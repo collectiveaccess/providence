@@ -109,6 +109,9 @@ class Db_pdo_mysql extends DbDriverBase {
 		
 		try {
 			$this->opr_db = new PDO('mysql:host='.$pa_options["host"].';dbname='.$pa_options["database"], $pa_options["username"], $pa_options["password"], array(PDO::ATTR_PERSISTENT => caGetOption("persistentConnections", $pa_options, true)));
+			$this->opr_db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			$this->opr_db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+			$this->opr_db->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
 		} catch (Exception $e) {
 			$po_caller->postError(200, $e->getMessage(), "Db->pdo_mysql->connect()");
 			return false;
@@ -146,83 +149,18 @@ class Db_pdo_mysql extends DbDriverBase {
 	public function prepare($po_caller, $ps_sql) {
 		$this->ops_sql = $ps_sql;
 		
-		// are there any placeholders at all?
-		if (strpos($ps_sql, '?') === false) {
-			return new DbStatement($this, $this->ops_sql, array('placeholder_map' => array(), 'native_statement' => $this->opr_db->prepare($ps_sql)));
-		}
-		
-		global $g_pdo_mysql_statement_cache;
-		
 		$vs_md5 = md5($ps_sql);
-		
+
 		// is prepared statement cached?
 		if(MemoryCache::contains($vs_md5, 'PdoStatementCache')) {
 			return MemoryCache::fetch($vs_md5, 'PdoStatementCache');
-		}
-		
-		// find placeholders
-		$vn_i = 0;
-		$vn_l = strlen($ps_sql);
-
-		$va_placeholder_map = array();
-		$vb_in_quote = '';
-		$vb_is_escaped = false;
-		
-		while($vn_i < $vn_l) {
-			$vs_c = $ps_sql{$vn_i};
-
-			switch($vs_c) {
-				case '"':
-					if (!$vb_is_escaped) {
-						if ($vb_in_quote == '"') {
-							$vb_in_quote = '';
-						} else {
-							if (!$vb_in_quote) {
-								$vb_in_quote = '"';
-							}
-						}
-					}
-					$vb_is_escaped = false;
-					break;
-				case "'":
-					if (!$vb_is_escaped) {
-						if ($vb_in_quote == "'") {
-							$vb_in_quote = '';
-						} else {
-							if (!$vb_in_quote) {
-								// handle escaped quote in '' format
-								if ($ps_sql{$vn_i + 1} == "'") {
-									$vn_i += 2;
-									continue;
-								} else {
-									$vb_in_quote = "'";
-								}
-							}
-						}
-					}
-					$vb_is_escaped = false;
-					break;
-				case '?':
-					if ((!$vb_is_escaped) && (!$vb_in_quote)) {
-						$va_placeholder_map[] = $vn_i;
-					}
-					$vb_is_escaped = false;
-					break;
-				case "\\":
-					$vb_is_escaped = !$vb_is_escaped;
-					break;
-				default:
-					$vb_is_escaped = false;
-					break;
-			}
-			$vn_i++;
 		}
 
 		if(MemoryCache::itemCountForNamespace('PdoStatementCache') >= 2048) {
 			MemoryCache::flush('PdoStatementCache');
 		}
 
-		$o_statement = new DbStatement($this, $this->ops_sql, array('placeholder_map' => $va_placeholder_map, 'native_statement' => $this->opr_db->prepare($ps_sql)));
+		$o_statement = new DbStatement($this, $this->ops_sql, array('native_statement' => $this->opr_db->prepare($ps_sql)));
 		MemoryCache::save($vs_md5, $o_statement, 'PdoStatementCache');
 
 		return $o_statement;
@@ -232,40 +170,19 @@ class Db_pdo_mysql extends DbDriverBase {
 	 * Executes a SQL statement
 	 *
 	 * @param mixed $po_caller object representation of the calling class, usually Db()
-	 * @param DbStatement $opo_statement
+	 * @param PDOStatement $opo_statement
 	 * @param string $ps_sql SQL statement
 	 * @param array $pa_values array of placeholder replacements
 	 * @return bool|DbResult
 	 */
 	public function execute($po_caller, $opo_statement, $ps_sql, $pa_values) {
 		if (!$ps_sql) {
-			$opo_statement->postError(240, _t("Query is empty"), "Db->pdo_mysql->execute()");
+			$po_caller->postError(240, _t("Query is empty"), "Db->pdo_mysql->execute()");
 			return false;
 		}
 
-		$va_placeholder_map = $po_caller->getOption('placeholder_map');
-
-		$vs_sql = $ps_sql;
-		
-		$va_proc_values = array();
-		$va_values_rev = array_reverse(array_keys($pa_values));
-		foreach($va_values_rev as $vn_i) {
-			if (is_array($pa_values[$vn_i])) {
-				foreach($pa_values[$vn_i] as $vn_x => $vs_vx) {
-					$pa_values[$vn_i][$vn_x] = $this->autoQuote($vs_vx);
-				}
-				
-				$vs_str = join(",", $pa_values[$vn_i]);
-				$vs_sql = substr_replace($vs_sql, $vs_str, $va_placeholder_map[$vn_i], 1);
-				continue;
-			}
-			$va_proc_values[] = $pa_values[$vn_i];
-		}
-		
-		if (sizeof($va_proc_values) != sizeof($pa_values)) {
-			$pa_values = array_reverse($va_proc_values);
-			$vo_dbstatement = $this->prepare($po_caller, $vs_sql);
-			$opo_statement = $vo_dbstatement->getOption('native_statement');
+		if(!($opo_statement instanceof PDOStatement)) {
+			$po_caller->postError(250, _t("Invalid prepared statement"), "Db->pdo_mysql->execute()");
 		}
 	
 		if (Db::$monitor) {
@@ -278,7 +195,7 @@ class Db_pdo_mysql extends DbDriverBase {
 		}
 		
 		if (Db::$monitor) {
-			Db::$monitor->logQuery($vs_sql, $pa_values, $t->getTime(4), $opo_statement->rowCount());
+			Db::$monitor->logQuery($ps_sql, $pa_values, $t->getTime(4), $opo_statement->rowCount());
 		}
 		return new DbResult($this, $opo_statement);
 	}
@@ -527,16 +444,17 @@ class Db_pdo_mysql extends DbDriverBase {
 	 * @return array field list, false on error
 	 */
 	public function &getTables($po_caller) {
-		if ($r_show = $this->opr_db->query("SHOW TABLES")) {
+		try {
+			$r_show = $this->opr_db->query("SHOW TABLES");
 			$va_tables = array();
-			while($va_row = $r_show->fetch(PDO::FETCH_NUM)) {
-				$va_tables[] = $va_row[0];
+			$va_results = $r_show->fetchAll(PDO::FETCH_NUM);
+			foreach($va_results as $va_result) {
+				$va_tables[] = $va_result[0];
 			}
 
 			return $va_tables;
-		} else { 
-			$va_err = $this->opr_db->errorInfo(); 
-			$po_caller->postError(280, $va_err[2], "Db->pdo_mysql->getTables()");
+		} catch(PDOException $e) {
+			$po_caller->postError(280, $e->getMessage(), "Db->pdo_mysql->getTables()");
 			return false;
 		}
 	}
@@ -553,7 +471,10 @@ class Db_pdo_mysql extends DbDriverBase {
 		if ($ps_fieldname) {
 			$vs_fieldname_sql = " LIKE '".$this->escape($ps_fieldname)."'";
 		}
-		if ($r_show = $this->opr_db->query("SHOW COLUMNS FROM ".$ps_table." ".$vs_fieldname_sql)) {
+
+		try{
+			$r_show = $this->opr_db->query("SHOW COLUMNS FROM ".$ps_table." ".$vs_fieldname_sql);
+
 			$va_tables = array();
 			while($va_row = $r_show->fetch(PDO::FETCH_NUM)) {
 
@@ -598,9 +519,8 @@ class Db_pdo_mysql extends DbDriverBase {
 			}
 
 			return $va_tables;
-		} else {
-			$va_err = $this->opr_db->errorInfo();
-			$po_caller->postError(280, $va_err[2], "Db->pdo_mysql->getTables()");
+		} catch(PDOException $e) {
+			$po_caller->postError(280, $e->getMessage(), "Db->pdo_mysql->getTables()");
 			return false;
 		}
 	}

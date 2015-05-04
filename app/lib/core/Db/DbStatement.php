@@ -146,7 +146,7 @@ class DbStatement extends DbBase {
 	function executeWithParamsAsArray($pa_params) {
 		$this->clearErrors();
 
-		if ($vb_res = $this->opo_db->execute($this, $this->opo_native_statement ? $this->opo_native_statement : $this,$this->ops_sql, $pa_params)) {
+		if ($vb_res = $this->opo_db->execute($this, $this->opo_native_statement ? $this->opo_native_statement : $this, $this->ops_sql, $pa_params)) {
 			$this->opn_last_insert_id = $this->opo_db->getLastInsertID($this);
 		}
 		return $vb_res;

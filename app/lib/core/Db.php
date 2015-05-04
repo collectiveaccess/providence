@@ -98,6 +98,7 @@ class Db extends DbBase {
 	
 	/** 
 	  * ApplicationMonitor to use for query logging
+	  * @var ApplicationMonitor
 	  */
 	static $monitor = null;
 

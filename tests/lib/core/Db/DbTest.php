@@ -33,11 +33,103 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 
 class DbTest extends PHPUnit_Framework_TestCase {
 
-	public function testCreateDropTable() {
-		$o_db = new Db();
+	/**
+	 * @var null|Db
+	 */
+	var $db = null;
 
-		$o_db->query("CREATE TABLE IF NOT EXISTS foo (id INT)");
-		$o_db->query("DROP TABLE foo");
+	public function setUp() {
+		$this->db = new Db();
+		$this->db->query("CREATE TABLE IF NOT EXISTS foo (
+			id INT,
+			text VARCHAR(255)
+		)");
+		$this->db->query("CREATE TABLE IF NOT EXISTS bar (
+			id INT,
+			text VARCHAR(255)
+		)");
+
+	}
+
+	public function testSimpleInsertSelectDeleteCycle() {
+		$this->checkIfFooIsEmpty();
+
+		$this->db->query("INSERT INTO foo (id, text) VALUES (1, 'bar')");
+
+		$qr_select = $this->db->query("SELECT * FROM foo");
+		$this->assertInternalType('object', $qr_select);
+		$this->assertTrue($qr_select->nextRow());
+
+		$this->assertEquals(1, $qr_select->get('id'));
+		$this->assertEquals('bar', $qr_select->get('text'));
+
+		$this->db->query("DELETE FROM foo");
+
+		$this->checkIfFooIsEmpty();
+	}
+
+	public function testInsertSelectDeleteCycleWithParamsArray() {
+		$this->checkIfFooIsEmpty();
+
+		$this->db->query("INSERT INTO foo (id, text) VALUES (?, ?)", array(1, 'bar'));
+
+		$qr_select = $this->db->query("SELECT * FROM foo");
+		$this->assertInternalType('object', $qr_select);
+		$this->assertTrue($qr_select->nextRow());
+
+		$this->assertEquals(1, $qr_select->get('id'));
+		$this->assertEquals('bar', $qr_select->get('text'));
+
+		$this->db->query("DELETE FROM foo");
+
+		$this->checkIfFooIsEmpty();
+	}
+
+	public function testInsertWithInvalidParamsArray() {
+		$this->checkIfFooIsEmpty();
+
+		$this->db->dieOnError(false);
+		$vm_ret = $this->db->query("INSERT INTO foo (id, text) VALUES (?, ?)", array(1, 'bar', 'foo'));
+		$this->assertFalse($vm_ret);
+
+		$this->checkIfFooIsEmpty();
+	}
+
+	public function testInsertWithPreparedStatement() {
+		$this->checkIfFooIsEmpty();
+
+		$o_stmt = $this->db->prepare("INSERT INTO foo (id, text) VALUES (?, ?)");
+		$o_stmt->execute(array(1,'bar'));
+
+		$qr_select = $this->db->query("SELECT * FROM foo");
+		$this->assertInternalType('object', $qr_select);
+		$this->assertTrue($qr_select->nextRow());
+
+		$this->assertEquals(1, $qr_select->get('id'));
+		$this->assertEquals('bar', $qr_select->get('text'));
+
+		$this->db->query("DELETE FROM foo");
+
+		$this->checkIfFooIsEmpty();
+	}
+
+	public function testGetTables() {
+		$va_tables = $this->db->getTables();
+
+		$this->assertContains('foo', $va_tables);
+		$this->assertContains('bar', $va_tables);
+	}
+
+	public function tearDown() {
+		$this->db->query("DROP TABLE IF EXISTS foo");
+		$this->db->query("DROP TABLE IF EXISTS bar");
+	}
+
+	public function checkIfFooIsEmpty() {
+		$qr_select = $this->db->query("SELECT * FROM foo");
+		$this->assertInternalType('object', $qr_select);
+		$this->assertFalse($qr_select->nextRow());
+		$this->assertEquals(0, $qr_select->numRows());
 	}
 
 }
