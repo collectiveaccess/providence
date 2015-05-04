@@ -60,11 +60,12 @@ class wamMaterialisedTaxonomyPlugin extends BaseApplicationPlugin {
 	}
 
 	/**
-	 * Implementation of the periodic task hook
+	 * Iterates through the configured tables and sets proxy attribute values for fields where they have been mapped.
 	 *
-	 *
+	 * @return true - required in order for subsequent hooks to fire
 	 */
 	public function hookPeriodicTask() {
+		$vb_skip_processed_rows = $this->opo_config->getBoolean('skip_processed_rows');
 		if ($va_table_config = $this->opo_config->getAssoc('tables')){
 			$vo_dm = Datamodel::load();
 			foreach($va_table_config as $vs_table_name => $va_type_info){
@@ -99,7 +100,7 @@ class wamMaterialisedTaxonomyPlugin extends BaseApplicationPlugin {
 						if($va_new_values){
 							$vs_taxonomy_checksum = md5(serialize($va_new_values));
 							$vs_stored_taxonomy_checksum = $vo_table_instance->getSimpleAttributeValue('taxonomyChecksum');
-							if($vs_stored_taxonomy_checksum !== $vs_taxonomy_checksum){
+							if($vs_stored_taxonomy_checksum !== $vs_taxonomy_checksum || !$vb_skip_processed_rows){
 								$vo_table_instance->setMode(ACCESS_WRITE);
 								$va_new_values['taxonomyChecksum'] = $vs_taxonomy_checksum;
 								foreach($va_new_values as $vs_field => $vs_value){
