@@ -77,7 +77,6 @@ class wamMaterialisedTaxonomyPlugin extends BaseApplicationPlugin {
 					/** @var ca_list_items $vo_type_list_item */
 					$vo_type_list_item = new ca_list_items($vn_type_id);
 					$vo_child_types = $vo_type_list_item->getHierarchy(null, array('idsOnly' => true));
-					$vo_table_instance->getTypeList();
 					/** @var BaseSearchResult $vo_result */
 					$va_ids = $vo_table_instance->find(array($vs_type_field => $vo_child_types, 'deleted' => false), array('returnAs' => 'ids'));
 					foreach($va_ids as $vn_id){
