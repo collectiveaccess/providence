@@ -47,6 +47,7 @@ class Db_pdo_mysql extends DbDriverBase {
 	/**
 	 * MySQL database resource
 	 *
+	 * @var PDO
 	 * @access private
 	 */
 	var $opr_db;
@@ -90,15 +91,20 @@ class Db_pdo_mysql extends DbDriverBase {
 	 * @return bool success state
 	 */
 	public function connect($po_caller, $pa_options) {
-		global $g_connect;
-		if (!is_array($g_connect)) { $g_connect = array(); }
 		$vs_db_connection_key = $pa_options["host"].'/'.$pa_options["database"];
-		
-		if (!($vb_unique_connection = caGetOption('uniqueConnection', $pa_options, false)) && isset($g_connect[$vs_db_connection_key]) && ($g_connect[$vs_db_connection_key])) { $this->opr_db = $g_connect[$vs_db_connection_key]; return true;}
+
+		// reuse connection
+		if (
+			!($vb_unique_connection = caGetOption('uniqueConnection', $pa_options, false))
+			&&
+			MemoryCache::contains($vs_db_connection_key, 'PdoConnectionCache')
+		) {
+			$this->opr_db = MemoryCache::fetch($vs_db_connection_key, 'PdoConnectionCache');
+			return true;
+		}
 		
 		if (!class_exists("PDO")) {
 			die(_t("Your PHP installation lacks PDO MySQL support. Please add it and retry..."));
-			exit;
 		}
 		
 		try {
@@ -111,7 +117,9 @@ class Db_pdo_mysql extends DbDriverBase {
 		$this->opr_db->exec('SET NAMES \'utf8\'');
 		$this->opr_db->exec('SET character_set_results = NULL');	
 	
-		if (!$vb_unique_connection) { $g_connect[$vs_db_connection_key] = $this->opr_db; }
+		if (!$vb_unique_connection) {
+			MemoryCache::save($vs_db_connection_key, $this->opr_db, 'PdoConnectionCache');
+		}
 		return true;
 	}
 
@@ -121,10 +129,7 @@ class Db_pdo_mysql extends DbDriverBase {
 	 * @return bool success state
 	 */
 	public function disconnect() {
-		//if (!is_resource($this->opr_db)) { return true; }
-		//if (!@mysql_close($this->opr_db)) {
-		//	return false;
-		//}
+		$this->opr_db = null;
 		return true;
 	}
 
@@ -151,8 +156,8 @@ class Db_pdo_mysql extends DbDriverBase {
 		$vs_md5 = md5($ps_sql);
 		
 		// is prepared statement cached?
-		if(isset($g_pdo_mysql_statement_cache[$vs_md5])) {
-			return $g_pdo_mysql_statement_cache[$vs_md5];
+		if(MemoryCache::contains($vs_md5, 'PdoStatementCache')) {
+			return MemoryCache::fetch($vs_md5, 'PdoStatementCache');
 		}
 		
 		// find placeholders
@@ -212,13 +217,15 @@ class Db_pdo_mysql extends DbDriverBase {
 			}
 			$vn_i++;
 		}
-		
-		if (sizeof($g_pdo_mysql_statement_cache) >= 2048) { 
-			array_shift($g_pdo_mysql_statement_cache); 
-		}	// limit statement cache to 2048 entries, otherwise we'll eat up memory in long running processes
 
-		
-		return $g_pdo_mysql_statement_cache[$vs_md5] = new DbStatement($this, $this->ops_sql, array('placeholder_map' => $va_placeholder_map, 'native_statement' => $this->opr_db->prepare($ps_sql)));
+		if(MemoryCache::itemCountForNamespace('PdoStatementCache') >= 2048) {
+			MemoryCache::flush('PdoStatementCache');
+		}
+
+		$o_statement = new DbStatement($this, $this->ops_sql, array('placeholder_map' => $va_placeholder_map, 'native_statement' => $this->opr_db->prepare($ps_sql)));
+		MemoryCache::save($vs_md5, $o_statement, 'PdoStatementCache');
+
+		return $o_statement;
 	}
 
 	/**
@@ -228,15 +235,16 @@ class Db_pdo_mysql extends DbDriverBase {
 	 * @param DbStatement $opo_statement
 	 * @param string $ps_sql SQL statement
 	 * @param array $pa_values array of placeholder replacements
+	 * @return bool|DbResult
 	 */
 	public function execute($po_caller, $opo_statement, $ps_sql, $pa_values) {
 		if (!$ps_sql) {
 			$opo_statement->postError(240, _t("Query is empty"), "Db->pdo_mysql->execute()");
 			return false;
 		}
-		
+
 		$va_placeholder_map = $po_caller->getOption('placeholder_map');
-		
+
 		$vs_sql = $ps_sql;
 		
 		$va_proc_values = array();
@@ -378,11 +386,6 @@ class Db_pdo_mysql extends DbDriverBase {
 	 */
 	public function escape($ps_text) {
 		return $ps_text;
-		if ($this->opr_db) {
-			return $this->opr_db->quote($ps_text);
-		} else {
-			return addslashes($ps_text);
-		}
 	}
 
 	/**
