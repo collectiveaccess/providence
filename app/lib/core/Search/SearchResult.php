@@ -800,6 +800,12 @@ class SearchResult extends BaseObject {
 	public static function clearResultCacheForRow($ps_table, $pn_row_id) {
 		unset(self::$s_prefetch_cache[$ps_table][$pn_row_id]);
 		unset(self::$s_rel_prefetch_cache[$ps_table][$pn_row_id]);
+
+		$ps_label_table = LabelableBaseModelWithAttributes::getLabelTable($ps_table);
+		if($ps_label_table) {
+			unset(self::$s_prefetch_cache[$ps_label_table][$pn_row_id]);
+			unset(self::$s_rel_prefetch_cache[$ps_label_table][$pn_row_id]);
+		}
 	}
 	# ------------------------------------------------------------------
 	/**

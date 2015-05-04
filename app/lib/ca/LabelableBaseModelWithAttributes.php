@@ -1648,6 +1648,20 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Static equivalent to @see getLabelTableName()
+		 * @param string $ps_table_name the base table name
+		 * @return string|bool
+		 */
+		public static function getLabelTable($ps_table_name) {
+			$o_dm = Datamodel::load();
+			$t_instance = $o_dm->getInstance($ps_table_name, true);
+			if($t_instance instanceof LabelableBaseModelWithAttributes) {
+				return $t_instance->getLabelTableName();
+			}
+			return false;
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * Returns instance of model class for label table
 		 *
 		 * @return BaseLabel Instance of label model
