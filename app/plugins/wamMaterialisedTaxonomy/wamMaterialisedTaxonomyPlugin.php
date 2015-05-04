@@ -91,7 +91,7 @@ class wamMaterialisedTaxonomyPlugin extends BaseApplicationPlugin {
 							$vo_ancestor_instance = new $vs_table_name($vn_ancestor_id);
 							if($vs_ancestor_type = $vo_ancestor_instance->getTypeCode()){
 								if(isset($va_type_to_attribute_map[$vs_ancestor_type])){
-									// Get a label, but it's ok to use the cache
+									// Get a label, but it's ok to use the cache so we pass `false` to getLabelForDisplay
 									$vs_label = $vo_ancestor_instance->getLabelForDisplay(false);
 									$va_new_values[$va_type_to_attribute_map[$vs_ancestor_type]] = $vs_label;
 								}
