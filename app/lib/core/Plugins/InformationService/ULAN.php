@@ -111,7 +111,7 @@ LIMIT 25');
 			$vs_label = $va_values['TermPrefLabel']['value'] . " (".$va_values['Parents']['value'].")  - " . $va_values['Bio']['value'];
 
 			$va_return['results'][] = array(
-				'label' => $vs_label,
+				'label' => htmlentities($vs_label),
 				'url' => $va_values['ID']['value'],
 				'id' => $vs_id,
 			);
