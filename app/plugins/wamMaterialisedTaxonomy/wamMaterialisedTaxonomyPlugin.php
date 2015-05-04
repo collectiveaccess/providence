@@ -66,23 +66,23 @@ class wamMaterialisedTaxonomyPlugin extends BaseApplicationPlugin {
 	 */
 	public function hookPeriodicTask() {
 		if ($va_table_config = $this->opo_config->getAssoc('tables')){
-			$o_dm = Datamodel::load();
+			$vo_dm = Datamodel::load();
 			foreach($va_table_config as $vs_table_name => $va_type_info){
-				/** @var BundlableLabelableBaseModelWithAttributes $t_table */
-				$t_table = $o_dm->getTableInstance($vs_table_name);
-				$vs_type_field = $t_table->getTypeFieldName();
+				/** @var BundlableLabelableBaseModelWithAttributes $vo_table_instance */
+				$vo_table_instance = $vo_dm->getTableInstance($vs_table_name);
+				$vs_type_field = $vo_table_instance->getTypeFieldName();
 				foreach($va_type_info as $vs_type => $va_type_to_attribute_map){
-					$vn_type_id = $t_table->getTypeIDForCode($vs_type);
-					/** @var ca_list_items $vo_type_l */
-					$vo_type_l = new ca_list_items($vn_type_id);
-					$vo_child_types = $vo_type_l->getHierarchy(null, array('idsOnly' => true));
-					$t_table->getTypeList();
+					$vn_type_id = $vo_table_instance->getTypeIDForCode($vs_type);
+					/** @var ca_list_items $vo_type_list_item */
+					$vo_type_list_item = new ca_list_items($vn_type_id);
+					$vo_child_types = $vo_type_list_item->getHierarchy(null, array('idsOnly' => true));
+					$vo_table_instance->getTypeList();
 					/** @var BaseSearchResult $vo_result */
-					$va_ids = $t_table->find(array($vs_type_field => $vo_child_types, 'deleted' => false), array('returnAs' => 'ids'));
+					$va_ids = $vo_table_instance->find(array($vs_type_field => $vo_child_types, 'deleted' => false), array('returnAs' => 'ids'));
 					foreach($va_ids as $vn_id){
-						$t_table->load($vn_id);
+						$vo_table_instance->load($vn_id);
 						$va_new_values = array();
-						$va_ancestors = $t_table->getHierarchyAncestors($vn_id, array('idsOnly' => true));
+						$va_ancestors = $vo_table_instance->getHierarchyAncestors($vn_id, array('idsOnly' => true));
 						/**
 						 * @var int $vn_ancestor_id
 						 * @var BundlableLabelableBaseModelWithAttributes $vo_ancestor_instance
@@ -98,14 +98,14 @@ class wamMaterialisedTaxonomyPlugin extends BaseApplicationPlugin {
 						}
 						if($va_new_values){
 							$vs_taxonomy_checksum = md5(serialize($va_new_values));
-							$vs_stored_taxonomy_checksum = $t_table->getSimpleAttributeValue('taxonomyChecksum');
+							$vs_stored_taxonomy_checksum = $vo_table_instance->getSimpleAttributeValue('taxonomyChecksum');
 							if($vs_stored_taxonomy_checksum !== $vs_taxonomy_checksum){
-								$t_table->setMode(ACCESS_WRITE);
+								$vo_table_instance->setMode(ACCESS_WRITE);
 								$va_new_values['taxonomyChecksum'] = $vs_taxonomy_checksum;
 								foreach($va_new_values as $vs_field => $vs_value){
-									$t_table->replaceAttribute(array($vs_field=>  $vs_value), $vs_field);
+									$vo_table_instance->replaceAttribute(array($vs_field=>  $vs_value), $vs_field);
 								}
-								$t_table->update();
+								$vo_table_instance->update();
 							}
 						}
 					}
