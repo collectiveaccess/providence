@@ -83,7 +83,7 @@ class wamMaterialisedTaxonomyPlugin extends BaseApplicationPlugin {
 					foreach($va_ids as $vn_id){
 						$vo_table_instance->load($vn_id);
 						$va_new_values = array();
-						$va_ancestors = $vo_table_instance->getHierarchyAncestors($vn_id, array('idsOnly' => true));
+						$va_ancestors = $vo_table_instance->getHierarchyAncestors($vn_id, array('idsOnly' => true, 'includeSelf' => true));
 						/**
 						 * @var int $vn_ancestor_id
 						 * @var BundlableLabelableBaseModelWithAttributes $vo_ancestor_instance
@@ -92,6 +92,7 @@ class wamMaterialisedTaxonomyPlugin extends BaseApplicationPlugin {
 							$vo_ancestor_instance = new $vs_table_name($vn_ancestor_id);
 							if($vs_ancestor_type = $vo_ancestor_instance->getTypeCode()){
 								if(isset($va_type_to_attribute_map[$vs_ancestor_type])){
+									// Get a label, but it's ok to use the cache
 									$vs_label = $vo_ancestor_instance->getLabelForDisplay(false);
 									$va_new_values[$va_type_to_attribute_map[$vs_ancestor_type]] = $vs_label;
 								}
