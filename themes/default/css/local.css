@@ -156,8 +156,10 @@ div.roundedRel {
   div.roundedRel a {
     font-size: inherit; }
 
-.hierarchyBrowserContainer {
-  width: 100%; }
+.hierarchyBrowserContainer,
+div.hierarchyBrowseTab,
+.caRelatedItem > div:nth-child(2) {
+  width: 100% !important; }
 
 .hierarchyBrowserLevel li {
   line-height: 1.2;
