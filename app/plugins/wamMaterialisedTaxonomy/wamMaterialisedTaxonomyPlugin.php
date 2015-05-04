@@ -112,12 +112,19 @@ class wamMaterialisedTaxonomyPlugin extends BaseApplicationPlugin {
 							}
 						}
 						if($va_new_values){
+							$vs_taxonomy_checksum = md5(serialize($va_new_values));
 							caDebug($va_new_values, 'new_values', true);
-							$t_table->setMode(ACCESS_WRITE);
-							foreach($va_new_values as $vs_field => $vs_value){
-								$t_table->replaceAttribute(array($vs_field=>  $vs_value), $vs_field);
+							caDebug($vs_taxonomy_checksum, 'taxonomyChecksum');
+							$vs_stored_taxonomy_checksum = $t_table->getSimpleAttributeValue('taxonomyChecksum');
+							caDebug($vs_stored_taxonomy_checksum, 'storedTaxonomyChecksum');
+							if($vs_stored_taxonomy_checksum !== $vs_taxonomy_checksum){
+								$t_table->setMode(ACCESS_WRITE);
+								$va_new_values['taxonomyChecksum'] = $vs_taxonomy_checksum;
+								foreach($va_new_values as $vs_field => $vs_value){
+									$t_table->replaceAttribute(array($vs_field=>  $vs_value), $vs_field);
+								}
+								$t_table->update();
 							}
-							$t_table->update();
 						}
 					}
 				}
