@@ -105,7 +105,7 @@ class wamMaterialisedTaxonomyPlugin extends BaseApplicationPlugin {
 								$vo_table_instance->setMode(ACCESS_WRITE);
 								$va_new_values['taxonomyChecksum'] = $vs_taxonomy_checksum;
 								foreach($va_new_values as $vs_field => $vs_value){
-									$vo_table_instance->replaceAttribute(array($vs_field=>  $vs_value), $vs_field);
+									$vo_table_instance->replaceAttribute(array($vs_field => $vs_value), $vs_field);
 								}
 								$vo_table_instance->update();
 							}
