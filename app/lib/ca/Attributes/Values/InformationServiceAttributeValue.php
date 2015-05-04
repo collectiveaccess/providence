@@ -143,6 +143,8 @@
  		private $ops_text_value;
  		private $ops_uri_value;
  		private $opo_plugin;
+
+		private $opa_indexing_info;
  		# ------------------------------------------------------------------
  		/**
  		 *
@@ -158,7 +160,9 @@
  		 */
  		public function loadTypeSpecificValueFromRow($pa_value_array) {
  			$this->ops_text_value = $pa_value_array['value_longtext1'];
- 			$this->ops_uri_value =  $pa_value_array['value_longtext2'];
+ 			$this->ops_uri_value = $pa_value_array['value_longtext2'];
+
+			$this->opa_indexing_info = caUnserializeForDatabase($pa_value_array['value_blob']);
  		}
  		# ------------------------------------------------------------------
  		/**
@@ -191,6 +195,9 @@
  		 */
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
+			$vs_service = caGetOption('service', $this->getSettingValuesFromElementArray(
+				$pa_element_info, array('service')
+			));
  			
  			//if (!trim($ps_value)) {
  				//$this->postError(1970, _t('Entry was blank.'), 'InformationServiceAttributeValue->parseValue()');
@@ -200,10 +207,16 @@
 			if (trim($ps_value)) {
 				$va_tmp = explode('|', $ps_value);
 				if(sizeof($va_tmp) != 3) {  return array('_dont_save' => true); }	// don't save if value hasn't changed
+
+				// get extra indexing info for this uri from plugin implementation
+				$this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service);
+				$va_indexing_blob = caSerializeForDatabase($this->opo_plugin->getExtraValuesForSearchIndexing($pa_element_info['settings'], $va_tmp[2]));
+
 				return array(
 					'value_longtext1' => $va_tmp[0],	// text
 					'value_longtext2' => $va_tmp[2],	// uri
-					'value_decimal1' => $va_tmp[1] 		// id
+					'value_decimal1' => $va_tmp[1], 	// id
+					'value_blob' => $va_indexing_blob
 				);
 			}
 			return array(
@@ -326,6 +339,10 @@
  			}	
  			return $va_settings;
  		}
+		# ------------------------------------------------------------------
+		public function getExtraValuesForSearchIndexing() {
+			return (is_array($this->opa_indexing_info) ? $this->opa_indexing_info : array());
+		}
  		# ------------------------------------------------------------------
 		/**
 		 * Returns name of field in ca_attribute_values to use for sort operations

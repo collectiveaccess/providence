@@ -29,3 +29,5 @@ before_script:
 branches:
   only:
     - develop
+    - dev/gettyLOD
+

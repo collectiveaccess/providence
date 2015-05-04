@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="http://dublincore.org/documents/dces/">
-  <profileName>[Testing] Automated testing purposes only</profileName>
+  <profileName>[Testing] Profile for test cases</profileName>
   <profileDescription/>
   <locales>
     <locale lang="en" country="US">English</locale>
@@ -2092,6 +2092,69 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="tgn" datatype="InformationService">
+      <labels>
+        <label locale="en_US">
+          <name>TGN</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="service">TGN</setting>
+        <setting name="fieldWidth">90</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="aat" datatype="InformationService">
+      <labels>
+        <label locale="en_US">
+          <name>AAT</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="service">AAT</setting>
+        <setting name="fieldWidth">90</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="ulan" datatype="InformationService">
+      <labels>
+        <label locale="en_US">
+          <name>ULAN</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="service">ULAN</setting>
+        <setting name="fieldWidth">90</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
   </elementSets>
   <userInterfaces>
     <userInterface code="standard_object_ui" type="ca_objects">
@@ -2124,6 +2187,15 @@
                 <setting name="label" locale="en_US">Alternate titles</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_tgn">
+              <bundle>ca_attribute_tgn</bundle>
+            </placement>
+            <placement code="ca_attribute_aat">
+              <bundle>ca_attribute_aat</bundle>
+            </placement>
+            <placement code="ca_attribute_ulan">
+              <bundle>ca_attribute_ulan</bundle>
             </placement>
             <placement code="ca_attribute_date">
               <bundle>ca_attribute_date</bundle>
