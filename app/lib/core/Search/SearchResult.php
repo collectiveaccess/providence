@@ -94,9 +94,9 @@ class SearchResult extends BaseObject {
 		$this->opb_use_identifiers_in_urls = (bool)$this->opo_subject_instance->getAppConfig()->get('use_identifiers_in_urls');
 		$this->opa_row_ids_to_prefetch_cache = array();
 
-		self::$s_prefetch_cache = array();
+		/*self::$s_prefetch_cache = array();
 		self::$s_rel_prefetch_cache = array();
-		self::$s_timestamp_cache = array();
+		self::$s_timestamp_cache = array();*/
 		
 		if ($po_engine_result) {
 			$this->init($po_engine_result, $pa_tables);
@@ -799,6 +799,7 @@ class SearchResult extends BaseObject {
 	# ------------------------------------------------------------------
 	public static function clearResultCacheForRow($ps_table, $pn_row_id) {
 		unset(self::$s_prefetch_cache[$ps_table][$pn_row_id]);
+		unset(self::$s_rel_prefetch_cache[$ps_table][$pn_row_id]);
 	}
 	# ------------------------------------------------------------------
 	/**
