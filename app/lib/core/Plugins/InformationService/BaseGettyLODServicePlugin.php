@@ -93,11 +93,13 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 		foreach($va_service_conf['detail_view_info'] as $va_node) {
 			if(!isset($va_node['literal'])) { continue; }
 
+			$vn_limit = caGetOption('limit', $va_node, 10, array('castTo' => 'int'));
+
 			$vs_uri_for_pull = isset($va_node['uri']) ? $va_node['uri'] : null;
 
 			$vs_display .= "<div class='formLabel'>";
 			$vs_display .= isset($va_node['label']) ? $va_node['label'].": " : "";
-			$vs_display .= "<span class='formLabelPlain'>".self::getLiteralFromRDFNode($ps_url, $va_node['literal'], $vs_uri_for_pull)."</span>";
+			$vs_display .= "<span class='formLabelPlain'>".self::getLiteralFromRDFNode($ps_url, $va_node['literal'], $vs_uri_for_pull, $vn_limit)."</span>";
 			$vs_display .= "</div>\n";
 		}
 
@@ -120,7 +122,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 			if(!isset($va_node['literal'])) { continue; }
 
 			$vs_uri_for_pull = isset($va_node['uri']) ? $va_node['uri'] : null;
-			$va_return[] = self::getLiteralFromRDFNode($ps_url, $va_node['literal'], $vs_uri_for_pull);
+			$va_return[] = str_replace('; ', ' ', self::getLiteralFromRDFNode($ps_url, $va_node['literal'], $vs_uri_for_pull));
 		}
 
 		return $va_return;
@@ -133,25 +135,55 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	 * @param string $ps_base_node
 	 * @param string $ps_literal_propery EasyRdf property definition
 	 * @param string|null $ps_node_uri Optional related node URI to pull from
+	 * @param int $pn_limit limit number of processed related notes
 	 * @return string|bool
 	 */
-	static function getLiteralFromRDFNode($ps_base_node, $ps_literal_propery, $ps_node_uri=null) {
+	static function getLiteralFromRDFNode($ps_base_node, $ps_literal_propery, $ps_node_uri=null, $pn_limit=10) {
 		if(!isURL($ps_base_node)) { return false; }
 
 		if(!($o_graph = self::getURIAsRDFGraph($ps_base_node))) { return false; }
 
+		$va_pull_graphs = array();
 		if(strlen($ps_node_uri) > 0) {
-			$o_related_node = $o_graph->get($ps_base_node, $ps_node_uri);
-			$vs_pull_uri = (string) $o_related_node;
-			if(!($o_graph = self::getURIAsRDFGraph($vs_pull_uri))) { return false; }
+			$o_related_nodes = $o_graph->all($ps_base_node, $ps_node_uri);
+			if(is_array($o_related_nodes)) {
+				$vn_i = 0;
+				foreach($o_related_nodes as $o_related_node) {
+					$vs_pull_uri = (string) $o_related_node;
+					if(!($o_pull_graph = self::getURIAsRDFGraph($vs_pull_uri))) { return false; }
+					$va_pull_graphs[$vs_pull_uri] = $o_pull_graph;
+
+					if((++$vn_i) >= $pn_limit) { break; }
+				}
+			}
 		} else {
-			$vs_pull_uri = $ps_base_node;
+			$va_pull_graphs[$ps_base_node] = $o_graph;
 		}
 
-		$o_literal = $o_graph->get($vs_pull_uri, $ps_literal_propery);
+		$va_return = array();
 
-		if(!($o_literal instanceof EasyRdf_Literal)) { return (string) $o_literal; }
-		return htmlentities($o_literal->getValue());
+		$vn_j = 0;
+		foreach($va_pull_graphs as $vs_uri => $o_g) {
+			$va_literals = $o_g->all($vs_uri, $ps_literal_propery);
+
+			foreach($va_literals as $o_literal) {
+				if($o_literal instanceof EasyRdf_Literal) {
+					$vs_string_to_add = htmlentities($o_literal->getValue());
+				} else {
+					$vs_string_to_add = (string) $o_literal;
+				}
+
+				// make links click-able
+				if(isURL($vs_string_to_add)) {
+					$vs_string_to_add = "<a href='{$vs_string_to_add}' target='_blank'>{$vs_string_to_add}</a>";
+				}
+
+				$va_return[] = $vs_string_to_add;
+				if((++$vn_j) >= $pn_limit) { break; }
+			}
+		}
+
+		return join('; ', $va_return);
 	}
 	# ------------------------------------------------
 	/**
