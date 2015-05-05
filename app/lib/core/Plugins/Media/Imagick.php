@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -279,7 +279,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	public function divineFileFormat($ps_filepath) {
 		# is it a camera raw image?
 		if (caMediaPluginDcrawInstalled($this->ops_dcraw_path)) {
-			exec($this->ops_dcraw_path." -i ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
+			exec($this->ops_dcraw_path." -i ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 			if ($vn_return == 0) {
 				if ((!preg_match("/^Cannot decode/", $va_output[0])) && (!preg_match("/Master/i", $va_output[0]))) {
 					return 'image/x-dcraw';
@@ -472,7 +472,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 						$this->postError(1610, _t("Could not copy Camera RAW file to temporary directory"), "WLPlugImagick->read()");
 						return false;
 					}
-					exec($this->ops_dcraw_path." -T ".caEscapeShellArg($vs_tmp_name), $va_output, $vn_return);
+					exec($this->ops_dcraw_path." -T ".caEscapeShellArg($vs_tmp_name).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 					if ($vn_return != 0) {
 						$this->postError(1610, _t("Camera RAW file conversion failed: %1", $vn_return), "WLPlugImagick->read()");
 						return false;

@@ -456,11 +456,16 @@ function caFileIsIncludable($ps_file) {
 	 * @return bool
 	 */
 	function caIsValidFilePath($ps_path) {
-		if (!$ps_path || (preg_match("/[^\/A-Za-z0-9\.:\ _\\\-]+/", $ps_path)) || !file_exists($ps_path)) { return false; }
+		if (!$ps_path || (preg_match("/[^\/A-Za-z0-9\.:\ _\(\)\\\-]+/", $ps_path)) || !file_exists($ps_path)) { return false; }
 
 		return true;
 	}
 	# ----------------------------------------
+	/**
+	 * Returns constant indicating class of operating system that system is running on
+	 *
+	 * @return int Returns constant OS_WIN32 for windows, OS_POSIX for Posix (Eg. Linux, MacOS)
+	 */
 	function caGetOSFamily() {
 		switch(strtoupper(substr(PHP_OS, 0, 3))	) {
 			case 'WIN':
@@ -470,6 +475,24 @@ function caFileIsIncludable($ps_file) {
 				return OS_POSIX;
 				break;
 		}
+	}
+	# ----------------------------------------
+	/**
+	 * Returns true if running on a Windows system
+	 *
+	 * @return bool
+	 */
+	function caIsWindows() {
+		return (caGetOSFamily() === OS_WIN32);
+	}
+	# ----------------------------------------
+	/**
+	 * Returns true if running on a POSIX system
+	 *
+	 * @return bool
+	 */
+	function caIsPOSIX() {
+		return (caGetOSFamily() === OS_POSIX);
 	}
 	# ----------------------------------------
 	function caGetPHPVersion() {

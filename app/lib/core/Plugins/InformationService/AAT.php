@@ -108,7 +108,7 @@ LIMIT 25');
 			$vs_label = $va_values['TermPrefLabel']['value'] . " (" . $va_values['Parents']['value'] . ")";
 
 			$va_return['results'][] = array(
-				'label' => str_replace(', ... Objects Facet', '', $vs_label),
+				'label' => htmlentities(str_replace(', ... Objects Facet', '', $vs_label)),
 				'url' => $va_values['ID']['value'],
 				'id' => $vs_id,
 			);
