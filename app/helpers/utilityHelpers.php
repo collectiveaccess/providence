@@ -456,7 +456,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return bool
 	 */
 	function caIsValidFilePath($ps_path) {
-		if (!$ps_path || (preg_match("/[^\/A-Za-z0-9\.:\ _\\\-]+/", $ps_path)) || !file_exists($ps_path)) { return false; }
+		if (!$ps_path || (preg_match("/[^\/A-Za-z0-9\.:\ _\\\-\(\)]+/", $ps_path)) || !file_exists($ps_path)) { return false; }
 
 		return true;
 	}
