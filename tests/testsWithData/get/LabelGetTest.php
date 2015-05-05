@@ -78,9 +78,7 @@ class LabelGetTest extends BaseTestWithData {
 		));
 
 		$this->assertGreaterThan(0, $vn_test_record);
-	
-		// Need to clear the result cache prior to testing for existance of newly added labels
-		SearchResult::clearResultCacheForTable('ca_objects');
+
 		$this->opt_object = new ca_objects($vn_test_record);
 	}
 	# -------------------------------------------------------
