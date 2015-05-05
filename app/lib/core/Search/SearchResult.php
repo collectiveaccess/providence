@@ -803,7 +803,7 @@ class SearchResult extends BaseObject {
 	 * SearchResult::clearResultCacheForTable() will clear the result cache for a table and, if applicable, the table
 	 * storing related labels, causing get() to re-fetch fresh data for the table on next invocation.
 	 *
-	 * @param $ps_table Name of table to purge cache for
+	 * @param string $ps_table Name of table to purge cache for
 	 * @return void
 	 */
 	public static function clearResultCacheForTable($ps_table) {
@@ -823,8 +823,8 @@ class SearchResult extends BaseObject {
 	 * SearchResult::clearResultCacheForRow() will clear the result cache for a single row, specified by its primary key,
 	 * causing get() to re-fetch fresh data for the row. If applicable, the table storing related labels will also be purged. 
 	 *
-	 * @param $ps_table Name of table to purge cache for
-	 * @pram $pn_row_id The primary key of the row to purge cache for
+	 * @param string $ps_table Name of table to purge cache for
+	 * @pram int $pn_row_id The primary key of the row to purge cache for
 	 * @return void
 	 */
 	public static function clearResultCacheForRow($ps_table, $pn_row_id) {
