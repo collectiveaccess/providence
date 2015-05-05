@@ -797,6 +797,36 @@ class SearchResult extends BaseObject {
 		return $vm_val;
 	}
 	# ------------------------------------------------------------------
+	/**
+	 * Results are speculatively pre-fetched in blocks to improve performance. This can cause issues
+	 * if you're inserting rows and expect a previously create SearchResult to "see" those new rows. 
+	 * SearchResult::clearResultCacheForTable() will clear the result cache for a table and, if applicable, the table
+	 * storing related labels, causing get() to re-fetch fresh data for the table on next invocation.
+	 *
+	 * @param $ps_table Name of table to purge cache for
+	 * @return void
+	 */
+	public static function clearResultCacheForTable($ps_table) {
+		unset(self::$s_prefetch_cache[$ps_table]);
+		unset(self::$s_rel_prefetch_cache[$ps_table]);
+
+		$ps_label_table = LabelableBaseModelWithAttributes::getLabelTable($ps_table);
+		if($ps_label_table) {
+			unset(self::$s_prefetch_cache[$ps_label_table]);
+			unset(self::$s_rel_prefetch_cache[$ps_label_table]);
+		}
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Results are speculatively pre-fetched in blocks to improve performance. This can cause issues
+	 * if you're inserting rows and expect a previously create SearchResult to "see" those new rows. 
+	 * SearchResult::clearResultCacheForRow() will clear the result cache for a single row, specified by its primary key,
+	 * causing get() to re-fetch fresh data for the row. If applicable, the table storing related labels will also be purged. 
+	 *
+	 * @param $ps_table Name of table to purge cache for
+	 * @pram $pn_row_id The primary key of the row to purge cache for
+	 * @return void
+	 */
 	public static function clearResultCacheForRow($ps_table, $pn_row_id) {
 		unset(self::$s_prefetch_cache[$ps_table][$pn_row_id]);
 		unset(self::$s_rel_prefetch_cache[$ps_table][$pn_row_id]);
@@ -810,6 +840,7 @@ class SearchResult extends BaseObject {
 	# ------------------------------------------------------------------
 	/**
 	 * Actual implementation of get()
+	 *
 	 * @param string $ps_field bundle specifier
 	 * @param null|array $pa_options options array
 	 * @return array|null|string
