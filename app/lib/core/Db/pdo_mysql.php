@@ -110,8 +110,7 @@ class Db_pdo_mysql extends DbDriverBase {
 		try {
 			$this->opr_db = new PDO('mysql:host='.$pa_options["host"].';dbname='.$pa_options["database"], $pa_options["username"], $pa_options["password"], array(PDO::ATTR_PERSISTENT => caGetOption("persistentConnections", $pa_options, true)));
 			$this->opr_db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-			$this->opr_db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
-			$this->opr_db->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
+			$this->opr_db->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
 		} catch (Exception $e) {
 			$po_caller->postError(200, $e->getMessage(), "Db->pdo_mysql->connect()");
 			return false;
@@ -188,9 +187,10 @@ class Db_pdo_mysql extends DbDriverBase {
 		if (Db::$monitor) {
 			$t = new Timer();
 		}
-		if (!($opo_statement->execute((is_array($pa_values) && sizeof($pa_values)) ? array_values($pa_values) : null))) {
-			$va_err = $this->opr_db->errorCode();
-			$po_caller->postError($this->nativeToDbError($this->opr_db->errorCode()), $va_err[2].((__CA_ENABLE_DEBUG_OUTPUT__) ? "\n<pre>".caPrintStacktrace()."</pre>" : ""), "Db->pdo_mysql->execute()");
+		try {
+			$opo_statement->execute((is_array($pa_values) && sizeof($pa_values)) ? array_values($pa_values) : null);
+		} catch(PDOException $e) {
+			$po_caller->postError($this->nativeToDbError($this->opr_db->errorCode()), $e->getMessage().((__CA_ENABLE_DEBUG_OUTPUT__) ? "\n<pre>".caPrintStacktrace()."\n{$ps_sql}</pre>" : ""), "Db->pdo_mysql->execute()");
 			return false;
 		}
 		
@@ -302,7 +302,11 @@ class Db_pdo_mysql extends DbDriverBase {
 	 * @return string
 	 */
 	public function escape($ps_text) {
-		return $ps_text;
+		// BaseModel doesn't expect the string quoted, but PDO does quote it,
+		// so in order to not end up with ''string'' in queries, we strip the
+		// PDO quotes here to mirror the mysql / mysqli behavior
+		$vs_text = $this->opr_db->quote($ps_text);
+		return mb_substr($vs_text,1,-1);
 	}
 
 	/**

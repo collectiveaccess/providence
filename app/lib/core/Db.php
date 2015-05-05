@@ -278,14 +278,14 @@ class Db extends DbBase {
 		$o_stmt->dieOnError($this->getDieOnError());
 
 		// If second parameter is array use that as query params for placeholders, otherwise use successive params to fill placeholders
-		if (!($vb_res = $o_stmt->executeWithParamsAsArray(is_array($va_args[0]) ? $va_args[0] : $va_args))) {
+		if (!($o_res = $o_stmt->executeWithParamsAsArray(is_array($va_args[0]) ? $va_args[0] : $va_args))) {
 			// copy errors from statement object to Db object
 			$this->errors = $o_stmt->errors();
 		} else {
 			$this->opn_last_insert_id = $o_stmt->getLastInsertID();
 		}
 
-		return $vb_res;
+		return $o_res;
 	}
 
 	/**

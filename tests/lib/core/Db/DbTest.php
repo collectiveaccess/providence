@@ -120,6 +120,42 @@ class DbTest extends PHPUnit_Framework_TestCase {
 		$this->assertContains('bar', $va_tables);
 	}
 
+	public function testQuote() {
+		$vm_ret = $this->db->escape("Editeur d'item de liste");
+		$this->assertEquals("Editeur d\'item de liste", $vm_ret);
+
+		$vm_ret = $this->db->escape('bar "foo"');
+		$this->assertEquals('bar \"foo\"', $vm_ret);
+	}
+
+	public function testTxAbort() {
+		$this->checkIfFooIsEmpty();
+		$this->db->beginTransaction();
+		$this->db->query("INSERT INTO foo (id, text) VALUES (?, ?)", array(1, 'bar'));
+		$this->db->query("INSERT INTO foo (id, text) VALUES (?, ?)", array(2, 'baz'));
+		$this->db->query("INSERT INTO foo (id, text) VALUES (?, ?)", array(3, 'foo'));
+		$this->db->rollbackTransaction();
+		$this->checkIfFooIsEmpty();
+	}
+
+	public function testTxCommit() {
+		$this->checkIfFooIsEmpty();
+		$this->db->beginTransaction();
+		$this->db->query("INSERT INTO foo (id, text) VALUES (?, ?)", array(1, 'bar'));
+		$this->db->commitTransaction();
+
+		$qr_select = $this->db->query("SELECT * FROM foo");
+		$this->assertInternalType('object', $qr_select);
+		$this->assertTrue($qr_select->nextRow());
+
+		$this->assertEquals(1, $qr_select->get('id'));
+		$this->assertEquals('bar', $qr_select->get('text'));
+
+		$this->db->query("DELETE FROM foo");
+
+		$this->checkIfFooIsEmpty();
+	}
+
 	public function tearDown() {
 		$this->db->query("DROP TABLE IF EXISTS foo");
 		$this->db->query("DROP TABLE IF EXISTS bar");
