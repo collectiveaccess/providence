@@ -76,12 +76,12 @@ class SearchResult extends BaseObject {
 	static $s_rel_prefetch_cache = array();
 	static $s_parsed_field_component_cache = array();
 	static $opa_hierarchy_parent_prefetch_cache = array();
+	static $opa_hierarchy_children_prefetch_cache = array();
 	static $opa_hierarchy_parent_prefetch_cache_index = array();
+	static $opa_hierarchy_children_prefetch_cache_index = array();
 	
 	private $opb_use_identifiers_in_urls = false;
 	private $ops_subject_idno = false;
-
-	private $t_list = null;
 	
 	# ------------------------------------------------------------------
 	public function __construct($po_engine_result=null, $pa_tables=null) {
@@ -93,10 +93,6 @@ class SearchResult extends BaseObject {
 		$this->ops_subject_idno = $this->opo_subject_instance->getProperty('ID_NUMBERING_ID_FIELD');
 		$this->opb_use_identifiers_in_urls = (bool)$this->opo_subject_instance->getAppConfig()->get('use_identifiers_in_urls');
 		$this->opa_row_ids_to_prefetch_cache = array();
-
-		/*self::$s_prefetch_cache = array();
-		self::$s_rel_prefetch_cache = array();
-		self::$s_timestamp_cache = array();*/
 		
 		if ($po_engine_result) {
 			$this->init($po_engine_result, $pa_tables);
