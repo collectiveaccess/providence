@@ -858,7 +858,8 @@ class SearchResult extends BaseObject {
 		
 		$vn_max_levels_from_top 			= caGetOption('maxLevelsFromTop', $pa_options, null);
 		$vn_max_levels_from_bottom 			= caGetOption('maxLevelsFromBottom', $pa_options, caGetOption('maxLevels', $pa_options, null));
-		
+		$vn_remove_first_items 				= caGetOption('removeFirstItems', $pa_options, 0, array('castTo' => 'int'));
+
 		$va_check_access 					= caGetOption('checkAccess', $pa_options, null); 
 		$vs_template 						= caGetOption('template', $pa_options, null);
 		
@@ -1003,7 +1004,9 @@ class SearchResult extends BaseObject {
 							$vs_field_spec = join('.', array_values($va_path_components['components']));
 						
 							$va_ancestor_ids = $this->get($va_path_components['table_name'].'.hierarchy.'.$vs_hier_pk_fld, array_merge($pa_options, array('returnAsArray' => true, 'returnAsLink'=> false, 'returnAllLocales' => false)));
-		
+							if($vn_remove_first_items > 0) {
+								$va_ancestor_ids = array_slice($va_ancestor_ids, $vn_remove_first_items);
+							}
 						
 							$qr_hier = caMakeSearchResult($va_path_components['table_name'], $va_ancestor_ids);
 							
