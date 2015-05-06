@@ -236,6 +236,8 @@ class SearchResult extends BaseObject {
 		if (!($t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename])) {
 			$t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename] = $this->opo_datamodel->getInstanceByTableName($ps_tablename, true);
 		}
+		if(!($ps_tablename instanceof LabelableBaseModelWithAttributes)) { return; }
+
 		$vs_label_table = $t_rel_instance->getLabelTableName();
 		
 		if (!isset($this->opa_tables[$vs_label_table])) {
@@ -1193,7 +1195,7 @@ class SearchResult extends BaseObject {
 //
 // [PRIMARY TABLE] Preferred/nonpreferred labels
 //
-				if (in_array($va_path_components['field_name'], array('preferred_labels', 'nonpreferred_labels'))) {
+				if (in_array($va_path_components['field_name'], array('preferred_labels', 'nonpreferred_labels')) && ($t_instance instanceof LabelableBaseModelWithAttributes)) {
 					$vs_label_table_name = $t_instance->getLabelTableName();
 					if (!isset(self::$s_prefetch_cache[$vs_label_table_name][$vn_row_id])) {
 						$this->prefetchLabels($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), $pa_options);
@@ -1215,7 +1217,7 @@ class SearchResult extends BaseObject {
 // [PRIMARY TABLE] Metadata attribute
 //				
 
-					if (isset($va_path_components['field_name']) && $va_path_components['field_name'] && $t_element = $t_instance->_getElementInstance($va_path_components['field_name'])) {
+					if (($t_instance instanceof BaseModelWithAttributes) && isset($va_path_components['field_name']) && $va_path_components['field_name'] && $t_element = $t_instance->_getElementInstance($va_path_components['field_name'])) {
 						$vn_element_id = $t_element->getPrimaryKey();
 					} else {
 						return $pa_options['returnAsArray'] ? array() : null;
