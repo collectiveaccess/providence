@@ -179,6 +179,20 @@ class DbTest extends PHPUnit_Framework_TestCase {
 		$this->checkIfFooIsEmpty();
 	}
 
+	public function testGetFieldsFromTable() {
+		$va_field_info = $this->db->getFieldsFromTable('foo');
+
+		foreach($va_field_info as $va_field) {
+			$this->assertTrue(in_array($va_field['fieldname'], array('id', 'text')));
+		}
+
+		$va_field_info = $this->db->getFieldsFromTable('foo', 'id');
+
+		foreach($va_field_info as $va_field) {
+			$this->assertEquals('id', $va_field['fieldname']);
+		}
+	}
+
 	# ----------------------------
 
 	public function tearDown() {

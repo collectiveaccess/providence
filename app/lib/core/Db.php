@@ -190,7 +190,7 @@ class Db extends DbBase {
 	/**
 	 * Fetches the underlying database connection handle
 	 *
-	 * @return Resource
+	 * @return DbDriverBase
 	 */
 	public function getHandle() {
 		return $this->opo_db->getHandle();
@@ -431,11 +431,64 @@ class Db extends DbBase {
 	 * Returns false if you're not connected to a database.
 	 *
 	 * @param string $ps_table name of the table
+	 * @param string|null $ps_fieldname optional fieldname
 	 * @return array
 	 */
-	public function getFieldsFromTable($ps_table) {
+	public function getFieldsFromTable($ps_table, $ps_fieldname=null) {
 		if(!$this->connected(true, "Db->getFieldsFromTable()")) { return false; }
-		return $this->opo_db->getFieldsFromTable($this, $ps_table);
+
+		$vs_fieldname_sql = "";
+		if ($ps_fieldname) {
+			$vs_fieldname_sql = " LIKE '".$this->escape($ps_fieldname)."'";
+		}
+
+		$qr_cols = $this->query("SHOW COLUMNS FROM ".$ps_table." ".$vs_fieldname_sql);
+
+		$va_fields = array();
+		while($qr_cols->nextRow()) {
+			$va_row = $qr_cols->getRow();
+
+			$va_options = array();
+			if ($va_row['Extra'] == "auto_increment") {
+				$va_options[] = "identity";
+			} else {
+				if (isset($va_row['Extra']) && (strlen($va_row['Extra']) > 0)) {
+					$va_options[] = $va_row['Extra'];
+				}
+			}
+
+			switch($va_row['Key']) {
+				case 'PRI':
+					$vs_index = "primary";
+					break;
+				case 'MUL':
+					$vs_index = "index";
+					break;
+				case 'UNI':
+					$vs_index = "unique";
+					break;
+				default:
+					$vs_index = "";
+					break;
+
+			}
+
+			$va_db_datatype = $this->opo_db->nativeToDbDataType($va_row['Type']);
+			$va_fields[] = array(
+				"fieldname" 		=> $va_row['Field'],
+				"native_type" 		=> $va_row['Type'],
+				"type"				=> $va_db_datatype["type"],
+				"max_length"		=> $va_db_datatype["length"],
+				"max_value"			=> $va_db_datatype["maximum"],
+				"min_value"			=> $va_db_datatype["minimum"],
+				"null" 				=> ($va_row['Null'] == "YES") ? true : false,
+				"index" 			=> $vs_index,
+				"default" 			=> ($va_row['Default'] == "NULL") ? null : ($va_row['Default'] !== "" ? $va_row['Default'] : null),
+				"options" 			=> $va_options
+			);
+		}
+
+		return $va_fields;
 	}
 
 	/**
@@ -448,7 +501,7 @@ class Db extends DbBase {
 	 */
 	public function getFieldInfo($ps_table, $ps_fieldname) {
 		if(!$this->connected(true, "Db->getFieldInfo()")) { return false; }
-		return $this->opo_db->getFieldInfo($this, $ps_table, $ps_fieldname);
+		return $this->getFieldInfo($ps_table, $ps_fieldname);
 	}
 
 	/**
@@ -472,20 +525,21 @@ class Db extends DbBase {
 		if(!$this->connected(true, "Db->getIndices()")) { return false; }
 		return $this->opo_db->getIndices($this, $ps_table);
 	}
-	
+
 	/**
 	 * Returns list of engines present in the database installation. The list in an array with
 	 * keys set to engine names and values set to an array of information returned from the database
-	 * server about engine that are currently available. Database server such as MySQL may return 
+	 * server about engine that are currently available. Database server such as MySQL may return
 	 * many engines, while others return only a single standard engine. In general, engines are only
-	 * of concern when you require specific features. CollectiveAccess, for example, requires the 
+	 * of concern when you require specific features. CollectiveAccess, for example, requires the
 	 * MySQL InnoDB engine. getEngines() enables the application to check for it.
 	 *
 	 * @return array An array of available engines, or false on error. The array is key'ed on Engine name. Values are arrays of engine information. This information is varies by database server.
 	 */
 	public function getEngines() {
 		if(!$this->connected(true, "Db->getEngines()")) { return false; }
-		return $this->opo_db->getEngines($this);
+		return false; // @todo implement using query ... this is not driver-specific
+		//return $this->opo_db->getEngines($this);
 	}
 
 	/**
@@ -496,4 +550,3 @@ class Db extends DbBase {
 		unset($this->opo_db);
 	}
 }
-?>

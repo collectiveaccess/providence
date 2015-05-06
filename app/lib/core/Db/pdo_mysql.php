@@ -384,84 +384,6 @@ class Db_pdo_mysql extends DbDriverBase {
 	}
 
 	/**
-	 * @see Db::getFieldsFromTable()
-	 * @param mixed $po_caller object representation of the calling class, usually Db
-	 * @param string $ps_table string representation of the table
-	 * @param string $ps_fieldname optional fieldname
-	 * @return array array containing lots of information
-	 */
-	public function getFieldsFromTable($po_caller, $ps_table, $ps_fieldname=null) {
-		$vs_fieldname_sql = "";
-		if ($ps_fieldname) {
-			$vs_fieldname_sql = " LIKE '".$this->escape($ps_fieldname)."'";
-		}
-
-		try{
-			$r_show = $this->opr_db->query("SHOW COLUMNS FROM ".$ps_table." ".$vs_fieldname_sql);
-
-			$va_tables = array();
-			while($va_row = $r_show->fetch(PDO::FETCH_NUM)) {
-
-				$va_options = array();
-				if ($va_row[5] == "auto_increment") {
-					$va_options[] = "identity";
-				} else {
-					if ($va_row[5]) {
-						$va_options[] = $va_row[5];
-					}
-				}
-
-				switch($va_row[3]) {
-					case 'PRI':
-						$vs_index = "primary";
-						break;
-					case 'MUL':
-						$vs_index = "index";
-						break;
-					case 'UNI':
-						$vs_index = "unique";
-						break;
-					default:
-						$vs_index = "";
-						break;
-
-				}
-
-				$va_db_datatype = $this->nativeToDbDataType($va_row[1]);
-				$va_tables[] = array(
-					"fieldname" 		=> $va_row[0],
-					"native_type" 		=> $va_row[1],
-					"type"				=> $va_db_datatype["type"],
-					"max_length"		=> $va_db_datatype["length"],
-					"max_value"			=> $va_db_datatype["maximum"],
-					"min_value"			=> $va_db_datatype["minimum"],
-					"null" 				=> ($va_row[2] == "YES") ? true : false,
-					"index" 			=> $vs_index,
-					"default" 			=> ($va_row[4] == "NULL") ? null : ($va_row[4] !== "" ? $va_row[4] : null),
-					"options" 			=> $va_options
-				);
-			}
-
-			return $va_tables;
-		} catch(PDOException $e) {
-			$po_caller->postError(280, $e->getMessage(), "Db->pdo_mysql->getTables()");
-			return false;
-		}
-	}
-
-	/**
-	 * @see Db::getFieldsInfo()
-	 * @param mixed $po_caller object representation of the calling class, usually Db
-	 * @param string $ps_table string representation of the table
-	 * @param string $ps_fieldname fieldname
-	 * @return array array containing lots of information
-	 */
-	public function getFieldInfo($po_caller, $ps_table, $ps_fieldname) {
-		$va_table_fields = $this->getFieldsFromTable($po_caller, $ps_table, $ps_fieldname);
-		return $va_table_fields[0];
-	}
-
-	/**
 	 * @see Db::getIndices()
 	 * @param mixed $po_caller object representation of the calling class, usually Db
 	 * @param string $ps_table string representation of the table
@@ -493,32 +415,6 @@ class Db_pdo_mysql extends DbDriverBase {
 		} else {
 			$va_err = $this->opr_db->errorInfo();
 			$po_caller->postError(280, $va_err[2], "Db->pdo_mysql->getKeys()");
-			return false;
-		}
-	}
-
-	/**
-	 * Returns list of engines present in the MySQL installation. The list in an array with
-	 * keys set to engine names and values set to an array of information returned from MySQL
-	 * about each engine. Note that while the MySQL SHOW ENGINES query return information
-	 * about unsupported and disabled engines, getEngines() only returns information
-	 * about engines that are available.
-     *
-	 * @param mixed $po_caller object representation of the calling class, usually Db
-	 * @return array engine list, false on error.
-	 */
-	public function getEngines($po_caller) {
-		if ($r_show = $this->opr_db->query("SHOW ENGINES")) {
-			$va_engines = array();
-			while($va_row = $r_show->fetch(PDO::FETCH_ASSOC)) {
-				if (!in_array($va_row['Support'], array('YES', 'DEFAULT'))) { continue; }
-				$va_engines[$va_row['Engine']] = $va_row;
-			}
-
-			return $va_engines;
-		} else {
-			$va_err = $this->opr_db->errorInfo();
-			$po_caller->postError(280, $va_err[2], "Db->pdo_mysql->getEngines()");
 			return false;
 		}
 	}
