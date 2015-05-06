@@ -1217,7 +1217,7 @@ class SearchResult extends BaseObject {
 // [PRIMARY TABLE] Metadata attribute
 //				
 
-					if (isset($va_path_components['field_name']) && $va_path_components['field_name'] && $t_element = $t_instance->_getElementInstance($va_path_components['field_name'])) {
+					if (($t_instance instanceof BaseModelWithAttributes) && isset($va_path_components['field_name']) && $va_path_components['field_name'] && $t_element = $t_instance->_getElementInstance($va_path_components['field_name'])) {
 						$vn_element_id = $t_element->getPrimaryKey();
 					} else {
 						return $pa_options['returnAsArray'] ? array() : null;
