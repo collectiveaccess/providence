@@ -156,6 +156,29 @@ class DbTest extends PHPUnit_Framework_TestCase {
 		$this->checkIfFooIsEmpty();
 	}
 
+	public function testGetAllFieldValues() {
+		$this->checkIfFooIsEmpty();
+		$this->db->query("INSERT INTO foo (id, text) VALUES (?, ?)", array(1, 'bar'));
+		$this->db->query("INSERT INTO foo (id, text) VALUES (?, ?)", array(2, 'baz'));
+		$this->db->query("INSERT INTO foo (id, text) VALUES (?, ?)", array(3, 'foo'));
+
+		$qr_select = $this->db->query("SELECT * FROM foo");
+		$va_ret = $qr_select->getAllFieldValues('id');
+		$this->assertEquals(array(1, 2, 3), $va_ret);
+
+		$qr_select = $this->db->query("SELECT * FROM foo");
+		$va_ret = $qr_select->getAllFieldValues(array('id', 'text'));
+
+		$this->assertArrayHasKey('id', $va_ret);
+		$this->assertArrayHasKey('text', $va_ret);
+
+		$this->assertEquals(array(1, 2, 3), $va_ret['id']);
+		$this->assertEquals(array('bar', 'baz', 'foo'), $va_ret['text']);
+
+		$this->db->query("DELETE FROM foo");
+		$this->checkIfFooIsEmpty();
+	}
+
 	# ----------------------------
 
 	public function tearDown() {

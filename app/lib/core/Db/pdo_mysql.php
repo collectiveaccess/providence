@@ -150,18 +150,19 @@ class Db_pdo_mysql extends DbDriverBase {
 		
 		$vs_md5 = md5($ps_sql);
 
-		// is prepared statement cached?
+		/*// is prepared statement cached?
 		if(MemoryCache::contains($vs_md5, 'PdoStatementCache')) {
 			return MemoryCache::fetch($vs_md5, 'PdoStatementCache');
 		}
 
 		if(MemoryCache::itemCountForNamespace('PdoStatementCache') >= 2048) {
 			MemoryCache::flush('PdoStatementCache');
-		}
+		}*/
 
-		$o_statement = new DbStatement($this, $this->ops_sql, array('native_statement' => $this->opr_db->prepare($ps_sql)));
-		MemoryCache::save($vs_md5, $o_statement, 'PdoStatementCache');
+		$o_pdo_stmt = $this->opr_db->prepare($ps_sql);
+		$o_statement = new DbStatement($this, $this->ops_sql, array('native_statement' => $o_pdo_stmt));
 
+		//MemoryCache::save($vs_md5, $o_statement, 'PdoStatementCache');
 		return $o_statement;
 	}
 
@@ -275,30 +276,28 @@ class Db_pdo_mysql extends DbDriverBase {
 	/**
 	 * @see DbResult::getAllFieldValues()
 	 * @param mixed $po_caller object representation of the calling class, usually Db
-	 * @param mixed $pr_res mysql resource
+	 * @param PDOStatement $pr_res mysql resource
 	 * @param mixed $pm_field the field or an array of fields
 	 * @return array an array of field values (if $pm_field is a single field name) or an array if field names each of which is an array of values (if $pm_field is an array of field names)
 	 */
 	function getAllFieldValues($po_caller, $pr_res, $pm_field) {
 		$va_vals = array();
 		
-		if (is_array($pa_fields)) {
-			$va_row = $pr_res->fetch(PDO::FETCH_ASSOC);
-			foreach($pa_fields as $vs_field) {
-				if (!is_array($va_row) || !array_key_exists($vs_field, $va_row)) { return array(); }
-			}
-			$this->seek($po_caller, $pr_res, 0);
-			while(is_array($va_row = $pr_res->fetch(PDO::FETCH_ASSOC))) {
-				foreach($pa_fields as $vs_field) {
-					$va_vals[$vs_field][] = $va_row[$vs_field];
+		if (is_array($pm_field)) {
+			$va_rows = $pr_res->fetchAll(PDO::FETCH_ASSOC);
+			foreach($va_rows as $va_row) {
+				foreach($pm_field as $vs_field) {
+					if(isset($va_row[$vs_field])) {
+						$va_vals[$vs_field][] = $va_row[$vs_field];
+					}
 				}
 			}
 		} else {
-			$va_row = $pr_res->fetch(PDO::FETCH_ASSOC);
-			if (!is_array($va_row) || !array_key_exists($pa_fields, $va_row)) { return array(); }
-			$this->seek($po_caller, $pr_res, 0);
-			while(is_array($va_row = $pr_res->fetch(PDO::FETCH_ASSOC))) {
-				$va_vals[] = $va_row[$pa_fields];
+			$va_rows = $pr_res->fetchAll(PDO::FETCH_ASSOC);
+			foreach($va_rows as $va_row) {
+				if(isset($va_row[$pm_field])) {
+					$va_vals[] = $va_row[$pm_field];
+				}
 			}
 		}
 		return $va_vals;
@@ -307,7 +306,7 @@ class Db_pdo_mysql extends DbDriverBase {
 	/**
 	 * @see DbResult::nextRow()
 	 * @param mixed $po_caller object representation of the calling class, usually Db
-	 * @param mixed $pr_res mysql resource
+	 * @param PDOStatement $pr_res mysql resource
 	 * @return array array representation of the next row
 	 */
 	public function nextRow($po_caller, $pr_res) {
@@ -321,25 +320,19 @@ class Db_pdo_mysql extends DbDriverBase {
 	/**
 	 * @see DbResult::seek()
 	 * @param mixed $po_caller object representation of the calling class, usually Db
-	 * @param mixed $pr_res mysql resource
+	 * @param PDOStatement $pr_res mysql resource
 	 * @param int $pn_offset line number to seek
 	 * @return array array representation of the next row
 	 */
-	public function seek($po_caller, $pr_res, $pn_offset) {
-		if ($pn_offset < 0) { return false; }
-		if ($pn_offset > ($pr_res->rowCount() - 1)) { return false; }
-		if (!($pr_res->fetch(PDO::FETCH_ASSOC, PDO::FETCH_ORI_ABS, $pn_offset))) {
-			$po_caller->postError(260,_t("seek(%1) failed: result has %2 rows", $pn_offset, $this->numRows($po_caller, $pr_res)),"Db->pdo_mysql->seek()");
-			return false;
-		};
-
-		return true;
+	public function seek($po_caller, &$pr_res, $pn_offset) {
+		// seek is not supported by pdo
+		return false;
 	}
 
 	/**
 	 * @see DbResult::numRows()
 	 * @param mixed $po_caller object representation of the calling class, usually Db
-	 * @param mixed $pr_res mysql resource
+	 * @param PDOStatement $pr_res mysql resource
 	 * @return int number of rows
 	 */
 	public function numRows($po_caller, $pr_res) {
@@ -349,10 +342,13 @@ class Db_pdo_mysql extends DbDriverBase {
 	/**
 	 * @see DbResult::free()
 	 * @param mixed $po_caller object representation of the calling class, usually Db
-	 * @param mixed $pr_res mysql resource
+	 * @param PDOStatement $pr_res mysql resource
 	 * @return bool success state
 	 */
 	public function free($po_caller, $pr_res) {
+		if($pr_res instanceof PDOStatement) {
+			$pr_res->closeCursor();
+		}
 		return true;
 	}
 
