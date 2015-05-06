@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,8 +37,8 @@
 	$pa_ancestors 		= $this->getVar('ancestors');
 	$pn_id 				= $this->getVar('id');
 	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
-	$va_hierarchy		= $t_subject->getHierarchyAsList(null, array('idsOnly' => true));
-	if(is_array($va_hierarchy)) { $vn_items_in_hier = sizeof($va_hierarchy); }
+	$vn_items_in_hier 	= $t_subject->getHierarchySize();
+	$vs_bundle_preview	= '('.$vn_items_in_hier. ') '. caProcessTemplateForIDs("^preferred_labels", $t_subject->tableName(), array($t_subject->getPrimaryKey()));
 	
 	switch($vs_priv_table) {
 		case 'ca_relationship_types':
@@ -160,7 +160,7 @@
 	});
 </script>
 <?php
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $pa_bundle_settings, false, $vs_bundle_preview);
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 ?>
 <div id="<?php print $vs_id_prefix; ?>">
@@ -461,6 +461,7 @@
 				dontAllowEditForFirstLevel: <?php print (in_array($t_subject->tableName(), array('ca_places', 'ca_storage_locations', 'ca_list_items', 'ca_relationship_types')) ? 'true' : 'false'); ?>,
 				
 				readOnly: false, //<?php print $vb_read_only ? 1 : 0; ?>,
+				disabledItems: 'hide',
 				
 				editUrl: '<?php print $vs_edit_url; ?>',
 				editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
@@ -488,6 +489,7 @@
 				initDataUrl: '<?php print $va_lookup_urls['ancestorList']; ?>',
 				
 				readOnly: <?php print $vb_read_only ? 1 : 0; ?>,
+				disabledItems: 'hide',
 				
 				initItemID: '<?php print $vn_init_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
@@ -541,6 +543,7 @@
 				
 				readOnly: true,
 				allowSelection: false,
+				disabledItems: 'hide',
 				
 				initItemID: '<?php print $vn_init_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',

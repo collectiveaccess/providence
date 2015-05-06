@@ -158,7 +158,7 @@
 		'displayDelimiter' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
-			'default' => ',',
+			'default' => '; ',
 			'width' => 10, 'height' => 1,
 			'label' => _t('Value delimiter'),
 			'validForRootOnly' => 1,
@@ -199,12 +199,16 @@
  		 *							longitude - the longitude of the first point in the geocode
  		 *							path - a full path of coordinates (useful if the geocode is a path rather than a point) as a string with each coordinate pair separated with semicolons
  		 *							label - the display text for the geocode
+		 * 			path - only return path as plain text (the path is a colon-delimited list of coordinates)
  		 *
  		 * @return mixed - will return string with display value by default; array with parsed coordinate values if the "coordinates" option is passed
  		 */
 		public function getDisplayValue($pa_options=null) {
 			if(isset($pa_options['coordinates']) && $pa_options['coordinates']) {
 				return array('latitude' => $this->opn_latitude, 'longitude' => $this->opn_longitude, 'path' => $this->ops_path_value, 'label' => $this->ops_text_value);
+			}
+			if(caGetOption('path', $pa_options, false)) {
+				return trim($this->ops_path_value);
 			}
 			if (!$this->ops_text_value && $this->ops_path_value) {
 				return "[".$this->ops_path_value."]";
@@ -225,7 +229,7 @@
 			return $this->ops_path_value;
 		}
  		# ------------------------------------------------------------------
- 		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {	
+ 		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$va_settings = $this->getSettingValuesFromElementArray(
  				$pa_element_info, 
  				array('mustNotBeBlank')

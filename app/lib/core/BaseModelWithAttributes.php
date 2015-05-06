@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -486,7 +486,7 @@
 				// set the field values array for this instance
 				//$this->setFieldValuesArray($va_field_values_with_updated_attributes);
 				
-				$this->doSearchIndexing(array_merge($this->getFieldValuesArray(true), $va_fields_changed_array));	// TODO: SHOULD SECOND PARAM (REINDEX) BE "TRUE"?
+				$this->doSearchIndexing(array_merge($this->getFieldValuesArray(true), $va_fields_changed_array), false, array('isNewRow' => true));	
 				
 				
 				if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
@@ -1351,7 +1351,7 @@
 		  */
 		public function getAttributeLabel($pm_element_code_or_id) {
 			if (isset(BaseModelWithAttributes::$s_element_label_cache[$pm_element_code_or_id])) {
-				$va_cached_labels = caExtractValuesByUserLocale(BaseModelWithAttributes::$s_element_label_cache);
+				$va_cached_labels = (BaseModelWithAttributes::$s_element_label_cache);
 				return $va_cached_labels[$pm_element_code_or_id]['name'];
 			}
 			if (!($t_element = $this->_getElementInstance($pm_element_code_or_id))) {
@@ -1363,7 +1363,7 @@
 		// get HTML form element bundle for metadata element
 		public function getAttributeDescription($pm_element_code_or_id) {
 			if (isset(BaseModelWithAttributes::$s_element_label_cache[$pm_element_code_or_id])) {
-				$va_cached_labels = caExtractValuesByUserLocale(BaseModelWithAttributes::$s_element_label_cache);
+				$va_cached_labels = (BaseModelWithAttributes::$s_element_label_cache);
 				return $va_cached_labels[$pm_element_code_or_id]['description'];
 			}
 			
@@ -1386,7 +1386,7 @@
 		// get HTML form element bundle for metadata element
 		public function getAttributeLabelAndDescription($pm_element_code_or_id) {
 			if (isset(BaseModelWithAttributes::$s_element_label_cache[$pm_element_code_or_id])) {
-				$va_cached_labels = caExtractValuesByUserLocale(BaseModelWithAttributes::$s_element_label_cache);
+				$va_cached_labels = (BaseModelWithAttributes::$s_element_label_cache);
 				return $va_cached_labels[$pm_element_code_or_id];
 			}
 			if (!($t_element = $this->_getElementInstance($pm_element_code_or_id))) {
@@ -2043,6 +2043,7 @@
 	     * Supported options
 	     *	delimiter = text to use between attribute values; default is a single space
 	     *	convertLineBreaks = if true will convert line breaks to HTML <br/> tags for display in a web browser; default is false
+	     *	dontUseElementTemplate = By default any display template set in the metadata element is used if the $ps_template parameter is blank or null. Set this option to prevent the metadata element template from being used in any event. [Default is false]
 		 */
 		public function getAttributesForDisplay($pm_element_code_or_id, $ps_template=null, $pa_options=null) {
 			if (!($vn_row_id = $this->getPrimaryKey())) { 
@@ -2056,7 +2057,7 @@
 			
 			$va_tmp = $this->getAttributeDisplayValues($pm_element_code_or_id, $vn_row_id, array_merge($pa_options, array('returnAllLocales' => false)));
 		
-			if (!$ps_template && ($vs_template_tmp = $t_element->getSetting('displayTemplate', true))) {	// grab template from metadata element if none is passed in $ps_template
+			if (!$ps_template && ($vs_template_tmp = $t_element->getSetting('displayTemplate', true))&& !caGetOption('dontUseElementTemplate', $pa_options, false)) {	// grab template from metadata element if none is passed in $ps_template
 				$ps_template = $vs_template_tmp;
 			}
 			$vs_delimiter = $t_element->getSetting('displayDelimiter', true);
@@ -2469,7 +2470,7 @@
  			$o_db = $this->getDb();
  			
  			$qr_res = $o_db->query("
- 				SELECT camtr.element_id, came.element_code, cmel.*
+ 				SELECT camtr.element_id, came.element_code, cmel.name, cmel.locale_id
  				FROM ca_metadata_type_restrictions camtr
  				INNER JOIN ca_metadata_elements AS came ON camtr.element_id = came.element_id
  				INNER JOIN ca_metadata_element_labels AS cmel ON cmel.element_id = came.element_id
@@ -2477,15 +2478,19 @@
  					$vs_type_sql (camtr.table_num = ?) AND came.parent_id IS NULL
  			", (int)$this->tableNum());
  			$va_codes = array();
+ 			
+ 			$va_element_labels_by_locale = array();
  			while($qr_res->nextRow()) {
  				$vn_element_id = (int)$qr_res->get('element_id');
  				$vs_element_code = (string)$qr_res->get('element_code');
  				$vn_locale_id = (int)$qr_res->get('locale_id');
  				
- 				BaseModelWithAttributes::$s_element_label_cache[$vn_element_id][$vn_locale_id] = BaseModelWithAttributes::$s_element_label_cache[$vs_element_code][$vn_locale_id] = $qr_res->getRow();
+ 				$va_element_labels_by_locale[$vn_element_id][$vn_locale_id] = $va_element_labels_by_locale[$vs_element_code][$vn_locale_id] = $qr_res->getRow();
  				if (isset($va_codes[$vn_element_id])) { continue; }
  				$va_codes[$vn_element_id] = $vs_element_code;
  			}
+ 			if (!is_array(BaseModelWithAttributes::$s_element_label_cache)) { BaseModelWithAttributes::$s_element_label_cache = array(); }
+ 			BaseModelWithAttributes::$s_element_label_cache += caExtractValuesByUserLocale($va_element_labels_by_locale);
  			
  			if ($pb_include_sub_element_codes && sizeof($va_codes)) {
  				$qr_res = $o_db->query("

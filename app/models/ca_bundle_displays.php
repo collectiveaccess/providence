@@ -41,8 +41,7 @@ require_once(__CA_MODELS_DIR__.'/ca_bundle_display_placements.php');
 require_once(__CA_MODELS_DIR__.'/ca_bundle_displays_x_user_groups.php'); 
 require_once(__CA_MODELS_DIR__.'/ca_bundle_display_type_restrictions.php'); 
 require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php'); 
-require_once(__CA_MODELS_DIR__.'/ca_lists.php'); 
-require_once(__CA_LIB_DIR__."/core/Parsers/htmlpurifier/HTMLPurifier.standalone.php");
+require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 
 define('__CA_BUNDLE_DISPLAY_NO_ACCESS__', 0);
 define('__CA_BUNDLE_DISPLAY_READ_ACCESS__', 1);

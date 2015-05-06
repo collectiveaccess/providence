@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -387,7 +387,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		$o_db = $this->getDb();
 		$va_type_list = caMakeTypeIDList($this->get('editor_type'), array($pn_type_id), array('dontIncludeSubtypesInTypeRestriction' => true));
 		if (!sizeof($va_type_list)) { $va_type_list = array($pn_type_id); }
-		$vs_type_sql = ((int)$pn_type_id) ? "AND (ceustr.type_id IS NULL OR ceustr.type_id IN (".join(",", $va_type_list)."))" : 'AND (ceustr.type_id IS NULL)';
+		$vs_type_sql = ((int)$pn_type_id) ? "AND (ceustr.type_id IS NULL OR ceustr.type_id IN (".join(",", $va_type_list)."))" : '';
 	
 		$qr_res = $o_db->query("
 			SELECT ceus.*, ceusl.*, ceustr.type_id restriction_type_id
@@ -713,7 +713,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			SELECT cauis.screen_id, cauis.rank
 			FROM ca_editor_ui_screens cauis
 			WHERE
-				cauis.ui_id = ?
+				cauis.ui_id = ? AND cauis.parent_id IS NOT NULL
 			ORDER BY 
 				cauis.rank ASC
 		", (int)$vn_ui_id);
@@ -1077,4 +1077,3 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ----------------------------------------
 }
-?>

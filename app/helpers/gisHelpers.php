@@ -477,7 +477,7 @@
 	 *			ex. 43.34,-74.23 ~ 5km
 	 *	[Area with
 	 */ 
-	function caParseGISSearch($ps_value){
+	function caParseGISSearch($ps_value) {
 		$ps_value = preg_replace('![ ]*,[ ]*!', ',', $ps_value);
 		$ps_value = str_replace(" - ", " .. ", $ps_value);
 		$ps_value = str_replace(" to ", " .. ", $ps_value);
@@ -490,6 +490,7 @@
 		$vn_state = 0;
 		while(sizeof($va_tokens)) {
 			$vs_token = trim(array_shift($va_tokens));
+			if(!$vs_token) { continue; }
 			switch($vn_state) {
 				case 0:		// start
 					$va_tmp = explode(',', $vs_token);

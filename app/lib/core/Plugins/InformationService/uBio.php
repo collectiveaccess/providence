@@ -95,7 +95,6 @@ class WLPlugInformationServiceuBio Extends BaseInformationServicePlugin Implemen
 
 		$va_data = array();
 		$vs_query_url = "http://www.ubio.org/webservices/service.php?function=namebank_search&searchName={$ps_search}&sci=1&vern=1&keyCode={$vs_ubio_keycode}";
-		file_put_contents('/tmp/ubio.txt', $vs_query_url."\n", FILE_APPEND);
 		$vs_result = caQueryExternalWebservice($vs_query_url);
 
 		$vo_doc = new DOMDocument();

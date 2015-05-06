@@ -67,7 +67,11 @@
 			if (sizeof($this->errors)) {
 				foreach ($this->errors as $e) {
 					if ((is_null($ps_source)) || ((!is_null($ps_source) && ($e->getErrorSource() === $ps_source)))) {
-						array_push($error_descs,$e->getErrorDescription());
+						if(is_string($e)) {
+							array_push($error_descs,$e);
+						} else {
+							array_push($error_descs,$e->getErrorDescription());
+						}
 					}
 				}
 			}

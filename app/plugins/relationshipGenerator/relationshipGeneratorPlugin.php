@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2015 Whirl-i-Gig
  * This file originally contributed 2014 by Gaia Resources
  *
  * For more information visit http://www.CollectiveAccess.org
@@ -283,7 +283,13 @@ class relationshipGeneratorPlugin extends BaseApplicationPlugin {
 						array( 'idno' => $pm_related_record ) :
 						array( 'id' => $pm_related_record ))
 		));
-		$va_keys = is_array($va_items) ? array_keys($va_items) : null;
+		//$va_keys = is_array($va_items) ? array_keys($va_items) : null;
+		
+		$va_keys = array();
+		foreach($va_items as $va_item) {
+			$va_keys[] = $va_item[$va_item['_key']];
+		}
+		
 		return sizeof($va_keys) > 0 ? $va_keys[0] : null;
 	}
 

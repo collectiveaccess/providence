@@ -1081,6 +1081,8 @@ class ca_commerce_orders extends BaseModel {
 	 *		exclude = optional array of order_id's to omit from the returned list
 	 */
 	public function getOrders($pa_options=null) {
+		if(!$this->getAppConfig()->get('enable_client_services')) { return array(); }
+
 		$o_db = $this->getDb();
 
 		$vb_join_transactions = false;
@@ -1282,7 +1284,7 @@ class ca_commerce_orders extends BaseModel {
 		// Get item totals
 		$qr_res = $o_db->query($vs_sql = "
 	 		SELECT 
-	 			o.*, 
+	 			o.order_id,
 	 			sum(i.fee) order_total_item_fees, 
 	 			sum(i.tax) order_total_item_tax, 
 	 			((o.shipping_cost) + (i.shipping_cost)) order_total_shipping, 
@@ -1306,6 +1308,10 @@ class ca_commerce_orders extends BaseModel {
 
 		while($qr_res->nextRow()) {
 			$va_order = $qr_res->getRow();
+			$qr_order = $o_db->query("SELECT * FROM ca_commerce_orders o WHERE o.order_id=?", $qr_res->get('order_id'));
+			if($qr_order->nextRow()) {
+				$va_order = array_merge($va_order, $qr_order->getRow());
+			}
 			$va_order['order_number'] = date('mdY', $va_order['created_on']).'-'.$va_order['order_id'];
 			// order additional fees
 			$vn_additional_order_fees = 0;

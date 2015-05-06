@@ -428,14 +428,17 @@
 		if(!$ps_mediainfo_path) { $ps_mediainfo_path = caGetExternalApplicationPath('mediainfo'); }
 		if (!caIsValidFilePath($ps_mediainfo_path)) { return false; }
 		
+		//
+		// TODO: why don't we parse this from the XML output like civilized people?
+		//
 		exec($ps_mediainfo_path." ".caEscapeShellArg($ps_filepath), $va_output, $vn_return);
 		$vs_cat = "GENERIC";
 		$va_return = array();
 		foreach($va_output as $vs_line){
 			$va_split = explode(":",$vs_line);
-			$vs_left = trim($va_split[0]);
-			$vs_right = trim($va_split[1]);
-			if(strlen($vs_right)==0){ // category line
+			$vs_left = trim(array_shift($va_split));
+			$vs_right = trim(join(":", $va_split));
+			if(strlen($vs_right) == 0){ // category line
 				$vs_cat = strtoupper($vs_left);
 				continue;
 			}

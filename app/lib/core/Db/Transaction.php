@@ -42,7 +42,7 @@ class Transaction {
   	private $o_db; # database connection
   	
 	# ----------------------------------------
-	public function Transaction($po_db=null) {
+	public function __construct($po_db=null) {
 		$this->o_db = ($po_db) ? $po_db : new Db(null, array('uniqueConnection' => true));
 		$this->o_db->dieOnError(false);
 		$this->start();

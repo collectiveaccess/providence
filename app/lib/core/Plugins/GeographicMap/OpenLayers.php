@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2014 Whirl-i-Gig
+ * Copyright 2012-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -391,7 +391,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
  		
 		$po_request = isset($pa_options['request']) ? $pa_options['request'] : null;
 		
-		$vs_id = $pa_element_info['element_id'];
+		$vs_id = $pa_element_info['element_id']."_{n}";
 		
 		$vs_custom_tile_layer = '';
 		if ($vs_tileserver_url = caGetOption('tileServerURL', $pa_element_info['settings'], null)) {
@@ -525,7 +525,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		map_{$vs_id}_delete_button.activate();
 		
 		// Grab current map coordinates from input
-		var map_{$vs_id}_loc_str = '{".$pa_element_info['element_id']."}';
+		var map_{$vs_id}_loc_str = '{{".$pa_element_info['element_id']."}}';
 		var map_{$vs_id}_loc_features = map_{$vs_id}_loc_str.match(/\[([\d\,\-\.\:\;]+)\]/)
 		if (map_{$vs_id}_loc_features && (map_{$vs_id}_loc_features.length > 1)) {
 			map_{$vs_id}_loc_features = map_{$vs_id}_loc_features[1].split(/:/);

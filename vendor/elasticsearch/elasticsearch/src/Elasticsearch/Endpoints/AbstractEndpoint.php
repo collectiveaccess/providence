@@ -113,6 +113,7 @@ abstract class AbstractEndpoint
         }
 
         $this->checkUserParams($params);
+        $params = $this->convertCustom($params);
         $this->params = $this->convertArraysToStrings($params);
         $this->extractIgnore();
         return $this;
@@ -131,6 +132,7 @@ abstract class AbstractEndpoint
         }
 
         if (is_array($index) === true) {
+            $index = array_map('trim', $index);
             $index = implode(",", $index);
         }
 
@@ -151,6 +153,7 @@ abstract class AbstractEndpoint
         }
 
         if (is_array($type) === true) {
+            $type = array_map('trim', $type);
             $type = implode(",", $type);
         }
 
@@ -256,11 +259,15 @@ abstract class AbstractEndpoint
             return; //no params, just return.
         }
 
-        $whitelist = array_merge($this->getParamWhitelist(), array('ignore'));
+        $whitelist = array_merge($this->getParamWhitelist(), array('ignore', 'custom', 'curlOpts'));
 
         foreach ($params as $key => $value) {
             if (array_search($key, $whitelist) === false) {
-                throw new UnexpectedValueException($key . ' is not a valid parameter');
+                throw new UnexpectedValueException(sprintf(
+                    '"%s" is not a valid parameter. Allowed parameters are: "%s"',
+                    $key,
+                    implode('", "', $whitelist)
+                ));
             }
         }
 
@@ -273,6 +280,17 @@ abstract class AbstractEndpoint
             $this->ignore = explode(",", $this->params['ignore']);
             unset($this->params['ignore']);
         }
+    }
+
+    private function convertCustom($params)
+    {
+        if (isset($params['custom']) === true) {
+            foreach ($params['custom'] as $k => $v) {
+                $params[$k] = $v;
+            }
+            unset($params['custom']);
+        }
+        return $params;
     }
 
 

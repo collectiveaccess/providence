@@ -627,11 +627,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$this->ops_elasticsearch_index_name."/".
 			$this->opo_datamodel->getTableName($pn_subject_tablenum)."/".$pn_subject_row_id
 		);
-
-		$vo_http_client->setEncType('text/json')->request('DELETE');
 		
 		try {
-			$vo_http_client->request();
+			$vo_http_client->setEncType('text/json')->request('DELETE');
 		} catch (Exception $e){
 			caLogEvent('ERR', _t('Commit of index delete failed: %1', $e->getMessage()), 'ElasticSearch->removeRowIndexing()');
 		}
@@ -685,7 +683,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				$this->ops_elasticsearch_index_name."/".
 				$va_key[0]."/".$va_key[2]
 			);
-
+			
 			try {
 				$vo_http_client->setRawData(json_encode($va_post_json))->setEncType('text/json')->request('POST');
 				$vo_http_response = $vo_http_client->request();

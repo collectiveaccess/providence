@@ -3,8 +3,8 @@
 namespace DebugBar\DataCollector\PDO;
 
 use PDO;
-use PDOStatement;
 use PDOException;
+use PDOStatement;
 
 /**
  * A traceable PDO statement to use with Traceablepdo
@@ -20,19 +20,22 @@ class TraceablePDOStatement extends PDOStatement
         $this->pdo = $pdo;
     }
 
-    public function bindColumn($column, &$param, $type = null, $maxlen = null, $driverdata = null) {
+    public function bindColumn($column, &$param, $type = null, $maxlen = null, $driverdata = null)
+    {
         $this->boundParameters[$column] = $param;
         $args = array_merge(array($column, &$param), array_slice(func_get_args(), 2));
         return call_user_func_array(array("parent", 'bindColumn'), $args);
     }
 
-    public function bindParam($param, &$var, $data_type = PDO::PARAM_STR, $length = null, $driver_options = null) {
+    public function bindParam($param, &$var, $data_type = PDO::PARAM_STR, $length = null, $driver_options = null)
+    {
         $this->boundParameters[$param] = $var;
         $args = array_merge(array($param, &$var), array_slice(func_get_args(), 2));
         return call_user_func_array(array("parent", 'bindParam'), $args);
     }
 
-    public function bindValue($param, $value, $data_type = PDO::PARAM_STR) {
+    public function bindValue($param, $value, $data_type = PDO::PARAM_STR)
+    {
         $this->boundParameters[$param] = $value;
         return call_user_func_array(array("parent", 'bindValue'), func_get_args());
     }
@@ -57,7 +60,7 @@ class TraceablePDOStatement extends PDOStatement
 
         if ($this->pdo->getAttribute(PDO::ATTR_ERRMODE) !== PDO::ERRMODE_EXCEPTION && $result === false) {
             $error = $this->errorInfo();
-            $ex = new PDOException($error[2], $error[0]);
+            $ex = new PDOException($error[2], (int) $error[0]);
         }
 
         $trace->end($ex, $this->rowCount());
