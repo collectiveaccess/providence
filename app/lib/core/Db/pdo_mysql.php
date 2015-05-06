@@ -15,10 +15,10 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
@@ -29,10 +29,10 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
+
+/**
+ *
+ */
 
 require_once(__CA_LIB_DIR__."/core/Db/DbDriverBase.php");
 require_once(__CA_LIB_DIR__."/core/Db/DbResult.php");
@@ -102,11 +102,11 @@ class Db_pdo_mysql extends DbDriverBase {
 			$this->opr_db = MemoryCache::fetch($vs_db_connection_key, 'PdoConnectionCache');
 			return true;
 		}
-		
+
 		if (!class_exists("PDO")) {
 			die(_t("Your PHP installation lacks PDO MySQL support. Please add it and retry..."));
 		}
-		
+
 		try {
 			$this->opr_db = new PDO('mysql:host='.$pa_options["host"].';dbname='.$pa_options["database"], $pa_options["username"], $pa_options["password"], array(PDO::ATTR_PERSISTENT => caGetOption("persistentConnections", $pa_options, true)));
 			$this->opr_db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -115,10 +115,10 @@ class Db_pdo_mysql extends DbDriverBase {
 			$po_caller->postError(200, $e->getMessage(), "Db->pdo_mysql->connect()");
 			return false;
 		}
-		
+
 		$this->opr_db->exec('SET NAMES \'utf8\'');
-		$this->opr_db->exec('SET character_set_results = NULL');	
-	
+		$this->opr_db->exec('SET character_set_results = NULL');
+
 		if (!$vb_unique_connection) {
 			MemoryCache::save($vs_db_connection_key, $this->opr_db, 'PdoConnectionCache');
 		}
@@ -147,7 +147,7 @@ class Db_pdo_mysql extends DbDriverBase {
 	 */
 	public function prepare($po_caller, $ps_sql) {
 		$this->ops_sql = $ps_sql;
-		
+
 		$vs_md5 = md5($ps_sql);
 
 		/*// is prepared statement cached?
@@ -184,7 +184,7 @@ class Db_pdo_mysql extends DbDriverBase {
 		if(!($opo_statement instanceof PDOStatement)) {
 			$po_caller->postError(250, _t("Invalid prepared statement"), "Db->pdo_mysql->execute()");
 		}
-	
+
 		if (Db::$monitor) {
 			$t = new Timer();
 		}
@@ -194,7 +194,7 @@ class Db_pdo_mysql extends DbDriverBase {
 			$po_caller->postError($po_caller->nativeToDbError($this->opr_db->errorCode()), $e->getMessage().((__CA_ENABLE_DEBUG_OUTPUT__) ? "\n<pre>".caPrintStacktrace()."\n{$ps_sql}</pre>" : ""), "Db->pdo_mysql->execute()");
 			return false;
 		}
-		
+
 		if (Db::$monitor) {
 			Db::$monitor->logQuery($ps_sql, $pa_values, $t->getTime(4), $opo_statement->rowCount());
 		}
@@ -272,7 +272,7 @@ class Db_pdo_mysql extends DbDriverBase {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * @see DbResult::getAllFieldValues()
 	 * @param mixed $po_caller object representation of the calling class, usually Db
@@ -282,7 +282,7 @@ class Db_pdo_mysql extends DbDriverBase {
 	 */
 	function getAllFieldValues($po_caller, $pr_res, $pm_field) {
 		$va_vals = array();
-		
+
 		if (is_array($pm_field)) {
 			$va_rows = $pr_res->fetchAll(PDO::FETCH_ASSOC);
 			foreach($va_rows as $va_row) {
@@ -386,7 +386,7 @@ class Db_pdo_mysql extends DbDriverBase {
 	/**
 	 * Get database connection handle
 	 *
-	 * @return resource 
+	 * @return resource
 	 */
 	public function getHandle() {
 		return $this->opr_db;
@@ -402,4 +402,3 @@ class Db_pdo_mysql extends DbDriverBase {
 		//$this->disconnect();
 	}
 }
-?>
