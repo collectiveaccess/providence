@@ -236,7 +236,6 @@ class SearchResult extends BaseObject {
 		if (!($t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename])) {
 			$t_rel_instance = SearchResult::$s_instance_cache[$ps_tablename] = $this->opo_datamodel->getInstanceByTableName($ps_tablename, true);
 		}
-		if(!($ps_tablename instanceof LabelableBaseModelWithAttributes)) { return; }
 
 		$vs_label_table = $t_rel_instance->getLabelTableName();
 		
