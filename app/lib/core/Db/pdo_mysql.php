@@ -309,9 +309,9 @@ class Db_pdo_mysql extends DbDriverBase {
 	 * @param PDOStatement $pr_res mysql resource
 	 * @return array array representation of the next row
 	 */
-	public function nextRow($po_caller, $pr_res) {
-		if (!$pr_res){ return null; }
-		$va_row = $pr_res->fetch(PDO::FETCH_ASSOC);
+	public function nextRow($po_caller, $po_stmt) {
+		if (!($po_stmt instanceof PDOStatement)) { return null; }
+		$va_row = $po_stmt->fetch(PDO::FETCH_ASSOC);
 		if (!is_array($va_row)) { return null; }
 
 		return $va_row;
