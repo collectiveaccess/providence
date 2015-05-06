@@ -607,41 +607,6 @@ class Db_pdo_mysql extends DbDriverBase {
 	}
 
 	/**
-	 * Converts db datatypes to native datatypes
-	 *
-	 * @param string string representation of the datatype
-	 * @return string string representation of the native datatype
-	 */
-	public function dbToNativeDataType($ps_db_datatype) {
-		switch($ps_db_datatype) {
-			case "int":
-				return "int";
-				break;
-			case "float":
-				return "decimal";
-				break;
-			case "bit":
-				return "tinyint";
-				break;
-			case "char":
-				return "char";
-				break;
-			case "varchar":
-				return "varchar";
-				break;
-			case "text":
-				return "longtext";
-				break;
-			case "blob":
-				return "longblob";
-				break;
-			default:
-				return null;
-				break;
-		}
-	}
-
-	/**
 	 * Conversion of error numbers
 	 *
 	 * @param int native error number
