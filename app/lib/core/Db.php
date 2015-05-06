@@ -473,7 +473,7 @@ class Db extends DbBase {
 
 			}
 
-			$va_db_datatype = $this->opo_db->nativeToDbDataType($va_row['Type']);
+			$va_db_datatype = $this->nativeToDbDataType($va_row['Type']);
 			$va_fields[] = array(
 				"fieldname" 		=> $va_row['Field'],
 				"native_type" 		=> $va_row['Type'],
@@ -523,23 +523,178 @@ class Db extends DbBase {
 	 */
 	public function getIndices($ps_table) {
 		if(!$this->connected(true, "Db->getIndices()")) { return false; }
-		return $this->opo_db->getIndices($this, $ps_table);
+
+		$qr_keys = $this->query("SHOW KEYS FROM ".$ps_table);
+		$va_keys = array();
+
+		$vn_i = 1;
+		while($qr_keys->nextRow()) {
+			$va_row = $qr_keys->getRow();
+			$vs_keyname = $va_row['Key_name'];
+
+			if ($va_keys[$vs_keyname]) {
+				$va_keys[$vs_keyname]['fields'][] = $va_row['Column_name'];
+			} else {
+				$va_keys[$vs_keyname] = $va_row;
+				$va_keys[$vs_keyname]['fields'] = array($va_keys[$vs_keyname]['Column_name'] );
+				$va_keys[$vs_keyname]['name'] = $vs_keyname;
+				unset($va_keys[$vs_keyname]['Column_name'] );
+
+				$va_keys[$vn_i] =& $va_keys[$vs_keyname];
+
+				$vn_i++;
+			}
+		}
+
+		return $va_keys;
 	}
 
 	/**
-	 * Returns list of engines present in the database installation. The list in an array with
-	 * keys set to engine names and values set to an array of information returned from the database
-	 * server about engine that are currently available. Database server such as MySQL may return
-	 * many engines, while others return only a single standard engine. In general, engines are only
-	 * of concern when you require specific features. CollectiveAccess, for example, requires the
-	 * MySQL InnoDB engine. getEngines() enables the application to check for it.
+	 * Converts native datatypes to db datatypes
 	 *
-	 * @return array An array of available engines, or false on error. The array is key'ed on Engine name. Values are arrays of engine information. This information is varies by database server.
+	 * @param string string representation of the datatype
+	 * @return array array with more information about the type, specific to mysql
 	 */
-	public function getEngines() {
-		if(!$this->connected(true, "Db->getEngines()")) { return false; }
-		return false; // @todo implement using query ... this is not driver-specific
-		//return $this->opo_db->getEngines($this);
+	public function nativeToDbDataType($ps_native_datatype_spec) {
+		if (preg_match("/^([A-Za-z]+)[\(]{0,1}([\d,]*)[\)]{0,1}[ ]*([A-Za-z]*)/", $ps_native_datatype_spec, $va_matches)) {
+			$vs_native_type = $va_matches[1];
+			$vs_length = $va_matches[2];
+			$vb_unsigned = ($va_matches[3] == "unsigned") ? true : false;
+			switch($vs_native_type) {
+				case 'varchar':
+					return array("type" => "varchar", "length" => $vs_length);
+					break;
+				case 'char':
+					return array("type" => "char", "length" => $vs_length);
+					break;
+				case 'bigint':
+					return array("type" => "int", "minimum" => $vb_unsigned ? 0 : -1 * ((pow(2, 64)/2)), "maximum" => $vb_unsigned ? pow(2,64) - 1 : (pow(2,64)/2) - 1);
+					break;
+				case 'int':
+					return array("type" => "int", "minimum" => $vb_unsigned ? 0 : -1 * ((pow(2, 32)/2)), "maximum" => $vb_unsigned ? pow(2,32) - 1: (pow(2,32)/2) - 1);
+					break;
+				case 'mediumint':
+					return array("type" => "int", "minimum" => $vb_unsigned ? 0 : -1 * ((pow(2, 24)/2)), "maximum" => $vb_unsigned ? pow(2,24) - 1: (pow(2,24)/2) - 1);
+					break;
+				case 'smallint':
+					return array("type" => "int", "minimum" => $vb_unsigned ? 0 : -1 * ((pow(2, 16)/2)), "maximum" => $vb_unsigned ? pow(2,16) - 1: (pow(2,16)/2) - 1);
+					break;
+				case 'tinyint':
+					return array("type" => "int", "minimum" => $vb_unsigned ? 0 : -128, "maximum" => $vb_unsigned ? 255 : 127);
+					break;
+				case 'decimal':
+				case 'float':
+				case 'numeric':
+					$va_tmp = explode(",",$vs_length);
+					if ($vb_unsigned) {
+						$vn_max = (pow(10, $va_tmp[0]) - (1/pow(10, $va_tmp[1]))) - 1;
+						$vn_min = 0;
+					} else {
+						$vn_max = ((pow(10, $va_tmp[0]) - (1/pow(10, $va_tmp[1]))) / 2) -1;
+						$vn_min = -1 * ((pow(10, $va_tmp[0]) - (1/pow(10, $va_tmp[1]))) / 2);
+					}
+					return array("type" => "float", "minimum" => $vn_min, "maximum" => $vn_max);
+					break;
+				case 'tinytext':
+					return array("type" => "varchar", "length" => 255);
+					break;
+				case 'text':
+					return array("type" => "text", "length" => pow(2,16) - 1);
+					break;
+				case 'mediumtext':
+					return array("type" => "text", "length" => pow(2,24) - 1);
+					break;
+				case 'longtext':
+					return array("type" => "text", "length" => pow(2,32) - 1);
+					break;
+				case 'tinyblob':
+					return array("type" => "blob", "length" => 255);
+					break;
+				case 'blob':
+					return array("type" => "blob", "length" => pow(2,16) - 1);
+					break;
+				case 'mediumblob':
+					return array("type" => "blob", "length" => pow(2,24) - 1);
+					break;
+				case 'longblob':
+					return array("type" => "blob", "length" => pow(2,32) - 1);
+					break;
+				default:
+					return null;
+					break;
+			}
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Conversion of error numbers
+	 *
+	 * @param int native error number
+	 * @return int db error number
+	 */
+	public function nativeToDbError($pn_error_number) {
+		switch($pn_error_number) {
+			case 1004:	// Can't create file
+			case 1005:	// Can't create table
+			case 1006:	// Can't create database
+				return 242;
+				break;
+			case 1007:	// Database already exists
+				return 244;
+				break;
+			case 1050:	// Table already exists
+			case 1061:	// Duplicate key
+				return 245;
+				break;
+			case 1008:	// Can't drop database; database doesn't exist
+			case 1049:	// Unknown database
+				return 201;
+				break;
+			case 1051:	// Unknown table
+			case 1146:	// Table doesn't exist
+				return 282;
+				break;
+			case 1054:	// Unknown field
+				return 283;
+				break;
+			case 1091:	// Can't DROP item; check that column/key exists
+				return 284;
+				break;
+			case 1044:	// access denied for user to database
+			case 1142:	// command denied to user for table
+				return 207;
+				break;
+			case 1046:	// No database selected
+				return 208;
+				break;
+			case 1048:	// Column cannot be null
+				return 291;
+				break;
+			case 1216:	// Cannot add or update a child row: a foreign key constraint fails
+			case 1217:	// annot delete or update a parent row: a foreign key constraint fails
+				return 290;
+				break;
+			case 1136:	// Column count doesn't match value count
+				return 288;
+				break;
+			case 1100:	// Table was not locked with LOCK TABLES
+				return 265;
+				break;
+			case 1062:	// duplicate value for unique field
+			case 1022:	// Can't write; duplicate key in table
+				return 251;
+				break;
+			case 1065:
+				// query empty
+				return 240;
+				break;
+			case 1064:	// SQL syntax error
+			default:
+				return 250;
+				break;
+		}
 	}
 
 	/**

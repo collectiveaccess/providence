@@ -193,6 +193,28 @@ class DbTest extends PHPUnit_Framework_TestCase {
 		}
 	}
 
+	public function testGetIndices() {
+		$va_indexes = $this->db->getIndices('ca_objects'); // not asking for foo this time!
+
+		$this->assertInternalType('array', $va_indexes);
+
+		foreach($va_indexes as $va_index) {
+			$this->assertEquals('ca_objects', $va_index['Table']);
+
+			$this->assertArrayHasKey('Non_unique', $va_index);
+			$this->assertArrayHasKey('Key_name', $va_index);
+			$this->assertArrayHasKey('Seq_in_index', $va_index);
+			$this->assertArrayHasKey('Collation', $va_index);
+			$this->assertArrayHasKey('Cardinality', $va_index);
+			$this->assertArrayHasKey('Sub_part', $va_index);
+			$this->assertArrayHasKey('Packed', $va_index);
+			$this->assertArrayHasKey('Null', $va_index);
+			$this->assertArrayHasKey('Index_type', $va_index);
+			$this->assertArrayHasKey('Comment', $va_index);
+			$this->assertArrayHasKey('Index_comment', $va_index);
+		}
+	}
+
 	# ----------------------------
 
 	public function tearDown() {
@@ -206,5 +228,4 @@ class DbTest extends PHPUnit_Framework_TestCase {
 		$this->assertFalse($qr_select->nextRow());
 		$this->assertEquals(0, $qr_select->numRows());
 	}
-
 }
