@@ -159,6 +159,8 @@ class Db_pdo_mysql extends DbDriverBase {
 			MemoryCache::flush('PdoStatementCache');
 		}*/
 
+
+
 		$o_pdo_stmt = $this->opr_db->prepare($ps_sql);
 		$o_statement = new DbStatement($this, $this->ops_sql, array('native_statement' => $o_pdo_stmt));
 
@@ -183,6 +185,7 @@ class Db_pdo_mysql extends DbDriverBase {
 
 		if(!($opo_statement instanceof PDOStatement)) {
 			$po_caller->postError(250, _t("Invalid prepared statement"), "Db->pdo_mysql->execute()");
+			return false;
 		}
 
 		if (Db::$monitor) {
@@ -313,7 +316,6 @@ class Db_pdo_mysql extends DbDriverBase {
 		if (!($po_stmt instanceof PDOStatement)) { return null; }
 		$va_row = $po_stmt->fetch(PDO::FETCH_ASSOC);
 		if (!is_array($va_row)) { return null; }
-
 		return $va_row;
 	}
 

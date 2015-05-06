@@ -42,26 +42,41 @@ class DbTest extends PHPUnit_Framework_TestCase {
 		$this->db = new Db();
 		$this->db->query("CREATE TABLE IF NOT EXISTS foo (
 			id INT,
-			text VARCHAR(255)
+			comment VARCHAR(255)
 		)");
 		$this->db->query("CREATE TABLE IF NOT EXISTS bar (
 			id INT,
-			text VARCHAR(255)
+			comment VARCHAR(255)
 		)");
 
+	}
+
+	public function testSelectWithINParam() {
+		$this->checkIfFooIsEmpty();
+
+		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(1, 'bar'));
+		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(2, 'baz'));
+		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(3, 'foo'));
+
+		$qr_select = $this->db->query("SELECT * FROM foo WHERE (id IN (?) AND comment LIKE '?')", array(1,2,3), ''); // @todo
+
+		$this->assertEquals(3, $qr_select->numRows());
+
+		$this->db->query("DELETE FROM foo");
+		$this->checkIfFooIsEmpty();
 	}
 
 	public function testSimpleInsertSelectDeleteCycle() {
 		$this->checkIfFooIsEmpty();
 
-		$this->db->query("INSERT INTO foo (id, text) VALUES (1, 'bar')");
+		$this->db->query("INSERT INTO foo (id, comment) VALUES (1, 'bar')");
 
 		$qr_select = $this->db->query("SELECT * FROM foo");
 		$this->assertInternalType('object', $qr_select);
 		$this->assertTrue($qr_select->nextRow());
 
 		$this->assertEquals(1, $qr_select->get('id'));
-		$this->assertEquals('bar', $qr_select->get('text'));
+		$this->assertEquals('bar', $qr_select->get('comment'));
 
 		$this->db->query("DELETE FROM foo");
 
@@ -71,14 +86,14 @@ class DbTest extends PHPUnit_Framework_TestCase {
 	public function testInsertSelectDeleteCycleWithParamsArray() {
 		$this->checkIfFooIsEmpty();
 
-		$this->db->query("INSERT INTO foo (id, text) VALUES (?, ?)", array(1, 'bar'));
+		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(1, 'bar'));
 
 		$qr_select = $this->db->query("SELECT * FROM foo");
 		$this->assertInternalType('object', $qr_select);
 		$this->assertTrue($qr_select->nextRow());
 
 		$this->assertEquals(1, $qr_select->get('id'));
-		$this->assertEquals('bar', $qr_select->get('text'));
+		$this->assertEquals('bar', $qr_select->get('comment'));
 
 		$this->db->query("DELETE FROM foo");
 
@@ -89,7 +104,7 @@ class DbTest extends PHPUnit_Framework_TestCase {
 		$this->checkIfFooIsEmpty();
 
 		$this->db->dieOnError(false);
-		$vm_ret = $this->db->query("INSERT INTO foo (id, text) VALUES (?, ?)", array(1, 'bar', 'foo'));
+		$vm_ret = $this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(1, 'bar', 'foo'));
 		$this->assertFalse($vm_ret);
 
 		$this->checkIfFooIsEmpty();
@@ -98,7 +113,7 @@ class DbTest extends PHPUnit_Framework_TestCase {
 	public function testInsertWithPreparedStatement() {
 		$this->checkIfFooIsEmpty();
 
-		$o_stmt = $this->db->prepare("INSERT INTO foo (id, text) VALUES (?, ?)");
+		$o_stmt = $this->db->prepare("INSERT INTO foo (id, comment) VALUES (?, ?)");
 		$o_stmt->execute(array(1,'bar'));
 
 		$qr_select = $this->db->query("SELECT * FROM foo");
@@ -106,7 +121,7 @@ class DbTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue($qr_select->nextRow());
 
 		$this->assertEquals(1, $qr_select->get('id'));
-		$this->assertEquals('bar', $qr_select->get('text'));
+		$this->assertEquals('bar', $qr_select->get('comment'));
 
 		$this->db->query("DELETE FROM foo");
 
@@ -131,9 +146,9 @@ class DbTest extends PHPUnit_Framework_TestCase {
 	public function testTxAbort() {
 		$this->checkIfFooIsEmpty();
 		$this->db->beginTransaction();
-		$this->db->query("INSERT INTO foo (id, text) VALUES (?, ?)", array(1, 'bar'));
-		$this->db->query("INSERT INTO foo (id, text) VALUES (?, ?)", array(2, 'baz'));
-		$this->db->query("INSERT INTO foo (id, text) VALUES (?, ?)", array(3, 'foo'));
+		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(1, 'bar'));
+		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(2, 'baz'));
+		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(3, 'foo'));
 		$this->db->rollbackTransaction();
 		$this->checkIfFooIsEmpty();
 	}
@@ -141,7 +156,7 @@ class DbTest extends PHPUnit_Framework_TestCase {
 	public function testTxCommit() {
 		$this->checkIfFooIsEmpty();
 		$this->db->beginTransaction();
-		$this->db->query("INSERT INTO foo (id, text) VALUES (?, ?)", array(1, 'bar'));
+		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(1, 'bar'));
 		$this->db->commitTransaction();
 
 		$qr_select = $this->db->query("SELECT * FROM foo");
@@ -149,7 +164,7 @@ class DbTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue($qr_select->nextRow());
 
 		$this->assertEquals(1, $qr_select->get('id'));
-		$this->assertEquals('bar', $qr_select->get('text'));
+		$this->assertEquals('bar', $qr_select->get('comment'));
 
 		$this->db->query("DELETE FROM foo");
 
@@ -158,22 +173,22 @@ class DbTest extends PHPUnit_Framework_TestCase {
 
 	public function testGetAllFieldValues() {
 		$this->checkIfFooIsEmpty();
-		$this->db->query("INSERT INTO foo (id, text) VALUES (?, ?)", array(1, 'bar'));
-		$this->db->query("INSERT INTO foo (id, text) VALUES (?, ?)", array(2, 'baz'));
-		$this->db->query("INSERT INTO foo (id, text) VALUES (?, ?)", array(3, 'foo'));
+		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(1, 'bar'));
+		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(2, 'baz'));
+		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(3, 'foo'));
 
 		$qr_select = $this->db->query("SELECT * FROM foo");
 		$va_ret = $qr_select->getAllFieldValues('id');
 		$this->assertEquals(array(1, 2, 3), $va_ret);
 
 		$qr_select = $this->db->query("SELECT * FROM foo");
-		$va_ret = $qr_select->getAllFieldValues(array('id', 'text'));
+		$va_ret = $qr_select->getAllFieldValues(array('id', 'comment'));
 
 		$this->assertArrayHasKey('id', $va_ret);
-		$this->assertArrayHasKey('text', $va_ret);
+		$this->assertArrayHasKey('comment', $va_ret);
 
 		$this->assertEquals(array(1, 2, 3), $va_ret['id']);
-		$this->assertEquals(array('bar', 'baz', 'foo'), $va_ret['text']);
+		$this->assertEquals(array('bar', 'baz', 'foo'), $va_ret['comment']);
 
 		$this->db->query("DELETE FROM foo");
 		$this->checkIfFooIsEmpty();
@@ -183,7 +198,7 @@ class DbTest extends PHPUnit_Framework_TestCase {
 		$va_field_info = $this->db->getFieldsFromTable('foo');
 
 		foreach($va_field_info as $va_field) {
-			$this->assertTrue(in_array($va_field['fieldname'], array('id', 'text')));
+			$this->assertTrue(in_array($va_field['fieldname'], array('id', 'comment')));
 		}
 
 		$va_field_info = $this->db->getFieldsFromTable('foo', 'id');
