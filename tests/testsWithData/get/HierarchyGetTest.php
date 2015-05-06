@@ -113,13 +113,84 @@ class HierarchyGetTest extends BaseTestWithData {
 
 		$vm_ret = $this->opt_child_object->get('ca_objects.parent.preferred_labels');
 		$this->assertEquals('My test moving image', $vm_ret);
+		
+		$vm_ret = $this->opt_child_object->get('ca_objects.parent.preferred_labels', array('returnAsArray' => true));
+		$this->assertTrue(is_array($vm_ret));
+		$this->assertEquals(1, sizeof($vm_ret));
+		$this->assertEquals('My test moving image', array_shift($vm_ret));
+		
+		$vm_ret = $this->opt_child_object->get('ca_objects.parent.preferred_labels', array('returnAsArray' => true, 'returnAllLocales' => true));
+		$this->assertTrue(is_array($vm_ret));
+		$this->assertEquals(1, sizeof($vm_ret));
+		$this->assertTrue(is_array($vm_ret = array_shift($vm_ret)));
+		$this->assertArrayHasKey(1, $vm_ret);
+		$this->assertEquals('My test moving image', $vm_ret[1][0]);
 
 		$vm_ret = $this->opt_parent_object->get('ca_objects.children.preferred_labels');
 		$this->assertEquals('My test still;Another test still', $vm_ret);
-
-		$vm_ret = $this->opt_child_object->get('ca_objects.hierarchy.preferred_labels');
-		// don't know if that arrow is going to be the default hier delimiter, but let's just say it is
+		
+		$vm_ret = $this->opt_parent_object->get('ca_objects.children.preferred_labels', array('returnAsArray' => true));
+		$this->assertTrue(is_array($vm_ret));
+		$this->assertEquals(2, sizeof($vm_ret));
+		$this->assertEquals('My test still', array_shift($vm_ret));
+		$this->assertEquals('Another test still', array_shift($vm_ret));
+		
+		$vm_ret = $this->opt_parent_object->get('ca_objects.children.preferred_labels', array('returnAsArray' => true, 'returnAllLocales' => true));
+		$this->assertTrue(is_array($vm_ret));
+		$this->assertEquals(2, sizeof($vm_ret));
+		$this->assertTrue(is_array($vm_item = array_shift($vm_ret)));
+		$this->assertArrayHasKey(1, $vm_item);
+		$this->assertEquals(1, sizeof($vm_item[1]));
+		$this->assertEquals('My test still', $vm_item[1][0]);
+		$this->assertTrue(is_array($vm_item = array_shift($vm_ret)));
+		$this->assertArrayHasKey(1, $vm_item);
+		$this->assertEquals(1, sizeof($vm_item[1]));
+		$this->assertEquals('Another test still', $vm_item[1][0]);
+		
+		$vm_ret = $this->opt_child_object->get('ca_objects.hierarchy.preferred_labels', array('delimiter' => ' ➔ '));
 		$this->assertEquals('My test moving image ➔ My test still', $vm_ret);
+		
+		$vm_ret = $this->opt_child_object->get('ca_objects.hierarchy.preferred_labels', array('delimiter' => ' ➔ ', 'hierarchyDirection' => 'desc'));
+		$this->assertEquals('My test still ➔ My test moving image', $vm_ret);
+		
+		$vm_ret = $this->opt_child_object->get('ca_objects.hierarchy.preferred_labels', array('returnAsArray' => true));
+		$this->assertTrue(is_array($vm_ret));
+		$this->assertEquals(2, sizeof($vm_ret));
+		$this->assertEquals('My test moving image', array_shift($vm_ret));
+		$this->assertEquals('My test still', array_shift($vm_ret));
+		
+		$vm_ret = $this->opt_child_object->get('ca_objects.hierarchy.preferred_labels', array('returnAsArray' => true, 'returnAllLocales' => true));
+		$this->assertTrue(is_array($vm_ret));
+		$this->assertEquals(2, sizeof($vm_ret));
+		$this->assertTrue(is_array($vm_item = array_shift($vm_ret)));
+		$this->assertArrayHasKey(1, $vm_item);
+		$this->assertEquals(1, sizeof($vm_item[1]));
+		$this->assertEquals('My test moving image', $vm_item[1][0]);
+		$this->assertTrue(is_array($vm_item = array_shift($vm_ret)));
+		$this->assertArrayHasKey(1, $vm_item);
+		$this->assertEquals(1, sizeof($vm_item[1]));
+		$this->assertEquals('My test still', $vm_item[1][0]);
+		
+		$vm_ret = $this->opt_child_object->get('ca_objects.siblings.preferred_labels', array('delimiter' => ', '));
+		$this->assertEquals('My test still, Another test still', $vm_ret);
+		
+		$vm_ret = $this->opt_child_object->get('ca_objects.siblings.preferred_labels', array('returnAsArray' => true));
+		$this->assertTrue(is_array($vm_ret));
+		$this->assertEquals(2, sizeof($vm_ret));
+		$this->assertEquals('My test still', array_shift($vm_ret));
+		$this->assertEquals('Another test still', array_shift($vm_ret));
+		
+		$vm_ret = $this->opt_child_object->get('ca_objects.siblings.preferred_labels', array('returnAsArray' => true, 'returnAllLocales' => true));
+		$this->assertTrue(is_array($vm_ret));
+		$this->assertEquals(2, sizeof($vm_ret));
+		$this->assertTrue(is_array($vm_item = array_shift($vm_ret)));
+		$this->assertArrayHasKey(1, $vm_item);
+		$this->assertEquals(1, sizeof($vm_item[1]));
+		$this->assertEquals('My test still', $vm_item[1][0]);
+		$this->assertTrue(is_array($vm_item = array_shift($vm_ret)));
+		$this->assertArrayHasKey(1, $vm_item);
+		$this->assertEquals(1, sizeof($vm_item[1]));
+		$this->assertEquals('Another test still', $vm_item[1][0]);
 	}
 	# -------------------------------------------------------
 	public function tearDown() {
