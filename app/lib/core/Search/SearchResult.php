@@ -996,8 +996,12 @@ class SearchResult extends BaseObject {
 						$va_vals = array();
 			
 						if ($va_path_components['field_name'] === $vs_hier_pk_fld) {
-							// Return ids from hierarchy in order 
-							$va_hier_ids = array_merge(array($vn_row_id), SearchResult::$opa_hierarchy_parent_prefetch_cache[$va_path_components['table_name']][$vn_row_id]);
+							// Return ids from hierarchy in order
+							if(is_array(SearchResult::$opa_hierarchy_parent_prefetch_cache[$va_path_components['table_name']][$vn_row_id])) {
+								$va_hier_ids = array_merge(array($vn_row_id), SearchResult::$opa_hierarchy_parent_prefetch_cache[$va_path_components['table_name']][$vn_row_id]);
+							} else {
+								$va_hier_ids = array($vn_row_id);
+							}
 							if ($vs_hierarchy_direction === 'asc') { $va_hier_ids = array_reverse($va_hier_ids); }
 							return $vb_return_as_array ?  $va_hier_ids : join($vs_delimiter, $va_hier_ids);
 						} else {
