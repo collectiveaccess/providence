@@ -968,8 +968,7 @@ class SearchResult extends BaseObject {
 					
 					break;
 				case 'hierarchy':
-					// generate the hierarchy 
-					$va_ids = array();
+					// generate the hierarchy
 					if ($va_path_components['related']) {
 						// [RELATED TABLE HIERARCHY]
 						
@@ -993,8 +992,6 @@ class SearchResult extends BaseObject {
 					$vs_hierarchy_direction = isset($pa_options['hierarchyDirection']) ? strtolower($pa_options['hierarchyDirection']) : 'asc';
 
 					if ($t_instance->isHierarchical()) {
-						$va_vals = array();
-			
 						if ($va_path_components['field_name'] === $vs_hier_pk_fld) {
 							// Return ids from hierarchy in order
 							if(is_array(SearchResult::$opa_hierarchy_parent_prefetch_cache[$va_path_components['table_name']][$vn_row_id])) {
