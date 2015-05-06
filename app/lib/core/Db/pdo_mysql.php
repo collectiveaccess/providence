@@ -221,88 +221,12 @@ class Db_pdo_mysql extends DbDriverBase {
 	}
 
 	/**
-	 * Creates a temporary table
-	 *
-	 * @param mixed $po_caller object representation of calling class, usually Db
-	 * @param string $ps_table_name string representation of the table name
-	 * @param array $pa_field_list array containing the field names
-	 * @param string $ps_type optional, defaults to innodb
-	 * @return mixed mysql resource
-	 */
-	public function createTemporaryTable($po_caller, $ps_table_name, $pa_field_list, $ps_type="") {
-		if (!$ps_table_name) {
-			$po_caller->postError(230, _t("No table name specified"), "Db->pdo_mysql->createTemporaryTable()");
-		}
-		if (!is_array($pa_field_list) || sizeof($pa_field_list) == 0) {
-			$po_caller->postError(231, _t("No fields specified"), "Db->pdo_mysql->createTemporaryTable()");
-		}
-
-
-		$vs_sql  = "CREATE TEMPORARY TABLE ".$ps_table_name;
-
-		$va_fields = array();
-		foreach($pa_field_list as $va_field) {
-			$vs_field = $va_field["name"]." ".$this->dbToNativeDataType($va_field["type"])." ";
-			if ($va_field["length"] > 0) {
-				$vs_field .= "(".$va_field["length"].") ";
-			}
-
-			if ($va_field["primary_key"]) {
-				$vs_field .= "primary key ";
-			}
-
-			if ($va_field["null"]) {
-				$vs_field .= "null";
-			} else {
-				$vs_field .= "not null";
-			}
-
-			$va_fields[] = $vs_field;
-		}
-
-		$vs_sql .= "(".join(",\n", $va_fields).")";
-
-		switch($ps_type) {
-			case 'memory':
-				$vs_sql .= " ENGINE=memory";
-				break;
-			case 'myisam':
-				$vs_sql .= " ENGINE=myisam";
-				break;
-			default:
-				$vs_sql .= " ENGINE=innodb";
-				break;
-		}
-
-		if (!($vb_res = $this->opr_db->exec($vs_sql))) {
-			$va_err = $this->opr_db->errorInfo();
-			$po_caller->postError($this->nativeToDbError($this->opr_db->errorCode()), $va_err[2], "Db->pdo_mysql->createTemporaryTable()");
-		}
-		return $vb_res;
-	}
-
-	/**
-	 * Drops a temporary table
-	 *
-	 * @param mixed $po_caller object representation of calling class, usually Db
-	 * @param string $ps_table_name string representation of the table name
-	 * @return mixed mysql resource
-	 */
-	public function dropTemporaryTable($po_caller, $ps_table_name) {
-		if (!($vb_res = $this->opr_db->exec("DROP TABLE ".$ps_table_name))) {
-			$va_err = $this->opr_db->errorInfo();
-			$po_caller->postError($this->nativeToDbError($this->opr_db->errorCode()), $va_err[2], "Db->pdo_mysql->dropTemporaryTable()");
-		}
-		return $vb_res;
-	}
-
-	/**
 	 * @see Db::escape()
 	 * @param string
 	 * @return string
 	 */
 	public function escape($ps_text) {
-		// BaseModel doesn't expect the string quoted, but PDO does quote it,
+		// BaseModel doesn't expect the string quoted but PDO does add quotes,
 		// so in order to not end up with ''string'' in queries, we strip the
 		// PDO quotes here to mirror the mysql / mysqli behavior
 		$vs_text = $this->opr_db->quote($ps_text);

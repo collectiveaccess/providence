@@ -325,35 +325,6 @@ class Db extends DbBase {
 	}
 
 	/**
-	 * Creates a temporary table in the database
-	 *
-	 * @param string $ps_table_name
-	 * @param array $pa_field_list
-	 * @param string $ps_type Type of the temporary table. Defaults to InnoDB when dealing with MySQL if ommitted.
-	 * @return mixed representation of the table; false on failure
-	 */
-	public function createTemporaryTable($ps_table_name, $pa_field_list, $ps_type="") {
-		if(!$this->connected(true, "Db->createTemporaryTable()")) { return false; }
-		$this->clearErrors();
-
-		return $this->opo_db->createTemporaryTable($this, $ps_table_name, $pa_field_list, $ps_type="");
-	}
-
-	/**
-	 * Drops a temporary table.
-	 * Returns false if you're not connected to a database.
-	 *
-	 * @param string $ps_table_name
-	 * @return mixed
-	 */
-	public function dropTemporaryTable($ps_table_name) {
-		if(!$this->connected(true, "Db->dropTemporaryTable()")) { return false; }
-		$this->clearErrors();
-
-		return $this->opo_db->dropTemporaryTable($this, $ps_table_name);
-	}
-
-	/**
 	 * Begins a transaction.
 	 * Returns false if you're not connected to a database or if your driver doesn't support this method.
 	 *

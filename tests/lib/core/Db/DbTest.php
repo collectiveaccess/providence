@@ -156,6 +156,8 @@ class DbTest extends PHPUnit_Framework_TestCase {
 		$this->checkIfFooIsEmpty();
 	}
 
+	# ----------------------------
+
 	public function tearDown() {
 		$this->db->query("DROP TABLE IF EXISTS foo");
 		$this->db->query("DROP TABLE IF EXISTS bar");
