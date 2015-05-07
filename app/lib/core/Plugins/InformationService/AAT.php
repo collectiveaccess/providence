@@ -92,8 +92,9 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 	?ID a skos:Concept; '.$vs_search_field.' "'.$vs_search.'"; skos:inScheme aat: ;
 	gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
 	{?ID gvp:parentStringAbbrev ?Parents}
-} ORDER BY ASC(?Order)
-LIMIT 25');
+	{?ID gvp:displayOrder ?Order}
+} ORDER BY DESC(?Order)
+LIMIT 50');
 
 		$va_results = $this->queryGetty($vs_query);
 		if(!is_array($va_results)) { return false; }
