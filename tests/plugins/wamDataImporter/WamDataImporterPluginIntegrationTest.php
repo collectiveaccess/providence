@@ -332,6 +332,7 @@ class WamDataImporterPluginIntegrationTest extends AbstractPluginIntegrationTest
 				)
 			)
 		);
+		caDebug($va_created_records, 'created_records', true);
 		$va_sampling_protocol = $va_params['content_tree']['ca_occurrences'][0][self::_getIdno('samplingProtocolContainer')];
 		$this->assertCount(2, $va_sampling_protocol, 'Number of elements should match the source');
 		$this->assertEquals($va_created_records[0]->getPrimaryKey(), $va_sampling_protocol[self::_getIdno('samplingProtocolValue')], 'Retrieved value should match');
