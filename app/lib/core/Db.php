@@ -443,6 +443,7 @@ class Db extends DbBase {
 		}
 
 		$qr_cols = $this->query("SHOW COLUMNS FROM ".$ps_table." ".$vs_fieldname_sql);
+		if(!$qr_cols) { return array(); }
 
 		$va_fields = array();
 		while($qr_cols->nextRow()) {

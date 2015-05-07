@@ -110,7 +110,7 @@ class Db_pdo_mysql extends DbDriverBase {
 		try {
 			$this->opr_db = new PDO('mysql:host='.$pa_options["host"].';dbname='.$pa_options["database"], $pa_options["username"], $pa_options["password"], array(PDO::ATTR_PERSISTENT => caGetOption("persistentConnections", $pa_options, true)));
 			$this->opr_db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-			$this->opr_db->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
+			$this->opr_db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 		} catch (Exception $e) {
 			$po_caller->postError(200, $e->getMessage(), "Db->pdo_mysql->connect()");
 			return false;
@@ -148,32 +148,15 @@ class Db_pdo_mysql extends DbDriverBase {
 	public function prepare($po_caller, $ps_sql) {
 		$this->ops_sql = $ps_sql;
 
-		// replace all IN (?) statements with :array
-		$ps_sql = preg_replace("/(IN|in)[\s]+\(\?\)/", ':array', $ps_sql);
-
-		// now we enumerate them like this :array0, :array1, :array2, ...
-		// which makes them a lot easier to find and replace with the appropriate value array later (in execute())
-		// to do that, we first search the positions of all occurrences in $va_positions ...
-		$vn_ptr = 0;
-		$va_positions = array();
-		while (($vn_ptr = strpos($ps_sql, ':array', $vn_ptr))!== false) {
-			$va_positions[] = $vn_ptr;
-			$vn_ptr = $vn_ptr + strlen(':array');
+		try {
+			$o_pdo_stmt = $this->opr_db->prepare($ps_sql);
+			$o_statement = new DbStatement($this, $ps_sql, array('native_statement' => $o_pdo_stmt));
+			//MemoryCache::save($vs_md5, $o_statement, 'PdoStatementCache');
+			return $o_statement;
+		} catch(PDOException $e) {
+			$po_caller->postError(240, $e->getMessage(), "Db->pdo_mysql->prepare()");
+			return false;
 		}
-		// and then loop through them and add the suffix ...
-		$i = 0;
-		if(sizeof($va_positions) > 0) {
-			foreach($va_positions as $vn_pos) {
-				$ps_sql = substr_replace($ps_sql, ':array'.$i, $vn_pos+$i, 6);
-				$i++;
-			}
-		}
-
-		$o_pdo_stmt = $this->opr_db->prepare($ps_sql);
-		$o_statement = new DbStatement($this, $ps_sql, array('native_statement' => $o_pdo_stmt));
-
-		//MemoryCache::save($vs_md5, $o_statement, 'PdoStatementCache');
-		return $o_statement;
 	}
 
 	/**
@@ -196,43 +179,20 @@ class Db_pdo_mysql extends DbDriverBase {
 			return false;
 		}
 
-		$j = 0;
-		$va_new_values = array(); // "flatten" value array in the process
-		$vb_prepare = false; // indicates if we have to re-prepare the PDOStatement (because we changed the query)
-		foreach($pa_values as $vn_i => $vm_val) {
-			// arrays in the value array usually target "IN (?)", which we prepared as :array0, :array1, :array2
-			// in prepare(). So we can just replace the n-th "IN (?)" with the appropriate amount of placeholders
-			// for the n-th value array and also flatten the values.
-			if(is_array($vm_val)) {
-				if(count($vm_val) == 0) { return false; } // don't allow empty value arrays
-
-				// If value is array(1,2,3), we need a placeholder string like this: ?,?,?
-				$vs_placeholders = str_repeat('?, ',  count($vm_val) - 1) . '?';
-				if(strpos($ps_sql,'array'.$j) === false) {
-					$po_caller->postError(250, 'Invalid parameters for SQL query'.((__CA_ENABLE_DEBUG_OUTPUT__) ? "\n<pre>".caPrintStacktrace()."\n{$ps_sql}</pre>" : ""), "Db->pdo_mysql->execute()");
-					return false;
-				}
-				$ps_sql = str_replace(':array'.$j, "IN ({$vs_placeholders})", $ps_sql);
-				$vb_prepare = true; $j++;
-				// flatten
-				foreach($vm_val as $vm_sub_val) {
-					$va_new_values[] = $vm_sub_val;
-				}
-
-			} else {
-				$va_new_values[] = $vm_val;
-			}
+		if(!is_array($va_tmp = self::rewriteQueryAndParams($ps_sql, $pa_values))) {
+			$po_caller->postError(250, _t("Query rewrite failed"), "Db->pdo_mysql->execute()");
+			return false;
 		}
 
-		if($vb_prepare) {
-			$opo_statement = $this->opr_db->prepare($ps_sql);
+		if($va_tmp['prepare']) {
+			$opo_statement = $this->opr_db->prepare($va_tmp['sql']);
 		}
 
 		if (Db::$monitor) {
 			$t = new Timer();
 		}
 		try {
-			$opo_statement->execute((is_array($va_new_values) && sizeof($va_new_values)) ? array_values($va_new_values) : null);
+			$opo_statement->execute((is_array($va_tmp['values']) && sizeof($va_tmp['values'])) ? array_values($va_tmp['values']) : null);
 		} catch(PDOException $e) {
 			$po_caller->postError($po_caller->nativeToDbError($this->opr_db->errorCode()), $e->getMessage().((__CA_ENABLE_DEBUG_OUTPUT__) ? "\n<pre>".caPrintStacktrace()."\n{$ps_sql}</pre>" : ""), "Db->pdo_mysql->execute()");
 			return false;
@@ -353,7 +313,7 @@ class Db_pdo_mysql extends DbDriverBase {
 	/**
 	 * @see DbResult::nextRow()
 	 * @param mixed $po_caller object representation of the calling class, usually Db
-	 * @param PDOStatement $pr_res mysql resource
+	 * @param PDOStatement $po_stmt mysql resource
 	 * @return array array representation of the next row
 	 */
 	public function nextRow($po_caller, $po_stmt) {
@@ -449,5 +409,57 @@ class Db_pdo_mysql extends DbDriverBase {
 		// to clean up by writing to the database so we disabled 
 		// disconnect-on-destruct
 		//$this->disconnect();
+	}
+
+	private static function rewriteQueryAndParams($ps_sql, $pa_values) {
+		// noop if there is no IN (?)
+		if(!preg_match("/(IN|in)[\s]+\(\?\)/", $ps_sql)) {
+			return array(
+				'sql' => $ps_sql,
+				'values' => $pa_values,
+				'prepare' => false
+			);
+		}
+
+		// replace all IN (?) statements with something consistent, "indexed" and easy to find
+		global $vn_in_count; $vn_in_count = 0;
+		//$ps_sql = preg_replace("/(IN|in)[\s]+\(\?\)/", ':array', $ps_sql);
+		$ps_sql = preg_replace_callback("/(IN|in)[\s]+\(\?\)/", function ($s) {
+			global $vn_in_count;
+			return ':array'.$vn_in_count++;
+		}, $ps_sql);
+
+		$j = 0;
+		$va_new_values = array(); // "flatten" value array in the process
+		$vb_prepare = false; // indicates if we have to re-prepare the PDOStatement (because we changed the query)
+		foreach($pa_values as $vn_i => $vm_val) {
+			// arrays in the value array usually target "IN (?)", which we prepared as :array0, :array1, :array2
+			// in prepare(). So we can just replace the n-th "IN (?)" with the appropriate amount of placeholders
+			// for the n-th value array and also flatten the values.
+			if(is_array($vm_val)) {
+				if(count($vm_val) == 0) { return false; } // don't allow empty value arrays
+
+				// If value is array(1,2,3), we need a placeholder string like this: ?,?,?
+				$vs_placeholders = str_repeat('?, ',  count($vm_val) - 1) . '?';
+				if(strpos($ps_sql,'array'.$j) === false) {
+					return false;
+				}
+				$ps_sql = str_replace(':array'.$j, "IN ({$vs_placeholders})", $ps_sql);
+				$vb_prepare = true; $j++;
+				// flatten
+				foreach($vm_val as $vm_sub_val) {
+					$va_new_values[] = $vm_sub_val;
+				}
+
+			} else {
+				$va_new_values[] = $vm_val;
+			}
+		}
+
+		return array(
+			'sql' => $ps_sql,
+			'values' => $va_new_values,
+			'prepare' => $vb_prepare
+		);
 	}
 }

@@ -51,6 +51,29 @@ class DbTest extends PHPUnit_Framework_TestCase {
 
 	}
 
+	public function testSelectWithINParam() {
+		$this->checkIfFooIsEmpty();
+
+		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(1, 'bar'));
+		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(2, 'baz'));
+		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(3, 'foo'));
+
+		$qr_select = $this->db->query("SELECT * FROM foo WHERE ((id IN (?)) AND (id IN (?)))", array(array(1,2,3),array(1,2,3)));
+		$this->assertEquals(3, $qr_select->numRows());
+
+		$qr_select = $this->db->query("SELECT * FROM foo WHERE ((id IN (?)) AND (id IN (?)) AND comment LIKE ?)", array(array(1,2,3),array(1,2,3), 'foo'));
+		$this->assertEquals(1, $qr_select->numRows());
+
+		$qr_select = $this->db->query("SELECT * FROM foo WHERE ((id IN (?)) AND (id IN (?)) AND comment LIKE ?)", array(array(1,2),array(2,3), 'baz'));
+		$this->assertEquals(1, $qr_select->numRows());
+
+		$qr_select = $this->db->query("SELECT * FROM foo WHERE ((id IN (?)) AND (id IN (?)) AND comment LIKE ?)", array(array(1,2),array(2,3), 'foo'));
+		$this->assertEquals(0, $qr_select->numRows());
+
+		$this->db->query("DELETE FROM foo");
+		$this->checkIfFooIsEmpty();
+	}
+
 	public function testSimpleInsertSelectDeleteCycle() {
 		$this->checkIfFooIsEmpty();
 
@@ -89,8 +112,7 @@ class DbTest extends PHPUnit_Framework_TestCase {
 		$this->checkIfFooIsEmpty();
 
 		$this->db->dieOnError(false);
-		$vm_ret = $this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(1, 'bar', 'foo'));
-		$this->assertFalse($vm_ret);
+		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(1, 'bar', 'foo'));
 
 		$this->checkIfFooIsEmpty();
 	}
@@ -136,29 +158,6 @@ class DbTest extends PHPUnit_Framework_TestCase {
 		$qr_select = $this->db->query("SELECT * FROM foo");
 		$this->assertEquals(0, $qr_select->numRows());
 
-		$this->checkIfFooIsEmpty();
-	}
-
-	public function testSelectWithINParam() {
-		$this->checkIfFooIsEmpty();
-
-		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(1, 'bar'));
-		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(2, 'baz'));
-		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(3, 'foo'));
-
-		$qr_select = $this->db->query("SELECT * FROM foo WHERE ((id IN (?)) AND (id IN (?)))", array(array(1,2,3),array(1,2,3)));
-		$this->assertEquals(3, $qr_select->numRows());
-
-		$qr_select = $this->db->query("SELECT * FROM foo WHERE ((id IN (?)) AND (id IN (?)) AND comment LIKE ?)", array(array(1,2,3),array(1,2,3), 'foo'));
-		$this->assertEquals(1, $qr_select->numRows());
-
-		$qr_select = $this->db->query("SELECT * FROM foo WHERE ((id IN (?)) AND (id IN (?)) AND comment LIKE ?)", array(array(1,2),array(2,3), 'baz'));
-		$this->assertEquals(1, $qr_select->numRows());
-
-		$qr_select = $this->db->query("SELECT * FROM foo WHERE ((id IN (?)) AND (id IN (?)) AND comment LIKE ?)", array(array(1,2),array(2,3), 'foo'));
-		$this->assertEquals(0, $qr_select->numRows());
-
-		$this->db->query("DELETE FROM foo");
 		$this->checkIfFooIsEmpty();
 	}
 
