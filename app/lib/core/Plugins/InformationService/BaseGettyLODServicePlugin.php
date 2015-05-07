@@ -89,7 +89,9 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 		if(!$va_service_conf || !is_array($va_service_conf)) { return array('display' => ''); }
 		if(!isset($va_service_conf['detail_view_info']) || !is_array($va_service_conf['detail_view_info'])) { return array('display' => ''); }
 
-		$vs_display = '<div style="margin-top:10px; margin-bottom: 10px;"><a target="_blank" href="'.$ps_url.'">'.$ps_url.'</a></div>';
+		$vs_display_url = self::getLiteralFromRDFNode($ps_url, '<http://www.w3.org/2000/01/rdf-schema#seeAlso>');
+		if(!$vs_display_url) { $vs_display_url = $ps_url; }
+		$vs_display = '<div style="margin-top:10px; margin-bottom: 10px;"><a target="_blank" href="'.$vs_display_url.'">'.$vs_display_url.'</a></div>';
 		foreach($va_service_conf['detail_view_info'] as $va_node) {
 			if(!isset($va_node['literal'])) { continue; }
 
@@ -139,7 +141,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	 * 				this is useful for gvp:parentString where the top-most category is usually not very useful
 	 * @return string|bool
 	 */
-	static function getLiteralFromRDFNode($ps_base_node, $ps_literal_propery, $ps_node_uri=null, $pa_options) {
+	static function getLiteralFromRDFNode($ps_base_node, $ps_literal_propery, $ps_node_uri=null, $pa_options=array()) {
 		if(!isURL($ps_base_node)) { return false; }
 
 		$pn_limit = (int) caGetOption('limit', $pa_options, 10);
