@@ -50,17 +50,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	# -------------------------------------------------------
 	private $opn_indexing_subject_tablenum=null;
 	private $opn_indexing_subject_row_id=null;
-
-	private $opa_doc_content_buffer;
-	
-	private $ops_insert_sql; 	// sql INSERT statement (for indexing)
 	
 	private $ops_delete_sql;	// sql DELETE statement (for unindexing)
 	private $opqr_delete;		// prepared statement for delete (subject_tablenum and subject_row_id only specified)
-	private $ops_delete_with_field_specification_sql;		// sql DELETE statement (for unindexing)
-	private $opqr_delete_with_field_specification;			// prepared statement for delete with field_tablenum and field_num specified
-	
-	private $opqr_update_index_in_place;
 	
 	private $opo_stemmer;		// snoball stemmer
 	private $opb_do_stemming = true;
@@ -76,6 +68,24 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	// TODO: Obviously these are specific to English. We need to add stop words for other languages.
 	//
 	static $s_stop_words = array("a", "an", "the", "of", "to");
+
+	private $ops_insert_word_index_sql = '';
+	private $opqr_lookup_word = null;
+	private $ops_insert_word_sql = '';
+	private $ops_insert_ngram_sql = '';
+
+
+	private $ops_delete_with_field_num_sql = "";
+	private $opqr_delete_with_field_num = null;
+
+	private $ops_delete_with_field_row_id_sql = '';
+	private $opqr_delete_with_field_row_id = null;
+
+	private $ops_delete_with_field_row_id_and_num = "";
+	private $opqr_delete_with_field_row_id_and_num = null;
+
+	private $ops_delete_dependent_sql = "";
+	private $opqr_delete_dependent_sql = null;
 	
 	# -------------------------------------------------------
 	public function __construct($po_db=null) {
@@ -1580,14 +1590,11 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	# ------------------------------------------------
 	public function flushContentBuffer() {
 		// add fields to doc
-		$va_row_sql = array();
-		$vn_segment = 0;
-		
 		$vn_max_word_segment_size = (int)$this->getOption('maxWordIndexInsertSegmentSize');
 		
 		// add new indexing
 		if (is_array(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer) && sizeof(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer)) {
-			while(sizeof(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer)) {
+			while(sizeof(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer) > 0) {
 				$this->opo_db->query($this->ops_insert_word_index_sql."\n".join(",", array_splice(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer, 0, $vn_max_word_segment_size)));
 			}
 			if ($this->debug) { Debug::msg("[SqlSearchDebug] Commit row indexing"); }
