@@ -93,13 +93,11 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 		foreach($va_service_conf['detail_view_info'] as $va_node) {
 			if(!isset($va_node['literal'])) { continue; }
 
-			$vn_limit = caGetOption('limit', $va_node, 10, array('castTo' => 'int'));
-
 			$vs_uri_for_pull = isset($va_node['uri']) ? $va_node['uri'] : null;
 
 			$vs_display .= "<div class='formLabel'>";
 			$vs_display .= isset($va_node['label']) ? $va_node['label'].": " : "";
-			$vs_display .= "<span class='formLabelPlain'>".self::getLiteralFromRDFNode($ps_url, $va_node['literal'], $vs_uri_for_pull, $vn_limit)."</span>";
+			$vs_display .= "<span class='formLabelPlain'>".self::getLiteralFromRDFNode($ps_url, $va_node['literal'], $vs_uri_for_pull, $va_node)."</span>";
 			$vs_display .= "</div>\n";
 		}
 
@@ -135,11 +133,17 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	 * @param string $ps_base_node
 	 * @param string $ps_literal_propery EasyRdf property definition
 	 * @param string|null $ps_node_uri Optional related node URI to pull from
-	 * @param int $pn_limit limit number of processed related notes
+	 * @param array $pa_options Available options are
+	 * 			limit -> limit number of processed related notes, defaults to 10
+	 * 			stripAfterLastComma -> strip everything after (and including) the last comma in the individual literal string
+	 * 				this is useful for gvp:parentString where the top-most category is usually not very useful
 	 * @return string|bool
 	 */
-	static function getLiteralFromRDFNode($ps_base_node, $ps_literal_propery, $ps_node_uri=null, $pn_limit=10) {
+	static function getLiteralFromRDFNode($ps_base_node, $ps_literal_propery, $ps_node_uri=null, $pa_options) {
 		if(!isURL($ps_base_node)) { return false; }
+
+		$pn_limit = (int) caGetOption('limit', $pa_options, 10);
+		$pb_strip_after_last_comma = (bool) caGetOption('stripAfterLastComma', $pa_options, false);
 
 		if(!($o_graph = self::getURIAsRDFGraph($ps_base_node))) { return false; }
 
@@ -171,6 +175,11 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 					$vs_string_to_add = htmlentities($o_literal->getValue());
 				} else {
 					$vs_string_to_add = (string) $o_literal;
+				}
+
+				if($pb_strip_after_last_comma) {
+					$vn_last_comma_pos = strrpos($vs_string_to_add, ',');
+					$vs_string_to_add = substr($vs_string_to_add, 0, ($vn_last_comma_pos - strlen($vs_string_to_add)));
 				}
 
 				// make links click-able
