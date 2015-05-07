@@ -148,21 +148,29 @@ class Db_pdo_mysql extends DbDriverBase {
 	public function prepare($po_caller, $ps_sql) {
 		$this->ops_sql = $ps_sql;
 
-		$vs_md5 = md5($ps_sql);
+		// replace all IN (?) statements with :array
+		$ps_sql = preg_replace("/(IN|in)[\s]+\(\?\)/", ':array', $ps_sql);
 
-		/*// is prepared statement cached?
-		if(MemoryCache::contains($vs_md5, 'PdoStatementCache')) {
-			return MemoryCache::fetch($vs_md5, 'PdoStatementCache');
+		// now we enumerate them like this :array0, :array1, :array2, ...
+		// which makes them a lot easier to find and replace with the appropriate value array later (in execute())
+		// to do that, we first search the positions of all occurrences in $va_positions ...
+		$vn_ptr = 0;
+		$va_positions = array();
+		while (($vn_ptr = strpos($ps_sql, ':array', $vn_ptr))!== false) {
+			$va_positions[] = $vn_ptr;
+			$vn_ptr = $vn_ptr + strlen(':array');
+		}
+		// and then loop through them and add the suffix ...
+		$i = 0;
+		if(sizeof($va_positions) > 0) {
+			foreach($va_positions as $vn_pos) {
+				$ps_sql = substr_replace($ps_sql, ':array'.$i, $vn_pos+$i, 6);
+				$i++;
+			}
 		}
 
-		if(MemoryCache::itemCountForNamespace('PdoStatementCache') >= 2048) {
-			MemoryCache::flush('PdoStatementCache');
-		}*/
-
-
-
 		$o_pdo_stmt = $this->opr_db->prepare($ps_sql);
-		$o_statement = new DbStatement($this, $this->ops_sql, array('native_statement' => $o_pdo_stmt));
+		$o_statement = new DbStatement($this, $ps_sql, array('native_statement' => $o_pdo_stmt));
 
 		//MemoryCache::save($vs_md5, $o_statement, 'PdoStatementCache');
 		return $o_statement;
@@ -188,11 +196,43 @@ class Db_pdo_mysql extends DbDriverBase {
 			return false;
 		}
 
+		$j = 0;
+		$va_new_values = array(); // "flatten" value array in the process
+		$vb_prepare = false; // indicates if we have to re-prepare the PDOStatement (because we changed the query)
+		foreach($pa_values as $vn_i => $vm_val) {
+			// arrays in the value array usually target "IN (?)", which we prepared as :array0, :array1, :array2
+			// in prepare(). So we can just replace the n-th "IN (?)" with the appropriate amount of placeholders
+			// for the n-th value array and also flatten the values.
+			if(is_array($vm_val)) {
+				if(count($vm_val) == 0) { return false; } // don't allow empty value arrays
+
+				// If value is array(1,2,3), we need a placeholder string like this: ?,?,?
+				$vs_placeholders = str_repeat('?, ',  count($vm_val) - 1) . '?';
+				if(strpos($ps_sql,'array'.$j) === false) {
+					$po_caller->postError(250, 'Invalid parameters for SQL query'.((__CA_ENABLE_DEBUG_OUTPUT__) ? "\n<pre>".caPrintStacktrace()."\n{$ps_sql}</pre>" : ""), "Db->pdo_mysql->execute()");
+					return false;
+				}
+				$ps_sql = str_replace(':array'.$j, "IN ({$vs_placeholders})", $ps_sql);
+				$vb_prepare = true; $j++;
+				// flatten
+				foreach($vm_val as $vm_sub_val) {
+					$va_new_values[] = $vm_sub_val;
+				}
+
+			} else {
+				$va_new_values[] = $vm_val;
+			}
+		}
+
+		if($vb_prepare) {
+			$opo_statement = $this->opr_db->prepare($ps_sql);
+		}
+
 		if (Db::$monitor) {
 			$t = new Timer();
 		}
 		try {
-			$opo_statement->execute((is_array($pa_values) && sizeof($pa_values)) ? array_values($pa_values) : null);
+			$opo_statement->execute((is_array($va_new_values) && sizeof($va_new_values)) ? array_values($va_new_values) : null);
 		} catch(PDOException $e) {
 			$po_caller->postError($po_caller->nativeToDbError($this->opr_db->errorCode()), $e->getMessage().((__CA_ENABLE_DEBUG_OUTPUT__) ? "\n<pre>".caPrintStacktrace()."\n{$ps_sql}</pre>" : ""), "Db->pdo_mysql->execute()");
 			return false;
@@ -243,8 +283,10 @@ class Db_pdo_mysql extends DbDriverBase {
 	 * @return bool success state
 	 */
 	public function beginTransaction($po_caller) {
-		if (!$this->opr_db->beginTransaction()) {
-			$po_caller->postError(250, "Could not start transaction", "Db->pdo_mysql->beginTransaction()");
+		try {
+			$this->opr_db->beginTransaction();
+		} catch(PDOException $e) {
+			$po_caller->postError(250, "Could not start transaction: ".$e->getMessage(), "Db->pdo_mysql->beginTransaction()");
 			return false;
 		}
 		return true;
@@ -256,8 +298,10 @@ class Db_pdo_mysql extends DbDriverBase {
 	 * @return bool success state
 	 */
 	public function commitTransaction($po_caller) {
-		if (!$this->opr_db->commit()) {
-			$po_caller->postError(250, "Could not commit transaction", "Db->pdo_mysql->commitTransaction()");
+		try {
+			$this->opr_db->commit();
+		} catch(PDOException $e) {
+			$po_caller->postError(250, "Could not commit transaction: ".$e->getMessage(), "Db->pdo_mysql->commitTransaction()");
 			return false;
 		}
 		return true;
@@ -315,7 +359,10 @@ class Db_pdo_mysql extends DbDriverBase {
 	public function nextRow($po_caller, $po_stmt) {
 		if (!($po_stmt instanceof PDOStatement)) { return null; }
 		$va_row = $po_stmt->fetch(PDO::FETCH_ASSOC);
-		if (!is_array($va_row)) { return null; }
+		if (!is_array($va_row)) {
+			$po_stmt->closeCursor();
+			return null;
+		}
 		return $va_row;
 	}
 
