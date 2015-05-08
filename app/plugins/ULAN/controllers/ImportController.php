@@ -159,7 +159,14 @@ class ImportController extends ActionController {
 
 		$o_wc = new WLPlugInformationServiceULAN();
 
-		$this->view->setVar('results', $o_wc->lookup(array(), $this->request->getParameter('term', pString), array('start' => (int)$this->request->getParameter('start', pInteger), 'count' => (int)$this->request->getParameter('count', pInteger))));
+		$this->view->setVar('results', $o_wc->lookup(
+			array(),
+			$this->request->getParameter('term', pString),
+			array(
+				'start' => (int)$this->request->getParameter('start', pInteger),
+				'count' => (int)$this->request->getParameter('count', pInteger)
+			)
+		));
 
 		$this->render("ajax_ulan_lookup_json.php");
 	}
@@ -172,6 +179,7 @@ class ImportController extends ActionController {
 
 		$o_wc = new WLPlugInformationServiceULAN();
 
+		file_put_contents('/tmp/importurls', $this->request->getParameter('url', pString). "\n", FILE_APPEND);
 		$this->view->setVar('detail', $o_wc->getExtendedInformation(array(), $this->request->getParameter('url', pString)));
 
 		$this->render("ajax_ulan_detail_json.php");

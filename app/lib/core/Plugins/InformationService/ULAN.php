@@ -103,8 +103,8 @@ class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements 
 		$va_return = array();
 		foreach($va_results as $va_values) {
 			$vs_id = '';
-			if(preg_match("/[a-z]{3,4}\/[0-9]+$/", $va_values['ID']['value'], $va_matches)) {
-				$vs_id = str_replace('/', ':', $va_matches[0]);
+			if(preg_match("/\/[0-9]+$/", $va_values['ID']['value'], $va_matches)) {
+				$vs_id = str_replace('/', '', $va_matches[0]);
 			}
 
 			$vs_label = $va_values['TermPrefLabel']['value'] . " (".$va_values['Parents']['value'].")  - " . $va_values['Bio']['value'];
