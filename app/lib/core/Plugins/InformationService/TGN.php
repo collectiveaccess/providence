@@ -97,7 +97,7 @@ class WLPlugInformationServiceTGN extends BaseGettyLODServicePlugin implements I
   			{?ID gvp:displayOrder ?Order}
   			{?ID gvp:placeTypePreferred [gvp:prefLabelGVP [xl:literalForm ?Type]]}
 		} ORDER BY ASC(?Order)
-		LIMIT 25');
+		LIMIT 50');
 
 		$va_results = $this->queryGetty($vs_query);
 		if(!is_array($va_results)) { return false; }
