@@ -66,6 +66,7 @@ class wamMaterialisedTaxonomyPlugin extends BaseApplicationPlugin {
 	 */
 	public function hookPeriodicTask() {
 		$vb_skip_processed_rows = $this->opo_config->getBoolean('skip_processed_rows');
+		$vn_rows_to_process = $this->opo_config->getScalar('rows_to_process');
 		if ($va_table_config = $this->opo_config->getAssoc('tables')){
 			$vo_dm = Datamodel::load();
 			foreach($va_table_config as $vs_table_name => $va_type_info){
@@ -77,9 +78,14 @@ class wamMaterialisedTaxonomyPlugin extends BaseApplicationPlugin {
 					/** @var ca_list_items $vo_type_list_item */
 					$vo_type_list_item = new ca_list_items($vn_type_id);
 					$vo_child_types = $vo_type_list_item->getHierarchy(null, array('idsOnly' => true));
+					$vn_rows_processed = 0;
 					/** @var BaseSearchResult $vo_result */
 					$va_ids = $vo_table_instance->find(array($vs_type_field => $vo_child_types, 'deleted' => false), array('returnAs' => 'ids'));
 					foreach($va_ids as $vn_id){
+						if($vn_rows_to_process && $vn_rows_processed > $vn_rows_to_process){
+							// Do not process any more rows from this record type and its child types
+							break;
+						}
 						$vo_table_instance->load($vn_id);
 						$va_new_values = array();
 						$va_ancestors = $vo_table_instance->getHierarchyAncestors($vn_id, array('idsOnly' => true, 'includeSelf' => true));
@@ -107,6 +113,8 @@ class wamMaterialisedTaxonomyPlugin extends BaseApplicationPlugin {
 									$vo_table_instance->replaceAttribute(array($vs_field => $vs_value), $vs_field);
 								}
 								$vo_table_instance->update();
+								// Increment the counter of number of changed rows
+								$vn_rows_processed ++;
 							}
 						}
 					}
