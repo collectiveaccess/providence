@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/plugins/WorldCat/themes/default/views/import_run_html.php : 
+ * app/plugins/ULAN/themes/default/views/import_run_html.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,7 +32,7 @@
 	$pn_log_level = 		$this->getVar('log_level');
  ?>
  
-<h1><?php print _t('Importing from WorldCat'); ?></h1>
+<h1><?php print _t('Importing from ULAN'); ?></h1>
 
 <div class="batchProcessingTableProgressGroup">
 	<div id="batchProcessingTableStatus" class="batchProcessingStatus"> </div>
@@ -60,7 +60,7 @@
 		
 		// Start running import
 		var updateProgressBarInterval = null;
-		jQuery.post('<?php print caNavUrl($this->request, '*', '*', 'RunImport', array()); ?>', <?php print json_encode(array('importer_id' => $pn_importer_id, 'job_id' => $ps_job_id, 'WorldCatID' => $pa_worldcat_ids, 'log_level' => $pn_log_level)); ?>,
+		jQuery.post('<?php print caNavUrl($this->request, '*', '*', 'RunImport', array()); ?>', <?php print json_encode(array('importer_id' => $pn_importer_id, 'job_id' => $ps_job_id, 'ULANID' => $pa_worldcat_ids, 'log_level' => $pn_log_level)); ?>,
 			function(data, textStatus, jqXHR) {
 				console.log("Job returned:", data);
 				// stop progress refresh

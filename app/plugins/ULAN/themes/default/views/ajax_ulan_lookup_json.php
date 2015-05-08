@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/plugins/WorldCat/views/default/ajax_worldcat_lookup_json.php :
+ * app/plugins/ULAN/views/default/ajax_ulan_lookup_json.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,4 +29,3 @@
  	$va_results = $this->getVar('results');
  	
  	print json_encode($va_results);
- ?>
