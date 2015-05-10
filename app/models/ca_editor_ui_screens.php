@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -686,7 +686,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'displayType' => DT_CHECKBOXES,
 							'width' => "10", 'height' => "1",
 							'takesLocale' => false,
-							'default' => '1',
+							'default' => '0',
 							'label' => _t('Show current only?'),
 							'description' => _t('If checked only current movements are displayed.')
 						);
@@ -698,7 +698,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'displayType' => DT_CHECKBOXES,
 							'width' => "10", 'height' => "1",
 							'takesLocale' => false,
-							'default' => '1',
+							'default' => '0',
 							'label' => _t('Show current only?'),
 							'description' => _t('If checked only current objects are displayed.')
 						);
@@ -710,7 +710,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'displayType' => DT_CHECKBOXES,
 							'width' => "10", 'height' => "1",
 							'takesLocale' => false,
-							'default' => '1',
+							'default' => '0',
 							'label' => _t('Show current only?'),
 							'description' => _t('If checked only current movements are displayed.')
 						);
@@ -722,7 +722,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'displayType' => DT_CHECKBOXES,
 							'width' => "10", 'height' => "1",
 							'takesLocale' => false,
-							'default' => '1',
+							'default' => '0',
 							'label' => _t('Show current only?'),
 							'description' => _t('If checked only current objects are displayed.')
 						);
@@ -734,7 +734,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'displayType' => DT_CHECKBOXES,
 							'width' => "10", 'height' => "1",
 							'takesLocale' => false,
-							'default' => '1',
+							'default' => '0',
 							'label' => _t('Show current only?'),
 							'description' => _t('If checked only current storage locations are displayed.')
 						);
@@ -746,7 +746,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'displayType' => DT_CHECKBOXES,
 							'width' => "10", 'height' => "1",
 							'takesLocale' => false,
-							'default' => '1',
+							'default' => '0',
 							'label' => _t('Show current only?'),
 							'description' => _t('If checked only current objects are displayed.')
 						);
