@@ -6531,4 +6531,21 @@ side. For many self-relations the direction determines the nature and display te
 		return true;
 	}
 	# --------------------------------------------------------------------------------------------
+	/**
+	 * Method calls by SearchResult::get() on models when bundle to fetch is not an intrinsic but is listed in the 
+	 * models bundle list. This is typically employed to let the model render bundle data in a custom manner.
+	 *
+	 * This method implementation is just a stub and always returns null. Models implementing custom rendering will override this method.
+	 *
+	 * @param string $ps_bundle_name Name of bundle
+	 * @param int $pn_row_id The primary key of the row from which the bundle is being rendered
+	 * @param array $pa_values The row value array
+	 * @param array $pa_options Options passed to SearchResult::get()
+	 *
+	 * @return null
+	 */
+	public function renderBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options=null) {
+		return null;
+	}
+	# --------------------------------------------------------------------------------------------
 }
