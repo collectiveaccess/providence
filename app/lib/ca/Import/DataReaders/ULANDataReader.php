@@ -59,24 +59,24 @@ class ULANDataReader extends BaseXMLDataReader {
 	/**
 	 * XML namespace URL used by data
 	 */
-	protected $ops_xml_namespace = 'http://www.loc.gov/MARC21/slim';
+	protected $ops_xml_namespace = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
 	
 	/**
 	 * XML namespace prefix to pair with namespace URL
 	 * For files that use a namespace this should match that actually used in the file;
 	 * For files that don't use a namespace this should be set to *something* – doesn't really matter what
 	 */
-	protected $ops_xml_namespace_prefix = 'n';
+	protected $ops_xml_namespace_prefix = 'rdf';
 	
 	/**
 	 * XPath to select data for reading
 	 */
-	protected $ops_xpath = '//n:record';
+	protected $ops_xpath = '/rdf:RDF';
 	
 	/**
 	 * 
 	 */
-	protected $ops_root_tag = 'record';
+	protected $ops_root_tag = 'RDF';
 	
 	/**
 	 * Merge attributes of row-level tag into record as regular values?
