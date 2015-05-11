@@ -130,17 +130,19 @@ class ULANDataReader extends BaseXMLDataReader {
 		
 		if(isset($this->opa_row_ids[$this->opn_current_row]) && ($vn_ulan_id = $this->opa_row_ids[$this->opn_current_row])) {
 			$o_curl=curl_init();
-			curl_setopt($o_curl, CURLOPT_URL, "http://vocab.getty.edu/sparql.json?query=http://vocab.getty.edu/ulan/{$vn_ulan_id}.rdf");
+			curl_setopt($o_curl, CURLOPT_URL, $vs_url = "http://vocab.getty.edu/download/rdf?uri=http://vocab.getty.edu/ulan/{$vn_ulan_id}.rdf");
 			curl_setopt($o_curl, CURLOPT_CONNECTTIMEOUT, 2);
 			curl_setopt($o_curl, CURLOPT_RETURNTRANSFER, 1);
 			curl_setopt($o_curl, CURLOPT_USERAGENT, 'CollectiveAccess web service lookup');
 			$vs_result = curl_exec($o_curl);
 			curl_close($o_curl);
 
-			if(!$vs_result) {
+			if(!strlen($vs_result)) {
 				throw new Exception("No data returned");
 			}
-			$o_row = $this->opo_handle_xml = dom_import_simplexml($vs_result);
+
+			$o_xml = simplexml_load_string($vs_result);
+			$o_row = $this->opo_handle_xml = dom_import_simplexml($o_xml);
 			$this->opa_row_buf[$this->opn_current_row] = $o_row;
 
 			

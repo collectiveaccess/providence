@@ -74,6 +74,7 @@
 <?php
 		if ($vb_importers_available) {
 			print _t('Log level').': '.caHTMLSelect('log_level', caGetLogLevels(), array('id' => 'caLogLevel'), array('value' => $this->getVar('log_level')));
+			print "<a id='caULANImport'>Run import</a>";
 		}
 ?>
 	</div>
