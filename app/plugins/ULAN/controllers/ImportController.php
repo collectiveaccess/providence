@@ -179,7 +179,6 @@ class ImportController extends ActionController {
 
 		$o_wc = new WLPlugInformationServiceULAN();
 
-		file_put_contents('/tmp/importurls', $this->request->getParameter('url', pString). "\n", FILE_APPEND);
 		$this->view->setVar('detail', $o_wc->getExtendedInformation(array(), $this->request->getParameter('url', pString)));
 
 		$this->render("ajax_ulan_detail_json.php");

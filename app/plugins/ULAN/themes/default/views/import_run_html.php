@@ -60,8 +60,12 @@
 		
 		// Start running import
 		var updateProgressBarInterval = null;
-		jQuery.post('<?php print caNavUrl($this->request, '*', '*', 'RunImport', array()); ?>', <?php print json_encode(array('importer_id' => $pn_importer_id, 'job_id' => $ps_job_id, 'ULANID' => $pa_ulan_ids, 'log_level' => $pn_log_level)); ?>,
-			function(data, textStatus, jqXHR) {
+		jQuery.ajax({
+			type: 'POST',
+			async: true,
+			url: '<?php print caNavUrl($this->request, '*', '*', 'RunImport', array()); ?>',
+			data: '<?php print json_encode(array('importer_id' => $pn_importer_id, 'job_id' => $ps_job_id, 'ULANID' => $pa_ulan_ids, 'log_level' => $pn_log_level)); ?>',
+			success: function(data, textStatus, jqXHR) {
 				console.log("Job returned:", data);
 				// stop progress refresh
 				clearInterval(updateProgressBarInterval);
@@ -72,7 +76,8 @@
 				jQuery('#batchProcessingTableStatus').html('<?php print addslashes(_t("Complete!")); ?>');
 				jQuery('#batchProcessingCounts').html(m + "/" + m);
 				
-			}, 'json');
+			},
+		});
 		
 				
 			// Set up repeating load of progress bar status
