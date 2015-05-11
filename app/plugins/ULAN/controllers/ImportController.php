@@ -90,7 +90,7 @@ class ImportController extends ActionController {
 
 		$pa_ulan_ids = $this->request->getParameter('ULANID', pArray);
 		$pn_importer_id = $this->request->getParameter('importer_id', pInteger);
-		$vs_job_id = md5('U'.$this->request->getUserID().'_'.$pn_importer_id.'_'.join(';', $pa_ulan_ids).'_'.uniqid(rand(), true).'_'.microtime(true));
+		$vs_job_id = md5('U'.$this->request->getUserID().'_'.$pn_importer_id.'_'.join(';', $pa_ulan_ids).'_'.uniqid('', true));
 
 		$this->view->setVar('importer_id', $pn_importer_id);
 		$this->view->setVar('job_id', $vs_job_id);
