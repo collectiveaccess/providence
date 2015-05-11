@@ -128,9 +128,9 @@ class ULANDataReader extends BaseXMLDataReader {
 	public function nextRow() {
 		if (!$this->opa_row_ids || !is_array($this->opa_row_ids) || !sizeof($this->opa_row_ids)) { return false; }
 		
-		if(isset($this->opa_row_ids[$this->opn_current_row]) && ($vn_ulan_id = $this->opa_row_ids[$this->opn_current_row])) {
+		if(isset($this->opa_row_ids[$this->opn_current_row]) && ($vs_ulan_uri = $this->opa_row_ids[$this->opn_current_row])) {
 			$o_curl=curl_init();
-			curl_setopt($o_curl, CURLOPT_URL, $vs_url = "http://vocab.getty.edu/download/rdf?uri=http://vocab.getty.edu/ulan/{$vn_ulan_id}.rdf");
+			curl_setopt($o_curl, CURLOPT_URL, $vs_url = "http://vocab.getty.edu/download/rdf?uri={$vs_ulan_uri}.rdf");
 			curl_setopt($o_curl, CURLOPT_CONNECTTIMEOUT, 2);
 			curl_setopt($o_curl, CURLOPT_RETURNTRANSFER, 1);
 			curl_setopt($o_curl, CURLOPT_USERAGENT, 'CollectiveAccess web service lookup');

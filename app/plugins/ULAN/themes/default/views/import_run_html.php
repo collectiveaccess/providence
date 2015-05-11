@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  	
-	$pa_worldcat_ids = 		$this->getVar('worldcat_ids');
+	$pa_ulan_ids = 			$this->getVar('ulan_ids');
 	$pn_importer_id = 		$this->getVar('importer_id');
 	$ps_job_id = 			$this->getVar('job_id');
 	$pn_log_level = 		$this->getVar('log_level');
@@ -60,7 +60,7 @@
 		
 		// Start running import
 		var updateProgressBarInterval = null;
-		jQuery.post('<?php print caNavUrl($this->request, '*', '*', 'RunImport', array()); ?>', <?php print json_encode(array('importer_id' => $pn_importer_id, 'job_id' => $ps_job_id, 'ULANID' => $pa_worldcat_ids, 'log_level' => $pn_log_level)); ?>,
+		jQuery.post('<?php print caNavUrl($this->request, '*', '*', 'RunImport', array()); ?>', <?php print json_encode(array('importer_id' => $pn_importer_id, 'job_id' => $ps_job_id, 'ULANID' => $pa_ulan_ids, 'log_level' => $pn_log_level)); ?>,
 			function(data, textStatus, jqXHR) {
 				console.log("Job returned:", data);
 				// stop progress refresh
