@@ -2290,14 +2290,27 @@
 			$pn_count_only = caGetOption('countOnly', $pa_options, false);
 			
 			$o_db = $this->getDb();
-			$qr_res = $o_db->query("
-				SELECT cav.value_id, a.element_id, a.attribute_id, a.table_num, a.row_id 
-				FROM ca_attribute_values cav
-				INNER JOIN ca_attributes AS a ON a.attribute_id = cav.attribute_id
-				WHERE
-					cav.element_id IN (SELECT element_id FROM ca_metadata_elements WHERE datatype = ?) AND cav.value_integer1 = ?
-			", array($vn_datatype, $vn_id));
 			
+			switch($vn_datatype) {
+				case 3: 	// Lists
+					$qr_res = $o_db->query("
+						SELECT cav.value_id, a.element_id, a.attribute_id, a.table_num, a.row_id 
+						FROM ca_attribute_values cav
+						INNER JOIN ca_attributes AS a ON a.attribute_id = cav.attribute_id
+						WHERE
+							cav.element_id IN (SELECT element_id FROM ca_metadata_elements WHERE datatype = ?) AND cav.item_id = ?
+					", array($vn_datatype, $vn_id));
+					break;
+				default:
+					$qr_res = $o_db->query("
+						SELECT cav.value_id, a.element_id, a.attribute_id, a.table_num, a.row_id 
+						FROM ca_attribute_values cav
+						INNER JOIN ca_attributes AS a ON a.attribute_id = cav.attribute_id
+						WHERE
+							cav.element_id IN (SELECT element_id FROM ca_metadata_elements WHERE datatype = ?) AND cav.value_integer1 = ?
+					", array($vn_datatype, $vn_id));
+					break;
+			}
 			
 			$va_references = array();
 			
@@ -2306,6 +2319,7 @@
 				$va_row = $qr_res->getRow();
 				$va_references[$va_row['table_num']][$va_row['row_id']][] = $va_row['element_id'];
 			}
+			
 			foreach($va_references as $vn_table_num => $va_rows) {
 				$va_row_ids = array_keys($va_rows);
 				if ((sizeof($va_row_ids) > 0) && $t_instance = $o_dm->getInstanceByTableNum($vn_table_num, true)) {
@@ -2339,14 +2353,30 @@
 			
 			if (is_array($va_references = $this->getAuthorityElementReferences()) && sizeof($va_references)) {
 				$o_db = $this->getDb();
-				$qr_res = $o_db->query("
-						UPDATE ca_attribute_values 
-						SET value_integer1 = ?, value_longtext1 = ? 
-						WHERE 
-							element_id IN (SELECT element_id FROM ca_metadata_elements WHERE datatype = ?)
-							AND
-							value_integer1 = ?",
-					array((int)$pn_to_id, (string)$pn_to_id, $vn_datatype, $vn_id));
+				
+				switch($vn_datatype) {
+					case 3: 	// Lists
+						$qr_res = $o_db->query("
+								UPDATE ca_attribute_values 
+								SET item_id = ?, value_longtext1 = ? 
+								WHERE 
+									element_id IN (SELECT element_id FROM ca_metadata_elements WHERE datatype = ?)
+									AND
+									item_id = ?",
+							array((int)$pn_to_id, (string)$pn_to_id, $vn_datatype, $vn_id));
+						break;
+					default:
+						$qr_res = $o_db->query("
+								UPDATE ca_attribute_values 
+								SET value_integer1 = ?, value_longtext1 = ? 
+								WHERE 
+									element_id IN (SELECT element_id FROM ca_metadata_elements WHERE datatype = ?)
+									AND
+									value_integer1 = ?",
+							array((int)$pn_to_id, (string)$pn_to_id, $vn_datatype, $vn_id));
+						break;
+				}
+				
 				if(!$o_db->numErrors()) {
 					$o_indexer = $this->getSearchIndexer();
 					foreach($va_references as $vs_table_num => $va_rows) {
@@ -2373,13 +2403,28 @@
 			
 			if (is_array($va_references = $this->getAuthorityElementReferences()) && sizeof($va_references)) {
 				$o_db = $this->getDb();
-				$qr_res = $o_db->query("
-						DELETE FROM ca_attribute_values 
-						WHERE 
-							element_id IN (SELECT element_id FROM ca_metadata_elements WHERE datatype = ?)
-							AND
-							value_integer1 = ?",
-					array($vn_datatype, $vn_id));
+				
+				switch($vn_datatype) {
+					case 3: 	// Lists
+						$qr_res = $o_db->query("
+								DELETE FROM ca_attribute_values 
+								WHERE 
+									element_id IN (SELECT element_id FROM ca_metadata_elements WHERE datatype = ?)
+									AND
+									item_id = ?",
+							array($vn_datatype, $vn_id));
+						break;
+					default:
+						$qr_res = $o_db->query("
+								DELETE FROM ca_attribute_values 
+								WHERE 
+									element_id IN (SELECT element_id FROM ca_metadata_elements WHERE datatype = ?)
+									AND
+									value_integer1 = ?",
+							array($vn_datatype, $vn_id));
+						break;
+				}
+				
 				if(!$o_db->numErrors()) {
 					$o_indexer = $this->getSearchIndexer();
 					foreach($va_references as $vs_table_num => $va_rows) {

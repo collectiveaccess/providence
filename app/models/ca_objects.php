@@ -2031,5 +2031,39 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		
 		return $vb_is_reserved ? $va_reservations : array();
 	}
+	# --------------------------------------------------------------------------------------------
+	#
+	# --------------------------------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function renderBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options=null) {
+		switch($ps_bundle_name) {
+			case 'ca_objects_location':
+				$va_values = array_shift(array_shift($pa_values));
+				$vn_loc_class =  $va_values['current_loc_class'];
+				$vn_loc_subclass =  $va_values['current_loc_subclass'];
+				$vn_loc_id =  $va_values['current_loc_id'];
+				$vs_loc_table_name = $this->getAppDatamodel()->getTableName($vn_loc_class);
+				
+				$t_instance = $this->getAppDatamodel()->getInstanceByTableName($vs_loc_table_name, true);
+				
+				if (($vs_table_name = $vs_loc_table_name) == 'ca_objects_x_storage_locations') {
+					$vs_table_name = 'ca_storage_locations';
+				}
+				
+				if(($qr_res = caMakeSearchResult($vs_table_name, array($vn_loc_id))) && $qr_res->nextHit()) {
+					// Return label for id
+					
+					$va_config = ca_objects::getConfigurationForCurrentLocationType($vs_table_name, $vn_loc_subclass);
+					$vs_template = isset($va_config['template']) ? $va_config['template'] : "^{$vs_table_name}.preferred_labels";
+					
+					return caTruncateStringWithEllipsis($qr_res->getWithTemplate($vs_template), 30, 'end');
+				} 
+				break;
+		}
+		
+		return null;
+	}
 	# ------------------------------------------------------
 }

@@ -490,6 +490,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Use parent as subject'),
 			'description' => _t('Import parent of subject instead of subject. This option is primarily useful when you are using a hierarchy builder refinery mapped to parent_id to create the entire hierarchy (including subject) and want the bottom-most level of the hierarchy to be the subject.')
 		);
+		$va_settings['treatAsIdentifiersForMultipleRows'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Treat value as identifiers for multiple rows'),
+			'description' => _t('Explode value on delimiter and use as identifiers for multiple rows.')
+		);
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
 	# ------------------------------------------------------

@@ -1069,7 +1069,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$t_item = new ca_object_representations();
 						$va_rep_type_list = $t_item->getTypeList();
 						$va_errors = array();
-
+							
+						$vs_bundle_template = caGetOption('display_template', $pa_bundle_settings, null);
 
 						// Paging
 						$vn_primary_id = 0;
@@ -1077,6 +1078,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if (sizeof($va_reps)) {
 							$o_type_config = Configuration::load($t_item->getAppConfig()->get('annotation_type_config'));
 							$va_annotation_type_mappings = $o_type_config->getAssoc('mappings');
+	
+							// Get display template values
+							$va_display_template_values = array();
+							if($vs_bundle_template && is_array($va_rep_ids = caExtractValuesFromArrayList($va_reps, 'representation_id')) && sizeof($va_rep_ids)) {
+								$va_display_template_values = caProcessTemplateForIDs($vs_bundle_template, 'ca_object_representations', $va_rep_ids, array_merge($pa_options, array('returnAsArray' => true, 'returnAllLocales' => false)));
+							}
 	
 							$vn_i = 0;
 							foreach ($va_reps as $va_rep) {
@@ -1089,8 +1096,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 								if ($va_rep['is_primary']) {
 									$vn_primary_id = $va_rep['representation_id'];
 								}
+								
 								$va_initial_values[$va_rep['representation_id']] = array(
 									'idno' => $va_rep['idno'], 
+									'_display' => $vs_bundle_template ? $va_display_template_values[$vn_i] : '',
 									'status' => $va_rep['status'], 
 									'status_display' => $t_item->getChoiceListValue('status', $va_rep['status']), 
 									'access' => $va_rep['access'],
@@ -2512,7 +2521,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
-		$va_initial_values = array();
 		$va_get_related_opts = array_merge($pa_options, $pa_bundle_settings);
 		if (isset($pa_bundle_settings['restrictToTermsRelatedToCollection']) && $pa_bundle_settings['restrictToTermsRelatedToCollection']) {
 			$va_get_related_opts['restrict_to_relationship_types'] = $pa_bundle_settings['restrictToTermsOnCollectionUseRelationshipType'];
@@ -4307,7 +4315,7 @@ if (!$vb_batch) {
 		if(isset($pa_options['restrictToLists']) && (!isset($pa_options['restrict_to_lists']) || !$pa_options['restrict_to_lists'])) { $pa_options['restrict_to_lists'] = $pa_options['restrictToLists']; }
 		if(isset($pa_options['groupFields'])) { $pa_options['groupFields'] = (bool)$pa_options['groupFields']; } else { $pa_options['groupFields'] = false; }
 
-		$va_primary_ids = caGetOption('primaryIDs', $pa_options, null);
+		$vb_show_current_only = caGetOption('showCurrentOnly', $pa_options, false);
 
 		$o_db = $this->getDb();
 		$t_locale = new ca_locales();
@@ -4554,6 +4562,10 @@ if (!$vb_batch) {
 					$va_wheres[] = "(".$vs_label_table_name.'.is_preferred = 1)';
 				}
 			}
+		}
+		
+		if ($vb_show_current_only && $t_item_rel) {
+			$va_wheres[] = '('.$t_item_rel->tableName().'.source_info = \'current\')';
 		}
 
 		// return source info in returned data
@@ -6529,6 +6541,23 @@ side. For many self-relations the direction determines the nature and display te
 
 		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 		return true;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Method calls by SearchResult::get() on models when bundle to fetch is not an intrinsic but is listed in the 
+	 * models bundle list. This is typically employed to let the model render bundle data in a custom manner.
+	 *
+	 * This method implementation is just a stub and always returns null. Models implementing custom rendering will override this method.
+	 *
+	 * @param string $ps_bundle_name Name of bundle
+	 * @param int $pn_row_id The primary key of the row from which the bundle is being rendered
+	 * @param array $pa_values The row value array
+	 * @param array $pa_options Options passed to SearchResult::get()
+	 *
+	 * @return null
+	 */
+	public function renderBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options=null) {
+		return null;
 	}
 	# --------------------------------------------------------------------------------------------
 }
