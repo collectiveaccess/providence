@@ -1069,7 +1069,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$t_item = new ca_object_representations();
 						$va_rep_type_list = $t_item->getTypeList();
 						$va_errors = array();
-
+							
+						$vs_bundle_template = caGetOption('display_template', $pa_bundle_settings, null);
 
 						// Paging
 						$vn_primary_id = 0;
@@ -1077,6 +1078,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if (sizeof($va_reps)) {
 							$o_type_config = Configuration::load($t_item->getAppConfig()->get('annotation_type_config'));
 							$va_annotation_type_mappings = $o_type_config->getAssoc('mappings');
+	
+							// Get display template values
+							$va_display_template_values = array();
+							if($vs_bundle_template && is_array($va_rep_ids = caExtractValuesFromArrayList($va_reps, 'representation_id')) && sizeof($va_rep_ids)) {
+								$va_display_template_values = caProcessTemplateForIDs($vs_bundle_template, 'ca_object_representations', $va_rep_ids, array_merge($pa_options, array('returnAsArray' => true, 'returnAllLocales' => false)));
+							}
 	
 							$vn_i = 0;
 							foreach ($va_reps as $va_rep) {
@@ -1089,8 +1096,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 								if ($va_rep['is_primary']) {
 									$vn_primary_id = $va_rep['representation_id'];
 								}
+								
 								$va_initial_values[$va_rep['representation_id']] = array(
 									'idno' => $va_rep['idno'], 
+									'_display' => $vs_bundle_template ? $va_display_template_values[$vn_i] : '',
 									'status' => $va_rep['status'], 
 									'status_display' => $t_item->getChoiceListValue('status', $va_rep['status']), 
 									'access' => $va_rep['access'],
@@ -2512,7 +2521,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
-		$va_initial_values = array();
 		$va_get_related_opts = array_merge($pa_options, $pa_bundle_settings);
 		if (isset($pa_bundle_settings['restrictToTermsRelatedToCollection']) && $pa_bundle_settings['restrictToTermsRelatedToCollection']) {
 			$va_get_related_opts['restrict_to_relationship_types'] = $pa_bundle_settings['restrictToTermsOnCollectionUseRelationshipType'];

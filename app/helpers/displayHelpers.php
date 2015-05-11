@@ -3445,7 +3445,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 						$vs_label = str_replace($vs_match, htmlspecialchars($vs_match), $vs_label);
 					}
 				}
-				$va_item['label'] = 'xxx'.trim(strip_tags($vs_label));
+				$va_item['label'] = trim(strip_tags($vs_label));
 				
 			}
 			
