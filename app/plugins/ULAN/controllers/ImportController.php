@@ -112,6 +112,9 @@ class ImportController extends ActionController {
 		if (!$this->request->user->canDoAction('can_import_ulan')) { return; }
 
 		$pa_ulan_ids = $this->request->getParameter('ULANID', pArray);
+
+		if(!is_array($pa_ulan_ids) || sizeof($pa_ulan_ids) < 1) { return; }
+
 		$pn_importer_id = $this->request->getParameter('importer_id', pInteger);
 		$ps_job_id = $this->request->getParameter('job_id', pString);
 		$pn_log_level = $this->request->getParameter('log_level', pInteger);

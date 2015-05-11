@@ -62,9 +62,8 @@
 		var updateProgressBarInterval = null;
 		jQuery.ajax({
 			type: 'POST',
-			async: true,
 			url: '<?php print caNavUrl($this->request, '*', '*', 'RunImport', array()); ?>',
-			data: '<?php print json_encode(array('importer_id' => $pn_importer_id, 'job_id' => $ps_job_id, 'ULANID' => $pa_ulan_ids, 'log_level' => $pn_log_level)); ?>',
+			data: <?php print json_encode(array('importer_id' => $pn_importer_id, 'job_id' => $ps_job_id, 'ULANID' => $pa_ulan_ids, 'log_level' => $pn_log_level)); ?>,
 			success: function(data, textStatus, jqXHR) {
 				console.log("Job returned:", data);
 				// stop progress refresh
@@ -75,8 +74,7 @@
 				jQuery('#progressbar').progressbar("option", "value", m);
 				jQuery('#batchProcessingTableStatus').html('<?php print addslashes(_t("Complete!")); ?>');
 				jQuery('#batchProcessingCounts').html(m + "/" + m);
-				
-			},
+			}
 		});
 		
 				

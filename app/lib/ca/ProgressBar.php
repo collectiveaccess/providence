@@ -138,12 +138,16 @@
 		public function setJobID($ps_job_id) {
 			$this->ops_job_id = $ps_job_id;
 
-			if(CompositeCache::contains($ps_job_id, 'ProgressBar')) {
-				$va_data = CompositeCache::fetch($ps_job_id, 'ProgressBar');
-				$this->setTotal($va_data['total']);
-			}
+			if(strlen($ps_job_id) > 0) {
+				if(CompositeCache::contains($ps_job_id, 'ProgressBar')) {
+					$va_data = CompositeCache::fetch($ps_job_id, 'ProgressBar');
+					$this->setTotal($va_data['total']);
+				}
 
-			return $ps_job_id;
+				return $ps_job_id;
+			} else {
+				return false;
+			}
 		}
 		# -------------------------------------------------------
 		/**
