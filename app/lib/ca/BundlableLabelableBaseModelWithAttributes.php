@@ -4307,7 +4307,7 @@ if (!$vb_batch) {
 		if(isset($pa_options['restrictToLists']) && (!isset($pa_options['restrict_to_lists']) || !$pa_options['restrict_to_lists'])) { $pa_options['restrict_to_lists'] = $pa_options['restrictToLists']; }
 		if(isset($pa_options['groupFields'])) { $pa_options['groupFields'] = (bool)$pa_options['groupFields']; } else { $pa_options['groupFields'] = false; }
 
-		$va_primary_ids = caGetOption('primaryIDs', $pa_options, null);
+		$vb_show_current_only = caGetOption('showCurrentOnly', $pa_options, false);
 
 		$o_db = $this->getDb();
 		$t_locale = new ca_locales();
@@ -4554,6 +4554,10 @@ if (!$vb_batch) {
 					$va_wheres[] = "(".$vs_label_table_name.'.is_preferred = 1)';
 				}
 			}
+		}
+		
+		if ($vb_show_current_only && $t_item_rel) {
+			$va_wheres[] = '('.$t_item_rel->tableName().'.source_info = \'current\')';
 		}
 
 		// return source info in returned data

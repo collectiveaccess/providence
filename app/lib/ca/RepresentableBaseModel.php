@@ -496,9 +496,7 @@
 		
 			$t_rep = new ca_object_representations();
 		
-			if ($this->inTransaction()) {
-				$t_rep->setTransaction($this->getTransaction());
-			}
+			if ($this->inTransaction()) { $t_rep->setTransaction($this->getTransaction()); }
 				
 			$vn_rep_id = null;
 			if(is_array($va_match_on = caGetOption('matchOn', $pa_options, null))) {
@@ -626,9 +624,7 @@
 			if (!($t_oxor = $this->_getRepresentationRelationshipTableInstance())) { return null; }
 			$vs_pk = $this->primaryKey();
 			
-			if ($this->inTransaction()) {
-				$t_oxor->setTransaction($this->getTransaction());
-			}
+			if ($this->inTransaction()) { $t_oxor->setTransaction($this->getTransaction()); }
 			$t_oxor->setMode(ACCESS_WRITE);
 			$t_oxor->set($vs_pk, $vn_id);
 			$t_oxor->set('representation_id', $t_rep->getPrimaryKey());
@@ -692,9 +688,7 @@
 			$va_old_replication_keys = array();
 			
 			$t_rep = new ca_object_representations();
-			if ($this->inTransaction()) {
-				$t_rep->setTransaction($this->getTransaction());
-			}
+			if ($this->inTransaction()) { $t_rep->setTransaction($this->getTransaction());}
 			if (!$t_rep->load(array('representation_id' => $pn_representation_id))) {
 				$this->postError(750, _t("Representation id=%1 does not exist", $pn_representation_id), "RepresentableBaseModel->editRepresentation()");
 				return false;
@@ -767,6 +761,8 @@
 			
 				if (!($t_oxor = $this->_getRepresentationRelationshipTableInstance())) { return null; }
 				$vs_pk = $this->primaryKey();
+				
+				if ($this->inTransaction()) { $t_oxor->setTransaction($this->getTransaction());}
 				
 				if (!$t_oxor->load(array($vs_pk => $vn_id, 'representation_id' => $pn_representation_id))) {
 					$this->postError(750, _t("Representation id=%1 is not related to %3 id=%2", $pn_representation_id, $vn_id, $this->getProperty('NAME_SINGULAR')), "RepresentableBaseModel->editRepresentation()");
