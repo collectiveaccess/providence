@@ -85,7 +85,7 @@
  <script type="text/javascript">
  	var caULANStartIndex = 0;
  	var caULANLastSearchTerm = '';
- 	var caULANNumResultsPerLoad = 25;
+ 	var caULANNumResultsPerLoad = 50;
  	
  	jQuery(document).ready(function() {
  		jQuery("#caULANTermLookup").on("click", function(e) {
@@ -136,7 +136,7 @@
  		if (c <= 0) { c = 10; }
  		jQuery("#caULANResults").html("<div class='caULANResultsMessage'><?php print caBusyIndicatorIcon($this->request).' '; ?>" + msg + "</div>");
 		jQuery.getJSON('<?php print caNavUrl($this->request, '*', '*', 'Lookup'); ?>', {term: term, start: start, count: c }, function(data) {
-			if (data['count'] >= 25) {
+			if (data['count'] >= 50) {
 				jQuery('#caULANResultsNextLink').show();
 			} else {
 				jQuery('#caULANResultsNextLink').hide();
