@@ -60,7 +60,6 @@
 		
 		// Start running import
 		var updateProgressBarInterval = null;
-		var requestOk = false;
 		jQuery.ajax({
 			type: 'POST',
 			async: true,
@@ -68,7 +67,6 @@
 			data: <?php print json_encode(array('importer_id' => $pn_importer_id, 'job_id' => $ps_job_id, 'ULANID' => $pa_ulan_ids, 'log_level' => $pn_log_level)); ?>,
 			success: function(data, textStatus, jqXHR) {
 				console.log("Job returned:", data);
-				requestOk = true;
 				// stop progress refresh
 				clearInterval(updateProgressBarInterval);
 				jQuery('#batchProcessingMore').fadeIn(500);
@@ -76,7 +74,7 @@
 				var bar = jQuery('#progressbar');
 				var m = bar.progressbar("option", "max");
 				bar.progressbar("option", "value", m);
-				jQuery('#batchProcessingTableStatus').html('<?php print addslashes(_t("Complete!")); ?>');
+				jQuery('#batchProcessingTableStatus').html('<?php print addslashes(_t("Import finished!")); ?>');
 				jQuery('#batchProcessingCounts').html(m + "/" + m);
 			}
 		});
@@ -84,17 +82,12 @@
 				
 			// Set up repeating load of progress bar status
 		updateProgressBarInterval = setInterval(function() {
-			if(!requestOk) {
-				jQuery.getJSON('<?php print caNavUrl($this->request, '*', '*', 'GetImportStatus', array('job_id' => $ps_job_id)); ?>', {}, function(data) {
+			jQuery.getJSON('<?php print caNavUrl($this->request, '*', '*', 'GetImportStatus', array('job_id' => $ps_job_id)); ?>', {}, function(data) {
 				jQuery('#progressbar').progressbar("option", "value", data.position).progressbar("option", "max", data.total);
 				jQuery('#batchProcessingTableStatus').html(data.message);
-					jQuery('#batchProcessingElapsedTime').html(data.elapsedTime);
-					jQuery('#batchProcessingCounts').html(data.position + "/" + data.total);
-				});
-			} else {
-				clearInterval(updateProgressBarInterval);
-			}
-		}, 1000);
-		
+				jQuery('#batchProcessingElapsedTime').html(data.elapsedTime);
+				jQuery('#batchProcessingCounts').html(data.position + "/" + data.total);
+			});
+		}, 2000);
 	});
 </script>
