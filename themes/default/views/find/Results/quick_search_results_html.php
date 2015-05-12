@@ -90,7 +90,7 @@
 						<div class="quickSearchResultHeader rounded">
 							<div class="quickSearchFullResultsLink"><?php print caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_FILTER__)." "._t("Full Results &rsaquo;"), null, $va_info['searchModule'], $va_info['searchController'], $va_info['searchAction'], array("search" => urlencode($ps_search), "type_id" => $vn_type_id)); ?></div>
 							<a href='#' style="text-decoration:none; color:#333;" id='show<?php print $vs_table.$vn_type_id; ?>' onclick='return caQuickSearchShowHideResults("show", "<?php print $vs_table.$vn_type_id; ?>");'><?php print unicode_ucfirst($va_type_info['name_plural'])." (".sizeof($va_occurrences_by_type[$vn_type_id]).")"; ?> <?php print caNavIcon($this->request, __CA_NAV_BUTTON_EXPAND__); ?></a>
-							<a href='#' id='hide<?php print $vs_table.$vn_type_id; ?>' style='display:none; text-decoration:none; color:#333;' onclick='return caQuickSearchShowHideResults("hide", "<?php print $vs_table.$vn_type_id; ?>");").hide();'><?php print unicode_ucfirst($va_type_info['name_plural'])." (".sizeof($va_occurrences_by_type[$vn_type_id]).")"; ?> <?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a>
+							<a href='#' id='hide<?php print $vs_table.$vn_type_id; ?>' style='display:none; text-decoration:none; color:#333;' onclick='return caQuickSearchShowHideResults("hide", "<?php print $vs_table.$vn_type_id; ?>").hide();'><?php print unicode_ucfirst($va_type_info['name_plural'])." (".sizeof($va_occurrences_by_type[$vn_type_id]).")"; ?> <?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a>
 						</div>
 						<div class="quickSearchHalfWidthResults" id="<?php print $vs_table.$vn_type_id; ?>_results" style="display:none;">
 							<ul class='quickSearchList'>
@@ -104,9 +104,10 @@
 										if ($va_occurrence['idno']) {
 											$vs_idno_display = ' ['.$va_occurrence['idno'].']';
 										}
-										
-										print '<li class="quickSearchList">'.caNavLink($this->request, $va_occurrence['name'], null, $va_info['module'], $va_info['controller'], $this->request->user->canAccess($va_info["module"],$va_info["controller"],$va_info["action"],array($va_info["primary_key"] => $o_res->get($va_info["primary_key"]))) ? $va_info['action'] : "Summary", array('occurrence_id' => $va_occurrence['occurrence_id']))." ".$vs_idno_display."</li>\n";
-										
+
+										print '<li class="quickSearchList">' .
+											caEditorLink($this->request, $va_occurrence['name'], null, $vs_table, $va_occurrence['occurrence_id']) .
+											($vs_idno_display ? $vs_idno_display : "") . "</li>\n";
 									}
 								}
 ?>
@@ -159,7 +160,10 @@
 									$vs_type_display = ' ['.$va_type_list[$vn_type_id]['name_singular'].']';
 								}
 								
-								print '<li class="quickSearchList">'.caNavLink($this->request, $vs_label, null, $va_info['module'], $va_info['controller'], $this->request->user->canAccess($va_info["module"],$va_info["controller"],$va_info["action"],array($va_info["primary_key"] => $o_res->get($va_info["primary_key"]))) ? $va_info['action'] : 'Summary', array($va_info['primary_key'] => $o_res->get($va_info['primary_key'])))." ".($vs_idno_display ? "({$vs_idno_display})" : "")." {$vs_type_display}</li>\n";		
+								print '<li class="quickSearchList">' .
+									caEditorLink($this->request, $vs_label, null, $vs_table, $o_res->get($va_info['primary_key'])) .
+									" ".($vs_idno_display ? "({$vs_idno_display})" : "") .
+									" {$vs_type_display}</li>\n";
 							}
 						}
 	?>

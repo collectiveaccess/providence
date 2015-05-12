@@ -35,6 +35,7 @@
   */
  
  	require_once(__CA_APP_DIR__."/helpers/batchHelpers.php");
+	require_once(__CA_APP_DIR__."/helpers/printHelpers.php");
  	require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");

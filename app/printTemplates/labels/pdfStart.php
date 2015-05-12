@@ -31,10 +31,13 @@
  *
  * ----------------------------------------------------------------------
  */
-?>
+?><!DOCTYPE html>
 <html>
 	<head>
 		<title><?php print $this->getVar('title'); ?></title>
-		<link type="text/css" href="pdf.css" rel="stylesheet" />
+		<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
+		<style type="text/css">
+			@page { margin: {{{marginTop}}} {{{marginRight}}} {{{marginBottom}}} {{{marginLeft}}}; }
+		</style>
 	</head>
 	<body>

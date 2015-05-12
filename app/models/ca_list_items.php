@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -229,14 +229,163 @@ $_ca_list_items_settings = array(
 			'options' => array(
 				_t('Individual person') => 'IND',
 				_t('Organization') => 'ORG',
+				_t('Individual person without additional forenames') => 'IND_SM',
 			),
 			'width' => 40, 'height' => 1,
 			'takesLocale' => false,
 			'default' => 'IND',
 			'label' => _t('Entity class'),
 			'description' => _t('The class of entity the type represents. Use <em>Individual person</em> for entities that require a fully articulated personal name. Use <em>organization</em> for group entities such as corporations, clubs and families.')
+		),
+		'render_in_new_menu' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Render in new menu'),
+			'description' => _t('Render in new menu')
 		)
-	)
+	),
+	'object_types' => array(
+		'render_in_new_menu' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Render in new menu'),
+			'description' => _t('Render in new menu')
+		)
+	),
+	'collection_types' => array(
+		'render_in_new_menu' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Render in new menu'),
+			'description' => _t('Render in new menu')
+		)
+	),
+	'loan_types' => array(
+		'render_in_new_menu' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Render in new menu'),
+			'description' => _t('Render in new menu')
+		)
+	),
+	'list_item_types' => array(
+		'render_in_new_menu' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Render in new menu'),
+			'description' => _t('Render in new menu')
+		)
+	),
+	'movement_types' => array(
+		'render_in_new_menu' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Render in new menu'),
+			'description' => _t('Render in new menu')
+		)
+	),
+	'object_lot_types' => array(
+		'render_in_new_menu' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Render in new menu'),
+			'description' => _t('Render in new menu')
+		)
+	),
+	'occurrence_types' => array(
+		'render_in_new_menu' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Render in new menu'),
+			'description' => _t('Render in new menu')
+		)
+	),
+	'place_types' => array(
+		'render_in_new_menu' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Render in new menu'),
+			'description' => _t('Render in new menu')
+		)
+	),
+	'storage_location_types' => array(
+		'render_in_new_menu' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Render in new menu'),
+			'description' => _t('Render in new menu')
+		)
+	),
 );
 
 class ca_list_items extends RepresentableBaseModel implements IHierarchy {
@@ -409,6 +558,8 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
 		
+		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
+
 		$this->BUNDLES['settings'] = array('type' => 'special', 'repeating' => false, 'label' => _t('List item settings'));
 	}
 	# ------------------------------------------------------
@@ -596,7 +747,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 				cli.parent_id IS NULL and cli.list_id IN (".join(',', $va_hierarchy_ids).") ".($pb_vocabularies ? " AND (l.use_as_vocabulary = 1)" : "")." AND
 				l.deleted = 0
 			GROUP BY
-				cli.item_id
+				cli.item_id, cli.list_id
 		");
 		
 		$vs_template = $this->getAppConfig()->get('ca_list_hierarchy_browser_display_settings');
@@ -749,7 +900,6 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		if (method_exists($this->SETTINGS, $ps_name)) {
 			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
 		}
-		print caPrintStackTrace();
 		die($this->tableName()." does not implement method {$ps_name}");
 	}
 	# ------------------------------------------------------

@@ -47,7 +47,7 @@
 			if (!$vn_col) { 
 				print "<tr>";
 			}
-			if (!$vs_idno = $vo_result->get('ca_objects.idno')) {
+			if (!($vs_idno = $vo_result->get('ca_objects.idno'))) {
 				$vs_idno = "???";
 			}
 			$va_labels = $vo_result->getDisplayLabels($this->request);
@@ -60,8 +60,8 @@
 			# --- get the height of the image so can calculate padding needed to center vertically
 			$va_media_info = $vo_result->getMediaInfo('ca_object_representations.media', 'preview170');
 			$va_tmp = $vo_result->getMediaTags('ca_object_representations.media', 'preview170');
-			
-			$vs_background_image = "/admin/themes/default/graphics/buttons/icon-image-64.png";
+
+			$vs_background_image = $this->request->getThemeUrlPath().'/graphics/buttons/icon-image-64.png';
 			$vn_padding_top = 0;
 			$vn_padding_top_bottom =  ((180 - $va_media_info["HEIGHT"]) / 2);
 			

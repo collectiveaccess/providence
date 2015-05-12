@@ -39,9 +39,9 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 
 	# ---------------------------------------
 	/**
-	 * 
-	 *
-	 * @return string 
+	 * Get search instance for given table name
+	 * @param string $pm_table_name_or_num Table name or number
+	 * @return BaseSearch
 	 */
 	function caGetSearchInstance($pm_table_name_or_num, $pa_options=null) {
 		$o_dm = Datamodel::load();
@@ -112,6 +112,10 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 			case 'ca_sets':
 				require_once(__CA_LIB_DIR__.'/ca/Search/SetSearch.php');
 				return new SetSearch();
+				break;
+			case 'ca_set_items':
+				require_once(__CA_LIB_DIR__.'/ca/Search/SetItemSearch.php');
+				return new SetItemSearch();
 				break;
 			case 'ca_tours':
 				require_once(__CA_LIB_DIR__.'/ca/Search/TourSearch.php');

@@ -263,8 +263,11 @@ class CollectiveAccessDataReader extends BaseDataReader {
 			//
 			// Object representations
 			//
-			if (($va_col[0] == 'ca_object_representations') && ($this->ops_table == 'ca_objects')) {
-				
+			if (($va_col[0] == 'ca_object_representations') && ($va_col[1] == 'media') && ($this->ops_table == 'ca_objects')) {
+				foreach($va_data['representations'] as $vn_rep_id => $va_rep_data) {
+					$va_urls[] = $va_rep_data['urls']['original'];
+				}
+				return join($vs_delimiter, $va_urls);
 			}
 			
 			//
@@ -416,6 +419,15 @@ class CollectiveAccessDataReader extends BaseDataReader {
 	 */
 	public function numRows() {
 		return is_array($this->opa_row_ids) ? sizeof($this->opa_row_ids) : 0;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return int
+	 */
+	public function currentRow() {
+		return $this->opn_current_row;
 	}
 	# -------------------------------------------------------
 	/**

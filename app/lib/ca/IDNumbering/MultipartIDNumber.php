@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2012 Whirl-i-Gig
+ * Copyright 2007-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -516,10 +516,18 @@ class MultipartIDNumber extends IDNumber {
 		$this->opo_db->dieOnError(false);
 
 		// Get the next number based upon field data
+		$vn_type_id = null;
+		
+		if ((bool)$va_element_info['sequence_by_type']) {
+			$o_dm = Datamodel::load();
+			$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
+			$vn_type_id = (int)$t_instance->getTypeIDForCode($this->getType());
+		}
+		
 		if ($qr_res = $this->opo_db->query("
 			SELECT $vs_field FROM ".$vs_table."
 			WHERE
-				$vs_field LIKE ?
+				$vs_field LIKE ? ".(($vn_type_id > 0) ? " AND type_id = {$vn_type_id}" : "")."
 			ORDER BY
 				$vs_sort_field DESC
 		", $vs_stub.(($vs_stub != '') ? $vs_separator.'%' : '%'))) {
@@ -601,7 +609,8 @@ class MultipartIDNumber extends IDNumber {
 				case 'CONSTANT':
 					$vn_len = mb_strlen($va_element_info['value']);
 					if ($vn_padding < $vn_len) { $vn_padding = $vn_len; }
-					$va_output[] = str_repeat(' ', $vn_padding - mb_strlen($va_element_vals[$vn_i])).$va_element_vals[$vn_i];
+					$vn_repeat_len = ($vn_padding - mb_strlen($va_element_vals[$vn_i]));
+					$va_output[] = (($vn_repeat_len > 0) ? str_repeat(' ', $vn_padding - mb_strlen($va_element_vals[$vn_i])) : '').$va_element_vals[$vn_i];
 					break;
 				case 'FREE':
 				case 'ALPHANUMERIC':
@@ -820,7 +829,7 @@ class MultipartIDNumber extends IDNumber {
 		}
 		if (sizeof($va_elements) < sizeof($va_element_vals)) {
 			$vs_extra_vals = join($vs_separator, array_slice($va_element_vals, sizeof($va_elements)));
-			$va_element_controls[] = "<input type='text' name='".$ps_name."_extra' value='".htmlspecialchars($vs_extra_vals, ENT_QUOTES, 'UTF-8')."' size='10'".($pa_options['readonly'] ? ' readonly="readonly" ' : '').">";
+			$va_element_controls[] = "<input type='text' name='".$ps_name."_extra' value='".htmlspecialchars($vs_extra_vals, ENT_QUOTES, 'UTF-8')."' size='10'".($pa_options['readonly'] ? ' disabled="1" ' : '').">";
 			$va_element_control_names[] = $ps_name.'_extra';
 		}
 
@@ -892,20 +901,37 @@ class MultipartIDNumber extends IDNumber {
 		$vn_i = 0;
 		$vn_num_serial_elements_seen = 0;
 		foreach ($va_elements as $va_element_info) {
-			if ($vn_i >= sizeof($va_values)) { break; }
+			//if ($vn_i >= sizeof($va_values)) { break; }
 
-			if ($va_element_info['type'] == 'SERIAL') {
-				$vn_num_serial_elements_seen++;
+			switch($va_element_info['type']) {
+				case 'SERIAL':
+					$vn_num_serial_elements_seen++;
 
-				if ($pn_max_num_replacements <= 0) {	// replace all
-					if ($pb_no_placeholders) { unset($va_values[$vn_i]); $vn_i++; continue; }
-					$va_values[$vn_i] = '%';
-				} else {
-					if (($vn_num_serial_elements - $vn_num_serial_elements_seen) < $pn_max_num_replacements) {
+					if ($pn_max_num_replacements <= 0) {	// replace all
 						if ($pb_no_placeholders) { unset($va_values[$vn_i]); $vn_i++; continue; }
 						$va_values[$vn_i] = '%';
+					} else {
+						if (($vn_num_serial_elements - $vn_num_serial_elements_seen) < $pn_max_num_replacements) {
+							if ($pb_no_placeholders) { unset($va_values[$vn_i]); $vn_i++; continue; }
+							$va_values[$vn_i] = '%';
+						}
 					}
-				}
+					break;
+				case 'CONSTANT':
+					$va_values[$vn_i] = $va_element_info['value'];
+					break;
+				case 'YEAR':
+					$va_tmp = getdate();
+					$va_values[$vn_i] = $va_tmp['year'];
+					break;
+				case 'MONTH':
+					$va_tmp = getdate();
+					$va_values[$vn_i] = $va_tmp['mon'];
+					break;
+				case 'DAY':
+					$va_tmp = getdate();
+					$va_values[$vn_i] = $va_tmp['mday'];
+					break;
 			}
 
 			$vn_i++;
@@ -1040,14 +1066,14 @@ class MultipartIDNumber extends IDNumber {
 				$vn_width = $this->getElementWidth($va_element_info, 3);
 
 				if ($pb_generate_for_search_form) {
-					$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="" maxlength="'.$vn_width.'" size="'.$vn_width.'"'.($pa_options['readonly'] ? ' readonly="readonly" ' : '').'/>';
+					$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="" maxlength="'.$vn_width.'" size="'.$vn_width.'"'.($pa_options['readonly'] ? ' disabled="1" ' : '').'/>';
 				} else {
 					if ($vs_element_value == '') {
 						$vs_next_num = $this->getNextValue($ps_element_name, null, true);
 						$vs_element .= '&lt;'._t('Will be assigned %1 when saved', $vs_next_num).'&gt;';
 					} else {
 						if ($va_element_info['editable']) {
-							$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'" maxlength="'.$vn_width.'"'.($pa_options['readonly'] ? ' readonly="readonly" ' : '').'/>';
+							$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'" maxlength="'.$vn_width.'"'.($pa_options['readonly'] ? ' disabled="1" ' : '').'/>';
 						} else {
 							$vs_element .= '<input type="hidden" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'"/>'.$vs_element_value;
 						}
@@ -1060,7 +1086,7 @@ class MultipartIDNumber extends IDNumber {
 
 				if (!$vs_element_value) { $vs_element_value = $va_element_info['value']; }
 				if ($va_element_info['editable'] || $pb_generate_for_search_form) {
-					$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'"'.($pa_options['readonly'] ? ' readonly="readonly" ' : '').'/>';
+					$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'"'.($pa_options['readonly'] ? ' disabled="1" ' : '').'/>';
 				} else {
 					$vs_element .= '<input type="hidden" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'"/>'.$vs_element_value;
 				}
@@ -1072,7 +1098,7 @@ class MultipartIDNumber extends IDNumber {
 				if (!$vs_element_value && !$pb_generate_for_search_form) { $vs_element_value = $va_element_info['default']; }
 				$vn_width = $this->getElementWidth($va_element_info, 3);
 				if (!$vs_element_value || $va_element_info['editable'] || $pb_generate_for_search_form) {
-					$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'" maxlength="'.$vn_width.'"'.($pa_options['readonly'] ? ' readonly="readonly" ' : '').'/>';
+					$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'" maxlength="'.$vn_width.'"'.($pa_options['readonly'] ? ' disabled="1" ' : '').'/>';
 				} else {
 					$vs_element .= '<input type="hidden" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'"/>'.$vs_element_value;
 				}
@@ -1092,13 +1118,13 @@ class MultipartIDNumber extends IDNumber {
 					}
 
 					if ($va_element_info['editable'] || $pb_generate_for_search_form) {
-						$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vn_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'"'.($pa_options['readonly'] ? ' readonly="readonly" ' : '').'/>';
+						$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vn_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'"'.($pa_options['readonly'] ? ' disabled="1" ' : '').'/>';
 					} else {
 						$vs_element .= '<input type="hidden" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vn_value, ENT_QUOTES, 'UTF-8').'"/>'.$vn_value;
 					}
 				} else {
 					if ($va_element_info['editable'] || $pb_generate_for_search_form) {
-						$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'"'.($pa_options['readonly'] ? ' readonly="readonly" ' : '').'/>';
+						$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'"'.($pa_options['readonly'] ? ' disabled="1" ' : '').'/>';
 					} else {
 						$vs_element .= '<input type="hidden" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'"/>'.$vs_element_value;
 					}
@@ -1151,6 +1177,26 @@ class MultipartIDNumber extends IDNumber {
 	# -------------------------------------------------------
 	public function setDb($po_db) {
 		$this->opo_db = $po_db;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Returns true if editable is set to 1 for the identifier, otherwise returns false
+	 * Also, if the identifier consists of multiple elements, false will be returned
+	 * @param string $ps_format_name
+	 * @return bool
+	 */
+	public function isFormatEditable($ps_format_name) {
+		$va_elements = $this->getElements();
+		if(sizeof($va_elements) == 1 ){
+			$vs_edit_info = $this->opa_formats[$ps_format_name][$this->getType()]['elements'][key($va_elements)];
+			switch($vs_edit_info['editable']){
+				case 1:
+					return true;
+				default:
+					return false;
+			}
+		}
+		return false;
 	}
 	# -------------------------------------------------------
 }

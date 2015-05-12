@@ -25,20 +25,19 @@
  *
  * ----------------------------------------------------------------------
  */
- 
+
 	$t_display				= $this->getVar('t_display');
 	$va_display_list 		= $this->getVar('display_list');
 	$vo_result 				= $this->getVar('result');
 	$vn_items_per_page 		= $this->getVar('current_items_per_page');
 	$vs_current_sort 		= $this->getVar('current_sort');
-	$vo_ar					= $this->getVar('access_restrictions');
 
 	$vn_ratio_pixels_to_excel_height = 0.85;
 	$vn_ratio_pixels_to_excel_width = 0.135;
 
 	$va_a_to_z = range('A', 'Z');
 	
-	$workbook = new PHPExcel;
+	$workbook = new PHPExcel();
 
 	// more accurate (but slower) automatic cell size calculation
 	PHPExcel_Shared_Font::setAutoSizeMethod(PHPExcel_Shared_Font::AUTOSIZE_METHOD_EXACT);
@@ -71,7 +70,7 @@
 			'borders' => array(
 					'allborders'=>array(
 							'style' => PHPExcel_Style_Border::BORDER_THIN)));
-	
+
 	$o_sheet->getDefaultStyle()->applyFromArray($cellstyle);
 	$o_sheet->setTitle("CollectiveAccess");
 	
@@ -136,9 +135,8 @@
 					}
 
 				}
-
 			} elseif ($vs_display_text = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))) {
-				$o_sheet->setCellValue($vs_column.$vn_line,$vs_display_text);
+				$o_sheet->setCellValue($vs_column.$vn_line, html_entity_decode(strip_tags(br2nl($vs_display_text)), ENT_QUOTES | ENT_HTML5));
 				// We trust the autosizing up to a certain point, but
 				// we want column widths to be finite :-).
 				// Since Arial is not fixed-with and font rendering
@@ -169,5 +167,3 @@
  	header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
  	header('Content-Disposition:inline;filename=Export.xlsx ');
  	$o_writer->save('php://output');
-
-?>

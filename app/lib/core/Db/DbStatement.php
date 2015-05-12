@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2013 Whirl-i-Gig
+ * Copyright 2006-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -100,13 +100,22 @@ class DbStatement extends DbBase {
 	 * @param string $ps_sql the SQL statement
 	 * @param array $po_options options array
 	 */
-	function DbStatement(&$po_db, $ps_sql, $po_options=null) {
-		$this->opo_db =& $po_db;
+	function DbStatement($po_db, $ps_sql, $po_options=null) {
+		$this->opo_db = $po_db;
 		$this->ops_sql = $ps_sql;
 	
 		$this->opo_native_statement = caGetOption('native_statement', $po_options, null);
 
 		$this->opa_options = $po_options;
+	}
+	
+	/**
+	 * Set database connection
+	 *
+	 * @param mixed $po_db instance of the db driver you are using
+	 */
+	function setDb($po_db) {
+		$this->opo_db = $po_db;	
 	}
 
 	/**

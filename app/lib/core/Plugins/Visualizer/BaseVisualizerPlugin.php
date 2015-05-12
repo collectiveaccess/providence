@@ -24,7 +24,7 @@
  * http://www.CollectiveAccess.org
  *
  * @package CollectiveAccess
- * @subpackage Geographic
+ * @subpackage Visualization
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
@@ -33,7 +33,6 @@
   /**
     *
     */ 
-    
 include_once(__CA_LIB_DIR__."/core/Plugins/WLPlug.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugVisualizer.php");
 include_once(__CA_LIB_DIR__."/core/Configuration.php");
@@ -134,7 +133,7 @@ abstract class BaseVisualizerPlugin Extends WLPlug {
 			}
 		} else {
 			# invalid property
-			$this->postError(1650, _t("Can't set property %1", $property), "WLPlugGeographicMapGoogleMaps->set()");
+			$this->postError(1650, _t("Can't set property %1", $property), "BaseVisualizerPlugin->set()");
 			return '';
 		}
 		return true;
@@ -275,4 +274,3 @@ abstract class BaseVisualizerPlugin Extends WLPlug {
 	}
 	# ------------------------------------------------
 }
-?>

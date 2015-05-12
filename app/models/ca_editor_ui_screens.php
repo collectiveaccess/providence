@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -247,10 +247,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		$t_placement->set('bundle_name', $ps_bundle_name);
 		$t_placement->set('placement_code', $ps_placement_code);
 		$t_placement->set('rank', $pn_rank);
-		
+
+		$va_available_settings = $t_placement->getAvailableSettings();
 		if (is_array($pa_settings)) {
-			foreach($pa_settings as $vs_key => $vs_value) {
-				$t_placement->setSetting($vs_key, $vs_value);
+			foreach($va_available_settings as $vs_setting => $va_info) {
+				if(isset($pa_settings[$vs_setting])) {
+					$t_placement->setSetting($vs_setting, $pa_settings[$vs_setting]);
+				} elseif(isset($va_info['default'])) {
+					$t_placement->setSetting($vs_setting, $va_info['default']);
+				}
 			}
 		}
 		
@@ -527,6 +532,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'label' => _t('Restrict to types'),
 							'description' => _t('Restricts display to items of the specified type(s). Leave all unselected for no restriction.')
 						),
+						'restrict_to_search' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'default' => '',
+							'width' => "275px", 'height' => 1,
+							'label' => _t('Restrict to search expression'),
+							'description' => _t('Restricts display to items matching the given search expression. Leave empty for no restriction.')
+						),
 						'dont_include_subtypes_in_type_restriction' => array(
 							'formatType' => FT_TEXT,
 							'displayType' => DT_CHECKBOXES,
@@ -673,7 +686,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'displayType' => DT_CHECKBOXES,
 							'width' => "10", 'height' => "1",
 							'takesLocale' => false,
-							'default' => '1',
+							'default' => '0',
 							'label' => _t('Show current only?'),
 							'description' => _t('If checked only current movements are displayed.')
 						);
@@ -685,7 +698,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'displayType' => DT_CHECKBOXES,
 							'width' => "10", 'height' => "1",
 							'takesLocale' => false,
-							'default' => '1',
+							'default' => '0',
 							'label' => _t('Show current only?'),
 							'description' => _t('If checked only current objects are displayed.')
 						);
@@ -697,7 +710,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'displayType' => DT_CHECKBOXES,
 							'width' => "10", 'height' => "1",
 							'takesLocale' => false,
-							'default' => '1',
+							'default' => '0',
 							'label' => _t('Show current only?'),
 							'description' => _t('If checked only current movements are displayed.')
 						);
@@ -709,7 +722,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'displayType' => DT_CHECKBOXES,
 							'width' => "10", 'height' => "1",
 							'takesLocale' => false,
-							'default' => '1',
+							'default' => '0',
 							'label' => _t('Show current only?'),
 							'description' => _t('If checked only current objects are displayed.')
 						);
@@ -721,7 +734,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'displayType' => DT_CHECKBOXES,
 							'width' => "10", 'height' => "1",
 							'takesLocale' => false,
-							'default' => '1',
+							'default' => '0',
 							'label' => _t('Show current only?'),
 							'description' => _t('If checked only current storage locations are displayed.')
 						);
@@ -733,7 +746,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'displayType' => DT_CHECKBOXES,
 							'width' => "10", 'height' => "1",
 							'takesLocale' => false,
-							'default' => '1',
+							'default' => '0',
 							'label' => _t('Show current only?'),
 							'description' => _t('If checked only current objects are displayed.')
 						);
@@ -783,6 +796,25 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				case 'special':
 					if (in_array($vs_bundle, array('hierarchy_location', 'hierarchy_navigation'))) {
 						$va_additional_settings = array(
+							// no 'classic' expand/collapse for these bundles
+							'expand_collapse_value' => false,
+							'expand_collapse_no_value' => false,
+							// the concept 'value' doesn't really make sense in this context, so we just add one option
+							'expand_collapse' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_SELECT,
+								'options' => array(
+									_t("Don't force (default)") => 'dont_force', // current default mode
+									_t('Collapse') => 'collapse',
+									_t('Expand') => 'expand',
+
+								),
+								'takesLocale' => false,
+								'default' => 'bubbles',
+								'width' => "200px", 'height' => 1,
+								'label' => _t('Always Expand/collapse'),
+								'description' => _t('Controls the expand/collapse behavior')
+							),
 							'open_hierarchy' => array(
 								'formatType' => FT_NUMBER,
 								'displayType' => DT_CHECKBOXES,
@@ -791,6 +823,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'default' => '1',
 								'label' => _t('Open hierarchy browser by default'),
 								'description' => _t('If checked hierarchy browser will be open when form loads.')
+							),
+							'auto_shrink' => array(
+								'formatType' => FT_NUMBER,
+								'displayType' => DT_CHECKBOXES,
+								'width' => "4", 'height' => "1",
+								'takesLocale' => false,
+								'default' => '0',
+								'label' => _t('Automatically shrink browser'),
+								'description' => _t('Check this option if you want the hierarchy browser to automatically shrink or expand based on the height of the column with the most data.')
 							),
 							'documentation_url' => array(
 								'formatType' => FT_TEXT,
@@ -955,7 +996,43 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('Show lots'),
 										'description' => _t('')
-									)
+									),
+									// no 'classic' expand/collapse for this bundle
+									'expand_collapse_value' => false,
+									'expand_collapse_no_value' => false,
+									// the concept 'value' doesn't really make sense in this context, so we just add one option
+									'expand_collapse' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'options' => array(
+											_t("Don't force (default)") => 'dont_force', // current default mode
+											_t('Collapse') => 'collapse',
+											_t('Expand') => 'expand',
+										),
+										'takesLocale' => false,
+										'default' => 'bubbles',
+										'width' => "200px", 'height' => 1,
+										'label' => _t('Always Expand/collapse'),
+										'description' => _t('Controls the expand/collapse behavior')
+									),
+									'hide_add_to_loan_controls' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_CHECKBOXES,
+										'width' => "10", 'height' => "1",
+										'takesLocale' => false,
+										'default' => '0',
+										'label' => _t('Hide "Add to loan" controls'),
+										'description' => _t('Check this option if you want to to hide the "Add to loan" controls in this bundle placement.')
+									),
+									'hide_update_location_controls' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_CHECKBOXES,
+										'width' => "10", 'height' => "1",
+										'takesLocale' => false,
+										'default' => '0',
+										'label' => _t('Hide "Update Location" controls'),
+										'description' => _t('Check this option if you want to to hide the "Update Location" controls in this bundle placement.')
+									),
 								);
 								
 								$va_types = caGetTypeList("ca_object_lots");
@@ -1196,7 +1273,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			$t_placement->setSettingDefinitionsForPlacement($va_additional_settings);
 			
 			$vs_display = "<div id='uiEditorBundle_{$vs_table}_{$vs_bundle_proc}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_table.'.'.$vs_bundle_proc))."</div>";
-			
+
 			$va_available_bundles[$vs_display][$vs_bundle] = array(
 				'bundle' => $vs_bundle,
 				'display' => $vs_display,
@@ -1246,10 +1323,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		if (!($vn_screen_id = $this->getPrimaryKey())) { return null; }		// screen must be loaded
 		if (!is_array($pa_settings)) { $pa_settings = array(); }
 		
-		$t_ui = new ca_editor_uis($this->get('ui_id'));
-		if (!$t_ui->getPrimaryKey()) { return false; }
-		
+		$t_ui = new ca_editor_uis();
 		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->getTableNum()))) { return false; }
+		
+		if ($this->inTransaction()) { 
+			$t_instance->setTransaction($this->getTransaction()); 
+			$t_ui->setTransaction($this->getTransaction()); 
+		}
+		if (!$t_ui->load($this->get('ui_id'))) { return false; }
+		
 
 		if ($t_instance instanceof BaseRelationshipModel) { // interstitial type restriction incoming
 			$va_rel_type_list = $t_instance->getRelationshipTypes();
@@ -1260,6 +1342,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		$t_restriction = new ca_editor_ui_screen_type_restrictions();
+		if ($this->inTransaction()) {  $t_restriction->setTransaction($this->getTransaction()); }
 		$t_restriction->setMode(ACCESS_WRITE);
 		$t_restriction->set('table_num', $t_ui->get('editor_type'));
 		$t_restriction->set('type_id', $pn_type_id);
@@ -1293,10 +1376,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		
-		$t_ui = new ca_editor_uis($this->get('ui_id'));
-		if (!$t_ui->getPrimaryKey()) { return false; }
-		
+		$t_ui = new ca_editor_uis();
 		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->getTableNum()))) { return false; }
+
+		if ($this->inTransaction()) { 
+			$t_instance->setTransaction($this->getTransaction()); 
+			$t_ui->setTransaction($this->getTransaction()); 
+		}
+		
+		if (!$t_ui->load($this->get('ui_id'))) { return false; }
 		
 		if ($t_instance instanceof BaseRelationshipModel) { // interstitial type restrictions
 			$va_type_list = $t_instance->getRelationshipTypes();

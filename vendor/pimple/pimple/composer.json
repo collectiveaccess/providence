@@ -17,12 +17,9 @@
     "autoload": {
         "psr-0": { "Pimple": "src/" }
     },
-    "autoload-dev": {
-        "psr-4": { "Pimple\\Tests\\": "tests/" }
-    },
     "extra": {
         "branch-alias": {
-            "dev-master": "2.1.x-dev"
+            "dev-master": "3.0.x-dev"
         }
     }
 }

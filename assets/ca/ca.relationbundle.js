@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -66,6 +66,13 @@ var caUI = caUI || {};
 				if(typeof options.lists != 'object') { options.lists = [options.lists]; }
 				options.extraParams.lists = options.lists.join(";");
 			}
+
+			// restrict to search expression
+			if (options && options.restrictToSearch && options.restrictToSearch.length) {
+				if (!options.extraParams) { options.extraParams = {}; }
+				if (typeof options.restrictToSearch != 'string') { options.restrictToSearch = ''; }
+				options.extraParams.restrictToSearch = options.restrictToSearch;
+			}
 			
 			// restrict to types (for all lookups) - limits lookup to specific types of items (NOT relationship types)
 			if (options && options.types && options.types.length) {
@@ -80,7 +87,7 @@ var caUI = caUI || {};
 					types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction});
 				}
 			}
-		}
+		};
 		
 		options.onAddItem = function(id, options, isNew) {
 			if (!isNew) { return; }
@@ -151,7 +158,7 @@ var caUI = caUI || {};
 					}
 				}, options.autocompleteOptions)
 			).on('click', null, {}, function() { this.select(); });
-		}
+		};
 		
 		options.select = function(id, data) {
 			if (!id) { id = 'new_' + (that.getCount() - 1); } // default to current "new" option
@@ -162,7 +169,7 @@ var caUI = caUI || {};
 			jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'id' + id).val(item_id);
 			jQuery('#' + options.itemID + id + ' #' + options.fieldNamePrefix + 'type_id' + id).css('display', 'inline');
 			var i, typeList, types = [];
-			var default_index = 0;
+			var default_type = 0;
 			
 			if (jQuery('#' + options.itemID + id + ' select[name=' + options.fieldNamePrefix + 'type_id' + id + ']').data('item_type_id') == type_id) {
 				// noop - don't change relationship types unless you have to
@@ -171,8 +178,8 @@ var caUI = caUI || {};
 					for(i=0; i < typeList.length; i++) {
 						types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction, rank: typeList[i].rank });
 						
-						if (typeList[i].is_default === '1') {
-							default_index = (types.length - 1);
+						if (parseInt(typeList[i].is_default) === 1) {
+							default_type = (typeList[i].direction ? typeList[i].direction : '') + typeList[i].type_id;
 						}
 					}
 				} 
@@ -181,8 +188,8 @@ var caUI = caUI || {};
 					for(i=0; i < typeList.length; i++) {
 						types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction, rank: typeList[i].rank });
 						
-						if (typeList[i].is_default === '1') {
-							default_index = (types.length - 1);
+						if (parseInt(typeList[i].is_default) === 1) {
+							default_type = (typeList[i].direction ? typeList[i].direction : '') + typeList[i].type_id;
 						}
 					}
 				}
@@ -203,13 +210,13 @@ var caUI = caUI || {};
 				});
 				
 				// select default
-				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).prop('selectedIndex', default_index);
+				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id + " option[value=\"" + default_type + "\"]").prop('selected', true);
 			
 				// set current type
 				jQuery('#' + options.itemID + id + ' select#' + options.fieldNamePrefix + 'type_id' + id).data('item_type_id', type_id);
 			}
 			that.showUnsavedChangesWarning(true);
-		}
+		};
 		
 		options.sort = function(key) {
 			var indexedValues = {};
@@ -226,6 +233,7 @@ var caUI = caUI || {};
 							if (key == 'idno') {
 								indexKey = jQuery('#' + id_string + ' .itemIdno').text() + "/" + id_string;
 							} else {
+                                alert(id_string);
 								indexKey = id_string;
 							}
 						}
@@ -248,7 +256,7 @@ var caUI = caUI || {};
 			
 			caUI.utils.showUnsavedChangesWarning(true);
 			that._updateSortOrderListIDFormElement();
-		}
+		};
 	
 		options.setDeleteButton = function(rowID) {
 			var curRowID = rowID;
@@ -257,7 +265,7 @@ var caUI = caUI || {};
 			jQuery('#' + rowID + ' .caDeleteItemButton').on('click', null, {},
 				function(e) { that.deleteFromBundle(n); e.preventDefault(); return false; }
 			);
-		}
+		};
 		
 		var that = caUI.initBundle(container, options);
 		

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2014 Whirl-i-Gig
+ * Copyright 2000-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -348,7 +348,6 @@ class Configuration {
 							case '"':
 								if ($vb_escape_set) {
 									$vs_scalar_value .= '"';
-									$vb_escape_set = false;
 								} else {
 									if (!$vn_in_quote) {
 										$vn_in_quote = 1;
@@ -356,10 +355,11 @@ class Configuration {
 										$vn_in_quote = 0;
 									}
 								}
+								$vb_escape_set = false;
 								break;
 							# -------------------
 							case ',':
-								if ($vn_in_quote) {
+								if ($vn_in_quote || $vb_escape_set) {
 									$vs_scalar_value .= ",";
 								} else {
 									if (strlen($vs_item = trim($this->_interpolateScalar($this->_trimScalar($vs_scalar_value)))) > 0) {
@@ -371,7 +371,7 @@ class Configuration {
 								break;
 							# -------------------
 							case ']':
-								if ($vn_in_quote) {
+								if ($vn_in_quote || $vb_escape_set) {
 									$vs_scalar_value .= "]";
 								} else {
 									# accept list
@@ -385,7 +385,11 @@ class Configuration {
 								break;
 							# -------------------
 							case '\\':
-								$vb_escape_set = true;
+								if ($vb_escape_set) {
+									$vs_scalar_value .= $vs_token;
+								} else {
+									$vb_escape_set = true;
+								}
 								break;
 							# -------------------
 							default:
@@ -491,7 +495,6 @@ class Configuration {
 							case '"':
 								if ($vb_escape_set) {
 									$vs_scalar_value .= '"';
-									$vb_escape_set = false;
 								} else {
 									if (!$vn_in_quote) {
 										$vn_in_quote = 1;
@@ -499,10 +502,11 @@ class Configuration {
 										$vn_in_quote = 0;
 									}
 								}
+								$vb_escape_set = false;
 								break;
 							# -------------------
 							case ',':
-								if ($vn_in_quote) {
+								if ($vn_in_quote || $vb_escape_set) {
 									$vs_scalar_value .= ",";
 								} else {
 									if ($vs_assoc_key) {
@@ -517,7 +521,7 @@ class Configuration {
 							# -------------------
 							# open nested associative value
 							case '{':
-								if (!$vn_in_quote) {
+								if (!$vn_in_quote && !$vb_escape_set) {
 									if ($this->opb_debug) { print "CONFIG DEBUG: STATE=50; Got open {; KEY IS '$vs_assoc_key'\n"; }
 									
 									if (!is_array($va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key]) || !$vb_merge_mode) {
@@ -527,15 +531,14 @@ class Configuration {
 									$vn_state = 40;
 									$vs_key = $vs_assoc_key = $vs_scalar_value = "";
 									$vn_in_quote = 0;
-									$vb_escape_set = false;
 								} else {
 									$vs_scalar_value .= $vs_token;
-									$vb_escape_set = false;
 								}
+								$vb_escape_set = false;
 								break;
 							# -------------------
 							case '}':
-								if ($vn_in_quote) {
+								if ($vn_in_quote || $vb_escape_set) {
 									$vs_scalar_value .= "}";
 								} else {
 									if ($this->opb_debug) { print "CONFIG DEBUG: STATE=50; Got close }; KEY IS '$vs_assoc_key'\n"; }
@@ -561,18 +564,26 @@ class Configuration {
 							# open list
 							case '[':
 								if ($this->opb_debug) { print "CONFIG DEBUG: STATE=50; Got open [; KEY IS '$vs_assoc_key'\n"; }
-								
-								if(!is_array($va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key]) || !$vb_merge_mode) {
-									$va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key] = array();
+							
+								if ($vn_in_quote || $vb_escape_set) {
+									$vs_scalar_value .= $vs_token;
+								} else {
+									if(!is_array($va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key]) || !$vb_merge_mode) {
+										$va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key] = array();
+									}
+									$va_assoc_pointer_stack[] =& $va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key];
+									$vn_state = 60;
+									$vn_in_quote = 0;
 								}
-								$va_assoc_pointer_stack[] =& $va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key];
-								$vn_state = 60;
-								$vn_in_quote = 0;
 								$vb_escape_set = false;
 								break;
 							# -------------------
 							case '\\':
-								$vb_escape_set = true;
+								if ($vb_escape_set) {
+									$vs_scalar_value .= $vs_token;
+								} else {
+									$vb_escape_set = true;
+								}
 								break;
 							# -------------------
 							default:
@@ -590,7 +601,6 @@ class Configuration {
 							case '"':
 								if ($vb_escape_set) {
 									$vs_scalar_value .= '"';
-									$vb_escape_set = false;
 								} else {
 									if (!$vn_in_quote) {
 										$vn_in_quote = 1;
@@ -598,11 +608,12 @@ class Configuration {
 										$vn_in_quote = 0;
 									}
 								}
+								$vb_escape_set = false;
 								break;
 							# -------------------
 							case ',':
 								if ($this->opb_debug) { print "CONFIG DEBUG: STATE=60; Got list-in-associative list comma; KEY IS '$vs_assoc_key'\n"; }
-								if ($vn_in_quote) {
+								if ($vn_in_quote || $vb_escape_set) {
 									$vs_scalar_value .= ",";
 								} else {
 									if (strlen($vs_item = trim($this->_interpolateScalar($this->_trimScalar($vs_scalar_value)))) > 0) {
@@ -614,7 +625,7 @@ class Configuration {
 								break;
 							# -------------------
 							case ']':
-								if ($vn_in_quote) {
+								if ($vn_in_quote || $vb_escape_set) {
 									$vs_scalar_value .= "]";
 								} else {
 									if ($this->opb_debug) { print "CONFIG DEBUG: STATE=60; Got ]; KEY IS '$vs_assoc_key'\n"; }

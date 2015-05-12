@@ -72,6 +72,7 @@
 			$va_excludes = explode(";", $ps_exclude);
 			$ps_type = $this->request->getParameter('type', pString);
 			$ps_types = $this->request->getParameter('types', pString);
+			$ps_restrict_to_search = trim($this->request->getParameter('restrictToSearch', pString));
 			$pb_no_subtypes = (bool)$this->request->getParameter('noSubtypes', pInteger);
 			$pb_quickadd = (bool)$this->request->getParameter('quickadd', pInteger);
 			$pb_no_inline = (bool)$this->request->getParameter('noInline', pInteger);
@@ -93,7 +94,6 @@
 				}
 				
 				// Get type_ids
-				$vs_type_query = '';
 				$va_ids = array();
 				if (sizeof($pa_types)) {
 					$va_types = $this->opo_item_instance->getTypeList();
@@ -127,16 +127,15 @@
 				if (is_array($pa_additional_query_params) && sizeof($pa_additional_query_params)) {
 					$vs_additional_query_params = ' AND ('.join(' AND ', $pa_additional_query_params).')';
 				}
+
+				$vs_restrict_to_search = '';
+				if(strlen($ps_restrict_to_search) > 0) {
+					$vs_restrict_to_search .= ' AND ('.$ps_restrict_to_search.')';
+				}
 				
 				// get sort field
-				$vs_sort = '_natural';		// always sort first on relevance...
-				if ($vs_idno_fld = $this->opo_item_instance->getProperty('ID_NUMBERING_SORT_FIELD')) {
-					$vs_sort .= ";".$this->opo_item_instance->tableName().".{$vs_idno_fld}";
-				} else {
-					if (method_exists($this->opo_item_instance, "getLabelSortField")) {
-						$vs_sort .= ";".$this->opo_item_instance->getLabelTableName().'.'.$this->opo_item_instance->getLabelSortField();
-					}
-				}
+				$vs_sort = $this->request->getAppConfig()->get($this->opo_item_instance->tableName().'_lookup_sort');
+				if(!$vs_sort) { $vs_sort = '_natural'; }
 	
 				$vs_hier_parent_id_fld 		= $this->opo_item_instance->getProperty('HIERARCHY_PARENT_ID_FLD');
 				$vs_hier_fld 						= $this->opo_item_instance->getProperty('HIERARCHY_ID_FLD');
@@ -152,16 +151,32 @@
 				}
 				
 				// do search
-				$qr_res = $o_search->search($ps_query.(intval($pb_exact) ? '' : '*').$vs_type_query.$vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
+				if($vs_additional_query_params || $vs_restrict_to_search) {
+					$vs_search = '('.trim($ps_query).(intval($pb_exact) ? '' : '*').')'.$vs_additional_query_params.$vs_restrict_to_search;
+				} else {
+					$vs_search = trim($ps_query).(intval($pb_exact) ? '' : '*');
+				}
+				//file_put_contents('/tmp/lookup_debug', $vs_search . "\n", FILE_APPEND);
+				$qr_res = $o_search->search($vs_search, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
 		
 				$qr_res->setOption('prefetch', $pn_limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);
 				
 				$va_opts = array('exclude' => $va_excludes, 'limit' => $pn_limit);
-				if(!$pb_no_inline && ($pb_quickadd || ($this->request->user && $this->request->user->canDoAction('can_quickadd_'.$this->opo_item_instance->tableName())))) {
+				$o_conf = Configuration::load();
+				if(!$pb_no_inline && ($pb_quickadd || (!strlen($pb_quickadd) && $this->request->user && $this->request->user->canDoAction('can_quickadd_'.$this->opo_item_instance->tableName()) && !((bool) $o_conf->get($this->opo_item_instance->tableName().'_disable_quickadd'))))) {
+					// if the lookup was restricted by search, try the lookup without the restriction
+					// so that we can notify the user that he might be about to create a duplicate
+					if((strlen($ps_restrict_to_search) > 0)) {
+						$o_no_filter_result = $o_search->search(trim($ps_query) . (intval($pb_exact) ? '' : '*') . $vs_type_query . $vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
+						if ($o_no_filter_result->numHits() != $qr_res->numHits()) {
+							$va_opts['inlineCreateMessageDoesNotExist'] = _t("<em>%1</em> doesn't exist with this filter but %2 record(s) match overall. Create <em>%1</em>?", $ps_query, $o_no_filter_result->numHits());
+							$va_opts['inlineCreateMessage'] = _t('<em>%1</em> matches %2 more record(s) without the current filter. Create <em>%1</em>?', $ps_query, ($o_no_filter_result->numHits() - $qr_res->numHits()));
+						}
+					}
+					if(!isset($va_opts['inlineCreateMessageDoesNotExist'])) { $va_opts['inlineCreateMessageDoesNotExist'] = _t('<em>%1</em> does not exist. Create?', $ps_query); }
+					if(!isset($va_opts['inlineCreateMessage'])) { $va_opts['inlineCreateMessage'] = _t('Create <em>%1</em>?', $ps_query); }
 					$va_opts['inlineCreateQuery'] = $ps_query;
-					$va_opts['inlineCreateMessageDoesNotExist'] = _t('<em>%1</em> does not exist. Create?', $ps_query);
-					$va_opts['inlineCreateMessage'] = _t('Create <em>%1</em>?', $ps_query);
 				} else {
 					$va_opts['emptyResultQuery'] = $ps_query;
 					$va_opts['emptyResultMessage'] = _t('No matches found for <em>%1</em>', $ps_query);
@@ -175,7 +190,7 @@
 			if ((bool)$this->request->getParameter('simple', pInteger)) { 
 				$va_items = caExtractValuesFromArrayList($va_items, 'label', array('preserveKeys' => false)); 
 			}
-			$this->view->setVar(str_replace(' ', '_', $this->ops_name_singular).'_list', $va_items);
+			$this->view->setVar(str_replace(' ', '_', $this->ops_name_singular).'_list', array_values($va_items));
  			return $this->render(str_replace(' ', '_', 'ajax_'.$this->ops_name_singular.'_list_html.php'));
 		}
  		# -------------------------------------------------------
@@ -198,6 +213,9 @@
 				$vn_id = $va_tmp[0];
 				$vn_start = (int)$va_tmp[1];
 				if($vn_start < 0) { $vn_start = 0; }
+				if(sizeof($va_tmp) < 2) {
+					$pn_id = '0:0';
+				}
 				
 				$va_items_for_locale = array();
 				if ((!($vn_id)) && method_exists($t_item, "getHierarchyList")) { 
@@ -205,6 +223,12 @@
 					$t_item->load($vn_id);
 					// no id so by default return list of available hierarchies
 					$va_items_for_locale = $t_item->getHierarchyList();
+
+					if(sizeof($va_items_for_locale) == 1 && $this->request->getAppConfig()->get($t_item->tableName().'_hierarchy_browser_hide_root')) {
+						$va_item = array_shift($va_items_for_locale);
+						$this->opo_request->setParameter('id', $va_item['item_id']);
+						return $this->GetHierarchyLevel();
+					}
 				} else {
 					if ($t_item->load($vn_id)) {		// id is the id of the parent for the level we're going to return
 						$vs_table_name = $t_item->tableName();
@@ -265,10 +289,15 @@
 								if (!$va_tmp[$vs_label_display_field_name]) { $va_tmp[$vs_label_display_field_name] = '???'; }
 							
 								$va_tmp['name'] = caProcessTemplateForIDs($vs_item_template, $vs_table_name, array($va_tmp[$vs_pk]), array('requireLinkTags' => true));
-							
+								if(!$va_tmp['name']) { $va_tmp['name'] = '??? '.$va_tmp[$vs_pk]; }
+								
 								// Child count is only valid if has_children is not null
 								$va_tmp['children'] = isset($va_child_counts[$vn_id]) ? (int)$va_child_counts[$vn_id] : 0;
-							
+
+								if(strlen($vs_enabled = $qr_children->get('is_enabled')) > 0) {
+									$va_tmp['is_enabled'] = $vs_enabled;
+								}
+
 								if (is_array($va_sorts)) {
 									$vs_sort_acc = array();
 									foreach($va_sorts as $vs_sort) {
@@ -332,7 +361,6 @@
  				$this->request->session->setVar($this->ops_table_name.'_'.$ps_bundle.'_browse_last_id', array_pop($pa_ids));
  			}
  			
- 			
  			$this->view->setVar(str_replace(' ', '_', $this->ops_name_singular).'_list', $va_level_data);
  			
  			return $this->render(str_replace(' ', '_', $this->ops_name_singular).'_hierarchy_level_json.php');
@@ -349,8 +377,13 @@
  			$t_item = new $this->ops_table_name($pn_id);
  			
  			$va_ancestors = array();
- 			if ($t_item->getPrimaryKey()) { 
+ 			if ($t_item->getPrimaryKey()) {
  				$va_ancestors = array_reverse($t_item->getHierarchyAncestors(null, array('includeSelf' => true, 'idsOnly' => true)));
+				if($this->request->getAppConfig()->get($t_item->tableName().'_hierarchy_browser_hide_root')) {
+					if(($k = array_search($t_item->getHierarchyRootID(), $va_ancestors)) !== false) {
+						unset($va_ancestors[$k]);
+					}
+				}
  			}
  			
  			// Force ids to ints to prevent jQuery from getting confused

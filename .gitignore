@@ -16,4 +16,6 @@ setup.php
 app/lib/core/Parsers/htmlpurifier/standalone/HTMLPurifier/DefinitionCache/Serializer/*
 app/lib/core/Parsers/dompdf/lib/fonts/*fm.php
 app/log/log*.txt
+themes/default/css/local.css
+themes/default/views/bundles/inspector_info.php
 

@@ -814,7 +814,8 @@ create table ca_storage_locations
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
-   rank                             int unsigned                     not null default 0,
+   rank                           int unsigned                   not null default 0,
+   is_enabled                     tinyint unsigned               not null default 1,
    primary key (location_id),
    constraint fk_ca_storage_locations_type_id foreign key (type_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -1324,11 +1325,11 @@ create table ca_task_queue
    created_on                     int unsigned                   not null,
    started_on                   int unsigned,
    completed_on                   int unsigned,
-   priority                       smallint unsigned              not null,
+   priority                       smallint unsigned              not null default 0,
    handler                        varchar(20)                    not null,
    parameters                     text                           not null,
    notes                          text                           not null,
-   error_code                     smallint unsigned              not null,
+   error_code                     smallint unsigned              not null default 0,
    primary key (task_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -1543,6 +1544,7 @@ create table ca_objects
    rank                           int unsigned                   not null default 0,
    acl_inherit_from_ca_collections tinyint unsigned              not null default 0,
    acl_inherit_from_parent         tinyint unsigned              not null default 0,
+   access_inherit_from_parent      tinyint unsigned              not null default 0,
    home_location_id               int unsigned,
    accession_sdatetime            decimal(30,20),
    accession_edatetime            decimal(30,20),
@@ -6386,6 +6388,42 @@ create unique index u_all on ca_commerce_order_items_x_object_representations
 
 
 /*==========================================================================*/
+create table ca_object_checkouts (
+   checkout_id	            int unsigned					not null AUTO_INCREMENT,
+   group_uuid               char(36) not null,
+   object_id                int unsigned not null,
+   user_id                	int unsigned not null,
+   created_on				int unsigned not null,
+   checkout_date			int unsigned null,
+   due_date					int unsigned null,
+   return_date				int unsigned null,
+   checkout_notes			text not null,
+   return_notes				text not null,
+   last_sent_coming_due_email int unsigned null,
+   last_sent_overdue_email int unsigned null,
+   last_reservation_available_email int unsigned null,
+   deleted					tinyint unsigned not null,
+   
+   primary key (checkout_id),
+   index i_group_uuid (group_uuid),
+   index i_object_id (object_id),
+   index i_user_id (user_id),
+   index i_created_on (created_on),
+   index i_checkout_date (checkout_date),
+   index i_due_date (due_date),
+   index i_return_date (return_date),
+   index i_last_sent_coming_due_email (last_sent_coming_due_email),
+   index i_last_reservation_available_email (last_reservation_available_email),
+   
+   constraint fk_ca_object_checkouts_object_id foreign key (object_id)
+      references ca_objects (object_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_object_checkouts_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
 create table ca_sql_search_words 
 (
   word_id int(10) unsigned not null auto_increment,
@@ -6463,14 +6501,36 @@ create table ca_metadata_dictionary_entries (
 create table ca_metadata_dictionary_rules (
    rule_id                  int unsigned					not null AUTO_INCREMENT,
    entry_id                 int unsigned not null,
-   rule_name                varchar(255) not null,
+   rule_code                varchar(30) not null,
+   expression               text not null,
+   rule_level               char(4) not null,
    settings                 longtext not null,
    primary key (rule_id),
    index i_entry_id (entry_id),
-   index i_rule_name (rule_name),
+   unique index u_rule_code (rule_code),
+   index i_rule_code (rule_level),
    
    constraint fk_ca_metadata_dictionary_rules_entry_id foreign key (entry_id)
       references ca_metadata_dictionary_entries (entry_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
+create table ca_metadata_dictionary_rule_violations (
+   violation_id             int unsigned					not null AUTO_INCREMENT,
+   rule_id                  int unsigned not null,
+   table_num                tinyint unsigned not null,
+   row_id               	int unsigned not null,
+   created_on				int unsigned not null,
+   last_checked_on			int unsigned not null,
+   primary key (violation_id),
+   index i_rule_id (rule_id),
+   index i_row_id (row_id, table_num),
+   index i_created_on (created_on),
+   index i_last_checked_on (last_checked_on),
+   
+   constraint fk_ca_metadata_dictionary_rule_vio_rule_id foreign key (rule_id)
+      references ca_metadata_dictionary_rules (rule_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
@@ -6485,5 +6545,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 111 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (112, unix_timestamp());
+/* CURRENT MIGRATION: 116 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (118, unix_timestamp());

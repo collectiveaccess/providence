@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -53,16 +53,25 @@ class WorldCatDataReader extends BaseXMLDataReader {
 	
 	private $ops_api_key = null;
 	
+	private $opb_z3950_available = false;
+	private $ops_z3950_user = null;
+	private $ops_z3950_password = null;
+	
 	
 	/**
-	 *
+	 * WorldCat web API search url
 	 */
 	static $s_worldcat_search_url = "http://www.worldcat.org/webservices/catalog/search/worldcat/opensearch";
 	
 	/**
-	 *
+	 * WorldCat web API catalog detail url
 	 */
 	static $s_worldcat_detail_url = "http://www.worldcat.org/webservices/catalog/content/";
+	
+	/**
+	 * WorldCat Z39.50 host
+	 */
+	static $s_worldcat_z3950_host = "zcat.oclc.org:210/OLUCWorldCat";
 	
 	/**
 	 * Skip root tag when evaluating XPath?
@@ -121,11 +130,26 @@ class WorldCatDataReader extends BaseXMLDataReader {
 		
 		$this->opa_formats = array('worldcat');	// must be all lowercase to allow for case-insensitive matching
 		
+		$o_config = Configuration::load();
 		if ($vs_api_key = caGetOption('APIKey', $pa_options, null)) {
 			$this->ops_api_key = $vs_api_key;
 		} else {
-			$o_config = Configuration::load();
 			$this->ops_api_key = $o_config->get('worldcat_api_key');
+		}
+		
+		$this->opb_z3950_available = function_exists("yaz_connect");
+		# TODO: check for CURL
+		
+		if ($vs_z3950_user = caGetOption('user', $pa_options, null)) {
+			$this->ops_z3950_user = $vs_z3950_user;
+		} else {
+			$this->ops_z3950_user = $o_config->get('worldcat_z39.50_user');
+		}
+		
+		if ($vs_z3950_password = caGetOption('password', $pa_options, null)) {
+			$this->ops_z3950_password = $vs_z3950_password;
+		} else {
+			$this->ops_z3950_password = $o_config->get('worldcat_z39.50_password');
 		}
 	}
 	# -------------------------------------------------------
@@ -168,9 +192,24 @@ class WorldCatDataReader extends BaseXMLDataReader {
 		
 			// Create a request
 			try {
-				$o_request = $o_client->get("{$vn_worldcat_id}?wskey=".$this->ops_api_key);
-				$o_response = $o_request->send();
-				$o_row = $this->opo_handle_xml = dom_import_simplexml($o_response->xml());
+				if ($this->opb_z3950_available && $this->ops_z3950_user) {
+					$r_conn = yaz_connect(WorldCatDataReader::$s_worldcat_z3950_host, array('user' => $this->ops_z3950_user, 'password' => $this->ops_z3950_password));
+					yaz_syntax($r_conn, "usmarc");
+					yaz_range($r_conn, 1, 10);
+					yaz_search($r_conn, "rpn", '@attr 1=12 @attr 4=2 "'.str_replace('"','', $vn_worldcat_id).'"');
+					yaz_wait();
+					$vs_data = yaz_record($r_conn, 1,  "xml; charset=marc-8,utf-8");
+				} elseif ($this->ops_api_key) {
+					$o_request = $o_client->get("{$vn_worldcat_id}?wskey=".$this->ops_api_key);
+					$o_response = $o_request->send();
+					$vs_data = $o_response->xml();
+				} else {
+					throw new Exception("Neither Z39.50 nor WorldCat web API is configured");
+				}
+				if (!$vs_data) {
+					throw new Exception("No data returned");
+				}
+				$o_row = $this->opo_handle_xml = dom_import_simplexml($vs_data);
 				$this->opa_row_buf[$this->opn_current_row] = $o_row;
 			} catch (Exception $e) {
 				return false;
@@ -222,6 +261,15 @@ class WorldCatDataReader extends BaseXMLDataReader {
 	 * 
 	 * @return int
 	 */
+	public function currentRow() {
+		return $this->opn_current_row;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return int
+	 */
 	public function inputType() {
 		return is_array($this->opa_row_ids) ? sizeof($this->opa_row_ids) : 0;
 	}
@@ -236,4 +284,3 @@ class WorldCatDataReader extends BaseXMLDataReader {
 	}
 	# -------------------------------------------------------
 }
-?>

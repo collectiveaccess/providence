@@ -158,7 +158,7 @@
 		'displayDelimiter' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
-			'default' => ',',
+			'default' => '; ',
 			'width' => 10, 'height' => 1,
 			'label' => _t('Value delimiter'),
 			'validForRootOnly' => 1,
@@ -199,12 +199,16 @@
  		 *							longitude - the longitude of the first point in the geocode
  		 *							path - a full path of coordinates (useful if the geocode is a path rather than a point) as a string with each coordinate pair separated with semicolons
  		 *							label - the display text for the geocode
+		 * 			path - only return path as plain text (the path is a colon-delimited list of coordinates)
  		 *
  		 * @return mixed - will return string with display value by default; array with parsed coordinate values if the "coordinates" option is passed
  		 */
 		public function getDisplayValue($pa_options=null) {
 			if(isset($pa_options['coordinates']) && $pa_options['coordinates']) {
 				return array('latitude' => $this->opn_latitude, 'longitude' => $this->opn_longitude, 'path' => $this->ops_path_value, 'label' => $this->ops_text_value);
+			}
+			if(caGetOption('path', $pa_options, false)) {
+				return trim($this->ops_path_value);
 			}
 			if (!$this->ops_text_value && $this->ops_path_value) {
 				return "[".$this->ops_path_value."]";
@@ -225,7 +229,7 @@
 			return $this->ops_path_value;
 		}
  		# ------------------------------------------------------------------
- 		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {	
+ 		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$va_settings = $this->getSettingValuesFromElementArray(
  				$pa_element_info, 
  				array('mustNotBeBlank')
@@ -359,14 +363,22 @@
  		}
  		# ------------------------------------------------------------------
  		/**
- 		 * @param array $pa_element_info
- 		 * @param array $pa_options Supported options are 
- 		 *			forSearch = if true, elenent is returned for use in a search form
- 		 *	@return string HTML for element		
+ 		 * Return HTML form element for editing.
+ 		 *
+ 		 * @param array $pa_element_info An array of information about the metadata element being edited
+ 		 * @param array $pa_options array Options include:
+ 		 *			forSearch = simple text entry is returned for use with search forms [Default=false]
+ 		 *			class = the CSS class to apply to all visible form elements [Default=lookupBg]
+ 		 *			width = the width of the form element [Default=field width defined in metadata element definition]
+ 		 *			height = the height of the form element [Default=field height defined in metadata element definition]
+ 		 *
+ 		 * @return string
  		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
+ 			$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '');
+ 			
  			if (isset($pa_options['forSearch']) && $pa_options['forSearch']) {
- 				return caHTMLTextInput("{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", array('id' => "{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", 'value' => $pa_options['value']), $pa_options);
+ 				return caHTMLTextInput("{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", array('id' => "{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", 'value' => $pa_options['value'], 'class' => $vs_class), $pa_options);
  			}
  			if ((!isset($pa_options['baseLayer']) || !$pa_options['baseLayer']) || (isset($pa_options['request']) && ($pa_options['request']))) {
  				if ($vs_base_layer_pref = $pa_options['request']->user->getPreference('maps_base_layer')) {
