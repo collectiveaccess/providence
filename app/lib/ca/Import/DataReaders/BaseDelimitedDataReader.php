@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -162,7 +162,7 @@ class BaseDelimitedDataReader extends BaseDataReader {
 		$vb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
 		$vs_delimiter = caGetOption('delimiter', $pa_options, ';');
 		
-		$vs_value = $this->opo_parser($ps_spec);
+		$vs_value = $this->opo_parser->getRowValue($ps_spec);
 	
 		if ($vb_return_as_array) { return array($vs_value); }
 		return $vs_value;
