@@ -2241,6 +2241,35 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * 
+		 */
+		public function getAuthorityReferenceListHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings, $pa_options) {
+			$va_errors = array();
+			
+			$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
+			$o_view = new View($po_request, "{$vs_view_path}/bundles/");
+			
+			$o_view->setVar('t_instance', $this);
+			$o_view->setVar('request', $po_request);
+			$o_view->setVar('id_prefix', $ps_form_name.'_'.$ps_placement_code);
+			
+			// pass bundle settings to view
+			$o_view->setVar('settings', $pa_bundle_settings);
+			
+			if (!($vn_datatype = $this->authorityElementDatatype())) {
+				$va_errors[] = _t('Cannot be used as a reference');
+			} else {
+				$va_references = $this->getAuthorityElementReferences();
+				
+				$o_view->setVar('references', $va_references);
+			}
+			
+			$o_view->setVar('errors', $va_errors);
+			
+			return $o_view->render('authority_references_list.php');
+		}
+		# ------------------------------------------------------------------
+		/**
 		 * Returns attribute data type code for authority element used to reference this model. 
 		 * Eg. for the ca_entities model the __CA_ATTRIBUTE_VALUE_ENTITIES__ constant (numeric 22) is returned.
 		 * Returns null if the model cannot be referenced using a metadata element.
