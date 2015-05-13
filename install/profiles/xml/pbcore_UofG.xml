@@ -10193,7 +10193,11 @@
       </labels>
       <elements>
         <metadataElement code="pbcoreCoverage_element2" datatype="Container">
-          <labels/>
+          <labels>
+            <label locale="en_US">
+              <name>Coverage Element 2</name>
+            </label>
+          </labels>
           <settings/>
           <elements>
             <metadataElement code="temporalTemporalCoverage" datatype="DateRange">
@@ -16967,7 +16971,6 @@ Format: &lt;ifdef code="ca_objects.instantiationPhysical"&gt;^ca_objects.instant
     </relationshipTable>
     <relationshipTable name="ca_entities_x_occurrences">
       <types>
-        <types>
           <type code="artist" default="0">
             <labels>
               <label locale="en_US">
@@ -17112,7 +17115,7 @@ Format: &lt;ifdef code="ca_objects.instantiationPhysical"&gt;^ca_objects.instant
               </label>
             </labels>
           </type>
-        </types>
+        
         <type code="creator" default="0">
           <labels>
             <label locale="en_US">
@@ -17121,7 +17124,6 @@ Format: &lt;ifdef code="ca_objects.instantiationPhysical"&gt;^ca_objects.instant
             </label>
           </labels>
         </type>
-        <types>
           <type code="advisor" default="0">
             <labels>
               <label locale="en_US">
@@ -17418,7 +17420,7 @@ Format: &lt;ifdef code="ca_objects.instantiationPhysical"&gt;^ca_objects.instant
               </label>
             </labels>
           </type>
-        </types>
+        
         <type code="contributor" default="1">
           <labels>
             <label locale="en_US">
@@ -17427,7 +17429,6 @@ Format: &lt;ifdef code="ca_objects.instantiationPhysical"&gt;^ca_objects.instant
             </label>
           </labels>
         </type>
-        <types>
           <type code="copyrightholder" default="0">
             <labels>
               <label locale="en_US">
@@ -17468,7 +17469,7 @@ Format: &lt;ifdef code="ca_objects.instantiationPhysical"&gt;^ca_objects.instant
               </label>
             </labels>
           </type>
-        </types>
+        
         <type code="publisher" default="0">
           <labels>
             <label locale="en_US">
@@ -17477,7 +17478,6 @@ Format: &lt;ifdef code="ca_objects.instantiationPhysical"&gt;^ca_objects.instant
             </label>
           </labels>
         </type>
-        <types>
           <type code="subjectof" default="0">
             <labels>
               <label locale="en_US">
@@ -17494,7 +17494,7 @@ Format: &lt;ifdef code="ca_objects.instantiationPhysical"&gt;^ca_objects.instant
               </label>
             </labels>
           </type>
-        </types>
+        
         <type code="subjectheading" default="0">
           <labels>
             <label locale="en_US">
