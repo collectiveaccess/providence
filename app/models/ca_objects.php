@@ -2042,7 +2042,10 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 	public function renderBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options=null) {
 		switch($ps_bundle_name) {
 			case 'ca_objects_location':
-				$va_values = array_shift(array_shift($pa_values));
+				if(!is_array($pa_values) || !sizeof($pa_values)) { return null; }
+				$va_values = array_shift($pa_values);
+				if(!is_array($va_values) || !sizeof($va_values)) { return null; }
+				$va_values = array_shift($va_values);
 				$vn_loc_class =  $va_values['current_loc_class'];
 				$vn_loc_subclass =  $va_values['current_loc_subclass'];
 				$vn_loc_id =  $va_values['current_loc_id'];
