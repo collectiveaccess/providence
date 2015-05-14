@@ -1685,7 +1685,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		// AttributeValue settings that are simply passed through by the exporter
 		if($t_exporter_item->getSetting('convertCodesToDisplayText')){
-			$va_get_options['convertCodesToDisplayText'] = true;
+			$va_get_options['convertCodesToDisplayText'] = true;		// try to return text suitable for display for system lists stored in intrinsics (ex. ca_objects.access, ca_objects.status, ca_objects.source_id)
+																		// this does not affect list attributes
+		} else {
+			$va_get_options['convertCodesToIdno'] = true;				// if display text is not requested try to return list item idno's... since underlying integer ca_list_items.item_id values are unlikely to be useful in an export context
 		}
 
 		if($t_exporter_item->getSetting('returnIdno')){
@@ -1715,24 +1718,36 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			if($vs_source) { // trying to find the source only makes sense if the source is set
 				$t_attr = new ca_attributes($vn_attribute_id);
 				$va_values = $t_attr->getAttributeValues();
+
+				$va_src_tmp = explode('.', $vs_source);
+				if(sizeof($va_src_tmp) == 2) {
+					$o_dm = Datamodel::load();
+					if($t_attr->get('table_num') == $o_dm->getTableNum($va_src_tmp[0])) {
+						$vs_source = $va_src_tmp[1];
+					}
+				}
+
 				$o_log->logDebug(_t("Trying to find code %1 in value array for the current attribute.", $vs_source));
 				$o_log->logDebug(_t("Value array is %1.", print_r($va_values, true)));
 
 				foreach($va_values as $vo_val) {
-					$vn_list_id = null;
+					$va_display_val_options = array();
 					if($vo_val instanceof ListAttributeValue) {
 						$t_element = ca_metadata_elements::getInstance($t_attr->get('element_id'));
-						$vn_list_id = $t_element->get('list_id');
-					}
+						$va_display_val_options = array('list_id' => $t_element->get('list_id'));
 
+						if($t_exporter_item->getSetting('returnIdno')) {
+							$va_display_val_options['returnIdno'] = true;
+						}
+					}
 
 					$o_log->logDebug(_t("Trying to match code from array %1 and the code we're looking for %2.", $vo_val->getElementCode(), $vs_source));
 					if($vo_val->getElementCode() == $vs_source) {
 
-						$o_log->logDebug(_t("Found value %1.", $vo_val->getDisplayValue(array('list_id' => $vn_list_id))));
+						$o_log->logDebug(_t("Found value %1.", $vo_val->getDisplayValue($va_display_val_options)));
 
 						$va_item_info[] = array(
-							'text' => $vo_val->getDisplayValue(array('list_id' => $vn_list_id)),
+							'text' => $vo_val->getDisplayValue($va_display_val_options),
 							'element' => $vs_element,
 						);
 					}
@@ -1824,7 +1839,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_default = $t_exporter_item->getSetting('default');
 		$vs_prefix = $t_exporter_item->getSetting('prefix');
 		$vs_suffix = $t_exporter_item->getSetting('suffix');
-		$vs_regexp = $t_exporter_item->getSetting('filterByRegExp');
+		//$vs_regexp = $t_exporter_item->getSetting('filterByRegExp');		// Deprecated -- remove?
 		$vn_max_length = $t_exporter_item->getSetting('maxLength');
 		$vs_skip_if_expr = $t_exporter_item->getSetting('skipIfExpression');
 
@@ -1846,19 +1861,20 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			// handle skipIfExpression setting
 			if($vs_skip_if_expr){
 				// Add current value as variable "value", accessible in expressions as ^value
-				if(ExpressionParser::evaluate($vs_skip_if_expr, array_merge(array('value' => $va_item['text']),ca_data_exporters::$s_variables))){
+				$va_vars = array_merge(array('value' => $va_item['text']), ca_data_exporters::$s_variables);
+				if(ExpressionParser::evaluate($vs_skip_if_expr, $va_vars)){
 					unset($va_item_info[$vn_key]);
 					continue;
 				}
 			}
 
-			// filter by regex (deprecated since you can do the same thing and more with skipIfExpression)
-			if((strlen($va_item['text'])>0) && $vs_regexp){
-				if(!preg_match("!".$vs_regexp."!", $va_item['text'])) {
- 					unset($va_item_info[$vn_key]);
- 					continue;
- 				}
-			}
+			// filter by regex (deprecated since you can do the same thing and more with skipIfExpression) -- remove?
+			//if((strlen($va_item['text'])>0) && $vs_regexp){
+			//	if(!preg_match("!".$vs_regexp."!i", $va_item['text'])) {
+ 			//		unset($va_item_info[$vn_key]);
+ 			//		continue;
+ 			//	}
+			//}
 
 			// do replacements
 			$va_item['text'] = ca_data_exporter_items::replaceText($va_item['text'],$va_replacements);

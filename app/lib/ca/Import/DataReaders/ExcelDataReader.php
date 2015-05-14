@@ -156,6 +156,10 @@ class ExcelDataReader extends BaseDataReader {
 	 * @return mixed
 	 */
 	public function get($pn_col, $pa_options=null) {
+		if(!is_numeric($pn_col)) {
+			$pn_col = PHPExcel_Cell::columnIndexFromString($pn_col);
+		}
+
 		if (is_array($this->opa_row_buf) && ((int)$pn_col > 0) && ((int)$pn_col <= sizeof($this->opa_row_buf))) {
 			return $this->opa_row_buf[(int)$pn_col];
 		}

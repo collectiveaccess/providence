@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -338,15 +338,16 @@ class ca_data_exporter_items extends BaseModel {
 			'description' => _t('The current mapping is skipped if the given expression evaluates to true.')
 		);
 
-		$va_settings['filterByRegExp'] = array(
-			'formatType' => FT_TEXT,
-			'displayType' => DT_FIELD,
-			'width' => 40, 'height' => 1,
-			'takesLocale' => false,
-			'default' => '',
-			'label' => _t('Regular expression filter'),
-			'description' => _t('Any value that does NOT match this PCRE regular expression is filtered and not exported. Insert expression without delimiters.')
-		);
+		// Deprecated -- remove?
+		//$va_settings['filterByRegExp'] = array(
+		//	'formatType' => FT_TEXT,
+		//	'displayType' => DT_FIELD,
+		//	'width' => 40, 'height' => 1,
+		//	'takesLocale' => false,
+		//	'default' => '',
+		//	'label' => _t('Regular expression filter'),
+		//	'description' => _t('Any value that does NOT match this PCRE regular expression is filtered and not exported. Insert expression without delimiters.')
+		//);
 
 		$va_settings['original_values'] = array(
 			'formatType' => FT_TEXT,

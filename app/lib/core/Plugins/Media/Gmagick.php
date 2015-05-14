@@ -532,7 +532,10 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$o_xmp = new XMPParser();
 					if ($o_xmp->parse($ps_filepath)) {
 						if (is_array($va_xmp_metadata = $o_xmp->getMetadata()) && sizeof($va_xmp_metadata)) {
-							$this->metadata['XMP'] = $va_xmp_metadata;
+							$this->metadata['XMP'] = array();
+							foreach($va_xmp_metadata as $vs_xmp_tag => $va_xmp_values) {
+								$this->metadata['XMP'][$vs_xmp_tag] = join('; ',$va_xmp_values);
+							}
 						}
 					}
 					

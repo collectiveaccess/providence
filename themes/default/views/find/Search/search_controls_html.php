@@ -108,6 +108,7 @@
 						initItemID: '<?php print $this->getVar('browse_last_id'); ?>',
 						indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
 						typeMenuID: 'browseTypeMenu',
+						disabledItems: 'full',
 						
 						currentSelectionDisplayID: 'browseCurrentSelection'
 					});

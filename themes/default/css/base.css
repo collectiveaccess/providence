@@ -190,14 +190,13 @@ h5 {
     color: #333;
     padding: 0;
     font-size: 12px;
-    border-bottom: dotted 1px #fff;
     text-transform:none; width:100%;
     font-weight:normal;
     font-family:"din-regular", arial, sans-serif;
     text-transform:uppercase;
 }
 
-#leftNav h2 a, #leftNav h2 span { display: block; padding-left: 15px; padding-top: 7px; padding-bottom: 4px; text-decoration: none; color: #666666; }
+#leftNav h2 a, #leftNav h2 span { display: block; padding-left: 15px; padding-top: 7px; padding-bottom: 4px; text-decoration: none; color: #666666; border-right:1px solid #dddddd;} 
 #leftNav h2 a:hover{
     color: #1ab3c8;
 }
@@ -3199,6 +3198,7 @@ input[type="text"], input[type="textarea"], textarea,  input[type="password"] {
 }
 
 input[type="text"]:disabled, input[type="textarea"]:disabled, textarea:disabled {
+    background-color: #F0F0F0;
     color: #808080;
     -webkit-text-fill-color:#808080;
 }
@@ -3909,6 +3909,7 @@ div.quickSearchNoResults {
     font-weight:bold;
     color:#333;
     font-size:12px;
+    line-height: 27px;
 }
 /*#browseCriteria a.close{
     text-transform:uppercase;
@@ -3927,15 +3928,15 @@ div.quickSearchNoResults {
 #browseCriteria a.startOver, #searchRefineParameters a.startOver{
     color: #aaa;
     text-decoration:none;
-    font-size:12px;
     border-radius:4px;
     -moz-border-radius:4px;
     -webkit-border-radius:4px;
     border: 1px solid #ccc;
-    padding:5px 5px 4px 5px;
+    padding:4px 5px 4px 5px;
     text-transform:uppercase;
     font-size:11px;
-    margin-left:10px;
+    line-height: 27px;
+    white-space: nowrap;
 }
 #browseCriteria a.startOver:hover{
     color:#1ab3c8;
@@ -3952,6 +3953,7 @@ div.quickSearchNoResults {
 	display:inline;
 	font-size:11px;
 	margin-right: 5px;
+	line-height: 27px;
 }
 .criteriaLink a{
 	background-color:#eee;
@@ -3965,6 +3967,9 @@ div.quickSearchNoResults {
 	padding:5px 7px 5px 7px;
 	margin-left:5px;
 	text-decoration:none;
+}
+.criteriaLink:last-of-type{
+    margin-right:15px;
 }
 /* browse pop up panel */
 #splashBrowsePanel {

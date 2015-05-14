@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -147,14 +147,18 @@
 			}
 			
 			var html = '';
-			for(var i=0; i < data['results'].length; i++) {
-				if (data['results'][i].id > 0) {
-					html += "<li class='caWorldCatResultItem'><input type='checkbox' name='WorldCatID[]' value='" + data['results'][i].id + "' class='caWorldCatSearchResultCheckbox'/> <a href='#' class='caWorldCatSearchResultItem'>" + data['results'][i].label + "</a> <div class='caWorldCatSearchResultDetails' id='caWorldCatSearchResult_" + i + "'></div></li>";
-				} else {
-					html += "<li class='caWorldCatResultItem'>" + data['results'][i].label + "</li>";
+			if (jQuery.isArray(data['results']) && (data['results'].length > 0)) {
+				for(var i=0; i < data['results'].length; i++) {
+					if (data['results'][i].id > 0) {
+						html += "<li class='caWorldCatResultItem'><input type='checkbox' name='WorldCatID[]' value='" + data['results'][i].id + "' class='caWorldCatSearchResultCheckbox'/> <a href='#' class='caWorldCatSearchResultItem'>" + data['results'][i].label + "</a> <div class='caWorldCatSearchResultDetails' id='caWorldCatSearchResult_" + i + "'></div></li>";
+					} else {
+						html += "<li class='caWorldCatResultItem'>" + data['results'][i].label + "</li>";
+					}
 				}
+				html = "<ul>" + html + "</ul>";
+			} else {
+				html = "<div class='caWorldCatResultsMessage'><?php print addslashes(_t('No results found')); ?></div>";
 			}
-			html = "<ul>" + html + "</ul>";
 			
 			jQuery("#caWorldCatResults").html(html);
 		});

@@ -102,7 +102,7 @@
 			$va_type_restriction_filters = $this->_getRestrictionSQL($vs_linking_table, (int)$vn_id, $pa_options);
 		
 			$qr_reps = $o_db->query("
-				SELECT caor.representation_id, caor.media, caoor.is_primary, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id, caor.idno, caor.idno_sort, caor.md5, caor.mimetype, caor.original_filename, caoor.rank
+				SELECT caor.representation_id, caor.media, caoor.is_primary, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id, caor.idno, caor.idno_sort, caor.md5, caor.mimetype, caor.original_filename, caoor.rank, caoor.relation_id
 				FROM ca_object_representations caor
 				INNER JOIN {$vs_linking_table} AS caoor ON caor.representation_id = caoor.representation_id
 				LEFT JOIN ca_locales AS l ON caor.locale_id = l.locale_id
@@ -496,9 +496,7 @@
 		
 			$t_rep = new ca_object_representations();
 		
-			if ($this->inTransaction()) {
-				$t_rep->setTransaction($this->getTransaction());
-			}
+			if ($this->inTransaction()) { $t_rep->setTransaction($this->getTransaction()); }
 				
 			$vn_rep_id = null;
 			if(is_array($va_match_on = caGetOption('matchOn', $pa_options, null))) {
@@ -529,6 +527,9 @@
 				$t_rep->set('status', $pn_status);
 				$t_rep->set('access', $pn_access);
 				$t_rep->set('media', $ps_media_path, $pa_options);
+		
+				$o_idno = $t_rep->getIDNoPlugInInstance();
+				$t_rep->setIdnoWithTemplate($o_idno->makeTemplateFromValue(''));
 		
 				if (is_array($pa_values)) {
 					if (isset($pa_values['idno'])) {
@@ -623,9 +624,7 @@
 			if (!($t_oxor = $this->_getRepresentationRelationshipTableInstance())) { return null; }
 			$vs_pk = $this->primaryKey();
 			
-			if ($this->inTransaction()) {
-				$t_oxor->setTransaction($this->getTransaction());
-			}
+			if ($this->inTransaction()) { $t_oxor->setTransaction($this->getTransaction()); }
 			$t_oxor->setMode(ACCESS_WRITE);
 			$t_oxor->set($vs_pk, $vn_id);
 			$t_oxor->set('representation_id', $t_rep->getPrimaryKey());
@@ -689,9 +688,7 @@
 			$va_old_replication_keys = array();
 			
 			$t_rep = new ca_object_representations();
-			if ($this->inTransaction()) {
-				$t_rep->setTransaction($this->getTransaction());
-			}
+			if ($this->inTransaction()) { $t_rep->setTransaction($this->getTransaction());}
 			if (!$t_rep->load(array('representation_id' => $pn_representation_id))) {
 				$this->postError(750, _t("Representation id=%1 does not exist", $pn_representation_id), "RepresentableBaseModel->editRepresentation()");
 				return false;
@@ -764,6 +761,8 @@
 			
 				if (!($t_oxor = $this->_getRepresentationRelationshipTableInstance())) { return null; }
 				$vs_pk = $this->primaryKey();
+				
+				if ($this->inTransaction()) { $t_oxor->setTransaction($this->getTransaction());}
 				
 				if (!$t_oxor->load(array($vs_pk => $vn_id, 'representation_id' => $pn_representation_id))) {
 					$this->postError(750, _t("Representation id=%1 is not related to %3 id=%2", $pn_representation_id, $vn_id, $this->getProperty('NAME_SINGULAR')), "RepresentableBaseModel->editRepresentation()");

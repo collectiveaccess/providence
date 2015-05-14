@@ -45,11 +45,15 @@
 		# -------------------------------------------------------
 		public function insert($pa_options=null) {
 			$this->_generateSortableValue();	// populate sort field
+			// invalidate get() prefetch cache
+			SearchResult::clearResultCacheForTable($this->tableName());
 			return parent::insert($pa_options);
 		}
 		# -------------------------------------------------------
 		public function update($pa_options=null) {
 			$this->_generateSortableValue();	// populate sort field
+			// invalidate get() prefetch cache
+			SearchResult::clearResultCacheForTable($this->tableName());
 			
 			// Invalid entire labels-by-id cache since we can't know what entries pertain to the label we just changed
 			LabelableBaseModelWithAttributes::$s_labels_by_id_cache = array();		

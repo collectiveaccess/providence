@@ -47,7 +47,7 @@
 			if (!$vn_col) { 
 				print "<tr>";
 			}
-			if (!$vs_idno = $vo_result->get('ca_objects.idno')) {
+			if (!($vs_idno = $vo_result->get('ca_objects.idno'))) {
 				$vs_idno = "???";
 			}
 			$va_labels = $vo_result->getDisplayLabels($this->request);

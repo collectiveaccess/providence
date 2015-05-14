@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2014 Whirl-i-Gig
+ * Copyright 2011-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -532,6 +532,7 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 		if (!$this->getPrimaryKey()) { return false; }
 		
 		$t_stop = new ca_tour_stops();
+		if($this->inTransaction()) { $t_stop->setTransaction($this->getTransaction()); }
 		$t_stop->setMode(ACCESS_WRITE);
 		$t_stop->set('idno', $ps_idno);
 		$t_stop->set('type_id', $pn_type_id);
@@ -562,7 +563,9 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function removeStop($pn_stop_id) {
 		if (!($vn_tour_id = $this->getPrimaryKey())) { return false; }
+		
 		$t_stop = new ca_tour_stops();
+		if($this->inTransaction()) { $t_stop->setTransaction($this->getTransaction()); }
 		
 		if (!$t_stop->load(array('tour_id' => $vn_tour_id, 'stop_id' => $pn_stop_id))) { return false; }
 		$t_stop->setMode(ACCESS_WRITE);
