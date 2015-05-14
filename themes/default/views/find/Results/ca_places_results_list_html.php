@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -89,8 +89,8 @@ if (!$this->getVar('no_hierarchies_defined')) {
 						print " <a href='#' onclick='caOpenBrowserWith(".$vn_place_id.");'>".caNavIcon($this->request, __CA_NAV_BUTTON_HIER__)."</a>";
 					}
 					print "</td>";	
-					foreach($va_display_list as $vn_placement_id => $va_display_item) {
-						print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))."</td>";
+					foreach($va_display_list as $vn_placement_id => $va_info) {
+						print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request), $va_info['settings']))."</td>";
 					}
 ?>	
 				</tr>
