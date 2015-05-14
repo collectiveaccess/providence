@@ -4572,7 +4572,7 @@ if (!$vb_batch) {
 			}
 		}
 		
-		if ($vb_show_current_only && $t_item_rel) {
+		if ($vb_show_current_only && $t_item_rel && $t_item_rel->hasField('source_info')) {
 			$va_wheres[] = '('.$t_item_rel->tableName().'.source_info = \'current\')';
 		}
 
@@ -4908,7 +4908,6 @@ if (!$vb_batch) {
 				{$vs_order_by}
 			";
 
-			//print "<pre>$vs_sql</pre>\n";
 			$qr_res = $o_db->query($vs_sql);
 			
 			if ($vb_uses_relationship_types)  {

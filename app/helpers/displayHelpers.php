@@ -2147,8 +2147,13 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	 * @return mixed Output of processed templates
 	 */
 	function caProcessTemplateForIDs($ps_template, $pm_tablename_or_num, $pa_row_ids, $pa_options=null) {
-		unset($pa_options['request']);
-		unset($pa_options['template']);	// we pass through options to get() and don't want templates 
+		foreach(array(
+			'request', 
+			'template',	// we pass through options to get() and don't want templates 
+			'restrictToTypes', 'restrict_to_types', 'restrict_to_relationship_types', 'restrictToRelationshipTypes') as $vs_k) {
+			unset($pa_options[$vs_k]);
+		}
+		
 		if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = true; }
 		$pb_return_as_array = (bool)caGetOption('returnAsArray', $pa_options, false);
 		
@@ -2798,7 +2803,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 									$va_val = array();
 								
 									if (is_array($va_val_tmp)) {
-										$va_val_tmp = array_reverse($va_val_tmp);
+										//$va_val_tmp = array_reverse($va_val_tmp);
 										if($va_tmp[0] == 'hierarchy') {
 											if ($vs_hierarchy_name) { 
 												array_shift($va_val_tmp); 							// remove root
