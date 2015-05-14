@@ -336,7 +336,8 @@
 			
 			try {
 				$this->view->setVar('title', $ps_title);
-				$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME));
+				
+				$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME).'/');
 				$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
 			
 				$o_pdf = new PDFRenderer();
@@ -369,6 +370,7 @@
 				$this->view->setVar('marginRight', caGetOption('marginRight', $va_template_info, '0mm'));
 				$this->view->setVar('marginBottom', caGetOption('marginBottom', $va_template_info, '0mm'));
 				$this->view->setVar('marginLeft', caGetOption('marginLeft', $va_template_info, '0mm'));
+				
 				
 				$vs_content = $this->render("pdfStart.php");
 				
@@ -417,10 +419,6 @@
 				}
 				
 				$vs_content .= $this->render("pdfEnd.php");
-				
-				$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME).'/');
-				$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
-				
 				
 				$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'));
 				$o_pdf->render($vs_content, array('stream'=> true, 'filename' => caGetOption('filename', $va_template_info, 'labels.pdf')));

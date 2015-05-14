@@ -4588,6 +4588,10 @@ if (!$vb_batch) {
 		if ((!isset($pa_options['showDeleted']) || !$pa_options['showDeleted']) && $t_rel_item->hasField('deleted')) {
 			$va_wheres[] = "({$vs_related_table}.deleted = 0)";
 		}
+		
+		if (($va_criteria = caGetOption('criteria', $pa_options, null)) && (is_array($va_criteria)) && (sizeof($va_criteria))) {
+			$va_wheres[] = "(".join(" AND ", $va_criteria).")"; 
+		}
 
 		if($vb_self_relationship) {
 			//

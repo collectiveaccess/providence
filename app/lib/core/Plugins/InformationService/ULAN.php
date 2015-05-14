@@ -79,6 +79,9 @@ class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements 
 	public function lookup($pa_settings, $ps_search, $pa_options=null) {
 		if(!is_array($pa_options)) { $pa_options = array(); }
 
+		$vn_start = (int) caGetOption('start', $pa_options, 0);
+		$vn_limit = (int) caGetOption('limit', $pa_options, 50);
+
 		$va_service_conf = $this->opo_linked_data_conf->get('tgn');
 		$vs_search_field = (isset($va_service_conf['search_text']) && $va_service_conf['search_text']) ? 'luc:text' : 'luc:term';
 
@@ -95,7 +98,7 @@ class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements 
     gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
     {?ID foaf:focus/gvp:biographyPreferred/schema:description ?Bio}
     {?ID gvp:parentStringAbbrev ?Parents}
-} LIMIT 50');
+} OFFSET '.$vn_start.' LIMIT '.$vn_limit);
 
 		$va_results = $this->queryGetty($vs_query);
 		if(!is_array($va_results)) { return false; }
@@ -103,8 +106,8 @@ class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements 
 		$va_return = array();
 		foreach($va_results as $va_values) {
 			$vs_id = '';
-			if(preg_match("/[a-z]{3,4}\/[0-9]+$/", $va_values['ID']['value'], $va_matches)) {
-				$vs_id = str_replace('/', ':', $va_matches[0]);
+			if(preg_match("/\/[0-9]+$/", $va_values['ID']['value'], $va_matches)) {
+				$vs_id = str_replace('/', '', $va_matches[0]);
 			}
 
 			$vs_label = $va_values['TermPrefLabel']['value'] . " (".$va_values['Parents']['value'].")  - " . $va_values['Bio']['value'];
@@ -115,6 +118,8 @@ class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements 
 				'id' => $vs_id,
 			);
 		}
+
+		$va_return['count'] = is_array($va_return['results']) ? sizeof($va_return['results']) : 0;
 
 		return $va_return;
 	}

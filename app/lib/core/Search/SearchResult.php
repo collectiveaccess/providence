@@ -1212,7 +1212,8 @@ class SearchResult extends BaseObject {
 						$this->prefetch($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), $pa_options);	
 					}
 					return $this->_getIntrinsicValue(self::$s_prefetch_cache[$va_path_components['table_name']][$vn_row_id], $t_instance, $va_val_opts);
-				} elseif(!$t_instance->hasElement($va_path_components['field_name']) && $t_instance->isValidBundle($va_path_components['field_name'])) {
+
+				} elseif(method_exists($t_instance, 'isValidBundle') && !$t_instance->hasElement($va_path_components['field_name']) && $t_instance->isValidBundle($va_path_components['field_name'])) {
 //
 // [PRIMARY TABLE] Special bundle
 //				
@@ -1460,7 +1461,7 @@ class SearchResult extends BaseObject {
 							$t_element = $pt_instance->_getElementInstance($o_value->getElementID());
 							$vn_list_id = $t_element->get('list_id');
 							
-							$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('list_id' => $vn_list_id)));
+							$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('alwaysReturnItemID' => !caGetOption('convertCodesToDisplayText', $pa_options, false), 'list_id' => $vn_list_id)));
 							break;
 						default:
 							$vs_val_proc = $o_value->getDisplayValue($pa_options);

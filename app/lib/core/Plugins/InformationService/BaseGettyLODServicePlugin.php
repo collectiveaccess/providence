@@ -97,10 +97,13 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 
 			$vs_uri_for_pull = isset($va_node['uri']) ? $va_node['uri'] : null;
 
-			$vs_display .= "<div class='formLabel'>";
-			$vs_display .= isset($va_node['label']) ? $va_node['label'].": " : "";
-			$vs_display .= "<span class='formLabelPlain'>".self::getLiteralFromRDFNode($ps_url, $va_node['literal'], $vs_uri_for_pull, $va_node)."</span>";
-			$vs_display .= "</div>\n";
+			// only display if there's content
+			if(strlen($vs_content = self::getLiteralFromRDFNode($ps_url, $va_node['literal'], $vs_uri_for_pull, $va_node)) > 0) {
+				$vs_display .= "<div class='formLabel'>";
+				$vs_display .= isset($va_node['label']) ? $va_node['label'].": " : "";
+				$vs_display .= "<span class='formLabelPlain'>".$vs_content."</span>";
+				$vs_display .= "</div>\n";
+			}
 		}
 
 		return array('display' => $vs_display);
