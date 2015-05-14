@@ -1061,7 +1061,7 @@ class SearchResult extends BaseObject {
 									}
 									$va_hier_list[] = $va_acc;
 								} else { 
-									return $vb_return_as_array ? array_filter($va_hiers, 'strlen') : join($vs_delimiter, array_filter($va_hiers, 'strlen'));
+									return $vb_return_as_array ? $va_hiers : join($vs_delimiter, array_filter($va_hiers, 'strlen'));
 								}
 							}
 						}
