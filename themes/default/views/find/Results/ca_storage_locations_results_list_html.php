@@ -88,7 +88,7 @@ if (!$this->getVar('no_hierarchies_defined')) {
 					}
 					print "</td>";		
 					foreach($va_display_list as $vn_placement_id => $va_info) {
-						print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request), $va_info['settings']))."</td>";
+						print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array()))."</td>";
 					}
 ?>	
 				</tr>

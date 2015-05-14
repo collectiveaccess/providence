@@ -65,7 +65,7 @@
 		// Output configured fields in display
 		foreach($va_display_list as $vn_placement_id => $va_info) {
 			if (in_array($va_info['bundle_name'], array('ca_objects.preferred_labels', 'ca_object_labels.name'))) { continue; } 		// skip preferred labels because we always output them above
-			if ($vs_display_text = $t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request), $va_info['settings']))) {
+			if ($vs_display_text = $t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array()))) {
 				print "<div class='objectFullTextTextBlock'><span class='formLabel'>".$va_info['display']."</span>: ".$vs_display_text."</div>\n";
 			}
 		}
