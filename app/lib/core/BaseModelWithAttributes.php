@@ -2262,6 +2262,20 @@
 				$va_references = $this->getAuthorityElementReferences();
 				
 				$o_view->setVar('references', $va_references);
+				
+				// make search strings
+				$va_element_list = $this->getAuthorityElementList();
+				
+				$va_search_strings = array();
+				
+				$vn_id = $this->getPrimaryKey();
+				print_R($va_element_list);
+				foreach($va_element_list as $vs_table => $va_elements_by_table) {
+					foreach($va_elements_by_table as $vn_element_id => $va_element_info) {
+						$va_search_strings[$vs_table][] = "{$vs_table}.".$va_element_info['element_code'].":{$vn_id}";
+					}
+				}
+				$o_view->setVar('search_strings', $va_search_strings);
 			}
 			
 			$o_view->setVar('errors', $va_errors);
@@ -2297,6 +2311,64 @@
 				return $va_element_datatypes[$this->tableName()];
 			}
 			return null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * 
+		 *
+		 * @param array $pa_options Option include:
+		 *		row_id = Return references for specified row. [Default is to return references for currently loaded row]
+		 *
+		 * @return mixed 
+		 */
+		public function getAuthorityElementList($pa_options=null) {
+			if (!($vn_datatype = $this->authorityElementDatatype())) { return null; }
+			if (!($vn_id = caGetOption('row_id', $pa_options, null))) { 
+				if (!($vn_id = $this->getPrimaryKey())) { 
+					return null; 
+				}
+			}
+			
+			$o_db = $this->getDb();
+			
+			switch($vn_datatype) {
+				case 3: 	// Lists
+					$qr_res = $o_db->query("
+						SELECT DISTINCT a.element_id, a.table_num, md.element_code, md.parent_id, md.hier_element_id
+						FROM ca_attribute_values cav
+						INNER JOIN ca_attributes AS a ON a.attribute_id = cav.attribute_id
+						INNER JOIN ca_metadata_elements AS md ON md.element_id = cav.element_id
+						WHERE
+							md.datatype = ? AND cav.item_id = ?
+					", array($vn_datatype, $vn_id));
+					break;
+				default:
+					$qr_res = $o_db->query("
+						SELECT DISTINCT a.element_id, a.table_num, md.element_code, md.parent_id, md.hier_element_id
+						FROM ca_attribute_values cav
+						INNER JOIN ca_attributes AS a ON a.attribute_id = cav.attribute_id
+						INNER JOIN ca_metadata_elements AS md ON md.element_id = cav.element_id
+						WHERE
+							md.datatype = ? AND cav.value_integer1 = ?
+					", array($vn_datatype, $vn_id));
+					break;
+			}
+			
+			$va_elements = array();
+			
+			$o_dm = Datamodel::load();
+			while($qr_res->nextRow()) {
+				$va_row = $qr_res->getRow();
+				$va_elements[$o_dm->getTableName($va_row['table_num'])][$va_row['element_id']] = array(
+					'element_id' => $va_row['element_id'],
+					'element_code' => $va_row['element_code'],
+					'parent_id' => $va_row['parent_id'],
+					'hier_element_id' => $va_row['hier_element_id']
+				);
+			}
+			
+			
+			return $va_elements;
 		}
 		# ------------------------------------------------------------------
 		/**

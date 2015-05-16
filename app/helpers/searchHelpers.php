@@ -142,6 +142,27 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 				break;
 		}
 	}
+	 # ------------------------------------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caSearchLink($po_request, $ps_content, $ps_classname, $ps_table, $ps_search, $pa_other_params=null, $pa_attributes=null, $pa_options=null) {
+		if (!($vs_url = caSearchUrl($po_request, $ps_table, $ps_search, false, $pa_other_params, $pa_options))) {
+			return "<strong>Error: no url for search</strong>";
+		}
+		
+		$vs_tag = "<a href='".$vs_url."'";
+		
+		if ($ps_classname) { $vs_tag .= " class='$ps_classname'"; }
+		if (is_array($pa_attributes)) {
+			$vs_tag .= _caHTMLMakeAttributeString($pa_attributes);
+		}
+		
+		$vs_tag .= '>'.$ps_content.'</a>';
+		
+		return $vs_tag;
+	}
+	 
 	# ---------------------------------------
 	/**
 	 * 
