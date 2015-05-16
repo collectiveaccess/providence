@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -109,7 +109,7 @@
 			if (in_array($va_info['bundle_name'], array('ca_objects.preferred_labels', 'ca_object_labels.name'))) { continue; }		// skip preferred labels because we always output it above
 			if (in_array($va_tmp[0], array('ca_object_representations'))) { continue; } // skip object representations
 			
-			if (!strlen($vs_display_value = $t_display->getDisplayValue($t_item, $vn_placement_id, array('request' => $this->request)))) {
+			if (!strlen($vs_display_value = $t_display->getDisplayValue($t_item, $vn_placement_id, array_merge(array('request' => $this->request), $va_info['settings'])))) {
 				if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }
 				$vs_display_value = "<"._t('not defined').">";
 				$vs_class = " notDefined";
