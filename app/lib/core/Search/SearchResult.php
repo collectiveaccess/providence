@@ -737,6 +737,7 @@ class SearchResult extends BaseObject {
 	 * 	@return mixed String or array
 	 */
 	public function get($ps_field, $pa_options=null) {
+		if(!is_array($pa_options)) { $pa_options = array(); }
 		$vb_return_as_array = isset($pa_options['returnAsArray']) ? (bool)$pa_options['returnAsArray'] : false;
 		$va_filters = is_array($pa_options['filters']) ? $pa_options['filters'] : array();
 		
