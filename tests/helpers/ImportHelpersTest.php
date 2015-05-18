@@ -35,9 +35,6 @@ class ImportHelpersTest extends PHPUnit_Framework_TestCase {
 	# -------------------------------------------------------
 	public function testAATMatch() {
 		// some real-world examples
-		//People and Culture:Associated Concepts:concepts in the arts:artistic concepts:forms of expression:forms of expression: visual arts:abstraction
-		//Objects We Use:Visual Works:visual works:visual works by medium or technique:prints:prints by process or technique:prints by process: transfer method:intaglio prints:etchings
-		//Objects We Use:Visual Works:visual works:visual works by medium or technique:works on paper
 		$vm_ret = caMatchAAT(
 			explode(':', 'People and Culture:Associated Concepts:concepts in the arts:artistic concepts:forms of expression:forms of expression: visual arts:abstraction')
 		);
@@ -58,10 +55,32 @@ class ImportHelpersTest extends PHPUnit_Framework_TestCase {
 
 		$vm_ret = caMatchAAT(
 			explode(':', 'People and Culture:Styles and Periods:styles and periods by region:European:European styles and periods:modern European styles and movements:modern European fine arts styles and movements:Abstract'),
-			180, array('removeParensFromLabelForComparison' => true)
+			180, array('removeParensFromLabels' => true)
 		);
 
 		$this->assertEquals('Abstract (fine arts style) (&lt;modern European fine arts styles and movements&gt;, &lt;modern European styles and movements&gt;)|http://vocab.getty.edu/aat/300108127|aat:300108127', $vm_ret);
+
+		$vm_ret = caMatchAAT(
+			explode(':', 'People and Culture:Associated Concepts:concepts in the arts:artistic concepts:art genres:computer art'),
+			180, array('removeParensFromLabels' => true)
+		);
+
+		$this->assertEquals('computer art (visual works) (digital art (visual works), new media art)|http://vocab.getty.edu/aat/300069478|aat:300069478', $vm_ret);
+
+		$vm_ret = caMatchAAT(
+			explode(':', 'Descriptors:Processes and Techniques:processes and techniques:processes and techniques by specific type:image-making processes and techniques:painting and painting techniques:painting techniques:painting techniques by medium:acrylic painting (technique)'),
+			180, array('removeParensFromLabels' => true)
+		);
+
+		$this->assertEquals('acrylic painting (technique) (&lt;painting techniques by medium&gt;, painting techniques)|http://vocab.getty.edu/aat/300182574|aat:300182574', $vm_ret);
+
+		/* don't bother
+		$vm_ret = caMatchAAT(
+			explode(':', 'Descriptors:Processes and Techniques:processes and techniques:processes and techniques by specific type:image-making processes and techniques:painting and painting techniques:painting (image-making)'),
+			180, array('removeParensFromLabels' => true)
+		);
+
+		var_dump($vm_ret);*/
 	}
 	# -------------------------------------------------------
 }

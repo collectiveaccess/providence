@@ -1069,7 +1069,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	 * @param array $pa_hierarchy_path
 	 * @param int $pn_threshold
 	 * @param array $pa_options
-	 * 		removeParensFromLabelForComparison =
+	 * 		removeParensFromLabels = Remove parens from labels for search and string comparison. This can improve results in specific cases.
 	 * @return bool|string
 	 */
 	function caMatchAAT($pa_hierarchy_path, $pn_threshold=180, $pa_options = array()) {
@@ -1080,10 +1080,14 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 
 		if(!is_array($pa_hierarchy_path)) { return false; }
 
-		$pb_remove_parens = caGetOption('removeParensFromLabelForComparison', $pa_options, false);
+		$pb_remove_parens_from_labels = caGetOption('removeParensFromLabels', $pa_options, false);
 
 		// search the bottom-most component (the actual term)
 		$vs_bot = trim(array_pop($pa_hierarchy_path));
+
+		if($pb_remove_parens_from_labels) {
+			$vs_bot = trim(preg_replace("/\([\p{L}\-\_\s]+\)/", '', $vs_bot));
+		}
 
 		$o_service = new WLPlugInformationServiceAAT();
 
@@ -1096,7 +1100,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 			if(stripos($va_hit['TermPrefLabel']['value'], $vs_bot) !== false) { // only consider terms that match what we search
 
 				// calculate similarity as a number by comparing both the term and the parent string
-				if($pb_remove_parens) {
+				if($pb_remove_parens_from_labels) {
 					$vs_label_cmp = trim(preg_replace("/\([\p{L}\s]+\)/", '', $va_hit['TermPrefLabel']['value']));
 				} else {
 					$vs_label_cmp = $va_hit['TermPrefLabel']['value'];
@@ -1106,6 +1110,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 
 				// it's a weighted sum because the term label is more important than the exact path
 				$vn_tmp = 2*$vn_label_percent + $vn_parent_percent;
+				//var_dump($va_hit); var_dump($vn_tmp);
 				if($vn_tmp > $vn_best_distance) {
 					$vn_best_distance = $vn_tmp;
 					$vn_pick = $vn_i;
