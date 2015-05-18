@@ -160,12 +160,12 @@ class ItemService extends BaseJSONService {
 
 		// labels
 
-		$va_labels = $t_instance->get($this->ops_table.".preferred_labels",array("returnAllLocales" => true));
+		$va_labels = $t_instance->get($this->ops_table.".preferred_labels", array("returnAllLocales" => true));
 		$va_labels = end($va_labels);
-		if(is_array($va_labels)){
-			foreach($va_labels as $vn_locale_id => $va_labels_by_locale){
-				foreach($va_labels_by_locale as $va_tmp){
-					$va_return["preferred_labels"][$va_locales[$vn_locale_id]["code"]][] = $va_tmp[$t_instance->getLabelDisplayField()];
+		if(is_array($va_labels)) {
+			foreach ($va_labels as $vn_locale_id => $va_labels_by_locale) {
+				foreach ($va_labels_by_locale as $vs_tmp) {
+					$va_return["preferred_labels"][$va_locales[$vn_locale_id]["code"]][] = $vs_tmp;
 				}
 			}
 		}
@@ -174,8 +174,8 @@ class ItemService extends BaseJSONService {
 		$va_labels = end($va_labels);
 		if(is_array($va_labels)){
 			foreach($va_labels as $vn_locale_id => $va_labels_by_locale){
-				foreach($va_labels_by_locale as $va_tmp){
-					$va_return["nonpreferred_labels"][$va_locales[$vn_locale_id]["code"]][] = $va_tmp[$t_instance->getLabelDisplayField()];
+				foreach($va_labels_by_locale as $vs_tmp){
+					$va_return["nonpreferred_labels"][$va_locales[$vn_locale_id]["code"]][] = $vs_tmp;
 				}
 			}
 		}
@@ -219,17 +219,17 @@ class ItemService extends BaseJSONService {
 		}
 
 		// representations for representable stuff
-		if($t_instance instanceof RepresentableBaseModel){
+		if($t_instance instanceof RepresentableBaseModel) {
 			$va_reps = $t_instance->getRepresentations(array('preview170','original'));
-			if(is_array($va_reps) && (sizeof($va_reps)>0)){
+			if(is_array($va_reps) && (sizeof($va_reps)>0)) {
 				$va_return['representations'] = $va_reps;
 			}
 		}
 
 		// captions for representations
-		if($this->ops_table == "ca_object_representations"){
+		if($t_instance instanceof ca_object_representations) {
 			$va_captions = $t_instance->getCaptionFileList();
-			if(is_array($va_captions) && (sizeof($va_captions)>0)){
+			if(is_array($va_captions) && (sizeof($va_captions)>0)) {
 				$va_return['captions'] = $va_captions;
 			}
 		}
