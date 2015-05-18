@@ -124,13 +124,10 @@ class VictimService extends NS11mmService {
 			'last_modification' => $t_entity->get('ca_entities.lastModified', array("dateFormat" => 'iso8601'))
 		);
 		
-		$va_nonpreferred_labels = $t_entity->get('ca_entities.nonpreferred_labels', array('returnAsArray' => true));
-	
-		foreach($va_nonpreferred_labels as $vn_entity_id => $va_labels) {
-			foreach($va_labels as $vn_i => $va_label) {
-				unset($va_labels[$vn_i]['form_element']);
-			}
-			$va_data['alternate_names'] = $va_labels;
+		$va_nonpreferred_labels = $t_entity->get('ca_entities.nonpreferred_labels', array('returnAsArray' => true, 'assumeDisplayField' => false));
+
+		foreach($va_nonpreferred_labels as $va_label) {
+			$va_data['alternate_names'][] = $va_label;
 		}
 		// add place info
 		$va_places = $t_entity->getRelatedItems('ca_places');
@@ -274,7 +271,8 @@ class VictimService extends NS11mmService {
 					if (!sizeof($va_pub_targets)) { continue; }
 					
 					if (!$t_rep->load($va_rep['representation_id'])) { continue; }
-					if ($t_rep->get("ca_object_representations.memex_status") != $vn_publish_rep) { continue; }
+					
+					if ($t_rep->get("ca_object_representations.memex_status", array('convertCodesToDisplayText' => false)) != $vn_publish_rep) { continue; }
 					
 					// reset filesize property to reflect size of version, not size of original
 					foreach($va_reps[$vn_i]['paths'] as $vs_version => $vs_path) {

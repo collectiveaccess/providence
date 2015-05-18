@@ -2143,12 +2143,18 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 	 *		sortDirection = The direction of the sort of repeating values within a row template. May be either ASC (ascending) or DESC (descending). [Default is ASC]
 	 *		linkTarget = Optional target to use when generating <l> tag-based links. By default links point to standard detail pages, but plugins may define linkTargets that point elsewhere.
 	 * 		skipIfExpression = skip the elements in $pa_row_ids for which the given expression does not evaluate true
+	 *		includeBlankValuesInArray = include blank template values in returned array when returnAsArray is set. If you need the returned array of values to line up with the row_ids in $pa_row_ids this should be set. [Default is false]
 	 *
 	 * @return mixed Output of processed templates
 	 */
 	function caProcessTemplateForIDs($ps_template, $pm_tablename_or_num, $pa_row_ids, $pa_options=null) {
-		unset($pa_options['request']);
-		unset($pa_options['template']);	// we pass through options to get() and don't want templates 
+		foreach(array(
+			'request', 
+			'template',	// we pass through options to get() and don't want templates 
+			'restrictToTypes', 'restrict_to_types', 'restrict_to_relationship_types', 'restrictToRelationshipTypes') as $vs_k) {
+			unset($pa_options[$vs_k]);
+		}
+		
 		if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = true; }
 		$pb_return_as_array = (bool)caGetOption('returnAsArray', $pa_options, false);
 		
@@ -2798,7 +2804,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 									$va_val = array();
 								
 									if (is_array($va_val_tmp)) {
-										$va_val_tmp = array_reverse($va_val_tmp);
+										//$va_val_tmp = array_reverse($va_val_tmp);
 										if($va_tmp[0] == 'hierarchy') {
 											if ($vs_hierarchy_name) { 
 												array_shift($va_val_tmp); 							// remove root
@@ -3011,8 +3017,10 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "!\^([\/A-Za-z0-9]+\[[\@\[\]\
 		}
 		
 		
-		foreach($va_proc_templates as $vn_i => $vs_template) {
-			if (!strlen(trim($vs_template))) { unset($va_proc_templates[$vn_i]); }
+		if ($pb_return_as_array && !caGetOption('includeBlankValuesInArray', $pa_options, false)) {
+			foreach($va_proc_templates as $vn_i => $vs_template) {
+				if (!strlen(trim($vs_template))) { unset($va_proc_templates[$vn_i]); }
+			}
 		}
 		
 		// Transform links

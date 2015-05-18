@@ -1083,7 +1083,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							$va_display_template_values = array();
 							if($vs_bundle_template && is_array($va_relation_ids = caExtractValuesFromArrayList($va_reps, 'relation_id')) && sizeof($va_relation_ids)) {
 								if ($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName())) {
-									$va_display_template_values = caProcessTemplateForIDs($vs_bundle_template, $vs_linking_table, $va_relation_ids, array_merge($pa_options, array('returnAsArray' => true, 'returnAllLocales' => false)));
+									$va_display_template_values = caProcessTemplateForIDs($vs_bundle_template, $vs_linking_table, $va_relation_ids, array_merge($pa_options, array('returnAsArray' => true, 'returnAllLocales' => false, 'includeBlankValuesInArray' => true)));
 								}
 							}
 	
@@ -4572,7 +4572,7 @@ if (!$vb_batch) {
 			}
 		}
 		
-		if ($vb_show_current_only && $t_item_rel) {
+		if ($vb_show_current_only && $t_item_rel && $t_item_rel->hasField('source_info')) {
 			$va_wheres[] = '('.$t_item_rel->tableName().'.source_info = \'current\')';
 		}
 
@@ -4587,6 +4587,10 @@ if (!$vb_batch) {
 
 		if ((!isset($pa_options['showDeleted']) || !$pa_options['showDeleted']) && $t_rel_item->hasField('deleted')) {
 			$va_wheres[] = "({$vs_related_table}.deleted = 0)";
+		}
+		
+		if (($va_criteria = caGetOption('criteria', $pa_options, null)) && (is_array($va_criteria)) && (sizeof($va_criteria))) {
+			$va_wheres[] = "(".join(" AND ", $va_criteria).")"; 
 		}
 
 		if($vb_self_relationship) {
@@ -4904,7 +4908,6 @@ if (!$vb_batch) {
 				{$vs_order_by}
 			";
 
-			//print "<pre>$vs_sql</pre>\n";
 			$qr_res = $o_db->query($vs_sql);
 			
 			if ($vb_uses_relationship_types)  {

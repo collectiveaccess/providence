@@ -156,11 +156,14 @@
 				
 					$va_tmp['dimensions'][$vs_version] = caGetRepresentationDimensionsForDisplay($qr_reps, 'original', array());
 				}
-			
 				
 				if (isset($va_info['INPUT']['FETCHED_FROM']) && ($vs_fetched_from_url = $va_info['INPUT']['FETCHED_FROM'])) {
 					$va_tmp['fetched_from'] = $vs_fetched_from_url;
 					$va_tmp['fetched_on'] = (int)$va_info['INPUT']['FETCHED_ON'];
+				}
+
+				if (isset($va_info['REPLICATION_KEYS'])) {
+					$va_tmp['REPLICATION_KEYS'] = $va_info['REPLICATION_KEYS'];
 				}
 			
 				$va_tmp['num_multifiles'] = $t_rep->numFiles($vn_rep_id);
