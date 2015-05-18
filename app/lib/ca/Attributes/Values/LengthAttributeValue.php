@@ -156,22 +156,22 @@
  			switch($g_ui_units_pref) {
  				case 'metric':
  					$vo_measurement = new Zend_Measure_Length((float)$pa_value_array['value_decimal1'], 'METER', $g_ui_locale);
- 					$this->ops_text_value = (float)$vo_measurement->convertTo(Zend_Measure_Length::METER, 4);
+ 					$this->ops_text_value = $vo_measurement->convertTo(Zend_Measure_Length::METER, 4);
  					break;
  				case 'english':
  					$vo_measurement = new Zend_Measure_Length((float)$pa_value_array['value_decimal1'], 'METER', $g_ui_locale);
- 					$this->ops_text_value = (float)$vo_measurement->convertTo(Zend_Measure_Length::FEET, 4);
+ 					$this->ops_text_value = $vo_measurement->convertTo(Zend_Measure_Length::FEET, 4);
  					break;
  				default: // show value in unit entered, but adjusted for the UI locale
 					try {
 						$vo_measurement = new Zend_Measure_Length((float)$pa_value_array['value_decimal1'], 'METER', $g_ui_locale);
-						$this->ops_text_value = (float)$vo_measurement->convertTo($pa_value_array['value_longtext2'], 4);
+						$this->ops_text_value = $vo_measurement->convertTo($pa_value_array['value_longtext2'], 4);
 					} catch (Exception $e) { // derp
 						$this->ops_text_value = $pa_value_array['value_longtext1'];
 					}
  					break;
  			}	
- 			$this->opn_decimal_value = (float)$pa_value_array['value_decimal1'];
+ 			$this->opn_decimal_value = $pa_value_array['value_decimal1'];
  		}
  		# ------------------------------------------------------------------
  		/**
