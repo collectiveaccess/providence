@@ -55,6 +55,13 @@ class ImportHelpersTest extends PHPUnit_Framework_TestCase {
 		);
 
 		$this->assertEquals('works on paper (&lt;visual works by material or technique&gt;, visual works (works))|http://vocab.getty.edu/aat/300189621|aat:300189621', $vm_ret);
+
+		$vm_ret = caMatchAAT(
+			explode(':', 'People and Culture:Styles and Periods:styles and periods by region:European:European styles and periods:modern European styles and movements:modern European fine arts styles and movements:Abstract'),
+			180, array('removeParensFromLabelForComparison' => true)
+		);
+
+		$this->assertEquals('Abstract (fine arts style) (&lt;modern European fine arts styles and movements&gt;, &lt;modern European styles and movements&gt;)|http://vocab.getty.edu/aat/300108127|aat:300108127', $vm_ret);
 	}
 	# -------------------------------------------------------
 }

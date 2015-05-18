@@ -1068,10 +1068,19 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	 * Try to match given (partial) hierarchy path to a single subject in getty linked data AAT service
 	 * @param array $pa_hierarchy_path
 	 * @param int $pn_threshold
+	 * @param array $pa_options
+	 * 		removeParensFromLabelForComparison =
 	 * @return bool|string
 	 */
-	function caMatchAAT($pa_hierarchy_path, $pn_threshold=180) {
+	function caMatchAAT($pa_hierarchy_path, $pn_threshold=180, $pa_options = array()) {
+		$vs_cache_key = md5(print_r($pa_hierarchy_path, true));
+		if(MemoryCache::contains($vs_cache_key, 'AATMatches')) {
+			return MemoryCache::fetch($vs_cache_key, 'AATMatches');
+		}
+
 		if(!is_array($pa_hierarchy_path)) { return false; }
+
+		$pb_remove_parens = caGetOption('removeParensFromLabelForComparison', $pa_options, false);
 
 		// search the bottom-most component (the actual term)
 		$vs_bot = trim(array_pop($pa_hierarchy_path));
@@ -1087,7 +1096,12 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 			if(stripos($va_hit['TermPrefLabel']['value'], $vs_bot) !== false) { // only consider terms that match what we search
 
 				// calculate similarity as a number by comparing both the term and the parent string
-				similar_text($va_hit['TermPrefLabel']['value'], $vs_bot, $vn_label_percent);
+				if($pb_remove_parens) {
+					$vs_label_cmp = trim(preg_replace("/\([\p{L}\s]+\)/", '', $va_hit['TermPrefLabel']['value']));
+				} else {
+					$vs_label_cmp = $va_hit['TermPrefLabel']['value'];
+				}
+				similar_text($vs_label_cmp, $vs_bot, $vn_label_percent);
 				similar_text($va_hit['ParentsFull']['value'], join(' ', array_reverse($pa_hierarchy_path)), $vn_parent_percent);
 
 				// it's a weighted sum because the term label is more important than the exact path
@@ -1098,7 +1112,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 				}
 			}
 		}
-		
+
 		if($vn_pick >= 0 && ($vn_best_distance > $pn_threshold)) {
 			$va_pick = $va_hits[$vn_pick];
 			$vs_id = '';
@@ -1115,7 +1129,9 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 				'id' => $vs_id,
 			);
 
-			return join('|', $va_return);
+			$vs_return = join('|', $va_return);
+			MemoryCache::save($vs_cache_key, $vs_return, 'AATMatches');
+			return $vs_return;
 		}
 
 		return false;
