@@ -35,6 +35,10 @@
 	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
 	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
 
+	require_once(__CA_LIB_DIR__.'/core/Plugins/InformationService/TGN.php');
+	require_once(__CA_LIB_DIR__.'/core/Plugins/InformationService/AAT.php');
+	require_once(__CA_LIB_DIR__.'/core/Plugins/InformationService/ULAN.php');
+
 	# ---------------------------------------
 	/**
 	 * 
@@ -1060,3 +1064,59 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 		return $vs_return;
 	}
 	# ---------------------------------------------------------------------
+	/**
+	 * Try to match given (partial) hierarchy path to a single subject in getty linked data AAT service
+	 * @param array $pa_hierarchy_path
+	 * @param int $pn_threshold
+	 * @return bool|string
+	 */
+	function caMatchAAT($pa_hierarchy_path, $pn_threshold=180) {
+		if(!is_array($pa_hierarchy_path)) { return false; }
+
+		// search the bottom-most component (the actual term)
+		$vs_bot = trim(array_pop($pa_hierarchy_path));
+
+		$o_service = new WLPlugInformationServiceAAT();
+
+		$va_hits = $o_service->lookup(array(), $vs_bot, array('phrase' => true, 'raw' => true));
+		if(!is_array($va_hits)) { return false; }
+
+		$vn_best_distance = 0;
+		$vn_pick = -1;
+		foreach($va_hits as $vn_i => $va_hit) {
+			if(stripos($va_hit['TermPrefLabel']['value'], $vs_bot) !== false) { // only consider terms that match what we search
+
+				// calculate similarity as a number by comparing both the term and the parent string
+				similar_text($va_hit['TermPrefLabel']['value'], $vs_bot, $vn_label_percent);
+				similar_text($va_hit['ParentsFull']['value'], join(' ', array_reverse($pa_hierarchy_path)), $vn_parent_percent);
+
+				// it's a weighted sum because the term label is more important than the exact path
+				$vn_tmp = 2*$vn_label_percent + $vn_parent_percent;
+				if($vn_tmp > $vn_best_distance) {
+					$vn_best_distance = $vn_tmp;
+					$vn_pick = $vn_i;
+				}
+			}
+		}
+		
+		if($vn_pick >= 0 && ($vn_best_distance > $pn_threshold)) {
+			$va_pick = $va_hits[$vn_pick];
+			$vs_id = '';
+			if(preg_match("/[a-z]{3,4}\/[0-9]+$/", $va_pick['ID']['value'], $va_matches)) {
+				$vs_id = str_replace('/', ':', $va_matches[0]);
+			}
+
+			$vs_label = $va_pick['TermPrefLabel']['value'] . " (" . $va_pick['Parents']['value'] . ")";
+			$vs_label = preg_replace('/\,\s\.\.\.\s[A-Za-z\s]+Facet\s*/', '', $vs_label);
+
+			$va_return = array(
+				'label' => htmlentities($vs_label),
+				'url' => $va_pick['ID']['value'],
+				'id' => $vs_id,
+			);
+
+			return join('|', $va_return);
+		}
+
+		return false;
+	}

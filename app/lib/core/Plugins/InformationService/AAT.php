@@ -99,10 +99,11 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 			$vs_search = join(' AND ', $va_search);
 		}
 
-		$vs_query = urlencode('SELECT ?ID ?TermPrefLabel ?Parents {
+		$vs_query = urlencode('SELECT ?ID ?TermPrefLabel ?Parents ?ParentsFull {
 	?ID a skos:Concept; '.$vs_search_field.' "'.$vs_search.'"; skos:inScheme aat: ;
 	gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
 	{?ID gvp:parentStringAbbrev ?Parents}
+	{?ID gvp:parentString ?ParentsFull}
 	{?ID gvp:displayOrder ?Order}
 } ORDER BY DESC(?Order)
 LIMIT 50');
@@ -120,9 +121,10 @@ LIMIT 50');
 			}
 
 			$vs_label = $va_values['TermPrefLabel']['value'] . " (" . $va_values['Parents']['value'] . ")";
+			$vs_label = preg_replace('/\,\s\.\.\.\s[A-Za-z\s]+Facet\s*/', '', $vs_label);
 
 			$va_return['results'][] = array(
-				'label' => htmlentities(str_replace(', ... Objects Facet', '', $vs_label)),
+				'label' => htmlentities($vs_label),
 				'url' => $va_values['ID']['value'],
 				'id' => $vs_id,
 			);
