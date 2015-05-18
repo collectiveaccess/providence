@@ -35,9 +35,7 @@
 
 	// fetch data for bundle preview
 	$vs_bundle_preview = $t_instance->get($vs_bundle_name, array('convertCodesToDisplayText' => true));
-	if(strlen($vs_bundle_preview) > 30) {
-		$vs_bundle_preview = substr($vs_bundle_preview, 0, 30) . ' ...';
-	}
+	if(is_array($vs_bundle_preview)) { $vs_bundle_preview = ''; }
  	
  	$va_errors = array();
  	if(is_array($va_action_errors = $this->getVar('errors'))) {
@@ -48,11 +46,11 @@
  	if ($vb_batch) {
 		print caBatchEditorIntrinsicModeControl($t_instance, $vs_id_prefix);
 	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $vs_bundle_preview));
 ?>
 		<script type="text/javascript">
 			jQuery(document).ready(function() {
-				jQuery('#' + '<?php print $vs_id_prefix; ?>' + '_BundleContentPreview').text('<?php print strip_tags($vs_bundle_preview); ?>');
+				jQuery('#' + '<?php print $vs_id_prefix; ?>' + '_BundleContentPreview').text(<?php print caEscapeForBundlePreview($vs_bundle_preview); ?>);
 			});
 		</script>
 <?php

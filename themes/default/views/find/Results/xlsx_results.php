@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -80,9 +80,9 @@
 	
 	// Column headers
 	$o_sheet->getRowDimension($vn_line)->setRowHeight(30);
-	foreach($va_display_list as $vn_placement_id => $va_display_item) {
+	foreach($va_display_list as $vn_placement_id => $va_info) {
 		if($vs_column) {
-			$o_sheet->setCellValue($vs_column.$vn_line,$va_display_item['display']);
+			$o_sheet->setCellValue($vs_column.$vn_line,$va_info['display']);
 			$o_sheet->getStyle($vs_column.$vn_line)->applyFromArray($columntitlestyle);
 			$vs_column = next($va_a_to_z);
 		}
@@ -98,14 +98,14 @@
 		// default to automatic row height. works pretty well in Excel but not so much in LibreOffice/OOo :-(
 		$o_sheet->getRowDimension($vn_line)->setRowHeight(-1);
 
-		foreach($va_display_list as $vn_placement_id => $va_display_item) {
+		foreach($va_display_list as $vn_placement_id => $va_info) {
 
 			if (
-				(strpos($va_display_item['bundle_name'], 'ca_object_representations.media') !== false)
+				(strpos($va_info['bundle_name'], 'ca_object_representations.media') !== false)
 				&&
-				($va_display_item['settings']['display_mode'] == 'media') // make sure that for the 'url' mode we don't insert the image here
+				($va_info['settings']['display_mode'] == 'media') // make sure that for the 'url' mode we don't insert the image here
 			) {
-				$vs_version = str_replace("ca_object_representations.media.", "", $va_display_item['bundle_name']);
+				$vs_version = str_replace("ca_object_representations.media.", "", $va_info['bundle_name']);
 				$va_info = $vo_result->getMediaInfo('ca_object_representations.media',$vs_version);
 				
 				if($va_info['MIMETYPE'] == 'image/jpeg') { // don't try to insert anything non-jpeg into an Excel file
@@ -135,8 +135,8 @@
 					}
 
 				}
-			} elseif ($vs_display_text = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))) {
-				$o_sheet->setCellValue($vs_column.$vn_line, html_entity_decode(strip_tags(br2nl($vs_display_text))));
+			} elseif ($vs_display_text = $t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request, 'purify' => true), is_array($va_info['settings']) ? $va_info['settings'] : $va_info['settings']))) {
+				$o_sheet->setCellValue($vs_column.$vn_line, html_entity_decode(strip_tags(br2nl($vs_display_text)), ENT_QUOTES | ENT_HTML5));
 				// We trust the autosizing up to a certain point, but
 				// we want column widths to be finite :-).
 				// Since Arial is not fixed-with and font rendering

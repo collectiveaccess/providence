@@ -1152,9 +1152,10 @@
 		 * @param string $ps_input_format The format of the source data
 		 * @param array $pa_options
 		 *		progressCallback =
-		 *		reportCallback =
-		 *		sendMail =
-		 *		dryRun =
+		 *		reportCallback = 
+		 *		sendMail = 
+		 *		dryRun = 
+		 *		importAllDatasets = 
 		 *		log = log directory path
 		 *		logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO. Constants are, in descending order of shrillness:
 		 *			KLogger::EMERG = Emergency messages (system is unusable)
@@ -1170,7 +1171,7 @@
 		public static function importMetadata($po_request, $ps_source, $ps_importer, $ps_input_format, $pa_options=null) {
 			$va_errors = $va_noticed = array();
 			$vn_start_time = time();
-
+			
 			$o_config = Configuration::load();
 			if (!(ca_data_importers::mappingExists($ps_importer))) {
 				$va_errors['general'] = array(
@@ -1181,12 +1182,13 @@
 				);
 				return false;
 			}
-
-			$vs_log_dir = caGetOption('log', $pa_options, null);
-			$vs_log_level = caGetOption('logLevel', $pa_options, "INFO");
-
-			$vb_dry_run = caGetOption('dryRun', $pa_options, false);
-
+			
+			$vs_log_dir = caGetOption('log', $pa_options, null); 
+			$vs_log_level = caGetOption('logLevel', $pa_options, "INFO"); 
+			$vb_import_all_datasets =  caGetOption('importAllDatasets', $pa_options, false); 
+			
+			$vb_dry_run = caGetOption('dryRun', $pa_options, false); 
+			
 			$vn_log_level = BatchProcessor::_logLevelStringToNumber($vs_log_level);
 
 			if (is_dir($ps_source)) {
@@ -1194,11 +1196,11 @@
 			} else {
 				$va_sources = array($ps_source);
 			}
-
+			
 			$vn_file_num = 0;
 			foreach($va_sources as $vs_source) {
 				$vn_file_num++;
-				if (!ca_data_importers::importDataFromSource($vs_source, $ps_importer, array('fileNumber' => $vn_file_num, 'numberOfFiles' => sizeof($va_sources), 'logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'useNcurses' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'dryRun' => $vb_dry_run))) {
+				if (!ca_data_importers::importDataFromSource($vs_source, $ps_importer, array('fileNumber' => $vn_file_num, 'numberOfFiles' => sizeof($va_sources), 'logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'useNcurses' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'dryRun' => $vb_dry_run, 'importAllDatasets' => $vb_import_all_datasets))) {
 					$va_errors['general'][] = array(
 						'idno' => "*",
 						'label' => "*",
@@ -1216,13 +1218,13 @@
 					//return true;
 				}
 			}
-
+			
 			$vn_elapsed_time = time() - $vn_start_time;
-
-
+			
+			
 			if (isset($pa_options['sendMail']) && $pa_options['sendMail']) {
 				if ($vs_email = trim($po_request->user->get('email'))) {
-					caSendMessageUsingView($po_request, array($vs_email => $po_request->user->get('fname').' '.$po_request->user->get('lname')), __CA_ADMIN_EMAIL__, _t('[%1] Batch metadata import completed', $po_request->config->get('app_display_name')), 'batch_metadata_import_completed.tpl',
+					caSendMessageUsingView($po_request, array($vs_email => $po_request->user->get('fname').' '.$po_request->user->get('lname')), __CA_ADMIN_EMAIL__, _t('[%1] Batch metadata import completed', $po_request->config->get('app_display_name')), 'batch_metadata_import_completed.tpl', 
 						array(
 							'notices' => $va_notices, 'errors' => $va_errors,
 							'numErrors' => sizeof($va_errors), 'numProcessed' => sizeof($va_notices),
@@ -1235,7 +1237,7 @@
 					);
 				}
 			}
-
+			
 			if (isset($pa_options['sendSMS']) && $pa_options['sendSMS']) {
 				SMS::send($po_request->getUserID(), _t("[%1] Metadata import processing for begun at %2 is complete", $po_request->config->get('app_display_name'),  caGetLocalizedDate($vn_start_time)));
 			}
@@ -1278,4 +1280,3 @@
 		}
 		# ----------------------------------------
 	}
-?>

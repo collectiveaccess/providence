@@ -702,7 +702,7 @@
 	 * Returns an HTML to edit an item in the appropriate bundle-based editor. If no specified item is specified (eg. no id value is set)
 	 * the a link to create a new item of the specfied type is returned.
 	 *
-	 * @param HTTPRequest $po_request The current request object
+	 * @param RequestHTTP $po_request The current request object
 	 * @param string $ps_content The displayed content of the link
 	 * @param string $ps_classname CSS classname(s) to apply to the link
 	 * @param string $ps_table The name or table_num of the edited items table
@@ -711,6 +711,7 @@
 	 * @param array $pa_attributes Optional array of attributes to set on the link's <a> tag. You can use this to set the id of the link, as well as any other <a> parameter.
 	 * @param array $pa_options Optional array of options. Supported options are:
 	 * 		verifyLink - if true and $pn_id is set, then existence of record with specified id is verified before link is returned. If the id does not exist then null is returned. Default is false - no verification performed.
+	 * @return string The <a> tag as string
 	 */
 	function caEditorLink($po_request, $ps_content, $ps_classname, $ps_table, $pn_id, $pa_additional_parameters=null, $pa_attributes=null, $pa_options=null) {
 		if (!($vs_url = caEditorUrl($po_request, $ps_table, $pn_id, false, $pa_additional_parameters, $pa_options))) {

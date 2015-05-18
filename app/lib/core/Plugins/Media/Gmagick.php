@@ -487,54 +487,57 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$this->metadata = array();
 					
 					// exif
-					//if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
-					//	if (is_array($va_exif = caSanitizeArray(@exif_read_data($ps_filepath, 'EXIF', true, false)))) { 							
-							// //
-// 							// Rotate incoming image as needed
-// 							//
-// 							if (isset($va_exif['IFD0']['Orientation'])) {
-// 								$vn_orientation = $va_exif['IFD0']['Orientation'];
-// 								$vs_tmp_basename = tempnam(caGetTempDirPath(), 'ca_image_tmp');
-// 								
-// 								$vb_is_rotated = false;
-// 								switch($vn_orientation) {
-// 									case 3:
-// 										$this->handle->rotateimage("#FFFFFF", 180);
-// 										unset($va_exif['IFD0']['Orientation']);
-// 										$vb_is_rotated = true;
-// 										break;
-// 									case 6:
-// 										$this->handle->rotateimage("#FFFFFF", 90);
-// 										unset($va_exif['IFD0']['Orientation']);
-// 										$vb_is_rotated = true;
-// 										break;
-// 									case 8:
-// 										$this->handle->rotateimage("#FFFFFF", -90);
-// 										unset($va_exif['IFD0']['Orientation']);
-// 										$vb_is_rotated = true;
-// 										break;
-// 								}
-// 								
-// 								if($vb_is_rotated) {								
-// 									if ( $this->handle->writeimage($vs_tmp_basename) ) {
-// 										$va_tmp = $this->handle->getimagegeometry();
-// 										$this->properties["faces"] = $this->opa_faces = caDetectFaces($vs_tmp_basename, $va_tmp['width'], $va_tmp['height']);
-// 									}
-// 									@unlink($vs_tmp_basename);
-// 								}
-// 							}
-// 	
-						//	$this->metadata['EXIF'] = $va_exif;
-						//}
-				//	}
+					if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
+						if (is_array($va_exif = caSanitizeArray(@exif_read_data($ps_filepath, 'EXIF', true, false)))) { 							
+							 
+ 							// Rotate incoming image as needed
+ 							
+ 							if (isset($va_exif['IFD0']['Orientation'])) {
+ 								$vn_orientation = $va_exif['IFD0']['Orientation'];
+ 								$vs_tmp_basename = tempnam(caGetTempDirPath(), 'ca_image_tmp');
+ 								
+ 								$vb_is_rotated = false;
+ 								switch($vn_orientation) {
+ 									case 3:
+ 										$this->handle->rotateimage("#FFFFFF", 180);
+ 										unset($va_exif['IFD0']['Orientation']);
+ 										$vb_is_rotated = true;
+ 										break;
+ 									case 6:
+ 										$this->handle->rotateimage("#FFFFFF", 90);
+ 										unset($va_exif['IFD0']['Orientation']);
+ 										$vb_is_rotated = true;
+ 										break;
+ 									case 8:
+ 										$this->handle->rotateimage("#FFFFFF", -90);
+ 										unset($va_exif['IFD0']['Orientation']);
+ 										$vb_is_rotated = true;
+ 										break;
+ 								}
+ 								
+ 								if($vb_is_rotated) {								
+ 									if ( $this->handle->writeimage($vs_tmp_basename) ) {
+ 										$va_tmp = $this->handle->getimagegeometry();
+ 										$this->properties["faces"] = $this->opa_faces = caDetectFaces($vs_tmp_basename, $va_tmp['width'], $va_tmp['height']);
+ 									}
+ 									@unlink($vs_tmp_basename);
+ 								}
+ 							}
+ 	
+							$this->metadata['EXIF'] = $va_exif;
+						}
+					}
 					
 					// XMP					
-					//$o_xmp = new XMPParser();
-					//if ($o_xmp->parse($ps_filepath)) {
-					//	if (is_array($va_xmp_metadata = $o_xmp->getMetadata()) && sizeof($va_xmp_metadata)) {
-					//		$this->metadata['XMP'] = $va_xmp_metadata;
-					//	}
-					//}
+					$o_xmp = new XMPParser();
+					if ($o_xmp->parse($ps_filepath)) {
+						if (is_array($va_xmp_metadata = $o_xmp->getMetadata()) && sizeof($va_xmp_metadata)) {
+							$this->metadata['XMP'] = array();
+							foreach($va_xmp_metadata as $vs_xmp_tag => $va_xmp_values) {
+								$this->metadata['XMP'][$vs_xmp_tag] = join('; ',$va_xmp_values);
+							}
+						}
+					}
 					
 					# load image properties
 					$va_tmp = $this->handle->getimagegeometry();

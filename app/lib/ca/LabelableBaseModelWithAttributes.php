@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -416,13 +416,16 @@
 	
 			$ps_boolean = caGetOption('boolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
 			$ps_label_boolean = caGetOption('labelBoolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
+			$ps_sort = caGetOption('sort', $pa_options, null);
 		
 			$vs_table = get_called_class();
 			$t_instance = new $vs_table;
 			$vn_table_num = $t_instance->tableNum();
 			$vs_table_pk = $t_instance->primaryKey();
 			
-			$t_label = $t_instance->getLabelTableInstance();
+			if (!($t_label = $t_instance->getLabelTableInstance())) {
+				return parent::find($pa_values, $pa_options);
+			}
 			$vs_label_table = $t_label->tableName();
 			$vs_label_table_pk = $t_label->primaryKey();
 			
@@ -435,6 +438,12 @@
 			$vb_has_label_fields = false;
 			foreach ($pa_values as $vs_field => $vm_value) {
 				if (in_array($vs_field, array('preferred_labels', 'nonpreferred_labels')) && is_array($vm_value) && sizeof($vm_value)) { $vb_has_label_fields = true; break; }
+			}
+			
+			$vs_sort_proc = $ps_sort;
+			if ((preg_match("!^{$vs_table}.preferred_labels[\.]{0,1}(.*)!", $ps_sort, $va_matches)) || (preg_match("!^{$vs_table}.nonpreferred_labels[\.]{0,1}(.*)!", $ps_sort, $va_matches))) { 
+				$vs_sort_proc = ($va_matches[1] && ($t_label->hasField($va_matches[1]))) ? "{$vs_label_table}.".$va_matches[1] : "{$vs_label_table}.".$t_label->getDisplayField();
+				$vb_has_label_fields = true; 
 			}
 			
 			$vb_has_attributes = false;
@@ -644,19 +653,19 @@
 			$vs_sql .=" WHERE {$vs_deleted_sql} ".join(" {$ps_boolean} ", $va_label_sql);
 			
 			$vs_orderby = '';
-			if ($vs_sort = caGetOption('sort', $pa_options, null)) {
+			if ($vs_sort_proc) {
 				$vs_sort_direction = caGetOption('sortDirection', $pa_options, 'ASC', array('validValues' => array('ASC', 'DESC')));
-				$va_tmp = explode(".", $vs_sort);
+				$va_tmp = explode(".", $vs_sort_proc);
 				if (sizeof($va_tmp) == 2) {
 					switch($va_tmp[0]) {
 						case $vs_table:
 							if ($t_instance->hasField($va_tmp[1])) {
-								$vs_orderby = " ORDER BY {$vs_sort} {$vs_sort_direction}";
+								$vs_orderby = " ORDER BY {$vs_sort_proc} {$vs_sort_direction}";
 							}
 							break;
 						case $vs_label_table:
 							if ($t_label->hasField($va_tmp[1])) {
-								$vs_orderby = " ORDER BY {$vs_sort} {$vs_sort_direction}";
+								$vs_orderby = " ORDER BY {$vs_sort_proc} {$vs_sort_direction}";
 							}
 							break;
 					}
@@ -801,7 +810,10 @@
 								$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->tableNum());
 								
 								$vb_check_access = is_array($pa_options['checkAccess']) && $t_instance->hasField('access');
-								$vs_sort = isset($pa_options['sort']) ? $pa_options['sort'] : null;
+								$va_sort = isset($pa_options['sort']) ? $pa_options['sort'] : null;
+								if (!is_array($va_sort) && $va_sort) { $va_sort = array($va_sort); }
+								if (!is_array($va_sort)) { $va_sort = array(); }
+								
 								$vs_sort_direction = (isset($pa_options['sort_direction']) && in_array(strtolower($pa_options['sort_direction']), array('asc', 'desc'))) ? strtolower($pa_options['sort_direction']) : 'asc';
 								
 								$qr_children = $this->makeSearchResult($this->tableName(), $va_children_ids);
@@ -810,7 +822,10 @@
 								while($qr_children->nextHit()) {
 									if ($vb_check_access && !in_array($qr_children->get("{$vs_table}.access"), $pa_options['checkAccess'])) { continue; }
 									
-									$vs_sort_key = ($vs_sort) ? $qr_children->get($vs_sort) : 0;
+									$vs_sort_key = '';
+									foreach($va_sort as $vs_sort){ 
+										$vs_sort_key .= ($vs_sort) ? $qr_children->get($vs_sort) : 0;
+									}
 									if(!is_array($va_data[$vs_sort_key])) { $va_data[$vs_sort_key] = array(); }
 									$va_data[$vs_sort_key] = array_merge($va_data[$vs_sort_key], $qr_children->get($vs_childless_path, array_merge($pa_options, array('returnAsArray' => true))));
 								}
@@ -1207,7 +1222,7 @@
 			$t_list = new ca_lists();
 			
 			// get labels
-			$va_preferred_labels = $this->get($this->tableName().".preferred_labels", array('returnAsArray' => true, 'returnAllLocales' => true));
+			$va_preferred_labels = $this->get($this->tableName().".preferred_labels", array('returnAsArray' => true, 'returnAllLocales' => true, 'assumeDisplayField' => false));
 			
 			if(is_array($va_preferred_labels) && sizeof($va_preferred_labels)) {
 				$va_preferred_labels_for_export = array();
@@ -1223,7 +1238,7 @@
 				$va_data['preferred_labels'] = $va_preferred_labels_for_export;
 			}
 			
-			$va_nonpreferred_labels = $this->get($this->tableName().".nonpreferred_labels", array('returnAsArray' => true, 'returnAllLocales' => true));
+			$va_nonpreferred_labels = $this->get($this->tableName().".nonpreferred_labels", array('returnAsArray' => true, 'returnAllLocales' => true, 'assumeDisplayField' => false));
 			if(is_array($va_nonpreferred_labels) && sizeof($va_nonpreferred_labels)) {
 				$va_nonpreferred_labels_for_export = array();
 				foreach($va_nonpreferred_labels as $vn_id => $va_labels_by_locale) {
@@ -1498,12 +1513,31 @@
  			return $va_labels;
  		}
  		# ------------------------------------------------------------------
-		/** 
+		/**
 		 * Returns number of preferred labels for the current row
 		 *
 		 * @return int Number of labels
 		 */
- 		public function getPreferredLabelCount() {
+		public function getPreferredLabelCount() {
+			return $this->getLabelCount(true);
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns number of nonpreferred labels for the current row
+		 *
+		 * @return int Number of labels
+		 */
+		public function getNonPreferredLabelCount() {
+			return $this->getLabelCount(false);
+		}
+		# ------------------------------------------------------------------
+		/** 
+		 * Returns number of preferred or nonpreferred labels for the current row
+		 *
+		 * @param bool $pb_preferred
+		 * @return int Number of labels
+		 */
+ 		public function getLabelCount($pb_preferred=true) {
  			if (!$this->getPrimaryKey()) { return null; }
 			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName(), true))) { return null; }
 			if ($this->inTransaction()) {
@@ -1520,12 +1554,13 @@
 						(l.".$this->primaryKey()." = ?)
 				", $this->getPrimaryKey());
  			} else {
+				$vn_is_preferred = ($pb_preferred ? 1 : 0);
 				$qr_res = $o_db->query("
 					SELECT l.label_id 
 					FROM ".$this->getLabelTableName()." l
 					WHERE 
-						(l.is_preferred = 1) AND (l.".$this->primaryKey()." = ?)
-				", $this->getPrimaryKey());
+						(l.is_preferred = ?) AND (l.".$this->primaryKey()." = ?)
+				", $vn_is_preferred, $this->getPrimaryKey());
 			}
  			
  			return $qr_res->numRows();
@@ -1612,6 +1647,20 @@
 		 */
 		public function getLabelTableName() {
 			return isset($this->LABEL_TABLE_NAME) ? $this->LABEL_TABLE_NAME : null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Static equivalent to @see getLabelTableName()
+		 * @param string $ps_table_name the base table name
+		 * @return string|bool
+		 */
+		public static function getLabelTable($ps_table_name) {
+			$o_dm = Datamodel::load();
+			$t_instance = $o_dm->getInstance($ps_table_name, true);
+			if($t_instance instanceof LabelableBaseModelWithAttributes) {
+				return $t_instance->getLabelTableName();
+			}
+			return false;
 		}
 		# ------------------------------------------------------------------
 		/**

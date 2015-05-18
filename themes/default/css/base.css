@@ -190,14 +190,13 @@ h5 {
     color: #333;
     padding: 0;
     font-size: 12px;
-    border-bottom: dotted 1px #fff;
     text-transform:none; width:100%;
     font-weight:normal;
     font-family:"din-regular", arial, sans-serif;
     text-transform:uppercase;
 }
 
-#leftNav h2 a, #leftNav h2 span { display: block; padding-left: 15px; padding-top: 7px; padding-bottom: 4px; text-decoration: none; color: #666666; }
+#leftNav h2 a, #leftNav h2 span { display: block; padding-left: 15px; padding-top: 7px; padding-bottom: 4px; text-decoration: none; color: #666666; border-right:1px solid #dddddd;} 
 #leftNav h2 a:hover{
     color: #1ab3c8;
 }
@@ -1195,16 +1194,23 @@ div.hint {
 .settingsBundle {
     padding: 10px;
 }
+
+/* often times referred to as bundlePreview */
 .bundleContentPreview {
-	position:absolute;
-	right:50px;
-	display:none;
-	font-style:italic;
-	color:#999999;
+	text-align:left;
+	display:inline-block;
+	color:#888888;
 	font-family: helvetica, sans-serif;
 	font-weight:normal;
-	font-size:11px;
+	font-size:13px;
 	padding-top:2px;
+	padding-left:10px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	width: 40%;
+	vertical-align:bottom;
+	padding-bottom:5px;
 }
 
 /* Style for labels on form fields where an error has occurred */
@@ -3192,6 +3198,7 @@ input[type="text"], input[type="textarea"], textarea,  input[type="password"] {
 }
 
 input[type="text"]:disabled, input[type="textarea"]:disabled, textarea:disabled {
+    background-color: #F0F0F0;
     color: #808080;
     -webkit-text-fill-color:#808080;
 }
@@ -3447,6 +3454,15 @@ a.exploreSelected {
     padding: 5px;
     font-size: 11px;
     font-style: italic;
+}
+
+.hierarchyCountDisplay {
+    text-align:right;
+    font-style:italic;
+    color:#999999;
+    font-family:helvetica, sans-serif;
+    font-size:11px;
+    margin-top:-8px;
 }
 
 /*** hierarchy navigation on editor pages ***/
@@ -3893,6 +3909,7 @@ div.quickSearchNoResults {
     font-weight:bold;
     color:#333;
     font-size:12px;
+    line-height: 27px;
 }
 /*#browseCriteria a.close{
     text-transform:uppercase;
@@ -3911,15 +3928,15 @@ div.quickSearchNoResults {
 #browseCriteria a.startOver, #searchRefineParameters a.startOver{
     color: #aaa;
     text-decoration:none;
-    font-size:12px;
     border-radius:4px;
     -moz-border-radius:4px;
     -webkit-border-radius:4px;
     border: 1px solid #ccc;
-    padding:5px 5px 4px 5px;
+    padding:4px 5px 4px 5px;
     text-transform:uppercase;
     font-size:11px;
-    margin-left:10px;
+    line-height: 27px;
+    white-space: nowrap;
 }
 #browseCriteria a.startOver:hover{
     color:#1ab3c8;
@@ -3936,6 +3953,7 @@ div.quickSearchNoResults {
 	display:inline;
 	font-size:11px;
 	margin-right: 5px;
+	line-height: 27px;
 }
 .criteriaLink a{
 	background-color:#eee;
@@ -3949,6 +3967,9 @@ div.quickSearchNoResults {
 	padding:5px 7px 5px 7px;
 	margin-left:5px;
 	text-decoration:none;
+}
+.criteriaLink:last-of-type{
+    margin-right:15px;
 }
 /* browse pop up panel */
 #splashBrowsePanel {
@@ -4192,7 +4213,7 @@ div.searchFormElementSettingsMessage {
     width:290px;
 }
 
-/ * SEARCH FORMS */
+/* SEARCH FORMS */
 
 .searchFormSelector {
     margin-bottom: 3px;
@@ -5246,6 +5267,10 @@ div.listRel {
     line-height:1.5em;
 }
 
+div.listRel:first-of-type {
+    margin-top:5px;
+}
+
 .caItemList {
     /* margin-top: 10px; */
     max-height: 500px;
@@ -6053,7 +6078,7 @@ div.searchlight-results div.searchlight-selected {
     color: red;
 }
 
-/ * OpenLayers */
+/* OpenLayers */
 
 .olMap {
     background-color: #999999;
@@ -7106,7 +7131,7 @@ div.caLibraryTransactionListItemDueDateLabel {
 }
 
 div.caLibraryTransactionListItemWillReserve {
-	color: #cc000;
+	color: #cc0000;
 	font-size: 11px;
 	font-weight: bold;
 }
@@ -7167,4 +7192,21 @@ div.caLibraryDashboardPanel {
 	width: 832px;
 	min-height: 100px;
 	margin: 10px 10px 10px 0;	
+}
+
+.authorityReferenceList ul  {
+	list-style-type: none;
+	padding: 0;
+	margin: 10px 0 0 5px;
+}
+
+.authorityReferenceList ul li {
+	padding: 0;
+	margin: 10px 0 0 5px;
+}
+
+div.authorityReferenceListContainer {
+	width: 100%;
+	overflow-y: hidden;
+	min-height: 200px;
 }

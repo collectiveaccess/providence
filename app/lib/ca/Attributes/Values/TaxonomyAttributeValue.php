@@ -111,7 +111,7 @@
 		'displayDelimiter' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
-			'default' => ',',
+			'default' => '; ',
 			'width' => 10, 'height' => 1,
 			'label' => _t('Value delimiter'),
 			'validForRootOnly' => 1,
@@ -146,7 +146,6 @@
 		}
  		# ------------------------------------------------------------------
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
-			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('uBioKeyCode'));
  			$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
  			$va_return = "";
 

@@ -54,12 +54,12 @@
 			$ps_type = 			$this->request->getParameter('type', pString);
 			$pn_element_id = 	$this->request->getParameter('element_id', pInteger);
 			$t_element = 		new ca_metadata_elements($pn_element_id);
-			
+
 			if (!$t_element->getPrimaryKey()) { 
 				// error
 				$va_items['error'] = array('label' => _t('ERROR: Invalid element_id'), 'idno' => '');
 			} else {
-			
+
 				$vs_service = $t_element->getSetting('service');
 			
 				$va_items = array();

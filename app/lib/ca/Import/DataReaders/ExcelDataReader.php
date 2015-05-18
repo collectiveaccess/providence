@@ -118,17 +118,16 @@ class ExcelDataReader extends BaseDataReader {
 					} else {
 						$this->opa_row_buf[] = $vs_val = trim((string)$o_cell->getValue());
 					}
-					if ($vs_val) { $vb_val_was_set = true; $vn_last_col_set = $vn_col;}
+					if (strlen($vs_val) > 0) { $vb_val_was_set = true; $vn_last_col_set = $vn_col;}
 				
 					$vn_col++;
 				
 					if ($vn_col > 255) { break; }	// max 255 columns; some Excel files have *thousands* of "phantom" columns
 				}
-				if (!$vb_val_was_set) { 
+				//if (!$vb_val_was_set) { 
 					//return $this->nextRow(); 
-					print "no val!";
-					continue;
-				}	// skip completely blank rows
+				//	continue;
+				//}	// skip completely blank rows
 			
 				return $o_row;
 			}
@@ -145,7 +144,7 @@ class ExcelDataReader extends BaseDataReader {
 	 */
 	public function seek($pn_row_num) {
 		$this->opn_current_row = $pn_row_num-1;
-		$this->opo_rows->seek($pn_row_num);
+		$this->opo_rows->seek(($pn_row_num > 0) ? ($pn_row_num - 1) : 0);
 		return $this->nextRow();
 	}
 	# -------------------------------------------------------
@@ -157,6 +156,10 @@ class ExcelDataReader extends BaseDataReader {
 	 * @return mixed
 	 */
 	public function get($pn_col, $pa_options=null) {
+		if(!is_numeric($pn_col)) {
+			$pn_col = PHPExcel_Cell::columnIndexFromString($pn_col);
+		}
+
 		if (is_array($this->opa_row_buf) && ((int)$pn_col > 0) && ((int)$pn_col <= sizeof($this->opa_row_buf))) {
 			return $this->opa_row_buf[(int)$pn_col];
 		}
@@ -220,6 +223,25 @@ class ExcelDataReader extends BaseDataReader {
 	 */
 	public function getDatasetCount() {
 		return $this->opo_handle->getSheetCount();
+	}
+	# -------------------------------------------------------
+	/**
+	 * Set current dataset for reading and reset current row to beginning
+	 * 
+	 * @param mixed $pm_dataset The number of the worksheet to read (starting at zero) [Default=0]
+	 * @return bool
+	 */
+	public function setCurrentDataset($pn_dataset=0) {
+		if (($pn_dataset < 0) || ($pn_dataset >= $this->getDatasetCount())) { return false; }
+		try {
+			$this->opo_handle->setActiveSheetIndex($pn_dataset);
+			$o_sheet = $this->opo_handle->getSheet($pn_dataset);
+			$this->opo_rows = $o_sheet->getRowIterator();
+			$this->opn_current_row = 0;
+			return true;
+		} catch (Exception $e) {
+			return false;
+		}
 	}
 	# -------------------------------------------------------
 }

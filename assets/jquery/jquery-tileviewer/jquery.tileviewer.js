@@ -36,7 +36,7 @@ The MIT License
 	ANNOTATIONS SUPPORT ADDED April 2013 by SK
 	MORE ANNOTATIONS SUPPORT ADDED October-December 2013 by SK
 	HAPPY HAPPY IMAGE ROTATION SUPPORT ADDED April 2014 by SK
-	USER INTERFACE OVERHAUL January 2015 by SK
+	USER INTERFACE OVERHAUL January-February 2015 by SK
 	*****************
 */
 
@@ -111,6 +111,7 @@ var methods = {
         return this.each(function() {
             var $this = $(this);
             options = $.extend(defaults, options);//override defaults with options
+            
             $this.data("options", options);
 
             ///////////////////////////////////////////////////////////////////////////////////
@@ -166,6 +167,8 @@ var methods = {
                         width: null,
                         height: null
                     },
+                    
+                    hammer: null,		// touch event detection (if Hammer.js is available)
                     
                     rotation: 0,		// degrees rotated
                     
@@ -1196,6 +1199,7 @@ var methods = {
   		view.annotations[i].points[view.mouseClickedOnControlPoint].y += dy;
   		view.make_annotation_dirty(i);
   		view.isAnnotationResize = true;
+  		view.draw();
   	}
  }
                    	
@@ -1243,13 +1247,13 @@ var methods = {
 								}
 								view.annotations[i].tx += (view.annotations[i].x - origX);
 								view.annotations[i].ty += (view.annotations[i].y - origY);
-								
 								break;
 						}
 						
 						
 						view.make_annotation_dirty(i);
 						view.isAnnotationTranslation = true;
+						view.draw();
  }
 						return;
                     },
@@ -1962,7 +1966,7 @@ var methods = {
 								.css("-ms-transform-origin", "50% 50%");
 					
 							
-							jQuery("#" + options.id + "RotationSlider").CircularSlider({ 
+							view.circularSlider = jQuery("#" + options.id + "RotationSlider").CircularSlider({ 
 								min : 0, 
 								max: 359, 
 								value : 0,
@@ -1977,6 +1981,10 @@ var methods = {
 								
 									view.update_textbox_position();
 								}
+							});
+							jQuery('.jcs-value').bind('click', function(e) {
+								view.circularSlider.setValue(0);
+								e.stopPropagation();
 							});
 							
 							//
@@ -2177,90 +2185,8 @@ var methods = {
 							//
 							// Touch events
 							//
-							
-							// TODO: "swipemove" event seems to sometimes causes problems because some mouse actions related to resizing of annotations are 
-							// incorrectly interpreted as swipes. Not sure what to do as of this writing (12.13.2013).
-							//
-							jQuery(view.canvas).bind('swipemove', function(e, m) {
-                				var offset = $(view.canvas).offset();
-								var desc = m.description.split(/:/);
-								if ((desc[0] != 'swipemove') || (desc[1] != '1')) {
-									return false;
-								}
-								
-								if (view.pan && view.pan.xdest) {
-									view.pan.xdest = view.pan.ydest = view.pan.leveldest = null; //cancel pan
-								}
-							
-								if (view.dragAnnotation) {
-									view.drag_annotation(view.dragAnnotation, m.delta[0].lastX, m.delta[0].lastY, m.originalEvent.pageX - offset.left, m.originalEvent.pageY - offset.top);
-								} else {
-									var a = view.rotation * (Math.PI/180);
-									var dx = m.delta[0].lastX;
-									var dy = m.delta[0].lastY;
-				
-									dxx = dx * Math.cos(a);
-									dxy = dy * Math.sin(a);
-					
-									dyx = dy * Math.cos((2*Math.PI) - a);
-									dyy = dx * Math.sin((2*Math.PI) - a);
-					
-									dx = dxx + dxy;
-									dy = dyx + dyy;
-					
-									layer.xpos += dx;
-									layer.ypos += dy;			
-								}
-								view.draw();
-								
-								e.preventDefault();
-								m.originalEvent.preventDefault();
-								return false;
-							});
-							
-							jQuery(view.canvas).bind('pinch', function(e, m) {
-								var desc = m.description.split(/:/);
-								if (desc[0] != 'pinch') {
-									return false;
-								}
-								if (view.pan && view.pan.xdest) {
-									view.pan.xdest = view.pan.ydest = view.pan.leveldest = null; //cancel pan
-								}
-								
-								if (m && (m.scale !== null)) {
-									var x = jQuery(view.canvas).data("touchx");
-									var y = jQuery(view.canvas).data("touchy");
-								
-									var scale = m.scale;
-									var old_tilesize = layer.tilesize;
-									if (scale < 1) { scale = -1 * (1/scale); }
-									scale = scale * (options.zoomSensitivity/4);
-									
-									view.change_zoom(scale, x, y);
-								}
-								e.preventDefault();
-								m.originalEvent.preventDefault();
-								return false;
-							});
-							
-							jQuery(view.canvas).bind('touchstart', function(e) {
-								var x = parseInt(e.originalEvent.targetTouches[0].clientX);
-								var y = parseInt(e.originalEvent.targetTouches[0].clientY);
-								if (e.originalEvent.targetTouches.length > 1) {		
-									// Average location of multiple touches							
-									var x2 = parseInt(e.originalEvent.targetTouches[1].clientX);
-									var y2 = parseInt(e.originalEvent.targetTouches[1].clientY);
-									x = (x + x2)/2;
-									y = (y + y2)/2;
-								}
-								
-								jQuery(view.canvas).data("touchx", x).data("touchy", y);
-							});
+
 						}
-                    },
-                    
-                    _dest_with_rotation: function(d) {
-                    
                     },
 
                     draw_tiles: function(ctx) {
@@ -2672,24 +2598,26 @@ var methods = {
                     },
 
                     pan: function() {
-                        var factor = Math.pow(2,layer.level)*layer.info.tilesize/layer.tilesize;
-                        var xdest_client = view.pan.xdest/factor + layer.xpos;
-                        var ydest_client = view.pan.ydest/factor + layer.ypos;
-                        var center = view.center_pixelpos();
-                        var dx = center.x - view.pan.xdest;
-                        var dy = center.y - view.pan.ydest;
+                        var factor = Math.pow(2,layer.level);
                         
-                        var dist = Math.sqrt(dx*dx + dy*dy);
-
-                            //Step 2a) Pan to destination
-                        if(dist >= factor) {
-                    		layer.xpos += dx / factor / 10;
-                    		layer.ypos += dy / factor / 10;
+                        // convert pan destination to client coordinates
+                        var xdest_client = ((view.pan.xdest) * (layer.tilesize/256)) + layer.xpos;
+                        var ydest_client = ((view.pan.ydest) * (layer.tilesize/256)) + layer.ypos;
+                        
+                        var dx = (view.canvas.clientWidth/2) - xdest_client;
+                        var dy = (view.canvas.clientHeight/2) - ydest_client;
+                        
+                        var dist = Math.sqrt((dx*dx) + (dy*dy));
+                        
+					 	// pan to destination
+                        if(dist >= 0.1) {
+                    		layer.xpos += dx  / 10;
+                    		layer.ypos += dy  / 10;
 						}
 
-						if(dist < factor) { // && level_dist < 0.1) {
-							//reached destination
-							view.pan.xdest = null;
+						if(dist < 0.1) { // && level_dist < 0.1) {
+							// reached destination
+							view.pan.xdest = view.pan.ydest = null;
 						}
 						
                         view.needdraw = true;
@@ -2698,10 +2626,21 @@ var methods = {
                     inside: function(xt,yt,x,y,w,h) {
                         if(xt > x && xt < x + w && yt > y && yt < y + h) return true;
                         return false;
-                    }
+                    },
+                    
+                    is_touch_device: function() {
+						return (('ontouchstart' in window)
+							|| (navigator.MaxTouchPoints > 0)
+							|| (navigator.msMaxTouchPoints > 0));
+					}
                 };//view definition
     
                 $this.data("view", view);
+                
+				if (view.is_touch_device() && (typeof Hammer === 'function')) {
+					view.hammer = new Hammer(view.canvas, {});
+				}
+			
 
                 //setup views
                 $this.addClass("tileviewer");
@@ -3105,28 +3044,31 @@ var methods = {
 						// Are we over a label?
 						//
 						var inAnnotation = null;
-						if ((options.annotationTextDisplayMode === 'mouseover') && (inAnnotation = view.mouse_is_in_annotation(x_relative, y_relative, e))) {
-							var sx = ((inAnnotation['tstartX']/100) * ((layer.info.width/factor) * (layer.tilesize/256))) + layer.xpos;
-							var sy = ((inAnnotation['tendY']/100) * ((layer.info.height/factor) * (layer.tilesize/256))) + layer.ypos;
 						
-							var sw = (((inAnnotation['tendX']/100) * ((layer.info.width/factor) * (layer.tilesize/256))) + layer.xpos) - sx - 10;	// 10 = 2 * 5px padding
+						if (options.displayAnnotations) {
+							if ((options.annotationTextDisplayMode === 'mouseover') && (inAnnotation = view.mouse_is_in_annotation(x_relative, y_relative, e))) {
+								var sx = ((inAnnotation['tstartX']/100) * ((layer.info.width/factor) * (layer.tilesize/256))) + layer.xpos;
+								var sy = ((inAnnotation['tendY']/100) * ((layer.info.height/factor) * (layer.tilesize/256))) + layer.ypos;
+						
+								var sw = (((inAnnotation['tendX']/100) * ((layer.info.width/factor) * (layer.tilesize/256))) + layer.xpos) - sx - 10;	// 10 = 2 * 5px padding
 						
 						
-							if (view.selectedAnnotation == inAnnotation['index'] && !options.lockAnnotationText) {
-								$(view.annotationTextEditor).css("display", "block");
-								$(inAnnotation['textBlock']).fadeOut(250);
-							} else {
-								// Mouseover non-selected annotation
-								if (options.annotationTextDisplayMode !== 'simultaneous') { 
-									$(inAnnotation['textBlock']).fadeIn(250);
+								if (view.selectedAnnotation == inAnnotation['index'] && !options.lockAnnotationText) {
+									$(view.annotationTextEditor).css("display", "block");
+									$(inAnnotation['textBlock']).fadeOut(250);
+								} else {
+									// Mouseover non-selected annotation
+									if (options.annotationTextDisplayMode !== 'simultaneous') { 
+										$(inAnnotation['textBlock']).fadeIn(250);
+									}
+									if (view.selectedAnnotation == null) { $(view.annotationTextEditor).fadeOut(250); }
 								}
-								if (view.selectedAnnotation == null) { $(view.annotationTextEditor).fadeOut(250); }
-							}
-						} else {
-							if (options.annotationTextDisplayMode !== 'simultaneous') { 
-								$('.tileviewerAnnotationTextBlock').fadeOut(250);
-								if((view.selectedAnnotation) && !options.lockAnnotationText) {
-									$(view.annotationTextEditor).fadeIn(250);
+							} else {
+								if (options.annotationTextDisplayMode !== 'simultaneous') { 
+									$('.tileviewerAnnotationTextBlock').fadeOut(250);
+									if((view.selectedAnnotation) && !options.lockAnnotationText) {
+										$(view.annotationTextEditor).fadeIn(250);
+									}
 								}
 							}
 						}

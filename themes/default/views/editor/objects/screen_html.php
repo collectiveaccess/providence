@@ -31,6 +31,10 @@
 
 	$vb_can_edit	 	= $t_object->isSaveable($this->request);
 	$vb_can_delete		= $t_object->isDeletable($this->request);
+
+	$vs_rel_table		= $this->getVar('rel_table');
+	$vn_rel_type_id		= $this->getVar('rel_type_id');
+	$vn_rel_id			= $this->getVar('rel_id');
 	
 	if ($vb_can_edit) {
 		$va_cancel_parameters = ($vn_object_id ? array('object_id' => $vn_object_id) : array('type_id' => $t_object->getTypeID()));
@@ -63,6 +67,16 @@
 			<input type='hidden' name='collection_id' value='<?php print $this->request->getParameter('collection_id', pInteger); ?>'/>
 			<input type='hidden' name='above_id' value='<?php print $vn_above_id; ?>'/>
 			<input id='isSaveAndReturn' type='hidden' name='is_save_and_return' value='0'/>
+			<input type='hidden' name='rel_table' value='<?php print $vs_rel_table; ?>'/>
+			<input type='hidden' name='rel_type_id' value='<?php print $vn_rel_type_id; ?>'/>
+			<input type='hidden' name='rel_id' value='<?php print $vn_rel_id; ?>'/>
+<?php
+			if($this->request->getParameter('rel', pInteger)) {
+?>
+				<input type='hidden' name='rel' value='1'/>
+<?php
+			}
+?>
 		</form>
 	</div>
 

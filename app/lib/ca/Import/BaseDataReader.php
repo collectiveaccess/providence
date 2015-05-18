@@ -208,6 +208,17 @@ abstract class BaseDataReader {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Set current dataset for reading and reset current row to beginning
+	 * Override if the reader supports multiple datasets
+	 * 
+	 * @param mixed $pm_dataset The number of the dataset to read (starting at zero) [Default=0]
+	 * @return bool
+	 */
+	public function setCurrentDataset($pn_dataset=0) {
+		return ($pn_dataset == 0) ? true : false;
+	}
+	# -------------------------------------------------------
+	/**
 	 * Return reader propery
 	 * 
 	 * @param string $ps_property 

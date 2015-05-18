@@ -40,9 +40,13 @@ class DICBuilder
         'logObject'             => null,
         'logPath'               => 'elasticsearch.log',
         'logLevel'              => Log\LogLevel::WARNING,
+        'logBubble'             => true,
+        'logPermission'         => null,
         'traceObject'           => null,
         'tracePath'             => 'elasticsearch.log',
         'traceLevel'            => Log\LogLevel::WARNING,
+        'traceBubble'           => true,
+        'tracePermission'       => null,
         'guzzleOptions'         => array(),
         'connectionPoolParams'  => array(
             'randomizeHosts' => true
@@ -298,12 +302,12 @@ class DICBuilder
             $connectionParams = $dicParams['connectionParams'];
 
             // Multihandle connections need a "static", shared curl multihandle.
-            if ($dicParams['connectionClass'] === '\Elasticsearch\Connections\CurlMultiConnection') {
+            if ($dicParams['connectionClass'] === '\Elasticsearch\Connections\CurlMultiConnection' || is_subclass_of($dicParams['connectionClass'], '\Elasticsearch\Connections\CurlMultiConnection')) {
                 $connectionParams = array_merge(
                     $connectionParams,
                     array('curlMultiHandle' => $dicParams['curlMultiHandle'])
                 );
-            } elseif ($dicParams['connectionClass'] === '\Elasticsearch\Connections\GuzzleConnection') {
+            } elseif ($dicParams['connectionClass'] === '\Elasticsearch\Connections\GuzzleConnection' || is_subclass_of($dicParams['connectionClass'], '\Elasticsearch\Connections\GuzzleConnection')) {
                 $connectionParams = array_merge(
                     $connectionParams,
                     array('guzzleClient' => $dicParams['guzzleClient'])

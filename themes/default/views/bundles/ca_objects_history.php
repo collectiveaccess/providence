@@ -45,7 +45,7 @@
 	$va_lookup_params = array();
 	
 	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings);
 ?>
 <div id="<?php print $vs_id_prefix; ?>">
 	<div class="bundleContainer">
@@ -53,8 +53,18 @@
 	if (!$vb_read_only) {
 ?>
 			<div class="caUseHistoryButtonBar">
+<?php
+			if(!caGetOption('hide_add_to_loan_controls', $va_settings, false)) {
+?>
 				<div style='float: left;' class='button labelInfo caAddLoanButton'><a href="#" id="<?php print $vs_id_prefix; ?>AddLoan"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print _t('Add to loan'); ?></a></div>
+<?php
+			}
+			if(!caGetOption('hide_update_location_controls', $va_settings, false)) {
+?>
 				<div style='float: left;'  class='button labelInfo caChangeLocationButton'><a href="#" id="<?php print $vs_id_prefix; ?>ChangeLocation"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print _t('Update location'); ?></a></div>
+<?php
+			}
+?>
 				<br style='clear: both;'/>
 			</div>
 <?php
@@ -287,7 +297,6 @@
 			relationshipTypes: <?php print json_encode($this->getVar('loan_relationship_types_by_sub_type')); ?>,
 			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'Loan', 'Get', $va_lookup_params); ?>',
 			types: <?php print json_encode($va_settings['restrict_to_types']); ?>,
-			bundlePreview: '<?php print strip_tags($t_instance->get($t_item->tableName())); ?>',
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
 			isSortable: <?php print ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>LoanBundleList',

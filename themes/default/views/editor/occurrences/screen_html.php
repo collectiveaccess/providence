@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,13 +25,17 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_occurrence 		= $this->getVar('t_subject');
-	$vn_occurrence_id 	= $this->getVar('subject_id');
-	$vn_above_id 		= $this->getVar('above_id');
+ 	$t_occurrence		= $this->getVar('t_subject');
+	$vn_occurrence_id	= $this->getVar('subject_id');
+	$vn_above_id		= $this->getVar('above_id');
 
 	$vb_can_edit	 	= $t_occurrence->isSaveable($this->request);
 	$vb_can_delete		= $t_occurrence->isDeletable($this->request);
-	
+
+	$vs_rel_table		= $this->getVar('rel_table');
+	$vn_rel_type_id		= $this->getVar('rel_type_id');
+	$vn_rel_id			= $this->getVar('rel_id');
+
 	if ($vb_can_edit) {
 		$va_cancel_parameters = ($vn_occurrence_id ? array('occurrence_id' => $vn_occurrence_id) : array('type_id' => $t_occurrence->getTypeID()));
 		print $vs_control_box = caFormControlBox(
@@ -58,6 +62,16 @@
 			<input type='hidden' name='occurrence_id' value='<?php print $vn_occurrence_id; ?>'/>
 			<input type='hidden' name='above_id' value='<?php print $vn_above_id; ?>'/>
 			<input id='isSaveAndReturn' type='hidden' name='is_save_and_return' value='0'/>
+			<input type='hidden' name='rel_table' value='<?php print $vs_rel_table; ?>'/>
+			<input type='hidden' name='rel_type_id' value='<?php print $vn_rel_type_id; ?>'/>
+			<input type='hidden' name='rel_id' value='<?php print $vn_rel_id; ?>'/>
+<?php
+			if($this->request->getParameter('rel', pInteger)) {
+?>
+				<input type='hidden' name='rel' value='1'/>
+<?php
+			}
+?>
 		</form>
 	</div>
 
