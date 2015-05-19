@@ -73,7 +73,11 @@ class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements 
 	 *
 	 * @param array $pa_settings Plugin settings values
 	 * @param string $ps_search The expression with which to query the remote data service
-	 * @param array $pa_options Lookup options (none defined yet)
+	 * @param array $pa_options Lookup options
+	 * 			phrase => send a lucene phrase search instead of keywords
+	 * 			raw => return raw, unprocessed results from getty service
+	 * 			start =>
+	 * 			limit =>
 	 * @return array
 	 */
 	public function lookup($pa_settings, $ps_search, $pa_options=null) {
@@ -81,6 +85,8 @@ class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements 
 
 		$vn_start = (int) caGetOption('start', $pa_options, 0);
 		$vn_limit = (int) caGetOption('limit', $pa_options, 50);
+		$pb_phrase = (bool) caGetOption('phrase', $pa_options, false);
+		$pb_raw = (bool) caGetOption('raw', $pa_options, false);
 
 		$va_service_conf = $this->opo_linked_data_conf->get('tgn');
 		$vs_search_field = (isset($va_service_conf['search_text']) && $va_service_conf['search_text']) ? 'luc:text' : 'luc:term';
@@ -90,8 +96,12 @@ class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements 
 		 * "Coney Island" you get all kinds of Islands, just not the one you're looking for. It's in there somewhere but
 		 * the order field might prevent it from showing up within the limit. So we do our own little piece of "query rewriting" here.
 		 */
-		$va_search = preg_split('/[\s]+/', $ps_search);
-		$vs_search = join(' AND ', $va_search);
+		if($pb_phrase) {
+			$vs_search = '\"'.$ps_search.'\"';
+		} else {
+			$va_search = preg_split('/[\s]+/', $ps_search);
+			$vs_search = join(' AND ', $va_search);
+		}
 
 		$vs_query = urlencode('SELECT ?ID ?TermPrefLabel ?Parents ?Bio {
     ?ID a skos:Concept; '.$vs_search_field.' "'.$vs_search.'"; skos:inScheme ulan: ;
@@ -100,8 +110,10 @@ class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements 
     {?ID gvp:parentStringAbbrev ?Parents}
 } OFFSET '.$vn_start.' LIMIT '.$vn_limit);
 
-		$va_results = $this->queryGetty($vs_query);
+		$va_results = parent::queryGetty($vs_query);
 		if(!is_array($va_results)) { return false; }
+
+		if($pb_raw) { return $va_results; }
 
 		$va_return = array();
 		foreach($va_results as $va_values) {

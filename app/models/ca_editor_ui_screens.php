@@ -844,6 +844,98 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						);
 					} else {
 						switch($vs_bundle) {
+							case 'authority_references_list':
+								$va_additional_settings = array(
+									'maxReferencesToDisplay' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => 100,
+										'width' => "50px", 'height' => 1,
+										'label' => _t('Maximum number of references to display'),
+										'description' => _t('Maximum number of references to display per item.')
+									),
+									'ca_objects_displayTemplate' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '<l>^ca_objects.preferred_labels.name</l> (^ca_objects.idno)',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Object display template'),
+										'description' => _t('Layout for referencing objects. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.idno</i>.')
+									),
+									'ca_object_lots_displayTemplate' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '<l>^ca_object_lots.preferred_labels.name</l> (^ca_object_lots.idno_stub)',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Lot display template'),
+										'description' => _t('Layout for referencing lots. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>.')
+									),
+									'ca_entities_displayTemplate' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '<l>^ca_entities.preferred_labels.displayname</l> (^ca_entities.idno)',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Entity display template'),
+										'description' => _t('Layout for referencing entities. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_entities.idno</i>.')
+									),
+									'ca_places_displayTemplate' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '<l>^ca_places.preferred_labels.name</l> (^ca_places.idno)',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Place display template'),
+										'description' => _t('Layout for referencing places. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_places.idno</i>.')
+									),
+									'ca_occurrences_displayTemplate' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '<l>^ca_occurrences.preferred_labels.name</l> (^ca_occurrences.idno)',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Occurrence display template'),
+										'description' => _t('Layout for referencing occurrences. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_occurrences.idno</i>.')
+									),
+									'ca_collections_displayTemplate' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '<l>^ca_collections.preferred_labels.name</l> (^ca_collections.idno)',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Collection display template'),
+										'description' => _t('Layout for referencing collections. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_collections.idno</i>.')
+									),
+									'ca_loans_displayTemplate' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '<l>^ca_loans.preferred_labels.name</l> (^ca_loans.idno)',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Loan display template'),
+										'description' => _t('Layout for referencing loans. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_loans.idno</i>.')
+									),
+									'ca_movements_displayTemplate' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '<l>^ca_movements.preferred_labels.name</l> (^ca_movements.idno)',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Movement display template'),
+										'description' => _t('Layout for referencing movements. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_movements.idno</i>.')
+									),
+									'ca_object_representations_displayTemplate' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '<l>^ca_object_representations.preferred_labels.name</l> (^ca_object_representations.idno)',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Object representation display template'),
+										'description' => _t('Layout for referencing object representations. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_representations.idno</i>.')
+									),
+									'ca_list_items_displayTemplate' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '<l>^ca_list_items.preferred_labels.name</l> (^ca_list_items.idno)',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('List item display template'),
+										'description' => _t('Layout for referencing list items. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_list_items.idno</i>.')
+									)
+								);
+								break;
 							case 'ca_commerce_order_history':
 								$va_additional_settings = array(
 									'orderType' => array(

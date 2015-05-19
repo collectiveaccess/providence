@@ -1477,6 +1477,30 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				);
 			}
 			
+			if (
+				(($vs_table === 'ca_objects') && ($vs_related_table === 'ca_storage_locations'))
+				||
+				(($vs_table === 'ca_storage_locations') && ($vs_related_table === 'ca_objects'))
+				||
+				(($vs_table === 'ca_objects') && ($vs_related_table === 'ca_movements'))
+				||
+				(($vs_table === 'ca_movements') && ($vs_related_table === 'ca_objects'))
+				||
+				(($vs_table === 'ca_storage_locations') && ($vs_related_table === 'ca_movements'))
+				||
+				(($vs_table === 'ca_movements') && ($vs_related_table === 'ca_storage_locations'))
+			) {
+				$va_additional_settings['showCurrentOnly'] = array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_CHECKBOXES,
+					'width' => "10", 'height' => "1",
+					'takesLocale' => false,
+					'default' => '0',
+					'label' => _t('Show current only?'),
+					'description' => _t('If checked only current objects are displayed.')
+				);
+			}
+			
 			//$va_additional_settings['format']['helpText'] = $this->getTemplatePlaceholderDisplayListForBundle($vs_bundle);
 		
 			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
@@ -1799,6 +1823,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 	 *		purify = if true then value is run through HTMLPurifier (http://htmlpurifier.org) before being returned; this is useful when you want to make sure any HTML in the value is valid, particularly when converting HTML to a PDF as invalid markup will cause an exception. Default is false as HTMLPurify can significantly slow down things if used everywhere.
 	 *		delimiter = character(s) to place between repeating values
 	 *		showHierarchy = 
+	 *		showCurrentOnly = 
 	 * @return string The processed value ready for display
 	 */
 	public function getDisplayValue($po_result, $pn_placement_id, $pa_options=null) {

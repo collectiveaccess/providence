@@ -2710,3 +2710,26 @@ function caFileIsIncludable($ps_file) {
 		return function_exists('curl_init');
 	}
 	# ----------------------------------------
+	/**
+	 * Returns the maximum depth of an array
+	 *
+	 * @param array $pa_array
+	 * @return int
+	 */
+	function caArrayDepth($pa_array) {
+		$vn_max_indentation = 1;
+
+		$va_array_str = print_r($pa_array, true);
+		$va_lines = explode("\n", $va_array_str);
+
+		foreach ($va_lines as $vs_line) {
+			$vn_indentation = (strlen($vs_line) - strlen(ltrim($vs_line))) / 4;
+
+			if ($vn_indentation > $vn_max_indentation) {
+				$vn_max_indentation = $vn_indentation;
+			}
+		}
+
+		return ceil(($vn_max_indentation - 1) / 2) + 1;
+	}
+	# ----------------------------------------
