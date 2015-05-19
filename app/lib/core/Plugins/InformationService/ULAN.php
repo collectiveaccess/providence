@@ -96,7 +96,11 @@ class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements 
 		 * "Coney Island" you get all kinds of Islands, just not the one you're looking for. It's in there somewhere but
 		 * the order field might prevent it from showing up within the limit. So we do our own little piece of "query rewriting" here.
 		 */
-		if($pb_phrase) {
+		if(is_numeric($ps_search)) {
+			$vs_search = $ps_search;
+		} elseif(isURL($ps_search)) {
+			$vs_search = str_replace('http://vocab.getty.edu/ulan/', '', $ps_search);
+		} elseif($pb_phrase) {
 			$vs_search = '\"'.$ps_search.'\"';
 		} else {
 			$va_search = preg_split('/[\s]+/', $ps_search);
