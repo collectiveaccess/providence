@@ -56,7 +56,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	 * @param string $ps_query The sparql query
 	 * @return array The decoded JSON result
 	 */
-	public function queryGetty($ps_query) {
+	public static function queryGetty($ps_query) {
 		$o_curl=curl_init();
 		curl_setopt($o_curl, CURLOPT_URL, "http://vocab.getty.edu/sparql.json?query={$ps_query}");
 		curl_setopt($o_curl, CURLOPT_CONNECTTIMEOUT, 2);
