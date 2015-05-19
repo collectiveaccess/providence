@@ -218,24 +218,37 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 					'value_blob' => $vs_indexing_blob
 				);
 			} elseif(sizeof($va_tmp)==1) { // this is something else -> try to look it up. we match hit when exactly 1 hit comes back
+
+				if(MemoryCache::contains($va_tmp[0], "InformationServiceLookup{$vs_service}")) {
+					return MemoryCache::fetch($va_tmp[0], "InformationServiceLookup{$vs_service}");
+				}
+
 				$this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service);
 				$va_ret = $this->opo_plugin->lookup($pa_element_info['settings'], $va_tmp[0]);
 				if(is_array($va_ret['results']) && (sizeof($va_ret['results']) == 1)) {
 					$va_hit = array_shift($va_ret['results']);
 					$vs_indexing_blob = caSerializeForDatabase($this->opo_plugin->getExtraValuesForSearchIndexing($pa_element_info['settings'], $va_hit['url']));
-					return array(
+					$va_return = array(
 						'value_longtext1' => $va_hit['label'],	// text
 						'value_longtext2' => $va_hit['url'],	// url
 						'value_decimal1' => $va_hit['id'], 	// id
 						'value_blob' => $vs_indexing_blob
 					);
+				} else {
+					$va_return = array(
+						'value_longtext1' => '',	// text
+						'value_longtext2' => '',	// url
+						'value_decimal1' => null	// id
+					);
 				}
+
+				MemoryCache::save($va_tmp[0], $va_return, "InformationServiceLookup{$vs_service}");
+				return $va_return;
 			} else {
 				return array('_dont_save' => true); // don't save if value hasn't changed
 			}
-
-
 		}
+
 		return array(
 			'value_longtext1' => '',	// text
 			'value_longtext2' => '',	// url
