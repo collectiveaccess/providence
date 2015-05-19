@@ -1083,7 +1083,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 							$va_display_template_values = array();
 							if($vs_bundle_template && is_array($va_relation_ids = caExtractValuesFromArrayList($va_reps, 'relation_id')) && sizeof($va_relation_ids)) {
 								if ($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName())) {
-									$va_display_template_values = caProcessTemplateForIDs($vs_bundle_template, $vs_linking_table, $va_relation_ids, array_merge($pa_options, array('returnAsArray' => true, 'returnAllLocales' => false)));
+									$va_display_template_values = caProcessTemplateForIDs($vs_bundle_template, $vs_linking_table, $va_relation_ids, array_merge($pa_options, array('returnAsArray' => true, 'returnAllLocales' => false, 'includeBlankValuesInArray' => true)));
 								}
 							}
 	
@@ -3551,10 +3551,18 @@ if (!$vb_batch) {
 						}
 					
 						// check for new representations to add 
-						foreach($_FILES as $vs_key => $vs_value) {
+						$va_file_list = $_FILES;
+						foreach($_REQUEST as $vs_key => $vs_value) {
+							if (!preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) { continue; }
+							$va_file_list[$vs_key] = array(
+								'url' => $vs_value
+							);
+						}
+						
+						foreach($va_file_list as $vs_key => $va_values) {
 							$this->clearErrors();
 							
-							if (!preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches)) { continue; }
+							if (!preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches) && (($vb_allow_fetching_of_urls && !preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) || !$vb_allow_fetching_of_urls)) { continue; }
 							
 							if($vs_upload_type = $po_request->getParameter($vs_prefix_stub.'upload_typenew_'.$va_matches[1], pString)) {
 								$po_request->user->setVar('defaultRepresentationUploadType', $vs_upload_type);
@@ -3564,12 +3572,12 @@ if (!$vb_batch) {
 							if ($vn_existing_rep_id = $po_request->getParameter($vs_prefix_stub.'idnew_'.$va_matches[1], pInteger)) {
 								$this->addRelationship('ca_object_representations', $vn_existing_rep_id, $vn_type_id);
 							} else {
-								if ($vb_allow_fetching_of_urls && ($vs_path = $_REQUEST[$vs_prefix_stub.'media_url_new_'.$va_matches[1]])) {
+								if ($vb_allow_fetching_of_urls && ($vs_path = $va_values['url'])) {
 									$va_tmp = explode('/', $vs_path);
 									$vs_original_name = array_pop($va_tmp);
 								} else {
-									$vs_path = $_FILES[$vs_prefix_stub.'media_new_'.$va_matches[1]]['tmp_name'];
-									$vs_original_name = $_FILES[$vs_prefix_stub.'media_new_'.$va_matches[1]]['name'];
+									$vs_path = $va_values['tmp_name'];
+									$vs_original_name = $va_values['name'];
 								}
 								if (!$vs_path) { continue; }
 							
@@ -4639,7 +4647,6 @@ if (!$vb_batch) {
 					WHERE
 						".join(' AND ', array_merge($va_wheres, array('('.$va_path[1].'.'.$vs_other_field .' IN ('.join(',', $va_row_ids).'))')))."
 					{$vs_order_by}";
-				//print "<pre>$vs_sql</pre>\n";
 
 				$qr_res = $o_db->query($vs_sql);
 

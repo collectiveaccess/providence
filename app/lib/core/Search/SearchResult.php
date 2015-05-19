@@ -737,6 +737,7 @@ class SearchResult extends BaseObject {
 	 * 	@return mixed String or array
 	 */
 	public function get($ps_field, $pa_options=null) {
+		if(!is_array($pa_options)) { $pa_options = array(); }
 		$vb_return_as_array = isset($pa_options['returnAsArray']) ? (bool)$pa_options['returnAsArray'] : false;
 		$va_filters = is_array($pa_options['filters']) ? $pa_options['filters'] : array();
 		
@@ -1204,6 +1205,7 @@ class SearchResult extends BaseObject {
 						$vm_val = self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id][$vs_subfield];
 				
 						if ($vs_subfield == 'timestamp') {
+							$this->opo_tep->init();
 							$this->opo_tep->setUnixTimestamps($vm_val, $vm_val);
 							$vm_val = $this->opo_tep->getText($pa_options);
 						}
@@ -1226,6 +1228,7 @@ class SearchResult extends BaseObject {
 						$vm_val = self::$s_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id][$vs_subfield];
 				
 						if ($vs_subfield == 'timestamp') {
+							$this->opo_tep->init();
 							$this->opo_tep->setUnixTimestamps($vm_val, $vm_val);
 							$vm_val = $this->opo_tep->getText($pa_options);
 						}
@@ -2071,6 +2074,7 @@ class SearchResult extends BaseObject {
 					if ($pa_options["getRawDate"]) {
 						return $vn_val;
 					} else {
+						$GLOBALS["_DbResult_time_expression_parser"]->init();
 						if ($vn_field_type == FT_HISTORIC_DATETIME) {
 							$GLOBALS["_DbResult_time_expression_parser"]->setHistoricTimestamps($vn_val, $vn_val);
 						} else {
@@ -2085,6 +2089,7 @@ class SearchResult extends BaseObject {
 					$vs_end_field_name = 	$va_field["instance"]->getFieldInfo($va_field["field"],"END");
 					
 					if (!$pa_options["getRawDate"]) {
+						$GLOBALS["_DbResult_time_expression_parser"]->init();
 						if ($vn_field_type == FT_HISTORIC_DATERANGE) {
 							$GLOBALS["_DbResult_time_expression_parser"]->setHistoricTimestamps($this->get($vs_start_field_name, array("binary" => true)), $this->get($vs_end_field_name, array("binary" => true)));
 						} else {

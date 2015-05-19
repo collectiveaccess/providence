@@ -109,7 +109,7 @@
 			if (in_array($va_info['bundle_name'], array('ca_objects.preferred_labels', 'ca_object_labels.name'))) { continue; }		// skip preferred labels because we always output it above
 			if (in_array($va_tmp[0], array('ca_object_representations'))) { continue; } // skip object representations
 			
-			if (!strlen($vs_display_value = $t_display->getDisplayValue($t_item, $vn_placement_id, array_merge(array('request' => $this->request), $va_info['settings'])))) {
+			if (!strlen($vs_display_value = $t_display->getDisplayValue($t_item, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array())))) {
 				if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }
 				$vs_display_value = "<"._t('not defined').">";
 				$vs_class = " notDefined";

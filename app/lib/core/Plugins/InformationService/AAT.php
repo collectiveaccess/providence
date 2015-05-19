@@ -73,31 +73,45 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 	 *
 	 * @param array $pa_settings Plugin settings values
 	 * @param string $ps_search The expression with which to query the remote data service
-	 * @param array $pa_options Lookup options (none defined yet)
+	 * @param array $pa_options Lookup options
+	 * 			phrase => send a lucene phrase search instead of keywords
+	 * 			raw => return raw, unprocessed results from getty service
 	 * @return array
 	 */
 	public function lookup($pa_settings, $ps_search, $pa_options=null) {
+		if(!is_array($pa_options)) { $pa_options = array(); }
+
 		$va_service_conf = $this->opo_linked_data_conf->get('aat');
 		$vs_search_field = (isset($va_service_conf['search_text']) && $va_service_conf['search_text']) ? 'luc:text' : 'luc:term';
+
+		$pb_phrase = (bool) caGetOption('phrase', $pa_options, false);
+		$pb_raw = (bool) caGetOption('raw', $pa_options, false);
 
 		/**
 		 * Contrary to what the Getty documentation says the terms seem to get combined by OR, not AND, so if you pass
 		 * "Coney Island" you get all kinds of Islands, just not the one you're looking for. It's in there somewhere but
 		 * the order field might prevent it from showing up within the limit. So we do our own little piece of "query rewriting" here.
 		 */
-		$va_search = preg_split('/[\s]+/', $ps_search);
-		$vs_search = join(' AND ', $va_search);
+		if($pb_phrase) {
+			$vs_search = '\"'.$ps_search.'\"';
+		} else {
+			$va_search = preg_split('/[\s]+/', $ps_search);
+			$vs_search = join(' AND ', $va_search);
+		}
 
-		$vs_query = urlencode('SELECT ?ID ?TermPrefLabel ?Parents {
+		$vs_query = urlencode('SELECT ?ID ?TermPrefLabel ?Parents ?ParentsFull {
 	?ID a skos:Concept; '.$vs_search_field.' "'.$vs_search.'"; skos:inScheme aat: ;
 	gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
 	{?ID gvp:parentStringAbbrev ?Parents}
+	{?ID gvp:parentString ?ParentsFull}
 	{?ID gvp:displayOrder ?Order}
 } ORDER BY DESC(?Order)
 LIMIT 50');
 
-		$va_results = $this->queryGetty($vs_query);
+		$va_results = parent::queryGetty($vs_query);
 		if(!is_array($va_results)) { return false; }
+
+		if($pb_raw) { return $va_results; }
 
 		$va_return = array();
 		foreach($va_results as $va_values) {
@@ -107,9 +121,10 @@ LIMIT 50');
 			}
 
 			$vs_label = $va_values['TermPrefLabel']['value'] . " (" . $va_values['Parents']['value'] . ")";
+			$vs_label = preg_replace('/\,\s\.\.\.\s[A-Za-z\s]+Facet\s*/', '', $vs_label);
 
 			$va_return['results'][] = array(
-				'label' => htmlentities(str_replace(', ... Objects Facet', '', $vs_label)),
+				'label' => htmlentities($vs_label),
 				'url' => $va_values['ID']['value'],
 				'id' => $vs_id,
 			);
