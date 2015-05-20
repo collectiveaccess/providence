@@ -9952,7 +9952,7 @@ $pa_options["display_form_field_tips"] = true;
 		
 		if ($this->purify() || (bool)$pa_options['purify']) {
 			if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
-    		$ps_tag = BaseMode::$html_purifier->purify($ps_tag);
+    		$ps_tag = BaseModel::$html_purifier->purify($ps_tag);
 		}
 		
 		$t_tag = new ca_item_tags();
