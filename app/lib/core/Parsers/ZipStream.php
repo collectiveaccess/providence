@@ -156,9 +156,9 @@
 				$vs_hex      = $vs_dtime[6] . $vs_dtime[7] . $vs_dtime[4] . $vs_dtime[5] . $vs_dtime[2] . $vs_dtime[3] . $vs_dtime[0] . $vs_dtime[1];
 	
 				if(function_exists('hex2bin')) { // this is only available in PHP 5.4+
-					$vn_hexdtime = hex2bin($dtime);
+					$vn_hexdtime = hex2bin($vs_dtime);
 				} else {
-					$vn_hexdtime = pack("H*" , $dtime);    
+					$vn_hexdtime = pack("H*" , $vs_dtime);    
 				}
 
 				
