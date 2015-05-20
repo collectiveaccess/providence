@@ -169,4 +169,14 @@ abstract class BaseInformationServicePlugin Extends WLPlug {
 	public function getExtraValuesForSearchIndexing($pa_settings, $ps_url) {
 		return array();
 	}
+	# ------------------------------------------------
+	/**
+	 * Should be overridden in implementation
+	 * @param array $pa_element_info
+	 * @return array|bool
+	 */
+	public function reload($pa_element_info)  {
+		return false; // plugin doesn't support reloading -> leave values as they are
+	}
+	# ------------------------------------------------
 }
