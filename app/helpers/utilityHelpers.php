@@ -456,6 +456,9 @@ function caFileIsIncludable($ps_file) {
 	 * @return bool
 	 */
 	function caIsValidFilePath($ps_path) {
+		// strip quotes from path if present since they'll cause file_exists() to fail
+		$ps_path = preg_replace("!^\"!", "", $ps_path);
+		$ps_path = preg_replace("!\"$!", "", $ps_path);
 		if (!$ps_path || (preg_match("/[^\/A-Za-z0-9\.:\ _\(\)\\\-]+/", $ps_path)) || !file_exists($ps_path)) { return false; }
 
 		return true;

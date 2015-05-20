@@ -30,6 +30,7 @@
  * ----------------------------------------------------------------------
  */
 require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/TGN.php");
+require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 
 class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase {
 
@@ -85,5 +86,22 @@ class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase
 	public function testGetExtendedInfoWithGibberish() {
 		$o_service = new WLPlugInformationServiceTGN();
 		$o_service->getExtendedInformation(array(), 'gibberish');
+	}
+
+	public function testSaveNewObject() {
+		$t_object = new ca_objects();
+		$t_object->setMode(ACCESS_WRITE);
+		$t_object->set('type_id', 'image');
+		$t_object->set('idno', 'tgn_test');
+		$t_object->addAttribute(array(
+			'tgn' => 'http://vocab.getty.edu/tgn/7015849'
+		), 'tgn');
+		$t_object->insert();
+
+		$this->assertGreaterThan(0, strlen($t_object->get('ca_objects.tgn')));
+
+		if($t_object->getPrimaryKey()) {
+			$t_object->delete(false, array('hard' => true));
+		}
 	}
 }
