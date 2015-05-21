@@ -29,4 +29,3 @@ before_script:
 branches:
   only:
     - develop
-

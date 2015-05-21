@@ -3049,5 +3049,75 @@
 			return _t('CollectiveAccess requires certain PHP configuration options to be set and for file permissions in several directories to be web-server writable. This command will check these settings and file permissions and return warnings if configuration appears to be incorrect.');
 		}
 		# -------------------------------------------------------
+		public static function reload_service_values($po_opts=null) {
+			$va_infoservice_elements = ca_metadata_elements::getElementsAsList(
+				false, null, null, true, false, false, array(__CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__)
+			);
+
+			$o_db = new Db();
+
+			foreach($va_infoservice_elements as $va_element) {
+				$qr_values = $o_db->query("
+					SELECT * FROM ca_attribute_values
+					WHERE element_id = ?
+				", $va_element['element_id']);
+
+				print CLIProgressBar::start($qr_values->numRows(), "Reloading values for element code ".$va_element['element_code']);
+
+				$t_attr = new ca_attribute_values($qr_values->get('value_id'));
+				$t_attr->setMode(ACCESS_WRITE);
+
+				while($qr_values->nextRow()) {
+					$o_val = new InformationServiceAttributeValue($qr_values->getRow());
+					$va_new_row = $o_val->reload($va_element);
+
+					print CLIProgressBar::next(); // inc before first continuation point
+
+					if(!$va_new_row || !is_array($va_new_row) || !sizeof($va_new_row)) { continue; }
+					if(!$t_attr->load($qr_values->get('value_id'))) { continue; }
+
+					$t_attr->set($va_new_row);
+
+					$t_attr->update();
+
+					if($t_attr->numErrors() > 0) {
+						print _t('There were errors updating an attribute row: ') . join(' ', $t_attr->getErrors());
+					}
+				}
+
+				print CLIProgressBar::finish();
+			}
+
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_service_valuesParamList() {
+			return array();
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_service_valuesUtilityClass() {
+			return _t('Maintenance');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_service_valuesShortHelp() {
+			return _t('Reload InformationService attribute values from referenced URLs.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_service_valuesHelp() {
+			return _t('InformationService attribute values store all the data CollectiveAccess needs to operate locally while keeping a reference to the referenced record at the remote web service. That means that potential changes at the remote data source are not pulled in automatically. This script explicitly performs a lookup for all existing InformationService attribute values and updates the local copy of the data with the latest values.');
+		}
+		# -------------------------------------------------------
 	}
-?>

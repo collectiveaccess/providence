@@ -125,8 +125,9 @@ LIMIT '.$pn_limit);
 				$vs_id = str_replace('/', ':', $va_matches[0]);
 			}
 
-			$vs_label = $va_values['TermPrefLabel']['value'] . " (" . $va_values['Parents']['value'] . ")";
+			$vs_label = '['. str_replace('aat:', '', $vs_id) . '] ' . $va_values['TermPrefLabel']['value'] . " (" . $va_values['Parents']['value'] . ")";
 			$vs_label = preg_replace('/\,\s\.\.\.\s[A-Za-z\s]+Facet\s*/', '', $vs_label);
+			$vs_label = preg_replace('/[\<\>]/', '', $vs_label);
 
 			$va_return['results'][] = array(
 				'label' => htmlentities($vs_label),
