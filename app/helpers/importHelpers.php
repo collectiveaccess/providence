@@ -1086,30 +1086,43 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 		$vs_bot = trim(array_pop($pa_hierarchy_path));
 
 		if($pb_remove_parens_from_labels) {
-			$vs_bot = trim(preg_replace("/\([\p{L}\-\_\s]+\)/", '', $vs_bot));
+			$vs_lookup = trim(preg_replace("/\([\p{L}\-\_\s]+\)/", '', $vs_bot));
+		} else {
+			$vs_lookup = $vs_bot;
 		}
 
 		$o_service = new WLPlugInformationServiceAAT();
 
-		$va_hits = $o_service->lookup(array(), $vs_bot, array('phrase' => true, 'raw' => true));
+		$va_hits = $o_service->lookup(array(), $vs_lookup, array('phrase' => true, 'raw' => true, 'limit' => 2000));
 		if(!is_array($va_hits)) { return false; }
 
 		$vn_best_distance = 0;
 		$vn_pick = -1;
 		foreach($va_hits as $vn_i => $va_hit) {
-			if(stripos($va_hit['TermPrefLabel']['value'], $vs_bot) !== false) { // only consider terms that match what we search
+			if(stripos($va_hit['TermPrefLabel']['value'], $vs_lookup) !== false) { // only consider terms that match what we searched
 
 				// calculate similarity as a number by comparing both the term and the parent string
-				if($pb_remove_parens_from_labels) {
-					$vs_label_cmp = trim(preg_replace("/\([\p{L}\s]+\)/", '', $va_hit['TermPrefLabel']['value']));
-				} else {
-					$vs_label_cmp = $va_hit['TermPrefLabel']['value'];
-				}
-				similar_text($vs_label_cmp, $vs_bot, $vn_label_percent);
+				$vs_label_with_parens = $va_hit['TermPrefLabel']['value'];
+				$vs_label_without_parens = trim(preg_replace("/\([\p{L}\s]+\)/", '', $vs_label_with_parens));
+				$va_label_percentages = array();
+
+				// we try every combination with and without parens on both sides
+				// unfortunately this code gets rather ugly because getting the similarity
+				// as percentage is only possible by passing a reference parameter :-(
+				similar_text($vs_label_with_parens, $vs_bot, $vn_label_percent);
+				$va_label_percentages[] = $vn_label_percent;
+				similar_text($vs_label_with_parens, $vs_lookup, $vn_label_percent);
+				$va_label_percentages[] = $vn_label_percent;
+				similar_text($vs_label_without_parens, $vs_bot, $vn_label_percent);
+				$va_label_percentages[] = $vn_label_percent;
+				similar_text($vs_label_without_parens, $vs_lookup, $vn_label_percent);
+				$va_label_percentages[] = $vn_label_percent;
+
+				// similarity to parent path
 				similar_text($va_hit['ParentsFull']['value'], join(' ', array_reverse($pa_hierarchy_path)), $vn_parent_percent);
 
 				// it's a weighted sum because the term label is more important than the exact path
-				$vn_tmp = 2*$vn_label_percent + $vn_parent_percent;
+				$vn_tmp = 2*max($va_label_percentages) + $vn_parent_percent;
 				//var_dump($va_hit); var_dump($vn_tmp);
 				if($vn_tmp > $vn_best_distance) {
 					$vn_best_distance = $vn_tmp;
@@ -1130,8 +1143,8 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 
 			$va_return = array(
 				'label' => htmlentities($vs_label),
-				'url' => $va_pick['ID']['value'],
 				'id' => $vs_id,
+				'url' => $va_pick['ID']['value'],
 			);
 
 			$vs_return = join('|', $va_return);

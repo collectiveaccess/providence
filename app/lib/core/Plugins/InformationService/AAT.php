@@ -86,6 +86,7 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 
 		$pb_phrase = (bool) caGetOption('phrase', $pa_options, false);
 		$pb_raw = (bool) caGetOption('raw', $pa_options, false);
+		$pn_limit = (int) caGetOption('limit', $pa_options, 50);
 
 		/**
 		 * Contrary to what the Getty documentation says the terms seem to get combined by OR, not AND, so if you pass
@@ -110,7 +111,7 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 	{?ID gvp:parentString ?ParentsFull}
 	{?ID gvp:displayOrder ?Order}
 } ORDER BY DESC(?Order)
-LIMIT 50');
+LIMIT '.$pn_limit);
 
 		$va_results = parent::queryGetty($vs_query);
 		if(!is_array($va_results)) { return false; }
