@@ -223,4 +223,20 @@ class ULANDataReader extends BaseXMLDataReader {
 		return $ps_spec;
 	}
 	# -------------------------------------------------------
+	public function get($ps_spec, $pa_options=null) {
+		$vm_ret = parent::get($ps_spec, $pa_options);
+
+		if(is_array($vm_ret)) {
+			foreach($vm_ret as &$vs_val) {
+				$vs_val = html_entity_decode($vs_val);
+			}
+
+			return $vm_ret;
+		} elseif(is_string($vm_ret)) {
+			return html_entity_decode($vm_ret);
+		}
+
+		return $vm_ret;
+	}
+	# -------------------------------------------------------
 }
