@@ -161,7 +161,7 @@
 				}
 			}
 		}
-    
+
     	$r_out = fopen("php://output", "wb");
     	
 		if ($r_out === FALSE) {
@@ -171,6 +171,10 @@
 		$vn_old_offset = 0;
 		$va_ctrl_dir = array();
 		$vn_i = 0;
+		
+		$vs_create_version = "\x00\x00";
+		$vs_extract_version = $vb_need_zip64 ? "\x2d\x00" : "\x14\x00";
+		
     	foreach($this->opa_file_list as $vs_name => $va_file) {
     		$vs_filepath 	= $va_file['path'];
     		$vs_dtime 		= $va_file['time'];
@@ -181,9 +185,9 @@
 				$vs_hex      = $vs_dtime[6] . $vs_dtime[7] . $vs_dtime[4] . $vs_dtime[5] . $vs_dtime[2] . $vs_dtime[3] . $vs_dtime[0] . $vs_dtime[1];
 	
 				if(function_exists('hex2bin')) { // this is only available in PHP 5.4+
-					$vn_hexdtime = hex2bin($vs_dtime);
+					$vn_hexdtime = hex2bin($vs_hex);
 				} else {
-					$vn_hexdtime = pack("H*", $vs_dtime);    
+					$vn_hexdtime = pack("H*", $vs_hex);    
 				}
 
 				
@@ -191,10 +195,10 @@
 				// Local file header segment
 				//
 				$vs_header   = "\x50\x4b\x03\x04";
-				$vs_header   .= "\x14\x00";            // ver needed to extract
+				$vs_header   .= $vs_extract_version;   // version needed to extract
 				$vs_header   .= "\x08\x00";            // gen purpose bit flag
 				$vs_header   .= "\x08\x00";            // compression method
-				$vs_header   .= $vn_hexdtime;             // last mod time and date
+				$vs_header   .= $vn_hexdtime;          // last mod time and date
 
 				if (!($vs_crc = $va_file['crc'])) {
 					$va_crc = unpack('N', pack('H*', hash_file('crc32b', $vs_filepath)));
@@ -253,13 +257,13 @@
 				// Data descriptor segment 
 				//
 				$vs_header  = "\x50\x4b\x07\x08";
-				$vs_header .= pack('V', $vs_crc);                  		// crc32
+				$vs_header .= pack('V', $vs_crc);							// crc32
 				if ($vb_need_zip64) {
-					$vs_header .= pack('P', $vn_compressed_filesize);               		// compressed filesize
-					$vs_header .= pack('P', $va_file['size']);     	// uncompressed filesize
+					$vs_header .= pack('P', $vn_compressed_filesize);		// compressed filesize
+					$vs_header .= pack('P', $va_file['size']);				// uncompressed filesize
 				} else {
-					$vs_header .= pack('V', $vn_compressed_filesize);               		// compressed filesize
-					$vs_header .= pack('V', $va_file['size']);     	// uncompressed filesize
+					$vs_header .= pack('V', $vn_compressed_filesize);		// compressed filesize
+					$vs_header .= pack('V', $va_file['size']);     			// uncompressed filesize
 				}
 				fwrite($r_out, $vs_header);
 				$vn_segsize += strlen($vs_header);
@@ -268,13 +272,19 @@
 				$vn_datasize += $vn_segsize;
 	
 				$vn_new_offset = $vn_datasize;
+				
+				if ($vb_need_zip64) {
+					// header with file sizes
+					$vs_extended_info = "\x00\x01".pack("v", 28);
+					$vs_extended_info .= pack("P", $va_file['size']).pack("P", $vn_compressed_filesize).pack("P", $vn_old_offset).pack("V", 0);	
+				}
 	
 				//
 				// Add to central directory record
 				//
 				$vs_central_directory_entry = "\x50\x4b\x01\x02";
-				$vs_central_directory_entry .= "\x00\x00";               				 // version made by
-				$vs_central_directory_entry .= "\x14\x00";               				 // version needed to extract
+				$vs_central_directory_entry .= $vs_create_version;               				 // version made by
+				$vs_central_directory_entry .= $vs_extract_version;               				 // version needed to extract
 				$vs_central_directory_entry .= "\x08\x00";               				 // gen purpose bit flag
 				$vs_central_directory_entry .= "\x08\x00";               				 // compression method
 				$vs_central_directory_entry .= $vn_hexdtime;                			 // last mod time & date
@@ -312,33 +322,22 @@
 		fwrite($r_out, $vs_ctrl_dir);
 		
 		//
-		// Add End of central directory record
-		//
-		fwrite($r_out, $vs_end_of_ctrl_dir = "\x50\x4b\x05\x06\x00\x00\x00\x00" .
-		pack('v', sizeof($va_ctrl_dir)) .  // total # of entries "on this disk"
-		pack('v', sizeof($va_ctrl_dir)) .  // total # of entries overall
-		pack('V', strlen($vs_ctrl_dir)) .           // size of central dir
-		pack('V', $vn_new_offset) .              // offset to start of central dir
-		"\x00\x00");
-		$vn_current_offset += strlen($vs_end_of_ctrl_dir);
-		
-		//
-		// Add Zip64 central directory if required
+		// Add Zip64 end of central directory if required
 		// 
 		$vn_zip64_ctrl_dir_offset = $vn_current_offset;
 		if ($vb_need_zip64) { 
 			fwrite($r_out, $vs_zip64_ctrl_dir = "\x50\x4b\x06\x06" .
 			pack('P', 44) .              // size of record (8)
 		
-			pack('v', "\x14\x00") .              // version created by (2)
-			pack('v', "\x14\x00") .              // version needed to extract (2)
+			pack('v', "\x00\x00") .              // version created by (2)
+			pack('v', $vs_extract_version) .              // version needed to extract (2)
 			
 			pack('V', 0) .              // number of this disk (4)
 			pack('V', 0) .              // number of disk with start of central directory (4)
 			pack('P', sizeof($va_ctrl_dir)) .  			// total # of entries on this disk
 			pack('P', sizeof($va_ctrl_dir)) .  			// total # of entries overall
 			pack('P', strlen($vs_ctrl_dir)) .  			// size of central dir
-			pack('P', $vn_zip64_ctrl_dir_offset) .		// offset
+			pack('P', $vn_new_offset) .		// offset
 			"");
 		
 		
@@ -355,6 +354,16 @@
 			$vn_current_offset += strlen($vs_end_of_zip64_ctrl_dir);
 		}
 		
+		//
+		// Add End of central directory record
+		//
+		fwrite($r_out, $vs_end_of_ctrl_dir = "\x50\x4b\x05\x06\x00\x00\x00\x00" .
+		pack('v', sizeof($va_ctrl_dir)) .  // total # of entries "on this disk"
+		pack('v', sizeof($va_ctrl_dir)) .  // total # of entries overall
+		pack('V', strlen($vs_ctrl_dir)) .           // size of central dir
+		pack('V', $vn_new_offset) .              // offset to start of central dir
+		"\x00\x00");
+		$vn_current_offset += strlen($vs_end_of_ctrl_dir);
 		
 		ob_flush();
 		flush();
