@@ -3049,9 +3049,6 @@
 			return _t('CollectiveAccess requires certain PHP configuration options to be set and for file permissions in several directories to be web-server writable. This command will check these settings and file permissions and return warnings if configuration appears to be incorrect.');
 		}
 		# -------------------------------------------------------
-		/**
-		 *
-		 */
 		public static function reload_service_values($po_opts=null) {
 			$va_infoservice_elements = ca_metadata_elements::getElementsAsList(
 				false, null, null, true, false, false, array(__CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__)
@@ -3071,12 +3068,18 @@
 					$o_val = new InformationServiceAttributeValue($qr_values->getRow());
 					$va_new_row = $o_val->reload($va_element);
 
+					print CLIProgressBar::next(); // inc before first continuation point
+
+					if(!$va_new_row || !is_array($va_new_row) || !sizeof($va_new_row)) { continue; }
+
 					$t_attr = new ca_attribute_values($qr_values->get('value_id'));
 					$t_attr->set($va_new_row);
 					$t_attr->setMode(ACCESS_WRITE);
 					$t_attr->update();
 
-					print CLIProgressBar::next();
+					if($t_attr->numErrors() > 0) {
+						print _t('There were errors updating an attribute row: ') . join(' ', $t_attr->getErrors());
+					}
 				}
 
 				print CLIProgressBar::finish();
