@@ -9564,6 +9564,55 @@
         </item>
       </items>
     </list>
+    <list code="entity_location_types" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Entity Location Types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="null" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Birth" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Birth Place</name_singular>
+              <name_plural>Birth Places</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Death" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Death Place</name_singular>
+              <name_plural>Death Places</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Worked" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Place Worked</name_singular>
+              <name_plural>Places Worked</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Resided" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Place Resided</name_singular>
+              <name_plural>Places Resided</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
     <list code="gender" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -9596,6 +9645,14 @@
         </label>
       </labels>
       <items>
+        <item idno="null" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>-</name_singular>
+              <name_plural>-</name_plural>
+            </label>
+          </labels>
+        </item>
         <item idno="ulan" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -14169,6 +14226,47 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="entity_tgn" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Entity Locations</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="lineBreakAfterNumberOfElements">1</setting>
+      </settings>
+      <elements>
+     <metadataElement code="entity_tgn_lookup" datatype="InformationService">
+      <labels>
+        <label locale="en_US">
+          <name>TGN Lookup</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="service">TGN</setting>
+        <setting name="fieldWidth">70</setting>
+      </settings>
+      </metadataElement>
+        <metadataElement code="entity_tgn_types" datatype="List" list="entity_location_types">
+          <labels>
+            <label locale="en_US">
+              <name>Location Type</name>
+            </label>
+          </labels>
+          <settings/>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <metadataElement code="tgn" datatype="InformationService">
       <labels>
         <label locale="en_US">
@@ -14182,14 +14280,6 @@
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">255</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-        <restriction code="r2">
-          <table>ca_entities</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">255</setting>
@@ -14842,6 +14932,9 @@
           <name>Nationality (Legacy)</name>
         </label>
       </labels>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+      </settings>
       <typeRestrictions>
         <restriction>
           <table>ca_entities</table>
@@ -14876,6 +14969,9 @@
           <name>Ethnicity (Legacy)</name>
         </label>
       </labels>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+      </settings>
       <typeRestrictions>
         <restriction>
           <table>ca_entities</table>
@@ -15628,16 +15724,39 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="authority" datatype="List" list="authority">
+    <metadataElement code="authority" datatype="List" list="Container">
       <labels>
         <label locale="en_US">
           <name>Authority</name>
         </label>
       </labels>
       <settings>
-        <setting name="listWidth">40</setting>
-        <setting name="listHeight">1</setting>
+        <setting name="lineBreakAfterNumberOfElements">2</setting>
       </settings>
+    <elements>
+      <metadataElement code="authority_list" datatype="List" list="authority">
+        <labels>
+          <label locale="en_US">
+            <name>Source</name>
+          </label>
+        </labels>
+        <settings>
+          <setting name="listWidth">40</setting>
+          <setting name="listHeight">1</setting>
+        </settings>
+    </metadataElement>
+      <metadataElement code="authority_link" datatype="Url">
+        <labels>
+          <label locale="en_US">
+            <name>See Also</name>
+          </label>
+        </labels>
+        <settings>
+          <setting name="listWidth">50</setting>
+          <setting name="listHeight">1</setting>
+        </settings>
+      </metadataElement>
+    </elements>
       <typeRestrictions>
         <restriction code="r1">
           <table>ca_entities</table>
@@ -15763,6 +15882,28 @@
         <setting name="fieldHeight">1</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="nationality_uri" datatype="Url">
+      <labels>
+        <label locale="en_US">
+          <name>Nationality URI</name>
+          <description/>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">80</setting>
+        <setting name="fieldHeight">1</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
@@ -21060,23 +21201,26 @@ Onsite date: <unit>^ca_object_lots.onsite_date <br/></unit>
             <placement code="ca_attribute_entity_date">
               <bundle>ca_attribute_entity_date</bundle>
             </placement>
-            <placement code="ca_attribute_nationality">
-              <bundle>ca_attribute_nationality</bundle>
-            </placement>
-            <placement code="ca_attribute_ethnicities">
-              <bundle>ca_attribute_ethnicities</bundle>
-            </placement>
              <placement code="ca_attribute_biography">
               <bundle>ca_attribute_biography</bundle>
             </placement>
-             <placement code="ca_attribute_birth_place">
-              <bundle>ca_attribute_birth_place</bundle>
+            <placement code="ca_attribute_entity_tgn">
+              <bundle>ca_attribute_entity_tgn</bundle>
             </placement>
-             <placement code="ca_attribute_death_place">
-              <bundle>ca_attribute_death_place</bundle>
+            <placement code="ca_attribute_aat">
+              <bundle>ca_attribute_aat</bundle>
+              <settings>
+                <setting name="label" locale="en_US">AAT Nationality</setting>
+              </settings>
             </placement>
-            <placement code="ca_attribute_tgn">
-              <bundle>ca_attribute_tgn</bundle>
+            <placement code="ca_attribute_nationality_uri">
+              <bundle>ca_attribute_nationality_uri</bundle>
+            </placement>
+            <placement code="ca_attribute_nationality_legacy">
+              <bundle>ca_attribute_nationality_legacy</bundle>
+            </placement>
+            <placement code="ca_attribute_ethnicities_legacy">
+              <bundle>ca_attribute_ethnicities_legacy</bundle>
             </placement>
             <placement code="ca_attribute_internal_artist">
               <bundle>ca_attribute_internal_artist</bundle>
@@ -21238,12 +21382,6 @@ Onsite date: <unit>^ca_object_lots.onsite_date <br/></unit>
             <placement code="ca_attribute_external_link">
               <bundle>ca_attribute_external_link</bundle>
             </placement>
-            <placement code="ca_attribute_nationality_legacy">
-              <bundle>ca_attribute_nationality_legacy</bundle>
-            </placement>
-            <placement code="ca_attribute_ethnicities_legacy">
-              <bundle>ca_attribute_ethnicities_legacy</bundle>
-            </placement>
           </bundlePlacements>
         </screen>
       </screens>
@@ -21289,12 +21427,12 @@ Onsite date: <unit>^ca_object_lots.onsite_date <br/></unit>
             <placement code="ca_attribute_entity_date">
               <bundle>ca_attribute_entity_date</bundle>
             </placement>
-            <placement code="ca_attribute_nationality">
-              <bundle>ca_attribute_nationality</bundle>
+            <placement code="ca_attribute_nationality_legacy">
+              <bundle>ca_attribute_nationality_legacy</bundle>
             </placement>
-            <placement code="ca_attribute_ethnicities">
-              <bundle>ca_attribute_ethnicities</bundle>
-            </placement>
+            <placement code="ca_attribute_ethnicities_legacy">
+              <bundle>ca_attribute_ethnicities_legacy</bundle>
+            </placement> 
              <placement code="ca_attribute_biography">
               <bundle>ca_attribute_biography</bundle>
             </placement>
@@ -21400,12 +21538,6 @@ Onsite date: <unit>^ca_object_lots.onsite_date <br/></unit>
            <placement code="ca_attribute_external_link">
               <bundle>ca_attribute_external_link</bundle>
             </placement>
-            <placement code="ca_attribute_nationality_legacy">
-              <bundle>ca_attribute_nationality_legacy</bundle>
-            </placement>
-            <placement code="ca_attribute_ethnicities_legacy">
-              <bundle>ca_attribute_ethnicities_legacy</bundle>
-            </placement> 
           </bundlePlacements>
         </screen>
       </screens>

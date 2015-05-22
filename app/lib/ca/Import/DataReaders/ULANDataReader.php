@@ -213,4 +213,30 @@ class ULANDataReader extends BaseXMLDataReader {
 		return __CA_DATA_READER_INPUT_TEXT__;
 	}
 	# -------------------------------------------------------
+	/**
+	 * We don't do XPath reconditioning for ULAN RDF
+	 * @param string $ps_spec
+	 * @param null $pa_options
+	 * @return string
+	 */
+	public function _convertXPathExpression($ps_spec, $pa_options=null) {
+		return $ps_spec;
+	}
+	# -------------------------------------------------------
+	public function get($ps_spec, $pa_options=null) {
+		$vm_ret = parent::get($ps_spec, $pa_options);
+
+		if(is_array($vm_ret)) {
+			foreach($vm_ret as &$vs_val) {
+				$vs_val = html_entity_decode($vs_val);
+			}
+
+			return $vm_ret;
+		} elseif(is_string($vm_ret)) {
+			return html_entity_decode($vm_ret);
+		}
+
+		return $vm_ret;
+	}
+	# -------------------------------------------------------
 }

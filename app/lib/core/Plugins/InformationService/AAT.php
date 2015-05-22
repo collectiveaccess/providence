@@ -86,6 +86,7 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 
 		$pb_phrase = (bool) caGetOption('phrase', $pa_options, false);
 		$pb_raw = (bool) caGetOption('raw', $pa_options, false);
+		$pn_limit = (int) caGetOption('limit', $pa_options, 50);
 
 		/**
 		 * Contrary to what the Getty documentation says the terms seem to get combined by OR, not AND, so if you pass
@@ -110,7 +111,7 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 	{?ID gvp:parentString ?ParentsFull}
 	{?ID gvp:displayOrder ?Order}
 } ORDER BY DESC(?Order)
-LIMIT 50');
+LIMIT '.$pn_limit);
 
 		$va_results = parent::queryGetty($vs_query);
 		if(!is_array($va_results)) { return false; }
@@ -124,8 +125,9 @@ LIMIT 50');
 				$vs_id = str_replace('/', ':', $va_matches[0]);
 			}
 
-			$vs_label = $va_values['TermPrefLabel']['value'] . " (" . $va_values['Parents']['value'] . ")";
+			$vs_label = '['. str_replace('aat:', '', $vs_id) . '] ' . $va_values['TermPrefLabel']['value'] . " (" . $va_values['Parents']['value'] . ")";
 			$vs_label = preg_replace('/\,\s\.\.\.\s[A-Za-z\s]+Facet\s*/', '', $vs_label);
+			$vs_label = preg_replace('/[\<\>]/', '', $vs_label);
 
 			$va_return['results'][] = array(
 				'label' => htmlentities($vs_label),
