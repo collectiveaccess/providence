@@ -377,36 +377,6 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 	}
 	# ------------------------------------------------------------------
 	/**
-	 * Reloads info for this row from the external service to be saved again
-	 * @param array $pa_element_info element info array
-	 * @return array|bool attribute value array (same format as parseValue()) or false in case of error
-	 * 		false means the value should be left untouched
-	 */
-	public function reload($pa_element_info)  {
-		if(strlen($this->ops_uri_value)<1) { return false; }
-
-		$vs_service = caGetOption('service', $this->getSettingValuesFromElementArray(
-			$pa_element_info, array('service')
-		));
-
-		$this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service);
-		if(!$this->opo_plugin) { return false; }
-
-		$va_reload_info = $this->opo_plugin->reload($pa_element_info['settings'], $this->ops_uri_value);
-		if(!is_array($va_reload_info) || !isset($va_reload_info['url'])) { return false; }
-
-		$vs_indexing_blob = caSerializeForDatabase($this->opo_plugin->getExtraValuesForSearchIndexing($pa_element_info['settings'], $va_reload_info['url']));
-
-		return array(
-			'value_longtext1' => $va_reload_info['label'],	// text
-			'value_longtext2' => $va_reload_info['url'],	// url
-			'value_decimal1' => $va_reload_info['id'], 	// id
-			'value_blob' => $vs_indexing_blob
-		);
-
-	}
-	# ------------------------------------------------------------------
-	/**
 	 * Returns name of field in ca_attribute_values to use for sort operations
 	 *
 	 * @return string Name of sort field

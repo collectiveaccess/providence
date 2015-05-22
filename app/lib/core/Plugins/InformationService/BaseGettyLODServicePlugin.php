@@ -131,20 +131,6 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 		return $va_return;
 	}
 	# ------------------------------------------------
-	public function reload($pa_settings, $ps_url) {
-		$va_results = $this->lookup($pa_settings, $ps_url);
-
-		if(!$va_results['results'] || !is_array($va_results['results']) || !sizeof($va_results['results'])) { return false; }
-
-		foreach($va_results['results'] as $va_result) {
-			if($va_result['url'] == $ps_url) {
-				return $va_result;
-			}
-		}
-
-		return false;
-	}
-	# ------------------------------------------------
 	// HELPERS
 	# ------------------------------------------------
 	/**
