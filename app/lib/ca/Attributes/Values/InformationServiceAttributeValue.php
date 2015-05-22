@@ -220,8 +220,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 					'value_decimal1' => $va_tmp[1], 	// id
 					'value_blob' => $vs_indexing_blob
 				);
-			} elseif(sizeof($va_tmp)==1) { // this is something else -> try to look it up. we match hit when exactly 1 hit comes back
-
+			} elseif(sizeof($va_tmp)==1 && !preg_match("/\s+\[[A-Za-z0-9\:\/\.\-]+\]$/",$va_tmp[0])) { // this is something else -> try to look it up. we match hit when exactly 1 hit comes back
 				if(MemoryCache::contains($va_tmp[0], "InformationServiceLookup{$vs_service}")) {
 					return MemoryCache::fetch($va_tmp[0], "InformationServiceLookup{$vs_service}");
 				}
