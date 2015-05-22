@@ -456,6 +456,9 @@ function caFileIsIncludable($ps_file) {
 	 * @return bool
 	 */
 	function caIsValidFilePath($ps_path) {
+		// strip quotes from path if present since they'll cause file_exists() to fail
+		$ps_path = preg_replace("!^\"!", "", $ps_path);
+		$ps_path = preg_replace("!\"$!", "", $ps_path);
 		if (!$ps_path || (preg_match("/[^\/A-Za-z0-9\.:\ _\(\)\\\-]+/", $ps_path)) || !file_exists($ps_path)) { return false; }
 
 		return true;
@@ -2708,5 +2711,28 @@ function caFileIsIncludable($ps_file) {
 		if ((bool)ini_get('safe_mode')) { return false; }
 
 		return function_exists('curl_init');
+	}
+	# ----------------------------------------
+	/**
+	 * Returns the maximum depth of an array
+	 *
+	 * @param array $pa_array
+	 * @return int
+	 */
+	function caArrayDepth($pa_array) {
+		$vn_max_indentation = 1;
+
+		$va_array_str = print_r($pa_array, true);
+		$va_lines = explode("\n", $va_array_str);
+
+		foreach ($va_lines as $vs_line) {
+			$vn_indentation = (strlen($vs_line) - strlen(ltrim($vs_line))) / 4;
+
+			if ($vn_indentation > $vn_max_indentation) {
+				$vn_max_indentation = $vn_indentation;
+			}
+		}
+
+		return ceil(($vn_max_indentation - 1) / 2) + 1;
 	}
 	# ----------------------------------------

@@ -56,7 +56,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	 * @param string $ps_query The sparql query
 	 * @return array The decoded JSON result
 	 */
-	public function queryGetty($ps_query) {
+	public static function queryGetty($ps_query) {
 		$o_curl=curl_init();
 		curl_setopt($o_curl, CURLOPT_URL, "http://vocab.getty.edu/sparql.json?query={$ps_query}");
 		curl_setopt($o_curl, CURLOPT_CONNECTTIMEOUT, 2);
@@ -97,10 +97,13 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 
 			$vs_uri_for_pull = isset($va_node['uri']) ? $va_node['uri'] : null;
 
-			$vs_display .= "<div class='formLabel'>";
-			$vs_display .= isset($va_node['label']) ? $va_node['label'].": " : "";
-			$vs_display .= "<span class='formLabelPlain'>".self::getLiteralFromRDFNode($ps_url, $va_node['literal'], $vs_uri_for_pull, $va_node)."</span>";
-			$vs_display .= "</div>\n";
+			// only display if there's content
+			if(strlen($vs_content = self::getLiteralFromRDFNode($ps_url, $va_node['literal'], $vs_uri_for_pull, $va_node)) > 0) {
+				$vs_display .= "<div class='formLabel'>";
+				$vs_display .= isset($va_node['label']) ? $va_node['label'].": " : "";
+				$vs_display .= "<span class='formLabelPlain'>".$vs_content."</span>";
+				$vs_display .= "</div>\n";
+			}
 		}
 
 		return array('display' => $vs_display);
@@ -146,6 +149,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 
 		$pn_limit = (int) caGetOption('limit', $pa_options, 10);
 		$pb_strip_after_last_comma = (bool) caGetOption('stripAfterLastComma', $pa_options, false);
+		$pb_invert = (bool) caGetOption('invert', $pa_options, false);
 
 		if(!($o_graph = self::getURIAsRDFGraph($ps_base_node))) { return false; }
 
@@ -174,14 +178,19 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 
 			foreach($va_literals as $o_literal) {
 				if($o_literal instanceof EasyRdf_Literal) {
-					$vs_string_to_add = htmlentities($o_literal->getValue());
+					$vs_string_to_add = htmlentities(preg_replace('/[\<\>]/', '', $o_literal->getValue()));
 				} else {
-					$vs_string_to_add = (string) $o_literal;
+					$vs_string_to_add = preg_replace('/[\<\>]/', '', (string) $o_literal);
 				}
 
 				if($pb_strip_after_last_comma) {
 					$vn_last_comma_pos = strrpos($vs_string_to_add, ',');
 					$vs_string_to_add = substr($vs_string_to_add, 0, ($vn_last_comma_pos - strlen($vs_string_to_add)));
+				}
+
+				$va_tmp = explode(', ', $vs_string_to_add);
+				if($pb_invert && sizeof($va_tmp)) {
+					$vs_string_to_add = join(' &gt; ', array_reverse($va_tmp));
 				}
 
 				// make links click-able

@@ -169,4 +169,5 @@ abstract class BaseInformationServicePlugin Extends WLPlug {
 	public function getExtraValuesForSearchIndexing($pa_settings, $ps_url) {
 		return array();
 	}
+	# ------------------------------------------------
 }

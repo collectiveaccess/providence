@@ -35,6 +35,10 @@
 	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
 	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
 
+	require_once(__CA_LIB_DIR__.'/core/Plugins/InformationService/TGN.php');
+	require_once(__CA_LIB_DIR__.'/core/Plugins/InformationService/AAT.php');
+	require_once(__CA_LIB_DIR__.'/core/Plugins/InformationService/ULAN.php');
+
 	# ---------------------------------------
 	/**
 	 * 
@@ -1060,3 +1064,93 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 		return $vs_return;
 	}
 	# ---------------------------------------------------------------------
+	/**
+	 * Try to match given (partial) hierarchy path to a single subject in getty linked data AAT service
+	 * @param array $pa_hierarchy_path
+	 * @param int $pn_threshold
+	 * @param array $pa_options
+	 * 		removeParensFromLabels = Remove parens from labels for search and string comparison. This can improve results in specific cases.
+	 * @return bool|string
+	 */
+	function caMatchAAT($pa_hierarchy_path, $pn_threshold=180, $pa_options = array()) {
+		$vs_cache_key = md5(print_r($pa_hierarchy_path, true));
+		if(MemoryCache::contains($vs_cache_key, 'AATMatches')) {
+			return MemoryCache::fetch($vs_cache_key, 'AATMatches');
+		}
+
+		if(!is_array($pa_hierarchy_path)) { return false; }
+
+		$pb_remove_parens_from_labels = caGetOption('removeParensFromLabels', $pa_options, false);
+
+		// search the bottom-most component (the actual term)
+		$vs_bot = trim(array_pop($pa_hierarchy_path));
+
+		if($pb_remove_parens_from_labels) {
+			$vs_lookup = trim(preg_replace("/\([\p{L}\-\_\s]+\)/", '', $vs_bot));
+		} else {
+			$vs_lookup = $vs_bot;
+		}
+
+		$o_service = new WLPlugInformationServiceAAT();
+
+		$va_hits = $o_service->lookup(array(), $vs_lookup, array('phrase' => true, 'raw' => true, 'limit' => 2000));
+		if(!is_array($va_hits)) { return false; }
+
+		$vn_best_distance = 0;
+		$vn_pick = -1;
+		foreach($va_hits as $vn_i => $va_hit) {
+			if(stripos($va_hit['TermPrefLabel']['value'], $vs_lookup) !== false) { // only consider terms that match what we searched
+
+				// calculate similarity as a number by comparing both the term and the parent string
+				$vs_label_with_parens = $va_hit['TermPrefLabel']['value'];
+				$vs_label_without_parens = trim(preg_replace("/\([\p{L}\s]+\)/", '', $vs_label_with_parens));
+				$va_label_percentages = array();
+
+				// we try every combination with and without parens on both sides
+				// unfortunately this code gets rather ugly because getting the similarity
+				// as percentage is only possible by passing a reference parameter :-(
+				similar_text($vs_label_with_parens, $vs_bot, $vn_label_percent);
+				$va_label_percentages[] = $vn_label_percent;
+				similar_text($vs_label_with_parens, $vs_lookup, $vn_label_percent);
+				$va_label_percentages[] = $vn_label_percent;
+				similar_text($vs_label_without_parens, $vs_bot, $vn_label_percent);
+				$va_label_percentages[] = $vn_label_percent;
+				similar_text($vs_label_without_parens, $vs_lookup, $vn_label_percent);
+				$va_label_percentages[] = $vn_label_percent;
+
+				// similarity to parent path
+				similar_text($va_hit['ParentsFull']['value'], join(' ', array_reverse($pa_hierarchy_path)), $vn_parent_percent);
+
+				// it's a weighted sum because the term label is more important than the exact path
+				$vn_tmp = 2*max($va_label_percentages) + $vn_parent_percent;
+				//var_dump($va_hit); var_dump($vn_tmp);
+				if($vn_tmp > $vn_best_distance) {
+					$vn_best_distance = $vn_tmp;
+					$vn_pick = $vn_i;
+				}
+			}
+		}
+
+		if($vn_pick >= 0 && ($vn_best_distance > $pn_threshold)) {
+			$va_pick = $va_hits[$vn_pick];
+			$vs_id = '';
+			if(preg_match("/[a-z]{3,4}\/[0-9]+$/", $va_pick['ID']['value'], $va_matches)) {
+				$vs_id = str_replace('/', ':', $va_matches[0]);
+			}
+
+			$vs_label = $va_pick['TermPrefLabel']['value'] . " (" . $va_pick['Parents']['value'] . ")";
+			$vs_label = preg_replace('/\,\s\.\.\.\s[A-Za-z\s]+Facet\s*/', '', $vs_label);
+
+			$va_return = array(
+				'label' => htmlentities($vs_label),
+				'id' => $vs_id,
+				'url' => $va_pick['ID']['value'],
+			);
+
+			$vs_return = join('|', $va_return);
+			MemoryCache::save($vs_cache_key, $vs_return, 'AATMatches');
+			return $vs_return;
+		}
+
+		return false;
+	}

@@ -1069,7 +1069,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$t_item = new ca_object_representations();
 						$va_rep_type_list = $t_item->getTypeList();
 						$va_errors = array();
-
+							
+						$vs_bundle_template = caGetOption('display_template', $pa_bundle_settings, null);
 
 						// Paging
 						$vn_primary_id = 0;
@@ -1077,6 +1078,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if (sizeof($va_reps)) {
 							$o_type_config = Configuration::load($t_item->getAppConfig()->get('annotation_type_config'));
 							$va_annotation_type_mappings = $o_type_config->getAssoc('mappings');
+	
+							// Get display template values
+							$va_display_template_values = array();
+							if($vs_bundle_template && is_array($va_relation_ids = caExtractValuesFromArrayList($va_reps, 'relation_id')) && sizeof($va_relation_ids)) {
+								if ($vs_linking_table = RepresentableBaseModel::getRepresentationRelationshipTableName($this->tableName())) {
+									$va_display_template_values = caProcessTemplateForIDs($vs_bundle_template, $vs_linking_table, $va_relation_ids, array_merge($pa_options, array('returnAsArray' => true, 'returnAllLocales' => false, 'includeBlankValuesInArray' => true)));
+								}
+							}
 	
 							$vn_i = 0;
 							foreach ($va_reps as $va_rep) {
@@ -1089,8 +1098,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 								if ($va_rep['is_primary']) {
 									$vn_primary_id = $va_rep['representation_id'];
 								}
+								
 								$va_initial_values[$va_rep['representation_id']] = array(
 									'idno' => $va_rep['idno'], 
+									'_display' => ($vs_bundle_template && isset($va_display_template_values[$vn_i])) ? $va_display_template_values[$vn_i] : '',
 									'status' => $va_rep['status'], 
 									'status_display' => $t_item->getChoiceListValue('status', $va_rep['status']), 
 									'access' => $va_rep['access'],
@@ -1681,6 +1692,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'ca_object_representation_chooser':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						$vs_element .= $this->getRepresentationChooserHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						break;
+					# -------------------------------
+					// This bundle is only available items that can be used as authority references (object, entities, occurrences, list items, etc.)
+					case 'authority_references_list':
+						$vs_element .= $this->getAuthorityReferenceListHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
 					# -------------------------------
 					default:
@@ -2512,7 +2528,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
-		$va_initial_values = array();
 		$va_get_related_opts = array_merge($pa_options, $pa_bundle_settings);
 		if (isset($pa_bundle_settings['restrictToTermsRelatedToCollection']) && $pa_bundle_settings['restrictToTermsRelatedToCollection']) {
 			$va_get_related_opts['restrict_to_relationship_types'] = $pa_bundle_settings['restrictToTermsOnCollectionUseRelationshipType'];
@@ -3536,10 +3551,18 @@ if (!$vb_batch) {
 						}
 					
 						// check for new representations to add 
-						foreach($_FILES as $vs_key => $vs_value) {
+						$va_file_list = $_FILES;
+						foreach($_REQUEST as $vs_key => $vs_value) {
+							if (!preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) { continue; }
+							$va_file_list[$vs_key] = array(
+								'url' => $vs_value
+							);
+						}
+						
+						foreach($va_file_list as $vs_key => $va_values) {
 							$this->clearErrors();
 							
-							if (!preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches)) { continue; }
+							if (!preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches) && (($vb_allow_fetching_of_urls && !preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) || !$vb_allow_fetching_of_urls)) { continue; }
 							
 							if($vs_upload_type = $po_request->getParameter($vs_prefix_stub.'upload_typenew_'.$va_matches[1], pString)) {
 								$po_request->user->setVar('defaultRepresentationUploadType', $vs_upload_type);
@@ -3549,12 +3572,12 @@ if (!$vb_batch) {
 							if ($vn_existing_rep_id = $po_request->getParameter($vs_prefix_stub.'idnew_'.$va_matches[1], pInteger)) {
 								$this->addRelationship('ca_object_representations', $vn_existing_rep_id, $vn_type_id);
 							} else {
-								if ($vb_allow_fetching_of_urls && ($vs_path = $_REQUEST[$vs_prefix_stub.'media_url_new_'.$va_matches[1]])) {
+								if ($vb_allow_fetching_of_urls && ($vs_path = $va_values['url'])) {
 									$va_tmp = explode('/', $vs_path);
 									$vs_original_name = array_pop($va_tmp);
 								} else {
-									$vs_path = $_FILES[$vs_prefix_stub.'media_new_'.$va_matches[1]]['tmp_name'];
-									$vs_original_name = $_FILES[$vs_prefix_stub.'media_new_'.$va_matches[1]]['name'];
+									$vs_path = $va_values['tmp_name'];
+									$vs_original_name = $va_values['name'];
 								}
 								if (!$vs_path) { continue; }
 							
@@ -4306,8 +4329,9 @@ if (!$vb_batch) {
 		if(isset($pa_options['returnLabelsAsArray']) && (!isset($pa_options['return_labels_as_array']) || !$pa_options['return_labels_as_array'])) { $pa_options['return_labels_as_array'] = $pa_options['returnLabelsAsArray']; }
 		if(isset($pa_options['restrictToLists']) && (!isset($pa_options['restrict_to_lists']) || !$pa_options['restrict_to_lists'])) { $pa_options['restrict_to_lists'] = $pa_options['restrictToLists']; }
 		if(isset($pa_options['groupFields'])) { $pa_options['groupFields'] = (bool)$pa_options['groupFields']; } else { $pa_options['groupFields'] = false; }
-
+		
 		$va_primary_ids = caGetOption('primaryIDs', $pa_options, null);
+		$vb_show_current_only = caGetOption('showCurrentOnly', $pa_options, false);
 
 		$o_db = $this->getDb();
 		$t_locale = new ca_locales();
@@ -4555,6 +4579,10 @@ if (!$vb_batch) {
 				}
 			}
 		}
+		
+		if ($vb_show_current_only && $t_item_rel && $t_item_rel->hasField('source_info')) {
+			$va_wheres[] = '('.$t_item_rel->tableName().'.source_info = \'current\')';
+		}
 
 		// return source info in returned data
 		if ($t_item_rel && $t_item_rel->hasField('source_info')) {
@@ -4567,6 +4595,10 @@ if (!$vb_batch) {
 
 		if ((!isset($pa_options['showDeleted']) || !$pa_options['showDeleted']) && $t_rel_item->hasField('deleted')) {
 			$va_wheres[] = "({$vs_related_table}.deleted = 0)";
+		}
+		
+		if (($va_criteria = caGetOption('criteria', $pa_options, null)) && (is_array($va_criteria)) && (sizeof($va_criteria))) {
+			$va_wheres[] = "(".join(" AND ", $va_criteria).")"; 
 		}
 
 		if($vb_self_relationship) {
@@ -4615,7 +4647,6 @@ if (!$vb_batch) {
 					WHERE
 						".join(' AND ', array_merge($va_wheres, array('('.$va_path[1].'.'.$vs_other_field .' IN ('.join(',', $va_row_ids).'))')))."
 					{$vs_order_by}";
-				//print "<pre>$vs_sql</pre>\n";
 
 				$qr_res = $o_db->query($vs_sql);
 
@@ -4884,7 +4915,6 @@ if (!$vb_batch) {
 				{$vs_order_by}
 			";
 
-			//print "<pre>$vs_sql</pre>\n";
 			$qr_res = $o_db->query($vs_sql);
 			
 			if ($vb_uses_relationship_types)  {
@@ -6529,6 +6559,23 @@ side. For many self-relations the direction determines the nature and display te
 
 		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 		return true;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Method calls by SearchResult::get() on models when bundle to fetch is not an intrinsic but is listed in the 
+	 * models bundle list. This is typically employed to let the model render bundle data in a custom manner.
+	 *
+	 * This method implementation is just a stub and always returns null. Models implementing custom rendering will override this method.
+	 *
+	 * @param string $ps_bundle_name Name of bundle
+	 * @param int $pn_row_id The primary key of the row from which the bundle is being rendered
+	 * @param array $pa_values The row value array
+	 * @param array $pa_options Options passed to SearchResult::get()
+	 *
+	 * @return null
+	 */
+	public function renderBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options=null) {
+		return null;
 	}
 	# --------------------------------------------------------------------------------------------
 }

@@ -78,7 +78,7 @@
 					$va_menu_items = array();
 				}
 				
-				$va_menu_items['import'] = array(
+				$va_menu_items['worldcat_import'] = array(
 					'displayName' => _t('WorldCat'),
 					"default" => array(
 						'module' => 'WorldCat', 

@@ -423,7 +423,9 @@
 			$vn_table_num = $t_instance->tableNum();
 			$vs_table_pk = $t_instance->primaryKey();
 			
-			$t_label = $t_instance->getLabelTableInstance();
+			if (!($t_label = $t_instance->getLabelTableInstance())) {
+				return parent::find($pa_values, $pa_options);
+			}
 			$vs_label_table = $t_label->tableName();
 			$vs_label_table_pk = $t_label->primaryKey();
 			

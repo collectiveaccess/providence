@@ -1270,6 +1270,33 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
 				);
 			}
+			
+			$va_additional_settings = array(
+				
+			);
+			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
+			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
+			
+			$vs_bundle = $vs_table.'.ca_objects_location';
+			$vs_label = _t('Current location');
+			$vs_display = "<div id='bundleDisplayEditorBundle_{$vs_table}_ca_objects_location'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> "._t('Current location')."</div>";
+			$vs_description = _t('Current location of object');
+			
+			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
+				'bundle' => $vs_bundle,
+				'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
+				'description' => $vs_description,
+				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
+				'settings' => $va_additional_settings
+			);
+			
+			if ($vb_show_tooltips) {
+				TooltipManager::add(
+					"#bundleDisplayEditorBundle_ca_objects_location",
+					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
+				);
+			}
+
 		}
 		
 		if (caGetBundleAccessLevel($vs_table, "ca_object_representations") != __CA_BUNDLE_ACCESS_NONE__) {
@@ -1447,6 +1474,30 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 						'label' => _t('Hierarchical delimiter'),
 						'description' => _t('Text to place in-between elements of a hierarchical value.')
 					)
+				);
+			}
+			
+			if (
+				(($vs_table === 'ca_objects') && ($vs_related_table === 'ca_storage_locations'))
+				||
+				(($vs_table === 'ca_storage_locations') && ($vs_related_table === 'ca_objects'))
+				||
+				(($vs_table === 'ca_objects') && ($vs_related_table === 'ca_movements'))
+				||
+				(($vs_table === 'ca_movements') && ($vs_related_table === 'ca_objects'))
+				||
+				(($vs_table === 'ca_storage_locations') && ($vs_related_table === 'ca_movements'))
+				||
+				(($vs_table === 'ca_movements') && ($vs_related_table === 'ca_storage_locations'))
+			) {
+				$va_additional_settings['showCurrentOnly'] = array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_CHECKBOXES,
+					'width' => "10", 'height' => "1",
+					'takesLocale' => false,
+					'default' => '0',
+					'label' => _t('Show current only?'),
+					'description' => _t('If checked only current objects are displayed.')
 				);
 			}
 			
@@ -1772,6 +1823,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 	 *		purify = if true then value is run through HTMLPurifier (http://htmlpurifier.org) before being returned; this is useful when you want to make sure any HTML in the value is valid, particularly when converting HTML to a PDF as invalid markup will cause an exception. Default is false as HTMLPurify can significantly slow down things if used everywhere.
 	 *		delimiter = character(s) to place between repeating values
 	 *		showHierarchy = 
+	 *		showCurrentOnly = 
 	 * @return string The processed value ready for display
 	 */
 	public function getDisplayValue($po_result, $pn_placement_id, $pa_options=null) {
