@@ -2616,7 +2616,7 @@
  			$o_db = $this->getDb();
  			
  			$qr_res = $o_db->query("
- 				SELECT camtr.element_id, came.element_code, cmel.name, cmel.locale_id
+ 				SELECT camtr.element_id, came.element_code, cmel.name, cmel.description, cmel.locale_id
  				FROM ca_metadata_type_restrictions camtr
  				INNER JOIN ca_metadata_elements AS came ON camtr.element_id = came.element_id
  				INNER JOIN ca_metadata_element_labels AS cmel ON cmel.element_id = came.element_id
