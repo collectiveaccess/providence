@@ -1191,7 +1191,7 @@
 			
 			$vn_log_level = BatchProcessor::_logLevelStringToNumber($vs_log_level);
 
-			if (is_dir($ps_source)) {
+			if (!isURL($ps_source) && is_dir($ps_source)) {
 				$va_sources = caGetDirectoryContentsAsList($ps_source, true, false, false, false);
 			} else {
 				$va_sources = array($ps_source);
