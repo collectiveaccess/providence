@@ -220,8 +220,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 					'value_decimal1' => $va_tmp[1], 	// id
 					'value_blob' => $vs_indexing_blob
 				);
-			} elseif(sizeof($va_tmp)==1) { // this is something else -> try to look it up. we match hit when exactly 1 hit comes back
-
+			} elseif(sizeof($va_tmp)==1 && !preg_match("/\s+\[[A-Za-z0-9\:\/\.\-]+\]$/",$va_tmp[0])) { // this is something else -> try to look it up. we match hit when exactly 1 hit comes back
 				if(MemoryCache::contains($va_tmp[0], "InformationServiceLookup{$vs_service}")) {
 					return MemoryCache::fetch($va_tmp[0], "InformationServiceLookup{$vs_service}");
 				}
@@ -375,36 +374,6 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 	# ------------------------------------------------------------------
 	public function getExtraValuesForSearchIndexing() {
 		return (is_array($this->opa_indexing_info) ? $this->opa_indexing_info : array());
-	}
-	# ------------------------------------------------------------------
-	/**
-	 * Reloads info for this row from the external service to be saved again
-	 * @param array $pa_element_info element info array
-	 * @return array|bool attribute value array (same format as parseValue()) or false in case of error
-	 * 		false means the value should be left untouched
-	 */
-	public function reload($pa_element_info)  {
-		if(strlen($this->ops_uri_value)<1) { return false; }
-
-		$vs_service = caGetOption('service', $this->getSettingValuesFromElementArray(
-			$pa_element_info, array('service')
-		));
-
-		$this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service);
-		if(!$this->opo_plugin) { return false; }
-
-		$va_reload_info = $this->opo_plugin->reload($pa_element_info['settings'], $this->ops_uri_value);
-		if(!is_array($va_reload_info) || !isset($va_reload_info['url'])) { return false; }
-
-		$vs_indexing_blob = caSerializeForDatabase($this->opo_plugin->getExtraValuesForSearchIndexing($pa_element_info['settings'], $va_reload_info['url']));
-
-		return array(
-			'value_longtext1' => $va_reload_info['label'],	// text
-			'value_longtext2' => $va_reload_info['url'],	// url
-			'value_decimal1' => $va_reload_info['id'], 	// id
-			'value_blob' => $vs_indexing_blob
-		);
-
 	}
 	# ------------------------------------------------------------------
 	/**

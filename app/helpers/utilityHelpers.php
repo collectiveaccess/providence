@@ -752,7 +752,7 @@ function caFileIsIncludable($ps_file) {
 	 * @return boolean true if it appears to be valid URL, false if not
 	 */
 	function isURL($ps_url) {
-		if (preg_match("!(http|ftp|https|rtmp|rtsp):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?!", $ps_url, $va_matches)) {
+		if (preg_match("!(http|ftp|https|rtmp|rtsp|mysql):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?!", $ps_url, $va_matches)) {
 			return array(
 				'protocol' => $va_matches[1],
 				'url' => $ps_url

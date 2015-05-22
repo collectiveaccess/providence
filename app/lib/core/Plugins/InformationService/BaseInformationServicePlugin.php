@@ -170,13 +170,4 @@ abstract class BaseInformationServicePlugin Extends WLPlug {
 		return array();
 	}
 	# ------------------------------------------------
-	/**
-	 * Should be overridden in implementation
-	 * @param array $pa_element_info
-	 * @return array|bool
-	 */
-	public function reload($pa_settings, $ps_url) {
-		return false; // plugin doesn't support reloading -> leave values as they are
-	}
-	# ------------------------------------------------
 }

@@ -2676,6 +2676,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$vm_value = $po_reader->get($pa_item['source'], array('returnAsArray' => true));
 				if (!is_array($vm_value)) { return $pb_return_as_array ? array() : null; }
 				foreach($vm_value as $vs_k => $vs_v) {
+					$vs_v = stripslashes($vs_v);
 					$vm_value[$vs_k] = ca_data_importers::replaceValue(trim($vs_v), $pa_item);
 				}
 				if ($pb_return_as_array) {
@@ -2690,7 +2691,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_did_seek) { $po_reader->seek($vn_cur_pos); }
 		}
 		
-		$vm_value = ca_data_importers::replaceValue($vm_value, $pa_item);
+		$vm_value = ca_data_importers::replaceValue(stripslashes($vm_value), $pa_item);
 		
 		if ($pb_return_as_array) {
 			return is_array($vm_value) ? $vm_value : array($vm_value);

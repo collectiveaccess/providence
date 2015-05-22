@@ -3063,24 +3063,20 @@
 				", $va_element['element_id']);
 
 				print CLIProgressBar::start($qr_values->numRows(), "Reloading values for element code ".$va_element['element_code']);
-
-				$t_attr = new ca_attribute_values($qr_values->get('value_id'));
-				$t_attr->setMode(ACCESS_WRITE);
+				$t_value = new ca_attribute_values();
 
 				while($qr_values->nextRow()) {
 					$o_val = new InformationServiceAttributeValue($qr_values->getRow());
-					$va_new_row = $o_val->reload($va_element);
+					$vs_uri = $o_val->getUri();
 
 					print CLIProgressBar::next(); // inc before first continuation point
 
-					if(!$va_new_row || !is_array($va_new_row) || !sizeof($va_new_row)) { continue; }
-					if(!$t_attr->load($qr_values->get('value_id'))) { continue; }
+					if(!$vs_uri || !strlen($vs_uri)) { continue; }
+					if(!$t_value->load($qr_values->get('value_id'))) { continue; }
 
-					$t_attr->set($va_new_row);
+					$t_value->editValue($vs_uri);
 
-					$t_attr->update();
-
-					if($t_attr->numErrors() > 0) {
+					if($t_value->numErrors() > 0) {
 						print _t('There were errors updating an attribute row: ') . join(' ', $t_attr->getErrors());
 					}
 				}
