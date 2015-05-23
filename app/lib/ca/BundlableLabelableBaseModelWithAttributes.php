@@ -4309,7 +4309,8 @@ if (!$vb_batch) {
  	 *		user_id = If set item level access control is performed relative to specified user_id, otherwise defaults to logged in user
  	 *		groupFields = Groups together fields in an arrangement that is easier for import to another system. Used by the ItemInfo web service when in "import" mode. [Default is false]
  	 *		returnLocaleCodes = Return locale values as codes (Ex. en_US) rather than numeric database-specific locale_ids. [Default is false]
- 	 *
+ 	 *		dontReturnLabels = 
+ 	 *		criteria = 
  	 *		primaryIDs = array of primary keys in related table to exclude from returned list of items. Array is keyed on table name for compatibility with the parameter as used in the caProcessTemplateForIDs() helper [Default is null - nothing is excluded].
  	 *
  	 * @return array - list of related items
@@ -4558,7 +4559,7 @@ if (!$vb_batch) {
 
 		// if related item is labelable then include the label table in the query as well
 		$vs_label_display_field = null;
-		if (method_exists($t_rel_item, "getLabelTableName")) {
+		if (method_exists($t_rel_item, "getLabelTableName") && !caGetOption('dontReturnLabels', $pa_options, false)) {
 			if($vs_label_table_name = $t_rel_item->getLabelTableName()) {           // make sure it actually has a label table...
 				$va_path[] = $vs_label_table_name;
 				$t_rel_item_label = $this->getAppDatamodel()->getTableInstance($vs_label_table_name);
