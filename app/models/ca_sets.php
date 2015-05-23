@@ -1327,24 +1327,32 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 						$t_set_item->delete(true);
 					}
 				}
+				unset($va_row_ranks[$vn_row_id]);
 			}
 		}
 		
-		
+	
 		// rewrite ranks
+		$va_existing_ranks = array_values($va_row_ranks);
+		$vn_rank_acc = end(array_values($va_row_ranks));
 		foreach($pa_row_ids as $vn_rank => $vn_row_id) {
-			$vn_rank_inc = $vn_rank + 1;
-			if ($vb_treat_row_ids_as_rids) { $va_tmp = explode("_", $vn_row_id); }
-			if (isset($va_row_ranks[$vn_row_id]) && $t_set_item->load($vb_treat_row_ids_as_rids ? array('set_id' => $vn_set_id, 'row_id' => $va_tmp[0], 'item_id' => $va_tmp[1]) : array('set_id' => $vn_set_id, 'row_id' => $vn_row_id))) {
-				if ($va_row_ranks[$vn_row_id] != $vn_rank_inc) {
-					$t_set_item->set('rank', $vn_rank_inc);
-					$t_set_item->update();
-				
-					if ($t_set_item->numErrors()) {
-						$va_errors[$vn_row_id] = _t('Could not reorder item %1: %2', $vn_row_id, join('; ', $t_set_item->getErrors()));
-					}
-				}
+			if (isset($va_existing_ranks[$vn_rank])) {
+				$vn_rank_inc = $va_existing_ranks[$vn_rank];
 			} else {
+				$vn_rank_acc++;
+				$vn_rank_inc = $vn_rank_acc;
+			}
+			
+			if ($vb_treat_row_ids_as_rids) { $va_tmp = explode("_", $vn_row_id); }
+			if (isset($va_row_ranks[$vn_row_id]) && ($va_row_ranks[$vn_row_id] != $vn_rank_inc) && $t_set_item->load($vb_treat_row_ids_as_rids ? array('set_id' => $vn_set_id, 'row_id' => $va_tmp[0], 'item_id' => $va_tmp[1]) : array('set_id' => $vn_set_id, 'row_id' => $vn_row_id))) {
+				print "NEW RANK $vn_rank_inc<br>\n";
+				$t_set_item->set('rank', $vn_rank_inc);
+				$t_set_item->update();
+			
+				if ($t_set_item->numErrors()) {
+					$va_errors[$vn_row_id] = _t('Could not reorder item %1: %2', $vn_row_id, join('; ', $t_set_item->getErrors()));
+				}
+			} elseif(!isset($va_row_ranks[$vn_row_id])) {
 				// add item to set
 				$this->addItem($vb_treat_row_ids_as_rids ? $va_tmp[0] : $vn_row_id, null, $vn_user_id, $vn_rank_inc);
 			}
