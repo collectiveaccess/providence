@@ -1176,10 +1176,10 @@ class SearchResult extends BaseObject {
 //
 // [RELATED TABLE] 
 //
-			$vs_opt_md5 = caMakeCacheKeyFromOptions(array_merge($pa_options, array('dontReturnLabels' => true)));
+			$vs_opt_md5 = caMakeCacheKeyFromOptions(array_merge($pa_options, array('dontReturnLabels' => false)));
 			
 			if (!isset(self::$s_rel_prefetch_cache[$this->ops_table_name][$vn_row_id][$va_path_components['table_name']][$vs_opt_md5])) {
-				$this->prefetchRelated($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), array_merge($pa_options, array('dontReturnLabels' => true)));
+				$this->prefetchRelated($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), array_merge($pa_options, array('dontReturnLabels' => false)));
 			}
 			
 			$va_related_items = self::$s_rel_prefetch_cache[$this->ops_table_name][$vn_row_id][$va_path_components['table_name']][$vs_opt_md5];
