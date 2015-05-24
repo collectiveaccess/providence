@@ -1512,21 +1512,21 @@ class SearchResult extends BaseObject {
 							break;
 					}
 					
-					if ($vb_return_as_link) { $vs_val_proc = caCreateLinksFromText($vs_val_proc, $vs_table_name, $vn_id); }
-					if (!$vb_return_all_locales && !$vb_return_as_array) {
-						$va_return_values[$vn_c] = $vs_val_proc;
-					} elseif(!$vb_return_all_locales) {
+					if($vb_return_as_link) { $vs_val_proc = caCreateLinksFromText($vs_val_proc, $vs_table_name, $vn_id); }
+					if(isset($va_return_values[$vn_c][$vn_locale_id])) { $vn_c++; }
+					
+					if(!$vb_return_all_locales) {
 						$va_return_values[$vn_c][$vn_locale_id] = $vs_val_proc;
 					} else {
 						$va_return_values[$vn_c][$vn_locale_id][$vs_element_code] = $vs_val_proc;
 					}
 				}
-				$vn_c++;
 			}
 		}
 		
 		if ($pa_options['returnAllLocales']) { return $va_return_values; } 	
 		if ($pa_options['returnAsArray']) { return is_array($va_return_values) ? array_values(caExtractValuesByUserLocale($va_return_values)) : array(); }
+		$va_return_values = caExtractValuesByUserLocale($va_return_values);
 		
 		return (sizeof($va_return_values) > 0) ? join($pa_options['delimiter'], $va_return_values) : null;
 	}
