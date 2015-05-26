@@ -108,9 +108,12 @@ class Db_pdo_mysql extends DbDriverBase {
 		}
 
 		try {
-			$this->opr_db = new PDO('mysql:host='.$pa_options["host"].';dbname='.$pa_options["database"], $pa_options["username"], $pa_options["password"], array(PDO::ATTR_PERSISTENT => caGetOption("persistentConnections", $pa_options, true)));
-			$this->opr_db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-			$this->opr_db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+			$this->opr_db = new PDO('mysql:host='.$pa_options["host"].';dbname='.$pa_options["database"], $pa_options["username"], $pa_options["password"], array(
+				PDO::ATTR_PERSISTENT => caGetOption("persistentConnections", $pa_options, true),
+				PDO::ATTR_EMULATE_PREPARES => true,
+				PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
+				PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+			));
 		} catch (Exception $e) {
 			$po_caller->postError(200, $e->getMessage(), "Db->pdo_mysql->connect()");
 			return false;
@@ -191,7 +194,9 @@ class Db_pdo_mysql extends DbDriverBase {
 		if (Db::$monitor) {
 			$t = new Timer();
 		}
+
 		try {
+			$opo_statement->closeCursor();
 			$opo_statement->execute((is_array($va_tmp['values']) && sizeof($va_tmp['values'])) ? array_values($va_tmp['values']) : null);
 		} catch(PDOException $e) {
 			$po_caller->postError($po_caller->nativeToDbError($this->opr_db->errorCode()), $e->getMessage().((__CA_ENABLE_DEBUG_OUTPUT__) ? "\n<pre>".caPrintStacktrace()."\n{$ps_sql}</pre>" : ""), "Db->pdo_mysql->execute()");
@@ -356,7 +361,12 @@ class Db_pdo_mysql extends DbDriverBase {
 	 */
 	public function free($po_caller, $pr_res) {
 		if($pr_res instanceof PDOStatement) {
-			$pr_res->closeCursor();
+			try {
+				$pr_res->fetchAll();
+				$pr_res->closeCursor();
+			} catch(PDOException $e) {
+				//noop
+			}
 		}
 		return true;
 	}
