@@ -82,7 +82,6 @@ class BaseEditorController extends ActionController {
 		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
 		$vs_mode = $this->request->getParameter('mode', pString);
 
-
 		if (!$this->_checkAccess($t_subject)) { return false; }
 
 		//
@@ -551,6 +550,9 @@ class BaseEditorController extends ActionController {
 
 				# trigger "DeleteItem" hook
 				$this->opo_app_plugin_manager->hookDeleteItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
+
+				# redirect to last find
+				caSetRedirect($this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $t_subject->tableName()));
 			}
 		}
 
