@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -80,7 +80,8 @@ class ExpressionParser {
             'current'		=> 'caIsCurrentDate',
             'future'		=> 'caDateEndsInFuture',
             'wc'			=> 'str_word_count',
-            'length'		=> 'strlen'
+            'length'		=> 'strlen',
+            'date'			=> 'caDateToHistoricTimestamp'
     );
     
     private $opa_tokens;
@@ -831,4 +832,3 @@ class ExpressionParser {
     }
 	# -------------------------------------------------------------------
 }
-?>

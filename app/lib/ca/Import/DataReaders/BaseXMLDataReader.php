@@ -258,7 +258,7 @@ class BaseXMLDataReader extends BaseDataReader {
 		// Recondition the spec for Xpath
 		$ps_spec = $this->_convertXPathExpression($ps_spec, array('useRootTag' => $this->ops_base_root_tag));
 
-		if (!($o_node_list = $this->opo_handle_xpath->query($ps_spec))) {
+		if (!($o_node_list = @$this->opo_handle_xpath->query($ps_spec))) {
 			return null;
 		}
 		
@@ -372,6 +372,8 @@ class BaseXMLDataReader extends BaseDataReader {
 				(!preg_match("!^[A-Za-z0-9\-_]+\(!", $vs_spec_element))		// functions should not get the default namespace applied
 				&&
 				(!preg_match("!^[\.]+$!", $vs_spec_element))				// . and .. should not get the default namespace applied
+				&&
+				(!preg_match("!^\([A-Za-z0-9\-_]+!", $vs_spec_element))		// groups in parens should not get the default namespace applied
 			) {
 				if ($this->ops_xml_namespace_prefix) {
 					$va_tmp[$vn_i]= $this->ops_xml_namespace_prefix.":{$vs_spec_element}";
