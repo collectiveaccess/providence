@@ -495,6 +495,7 @@
 		 * @param string $ps_text The name text
 		 * @param array $pa_options Optional array of options. Supported options are:
 		 *		locale = locale code to use when applying rules; if omitted current user locale is employed
+		 *		displaynameFormat = surnameCommaForename, forenameCommaSurname, forenameSurname, original [Default = original]
 		 *
 		 * @return array Array containing parsed name, keyed on ca_entity_labels fields (eg. forename, surname, middlename, etc.)
 		 */
@@ -627,8 +628,25 @@
 					}
 				}
 			}
-			
-			$va_name['displayname'] = $ps_original_text;
+
+			switch($vs_format = caGetOption('displaynameFormat', $pa_options, 'original', array('forceLowercase' => true))) {
+				case 'surnamecommaforename':
+					$va_name['displayname'] = ((strlen(trim($va_name['surname']))) ? $va_name['surname'].", " : '').$va_name['forename'];
+					break;
+				case 'forenamesurname':
+					$va_name['displayname'] = trim($va_name['forename'].' '.$va_name['surname']);
+					break;
+				case 'surnameforename':
+					$va_name['displayname'] = trim($va_name['surname'].' '.$va_name['forename']);
+					break;
+				default:
+					if ($vs_format) {
+						$va_name['displayname'] = caProcessTemplate($vs_format, $va_name);
+					} else {
+						$va_name['displayname'] = $ps_original_text;
+					}
+					break;
+			}
 			foreach($va_name as $vs_k => $vs_v) {
 				$va_name[$vs_k] = trim($vs_v);
 			}
