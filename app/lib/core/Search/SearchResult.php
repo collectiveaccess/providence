@@ -1176,15 +1176,15 @@ class SearchResult extends BaseObject {
 //
 // [RELATED TABLE] 
 //
-			$vs_opt_md5 = caMakeCacheKeyFromOptions(array_merge($pa_options, array('dontReturnLabels' => true)));
+			$vs_opt_md5 = caMakeCacheKeyFromOptions(array_merge($pa_options, array('dontReturnLabels' => false)));
 			
 			if (!isset(self::$s_rel_prefetch_cache[$this->ops_table_name][$vn_row_id][$va_path_components['table_name']][$vs_opt_md5])) {
-				$this->prefetchRelated($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), array_merge($pa_options, array('dontReturnLabels' => true)));
+				$this->prefetchRelated($va_path_components['table_name'], $this->opo_engine_result->currentRow(), $this->getOption('prefetch'), array_merge($pa_options, array('dontReturnLabels' => false)));
 			}
 			
 			$va_related_items = self::$s_rel_prefetch_cache[$this->ops_table_name][$vn_row_id][$va_path_components['table_name']][$vs_opt_md5];
 
-			if (!is_array($va_related_items)) { return $pa_options['returnAsArray'] ? array() : null; }
+			if (!is_array($va_related_items)) { return $vb_return_as_array ? array() : null; }
 		
 			
 			return $this->_getRelatedValue($va_related_items, $va_val_opts);
@@ -1309,7 +1309,7 @@ class SearchResult extends BaseObject {
 		// Handle table-only case...
 		if (!$va_path_components['field_name']) {
 			// ... by returning array of values from related items
-			if ($pa_options['returnAsArray']) {  return $pa_value_list; }
+			if ($pa_options['returnAsArray']) {  return is_array($pa_value_list) ? $pa_value_list : array(); }
 
 			// ... by processing a display template for these records
 			if(!($vs_template)) {
@@ -1330,7 +1330,7 @@ class SearchResult extends BaseObject {
 		foreach($pa_value_list as $vn_i => $va_rel_item) {
 			$va_ids[] = $va_rel_item[$vs_pk];
 		}
-		if (!sizeof($va_ids)) { return null; }
+		if (!sizeof($va_ids)) { return ($pa_options['returnAllLocales'] || $pa_options['returnAsArray']) ? array() : null; }
 
 		if(!$va_path_components['field_name']) {  // get spec is a plain table without field_name -> there is a template
 			if($vb_return_as_link) {
@@ -1373,7 +1373,7 @@ class SearchResult extends BaseObject {
 		}
 	
 		if ($pa_options['unserialize'] && !$pa_options['returnAsArray']) { return array_shift($va_return_values); }	
-		if ($pa_options['returnAllLocales'] || $pa_options['returnAsArray']) { return $va_return_values; } 
+		if ($pa_options['returnAllLocales'] || $pa_options['returnAsArray']) { return is_array($va_return_values) ? $va_return_values : array(); } 
 		
 		if ($vb_return_as_link) {
 			$va_return_values = caCreateLinksFromText($va_return_values, $t_rel_instance->tableName(), array($va_relation_info[$vs_pk]));
@@ -1512,21 +1512,21 @@ class SearchResult extends BaseObject {
 							break;
 					}
 					
-					if ($vb_return_as_link) { $vs_val_proc = caCreateLinksFromText($vs_val_proc, $vs_table_name, $vn_id); }
-					if (!$vb_return_all_locales && !$vb_return_as_array) {
-						$va_return_values[$vn_c] = $vs_val_proc;
-					} elseif(!$vb_return_all_locales) {
+					if($vb_return_as_link) { $vs_val_proc = caCreateLinksFromText($vs_val_proc, $vs_table_name, $vn_id); }
+					if(isset($va_return_values[$vn_c][$vn_locale_id])) { $vn_c++; }
+					
+					if(!$vb_return_all_locales) {
 						$va_return_values[$vn_c][$vn_locale_id] = $vs_val_proc;
 					} else {
 						$va_return_values[$vn_c][$vn_locale_id][$vs_element_code] = $vs_val_proc;
 					}
 				}
-				$vn_c++;
 			}
 		}
 		
 		if ($pa_options['returnAllLocales']) { return $va_return_values; } 	
-		if ($pa_options['returnAsArray']) { return array_values(caExtractValuesByUserLocale($va_return_values)); }
+		if ($pa_options['returnAsArray']) { return is_array($va_return_values) ? array_values(caExtractValuesByUserLocale($va_return_values)) : array(); }
+		$va_return_values = caExtractValuesByUserLocale($va_return_values);
 		
 		return (sizeof($va_return_values) > 0) ? join($pa_options['delimiter'], $va_return_values) : null;
 	}
