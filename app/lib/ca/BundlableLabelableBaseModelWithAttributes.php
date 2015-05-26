@@ -2479,7 +2479,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$vn_c++;
 			}
 		}
-		
+
 		// is this a form to create a new item?
 		if (!$vn_pk_id) {
 			// auto-add mandatory fields if this is a new object
@@ -4261,6 +4261,7 @@ if (!$vb_batch) {
 			if ($vb_we_set_transaction && isset($va_violations['ERR']) && is_array($va_violations['ERR']) && (sizeof($va_violations['ERR']) > 0)) { 
 			 	BaseModel::unsetChangeLogUnitID();
 				$this->removeTransaction(false); 
+				$this->_FIELD_VALUES[$this->primaryKey()] = null;	// clear primary key since transaction has been rolled back
 				
 				foreach($va_violations['ERR'] as $vs_bundle => $va_errs_by_bundle) {
 					foreach($va_errs_by_bundle as $vn_i => $va_rule) {
