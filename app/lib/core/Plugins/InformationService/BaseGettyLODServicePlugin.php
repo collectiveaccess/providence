@@ -146,6 +146,12 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	 */
 	static function getLiteralFromRDFNode($ps_base_node, $ps_literal_propery, $ps_node_uri=null, $pa_options=array()) {
 		if(!isURL($ps_base_node)) { return false; }
+		if(!is_array($pa_options)) { $pa_options = array(); }
+
+		$vs_cache_key = md5($ps_base_node . $ps_literal_propery . $ps_node_uri . print_r($pa_options, true));
+		if(CompositeCache::contains($vs_cache_key, 'GettyRDFLiterals')) {
+			return CompositeCache::fetch($vs_cache_key, 'GettyRDFLiterals');
+		}
 
 		$pn_limit = (int) caGetOption('limit', $pa_options, 10);
 		$pb_strip_after_last_comma = (bool) caGetOption('stripAfterLastComma', $pa_options, false);
@@ -203,7 +209,10 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 			}
 		}
 
-		return join('; ', $va_return);
+		$vs_return = join('; ', $va_return);
+		CompositeCache::save($vs_cache_key, $vs_return, 'GettyRDFLiterals');
+
+		return $vs_return;
 	}
 	# ------------------------------------------------
 	/**
@@ -214,8 +223,8 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	static function getURIAsRDFGraph($ps_uri) {
 		if(!$ps_uri) { return false; }
 
-		if(MemoryCache::contains($ps_uri, 'GettyLinkedDataRDFGraphs')) {
-			return MemoryCache::fetch($ps_uri, 'GettyLinkedDataRDFGraphs');
+		if(CompositeCache::contains($ps_uri, 'GettyLinkedDataRDFGraphs')) {
+			return CompositeCache::fetch($ps_uri, 'GettyLinkedDataRDFGraphs');
 		}
 
 		try {
@@ -225,7 +234,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 			return false;
 		}
 
-		MemoryCache::save($ps_uri, $o_graph, 'GettyLinkedDataRDFGraphs');
+		CompositeCache::save($ps_uri, $o_graph, 'GettyLinkedDataRDFGraphs');
 		return $o_graph;
 	}
 	# ------------------------------------------------

@@ -125,14 +125,14 @@ LIMIT '.$pn_limit);
 				$vs_id = str_replace('/', ':', $va_matches[0]);
 			}
 
-			$vs_label = '['. str_replace('aat:', '', $vs_id) . '] ' . $va_values['TermPrefLabel']['value'] . " (" . $va_values['Parents']['value'] . ")";
+			$vs_label = '['. str_replace('aat:', '', $vs_id) . '] ' . $va_values['TermPrefLabel']['value'] . " [" . $va_values['Parents']['value'] . "]";
 			$vs_label = preg_replace('/\,\s\.\.\.\s[A-Za-z\s]+Facet\s*/', '', $vs_label);
 			$vs_label = preg_replace('/[\<\>]/', '', $vs_label);
 
 			$va_return['results'][] = array(
 				'label' => htmlentities($vs_label),
 				'url' => $va_values['ID']['value'],
-				'id' => $vs_id,
+				'idno' => $vs_id,
 			);
 		}
 
@@ -148,7 +148,7 @@ LIMIT '.$pn_limit);
 		if(!$ps_text) { return ''; }
 		$va_matches = array();
 
-		if(preg_match("/^\[[0-9]+\]\s+([A-Za-z\s\-\(\)]+)\s+\(.+\)$/", $ps_text, $va_matches)) {
+		if(preg_match("/^\[[0-9]+\]\s+([A-Za-z\s\-\(\)]+)\s+\[.+\]$/", $ps_text, $va_matches)) {
 			return $va_matches[1];
 		}
 		return $ps_text;

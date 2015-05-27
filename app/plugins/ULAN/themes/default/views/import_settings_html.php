@@ -150,7 +150,7 @@
 			var html = '';
 			if (jQuery.isArray(data['results']) && (data['results'].length > 0)) {
 				for(var i=0; i < data['results'].length; i++) {
-					if (data['results'][i].id > 0) {
+					if (data['results'][i].idno > 0) {
 						html += "<li class='caULANResultItem'><input type='checkbox' name='ULANID[]' value='" + data['results'][i].url + "' class='caULANSearchResultCheckbox'/> <a href='#' class='caULANSearchResultItem'>" + data['results'][i].label + "</a> <div class='caULANSearchResultDetails' id='caULANSearchResult_" + i + "'></div></li>";
 					} else {
 						html += "<li class='caULANResultItem'>" + data['results'][i].label + "</li>";
