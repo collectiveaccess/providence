@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 	JavascriptLoadManager::register("jcarousel");
+ 	AssetLoadManager::register("jcarousel");
  
  	$t_rep 						= $this->getVar('t_subject');
 	$vn_representation_id 		= $this->getVar('subject_id');
@@ -74,22 +74,24 @@
 </div><!-- end caAnnoEditorTlContainer -->
 <br style="clear:both;"/>
 
-<div class="caAnnoMediaPlayerContainer">
+<div class="caAnnoEditorPlayerAndFormContainer">
+	<div class="caAnnoMediaPlayerContainer">
 <?php
-	print $this->getVar('player');
+		print $this->getVar('player');
 ?>
-	<div class="caAnnoMediaPlayerControlsLeft">
-		<?php print caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("New clip"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorNewInButton", "onclick" => "caAnnoEditorEdit(0, caAnnoEditorGetPlayerTime(), caAnnoEditorGetPlayerTime() + 10, \"PLAY\")")); ?>
-		<?php print "<span id='caAnnoEditorInOutButtonLabel'>"._t('Set').': </span>'.caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("start"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorInButton", "onclick" => "caAnnoEditorSetInTime(caAnnoEditorGetPlayerTime(), \"PLAY\")")); ?>
-		<?php print caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("end"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorOutPauseButton", "onclick" => "caAnnoEditorSetOutTime(caAnnoEditorGetPlayerTime(), \"PAUSE\")")); ?>
+		<div class="caAnnoMediaPlayerControlsLeft">
+			<?php print caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("New clip"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorNewInButton", "onclick" => "caAnnoEditorEdit(0, caAnnoEditorGetPlayerTime(), caAnnoEditorGetPlayerTime() + 10, \"PLAY\")")); ?>
+			<?php print "<span id='caAnnoEditorInOutButtonLabel'>"._t('Set').': </span>'.caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("start"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorInButton", "onclick" => "caAnnoEditorSetInTime(caAnnoEditorGetPlayerTime(), \"PLAY\")")); ?>
+			<?php print caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("end"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorOutPauseButton", "onclick" => "caAnnoEditorSetOutTime(caAnnoEditorGetPlayerTime(), \"PAUSE\")")); ?>
+		</div>
+		<div class="caAnnoMediaPlayerControlsRight">
+			<?php print caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("Set end &amp; Save"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorOutAndSavePauseButton", "onclick" => "caAnnoEditorSetOutTime(caAnnoEditorGetPlayerTime(), null, true)")); ?>
+		</div>
 	</div>
-	<div class="caAnnoMediaPlayerControlsRight">
-		<?php print caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("Set end &amp; Save"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorOutAndSavePauseButton", "onclick" => "caAnnoEditorSetOutTime(caAnnoEditorGetPlayerTime(), null, true)")); ?>
+
+	<div class="caAnnoEditorEditorScreen" id="caAnnoEditorEditorScreen">
+
 	</div>
-</div>
-
-<div class="caAnnoEditorEditorScreen" id="caAnnoEditorEditorScreen">
-
 </div>
 
 

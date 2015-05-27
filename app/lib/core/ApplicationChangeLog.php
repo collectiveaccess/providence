@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,12 +41,15 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
  class ApplicationChangeLog {
  	# ----------------------------------------------------------------------
  	private $ops_change_log_database = '';
+	private $opb_dont_show_timestamp_in_change_log = false;
  	# ----------------------------------------------------------------------
  	public function __construct() {
  		$o_config = Configuration::load();
 		if ($this->ops_change_log_database = $o_config->get("change_log_database")) {
 			$this->ops_change_log_database .= ".";
 		}
+
+		$this->opb_dont_show_timestamp_in_change_log = (bool) $o_config->get('dont_show_timestamp_in_change_log');
  	}
  	# ----------------------------------------------------------------------
  	/**
@@ -173,7 +176,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 					$vs_output .= "<td>";
 					foreach($va_log_entries as $va_log_entry) {
 						foreach($va_log_entry['changes'] as $va_change) {
-							$vs_output .= '<span class="logChangeLabel">'.$va_log_entry['changetype_display'].' '.$va_change['label'].'</span>: '.$va_change['description']."<br/>\n";
+							$vs_output .= '<span class="logChangeLabel">'.$va_log_entry['changetype_display'].' '.$va_change['label'].'</span>: '.$va_change['description'].(isset($va_change['rel_typename']) ? ' ('.$va_change['rel_typename'].')' : '')."<br/>\n";
 						}
 					}
 					$vs_output .= "</div></td>";
@@ -272,6 +275,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 		//print "<pre>".print_r($pa_data, true)."</pre>\n";	
 		$va_log_output = array();
 		$vs_blank_placeholder = '&lt;'._t('BLANK').'&gt;';
+		$o_tep = new TimeExpressionParser();
 		
 		if (!$pa_options) { $pa_options = array(); }
 		
@@ -304,7 +308,6 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 			foreach($pa_data as $va_log_entry) {
 				$va_grouped_data[$va_log_entry['unit_id']]['ca_table_num_'.$va_log_entry['logged_table_num']][] = $va_log_entry;
 			}
-			//print_r($va_grouped_data);
 			
 			//
 			// Process units
@@ -320,7 +323,12 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 						//
 						// Get date/time stamp for display
 						//
-						$vs_datetime = date("n/d/Y@g:i:sa T", $va_log_entry['log_datetime']);
+						$o_tep->setUnixTimestamps($va_log_entry['log_datetime'], $va_log_entry['log_datetime']);
+						if($this->opb_dont_show_timestamp_in_change_log) {
+							$vs_datetime = $o_tep->getText(array('timeOmit' => true));
+						} else {
+							$vs_datetime = $o_tep->getText();
+						}
 						
 						//
 						// Get user name
@@ -519,10 +527,12 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 								$va_changes[] = array(
 									'label' => caUcFirstUTF8Safe($t_related_table->getProperty('NAME_SINGULAR')),
 									'idno' => ($vs_idno_field = $t_related_table->getProperty('ID_NUMBERING_ID_FIELD')) ? $t_related_table->get($vs_idno_field) : null,
-									'description' => $t_related_table->getLabelForDisplay(),
+									'description' => method_exists($t_related_table, 'getLabelForDisplay') ? $t_related_table->getLabelForDisplay() : '',
 									'table_name' => $t_related_table->tableName(),
 									'table_num' => $t_related_table->tableNum(),
-									'row_id' => $t_related_table->getPrimaryKey()
+									'row_id' => $t_related_table->getPrimaryKey(),
+									'rel_type_id' => $va_log_entry['snapshot']['type_id'],
+									'rel_typename' => $t_rel->getRelationshipTypename('ltor', $va_log_entry['snapshot']['type_id'])
 								);
 							}
 						}

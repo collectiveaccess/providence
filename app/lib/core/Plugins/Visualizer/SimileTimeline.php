@@ -24,7 +24,7 @@
  * http://www.CollectiveAccess.org
  *
  * @package CollectiveAccess
- * @subpackage Geographic
+ * @subpackage Visualization
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
@@ -33,7 +33,6 @@
   /**
     *
     */ 
-    
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugVisualizer.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/Visualizer/BaseVisualizerPlugin.php");
 include_once(__CA_APP_DIR__."/helpers/gisHelpers.php");
@@ -44,7 +43,7 @@ class WLPlugVisualizerSimileTimeline Extends BaseVisualizerPlugIn Implements IWL
 	 *
 	 */
 	public function __construct() {
-		JavascriptLoadManager::register("timelineSimile");
+		AssetLoadManager::register("timelineSimile");
 			
 		parent::__construct();
 		$this->info['NAME'] = 'SIMILE Timeline';
@@ -289,7 +288,7 @@ class WLPlugVisualizerSimileTimeline Extends BaseVisualizerPlugIn Implements IWL
 	 */
 	public function registerDependencies() {
 		$va_packages = array("timelineSimile");
-		foreach($va_packages as $vs_package) { JavascriptLoadManager::register($vs_package); }
+		foreach($va_packages as $vs_package) { AssetLoadManager::register($vs_package); }
 		return $va_packages;
 	}
 	# -------------------------------------------------

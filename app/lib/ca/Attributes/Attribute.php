@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -50,8 +50,6 @@ require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/LCSHAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/GeoNamesAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/FileAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/MediaAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/PlaceAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/OccurrenceAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/TaxonomyAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/InformationServiceAttributeValue.php');
 require_once(__CA_LIB_DIR__.'/core/Configuration.php');
@@ -77,7 +75,7 @@ require_once(__CA_LIB_DIR__.'/core/Configuration.php');
  		# ------------------------------------------------------------------
  		public function setInfo($pa_values) {
  			foreach($pa_values as $vs_key => $vs_val) {
- 				if (!in_array($vs_key, array('attribute_id', 'element_id', 'locale_id'))) { continue; }
+ 				if (!in_array($vs_key, array('attribute_id', 'element_id', 'locale_id', 'table_num', 'row_id'))) { continue; }
  				$this->{'opn_'.$vs_key} = $vs_val;
  			}
  			
@@ -114,6 +112,14 @@ require_once(__CA_LIB_DIR__.'/core/Configuration.php');
  		# ------------------------------------------------------------------
  		public function getElementID() {
  			return $this->opn_element_id;
+ 		}
+ 		# ------------------------------------------------------------------
+ 		public function getTableNum() {
+ 			return $this->opn_table_num;
+ 		}
+ 		# ------------------------------------------------------------------
+ 		public function getRowID() {
+ 			return $this->opn_row_id;
  		}
  		# ------------------------------------------------------------------
  		public function getValues() {
@@ -165,7 +171,9 @@ require_once(__CA_LIB_DIR__.'/core/Configuration.php');
  		# ------------------------------------------------------------------
  		static public function getValueInstance($pn_datatype, $pa_value_array=null, $pb_use_cache=false) {
  			if ($pb_use_cache && Attribute::$s_instance_cache[$pn_datatype]) {
- 				return Attribute::$s_instance_cache[$pn_datatype];
+ 				$o_attr = Attribute::$s_instance_cache[$pn_datatype];
+ 				if (is_array($pa_value_array)) { $o_attr->loadValueFromRow($pa_value_array); }
+ 				return $o_attr;
  			}
  			
  			$va_types = Attribute::getAttributeTypes();

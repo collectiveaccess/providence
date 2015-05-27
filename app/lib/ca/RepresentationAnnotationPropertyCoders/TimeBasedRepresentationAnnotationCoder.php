@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,12 +40,18 @@
  	
 	class TimeBasedRepresentationAnnotationCoder extends BaseRepresentationAnnotationCoder implements IRepresentationAnnotationPropertyCoder {
 	# ------------------------------------------------------------------
+		/**
+		 *
+		 */
 		public function __construct() {
 			parent::__construct();
 			$this->ops_type = 'TimeBased';
 		}
 		# ------------------------------------------------------------------
-		/* return HTML form element for specified property */
+		/**
+		 * Return HTML form element for specified property 
+		 *
+		 */
 		public function htmlFormElement($ps_property, $pa_attributes=null) {
 			$vs_element = $vs_label = '';
 			$pa_attributes['class'] = 'timecodeBg';
@@ -75,7 +81,10 @@
 			return $vs_element;
 		}
 		# ------------------------------------------------------------------
-		/* Set the specified property; return true on success, false if value is invalid, null if property doesn't exist */
+		/**
+		 * Set the specified property; return true on success, false if value is invalid, null if property doesn't exist
+		 * 
+		 */
 		public function setProperty($ps_property, $pm_value) {
 			if (!($va_info = $this->getPropertyInfo($ps_property))) { return null; }	// invalid property
 			switch($va_info['fieldType']) {
@@ -98,7 +107,10 @@
 			}
 		}
 		# ------------------------------------------------------------------
-		/* returns the property value or null if the property doesn't exist */
+		/**
+		 * Returns the property value or null if the property doesn't exist 
+		 *
+		 */
 		public function getProperty($ps_property, $pb_return_raw_value=false) {
 			if (!($va_info = $this->getPropertyInfo($ps_property))) { return null; }	// invalid property
 			
@@ -133,6 +145,18 @@
 			}
 		}
 		# ------------------------------------------------------------------
+		/**
+		 * Returns a combination of all properties for text display
+		 */
+		public function getPropertiesForDisplay($pa_options=null) {
+			return '';
+		}
+		# ------------------------------------------------------------------
+		/**
+		 *
+		 */
+		public function useInEditor() {
+			return true;
+		}
+		# ------------------------------------------------------------------
 	}
-	
-?>

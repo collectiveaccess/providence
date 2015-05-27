@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
-	JavascriptLoadManager::register("sortableUI");
+	AssetLoadManager::register("sortableUI");
 ?>
 <h1><?php print _t('Media import processing status'); ?></h1>
 
@@ -106,7 +106,7 @@
 		
 		if ($pa_general['set_id']) {
 			$vs_buf .= 
-				caNavButton($po_request, __CA_NAV_BUTTON_BATCH_EDIT__, _t('Batch edit'), 'batch', 'Editor', 'Edit', array('set_id' => $pa_general['set_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)).' '.
+				caNavButton($po_request, __CA_NAV_BUTTON_BATCH_EDIT__, _t('Batch edit'), '', 'batch', 'Editor', 'Edit', array('set_id' => $pa_general['set_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)).' '.
 				_t('Batch edit set <em>%1</em> containing imported media', caNavLink($po_request, $pa_general['setName'], '', 'batch', 'Editor', 'Edit', array('set_id' => $pa_general['set_id'])));
 		}
 		

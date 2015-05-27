@@ -1,10 +1,9 @@
 <?php
 /**
  * @package dompdf
- * @link    http://www.dompdf.com/
+ * @link    http://dompdf.github.com/
  * @author  Benj Carson <benjcarson@digitaljunkies.ca>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id: inline_renderer.cls.php 448 2011-11-13 13:00:03Z fabien.menager $
  */
 
 /**
@@ -110,6 +109,13 @@ class Inline_Renderer extends Abstract_Renderer {
         $w += $child_w;
       
       $h = max($h, $child_h);
+
+      if (DEBUG_LAYOUT && DEBUG_LAYOUT_INLINE) {
+        $this->_debug_layout($child->get_border_box(), "blue");
+        if (DEBUG_LAYOUT_PADDINGBOX) {
+          $this->_debug_layout($child->get_padding_box(), "blue", array(0.5, 0.5));
+        }
+      }
     }
 
     
@@ -179,13 +185,6 @@ class Inline_Renderer extends Abstract_Renderer {
     if ( $link_node ) {
       if ( $href = $link_node->getAttribute("href") )
         $this->_canvas->add_link($href, $x, $y, $w, $h);
-    }
-    
-    if (DEBUG_LAYOUT && DEBUG_LAYOUT_INLINE) {
-      $this->_debug_layout($child->get_border_box(), "blue");
-      if (DEBUG_LAYOUT_PADDINGBOX) {
-        $this->_debug_layout($child->get_padding_box(), "blue", array(0.5, 0.5));
-      }
     }
   }
 }

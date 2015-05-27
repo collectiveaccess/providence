@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,6 +33,7 @@
   /**
   *
   */
+  define("__CA_ATTRIBUTE_VALUE_GEONAMES__", 14);
   
  require_once(__CA_LIB_DIR__.'/core/Configuration.php');
  require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
@@ -109,6 +110,22 @@
 		'label' => _t('Can be used in display'),
 		'description' => _t('Check this option if this attribute value can be used for display in search results. (The default is to be.)')
 	),
+	'canMakePDF' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Allow PDF output?'),
+		'description' => _t('Check this option if this metadata element can be output as a printable PDF. (The default is not to be.)')
+	),
+	'canMakePDFForValue' => array(
+		'formatType' => FT_NUMBER,
+		'displayType' => DT_CHECKBOXES,
+		'default' => 0,
+		'width' => 1, 'height' => 1,
+		'label' => _t('Allow PDF output?'),
+		'description' => _t('Check this option if individual values for this metadata element can be output as a printable PDF. (The default is not to be.)')
+	),
 	'displayTemplate' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
@@ -121,7 +138,7 @@
 	'displayDelimiter' => array(
 		'formatType' => FT_TEXT,
 		'displayType' => DT_FIELD,
-		'default' => ',',
+		'default' => '; ',
 		'width' => 10, 'height' => 1,
 		'label' => _t('Value delimiter'),
 		'validForRootOnly' => 1,
@@ -141,7 +158,6 @@
 		'default' => 'name,countryName,continentCode',
 		'width' => 90, 'height' => 4,
 		'label' => _t('GeoNames elements'),
-		'validForRootOnly' => 1,
 		'description' => _t('Comma-separated list of GeoNames attributes to be pulled from the service to build the text representation for the selected location. See http://www.geonames.org/export/geonames-search.html for further reference, including the available element names. Note that latitude and longitude are always added to the text value to enable map display.')
 	),
 	'gnDelimiter' => array(
@@ -150,7 +166,6 @@
 		'default' => ', ',
 		'width' => 10, 'height' => 1,
 		'label' => _t('GeoNames element delimiter'),
-		'validForRootOnly' => 1,
 		'description' => _t('Delimiter to use between multiple values pulled from GeoNames service.')
 	),
 );
@@ -241,19 +256,28 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 	}
 	# ------------------------------------------------------------------
 	/**
-	 * @param array $pa_element_info
- 	 * @param array $pa_options Supported options are 
- 	 *			forSearch = if true, elenent is returned for use in a search form
- 	 *	@return string HTML for element		
- 	 */
+	 * Return HTML form element for editing.
+	 *
+	 * @param array $pa_element_info An array of information about the metadata element being edited
+	 * @param array $pa_options array Options include:
+	 *			forSearch = simple text entry is returned for use with search forms [Default=false]
+	 *			class = the CSS class to apply to all visible form elements [Default=lookupBg]
+	 *			width = the width of the form element [Default=field width defined in metadata element definition]
+	 *			height = the height of the form element [Default=field height defined in metadata element definition]
+	 *			request = the RequestHTTP object for the current request; required for lookups to work [Default is null]
+	 *			disableMap = don't show map with Geonames data [Default=false]
+	 *
+	 * @return string
+	 */
 	public function htmlFormElement($pa_element_info, $pa_options=null) {
+		$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '');
 		if (isset($pa_options['forSearch']) && $pa_options['forSearch']) {
 			return caHTMLTextInput("{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", array('id' => "{fieldNamePrefix}".$pa_element_info['element_id']."_{n}", 'value' => $pa_options['value']), $pa_options);
 		}
  		$o_config = Configuration::load();
 
  		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'disableMap', 'maxResults', 'gnElements', 'gnDelimiter'));
-
+		
  		$vn_max_results = (isset($va_settings['maxResults']) ? intval($va_settings['maxResults']) : 20);
  		$vs_gn_elements = $va_settings['gnElements'];
  		$vs_gn_delimiter = $va_settings['gnDelimiter'];
@@ -271,7 +295,7 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 					'value' => '{{'.$pa_element_info['element_id'].'}}',
 					'maxlength' => 512,
 					'id' => "geonames_".$pa_element_info['element_id']."_autocomplete{n}",
-					'class' => 'lookupBg'
+					'class' => $vs_class ? $vs_class : 'lookupBg'
 				)
 			).
 			caHTMLHiddenInput(
@@ -300,9 +324,9 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 			</script>
 		";
 
-		if(!$va_settings["disableMap"]){
+		if(!caGetOption("disableMap", $va_settings, false) && !caGetOption("disableMap", $pa_options, false)){
 
-			JavascriptLoadManager::register('maps');
+			AssetLoadManager::register('maps');
 
 			$vs_element .= "
 				<div id='map_".$pa_element_info['element_id']."{n}' style='width:700px; height:160px;'>
@@ -361,4 +385,13 @@ class GeoNamesAttributeValue extends AttributeValue implements IAttributeValue {
 			return 'value_longtext1';
 		}
  	# ------------------------------------------------------------------
+		/**
+		 * Returns constant for geonames attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_GEONAMES__;
+		}
+ 		# ------------------------------------------------------------------
 }

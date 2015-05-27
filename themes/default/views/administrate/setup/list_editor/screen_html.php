@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2009 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,9 +34,9 @@
 	if ($vb_can_edit) {
 		print $vs_control_box = caFormControlBox(
 			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'ListEditorForm').' '.
-			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'administrate/setup/list_editor', 'ListEditor', 'Edit/'.$this->request->getActionExtra(), array('list_id' => $vn_list_id)), 
+			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'administrate/setup/list_editor', 'ListEditor', 'Edit/'.$this->request->getActionExtra(), array('list_id' => $vn_list_id)), 
 			'', 
-			((intval($vn_list_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'administrate/setup/list_editor', 'ListEditor', 'Delete/'.$this->request->getActionExtra(), array('list_id' => $vn_list_id)) : ''
+			((intval($vn_list_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'administrate/setup/list_editor', 'ListEditor', 'Delete/'.$this->request->getActionExtra(), array('list_id' => $vn_list_id)) : ''
 		);
 	}
 ?>
@@ -58,4 +58,4 @@
 
 	<div class="editorBottomPadding"><!-- empty --></div>
 	
-	<?php print caEditorFieldList($this->request, $va_bundle_list); ?>
+	<?php print caEditorFieldList($this->request, $t_list, $va_bundle_list); ?>

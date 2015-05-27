@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2012 Whirl-i-Gig
+ * Copyright 2010-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -50,17 +50,27 @@
 	  * @return array An array of integer values that, if present in a record, indicate that the record should be displayed to the current user
 	  */
 	function caGetUserAccessValues($po_request, $pa_options=null) {
+		if (defined("__CA_APP_TYPE__") && (__CA_APP_TYPE__ == 'PROVIDENCE')) { return null; }
 		$vb_dont_enforce_access_settings = isset($pa_options['dont_enforce_access_settings']) ? (bool)$pa_options['dont_enforce_access_settings'] : $po_request->config->get('dont_enforce_access_settings');
 		$va_privileged_access_settings = isset($pa_options['privileged_access_settings']) && is_array($pa_options['privileged_access_settings']) ? (bool)$pa_options['privileged_access_settings'] : (array)$po_request->config->getList('privileged_access_settings');
 		$va_public_access_settings = isset($pa_options['public_access_settings']) && is_array($pa_options['public_access_settings']) ? $pa_options['public_access_settings'] : (array)$po_request->config->getList('public_access_settings');
 	
 		if (!$vb_dont_enforce_access_settings) {
+			$va_access = array();
 			$vb_is_privileged = caUserIsPrivileged($po_request, $pa_options);
 			if($vb_is_privileged) {
-				return $va_privileged_access_settings;
+				$va_access = $va_privileged_access_settings;
 			} else {
-				return $va_public_access_settings;
+				$va_access = $va_public_access_settings;
 			}
+			
+			if ($po_request->isLoggedIn()) {
+				$va_user_access = $po_request->user->getAccessStatuses(1);
+				if(is_array($va_user_access)) {
+					$va_access = array_unique(array_merge($va_access, $va_user_access));
+				}
+			}
+			return $va_access;
 		}
 		return array();
 	}
@@ -115,11 +125,15 @@
 	 *			__CA_BUNDLE_ACCESS_EDIT__ (2)
 	 *			If not specified types are returned for which the user has at least __CA_BUNDLE_ACCESS_READONLY__
 	 *
+	 *		exactAccess = if set only sources with access equal to the "access" value are returned. Default is false.
+	 *
 	 * @return array List of numeric type_ids for which the user has access, or null if there are no restrictions at all
 	 */
 	function caGetTypeRestrictionsForUser($pm_table_name_or_num, $pa_options=null) {
-		global $g_access_helpers_type_restriction_cache;
+		global $g_request, $g_access_helpers_type_restriction_cache;
 		if (!is_array($pa_options)) { $pa_options = array(); }
+		
+		//if ($g_request && $g_request->isLoggedIn() && ($g_request->user->canDoAction('is_administrator'))) { return null; }
 		
 		$vs_cache_key = md5($pm_table_name_or_num."/".print_r($pa_options, true));
 		if (isset($g_access_helpers_type_restriction_cache[$vs_cache_key])) { return $g_access_helpers_type_restriction_cache[$vs_cache_key]; }
@@ -137,13 +151,12 @@
 		if (!$t_instance) { return null; }	// bad table
 		
 		// get types user has at least read-only access to
-		global $g_request;
 		$va_type_ids = null;
 		if ((bool)$t_instance->getAppConfig()->get('perform_type_access_checking') && $g_request && $g_request->isLoggedIn()) {
 			if (is_array($va_type_ids = $g_request->user->getTypesWithAccess($t_instance->tableName(), $vn_min_access))) {
 				$va_type_ids = caMakeTypeIDList($pm_table_name_or_num, $va_type_ids, array_merge($pa_options, array('dont_include_subtypes_in_type_restriction' => true)));
 			}
-		} 
+		}
 		// get types from config file
 		if ($va_config_types = $t_instance->getAppConfig()->getList($vs_table_name.'_restrict_to_types')) {
 			if ((bool)$o_config->get($vs_table_name.'_restrict_to_types_dont_include_subtypes')) {
@@ -160,7 +173,74 @@
 			}
 		}
 		
-		return $g_access_helpers_type_restriction_cache[$vs_cache_key] = $g_access_helpers_type_restriction_cache[$vs_cache_key]= $va_type_ids;
+		return $g_access_helpers_type_restriction_cache[$vs_cache_key] = $va_type_ids;
+	}
+	# ---------------------------------------------------------------------------------------------
+	/**
+	 * Global containing cached source restriction values for the current user and request
+	 */
+	$g_access_helpers_source_restriction_cache = array();
+	
+	/**
+	 * Return list of sources to restrict activity by for given table
+	 *
+	 * @param mixed $pm_table_name_or_num Table name of number to fetch sources for
+	 * @param array $pa_options Array of options:
+	 *		access = minimum access level user must have to a source for it to be returned. Values are:
+	 *			__CA_BUNDLE_ACCESS_NONE__ (0)
+	 *			__CA_BUNDLE_ACCESS_READONLY__ (1)
+	 *			__CA_BUNDLE_ACCESS_EDIT__ (2)
+	 *			If not specified sources are returned for which the user has at least __CA_BUNDLE_ACCESS_READONLY__
+	 *
+	 *		exactAccess = if set only sources with access equal to the "access" value are returned. Default is false.
+	 *
+	 * @return array List of numeric source_ids for which the user has access, or null if there are no restrictions at all
+	 */
+	function caGetSourceRestrictionsForUser($pm_table_name_or_num, $pa_options=null) {
+		global $g_request, $g_access_helpers_source_restriction_cache;
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		
+		//if ($g_request && $g_request->isLoggedIn() && ($g_request->user->canDoAction('is_administrator'))) { return null; }
+		
+		$vs_cache_key = md5($pm_table_name_or_num."/".print_r($pa_options, true));
+		if (isset($g_access_helpers_source_restriction_cache[$vs_cache_key])) { return $g_access_helpers_source_restriction_cache[$vs_cache_key]; }
+		$o_dm = Datamodel::load();
+		$o_config = Configuration::load();
+		
+		$vn_min_access = isset($pa_options['access']) ? (int)$pa_options['access'] : __CA_BUNDLE_ACCESS_READONLY__;
+		
+		if (is_numeric($pm_table_name_or_num)) {
+			$vs_table_name = $o_dm->getTableName($pm_table_name_or_num);
+		} else {
+			$vs_table_name = $pm_table_name_or_num;
+		}
+		$t_instance = $o_dm->getInstanceByTableName($vs_table_name, true);
+		if (!$t_instance) { return null; }	// bad table
+		
+		// get sources user has at least read-only access to
+		$va_source_ids = null;
+		if ((bool)$t_instance->getAppConfig()->get('perform_source_access_checking') && $g_request && $g_request->isLoggedIn()) {
+			if (is_array($va_source_ids = $g_request->user->getSourcesWithAccess($t_instance->tableName(), $vn_min_access, $pa_options))) {
+				$va_source_ids = caMakeSourceIDList($pm_table_name_or_num, $va_source_ids, array_merge($pa_options, array('dont_include_subsources_in_source_restriction' => true)));
+			}
+		} 
+		// get sources from config file
+		if ($va_config_sources = $t_instance->getAppConfig()->getList($vs_table_name.'_restrict_to_sources')) {
+			if ((bool)$o_config->get($vs_table_name.'_restrict_to_sources_dont_include_subsources')) {
+				$pa_options['dont_include_subsources_in_source_restriction'] = true;
+			}
+			$va_config_source_ids = caMakeSourceIDList($pm_table_name_or_num, $va_config_sources, $pa_options);
+			
+			if (is_array($va_config_source_ids)) {
+				if (is_array($va_source_ids) && sizeof($va_source_ids)) {
+					$va_source_ids = array_intersect($va_source_ids, $va_config_source_ids);
+				} else {
+					$va_source_ids = $va_config_source_ids;
+				}
+			}
+		}
+		
+		return $g_access_helpers_source_restriction_cache[$vs_cache_key] = $va_source_ids;
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**
@@ -184,6 +264,29 @@
 			$va_types = array_keys($t_instance->getTypeList());
 		}
 		return $va_types;
+	}
+	# ---------------------------------------------------------------------------------------------
+	/**
+	 * Return list of sources for which user has access
+	 *
+	 * @param mixed $pm_table_name_or_num Table name of number to fetch sources for
+	 * @param array $pa_options Array of options:
+	 *		access = minimum access level user must have to a source for it to be returned. Values are:
+	 *			__CA_BUNDLE_ACCESS_NONE__ (0)
+	 *			__CA_BUNDLE_ACCESS_READONLY__ (1)
+	 *			__CA_BUNDLE_ACCESS_EDIT__ (2)
+	 *			If not specified sources are returned for which the user has at least __CA_BUNDLE_ACCESS_READONLY__
+	 *
+	 * @return array List of numeric source_ids for which the user has access, or null if there are no restrictions at all
+	 */
+	function caGetSourceListForUser($pm_table_name_or_num, $pa_options=null) {
+		if(is_null($va_sources = caGetSourceRestrictionsForUser($pm_table_name_or_num, $pa_options))) {
+			$o_dm = Datamodel::load();
+			$t_instance = $o_dm->getInstanceByTableName($pm_table_name_or_num, true);
+			if (!$t_instance) { return null; }	// bad table
+			$va_sources = array_keys($t_instance->getSourceList());
+		}
+		return $va_sources;
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**
@@ -243,6 +346,64 @@
 		}
 		return array_keys($va_type_ids);
 	}
+	# ---------------------------------------------------------------------------------------------
+	/**
+	 * Converts the given list of source names or source_ids into an expanded list of numeric source_ids suitable for enforcing source restrictions. Processing
+	 * includes expansion of sources to include subsources and conversion of any source codes to source_ids.
+	 *
+	 * @param mixed $pm_table_name_or_num Table name or number to which sources apply
+	 * @param array $pa_sources List of source codes and/or source_ids that are the basis of the list
+	 * @param array $pa_options Array of options:
+	 * 		dont_include_subsources_in_source_restriction = if set, returned list is not expanded to include subsources
+	 *		dontIncludeSubsourcesInSourceRestriction = synonym for dont_include_subsources_in_source_restriction
+	 *
+	 * @return array List of numeric source_ids
+	 */
+	function caMakeSourceIDList($pm_table_name_or_num, $pa_sources, $pa_options=null) {
+		$o_dm = Datamodel::load();
+		if(isset($pa_options['dontIncludeSubsourcesInSourceRestriction']) && (!isset($pa_options['dont_include_subsources_in_source_restriction']) || !$pa_options['dont_include_subsources_in_source_restriction'])) { $pa_options['dont_include_subsources_in_source_restriction'] = $pa_options['dontIncludeSubsourcesInSourceRestriction']; }
+	 	
+		if (isset($pa_options['dont_include_subsources_in_source_restriction']) && $pa_options['dont_include_subsources_in_source_restriction']) {
+			$pa_options['noChildren'] = true;
+		}
+		
+		if (is_numeric($pm_table_name_or_num)) {
+			$vs_table_name = $o_dm->getTableName($pm_table_name_or_num);
+		} else {
+			$vs_table_name = $pm_table_name_or_num;
+		}
+		$t_instance = $o_dm->getInstanceByTableName($vs_table_name, true);
+		if (!$t_instance) { return null; }	// bad table
+		if (!($vs_source_list_code = $t_instance->getSourceListCode())) { return null; }	// table doesn't use sources
+		
+		$va_source_ids = array();
+		$t_list = new ca_lists();
+		$t_item = new ca_list_items();
+		
+		$vs_list_code = $t_instance->getSourceListCode();
+		foreach($pa_sources as $vm_source) {
+			if (!$vm_source) { continue; }
+			$vn_source_id = null;
+			if (is_numeric($vm_source)) { 
+				$vn_source_id = (int)$vm_source; 
+			} else {
+				$vn_source_id = (int)$t_list->getItemIDFromList($vs_source_list_code, $vm_source);
+			}
+			
+			if ($vn_source_id && !(isset($pa_options['noChildren']) || $pa_options['noChildren'])) {
+				if ($qr_children = $t_item->getHierarchy($vn_source_id, array())) {
+					while($qr_children->nextRow()) {
+						$va_source_ids[$qr_children->get('item_id')] = true;
+					}
+				}
+			} else {
+				if ($vn_source_id) {
+					$va_source_ids[$vn_source_id] = true;
+				}
+			}
+		}
+		return array_keys($va_source_ids);
+	}
 	# ------------------------------------------------------
 	/**
 	 * Converts the given list of relationship type names or relationship type_ids into an expanded list of numeric type_ids suitable for enforcing relationship type restrictions. Processing
@@ -264,6 +425,26 @@
 		
 		$t_rel_type = new ca_relationship_types();
 		return $t_rel_type->relationshipTypeListToIDs($pm_table_name_or_num, $pa_types, $pa_options);
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	function caGetRelationshipTableName($pm_table_name_or_num_left, $pm_table_name_or_num_right, $pa_options=null) {
+		$o_dm = Datamodel::load();
+		
+		$va_path = $o_dm->getPath($pm_table_name_or_num_left, $pm_table_name_or_num_right);
+		if (!is_array($va_path)) { return null; }
+		
+		
+		foreach(array_keys($va_path) as $vs_table) {
+			if ($t_instance = $o_dm->getInstanceByTableName($vs_table, true)) {
+				if (method_exists($t_instance, "isRelationship") && $t_instance->isRelationship() && $t_instance->hasField('type_id')) {
+					return $vs_table;
+				}
+			}
+		}
+		return null;
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**
@@ -301,6 +482,43 @@
 		}
 		
 		return $va_types;
+	}
+	# ---------------------------------------------------------------------------------------------
+	/**
+	 * Merges sources specified with any specified "restrict_to_sources"/"restrictToSources" option, user access settings and sources configured in app.conf
+	 * into a single list of source_ids suitable for enforcing source restrictions.
+	 *
+	 * @param BaseModel $t_instance A model instance for the table to which the sources apply
+	 * @param array $pa_options An array of options containing, if specified, a list of sources for either the "restrict_to_sources" or "restrictToSources" keys
+	 * 
+	 * @return array List of numeric source_ids for which the user has access
+	 */
+	function caMergeSourceRestrictionLists($t_instance, $pa_options) {
+		$va_restrict_to_source_ids = null;
+		if (is_array($pa_options['restrict_to_sources']) && sizeof($pa_options['restrict_to_sources'])) {
+			$pa_options['restrictToSources'] = $pa_options['restrict_to_sources'];
+		}
+		if (is_array($pa_options['restrictToSources']) && sizeof($pa_options['restrictToSources'])) {
+			$va_restrict_to_source_ids = caMakeSourceIDList($t_instance->tableName(), $pa_options['restrictToSources'], array('noChildren' => true));
+		}
+		
+		$va_sources = null;
+		
+		$o_config = Configuration::load();
+		if ((bool)$o_config->get('perform_source_access_checking') && method_exists($t_instance, 'getSourceFieldName') && ($vs_source_field_name = $t_instance->getSourceFieldName())) {
+			$va_sources = caGetSourceRestrictionsForUser($t_instance->tableName());
+		}
+		if (is_array($va_sources) && sizeof($va_sources) && is_array($va_restrict_to_source_ids) && sizeof($va_restrict_to_source_ids)) {
+			if (sizeof($va_tmp = array_intersect($va_restrict_to_source_ids, $va_sources))) {
+				$va_sources = $va_tmp;
+			}
+		} else {
+			if (!is_array($va_sources) || !sizeof($va_sources)) {
+				$va_sources = $va_restrict_to_source_ids;
+			}
+		}
+		
+		return $va_sources;
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**
@@ -345,48 +563,85 @@
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**
+	 * Returns allowed access for the currently logged in user to the specified source
+	 *
+	 * @param string $ps_table_name Table name of bundle (Eg. ca_objects, ca_entities, ca_places)
+	 * @param string $pm_source_code_or_id Code or source_id for source to check
+	 * @return int Numeric constant representing access. Values are:
+	 *		__CA_BUNDLE_ACCESS_NONE__ (0)
+	 *		__CA_BUNDLE_ACCESS_READONLY__ (1)
+	 *		__CA_BUNDLE_ACCESS_EDIT__ (2)
+	 */
+	function caGetSourceAccessLevel($ps_table_name, $pm_source_code_or_id) {
+		global $g_request;
+		if ($g_request) {
+			return $g_request->user->getSourceAccessLevel($ps_table_name, $pm_source_code_or_id);
+		}
+		
+		$o_config = Configuration::load();
+		return (int)$o_config->get('default_source_access_level');
+	}
+	# ---------------------------------------------------------------------------------------------
+	/**
 	 * Determines if the specified item (and optionally a specific bundle in that item) are readable by the user
 	 *
 	 * @param int $pn_user_id
 	 * @param mixed $pm_table A table name or number
-	 * @param int $pn_id The primary key value of the row
+	 * @param mixed $pm_id A primary key value of the row, or an array of values to check. If a single integer value is provided then a boolean result will be returned; if an array of values is provided then an array will be returned with all ids that are readable
 	 * @param string $ps_bundle_name An optional bundle to check access for
 	 *
-	 * @return True if user has read access, otherwise false if the user does not have access or null if one or more parameters are invalid
+	 * @return If $pm_id is an integer return true if user has read access, otherwise false if the user does not have access; if $pm_id is an array of ids, returns an array with all ids the are readable; returns null if one or more parameters are invalid
 	 */
-	function caCanRead($pn_user_id, $pm_table, $pn_id, $ps_bundle_name=null) {
+	function caCanRead($pn_user_id, $pm_table, $pm_id, $ps_bundle_name=null, $pa_options=null) {
+		$pb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
+		$t_user = new ca_users($pn_user_id, true);
+		if (!$t_user->getPrimaryKey()) { return null; }
+		
 		$o_dm = Datamodel::load();
-		$ps_table_name = (is_numeric($pm_table)) ? $o_dm->getTableName($pm_table) : $pm_table;
+		$ps_table_name = (is_numeric($pm_table)) ? $o_dm->getTableName($pm_table) : $pm_table;		
+	
+		if (!is_array($pm_id)) { $pm_id = array($pm_id); }
+		
+		if ($ps_bundle_name) {
+			if ($t_user->getBundleAccessLevel($ps_table_name, $ps_bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { 
+				return ((sizeof($pm_id) == 1) && !$pb_return_as_array) ? false : array();
+			}
+		}
 		
 		if (!($t_instance = $o_dm->getInstanceByTableName($ps_table_name, true))) { return null; }
-		if (!$t_instance->load($pn_id)) { return null; }
-		
-		$t_user = new ca_users($pn_user_id);
-		if (!$t_user->getPrimaryKey()) { return null; }
+	
+		$vb_do_type_access_check = (bool)$t_instance->getAppConfig()->get('perform_type_access_checking');
+		$vb_do_item_access_check = (bool)$t_instance->getAppConfig()->get('perform_item_level_access_checking');
 		
 		list($ps_table_name, $ps_bundle_name) = caTranslateBundlesForAccessChecking($ps_table_name, $ps_bundle_name);
 		
-		// Check type restrictions
- 		if ((bool)$t_instance->getAppConfig()->get('perform_type_access_checking')) {
-			$vn_type_access = $t_user->getTypeAccessLevel($ps_table_name, $t_instance->getTypeID());
-			if ($vn_type_access < __CA_BUNDLE_ACCESS_READONLY__) {
-				return false;
+		if (!($qr_res = caMakeSearchResult($ps_table_name, $pm_id))) { return null; }
+		
+		$va_return_values = array();
+		while($qr_res->nextHit()) {
+			$vn_id = $qr_res->getPrimaryKey();
+		
+			// Check type restrictions
+			if ($vb_do_type_access_check) {
+				$vn_type_access = $t_user->getTypeAccessLevel($ps_table_name, $qr_res->get("{$ps_table_name}.type_id"));
+				if ($vn_type_access < __CA_BUNDLE_ACCESS_READONLY__) {
+					continue;
+				}
 			}
-		}
 		
-		// Check item level restrictions
-		if ((bool)$t_instance->getAppConfig()->get('perform_item_level_access_checking')) {
-			$vn_item_access = $t_instance->checkACLAccessForUser($t_user);
-			if ($vn_item_access < __CA_ACL_READONLY_ACCESS__) {
-				return false;
+			// Check item level restrictions
+			if ($vb_do_item_access_check) {
+				$vn_item_access = $t_instance->checkACLAccessForUser($t_user, $vn_id);
+				if ($vn_item_access < __CA_ACL_READONLY_ACCESS__) {
+					continue;
+				}
 			}
+		
+			$va_return_values[] = $vn_id;
 		}
 		
-		if ($ps_bundle_name) {
-			if ($t_user->getBundleAccessLevel($ps_table_name, $ps_bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { return false; }
-		}
-		
-		return true;
+		if ((sizeof($pm_id) == 1) && !$pb_return_as_array) { return (sizeof($va_return_values) > 0) ? true : false; }
+		return $va_return_values;
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**
@@ -434,4 +689,3 @@
 		return array($ps_table_name, $ps_bundle_name); 
 	}
 	# ---------------------------------------------------------------------------------------------
- ?>

@@ -99,7 +99,7 @@
 				print caFormSubmitButton($this->request, __CA_NAV_BUTTON_GO__, _t('Filter'), 'caViewOptions', array())."\n";
 				
 				if (sizeof($va_order_list)) {
-					print caNavButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, _t('Get PDF'), 'client/orders', 'Orders', 'Export');
+					print caNavButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, _t('Get PDF'), '', 'client/orders', 'Orders', 'Export');
 				}
 ?>
 			</td>
@@ -173,7 +173,7 @@
 					<?php print $t_order->getChoiceListValue('order_status', $va_order['order_status']); ?>
 				</td>
 				<td>
-					<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'client/orders', 'OrderEditor', 'Edit', array('order_id' => $va_order['order_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), '', 'client/orders', 'OrderEditor', 'Edit', array('order_id' => $va_order['order_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 				</td>
 			</tr>
 <?php

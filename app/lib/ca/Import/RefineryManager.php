@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -101,7 +101,7 @@
 		 */
 		public static function getRefineryNames() {
 			$vs_base_refinery_dir = __CA_APP_DIR__.'/refineries';
-			
+			if(!file_exists($vs_base_refinery_dir)) { return array(); }
 			$va_refinery_dirs = array();
 			if (is_resource($r_dir = opendir($vs_base_refinery_dir))) {
 				while (($vs_refinery = readdir($r_dir)) !== false) {
@@ -149,7 +149,7 @@
 			RefineryManager::initRefineries();
 			
 			if(isset(RefineryManager::$s_refinery_instances[$ps_refinery_name]) && is_object(RefineryManager::$s_refinery_instances[$ps_refinery_name])) {
-				return RefineryManager::$s_refinery_instances[$ps_widget_name]->getDescription();
+				return RefineryManager::$s_refinery_instances[$ps_refinery_name]->getDescription();
 			}
 			
 			return null;
@@ -160,6 +160,7 @@
 		 */
 		public function getRefinerySettingsForm($ps_refinery_name, $ps_refinery_id, $pa_settings) {
 			$vs_buf = '';
+			$o_appvar = null;
 			RefineryManager::initRefineries();
 			if (RefineryManager::$s_refinery_instances[$ps_refinery_name] && is_object(RefineryManager::$s_refinery_instances[$ps_refinery_name])) {
 				$va_available_settings = RefineryManager::$s_refinery_instances[$ps_refinery_name]->getAvailableSettings();

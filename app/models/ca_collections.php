@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -278,6 +278,12 @@ class ca_collections extends RepresentableBaseModel implements IBundleProvider {
 	protected $ATTRIBUTE_TYPE_LIST_CODE = 'collection_types';	// list code (ca_lists.list_code) of list defining types for this table
 
 	# ------------------------------------------------------
+	# Sources
+	# ------------------------------------------------------
+	protected $SOURCE_ID_FLD = 'source_id';					// name of source field for this table
+	protected $SOURCE_LIST_CODE = 'collection_sources';		// list code (ca_lists.list_code) of list defining sources for this table
+
+	# ------------------------------------------------------
 	# Self-relations
 	# ------------------------------------------------------
 	protected $SELF_RELATION_TABLE_NAME = 'ca_collections_x_collections';
@@ -356,151 +362,8 @@ class ca_collections extends RepresentableBaseModel implements IBundleProvider {
 
 		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
-	}
-	# ------------------------------------------------------
-	/**
-	 * Finds collections with a label that matches $ps_name exactly
-	 *
-	 * @param string $ps_name The name to search for
-	 * @return array A list of collection_ids with the specified label
-	 */
-	public function getCollectionIDsByName($ps_name, $pn_parent_id=null, $pn_type_id=null) {
-		$o_db = $this->getDb();
 		
-		$va_params = array((string)$ps_name);
-		
-		$vs_type_sql = '';
-		if ($pn_type_id) {
-			if(sizeof($va_type_ids = caMakeTypeIDList('ca_collections', array($pn_type_id)))) {
-				$vs_type_sql = " AND cae.type_id in (?)";
-				$va_params[] = $va_type_ids;
-			}
-		}
-		
-		if ($pn_parent_id) {
-			$vs_parent_sql = " AND cae.parent_id = ?";
-			$va_params[] = (int)$pn_parent_id;
-		} 
-		
-		
-		$qr_res = $o_db->query("
-			SELECT DISTINCT cae.collection_id
-			FROM ca_collections cae
-			INNER JOIN ca_collection_labels AS cael ON cael.collection_id = cae.collection_id
-			WHERE
-				cael.name = ? {$vs_type_sql} {$vs_parent_sql} AND cae.deleted = 0
-			", $va_params);
-		
-		$va_collection_ids = array();
-		while($qr_res->nextRow()) {
-			$va_collection_ids[] = $qr_res->get('collection_id');
-		}
-		return $va_collection_ids;
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function getIDsByLabel($pa_label_values, $pn_parent_id=null, $pn_type_id=null) {
-		return $this->getCollectionIDsByName($pa_label_values['name'], $pn_parent_id, $pn_type_id);
-	}
-	# ------------------------------------------------------
-	/**
-	 * Return array containing information about all hierarchies, including their root_id's
-	 * For non-adhoc hierarchies such as places, this call returns the contents of the place_hierarchies list
-	 * with some extra information such as the # of top-level items in each hierarchy.
-	 *
-	 * For an ad-hoc hierarchy like that of an collection, there is only ever one hierarchy to display - that of the current collection.
-	 * So for adhoc hierarchies we just return a single entry corresponding to the root of the current collection hierarchy
-	 */
-	 public function getHierarchyList($pb_dummy=false) {
-	 	$vn_pk = $this->getPrimaryKey();
-	 	$vs_template = $this->getAppConfig()->get('ca_collections_hierarchy_browser_display_settings');
-	 	
-	 	if (!$vn_pk) { 
-	 		$o_db = new Db();
-	 		if (is_array($va_type_ids = caMergeTypeRestrictionLists($this, array())) && sizeof($va_type_ids)) {
-				$qr_res = $o_db->query("
-					SELECT o.collection_id, count(*) c
-					FROM ca_collections o
-					INNER JOIN ca_collections AS p ON p.parent_id = o.collection_id
-					WHERE o.parent_id IS NULL AND o.type_id IN (?)
-					GROUP BY o.collection_id
-				", array($va_type_ids));
-			} else {
-				$qr_res = $o_db->query("
-					SELECT o.collection_id, count(*) c
-					FROM ca_collections o
-					INNER JOIN ca_collections AS p ON p.parent_id = o.collection_id
-					WHERE o.parent_id IS NULL
-					GROUP BY o.collection_id
-				");
-			}
-	 		$va_hiers = array();
-	 		
-	 		$va_collection_ids = $qr_res->getAllFieldValues('collection_id');
-	 		$qr_res->seek(0);
-	 		$va_labels = $this->getPreferredDisplayLabelsForIDs($va_collection_ids);
-	 		while($qr_res->nextRow()) {
-	 			$va_hiers[$vn_collection_id = $qr_res->get('collection_id')] = array(
-	 				'item_id' => $vn_collection_id,
-	 				'collection_id' => $vn_collection_id,
-	 				'name' => caProcessTemplateForIDs($vs_template, 'ca_collections', array($vn_collection_id)),
-	 				'hierarchy_id' => $vn_collection_id,
-	 				'children' => (int)$qr_res->get('c')
-	 			);
-	 		}
-	 		return $va_hiers;
-	 	} else {
-	 		// return specific collection as root of hierarchy
-			$vs_label = $this->getLabelForDisplay(false);
-			$vs_hier_fld = $this->getProperty('HIERARCHY_ID_FLD');
-			$vs_parent_fld = $this->getProperty('PARENT_ID_FLD');
-			$vn_hier_id = $this->get($vs_hier_fld);
-			
-			if ($this->get($vs_parent_fld)) { 
-				// currently loaded row is not the root so get the root
-				$va_ancestors = $this->getHierarchyAncestors();
-				if (!is_array($va_ancestors) || sizeof($va_ancestors) == 0) { return null; }
-				$t_collection = new ca_collections($va_ancestors[0]);
-			} else {
-				$t_collection =& $this;
-			}
-			
-			$va_children = $t_collection->getHierarchyChildren(null, array('idsOnly' => true));
-			$va_collection_hierarchy_root = array(
-				$t_collection->get($vs_hier_fld) => array(
-					'item_id' => $vn_pk,
-					'collection_id' => $vn_pk,
-					'name' => caProcessTemplateForIDs($vs_template, 'ca_collections', array($vn_pk)),
-					'hierarchy_id' => $vn_hier_id,
-					'children' => sizeof($va_children)
-				)
-			);
-				
-	 		return $va_collection_hierarchy_root;
-		}
-	}
-	# ------------------------------------------------------
-	/**
-	 * Returns name of hierarchy for currently loaded row or, if specified, row identified by optional $pn_id parameter
-	 */
-	 public function getHierarchyName($pn_id=null) {
-	 	if (!$pn_id) { $pn_id = $this->getPrimaryKey(); }
-	 	
-		$va_ancestors = $this->getHierarchyAncestors($pn_id, array('idsOnly' => true));
-		if (is_array($va_ancestors) && sizeof($va_ancestors)) {
-			$vn_parent_id = array_pop($va_ancestors);
-			$t_collection = new ca_collections($vn_parent_id);
-			return $t_collection->getLabelForDisplay(false);
-		} else {			
-			if ($pn_id == $this->getPrimaryKey()) {
-				return $this->getLabelForDisplay(true);
-			} else {
-				$t_collection = new ca_collections($pn_id);
-				return $t_collection->getLabelForDisplay(false);
-			}
-		}
+		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
 	}
 	# ------------------------------------------------------
 }

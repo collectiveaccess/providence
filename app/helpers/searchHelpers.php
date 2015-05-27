@@ -39,9 +39,9 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 
 	# ---------------------------------------
 	/**
-	 * 
-	 *
-	 * @return string 
+	 * Get search instance for given table name
+	 * @param string $pm_table_name_or_num Table name or number
+	 * @return BaseSearch
 	 */
 	function caGetSearchInstance($pm_table_name_or_num, $pa_options=null) {
 		$o_dm = Datamodel::load();
@@ -113,6 +113,10 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 				require_once(__CA_LIB_DIR__.'/ca/Search/SetSearch.php');
 				return new SetSearch();
 				break;
+			case 'ca_set_items':
+				require_once(__CA_LIB_DIR__.'/ca/Search/SetItemSearch.php');
+				return new SetItemSearch();
+				break;
 			case 'ca_tours':
 				require_once(__CA_LIB_DIR__.'/ca/Search/TourSearch.php');
 				return new TourSearch();
@@ -138,6 +142,27 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 				break;
 		}
 	}
+	 # ------------------------------------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caSearchLink($po_request, $ps_content, $ps_classname, $ps_table, $ps_search, $pa_other_params=null, $pa_attributes=null, $pa_options=null) {
+		if (!($vs_url = caSearchUrl($po_request, $ps_table, $ps_search, false, $pa_other_params, $pa_options))) {
+			return "<strong>Error: no url for search</strong>";
+		}
+		
+		$vs_tag = "<a href='".$vs_url."'";
+		
+		if ($ps_classname) { $vs_tag .= " class='$ps_classname'"; }
+		if (is_array($pa_attributes)) {
+			$vs_tag .= _caHTMLMakeAttributeString($pa_attributes);
+		}
+		
+		$vs_tag .= '>'.$ps_content.'</a>';
+		
+		return $vs_tag;
+	}
+	 
 	# ---------------------------------------
 	/**
 	 * 
@@ -305,6 +330,15 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 		}
 		
 		return array_keys($va_aps);
+	}
+	# ---------------------------------------
+	/**
+	 * 
+	 *
+	 * @return Configuration 
+	 */
+	function caGetSearchConfig() {
+		return Configuration::load(__CA_APP_DIR__.'/conf/search.conf');
 	}
 	# ---------------------------------------
 ?>

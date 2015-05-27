@@ -28,13 +28,14 @@
 
 include_once(__CA_LIB_DIR__."/core/Search/SearchEngine.php");
 include_once(__CA_LIB_DIR__."/core/Media.php");
+include_once(__CA_LIB_DIR__."/core/Print/PDFRenderer.php");
 include_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 include_once(__CA_LIB_DIR__."/ca/ConfigurationCheck.php");
 
 class ConfigurationCheckController extends ActionController {
 	# ------------------------------------------------
 	public function DoCheck(){
-	
+		AssetLoadManager::register('tableList');
 		// Search engine
 		$vo_search_config_settings = SearchEngine::checkPluginConfiguration();
 		$this->view->setVar('search_config_settings',$vo_search_config_settings);
@@ -51,6 +52,18 @@ class ConfigurationCheckController extends ActionController {
 		}
 		
 		$this->view->setVar('media_config_plugin_list',  $va_plugins);
+		
+		// PDF Rendering
+		$t_pdf_renderer = new PDFRenderer();
+		$va_plugin_names = PDFRenderer::getAvailablePDFRendererPlugins();
+		$va_plugins = array();
+		foreach($va_plugin_names as $vs_plugin_name) {
+			if ($va_plugin_status = $t_pdf_renderer->checkPluginStatus($vs_plugin_name)) {
+				$va_plugins[$vs_plugin_name] = $va_plugin_status;
+			}
+		}
+		
+		$this->view->setVar('pdf_renderer_config_plugin_list',  $va_plugins);
 		
 		// Application plugins
 		$va_plugin_names = ApplicationPluginManager::getPluginNames();
@@ -74,13 +87,14 @@ class ConfigurationCheckController extends ActionController {
 		$this->view->setVar('barcode_config_component_list',  $va_barcode_components);
 
 		// General system configuration issues
-		ConfigurationCheck::performExpensive();
-		if(ConfigurationCheck::foundErrors()){
-			$this->view->setVar('configuration_check_errors', ConfigurationCheck::getErrors());
+		if (!(bool)$this->request->config->get('dont_do_expensive_configuration_checks_in_web_ui')) {
+			ConfigurationCheck::performExpensive();
+			if(ConfigurationCheck::foundErrors()){
+				$this->view->setVar('configuration_check_errors', ConfigurationCheck::getErrors());
+			}
 		}
 
 		$this->render('config_check_html.php');
 	}
 	# ------------------------------------------------
 }
-?>

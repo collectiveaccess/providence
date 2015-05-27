@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -273,6 +273,12 @@ class ca_entities extends RepresentableBaseModel implements IBundleProvider {
 	# ------------------------------------------------------
 	protected $ATTRIBUTE_TYPE_ID_FLD = 'type_id';			// name of type field for this table - attributes system uses this to determine via ca_metadata_type_restrictions which attributes are applicable to rows of the given type
 	protected $ATTRIBUTE_TYPE_LIST_CODE = 'entity_types';	// list code (ca_lists.list_code) of list defining types for this table
+	
+	# ------------------------------------------------------
+	# Sources
+	# ------------------------------------------------------
+	protected $SOURCE_ID_FLD = 'source_id';				// name of source field for this table
+	protected $SOURCE_LIST_CODE = 'entity_sources';		// list code (ca_lists.list_code) of list defining sources for this table
 
 	# ------------------------------------------------------
 	# Self-relations
@@ -337,203 +343,8 @@ class ca_entities extends RepresentableBaseModel implements IBundleProvider {
 		
 		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
-	}
- 	# ------------------------------------------------------
-	/**
-	 * Returns entity_id for entities with matching fore- and surnames
-	 *
-	 * @param string $ps_forename The forename to search for
-	 * @param string $ps_surnamae The surname to search for
-	 * @return array Entity_id's for matching entities
-	 */
-	public function getEntityIDsByName($ps_forename, $ps_surname, $pn_parent_id=null, $pn_type_id=null) {
-		$o_db = $this->getDb();
 		
-		$va_params = array((string)$ps_forename, (string)$ps_surname);
-		
-		$vs_type_sql = '';
-		if ($pn_type_id) {
-			if(sizeof($va_type_ids = caMakeTypeIDList('ca_entities', array($pn_type_id)))) {
-				$vs_type_sql = " AND cae.type_id IN (?)";
-				$va_params[] = $va_type_ids;
-			}
-		}
-		
-		if ($pn_parent_id) {
-			$vs_parent_sql = " AND cae.parent_id = ?";
-			$va_params[] = (int)$pn_parent_id;
-		} 
-		
-		
-		$qr_res = $o_db->query("
-			SELECT DISTINCT cae.entity_id
-			FROM ca_entities cae
-			INNER JOIN ca_entity_labels AS cael ON cael.entity_id = cae.entity_id
-			WHERE
-				cael.forename = ? AND cael.surname = ? {$vs_type_sql} {$vs_parent_sql} AND cae.deleted = 0
-		", $va_params);
-		
-		$va_entity_ids = array();
-		while($qr_res->nextRow()) {
-			$va_entity_ids[] = $qr_res->get('entity_id');
-		}
-		return $va_entity_ids;
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function getIDsByLabel($pa_label_values, $pn_parent_id=null, $pn_type_id=null) {
-		if (!isset($pa_label_values['forename']) && !isset($pa_label_values['surname']) && isset($pa_label_values['displayname'])) {
-			$pa_label_values = DataMigrationUtils::splitEntityName($pa_label_values['displayname']);
-		}
-		return $this->getEntityIDsByName($pa_label_values['forename'], $pa_label_values['surname'], $pn_parent_id, $pn_type_id);
-	}
-	# ------------------------------------------------------
-	/**
-	 * Returns a flat list of all entities in the specified list referenced by items in the specified table
-	 * (and optionally a search on that table)
-	 */
-	public function getReferenced($pm_table_num_or_name, $pn_type_id=null, $pa_reference_limit_ids=null, $pn_access=null) {
-		if (is_numeric($pm_table_num_or_name)) {
-			$vs_table_name = $this->getAppDataModel()->getTableName($pm_table_num_or_name);
-		} else {
-			$vs_table_name = $pm_table_num_or_name;
-		}
-		
-		if (!($t_ref_table = $this->getAppDatamodel()->getInstanceByTableName($vs_table_name, true))) {
-			return null;
-		}
-		
-		
-		if (!$vs_table_name) { return null; }
-		
-		$o_db = $this->getDb();
-		$va_path = $this->getAppDatamodel()->getPath($this->tableName(), $vs_table_name);
-		array_shift($va_path); // remove table name from path
-		
-		$vs_last_table = $this->tableName();
-		$va_joins = array();
-		foreach($va_path as $vs_rel_table_name => $vn_rel_table_num) {
-			$va_rels = $this->getAppDatamodel()->getRelationships($vs_last_table, $vs_rel_table_name);
-			$va_rel = $va_rels[$vs_last_table][$vs_rel_table_name][0];
-			
-			
-			$va_joins[] = "INNER JOIN {$vs_rel_table_name} ON {$vs_last_table}.".$va_rel[0]." = {$vs_rel_table_name}.".$va_rel[1];
-			
-			$vs_last_table = $vs_rel_table_name;
-		}
-		
-		$va_sql_wheres = array();
-		if (is_array($pa_reference_limit_ids) && sizeof($pa_reference_limit_ids)) {
-			$va_sql_wheres[] = "({$vs_table_name}.".$t_ref_table->primaryKey()." IN (".join(',', $pa_reference_limit_ids)."))";
-		}
-		
-		if (!is_null($pn_access)) {
-			$va_sql_wheres[] = "({$vs_table_name}.access = ".intval($pn_access).")";
-		}
-		
-		// get entity counts
-		$vs_sql = "
-			SELECT ca_entities.entity_id, count(*) cnt
-			FROM ca_entities
-			".join("\n", $va_joins)."
-			".(sizeof($va_sql_wheres) ? " WHERE ".join(' AND ', $va_sql_wheres) : "")."
-			GROUP BY
-				ca_entities.entity_id, {$vs_table_name}.".$t_ref_table->primaryKey()."
-		";
-		$qr_items = $o_db->query($vs_sql);
-		
-		$va_item_counts = array();
-		while($qr_items->nextRow()) {
-			$va_item_counts[$qr_items->get('entity_id')]++;
-		}
-		
-		$vs_sql = "
-			SELECT ca_entities.entity_id, ca_entities.idno, ca_entities.type_id, 
-			ca_entity_labels.forename, ca_entity_labels.middlename, ca_entity_labels.surname, ca_entity_labels.displayname,
-			count(*) c
-			FROM ca_entities
-			INNER JOIN ca_entity_labels ON ca_entity_labels.entity_id = ca_entities.entity_id
-			".join("\n", $va_joins)."
-			WHERE
-				(ca_entity_labels.is_preferred = 1)
-				".(sizeof($va_sql_wheres) ? " AND ".join(' AND ', $va_sql_wheres) : "")."
-			GROUP BY
-				ca_entity_labels.label_id
-			ORDER BY ca_entity_labels.surname, ca_entity_labels.forename
-		";
-		
-		$qr_items = $o_db->query($vs_sql);
-		
-		$va_items = array();
-		while($qr_items->nextRow()) {
-			$vn_entity_id = $qr_items->get('entity_id');
-			$va_items[$vn_entity_id][$qr_items->get('locale_id')] = array_merge($qr_items->getRow(), array('cnt' => $va_item_counts[$vn_entity_id]));
-		}
-		
-		return caExtractValuesByUserLocale($va_items);
-	}
-	# ------------------------------------------------------
-	/**
-	 * Return array containing information about all hierarchies, including their root_id's
-	 * For non-adhoc hierarchies such as places, this call returns the contents of the place_hierarchies list
-	 * with some extra information such as the # of top-level items in each hierarchy.
-	 *
-	 * For an ad-hoc hierarchy like that of an entity, there is only ever one hierarchy to display - that of the current entity.
-	 * So for adhoc hierarchies we just return a single entry corresponding to the root of the current entity hierarchy
-	 */
-	 public function getHierarchyList($pb_dummy=false) {
-	 	$vn_pk = $this->getPrimaryKey();
-	 	if (!$vn_pk) { return null; }		// have to load a row first
-	 	$vs_template = $this->getAppConfig()->get('ca_entities_hierarchy_browser_display_settings');
-	 	
-	 	$vs_label = $this->getLabelForDisplay(false);
-	 	$vs_hier_fld = $this->getProperty('HIERARCHY_ID_FLD');
-	 	$vs_parent_fld = $this->getProperty('PARENT_ID_FLD');
-	 	$vn_hier_id = $this->get($vs_hier_fld);
-	 	
-	 	if ($this->get($vs_parent_fld)) { 
-	 		// currently loaded row is not the root so get the root
-	 		$va_ancestors = $this->getHierarchyAncestors();
-	 		if (!is_array($va_ancestors) || sizeof($va_ancestors) == 0) { return null; }
-	 		$t_entity = new ca_entities($va_ancestors[0]);
-	 	} else {
-	 		$t_entity =& $this;
-	 	}
-	 	
-	 	$va_children = $t_entity->getHierarchyChildren(null, array('idsOnly' => true));
-	 	$va_entity_hierarchy_root = array(
-	 		$t_entity->get($vs_hier_fld) => array(
-	 			'entity_id' => $vn_pk,
-	 			'name' => $vs_name = caProcessTemplateForIDs($vs_template, 'ca_entities', array($vn_pk)),
-	 			'hierarchy_id' => $vn_hier_id,
-	 			'children' => sizeof($va_children)
-	 		)
-	 	);
-	 	
-	 	return $va_entity_hierarchy_root;
-	}
-	# ------------------------------------------------------
-	/**
-	 * Returns name of hierarchy for currently loaded row or, if specified, row identified by optional $pn_id parameter
-	 */
-	 public function getHierarchyName($pn_id=null) {
-	 	if (!$pn_id) { $pn_id = $this->getPrimaryKey(); }
-	 	
-		$va_ancestors = $this->getHierarchyAncestors($pn_id, array('idsOnly' => true));
-		if (is_array($va_ancestors) && sizeof($va_ancestors)) {
-			$vn_parent_id = array_pop($va_ancestors);
-			$t_entity = new ca_entities($vn_parent_id);
-			return $t_entity->getLabelForDisplay(false);
-		} else {			
-			if ($pn_id == $this->getPrimaryKey()) {
-				return $this->getLabelForDisplay(true);
-			} else {
-				$t_entity = new ca_entities($pn_id);
-				return $t_entity->getLabelForDisplay(false);
-			}
-		}
+		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
 	}
 	# ------------------------------------------------------
 }

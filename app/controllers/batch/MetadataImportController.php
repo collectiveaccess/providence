@@ -61,8 +61,8 @@
  				return;
  			}
  			
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('panel');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('panel');
  			
  			
  			$this->opo_datamodel = Datamodel::load();
@@ -78,8 +78,8 @@
  		 *
  		 */
  		public function Index($pa_values=null, $pa_options=null) {
-			JavascriptLoadManager::register('tableList');
-			JavascriptLoadManager::register('fileupload');
+			AssetLoadManager::register('tableList');
+			AssetLoadManager::register('fileupload');
 		
  			$va_importers = ca_data_importers::getImporters();
  			$this->view->setVar('importer_list', $va_importers);
@@ -114,16 +114,17 @@
  		 */
  		public function UploadImporters() {
  			$va_response = array('uploadMessage' => '', 'skippedMessage' => '');
+ 			$va_errors = array();
  			
-				foreach($_FILES as $vs_param => $va_file) {
-					foreach($va_file['name'] as $vn_i => $vs_name) {
-						if ($t_importer = ca_data_importers::loadImporterFromFile($va_file['tmp_name'][$vn_i], $va_errors, array('logDirectory' => $this->request->config->get('batch_metadata_import_log_directory'), 'logLevel' => KLogger::INFO))) {
-							$va_response['copied'][$vs_name] = true;
-						} else {
-							$va_response['skipped'][$vs_name] = true;
-						}
+			foreach($_FILES as $vs_param => $va_file) {
+				foreach($va_file['name'] as $vn_i => $vs_name) {
+					if ($t_importer = ca_data_importers::loadImporterFromFile($va_file['tmp_name'][$vn_i], $va_errors, array('logDirectory' => $this->request->config->get('batch_metadata_import_log_directory'), 'logLevel' => KLogger::INFO))) {
+						$va_response['copied'][$vs_name] = true;
+					} else {
+						$va_response['skipped'][$vs_name] = true;
 					}
 				}
+			}
 			
 			$va_response['uploadMessage'] = (($vn_upload_count = sizeof($va_response['copied'])) == 1) ? _t('Uploaded %1 worksheet', $vn_upload_count) : _t('Uploaded %1 worksheets', $vn_upload_count);
 			if (is_array($va_response['skipped']) && ($vn_skip_count = sizeof($va_response['skipped'])) && !$va_response['error']) {
@@ -140,12 +141,17 @@
  		 * 
  		 */
  		public function Run() {
-			JavascriptLoadManager::register('fileupload');
+			AssetLoadManager::register('fileupload');
 			
  			$t_importer = $this->getImporterInstance();
  			
  			$this->view->setVar('t_importer', $t_importer);
- 			$this->view->setVar('last_settings', $this->request->user->getVar('batch_metadata_last_settings'));
+ 			$this->view->setVar('last_settings', $va_last_settings = $this->request->user->getVar('batch_metadata_last_settings'));
+ 			
+ 			$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');	
+			$o_view->setVar('id', 'fileImportPath');	
+			$o_view->setVar('defaultPath', caGetOption('fileImportPath', $va_last_settings, null));
+			$this->view->setVar('file_browser', $o_view->render('settings_directory_browser_html.php'));
  			
 			$this->render('metadataimport/importer_run_html.php');
  		}
@@ -156,6 +162,7 @@
  		 * 
  		 */
  		public function ImportData() {
+ 			global $g_ui_locale_id;
  			$t_importer = $this->getImporterInstance();
  			
  			if (!$t_subject = $t_importer->getAppDatamodel()->getInstanceByTableNum($t_importer->get('table_num'), true)) {
@@ -171,7 +178,11 @@
  				
  				'logLevel' => $this->request->getParameter("logLevel", pInteger),
  				'dryRun' => $this->request->getParameter("dryRun", pInteger),
- 				'debug' => $this->request->getParameter("debug", pInteger)
+ 				
+ 				'fileInput' => $this->request->getParameter("fileInput", pString),
+ 				'fileImportPath' => $this->request->getParameter("fileImportPath", pString),
+ 				
+ 				'importAllDatasets' => (bool)$this->request->getParameter("importAllDatasets", pInteger)
  			);
  			
  			$va_last_settings = $va_options;
@@ -179,7 +190,13 @@
  			$va_last_settings['inputFormat'] = $this->request->getParameter("inputFormat", pString); 
  			$va_last_settings['logLevel'] = $this->request->getParameter("logLevel", pInteger); 
  			$va_last_settings['dryRun'] = $this->request->getParameter("dryRun", pInteger); 
- 			$va_last_settings['debug'] = $this->request->getParameter("debug", pInteger); 
+ 			if ($vs_file_input = $this->request->getParameter("fileInput", pString)) {
+ 				$va_last_settings['fileInput'] = $vs_file_input; 
+ 			}
+ 			if ($vs_file_import_path = $this->request->getParameter("fileImportPath", pString)) {
+ 				$va_last_settings['fileImportPath'] = $vs_file_import_path;
+ 			}
+ 			
  			$this->request->user->setVar('batch_metadata_last_settings', $va_last_settings);
  			
  			$this->view->setVar("t_subject", $t_subject);

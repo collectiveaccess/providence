@@ -573,11 +573,11 @@ class CataloguingService extends BaseService {
 	 */
 	public function removeRelationship($type, $related_type, $relation_id){
 		$t_instance = $this->getRelTableInstance($type, $related_type, $relation_id);
-		$t_rel_instance->delete();
-		if($t_rel_instance->numErrors()==0){
+		$t_instance->delete();
+		if($t_instance->numErrors()==0){
 			return true;
 		} else {
-			throw new SoapFault("Server", "There were errors while deleting the relationship: ".join(";",$t_rel_instance->getErrors()));
+			throw new SoapFault("Server", "There were errors while deleting the relationship: ".join(";",$t_instance->getErrors()));
 		}
 	}	
 	# -------------------------------------------------------

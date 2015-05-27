@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -47,12 +47,16 @@ class InterstitialSearch extends BaseSearch {
 
 	# ----------------------------------------------------------------------
 	public function __construct($ps_table) {
+		$o_dm = Datamodel::load();
 		$this->ops_tablename = $ps_table;
-		$this->ops_primary_key = $o_db->getTablePrimaryKeyName($ps_table);
+		$this->opn_tablenum = $o_dm->getTableNum($ps_table);
+		
+		$this->ops_primary_key = $o_dm->getTablePrimaryKeyName($ps_table);
+		parent::__construct();
 	}
 	# ----------------------------------------------------------------------
 	public function &search($ps_search, $pa_options=null) {
-		return parent::doSearch($ps_search, new InterstitialSearchResult(), $pa_options);
+		return parent::doSearch($ps_search, new InterstitialSearchResult($this->ops_tablename), $pa_options);
 	}
 	# ----------------------------------------------------------------------
 }

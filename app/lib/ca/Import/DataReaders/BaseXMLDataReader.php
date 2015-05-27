@@ -123,6 +123,8 @@ class BaseXMLDataReader extends BaseDataReader {
 		$this->ops_description = _t('Provides basic XML functions for all XML-format data readers');
 		
 		$this->opa_formats = array();
+		
+		$this->opa_properties['isXML'] = true;
 	}
 	# -------------------------------------------------------
 	/**
@@ -139,8 +141,13 @@ class BaseXMLDataReader extends BaseDataReader {
 			$this->ops_xpath = $this->_convertXPathExpression($ps_base_path);
 		}
 		
-		$this->opo_xml = DOMDocument::load($ps_source);
-		$this->opo_xpath = new DOMXPath($this->opo_xml);
+		if(!($this->opo_xml = @DOMDocument::load($ps_source))) { return false;}
+		
+		try {
+			$this->opo_xpath = new DOMXPath($this->opo_xml);
+		} catch (Exception $e) {
+			return false;
+		}
 		
 		if ($this->ops_xml_namespace_prefix && $this->ops_xml_namespace) {
 			$this->opo_xpath->registerNamespace($this->ops_xml_namespace_prefix, $this->ops_xml_namespace);
@@ -179,16 +186,16 @@ class BaseXMLDataReader extends BaseDataReader {
 			for($vn_i=0; $vn_i < $vn_l; $vn_i++) {
 				$o_node = $o_attributes->item($vn_i);
 				$vs_key = $ps_base_key.'/@'.$o_node->nodeName;
- 				$this->opa_row_buf[$vs_key] = (string)$o_node->nodeValue;
+ 				$this->opa_row_buf[$vs_key][] = (string)$o_node->nodeValue;
  				if ($this->opb_tag_names_as_case_insensitive && (strtolower($vs_key) != $vs_key)) { 
- 					$this->opa_row_buf[strtolower($vs_key)] = (string)$o_node->nodeValue;
+ 					$this->opa_row_buf[strtolower($vs_key)][] = (string)$o_node->nodeValue;
  				}
  				
  				if ($this->opb_use_row_tag_attributes_as_row_level_values) {
  					$vs_key = $ps_base_key.'/'.$o_node->nodeName;
-					$this->opa_row_buf[$vs_key] = (string)$o_node->nodeValue;
+					$this->opa_row_buf[$vs_key][] = (string)$o_node->nodeValue;
 					if ($this->opb_tag_names_as_case_insensitive && (strtolower($vs_key) != $vs_key)) { 
-						$this->opa_row_buf[strtolower($vs_key)] = (string)$o_node->nodeValue;
+						$this->opa_row_buf[strtolower($vs_key)][] = (string)$o_node->nodeValue;
 					}
  				}
  			}
@@ -250,16 +257,36 @@ class BaseXMLDataReader extends BaseDataReader {
 		
 		// Recondition the spec for Xpath
 		$ps_spec = $this->_convertXPathExpression($ps_spec, array('useRootTag' => $this->ops_base_root_tag));
-		$o_node_list = $this->opo_handle_xpath->query($ps_spec);
+
+		if (!($o_node_list = @$this->opo_handle_xpath->query($ps_spec))) {
+			return null;
+		}
 		
 		$va_values = array();
 		foreach($o_node_list as $o_node) {
-			$va_values[] = $o_node->nodeValue;
+			$va_values[] = ($vs_xml = $this->getInnerXML($o_node)) ? $vs_xml : $o_node->nodeValue;
 		}
 		
 		if ($vb_return_as_array) { return $va_values; }
 		return join($vs_delimiter, $va_values);
 	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return string
+	 */
+	private function getInnerXML($po_node) { 
+		$vs_buf = ''; 
+		$vo_children = $po_node->childNodes; 
+		if($vo_children) {
+			foreach ($vo_children as $vo_child) { 
+				$vs_buf .= $vo_child->ownerDocument->saveXML( $vo_child ); 
+			} 
+		}
+
+		return $vs_buf;  
+    }
 	# -------------------------------------------------------
 	/**
 	 * 
@@ -293,6 +320,15 @@ class BaseXMLDataReader extends BaseDataReader {
 	 * 
 	 * @return int
 	 */
+	public function currentRow() {
+		return $this->opn_current_row;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return int
+	 */
 	public function getInputType() {
 		return __CA_DATA_READER_INPUT_FILE__;
 	}
@@ -318,15 +354,30 @@ class BaseXMLDataReader extends BaseDataReader {
 		$vb_double_slash = (substr($ps_spec, 0, 2) == '//') ? true : false;
 		$va_tmp = explode("/", $ps_spec);
 		while(sizeof($va_tmp) && !$va_tmp[0]) { array_shift($va_tmp);}
-		if ($vb_add_root_tag && !$vb_double_slash && ($va_tmp[0] != $this->ops_root_tag)) { array_unshift($va_tmp, $this->ops_xml_namespace_prefix.':'.($vs_use_root_tag ? $vs_use_root_tag : $this->ops_root_tag)); }
+		if ($vb_add_root_tag && !$vb_double_slash && ($va_tmp[0] != $this->ops_root_tag)) { 
+			$vs_tag_tmp = ($vs_use_root_tag ? $vs_use_root_tag : $this->ops_root_tag);
+			
+			if ($this->ops_xml_namespace_prefix && !preg_match("!^".$this->ops_xml_namespace_prefix.":!", $vs_tag_tmp)) {
+				$vs_tag_tmp = $this->ops_xml_namespace_prefix.":{$vs_tag_tmp}";
+			}
+			array_unshift($va_tmp, $vs_tag_tmp); 
+		}
 		foreach($va_tmp as $vn_i => $vs_spec_element) {
 			if(!$vs_spec_element) { continue; }
 			if (
-				(strpos($vs_spec_element, ":") === false)
+				!(preg_match("!^[A-Za-z0-9\-_]+:[A-Za-z0-9\-_]+!", $vs_spec_element))	// tags that are already namedspaced should not get the default namespace applied
 				&&
-				(strpos($vs_spec_element, "@") !== 0)
+				(strpos($vs_spec_element, "@") !== 0)						// attributes should not get the default namespace applied
+				&&
+				(!preg_match("!^[A-Za-z0-9\-_]+\(!", $vs_spec_element))		// functions should not get the default namespace applied
+				&&
+				(!preg_match("!^[\.]+$!", $vs_spec_element))				// . and .. should not get the default namespace applied
+				&&
+				(!preg_match("!^\([A-Za-z0-9\-_]+!", $vs_spec_element))		// groups in parens should not get the default namespace applied
 			) {
-				$va_tmp[$vn_i]= $this->ops_xml_namespace_prefix.":{$vs_spec_element}";
+				if ($this->ops_xml_namespace_prefix) {
+					$va_tmp[$vn_i]= $this->ops_xml_namespace_prefix.":{$vs_spec_element}";
+				}
 			}
 		}
 		$ps_spec = ($vb_double_slash ? '//' : '/').join("/", $va_tmp);
@@ -335,4 +386,3 @@ class BaseXMLDataReader extends BaseDataReader {
 	}
 	# -------------------------------------------------------
 }
-?>

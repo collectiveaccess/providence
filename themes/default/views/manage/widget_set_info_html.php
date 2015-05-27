@@ -30,7 +30,7 @@
 	
 	if ($this->request->user->canDoAction('is_administrator') || $this->request->user->canDoAction('can_administrate_sets')) {
 ?>
-<h3><?php print _t('Set Statistics'); ?>:
+<h3 class='setStats'><?php print _t('Set Statistics'); ?>:
 <div><?php
 		if (sizeof($va_sets['mine']) == 1) {
 			print _t("1 set available to you");
@@ -39,9 +39,9 @@
 		}
 		print "<br/>\n";
 		if (sizeof($va_sets['user']) == 1) {
-			print _t("1 set created by other users");
+			print _t("1 set created by users");
 		} else {
-			print _t("%1 sets created by other users", sizeof($va_sets['user']));
+			print _t("%1 sets created by users", sizeof($va_sets['user']));
 		}
 		print "<br/>\n";
 		if (sizeof($va_sets['public']) == 1) {

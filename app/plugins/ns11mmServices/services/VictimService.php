@@ -69,7 +69,6 @@ class VictimService extends NS11mmService {
         
 		$qr_res = $o_search->search("ca_entities.type_id:".$this->opn_victim_type_id, array('limitToModifiedOn' => $vs_range));
 		
-		
         $skip = $this->opo_request->getParameter('skip', pInteger);
         $limit = $this->opo_request->getParameter('limit', pInteger);
         
@@ -125,13 +124,10 @@ class VictimService extends NS11mmService {
 			'last_modification' => $t_entity->get('ca_entities.lastModified', array("dateFormat" => 'iso8601'))
 		);
 		
-		$va_nonpreferred_labels = $t_entity->get('ca_entities.nonpreferred_labels', array('returnAsArray' => true));
-	
-		foreach($va_nonpreferred_labels as $vn_entity_id => $va_labels) {
-			foreach($va_labels as $vn_i => $va_label) {
-				unset($va_labels[$vn_i]['form_element']);
-			}
-			$va_data['alternate_names'] = $va_labels;
+		$va_nonpreferred_labels = $t_entity->get('ca_entities.nonpreferred_labels', array('returnAsArray' => true, 'assumeDisplayField' => false));
+
+		foreach($va_nonpreferred_labels as $va_label) {
+			$va_data['alternate_names'][] = $va_label;
 		}
 		// add place info
 		$va_places = $t_entity->getRelatedItems('ca_places');
@@ -141,6 +137,7 @@ class VictimService extends NS11mmService {
 		
 		$va_place_type_idnos = array();
 		foreach($va_place_type_list as $vn_type_id => $va_type) {
+			if (!$va_type['is_enabled']) { continue; }
 			$va_place_type_idnos[] = $va_type['idno'];
 		}
 		$va_data['place_types'] = $va_place_type_idnos;
@@ -274,7 +271,8 @@ class VictimService extends NS11mmService {
 					if (!sizeof($va_pub_targets)) { continue; }
 					
 					if (!$t_rep->load($va_rep['representation_id'])) { continue; }
-					if ($t_rep->get("ca_object_representations.memex_status") != $vn_publish_rep) { continue; }
+					
+					if ($t_rep->get("ca_object_representations.memex_status", array('convertCodesToDisplayText' => false)) != $vn_publish_rep) { continue; }
 					
 					// reset filesize property to reflect size of version, not size of original
 					foreach($va_reps[$vn_i]['paths'] as $vs_version => $vs_path) {
@@ -284,6 +282,7 @@ class VictimService extends NS11mmService {
 					unset($va_reps[$vn_i]['paths']);
 					unset($va_reps[$vn_i]['tags']);
 					unset($va_reps[$vn_i]['media']);
+					unset($va_reps[$vn_i]['media_metadata']);
 					unset($va_reps[$vn_i]['is_primary']);
 					unset($va_reps[$vn_i]['name']);
 					unset($va_reps[$vn_i]['status']);
@@ -524,7 +523,7 @@ class VictimService extends NS11mmService {
 		
 		// is the entity a victim?
 		if ($t_entity->getTypeID() != $this->opn_victim_type_id) {
-			return $this->makeResponse(array(), 500, 'Entity is not of type "victim"');
+			return $this->makeResponse(array(), 500, 'Entity is not of type "victim"; expected '.$this->opn_victim_type_id.'; got '.$t_entity->getTypeID());
 		}
 		
 		return $t_entity;

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,7 +34,8 @@
 			$this->ops_name = 'entitySplitter';
 			$this->ops_title = _t('Entity splitter');
 			$this->ops_description = _t('Provides several entity-related import functions: splitting of entity names into component names (forename, surname, Etc.), splitting of many names in a string into separate names, and merging entity data with entity names (life dates, nationality, Etc.).');
-			
+
+			$this->opb_supports_relationships = true;
 			$this->opb_returns_multiple_values = true;
 			
 			parent::__construct();
@@ -56,6 +57,7 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
+			$pa_options['displaynameFormat'] = caGetOption('entitySplitter_displaynameFormat', $pa_item['settings'], null);
 			return caGenericImportSplitter('entitySplitter', 'entity', 'ca_entities', $this, $pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options);
 		}
 		# -------------------------------------------------------	
@@ -79,6 +81,33 @@
 				'default' => '',
 				'label' => _t('Delimiter'),
 				'description' => _t('Sets the value of the delimiter to break on, separating data source values.')
+			),
+			'entitySplitter_matchOn' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Match on'),
+				'description' => _t('List indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails')
+			),
+			'entitySplitter_displaynameFormat' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Display name format'),
+				'description' => _t('Format to force entity display name to after parsing. You can pass a template using name element prefixed with carets (^) or one of the following: surnameCommaForename, forenameCommaSurname, forenameSurname, original.')
+			),
+			'entitySplitter_dontCreate' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => false,
+				'label' => _t('Do not create new records'),
+				'description' => _t('If set splitter will only match on existing records and will not create new ones.')
 			),
 			'entitySplitter_relationshipType' => array(
 				'formatType' => FT_TEXT,
@@ -151,15 +180,6 @@
 				'default' => '',
 				'label' => _t('Interstitial attributes'),
 				'description' => _t('Sets or maps metadata for the interstitial entity <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found.')
-			),
-			'entitySplitter_relatedEntities' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_SELECT,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Related entities'),
-				'description' => _t('Entities related to the entity being created.')
 			),
 			'entitySplitter_nonPreferredLabels' => array(
 				'formatType' => FT_TEXT,

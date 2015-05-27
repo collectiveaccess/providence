@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,7 +49,7 @@ class WLPlugGeographicMapGoogleMaps Extends BaseGeographicMapPlugIn Implements I
 		
 		$this->description = _t('Generates maps using the GoogleMaps API');
 		
-		JavascriptLoadManager::register("maps");
+		AssetLoadManager::register("maps");
 	}
 	# ------------------------------------------------
 	/**
@@ -69,9 +69,14 @@ class WLPlugGeographicMapGoogleMaps Extends BaseGeographicMapPlugIn Implements I
 	 *		maxZoomLevel - Maximum zoom level to allow; leave null if you don't want to enforce a limit
 	 *		zoomLevel - Zoom map to specified level rather than fitting all markers into view; leave null if you don't want to specify a zoom level. IF this option is set minZoomLevel and maxZoomLevel will be ignored.
 	 *		balloonView -
-	 *		pathColor - 
-	 *		pathWeight -
-	 *		pathOpacity - 
+	 *		pathColor - used for paths and circles
+	 *		pathWeight - used for paths and circles
+	 *		pathOpacity - used for paths and circles
+	 *		obscure - do not map exact point, instead show broad area around point, also do not show label since this would tell the specific location
+	 *		circle - render circle instead of point
+	 *		radius - circle radius
+	 *		fillColor - circle fill
+	 *		fillOpacity - circle fill opacity
 	 */
 	public function render($ps_format, $pa_options=null) {
 		$o_config = Configuration::load();
@@ -93,6 +98,11 @@ class WLPlugGeographicMapGoogleMaps Extends BaseGeographicMapPlugIn Implements I
 		$vn_path_opacity = (isset($pa_options['pathOpacity']) && ((int)$pa_options['pathOpacity'] >= 0)  && ((int)$pa_options['pathOpacity'] <= 1)) ? (int)$pa_options['pathOpacity'] : 0.5;
 		
 		$vs_balloon_view = (isset($pa_options['balloonView'])) ? $pa_options['balloonView'] : null;
+		$vb_obscure = (isset($pa_options['obscure'])) ? $pa_options['obscure'] : false;
+		$vb_circle = (isset($pa_options['circle'])) ? $pa_options['circle'] : false;
+		$vn_radius = (isset($pa_options['radius'])) ? $pa_options['radius'] : 500;
+		$vs_fill_color = (isset($pa_options['fillColor'])) ? $pa_options['fillColor'] : '#cc0000';
+		$vn_fill_opacity = (isset($pa_options['fillOpacity']) && ((int)$pa_options['fillOpacity'] >= 0)  && ((int)$pa_options['fillOpacity'] <= 1)) ? (int)$pa_options['fillOpacity'] : 0.3;
 		
 		$vs_type = (isset($pa_options['mapType'])) ? strtoupper($pa_options['mapType']) : strtoupper($this->opo_config->get('google_maps_default_type'));
 		if (!in_array($vs_type, array('ROADMAP', 'SATELLITE', 'HYBRID', 'TERRAIN'))) {
@@ -106,6 +116,11 @@ class WLPlugGeographicMapGoogleMaps Extends BaseGeographicMapPlugIn Implements I
 			case 'JPEG':
 			case 'PNG':
 			case 'GIF':
+				$vn_width = intval($vn_width);
+				$vn_height = intval($vn_height);
+				if ($vn_width < 1) { $vn_width = 200; }
+				if ($vn_height < 1) { $vn_height = 200; }
+				
 				$va_markers = array();
 				$va_paths = array();
 				$va_center = null;
@@ -137,6 +152,17 @@ class WLPlugGeographicMapGoogleMaps Extends BaseGeographicMapPlugIn Implements I
 			# ---------------------------------
 			case 'HTML':
 			default:
+				if(!strpos($vn_width, "%")){
+					$vn_width = intval($vn_width);
+					if ($vn_width < 1) { $vn_width = 200; }
+					$vn_width = $vn_width."px";
+				}
+				if(!strpos($vn_height, "%")){
+					$vn_height = intval($vn_height);
+					if ($vn_height < 1) { $vn_height = 200; }
+					$vn_height = $vn_height."px";
+				}
+				
 				if (isset($pa_options['showNavigationControls'])) {
 					$vb_show_navigation_control 	= $pa_options['showNavigationControls'] ? 'true' : 'false';
 				} else {
@@ -226,7 +252,14 @@ jQuery(document).ready(function() {
 			} else {
 				// is point
 				$va_coord = array_shift($va_coords);
-				$va_locs[$va_coord['latitude']][$va_coord['longitude']][] = array('label' => $o_map_item->getLabel(), 'content' => $o_map_item->getContent(), 'ajaxContentUrl' => $o_map_item->getAjaxContentUrl(), 'ajaxContentID' => $o_map_item->getAjaxContentID());
+				if($vb_obscure){
+					$vn_latitude = round($va_coord['latitude'], 3).'0000';
+					$vn_longitude = round($va_coord['longitude'], 3).'0000';
+					$va_locs[$vn_latitude][$vn_longitude][] = array('label' => '', 'content' => '', 'ajaxContentUrl' => $o_map_item->getAjaxContentUrl(), 'ajaxContentID' => $o_map_item->getAjaxContentID());
+ 					$va_extents = array("north" => $vn_latitude, "south" => $vn_latitude, "east" => $vn_longitude, "west" => $vn_longitude);
+				}else{
+					$va_locs[$va_coord['latitude']][$va_coord['longitude']][] = array('label' => $o_map_item->getLabel(), 'content' => $o_map_item->getContent(), 'ajaxContentUrl' => $o_map_item->getAjaxContentUrl(), 'ajaxContentID' => $o_map_item->getAjaxContentID());
+ 				}
 			}
 		}
 		
@@ -253,9 +286,17 @@ jQuery(document).ready(function() {
 					$vs_balloon_content = join($vs_delimiter, $va_buf);
 				}
 				
-				$vs_buf .= "	var m = caMap_{$vs_id}.makeMarker(".$vn_latitude.", ".$vn_longitude.", '".preg_replace("![\n\r]+!", " ", addslashes($vs_label))."', '".preg_replace("![\n\r]+!", " ", addslashes($vs_balloon_content))."', '".preg_replace("![\n\r]+!", " ", ($vs_ajax_content_url ? addslashes($vs_ajax_content_url."/_ajax/1/id/".join(';', $va_ajax_ids)) : ''))."', {icon: '".$o_config->get("themes_url")."/".(defined("__CA_THEME__") ? __CA_THEME__ : $o_config->get('theme'))."/graphics/blu-pointer.png'} );\n";
-				$vs_buf .= "	caMap_{$vs_id}_markers.push(m);\n";
-				$vs_buf .= "	mc_{$vs_id}.addMarker(m);\n";
+				if($vb_circle){
+					$vs_buf .= "	caMap_{$vs_id}_markers.push(caMap_{$vs_id}.makeCircle(".$vn_latitude.", ".$vn_longitude.", '".preg_replace("![\n\r]+!", " ", addslashes($vs_label))."', '".preg_replace("![\n\r]+!", " ", addslashes(join($vs_delimiter, $va_buf)))."', '".preg_replace("![\n\r]+!", " ", ($vs_ajax_content_url ? addslashes($vs_ajax_content_url."/id/".join(';', $va_ajax_ids)) : ''))."', {radius: {$vn_radius}, strokeColor: '{$vs_path_color}', strokeWeight: {$vn_path_weight}, strokeOpacity: {$vn_path_opacity}, fillColor: '{$vs_fill_color}', fillOpacity: {$vn_fill_opacity}}));\n";
+					# --- change extents based on radius
+					# --- one degree lat = 110574.61087757687 meters
+					$vn_lat_offset = $vn_radius/110574.61087757687;
+					# --- one degree long = 111302.61697430261 meters
+					$vn_lon_offset = $vn_radius/111302.61697430261;
+					$va_extents = array("north" => number_format(($va_extents['north'] + $vn_lat_offset), 7, ".", ""), "south" => number_format(($va_extents['south'] - $vn_lat_offset), 7, ".", ""), "east" => number_format(($va_extents['east'] + $vn_lon_offset), 7, ".", ""), "west" => number_format(($va_extents['west'] - $vn_lon_offset), 7, ".", ""));
+				}else{
+					$vs_buf .= "	caMap_{$vs_id}_markers.push(caMap_{$vs_id}.makeMarker(".$vn_latitude.", ".$vn_longitude.", '".preg_replace("![\n\r]+!", " ", addslashes($vs_label))."', '".preg_replace("![\n\r]+!", " ", addslashes($vs_balloon_content))."', '".preg_replace("![\n\r]+!", " ", ($vs_ajax_content_url ? addslashes($vs_ajax_content_url."/_ajax/1/id/".join(';', $va_ajax_ids)) : ''))."', {} ));\n";
+				}
 			}
 		}
 		
@@ -318,7 +359,7 @@ $vs_buf .= "
 	 *
 	 */
 	public function getAttributeBundleHTML($pa_element_info, $pa_options=null) {
- 		JavascriptLoadManager::register('maps');
+ 		AssetLoadManager::register('maps');
  		
 		$o_config = Configuration::load();
 		

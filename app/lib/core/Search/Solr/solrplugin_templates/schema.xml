@@ -23,7 +23,7 @@
 		<field name="created_user_id" type="int" indexed="true" stored="false" multiValued="false"/>
 		<field name="modified" type="daterange" indexed="true" stored="false" multiValued="false"/>
 		<field name="modified_user_id" type="int" indexed="true" stored="false" multiValued="false"/>
-		<dynamicField name="*" type="ignored" />
+		<dynamicField name="*" type="text" indexed="true" stored="false" multiValued="true" />
 		<dynamicField name="*_coordinate"  type="float" indexed="true" stored="false"/>
 	</fields>
 	<uniqueKey><!--KEY--></uniqueKey>

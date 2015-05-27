@@ -33,7 +33,6 @@
   /**
     *
     */ 
-    
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugVisualizer.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/Visualizer/BaseVisualizerPlugin.php");
 include_once(__CA_APP_DIR__."/helpers/gisHelpers.php");
@@ -78,9 +77,11 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 					$this->opn_num_items_rendered++;
 				}
 			}
+
+			if($this->opn_num_items_rendered >= 100) { break; }
 		}
-		
-		$vs_buf = "
+
+		$vs_buf = $this->getLocaleJSSrc($po_request)."
 	<div id='timeline-embed' style='width: {$vs_width}; height: {$vs_height};'></div>
     <script type='text/javascript'>
 		jQuery(document).ready(function() {
@@ -94,7 +95,7 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 		});
 	</script>
 ";
-		
+
 		return $vs_buf;
 	}
 	# ------------------------------------------------
@@ -122,9 +123,8 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 		$qr_res = $this->getData();
 		$vs_table_name = $qr_res->tableName();
 		$vs_pk = $qr_res->primaryKey();
-		
+
 		$vn_c = 0;
-		$va_results = array();
 		
 		while($qr_res->nextHit()) {
 			foreach($pa_viz_settings['sources'] as $vs_source_name => $va_source) {
@@ -143,7 +143,7 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 					"endDate" => $va_timeline_dates['end'],
 					"headline" => $po_request ? caEditorLink($po_request, $vs_title, '', $vs_table_name, $vn_row_id) : $vs_title,
 					"text" => $qr_res->getWithTemplate($va_source['display']['description_template']),
-					"tag" => $vs_tag,
+					"tag" => '',
 					"classname" => "",
 					"asset" => array(
 						"media" => $qr_res->getWithTemplate($va_source['display']['image'], array('returnURL' => true)),
@@ -153,12 +153,12 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 					)
 				);
 			}
-			
+
 			$vn_c++;
-			if ($vn_c > 2000) { break; }
+			if ($vn_c >= 100) { break; }
 		}
-		
-		
+
+
 		return json_encode(array('timeline' => $va_data));
 	}
 	# ------------------------------------------------
@@ -212,9 +212,18 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 	 */
 	public function registerDependencies() {
 		$va_packages = array("timelineJS");
-		foreach($va_packages as $vs_package) { JavascriptLoadManager::register($vs_package); }
+		foreach($va_packages as $vs_package) { AssetLoadManager::register($vs_package); }
 		return $va_packages;
 	}
 	# ------------------------------------------------
+	private function getLocaleJSSrc($po_request) {
+		// try to include locale file
+		global $g_ui_locale; $va_matches = array();
+		preg_match("/^([a-z]{2,3})\_[A-Z]{2,3}$/", $g_ui_locale, $va_matches);
+		if(isset($va_matches[1]) && file_exists(__CA_BASE_DIR__.'/assets/timelinejs/js/locale/'.$va_matches[1].'.js')) {
+			return "<script src='".$po_request->getBaseUrlPath()."/assets/timelinejs/js/locale/".$va_matches[1].".js' type='text/javascript'></script>";
+		}
+		return '';
+	}
+	# ------------------------------------------------
 }
-?>

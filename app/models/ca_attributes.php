@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -201,19 +201,26 @@ class ca_attributes extends BaseModel {
 	public function addAttribute($pn_table_num, $pn_row_id, $pm_element_code_or_id, $pa_values, $pa_options=null) {
 		require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');	// defer inclusion until runtime to ensure baseclasses are already loaded, otherwise you get circular dependencies
 		
+		global $g_ui_locale_id;
+		
 		unset(ca_attributes::$s_get_attributes_cache[$pn_table_num.'/'.$pn_row_id]);
 		$t_element = ca_attributes::getElementInstance($pm_element_code_or_id);
 		
-		$vb_already_in_transaction = $this->inTransaction();
-		if (!$vb_already_in_transaction) {
-			$o_trans = new Transaction();
+		$vb_web_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$o_trans = new Transaction($this->getDb());
+			$vb_web_set_transaction = true;
 			$this->setTransaction($o_trans);
 		} else {
 			$o_trans = $this->getTransaction();
 		}
+		
 		// create new attribute row
 		$this->set('element_id', $vn_attribute_id = $t_element->getPrimaryKey());
-		$this->set('locale_id', $pa_values['locale_id']);
+		
+		// Force default of locale-less attributes to current user locale if possible
+		if (!isset($pa_values['locale_id']) || !$pa_values['locale_id']) { $pa_values['locale_id'] = $g_ui_locale_id; }
+		if (isset($pa_values['locale_id'])) { $this->set('locale_id', $pa_values['locale_id']); }
 		
 		// TODO: verify table_num/row_id combo
 		$this->set('table_num', $pn_table_num);
@@ -223,7 +230,7 @@ class ca_attributes extends BaseModel {
 		$this->insert();
 		
 		if ($this->numErrors()) {
-			if (!$vb_already_in_transaction) {
+			if ($vb_web_set_transaction) {
 				$o_trans->rollback();
 			}
 			
@@ -268,14 +275,14 @@ class ca_attributes extends BaseModel {
 			// empty values to pass without complaint.
 			//
 			$this->delete(true);	// nuke existing ca_attributes record
-			if (!$vb_already_in_transaction) {
+			if ($vb_web_set_transaction) {
 				$o_trans->rollback();
 			}
 			return null;	// we return null so the caller understands not to throw errors
 		}
 		
 		if ($this->numErrors()) {
-			if (!$vb_already_in_transaction) {
+			if ($vb_web_set_transaction) {
 				$o_trans->rollback();
 			} else {
 				$va_errors = $this->errors();
@@ -285,9 +292,7 @@ class ca_attributes extends BaseModel {
 			return false;
 		}
 		
-		if (!$vb_already_in_transaction) {
-			$o_trans->commit();
-		}
+		if ($vb_web_set_transaction) { $o_trans->commit(); }
 		return $this->getPrimaryKey();
 	}
 	# ------------------------------------------------------
@@ -295,11 +300,14 @@ class ca_attributes extends BaseModel {
 	 *
 	 */
 	public function editAttribute($pa_values, $pa_options=null) {
+		global $g_ui_locale_id;
+		
 		if (!$this->getPrimaryKey()) { return null; }
 		
-		$vb_already_in_transaction = $this->inTransaction();
-		if (!$vb_already_in_transaction) {
-			$o_trans = new Transaction();
+		$vb_web_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$o_trans = new Transaction($this->getDb());
+			$vb_web_set_transaction = true;
 			$this->setTransaction($o_trans);
 		} else {
 			$o_trans = $this->getTransaction();
@@ -308,10 +316,15 @@ class ca_attributes extends BaseModel {
 		unset(ca_attributes::$s_get_attributes_cache[$this->get('table_num').'/'.$this->get('row_id')]);
 		
 		$this->setMode(ACCESS_WRITE);
-		$this->set('locale_id', $pa_values['locale_id']);
+		
+		// Force default of locale-less attributes to current user locale if possible
+		if (!isset($pa_values['locale_id']) || !$pa_values['locale_id']) { $pa_values['locale_id'] = $g_ui_locale_id; }
+		if (isset($pa_values['locale_id'])) { $this->set('locale_id', $pa_values['locale_id']); }
+		
 		$this->update();
+
 		if ($this->numErrors()) {
-			if (!$vb_already_in_transaction) {
+			if ($vb_web_set_transaction) {
 				$o_trans->rollback();
 			}
 			$vs_errors = join('; ', $this->getErrors());
@@ -372,15 +385,13 @@ class ca_attributes extends BaseModel {
 		
 		
 		if ($this->numErrors()) {
-			if (!$vb_already_in_transaction) {
+			if ($vb_web_set_transaction) {
 				$o_trans->rollback();
 			}
 			return false;
 		}
 		
-		if (!$vb_already_in_transaction) {
-			$o_trans->commit();
-		}
+		if ($vb_web_set_transaction) { $o_trans->commit(); }
 		return true;
 	}
 	# ------------------------------------------------------
@@ -404,9 +415,17 @@ class ca_attributes extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Return values for currently loaded attribute.
 	 *
+	 * @param array $pa_options Options include:
+	 *		returnAs = what to return; possible values are:
+	 *			values					= an array of attribute values [Default]
+	 *			attributeInstance		= an instance of the Attribute class loaded with the attribute value(s)
+	 *			count					= the number of values in the attribute
+	 *
+	 * @return mixed An array, instance of class Attribute or an integer value count depending upon setting of returnAs option. Returns null if no attribute is loaded.
 	 */
-	public function getAttributeValues() {
+	public function getAttributeValues($pa_options=null) {
 		if (!$this->getPrimaryKey()) { return null; }
 		$o_db = $this->getDb();
 		$qr_attrs = $o_db->query("
@@ -423,7 +442,18 @@ class ca_attributes extends BaseModel {
 			$o_attr->addValueFromRow($va_raw_row);
 		}
 		
-		return $o_attr->getValues();
+		switch($vs_return_as = caGetOption('returnAs', $pa_options, null)) {
+			case 'attributeInstance':
+				return $o_attr;
+				break;
+			case 'count':
+				return sizeof($o_attr->getValues());
+				break;
+			case 'values':
+			default:
+				return $o_attr->getValues();	
+				break;
+		}
 	}
 	# ------------------------------------------------------
 	# Static methods
@@ -487,13 +517,16 @@ class ca_attributes extends BaseModel {
 			$vs_errors = '';
 		}
 
-		$ps_formatted_element = str_replace("^LABEL", "<span id='_attribute_value_".$pa_element_info['element_code']."'>{$vs_label}</span>", $ps_format);
+		$ps_formatted_element = str_replace("^LABEL", "<span class='_attribute_value_".$pa_element_info['element_code']."'>{$vs_label}</span>", $ps_format);
 		$ps_formatted_element = str_replace("^ELEMENT", $vs_element, $ps_formatted_element);
 		$ps_formatted_element = str_replace("^DESCRIPTION", "", $ps_formatted_element);
 		$ps_formatted_element = str_replace("^EXTRA", "", $ps_formatted_element);
 	
 		if ($vs_description) {
-			TooltipManager::add('#_attribute_value_'.$pa_element_info['element_code'], "<h3>".$vs_label."</h3>".$vs_description);
+			// don't use TooltipManager to make sure the tooltip is also displayed when this element is added dynamically (via "add" button)
+			//TooltipManager::add('#_attribute_value_'.$pa_element_info['element_code'], "<h3>".$vs_label."</h3>".$vs_description);
+
+			$ps_formatted_element .= "\n".caGetTooltipJS(array('._attribute_value_'.$pa_element_info['element_code'] => $vs_description));
 		}
 		return $ps_formatted_element;
 	}
@@ -506,12 +539,17 @@ class ca_attributes extends BaseModel {
 	 * @param $pn_table_num int The table number of the table to fetch attributes for
 	 * @param $pa_row_ids array List of row_ids to fetch attributes for
 	 * @param $pa_options array Optional array of options. Supported options include:
-	 *			NONE
+	 *			resetCache = Clear cache before prefetch. [Default is false]
+	 *
 	 * @return boolean Always return true
 	 */
 	static public function prefetchAttributes($po_db, $pn_table_num, $pa_row_ids, $pa_element_ids, $pa_options=null) {
 		if(!sizeof($pa_row_ids)) { return true; }
 		if(!is_array($pa_element_ids) || !sizeof($pa_element_ids)) { return true; }
+		
+		if (caGetOption('resetCache', $pa_options, false)) {
+			ca_attributes::$s_get_attributes_cache = array();
+		}
 	
 		// Make sure the element_id list looks like element_ids and does not have blanks
 		$va_element_ids = array();
@@ -542,6 +580,7 @@ class ca_attributes extends BaseModel {
 		$vn_last_attribute_id = $vn_last_row_id = null;
 		
 		$vn_val_count = 0;
+		$o_attr = $vn_last_element_id = null; 
 		while($qr_attrs->nextRow()) {
 			$va_raw_row = $qr_attrs->getRow();
 			if ($vn_last_attribute_id != $va_raw_row['attribute_id']) {
@@ -552,10 +591,12 @@ class ca_attributes extends BaseModel {
 				$vn_last_attribute_id = $va_raw_row['attribute_id'];
 				$vn_last_row_id = $va_raw_row['row_id'];
 				$vn_last_element_id = $va_raw_row['element_set_id'];
+				
 				// when creating the attribute you want element_id = to the "set" id (ie. the element_id in the ca_attributes row) so we overwrite
 				// the element_id of the ca_attribute_values row before we pass the array to Attribute() below
 				$o_attr = new Attribute(array_merge($va_raw_row, array('element_id' => $va_raw_row['element_set_id'])));
 			}
+			
 			$o_attr->addValueFromRow($va_raw_row);
 			$vn_val_count++;
 		}
@@ -570,7 +611,12 @@ class ca_attributes extends BaseModel {
 				ca_attributes::$s_get_attributes_cache[(int)$pn_table_num.'/'.(int)$vn_row_id][(int)$vn_element_id] = $va_attrs_for_element;
 				// Limit cache size
 				if (sizeof(ca_attributes::$s_get_attributes_cache) > ca_attributes::$s_attribute_cache_size) {
-					array_shift(ca_attributes::$s_get_attributes_cache);
+					//array_shift(ca_attributes::$s_get_attributes_cache);
+					if (($vn_splice_length = ceil(sizeof(ca_attributes::$s_get_attributes_cache) - ca_attributes::$s_attribute_cache_size + (ca_attributes::$s_attribute_cache_size * 0.5))) > ca_attributes::$s_attribute_cache_size) {
+						$vn_splice_length = ca_attributes::$s_attribute_cache_size;
+					}
+					
+					array_splice(ca_attributes::$s_get_attributes_cache, 0, $vn_splice_length);
 				}
 			}
 			
@@ -590,28 +636,45 @@ class ca_attributes extends BaseModel {
 				
 			// Limit cache size
 			if (sizeof(ca_attributes::$s_get_attributes_cache) > ca_attributes::$s_attribute_cache_size) {
-				array_shift(ca_attributes::$s_get_attributes_cache);
+				//array_shift(ca_attributes::$s_get_attributes_cache);
+				if (($vn_splice_length = ceil(sizeof(ca_attributes::$s_get_attributes_cache) - ca_attributes::$s_attribute_cache_size + (ca_attributes::$s_attribute_cache_size * 0.5))) > ca_attributes::$s_attribute_cache_size) {
+					$vn_splice_length = ca_attributes::$s_attribute_cache_size;
+				}
+				
+				array_splice(ca_attributes::$s_get_attributes_cache, 0, $vn_splice_length);
 			}
 		}
+		
 		return true;
 	}
 	# ------------------------------------------------------
 	/**
 	 * Retrieve attributes attached to specified row_id in specified table
 	 * Returns a list (indexed array) of Attribute objects.
+	 *
+	 * @param Db $po_db Db() instance to use for database access
+	 * @param int $pn_table_num Table number of table to fetch attributes values for
+	 * @param int $pn_row_id Row to fetch attribute values for
+	 * @param array $pa_element_ids Array of element_ids to fetch values for
+	 * @param array $pa_options Options include:
+	 *		noCache = Don't use cached attribute values. [Default is false]
+	 *
+	 * @return array
 	 */
 	static public function getAttributes($po_db, $pn_table_num, $pn_row_id, $pa_element_ids, $pa_options=null) {
+		$pb_no_cache = (isset($pa_options['noCache']) && $pa_options['noCache']);
+		if ($pb_no_cache) { $pa_options['resetCache'] = true; }
 		
 		$va_element_ids = array();
 		foreach($pa_element_ids as $vn_element_id) {
-			if (!is_array(ca_attributes::$s_get_attributes_cache[$pn_table_num.'/'.$pn_row_id][$vn_element_id])) {
+			if (!isset(ca_attributes::$s_get_attributes_cache[$pn_table_num.'/'.$pn_row_id][$vn_element_id]) || $pb_no_cache) {
 				$va_element_ids[] = $vn_element_id;
 			}
 		}
 		
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (sizeof($va_element_ids)) {
-			if (!(ca_attributes::prefetchAttributes($po_db, $pn_table_num, array($pn_row_id), $va_element_ids))) {
+			if (!(ca_attributes::prefetchAttributes($po_db, $pn_table_num, array($pn_row_id), $va_element_ids, $pa_options))) {
 				return null;
 			}
 		}
@@ -624,8 +687,6 @@ class ca_attributes extends BaseModel {
 	 * @return array Array of values indexed on row_id, then locale_id and finally an index (to accommodate repeating values)
 	 */
 	static public function getRawAttributeValuesForIDs($po_db, $pn_table_num, $pa_row_ids, $pn_element_id, $pa_options=null) {
-		
-		
 		$qr_attrs = $po_db->query("
 			SELECT 
 				caa.attribute_id, caa.locale_id, caa.element_id element_set_id, caa.row_id,
@@ -656,12 +717,12 @@ class ca_attributes extends BaseModel {
 	/**
 	 * Return number of attributes with specified element_id attached to specified row in specified table.
 	 *
-	 * @param $po_db - Db() instance to use for database access
-	 * @param $pn_table_num - table_num of table attributes to count are attached to
-	 * @param $pn_row_id - row_id of row attributes to count are attached to
-	 * @param $pn_element_id - metadata element of attribute to count
+	 * @param Db $po_db Db() instance to use for database access
+	 * @param int $pn_table_num Table number of table attributes to count are attached to
+	 * @param int $pn_row_id row_id of row attributes to count are attached to
+	 * @param int $pn_element_id Metadata element of attribute to count
 	 *
-	 * @return int - number of attributes with specified element_id attached to specified row
+	 * @return int number of attributes with specified element_id attached to specified row
 	 */
 	static public function getAttributeCount($po_db, $pn_table_num, $pn_row_id, $pn_element_id) {
 		$qr_attrs = $po_db->query("
@@ -717,6 +778,7 @@ class ca_attributes extends BaseModel {
 		$va_attrs = array();
 		$vn_last_attribute_id = null;
 		
+		$o_attr = null;
 		while($qr_attrs->nextRow()) {
 			$va_raw_row = $qr_attrs->getRow();
 			if ($vn_last_attribute_id != $va_raw_row['attribute_id']) {

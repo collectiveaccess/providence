@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -188,6 +188,7 @@ class ca_user_roles extends BaseModel {
 	protected $opo_app_plugin_manager;
 	
 	static $s_action_list;
+	static $s_bundle_list;
 	
 	# ------------------------------------------------------
 	# --- Constructor
@@ -205,6 +206,8 @@ class ca_user_roles extends BaseModel {
 		
  		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 		$this->opo_widget_manager = new WidgetManager();
+
+		ca_user_roles::$s_bundle_list = array();
 	}
 	# ------------------------------------------------------
 	public function getRoleList($ps_sort_field='', $ps_sort_direction='asc') {
@@ -268,6 +271,188 @@ class ca_user_roles extends BaseModel {
 		} else {
 			return $va_actions['raw'];
 		}
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get bundle access settings for current role
+	 */
+	public function getBundleAccessSettings() {
+		if(!$this->getPrimaryKey()) { return array(); }
+
+		$va_vars = $this->get('vars');
+ 		if(isset($va_vars['bundle_access_settings'])){
+ 			return $va_vars['bundle_access_settings'];
+ 		} else {
+ 			return array();
+ 		}
+	}
+	# ------------------------------------------------------
+	/**
+	 * Set access setting for given bundle
+	 *
+	 * @param string $ps_table the table the bundle belongs to
+	 * @param string $ps_bundle the bundle name, e.g. preferred_labels
+	 * @param int $pn_access access level, __CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__ or __CA_BUNDLE_ACCESS_EDIT__
+	 * @return boolean success or not
+	 */
+	public function setAccessSettingForBundle($ps_table, $ps_bundle, $pn_access) {
+		if(!in_array($pn_access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { return false; }
+		if(!$this->getPrimaryKey()) { return false; }
+		if(!$this->getAppDatamodel()->tableExists($ps_table)) { return false; }
+
+		$va_vars = $this->get('vars');
+		if(!is_array($va_vars)) { $va_vars = array(); }
+		if(!isset($va_vars['bundle_access_settings'])) { $va_vars['bundle_access_settings'] = array(); }
+
+		if(!is_array(ca_user_roles::$s_bundle_list) || !is_array(ca_user_roles::$s_bundle_list[$ps_table])) {
+			$t_ui_screens = new ca_editor_ui_screens();
+			ca_user_roles::$s_bundle_list[$ps_table] = array_keys($t_ui_screens->getAvailableBundles($ps_table,array('dontCache' => true)));
+		}
+		if(!in_array($ps_bundle, ca_user_roles::$s_bundle_list[$ps_table])) {
+			return false; 
+		}
+
+		$va_vars['bundle_access_settings'][$ps_table.".".$ps_bundle] = $pn_access;
+		$this->set('vars', $va_vars);
+
+		$vn_old_mode = $this->getMode();
+		$this->setMode(ACCESS_WRITE);
+		$this->update();
+		$this->setMode($vn_old_mode);
+
+		if($this->numErrors()>0) {
+			return false;
+		}
+
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get type access settings for current role
+	 */
+	public function getTypeAccessSettings() {
+		if(!$this->getPrimaryKey()) { return array(); }
+		if(!$this->getAppConfig()->get('perform_type_access_checking')) { array(); }
+
+		$va_vars = $this->get('vars');
+ 		if(isset($va_vars['type_access_settings'])){
+ 			return $va_vars['type_access_settings'];
+ 		} else {
+ 			return array();
+ 		}
+	}
+	# ------------------------------------------------------
+	/**
+	 * Set access setting for given type
+	 *
+	 * @param string $ps_table the table the bundle belongs to
+	 * @param string $pm_type_id_or_code the primary key or code for the type list item
+	 * @param int $pn_access access level, __CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__ or __CA_BUNDLE_ACCESS_EDIT__
+	 * @return boolean success or not
+	 */
+	public function setAccessSettingForType($ps_table, $pm_type_id_or_code, $pn_access) {
+		if(!in_array($pn_access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { return false; }
+		if(!$this->getPrimaryKey()) { return false; }
+		//if(!$this->getAppConfig()->get('perform_type_access_checking')) { return false; }
+		$o_dm = Datamodel::load();
+		$t_list = new ca_lists();	
+
+		$va_vars = $this->get('vars');
+		if(!is_array($va_vars)) { $va_vars = array(); }
+		if(!isset($va_vars['type_access_settings'])) { $va_vars['type_access_settings'] = array(); }
+
+		$t_instance = $o_dm->getInstanceByTableName($ps_table, true);
+		if(!$t_instance) { return false; }
+		if(!($vs_list_code = $t_instance->getTypeListCode())) { return false; }
+
+		// convert idno to id
+		if(!is_numeric($pm_type_id_or_code)){
+			if(!$t_list->itemIsInList($vs_list_code,$pm_type_id_or_code)) { return false; }
+			$pm_type_id_or_code = ca_lists::getItemID($vs_list_code,$pm_type_id_or_code);
+		}
+
+		if(!$t_list->itemIDIsInList($vs_list_code,$pm_type_id_or_code)){ return false; }
+
+		$va_vars['type_access_settings'][$ps_table.".".$pm_type_id_or_code] = $pn_access;
+
+		$this->set('vars', $va_vars);
+
+		$vn_old_mode = $this->getMode();
+		$this->setMode(ACCESS_WRITE);
+		$this->update();
+		$this->setMode($vn_old_mode);
+
+		if($this->numErrors()>0) {
+			return false;
+		}
+
+		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get source access settings for current role
+	 */
+	public function getSourceAccessSettings() {
+		if(!$this->getPrimaryKey()) { return array(); }
+		if(!$this->getAppConfig()->get('perform_type_access_checking')) { array(); }
+
+		$va_vars = $this->get('vars');
+ 		if(isset($va_vars['type_access_settings'])){
+ 			return $va_vars['type_access_settings'];
+ 		} else {
+ 			return array();
+ 		}
+	}
+	# ------------------------------------------------------
+	/**
+	 * Set access setting for given source
+	 *
+	 * @param string $ps_table the table the bundle belongs to
+	 * @param string $pm_source_id_or_code the primary key or code for the type list item
+	 * @param int $pn_access access level, __CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__ or __CA_BUNDLE_ACCESS_EDIT__
+	 * @param bool $pb_is_default Mark source as default for this table
+	 * @return boolean success or not
+	 */
+	public function setAccessSettingForSource($ps_table, $pm_source_id_or_code, $pn_access, $pb_is_default=false) {
+		if(!in_array($pn_access, array(__CA_BUNDLE_ACCESS_NONE__, __CA_BUNDLE_ACCESS_READONLY__, __CA_BUNDLE_ACCESS_EDIT__))) { return false; }
+		if(!$this->getPrimaryKey()) { return false; }
+		//if(!$this->getAppConfig()->get('perform_source_access_checking')) { return false; }
+		$o_dm = Datamodel::load();
+		$t_list = new ca_lists();	
+
+		$va_vars = $this->get('vars');
+		if(!is_array($va_vars)) { $va_vars = array(); }
+		if(!isset($va_vars['source_access_settings'])) { $va_vars['source_access_settings'] = array(); }
+
+		$t_instance = $o_dm->getInstanceByTableName($ps_table, true);
+		if(!$t_instance) { return false; }
+		if(!($vs_list_code = $t_instance->getSourceListCode())) { return false; }
+
+		// convert idno to id
+		if(!is_numeric($pm_source_id_or_code)){
+			if(!$t_list->itemIsInList($vs_list_code,$pm_source_id_or_code)) { return false; }
+			$pm_source_id_or_code = ca_lists::getItemID($vs_list_code,$pm_source_id_or_code);
+		}
+
+		if(!$t_list->itemIDIsInList($vs_list_code,$pm_source_id_or_code)){ return false; }
+
+		$va_vars['source_access_settings'][$ps_table.".".$pm_source_id_or_code] = $pn_access;
+		if ($pb_is_default) {
+			$va_vars['source_access_settings'][$ps_table.'_default_id'] = $pm_source_id_or_code;
+		}
+
+		$this->set('vars', $va_vars);
+
+		$vn_old_mode = $this->getMode();
+		$this->setMode(ACCESS_WRITE);
+		$this->update();
+		$this->setMode($vn_old_mode);
+
+		if($this->numErrors()>0) {
+			return false;
+		}
+
+		return true;
 	}
 	# ------------------------------------------------------
 	/**
@@ -398,4 +583,3 @@ class ca_user_roles extends BaseModel {
 	}
 	# ------------------------------------------------------
 }
-?>

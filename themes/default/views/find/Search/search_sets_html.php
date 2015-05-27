@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,17 +26,20 @@
  * ----------------------------------------------------------------------
  */
  
- 	$t_subject = $this->getVar('t_subject');
- 	$o_result_context = $this->getVar('result_context');
+ 	$t_subject 			= $this->getVar('t_subject');
+ 	$o_result_context 	= $this->getVar('result_context');
 ?>
-<div id="searchSetsBox">
-	<div class="bg">
+<div class='setTools'>
+	<a href="#" id='searchSetToolsShow' onclick="$('.setTools').hide(); return caShowSearchSetTools();"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_SETS__); print _t("Set Tools"); ?></a>
+</div><!-- end setTools -->
+
+<div id="searchSetTools">
 <?php
 	if (is_array($va_sets = $this->getVar('available_sets')) && sizeof($va_sets)) {
 ?>	
 	<div class="col">
 <?php
-		print _t("Add checked to set").":<br/>";
+		print "<span class='header'>"._t("Add checked to set").":</span><br/>";
 ?>
 		<form id="caAddToSet">
 <?php
@@ -45,18 +48,20 @@
 			$va_options[$va_set_info['name']] = $vn_set_id;
 		}
 		
-		print caHTMLSelect('set_id', $va_options, array('id' => 'caAddToSetID', 'class' => 'searchSetsSelect'), array('value' => null, 'width' => '170px'))."\n";
+		print caHTMLSelect('set_id', $va_options, array('id' => 'caAddToSetID', 'class' => 'searchSetsSelect'), array('value' => null, 'width' => '140px'));
+		print caBusyIndicatorIcon($this->request, array('id' => 'caAddToSetIDIndicator'))."\n";
 ?>
-			<a href='#' onclick="caAddItemsToSet();" class="button"><?php print _t('Add'); ?> &rsaquo;</a>
-			<div class="searchSetsToggle"><a href="#" onclick="caToggleAddToSet()" class="searchSetsToggle"><?php print _t("Toggle checked"); ?></a></div>
+			<a href='#' onclick="return caAddItemsToSet();" class="button"><?php print _t('Add'); ?> &rsaquo;</a>
+			<div class="searchSetsToggle"><a href="#" onclick="return caToggleAddToSet();" class="searchSetsToggle"><?php print _t("Toggle checked"); ?></a></div>
 		</form>
 	</div>
+	<br class="clear"/>
 <?php
 	}
 ?>
 	<div class="col">
 <?php
-		print _t("Create set").":<br/>";
+		print "<span class='header'>"._t("Create set").":</span><br/>";
 ?>
 		<form id="caCreateSetFromResults">
 <?php
@@ -64,12 +69,13 @@
 			print " ";
 			print caHTMLSelect('set_create_mode', 
 				array(
-					'from results' => _t('from_results'),
-					'from checked' => _t('from_checked')
+					_t('from results') => 'from_results',
+					_t('from checked') => 'from_checked'
 				), 
 				array('id' => 'caCreateSetFromResultsMode', 'class' => 'searchSetsSelect'),
-				array('value' => null, 'width' => '170px')
+				array('value' => null, 'width' => '140px')
 			);
+			print caBusyIndicatorIcon($this->request, array('id' => 'caCreateSetFromResultsIndicator'))."\n";
 ?>
 			<a href='#' onclick="caCreateSetFromResults(); return false;" class="button"><?php print _t('Create'); ?> &rsaquo;</a>
 <?php		
@@ -81,12 +87,28 @@
 	</div>
 
 
-		<a href='#' id='hideSets' onclick='return caHandleResultsUIBoxes("sets", "hide");'><img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/collapse.gif" width="11" height="11" border="0"></a>
+		<a href='#' id='hideSets' onclick='caHideSearchSetTools(); $(".setTools").slideDown(250); '><?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a>
 		<div style='clear:both;height:1px;'>&nbsp;</div>
-	</div><!-- end bg -->
-</div><!-- end searchSetsBox -->
+</div><!-- end searchSetTools -->
 
 <script type="text/javascript">
+	function caShowSearchSetTools() {
+		jQuery('#searchSetToolsShow').hide();
+		jQuery("#searchSetTools").slideDown(250);
+		
+		jQuery("input.addItemToSetControl").show(); 
+		return false;
+	}
+	
+	function caHideSearchSetTools() {
+	
+		jQuery('#searchSetToolsShow').show();
+		jQuery("#searchSetTools").slideUp(250);
+		
+		jQuery("input.addItemToSetControl").hide(); 
+		return false;
+	}
+	
 	//
 	// Find and return list of checked items to be added to set
 	// item_ids are returned in a simple array
@@ -105,9 +127,11 @@
 		jQuery('#caFindResultsForm .addItemToSetControl').each(function(i, j) {
 			jQuery(j).prop('checked', !jQuery(j).prop('checked'));
 		});
+		return false;
 	}
 	
 	function caAddItemsToSet() {
+		jQuery("#caAddToSetIDIndicator").show();
 		jQuery.post(
 			'<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addToSet'); ?>', 
 			{ 
@@ -115,6 +139,7 @@
 				item_ids: caGetSelectedItemIDsToAddToSet().join(';')
 			}, 
 			function(res) {
+				jQuery("#caAddToSetIDIndicator").hide();
 				if (res['status'] === 'ok') { 
 					var item_type_name;
 					if (res['num_items_added'] == 1) {
@@ -140,9 +165,11 @@
 			},
 			'json'
 		);
+		return false;
 	}
 	
 	function caCreateSetFromResults() {
+		jQuery("#caCreateSetFromResultsIndicator").show();
 		jQuery.post(
 			'<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'createSetFromResult'); ?>', 
 			{ 
@@ -151,6 +178,7 @@
 				item_ids: caGetSelectedItemIDsToAddToSet().join(';')
 			}, 
 			function(res) {
+				jQuery("#caCreateSetFromResultsIndicator").hide();
 				if (res['status'] === 'ok') { 
 					var item_type_name;
 					if (res['num_items_added'] == 1) {
@@ -173,7 +201,6 @@
 							text: res['set_name'],
 							selected: 1
 						}));
-						console.log(res);
 						// add new set to search by set drop-down
 						jQuery("select.searchSetSelect").append($("<option/>", {
 							value: 'set:"' + res['set_code'] + '"',

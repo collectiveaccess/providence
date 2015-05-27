@@ -132,7 +132,8 @@ class Media extends BaseObject {
 		
 		# load the plugin
 		require_once("{$plugin_dir}/{$ps_plugin_name}.php");
-		eval("\$p = new WLPlugMedia".$ps_plugin_name."();");
+		$vs_classname = "WLPlugMedia{$ps_plugin_name}";
+		$p = new $vs_classname;
 		# register the plugin's capabilities
 		
 		return $p->checkStatus();

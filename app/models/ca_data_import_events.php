@@ -245,6 +245,11 @@ class ca_data_import_events extends BaseModel {
 		$vn_table_num = $this->opo_datamodel->getTableNum($pm_table_name_or_num);
 		
 		$this->opo_data_import_item = new ca_data_import_items();
+		
+		if ($this->inTransaction()) { 
+			$o_trans = $this->getTransaction();
+			$this->opo_data_import_item->setTransaction($o_trans); 
+		}
 		$this->opo_data_import_item->setMode(ACCESS_WRITE);
 		$this->opo_data_import_item->set('event_id', $vn_event_id);
 		$this->opo_data_import_item->set('source_ref', $ps_source_ref);

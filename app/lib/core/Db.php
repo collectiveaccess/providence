@@ -53,7 +53,6 @@ class Db extends DbBase {
 	 * @access private
 	 */
 	private $opo_db;
-
 	/**
 	 * Number of transactions begun
 	 *
@@ -99,6 +98,7 @@ class Db extends DbBase {
 	
 	/** 
 	  * ApplicationMonitor to use for query logging
+	  * @var ApplicationMonitor
 	  */
 	static $monitor = null;
 
@@ -117,16 +117,16 @@ class Db extends DbBase {
 
 		$this->opn_transaction_count = 0;
 
-		if (is_array($pa_options)) {
-			$va_options = $pa_options;
-		} else {
-			$va_options = array(
+		$va_options = (is_array($pa_options)) ? $pa_options : array();
+		
+		if (!isset($va_options['username'])) {
+			$va_options = array_merge($va_options, array(
 				"username" => 	$this->config->get("db_user"),
 				"password" => 	$this->config->get("db_password"),
 				"host" =>	 	$this->config->get("db_host"),
 				"database" =>	$this->config->get("db_database"),
 				"type" =>		$this->config->get("db_type")
-			);
+			));
 		}
 		$this->dieOnError($pb_die_on_error);
 		$this->connect($va_options);
@@ -185,6 +185,15 @@ class Db extends DbBase {
 	 */
 	public function getConfig() {
 		return $this->config;
+	}
+	
+	/**
+	 * Fetches the underlying database connection handle
+	 *
+	 * @return DbDriverBase
+	 */
+	public function getHandle() {
+		return $this->opo_db->getHandle();
 	}
 	
 	/**
@@ -269,14 +278,14 @@ class Db extends DbBase {
 		$o_stmt->dieOnError($this->getDieOnError());
 
 		// If second parameter is array use that as query params for placeholders, otherwise use successive params to fill placeholders
-		if (!($vb_res = $o_stmt->executeWithParamsAsArray(is_array($va_args[0]) ? $va_args[0] : $va_args))) {
+		if (!($o_res = $o_stmt->executeWithParamsAsArray(is_array($va_args[0]) ? $va_args[0] : $va_args))) {
 			// copy errors from statement object to Db object
 			$this->errors = $o_stmt->errors();
 		} else {
 			$this->opn_last_insert_id = $o_stmt->getLastInsertID();
 		}
 
-		return $vb_res;
+		return $o_res;
 	}
 
 	/**
@@ -313,35 +322,6 @@ class Db extends DbBase {
 	public function escape($ps_text) {
 		if(!$this->connected(true, "Db->escape()")) { return false; }
 		return $this->opo_db->escape($ps_text);
-	}
-
-	/**
-	 * Creates a temporary table in the database
-	 *
-	 * @param string $ps_table_name
-	 * @param array $pa_field_list
-	 * @param string $ps_type Type of the temporary table. Defaults to InnoDB when dealing with MySQL if ommitted.
-	 * @return mixed representation of the table; false on failure
-	 */
-	public function createTemporaryTable($ps_table_name, $pa_field_list, $ps_type="") {
-		if(!$this->connected(true, "Db->createTemporaryTable()")) { return false; }
-		$this->clearErrors();
-
-		return $this->opo_db->createTemporaryTable($this, $ps_table_name, $pa_field_list, $ps_type="");
-	}
-
-	/**
-	 * Drops a temporary table.
-	 * Returns false if you're not connected to a database.
-	 *
-	 * @param string $ps_table_name
-	 * @return mixed
-	 */
-	public function dropTemporaryTable($ps_table_name) {
-		if(!$this->connected(true, "Db->dropTemporaryTable()")) { return false; }
-		$this->clearErrors();
-
-		return $this->opo_db->dropTemporaryTable($this, $ps_table_name);
 	}
 
 	/**
@@ -451,11 +431,65 @@ class Db extends DbBase {
 	 * Returns false if you're not connected to a database.
 	 *
 	 * @param string $ps_table name of the table
+	 * @param string|null $ps_fieldname optional fieldname
 	 * @return array
 	 */
-	public function getFieldsFromTable($ps_table) {
+	public function getFieldsFromTable($ps_table, $ps_fieldname=null) {
 		if(!$this->connected(true, "Db->getFieldsFromTable()")) { return false; }
-		return $this->opo_db->getFieldsFromTable($this, $ps_table);
+
+		$vs_fieldname_sql = "";
+		if ($ps_fieldname) {
+			$vs_fieldname_sql = " LIKE '".$this->escape($ps_fieldname)."'";
+		}
+
+		$qr_cols = $this->query("SHOW COLUMNS FROM ".$ps_table." ".$vs_fieldname_sql);
+		if(!$qr_cols) { return array(); }
+
+		$va_fields = array();
+		while($qr_cols->nextRow()) {
+			$va_row = $qr_cols->getRow();
+
+			$va_options = array();
+			if ($va_row['Extra'] == "auto_increment") {
+				$va_options[] = "identity";
+			} else {
+				if (isset($va_row['Extra']) && (strlen($va_row['Extra']) > 0)) {
+					$va_options[] = $va_row['Extra'];
+				}
+			}
+
+			switch($va_row['Key']) {
+				case 'PRI':
+					$vs_index = "primary";
+					break;
+				case 'MUL':
+					$vs_index = "index";
+					break;
+				case 'UNI':
+					$vs_index = "unique";
+					break;
+				default:
+					$vs_index = "";
+					break;
+
+			}
+
+			$va_db_datatype = $this->nativeToDbDataType($va_row['Type']);
+			$va_fields[] = array(
+				"fieldname" 		=> $va_row['Field'],
+				"native_type" 		=> $va_row['Type'],
+				"type"				=> $va_db_datatype["type"],
+				"max_length"		=> $va_db_datatype["length"],
+				"max_value"			=> $va_db_datatype["maximum"],
+				"min_value"			=> $va_db_datatype["minimum"],
+				"null" 				=> ($va_row['Null'] == "YES") ? true : false,
+				"index" 			=> $vs_index,
+				"default" 			=> ($va_row['Default'] == "NULL") ? null : ($va_row['Default'] !== "" ? $va_row['Default'] : null),
+				"options" 			=> $va_options
+			);
+		}
+
+		return $va_fields;
 	}
 
 	/**
@@ -468,7 +502,7 @@ class Db extends DbBase {
 	 */
 	public function getFieldInfo($ps_table, $ps_fieldname) {
 		if(!$this->connected(true, "Db->getFieldInfo()")) { return false; }
-		return $this->opo_db->getFieldInfo($this, $ps_table, $ps_fieldname);
+		return $this->getFieldInfo($ps_table, $ps_fieldname);
 	}
 
 	/**
@@ -490,22 +524,30 @@ class Db extends DbBase {
 	 */
 	public function getIndices($ps_table) {
 		if(!$this->connected(true, "Db->getIndices()")) { return false; }
-		return $this->opo_db->getIndices($this, $ps_table);
-	}
-	
-	/**
-	 * Returns list of engines present in the database installation. The list in an array with
-	 * keys set to engine names and values set to an array of information returned from the database
-	 * server about engine that are currently available. Database server such as MySQL may return 
-	 * many engines, while others return only a single standard engine. In general, engines are only
-	 * of concern when you require specific features. CollectiveAccess, for example, requires the 
-	 * MySQL InnoDB engine. getEngines() enables the application to check for it.
-	 *
-	 * @return array An array of available engines, or false on error. The array is key'ed on Engine name. Values are arrays of engine information. This information is varies by database server.
-	 */
-	public function getEngines() {
-		if(!$this->connected(true, "Db->getEngines()")) { return false; }
-		return $this->opo_db->getEngines($this);
+
+		$qr_keys = $this->query("SHOW KEYS FROM ".$ps_table);
+		$va_keys = array();
+
+		$vn_i = 1;
+		while($qr_keys->nextRow()) {
+			$va_row = $qr_keys->getRow();
+			$vs_keyname = $va_row['Key_name'];
+
+			if ($va_keys[$vs_keyname]) {
+				$va_keys[$vs_keyname]['fields'][] = $va_row['Column_name'];
+			} else {
+				$va_keys[$vs_keyname] = $va_row;
+				$va_keys[$vs_keyname]['fields'] = array($va_keys[$vs_keyname]['Column_name'] );
+				$va_keys[$vs_keyname]['name'] = $vs_keyname;
+				unset($va_keys[$vs_keyname]['Column_name'] );
+
+				$va_keys[$vn_i] =& $va_keys[$vs_keyname];
+
+				$vn_i++;
+			}
+		}
+
+		return $va_keys;
 	}
 
 	/**
@@ -516,4 +558,3 @@ class Db extends DbBase {
 		unset($this->opo_db);
 	}
 }
-?>

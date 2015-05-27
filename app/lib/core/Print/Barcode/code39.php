@@ -189,8 +189,8 @@ class Barcode_code39 extends Barcode
        // Allocate black and white colors to the image
        $black = imagecolorallocate( $img, 0, 0, 0 );
        $white = imagecolorallocate( $img, 255, 255, 255 );
-       $font_height = ( $noText ? 0 : imagefontheight( "gdFontSmall" ) );
-       $font_width = imagefontwidth( "gdFontSmall" );
+       $font_height = ( $noText ? 0 : imagefontheight( $this->_font_size ) );
+       $font_width = imagefontwidth( $this->_font_size );
 
        // fill background with white color
        imagefill( $img, 0, 0, $white );

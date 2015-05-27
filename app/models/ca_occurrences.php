@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,7 +35,7 @@
    */
 
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
-require_once(__CA_LIB_DIR__."/ca/RepresentableBaseModel.php");
+require_once(__CA_LIB_DIR__."/ca/BaseObjectLocationModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_occurrences'] = array(
@@ -173,7 +173,7 @@ BaseModel::$s_ca_models_definitions['ca_occurrences'] = array(
  	)
 );
 
-class ca_occurrences extends RepresentableBaseModel implements IBundleProvider {
+class ca_occurrences extends BaseObjectLocationModel implements IBundleProvider {
 	# ------------------------------------------------------
 	# --- Object attribute properties
 	# ------------------------------------------------------
@@ -265,6 +265,12 @@ class ca_occurrences extends RepresentableBaseModel implements IBundleProvider {
 	protected $ATTRIBUTE_TYPE_LIST_CODE = 'occurrence_types';	// list code (ca_lists.list_code) of list defining types for this table
 
 	# ------------------------------------------------------
+	# Sources
+	# ------------------------------------------------------
+	protected $SOURCE_ID_FLD = 'source_id';					// name of source field for this table
+	protected $SOURCE_LIST_CODE = 'occurrence_sources';		// list code (ca_lists.list_code) of list defining sources for this table
+
+	# ------------------------------------------------------
 	# Self-relations
 	# ------------------------------------------------------
 	protected $SELF_RELATION_TABLE_NAME = 'ca_occurrences_x_occurrences';
@@ -325,149 +331,11 @@ class ca_occurrences extends RepresentableBaseModel implements IBundleProvider {
 		
 		$this->BUNDLES['ca_list_items'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related vocabulary terms'));
 		$this->BUNDLES['ca_sets'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));
-	
+		
+		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
+
 		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
-	}
-	# ------------------------------------------------------
-	/**
-	 * Return array containing information about all hierarchies, including their root_id's
-	 * For non-adhoc hierarchies such as occurrences, this call returns the contents of the occurrence_hierarchies list
-	 * with some extra information such as the # of top-level items in each hierarchy.
-	 *
-	 * For an ad-hoc hierarchy like that of an collection, there is only ever one hierarchy to display - that of the current collection.
-	 * So for adhoc hierarchies we just return a single entry corresponding to the root of the current occurrence hierarchy
-	 */
-	 public function getHierarchyList($pb_dummy=false) {
-	 	$vn_pk = $this->getPrimaryKey();
-	 	$vs_template = $this->getAppConfig()->get('ca_occurrences_hierarchy_browser_display_settings');
-	 	
-	 	if (!$vn_pk) { 
-	 		$o_db = new Db();
-	 		if (is_array($va_type_ids = caMergeTypeRestrictionLists($this, array())) && sizeof($va_type_ids)) {
-				$qr_res = $o_db->query("
-					SELECT o.occurrence_id, count(*) c
-					FROM ca_occurrences o
-					INNER JOIN ca_occurrences AS p ON p.parent_id = o.occurrence_id
-					WHERE o.parent_id IS NULL AND o.type_id IN (?)
-					GROUP BY o.occurrence_id
-				", array($va_type_ids));
-			} else {
-				$qr_res = $o_db->query("
-					SELECT o.occurrence_id, count(*) c
-					FROM ca_occurrences o
-					INNER JOIN ca_occurrences AS p ON p.parent_id = o.occurrence_id
-					WHERE o.parent_id IS NULL
-					GROUP BY o.occurrence_id
-				");
-			}
-	 		$va_hiers = array();
-	 		
-	 		$va_occurrence_ids = $qr_res->getAllFieldValues('occurrence_id');
-	 		$qr_res->seek(0);
-	 		$va_labels = $this->getPreferredDisplayLabelsForIDs($va_occurrence_ids);
-	 		while($qr_res->nextRow()) {
-	 			$va_hiers[$vn_occurrence_id = $qr_res->get('occurrence_id')] = array(
-	 				'occurrence_id' => $vn_occurrence_id,
-	 				'name' => caProcessTemplateForIDs($vs_template, 'ca_occurrences', array($vn_occurrence_id)),
-	 				'hierarchy_id' => $vn_occurrence_id,
-	 				'children' => (int)$qr_res->get('c')
-	 			);
-	 		}
-	 		return $va_hiers;
-	 	} else {
-	 		// return specific occurrence as root of hierarchy
-			$vs_label = $this->getLabelForDisplay(false);
-			$vs_hier_fld = $this->getProperty('HIERARCHY_ID_FLD');
-			$vs_parent_fld = $this->getProperty('PARENT_ID_FLD');
-			$vn_hier_id = $this->get($vs_hier_fld);
-			
-			if ($this->get($vs_parent_fld)) { 
-				// currently loaded row is not the root so get the root
-				$va_ancestors = $this->getHierarchyAncestors();
-				if (!is_array($va_ancestors) || sizeof($va_ancestors) == 0) { return null; }
-				$t_occurrence = new ca_occurrences($va_ancestors[0]);
-			} else {
-				$t_occurrence =& $this;
-			}
-			
-			$va_children = $t_occurrence->getHierarchyChildren(null, array('idsOnly' => true));
-			$va_occurrence_hierarchy_root = array(
-				$t_occurrence->get($vs_hier_fld) => array(
-					'occurrence_id' => $vn_pk,
-	 				'item_id' => $vn_pk,
-					'name' => $vs_name = caProcessTemplateForIDs($vs_template, 'ca_occurrences', array($vn_pk)),
-					'hierarchy_id' => $vn_hier_id,
-					'children' => sizeof($va_children)
-				)
-			);
-				
-	 		return $va_occurrence_hierarchy_root;
-		}
-	}
-	# ------------------------------------------------------
-	/**
-	 * Returns name of hierarchy for currently loaded row or, if specified, row identified by optional $pn_id parameter
-	 */
-	 public function getHierarchyName($pn_id=null) {
-	 	if (!$pn_id) { $pn_id = $this->getPrimaryKey(); }
-	 	
-		$va_ancestors = $this->getHierarchyAncestors($pn_id, array('idsOnly' => true));
-		if (is_array($va_ancestors) && sizeof($va_ancestors)) {
-			$vn_parent_id = array_pop($va_ancestors);
-			$t_occ = new ca_occurrences($vn_parent_id);
-			return $t_occ->getLabelForDisplay(false);
-		} else {			
-			if ($pn_id == $this->getPrimaryKey()) {
-				return $this->getLabelForDisplay(true);
-			} else {
-				$t_occ = new ca_occurrences($pn_id);
-				return $t_occ->getLabelForDisplay(false);
-			}
-		}
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function getOccurrenceIDsByName($ps_name, $pn_parent_id=null, $pn_type_id=null) {
-		$o_db = $this->getDb();
-		
-		$va_params = array((string)$ps_name);
-		
-		$vs_type_sql = '';
-		if ($pn_type_id) {
-			if(sizeof($va_type_ids = caMakeTypeIDList('ca_occurrences', array($pn_type_id)))) {
-				$vs_type_sql = " AND cap.type_id IN (?)";
-				$va_params[] = $va_type_ids;
-			}
-		}
-		
-		if ($pn_parent_id) {
-			$vs_parent_sql = " AND cap.parent_id = ?";
-			$va_params[] = (int)$pn_parent_id;
-		} 
-		
-		$qr_res = $o_db->query($x="
-				SELECT DISTINCT cap.occurrence_id
-				FROM ca_occurrences cap
-				INNER JOIN ca_occurrence_labels AS capl ON capl.occurrence_id = cap.occurrence_id
-				WHERE
-					capl.name = ? {$vs_type_sql} {$vs_parent_sql} AND cap.deleted = 0
-			", $va_params);
-		
-		$va_occurrence_ids = array();
-		while($qr_res->nextRow()) {
-			$va_occurrence_ids[] = $qr_res->get('occurrence_id');
-		}
-		return $va_occurrence_ids;
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function getIDsByLabel($pa_label_values, $pn_parent_id=null, $pn_type_id=null) {
-		return $this->getOccurrenceIDsByName($pa_label_values['name'], $pn_parent_id, $pn_type_id);
 	}
 	# ------------------------------------------------------
 }

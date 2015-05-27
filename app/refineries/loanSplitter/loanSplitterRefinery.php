@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,6 +36,7 @@
 			$this->ops_description = _t('Provides several loan-related import functions: splitting of multiple loans in a string into individual values, mapping of type and relationship type for related loans, and merging loan data with loan names.');
 
 			$this->opb_returns_multiple_values = true;
+			$this->opb_supports_relationships = true;
 			
 			parent::__construct();
 		}
@@ -79,6 +80,24 @@
 				'default' => '',
 				'label' => _t('Delimiter'),
 				'description' => _t('Sets the value of the delimiter to break on, separating data source values')
+			),
+			'loanSplitter_matchOn' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Match on'),
+				'description' => _t('List indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails')
+			),
+			'loanSplitter_dontCreate' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => false,
+				'label' => _t('Do not create new records'),
+				'description' => _t('If set splitter will only match on existing records and will not create new ones.')
 			),
 			'loanSplitter_relationshipType' => array(
 				'formatType' => FT_TEXT,

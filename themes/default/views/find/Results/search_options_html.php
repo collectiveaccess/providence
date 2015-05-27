@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,31 +26,39 @@
  * ----------------------------------------------------------------------
  */
 
-	$vo_result 					= $this->getVar('result');
- 	$vo_result_context 			= $this->getVar('result_context');
- 	$t_subject = 			$this->getVar('t_subject');
- 	$vs_table = 			$t_subject->tableName();
+	$vo_result 				= $this->getVar('result');
+ 	$vo_result_context 		= $this->getVar('result_context');
+ 	$t_subject 				= $this->getVar('t_subject');
+ 	$vs_table 				= $t_subject->tableName();
  ?>
-<a href='#' id='showOptions' onclick='return caHandleResultsUIBoxes("display", "show");'><?php print _t("Display Options"); ?> <img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/arrows/arrow_right_gray.gif" width="6" height="7" border="0"></a>
+ 
+ 
+ <?php
+if($vo_result->numHits() > 0) {
+	print $this->render('Search/search_tools_html.php');
+
+	if(($this->getVar('mode') === 'search') && ($this->request->user->canDoAction('can_browse_'.$vs_table))){
+		print $this->render('Search/search_refine_html.php');
+	}
+}
+?>
+<div style="clear: both;"><!-- empty --></div>
+ 
+<a href='#' id='showOptions' onclick='return caHandleResultsUIBoxes("display", "show");'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_SETTINGS__); ?></a>
 
 <?php
 	if($vo_result->numHits() > 0) {
 		if($this->getVar('mode') === 'search' && ($this->request->user->canDoAction('can_browse_'.$vs_table))){
 ?>
-			<a href='#' id='showRefine' onclick='return caHandleResultsUIBoxes("refine", "show");'><?php print _t("Filter Search"); ?> <img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/arrows/arrow_right_gray.gif" width="6" height="7" border="0"></a>
+			<a href='#' id='showRefine' onclick='return caHandleResultsUIBoxes("refine", "show");'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_FILTER__); ?></a>
 <?php
 		}
 ?>
-		<a href='#' id='showTools' onclick='return caHandleResultsUIBoxes("tools", "show");'><?php print _t("Tools"); ?> <img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/arrows/arrow_right_gray.gif" width="6" height="7" border="0"></a>
-		<a href='#' id='showSets' onclick='return caHandleResultsUIBoxes("sets", "show");'><?php print _t("Sets"); ?> <img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/arrows/arrow_right_gray.gif" width="6" height="7" border="0"></a>
+		<a href='#' id='showTools' onclick='return caHandleResultsUIBoxes("tools", "show");'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_EXPORT__); ?></a>
 <?php
-		if ($vs_viz_list = Visualizer::getAvailableVisualizationsAsHTMLFormElement($vo_result->tableName(), 'viz', array('id' => 'caSearchVizOpts'), array('resultContext' => $vo_result_context, 'data' => $vo_result, 'restrictToTypes' => array($vo_result_context->getTypeRestriction($vb_type_restriction_has_changed))))) {
-?>
-		<a href='#' id='showViz' onclick='return caHandleResultsUIBoxes("viz", "show");'><?php print _t("Visualization"); ?> <img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/arrows/arrow_right_gray.gif" width="6" height="7" border="0"></a>
-<?php
-		}
 	}
 ?>
+<div style="clear: both;"><!-- empty --></div>
 <div id="searchOptionsBox">
 	<div class="bg">
 <?php
@@ -81,7 +89,7 @@
 		print _t("#/page").": <select name='n' style='width: 50px;'>\n";
 		if(is_array($va_items_per_page) && sizeof($va_items_per_page) > 0){
 			foreach($va_items_per_page as $vn_items_per_p){
-				print "<option value='".(int)$vn_items_per_p."' ".(((int)$vn_items_per_p == $vn_current_items_per_page) ? "SELECTED='1'" : "").">".$vn_items_per_p."</option>\n";
+				print "<option value='".(int)$vn_items_per_p."' ".(((int)$vn_items_per_p == $vn_current_items_per_page) ? "SELECTED='1'" : "").">{$vn_items_per_p}</option>\n";
 			}
 		}
 		print "</select>\n";
@@ -93,7 +101,7 @@
 		print _t("Layout").": <select name='view' style='width: 100px;'>\n";
 		if(is_array($va_views) && sizeof($va_views) > 0){
 			foreach($va_views as $vs_view => $vs_name){
-				print "<option value='".$vs_view."' ".(($vs_view == $vs_current_view) ? "SELECTED='1'" : "").">".$vs_name."</option>\n";
+				print "<option value='".$vs_view."' ".(($vs_view == $vs_current_view) ? "SELECTED='1'" : "").">{$vs_name}</option>\n";
 			}
 		}
 		print "</select>\n";
@@ -104,60 +112,32 @@
 		print _t("Display").": <select name='display_id' style='width: 100px;'>\n";
 		if(is_array($va_display_lists) && sizeof($va_display_lists) > 0){
 			foreach($va_display_lists as $vn_display_id => $vs_display_name){
-				print "<option value='".$vn_display_id."' ".(($vn_display_id == $this->getVar("current_display_list")) ? "SELECTED='1'" : "").">".$vs_display_name."</option>\n";
+				print "<option value='".$vn_display_id."' ".(($vn_display_id == $this->getVar("current_display_list")) ? "SELECTED='1'" : "").">{$vs_display_name}</option>\n";
 			}
 		}
 		print "</select>\n";
 		print "</div>";		
 		
-		print "<div class='col'>";
-		print "<a href='#' id='saveOptions' onclick='jQuery(\"#caSearchOptionsForm\").submit();'>"._t('Save').' <img src="'.$this->request->getThemeUrlPath().'/graphics/arrows/arrow_right_gray.gif" width="9" height="10" border="0"></a>';
-		print "</div>";		
+
+		print "<a href='#' id='saveOptions' onclick='jQuery(\"#caSearchOptionsForm\").submit();'>".caNavIcon($this->request, __CA_NAV_BUTTON_COMMIT__).'</a>';
+?>		
+		<a href='#' id='hideOptions' onclick='return caHandleResultsUIBoxes("display", "hide");'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a>
+<?php		
 		print "</form>\n";
 ?>
-		<a href='#' id='hideOptions' onclick='return caHandleResultsUIBoxes("display", "hide");'><img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/collapse.gif" width="11" height="11" border="0"></a>
+
 		<div style='clear:both;height:1px;'>&nbsp;</div>
 	</div><!-- end bg -->
 </div><!-- end searchOptionsBox -->
 <?php
-if($vo_result->numHits() > 0) {
-	if($this->getVar('mode') === 'search' && ($this->request->user->canDoAction('can_browse_'.$vs_table))){
-		print $this->render('Search/search_refine_html.php');
-	}
-	print $this->render('Search/search_tools_html.php');
-	print $this->render('Search/search_sets_html.php');
-	
-	 if ($vs_viz_list) {
-
+	TooltipManager::add('#showOptions', _t("Display Options"));
+	TooltipManager::add('#showRefine', _t("Refine Results"));
+	TooltipManager::add('#showTools', _t("Export Tools"));
 ?>
-<div id="searchVizBox">
-	<div class="bg">
-		<form>
-<?php
-		print "<div class='col'>";
-		print _t('Visualize results as %1', $vs_viz_list);
-		print "</div>";	
-		
-		print "<div class='col'>";
-		print "<a href='#' id='saveOptions' onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Viz', array())."/viz/\" + jQuery(\"#caSearchVizOpts\").val()); return false;'>"._t('View').' <img src="'.$this->request->getThemeUrlPath().'/graphics/arrows/arrow_right_gray.gif" width="9" height="10" border="0"></a>';
-		print "</div>";		
-		print "</form>\n";
-?>
-		<a href='#' id='hideViz' onclick='return caHandleResultsUIBoxes("viz", "hide");'><img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/collapse.gif" width="11" height="11" border="0"></a>
-		<div style='clear:both;height:1px;'>&nbsp;</div>
-	</div><!-- end bg -->
-</div><!-- end searchVizBox -->
-<?php	
-	}
-	
-}
-?>
-<div style="clear: both; padding: 5px;"><!-- empty --></div>
-
 <script type="text/javascript">
 	function caHandleResultsUIBoxes(mode, action) {
-		var boxes = ['searchOptionsBox', 'searchRefineBox', 'searchToolsBox', 'searchSetsBox', 'searchVizBox'];
-		var showButtons = ['showOptions', 'showRefine', 'showTools', 'showSets', 'showViz'];
+		var boxes = ['searchOptionsBox', 'searchRefineBox', 'searchToolsBox', 'searchSetsBox'];
+		var showButtons = ['showOptions', 'showRefine', 'showTools', 'showSets'];
 		
 		var currentBox, currentShowButton, currentHideButton;
 		
@@ -181,6 +161,7 @@ if($vo_result->numHits() > 0) {
 				
 					currentBox = "searchToolsBox";
 					currentShowButton = "showTools";
+					jQuery("input.addItemToSetControl").show(); 
 				} 
 				break;
 			case 'sets':
@@ -188,13 +169,6 @@ if($vo_result->numHits() > 0) {
 					currentBox = "searchSetsBox";
 					currentShowButton = "showSets";
 					jQuery("input.addItemToSetControl").show(); 
-					
-				} 
-				break;
-			case 'viz':
-				if (action == 'show') {
-					currentBox = "searchVizBox";
-					currentShowButton = "showViz";
 					
 				} 
 				break;

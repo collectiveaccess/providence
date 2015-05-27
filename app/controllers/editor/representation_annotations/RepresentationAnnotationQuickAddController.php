@@ -47,7 +47,7 @@
  		}
  		# -------------------------------------------------------
  		public function Save($pa_options=null) {
- 			if (!parent::Save(array('loadSubject' => true, 'dontCheckQuickAddAction' => true))) {
+ 			if (!($vn_rc = parent::Save(array('loadSubject' => true, 'dontCheckQuickAddAction' => true)))) {
  				$this->notification->addNotification(_t('Saved annotation.'), __NOTIFICATION_TYPE_INFO__);
  			}
  			return $vn_rc;

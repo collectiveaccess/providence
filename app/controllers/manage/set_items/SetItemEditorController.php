@@ -42,7 +42,7 @@
  			$t_item = new ca_set_items($po_request->getParameter('item_id', pInteger));
  			$t_set = new ca_sets($t_item->get('set_id'));
  			if (!$t_set->haveAccessToSet($po_request->getUserID(), __CA_SET_EDIT_ACCESS__, $t_item->get('set_id'))) {
- 				$this->postError(2320, _t("Access denied"), "RequestDispatcher->dispatch()");
+ 				$this->postError(2320, _t("Access denied"), "SetItemEditorController->__construct()");
  			}
  		}
  		# -------------------------------------------------------

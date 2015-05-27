@@ -57,13 +57,11 @@
 			));
 			
 			$cookiepath = ((__CA_URL_ROOT__=="") ? "/" : __CA_URL_ROOT__);
-			setcookie('CA_'.__CA_APP_NAME__.'_ui_locale', $g_ui_locale, time()+36000, $cookiepath);
+			if (!headers_sent()) { setcookie('CA_'.__CA_APP_NAME__.'_ui_locale', $g_ui_locale, time()+36000, $cookiepath); }
 			return true;
 		} else {
 			// cookie invalid, deleting
-			setcookie('CA_'.__CA_APP_NAME__.'_ui_locale', NULL, -1);
+			if (!headers_sent()) { setcookie('CA_'.__CA_APP_NAME__.'_ui_locale', NULL, -1); }
 			return false;
 		}
    }
-   
-?>

@@ -41,7 +41,7 @@
 		print caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caRoleList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			'', 
-			caNavHeaderButton($this->request, __CA_NAV_BUTTON_ADD__, _t("New role"), 'administrate/access', 'Roles', 'Edit', array('role_id' => 0))
+			caNavHeaderButton($this->request, __CA_NAV_BUTTON_ADD_LARGE__, _t("New role"), 'administrate/access', 'Roles', 'Edit', array('role_id' => 0))
 		); 
 ?>	
 		<table id="caRoleList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
@@ -75,13 +75,16 @@
 						<?php print $va_role['description']; ?>
 					</td>
 					<td>
-						<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'administrate/access', 'Roles', 'Edit', array('role_id' => $va_role['role_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+						<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'editIcon', 'administrate/access', 'Roles', 'Edit', array('role_id' => $va_role['role_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 						
-						<?php print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'administrate/access', 'Roles', 'Delete', array('role_id' => $va_role['role_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+						<?php print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'deleteIcon', 'administrate/access', 'Roles', 'Delete', array('role_id' => $va_role['role_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 					</td>
 				</tr>
 <?php
 		}
+		
+		TooltipManager::add('.deleteIcon', _t("Delete"));
+		TooltipManager::add('.editIcon', _t("Edit"));	
 	} else {
 ?>
 				<tr>

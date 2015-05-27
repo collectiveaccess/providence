@@ -200,6 +200,49 @@ class TaskQueue extends BaseObject {
 	}
 	# ---------------------------------------------------------------------------
 	/**
+	 * Reset unfinished tasks, i.e. tasks with started_on!=null, completed_on==null and error_code=0
+	 * This is useful when the task queue script (or the whole machine) crashed.
+	 * It shouldn't interfere with any running handlers.
+	 */
+	function resetUnfinishedTasks() {
+		// verify registered processes
+		$o_appvars = new ApplicationVars();
+		$va_opo_processes = $o_appvars->getVar("taskqueue_opo_processes");
+		if (!is_array($va_opo_processes)) { $va_opo_processes = array(); }
+		$va_opo_verified_processes = $this->verifyProcesses($va_opo_processes);
+		$o_appvars->setVar("taskqueue_opo_processes", $va_opo_verified_processes);
+		$o_appvars->save();
+
+		$o_db = new Db();
+		$qr_unfinished = $o_db->query("
+			SELECT *
+			FROM ca_task_queue
+			WHERE
+				completed_on IS NULL AND
+				started_on IS NOT NULL AND
+				error_code = 0
+		");
+
+		// reset start datetime for zombie rows
+		while($qr_unfinished->nextRow()) {
+			// don't touch rows that are being processed right now
+			if(
+				$this->rowKeyIsBeingProcessed($qr_unfinished->get('row_key')) ||
+				$this->entityKeyIsBeingProcessed($qr_unfinished->get('entity_key'))
+			) {
+				continue;
+			}
+			// reset started_on datetime
+			$this->opo_eventlog->log(array(
+				"CODE" => "QUE",
+				"SOURCE" => "TaskQueue->resetUnfinishedTasks()",
+				"MESSAGE" => "Reset start_date for unfinished task with task_id ".$qr_unfinished->get('task_id')
+			));
+			$o_db->query("UPDATE ca_task_queue SET started_on = NULL WHERE task_id = ?", $qr_unfinished->get('task_id'));
+		}
+	}
+	# ---------------------------------------------------------------------------
+	/**
 	 *
 	 */
 	function processQueue($ps_handler="") {
@@ -608,7 +651,7 @@ class TaskQueue extends BaseObject {
 		
 		if (is_array($va_opo_processes)) {
 			foreach($va_opo_processes as $va_proc_info) {
-				if ($va_proc_info['entity_key'] == $ps_entity_key) {
+				if ($va_proc_info['entity_key'] == $ps_row_key) {
 					return true;
 				} 
 			}

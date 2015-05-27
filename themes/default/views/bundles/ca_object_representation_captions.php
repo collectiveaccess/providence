@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,9 +37,10 @@
 	$va_initial_values = $this->getVar('initialValues');
 	if (!is_array($va_initial_values)) { $va_initial_values = array(); }
 	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_caption->tableNum().'_rel');
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 ?>
-<div id="<?php print $vs_id_prefix.$t_caption->tableNum().'_rel'; ?>">
+<div id="<?php print $vs_id_prefix; ?>">
 <?php
 	//
 	// Bundle template for new items
@@ -111,7 +112,7 @@
 			
 <script type="text/javascript">
 	jQuery(document).ready(function() {
-		caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_caption->tableNum().'_rel'; ?>', {
+		caUI.initRelationBundle('#<?php print $vs_id_prefix; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 			templateValues: ['locale_id', 'locale', 'caption_id', 'filesize'],
 			initialValues: <?php print json_encode($va_initial_values); ?>,

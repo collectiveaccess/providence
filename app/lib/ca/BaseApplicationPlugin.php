@@ -41,7 +41,7 @@ require_once(__CA_LIB_DIR__.'/ca/IApplicationPlugin.php');
 		protected $description = '';
 		# -------------------------------------------------------
 		public function __construct() {
-		
+			// NOOP
 		}
 		# -------------------------------------------------------
 		/**

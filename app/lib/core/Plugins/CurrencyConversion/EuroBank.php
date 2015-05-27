@@ -48,7 +48,7 @@
 		/**
 		 * Convert currency value to another currency. Will throw an exception if value cannot be converted.
 		 *
-		 * @param $ps_value string Currency value with specifier (Ex. $500, USD 500, ¥1200, CAD 750)
+		 * @param $ps_value string Currency value with specifier (Ex. $500, USD 500, ��1200, CAD 750)
 		 * @param $ps_to string Specifier of currency to convert value to (Ex. USD, CAD, EUR)
 		 * @param $pa_options array Options are:
 		 *		numericValue = return floating point numeric value only, without currency specifier. Default is false.
@@ -105,17 +105,17 @@
 			
 			$vs_format = Zend_Locale_Data::getContent($o_locale, 'currencynumber');
 
-			// this returns a string like '50,00 ¤' for locale de_DE
- 			$vs_decimal_with_placeholder = Zend_Locale_Format::toNumber($vn_converted_value, array('locale' => $locale, 'number_format' => $vs_format, 'precision' => 2));
+			// this returns a string like '50,00 ��' for locale de_DE
+ 			$vs_decimal_with_placeholder = Zend_Locale_Format::toNumber($vn_converted_value, array('locale' => $o_locale, 'number_format' => $vs_format, 'precision' => 2));
 
  			// if the currency placeholder is the first character, for instance in en_US locale ($10), insert a space.
  			// this has to be done because we don't print "$10" (which is expected in the locale rules) but "USD 10" ... and that looks nicer with an additional space.
- 			if(substr($vs_decimal_with_placeholder,0,2)=='¤'){ // for whatever reason '¤' has length 2
- 				$vs_decimal_with_placeholder = str_replace('¤', '¤ ', $vs_decimal_with_placeholder);
+ 			if(substr($vs_decimal_with_placeholder,0,2)=='��'){ // for whatever reason '��' has length 2
+ 				$vs_decimal_with_placeholder = str_replace('��', '�� ', $vs_decimal_with_placeholder);
  			}
 
  			// insert currency which is not locale-dependent in our case
- 			return str_replace('¤', $ps_to, $vs_decimal_with_placeholder);
+ 			return str_replace('��', $ps_to, $vs_decimal_with_placeholder);
 		}
 		# ------------------------------------------------
 		/**
@@ -148,8 +148,8 @@
 			$vn_day = date("j");
 			
 			// Does data exist in cache? Is it current?
-			$o_cache = caGetCacheObject('ca_currency_conversion', 60*60*24);
-			if (is_array($va_data = $o_cache->load('data')) && ($va_data['year'] == $vn_year) && ($va_data['day'] == $vn_day)) {
+			$va_data = ExternalCache::fetch('EuroBankData');
+			if (is_array($va_data) && ($va_data['year'] == $vn_year) && ($va_data['day'] == $vn_day)) {
 				return $va_data['rates'];
 			}
 
@@ -168,9 +168,7 @@
 					$va_data['rates'][$vs_currency] = $vn_rate;
 				}
 				$va_data['rates']['EUR'] = 1.0;	// add Euro to list
-				if ($o_cache) {
-					$o_cache->save($va_data, 'data');
-				}
+				ExternalCache::save('EuroBankData', $va_data);
 				return $va_data['rates'];
 			}
 			throw(new Exception(_t("Cannot fetch data from %1", WLPlugCurrencyConversionEuroBank::CONVERSION_SERVICE_URL)));

@@ -220,7 +220,7 @@ class MediaInfoCoder {
 		if ($o_config->get('use_pdfjs_viewer')) {
 			foreach($va_media_info as $vs_version => $va_info) {
 				if (isset($va_info['MIMETYPE']) && ($va_info['MIMETYPE'] == 'application/pdf')) {
-					JavascriptLoadManager::register("pdfjs");
+					AssetLoadManager::register("pdfjs");
 				}
 			}
 		}
@@ -280,7 +280,7 @@ class MediaInfoCoder {
 		if ($o_config->get('use_pdfjs_viewer')) {
 			foreach($va_media_info as $vs_version => $va_info) {
 				if (isset($va_info['MIMETYPE']) && ($va_info['MIMETYPE'] == 'application/pdf')) {
-					JavascriptLoadManager::register("pdfjs");
+					AssetLoadManager::register("pdfjs");
 				}
 			}
 		}
@@ -289,10 +289,8 @@ class MediaInfoCoder {
 	}
 	# ---------------------------------------------------------------------------
 	public function getMediaVersions($ps_data) {
-		if (!is_array($va_media_info)) {
-			if (!($va_media_info = $this->getMediaArray($ps_data))) {
-				return false;
-			}
+		if (!($va_media_info = $this->getMediaArray($ps_data))) {
+			return false;
 		}
 		
 		unset($va_media_info["ORIGINAL_FILENAME"]);
@@ -300,6 +298,7 @@ class MediaInfoCoder {
 		unset($va_media_info["VOLUME"]);
 		unset($va_media_info["_undo_"]);
 		unset($va_media_info["TRANSFORMATION_HISTORY"]);
+		unset($va_media_info["_CENTER"]);
 		
 		return array_keys($va_media_info);		
 	}

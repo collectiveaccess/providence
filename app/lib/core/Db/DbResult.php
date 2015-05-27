@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2011 Whirl-i-Gig
+ * Copyright 2006-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -189,7 +189,7 @@ class DbResult extends DbBase {
 		}
 
 		if (isset($pa_options["escapeForXML"]) && $pa_options["escapeForXML"]) {
-			$vs_val = escapeForXML($vs_val);
+			$vs_val = caEscapeForXML($vs_val);
 		}
 
 		if (get_magic_quotes_gpc() || $pa_options["stripSlashes"]) {
@@ -237,12 +237,12 @@ class DbResult extends DbBase {
 	/**
 	 * Move the pointer to a certain position in the result set.
 	 *
-	 * @param int Position where the pointer should move to; default is 0.
+	 * @param int $pn_pos Position where the pointer should move to; default is 0.
 	 * @return bool Success or not
 	 */
 	function seek($pn_pos=0) {
 		$this->clearErrors();
-		$this->opo_db->seek($this, $this->opr_res, $pn_pos);
+		$vm_ret = $this->opo_db->seek($this, $this->opr_res, $pn_pos);
 
 		if ($this->numErrors()) {
 			$this->opo_db->seek($this, $this->opr_res, 0);
@@ -250,7 +250,7 @@ class DbResult extends DbBase {
     		return false;
 		}
 		$this->opn_current_row = $pn_pos;
-    	return true;
+    	return $vm_ret;
 	}
 	# ---------------------------------------------------------------------------
 	/**
@@ -271,15 +271,27 @@ class DbResult extends DbBase {
 	/**
 	  * Returns a list of values for the specified field from all rows in the result set. If you need to extract all values from single field in a result set this method provides a convenient means to do so.
 	  *
-	  * @param string $ps_field Name of field to fetch
+	  * @param mixed $ps_field Array of field names or single name of field to fetch
 	  * @return array List of values for the specified fields
 	  */
-	public function getAllFieldValues($ps_field) {
+	public function getAllFieldValues($pm_field, $pa_options=null) {
+		$vn_current_row = $this->opn_current_row;
 		$this->seek(0);
-		$va_values = array();
-		while($this->nextRow()) {
-			$va_values[] = $this->get($ps_field);
+		
+		if(is_array($pm_field)) {
+			$vm_field = array();
+			foreach($pm_field as $vs_field) {
+				$va_field = isset(DbResult::$s_field_info_cache[$vs_field]) ? DbResult::$s_field_info_cache[$vs_field] : $this->getFieldInfo($vs_field);
+				$vm_field[] = $va_field['field'];
+			}
+		} else {
+			$va_field = isset(DbResult::$s_field_info_cache[$pm_field]) ? DbResult::$s_field_info_cache[$pm_field] : $this->getFieldInfo($pm_field);
+			$vm_field = $va_field['field'];
 		}
+		
+		
+		$va_values = $this->opo_db->getAllFieldValues($this, $this->opr_res, $vm_field);
+		$this->seek($vn_current_row - 1);
 		
 		return $va_values;
 	}
@@ -762,7 +774,7 @@ class DbResult extends DbBase {
 	 * Free result memory
 	 */
 	function free() {
-		$this->opo_db->free($this, $this->opr_res);
+		if ($this->opo_db) { $this->opo_db->free($this, $this->opr_res); }
 	}
 
 	/**

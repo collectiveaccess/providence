@@ -276,7 +276,7 @@ class ca_data_importer_log extends BaseModel {
 	 * @param string $ps_typecode Code indicating import action. Valid values are 'I' for insert (creation of new record in database) or 'U' for update (updated existing record).
 	 * @return bool Returns id for newly created item on success, false on error or null if no event is currently loaded.
 	 */
-	public function endItem($pn_row_id, $pn_success, $ps_message) {
+	public function endItem($pn_row_id, $pb_success, $ps_message) {
 		if (!($vn_log_id = $this->getPrimaryKey())) { return null; } 
 		
 		$this->opo_data_import_item->setMode(ACCESS_WRITE);

@@ -92,6 +92,23 @@
  				return;
  			}
  			
+ 			//
+ 			// Is record from correct source?
+ 			// 
+ 			$va_restrict_to_sources = null;
+ 			if ($t_subject->getAppConfig()->get('perform_source_access_checking')) {
+ 				$va_restrict_to_sources = caGetSourceRestrictionsForUser($this->ops_table_name, array('access' => $vn_subject_id ? __CA_BUNDLE_ACCESS_READONLY__ : __CA_BUNDLE_ACCESS_EDIT__));
+ 			
+ 				if (!$t_subject->get('source_id')) {
+ 					$t_subject->set('source_id', $t_subject->getDefaultSourceID(array('request' => $this->request)));
+ 				}
+ 			
+				if (is_array($va_restrict_to_sources) && !in_array($t_subject->get('source_id'), $va_restrict_to_sources)) {
+					$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2562?r='.urlencode($this->request->getFullUrlPath()));
+					return;
+				}
+			}
+ 			
  			if(is_array($pa_values)) {
  				foreach($pa_values as $vs_key => $vs_val) {
  					$t_subject->set($vs_key, $vs_val);
@@ -117,7 +134,6 @@
  					}
  					if (!$vn_type_id) {
  						$vn_type_id = $t_subject->getDefaultTypeID();
- 						$t_subject->set('type_id', $vn_type_id);
  					}
  				}
  			}
@@ -134,7 +150,10 @@
  			$t_subject->set('type_id', $vn_type_id);
  			
  			$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $vn_type_id, array('editorPref' => 'quickadd'));
- 			
+ 			if (!$t_ui) {
+ 				$this->postError(1100, _t('No interface defined for %1', $this->ops_table_name), 'BaseQuickAddController->Form');
+ 				return;
+ 			}
  			// Get default screen (this is all we show in quickadd, even if the UI has multiple screens)
  			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 				array(),
@@ -237,6 +256,29 @@
  				return;
  			}
  			
+ 			//
+ 			// Is record from correct source?
+ 			// 
+ 			$va_restrict_to_sources = null;
+ 			if ($t_subject->getAppConfig()->get('perform_source_access_checking')) {
+ 				if (is_array($va_restrict_to_sources = caGetSourceRestrictionsForUser($this->ops_table_name, array('access' => __CA_BUNDLE_ACCESS_EDIT__)))) {
+					if (
+						(!$t_subject->get('source_id'))
+						||
+						($t_subject->get('source_id') && !in_array($t_subject->get('source_id'), $va_restrict_to_sources))
+						||
+						((strlen($vn_source_id = $this->request->getParameter('source_id', pInteger))) && !in_array($vn_source_id, $va_restrict_to_sources))
+					) {
+						$t_subject->set('source_id', $t_subject->getDefaultSourceID(array('request' => $this->request)));
+					}
+			
+					if (is_array($va_restrict_to_sources) && !in_array($t_subject->get('source_id'), $va_restrict_to_sources)) {
+						$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2562?r='.urlencode($this->request->getFullUrlPath()));
+						return;
+					}
+				}
+			}
+ 			
  			// Make sure request isn't empty
  			if(!sizeof($_POST)) {
  				$va_response = array(
@@ -257,7 +299,7 @@
  			// Set "context" id from those editors that need to restrict idno lookups to within the context of another field value (eg. idno's for ca_list_items are only unique within a given list_id)
  			$vn_context_id = null;
  			if ($vs_idno_context_field = $t_subject->getProperty('ID_NUMBERING_CONTEXT_FIELD')) {
- 				if ($vn_subject_id > 0) {
+ 				if ($t_subject->getPrimaryKey() > 0) {
  					$this->view->setVar('_context_id', $vn_context_id = $t_subject->get($vs_idno_context_field));
  				} else {
  					if ($vn_parent_id > 0) {
@@ -287,7 +329,7 @@
  			$vb_save_rc = $t_subject->saveBundlesForScreen($this->request->getParameter('screen', pString), $this->request, $va_opts);
 			$this->view->setVar('t_ui', $t_ui);
 		
-			if(!$vn_subject_id) {
+			if(!$t_subject->getPrimaryKey()) {
 				$vn_subject_id = $t_subject->getPrimaryKey();
 				if (!$vb_save_rc) {
 					$vs_message = _t("Could not save %1", $vs_type_name);
@@ -336,9 +378,20 @@
  			
  			$vn_id = $t_subject->getPrimaryKey();
  			
+ 			$vn_relation_id = null;
  			if ($vn_id) {
  				$va_tmp = caProcessRelationshipLookupLabel($t_subject->makeSearchResult($t_subject->tableName(), array($vn_id)), $t_subject);
  				$va_name = array_pop($va_tmp);
+ 				 			
+				// Add relationship to added item here?
+				$pn_related_id = $this->request->getParameter('relatedID', pInteger);
+				$ps_related_table = $this->request->getParameter('relatedTable', pString);
+				$ps_relationship_type = $this->request->getParameter('relationshipType', pString);
+				if ($pn_related_id && $ps_related_table && $ps_relationship_type) {
+					if ($t_rel = $t_subject->addRelationship($ps_related_table, $pn_related_id, $ps_relationship_type)) {
+						$vn_relation_id = $t_rel->getPrimaryKey();
+					}
+				}
  			} else {
  				$va_name = array();
  			}
@@ -347,6 +400,7 @@
  				'id' => $vn_id,
  				'table' => $t_subject->tableName(),
 				'type_id' => method_exists($t_subject, "getTypeID") ? $t_subject->getTypeID() : null,
+				'relation_id' => $vn_relation_id,
  				'display' => $va_name['label'],
  				'errors' => $va_error_list
  			);
@@ -364,9 +418,9 @@
  		 */
  		protected function _initView($pa_options=null) {
  			// load required javascript
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('imageScroller');
- 			JavascriptLoadManager::register('ckeditor');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('imageScroller');
+ 			AssetLoadManager::register('ckeditor');
  			
  			$t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
  			
@@ -415,7 +469,7 @@
  			if ($vs_parent_id_fld = $t_subject->getProperty('HIERARCHY_PARENT_ID_FLD')) {
  				$this->view->setVar('parent_id', $vn_parent_id = $this->request->getParameter($vs_parent_id_fld, pInteger));
 
- 				return array($t_subject, $t_ui, $vn_parent_id, $vn_above_id);
+ 				return array($t_subject, $t_ui, $vn_parent_id, null);
  			}
  			
  			return array($t_subject, $t_ui);

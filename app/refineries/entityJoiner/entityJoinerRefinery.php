@@ -37,6 +37,8 @@
 			$this->ops_name = 'entityJoiner';
 			$this->ops_title = _t('Entity joiner');
 			$this->ops_description = _t('Converts data with partial entity names into a valid entities for import.');
+
+			$this->opb_supports_relationships = true;
 			
 			parent::__construct();
 		}
@@ -83,7 +85,7 @@
 			
 				$va_name = array();
 				foreach($t_entity->getLabelUIFields() as $vs_fld) {
-					$va_name[$vs_fld] = BaseRefinery::parsePlaceholder($pa_item['settings']['entityJoiner_'.$vs_fld], $pa_source_data, $pa_item, ' ', $vn_c, array('returnAsString' => true, 'delimiter' => ' '));
+					$va_name[$vs_fld] = BaseRefinery::parsePlaceholder($pa_item['settings']['entityJoiner_'.$vs_fld], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
 				};
 		
 				if(isset($va_name[$vs_terminal])) {
@@ -101,11 +103,11 @@
 				if (
 					($vs_rel_type_opt = $pa_item['settings']['entityJoiner_relationshipType'])
 				) {
-					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item);
+					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
 				}
 				
 				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && ($vs_rel_type_opt = $pa_item['settings']['entityJoiner_relationshipTypeDefault'])) {
-					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item);
+					$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
 				}
 				
 				if ((!isset($va_val['_relationship_type']) || !$va_val['_relationship_type']) && $o_log) {
@@ -116,11 +118,11 @@
 				if (
 					($vs_type_opt = $pa_item['settings']['entityJoiner_entityType'])
 				) {
-					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item);
+					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
 				}
 				
 				if((!isset($va_val['_type']) || !$va_val['_type']) && ($vs_type_opt = $pa_item['settings']['entityJoiner_entityTypeDefault'])) {
-					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item);
+					$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
 				}
 				
 				if ((!isset($va_val['_type']) || !$va_val['_type']) && $o_log) {
@@ -128,19 +130,16 @@
 				}
 			
 				// Set attributes
-				if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']['entityJoiner_attributes'], $pa_source_data, $pa_item, null, $vn_c, $o_log))) {
+				if (is_array($va_attr_vals = caProcessRefineryAttributes($pa_item['settings']['entityJoiner_attributes'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'log' => $o_log)))) {
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 				
 				// Set interstitials
-				if (isset($pa_options['mapping']) && is_array($va_attr_vals = caProcessInterstitialAttributes('entityJoiner', $pa_options['mapping']->get('table_num'), 'ca_entities', $pa_source_data, $pa_item, $vs_delimiter, $vn_c, $o_log))) {
+				if (isset($pa_options['mapping']) && is_array($va_attr_vals = caProcessInterstitialAttributes('entityJoiner', $pa_options['mapping']->get('table_num'), 'ca_entities', $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'log' => $o_log)))) {
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
-				
-				// Set relatedEntities
-				if (is_array($va_attr_vals = caProcessRefineryRelated("entityJoiner", "ca_entities", $pa_item['settings']['entityJoiner_relatedEntities'], $pa_source_data, $pa_item, null, $vn_c, $o_log))) {
-					$va_val = array_merge($va_val, $va_attr_vals);
-				}
+
+				caProcessRefineryRelatedMultiple($this, $pa_item, $pa_source_data, $vn_c, $o_log, caGetOption('reader', $pa_options, null), $va_val, $va_vals);
 				
 				// nonpreferred labels
 				if (is_array($pa_item['settings']['entityJoiner_nonpreferred_labels'])) {
@@ -152,12 +151,12 @@
 								if (!trim($vs_v)) { continue; }
 								if ($vs_k == 'split') {
 									if (!is_array($va_non_preferred_labels[$vn_index] )) { $va_non_preferred_labels[$vn_index]  = array(); }
-									if ($vs_name = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, ' ', $vn_c, array('returnAsString' => true, 'delimiter' => ' '))) {
+									if ($vs_name = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '))) {
 										$va_non_preferred_labels[$vn_index] = array_merge($va_non_preferred_labels[$vn_index], DataMigrationUtils::splitEntityName($vs_name));
 										$vb_non_pref_label_was_set = true;
 									}
 								} else {
-									if ($va_non_preferred_labels[$vn_index][$vs_k] = trim(BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, ' ', $vn_c, array('returnAsString' => true, 'delimiter' => ' ')))) {
+									if ($va_non_preferred_labels[$vn_index][$vs_k] = trim(BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' ')))) {
 										$vb_non_pref_label_was_set = true;
 									}
 								}
@@ -324,15 +323,6 @@
 				'default' => '',
 				'label' => _t('Interstitial attributes'),
 				'description' => _t('Sets or maps metadata for the interstitial entity <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found.')
-			),
-			'entityJoiner_relatedEntities' => array(
-				'formatType' => FT_TEXT,
-				'displayType' => DT_SELECT,
-				'width' => 10, 'height' => 1,
-				'takesLocale' => false,
-				'default' => '',
-				'label' => _t('Related entities'),
-				'description' => _t('Entities related to the entity being created.')
 			)
 		);
 ?>

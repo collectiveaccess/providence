@@ -38,6 +38,7 @@
  	require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
+ 	require_once(__CA_MODELS_DIR__."/ca_data_importers.php");
  	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
  	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
  	require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
@@ -51,6 +52,8 @@
  		protected $opo_datamodel;
  		protected $opo_app_plugin_manager;
  		protected $opo_result_context;
+
+		protected $opa_importable_tables = array();
  		# -------------------------------------------------------
  		#
  		# -------------------------------------------------------
@@ -63,12 +66,30 @@
  				return;
  			}
  			
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('panel');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('panel');
  			
  			$this->opo_datamodel = Datamodel::load();
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
  			$this->opo_result_context = new ResultContext($po_request, $this->ops_table_name, ResultContext::getLastFind($po_request, $this->ops_table_name));
+
+			$this->opa_importable_tables = array(
+				caGetTableDisplayName('ca_objects') => 'ca_objects',
+				caGetTableDisplayName('ca_entities') => 'ca_entities',
+				caGetTableDisplayName('ca_places') => 'ca_places',
+				caGetTableDisplayName('ca_collections') => 'ca_collections',
+				caGetTableDisplayName('ca_occurrences') => 'ca_occurrences',
+				caGetTableDisplayName('ca_storage_locations') => 'ca_storage_locations',
+				caGetTableDisplayName('ca_object_lots') => 'ca_object_lots',
+				caGetTableDisplayName('ca_movements') => 'ca_movements',
+				caGetTableDisplayName('ca_loans') => 'ca_loans',
+			);
+
+			foreach($this->opa_importable_tables as $vs_key => $vs_table) {
+				if($this->getRequest()->getAppConfig()->get($vs_table.'_disable')) {
+					unset($this->opa_importable_tables[$vs_key]);
+				}
+			}
  		}
  		# -------------------------------------------------------
  		/**
@@ -79,20 +100,34 @@
  		 *
  		 */
  		public function Index($pa_values=null, $pa_options=null) {
- 			JavascriptLoadManager::register("directoryBrowser");
+ 			AssetLoadManager::register("directoryBrowser");
  			list($t_ui) = $this->_initView($pa_options);
  			
  			$this->view->setVar('batch_mediaimport_last_settings', $va_last_settings = is_array($va_last_settings = $this->request->user->getVar('batch_mediaimport_last_settings')) ? $va_last_settings : array());
- 			
- 			$t_object = new ca_objects();
- 			$t_object->set('status', $va_last_settings['ca_objects_status']);
- 			$t_object->set('access', $va_last_settings['ca_objects_access']);
+
+			// get import type from request
+			$vs_import_target = $this->getRequest()->getParameter('target', pString);
+			$t_instance = $this->getRequest()->getAppDatamodel()->getInstance($vs_import_target);
+			// if that failed, try last settings
+			if(!$t_instance) {
+				$vs_import_target = $va_last_settings['importTarget'];
+				$t_instance = $this->getRequest()->getAppDatamodel()->getInstance($vs_import_target);
+			}
+			// if that too failed, go back to objects
+			if(!$t_instance) {
+				$t_instance = new ca_objects();
+				$vs_import_target = 'ca_objects';
+			}
+			$this->getView()->setVar('import_target', $vs_import_target);
+
+			$t_instance->set('status', $va_last_settings[$vs_import_target.'_status']);
+			$t_instance->set('access', $va_last_settings[$vs_import_target.'_access']);
  			
  			$t_rep = new ca_object_representations();
  			$t_rep->set('status', $va_last_settings['ca_object_representations_status']);
  			$t_rep->set('access', $va_last_settings['ca_object_representations_access']);
  			
- 			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
+ 			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 				array(),
 				array()
 			);
@@ -100,6 +135,11 @@
  				$this->request->setActionExtra($va_nav['defaultScreen']);
  			}
 			$this->view->setVar('t_ui', $t_ui);
+
+			$this->view->setVar('import_target', caHTMLSelect('import_target', $this->opa_importable_tables, array(
+				'id' => 'caImportTargetSelect',
+				'onchange' => 'window.location.replace("'.caNavUrl($this->getRequest(), $this->getRequest()->getModulePath(), $this->getRequest()->getController(), $this->getRequest()->getAction()) . '/target/" + jQuery("#caImportTargetSelect").val()); return false;'
+			), array('value' => $vs_import_target)));
 			
 			$this->view->setVar('import_mode', caHTMLSelect('import_mode', array(
 				_t('Import all media, matching with existing records where possible') => 'TRY_TO_MATCH',
@@ -113,14 +153,34 @@
 				_t('Match using directory name, then file name') => 'FILE_AND_DIRECTORY_NAMES'
 			), array(), array('value' => $va_last_settings['matchMode'])));
  			
- 			$this->view->setVar('ca_objects_type_list', $t_object->getTypeListAsHTMLFormElement('ca_objects_type_id', null, array('value' => $va_last_settings['ca_objects_type_id'])));
+ 			$this->view->setVar($vs_import_target.'_type_list', $t_instance->getTypeListAsHTMLFormElement($vs_import_target.'_type_id', null, array('value' => $va_last_settings[$vs_import_target.'_type_id'])));
+ 			$this->view->setVar($vs_import_target.'_limit_to_types_list', $t_instance->getTypeListAsHTMLFormElement($vs_import_target.'_limit_matching_to_type_ids[]', array('multiple' => 1), array('height' => '100px', 'values' => $va_last_settings[$vs_import_target.'_limit_matching_to_type_ids'])));
  			$this->view->setVar('ca_object_representations_type_list', $t_rep->getTypeListAsHTMLFormElement('ca_object_representations_type_id', null, array('value' => $va_last_settings['ca_object_representations_type_id'])));
+
+			if($vs_import_target != 'ca_objects') { // non-object representations have relationship types
+				$t_rel = ca_relationship_types::getRelationshipTypeInstance($t_instance->tableName(), 'ca_object_representations');
+				$this->getView()->setVar($vs_import_target.'_representation_relationship_type', $t_rel->getRelationshipTypesAsHTMLSelect('ltor',null,null, array('name' => $vs_import_target.'_representation_relationship_type'), array('value' => $va_last_settings[$vs_import_target.'_representation_relationship_type'])));
+			}
  		
+ 			$va_importer_list = ca_data_importers::getImporters(null, array('formats' => array('exif')));
+ 			$va_object_importer_options = $va_object_representation_importer_options = array("-" => '');
+ 			foreach($va_importer_list as $vn_importer_id => $va_importer_info) {
+ 				if ($va_importer_info['table_num'] == $t_instance->tableNum()) { // target table
+ 					$va_object_importer_options[$va_importer_info['label']] = $vn_importer_id;
+ 				} else {
+ 					$va_object_representation_importer_options[$va_importer_info['label']] = $vn_importer_id;
+ 				}
+ 			}
+ 			$this->view->setVar($vs_import_target.'_mapping_list', caHTMLSelect($vs_import_target.'_mapping_id', $va_object_importer_options, array(), array('value' => $va_last_settings[$vs_import_target.'_mapping_id'])));
+ 			$this->view->setVar($vs_import_target.'_mapping_list_count', sizeof($va_object_importer_options));
+ 			$this->view->setVar('ca_object_representations_mapping_list', caHTMLSelect('ca_object_representations_mapping_id', $va_object_representation_importer_options, array(), array('value' => $va_last_settings['ca_object_representations_mapping_id'])));
+ 			$this->view->setVar('ca_object_representations_mapping_list_count', sizeof($va_object_representation_importer_options));
+ 			
  			//
  			// Available sets
  			//
  			$t_set = new ca_sets();
- 			$va_available_set_list = caExtractValuesByUserLocale($t_set->getSets(array('table' => 'ca_objects', 'user_id' => $this->request->getUserID(), 'access' => __CA_SET_EDIT_ACCESS__, 'omitCounts' => true)));
+ 			$va_available_set_list = caExtractValuesByUserLocale($t_set->getSets(array('table' => $vs_import_target, 'user_id' => $this->request->getUserID(), 'access' => __CA_SET_EDIT_ACCESS__, 'omitCounts' => true)));
  			$va_available_sets = array();
  			foreach($va_available_set_list as $vn_set_id => $va_set) {
  				$va_available_sets[$va_set['name']] = $vn_set_id;
@@ -128,7 +188,7 @@
  			$this->view->setVar('available_sets', $va_available_sets);
 
 
- 			$this->view->setVar('t_object', $t_object);
+ 			$this->view->setVar('t_instance', $t_instance);
  			$this->view->setVar('t_rep', $t_rep);
  		
  			$this->render('mediaimport/import_options_html.php');
@@ -144,7 +204,11 @@
 			
  			if (!is_array($pa_options)) { $pa_options = array(); }
  			list($t_ui) = $this->_initView($pa_options);
- 			
+
+			$vs_import_target = $this->getRequest()->getParameter('import_target', pString);
+			if(!$this->getRequest()->getAppDatamodel()->tableExists($vs_import_target)) {
+				$vs_import_target = 'ca_objects';
+			}
  			$vs_directory = $this->request->getParameter('directory', pString);
  			
  			$vs_batch_media_import_root_directory = $this->request->config->get('batch_media_import_root_directory');
@@ -169,23 +233,34 @@
  				'deleteMediaOnImport' => (bool)$this->request->getParameter('delete_media_on_import', pInteger),
  				'importMode' => $this->request->getParameter('import_mode', pString),
  				'matchMode' => $this->request->getParameter('match_mode', pString),
- 				'ca_objects_type_id' => $this->request->getParameter('ca_objects_type_id', pInteger),
+				$vs_import_target.'_limit_matching_to_type_ids' => $this->request->getParameter($vs_import_target.'_limit_matching_to_type_ids', pArray),
+ 				$vs_import_target.'_type_id' => $this->request->getParameter($vs_import_target.'_type_id', pInteger),
  				'ca_object_representations_type_id' => $this->request->getParameter('ca_object_representations_type_id', pInteger),
- 				'ca_objects_status' => $this->request->getParameter('ca_objects_status', pInteger),
+ 				$vs_import_target.'_status' => $this->request->getParameter($vs_import_target.'_status', pInteger),
  				'ca_object_representations_status' => $this->request->getParameter('ca_object_representations_status', pInteger),
- 				'ca_objects_access' => $this->request->getParameter('ca_objects_access', pInteger),
+ 				$vs_import_target.'_access' => $this->request->getParameter($vs_import_target.'_access', pInteger),
  				'ca_object_representations_access' => $this->request->getParameter('ca_object_representations_access', pInteger),
+ 				$vs_import_target.'_mapping_id' => $this->request->getParameter($vs_import_target.'_mapping_id', pInteger),
+ 				'ca_object_representations_mapping_id' => $this->request->getParameter('ca_object_representations_mapping_id', pInteger),
  				'setMode' => $this->request->getParameter('set_mode', pString),
  				'setCreateName' => $this->request->getParameter('set_create_name', pString),
  				'set_id' => $this->request->getParameter('set_id', pInteger),
  				'idnoMode' => $this->request->getParameter('idno_mode', pString),
  				'idno' => $this->request->getParameter('idno', pString),
- 				'idno' => $this->request->getParameter('idno', pString),
+				'representationIdnoMode' => $this->request->getParameter('representation_idno_mode', pString),
+				'representation_idno' => $this->request->getParameter('idno_representation_number', pString),
+ 				'logLevel' => $this->request->getParameter('log_level', pString),
+ 				'allowDuplicateMedia' => $this->request->getParameter('allow_duplicate_media', pInteger),
  				'locale_id' => $g_ui_locale_id,
  				'user_id' => $this->request->getUserID(),
- 				'skipFileList' => $this->request->getParameter('skip_file_list', pString)
+ 				'skipFileList' => $this->request->getParameter('skip_file_list', pString),
+				'importTarget' => $vs_import_target
  			);
- 			
+
+			if($vn_rel_type = $this->request->getParameter($vs_import_target.'_representation_relationship_type', pInteger)) {
+				$va_options[$vs_import_target.'_representation_relationship_type'] = $vn_rel_type;
+			}
+
  			if (is_array($va_create_relationships_for = $this->request->getParameter('create_relationship_for', pArray))) {
  				$va_options['create_relationship_for'] = $va_create_relationships_for;
  				foreach($va_create_relationships_for as $vs_rel_table) {
@@ -196,7 +271,7 @@
  			$va_last_settings = $va_options;
  			$va_last_settings['importFromDirectory'] = preg_replace("!{$vs_batch_media_import_root_directory}[/]*!", "", $va_last_settings['importFromDirectory']); 
  			$this->request->user->setVar('batch_mediaimport_last_settings', $va_last_settings);
- 
+ 			
  			if ((bool)$this->request->config->get('queue_enabled') && (bool)$this->request->getParameter('run_in_background', pInteger)) { // queue for background processing
  				$o_tq = new TaskQueue();
  				
@@ -233,7 +308,7 @@
 				$dir = substr($dir, 0, strlen($dir) - 1);
 			}
 			
-			if($va_paths = scandir($dir, 0)) {
+			if($va_paths = @scandir($dir, 0)) {
 				$vn_i = $vn_c = 0;
 				foreach($va_paths as $item) {
 					if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
@@ -283,9 +358,9 @@
  		 */
  		protected function _initView($pa_options=null) {
  			// load required javascript
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('imageScroller');
- 			JavascriptLoadManager::register('datePickerUI');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('imageScroller');
+ 			AssetLoadManager::register('datePickerUI');
  			
  			$t_ui = new ca_editor_uis();
  			if (!isset($pa_options['ui']) && !$pa_options['ui']) {
@@ -333,6 +408,7 @@
  				$va_tmp = explode(";", $ps_id);
  				
  				$va_acc = array();
+ 				$vn_i = 0;
  				foreach($va_tmp as $vs_tmp) {
  					list($vs_directory, $vn_start) = explode(":", $vs_tmp);
  					if (!$vs_directory) { continue; }
@@ -341,16 +417,22 @@
 					$vs_k = array_pop($va_tmp);
 					if(!$vs_k) { $vs_k = '/'; }
 					
-					$va_level_data[$vs_k] = $va_file_list = $this->_getDirectoryListing($vs_root_directory.'/'.$vs_directory, false, 20, (int)$vn_start, (int)$pn_max);
-					$va_level_data[$vs_k]['_primaryKey'] = 'name';
+					$va_level_data["{$vs_k}|{$vn_i}"] = $va_file_list = $this->_getDirectoryListing($vs_root_directory.'/'.$vs_directory, false, 20, (int)$vn_start, (int)$pn_max);
+					$va_level_data["{$vs_k}|{$vn_i}"]['_primaryKey'] = 'name';
 					
 					$va_counts = caGetDirectoryContentsCount($vs_root_directory.'/'.$vs_directory, false, false);
-					$va_level_data[$vs_k]['_itemCount'] = $va_counts['files'] + $va_counts['directories'];
+					$va_level_data["{$vs_k}|{$vn_i}"]['_itemCount'] = $va_counts['files'] + $va_counts['directories'];
+					$vn_i++;
  				}
  			} else {
  				list($ps_directory, $pn_start) = explode(":", $ps_id);
+ 				
+				$va_tmp = explode('/', $ps_directory);
+				$vn_level = sizeof($va_tmp);
+				if ($ps_directory[0] == '/') { $vn_level--; }
+				
 				if (!$ps_directory) { 
-					$va_level_data[$vs_k] = array('/' => 
+					$va_level_data["{$vs_k}|{$vn_level}"] = array('/' => 
 							array(
 								'item_id' => '/',
 								'name' => 'Root',
@@ -358,22 +440,22 @@
 								'children' => 1
 							)
 					);
-					$va_level_data[$vs_k]['_primaryKey'] = 'name';
-					$va_level_data[$vs_k]['_itemCount'] = 1;
+					$va_level_data["{$vs_k}|{$vn_level}"]['_primaryKey'] = 'name';
+					$va_level_data["{$vs_k}|{$vn_level}"]['_itemCount'] = 1;
 				} else {
 					$va_tmp = explode('/', $ps_directory);
 					$vs_k = array_pop($va_tmp);
 					if(!$vs_k) { $vs_k = '/'; }
 					
-					$va_level_data[$vs_k] = $va_file_list = $this->_getDirectoryListing($vs_root_directory.'/'.$ps_directory, false, 20, (int)$pn_start, (int)$pn_max);
-					$va_level_data[$vs_k]['_primaryKey'] = 'name';
+					$va_level_data["{$vs_k}|{$vn_level}"] = $va_file_list = $this->_getDirectoryListing($vs_root_directory.'/'.$ps_directory, false, 20, (int)$pn_start, (int)$pn_max);
+					$va_level_data["{$vs_k}|{$vn_level}"]['_primaryKey'] = 'name';
 					
 					$va_counts = caGetDirectoryContentsCount($vs_root_directory.'/'.$ps_directory, false, false);
-					$va_level_data[$vs_k]['_itemCount'] = $va_counts['files'] + $va_counts['directories'];
+					$va_level_data["{$vs_k}|{$vn_level}"]['_itemCount'] = $va_counts['files'] + $va_counts['directories'];
 				}
 			}
  			
- 			$this->view->setVar('directory_list', $va_level_data);
+ 			$this->view->setVar('directory_list', caSanitizeArray($va_level_data));
  			
  			
  			$this->render('mediaimport/directory_level_json.php');
@@ -426,7 +508,7 @@
  			} else {
 				foreach($_FILES as $vs_param => $va_file) {
 					foreach($va_file['name'] as $vn_i => $vs_name) {
-						if (!in_array(pathinfo($vs_name, PATHINFO_EXTENSION), $va_extensions)) { 
+						if (!in_array(strtolower(pathinfo($vs_name, PATHINFO_EXTENSION)), $va_extensions)) { 
 							$va_response['skipped'][$vs_name] = true;
 							continue; 
 						}

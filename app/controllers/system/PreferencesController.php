@@ -104,6 +104,8 @@
 						foreach($_REQUEST AS $vs_k => $vs_v) {
 							if (preg_match("!pref_{$vs_pref}_([\d]+)!", $vs_k, $va_matches)) {
 								$va_ui_prefs[$vs_pref][$va_matches[1]] = $vs_v;
+							} elseif (preg_match("!pref_{$vs_pref}__NONE_!", $vs_k)) {
+								$va_ui_prefs[$vs_pref]['_NONE_'] = $vs_v;
 							}
 						}
 					
@@ -202,8 +204,7 @@
 							$g_ui_locale = $this->request->user->getPreferredUILocale();				// get current UI locale as locale string 			(available as global)
 							
 							if(!initializeLocale($g_ui_locale)) die("Error loading locale ".$g_ui_locale);
-							global $ca_translation_cache;
-							$ca_translation_cache = array();				
+							MemoryCache::flush('translation');
 							
 							// reload menu bar
 							AppNavigation::clearMenuBarCache($this->request);

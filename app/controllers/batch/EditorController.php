@@ -35,6 +35,7 @@
   */
  
  	require_once(__CA_APP_DIR__."/helpers/batchHelpers.php");
+	require_once(__CA_APP_DIR__."/helpers/printHelpers.php");
  	require_once(__CA_APP_DIR__."/helpers/configurationHelpers.php");
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
@@ -55,10 +56,10 @@
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
- 			JavascriptLoadManager::register('bundleListEditorUI');
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('bundleListEditorUI');
- 			JavascriptLoadManager::register('panel');
+ 			AssetLoadManager::register('bundleListEditorUI');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('bundleListEditorUI');
+ 			AssetLoadManager::register('panel');
  			
  			$this->opo_datamodel = Datamodel::load();
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
@@ -92,7 +93,7 @@
  			
  			$this->view->setVar('batch_editor_last_settings', $va_last_settings = is_array($va_last_settings = $this->request->user->getVar('batch_editor_last_settings')) ? $va_last_settings : array());
  			
- 			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
+ 			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 				array(),
 				array(),
 				false,
@@ -160,7 +161,7 @@
  
  		}
  		# -------------------------------------------------------
- 		public function Delete() {
+ 		public function Delete($pa_options=null) {
  			list($vn_set_id, $t_set, $t_subject, $t_ui) = $this->_initView($pa_options);
 
  			if (!$this->request->user->canDoAction('can_batch_delete_'.$t_set->getAppDatamodel()->getTableName($t_set->get('table_num')))) {
@@ -256,9 +257,9 @@
  		 */
  		protected function _initView($pa_options=null) {
  			// load required javascript
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('imageScroller');
- 			JavascriptLoadManager::register('datePickerUI');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('imageScroller');
+ 			AssetLoadManager::register('datePickerUI');
  			
  			$vn_set_id = $this->request->getParameter('set_id', pInteger);
  			$t_set = new ca_sets();

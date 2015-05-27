@@ -205,7 +205,7 @@ class WLPlugMediaReplicationVimeo Extends BaseMediaReplicationPlugin {
 			'description' => $vo_info->video[0]->description,
 			'viewCount' => $vo_info->video[0]->number_of_plays,
 			'pageUrl' => $vo_info->video[0]->urls->url[0]->_content,
-			'playUrl' => $o_video_entry->getFlashPlayerUrl()
+			'playUrl' => $vo_info->video[0]->getFlashPlayerUrl()
 		);
 	}
 	# ------------------------------------------------

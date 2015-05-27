@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
- 	JavascriptLoadManager::register('setEditorUI');
+ 	AssetLoadManager::register('setEditorUI');
  
 	$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$va_items 				= $this->getVar('items');
@@ -39,8 +39,9 @@
 	$vn_table_num 			= $t_set->get('table_num');
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'setItemEditor');
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'setItemEditor', $va_settings);
 ?>
-<div id="<?php print $vs_id_prefix; ?>setItemEditor" class='setItemEditor'>
+<div id="<?php print $vs_id_prefix; ?>" class='setItemEditor'>
 <?php
 	if (!$vn_table_num) {
 ?>

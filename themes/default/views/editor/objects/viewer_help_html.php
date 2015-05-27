@@ -38,6 +38,7 @@
 		<li><?php print _t('%1 to activate image panning', '<code>space</code>'); ?></li>
 		<li><?php print _t('%1 to select the rectangle annotation tool', '<code>r</code>'); ?></li>
 		<li><?php print _t('%1 to select the point annotation tool', '<code>p</code>'); ?></li>
+		<li><?php print _t('%1 to select the polygon annotation tool', '<code>y</code>'); ?></li>
 		<li><?php print _t('%1 to delete the selected annotation', '<code>d</code>'); ?></li>
 		<li><?php print _t('%1 to toggle visibility of the image overview', '<code>n</code>'); ?></li>
 		<li><?php print _t('%1 to return the image to the centered, zoomed out "home" position', '<code>h</code>'); ?></li>

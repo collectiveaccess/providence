@@ -1,8 +1,13 @@
+@import url("//hello.myfonts.net/count/28ec2c");
+
+@font-face {font-family: 'DIN-Regular';src: url('fonts/28EC2C_0_0.eot');src: url('fonts/28EC2C_0_0.eot?#iefix') format('embedded-opentype'),url('fonts/28EC2C_0_0.woff') format('woff'),url('fonts/28EC2C_0_0.ttf') format('truetype');}
+
+
 html, body { 
-	font: 12px "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, Sans-serif;
+	font: 12px Helvetica, Sans-serif;
 	margin:0px;
 	padding:0px;
-	background-color:#DEDEDE;
+	background-color:#FFFFFF;
 	height: 100%;
 	color:#333333;
 	line-height:1.3em;
@@ -18,11 +23,14 @@ a:hover{
 	color: #1FAA99;
 }
 #box {
-	background-color:#FFFFFF;
-	width: 600px;
-	text-align: left;
-	padding: 0px;
-	margin:50px auto 50px auto;
+	width:485px;
+	background-color: #FFFFFF;
+	text-align:left;
+	margin: 100px auto;
+	-moz-box-shadow: 0 0 5px #888;
+	-webkit-box-shadow: 0 0 5px#888;
+	box-shadow: 0 0 5px #888;
+	padding-top: 25px;
 }
 #logo{
 	text-align:center;
@@ -104,9 +112,11 @@ H2{
 .permissionError {
 	padding: 10px;
 	font-size: 12px;
-	background-color: #dddddd;
+	background-color: #eee;
 	margin:10px 0px 0px 0px;
-	border:2px solid #828282;
+	border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
 }
 
 .permissionErrorIcon {
@@ -116,7 +126,7 @@ H2{
 .error{
 	color:red;
 	padding:10px 0px 5px 0px;
-	font-weight:bold;
+	font-family: 'DIN-Regular', helvetica, sans-serif;
 	font-size:16px;
 }
 

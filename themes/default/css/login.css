@@ -1,8 +1,12 @@
+@import url("//hello.myfonts.net/count/28ec2c");
+
+@font-face {font-family: 'DIN-Regular';src: url('fonts/28EC2C_0_0.eot');src: url('fonts/28EC2C_0_0.eot?#iefix') format('embedded-opentype'),url('fonts/28EC2C_0_0.woff') format('woff'),url('fonts/28EC2C_0_0.ttf') format('truetype');}
+
 html, body { 
-	font: 10px "Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, Sans-serif;
+	font: 10px "Helvetica Neue", Verdana, Arial, Helvetica, Sans-serif;
 	margin:0px;
 	padding:0px;
-	background-color:#DEDEDE;
+	background-color:#fff;
 	height: 100%;
 }
 
@@ -10,10 +14,10 @@ form{
 	display:inline;
 }
 
-a, a:link, a:visited, a font { color: #134959; text-decoration: underline; }
+a, a:link, a:visited, a font { color: #1ab3c8; text-decoration: underline; }
 
 a:hover{
-	color: #1FAA99;
+	color: #333;
 }
 
 #loginBox {
@@ -21,16 +25,41 @@ a:hover{
 	background-color: #FFFFFF;
 	text-align:left;
 	margin:100px 0px 50px 0px;
+	-moz-box-shadow: 0 0 5px #888;
+	-webkit-box-shadow: 0 0 5px#888;
+	box-shadow: 0 0 5px #888;
+	padding-top: 25px;
 }
 #loginForm{
 	padding:0px 0px 40px 60px;
 	text-align:left;
 }
+
+#forgotLink {
+   float: right;
+   margin-right: 70px;
+}
+
 #systemTitle{
 	padding:30px 0px 10px 60px;
-	font-weight:bold;
+	font-weight:normal;
 	font-size:22px;
+	font-family: 'DIN-Regular';
 }
+
+.smallContent {
+    font-size: 14px;
+    margin-right: 68px;
+    text-align: justify;
+}
+
+.notificationContent {
+    font-size: 18px;
+    margin-right: 68px;
+    font-weight: bold;
+    color: darkred;
+}
+
 .loginFormElement{
 	font-size:14px;
 	line-height:2.3em;
@@ -40,15 +69,16 @@ a:hover{
 	padding-top:15px;
 }
 #loginForm form input[type="text"], #loginForm form input[type="password"]{
-	font-size:18px;
-	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size:16px;
+	font-family: "Helvetica Neue", Arial, sans-serif;
 	border:1px solid #999999;
 	padding:0px;
 	margin:0px;
 	font-weight:normal;
 	text-align:left;
-	width:360px;
+	width:350px;
 	height: 32px;
+	padding-left:5px;
 }
 
 .loginAgainLink{
@@ -86,67 +116,76 @@ a.button:hover{
 }
 
 a.form-button, span.form-button, del.form-button{
-	display:-moz-inline-box;
-	display:inline-block;
-	cursor:pointer;
-	border:none;
+    display:-moz-inline-box;
+    display:inline-block;
+    cursor:pointer;
+    border:none;
     font-size:0;
     line-height:0;
-    
-	/*
+
+    /*
 	for Safari, read this first
 	http://creativebits.org/webdev/safari_background_repeat_bug_fix
 	*/
-	background-position:0 0;
-	background-repeat:no-repeat;
-	height:30px;
-	text-decoration:none;
-	color:#2e523b;
-	font-style:normal;
-	margin:0 6px 0px 0;
-	padding:0 10px 0 0;	
-	vertical-align:middle;	
-	
+    background-position:0 0;
+    background-repeat:no-repeat;
+    height:30px;
+    text-decoration:none;
+    color:#2e523b;
+    font-style:normal;
+    margin:0 6px 0px 0;
+    padding:0 10px 0 0;
+    vertical-align:middle;
+
     padding-top: 0px; /* was -2 */
-	_position:relative;
-	_width:10px;	
-	_overflow-y:hidden;
+    _position:relative;
+    _width:10px;
+    _overflow-y:hidden;
 }
 
 a.form-button, span.form-button, del.form-button,
 a.form-button span, span.form-button button, span.form-button input, del.form-button span{
-    background-image:url('../graphics/backgrounds/form_buttons.png');
+   /* background-image:url('../graphics/backgrounds/form_buttons.png'); */
 }
 
 a.form-button span, span.form-button button, span.form-button input, del.form-button span{
-	
-	white-space:nowrap;
-	cursor:pointer;
+
+    white-space:nowrap;
+    cursor:pointer;
     color:#222;
-	display:-moz-inline-box;
-	display:inline-block;
-	line-height:1;
+    display:-moz-inline-box;
+    display:inline-block;
+    line-height:1;
     letter-spacing:0 !important;
-    font-family:"Arial" !important;
     font-size:12px !important;
-    font-style:normal;    
+    font-style:normal;
+    font-family: 'DIN-Regular';
+    font-weight:bold;
     background-color:transparent;
-	background-position:100% 0;
-	background-repeat:no-repeat;
-	height:30px;
-	padding:8px 20px 0 10px;
-	margin:0 -16px 0 10px;
-	border:none;
-	vertical-align:text-top;
-	zoom: 1;  
-	_position:relative;
+    background-position:100% 0;
+    background-repeat:no-repeat;
+    height:24px;
+    padding:8px 20px 0 10px;
+    margin:0 -16px 0 0px;
+    border:none;
+    vertical-align:text-top;
+    zoom: 1;
+    _position:relative;
     _padding-left:0px;
-	_padding-right:12px;
-	_margin-right:-10px;	
-	_display:block;
-	_top:0;
-	_right:-5px;
-	
+    _padding-right:12px;
+    _margin-right:-10px;
+    _display:block;
+    _top:0;
+    _right:-5px;
+    background-color: #eee;
+	padding: 12px 12px 0px 6px;
+	border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+}
+a.form-button img {
+	float:left;
+	margin-top:-5px;
 }
 
 span.form-button button{

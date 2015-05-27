@@ -101,7 +101,7 @@ BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
 				'DISPLAY_WIDTH' => 15, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Middlename'), 'DESCRIPTION' => _t('Many names include one or more middle names, placed between the forename and the surname. In the Western world, a middle name is effectively a second given name. You should enter all middle names here. If there is more than one separate the names with spaces.'),
+				'LABEL' => _t('Middle Name'), 'DESCRIPTION' => _t('Many names include one or more middle names, placed between the forename and the surname. In the Western world, a middle name is effectively a second given name. You should enter all middle names here. If there is more than one separate the names with spaces.'),
 				'BOUNDS_LENGTH' => array(0,100)
 		),
 		'surname' => array(
@@ -110,14 +110,14 @@ BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => _t('Surname/organization'), 'DESCRIPTION' => _t('A surname is a name added to a given name and is part of a personal name. In many cases a surname is a family name. For organizations this should be set to the full name.'),
-				'BOUNDS_LENGTH' => array(1,100)
+				'BOUNDS_LENGTH' => array(0,100)
 		),
 		'prefix' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Prefixes'), 'DESCRIPTION' => _t('A prefix may be added to a name to signify veneration, a social position, an official position or a professional or academic qualification.'),
+				'LABEL' => _t('Prefix'), 'DESCRIPTION' => _t('A prefix may be added to a name to signify veneration, a social position, an official position or a professional or academic qualification.'),
 				'BOUNDS_LENGTH' => array(0,100)
 		),
 		'suffix' => array(
@@ -125,7 +125,7 @@ BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Suffixes'), 'DESCRIPTION' => _t('A suffix may be added to a name to signify veneration, a social position, an official position or a professional or academic qualification.'),
+				'LABEL' => _t('Suffix'), 'DESCRIPTION' => _t('A suffix may be added to a name to signify veneration, a social position, an official position or a professional or academic qualification.'),
 				'BOUNDS_LENGTH' => array(0,100)
 		),
 		'name_sort' => array(
@@ -272,6 +272,10 @@ class ca_entity_labels extends BaseLabel {
 	}
 	# ------------------------------------------------------
 	public function insert($pa_options=null) {
+		if (!trim($this->get('surname')) && !trim($this->get('forename'))) {
+			$this->postError(1100, _t('Surname or forename must be set'), 'ca_entity_labels->insert()');
+			return false;
+		}
 		if (!$this->get('displayname')) {
 			$this->set('displayname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
 		}
@@ -279,6 +283,10 @@ class ca_entity_labels extends BaseLabel {
 	}
 	# ------------------------------------------------------
 	public function update($pa_options=null) {
+		if (!trim($this->get('surname')) && !trim($this->get('forename'))) {
+			$this->postError(1100, _t('Surname or forename must be set'), 'ca_entity_labels->insert()');
+			return false;
+		}
 		if (!$this->get('displayname')) {
 			$this->set('displayname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
 		}
@@ -286,4 +294,3 @@ class ca_entity_labels extends BaseLabel {
 	}
 	# ------------------------------------------------------
 }
-?>

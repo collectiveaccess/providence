@@ -205,6 +205,12 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 	# Self-relations
 	# ------------------------------------------------------
 	protected $SELF_RELATION_TABLE_NAME = null;
+
+	# ------------------------------------------------------
+	# Search
+	# ------------------------------------------------------
+	protected $SEARCH_CLASSNAME = 'SetItemSearch';
+	protected $SEARCH_RESULT_CLASSNAME = 'SetItemSearchResult';
 	
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields

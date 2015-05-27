@@ -44,9 +44,9 @@
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
- 			JavascriptLoadManager::register('tableList');
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register("panel");
+ 			AssetLoadManager::register('tableList');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register("panel");
  			
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
  			
@@ -338,7 +338,7 @@
  			$pn_transaction_id = $this->request->getParameter('transaction_id', pInteger);
  			$t_trans = new ca_commerce_transactions($pn_transaction_id);
  			
- 			$this->view->setVar('communication_id', $pn_communication_id);
+ 			//$this->view->setVar('communication_id', $pn_communication_id);
  			$this->view->setVar('transaction_id', $pn_transaction_id);
  			
  			if ($t_trans->haveAccessToTransaction($this->request->getUserID())) {
@@ -579,7 +579,7 @@
  		 * @param array $pa_options Array of options passed through to _initView 
  		 */
  		public function Log($pa_options=null) {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			
  			$this->render('order_log_html.php');
  		}
@@ -698,16 +698,15 @@
  		 */
  		public function SelectRepresentations() {
  			$pn_item_id = $this->request->getParameter('item_id', pInteger);
- 			$pn_object_id = $this->request->getParameter('object_id', pInteger);
+ 			$pn_object_id = (int)$this->request->getParameter('object_id', pInteger);
 
  			$t_item = new ca_commerce_order_items($pn_item_id);
  			$t_object = new ca_objects($pn_object_id);
- 			if(!$vn_object_id) { $vn_object_id = 0; }
  			$t_rep = new ca_object_representations($t_object->getPrimaryRepresentationID());
  			
- 			$va_opts = array('use_book_viewer' => true, 'display' => 'media_overlay', 'object_id' => $pn_object_id, 'order_item_id' => $pn_item_id, 'containerID' => 'caMediaPanelContentArea', 'access' => caGetUserAccessValues($this->request));
+ 			$va_opts = array('use_book_viewer' => true, 'display' => 'media_overlay', 't_subject' => $t_object, 't_representation' => $t_rep, 'order_item_id' => $pn_item_id, 'containerID' => 'caMediaPanelContentArea', 'access' => caGetUserAccessValues($this->request));
 
- 			$this->response->addContent($t_rep->getRepresentationViewerHTMLBundle($this->request, $va_opts, array('sectionsAreSelectable' => true, 'use_book_viewer_when_number_of_representations_exceeds' => 0)));
+ 			$this->response->addContent(caGetMediaViewerHTMLBundle($this->request, $va_opts, array('sectionsAreSelectable' => true, 'use_book_viewer_when_number_of_representations_exceeds' => 0)));
  		}
  		# -------------------------------------------------------
  		public function RecordRepresentationSelection() {

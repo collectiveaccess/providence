@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -279,7 +279,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	public function divineFileFormat($ps_filepath) {
 		# is it a camera raw image?
 		if (caMediaPluginDcrawInstalled($this->ops_dcraw_path)) {
-			exec($this->ops_dcraw_path." -i ".caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
+			exec($this->ops_dcraw_path." -i ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 			if ($vn_return == 0) {
 				if ((!preg_match("/^Cannot decode/", $va_output[0])) && (!preg_match("/Master/i", $va_output[0]))) {
 					return 'image/x-dcraw';
@@ -288,6 +288,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		}
 		
 		$r_handle = new Imagick();
+		$this->setResourceLimits($r_handle);
 		try {
 			if ($ps_filepath != '' && ($r_handle->pingImage($ps_filepath))) {
 				$mimetype = $this->_getMagickImageMimeType($r_handle);
@@ -457,6 +458,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$this->handle = "";
 				$this->filepath = "";
 				$handle = new Imagick();
+				$this->setResourceLimits($handle);
 				
 				if ($mimetype == 'image/x-dcraw') {
 					if($this->filepath_conv) { @unlink($this->filepath_conv); }
@@ -470,7 +472,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 						$this->postError(1610, _t("Could not copy Camera RAW file to temporary directory"), "WLPlugImagick->read()");
 						return false;
 					}
-					exec($this->ops_dcraw_path." -T ".caEscapeShellArg($vs_tmp_name), $va_output, $vn_return);
+					exec($this->ops_dcraw_path." -T ".caEscapeShellArg($vs_tmp_name).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 					if ($vn_return != 0) {
 						$this->postError(1610, _t("Camera RAW file conversion failed: %1", $vn_return), "WLPlugImagick->read()");
 						return false;
@@ -503,7 +505,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					}
 					
 					// exif
-					if(function_exists('exif_read_data')) {
+					if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
 						if (is_array($va_exif = caSanitizeArray(@exif_read_data($ps_filepath, 'EXIF', true, false)))) { 							
 							//
 							// Rotate incoming image as needed
@@ -705,6 +707,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					}
 					
 					$w = new Imagick();
+					$this->setResourceLimits($w);
 					if (!$w->readImage($parameters['image'])) {
 						$this->postError(1610, _t("Couldn't load watermark image at %1", $parameters['image']), "WLPlugImagick->transform:WATERMARK()");
 						return false;
@@ -807,11 +810,20 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 										break;
 									case 'center':
 									default:
+										$crop_from_offset_x = $crop_from_offset_y = 0;
+										
+										// Get image center
+										$vn_center_x = caGetOption('_centerX', $parameters, 0.5);
+										$vn_center_y = caGetOption('_centerY', $parameters, 0.5);
 										if ($w > $parameters["width"]) {
-											$crop_from_offset_x = ceil(($w - $parameters["width"])/2);
+											$crop_from_offset_x = ceil($w * $vn_center_x) - ($parameters["width"]/2);
+											if (($crop_from_offset_x + $parameters["width"]) > $w) { $crop_from_offset_x = $w - $parameters["width"]; }
+											if ($crop_from_offset_x < 0) { $crop_from_offset_x = 0; }
 										} else {
 											if ($h > $parameters["height"]) {
-												$crop_from_offset_y = ceil(($h - $parameters["height"])/2);
+												$crop_from_offset_y = ceil($h * $vn_center_y) - ($parameters["height"]/2);
+												if (($crop_from_offset_y + $parameters["height"]) > $h) { $crop_from_offset_y = $h - $parameters["height"]; }
+												if ($crop_from_offset_y < 0) { $crop_from_offset_y = 0; }
 											}
 										}
 										break;
@@ -1019,10 +1031,12 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$vs_archive_original = $vs_archive_original.".tif";
 
 		$vo_orig = new Imagick();
+		$vo_orig->setResourceLimits($r_handle);
 
 		foreach($pa_files as $vs_file){
 			if(file_exists($vs_file)){
 				$vo_imagick = new Imagick();
+				$vo_imagick->setResourceLimits($r_handle);
 
 				if($vo_imagick->readImage($vs_file)){
 					$vo_orig->addImage($vo_imagick);
@@ -1163,6 +1177,16 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$this->metadata = array();
 		$this->errors = array();
 		$this->opa_faces = null;
+	}
+	# ------------------------------------------------
+	private function setResourceLimits($po_handle) {
+		$po_handle->setResourceLimit(imagick::RESOURCETYPE_MEMORY, 1024*1024*1024);		// Set maximum amount of memory in bytes to allocate for the pixel cache from the heap.
+		$po_handle->setResourceLimit(imagick::RESOURCETYPE_MAP, 1024*1024*1024);		// Set maximum amount of memory map in bytes to allocate for the pixel cache.
+		$po_handle->setResourceLimit(imagick::RESOURCETYPE_AREA, 6144*6144);			// Set the maximum width * height of an image that can reside in the pixel cache memory.
+		$po_handle->setResourceLimit(imagick::RESOURCETYPE_FILE, 1024);					// Set maximum number of open pixel cache files.
+		$po_handle->setResourceLimit(imagick::RESOURCETYPE_DISK, 64*1024*1024*1024);					// Set maximum amount of disk space in bytes permitted for use by the pixel cache.	
+		
+		return true;
 	}
 	# ------------------------------------------------
 	public function cleanup() {

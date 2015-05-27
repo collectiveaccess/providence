@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -314,15 +314,40 @@ class ca_data_exporter_items extends BaseModel {
 			'description' => _t('If set, id values refering to foreign keys are returned as preferred label text in the current locale.')
 		);
 
-		$va_settings['filterByRegExp'] = array(
+		$va_settings['returnIdno'] = array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Return id numbers for List attribute values'),
+			'description' => _t('If set, idnos are returned for List attribute values instead of primary key values. Do not combine this with convertCodesToDisplayText!')
+		);
+
+		$va_settings['skipIfExpression'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'width' => 40, 'height' => 1,
 			'takesLocale' => false,
 			'default' => '',
-			'label' => _t('Regular expression filter'),
-			'description' => _t('Any value that does NOT match this PCRE regular expression is filtered and not exported. Insert expression without delimiters.')
+			'label' => _t('Skip if expression'),
+			'description' => _t('The current mapping is skipped if the given expression evaluates to true.')
 		);
+
+		// Deprecated -- remove?
+		//$va_settings['filterByRegExp'] = array(
+		//	'formatType' => FT_TEXT,
+		//	'displayType' => DT_FIELD,
+		//	'width' => 40, 'height' => 1,
+		//	'takesLocale' => false,
+		//	'default' => '',
+		//	'label' => _t('Regular expression filter'),
+		//	'description' => _t('Any value that does NOT match this PCRE regular expression is filtered and not exported. Insert expression without delimiters.')
+		//);
 
 		$va_settings['original_values'] = array(
 			'formatType' => FT_TEXT,
@@ -361,7 +386,17 @@ class ca_data_exporter_items extends BaseModel {
 			'takesLocale' => false,
 			'default' => '',
 			'label' => _t('Omit if empty'),
-			'description' => _t('Omit this item and all its children if this CollectiveAccess bundle specifier returns an empty result.')
+			'description' => _t('Omit this item and all its children unless this CollectiveAccess bundle specifier returns a result.')
+		);
+
+		$va_settings['omitIfNotEmpty'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Omit if not empty'),
+			'description' => _t('Omit this item and all its children if this CollectiveAccess bundle specifier returns a non-empty result.')
 		);
 
 		$va_settings['context'] = array(
@@ -394,6 +429,16 @@ class ca_data_exporter_items extends BaseModel {
 			'description' => _t('Restricts the context of the mapping to only records related with the designated relationship type. Only valid when context is set.')
 		);
 
+		$va_settings['restrictToBundleValues'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Restrict to bundle values'),
+			'description' => _t('Restricts the context of the mapping to only records related with the designated bundle values. Only valid when context is set.')
+		);
+
 		$va_settings['checkAccess'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -402,6 +447,78 @@ class ca_data_exporter_items extends BaseModel {
 			'default' => '',
 			'label' => _t('Check access'),
 			'description' => _t('Restricts the context of the mapping to only records with one of the designated access values. Only valid when context is set.')
+		);
+
+		$va_settings['sort'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Sort'),
+			'description' => _t('Sorts the values returned for a context switch on these fields. Only valid when context is set.')
+		);
+
+		$va_settings['start_as_iso8601'] = array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Start as ISO8601'),
+			'description' => _t('If set, only the end of a date range is exported for the current mapping. Format is ISO8601. Only applies to exports of DateRange attributes.')
+		);
+
+		$va_settings['end_as_iso8601'] = array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('End as ISO8601'),
+			'description' => _t('If set, only the beginning of a date range is exported for the current mapping. Format is ISO8601. Only applies to exports of DateRange attributes.')
+		);
+
+		$va_settings['dontReturnValueIfOnSameDayAsStart'] = array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Do not return value if on the same day as start'),
+			'description' => _t('If set, the exporter will not insert a value for this mapping if the end day of the DateRange in question is on the same day as the start. Only applias to exports of DateRange attributes and only in conjunction with end_as_iso8601.'),
+		);
+
+		$va_settings['dateFormat'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Date format'),
+			'description' => _t('Formatting option for DateRange attributes.')
+		);
+		
+		$va_settings['_id'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('ID'),
+			'description' => _t('ID of item as set in mapping.')
 		);
 		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);

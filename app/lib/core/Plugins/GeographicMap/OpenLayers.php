@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2014 Whirl-i-Gig
+ * Copyright 2012-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,7 +49,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		
 		$this->description = _t('Generates maps using the OpenLayers API');
 		
-		JavascriptLoadManager::register("openlayers");
+		AssetLoadManager::register("openlayers");
 	}
 	# ------------------------------------------------
 	/**
@@ -66,7 +66,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 	 *		strokeColor = Color of plotted paths, in hex format with leading "#"
 	 *		fillColorSelected = Color to fill regions with when selected, in hex format with leading "#"
 	 *		strokeColorSelected = Color of plotted paths when selected, in hex format with leading "#"
-	 *
+	 *		layerSwitcherControl = Show layer switcher controls? [Default is false]
 	 * 		delimiter = HTML to place between items displayed in info overlays for plotted items. Default is an HTML break ("<br/>")
 	 * @return string HTML output
 	 */
@@ -139,7 +139,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 					$va_layers[] = "new OpenLayers.Layer.OSM('{$vs_tile_layer_name}', '{$vs_tileserver_url}',{ isBaseLayer: false, tileOptions : {crossOriginKeyword: null}})";
 				}
 		
-				$vs_layer_switcher_control = caGetOption('layerSwitcherControl', $pa_element_info['settings'], null) ? "map_{$vs_id}.addControl(new OpenLayers.Control.LayerSwitcher());" : "";
+				$vs_layer_switcher_control = caGetOption('layerSwitcherControl', $pa_options, null) ? "map_{$vs_id}.addControl(new OpenLayers.Control.LayerSwitcher());" : "";
 		
 		
 				$va_layers[] = "new {$vs_base_layer}";
@@ -201,7 +201,11 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 				$va_ajax_ids = array();
 				$vs_label = $vs_ajax_content_url = '';
 				foreach($va_marker_content_items as $va_marker_content_item) {
-					if (!$vs_label) { $vs_label = $va_marker_content_item['label']; }
+					if (!$vs_label) {
+						$vs_label = $va_marker_content_item['label'];
+					} else { // if there are multiple items in one location, we want to add the labels of the 2nd and all following items to the 'content' part of the overlay, while still not duplicating content (hence, md5)
+						$va_buf[md5($va_marker_content_item['label'])] = $va_marker_content_item['label'];
+					}
 					if (!$vs_ajax_content_url) { $vs_ajax_content_url = $va_marker_content_item['ajaxContentUrl']; }
 					$va_ajax_ids[] = $va_marker_content_item['ajaxContentID'];
 					$va_buf[md5($va_marker_content_item['content'])] = $va_marker_content_item['content'];	// md5 is to ensure there is no duplicate content (eg. if something is mapped to the same location twice)
@@ -334,7 +338,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 	 * @return string HTML output
 	 */
 	public function getAttributeBundleHTML($pa_element_info, $pa_options=null) {
-		JavascriptLoadManager::register('openlayers');
+		AssetLoadManager::register('openlayers');
 		$o_config = Configuration::load();
 		
 		$va_element_width = caParseFormElementDimension($pa_element_info['settings']['fieldWidth']);
@@ -387,7 +391,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
  		
 		$po_request = isset($pa_options['request']) ? $pa_options['request'] : null;
 		
-		$vs_id = $pa_element_info['element_id'];
+		$vs_id = $pa_element_info['element_id']."_{n}";
 		
 		$vs_custom_tile_layer = '';
 		if ($vs_tileserver_url = caGetOption('tileServerURL', $pa_element_info['settings'], null)) {
@@ -521,18 +525,18 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		map_{$vs_id}_delete_button.activate();
 		
 		// Grab current map coordinates from input
-		var map_{$ps_id}_loc_str = '{".$pa_element_info['element_id']."}';
-		var map_{$ps_id}_loc_features = map_{$ps_id}_loc_str.match(/\[([\d\,\-\.\:\;]+)\]/)
-		if (map_{$ps_id}_loc_features && (map_{$ps_id}_loc_features.length > 1)) {
-			map_{$ps_id}_loc_features = map_{$ps_id}_loc_features[1].split(/:/);
+		var map_{$vs_id}_loc_str = '{{".$pa_element_info['element_id']."}}';
+		var map_{$vs_id}_loc_features = map_{$vs_id}_loc_str.match(/\[([\d\,\-\.\:\;]+)\]/)
+		if (map_{$vs_id}_loc_features && (map_{$vs_id}_loc_features.length > 1)) {
+			map_{$vs_id}_loc_features = map_{$vs_id}_loc_features[1].split(/:/);
 		} else {
-			map_{$ps_id}_loc_features = [];
+			map_{$vs_id}_loc_features = [];
 		}
 		var features_{$vs_id} = [];
 		
 		var i, j, c=0;
-		for(i=0; i < map_{$ps_id}_loc_features.length; i++) {
-			var ptlist = map_{$ps_id}_loc_features[i].split(/;/);
+		for(i=0; i < map_{$vs_id}_loc_features.length; i++) {
+			var ptlist = map_{$vs_id}_loc_features[i].split(/;/);
 			
 			if (ptlist.length > 1) {
 				// path
@@ -615,4 +619,3 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 	}
 	# ------------------------------------------------
 }
-?>

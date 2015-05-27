@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2012 Whirl-i-Gig
+ * Copyright 2011-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -121,6 +121,22 @@ BaseModel::$s_ca_models_definitions['ca_tours'] = array(
 				),
 				'LIST' => 'workflow_statuses',
 				'LABEL' => _t('Status'), 'DESCRIPTION' => _t('Indicates the current state of the tour.')
+		),
+		'source_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'LIST_CODE' => 'tour_sources',
+				'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of tour. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed.')
+		),
+		'source_info' => array(
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => 'Source information', 'DESCRIPTION' => 'Serialized array used to store source information for tour information retrieved via web services [NOT IMPLEMENTED YET].'
 		)
  	)
 );
@@ -212,7 +228,13 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 	# Attributes
 	# ------------------------------------------------------
 	protected $ATTRIBUTE_TYPE_ID_FLD = 'type_id';			// name of type field for this table - attributes system uses this to determine via ca_metadata_type_restrictions which attributes are applicable to rows of the given type
-	protected $ATTRIBUTE_TYPE_LIST_CODE = 'tour_types';	// list code (ca_lists.list_code) of list defining types for this table
+	protected $ATTRIBUTE_TYPE_LIST_CODE = 'tour_types';		// list code (ca_lists.list_code) of list defining types for this table
+
+	# ------------------------------------------------------
+	# Sources
+	# ------------------------------------------------------
+	protected $SOURCE_ID_FLD = 'source_id';				// name of source field for this table
+	protected $SOURCE_LIST_CODE = 'tour_sources';		// list code (ca_lists.list_code) of list defining sources for this table
 
 	# ------------------------------------------------------
 	# ID numbering
@@ -266,7 +288,7 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		if ($t_dupe = parent::duplicate($pa_options)) {
-			$vb_duplicate_subitems = isset($pa_options['duplicate_subitems']) && $pa_options['duplicate_subitems'];
+			$vb_duplicate_subitems = caGetOption('duplicate_subitems', $pa_options, false);
 		
 			if ($vb_duplicate_subitems) { 
 				// Try to dupe related ca_tour_stops rows
@@ -282,8 +304,11 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 				$va_stops = array();
 				while($qr_res->nextRow()) {
 					//$va_stops[$qr_res->get('stop_id')] = $qr_res->getRow();
-					$t_stop = new ca_tour_stops($qr_res->get('stop_id'));
+					$t_stop = new ca_tour_stops();
+					$t_stop->setTransaction($o_t);
+					$t_stop->load($qr_res->get('stop_id'));
 					if ($t_dupe_stop = $t_stop->duplicate($pa_options)) {
+						$t_dupe_stop->setTransaction($o_t);
 						$t_dupe_stop->setMode(ACCESS_WRITE);
 						$t_dupe_stop->set('tour_id', $t_dupe->getPrimaryKey());
 						$t_dupe_stop->update(); 
@@ -452,7 +477,14 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 		$va_stop_ranks = $this->getStopIDRanks($pa_options);	// get current ranks
 		
 		$vn_i = 0;
-		$o_trans = new Transaction();
+		$vb_web_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$o_trans = new Transaction($this->getDb());
+			$vb_web_set_transaction = true;
+		} else {
+			$o_trans = $this->getTransaction();
+		}
+		
 		$t_stop = new ca_tour_stops();
 		$t_stop->setTransaction($o_trans);
 		$t_stop->setMode(ACCESS_WRITE);
@@ -485,9 +517,9 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		if(sizeof($va_errors)) {
-			$o_trans->rollback();
+			if ($vb_web_set_transaction) { $o_trans->rollback(); }
 		} else {
-			$o_trans->commit();
+			if ($vb_web_set_transaction) { $o_trans->commit(); }
 		}
 		
 		return $va_errors;
@@ -500,6 +532,7 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 		if (!$this->getPrimaryKey()) { return false; }
 		
 		$t_stop = new ca_tour_stops();
+		if($this->inTransaction()) { $t_stop->setTransaction($this->getTransaction()); }
 		$t_stop->setMode(ACCESS_WRITE);
 		$t_stop->set('idno', $ps_idno);
 		$t_stop->set('type_id', $pn_type_id);
@@ -530,7 +563,9 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function removeStop($pn_stop_id) {
 		if (!($vn_tour_id = $this->getPrimaryKey())) { return false; }
+		
 		$t_stop = new ca_tour_stops();
+		if($this->inTransaction()) { $t_stop->setTransaction($this->getTransaction()); }
 		
 		if (!$t_stop->load(array('tour_id' => $vn_tour_id, 'stop_id' => $pn_stop_id))) { return false; }
 		$t_stop->setMode(ACCESS_WRITE);
@@ -547,12 +582,13 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @return string Rendered HTML bundle for display
 	 */
-	public function getTourStopHTMLFormBundle($po_request, $ps_form_name) {
+	public function getTourStopHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null) {
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
 		$o_view->setVar('t_tour', $this);		
 		$o_view->setVar('t_stop', new ca_tour_stops());		
 		$o_view->setVar('id_prefix', $ps_form_name);		
+		$o_view->setVar('placement_code', $ps_placement_code);		
 		$o_view->setVar('request', $po_request);
 		
 		if ($this->getPrimaryKey()) {

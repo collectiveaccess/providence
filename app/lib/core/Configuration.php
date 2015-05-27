@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2012 Whirl-i-Gig
+ * Copyright 2000-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,16 +33,6 @@
  /**
   *
   */
-
-/**
- * Global containing parsed configurations files. Each time a new configuration file
- * is parsed, a copy of the resultant data structure is cached here in case the same file
- * is opened again.
- *
- * @global Array $_CONFIG_CACHE
- */
-$_CONFIG_CACHE = array();
-$_CONFIG_INSTANCE_CACHE = array();
 
 
 /**
@@ -94,173 +84,132 @@ class Configuration {
 	private $ops_md5_path;
 
 	/* ---------------------------------------- */
-	static function load($ps_file_path="", $pb_dont_cache=false, $pb_dont_cache_instance=false) {
-		global $_CONFIG_INSTANCE_CACHE;
-		if (!isset($_CONFIG_INSTANCE_CACHE[$ps_file_path]) || $pb_dont_cache || $pb_dont_cache_instance) {
-			$_CONFIG_INSTANCE_CACHE[$ps_file_path] = new Configuration($ps_file_path, true, $pb_dont_cache);
+	/**
+	 * @param string $ps_file_path
+	 * @param bool $pb_dont_cache
+	 * @param bool $pb_dont_cache_instance
+	 * @return Configuration
+	 */
+	static function load($ps_file_path=__CA_APP_CONFIG__, $pb_dont_cache=false, $pb_dont_cache_instance=false) {
+		if(!$ps_file_path) { $ps_file_path = __CA_APP_CONFIG__; }
+
+		if(!MemoryCache::contains($ps_file_path, 'ConfigurationInstances') || $pb_dont_cache || $pb_dont_cache_instance) {
+			MemoryCache::save($ps_file_path, new Configuration($ps_file_path, true, $pb_dont_cache), 'ConfigurationInstances');
 		}
-		return $_CONFIG_INSTANCE_CACHE[$ps_file_path];
+
+		return MemoryCache::fetch($ps_file_path, 'ConfigurationInstances');
 	}
 	/* ---------------------------------------- */
-/**
- * Load a configuration file. In addition to the parameters described below two global variables can also affect loading:
- *
- *		$g_ui_locale - if it contains the current locale code, this code will be used when computing the MD5 signature of the current configuration for caching purposes. By setting this to the current locale simultaneous caching of configurations for various locales (eg. config files with gettext-translated strings in them) is enabled.
- *		$g_configuration_cache_suffix - any text it contains is used along with the configuration path and $g_ui_locale to compute the MD5 signature of the current configuration for caching purposes. By setting this to some value you can support simultaneous caching of configurations for several different modes. This is mainly used to support caching of theme-specific configurations. Since the theme can change based upon user agent, we need to potentially keep several computed configurations cached at the same time, one for each theme used.
- *		
- * @param string $ps_file_path Absolute path to configuration file to parse
- * @param bool $pb_die_on_error If true, request processing will halt with call to die() on error in parsing config file
- * @param bool $pb_dont_cache If true, file will be parsed even if it's already cached
- *
- *
- */
-	function Configuration ($ps_file_path="", $pb_die_on_error=true, $pb_dont_cache=false) {
-		global $g_ui_locale, $g_configuration_cache_suffix, $_CONFIG_CACHE;
+	/**
+	 * Load a configuration file. In addition to the parameters described below two global variables can also affect loading:
+	 *
+	 *		$g_ui_locale - if it contains the current locale code, this code will be used when computing the MD5 signature of the current configuration for caching purposes. By setting this to the current locale simultaneous caching of configurations for various locales (eg. config files with gettext-translated strings in them) is enabled.
+	 *		$g_configuration_cache_suffix - any text it contains is used along with the configuration path and $g_ui_locale to compute the MD5 signature of the current configuration for caching purposes. By setting this to some value you can support simultaneous caching of configurations for several different modes. This is mainly used to support caching of theme-specific configurations. Since the theme can change based upon user agent, we need to potentially keep several computed configurations cached at the same time, one for each theme used.
+	 *		
+	 * @param string $ps_file_path Absolute path to configuration file to parse
+	 * @param bool $pb_die_on_error If true, request processing will halt with call to die() on error in parsing config file
+	 * @param bool $pb_dont_cache If true, file will be parsed even if it's already cached
+	 *
+	 *
+	 */
+	public function __construct($ps_file_path=__CA_APP_CONFIG__, $pb_die_on_error=false, $pb_dont_cache=false) {
+		global $g_ui_locale, $g_configuration_cache_suffix;
 		
 		$this->ops_config_file_path = $ps_file_path ? $ps_file_path : __CA_APP_CONFIG__;	# path to configuration file
+		// cache key for on-disk caching
+		$vs_path_as_md5 = md5($_SERVER['HTTP_HOST'].$this->ops_config_file_path.'/'.$g_ui_locale.(isset($g_configuration_cache_suffix) ? '/'.$g_configuration_cache_suffix : ''));
 		
 		#
 		# Is configuration file already cached?
 		#
-		if (!isset($_CONFIG_CACHE[$this->ops_config_file_path.$g_ui_locale]) || $pb_dont_cache) {
-		
-			$va_config_path_components = explode("/", $this->ops_config_file_path);
-			$vs_config_filename = array_pop($va_config_path_components);
-			
-			$vb_local_conf_file_exists = false;
-			if (defined('__CA_LOCAL_CONFIG_DIRECTORY__') && file_exists(__CA_LOCAL_CONFIG_DIRECTORY__.'/'.$vs_config_filename)) {
-				$vb_local_conf_file_exists = true;	
-			}
-			
-			if(!defined('__CA_DISABLE_CONFIG_CACHING__') || !__CA_DISABLE_CONFIG_CACHING__){
-				# is a "compiled" version of the config file cached on disk?
-				$va_frontend_options = array(
-					'lifetime' => null, 				/* cache lives forever (until manual destruction) */
-					'logging' => false,					/* do not use Zend_Log to log what happens */
-					'write_control' => true,			/* immediate read after write is enabled (we don't write often) */
-					'automatic_cleaning_factor' => 0, 	/* no automatic cache cleaning */
-					'automatic_serialization' => true	/* we store arrays, so we have to enable that */
-				);
-				$vs_cache_dir = __CA_APP_DIR__.'/tmp';
-				$va_backend_options = array(
-					'cache_dir' => $vs_cache_dir,		/* where to store cache data? */
-					'file_locking' => true,				/* cache corruption avoidance */
-					'read_control' => false,			/* no read control */
-					'file_name_prefix' => 'ca_cache',	/* prefix of cache files */
-					'cache_file_perm' => 0700			/* permissions of cache files */
-				);
-
-				$vs_path_as_md5 = md5($_SERVER['HTTP_HOST'].$this->ops_config_file_path.'/'.$g_ui_locale.(isset($g_configuration_cache_suffix) ? '/'.$g_configuration_cache_suffix : ''));
-				$vo_cache = null;
-
-				if (!$pb_dont_cache) {
-					try {
-						$vo_cache = Zend_Cache::factory('Core', 'File', $va_frontend_options, $va_backend_options);
-					} catch (Exception $e) {
-						// ok... just keep on going
-						$vo_cache = null;
-					}
-				}
-				
-				
-
-				if (is_object($vo_cache)) {
-					// check that setup.php and global.conf haven't changed. If they have we're going to want to
-					// regenerate all config file caches so they reflect inherited changes
-					$va_global_config_stat = @stat(__CA_CONF_DIR__.'/global.conf');
-					$va_setup_stat = @stat(__CA_BASE_DIR__.'/setup.php');
-					if(
-						($va_global_config_stat['mtime'] != $vo_cache->load('ca_global_config_mtime'))
-						||
-						($va_setup_stat['mtime'] != $vo_cache->load('ca_setup_mtime'))
-					) {
-						// either global.conf or setup.php have changed so clear the cache
-						$vo_cache->clean(Zend_Cache::CLEANING_MODE_MATCHING_TAG, array('ca_config_cache'));
-
-						// save current times for global.conf and setup.php
-						$vo_cache->save($va_global_config_stat['mtime'],'ca_global_config_mtime', array('ca_config_cache'));
-						$vo_cache->save($va_setup_stat['mtime'],'ca_setup_mtime', array('ca_config_cache'));
-					}
+		$va_config_path_components = explode("/", $this->ops_config_file_path);
+		$vs_config_filename = array_pop($va_config_path_components);
 
 
-					if (is_object($vo_cache)) {
-						$va_cache_data = $vo_cache->load('ca_config_file_'.$vs_path_as_md5);
-						#
-						# is cache outdated? (changes to config file have invalidated it)
-						#
-						$vb_cache_is_invalid = false;
-						
-						$va_configfile_stat = @stat($this->ops_config_file_path);
-						if($va_configfile_stat['mtime'] != $vo_cache->load('ca_config_file_mtime_'.$vs_path_as_md5)) {	// config file has changed
-							$vo_cache->save($va_configfile_stat['mtime'],'ca_config_file_mtime_'.$vs_path_as_md5, array('ca_config_cache'));
-							$vb_cache_is_invalid = true;
-						}
-						if ($vb_local_conf_file_exists) {
-							$va_local_configfile_stat = @stat(__CA_LOCAL_CONFIG_DIRECTORY__.'/'.$vs_config_filename);
-							if($va_local_configfile_stat['mtime'] != ($x = $vo_cache->load('ca_config_file_local_mtime_'.$vs_path_as_md5))) {	// local config file has changed
-								$vo_cache->save($va_local_configfile_stat['mtime'],'ca_config_file_local_mtime_'.$vs_path_as_md5, array('ca_config_cache'));
-								$vb_cache_is_invalid = true;
-							}
-						}
-						if (!$vb_cache_is_invalid) {
-							// Get it out of the cache because cache is ok
-							$this->ops_config_settings = $va_cache_data;
-							$this->ops_md5_path = md5($this->ops_config_file_path);
-							return;
-						}
-					}
-				}
-			}
-			
-			# load hash
-			$this->ops_config_settings = array();
-
-			# try loading global.conf file
-			$vs_global_path = join("/", $va_config_path_components)."/global.conf";
-			
-			if (!isset($_CONFIG_CACHE[$vs_global_path.$g_ui_locale])) {
-				$this->loadFile($vs_global_path, false);
-				$_CONFIG_CACHE[$vs_global_path.$g_ui_locale] = $this->ops_config_settings;	// cache global.conf
-			} else {
-				$this->ops_config_settings = $_CONFIG_CACHE[$vs_global_path.$g_ui_locale];
-			}
-			
-			//
-			// Insert current user locale as constant into configuration.
-			//
-			$this->ops_config_settings['scalars']['LOCALE'] = $g_ui_locale;
-			
-			#
-			# load specified config file
-			#
-			$vb_loaded_config = false;
-			if ($this->loadFile($this->ops_config_file_path, $pb_die_on_error)) {
-				$this->ops_config_settings["ops_config_file_path"] = $this->ops_config_file_path;
-				$vb_loaded_config = true;
-			}
-			
-			if ($vb_loaded_config) {
-				#
-				# try to load optional "local" config file (extra, optional, config file that can override values in the specified config file with "local" values)
-				#
-				if ($vb_local_conf_file_exists) {
-					$this->loadFile(__CA_LOCAL_CONFIG_DIRECTORY__.'/'.$vs_config_filename, $pb_die_on_error);
-				}
-				
-				$_CONFIG_CACHE[$this->ops_config_file_path.$g_ui_locale] = $this->ops_config_settings;	
-				if (is_object($vo_cache)) {
-					// Save parsed config file to cache
-					$vo_cache->save($this->ops_config_settings, 'ca_config_file_'.$vs_path_as_md5, array('ca_config_cache'));
-					return;
-				}
-			}
-		} else {
-			#
-			# Return cached configuration file
-			#
-			$this->ops_config_settings = $_CONFIG_CACHE[$this->ops_config_file_path.$g_ui_locale];
-			return;
+		$vs_local_conf_file_path = null;
+		if (defined('__CA_LOCAL_CONFIG_DIRECTORY__') && file_exists(__CA_LOCAL_CONFIG_DIRECTORY__.'/'.$vs_config_filename)) {
+			$vs_local_conf_file_path = __CA_LOCAL_CONFIG_DIRECTORY__.'/'.$vs_config_filename;
+		} elseif (defined('__CA_DEFAULT_THEME_CONFIG_DIRECTORY__') && file_exists(__CA_DEFAULT_THEME_CONFIG_DIRECTORY__.'/'.$vs_config_filename)) {
+			$vs_local_conf_file_path = __CA_DEFAULT_THEME_CONFIG_DIRECTORY__.'/'.$vs_config_filename;
 		}
+
+		if((!defined('__CA_DISABLE_CONFIG_CACHING__') || !__CA_DISABLE_CONFIG_CACHING__) && !$pb_dont_cache) {
+			// check that setup.php and global.conf haven't changed. If they have we're going to want to
+			// regenerate all config file caches so they reflect inherited changes
+			$va_global_config_stat = @stat(__CA_CONF_DIR__.'/global.conf');
+			$va_setup_stat = @stat(__CA_BASE_DIR__.'/setup.php');
+			if(
+				($va_global_config_stat['mtime'] != ExternalCache::fetch('ca_global_config_mtime', 'Configuration'))
+				||
+				($va_setup_stat['mtime'] != ExternalCache::fetch('ca_setup_mtime', 'Configuration'))
+			) {
+				// either global.conf or setup.php have changed so clear the cache
+				ExternalCache::flush();
+
+				// save current times for global.conf and setup.php
+				ExternalCache::save('ca_global_config_mtime', $va_global_config_stat['mtime'], 'Configuration', 0);
+				ExternalCache::save('ca_setup_mtime', $va_setup_stat['mtime'], 'Configuration', 0);
+			}
+
+			$va_cache_data = ExternalCache::fetch($vs_path_as_md5, 'Configuration');
+
+			#
+			# is cache outdated? (changes to config file have invalidated it)
+			#
+			$vb_cache_is_invalid = false;
+
+			$va_configfile_stat = @stat($this->ops_config_file_path);
+			if($va_configfile_stat['mtime'] != ExternalCache::fetch('ca_config_file_mtime_'.$vs_path_as_md5, 'Configuration')) { // config file has changed
+				ExternalCache::save('ca_config_file_mtime_'.$vs_path_as_md5, $va_configfile_stat['mtime'], 'Configuration');
+				$vb_cache_is_invalid = true;
+			}
+
+			if ($vs_local_conf_file_path) {
+				$va_local_configfile_stat = @stat($vs_local_conf_file_path);
+				if($va_local_configfile_stat['mtime'] != ExternalCache::fetch('ca_config_file_local_mtime_'.$vs_path_as_md5, 'Configuration')) { // local config file has changed
+					ExternalCache::save('ca_config_file_local_mtime_'.$vs_path_as_md5, $va_local_configfile_stat['mtime'], 'Configuration');
+					$vb_cache_is_invalid = true;
+				}
+			}
+			if (!$vb_cache_is_invalid) {
+				// Get it out of the cache because cache is ok
+				$this->ops_config_settings = $va_cache_data;
+				$this->ops_md5_path = md5($this->ops_config_file_path);
+				return;
+			}
+
+		}
+
+		# load hash
+		$this->ops_config_settings = array();
+
+		# try loading global.conf file
+		$vs_global_path = join("/", $va_config_path_components).'/global.conf';
+		if (file_exists($vs_global_path)) { $this->loadFile($vs_global_path, false); }
+
+		//
+		// Insert current user locale as constant into configuration.
+		//
+		$this->ops_config_settings['scalars']['LOCALE'] = $g_ui_locale;
+
+		#
+		# load specified config file
+		#
+		if (file_exists($this->ops_config_file_path) && $this->loadFile($this->ops_config_file_path, false)) {
+			$this->ops_config_settings["ops_config_file_path"] = $this->ops_config_file_path;
+		}
+
+		#
+		# try to load optional "local" config file (extra, optional, config file that can override values in the specified config file with "local" values)
+		#
+		if ($vs_local_conf_file_path) {
+			$this->loadFile($vs_local_conf_file_path, false, false);
+		}
+
+		if($vs_path_as_md5 && !$pb_dont_cache) {
+			ExternalCache::save($vs_path_as_md5, $this->ops_config_settings, 'Configuration');
+		}
+
 	}
 	/* ---------------------------------------- */
 	/**
@@ -271,7 +220,7 @@ class Configuration {
 	 * @param $pn_num_lines_to_read - if set to a positive integer, will abort parsing after the first $pn_num_lines_to_read lines of the config file are read. This is useful for reading in headers in config files without having to parse the entire file.
 	 * @return boolean - returns true if parse succeeded, false if parse failed
 	 */
-	function loadFile($ps_filepath, $pb_die_on_error=false, $pn_num_lines_to_read=null) {
+	public function loadFile($ps_filepath, $pb_die_on_error=false, $pn_num_lines_to_read=null) {
 		$this->ops_md5_path = md5($ps_filepath);
 		$this->ops_error = "";
 		$r_file = @fopen($ps_filepath,"r", true);
@@ -288,6 +237,7 @@ class Configuration {
 
 		$va_token_history = array();
 		$vn_line_num = 0;
+		$vb_merge_mode = false;
 		while (!feof($r_file)) {
 			$vn_line_num++;
 			
@@ -295,9 +245,11 @@ class Configuration {
 			$vs_buffer = trim(fgets($r_file, 32000));
 
 			# skip comments (start with '#') or blank lines
+			if (strtolower(substr($vs_buffer,0,7)) == '#!merge') { $vb_merge_mode = true; }
+			if (strtolower(substr($vs_buffer,0,9)) == '#!replace') { $vb_merge_mode = false; }
 			if (!$vs_buffer || (substr($vs_buffer,0,1) === "#")) { continue; }
 
-			$va_token_tmp = preg_split("/([={}\[\]\",]){1}/", $vs_buffer, -1, PREG_SPLIT_DELIM_CAPTURE);
+			$va_token_tmp = preg_split("/([={}\[\]\",\\\]){1}/", $vs_buffer, -1, PREG_SPLIT_DELIM_CAPTURE);
 
 			// eliminate blank tokens
 			$va_tokens = array();
@@ -339,11 +291,15 @@ class Configuration {
 					case 10:
 						switch($vs_token) {
 							case '[':
-								$this->ops_config_settings["lists"][$vs_key] = array();
+								if(!is_array($this->ops_config_settings["lists"][$vs_key]) || !$vb_merge_mode) {
+									$this->ops_config_settings["lists"][$vs_key] = array();
+								}
 								$vn_state = 30;
 								break;
 							case '{':
-								$this->ops_config_settings["assoc"][$vs_key] = array();
+								if(!is_array($this->ops_config_settings["assoc"][$vs_key]) || !$vb_merge_mode) {
+									$this->ops_config_settings["assoc"][$vs_key] = array();
+								}
 								$va_assoc_pointer_stack[] = &$this->ops_config_settings["assoc"][$vs_key];
 								$vn_state = 40;
 								break;
@@ -391,8 +347,7 @@ class Configuration {
 							# -------------------
 							case '"':
 								if ($vb_escape_set) {
-									$vs_scalar_value = '"';
-									$vb_escape_set = false;
+									$vs_scalar_value .= '"';
 								} else {
 									if (!$vn_in_quote) {
 										$vn_in_quote = 1;
@@ -400,24 +355,27 @@ class Configuration {
 										$vn_in_quote = 0;
 									}
 								}
+								$vb_escape_set = false;
 								break;
 							# -------------------
 							case ',':
-								if ($vn_in_quote) {
+								if ($vn_in_quote || $vb_escape_set) {
 									$vs_scalar_value .= ",";
 								} else {
-									$this->ops_config_settings["lists"][$vs_key][] = $this->_interpolateScalar($this->_trimScalar($vs_scalar_value));
+									if (strlen($vs_item = trim($this->_interpolateScalar($this->_trimScalar($vs_scalar_value)))) > 0) {
+										$this->ops_config_settings["lists"][$vs_key][] = $vs_item;
+									}
 									$vs_scalar_value = "";
 								}
 								$vb_escape_set = false;
 								break;
 							# -------------------
 							case ']':
-								if ($vn_in_quote) {
+								if ($vn_in_quote || $vb_escape_set) {
 									$vs_scalar_value .= "]";
 								} else {
 									# accept list
-									if (strlen($vs_item = $this->_interpolateScalar($this->_trimScalar($vs_scalar_value))) > 0) {
+									if (strlen($vs_item = trim($this->_interpolateScalar($this->_trimScalar($vs_scalar_value)))) > 0) {
 										$this->ops_config_settings["lists"][$vs_key][] = $vs_item;
 									}
 									# initialize
@@ -427,7 +385,11 @@ class Configuration {
 								break;
 							# -------------------
 							case '\\':
-								$vb_escape_set = true;
+								if ($vb_escape_set) {
+									$vs_scalar_value .= $vs_token;
+								} else {
+									$vb_escape_set = true;
+								}
 								break;
 							# -------------------
 							default:
@@ -492,7 +454,7 @@ class Configuration {
 							# -------------------
 							case '}':
 								if ($vn_in_quote) {
-									$vs_assoc_key .= "}";
+									$vs_scalar_value .= "}";
 								} else {
 									if ($this->opb_debug) { print "CONFIG DEBUG: STATE=40; Got close }; KEY IS '$vs_assoc_key'\n"; }
 									if (sizeof($va_assoc_pointer_stack) > 1) {
@@ -532,8 +494,7 @@ class Configuration {
 							# -------------------
 							case '"':
 								if ($vb_escape_set) {
-									$vs_scalar_value = '"';
-									$vb_escape_set = false;
+									$vs_scalar_value .= '"';
 								} else {
 									if (!$vn_in_quote) {
 										$vn_in_quote = 1;
@@ -541,10 +502,11 @@ class Configuration {
 										$vn_in_quote = 0;
 									}
 								}
+								$vb_escape_set = false;
 								break;
 							# -------------------
 							case ',':
-								if ($vn_in_quote) {
+								if ($vn_in_quote || $vb_escape_set) {
 									$vs_scalar_value .= ",";
 								} else {
 									if ($vs_assoc_key) {
@@ -559,22 +521,24 @@ class Configuration {
 							# -------------------
 							# open nested associative value
 							case '{':
-								if (!$vn_in_quote) {
+								if (!$vn_in_quote && !$vb_escape_set) {
 									if ($this->opb_debug) { print "CONFIG DEBUG: STATE=50; Got open {; KEY IS '$vs_assoc_key'\n"; }
-									$va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key] = array();
+									
+									if (!is_array($va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key]) || !$vb_merge_mode) {
+										$va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key] = array();
+									}
 									$va_assoc_pointer_stack[] =& $va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key];
 									$vn_state = 40;
 									$vs_key = $vs_assoc_key = $vs_scalar_value = "";
 									$vn_in_quote = 0;
-									$vb_escape_set = false;
 								} else {
 									$vs_scalar_value .= $vs_token;
-									$vb_escape_set = false;
 								}
+								$vb_escape_set = false;
 								break;
 							# -------------------
 							case '}':
-								if ($vn_in_quote) {
+								if ($vn_in_quote || $vb_escape_set) {
 									$vs_scalar_value .= "}";
 								} else {
 									if ($this->opb_debug) { print "CONFIG DEBUG: STATE=50; Got close }; KEY IS '$vs_assoc_key'\n"; }
@@ -600,15 +564,26 @@ class Configuration {
 							# open list
 							case '[':
 								if ($this->opb_debug) { print "CONFIG DEBUG: STATE=50; Got open [; KEY IS '$vs_assoc_key'\n"; }
-								$va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key] = array();
-								$va_assoc_pointer_stack[] =& $va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key];
-								$vn_state = 60;
-								$vn_in_quote = 0;
+							
+								if ($vn_in_quote || $vb_escape_set) {
+									$vs_scalar_value .= $vs_token;
+								} else {
+									if(!is_array($va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key]) || !$vb_merge_mode) {
+										$va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key] = array();
+									}
+									$va_assoc_pointer_stack[] =& $va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key];
+									$vn_state = 60;
+									$vn_in_quote = 0;
+								}
 								$vb_escape_set = false;
 								break;
 							# -------------------
 							case '\\':
-								$vb_escape_set = true;
+								if ($vb_escape_set) {
+									$vs_scalar_value .= $vs_token;
+								} else {
+									$vb_escape_set = true;
+								}
 								break;
 							# -------------------
 							default:
@@ -625,8 +600,7 @@ class Configuration {
 							# -------------------
 							case '"':
 								if ($vb_escape_set) {
-									$vs_scalar_value = '"';
-									$vb_escape_set = false;
+									$vs_scalar_value .= '"';
 								} else {
 									if (!$vn_in_quote) {
 										$vn_in_quote = 1;
@@ -634,29 +608,32 @@ class Configuration {
 										$vn_in_quote = 0;
 									}
 								}
+								$vb_escape_set = false;
 								break;
 							# -------------------
 							case ',':
 								if ($this->opb_debug) { print "CONFIG DEBUG: STATE=60; Got list-in-associative list comma; KEY IS '$vs_assoc_key'\n"; }
-								if ($vn_in_quote) {
+								if ($vn_in_quote || $vb_escape_set) {
 									$vs_scalar_value .= ",";
 								} else {
-									$va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][] = $this->_trimScalar($vs_scalar_value);
+									if (strlen($vs_item = trim($this->_interpolateScalar($this->_trimScalar($vs_scalar_value)))) > 0) {
+										$va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][] = $vs_item;
+									}
 									$vs_scalar_value = "";
 								}
 								$vb_escape_set = false;
 								break;
 							# -------------------
 							case ']':
-								if ($vn_in_quote) {
+								if ($vn_in_quote || $vb_escape_set) {
 									$vs_scalar_value .= "]";
 								} else {
 									if ($this->opb_debug) { print "CONFIG DEBUG: STATE=60; Got ]; KEY IS '$vs_assoc_key'\n"; }
 									# accept list
-									if ($vs_item = $this->_trimScalar($vs_scalar_value)) {
+									if (strlen($vs_item = trim($this->_interpolateScalar($this->_trimScalar($vs_scalar_value)))) > 0) {
 										$va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][] = $vs_item;
-										array_pop($va_assoc_pointer_stack);
 									}
+									array_pop($va_assoc_pointer_stack);
 									# initialize
 									$vn_state = 40;
 									$vs_assoc_key = '';
@@ -746,17 +723,17 @@ class Configuration {
 		return $vs_output;
 	}
 	/* ---------------------------------------- */
-/**
- * Get configuration value
- *
- * @param string $ps_key Name of configuration value to get. get() will look for the
- * configuration value first as a scalar, then as a list and finally as an associative array.
- * The first value found is returned.
- *
- * @return mixed A string, indexed array (list) or associative array, depending upon what
- * kind of configuration value was found.
- */
-	function get($ps_key) {
+	/**
+	 * Get configuration value
+	 *
+	 * @param string $ps_key Name of configuration value to get. get() will look for the
+	 * configuration value first as a scalar, then as a list and finally as an associative array.
+	 * The first value found is returned.
+	 *
+	 * @return mixed A string, indexed array (list) or associative array, depending upon what
+	 * kind of configuration value was found.
+	 */
+	public function get($ps_key) {
 		if (isset(Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]) && Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]) { return Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]; } 
 		$this->ops_error = "";
 
@@ -771,16 +748,16 @@ class Configuration {
 		return $vs_tmp;
 	}
 	/* ---------------------------------------- */
-/**
- * Get boolean configuration value
- *
- * @param string $ps_key Name of configuration value to get. getBoolean() will look for the
- * configuration value only as a scalar, and return boolean 'true' if the scalar value is
- * either 'yes', 'true' or '1'.
- *
- * @return boolean
- */
-	function getBoolean($ps_key) {
+	/**
+	 * Get boolean configuration value
+	 *
+	 * @param string $ps_key Name of configuration value to get. getBoolean() will look for the
+	 * configuration value only as a scalar, and return boolean 'true' if the scalar value is
+	 * either 'yes', 'true' or '1'.
+	 *
+	 * @return boolean
+	 */
+	public function getBoolean($ps_key) {
 		$vs_tmp = strtolower($this->getScalar($ps_key));
 		if(($vs_tmp == "yes") || ($vs_tmp == "true") || ($vs_tmp == "1")) {
 			return true;
@@ -789,16 +766,16 @@ class Configuration {
 		}
 	}
 	/* ---------------------------------------- */
-/**
- * Get scalar configuration value
- *
- * @param string $ps_key Name of scalar configuration value to get. get() will look for the
- * configuration value only as a scalar. Like-named list or associative array values are
- * ignored.
- *
- * @return string
- */
-	function getScalar($ps_key) {
+	/**
+	 * Get scalar configuration value
+	 *
+	 * @param string $ps_key Name of scalar configuration value to get. get() will look for the
+	 * configuration value only as a scalar. Like-named list or associative array values are
+	 * ignored.
+	 *
+	 * @return string
+	 */
+	public function getScalar($ps_key) {
 		$this->ops_error = "";
 		if (isset($this->ops_config_settings["scalars"][$ps_key])) {
 			return $this->ops_config_settings["scalars"][$ps_key];
@@ -807,49 +784,49 @@ class Configuration {
 		}
 	}
 	/* ---------------------------------------- */
-/**
- * Get keys for scalar values
- *
- *
- * @return array List of all possible keys for scalar values
- */
-	function getScalarKeys() {
+	/**
+	 * Get keys for scalar values
+	 *
+	 *
+	 * @return array List of all possible keys for scalar values
+	 */
+	public function getScalarKeys() {
 		$this->ops_error = "";
 		return array_keys($this->ops_config_settings["scalars"]);
 	}
 	/* ---------------------------------------- */
-/**
- * Get keys for list values
- *
- *
- * @return array List of all possible keys for list values
- */
-	function getListKeys() {
+	/**
+	 * Get keys for list values
+	 *
+	 *
+	 * @return array List of all possible keys for list values
+	 */
+	public function getListKeys() {
 		$this->ops_error = "";
 		return array_keys($this->ops_config_settings["lists"]);
 	}
 	/* ---------------------------------------- */
-/**
- * Get keys for associative values
- *
- *
- * @return array List of all possible keys for associative values
- */
-	function getAssocKeys() {
+	/**
+	 * Get keys for associative values
+	 *
+	 *
+	 * @return array List of all possible keys for associative values
+	 */
+	public function getAssocKeys() {
 		$this->ops_error = "";
 		return @array_keys($this->ops_config_settings["assoc"]);
 	}
 	/* ---------------------------------------- */
-/**
- * Get list configuration value
- *
- * @param string $ps_key Name of list configuration value to get. get() will look for the
- * configuration value only as a list. Like-named scalar or associative array values are
- * ignored.
- *
- * @return array An indexed array
- */
-	function getList($ps_key) {
+	/**
+	 * Get list configuration value
+	 *
+	 * @param string $ps_key Name of list configuration value to get. get() will look for the
+	 * configuration value only as a list. Like-named scalar or associative array values are
+	 * ignored.
+	 *
+	 * @return array An indexed array
+	 */
+	public function getList($ps_key) {
 		$this->ops_error = "";
 		if (isset($this->ops_config_settings["lists"][$ps_key])) {
 			if (is_array($this->ops_config_settings["lists"][$ps_key])) {
@@ -862,16 +839,16 @@ class Configuration {
 		}
 	}
 	/* ---------------------------------------- */
-/**
- * Get associative configuration value
- *
- * @param string $ps_key Name of associative configuration value to get. get() will look for the
- * configuration value only as an associative array. Like-named scalar or list values are
- * ignored.
- *
- * @return array An associative array
- */
-	function getAssoc($ps_key) {
+	/**
+	 * Get associative configuration value
+	 *
+	 * @param string $ps_key Name of associative configuration value to get. get() will look for the
+	 * configuration value only as an associative array. Like-named scalar or list values are
+	 * ignored.
+	 *
+	 * @return array An associative array
+	 */
+	public function getAssoc($ps_key) {
 		$this->ops_error = "";
 		if (isset($this->ops_config_settings["assoc"][$ps_key])) {
 			if (is_array($this->ops_config_settings["assoc"][$ps_key])) {
@@ -884,25 +861,25 @@ class Configuration {
 		}
 	}
 	/* ---------------------------------------- */
-/**
- * Find out if there was an error processing the configuration file
- *
- * @return bool Returns true if error occurred, false if not
- */
-	function isError() {
+	/**
+	 * Find out if there was an error processing the configuration file
+	 *
+	 * @return bool Returns true if error occurred, false if not
+	 */
+	public function isError() {
 		return ($this->ops_error) ? true : false;
 	}
 	/* ---------------------------------------- */
-/**
- * Get error message
- *
- * @return string Returns user-displayable error message
- */
-	function getError() {
+	/**
+	 * Get error message
+	 *
+	 * @return string Returns user-displayable error message
+	 */
+	public function getError() {
 		return $this->ops_error;
 	}
 	/* ---------------------------------------- */
-	function _trimScalar($ps_scalar_value) {
+	private function _trimScalar($ps_scalar_value) {
 		if (preg_match("/^[ ]+$/", $ps_scalar_value)) {
 			$ps_scalar_value = " ";
 		} else {
@@ -917,11 +894,11 @@ class Configuration {
 		return $ps_scalar_value;
 	}
 	/* ---------------------------------------- */
-	function _dieOnError() {
+	private function _dieOnError() {
 		die("Error loading configuration file '".$this->ops_config_file_path."': ".$this->ops_error."\n");
 	}
 	/* ---------------------------------------- */
-	function _interpolateScalar($ps_text) {
+	private function _interpolateScalar($ps_text) {
 		if (preg_match_all("/<([A-Za-z0-9_\-\.]+)>/", $ps_text, $va_matches)) {
 			foreach($va_matches[1] as $vs_key) {
 				if (($vs_val = $this->getScalar($vs_key)) !== false) {
@@ -943,35 +920,13 @@ class Configuration {
 	/**
 	 * Removes all cached configuration
 	 */
-	static function clearCache() {
-		$va_frontend_options = array(
-			'lifetime' => null, 				/* cache lives forever (until manual destruction) */
-			'logging' => false,					/* do not use Zend_Log to log what happens */
-			'write_control' => true,			/* immediate read after write is enabled (we don't write often) */
-			'automatic_cleaning_factor' => 0, 	/* no automatic cache cleaning */
-			'automatic_serialization' => true	/* we store arrays, so we have to enable that */
-		);
-		$vs_cache_dir = __CA_APP_DIR__.'/tmp';
-		$va_backend_options = array(
-			'cache_dir' => $vs_cache_dir,		/* where to store cache data? */
-			'file_locking' => true,				/* cache corruption avoidance */
-			'read_control' => false,			/* no read control */
-			'file_name_prefix' => 'ca_cache',	/* prefix of cache files */
-			'cache_file_perm' => 0700			/* permissions of cache files */
-		);
-
-		try {
-			$vo_cache = Zend_Cache::factory('Core', 'File', $va_frontend_options, $va_backend_options);
-			$vo_cache->clean(Zend_Cache::CLEANING_MODE_MATCHING_TAG, array('ca_config_cache'));
-		} catch (Exception $e) {
-			// ok... just keep on going
-		}
-		
+	public static function clearCache() {
+		ExternalCache::flush();
+		MemoryCache::flush();
 	}
 	/* ---------------------------------------- */
-	function __destruct() {
+	//public function __destruct() {
 		//print "DESTRUCT Config\n";
-	}
+	//}
 	# ---------------------------------------------------------------------------
 }
-?>

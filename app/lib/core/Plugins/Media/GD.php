@@ -330,7 +330,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 			# Read in Tilepic format image
 			#
 			$this->handle = new TilepicParser($filepath);
-			$tp->useLibrary(LIBRARY_GD);
+			$this->handle->useLibrary(LIBRARY_GD);
 			if (!$this->handle->error) {
 				$this->filepath = $filepath;
 				foreach($this->handle->properties as $k => $v) {
@@ -342,7 +342,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$this->properties["typename"] = "Tilepic";
 				return true;
 			} else {
-				postError(1610, $this->handle->error, "WLPlugGD->read()");
+				$this->postError(1610, $this->handle->error, "WLPlugGD->read()");
 				return false;
 			}
 		} else {
@@ -358,7 +358,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$vs_typename = "GIF";
 					break;
 				case IMAGETYPE_JPEG:
-					if(function_exists('exif_read_data')) {
+					if(function_exists('exif_read_data') && !($this->opo_config->get('dont_use_exif_read_data'))) {
 						$this->metadata["EXIF"] = $va_exif = caSanitizeArray(@exif_read_data($filepath, 'EXIF', true, false));
 						
 						
@@ -400,7 +400,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 					
 					
 					$o_xmp = new XMPParser();
-					if ($o_xmp->parse($ps_filepath)) {
+					if ($o_xmp->parse($filepath)) {
 						if (is_array($va_xmp_metadata = $o_xmp->getMetadata()) && sizeof($va_xmp_metadata)) {
 							$va_metadata['XMP'] = $va_xmp_metadata;
 						}
@@ -422,7 +422,6 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 				# load image properties
 				$this->properties["width"] = $va_info[0];
 				$this->properties["height"] = $va_info[1];
-				$this->properties["quality"] = "";
 				$this->properties["mimetype"] = $vs_mimetype;
 				$this->properties["typename"] = $vs_typename;
 				$this->properties["filesize"] = @filesize($filepath);
@@ -496,7 +495,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 		
 		if (!($this->info["TRANSFORMATIONS"][$operation])) {
 			# invalid transformation
-			postError(1655, _t("Invalid transformation %1", $operation), "WLPlugGD->transform()");
+			$this->postError(1655, _t("Invalid transformation %1", $operation), "WLPlugGD->transform()");
 			return false;
 		}
 		
@@ -577,7 +576,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$angle = $parameters["angle"];
 			if (($angle > -360) && ($angle < 360)) {
 				if ( !($r_new_img = imagerotate($this->handle, $angle, 0 )) ){
-					postError(1610, _t("Couldn't rotate image"), "WLPlugGD->transform()");
+					$this->postError(1610, _t("Couldn't rotate image"), "WLPlugGD->transform()");
 					return false;
 				}
 				imagedestroy($this->handle);
@@ -613,6 +612,9 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# ----------------------------------------------------------
 	public function write($filepath, $mimetype) {
 		if (!$this->handle) { return false; }
+
+		// 75 is about the default value of imagejpeg() so it seems like a reasonable default for us as well
+		$vn_jpeg_quality = (isset($this->properties["quality"]) && $this->properties["quality"]) ? intval($this->properties["quality"]) : 75;
 		
 		if ($mimetype == "image/tilepic") {
 			if ($this->properties["mimetype"] == "image/tilepic") {
@@ -625,7 +627,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 						"tile_width" => $this->properties["tile_width"],
 						"tile_height" => $this->properties["tile_height"],
 						"layer_ratio" => $this->properties["layer_ratio"],
-						"quality" => $this->properties["quality"],
+						"quality" => $vn_jpeg_quality,
 						"antialiasing" => $this->properties["antialiasing"],
 						"output_mimetype" => $this->properties["tile_mimetype"],
 						"layers" => $this->properties["layers"],
@@ -665,7 +667,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$vs_typename = "GIF";
 					break;
 				case 'image/jpeg':
-					$vn_res = imagejpeg($this->handle, $filepath.".".$ext, $this->properties["quality"] ? $this->properties["quality"] : null);
+					$vn_res = imagejpeg($this->handle, $filepath.".".$ext, $vn_jpeg_quality);
 					$vs_typename = "JPEG";
 					break;
 				case 'image/png':

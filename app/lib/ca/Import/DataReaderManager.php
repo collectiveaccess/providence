@@ -85,11 +85,21 @@
 		# -------------------------------------------------------
 		/**
 		 * Returns names of all readers
+		 *
+		 * @param string $ps_reader
+		 * @param array $pa_options Options include:
+		 *		noCache = Return newly created instance rather than cached one. [Default is false]
+		 *
+		 * @return BaseDataReader reader instance
 		 */
-		public static function getDataReaderInstance($ps_reader) {
+		public static function getDataReaderInstance($ps_reader, $pa_options=null) {
 			DataReaderManager::initDataReaders();
 			if (isset(DataReaderManager::$s_data_reader_instances[$ps_reader]) && DataReaderManager::$s_data_reader_instances[$ps_reader]) {
-				return DataReaderManager::$s_data_reader_instances[$ps_reader];
+				//if (caGetOption('noCache', $pa_options, false)) {
+					$vs_classname = get_class(DataReaderManager::$s_data_reader_instances[$ps_reader]);
+					return new $vs_classname;
+				//}
+				//return DataReaderManager::$s_data_reader_instances[$ps_reader];
 			}
 			return null;
 		}
@@ -156,14 +166,16 @@
 		/**
 		 * 
 		 * @param string $ps_format
+		 * @param array $pa_options Options include:
+		 *		noCache = Return newly created instance rather than cached one. [Default is false]
 		 * @return BaseDataReader 
 		 */
-		public static function getDataReaderForFormat($ps_format) {
+		public static function getDataReaderForFormat($ps_format, $pa_options=null) {
 			DataReaderManager::initDataReaders();
 			
 			$va_readers = DataReaderManager::getDataReaderNames();
 			foreach($va_readers as $vs_reader) {
-				if ($o_reader = DataReaderManager::getDataReaderInstance($vs_reader)) {
+				if ($o_reader = DataReaderManager::getDataReaderInstance($vs_reader, $pa_options)) {
 					if ($o_reader->canReadFormat($ps_format)) {
 						return $o_reader;
 					}
@@ -174,4 +186,3 @@
 		}
 		# -------------------------------------------------------
 	}
-?>

@@ -43,9 +43,9 @@
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
- 			JavascriptLoadManager::register('tableList');
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register("panel");
+ 			AssetLoadManager::register('tableList');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register("panel");
  			
  			$this->opo_app_plugin_manager = new ApplicationPluginManager();
  			
@@ -340,7 +340,7 @@
  			$pn_transaction_id = $this->request->getParameter('transaction_id', pInteger);
  			$t_trans = new ca_commerce_transactions($pn_transaction_id);
  			
- 			$this->view->setVar('communication_id', $pn_communication_id);
+ 			//$this->view->setVar('communication_id', $pn_communication_id);
  			$this->view->setVar('transaction_id', $pn_transaction_id);
  			
  			if ($t_trans->haveAccessToTransaction($this->request->getUserID())) {
@@ -582,7 +582,7 @@
  		 * @param array $pa_options Array of options passed through to _initView 
  		 */
  		public function Log($pa_options=null) {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			
  			$this->render('order_log_html.php');
  		}

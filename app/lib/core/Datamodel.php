@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2005-2013 Whirl-i-Gig
+ * Copyright 2005-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,23 +44,16 @@ class Datamodel {
 	# --- Properties
 	# --------------------------------------------------------------------------------------------
 	private $opo_graph;
-	static $s_get_path_cache = array();
-	static $s_graph = null;
-	static $s_many_many_cache = array();
-	
-	static $s_datamodel_field_num_cache = array();
-	static $s_datamodel_field_name_cache = array();
-	static $s_datamodel_instance_cache = null;
-	static $s_datamodel_model_instance_cache = null;
 	# --------------------------------------------------------------------------------------------
 	/**
-	 *
+	 * @return Datamodel
 	 */
 	static public function load() {
-		if (!DataModel::$s_datamodel_instance_cache) {
-			DataModel::$s_datamodel_instance_cache = new Datamodel();
+		if(!MemoryCache::contains('instance', 'Datamodel')) {
+			MemoryCache::save('instance', new Datamodel(), 'Datamodel');
 		}
-		return DataModel::$s_datamodel_instance_cache;
+
+		return MemoryCache::fetch('instance', 'Datamodel');
 	}
 	# --------------------------------------------------------------------------------------------
 	# --- Constructor
@@ -68,26 +61,18 @@ class Datamodel {
 	/**
 	 *
 	 */
-	function __construct($pb_dont_cache=false) {
-		// is the graph already in memory?
-		if (!$pb_dont_cache && DataModel::$s_graph) { return; }
-		
+	public function __construct($pb_dont_cache=false) {
 		// is there an on-disk cache of the internal graph?
-		if (is_object($vo_cache = $this->_getCacheObject())) {
-			if ($va_graph = $vo_cache->load('ca_datamodel_graph')) {
+		if(!$pb_dont_cache && ExternalCache::contains('ca_datamodel_graph')) {
+			if ($va_graph = ExternalCache::fetch('ca_datamodel_graph')) {
 				$this->opo_graph = new Graph($va_graph);
 				return;
 			}
-		} 
+		}
 		
 		$o_config = Configuration::load();
  			
 		if ($vs_data_model_path = $o_config->get("data_model")) {
-			// is it cached in memory?
-			if ($_DATAMODEL_CACHE[$vs_data_model_path]) {
-				$this->opo_graph = $_DATAMODEL_CACHE[$vs_data_model_path];
-				return true;
-			}
 			
 			$o_datamodel = Configuration::load($vs_data_model_path);
 			$this->opo_graph = new Graph();
@@ -142,44 +127,65 @@ class Datamodel {
 				$va_attr['WEIGHT'] = $vn_weight;
 				$this->opo_graph->setAttributes($va_attr, $vs_table1, $vs_table2);
 			}
-			
-			if (is_object($vo_cache)) {
-				$vo_cache->save(DataModel::$s_graph = $this->opo_graph->getInternalData(), 'ca_datamodel_graph', array('ca_datamodel_cache'));
-			}
+
+			$va_graph_data = $this->opo_graph->getInternalData();
+			ExternalCache::save('ca_datamodel_graph', $va_graph_data);
 		}
 	}
 	# --------------------------------------------------------------------------------------------
 	# 
 	# --------------------------------------------------------------------------------------------
 	/**
-	 *
+	 * Get table num for given table name or num
+	 * @param string $ps_table table name
+	 * @return mixed|null|string
 	 */
-	function getTableNum($ps_table) {
+	public function getTableNum($ps_table) {
+		if (!$ps_table) { return null; }
 		if (is_numeric($ps_table) ) { return $ps_table; }
+
+		if(MemoryCache::contains($ps_table, 'DatamodelTableNum')) {
+			return MemoryCache::fetch($ps_table, 'DatamodelTableNum');
+		}
+		
 		if ($this->opo_graph->hasNode($ps_table)) {
-			return $this->opo_graph->getAttribute("num", $ps_table);
+			$vn_return = $this->opo_graph->getAttribute("num", $ps_table);
+			MemoryCache::save($ps_table, $vn_return, 'DatamodelTableNum');
+			return $vn_return;
 		} else {
+			MemoryCache::save($ps_table, null, 'DatamodelTableNum');
 			return null;
 		}
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 *
+	 * Get table name for given table number
+	 * @param int $pn_tablenum table number
+	 * @return null|string
 	 */
-	function getTableName($pn_tablenum) {
+	public function getTableName($pn_tablenum) {
+		if (!$pn_tablenum) { return null; }
 		if (!is_numeric($pn_tablenum) ) { return $pn_tablenum; }
+		if(MemoryCache::contains($pn_tablenum, 'DatamodelTableName')) {
+			return MemoryCache::fetch($pn_tablenum, 'DatamodelTableName');
+		}
+
 		$pn_tablenum = intval($pn_tablenum);
 		if ($this->opo_graph->hasNode("t#".$pn_tablenum)) {
-			return $this->opo_graph->getAttribute("name", "t#".$pn_tablenum);
+			$vs_table = $this->opo_graph->getAttribute("name", "t#".$pn_tablenum);
+			MemoryCache::save($pn_tablenum, $vs_table, 'DatamodelTableName');
+			return $vs_table;
 		} else {
+			MemoryCache::save($pn_tablenum, null, 'DatamodelTableName');
 			return null;
 		}
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 *
+	 * Get list of all tables
+	 * @return array
 	 */
-	function getTableNames() {
+	public function getTableNames() {
 		$va_table_names = array();
 		foreach($this->opo_graph->getNodes() as $vs_key => $va_value) {
 			if (isset($va_value["num"])) {
@@ -197,11 +203,19 @@ class Datamodel {
 	 *
 	 * @return int The field number or null if the table or field are invalid
 	 */
-	function getFieldNum($ps_table, $ps_field) {
-		if (isset(DataModel::$s_datamodel_field_num_cache[$ps_table.'/'.$ps_field])) { return DataModel::$s_datamodel_field_num_cache[$ps_table.'/'.$ps_field]; }
+	public function getFieldNum($ps_table, $ps_field) {
+		if(is_numeric($ps_table)) { $ps_table = $this->getTableName($ps_table); }
+		if(!$ps_table || !$ps_field) { return null; }
+
+		if(MemoryCache::contains("{$ps_table}/{$ps_field}", 'DatamodelFieldNum')) {
+			return MemoryCache::fetch("{$ps_table}/{$ps_field}", 'DatamodelFieldNum');
+		}
+
 		if ($t_table = $this->getInstanceByTableName($ps_table, true)) {
 			$va_fields = $t_table->getFieldsArray();
-			return DataModel::$s_datamodel_field_num_cache[$ps_table.'/'.$ps_field] = array_search($ps_field, array_keys($va_fields));
+			$vn_field_num = array_search($ps_field, array_keys($va_fields));
+			MemoryCache::save("{$ps_table}/{$ps_field}", $vn_field_num, 'DatamodelFieldNum');
+			return $vn_field_num;
 		} else {
 			return null;
 		}
@@ -213,14 +227,42 @@ class Datamodel {
 	 * @param string $ps_table The table name
 	 * @param int $pn_field_num The field number
 	 *
-	 * @return int The field name or null if the table or field number are invalid
+	 * @return string The field name or null if the table or field number are invalid
 	 */
-	function getFieldName($ps_table, $pn_field_num) {
-		if (isset(DataModel::$s_datamodel_field_name_cache[$ps_table.'/'.$pn_field_num])) { return DataModel::$s_datamodel_field_name_cache[$ps_table.'/'.$pn_field_num]; }
+	public function getFieldName($ps_table, $pn_field_num) {
+		if(is_numeric($ps_table)) { $ps_table = $this->getTableName($ps_table); }
+		if(!$ps_table || !is_int($pn_field_num)) { return null; }
+
+		if(MemoryCache::contains("{$ps_table}/{$pn_field_num}", 'DatamodelFieldName')) {
+			return MemoryCache::fetch("{$ps_table}/{$pn_field_num}", 'DatamodelFieldName');
+		}
+
 		if ($t_table = $this->getInstanceByTableName($ps_table, true)) {
 			$va_fields = $t_table->getFieldsArray();
 			$va_field_list = array_keys($va_fields);
-			return DataModel::$s_datamodel_field_name_cache[$ps_table.'/'.$pn_field_num] = $va_field_list[(int)$pn_field_num];
+			$vs_field_name = $va_field_list[(int)$pn_field_num];
+			MemoryCache::save("{$ps_table}/{$pn_field_num}", $vs_field_name, 'DatamodelFieldName');
+			return $vs_field_name;
+		} else {
+			return null;
+		}
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Get information for field from model 
+	 *
+	 * @param string $ps_table The table name
+	 * @param string $ps_field The field name
+	 * @param string $ps_key A model info key, optional
+	 *
+	 * @return mixed If $ps_key is set the specified value will be returned, which may be a string, number or array. If $ps_key is omitted the entire information array is returned.
+	 */
+	public function getFieldInfo($ps_table, $ps_field, $ps_key=null) {
+		if(is_numeric($ps_table)) { $ps_table = $this->getTableName($ps_table); }
+		if ($t_table = $this->getInstanceByTableName($ps_table, true)) {
+			$va_info = $t_table->getFieldInfo($ps_field);
+			if ($ps_key) { return $va_info[$ps_key]; }
+			return $va_info;
 		} else {
 			return null;
 		}
@@ -232,7 +274,8 @@ class Datamodel {
 	 * @param string $ps_table The name of the table to check for
 	 * @return bool True if it exists, false if it doesn't
 	 */
-	function tableExists($ps_table) {
+	public function tableExists($ps_table) {
+		if(is_numeric($ps_table)) { $ps_table = $this->getTableName($ps_table); }
 		if ($this->opo_graph->hasNode($ps_table)) {
 			return true;
 		} else {
@@ -241,64 +284,102 @@ class Datamodel {
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Return model instance for specified table. Unlike the older Datamodel::getInstanceByTableName() and 
+	 * Datamodel::getInstanceByTableNum(), getInstance() can take either a table name or number.
 	 *
+	 * By default a cached instance is returned. The initial state (Eg. is a row loaded, field values) for the returned cached instance is undefined
+	 * and may reflect previous use and may be referenced by previous callers. You should be sure to do any initialization required before use, 
+	 * or don't use the cache. When caching is bypassed you are guaranteed a newly created, freshly initialized instance.
+	 *
+	 * @param mixed $pm_table_name_or_num
+	 * @param bool $pb_use_cache Use a cached instance. [Default is false]
+	 * @return null|BaseModel
 	 */
-	# Returns an object representing table; object can be used to manipulate records or get information
-	# on various table attributes.
-	function getInstanceByTableName($ps_table, $pb_use_cache=false) {
-		if ($pb_use_cache && isset(DataModel::$s_datamodel_model_instance_cache[$ps_table]) && DataModel::$s_datamodel_model_instance_cache[$ps_table]) { 
-			return DataModel::$s_datamodel_model_instance_cache[$ps_table];
+	public function getInstance($pm_table_name_or_num, $pb_use_cache=false) {
+		if (is_numeric($pm_table_name_or_num)) {
+			return $this->getInstanceByTableNum($pm_table_name_or_num, $pb_use_cache);
+		}
+		return $this->getInstanceByTableName($pm_table_name_or_num, $pb_use_cache);
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Returns an object representing table; object can be used to manipulate records or get information on various table attributes.
+	 * @param string $ps_table Table name
+	 * @param bool $pb_use_cache Use a cached instance. Default is false.
+	 * @return null|BaseModel
+	 */
+	public function getInstanceByTableName($ps_table, $pb_use_cache=false) {
+		if(!$ps_table) { return null; }
+
+		if($pb_use_cache && MemoryCache::contains($ps_table, 'DatamodelModelInstance')) {
+			return MemoryCache::fetch($ps_table, 'DatamodelModelInstance');
 		}
 		
-		if ($this->opo_graph->hasNode($ps_table)) {
-			if (!isset(DataModel::$s_datamodel_model_instance_cache[$ps_table]) || !DataModel::$s_datamodel_model_instance_cache[$ps_table]) { 
+		if($this->opo_graph->hasNode($ps_table)) {
+			if(!MemoryCache::contains($ps_table, 'DatamodelModelInstance')) {
 				if (!file_exists(__CA_MODELS_DIR__.'/'.$ps_table.'.php')) { return null; }
 				require_once(__CA_MODELS_DIR__.'/'.$ps_table.'.php'); # class file name has trailing '.php'
 			}
-			return DataModel::$s_datamodel_model_instance_cache[$ps_table] = new $ps_table;
+			$t_instance = new $ps_table;
+			if($pb_use_cache) { MemoryCache::save($ps_table, $t_instance, 'DatamodelModelInstance'); }
+			return $t_instance;
 		} else {
+			MemoryCache::save($ps_table, null, 'DatamodelModelInstance');
 			return null;
 		}
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 *
+	 * Returns an object representing table; object can be used to manipulate records or get information on various table attributes.
+	 * @param int $pn_tablenum Table number
+	 * @param bool $pb_use_cache Use a cached instance. Default is false.
+	 * @return null|BaseModel
 	 */
-	# Returns an object representing table; object can be used to manipulate records or get information
-	# on various table attributes.
-	function getInstanceByTableNum($pn_tablenum, $pb_use_cache=false) {
-		if ($vs_class_name = $this->getTableName($pn_tablenum)) {
-			if ($pb_use_cache && isset(DataModel::$s_datamodel_model_instance_cache[$vs_class_name]) && DataModel::$s_datamodel_model_instance_cache[$vs_class_name]) { 
-				return DataModel::$s_datamodel_model_instance_cache[$vs_class_name];
+	public function getInstanceByTableNum($pn_tablenum, $pb_use_cache=false) {
+		if($vs_class_name = $this->getTableName($pn_tablenum)) {
+			if($pb_use_cache && MemoryCache::contains($vs_class_name, 'DatamodelModelInstance')) {
+				return MemoryCache::fetch($vs_class_name, 'DatamodelModelInstance');
 			}
-			
-			if (!isset(DataModel::$s_datamodel_model_instance_cache[$vs_class_name]) || !DataModel::$s_datamodel_model_instance_cache[$vs_class_name]) { 
+
+			if(!MemoryCache::contains($vs_class_name, 'DatamodelModelInstance')) {
 				if (!file_exists(__CA_MODELS_DIR__.'/'.$vs_class_name.'.php')) { return null; }
 				require_once(__CA_MODELS_DIR__.'/'.$vs_class_name.'.php'); # class file name has trailing '.php'
 			}
-			return DataModel::$s_datamodel_model_instance_cache[$vs_class_name] = new $vs_class_name;
+			$t_instance = new $vs_class_name;
+			if($pb_use_cache) { MemoryCache::save($vs_class_name, $t_instance, 'DatamodelModelInstance'); }
+			return $t_instance;
 		} else {
 			return null;
 		}
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 *
+	 * @DEPRECATED
 	 */
-	# Alias for $this->getInstanceByTableName()
-	function getTableInstance($ps_table, $pb_use_cache=false) {
-		return $this->getInstanceByTableName($ps_table, $pb_use_cache);
+	public function getTableInstance($ps_table, $pb_use_cache=false) {
+		return $this->getInstanceByTableNum($ps_table, $pb_use_cache);
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Compatibility alias for Datamodel::primaryKey()
+	 *
+	 * @param mixed $pn_tablenum An integer table number or string table name
+	 * @return string The name of the primary key
+	 */
+	public function getTablePrimaryKeyName($pn_tablenum) {
+		return $this->primaryKey($pn_tablenum);
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
 	 * Returns field name of primary key for table
 	 *
 	 * @param mixed $pn_tablenum An integer table number or string table name
+	 * @param bool $pb_include_tablename Return primary key field name prepended with table name (Eg. ca_objects.object_id) [Default is false]
 	 * @return string The name of the primary key
 	 */
-	public function getTablePrimaryKeyName($pn_tablenum) {
+	public function primaryKey($pn_tablenum, $pb_include_tablename=false) {
 		if ($t_instance = is_numeric($pn_tablenum) ? $this->getInstanceByTableNum($pn_tablenum, true) : $this->getInstanceByTableName($pn_tablenum, true)) {
-			return $t_instance->primaryKey();
+			return $pb_include_tablename ? $t_instance->tableName().'.'.$t_instance->primaryKey() : $t_instance->primaryKey();
 		}
 		return null;
 	}
@@ -323,7 +404,11 @@ class Datamodel {
 	 * Returns a list of relations where the specified table is the "many" end. In other words, get
 	 * details for all foreign keys in the specified table 
 	 */
-	function getManyToOneRelations ($ps_table, $ps_field=null) {
+	public function getManyToOneRelations($ps_table, $ps_field=null) {
+		if(!$ps_table) { return null; }
+		if(MemoryCache::contains("{$ps_table}/{$ps_field}", 'DatamodelManyToOneRelations')) {
+			return MemoryCache::fetch("{$ps_table}/{$ps_field}", 'DatamodelManyToOneRelations');
+		}
 		if ($o_table = $this->getInstanceByTableName($ps_table, true)) {
 			$va_related_tables = $this->opo_graph->getNeighbors($ps_table);
 			$vs_table_pk = $o_table->primaryKey();
@@ -331,18 +416,20 @@ class Datamodel {
 			$va_many_to_one_relations = array();
 			foreach($va_related_tables as $vs_related_table) {
 				$va_relationships = $this->opo_graph->getAttribute("relationships", $ps_table, $vs_related_table);
-			//	print_r($va_relationships);
+
 				if (is_array($va_relationships[$ps_table][$vs_related_table])) {
 					foreach($va_relationships[$ps_table][$vs_related_table] as $va_fields) {
 						if ($va_fields[0] != $vs_table_pk) {
 							if ($ps_field) {
 								if ($va_fields[0] == $ps_field) {
-									return array(
+									$va_many_to_one_relations = array(
 										"one_table" 		=> $vs_related_table,
 										"one_table_field" 	=> $va_fields[1],
 										"many_table" 		=> $ps_table,
 										"many_table_field" 	=> $va_fields[0]
 									);
+									MemoryCache::save("{$ps_table}/{$ps_field}", $va_many_to_one_relations, 'DatamodelManyToOneRelations');
+									return $va_many_to_one_relations;
 								}
 							} else {
 								$va_many_to_one_relations[$va_fields[0]] = array(
@@ -356,8 +443,10 @@ class Datamodel {
 					}
 				}
 			}
+			MemoryCache::save("{$ps_table}/{$ps_field}", $va_many_to_one_relations, 'DatamodelManyToOneRelations');
 			return $va_many_to_one_relations;
 		} else {
+			MemoryCache::save("{$ps_table}/{$ps_field}", null, 'DatamodelManyToOneRelations');
 			return null;
 		}
 	}
@@ -365,7 +454,11 @@ class Datamodel {
 	/**
 	 *
 	 */
-	function getOneToManyRelations ($ps_table, $ps_many_table=null) {
+	public function getOneToManyRelations ($ps_table, $ps_many_table=null) {
+		if(!$ps_table) { return null; }
+		if(MemoryCache::contains("{$ps_table}/{$ps_many_table}", 'DatamodelOneToManyRelations')) {
+			return MemoryCache::fetch("{$ps_table}/{$ps_many_table}", 'DatamodelOneToManyRelations');
+		}
 		if ($o_table = $this->getInstanceByTableName($ps_table, true)) {
 			$va_related_tables = $this->opo_graph->getNeighbors($ps_table);
 			$vs_table_pk = $o_table->primaryKey();
@@ -379,12 +472,14 @@ class Datamodel {
 						if ($va_fields[0] == $vs_table_pk) {
 							if ($ps_many_table) {
 								if ($ps_many_table == $vs_related_table) {
-									return array(
+									$va_one_to_many_relations = array(
 										"one_table" 		=> $ps_table,
 										"one_table_field" 	=> $va_fields[0],
 										"many_table" 		=> $vs_related_table,
 										"many_table_field" 	=> $va_fields[1]
 									);
+									MemoryCache::save("{$ps_table}/{$ps_many_table}", $va_one_to_many_relations, 'DatamodelOneToManyRelations');
+									return $va_one_to_many_relations;
 								}
 							} else {
 								$va_one_to_many_relations[$vs_related_table][] = array(
@@ -398,8 +493,10 @@ class Datamodel {
 					}
 				}
 			}
+			MemoryCache::save("{$ps_table}/{$ps_many_table}", $va_one_to_many_relations, 'DatamodelOneToManyRelations');
 			return $va_one_to_many_relations;
 		} else {
+			MemoryCache::save("{$ps_table}/{$ps_many_table}", null, 'DatamodelOneToManyRelations');
 			return null;
 		}
 	}
@@ -407,9 +504,9 @@ class Datamodel {
 	/**
 	 * returns list of many-many relations involving the specific table
 	 */
-	function getManyToManyRelations ($ps_table, $ps_table2=null) {
-		if(isset(Datamodel::$s_many_many_cache["{$ps_table}/{$ps_table2}"])) {
-			return Datamodel::$s_many_many_cache["{$ps_table}/{$ps_table2}"];
+	public function getManyToManyRelations ($ps_table, $ps_table2=null) {
+		if(MemoryCache::contains("{$ps_table}/{$ps_table2}", 'DatamodelManyToManyRelations')) {
+			return MemoryCache::fetch("{$ps_table}/{$ps_table2}", 'DatamodelManyToManyRelations');
 		}
 		if ($o_table = $this->getInstanceByTableName($ps_table, true)) {
 			$vs_table_pk = $o_table->primaryKey();
@@ -419,16 +516,17 @@ class Datamodel {
 			
 			$va_one_to_many_relations = $this->getOneToManyRelations($ps_table);
 			
-			foreach($va_one_to_many_relations as $vs_left_table => $va_left_relations) {
+			foreach($va_one_to_many_relations as $va_left_relations) {
 				foreach($va_left_relations as $va_left_relation) {
 					# get ManyToOne relation for this
 					$va_many_to_one_relations = $this->getManyToOneRelations($va_left_relation["many_table"]);
 			
 					if (is_array($va_many_to_one_relations)) {
-						foreach($va_many_to_one_relations as $vs_field => $va_right_relation) {
+						foreach($va_many_to_one_relations as $va_right_relation) {
 							if ($ps_table != $va_right_relation["one_table"]) {
 								if ($ps_table2 == $va_right_relation["one_table"]) {
-									return Datamodel::$s_many_many_cache["{$ps_table}/{$ps_table2}"] = $va_left_relation["many_table"];
+									MemoryCache::save("{$ps_table}/{$ps_table2}", $va_left_relation["many_table"], 'DatamodelManyToManyRelations');
+									return $va_left_relation["many_table"];
 								}
 								$va_many_many_relations[] = array(
 									"left_table" 						=> $ps_table,
@@ -444,25 +542,23 @@ class Datamodel {
 					}
 				}
 			}
-			
-			return Datamodel::$s_many_many_cache["{$ps_table}/{$ps_table2}"] = $va_many_many_relations;
+			MemoryCache::save("{$ps_table}/{$ps_table2}", $va_many_many_relations, 'DatamodelManyToManyRelations');
+			return $va_many_many_relations;
 		} else {
-			return Datamodel::$s_many_many_cache["{$ps_table}/{$ps_table2}"] = null;
+			MemoryCache::save("{$ps_table}/{$ps_table2}", null, 'DatamodelManyToManyRelations');
+			return null;
 		}
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
 	 *
 	 */
-	function getPath($ps_left_table, $ps_right_table) {
-		if (isset(DataModel::$s_get_path_cache[$ps_left_table.'/'.$ps_right_table])) { return DataModel::$s_get_path_cache[$ps_left_table.'/'.$ps_right_table]; }
-		
-		$vo_cache = $this->_getCacheObject();
-		
-		if (is_object($vo_cache)) {
-			if (is_array($va_cache_data = $vo_cache->load('ca_datamodel_path_'.$ps_left_table.'_'.$ps_right_table))) {
-				return $va_cache_data;
-			}
+	public function getPath($ps_left_table, $ps_right_table) {
+		if (is_numeric($ps_left_table)) { $ps_left_table = $this->getTableName($ps_left_table); }
+		if (is_numeric($ps_right_table)) { $ps_right_table = $this->getTableName($ps_right_table); }
+
+		if(CompositeCache::contains("{$ps_left_table}/{$ps_right_table}", 'DatamodelPaths')) {
+			return CompositeCache::fetch("{$ps_left_table}/{$ps_right_table}", 'DatamodelPaths');
 		}
 		
 		# handle self relationships as a special case
@@ -475,56 +571,27 @@ class Datamodel {
              return array($ps_left_table=>$this->getTableNum($ps_left_table),$rel_table=>$this->getTableNum($rel_table));
         }
  		
- 		DataModel::$s_get_path_cache[$ps_left_table.'/'.$ps_right_table] = $this->opo_graph->getPath($ps_left_table, $ps_right_table);
- 		if (is_object($vo_cache)) {
- 			$vo_cache->save(DataModel::$s_get_path_cache[$ps_left_table.'/'.$ps_right_table], 'ca_datamodel_path_'.$ps_left_table.'_'.$ps_right_table, array('ca_datamodel_cache'));
- 		}
- 		return DataModel::$s_get_path_cache[$ps_left_table.'/'.$ps_right_table];
+ 		$vs_path = $this->opo_graph->getPath($ps_left_table, $ps_right_table);
+		CompositeCache::save("{$ps_left_table}/{$ps_right_table}", $vs_path, 'DatamodelPaths');
+ 		return $vs_path;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
 	 *
 	 */
-	function getRelationships($ps_left_table, $ps_right_table) {
+	public function getRelationships($ps_left_table, $ps_right_table) {
+		if(MemoryCache::contains("{$ps_left_table}/{$ps_right_table}", 'DatamodelRelationships')) {
+			return MemoryCache::fetch("{$ps_left_table}/{$ps_right_table}", 'DatamodelRelationships');
+		}
+
 		$va_relationships = $this->opo_graph->getAttribute("relationships", $ps_left_table, $ps_right_table);
+		MemoryCache::save("{$ps_left_table}/{$ps_right_table}", $va_relationships, 'DatamodelRelationships');
 		
 		return $va_relationships;
 	}
 	# --------------------------------------------------------------------------------------------
-	/** 
-	 *
-	 */
-	private function _getCacheObject() {
-		
-		$va_frontend_options = array(
-			'lifetime' => null, 				/* cache lives forever (until manual destruction) */
-			'logging' => false,					/* do not use Zend_Log to log what happens */
-			'write_control' => true,			/* immediate read after write is enabled (we don't write often) */
-			'automatic_cleaning_factor' => 0, 	/* no automatic cache cleaning */
-			'automatic_serialization' => true	/* we store arrays, so we have to enable that */
-		);
-		$vs_cache_dir = __CA_APP_DIR__.'/tmp';
-		$va_backend_options = array(
-			'cache_dir' => $vs_cache_dir,		/* where to store cache data? */
-			'file_locking' => true,				/* cache corruption avoidance */
-			'read_control' => false,			/* no read control */
-			'file_name_prefix' => 'ca_datamodel',	/* prefix of datamodel cache files */
-			'cache_file_perm' => 0700			/* permissions of cache files */
-		);
-
-		try {
-			$vo_cache = Zend_Cache::factory('Core', 'File', $va_frontend_options, $va_backend_options);
-		} catch (Exception $e) {
-			// ok... just keep on going
-			$vo_cache = null;
-		}
-		
-		return $vo_cache;
-	}
-	# --------------------------------------------------------------------------------------------
-	function __destruct() {
+	public function __destruct() {
 		//print "DESTRUCT datamodel\n";
 	}
 	# --------------------------------------------------------------------------------------------
 }
-?>

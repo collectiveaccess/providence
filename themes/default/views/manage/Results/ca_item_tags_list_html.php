@@ -34,9 +34,9 @@
 		
 		<div style="text-align:right;">
 			<?php print _t('Batch actions'); ?>: </a>
-			<a href='#' onclick='jQuery("#tagListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Tags', 'DeleteTags'); ?>").submit();' class='form-button'><span class='form-button'><?php print _t("Delete"); ?></span></a>
+			<a href='#' onclick='jQuery("#tagListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Tags', 'DeleteTags'); ?>").submit();' class='form-button'><span class='form-button delete'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DELETE__); ?><span class='formtext'><?php print _t("Delete"); ?></span></span></a>
 		</div>
-		<table id="caTagsList" class="listtable" border="0" cellpadding="0" cellspacing="1" style="margin-top:3px;">
+		<table id="caTagsList" class="listtable" border="0" cellpadding="0" cellspacing="1" style="margin-top:10px;">
 			<thead>
 				<tr>
 					<th class="list-header-unsorted">

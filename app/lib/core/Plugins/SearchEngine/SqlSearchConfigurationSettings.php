@@ -83,7 +83,6 @@ class SqlSearchConfigurationSettings extends ASearchConfigurationSettings {
 	}
 	# ------------------------------------------------
 	public function getSettingDescription($pn_setting_num){
-		$vo_app_config = Configuration::load();
 		switch($pn_setting_num){
 			case __CA_SQLSEARCH_RUNNING_MYSQL__:
 				return _t("The SqlSearch search engine requires that MySQL be the back-end database for your CollectiveAccess installation.");
@@ -99,7 +98,7 @@ class SqlSearchConfigurationSettings extends ASearchConfigurationSettings {
 			case __CA_SQLSEARCH_RUNNING_MYSQL__:
 				return _t("Try reinstalling your system with MySQL as the back-end database or try a different search engine.");
 			case __CA_SQLSEARCH_TABLES_EXIST__:
-				return _t("Try reloading the definitions for these tables: ca_mysql_fulltext_search, ca_mysql_fulltext_date_search");
+				return _t("Try reloading the definitions for these tables: ca_sql_search_words, ca_sql_search_word_index, ca_sql_search_ngrams");
 			default:
 				return null;
 		}
@@ -109,7 +108,7 @@ class SqlSearchConfigurationSettings extends ASearchConfigurationSettings {
 		$vo_app_config = Configuration::load();
 		$vs_db_type = $vo_app_config->get('db_type');
 		
-		if ($vs_db_type === 'mysql') {
+		if (in_array($vs_db_type, array('mysql', 'mysqli', 'pdo_mysql'))) {
 			return __CA_SEARCH_CONFIG_OK__;
 		}
 		return __CA_SEARCH_CONFIG_ERROR__;
@@ -119,7 +118,11 @@ class SqlSearchConfigurationSettings extends ASearchConfigurationSettings {
 		$o_db = new Db();
 		$va_tables = $o_db->getTables();
 		
-		if (in_array('ca_mysql_fulltext_search', $va_tables) && in_array('ca_mysql_fulltext_search', $va_tables)) {
+		if (
+			in_array('ca_sql_search_words', $va_tables) &&
+			in_array('ca_sql_search_word_index', $va_tables) &&
+			in_array('ca_sql_search_ngrams', $va_tables)
+		) {
 			return __CA_SEARCH_CONFIG_OK__;
 		}
 		return __CA_SEARCH_CONFIG_ERROR__;

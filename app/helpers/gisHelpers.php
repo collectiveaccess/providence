@@ -376,6 +376,17 @@
 			_t("Quebec") => "QC",
 			_t("Saskatchewan") => "SK",
 			_t("Yukon Territory") => "YT"
+		),
+		'AU' => array(
+			_t("Australian Capital Territory") => "ACT",
+			_t("Jervis Bay Territory") => "JBT",
+			_t("New South Wales") => "NSW",
+			_t("Northern Territory") => "NT",
+			_t("Queensland") => "QLD",
+			_t("South Australia") => "SA",
+			_t("Tasmania") => "TAS",
+			_t("Victoria") => "VIC",
+			_t("Western Australia") => "WA",
 		)
 	);
     
@@ -466,7 +477,7 @@
 	 *			ex. 43.34,-74.23 ~ 5km
 	 *	[Area with
 	 */ 
-	function caParseGISSearch($ps_value){
+	function caParseGISSearch($ps_value) {
 		$ps_value = preg_replace('![ ]*,[ ]*!', ',', $ps_value);
 		$ps_value = str_replace(" - ", " .. ", $ps_value);
 		$ps_value = str_replace(" to ", " .. ", $ps_value);
@@ -479,6 +490,7 @@
 		$vn_state = 0;
 		while(sizeof($va_tokens)) {
 			$vs_token = trim(array_shift($va_tokens));
+			if(!$vs_token) { continue; }
 			switch($vn_state) {
 				case 0:		// start
 					$va_tmp = explode(',', $vs_token);

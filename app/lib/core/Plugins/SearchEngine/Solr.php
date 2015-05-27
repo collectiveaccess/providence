@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -52,19 +52,34 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 	private $opn_indexing_subject_tablenum;
 	private $ops_indexing_subject_tablename;
 	private $opn_indexing_subject_row_id;
+
+	private $ops_search_solr_url;
+	private $ops_search_solr_home_dir;
 	
 	static $s_doc_content_buffer = array();			// content buffer used when indexing
 	static $s_element_code_cache = array();
 	static $s_fieldnum_cache = array();				// cached field name-to-number values used when indexing
 	# -------------------------------------------------------
-	public function __construct(){
-		parent::__construct();
-		
-		$this->opo_db = new Db();
+	public function __construct($po_db=null){
+		parent::__construct($po_db);
 
 		$this->opo_tep = new TimeExpressionParser();	
 		
 		$this->opo_geocode_parser = new GeocodeAttributeValue();
+
+		// allow overriding settings from search.conf via constant (usually defined in bootstrap file)
+		// this is useful for multi-instance setups which have the same set of config files for multiple instances
+		if(defined('__CA_SOLR_URL__') && (strlen(__CA_SOLR_URL__)>0)) {
+			$this->ops_search_solr_url = __CA_SOLR_URL__;
+		} else {
+			$this->ops_search_solr_url = $this->opo_search_config->get('search_solr_url');
+		}
+
+		if(defined('__CA_SOLR_HOME_DIR__') && (strlen(__CA_SOLR_HOME_DIR__)>0)) {
+			$this->ops_search_solr_home_dir = __CA_SOLR_HOME_DIR__;
+		} else {
+			$this->ops_search_solr_home_dir = $this->opo_search_config->get('search_solr_home_dir');
+		}
 	}
 	# -------------------------------------------------------
 	public function init(){
@@ -135,6 +150,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 				case 'Zend_Search_Lucene_Search_Query_Term':
 				case 'Zend_Search_Lucene_Search_Query_MultiTerm':
 				case 'Zend_Search_Lucene_Search_Query_Phrase':
+					$vs_access_point = '';
 					if ($vs_class != 'Zend_Search_Lucene_Search_Query_Term') {
 						$va_raw_terms = array();
 						foreach($o_lucene_query_element->getQueryTerms() as $o_term) {
@@ -311,30 +327,58 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			$ps_search_expression = $this->_queryToString($o_rewritten_query);
 		}
 		if (is_array($pa_filters) && sizeof($pa_filters) && ($vs_filter_query = $this->_filterValueToQueryValue($pa_filters))) {
-			$ps_search_expression .= ' AND ('.$vs_filter_query.')';
+			$ps_search_expression = "({$ps_search_expression}) AND ({$vs_filter_query})";
 		}
 		
-		$vo_http_client = new Zend_Http_Client();
-		$vo_http_client->setUri(
-			$this->opo_search_config->get('search_solr_url')."/". /* general url */
-			$this->opo_datamodel->getTableName($pn_subject_tablenum). /* core name (i.e. table name) */
-			"/select"//. /* standard request handler */
-		);
-
-		$vo_http_client->setParameterGet($va_get = array(
-			'q'		=> utf8_decode($ps_search_expression),
-			'wt'	=> 'json',						// php fetching mode
-			'fl'	=> $this->opo_datamodel->getTablePrimaryKeyName($pn_subject_tablenum),
-			'start'	=> $this->getOption('start'),	// where to start the result fetching
-			'rows'	=> $this->getOption('limit')	// how many results to fetch
-		));
+		if (
+			preg_match_all("!([A-Za-z0-9_\-\.]+)[/]{1}([A-Za-z0-9_\-]+):(\"[^\"]*\")!", $ps_search_expression, $va_matches)
+			||
+			preg_match_all("!([A-Za-z0-9_\-\.]+)[/]{1}([A-Za-z0-9_\-]+):([^ ]*)!", $ps_search_expression, $va_matches)
+		) {
+			foreach($va_matches[0] as $vn_i => $vs_element) {
+				$vs_fld = $va_matches[1][$vn_i];
+				if (!($vs_rel_type = trim($va_matches[2][$vn_i]))) { continue; }
+				
+				$va_tmp = explode(".", $vs_fld);
+				
+				$vs_rel_table = caGetRelationshipTableName($pn_subject_tablenum, $va_tmp[0]);
+				$va_rel_type_ids = ($vs_rel_type && $vs_rel_table) ? caMakeRelationshipTypeIDList($vs_rel_table, array($vs_rel_type)) : null;
+				
+				$va_new_elements = array();
+				foreach($va_rel_type_ids as $vn_rel_type_id) {
+					$va_new_elements[] = "(".$va_matches[1][$vn_i]."/".$vn_rel_type_id.":".$va_matches[3][$vn_i].")";
+				}
+				
+				$ps_search_expression = str_replace($vs_element, "(".join(" OR ", $va_new_elements).")", $ps_search_expression);
+			}
+		}
 		
-		//caDebug($va_get,'Solr GET parameters');
-
-		$vo_http_response = $vo_http_client->request();
-		$va_result = json_decode($vo_http_response->getBody(), true);
+		$ps_search_expression = str_replace("/", '\\/', $ps_search_expression); // escape forward slashes used to delimit relationship type qualifier
 		
-		//caDebug($va_result,'Result body');
+		Debug::msg("[SOLR] Running query {$ps_search_expression}");
+		
+		try {
+			$vo_http_client = new Zend_Http_Client();
+			$vo_http_client->setUri(
+				$this->ops_search_solr_url."/". /* general url */
+				$this->opo_datamodel->getTableName($pn_subject_tablenum). /* core name (i.e. table name) */
+				"/select"//. /* standard request handler */
+			);
+
+			$vo_http_client->setParameterGet($va_get = array(
+				'q'		=> utf8_decode($ps_search_expression),
+				'wt'	=> 'json',						// php fetching mode
+				'fl'	=> $this->opo_datamodel->getTablePrimaryKeyName($pn_subject_tablenum),
+				'start'	=> $this->getOption('start'),	// where to start the result fetching
+				'rows'	=> $this->getOption('limit')	// how many results to fetch
+			));
+		
+			$vo_http_response = $vo_http_client->request();
+			$va_result = json_decode($vo_http_response->getBody(), true);
+		} catch (Exception $e) {
+			caLogEvent('ERR', _t('Could not connect to SOLR server: %1', $e->getMessage()), 'Solr->search()');
+			$va_result["response"]["docs"] = array();
+		}
 		
 		return new WLPlugSearchEngineSolrResult($va_result["response"]["docs"], $pn_subject_tablenum);
 	}
@@ -477,6 +521,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			$pm_content = serialize($pm_content);
 		}
 
+		$vn_rel_type_id = (isset($pa_options['relationship_type_id']) && ($pa_options['relationship_type_id'] > 0)) ? (int)$pa_options['relationship_type_id'] : null;
 		$ps_content_tablename = $this->ops_indexing_subject_tablename;
 		if ($ps_content_fieldname[0] === 'A') {
 			// attribute
@@ -553,6 +598,9 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		}
 
 		$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname][] = $pm_content;
+		if ($vn_rel_type_id) { // add relationship type-specific indexing
+			$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname.'/'.$vn_rel_type_id][] = $pm_content;
+		}
 	}
 	# -------------------------------------------------------
 	public function commitRowIndexing(){
@@ -574,7 +622,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		$vs_post_xml = '<delete><id>'.$pn_subject_row_id.'</id></delete>';
 		$vo_http_client = new Zend_Http_Client();
 		$vo_http_client->setUri(
-			$this->opo_search_config->get('search_solr_url')."/". /* general url */
+			$this->ops_search_solr_url."/". /* general url */
 			$this->opo_datamodel->getTableName($pn_subject_tablenum). /* core name (i.e. table name */
 			"/update" /* updater */
 		);
@@ -670,54 +718,55 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		/* No delete of the old stuff needed. If the pk (defined as uniqueKey) already exists, it is automatically updated */
 
 		/* send data */
-		$vo_http_client = new Zend_Http_Client();
-		foreach($va_post_xml as $vs_core => $vs_post_xml) {
+		try {
+			$vo_http_client = new Zend_Http_Client();
+			foreach($va_post_xml as $vs_core => $vs_post_xml) {
 
-			//caDebug($vs_post_xml,$vs_core);
-
-			$vo_http_client->setUri(
-				$this->opo_search_config->get('search_solr_url')."/". /* general url */
-				$vs_core. /* core name (i.e. table name) */
-				"/update" /* updater */
-			);
-			$vo_http_client->setRawData($x="<add>{$vs_post_xml}</add>")->setEncType('text/xml')->request('POST');
+				$vo_http_client->setUri(
+					$this->ops_search_solr_url."/". /* general url */
+					$vs_core. /* core name (i.e. table name) */
+					"/update" /* updater */
+				);
+				$vo_http_client->setRawData($x="<add>{$vs_post_xml}</add>")->setEncType('text/xml')->request('POST');
 			
-			try {
-				$vo_http_response = $vo_http_client->request();
-				if ($o_resp = new SimpleXMLElement($vo_http_response->getBody())) {
-					$va_status = $o_resp->xpath("/response/lst/int[@name='status']");
-					$vn_status = (int)$va_status[0];
-					if ($vn_status > 0) { 
-						caLogEvent('ERR', _t('Indexing failed for %1: status %2, msg %3', $vs_core, $vn_status, $o_resp->asXML()), 'Solr->flushContentBuffer()');
-					} else {						
-						/* commit */
-						try {
-							$vs_post_xml = '<commit />';
-							$vo_http_client->setRawData($vs_post_xml)->setEncType('text/xml')->request('POST');
-							$vo_http_response = $vo_http_client->request();
-							if ($o_resp = new SimpleXMLElement($vo_http_response->getBody())) {
-								$va_status = $o_resp->xpath("/response/lst/int[@name='status']");
-								$vn_status = (int)$va_status[0];
-								if ($vn_status > 0) { 
-									caLogEvent('ERR', _t('Indexing commit failed for %1: status %2, msg %3', $vs_core, $vn_status, $o_resp->asXML()), 'Solr->flushContentBuffer()');
+				try {
+					$vo_http_response = $vo_http_client->request();
+					if ($o_resp = new SimpleXMLElement($vo_http_response->getBody())) {
+						$va_status = $o_resp->xpath("/response/lst/int[@name='status']");
+						$vn_status = (int)$va_status[0];
+						if ($vn_status > 0) { 
+							caLogEvent('ERR', _t('Indexing failed for %1: status %2, msg %3', $vs_core, $vn_status, $o_resp->asXML()), 'Solr->flushContentBuffer()');
+						} else {						
+							/* commit */
+							try {
+								$vs_post_xml = '<commit />';
+								$vo_http_client->setRawData($vs_post_xml)->setEncType('text/xml')->request('POST');
+								$vo_http_response = $vo_http_client->request();
+								if ($o_resp = new SimpleXMLElement($vo_http_response->getBody())) {
+									$va_status = $o_resp->xpath("/response/lst/int[@name='status']");
+									$vn_status = (int)$va_status[0];
+									if ($vn_status > 0) { 
+										caLogEvent('ERR', _t('Indexing commit failed for %1: status %2, msg %3', $vs_core, $vn_status, $o_resp->asXML()), 'Solr->flushContentBuffer()');
+									}
+								} else {
+									caLogEvent('ERR', _t('Indexing commit failed for %1: invalid response from SOLR %2', $vs_core, $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
 								}
-							} else {
-								caLogEvent('ERR', _t('Indexing commit failed for %1: invalid response from SOLR %2', $vs_core, $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
+							} catch (Exception $e) {
+								// Commit error
+								caLogEvent('ERR', _t('Indexing commit failed: %1; response was %2', $e->getMessage(), $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
 							}
-						} catch (Exception $e) {
-							// Commit error
-							caLogEvent('ERR', _t('Indexing commit failed: %1; response was %2', $e->getMessage(), $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
 						}
+					} else {
+						caLogEvent('ERR', _t('Indexing failed for %1: invalid response from SOLR %2', $vs_core, $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
 					}
-				} else {
-					caLogEvent('ERR', _t('Indexing failed for %1: invalid response from SOLR %2', $vs_core, $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
+				} catch (Exception $e) {
+					// Indexing error
+					caLogEvent('ERR', _t('Indexing failed for %1: %2; response was %3', $vs_core, $e->getMessage(), $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
 				}
-			} catch (Exception $e) {
-				// Indexing error
-				caLogEvent('ERR', _t('Indexing failed for %1: %2; response was %3', $vs_core, $e->getMessage(), $vo_http_response->getBody()), 'Solr->flushContentBuffer()');
 			}
+		} catch(Exception $e) {
+			caLogEvent('ERR', _t('Could not connect to SOLR server: %1', $e->getMessage()), 'Solr->flushContentBuffer()');
 		}
-
 		/* clean up */
 		unset($vo_http_client);
 		unset($vs_post_xml);
@@ -730,7 +779,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		$vs_post_xml = '<optimize />';
 		$vo_http_client = new Zend_Http_Client();
 		$vo_http_client->setUri(
-			$this->opo_search_config->get('search_solr_url')."/". /* general url */
+			$this->ops_search_solr_url."/". /* general url */
 			$this->opo_datamodel->getTableName($pn_tablenum). /* core name (i.e. table name */
 			"/update" /* updater */
 		);
@@ -750,7 +799,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 			/* reload all cores */
 			$vo_http_client = new Zend_Http_Client();
 			$vo_http_client->setUri(
-				$this->opo_search_config->get('search_solr_url')."/". /* general url */
+				$this->ops_search_solr_url."/". /* general url */
 				"/admin/cores" /* CoreAdminHandler */
 			);
 
@@ -773,9 +822,9 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 		}
 
 		$va_searchconfig_stat = stat($this->opo_search_config->get('search_indexing_config'));
-		if(file_exists($this->opo_search_config->get('search_solr_home_dir')."/".$this->ops_indexing_subject_tablename.'/conf/schema.xml')){
+		if(file_exists($this->ops_search_solr_home_dir."/".$this->ops_indexing_subject_tablename.'/conf/schema.xml')){
 			$va_solrconfig_stat = stat(
-				$this->opo_search_config->get('search_solr_home_dir')."/".
+				$this->ops_search_solr_home_dir."/".
 				$this->ops_indexing_subject_tablename.
 				'/conf/schema.xml'
 			);

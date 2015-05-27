@@ -123,10 +123,10 @@ class PrintFormRectangleElement extends PrintFormElements {
 			
 		if ($this->opo_form->getPDFLibrary() == __PDF_LIBRARY_ZEND__) {
 			$po_page = $po_pdf->pages[sizeof($po_pdf->pages)-1];
-			if (($vn_y - $vn_cur_y) >= ($vn_height * cos($vn_rotate_radians)) + ($vn_width * sin($vn_rotate_radians))) {
+			if (($vn_y - $vn_cur_y) >= ($vn_height)) {
 				break;
 			}
-			if (($vn_cur_x - $vn_x) >= ($vn_width * cos($vn_rotate_radians)) + ($vn_height * sin($vn_rotate_radians))) {
+			if (($vn_cur_x - $vn_x) >= ($vn_width)) {
 				break;
 			}
 			
@@ -135,13 +135,11 @@ class PrintFormRectangleElement extends PrintFormElements {
 			
 			$po_page->drawRectangle($vn_x, $vn_y, $vn_x + $vn_width, $vn_y - $vn_height + $vn_size, (floatval($vn_border) > 0) ? Zend_Pdf_Page::SHAPE_DRAW_FILL_AND_STROKE : Zend_Pdf_Page::SHAPE_DRAW_FILL);
 			
-			$vn_cur_x += ($vn_leading * sin($vn_rotate_radians));
-			$vn_cur_y -= ($vn_leading * cos($vn_rotate_radians));
 		} else {
-			if (($vn_y - $vn_cur_y) >= ($vn_height * cos($vn_rotate_radians)) + ($vn_width * sin($vn_rotate_radians))) {
+			if (($vn_y - $vn_cur_y) >= ($vn_height)) {
 				break;
 			}
-			if (($vn_cur_x - $vn_x) >= ($vn_width * cos($vn_rotate_radians)) + ($vn_height * sin($vn_rotate_radians))) {
+			if (($vn_cur_x - $vn_x) >= $vn_width) {
 				break;
 			}
 			
@@ -156,9 +154,6 @@ class PrintFormRectangleElement extends PrintFormElements {
 			$po_pdf->lineTo($vn_x, $vn_y - $vn_height + $vn_size);
 			$po_pdf->lineTo($vn_x, $vn_y + $vn_size);
 			$po_pdf->stroke();
-			
-			$vn_cur_x += ($vn_leading * sin($vn_rotate_radians));
-			$vn_cur_y -= ($vn_leading * cos($vn_rotate_radians));
 		}
 			
 		return true;

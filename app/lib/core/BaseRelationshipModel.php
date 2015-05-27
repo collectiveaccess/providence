@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -200,6 +200,15 @@
 		public function isSelfRelationship() {
 			return (bool)($this->getLeftTableNum() == $this->getRightTableNum());
 		}
+		# ------------------------------------------------------
+		/**
+		 * Returns true if model is a relationship
+		 *
+		 * @return bool
+		 */
+		public function isRelationship() {
+			return true;
+		}
  		# ------------------------------------------------------
 		/**
 		 * Returns an array of relationship types for this relation, subject to sub type restrictions
@@ -241,7 +250,7 @@
 						} else {
 							$va_criteria['type_code'] = $vs_type_code;
 						}
-						if ($t_rel_type->load(array($va_criteria))) {
+						if ($t_rel_type->load($va_criteria)) {
 							$va_restrict_to_type_list[] = "(crt.hier_left >= ".$t_rel_type->get('hier_left')." AND crt.hier_right <= ".$t_rel_type->get('hier_right').")";
 						}
 					}
@@ -286,12 +295,12 @@
 		/**
 		 * Returns an HTML <select> element of relationship types with values=type_id and option text = to the typename
 		 */
-		public function getRelationshipTypesAsHTMLSelect($ps_orientation, $pn_sub_type_left_id=null, $pn_sub_type_right_id=null, $pa_options=null) {
+		public function getRelationshipTypesAsHTMLSelect($ps_orientation, $pn_sub_type_left_id=null, $pn_sub_type_right_id=null, $pa_attributes=null, $pa_options=null) {
 			$vs_left_table_name = $this->getLeftTableName();
 			$vs_right_table_name = $this->getRightTableName();
 			if (!in_array($ps_orientation, array($vs_left_table_name, $vs_right_table_name))) { $ps_orientation = $vs_left_table_name; }
 			
-			$va_types = $this->getRelationshipTypes($pn_sub_type_left_id, $pn_sub_type_right_id);
+			$va_types = $this->getRelationshipTypes($pn_sub_type_left_id, $pn_sub_type_right_id, $pa_options);
 			$va_options = array();
 			
 			$va_parent_ids = array();
@@ -309,9 +318,9 @@
 				$va_options[str_repeat("&#160;&#160;&#160;", $vn_l-1).(($ps_orientation == $vs_left_table_name) ? $va_type['typename'] : $va_type['typename_reverse'])] = $va_type['type_id'];
 			}
 			
-			$vs_name = caGetOption('name', $pa_options, 'type_id');
+			$vs_name = caGetOption('name', $pa_attributes, 'type_id');
 			
-			return caHTMLSelect($vs_name, $va_options, $pa_options);
+			return caHTMLSelect($vs_name, $va_options, $pa_attributes, $pa_options);
 		}
 		# ------------------------------------------------------
 		/**
@@ -656,8 +665,15 @@
 		/**
 		 * 
 		 */
-		public function getTypeID() {
-			return BaseModel::get('type_id');
+		public function getTypeID($pn_id = NULL) {
+			if ($pn_id) {
+				$qr_res = $this->getDb()->query("SELECT type_id FROM ".$this->tableName()." WHERE ".$this->primaryKey()." = ?", array((int)$pn_id));
+				if($qr_res->nextRow()) {
+					return $qr_res->get('type_id');
+				}
+				return null;
+			}
+			return (BaseModel::hasField('type_id')) ? BaseModel::get('type_id') : null;
 		}
 		# ------------------------------------------------------
 		/**
@@ -666,8 +682,8 @@
 		 * @param string $ps_direction Determines the reading direction of the relationship. Possible values are 'ltor' (left-to-right) and 'rtol' (right-to-left). Default value is ltor.
 		 * @return string Type name or null if no row is loaded.
 		 */
-		public function getRelationshipTypename($ps_direction='ltor') {
-			if ($vn_type_id = $this->getTypeID()) {
+		public function getRelationshipTypename($ps_direction='ltor', $pn_type_id=null) {
+			if (($vn_type_id = $pn_type_id) || ($vn_type_id = $this->getTypeID())) {
 				$t_rel_type = new ca_relationship_types($vn_type_id);
 				return ($ps_direction == 'ltor') ? $t_rel_type->get('ca_relationship_types.preferred_labels.typename') : $t_rel_type->get('ca_relationship_types.preferred_labels.typename_reverse');
 			}
@@ -687,5 +703,47 @@
 			return null;
 		}
 		# ------------------------------------------------------
+		/**
+		 * Get row_ids linked to by this self-relationship. By default this method will return
+		 * row_ids for linked records on either side of the relationship for the currently loaded relationship.
+		 * You can omit specific row_ids from the list of returned ids by including them in the $pa_primary_ids parameters array.
+		 * You can obtain linked row_ids for multiple relationships, not necessarily including the currently loaded relationship,
+		 * by passing a list of relation_ids in the optional $pa_relationship_ids parameter.
+		 *
+		 * This method only returns values for self-relationships (Ex. ca_objects_x_objects, ca_entities_x_entities). It will return null
+		 * when called for non-self-relationships. The returned values are primary keys (row_ids) for the related record - Eg. ca_objects object_id's
+		 * for ca_objects_x_objects, ca_entities entity_id's for ca_entities_x_entities.
+		 *
+		 * @param array $pa_primary_ids List of row_ids to not include in the returned list. [Default is to include all row_ids]
+		 * @param array $pa_relationship_ids List of relationship relation_ids to return related row_ids for. [Default is to return row_ids for the currently loaded relationship only.]
+		 *
+		 * @return array An array of row_ids. If called on a non-self-relationship or with no loaded relationship and and empty $pa_relationship_ids parameter, will return null.
+		 */
+		public function getRelatedIDsForSelfRelationship($pa_primary_ids=null, $pa_relationship_ids=null) {
+			if (!$this->isSelfRelationship()) { return null; }
+			
+			if (!is_array($pa_primary_ids)) { $pa_primary_ids = array(); }
+			
+			if (!is_array($pa_relationship_ids) || !sizeof($pa_relationship_ids)) { 
+				if (!($vn_id = $this->getPrimaryKey())) { return null; }
+				$pa_relationship_ids = array($vn_id);
+			}
+			
+			$o_db = $this->getDb();
+			
+			$qr_res = $o_db->query("
+				SELECT * FROM ".$this->tableName()." WHERE relation_id IN (?)
+			", array($pa_relationship_ids));
+			
+			$va_ids = array();
+			$vs_left_fld = $this->getLeftTableFieldName();
+			$vs_right_fld = $this->getRightTableFieldName();
+			while($qr_res->nextRow()) {
+				if (!in_array($vn_id = $qr_res->get($vs_left_fld), $pa_primary_ids)) { $va_ids[$vn_id] = 1; }
+				if (!in_array($vn_id = $qr_res->get($vs_right_fld), $pa_primary_ids)) { $va_ids[$vn_id] = 1; }
+			}
+		
+			return array_keys($va_ids);
+		}
+		# ------------------------------------------------------
 	}
-?>

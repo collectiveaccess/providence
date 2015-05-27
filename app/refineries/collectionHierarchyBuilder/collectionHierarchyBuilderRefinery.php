@@ -38,6 +38,7 @@
 			$this->ops_description = _t('Builds a collection hierarchy.');
 			
 			$this->opb_returns_multiple_values = true;
+			$this->opb_supports_relationships = true;
 			
 			parent::__construct();
 		}
@@ -80,7 +81,7 @@
 			
 			// Set collection parents
 			if ($va_parents = $pa_item['settings']['collectionHierarchyBuilder_parents']) {
-				$vn_parent_id = caProcessRefineryParents('collectionHierarchyBuilderRefinery', 'ca_collections', $va_parents, $pa_source_data, $pa_item, null, null, $o_log);
+				$vn_parent_id = caProcessRefineryParents('collectionHierarchyBuilderRefinery', 'ca_collections', $va_parents, $pa_source_data, $pa_item, null, $pa_options);
 			}
 			
 			return $vn_parent_id;

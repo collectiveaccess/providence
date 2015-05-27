@@ -1,5 +1,36 @@
 #!/usr/bin/env php
 <?php
+/** ---------------------------------------------------------------------
+ * support/bin/caUtils :
+ * ----------------------------------------------------------------------
+ * CollectiveAccess
+ * Open-source collections management software
+ * ----------------------------------------------------------------------
+ *
+ * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
+ * Copyright 2013-2015 Whirl-i-Gig
+ *
+ * For more information visit http://www.CollectiveAccess.org
+ *
+ * This program is free software; you may redistribute it and/or modify it under
+ * the terms of the provided license as published by Whirl-i-Gig
+ *
+ * CollectiveAccess is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ *
+ * This source code is free and modifiable under the terms of 
+ * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
+ * the "license.txt" file for details, or visit the CollectiveAccess web site at
+ * http://www.CollectiveAccess.org
+ *
+ * @package CollectiveAccess
+ * @subpackage Utils
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ *
+ * ----------------------------------------------------------------------
+ */
+ 
 	if (!_caUtilsLoadSetupPHP()) {
 		die("Could not find your CollectiveAccess setup.php file! Please set the COLLECTIVEACCESS_HOME environment variable to the location of your CollectiveAccess installation, or run this command from a sub-directory of your CollectiveAccess installation.\n");
 	}
@@ -7,6 +38,7 @@
 	require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 	require_once(__CA_APP_DIR__."/helpers/CLIHelpers.php");
 	require_once(__CA_LIB_DIR__."/ca/Utils/CLIUtils.php");
+	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 	require_once(__CA_LIB_DIR__."/core/Zend/Console/Getopt.php");
 	
 	if (!caIsRunFromCLI()) {
@@ -16,15 +48,37 @@
 	$o_config = Configuration::load();
 	$g_ui_locale = $o_config->get('locale_default');
 	$t_locale = new ca_locales();
-	$g_ui_locale_id = $t_locale->localeCodeToID($g_ui_locale);		// get current UI locale as locale_id	  (available as global)
+	$g_ui_locale_id = $t_locale->getDb()->getFieldsFromTable('ca_locales') ? $t_locale->localeCodeToID($g_ui_locale) : -1; // get current UI locale as locale_id (available as global)
 	initializeLocale($g_ui_locale);
+	
+ 	$o_app_plugin_manager = new ApplicationPluginManager();
 
-	$vs_cmd = strtolower(str_replace("-", "_", $argv[1]));
+	$vs_cmd = $argv[1];
+	$vs_cmd_proc = strtolower(str_replace("-", "_", $vs_cmd));
+	
+	//
+	// Check for plug-in commands
+	//
+	$va_plugin_commands_by_class = $o_app_plugin_manager->hookCLICaUtilsGetCommands($va_plugin_commands = array());
+	$va_plugin_commands = array();
+	foreach($va_plugin_commands_by_class as $vs_class => $va_commands) {
+		foreach($va_commands as $vs_command => $va_command_info) {
+			unset($va_plugin_commands_by_class[$vs_class][$vs_command]);
+			$va_plugin_commands_by_class[$vs_class][strtolower($vs_command)] = $va_command_info;
+			$va_plugin_commands[strtolower($vs_command)] = $vs_class;
+		}
+	}
+	if ($vb_is_plugin_command = isset($va_plugin_commands[$vs_cmd_proc])) {
+		$va_command_opts = is_array($va_plugin_commands_by_class[$va_plugin_commands[$vs_cmd_proc]][$vs_cmd_proc]['Options']) ? $va_plugin_commands_by_class[$va_plugin_commands[$vs_cmd_proc]][$vs_cmd_proc]['Options'] : array();
+	} else {
+		$va_command_opts = method_exists("CLIUtils", "{$vs_cmd_proc}ParamList") ? call_user_func("CLIUtils::{$vs_cmd_proc}ParamList") : array();
+	}
 	
 	$va_available_cli_opts = array_merge(array(
 			"hostname|h-s" => 'Hostname of installation. If omitted default installation is used.',
+			"setup-s" => 'Specify the path to an alternate setup.php.',
 			"help" => "Displays available commands with descriptions."
-		), method_exists("CLIUtils", "{$vs_cmd}ParamList") ? call_user_func("CLIUtils::{$vs_cmd}ParamList") : array());
+		), $va_command_opts);
 	
 	try {
 		$o_opts = new Zend_Console_Getopt($va_available_cli_opts);
@@ -38,29 +92,40 @@
 	
 	$va_args = $o_opts->getRemainingArgs();
 	
-	$vs_app_heading = CLIUtils::textWithColor(_t("CollectiveAccess %1 (%2/%3) Utilities\n(c) 2013-2014 Whirl-i-Gig",__CollectiveAccess__, __CollectiveAccess_Schema_Rev__, __CollectiveAccess_Release_Type__), "bold_blue")."\n\n";
+	$vs_app_heading = CLIUtils::textWithColor(_t("CollectiveAccess %1 (%2/%3) Utilities\n(c) 2013-2015 Whirl-i-Gig",__CollectiveAccess__, __CollectiveAccess_Schema_Rev__, __CollectiveAccess_Release_Type__), "bold_blue")."\n\n";
 	
 	print $vs_app_heading;
-	
-	if (method_exists("CLIUtils", $vs_cmd) || ((strtolower($vs_cmd) === 'help') && (sizeof($va_args) > 1))) {
-		if ((sizeof($va_args) > 1) && ((strtolower($va_args[1]) === 'help') || (strtolower($vs_cmd) === 'help'))) {
+			
+	if (method_exists("CLIUtils", $vs_cmd_proc) || ($vb_is_plugin_command) || (($vs_cmd_proc === 'help') && (sizeof($va_args) > 1))) {
+		if ((sizeof($va_args) > 1) && ((strtolower($va_args[1]) === 'help') || ($vs_cmd_proc === 'help'))) {
 			//
 			// Full-length help for command
 			//
-			if (strtolower($vs_cmd) === 'help') {
+			if ($vs_cmd_proc === 'help') {
 				$vs_cmd = $va_args[1];
+				$vs_cmd_proc = strtolower(str_replace("-", "_", $va_args[1]));
+				$vb_is_plugin_command = isset($va_plugin_commands[$vs_cmd_proc]);
 			}
-			$vs_cmd_proc = strtolower(str_replace("-", "_", $vs_cmd));
-			if (method_exists("CLIUtils", $vs_cmd_proc)) {
+			
+				
+			if ((method_exists("CLIUtils", $vs_cmd_proc)) || $vb_is_plugin_command) {
+			
+				if ($vb_is_plugin_command) {
+					$va_plugin_command_info = $va_plugin_commands_by_class[$va_plugin_commands[$vs_cmd_proc]][$vs_cmd_proc];
+				
+					$vs_short_help = $va_plugin_command_info['ShortHelp'];
+					$va_opts = $va_plugin_command_info['Options'];
+				} else {
+					$vs_short_help = call_user_func_array("CLIUtils::{$vs_cmd_proc}Help", array($o_opts));
+					$va_opts = call_user_func_array("CLIUtils::{$vs_cmd_proc}ParamList", array($o_opts));
+				}
 			
 				print CLIUtils::textWithColor("Help for \"{$vs_cmd}\":", "bold_green")."\n\n";
-				print "\t".wordwrap(call_user_func_array("CLIUtils::{$vs_cmd_proc}Help", array($o_opts)), 90, "\n\t")."\n\n";
+				print "\t".wordwrap($vs_short_help, 90, "\n\t")."\n\n";
 			
-			
-				$va_opts = call_user_func_array("CLIUtils::{$vs_cmd_proc}ParamList", array($o_opts));
 			
 				if (is_array($va_opts) && sizeof($va_opts)) {
-					print CLIUtils::textWithColor("Options for {$vs_cmd_proc} are:", "bold_green")."\n\n";
+					print CLIUtils::textWithColor("Options for {$vs_cmd} are:", "bold_green")."\n\n";
 					foreach($va_opts as $vs_opt_format => $vs_opt_desc) {
 						$va_tmp = explode("|", $vs_opt_format);
 						$va_abbr = preg_split("![=\-]+!", $va_tmp[1]);
@@ -77,16 +142,32 @@
 			// Execute command
 			//
 		
-			call_user_func_array("CLIUtils::{$vs_cmd}", array($o_opts));
-			print "\n";
-			if ($vn_n = CLIUtils::numErrors()) {
-				if ($vn_n > 1) {
-					print CLIUtils::textWithColor(_t("(There were %1 errors)", $vn_n), "yellow")."\n";
-				} else {
-					print CLIUtils::textWithColor(_t("(1 error occurred)"), "yellow")."\n";
+			if ($vb_is_plugin_command) {
+				$va_settings = array();
+				foreach($va_command_opts as $vs_opt => $vs_opt_desc) {
+					$va_opt_tmp = explode('|', $vs_opt);
+					$va_settings[$va_opt_tmp[0]] = (string)$o_opts->getOption($va_opt_tmp[0]);
 				}
+				
+				$va_params = array($va_plugin_commands[$vs_cmd_proc], $va_settings, 'CLI');
+				$va_params = $o_app_plugin_manager->hookCLICaUtilsGetToolWithSettings($va_params);
+				if ($o_tool = $va_params['tool']) {
+					$o_tool->run($vs_cmd_proc);
+				} else {
+					print CLIUtils::textWithColor("Could not run command \"{$vs_cmd}\"\n", "bold_red");
+				}
+			} else {
+				call_user_func_array("CLIUtils::{$vs_cmd_proc}", array($o_opts));
+				print "\n";
+				if ($vn_n = CLIUtils::numErrors()) {
+					if ($vn_n > 1) {
+						print CLIUtils::textWithColor(_t("(There were %1 errors)", $vn_n), "yellow")."\n";
+					} else {
+						print CLIUtils::textWithColor(_t("(1 error occurred)"), "yellow")."\n";
+					}
+				}
+				print "\n";
 			}
-			print "\n";
 		}
 	} else {
 		//
@@ -111,6 +192,14 @@
 			$va_by_class[$vs_class][$vs_method] = CLIUtils::textWithColor(str_pad(str_replace("_", "-", $vs_method), 30), "red")."\t".wordwrap(call_user_func("CLIUtils::{$vs_method}ShortHelp"), 75, "\n\t".str_repeat(" ", 30)."\t");
 		}
 		
+		if(is_array($va_plugin_commands_by_class)) {
+			foreach($va_plugin_commands_by_class as $vs_class => $va_commands) {
+				foreach($va_commands as $vs_command => $va_command_info) {
+					$va_by_class[$vs_class][$vs_command] = CLIUtils::textWithColor(str_pad(str_replace("_", "-", $va_command_info['Command']), 30), "red")."\t".wordwrap($va_command_info['ShortHelp'], 75, "\n\t".str_repeat(" ", 30)."\t");
+				}
+			}
+		}
+		
 		ksort($va_by_class);
 		foreach($va_by_class as $vs_class => $va_methods) {
 			print CLIUtils::textWithColor($vs_class, "bold_green")."\n\n";
@@ -131,12 +220,18 @@
 	 * @return bool True if setup.php is located and loaded, false if setup.php could not be found.
 	 */
 	function _caUtilsLoadSetupPHP() {
-		
+		$vs_setup_path = 'setup.php';
+
 		// try to get hostname off of argv since we need that before anything else in a multi-database installation
+		// also detect the --setup flag, which accepts a path to an alternate setup.php
 		if (isset($_SERVER['argv']) && is_array($_SERVER['argv'])) {
 			foreach($_SERVER['argv'] as $vs_opt) {
 				if (preg_match("!^\-\-hostname\=([A-Za-z0-9_\-\.]+)!", $vs_opt, $va_matches) || preg_match("!^\-h\=([A-Za-z0-9_\-\.]+)!", $vs_opt, $va_matches)) {
 					$_SERVER['HTTP_HOST'] = $va_matches[1];
+					break;
+				}
+				if (preg_match('!^\-\-setup\=([A-Za-z0-9_\-\/\.]+)$!', $vs_opt, $va_matches)) {
+					$vs_setup_path = $va_matches[1];
 					break;
 				}
 			}
@@ -144,16 +239,17 @@
 		
 		// Look for environment variable
 		$vs_path = getenv("COLLECTIVEACCESS_HOME");
-		if (file_exists("{$vs_path}/setup.php")) {
-			require_once("{$vs_path}/setup.php");
+		if (file_exists("{$vs_path}/{$vs_setup_path}")) {
+			require_once("{$vs_path}/{$vs_setup_path}");
 			return true;
 		}
-		
+
 		// Look in current directory and then in parent directories
 		$vs_cwd = getcwd();
 		$va_cwd = explode("/", $vs_cwd);
 		while(sizeof($va_cwd) > 0) {
-			if (file_exists("/".join("/", $va_cwd)."/setup.php")) {
+			$vs_setup_path_fallback = "/".join("/", $va_cwd)."/".$vs_setup_path;
+			if (file_exists($vs_setup_path_fallback)) {
 				// Rewrite $_SERVER with paths that setup.php can use
 				//print_R($_SERVER);
 					// try to load pre-save paths
@@ -163,14 +259,15 @@
 					if (!isset($_SERVER['HTTP_HOST'])) { $_SERVER['HTTP_HOST'] = $va_hints['HTTP_HOST']; }
 				} else {
 					// Guess paths based upon location of setup.php (*should* work)
-					if (!isset($_SERVER['DOCUMENT_ROOT']) && !$_SERVER['DOCUMENT_ROOT']) { $_SERVER['DOCUMENT_ROOT'] = join("/", $va_cwd); }
-					if (!isset($_SERVER['SCRIPT_FILENAME']) && !$_SERVER['SCRIPT_FILENAME']) { $_SERVER['SCRIPT_FILENAME'] = join("/", $va_cwd)."/index.php"; }
-					if (!isset($_SERVER['HTTP_HOST']) && !$_SERVER['HTTP_HOST']) { $_SERVER['HTTP_HOST'] = 'localhost'; }
+					if (!isset($_SERVER['DOCUMENT_ROOT']) || !$_SERVER['DOCUMENT_ROOT']) { $_SERVER['DOCUMENT_ROOT'] = join("/", $va_cwd); }
+					if (!isset($_SERVER['SCRIPT_FILENAME']) || !$_SERVER['SCRIPT_FILENAME']) { $_SERVER['SCRIPT_FILENAME'] = join("/", $va_cwd)."/index.php"; }
+					if (!isset($_SERVER['HTTP_HOST']) || !$_SERVER['HTTP_HOST']) { $_SERVER['HTTP_HOST'] = 'localhost'; }
 					
-					print "[\033[1;33mWARNING\033[0m] Guessing base path and hostname because configuration is not available. Loading any CollectiveAccess screen (except for the installer) in a web browser will cache configuration details and resolve this issue.\n\n";
+					print "[\033[1;33mWARNING\033[0m] Configuration is not available. Loading any CollectiveAccess screen (except for the installer) in a web browser will cache configuration details and resolve this issue.\n\n";
+					die;
 				}
 				
-				require_once("/".join("/", $va_cwd)."/setup.php");
+				require_once($vs_setup_path_fallback);
 				return true;
 			}
 			array_pop($va_cwd);

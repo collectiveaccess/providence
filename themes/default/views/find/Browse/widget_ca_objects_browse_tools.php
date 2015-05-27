@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,15 @@
  *
  * ----------------------------------------------------------------------
  */
+  
+  	$vo_result_context 			= $this->getVar('result_context');
+ 	$vo_result					= $this->getVar('result');
 ?>
-<h3>
+<h3 class='searchType' >
 	<?php print _t("Browse %1", $this->getVar('mode_type_plural'))."<br/>\n"; ?>
 </h3>
+<?php 
+	if ($vo_result) {
+		print $this->render('Search/search_sets_html.php'); 
+	}
+?>

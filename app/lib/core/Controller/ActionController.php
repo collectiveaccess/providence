@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2009 Whirl-i-Gig
+ * Copyright 2007-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,17 +35,35 @@
   */
  
 require_once(__CA_LIB_DIR__.'/core/BaseObject.php');
+require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
 require_once(__CA_LIB_DIR__.'/core/View.php');
 require_once(__CA_LIB_DIR__.'/core/Controller/Request/NotificationManager.php');
 
 class ActionController extends BaseObject {
 	# -------------------------------------------------------
+	/**
+	 * @var RequestHTTP
+	 */
 	protected $opo_request;
+	/**
+	 * @var ResponseHTTP
+	 */
 	protected $opo_response;
+	/**
+	 * @var View
+	 */
 	protected $opo_view;
 	protected $opa_view_paths;
+	/**
+	 * @var NotificationManager
+	 */
 	protected $opo_notification_manager;
 	# -------------------------------------------------------
+	/**
+	 * @param RequestHTTP $po_request
+	 * @param ResponseHTTP $po_response
+	 * @param null|array $pa_view_paths
+	 */
 	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
 		$this->opo_request =& $po_request;
 		$this->opo_response =& $po_response;
@@ -57,7 +75,7 @@ class ActionController extends BaseObject {
 		}
 		
 		$this->opa_view_paths = is_array($pa_view_paths) ? $pa_view_paths : ($pa_view_paths ? array($pa_view_paths) : array());
-		$this->opo_notification_manager = new NotificationManager($this->request);
+		$this->opo_notification_manager = new NotificationManager($this->opo_request);
 	}
 	# -------------------------------------------------------
 	public function setViewPath($pa_view_paths) {
@@ -91,6 +109,14 @@ class ActionController extends BaseObject {
 		}
 	}
 	# -------------------------------------------------------
+	public function getAppDatamodel() {
+		return Datamodel::load();
+	}
+	# -------------------------------------------------------
+	/**
+	 * Init new view
+	 * @return View
+	 */
 	public function initView() {
 		$this->opo_view = new View($this->opo_request, $this->opa_view_paths);
 		$this->opo_view->setVar('request', $this->getRequest());
@@ -98,15 +124,37 @@ class ActionController extends BaseObject {
 		return $this->opo_view;
 	}
 	# -------------------------------------------------------
+	/**
+	 * Get view object by reference
+	 * @return View
+	 */
 	public function &getView() {
 		if (!$this->opo_view) { $this->initView(); }
 		return $this->opo_view;
 	}
 	# -------------------------------------------------------
-	public function &render($ps_view, $pb_dont_add_content_to_response=false) {
+	public function viewExists($ps_path) {
+		if (!$this->opo_view) { $this->initView(); }
+		return $this->opo_view->viewExists($ps_path);
+	}
+	# -------------------------------------------------------
+	public function getTagListForView($ps_path) {
+		if (!$this->opo_view) { $this->initView(); }
+		return $this->opo_view->getTagList($ps_path);
+	}
+	# -------------------------------------------------------
+	/**
+	 * Render view file
+	 * 
+	 * @param string $ps_view path to view file
+	 * @param bool $pb_dont_add_content_to_response
+	 * @param bool $pb_dont_replace_tags
+	 * @return mixed|null|string
+	 */
+	public function &render($ps_view, $pb_dont_add_content_to_response=false, $pb_dont_replace_tags=false) {
 		if (!$this->opo_view) { $this->initView(); }
 		
-		$vs_content = $this->opo_view->render($ps_view);
+		$vs_content = $this->opo_view->render($ps_view, $pb_dont_replace_tags);
 		
 		if ($this->opo_view->numErrors() > 0) {
 			$this->errors = $this->opo_view->errors;
@@ -117,10 +165,19 @@ class ActionController extends BaseObject {
 		return $vs_content;
 	}
 	# -------------------------------------------------------
+	/**
+	 * Get request object (by reference)
+	 *
+	 * @return RequestHTTP
+	 */
 	public function &getRequest() {
 		return $this->opo_request;
 	}
 	# -------------------------------------------------------
+	/*
+	 * Get response object (by reference)
+	 * @return ResponseHTTP
+	 */
 	public function &getResponse() {
 		return $this->opo_response;
 	}
@@ -131,7 +188,7 @@ class ActionController extends BaseObject {
 	}
 	# -------------------------------------------------------
 	public function redirect($ps_url, $pn_code=302) {
-		$this->response->setRedirect($ps_url, $pn_code);
+		$this->opo_response->setRedirect($ps_url, $pn_code);
 	}
 	# -------------------------------------------------------
 	public function __call($ps_methodname, $pa_params) {
@@ -141,4 +198,3 @@ class ActionController extends BaseObject {
 	}
 	# -------------------------------------------------------
 }
-?>

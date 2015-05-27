@@ -173,7 +173,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		
 		),
 		"RELATED_TABLES" => array(
-			"ca_data_exporter_items", "ca_data_exporter_labels"
+			
 		)
 	);	
 	
@@ -208,6 +208,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	public static $s_exporter_item_cache = array();
 	public static $s_mapping_check_cache = array();
 	public static $s_instance_cache = array();
+	public static $s_variables = array();
 
 	protected $opo_app_plugin_manager;
 	
@@ -259,6 +260,26 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'default' => '',
 			'label' => _t('Wrapping text after export'),
 			'description' => _t('If this exporter is used for an item set export (as opposed to a single item), the text set here will be inserted after the last item. This can for instance be used to wrap a repeating set of XML elements in a single global element. The text has to be valid for the current exporter format.')
+		);
+
+		$va_settings['wrap_before_record'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 70, 'height' => 6,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Wrapping text before record export'),
+			'description' => _t('The text set here will be inserted before earch record-level export.')
+		);
+
+		$va_settings['wrap_after_record'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 70, 'height' => 6,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Wrapping text after record export'),
+			'description' => _t('The text set here will be inserted after earch record-level export.')
 		);
 
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
@@ -329,6 +350,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 *                          includeSettingsForm
 	 *                          id_prefix
 	 *                          orderForDeleteCascade
+	 *							dontIncludeVariables
 	 * @return array array of items, keyed by their primary key
 	 */
 	public function getItems($pa_options=array()){
@@ -337,6 +359,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vb_include_settings_form = isset($pa_options['includeSettingsForm']) ? (bool)$pa_options['includeSettingsForm'] : false;
 		$vb_only_top_level = isset($pa_options['onlyTopLevel']) ? (bool)$pa_options['onlyTopLevel'] : false;
 		$vb_order_for_delete_cascade = isset($pa_options['orderForDeleteCascade']) ? (bool)$pa_options['orderForDeleteCascade'] : false;
+		$vb_dont_include_vars = caGetOption('dontIncludeVariables',$pa_options);
 
 		$vs_id_prefix = isset($pa_options['id_prefix']) ? $pa_options['id_prefix'] : '';
 
@@ -344,7 +367,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$va_conditions = array();
 		if($vb_only_top_level){
-			$va_conditions[] ="AND parent_id IS NULL";
+			$va_conditions[] = "AND parent_id IS NULL";
+		}
+
+		if($vb_dont_include_vars){
+			$va_conditions[] = "AND element not like \"_VARIABLE_:%\"";
 		}
 
 		if($vb_order_for_delete_cascade){
@@ -373,7 +400,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		return $va_items;
 	}
 	# ------------------------------------------------------
-	public function getTopLevelItems($pa_options=array()){
+	public function getTopLevelItems($pa_options=array()) {
 		return $this->getItems(array_merge(array('onlyTopLevel' => true),$pa_options));
 	}
 	# ------------------------------------------------------
@@ -514,10 +541,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * Returns list of available data exporters as HTML form element
 	 */
 	static public function getExporterListAsHTMLFormElement($ps_name, $pn_table_num=null, $pa_attributes=null, $pa_options=null) {
-		$va_importers = ca_data_exporters::getExporters($pn_table_num, $pa_options);
+		$va_exporters = ca_data_exporters::getExporters($pn_table_num, $pa_options);
 		
 		$va_opts = array();
-		foreach($va_importers as $vn_importer_id => $va_importer_info) {
+		foreach($va_exporters as $va_importer_info) {
 			$va_opts[$va_importer_info['label']." (".$va_importer_info['exporter_code'].")"] = $va_importer_info['exporter_id'];
 		}
 		ksort($va_opts);
@@ -529,6 +556,28 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	static public function getExporterCount($pn_table_num=null) {
 		return ca_data_exporters::getExporters($pn_table_num, array('countOnly' => true));
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get name for exporter target table
+	 * @return null|string
+	 */
+	public function getTargetTableName() {
+		if(!$this->getPrimaryKey()) { return null; }
+
+		$o_dm = Datamodel::load();
+		return $o_dm->getTableName($this->get('table_num'));
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get instance for exporter target table
+	 * @return BaseModel|null
+	 */
+	public function getTargetTableInstance() {
+		if(!$this->getPrimaryKey()) { return null; }
+
+		$o_dm = Datamodel::load();
+		return $o_dm->getTableInstance($this->get('table_num'));
 	}
 	# ------------------------------------------------------
 	/**
@@ -632,6 +681,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			switch($vs_mode) {
 				case 'Mapping':
 				case 'Constant':
+				case 'Variable':
 				case 'RepeatMappings':
 					$o_id = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
 					$o_parent = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
@@ -664,12 +714,24 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						$vs_source = "_CONSTANT_:{$vs_source}";
 					}
 
+					if ($vs_mode == 'Variable') {
+						if(preg_match("/^[A-Za-z0-9\_\-]+$/",$vs_element)){
+							$vs_element = "_VARIABLE_:{$vs_element}";
+						} else {
+							$pa_errors[] = _t("Variable name %1 is invalid. It should only contain ASCII letters, numbers, hyphens and underscores. The variable was not created.",$vs_element);
+							continue(2);
+						}
+
+					}
+
 					$va_options = null;
 					if ($vs_options_json = (string)$o_options->getValue()) { 
 						if (is_null($va_options = @json_decode($vs_options_json, true))) {
 							$pa_errors[] = _t("Warning: options for element %1 are not in proper JSON",$vs_element);
 						}
 					}
+					
+					$va_options['_id'] = (string)$o_id->getValue();	// stash ID for future reference
 
 					$vs_key = (strlen($vs_id)>0 ? $vs_id : md5($vn_row));
 
@@ -680,7 +742,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						'options' => $va_options,
 					);
 
-					// allow mapping repitition
+					// allow mapping repetition
 					if($vs_mode == 'RepeatMappings'){
 						if(strlen($vs_source)<1) {// ignore repitition rows without value
 							continue;
@@ -785,9 +847,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			// noop, because we don't care: mappings without replacements are still valid
 		}
 
-		//caDebug($va_mapping,"Extracted mapping from XLSX");
-		//caDebug($va_settings,"Mapping settings extracted from XLSX");
-
 		// Do checks on mapping
 		if (!$va_settings['code']) { 
 			$pa_errors[] = _t("Error: You must set a code for your mapping!");
@@ -864,9 +923,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			
 			$vn_parent_id = null;
 			if($va_info['parent_id']){ $vn_parent_id = $va_id_map[$va_info['parent_id']]; }
-
-			//caDebug($va_item_settings,"Settings for new exporter item");
-
+			
 			$t_item = $t_exporter->addItem($vn_parent_id,$va_info['element'],$va_info['source'],$va_item_settings);
 
 			if ($t_exporter->numErrors()) {
@@ -893,9 +950,31 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @param string $ps_filename Destination filename (we can't keep everything in memory here)
 	 * @param array $pa_options
 	 *		showCLIProgressBar = Show command-line progress bar. Default is false.
+	 *		logDirectory = path to directory where logs should be written
+	 *		logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO. Constants are, in descending order of shrillness:
+	 *			KLogger::EMERG = Emergency messages (system is unusable)
+	 *			KLogger::ALERT = Alert messages (action must be taken immediately)
+	 *			KLogger::CRIT = Critical conditions
+	 *			KLogger::ERR = Error conditions
+	 *			KLogger::WARN = Warnings
+	 *			KLogger::NOTICE = Notices (normal but significant conditions)
+	 *			KLogger::INFO = Informational messages
+	 *			KLogger::DEBUG = Debugging messages
 	 * @return boolean success state
 	 */
 	static public function exportRDFMode($ps_config, $ps_filename, $pa_options=array()){
+
+		$vs_log_dir = caGetOption('logDirectory',$pa_options);
+		if(!file_exists($vs_log_dir) || !is_writable($vs_log_dir)) {
+			$vs_log_dir = caGetTempDirPath();
+		}
+
+		if(!($vn_log_level = caGetOption('logLevel',$pa_options))) {
+			$vn_log_level = KLogger::INFO;
+		}
+
+		$o_log = new KLogger($vs_log_dir, $vn_log_level);
+
 		$vb_show_cli_progress_bar = (isset($pa_options['showCLIProgressBar']) && ($pa_options['showCLIProgressBar']));
 
 		if(!($o_config = Configuration::load($ps_config))){
@@ -907,7 +986,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_wrap_before = $o_config->get('wrap_before');
 		$vs_wrap_after = $o_config->get('wrap_after');
 		$va_nodes = $o_config->get('nodes');
-		//caDebug($va_nodes,"Node config");
 
 		if($vs_wrap_before){
 			file_put_contents($ps_filename, $vs_wrap_before."\n", FILE_APPEND);
@@ -982,7 +1060,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_mappings = explode("/", $vs_mapping);
 
 			foreach($va_mappings as $vs_mapping){
-				$vs_item_export = ca_data_exporters::exportRecord($vs_mapping,$va_split[1]);
+				$vs_item_export = ca_data_exporters::exportRecord($vs_mapping,$va_split[1],array('rdfMode' => true, 'logger' => $o_log));
 				file_put_contents($ps_filename, trim($vs_item_export)."\n", FILE_APPEND);
 			}
 
@@ -1010,14 +1088,72 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @param string $ps_filename Destination filename (we can't keep everything in memory here)
 	 * @param array $pa_options
 	 *		showCLIProgressBar = Show command-line progress bar. Default is false.
+	 *		logDirectory = path to directory where logs should be written
+	 *		logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO. Constants are, in descending order of shrillness:
+	 *			KLogger::EMERG = Emergency messages (system is unusable)
+	 *			KLogger::ALERT = Alert messages (action must be taken immediately)
+	 *			KLogger::CRIT = Critical conditions
+	 *			KLogger::ERR = Error conditions
+	 *			KLogger::WARN = Warnings
+	 *			KLogger::NOTICE = Notices (normal but significant conditions)
+	 *			KLogger::INFO = Informational messages
+	 *			KLogger::DEBUG = Debugging messages
 	 * @return boolean success state
 	 */
 	static public function exportRecordsFromSearchExpression($ps_exporter_code, $ps_expression, $ps_filename, $pa_options=array()){
+
+		ca_data_exporters::$s_exporter_cache = array();
+		ca_data_exporters::$s_exporter_item_cache = array();
+
+		if(!$t_mapping = ca_data_exporters::loadExporterByCode($ps_exporter_code)){ return false; }
+
+		$o_search = caGetSearchInstance($t_mapping->get('table_num'));
+		$o_result = $o_search->search($ps_expression);
+
+		return self::exportRecordsFromSearchResult($ps_exporter_code, $o_result, $ps_filename, $pa_options);
+	}
+
+	# ------------------------------------------------------
+	/**
+	 * Export a record set as defined by the given search expression and the table_num for this exporter.
+	 * This function wraps the record-level exports using the settings 'wrap_before' and 'wrap_after' if they are set.
+	 * @param string $ps_exporter_code defines the exporter to use
+	 * @param SearchResult $po_result An existing SearchResult object
+	 * @param string $ps_filename Destination filename (we can't keep everything in memory here)
+	 * @param array $pa_options
+	 * 		progressCallback = callback function for asynchronous UI status reporting
+	 *		showCLIProgressBar = Show command-line progress bar. Default is false.
+	 *		logDirectory = path to directory where logs should be written
+	 *		logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO. Constants are, in descending order of shrillness:
+	 *			KLogger::EMERG = Emergency messages (system is unusable)
+	 *			KLogger::ALERT = Alert messages (action must be taken immediately)
+	 *			KLogger::CRIT = Critical conditions
+	 *			KLogger::ERR = Error conditions
+	 *			KLogger::WARN = Warnings
+	 *			KLogger::NOTICE = Notices (normal but significant conditions)
+	 *			KLogger::INFO = Informational messages
+	 *			KLogger::DEBUG = Debugging messages
+	 * @return boolean success state
+	 */
+	static public function exportRecordsFromSearchResult($ps_exporter_code, $po_result, $ps_filename, $pa_options=array()){
+		if(!($po_result instanceof SearchResult)) { return false; }
+
+		$vs_log_dir = caGetOption('logDirectory',$pa_options);
+		if(!file_exists($vs_log_dir) || !is_writable($vs_log_dir)) {
+			$vs_log_dir = caGetTempDirPath();
+		}
+
+		if(!($vn_log_level = caGetOption('logLevel',$pa_options))) {
+			$vn_log_level = KLogger::INFO;
+		}
+
+		$o_log = new KLogger($vs_log_dir, $vn_log_level);
+
 		ca_data_exporters::$s_exporter_cache = array();
 		ca_data_exporters::$s_exporter_item_cache = array();
 
 		$vb_show_cli_progress_bar = (isset($pa_options['showCLIProgressBar']) && ($pa_options['showCLIProgressBar']));
-		$po_request = isset($pa_options['request']) ? $pa_options['request'] : null;
+		$po_request = caGetOption('request', $pa_options, null);
 
 		if(!$t_mapping = ca_data_exporters::loadExporterByCode($ps_exporter_code)){
 			return false;
@@ -1031,15 +1167,17 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			return false;
 		}
 
+		$o_log->logInfo(_t("Starting SearchResult-based multi-record export for mapping %1.", $ps_exporter_code));
+
 		$vn_start_time = time();
 
 		$vs_wrap_before = $t_mapping->getSetting('wrap_before');
 		$vs_wrap_after = $t_mapping->getSetting('wrap_after');
 
 		$t_instance = $t_mapping->getAppDatamodel()->getInstanceByTableNum($t_mapping->get('table_num'));
-		$o_search = caGetSearchInstance($t_mapping->get('table_num'));
-		$o_result = $o_search->search($ps_expression);
-		$vn_num_items = $o_result->numHits();
+		$vn_num_items = $po_result->numHits();
+
+		$o_log->logInfo(_t("SearchResult contains %1 results. Now calling single-item export for each record.", $vn_num_items));
 
 		if($vs_wrap_before){
 			file_put_contents($ps_filename, $vs_wrap_before."\n", FILE_APPEND);
@@ -1051,14 +1189,42 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
 			if($vn_num_items>0) {
-				$ps_callback($po_request, 0, $vn_num_items, _t("Exporting result for search expression '%1'", $ps_expression), (time() - $vn_start_time), memory_get_usage(true), 0);
+				$ps_callback($po_request, 0, $vn_num_items, _t("Exporting result"), (time() - $vn_start_time), memory_get_usage(true), 0);
 			} else {
 				$ps_callback($po_request, 0, -1, _t('Found no records to export'), (time() - $vn_start_time), memory_get_usage(true), 0);
 			}
 		}
 		$vn_num_processed = 0;
-		while($o_result->nextHit()){
-			$vs_item_export = ca_data_exporters::exportRecord($ps_exporter_code,$o_result->get($t_instance->primaryKey()));
+
+
+		if ($t_mapping->getSetting('CSV_print_field_names')) {
+			$va_header = $va_header_sources = array();
+			$va_mapping_items = $t_mapping->getItems();
+			foreach($va_mapping_items as $vn_i => $va_mapping_item) {
+				$va_settings = caUnserializeForDatabase($va_mapping_item['settings']);
+				$va_header_sources[(int)$va_mapping_item['element']] = $va_settings['_id'] ? $va_settings['_id'] : $va_mapping_item['source'];
+			}
+			ksort($va_header_sources);
+			foreach($va_header_sources as $vn_element => $vs_source) {
+				$va_tmp = explode(".", $vs_source);
+				if ($t_table = $t_mapping->getAppDatamodel()->getInstanceByTableName($va_tmp[0], true)) {
+					$va_header[] = $t_table->getDisplayLabel($vs_source);
+				} else {
+					$va_header[] = $vs_source;
+				}
+			}
+			file_put_contents($ps_filename, join(",", $va_header)."\n", FILE_APPEND);
+		}
+
+		while($po_result->nextHit()) {
+
+			if($po_request instanceof RequestHTTP) {
+				if(!caCanRead($po_request->getUserID(), $t_instance->tableNum(), $po_result->get($t_instance->primaryKey()))){
+					continue;
+				}
+			}
+
+			$vs_item_export = ca_data_exporters::exportRecord($ps_exporter_code, $po_result->get($t_instance->primaryKey()), array('logger' => $o_log));
 			file_put_contents($ps_filename, $vs_item_export."\n", FILE_APPEND);
 
 			if ($vb_show_cli_progress_bar) {
@@ -1068,7 +1234,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$vn_num_processed++;
 
 			if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
-				$ps_callback($po_request, $vn_num_processed, $vn_num_items, _t("Exporting ... [%1/%2]", $vn_num_processed, $vn_num_items), (time() - $vn_start_time), memory_get_usage(true), $vn_num_processed); 
+				$ps_callback($po_request, $vn_num_processed, $vn_num_items, _t("Exporting ... [%1/%2]", $vn_num_processed, $vn_num_items), (time() - $vn_start_time), memory_get_usage(true), $vn_num_processed);
 			}
 		}
 
@@ -1085,6 +1251,36 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		}
 
 		return true;
+	}
+
+	# ------------------------------------------------------
+	/**
+	 * Export set items
+	 *
+	 * @param string $ps_exporter_code defines the exporter to use
+	 * @param int $pn_set_id primary key of set to export
+	 * @param string $ps_filename Destination filename (we can't keep everything in memory here)
+	 * @param array $pa_options
+	 * 		progressCallback = callback function for asynchronous UI status reporting
+	 *		showCLIProgressBar = Show command-line progress bar. Default is false.
+	 *		logDirectory = path to directory where logs should be written
+	 *		logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO.
+	 * @return boolean success state
+	 */
+	static public function exportRecordsFromSet($ps_exporter_code, $pn_set_id, $ps_filename, $pa_options=null){
+		ca_data_exporters::$s_exporter_cache = array();
+		ca_data_exporters::$s_exporter_item_cache = array();
+
+		if(!($t_mapping = ca_data_exporters::loadExporterByCode($ps_exporter_code))){ return false; }
+		if(sizeof(ca_data_exporters::checkMapping($ps_exporter_code))>0){ return false; }
+
+		$t_set = new ca_sets();
+
+		if(!$t_set->load($pn_set_id)) { return false; }
+
+		$va_row_ids = array_keys($t_set->getItems(array('returnRowIdsOnly' => true)));
+		$o_result = $t_set->makeSearchResult($t_set->get('table_num'), $va_row_ids);
+		return self::exportRecordsFromSearchResult($ps_exporter_code, $o_result, $ps_filename, $pa_options);
 	}
 	# ------------------------------------------------------
 	/**
@@ -1170,21 +1366,67 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 *        singleRecord = Gives a signal to the export format implementation that this is a single record export. For certain formats
 	 *        	this might trigger different behavior, for instance the XML export format prepends the item-level output with <?xml ... ?>
 	 *        	in those cases.
+	 *        rdfMode = Signals the implementation that this is an RDF mode export
+	 *        logDirectory = path to directory where logs should be written
+	 *		  logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO. Constants are, in descending order of shrillness:
+	 *			KLogger::EMERG = Emergency messages (system is unusable)
+	 *			KLogger::ALERT = Alert messages (action must be taken immediately)
+	 *			KLogger::CRIT = Critical conditions
+	 *			KLogger::ERR = Error conditions
+	 *			KLogger::WARN = Warnings
+	 *			KLogger::NOTICE = Notices (normal but significant conditions)
+	 *			KLogger::INFO = Informational messages
+	 *			KLogger::DEBUG = Debugging messages
+	 *		  logger = Optional ready-to-use instance of KLogger to use for logging/debugging
 	 * @return string Exported record as string
 	 */
 	static public function exportRecord($ps_exporter_code, $pn_record_id, $pa_options=array()){
+
+		// The variable cache is valid for the whole record export.
+		// It's being modified in ca_data_exporters::processExporterItem
+		// and then reset here if we move on to the next record.
+		ca_data_exporters::$s_variables = array();
+
+		$o_log = caGetOption('logger', $pa_options);
+
+		// only set up new logging facilities if no existing one has been passed down
+		if(!$o_log || !($o_log instanceof KLogger)) {
+
+			$vs_log_dir = caGetOption('logDirectory',$pa_options);
+			if(!file_exists($vs_log_dir) || !is_writable($vs_log_dir)) {
+				$vs_log_dir = caGetTempDirPath();
+			}
+
+			if(!($vn_log_level = caGetOption('logLevel',$pa_options))) {
+				$vn_log_level = KLogger::INFO;
+			}
+
+			$o_log = new KLogger($vs_log_dir, $vn_log_level);
+		}
+
+		// make sure we pass logger to item processor
+		$pa_options['logger'] = $o_log;
+
 		ca_data_exporters::$s_instance_cache = array();		
 
 		$t_exporter = ca_data_exporters::loadExporterByCode($ps_exporter_code);
-		if(!$t_exporter) { return false; }
+		if(!$t_exporter) { 
+			$o_log->logError(_t("Failed to load exporter with code '%1' for item with ID %2", $ps_exporter_code, $pn_record_id));
+			return false; 
+		}
+
+		$o_log->logInfo(_t("Successfully loaded exporter with code '%1' for item with ID %2", $ps_exporter_code, $pn_record_id));
 
 		$va_export = array();
 
 		foreach($t_exporter->getTopLevelItems() as $va_item){
-			$va_export = array_merge($va_export,$t_exporter->processExporterItem($va_item['item_id'],$t_exporter->get('table_num'),$pn_record_id,$pa_options));
+			$va_export = array_merge($va_export, $t_exporter->processExporterItem($va_item['item_id'], $t_exporter->get('table_num'), $pn_record_id, $pa_options));
 		}
 
-		// TODO: we may wanna auto-load this
+		$o_log->logInfo(_t("The export tree for exporter code '%1' and item with ID %2 is now ready to be processed by the export format (i.e. transformed to XML, for example).", $ps_exporter_code, $pn_record_id));
+		$o_log->logDebug(print_r($va_export,true));
+
+		// we may wanna auto-load this?
 		switch($t_exporter->getSetting('exporter_format')){
 			case 'XML':
 				$o_export = new ExportXML();
@@ -1199,28 +1441,60 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				return;
 		}
 
+		$o_export->setLogger($o_log);
+
 		// if someone wants to mangle the whole tree ... well, go right ahead
 		$o_manager = new ApplicationPluginManager();
 
-		//caDebug($va_export, "Export before tree plugin hook");
-		if(is_null($va_plugin_export = $o_manager->hookExportRecord(array('exporter_instance' => $t_exporter, 'record_id' => $pn_record_id, 'export' => $va_export)))){
-			return; // skip this record if plugin returns null
-		} else {
-			$va_export = $va_plugin_export['export'];
-		}
-		//caDebug($va_export,"Export after tree plugin hook");
+		$o_manager->hookExportRecord(array('exporter_instance' => $t_exporter, 'record_id' => $pn_record_id, 'export' => &$va_export));
 		
 		$pa_options['settings'] = $t_exporter->getSettings();
 
-		return $o_export->processExport($va_export,$pa_options);
+		$vs_wrap_before = $t_exporter->getSetting('wrap_before_record');
+		$vs_wrap_after = $t_exporter->getSetting('wrap_after_record');
+
+		if($vs_wrap_before || $vs_wrap_after) {
+			$pa_options['singleRecord'] = false;
+		}
+
+		$vs_export = $o_export->processExport($va_export,$pa_options);
+
+		if(strlen($vs_wrap_before)>0) {
+			$vs_export = $vs_wrap_before."\n".$vs_export;
+		}
+
+		if(strlen($vs_wrap_after)>0) {
+			$vs_export = $vs_export."\n".$vs_wrap_after;
+		}
+
+		return $vs_export;
 	}
 	# ------------------------------------------------------
 	/**
+	 * Processes single exporter item for a given record
+	 *
+	 * @param int $pn_item_id Primary of exporter item
+	 * @param int $pn_table_num Table num of item to export
+	 * @param int $pn_record_id Primary key value of item to export
 	 * @param array $pa_options
 	 *		ignoreContext = don't switch context even though context may be set for current item
+	 *		relationship_type_id, relationship_type_code, relationship_typename =
+	 *			if this export is a sub-export (context-switch), we have no way of knowing the relationship
+	 *			to the 'parent' element in the export, so there has to be a means to pass it down to make it accessible
+	 * 		attribute_id = signals that this is an export relative to a specific attribute instance
+	 * 			this triggers special behavior that allows getting container values in a kind of sub-export
+	 *			it's really only useful for Containers but in theory can be any attribute
+	 *		logger = KLogger instance to use for logging. This option is mandatory!
+	 * @return array Item info
 	 */
 	public function processExporterItem($pn_item_id,$pn_table_num,$pn_record_id,$pa_options=array()){
-		$vb_ignore_context = (isset($pa_options['ignoreContext']) && $pa_options['ignoreContext']);
+
+		$o_log = caGetOption('logger',$pa_options); // always set by exportRecord()
+
+		$vb_ignore_context = caGetOption('ignoreContext',$pa_options);
+		$vn_attribute_id = caGetOption('attribute_id',$pa_options);
+
+		$o_log->logInfo(_t("Export mapping processor called with parameters [exporter_item_id:%1 table_num:%2 record_id:%3]", $pn_item_id, $pn_table_num, $pn_record_id));
 
 		$t_exporter_item = ca_data_exporters::loadExporterItemByID($pn_item_id);
 		$t_instance = ca_data_exporters::loadInstanceByID($pn_record_id,$pn_table_num);
@@ -1231,16 +1505,21 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			$va_restrict_to_types = $t_exporter_item->getSetting('restrictToTypes');
 			$va_restrict_to_rel_types = $t_exporter_item->getSetting('restrictToRelationshipTypes');
+			$va_restrict_to_bundle_vals = $t_exporter_item->getSetting('restrictToBundleValues');
 			$va_check_access = $t_exporter_item->getSetting('checkAccess');
+			$va_sort = $t_exporter_item->getSetting('sort');
 
 			$vn_new_table_num = $this->getAppDatamodel()->getTableNum($vs_context);
+			$vb_context_is_related_table = false;
+			$va_related = null;
 
 			if($vn_new_table_num){ // switch to new table
 				$vs_key = $this->getAppDatamodel()->getTablePrimaryKeyName($vs_context);
 			} else { // this table, i.e. hierarchy context switch
 				$vs_key = $t_instance->primaryKey();
-				$vn_new_table_num = $pn_table_num;
 			}
+
+			$o_log->logInfo(_t("Initiating context switch to '%1' for mapping ID %2 and record ID %3. The processor now tries to find matching records for the switch and calls itself for each of those items.", $vs_context, $pn_item_id, $pn_record_id));
 
 			switch($vs_context){
 				case 'children':
@@ -1275,18 +1554,60 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						$va_related[] = array($vs_key => intval($vn_pk));
 					}
 					break;
-				default: // plain old related table
-					if($vn_new_table_num) {
-						$va_related = $t_instance->getRelatedItems(
-							$vs_context,
-							array(
-								'restrictToTypes' => $va_restrict_to_types,
-								'restrictToRelationshipTypes' => $va_restrict_to_rel_types,
-								'checkAccess' => $va_check_access,
-							)
-						);
+				case 'ca_list_items.firstLevel':
+					if($t_instance->tableName() == 'ca_lists') {
+						$o_dm = Datamodel::load();
+						$va_related = array();
+						$va_items_legacy_format = $t_instance->getListItemsAsHierarchy(null,array('maxLevels' => 1, 'dontIncludeRoot' => true));
+						$vn_new_table_num = $o_dm->getTableNum('ca_list_items');
+						$vs_key = 'item_id';
+						foreach($va_items_legacy_format as $va_item_legacy_format) {
+							$va_related[$va_item_legacy_format['NODE']['item_id']] = $va_item_legacy_format['NODE'];
+						}
+						break;
 					} else {
 						return array();
+					}
+					break;
+				default:
+					if($vn_new_table_num) {
+						$va_options = array(
+							'restrictToTypes' => $va_restrict_to_types,
+							'restrictToRelationshipTypes' => $va_restrict_to_rel_types,
+							'restrictToBundleValues' => $va_restrict_to_bundle_vals,
+							'checkAccess' => $va_check_access,
+							'sort' => $va_sort,
+						);
+
+						$o_log->logDebug(_t("Calling getRelatedItems with options: %1.", print_r($va_options,true)));
+
+						$va_related = $t_instance->getRelatedItems($vs_context, $va_options);
+						$vb_context_is_related_table = true;
+					} else { // container or invalid context
+						$va_context_tmp = explode('.', $vs_context);
+						if(sizeof($va_context_tmp) != 2) {
+							$o_log->logError(_t("Invalid context %1. Ignoring this mapping.", $vs_context));
+							return array();
+						}
+
+						$va_attrs = $t_instance->getAttributesByElement($va_context_tmp[1]);
+
+						$va_info = array();
+
+						if(is_array($va_attrs) && sizeof($va_attrs)>0) {
+
+							$o_log->logInfo(_t("Switching context for element code: %1.", $va_context_tmp[1]));
+							$o_log->logDebug(_t("Raw attribute value array is as follows. The mapping will now be repeated for each (outer) attribute. %1", print_r($va_attrs,true)));
+
+							foreach($va_attrs as $vo_attr) {
+								$va_attribute_export = $this->processExporterItem($pn_item_id,$pn_table_num,$pn_record_id,array_merge(array('ignoreContext' => true, 'attribute_id' => $vo_attr->getAttributeID()),$pa_options));
+								$va_info = array_merge($va_info,$va_attribute_export);
+							}
+						} else {
+							$o_log->logInfo(_t("Switching context for element code %1 failed. Either there is no attribute with that code attached to the current row or the code is invalid. Mapping is ignored for current row.", $va_context_tmp[1]));
+						}
+						return $va_info;
+
 					}
 					break;
 			}
@@ -1294,10 +1615,22 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_info = array();
 
 			if(is_array($va_related)){
+				$o_log->logDebug(_t("The current mapping will now be repreated for these items: %1", print_r($va_related,true)));
+				if(!$vn_new_table_num) { $vn_new_table_num = $pn_table_num; }
+
 				foreach($va_related as $va_rel){
+					// if we're dealing with a related table, pass on some info the relationship type to the context-switched invocation of processExporterItem(),
+					// because we can't access that information from the related item simply because we don't exactly know where the call originated
+					if($vb_context_is_related_table){
+							$pa_options['relationship_typename'] = $va_rel['relationship_typename'];
+							$pa_options['relationship_type_code'] = $va_rel['relationship_type_code'];
+							$pa_options['relationship_type_id'] = $va_rel['relationship_type_id'];
+					}
 					$va_rel_export = $this->processExporterItem($pn_item_id,$vn_new_table_num,$va_rel[$vs_key],array_merge(array('ignoreContext' => true),$pa_options));
 					$va_info = array_merge($va_info,$va_rel_export);
 				}
+			} else {
+				$o_log->logDebug(_t("No matching related items found for last context switch"));
 			}
 
 			return $va_info;
@@ -1314,19 +1647,22 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vs_element = $t_exporter_item->get('element');
 		$vb_repeat = $t_exporter_item->getSetting('repeat_element_for_multiple_values');
 
-		// if omitIfEmpty is set and returns nothing, we ignore this exporter item and all children
+		// if omitIfEmpty is set and get() returns nothing, we ignore this exporter item and all children
 		if($vs_omit_if_empty = $t_exporter_item->getSetting('omitIfEmpty')){
 			if(!(strlen($t_instance->get($vs_omit_if_empty))>0)){
 				return array();
 			}
 		}
 
+		// if omitIfNotEmpty is set and get() returns a value, we ignore this exporter item and all children
+		if($vs_omit_if_not_empty = $t_exporter_item->getSetting('omitIfNotEmpty')){
+			if(strlen($t_instance->get($vs_omit_if_not_empty))>0){
+				return array();
+			}
+		}
+
 		// always return URL for export, not an HTML tag
 		$va_get_options = array('returnURL' => true);
-
-		if($t_exporter_item->getSetting('convertCodesToDisplayText')){
-			$va_get_options['convertCodesToDisplayText'] = true;
-		}
 
 		if($vs_delimiter = $t_exporter_item->getSetting("delimiter")){
 			$va_get_options['delimiter'] = $vs_delimiter;
@@ -1347,23 +1683,121 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_get_options['locale'] = $vs_locale;
 		}
 
-		if($vs_source) {
+		// AttributeValue settings that are simply passed through by the exporter
+		if($t_exporter_item->getSetting('convertCodesToDisplayText')){
+			$va_get_options['convertCodesToDisplayText'] = true;		// try to return text suitable for display for system lists stored in intrinsics (ex. ca_objects.access, ca_objects.status, ca_objects.source_id)
+																		// this does not affect list attributes
+		} else {
+			$va_get_options['convertCodesToIdno'] = true;				// if display text is not requested try to return list item idno's... since underlying integer ca_list_items.item_id values are unlikely to be useful in an export context
+		}
+
+		if($t_exporter_item->getSetting('returnIdno')){
+			$va_get_options['returnIdno'] = true;
+		}
+
+		if($t_exporter_item->getSetting('start_as_iso8601')){
+			$va_get_options['start_as_iso8601'] = true;
+		}
+
+		if($t_exporter_item->getSetting('end_as_iso8601')){
+			$va_get_options['end_as_iso8601'] = true;
+		}
+
+		if($t_exporter_item->getSetting('dontReturnValueIfOnSameDayAsStart')){
+			$va_get_options['dontReturnValueIfOnSameDayAsStart'] = true;
+		}
+
+		if($vs_date_format = $t_exporter_item->getSetting('dateFormat')){
+			$va_get_options['dateFormat'] = $vs_date_format;
+		}
+
+		if($vn_attribute_id) {
+
+			$o_log->logInfo(_t("Processing mapping in attribute mode for attribute_id = %1.", $vn_attribute_id));
+
+			if($vs_source) { // trying to find the source only makes sense if the source is set
+				$t_attr = new ca_attributes($vn_attribute_id);
+				$va_values = $t_attr->getAttributeValues();
+
+				$va_src_tmp = explode('.', $vs_source);
+				if(sizeof($va_src_tmp) == 2) {
+					$o_dm = Datamodel::load();
+					if($t_attr->get('table_num') == $o_dm->getTableNum($va_src_tmp[0])) {
+						$vs_source = $va_src_tmp[1];
+					}
+				}
+
+				$o_log->logDebug(_t("Trying to find code %1 in value array for the current attribute.", $vs_source));
+				$o_log->logDebug(_t("Value array is %1.", print_r($va_values, true)));
+
+				foreach($va_values as $vo_val) {
+					$va_display_val_options = array();
+					if($vo_val instanceof ListAttributeValue) {
+						$t_element = ca_metadata_elements::getInstance($t_attr->get('element_id'));
+						$va_display_val_options = array('list_id' => $t_element->get('list_id'));
+
+						if($t_exporter_item->getSetting('returnIdno')) {
+							$va_display_val_options['returnIdno'] = true;
+						}
+					}
+
+					$o_log->logDebug(_t("Trying to match code from array %1 and the code we're looking for %2.", $vo_val->getElementCode(), $vs_source));
+					if($vo_val->getElementCode() == $vs_source) {
+
+						$o_log->logDebug(_t("Found value %1.", $vo_val->getDisplayValue($va_display_val_options)));
+
+						$va_item_info[] = array(
+							'text' => $vo_val->getDisplayValue($va_display_val_options),
+							'element' => $vs_element,
+						);
+					}
+				}
+			} else { // no source in attribute context probably means this is some form of wrapper, e.g. a MARC field
+				$va_item_info[] = array(
+					'element' => $vs_element,
+				);
+			}
+		} else if($vs_source) {
+			$o_log->logDebug(_t("Source for current mapping is %1", $vs_source));
 			$va_matches = array();
 			// CONSTANT value
 			if(preg_match("/^_CONSTANT_:(.*)$/",$vs_source,$va_matches)){
+
+				$o_log->logDebug(_t("This is a constant. Value for this mapping is '%1'", trim($va_matches[1])));
+
 				$va_item_info[] = array(
 					'text' => trim($va_matches[1]),
 					'element' => $vs_element,
 				);
-			} else {
-				if(!$vb_repeat){
+			} else if(in_array($vs_source, array("relationship_type_id", "relationship_type_code", "relationship_typename"))){
+				if(isset($pa_options[$vs_source]) && strlen($pa_options[$vs_source])>0) {
+
+					$o_log->logDebug(_t("Source refers to releationship type information. Value for this mapping is '%1'", $pa_options[$vs_source]));
+
 					$va_item_info[] = array(
-						'text' => $t_instance->get($vs_source,$va_get_options),
+						'text' => $pa_options[$vs_source],
 						'element' => $vs_element,
 					);
-				} else { // if user wants current element repeated in case of multiple returned values, go ahead and do that
+				}
+			} else {
+				if(!$vb_repeat){
+
+					$vs_get = $t_instance->get($vs_source,$va_get_options);
+
+					$o_log->logDebug(_t("Source is a simple get() for some bundle. Value for this mapping is '%1'", $vs_get));
+					$o_log->logDebug(_t("get() options are: %1", print_r($va_get_options,true)));
+
+					$va_item_info[] = array(
+						'text' => $vs_get,
+						'element' => $vs_element,
+					);
+				} else { // user wants current element repeated in case of multiple returned values
 					$va_get_options['delimiter'] = ';#;';
 					$vs_values = $t_instance->get($vs_source,$va_get_options);
+
+					$o_log->logDebug(_t("Source is a get() that should be repeated for multiple values. Value for this mapping is '%1'. It includes the custom delimiter ';#;' that is later used to split the value into multiple values.", $vs_values));
+					$o_log->logDebug(_t("get() options are: %1", print_r($va_get_options,true)));
+
 					$va_tmp = explode(";#;",$vs_values);
 					foreach($va_tmp as $vs_text) {
 						$va_item_info[] = array(
@@ -1376,11 +1810,18 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		} else if($vs_template){
 			// templates without source are probably just static text, but you never know
 			// -> run them through processor anyways
+			$vs_proc_template = caProcessTemplateForIDs($vs_template, $pn_table_num, array($pn_record_id), array());
+			
+			$o_log->logDebug(_t("Current mapping has no source but a template '%1'. Value from extracted via template processor is '%2'", $vs_template, $vs_proc_template));
+
 			$va_item_info[] = array(
 				'element' => $vs_element,
-				'text' => caProcessTemplateForIDs($vs_template, $pn_table_num, array($pn_record_id), array()),
+				'text' => $vs_proc_template,
 			);
 		} else { // no source, no template -> probably wrapper
+
+			$o_log->logDebug(_t("Current mapping has no source and no template and is probably an XML/MARC wrapper element"));
+
 			$va_item_info[] = array(
 				'element' => $vs_element,
 			);
@@ -1391,12 +1832,16 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$g_ui_locale = $vs_old_ui_locale;
 		}
 
-		// handle settings and plugin hooks
+		$o_log->logDebug(_t("We're now processing other settings like default, prefix, suffix, skipIfExpression, filterByRegExp, maxLength, plugins and replacements for this mapping"));
+		$o_log->logDebug(_t("Local data before processing is: %1", print_r($va_item_info,true)));
+
+		// handle other settings and plugin hooks
 		$vs_default = $t_exporter_item->getSetting('default');
 		$vs_prefix = $t_exporter_item->getSetting('prefix');
 		$vs_suffix = $t_exporter_item->getSetting('suffix');
-		$vs_regexp = $t_exporter_item->getSetting('filterByRegExp');
-		$vn_maxlength = $t_exporter_item->getSetting('maxLength');
+		//$vs_regexp = $t_exporter_item->getSetting('filterByRegExp');		// Deprecated -- remove?
+		$vn_max_length = $t_exporter_item->getSetting('maxLength');
+		$vs_skip_if_expr = $t_exporter_item->getSetting('skipIfExpression');
 
 		$vs_original_values = $t_exporter_item->getSetting('original_values');
 		$vs_replacement_values = $t_exporter_item->getSetting('replacement_values');
@@ -1404,20 +1849,32 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$va_replacements = ca_data_exporter_items::getReplacementArray($vs_original_values,$vs_replacement_values);
 		
 		foreach($va_item_info as $vn_key => &$va_item){
-			// if returned value is null then we skip the item
-			if(is_null($va_plugin_item = $this->opo_app_plugin_manager->hookExportItemBeforeSettings(array('instance' => $t_instance, 'exporter_item_instance' => $t_exporter_item, 'export_item' => $va_item)))){
-				continue;
-			} else {
-				$va_item = $va_plugin_item['export_item'];
+			$this->opo_app_plugin_manager->hookExportItemBeforeSettings(array('instance' => $t_instance, 'exporter_item_instance' => $t_exporter_item, 'export_item' => &$va_item));
+
+			// handle dontReturnValueIfOnSameDayAsStart
+			if(caGetOption('dontReturnValueIfOnSameDayAsStart', $va_get_options, false)) {
+				if(strlen($va_item['text']) < 1) {
+					unset($va_item_info[$vn_key]);
+				}
 			}
 
-			// filter by regexp
-			if((strlen($va_item['text'])>0) && $vs_regexp){
-				if(!preg_match("!".$vs_regexp."!", $va_item['text'])) {
- 					unset($va_item_info[$vn_key]);
- 					continue;
- 				}
+			// handle skipIfExpression setting
+			if($vs_skip_if_expr){
+				// Add current value as variable "value", accessible in expressions as ^value
+				$va_vars = array_merge(array('value' => $va_item['text']), ca_data_exporters::$s_variables);
+				if(ExpressionParser::evaluate($vs_skip_if_expr, $va_vars)){
+					unset($va_item_info[$vn_key]);
+					continue;
+				}
 			}
+
+			// filter by regex (deprecated since you can do the same thing and more with skipIfExpression) -- remove?
+			//if((strlen($va_item['text'])>0) && $vs_regexp){
+			//	if(!preg_match("!".$vs_regexp."!i", $va_item['text'])) {
+ 			//		unset($va_item_info[$vn_key]);
+ 			//		continue;
+ 			//	}
+			//}
 
 			// do replacements
 			$va_item['text'] = ca_data_exporter_items::replaceText($va_item['text'],$va_replacements);
@@ -1430,22 +1887,39 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				$va_item['text'] = $vs_prefix.$va_item['text'].$vs_suffix;
 			}
 
-			if($vn_maxlength && (strlen($va_item['text']) > $vn_maxlength)){
-				$va_item['text'] = substr($va_item['text'], 0, $vn_maxlength)." ...";
+			if($vn_max_length && (strlen($va_item['text']) > $vn_max_length)){
+				$va_item['text'] = substr($va_item['text'], 0, $vn_max_length)." ...";
+			}
+
+			// if this is a variable, set the value and delete it from the export tree
+			$va_matches = array();
+			if(preg_match("/^_VARIABLE_:(.*)$/",$va_item['element'],$va_matches)) {
+				ca_data_exporters::$s_variables[$va_matches[1]] = $va_item['text'];
+				unset($va_item_info[$vn_key]);
+				continue;
 			}
 
 			// if returned value is null then we skip the item
-			if(is_null($va_plugin_item = $this->opo_app_plugin_manager->hookExportItem(array('instance' => $t_instance, 'exporter_item_instance' => $t_exporter_item, 'export_item' => $va_item)))){
-				continue;
-			} else {
-				$va_item = $va_plugin_item['export_item'];
-			}
+			$this->opo_app_plugin_manager->hookExportItem(array('instance' => $t_instance, 'exporter_item_instance' => $t_exporter_item, 'export_item' => &$va_item));
 		}
 
-		foreach($t_exporter_item->getHierarchyChildren() as $va_child){
-			foreach($va_item_info as &$va_item){
-				$va_child_export = $this->processExporterItem($va_child['item_id'],$pn_table_num,$pn_record_id,$pa_options);	
-				$va_item['children'] = array_merge((array)$va_item['children'],$va_child_export);
+		$o_log->logInfo(_t("Extracted data for this mapping is as follows:"));
+
+		foreach($va_item_info as $va_tmp) {
+			$o_log->logInfo(sprintf("    element:%-20s value: %-10s",$va_tmp['element'],$va_tmp['text']));
+		}
+
+		$va_children = $t_exporter_item->getHierarchyChildren();
+
+		if(is_array($va_children) && sizeof($va_children)>0){
+		
+			$o_log->logInfo(_t("Now proceeding to process %1 direct children in the mapping hierarchy", sizeof($va_children)));
+
+			foreach($va_children as $va_child) {
+				foreach($va_item_info as &$va_info){
+					$va_child_export = $this->processExporterItem($va_child['item_id'],$pn_table_num,$pn_record_id,$pa_options);	
+					$va_info['children'] = array_merge((array)$va_info['children'],$va_child_export);
+				}
 			}
 		}
 
@@ -1494,4 +1968,3 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 }
-?>

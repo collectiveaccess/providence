@@ -75,8 +75,7 @@
 			$vn_progress += 7;
 			caIncrementProgress($vn_progress, "Processing locales");
 			$vo_installer->processLocales();
-			
-			//$vn_progress += 7;
+
 			caIncrementProgress($vn_progress, "Processing lists");
 			$vo_installer->processLists('caGetListToBeLoaded');
 			
@@ -84,13 +83,13 @@
 			caIncrementProgress($vn_progress, "Processing relationship types");
 			$vo_installer->processRelationshipTypes();
 
-			$vn_progress += 7;
+			$vn_progress += 5;
 			caIncrementProgress($vn_progress, "Processing metadata elements");
 			$vo_installer->processMetadataElements('caGetMetadataElementToBeLoaded');
-			
-			$vn_progress += 7;
-			caIncrementProgress($vn_progress, "Processing user interfaces");
-			$vo_installer->processUserInterfaces();
+
+			$vn_progress += 2;
+			caIncrementProgress($vn_progress, "Processing metadata dictionary");
+			$vo_installer->processMetadataDictionary();
 			
 			$vn_progress += 7;
 			caIncrementProgress($vn_progress, "Processing access roles");
@@ -102,6 +101,10 @@
 			
 			caIncrementProgress($vn_progress, "Creating logins");
 			$va_login_info = $vo_installer->processLogins();
+
+			$vn_progress += 7;
+			caIncrementProgress($vn_progress, "Processing user interfaces");
+			$vo_installer->processUserInterfaces();
 			
 			$vn_progress += 7;
 			caIncrementProgress($vn_progress, "Processing displays");
