@@ -80,21 +80,6 @@ class Db extends DbBase {
 	 * @access private
 	 */
 	private $opn_last_insert_id = null;
-
-	/**
-	 * Standard field types (db drivers map native types to these types)
-	 *
-	 * @access private
-	 */
-	private $opa_field_types = array(
-		"int",
-		"float",
-		"bit",
-		"char",
-		"varchar",
-		"text",
-		"blob"
-	);
 	
 	/** 
 	  * ApplicationMonitor to use for query logging
@@ -111,7 +96,7 @@ class Db extends DbBase {
 	 * @param array $pa_options Database options like username, pw, host, etc - if ommitted, it is fetched from configuration file
 	 * @param bool $pb_die_on_error optional, default is true
 	 */
-	public function Db($ps_config_file_path="", $pa_options=null, $pb_die_on_error=true) {
+	public function __construct($ps_config_file_path="", $pa_options=null, $pb_die_on_error=true) {
 		$this->config = Configuration::load();
 		$this->datamodel = Datamodel::load();
 
@@ -489,6 +474,10 @@ class Db extends DbBase {
 			);
 		}
 
+		if($ps_fieldname) {
+			return (sizeof($va_fields) > 0) ? array_shift($va_fields) : array();
+		}
+
 		return $va_fields;
 	}
 
@@ -502,7 +491,7 @@ class Db extends DbBase {
 	 */
 	public function getFieldInfo($ps_table, $ps_fieldname) {
 		if(!$this->connected(true, "Db->getFieldInfo()")) { return false; }
-		return $this->getFieldInfo($ps_table, $ps_fieldname);
+		return $this->getFieldsFromTable($ps_table, $ps_fieldname);
 	}
 
 	/**

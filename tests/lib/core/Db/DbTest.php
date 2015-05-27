@@ -166,6 +166,7 @@ class DbTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertContains('foo', $va_tables);
 		$this->assertContains('bar', $va_tables);
+		$this->assertEquals(204, sizeof($va_tables)); // 202 CA tables plus 2 we created!
 	}
 
 	public function testQuote() {
@@ -182,6 +183,7 @@ class DbTest extends PHPUnit_Framework_TestCase {
 		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(1, 'bar'));
 		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(2, 'baz'));
 		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(3, 'foo'));
+		$this->assertEquals(1, $this->db->getTransactionCount());
 		$this->db->rollbackTransaction();
 		$this->checkIfFooIsEmpty();
 	}
@@ -234,11 +236,12 @@ class DbTest extends PHPUnit_Framework_TestCase {
 			$this->assertTrue(in_array($va_field['fieldname'], array('id', 'comment')));
 		}
 
-		$va_field_info = $this->db->getFieldsFromTable('foo', 'id');
+		$va_field = $this->db->getFieldsFromTable('foo', 'id');
+		$this->assertEquals('id', $va_field['fieldname']);
 
-		foreach($va_field_info as $va_field) {
-			$this->assertEquals('id', $va_field['fieldname']);
-		}
+		// this is an alias for getFieldsFromTable()
+		$va_field = $this->db->getFieldInfo('foo', 'comment');
+		$this->assertEquals('comment', $va_field['fieldname']);
 	}
 
 	public function testGetIndices() {
@@ -271,6 +274,7 @@ class DbTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function checkIfFooIsEmpty() {
+		$this->assertEquals(0, $this->db->getTransactionCount());
 		$qr_select = $this->db->query("SELECT * FROM foo");
 		$this->assertInternalType('object', $qr_select);
 		$this->assertFalse($qr_select->nextRow());
