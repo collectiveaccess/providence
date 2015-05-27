@@ -1518,7 +1518,7 @@ class SearchResult extends BaseObject {
 					if(!$vb_return_all_locales) {
 						$va_return_values[$vn_c][$vn_locale_id] = $vs_val_proc;
 					} else {
-						$va_return_values[$vn_c][$vn_locale_id][$vs_element_code] = $vs_val_proc;
+						$va_return_values[$vn_c][$vn_locale_id][$o_attribute->getAttributeID()][$vs_element_code] = $vs_val_proc;
 					}
 				}
 			}
