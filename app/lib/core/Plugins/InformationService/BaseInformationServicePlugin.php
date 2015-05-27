@@ -160,4 +160,23 @@ abstract class BaseInformationServicePlugin Extends WLPlug {
 		return;
 	}
 	# ------------------------------------------------
+	/**
+	 * Should be overridden in implementation
+	 * @param array $pa_settings
+	 * @param string $ps_url
+	 * @return array
+	 */
+	public function getExtraValuesForSearchIndexing($pa_settings, $ps_url) {
+		return array();
+	}
+	# ------------------------------------------------
+	/**
+	 * Should be overridden in implementation
+	 * @param string $ps_text
+	 * @return string
+	 */
+	public function getDisplayValueFromLookupText($ps_text) {
+		return $ps_text;
+	}
+	# ------------------------------------------------
 }

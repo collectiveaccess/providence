@@ -356,7 +356,7 @@ class TilepicParser {
 	# ------------------------------------------------
 	private function _imageMagickRead($ps_filepath) {
 		if (caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
-			exec($this->ops_imagemagick_path.'/identify -format "%m;%w;%h\n" '.caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
+			exec($this->ops_imagemagick_path.'/identify -format "%m;%w;%h\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 			
 			$va_tmp = explode(';', $va_output[0]);
 			if (sizeof($va_tmp) != 3) {
@@ -377,7 +377,7 @@ class TilepicParser {
 	# ------------------------------------------------
 	private function _graphicsMagickRead($ps_filepath) {
 		if (caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) {
-			exec($this->ops_graphicsmagick_path.' identify -format "%m;%w;%h\n" '.caEscapeShellArg($ps_filepath)." 2> /dev/null", $va_output, $vn_return);
+			exec($this->ops_graphicsmagick_path.' identify -format "%m;%w;%h\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 			$va_tmp = explode(';', $va_output[0]);
 			if (sizeof($va_tmp) != 3) {
 				return null;
@@ -537,7 +537,7 @@ class TilepicParser {
 	# ------------------------------------------------
 	private function _CoreImageRead($ps_filepath) {
 		if (caMediaPluginCoreImageInstalled($this->ops_CoreImage_path)) {
-			$vs_output = shell_exec('sips --getProperty format --getProperty space --getProperty bitsPerSample --getProperty pixelWidth --getProperty pixelHeight --getProperty dpiWidth --getProperty dpiHeight '.caEscapeShellArg($ps_filepath)." 2> /dev/null");
+			$vs_output = shell_exec('sips --getProperty format --getProperty space --getProperty bitsPerSample --getProperty pixelWidth --getProperty pixelHeight --getProperty dpiWidth --getProperty dpiHeight '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""));
 			
 			$va_tmp = explode("\n", $vs_output);
 			

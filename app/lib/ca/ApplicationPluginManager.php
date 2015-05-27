@@ -168,6 +168,7 @@
 		 * @return array List of user actions keyed by action code
 		 */
 		static public function getPluginRoleActions() {
+			if ($va_actions = CompositeCache::fetch('role_action_list', 'ApplicationPluginManager')) { return $va_actions; }
 			$va_actions = array();
 			
 			$o_config = Configuration::load();
@@ -182,8 +183,8 @@
 			
 				$va_actions = array_merge($va_actions, call_user_func(array($vs_plugin_classname, 'getRoleActionList')));
 			}
+			CompositeCache::save('role_action_list', $va_actions, 'ApplicationPluginManager');
 			return $va_actions;
 		}
 		# -------------------------------------------------------
 	}
-?>

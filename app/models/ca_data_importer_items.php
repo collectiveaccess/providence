@@ -222,19 +222,6 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Replacement values'),
 			'description' => _t('Return-separated list of CollectiveAccess list item idnos that correspond to the mapped values from the original data source.  For example sound recording (entered in the Original values column) maps to audio_digital, which is entered here in the Replacement values column.')
 		);
-		$va_settings['skipGroupIfEmpty'] = array(
-			'formatType' => FT_TEXT,
-			'displayType' => DT_FIELD,
-			'width' => 40, 'height' => 10,
-			'takesLocale' => false,
-			'default' => 0,
-			'options' => array(
-				_t('yes') => 1,
-				_t('no') => 0
-			),
-			'label' => _t('Skip group if empty'),
-			'description' => _t('Skip all of the elements in the group if value for this element is empty.  For example, a field called Description Type would be irrelevant if the Description field is empty.')
-		);
 		$va_settings['skipIfEmpty'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -266,6 +253,28 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Skip mapping if not value'),
 			'description' => _t('Skip mapping if value for this element is not equal to the specified value(s).')
 		);
+		$va_settings['skipIfExpression'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Skip if expression'),
+			'description' => _t('Skip mapping if value for the expression is true.')
+		);
+		$va_settings['skipGroupIfEmpty'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Skip group if empty'),
+			'description' => _t('Skip all of the elements in the group if value for this element is empty.  For example, a field called Description Type would be irrelevant if the Description field is empty.')
+		);
 		$va_settings['skipGroupIfValue'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -283,6 +292,15 @@ class ca_data_importer_items extends BaseModel {
 			'default' => 0,
 			'label' => _t('Skip group if not value'),
 			'description' => _t('Skip all of the elements in the group if value for this element is not equal to any of the specified values(s).')
+		);
+		$va_settings['skipGroupIfExpression'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 10,
+			'takesLocale' => false,
+			'default' => 0,
+			'label' => _t('Skip group if expression'),
+			'description' => _t('Skip all of the elements in the group if value for the expression is true.')
 		);
 		$va_settings['skipRowIfEmpty'] = array(
 			'formatType' => FT_TEXT,
@@ -315,23 +333,14 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Skip row if value is not'),
 			'description' => _t('Skip the row if value for this element is not equal to any of the specified value(s).')
 		);
-		$va_settings['skipGroupIfExpression'] = array(
+		$va_settings['skipRowIfExpression'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
 			'width' => 40, 'height' => 10,
 			'takesLocale' => false,
 			'default' => 0,
-			'label' => _t('Skip group if expression'),
-			'description' => _t('Skip all of the elements in the group if value for the expression is true.')
-		);
-		$va_settings['skipIfExpression'] = array(
-			'formatType' => FT_TEXT,
-			'displayType' => DT_FIELD,
-			'width' => 40, 'height' => 10,
-			'takesLocale' => false,
-			'default' => 0,
-			'label' => _t('Skip if expression'),
-			'description' => _t('Skip mapping if value for the expression is true.')
+			'label' => _t('Skip row if expression'),
+			'description' => _t('Skip the row if value for the expression is true.')
 		);
 		$va_settings['default'] = array(
 			'formatType' => FT_TEXT,
@@ -480,6 +489,15 @@ class ca_data_importer_items extends BaseModel {
 			'default' => '',
 			'label' => _t('Use parent as subject'),
 			'description' => _t('Import parent of subject instead of subject. This option is primarily useful when you are using a hierarchy builder refinery mapped to parent_id to create the entire hierarchy (including subject) and want the bottom-most level of the hierarchy to be the subject.')
+		);
+		$va_settings['treatAsIdentifiersForMultipleRows'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Treat value as identifiers for multiple rows'),
+			'description' => _t('Explode value on delimiter and use as identifiers for multiple rows.')
 		);
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}

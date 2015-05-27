@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2014 Whirl-i-Gig
+ * Copyright 2006-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2966,7 +2966,7 @@ class TimeExpressionParser {
 	public function getISODateTime($pa_date, $ps_mode='START', $pa_options=null) {
 		if (!$pa_date['month']) { $pa_date['month'] = ($ps_mode == 'END') ? 12 : 1; }
 		if (!$pa_date['day']) { $pa_date['day'] = ($ps_mode == 'END') ? 31 : 1; }
-		if ($ps_mode = 'FULL') {
+		if ($ps_mode == 'FULL') {
 			$vs_date = $pa_date['year'].'-'.sprintf("%02d", $pa_date['month']).'-'.sprintf("%02d", $pa_date['day']);
 			
 			if (!isset($pa_options['timeOmit']) || !$pa_options['timeOmit']) {
@@ -3141,14 +3141,14 @@ class TimeExpressionParser {
 				
 				if (!$vn_s || !$vn_e) { break; }
 				
-				$vs_bc_indicator = 			$this->opo_language_settings->get("dateBCIndicator");
+				$vs_bc_indicator = $this->opo_language_settings->get("dateBCIndicator");
 				if ($vn_s <= $vn_e) {
-					for($vn_y=$vn_s; $vn_y <= $vn_e; $vn_y++) {
-						if ($vn_y == 0) { continue; }
-						if ($vn_y < 0) {
-							$va_values[(int)$vn_y] = abs($vn_y).' '.$vs_bc_indicator;
+					for($y=$vn_s; $y <= $vn_e; $y++) {
+						if ($y == 0) { continue; }
+						if ($y < 0) {
+							$va_values[(int)$y] = abs($y).' '.$vs_bc_indicator;
 						} else {
-							$va_values[(int)$vn_y] = $vn_y;
+							$va_values[(int)$y] = $y;
 						}
 					}
 				}

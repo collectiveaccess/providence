@@ -72,7 +72,7 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 		// from the entire data set
 		$qr_res = $this->getData();
 		while($qr_res->nextHit()) {
-			foreach($pa_viz_settings['sources'] as $va_source) {
+			foreach($pa_viz_settings['sources'] as $vs_source_name => $va_source) {
 				if($qr_res->get($va_source['data'])) {
 					$this->opn_num_items_rendered++;
 				}

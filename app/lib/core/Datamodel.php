@@ -321,7 +321,7 @@ class Datamodel {
 				require_once(__CA_MODELS_DIR__.'/'.$ps_table.'.php'); # class file name has trailing '.php'
 			}
 			$t_instance = new $ps_table;
-			MemoryCache::save($ps_table, $t_instance, 'DatamodelModelInstance');
+			if($pb_use_cache) { MemoryCache::save($ps_table, $t_instance, 'DatamodelModelInstance'); }
 			return $t_instance;
 		} else {
 			MemoryCache::save($ps_table, null, 'DatamodelModelInstance');
@@ -346,7 +346,7 @@ class Datamodel {
 				require_once(__CA_MODELS_DIR__.'/'.$vs_class_name.'.php'); # class file name has trailing '.php'
 			}
 			$t_instance = new $vs_class_name;
-			MemoryCache::save($vs_class_name, $t_instance, 'DatamodelModelInstance');
+			if($pb_use_cache) { MemoryCache::save($vs_class_name, $t_instance, 'DatamodelModelInstance'); }
 			return $t_instance;
 		} else {
 			return null;
@@ -361,14 +361,25 @@ class Datamodel {
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
-	 * Returns field name of primary key for table
+	 * Compatibility alias for Datamodel::primaryKey()
 	 *
 	 * @param mixed $pn_tablenum An integer table number or string table name
 	 * @return string The name of the primary key
 	 */
 	public function getTablePrimaryKeyName($pn_tablenum) {
+		return $this->primaryKey($pn_tablenum);
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Returns field name of primary key for table
+	 *
+	 * @param mixed $pn_tablenum An integer table number or string table name
+	 * @param bool $pb_include_tablename Return primary key field name prepended with table name (Eg. ca_objects.object_id) [Default is false]
+	 * @return string The name of the primary key
+	 */
+	public function primaryKey($pn_tablenum, $pb_include_tablename=false) {
 		if ($t_instance = is_numeric($pn_tablenum) ? $this->getInstanceByTableNum($pn_tablenum, true) : $this->getInstanceByTableName($pn_tablenum, true)) {
-			return $t_instance->primaryKey();
+			return $pb_include_tablename ? $t_instance->tableName().'.'.$t_instance->primaryKey() : $t_instance->primaryKey();
 		}
 		return null;
 	}

@@ -30,6 +30,10 @@
 
 	$vb_can_edit	 	= $t_lot->isSaveable($this->request);
 	$vb_can_delete		= $t_lot->isDeletable($this->request);
+
+	$vs_rel_table		= $this->getVar('rel_table');
+	$vn_rel_type_id		= $this->getVar('rel_type_id');
+	$vn_rel_id			= $this->getVar('rel_id');
 	
 	if ($vb_can_edit) {
 		$va_cancel_parameters = ($vn_lot_id ? array('lot_id' => $vn_lot_id) : array('type_id' => $t_lot->getTypeID()));
@@ -56,6 +60,9 @@
 ?>
 			<input type='hidden' name='lot_id' value='<?php print $vn_lot_id; ?>'/>
 			<input id='isSaveAndReturn' type='hidden' name='is_save_and_return' value='0'/>
+			<input type='hidden' name='rel_table' value='<?php print $vs_rel_table; ?>'/>
+			<input type='hidden' name='rel_type_id' value='<?php print $vn_rel_type_id; ?>'/>
+			<input type='hidden' name='rel_id' value='<?php print $vn_rel_id; ?>'/>
 <?php
 			if($this->request->getParameter('rel', pInteger)) {
 ?>

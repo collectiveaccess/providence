@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -375,8 +375,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function getScreens($po_request=null, $pn_type_id=null, $pa_options=null) {
 		if (!$this->getPrimaryKey()) { return false; }
-		
-		$vs_opts_md5 = caMakeCacheKeyFromOptions($pa_options);
+
 		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('editor_type')))) { return null; }
 		
 		if($t_instance instanceof BaseRelationshipModel) {
@@ -714,7 +713,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			SELECT cauis.screen_id, cauis.rank
 			FROM ca_editor_ui_screens cauis
 			WHERE
-				cauis.ui_id = ?
+				cauis.ui_id = ? AND cauis.parent_id IS NOT NULL
 			ORDER BY 
 				cauis.rank ASC
 		", (int)$vn_ui_id);
@@ -1078,4 +1077,3 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ----------------------------------------
 }
-?>
