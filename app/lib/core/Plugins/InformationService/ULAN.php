@@ -140,4 +140,19 @@ class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements 
 		return $va_return;
 	}
 	# ------------------------------------------------
+	/**
+	 * Get display value
+	 * @param string $ps_text
+	 * @return string
+	 */
+	public function getDisplayValueFromLookupText($ps_text) {
+		if(!$ps_text) { return ''; }
+		$va_matches = array();
+
+		if(preg_match("/^\[[0-9]+\]\s+([A-Za-z\s]+)\;.+\(.+\)$/", $ps_text, $va_matches)) {
+			return $va_matches[1];
+		}
+		return $ps_text;
+	}
+	# ------------------------------------------------
 }

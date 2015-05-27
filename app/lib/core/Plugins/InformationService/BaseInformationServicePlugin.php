@@ -170,4 +170,13 @@ abstract class BaseInformationServicePlugin Extends WLPlug {
 		return array();
 	}
 	# ------------------------------------------------
+	/**
+	 * Should be overridden in implementation
+	 * @param string $ps_text
+	 * @return string
+	 */
+	public function getDisplayValueFromLookupText($ps_text) {
+		return $ps_text;
+	}
+	# ------------------------------------------------
 }
