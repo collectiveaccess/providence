@@ -132,7 +132,7 @@ LIMIT '.$pn_limit);
 			$va_return['results'][] = array(
 				'label' => htmlentities($vs_label),
 				'url' => $va_values['ID']['value'],
-				'id' => $vs_id,
+				'idno' => $vs_id,
 			);
 		}
 

@@ -130,7 +130,7 @@ class WLPlugInformationServiceTGN extends BaseGettyLODServicePlugin implements I
 			$va_return['results'][] = array(
 				'label' => htmlentities(str_replace(', ... World', '', $vs_label)),
 				'url' => $va_values['ID']['value'],
-				'id' => $vs_id,
+				'idno' => $vs_id,
 			);
 		}
 
