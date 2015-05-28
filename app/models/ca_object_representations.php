@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -372,6 +372,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 		$this->BUNDLES['ca_object_representations_media_display'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media and preview images'));
 		$this->BUNDLES['ca_object_representation_captions'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Captions/subtitles'));
+		
+		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
 	}
 	# ------------------------------------------------------
 	public function insert($pa_options=null) {

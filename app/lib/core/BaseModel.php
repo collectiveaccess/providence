@@ -117,7 +117,6 @@ require_once(__CA_LIB_DIR__."/core/Media/MediaProcessingSettings.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/gisHelpers.php");
 require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
-require_once(__CA_LIB_DIR__."/core/Parsers/htmlpurifier/HTMLPurifier.standalone.php");
 require_once(__CA_LIB_DIR__."/ca/MediaContentLocationIndexer.php");
 require_once(__CA_LIB_DIR__.'/ca/MediaReplicator.php');
 
@@ -243,6 +242,7 @@ class BaseModel extends BaseObject {
 	/**
 	 * prepared change log statement (primary log entry)
 	 *
+	 * @private DbStatement
 	 * @access private
 	 */
 	private $opqs_change_log;
@@ -250,9 +250,18 @@ class BaseModel extends BaseObject {
 	/**
 	 * prepared change log statement (log subject entries)
 	 *
+	 * @private DbStatement
 	 * @access private
 	 */
 	private $opqs_change_log_subjects;
+
+	/**
+	 * prepared change log statement (log snapshots)
+	 *
+	 * @private DbStatement
+	 * @access private
+	 */
+	private $opqs_change_log_snapshot;
 
 	/**
 	 * prepared statement to get change log
@@ -309,12 +318,14 @@ class BaseModel extends BaseObject {
 	 * @access private
 	 */
 	private $field_conflicts;
-
-
-	/** 
-	 * Single instance of search indexer used by all models
+	
+	
+	/**
+	 * Search indexer instance (one per model instance)
+	 *
+	 * @access private
 	 */
-	static public $search_indexer;
+	private $search_indexer;
 	
 	/**
 	 * Single instance of HTML Purifier used by all models
@@ -380,6 +391,8 @@ class BaseModel extends BaseObject {
 			$this->ops_locale = $vs_locale;
 		}
 		
+		$this->opb_purify_input = (bool)$this->_CONFIG->get("purify_all_text_input");
+		
  		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 
 		$this->setMode(ACCESS_READ);
@@ -430,7 +443,7 @@ class BaseModel extends BaseObject {
 	 * Convenience method to return application datamodel object. This is the same object
 	 * you'd get if you instantiated a Datamodel() object
 	 *
-	 * @return Configuration
+	 * @return Datamodel
 	 */
 	public function getAppDatamodel() {
 		return $this->_DATAMODEL;
@@ -769,7 +782,11 @@ class BaseModel extends BaseObject {
 						} else {
 							if (($va_tmp[1] == 'children') && ($this->isHierarchical())) {
 								$vb_check_access = is_array($pa_options['checkAccess']) && $this->hasField('access');
-								$vs_sort = isset($pa_options['sort']) ? $pa_options['sort'] : null;
+								
+								$va_sort = isset($pa_options['sort']) ? $pa_options['sort'] : null;
+								if (!is_array($va_sort) && $va_sort) { $va_sort = array($va_sort); }
+								if (!is_array($va_sort)) { $va_sort = array(); }
+							
 								$vs_sort_direction = (isset($pa_options['sort_direction']) && in_array(strtolower($pa_options['sort_direction']), array('asc', 'desc'))) ? strtolower($pa_options['sort_direction']) : 'asc';
 							
 								unset($va_tmp[1]);					// remove 'children' from field path
@@ -796,7 +813,12 @@ class BaseModel extends BaseObject {
 												if ($vb_check_access && !in_array($qr_children->get("{$vs_table}.access"), $pa_options['checkAccess'])) { continue; }
 									
 												$vn_child_id = $qr_children->get($vs_pk);
-												$vs_sort_key = ($vs_sort) ? $qr_children->get($vs_sort) : 0;
+												
+												$vs_sort_key = '';
+												foreach($va_sort as $vs_sort){ 
+													$vs_sort_key .= ($vs_sort) ? $qr_children->get($vs_sort) : 0;
+												}
+									
 												if(!is_array($va_data[$vs_sort_key])) { $va_data[$vs_sort_key] = array(); }
 												if ($vb_return_as_array) {
 													$va_data[$vs_sort_key][$vn_child_id]  = array_shift($qr_children->get($vs_childless_path, array_merge($pa_options, array('returnAsArray' => $vb_return_as_array, 'returnAllLocales' => $vb_return_all_locales))));
@@ -1084,6 +1106,7 @@ class BaseModel extends BaseObject {
 	public function getFieldValuesForIDs($pa_ids, $pa_fields=null, $pa_options=null) {
 		if ((!is_array($pa_ids) && (int)$pa_ids > 0)) { $pa_ids = array($pa_ids); }
 		if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
+		if(!is_array($pa_fields)) { $pa_fields = $this->getFormFields(true, true, true); }
 		
 		$vb_dont_use_cache = caGetOption('noCache', $pa_options, false);
 		
@@ -1407,7 +1430,7 @@ class BaseModel extends BaseObject {
 							$vm_value = stripSlashes($vm_value);
 						}
 						
-						if ((isset($pa_options['purify']) && ($pa_options['purify'])) || ((bool)$this->opb_purify_input) || ($this->getFieldInfo($vs_field, "PURIFY")) || ((bool)$this->getAppConfig()->get('useHTMLPurifier'))) {
+						if ((isset($pa_options['purify']) && ($pa_options['purify'])) || ((bool)$this->opb_purify_input) || ($this->getFieldInfo($vs_field, "PURIFY"))) {
 							if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
     						$vm_value = BaseModel::$html_purifier->purify((string)$vm_value);
 						}
@@ -1447,6 +1470,10 @@ class BaseModel extends BaseObject {
 						}
 						break;
 					case (FT_PASSWORD):
+						if ((isset($pa_options['purify']) && ($pa_options['purify'])) || ((bool)$this->opb_purify_input) || ($this->getFieldInfo($vs_field, "PURIFY"))) {
+							if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
+    						$vm_value = BaseModel::$html_purifier->purify((string)$vm_value);
+						}
 						if (!$vm_value) { // store blank passwords as blank,
 							$this->_FIELD_VALUES[$vs_field] = "";
 							$this->_FIELD_VALUE_CHANGED[$vs_field] = true;
@@ -1473,6 +1500,12 @@ class BaseModel extends BaseObject {
 						
 						if (caGetOSFamily() == OS_WIN32) {	// fix for paths using backslashes on Windows failing in processing
 							$vm_value = str_replace('\\', '/', $vm_value);
+						}
+						
+						if ((isset($pa_options['purify']) && ($pa_options['purify'])) || ((bool)$this->opb_purify_input) || ($this->getFieldInfo($vs_field, "PURIFY"))) {
+							if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
+    						$pa_options["original_filename"] = BaseModel::$html_purifier->purify((string)$pa_options["original_filename"]);
+    						$vm_value = BaseModel::$html_purifier->purify((string)$vm_value);
 						}
 						
 						$va_matches = null;
@@ -1558,12 +1591,13 @@ class BaseModel extends BaseObject {
 	}
 	# --------------------------------------------------------------------------------
 	/**
-	 * Returns name of primary key
+	 * Returns name of primary key field (Eg. object_id)
 	 *
+	 * @param bool $pb_include_tablename Return primary key field name prepended with table name (Eg. ca_objects.object_id) [Default is false]
 	 * @return string the primary key of the table
 	 */
-	public function primaryKey() {
-		return $this->PRIMARY_KEY;
+	public function primaryKey($pb_include_tablename=false) {
+		return $pb_include_tablename ? $this->TABLE.'.'.$this->PRIMARY_KEY : $this->PRIMARY_KEY;
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -1803,7 +1837,7 @@ class BaseModel extends BaseObject {
 					$va_sql_wheres[] = "($vs_field = $vm_value)";
 				}
 			}
-			$vs_sql = "SELECT * FROM ".$this->tableName()." WHERE ".join(" AND ", $va_sql_wheres);
+			$vs_sql = "SELECT * FROM ".$this->tableName()." WHERE ".join(" AND ", $va_sql_wheres). " LIMIT 1";
 		}
 
 		$qr_res = $o_db->query($vs_sql);
@@ -2395,7 +2429,6 @@ class BaseModel extends BaseObject {
 					}
 
 					$this->_FILES_CLEAR = array();
-					$this->logChange("I");
 
 					#
 					# update search index
@@ -2403,8 +2436,10 @@ class BaseModel extends BaseObject {
 					$vn_id = $this->getPrimaryKey();
 					
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) && !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
-						$this->doSearchIndexing($this->getFieldValuesArray(true), false);
+						$this->doSearchIndexing($this->getFieldValuesArray(true), false, array('isNewRow' => true));
 					}
+
+					$this->logChange("I");
 
 					if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 					
@@ -3008,18 +3043,20 @@ class BaseModel extends BaseObject {
 	 *
 	 * @param array $pa_changed_field_values_array List of changed field values. [Default is to load list from model]
 	 * @param bool $pb_reindex_mode If set indexing is done in "reindex mode"; that is the row is reindexed from scratch as if the entire database is being reindexed. [Default is false]
-	 * @param string $ps_engine Name of the search engine to use. [Default is the engine configured using "search_engine_plugin" in app.conf] 
+	 * @param array $pa_options Options include 
+	 * 		engine = Name of the search engine to use. [Default is the engine configured using "search_engine_plugin" in app.conf] 
+	 *		isNewRow = Set to true if row is being indexed for the first time. BaseModel::insert() should set this. [Default is false]
 	 *
 	 * @return bool true on success, false on failure of indexing
 	 */
-	public function doSearchIndexing($pa_changed_field_values_array=null, $pb_reindex_mode=false, $ps_engine=null) {
+	public function doSearchIndexing($pa_changed_field_values_array=null, $pb_reindex_mode=false, $pa_options=null) {
 		if (defined("__CA_DONT_DO_SEARCH_INDEXING__")) { return; }
 		if (is_null($pa_changed_field_values_array)) { 
 			$pa_changed_field_values_array = $this->getChangedFieldValuesArray();
 		}
 		
-		$o_indexer = $this->getSearchIndexer($ps_engine);
-		return $o_indexer->indexRow($this->tableNum(), $this->getPrimaryKey(), $this->getFieldValuesArray(true), $pb_reindex_mode, null, $pa_changed_field_values_array, $this->_FIELD_VALUES_OLD);
+		$o_indexer = $this->getSearchIndexer(caGetOption('engine', $pa_options, null));
+		return $o_indexer->indexRow($this->tableNum(), $this->getPrimaryKey(), $this->getFieldValuesArray(true), $pb_reindex_mode, null, $pa_changed_field_values_array, $this->_FIELD_VALUES_OLD, $pa_options);
 	}
 	
 	/**
@@ -3032,12 +3069,12 @@ class BaseModel extends BaseObject {
 	 * @return SearchIndexer
 	 */
 	public function getSearchIndexer($ps_engine=null) {
-		if (!BaseModel::$search_indexer) {
-			BaseModel::$search_indexer = new SearchIndexer($this->getDb(), $ps_engine);
+		if (!$this->search_indexer) {
+			$this->search_indexer = new SearchIndexer($this->getDb(), $ps_engine);
 		} else {
-			BaseModel::$search_indexer->setDb($this->getDb());
+			$this->search_indexer->setDb($this->getDb());
 		}
-		return BaseModel::$search_indexer;
+		return $this->search_indexer;
 	}
 
 	/**
@@ -3150,29 +3187,11 @@ class BaseModel extends BaseObject {
 
 
 			#
-			# --- delete search index entries
+			# --- begin delete search index entries
 			#
-			
-			// TODO: FIX THIS ISSUE!
-			// NOTE: we delete the indexing here, before we actually do the 
-			// SQL delete because the search indexer relies upon the relevant
-			// relationships to be intact (ie. exist) in order to properly remove the indexing for them.
-			//
-			// In particular, the incremental indexing used by the MySQL Fulltext plugin fails to properly
-			// update if it can't traverse the relationships it is to remove.
-			//
-			// By removing the search indexing here we run the risk of corrupting the search index if the SQL
-			// delete subsequently fails. Specifically, the indexing for rows that still exist in the database
-			// will be removed. Wrapping everything in a MySQL transaction deals with it for MySQL Fulltext, but
-			// other non-SQL engines (Lucene, SOLR, etc.) are still affected. 
-			//
-			// At some point we need to come up with something clever to handle this. Most likely it means moving all of the actual
-			// analysis to startRowUnindexing() and only executing commands in commitRowUnIndexing(). For now we blithely assume that 
-			// SQL deletes always succeed. If they don't we can always reindex. Only the indexing is affected, not the underlying data.
 			if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
 				$o_indexer = $this->getSearchIndexer();
-				$o_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
-				$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
+				$o_indexer->startRowUnIndexing($this->tableNum(), $vn_id); // records dependencies but does not actually delete indexing
 			}
 
 			# --- Check ->many and many<->many relations
@@ -3235,6 +3254,13 @@ class BaseModel extends BaseObject {
 				$this->errors = $o_db->errors();
 				if ($vb_we_set_transaction) { $this->removeTransaction(false); }
 				return false;
+			}
+			
+			#
+			# --- complete delete of search index entries
+			#
+			if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
+				$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
 			}
 			
 			# cancel and pending queued tasks against this record
@@ -5972,12 +5998,15 @@ class BaseModel extends BaseObject {
 	 * Returns a hash with field names as keys and attributes hashes as values
 	 * If $names_only is set, only the field names are returned in an indexed array (NOT a hash)
 	 * Only returns fields that belong in public forms - it omits those fields with a display type of 7 ("PRIVATE")
+	 *
+	 * If $sql_fields all virtual fields (Eg. date ranges) are returned as their underlying SQL fields. A date range will thus be two fields for the start and end of the range.
 	 * 
 	 * @param bool $return_all
 	 * @param bool $names_only
+	 * @param bool $sql_fields
 	 * @return array  
 	 */
-	public function getFormFields ($return_all = 0, $names_only = 0) {
+	public function getFormFields ($return_all = 0, $names_only = 0, $sql_fields=0) {
 		if (($return_all) && (!$names_only)) {
 			return $this->FIELDS;
 		}
@@ -5987,13 +6016,23 @@ class BaseModel extends BaseObject {
 		if (!$names_only) {
 			foreach($this->FIELDS as $field => $attr) {
 				if ($return_all || ($attr["DISPLAY_TYPE"] != DT_OMIT)) {
-					$form_fields[$field] = $attr;
+					if ($sql_fields && $attr["START"]) {
+						$form_fields[$attr["START"]] = $attr;
+						$form_fields[$attr["END"]] = $attr;
+					} else {
+						$form_fields[$field] = $attr;
+					}
 				}
 			}
 		} else {
 			foreach($this->FIELDS as $field => $attr) {
 				if ($return_all || ($attr["DISPLAY_TYPE"] != DT_OMIT)) {
-					$form_fields[] = $field;
+					if ($sql_fields && $attr["START"]) {
+						$form_fields[] = $attr["START"];
+						$form_fields[] = $attr["END"];
+					} else {
+						$form_fields[] = $field;
+					}
 				}
 			}
 		}
@@ -6370,7 +6409,7 @@ class BaseModel extends BaseObject {
 				return false;
 			}
 			if (!($this->opqs_change_log_snapshot = $o_db->prepare("
-				INSERT INTO ".$vs_change_log_database."ca_change_log_snapshots
+				INSERT IGNORE INTO ".$vs_change_log_database."ca_change_log_snapshots
 				(
 					log_id, snapshot
 				)
@@ -6381,7 +6420,7 @@ class BaseModel extends BaseObject {
 				return false;
 			}
 			if (!($this->opqs_change_log_subjects = $o_db->prepare("
-				INSERT INTO ".$vs_change_log_database."ca_change_log_subjects
+				INSERT IGNORE INTO ".$vs_change_log_database."ca_change_log_subjects
 				(
 					log_id, subject_table_num, subject_row_id
 				)
@@ -7058,6 +7097,58 @@ class BaseModel extends BaseObject {
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Returns number of rows in the hierarchy
+	 * 
+	 * @param int $pn_id node to start from - default is the hierarchy root
+	 * @param array $pa_options
+	 * @return int count
+	 */
+	public function getHierarchySize($pn_id=null, $pa_options=null) {
+		if (!$this->isHierarchical()) { return null; }
+		
+		$vs_hier_left_fld 		= $this->getProperty("HIERARCHY_LEFT_INDEX_FLD");
+		$vs_hier_right_fld 		= $this->getProperty("HIERARCHY_RIGHT_INDEX_FLD");
+		$vs_hier_id_fld 		= $this->getProperty("HIERARCHY_ID_FLD");
+		$vs_hier_id_table 		= $this->getProperty("HIERARCHY_DEFINITION_TABLE");
+		$vs_hier_parent_id_fld 	= $this->getProperty("HIERARCHY_PARENT_ID_FLD");
+		
+		$o_db = $this->getDb();
+		
+		$va_params = array();
+		
+		$t_instance = null;
+		if ($pn_id && ($pn_id != $this->getPrimaryKey())) {
+			$t_instance = $this->getAppDatamodel()->getInstanceByTableName($this->tableName());
+			if (!$t_instance->load($pn_id)) { return null; }
+		} else {
+			$t_instance = $this;
+		}
+	
+		if ($pn_id > 0) {
+			$va_params[] = (float)$t_instance->get($vs_hier_left_fld);
+			$va_params[] = (float)$t_instance->get($vs_hier_right_fld);
+		}
+		if($vs_hier_id_fld) {
+			$va_params[] = (int)$t_instance->get($vs_hier_id_fld);
+		}
+		
+		$qr_res = $o_db->query("
+			SELECT count(*) c 
+			FROM ".$this->tableName()."
+			WHERE
+				".(($pn_id > 0) ? "({$vs_hier_left_fld} >= ?) AND ({$vs_hier_right_fld} <= ?) " : '').
+				($vs_hier_id_fld ? ' '.(($pn_id > 0) ? ' AND ' : '')."({$vs_hier_id_fld} = ?)" : '').
+				($this->hasField('deleted') ? ' '.(($vs_hier_id_fld) ? ' AND ' : '')."(deleted = 0)" : '')
+				."
+		", $va_params);
+	
+		if ($qr_res->nextRow()) {
+			return (int)$qr_res->get('c');
+		}
+		return null;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 * Count child rows for specified parent rows
 	 *
 	 * @param array list of primary keys for which to fetch child counts
@@ -7544,8 +7635,8 @@ class BaseModel extends BaseObject {
 		
 		foreach($va_hier as $vn_i => $va_item) {
 			$va_levels[$vn_i] = $va_item['LEVEL'];
-			$va_ids[] = $va_item['NODE'][$vs_pk];
-			$va_parent_ids[] = $va_item['NODE']['parent_id'];
+			$va_ids[] = $vn_id = $va_item['NODE'][$vs_pk];
+			$va_parent_ids[$vn_id] = $va_item['NODE']['parent_id'];
 		}
 		
 		$va_hierarchy_data = array();
@@ -7572,19 +7663,20 @@ class BaseModel extends BaseObject {
 			}
 			
 			foreach($va_vals as $vn_i => $vs_val) {
-				$va_hierarchy_data[$va_parent_ids[$vn_i]][$va_sort_keys[$vn_i]] = array(
+				$va_hierarchy_data[$va_parent_ids[$va_ids[$vn_i]]][$va_sort_keys[$vn_i]] = array(
 					'level' => $va_levels[$vn_i],
 					'id' => $va_ids[$vn_i],
-					'parent_id' => $va_parent_ids[$vn_i],
+					'parent_id' => $va_parent_ids[$va_ids[$vn_i]],
 					'display' => $vs_val
 				);
 			}
+		
 			$va_hierarchy_flattened = array();
 			foreach($va_hierarchy_data as $vn_parent_id => $va_level_content) {
 				ksort($va_hierarchy_data[$vn_parent_id]);
 			}
 			
-			return $this->_getFlattenedHierarchyArray($va_hierarchy_data, $pn_id ? $pn_id : null, $ps_sort_direction);
+			return $this->_getFlattenedHierarchyArray($va_hierarchy_data, $va_parent_ids[$pn_id] ? $va_parent_ids[$pn_id] : null, $ps_sort_direction);
 		} else {		
 			foreach($va_vals as $vn_i => $vs_val) {
 				$va_hierarchy_data[] = array(
@@ -8177,15 +8269,28 @@ $pa_options["display_form_field_tips"] = true;
 							$t_list = new ca_lists();
 							$va_list_attrs = array( 'id' => $pa_options['id']);
 							//if ($vn_max_pixel_width) { $va_list_attrs['style'] = $vs_width_style; }
-							
+
+							if(method_exists($this, 'getTypeFieldName') && ($ps_field == $this->getTypeFieldName())) {
+								$va_limit_list = caGetTypeListForUser($this->tableName(), array('access' => __CA_BUNDLE_ACCESS_EDIT__));
+							}
 							
 							// NOTE: "raw" field value (value passed into method, before the model default value is applied) is used so as to allow the list default to be used if needed
-							$vs_element = $t_list->getListAsHTMLFormElement($vs_list_code, $pa_options["name"].$vs_multiple_name_extension, $va_list_attrs, array('value' => $vm_raw_field_value, 'key' => $vs_key, 'nullOption' => $vs_null_option, 'readonly' => $pa_options['readonly']));
+							$vs_element = $t_list->getListAsHTMLFormElement(
+								$vs_list_code, $pa_options["name"].$vs_multiple_name_extension, $va_list_attrs,
+								array(
+									'value' => $vm_raw_field_value,
+									'key' => $vs_key,
+									'nullOption' => $vs_null_option,
+									'readonly' => $pa_options['readonly'],
+									'restrictTypeListForTable' => $this->tableName(),
+									'limitToItemsWithID' => $va_limit_list ? $va_limit_list : null,
+								)
+							);
 							
 							if (isset($pa_options['hide_select_if_no_options']) && $pa_options['hide_select_if_no_options'] && (!$vs_element)) {
 								$vs_element = "";
 								$ps_format = '^ERRORS^ELEMENT';
-							} 
+							}
 						} else {
 							// -----
 							// from related table
@@ -8905,6 +9010,9 @@ $pa_options["display_form_field_tips"] = true;
 			$t_rel_type = new ca_relationship_types();
 			if ($vs_linking_table = $t_rel_type->getRelationshipTypeTable($this->tableName(), $t_item_rel->tableName())) {
 				$pn_type_id = $t_rel_type->getRelationshipTypeID($vs_linking_table, $pm_type_id);
+			} else {
+				$this->postError(2510, _t('Type id "%1" is not valid', $pm_type_id), 'BaseModel->addRelationship()');
+				return false;
 			}
 		} else {
 			$pn_type_id = $pm_type_id;
@@ -8944,8 +9052,8 @@ $pa_options["display_form_field_tips"] = true;
 			if(!is_null($ps_source_info)){ $t_item_rel->set("source_info",$ps_source_info); }
 			$t_item_rel->insert();
 			
-			if ($t_item_rel->numErrors()) {
-				$this->errors = $t_item_rel->errors;
+			if ($t_item_rel->numErrors() > 0) {
+				$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
 				return false;
 			}
 			return $t_item_rel;
@@ -8955,7 +9063,6 @@ $pa_options["display_form_field_tips"] = true;
 					$t_item_rel->setMode(ACCESS_WRITE);
 					
 					$vs_left_table = $t_item_rel->getLeftTableName();
-					$vs_right_table = $t_item_rel->getRightTableName();
 
 					if ($this->tableName() == $vs_left_table) {
 						// is lefty
@@ -8973,8 +9080,8 @@ $pa_options["display_form_field_tips"] = true;
 					if(!is_null($ps_source_info)){ $t_item_rel->set("source_info",$ps_source_info); }
 					$t_item_rel->insert();
 					
-					if ($t_item_rel->numErrors()) {
-						$this->errors = $t_item_rel->errors;
+					if ($t_item_rel->numErrors() > 0) {
+						$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
 						return false;
 					}
 					
@@ -8987,8 +9094,8 @@ $pa_options["display_form_field_tips"] = true;
 							$t_item_rel->set($va_rel_info['rel_keys']['many_table_field'], $this->getPrimaryKey());
 							$t_item_rel->update();
 							
-							if ($t_item_rel->numErrors()) {
-								$this->errors = $t_item_rel->errors;
+							if ($t_item_rel->numErrors() > 0) {
+								$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
 								return false;
 							}
 						} else {
@@ -8998,8 +9105,8 @@ $pa_options["display_form_field_tips"] = true;
 							$t_item_rel->set($t_item_rel->getTypeFieldName(), $pn_type_id);	
 							$t_item_rel->insert();
 							
-							if ($t_item_rel->numErrors()) {
-								$this->errors = $t_item_rel->errors;
+							if ($t_item_rel->numErrors() > 0) {
+								$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
 								return false;
 							}
 						}
@@ -9009,18 +9116,18 @@ $pa_options["display_form_field_tips"] = true;
 						$this->set($va_rel_info['rel_keys']['many_table_field'], $pn_rel_id);
 						$this->update();
 					
-						if ($this->numErrors()) {
+						if ($this->numErrors() > 0) {
+							$this->errors = array_merge($this->getErrors(), $t_item_rel->getErrors());
 							return false;
 						}
 						return $this;
 					}
 					break;
 				default:
+					$this->postError(280, _t('Could not find a path to the specified related table'), 'BaseModel->addRelationship', $t_rel_item->tableName());
 					return false;
-					break;
 			}
-		}		
-		return false;
+		}
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
@@ -9409,11 +9516,10 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_rel_table_num = $t_item_rel->tableNum();
 		
 		// Reindex modified relationships
-		if (!BaseModel::$search_indexer) {
-			BaseModel::$search_indexer = new SearchIndexer($this->getDb());
-		}
+		
+		$o_indexer = $this->getSearchIndexer();
 		foreach($va_to_reindex_relations as $vn_relation_id => $va_row) {
-			BaseModel::$search_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
+			$o_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
 		}
 		
 		return sizeof($va_to_reindex_relations);
@@ -9514,11 +9620,9 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_rel_table_num = $t_item_rel->tableNum();
 		
 		// Reindex modified relationships
-		if (!BaseModel::$search_indexer) {
-			BaseModel::$search_indexer = new SearchIndexer($this->getDb());
-		}
+		$o_indexer = $this->getSearchIndexer();
 		foreach($va_new_relations as $vn_relation_id => $va_row) {
-			BaseModel::$search_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
+			$o_indexer->indexRow($vn_rel_table_num, $vn_relation_id, $va_row, false, null, array($vs_item_pk => true));
 		}
 		
 		return sizeof($va_new_relations);
@@ -9847,12 +9951,13 @@ $pa_options["display_form_field_tips"] = true;
 		
 		if(!isset($pa_options['purify'])) { $pa_options['purify'] = true; }
 		
-		if ((bool)$pa_options['purify']) {
-			$o_purifier = new HTMLPurifier();
-    		$ps_tag = $o_purifier->purify($ps_tag);
+		if ($this->purify() || (bool)$pa_options['purify']) {
+			if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
+    		$ps_tag = BaseModel::$html_purifier->purify($ps_tag);
 		}
 		
 		$t_tag = new ca_item_tags();
+		$t_tag->purify($this->purify() || $pa_options['purify']);
 		
 		if (!$t_tag->load(array('tag' => $ps_tag, 'locale_id' => $pn_locale_id))) {
 			// create new new
@@ -9879,9 +9984,9 @@ $pa_options["display_form_field_tips"] = true;
 		
 		if (!is_null($pn_moderator)) {
 			$t_ixt->set('moderated_by_user_id', $pn_moderator);
-			$t_ixt->set('moderated_on', 'now');
+			$t_ixt->set('moderated_on', _t('now'));
 		}elseif($this->_CONFIG->get("dont_moderate_comments")){
-			$t_ixt->set('moderated_on', 'now');
+			$t_ixt->set('moderated_on', _t('now'));
 		}
 		
 		$t_ixt->insert();
@@ -10085,13 +10190,14 @@ $pa_options["display_form_field_tips"] = true;
 		if(!isset($pa_options['purify'])) { $pa_options['purify'] = true; }
 		
 		if ((bool)$pa_options['purify']) {
-			$o_purifier = new HTMLPurifier();
-    		$ps_comment = $o_purifier->purify($ps_comment);
-    		$ps_name = $o_purifier->purify($ps_name);
-    		$ps_email = $o_purifier->purify($ps_email);
+			if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
+    		$ps_comment = BaseModel::$html_purifier->purify($ps_comment);
+    		$ps_name = BaseModel::$html_purifier->purify($ps_name);
+    		$ps_email = BaseModel::$html_purifier->purify($ps_email);
 		}
 		
 		$t_comment = new ca_item_comments();
+		$t_comment->purify($this->purify() || $pa_options['purify']);
 		$t_comment->setMode(ACCESS_WRITE);
 		$t_comment->set('table_num', $this->tableNum());
 		$t_comment->set('row_id', $vn_row_id);
@@ -10170,12 +10276,13 @@ $pa_options["display_form_field_tips"] = true;
 		
 		
 		if(!isset($pa_options['purify'])) { $pa_options['purify'] = true; }
+		$t_comment->purify($this->purify() || $pa_options['purify']);
 		
 		if ((bool)$pa_options['purify']) {
-			$o_purifier = new HTMLPurifier();
-    		$ps_comment = $o_purifier->purify($ps_comment);
-    		$ps_name = $o_purifier->purify($ps_name);
-    		$ps_email = $o_purifier->purify($ps_email);
+			if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
+    		$ps_comment = BaseModel::$html_purifier->purify($ps_comment);
+    		$ps_name = BaseModel::$html_purifier->purify($ps_name);
+    		$ps_email = BaseModel::$html_purifier->purify($ps_email);
 		}
 		
 		

@@ -177,7 +177,7 @@
 		'displayDelimiter' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
-			'default' => ',',
+			'default' => '; ',
 			'width' => 10, 'height' => 1,
 			'label' => _t('Value delimiter'),
 			'validForRootOnly' => 1,
@@ -208,6 +208,8 @@
  		 *			showHierarchy = If true then hierarchical parents of list item will be returned and hierarchical options described below will be used to control the output [Default is false]
  		 *			returnIdno = If true list item idno is returned rather than preferred label [Default is false]
  		 *			idsOnly = Return numeric item_id only [Default is false]
+ 		 *			alwaysReturnItemID = Synonym for idsOnly [Default is false]
+ 		 *
  		 *			HIERARCHICAL OPTIONS: 
  		 *				direction - For hierarchy specifications (eg. ca_objects.hierarchy) this determines the order in which the hierarchy is returned. ASC will return the hierarchy root first while DESC will return it with the lowest node first. Default is ASC.
  		 *				top - For hierarchy specifications (eg. ca_objects.hierarchy) this option, if set, will limit the returned hierarchy to the first X nodes from the root down. Default is to not limit.
@@ -219,10 +221,11 @@
  		 */
 		public function getDisplayValue($pa_options=null) {
 			if($vb_return_idno = ((isset($pa_options['returnIdno']) && (bool)$pa_options['returnIdno']))) {
-				return caGetListItemIdno($this->ops_text_value); 
+				return caGetListItemIdno($this->opn_item_id); 
 			}
-			$vb_ids_only = (bool)caGetOption('idsOnly', $pa_options, false);
-			if ($vb_ids_only) { return (int)$this->ops_text_value; }
+			
+			$vb_ids_only = (bool)caGetOption('idsOnly', $pa_options, caGetOption('alwaysReturnItemID', $pa_options, false));
+			if ($vb_ids_only) { return (int)$this->opn_item_id; }
 			
 			$vn_list_id = (is_array($pa_options) && isset($pa_options['list_id'])) ? (int)$pa_options['list_id'] : null;
 			if ($vn_list_id > 0) {
@@ -236,15 +239,15 @@
 					if ($o_trans) { $t_item->setTransaction($o_trans); }
 				}
 				
-				$vs_get_spec = ((isset($pa_options['useSingular']) && $pa_options['useSingular']) ? 'name_singular' : 'name_plural');
+				$vs_get_spec = ((isset($pa_options['useSingular']) && $pa_options['useSingular']) ? 'preferred_labels.name_singular' : 'preferred_labels.name_plural');
 
 				// do we need to get the hierarchy?
 				if ($pa_options['showHierarchy']) {
-					$t_item->load($this->ops_text_value);
-					return $t_item->get('ca_list_items.hierarchy.'.$vs_get_spec, $pa_options);
+					$t_item->load((int)$this->opn_item_id);
+					return $t_item->get('ca_list_items.hierarchy.'.$vs_get_spec, array_merge(array('removeFirstItems' => 1, 'delimiter' => ' ➔ ', $pa_options)));
 				} 
 				
-				return $t_list->getItemFromListForDisplayByItemID($vn_list_id, $this->ops_text_value, (isset($pa_options['useSingular']) && $pa_options['useSingular']) ? false : true);
+				return $t_list->getItemFromListForDisplayByItemID($vn_list_id, $this->opn_item_id, (isset($pa_options['useSingular']) && $pa_options['useSingular']) ? false : true);
 			}
 			return $this->ops_text_value;
 		}
@@ -264,6 +267,8 @@
  		 */
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			$vb_treat_value_as_idno = caGetOption('alwaysTreatValueAsIdno', $pa_options, false);
+ 			
+ 			if (is_array($ps_value)) { $ps_value = array_pop($ps_value); }
  			
  			$va_match_on = caGetOption('matchOn', $pa_options, null);
  			if ($va_match_on && !is_array($va_match_on)){ $va_match_on = array($va_match_on); }

@@ -282,6 +282,11 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	protected $ID_NUMBERING_SORT_FIELD = null;			// name of field containing version of identifier for sorting (is normalized with padding to sort numbers properly)
 	protected $ID_NUMBERING_CONTEXT_FIELD = null;		// name of field to use value of for "context" when checking for duplicate identifier values; if not set identifer is assumed to be global in scope; if set identifer is checked for uniqueness (if required) within the value of this field
 
+	# ------------------------------------------------------
+	# Search
+	# ------------------------------------------------------
+	protected $SEARCH_CLASSNAME = 'SetSearch';
+	protected $SEARCH_RESULT_CLASSNAME = 'SetSearchResult';
 	
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
@@ -1280,6 +1285,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * @param array $pa_options An optional array of options. Supported options include:
 	 *			user_id = the user_id of the current user; used to determine which sets the user has access to
 	 *			treatRowIDsAsRIDs = assume combination row_id/item_id indices in $pa_row_ids array instead of solely row_ids. Since a set can potentially contain multiple instances of the same row_id, only "rIDs" – a combination of the row_id and the set item_id (row_id + "_" + item_id) – are guaranteed to be unique. [Default=false]
+	 * 			deleteExcludedItems = should the set items not passed in pa_row_ids be deleted?  default is false
 	 * @return array An array of errors. If the array is empty then no errors occurred
 	 */
 	public function reorderItems($pa_row_ids, $pa_options=null) {
@@ -1288,7 +1294,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		}
 		
 		$vn_user_id = isset($pa_options['user_id']) ? (int)$pa_options['user_id'] : null; 
-		$vb_treat_row_ids_as_rids = caGetOption('treatRowIDsAsRIDs', $pa_options, false);
+		$vb_treat_row_ids_as_rids = caGetOption('treatRowIDsAsRIDs', $pa_options, false); 
+		$vb_delete_excluded_items = caGetOption('deleteExcludedItems', $pa_options, false);
 		
 		// does user have edit access to set?
 		if ($vn_user_id && !$this->haveAccessToSet($vn_user_id, __CA_SET_EDIT_ACCESS__)) {
@@ -1313,18 +1320,24 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		
 		// delete rows not present in $pa_row_ids
-		$va_to_delete = array();
+		$va_excluded_item_ids = array();
 		foreach($va_row_ranks as $vn_row_id => $va_rank) {
 			if (!in_array($vn_row_id, $pa_row_ids)) {
 				
 				if ($vb_treat_row_ids_as_rids) {
 					$va_tmp = explode("_", $vn_row_id);
 					if ($t_set_item->load(array('set_id' => $vn_set_id, 'row_id' => $va_tmp[0], 'item_id' => $va_tmp[1]))) {
-						$t_set_item->delete(true);
+						$va_excluded_item_ids[$t_set_item->get("rank")] = $t_set_item->get("item_id");
+						if($vb_delete_excluded_items){
+							$t_set_item->delete(true);
+						}
 					}
 				} else {
 					if ($t_set_item->load(array('set_id' => $vn_set_id, 'row_id' => $vn_row_id))) {
-						$t_set_item->delete(true);
+						$va_excluded_item_ids[$t_set_item->get("rank")] = $t_set_item->get("item_id");
+						if($vb_delete_excluded_items){
+							$t_set_item->delete(true);
+						}
 					}
 				}
 				unset($va_row_ranks[$vn_row_id]);
@@ -1345,7 +1358,6 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			
 			if ($vb_treat_row_ids_as_rids) { $va_tmp = explode("_", $vn_row_id); }
 			if (isset($va_row_ranks[$vn_row_id]) && ($va_row_ranks[$vn_row_id] != $vn_rank_inc) && $t_set_item->load($vb_treat_row_ids_as_rids ? array('set_id' => $vn_set_id, 'row_id' => $va_tmp[0], 'item_id' => $va_tmp[1]) : array('set_id' => $vn_set_id, 'row_id' => $vn_row_id))) {
-				print "NEW RANK $vn_rank_inc<br>\n";
 				$t_set_item->set('rank', $vn_rank_inc);
 				$t_set_item->update();
 			

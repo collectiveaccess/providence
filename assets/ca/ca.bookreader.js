@@ -40,7 +40,6 @@ var caUI = caUI || {};
 			page: 1,
 			sidebar: false,
 			editButton: 'Edit',
-			downloadButton: 'Download',
 			closeButton: 'Close',
 			sectionsAreSelectable: false,
 			selectionRecordURL: null

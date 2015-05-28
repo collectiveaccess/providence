@@ -150,6 +150,29 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	}
 	# ---------------------------------------
 	/**
+	 * Fetch item_id for item with specified value. Value must match exactly.
+	 *
+	 * @param string $ps_list_code List code
+	 * @param string $ps_value The item value to search for
+	 * @param array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default=null]
+	 * @return int item_id of list item or null if no matching item was found
+	 */
+	$g_list_item_id_for_value_cache = array();
+	function caGetListItemIDForValue($ps_list_code, $ps_value, $pa_options=null) {
+		global $g_list_item_id_for_value_cache;
+		if(isset($g_list_item_id_for_value_cache[$ps_list_code.'/'.$ps_value])) { return $g_list_item_id_for_value_cache[$ps_list_code.'/'.$ps_value]; }
+		$t_list = new ca_lists();
+		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
+		
+		if ($g_list_item_id_for_value_cache[$ps_list_code.'/'.$ps_value] = $t_list->getItemFromListByItemValue($ps_list_code, $ps_value)) {
+			$va_tmp = array_keys($g_list_item_id_for_value_cache[$ps_list_code.'/'.$ps_value]);
+			return array_shift($va_tmp); 
+		}
+		return null;
+	}
+	# ---------------------------------------
+	/**
 	 * Fetch item_id for item with specified label. Value must match exactly.
 	 *
 	 * @param string $ps_list_code List code

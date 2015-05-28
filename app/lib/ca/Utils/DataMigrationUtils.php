@@ -495,6 +495,7 @@
 		 * @param string $ps_text The name text
 		 * @param array $pa_options Optional array of options. Supported options are:
 		 *		locale = locale code to use when applying rules; if omitted current user locale is employed
+		 *		displaynameFormat = surnameCommaForename, forenameCommaSurname, forenameSurname, original [Default = original]
 		 *
 		 * @return array Array containing parsed name, keyed on ca_entity_labels fields (eg. forename, surname, middlename, etc.)
 		 */
@@ -627,8 +628,25 @@
 					}
 				}
 			}
-			
-			$va_name['displayname'] = $ps_original_text;
+
+			switch($vs_format = caGetOption('displaynameFormat', $pa_options, 'original', array('forceLowercase' => true))) {
+				case 'surnamecommaforename':
+					$va_name['displayname'] = ((strlen(trim($va_name['surname']))) ? $va_name['surname'].", " : '').$va_name['forename'];
+					break;
+				case 'forenamesurname':
+					$va_name['displayname'] = trim($va_name['forename'].' '.$va_name['surname']);
+					break;
+				case 'surnameforename':
+					$va_name['displayname'] = trim($va_name['surname'].' '.$va_name['forename']);
+					break;
+				default:
+					if ($vs_format) {
+						$va_name['displayname'] = caProcessTemplate($vs_format, $va_name);
+					} else {
+						$va_name['displayname'] = $ps_original_text;
+					}
+					break;
+			}
 			foreach($va_name as $vs_k => $vs_v) {
 				$va_name[$vs_k] = trim($vs_v);
 			}
@@ -748,6 +766,7 @@
 		 *
 		 * @param string $ps_table The table to match and/or create rows in
 		 * @param array $pa_label Array with values for row label
+		 * @param int $pn_parent_id
 		 * @param int $pn_type_id The type_id or code of the type to use if the row needs to be created
 		 * @param int $pn_locale_id The locale_id to use if the row needs to be created (will be used for both the row locale as well as the label locale)
 		 * @param array $pa_values An optional array of additional values to populate newly created rows with. These values are *only* used for newly created rows; they will not be applied if the row named already exists unless the forceUpdate option is set, in which case attributes (but not intrinsics) will be updated. The array keys should be names of fields or valid attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
@@ -783,11 +802,11 @@
 			
 			$pb_output_errors 				= caGetOption('outputErrors', $pa_options, false);
 			$pb_match_on_displayname 		= caGetOption('matchOnDisplayName', $pa_options, false);
-			$pa_match_on 					= caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));	
+			$pa_match_on 					= caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			$ps_event_source 				= caGetOption('importEventSource', $pa_options, '?'); 
 			$pb_match_media_without_ext 	= caGetOption('matchMediaFilesWithoutExtension', $pa_options, false);
 			
-			$vn_parent_id 					= caGetOption('parent_id', $pa_values, null); 
+			$vn_parent_id 					= ($pn_parent_id ? $pn_parent_id : caGetOption('parent_id', $pa_values, null));
 			
 			$vs_idno_fld					= $t_instance->getProperty('ID_NUMBERING_ID_FIELD');
 			$vs_idno 						= caGetOption($vs_idno_fld, $pa_values, null); 
@@ -894,7 +913,7 @@
 							// entities only
 							$vn_id = $vs_table_class::find(array('preferred_labels' => array('forename' => $pa_label['forename'], 'middlename' => $pa_label['middlename'], 'surname' => $pa_label['surname']), 'type_id' => $pn_type_id, 'parent_id' => $vn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
 						} else {
-							$vn_id = ($vs_table_class::find(array('preferred_labels' => array($vs_label_display_fld => $pa_label[$vs_label_display_fld]), 'parent_id' => caGetOption('parent_id', $pa_values, null), 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
+							$vn_id = ($vs_table_class::find(array('preferred_labels' => array($vs_label_display_fld => $pa_label[$vs_label_display_fld]), 'parent_id' => $vn_parent_id, 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
 						}
 						if ($vn_id) { break(2); }
 						break;
@@ -923,12 +942,19 @@
 				if (caGetOption('dontCreate', $pa_options, false)) { return false; }
 				if ($o_event) { $o_event->beginItem($ps_event_source, $vs_table_class, 'I'); }
 
+				// If we're creating a new item, it's probably a good idea to *NOT* use a
+				// BaseModel instance from cache, because those cannot change their type_id
+				if (!$t_instance = $o_dm->getInstanceByTableName($ps_table, false))  { return null; }
+				if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
+					$t_instance->setTransaction($pa_options['transaction']);
+				}
+
 				$t_instance->setMode(ACCESS_WRITE);
 				$t_instance->set('locale_id', $pn_locale_id);
 				$t_instance->set('type_id', $pn_type_id);
 				
 				$va_intrinsics = array(
-					'source_id' => null, 'access' => 0, 'status' => 0, 'lifespan' => null, 'parent_id' => null, 'lot_status_id' => null, '_interstitial' => null
+					'source_id' => null, 'access' => 0, 'status' => 0, 'lifespan' => null, 'parent_id' => $vn_parent_id, 'lot_status_id' => null, '_interstitial' => null
 				);
 				if ($vs_hier_id_fld = $t_instance->getProperty('HIERARCHY_ID_FLD')) { $va_intrinsics[$vs_hier_id_fld] = null;}
 				if ($vs_idno_fld) {$va_intrinsics[$vs_idno_fld] = null; }

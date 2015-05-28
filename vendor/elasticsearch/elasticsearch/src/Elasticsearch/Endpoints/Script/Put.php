@@ -86,7 +86,11 @@ class Put extends AbstractEndpoint
      */
     protected function getParamWhitelist()
     {
-        return array();
+        return array(
+            'version_type',
+            'version',
+            'op_type'
+        );
     }
 
 

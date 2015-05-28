@@ -7193,3 +7193,20 @@ div.caLibraryDashboardPanel {
 	min-height: 100px;
 	margin: 10px 10px 10px 0;	
 }
+
+.authorityReferenceList ul  {
+	list-style-type: none;
+	padding: 0;
+	margin: 10px 0 0 5px;
+}
+
+.authorityReferenceList ul li {
+	padding: 0;
+	margin: 10px 0 0 5px;
+}
+
+div.authorityReferenceListContainer {
+	width: 100%;
+	overflow-y: hidden;
+	min-height: 200px;
+}

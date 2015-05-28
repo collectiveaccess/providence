@@ -68,6 +68,7 @@
 				if (!file_exists("{$vs_base_service_dir}/{$vs_service}.php")) { continue; }
 				require_once("{$vs_base_service_dir}/{$vs_service}.php");
 				$vs_service_classname = "WLPlugInformationService{$vs_service}";
+				if(!class_exists($vs_service_classname)) { continue; }
 				$o_instance = new $vs_service_classname();
 				
 				$va_status = $o_instance->checkStatus();
@@ -83,7 +84,7 @@
 		}
 		# -------------------------------------------------------
 		/**
-		 * Returns names of all readers
+		 * @return IWLPlugInformationService
 		 */
 		public static function getInformationServiceInstance($ps_service) {
 			InformationServiceManager::initInformationServices();
@@ -102,7 +103,7 @@
 			$va_services = array();
 			if (is_resource($r_dir = opendir($vs_base_service_dir))) {
 				while (($vs_service = readdir($r_dir)) !== false) {
-					if ($vs_service == 'BaseInformationServicePlugin.php') { continue; }
+					if (substr($vs_service,0,4) == 'Base') { continue; }
 					if (file_exists($vs_base_service_dir.'/'.$vs_service) && preg_match("/^([A-Za-z_]+[A-Za-z0-9_]*)\.php$/", $vs_service, $va_matches)) {
 						$va_services[] = $va_matches[1];
 					}

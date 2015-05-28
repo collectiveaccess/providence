@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2014 Whirl-i-Gig
+ * Copyright 2012-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -61,8 +61,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	static $s_doc_content_buffer = array();			// content buffer used when indexing
 	static $s_element_code_cache = array();
 	# -------------------------------------------------------
-	public function __construct(){
-		parent::__construct();
+	public function __construct($po_db=null){
+		parent::__construct($po_db);
 		
 		$this->opo_db = new Db();
 		$this->opo_tep = new TimeExpressionParser();	
@@ -627,11 +627,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$this->ops_elasticsearch_index_name."/".
 			$this->opo_datamodel->getTableName($pn_subject_tablenum)."/".$pn_subject_row_id
 		);
-
-		$vo_http_client->setEncType('text/json')->request('DELETE');
 		
 		try {
-			$vo_http_client->request();
+			$vo_http_client->setEncType('text/json')->request('DELETE');
 		} catch (Exception $e){
 			caLogEvent('ERR', _t('Commit of index delete failed: %1', $e->getMessage()), 'ElasticSearch->removeRowIndexing()');
 		}
@@ -685,7 +683,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				$this->ops_elasticsearch_index_name."/".
 				$va_key[0]."/".$va_key[2]
 			);
-
+			
 			try {
 				$vo_http_client->setRawData(json_encode($va_post_json))->setEncType('text/json')->request('POST');
 				$vo_http_response = $vo_http_client->request();

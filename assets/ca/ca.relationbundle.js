@@ -66,6 +66,13 @@ var caUI = caUI || {};
 				if(typeof options.lists != 'object') { options.lists = [options.lists]; }
 				options.extraParams.lists = options.lists.join(";");
 			}
+
+			// restrict to search expression
+			if (options && options.restrictToSearch && options.restrictToSearch.length) {
+				if (!options.extraParams) { options.extraParams = {}; }
+				if (typeof options.restrictToSearch != 'string') { options.restrictToSearch = ''; }
+				options.extraParams.restrictToSearch = options.restrictToSearch;
+			}
 			
 			// restrict to types (for all lookups) - limits lookup to specific types of items (NOT relationship types)
 			if (options && options.types && options.types.length) {
@@ -79,6 +86,11 @@ var caUI = caUI || {};
 				for(i=0; i < typeList.length; i++) {
 					types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction});
 				}
+			}
+			
+			if (caUI && caUI.utils && caUI.utils.showUnsavedChangesWarning) {
+				// Attached change handler to form elements in relationship
+				jQuery('#' + options.itemID + id + ' select, #' + options.itemID + id + ' input, #' + options.itemID + id + ' textarea').not('.dontTriggerUnsavedChangeWarning').change(function() { caUI.utils.showUnsavedChangesWarning(true); });
 			}
 		};
 		

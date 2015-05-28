@@ -336,7 +336,8 @@
 			
 			try {
 				$this->view->setVar('title', $ps_title);
-				$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME));
+				
+				$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME).'/');
 				$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
 			
 				$o_pdf = new PDFRenderer();
@@ -369,6 +370,7 @@
 				$this->view->setVar('marginRight', caGetOption('marginRight', $va_template_info, '0mm'));
 				$this->view->setVar('marginBottom', caGetOption('marginBottom', $va_template_info, '0mm'));
 				$this->view->setVar('marginLeft', caGetOption('marginLeft', $va_template_info, '0mm'));
+				
 				
 				$vs_content = $this->render("pdfStart.php");
 				
@@ -417,10 +419,6 @@
 				}
 				
 				$vs_content .= $this->render("pdfEnd.php");
-				
-				$this->view->setVar('base_path', $vs_base_path = pathinfo($va_template_info['path'], PATHINFO_DIRNAME).'/');
-				$this->view->addViewPath(array($vs_base_path, "{$vs_base_path}/local"));
-				
 				
 				$o_pdf->setPage(caGetOption('pageSize', $va_template_info, 'letter'), caGetOption('pageOrientation', $va_template_info, 'portrait'));
 				$o_pdf->render($vs_content, array('stream'=> true, 'filename' => caGetOption('filename', $va_template_info, 'labels.pdf')));
@@ -499,7 +497,7 @@
 							
 							$vn_rel_count = 0;
 							$vn_limit = ($va_element_info['limit'] > 0) ? $va_element_info['limit'] : 0;
-							foreach($va_rel_items as $vn_id => $va_rel_item) {
+							foreach($va_rel_items as $vs_key => $va_rel_item) {
 								$va_values[$vs_element_name] = array();
 								if ($t_rel_table->load($va_rel_item[$t_rel_table->primaryKey()])) {
 									foreach($va_fields as $vs_field) {
@@ -845,17 +843,20 @@
 				if ($t_set->getPrimaryKey() && ($t_set->get('table_num') == $t_model->tableNum())) {
 					$va_item_ids = $t_set->getItemRowIDs(array('user_id' => $this->request->getUserID()));
 					
+					$va_row_ids_to_add = array();
 					foreach($pa_row_ids as $vn_row_id) {
 						if (!$vn_row_id) { continue; }
 						if (isset($va_item_ids[$vn_row_id])) { $vn_dupe_item_count++; continue; }
-						if ($t_set->addItem($vn_row_id, array(), $this->request->getUserID())) {
 							
-							$va_item_ids[$vn_row_id] = 1;
-							$vn_added_items_count++;
-						} else {
+						$va_item_ids[$vn_row_id] = 1;
+						$va_row_ids_to_add[$vn_row_id] = 1;
+						$vn_added_items_count++;
+						
+						if (($vn_added_items_count = $t_set->addItems(array_keys($va_row_ids_to_add))) === false) {
 							$this->view->setVar('error', join('; ', $t_set->getErrors()));
 						}
 					}
+					
 				} else {
 					$this->view->setVar('error', _t('Invalid set'));
 				}

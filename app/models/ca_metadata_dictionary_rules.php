@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -258,7 +258,9 @@ class ca_metadata_dictionary_rules extends BaseModel {
 	 * 
 	 */
 	static public function getRules($pa_options=null) {
-		$o_db = new Db();
+		if (!($o_db = caGetOption('db', $pa_options, null))) {
+			$o_db = new Db();
+		}
 		
 		$vs_sql = "
 			SELECT cmdr.rule_id, cmdr.entry_id, cmde.bundle_name, cmde.settings entry_settings, 
