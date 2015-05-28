@@ -4584,7 +4584,7 @@ if (!$vb_batch) {
 			}
 		}
 		
-		if ($vb_show_current_only && $t_item_rel && $t_item_rel->hasField('source_info')) {
+		if ($vb_show_current_only && $t_item_rel && $t_item_rel->hasField('source_info') && ($t_item_rel->tableName() == 'ca_movements_x_objects')) {	// TODO: table check is temporary hack while we get "current" support into non-movement relationships
 			$va_wheres[] = '('.$t_item_rel->tableName().'.source_info = \'current\')';
 		}
 
