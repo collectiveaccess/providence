@@ -124,6 +124,12 @@ class ItemService extends BaseJSONService {
 				$va_options = array();
 			}
 
+			// hack to add option to include comment count in search result
+			if(trim($vs_bundle) == 'ca_item_comments.count') {
+				$va_item[$vs_bundle] = (int) $t_instance->getNumComments(null);
+				continue;
+			}
+
 			$vm_return = $t_instance->get($vs_bundle,$va_options);
 
 			// render 'empty' arrays as JSON objects, not as lists (which is the default behavior of json_encode)
@@ -160,7 +166,6 @@ class ItemService extends BaseJSONService {
 		}
 
 		// labels
-
 		$va_labels = $t_instance->get($this->ops_table.".preferred_labels", array("returnAllLocales" => true));
 		$va_labels = end($va_labels);
 		if(is_array($va_labels)) {
@@ -218,6 +223,9 @@ class ItemService extends BaseJSONService {
 				}
 			}
 		}
+
+		// comment count
+		$va_return['num_comments'] = $t_instance->getNumComments(null);
 
 		// representations for representable stuff
 		if($t_instance instanceof RepresentableBaseModel) {

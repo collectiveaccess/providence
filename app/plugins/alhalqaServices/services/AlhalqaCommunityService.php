@@ -155,7 +155,7 @@ class AlhalqaCommunityService extends BaseJSONService {
 			return false;
 		}
 
-		$t_object->addComment('', 1, null, null, $vn_entity_id);
+		$t_object->addComment('like', 1, null, null, $vn_entity_id);
 
 		return array('msg' => 'like successfully added');
 	}
