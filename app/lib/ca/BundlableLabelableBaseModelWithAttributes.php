@@ -3726,7 +3726,7 @@ if (!$vb_batch) {
 						
 						$va_rids = explode(';', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}setRowIDList", pString));
 						
-						$this->reorderItems($va_rids, array('user_id' => $po_request->getUserID(), 'treatRowIDsAsRIDs' => true));
+						$this->reorderItems($va_rids, array('user_id' => $po_request->getUserID(), 'treatRowIDsAsRIDs' => true, 'deleteExcludedItems' => true));
 						break;
 					# -------------------------------------
 					// This bundle is only available for ca_search_forms 
@@ -4584,7 +4584,7 @@ if (!$vb_batch) {
 			}
 		}
 		
-		if ($vb_show_current_only && $t_item_rel && $t_item_rel->hasField('source_info')) {
+		if ($vb_show_current_only && $t_item_rel && $t_item_rel->hasField('source_info') && ($t_item_rel->tableName() == 'ca_movements_x_objects')) {	// TODO: table check is temporary hack while we get "current" support into non-movement relationships
 			$va_wheres[] = '('.$t_item_rel->tableName().'.source_info = \'current\')';
 		}
 
