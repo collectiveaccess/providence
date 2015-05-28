@@ -71,6 +71,7 @@ class SearchResult extends BaseObject {
 	private $opa_cached_result_counts;
 
 	static $s_prefetch_cache = array();
+	static $s_prefetch_cache_index = array();
 	static $s_instance_cache = array();
 	static $s_timestamp_cache = array();
 	static $s_rel_prefetch_cache = array();
@@ -589,9 +590,15 @@ class SearchResult extends BaseObject {
 		while($qr_rel->nextRow()) {
 			$va_row = $qr_rel->getRow();
 			$vn_row_id = $va_row[$this->ops_table_pk];
+			if (isset(self::$s_prefetch_cache_index[$ps_tablename][$vn_row_id])) { continue; } // already cached
 			
+			$va_rel_row_ids[] = $vn_row_id;
 			$vn_locale_id = $vb_has_locale_id ? $va_row['locale_id'] : null;
 			self::$s_prefetch_cache[$ps_tablename][$vn_row_id][$vn_locale_id][] = $va_row;
+		}
+		
+		foreach($va_rel_row_ids as $vn_row_id) {
+			self::$s_prefetch_cache_index[$ps_tablename][$vn_row_id] = true;
 		}
 		
 		// Fill row_id values for which there is nothing to prefetch with an empty lists
