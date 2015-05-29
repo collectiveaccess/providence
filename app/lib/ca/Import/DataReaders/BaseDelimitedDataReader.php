@@ -98,6 +98,8 @@ class BaseDelimitedDataReader extends BaseDataReader {
 	 * @return bool
 	 */
 	public function read($ps_source, $pa_options=null) {
+		parent::read($ps_source, $pa_options);
+		
 		$this->opn_current_row = 0;
 		
 		if($this->opo_parser->parse($ps_source)) {
@@ -159,6 +161,8 @@ class BaseDelimitedDataReader extends BaseDataReader {
 	 * @return mixed
 	 */
 	public function get($ps_spec, $pa_options=null) {
+		if ($vm_ret = parent::get($ps_spec, $pa_options)) { return $vm_ret; }
+		
 		$vb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
 		$vs_delimiter = caGetOption('delimiter', $pa_options, ';');
 		

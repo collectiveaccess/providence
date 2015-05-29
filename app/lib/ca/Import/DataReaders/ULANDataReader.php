@@ -115,6 +115,8 @@ class ULANDataReader extends BaseXMLDataReader {
 	 * @return bool
 	 */
 	public function read($ps_source, $pa_options=null) {
+		parent::read($ps_source, $pa_options);
+		
 		// source is a comma or semicolon separated list of ULAN ids
 		$va_ids = preg_split("![,;]+!", $ps_source);
 		if(!is_array($va_ids) || !sizeof($va_ids)) { return false; }

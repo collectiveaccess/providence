@@ -166,10 +166,13 @@
 					}
 					// Make sure all tags are in source data array, otherwise try to pull them from the reader.
 					// Some formats, mainly XML, can take expressions (XPath for XML) that are not precalculated in the array
+					//print "p=$ps_placeholder\n";
+					//print_R($va_tags);
 					foreach($va_tags as $vs_tag) {
-						if (isset($pa_source_data[$vs_tag])) { continue; }
-						$va_val = $o_reader->get($vs_key, array('returnAsArray' => true));
-						$pa_source_data[$vs_tag] = $va_val[$pn_index];
+						$va_tag = explode('~', $vs_tag);
+						if (isset($pa_source_data[$va_tag[0]])) { continue; }
+						$va_val = $o_reader->get($va_tag[0], array('returnAsArray' => true));
+						$pa_source_data[$va_tag[0]] = $va_val[$pn_index];
 					}
 					$vm_val = caProcessTemplate($ps_placeholder, $pa_source_data);
 				} else {
