@@ -585,13 +585,14 @@ class SearchResult extends BaseObject {
 		";
 		$qr_rel = $this->opo_subject_instance->getDb()->query($vs_sql);
 		
-		$va_rel_row_ids = array();
+		$vs_rel_pk = $t_rel_instance->primaryKey();
 		while($qr_rel->nextRow()) {
 			$va_row = $qr_rel->getRow();
 			$vn_row_id = $va_row[$this->ops_table_pk];
+			$vn_rel_row_id = $va_row[$vs_rel_pk];
 			
 			$vn_locale_id = $vb_has_locale_id ? $va_row['locale_id'] : null;
-			self::$s_prefetch_cache[$ps_tablename][$vn_row_id][$vn_locale_id][] = $va_row;
+			self::$s_prefetch_cache[$ps_tablename][$vn_row_id][$vn_locale_id][$vn_rel_row_id] = $va_row;
 		}
 		
 		// Fill row_id values for which there is nothing to prefetch with an empty lists

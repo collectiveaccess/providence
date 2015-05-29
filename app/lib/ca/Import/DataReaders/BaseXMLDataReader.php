@@ -135,6 +135,8 @@ class BaseXMLDataReader extends BaseDataReader {
 	 * @return bool
 	 */
 	public function read($ps_source, $pa_options=null) {
+		parent::read($ps_source, $pa_options);
+		
 		if ($ps_base_path = caGetOption('basePath', $pa_options, null)) {
 			$va_tmp = explode("/", $ps_base_path);
 			$this->ops_base_root_tag = array_pop($va_tmp);
@@ -252,6 +254,8 @@ class BaseXMLDataReader extends BaseDataReader {
 	 * @return mixed
 	 */
 	public function get($ps_spec, $pa_options=null) {
+		if ($vm_ret = parent::get($ps_spec, $pa_options)) { return $vm_ret; }
+		
 		$vb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
 		$vs_delimiter = caGetOption('delimiter', $pa_options, ';');
 		

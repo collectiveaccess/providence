@@ -828,7 +828,7 @@
 			}
 			if (!$vs_idno) {
 				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
-					$vs_idno = $t_instance->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+					$pa_values[$vs_idno_fld] = $vs_idno = $t_instance->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 				}
 			}
 			
@@ -948,6 +948,7 @@
 				// If we're creating a new item, it's probably a good idea to *NOT* use a
 				// BaseModel instance from cache, because those cannot change their type_id
 				if (!$t_instance = $o_dm->getInstanceByTableName($ps_table, false))  { return null; }
+				
 				if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 					$t_instance->setTransaction($pa_options['transaction']);
 				}
@@ -960,7 +961,7 @@
 					'source_id' => null, 'access' => 0, 'status' => 0, 'lifespan' => null, 'parent_id' => $vn_parent_id, 'lot_status_id' => null, '_interstitial' => null
 				);
 				if ($vs_hier_id_fld = $t_instance->getProperty('HIERARCHY_ID_FLD')) { $va_intrinsics[$vs_hier_id_fld] = null;}
-				if ($vs_idno_fld) {$va_intrinsics[$vs_idno_fld] = null; }
+				if ($vs_idno_fld) {$va_intrinsics[$vs_idno_fld] = $vs_idno ? $vs_idno : null; }
 				
 				foreach($va_intrinsics as $vs_fld => $vm_fld_default) {
 					if ($t_instance->hasField($vs_fld)) { 
@@ -1014,7 +1015,7 @@
 
 					$vb_label_errors = true;
 				}
-				
+			
 				DataMigrationUtils::_setIdno($t_instance, $vs_idno, $pa_options);
 				$vb_attr_errors = !DataMigrationUtils::_setAttributes($t_instance, $pn_locale_id, $pa_values, $pa_options);
 				DataMigrationUtils::_setNonPreferredLabels($t_instance, $pn_locale_id, $pa_options);

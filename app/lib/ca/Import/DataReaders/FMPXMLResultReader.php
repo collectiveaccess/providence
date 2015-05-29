@@ -116,6 +116,7 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 	 * @return bool
 	 */
 	public function read($ps_source, $pa_options=null) {
+		parent::read($ps_source, $pa_options);
 		try {
 			$this->opo_xml = DOMDocument::load($ps_source);
 			$this->opo_xpath = new DOMXPath($this->opo_xml);
@@ -231,6 +232,8 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 	 * @return mixed
 	 */
 	public function get($ps_spec, $pa_options=null) {
+		if ($vm_ret = parent::get($ps_spec, $pa_options)) { return $vm_ret; }
+		
 		$vb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
 		$vs_delimiter = caGetOption('delimiter', $pa_options, ';');
 		
