@@ -231,8 +231,9 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 				if(is_array($va_ret['results']) && (sizeof($va_ret['results']) == 1)) {
 					$va_hit = array_shift($va_ret['results']);
 					$vs_indexing_blob = caSerializeForDatabase($this->opo_plugin->getExtraValuesForSearchIndexing($pa_element_info['settings'], $va_hit['url']));
+					$vs_display_text = $this->opo_plugin->getDisplayValueFromLookupText($va_hit['label']);
 					$va_return = array(
-						'value_longtext1' => $va_hit['label'],	// text
+						'value_longtext1' => $vs_display_text,	// text
 						'value_longtext2' => $va_hit['url'],	// url
 						'value_decimal1' => $va_hit['id'], 	// id
 						'value_blob' => $vs_indexing_blob
