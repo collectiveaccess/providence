@@ -2429,7 +2429,6 @@ class BaseModel extends BaseObject {
 					}
 
 					$this->_FILES_CLEAR = array();
-					$this->logChange("I");
 
 					#
 					# update search index
@@ -2439,6 +2438,8 @@ class BaseModel extends BaseObject {
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) && !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
 						$this->doSearchIndexing($this->getFieldValuesArray(true), false, array('isNewRow' => true));
 					}
+
+					$this->logChange("I");
 
 					if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 					
