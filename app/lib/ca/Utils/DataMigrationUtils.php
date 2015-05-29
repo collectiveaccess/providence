@@ -639,6 +639,9 @@
 				case 'surnameforename':
 					$va_name['displayname'] = trim($va_name['surname'].' '.$va_name['forename']);
 					break;
+				case 'original':
+					$va_name['displayname'] = $ps_original_text;
+					break;
 				default:
 					if ($vs_format) {
 						$va_name['displayname'] = caProcessTemplate($vs_format, $va_name);
