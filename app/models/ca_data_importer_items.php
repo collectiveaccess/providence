@@ -499,6 +499,16 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Treat value as identifiers for multiple rows'),
 			'description' => _t('Explode value on delimiter and use as identifiers for multiple rows.')
 		);
+		$va_settings['displaynameFormat'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 40, 'height' => 2,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Display name format'),
+			'description' => _t('Transform label using options for formatting entity display names. Default is to use value as is. Other options are surnameCommaForename, forenameCommaSurname, forenameSurname. See DataMigrationUtils::splitEntityName().')
+		);
+		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
 	# ------------------------------------------------------
