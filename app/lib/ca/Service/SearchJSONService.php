@@ -141,13 +141,6 @@ class SearchJSONService extends BaseJSONService {
 						}
 					}
 
-					// hack to include comment count in search result (@todo implement something like this in SearchResult::get())
-					if(trim($vs_bundle) == 'ca_item_comments.count') {
-						$t_instance->load($vn_id);
-						$va_item[$vs_bundle] = (int) $t_instance->getNumComments(null);
-						continue;
-					}
-
 					$vm_return = $vo_result->get($vs_bundle, $va_options);
 
 					// render 'empty' arrays as JSON objects, not as lists (which is the default behavior of json_encode)

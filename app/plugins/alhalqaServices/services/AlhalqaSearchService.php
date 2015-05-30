@@ -51,8 +51,12 @@ class AlhalqaSearchService extends SearchJSONService {
 
 			foreach($va_return['results'] as &$va_result) {
 				$t_object = new ca_objects($va_result['object_id']);
-				$va_objects = $t_object->getRelatedItems('ca_objects', array('restrictToRelationshipTypes' => 'reference'));
 
+				// include number of 'likes' (comments)
+				$va_result['likes'] = (int) $t_object->getNumComments(null);
+
+				// include urls for reference img
+				$va_objects = $t_object->getRelatedItems('ca_objects', array('restrictToRelationshipTypes' => 'reference'));
 				$va_object = array_shift($va_objects);
 				$t_rel_object = new ca_objects($va_object['object_id']);
 				$va_rep = $t_rel_object->getPrimaryRepresentation(array('preview170', 'alhalqa1000', 'alhalqa2000'));
