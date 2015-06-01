@@ -45,9 +45,9 @@ class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase
 			$va_labels[] = $va_record['label'];
 		}
 
-		$this->assertContains('Brooklyn; Poweshiek, Iowa (inhabited places)', $va_labels);
-		$this->assertContains('Brooklyn; New York, New York (boroughs)', $va_labels);
-		$this->assertContains('Brooklyn; Green, Wisconsin (inhabited places)', $va_labels);
+		$this->assertContains('[2034406] Brooklyn; Poweshiek, Iowa (inhabited places)', $va_labels);
+		$this->assertContains('[7015822] Brooklyn; New York, New York (boroughs)', $va_labels);
+		$this->assertContains('[2120816] Brooklyn; Green, Wisconsin (inhabited places)', $va_labels);
 	}
 
 	public function testConeyIsland() {
@@ -61,9 +61,9 @@ class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase
 			$va_labels[] = $va_record['label'];
 		}
 
-		$this->assertContains('Coney Island; Brooklyn, New York (neighborhoods)', $va_labels);
-		$this->assertContains('Coney Island Creek; Kings, New York (creeks (bodies of water))', $va_labels);
-		$this->assertContains('Coney Island; Armagh, Northern Ireland (islands (landforms))', $va_labels);
+		$this->assertContains('[7015849] Coney Island; Brooklyn, New York (neighborhoods)', $va_labels);
+		$this->assertContains('[2252267] Coney Island Creek; Kings, New York (creeks (bodies of water))', $va_labels);
+		$this->assertContains('[7454829] Coney Island; Armagh, Northern Ireland (islands (landforms))', $va_labels);
 	}
 
 	public function testRubbishQuery() {
@@ -97,6 +97,8 @@ class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase
 			'tgn' => 'http://vocab.getty.edu/tgn/7015849'
 		), 'tgn');
 		$t_object->insert();
+
+		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Newly inserted object should have a pk. You\'re probably running the test suite against the wrong profile');
 
 		$this->assertGreaterThan(0, strlen($t_object->get('ca_objects.tgn')));
 

@@ -33,9 +33,8 @@ require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/AAT.php");
 
 class AATInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase {
 
-	public function testFoo() {
+	public function testGetExtendedInfo() {
 		$o_service = new WLPlugInformationServiceAAT();
-
-		$o_service->lookup(array(), 'landfills');
+		$o_service->getExtendedInformation(array(), 'http://vocab.getty.edu/aat/300225636');
 	}
 }

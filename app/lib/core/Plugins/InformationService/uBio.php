@@ -178,7 +178,7 @@ class WLPlugInformationServiceuBio Extends BaseInformationServicePlugin Implemen
 				$va_data['results'][] = array(
 					'label' => trim($vs_label),
 					'url' => "http://www.ubio.org/webservices/service.php?function=namebank_object&namebankID={$vs_id}",
-					'id' => $vs_id
+					'idno' => $vs_id
 				);
 
 				if(++$i == 50){ // let's limit to 50 results

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -80,7 +80,7 @@
 			$vs_type = BaseRefinery::parsePlaceholder($va_parent['type'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 
 			if (!$vs_name && !$vs_idno) { continue; }
-			if (!$vs_name) { $vs_name = $vs_idno; }
+			if (!$vs_name) { continue; }//$vs_name = $vs_idno; }
 			
 			$va_attributes = (isset($va_parent['attributes']) && is_array($va_parent['attributes'])) ? $va_parent['attributes'] : array();
 			
@@ -150,7 +150,7 @@
 					$va_attributes['preferred_labels']['name'] = $va_attributes['_preferred_labels'] = $vs_name;
 					break;
 				case 'ca_entities':
-					$vn_id = DataMigrationUtils::getEntityID($va_entity_label = DataMigrationUtils::splitEntityName($vs_name), $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
+					$vn_id = DataMigrationUtils::getEntityID($va_entity_label = DataMigrationUtils::splitEntityName($vs_name, $pa_options), $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					$va_attributes['preferred_labels'] = $va_entity_label;
 					$va_attributes['_preferred_labels'] = $vs_name;
 					break;
@@ -381,7 +381,7 @@
 						$va_name[$vs_label_fld] = BaseRefinery::parsePlaceholder($pa_related_options[$vs_label_fld], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader));
 					}
 				} else {
-					$va_name = DataMigrationUtils::splitEntityName($vs_name);
+					$va_name = DataMigrationUtils::splitEntityName($vs_name, $pa_options);
 				} 
 			
 				if (!is_array($va_name) || !$va_name) { 
@@ -711,7 +711,7 @@
 								$vn_item_id = DataMigrationUtils::getObjectLotID($vs_item, $vs_item, $va_val['_type'], $g_ui_locale_id, $va_attr_vals, $pa_options);
 								break;
 							case 'ca_entities':
-								$vn_item_id = DataMigrationUtils::getEntityID(DataMigrationUtils::splitEntityName($vs_item), $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
+								$vn_item_id = DataMigrationUtils::getEntityID(DataMigrationUtils::splitEntityName($vs_item, $pa_options), $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
 								break;
 							case 'ca_places':
 								$vn_item_id = DataMigrationUtils::getPlaceID($vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
@@ -778,7 +778,7 @@
 	
 						switch($ps_table) {
 							case 'ca_entities':
-								$va_val['preferred_labels'] = DataMigrationUtils::splitEntityName($vs_item);
+								$va_val['preferred_labels'] = DataMigrationUtils::splitEntityName($vs_item, $pa_options);
 								if(!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
 								break;
 							case 'ca_list_items':
@@ -827,7 +827,7 @@
 					
 						switch($ps_table) {
 							case 'ca_entities':
-								$va_val = DataMigrationUtils::splitEntityName($vs_item);
+								$va_val = DataMigrationUtils::splitEntityName($vs_item, $pa_options);
 								break;
 							case 'ca_list_items':
 								$va_val = array('name_singular' => $vs_item, 'name_plural' => $vs_item);
@@ -1086,30 +1086,43 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 		$vs_bot = trim(array_pop($pa_hierarchy_path));
 
 		if($pb_remove_parens_from_labels) {
-			$vs_bot = trim(preg_replace("/\([\p{L}\-\_\s]+\)/", '', $vs_bot));
+			$vs_lookup = trim(preg_replace("/\([\p{L}\-\_\s]+\)/", '', $vs_bot));
+		} else {
+			$vs_lookup = $vs_bot;
 		}
 
 		$o_service = new WLPlugInformationServiceAAT();
 
-		$va_hits = $o_service->lookup(array(), $vs_bot, array('phrase' => true, 'raw' => true));
+		$va_hits = $o_service->lookup(array(), $vs_lookup, array('phrase' => true, 'raw' => true, 'limit' => 2000));
 		if(!is_array($va_hits)) { return false; }
 
 		$vn_best_distance = 0;
 		$vn_pick = -1;
 		foreach($va_hits as $vn_i => $va_hit) {
-			if(stripos($va_hit['TermPrefLabel']['value'], $vs_bot) !== false) { // only consider terms that match what we search
+			if(stripos($va_hit['TermPrefLabel']['value'], $vs_lookup) !== false) { // only consider terms that match what we searched
 
 				// calculate similarity as a number by comparing both the term and the parent string
-				if($pb_remove_parens_from_labels) {
-					$vs_label_cmp = trim(preg_replace("/\([\p{L}\s]+\)/", '', $va_hit['TermPrefLabel']['value']));
-				} else {
-					$vs_label_cmp = $va_hit['TermPrefLabel']['value'];
-				}
-				similar_text($vs_label_cmp, $vs_bot, $vn_label_percent);
+				$vs_label_with_parens = $va_hit['TermPrefLabel']['value'];
+				$vs_label_without_parens = trim(preg_replace("/\([\p{L}\s]+\)/", '', $vs_label_with_parens));
+				$va_label_percentages = array();
+
+				// we try every combination with and without parens on both sides
+				// unfortunately this code gets rather ugly because getting the similarity
+				// as percentage is only possible by passing a reference parameter :-(
+				similar_text($vs_label_with_parens, $vs_bot, $vn_label_percent);
+				$va_label_percentages[] = $vn_label_percent;
+				similar_text($vs_label_with_parens, $vs_lookup, $vn_label_percent);
+				$va_label_percentages[] = $vn_label_percent;
+				similar_text($vs_label_without_parens, $vs_bot, $vn_label_percent);
+				$va_label_percentages[] = $vn_label_percent;
+				similar_text($vs_label_without_parens, $vs_lookup, $vn_label_percent);
+				$va_label_percentages[] = $vn_label_percent;
+
+				// similarity to parent path
 				similar_text($va_hit['ParentsFull']['value'], join(' ', array_reverse($pa_hierarchy_path)), $vn_parent_percent);
 
 				// it's a weighted sum because the term label is more important than the exact path
-				$vn_tmp = 2*$vn_label_percent + $vn_parent_percent;
+				$vn_tmp = 2*max($va_label_percentages) + $vn_parent_percent;
 				//var_dump($va_hit); var_dump($vn_tmp);
 				if($vn_tmp > $vn_best_distance) {
 					$vn_best_distance = $vn_tmp;
@@ -1130,8 +1143,8 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 
 			$va_return = array(
 				'label' => htmlentities($vs_label),
-				'url' => $va_pick['ID']['value'],
 				'id' => $vs_id,
+				'url' => $va_pick['ID']['value'],
 			);
 
 			$vs_return = join('|', $va_return);

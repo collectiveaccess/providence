@@ -1416,6 +1416,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				} else {
 					$vs_label = '<span class="formLabelText" id="'.$vs_field_id.'">'.$vs_label_text.'</span>'; 
 				}
+
+				// fall back to element description if applicable
 				$vs_description =  (isset($pa_bundle_settings['description'][$g_ui_locale]) && $pa_bundle_settings['description'][$g_ui_locale]) ? $pa_bundle_settings['description'][$g_ui_locale]  : $this->getAttributeDescription($vs_attr_element_code);
 
                 $vs_documentation_url =  trim((isset($pa_bundle_settings['documentation_url']) && $pa_bundle_settings['documentation_url']) ? $pa_bundle_settings['documentation_url']  : $vs_documentation_url = $this->getAttributeDocumentationUrl($vs_attr_element_code));
@@ -3724,7 +3726,7 @@ if (!$vb_batch) {
 						
 						$va_rids = explode(';', $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}setRowIDList", pString));
 						
-						$this->reorderItems($va_rids, array('user_id' => $po_request->getUserID(), 'treatRowIDsAsRIDs' => true));
+						$this->reorderItems($va_rids, array('user_id' => $po_request->getUserID(), 'treatRowIDsAsRIDs' => true, 'deleteExcludedItems' => true));
 						break;
 					# -------------------------------------
 					// This bundle is only available for ca_search_forms 
@@ -4091,6 +4093,7 @@ if (!$vb_batch) {
 			if ($vb_we_set_transaction && isset($va_violations['ERR']) && is_array($va_violations['ERR']) && (sizeof($va_violations['ERR']) > 0)) { 
 			 	BaseModel::unsetChangeLogUnitID();
 				$this->removeTransaction(false); 
+				$this->_FIELD_VALUES[$this->primaryKey()] = null;	// clear primary key since transaction has been rolled back
 				
 				foreach($va_violations['ERR'] as $vs_bundle => $va_errs_by_bundle) {
 					foreach($va_errs_by_bundle as $vn_i => $va_rule) {
@@ -4307,7 +4310,8 @@ if (!$vb_batch) {
  	 *		user_id = If set item level access control is performed relative to specified user_id, otherwise defaults to logged in user
  	 *		groupFields = Groups together fields in an arrangement that is easier for import to another system. Used by the ItemInfo web service when in "import" mode. [Default is false]
  	 *		returnLocaleCodes = Return locale values as codes (Ex. en_US) rather than numeric database-specific locale_ids. [Default is false]
- 	 *
+ 	 *		dontReturnLabels = 
+ 	 *		criteria = 
  	 *		primaryIDs = array of primary keys in related table to exclude from returned list of items. Array is keyed on table name for compatibility with the parameter as used in the caProcessTemplateForIDs() helper [Default is null - nothing is excluded].
  	 *
  	 * @return array - list of related items
@@ -4556,7 +4560,7 @@ if (!$vb_batch) {
 
 		// if related item is labelable then include the label table in the query as well
 		$vs_label_display_field = null;
-		if (method_exists($t_rel_item, "getLabelTableName")) {
+		if (method_exists($t_rel_item, "getLabelTableName") && !caGetOption('dontReturnLabels', $pa_options, false)) {
 			if($vs_label_table_name = $t_rel_item->getLabelTableName()) {           // make sure it actually has a label table...
 				$va_path[] = $vs_label_table_name;
 				$t_rel_item_label = $this->getAppDatamodel()->getTableInstance($vs_label_table_name);
@@ -4580,7 +4584,7 @@ if (!$vb_batch) {
 			}
 		}
 		
-		if ($vb_show_current_only && $t_item_rel && $t_item_rel->hasField('source_info')) {
+		if ($vb_show_current_only && $t_item_rel && $t_item_rel->hasField('source_info') && ($t_item_rel->tableName() == 'ca_movements_x_objects')) {	// TODO: table check is temporary hack while we get "current" support into non-movement relationships
 			$va_wheres[] = '('.$t_item_rel->tableName().'.source_info = \'current\')';
 		}
 

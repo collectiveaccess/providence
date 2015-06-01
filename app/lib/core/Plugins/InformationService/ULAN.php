@@ -126,18 +126,33 @@ class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements 
 				$vs_id = str_replace('/', '', $va_matches[0]);
 			}
 
-			$vs_label = $va_values['TermPrefLabel']['value'] . " (".$va_values['Parents']['value'].")  - " . $va_values['Bio']['value'];
+			$vs_label = '['. str_replace('ulan:', '', $vs_id) . '] ' . $va_values['TermPrefLabel']['value'] . " (".$va_values['Parents']['value'].")  - " . $va_values['Bio']['value'];
 
 			$va_return['results'][] = array(
 				'label' => htmlentities($vs_label),
 				'url' => $va_values['ID']['value'],
-				'id' => $vs_id,
+				'idno' => $vs_id,
 			);
 		}
 
 		$va_return['count'] = is_array($va_return['results']) ? sizeof($va_return['results']) : 0;
 
 		return $va_return;
+	}
+	# ------------------------------------------------
+	/**
+	 * Get display value
+	 * @param string $ps_text
+	 * @return string
+	 */
+	public function getDisplayValueFromLookupText($ps_text) {
+		if(!$ps_text) { return ''; }
+		$va_matches = array();
+
+		if(preg_match("/^\[[0-9]+\]\s+([A-Za-z\s]+)\;.+\(.+\)$/", $ps_text, $va_matches)) {
+			return $va_matches[1];
+		}
+		return $ps_text;
 	}
 	# ------------------------------------------------
 }

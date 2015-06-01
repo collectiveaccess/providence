@@ -495,6 +495,7 @@
 		 * @param string $ps_text The name text
 		 * @param array $pa_options Optional array of options. Supported options are:
 		 *		locale = locale code to use when applying rules; if omitted current user locale is employed
+		 *		displaynameFormat = surnameCommaForename, forenameCommaSurname, forenameSurname, original [Default = original]
 		 *
 		 * @return array Array containing parsed name, keyed on ca_entity_labels fields (eg. forename, surname, middlename, etc.)
 		 */
@@ -627,8 +628,28 @@
 					}
 				}
 			}
-			
-			$va_name['displayname'] = $ps_original_text;
+
+			switch($vs_format = caGetOption('displaynameFormat', $pa_options, 'original', array('forceLowercase' => true))) {
+				case 'surnamecommaforename':
+					$va_name['displayname'] = ((strlen(trim($va_name['surname']))) ? $va_name['surname'].", " : '').$va_name['forename'];
+					break;
+				case 'forenamesurname':
+					$va_name['displayname'] = trim($va_name['forename'].' '.$va_name['surname']);
+					break;
+				case 'surnameforename':
+					$va_name['displayname'] = trim($va_name['surname'].' '.$va_name['forename']);
+					break;
+				case 'original':
+					$va_name['displayname'] = $ps_original_text;
+					break;
+				default:
+					if ($vs_format) {
+						$va_name['displayname'] = caProcessTemplate($vs_format, $va_name);
+					} else {
+						$va_name['displayname'] = $ps_original_text;
+					}
+					break;
+			}
 			foreach($va_name as $vs_k => $vs_v) {
 				$va_name[$vs_k] = trim($vs_v);
 			}
@@ -807,7 +828,7 @@
 			}
 			if (!$vs_idno) {
 				if(isset($pa_options['generateIdnoWithTemplate']) && $pa_options['generateIdnoWithTemplate']) {
-					$vs_idno = $t_instance->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
+					$pa_values[$vs_idno_fld] = $vs_idno = $t_instance->setIdnoWithTemplate($pa_options['generateIdnoWithTemplate'], array('dontSetValue' => true));
 				}
 			}
 			
@@ -927,6 +948,7 @@
 				// If we're creating a new item, it's probably a good idea to *NOT* use a
 				// BaseModel instance from cache, because those cannot change their type_id
 				if (!$t_instance = $o_dm->getInstanceByTableName($ps_table, false))  { return null; }
+				
 				if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 					$t_instance->setTransaction($pa_options['transaction']);
 				}
@@ -939,7 +961,7 @@
 					'source_id' => null, 'access' => 0, 'status' => 0, 'lifespan' => null, 'parent_id' => $vn_parent_id, 'lot_status_id' => null, '_interstitial' => null
 				);
 				if ($vs_hier_id_fld = $t_instance->getProperty('HIERARCHY_ID_FLD')) { $va_intrinsics[$vs_hier_id_fld] = null;}
-				if ($vs_idno_fld) {$va_intrinsics[$vs_idno_fld] = null; }
+				if ($vs_idno_fld) {$va_intrinsics[$vs_idno_fld] = $vs_idno ? $vs_idno : null; }
 				
 				foreach($va_intrinsics as $vs_fld => $vm_fld_default) {
 					if ($t_instance->hasField($vs_fld)) { 
@@ -993,7 +1015,7 @@
 
 					$vb_label_errors = true;
 				}
-				
+			
 				DataMigrationUtils::_setIdno($t_instance, $vs_idno, $pa_options);
 				$vb_attr_errors = !DataMigrationUtils::_setAttributes($t_instance, $pn_locale_id, $pa_values, $pa_options);
 				DataMigrationUtils::_setNonPreferredLabels($t_instance, $pn_locale_id, $pa_options);

@@ -1552,6 +1552,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					if (isset($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['formatWithTemplate']) && strlen($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['formatWithTemplate'])) {
 						$vs_label_val = caProcessTemplate($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['formatWithTemplate'], $va_row);
 					}
+					if ($vs_opt = $va_mapping_items[$vn_preferred_label_mapping_id]['settings']['displaynameFormat']) {
+						$va_label_val = DataMigrationUtils::splitEntityName($vs_label_val, array('displaynameFormat' => $vs_opt));
+						$vs_label_val = $va_label_val['displayname'];
+					}
 					$va_pref_label_values[$vs_preferred_label_mapping_fld] = $vs_label_val;
 				}
 				$vs_display_label = isset($va_pref_label_values[$vs_label_display_fld]) ? $va_pref_label_values[$vs_label_display_fld] : $vs_idno;
@@ -2676,6 +2680,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$vm_value = $po_reader->get($pa_item['source'], array('returnAsArray' => true));
 				if (!is_array($vm_value)) { return $pb_return_as_array ? array() : null; }
 				foreach($vm_value as $vs_k => $vs_v) {
+					$vs_v = stripslashes($vs_v);
 					$vm_value[$vs_k] = ca_data_importers::replaceValue(trim($vs_v), $pa_item);
 				}
 				if ($pb_return_as_array) {
@@ -2690,7 +2695,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			if ($vb_did_seek) { $po_reader->seek($vn_cur_pos); }
 		}
 		
-		$vm_value = ca_data_importers::replaceValue($vm_value, $pa_item);
+		$vm_value = ca_data_importers::replaceValue(stripslashes($vm_value), $pa_item);
 		
 		if ($pb_return_as_array) {
 			return is_array($vm_value) ? $vm_value : array($vm_value);

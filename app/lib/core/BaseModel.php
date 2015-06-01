@@ -2429,7 +2429,6 @@ class BaseModel extends BaseObject {
 					}
 
 					$this->_FILES_CLEAR = array();
-					$this->logChange("I");
 
 					#
 					# update search index
@@ -2439,6 +2438,8 @@ class BaseModel extends BaseObject {
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) && !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
 						$this->doSearchIndexing($this->getFieldValuesArray(true), false, array('isNewRow' => true));
 					}
+
+					$this->logChange("I");
 
 					if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 					
@@ -6408,7 +6409,7 @@ class BaseModel extends BaseObject {
 				return false;
 			}
 			if (!($this->opqs_change_log_snapshot = $o_db->prepare("
-				INSERT INTO ".$vs_change_log_database."ca_change_log_snapshots
+				INSERT IGNORE INTO ".$vs_change_log_database."ca_change_log_snapshots
 				(
 					log_id, snapshot
 				)
@@ -6419,7 +6420,7 @@ class BaseModel extends BaseObject {
 				return false;
 			}
 			if (!($this->opqs_change_log_subjects = $o_db->prepare("
-				INSERT INTO ".$vs_change_log_database."ca_change_log_subjects
+				INSERT IGNORE INTO ".$vs_change_log_database."ca_change_log_subjects
 				(
 					log_id, subject_table_num, subject_row_id
 				)
@@ -9954,7 +9955,7 @@ $pa_options["display_form_field_tips"] = true;
 		
 		if ($this->purify() || (bool)$pa_options['purify']) {
 			if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
-    		$ps_tag = BaseMode::$html_purifier->purify($ps_tag);
+    		$ps_tag = BaseModel::$html_purifier->purify($ps_tag);
 		}
 		
 		$t_tag = new ca_item_tags();

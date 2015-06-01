@@ -59,8 +59,13 @@ class AttributeGetTest extends BaseTestWithData {
 				// simple text
 				'internal_notes' => array(
 					array(
+						'locale' => 'en_US',
 						'internal_notes' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ullamcorper sapien nec velit porta luctus.'
-					)
+					),
+					array(
+						'locale' => 'de_DE',
+						'internal_notes' => 'Bacon ipsum dolor amet venison bresaola short ribs turkey ham hock beef ribs.'
+					),
 				),
 
 				// text in a container
@@ -117,11 +122,12 @@ class AttributeGetTest extends BaseTestWithData {
 		$vm_ret = $this->opt_object->get('ca_objects.type_id', array('convertCodesToDisplayText' => true));
 		$this->assertEquals('Image', $vm_ret);
 
+		// there are two internal notes but we assume that only the current UI locale is returned, unless we explicitly say otherwise
 		$vm_ret = $this->opt_object->get('ca_objects.internal_notes');
-		$this->assertRegExp("/^Lorem ipsum/", $vm_ret);
+		$this->assertEquals("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ullamcorper sapien nec velit porta luctus.", $vm_ret);
 
 		$vm_ret = $this->opt_object->get('internal_notes');
-		$this->assertRegExp("/^Lorem ipsum/", $vm_ret);
+		$this->assertEquals("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ullamcorper sapien nec velit porta luctus.", $vm_ret);
 
 		$vm_ret = $this->opt_object->get('ca_objects.external_link.url_source');
 		$this->assertEquals("My URL source;Another URL source", $vm_ret);
@@ -129,7 +135,7 @@ class AttributeGetTest extends BaseTestWithData {
 		$vm_ret = $this->opt_object->get('ca_objects.dimensions.dimensions_length');
 		$this->assertEquals("10.0 in", $vm_ret);
 		$vm_ret = $this->opt_object->get('ca_objects.dimensions.dimensions_weight');
-		$this->assertEquals("2.00 lb", $vm_ret);
+		$this->assertEquals("2.0000 lb", $vm_ret);
 
 		$vm_ret = $this->opt_object->get('ca_objects.integer_test', array('delimiter' => ' / '));
 		$this->assertEquals("23 / 1984", $vm_ret);
@@ -138,7 +144,7 @@ class AttributeGetTest extends BaseTestWithData {
 		$this->assertEquals("USD 100.00", $vm_ret);
 
 		$vm_ret = $this->opt_object->get('ca_objects.georeference');
-		$this->assertEquals("1600 Amphitheatre Parkway, Mountain View, CA [37.4225456,-122.0842498]", $vm_ret);
+		$this->assertEquals("1600 Amphitheatre Parkway, Mountain View, CA [37.4224553,-122.0843062]", $vm_ret);
 
 		// This is how we fetch the bundle preview for containers:
 		$vs_template = "<unit relativeTo='ca_objects.dimensions'><if rule='^measurement_notes =~ /foo/'>^ca_objects.dimensions.dimensions_length</if></unit>";

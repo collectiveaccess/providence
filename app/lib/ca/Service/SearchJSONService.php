@@ -120,6 +120,7 @@ class SearchJSONService extends BaseJSONService {
 			}
 
 			if(is_array($pa_bundles)){
+
 				foreach($pa_bundles as $vs_bundle => $va_options){
 					if(!is_array($va_options)){
 						$va_options = array();

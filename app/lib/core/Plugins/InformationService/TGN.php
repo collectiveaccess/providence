@@ -125,16 +125,31 @@ class WLPlugInformationServiceTGN extends BaseGettyLODServicePlugin implements I
 				$vs_id = str_replace('/', ':', $va_matches[0]);
 			}
 
-			$vs_label = $va_values['TermPrefLabel']['value'] . "; " . $va_values['Parents']['value'] . " (" . $va_values['Type']['value'] . ")";
+			$vs_label = '['. str_replace('tgn:', '', $vs_id) . '] ' . $va_values['TermPrefLabel']['value'] . "; " . $va_values['Parents']['value'] . " (" . $va_values['Type']['value'] . ")";
 
 			$va_return['results'][] = array(
 				'label' => htmlentities(str_replace(', ... World', '', $vs_label)),
 				'url' => $va_values['ID']['value'],
-				'id' => $vs_id,
+				'idno' => $vs_id,
 			);
 		}
 
 		return $va_return;
+	}
+	# ------------------------------------------------
+	/**
+	 * Get display value
+	 * @param string $ps_text
+	 * @return string
+	 */
+	public function getDisplayValueFromLookupText($ps_text) {
+		if(!$ps_text) { return ''; }
+		$va_matches = array();
+
+		if(preg_match("/^\[[0-9]+\]\s+([A-Za-z\s]+)\;.+\(.+\)$/", $ps_text, $va_matches)) {
+			return $va_matches[1];
+		}
+		return $ps_text;
 	}
 	# ------------------------------------------------
 }
