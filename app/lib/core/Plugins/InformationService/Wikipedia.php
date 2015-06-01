@@ -78,20 +78,13 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 	 * @return array
 	 */
 	public function lookup($pa_settings, $ps_search, $pa_options=null) {
-
-		/*$va_get_params = array(
-			'action' => 'query',
-			'titles' => urlencode($ps_search),
-			'prop' => 'pageimages|info|extracts', //'prop' => 'pageimages|info|extracts',
-			'inprop' => 'url',
-			'piprop' => 'thumbnail',
-			'pithumbsize' => '200px',
-			'format' => 'json'
-		);*/
+		// support passing full wikipedia URLs
+		if(isURL($ps_search)) { $ps_search = self::getPageTitleFromURI($ps_search); }
 
 		// readable version of get parameters
 		// @todo not sure if just lookup up page titles is what we want, but we'll see how it goes
 		// @todo maybe we want to actually search: http://www.mediawiki.org/wiki/API:Search
+
 		$va_get_params = array(
 			'action' => 'query',
 			'titles' => urlencode($ps_search),
@@ -101,14 +94,14 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 		);
 
 		$vs_content = caQueryExternalWebservice(
-			$vs_url = 'http://en.wikipedia.org/w/api.php?' . caConcatGetParams($va_get_params)
+			'http://en.wikipedia.org/w/api.php?' . caConcatGetParams($va_get_params)
 		);
 
 		$va_content = @json_decode($vs_content, true);
-		if(!is_array($va_content) || !isset($va_content['query'])) { return array(); }
+		if(!is_array($va_content) || !isset($va_content['query']['pages'])) { return array(); }
 
 		// the top two levels are 'query' and 'pages'
-		$va_results = array_shift(array_shift($va_content));
+		$va_results = $va_content['query']['pages'];
 		$va_return = array();
 
 		foreach($va_results as $va_result) {
@@ -133,6 +126,62 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 		$vs_display = "<a href='$ps_url'>$ps_url</a>";
 
 		return array('display' => $vs_display);
+	}
+	# ------------------------------------------------
+	public function getExtraInfo($pa_settings, $ps_url) {
+		// readable version of get parameters
+		$va_get_params = array(
+			'action' => 'query',
+			'titles' => self::getPageTitleFromURI($ps_url),
+			'prop' => 'pageimages|info|extracts',
+			'inprop' => 'url',
+			'piprop' => 'thumbnail',
+			'pithumbsize' => '200px',
+			'format' => 'json'
+		);
+
+		$vs_content = caQueryExternalWebservice(
+			'http://en.wikipedia.org/w/api.php?' . caConcatGetParams($va_get_params)
+		);
+
+		$va_content = @json_decode($vs_content, true);
+		if(!is_array($va_content) || !isset($va_content['query']['pages'])) { return array(); }
+
+		// the top two levels are 'query' and 'pages'
+		$va_results = $va_content['query']['pages'];
+
+		if(sizeof($va_results) > 1) {
+			Debug::msg('[Wikipedia] Found multiple results for page title '.self::getPageTitleFromURI($ps_url));
+		}
+
+		if(sizeof($va_results) == 0) {
+			Debug::msg('[Wikipedia] Couldnt find any results for page title '.self::getPageTitleFromURI($ps_url));
+			return null;
+		}
+
+		$va_result = array_shift($va_results);
+		// try to extract the first paragraph (usually an abstract/summary of the article)
+		$vs_abstract = preg_replace("/\s+<p><\/p>\s+<h2>.+$/ms", "", $va_result['extract']);
+
+		return array(
+			'image_thumbnail' => $va_result['thumbnail']['source'],
+			'image_thumbnail_width' => $va_result['thumbnail']['width'],
+			'image_thumbnail_height' => $va_result['thumbnail']['height'],
+			'title' => $va_result['title'],
+			'pageid' => $va_result['page_id'],
+			'fullurl' => $va_result['fullurl'],
+			'canonicalurl' => $va_result['canonicalurl'],
+			'extract' => $va_result['extract'],
+			'abstract' => $vs_abstract,
+		);
+	}
+	# ------------------------------------------------
+	private static function getPageTitleFromURI($ps_uri) {
+		if(preg_match("/\/([^\/]+)$/", $ps_uri, $va_matches)) {
+			return $va_matches[1];
+		}
+
+		return false;
 	}
 	# ------------------------------------------------
 }

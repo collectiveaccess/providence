@@ -30,14 +30,46 @@
  * ----------------------------------------------------------------------
  */
 require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/Wikipedia.php");
+require_once(__CA_MODELS_DIR__."/ca_objects.php");
 
 class WikipediaInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase {
 
-	public function testLookup(){
+	public function testSaveNewObject() {
+		$t_object = new ca_objects();
+		$t_object->setMode(ACCESS_WRITE);
+		$t_object->set('type_id', 'image');
+		$t_object->set('idno', 'wikipedia_test');
+		$t_object->addAttribute(array(
+			'wikipedia' => 'http://en.wikipedia.org/wiki/Aaron_Burr'
+		), 'wikipedia');
+		$t_object->insert();
+
+		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Newly inserted object should have a pk. You\'re probably running the test suite against the wrong profile');
+		$this->assertGreaterThan(0, strlen($t_object->get('ca_objects.wikipedia')));
+
+		if($t_object->getPrimaryKey()) {
+			$t_object->delete(false, array('hard' => true));
+		}
+	}
+
+	public function testLookup() {
 		$o_service = new WLPlugInformationServiceWikipedia();
 		$va_return = $o_service->lookup(array(), 'Aaron Burr');
+
 		$this->assertInternalType('array', $va_return);
+		$this->assertArrayHasKey('results', $va_return);
+		$this->assertInternalType('array', $va_return['results']);
+		$this->assertEquals(1, sizeof($va_return['results']));
 		$this->assertEquals('http://en.wikipedia.org/wiki/Aaron_Burr', $va_return['results'][0]['url']);
+	}
+
+	public function testGetExtraInfo() {
+		$o_service = new WLPlugInformationServiceWikipedia();
+		$vm_ret = $o_service->getExtraInfo(array(), 'http://en.wikipedia.org/wiki/Aaron_Burr');
+
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertArrayHasKey('fullurl', $vm_ret);
+		$this->assertArrayHasKey('image_thumbnail', $vm_ret);
 	}
 
 }
