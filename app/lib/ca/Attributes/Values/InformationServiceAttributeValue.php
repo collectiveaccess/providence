@@ -237,27 +237,36 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 					'value_blob' => caSerializeForDatabase($va_info)
 				);
 			} elseif(sizeof($va_tmp)==1 && (isURL($va_tmp[0]) || is_numeric($va_tmp[0]))) { // URI or ID -> try to look it up. we match hit when exactly 1 hit comes back
+
+				// try cache
 				if(MemoryCache::contains($va_tmp[0], "InformationServiceLookup{$vs_service}")) {
 					return MemoryCache::fetch($va_tmp[0], "InformationServiceLookup{$vs_service}");
 				}
 
+				// try lookup
 				$this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service);
 				$va_ret = $this->opo_plugin->lookup($pa_element_info['settings'], $va_tmp[0]);
+
+				// only match exact results. at some point we might want to try to get fancy
+				// and pick one (or rather, have the plugin pick one) if there's more than one
 				if(is_array($va_ret['results']) && (sizeof($va_ret['results']) == 1)) {
 					$va_hit = array_shift($va_ret['results']);
-					$vs_indexing_blob = caSerializeForDatabase($this->opo_plugin->getDataForSearchIndexing($pa_element_info['settings'], $va_hit['url']));
+
+					$va_info['indexing_info'] = $this->opo_plugin->getDataForSearchIndexing($pa_element_info['settings'], $va_hit['url']);
+					$va_info['extra_info'] = $this->opo_plugin->getExtraInfo($pa_element_info['settings'], $va_hit['url']);
 					$vs_display_text = $this->opo_plugin->getDisplayValueFromLookupText($va_hit['label']);
 					$va_return = array(
 						'value_longtext1' => $vs_display_text,	// text
 						'value_longtext2' => $va_hit['url'],	// url
 						'value_decimal1' => $va_hit['id'], 	// id
-						'value_blob' => $vs_indexing_blob
+						'value_blob' => caSerializeForDatabase($va_info)
 					);
 				} else {
 					$va_return = array(
 						'value_longtext1' => '',	// text
 						'value_longtext2' => '',	// url
-						'value_decimal1' => null	// id
+						'value_decimal1' => null,	// id
+						'value_blob' => null		// extra info
 					);
 				}
 
@@ -271,7 +280,8 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 		return array(
 			'value_longtext1' => '',	// text
 			'value_longtext2' => '',	// url
-			'value_decimal1' => null	// id
+			'value_decimal1' => null,	// id
+			'value_blob' => null		// extra info
 		);
 	}
 	# ------------------------------------------------------------------
