@@ -105,9 +105,31 @@ class AttributeGetTest extends BaseTestWithData {
 				),
 
 				// Georeference
-				'georeference' => array(
+				/*'georeference' => array(
 					array(
 						'georeference' => '1600 Amphitheatre Parkway, Mountain View, CA',
+					),
+				),*/
+
+				// InformationService/TGN
+				'tgn' => array(
+					array(
+						'tgn' => 'http://vocab.getty.edu/tgn/7015849',
+					),
+				),
+
+				// InformationService/Wikipedia
+				'wikipedia' => array(
+					array(
+						'wikipedia' => 'http://en.wikipedia.org/wiki/Aaron_Burr'
+					),
+				),
+
+				// InformationService/Container - Wikipedia and ULAN
+				'informationservice' => array(
+					array(
+						'wiki' => 'http://en.wikipedia.org/wiki/Aaron_Burr',
+						'ulan_container' => 'http://vocab.getty.edu/ulan/500024253'
 					),
 				),
 			)
@@ -144,7 +166,7 @@ class AttributeGetTest extends BaseTestWithData {
 		$this->assertEquals("USD 100.00", $vm_ret);
 
 		$vm_ret = $this->opt_object->get('ca_objects.georeference');
-		$this->assertEquals("1600 Amphitheatre Parkway, Mountain View, CA [37.4224553,-122.0843062]", $vm_ret);
+		//$this->assertEquals("1600 Amphitheatre Parkway, Mountain View, CA [37.4224553,-122.0843062]", $vm_ret);
 
 		// This is how we fetch the bundle preview for containers:
 		$vs_template = "<unit relativeTo='ca_objects.dimensions'><if rule='^measurement_notes =~ /foo/'>^ca_objects.dimensions.dimensions_length</if></unit>";
@@ -155,6 +177,17 @@ class AttributeGetTest extends BaseTestWithData {
 		$vs_template = "<unit relativeTo='ca_objects.dimensions'><if rule='^measurement_notes =~ /bar/'>^ca_objects.dimensions.dimensions_length</if></unit>";
 		$vm_ret = $this->opt_object->getAttributesForDisplay('dimensions', $vs_template);
 		$this->assertEmpty($vm_ret);
+
+		// 'flat' informationservice attribues
+		$this->assertEquals('Coney Island', $this->opt_object->get('ca_objects.tgn'));
+		$this->assertContains('Aaron Burr', $this->opt_object->get('ca_objects.wikipedia'));
+		// new subfield notation
+		$this->assertContains('Burr killed his political rival Alexander Hamilton in a famous duel', $this->opt_object->get('ca_objects.wikipedia.abstract'));
+
+		// informationservice attributes in container
+		$this->assertEquals('[500024253] Haring, Keith (Persons, Artists) - American painter, muralist, and cartoonist, 1958-1990', $this->opt_object->get('ca_objects.informationservice.ulan_container'));
+		$this->assertContains('Aaron Burr', $this->opt_object->get('ca_objects.informationservice.wiki'));
+		$this->assertContains('Burr killed his political rival Alexander Hamilton in a famous duel', $this->opt_object->get('ca_objects.informationservice.wiki.abstract'));
 	}
 	# -------------------------------------------------------
 }

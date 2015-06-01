@@ -34,37 +34,6 @@ require_once(__CA_MODELS_DIR__."/ca_objects.php");
 
 class WikipediaInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase {
 
-	/**
-	 * @todo move this into testsWithData
-	 */
-	public function testSaveNewObject() {
-		$t_object = new ca_objects();
-		$t_object->setMode(ACCESS_WRITE);
-		$t_object->set('type_id', 'image');
-		$t_object->set('idno', 'wikipedia_test');
-		$t_object->addAttribute(array(
-			'wikipedia' => 'http://en.wikipedia.org/wiki/Aaron_Burr'
-		), 'wikipedia');
-
-		$t_object->addAttribute(array(
-			'wiki' => 'http://en.wikipedia.org/wiki/Aaron_Burr',
-			'ulan_container' => 'http://vocab.getty.edu/ulan/500024253'
-		), 'informationservice');
-
-		$t_object->insert();
-
-		$this->assertGreaterThan(0, $t_object->getPrimaryKey(), 'Newly inserted object should have a pk. You\'re probably running the test suite against the wrong profile');
-
-		$this->assertContains('Aaron Burr', $t_object->get('ca_objects.wikipedia'));
-		$this->assertContains('Burr killed his political rival Alexander Hamilton in a famous duel', $t_object->get('ca_objects.wikipedia.abstract'));
-		$this->assertContains('Aaron Burr', $t_object->get('ca_objects.informationservice.wiki'));
-		$this->assertContains('Burr killed his political rival Alexander Hamilton in a famous duel', $t_object->get('ca_objects.informationservice.wiki.abstract'));
-
-		if($t_object->getPrimaryKey()) {
-			$t_object->delete(false, array('hard' => true));
-		}
-	}
-
 	public function testLookup() {
 		$o_service = new WLPlugInformationServiceWikipedia();
 		$va_return = $o_service->lookup(array(), 'Aaron Burr');
