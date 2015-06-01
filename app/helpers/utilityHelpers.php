@@ -2736,3 +2736,19 @@ function caFileIsIncludable($ps_file) {
 		return ceil(($vn_max_indentation - 1) / 2) + 1;
 	}
 	# ----------------------------------------
+	/**
+	 * Concatenate array of get parameters as string suitable for a URL
+	 * @param array $pa_params associative array of GET parameters
+	 * @return null|string
+	 */
+	function caConcatGetParams($pa_params) {
+		if(!is_array($pa_params)) { return null; }
+
+		$va_return = array();
+		foreach($pa_params as $vs_k => $vs_v) {
+			$va_return[] = $vs_k.'='.$vs_v;
+		}
+
+		return join('&', $va_return);
+	}
+	# ----------------------------------------

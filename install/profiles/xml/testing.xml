@@ -2176,6 +2176,27 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="wikipedia" datatype="InformationService">
+      <labels>
+        <label locale="en_US">
+          <name>Wikipedia</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="service">Wikipedia</setting>
+        <setting name="fieldWidth">90</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
   </elementSets>
   <userInterfaces>
     <userInterface code="standard_object_ui" type="ca_objects">
@@ -2220,6 +2241,9 @@
             </placement>
             <placement code="ca_attribute_ubio">
               <bundle>ca_attribute_ubio</bundle>
+            </placement>
+            <placement code="ca_attribute_wikipedia">
+              <bundle>ca_attribute_wikipedia</bundle>
             </placement>
             <placement code="ca_attribute_date">
               <bundle>ca_attribute_date</bundle>
