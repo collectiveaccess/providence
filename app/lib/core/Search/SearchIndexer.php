@@ -1023,7 +1023,7 @@ class SearchIndexer extends SearchBase {
 													$vn_list_id = $this->_getElementListID($vo_value->getElementID());
 													$vs_value_to_index = $vo_value->getDisplayValue($vn_list_id);
 
-													$va_additional_indexing = $vo_value->getExtraValuesForSearchIndexing();
+													$va_additional_indexing = $vo_value->getDataForSearchIndexing();
 													if(is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {
 														foreach($va_additional_indexing as $vs_additional_value) {
 															$vs_value_to_index .= " ; ".$vs_additional_value;
@@ -1084,7 +1084,7 @@ class SearchIndexer extends SearchBase {
 											foreach($vo_attribute->getValues() as $vo_value) {
 												$vs_value_to_index = $vo_value->getDisplayValue($vn_list_id);
 
-												$va_additional_indexing = $vo_value->getExtraValuesForSearchIndexing();
+												$va_additional_indexing = $vo_value->getDataForSearchIndexing();
 												if(is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {
 													foreach($va_additional_indexing as $vs_additional_value) {
 														$vs_value_to_index .= " ; ".$vs_additional_value;
@@ -1191,7 +1191,7 @@ class SearchIndexer extends SearchBase {
 								$vn_list_id = $this->_getElementListID($vo_value->getElementID());
 								$vs_value_to_index = $vo_value->getDisplayValue($vn_list_id);
 
-								$va_additional_indexing = $vo_value->getExtraValuesForSearchIndexing();
+								$va_additional_indexing = $vo_value->getDataForSearchIndexing();
 								if(is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {
 									foreach($va_additional_indexing as $vs_additional_value) {
 										$vs_value_to_index .= " ; ".$vs_additional_value;
@@ -1241,7 +1241,7 @@ class SearchIndexer extends SearchBase {
 						foreach($vo_attribute->getValues() as $vo_value) {
 							$vs_value_to_index = $vo_value->getDisplayValue(array('idsOnly' => true));
 
-							$va_additional_indexing = $vo_value->getExtraValuesForSearchIndexing();
+							$va_additional_indexing = $vo_value->getDataForSearchIndexing();
 							if(is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {
 								foreach($va_additional_indexing as $vs_additional_value) {
 									$vs_value_to_index .= " ; ".$vs_additional_value;
@@ -1297,7 +1297,7 @@ class SearchIndexer extends SearchBase {
 						foreach($vo_attribute->getValues() as $vo_value) {
 							$vs_value_to_index = $vo_value->getDisplayValue();
 
-							$va_additional_indexing = $vo_value->getExtraValuesForSearchIndexing();
+							$va_additional_indexing = $vo_value->getDataForSearchIndexing();
 							if(is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {
 								foreach($va_additional_indexing as $vs_additional_value) {
 									$vs_value_to_index .= " ; ".$vs_additional_value;

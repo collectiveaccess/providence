@@ -145,9 +145,17 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 	/**
 	 * @var IWLPlugInformationService|null
 	 */
-	private $opo_plugin;
-
-	private $opa_indexing_info;
+	private $opo_plugin = null;
+	/**
+	 * Extra indexing info
+	 * @var array
+	 */
+	private $opa_indexing_info  = array();
+	/**
+	 * Extra info (this is actually get-able)
+	 * @var array
+	 */
+	private $opa_extra_info = array();
 	# ------------------------------------------------------------------
 	/**
 	 *
@@ -165,7 +173,12 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 		$this->ops_text_value = $pa_value_array['value_longtext1'];
 		$this->ops_uri_value = $pa_value_array['value_longtext2'];
 
-		$this->opa_indexing_info = caUnserializeForDatabase($pa_value_array['value_blob']);
+		$va_info = caUnserializeForDatabase($pa_value_array['value_blob']);
+		$this->opa_indexing_info =
+			(is_array($va_info) && isset($va_info['indexing_info']) && is_array($va_info['indexing_info'])) ? $va_info['indexing_info'] : array();
+
+		$this->opa_extra_info =
+			(is_array($va_info) && isset($va_info['extra_info']) && is_array($va_info['extra_info'])) ? $va_info['extra_info'] : array();
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -209,17 +222,19 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 
 		if (trim($ps_value)) {
 			$va_tmp = explode('|', $ps_value);
-			if(sizeof($va_tmp) == 3) { /// value is already in desired format
+			$va_info = array();
+			if(sizeof($va_tmp) == 3) { /// value is already in desired format (from autocomplete lookup)
 				// get extra indexing info for this uri from plugin implementation
 				$this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service);
 				$vs_display_text = $this->opo_plugin->getDisplayValueFromLookupText($va_tmp[0]);
-				$vs_indexing_blob = caSerializeForDatabase($this->opo_plugin->getExtraValuesForSearchIndexing($pa_element_info['settings'], $va_tmp[2]));
+				$va_info['indexing_info'] = $this->opo_plugin->getDataForSearchIndexing($pa_element_info['settings'], $va_tmp[2]);
+				$va_info['extra_info'] = $this->opo_plugin->getExtraInfo($pa_element_info['settings'], $va_tmp[2]);
 
 				return array(
 					'value_longtext1' => $vs_display_text,	// text
 					'value_longtext2' => $va_tmp[2],		// uri
 					'value_decimal1' => $va_tmp[1], 		// id
-					'value_blob' => $vs_indexing_blob
+					'value_blob' => caSerializeForDatabase($va_info)
 				);
 			} elseif(sizeof($va_tmp)==1 && (isURL($va_tmp[0]) || is_numeric($va_tmp[0]))) { // URI or ID -> try to look it up. we match hit when exactly 1 hit comes back
 				if(MemoryCache::contains($va_tmp[0], "InformationServiceLookup{$vs_service}")) {
@@ -230,7 +245,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 				$va_ret = $this->opo_plugin->lookup($pa_element_info['settings'], $va_tmp[0]);
 				if(is_array($va_ret['results']) && (sizeof($va_ret['results']) == 1)) {
 					$va_hit = array_shift($va_ret['results']);
-					$vs_indexing_blob = caSerializeForDatabase($this->opo_plugin->getExtraValuesForSearchIndexing($pa_element_info['settings'], $va_hit['url']));
+					$vs_indexing_blob = caSerializeForDatabase($this->opo_plugin->getDataForSearchIndexing($pa_element_info['settings'], $va_hit['url']));
 					$vs_display_text = $this->opo_plugin->getDisplayValueFromLookupText($va_hit['label']);
 					$va_return = array(
 						'value_longtext1' => $vs_display_text,	// text
@@ -368,8 +383,21 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 		return $va_settings;
 	}
 	# ------------------------------------------------------------------
-	public function getExtraValuesForSearchIndexing() {
+	public function getDataForSearchIndexing() {
 		return (is_array($this->opa_indexing_info) ? $this->opa_indexing_info : array());
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Get extra info
+	 * @param null|string $ps_info_key Optional specific info key
+	 * @return mixed
+	 */
+	public function getExtraInfo($ps_info_key=null) {
+		if(!$ps_info_key) {
+			return (is_array($this->opa_extra_info) ? $this->opa_extra_info : array());
+		} else {
+			return isset($this->opa_extra_info[$ps_info_key]) ? $this->opa_extra_info[$ps_info_key] : null;
+		}
 	}
 	# ------------------------------------------------------------------
 	/**

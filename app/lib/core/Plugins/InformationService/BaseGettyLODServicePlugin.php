@@ -115,7 +115,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	 * @param string $ps_url
 	 * @return array
 	 */
-	public function getExtraValuesForSearchIndexing($pa_settings, $ps_url) {
+	public function getDataForSearchIndexing($pa_settings, $ps_url) {
 		$va_service_conf = $this->opo_linked_data_conf->get($this->getConfigName());
 		if(!$va_service_conf || !is_array($va_service_conf)) { return array(); }
 		if(!isset($va_service_conf['additional_indexing_info']) || !is_array($va_service_conf['additional_indexing_info'])) { return array(); }
