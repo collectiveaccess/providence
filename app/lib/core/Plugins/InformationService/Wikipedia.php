@@ -116,14 +116,19 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 	}
 	# ------------------------------------------------
 	/** 
-	 * Fetch details about a specific item from a Wikipedia-based data service
+	 * Fetch details about a specific item from a Wikipedia-based data service for "more info" panel
 	 *
 	 * @param array $pa_settings Plugin settings values
 	 * @param string $ps_url The URL originally returned by the data service uniquely identifying the item
 	 * @return array An array of data from the data server defining the item.
 	 */
 	public function getExtendedInformation($pa_settings, $ps_url) {
-		$vs_display = "<a href='$ps_url'>$ps_url</a>";
+		$vs_display = "<p><a href='$ps_url' target='_blank'>$ps_url</a></p>";
+
+		$va_info = $this->getExtraInfo($pa_settings, $ps_url);
+
+		$vs_display .= "<div style='float:right; margin: 10px 0px 10px 10px;'><img src='".$va_info['image_thumbnail']."' /></div>";
+		$vs_display .= $va_info['abstract'];
 
 		return array('display' => $vs_display);
 	}
