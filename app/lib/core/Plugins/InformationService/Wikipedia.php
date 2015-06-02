@@ -39,7 +39,16 @@ require_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugInformationService.php");
 require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/BaseInformationServicePlugin.php");
 
 global $g_information_service_settings_Wikipedia;
-$g_information_service_settings_Wikipedia = array();
+$g_information_service_settings_Wikipedia = array(
+	'lang' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_FIELD,
+		'default' => 'en',
+		'width' => 30, 'height' => 1,
+		'label' => _t('Wikipedia language'),
+		'description' => _t('2- or 3-letter language code for Wikipedia to use. Defaults to "en". See http://meta.wikimedia.org/wiki/List_of_Wikipedias')
+	),
+);
 
 class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Implements IWLPlugInformationService {
 	# ------------------------------------------------
@@ -80,31 +89,33 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 	public function lookup($pa_settings, $ps_search, $pa_options=null) {
 		// support passing full wikipedia URLs
 		if(isURL($ps_search)) { $ps_search = self::getPageTitleFromURI($ps_search); }
+		$vs_lang = caGetOption('lang', $pa_settings, 'en');
 
 		// readable version of get parameters
-		// @todo not sure if just lookup up page titles is what we want, but we'll see how it goes
-		// @todo maybe we want to actually search: http://www.mediawiki.org/wiki/API:Search
-
 		$va_get_params = array(
 			'action' => 'query',
-			'titles' => urlencode($ps_search),
+			'generator' => 'search',	// use search service as generator for page service
+			'gsrsearch' => urlencode($ps_search),
+			'gsrlimit' => 50,	 		// max allowed by mediawiki
+			'gsrwhat' => 'nearmatch',	// search for near matches in titles
 			'prop' => 'info',
 			'inprop' => 'url',
 			'format' => 'json'
 		);
 
 		$vs_content = caQueryExternalWebservice(
-			'http://en.wikipedia.org/w/api.php?' . caConcatGetParams($va_get_params)
+			$vs_url = 'http://'.$vs_lang.'.wikipedia.org/w/api.php?' . caConcatGetParams($va_get_params)
 		);
 
 		$va_content = @json_decode($vs_content, true);
-		if(!is_array($va_content) || !isset($va_content['query']['pages'])) { return array(); }
+		if(!is_array($va_content) || !isset($va_content['query']['pages']) || !is_array($va_content['query']['pages']) || !sizeof($va_content['query']['pages'])) { return array(); }
 
 		// the top two levels are 'query' and 'pages'
 		$va_results = $va_content['query']['pages'];
 		$va_return = array();
 
 		foreach($va_results as $va_result) {
+
 			$va_return['results'][] = array(
 				'label' => $va_result['title'] . ' ['.$va_result['fullurl'].']',
 				'url' => $va_result['fullurl'],
@@ -134,6 +145,8 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 	}
 	# ------------------------------------------------
 	public function getExtraInfo($pa_settings, $ps_url) {
+		$vs_lang = caGetOption('lang', $pa_settings, 'en');
+
 		// readable version of get parameters
 		$va_get_params = array(
 			'action' => 'query',
@@ -146,7 +159,7 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 		);
 
 		$vs_content = caQueryExternalWebservice(
-			'http://en.wikipedia.org/w/api.php?' . caConcatGetParams($va_get_params)
+			'http://'.$vs_lang.'.wikipedia.org/w/api.php?' . caConcatGetParams($va_get_params)
 		);
 
 		$va_content = @json_decode($vs_content, true);

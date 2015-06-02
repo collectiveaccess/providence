@@ -41,8 +41,23 @@ class WikipediaInformationServiceAttributeValueTest extends PHPUnit_Framework_Te
 		$this->assertInternalType('array', $va_return);
 		$this->assertArrayHasKey('results', $va_return);
 		$this->assertInternalType('array', $va_return['results']);
-		$this->assertEquals(1, sizeof($va_return['results']));
 		$this->assertEquals('http://en.wikipedia.org/wiki/Aaron_Burr', $va_return['results'][0]['url']);
+	}
+
+	public function testNonExistentLookup() {
+		$o_service = new WLPlugInformationServiceWikipedia();
+		$va_return = $o_service->lookup(array(), 'sdkfljsdlkfjsdlkjhfljksdfhjsljkd');
+		$this->assertEmpty($va_return);
+	}
+
+	public function testGermanLookup() {
+		$o_service = new WLPlugInformationServiceWikipedia();
+		$va_return = $o_service->lookup(array('lang' => 'de'), 'John von Neumann');
+
+		$this->assertInternalType('array', $va_return);
+		$this->assertArrayHasKey('results', $va_return);
+		$this->assertInternalType('array', $va_return['results']);
+		$this->assertEquals('http://de.wikipedia.org/wiki/John_von_Neumann', $va_return['results'][0]['url']);
 	}
 
 	public function testGetExtraInfo() {
