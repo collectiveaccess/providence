@@ -90,7 +90,7 @@ class AttributeGetTest extends BaseTestWithData {
 				// Integer
 				'integer_test' => array(
 					array(
-						'integer_test' => 23,
+						'integer_test' => -23,
 					),
 					array(
 						'integer_test' => 1984,
@@ -160,7 +160,7 @@ class AttributeGetTest extends BaseTestWithData {
 		$this->assertEquals("2.0000 lb", $vm_ret);
 
 		$vm_ret = $this->opt_object->get('ca_objects.integer_test', array('delimiter' => ' / '));
-		$this->assertEquals("23 / 1984", $vm_ret);
+		$this->assertEquals("-23 / 1984", $vm_ret);
 
 		$vm_ret = $this->opt_object->get('ca_objects.currency_test');
 		$this->assertEquals("USD 100.00", $vm_ret);
