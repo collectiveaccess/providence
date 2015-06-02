@@ -238,9 +238,9 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 				);
 			} elseif(sizeof($va_tmp)==1 && (isURL($va_tmp[0]) || is_numeric($va_tmp[0]))) { // URI or ID -> try to look it up. we match hit when exactly 1 hit comes back
 
-				// try cache
-				if(MemoryCache::contains($va_tmp[0], "InformationServiceLookup{$vs_service}")) {
-					return MemoryCache::fetch($va_tmp[0], "InformationServiceLookup{$vs_service}");
+				// try lookup cache
+				if(CompositeCache::contains($va_tmp[0], "InformationServiceLookup{$vs_service}")) {
+					return CompositeCache::fetch($va_tmp[0], "InformationServiceLookup{$vs_service}");
 				}
 
 				// try lookup
@@ -270,7 +270,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 					);
 				}
 
-				MemoryCache::save($va_tmp[0], $va_return, "InformationServiceLookup{$vs_service}");
+				CompositeCache::save($va_tmp[0], $va_return, "InformationServiceLookup{$vs_service}");
 				return $va_return;
 			} else { // don't save if value hasn't changed
 				return array('_dont_save' => true);
