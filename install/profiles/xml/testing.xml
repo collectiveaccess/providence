@@ -2060,6 +2060,8 @@
       </labels>
       <settings>
         <setting name="fieldWidth">70</setting>
+        <setting name="minValue">-65535</setting>
+        <setting name="maxValue">65535</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
