@@ -410,6 +410,14 @@ class XMPParser extends BaseMediaMetadataParser {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Get list of available XMP fields
+	 * @return array
+	 */
+	public function getAvailableFields() {
+		return array_keys($this->opa_fields);
+	}
+	# -------------------------------------------------------
+	/**
 	 * Gets value of one of the fields listed in XMPParser::$opa_fields above.
 	 *
 	 * @param string $ps_field The name of a field, as listed in XMPParser::$opa_fields
