@@ -333,6 +333,7 @@ class WamDataImporterPluginIntegrationTest extends AbstractPluginIntegrationTest
 		// CLEANUP
 		self::_cleanupCreatedRecords($va_created_records);
 	}
+
 	private static function _cleanupCreatedRecords($pa_records) {
 		foreach ($pa_records as $vo_record) {
 			$vo_record->setMode(ACCESS_WRITE);
