@@ -80,7 +80,7 @@
 			$vs_type = BaseRefinery::parsePlaceholder($va_parent['type'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 
 			if (!$vs_name && !$vs_idno) { continue; }
-			if (!$vs_name) { $vs_name = $vs_idno; }
+			if (!$vs_name) { continue; }//$vs_name = $vs_idno; }
 			
 			$va_attributes = (isset($va_parent['attributes']) && is_array($va_parent['attributes'])) ? $va_parent['attributes'] : array();
 			
@@ -1138,8 +1138,9 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 				$vs_id = str_replace('/', ':', $va_matches[0]);
 			}
 
-			$vs_label = $va_pick['TermPrefLabel']['value'] . " (" . $va_pick['Parents']['value'] . ")";
+			$vs_label = '['. str_replace('aat:', '', $vs_id) . '] ' . $va_pick['TermPrefLabel']['value'] . " [" . $va_pick['Parents']['value'] . "]";
 			$vs_label = preg_replace('/\,\s\.\.\.\s[A-Za-z\s]+Facet\s*/', '', $vs_label);
+			$vs_label = preg_replace('/[\<\>]/', '', $vs_label);
 
 			$va_return = array(
 				'label' => htmlentities($vs_label),

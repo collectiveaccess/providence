@@ -177,7 +177,7 @@ abstract class AttributeValue extends BaseObject {
 
 	 * @return array
 	 */
-	public function getExtraValuesForSearchIndexing() {
+	public function getDataForSearchIndexing() {
 		return array();
 	}
 	# ------------------------------------------------------------------

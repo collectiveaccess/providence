@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/lib/core/Plugins/IWLPlugInformationService.php : 
+ * app/plugins/aboutDrawingServices/controllers/AlhalqaFindController.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2015 Whirl-i-Gig
+ * Copyright 2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,31 +25,29 @@
  *
  * ----------------------------------------------------------------------
  */
-	
-	interface IWLPlugInformationService {
+ 	require_once(__CA_APP_DIR__.'/plugins/alhalqaServices/services/AlhalqaSearchService.php');
+	require_once(__CA_APP_DIR__.'/service/controllers/FindController.php');
+
+	class AlhalqaFindController extends FindController {
+
 		# -------------------------------------------------------
-		# Initialization and state
+		public function __call($ps_table, $pa_args) {
+			$vo_service = new AlhalqaSearchService($this->request,$ps_table);
+			$va_content = $vo_service->dispatch();
+
+			if(intval($this->request->getParameter("pretty",pInteger))>0){
+				$this->view->setVar("pretty_print",true);
+			}
+
+			if($vo_service->hasErrors()){
+				$this->view->setVar("errors",$vo_service->getErrors());
+				$this->render("json_error.php");
+			} else {
+				$this->view->setVar("content",$va_content);
+				$this->render("json.php");
+			}
+		}
 		# -------------------------------------------------------
-		public function __construct();
-		public function register();
-		public function init();
-		public function cleanup();
-		
-		public function getDescription();
-		public function checkStatus();
-		
-		# -------------------------------------------------------
-		# Settings
-		# -------------------------------------------------------
-		public function getAvailableSettings();
-		
-		# -------------------------------------------------------
-		# Data
-		# -------------------------------------------------------
-		public function lookup($pa_settings, $ps_search, $pa_options=null);
-		public function getDisplayValueFromLookupText($ps_text);
-		public function getExtendedInformation($pa_settings, $ps_url);
-		public function getDataForSearchIndexing($pa_settings, $ps_url);
-		public function getExtraInfo($pa_settings, $ps_url);
-		# -------------------------------------------------------
+
+
 	}

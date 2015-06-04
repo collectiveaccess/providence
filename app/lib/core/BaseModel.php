@@ -7721,6 +7721,7 @@ class BaseModel extends BaseObject {
 	 *			[Default is ids]
 	 *	
 	 *		limit = if searchResult, ids or modelInstances is set, limits number of returned ancestoes. [Default is no limit]
+	 *		includeSelf = Include initial row_id values in returned set [Default is false]
 	 *		
 	 * @return mixed
 	 */
@@ -7733,6 +7734,7 @@ class BaseModel extends BaseObject {
 		$t_instance = new $vs_table;
 		
 	 	if (!($vs_parent_id_fld = $t_instance->getProperty('HIERARCHY_PARENT_ID_FLD'))) { return null; }
+		$pb_include_self = caGetOption('includeSelf', $pa_options, false);
 		if ($o_trans) { $t_instance->setTransaction($o_trans); }
 		
 		$vs_table_name = $t_instance->tableName();
@@ -7740,7 +7742,7 @@ class BaseModel extends BaseObject {
 		
 		$o_db = $t_instance->getDb();
 		
-		$va_ancestor_row_ids = array();
+		$va_ancestor_row_ids = $pb_include_self ? $pa_row_ids : array();
 		$va_level_row_ids = $pa_row_ids;
 		do {
 			$qr_level = $o_db->query("

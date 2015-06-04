@@ -1340,6 +1340,9 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 						}
 					}
 				}
+				if(($vn_k = array_search($pa_row_ids, $pa_row_ids)) !== false) {
+					unset($pa_row_ids[$vn_k]);
+				}
 				unset($va_row_ranks[$vn_row_id]);
 			}
 		}

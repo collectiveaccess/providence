@@ -145,9 +145,17 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 	/**
 	 * @var IWLPlugInformationService|null
 	 */
-	private $opo_plugin;
-
-	private $opa_indexing_info;
+	private $opo_plugin = null;
+	/**
+	 * Extra indexing info
+	 * @var array
+	 */
+	private $opa_indexing_info  = array();
+	/**
+	 * Extra info (this is actually get-able)
+	 * @var array
+	 */
+	private $opa_extra_info = array();
 	# ------------------------------------------------------------------
 	/**
 	 *
@@ -165,7 +173,12 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 		$this->ops_text_value = $pa_value_array['value_longtext1'];
 		$this->ops_uri_value = $pa_value_array['value_longtext2'];
 
-		$this->opa_indexing_info = caUnserializeForDatabase($pa_value_array['value_blob']);
+		$va_info = caUnserializeForDatabase($pa_value_array['value_blob']);
+		$this->opa_indexing_info =
+			(is_array($va_info) && isset($va_info['indexing_info']) && is_array($va_info['indexing_info'])) ? $va_info['indexing_info'] : array();
+
+		$this->opa_extra_info =
+			(is_array($va_info) && isset($va_info['extra_info']) && is_array($va_info['extra_info'])) ? $va_info['extra_info'] : array();
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -209,43 +222,55 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 
 		if (trim($ps_value)) {
 			$va_tmp = explode('|', $ps_value);
-			if(sizeof($va_tmp) == 3) { /// value is already in desired format
+			$va_info = array();
+			if(sizeof($va_tmp) == 3) { /// value is already in desired format (from autocomplete lookup)
 				// get extra indexing info for this uri from plugin implementation
 				$this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service);
 				$vs_display_text = $this->opo_plugin->getDisplayValueFromLookupText($va_tmp[0]);
-				$vs_indexing_blob = caSerializeForDatabase($this->opo_plugin->getExtraValuesForSearchIndexing($pa_element_info['settings'], $va_tmp[2]));
+				$va_info['indexing_info'] = $this->opo_plugin->getDataForSearchIndexing($pa_element_info['settings'], $va_tmp[2]);
+				$va_info['extra_info'] = $this->opo_plugin->getExtraInfo($pa_element_info['settings'], $va_tmp[2]);
 
 				return array(
 					'value_longtext1' => $vs_display_text,	// text
 					'value_longtext2' => $va_tmp[2],		// uri
 					'value_decimal1' => $va_tmp[1], 		// id
-					'value_blob' => $vs_indexing_blob
+					'value_blob' => caSerializeForDatabase($va_info)
 				);
 			} elseif(sizeof($va_tmp)==1 && (isURL($va_tmp[0]) || is_numeric($va_tmp[0]))) { // URI or ID -> try to look it up. we match hit when exactly 1 hit comes back
-				if(MemoryCache::contains($va_tmp[0], "InformationServiceLookup{$vs_service}")) {
-					return MemoryCache::fetch($va_tmp[0], "InformationServiceLookup{$vs_service}");
+
+				// try lookup cache
+				if(CompositeCache::contains($va_tmp[0], "InformationServiceLookup{$vs_service}")) {
+					return CompositeCache::fetch($va_tmp[0], "InformationServiceLookup{$vs_service}");
 				}
 
+				// try lookup
 				$this->opo_plugin = InformationServiceManager::getInformationServiceInstance($vs_service);
 				$va_ret = $this->opo_plugin->lookup($pa_element_info['settings'], $va_tmp[0]);
+
+				// only match exact results. at some point we might want to try to get fancy
+				// and pick one (or rather, have the plugin pick one) if there's more than one
 				if(is_array($va_ret['results']) && (sizeof($va_ret['results']) == 1)) {
 					$va_hit = array_shift($va_ret['results']);
-					$vs_indexing_blob = caSerializeForDatabase($this->opo_plugin->getExtraValuesForSearchIndexing($pa_element_info['settings'], $va_hit['url']));
+
+					$va_info['indexing_info'] = $this->opo_plugin->getDataForSearchIndexing($pa_element_info['settings'], $va_hit['url']);
+					$va_info['extra_info'] = $this->opo_plugin->getExtraInfo($pa_element_info['settings'], $va_hit['url']);
+					$vs_display_text = $this->opo_plugin->getDisplayValueFromLookupText($va_hit['label']);
 					$va_return = array(
-						'value_longtext1' => $va_hit['label'],	// text
+						'value_longtext1' => $vs_display_text,	// text
 						'value_longtext2' => $va_hit['url'],	// url
 						'value_decimal1' => $va_hit['id'], 	// id
-						'value_blob' => $vs_indexing_blob
+						'value_blob' => caSerializeForDatabase($va_info)
 					);
 				} else {
 					$va_return = array(
 						'value_longtext1' => '',	// text
 						'value_longtext2' => '',	// url
-						'value_decimal1' => null	// id
+						'value_decimal1' => null,	// id
+						'value_blob' => null		// extra info
 					);
 				}
 
-				MemoryCache::save($va_tmp[0], $va_return, "InformationServiceLookup{$vs_service}");
+				CompositeCache::save($va_tmp[0], $va_return, "InformationServiceLookup{$vs_service}");
 				return $va_return;
 			} else { // don't save if value hasn't changed
 				return array('_dont_save' => true);
@@ -255,7 +280,8 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 		return array(
 			'value_longtext1' => '',	// text
 			'value_longtext2' => '',	// url
-			'value_decimal1' => null	// id
+			'value_decimal1' => null,	// id
+			'value_blob' => null		// extra info
 		);
 	}
 	# ------------------------------------------------------------------
@@ -367,8 +393,21 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 		return $va_settings;
 	}
 	# ------------------------------------------------------------------
-	public function getExtraValuesForSearchIndexing() {
+	public function getDataForSearchIndexing() {
 		return (is_array($this->opa_indexing_info) ? $this->opa_indexing_info : array());
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Get extra info
+	 * @param null|string $ps_info_key Optional specific info key
+	 * @return mixed
+	 */
+	public function getExtraInfo($ps_info_key=null) {
+		if(!$ps_info_key) {
+			return (is_array($this->opa_extra_info) ? $this->opa_extra_info : array());
+		} else {
+			return isset($this->opa_extra_info[$ps_info_key]) ? $this->opa_extra_info[$ps_info_key] : null;
+		}
 	}
 	# ------------------------------------------------------------------
 	/**

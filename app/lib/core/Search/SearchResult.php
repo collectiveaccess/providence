@@ -689,35 +689,62 @@ class SearchResult extends BaseObject {
 	# ------------------------------------------------------------------
 	/**
 	 * Returns a value from the query result. This can be a single value if it is a field in the subject table (eg. objects table in an objects search), or
-	 * perhaps multiple related values (eg. related entities in an objects search). By default get() always returns a single value; for fields with multiple values
-	 * the value will be the first value encountered when loading the field data. 
+	 * perhaps multiple related values (eg. related entities in an objects search). 
 	 *
-	 * You can fetch the values of attributes attached to the subject row (ie. if you're searching for ca_objects rows, the subject row is the ca_objects row)
-	 * by use the "virtual" field name <subject_table_name>.<element_code> (ex. ca_objects.date_created)
-	 * If the attribute is a multi-value container then you can fetch a specific value using the format <subject_table_name>.<attribute_element_code>/<value_element_code>
-	 * For example, if you want to get the "date_value" value out of a "date" attribute attached to a ca_objects row, then you'd call get()
-	 * with this fieldname: ca_objects.date/date_value
+	 * You can fetch the values attached to a subject using the "virtual" field name <subject_table_name>.<element_code> (ex. ca_objects.date_created)
+	 * If the attribute is a multi-value container then you can fetch a specific value using the format <subject_table_name>.<attribute_element_code>.<value_element_code>
+	 * For example, to get the "date_value" value out of a "date" container attached to a ca_objects row, get() would be called with the field parameter set to ca_objects.date.date_value
 	 *
-	 * If you want to get the other values for a multiple-value fields use the following options:
+	 * By default get() returns a string for display in the current locale. You can control the formatting of the output using various options described below including "template" (format output using a displayt template),
+	 * "makeLink" (convert references to records into clickable links) and "delimiter" (specify text to place between multiple values)
 	 *
-	 *		returnAsArray = if true, return an array, otherwise return a string (default is false)
-	 *		template = format values
-	 *		delimiter = Characters to place in between repeating values when returning a string
-	 *		returnAllLocales = Return array of all available values in all locales. Array is indexed by id and then by locale. Implies returnAsArray. [Default is false]
-	 *		convertCodesToDisplayText = if true then item_ids are automatically converted to display text in the current locale [Default is false (return item_ids raw)]
-	 *		convertCodesToIdno = if true then item_ids are automatically converted to list item idno's (ca_list_items.idno); if convertCodesToDisplayText is also set then it takes precedence  [Default is false (return item_ids raw)]
+	 * When the "returnAsArray" option is set get() will return a numerically indexed array list of values. This array will always be one-dimensional with a sequence of display values.
 	 *
-	 *		useLocaleCodes = indicate locales use codes (ex. en_US) rather than numeric locale_ids. [Default is false]
+	 * You can force values for all available locales to be included in the returned string or array list using the "returnAllLocales" option.
+	 * 
+	 * CollectiveAccess stores related, repeating and multilingual data in a fairly complex series of nested structures. get() is intended to faciliate output of data so most of its options are geared towards
+	 * flattening of data for easy of formatting and display, with commensurate loss of internal structre. Set the "returnWithStructure" option to obtain the "raw" data with all of its internal structure intact. The
+	 * returned value will be a multidimensional array tailored to the type of data being returned. Typically this array will be indexed first by the id of the record to which the returned data is attached, then
+	 * by locale_id or code (if "returnAllLocales" is set), then the id specific to the data item (Eg. internal attribute_id for metadata, label_id for labels, Etc.), and finally an array with keys set to data element names
+	 * and associated values.
 	 *
-	 * 		restrict_to_type = restricts returned items to those of the specified type; only supports a single type which can be specified as a list item_code or item_id
- 	 *		restrictToType = synonym for restrict_to_type
- 	 *		restrict_to_types = restricts returned items to those of the specified types; pass an array of list item_codes or item_ids
- 	 *		restrictToTypes = synonym for restrict_to_types
- 	 *		restrict_to_relationship_types = restricts returned items to those related to the current row by the specified relationship type(s). You can pass either an array of types or a single type. The types can be relationship type_code's or type_id's.
- 	 *		restrictToRelationshipTypes = synonym for restrict_to_relationship_types
+	 * Return values can be modified using the following options:
+	 *
+	 *
+	 *		[Options that change the type of return value]
+	 *			returnAsArray = return values in a one-dimensional, numerically indexed array. If not not a string is always returned. [Default is false]
+	 *			returnWithStructure = return values in a multi-dimensional array mirroring the internal storage structure of CollectiveAccess. [Default is false]
+	 *
+	 *		[Options controlling scope of data in return value]
+	 *			returnAllLocales = Return array of all available values in all locales. Array is indexed by id and then by locale. Implies returnAsArray. [Default is false]
+	 *			useLocaleCodes = indicate locales use codes (ex. en_US) rather than numeric locale_ids. [Default is false]
+	 * 			restrict_to_type = restricts returned items to those of the specified type; only supports a single type which can be specified as a list item_code or item_id
+ 	 *			restrictToType = synonym for restrict_to_type
+ 	 *			restrict_to_types = restricts returned items to those of the specified types; pass an array of list item_codes or item_ids
+ 	 *			restrictToTypes = synonym for restrict_to_types
+ 	 *			restrict_to_relationship_types = restricts returned items to those related to the current row by the specified relationship type(s). You can pass either an array of types or a single type. The types can be relationship type_code's or type_id's.
+ 	 *			restrictToRelationshipTypes = synonym for restrict_to_relationship_types
+ 	 *			exclude_relationship_types = omits any items related to the current row with any of the specified types from the returned set of its. You can pass either an array of types or a single type. The types can be relationship type_code's or type_id's.
+ 	 *			excludeRelationshipTypes = synonym for exclude_relationship_types
+	 *
+	 *		[Formatting options for strings]
+	 *			template = format values
+	 *			delimiter = Characters to place in between repeating values when returning a string
+	 *			makeLink = 
+	 *			convertCodesToDisplayText = if true then item_ids are automatically converted to display text in the current locale [Default is false (return item_ids raw)]
+	 *			convertCodesToIdno = if true then item_ids are automatically converted to list item idno's (ca_list_items.idno); if convertCodesToDisplayText is also set then it takes precedence  [Default is false (return item_ids raw)]
+	 *
+	 *		[Formatting options for hierarchies]
+	 *			maxLevelsFromTop = for hierarchical gets, restricts the number of levels returned to the top-most starting with the root.
+	 *			maxLevelsFromBottom = for hierarchical gets, restricts the number of levels returned to the bottom-most starting with the lowest leaf node.
+	 *			maxLevels = synonym for maxLevelsFromBottom
+	 *			hierarchyDirection = asc|desc Order in which to return levels when get()'ing a hierarchical path. "Asc"ending  begins with the root; "desc"ending begins with the child furthest from the root [Default is asc]
+ 	 *			allDescendants = Return all items from the full depth of the hierarchy when get()'ing children rather than only immediate children. [Default is false]
  	 *
- 	 *		exclude_relationship_types = omits any items related to the current row with any of the specified types from the returned set of its. You can pass either an array of types or a single type. The types can be relationship type_code's or type_id's.
- 	 *		excludeRelationshipTypes = synonym for exclude_relationship_types
+	 *		[Front-end access control]		
+	 *			checkAccess = Array of access values to filter returned values on. Available for any table with an "access" field (ca_objects, ca_entities, etc.). If omitted no filtering is performed. [Default is null]
+ 	 *
+ 	 *		
  	 *
  	 *		returnAsLink = if true and $ps_field is set to a specific field in a related table, or $ps_field is set to a related table 
  	 *				(eg. ca_entities or ca_entities.related) AND the template option is set and returnAllLocales is not set, then returned values will be links. The destination of the link will be the appropriate editor when executed within Providence or the appropriate detail page when executed within Pawtucket or another front-end. Default is false.
@@ -726,20 +753,16 @@ class SearchResult extends BaseObject {
  	 *		returnAsLinkAttributes = array of attributes to include in link <a> tag. Use this to set class, alt and any other link attributes.
  	 * 		returnAsLinkTarget = Optional link target. If any plugin implementing hookGetAsLink() responds to the specified target then the plugin will be used to generate the links rather than CA's default link generator.
  	 *
- 	 *		hierarchyDirection = asc|desc Order in which to return levels when get()'ing a hierarchical path. "Asc"ending  begins with the root; "desc"ending begins with the child furthest from the root [Default is asc]
- 	 *		allDescendants = Return all items from the full depth of the hierarchy when get()'ing children rather than only immediate children. [Default is false]
- 	 *
+ 	 *		
  	 *		sort = optional array of bundles to sort returned values on. Currently only supported when getting related values via simple related <table_name> and <table_name>.related invokations. Eg. from a ca_objects results you can use the 'sort' option got get('ca_entities'), get('ca_entities.related') or get('ca_objects.related'). The bundle specifiers are fields with or without tablename. Only those fields returned for the related tables (intrinsics and label fields) are sortable. You cannot sort on attributes.
 	 *		filters = optional array of elements to filter returned values on. The element must be part of the container being fetched from. For example, if you're get()'ing a value from a container element (Eg. ca_objects.dates.date_value) you can filter on any other subelement in that container by passing the name of the subelement and a value (Eg. "date_type" => "copyright"). Pass only the name of the subelement, not the full path that includes the table and container element. You can filter on multiple subelements by passing each subelement as a key in the array. Only values that match all filters are returned. You can filter on multiple values for a subelement by passing an array of values rather than a scalar (Eg. "date_type" => array("copyright", "patent")). Values that match *any* of the values will be returned. Only simple equivalance is supported. NOTE: Filters are only available when returnAsArray is set. They will be ignored if returnAsArray is not set.
 	 *
-	 *		maxLevelsFromTop = for hierarchical gets, restricts the number of levels returned to the top-most starting with the root.
-	 *		maxLevelsFromBottom = for hierarchical gets, restricts the number of levels returned to the bottom-most starting with the lowest leaf node.
-	 *		maxLevels = synonym for maxLevelsFromBottom
 	 *
-	 *		assumeDisplayField = Return display field for ambiguous preferred label specifiers (Ex. ca_entities.preferred_labels => ca_entities.preferred_labels.displayname), otherwise  an array with all label fields is returned [Default is true]
 	 *		
-	 *		checkAccess = Array of access values to filter returned values on. Available for any table with an "access" field (ca_objects, ca_entities, etc.). If omitted no filtering is performed. [Default is null]
-	 *
+	 *		
+	 *		
+	 *	@param string $ps_field 
+	 *	@param array $pa_options Options as described above
 	 * 	@return mixed String or array
 	 */
 	public function get($ps_field, $pa_options=null) {
@@ -1209,7 +1232,7 @@ class SearchResult extends BaseObject {
 			
 			$va_related_items = self::$s_rel_prefetch_cache[$this->ops_table_name][$vn_row_id][$va_path_components['table_name']][$vs_opt_md5];
 
-			if (!is_array($va_related_items)) { return $vb_return_as_array ? array() : null; }
+			if (!is_array($va_related_items)) { return ($vb_return_with_structure || $vb_return_as_array) ? array() : null; }
 		
 			
 			return $this->_getRelatedValue($va_related_items, $va_val_opts);
@@ -1340,9 +1363,13 @@ class SearchResult extends BaseObject {
 		
 		// Handle table-only case...
 		if (!$va_path_components['field_name']) {
-			// ... by returning a list of preferred label values 
-			$va_path_components['field_name'] = 'preferred_labels';
-			$va_path_components['subfield_name'] = $t_rel_instance->getLabelDisplayField();
+			if ($pa_options['returnWithStructure']) {
+				return $pa_value_list;
+			} else {
+				// ... by returning a list of preferred label values 
+				$va_path_components['field_name'] = 'preferred_labels';
+				$va_path_components['subfield_name'] = $t_rel_instance->getLabelDisplayField();
+			}	
 		}
 		
 		if (in_array($va_path_components['field_name'], array('preferred_labels', 'nonpreferred_labels')) && !$va_path_components['subfield_name']) {
@@ -1382,7 +1409,7 @@ class SearchResult extends BaseObject {
 				$va_return_values[] = $vm_val;
 			}
 		}
-	
+		
 		if ($pa_options['unserialize'] && !$pa_options['returnAsArray']) { return array_shift($va_return_values); }	
 		if ($pa_options['returnAsArray']) { return is_array($va_return_values) ? $va_return_values : array(); } 
 		
@@ -1411,13 +1438,15 @@ class SearchResult extends BaseObject {
 	 * @return array|string
 	 */
 	private function _getLabelValue($pa_value_list, $pt_instance, $pa_options) {
-		//$vb_assume_display_field 	= caGetOption('assumeDisplayField', $pa_options, true, array('castTo' => 'bool'));
+		$vb_assume_display_field 	= isset($pa_options['assumeDisplayField']) ? (bool)$pa_options['assumeDisplayField'] : true;
 		
 		$va_path_components			=& $pa_options['pathComponents'];
 		
 		// Set subfield to display field if not specified and *NOT* returning as array
-		// (when returning as array without a specified subfield we return an array with entire label record)
-		if ((!$pa_options['returnAsArray'] || $vb_assume_display_field) && !$va_path_components['subfield_name']) { $va_path_components['subfield_name'] = $pt_instance->getLabelDisplayField(); }
+		if ($vb_assume_display_field && !$va_path_components['subfield_name']) { 
+			$va_path_components['components'][2] = $va_path_components['subfield_name'] = $pt_instance->getLabelDisplayField(); 
+			$va_path_components['num_components'] = sizeof($va_path_components['components']);
+		}
 		
 		$vs_table_name = $pt_instance->tableName();
 		$vs_pk = $pt_instance->primaryKey();
@@ -1457,7 +1486,7 @@ class SearchResult extends BaseObject {
 					}
 					
 					if ($pa_options['makeLink']) {
-						$vs_val_proc = caCreateLinksFromText($vs_val_proc, $vs_table_name, $vn_id);
+						$vs_val_proc = array_shift(caCreateLinksFromText(array($vs_val_proc), $vs_table_name, array($vn_id)));
 					}
 					
 					if ($pa_options['returnWithStructure']) {
@@ -1510,7 +1539,7 @@ class SearchResult extends BaseObject {
 		$vn_id = $this->get($pt_instance->primaryKey(true));
 		$vs_table_name = $pt_instance->tableName();
 		
-		if (is_array($pa_value_list)) {
+		if (is_array($pa_value_list) && sizeof($pa_value_list)) {
 			foreach($pa_value_list as $o_attribute) {
 				$va_values = $o_attribute->getValues();
 				
@@ -1534,8 +1563,10 @@ class SearchResult extends BaseObject {
 							$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
 							break;
 						case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
+							//ca_objects.informationservice.ulan_container
+							
 							// support subfield notations like ca_objects.wikipedia.abstract, but only if we're not already at subfield-level, e.g. ca_objects.container.wikipedia
-							if($va_path_components['subfield_name'] && ($vs_element_code != $va_path_components['subfield_name'])) {
+							if($va_path_components['subfield_name'] && ($vs_element_code != $va_path_components['subfield_name']) && ($vs_element_code == $va_path_components['field_name'])) {
 								$vs_val_proc = $o_value->getExtraInfo($va_path_components['subfield_name']);
 								break;
 							}
@@ -1545,23 +1576,32 @@ class SearchResult extends BaseObject {
 								$vs_val_proc = $o_value->getExtraInfo($va_path_components['components'][3]);
 								break;
 							}
-
-							$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'])));
-							break;
+							
+							// support ca_objects.wikipedia or ca_objects.container.wikipedia (Eg. no "extra" value specified)
+							if (($vs_element_code == $va_path_components['field_name']) || $vs_element_code == $va_path_components['subfield_name']) {
+								$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'])));
+								break;
+							}
+							continue;
 						default:
 							$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'])));
 							break;
 					}
 					
-					if($pa_options['makeLink']) { $vs_val_proc = caCreateLinksFromText($vs_val_proc, $vs_table_name, $vn_id); }
+					if($pa_options['makeLink']) { $vs_val_proc = array_shift(caCreateLinksFromText(array($vs_val_proc), $vs_table_name, array($vn_id))); }
 					
 					if ($pa_options['returnWithStructure']) {
-							$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][$vs_element_code] = $vs_val_proc;
+						$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][$vs_element_code] = $vs_val_proc;
 					} else { 
 						$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()] = $vs_val_proc;	
 					}
 				}
 			}
+		} else {
+			// is blank
+			if ($pa_options['returnWithStructure'] && $pa_options['returnBlankValues']) {
+				$va_return_values[(int)$vn_id][null][null][$va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : $va_path_components['field_name']] = '';
+			}	
 		}
 		
 		if (!$pa_options['returnAllLocales']) { $va_return_values = caExtractValuesByUserLocale($va_return_values); } 	
@@ -1640,7 +1680,7 @@ class SearchResult extends BaseObject {
 							$vs_prop = $this->opo_tep->getText($pa_options);
 						}
 						
-						if ($vb_return_as_link) { $vs_prop = caCreateLinksFromText($vs_prop, $vs_table_name, $vn_id); }
+						if ($vb_return_as_link) { $vs_prop = array_shift(caCreateLinksFromText(array($vs_prop), $vs_table_name, array($vn_id))); }
 						
 						$va_return_values[$vn_id][$vm_locale_id] = $vs_prop;
 					}
@@ -1945,7 +1985,7 @@ class SearchResult extends BaseObject {
 	 */
 	function getMediaInfo($ps_field, $ps_version=null, $ps_key=null, $pa_options=null) {
 		$vn_index = (isset($pa_options['index']) && ((int)$pa_options['index'] > 0)) ? (int)$pa_options['index'] : 0;
-		$va_media_info = $this->get($ps_field, array("unserialize" => true, 'returnAsArray' => true));
+		$va_media_info = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaInfo($va_media_info[$vn_index], $ps_version, $ps_key, $pa_options);
 	}
 	# ------------------------------------------------------------------
@@ -1953,7 +1993,7 @@ class SearchResult extends BaseObject {
 	 * 
 	 */
 	function getMediaPath($ps_field, $ps_version, $pa_options=null) {
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaPath($this->get($ps_field, array("unserialize" => true)), $ps_version, $pa_options);
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaPath(array_shift($this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true))), $ps_version, $pa_options);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -1961,7 +2001,7 @@ class SearchResult extends BaseObject {
 	 *
 	 */
 	function getMediaPaths($ps_field, $ps_version, $pa_options=null) {
-		$va_media = $this->get($ps_field, array("unserialize" => true, 'returnAsArray' => true));
+		$va_media = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
 		
 		$va_media_paths = array();
 		if (is_array($va_media) && sizeof($va_media)) {
@@ -2041,7 +2081,7 @@ class SearchResult extends BaseObject {
 	 * 
 	 */
 	function getMediaVersions($ps_field) {
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaVersions($this->get($ps_field, array("unserialize" => true)));
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaVersions(array_shift($this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true))));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -2059,7 +2099,7 @@ class SearchResult extends BaseObject {
 	 */
 	function hasMedia($ps_field) {  
 		$va_field = $this->getFieldInfo($ps_field);
-		return $GLOBALS["_DbResult_mediainfocoder"]->hasMedia($this->get($va_field["field"], array("unserialize" => true)));
+		return $GLOBALS["_DbResult_mediainfocoder"]->hasMedia(array_shift($this->get($va_field["field"], array("unserialize" => true, 'returnWithStructure' => true))));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -2067,7 +2107,7 @@ class SearchResult extends BaseObject {
 	 */
 	function mediaIsMirrored($ps_field, $ps_version) {
 		$va_field = $this->getFieldInfo($ps_field);
-		return $GLOBALS["_DbResult_mediainfocoder"]->mediaIsMirrored($this->get($va_field["field"], array("unserialize" => true)), $ps_version);
+		return $GLOBALS["_DbResult_mediainfocoder"]->mediaIsMirrored(array_shift($this->get($va_field["field"], array("unserialize" => true, 'returnWithStructure' => true))), $ps_version);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -2075,7 +2115,7 @@ class SearchResult extends BaseObject {
 	 */
 	function getMediaMirrorStatus($ps_field, $ps_version, $ps_mirror=null) {
 		$va_field = $this->getFieldInfo($ps_field);
-		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaMirrorStatus($this->get($va_field["field"], array("unserialize" => true)), $ps_version, $ps_mirror);
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaMirrorStatus(array_shift($this->get($va_field["field"], array("unserialize" => true, 'returnWithStructure' => true))), $ps_version, $ps_mirror);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -2083,7 +2123,7 @@ class SearchResult extends BaseObject {
 	 */
 	function getFileInfo($ps_field) {
 		$va_field = $this->getFieldInfo($ps_field);
-		return $GLOBALS["_DbResult_fileinfocoder"]->getFileInfo($this->get($va_field["field"], array("unserialize" => true)));
+		return $GLOBALS["_DbResult_fileinfocoder"]->getFileInfo(array_shift($this->get($va_field["field"], array("unserialize" => true, 'returnWithStructure' => true))));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -2091,7 +2131,7 @@ class SearchResult extends BaseObject {
 	 */
 	function getFilePath($ps_field) {
 		$va_field = $this->getFieldInfo($ps_field);
-		return $GLOBALS["_DbResult_fileinfocoder"]->getFilePath($this->get($va_field["field"], array("unserialize" => true)));
+		return $GLOBALS["_DbResult_fileinfocoder"]->getFilePath(array_shift($this->get($va_field["field"], array("unserialize" => true, 'returnWithStructure' => true))));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -2099,7 +2139,7 @@ class SearchResult extends BaseObject {
 	 */
 	function getFileUrl($ps_field) {
 		$va_field = $this->getFieldInfo($ps_field);
-		return $GLOBALS["_DbResult_fileinfocoder"]->getFileUrl($this->get($va_field["field"], array("unserialize" => true)));
+		return $GLOBALS["_DbResult_fileinfocoder"]->getFileUrl(array_shift($this->get($va_field["field"], array("unserialize" => true, 'returnWithStructure' => true))));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -2107,7 +2147,7 @@ class SearchResult extends BaseObject {
 	 */
 	function hasFile($ps_field) {
 		$va_field = $this->getFieldInfo($ps_field);
-		return $GLOBALS["_DbResult_fileinfocoder"]->hasFile($this->get($va_field["field"], array("unserialize" => true)));
+		return $GLOBALS["_DbResult_fileinfocoder"]->hasFile(array_shift($this->get($va_field["field"], array("unserialize" => true, 'returnWithStructure' => true))));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -2115,7 +2155,7 @@ class SearchResult extends BaseObject {
 	 */
 	function getFileConversions($ps_field) {
 		$va_field = $this->getFieldInfo($ps_field);
-		return $GLOBALS["_DbResult_fileinfocoder"]->getFileConversions($this->get($va_field["field"], array("unserialize" => true)));
+		return $GLOBALS["_DbResult_fileinfocoder"]->getFileConversions(array($this->get($va_field["field"], array("unserialize" => true, 'returnWithStructure' => true))));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -2123,7 +2163,7 @@ class SearchResult extends BaseObject {
 	 */
 	function getFileConversionPath($ps_field, $ps_mimetype) {
 		$va_field = $this->getFieldInfo($ps_field);
-		return $GLOBALS["_DbResult_fileinfocoder"]->getFileConversionPath($this->get($va_field["field"], array("unserialize" => true)), $ps_mimetype);
+		return $GLOBALS["_DbResult_fileinfocoder"]->getFileConversionPath(array($this->get($va_field["field"], array("unserialize" => true, 'returnWithStructure' => true))), $ps_mimetype);
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -2131,7 +2171,7 @@ class SearchResult extends BaseObject {
 	 */
 	function getFileConversionUrl($ps_field, $ps_mimetype) {
 		$va_field = $this->getFieldInfo($ps_field);
-		return $GLOBALS["_DbResult_fileinfocoder"]->getFileConversionUrl($this->get($va_field["field"], array("unserialize" => true)), $ps_mimetype);
+		return $GLOBALS["_DbResult_fileinfocoder"]->getFileConversionUrl(array_shift($this->get($va_field["field"], array("unserialize" => true, 'returnWithStructure' => true))), $ps_mimetype);
 	}
 	# ------------------------------------------------------------------
 	/**

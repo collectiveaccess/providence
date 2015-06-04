@@ -91,7 +91,10 @@ abstract class BaseDataReader {
 	 * @param array $pa_options
 	 * @return bool
 	 */
-	abstract function read($ps_source, $pa_options=null);
+	public function read($ps_source, $pa_options=null) {
+		$this->ops_source = $ps_source;
+		return null;
+	}
 	# -------------------------------------------------------
 	/**
 	 * 
@@ -112,13 +115,32 @@ abstract class BaseDataReader {
 	abstract function seek($pn_row_num);
 	# -------------------------------------------------------
 	/**
+	 *
+	 * @return int
+	 */
+	abstract public function currentRow();
+	# -------------------------------------------------------
+	/**
 	 * 
 	 * 
 	 * @param mixed $pm_spec
 	 * @param array $pa_options
 	 * @return mixed
 	 */
-	abstract function get($pm_spec, $pa_options=null);
+	public function get($ps_field, $pa_options=null) {
+		//
+		// Return "special" values
+		//
+		switch($ps_field) {
+			case '__row__':
+				return $this->currentRow();
+				break;
+			case '__source__':
+				return pathinfo($this->ops_source, PATHINFO_BASENAME);
+				break;
+		}
+		return null;
+	}
 	# -------------------------------------------------------
 	/**
 	 * 

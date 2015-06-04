@@ -66,6 +66,7 @@ class MARCDataReader extends BaseDataReader {
 	 * @return bool
 	 */
 	public function read($ps_source, $pa_options=null) {
+		parent::read($ps_source, $pa_options);
 		try {
 			$this->opo_handle = new File_MARC($ps_source, File_MARC::SOURCE_FILE);
 			$this->opn_current_row = -1;
@@ -125,6 +126,8 @@ class MARCDataReader extends BaseDataReader {
 	 * @return mixed
 	 */
 	public function get($ps_spec, $pa_options=null) {
+		if ($vm_ret = parent::get($ps_spec, $pa_options)) { return $vm_ret; }
+		
 		list($ps_code, $ps_subcode, $ps_indicators) = explode('/', $ps_spec);
 		if (!isset($this->opa_rows[$this->opn_current_row])) { return null; }
 		
