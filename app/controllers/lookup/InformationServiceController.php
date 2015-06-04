@@ -115,7 +115,13 @@
 							if (!($o_plugin = InformationServiceManager::getInformationServiceInstance($vs_service))) {
 								$va_items['error'] = array('label' => _t('ERROR: Invalid service'), 'idno' => '');
 							} else {
-								$va_data = $o_plugin->getExtendedInformation($va_settings, $vs_url);
+								$vs_cache_key = md5(print_r($va_settings, true) . $vs_url);
+								if(CompositeCache::contains($vs_cache_key, 'InformationServiceExtendedInfo')) {
+									$va_data = CompositeCache::fetch($vs_cache_key, 'InformationServiceExtendedInfo');
+								} else {
+									$va_data = $o_plugin->getExtendedInformation($va_settings, $vs_url);
+									CompositeCache::save($vs_cache_key, $va_data, 'InformationServiceExtendedInfo');
+								}
 							}
 						}
 					}

@@ -46,20 +46,22 @@ class RequestHTTP extends Request {
 	# -------------------------------------------------------
 	private $opb_is_dispatched;
  		
-/**
- * Current session object. If you need to set session variables you may
- * do so using Session object method calls on the object referenced by this property
- *
- * @access public
- */	
+	/**
+	 * Current session object. If you need to set session variables you may
+	 * do so using Session object method calls on the object referenced by this property
+	 *
+	 * @var Session
+	 * @access public
+	 */
 	public $session;
 	
-/**
- * User object for currently logged in user. Will be undefined if no user is logged in.
- * You may check to see if a user is logged in using the isLoggedIn() method.
- *
- * @access public
- */	
+	/**
+	 * User object for currently logged in user. Will be undefined if no user is logged in.
+	 * You may check to see if a user is logged in using the isLoggedIn() method.
+	 *
+	 * @var ca_users
+	 * @access public
+	 */
 	public $user;
 	
 	private $opo_response;
@@ -123,10 +125,28 @@ class RequestHTTP extends Request {
 				$pa_options["no_authentication"] = true;
 			}
 		}
-	
-		# get session
+
+		# figure out script name
+		$va_tmp = (isset($_SERVER['SCRIPT_NAME']) && $_SERVER['SCRIPT_NAME']) ? explode('/', $_SERVER['SCRIPT_NAME']) : array();
+		$this->ops_script_name = '';
+		while((!$this->ops_script_name) && (sizeof($va_tmp) > 0)) {
+			$this->ops_script_name = array_pop($va_tmp);
+		}
+
+		# create session
 		$vs_app_name = $this->config->get("app_name");
-		$this->session = new Session($vs_app_name, isset($pa_options["dont_create_new_session"]) ? $pa_options["dont_create_new_session"] : false);
+
+		// restore session from token for service requests
+		if(($this->ops_script_name=="service.php") && isset($_GET['authToken']) && (strlen($_GET['authToken']) > 0)) {
+			$vs_token = preg_replace("/[^a-f0-9]/", "", $_GET['authToken']); // sanitize
+
+			$this->session = Session::restoreFromServiceAuthToken($vs_token, $vs_app_name);
+		}
+
+		// plain old session
+		if(!$this->session) {
+			$this->session = new Session($vs_app_name, isset($pa_options["dont_create_new_session"]) ? $pa_options["dont_create_new_session"] : false);
+		}
 		
 		if (!isset($pa_options["no_authentication"]) || !$pa_options["no_authentication"]) {
 			$this->doAuthentication($pa_options);
@@ -146,16 +166,9 @@ class RequestHTTP extends Request {
 		$this->opa_params['URL'] = array();
 		
 		$this->ops_request_method = (isset($_SERVER["REQUEST_METHOD"]) ? $_SERVER["REQUEST_METHOD"] : null);
-
-		$va_tmp = (isset($_SERVER['SCRIPT_NAME']) && $_SERVER['SCRIPT_NAME']) ? explode('/', $_SERVER['SCRIPT_NAME']) : array();
-		
-		$this->ops_script_name = '';
-		while((!$this->ops_script_name) && (sizeof($va_tmp) > 0)) {
-			$this->ops_script_name = array_pop($va_tmp);
-		}
 		
 		/* allow authentication via URL for web service API like so: http://user:pw@example.com/ */
-		if($this->ops_script_name=="service.php"){
+		if($this->ops_script_name=="service.php") {
 			$this->ops_raw_post_data = file_get_contents("php://input");
 
 			if($_SERVER["PHP_AUTH_USER"] && $_SERVER["PHP_AUTH_PW"]){

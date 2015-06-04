@@ -1497,7 +1497,7 @@ class SearchResult extends BaseObject {
 				foreach($va_values as $o_value) {
 					$vs_element_code = $o_value->getElementCode();
 					if ($va_path_components['subfield_name']) {
-						if ($va_path_components['subfield_name'] !== $vs_element_code) { continue; }
+						if ($va_path_components['subfield_name'] !== $vs_element_code && !($o_value instanceof InformationServiceAttributeValue)) { continue; }
 						$vs_element_code = is_array($va_return_values[$vn_c][$vn_locale_id]) ? sizeof($va_return_values[$vn_c][$vn_locale_id]) : 0;
 					}
 					
@@ -1507,6 +1507,21 @@ class SearchResult extends BaseObject {
 							$vn_list_id = $t_element->get('list_id');
 							
 							$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('alwaysReturnItemID' => !caGetOption('convertCodesToDisplayText', $pa_options, false), 'list_id' => $vn_list_id)));
+							break;
+						case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
+							// support subfield notations like ca_objects.wikipedia.abstract, but only if we're not already at subfield-level, e.g. ca_objects.container.wikipedia
+							if($va_path_components['subfield_name'] && ($o_value->getElementCode() != $va_path_components['subfield_name'])) {
+								$vs_val_proc = $o_value->getExtraInfo($va_path_components['subfield_name']);
+								break;
+							}
+
+							// support ca_objects.container.wikipedia.abstract
+							if(($o_value->getElementCode() == $va_path_components['subfield_name']) && ($va_path_components['num_components'] == 4)) {
+								$vs_val_proc = $o_value->getExtraInfo($va_path_components['components'][3]);
+								break;
+							}
+
+							$vs_val_proc = $o_value->getDisplayValue($pa_options);
 							break;
 						default:
 							$vs_val_proc = $o_value->getDisplayValue($pa_options);

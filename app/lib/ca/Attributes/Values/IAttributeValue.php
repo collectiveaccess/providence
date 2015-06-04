@@ -81,5 +81,5 @@
  		public function getType();
 
 		// Get extra info to add to search index
-		public function getExtraValuesForSearchIndexing();
+		public function getDataForSearchIndexing();
 	}

@@ -3077,7 +3077,7 @@
 					$t_value->editValue($vs_uri);
 
 					if($t_value->numErrors() > 0) {
-						print _t('There were errors updating an attribute row: ') . join(' ', $t_attr->getErrors());
+						print _t('There were errors updating an attribute row: ') . join(' ', $t_value->getErrors());
 					}
 				}
 
