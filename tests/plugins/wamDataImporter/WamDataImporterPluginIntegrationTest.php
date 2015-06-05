@@ -45,7 +45,6 @@ ApplicationPluginManager::initPlugins();
  */
 class WamDataImporterPluginIntegrationTest extends AbstractPluginIntegrationTest {
 
-
 	public static function setUpBeforeClass() {
 		self::_init();
 		self::_createRelationshipType('identification', 'ca_objects_x_vocabulary_terms');
@@ -55,10 +54,9 @@ class WamDataImporterPluginIntegrationTest extends AbstractPluginIntegrationTest
 		self::_createEntity('Linnaeus');
 		self::_createEntity('Darwin');
 
-
 		self::_createListItem('collecting_event', BaseModel::$s_ca_models_definitions['ca_occurrences']['FIELDS']['type_id']['LIST_CODE']);
-
 		self::_createListItem('test_list_item_type', BaseModel::$s_ca_models_definitions['ca_list_items']['FIELDS']['type_id']['LIST_CODE']);
+
 		$vo_container = self::_createMetadataElement('samplingProtocolContainer', __CA_ATTRIBUTE_VALUE_CONTAINER__);
 		$vo_protocol_value = self::_createMetadataElement('samplingProtocolValue', __CA_ATTRIBUTE_VALUE_LIST__);
 		$vo_protocol_list = self::_createList('samplingProtocol');
@@ -279,7 +277,6 @@ class WamDataImporterPluginIntegrationTest extends AbstractPluginIntegrationTest
 		self::_cleanupCreatedRecords($va_created_records);
 	}
 
-
 	public function testSplitElementOnRelatedOccurrenceListItem(){
 		// ARRANGE
 		$vo_plugin = new wamDataImporterPlugin(__DIR__ . '/conf/integration');
@@ -311,10 +308,7 @@ class WamDataImporterPluginIntegrationTest extends AbstractPluginIntegrationTest
 		);
 		// ACT
 		$vo_plugin->hookDataImportContentTree($va_params);
-
 		// ASSERT
-
-
 		$va_created_records = array(
 			DataMigrationUtils::getListItemID(
 				self::_getIdno('samplingProtocol'),
@@ -338,9 +332,8 @@ class WamDataImporterPluginIntegrationTest extends AbstractPluginIntegrationTest
 		$this->assertEquals('Running around in a pitfall trap', $va_sampling_protocol[self::_getIdno('samplingProtocolText')], 'Should not change the field that is not the target element.');
 		// CLEANUP
 		self::_cleanupCreatedRecords($va_created_records);
-
-
 	}
+
 	private static function _cleanupCreatedRecords($pa_records) {
 		foreach ($pa_records as $vo_record) {
 			$vo_record->setMode(ACCESS_WRITE);
