@@ -691,8 +691,8 @@ class SearchResult extends BaseObject {
 	 * Returns a value from the query result. This can be a single value if it is a field in the subject table (eg. objects table in an objects search), or
 	 * perhaps multiple related values (eg. related entities in an objects search). 
 	 *
-	 * You can fetch the values attached to a subject using the "virtual" field name <subject_table_name>.<element_code> (ex. ca_objects.date_created)
-	 * If the attribute is a multi-value container then you can fetch a specific value using the format <subject_table_name>.<attribute_element_code>.<value_element_code>
+	 * You can fetch the values attached to a subject using the bundle specification, generally in the format <subject_table_name>.<element_code> (ex. ca_objects.date_created)
+	 * If the bundle is a container then you can fetch a specific value using the format <subject_table_name>.<attribute_element_code>.<value_element_code>
 	 * For example, to get the "date_value" value out of a "date" container attached to a ca_objects row, get() would be called with the field parameter set to ca_objects.date.date_value
 	 *
 	 * By default get() returns a string for display in the current locale. You can control the formatting of the output using various options described below including "template" (format output using a displayt template),
@@ -710,57 +710,48 @@ class SearchResult extends BaseObject {
 	 *
 	 * Return values can be modified using the following options:
 	 *
-	 *
-	 *		[Options that change the type of return value]
+	 *		[Options controlling type of return value]
 	 *			returnAsArray = return values in a one-dimensional, numerically indexed array. If not not a string is always returned. [Default is false]
 	 *			returnWithStructure = return values in a multi-dimensional array mirroring the internal storage structure of CollectiveAccess. [Default is false]
 	 *
 	 *		[Options controlling scope of data in return value]
-	 *			returnAllLocales = Return array of all available values in all locales. Array is indexed by id and then by locale. Implies returnAsArray. [Default is false]
-	 *			useLocaleCodes = indicate locales use codes (ex. en_US) rather than numeric locale_ids. [Default is false]
-	 * 			restrict_to_type = restricts returned items to those of the specified type; only supports a single type which can be specified as a list item_code or item_id
- 	 *			restrictToType = synonym for restrict_to_type
- 	 *			restrict_to_types = restricts returned items to those of the specified types; pass an array of list item_codes or item_ids
- 	 *			restrictToTypes = synonym for restrict_to_types
- 	 *			restrict_to_relationship_types = restricts returned items to those related to the current row by the specified relationship type(s). You can pass either an array of types or a single type. The types can be relationship type_code's or type_id's.
- 	 *			restrictToRelationshipTypes = synonym for restrict_to_relationship_types
- 	 *			exclude_relationship_types = omits any items related to the current row with any of the specified types from the returned set of its. You can pass either an array of types or a single type. The types can be relationship type_code's or type_id's.
- 	 *			excludeRelationshipTypes = synonym for exclude_relationship_types
-	 *
-	 *		[Formatting options for strings]
-	 *			template = format values
+	 *			returnAllLocales = Return values from all available locales, rather than just the most appropriate locale for the current user. For string and array return values, returnAllLocales will result in inclusion of additional values. For returnWithStructure, additional entries keys on locale_id or code will be added.  [Default is false]
+	 *			useLocaleCodes =  For returnWithStructure locale codes (ex. en_US) will be used rather than numeric locale_ids. [Default is false]
+	 * 			restrictToTypes = For bundles referencing data in related tables (ex. calling ca_entities.idno from a ca_objects result) will restrict returned items to those of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]
+ 	 *			restrictToRelationshipTypes =  For bundles referencing data in related tables (ex. calling ca_entities.idno from a ca_objects result) will restrict returned items to those related using the specified relationship types. An array of relationship type idnos and/or type_ids may be specified. [Default is null]
+ 	 *			excludeTypes = For bundles referencing data in related tables (ex. calling ca_entities.idno from a ca_objects result) will restrict returned items to those *not* of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]
+ 	 *			excludeRelationshipTypes = For bundles referencing data in related tables (ex. calling ca_entities.idno from a ca_objects result) will restrict returned items to those *not* related using the specified relationship types. An array of relationship type idnos and/or type_ids may be specified. [Default is null]
+ 	 *			restrictToType = Synonym for restrictToTypes. [Default is null]
+ 	 *			restrictToRelationshipType = Synonym for restrictToRelationshipTypes. [Default is null]
+ 	 *			excludeType = Synonym for excludeTypes. [Default is null]
+ 	 *			excludeRelationshipType = Synonym for excludeRelationshipTypes. [Default is null]
+ 	 *			filters = Array list of elements to filter returned values on. The element must be part of the container being fetched from. For example, when fetching a value from a container element (ex. ca_objects.dates.date_value) you can filter on any other subelement in that container by passing the name of the subelement and a value (ex. "date_type" => "copyright"). Pass only the name of the subelement, not the full path that includes the table and container element. You may filter on multiple subelements by passing each subelement as a key in the array. Only values that match all filters are returned. You can filter on multiple values for a subelement by passing an array of values rather than a scalar (Eg. "date_type" => array("copyright", "patent")). Values that match *any* of the values will be returned. Only simple equivalance is supported. NOTE: Filters are only available when returnAsArray or returnWithStructure are set. [Default is null]
+ 	 *			assumeDisplayField = For returnWithStructure, return display field for ambiguous preferred label specifiers (ex. ca_entities.preferred_labels => ca_entities.preferred_labels.displayname). If set to false an array with all label fields is returned. [Default is true]
+	 *			returnURL = When fetching intrinsic value of type FT_MEDIA return URL to media rather than HTML tag. [Default is false]
+	 *			returnPath = When fetching intrinsic value of type FT_MEDIA return path to media rather than HTML tag. [Default is false] 
+	 *			unserialize = When fetching intrinsic value of type FT_VARS (serialized variables) return unserialized value. [Default is false]
+	 *			
+	 *		[Formatting options for strings and arrays]
+	 *			template = Display template use when formatting return values. @see http://docs.collectiveaccess.org/wiki/Display_Templates. [Default is null]
 	 *			delimiter = Characters to place in between repeating values when returning a string
-	 *			makeLink = 
-	 *			convertCodesToDisplayText = if true then item_ids are automatically converted to display text in the current locale [Default is false (return item_ids raw)]
-	 *			convertCodesToIdno = if true then item_ids are automatically converted to list item idno's (ca_list_items.idno); if convertCodesToDisplayText is also set then it takes precedence  [Default is false (return item_ids raw)]
+	 *			makeLink = Return value as a link to the relevant editor (Providence) or detail (Pawtucket) when bundle references data in a related table; return value as HTML link when value is URL type. [Default is false]
+	 *			returnAsLink = Synonym for makeLink. [Default is false]
+	 *			convertCodesToDisplayText = Convert list item_ids text in the user's preferred locale for display. [Default is false]
+	 *			convertCodesToIdno = Convert list item_ids to idno's (ca_list_items.idno). If convertCodesToDisplayText is also set then it will take precedence. [Default is false]
+	 *			output = Convert list item_ids to display text in user's preferred locale ("text") or idno ("idno"). This is an easier to type alternative to the convertCodesToDisplayText and convertCodesToIdno options. [Default is null]
+	 *			sort = Array list of bundles to sort returned values on. Currently sort is only supported when getting related values via simple related <table_name> and <table_name>.related bundle specifiers. Eg. from a ca_objects results you can sort when fetching 'ca_entities', 'ca_entities.related', 'ca_objects.related', etc.. The sortable bundle specifiers are fields with or without tablename. Only those fields returned for the related tables (intrinsics and label fields) are sortable. You cannot currenty sort on attributes. [Default is null]
 	 *
 	 *		[Formatting options for hierarchies]
-	 *			maxLevelsFromTop = for hierarchical gets, restricts the number of levels returned to the top-most starting with the root.
-	 *			maxLevelsFromBottom = for hierarchical gets, restricts the number of levels returned to the bottom-most starting with the lowest leaf node.
-	 *			maxLevels = synonym for maxLevelsFromBottom
-	 *			hierarchyDirection = asc|desc Order in which to return levels when get()'ing a hierarchical path. "Asc"ending  begins with the root; "desc"ending begins with the child furthest from the root [Default is asc]
- 	 *			allDescendants = Return all items from the full depth of the hierarchy when get()'ing children rather than only immediate children. [Default is false]
+	 *			maxLevelsFromTop = Restrict the number of levels returned to the top-most beginning with the root. [Default is null]
+	 *			maxLevelsFromBottom = Restrict the number of levels returned to the bottom-most starting with the lowest leaf node. [Default is null]
+	 *			maxLevels = synonym for maxLevelsFromBottom. [Default is null]
+	 *			hierarchyDirection = Order in which to return hierarchical levels. Set to either "asc" or "desc". "Asc"ending returns hierarchy beginning with the root; "desc"ending begins with the child furthest from the root. [Default is asc]
+ 	 *			allDescendants = Return all items from the full depth of the hierarchy when fetching children. By default only immediate children are returned. [Default is false]
  	 *
 	 *		[Front-end access control]		
 	 *			checkAccess = Array of access values to filter returned values on. Available for any table with an "access" field (ca_objects, ca_entities, etc.). If omitted no filtering is performed. [Default is null]
  	 *
- 	 *		
- 	 *
- 	 *		returnAsLink = if true and $ps_field is set to a specific field in a related table, or $ps_field is set to a related table 
- 	 *				(eg. ca_entities or ca_entities.related) AND the template option is set and returnAllLocales is not set, then returned values will be links. The destination of the link will be the appropriate editor when executed within Providence or the appropriate detail page when executed within Pawtucket or another front-end. Default is false.
- 	 *				If $ps_field is set to refer to a URL metadata element and returnAsLink is set then the returned values will be HTML links using the URL value.
- 	 *		returnAsLinkText = text to use a content of HTML link. If omitted the url itself is used as the link content.
- 	 *		returnAsLinkAttributes = array of attributes to include in link <a> tag. Use this to set class, alt and any other link attributes.
- 	 * 		returnAsLinkTarget = Optional link target. If any plugin implementing hookGetAsLink() responds to the specified target then the plugin will be used to generate the links rather than CA's default link generator.
- 	 *
- 	 *		
- 	 *		sort = optional array of bundles to sort returned values on. Currently only supported when getting related values via simple related <table_name> and <table_name>.related invokations. Eg. from a ca_objects results you can use the 'sort' option got get('ca_entities'), get('ca_entities.related') or get('ca_objects.related'). The bundle specifiers are fields with or without tablename. Only those fields returned for the related tables (intrinsics and label fields) are sortable. You cannot sort on attributes.
-	 *		filters = optional array of elements to filter returned values on. The element must be part of the container being fetched from. For example, if you're get()'ing a value from a container element (Eg. ca_objects.dates.date_value) you can filter on any other subelement in that container by passing the name of the subelement and a value (Eg. "date_type" => "copyright"). Pass only the name of the subelement, not the full path that includes the table and container element. You can filter on multiple subelements by passing each subelement as a key in the array. Only values that match all filters are returned. You can filter on multiple values for a subelement by passing an array of values rather than a scalar (Eg. "date_type" => array("copyright", "patent")). Values that match *any* of the values will be returned. Only simple equivalance is supported. NOTE: Filters are only available when returnAsArray is set. They will be ignored if returnAsArray is not set.
 	 *
-	 *
-	 *		
-	 *		
-	 *		
 	 *	@param string $ps_field 
 	 *	@param array $pa_options Options as described above
 	 * 	@return mixed String or array
@@ -871,7 +862,7 @@ class SearchResult extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	/**
-	 * Actual implementation of get()
+	 * Implementation of core get() logic
 	 *
 	 * @param string $ps_field bundle specifier
 	 * @param null|array $pa_options options array
@@ -880,40 +871,39 @@ class SearchResult extends BaseObject {
 	private function _get($ps_field, $pa_options=null) {
 		if (!is_array($pa_options)) $pa_options = array();
 		
-		$vb_return_as_array 				= caGetOption('returnAsArray', $pa_options, false); 
-		$vb_return_all_locales 				= caGetOption('returnAllLocales', $pa_options, false);
-		$vb_return_with_structure 			= caGetOption('returnWithStructure', $pa_options, false);
+		$vb_return_as_array 				= isset($pa_options['returnAsArray']) ? (bool)$pa_options['returnAsArray'] : false;
+		$vb_return_all_locales 				= isset($pa_options['returnAllLocales']) ? (bool)$pa_options['returnAllLocales'] : false;
+		$vb_return_with_structure 			= isset($pa_options['returnWithStructure']) ? (bool)$pa_options['returnWithStructure'] : false;
 		if ($vb_return_with_structure) { $pa_options['returnAsArray'] = $vb_return_as_array = true; } // returnWithStructure implies returnAsArray
 
-		$vs_delimiter 						= caGetOption('delimiter', $pa_options, ';'); 
-		$vb_unserialize 					= caGetOption('unserialize', $pa_options, false); 
+		$vs_delimiter 						= isset($pa_options['delimiter']) ? $pa_options['delimiter'] : ';';
+		$vb_unserialize 					= isset($pa_options['unserialize']) ? (bool)$pa_options['unserialize'] : false;
 		
-		$vb_return_url 						= caGetOption('returnURL', $pa_options, false); 
-		$vb_convert_codes_to_display_text 	= caGetOption('convertCodesToDisplayText', $pa_options, false); 
-		$vb_convert_codes_to_idno 			= caGetOption('convertCodesToIdno', $pa_options, false); 
+		$vb_return_url 						= isset($pa_options['returnURL']) ? (bool)$pa_options['returnURL'] : false;
+		$vb_return_path 					= isset($pa_options['returnPath']) ? (bool)$pa_options['returnPAth'] : false;
+		$vb_convert_codes_to_display_text 	= isset($pa_options['convertCodesToDisplayText']) ? (bool)$pa_options['convertCodesToDisplayText'] : false;
+		$vb_convert_codes_to_idno 			= isset($pa_options['convertCodesToIdno']) ? (bool)$pa_options['convertCodesToIdno'] : false;
 		
-		$vb_use_locale_codes 				= caGetOption('useLocaleCodes', $pa_options, false); 
+		$vb_use_locale_codes 				= isset($pa_options['useLocaleCodes']) ? (bool)$pa_options['useLocaleCodes'] : false;
 		
-		if (!($vs_output = caGetOption('output', $pa_options, null))) {
+		if (!($vs_output = (isset($pa_options['output']) ? (string)$pa_options['output'] : null))) {
 			if ($vb_convert_codes_to_display_text) { $vs_output = "text"; }
 			if (!$vs_output && $vb_convert_codes_to_idno) { $vs_output = "idno"; }
 		}
 		if (!in_array($vs_output, array('text', 'idno', 'value'))) { $vs_output = 'value'; }
 		$pa_options['output'] = $vs_output;
 		
-		
-		
-		if (is_null($vb_return_as_link = caGetOption('makeLink', $pa_options, null))) {
-			$vb_return_as_link 				= caGetOption('returnAsLink', $pa_options, null); 
+		if (!($vb_return_as_link = (isset($pa_options['makeLink']) ? (bool)$pa_options['makeLink'] : false))) {
+			$vb_return_as_link 				= (isset($pa_options['returnAsLink']) ? (bool)$pa_options['returnAsLink'] : false); 
 		}
 		$pa_options['makeLink'] = $vb_return_as_link;
 		
-		$vn_max_levels_from_top 			= caGetOption('maxLevelsFromTop', $pa_options, null);
-		$vn_max_levels_from_bottom 			= caGetOption('maxLevelsFromBottom', $pa_options, caGetOption('maxLevels', $pa_options, null));
-		$vn_remove_first_items 				= caGetOption('removeFirstItems', $pa_options, 0, array('castTo' => 'int'));
+		$vn_max_levels_from_top 			= isset($pa_options['maxLevelsFromTop']) ? (int)$pa_options['maxLevelsFromTop'] : null;
+		$vn_max_levels_from_bottom 			= isset($pa_options['maxLevelsFromBottom']) ? (int)$pa_options['maxLevelsFromBottom'] : null;
+		$vn_remove_first_items 				= isset($pa_options['removeFirstItems']) ? (int)$pa_options['removeFirstItems'] : 0;
 
-		$va_check_access 					= caGetOption('checkAccess', $pa_options, null); 
-		$vs_template 						= caGetOption('template', $pa_options, null);
+		$va_check_access 					= isset($pa_options['checkAccess']) ? (is_array($pa_options['checkAccess']) ? $pa_options['checkAccess'] : array($pa_options['checkAccess'])) : null;
+		$vs_template 						= isset($pa_options['template']) ? (string)$pa_options['template'] : null;
 		
 		
 		$va_path_components = isset(SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field]) ? SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_field] : $this->parseFieldPathComponents($ps_field);
@@ -924,7 +914,10 @@ class SearchResult extends BaseObject {
 			'returnWithStructure' => $vb_return_with_structure,
 			'pathComponents' => $va_path_components,
 			'delimiter' => $vs_delimiter,
+			'makeLink' => $vb_return_as_link,
 			'returnURL' => $vb_return_url,
+			'returnPath' => $vb_return_path,
+			'unserialize' => $vb_unserialize,
 			'convertCodesToDisplayText' => $vb_convert_codes_to_display_text,
 			'convertCodesToIdno' => $vb_convert_codes_to_idno,
 			'checkAccess' => $va_check_access,
@@ -1337,13 +1330,7 @@ class SearchResult extends BaseObject {
 	 * get() value for related table
 	 *
 	 * @param array $pa_value_list
-	 * @param array Options include:
-	 *		pathComponents = 
-	 *		returnAsArray =
-	 *		returnAllLocales =
-	 *		returnAsLink = 
-	 *		delimiter =
-	 *		template =
+	 * @param array Options 
 	 *
 	 * @return array|string
 	 */
@@ -1352,8 +1339,6 @@ class SearchResult extends BaseObject {
 		$va_path_components		=& $pa_options['pathComponents'];
 		
 		$pa_check_access		= $pa_options['checkAccess'];
-		
-
 		
 		if (!($t_rel_instance = SearchResult::$s_instance_cache[$va_path_components['table_name']])) {
 			$t_rel_instance = SearchResult::$s_instance_cache[$va_path_components['table_name']] = $this->opo_datamodel->getInstanceByTableName($va_path_components['table_name'], true);
@@ -1421,19 +1406,11 @@ class SearchResult extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	/**
-	 * 
+	 * get() value for label
 	 *
 	 * @param array $pa_value_list
 	 * @param BaseModel $pt_instance
-	 * @param array Options include:
-	 *		pathComponents = 
-	 *		returnAsArray =
-	 *		returnAllLocales =
-	 *		returnAsLink = 
-	 *		delimiter =
-	 *		convertCodesToDisplayText =
-	 *		convertCodesToIdno =
-	 *		assumeDisplayField = Return display field for ambiguous preferred label specifiers (Ex. ca_entities.preferred_labels => ca_entities.preferred_labels.displayname), otherwise  an array with all label fields is returned [Default is true]
+	 * @param array Options
 	 *
 	 * @return array|string
 	 */
@@ -1518,16 +1495,11 @@ class SearchResult extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	/**
-	 * 
+	 * get() value for attribute
 	 *
 	 * @param array $pa_value_list
 	 * @param BaseModel $pt_instance
-	 * @param array Options include:
-	 *		pathComponents = 
-	 *		returnAsArray =
-	 *		returnAllLocales =
-	 *		returnAsLink = 
-	 *		delimiter =
+	 * @param array Options
 	 *
 	 * @return array|string
 	 */
@@ -1622,21 +1594,11 @@ class SearchResult extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	/**
-	 * 
+	 * get() value for intrinsic
 	 *
 	 * @param array $pa_value_list
 	 * @param BaseModel $pt_instance
-	 * @param array Options include:
-	 *		pathComponents = 
-	 *		returnAsArray =
-	 *		returnAllLocales =
-	 *		returnAsLink = 
-	 *		delimiter =
-	 *		unserialize =
-	 *		convertCodesToDisplayText = 
-	 *		convertCodesToIdno = 
-	 *		fieldInfo =
-	 *		primaryKey = 
+	 * @param array Options
 	 *
 	 * @return array|string
 	 */
@@ -1721,6 +1683,8 @@ class SearchResult extends BaseObject {
 							$va_return_values[$vn_id][$vm_locale_id] = $this->getMediaInfo($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $vs_info_element, $pa_options);
 						} elseif (isset($pa_options['returnURL']) && ($pa_options['returnURL'])) {
 							$va_return_values[$vn_id][$vm_locale_id] = $this->getMediaUrl($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $pa_options);
+						} elseif (isset($pa_options['returnPath']) && ($pa_options['returnPath'])) {
+							$va_return_values[$vn_id][$vm_locale_id] = $this->getMediaPath($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $pa_options);
 						} else {
 							$va_return_values[$vn_id][$vm_locale_id] = $this->getMediaTag($va_path_components['table_name'].'.'.$va_path_components['field_name'], $vs_version, $pa_options);
 						}
@@ -1776,7 +1740,12 @@ class SearchResult extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	/** 
+	 * Flatten value of returned values subject to get() options.
 	 *
+	 * @param array $pa_array
+	 * @param array $pa_options
+	 *
+	 * @return array
 	 */
 	private function _flattenArray($pa_array, $pa_options=null) {
 		$va_flattened_values = array();

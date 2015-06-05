@@ -2560,7 +2560,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 			
 			if(!sizeof($va_tags)) { $vn_i++; continue; } 	// if there are no tags in the template then we don't need to process further
 		
-			if ($ps_resolve_links_using != $ps_tablename) {
+			if ($ps_resolve_links_using !== $ps_tablename) {
 				$va_resolve_links_using_row_ids += $qr_res->get("{$ps_resolve_links_using}.{$vs_resolve_links_using_pk}", array('returnAsArray' => true, 'checkAccess' => $pa_check_access));
 				
 				// we need to remove "primary_ids" from the list, since for self-relations these will be the side(s) of the relations we're viewing *from*
@@ -2689,7 +2689,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 								}
 								
 								if ($va_spec_bits[1] != '_hierarchyName') {
-									$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_additional_options, array("returnAsArray" => true, "returnAllLocales" => true, 'useLocaleCodes' => false, 'returnWithStructure' => true, 'filters' => $va_tag_filters, 'primaryIDs' => $va_primary_ids)));
+									$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_additional_options, array('returnWithStructure' => true, 'returnBlankValues' => true, 'returnAllLocales' => true, 'useLocaleCodes' => false, 'filters' => $va_tag_filters, 'primaryIDs' => $va_primary_ids)));
 								} else {
 									$va_val = array();
 								}
@@ -2700,9 +2700,15 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 									}
 								}
 								$va_val = caExtractValuesByUserLocale($va_val);
+								
 								$va_val_tmp = array();
+							
 								foreach($va_val as $vn_d => $va_vals) {
-									$va_val_tmp = array_merge($va_val_tmp, $va_vals);
+									if (is_array($va_vals)) {
+										$va_val_tmp = array_merge($va_val_tmp, array_values($va_vals));
+									} else {
+										$va_val_tmp[] = $va_vals;
+									}
 								}
 								$va_val = $va_val_tmp;
 								
@@ -2748,6 +2754,12 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 											if(!is_array($va_val_container)) { 
 												if ($va_val_container) { $va_val_proc[] = $va_val_container; }
 												continue; 
+											}
+											
+											// Add display field to *_labels terminals
+											if (in_array($vs_terminal, array('preferred_labels', 'nonpreferred_labels')) && !$va_val_container[$vs_terminal]) {
+												$t_rel = $o_dm->getInstanceByTableName($va_spec_bits[0], true);
+												$vs_terminal = $t_rel->getLabelDisplayField();
 											}
 											$va_val_proc[] = $va_val_container[$vs_terminal];
 										}
@@ -2801,7 +2813,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 								} elseif ($va_tmp[0] == '_hierarchyName') {
 									$va_val[] = $vs_hierarchy_name;
 								} else {
-									$va_val_tmp = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_tag_opts, array('returnAsArray' => true, 'assumeDisplayField' => true, 'filters' => $va_tag_filters, 'checkAccess' => $pa_check_access)));
+									$va_val_tmp = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_tag_opts, array('returnAsArray' => true, 'returnBlankValues' => true, 'assumeDisplayField' => true, 'filters' => $va_tag_filters, 'checkAccess' => $pa_check_access)));
 									
 									$va_val = array();
 								
