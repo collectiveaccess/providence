@@ -105,6 +105,51 @@ class Session {
 		return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($vs_data), 4));
 	}
 	# ----------------------------------------
+	/**
+	 * Return service authentication token for this session (and create it, if none exists yet).
+	 * These tokens usually have a much shorter lifetime than the session.
+	 * @param bool $pb_dont_create_new_token dont create new auth token
+	 * @return string|bool The token, false if
+	 */
+	public function getServiceAuthToken($pb_dont_create_new_token=false) {
+		if(!$this->getSessionID()) { return false; }
+
+		if(ExternalCache::contains($this->getSessionID(), 'SessionIDToServiceAuthTokens')) {
+			return ExternalCache::fetch($this->getSessionID(), 'SessionIDToServiceAuthTokens');
+		}
+
+		if($pb_dont_create_new_token) { return false; }
+
+		// generate new token
+		$vs_token = hash('sha256', mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+
+		// save mappings in both directions for easy lookup. they are valid for 2 hrs (@todo maybe make this configurable?)
+		ExternalCache::save($this->getSessionID(), $vs_token, 'SessionIDToServiceAuthTokens', 60 * 60 * 2);
+		ExternalCache::save($vs_token, $this->getSessionID(), 'ServiceAuthTokensToSessionID', 60 * 60 * 2);
+
+		return $vs_token;
+	}
+
+	/**
+	 * Restore session form a temporary service auth token
+	 * @param string $ps_token
+	 * @param string|null $ps_name
+	 * @return Session|bool The restored session, false on failure
+	 */
+	public static function restoreFromServiceAuthToken($ps_token, $ps_name=null) {
+		$o_config = Configuration::load();
+		$vs_app_name = $o_config->get("app_name");
+
+		if(!ExternalCache::contains($ps_token, 'ServiceAuthTokensToSessionID')) {
+			return false;
+		}
+
+		$vs_session_id = ExternalCache::fetch($ps_token, 'ServiceAuthTokensToSessionID');
+		$_COOKIE[$vs_app_name] = $vs_session_id;
+
+		return new Session($vs_app_name);
+	}
+	# ----------------------------------------
 	# --- Methods
 	# ----------------------------------------
 	/**
@@ -119,6 +164,12 @@ class Session {
 	 * Useful for logging out users (destroying the session destroys the login)
 	 */
 	public function deleteSession() {
+		// nuke service token caches
+		if($vs_token = $this->getServiceAuthToken(true)) {
+			ExternalCache::delete($vs_token, 'ServiceAuthTokensToSessionID');
+		}
+		ExternalCache::delete($this->getSessionID(), 'SessionIDToServiceAuthTokens');
+
 		if (isset($_COOKIE[session_name()])) {
 			setcookie(session_name(), '', time()- (24 * 60 * 60),'/');
 		}
