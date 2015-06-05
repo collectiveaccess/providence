@@ -240,7 +240,6 @@
 				return caGetListItemIdno($this->opn_item_id); 
 			}
 			
-			//$vb_ids_only = (bool)caGetOption('idsOnly', $pa_options, caGetOption('alwaysReturnItemID', $pa_options, false));
 			if(is_null($vb_ids_only = isset($pa_options['idsOnly']) ? (bool)$pa_options['idsOnly'] : null)) {
 				$vb_ids_only = isset($pa_options['alwaysReturnItemID']) ? (bool)$pa_options['alwaysReturnItemID'] : false;
 			}
@@ -251,7 +250,6 @@
 			if ($vn_list_id > 0) {
 				$t_list = new ca_lists();
 				
-				//if ($o_trans = caGetOption('transaction', $pa_options, null)) {
 				if ($o_trans = (isset($pa_options['transaction']) ? $pa_options['transaction'] : null)) {
 					$t_list->setTransaction($o_trans);
 				}
