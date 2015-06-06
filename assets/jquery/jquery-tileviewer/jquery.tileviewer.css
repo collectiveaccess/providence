@@ -380,6 +380,68 @@ div.tileviewerAnnotationListContent {
 	margin: 35px 0 75px 0;
 }
 
+/* Key */
+div.tileviewerKey {
+	position: absolute;
+	bottom: 40px; left: 0px;
+	width: 200px;
+	height: 200px;
+	
+	overflow-y: auto;
+	padding: 5px;
+	border: 1px solid #999;
+	background: #f0f0f0;
+	opacity: 0.9;
+	
+	z-index: 999999;
+	
+	-webkit-border-radius: 0 5px 5px 0;
+	-moz-border-radius: 0 5px 5px 0;
+	border-radius: 0 5px 5px 0;
+	
+	-webkit-box-shadow: 4px 4px 5px rgba(50, 50, 50, 0.75);
+	-moz-box-shadow:    4px 4px 5px rgba(50, 50, 50, 0.75);
+	box-shadow:         4px 4px 5px rgba(50, 50, 50, 0.75);
+}
+
+div.tileviewerKey div.content {
+	padding: 0px;
+}
+
+ul.tileviewerKey {
+	text-align: left;
+	padding: 10px;
+	list-style-type: none;
+}
+
+div.tileviewerKeyColorChip {
+	width: 16px;
+	height: 16px;
+	border: 1px solid #ccc;
+	float: left;
+	
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+}
+
+div.tileviewerKeyText {
+	margin-left: 25px;
+}
+
+li.tileviewerKeyItem {
+	line-height: 24px;	
+	clear: both;
+}
+
+li.tileviewerKeyItem div {
+	font-size: 14px;
+}
+
+div.tileviewerKeyContent {
+	margin: 0px 0 0px 0;
+}
+
 /* Circular slider used for rotation control */
 .tileviewerToolbarRotationSlider .jcs {
     position: relative;
@@ -440,4 +502,19 @@ div.tileviewerAnnotationListContent {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+}
+
+.tileviewerTooltipFormat {
+	color:#fff !important;
+	background-color:#333 !important;
+	background-image:none !important;
+	border-radius:4px !important;
+	font-size:12px !important;
+	border: 0px !important;
+	font-family: "helvetica neue", arial, sans-serif;
+	opacity: 1.0 !important;
+
+	z-index: 99999 !important;
+	-webkit-box-shadow: none !important;
+	box-shadow: none !important;
 }

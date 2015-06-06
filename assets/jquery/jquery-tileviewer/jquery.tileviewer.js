@@ -1,13 +1,14 @@
 /* 
 TileViewer HTML5 client
 
-    Version: 3.0.0
+    Version: 3.0.1
 
     This plugin is tested with following dependencies
     * JQuery 1.7+
     * JQuery.HotKeys
     * Brandon Aaron's (http://brandonaaron.net) mousewheel jquery plugin 3.0.3
     * Circular-Slider (https://github.com/princejwesley/circular-slider)
+    * HammerJS (http://hammerjs.github.io)
 
 The MIT License
 
@@ -63,7 +64,15 @@ var methods = {
             maximumPixelsize: 4,//set this to >1 if you want to let user to zoom image after reaching its original resolution (also consider using magnifier..)
             thumbDepth: 2, //level depth when thumbnail should appear
             
-            toolbar: ['pan', 'toggleAnnotations', 'rect', 'point', 'polygon', 'lock', 'separator',  'overview', 'rotation', 'expand', 'separator', 'list', 'download', 'help'],
+            toolbar: ['pan', 'toggleAnnotations', 'rect', 'point', 'polygon', 'lock', 'separator',  'overview', 'rotation', 'expand', 'separator', 'list', 'download', 'help', 'key'],
+            tooltips: {
+            	'pan': 'Pan around image', 'toggleAnnotations': 'Show/hide annotations', 
+            	'rect': 'Rectangle annotation tool', 'point': 'Point annotation tool', 'polygon': 'Polygon annotation tool',
+            	'lock': 'Lock annotations', 'overview': 'Show/hide image overview', 'rotation': 'Rotate image', 'expand': 'Fit image to window', 
+            	'list': 'Show/hide annotation sidebar', 'download': 'Download image', 'help': 'Help', 'key': 'Color key',
+            	'rotationReset': 'Reset rotation'
+            },
+            tooltipClass: 'tileviewerTooltipFormat',
             
             annotationLoadUrl: null,
             annotationSaveUrl: null,
@@ -105,7 +114,9 @@ var methods = {
 			mediaDownloadUrl: null,							// url to download of media
 			allowAnnotationList: true,						// use annotation list
 			annotationList: false,							// is annotation list currently displayed?
-			allowAnnotationSearch: true						// allow annotation search option in annotation list; only available if annotation list is allowed
+			allowAnnotationSearch: true,					// allow annotation search option in annotation list; only available if annotation list is allowed
+			
+			showKey: false
         };
 
         return this.each(function() {
@@ -149,7 +160,6 @@ var methods = {
                 var view = {
                     canvas: document.createElement("canvas"),			// main canvas where image is drawn
                     thumbCanvas: document.createElement("canvas"),		// small canvas where optional thumbnail view (aka "navigator") is drawn
-                    //status: document.createElement("p"),
                     controls: document.createElement("div"),
                     annotationContainer: document.createElement("div"),
                     annotationTextBlocks: [],
@@ -240,14 +250,12 @@ var methods = {
                         } else {
                         	jQuery($this).find(".tileviewerAnnotationList").hide();
                         }
-
-                        //calculate framerate
-                        //var end = new Date().getTime();
-                        //var time = end - start;
-                        //view.framerate = Math.round(1000/time);
-
-                        //view.update_status();
                         
+                         if (options.showKey) {
+                        	jQuery($this).find(".tileviewerKey").show();
+                        } else {
+                        	jQuery($this).find(".tileviewerKey").hide();
+                        }
                         
                         view.update_controls();
                         
@@ -256,26 +264,6 @@ var methods = {
                        		view.draw_annotations();
                        	}
                         
-                    },
-
-                    //TODO - let user override this
-                    update_status: function() {
-                        if(options.debug) {
-                            var pixel_pos = view.client2pixel(view.xnow, view.ynow);
-                            $(view.status).html(
-                                "width: " + layer.info.width + 
-                                "<br/>height: " + layer.info.height + 
-                                "<br/>level:" + Math.round((layer.level + layer.info.tilesize/layer.tilesize-1)*100)/100 + 
-                                    " (tsize:"+Math.round(layer.tilesize*100)/100+")"+
-                                "<br/>framerate: " + view.framerate + 
-                                "<br/>images loading: " + layer.loader.loading + 
-                                "<br/>tiles in dict: " + layer.loader.tile_count + 
-                                "<br/>x:" + pixel_pos.x + 
-                                "<br/>y:" + pixel_pos.y  
-                            );
-                        } else {
-                            $(view.status).empty();
-                        }
                     },
                     
                     load_annotations: function() {     
@@ -462,10 +450,15 @@ var methods = {
                     	var annotationsToDraw = jQuery.extend(true, [], view.annotations);
                         var selectedAnnotation = view.selectedAnnotation;
                         
+						var key = {};
                         for(var i in annotationsToDraw) {
                         	if (!jQuery.isNumeric(i)) { continue; }
                         	var annotation = annotationsToDraw[i];
                         	if (!annotation) { continue; }
+                        	
+                        	if (annotation.key && annotation.key.color && annotation.key.idno && !key[annotation.key.idno]) {
+                        		key[annotation.key.idno] = "<li class='tileviewerKeyItem'><div class='tileviewerKeyColorChip' style='background-color: #" + annotation.key.color + "'></div><div class='tileviewerKeyText'>" + annotation.key.name + "</div></li>";
+                        	}
                         	
                         	jQuery(annotationList).append("<li class='tileviewerAnnotationListItem tileviewerAnnotationListItem_" + annotation['annotation_id'] + "'>" + (annotation['label'] ? annotation['label'] : '&lt;Empty&gt;') +  "</li>");
                         	jQuery(annotationList).find('.tileviewerAnnotationListItem_' + annotation['annotation_id']).data('annotation', annotation).bind('click', function(e) {
@@ -491,6 +484,13 @@ var methods = {
 							if (s) { view.search_annotation_list(s); }
 						} else {
 							jQuery($this).find(".tileviewerAnnotationList .tileviewerAnnotationListContent").empty().append("<h3>" + "No annotations" + "</h3>");
+						}
+						
+						// update key
+						var keyList = '', keyHeight = 50;
+						jQuery.each(key, function(k, v) { keyList += v; keyHeight += 30;});
+                        if (keyList) {
+							jQuery($this).find(".tileviewerKey").css('height', keyHeight + "px").html("<div class='tileviewerKeyContent'><h3>Key</h3><ul class='tileviewerKey'>" + keyList + "</ul></div>");
 						}
                     },
                     
@@ -591,7 +591,7 @@ var methods = {
                         			jQuery($this).find("li.tileviewerAnnotationListItem_" + annotation['annotation_id']).addClass('tileviewerAnnotationListItemSelected');
                         		}
                         	} else {
-                        		ctx.strokeStyle = '#' + options.annotationColor; 
+                        		ctx.strokeStyle = '#' + ((annotation.key && annotation.key.color) ? annotation.key.color : options.annotationColor); 
                         		
                         		jQuery($this).find("li.tileviewerAnnotationListItem_" + annotation['annotation_id']).removeClass('tileviewerAnnotationListItemSelected');
                         	}
@@ -614,7 +614,7 @@ var methods = {
 										if (r < 20) { r = 20; }
 										ctx.arc(x + (w/2), y + (h/2), r, 0,2*Math.PI);
 										
-										ctx.fillStyle = options.annotationDisplayModeCenterColor;
+										ctx.fillStyle = (annotation.key && annotation.key.color) ? view.hexToRGBA(annotation.key.color, 0.4) : options.annotationDisplayModeCenterColor;
       									ctx.fill();
 									}
 									
@@ -694,7 +694,7 @@ var methods = {
 									if (options.highlightPointsWithCircles) {
 										ctx.arc(x, y, r * (areaMultiplier/2), 0,2*Math.PI);
 										
-										ctx.fillStyle = (selectedAnnotation == i)  ? "rgba(175, 0, 0, 0.30)" : options.annotationDisplayModeCenterColor;
+										ctx.fillStyle = (selectedAnnotation == i)  ? "rgba(175, 0, 0, 0.30)" : (annotation.key && annotation.key.color) ? view.hexToRGBA(annotation.key.color, 0.4) : options.annotationDisplayModeCenterColor;
       									ctx.fill();
 									}
 																		
@@ -814,7 +814,7 @@ var methods = {
 											
 											ctx.arc(minX + ((maxX-minX)/2), minY + ((maxY-minY)/2), r, 0,2*Math.PI);
 										
-											ctx.fillStyle = options.annotationDisplayModeCenterColor;
+											ctx.fillStyle = (annotation.key && annotation.key.color) ? view.hexToRGBA(annotation.key.color, 0.4) : options.annotationDisplayModeCenterColor;
 											ctx.fill();
 										}
 										
@@ -1672,6 +1672,13 @@ var methods = {
                    		view.draw();
                    	},
                     
+                    get_tool_tip: function(t) {
+                    	if (options.tooltips && options.tooltips[t]) {
+                    		return options.tooltips[t];
+                    	}
+                    	return '';
+                    },
+                    
                     update_controls: function() {
                         if (!$(view.controls).html()) {
                         	jQuery(view.controls).append("<div class='tileviewerToolbarCol'> </div>");
@@ -1679,31 +1686,33 @@ var methods = {
                         	var d = $(view.controls).find(".tileviewerToolbarCol");
                      						
 							view.tools = {};
-							view.tools['pan'] = "<a href='#' id='" + options.id + "ControlPanImage' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/pan_on.png' width='25' height='25'/></a>";
+							view.tools['pan'] = "<a href='#' title='" + view.get_tool_tip('pan') + "' id='" + options.id + "ControlPanImage' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/pan_on.png' width='25' height='25'/></a>";
 							if (options.useAnnotations && options.showAnnotationTools && !options.lockAnnotations) { 
-								view.tools['point'] = "<a href='#' id='" + options.id + "ControlAddPointAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/point.png' width='26' height='25'/></a>";		
-								view.tools['rect'] = "<a href='#' id='" + options.id + "ControlAddRectAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/rect.png' width='25' height='24'/></a>";
-								view.tools['polygon'] = "<a href='#' id='" + options.id + "ControlAddPolygonAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/polygon.png' width='28' height='25'/></a>";
-								view.tools['lock'] = "<a href='#' id='" + options.id + "ControlLockAnnotations' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/locked.png' width='20' height='25'/></a>";
+								view.tools['point'] = "<a href='#' title='" + view.get_tool_tip('point') + "' id='" + options.id + "ControlAddPointAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/point.png' width='26' height='25'/></a>";		
+								view.tools['rect'] = "<a href='#' title='" + view.get_tool_tip('rect') + "' id='" + options.id + "ControlAddRectAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/rect.png' width='25' height='24'/></a>";
+								view.tools['polygon'] = "<a href='#' title='" + view.get_tool_tip('polygon') + "' id='" + options.id + "ControlAddPolygonAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/polygon.png' width='28' height='25'/></a>";
+								view.tools['lock'] = "<a href='#' title='" + view.get_tool_tip('lock') + "' id='" + options.id + "ControlLockAnnotations' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/locked.png' width='20' height='25'/></a>";
+								view.tools['key'] = "<a href='#' title='" + view.get_tool_tip('key') + "' id='" + options.id + "ControlKey' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/key.png' width='30' height='14'/></a>";	
 							}
-							view.tools['overview'] = "<a href='#' id='" + options.id + "ControlOverview' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/navigator.png' width='27' height='23'/></a>";	
-							view.tools['expand'] = "<a href='#' id='" + options.id + "ControlFitToScreen' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/expand.png' width='25' height='25'/></a>";	
+							view.tools['overview'] = "<a href='#' title='" + view.get_tool_tip('overview') + "' id='" + options.id + "ControlOverview' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/navigator.png' width='27' height='23'/></a>";	
+							view.tools['expand'] = "<a href='#' title='" + view.get_tool_tip('expand') + "' id='" + options.id + "ControlFitToScreen' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/expand.png' width='25' height='25'/></a>";	
 							if (options.helpLoadUrl) {
-								view.tools['help'] = "<a href='#' id='" + options.id + "ControlHelp' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/viewerhelp.png' width='25' height='25'/></a>";	
+								view.tools['help'] = "<a href='#' title='" + view.get_tool_tip('help') + "' id='" + options.id + "ControlHelp' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/viewerhelp.png' width='25' height='25'/></a>";	
 							}
+							
 					
-							view.tools['toggleAnnotations'] = "<a href='#' id='" + options.id + "ControlToggleAnnotations' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/eye_on.png' width='30' height='19'/></a>";	
+							view.tools['toggleAnnotations'] = "<a href='#' title='" + view.get_tool_tip('toggleAnnotations') + "' id='" + options.id + "ControlToggleAnnotations' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/eye_on.png' width='30' height='19'/></a>";	
 					
 							if (options.mediaDownloadUrl) {
-								view.tools['download'] = "<a href='#' id='" + options.id + "ControlDownload' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/viewer_media_download.png' width='27' height='25'/></a>";	
+								view.tools['download'] = "<a href='#' title='" + view.get_tool_tip('download') + "' id='" + options.id + "ControlDownload' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/viewer_media_download.png' width='27' height='25'/></a>";	
 							}
 					
 							if (options.allowRotation) {
-								view.tools['rotation'] = "<a href='#' id='" + options.id + "ControlRotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/rotate.png' width='23' height='25'/></a>";	
+								view.tools['rotation'] = "<a href='#' title='" + view.get_tool_tip('rotation') + "' id='" + options.id + "ControlRotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/rotate.png' width='23' height='25'/></a>";	
 							}
 							
 							if (options.allowAnnotationList) {
-								view.tools['list'] = "<a href='#' id='" + options.id + "ControlAnnotationList' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/list.png' width='28' height='25'/></a>";	
+								view.tools['list'] = "<a href='#' title='" + view.get_tool_tip('list') + "' id='" + options.id + "ControlAnnotationList' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/list.png' width='28' height='25'/></a>";	
 							}
 					
 							for(var k=0; k < options.toolbar.length; k++) {
@@ -1851,6 +1860,15 @@ var methods = {
 									jQuery(this).css("opacity", options.annotationList ? 1.0 : 0.5).find('img').attr('src', options.buttonUrlPath + (options.annotationList ? '/list_on.png' : '/list.png'));
 								}).css("opacity", 0.5);
 							}
+							
+							//
+							// Key
+							// 
+							jQuery("#" + options.id + "ControlKey").click(function() {
+								options.showKey = !options.showKey;
+								view.draw();
+								jQuery(this).css("opacity", options.showKey ? 1.0 : 0.5).find('img').attr('src', options.buttonUrlPath + (options.showKey ? '/key_on.png' : '/key.png'));
+							}).css("opacity", 0.5);
 					
 							//
 							// Toggle annotations
@@ -2004,6 +2022,13 @@ var methods = {
 							jQuery($this).find(".tileviewerAnnotationList").append("<div class='tileviewerAnnotationListContent'></div>");
 							
 							jQuery($this).find(".tileviewerAnnotationList").css("display", "none");
+							
+							//
+							// Color key
+							//
+							jQuery($this).append("<div class='tileviewerKey'></div>");
+							jQuery($this).find(".tileviewerKey").append("<div class='tileviewerKeyContent'></div>");
+							jQuery($this).find(".tileviewerKey").css("display", "none");
 							
 							//
 							// Zooming
@@ -2185,7 +2210,19 @@ var methods = {
 							//
 							// Touch events
 							//
+							// TODO
 
+							//
+							// Tool tips
+							//
+							
+							// tool bar tooltips
+							jQuery(".tileviewerControl").tooltip({'tooltipClass' : options.tooltipClass, 'hide': false});
+							
+							// rotation reset button tooltip
+							if (options.tooltips && options.tooltips['rotationReset']) {
+								jQuery('.jcs-value').attr('title', options.tooltips['rotationReset']).tooltip({'tooltipClass' : options.tooltipClass, 'hide': false});
+							}
 						}
                     },
 
@@ -2632,6 +2669,33 @@ var methods = {
 						return (('ontouchstart' in window)
 							|| (navigator.MaxTouchPoints > 0)
 							|| (navigator.msMaxTouchPoints > 0));
+					},
+					
+					hexToRGBA: function(h,a) {
+						if(h.substr(0,1) == '#') { h = h.substr(1); }
+						
+						var r, g, b;
+						
+						switch(h.length) {
+							case 6:							
+								r = parseInt(h.substr(0,2), 16);
+								g = parseInt(h.substr(2,2), 16);
+								b = parseInt(h.substr(4,2), 16);
+								break;
+							case 3:								
+								r = parseInt(h.substr(0,1), 16);
+								g = parseInt(h.substr(1,1), 16);
+								b = parseInt(h.substr(2,1), 16);
+								break;
+							default:
+								return null;
+								break;
+						}
+						if (isNaN(a = parseFloat(a))) {
+							a = 1;
+						}
+						if ((a < 0) || (a > 1)) { a = 1; }
+						return "rgba(" + r + ", " + g + ", " + b + ", " + a + ")";
 					}
                 };//view definition
     

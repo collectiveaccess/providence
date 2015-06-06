@@ -369,6 +369,7 @@
 			$vs_annotation_load_url	=		caGetOption("annotation_load_url", $pa_options, null);
 			$vs_annotation_save_url	=		caGetOption("annotation_save_url", $pa_options, null);
 			$vs_help_load_url	=			caGetOption("help_load_url", $pa_options, null);
+			$vs_download_url =				caGetOption("download_url", $pa_options, null);
 			
 			$vs_annotation_editor_panel =	caGetOption("annotationEditorPanel", $pa_options, null);
 			$vs_annotation_editor_url =		caGetOption("annotationEditorUrl", $pa_options, null);
@@ -417,6 +418,7 @@ $vs_tag = "
 								annotationEditorUrl: '{$vs_annotation_editor_url}',
 								annotationEditorLink: '".addslashes(_t('More...'))."',
 								helpLoadUrl: '{$vs_help_load_url}',
+								mediaDownloadUrl: '{$vs_download_url}',
 								info: {
 									width: '{$vn_width}',
 									height: '{$vn_height}',

@@ -1750,7 +1750,8 @@ class BaseEditorController extends ActionController {
 				'description' => 	caGetOption('description', $va_annotation, '', array('castTo' => 'string')),
 				'type' => 			caGetOption('type', $va_annotation, 'rect', array('castTo' => 'string')),
 				'locked' => 		caGetOption('locked', $va_annotation, '0', array('castTo' => 'string')),
-				'options' => 		caGetOption('options', $va_annotation, array(), array('castTo' => 'array'))
+				'options' => 		caGetOption('options', $va_annotation, array(), array('castTo' => 'array')),
+				'key' =>			caGetOption('key', $va_annotation, null)
 			);
 		}
 
