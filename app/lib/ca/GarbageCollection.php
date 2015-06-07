@@ -57,6 +57,8 @@ final class GarbageCollection {
 		foreach($va_list as $vs_file) {
 			$r = fopen($vs_file, "r");
 
+			if(!is_resource($r)) { continue; } // skip if for some reason the file couldn't be opened
+
 			if (false !== ($vs_line = fgets($r))) {
 				$vn_lifetime = (integer) $vs_line;
 
