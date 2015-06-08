@@ -618,6 +618,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  			
  			$va_annotations[$vs_sort_key][$va_tmp['annotation_id']] = $va_tmp;
  		}
+ 		if (!sizeof($va_annotation_ids)) { return array(); }
+ 		
  		ksort($va_annotations, SORT_NUMERIC);
  		
  		// get annotation labels
