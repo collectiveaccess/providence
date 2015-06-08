@@ -1728,6 +1728,15 @@ td.listtableTotals {
 	width:20px;
 	padding:5px;
 }
+
+#caSetList tbody tr td div.caSetListName {
+	overflow: auto;
+}
+
+#caSetList tbody tr td div.caSetListName {
+	width: 200px;
+}
+
 .saveDelete {
 	width:60px;
 	white-space:nowrap;
