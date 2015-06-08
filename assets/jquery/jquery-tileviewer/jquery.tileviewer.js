@@ -64,12 +64,12 @@ var methods = {
             maximumPixelsize: 4,//set this to >1 if you want to let user to zoom image after reaching its original resolution (also consider using magnifier..)
             thumbDepth: 2, //level depth when thumbnail should appear
             
-            toolbar: ['pan', 'toggleAnnotations', 'rect', 'point', 'polygon', 'lock', 'separator',  'overview', 'rotation', 'expand', 'separator', 'list', 'download', 'help', 'key'],
+            toolbar: ['pan', 'toggleAnnotations', 'rect', 'point', 'polygon', 'measure', 'lock', 'separator',  'overview', 'rotation', 'expand', 'separator', 'list', 'download', 'help', 'key'],
             tooltips: {
             	'pan': 'Pan around image', 'toggleAnnotations': 'Show/hide annotations', 
-            	'rect': 'Rectangle annotation tool', 'point': 'Point annotation tool', 'polygon': 'Polygon annotation tool',
+            	'rect': 'Rectangle annotation tool', 'point': 'Point annotation tool', 'polygon': 'Polygon annotation tool', 'measure': 'Measure features',
             	'lock': 'Lock annotations', 'overview': 'Show/hide image overview', 'rotation': 'Rotate image', 'expand': 'Fit image to window', 
-            	'list': 'Show/hide annotation sidebar', 'download': 'Download image', 'help': 'Help', 'key': 'Color key',
+            	'list': 'Show/hide annotation sidebar', 'download': 'Download image', 'help': 'Help', 'key': 'Color key', 
             	'rotationReset': 'Reset rotation'
             },
             tooltipClass: 'tileviewerTooltipFormat',
@@ -99,6 +99,7 @@ var methods = {
 			addPointAnnotationMode: false,
 			addRectAnnotationMode: false,
 			addPolygonAnnotationMode: false,
+			addMeasureAnnotationMode: false,
 			panMode: true,
 			
 			allowRotation: true,
@@ -756,20 +757,60 @@ var methods = {
 								
 									break;
 								case 'poly':
+								case 'measure':
 									var x = (((parseFloat(annotation.x))/100) * layerWidth * layerMag) + layer.xpos;
 									var y = (((parseFloat(annotation.y))/100) * layerHeight * layerMag) + layer.ypos;
 									
 									if (annotation.points && jQuery.isArray(annotation.points)) {
 									
 										if ((options.annotationDisplayMode == 'perimeter') || (selectedAnnotation == i) || (view.mouseOverAnnotation == i)) {
+											if ((annotation.type === 'measure') && annotation.points && annotation.points[1]) {
+												// Measure: draw perpendicular cross-line
+												var x1 = (((parseFloat(annotation.points[0].x))/100) * layerWidth * layerMag) + layer.xpos;
+												var y1 = (((parseFloat(annotation.points[0].y))/100) * layerHeight * layerMag) + layer.ypos;
+												var x2 = (((parseFloat(annotation.points[1].x))/100) * layerWidth * layerMag) + layer.xpos;
+												var y2 = (((parseFloat(annotation.points[1].y))/100) * layerHeight * layerMag) + layer.ypos;
+												
+												var slope = (y2 - y1)/(x2 - x1);
+												var angle = Math.atan(slope) + (Math.PI/2);
+												var angleInDegrees = 360 * (angle/(Math.PI * 2));
+												
+												
+												var l = ((5/100) * layerWidth * layerMag);
+												ctx.beginPath();
+												ctx.moveTo(x1 - ((l/2) * Math.cos(angle)), y1-((l/2) * Math.sin(angle)));
+												ctx.lineTo(x1 + ((l/2) * Math.cos(angle)), y1+((l/2) * Math.sin(angle)));
+												ctx.stroke();
+												
+												ctx.beginPath();
+												ctx.moveTo(x2 - ((l/2) * Math.cos(angle)), y2-((l/2) * Math.sin(angle)));
+												ctx.lineTo(x2 + ((l/2) * Math.cos(angle)), y2+((l/2) * Math.sin(angle)));
+												ctx.stroke();
+												
+												// Measure: draw quantity
+												
+												// TODO: display scaled measurement; this is a placeholder
+												var d = Math.sqrt(Math.pow(x2 - x1, 2) + (Math.pow(y2 - y1, 2)));
+												var d_relative = (d/layerWidth/layerMag) * 100;
+												
+												ctx.save();
+												ctx.translate((x2 + x1)/2, (y2 + y1)/2);
+												ctx.rotate(angle - (Math.PI/2));
+												ctx.textAlign = "center";
+												ctx.font = "18px Arial";
+												ctx.fillStyle = '#cc0000';
+												ctx.fillText("Length: " + d_relative.toFixed(2), 0, 22);
+												ctx.restore();
+											} 
+											
 											// Draw points
 											for(var pointIndex in annotation.points) {
 												if (!jQuery.isNumeric(pointIndex)) { continue; }
-											
+										
 												var c = annotation.points[pointIndex];
 												x = (((parseFloat(c.x))/100) * layerWidth * layerMag) + layer.xpos;
 												y = (((parseFloat(c.y))/100) * layerHeight * layerMag) + layer.ypos;
-											
+										
 												ctx.beginPath();
 												ctx.arc(x,y, 3, 0, 2*Math.PI);
 												ctx.stroke();
@@ -1190,9 +1231,9 @@ var methods = {
             }
  } 
 
- if (view.annotations[i]['type'] == 'poly') {
+ if ((view.annotations[i]['type'] == 'poly') || (view.annotations[i]['type'] == 'measure')) {
  	// Handle dragging of points to resize/reshape polygon
-  	if((view.mouseClickedOnControlPoint != null) && (view.annotations[i].type == 'poly')) {
+  	if(view.mouseClickedOnControlPoint != null) {
   		var dx = (parseFloat(rClickX) - parseFloat(view.annotations[i].points[view.mouseClickedOnControlPoint].x));
   		var dy = (parseFloat(rClickY) - parseFloat(view.annotations[i].points[view.mouseClickedOnControlPoint].y));
   		view.annotations[i].points[view.mouseClickedOnControlPoint].x += dx;
@@ -1229,6 +1270,7 @@ var methods = {
 								view.annotations[i].ty += (view.annotations[i].y - origY);
 								break;
 							case 'poly':
+							case 'measure':
 								var dx = parseFloat((((view.dragAnnotationLastCoords.x - layer.xpos)/((layer.info.width/factor) * (layer.tilesize/256))) * 100) - origX);
 								var dy = parseFloat((((view.dragAnnotationLastCoords.y - layer.ypos)/((layer.info.height/factor) * (layer.tilesize/256))) * 100) - origY);
 								
@@ -1324,6 +1366,25 @@ var methods = {
 									points:[{x: x, y: y}]
 								});
 								break;
+							case 'measure':
+								// TODO: does this actually need to be distinct from poly?
+								var lw = w/((layer.info.tilesize * layer.xtilenum) + layer.tilesize_xlast);
+                    			var defaultWidth = 0.20 * lw * 100;			// default width of rect is 20% of visible screen width
+                    			if (defaultWidth <= 0) { defaultWidth = 10; }
+                    			var defaultTxOffset = 0.25 * lw * 100;			// default width of rect is 25% of visible screen width
+                    			if (defaultTxOffset <= 0) { defaultTxOffset = 10; }
+                    			
+                    			var lh = h/((layer.info.tilesize * layer.ytilenum) + layer.tilesize_ylast);
+                    			var defaultTyOffset = 0.10 * lh * 100;			// default width of rect is 10% of visible screen height
+                    			if (defaultTyOffset <= 0) { defaultTyOffset = 10; }
+                    		console.log("start measurement", type, x, y, '@' + view.annotations.length);	
+								view.annotations.push({
+									type: type, x: x, y: y, w: 0, h: 0, index: view.annotations.length,
+									tx: x + defaultTxOffset, ty: y + defaultTyOffset, tw: defaultWidth, th: (120/layer.info.width) * 100,
+									label: options.defaultAnnotationText, textBlock: textBlock,
+									points:[{x: x, y: y}]
+								});
+								break;
 						}
 						view.save_annotations([view.annotations.length-1], []);
 						
@@ -1337,7 +1398,7 @@ var methods = {
 						// Select just-created annotation
 						jQuery('#tileviewerAnnotationTextBlock_' + (view.annotations.length-1)).click();
 						
-						if (type != 'poly') {
+						if ((type != 'poly') && (type != 'measure')) {
 							// Revert current tool to pan
 							jQuery("#" + options.id + "ControlPanImage").click();
 						}
@@ -1352,18 +1413,31 @@ var methods = {
 						var w = jQuery($this).width();
 						var h = jQuery($this).height();
 						
+						if(!view.annotations[view.polygonInProgressAnnotationIndex]) { return; }
+						if (parseInt(view.annotations[view.polygonInProgressAnnotationIndex]['locked']) == 1) { return; }
+                    	
                     	switch(type) {
+                    		case 'measure':
+                    			view.annotations[view.polygonInProgressAnnotationIndex].points.push({x: x, y: y});
+								view.annotations[view.polygonInProgressAnnotationIndex]['label'] = $('#tileviewerAnnotationTextLabel').val();	// set in-progress text in label field
+						
+								// measurements only have two points (for now, at least... maybe forever)
+								if (view.annotations[view.polygonInProgressAnnotationIndex].points.length >= 2) {
+									view.save_annotations([view.polygonInProgressAnnotationIndex], []);
+									view.polygonInProgressAnnotationIndex = null;
+									// Revert current tool to pan
+									jQuery("#" + options.id + "ControlPanImage").click();
+								}
+                    			break;
                     		default:
 							case 'poly':
-								if(!view.annotations[view.polygonInProgressAnnotationIndex]) { return; }
-								if (parseInt(view.annotations[view.polygonInProgressAnnotationIndex]['locked']) == 1) { return; }
 								view.annotations[view.polygonInProgressAnnotationIndex].points.push({x: x, y: y});
 								view.annotations[view.polygonInProgressAnnotationIndex]['label'] = $('#tileviewerAnnotationTextLabel').val();	// set in-progress text in label field
-								break;
-						}
 						
-						if (view.annotations[view.polygonInProgressAnnotationIndex].points.length >= 3) {
-							view.save_annotations([view.polygonInProgressAnnotationIndex], []);
+								if (view.annotations[view.polygonInProgressAnnotationIndex].points.length >= 3) {
+									view.save_annotations([view.polygonInProgressAnnotationIndex], []);
+								}
+								break;
 						}
 						
 						view.draw_annotations();
@@ -1417,6 +1491,7 @@ var methods = {
                     		
                     		view.mouseClickedOnControlPoint = null;
                     		switch(v['type']) {
+                    			case 'measure':
                     			case 'poly':
                     				// are we clicking on a line or point?
                     				var points = view.annotations[k].points;
@@ -1554,8 +1629,12 @@ var methods = {
                     	if (view.polygonInProgressAnnotationIndex && view.annotations[view.polygonInProgressAnnotationIndex]) {
 							var p = view.annotations[view.polygonInProgressAnnotationIndex];
 							
-							if (p.points.length < 3) {
-								// Annotation must have at least 3 points to be saved
+							if ((p.type == 'poly') && (p.points.length < 3)) {
+								// Polygon annotation must have at least 3 points to be saved
+								view.delete_annotation(view.polygonInProgressAnnotationIndex);
+							}
+							if ((p.type == 'measure') && (p.points.length < 2)) {
+								// Measure annotation must have at least 2 points to be saved
 								view.delete_annotation(view.polygonInProgressAnnotationIndex);
 							}
 						}
@@ -1691,6 +1770,7 @@ var methods = {
 								view.tools['point'] = "<a href='#' title='" + view.get_tool_tip('point') + "' id='" + options.id + "ControlAddPointAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/point.png' width='26' height='25'/></a>";		
 								view.tools['rect'] = "<a href='#' title='" + view.get_tool_tip('rect') + "' id='" + options.id + "ControlAddRectAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/rect.png' width='25' height='24'/></a>";
 								view.tools['polygon'] = "<a href='#' title='" + view.get_tool_tip('polygon') + "' id='" + options.id + "ControlAddPolygonAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/polygon.png' width='28' height='25'/></a>";
+								view.tools['measure'] = "<a href='#' title='" + view.get_tool_tip('measure') + "' id='" + options.id + "ControlAddMeasureAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/measure.png' width='25' height='25'/></a>";	
 								view.tools['lock'] = "<a href='#' title='" + view.get_tool_tip('lock') + "' id='" + options.id + "ControlLockAnnotations' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/locked.png' width='20' height='25'/></a>";
 								view.tools['key'] = "<a href='#' title='" + view.get_tool_tip('key') + "' id='" + options.id + "ControlKey' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/key.png' width='30' height='14'/></a>";	
 							}
@@ -1730,16 +1810,17 @@ var methods = {
 							// Tools
 							//
 							jQuery("#" + options.id + "ControlPanImage").click(function() {
-								options.addPointAnnotationMode = options.addPolygonAnnotationMode = options.addRectAnnotationMode = false;
+								options.addPointAnnotationMode = options.addPolygonAnnotationMode = options.addRectAnnotationMode = options.addMeasureAnnotationMode = false;
 								options.panMode = !options.panMode;
 						
 								view.complete_in_progress_annotation();
 						
 								view.draw();
-								jQuery(this).css("opacity", options.panMode ? 1.0 : 0.5).find('img').attr('src', options.panMode ? options.buttonUrlPath + '/pan_on.png' : options.buttonUrlPath + '/pan.png');
+								jQuery(this).css("opacity", options.panMode ? 1.0 : 0.5).find('img').attr('src', options.buttonUrlPath + (options.panMode ? '/pan_on.png' : '/pan.png'));
 								jQuery("#" + options.id + "ControlAddRectAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/rect.png');
 								jQuery("#" + options.id + "ControlAddPointAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/point.png');
 								jQuery("#" + options.id + "ControlAddPolygonAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/polygon.png');
+								jQuery("#" + options.id + "ControlAddMeasureAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/measure.png');
 							});	
 					
 							if (options.useAnnotations && options.showAnnotationTools) { 			
@@ -1751,16 +1832,17 @@ var methods = {
 										if (!options.displayAnnotations || options.lockAnnotations) { return; }
 								
 										options.addRectAnnotationMode = !options.addRectAnnotationMode;
-										options.addPointAnnotationMode = options.addPolygonAnnotationMode = false;
+										options.addPointAnnotationMode = options.addPolygonAnnotationMode = options.addMeasureAnnotationMode = false;
 										options.panMode = false;
 								
 										view.complete_in_progress_annotation();
 								
 										view.draw();
-										jQuery(this).css("opacity", options.addRectAnnotationMode ? 1.0 : 0.5).find('img').attr('src', options.addRectAnnotationMode ? options.buttonUrlPath + '/rect_on.png' : options.buttonUrlPath + '/rect.png');
+										jQuery(this).css("opacity", options.addRectAnnotationMode ? 1.0 : 0.5).find('img').attr('src', options.buttonUrlPath + (options.addRectAnnotationMode ? '/rect_on.png' : '/rect.png'));
 										jQuery("#" + options.id + "ControlPanImage").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/pan.png');
 										jQuery("#" + options.id + "ControlAddPointAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/point.png');
 										jQuery("#" + options.id + "ControlAddPolygonAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/polygon.png');
+										jQuery("#" + options.id + "ControlAddMeasureAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/measure.png');
 								
 										if (!options.addRectAnnotationMode) {
 											jQuery("#" + options.id + "ControlPanImage").click();
@@ -1775,16 +1857,17 @@ var methods = {
 										if (!options.displayAnnotations || options.lockAnnotations) { return; }
 								
 										options.addPointAnnotationMode = !options.addPointAnnotationMode;
-										options.addRectAnnotationMode = options.addPolygonAnnotationMode = false;
+										options.addRectAnnotationMode = options.addPolygonAnnotationMode = options.addMeasureAnnotationMode = false;
 										options.panMode = false;
 								
 										view.complete_in_progress_annotation();
 								
 										view.draw();
-										jQuery(this).css("opacity", options.addPointAnnotationMode ? 1.0 : 0.5).find('img').attr('src', options.addPointAnnotationMode ? options.buttonUrlPath + '/point_on.png' : options.buttonUrlPath + '/point.png');
+										jQuery(this).css("opacity", options.addPointAnnotationMode ? 1.0 : 0.5).find('img').attr('src', options.buttonUrlPath + (options.addPointAnnotationMode ? '/point_on.png' : '/point.png'));
 										jQuery("#" + options.id + "ControlPanImage").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/pan.png');
 										jQuery("#" + options.id + "ControlAddRectAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/rect.png');
 										jQuery("#" + options.id + "ControlAddPolygonAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/polygon.png');
+										jQuery("#" + options.id + "ControlAddMeasureAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/measure.png');
 								
 										if (!options.addPointAnnotationMode) {
 											jQuery("#" + options.id + "ControlPanImage").click();
@@ -1799,18 +1882,44 @@ var methods = {
 										if (!options.displayAnnotations || options.lockAnnotations) { return; }
 								
 										options.addPolygonAnnotationMode = !options.addPolygonAnnotationMode;
-										options.addRectAnnotationMode = addPointAnnotationMode = false;
+										options.addRectAnnotationMode = options.addPointAnnotationMode = options.addMeasureAnnotationMode = false;
 										options.panMode = false;
 								
 										view.complete_in_progress_annotation();
 								
 										view.draw();
-										jQuery(this).css("opacity", options.addPolygonAnnotationMode ? 1.0 : 0.5).find('img').attr('src', options.addPolygonAnnotationMode ? options.buttonUrlPath + '/polygon_on.png' : options.buttonUrlPath + '/polygon.png');
+										jQuery(this).css("opacity", options.addPolygonAnnotationMode ? 1.0 : 0.5).find('img').attr('src', options.buttonUrlPath + (options.addPolygonAnnotationMode ? '/polygon_on.png' : '/polygon.png'));
 										jQuery("#" + options.id + "ControlPanImage").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/pan.png');
 										jQuery("#" + options.id + "ControlAddRectAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/rect.png');
 										jQuery("#" + options.id + "ControlAddPointAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/point.png');
+										jQuery("#" + options.id + "ControlAddMeasureAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/measure.png');
 								
 										if (!options.addPolygonAnnotationMode) {
+											jQuery("#" + options.id + "ControlPanImage").click();
+										}
+									}).css("opacity", 0.5);	
+									
+									//
+									// Measure annotation
+									//
+								
+									jQuery("#" + options.id + "ControlAddMeasureAnnotation").click(function() {
+										if (!options.displayAnnotations || options.lockAnnotations) { return; }
+								
+										options.addMeasureAnnotationMode = !options.addMeasureAnnotationMode;
+										options.addRectAnnotationMode = options.addPolygonAnnotationMode = options.addPointAnnotationMode = false;
+										options.panMode = false;
+								
+										view.complete_in_progress_annotation();
+								
+										view.draw();
+										jQuery(this).css("opacity", options.addMeasureAnnotationMode ? 1.0 : 0.5).find('img').attr('src', options.buttonUrlPath + (options.addMeasureAnnotationMode ? '/measure_on.png' : '/measure.png'));
+										jQuery("#" + options.id + "ControlPanImage").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/pan.png');
+										jQuery("#" + options.id + "ControlAddPointAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/point.png');
+										jQuery("#" + options.id + "ControlAddRectAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/rect.png');
+										jQuery("#" + options.id + "ControlAddPolygonAnnotation").css("opacity", 0.5).find('img').attr('src', options.buttonUrlPath + '/polygon.png');
+								
+										if (!options.addMeasureAnnotationMode) {
 											jQuery("#" + options.id + "ControlPanImage").click();
 										}
 									}).css("opacity", 0.5);	
@@ -2671,6 +2780,9 @@ var methods = {
 							|| (navigator.msMaxTouchPoints > 0));
 					},
 					
+					//
+					// Convert hex color to RGB with alpha
+					//
 					hexToRGBA: function(h,a) {
 						if(h.substr(0,1) == '#') { h = h.substr(1); }
 						
@@ -2747,7 +2859,7 @@ var methods = {
 						// Save changed text label
 						jQuery(view.annotationTextEditor).data('dirty', null);
 						
-						if(!view.annotations[inAnnotation['index']]) { console.log("Could not save text; no annotation at index ", inAnnotation['index'], inAnnotation); }
+						if(!view.annotations[inAnnotation['index']]) { console.log("Could not save text; no annotation at index ", inAnnotation['index'], inAnnotation);  return; }
 						view.annotations[inAnnotation['index']]['label'] = jQuery('#tileviewerAnnotationTextLabel').val();
 						view.make_annotation_dirty(inAnnotation['index']);
 						view.save_annotations([inAnnotation['index']], []);
@@ -2972,14 +3084,15 @@ var methods = {
 									view.add_annotation('point', x_relative, y_relative);
 									return;
 								}
-								if (options.addPolygonAnnotationMode) {
+								if (options.addPolygonAnnotationMode || options.addMeasureAnnotationMode) {
 									if(view.polygonInProgressAnnotationIndex === null) {
-										view.polygonInProgressAnnotationIndex = view.add_annotation('poly', x_relative, y_relative);
+										view.polygonInProgressAnnotationIndex = view.add_annotation((options.addMeasureAnnotationMode ? 'measure' : 'poly'), x_relative, y_relative);
 									} else {
-										view.add_annotation_point('poly', x_relative, y_relative);
+										view.add_annotation_point((options.addMeasureAnnotationMode ? 'measure' : 'poly'), x_relative, y_relative);
 									}
 									return;
 								}
+								
 								view.selectedAnnotation = null;	// deselect current annotation
 								view.needdraw = true;
 							}
