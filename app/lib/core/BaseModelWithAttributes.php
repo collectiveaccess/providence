@@ -1163,7 +1163,7 @@
 		 */
 		public function getDefaultTypeID() {
 			$t_list = new ca_lists();
-			return $t_list->getDefaultItemID($this->getTypeListCode());
+			return $t_list->getDefaultItemID($this->getTypeListCode(), array('omitRoot' => true));
 		}
 		# ------------------------------------------------------------------
 		/**
