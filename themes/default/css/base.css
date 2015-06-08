@@ -6365,7 +6365,6 @@ div.quickAddDialogHeader {
 }
 
 div.quickAddErrorContainer {
-    position: fixed;
     width: 890px;
     display: none;
     z-index:33000;
