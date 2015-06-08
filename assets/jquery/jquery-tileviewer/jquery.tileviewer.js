@@ -404,6 +404,8 @@ var methods = {
 									||
 									(view.annotations[index].type == 'poly')
 									||
+									(view.annotations[index].type == 'measure')
+									||
 									((view.annotations[index].type == 'rect') && options.allowDraggableTextBoxesForRects)
 								)
 							) {
@@ -536,6 +538,7 @@ var methods = {
 								return { x: x, y: y };
 								break;
 							case 'poly':
+							case 'measure':
 								var minX = null, minY = null, maxX = null, maxY = null;
 								for(var pointIndex in annotation.points) {
 									if (!jQuery.isNumeric(pointIndex)) { continue; }
@@ -798,7 +801,7 @@ var methods = {
 												ctx.rotate(angle - (Math.PI/2));
 												ctx.textAlign = "center";
 												ctx.font = "18px Arial";
-												ctx.fillStyle = '#cc0000';
+												ctx.fillStyle = '#333';
 												ctx.fillText("Length: " + d_relative.toFixed(2), 0, 22);
 												ctx.restore();
 											} 
@@ -1377,7 +1380,7 @@ var methods = {
                     			var lh = h/((layer.info.tilesize * layer.ytilenum) + layer.tilesize_ylast);
                     			var defaultTyOffset = 0.10 * lh * 100;			// default width of rect is 10% of visible screen height
                     			if (defaultTyOffset <= 0) { defaultTyOffset = 10; }
-                    		console.log("start measurement", type, x, y, '@' + view.annotations.length);	
+                    			
 								view.annotations.push({
 									type: type, x: x, y: y, w: 0, h: 0, index: view.annotations.length,
 									tx: x + defaultTxOffset, ty: y + defaultTyOffset, tw: defaultWidth, th: (120/layer.info.width) * 100,
@@ -1650,6 +1653,8 @@ var methods = {
 							(curAnnotation.type == 'point') 
 							|| 
 							(curAnnotation.type == 'poly')
+							|| 
+							(curAnnotation.type == 'measure')
 							||
 							(options.allowDraggableTextBoxesForRects && (curAnnotation.type == 'rect'))
 						) {
@@ -2880,6 +2885,8 @@ var methods = {
                 			(view.annotations[view.selectedAnnotation].type == 'point')
 							|| 
 							(view.annotations[view.selectedAnnotation].type == 'poly')
+							|| 
+							(view.annotations[view.selectedAnnotation].type == 'measure')
                 			||
                 			((view.annotations[view.selectedAnnotation].type == 'rect') && options.allowDraggableTextBoxesForRects)
                 		)
