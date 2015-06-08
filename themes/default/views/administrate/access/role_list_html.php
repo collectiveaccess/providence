@@ -74,9 +74,8 @@
 					<td>
 						<?php print $va_role['description']; ?>
 					</td>
-					<td>
+					<td class="saveDelete">
 						<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'list-button', 'administrate/access', 'Roles', 'Edit', array('role_id' => $va_role['role_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-						
 						<?php print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'list-button', 'administrate/access', 'Roles', 'Delete', array('role_id' => $va_role['role_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 					</td>
 				</tr>

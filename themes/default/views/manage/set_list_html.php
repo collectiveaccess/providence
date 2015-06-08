@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -101,8 +101,7 @@
 				</td>
 				<td align="center">
 					<div>
-<?php 
-					
+<?php 	
 					if (($va_set['item_count'] > 0) && ($this->request->user->canDoAction('can_batch_edit_'.$t_set->getAppDatamodel()->getTableName($va_set['table_num'])))) {
 						print $va_set['item_count']; 
 						print caNavButton($this->request, __CA_NAV_BUTTON_BATCH_EDIT__, _t('Batch edit'), 'batchIcon', 'batch', 'Editor', 'Edit', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true));

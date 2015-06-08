@@ -327,7 +327,7 @@ h5 {
 	clear: both;
 	min-height: 26px;
 }
-#leftNav .watchThis, #leftNav #inspectorChangeType, #leftNav #inspectorCreateChild, #leftNav #caDuplicateItemButton, #leftNav #inspectorLotMediaDownloadButton {
+#leftNav .watchThis, #leftNav #inspectorChangeType, #leftNav #inspectorCreateChild, #leftNav #caDuplicateItemButton, #leftNav #inspectorLotMediaDownloadButton, #leftNav #inspectorSetMediaDownloadButton {
 	float: left;
 	margin-right: 10px;
 	width: 28px;
@@ -1729,12 +1729,16 @@ td.listtableTotals {
 	padding:5px;
 }
 
-#caSetList tbody tr td div.caSetListName {
+#caSetList tbody tr td div.caSetListName, #caSetList tbody tr td div.caSetListOwner {
 	overflow: auto;
 }
 
 #caSetList tbody tr td div.caSetListName {
-	width: 200px;
+	width: 160px;
+}
+
+#caSetList tbody tr td div.caSetListOwner {
+	width: 90px;
 }
 
 .saveDelete {
