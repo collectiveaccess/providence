@@ -611,6 +611,7 @@ class SearchResult extends BaseObject {
 	 * 
 	 */
 	public function prefetchRelated($ps_tablename, $pn_start, $pn_num_rows, $pa_options) {
+		if (!method_exists($this->opo_subject_instance, "getRelatedItems")) { return false; }
 		unset($pa_options['request']);
 		if (sizeof($va_row_ids = $this->getRowIDsToPrefetch($pn_start, $pn_num_rows)) == 0) { return false; }
 		
