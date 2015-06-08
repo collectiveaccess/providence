@@ -397,6 +397,9 @@
 			$vn_viewer_height_with_units = $vn_viewer_height; 
 			if (preg_match('!^[\d]+$!', $vn_viewer_width)) { $vn_viewer_width_with_units .= 'px'; }
 			if (preg_match('!^[\d]+$!', $vn_viewer_height)) { $vn_viewer_height_with_units .= 'px'; }
+			
+			$o_config = Configuration::load();
+			$vb_use_key = $o_config->get('annotation_class_element') ? "true" : "false";
 $vs_tag = "
 				<div id='{$vs_id_name}' style='width:{$vn_viewer_width_with_units}; height: {$vn_viewer_height_with_units}; position: relative; z-index: 0;'>
 					{$vs_error_tag}
@@ -419,6 +422,7 @@ $vs_tag = "
 								annotationEditorLink: '".addslashes(_t('More...'))."',
 								helpLoadUrl: '{$vs_help_load_url}',
 								mediaDownloadUrl: '{$vs_download_url}',
+								useKey: {$vb_use_key},
 								info: {
 									width: '{$vn_width}',
 									height: '{$vn_height}',
