@@ -113,7 +113,7 @@
 					</div>
 				</td>
 				<td>
-					<div><?php print $va_set['fname'].' '.$va_set['lname'].($va_set['email'] ? "<br/>(<a href='mailto:".$va_set['email']."'>".$va_set['email']."</a>)" : ""); ?></div>
+					<div class="caSetListOwner"><?php print $va_set['fname'].' '.$va_set['lname'].($va_set['email'] ? "<br/>(<a href='mailto:".$va_set['email']."'>".$va_set['email']."</a>)" : ""); ?></div>
 				</td>
 				<td>
 					<div><?php print $t_set->getChoiceListValue('access', $va_set['access']); ?></div>
