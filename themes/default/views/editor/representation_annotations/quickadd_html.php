@@ -53,6 +53,7 @@
 	}
 ?>
 	</div>
+	<div class="quickAddFormTopPadding"><!-- empty --></div>
 	<div class="caAnnoEditorEditorErrorContainer" id="<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>"></div>
 	<div class="quickAddSectionBox" id="<?php print $vs_form_name; ?>Container<?php print $vs_field_name_prefix.$vs_n; ?>">
 <?php
