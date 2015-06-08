@@ -780,6 +780,8 @@ var methods = {
 												
 												
 												var l = ((5/100) * layerWidth * layerMag);
+												ctx.save();
+												ctx.lineWidth = 4;
 												ctx.beginPath();
 												ctx.moveTo(x1 - ((l/2) * Math.cos(angle)), y1-((l/2) * Math.sin(angle)));
 												ctx.lineTo(x1 + ((l/2) * Math.cos(angle)), y1+((l/2) * Math.sin(angle)));
@@ -789,6 +791,7 @@ var methods = {
 												ctx.moveTo(x2 - ((l/2) * Math.cos(angle)), y2-((l/2) * Math.sin(angle)));
 												ctx.lineTo(x2 + ((l/2) * Math.cos(angle)), y2+((l/2) * Math.sin(angle)));
 												ctx.stroke();
+												ctx.restore();
 												
 												// Measure: draw quantity
 												
@@ -820,6 +823,12 @@ var methods = {
 											}
 										
 											// Draw lines between points
+											ctx.save();
+											
+											if (annotation.type == 'measure') {
+												if (!ctx.setLineDash) { ctx.setLineDash = function () {} }
+												ctx.setLineDash([2,3]);
+											}
 											ctx.beginPath();
 											var startX = x = (((parseFloat(annotation.points[0].x))/100) * layerWidth * layerMag) + layer.xpos;
 											var startY = y = (((parseFloat(annotation.points[0].y))/100) * layerHeight * layerMag) + layer.ypos;
@@ -836,6 +845,7 @@ var methods = {
 												ctx.lineTo(startX, startY);
 											}
 											ctx.stroke();
+											ctx.restore();
 										} else {
 											// if no outline draw dot at center
 											var minX = null, minY = null, maxX = null, maxY = null;
