@@ -86,7 +86,9 @@ class SearchJSONService extends BaseJSONService {
 	}
 	# -------------------------------------------------------
 	/**
-	 *
+	 * Perform search
+	 * @param array|null $pa_bundles list of bundles to return for search result
+	 * @return array|bool
 	 */
 	protected function search($pa_bundles=null) {
 		if (!($vo_search = caGetSearchInstance($this->getTableName()))) {
@@ -114,9 +116,7 @@ class SearchJSONService extends BaseJSONService {
 			if ($vs_template) {
 				$va_item["display_label"] = caProcessTemplateForIDs($vs_template, $vs_table_name, array($vn_id), array('convertCodesToDisplayText' => true));
 			} else {
-				if(is_array($va_display_labels = $vo_result->getDisplayLabels())) {
-					$va_item["display_label"] = array_pop($va_display_labels);
-				}
+				$va_item["display_label"] = $vo_result->get($vs_table_name . '.preferred_labels');
 			}
 
 			if(is_array($pa_bundles)) {
