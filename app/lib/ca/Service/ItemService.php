@@ -607,7 +607,7 @@ class ItemService extends BaseJSONService {
 				continue;
 			}
 
-			$va_related_items = $t_instance->get($vs_rel_table,array("returnWithStructure" => true, 'useLocaleCodes' => true));
+			$va_related_items = $t_instance->get($vs_rel_table,array("returnWithStructure" => true, 'useLocaleCodes' => true, 'groupFields' => true));
 
 			if(($this->ops_table == "ca_objects") && ($vs_rel_table=="ca_object_representations")) {
 				$va_versions = $t_instance->getMediaVersions('media');
