@@ -42,17 +42,18 @@
 	$va_notifications 	= $this->getVar('notifications');
 ?>		
 <form action="#" class="quickAddSectionForm" name="<?php print $vs_form_name; ?>" method="POST" enctype="multipart/form-data" id="<?php print $vs_form_name.$vs_field_name_prefix.$vs_n; ?>">
-	<div class='quickAddDialogHeader'><?php 
-	
-	if ($vb_can_edit) {
-		if (($vn_subject_id > 0) && (preg_match("!timebased!i", $t_subject->getAnnotationType()))) {
-			print "<div style='float: right;'>".caJSButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete annotation"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caConfirmDeleteAnnotation(true);"))."</div>\n";
+	<div class='quickAddDialogHeader'><?php 	
+		if ($vb_can_edit) {
+			if (($vn_subject_id > 0) && (preg_match("!timebased!i", $t_subject->getAnnotationType()))) {
+				print "<div style='float: right;'>".caJSButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete annotation"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caConfirmDeleteAnnotation(true);"))."</div>\n";
+			}
+			print "<div style='float: left;'>".caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save annotation"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("id" => "caAnnoEditorScreenSaveButton", "onclick" => "caSaveAnnotation{$vs_form_name}{$vs_field_name_prefix}{$vs_n}(event);"))
+				.' '.caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "return caAnnoEditorDisableAnnotationForm();"))."</div><br style='clear: both;'/>\n";
 		}
-		print "<div style='float: left;'>".caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save annotation"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("id" => "caAnnoEditorScreenSaveButton", "onclick" => "caSaveAnnotation{$vs_form_name}{$vs_field_name_prefix}{$vs_n}(event);"))
-			.' '.caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "return caAnnoEditorDisableAnnotationForm();"))."</div><br style='clear: both;'/>\n";
-	}
 ?>
 	</div>
+	
+	<div class="quickAddFormTopPadding"><!-- empty --></div>
 	<div class="caAnnoEditorEditorErrorContainer" id="<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>"></div>
 	<div class="quickAddSectionBox" id="<?php print $vs_form_name; ?>Container<?php print $vs_field_name_prefix.$vs_n; ?>">
 <?php

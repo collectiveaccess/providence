@@ -41,14 +41,14 @@ class SearchJSONService extends BaseJSONService {
 	private $ops_query;
 	private $opb_deleted_only = false;
 	# -------------------------------------------------------
-	public function __construct($po_request,$ps_table=""){
+	public function __construct($po_request,$ps_table="") {
 		$this->ops_query = $po_request->getParameter("q",pString);
 		$this->opb_deleted_only = (bool)$po_request->getParameter("deleted",pInteger);
 
 		parent::__construct($po_request,$ps_table);
 	}
 	# -------------------------------------------------------
-	public function dispatch(){
+	public function dispatch() {
 		$va_post = $this->getRequestBodyArray();
 
 		// make sure only requests that are actually identical get pulled from cache
@@ -61,13 +61,13 @@ class SearchJSONService extends BaseJSONService {
 			return ExternalCache::fetch($vs_cache_key, 'SearchJSONService');
 		}
 
-		switch($this->getRequestMethod()){
+		switch($this->getRequestMethod()) {
 			case "GET":
 			case "POST":
 				if(sizeof($va_post)==0) {
 					$vm_return = $this->search();
 				} else {
-					if(is_array($va_post["bundles"])){
+					if(is_array($va_post["bundles"])) {
 						$vm_return = $this->search($va_post["bundles"]);
 					} else {
 						$this->addError(_t("Invalid request body format"));
@@ -86,7 +86,9 @@ class SearchJSONService extends BaseJSONService {
 	}
 	# -------------------------------------------------------
 	/**
-	 *
+	 * Perform search
+	 * @param array|null $pa_bundles list of bundles to return for search result
+	 * @return array|bool
 	 */
 	protected function search($pa_bundles=null) {
 		if (!($vo_search = caGetSearchInstance($this->getTableName()))) {
@@ -107,25 +109,23 @@ class SearchJSONService extends BaseJSONService {
 
 			$va_item[$t_instance->primaryKey()] = $vn_id = $vo_result->get($t_instance->primaryKey());
 			$va_item['id'] = $vn_id;
-			if($vs_idno = $vo_result->get("idno")){
+			if($vs_idno = $vo_result->get("idno")) {
 				$va_item["idno"] = $vs_idno;
 			}
 
 			if ($vs_template) {
 				$va_item["display_label"] = caProcessTemplateForIDs($vs_template, $vs_table_name, array($vn_id), array('convertCodesToDisplayText' => true));
 			} else {
-				if(is_array($va_display_labels = $vo_result->getDisplayLabels())){
-					$va_item["display_label"] = array_pop($va_display_labels);
-				}
+				$va_item["display_label"] = $vo_result->get($vs_table_name . '.preferred_labels');
 			}
 
-			if(is_array($pa_bundles)){
+			if(is_array($pa_bundles)) {
 
-				foreach($pa_bundles as $vs_bundle => $va_options){
-					if(!is_array($va_options)){
+				foreach($pa_bundles as $vs_bundle => $va_options) {
+					if(!is_array($va_options)) {
 						$va_options = array();
 					}
-					if($this->_isBadBundle($vs_bundle)){
+					if($this->_isBadBundle($vs_bundle)) {
 						continue;
 					}
 

@@ -611,6 +611,7 @@ class SearchResult extends BaseObject {
 	 * 
 	 */
 	public function prefetchRelated($ps_tablename, $pn_start, $pn_num_rows, $pa_options) {
+		if (!method_exists($this->opo_subject_instance, "getRelatedItems")) { return false; }
 		unset($pa_options['request']);
 		if (sizeof($va_row_ids = $this->getRowIDsToPrefetch($pn_start, $pn_num_rows)) == 0) { return false; }
 		
@@ -634,8 +635,6 @@ class SearchResult extends BaseObject {
 				'criteria' => array()
 			);
 		}
-		
-		// TODO: why is the repeatedly called?
 		
 		foreach($va_rel_items as $vs_key => $va_rel_item) {
 			self::$s_rel_prefetch_cache[$this->ops_table_name][(int)$va_rel_item['row_id']][$ps_tablename][$vs_md5][$va_rel_item[$va_rel_item['_key']]] = $va_rel_item;
@@ -1344,7 +1343,7 @@ class SearchResult extends BaseObject {
 			$t_rel_instance = SearchResult::$s_instance_cache[$va_path_components['table_name']] = $this->opo_datamodel->getInstanceByTableName($va_path_components['table_name'], true);
 		}
 
-		if (!($t_rel_instance instanceof BundlableLabelableBaseModelWithAttributes)) { return null; }
+		if (!($t_rel_instance instanceof BaseModel)) { return null; }
 		
 		// Handle table-only case...
 		if (!$va_path_components['field_name']) {
@@ -1368,7 +1367,7 @@ class SearchResult extends BaseObject {
 		}
 		if (!sizeof($va_ids)) { return $pa_options['returnAsArray'] ? array() : null; }
 
-		$qr_rel = $t_rel_instance->makeSearchResult($va_path_components['table_name'], $va_ids);
+		if (!($qr_rel = caMakeSearchResult($va_path_components['table_name'], $va_ids))) { return null; }
 		$va_return_values = array();
 		$va_spec = array();
 		foreach(array('table_name', 'field_name', 'subfield_name') as $vs_f) {

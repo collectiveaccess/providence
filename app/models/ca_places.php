@@ -373,8 +373,9 @@ class ca_places extends RepresentableBaseModel implements IBundleProvider, IHier
 			WHERE 
 				p.parent_id IS NULL and p.hierarchy_id IN (".join(',', $va_hierarchy_ids).")
 			GROUP BY
-				p.place_id
+				p.place_id, p.hierarchy_id
 		");
+		
 		while ($qr_res->nextRow()) {
 			$vn_hierarchy_id = $qr_res->get('hierarchy_id');
 			$va_place_hierarchies[$vn_hierarchy_id]['place_id'] = $va_place_hierarchies[$vn_hierarchy_id]['item_id'] = $qr_res->get('place_id');

@@ -57,7 +57,6 @@ var methods = {
             thumbnail: false,//display thumbnail
             magnifier: false,//display magnifier
             debug: false,
-            pixel: true,
             magnifierViewSize: 196, //view size
             magnifierViewArea: 48, //pixel w/h sizes to zoom
             grabberSize: 12, //size of the grabber area
@@ -117,6 +116,7 @@ var methods = {
 			annotationList: false,							// is annotation list currently displayed?
 			allowAnnotationSearch: true,					// allow annotation search option in annotation list; only available if annotation list is allowed
 			
+			useKey: false,
 			showKey: false
         };
 
@@ -330,7 +330,7 @@ var methods = {
                     	if (!options.useAnnotations) { return; }
                     	
                     	if (view.isSavingAnnotations) { 
-                    		if (options.debug) { console.log("Cannot commit now; save is pending"); }
+                    		if (options.debug) { console.log("Cannot commit now; save is pending"); console.trace(); }
                     		return false; 
                     	}
                     	if ((view.annotationsToSave.length == 0) && (view.annotationsToDelete.length == 0)) {
@@ -375,7 +375,10 @@ var methods = {
                     		view.annotationsToDelete = [];
                     		
                     		view.isSavingAnnotations = false;
-                    		view.commit_annotation_changes();
+                    		
+                    		if ((view.annotationsToSave.length > 0) || (view.annotationsToDelete.length > 0)) {
+                    			view.commit_annotation_changes();
+                    		}
                     		
                     		view.needdraw = true;
                     		
@@ -383,6 +386,17 @@ var methods = {
                     	}, 'json');
                     },
 
+                    _get_annotation_by_index: function(index, returnArrayIndex) {
+                    	var annotationsToCheck = jQuery.extend(true, [], view.annotations);
+                        
+                        index = parseInt(index);
+                        for(var i in annotationsToCheck) {
+                        	if (!annotationsToCheck[i]) { continue; }
+                    		if (parseInt(annotationsToCheck[i]['index']) === index) { return returnArrayIndex ? i : annotationsToCheck[i]; }
+                    	}
+                    	return null;
+                    },
+                    
 					_make_annotation_text_block_draggable: function(id) {
 						var index = jQuery(this).data('annotationIndex');
 							
@@ -453,15 +467,10 @@ var methods = {
                     	var annotationsToDraw = jQuery.extend(true, [], view.annotations);
                         var selectedAnnotation = view.selectedAnnotation;
                         
-						var key = {};
                         for(var i in annotationsToDraw) {
                         	if (!jQuery.isNumeric(i)) { continue; }
                         	var annotation = annotationsToDraw[i];
                         	if (!annotation) { continue; }
-                        	
-                        	if (annotation.key && annotation.key.color && annotation.key.idno && !key[annotation.key.idno]) {
-                        		key[annotation.key.idno] = "<li class='tileviewerKeyItem'><div class='tileviewerKeyColorChip' style='background-color: #" + annotation.key.color + "'></div><div class='tileviewerKeyText'>" + annotation.key.name + "</div></li>";
-                        	}
                         	
                         	jQuery(annotationList).append("<li class='tileviewerAnnotationListItem tileviewerAnnotationListItem_" + annotation['annotation_id'] + "'>" + (annotation['label'] ? annotation['label'] : '&lt;Empty&gt;') +  "</li>");
                         	jQuery(annotationList).find('.tileviewerAnnotationListItem_' + annotation['annotation_id']).data('annotation', annotation).bind('click', function(e) {
@@ -489,15 +498,39 @@ var methods = {
 							jQuery($this).find(".tileviewerAnnotationList .tileviewerAnnotationListContent").empty().append("<h3>" + "No annotations" + "</h3>");
 						}
 						
+						view.update_key();
+                    },
+                    
+                    update_key: function() {
+                    	if (!options.useKey) { return; }
+                    	
+                    	var annotationsToCheck = jQuery.extend(true, [], view.annotations);
+                    	var key = {};
+                        for(var i in annotationsToCheck) {
+                        	if (!jQuery.isNumeric(i)) { continue; }
+                        	var annotation = annotationsToCheck[i];
+                        	if (!annotation) { continue; }
+                        	
+                        	if (annotation.key && annotation.key.color && annotation.key.idno && !key[annotation.key.idno]) {
+                        		key[annotation.key.idno] = "<li class='tileviewerKeyItem'><div class='tileviewerKeyColorChip' style='background-color: #" + annotation.key.color + "'></div><div class='tileviewerKeyText'>" + annotation.key.name + "</div></li>";
+                        	}
+                        }
+                        
 						// update key
 						var keyList = '', keyHeight = 50;
 						jQuery.each(key, function(k, v) { keyList += v; keyHeight += 30;});
-                        if (keyList) {
+						if (keyList) {
+							jQuery("#" + options.id + "ControlKey").show();
 							jQuery($this).find(".tileviewerKey").css('height', keyHeight + "px").html("<div class='tileviewerKeyContent'><h3>Key</h3><ul class='tileviewerKey'>" + keyList + "</ul></div>");
+							if (options.showKey) { jQuery($this).find(".tileviewerKey").show(); }
+						} else {
+							// No key
+							if(options.showKey) { jQuery("#" + options.id + "ControlKey").click(); }
+							jQuery("#" + options.id + "ControlKey").hide();
 						}
                     },
                     
-                     search_annotation_list: function(s) {
+                    search_annotation_list: function(s) {
                      	jQuery($this).find(".tileviewerAnnotationList .tileviewerAnnotationListContent .tileviewerNoAnnotationMessage").remove();
                      	if (!s) {
                      		jQuery($this).find("ol.tileviewerAnnotationList li").show();
@@ -921,10 +954,10 @@ var methods = {
 									}
 									break;
 								case 'circle':
-									console.log("Circle annotations not supported (yet)");
+									if (options.debug) { console.log("Circle annotations not supported (yet)"); }
 									break;
 								default:
-									console.log("Invalid annotation type: " + annotation.type);
+									if (options.debug) {  console.log("Invalid annotation type: " + annotation.type); }
 									break;
 									
 							}
@@ -965,7 +998,10 @@ var methods = {
                     update_textbox_position: function(e) {
                     	if (!options.useAnnotations || !options.displayAnnotations) { return; }
                     	if (view.selectedAnnotation == null) {
-							$(view.annotationTextEditor).css("display", "none").blur();
+							$(view.annotationTextEditor).css("display", "none");
+							if($('#tileviewerAnnotationTextLabel').is(':focus')) {
+								$('#tileviewerAnnotationTextLabel').blur();
+							}
 						}
 						
                     	var offset = $(view.canvas).offset();
@@ -1416,6 +1452,8 @@ var methods = {
 							jQuery("#" + options.id + "ControlPanImage").click();
 						}
 						
+						view.update_key();
+						
 						return view.annotations.length - 1;	// return index of newly added annotation
                     },
                     
@@ -1484,6 +1522,8 @@ var methods = {
                     	
                     	view.polygonInProgressAnnotationIndex = null;
                     	view.needdraw = true;
+                    	
+                    	view.update_key();
                     },
                     
                 	delete_annotation_point: function(i, pointIndex) {
@@ -1655,7 +1695,7 @@ var methods = {
                     },
                     
                     _make_annotation_text_editor_draggable: function(inAnnotation) {
-                    	var curAnnotation = view.annotations[inAnnotation['index']];
+                    	var curAnnotation = view._get_annotation_by_index(inAnnotation['index']); //view.annotations[inAnnotation['index']];
                     	
                      	jQuery(view.annotationTextEditor).draggable();
 						
@@ -1677,10 +1717,11 @@ var methods = {
                     },
                     
                     open_annotation_text_editor: function(inAnnotation) {
+                    	jQuery("#tileviewerAnnotationTextLabel").blur();	// ensure previously entered annotation text is saved
                     	if (options.lockAnnotationText) { return; }
-                    	if (!inAnnotation || !options.displayAnnotations) { console.log("failed to open annotation text editor"); console.trace(); return; }
+                    	if (!inAnnotation || !options.displayAnnotations) { if (options.debug) { console.log("Failed to open annotation text editor"); } return; }
                     	
-                    	var curAnnotation = view.annotations[inAnnotation['index']];
+                    	var curAnnotation = view._get_annotation_by_index(inAnnotation['index']); //view.annotations[inAnnotation['index']];
 						var sx = ((inAnnotation['tstartX']/100) * ((layer.info.width/factor) * (layer.tilesize/256))) + layer.xpos;
 						var sy = ((inAnnotation['tendY']/100) * ((layer.info.height/factor) * (layer.tilesize/256))) + layer.ypos;
 						
@@ -1691,7 +1732,7 @@ var methods = {
 						
 						t = "<form><textarea id='tileviewerAnnotationTextLabel'>" + tText + "</textarea> <div class='tileviewerAnnotationLockedButtonLabel'><input type='checkbox' id='tileviewerAnnotationLockedButton' value='1' " + ((parseInt(curAnnotation['locked']) > 0) ? "CHECKED='1'" : '') + "/> Locked</div>";
 						
-						if (options.annotationEditorUrl) {
+						if (options.annotationEditorUrl && curAnnotation['annotation_id']) {
 							t += "<a class='tileviewerFullAnnotationEditorLink' href='#' onclick='caRepresentationAnnotationEditor.showPanel(\"" + options.annotationEditorUrl + "/annotation_id/" + curAnnotation['annotation_id'] + "\"); return false;'>" + options.annotationEditorLink + "</a>";
 						}
 						t += "<a href='#' class='tileviewerAnnotationDeleteButton'>Delete</a>";
@@ -1706,6 +1747,9 @@ var methods = {
 								jQuery(this).html("");
 							});
 						}
+						jQuery("#tileviewerAnnotationTextLabel").on("change", function(e) {
+							view.save_annotation_text_editor_change();
+						});
 						
 						jQuery('#tileviewerAnnotationLockedButton').on("change", function(e) {	
 							curAnnotation['locked'] = (jQuery(this).is(":checked") == 1) ? 1 : 0;
@@ -1735,6 +1779,23 @@ var methods = {
 						});
 						
 						jQuery("#tileviewerAnnotationLockedButton").change();
+					},
+					
+					save_annotation_text_editor_change: function() {
+						var inAnnotation;
+						if(inAnnotation = jQuery(view.annotationTextEditor).data('dirty')) {
+							// Save changed text label
+							jQuery(view.annotationTextEditor).data('dirty', null);
+						
+							var i = view._get_annotation_by_index(inAnnotation['index'], true);
+							
+							if(i == null) { return; }	// annotation has been deleted
+							view.annotations[i]['label'] = jQuery('#tileviewerAnnotationTextLabel').val();
+							view.make_annotation_dirty(inAnnotation['index']);
+							view.save_annotations([inAnnotation['index']], []);
+							//view.draw();
+							view.draw_annotations();
+						}
 					},
 
                    	make_annotation_dirty: function(i) {
@@ -1787,7 +1848,9 @@ var methods = {
 								view.tools['polygon'] = "<a href='#' title='" + view.get_tool_tip('polygon') + "' id='" + options.id + "ControlAddPolygonAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/polygon.png' width='28' height='25'/></a>";
 								view.tools['measure'] = "<a href='#' title='" + view.get_tool_tip('measure') + "' id='" + options.id + "ControlAddMeasureAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/measure.png' width='25' height='25'/></a>";	
 								view.tools['lock'] = "<a href='#' title='" + view.get_tool_tip('lock') + "' id='" + options.id + "ControlLockAnnotations' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/locked.png' width='20' height='25'/></a>";
-								view.tools['key'] = "<a href='#' title='" + view.get_tool_tip('key') + "' id='" + options.id + "ControlKey' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/key.png' width='30' height='14'/></a>";	
+								if (options.useKey) {
+									view.tools['key'] = "<a href='#' title='" + view.get_tool_tip('key') + "' id='" + options.id + "ControlKey' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/key.png' width='30' height='14'/></a>";	
+								}
 							}
 							view.tools['overview'] = "<a href='#' title='" + view.get_tool_tip('overview') + "' id='" + options.id + "ControlOverview' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/navigator.png' width='27' height='23'/></a>";	
 							view.tools['expand'] = "<a href='#' title='" + view.get_tool_tip('expand') + "' id='" + options.id + "ControlFitToScreen' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/expand.png' width='25' height='25'/></a>";	
@@ -1988,11 +2051,13 @@ var methods = {
 							//
 							// Key
 							// 
-							jQuery("#" + options.id + "ControlKey").click(function() {
-								options.showKey = !options.showKey;
-								view.draw();
-								jQuery(this).css("opacity", options.showKey ? 1.0 : 0.5).find('img').attr('src', options.buttonUrlPath + (options.showKey ? '/key_on.png' : '/key.png'));
-							}).css("opacity", 0.5);
+							if (options.useKey) {
+								jQuery("#" + options.id + "ControlKey").click(function() {
+									options.showKey = !options.showKey;
+									view.draw();
+									jQuery(this).css("opacity", options.showKey ? 1.0 : 0.5).find('img').attr('src', options.buttonUrlPath + (options.showKey ? '/key_on.png' : '/key.png'));
+								}).css("opacity", 0.5);
+							}
 					
 							//
 							// Toggle annotations
@@ -2150,9 +2215,11 @@ var methods = {
 							//
 							// Color key
 							//
-							jQuery($this).append("<div class='tileviewerKey'></div>");
-							jQuery($this).find(".tileviewerKey").append("<div class='tileviewerKeyContent'></div>");
-							jQuery($this).find(".tileviewerKey").css("display", "none");
+							if (options.useKey) {
+								jQuery($this).append("<div class='tileviewerKey'></div>");
+								jQuery($this).find(".tileviewerKey").append("<div class='tileviewerKeyContent'></div>");
+								jQuery($this).find(".tileviewerKey").css("display", "none");
+							}
 							
 							//
 							// Zooming
@@ -2866,22 +2933,7 @@ var methods = {
             	// Begin ANNOTATIONS: init text editor
             	//
                 $(view.annotationTextEditor).addClass("tileviewerAnnotationTextEditor");
-                
-						
-				$(view.annotationTextEditor).on("blur", function(e) {
-					var inAnnotation;
-					if(inAnnotation = jQuery(view.annotationTextEditor).data('dirty')) {
-						// Save changed text label
-						jQuery(view.annotationTextEditor).data('dirty', null);
-						
-						if(!view.annotations[inAnnotation['index']]) { console.log("Could not save text; no annotation at index ", inAnnotation['index'], inAnnotation);  return; }
-						view.annotations[inAnnotation['index']]['label'] = jQuery('#tileviewerAnnotationTextLabel').val();
-						view.make_annotation_dirty(inAnnotation['index']);
-						view.save_annotations([inAnnotation['index']], []);
-						view.draw();
-					}
-				});
-                
+            
                 annotationContainer.append(view.annotationTextEditor);
                 $(view.annotationTextEditor).draggable();
                 
@@ -3247,7 +3299,7 @@ var methods = {
 								var sw = (((inAnnotation['tendX']/100) * ((layer.info.width/factor) * (layer.tilesize/256))) + layer.xpos) - sx - 10;	// 10 = 2 * 5px padding
 						
 						
-								if (view.selectedAnnotation == inAnnotation['index'] && !options.lockAnnotationText) {
+								if ((view.selectedAnnotation == inAnnotation['index']) && !options.lockAnnotationText) {
 									$(view.annotationTextEditor).css("display", "block");
 									$(inAnnotation['textBlock']).fadeOut(250);
 								} else {
@@ -3431,7 +3483,7 @@ var methods = {
             case "zoom_out":
                 break;
             default:
-                console.log("unknown mode:" + options.mode);
+                if (options.debug) { console.log("unknown mode:" + options.mode); }
                 return;
             }
 
@@ -3469,7 +3521,7 @@ var methods = {
     	var c = 1;	// our Tilepic parser always puts a tiny thumb as the first tile, which we want to skip since tileviewer doesn't encode a counterpart
     	alevel = l - level - 2;
     	for(i=0; i<alevel; i++) {
-    		if (i < 0) { console.log("Negative i=" + i); continue;}
+    		if (i < 0) { if (options.debug) {  console.log("Negative i=" + i); } continue;}
     		//if (i >= methods.tileCounts.length) { console.log("Excessive i=" + i); continue;}
     		c += methods.tileCounts[i];
     	}

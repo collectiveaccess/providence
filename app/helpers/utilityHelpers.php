@@ -542,7 +542,10 @@ function caFileIsIncludable($ps_file) {
 		return str_replace("&amp;#", "&#", $ps_text);
 	}
 	# ----------------------------------------
-	function caEscapeForBundlePreview($ps_text) {
+	function caEscapeForBundlePreview($ps_text, $pn_limit=100) {
+		if(strlen($ps_text) > $pn_limit) {
+			$ps_text = substr($ps_text, 0, $pn_limit) . " ...";
+		}
 		return json_encode(html_entity_decode(strip_tags($ps_text), ENT_QUOTES | ENT_HTML5));
 	}
 	# ----------------------------------------

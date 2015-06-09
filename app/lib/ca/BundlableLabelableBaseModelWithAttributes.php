@@ -4318,7 +4318,7 @@ if (!$vb_batch) {
  	 *
  	 *		[Options controlling format of data in return value]
  	 *			useLocaleCodes = Return locale values as codes (Ex. en_US) rather than numeric database-specific locale_ids. [Default is false]
- 	 *			sort = Array list of bundles to sort returned values on. The sortable bundle specifiers are fields with or without tablename. Only those fields returned for the related tables (intrinsics and label fields) are sortable.  Sort on attributes is not yet supported. [Default is null]
+ 	 *			sort = Array list of bundles to sort returned values on. The sortable bundle specifiers are fields with or without tablename. Only those fields returned for the related tables (intrinsics, attributes and label fields) are sortable. [Default is null]
 	 *			sortDirection = Direction of sort. Use "asc" (ascending) or "desc" (descending). [Default is asc]
  	 *			groupFields = Groups together fields in an arrangement that is easier for import to another system. Used by the ItemInfo web service when in "import" mode. [Default is false]
  	 *
@@ -4352,7 +4352,7 @@ if (!$vb_batch) {
 		if (!isset($pa_options['returnLabelsAsArray']) && (isset($pa_options['return_labels_as_array']) && $pa_options['return_labels_as_array'])) { $pa_options['returnLabelsAsArray'] = $pa_options['return_labels_as_array']; }
 		if (!isset($pa_options['restrictToLists']) && (isset($pa_options['restrict_to_lists']) && $pa_options['restrict_to_lists'])) { $pa_options['restrictToLists'] = $pa_options['restrict_to_lists']; }
 		
-		$va_group_fields = isset($pa_options['groupFields']) ? $pa_options['groupFields'] : false;
+		$vb_group_fields = isset($pa_options['groupFields']) ? $pa_options['groupFields'] : false;
 		$va_primary_ids = (isset($pa_options['primaryIDs']) && is_array($pa_options['primaryIDs'])) ? $pa_options['primaryIDs'] : null;
 		$vb_show_current_only = isset($pa_options['showCurrentOnly']) ? $pa_options['showCurrentOnly'] : false;
 		
@@ -4716,7 +4716,7 @@ if (!$vb_batch) {
 					//
 					// Return data in an arrangement more convenient for the data importer 
 					//
-					if ($va_group_fields) {
+					if ($vb_group_fields) {
 						$vs_rel_pk = $t_rel_item->primaryKey();
 						if ($t_rel_item_label) {
 							foreach($t_rel_item_label->getFormFields() as $vs_field => $va_field_info) {
@@ -4853,7 +4853,7 @@ if (!$vb_batch) {
 						$va_rels[$vs_v]['relationship_type_code'] = $va_rel_types[$va_row['relationship_type_id']]['type_code'];
 					}
 
-					if ($va_group_fields) {
+					if ($vb_group_fields) {
 						$vs_rel_pk = $t_rel_item->primaryKey();
 						if ($t_rel_item_label) {
 							foreach($t_rel_item_label->getFormFields() as $vs_field => $va_field_info) {
@@ -4990,7 +4990,7 @@ if (!$vb_batch) {
 					$va_rels[$vs_v]['relationship_type_code'] = $va_rel_types[$va_row['relationship_type_id']]['type_code'];
 				}
 
-				if ($va_group_fields) {
+				if ($vb_group_fields) {
 					$vs_rel_pk = $t_rel_item->primaryKey();
 					if ($t_rel_item_label) {
 						foreach($t_rel_item_label->getFormFields() as $vs_field => $va_field_info) {
