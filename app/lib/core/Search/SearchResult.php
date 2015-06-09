@@ -287,6 +287,10 @@ class SearchResult extends BaseObject {
 		
 		$va_row_ids_in_current_level = $va_row_ids;
 		
+		// Make sure singletons get into the cache
+		foreach($va_row_ids as $vn_row_id) {
+			SearchResult::$opa_hierarchy_parent_prefetch_cache[$ps_tablename][$vn_row_id][] = $va_row[$vn_row_id];
+		}
 		$va_row_id_map = null;
 		$vn_level = 0;
 		
@@ -1050,6 +1054,7 @@ class SearchResult extends BaseObject {
 								foreach($va_ids as $vn_id) {
 									if(is_array(SearchResult::$opa_hierarchy_parent_prefetch_cache[$va_path_components['table_name']][$vn_id])) {
 										$va_hier_id_list = array_merge(array($vn_id), SearchResult::$opa_hierarchy_parent_prefetch_cache[$va_path_components['table_name']][$vn_id]);
+										
 										if ($vs_hierarchy_direction === 'asc') { $va_hier_id_list = array_reverse($va_hier_id_list); }
 										$va_hier_ids[] = $va_hier_id_list;
 									}
