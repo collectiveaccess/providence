@@ -507,7 +507,7 @@
 	/**
 	 * Perform mapping of extracted media metadata to CollectiveAccess bundles.
 	 *
-	 * @param BaseModel $po_instance Model instance to insert extracted metadata into
+	 * @param BundlableLabelableBaseModelWithAttributes $po_instance Model instance to insert extracted metadata into
 	 * @param array $pa_metadata Extracted metadata
 	 * @param int $pn_locale_id The current locale as a numeric locale_id
 	 * @return bool True extracted metadata was mapped and the model changed, false if no change was made to the model
@@ -637,8 +637,11 @@
 
 		foreach($va_mapping as $vs_metadata => $va_attr) {
 			$va_tmp = explode(":", $vs_metadata);
+			$vs_delimiter = caGetOption('delimiter', $va_attr, false);
 
 			foreach($va_attr as $vs_attr) {
+				if($vs_attr == 'delimiter') { continue; }
+
 				$va_metadata =& $pa_metadata;
 				foreach($va_tmp as $vs_el) {
 					if (isset($va_metadata[$vs_el])) {
@@ -669,10 +672,21 @@
 						} else {
 							// try as attribute
 							if(sizeof($va_tmp2)==2){ // format ca_objects.foo, we only want "foo"
-								$po_instance->replaceAttribute(array(
-									$va_tmp2[1] => $va_metadata,
-									'locale_id' => $pn_locale_id
-								),$va_tmp2[1]);
+								if($vs_delimiter) {
+									$va_m = explode($vs_delimiter, $va_metadata);
+									$po_instance->removeAttributes($va_tmp2[1]);
+									foreach($va_m as $vs_m) {
+										$po_instance->addAttribute(array(
+											$va_tmp2[1] => trim($vs_m),
+											'locale_id' => $pn_locale_id
+										),$va_tmp2[1]);
+									}
+								} else {
+									$po_instance->replaceAttribute(array(
+										$va_tmp2[1] => $va_metadata,
+										'locale_id' => $pn_locale_id
+									),$va_tmp2[1]);
+								}
 							}
 						}
 				}
