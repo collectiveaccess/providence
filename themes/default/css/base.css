@@ -1709,6 +1709,19 @@ table.listtable tbody tr.odd td {
     background-color:#f8f8f8;
 }
 
+#caCommentsList tbody tr td div.caUserCommentsListName, #caCommentsList tbody tr td div.caUserCommentsListComment {
+	overflow: auto;
+}
+
+#caCommentsList tbody tr td div.caUserCommentsListName {
+	width: 100px;
+}
+
+#caCommentsList tbody tr td div.caUserCommentsListComment {
+	width: 150px;
+}
+
+
 /* table footer */
 table.listtable tfoot td {
     padding: 4px;
