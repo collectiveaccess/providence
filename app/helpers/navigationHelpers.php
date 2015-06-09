@@ -1168,4 +1168,16 @@
 		);
 	}
 	# ------------------------------------------------------------------------------------------------
-?>
+	/**
+	 * Redirect to given url
+	 * @param string $ps_url
+	 * @return bool success state
+	 */
+	function caSetRedirect($ps_url) {
+		global $g_response;
+		if(!($g_response instanceof ResponseHTTP)) { return false; }
+
+		$g_response->setRedirect($ps_url);
+		return true;
+	}
+	# ------------------------------------------------------------------------------------------------

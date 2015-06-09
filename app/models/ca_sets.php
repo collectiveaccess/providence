@@ -1340,41 +1340,46 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 						}
 					}
 				}
+				if(($vn_k = array_search($pa_row_ids, $pa_row_ids)) !== false) {
+					unset($pa_row_ids[$vn_k]);
+				}
+				unset($va_row_ranks[$vn_row_id]);
 			}
 		}
 		
-		
+	
 		// rewrite ranks
+		$va_existing_ranks = array_values($va_row_ranks);
+		$vn_rank_acc = end(array_values($va_row_ranks));
+		
+		$va_rank_updates = array();
 		foreach($pa_row_ids as $vn_rank => $vn_row_id) {
-			$vn_rank_inc = $vn_rank + 1;
-			if ($vb_treat_row_ids_as_rids) { $va_tmp = explode("_", $vn_row_id); }
-			if (isset($va_row_ranks[$vn_row_id]) && $t_set_item->load($vb_treat_row_ids_as_rids ? array('set_id' => $vn_set_id, 'row_id' => $va_tmp[0], 'item_id' => $va_tmp[1]) : array('set_id' => $vn_set_id, 'row_id' => $vn_row_id))) {
-				if ($va_row_ranks[$vn_row_id] != $vn_rank_inc) {
-					$t_set_item->set('rank', $vn_rank_inc);
-					$t_set_item->update();
-				
-					if ($t_set_item->numErrors()) {
-						$va_errors[$vn_row_id] = _t('Could not reorder item %1: %2', $vn_row_id, join('; ', $t_set_item->getErrors()));
-					}
-				}
+			if (isset($va_existing_ranks[$vn_rank])) {
+				$vn_rank_inc = $va_existing_ranks[$vn_rank];
 			} else {
+				$vn_rank_acc++;
+				$vn_rank_inc = $vn_rank_acc;
+			}
+			
+			if ($vb_treat_row_ids_as_rids) { $va_tmp = explode("_", $vn_row_id); }
+			if (isset($va_row_ranks[$vn_row_id]) && ($va_row_ranks[$vn_row_id] != $vn_rank_inc)) {
+				$va_rank_updates[$vn_row_id] = $vn_rank_inc;
+			} elseif(!isset($va_row_ranks[$vn_row_id])) {
 				// add item to set
 				$this->addItem($vb_treat_row_ids_as_rids ? $va_tmp[0] : $vn_row_id, null, $vn_user_id, $vn_rank_inc);
 			}
 		}
-		if(!$vb_delete_excluded_items){
-			# --- don't delete items whose id's where not passed to this function, 
-			foreach($va_excluded_item_ids as $vn_item_id){
-				$vn_rank_inc++;
-				$t_set_item->load($vn_item_id);
-				$t_set_item->set('rank', $vn_rank_inc);
-				$t_set_item->update();
-			
-				if ($t_set_item->numErrors()) {
-					$va_errors[$vn_row_id] = _t('Could not reorder item %1: %2', $vn_row_id, join('; ', $t_set_item->getErrors()));
-				}
+		
+		foreach($va_rank_updates as $vn_row_id => $vn_new_rank) {
+			if($vb_treat_row_ids_as_rids) {
+				$va_tmp = explode("_", $vn_row_id);
+				$this->getDb()->query("UPDATE ca_set_items SET rank = ? WHERE set_id = ? AND row_id = ? AND item_id = ?", $x=array($vn_new_rank, $vn_set_id, $va_tmp[0], $va_tmp[1]));
+
+			} else {
+				$this->getDb()->query("UPDATE ca_set_items SET rank = ? WHERE set_id = ? AND row_id = ?", array($vn_set_id, $vn_new_rank));
 			}
 		}
+		
 		
 		if(sizeof($va_errors)) {
 			if ($vb_web_set_transaction) { $o_trans->rollback(); }

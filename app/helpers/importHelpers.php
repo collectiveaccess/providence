@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,6 +34,10 @@
 	require_once(__CA_LIB_DIR__.'/ca/Import/BaseDataReader.php');
 	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
 	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
+
+	require_once(__CA_LIB_DIR__.'/core/Plugins/InformationService/TGN.php');
+	require_once(__CA_LIB_DIR__.'/core/Plugins/InformationService/AAT.php');
+	require_once(__CA_LIB_DIR__.'/core/Plugins/InformationService/ULAN.php');
 
 	# ---------------------------------------
 	/**
@@ -76,7 +80,7 @@
 			$vs_type = BaseRefinery::parsePlaceholder($va_parent['type'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 
 			if (!$vs_name && !$vs_idno) { continue; }
-			if (!$vs_name) { $vs_name = $vs_idno; }
+			if (!$vs_name) { continue; }//$vs_name = $vs_idno; }
 			
 			$va_attributes = (isset($va_parent['attributes']) && is_array($va_parent['attributes'])) ? $va_parent['attributes'] : array();
 			
@@ -146,7 +150,7 @@
 					$va_attributes['preferred_labels']['name'] = $va_attributes['_preferred_labels'] = $vs_name;
 					break;
 				case 'ca_entities':
-					$vn_id = DataMigrationUtils::getEntityID($va_entity_label = DataMigrationUtils::splitEntityName($vs_name), $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
+					$vn_id = DataMigrationUtils::getEntityID($va_entity_label = DataMigrationUtils::splitEntityName($vs_name, $pa_options), $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					$va_attributes['preferred_labels'] = $va_entity_label;
 					$va_attributes['_preferred_labels'] = $vs_name;
 					break;
@@ -377,7 +381,7 @@
 						$va_name[$vs_label_fld] = BaseRefinery::parsePlaceholder($pa_related_options[$vs_label_fld], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader));
 					}
 				} else {
-					$va_name = DataMigrationUtils::splitEntityName($vs_name);
+					$va_name = DataMigrationUtils::splitEntityName($vs_name, $pa_options);
 				} 
 			
 				if (!is_array($va_name) || !$va_name) { 
@@ -707,7 +711,7 @@
 								$vn_item_id = DataMigrationUtils::getObjectLotID($vs_item, $vs_item, $va_val['_type'], $g_ui_locale_id, $va_attr_vals, $pa_options);
 								break;
 							case 'ca_entities':
-								$vn_item_id = DataMigrationUtils::getEntityID(DataMigrationUtils::splitEntityName($vs_item), $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
+								$vn_item_id = DataMigrationUtils::getEntityID(DataMigrationUtils::splitEntityName($vs_item, $pa_options), $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
 								break;
 							case 'ca_places':
 								$vn_item_id = DataMigrationUtils::getPlaceID($vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
@@ -774,7 +778,7 @@
 	
 						switch($ps_table) {
 							case 'ca_entities':
-								$va_val['preferred_labels'] = DataMigrationUtils::splitEntityName($vs_item);
+								$va_val['preferred_labels'] = DataMigrationUtils::splitEntityName($vs_item, $pa_options);
 								if(!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
 								break;
 							case 'ca_list_items':
@@ -823,7 +827,7 @@
 					
 						switch($ps_table) {
 							case 'ca_entities':
-								$va_val = DataMigrationUtils::splitEntityName($vs_item);
+								$va_val = DataMigrationUtils::splitEntityName($vs_item, $pa_options);
 								break;
 							case 'ca_list_items':
 								$va_val = array('name_singular' => $vs_item, 'name_plural' => $vs_item);
@@ -1060,3 +1064,79 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 		return $vs_return;
 	}
 	# ---------------------------------------------------------------------
+	/**
+	 * Try to match given (partial) hierarchy path to a single subject in getty linked data AAT service
+	 * @param array $pa_hierarchy_path
+	 * @param int $pn_threshold
+	 * @param array $pa_options
+	 * 		removeParensFromLabels = Remove parens from labels for search and string comparison. This can improve results in specific cases.
+	 * @return bool|string
+	 */
+	function caMatchAAT($pa_hierarchy_path, $pn_threshold=180, $pa_options = array()) {
+		$vs_cache_key = md5(print_r($pa_hierarchy_path, true));
+		if(MemoryCache::contains($vs_cache_key, 'AATMatches')) {
+			return MemoryCache::fetch($vs_cache_key, 'AATMatches');
+		}
+
+		if(!is_array($pa_hierarchy_path)) { return false; }
+
+		$pb_remove_parens_from_labels = caGetOption('removeParensFromLabels', $pa_options, false);
+
+		// search the bottom-most component (the actual term)
+		$vs_bot = trim(array_pop($pa_hierarchy_path));
+
+		if($pb_remove_parens_from_labels) {
+			$vs_lookup = trim(preg_replace("/\([\p{L}\-\_\s]+\)/", '', $vs_bot));
+		} else {
+			$vs_lookup = $vs_bot;
+		}
+
+		$o_service = new WLPlugInformationServiceAAT();
+
+		$va_hits = $o_service->lookup(array(), $vs_lookup, array('phrase' => true, 'raw' => true, 'limit' => 2000));
+		if(!is_array($va_hits)) { return false; }
+
+		$vn_best_distance = 0;
+		$vn_pick = -1;
+		foreach($va_hits as $vn_i => $va_hit) {
+			if(stripos($va_hit['TermPrefLabel']['value'], $vs_lookup) !== false) { // only consider terms that match what we searched
+
+				// calculate similarity as a number by comparing both the term and the parent string
+				$vs_label_with_parens = $va_hit['TermPrefLabel']['value'];
+				$vs_label_without_parens = trim(preg_replace("/\([\p{L}\s]+\)/", '', $vs_label_with_parens));
+				$va_label_percentages = array();
+
+				// we try every combination with and without parens on both sides
+				// unfortunately this code gets rather ugly because getting the similarity
+				// as percentage is only possible by passing a reference parameter :-(
+				similar_text($vs_label_with_parens, $vs_bot, $vn_label_percent);
+				$va_label_percentages[] = $vn_label_percent;
+				similar_text($vs_label_with_parens, $vs_lookup, $vn_label_percent);
+				$va_label_percentages[] = $vn_label_percent;
+				similar_text($vs_label_without_parens, $vs_bot, $vn_label_percent);
+				$va_label_percentages[] = $vn_label_percent;
+				similar_text($vs_label_without_parens, $vs_lookup, $vn_label_percent);
+				$va_label_percentages[] = $vn_label_percent;
+
+				// similarity to parent path
+				similar_text($va_hit['ParentsFull']['value'], join(' ', array_reverse($pa_hierarchy_path)), $vn_parent_percent);
+
+				// it's a weighted sum because the term label is more important than the exact path
+				$vn_tmp = 2*max($va_label_percentages) + $vn_parent_percent;
+				//var_dump($va_hit); var_dump($vn_tmp);
+				if($vn_tmp > $vn_best_distance) {
+					$vn_best_distance = $vn_tmp;
+					$vn_pick = $vn_i;
+				}
+			}
+		}
+
+		if($vn_pick >= 0 && ($vn_best_distance > $pn_threshold)) {
+			$va_pick = $va_hits[$vn_pick];
+
+			MemoryCache::save($vs_cache_key, $va_pick['ID']['value'], 'AATMatches');
+			return $va_pick['ID']['value'];
+		}
+
+		return false;
+	}

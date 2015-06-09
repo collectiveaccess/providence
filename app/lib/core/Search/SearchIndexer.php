@@ -782,6 +782,7 @@ class SearchIndexer extends SearchBase {
 							$va_queries[] = array('sql' => $vs_sql, 'params' => $va_params);
 						}
 					}
+
 					foreach($va_queries as $va_query) {
 						$vs_sql = $va_query['sql'];
 						$va_params = $va_query['params'];
@@ -796,11 +797,15 @@ class SearchIndexer extends SearchBase {
 						if (method_exists($t_rel, "getApplicableElementCodes")) {
 							if (is_array($va_element_ids = array_keys($t_rel->getApplicableElementCodes(null, false, false))) && sizeof($va_element_ids)) {
 								$va_rel_row_ids = $qr_res->getAllFieldValues($vs_related_pk);
-								ca_attributes::prefetchAttributes($this->opo_db, $vn_related_tablenum, $va_rel_row_ids , $va_element_ids);
+								if(sizeof($va_rel_row_ids) > 0) {
+									ca_attributes::prefetchAttributes($this->opo_db, $vn_related_tablenum, $va_rel_row_ids , $va_element_ids);
+								}
 							}
 						}
 
-						$qr_res->seek(0);
+						if(!$qr_res->seek(0)) {
+							$qr_res = $this->opo_db->query($vs_sql, $va_params);
+						}
 						while($qr_res->nextRow()) {
 							$va_field_data = $qr_res->getRow();
 
@@ -1018,7 +1023,7 @@ class SearchIndexer extends SearchBase {
 													$vn_list_id = $this->_getElementListID($vo_value->getElementID());
 													$vs_value_to_index = $vo_value->getDisplayValue($vn_list_id);
 
-													$va_additional_indexing = $vo_value->getExtraValuesForSearchIndexing();
+													$va_additional_indexing = $vo_value->getDataForSearchIndexing();
 													if(is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {
 														foreach($va_additional_indexing as $vs_additional_value) {
 															$vs_value_to_index .= " ; ".$vs_additional_value;
@@ -1079,7 +1084,7 @@ class SearchIndexer extends SearchBase {
 											foreach($vo_attribute->getValues() as $vo_value) {
 												$vs_value_to_index = $vo_value->getDisplayValue($vn_list_id);
 
-												$va_additional_indexing = $vo_value->getExtraValuesForSearchIndexing();
+												$va_additional_indexing = $vo_value->getDataForSearchIndexing();
 												if(is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {
 													foreach($va_additional_indexing as $vs_additional_value) {
 														$vs_value_to_index .= " ; ".$vs_additional_value;
@@ -1186,7 +1191,7 @@ class SearchIndexer extends SearchBase {
 								$vn_list_id = $this->_getElementListID($vo_value->getElementID());
 								$vs_value_to_index = $vo_value->getDisplayValue($vn_list_id);
 
-								$va_additional_indexing = $vo_value->getExtraValuesForSearchIndexing();
+								$va_additional_indexing = $vo_value->getDataForSearchIndexing();
 								if(is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {
 									foreach($va_additional_indexing as $vs_additional_value) {
 										$vs_value_to_index .= " ; ".$vs_additional_value;
@@ -1236,7 +1241,7 @@ class SearchIndexer extends SearchBase {
 						foreach($vo_attribute->getValues() as $vo_value) {
 							$vs_value_to_index = $vo_value->getDisplayValue(array('idsOnly' => true));
 
-							$va_additional_indexing = $vo_value->getExtraValuesForSearchIndexing();
+							$va_additional_indexing = $vo_value->getDataForSearchIndexing();
 							if(is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {
 								foreach($va_additional_indexing as $vs_additional_value) {
 									$vs_value_to_index .= " ; ".$vs_additional_value;
@@ -1292,7 +1297,7 @@ class SearchIndexer extends SearchBase {
 						foreach($vo_attribute->getValues() as $vo_value) {
 							$vs_value_to_index = $vo_value->getDisplayValue();
 
-							$va_additional_indexing = $vo_value->getExtraValuesForSearchIndexing();
+							$va_additional_indexing = $vo_value->getDataForSearchIndexing();
 							if(is_array($va_additional_indexing) && (sizeof($va_additional_indexing) > 0)) {
 								foreach($va_additional_indexing as $vs_additional_value) {
 									$vs_value_to_index .= " ; ".$vs_additional_value;
@@ -1859,7 +1864,7 @@ class SearchIndexer extends SearchBase {
 			WHERE
 			{$ps_subject_tablename}.{$vs_subject_pk} = ?
 		";
-		//print $vs_sql;
+
 
 		$qr_res = $this->opo_db->query($vs_sql, $pn_row_id);
 

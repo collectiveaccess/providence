@@ -921,16 +921,22 @@ class MultipartIDNumber extends IDNumber {
 					$va_values[$vn_i] = $va_element_info['value'];
 					break;
 				case 'YEAR':
-					$va_tmp = getdate();
-					$va_values[$vn_i] = $va_tmp['year'];
+					if (caGetOption('force_derived_values_to_current_year', $va_element_info, false)) {
+						$va_tmp = getdate();
+						$va_values[$vn_i] = $va_tmp['year'];
+					}
 					break;
 				case 'MONTH':
-					$va_tmp = getdate();
-					$va_values[$vn_i] = $va_tmp['mon'];
+					if (caGetOption('force_derived_values_to_current_month', $va_element_info, false)) {
+						$va_tmp = getdate();
+						$va_values[$vn_i] = $va_tmp['mon'];
+					}
 					break;
 				case 'DAY':
-					$va_tmp = getdate();
-					$va_values[$vn_i] = $va_tmp['mday'];
+					if (caGetOption('force_derived_values_to_current_day', $va_element_info, false)) {
+						$va_tmp = getdate();
+						$va_values[$vn_i] = $va_tmp['mday'];
+					}
 					break;
 			}
 

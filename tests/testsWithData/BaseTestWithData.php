@@ -84,7 +84,7 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 		$o_itemservice = new ItemService($this->opo_request, $ps_table);
 		$va_return = $o_itemservice->addItem($ps_table, $pa_data);
 		if(!$va_return) {
-			$this->assertTrue(false, 'Inserting test data failed');
+			$this->assertTrue(false, 'Inserting test data failed. API errors are: ' . join(' ', $o_itemservice->getErrors()));
 		}
 
 		$this->opa_record_map[$ps_table][] = $vn_return = array_shift($va_return);

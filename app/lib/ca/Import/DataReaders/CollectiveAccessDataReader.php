@@ -77,6 +77,8 @@ class CollectiveAccessDataReader extends BaseDataReader {
 	 * @return bool
 	 */
 	public function read($ps_source, $pa_options=null) {
+		parent::read($ps_source, $pa_options);
+		
 		# http://username:password@hostname/path/table?t=q=query
 		$va_url = parse_url($ps_source);
 		
@@ -154,6 +156,8 @@ class CollectiveAccessDataReader extends BaseDataReader {
 	 * @return mixed
 	 */
 	public function get($ps_col, $pa_options=null) {
+		if ($vm_ret = parent::get($ps_col, $pa_options)) { return $vm_ret; }
+		
 		$pb_return_as_array = isset($pa_options['returnAsArray']) ? (bool)$pa_options['returnAsArray'] : false;
 		$pb_return_all_locales = isset($pa_options['returnAllLocales']) ? (bool)$pa_options['returnAllLocales'] : false;
 		$pb_convert_codes_to_display_text = isset($pa_options['convertCodesToDisplayText']) ? (bool)$pa_options['convertCodesToDisplayText'] : false;

@@ -327,6 +327,8 @@
 						
 							switch($vn_datatype = (int)$t_element->get('datatype')) {
 								case __CA_ATTRIBUTE_VALUE_LIST__:
+									$vs_sortable_value_fld = $vs_sort_field = 'name_plural';
+									
 									$vs_sql = "
 										SELECT attr.row_id, lower(lil.name_plural) name_plural
 										FROM ca_attributes attr

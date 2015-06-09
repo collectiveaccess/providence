@@ -3049,5 +3049,149 @@
 			return _t('CollectiveAccess requires certain PHP configuration options to be set and for file permissions in several directories to be web-server writable. This command will check these settings and file permissions and return warnings if configuration appears to be incorrect.');
 		}
 		# -------------------------------------------------------
+		public static function reload_service_values($po_opts=null) {
+			$va_infoservice_elements = ca_metadata_elements::getElementsAsList(
+				false, null, null, true, false, false, array(__CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__)
+			);
+
+			$o_db = new Db();
+
+			foreach($va_infoservice_elements as $va_element) {
+				$qr_values = $o_db->query("
+					SELECT * FROM ca_attribute_values
+					WHERE element_id = ?
+				", $va_element['element_id']);
+
+				print CLIProgressBar::start($qr_values->numRows(), "Reloading values for element code ".$va_element['element_code']);
+				$t_value = new ca_attribute_values();
+
+				while($qr_values->nextRow()) {
+					$o_val = new InformationServiceAttributeValue($qr_values->getRow());
+					$vs_uri = $o_val->getUri();
+
+					print CLIProgressBar::next(); // inc before first continuation point
+
+					if(!$vs_uri || !strlen($vs_uri)) { continue; }
+					if(!$t_value->load($qr_values->get('value_id'))) { continue; }
+
+					$t_value->editValue($vs_uri);
+
+					if($t_value->numErrors() > 0) {
+						print _t('There were errors updating an attribute row: ') . join(' ', $t_value->getErrors());
+					}
+				}
+
+				print CLIProgressBar::finish();
+			}
+
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_service_valuesParamList() {
+			return array();
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_service_valuesUtilityClass() {
+			return _t('Maintenance');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_service_valuesShortHelp() {
+			return _t('Reload InformationService attribute values from referenced URLs.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_service_valuesHelp() {
+			return _t('InformationService attribute values store all the data CollectiveAccess needs to operate locally while keeping a reference to the referenced record at the remote web service. That means that potential changes at the remote data source are not pulled in automatically. This script explicitly performs a lookup for all existing InformationService attribute values and updates the local copy of the data with the latest values.');
+		}
+		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function reload_ulan_records($po_opts=null) {
+			require_once(__CA_MODELS_DIR__.'/ca_data_importers.php');
+
+			if(!($vs_mapping = $po_opts->getOption('mapping'))) {
+				CLIUtils::addError("\t\tNo mapping found. Please use the -m parameter to specify a ULAN mapping.");
+				return false;
+			}
+
+			if (!(ca_data_importers::mappingExists($vs_mapping))) {
+				CLIUtils::addError("\t\tMapping $vs_mapping does not exist");
+				return false;
+			}
+
+			$vs_log_dir = $po_opts->getOption('log');
+			$vn_log_level = CLIUtils::getLogLevel($po_opts);
+
+			$o_db = new Db();
+			$qr_items = $o_db->query("
+				SELECT DISTINCT source FROM ca_data_import_events WHERE type_code = 'ULAN'
+			");
+
+			$va_sources = array();
+
+			while($qr_items->nextRow()) {
+				$vs_source = $qr_items->get('source');
+				if(!isURL($vs_source)) {
+					continue;
+				}
+
+				if(!preg_match("/http\:\/\/vocab\.getty\.edu\/ulan\//", $vs_source)) {
+					continue;
+				}
+
+				$va_sources[] = $vs_source;
+			}
+
+			ca_data_importers::importDataFromSource(join(',', $va_sources), $vs_mapping, array('format' => 'ULAN', 'showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level));
+
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_ulan_recordsParamList() {
+			return array(
+				"mapping|m=s" => _t('Which mapping to use to re-import the ULAN records.'),
+				"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
+				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_ulan_recordsUtilityClass() {
+			return _t('Maintenance');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_ulan_recordsShortHelp() {
+			return _t('Reload records imported from ULAN with the specified mapping.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_ulan_recordsHelp() {
+			return _t('Reload records imported from ULAN with the specified mapping. This utility assumes that the mapping is set up with an existingRecordPolicy that ensures that existing records are matched properly. It will create duplicates if it does not match existing records so be sure to test your mapping first!');
+		}
+		# -------------------------------------------------------
 	}
-?>

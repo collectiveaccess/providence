@@ -327,7 +327,7 @@ h5 {
 	clear: both;
 	min-height: 26px;
 }
-#leftNav .watchThis, #leftNav #inspectorChangeType, #leftNav #inspectorCreateChild, #leftNav #caDuplicateItemButton, #leftNav #inspectorLotMediaDownloadButton {
+#leftNav .watchThis, #leftNav #inspectorChangeType, #leftNav #inspectorCreateChild, #leftNav #caDuplicateItemButton, #leftNav #inspectorLotMediaDownloadButton, #leftNav #inspectorSetMediaDownloadButton {
 	float: left;
 	margin-right: 10px;
 	width: 28px;
@@ -1709,6 +1709,19 @@ table.listtable tbody tr.odd td {
     background-color:#f8f8f8;
 }
 
+#caCommentsList tbody tr td div.caUserCommentsListName, #caCommentsList tbody tr td div.caUserCommentsListComment {
+	overflow: auto;
+}
+
+#caCommentsList tbody tr td div.caUserCommentsListName {
+	width: 100px;
+}
+
+#caCommentsList tbody tr td div.caUserCommentsListComment {
+	width: 150px;
+}
+
+
 /* table footer */
 table.listtable tfoot td {
     padding: 4px;
@@ -1728,6 +1741,19 @@ td.listtableTotals {
 	width:20px;
 	padding:5px;
 }
+
+#caSetList tbody tr td div.caSetListName, #caSetList tbody tr td div.caSetListOwner {
+	overflow: auto;
+}
+
+#caSetList tbody tr td div.caSetListName {
+	width: 160px;
+}
+
+#caSetList tbody tr td div.caSetListOwner {
+	width: 90px;
+}
+
 .saveDelete {
 	width:60px;
 	white-space:nowrap;
@@ -6365,7 +6391,6 @@ div.quickAddDialogHeader {
 }
 
 div.quickAddErrorContainer {
-    position: fixed;
     width: 890px;
     display: none;
     z-index:33000;
@@ -7192,4 +7217,21 @@ div.caLibraryDashboardPanel {
 	width: 832px;
 	min-height: 100px;
 	margin: 10px 10px 10px 0;	
+}
+
+.authorityReferenceList ul  {
+	list-style-type: none;
+	padding: 0;
+	margin: 10px 0 0 5px;
+}
+
+.authorityReferenceList ul li {
+	padding: 0;
+	margin: 10px 0 0 5px;
+}
+
+div.authorityReferenceListContainer {
+	width: 100%;
+	overflow-y: hidden;
+	min-height: 200px;
 }

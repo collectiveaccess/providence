@@ -87,6 +87,11 @@ var caUI = caUI || {};
 					types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction});
 				}
 			}
+			
+			if (caUI && caUI.utils && caUI.utils.showUnsavedChangesWarning) {
+				// Attached change handler to form elements in relationship
+				jQuery('#' + options.itemID + id + ' select, #' + options.itemID + id + ' input, #' + options.itemID + id + ' textarea').not('.dontTriggerUnsavedChangeWarning').change(function() { caUI.utils.showUnsavedChangesWarning(true); });
+			}
 		};
 		
 		options.onAddItem = function(id, options, isNew) {

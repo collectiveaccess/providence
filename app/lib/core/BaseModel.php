@@ -2429,7 +2429,6 @@ class BaseModel extends BaseObject {
 					}
 
 					$this->_FILES_CLEAR = array();
-					$this->logChange("I");
 
 					#
 					# update search index
@@ -2439,6 +2438,8 @@ class BaseModel extends BaseObject {
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) && !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
 						$this->doSearchIndexing($this->getFieldValuesArray(true), false, array('isNewRow' => true));
 					}
+
+					$this->logChange("I");
 
 					if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 					
@@ -6408,7 +6409,7 @@ class BaseModel extends BaseObject {
 				return false;
 			}
 			if (!($this->opqs_change_log_snapshot = $o_db->prepare("
-				INSERT INTO ".$vs_change_log_database."ca_change_log_snapshots
+				INSERT IGNORE INTO ".$vs_change_log_database."ca_change_log_snapshots
 				(
 					log_id, snapshot
 				)
@@ -6419,7 +6420,7 @@ class BaseModel extends BaseObject {
 				return false;
 			}
 			if (!($this->opqs_change_log_subjects = $o_db->prepare("
-				INSERT INTO ".$vs_change_log_database."ca_change_log_subjects
+				INSERT IGNORE INTO ".$vs_change_log_database."ca_change_log_subjects
 				(
 					log_id, subject_table_num, subject_row_id
 				)
@@ -7720,6 +7721,7 @@ class BaseModel extends BaseObject {
 	 *			[Default is ids]
 	 *	
 	 *		limit = if searchResult, ids or modelInstances is set, limits number of returned ancestoes. [Default is no limit]
+	 *		includeSelf = Include initial row_id values in returned set [Default is false]
 	 *		
 	 * @return mixed
 	 */
@@ -7732,6 +7734,7 @@ class BaseModel extends BaseObject {
 		$t_instance = new $vs_table;
 		
 	 	if (!($vs_parent_id_fld = $t_instance->getProperty('HIERARCHY_PARENT_ID_FLD'))) { return null; }
+		$pb_include_self = caGetOption('includeSelf', $pa_options, false);
 		if ($o_trans) { $t_instance->setTransaction($o_trans); }
 		
 		$vs_table_name = $t_instance->tableName();
@@ -7739,7 +7742,7 @@ class BaseModel extends BaseObject {
 		
 		$o_db = $t_instance->getDb();
 		
-		$va_ancestor_row_ids = array();
+		$va_ancestor_row_ids = $pb_include_self ? $pa_row_ids : array();
 		$va_level_row_ids = $pa_row_ids;
 		do {
 			$qr_level = $o_db->query("
@@ -9952,7 +9955,7 @@ $pa_options["display_form_field_tips"] = true;
 		
 		if ($this->purify() || (bool)$pa_options['purify']) {
 			if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
-    		$ps_tag = BaseMode::$html_purifier->purify($ps_tag);
+    		$ps_tag = BaseModel::$html_purifier->purify($ps_tag);
 		}
 		
 		$t_tag = new ca_item_tags();
@@ -11191,7 +11194,7 @@ $pa_options["display_form_field_tips"] = true;
 	 * using the SearchEngine. For full-text searches, searches on attributes, or searches that require transformations or complex boolean operations use
 	 * the SearchEngine.
 	 *
-	 * @param array $pa_values An array of values to match. Keys are field names. This must be an array with at least one key-value pair where the key is a valid field name for the model.
+	 * @param array $pa_values An array of values to match. Keys are field names. This must be an array with at least one key-value pair where the key is a valid field name for the model. If you pass an integer instead of an array it will be used as the primary key value for the table; result will be returned as "firstModelInstance" unless the returnAs option is explicitly set.
 	 * @param array $pa_options Options are:
 	 *		transaction = optional Transaction instance. If set then all database access is done within the context of the transaction
 	 *		returnAs = what to return; possible values are:
@@ -11217,14 +11220,21 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 * @return mixed Depending upon the returnAs option setting, an array, subclass of BaseModel or integer may be returned.
 	 */
-	public static function find($pa_values, $pa_options=null) {
+	public static function find($pa_values, $pa_options=null) {	
+		$t_instance = null;
+		$vs_table = get_called_class();
+		
+		if (!is_array($pa_values) && ((int)$pa_values > 0)) { 
+			$t_instance = new $vs_table;
+			$pa_values = array($t_instance->primaryKey() => (int)$pa_values); 
+			if (!isset($pa_options['returnAs'])) { $pa_options['returnAs'] = 'firstModelInstance'; }
+		}
 		if (!is_array($pa_values) || (sizeof($pa_values) == 0)) { return null; }
 		$ps_return_as = caGetOption('returnAs', $pa_options, 'ids', array('forceLowercase' => true, 'validValues' => array('searchResult', 'ids', 'modelInstances', 'firstId', 'firstModelInstance', 'count')));
 		$ps_boolean = caGetOption('boolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
 		$o_trans = caGetOption('transaction', $pa_options, null);
 		
-		$vs_table = get_called_class();
-		$t_instance = new $vs_table;
+		if (!$t_instance) { $t_instance = new $vs_table; }
 		if ($o_trans) { $t_instance->setTransaction($o_trans); }
 		
 		$va_sql_wheres = array();
@@ -11429,7 +11439,271 @@ $pa_options["display_form_field_tips"] = true;
 		
 		parent::__destruct();
 	}
-	# --------------------------------------------------------------------------------------------
+	# ------------------------------------------------------
+ 	/**
+ 	 * Returns list of items in the specified table related to the currently loaded row or rows specified in options. This is a simplified version of
+ 	 * BundlableLabelableBaseModelWithAttributes::getRelatedItems() for models derived directly from BaseModel.
+ 	 * 
+ 	 * @param $pm_rel_table_name_or_num - the table name or table number of the item type you want to get a list of (eg. if you are calling this on an ca_item_comments instance passing 'ca_users' here will get you a list of users related to the comment)
+ 	 * @param $pa_options - array of options. Supported options are:
+ 	 *
+ 	 *		[Options controlling rows for which data is returned]
+ 	 *			row_ids = Array of primary key values to use when fetching related items. If omitted or set to a null value the 'row_id' option will be used. [Default is null]
+ 	 *			row_id = Primary key value to use when fetching related items. If omitted or set to a false value (null, false, 0) then the primary key value of the currently loaded row is used. [Default is currently loaded row]
+ 	 *			start = Zero-based index to begin return set at. [Default is 0]
+ 	 *			limit = Maximum number of related items to return. [Default is 1000]
+ 	 *			showDeleted = Return related items that have been deleted. [Default is false]
+ 	 *			primaryIDs = array of primary keys in related table to exclude from returned list of items. Array is keyed on table name for compatibility with the parameter as used in the caProcessTemplateForIDs() helper [Default is null - nothing is excluded].
+ 	 *			where = Restrict returned items to specified field values. The fields must be intrinsic and in the related table. This option can be useful when you want to efficiently fetch specific rows from a related table. Note that multiple fields/values are logically AND'ed together – all must match for a row to be returned - and that only equivalence is supported. [Default is null]			
+ 	 *			criteria = Restrict returned items using SQL criteria appended directly onto the query. Criteria is used as-is and must be compatible with the generated SQL query. [Default is null]
+ 	 *
+ 	 *		[Options controlling scope of data in return value]
+ 	 *			restrictToLists = Restrict returned items to those that are in one or more specified lists. This option is only relevant when fetching related ca_list_items. An array of list list_codes or list_ids may be specified. [Default is null]
+ 	 * 			fields = array of fields (in table.fieldname format) to include in returned data. [Default is null]
+ 	 *			idsOnly = Return one-dimensional array of related primary key values only. [Default is false]
+ 	 *
+ 	 *		[Options controlling format of data in return value]
+ 	 *			sort = Array list of bundles to sort returned values on. The sortable bundle specifiers are fields with or without tablename. Only those fields returned for the related tables (intrinsics) are sortable. [Default is null]
+	 *			sortDirection = Direction of sort. Use "asc" (ascending) or "desc" (descending). [Default is asc]
+ 	 *
+ 	 *		[Front-end access control]	
+ 	 *			checkAccess = Array of access values to filter returned values on. Available for any related table with an "access" field (ca_objects, ca_entities, etc.). If omitted no filtering is performed. [Default is null]
+ 	 *			user_id = Perform item level access control relative to specified user_id rather than currently logged in user. [Default is user_id for currently logged in user]
+ 	 *
+ 	 * @return array List of related items
+ 	 */
+	public function getRelatedItems($pm_rel_table_name_or_num, $pa_options=null) {
+		global $AUTH_CURRENT_USER_ID;
+		$vn_user_id = (isset($pa_options['user_id']) && $pa_options['user_id']) ? $pa_options['user_id'] : (int)$AUTH_CURRENT_USER_ID;
+		$vb_show_if_no_acl = (bool)($this->getAppConfig()->get('default_item_access_level') > __CA_ACL_NO_ACCESS__);
+
+		$va_primary_ids = (isset($pa_options['primaryIDs']) && is_array($pa_options['primaryIDs'])) ? $pa_options['primaryIDs'] : null;
+		
+		
+		$va_get_where = (isset($pa_options['where']) && is_array($pa_options['where']) && sizeof($pa_options['where'])) ? $pa_options['where'] : null;
+
+		$va_row_ids = (isset($pa_options['row_ids']) && is_array($pa_options['row_ids'])) ? $pa_options['row_ids'] : null;
+		$vn_row_id = (isset($pa_options['row_id']) && $pa_options['row_id']) ? $pa_options['row_id'] : $this->getPrimaryKey();
+
+		$o_db = $this->getDb();
+		$o_tep = new TimeExpressionParser();
+		
+		$vb_uses_effective_dates = false;
+
+		
+		if(isset($pa_options['sort']) && !is_array($pa_options['sort'])) { $pa_options['sort'] = array($pa_options['sort']); }
+		$va_sort_fields = (isset($pa_options['sort']) && is_array($pa_options['sort'])) ? $pa_options['sort'] : null;
+		$vs_sort_direction = (isset($pa_options['sortDirection']) && $pa_options['sortDirection']) ? $pa_options['sortDirection'] : null;
+
+		if (!$va_row_ids && ($vn_row_id > 0)) {
+			$va_row_ids = array($vn_row_id);
+		}
+
+		if (!$va_row_ids || !is_array($va_row_ids) || !sizeof($va_row_ids)) { return array(); }
+
+		$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : 1000;
+		$vn_start = (isset($pa_options['start']) && ((int)$pa_options['start'] > 0)) ? (int)$pa_options['start'] : 0;
+
+		if (is_numeric($pm_rel_table_name_or_num)) {
+			if(!($vs_related_table_name = $this->getAppDatamodel()->getTableName($pm_rel_table_name_or_num))) { return null; }
+		} else {
+			if (sizeof($va_tmp = explode(".", $pm_rel_table_name_or_num)) > 1) {
+				$pm_rel_table_name_or_num = array_shift($va_tmp);
+			}
+			if (!($o_instance = $this->getAppDatamodel()->getInstanceByTableName($pm_rel_table_name_or_num, true))) { return null; }
+			$vs_related_table_name = $pm_rel_table_name_or_num;
+		}
+
+		if (!is_array($pa_options)) { $pa_options = array(); }
+
+		switch(sizeof($va_path = array_keys($this->getAppDatamodel()->getPath($this->tableName(), $vs_related_table_name)))) {
+			case 3:
+				$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+				$t_rel_item = $this->getAppDatamodel()->getTableInstance($va_path[2]);
+				$vs_key = $t_item_rel->primaryKey(); //'relation_id';
+				break;
+			case 2:
+				$t_item_rel = null;
+				$t_rel_item = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+				$vs_key = $t_rel_item->primaryKey();
+				break;
+			default:
+				// bad related table
+				return null;
+				break;
+		}
+
+		$va_wheres = array();
+		$va_selects = array();
+		$va_joins_post_add = array();
+
+		$vs_related_table = $t_rel_item->tableName();
+
+		if ($t_item_rel) {
+			//define table names
+			$vs_linking_table = $t_item_rel->tableName();
+
+			$va_selects[] = "{$vs_related_table}.".$t_rel_item->primaryKey();
+
+			if ($t_rel_item->hasField('is_enabled')) {
+				$va_selects[] = "{$vs_related_table}.is_enabled";
+			}
+		}
+
+		
+		if (is_array($va_get_where)) {
+			foreach($va_get_where as $vs_fld => $vm_val) {
+				if ($t_rel_item->hasField($vs_fld)) {
+					$va_wheres[] = "({$vs_related_table_name}.{$vs_fld} = ".(!is_numeric($vm_val) ? "'".$this->getDb()->escape($vm_val)."'": $vm_val).")";
+				}
+			}
+		}
+
+		if ($vs_idno_fld = $t_rel_item->getProperty('ID_NUMBERING_ID_FIELD')) { $va_selects[] = "{$vs_related_table}.{$vs_idno_fld}"; }
+		if ($vs_idno_sort_fld = $t_rel_item->getProperty('ID_NUMBERING_SORT_FIELD')) { $va_selects[] = "{$vs_related_table}.{$vs_idno_sort_fld}"; }
+
+		$va_selects[] = $va_path[1].'.'.$vs_key;
+
+		if (isset($pa_options['fields']) && is_array($pa_options['fields'])) {
+			$va_selects = array_merge($va_selects, $pa_options['fields']);
+		}
+
+
+
+		if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
+			$va_wheres[] = "({$vs_related_table}.access IN (".join(',', $pa_options['checkAccess'])."))";
+		}
+
+		if ((!isset($pa_options['showDeleted']) || !$pa_options['showDeleted']) && $t_rel_item->hasField('deleted')) {
+			$va_wheres[] = "({$vs_related_table}.deleted = 0)";
+		}
+		
+		if (($va_criteria = (isset($pa_options['criteria']) ? $pa_options['criteria'] : null)) && (is_array($va_criteria)) && (sizeof($va_criteria))) {
+			$va_wheres[] = "(".join(" AND ", $va_criteria).")"; 
+		}
+
+		$va_wheres[] = "(".$this->tableName().'.'.$this->primaryKey()." IN (".join(",", $va_row_ids)."))";
+		$va_selects[] = $t_rel_item->tableName().".*";
+		$vs_cur_table = array_shift($va_path);
+		$va_joins = array();
+
+		// Enforce restrict_to_lists for related list items
+		if (($vs_related_table_name == 'ca_list_items') && is_array($pa_options['restrictToLists'])) {
+			$va_list_ids = array();
+			foreach($pa_options['restrictToLists'] as $vm_list) {
+				if ($vn_list_id = ca_lists::getListID($vm_list)) { $va_list_ids[] = $vn_list_id; }
+			}
+			if (sizeof($va_list_ids)) {
+				$va_wheres[] = "(ca_list_items.list_id IN (".join(",", $va_list_ids)."))";
+			}
+		}
+
+		foreach($va_path as $vs_join_table) {
+			$va_rel_info = $this->getAppDatamodel()->getRelationships($vs_cur_table, $vs_join_table);
+			$va_joins[] = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
+			$vs_cur_table = $vs_join_table;
+		}
+
+		// If we're getting ca_set_items, we have to rename the intrinsic row_id field because the pk is named row_id below. Hence, this hack.
+		if($vs_related_table_name == 'ca_set_items') {
+			$va_selects[] = 'ca_set_items.row_id AS record_id';
+		}
+
+		$va_selects[] = $this->tableName().'.'.$this->primaryKey().' AS row_id';
+
+		$vs_order_by = '';
+		if ($t_item_rel && $t_item_rel->hasField('rank')) {
+			$vs_order_by = ' ORDER BY '.$t_item_rel->tableName().'.rank';
+		} else {
+			if ($t_rel_item && ($vs_sort = $t_rel_item->getProperty('ID_NUMBERING_SORT_FIELD'))) {
+				$vs_order_by = " ORDER BY {$vs_related_table}.{$vs_sort}";
+			}
+		}
+
+		$vs_sql = "
+			SELECT DISTINCT ".join(', ', $va_selects)."
+			FROM ".$this->tableName()."
+			".join("\n", array_merge($va_joins, $va_joins_post_add))."
+			WHERE
+				".join(' AND ', $va_wheres)."
+			{$vs_order_by}
+		";
+
+		$qr_res = $o_db->query($vs_sql);
+		
+		$va_rels = array();
+		$vn_c = 0;
+		if ($vn_start > 0) { $qr_res->seek($vn_start); }
+		while($qr_res->nextRow()) {
+			if ($vn_c >= $vn_limit) { break; }
+			
+			if (is_array($va_primary_ids) && is_array($va_primary_ids[$vs_related_table])) {
+				if (in_array($qr_res->get($vs_key), $va_primary_ids[$vs_related_table])) { continue; }
+			}
+			
+			if (isset($pa_options['idsOnly']) && $pa_options['idsOnly']) {
+				$va_rels[] = $qr_res->get($t_rel_item->primaryKey());
+				continue;
+			}
+
+			$va_row = $qr_res->getRow();
+			$vs_v = (sizeof($va_path) <= 2) ? $va_row['row_id'].'/'.$va_row[$vs_key] : $va_row[$vs_key];
+
+			$vs_display_label = $va_row[$vs_label_display_field];
+
+			if (!isset($va_rels[$vs_v]) || !$va_rels[$vs_v]) {
+				$va_rels[$vs_v] = $va_row;
+			}
+
+			$va_rels[$vs_v]['_key'] = $vs_key;
+			$va_rels[$vs_v]['direction'] = $vs_direction;
+
+			$vn_c++;
+		}			
+
+		//
+		// Sort on fields if specified
+		//
+		if (is_array($va_sort_fields) && sizeof($va_rels)) {
+			$va_ids = array();
+			$vs_rel_pk = $t_rel_item->primaryKey();
+			foreach($va_rels as $vn_i => $va_rel) {
+				$va_ids[] = $va_rel[$vs_rel_pk];
+			}
+
+			$vs_rel_pk = $t_rel_item->primaryKey();
+			foreach($va_sort_fields as $vn_x => $vs_sort_field) {
+				if ($vs_sort_field == 'relation_id') { // sort by relationship primary key
+					if ($t_item_rel) {
+						$va_sort_fields[$vn_x] = $vs_sort_field = $t_item_rel->tableName().'.'.$t_item_rel->primaryKey();
+					}
+					continue;
+				}
+				$va_tmp = explode('.', $vs_sort_field);
+				if ($va_tmp[0] == $vs_related_table_name) {
+					if (!($qr_rel = caMakeSearchResult($va_tmp[0], $va_ids))) { continue; }
+
+					$vs_table = array_shift($va_tmp);
+					$vs_key = join(".", $va_tmp);
+					while($qr_rel->nextHit()) {
+						$vn_pk_val = $qr_rel->get($vs_table.".".$vs_rel_pk);
+						foreach($va_rels as $vn_rel_id => $va_rel) {
+							if ($va_rel[$vs_rel_pk] == $vn_pk_val) {
+								$va_rels[$vn_rel_id][$vs_key] = $qr_rel->get($vs_sort_field, array("delimiter" => ";", 'sortable' => 1));
+								break;
+							}
+						}
+					}
+				}
+			}
+
+			// Perform sort
+			$va_rels = caSortArrayByKeyInValue($va_rels, $va_sort_fields, $vs_sort_direction);
+		}
+
+		return $va_rels;
+	}
+	# -----------------------------------------------------
 }
 
 // includes for which BaseModel must already be defined

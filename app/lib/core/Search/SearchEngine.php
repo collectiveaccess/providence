@@ -286,7 +286,7 @@ class SearchEngine extends SearchBase {
 				$va_hits = $this->filterHitsByACL($va_hits, $this->opn_tablenum, $vn_user_id, __CA_ACL_READONLY_ACCESS__);
 			}
 			
-			if ($vs_sort != '_natural') {
+			if ($vs_sort && ($vs_sort !== '_natural')) {
 				$va_hits = $this->sortHits($va_hits, $t_table->tableName(), $pa_options['sort'], (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
 			} elseif (($vs_sort == '_natural') && ($vs_sort_direction == 'desc')) {
 				$va_hits = array_reverse($va_hits);

@@ -312,7 +312,6 @@ class Installer {
 
 		$qr_tables = $vo_db->query("SHOW TABLES");
 
-		$vb_found_schema = false;
 		while($qr_tables->nextRow()) {
 			$vs_table = $qr_tables->getFieldAtIndex(0);
 			if (in_array($vs_table, $va_ca_tables)) {

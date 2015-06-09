@@ -257,7 +257,7 @@
 				return false;
  			}
 			
-			if(!(( preg_match( '/^\d*$/'  , $ps_value)))){
+			if(!(( preg_match( '/[^\d\-]*$/'  , $ps_value)))){
 				//this is not an integer, it contains symbols other than [0-9]
 				$this->postError(1970, _t('%1 is not an integer value', $pa_element_info['displayLabel']), 'IntegerAttributeValue->parseValue()');
 				return false;

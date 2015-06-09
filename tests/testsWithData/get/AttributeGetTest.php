@@ -59,8 +59,13 @@ class AttributeGetTest extends BaseTestWithData {
 				// simple text
 				'internal_notes' => array(
 					array(
+						'locale' => 'en_US',
 						'internal_notes' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ullamcorper sapien nec velit porta luctus.'
-					)
+					),
+					array(
+						'locale' => 'de_DE',
+						'internal_notes' => 'Bacon ipsum dolor amet venison bresaola short ribs turkey ham hock beef ribs.'
+					),
 				),
 
 				// text in a container
@@ -85,7 +90,7 @@ class AttributeGetTest extends BaseTestWithData {
 				// Integer
 				'integer_test' => array(
 					array(
-						'integer_test' => 23,
+						'integer_test' => -23,
 					),
 					array(
 						'integer_test' => 1984,
@@ -105,6 +110,28 @@ class AttributeGetTest extends BaseTestWithData {
 						'georeference' => '1600 Amphitheatre Parkway, Mountain View, CA',
 					),
 				),
+
+				// InformationService/TGN
+				'tgn' => array(
+					array(
+						'tgn' => 'http://vocab.getty.edu/tgn/7015849',
+					),
+				),
+
+				// InformationService/Wikipedia
+				'wikipedia' => array(
+					array(
+						'wikipedia' => 'http://en.wikipedia.org/wiki/Aaron_Burr'
+					),
+				),
+
+				// InformationService/Container - Wikipedia and ULAN
+				'informationservice' => array(
+					array(
+						'wiki' => 'http://en.wikipedia.org/wiki/Aaron_Burr',
+						'ulan_container' => 'http://vocab.getty.edu/ulan/500024253'
+					),
+				),
 			)
 		));
 
@@ -117,11 +144,12 @@ class AttributeGetTest extends BaseTestWithData {
 		$vm_ret = $this->opt_object->get('ca_objects.type_id', array('convertCodesToDisplayText' => true));
 		$this->assertEquals('Image', $vm_ret);
 
+		// there are two internal notes but we assume that only the current UI locale is returned, unless we explicitly say otherwise
 		$vm_ret = $this->opt_object->get('ca_objects.internal_notes');
-		$this->assertRegExp("/^Lorem ipsum/", $vm_ret);
+		$this->assertEquals("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ullamcorper sapien nec velit porta luctus.", $vm_ret);
 
 		$vm_ret = $this->opt_object->get('internal_notes');
-		$this->assertRegExp("/^Lorem ipsum/", $vm_ret);
+		$this->assertEquals("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque ullamcorper sapien nec velit porta luctus.", $vm_ret);
 
 		$vm_ret = $this->opt_object->get('ca_objects.external_link.url_source');
 		$this->assertEquals("My URL source;Another URL source", $vm_ret);
@@ -129,16 +157,16 @@ class AttributeGetTest extends BaseTestWithData {
 		$vm_ret = $this->opt_object->get('ca_objects.dimensions.dimensions_length');
 		$this->assertEquals("10.0 in", $vm_ret);
 		$vm_ret = $this->opt_object->get('ca_objects.dimensions.dimensions_weight');
-		$this->assertEquals("2.00 lb", $vm_ret);
+		$this->assertEquals("2.0000 lb", $vm_ret);
 
 		$vm_ret = $this->opt_object->get('ca_objects.integer_test', array('delimiter' => ' / '));
-		$this->assertEquals("23 / 1984", $vm_ret);
+		$this->assertEquals("-23 / 1984", $vm_ret);
 
 		$vm_ret = $this->opt_object->get('ca_objects.currency_test');
 		$this->assertEquals("USD 100.00", $vm_ret);
 
 		$vm_ret = $this->opt_object->get('ca_objects.georeference');
-		$this->assertEquals("1600 Amphitheatre Parkway, Mountain View, CA [37.4225456,-122.0842498]", $vm_ret);
+		$this->assertRegExp("/^1600 Amphitheatre Parkway, Mountain View, CA \[[\d\.\,\-]+\]/", $vm_ret);
 
 		// This is how we fetch the bundle preview for containers:
 		$vs_template = "<unit relativeTo='ca_objects.dimensions'><if rule='^measurement_notes =~ /foo/'>^ca_objects.dimensions.dimensions_length</if></unit>";
@@ -149,6 +177,17 @@ class AttributeGetTest extends BaseTestWithData {
 		$vs_template = "<unit relativeTo='ca_objects.dimensions'><if rule='^measurement_notes =~ /bar/'>^ca_objects.dimensions.dimensions_length</if></unit>";
 		$vm_ret = $this->opt_object->getAttributesForDisplay('dimensions', $vs_template);
 		$this->assertEmpty($vm_ret);
+
+		// 'flat' informationservice attribues
+		$this->assertEquals('Coney Island', $this->opt_object->get('ca_objects.tgn'));
+		$this->assertContains('Aaron Burr', $this->opt_object->get('ca_objects.wikipedia'));
+		// new subfield notation
+		$this->assertContains('Burr killed his political rival Alexander Hamilton in a famous duel', $this->opt_object->get('ca_objects.wikipedia.abstract'));
+
+		// informationservice attributes in container
+		$this->assertEquals('[500024253] Haring, Keith (Persons, Artists) - American painter, muralist, and cartoonist, 1958-1990', $this->opt_object->get('ca_objects.informationservice.ulan_container'));
+		$this->assertContains('Aaron Burr', $this->opt_object->get('ca_objects.informationservice.wiki'));
+		$this->assertContains('Burr killed his political rival Alexander Hamilton in a famous duel', $this->opt_object->get('ca_objects.informationservice.wiki.abstract'));
 	}
 	# -------------------------------------------------------
 }

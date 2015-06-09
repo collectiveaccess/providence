@@ -29,4 +29,5 @@ before_script:
 branches:
   only:
     - develop
-
+    - dev/pdoPreparedStatements
+    - dev/infoServiceImprovements

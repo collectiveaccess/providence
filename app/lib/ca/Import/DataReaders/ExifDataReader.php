@@ -66,6 +66,8 @@ class ExifDataReader extends BaseDataReader {
 	 * @return bool
 	 */
 	public function read($ps_source, $pa_options=null) {
+		parent::read($ps_source, $pa_options);
+		
 		$vs_path_to_exif_tool = caGetExternalApplicationPath("exiftool");
 	
 		$this->opn_current_row = -1;
@@ -113,6 +115,8 @@ class ExifDataReader extends BaseDataReader {
 	 * @return mixed
 	 */
 	public function get($ps_field, $pa_options=null) {
+		if ($vm_ret = parent::get($ps_field, $pa_options)) { return $vm_ret; }
+		
 		if ($this->opn_current_row !== 0) { return null; }
 		if(!is_array($this->opa_row_buf)) { return null; }
 		

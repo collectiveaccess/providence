@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -200,7 +200,7 @@
  		}
  		# ------------------------------------------------------------------
  		/**
- 		 * Will return plural value of list item unless useSingular option is set to true, in which case singular version of list item label will be used.
+ 		 * When returning text will return plural value of list item unless useSingular option is set to true, in which case singular version of list item label will be used.
  		 *
  		 * @param array Optional array of options. Support options are:
  		 * 			list_id = if set then the numeric item_id value is translated into label text in the current locale. If not set then the numeric item_id is returned.
@@ -209,6 +209,7 @@
  		 *			returnIdno = If true list item idno is returned rather than preferred label [Default is false]
  		 *			idsOnly = Return numeric item_id only [Default is false]
  		 *			alwaysReturnItemID = Synonym for idsOnly [Default is false]
+ 		 *			output = what value for the list to return. Valid values are text [display text], idno [identifier; same as returnIdno option], value [numeric item_id; same as idsOnly option]. [Default is value]
  		 *
  		 *			HIERARCHICAL OPTIONS: 
  		 *				direction - For hierarchy specifications (eg. ca_objects.hierarchy) this determines the order in which the hierarchy is returned. ASC will return the hierarchy root first while DESC will return it with the lowest node first. Default is ASC.
@@ -220,18 +221,36 @@
  		 * @return string The value
  		 */
 		public function getDisplayValue($pa_options=null) {
+			if (isset($pa_options['output'])) {
+				switch(strtolower($pa_options['output'])) {
+					case 'idno':
+						$pa_options['returnIdno'] = true;
+						break;
+					case 'text':
+						$pa_options['returnIdno'] = false;
+						$pa_options['idsOnly'] = false;
+						break;
+					default:
+						$pa_options['idsOnly'] = true; 
+						break;
+				}
+			}
+			
 			if($vb_return_idno = ((isset($pa_options['returnIdno']) && (bool)$pa_options['returnIdno']))) {
 				return caGetListItemIdno($this->opn_item_id); 
 			}
 			
-			$vb_ids_only = (bool)caGetOption('idsOnly', $pa_options, caGetOption('alwaysReturnItemID', $pa_options, false));
+			if(is_null($vb_ids_only = isset($pa_options['idsOnly']) ? (bool)$pa_options['idsOnly'] : null)) {
+				$vb_ids_only = isset($pa_options['alwaysReturnItemID']) ? (bool)$pa_options['alwaysReturnItemID'] : false;
+			}
+			
 			if ($vb_ids_only) { return (int)$this->opn_item_id; }
 			
 			$vn_list_id = (is_array($pa_options) && isset($pa_options['list_id'])) ? (int)$pa_options['list_id'] : null;
 			if ($vn_list_id > 0) {
 				$t_list = new ca_lists();
 				
-				if ($o_trans = caGetOption('transaction', $pa_options, null)) {
+				if ($o_trans = (isset($pa_options['transaction']) ? $pa_options['transaction'] : null)) {
 					$t_list->setTransaction($o_trans);
 				}
 				$t_item = new ca_list_items(); 

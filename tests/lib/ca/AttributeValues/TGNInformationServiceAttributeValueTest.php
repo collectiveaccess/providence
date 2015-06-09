@@ -30,6 +30,7 @@
  * ----------------------------------------------------------------------
  */
 require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/TGN.php");
+require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 
 class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase {
 
@@ -37,16 +38,16 @@ class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase
 		$o_service = new WLPlugInformationServiceTGN();
 
 		$va_return = $o_service->lookup(array(), 'Brooklyn');
-		$this->assertEquals(25, sizeof($va_return['results']));
+		$this->assertEquals(50, sizeof($va_return['results']));
 
 		$va_labels = array();
 		foreach($va_return['results'] as $va_record) {
 			$va_labels[] = $va_record['label'];
 		}
 
-		$this->assertContains('Brooklyn; Poweshiek, Iowa (inhabited places)', $va_labels);
-		$this->assertContains('Brooklyn; New York, New York (boroughs)', $va_labels);
-		$this->assertContains('Brooklyn; Green, Wisconsin (inhabited places)', $va_labels);
+		$this->assertContains('[2034406] Brooklyn; Poweshiek, Iowa (inhabited places)', $va_labels);
+		$this->assertContains('[7015822] Brooklyn; New York, New York (boroughs)', $va_labels);
+		$this->assertContains('[2120816] Brooklyn; Green, Wisconsin (inhabited places)', $va_labels);
 	}
 
 	public function testConeyIsland() {
@@ -60,9 +61,9 @@ class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase
 			$va_labels[] = $va_record['label'];
 		}
 
-		$this->assertContains('Coney Island; Brooklyn, New York (neighborhoods)', $va_labels);
-		$this->assertContains('Coney Island Creek; Kings, New York (creeks (bodies of water))', $va_labels);
-		$this->assertContains('Coney Island; Armagh, Northern Ireland (islands (landforms))', $va_labels);
+		$this->assertContains('[7015849] Coney Island; Brooklyn, New York (neighborhoods)', $va_labels);
+		$this->assertContains('[2252267] Coney Island Creek; Kings, New York (creeks (bodies of water))', $va_labels);
+		$this->assertContains('[7454829] Coney Island; Armagh, Northern Ireland (islands (landforms))', $va_labels);
 	}
 
 	public function testRubbishQuery() {
