@@ -2674,6 +2674,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 								
 								$va_additional_options = array('returnAsArray' => true, 'checkAccess' => $pa_check_access);
 								$vs_hierarchy_name = null;
+								
+								$vb_is_hierarchy = false;
 								if (in_array($va_spec_bits[1], array('hierarchy', '_hierarchyName'))) {
 									$t_rel = $o_dm->getInstanceByTableName($va_spec_bits[0], true);
 								
@@ -2699,18 +2701,21 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 										unset($va_val[$vn_primary_id]);
 									}
 								}
-								$va_val = caExtractValuesByUserLocale($va_val);
 								
-								$va_val_tmp = array();
+								if ($va_spec_bits[1] !== 'hierarchy') {
+									$va_val = caExtractValuesByUserLocale($va_val);
+								
+									$va_val_tmp = array();
 							
-								foreach($va_val as $vn_d => $va_vals) {
-									if (is_array($va_vals)) {
-										$va_val_tmp = array_merge($va_val_tmp, array_values($va_vals));
-									} else {
-										$va_val_tmp[] = $va_vals;
+									foreach($va_val as $vn_d => $va_vals) {
+										if (is_array($va_vals)) {
+											$va_val_tmp = array_merge($va_val_tmp, array_values($va_vals));
+										} else {
+											$va_val_tmp[] = $va_vals;
+										}
 									}
+									$va_val = $va_val_tmp;
 								}
-								$va_val = $va_val_tmp;
 								
 								$va_val_proc = array();
 								
@@ -2722,13 +2727,20 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 										break;
 									case 'hierarchy':
 										if (is_array($va_val) && (sizeof($va_val) > 0)) {
-											//$va_val = array_reverse($va_val);
-											if ($vs_hierarchy_name) { array_unshift($va_val, $vs_hierarchy_name); }
+											
+											$va_hier_list = array();
+											if ($vs_hierarchy_name) { array_unshift($va_hier_list, $vs_hierarchy_name); }
+											$vs_name = end($va_spec_bits);
 											foreach($va_val as $va_hier) {
-												if (!is_array($va_hier)) { $va_hier = array($va_hier); }
-												$va_val_proc[] = join(caGetOption("delimiter", $va_tag_opts, $vs_delimiter), $va_hier);
+												$va_hier = caExtractValuesByUserLocale($va_hier);
+												foreach($va_hier as $va_hier_item) {
+													foreach($va_hier_item as $va_hier_value) {
+														$va_hier_list[] = $va_hier_value[$vs_name] ? $va_hier_value[$vs_name] : array_shift($va_hier_value);
+													}
+												}
 											}
-											$va_val_proc = array(join(caGetOption("delimiter", $va_tag_opts, $vs_delimiter), $va_val_proc));
+												
+											$va_val_proc[] = join(caGetOption("delimiter", $va_tag_opts, $vs_delimiter), $va_hier_list);
 										} 
 										break;
 									case 'parent':
