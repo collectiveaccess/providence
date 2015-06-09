@@ -1133,24 +1133,9 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 
 		if($vn_pick >= 0 && ($vn_best_distance > $pn_threshold)) {
 			$va_pick = $va_hits[$vn_pick];
-			$vs_id = '';
-			if(preg_match("/[a-z]{3,4}\/[0-9]+$/", $va_pick['ID']['value'], $va_matches)) {
-				$vs_id = str_replace('/', ':', $va_matches[0]);
-			}
 
-			$vs_label = '['. str_replace('aat:', '', $vs_id) . '] ' . $va_pick['TermPrefLabel']['value'] . " [" . $va_pick['Parents']['value'] . "]";
-			$vs_label = preg_replace('/\,\s\.\.\.\s[A-Za-z\s]+Facet\s*/', '', $vs_label);
-			$vs_label = preg_replace('/[\<\>]/', '', $vs_label);
-
-			$va_return = array(
-				'label' => htmlentities($vs_label),
-				'id' => $vs_id,
-				'url' => $va_pick['ID']['value'],
-			);
-
-			$vs_return = join('|', $va_return);
-			MemoryCache::save($vs_cache_key, $vs_return, 'AATMatches');
-			return $vs_return;
+			MemoryCache::save($vs_cache_key, $va_pick['ID']['value'], 'AATMatches');
+			return $va_pick['ID']['value'];
 		}
 
 		return false;
