@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" base="base" infoUrl="">
-  <profileName>PBCore at the University of Georgia</profileName>
+  <profileName>[Standard] PBCore at the University of Georgia</profileName>
   <profileDescription>A PBCore-based profile created by University of Georgia Special Collections Library (Walter J. Brown Media Archives And Peabody Awards Collection), USA</profileDescription>
   <locales>
     <locale lang="en" country="US">English</locale>
