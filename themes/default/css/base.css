@@ -333,10 +333,18 @@ h5 {
 	width: 28px;
 	text-align: center;
 }
-#leftNav #inspectorLotMediaDownloadButton {
-	margin-top:5px;
+
+#leftNav #inspectorLotMediaDownloadButton, #leftNav #inspectorSetMediaDownloadButton {
+	margin-top:8px;
 	margin-right:8px;
+	width:22px;
+	float:left;
 } 
+#leftNav .button.info {
+	float:left;
+	width:22px;
+	margin-left:2px;
+}
 #leftNav #inspectorChangeType img {
 	width: 26px;
 	padding-top: 1px;
@@ -1341,6 +1349,7 @@ div.hint {
     padding: 0px 0px 10px 0px !important;
     margin: 0px !important;
     font-color: #000000 !important;
+    text-align:left !important;
 }
 .tooltipFormat {
 	color:#fff !important;
@@ -1350,6 +1359,7 @@ div.hint {
 	font-size:12px !important;
 	border: 0px !important;
 	font-family: "helvetica neue", arial, sans-serif;
+	text-align:left !important; 
 }
 
 /*** Button styles ***/
@@ -2421,6 +2431,7 @@ select.searchToolsSelect {
     padding: 0px 8px 8px 8px;
     width:170px;
     background-color:#f7f7f7;
+    clear:both;
 }
 #leftNav #inspectorShowMedia {
 	text-align: center;
@@ -4612,6 +4623,7 @@ span.bundleDisplayEditorPlacementListItemTitle {
 	color:#fff;
 	font-weight:normal;
 	font-size:14px;
+	text-align:left;
 }
 .elementSettingsUI {
 	position: absolute;
