@@ -31,4 +31,3 @@ branches:
     - develop
     - dev/pdoPreparedStatements
     - dev/infoServiceImprovements
-    - release-1.5
