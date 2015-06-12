@@ -330,9 +330,9 @@
 		}
 		if (!caIsValidFilePath($ps_pdfminer_path)) { return false; }
 
-		if (!file_exists($ps_pdfminer_path."/pdf2txt.py")) { return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = false; }
+		if (!file_exists($ps_pdfminer_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = false; }
 		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
-		exec($ps_pdfminer_path."/pdf2txt.py > /dev/null",$va_output,$vn_return);
+		exec($ps_pdfminer_path." > /dev/null",$va_output,$vn_return);
 		if($vn_return == 100) {
 			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = true;
 		}
