@@ -4404,7 +4404,7 @@ if (!$vb_batch) {
 				$vs_key = $t_item_rel->primaryKey(); //'relation_id';
 				break;
 			case 2:
-				$t_item_rel = null;
+				$t_item_rel = $this->isRelationship() ? $this : null;
 				$t_rel_item = $this->getAppDatamodel()->getTableInstance($va_path[1]);
 				$vs_key = $t_rel_item->primaryKey();
 				break;
@@ -4431,14 +4431,14 @@ if (!$vb_batch) {
 		if ($t_rel_item->hasField('source_id')) { $va_selects[] = "{$vs_related_table}.source_id item_source_id"; }
 
 		// TODO: get these field names from models
-		if ($t_item_rel) {
+		if (($t_tmp = $t_item_rel) || ($t_rel_item->isRelationship() && ($t_tmp = $t_rel_item))) {
 			//define table names
-			$vs_linking_table = $t_item_rel->tableName();
+			$vs_linking_table = $t_tmp->tableName();
 
 			$va_selects[] = "{$vs_related_table}.".$t_rel_item->primaryKey();
 
 			// include dates in returned data
-			if ($t_item_rel->hasField('effective_date')) {
+			if ($t_tmp->hasField('effective_date')) {
 				$va_selects[] = $vs_linking_table.'.sdatetime';
 				$va_selects[] = $vs_linking_table.'.edatetime';
 
@@ -4450,7 +4450,7 @@ if (!$vb_batch) {
 			}
 
 
-			if ($t_item_rel->hasField('type_id')) {
+			if ($t_tmp->hasField('type_id')) {
 				$va_selects[] = $vs_linking_table.'.type_id relationship_type_id';
 
 				require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
@@ -4938,8 +4938,8 @@ if (!$vb_batch) {
 			$qr_res = $o_db->query($vs_sql);
 			
 			if ($vb_uses_relationship_types)  {
-				$va_rel_types = $t_rel->getRelationshipInfo($t_item_rel->tableName());
-				$vs_left_table = $t_item_rel->getLeftTableName();
+				$va_rel_types = $t_rel->getRelationshipInfo($t_tmp->tableName());
+				$vs_left_table = $t_tmp->getLeftTableName();
 				$vs_direction = ($vs_left_table == $this->tableName()) ? 'ltor' : 'rtol';
 			}
 			$va_rels = array();
