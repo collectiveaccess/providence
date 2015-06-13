@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -156,7 +156,7 @@
 				} else {
 					$vs_search = trim($ps_query).(intval($pb_exact) ? '' : '*');
 				}
-				//file_put_contents('/tmp/lookup_debug', $vs_search . "\n", FILE_APPEND);
+				
 				$qr_res = $o_search->search($vs_search, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
 		
 				$qr_res->setOption('prefetch', $pn_limit);

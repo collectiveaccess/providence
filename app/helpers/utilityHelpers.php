@@ -2373,7 +2373,12 @@ function caFileIsIncludable($ps_file) {
 				return @file_get_contents($ps_url, false, $vo_context);
 			}
 		} else {
-			return @file_get_contents($ps_url);
+			return @file_get_contents($ps_url, false, stream_context_create(array(
+				"ssl"=>array(
+					"verify_peer"=>false,
+					"verify_peer_name"=>false,
+				),
+			)));
 		}
 	}
 	# ----------------------------------------

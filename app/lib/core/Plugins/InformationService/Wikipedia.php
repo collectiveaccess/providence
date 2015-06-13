@@ -104,7 +104,7 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 		);
 
 		$vs_content = caQueryExternalWebservice(
-			$vs_url = 'http://'.$vs_lang.'.wikipedia.org/w/api.php?' . caConcatGetParams($va_get_params)
+			$vs_url = 'https://'.$vs_lang.'.wikipedia.org/w/api.php?' . caConcatGetParams($va_get_params)
 		);
 
 		$va_content = @json_decode($vs_content, true);
@@ -159,7 +159,7 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 		);
 
 		$vs_content = caQueryExternalWebservice(
-			'http://'.$vs_lang.'.wikipedia.org/w/api.php?' . caConcatGetParams($va_get_params)
+			'https://'.$vs_lang.'.wikipedia.org/w/api.php?' . caConcatGetParams($va_get_params)
 		);
 
 		$va_content = @json_decode($vs_content, true);
