@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/testsWithData/get/LoansXLoansTest.php
+ * tests/testsWithData/get/ObjectsXLocationsTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,19 +33,19 @@
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
 /**
- * Class LoansXLoansTest
+ * Class ObjectsXLocationsTest
  * Note: Requires testing profile!
  */
-class LoansXLoansTest extends BaseTestWithData {
+class ObjectsXLocationsTest extends BaseTestWithData {
 	# -------------------------------------------------------
 	/**
 	 * @var BundlableLabelableBaseModelWithAttributes
 	 */
-	private $opt_loan_in = null;
+	private $opt_object = null;
 	/**
 	 * @var BundlableLabelableBaseModelWithAttributes
 	 */
-	private $opt_loan_out = null;
+	private $opt_location = null;
 	# -------------------------------------------------------
 	public function setUp() {
 		// don't forget to call parent so that the request is set up
@@ -55,35 +55,31 @@ class LoansXLoansTest extends BaseTestWithData {
 		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
 		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 		 */
-		$vn_loan_in = $this->addTestRecord('ca_loans', array(
+		$vn_object_id = $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
-				'type_id' => 'in',
-			),
-			'preferred_labels' => array(
-				array(
-					"locale" => "en_US",
-					"name" => "New Loan In",
-				),
+				'type_id' => 'image',
+				'idno' => 'test'
 			),
 		));
 
-		$this->assertGreaterThan(0, $vn_loan_in);
+		$this->assertGreaterThan(0, $vn_object_id);
 
-		$vn_loan_out = $this->addTestRecord('ca_loans', array(
+		$vn_loan_out = $this->addTestRecord('ca_storage_locations', array(
 			'intrinsic_fields' => array(
-				'type_id' => 'out',
+				'type_id' => 'cabinet',
 			),
 			'preferred_labels' => array(
 				array(
 					"locale" => "en_US",
-					"name" => "New Loan Out",
+					"name" => "My Cabinet",
 				),
 			),
 			'related' => array(
-				'ca_loans' => array(
+				'ca_objects' => array(
 					array(
-						'object_id' => $vn_loan_in,
+						'object_id' => $vn_object_id,
 						'type_id' => 'related',
+						'effective_date' => 'January 28 1985'
 					)
 				),
 			),
@@ -91,40 +87,20 @@ class LoansXLoansTest extends BaseTestWithData {
 
 		$this->assertGreaterThan(0, $vn_loan_out);
 
-		$this->opt_loan_in = new ca_loans($vn_loan_in);
-		$this->opt_loan_out = new ca_loans($vn_loan_out);
+		$this->opt_object = new ca_objects($vn_object_id);
+		$this->opt_location = new ca_storage_locations($vn_loan_out);
 	}
 	# -------------------------------------------------------
 	public function testGets() {
-		$vm_ret = $this->opt_loan_in->get('ca_loans.related');
-		$this->assertEquals('New Loan Out', $vm_ret);
+		$vm_ret = $this->opt_object->get("ca_objects_x_storage_locations.effective_date");
+		$this->assertEquals('January 28 1985', $vm_ret);
 
-		$va_items = $this->opt_loan_in->getRelatedItems('ca_loans');
-		$vn_relation_id = array_shift(caExtractArrayValuesFromArrayOfArrays($va_items, 'relation_id'));
+		$vm_ret = $this->opt_object->get("ca_objects_x_storage_locations.effective_date", array('getDirectDate' => true));
+		$this->assertEquals($vm_ret, '1985.01280000000000000000');
 
-		// The relationship we created is Loan Out <-> Loan In, so evaluating with loan in as primary ID should give us the loan out
-		$va_opts = array(
-			'resolveLinksUsing' => 'ca_loans',
-			'primaryIDs' =>
-				array (
-					'ca_loans' => array ($this->opt_loan_in->getPrimaryKey()),
-  				),
-		);
-
-		$vm_ret = caProcessTemplateForIDs("^ca_loans.preferred_labels", 'ca_loans_x_loans', array($vn_relation_id), $va_opts);
-		$this->assertEquals('New Loan Out', $vm_ret);
-
-		// Now for the other side ...
-		$va_opts = array(
-			'resolveLinksUsing' => 'ca_loans',
-			'primaryIDs' =>
-				array (
-					'ca_loans' => array ($this->opt_loan_out->getPrimaryKey()),
-				),
-		);
-
-		$vm_ret = caProcessTemplateForIDs("^ca_loans.preferred_labels", 'ca_loans_x_loans', array($vn_relation_id), $va_opts);
-		$this->assertEquals('New Loan In', $vm_ret);
+		// try legacy version of same option
+		$vm_ret = $this->opt_object->get("ca_objects_x_storage_locations.effective_date", array('GET_DIRECT_DATE' => true));
+		$this->assertEquals($vm_ret, '1985.01280000000000000000');
 	}
 	# -------------------------------------------------------
 }
