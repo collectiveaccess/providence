@@ -1608,7 +1608,7 @@ class SearchResult extends BaseObject {
 	 */
 	private function _getIntrinsicValue($pa_value_list, $pt_instance, $pa_options) {
 		$vb_return_as_link 		= isset($pa_options['returnAsLink']) ? $pa_options['returnAsLink'] : false;
-		$vb_get_direct_date 	= isset($pa_options['getDirectDate']) ? $pa_options['getDirectDate'] : isset($pa_options['GET_DIRECT_DATE']) ? $pa_options['GET_DIRECT_DATE'] : false;
+		$vb_get_direct_date 	= (bool) caGetOption(array('getDirectDate', 'GET_DIRECT_DATE'), $pa_options, false);
 		$vb_sortable			= isset($pa_options['sortable']) ? $pa_options['sortable'] : false;
 		
 		$va_path_components		= $pa_options['pathComponents'];
