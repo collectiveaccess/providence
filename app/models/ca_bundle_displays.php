@@ -1897,18 +1897,18 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 						switch(sizeof($va_path)) {
 							case 3:
 								// For regular relationships just evaluate the template relative to the relationship record
-								// this way the template can reference institial data
+								// this way the template can reference interstitial data
 								$vs_val = $po_result->getWithTemplate($vs_unit_tag.$pa_options['template']."</unit>", $pa_options);
 								break;
 							case 2:
 								$t_rel = $o_dm->getInstanceByTableName($va_path[1], true);
 								if (method_exists($t_rel, 'isSelfRelationship') && $t_rel->isSelfRelationship()) {
 									// is a self-relationship
-									$vs_val = $po_result->getWithTemplate($vs_unit_tag.$pa_options['template']."</unit>", array('primaryIDs' => array($po_result->tableName() => array($po_result->getPrimaryKey()))));
+									$vs_val = $po_result->getWithTemplate($vs_unit_tag.$pa_options['template']."</unit>", array_merge($pa_options, array('primaryIDs' => array($po_result->tableName() => array($po_result->getPrimaryKey())))));
 								} else {
 									// is a many-one relationship; evaluate the template for these relative
 									// to the related record
-									$vs_val = $po_result->getWithTemplate($vs_unit_tag.$pa_options['template']."</unit>");
+									$vs_val = $po_result->getWithTemplate($vs_unit_tag.$pa_options['template']."</unit>", $pa_options);
 								}
 								break;
 							default:
