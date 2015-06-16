@@ -282,7 +282,7 @@ class SearchResult extends BaseObject {
 			SELECT t.{$vs_pk}, t.{$vs_parent_id_fld} ".($vs_hier_id_fld ? ", t.{$vs_hier_id_fld}" : '')."
 			FROM {$ps_tablename} t
 			WHERE
-				t.{$vs_pk} IN (?)
+				t.{$vs_pk} IN (?)".($t_rel_instance->hasField('deleted') ? " AND (t.deleted = 0)" : "")."
 		";
 		
 		$va_row_ids_in_current_level = $va_row_ids;
@@ -349,7 +349,7 @@ class SearchResult extends BaseObject {
 			SELECT {$vs_pk}, {$vs_parent_id_fld}
 			FROM {$ps_tablename}
 			WHERE
-				 {$vs_parent_id_fld} IN (?)
+				 {$vs_parent_id_fld} IN (?)".($t_rel_instance->hasField('deleted') ? " AND (deleted = 0)" : "")."
 		";
 		
 		$va_row_ids_in_current_level = $va_row_ids;
@@ -424,7 +424,7 @@ class SearchResult extends BaseObject {
 			FROM {$ps_tablename} t
 			INNER JOIN {$ps_tablename} AS p ON t.{$vs_parent_id_fld} = p.{$vs_parent_id_fld}
 			WHERE
-				 t.{$vs_pk} IN (?)
+				 t.{$vs_pk} IN (?)".($t_rel_instance->hasField('deleted') ? " AND (t.deleted = 0) AND (p.deleted = 0)" : "")."
 		";
 		
 		
