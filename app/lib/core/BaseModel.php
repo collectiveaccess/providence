@@ -9361,7 +9361,7 @@ $pa_options["display_form_field_tips"] = true;
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
 		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num))) { return null; }
 		$t_item_rel = $va_rel_info['t_item_rel'];
-		
+		if (!method_exists($t_item_rel, "isRelationship") || !$t_item_rel->isRelationship()){ return false; }
 		if ($pm_type_id && !is_numeric($pm_type_id)) {
 			$t_rel_type = new ca_relationship_types();
 			if ($vs_linking_table = $t_rel_type->getRelationshipTypeTable($this->tableName(), $t_item_rel->tableName())) {
