@@ -641,7 +641,7 @@
 			
 			// get attributes
 			foreach($va_codes as $vs_code) {
-				if ($va_v = $this->get($this->tableName().'.'.$vs_code, array('returnAllLocales' => true, 'returnAsArray' => true, 'return' => 'url', 'version' => 'original'))) {
+				if ($va_v = $this->get($this->tableName().'.'.$vs_code, array('returnWithStructure' => true, 'returnAllLocales' => true, 'returnAsArray' => true, 'return' => 'url', 'version' => 'original'))) {
 					foreach($va_v as $vn_id => $va_v_by_locale) {
 						foreach($va_v_by_locale as $vn_locale_id => $va_v_list) {
 							if (!($vs_locale = $t_locale->localeIDToCode($vn_locale_id))) {
