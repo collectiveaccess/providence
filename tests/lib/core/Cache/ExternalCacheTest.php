@@ -143,7 +143,7 @@ class ExternalCacheTest extends PHPUnit_Framework_TestCase {
 		$vm_ret = ExternalCache::save('foo',  array('foo' => 'bar'), 'barNamespace');
 		$this->assertTrue($vm_ret, 'Setting item in cache should return true');
 
-		ExternalCache::flush();
+		ExternalCache::flush('barNamespace');
 
 		$vm_ret = ExternalCache::contains('foo', 'barNamespace');
 		$this->assertFalse($vm_ret, 'Should not return anything after deleting');
@@ -211,4 +211,36 @@ class ExternalCacheTest extends PHPUnit_Framework_TestCase {
 		ExternalCache::save('', 'data1', 'this is invalid');
 	}
 
+	public function testTTL() {
+		ExternalCache::save('foo', array(), 'barNamespace', 1);
+		$vm_ret = ExternalCache::contains('foo', 'barNamespace');
+		$this->assertTrue($vm_ret, 'The key we just set should exist');
+
+		$vm_ret = ExternalCache::fetch('foo', 'barNamespace');
+		$this->assertEquals(array(), $vm_ret, 'The value we set should be returned');
+
+		sleep(1);
+
+		$vm_ret = ExternalCache::contains('foo', 'barNamespace');
+		$this->assertFalse($vm_ret, 'The key should have expired by now');
+	}
+
+	public function testLongerTTL() {
+		ExternalCache::save('foo', array(), 'barNamespace', 2);
+		$vm_ret = ExternalCache::contains('foo', 'barNamespace');
+		$this->assertTrue($vm_ret, 'The key we just set should exist');
+
+		$vm_ret = ExternalCache::fetch('foo', 'barNamespace');
+		$this->assertEquals(array(), $vm_ret, 'The value we set should be returned');
+
+		sleep(1);
+
+		$vm_ret = ExternalCache::contains('foo', 'barNamespace');
+		$this->assertTrue($vm_ret, 'The key should still be there');
+
+		sleep(1);
+
+		$vm_ret = ExternalCache::contains('foo', 'barNamespace');
+		$this->assertFalse($vm_ret, 'The key should have expired by now');
+	}
 }
