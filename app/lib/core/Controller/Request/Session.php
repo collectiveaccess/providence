@@ -92,7 +92,9 @@ class Session {
 				$this->opa_session_vars = ExternalCache::fetch($this->getSessionID(), 'SessionVars');
 			} else {
 				$this->opa_session_vars = array();
-				ExternalCache::delete($this->getSessionID(), 'SessionVars');
+				if($this->getSessionID()) {
+					ExternalCache::delete($this->getSessionID(), 'SessionVars');
+				}
 				$this->opa_session_vars['session_end_timestamp'] = time() + $this->lifetime;
 			}
 
