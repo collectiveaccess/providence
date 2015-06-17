@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Configuration.php : 
+ * app/lib/core/Configuration.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -15,10 +15,10 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
@@ -29,10 +29,10 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
+
+/**
+ *
+ */
 
 
 /**
@@ -52,34 +52,34 @@
  * @example docs/Configuration1.example Example configuration file
  */
 class Configuration {
-/**
- * Contains parsed configuration values
- *
- * @access private
- */
+	/**
+	 * Contains parsed configuration values
+	 *
+	 * @access private
+	 */
 	var $ops_config_settings;
 
-/**
- * Error message
- *
- * @access private
- */
+	/**
+	 * Error message
+	 *
+	 * @access private
+	 */
 	var $ops_error="";		#  error message - blank if no error
 
-/**
- * Absolute path to configuration file
- *
- * @access private
- */
+	/**
+	 * Absolute path to configuration file
+	 *
+	 * @access private
+	 */
 	var $ops_config_file_path;
 
-/**
- * Display debugging info
- *
- * @access private
- */
+	/**
+	 * Display debugging info
+	 *
+	 * @access private
+	 */
 	var $opb_debug = false;
-	
+
 	static $s_get_cache;
 	private $ops_md5_path;
 
@@ -105,7 +105,7 @@ class Configuration {
 	 *
 	 *		$g_ui_locale - if it contains the current locale code, this code will be used when computing the MD5 signature of the current configuration for caching purposes. By setting this to the current locale simultaneous caching of configurations for various locales (eg. config files with gettext-translated strings in them) is enabled.
 	 *		$g_configuration_cache_suffix - any text it contains is used along with the configuration path and $g_ui_locale to compute the MD5 signature of the current configuration for caching purposes. By setting this to some value you can support simultaneous caching of configurations for several different modes. This is mainly used to support caching of theme-specific configurations. Since the theme can change based upon user agent, we need to potentially keep several computed configurations cached at the same time, one for each theme used.
-	 *		
+	 *
 	 * @param string $ps_file_path Absolute path to configuration file to parse
 	 * @param bool $pb_die_on_error If true, request processing will halt with call to die() on error in parsing config file
 	 * @param bool $pb_dont_cache If true, file will be parsed even if it's already cached
@@ -114,11 +114,11 @@ class Configuration {
 	 */
 	public function __construct($ps_file_path=__CA_APP_CONFIG__, $pb_die_on_error=false, $pb_dont_cache=false) {
 		global $g_ui_locale, $g_configuration_cache_suffix;
-		
+
 		$this->ops_config_file_path = $ps_file_path ? $ps_file_path : __CA_APP_CONFIG__;	# path to configuration file
 		// cache key for on-disk caching
 		$vs_path_as_md5 = md5($_SERVER['HTTP_HOST'].$this->ops_config_file_path.'/'.$g_ui_locale.(isset($g_configuration_cache_suffix) ? '/'.$g_configuration_cache_suffix : ''));
-		
+
 		#
 		# Is configuration file already cached?
 		#
@@ -213,7 +213,7 @@ class Configuration {
 	}
 	/* ---------------------------------------- */
 	/**
-	 * Parses configuration file located at $ps_file_path. 
+	 * Parses configuration file located at $ps_file_path.
 	 *
 	 * @param $ps_file_path - absolute path to configuration file to parse
 	 * @param $pb_die_on_error - if true, die() will be called on parse error halting request; default is false
@@ -229,7 +229,7 @@ class Configuration {
 			if ($pb_die_on_error) { $this->_dieOnError(); }
 			return false;
 		}
-		
+
 		$vs_key = $vs_scalar_value = $vs_assoc_key = "";
 		$vn_in_quote = $vn_state = 0;
 		$vb_escape_set = false;
@@ -240,7 +240,7 @@ class Configuration {
 		$vb_merge_mode = false;
 		while (!feof($r_file)) {
 			$vn_line_num++;
-			
+
 			if (($pn_num_lines_to_read > 0) && ($vn_line_num > $pn_num_lines_to_read)) { break; }
 			$vs_buffer = trim(fgets($r_file, 32000));
 
@@ -261,7 +261,7 @@ class Configuration {
 			}
 			while (sizeof($va_tokens)) {
 				$vs_token = array_shift($va_tokens);
-				
+
 				$va_token_history[] = $vs_token;
 				if (sizeof($va_token_history) > 50) { array_shift($va_token_history); }
 				switch($vn_state) {
@@ -324,8 +324,8 @@ class Configuration {
 					# handle scalar values
 					case 20:
 						if ((preg_match("/[\r\n]/", $vs_token))) {
-								$this->ops_config_settings["scalars"][$vs_key] = $this->_trimScalar($vs_scalar_value);
-								$vn_state = -1;
+							$this->ops_config_settings["scalars"][$vs_key] = $this->_trimScalar($vs_scalar_value);
+							$vn_state = -1;
 						} else {
 							if (sizeof($va_tokens) == 0) {
 								$vs_scalar_value .= $vs_token;
@@ -523,7 +523,7 @@ class Configuration {
 							case '{':
 								if (!$vn_in_quote && !$vb_escape_set) {
 									if ($this->opb_debug) { print "CONFIG DEBUG: STATE=50; Got open {; KEY IS '$vs_assoc_key'\n"; }
-									
+
 									if (!is_array($va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key]) || !$vb_merge_mode) {
 										$va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key] = array();
 									}
@@ -564,7 +564,7 @@ class Configuration {
 							# open list
 							case '[':
 								if ($this->opb_debug) { print "CONFIG DEBUG: STATE=50; Got open [; KEY IS '$vs_assoc_key'\n"; }
-							
+
 								if ($vn_in_quote || $vb_escape_set) {
 									$vs_scalar_value .= $vs_token;
 								} else {
@@ -703,7 +703,7 @@ class Configuration {
 		}
 
 		fclose($r_file);
-		
+
 		return true;
 	}
 	/* ---------------------------------------- */
@@ -734,7 +734,7 @@ class Configuration {
 	 * kind of configuration value was found.
 	 */
 	public function get($ps_key) {
-		if (isset(Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]) && Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]) { return Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]; } 
+		if (isset(Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]) && Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]) { return Configuration::$s_get_cache[$this->ops_md5_path][$ps_key]; }
 		$this->ops_error = "";
 
 		$vs_tmp = $this->getScalar($ps_key);
@@ -926,7 +926,7 @@ class Configuration {
 	}
 	/* ---------------------------------------- */
 	//public function __destruct() {
-		//print "DESTRUCT Config\n";
+	//print "DESTRUCT Config\n";
 	//}
 	# ---------------------------------------------------------------------------
 }
