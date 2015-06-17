@@ -149,6 +149,29 @@ class ExternalCacheTest extends PHPUnit_Framework_TestCase {
 		$this->assertFalse($vm_ret, 'Should not return anything after deleting');
 	}
 
+	public function testManyKeys() {
+		for($i=1; $i<10; $i++) {
+			$vm_ret = ExternalCache::save($i, $i, 'barNamespace');
+			$this->assertTrue($vm_ret, 'Setting item in cache should return true');
+
+			$vm_ret = ExternalCache::contains($i, 'barNamespace');
+			$this->assertTrue($vm_ret, 'The key we just set should exist');
+
+			$vm_ret = ExternalCache::fetch($i, 'barNamespace');
+			$this->assertEquals($i, $vm_ret, 'The value we set should be returned');
+		}
+
+		// after all that the first key should still be around
+
+		$vm_ret = ExternalCache::contains(1, 'barNamespace');
+		$this->assertTrue($vm_ret, 'The first key should still exist');
+
+		$vm_ret = ExternalCache::fetch(1, 'barNamespace');
+		$this->assertEquals(1, $vm_ret, 'The first value should still be correct');
+
+		ExternalCache::flush();
+	}
+
 	public function testWeirdKeys() {
 		// we could try to carefully engineer potentially dangerous
 		// cache keys (which may translate into on-disk file names depending
