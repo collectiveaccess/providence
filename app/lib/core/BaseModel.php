@@ -7633,6 +7633,7 @@ class BaseModel extends BaseObject {
 		
 		$va_levels = $va_ids = $va_parent_ids = array();
 		
+		if (!is_array($va_hier)) { return array(); }
 		foreach($va_hier as $vn_i => $va_item) {
 			$va_levels[$vn_i] = $va_item['LEVEL'];
 			$va_ids[] = $vn_id = $va_item['NODE'][$vs_pk];
