@@ -81,6 +81,8 @@ class Configuration {
 	var $opb_debug = false;
 
 	static $s_get_cache;
+	static $s_config_cache = null;
+	static $s_have_to_write_config_cache = false;
 	private $ops_md5_path;
 
 	/* ---------------------------------------- */
@@ -133,49 +135,36 @@ class Configuration {
 			$vs_local_conf_file_path = __CA_DEFAULT_THEME_CONFIG_DIRECTORY__.'/'.$vs_config_filename;
 		}
 
+		// try to figure out if we can get it from cache
 		if((!defined('__CA_DISABLE_CONFIG_CACHING__') || !__CA_DISABLE_CONFIG_CACHING__) && !$pb_dont_cache) {
-			// check that setup.php and global.conf haven't changed. If they have we're going to want to
-			// regenerate all config file caches so they reflect inherited changes
-			$va_global_config_stat = @stat(__CA_CONF_DIR__.'/global.conf');
-			$va_setup_stat = @stat(__CA_BASE_DIR__.'/setup.php');
-			if(
-				($va_global_config_stat['mtime'] != ExternalCache::fetch('ca_global_config_mtime', 'Configuration'))
-				||
-				($va_setup_stat['mtime'] != ExternalCache::fetch('ca_setup_mtime', 'Configuration'))
-			) {
-				// either global.conf or setup.php have changed so clear the cache
-				ExternalCache::flush();
+			self::loadConfigCacheInMemory();
 
-				// save current times for global.conf and setup.php
-				ExternalCache::save('ca_global_config_mtime', $va_global_config_stat['mtime'], 'Configuration', 0);
-				ExternalCache::save('ca_setup_mtime', $va_setup_stat['mtime'], 'Configuration', 0);
+			if($vb_setup_has_changed = caSetupPhpHasChanged()) {
+				self::clearCache();
 			}
 
-			$va_cache_data = ExternalCache::fetch($vs_path_as_md5, 'Configuration');
+			if(!$vb_setup_has_changed && isset(self::$s_config_cache[$vs_path_as_md5])) {
+				$vb_cache_is_invalid = false;
 
-			#
-			# is cache outdated? (changes to config file have invalidated it)
-			#
-			$vb_cache_is_invalid = false;
-
-			$va_configfile_stat = @stat($this->ops_config_file_path);
-			if($va_configfile_stat['mtime'] != ExternalCache::fetch('ca_config_file_mtime_'.$vs_path_as_md5, 'Configuration')) { // config file has changed
-				ExternalCache::save('ca_config_file_mtime_'.$vs_path_as_md5, $va_configfile_stat['mtime'], 'Configuration');
-				$vb_cache_is_invalid = true;
-			}
-
-			if ($vs_local_conf_file_path) {
-				$va_local_configfile_stat = @stat($vs_local_conf_file_path);
-				if($va_local_configfile_stat['mtime'] != ExternalCache::fetch('ca_config_file_local_mtime_'.$vs_path_as_md5, 'Configuration')) { // local config file has changed
-					ExternalCache::save('ca_config_file_local_mtime_'.$vs_path_as_md5, $va_local_configfile_stat['mtime'], 'Configuration');
+				$vs_config_mtime = caGetFileMTime($this->ops_config_file_path);
+				if($vs_config_mtime != self::$s_config_cache['mtime_'.$vs_path_as_md5]) { // config file has changed
+					self::$s_config_cache['mtime_'.$vs_path_as_md5] = $vs_config_mtime;
 					$vb_cache_is_invalid = true;
 				}
-			}
-			if (!$vb_cache_is_invalid) {
-				// Get it out of the cache because cache is ok
-				$this->ops_config_settings = $va_cache_data;
-				$this->ops_md5_path = md5($this->ops_config_file_path);
-				return;
+
+				if ($vs_local_conf_file_path) {
+					$vs_local_config_mtime = caGetFileMTime($vs_local_conf_file_path);
+					if($vs_local_config_mtime != self::$s_config_cache['local_mtime_'.$vs_path_as_md5]) { // local config file has changed
+						self::$s_config_cache['local_mtime_'.$vs_path_as_md5] = $vs_local_config_mtime;
+						$vb_cache_is_invalid = true;
+					}
+				}
+
+				if (!$vb_cache_is_invalid) { // cache is ok
+					$this->ops_config_settings = self::$s_config_cache[$vs_path_as_md5];;
+					$this->ops_md5_path = md5($this->ops_config_file_path);
+					return;
+				}
 			}
 
 		}
@@ -207,15 +196,17 @@ class Configuration {
 		}
 
 		if($vs_path_as_md5 && !$pb_dont_cache) {
-			ExternalCache::save($vs_path_as_md5, $this->ops_config_settings, 'Configuration');
+			self::$s_config_cache[$vs_path_as_md5] = $this->ops_config_settings;
+			// we loaded this cfg from file, so we have to write the
+			// config cache to disk at least once on this request
+			self::$s_have_to_write_config_cache = true;
 		}
-
 	}
 	/* ---------------------------------------- */
 	/**
 	 * Parses configuration file located at $ps_file_path.
 	 *
-	 * @param $ps_file_path - absolute path to configuration file to parse
+	 * @param $ps_filepath - absolute path to configuration file to parse
 	 * @param $pb_die_on_error - if true, die() will be called on parse error halting request; default is false
 	 * @param $pn_num_lines_to_read - if set to a positive integer, will abort parsing after the first $pn_num_lines_to_read lines of the config file are read. This is useful for reading in headers in config files without having to parse the entire file.
 	 * @return boolean - returns true if parse succeeded, false if parse failed
@@ -921,12 +912,29 @@ class Configuration {
 	 * Removes all cached configuration
 	 */
 	public static function clearCache() {
-		ExternalCache::flush();
-		MemoryCache::flush();
+		ExternalCache::delete('ConfigurationCache');
+		self::$s_config_cache = null;
 	}
 	/* ---------------------------------------- */
-	//public function __destruct() {
-	//print "DESTRUCT Config\n";
-	//}
+	/**
+	 * Load configuration from external cache into memory
+	 */
+	public static function loadConfigCacheInMemory() {
+		if(!is_null(self::$s_config_cache)) { return; }
+
+		if(ExternalCache::contains('ConfigurationCache')) {
+			self::$s_config_cache = ExternalCache::fetch('ConfigurationCache');
+		}
+	}
+	/* ---------------------------------------- */
+	/**
+	 * Destructor: Save config cache to disk/external provider
+	 */
+	public function __destruct() {
+		if(self::$s_have_to_write_config_cache) {
+			ExternalCache::save('ConfigurationCache', self::$s_config_cache, 'default', 0);
+			self::$s_have_to_write_config_cache = false;
+		}
+	}
 	# ---------------------------------------------------------------------------
 }
