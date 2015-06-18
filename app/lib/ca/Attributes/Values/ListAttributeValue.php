@@ -370,7 +370,7 @@
  			if (isset($pa_options['nullOption']) && strlen($pa_options['nullOption'])) {
  				$vb_null_option = $pa_options['nullOption'];
  			} else {
- 				$vb_null_option = !$vb_require_value ? $pa_element_info['settings']['nullOptionText'] : null;
+ 				$vb_null_option = !$vb_require_value ? ($pa_element_info['settings']['nullOptionText'] ? $pa_element_info['settings']['nullOptionText'] : _t('Not set')) : null;
  			}
  			
  			$vs_render = caGetOption('render', $pa_options, caGetOption('render', $pa_element_info['settings'], ''));
@@ -460,4 +460,3 @@
 		}
  		# ------------------------------------------------------------------
 	}
- ?>
