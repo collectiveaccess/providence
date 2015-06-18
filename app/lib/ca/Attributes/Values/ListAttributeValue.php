@@ -88,7 +88,7 @@
 			'default' => 0,
 			'width' => 1, 'height' => 1,
 			'label' => _t('Use list default when value is null?'),
-			'description' => _t('Check this option if the list default value should be used when the item value is null. (The default is disregard the default value and show the null value.)')
+			'description' => _t('Check this option if the list default value should be used when the item value is null. (The default is to disregard the default value and show the null value.)')
 		),
 		'canBeUsedInSort' => array(
 			'formatType' => FT_NUMBER,
