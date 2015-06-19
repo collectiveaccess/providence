@@ -60,10 +60,14 @@ final class ConfigurationExporter {
 	private $opt_locale;
 	/** @var DOMDocument */
 	private $opo_dom;
+	/**
+	 * @var int
+	 */
+	private $opn_modified_after = null;
 	# -------------------------------------------------------
 
 	# -------------------------------------------------------
-	public function __construct() {
+	public function __construct($pn_modified_after = null) {
 		$this->opo_config = Configuration::load();
 		$this->opo_db = new Db();
 		$this->opo_dm = Datamodel::load();
@@ -73,6 +77,10 @@ final class ConfigurationExporter {
 		$this->opo_dom->formatOutput = true;
 
 		$this->opt_locale = new ca_locales();
+
+		if(is_int($pn_modified_after)) {
+			$this->opn_modified_after = $pn_modified_after;
+		}
 	}
 	# -------------------------------------------------------
 	/**
@@ -81,10 +89,11 @@ final class ConfigurationExporter {
 	 * @param string $ps_description Description of the profile, used for "profileDescription" element
 	 * @param string $ps_base Base profile
 	 * @param string $ps_info_url Info URL for the profile
+	 * @param int|null $pn_modified_after If set, only configuration elements modified *after* this unix timestamp are exported
 	 * @return string string profile as XML string
 	 */
-	public static function exportConfigurationAsXML($ps_name="",$ps_description="",$ps_base="",$ps_info_url="") {
-		$o_exporter = new ConfigurationExporter();
+	public static function exportConfigurationAsXML($ps_name="",$ps_description="",$ps_base="",$ps_info_url="",$pn_modified_after=null) {
+		$o_exporter = new ConfigurationExporter($pn_modified_after);
 
 		$vo_root = $o_exporter->getDOM()->createElement('profile');
 		$o_exporter->getDOM()->appendChild($vo_root);
@@ -152,8 +161,14 @@ final class ConfigurationExporter {
 		$qr_locales = $this->opo_db->query("SELECT * FROM ca_locales ORDER BY locale_id");
 
 		$vo_locales = $this->opo_dom->createElement("locales");
+		$t_locale = new ca_locales();
 
 		while($qr_locales->nextRow()) {
+			if($this->opn_modified_after) {
+				if($t_locale->getLastChangeTimestampAsInt($qr_locales->get('locale_id')) < $this->opn_modified_after) {
+					continue;
+				}
+			}
 			$vo_locale = $this->opo_dom->createElement("locale",caEscapeForXML($qr_locales->get("name")));
 			$vo_locale->setAttribute("lang", $qr_locales->get("language"));
 			$vo_locale->setAttribute("country", $qr_locales->get("country"));
@@ -208,6 +223,14 @@ final class ConfigurationExporter {
 			$vo_list->appendChild($vo_labels);
 
 			$vo_items = $this->getListItemsAsDOM($t_list->getRootItemIDForList($qr_lists->get("list_code")));
+
+			// if we're only exporting changes, don't export list if no items are exported AND the list hasn't changed
+			if($this->opn_modified_after && !$vo_items->childNodes->length) {
+				if($t_list->getLastChangeTimestampAsInt($qr_lists->get('list_id')) < $this->opn_modified_after) {
+					continue;
+				}
+			}
+
 			if($vo_items) {
 				$vo_list->appendChild($vo_items);
 			}
@@ -220,6 +243,7 @@ final class ConfigurationExporter {
 	# -------------------------------------------------------
 	private function getListItemsAsDOM($pn_parent_id) {
 		$qr_items = $this->opo_db->query("SELECT * FROM ca_list_items WHERE parent_id=? AND deleted=0",$pn_parent_id);
+		$t_list_item = new ca_list_items();
 
 		if(!($qr_items->numRows()>0)) {
 			return false;
@@ -228,6 +252,12 @@ final class ConfigurationExporter {
 		$vo_items = $this->opo_dom->createElement("items");
 		$vs_default_locale = $this->opt_locale->localeIDToCode($this->opt_locale->getDefaultCataloguingLocaleID());
 		while($qr_items->nextRow()) {
+			if($this->opn_modified_after) {
+				if($t_list_item->getLastChangeTimestampAsInt($qr_items->get('item_id')) < $this->opn_modified_after) {
+					continue;
+				}
+			}
+
 			$vo_item = $this->opo_dom->createElement("item");
 			$vs_idno = $this->makeIDNOFromInstance($qr_items,'idno');
 
@@ -282,6 +312,12 @@ final class ConfigurationExporter {
 		$t_element = new ca_metadata_elements();
 
 		while($qr_elements->nextRow()) {
+			if($this->opn_modified_after) {
+				if($t_element->getLastChangeTimestampAsInt($qr_elements->get('element_id')) < $this->opn_modified_after) {
+					continue;
+				}
+			}
+
 			$vo_element = $this->opo_dom->createElement("metadataElement");
 
 			$vo_element->setAttribute("code", $this->makeIDNO($qr_elements->get("element_code")));
@@ -460,6 +496,12 @@ final class ConfigurationExporter {
 
 		while($qr_entries->nextRow()) {
 			$t_entry = new ca_metadata_dictionary_entries($qr_entries->get('entry_id'));
+			if($this->opn_modified_after) {
+				if($t_entry->getLastChangeTimestampAsInt($qr_entries->get('entry_id')) < $this->opn_modified_after) {
+					continue;
+				}
+			}
+
 			$vo_entry = $this->opo_dom->createElement("entry");
 			$vo_dict->appendChild($vo_entry);
 			$vo_entry->setAttribute('bundle', $t_entry->get('bundle_name'));
@@ -671,8 +713,16 @@ final class ConfigurationExporter {
 			$vo_screens = $this->opo_dom->createElement("screens");
 			$qr_screens = $this->opo_db->query("SELECT * FROM ca_editor_ui_screens WHERE parent_id IS NOT NULL AND ui_id=? ORDER BY screen_id",$qr_uis->get("ui_id"));
 
+			$t_screen = new ca_editor_ui_screens();
+
 			while($qr_screens->nextRow()) {
-				$t_screen = new ca_editor_ui_screens($qr_screens->get("screen_id"));
+				if($this->opn_modified_after) {
+					if($t_screen->getLastChangeTimestampAsInt($qr_screens->get('element_id')) < $this->opn_modified_after) {
+						continue;
+					}
+				}
+
+				$t_screen->load($qr_screens->get("screen_id"));
 
 				$vo_screen = $this->opo_dom->createElement("screen");
 				if($vs_idno = $qr_screens->get("idno")) {
@@ -797,9 +847,23 @@ final class ConfigurationExporter {
 					}
 				}
 
+				// if we're only exporting changes, don't export screen if no placements are exported AND the screen itself hasn't changed
+				if($this->opn_modified_after && !$vo_placements->childNodes->length) {
+					if($t_screen->getLastChangeTimestampAsInt($qr_screens->get('screen_id')) < $this->opn_modified_after) {
+						continue;
+					}
+				}
+
 				$vo_screen->appendChild($vo_placements);
 
 				$vo_screens->appendChild($vo_screen);
+			}
+
+			// if we're only exporting changes, don't export UI if no screens are exported AND the UI itself hasn't changed
+			if($this->opn_modified_after && !$vo_screens->childNodes->length) {
+				if($t_ui->getLastChangeTimestampAsInt($qr_uis->get('ui_id')) < $this->opn_modified_after) {
+					continue;
+				}
 			}
 
 			$vo_ui->appendChild($vo_screens);
@@ -828,6 +892,10 @@ final class ConfigurationExporter {
 			if($qr_root->nextRow()) {
 				$vn_parent = $qr_root->get("type_id");
 				if($vo_types = $this->getRelationshipTypesForParentAsDOM($vn_parent)) {
+					// don't ouput table if we're exporting changes and nothing has changed for this hierarchy
+					if($this->opn_modified_after && !$vo_types->childNodes->length) {
+						continue;
+					}
 					$vo_table->appendChild($vo_types);
 					$vo_rel_types->appendChild($vo_table);
 				}
@@ -844,9 +912,16 @@ final class ConfigurationExporter {
 
 		$qr_types = $this->opo_db->query("SELECT * FROM ca_relationship_types WHERE parent_id=?",$pn_parent_id);
 		if(!$qr_types->numRows()) return false;
+		$t_rel_types = new ca_relationship_types();
 
 		while($qr_types->nextRow()) {
 			$vo_type = $this->opo_dom->createElement("type");
+
+			if($this->opn_modified_after) {
+				if($t_rel_types->getLastChangeTimestampAsInt($qr_types->get('type_id')) < $this->opn_modified_after) {
+					continue;
+				}
+			}
 
 			if(preg_match("/root\_for\_[0-9]{1,3}/",$qr_types->get("type_code"))) { // ignore legacy root records
 				continue;
@@ -916,6 +991,8 @@ final class ConfigurationExporter {
 		$t_ui_screens = new ca_editor_ui_screens();
 
 		$vo_roles = $this->opo_dom->createElement("roles");
+
+		if($this->opn_modified_after) { return $vo_roles; }
 
 		$qr_roles = $this->opo_db->query("SELECT * FROM ca_user_roles");
 
@@ -994,6 +1071,8 @@ final class ConfigurationExporter {
 
 		$vo_groups = $this->opo_dom->createElement("groups");
 
+		if($this->opn_modified_after) { return $vo_groups; }
+
 		$qr_groups = $this->opo_db->query("SELECT * FROM ca_user_groups WHERE parent_id IS NOT NULL");
 
 		while($qr_groups->nextRow()) {
@@ -1027,6 +1106,12 @@ final class ConfigurationExporter {
 		while($qr_forms->nextRow()) {
 			/** @var ca_search_forms $t_form */
 			$t_form = new ca_search_forms($qr_forms->get("form_id"));
+
+			if($this->opn_modified_after) {
+				if($t_form->getLastChangeTimestampAsInt($qr_forms->get('form_id')) < $this->opn_modified_after) {
+					continue;
+				}
+			}
 
 			$vo_form = $this->opo_dom->createElement("searchForm");
 			$vo_form->setAttribute("code", $this->makeIDNO($qr_forms->get("form_code")));
@@ -1155,6 +1240,12 @@ final class ConfigurationExporter {
 			$va_info = $va_display_by_locale[$va_locales[0]];
 
 			if (!$t_display->load($va_info['display_id'])) { continue; }
+
+			if($this->opn_modified_after) {
+				if($t_display->getLastChangeTimestampAsInt() < $this->opn_modified_after) {
+					continue;
+				}
+			}
 
 			$vs_buf .= "\t<display code='".($va_info['display_code'] && preg_match('!^[A-Za-z0-9_]+$!', $va_info['display_code']) ? $va_info['display_code'] : 'display_'.$va_info['display_id'])."' type='".$o_dm->getTableName($va_info['table_num'])."' system='".$t_display->get('is_system')."'>\n";
 			$vs_buf .= "\t\t<labels>\n";

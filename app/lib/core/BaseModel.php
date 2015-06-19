@@ -6762,6 +6762,15 @@ class BaseModel extends BaseObject {
 		}
 		return null;
 	}
+
+	/**
+	 * Get just the actual timestamp of the last change (as opposed to the array returned by getLastChangeTimestamp())
+	 * @param null|int $pn_row_id
+	 */
+	public function getLastChangeTimestampAsInt($pn_row_id=null) {
+		$va_last_change = $this->getLastChangeTimestamp($pn_row_id);
+		return (int) $va_last_change['timestamp'];
+	}
 	# --------------------------------------------------------------------------------------------
 	# --- Hierarchical functions
 	# --------------------------------------------------------------------------------------------
