@@ -27,6 +27,7 @@
  */
 require_once(__CA_LIB_DIR__.'/ca/Service/BaseServiceController.php');
 require_once(__CA_LIB_DIR__.'/ca/Service/ModelService.php');
+require_once(__CA_LIB_DIR__.'/ca/ConfigurationExporter.php');
 
 class ModelController extends BaseServiceController {
 	# -------------------------------------------------------
@@ -34,7 +35,21 @@ class ModelController extends BaseServiceController {
 		parent::__construct($po_request, $po_response, $pa_view_paths);
 	}
 	# -------------------------------------------------------
-	public function __call($ps_table, $pa_args){
+	public function exportConfig() {
+		$vn_timestamp = null;
+		if($vs_after = $this->opo_request->getParameter('modifiedAfter', pString)) {
+			$o_tep = new TimeExpressionParser();
+			if($o_tep->parse($vs_after)) {
+				$va_timestamps = $o_tep->getUnixTimestamps();
+				$vn_timestamp = $va_timestamps['start'];
+			}
+		}
+
+		$this->view->setVar('content', ConfigurationExporter::exportConfigurationAsXML('', '', '', '', $vn_timestamp));
+		$this->render('xml.php');
+	}
+	# -------------------------------------------------------
+	public function __call($ps_table, $pa_args) {
 		$vo_service = new ModelService($this->request,$ps_table);
 		$va_content = $vo_service->dispatch();
 
