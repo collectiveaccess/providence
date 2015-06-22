@@ -2771,3 +2771,34 @@ function caFileIsIncludable($ps_file) {
 		return join('&', $va_return);
 	}
 	# ----------------------------------------
+	/**
+	 * Get modified timestamp for given file
+	 * @param string $ps_file absolute file path
+	 * @return bool|int timestamp, false on error
+	 */
+	function caGetFileMTime($ps_file) {
+		$va_stat = @stat($ps_file);
+		if(!is_array($va_stat) || !isset($va_stat['mtime'])) { return false; }
+		return $va_stat['mtime'];
+	}
+	# ----------------------------------------
+	/**
+	 * Check if setup.php has changed since we last cached the mtime.
+	 * If it has, cache the new mtime
+	 * @return bool
+	 */
+	function caSetupPhpHasChanged() {
+		$vn_setup_mtime = caGetFileMTime(__CA_BASE_DIR__.'/setup.php');
+
+		if(
+			!CompositeCache::contains('setup_php_mtime')
+			||
+			($vn_setup_mtime != CompositeCache::fetch('setup_php_mtime'))
+		) {
+			CompositeCache::save('setup_php_mtime', $vn_setup_mtime, 'default', 0);
+			return true;
+		}
+
+		return false;
+	}
+	# ----------------------------------------
