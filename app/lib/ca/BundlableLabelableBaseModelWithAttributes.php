@@ -3998,19 +3998,20 @@ if (!$vb_batch) {
 						if (!is_array($va_rep_ids = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}", pArray))) { $va_rep_ids = array(); }
 								
 						if ($vs_element_code = caGetOption(array('elementCode', 'element_code'), $va_bundle_settings, null)) {
-							if (!is_array($va_current_rep_ids = $this->get($this->tableName().".".$vs_element_code, array('returnWithStructure' => true, 'idsOnly' => true)))) { $va_current_rep_ids = array(); }
+							if (!is_array($va_current_rep_ids = $this->get($this->tableName().".".$vs_element_code, array('returnAsArray' => true, 'idsOnly' => true)))) { 
+								$va_current_rep_ids = $va_current_rep_id_with_structure = array();
+							} else {
+								$va_current_rep_id_with_structure = $this->get($this->tableName().".".$vs_element_code, array('returnWithStructure' => true, 'idsOnly' => true));
+							}
 							
-							//$va_current_rep_ids = caExtractValuesFromArrayList($va_current_rep_ids, $vs_element_code, array('preserveKeys' => true));
 							$va_rep_to_attr_id = array();
 							
-						
-						
 							foreach($va_rep_ids as $vn_rep_id) {
 								if (in_array($vn_rep_id, $va_current_rep_ids)) { continue; }
 								$this->addAttribute(array($vs_element_code => $vn_rep_id), $vs_element_code);
 							}
 							
-							foreach($va_current_rep_ids as $vn_id => $va_vals_by_attr_id) {
+							foreach($va_current_rep_id_with_structure as $vn_id => $va_vals_by_attr_id) {
 								foreach($va_vals_by_attr_id as $vn_attribute_id => $va_val) {
 									if (!in_array($va_val[$vs_element_code], $va_rep_ids)) {
 										$this->removeAttribute($vn_attribute_id);
