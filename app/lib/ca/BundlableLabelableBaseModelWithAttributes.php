@@ -4914,13 +4914,13 @@ if (!$vb_batch) {
 
 			foreach($va_path as $vs_join_table) {
 				$va_rel_info = $this->getAppDatamodel()->getRelationships($vs_cur_table, $vs_join_table);
-				$vs_join = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.';
+				$vs_join = 'INNER JOIN '.$vs_join_table.' ON ';
 				
 				$va_tmp = array();
 				foreach($va_rel_info[$vs_cur_table][$vs_join_table] as $vn_i => $va_rel) {
-					$va_tmp[] = $va_rel_info[$vs_cur_table][$vs_join_table][$vn_i][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][$vn_i][1]."\n";
+					$va_tmp[] = $vs_cur_table.".".$va_rel_info[$vs_cur_table][$vs_join_table][$vn_i][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][$vn_i][1]."\n";
 				}
-				$va_joins[] = $vs_join.' '.join(' OR ', $va_tmp);
+				$va_joins[] = $vs_join.join(' OR ', $va_tmp);
 				$vs_cur_table = $vs_join_table;
 			}
 
