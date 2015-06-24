@@ -2,11 +2,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: CollectiveAccess\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-14 12:10+0100\n"
+"POT-Creation-Date: 2015-06-23 09:11-0500\n"
 "PO-Revision-Date: \n"
-"Last-Translator: Gautier Michelin <gm@ideesculture.com>\n"
+"Last-Translator: Stefan <stefan@whirl-i-gig.com>\n"
 "Language-Team: info@collectiveaccess.org\n"
-"Language: en\n"
+"Language: en_US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -14,6 +14,7 @@ msgstr ""
 "X-Poedit-Basepath: ../../../\n"
 "X-Poedit-KeywordsList: _t;_p;_\n"
 "X-Generator: Poedit 1.8.1\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SearchPath-0: .\n"
 
 #: app/controllers/administrate/access/GroupsController.php:58
@@ -226,7 +227,7 @@ msgstr ""
 #: app/controllers/find/SearchTourStopsController.php:72
 #: app/controllers/find/SearchToursAdvancedController.php:72
 #: app/controllers/find/SearchToursController.php:72
-#: app/helpers/displayHelpers.php:3819
+#: app/helpers/displayHelpers.php:3820
 #: themes/default/views/bundles/ca_set_items.php:58
 #: themes/default/views/find/Results/quick_search_results_html.php:36
 msgid "name"
@@ -261,7 +262,7 @@ msgstr ""
 #: app/controllers/find/SearchPlacesAdvancedController.php:76
 #: app/controllers/find/SearchPlacesController.php:73
 #: app/controllers/find/SearchStorageLocationsAdvancedController.php:76
-#: app/helpers/displayHelpers.php:3820
+#: app/helpers/displayHelpers.php:3821
 #: themes/default/views/find/Results/quick_search_results_html.php:36
 msgid "idno"
 msgstr ""
@@ -710,7 +711,7 @@ msgstr ""
 #: app/controllers/find/SearchOccurrencesAdvancedController.php:75
 #: app/controllers/find/SearchPlacesAdvancedController.php:75
 #: app/controllers/find/SearchStorageLocationsAdvancedController.php:75
-#: app/helpers/displayHelpers.php:3821 app/conf/browse.conf:228
+#: app/helpers/displayHelpers.php:3822 app/conf/browse.conf:228
 #: app/conf/browse.conf:431 app/conf/browse.conf:531 app/conf/browse.conf:615
 #: app/conf/browse.conf:703 app/conf/browse.conf:792 app/conf/browse.conf:867
 #: app/conf/browse.conf:903 app/conf/browse.conf:928 app/conf/browse.conf:975
@@ -976,11 +977,11 @@ msgstr ""
 #: app/widgets/recordsByStatus/recordsByStatusWidget.php:205
 #: app/widgets/recordsByStatus/recordsByStatusWidget.php:242
 #: themes/default/views/manage/saved_searches_list_html.php:90
-#: app/conf/user_pref_defs.conf:579 app/conf/user_pref_defs.conf:631
-#: app/conf/user_pref_defs.conf:671 app/conf/user_pref_defs.conf:712
-#: app/conf/user_pref_defs.conf:751 app/conf/user_pref_defs.conf:791
-#: app/conf/user_pref_defs.conf:828 app/conf/user_pref_defs.conf:966
-#: app/conf/user_pref_defs.conf:1027
+#: app/conf/navigation.conf:1763 app/conf/user_pref_defs.conf:579
+#: app/conf/user_pref_defs.conf:631 app/conf/user_pref_defs.conf:671
+#: app/conf/user_pref_defs.conf:712 app/conf/user_pref_defs.conf:751
+#: app/conf/user_pref_defs.conf:791 app/conf/user_pref_defs.conf:828
+#: app/conf/user_pref_defs.conf:966 app/conf/user_pref_defs.conf:1027
 msgid "Collections"
 msgstr ""
 
@@ -994,12 +995,12 @@ msgstr ""
 #: app/widgets/recordsByStatus/recordsByStatusWidget.php:185
 #: app/widgets/recordsByStatus/recordsByStatusWidget.php:237
 #: themes/default/views/manage/saved_searches_list_html.php:65
-#: app/conf/user_pref_defs.conf:575 app/conf/user_pref_defs.conf:627
-#: app/conf/user_pref_defs.conf:666 app/conf/user_pref_defs.conf:708
-#: app/conf/user_pref_defs.conf:746 app/conf/user_pref_defs.conf:786
-#: app/conf/user_pref_defs.conf:825 app/conf/user_pref_defs.conf:860
-#: app/conf/user_pref_defs.conf:894 app/conf/user_pref_defs.conf:962
-#: app/conf/user_pref_defs.conf:1022
+#: app/conf/navigation.conf:1194 app/conf/user_pref_defs.conf:575
+#: app/conf/user_pref_defs.conf:627 app/conf/user_pref_defs.conf:666
+#: app/conf/user_pref_defs.conf:708 app/conf/user_pref_defs.conf:746
+#: app/conf/user_pref_defs.conf:786 app/conf/user_pref_defs.conf:825
+#: app/conf/user_pref_defs.conf:860 app/conf/user_pref_defs.conf:894
+#: app/conf/user_pref_defs.conf:962 app/conf/user_pref_defs.conf:1022
 msgid "Objects"
 msgstr ""
 
@@ -1028,12 +1029,12 @@ msgstr ""
 #: app/widgets/recordsByStatus/recordsByStatusWidget.php:189
 #: app/widgets/recordsByStatus/recordsByStatusWidget.php:238
 #: themes/default/views/manage/saved_searches_list_html.php:70
-#: app/conf/user_pref_defs.conf:576 app/conf/user_pref_defs.conf:628
-#: app/conf/user_pref_defs.conf:668 app/conf/user_pref_defs.conf:709
-#: app/conf/user_pref_defs.conf:748 app/conf/user_pref_defs.conf:788
-#: app/conf/user_pref_defs.conf:827 app/conf/user_pref_defs.conf:861
-#: app/conf/user_pref_defs.conf:896 app/conf/user_pref_defs.conf:963
-#: app/conf/user_pref_defs.conf:1024
+#: app/conf/navigation.conf:1429 app/conf/user_pref_defs.conf:576
+#: app/conf/user_pref_defs.conf:628 app/conf/user_pref_defs.conf:668
+#: app/conf/user_pref_defs.conf:709 app/conf/user_pref_defs.conf:748
+#: app/conf/user_pref_defs.conf:788 app/conf/user_pref_defs.conf:827
+#: app/conf/user_pref_defs.conf:861 app/conf/user_pref_defs.conf:896
+#: app/conf/user_pref_defs.conf:963 app/conf/user_pref_defs.conf:1024
 msgid "Entities"
 msgstr ""
 
@@ -1048,10 +1049,11 @@ msgstr ""
 #: app/widgets/recordsByStatus/recordsByStatusWidget.php:193
 #: app/widgets/recordsByStatus/recordsByStatusWidget.php:239
 #: themes/default/views/manage/saved_searches_list_html.php:75
-#: app/conf/user_pref_defs.conf:577 app/conf/user_pref_defs.conf:629
-#: app/conf/user_pref_defs.conf:669 app/conf/user_pref_defs.conf:710
-#: app/conf/user_pref_defs.conf:749 app/conf/user_pref_defs.conf:789
-#: app/conf/user_pref_defs.conf:964 app/conf/user_pref_defs.conf:1025
+#: app/conf/navigation.conf:1596 app/conf/user_pref_defs.conf:577
+#: app/conf/user_pref_defs.conf:629 app/conf/user_pref_defs.conf:669
+#: app/conf/user_pref_defs.conf:710 app/conf/user_pref_defs.conf:749
+#: app/conf/user_pref_defs.conf:789 app/conf/user_pref_defs.conf:964
+#: app/conf/user_pref_defs.conf:1025
 msgid "Places"
 msgstr ""
 
@@ -1065,47 +1067,50 @@ msgstr ""
 #: app/widgets/recordsByStatus/recordsByStatusWidget.php:197
 #: app/widgets/recordsByStatus/recordsByStatusWidget.php:240
 #: themes/default/views/manage/saved_searches_list_html.php:95
-#: app/conf/navigation.conf:584 app/conf/user_pref_defs.conf:578
-#: app/conf/user_pref_defs.conf:630 app/conf/user_pref_defs.conf:670
-#: app/conf/user_pref_defs.conf:711 app/conf/user_pref_defs.conf:750
-#: app/conf/user_pref_defs.conf:790 app/conf/user_pref_defs.conf:965
-#: app/conf/user_pref_defs.conf:1026
+#: app/conf/navigation.conf:584 app/conf/navigation.conf:1930
+#: app/conf/user_pref_defs.conf:578 app/conf/user_pref_defs.conf:630
+#: app/conf/user_pref_defs.conf:670 app/conf/user_pref_defs.conf:711
+#: app/conf/user_pref_defs.conf:750 app/conf/user_pref_defs.conf:790
+#: app/conf/user_pref_defs.conf:965 app/conf/user_pref_defs.conf:1026
 msgid "Occurrences"
 msgstr ""
 
 #: app/controllers/find/QuickSearchController.php:91
 #: app/models/ca_set_items.php:71 app/models/ca_sets.php:95
 #: app/models/ca_storage_locations.php:378
-#: app/models/ca_storage_locations.php:390 app/conf/user_pref_defs.conf:580
-#: app/conf/user_pref_defs.conf:632 app/conf/user_pref_defs.conf:672
-#: app/conf/user_pref_defs.conf:752
+#: app/models/ca_storage_locations.php:390 app/conf/navigation.conf:2103
+#: app/conf/user_pref_defs.conf:580 app/conf/user_pref_defs.conf:632
+#: app/conf/user_pref_defs.conf:672 app/conf/user_pref_defs.conf:752
 msgid "Storage locations"
 msgstr ""
 
 #: app/controllers/find/QuickSearchController.php:92
 #: app/models/ca_set_items.php:73 app/models/ca_sets.php:97
 #: app/widgets/recentChanges/recentChangesWidget.php:128
-#: app/conf/user_pref_defs.conf:581 app/conf/user_pref_defs.conf:673
-#: app/conf/user_pref_defs.conf:897
+#: app/conf/navigation.conf:2270 app/conf/user_pref_defs.conf:581
+#: app/conf/user_pref_defs.conf:673 app/conf/user_pref_defs.conf:897
 msgid "Loans"
 msgstr ""
 
 #: app/controllers/find/QuickSearchController.php:93
 #: app/models/ca_set_items.php:74 app/models/ca_sets.php:98
 #: app/widgets/recentChanges/recentChangesWidget.php:129
-#: app/conf/user_pref_defs.conf:582 app/conf/user_pref_defs.conf:633
-#: app/conf/user_pref_defs.conf:674 app/conf/user_pref_defs.conf:862
+#: app/conf/navigation.conf:2444 app/conf/user_pref_defs.conf:582
+#: app/conf/user_pref_defs.conf:633 app/conf/user_pref_defs.conf:674
+#: app/conf/user_pref_defs.conf:862
 msgid "Movements"
 msgstr ""
 
 #: app/controllers/find/QuickSearchController.php:94
 #: app/models/ca_set_items.php:76 app/models/ca_sets.php:100
+#: app/conf/navigation.conf:2658 app/conf/navigation.conf:2853
 msgid "Tours"
 msgstr ""
 
 #: app/controllers/find/QuickSearchController.php:95
 #: app/models/ca_set_items.php:77 app/models/ca_sets.php:101
-#: app/models/ca_tours.php:273 app/conf/user_pref_defs.conf:583
+#: app/models/ca_tours.php:273 app/conf/navigation.conf:2760
+#: app/conf/navigation.conf:2911 app/conf/user_pref_defs.conf:583
 #: app/conf/user_pref_defs.conf:675 app/conf/user_pref_defs.conf:713
 #: app/conf/user_pref_defs.conf:753 app/conf/user_pref_defs.conf:792
 #: app/conf/user_pref_defs.conf:967 app/conf/user_pref_defs.conf:1028
@@ -1468,15 +1473,15 @@ msgstr ""
 msgid "tags"
 msgstr ""
 
-#: app/controllers/manage/WatchedItemsController.php:44
+#: app/controllers/manage/WatchedItemsController.php:45
 msgid "There are no watched items"
 msgstr ""
 
-#: app/controllers/manage/WatchedItemsController.php:71
+#: app/controllers/manage/WatchedItemsController.php:72
 msgid "Your watched items have been deleted"
 msgstr ""
 
-#: app/controllers/manage/WatchedItemsController.php:74
+#: app/controllers/manage/WatchedItemsController.php:75
 msgid ""
 "Please use the checkboxes to select items to remove from your watch list"
 msgstr ""
@@ -1882,8 +1887,8 @@ msgid "Viewing %1"
 msgstr ""
 
 #: app/helpers/displayHelpers.php:683 app/helpers/utilityHelpers.php:2217
-#: app/helpers/utilityHelpers.php:2238 app/lib/core/BaseModel.php:9989
-#: app/lib/core/BaseModel.php:9991 app/models/ca_data_import_events.php:286
+#: app/helpers/utilityHelpers.php:2238 app/lib/core/BaseModel.php:9990
+#: app/lib/core/BaseModel.php:9992 app/models/ca_data_import_events.php:286
 #: app/models/ca_object_checkouts.php:449 app/models/ca_objects.php:919
 #: app/models/ca_objects.php:1364 app/models/ca_objects.php:1404
 #: app/models/ca_objects.php:1465 app/models/ca_objects.php:1511
@@ -2283,7 +2288,8 @@ msgstr ""
 msgid "Number of rules"
 msgstr ""
 
-#: app/helpers/displayHelpers.php:1535
+#: app/helpers/displayHelpers.php:1535 app/conf/navigation.conf:4007
+#: app/conf/navigation.conf:4150
 msgid "Items"
 msgstr ""
 
@@ -2354,7 +2360,7 @@ msgstr ""
 msgid "Back to record"
 msgstr ""
 
-#: app/helpers/displayHelpers.php:3286
+#: app/helpers/displayHelpers.php:3287
 #: app/lib/ca/Attributes/Values/MediaAttributeValue.php:198
 #: app/models/ca_object_representations.php:1529
 #: app/models/ca_representation_annotations.php:605
@@ -2362,7 +2368,7 @@ msgstr ""
 msgid "page"
 msgstr ""
 
-#: app/helpers/displayHelpers.php:3286
+#: app/helpers/displayHelpers.php:3287
 #: app/lib/ca/Attributes/Values/MediaAttributeValue.php:198
 #: app/models/ca_object_representations.php:1529
 #: app/models/ca_representation_annotations.php:605
@@ -2370,12 +2376,12 @@ msgstr ""
 msgid "pages"
 msgstr ""
 
-#: app/helpers/displayHelpers.php:3815
+#: app/helpers/displayHelpers.php:3816
 #: themes/default/views/bundles/ca_set_items.php:57
 msgid "Sort by"
 msgstr ""
 
-#: app/helpers/displayHelpers.php:3822
+#: app/helpers/displayHelpers.php:3823
 msgid "entry"
 msgstr ""
 
@@ -3855,23 +3861,23 @@ msgstr ""
 msgid "seconds"
 msgstr ""
 
-#: app/helpers/utilityHelpers.php:2517
+#: app/helpers/utilityHelpers.php:2522
 msgid "%1 is not a valid unit of length [%2]"
 msgstr ""
 
-#: app/helpers/utilityHelpers.php:2523 app/helpers/utilityHelpers.php:2630
+#: app/helpers/utilityHelpers.php:2528 app/helpers/utilityHelpers.php:2635
 msgid "Not a valid measurement"
 msgstr ""
 
-#: app/helpers/utilityHelpers.php:2527 app/helpers/utilityHelpers.php:2634
+#: app/helpers/utilityHelpers.php:2532 app/helpers/utilityHelpers.php:2639
 msgid "Must not be less than zero"
 msgstr ""
 
-#: app/helpers/utilityHelpers.php:2540 app/helpers/utilityHelpers.php:2646
+#: app/helpers/utilityHelpers.php:2545 app/helpers/utilityHelpers.php:2651
 msgid "Not a valid measurement [%1]"
 msgstr ""
 
-#: app/helpers/utilityHelpers.php:2623
+#: app/helpers/utilityHelpers.php:2628
 msgid "Not a valid unit of weight [%2]"
 msgstr ""
 
@@ -5144,8 +5150,8 @@ msgstr ""
 #: app/lib/ca/Attributes/Values/ListAttributeValue.php:91
 msgid ""
 "Check this option if the list default value should be used when the item "
-"value is null. (The default is disregard the default value and show the null "
-"value.)"
+"value is null. (The default is to disregard the default value and show the "
+"null value.)"
 msgstr ""
 
 #: app/lib/ca/Attributes/Values/ListAttributeValue.php:106
@@ -5216,6 +5222,11 @@ msgstr ""
 
 #: app/lib/ca/Attributes/Values/ListAttributeValue.php:344
 msgid "Value %3 for %1 [%2] is invalid"
+msgstr ""
+
+#: app/lib/ca/Attributes/Values/ListAttributeValue.php:373
+#: app/lib/core/ApplicationChangeLog.php:425
+msgid "Not set"
 msgstr ""
 
 #: app/lib/ca/Attributes/Values/ListAttributeValue.php:435
@@ -5419,7 +5430,22 @@ msgid "browse"
 msgstr ""
 
 #: app/lib/ca/BaseBrowseController.php:339
-#: app/lib/ca/BaseBrowseController.php:343
+#: app/lib/ca/BaseBrowseController.php:343 app/conf/navigation.conf:1073
+#: app/conf/navigation.conf:1115 app/conf/navigation.conf:1180
+#: app/conf/navigation.conf:1242 app/conf/navigation.conf:1312
+#: app/conf/navigation.conf:1375 app/conf/navigation.conf:1417
+#: app/conf/navigation.conf:1476 app/conf/navigation.conf:1517
+#: app/conf/navigation.conf:1582 app/conf/navigation.conf:1643
+#: app/conf/navigation.conf:1684 app/conf/navigation.conf:1749
+#: app/conf/navigation.conf:1810 app/conf/navigation.conf:1851
+#: app/conf/navigation.conf:1916 app/conf/navigation.conf:1979
+#: app/conf/navigation.conf:2023 app/conf/navigation.conf:2089
+#: app/conf/navigation.conf:2147 app/conf/navigation.conf:2191
+#: app/conf/navigation.conf:2256 app/conf/navigation.conf:2316
+#: app/conf/navigation.conf:2363 app/conf/navigation.conf:2429
+#: app/conf/navigation.conf:2494 app/conf/navigation.conf:2538
+#: app/conf/navigation.conf:2604 app/conf/navigation.conf:2898
+#: app/conf/navigation.conf:2956 app/conf/navigation.conf:3368
 msgid "Browse"
 msgstr ""
 
@@ -5928,7 +5954,7 @@ msgstr ""
 #: app/lib/ca/Utils/CLIUtils.php:2097 app/lib/ca/Utils/CLIUtils.php:2137
 #: app/lib/ca/Utils/CLIUtils.php:2816
 #: app/lib/core/Plugins/GeographicMap/OpenLayers.php:419
-#: app/models/ca_lists.php:1518
+#: app/models/ca_lists.php:1519
 #: app/widgets/advancedSearchForm/views/search_advanced_form_html.php:76
 #: app/widgets/savedSearches/views/main_html.php:89
 #: app/widgets/searchBySet/views/main_html.php:87
@@ -5990,6 +6016,17 @@ msgstr ""
 #: themes/default/views/manage/Search/ca_item_tags_search_controls_html.php:40
 #: themes/default/views/pageFormat/menuBar.php:7
 #: themes/default/views/pageFormat/menuBar.php:32
+#: app/conf/navigation.conf:1152 app/conf/navigation.conf:1283
+#: app/conf/navigation.conf:1491 app/conf/navigation.conf:1554
+#: app/conf/navigation.conf:1658 app/conf/navigation.conf:1721
+#: app/conf/navigation.conf:1825 app/conf/navigation.conf:1888
+#: app/conf/navigation.conf:1995 app/conf/navigation.conf:2061
+#: app/conf/navigation.conf:2165 app/conf/navigation.conf:2228
+#: app/conf/navigation.conf:2335 app/conf/navigation.conf:2401
+#: app/conf/navigation.conf:2510 app/conf/navigation.conf:2576
+#: app/conf/navigation.conf:2870 app/conf/navigation.conf:2928
+#: app/conf/navigation.conf:3311 app/conf/navigation.conf:3338
+#: app/conf/navigation.conf:3361
 msgid "Search"
 msgstr ""
 
@@ -6294,23 +6331,23 @@ msgid ""
 "per locale is allowed."
 msgstr ""
 
-#: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:4246
+#: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:4253
 msgid "There must be at least %1 relationship for %2"
 msgstr ""
 
-#: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:4246
+#: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:4253
 msgid "There must be at least %1 relationships for %2"
 msgstr ""
 
-#: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:4250
+#: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:4257
 msgid "There must be no more than %1 relationship for %2"
 msgstr ""
 
-#: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:4250
+#: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:4257
 msgid "There must be no more than %1 relationships for %2"
 msgstr ""
 
-#: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:5291
+#: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:5298
 msgid "Identifier %1 already exists and duplicates are not permitted"
 msgstr ""
 
@@ -7345,11 +7382,11 @@ msgid "Invalid table"
 msgstr ""
 
 #: app/lib/ca/SiteComments.php:119 app/lib/ca/SiteComments.php:158
-#: app/lib/core/BaseModel.php:10268 app/lib/core/BaseModel.php:10333
+#: app/lib/core/BaseModel.php:10269 app/lib/core/BaseModel.php:10334
 msgid "Comment id is invalid"
 msgstr ""
 
-#: app/lib/ca/SiteComments.php:164 app/lib/core/BaseModel.php:10346
+#: app/lib/ca/SiteComments.php:164 app/lib/core/BaseModel.php:10347
 msgid "Comment was not created by specified user"
 msgstr ""
 
@@ -7671,6 +7708,7 @@ msgstr ""
 #: app/lib/ca/Utils/CLIUtils.php:2715 app/lib/ca/Utils/CLIUtils.php:2877
 #: app/lib/ca/Utils/CLIUtils.php:2946 app/lib/ca/Utils/CLIUtils.php:3034
 #: app/lib/ca/Utils/CLIUtils.php:3101 app/lib/ca/Utils/CLIUtils.php:3179
+#: app/conf/navigation.conf:3629
 msgid "Maintenance"
 msgstr ""
 
@@ -7926,6 +7964,7 @@ msgstr ""
 #: app/lib/ca/Utils/CLIUtils.php:1536 app/models/ca_bundle_displays.php:1313
 #: themes/default/views/manage/Results/ca_item_comments_list_html.php:49
 #: themes/default/views/manage/comment_list_html.php:63
+#: app/conf/navigation.conf:3049 app/conf/navigation.conf:4250
 #: app/conf/user_pref_defs.conf:74
 msgid "Media"
 msgstr ""
@@ -8991,10 +9030,6 @@ msgstr ""
 msgid "Deleted"
 msgstr ""
 
-#: app/lib/core/ApplicationChangeLog.php:425
-msgid "Not set"
-msgstr ""
-
 #: app/lib/core/ApplicationChangeLog.php:428
 msgid "Non-existent"
 msgstr ""
@@ -9113,7 +9148,7 @@ msgid "no"
 msgstr ""
 
 #: app/lib/core/BaseModel.php:1043 app/lib/core/BaseModel.php:1542
-#: app/lib/core/BaseModel.php:8894
+#: app/lib/core/BaseModel.php:8895
 msgid "'%1' does not exist in this object"
 msgstr ""
 
@@ -9470,44 +9505,44 @@ msgstr ""
 msgid "Could not get hierarchy siblings: %1"
 msgstr ""
 
-#: app/lib/core/BaseModel.php:8619
+#: app/lib/core/BaseModel.php:8620
 msgid "Value must be unique. Please try another."
 msgstr ""
 
-#: app/lib/core/BaseModel.php:9004 app/lib/core/BaseModel.php:9152
-#: app/lib/core/BaseModel.php:9291 app/lib/core/BaseModel.php:9698
+#: app/lib/core/BaseModel.php:9005 app/lib/core/BaseModel.php:9153
+#: app/lib/core/BaseModel.php:9292 app/lib/core/BaseModel.php:9699
 msgid "Related table specification \"%1\" is not valid"
 msgstr ""
 
-#: app/lib/core/BaseModel.php:9016
+#: app/lib/core/BaseModel.php:9017
 msgid "Type id \"%1\" is not valid"
 msgstr ""
 
-#: app/lib/core/BaseModel.php:9034 app/lib/core/BaseModel.php:9178
+#: app/lib/core/BaseModel.php:9035 app/lib/core/BaseModel.php:9179
 msgid "Relationship already exists"
 msgstr ""
 
-#: app/lib/core/BaseModel.php:9129
+#: app/lib/core/BaseModel.php:9130
 msgid "Could not find a path to the specified related table"
 msgstr ""
 
-#: app/lib/core/BaseModel.php:9949
+#: app/lib/core/BaseModel.php:9950
 msgid "No locale was set for tag"
 msgstr ""
 
-#: app/lib/core/BaseModel.php:10027 app/lib/core/BaseModel.php:10078
+#: app/lib/core/BaseModel.php:10028 app/lib/core/BaseModel.php:10079
 msgid "Tag relation id is invalid"
 msgstr ""
 
-#: app/lib/core/BaseModel.php:10034 app/lib/core/BaseModel.php:10085
+#: app/lib/core/BaseModel.php:10035 app/lib/core/BaseModel.php:10086
 msgid "Tag is not part of the current row"
 msgstr ""
 
-#: app/lib/core/BaseModel.php:10040 app/lib/core/BaseModel.php:10091
+#: app/lib/core/BaseModel.php:10041 app/lib/core/BaseModel.php:10092
 msgid "Tag was not created by specified user"
 msgstr ""
 
-#: app/lib/core/BaseModel.php:10275 app/lib/core/BaseModel.php:10340
+#: app/lib/core/BaseModel.php:10276 app/lib/core/BaseModel.php:10341
 msgid "Comment is not part of the current row"
 msgstr ""
 
@@ -9532,23 +9567,23 @@ msgstr ""
 msgid "Cannot remove value; at least %1 values are required"
 msgstr ""
 
-#: app/lib/core/BaseModelWithAttributes.php:1429
+#: app/lib/core/BaseModelWithAttributes.php:1431
 msgid "Element is not the root of the element set"
 msgstr ""
 
-#: app/lib/core/BaseModelWithAttributes.php:2217
+#: app/lib/core/BaseModelWithAttributes.php:2219
 msgid "Couldn't add element to restriction list: %1"
 msgstr ""
 
-#: app/lib/core/BaseModelWithAttributes.php:2236
+#: app/lib/core/BaseModelWithAttributes.php:2238
 msgid "Couldn't remove element from restriction list: %1"
 msgstr ""
 
-#: app/lib/core/BaseModelWithAttributes.php:2260
+#: app/lib/core/BaseModelWithAttributes.php:2262
 msgid "Cannot be used as a reference"
 msgstr ""
 
-#: app/lib/core/BaseModelWithAttributes.php:2744
+#: app/lib/core/BaseModelWithAttributes.php:2746
 msgid "Element code or id must not be blank"
 msgstr ""
 
@@ -10832,7 +10867,7 @@ msgid "Check if app/tmp is writable by the web server user (%1)."
 msgstr ""
 
 #: app/lib/core/Plugins/SearchEngine/SqlSearch.php:841
-#: app/models/ca_sets.php:1095 app/models/ca_sets.php:1147
+#: app/models/ca_sets.php:1093 app/models/ca_sets.php:1151
 #: app/widgets/recentlyCreated/views/main_html.php:45
 #: app/widgets/recordsByStatus/views/main_html.php:43
 msgid "[BLANK]"
@@ -11177,8 +11212,14 @@ msgstr ""
 #: app/models/ca_tours.php:108
 #: themes/default/views/bundles/ca_object_representations.php:167
 #: themes/default/views/manage/set_list_html.php:79
-#: app/conf/navigation.conf:100 app/conf/navigation.conf:278
-#: app/conf/navigation.conf:536 app/conf/navigation.conf:793
+#: app/conf/navigation.conf:100 app/conf/navigation.conf:189
+#: app/conf/navigation.conf:278 app/conf/navigation.conf:367
+#: app/conf/navigation.conf:460 app/conf/navigation.conf:536
+#: app/conf/navigation.conf:625 app/conf/navigation.conf:717
+#: app/conf/navigation.conf:793 app/conf/navigation.conf:882
+#: app/conf/navigation.conf:965 app/conf/navigation.conf:2712
+#: app/conf/navigation.conf:2801 app/conf/navigation.conf:3411
+#: app/conf/navigation.conf:3478
 msgid "Access"
 msgstr ""
 
@@ -11651,6 +11692,7 @@ msgstr ""
 #: app/models/ca_search_form_placements.php:84
 #: app/models/ca_search_forms.php:111
 #: themes/default/views/dashboard/ajax_settings_html.php:38
+#: app/conf/navigation.conf:4257
 msgid "Settings"
 msgstr ""
 
@@ -11911,7 +11953,7 @@ msgid "Sales order"
 msgstr ""
 
 #: app/models/ca_bundle_displays.php:1211
-#: app/models/ca_editor_ui_screens.php:948
+#: app/models/ca_editor_ui_screens.php:948 app/conf/navigation.conf:752
 msgid "Loan"
 msgstr ""
 
@@ -12071,7 +12113,8 @@ msgstr ""
 
 #: app/models/ca_bundle_displays.php:1547
 #: app/models/ca_bundle_displays.php:1564 app/models/ca_search_forms.php:814
-#: app/models/ca_search_forms.php:983 app/conf/user_pref_defs.conf:3
+#: app/models/ca_search_forms.php:983 app/conf/navigation.conf:3017
+#: app/conf/user_pref_defs.conf:3
 msgid "General"
 msgstr ""
 
@@ -13101,7 +13144,8 @@ msgid "Notes pertaining to the shipment of this item."
 msgstr ""
 
 #: app/models/ca_commerce_order_items.php:149
-#: app/models/ca_commerce_orders.php:401
+#: app/models/ca_commerce_orders.php:401 app/conf/navigation.conf:4022
+#: app/conf/navigation.conf:4165
 msgid "Additional fees"
 msgstr ""
 
@@ -15015,6 +15059,7 @@ msgstr ""
 #: app/plugins/ULAN/themes/default/views/import_settings_html.php:34
 #: app/plugins/WorldCat/WorldCatPlugin.php:94
 #: app/plugins/WorldCat/themes/default/views/import_settings_html.php:34
+#: app/conf/navigation.conf:4243
 msgid "Import"
 msgstr ""
 
@@ -17170,7 +17215,7 @@ msgstr ""
 #: app/refineries/listItemHierarchyBuilder/listItemHierarchyBuilderRefinery.php:108
 #: app/refineries/listItemIndentedHierarchyBuilder/listItemIndentedHierarchyBuilderRefinery.php:209
 #: app/refineries/listItemSplitter/listItemSplitterRefinery.php:149
-#: app/conf/navigation.conf:3875
+#: app/conf/navigation.conf:3875 app/conf/navigation.conf:3945
 msgid "List"
 msgstr ""
 
@@ -17409,7 +17454,7 @@ msgid ""
 "cataloguing."
 msgstr ""
 
-#: app/models/ca_lists.php:1522
+#: app/models/ca_lists.php:1523
 msgid "Current selection"
 msgstr ""
 
@@ -18534,7 +18579,7 @@ msgid ""
 "this object"
 msgstr ""
 
-#: app/models/ca_objects.php:81
+#: app/models/ca_objects.php:81 app/conf/navigation.conf:59
 msgid "Lot"
 msgstr ""
 
@@ -19131,7 +19176,7 @@ msgid ""
 "relationship."
 msgstr ""
 
-#: app/models/ca_relationship_types.php:682
+#: app/models/ca_relationship_types.php:682 app/conf/navigation.conf:3608
 msgid "Relationship types"
 msgstr ""
 
@@ -19490,7 +19535,7 @@ msgstr ""
 msgid "Set items"
 msgstr ""
 
-#: app/models/ca_sets.php:1055
+#: app/models/ca_sets.php:1053
 msgid "Item does not exist"
 msgstr ""
 
@@ -20521,46 +20566,6 @@ msgstr ""
 msgid "Failed to get reserved available list"
 msgstr ""
 
-#: app/plugins/museesDeFrance/museesDeFrancePlugin.php:14
-msgid "Permet de générer les PV de récolement."
-msgstr ""
-
-#: app/plugins/museesDeFrance/museesDeFrancePlugin.php:132
-msgid "Suivi du récolement"
-msgstr ""
-
-#: app/plugins/museesDeFrance/museesDeFrancePlugin.php:141
-msgid "Registre des biens affectés"
-msgstr ""
-
-#: app/plugins/museesDeFrance/museesDeFrancePlugin.php:152
-msgid "Registre des biens déposés"
-msgstr ""
-
-#: app/plugins/museesDeFrance/museesDeFrancePlugin.php:163
-msgid "Installation"
-msgstr ""
-
-#: app/plugins/museesDeFrance/museesDeFrancePlugin.php:173
-msgid "Procédures<br/>réglementaires"
-msgstr ""
-
-#: app/plugins/museesDeFrance/museesDeFrancePlugin.php:187
-msgid "plugin Récolement SMF"
-msgstr ""
-
-#: app/plugins/museesDeFrance/museesDeFrancePlugin.php:188
-msgid "Actions pour le plugin Récolement SMF"
-msgstr ""
-
-#: app/plugins/museesDeFrance/museesDeFrancePlugin.php:226
-msgid "Peut utiliser les fonctions du plugin Musées de France"
-msgstr ""
-
-#: app/plugins/museesDeFrance/museesDeFrancePlugin.php:227
-msgid "L'utilisateur peut utiliser les fonctions du plugin Musées de France."
-msgstr ""
-
 #: app/plugins/ns11mmServices/ns11mmServicesPlugin.php:38
 msgid "Implements Memex services for National September 11th Museum."
 msgstr ""
@@ -20763,20 +20768,6 @@ msgstr ""
 
 #: app/plugins/pier21Tools/pier21ToolsPlugin.php:43
 msgid "Tools for Pier 21."
-msgstr ""
-
-#: app/plugins/providencePluginUserMenu/providencePluginUserMenuPlugin.php:38
-msgid ""
-"Deletes the black bar and adds a button on top of the screen to log out and "
-"more."
-msgstr ""
-
-#: app/plugins/providencePluginUserMenu/providencePluginUserMenuPlugin.php:104
-msgid "Can use"
-msgstr ""
-
-#: app/plugins/providencePluginUserMenu/providencePluginUserMenuPlugin.php:105
-msgid "User can use the plugin."
 msgstr ""
 
 #: app/plugins/relationshipGenerator/relationshipGeneratorPlugin.php:77
@@ -23138,6 +23129,7 @@ msgid "There have been no changes to <strong>%1</strong> from %2."
 msgstr ""
 
 #: app/widgets/recentComments/recentCommentsWidget.php:41
+#: app/conf/navigation.conf:3296
 msgid "Comments"
 msgstr ""
 
@@ -23220,6 +23212,7 @@ msgid "There are no %1 comments"
 msgstr ""
 
 #: app/widgets/recentTags/recentTagsWidget.php:43
+#: app/conf/navigation.conf:3322
 msgid "Tags"
 msgstr ""
 
@@ -23504,6 +23497,7 @@ msgstr ""
 #: themes/default/views/find/Search/widget_ca_storage_locations_search_tools.php:63
 #: themes/default/views/find/Search/widget_ca_tour_stops_search_tools.php:63
 #: themes/default/views/find/Search/widget_ca_tours_search_tools.php:63
+#: app/conf/navigation.conf:3245
 msgid "Saved searches"
 msgstr ""
 
@@ -23983,6 +23977,13 @@ msgstr ""
 #: themes/default/views/manage/search_form_list_html.php:101
 #: themes/default/views/manage/set_list_html.php:125
 #: themes/default/views/manage/set_list_html.php:144
+#: app/conf/navigation.conf:10 app/conf/navigation.conf:11
+#: app/conf/navigation.conf:12 app/conf/navigation.conf:13
+#: app/conf/navigation.conf:14 app/conf/navigation.conf:15
+#: app/conf/navigation.conf:16 app/conf/navigation.conf:17
+#: app/conf/navigation.conf:18 app/conf/navigation.conf:19
+#: app/conf/navigation.conf:20 app/conf/navigation.conf:21
+#: app/conf/navigation.conf:22 app/conf/navigation.conf:2661
 msgid "Edit"
 msgstr ""
 
@@ -24087,6 +24088,7 @@ msgid "Active?"
 msgstr ""
 
 #: themes/default/views/administrate/access/user_list_html.php:111
+#: app/conf/navigation.conf:3096
 msgid "Tools"
 msgstr ""
 
@@ -24161,6 +24163,7 @@ msgstr ""
 #: themes/default/views/administrate/maintenance/hierarchical_reindex_landing_html.php:29
 #: themes/default/views/administrate/maintenance/hierarchical_reindex_landing_html.php:37
 #: themes/default/views/administrate/maintenance/hierarchical_reindex_status_html.php:30
+#: app/conf/navigation.conf:3653
 msgid "Rebuild hierarchical indices"
 msgstr ""
 
@@ -24182,12 +24185,14 @@ msgstr ""
 #: themes/default/views/administrate/maintenance/search_reindex_landing_html.php:29
 #: themes/default/views/administrate/maintenance/search_reindex_landing_html.php:38
 #: themes/default/views/administrate/maintenance/search_reindex_status_html.php:30
+#: app/conf/navigation.conf:3639
 msgid "Rebuild search indices"
 msgstr ""
 
 #: themes/default/views/administrate/maintenance/sort_values_reload_landing_html.php:29
 #: themes/default/views/administrate/maintenance/sort_values_reload_landing_html.php:38
 #: themes/default/views/administrate/maintenance/sort_values_reload_status_html.php:30
+#: app/conf/navigation.conf:3646
 msgid "Reload sort values"
 msgstr ""
 
@@ -24575,6 +24580,7 @@ msgstr ""
 
 #: themes/default/views/administrate/setup/Search/search_sets_html.php:80
 #: themes/default/views/find/Search/search_sets_html.php:80
+#: app/conf/navigation.conf:2672
 msgid "Create"
 msgstr ""
 
@@ -24914,6 +24920,7 @@ msgid "System?"
 msgstr ""
 
 #: themes/default/views/administrate/setup/widget_element_info_html.php:34
+#: app/conf/navigation.conf:3601
 msgid "Metadata elements"
 msgstr ""
 
@@ -25717,6 +25724,7 @@ msgid "by %1 client"
 msgstr ""
 
 #: themes/default/views/bundles/ca_object_checkouts.php:107
+#: app/conf/navigation.conf:3805
 msgid "Check out"
 msgstr ""
 
@@ -25740,7 +25748,7 @@ msgstr ""
 msgid "Add caption file"
 msgstr ""
 
-#: themes/default/views/bundles/ca_object_representation_chooser_html.php:61
+#: themes/default/views/bundles/ca_object_representation_chooser_html.php:60
 msgid "No metadata element is configured"
 msgstr ""
 
@@ -26020,6 +26028,7 @@ msgstr ""
 #: themes/default/views/bundles/hierarchy_location.php:245
 #: themes/default/views/bundles/hierarchy_location.php:260
 #: themes/default/views/client/library/checkin_html.php:46
+#: app/conf/navigation.conf:1002 app/conf/navigation.conf:2836
 msgid "Find"
 msgstr ""
 
@@ -26190,6 +26199,7 @@ msgid "New loan"
 msgstr ""
 
 #: themes/default/views/client/library/checkin_html.php:36
+#: app/conf/navigation.conf:3929
 msgid "Check-in"
 msgstr ""
 
@@ -26218,6 +26228,7 @@ msgid "Omitted %1 matches that are already queued for check-in"
 msgstr ""
 
 #: themes/default/views/client/library/checkout_html.php:55
+#: app/conf/navigation.conf:3921
 msgid "Check-out"
 msgstr ""
 
@@ -26308,6 +26319,7 @@ msgstr ""
 #: themes/default/views/client/orders/list_orders_html.php:127
 #: themes/default/views/client/orders/order_pdf_export_html.php:39
 #: themes/default/views/client/orders/order_pdf_export_html.php:102
+#: app/conf/navigation.conf:3831
 msgid "Client"
 msgstr ""
 
@@ -26320,10 +26332,14 @@ msgstr ""
 #: themes/default/views/client/library/loan_pdf_export_html.php:36
 #: themes/default/views/client/orders/list_orders_html.php:130
 #: themes/default/views/client/orders/order_pdf_export_html.php:39
-#: app/conf/navigation.conf:178 app/conf/navigation.conf:356
-#: app/conf/navigation.conf:449 app/conf/navigation.conf:614
-#: app/conf/navigation.conf:706 app/conf/navigation.conf:871
-#: app/conf/navigation.conf:954
+#: app/conf/navigation.conf:89 app/conf/navigation.conf:178
+#: app/conf/navigation.conf:267 app/conf/navigation.conf:356
+#: app/conf/navigation.conf:449 app/conf/navigation.conf:525
+#: app/conf/navigation.conf:614 app/conf/navigation.conf:706
+#: app/conf/navigation.conf:782 app/conf/navigation.conf:871
+#: app/conf/navigation.conf:954 app/conf/navigation.conf:2701
+#: app/conf/navigation.conf:2790 app/conf/navigation.conf:3400
+#: app/conf/navigation.conf:3467
 msgid "Summary"
 msgstr ""
 
@@ -26417,6 +26433,7 @@ msgstr ""
 
 #: themes/default/views/client/library/order_communications_html.php:45
 #: themes/default/views/client/orders/order_communications_html.php:45
+#: app/conf/navigation.conf:4067 app/conf/navigation.conf:4210
 msgid "Communications"
 msgstr ""
 
@@ -26448,7 +26465,7 @@ msgstr ""
 
 #: themes/default/views/client/library/order_communications_html.php:85
 #: themes/default/views/client/orders/order_communications_html.php:85
-#: app/conf/navigation.conf:3852
+#: app/conf/navigation.conf:3852 app/conf/navigation.conf:3906
 msgid "Messages"
 msgstr ""
 
@@ -26631,6 +26648,7 @@ msgstr ""
 
 #: themes/default/views/client/library/order_overview_html.php:233
 #: themes/default/views/client/orders/order_overview_html.php:243
+#: app/conf/navigation.conf:2974
 msgid "Manage"
 msgstr ""
 
@@ -26871,6 +26889,7 @@ msgid "Sale information"
 msgstr ""
 
 #: themes/default/views/client/orders/order_fulfillment_events_html.php:48
+#: app/conf/navigation.conf:4082
 msgid "Fulfillment events"
 msgstr ""
 
@@ -27523,6 +27542,7 @@ msgstr ""
 
 #: themes/default/views/library/checkin/items_html.php:4
 #: themes/default/views/library/checkin/items_html.php:22
+#: app/conf/navigation.conf:3817
 msgid "Check in"
 msgstr ""
 
@@ -28561,19 +28581,349 @@ msgid ""
 "If set, overrides the default model setting for the overall bundle label."
 msgstr ""
 
-#: app/conf/navigation.conf:208 app/conf/navigation.conf:386
-#: app/conf/navigation.conf:479 app/conf/navigation.conf:644
-#: app/conf/navigation.conf:736 app/conf/navigation.conf:901
-#: app/conf/navigation.conf:984
+#: app/conf/media_processing.conf:95 app/conf/media_processing.conf:164
+msgid "Image is being processed"
+msgstr ""
+
+#: app/conf/media_processing.conf:229
+msgid "Document is being processed"
+msgstr ""
+
+#: app/conf/media_processing.conf:509 app/conf/media_processing.conf:577
+#: app/conf/media_processing.conf:645 app/conf/media_processing.conf:713
+msgid "Video is being processed"
+msgstr ""
+
+#: app/conf/media_processing.conf:781 app/conf/media_processing.conf:849
+#: app/conf/media_processing.conf:922 app/conf/media_processing.conf:990
+#: app/conf/media_processing.conf:1054
+msgid "Media is being processed"
+msgstr ""
+
+#: app/conf/media_processing.conf:1178 app/conf/media_processing.conf:1252
+msgid "Audio is being processed"
+msgstr ""
+
+#: app/conf/navigation.conf:37
+msgid "Batch Editor"
+msgstr ""
+
+#: app/conf/navigation.conf:119 app/conf/navigation.conf:208
+#: app/conf/navigation.conf:297 app/conf/navigation.conf:386
+#: app/conf/navigation.conf:479 app/conf/navigation.conf:555
+#: app/conf/navigation.conf:644 app/conf/navigation.conf:736
+#: app/conf/navigation.conf:812 app/conf/navigation.conf:901
+#: app/conf/navigation.conf:984 app/conf/navigation.conf:2731
+#: app/conf/navigation.conf:2820 app/conf/navigation.conf:3139
+#: app/conf/navigation.conf:3181 app/conf/navigation.conf:3214
+#: app/conf/navigation.conf:3273 app/conf/navigation.conf:3430
+#: app/conf/navigation.conf:3497 app/conf/navigation.conf:3693
+#: app/conf/navigation.conf:3729 app/conf/navigation.conf:3764
+#: app/conf/navigation.conf:4094 app/conf/navigation.conf:4225
 msgid "Log"
+msgstr ""
+
+#: app/conf/navigation.conf:237 app/conf/navigation.conf:1326
+msgid "Representations"
 msgstr ""
 
 #: app/conf/navigation.conf:326
 msgid "Entity"
 msgstr ""
 
+#: app/conf/navigation.conf:415
+msgid "Place"
+msgstr ""
+
+#: app/conf/navigation.conf:425
+msgid "Place editor"
+msgstr ""
+
+#: app/conf/navigation.conf:495
+msgid "Collection"
+msgstr ""
+
+#: app/conf/navigation.conf:672
+msgid "Storage location"
+msgstr ""
+
+#: app/conf/navigation.conf:682
+msgid "Storage location editor"
+msgstr ""
+
 #: app/conf/navigation.conf:841
 msgid "Movement"
+msgstr ""
+
+#: app/conf/navigation.conf:930
+msgid "Representation annotations"
+msgstr ""
+
+#: app/conf/navigation.conf:1026
+msgid "Lots"
+msgstr ""
+
+#: app/conf/navigation.conf:1044 app/conf/navigation.conf:1088
+#: app/conf/navigation.conf:1213 app/conf/navigation.conf:1346
+#: app/conf/navigation.conf:1390 app/conf/navigation.conf:1447
+#: app/conf/navigation.conf:1614 app/conf/navigation.conf:1781
+#: app/conf/navigation.conf:1948 app/conf/navigation.conf:2118
+#: app/conf/navigation.conf:2285 app/conf/navigation.conf:2463
+msgid "Basic search"
+msgstr ""
+
+#: app/conf/navigation.conf:1056 app/conf/navigation.conf:1099
+#: app/conf/navigation.conf:1163 app/conf/navigation.conf:1225
+#: app/conf/navigation.conf:1295 app/conf/navigation.conf:1358
+#: app/conf/navigation.conf:1401 app/conf/navigation.conf:1459
+#: app/conf/navigation.conf:1501 app/conf/navigation.conf:1565
+#: app/conf/navigation.conf:1626 app/conf/navigation.conf:1668
+#: app/conf/navigation.conf:1732 app/conf/navigation.conf:1793
+#: app/conf/navigation.conf:1835 app/conf/navigation.conf:1899
+#: app/conf/navigation.conf:1961 app/conf/navigation.conf:2006
+#: app/conf/navigation.conf:2072 app/conf/navigation.conf:2130
+#: app/conf/navigation.conf:2175 app/conf/navigation.conf:2239
+#: app/conf/navigation.conf:2298 app/conf/navigation.conf:2346
+#: app/conf/navigation.conf:2412 app/conf/navigation.conf:2476
+#: app/conf/navigation.conf:2521 app/conf/navigation.conf:2587
+#: app/conf/navigation.conf:2881 app/conf/navigation.conf:2939
+msgid "Advanced search"
+msgstr ""
+
+#: app/conf/navigation.conf:2622
+msgid "QuickSearch"
+msgstr ""
+
+#: app/conf/navigation.conf:2633
+msgid "QuickSearch Results"
+msgstr ""
+
+#: app/conf/navigation.conf:2645
+msgid "Last QuickSearch"
+msgstr ""
+
+#: app/conf/navigation.conf:3010
+msgid "My preferences"
+msgstr ""
+
+#: app/conf/navigation.conf:3025 app/conf/user_pref_defs.conf:14
+msgid "Editing"
+msgstr ""
+
+#: app/conf/navigation.conf:3033 app/conf/user_pref_defs.conf:46
+msgid "Batch editing"
+msgstr ""
+
+#: app/conf/navigation.conf:3041 app/conf/user_pref_defs.conf:63
+msgid "Quick add"
+msgstr ""
+
+#: app/conf/navigation.conf:3057 app/conf/user_pref_defs.conf:81
+msgid "Units of measurement"
+msgstr ""
+
+#: app/conf/navigation.conf:3065
+msgid "Duplication"
+msgstr ""
+
+#: app/conf/navigation.conf:3073 app/conf/user_pref_defs.conf:103
+msgid "User profile"
+msgstr ""
+
+#: app/conf/navigation.conf:3083
+msgid "My watched items"
+msgstr ""
+
+#: app/conf/navigation.conf:3103
+msgid "My project teams"
+msgstr ""
+
+#: app/conf/navigation.conf:3110
+msgid "My displays"
+msgstr ""
+
+#: app/conf/navigation.conf:3120
+msgid "Edit display"
+msgstr ""
+
+#: app/conf/navigation.conf:3152
+msgid "My sets"
+msgstr ""
+
+#: app/conf/navigation.conf:3162
+msgid "Edit set"
+msgstr ""
+
+#: app/conf/navigation.conf:3195
+msgid "Edit set item"
+msgstr ""
+
+#: app/conf/navigation.conf:3228
+msgid "My search tools"
+msgstr ""
+
+#: app/conf/navigation.conf:3238
+msgid "Search forms"
+msgstr ""
+
+#: app/conf/navigation.conf:3254
+msgid "Edit search form"
+msgstr ""
+
+#: app/conf/navigation.conf:3287 app/conf/user_actions.conf:214
+msgid "User generated content"
+msgstr ""
+
+#: app/conf/navigation.conf:3303 app/conf/navigation.conf:3330
+msgid "Moderate"
+msgstr ""
+
+#: app/conf/navigation.conf:3351
+msgid "Lists & vocabularies"
+msgstr ""
+
+#: app/conf/navigation.conf:3381
+msgid "Edit list"
+msgstr ""
+
+#: app/conf/navigation.conf:3444
+msgid "Edit list item"
+msgstr ""
+
+#: app/conf/navigation.conf:3511
+msgid "Exporters"
+msgstr ""
+
+#: app/conf/navigation.conf:3518
+msgid "Exporter list"
+msgstr ""
+
+#: app/conf/navigation.conf:3527
+msgid "Access control"
+msgstr ""
+
+#: app/conf/navigation.conf:3534
+msgid "User logins"
+msgstr ""
+
+#: app/conf/navigation.conf:3541
+msgid "User groups"
+msgstr ""
+
+#: app/conf/navigation.conf:3548
+msgid "Access roles"
+msgstr ""
+
+#: app/conf/navigation.conf:3557
+msgid "Logs"
+msgstr ""
+
+#: app/conf/navigation.conf:3565
+msgid "Events log"
+msgstr ""
+
+#: app/conf/navigation.conf:3572
+msgid "Search log"
+msgstr ""
+
+#: app/conf/navigation.conf:3581
+msgid "Administration"
+msgstr ""
+
+#: app/conf/navigation.conf:3594
+msgid "User interfaces"
+msgstr ""
+
+#: app/conf/navigation.conf:3615
+msgid "Locales"
+msgstr ""
+
+#: app/conf/navigation.conf:3622
+msgid "Configuration check"
+msgstr ""
+
+#: app/conf/navigation.conf:3660
+msgid "Export configuration"
+msgstr ""
+
+#: app/conf/navigation.conf:3671
+msgid "Relationship type editor"
+msgstr ""
+
+#: app/conf/navigation.conf:3707
+msgid "User interface editor"
+msgstr ""
+
+#: app/conf/navigation.conf:3742
+msgid "User interface screen editor"
+msgstr ""
+
+#: app/conf/navigation.conf:3779
+msgid "Library"
+msgstr ""
+
+#: app/conf/navigation.conf:3789
+msgid "Dashboard"
+msgstr ""
+
+#: app/conf/navigation.conf:3840
+msgid "Sales communications"
+msgstr ""
+
+#: app/conf/navigation.conf:3867
+msgid "Sales orders"
+msgstr ""
+
+#: app/conf/navigation.conf:3894
+msgid "Library communications"
+msgstr ""
+
+#: app/conf/navigation.conf:3937
+msgid "Manage loans"
+msgstr ""
+
+#: app/conf/navigation.conf:3954
+msgid "Calendar"
+msgstr ""
+
+#: app/conf/navigation.conf:3966
+msgid "Order editor"
+msgstr ""
+
+#: app/conf/navigation.conf:3977 app/conf/navigation.conf:4120
+msgid "Overview"
+msgstr ""
+
+#: app/conf/navigation.conf:3993
+msgid "Customer &amp; sale info"
+msgstr ""
+
+#: app/conf/navigation.conf:4037 app/conf/navigation.conf:4180
+msgid "Shipping details"
+msgstr ""
+
+#: app/conf/navigation.conf:4052 app/conf/navigation.conf:4195
+msgid "Payment"
+msgstr ""
+
+#: app/conf/navigation.conf:4109
+msgid "Loan editor"
+msgstr ""
+
+#: app/conf/navigation.conf:4136
+msgid "Customer info"
+msgstr ""
+
+#: app/conf/navigation.conf:4273
+msgid "Data"
+msgstr ""
+
+#: app/conf/navigation.conf:4280
+msgid "Importer list"
+msgstr ""
+
+#: app/conf/navigation.conf:4294
+msgid "Run import"
 msgstr ""
 
 #: app/conf/user_actions.conf:7
@@ -28947,10 +29297,6 @@ msgstr ""
 
 #: app/conf/user_actions.conf:208
 msgid "Allow user to duplicate sets"
-msgstr ""
-
-#: app/conf/user_actions.conf:214
-msgid "User generated content"
 msgstr ""
 
 #: app/conf/user_actions.conf:215
@@ -30478,28 +30824,8 @@ msgstr ""
 msgid "Indicates user is allowed to check out library items for themselves."
 msgstr ""
 
-#: app/conf/user_pref_defs.conf:14
-msgid "Editing"
-msgstr ""
-
-#: app/conf/user_pref_defs.conf:46
-msgid "Batch editing"
-msgstr ""
-
-#: app/conf/user_pref_defs.conf:63
-msgid "Quick add"
-msgstr ""
-
-#: app/conf/user_pref_defs.conf:81
-msgid "Units of measurement"
-msgstr ""
-
 #: app/conf/user_pref_defs.conf:88
 msgid "Duplication tools"
-msgstr ""
-
-#: app/conf/user_pref_defs.conf:103
-msgid "User profile"
 msgstr ""
 
 #: app/conf/user_pref_defs.conf:126
