@@ -73,10 +73,12 @@ Vagrant.configure(2) do |config|
       ln -fs /vagrant /var/www/html
     fi
 
-    cp /vagrant/setup.php-dist /vagrant/setup.php
-    sed -i "s/my_database_user/root/g" ${setup_php}
-    sed -i "s/my_database_password/root/g" ${setup_php}
-    sed -i "s/name_of_my_database/collectiveaccess/g" ${setup_php}
+	if [[ ! -f /vagrant/setup.php ]]; then
+      cp /vagrant/setup.php-dist /vagrant/setup.php
+      sed -i "s/my_database_user/root/g" ${setup_php}
+      sed -i "s/my_database_password/root/g" ${setup_php}
+      sed -i "s/name_of_my_database/collectiveaccess/g" ${setup_php}
+    fi
 
     service apache2 restart
     service mysql restart
