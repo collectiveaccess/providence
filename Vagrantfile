@@ -20,6 +20,13 @@ Vagrant.configure(2) do |config|
   	v.name = "collectiveaccess"
   end
 
+  config.vm.synced_folder "./", "/vagrant",
+  	id: "vagrant-root",
+    owner: "vagrant",
+    group: "www-data",
+    mount_options: ["dmode=775,fmode=664"]
+
+
   # provision via shell script
   #
   config.vm.provision "shell", inline: <<-SHELL
@@ -70,10 +77,6 @@ Vagrant.configure(2) do |config|
     sed -i "s/my_database_user/root/g" ${setup_php}
     sed -i "s/my_database_password/root/g" ${setup_php}
     sed -i "s/name_of_my_database/collectiveaccess/g" ${setup_php}
-
-    chown -R www-data /vagrant/app/tmp
-    chown -R www-data /vagrant/web/vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer
-    chown -R www-data /vagrant/media/collectiveaccess
 
     service apache2 restart
     service mysql restart
