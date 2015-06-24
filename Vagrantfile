@@ -26,7 +26,6 @@ Vagrant.configure(2) do |config|
     group: "www-data",
     mount_options: ["dmode=775,fmode=664"]
 
-
   # provision via shell script
   #
   config.vm.provision "shell", inline: <<-SHELL
@@ -55,7 +54,7 @@ Vagrant.configure(2) do |config|
     apt-get -q -y -o Dpkg::Options::=--force-confold install ffmpeg graphicsmagick python-pdfminer
     apt-get -q -y -o Dpkg::Options::=--force-confold install ghostscript dcraw xpdf mediainfo exiftool
 
-    # slooooow setup with gmagick and libreoffice (install takes forever). if you want a shiny setup, uncomment it here
+    # slooooow setup with gmagick and libreoffice. if you want a shiny setup, uncomment it here
     #
     # apt-get -q -y -o Dpkg::Options::=--force-confold install php5-dev php-pear libgraphicsmagick1-dev libreoffice abiword
 	# pecl install gmagick-1.1.7RC3
@@ -73,7 +72,7 @@ Vagrant.configure(2) do |config|
       ln -fs /vagrant /var/www/html
     fi
 
-	if [[ ! -f /vagrant/setup.php ]]; then
+    if [[ ! -f /vagrant/setup.php ]]; then
       cp /vagrant/setup.php-dist /vagrant/setup.php
       sed -i "s/my_database_user/root/g" ${setup_php}
       sed -i "s/my_database_password/root/g" ${setup_php}
