@@ -77,6 +77,8 @@ class CollectiveAccessDataReader extends BaseDataReader {
 	 * @return bool
 	 */
 	public function read($ps_source, $pa_options=null) {
+		parent::read($ps_source, $pa_options);
+		
 		# http://username:password@hostname/path/table?t=q=query
 		$va_url = parse_url($ps_source);
 		
@@ -122,7 +124,6 @@ class CollectiveAccessDataReader extends BaseDataReader {
 				$request = $this->opo_client->get("/service.php/item/{$this->ops_table}/id/{$vn_id}?pretty=1&format=import");
 				$response = $request->send();
 				$data = $response->json();
-				//print_R($data);
 				$this->opa_row_buf[$this->opn_current_row] = $data;
 			} catch (Exception $e) {
 				//return false;
@@ -155,6 +156,8 @@ class CollectiveAccessDataReader extends BaseDataReader {
 	 * @return mixed
 	 */
 	public function get($ps_col, $pa_options=null) {
+		if ($vm_ret = parent::get($ps_col, $pa_options)) { return $vm_ret; }
+		
 		$pb_return_as_array = isset($pa_options['returnAsArray']) ? (bool)$pa_options['returnAsArray'] : false;
 		$pb_return_all_locales = isset($pa_options['returnAllLocales']) ? (bool)$pa_options['returnAllLocales'] : false;
 		$pb_convert_codes_to_display_text = isset($pa_options['convertCodesToDisplayText']) ? (bool)$pa_options['convertCodesToDisplayText'] : false;
@@ -168,8 +171,10 @@ class CollectiveAccessDataReader extends BaseDataReader {
 			
 			if (!$pb_return_all_locales) {
 				$va_data['attributes'] = caExtractValuesByUserLocale($va_data['attributes']);
-				$va_data['preferred_labels'] = array_pop(caExtractValuesByUserLocale(array($va_data['preferred_labels'])));
+				$va_tmp = caExtractValuesByUserLocale(array($va_data['preferred_labels']));
+				$va_data['preferred_labels'] = array_pop($va_tmp);
 			}
+			
 			switch(sizeof($va_col)) {
 				// ------------------------------------------------------------------------------------------------
 				case 2:
@@ -262,8 +267,11 @@ class CollectiveAccessDataReader extends BaseDataReader {
 			//
 			// Object representations
 			//
-			if (($va_col[0] == 'ca_object_representations') && ($this->ops_table == 'ca_objects')) {
-				
+			if (($va_col[0] == 'ca_object_representations') && ($va_col[1] == 'media') && ($this->ops_table == 'ca_objects')) {
+				foreach($va_data['representations'] as $vn_rep_id => $va_rep_data) {
+					$va_urls[] = $va_rep_data['urls']['original'];
+				}
+				return join($vs_delimiter, $va_urls);
 			}
 			
 			//
@@ -422,6 +430,15 @@ class CollectiveAccessDataReader extends BaseDataReader {
 	 * 
 	 * @return int
 	 */
+	public function currentRow() {
+		return $this->opn_current_row;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return int
+	 */
 	public function inputType() {
 		return is_array($this->opa_row_ids) ? sizeof($this->opa_row_ids) : 0;
 	}
@@ -436,3 +453,4 @@ class CollectiveAccessDataReader extends BaseDataReader {
 	}
 	# -------------------------------------------------------
 }
+?>

@@ -53,7 +53,11 @@ class SolrConfiguration {
 		$po_search_config = Configuration::load($po_app_config->get("search_config"));
 		$po_search_indexing_config = Configuration::load($po_search_config->get("search_indexing_config"));
 
-		$ps_solr_home_dir = $po_search_config->get('search_solr_home_dir');
+		if(defined('__CA_SOLR_HOME_DIR__') && (strlen(__CA_SOLR_HOME_DIR__)>0)) {
+			$ps_solr_home_dir = __CA_SOLR_HOME_DIR__;
+		} else {
+			$ps_solr_home_dir = $po_search_config->get('search_solr_home_dir');
+		}
 
 		$po_datamodel = Datamodel::load();
 		$po_search_base = new SearchBase();

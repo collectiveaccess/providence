@@ -36,9 +36,9 @@
 <?php
 	print $vs_control_box = caFormControlBox(
 		caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'UsersForm').' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'administrate/access', 'Users', 'ListUsers', array('user_id' => 0)), 
+		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'administrate/access', 'Users', 'ListUsers', array('user_id' => 0)), 
 		'', 
-		caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'administrate/access', 'Users', 'Delete', array('user_id' => $vn_user_id))
+		caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'administrate/access', 'Users', 'Delete', array('user_id' => $vn_user_id))
 	);
 ?>
 <?php
@@ -49,10 +49,11 @@
 			
 			switch($vs_f) {
 				case 'password':
-					// display password confirmation
-					print $t_user->htmlFormElement($vs_f, null, array('field_errors' => $this->request->getActionErrors('field_'.$vs_f)));
-
-					print $t_user->htmlFormElement($vs_f, str_replace('^LABEL', _t("Confirm password"), $this->appconfig->get('form_element_display_format')), array('name' => 'password_confirm', 'LABEL' => 'Confirm password'));
+					if(AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__)) {
+						// display password confirmation
+						print $t_user->htmlFormElement($vs_f, null, array('field_errors' => $this->request->getActionErrors('field_'.$vs_f)));
+						print $t_user->htmlFormElement($vs_f, str_replace('^LABEL', _t("Confirm password"), $this->appconfig->get('form_element_display_format')), array('name' => 'password_confirm', 'LABEL' => 'Confirm password'));
+					}
 					break;
 				case 'entity_id':
 					print "<div class='formLabel'><span id='_ca_user_entity_id_'>".($vs_entity_label = $t_user->getFieldInfo('entity_id', 'LABEL'))."</span><br/>";

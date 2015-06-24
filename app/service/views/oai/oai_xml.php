@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
+	header("Content-type: text/xml");
 
 	$oaiData = $this->getVar('oaiData');
-	print caFormatXML($oaiData->saveXML());
-?>
+	print $oaiData->saveXML();

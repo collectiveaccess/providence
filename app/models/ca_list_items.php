@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -198,6 +198,22 @@ BaseModel::$s_ca_models_definitions['ca_list_items'] = array(
  				'IS_NULL' => false, 
  				'DEFAULT' => 0,
  				'LABEL' => _t('Is deleted?'), 'DESCRIPTION' => _t('Indicates if list item is deleted or not.')
+		),
+		'source_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'LIST_CODE' => 'list_item_sources',
+				'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of list item. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed.')
+		),
+		'source_info' => array(
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => 'Source information', 'DESCRIPTION' => 'Serialized array used to store source information for list item information retrieved via web services [NOT IMPLEMENTED YET].'
 		)
  	)
 );
@@ -213,14 +229,163 @@ $_ca_list_items_settings = array(
 			'options' => array(
 				_t('Individual person') => 'IND',
 				_t('Organization') => 'ORG',
+				_t('Individual person without additional forenames') => 'IND_SM',
 			),
 			'width' => 40, 'height' => 1,
 			'takesLocale' => false,
 			'default' => 'IND',
 			'label' => _t('Entity class'),
 			'description' => _t('The class of entity the type represents. Use <em>Individual person</em> for entities that require a fully articulated personal name. Use <em>organization</em> for group entities such as corporations, clubs and families.')
+		),
+		'render_in_new_menu' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Render in new menu'),
+			'description' => _t('Render in new menu')
 		)
-	)
+	),
+	'object_types' => array(
+		'render_in_new_menu' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Render in new menu'),
+			'description' => _t('Render in new menu')
+		)
+	),
+	'collection_types' => array(
+		'render_in_new_menu' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Render in new menu'),
+			'description' => _t('Render in new menu')
+		)
+	),
+	'loan_types' => array(
+		'render_in_new_menu' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Render in new menu'),
+			'description' => _t('Render in new menu')
+		)
+	),
+	'list_item_types' => array(
+		'render_in_new_menu' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Render in new menu'),
+			'description' => _t('Render in new menu')
+		)
+	),
+	'movement_types' => array(
+		'render_in_new_menu' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Render in new menu'),
+			'description' => _t('Render in new menu')
+		)
+	),
+	'object_lot_types' => array(
+		'render_in_new_menu' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Render in new menu'),
+			'description' => _t('Render in new menu')
+		)
+	),
+	'occurrence_types' => array(
+		'render_in_new_menu' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Render in new menu'),
+			'description' => _t('Render in new menu')
+		)
+	),
+	'place_types' => array(
+		'render_in_new_menu' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Render in new menu'),
+			'description' => _t('Render in new menu')
+		)
+	),
+	'storage_location_types' => array(
+		'render_in_new_menu' => array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'width' => 20, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 1,
+			'label' => _t('Render in new menu'),
+			'description' => _t('Render in new menu')
+		)
+	),
 );
 
 class ca_list_items extends RepresentableBaseModel implements IHierarchy {
@@ -310,6 +475,12 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	# ------------------------------------------------------
 	protected $ATTRIBUTE_TYPE_ID_FLD = 'type_id';					// name of type field for this table - attributes system uses this to determine via ca_metadata_type_restrictions which attributes are applicable to rows of the given type
 	protected $ATTRIBUTE_TYPE_LIST_CODE = 'list_item_types';		// list code (ca_lists.list_code) of list defining types for this table
+
+	# ------------------------------------------------------
+	# Sources
+	# ------------------------------------------------------
+	protected $SOURCE_ID_FLD = 'source_id';					// name of source field for this table
+	protected $SOURCE_LIST_CODE = 'list_item_sources';		// list code (ca_lists.list_code) of list defining sources for this table
 	
 	# ------------------------------------------------------
 	# Labels
@@ -382,10 +553,13 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		$this->BUNDLES['ca_movements'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related movements'));
 		
 		$this->BUNDLES['ca_list_items'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related vocabulary terms'));
+		$this->BUNDLES['ca_sets'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));
 		
 		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
 		
+		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
+
 		$this->BUNDLES['settings'] = array('type' => 'special', 'repeating' => false, 'label' => _t('List item settings'));
 	}
 	# ------------------------------------------------------
@@ -404,11 +578,16 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	}
  	# ------------------------------------------------------
 	public function insert($pa_options=null) {
+		$vb_web_set_transaction = false;
 		if (!$this->inTransaction()) {
-			$this->setTransaction(new Transaction());
+			$this->setTransaction(new Transaction($this->getDb()));
+			$vb_web_set_transaction = true;
 		}
+		
+		$o_trans = $this->getTransaction();
+		
 		if ($this->get('is_default')) {
-			$this->getDb()->query("
+			$o_trans->getDb()->query("
 				UPDATE ca_list_items 
 				SET is_default = 0 
 				WHERE list_id = ?
@@ -418,9 +597,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		
 		if ($this->getPrimaryKey()) {
 			$t_list = new ca_lists();
-			$o_trans = $this->getTransaction();
 			$t_list->setTransaction($o_trans);
-			
 			
 			if (($t_list->load($this->get('list_id'))) && ($t_list->get('list_code') == 'place_hierarchies') && ($this->get('parent_id'))) {
 				// insert root or place hierarchy when creating non-root items in 'place_hierarchies' list
@@ -442,6 +619,9 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 				if ($t_place->numErrors()) {
 					$this->delete();
 					$this->errors = array_merge($this->errors, $t_place->errors);
+					if ($vb_web_set_transaction) {
+						$this->getTransaction()->rollback();
+					}
 					return false;
 				}
 				
@@ -455,9 +635,9 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		}
 		
 		if ($this->numErrors()) {
-			$this->getTransaction()->rollback();
+			if ($vb_web_set_transaction) { $o_trans->rollback(); }
 		} else {
-			$this->getTransaction()->commit();
+			if ($vb_web_set_transaction) { $o_trans->commit(); }
 			$this->_setSettingsForList();
 		}
 		return $vn_rc;
@@ -465,7 +645,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	# ------------------------------------------------------
 	public function update($pa_options=null) {
 		if (!$this->inTransaction()) {
-			$this->setTransaction(new Transaction());
+			$this->setTransaction(new Transaction($this->getDb()));
 		}
 		if ($this->get('is_default') == 1) {
 			$this->getDb()->query("
@@ -564,9 +744,10 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 			LEFT JOIN ca_list_items AS cli2 ON cli.item_id = cli2.parent_id
 			INNER JOIN ca_lists AS l ON l.list_id = cli.list_id
 			WHERE 
-				cli.parent_id IS NULL and cli.list_id IN (".join(',', $va_hierarchy_ids).") ".($pb_vocabularies ? " AND (l.use_as_vocabulary = 1)" : "")."
+				cli.parent_id IS NULL and cli.list_id IN (".join(',', $va_hierarchy_ids).") ".($pb_vocabularies ? " AND (l.use_as_vocabulary = 1)" : "")." AND
+				l.deleted = 0
 			GROUP BY
-				cli.item_id
+				cli.item_id, cli.list_id
 		");
 		
 		$vs_template = $this->getAppConfig()->get('ca_list_hierarchy_browser_display_settings');
@@ -579,7 +760,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 				SELECT count(*) children
 				FROM ca_list_items cli
 				WHERE 
-					cli.parent_id = ?
+					cli.parent_id = ? AND cli.deleted = 0
 			", (int)$qr_res->get('item_id'));
 			$vn_children_count = 0;
 			if ($qr_children->nextRow()) {
@@ -637,94 +818,6 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 	 	
 	 	return $t_list->getLabelForDisplay(false);
 	 }
-	 # ------------------------------------------------------
-	/**
-	 * Returns a flat list of all items in the specified list referenced by items in the specified table
-	 * (and optionally a search on that table)
-	 */
-	public function getReferenced($pm_table_num_or_name, $pn_type_id=null, $pa_reference_limit_ids=null, $pn_access=null, $pn_restrict_to_relationship_hierarchy_id=null) {
-		if (is_numeric($pm_table_num_or_name)) {
-			$vs_table_name = $this->getAppDataModel()->getTableName($pm_table_num_or_name);
-		} else {
-			$vs_table_name = $pm_table_num_or_name;
-		}
-		
-		if (!($t_ref_table = $this->getAppDatamodel()->getInstanceByTableName($vs_table_name, true))) {
-			return null;
-		}
-		
-		
-		if (!$vs_table_name) { return null; }
-		
-		$o_db = $this->getDb();
-		$va_path = $this->getAppDatamodel()->getPath($this->tableName(), $vs_table_name);
-		array_shift($va_path); // remove table name from path
-		
-		$vs_last_table = $this->tableName();
-		$va_joins = array();
-		foreach($va_path as $vs_rel_table_name => $vn_rel_table_num) {
-			$va_rels = $this->getAppDatamodel()->getRelationships($vs_last_table, $vs_rel_table_name);
-			$va_rel = $va_rels[$vs_last_table][$vs_rel_table_name][0];
-			
-			
-			$va_joins[] = "INNER JOIN {$vs_rel_table_name} ON {$vs_last_table}.".$va_rel[0]." = {$vs_rel_table_name}.".$va_rel[1];
-			
-			$vs_last_table = $vs_rel_table_name;
-		}
-		
-		$va_sql_wheres = array();
-		if (is_array($pa_reference_limit_ids) && sizeof($pa_reference_limit_ids)) {
-			$va_sql_wheres[] = "({$vs_table_name}.".$t_ref_table->primaryKey()." IN (".join(',', $pa_reference_limit_ids)."))";
-		}
-		
-		if (!is_null($pn_access)) {
-			$va_sql_wheres[] = "({$vs_table_name}.access = ".intval($pn_access).")";
-		}
-		
-		if ($pn_restrict_to_relationship_hierarchy_id > 0) {
-			$va_sql_wheres[] = "(ca_list_items.list_id = {$pn_restrict_to_relationship_hierarchy_id})";
-		}
-		
-		// get item counts
-		$vs_sql = "
-			SELECT ca_list_items.item_id, count(*) cnt
-			FROM ca_list_items
-			".join("\n", $va_joins)."
-			".(sizeof($va_sql_wheres) ? " WHERE ".join(' AND ', $va_sql_wheres) : "")."
-			GROUP BY
-				ca_list_items.item_id, {$vs_table_name}.".$t_ref_table->primaryKey()."
-		";
-		$qr_items = $o_db->query($vs_sql);
-		
-		$va_item_counts = array();
-		while($qr_items->nextRow()) {
-			$va_item_counts[$qr_items->get('item_id')]++;
-		}
-		
-		$vs_sql = "
-			SELECT ca_list_items.item_id, ca_list_items.idno, ca_list_item_labels.*, count(*) c
-			FROM ca_list_items
-			INNER JOIN ca_list_item_labels ON ca_list_item_labels.item_id = ca_list_items.item_id
-			".join("\n", $va_joins)."
-			WHERE
-				(ca_list_item_labels.is_preferred = 1)
-				".(sizeof($va_sql_wheres) ? " AND ".join(' AND ', $va_sql_wheres) : "")."
-			GROUP BY
-				ca_list_item_labels.label_id
-			ORDER BY 
-				ca_list_item_labels.name_plural
-		";
-		
-		$qr_items = $o_db->query($vs_sql);
-		
-		$va_items = array();
-		while($qr_items->nextRow()) {
-			$vn_item_id = $qr_items->get('item_id');
-			$va_items[$vn_item_id][$qr_items->get('locale_id')] = array_merge($qr_items->getRow(), array('cnt' => $va_item_counts[$vn_item_id]));
-		}
-		
-		return caExtractValuesByUserLocale($va_items);
-	}
 	# ------------------------------------------------------
 	/**
 	 * Override standard implementation to insert list_code for current list_id into returned data. The list_code is required for consumers of export data
@@ -740,49 +833,6 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		$va_data['list_code'] = $t_list->get('list_code');
 		
 		return $va_data;	
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function getListItemIDsByName($pn_list_id, $ps_name, $pn_parent_id=null, $pn_type_id=null) {
-		$o_db = $this->getDb();
-		
-		$va_params = array((int)$pn_list_id, (string)$ps_name, (string)$ps_name);
-		
-		$vs_type_sql = '';
-		if ($pn_type_id) {
-			if(sizeof($va_type_ids = caMakeTypeIDList('ca_list_items', array($pn_type_id)))) {
-				$vs_type_sql = " AND cap.type_id IN (?)";
-				$va_params[] = $va_type_ids;
-			}
-		}
-		
-		if ($pn_parent_id) {
-			$vs_parent_sql = " AND cap.parent_id = ?";
-			$va_params[] = (int)$pn_parent_id;
-		} 
-		
-		$qr_res = $o_db->query("
-			SELECT DISTINCT cap.item_id
-			FROM ca_list_items cap
-			INNER JOIN ca_list_item_labels AS capl ON capl.item_id = cap.item_id
-			WHERE
-				cap.list_id = ? AND (capl.name_singular = ? OR capl.name_plural = ?) {$vs_type_sql} {$vs_parent_sql} AND cap.deleted = 0
-		", $va_params);
-		
-		$va_item_ids = array();
-		while($qr_res->nextRow()) {
-			$va_item_ids[] = $qr_res->get('item_id');
-		}
-		return $va_item_ids;
-	}
-	# ------------------------------------------------------
-	/**
-	 * @param array $pa_label_values
-	 */
-	public function getIDsByLabel($pa_label_values, $pn_parent_id=null, $pn_type_id=null) {
-		return $this->getListItemIDsByName($pa_label_values['list_id'], $pa_label_values['name_plural'], $pn_parent_id, $pn_type_id);
 	}
 	# ------------------------------------------------------
  	/**

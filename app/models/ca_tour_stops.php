@@ -341,71 +341,6 @@ class ca_tour_stops extends BundlableLabelableBaseModelWithAttributes {
 		}
 		return parent::set($pa_fields, null, $pa_options);
 	}
-	# ------------------------------------------------------
-	/**
-	 * Return array containing information about all hierarchies, including their root_id's
-	 * For non-adhoc hierarchies such as places, this call returns the contents of the place_hierarchies list
-	 * with some extra information such as the # of top-level items in each hierarchy.
-	 *
-	 * For an ad-hoc hierarchy like that of a tour stop, there is only ever one hierarchy to display - that of the current stop.
-	 * So for adhoc hierarchies we just return a single entry corresponding to the root of the current tour stop hierarchy
-	 */
-	 public function getHierarchyList($pb_dummy=false) {
-	 	$vn_pk = $this->getPrimaryKey();
-	 	if (!$vn_pk) { return null; }		// have to load a row first
-	 	
-	 	$vs_template = $this->getAppConfig()->get('ca_tour_stops_hierarchy_browser_display_settings');
-	 	if (!$vs_template) {
-	 		$vs_template = "^ca_tour_stops.preferred_labels.name"; 
-	 	}
-	 	
-	 	$vs_label = $this->getLabelForDisplay(false);
-	 	$vs_hier_fld = $this->getProperty('HIERARCHY_ID_FLD');
-	 	$vs_parent_fld = $this->getProperty('PARENT_ID_FLD');
-	 	$vn_hier_id = $this->get($vs_hier_fld);
-	 	
-	 	if ($this->get($vs_parent_fld)) { 
-	 		// currently loaded row is not the root so get the root
-	 		$va_ancestors = $this->getHierarchyAncestors();
-	 		if (!is_array($va_ancestors) || sizeof($va_ancestors) == 0) { return null; }
-	 		$t_stop = new ca_tour_stops($va_ancestors[0]);
-	 	} else {
-	 		$t_stop =& $this;
-	 	}
-	 	
-	 	$va_children = $t_stop->getHierarchyChildren(null, array('idsOnly' => true));
-	 	$va_stop_hierarchy_root = array(
-	 		$t_stop->get($vs_hier_fld) => array(
-	 			'item_id' => $vn_pk,
-	 			'name' => $vs_name = caProcessTemplateForIDs($vs_template, 'ca_tour_stops', array($vn_pk)),
-	 			'hierarchy_id' => $vn_hier_id,
-	 			'children' => sizeof($va_children)
-	 		)
-	 	);
-	 	
-	 	return $va_stop_hierarchy_root;
-	}
-	# ------------------------------------------------------
-	/**
-	 * Returns name of hierarchy for currently loaded row or, if specified, row identified by optional $pn_id parameter
-	 */
-	 public function getHierarchyName($pn_id=null) {
-	 	if (!$pn_id) { $pn_id = $this->getPrimaryKey(); }
-	 	
-		$va_ancestors = $this->getHierarchyAncestors($pn_id, array('idsOnly' => true));
-		if (is_array($va_ancestors) && sizeof($va_ancestors)) {
-			$vn_parent_id = array_pop($va_ancestors);
-			$t_stop = new ca_tour_stops($vn_parent_id);
-			return $t_stop->getLabelForDisplay(false);
-		} else {			
-			if ($pn_id == $this->getPrimaryKey()) {
-				return $this->getLabelForDisplay(true);
-			} else {
-				$t_stop = new ca_tour_stops($pn_id);
-				return $t_stop->getLabelForDisplay(false);
-			}
-		}
-	 }
  	# ------------------------------------------------------
  	/**
  	 * Check if currently loaded row is save-able
@@ -440,50 +375,6 @@ class ca_tour_stops extends BundlableLabelableBaseModelWithAttributes {
  		
  		return true;
  	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function getTourStopIDsByName($ps_name, $pn_parent_id=null, $pn_type_id=null) {
-		$o_db = $this->getDb();
-		
-		$va_params = array((string)$ps_name);
-		
-		$vs_type_sql = '';
-		if ($pn_type_id) {
-			if(sizeof($va_type_ids = caMakeTypeIDList('ca_tour_stops', array($pn_type_id)))) {
-				$vs_type_sql = " AND cap.type_id IN (?)";
-				$va_params[] = $va_type_ids;
-			}
-		}
-		
-		if ($pn_parent_id) {
-			$vs_parent_sql = " AND cap.parent_id = ?";
-			$va_params[] = (int)$pn_parent_id;
-		} 
-		
-		
-		$qr_res = $o_db->query("
-			SELECT DISTINCT cap.stop_id
-			FROM ca_tour_stops cap
-			INNER JOIN ca_tour_stop_labels AS capl ON capl.stop_id = cap.stop_id
-			WHERE
-				capl.name = ? {$vs_type_sql} {$vs_parent_sql} AND cap.deleted = 0
-		", $va_params);
-		
-		$va_stop_ids = array();
-		while($qr_res->nextRow()) {
-			$va_stop_ids[] = $qr_res->get('stop_id');
-		}
-		return $va_stop_ids;
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function getIDsByLabel($pa_label_values, $pn_parent_id=null, $pn_type_id=null) {
-		return $this->getTourStopIDsByName($pa_label_values['name'], $pn_parent_id, $pn_type_id);
-	}
 	# ------------------------------------------------------
 }
 ?>

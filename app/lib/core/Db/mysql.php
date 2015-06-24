@@ -88,7 +88,7 @@ class Db_mysql extends DbDriverBase {
 	 *
 	 * @see DbDriverBase::DbDriverBase()
 	 */
-	function __construct() {
+	public function __construct() {
 		//print "Construct db driver\n";
 	}
 
@@ -99,19 +99,28 @@ class Db_mysql extends DbDriverBase {
 	 * @param array $pa_options array containing options like host, username, password
 	 * @return bool success state
 	 */
-	function connect($po_caller, $pa_options) {
+	public function connect($po_caller, $pa_options) {
 		global $g_connect;
 		if (!is_array($g_connect)) { $g_connect = array(); }
 		$vs_db_connection_key = $pa_options["host"].'/'.$pa_options["database"];
 		
-		if (isset($g_connect[$vs_db_connection_key]) && is_resource($g_connect[$vs_db_connection_key])) { $this->opr_db = $g_connect[$vs_db_connection_key]; return true;}
+		if (
+			!($vb_unique_connection = caGetOption('uniqueConnection', $pa_options, false)) 
+			&& 
+			isset($g_connect[$vs_db_connection_key]) 
+			&& 
+			is_resource($g_connect[$vs_db_connection_key])
+		) { 
+			$this->opr_db = $g_connect[$vs_db_connection_key]; 
+			return true;
+		}
 		
 		if (!function_exists("mysql_connect")) {
 			die(_t("Your PHP installation lacks MySQL support. Please add it and retry..."));
 			exit;
 		}
 		
-		if (isset($pa_options["persistent_connections"]) && $pa_options["persistent_connections"]) {
+		if (!$vb_unique_connection && ($vb_persistent_connections = caGetOption('persistentConnections', $pa_options, false))) {
 			$this->opr_db = @mysql_pconnect($pa_options["host"], $pa_options["username"], $pa_options["password"]);
 		} else {
 			$this->opr_db = @mysql_connect($pa_options["host"], $pa_options["username"], $pa_options["password"], true);
@@ -128,7 +137,7 @@ class Db_mysql extends DbDriverBase {
 		mysql_query('SET NAMES \'utf8\'', $this->opr_db);
 		mysql_query('SET character_set_results = NULL', $this->opr_db);	
 		
-		$g_connect[$vs_db_connection_key] = $this->opr_db;
+		if (!$vb_unique_connection) { $g_connect[$vs_db_connection_key] = $this->opr_db; }
 		return true;
 	}
 
@@ -137,7 +146,7 @@ class Db_mysql extends DbDriverBase {
 	 *
 	 * @return bool success state
 	 */
-	function disconnect() {
+	public function disconnect() {
 		//if (!is_resource($this->opr_db)) { return true; }
 		//if (!@mysql_close($this->opr_db)) {
 		//	return false;
@@ -155,7 +164,7 @@ class Db_mysql extends DbDriverBase {
 	 * @param string $ps_sql query string
 	 * @return DbStatement
 	 */
-	function prepare($po_caller, $ps_sql) {
+	public function prepare($po_caller, $ps_sql) {
 		$this->ops_sql = $ps_sql;
 		
 		// are there any placeholders at all?
@@ -231,7 +240,7 @@ class Db_mysql extends DbDriverBase {
 			$vn_i++;
 		}
 		
-		if (sizeof($g_mysql_statement_cache) >= 2048) { 
+		while (sizeof($g_mysql_statement_cache) >= 2048) { 
 			array_shift($g_mysql_statement_cache); 
 		}	// limit statement cache to 2048 entries, otherwise we'll eat up memory in long running processes
 
@@ -248,7 +257,7 @@ class Db_mysql extends DbDriverBase {
 	 * @param string $ps_sql SQL statement
 	 * @param array $pa_values array of placeholder replacements
 	 */
-	function execute($po_caller, $opo_statement, $ps_sql, $pa_values) {
+	public function execute($po_caller, $opo_statement, $ps_sql, $pa_values) {
 		if (!$ps_sql) {
 			$opo_statement->postError(240, _t("Query is empty"), "Db->mysql->execute()");
 			return false;
@@ -288,7 +297,9 @@ class Db_mysql extends DbDriverBase {
 		}
 		if (!($r_res = mysql_query($vs_sql, $this->opr_db))) {
 			$vn_mysql_err = (int)mysql_errno($this->opr_db);
+			
 			switch($vn_mysql_err) {
+				case 1205:		// deadlock
 				case 1216:		// deadlock
 					$vn_tries = 0;
 					// wait a bit and try the query again (up to 10 times)
@@ -301,22 +312,13 @@ class Db_mysql extends DbDriverBase {
 					}
 					
 					if (!$r_res) {
-						$opo_statement->postError($this->nativeToDbError($vn_mysql_err), mysql_error($this->opr_db).((__CA_ENABLE_DEBUG_OUTPUT__) ? "\n<pre>".caPrintStacktrace()."</pre>" : ""), "Db->mysql->execute()");
+						$opo_statement->postError($po_caller->nativeToDbError($vn_mysql_err), mysql_error($this->opr_db).((__CA_ENABLE_DEBUG_OUTPUT__) ? "\n<pre>".caPrintStacktrace()."</pre>" : ""), "Db->mysql->execute()");
 						return false;
 					}
 					return new DbResult($this, $r_res);
 					break;
-				case 2006:		// gone away
-					// reconnect
-					if ($po_caller->connect()) {
-						if ($r_res = mysql_query($vs_sql, $this->opr_db)) {
-							return new DbResult($this, $r_res);
-						}
-					}
-					$opo_statement->postError($this->nativeToDbError($vn_mysql_err), mysql_error($this->opr_db).((__CA_ENABLE_DEBUG_OUTPUT__) ? "\n<pre>".caPrintStacktrace()."</pre>" : ""), "Db->mysql->execute()");
-					break;
 				default:
-					$opo_statement->postError($this->nativeToDbError($vn_mysql_err), mysql_error($this->opr_db).((__CA_ENABLE_DEBUG_OUTPUT__) ? "\n<pre>".caPrintStacktrace()."</pre>" : ""), "Db->mysql->execute()");
+					$opo_statement->postError($po_caller->nativeToDbError($vn_mysql_err), mysql_error($this->opr_db).((__CA_ENABLE_DEBUG_OUTPUT__) ? "\n<pre>".caPrintStacktrace()."</pre>" : ""), "Db->mysql->execute()");
 					break;
 			}
 			return false;
@@ -334,7 +336,7 @@ class Db_mysql extends DbDriverBase {
 	 * @param mixed $po_caller object representation of calling class, usually Db
 	 * @return int the ID generated by the last MySQL INSERT statement
 	 */
-	function getLastInsertID($po_caller) {
+	public function getLastInsertID($po_caller) {
 		return @mysql_insert_id($this->opr_db);
 	}
 
@@ -344,82 +346,8 @@ class Db_mysql extends DbDriverBase {
 	 * @param mixed $po_caller object representation of calling class, usually Db
 	 * @return int number of rows
 	 */
-	function affectedRows($po_caller) {
+	public function affectedRows($po_caller) {
 		return @mysql_affected_rows($this->opr_db);
-	}
-
-	/**
-	 * Creates a temporary table
-	 *
-	 * @param mixed $po_caller object representation of calling class, usually Db
-	 * @param string $ps_table_name string representation of the table name
-	 * @param array $pa_field_list array containing the field names
-	 * @param string $ps_type optional, defaults to innodb
-	 * @return mixed mysql resource
-	 */
-	function createTemporaryTable($po_caller, $ps_table_name, $pa_field_list, $ps_type="") {
-		if (!$ps_table_name) {
-			$po_caller->postError(230, _t("No table name specified"), "Db->mysql->createTemporaryTable()");
-		}
-		if (!is_array($pa_field_list) || sizeof($pa_field_list) == 0) {
-			$po_caller->postError(231, _t("No fields specified"), "Db->mysql->createTemporaryTable()");
-		}
-
-
-		$vs_sql  = "CREATE TEMPORARY TABLE ".$ps_table_name;
-
-		$va_fields = array();
-		foreach($pa_field_list as $va_field) {
-			$vs_field = $va_field["name"]." ".$this->dbToNativeDataType($va_field["type"])." ";
-			if ($va_field["length"] > 0) {
-				$vs_field .= "(".$va_field["length"].") ";
-			}
-
-			if ($va_field["primary_key"]) {
-				$vs_field .= "primary key ";
-			}
-
-			if ($va_field["null"]) {
-				$vs_field .= "null";
-			} else {
-				$vs_field .= "not null";
-			}
-
-			$va_fields[] = $vs_field;
-		}
-
-		$vs_sql .= "(".join(",\n", $va_fields).")";
-
-		switch($ps_type) {
-			case 'memory':
-				$vs_sql .= " ENGINE=memory";
-				break;
-			case 'myisam':
-				$vs_sql .= " ENGINE=myisam";
-				break;
-			default:
-				$vs_sql .= " ENGINE=innodb";
-				break;
-		}
-
-		if (!($vb_res = @mysql_query($vs_sql, $this->opr_db))) {
-			$po_caller->postError($this->nativeToDbError(mysql_errno($this->opr_db)), mysql_error($this->opr_db), "Db->mysql->createTemporaryTable()");
-		}
-		return $vb_res;
-	}
-
-	/**
-	 * Drops a temporary table
-	 *
-	 * @param mixed $po_caller object representation of calling class, usually Db
-	 * @param string $ps_table_name string representation of the table name
-	 * @return mixed mysql resource
-	 */
-	function dropTemporaryTable($po_caller, $ps_table_name) {
-		if (!($vb_res = @mysql_query("DROP TABLE ".$ps_table_name, $this->opr_db))) {
-			$po_caller->postError($this->nativeToDbError(mysql_errno($this->opr_db)), mysql_error($this->opr_db), "Db->mysql->dropTemporaryTable()");
-		}
-		return $vb_res;
 	}
 
 	/**
@@ -427,7 +355,7 @@ class Db_mysql extends DbDriverBase {
 	 * @param string
 	 * @return string
 	 */
-	function escape($ps_text) {
+	public function escape($ps_text) {
 		if ($this->opr_db) {
 			return mysql_real_escape_string($ps_text, $this->opr_db);
 		} else {
@@ -440,7 +368,7 @@ class Db_mysql extends DbDriverBase {
 	 * @param mixed $po_caller object representation of the calling class, usually Db
 	 * @return bool success state
 	 */
-	function beginTransaction($po_caller) {
+	public function beginTransaction($po_caller) {
 		if (!@mysql_query('set autocommit=0', $this->opr_db)) {
 			$po_caller->postError(250, mysql_error($this->opr_db), "Db->mysql->beginTransaction()");
 			return false;
@@ -457,7 +385,7 @@ class Db_mysql extends DbDriverBase {
 	 * @param mixed $po_caller object representation of the calling class, usually Db
 	 * @return bool success state
 	 */
-	function commitTransaction($po_caller) {
+	public function commitTransaction($po_caller) {
 		if (!@mysql_query('commit', $this->opr_db)) {
 			$po_caller->postError(250, mysql_error($this->opr_db), "Db->mysql->commitTransaction()");
 			return false;
@@ -474,7 +402,7 @@ class Db_mysql extends DbDriverBase {
 	 * @param mixed $po_caller object representation of the calling class, usually Db
 	 * @return bool success state
 	 */
-	function rollbackTransaction($po_caller) {
+	public function rollbackTransaction($po_caller) {
 		if (!@mysql_query('rollback', $this->opr_db)) {
 			$po_caller->postError(250, mysql_error($this->opr_db), "Db->mysql->rollbackTransaction()");
 			return false;
@@ -485,24 +413,50 @@ class Db_mysql extends DbDriverBase {
 		}
 		return true;
 	}
-
+	
+	/**
+	 * @see DbResult::getAllFieldValues()
+	 * @param mixed $po_caller object representation of the calling class, usually Db
+	 * @param mixed $pr_res mysql resource
+	 * @param mixed $pm_field the field or an array of fields
+	 * @return array an array of field values (if $pm_field is a single field name) or an array if field names each of which is an array of values (if $pm_field is an array of field names)
+	 */
+	function getAllFieldValues($po_caller, $pr_res, $pa_fields) {
+		$va_vals = array();
+		
+		if (is_array($pa_fields)) {
+			$va_row = @mysql_fetch_assoc($pr_res);
+			foreach($pa_fields as $vs_field) {
+				if (!is_array($va_row) || !array_key_exists($vs_field, $va_row)) { return array(); }
+			}
+			$this->seek($po_caller, $pr_res, 0);
+			while(is_array($va_row = @mysql_fetch_assoc($pr_res))) {
+				foreach($pa_fields as $vs_field) {
+					$va_vals[$vs_field][] = $va_row[$vs_field];
+				}
+			}
+		} else {
+			$va_row = @mysql_fetch_assoc($pr_res);
+			if (!is_array($va_row) || !array_key_exists($pa_fields, $va_row)) { return array(); }
+			$this->seek($po_caller, $pr_res, 0);
+			while(is_array($va_row = @mysql_fetch_assoc($pr_res))) {
+				$va_vals[] = $va_row[$pa_fields];
+			}
+		}
+		return $va_vals;
+	}
+	
 	/**
 	 * @see DbResult::nextRow()
 	 * @param mixed $po_caller object representation of the calling class, usually Db
 	 * @param mixed $pr_res mysql resource
 	 * @return array array representation of the next row
 	 */
-	function nextRow($po_caller, $pr_res) {
+	public function nextRow($po_caller, $pr_res) {
 		//$va_row = @mysql_fetch_row($pr_res);
 		$va_row = @mysql_fetch_assoc($pr_res);
 		if (!is_array($va_row)) { return null; }
-
-		//$vn_n = mysql_num_fields($pr_res);
-
-		//for ($vn_i=0; $vn_i < $vn_n; $vn_i++) {
-			//$o_fld = mysql_fetch_field($pr_res, $vn_i);
-		//	$va_row[$o_fld->table . '.' . $o_fld->name] = $va_row[$o_fld->name] = $va_row[$vn_i];
-		//}
+		
 		return $va_row;
 	}
 
@@ -513,7 +467,7 @@ class Db_mysql extends DbDriverBase {
 	 * @param int $pn_offset line number to seek
 	 * @return array array representation of the next row
 	 */
-	function seek($po_caller, $pr_res, $pn_offset) {
+	public function seek($po_caller, $pr_res, $pn_offset) {
 		if ($pn_offset < 0) { return false; }
 		if ($pn_offset > (mysql_num_rows($pr_res) - 1)) { return false; }
 		if (!@mysql_data_seek($pr_res, $pn_offset)) {
@@ -530,7 +484,7 @@ class Db_mysql extends DbDriverBase {
 	 * @param mixed $pr_res mysql resource
 	 * @return int number of rows
 	 */
-	function numRows($po_caller, $pr_res) {
+	public function numRows($po_caller, $pr_res) {
 		return @mysql_num_rows($pr_res);
 	}
 
@@ -540,7 +494,7 @@ class Db_mysql extends DbDriverBase {
 	 * @param mixed $pr_res mysql resource
 	 * @return bool success state
 	 */
-	function free($po_caller, $pr_res) {
+	public function free($po_caller, $pr_res) {
 		if (is_resource($pr_res)) {
 			return @mysql_free_result($pr_res);
 		}
@@ -553,7 +507,7 @@ class Db_mysql extends DbDriverBase {
 	 * @param string $ps_key feature to look for
 	 * @return bool|int
 	 */
-	function supports($po_caller, $ps_key) {
+	public function supports($po_caller, $ps_key) {
 		return $this->opa_features[$ps_key];
 	}
 
@@ -562,7 +516,7 @@ class Db_mysql extends DbDriverBase {
 	 * @param mixed $po_caller object representation of the calling class, usually Db
 	 * @return array field list, false on error
 	 */
-	function &getTables($po_caller) {
+	public function &getTables($po_caller) {
 		if ($r_show = mysql_query("SHOW TABLES", $this->opr_db)) {
 			$va_tables = array();
 			while($va_row = mysql_fetch_row($r_show)) {
@@ -577,327 +531,18 @@ class Db_mysql extends DbDriverBase {
 	}
 
 	/**
-	 * @see Db::getFieldsFromTable()
-	 * @param mixed $po_caller object representation of the calling class, usually Db
-	 * @param string $ps_table string representation of the table
-	 * @param string $ps_fieldname optional fieldname
-	 * @return array array containing lots of information
-	 */
-	function getFieldsFromTable($po_caller, $ps_table, $ps_fieldname=null) {
-		$vs_fieldname_sql = "";
-		if ($ps_fieldname) {
-			$vs_fieldname_sql = " LIKE '".$this->escape($ps_fieldname)."'";
-		}
-		if ($r_show = mysql_query("SHOW COLUMNS FROM ".$ps_table." ".$vs_fieldname_sql, $this->opr_db)) {
-			$va_tables = array();
-			while($va_row = mysql_fetch_row($r_show)) {
-
-				$va_options = array();
-				if ($va_row[5] == "auto_increment") {
-					$va_options[] = "identity";
-				} else {
-					if ($va_row[5]) {
-						$va_options[] = $va_row[5];
-					}
-				}
-
-				switch($va_row[3]) {
-					case 'PRI':
-						$vs_index = "primary";
-						break;
-					case 'MUL':
-						$vs_index = "index";
-						break;
-					case 'UNI':
-						$vs_index = "unique";
-						break;
-					default:
-						$vs_index = "";
-						break;
-
-				}
-
-				$va_db_datatype = $this->nativeToDbDataType($va_row[1]);
-				$va_tables[] = array(
-					"fieldname" 		=> $va_row[0],
-					"native_type" 		=> $va_row[1],
-					"type"				=> $va_db_datatype["type"],
-					"max_length"		=> $va_db_datatype["length"],
-					"max_value"			=> $va_db_datatype["maximum"],
-					"min_value"			=> $va_db_datatype["minimum"],
-					"null" 				=> ($va_row[2] == "YES") ? true : false,
-					"index" 			=> $vs_index,
-					"default" 			=> ($va_row[4] == "NULL") ? null : ($va_row[4] !== "" ? $va_row[4] : null),
-					"options" 			=> $va_options
-				);
-			}
-
-			return $va_tables;
-		} else {
-			$po_caller->postError(280, mysql_error($this->opr_db), "Db->mysql->getTables()");
-			return false;
-		}
-	}
-
-	/**
-	 * @see Db::getFieldsInfo()
-	 * @param mixed $po_caller object representation of the calling class, usually Db
-	 * @param string $ps_table string representation of the table
-	 * @param string $ps_fieldname fieldname
-	 * @return array array containing lots of information
-	 */
-	function getFieldInfo($po_caller, $ps_table, $ps_fieldname) {
-		$va_table_fields = $this->getFieldsFromTable($po_caller, $ps_table, $ps_fieldname);
-		return $va_table_fields[0];
-	}
-
-	/**
-	 * @see Db::getIndices()
-	 * @param mixed $po_caller object representation of the calling class, usually Db
-	 * @param string $ps_table string representation of the table
-	 * @return array
-	 */
-	public function getIndices($po_caller, $ps_table) {
-		if ($r_show = mysql_query("SHOW KEYS FROM ".$ps_table, $this->opr_db)) {
-			$va_keys = array();
-
-			$vn_i = 1;
-			while($va_row = mysql_fetch_assoc($r_show)) {
-				$vs_keyname = $va_row['Key_name'];
-
-				if ($va_keys[$vs_keyname]) {
-					$va_keys[$vs_keyname]['fields'][] = $va_row['Column_name'];
-				} else {
-					$va_keys[$vs_keyname] = $va_row;
-					$va_keys[$vs_keyname]['fields'] = array($va_keys[$vs_keyname]['Column_name'] );
-					$va_keys[$vs_keyname]['name'] = $vs_keyname;
-					unset($va_keys[$vs_keyname]['Column_name'] );
-
-					$va_keys[$vn_i] =& $va_keys[$vs_keyname];
-
-					$vn_i++;
-				}
-			}
-
-			return $va_keys;
-		} else {
-			$po_caller->postError(280, mysql_error($this->opr_db), "Db->mysql->getKeys()");
-			return false;
-		}
-	}
-
-	/**
-	 * Returns list of engines present in the MySQL installation. The list in an array with
-	 * keys set to engine names and values set to an array of information returned from MySQL
-	 * about each engine. Note that while the MySQL SHOW ENGINES query return information
-	 * about unsupported and disabled engines, getEngines() only returns information
-	 * about engines that are available.
-     *
-	 * @param mixed $po_caller object representation of the calling class, usually Db
-	 * @return array engine list, false on error.
-	 */
-	function getEngines($po_caller) {
-		if ($r_show = mysql_query("SHOW ENGINES", $this->opr_db)) {
-			$va_engines = array();
-			while($va_row = mysql_fetch_assoc($r_show)) {
-				if (!in_array($va_row['Support'], array('YES', 'DEFAULT'))) { continue; }
-				$va_engines[$va_row['Engine']] = $va_row;
-			}
-
-			return $va_engines;
-		} else {
-			$po_caller->postError(280, mysql_error($this->opr_db), "Db->mysql->getEngines()");
-			return false;
-		}
-	}
-	
-	/**
-	 * Converts native datatypes to db datatypes
+	 * Get database connection handle
 	 *
-	 * @param string string representation of the datatype
-	 * @return array array with more information about the type, specific to mysql
+	 * @return resource 
 	 */
-	function nativeToDbDataType($ps_native_datatype_spec) {
-		if (preg_match("/^([A-Za-z]+)[\(]{0,1}([\d,]*)[\)]{0,1}[ ]*([A-Za-z]*)/", $ps_native_datatype_spec, $va_matches)) {
-			$vs_native_type = $va_matches[1];
-			$vs_length = $va_matches[2];
-			$vb_unsigned = ($va_matches[3] == "unsigned") ? true : false;
-			switch($vs_native_type) {
-				case 'varchar':
-					return array("type" => "varchar", "length" => $vs_length);
-					break;
-				case 'char':
-					return array("type" => "char", "length" => $vs_length);
-					break;
-				case 'bigint':
-					return array("type" => "int", "minimum" => $vb_unsigned ? 0 : -1 * ((pow(2, 64)/2)), "maximum" => $vb_unsigned ? pow(2,64) - 1 : (pow(2,64)/2) - 1);
-					break;
-				case 'int':
-					return array("type" => "int", "minimum" => $vb_unsigned ? 0 : -1 * ((pow(2, 32)/2)), "maximum" => $vb_unsigned ? pow(2,32) - 1: (pow(2,32)/2) - 1);
-					break;
-				case 'mediumint':
-					return array("type" => "int", "minimum" => $vb_unsigned ? 0 : -1 * ((pow(2, 24)/2)), "maximum" => $vb_unsigned ? pow(2,24) - 1: (pow(2,24)/2) - 1);
-					break;
-				case 'smallint':
-					return array("type" => "int", "minimum" => $vb_unsigned ? 0 : -1 * ((pow(2, 16)/2)), "maximum" => $vb_unsigned ? pow(2,16) - 1: (pow(2,16)/2) - 1);
-					break;
-				case 'tinyint':
-					return array("type" => "int", "minimum" => $vb_unsigned ? 0 : -128, "maximum" => $vb_unsigned ? 255 : 127);
-					break;
-				case 'decimal':
-				case 'float':
-				case 'numeric':
-					$va_tmp = explode(",",$vs_length);
-					if ($vb_unsigned) {
-						$vn_max = (pow(10, $va_tmp[0]) - (1/pow(10, $va_tmp[1]))) - 1;
-						$vn_min = 0;
-					} else {
-						$vn_max = ((pow(10, $va_tmp[0]) - (1/pow(10, $va_tmp[1]))) / 2) -1;
-						$vn_min = -1 * ((pow(10, $va_tmp[0]) - (1/pow(10, $va_tmp[1]))) / 2);
-					}
-					return array("type" => "float", "minimum" => $vn_min, "maximum" => $vn_max);
-					break;
-				case 'tinytext':
-					return array("type" => "varchar", "length" => 255);
-					break;
-				case 'text':
-					return array("type" => "text", "length" => pow(2,16) - 1);
-					break;
-				case 'mediumtext':
-					return array("type" => "text", "length" => pow(2,24) - 1);
-					break;
-				case 'longtext':
-					return array("type" => "text", "length" => pow(2,32) - 1);
-					break;
-				case 'tinyblob':
-					return array("type" => "blob", "length" => 255);
-					break;
-				case 'blob':
-					return array("type" => "blob", "length" => pow(2,16) - 1);
-					break;
-				case 'mediumblob':
-					return array("type" => "blob", "length" => pow(2,24) - 1);
-					break;
-				case 'longblob':
-					return array("type" => "blob", "length" => pow(2,32) - 1);
-					break;
-				default:
-					return null;
-					break;
-			}
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * Converts db datatypes to native datatypes
-	 *
-	 * @param string string representation of the datatype
-	 * @return string string representation of the native datatype
-	 */
-	function dbToNativeDataType($ps_db_datatype) {
-		switch($ps_db_datatype) {
-			case "int":
-				return "int";
-				break;
-			case "float":
-				return "decimal";
-				break;
-			case "bit":
-				return "tinyint";
-				break;
-			case "char":
-				return "char";
-				break;
-			case "varchar":
-				return "varchar";
-				break;
-			case "text":
-				return "longtext";
-				break;
-			case "blob":
-				return "longblob";
-				break;
-			default:
-				return null;
-				break;
-		}
-	}
-
-	/**
-	 * Conversion of error numbers
-	 *
-	 * @param int native error number
-	 * @return int db error number
-	 */
-	function nativeToDbError($pn_error_number) {
-		switch($pn_error_number) {
-			case 1004:	// Can't create file
-			case 1005:	// Can't create table
-			case 1006:	// Can't create database
-				return 242;
-				break;
-			case 1007:	// Database already exists
-				return 244;
-				break;
-			case 1050:	// Table already exists
-			case 1061:	// Duplicate key
-				return 245;
-				break;
-			case 1008:	// Can't drop database; database doesn't exist
-			case 1049:	// Unknown database
-				return 201;
-				break;
-			case 1051:	// Unknown table
-			case 1146:	// Table doesn't exist
-				return 282;
-				break;
-			case 1054:	// Unknown field
-				return 283;
-				break;
-			case 1091:	// Can't DROP item; check that column/key exists
-				return 284;
-				break;
-			case 1044:	// access denied for user to database
-			case 1142:	// command denied to user for table
-				return 207;
-				break;
-			case 1046:	// No database selected
-				return 208;
-				break;
-			case 1048:	// Column cannot be null
-				return 291;
-				break;
-			case 1216:	// Cannot add or update a child row: a foreign key constraint fails
-			case 1217:	// annot delete or update a parent row: a foreign key constraint fails
-				return 290;
-				break;
-			case 1136:	// Column count doesn't match value count
-				return 288;
-				break;
-			case 1100:	// Table was not locked with LOCK TABLES
-				return 265;
-				break;
-			case 1062:	// duplicate value for unique field
-			case 1022:	// Can't write; duplicate key in table
-				return 251;
-				break;
-			case 1065:
-				// query empty
-				return 240;
-				break;
-			case 1064:	// SQL syntax error
-			default:
-				return 250;
-				break;
-		}
+	public function getHandle() {
+		return $this->opr_db;
 	}
 
 	/**
 	 * Destructor
 	 */
-	function __destruct() {
+	public function __destruct() {
 		// Disconnecting here can affect other classes that need
 		// to clean up by writing to the database so we disabled 
 		// disconnect-on-destruct

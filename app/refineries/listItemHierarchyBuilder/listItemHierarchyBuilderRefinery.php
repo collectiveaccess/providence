@@ -38,6 +38,7 @@
 			$this->ops_description = _t('Builds a list item hierarchy.');
 			
 			$this->opb_returns_multiple_values = true;
+			$this->opb_supports_relationships = true;
 			
 			parent::__construct();
 		}
@@ -80,7 +81,7 @@
 			
 			// Set list item parents
 			if ($va_parents = $pa_item['settings']['listItemHierarchyBuilder_parents']) {
-				$vn_parent_id = caProcessRefineryParents('listItemHierarchyBuilderRefinery', 'ca_list_items', $va_parents, $pa_source_data, $pa_item, null, null, $o_log, array('list_id' => $pa_item['settings']['listItemHierarchyBuilder_list']));
+				$vn_parent_id = caProcessRefineryParents('listItemHierarchyBuilderRefinery', 'ca_list_items', $va_parents, $pa_source_data, $pa_item, null, array_merge($pa_options, array('list_id' => $pa_item['settings']['listItemHierarchyBuilder_list'])));
 			}
 			
 			return $vn_parent_id;

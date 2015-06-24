@@ -55,7 +55,7 @@
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			$this->opo_datamodel = Datamodel::load();
  			
- 			JavascriptLoadManager::register('maps');
+ 			AssetLoadManager::register('maps');
  		}
  		# -------------------------------------------------------
  		/**
@@ -104,9 +104,10 @@
  		 * application on an as-needed basis.
  		 */
  		public function Show() {
- 			JavascriptLoadManager::register('browsable');
- 			JavascriptLoadManager::register('imageScroller');
- 			JavascriptLoadManager::register('maps3');
+ 			AssetLoadManager::register('browsable');
+ 			AssetLoadManager::register('imageScroller');
+ 			AssetLoadManager::register('maps3');
+ 			AssetLoadManager::register('jquery', 'expander');
  			
  			$va_access_values = caGetUserAccessValues($this->request);
  			$this->view->setVar('access_values', $va_access_values);

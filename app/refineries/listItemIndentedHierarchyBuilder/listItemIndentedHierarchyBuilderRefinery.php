@@ -143,7 +143,7 @@
 			foreach($va_levels as $vn_i => $vs_level_placeholder) {
 				$vs_level_value = null;
 				if (strlen($vs_level_placeholder)) {
-					if ($vs_level_value = BaseRefinery::parsePlaceholder($vs_level_placeholder, $pa_source_data, $pa_item, $vs_delimiter, 0, array('returnAsString' => true))) {
+					if ($vs_level_value = BaseRefinery::parsePlaceholder($vs_level_placeholder, $pa_source_data, $pa_item, 0, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true))) {
 						if (!$vn_parent_id && isset(listItemIndentedHierarchyBuilderRefinery::$opa_level_value_ids[$vn_i-1])) { 
 							$vn_parent_id = listItemIndentedHierarchyBuilderRefinery::$opa_level_value_ids[$vn_i-1];
 						}

@@ -187,9 +187,6 @@ class ca_relationship_type_labels extends BaseLabel {
 	);
 	protected $LABEL_DISPLAY_FIELD = 'typename';
 	
-	# --- Name of field used for sorting purposes
-	protected $LABEL_SORT_FIELD = 'name_sort';
-	
 	# --- Name of table this table contains label for
 	protected $LABEL_SUBJECT_TABLE = 'ca_relationship_types';
 	

@@ -115,6 +115,26 @@
         </item>
       </items>
     </list>
+    <list code="list_item_sources" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>List item sources</name>
+        </label>
+        <label locale="en_CA">
+          <name>List item sources</name>
+        </label>
+      </labels>
+      <items>
+      	 <item idno="local" enabled="1" default="0">
+			  <labels>
+				<label locale="en_US" preferred="1">
+				  <name_singular>Local</name_singular>
+				  <name_plural>Local</name_plural>
+				</label>
+			  </labels>
+        </item>
+      </items>
+    </list>
     <list code="list_item_label_types" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -514,6 +534,23 @@
             <label locale="sv_SE" preferred="1">
               <name_singular>potentiella förvärv</name_singular>
               <name_plural>potentiella förvärv</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="object_deaccession_types" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Object deaccession types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="disposed" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>disposed</name_singular>
+              <name_plural>disposed</name_plural>
             </label>
           </labels>
         </item>
@@ -1029,6 +1066,17 @@
         </item>
       </items>
     </list>
+    <list code="object_lot_sources" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Object lot sources</name>
+        </label>
+        <label locale="en_CA">
+          <name>Object lot sources</name>
+        </label>
+      </labels>
+      <items/>
+    </list>
     <list code="object_lot_statuses" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -1243,6 +1291,17 @@
         </item>
       </items>
     </list>
+    <list code="loan_sources" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Loan sources</name>
+        </label>
+        <label locale="en_CA">
+          <name>Loan sources</name>
+        </label>
+      </labels>
+      <items/>
+    </list>
     <list code="movement_types" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -1280,6 +1339,17 @@
           </labels>
         </item>
       </items>
+    </list>
+    <list code="movement_sources" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Movement sources</name>
+        </label>
+        <label locale="en_CA">
+          <name>Movement sources</name>
+        </label>
+      </labels>
+      <items/>
     </list>
     <list code="entity_types" hierarchical="1" system="0" vocabulary="0">
       <labels>
@@ -1469,6 +1539,18 @@
             </label>
           </labels>
         </item>
+        <item idno="county" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>county</name_singular>
+              <name_plural>counties</name_plural>
+            </label>
+            <label locale="en_CA" preferred="1">
+              <name_singular>county</name_singular>
+              <name_plural>counties</name_plural>
+            </label>
+          </labels>
+        </item>
         <item idno="neighborhood" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -1532,16 +1614,12 @@
         <item idno="socken" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>socken</name_singular>
-              <name_plural>socknar</name_plural>
+              <name_singular>parrish</name_singular>
+              <name_plural>parrishes</name_plural>
             </label>
             <label locale="en_CA" preferred="1">
-              <name_singular>socken</name_singular>
-              <name_plural>socknar</name_plural>
-            </label>
-            <label locale="fr_FR" preferred="1">
-              <name_singular>socken</name_singular>
-              <name_plural>socknar</name_plural>
+              <name_singular>parrish</name_singular>
+              <name_plural>parrishes</name_plural>
             </label>
             <label locale="sv_SE" preferred="1">
               <name_singular>socken</name_singular>
@@ -1847,6 +1925,17 @@
       </labels>
       <items/>
     </list>
+    <list code="storage_location_sources" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Storage location sources</name>
+        </label>
+        <label locale="en_CA">
+          <name>Storage location sources</name>
+        </label>
+      </labels>
+      <items/>
+    </list>
     <list code="storage_location_label_types" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -1963,6 +2052,17 @@
         </item>
       </items>
     </list>
+    <list code="object_representation_sources" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Object representation sources</name>
+        </label>
+        <label locale="en_CA">
+          <name>Object representation sources</name>
+        </label>
+      </labels>
+      <items/>
+    </list>
     <list code="tour_types" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -2020,6 +2120,17 @@
 			  </labels>
         </item>
     </items>
+    </list>
+    <list code="tour_sources" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Tour sources</name>
+        </label>
+        <label locale="en_CA">
+          <name>Tour sources</name>
+        </label>
+      </labels>
+      <items/>
     </list>
     <list code="tour_stop_types" hierarchical="1" system="0" vocabulary="0">
       <labels>
@@ -2080,6 +2191,7 @@
     </items>
     </list>
   </lists>
+ 
   <elementSets>
     <metadataElement code="set_description" datatype="Text">
       <labels>
@@ -5205,6 +5317,35 @@
       </roles>
     </group>
   </groups>
+  <displays>
+    <display code="researcher_display" type="ca_objects" system="1">
+      <labels>
+        <label locale="en_US">
+          <name>Researcher Display</name>
+        </label>
+      </labels>
+      <bundlePlacements>
+        <placement code="idno">
+          <bundle>ca_objects.idno</bundle>
+        </placement>        
+        <placement code="preferred_labels">
+          <bundle>ca_objects.preferred_labels</bundle>
+        </placement>
+        <placement code="description">
+          <bundle>ca_objects.description</bundle>
+        </placement>
+        <placement code="date">
+          <bundle>ca_objects.date</bundle>
+        </placement>
+        <placement code="type">
+          <bundle>ca_objects.type_id</bundle>
+        </placement>        
+        <placement code="entities">
+          <bundle>ca_entities</bundle>
+        </placement>       
+      </bundlePlacements>
+    </display>   
+  </displays>
   
    <searchForms>
   	<searchForm code="ca_objects_adv_search" type="ca_objects" system="1">

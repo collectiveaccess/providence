@@ -22,7 +22,7 @@
 	print caFormTag($this->request, 'ShowStat', 'queryParametersForm', null, 'POST', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));												
 	print $vs_control_box = caFormControlBox(
 		caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Continue"), 'queryParametersForm').' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), $this->request->getModulePath(), $this->request->getController(), 'Index', array()), 
+		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', $this->request->getModulePath(), $this->request->getController(), 'Index', array()), 
 		'', 
 		''
 	);

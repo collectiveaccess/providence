@@ -374,7 +374,15 @@ class ca_bookmark_folders extends BaseModel {
 		$va_bookmark_ranks = $this->getBookmarkIDRanks($pn_folder_id, $pn_user_id, $pa_options);	// get current ranks
 		
 		$vn_i = 0;
-		$o_trans = new Transaction();
+		
+		$vb_web_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$o_trans = new Transaction($this->getDb());
+			$vb_web_set_transaction = true;
+		} else {
+			$o_trans = $this->getTransaction();
+		}
+		
 		$t_bookmark = new ca_bookmarks();
 		$t_bookmark->setTransaction($o_trans);
 		$t_bookmark->setMode(ACCESS_WRITE);
@@ -407,9 +415,9 @@ class ca_bookmark_folders extends BaseModel {
 		}
 		
 		if(sizeof($va_errors)) {
-			$o_trans->rollback();
+			if ($vb_web_set_transaction) { $o_trans->rollback(); }
 		} else {
-			$o_trans->commit();
+			if ($vb_web_set_transaction) { $o_trans->commit(); }
 		}
 		
 		return $va_errors;

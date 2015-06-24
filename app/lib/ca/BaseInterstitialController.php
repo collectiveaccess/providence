@@ -33,7 +33,8 @@
  /**
   *
   */
- 
+
+	require_once(__CA_APP_DIR__."/helpers/printHelpers.php");
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
  	require_once(__CA_MODELS_DIR__."/ca_editor_ui_bundle_placements.php");
  	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
@@ -89,18 +90,23 @@
  				}
  			}
  			
- 			$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, null, array('editorPref' => 'interstitial'));
- 			
- 			
+ 			$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $t_subject->getTypeID(), array('editorPref' => 'interstitial'));
 			
 			if (!$t_ui || !$t_ui->getPrimaryKey()) {
 				$this->notification->addNotification(_t('There is no configuration available for this editor. Check your system configuration and ensure there is at least one valid configuration for this type of editor.'), __NOTIFICATION_TYPE_ERROR__);
 				$va_field_values = array();
 			} else {
-				// Get default screen (this is all we show in quickadd, even if the UI has multiple screens)
+				// Get default screen (this is all we show in interstitial, even if the UI has multiple screens)
+				$va_options = array();
+				if($vn_type_id = $t_subject->getTypeID()){
+					$va_options['restrictToTypes'][$vn_type_id] = $t_subject->getRelationshipTypeCode();
+				}
+
 				$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 					array(),
-					array()
+					array(),
+					false,
+					$va_options
 				);
  			
 				$this->view->setVar('t_ui', $t_ui);
@@ -272,9 +278,9 @@
  		 */
  		protected function _initView($pa_options=null) {
  			// load required javascript
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('imageScroller');
- 			JavascriptLoadManager::register('ckeditor');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('imageScroller');
+ 			AssetLoadManager::register('ckeditor');
 
  			if (!($t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name))) { return null; }
  			

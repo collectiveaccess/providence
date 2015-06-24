@@ -64,6 +64,10 @@ class InmagicReader extends BaseXMLDataReader {
 	 */
 	protected $ops_xpath = '//inm:Recordset/inm:Record';
 	
+	/**
+	 * 
+	 */
+	protected $ops_root_tag = 'inm:Record';
 	
 	/**
 	 * Merge attributes of row-level tag into record as regular values?

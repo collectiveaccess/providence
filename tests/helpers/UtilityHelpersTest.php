@@ -29,7 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
-require_once('PHPUnit/Autoload.php');
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 
 class UtilityHelpersTest extends PHPUnit_Framework_TestCase {

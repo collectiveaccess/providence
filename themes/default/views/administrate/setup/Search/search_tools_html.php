@@ -15,36 +15,51 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
  */
- 
+
  	$t_subject = $this->getVar('t_subject');
 ?>
 <div id="searchToolsBox">
 	<div class="bg">
 <?php
+	if(is_array($va_export_mappings = $this->getVar('exporter_list')) && sizeof($va_export_mappings)>0) {
+?>
+		<div class="col">
+			<?php
+			print _t("Export results with mapping") . ":<br/>";
+			print caFormTag($this->request, 'ExportData', 'caExportWithMappingForm', 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+			print ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_subject->tableNum(), array('id' => 'caExporterList'),array('width' => '150px'));
+			print caHTMLHiddenInput('caIsExportFromSearchOrBrowseResult', array('value' => 1));
+			print caHTMLHiddenInput('find_type', array('value' => $this->getVar('find_type')));
+			print caFormSubmitLink($this->request, _t('Export'), 'button', 'caExportWithMappingForm') . " &rsaquo;";
+			?>
+			</form>
+		</div>
+<?php
+	}
 	if (is_array($va_forms = $this->getVar('print_forms')) && sizeof($va_forms)) {
 ?>
 		<div class="col">
 <?php
 			print _t("Print results as labels").":<br/>";
-			print caFormTag($this->request, 'printLabels', 'caPrintLabelsForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
-	
+			print caFormTag($this->request, 'printLabels', 'caPrintLabelsForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+
 			$va_options = array();
 			foreach($this->getVar('print_forms') as $vn_ => $va_form_info) {
 				$va_options[$va_form_info['name']] = $va_form_info['code'];
 			}
-			
+
 			uksort($va_options, 'strnatcasecmp');
-			
+
 			print caHTMLSelect('label_form', $va_options, array('class' => 'searchToolsSelect'), array('value' => $this->getVar('current_label_form')))."\n";
 			print caFormSubmitLink($this->request, _t('Print'), 'button', 'caPrintLabelsForm')." &rsaquo;";
 ?>
@@ -56,7 +71,7 @@
 	<div class="col">
 <?php
 		print _t("Download results as").":<br/>";
-		print caFormTag($this->request, 'export', 'caExportForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
+		print caFormTag($this->request, 'export', 'caExportForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
 
 		$va_options = array();
 		foreach($this->getVar('export_formats') as $vn_i => $va_format_info) {
@@ -69,7 +84,7 @@
 	</div>
 <?php
 	if (is_array($va_sets = $this->getVar('available_sets')) && sizeof($va_sets)) {
-?>	
+?>
 	<div class="col">
 <?php
 		print _t("Add checked to set").":<br/>";
@@ -80,7 +95,7 @@
 		foreach($va_sets as $vn_set_id => $va_set_info) {
 			$va_options[$va_set_info['name']] = $vn_set_id;
 		}
-		
+
 		print caHTMLSelect('set_id', $va_options, array('id' => 'caAddToSetID', 'class' => 'searchToolsSelect'), array('value' => null))."\n";
 ?>
 			<a href='#' onclick="caAddItemsToSet();" class="button"><?php print _t('Add'); ?> &rsaquo;</a>
@@ -89,7 +104,7 @@
 <?php
 	}
 ?>
-		<a href='#' id='hideTools' onclick='jQuery("#searchToolsBox").slideUp(250); jQuery("#showTools").slideDown(1); jQuery("input.addItemToSetControl").hide(); return false;'><img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/collapse.gif" width="11" height="11" border="0"></a>
+		<a href='#' id='hideTools' onclick='jQuery("#searchToolsBox").slideUp(250); jQuery("#showTools").slideDown(1); jQuery("input.addItemToSetControl").hide(); return false;'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a>
 		<div style='clear:both;height:1px;'>&nbsp;</div>
 	</div><!-- end bg -->
 </div><!-- end searchToolsBox -->
@@ -108,16 +123,16 @@
 		});
 		return selectedItemIDS;
 	}
-	
+
 	function caAddItemsToSet() {
 		jQuery.post(
-			'<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addToSet'); ?>', 
-			{ 
-				set_id: jQuery('#caAddToSetID').val(), 
+			'<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addToSet'); ?>',
+			{
+				set_id: jQuery('#caAddToSetID').val(),
 				item_ids: caGetSelectedItemIDsToAddToSet().join(';')
-			}, 
+			},
 			function(res) {
-				if (res['status'] === 'ok') { 
+				if (res['status'] === 'ok') {
 					var item_type_name;
 					if (res['num_items_added'] == 1) {
 						item_type_name = '<?php print addslashes($t_subject->getProperty('NAME_SINGULAR')); ?>';
@@ -128,15 +143,15 @@
 					msg = msg.replace('^num_items', res['num_items_added']);
 					msg = msg.replace('^item_type_name', item_type_name);
 					msg = msg.replace('^set_name', res['set_name']);
-					
-					if (res['num_items_already_in_set'] > 0) { 
+
+					if (res['num_items_already_in_set'] > 0) {
 						msg += '<?php print addslashes(_t('<br/>(^num_dupes were already in the set.)')); ?>';
 						msg = msg.replace('^num_dupes', res['num_items_already_in_set']);
 					}
-					
-					jQuery.jGrowl(msg, { header: '<?php print addslashes(_t('Add to set')); ?>' }); 
+
+					jQuery.jGrowl(msg, { header: '<?php print addslashes(_t('Add to set')); ?>' });
 					jQuery('#caFindResultsForm .addItemToSetControl').attr('checked', false);
-				} else { 
+				} else {
 					jQuery.jGrowl(res['error'], { header: '<?php print addslashes(_t('Add to set')); ?>' });
 				};
 			},

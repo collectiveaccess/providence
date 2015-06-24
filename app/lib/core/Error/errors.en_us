@@ -86,6 +86,9 @@
 901 = User already exists
 920 = Invalid preference
 921 = Invalid preference value
+922 = Invalid email address
+923 = Couldn't update user
+925 = Authentication adapter error
 930 = Couldn't add user role
 931 = Couldn't remove user role
 935 = Couldn't add user to group
@@ -195,7 +198,9 @@
 2520 = Can't set type id after item is created
 2550 = Item has been deleted
 2560 = Item is not correct type
+2562 = Item is not correct source
 2570 = Can't change access control list for this item
+2575 = Can't view log for this item
 2580 = You do not have access to this item
 2585 = You cannot quickadd
 2590 = Item does not have the minimum number of relationships specified
@@ -223,9 +228,6 @@
 3015 = Specified XML schema is not available
 3020 = Validation of file failed
 
-# --- Generic application plugin errors
-3000 = Access denied
-
 # --- Summary printing errors
 3100 = Could not generate PDF
 
@@ -244,3 +246,11 @@
 # --- Import/export errors
 3400 = Import of metadata is not allowed
 3410 = Import of media is not allowed
+3420 = Invalid exporter
+3430 = Exporting this type is not allowed
+3440 = Batch exporting is not allowed
+
+# --- Generic application plugin errors
+3500 = Access denied
+3510 = Plugin does not exist
+3520 = Command does not exist

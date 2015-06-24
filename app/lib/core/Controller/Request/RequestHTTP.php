@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2013 Whirl-i-Gig
+ * Copyright 2007-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,32 +44,24 @@ define("__AUTH_NO_ACCESS__", 2);
 
 class RequestHTTP extends Request {
 	# -------------------------------------------------------
-	private $ops_base_url;
 	private $opb_is_dispatched;
-	private $ops_path;
  		
-/**
- * Current session object. If you need to set session variables you may
- * do so using Session object method calls on the object referenced by this property
- *
- * @access public
- */	
-		public $session;
-/**
- * List of user auth handlers to evaluate upon a login. Each element of the list is a string
- * containing the name of the auth class. The class must be in a file of the same name with with
- * the extension "inc." The file must be in a location accessible by the php_include_path
- *
- * @access private
- */
-	private $userHandlers = array();
+	/**
+	 * Current session object. If you need to set session variables you may
+	 * do so using Session object method calls on the object referenced by this property
+	 *
+	 * @var Session
+	 * @access public
+	 */
+	public $session;
 	
-/**
- * User object for currently logged in user. Will be undefined if no user is logged in.
- * You may check to see if a user is logged in using the isLoggedIn() method.
- *
- * @access public
- */	
+	/**
+	 * User object for currently logged in user. Will be undefined if no user is logged in.
+	 * You may check to see if a user is logged in using the isLoggedIn() method.
+	 *
+	 * @var ca_users
+	 * @access public
+	 */
 	public $user;
 	
 	private $opo_response;
@@ -79,6 +71,8 @@ class RequestHTTP extends Request {
 	private $ops_path_info;
 	private $ops_request_method;
 	private $ops_raw_post_data = "";
+
+	private $opa_params;
 	
 /**
  * Parsed request info: controller path, controller and action
@@ -131,13 +125,27 @@ class RequestHTTP extends Request {
 				$pa_options["no_authentication"] = true;
 			}
 		}
-	
-		# get session
+
+		# figure out script name
+		$va_tmp = (isset($_SERVER['SCRIPT_NAME']) && $_SERVER['SCRIPT_NAME']) ? explode('/', $_SERVER['SCRIPT_NAME']) : array();
+		$this->ops_script_name = '';
+		while((!$this->ops_script_name) && (sizeof($va_tmp) > 0)) {
+			$this->ops_script_name = array_pop($va_tmp);
+		}
+
+		# create session
 		$vs_app_name = $this->config->get("app_name");
-		$this->session = new Session($vs_app_name, isset($pa_options["dont_create_new_session"]) ? $pa_options["dont_create_new_session"] : false);
-		
-		if (!isset($pa_options["dont_add_default_handlers"]) || !$pa_options["dont_add_default_handlers"]) {
-			$this->addUserHandler("ca_users");
+
+		// restore session from token for service requests
+		if(($this->ops_script_name=="service.php") && isset($_GET['authToken']) && (strlen($_GET['authToken']) > 0)) {
+			$vs_token = preg_replace("/[^a-f0-9]/", "", $_GET['authToken']); // sanitize
+
+			$this->session = Session::restoreFromServiceAuthToken($vs_token, $vs_app_name);
+		}
+
+		// plain old session
+		if(!$this->session) {
+			$this->session = new Session($vs_app_name, isset($pa_options["dont_create_new_session"]) ? $pa_options["dont_create_new_session"] : false);
 		}
 		
 		if (!isset($pa_options["no_authentication"]) || !$pa_options["no_authentication"]) {
@@ -158,16 +166,9 @@ class RequestHTTP extends Request {
 		$this->opa_params['URL'] = array();
 		
 		$this->ops_request_method = (isset($_SERVER["REQUEST_METHOD"]) ? $_SERVER["REQUEST_METHOD"] : null);
-
-		$va_tmp = (isset($_SERVER['SCRIPT_NAME']) && $_SERVER['SCRIPT_NAME']) ? explode('/', $_SERVER['SCRIPT_NAME']) : array();
-		
-		$this->ops_script_name = '';
-		while((!$this->ops_script_name) && (sizeof($va_tmp) > 0)) {
-			$this->ops_script_name = array_pop($va_tmp);
-		}
 		
 		/* allow authentication via URL for web service API like so: http://user:pw@example.com/ */
-		if($this->ops_script_name=="service.php"){
+		if($this->ops_script_name=="service.php") {
 			$this->ops_raw_post_data = file_get_contents("php://input");
 
 			if($_SERVER["PHP_AUTH_USER"] && $_SERVER["PHP_AUTH_PW"]){
@@ -285,8 +286,7 @@ class RequestHTTP extends Request {
 		if ($this->config->get('always_use_default_theme')) { $pb_use_default = true; }
 		if (!$pb_use_default && $this->isLoggedIn()) {
 			$vs_theme = $this->user->getPreference('ui_theme');
-		} 
-		if (!$vs_theme) {
+		} else {
 			$vs_theme = $this->config->get('theme');		// default theme
 		}
 		return $this->config->get('themes_url').'/'.$vs_theme;
@@ -296,11 +296,28 @@ class RequestHTTP extends Request {
 		if ($this->config->get('always_use_default_theme')) { $pb_use_default = true; }
 		if (!$pb_use_default && $this->isLoggedIn()) {
 			$vs_theme = $this->user->getPreference('ui_theme');
-		} 
-		if (!$vs_theme) {
+		} else {
 			$vs_theme = $this->config->get('theme');		// default theme
 		}
 		return $this->config->get('themes_directory').'/'.$vs_theme;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Returns url path to "default" theme. This is not (necessarily) the same as the configured theme for the installation
+	 * that is returned when calling getThemeUrlPath() with the $pb_use_default parameter set. The path returned
+	 * by this method is the url path to the base theme named "default"
+	 */
+	public function getDefaultThemeUrlPath() {
+		return $this->config->get('themes_url').'/default';
+	}
+	# -------------------------------------------------------
+	/**
+	 * Returns path to "default" theme. This is not (necessarily) the same as the configured theme for the installation
+	 * that is returned when calling getThemeDirectoryPath() with the $pb_use_default parameter set. The path returned
+	 * by this method is the path to the base theme named "default"
+	 */
+	public function getDefaultThemeDirectoryPath() {
+		return $this->config->get('themes_directory').'/default';
 	}
 	# -------------------------------------------------------
 	public function getServiceViewPath(){
@@ -383,22 +400,22 @@ class RequestHTTP extends Request {
 	public function getRequestUrl($pb_absolute=false) {
 		$va_url = array();
 		if ($vs_tmp = $this->getBaseUrlPath()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getScriptName()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getModulePath()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getController()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getAction()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		if ($vs_tmp = $this->getActionExtra()) {
-			$va_url[] = $vs_tmp;
+			$va_url[] = trim($vs_tmp, '/');
 		}
 		
 		//foreach($this->opa_params['PATH'] as $vs_param => $vs_value) {
@@ -567,9 +584,6 @@ class RequestHTTP extends Request {
  * Implements standard username/password and IP-address based user authentication. Applications
  * requiring completely custom authentication methods should override this method. However, most of
  * the time if you need custom authentication you can just create a custom user auth handler class ("username/password" authentication).
- * Your custom handler class must implement all of the methods
- * in the user, must be accessible via the php_include_path, and must be added to your Auth instance
- * using addUserHandler().
  *
  * One clean way to extend Auth is create a sub-class whose constructor calls addUserHandler() and delegates
  * everything else to Auth.
@@ -585,7 +599,7 @@ class RequestHTTP extends Request {
 		
 		foreach(array(
 			'no_headers', 'dont_redirect_to_login', 'dont_create_new_session', 'dont_redirect_to_welcome',
-			'user_name', 'password', 'options', 'noPublicUsers', 'dont_redirect', 'no_headers'
+			'user_name', 'password', 'options', 'noPublicUsers', 'dont_redirect', 'no_headers', 'redirect'
 		) as $vs_key) {
 			if (!isset($pa_options[$vs_key])) { $pa_options[$vs_key] = null; }
 		}
@@ -602,7 +616,6 @@ class RequestHTTP extends Request {
 			$pa_options["dont_redirect_to_welcome"] = true;
 		}
 		
-		
 		$vb_login_successful = false;
 		if (!$pa_options["user_name"]) {		// no incoming login
 			//
@@ -610,20 +623,13 @@ class RequestHTTP extends Request {
 			//
 			if ($vn_user_id = $this->session->getVar($vs_app_name."_user_id")) {				// does session have a user attached to it?
 				// user is already logged in
-				$vs_user_class_name = preg_replace("/[^A-Za-z0-9\-\_]+/", "", $this->session->getVar($vs_app_name."_user_classname"));
 
-				if(in_array($vs_user_class_name, $this->userHandlers)) {						// make sure auth class is valid
-					if (caFileIsIncludable($vs_user_class_name.".php")) {
-						require_once($vs_user_class_name.".php"); 
-						$va_options = $pa_options["options"];
-						$this->user = new $vs_user_class_name($vn_user_id, $va_options);		// add user object
-				
-						if ((!$this->user->isActive()) || ($this->user->numErrors()) || ($pa_options['noPublicUsers'] && $this->user->isPublicUser())) {			// error means user_id in session is invalid
-							$vb_login_successful = false;
-						} else {
-							$vb_login_successful = true;
-						}
-					}
+				$this->user = new ca_users($vn_user_id);		// add user object
+
+				if ((!$this->user->isActive()) || ($this->user->numErrors()) || ($pa_options['noPublicUsers'] && $this->user->isPublicUser())) {			// error means user_id in session is invalid
+					$vb_login_successful = false;
+				} else {
+					$vb_login_successful = true;
 				}
 				
 				if ($vb_login_successful) {
@@ -637,31 +643,30 @@ class RequestHTTP extends Request {
 			}
 			
 			if (!$vb_login_successful) {
-				foreach($this->userHandlers as $vs_user_class_name) {
-					$vs_user_class_name = preg_replace("/[^A-Za-z0-9\-\_]+/", "", $vs_user_class_name);
-					
-					if (!caFileIsIncludable($vs_user_class_name.".php")) { continue; }
-					
-					require_once($vs_user_class_name.".php");
-					$this->user = new $vs_user_class_name();		// add user object
-					
-					$vs_tmp1 = $vs_tmp2 = null;
-					if (($vn_auth_type = $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"]))) {	# error means user_id in session is invalid
-						if (($pa_options['noPublicUsers'] && $this->user->isPublicUser()) || !$this->user->isActive()) {
-							$vb_login_successful = false;
-							break;
-						}
-						
+				$this->user = new ca_users();		// add user object
+
+				$vs_tmp1 = $vs_tmp2 = null;
+				if (($vn_auth_type = $this->user->authenticate($vs_tmp1, $vs_tmp2, $pa_options["options"]))) {	# error means user_id in session is invalid
+					if (($pa_options['noPublicUsers'] && $this->user->isPublicUser()) || !$this->user->isActive()) {
+						$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
+						$vb_login_successful = false;
+					} else {
 						$vb_login_successful = true;
 						$vn_user_id = $this->user->getUserID();
-						break;
 					}
 				}
+
 				if (!$vb_login_successful) {																	// throw user to login screen
 					if (!$pa_options["dont_redirect_to_login"]) {
-						//header("Location: ".$this->getBasePath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_path"));
-						$this->opo_response->addHeader("Location", $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_path"));
-						//exit;
+						$o_event_log->log(array("CODE" => "LOGF", "SOURCE" => "Auth", "MESSAGE" => "Failed login with redirect for user id '".$vn_user_id."' (".$_SERVER['REQUEST_URI']."); IP=".$_SERVER["REMOTE_ADDR"]."; user agent='".$_SERVER["HTTP_USER_AGENT"]."'"));
+						$vs_redirect = $this->getRequestUrl(true);
+
+						if (strpos($vs_redirect, $this->config->get("auth_login_path") !== -1)) {
+							$vs_redirect = '';
+						} else {
+							$vs_redirect = '?redirect=' . urlencode($vs_redirect);
+						}
+						$this->opo_response->addHeader("Location", $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_path") . $vs_redirect);
 					}
 					return false;
 				}
@@ -673,21 +678,14 @@ class RequestHTTP extends Request {
 		//
 		if ($pa_options["user_name"]) {
 			$vb_login_successful = false;
-			foreach($this->userHandlers as $vs_user_class_name) {
-				$vs_user_class_name = preg_replace("/[^A-Za-z0-9\-\_]+/", "", $vs_user_class_name);
-				
-				if (!caFileIsIncludable($vs_user_class_name.".php")) { continue; }
-				require_once($vs_user_class_name.".php");
-				$this->user = new $vs_user_class_name();
-					
-				if (($vn_auth_type = $this->user->authenticate($pa_options["user_name"], $pa_options["password"], $pa_options["options"]))) {	# error means user_id in session is invalid
-					if (($pa_options['noPublicUsers'] && $this->user->isPublicUser()) || !$this->user->isActive()) {
-						$vb_login_successful = false;
-						break;
-					}
+			$this->user = new ca_users();
+
+			if (($vn_auth_type = $this->user->authenticate($pa_options["user_name"], $pa_options["password"], $pa_options["options"]))) {	# error means user_id in session is invalid
+				if (($pa_options['noPublicUsers'] && $this->user->isPublicUser()) || !$this->user->isActive()) {
+					$vb_login_successful = false;
+				} else {
 					$vb_login_successful = true;
 					$vn_user_id = $this->user->getUserID();
-					break;
 				}
 			}
 		}
@@ -711,7 +709,6 @@ class RequestHTTP extends Request {
 		
 			$this->session->setVar($vs_app_name."_user_auth_type",$vn_auth_type);				// type of auth used: 1=username/password; 2=ip-base auth
 			$this->session->setVar($vs_app_name."_user_id",$vn_user_id);						// auth succeeded; set user_id in session
-			$this->session->setVar($vs_app_name."_user_classname",$this->user->getClassName());	// auth succeeded; set user_id in session
 			$this->session->setVar($vs_app_name."_logintime",time());							// also set login time (unix timestamp) in session
 			$this->session->setVar($vs_app_name."_lastping",time());
 			
@@ -724,7 +721,9 @@ class RequestHTTP extends Request {
 			
 			//$this->user->close(); ** will be called externally **
 			$AUTH_CURRENT_USER_ID = $vn_user_id;
-			if (!$pa_options["dont_redirect_to_welcome"]) {
+			if ($pa_options['redirect']) {
+				$this->opo_response->addHeader("Location", $pa_options['redirect']);
+			} elseif (!$pa_options["dont_redirect_to_welcome"]) {
 				//header("Location: ".$this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_welcome_path"));				// redirect to "welcome" page
 				$this->opo_response->addHeader("Location", $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_welcome_path"));
 				//exit;
@@ -751,32 +750,6 @@ class RequestHTTP extends Request {
 			//$this->session->deleteSession();
 			$this->user = null;
 		}
-	}
-	# ----------------------------------------
-/**
- * 
- * Adds the specified class to the list of handlers to attempt username/password based authentication with. The handlers are executed
- * in the order in which they were added. The specified class must be in a file with the same name and "inc" as its
- * extension. The .php file must be in a location listed in the php_include_path.
- *
- * Note that the class must implement all of the methods in the user auth handler interface.
- *
- * @access public 
- * @param $ps_classname string name of handler class name
- */	
-	public function addUserHandler($ps_classname) {
-		$this->userHandlers[] = $ps_classname;
-	}
-	# ----------------------------------------
-/**
- * 
- * Removes all user auth handlers from the Auth instance. You must add at least one handler before attempting to 
- * authenticate a user.
- *
- * @access public 
- */	
-	public function clearUserHandlerList() {
-		$this->userHandlers = array();
 	}
 	# ----------------------------------------
 	/**
@@ -810,4 +783,3 @@ class RequestHTTP extends Request {
 	}
 	# ----------------------------------------
  }
- ?>

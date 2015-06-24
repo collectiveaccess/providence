@@ -29,18 +29,28 @@
  * 
  * ----------------------------------------------------------------------
  */
-	require_once('PHPUnit/Autoload.php');
-	require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
-	
-	class DatamodelTest extends PHPUnit_Framework_TestCase {
-		public function testInstantiateAllModels() {
-			$o_dm = Datamodel::load();
-			
-			$va_tables = $o_dm->getTableNames();
-			
-			foreach($va_tables as $vs_table) {
-				$this->assertInstanceOf($vs_table, $o_dm->getInstanceByTableName($vs_table));
-			}
+require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
+
+class DatamodelTest extends PHPUnit_Framework_TestCase {
+	public function testInstantiateAllModels() {
+		$o_dm = Datamodel::load();
+
+		$va_tables = $o_dm->getTableNames();
+
+		foreach($va_tables as $vs_table) {
+			// we do multiple calls to get some cache hits
+			$this->assertInstanceOf($vs_table, $o_dm->getInstanceByTableName($vs_table));
+			$this->assertInstanceOf($vs_table, $o_dm->getInstanceByTableName($vs_table, true));
+
+			$vn_table_num = $o_dm->getTableNum($vs_table);
+
+			$this->assertInstanceOf($vs_table, $o_dm->getInstanceByTableNum($vn_table_num));
+			$this->assertInstanceOf($vs_table, $o_dm->getInstanceByTableNum($vn_table_num, true));
+
+			$this->assertInstanceOf($vs_table, $o_dm->getInstance($vs_table));
+			$this->assertInstanceOf($vs_table, $o_dm->getInstance($vs_table, true));
+			$this->assertInstanceOf($vs_table, $o_dm->getInstance($vn_table_num));
+			$this->assertInstanceOf($vs_table, $o_dm->getInstance($vn_table_num, true));
 		}
 	}
-?>
+}

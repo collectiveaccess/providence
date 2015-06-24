@@ -37,7 +37,7 @@
 	if ($vb_can_edit) {
 		print $vs_control_box = caFormControlBox(
 			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'caAccessControlList').' '.
-			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), $this->request->getModulePath(), $this->request->getController(), 'Access/'.$this->request->getActionExtra(), array($t_instance->primaryKey() => $t_instance->getPrimaryKey())),
+			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', $this->request->getModulePath(), $this->request->getController(), 'Access/'.$this->request->getActionExtra(), array($t_instance->primaryKey() => $t_instance->getPrimaryKey())),
 			'',
 			''
 		);
@@ -107,10 +107,10 @@
 	</div>
 <?php
 		if ($t_instance->hasField('acl_inherit_from_ca_collections')) {
-			print $t_instance->getBundleFormHTML('acl_inherit_from_ca_collections', 'acl_inherit_from_ca_collections', array('forACLAccessScreen' => true), array('request' => $this->request));
+			print $t_instance->getBundleFormHTML('acl_inherit_from_ca_collections', '', array('forACLAccessScreen' => true), array('request' => $this->request));
 		}
 		if ($t_instance->hasField('acl_inherit_from_parent')) {
-			print $t_instance->getBundleFormHTML('acl_inherit_from_parent', 'acl_inherit_from_parent', array('forACLAccessScreen' => true), array('request' => $this->request));
+			print $t_instance->getBundleFormHTML('acl_inherit_from_parent', '', array('forACLAccessScreen' => true), array('request' => $this->request));
 		}
 ?>
 	</form>	

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,7 +33,8 @@
   /**
   *
   */
-  
+  	define("__CA_ATTRIBUTE_VALUE_TAXONOMY__", 19);
+  	
  	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
@@ -82,6 +83,22 @@
 			'label' => _t('Can be used in display'),
 			'description' => _t('Check this option if this attribute value can be used for display in search results. (The default is to be.)')
 		),
+		'canMakePDF' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output?'),
+			'description' => _t('Check this option if this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
+		'canMakePDFForValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output for individual values?'),
+			'description' => _t('Check this option if individual values for this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
 		'displayTemplate' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -94,7 +111,7 @@
 		'displayDelimiter' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
-			'default' => ',',
+			'default' => '; ',
 			'width' => 10, 'height' => 1,
 			'label' => _t('Value delimiter'),
 			'validForRootOnly' => 1,
@@ -129,7 +146,6 @@
 		}
  		# ------------------------------------------------------------------
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
-			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('uBioKeyCode'));
  			$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
  			$va_return = "";
 
@@ -153,9 +169,21 @@
 			return $va_return;
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 * Return HTML form element for editing.
+ 		 *
+ 		 * @param array $pa_element_info An array of information about the metadata element being edited
+ 		 * @param array $pa_options array Options include:
+ 		 *			class = the CSS class to apply to all visible form elements [Default=lookupBg]
+ 		 *			width = the width of the form element [Default=field width defined in metadata element definition]
+ 		 *			height = the height of the form element [Default=field height defined in metadata element definition]
+ 		 *
+ 		 * @return string
+ 		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
  			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight'));
-
+ 			$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : 'lookupBg');
+ 			
  			$vs_element = '<div id="taxonomy_'.$pa_element_info['element_id'].'_input{n}">'.
  				caHTMLTextInput(
  					'{fieldNamePrefix}'.$pa_element_info['element_id'].'_autocomplete{n}',
@@ -165,7 +193,7 @@
 						'value' => '{{'.$pa_element_info['element_id'].'}}',
 						'maxlength' => 512,
 						'id' => "taxonomy_".$pa_element_info['element_id']."_autocomplete{n}",
-						'class' => 'lookupBg'
+						'class' => $vs_class
 					)
 				).
 				caHTMLHiddenInput(
@@ -213,6 +241,15 @@
 
  			return $_ca_attribute_settings['TaxonomyAttributeValue'];
  		}
+ 		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for taxonomy attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_TAXONOMY__;
+		}
  		# ------------------------------------------------------------------
 	}
  ?>

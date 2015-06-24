@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -55,11 +55,11 @@ class ObjectSearchResult extends BaseSearchResult {
 	 *
 	 * @param IWLPlugSearchEngineResult $po_engine_result
 	 * @param array $pa_tables
-	 * @param array $pa_options Options are:
+	 * @param array $pa_options Options are those taken by SearchResult::init():
 	 *		filterNonPrimaryRepresentations = If set only primary representations are returned. This can improve performance somewhat in most cases. Default is true.
 	 */
 	public function init($po_engine_result, $pa_tables, $pa_options=null) {
-		parent::init($po_engine_result, $pa_tables);
+		parent::init($po_engine_result, $pa_tables, $pa_options);
 		
 		if (!isset($pa_options['filterNonPrimaryRepresentations'])) { $pa_options['filterNonPrimaryRepresentations'] = true; }
 		if ($pa_options['filterNonPrimaryRepresentations']) {
@@ -109,6 +109,13 @@ class ObjectSearchResult extends BaseSearchResult {
 			}
 		}
 		return parent::get($ps_field, $pa_options);
+	}
+	# -------------------------------------
+	/**
+	 *
+	 */
+	public function getTagForPrimaryRepresentation($ps_version, $pa_options=null) {
+		return $this->getMediaTag('ca_object_representations.media', $ps_version, $pa_options);
 	}
 	# -------------------------------------
 	/**
@@ -256,4 +263,3 @@ class ObjectSearchResult extends BaseSearchResult {
 	 }
 	 # -------------------------------------
 }
-?>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2003-2008 Whirl-i-Gig
+ * Copyright 2003-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,11 +38,12 @@ require_once(__CA_LIB_DIR__."/core/Configuration.php");
 require_once(__CA_LIB_DIR__."/core/Db.php");
 
 class Transaction {
-  	var $o_db; # database connection
+	# ----------------------------------------
+  	private $o_db; # database connection
   	
 	# ----------------------------------------
-	public function Transaction($po_db=null) {
-		$this->o_db = ($po_db) ? $po_db : new Db();
+	public function __construct($po_db=null) {
+		$this->o_db = ($po_db) ? $po_db : new Db(null, array('uniqueConnection' => true));
 		$this->o_db->dieOnError(false);
 		$this->start();
 	}

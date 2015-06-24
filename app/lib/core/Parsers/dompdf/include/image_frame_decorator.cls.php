@@ -1,11 +1,10 @@
 <?php
 /**
  * @package dompdf
- * @link    http://www.dompdf.com/
+ * @link    http://dompdf.github.com/
  * @author  Benj Carson <benjcarson@digitaljunkies.ca>
- * @author  Fabien Ménager <fabien.menager@gmail.com>
+ * @author  Fabien MÃ©nager <fabien.menager@gmail.com>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id: image_frame_decorator.cls.php 448 2011-11-13 13:00:03Z fabien.menager $
  */
 
 /**
@@ -38,18 +37,19 @@ class Image_Frame_Decorator extends Frame_Decorator {
    * @param DOMPDF $dompdf the document's dompdf object (required to resolve relative & remote urls)
    */
   function __construct(Frame $frame, DOMPDF $dompdf) {
-    global $_dompdf_warnings;
-    
     parent::__construct($frame, $dompdf);
     $url = $frame->get_node()->getAttribute("src");
-      
-    //debugpng
-    if (DEBUGPNG) print '[__construct '.$url.']';
 
-    list($this->_image_url, $type, $this->_image_msg) = Image_Cache::resolve_url($url,
-                                                                          $dompdf->get_protocol(),
-                                                                          $dompdf->get_host(),
-                                                                          $dompdf->get_base_path());
+    $debug_png = $dompdf->get_option("debug_png");
+    if ($debug_png) print '[__construct '.$url.']';
+
+    list($this->_image_url, /*$type*/, $this->_image_msg) = Image_Cache::resolve_url(
+      $url,
+      $dompdf->get_protocol(),
+      $dompdf->get_host(),
+      $dompdf->get_base_path(),
+      $dompdf
+    );
 
     if ( Image_Cache::is_broken($this->_image_url) &&
          $alt = $frame->get_node()->getAttribute("alt") ) {

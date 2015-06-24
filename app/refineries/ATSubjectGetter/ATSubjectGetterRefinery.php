@@ -140,9 +140,9 @@
 			
 				// Set item_type
 				if ($va_item_type) {
-					if (!($va_val['_type'] = BaseRefinery::parsePlaceholder($va_item_type, $pa_source_data, $pa_item, $vs_delimiter, $vn_c))) {
+					if (!($va_val['_type'] = BaseRefinery::parsePlaceholder($va_item_type, $pa_source_data, $pa_item, $vn_c))) {
 						if($vs_type_opt = $pa_item['settings']['ATSubjectGetter_itemTypeDefault']) {
-							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $vn_c);
 						}
 					}
 				}
@@ -156,7 +156,7 @@
 					
 					if (!preg_match("!^([A-Za-z0-9 ]+)!", $va_target['relationshipType'], $va_matches) || !($va_val['_relationship_type'] = $va_matches[1])) {
 						if ($vs_rel_type_opt = $pa_item['settings']['ATSubjectGetter_relationshipTypeDefault']) {
-							$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+							$va_val['_relationship_type'] = BaseRefinery::parsePlaceholder($vs_rel_type_opt, $pa_source_data, $pa_item, $vn_c);
 						}
 					}	
 					
@@ -170,7 +170,7 @@
 						foreach($pa_item['settings']['ATSubjectGetter_attributes'] as $vs_element_code => $va_attrs) {
 							if(is_array($va_attrs)) {
 								foreach($va_attrs as $vs_k => $vs_v) {
-									$va_attr_vals[$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $vs_delimiter, $vn_c);
+									$va_attr_vals[$vs_element_code][$vs_k] = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $vn_c);
 								}
 							}
 						}

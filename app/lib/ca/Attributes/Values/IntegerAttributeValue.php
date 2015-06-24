@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2011 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,6 +33,7 @@
  /**
   *
   */
+ 	define("__CA_ATTRIBUTE_VALUE_INTEGER__", 11);
  	
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
  	require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
@@ -121,6 +122,14 @@
 			'label' => _t('Must not be blank'),
 			'description' => _t('Check this option if this attribute value must be set to some value - it must not be blank in other words. (The default is not to be.)')
 		),
+		'mustBeUnique' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Must be unique'),
+			'description' => _t('Check this option to enforce uniqueness across all values for this attribute.')
+		),
 		'canBeUsedInSearchForm' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
@@ -137,6 +146,22 @@
 			'label' => _t('Can be used in display'),
 			'description' => _t('Check this option if this attribute value can be used for display in search results. (The default is to be.)')
 		),
+		'canMakePDF' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output?'),
+			'description' => _t('Check this option if this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
+		'canMakePDFForValue' => array(
+			'formatType' => FT_NUMBER,
+			'displayType' => DT_CHECKBOXES,
+			'default' => 0,
+			'width' => 1, 'height' => 1,
+			'label' => _t('Allow PDF output for individual values?'),
+			'description' => _t('Check this option if individual values for this metadata element can be output as a printable PDF. (The default is not to be.)')
+		),
 		'displayTemplate' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
@@ -149,7 +174,7 @@
 		'displayDelimiter' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
-			'default' => ',',
+			'default' => '; ',
 			'width' => 10, 'height' => 1,
 			'label' => _t('Value delimiter'),
 			'validForRootOnly' => 1,
@@ -179,7 +204,7 @@
  			$ps_value = trim($ps_value);
  			$va_settings = $this->getSettingValuesFromElementArray(
  				$pa_element_info, 
- 				array('minChars', 'maxChars', 'minValue', 'maxValue', 'regex', 'mustNotBeBlank')
+ 				array('minChars', 'maxChars', 'minValue', 'maxValue', 'regex', 'mustNotBeBlank', 'mustBeUnique')
  			);
  			$vn_strlen = unicode_strlen($ps_value);
  			if ($va_settings['minChars'] && ($vn_strlen < $va_settings['minChars'])) {
@@ -232,10 +257,25 @@
 				return false;
  			}
 			
-			if(!(( preg_match( '/^\d*$/'  , $ps_value)))){
+			if(!(( preg_match( '/[^\d\-]*$/'  , $ps_value)))){
 				//this is not an integer, it contains symbols other than [0-9]
 				$this->postError(1970, _t('%1 is not an integer value', $pa_element_info['displayLabel']), 'IntegerAttributeValue->parseValue()');
 				return false;
+			}
+
+			if(isset($va_settings['mustBeUnique']) && (bool)$va_settings['mustBeUnique']) {
+				if(isset($pa_options['transaction']) && ($o_trans = $pa_options['transaction'])) {
+					$o_db = $o_trans->getDb();
+				} else {
+					$o_db = new Db();	
+				}
+
+				$qr_values = $o_db->query('SELECT value_id FROM ca_attribute_values WHERE element_id=? AND value_integer1=?', $pa_element_info['element_id'], $pn_value);
+
+				if($qr_values->numRows()>0) {
+					$this->postError(1970, _t('%1 must be unique across all values. The value you entered already exists.', $pa_element_info['displayLabel']), 'IntegerAttributeValue->parseValue()');
+					return false;
+				}
 			}
 			
  			return array(
@@ -244,8 +284,20 @@
  			);
  		}
  		# ------------------------------------------------------------------
+ 		/**
+ 		 * Return HTML form element for editing.
+ 		 *
+ 		 * @param array $pa_element_info An array of information about the metadata element being edited
+ 		 * @param array $pa_options array Options include:
+ 		 *			class = the CSS class to apply to all visible form elements [Default=lookupBg]
+ 		 *			width = the width of the form element [Default=field width defined in metadata element definition]
+ 		 *			height = the height of the form element [Default=field height defined in metadata element definition]
+ 		 *
+ 		 * @return string
+ 		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
  			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'minChars', 'maxChars'));
+ 			$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '');
  			
  			return caHTMLTextInput(
  				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
@@ -254,7 +306,8 @@
  					'height' => (isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight'], 
  					'value' => '{{'.$pa_element_info['element_id'].'}}', 
  					'maxlength' => $va_settings['maxChars'],
- 					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}'
+ 					'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
+ 					'class' => $vs_class
  				)
  			);
  		}
@@ -272,6 +325,15 @@
 		 */
 		public function sortField() {
 			return 'value_integer1';
+		}
+ 		# ------------------------------------------------------------------
+		/**
+		 * Returns constant for integer attribute value
+		 * 
+		 * @return int Attribute value type code
+		 */
+		public function getType() {
+			return __CA_ATTRIBUTE_VALUE_INTEGER__;
 		}
  		# ------------------------------------------------------------------
 	}

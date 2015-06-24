@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -58,8 +58,8 @@
 				); 
 ?>
 			</form>
-			<div id="browse">
-				<div class='subTitle' style='background-color: #eeeeee; padding:5px 0px 5px 5px;'><?php print _t("Hierarchy"); ?></div>
+			<div id="browse" class="hierarchyWindow">
+				<div class='subTitle'><?php print _t("Hierarchy"); ?></div>
 
 				<!--- BEGIN HIERARCHY BROWSER TYPE MENU --->
 				<div id='browseTypeMenu'>
@@ -71,7 +71,7 @@
 			if($vs_table == 'ca_list_items') {
 ?>
 						<div style="float: right;">
-							<?php print caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_ADD__, '').' '._t('Add new list'), 'list-link', 'administrate/setup/list_editor', 'ListEditor', 'Edit', array('list_id' => 0)); ?>
+							<?php print caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_ADD__).' '._t('Add new list'), 'list-link', 'administrate/setup/list_editor', 'ListEditor', 'Edit', array('list_id' => 0)); ?>
 						</div>
 <?php	
 			}
@@ -88,7 +88,7 @@
 			if($vs_table == 'ca_list_items') {
 ?>
 						<div style="float: right;">
-							<?php print caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_ADD__, '').' '._t('Add new list'), 'list-link', 'administrate/setup/list_editor', 'ListEditor', 'Edit', array('list_id' => 0)); ?>
+							<?php print caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_ADD__).' '._t('Add new list'), 'list-link', 'administrate/setup/list_editor', 'ListEditor', 'Edit', array('list_id' => 0)); ?>
 						</div>
 <?php	
 			}
@@ -142,7 +142,10 @@
 						initDataUrl: '<?php print $va_lookup_urls['ancestorList']; ?>',
 						
 						editUrl: '<?php print caEditorUrl($this->request, $vs_table); ?>',
-						editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/arrow_grey_right.gif" border="0" title="Edit">',
+						editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__);?>",
+						disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
+						
+						disabledItems: 'full',
 						
 						initItemID: '<?php print $this->getVar('browse_last_id'); ?>',
 						indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',

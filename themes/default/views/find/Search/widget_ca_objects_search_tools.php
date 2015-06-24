@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2012 Whirl-i-Gig
+ * Copyright 2010-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,8 +25,11 @@
  *
  * ----------------------------------------------------------------------
  */
+ 
+ 	$vo_result_context 			= $this->getVar('result_context');
+ 	$vo_result					= $this->getVar('result');
 ?>
-<h3>
+<h3 class='searchType'>
 	<?php print _t("Search %1", $this->getVar('mode_type_plural'))."<br/>\n"; ?>
 </h3>
 <?php
@@ -35,7 +38,7 @@
 	if (is_array($va_search_history) && sizeof($va_search_history) > 0) {
 ?>
 
-<h3 class="tools"><?php print _t("History"); ?>:
+<h3 class='searchHistory'><?php print _t("History"); ?>:
 	<div>
 <?php
 		print caFormTag($this->request, 'Index', 'caSearchHistoryForm', 'find/SearchObjects', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
@@ -58,7 +61,7 @@
 
 	$va_saved_searches = $this->request->user->getSavedSearches($this->getVar('table_name'), $this->getVar('find_type'));
 ?>
-<h3 class="tools"><?php print _t("Saved searches"); ?>:
+<h3 class='searchSaved'><?php print _t("Saved searches"); ?>:
 	<div>
 <?php
 		print caFormTag($this->request, 'doSavedSearch', 'caSavedSearchesForm', $this->request->getModulePath().'/'.$this->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
@@ -85,7 +88,7 @@
 <?php
 if(sizeof($this->getVar("available_sets")) > 0){
 ?>
-	<h3 class="tools"><?php print _t("Search by set"); ?>:
+	<h3 class='searchTools'><?php print _t("Search by set"); ?>:
 	<div>
 <?php
 		print caFormTag($this->request, 'Index', 'caSearchSetsForm', 'find/SearchObjects', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
@@ -103,4 +106,26 @@ if(sizeof($this->getVar("available_sets")) > 0){
 	</h3>
 <?php
 }
+	if($vo_result) {
+		if ($vs_viz_list = Visualizer::getAvailableVisualizationsAsHTMLFormElement($vo_result->tableName(), 'viz', array('id' => 'caSearchVizOpts'), array('resultContext' => $vo_result_context, 'data' => $vo_result, 'restrictToTypes' => array($vo_result_context->getTypeRestriction($vb_type_restriction_has_changed))))) {
+?>
+			<div class='visualize'>
+				<div id='vizLink'>
+					<?php print "<a href='#'  onclick='jQuery(\"#caSearchVizOptsContainer\").slideToggle(250); jQuery(\"#vizLink\").hide();return false;'>".caNavIcon($this->request, __CA_NAV_BUTTON_VISUALIZE__)." "._t("Visualize")."</a>"; ?>
+					<div class='clear:both;'></div>
+				</div>
+				<div id='caSearchVizOptsContainer' style="display:none;">
+					<?php print $vs_viz_list; ?>
+					<?php print "<a href='#'  onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Viz', array())."/viz/\" + jQuery(\"#caSearchVizOpts\").val()); return false;'>"._t("Go")."</a>"; ?>
+					
+					<a href='#' id='hideViz' onclick='$("#caSearchVizOptsContainer").slideUp(250); $("#vizLink").slideDown(250); '><?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a>
+					<div class='clear:both;width:100%;'></div>
+				</div>
+
+			</div>
+<?php
+		}
+		
+		print $this->render('Search/search_sets_html.php');
+	}
 ?>

@@ -173,15 +173,6 @@ class ca_locales extends BaseModel {
 
 	protected $FIELDS;
 	
-	
-	public static $s_locale_code_to_id = array();
-	public static $s_locale_id_to_code = array();
-	public static $s_locale_list_cache = array();
-	public static $s_locale_count_cache = array();
-	public static $s_locale_id_to_name = array();
-	
-	public static $s_default_locale_id = null;
-	
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -197,11 +188,50 @@ class ca_locales extends BaseModel {
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
+	public function insert($pa_options=null) {
+		$vm_rc = parent::insert($pa_options);
+		$this->flushLocaleListCache();
+		return $vm_rc;
+	}
+	# ------------------------------------------------------
+	public function update($pa_options=null) {
+		$vm_rc = parent::update($pa_options);
+		$this->flushLocaleListCache();
+		return $vm_rc;
+	}
+	# ------------------------------------------------------
+	public function delete($pb_delete_related = false, $pa_options = NULL, $pa_fields = NULL, $pa_table_list = NULL) {
+		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
+		$this->flushLocaleListCache();
+		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Helper to flush the specific possible cache keys for the getLocaleList function below. We don't want
+	 * to flush the whole cache because that would nuke the session too. After the initial setup, locales change
+	 * very, very rarely anyway.
+	 */
+	private function flushLocaleListCache() {
+		foreach($this->getFields() as $vs_field) {
+			foreach(array('asc', 'desc') as $vs_sort_direction) {
+				CompositeCache::delete("{$vs_field}/{$vs_sort_direction}/0/0/0", 'LocaleList');
+				CompositeCache::delete("{$vs_field}/{$vs_sort_direction}/0/0/1", 'LocaleList');
+				CompositeCache::delete("{$vs_field}/{$vs_sort_direction}/0/1/0", 'LocaleList');
+				CompositeCache::delete("{$vs_field}/{$vs_sort_direction}/0/1/1", 'LocaleList');
+				CompositeCache::delete("{$vs_field}/{$vs_sort_direction}/1/0/0", 'LocaleList');
+				CompositeCache::delete("{$vs_field}/{$vs_sort_direction}/1/0/1", 'LocaleList');
+				CompositeCache::delete("{$vs_field}/{$vs_sort_direction}/1/1/1", 'LocaleList');
+			}
+		}
+	}
+	# ------------------------------------------------------
 	/**
 	 *
 	 */
 	static public function getDefaultCataloguingLocaleID() {
-		if (ca_locales::$s_default_locale_id) { return ca_locales::$s_default_locale_id; }
+		if(MemoryCache::contains('default_locale_id')) {
+			return MemoryCache::fetch('default_locale_id');
+		}
 		global $g_ui_locale_id;
 		
 		$va_locale_list = ca_locales::getLocaleList(array('available_for_cataloguing_only' => true));
@@ -213,8 +243,9 @@ class ca_locales extends BaseModel {
 			$va_tmp = array_keys($va_locale_list);
 			$vn_default_id =  array_shift($va_tmp);
 		}
-		
-		return ca_locales::$s_default_locale_id = $vn_default_id;
+
+		MemoryCache::save('default_locale_id', $vn_default_id);
+		return $vn_default_id;
 	}
 	# ------------------------------------------------------
 	/**
@@ -234,8 +265,23 @@ class ca_locales extends BaseModel {
 		}
 	
 		$vs_cache_key = $vs_sort_field.'/'.$vs_sort_direction.'/'.($vb_index_by_code ? 1 : 0).'/'.($vb_return_display_values ? 1 : 0).'/'.($vb_available_for_cataloguing_only ? 1 : 0);
-		if(isset(ca_locales::$s_locale_list_cache[$vs_cache_key])) {
-			return ca_locales::$s_locale_list_cache[$vs_cache_key];
+		if(CompositeCache::contains($vs_cache_key, 'LocaleList')) {
+			$va_locales = CompositeCache::fetch($vs_cache_key, 'LocaleList');
+
+			// Check if memory cache has been populated with necessary data yet.
+			// This might not be the case if $va_locales comes from disk and the SQL code below was not executed.
+			// Unfortunately the other helpers like loadLocaleByCode() rely on this side-effect of getLocaleList().
+			if(MemoryCache::itemCountForNamespace('LocaleCodeToId') == 0) {
+				foreach($va_locales as $va_locale) {
+					if ($vb_available_for_cataloguing_only && $va_locale['dont_use_for_cataloguing']) { continue; }
+
+					MemoryCache::save($va_locale['language'].'_'.$va_locale['country'], $va_locale['locale_id'], 'LocaleCodeToId');
+					MemoryCache::save($va_locale['locale_id'], $va_locale['language'].'_'.$va_locale['country'], 'LocaleIdToCode');
+					MemoryCache::save($va_locale['locale_id'], $va_locale['name'], 'LocaleIdToName');
+				}
+			}
+
+			return $va_locales;
 		}
 		
 		$o_db = new Db();
@@ -267,13 +313,13 @@ class ca_locales extends BaseModel {
 			} else {
  				$va_locales[$vn_id] = $vm_val;
  			}
- 			
- 			ca_locales::$s_locale_code_to_id[$vs_code] = $vn_id;
- 			ca_locales::$s_locale_id_to_code[$vn_id] = $vs_code;
- 			ca_locales::$s_locale_id_to_name[$vn_id] = $vs_name;
+
+			MemoryCache::save($vs_code, $vn_id, 'LocaleCodeToId');
+			MemoryCache::save($vn_id, $vs_code, 'LocaleIdToCode');
+			MemoryCache::save($vn_id, $vs_name, 'LocaleIdToName');
  		}
-		
-		ca_locales::$s_locale_list_cache[$vs_cache_key] = $va_locales;
+
+		CompositeCache::save($vs_cache_key, $va_locales, 'LocaleList');
 		return $va_locales;
 	}
 	# ------------------------------------------------------
@@ -306,16 +352,19 @@ class ca_locales extends BaseModel {
 			$vs_for_cataloguing_sql = " WHERE dont_use_for_cataloguing = 0";
 			$vs_cache_key = 'forCataloguing';
 		}
-		
-		if (isset(ca_locales::$s_locale_count_cache[$vs_cache_key])) { return ca_locales::$s_locale_count_cache[$vs_cache_key]; }
+
+		if(MemoryCache::contains($vs_cache_key, 'LocaleCount')) {
+			return MemoryCache::fetch($vs_cache_key, 'LocaleCount');
+		}
 		
 		$qr_res = $this->getDb()->query("SELECT count(*) c FROM ca_locales {$vs_for_cataloguing_sql}");
 		$vn_num_locales = 0;
 		if ($qr_res->nextRow()) {
 			$vn_num_locales = $qr_res->get('c');
 		}
-		
-		return ca_locales::$s_locale_count_cache[$vs_cache_key] = $vn_num_locales;
+
+		MemoryCache::save($vs_cache_key, $vn_num_locales, 'LocaleCount');
+		return $vn_num_locales;
 	}
 	# ------------------------------------------------------
 	/**
@@ -336,11 +385,11 @@ class ca_locales extends BaseModel {
 	 * @return int The locale_id of the locale, or null if the code is invalid
 	 */
 	public function loadLocaleByCode($ps_code) {
-		if (!isset(ca_locales::$s_locale_code_to_id[$ps_code])) {
+		if (!MemoryCache::contains($ps_code, 'LocaleCodeToId')){
 			ca_locales::getLocaleList(array('index_by_code' => true));
 		}
 		
-		$this->load(ca_locales::$s_locale_code_to_id[$ps_code]);
+		$this->load(MemoryCache::fetch($ps_code, 'LocaleCodeToId'));
 		
 		return $this->getPrimaryKey();
 	}
@@ -354,10 +403,10 @@ class ca_locales extends BaseModel {
 	 * @return int The locale_id of the locale, or null if the code is invalid
 	 */
 	public function localeCodeToID($ps_code) {
-		if (!isset(ca_locales::$s_locale_code_to_id[$ps_code])) {
+		if (!MemoryCache::contains($ps_code, 'LocaleCodeToId')){
 			ca_locales::getLocaleList(array('index_by_code' => true));
 		}
-		return ca_locales::$s_locale_code_to_id[$ps_code];
+		return MemoryCache::fetch($ps_code, 'LocaleCodeToId');
 	}
 	# ------------------------------------------------------
 	/**
@@ -368,10 +417,10 @@ class ca_locales extends BaseModel {
 	 * @return string A language code in the form <language>_<country> (eg. en_US)
 	 */
 	public function localeIDToCode($pn_id) {
-		if(!isset(ca_locales::$s_locale_id_to_code[$pn_id])){
+		if (!MemoryCache::contains($pn_id, 'LocaleIdToCode')){
 			ca_locales::getLocaleList();
 		}
-		return ca_locales::$s_locale_id_to_code[$pn_id];
+		return MemoryCache::fetch($pn_id, 'LocaleIdToCode');
 	}
 	# ------------------------------------------------------
 	/**
@@ -382,11 +431,10 @@ class ca_locales extends BaseModel {
 	 * @return string The name of the locale
 	 */
 	public function localeIDToName($pn_id) {
-		if(!isset(ca_locales::$s_locale_id_to_name[$pn_id])){
+		if (!MemoryCache::contains($pn_id, 'LocaleIdToName')){
 			ca_locales::getLocaleList();
 		}
-		return ca_locales::$s_locale_id_to_name[$pn_id];
+		return MemoryCache::fetch($pn_id, 'LocaleIdToName');
 	}
 	# ------------------------------------------------------
 }
-?>

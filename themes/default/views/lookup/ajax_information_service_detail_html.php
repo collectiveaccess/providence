@@ -28,4 +28,3 @@
 	$va_data = $this->getVar('detail');
 	
 	print $va_data['display'];
-?>

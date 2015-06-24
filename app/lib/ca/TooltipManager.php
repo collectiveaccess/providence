@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,6 +37,7 @@
 	class TooltipManager {
 		# --------------------------------------------------------------------------------
 		private static $opa_tooltips;
+		private static $opa_tooltip_functions;
 		private static $opa_namespace_classes = array();
 		# --------------------------------------------------------------------------------
 		/**
@@ -45,7 +46,7 @@
 		 * @return void
 		 */
 		static function init() {
-			TooltipManager::$opa_tooltips = array();
+			TooltipManager::$opa_tooltips = TooltipManager::$opa_tooltip_functions = array();
 		}
 		# --------------------------------------------------------------------------------
 		/**
@@ -62,6 +63,22 @@
 			if (!trim($ps_namespace)) { $ps_namespace = 'default'; }
 			
 			TooltipManager::$opa_tooltips[$ps_namespace][$ps_dom_selector] = $ps_content;
+		}
+		# --------------------------------------------------------------------------------
+		/**
+		 * Add tooltip to current response.
+		 *
+		 * @param string $ps_dom_selector CSS-stlye DOM element selector of the element(s) to attach the tooltip to
+		 * @param string $ps_code Javascript code returning value for the tooltip to display
+		 * @param string $ps_namespace Optional namespace specifier; allows you to group tooltip code and output different tool tips at different times in the request cycle
+		 * @return (bool) - Returns true if tooltip was successfully added, false if not
+		 */
+		static function addFunction($ps_dom_selector, $ps_code, $ps_namespace='default') {
+			if (!is_array(TooltipManager::$opa_tooltips)) { TooltipManager::init(); }
+			if (!$ps_dom_selector) { return false; }
+			if (!trim($ps_namespace)) { $ps_namespace = 'default'; }
+			
+			TooltipManager::$opa_tooltip_functions[$ps_namespace][$ps_dom_selector] = $ps_code;
 		}
 		# --------------------------------------------------------------------------------
 		/**
@@ -92,19 +109,22 @@
 			if (!$ps_namespace) { $ps_namespace = 'default'; }
 			$vs_buf = '';
 			if (!is_array(TooltipManager::$opa_tooltips)) { TooltipManager::init(); }
-			if (isset(TooltipManager::$opa_tooltips[$ps_namespace]) && sizeof(TooltipManager::$opa_tooltips[$ps_namespace])) {
-				$vs_buf = "<script type='text/javascript'>\njQuery(document).ready(function() {\n";
-			
-				foreach(TooltipManager::$opa_tooltips[$ps_namespace] as $vs_id => $vs_content) {
-					$vs_class = (isset(TooltipManager::$opa_namespace_classes[$ps_namespace]) && TooltipManager::$opa_namespace_classes[$ps_namespace]) ? TooltipManager::$opa_namespace_classes[$ps_namespace] : "tooltipFormat";
-					$vs_buf .= "jQuery('{$vs_id}').tooltip({ tooltipClass: '{$vs_class}', show: 150, hide: 150, items: '*', content: function() { return '".preg_replace('![\n\r]{1}!', ' ', addslashes($vs_content))."'; }});";
-				}
-				
-				$vs_buf .= "});\n</script>\n";
-				
+
+			if (isset(TooltipManager::$opa_tooltips[$ps_namespace]) && is_array(TooltipManager::$opa_tooltips[$ps_namespace])) {
+				$vs_class = (isset(TooltipManager::$opa_namespace_classes[$ps_namespace]) && TooltipManager::$opa_namespace_classes[$ps_namespace]) ? TooltipManager::$opa_namespace_classes[$ps_namespace] : "tooltipFormat";
+				$vs_buf .=  caGetTooltipJS(TooltipManager::$opa_tooltips[$ps_namespace], $vs_class);
 			}
+
+			if (isset(TooltipManager::$opa_tooltip_functions[$ps_namespace]) && is_array(TooltipManager::$opa_tooltip_functions[$ps_namespace])) {
+				$vs_buf .= "<script type='text/javascript'>\njQuery(document).ready(function() {\n";
+				foreach(TooltipManager::$opa_tooltip_functions[$ps_namespace] as $vs_id => $vs_code) {
+					$vs_class = (isset(TooltipManager::$opa_namespace_classes[$ps_namespace]) && TooltipManager::$opa_namespace_classes[$ps_namespace]) ? TooltipManager::$opa_namespace_classes[$ps_namespace] : "tooltipFormat";
+					$vs_buf .= "jQuery('{$vs_id}').tooltip({ tooltipClass: '{$vs_class}', show: 150, hide: 150, items: '*', content: function() { {$vs_code}; }});\n";
+				}
+				$vs_buf .= "});\n</script>\n";
+			}
+
 			return $vs_buf;
 		}
 		# --------------------------------------------------------------------------------
 	}
-?>

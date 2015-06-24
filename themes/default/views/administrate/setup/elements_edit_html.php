@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,18 +37,22 @@
 <?php
 	print $vs_control_box = caFormControlBox(
 		caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'ElementsForm').' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'administrate/setup', 'Elements', 'Index', array('element_id' => 0)),
+		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'administrate/setup', 'Elements', 'Index', array('element_id' => 0)),
 		'',
-		caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'administrate/setup', 'Elements', 'Delete', array('element_id' => $vn_element_id))
+		caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'administrate/setup', 'Elements', 'Delete', array('element_id' => $vn_element_id))
 	);
 
 
 	print caFormTag($this->request, 'Save', 'ElementsForm');
 ?>
-	<div class='formLabel'><span id="_ca_metadata_element_labels_"><?php print _t("Labels"); ?></span><br/></div>
+
+<div class="bundleLabel">
+	<span class="formLabelText" id="_ca_metadata_element_labels_"><?php print _t("Labels"); ?></span>
 <?php
 	print $t_element->getPreferredLabelHTMLFormBundle($this->request,'element_labels','element_labels');
-
+?>
+</div>
+<?php
 	$va_lookup_url_info = caJSONLookupServiceUrl($this->request, $t_element->tableName());
 	$va_options =	array(							
 							'error_icon' 					=> $this->request->getThemeUrlPath()."/graphics/icons/warning_small.gif",

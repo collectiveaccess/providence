@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -123,6 +123,15 @@ BaseModel::$s_ca_models_definitions['ca_object_lots'] = array(
 				),
 				'LIST' => 'workflow_statuses',
 				'LABEL' => _t('Status'), 'DESCRIPTION' => _t('Indicates the current state of the object lot record.')
+		),
+		'source_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'LIST_CODE' => 'object_lot_sources',
+				'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of lot. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed.')
 		),
 		'source_info' => array(
 				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
@@ -242,6 +251,12 @@ class ca_object_lots extends RepresentableBaseModel {
 	protected $ATTRIBUTE_TYPE_LIST_CODE = 'object_lot_types';	// list code (ca_lists.list_code) of list defining types for this table
 
 	# ------------------------------------------------------
+	# Sources
+	# ------------------------------------------------------
+	protected $SOURCE_ID_FLD = 'source_id';					// name of source field for this table
+	protected $SOURCE_LIST_CODE = 'object_lot_sources';		// list code (ca_lists.list_code) of list defining sources for this table
+
+	# ------------------------------------------------------
 	# ID numbering
 	# ------------------------------------------------------
 	protected $ID_NUMBERING_ID_FIELD = 'idno_stub';				// name of field containing user-defined identifier
@@ -268,6 +283,13 @@ class ca_object_lots extends RepresentableBaseModel {
 	# are listed here is the order in which they will be returned using getFields()
 
 	protected $FIELDS;
+	
+	/**
+	 * Cache for object counts used by ca_object_lots::numObjects()
+	 *
+	 * @see ca_object_lots::numObjects()
+	 */
+	static $s_object_count_cache = array();
 	
 	# ------------------------------------------------------
 	# --- Constructor
@@ -301,30 +323,8 @@ class ca_object_lots extends RepresentableBaseModel {
 		$this->BUNDLES['ca_sets'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));
 		
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
-	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Returns the number of ca_object rows related to the currently loaded object lot.
- 	 *
- 	 * @param int $pn_lot_id Optional lot_id to get object count for; if null then the id of the currently loaded lot will be used
- 	 * @return int Number of objects related to the object lot or null if $pn_lot_id is not set and there is no currently loaded lot
- 	 */
- 	 public function numObjects($pn_lot_id=null) {
- 	 	if (!$pn_lot_id) {
- 	 		if (!($vn_lot_id = $this->getPrimaryKey())) {
-				return null;
- 	 		}
- 	 	}
-		$o_db = $this->getDb();
-		$qr_res = $o_db->query("
-				SELECT count(*) c
-				FROM ca_objects
-				WHERE
-					lot_id = ? AND deleted = 0
-			", (int)$vn_lot_id);
-			
-		$qr_res->nextRow();
-		return (int)$qr_res->get('c');
+		
+		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
 	}
 	# ------------------------------------------------------
  	/**
@@ -375,17 +375,52 @@ class ca_object_lots extends RepresentableBaseModel {
 	}
 	# ------------------------------------------------------
  	/**
+ 	 * Returns the number of ca_object rows related to the currently loaded object lot.
+ 	 *
+ 	 * @param int $pn_lot_id Optional lot_id to get object count for; if null then the id of the currently loaded lot will be used
+ 	 * @param array $pa_options Options include:
+ 	 *		return = Set to "components" to return the count of component objects only; "objects" to return the count of objects (but not components) or "all" to return a count of any kind of object. [Default = "all"]
+ 	 *		noCache = If set cached object counts are generated from the database and any cached counts are ignored. [Default = false]
+ 	 * @return int Number of objects related to the object lot or null if $pn_lot_id is not set and there is no currently loaded lot
+ 	 */
+ 	 public function numObjects($pn_lot_id=null, $pa_options=null) {
+ 	 	$vn_lot_id = $this->getPrimaryKey();
+ 	 	if ($pn_lot_id && ($pn_lot_id != $vn_lot_id)) {
+ 	 		$vn_lot_id = $pn_lot_id;
+ 	 	}
+ 	 	
+ 	 	$pb_no_cache = caGetOption('noCache', $pa_options, false);
+ 	 	
+ 	 	if (!$pb_no_cache) {
+ 	 		$vs_cache_key = caMakeCacheKeyFromOptions($pa_options);
+ 	 		if (isset(ca_object_lots::$s_object_count_cache[$vn_lot_id][$vs_cache_key])) {
+ 	 			return ca_object_lots::$s_object_count_cache[$vn_lot_id][$vs_cache_key];
+ 	 		}
+ 	 	}
+ 	 	return sizeof($this->getObjects($pn_lot_id, $pa_options));
+	}
+	# ------------------------------------------------------
+ 	/**
  	 * Returns a list of ca_object rows related to the currently loaded object lot.
  	 *
  	 * @param int $pn_lot_id Optional lot_id to get object list for; if null then the id of the currently loaded lot will be used
+ 	 * @param array $pa_options Options include:
+ 	 *		return = Set to "components" to return the count of component objects only; "objects" to return the count of objects (but not components) or "all" to return a count of any kind of object. [Default = "all"]
  	 * @return array List of objects related to the object lot or null if $pn_lot_id is not set and there is no currently loaded lot
  	 */
- 	 public function getObjects($pn_lot_id=null) {
- 	 	if (!$pn_lot_id) {
- 	 		if (!($vn_lot_id = $this->getPrimaryKey())) {
-				return null;
- 	 		}
+ 	 public function getObjects($pn_lot_id=null, $pa_options=null) {
+ 	 	$vn_lot_id = $this->getPrimaryKey();
+ 	 	if ($pn_lot_id && ($pn_lot_id != $vn_lot_id)) {
+ 	 		$vn_lot_id = $pn_lot_id;
  	 	}
+ 	 	
+ 	 	$ps_return = caGetOption('return', $pa_options, 'all');
+ 	 	$vs_cache_key = caMakeCacheKeyFromOptions($pa_options);
+ 	 	
+		if (is_array($va_component_types = $this->getAppConfig()->getList('ca_objects_component_types')) && sizeof($va_component_types)) {
+			$va_component_types = caMakeTypeIDList('ca_objects', $va_component_types);
+		}
+		
 		$o_db = $this->getDb();
 		$qr_res = $o_db->query("
 				SELECT *
@@ -395,13 +430,33 @@ class ca_object_lots extends RepresentableBaseModel {
 				ORDER BY
 					idno_sort
 			", (int)$vn_lot_id);
-			
+	
 		$va_rows = array();
 		while($qr_res->nextRow()) {
-			$va_rows[$qr_res->get('object_id')] = $qr_res->getRow();
+			$va_rows[$qr_res->get('object_id')] = 1;
 		}
+		if (!sizeof($va_rows)) { ca_object_lots::$s_object_count_cache[$vn_lot_id][$vs_cache_key] = 0; return array(); }
 		
-		return $va_rows;
+		
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM ca_objects
+			WHERE
+				hier_object_id IN (?) AND deleted = 0
+			ORDER BY
+				idno_sort
+		", array(array_keys($va_rows)));
+	
+		$va_objects = array();
+		while($qr_res->nextRow()) {
+			$va_row = $qr_res->getRow();
+			if (($ps_return == 'objects') && in_array($va_row['type_id'], $va_component_types)) { continue; }
+			if (($ps_return == 'components') && !in_array($va_row['type_id'], $va_component_types)) { continue; }
+			$va_objects[$va_row['object_id']] = $va_row;
+		}
+				
+		ca_object_lots::$s_object_count_cache[$vn_lot_id][$vs_cache_key] = sizeof($va_objects); 
+ 	 	return $va_objects;
 	}
 	# ------------------------------------------------------
  	/**
@@ -444,9 +499,17 @@ class ca_object_lots extends RepresentableBaseModel {
 			$va_objects = $this->getObjects();
 			$vs_lot_num = $this->get('idno_stub');
 			
-			$t = new Transaction();
+			
 			$t_object = new ca_objects();
-			$t_object->setTransaction($t);
+			
+			$vb_web_set_transaction = false;
+			if (!$this->inTransaction()) {
+				$o_trans = new Transaction($this->getDb());
+				$vb_web_set_transaction = true;
+			} else {
+				$o_trans = $this->getTransaction();
+			}
+			$t_object->setTransaction($o_trans);
 			$t_idno = $t_object->getIDNoPlugInInstance();
 			$vs_separator = $t_idno->getSeparator();
 			$vn_i = 1;
@@ -469,7 +532,9 @@ class ca_object_lots extends RepresentableBaseModel {
 					$vn_i++;
 				}
 			}
-			$t->commit();
+			if ($vb_web_set_transaction) {
+				$o_trans->commit();
+			}
 		}
 		
 		return true;

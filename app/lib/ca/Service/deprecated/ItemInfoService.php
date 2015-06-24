@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -73,8 +73,8 @@ class ItemInfoService extends BaseService {
 	 * -DONT_PROCESS_GLOSSARY_TAGS: ?
 	 * -CONVERT_HTML_BREAKS: similar to nl2br()
 	 * -convertLineBreaks: same as CONVERT_HTML_BREAKS
-	 * -GET_DIRECT_DATE: return raw date value from database if $ps_field adresses a date field, otherwise the value will be parsed using the TimeExpressionParser::getText() method
-	 * -GET_DIRECT_TIME: return raw time value from database if $ps_field adresses a time field, otherwise the value will be parsed using the TimeExpressionParser::getText() method
+	 * -getDirectDate: return raw date value from database if $ps_field adresses a date field, otherwise the value will be parsed using the TimeExpressionParser::getText() method
+	 * -getDirectTime: return raw time value from database if $ps_field adresses a time field, otherwise the value will be parsed using the TimeExpressionParser::getText() method
 	 * -TIMECODE_FORMAT: set return format for fields representing time ranges possible (string) values: COLON_DELIMITED, HOURS_MINUTES_SECONDS, RAW; data will be passed through floatval() by default
 	 * -QUOTE: set return value into quotes
 	 * -URL_ENCODE: value will be passed through urlencode()
@@ -430,7 +430,7 @@ class ItemInfoService extends BaseService {
 				}
 			}
 			
-			return $va_items;
+			return array_values($va_items);
 		} else {
 			throw new SoapFault("Server", "Invalid type");
 		}

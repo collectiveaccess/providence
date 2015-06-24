@@ -8,12 +8,12 @@
  * All Rights Reserved.
  * 
  * @package dompdf
- * @link    http://www.dompdf.com/
+ * @link    http://dompdf.github.com/
  * @author  Benj Carson <benjcarson@digitaljunkies.ca>
  * @author  Blake Ross <BlakeR1234@aol.com>
- * @author  Fabien Ménager <fabien.menager@gmail.com>
+ * @author  Fabien MÃ©nager <fabien.menager@gmail.com>
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
- * @version $Id: html.css 456 2012-01-21 11:20:37Z fabien.menager $
+ * @version $Id$
  */
 
 @page {
@@ -337,52 +337,133 @@ dir ol dir,   dir ul dir,   dir menu dir,   dir dir dir {
 
 /* forms */
 /* From http://dev.w3.org/csswg/css3-ui/#appearance */
-input {
-  -dompdf-appearance: textfield;
+form {
+  display: block;
 }
 
-input[type=password] {
-  -dompdf-appearance: radio-button;
+input, button, select {
+  display: inline-block;
+  font-family: sans-serif;
 }
 
-input[type=radio] {
-  -dompdf-appearance: password;
+input[type=text],
+input[type=password],
+select {
+  width: 12em;
 }
 
-input[type=checkbox] {
-  -dompdf-appearance: checkbox;
+input[type=text],
+input[type=password],
+input[type=button],
+input[type=submit],
+input[type=reset],
+input[type=file],
+button,
+textarea,
+select {
+  background: #FFF;
+  border: 1px solid #999;
+  padding: 2px;
+  margin: 2px;
 }
 
 input[type=button],
 input[type=submit],
-input[type=reset] {
-  -dompdf-appearance: button;
+input[type=reset],
+input[type=file],
+button {
+  background: #CCC;
+  width: 8em;
+  text-align: center;
 }
 
-select {
-  -dompdf-appearance: pop-up-menu;
+input[type=text]:before,
+input[type=button]:before,
+input[type=submit]:before,
+input[type=reset]:before {
+  content: attr(value);
+}
+
+input[type=file]:before {
+  content: "Chose a file";
+}
+
+input[type=password][value]:before {
+  font-family: "DejaVu Sans";
+  content: "\2022\2022\2022\2022\2022\2022\2022\2022";
+  line-height: 1em;
+}
+
+input[type=checkbox],
+input[type=radio],
+select:after {
+  font-family: "DejaVu Sans";
+  font-size: 18px;
+  line-height: 1;
+}
+
+input[type=checkbox]:before {
+  content: "\2610";
+}
+
+input[type=checkbox][checked]:before {
+  content: "\2611";
+}
+
+input[type=radio]:before {
+  content: "\25CB";
+}
+
+input[type=radio][checked]:before {
+  content: "\25C9";
 }
 
 textarea {
-  -dompdf-appearance: field;
   display: block;
+  height: 3em;
+  overflow: hidden;
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+select {
+  position: relative!important;
+  overflow: hidden!important;
+}
+
+select:after {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 5em;
+  width: 1.4em;
+  text-align: center;
+  background: #CCC;
+  content: "\25BE";
+}
+
+select option {
+  display: none;
+}
+
+select option[selected] {
+  display: inline;
 }
 
 fieldset {
   display: block;
-  margin-left: 2px;
-  margin-right: 2px;
-  padding: 0.35em 0.625em 0.75em;
+  margin: 0.6em 2px 2px;
+  padding: 0.75em;
   border: 1pt groove #666;
   position: relative;
 }
 
 fieldset > legend {
   position: absolute;
-  top: -1em;
-  white-space: nowrap;
-  padding-left: 4px;
-  padding-right: 2px;
+  top: -0.6em;
+  left: 0.75em;
+  padding: 0 0.3em;
   background: white;
 }
 
@@ -423,4 +504,5 @@ dompdf_generated {
 area, base, basefont, head, meta, script, style, title,
 noembed, noscript, param {
   display: none;
+  -dompdf-keep: yes;
 }

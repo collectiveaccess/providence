@@ -38,9 +38,9 @@
 	if ($vb_can_edit) {
 		print $vs_control_box = caFormControlBox(
 			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'RelationshipTypeEditorForm').' '.
-			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), 'administrate/setup/relationship_type_editor', 'RelationshipTypeEditor', 'Edit/'.$this->request->getActionExtra(), array('type_id' => $vn_type_id)), 
+			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'administrate/setup/relationship_type_editor', 'RelationshipTypeEditor', 'Edit/'.$this->request->getActionExtra(), array('type_id' => $vn_type_id)), 
 			'', 
-			(intval($vn_type_id) > 0) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'administrate/setup/relationship_type_editor', 'RelationshipTypeEditor', 'Delete/'.$this->request->getActionExtra(), array('type_id' => $vn_type_id)) : ''
+			(intval($vn_type_id) > 0) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'administrate/setup/relationship_type_editor', 'RelationshipTypeEditor', 'Delete/'.$this->request->getActionExtra(), array('type_id' => $vn_type_id)) : ''
 		);
 	}
 ?>

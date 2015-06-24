@@ -36,8 +36,8 @@
  		private $opo_client_services_config;
  		# -------------------------------------------------------
  		public function Index() {
- 			JavascriptLoadManager::register('tableList');
- 			JavascriptLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('tableList');
+ 			AssetLoadManager::register('bundleableEditor');
 			
 			$o_result_context = new ResultContext($this->request, 'ca_commerce_orders', 'basic_search_library');
  			$this->_initView($o_result_context);
@@ -49,7 +49,7 @@
  		 * 
  		 */
  		public function Calendar() {
- 			JavascriptLoadManager::register('calendar');
+ 			AssetLoadManager::register('calendar');
  			
  			$o_result_context = new ResultContext($this->request, 'ca_commerce_orders', 'basic_search_calendar');
  			$this->_initView($o_result_context);

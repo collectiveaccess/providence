@@ -36,8 +36,8 @@
  		private $opo_client_services_config;
  		# -------------------------------------------------------
  		public function Index() {
- 			JavascriptLoadManager::register('tableList');
- 			JavascriptLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('tableList');
+ 			AssetLoadManager::register('bundleableEditor');
 			
 			$o_result_context = new ResultContext($this->request, 'ca_commerce_orders', 'basic_search_order');
  			$this->_initView($o_result_context);
@@ -46,7 +46,7 @@
  		}
  		# -------------------------------------------------------
  		public function ViewOrder() {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			
  			$this->render('view_orders_html.php');
  		}

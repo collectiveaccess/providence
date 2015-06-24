@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,20 +35,22 @@
  			$va_errors[] = $o_error->getErrorDescription();
  		}
  	}
+ 	
+ 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 ?>
-	<div>
-		<div class="bundleContainer">
-			<div class="caItemList">
-				<div class="labelInfo">	
+<div id="<?php print $vs_id_prefix; ?>">
+	<div class="bundleContainer">
+		<div class="caItemList">
+			<div class="labelInfo">	
 <?php
-					if (is_array($va_errors) && sizeof($va_errors)) {
+				if (is_array($va_errors) && sizeof($va_errors)) {
 ?>
-						<span class="formLabelError"><?php print join('; ', $va_errors); ?></span>
+					<span class="formLabelError"><?php print join('; ', $va_errors); ?></span>
 <?php
-					}
+				}
 ?>
-					<?php print $vs_element; ?>
-				</div>
+				<?php print $vs_element; ?>
 			</div>
 		</div>
 	</div>
+</div>

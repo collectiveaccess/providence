@@ -156,7 +156,6 @@
 					);
 				}
 				print "\t\t[Notice] Found ".sizeof($va_items)." items\n";
-				//print_R($va_items);
 		
 				// Ok... now fetch and import each
 				$o_client->setUri($vs_base_url."/service.php/iteminfo/ItemInfo/rest");
@@ -189,7 +188,6 @@
 		foreach($pa_item_queue as $vn_i => $va_item) {
 			$vs_table = $va_item['table'];
 			$va_import_relationships_from = $pa_config['importRelatedFor'][$va_item['table']];
-			print "oo"; print_r($va_import_relationships_from);
 			$vn_id = $va_item['id'];
 			if (!$vn_id) { print "[Notice] SKIP CAUSE NO ID ({$ps_code})\n"; continue; }
 			if(isset($this->opa_processed_records[$vs_table.'/'.$vn_id])) { continue; }
@@ -516,7 +514,6 @@
 			
 			// Are there relationships?
 			$pb_imported_self_relations = false;
-			print_r($va_import_relationships_from);
 			foreach($va_import_relationships_from as $vs_rel_table => $va_table_info) {
 				$vb_is_self_relation = (($vs_rel_table == $t_instance->tableName()) && (!$pb_imported_self_relations)) ? true : false;
 				if (!$pa_tables[$vs_rel_table] || $vb_is_self_relation) {

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,10 +36,11 @@
  
  
 /**
- * Input type constants. Returned by inputType() to indicate what sort of input this reader takes (eg. File or URL)
+ * Input type constants. Returned by inputType() to indicate what sort of input this reader takes (eg. File, URL, text, etc.)
  */ 
 define("__CA_DATA_READER_INPUT_FILE__", 0);
 define("__CA_DATA_READER_INPUT_URL__", 1);
+define("__CA_DATA_READER_INPUT_TEXT__", 2);
 
 abstract class BaseDataReader {
 	# -------------------------------------------------------
@@ -67,6 +68,12 @@ abstract class BaseDataReader {
 	 *
 	 */
 	protected $opa_formats = array();
+	
+	/**
+	 *
+	 */
+	protected $opa_properties = array();
+	
 	# -------------------------------------------------------
 	/**
 	 *
@@ -84,7 +91,10 @@ abstract class BaseDataReader {
 	 * @param array $pa_options
 	 * @return bool
 	 */
-	abstract function read($ps_source, $pa_options=null);
+	public function read($ps_source, $pa_options=null) {
+		$this->ops_source = $ps_source;
+		return null;
+	}
 	# -------------------------------------------------------
 	/**
 	 * 
@@ -105,13 +115,32 @@ abstract class BaseDataReader {
 	abstract function seek($pn_row_num);
 	# -------------------------------------------------------
 	/**
+	 *
+	 * @return int
+	 */
+	abstract public function currentRow();
+	# -------------------------------------------------------
+	/**
 	 * 
 	 * 
 	 * @param mixed $pm_spec
 	 * @param array $pa_options
 	 * @return mixed
 	 */
-	abstract function get($pm_spec, $pa_options=null);
+	public function get($ps_field, $pa_options=null) {
+		//
+		// Return "special" values
+		//
+		switch($ps_field) {
+			case '__row__':
+				return $this->currentRow();
+				break;
+			case '__source__':
+				return pathinfo($this->ops_source, PATHINFO_BASENAME);
+				break;
+		}
+		return null;
+	}
 	# -------------------------------------------------------
 	/**
 	 * 
@@ -181,9 +210,51 @@ abstract class BaseDataReader {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Override to return true if your format can contain more than one independent data set
+	 * (Eg. an Excel files with many free-standing worksheets)
+	 * 
+	 * @return bool
+	 */
+	public function hasMultipleDatasets() {
+		return false;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Returns number of distinct datasets in the file
+	 * Override this if it's more than 1
+	 * 
+	 * @return int
+	 */
+	public function getDatasetCount() {
+		return 1;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Set current dataset for reading and reset current row to beginning
+	 * Override if the reader supports multiple datasets
+	 * 
+	 * @param mixed $pm_dataset The number of the dataset to read (starting at zero) [Default=0]
+	 * @return bool
+	 */
+	public function setCurrentDataset($pn_dataset=0) {
+		return ($pn_dataset == 0) ? true : false;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Return reader propery
+	 * 
+	 * @param string $ps_property 
+	 * @return mixed
+	 */
+	public function getProperty($ps_property) {
+		return isset($this->opa_properties[$ps_property]) ? $this->opa_properties[$ps_property] : null;
+	}
+	# -------------------------------------------------------
+	/**
 	 * Indicates whether the reader takes a file or URL as input. The 
 	 * __CA_DATA_READER_INPUT_FILE__ constant is returned if file input is required, 
 	 * __CA_DATA_READER_INPUT_URL__ if a URL is required
+	 * __CA_DATA_READER_INPUT_TEXT__ if data encoded as text is required
 	 * 
 	 * @return int
 	 */

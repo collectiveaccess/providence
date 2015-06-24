@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2010 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -47,8 +47,8 @@
 			<form id="commentListForm"><input type="hidden" name="mode" value="list">
 			
 			<div style="text-align:right;">
-				<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Approve'); ?>").submit();' class='form-button'><span class='form-button'>Approve</span></a>
-				<a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Delete'); ?>").submit();' class='form-button'><span class='form-button'>Delete</span></a>
+				<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Approve'); ?>").submit();' class='form-button'><span class='form-button approve'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_APPROVE__); ?><span class='formtext'>Approve</span></span></a>
+				<a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Delete'); ?>").submit();' class='form-button'><span class='form-button delete'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DELETE__); ?><span class='formtext'>Delete</span></span></a>
 			</div>
 			<table id="caCommentsList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
 				<thead>
@@ -80,6 +80,7 @@
 ?>
 					<tr>
 						<td>
+							<div class="caUserCommentsListName">
 <?php 
 							if($va_comment['user_id']){
 								print $va_comment['fname']." ".$va_comment['lname']."<br/>".$va_comment['user_email'];
@@ -87,15 +88,18 @@
 								print $va_comment['name']."<br/>".$va_comment['user_email'];
 							}
 ?>
+							</div>
 						</td>
 						<td>
-							<?php print $va_comment['comment']; ?>
+							<div class="caUserCommentsListComment">
+								<?php print $va_comment['comment']; ?>
+							</div>
 						</td>	
 						<td>
 <?php
 							if(is_array($va_comment['media1']) && (sizeof($va_comment['media1']) > 0)){
 								print "<span style='white-space: nowrap;'>".$va_comment['media1']['thumbnail']['TAG'];
-								print caNavButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, 'Download', 'manage', 'Comments', 'DownloadMedia', array('version' => 'original', 'comment_id' => $va_comment['comment_id'], 'mode' => 'list', 'download' => 1), array(), array('no_background' => true, 'dont_show_content' => true));
+								print caNavButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, _t('Download'), '', 'manage', 'Comments', 'DownloadMedia', array('version' => 'original', 'comment_id' => $va_comment['comment_id'], 'mode' => 'list', 'download' => 1), array(), array('no_background' => true, 'dont_show_content' => true));
 								print "</span>";
 							}
 ?>

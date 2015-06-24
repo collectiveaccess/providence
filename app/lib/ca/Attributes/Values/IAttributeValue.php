@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2010 Whirl-i-Gig
+ * Copyright 2008-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -77,5 +77,9 @@
  		// Return name of setting whose value is to be used for attribute value default
  		public function getDefaultValueSetting();
  		
+ 		// Return type constant for value
+ 		public function getType();
+
+		// Get extra info to add to search index
+		public function getDataForSearchIndexing();
 	}
- ?>

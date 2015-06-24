@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,6 +27,7 @@
  */
  	require_once(__CA_LIB_DIR__.'/ca/Import/BaseRefinery.php');
  	require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
+ 	require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
  
 	class dateJoinerRefinery extends BaseRefinery {
 		# -------------------------------------------------------
@@ -74,7 +75,7 @@
 					$vs_date_start = $pa_item['settings']['dateJoiner_start'];
 					$vs_date_end = $pa_item['settings']['dateJoiner_end'];
 			
-					if ($vs_date_expression && ($vs_exp = BaseRefinery::parsePlaceholder($vs_date_expression, $pa_source_data, $pa_item))) {
+					if ($vs_date_expression && ($vs_exp = BaseRefinery::parsePlaceholder($vs_date_expression, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' ')))) {
 						if ($o_tep->parse($vs_exp)) {
 							return $o_tep->getText();
 						} else {
@@ -83,10 +84,35 @@
 					}
 			
 					$va_date = array();
-					if ($vs_date_start = BaseRefinery::parsePlaceholder($vs_date_start, $pa_source_data, $pa_item)) { $va_date[] = $vs_date_start; }
-					if ($vs_date_end = BaseRefinery::parsePlaceholder($vs_date_end, $pa_source_data, $pa_item)) { $va_date[] = $vs_date_end; }
+					if ($vs_date_start = BaseRefinery::parsePlaceholder($vs_date_start, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '))) { 
+						if (
+							!($vs_skip_start_exp = $pa_item['settings']['dateJoiner_skipStartIfExpression'])
+							||
+							!ExpressionParser::evaluate($vs_skip_start_exp, array_merge($pa_source_data, array('start' => $vs_date_start, 'end' => $vs_date_end, 'expression' => $ps_expression)))
+						) {
+							$va_date[] = $vs_date_start; 
+						} elseif ($vs_skip_start_replacement = $pa_item['settings']['dateJoiner_skipStartIfExpressionReplacementValue']) {
+							$va_date[] = $vs_skip_start_replacement; 
+						}
+					}
+					if ($vs_date_end = BaseRefinery::parsePlaceholder($vs_date_end, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '))) { 
+						if (
+							!($vs_skip_end_exp = $pa_item['settings']['dateJoiner_skipEndIfExpression'])
+							||
+							!ExpressionParser::evaluate($vs_skip_end_exp, array_merge($pa_source_data, array('start' => $vs_date_start, 'end' => $vs_date_end, 'expression' => $ps_expression)))
+						) {
+							$va_date[] = $vs_date_end; 
+						} elseif ($vs_skip_end_replacement = $pa_item['settings']['dateJoiner_skipEndIfExpressionReplacementValue']) {
+							$va_date[] = $vs_skip_end_replacement; 
+						}
+						
+					}
+					
+					foreach($va_date as $vn_i => $vs_date) {
+						$va_date[$vn_i] = preg_replace("![^\d]+$!", "", $vs_date);
+					}
 					$vs_date_expression = join(" - ", $va_date);
-					if ($vs_date_expression && ($vs_exp = BaseRefinery::parsePlaceholder($vs_date_expression, $pa_source_data, $pa_item))) {
+					if ($vs_date_expression && ($vs_exp = BaseRefinery::parsePlaceholder($vs_date_expression, $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' ')))) {
 						if ($o_tep->parse($vs_exp)) {
 							return $o_tep->getText();
 						} else {
@@ -99,14 +125,15 @@
 					$va_month_list = $o_tep->getMonthList();
 					
 					$va_date = array();
-					if ($vs_date_month = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_month'], $pa_source_data, $pa_item))) { 
+					if ($vs_date_month = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_month'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' ')))) { 
 						if (($vn_m = array_search($vs_date_month, $va_month_list)) !== false) {
 							$vs_date_month = ($vn_m + 1);
 						}
 						$va_date[] = $vs_date_month; 
 					}
-					if ($vs_date_day = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_day'], $pa_source_data, $pa_item))) { $va_date[] = $vs_date_day; }
-					if ($vs_date_year = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_year'], $pa_source_data, $pa_item))) { $va_date[] = $vs_date_year; }
+
+					if ($vs_date_day = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_day'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' ')))) { $va_date[] = $vs_date_day; }
+					if ($vs_date_year = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_year'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' ')))) { $va_date[] = $vs_date_year; }
 		
 					if(sizeof($va_date)) {							// TODO: this is assuming US-style dates for now
 						if ($o_tep->parse(join("/", $va_date))) {
@@ -123,14 +150,14 @@
 					
 					// Process start date
 					$va_date = array();
-					if ($vs_date_month = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_startMonth'], $pa_source_data, $pa_item))) { 
+					if ($vs_date_month = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_startMonth'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' ')))) { 
 						if (($vn_m = array_search($vs_date_month, $va_month_list)) !== false) {
 							$vs_date_month = ($vn_m + 1);
 						}
 						$va_date[] = $vs_date_month; 
 					}
-					if ($vs_date_day = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_startDay'], $pa_source_data, $pa_item))) { $va_date[] = $vs_date_day; }
-					if ($vs_date_year = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_startYear'], $pa_source_data, $pa_item))) { $va_date[] = $vs_date_year; }
+					if ($vs_date_day = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_startDay'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' ')))) { $va_date[] = $vs_date_day; }
+					if ($vs_date_year = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_startYear'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' ')))) { $va_date[] = $vs_date_year; }
 		
 					if(sizeof($va_date)) {
 						if ($o_tep->parse(join("/", $va_date))) {	// TODO: this is assuming US-style dates for now
@@ -142,14 +169,15 @@
 					
 					// Process end date
 					$va_date = array();
-					if ($vs_date_month = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_endMonth'], $pa_source_data, $pa_item))) { 
+					if ($vs_date_month = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_endMonth'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' ')))) { 
 						if (($vn_m = array_search($vs_date_month, $va_month_list)) !== false) {
 							$vs_date_month = ($vn_m + 1);
 						}
 						$va_date[] = $vs_date_month; 
 					}
-					if ($vs_date_day = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_endDay'], $pa_source_data, $pa_item))) { $va_date[] = $vs_date_day; }
-					if ($vs_date_year = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_endYear'], $pa_source_data, $pa_item))) { $va_date[] = $vs_date_year; }
+					
+					if ($vs_date_day = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_endDay'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' ')))) { $va_date[] = $vs_date_day; }
+					if ($vs_date_year = trim(BaseRefinery::parsePlaceholder($pa_item['settings']['dateJoiner_endYear'], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' ')))) { $va_date[] = $vs_date_year; }
 		
 					if(sizeof($va_date)) {
 						if ($o_tep->parse(join("/", $va_date))) {	// TODO: this is assuming US-style dates for now
@@ -212,6 +240,25 @@
 				'label' => _t('Date start'),
 				'description' => _t('Maps the date from the data source that is the beginning of the conjoined date range. (For Two-column range).')
 			),
+			'dateJoiner_skipStartIfExpression' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Skip start date if expression'),
+				'description' => _t('Omits start date from range if specified expression is true. (For Two-column range).')
+			),
+			
+			'dateJoiner_skipStartIfExpressionReplacementValue' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Skip start date replacement value'),
+				'description' => _t('Value to replace start date with when start date is skipped. (For Two-column range).')
+			),
 			'dateJoiner_end' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_FIELD,
@@ -220,6 +267,24 @@
 				'default' => '',
 				'label' => _t('Date end'),
 				'description' => _t('Maps the date from the data source that is the end of the conjoined date range. (For Two-column range)')
+			),
+			'dateJoiner_skipEndIfExpression' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Skip end date if expression'),
+				'description' => _t('Omits end date from range if specified expression is true. (For Two-column range).')
+			),
+			'dateJoiner_skipEndIfExpressionReplacementValue' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Skip end date replacement value'),
+				'description' => _t('Value to replace end date with when end date is skipped. (For Two-column range).')
 			),
 			'dateJoiner_startDay' => array(
 				'formatType' => FT_TEXT,
@@ -303,4 +368,3 @@
 				'description' => _t('Maps the year value for the date from the data source. (For Multi-column date)')
 			)
 		);
-?>

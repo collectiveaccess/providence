@@ -29,7 +29,6 @@
  * 
  * ----------------------------------------------------------------------
  */
-require_once('PHPUnit/Autoload.php');
 require_once(__CA_LIB_DIR__."/ca/Service/ItemService.php");
 
 class ItemServiceTest extends PHPUnit_Framework_TestCase {

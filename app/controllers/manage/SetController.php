@@ -32,11 +32,13 @@
  	class SetController extends ActionController {
  		# -------------------------------------------------------
  		public function ListSets() {
- 			JavascriptLoadManager::register('tableList');
+ 			AssetLoadManager::register('tableList');
  			$o_result_context = new ResultContext($this->request, 'ca_sets', 'basic_search');
  			
  			$t_set = new ca_sets();
 			$this->view->setVar('t_set', $t_set);
+			
+			$vn_user_id = !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null;
 			
  			if ($this->request->user->canDoAction('is_administrator') || $this->request->user->canDoAction('can_administrate_sets')) {
 				$ps_mode = $this->request->getParameter('mode', pString);
@@ -50,17 +52,17 @@
 				switch($pn_mode) {
 					case 0:
 					default:
-						$va_set_list = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $this->request->getUserID(), 'access' => __CA_SET_EDIT_ACCESS__)), null, null, array());
+						$va_set_list = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $vn_user_id, 'access' => __CA_SET_EDIT_ACCESS__)), null, null, array());
 						break;
 					case 1:
-						$va_set_list = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $this->request->getUserID(), 'allUsers' => true)), null, null, array());
+						$va_set_list = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $vn_user_id, 'allUsers' => true)), null, null, array());
 						break;
 					case 2:
-						$va_set_list = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $this->request->getUserID(), 'publicUsers' => true)), null, null, array());
+						$va_set_list = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $vn_user_id, 'publicUsers' => true)), null, null, array());
 						break;
 				}
 			} else {
-				$va_set_list = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $this->request->getUserID(), 'access' => __CA_SET_EDIT_ACCESS__)), null, null, array());
+				$va_set_list = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $vn_user_id, 'access' => __CA_SET_EDIT_ACCESS__)), null, null, array());
 			}
 			
 			if ($va_set_list) {
@@ -106,10 +108,12 @@
  		public function Info() {
  			$t_set = new ca_sets($vn_set_id = $this->request->getParameter('set_id', pInteger));
  			
+			$vn_user_id = !(bool)$this->request->config->get('ca_sets_all_users_see_all_sets') ? $this->request->getUserID() : null;
+			
  			$va_set_stats = array('mine' => caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $this->request->getUserID(), 'access' => __CA_SET_EDIT_ACCESS__)), null, null, array()));
  			if ($this->request->user->canDoAction('is_administrator') || $this->request->user->canDoAction('can_administrate_sets')) {
- 				$va_set_stats['user'] = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $this->request->getUserID(), 'allUsers' => true)), null, null, array());
- 				$va_set_stats['public'] = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $this->request->getUserID(), 'publicUsers' => true)), null, null, array());
+ 				$va_set_stats['user'] = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $vn_user_id, 'allUsers' => true)), null, null, array());
+ 				$va_set_stats['public'] = caExtractValuesByUserLocale($t_set->getSets(array('user_id' => $vn_user_id, 'publicUsers' => true)), null, null, array());
  			}
  			
  			$o_result_context = new ResultContext($this->request, 'ca_sets', 'basic_search');

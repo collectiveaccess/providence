@@ -30,7 +30,9 @@
 	$vo_result 				= $this->getVar('result');
 	$vn_items_per_page 		= $this->getVar('current_items_per_page');
 	$vs_current_sort 		= $this->getVar('current_sort');
-	$vo_ar				= $this->getVar('access_restrictions');
+	$vo_ar					= $this->getVar('access_restrictions');
+	$vs_image_name 			= $this->request->config->get('no_image_icon');
+
 ?>
 <form id="caFindResultsForm">
 	<table border="0" cellpadding="0px" cellspacing="0px" width="100%">
@@ -45,7 +47,7 @@
 			if (!$vn_col) { 
 				print "<tr>";
 			}
-			if (!$vs_idno = $vo_result->get('ca_objects.idno')) {
+			if (!($vs_idno = $vo_result->get('ca_objects.idno'))) {
 				$vs_idno = "???";
 			}
 			$va_labels = $vo_result->getDisplayLabels($this->request);
@@ -57,20 +59,26 @@
 			}
 			# --- get the height of the image so can calculate padding needed to center vertically
 			$va_media_info = $vo_result->getMediaInfo('ca_object_representations.media', 'preview170');
+			$va_tmp = $vo_result->getMediaTags('ca_object_representations.media', 'preview170');
+
+			$vs_background_image = $this->request->getThemeUrlPath().'/graphics/buttons/icon-image-64.png';
 			$vn_padding_top = 0;
-			$vn_padding_top_bottom =  ((170 - $va_media_info["HEIGHT"]) / 2);
+			$vn_padding_top_bottom =  ((180 - $va_media_info["HEIGHT"]) / 2);
 			
-			print "<td align='center' valign='top' style='padding:20px 2px 2px 2px;'><div class='objectThumbnailsImageContainer' style='padding: ".$vn_padding_top_bottom."px 0px ".$vn_padding_top_bottom."px 0px;'>"; 
+			if (sizeof($va_tmp) == 0) {
+				$vs_background_image = 'background-image:url("'.$vs_background_image.'"); background-position: 55px 65px; background-repeat: no-repeat; background-size: 64px 64px; opacity: .3;';
+			}
+			
+			print "<td align='center' valign='top' style='padding:2px 2px 2px 2px;'><div class='objectThumbnailsImageContainer' style='padding: ".$vn_padding_top_bottom."px 0px ".$vn_padding_top_bottom."px 0px; {$vs_background_image}'>"; 
 ?>
 			<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_object_id; ?>' class="addItemToSetControl addItemToSetControlInThumbnails" />		
 <?php
-			$va_tmp = $vo_result->getMediaTags('ca_object_representations.media', 'preview170');
 			print caEditorLink($this->request, array_shift($va_tmp), '', 'ca_objects', $vn_object_id, array(), array('onmouseover' => 'jQuery(".qlButtonContainerThumbnail").css("display", "none"); jQuery("#ql_'.$vn_object_id.'").css("display", "block");', 'onmouseout' => 'jQuery(".qlButtonContainerThumbnail").css("display", "none");'));
 		
 			print "<div class='qlButtonContainerThumbnail' id='ql_".$vn_object_id."' onmouseover='jQuery(\"#ql_".$vn_object_id."\").css(\"display\", \"block\");'><a class='qlButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, 'find', 'SearchObjects', 'QuickLook', array('object_id' => $vn_object_id))."\"); return false;' >Quick Look</a></div>";
 			
-			print "</div><div style='width:185px; overflow:hidden;'".$vs_caption;
-			print "<br/>[".caEditorLink($this->request, $vs_idno, '', 'ca_objects', $vn_object_id, array())."]\n";
+			print "</div><div class='thumbCaption' ".$vs_caption;
+			print "<br/>".caEditorLink($this->request, $vs_idno, '', 'ca_objects', $vn_object_id, array())."\n";
 			print "</div></td>";
 			$vn_col++;
 			if($vn_col == $vn_display_cols){

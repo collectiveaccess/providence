@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -82,6 +82,15 @@ BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
 				'LABEL' => 'Sortable location identifier', 'DESCRIPTION' => 'Value used for sorting locations on identifier value.',
 				'BOUNDS_LENGTH' => array(0,255)
 		),
+		'source_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'LIST_CODE' => 'storage_location_sources',
+				'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of storage location. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed.')
+		),
 		'source_info' => array(
 				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
@@ -102,6 +111,19 @@ BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'Hierarchical index - right bound', 'DESCRIPTION' => 'Right-side boundary for nested set-style hierarchical indexing; used to accelerate search and retrieval of hierarchical record sets.'
+		),
+		'access' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 0,
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'BOUNDS_CHOICE_LIST' => array(
+					_t('Not accessible to public') => 0,
+					_t('Accessible to public') => 1
+				),
+				'LIST' => 'access_statuses',
+				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if location information is accessible to the public or not. ')
 		),
 		'status' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -148,7 +170,15 @@ BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
 				'DEFAULT' => '',
 				"MEDIA_PROCESSING_SETTING" => 'ca_icons',
 				'LABEL' => _t('Icon'), 'DESCRIPTION' => _t('Optional icon to identify the editor UI with')
-		)
+		),
+		'is_enabled' => array(
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT,
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false,
+				'DEFAULT' => '1',
+				'LABEL' => _t('Is enabled?'), 'DESCRIPTION' => _t("If unchecked this item is disabled and can't be edited or used in new relationships"),
+				'BOUNDS_VALUE' => array(0,1)
+		),
  	)
 );
 
@@ -250,6 +280,12 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 	protected $ATTRIBUTE_TYPE_LIST_CODE = 'storage_location_types';	// list code (ca_lists.list_code) of list defining types for this table
 
 	# ------------------------------------------------------
+	# Sources
+	# ------------------------------------------------------
+	protected $SOURCE_ID_FLD = 'source_id';							// name of source field for this table
+	protected $SOURCE_LIST_CODE = 'storage_location_sources';		// list code (ca_lists.list_code) of list defining sources for this table
+
+	# ------------------------------------------------------
 	# ID numbering
 	# ------------------------------------------------------
 	protected $ID_NUMBERING_ID_FIELD = 'idno';				// name of field containing user-defined identifier
@@ -298,8 +334,33 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 		$this->BUNDLES['ca_list_items'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related vocabulary terms'));
 		$this->BUNDLES['ca_sets'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));
 		
+		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
+
 		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
+	}
+	# ------------------------------------------------------
+	public function insert($pa_options=null) {
+		$vb_web_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$this->setTransaction(new Transaction($this->getDb()));
+			$vb_web_set_transaction = true;
+		}
+
+		$o_trans = $this->getTransaction();
+
+		if (!strlen($this->get('is_enabled'))) {
+			$this->set('is_enabled', 1);
+		}
+		$vn_rc = parent::insert($pa_options);
+
+		if ($this->numErrors()) {
+			if ($vb_web_set_transaction) { $o_trans->rollback(); }
+		} else {
+			if ($vb_web_set_transaction) { $o_trans->commit(); }
+		}
+
+		return $vn_rc;
 	}
 	# ------------------------------------------------------
 	/**
@@ -328,48 +389,66 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 	 public function getHierarchyName($pn_id=null) {
 	 	return _t('Storage locations');
 	 }
-	 # ------------------------------------------------------
+	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	public function getLocationIDsByName($ps_name, $pn_parent_id=null, $pn_type_id=null) {
-		$o_db = $this->getDb();
-		
-		$va_params = array((string)$ps_name);
-		
-		$vs_type_sql = '';
-		if ($pn_type_id) {
-			if(sizeof($va_type_ids = caMakeTypeIDList('ca_storage_locations', array($pn_type_id)))) {
-				$vs_type_sql = " AND casl.type_id IN (?)";
-				$va_params[] = $va_type_ids;
-			}
+	public function getCurrentObjectIDs() {
+		if (!$this->getPrimaryKey()) { return array(); }
+		$qr_objects = $this->getDb()->query("
+				SELECT cxo.object_id
+				FROM ca_movements_x_objects cxo
+				INNER JOIN ca_movements_x_storage_locations AS slxm ON slxm.movement_id = cxo.movement_id
+				WHERE
+					(slxm.location_id = ?)
+					
+			", array((int)$this->getPrimaryKey()));
+		$va_ids = array();
+		while($qr_objects->nextRow()) {
+			$va_ids[] = $qr_objects->get('object_id');
 		}
-		
-		if ($pn_parent_id) {
-			$vs_parent_sql = " AND casl.parent_id = ?";
-			$va_params[] = (int)$pn_parent_id;
-		} 
-		
-		$qr_res = $o_db->query("
-			SELECT DISTINCT casl.location_id
-			FROM ca_storage_locations casl
-			INNER JOIN ca_storage_location_labels AS casll ON casll.location_id = casl.location_id
-			WHERE
-				casll.name = ? {$vs_type_sql} {$vs_parent_sql} AND casl.deleted = 0
-		", $va_params);
-		
-		$va_location_ids = array();
-		while($qr_res->nextRow()) {
-			$va_location_ids[] = $qr_res->get('location_id');
-		}
-		return $va_location_ids;
+		return $va_ids;
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
-	public function getIDsByLabel($pa_label_values, $pn_parent_id=null, $pn_type_id=null) {
-		return $this->getLocationIDsByName($pa_label_values['name'], $pn_parent_id, $pn_type_id);
+	public function saveBundlesForScreen($pm_screen, $po_request, &$pa_options) {
+		if ($vn_rc = parent::saveBundlesForScreen($pm_screen, $po_request, $pa_options)) {
+			unset($pa_options['ui_instance']);
+			
+			// get list of objects currently associated with this storage location
+			$va_object_ids = $this->getCurrentObjectIDs();
+
+			$vs_movement_storage_location_relationship_type = $this->getAppConfig()->get('record_movement_information_when_moving_storage_location_movement_to_storage_location_relationship_type');
+			$vs_movement_object_relationship_type = $this->getAppConfig()->get('record_movement_information_when_moving_storage_location_movement_to_object_relationship_type');
+			
+			
+			foreach($_REQUEST as $vs_key => $vs_val) {
+				if (preg_match('!^(.*)_movement_form_name$!', $vs_key, $va_matches)) {
+					$vs_form_name = $po_request->getParameter($va_matches[1].'_movement_form_name', pString);
+					$vs_screen = $po_request->getParameter($va_matches[1].'_movement_screen', pString);
+					
+					if (is_array($va_object_ids) && sizeof($va_object_ids)) {
+						$t_movement = new ca_movements();
+						$t_movement->set('type_id', $t_movement->getDefaultTypeID());
+						
+						$va_movement_opts = array_merge($pa_options, array('formName' => $vs_form_name));
+						$t_movement->saveBundlesForScreen($vs_screen, $po_request, $va_movement_opts);
+			
+						if ($vs_movement_storage_location_relationship_type) {
+							$t_movement->addRelationship('ca_storage_locations', $this->getPrimaryKey(), $vs_movement_storage_location_relationship_type);
+						}
+						if ($vs_movement_object_relationship_type) {
+							foreach($va_object_ids as $vn_object_id) {
+								$t_movement->addRelationship('ca_objects', $vn_object_id, $vs_movement_object_relationship_type);
+							}
+						}
+					}
+				}
+			}
+		}
+		return $vn_rc;
 	}
 	# ------------------------------------------------------
 }

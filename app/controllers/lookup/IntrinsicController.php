@@ -69,7 +69,7 @@
 				SELECT DISTINCT {$vs_field}
 				FROM {$vs_table}
 				WHERE
-					({$vs_field} LIKE ?)
+					({$vs_field} LIKE ?) ".($t_table->hasField('deleted') ? ' AND deleted = 0' : '')."
 				ORDER BY
 					{$vs_field}
 				LIMIT {$vn_max_returned_values}

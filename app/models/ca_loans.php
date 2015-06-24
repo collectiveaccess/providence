@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,7 +35,7 @@
    */
 
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
-require_once(__CA_LIB_DIR__."/ca/RepresentableBaseModel.php");
+require_once(__CA_LIB_DIR__."/ca/BaseObjectLocationModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_loans'] = array(
@@ -81,6 +81,15 @@ BaseModel::$s_ca_models_definitions['ca_loans'] = array(
 				'LABEL' => 'Idno sort', 'DESCRIPTION' => 'Sortable version of value in idno',
 				'BOUNDS_LENGTH' => array(0,255)
 		),
+		'source_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => true, 
+				'DEFAULT' => '',
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'LIST_CODE' => 'loan_sources',
+				'LABEL' => _t('Source'), 'DESCRIPTION' => _t('Administrative source of loan. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed.')
+		),
 		'source_info' => array(
 				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
@@ -108,6 +117,19 @@ BaseModel::$s_ca_models_definitions['ca_loans'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'Hierarchical index - right bound', 'DESCRIPTION' => 'Right-side boundary for nested set-style hierarchical indexing; used to accelerate search and retrieval of hierarchical record sets.'
+		),
+		'access' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => 0,
+				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+				'BOUNDS_CHOICE_LIST' => array(
+					_t('Not accessible to public') => 0,
+					_t('Accessible to public') => 1
+				),
+				'LIST' => 'access_statuses',
+				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates if loan information is accessible to the public or not. ')
 		),
 		'status' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
@@ -143,7 +165,7 @@ BaseModel::$s_ca_models_definitions['ca_loans'] = array(
  	)
 );
 
-class ca_loans extends RepresentableBaseModel implements IBundleProvider {
+class ca_loans extends BaseObjectLocationModel implements IBundleProvider {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -233,12 +255,18 @@ class ca_loans extends RepresentableBaseModel implements IBundleProvider {
 	# Attributes
 	# ------------------------------------------------------
 	protected $ATTRIBUTE_TYPE_ID_FLD = 'type_id';			// name of type field for this table - attributes system uses this to determine via ca_metadata_type_restrictions which attributes are applicable to rows of the given type
-	protected $ATTRIBUTE_TYPE_LIST_CODE = 'loan_types';	// list code (ca_lists.list_code) of list defining types for this table
+	protected $ATTRIBUTE_TYPE_LIST_CODE = 'loan_types';		// list code (ca_lists.list_code) of list defining types for this table
+
+	# ------------------------------------------------------
+	# Sources
+	# ------------------------------------------------------
+	protected $SOURCE_ID_FLD = 'source_id';				// name of source field for this table
+	protected $SOURCE_LIST_CODE = 'loan_sources';		// list code (ca_lists.list_code) of list defining sources for this table
 
 	# ------------------------------------------------------
 	# Self-relations
 	# ------------------------------------------------------
-	protected $SELF_RELATION_TABLE_NAME = null;
+	protected $SELF_RELATION_TABLE_NAME = 'ca_loans_x_loans';
 	
 	# ------------------------------------------------------
 	# ID numbering
@@ -292,52 +320,8 @@ class ca_loans extends RepresentableBaseModel implements IBundleProvider {
 		$this->BUNDLES['ca_storage_locations'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related storage locations'));
 		
 		$this->BUNDLES['ca_list_items'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related vocabulary terms'));
-	}
-	# ------------------------------------------------------
-	/**
-	 * Finds loans with a label that matches $ps_name exactly
-	 *
-	 * @param string $ps_name The name to search for
-	 * @return array A list of loan_ids with the specified label
-	 */
-	public function getLoanIDsByName($ps_name, $pn_parent_id=null, $pn_type_id=null) {
-		$o_db = $this->getDb();
 		
-		$va_params = array((string)$ps_name);
-		
-		$vs_type_sql = '';
-		if ($pn_type_id) {
-			if(sizeof($va_type_ids = caMakeTypeIDList('ca_loans', array($pn_type_id)))) {
-				$vs_type_sql = " AND cae.type_id IN (?)";
-				$va_params[] = $va_type_ids;
-			}
-		}
-		
-		if ($pn_parent_id) {
-			$vs_parent_sql = " AND cae.parent_id = ?";
-			$va_params[] = (int)$pn_parent_id;
-		} 
-		
-		$qr_res = $o_db->query("
-			SELECT DISTINCT cae.loan_id
-			FROM ca_loans cae
-			INNER JOIN ca_loan_labels AS cael ON cael.loan_id = cae.loan_id
-			WHERE
-				cael.name = ? {$vs_type_sql} {$vs_parent_sql} AND cae.deleted = 0
-		", $va_params);
-		
-		$va_loan_ids = array();
-		while($qr_res->nextRow()) {
-			$va_loan_ids[] = $qr_res->get('loan_id');
-		}
-		return $va_loan_ids;
-	}
-	# ------------------------------------------------------
-	/**
-	 *
-	 */
-	public function getIDsByLabel($pa_label_values, $pn_parent_id=null, $pn_type_id=null) {
-		return $this->getLoanIDsByName($pa_label_values['name'], $pn_parent_id, $pn_type_id);
+		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
 	}
 	# ------------------------------------------------------
 }

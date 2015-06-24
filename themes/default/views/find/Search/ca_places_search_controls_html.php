@@ -83,7 +83,7 @@
 					initDataUrl: '<?php print caNavUrl($this->request, 'lookup', 'Place', 'GetHierarchyAncestorList'); ?>',
 					
 					editUrl: '<?php print caNavUrl($this->request, 'editor/places', 'PlaceEditor', 'Edit', array('place_id' => '')); ?>',
-					editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/arrow_grey_right.gif" border="0" title="Edit place">',
+					editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
 					
 					initItemID: '<?php print $this->getVar('browse_last_id'); ?>',
 					indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',

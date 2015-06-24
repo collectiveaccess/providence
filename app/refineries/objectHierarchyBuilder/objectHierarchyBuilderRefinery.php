@@ -38,6 +38,7 @@
 			$this->ops_description = _t('Builds an object hierarchy.');
 			
 			$this->opb_returns_multiple_values = true;
+			$this->opb_supports_relationships = true;
 			
 			parent::__construct();
 		}
@@ -80,7 +81,7 @@
 			
 			// Set object parents
 			if ($va_parents = $pa_item['settings']['objectHierarchyBuilder_parents']) {
-				$vn_parent_id = caProcessRefineryParents('objectHierarchyBuilderRefinery', 'ca_objects', $va_parents, $pa_source_data, $pa_item, null, null, $o_log);
+				$vn_parent_id = caProcessRefineryParents('objectHierarchyBuilderRefinery', 'ca_objects', $va_parents, $pa_source_data, $pa_item, null, $pa_options);
 			}
 			
 			return $vn_parent_id;
@@ -106,6 +107,17 @@
 			'default' => '',
 			'label' => _t('Parents'),
 			'description' => _t('object parents to create')
+		),
+		'objectHierarchyBuilder_dontMatchOnLabel' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Do not match on label'),
+			'description' => _t('set to prohibit matching using label')
 		)
+		
+		
 	);
 ?>

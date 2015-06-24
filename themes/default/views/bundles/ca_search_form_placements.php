@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,19 +29,19 @@
 	$t_form 								= $this->getVar('t_form');
 	$vs_id_prefix 							= $this->getVar('placement_code').$this->getVar('id_prefix');
 	
-	$va_available_display_items 		= $t_form->getAvailableBundles();
+	$va_available_display_items 			= $t_form->getAvailableBundles();
 	
 	foreach($va_available_display_items as $vs_bundle => $va_item) {
 		unset($va_available_display_items[$vs_bundle]['settings']);	// strip lists of valid settings - we don't need to send them to the client and they can be fairly large
 	}
 	
 	//getTemplatePlaceholderListForBundle
-	$va_to_display_items  				= $t_form->getPlacementsInForm(array('noCache' => true));
+	$va_to_display_items  					= $t_form->getPlacementsInForm(array('noCache' => true));
 	
-	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'searchFormPlacements');
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 ?>
-<div class="bundleDisplayPlacementEditorContainer" id="<?php print $vs_id_prefix; ?>searchFormPlacements">
+<div class="bundleDisplayPlacementEditorContainer" id="<?php print $vs_id_prefix; ?>">
 	<div id="bundleDisplayPlacementEditor" class="bundleDisplayPlacementEditor">
 		<div class="bundleDisplayPlacementEditorHelpText"><?php print _t("Drag your selection from column to column to edit the contents of the search form."); ?></div>
 		<table>
@@ -76,7 +76,7 @@
 				
 				displayBundleListID: '<?php print $vs_id_prefix; ?>displayBundleList',
 				
-				settingsIcon: "<img src='<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/edit.gif' alt='<?php print _t('Settings'); ?>' border='0' width='16' height='16'/>"
+				settingsIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_INFO2__); ?>"
 			});		
 		});
 	</script>

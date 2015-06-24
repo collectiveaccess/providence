@@ -46,15 +46,19 @@ require_once(__CA_MODELS_DIR__."/ca_user_groups.php");
 require_once(__CA_MODELS_DIR__."/ca_search_forms.php");
 require_once(__CA_MODELS_DIR__."/ca_search_form_placements.php");
 require_once(__CA_MODELS_DIR__."/ca_editor_ui_screens.php");
-
+require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
 
 
 final class ConfigurationExporter {
 	# -------------------------------------------------------
 	private $opo_config;
+	/** @var Datamodel*/
 	private $opo_dm;
+	/** @var Db */
 	private $opo_db;
+	/** @var ca_locales */
 	private $opt_locale;
+	/** @var DOMDocument */
 	private $opo_dom;
 	# -------------------------------------------------------
 
@@ -73,14 +77,13 @@ final class ConfigurationExporter {
 	# -------------------------------------------------------
 	/**
 	 * Export current configuration as XML profile
-	 * @param type $ps_name Name of the profile, used for "profileName" element
-	 * @param type $ps_description Description of the profile, used for "profileDescription" element
-	 * @param type $ps_base Base profile
-	 * @param type $ps_info_url Info URL for the profile
-	 * @param type $pa_options Associative array of options. Possible keys
-	 * @return type string profile as XML string
+	 * @param string $ps_name Name of the profile, used for "profileName" element
+	 * @param string $ps_description Description of the profile, used for "profileDescription" element
+	 * @param string $ps_base Base profile
+	 * @param string $ps_info_url Info URL for the profile
+	 * @return string string profile as XML string
 	 */
-	public static function exportConfigurationAsXML($ps_name="",$ps_description="",$ps_base="",$ps_info_url="",$pa_options=null) {
+	public static function exportConfigurationAsXML($ps_name="",$ps_description="",$ps_base="",$ps_info_url="") {
 		$o_exporter = new ConfigurationExporter();
 		
 		$vo_root = $o_exporter->getDOM()->createElement('profile');
@@ -113,6 +116,9 @@ final class ConfigurationExporter {
 		$vo_root->appendChild($o_exporter->getLocalesAsDOM());
 		$vo_root->appendChild($o_exporter->getListsAsDOM());
 		$vo_root->appendChild($o_exporter->getElementsAsDOM());
+		if($o_dict = $o_exporter->getMetadataDictionaryAsDOM()) {
+			$vo_root->appendChild($o_dict);
+		}
 		$vo_root->appendChild($o_exporter->getUIsAsDOM());
 		$vo_root->appendChild($o_exporter->getRelationshipTypesAsDOM());
 		$vo_root->appendChild($o_exporter->getRolesAsDOM());
@@ -175,7 +181,7 @@ final class ConfigurationExporter {
 
 		while($qr_lists->nextRow()){
 			$vo_list = $this->opo_dom->createElement("list");
-			$vo_list->setAttribute("code", $this->makeIDNO($qr_lists->get("list_code")));
+			$vo_list->setAttribute("code", $this->makeIDNOFromInstance($qr_lists, 'list_code'));
 			$vo_list->setAttribute("hierarchical", $qr_lists->get("is_hierarchical"));
 			$vo_list->setAttribute("system", $qr_lists->get("is_system_list"));
 			$vo_list->setAttribute("vocabulary", $qr_lists->get("use_as_vocabulary"));
@@ -220,11 +226,12 @@ final class ConfigurationExporter {
 		}
 
 		$vo_items = $this->opo_dom->createElement("items");
-
+		$vs_default_locale = $this->opt_locale->localeIDToCode($this->opt_locale->getDefaultCataloguingLocaleID());
 		while($qr_items->nextRow()){
 			$vo_item = $this->opo_dom->createElement("item");
+			$vs_idno = $this->makeIDNOFromInstance($qr_items,'idno');
 
-			$vo_item->setAttribute("idno", $this->makeIDNO($qr_items->get("idno")));
+			$vo_item->setAttribute("idno", $vs_idno);
 			$vo_item->setAttribute("enabled", $qr_items->get("is_enabled"));
 			$vo_item->setAttribute("default", $qr_items->get("is_default"));
 			if(is_numeric($vn_value = $qr_items->get("item_value"))){
@@ -244,12 +251,12 @@ final class ConfigurationExporter {
 
 					$vo_labels->appendChild($vo_label);
 				}
-			} else { // fallback if list item has no labels: add idno label in en_US
+			} else { // fallback if list item has no labels: add idno label in the default cataloguing locale
 				$vo_label = $this->opo_dom->createElement("label");
 				$vo_label->setAttribute("preferred", "1");
-				$vo_label->setAttribute("locale", "en_US");
-				$vo_label->appendChild($this->opo_dom->createElement("name_singular",caEscapeForXML($this->makeIDNO($qr_items->get("idno")))));
-				$vo_label->appendChild($this->opo_dom->createElement("name_plural",caEscapeForXML($this->makeIDNO($qr_items->get("idno")))));
+				$vo_label->setAttribute("locale", $vs_default_locale);
+				$vo_label->appendChild($this->opo_dom->createElement("name_singular",caEscapeForXML($vs_idno)));
+				$vo_label->appendChild($this->opo_dom->createElement("name_plural",caEscapeForXML($vs_idno)));
 				$vo_labels->appendChild($vo_label);
 			}
 
@@ -329,6 +336,7 @@ final class ConfigurationExporter {
 			$vo_restrictions = $this->opo_dom->createElement("typeRestrictions");
 
 			foreach($t_element->getTypeRestrictions() as $va_restriction){
+				/** @var ca_metadata_type_restrictions $t_restriction */
 				$t_restriction = new ca_metadata_type_restrictions($va_restriction["restriction_id"]);
 				
 				$vs_table_name = $this->opo_dm->getTableName($t_restriction->get("table_num"));
@@ -338,6 +346,7 @@ final class ConfigurationExporter {
 				$vo_restriction->appendChild($vo_table);
 
 				if($t_restriction->get("type_id")){
+					/** @var BaseRelationshipModel $t_instance */
 					$t_instance = $this->opo_dm->getInstanceByTableNum($t_restriction->get("table_num"));
 					$vs_type_code = $t_instance->getTypeListCode();
 
@@ -439,8 +448,134 @@ final class ConfigurationExporter {
 		return $vo_elements;
 	}
 	# -------------------------------------------------------
+	/**
+	 * @return DOMElement|null
+	 */
+	public function getMetadataDictionaryAsDOM() {
+		$vo_dict = $this->opo_dom->createElement("metadataDictionary");
+
+		$qr_entries = $this->opo_db->query("SELECT entry_id FROM ca_metadata_dictionary_entries ORDER BY entry_id");
+
+		if($qr_entries->numRows() < 1) { return null; }
+
+		while($qr_entries->nextRow()) {
+			$t_entry = new ca_metadata_dictionary_entries($qr_entries->get('entry_id'));
+			$vo_entry = $this->opo_dom->createElement("entry");
+			$vo_dict->appendChild($vo_entry);
+			$vo_entry->setAttribute('bundle', $t_entry->get('bundle_name'));
+
+			if(is_array($t_entry->getSettings())) {
+				$va_settings = array();
+
+				// bring array settings and key=>val settings in unified format: key=>array_of_vals or key=>locale=>val
+				foreach($t_entry->getSettings() as $vs_setting => $va_value){
+					if(is_array($va_value)) {
+						foreach($va_value as $vs_key => $vs_value) {
+							if(preg_match("/^[a-z]{2,3}\_[A-Z]{2,3}$/",$vs_key)) { // locale
+								$va_settings[$vs_setting][$vs_key] = $vs_value;
+								continue;
+							}
+							$va_settings[$vs_setting][] = $vs_value;
+						}
+					} else {
+						$va_settings[$vs_setting][] = $va_value;
+					}
+				}
+
+				// append settings to XML tree
+				if(sizeof($va_settings)>0) {
+					$vo_settings = $this->opo_dom->createElement("settings");
+					$vo_entry->appendChild($vo_settings);
+
+					foreach($va_settings as $vs_setting => $va_values) {
+						foreach($va_values as $vs_key => $vs_value) {
+							if($vs_value != caEscapeForXML($vs_value)) { // if something is escaped in caEscapeForXML(), wrap in CDATA
+								$vo_setting = $this->opo_dom->createElement('setting');
+								$vo_setting->appendChild(new DOMCdataSection($vs_value));
+							} else {
+								$vo_setting = $this->opo_dom->createElement("setting", $vs_value);
+							}
+							if(preg_match("/^[a-z]{2,3}\_[A-Z]{2,3}$/",$vs_key)) { // locale
+								$vo_setting->setAttribute("locale", $vs_key);
+							}
+							$vo_setting->setAttribute("name", $vs_setting);
+							$vo_settings->appendChild($vo_setting);
+						}
+					}
+				}
+			}
+
+			// rules for this dictionary
+			$va_rules = $t_entry->getRules();
+
+			if(is_array($va_rules) && sizeof($va_rules)>0) {
+				$vo_rules = $this->opo_dom->createElement("rules");
+				$vo_entry->appendChild($vo_rules);
+
+				foreach($va_rules as $va_rule) {
+					$vo_rule = $this->opo_dom->createElement("rule");
+					$vo_rules->appendChild($vo_rule);
+					$vo_rule->setAttribute('code', $va_rule['rule_code']);
+					$vo_rule->setAttribute('level', $va_rule['rule_level']);
+
+					// expression
+					if(isset($va_rule['expression']) && sizeof($va_rule['expression']) > 0) {
+						$vo_expression = $this->opo_dom->createElement('expression');
+						$vo_expression->appendChild(new DOMCdataSection($va_rule['expression']));
+						$vo_rule->appendChild($vo_expression);
+					}
+
+					// rule settings
+					if(isset($va_rule['settings']) && is_array($va_rule['settings'])) {
+						$va_settings = array();
+
+						// bring array settings and key=>val settings in unified format: key=>array_of_vals
+						foreach($va_rule['settings'] as $vs_setting => $va_value) {
+							if(is_array($va_value)) {
+								foreach($va_value as $vs_key => $vs_value) {
+									if(preg_match("/^[a-z]{2,3}\_[A-Z]{2,3}$/",$vs_key)) { // locale
+										$va_settings[$vs_setting][$vs_key] = $vs_value;
+										continue;
+									}
+									$va_settings[$vs_setting][] = $vs_value;
+								}
+							} else {
+								$va_settings[$vs_setting][] = $va_value;
+							}
+						}
+
+						// append settings to XML tree
+						if(sizeof($va_settings)>0) {
+							$vo_settings = $this->opo_dom->createElement("settings");
+							$vo_rule->appendChild($vo_settings);
+
+							foreach($va_settings as $vs_setting => $va_values) {
+								foreach($va_values as $vs_key => $vs_value) {
+									if($vs_value != caEscapeForXML($vs_value)) { // if something is escaped in caEscapeForXML(), wrap in CDATA
+										$vo_setting = $this->opo_dom->createElement('setting');
+										$vo_setting->appendChild(new DOMCdataSection($vs_value));
+									} else {
+										$vo_setting = $this->opo_dom->createElement("setting", $vs_value);
+									}
+									if(preg_match("/^[a-z]{2,3}\_[A-Z]{2,3}$/",$vs_key)) { // locale
+										$vo_setting->setAttribute("locale", $vs_key);
+									}
+									$vo_setting->setAttribute("name", $vs_setting);
+									$vo_settings->appendChild($vo_setting);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return $vo_dict;
+	}
+	# -------------------------------------------------------
 	public function getUIsAsDOM(){
 		$t_list = new ca_lists();
+		$t_rel_type = new ca_relationship_types();
 		
 		$vo_uis = $this->opo_dom->createElement("userInterfaces");
 		
@@ -490,11 +625,16 @@ final class ConfigurationExporter {
 				foreach($va_ui_type_restrictions as $va_restriction){
 					$vo_restriction = $this->opo_dom->createElement("restriction");
 					$vo_ui_type_restrictions->appendChild($vo_restriction);
-					
+					/** @var BaseModelWithAttributes $t_instance */
 					$t_instance = $this->opo_dm->getInstanceByTableNum($va_restriction["table_num"]);
-					$vs_type_code = $t_instance->getTypeListCode();
-					$va_item = $t_list->getItemFromListByItemID($vs_type_code, $va_restriction["type_id"]);
-					$vo_restriction->setAttribute("type", $va_item["idno"]);
+					if($t_instance instanceof BaseRelationshipModel) {
+						$t_rel_type->load($va_restriction["type_id"]);
+						$vo_restriction->setAttribute("type", $t_rel_type->get('type_code'));
+					} else {
+						$vs_type_code = $t_instance->getTypeListCode();
+						$va_item = $t_list->getItemFromListByItemID($vs_type_code, $va_restriction["type_id"]);
+						$vo_restriction->setAttribute("type", $va_item["idno"]);
+					}
 				}
 			}
 
@@ -567,14 +707,18 @@ final class ConfigurationExporter {
 				if(is_array($t_screen->getTypeRestrictions()) && sizeof($t_screen->getTypeRestrictions())>0){
 					$vo_type_restrictions = $this->opo_dom->createElement("typeRestrictions");
 
-					foreach($t_screen->getTypeRestrictions() as $va_restriction){
+					foreach($t_screen->getTypeRestrictions() as $va_restriction) {
 						$vo_type_restriction = $this->opo_dom->createElement("restriction");
 
 						$t_instance = $this->opo_dm->getInstanceByTableNum($va_restriction["table_num"]);
-						$vs_type_code = $t_instance->getTypeListCode();
-						$va_item = $t_list->getItemFromListByItemID($vs_type_code, $va_restriction["type_id"]);
-
-						$vo_type_restriction->setAttribute("type", $va_item["idno"]);
+						if($t_instance instanceof BaseRelationshipModel) {
+							$t_rel_type->load($va_restriction["type_id"]);
+							$vo_type_restriction->setAttribute("type", $t_rel_type->get('type_code'));
+						} else {
+							$vs_type_code = $t_instance->getTypeListCode();
+							$va_item = $t_list->getItemFromListByItemID($vs_type_code, $va_restriction["type_id"]);
+							$vo_type_restriction->setAttribute("type", $va_item["idno"]);
+						}
 
 						$vo_type_restrictions->appendChild($vo_type_restriction);
 					}
@@ -625,7 +769,7 @@ final class ConfigurationExporter {
 											break;
 									}
 									if(strlen($vs_value)>0){
-										if($vs_value === 0 || $vs_value === "0"){ // caExcapeForXML mangles zero values for some reason -> catch them here.
+										if($vs_value === 0 || $vs_value === "0"){ // caEscapeForXML mangles zero values for some reason -> catch them here.
 											$vs_setting_val = $vs_value;
 										} else {
 											$vs_setting_val = caEscapeForXML($vs_value);
@@ -637,7 +781,7 @@ final class ConfigurationExporter {
 											if(preg_match("/^[a-z]{2,3}\_[A-Z]{2,3}$/",$vs_key)){
 												$vo_setting->setAttribute("locale", $vs_key);
 											} else {
-												continue;
+												$vo_setting->setAttribute("locale", "en_US");
 											}
 										}
 										$vo_settings->appendChild($vo_setting);
@@ -681,11 +825,12 @@ final class ConfigurationExporter {
 				WHERE table_num=?
 				AND parent_id IS NULL
 			",$qr_tables->get("table_num"));
-			if($qr_root->nextRow()) $vn_parent = $qr_root->get("type_id");
-			
-			if($vo_types = $this->getRelationshipTypesForParentAsDOM($vn_parent)){
-				$vo_table->appendChild($vo_types);
-				$vo_rel_types->appendChild($vo_table);
+			if($qr_root->nextRow()) {
+				$vn_parent = $qr_root->get("type_id");
+				if($vo_types = $this->getRelationshipTypesForParentAsDOM($vn_parent)){
+					$vo_table->appendChild($vo_types);
+					$vo_rel_types->appendChild($vo_table);
+				}
 			}
 		}
 		
@@ -726,9 +871,11 @@ final class ConfigurationExporter {
 			$vo_type->appendChild($vo_labels);
 			
 			// restrictions (left side)
+			/** @var BaseRelationshipModel $t_instance */
 			$t_instance = $this->opo_dm->getInstanceByTableNum($qr_types->get("table_num"));
 			
 			if($qr_types->get("sub_type_left_id")){
+				/** @var BaseModelWithAttributes $t_left_instance */
 				$vs_left_table = $t_instance->getLeftTableName();
 				$t_left_instance = $this->opo_dm->getInstanceByTableNum($vs_left_table);
 
@@ -741,6 +888,7 @@ final class ConfigurationExporter {
 			// restrictions (right side)
 			
 			if($qr_types->get("sub_type_right_id")){
+				/** @var BaseModelWithAttributes $t_right_instance */
 				$vs_right_table = $t_instance->getRightTableName();
 				$t_right_instance = $this->opo_dm->getInstanceByTableNum($vs_right_table);
 
@@ -819,7 +967,7 @@ final class ConfigurationExporter {
 					$vs_table_name = $va_tmp[0];
 					$vn_type_id = $va_tmp[1];
 					$vs_access = $this->_convertACLConstantToString(intval($vn_val));
-
+					/** @var BaseModelWithAttributes $t_instance */
 					$t_instance = $this->opo_dm->getInstanceByTableName($vs_table_name, true);
 					if (!($vs_list_code = $t_instance->getTypeListCode())) { continue; }
 
@@ -877,6 +1025,7 @@ final class ConfigurationExporter {
 		$qr_forms = $this->opo_db->query("SELECT * FROM ca_search_forms");
 		
 		while($qr_forms->nextRow()){
+			/** @var ca_search_forms $t_form */
 			$t_form = new ca_search_forms($qr_forms->get("form_id"));
 			
 			$vo_form = $this->opo_dom->createElement("searchForm");
@@ -897,7 +1046,7 @@ final class ConfigurationExporter {
 
 			$vo_form->appendChild($vo_labels);
 			
-			if(is_array($t_form->getSettings())){
+			if(is_array($t_form->getSettings())) {
 				$vo_settings = $this->opo_dom->createElement("settings");
 				foreach($t_form->getSettings() as $vs_setting => $va_value){
 					if(is_array($va_value)){
@@ -955,7 +1104,7 @@ final class ConfigurationExporter {
 
 				$vo_placements->appendChild($vo_placement);
 				$vo_placement->appendChild($this->opo_dom->createElement("bundle",caEscapeForXML($qr_placements->get("bundle_name"))));
-
+				/** @var ca_search_form_placements $t_placement */
 				$t_placement = new ca_search_form_placements($qr_placements->get("placement_id"));
 
 				if(is_array($t_placement->getSettings())){
@@ -992,8 +1141,9 @@ final class ConfigurationExporter {
 		return $vo_forms;
 	}
 	# -------------------------------------------------------
-	public function getDisplaysAsXML($pa_options=null) {
+	public function getDisplaysAsXML() {
 		$t_display = new ca_bundle_displays();
+		/** @var Datamodel $o_dm */
 		$o_dm = Datamodel::load();
 		$this->opt_locale = new ca_locales();
 		
@@ -1050,7 +1200,7 @@ final class ConfigurationExporter {
 
 				$vs_buf .= "\t\t</groupAccess>\n";
 			}
-			
+
 			$va_placements = $t_display->getPlacements();
 			
 			$vs_buf .= "<bundlePlacements>\n";
@@ -1062,13 +1212,40 @@ final class ConfigurationExporter {
 					foreach($va_settings as $vs_setting => $vm_value) {
 						switch($vs_setting) {
 							case 'label':
-								//restrict_to_relationship_types
 								if(is_array($vm_value)) {
 									foreach($vm_value as $vn_locale_id => $vm_locale_specific_value) {
-										$vs_buf .= "<setting name='label' locale='".$this->opt_locale->localeIDToCode($vn_locale_id)."'>".caEscapeForXML($vm_locale_specific_value)."</setting>\n";
+										if(preg_match("/^[a-z]{2,3}\_[A-Z]{2,3}$/",$vn_locale_id)) { // locale code
+											$vs_locale_code = $vn_locale_id;
+										} else {
+											if(!($vs_locale_code = $this->opt_locale->localeIDToCode($vn_locale_id))) {
+												$vs_locale_code = 'en_US';
+											}
+										}
+										$vs_buf .= "<setting name='label' locale='".$vs_locale_code."'>".caEscapeForXML($vm_locale_specific_value)."</setting>\n";
 									}
 								}
-							
+								break;
+							case 'restrict_to_relationship_types':
+								if(is_array($vm_value)){
+									foreach($vm_value as $vn_val){
+										$t_rel_type = new ca_relationship_types($vn_val);
+										if ($t_rel_type->getPrimaryKey()) {
+											$vs_value = $t_rel_type->get('type_code');
+											$vs_buf .= "\t\t\t\t<setting name='{$vs_setting}'><![CDATA[".$vs_value."]]></setting>\n";
+										}
+									}
+								}
+								break;
+							case 'restrict_to_types':
+								if(is_array($vm_value)){
+									foreach($vm_value as $vn_val){
+										$t_item = new ca_list_items($vn_val);
+										if ($t_item->getPrimaryKey()) {
+											$vs_value = $t_item->get('idno');
+											$vs_buf .= "\t\t\t\t<setting name='{$vs_setting}'><![CDATA[".$vs_value."]]></setting>\n";
+										}
+									}
+								}
 								break;
 							default:
 								if (is_array($vm_value)) {
@@ -1096,9 +1273,9 @@ final class ConfigurationExporter {
 	# -------------------------------------------------------
 	// Utilities
 	# -------------------------------------------------------
-	private function makeIDNO($ps_idno){
+	private function makeIDNO($ps_idno, $pn_length = 30){
 		if(strlen($ps_idno)>0){
-			return substr(preg_replace("/[^_a-zA-Z0-9]/","_",$ps_idno),0,30);
+			return substr(preg_replace("/[^_a-zA-Z0-9]/","_",$ps_idno),0, $pn_length);
 		} else {
 			return "default";
 		}
@@ -1126,5 +1303,17 @@ final class ConfigurationExporter {
 		}
 	}
 	# --------------------------------------------------
+	/**
+	 * @param BaseModel $po_model_instance
+	 * @param string $ps_field_name
+	 * @return string normalised idno
+	 */
+	private function makeIDNOFromInstance($po_model_instance, $ps_field_name) {
+		$va_length = $po_model_instance->getFieldInfo($ps_field_name, 'BOUNDS_LENGTH');
+		// Previously this was always 30, so let's be conservative
+		$vn_max_length = isset($va_length[1]) ? $va_length[1] : 30;
+		$vs_value = $po_model_instance->get($ps_field_name);
+		return $this->makeIDNO($vs_value, $vn_max_length);
+	}
 }
 ?>
