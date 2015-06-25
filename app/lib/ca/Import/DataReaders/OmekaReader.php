@@ -66,7 +66,7 @@ class OmekaReader extends BaseXMLDataReader {
 	/**
 	 *
 	 */
-	protected $ops_root_tag = '/itemContainer';
+	protected $ops_root_tag = 'itemContainer';
 
 	/**
 	 * Merge attributes of row-level tag into record as regular values?
