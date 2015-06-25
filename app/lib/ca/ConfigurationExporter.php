@@ -745,7 +745,7 @@ final class ConfigurationExporter {
 								if(!is_array($va_values)) { $va_values = array($va_values); }
 
 								// account for legacy settings
-								if($vs_setting=="restrict_to_type") $vs_setting = "restrict_to_types";
+								if($vs_setting == "restrict_to_type") { $vs_setting = "restrict_to_types"; }
 
 								foreach($va_values as $vs_key => $vs_value) {
 									switch($vs_setting) {
@@ -769,25 +769,26 @@ final class ConfigurationExporter {
 											break;
 									}
 									if(strlen($vs_value)>0) {
-										if($vs_value === 0 || $vs_value === "0") { // caEscapeForXML mangles zero values for some reason -> catch them here.
+										// caEscapeForXML mangles zero values for some reason -> catch them here.
+										if($vs_value === 0 || $vs_value === "0") {
 											$vs_setting_val = $vs_value;
 										} else {
 											$vs_setting_val = caEscapeForXML($vs_value);
 										}
-										$vo_setting = @$this->opo_dom->createElement("setting", $vs_setting_val);
 
+										$vo_setting = @$this->opo_dom->createElement("setting", $vs_setting_val);
 										$vo_setting->setAttribute("name", $vs_setting);
 										if($vs_setting=="label" || $vs_setting=="add_label" || $vs_setting=="description") {
 											if(preg_match("/^[a-z]{2,3}\_[A-Z]{2,3}$/",$vs_key)) {
 												$vo_setting->setAttribute("locale", $vs_key);
 											} else {
-												$vo_setting->setAttribute("locale", "en_US");
+												continue;
 											}
 										}
+
 										$vo_settings->appendChild($vo_setting);
 									}
 								}
-
 
 							}
 
