@@ -52,9 +52,9 @@ Vagrant.configure(2) do |config|
     apt-get -q -y -o Dpkg::Options::=--force-confold install php5-curl php5-mysqlnd php5-json php5-gd php5-imap php5-mcrypt
     apt-get -q -y -o Dpkg::Options::=--force-confold install htop screen vim apachetop vnstat git
     apt-get -q -y -o Dpkg::Options::=--force-confold install ffmpeg graphicsmagick python-pdfminer
-    apt-get -q -y -o Dpkg::Options::=--force-confold install ghostscript dcraw xpdf mediainfo exiftool
+    apt-get -q -y -o Dpkg::Options::=--force-confold install ghostscript dcraw xpdf mediainfo exiftool phantomjs
 
-    # slooooow setup with gmagick and libreoffice. if you want a shiny setup, uncomment it here
+    # slooooow setup with gmagick and libreoffice. if you want a shiny media processing setup, uncomment the following lines
     #
     # apt-get -q -y -o Dpkg::Options::=--force-confold install php5-dev php-pear libgraphicsmagick1-dev libreoffice abiword
 	# pecl install gmagick-1.1.7RC3
@@ -77,6 +77,12 @@ Vagrant.configure(2) do |config|
       sed -i "s/my_database_user/root/g" ${setup_php}
       sed -i "s/my_database_password/root/g" ${setup_php}
       sed -i "s/name_of_my_database/collectiveaccess/g" ${setup_php}
+    fi
+
+    if ! [ -f /vagrant/app/conf/local/external_applications.conf ]; then
+      cp /vagrant/app/conf/external_applications.conf /vagrant/app/conf/local/external_applications.conf
+	  sed -i "s/pdf2txt\.py/pdf2txt/g" /vagrant/app/conf/local/external_applications.conf
+	  sed -i "s/\/usr\/local\/bin\/phantomjs/\/usr\/bin\/phantomjs/g" /vagrant/app/conf/local/external_applications.conf
     fi
 
     service apache2 restart
