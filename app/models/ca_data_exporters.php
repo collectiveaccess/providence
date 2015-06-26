@@ -595,8 +595,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			case 'CSV':
 				$o_export = new ExportCSV();
 				break;
-			case 'XMP':
-				$o_export = new ExportXMP();
+			case 'ExifTool':
+				$o_export = new ExportExifTool();
 				break;
 			default:
 				return;
@@ -1354,8 +1354,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				case 'CSV':
 					$o_export = new ExportCSV();
 					break;
-				case 'XMP':
-					$o_export = new ExportXMP();
+				case 'ExifTool':
+					$o_export = new ExportExifTool();
 					break;
 				default:
 					return array(_t("Invalid exporter format"));
@@ -1443,8 +1443,8 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			case 'CSV':
 				$o_export = new ExportCSV();
 				break;
-			case 'XMP':
-				$o_export = new ExportXMP();
+			case 'ExifTool':
+				$o_export = new ExportExifTool();
 				break;
 			default:
 				return;

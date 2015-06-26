@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * ExportXMP.php : defines XMP export format
+ * ExportExifTool.php : defines ExifTool export format
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -31,20 +31,19 @@
  */
 
 require_once(__CA_LIB_DIR__.'/ca/Export/BaseExportFormat.php');
-require_once(__CA_LIB_DIR__.'/core/Parsers/MediaMetadata/XMPParser.php');
 
-class ExportXMP extends BaseExportFormat {
+class ExportExifTool extends BaseExportFormat {
 	# ------------------------------------------------------
 	
 	# ------------------------------------------------------
 	public function __construct() {
-		$this->ops_name = 'XMP';
-		$this->ops_element_description = _t('Values are XMP field names without prefix');
+		$this->ops_name = 'ExifTool';
+		$this->ops_element_description = _t('Values are ExifTool XML element names. See http://www.sno.phy.queensu.ca/~phil/exiftool/metafiles.html#xml');
 		parent::__construct();
 	}
 	# ------------------------------------------------------
 	public function getFileExtension($pa_settings) {
-		return 'xmp';
+		return 'xml';
 	}
 	# ------------------------------------------------------
 	public function getContentType($pa_settings) {
@@ -60,20 +59,9 @@ class ExportXMP extends BaseExportFormat {
 	public function getMappingErrors($t_mapping) {
 		$va_errors = array();
 		$va_top = $t_mapping->getTopLevelItems();
-		$o_parser = new XMPParser();
-		$va_available_fields = $o_parser->getAvailableFields();
 
 		foreach($va_top as $va_item) {
-			$t_item = new ca_data_exporter_items($va_item['item_id']);
 
-			$vs_element = $va_item['element'];
-			if(!in_array($vs_element, $va_available_fields)) {
-				$va_errors[] = _t("Element %1 is not valid for XMP", $vs_element);
-			}
-
-			if(sizeof($t_item->getHierarchyChildren())>0) {
-				$va_errors[] = _t("XMP exports can't be hierarchical", $vs_element);
-			}
 		}
 
 		return $va_errors;
@@ -81,4 +69,4 @@ class ExportXMP extends BaseExportFormat {
 	# ------------------------------------------------------
 }
 
-BaseExportFormat::$s_format_settings['XMP'] = array();
+BaseExportFormat::$s_format_settings['ExifTool'] = array();
