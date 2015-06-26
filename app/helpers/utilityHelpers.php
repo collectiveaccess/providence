@@ -542,7 +542,10 @@ function caFileIsIncludable($ps_file) {
 		return str_replace("&amp;#", "&#", $ps_text);
 	}
 	# ----------------------------------------
-	function caEscapeForBundlePreview($ps_text) {
+	function caEscapeForBundlePreview($ps_text, $pn_limit=100) {
+		if(strlen($ps_text) > $pn_limit) {
+			$ps_text = substr($ps_text, 0, $pn_limit) . " ...";
+		}
 		return json_encode(html_entity_decode(strip_tags($ps_text), ENT_QUOTES | ENT_HTML5));
 	}
 	# ----------------------------------------
@@ -1695,7 +1698,7 @@ function caFileIsIncludable($ps_file) {
 	 * An options array is simply an associative array where keys are option names and values are option values.
 	 * caGetOption() provides a simple interface to grab values, force default values for non-existent settings and enforce simple validation rules.
 	 *
-	 * @param mixed $ps_option The option to extract
+	 * @param mixed $pm_option The option to extract. If an array is provided then each option is tried, in order, until a non-false value is found.
 	 * @param array $pa_options The options array to extract values from
 	 * @param mixed $pm_default An optional default value to return if $ps_option is not set in $pa_options 
 	 * @param array $pa_parse_options Option parser options (cross your eyes now) include:
@@ -1706,7 +1709,7 @@ function caFileIsIncludable($ps_file) {
 	 *		castTo = array|int|string
 	 * @return mixed
 	 */
-	function caGetOption($ps_option, $pa_options, $pm_default=null, $pa_parse_options=null) {
+	function caGetOption($pm_option, $pa_options, $pm_default=null, $pa_parse_options=null) {
 		$va_valid_values = null;
 		$vb_case_insensitive = false;
 		if (isset($pa_parse_options['validValues']) && is_array($pa_parse_options['validValues'])) {
@@ -1716,7 +1719,18 @@ function caFileIsIncludable($ps_file) {
 				$vb_case_insensitive = true;
 			}
 		}
-		$vm_val = (isset($pa_options[$ps_option]) && !is_null($pa_options[$ps_option])) ? $pa_options[$ps_option] : $pm_default;
+		
+		if (is_array($pm_option)) { 
+			$vm_val = null;
+			foreach($pm_option as $ps_option) {
+				if (isset($pa_options[$ps_option]) && !is_null($pa_options[$ps_option]) && ($vm_val = $pa_options[$ps_option])) {
+					break;
+				}
+			}
+			if (!$vm_val) { $vm_val = $pm_default; }
+		} else {
+			$vm_val = (isset($pa_options[$pm_option]) && !is_null($pa_options[$pm_option])) ? $pa_options[$pm_option] : $pm_default;
+		}
 		
 		if(is_array($va_valid_values)) {
 			if (!in_array($vb_case_insensitive ? mb_strtolower($vm_val) : $vm_val, $va_valid_values)) {
@@ -2359,7 +2373,12 @@ function caFileIsIncludable($ps_file) {
 				return @file_get_contents($ps_url, false, $vo_context);
 			}
 		} else {
-			return @file_get_contents($ps_url);
+			return @file_get_contents($ps_url, false, stream_context_create(array(
+				"ssl"=>array(
+					"verify_peer"=>false,
+					"verify_peer_name"=>false,
+				),
+			)));
 		}
 	}
 	# ----------------------------------------
@@ -2750,5 +2769,36 @@ function caFileIsIncludable($ps_file) {
 		}
 
 		return join('&', $va_return);
+	}
+	# ----------------------------------------
+	/**
+	 * Get modified timestamp for given file
+	 * @param string $ps_file absolute file path
+	 * @return bool|int timestamp, false on error
+	 */
+	function caGetFileMTime($ps_file) {
+		$va_stat = @stat($ps_file);
+		if(!is_array($va_stat) || !isset($va_stat['mtime'])) { return false; }
+		return $va_stat['mtime'];
+	}
+	# ----------------------------------------
+	/**
+	 * Check if setup.php has changed since we last cached the mtime.
+	 * If it has, cache the new mtime
+	 * @return bool
+	 */
+	function caSetupPhpHasChanged() {
+		$vn_setup_mtime = caGetFileMTime(__CA_BASE_DIR__.'/setup.php');
+
+		if(
+			!CompositeCache::contains('setup_php_mtime')
+			||
+			($vn_setup_mtime != CompositeCache::fetch('setup_php_mtime'))
+		) {
+			CompositeCache::save('setup_php_mtime', $vn_setup_mtime, 'default', 0);
+			return true;
+		}
+
+		return false;
 	}
 	# ----------------------------------------

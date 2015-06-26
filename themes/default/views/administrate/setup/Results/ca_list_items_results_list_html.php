@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -83,8 +83,8 @@ if (!$this->getVar('no_hierarchies_defined')) {
 				foreach($va_display_list as $vn_placement_id => $va_display_item) {
 					print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id)."</td>";
 				}
-				print "<td style='width:5%;'><span class='editIcon'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_list_items', $vn_item_id, array())."</span>";
-				print " <a href='#' class='hierarchyIcon' onclick='caOpenBrowserWith(".$vn_item_id.");'>".caNavIcon($this->request, __CA_NAV_BUTTON_GO__, array('title' => _t('View in hierarchy')))."</a>";
+				print "<td class='editDelete'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), 'list-button', 'ca_list_items', $vn_item_id, array());
+				print " <a href='#' class='list-button' onclick='caOpenBrowserWith({$vn_item_id});'>".caNavIcon($this->request, __CA_NAV_BUTTON_GO__, array('title' => _t('View in hierarchy')))."</a>";
 				print "</td>";		
 ?>	
 			</tr>

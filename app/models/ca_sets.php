@@ -1041,16 +1041,14 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$vn_table_num = $this->get('table_num');
 		
-		if (!$this->inTransaction()) {
-			$o_trans = new Transaction($this->getDb());
-			$vb_web_set_transaction = true;
-		} else {
+		$o_trans = null;
+		if ($this->inTransaction()) {
 			$o_trans = $this->getTransaction();
 		}
 		
 		// Verify existance of row before adding to set
 		$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($vn_table_num, true);
-		$t_instance->setTransaction($o_trans);
+		if ($o_trans) { $t_instance->setTransaction($o_trans); }
 		if (!$t_instance->load($pn_row_id)) {
 			$this->postError(750, _t('Item does not exist'), 'ca_sets->addItem()');
 			return false;
@@ -1058,7 +1056,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		// Add it to the set
 		$t_item = new ca_set_items();
-		$t_item->setTransaction($o_trans);
+		if ($o_trans) { $t_item->setTransaction($o_trans); }
 		$t_item->setMode(ACCESS_WRITE);
 		$t_item->set('set_id', $this->getPrimaryKey());
 		$t_item->set('table_num', $vn_table_num);
@@ -1094,6 +1092,12 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$t_item->addLabel(array(
 				'caption' => _t('[BLANK]'),
 			), $g_ui_locale_id);
+			
+			if ($t_item->numErrors()) {
+				$t_item->delete();
+				$this->errors = $t_item->errors;
+				return false;
+			}
 		}
 		return (int)$t_item->getPrimaryKey();
 	}

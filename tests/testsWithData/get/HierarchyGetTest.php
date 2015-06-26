@@ -119,13 +119,13 @@ class HierarchyGetTest extends BaseTestWithData {
 		$this->assertEquals(1, sizeof($vm_ret));
 		$this->assertEquals('My test moving image', array_shift($vm_ret));
 		
-		$vm_ret = $this->opt_child_object->get('ca_objects.parent.preferred_labels', array('returnAsArray' => true, 'returnAllLocales' => true));
+		$vm_ret = $this->opt_child_object->get('ca_objects.parent.preferred_labels', array('returnAsArray' => true));
 		$this->assertTrue(is_array($vm_ret));
 		$this->assertEquals(1, sizeof($vm_ret));
-		$this->assertTrue(is_array($vm_ret = array_shift($vm_ret)));
-		$this->assertArrayHasKey(1, $vm_ret);
-		$this->assertEquals('My test moving image', $vm_ret[1][0]);
+	//	$this->assertTrue(is_array($vm_ret = array_shift($vm_ret)));
+		$this->assertArrayHasKey(0, $vm_ret);
 
+		$this->assertContains('My test moving image', $vm_ret);
 		$vm_ret = $this->opt_parent_object->get('ca_objects.children.preferred_labels');
 		$this->assertEquals('My test still;Another test still', $vm_ret);
 		
@@ -135,17 +135,19 @@ class HierarchyGetTest extends BaseTestWithData {
 		$this->assertEquals('My test still', array_shift($vm_ret));
 		$this->assertEquals('Another test still', array_shift($vm_ret));
 		
-		$vm_ret = $this->opt_parent_object->get('ca_objects.children.preferred_labels', array('returnAsArray' => true, 'returnAllLocales' => true));
+		$vm_ret = $this->opt_parent_object->get('ca_objects.children.preferred_labels', array('returnWithStructure' => true, 'returnAllLocales' => true));
+
 		$this->assertTrue(is_array($vm_ret));
 		$this->assertEquals(2, sizeof($vm_ret));
 		$this->assertTrue(is_array($vm_item = array_shift($vm_ret)));
 		$this->assertArrayHasKey(1, $vm_item);
 		$this->assertEquals(1, sizeof($vm_item[1]));
-		$this->assertEquals('My test still', $vm_item[1][0]);
-		$this->assertTrue(is_array($vm_item = array_shift($vm_ret)));
-		$this->assertArrayHasKey(1, $vm_item);
-		$this->assertEquals(1, sizeof($vm_item[1]));
-		$this->assertEquals('Another test still', $vm_item[1][0]);
+
+		$this->assertTrue(is_array($vm_subitem = array_shift($vm_item)));
+		$this->assertTrue(is_array($vm_values = array_shift($vm_subitem)));
+		$this->assertArrayHasKey('name', $vm_values);
+		$this->assertEquals('My test still', $vm_values['name']);
+		
 		
 		$vm_ret = $this->opt_child_object->get('ca_objects.hierarchy.preferred_labels', array('delimiter' => ' ➔ '));
 		$this->assertEquals('My test moving image ➔ My test still', $vm_ret);
@@ -159,17 +161,27 @@ class HierarchyGetTest extends BaseTestWithData {
 		$this->assertEquals('My test moving image', array_shift($vm_ret));
 		$this->assertEquals('My test still', array_shift($vm_ret));
 		
-		$vm_ret = $this->opt_child_object->get('ca_objects.hierarchy.preferred_labels', array('returnAsArray' => true, 'returnAllLocales' => true));
+		$vm_ret = $this->opt_child_object->get('ca_objects.hierarchy.preferred_labels', array('returnWithStructure' => true, 'returnAllLocales' => true));
+		
 		$this->assertTrue(is_array($vm_ret));
-		$this->assertEquals(2, sizeof($vm_ret));
-		$this->assertTrue(is_array($vm_item = array_shift($vm_ret)));
-		$this->assertArrayHasKey(1, $vm_item);
-		$this->assertEquals(1, sizeof($vm_item[1]));
-		$this->assertEquals('My test moving image', $vm_item[1][0]);
-		$this->assertTrue(is_array($vm_item = array_shift($vm_ret)));
-		$this->assertArrayHasKey(1, $vm_item);
-		$this->assertEquals(1, sizeof($vm_item[1]));
-		$this->assertEquals('My test still', $vm_item[1][0]);
+ 		$this->assertEquals(1, sizeof($vm_ret));
+ 		$this->assertTrue(is_array($vm_items = array_shift($vm_ret)));
+ 		$this->assertEquals(2, sizeof($vm_items));
+ 		$this->assertTrue(is_array($vm_item = array_shift($vm_items)));
+ 		$this->assertArrayHasKey(1, $vm_item);
+ 		$this->assertTrue(is_array($vm_item = array_shift($vm_item)));
+ 		$this->assertEquals(1, sizeof($vm_item));
+ 		$this->assertTrue(is_array($vm_item = array_shift($vm_item)));
+ 		$this->assertEquals(1, sizeof($vm_item));
+ 		$this->assertEquals('My test moving image', $vm_item['name']);
+ 		
+ 		$this->assertTrue(is_array($vm_item = array_shift($vm_items)));
+ 		$this->assertArrayHasKey(1, $vm_item);
+ 		$this->assertTrue(is_array($vm_item = array_shift($vm_item)));
+ 		$this->assertEquals(1, sizeof($vm_item));
+ 		$this->assertTrue(is_array($vm_item = array_shift($vm_item)));
+ 		$this->assertEquals(1, sizeof($vm_item));
+ 		$this->assertEquals('My test still', $vm_item['name']);
 		
 		$vm_ret = $this->opt_child_object->get('ca_objects.siblings.preferred_labels', array('delimiter' => ', '));
 		$this->assertEquals('My test still, Another test still', $vm_ret);
@@ -180,17 +192,21 @@ class HierarchyGetTest extends BaseTestWithData {
 		$this->assertEquals('My test still', array_shift($vm_ret));
 		$this->assertEquals('Another test still', array_shift($vm_ret));
 		
-		$vm_ret = $this->opt_child_object->get('ca_objects.siblings.preferred_labels', array('returnAsArray' => true, 'returnAllLocales' => true));
-		$this->assertTrue(is_array($vm_ret));
-		$this->assertEquals(2, sizeof($vm_ret));
-		$this->assertTrue(is_array($vm_item = array_shift($vm_ret)));
-		$this->assertArrayHasKey(1, $vm_item);
-		$this->assertEquals(1, sizeof($vm_item[1]));
-		$this->assertEquals('My test still', $vm_item[1][0]);
-		$this->assertTrue(is_array($vm_item = array_shift($vm_ret)));
-		$this->assertArrayHasKey(1, $vm_item);
-		$this->assertEquals(1, sizeof($vm_item[1]));
-		$this->assertEquals('Another test still', $vm_item[1][0]);
+		$vm_ret = $this->opt_child_object->get('ca_objects.siblings.preferred_labels', array('returnWithStructure' => true, 'returnAllLocales' => true));
+ 		$this->assertTrue(is_array($vm_ret));
+
+ 		$this->assertEquals(2, sizeof($vm_ret));
+ 		$this->assertTrue(is_array($vm_items = array_shift($vm_ret)));
+ 		$this->assertEquals(1, sizeof($vm_items));
+ 		$this->assertTrue(is_array($vm_item = array_shift($vm_items)));
+ 		$this->assertTrue(is_array($vm_item = array_shift($vm_item)));
+ 		$this->assertEquals('My test still', $vm_item['name']);
+ 		
+ 		$this->assertTrue(is_array($vm_items = array_shift($vm_ret)));
+ 		$this->assertEquals(1, sizeof($vm_items));
+ 		$this->assertTrue(is_array($vm_item = array_shift($vm_items)));
+ 		$this->assertTrue(is_array($vm_item = array_shift($vm_item)));
+ 		$this->assertEquals('Another test still', $vm_item['name']);
 	}
 	# -------------------------------------------------------
 	public function tearDown() {

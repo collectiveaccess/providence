@@ -89,7 +89,7 @@ class ca_setsTest extends PHPUnit_Framework_TestCase {
 		// this is (hopefully was?) the actual PROV-434 bug
 		// @see http://clangers.collectiveaccess.org/jira/browse/PROV-434
 		//
-		$va_items = $t_set->get('ca_set_items', array('returnAsArray' => true));
+		$va_items = $t_set->get('ca_set_items', array('returnWithStructure' => true));
 		$this->assertEquals(1, sizeof($va_items));
 		$va_item = array_shift($va_items);
 
@@ -133,7 +133,7 @@ class ca_setsTest extends PHPUnit_Framework_TestCase {
 		// this is (hopefully was?) the actual PROV-434 bug
 		// @see http://clangers.collectiveaccess.org/jira/browse/PROV-434
 		//
-		$va_items = $t_set->get('ca_set_items', array('returnAsArray' => true));
+		$va_items = $t_set->get('ca_set_items', array('returnWithStructure' => true));
 		$this->assertEquals(1, sizeof($va_items));
 		$va_item = array_shift($va_items);
 

@@ -38,6 +38,9 @@ require_once(__CA_MODELS_DIR__."/ca_lists.php");
 
 class BaseJSONService {
 	# -------------------------------------------------------
+	/**
+	 * @var RequestHTTP
+	 */
 	protected $opo_request;
 	protected $ops_table;
 	protected $opo_dm;

@@ -377,7 +377,7 @@
 		 * using the SearchEngine. For full-text searches, searches on attributes, or searches that require transformations or complex boolean operations use
 		 * the SearchEngine.
 		 *
-		 * @param array $pa_values An array of values to match. Keys are field names, metadata element codes or preferred_labels and /or nonpreferred_labels. This must be an array with at least one key-value pair where the key is a valid field name for the model.
+		 * @param array $pa_values An array of values to match. Keys are field names, metadata element codes or preferred_labels and /or nonpreferred_labels. This must be an array with at least one key-value pair where the key is a valid field name for the model. If you pass an integer instead of an array it will be used as the primary key value for the table; result will be returned as "firstModelInstance" unless the returnAs option is explicitly set.
 		 * @param array $pa_options Options are:
 		 *		transaction = optional Transaction instance. If set then all database access is done within the context of the transaction
 		 *		returnAs = what to return; possible values are:
@@ -410,6 +410,14 @@
 		 * @return mixed Depending upon the returnAs option setting, an array, subclass of LabelableBaseModelWithAttributes or integer may be returned.
 		 */
 		public static function find($pa_values, $pa_options=null) {
+			$t_instance = null;
+			$vs_table = get_called_class();
+			
+			if (!is_array($pa_values) && ((int)$pa_values > 0)) { 
+				$t_instance = new $vs_table;
+				$pa_values = array($t_instance->primaryKey() => (int)$pa_values);
+				if (!isset($pa_options['returnAs'])) { $pa_options['returnAs'] = 'firstModelInstance'; }
+			}
 			if (!is_array($pa_values) || (sizeof($pa_values) == 0)) { return null; }
 			
 			$ps_return_as = caGetOption('returnAs', $pa_options, 'ids', array('forceLowercase' => true, 'validValues' => array('searchResult', 'ids', 'modelInstances', 'firstId', 'firstModelInstance', 'count')));
@@ -418,8 +426,7 @@
 			$ps_label_boolean = caGetOption('labelBoolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
 			$ps_sort = caGetOption('sort', $pa_options, null);
 		
-			$vs_table = get_called_class();
-			$t_instance = new $vs_table;
+			if (!$t_instance) { $t_instance = new $vs_table; }
 			$vn_table_num = $t_instance->tableNum();
 			$vs_table_pk = $t_instance->primaryKey();
 			
@@ -1222,7 +1229,7 @@
 			$t_list = new ca_lists();
 			
 			// get labels
-			$va_preferred_labels = $this->get($this->tableName().".preferred_labels", array('returnAsArray' => true, 'returnAllLocales' => true, 'assumeDisplayField' => false));
+			$va_preferred_labels = $this->get($this->tableName().".preferred_labels", array('returnWithStructure' => true, 'returnAsArray' => true, 'returnAllLocales' => true, 'assumeDisplayField' => false));
 			
 			if(is_array($va_preferred_labels) && sizeof($va_preferred_labels)) {
 				$va_preferred_labels_for_export = array();
@@ -1231,14 +1238,14 @@
 						if (!($vs_locale = $t_locale->localeIDToCode($vn_locale_id))) {
 							$vs_locale = 'NONE';
 						}
-						$va_preferred_labels_for_export[$vs_locale] = $va_labels[0];
+						$va_preferred_labels_for_export[$vs_locale] = array_shift($va_labels);
 						unset($va_preferred_labels_for_export[$vs_locale]['form_element']);
 					}
 				}
 				$va_data['preferred_labels'] = $va_preferred_labels_for_export;
 			}
 			
-			$va_nonpreferred_labels = $this->get($this->tableName().".nonpreferred_labels", array('returnAsArray' => true, 'returnAllLocales' => true, 'assumeDisplayField' => false));
+			$va_nonpreferred_labels = $this->get($this->tableName().".nonpreferred_labels", array('returnWithStructure' => true, 'returnAsArray' => true, 'returnAllLocales' => true, 'assumeDisplayField' => false));
 			if(is_array($va_nonpreferred_labels) && sizeof($va_nonpreferred_labels)) {
 				$va_nonpreferred_labels_for_export = array();
 				foreach($va_nonpreferred_labels as $vn_id => $va_labels_by_locale) {

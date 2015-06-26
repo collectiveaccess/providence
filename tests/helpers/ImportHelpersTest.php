@@ -39,47 +39,47 @@ class ImportHelpersTest extends PHPUnit_Framework_TestCase {
 			explode(':', 'People and Culture:Associated Concepts:concepts in the arts:artistic concepts:forms of expression:forms of expression: visual arts:abstraction')
 		);
 
-		$this->assertEquals('[300056508] abstraction [forms of expression for visual arts, forms of expression (artistic concept)]|aat:300056508|http://vocab.getty.edu/aat/300056508', $vm_ret);
+		$this->assertEquals('http://vocab.getty.edu/aat/300056508', $vm_ret);
 
 		$vm_ret = caMatchAAT(
 			explode(':', 'Objects We Use:Visual Works:visual works:visual works by medium or technique:prints:prints by process or technique:prints by process: transfer method:intaglio prints:etchings')
 		);
 
-		$this->assertEquals('[300041365] etchings (prints) [intaglio prints, prints by process: transfer method]|aat:300041365|http://vocab.getty.edu/aat/300041365', $vm_ret);
+		$this->assertEquals('http://vocab.getty.edu/aat/300041365', $vm_ret);
 
 		$vm_ret = caMatchAAT(
 			explode(':', 'Objects We Use:Visual Works:visual works:visual works by medium or technique:works on paper')
 		);
 
-		$this->assertEquals('[300189621] works on paper [visual works by material or technique, visual works (works)]|aat:300189621|http://vocab.getty.edu/aat/300189621', $vm_ret);
+		$this->assertEquals('http://vocab.getty.edu/aat/300189621', $vm_ret);
 
 		$vm_ret = caMatchAAT(
 			explode(':', 'People and Culture:Styles and Periods:styles and periods by region:European:European styles and periods:modern European styles and movements:modern European fine arts styles and movements:Abstract'),
 			180, array('removeParensFromLabels' => true)
 		);
 
-		$this->assertEquals('[300108127] Abstract (fine arts style) [modern European fine arts styles and movements, modern European styles and movements]|aat:300108127|http://vocab.getty.edu/aat/300108127', $vm_ret);
+		$this->assertEquals('http://vocab.getty.edu/aat/300108127', $vm_ret);
 
 		$vm_ret = caMatchAAT(
 			explode(':', 'People and Culture:Associated Concepts:concepts in the arts:artistic concepts:art genres:computer art'),
 			180, array('removeParensFromLabels' => true)
 		);
 
-		$this->assertEquals('[300069478] computer art (visual works) [digital art (visual works), new media art]|aat:300069478|http://vocab.getty.edu/aat/300069478', $vm_ret);
+		$this->assertEquals('http://vocab.getty.edu/aat/300069478', $vm_ret);
 
 		$vm_ret = caMatchAAT(
 			explode(':', 'Descriptors:Processes and Techniques:processes and techniques:processes and techniques by specific type:image-making processes and techniques:painting and painting techniques:painting techniques:painting techniques by medium:acrylic painting (technique)'),
 			180, array('removeParensFromLabels' => true)
 		);
 
-		$this->assertEquals('[300182574] acrylic painting (technique) [painting techniques by medium, painting techniques]|aat:300182574|http://vocab.getty.edu/aat/300182574', $vm_ret);
+		$this->assertEquals('http://vocab.getty.edu/aat/300182574', $vm_ret);
 
 		$vm_ret = caMatchAAT(
 			explode(':', 'Descriptors:Processes and Techniques:processes and techniques:processes and techniques by specific type:image-making processes and techniques:painting and painting techniques:painting (image-making)'),
 			180, array('removeParensFromLabels' => true)
 		);
 
-		$this->assertEquals('[300054216] painting (image-making) [painting and painting techniques, image-making processes and techniques]|aat:300054216|http://vocab.getty.edu/aat/300054216', $vm_ret);
+		$this->assertEquals('http://vocab.getty.edu/aat/300054216', $vm_ret);
 	}
 	# -------------------------------------------------------
 }

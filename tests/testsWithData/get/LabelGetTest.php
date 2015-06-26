@@ -91,22 +91,22 @@ class LabelGetTest extends BaseTestWithData {
 		$this->assertEquals('My test image', $vm_ret);
 
 		// extract de_DE locale from array
-		$vm_ret = $this->opt_object->get('ca_objects.preferred_labels', array('returnAllLocales' => true));
+		$vm_ret = $this->opt_object->get('ca_objects.preferred_labels', array('returnWithStructure' => true, 'returnAllLocales' => true));
 		$this->assertInternalType('array', $vm_ret);
 
-		$va_vals = caExtractValuesByLocale(array('preferred' => array('de_DE')),$vm_ret);
-		$this->assertEquals('Testbild', array_shift(array_shift($va_vals)));
+		$va_vals = array_shift(array_shift(caExtractValuesByLocale(array('preferred' => array('de_DE')),$vm_ret)));
+		$this->assertEquals('Testbild', $va_vals['name']);
 
 		// it should get the en_US title here because at this point this is our "UI locale"
 		$vm_ret = $this->opt_object->get('ca_objects.nonpreferred_labels');
 		$this->assertEquals('Alternative title for test image', $vm_ret);
 
 		// extract de_DE locale from array
-		$vm_ret = $this->opt_object->get('ca_objects.nonpreferred_labels', array('returnAllLocales' => true));
+		$vm_ret = $this->opt_object->get('ca_objects.nonpreferred_labels', array('returnWithStructure' => true, 'returnAllLocales' => true));
 		$this->assertInternalType('array', $vm_ret);
 
-		$va_vals = caExtractValuesByLocale(array('preferred' => array('de_DE')),$vm_ret);
-		$this->assertEquals('Alternativer Titel für Testbild', array_shift(array_shift($va_vals)));
+		$va_vals = array_shift(array_shift(caExtractValuesByLocale(array('preferred' => array('de_DE')),$vm_ret)));
+		$this->assertEquals('Alternativer Titel für Testbild', $va_vals['name']);
 	}
 	# -------------------------------------------------------
 }
