@@ -335,7 +335,7 @@ class BaseModel extends BaseObject {
 	/**
 	 * If set, all field values passed through BaseModel::set() are run through HTML Purifier before being stored
 	 */
-	private $opb_purify_input = false;
+	private $opb_purify_input = true;
 	
 	/**
 	 * Array of model definitions, keyed on table name
@@ -391,7 +391,7 @@ class BaseModel extends BaseObject {
 			$this->ops_locale = $vs_locale;
 		}
 		
-		$this->opb_purify_input = (bool)$this->_CONFIG->get("purify_all_text_input");
+		$this->opb_purify_input = strlen($this->_CONFIG->get("purify_all_text_input")) ? (bool)$this->_CONFIG->get("purify_all_text_input") : true;
 		
  		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 
