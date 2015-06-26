@@ -1521,6 +1521,7 @@ class SearchResult extends BaseObject {
 		
 		if (is_array($pa_value_list) && sizeof($pa_value_list)) {
 			foreach($pa_value_list as $o_attribute) {
+				$va_acc = array();
 				$va_values = $o_attribute->getValues();
 				
 				if ($pa_options['useLocaleCodes']) {
@@ -1530,9 +1531,13 @@ class SearchResult extends BaseObject {
 				}
 				
 				foreach($va_values as $o_value) {
+					$vb_dont_return_value = false;
 					$vs_element_code = $o_value->getElementCode();
 					if ($va_path_components['subfield_name']) {
-						if ($va_path_components['subfield_name'] && ($va_path_components['subfield_name'] !== $vs_element_code) && !($o_value instanceof InformationServiceAttributeValue)) { continue; }
+						if ($va_path_components['subfield_name'] && ($va_path_components['subfield_name'] !== $vs_element_code) && !($o_value instanceof InformationServiceAttributeValue)) { 
+							$vb_dont_return_value = true;
+							if (!$pa_options['filter']) { continue; }
+						}
 					}
 				
 					switch($o_value->getType()) {
@@ -1568,12 +1573,37 @@ class SearchResult extends BaseObject {
 							break;
 					}
 					
-					if($pa_options['makeLink']) { $vs_val_proc = array_shift(caCreateLinksFromText(array($vs_val_proc), $vs_table_name, array($vn_id))); }
+					$va_spec = $va_path_components['components'];
 					
-					if ($pa_options['returnWithStructure']) {
-						$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][$vs_element_code] = $vs_val_proc;
-					} else { 
-						$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()] = $vs_val_proc;	
+					array_pop($va_spec);
+					$va_acc[join('.', $va_spec).'.'.$vs_element_code] = $o_value->getDisplayValue(array_merge($pa_options, array('output' => 'idno')));
+					
+					if (!$vb_dont_return_value) {
+						if($pa_options['makeLink']) { $vs_val_proc = array_shift(caCreateLinksFromText(array($vs_val_proc), $vs_table_name, array($vn_id))); }
+					
+						if ($pa_options['returnWithStructure']) {
+							$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][$vs_element_code] = $vs_val_proc;
+						} else { 
+							$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()] = $vs_val_proc;	
+						}
+					}
+				}
+				
+				if ($pa_options['filter']) {
+					$va_tags = caGetTemplateTags($pa_options['filter']);
+			
+					$va_vars = array();
+					foreach($va_tags as $vs_tag) {
+						if (isset($va_acc[$vs_tag])) { 
+							$va_vars[$vs_tag] = $va_acc[$vs_tag];
+						}  else {
+							$va_vars[$vs_tag] = $this->get($vs_tag, array('convertCodesToIdno' => true));
+						}
+					}
+					
+					if (ExpressionParser::evaluate($pa_options['filter'], $va_vars)) {
+						unset($va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()]);
+						continue;
 					}
 				}
 			}
