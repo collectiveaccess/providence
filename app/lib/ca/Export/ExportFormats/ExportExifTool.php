@@ -39,6 +39,30 @@ class ExportExifTool extends BaseExportFormat {
 	 * @var DOMDocument
 	 */
 	private $opo_dom = null;
+
+	/**
+	 * List of ExifTool namespaces
+	 * @var array
+	 */
+	private $opa_namespaces = array(
+		'xmlns:et' => 'http://ns.exiftool.ca/1.0/',
+		'xmlns:ExifTool' => 'http://ns.exiftool.ca/ExifTool/1.0/',
+		'xmlns:System' => 'http://ns.exiftool.ca/File/System/1.0/',
+		'xmlns:File' => 'http://ns.exiftool.ca/File/1.0/',
+		'xmlns:JFIF' => 'http://ns.exiftool.ca/JFIF/JFIF/1.0/',
+		'xmlns:IFD0' => 'http://ns.exiftool.ca/EXIF/IFD0/1.0/',
+		'xmlns:ExifIFD' => 'http://ns.exiftool.ca/EXIF/ExifIFD/1.0/',
+		'xmlns:Apple' => 'http://ns.exiftool.ca/MakerNotes/Apple/1.0/',
+		'xmlns:XMP-x' => 'http://ns.exiftool.ca/XMP/XMP-x/1.0/',
+		'xmlns:XMP-xmp' => 'http://ns.exiftool.ca/XMP/XMP-xmp/1.0/',
+		'xmlns:XMP-photoshop' => 'http://ns.exiftool.ca/XMP/XMP-photoshop/1.0/',
+		'xmlns:Photoshop' => 'http://ns.exiftool.ca/Photoshop/Photoshop/1.0/',
+		'xmlns:ICC-header' => 'http://ns.exiftool.ca/ICC_Profile/ICC-header/1.0/',
+		'xmlns:ICC_Profile' => 'http://ns.exiftool.ca/ICC_Profile/ICC_Profile/1.0/',
+		'xmlns:ICC-view' => 'http://ns.exiftool.ca/ICC_Profile/ICC-view/1.0/',
+		'xmlns:ICC-meas' => 'http://ns.exiftool.ca/ICC_Profile/ICC-meas/1.0/',
+		'xmlns:Composite' => 'http://ns.exiftool.ca/Composite/1.0/',
+	);
 	# ------------------------------------------------------
 	public function __construct() {
 		$this->ops_name = 'ExifTool';
@@ -79,23 +103,9 @@ class ExportExifTool extends BaseExportFormat {
 		$o_rdf->appendChild($o_desc);
 
 		// add full range of exiftool namespaces
-		$o_desc->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:et', 'http://ns.exiftool.ca/1.0/');
-		$o_desc->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:ExifTool', 'http://ns.exiftool.ca/ExifTool/1.0/');
-		$o_desc->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:System', 'http://ns.exiftool.ca/File/System/1.0/');
-		$o_desc->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:File', 'http://ns.exiftool.ca/File/1.0/');
-		$o_desc->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:JFIF', 'http://ns.exiftool.ca/JFIF/JFIF/1.0/');
-		$o_desc->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:IFD0', 'http://ns.exiftool.ca/EXIF/IFD0/1.0/');
-		$o_desc->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:ExifIFD', 'http://ns.exiftool.ca/EXIF/ExifIFD/1.0/');
-		$o_desc->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:Apple', 'http://ns.exiftool.ca/MakerNotes/Apple/1.0/');
-		$o_desc->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:XMP-x', 'http://ns.exiftool.ca/XMP/XMP-x/1.0/');
-		$o_desc->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:XMP-xmp', 'http://ns.exiftool.ca/XMP/XMP-xmp/1.0/');
-		$o_desc->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:XMP-photoshop', 'http://ns.exiftool.ca/XMP/XMP-photoshop/1.0/');
-		$o_desc->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:Photoshop', 'http://ns.exiftool.ca/Photoshop/Photoshop/1.0/');
-		$o_desc->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:ICC-header', 'http://ns.exiftool.ca/ICC_Profile/ICC-header/1.0/');
-		$o_desc->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:ICC_Profile', 'http://ns.exiftool.ca/ICC_Profile/ICC_Profile/1.0/');
-		$o_desc->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:ICC-view', 'http://ns.exiftool.ca/ICC_Profile/ICC-view/1.0/');
-		$o_desc->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:ICC-meas', 'http://ns.exiftool.ca/ICC_Profile/ICC-meas/1.0/');
-		$o_desc->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:Composite', 'http://ns.exiftool.ca/Composite/1.0/');
+		foreach($this->opa_namespaces as $vs_ns_key => $vs_ns_url) {
+			$o_desc->setAttributeNS('http://www.w3.org/2000/xmlns/', $vs_ns_key, $vs_ns_url);
+		}
 
 		$o_desc->setAttribute('et:toolkit', 'CollectiveAccess ExifTool Exporter');
 
@@ -127,8 +137,18 @@ class ExportExifTool extends BaseExportFormat {
 		$va_errors = array();
 		$va_top = $t_mapping->getTopLevelItems();
 
+		$va_namespace_keys = array();
+		foreach(array_keys($this->opa_namespaces) as $vs_key) {
+			$va_namespace_keys[] = str_replace('xmlns:', '', $vs_key);
+		}
+
+
 		foreach($va_top as $va_item) {
-			//@todo check element prefixes? e.g. /^ExifIFD/ etc.
+
+			$vs_element_ns = preg_replace("/\:.+$/", '', $va_item['element']);
+			if(!in_array($vs_element_ns, $va_namespace_keys)) {
+				$va_errors[] = _t('%1 is not a valid element for ExifTool exports. It must be part of one of the ExifTool namespaces.', $va_item['element']);
+			}
 		}
 
 		return $va_errors;
