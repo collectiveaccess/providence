@@ -67,6 +67,10 @@ Vagrant.configure(2) do |config|
 
     echo "CREATE DATABASE IF NOT EXISTS collectiveaccess" | mysql -u root --password=root
 
+    sed -i "s/memory\_limit\ \=\ 128M/memory\_limit\ \=\ 512M/g" /etc/php5/apache2/php.ini
+    sed -i "s/post\_max\_size\ \=\ 8M/post\_max\_size\ \=\ 64M/g" /etc/php5/apache2/php.ini
+    sed -i "s/upload\_max\_filesize \=\ 2M/upload\_max\_filesize\ \=\ 64M/g" /etc/php5/apache2/php.ini
+
     if ! [ -L /var/www/html ]; then
       rm -rf /var/www/html
       ln -fs /vagrant /var/www/html
@@ -77,6 +81,7 @@ Vagrant.configure(2) do |config|
       sed -i "s/my_database_user/root/g" ${setup_php}
       sed -i "s/my_database_password/root/g" ${setup_php}
       sed -i "s/name_of_my_database/collectiveaccess/g" ${setup_php}
+      sed -i "s/INSTALLS\_\_\'\, false/INSTALLS\_\_\'\, true/g" ${setup_php}
     fi
 
     if ! [ -f /vagrant/app/conf/local/external_applications.conf ]; then
