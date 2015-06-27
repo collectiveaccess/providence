@@ -45,8 +45,8 @@ class AlhalqaBrowseService extends BrowseService {
 	# -------------------------------------------------------
 
 
-	protected function search($pa_bundles=null) {
-		$va_return = parent::search($pa_bundles);
+	protected function getBrowseResults() {
+		$va_return = parent::getBrowseResults();
 		if(($this->getTableName() == 'ca_objects') && is_array($va_return['results']) && sizeof($va_return['results'])>0) {
 
 			foreach($va_return['results'] as &$va_result) {
