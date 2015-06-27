@@ -48,6 +48,7 @@ class BrowseService extends BaseJSONService {
 			case "OPTIONS":
 				return $this->getFacetInfo();
 			case "GET":
+			case "POST":
 				if(sizeof($this->getRequestBodyArray())>0) {
 					return $this->getBrowseResults();
 				} else {
