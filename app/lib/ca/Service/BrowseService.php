@@ -153,7 +153,7 @@ class BrowseService extends BaseJSONService {
 			$va_criteria = $va_post["criteria"];
 			if(is_array($va_criteria)) {
 				foreach($va_criteria as $vs_facet => $va_row_ids) {
-					if(is_array($va_row_ids)) {
+					if($va_row_ids) {
 						$o_browse->addCriteria($vs_facet,$va_row_ids);
 					}
 				}
