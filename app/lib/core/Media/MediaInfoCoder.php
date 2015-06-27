@@ -299,6 +299,9 @@ class MediaInfoCoder {
 		unset($va_media_info["_undo_"]);
 		unset($va_media_info["TRANSFORMATION_HISTORY"]);
 		unset($va_media_info["_CENTER"]);
+		unset($va_media_info["REPLICATION_KEYS"]);
+		unset($va_media_info["REPLICATION_STATUS"]);
+		unset($va_media_info["REPLICATION_LOG"]);
 		
 		return array_keys($va_media_info);		
 	}
