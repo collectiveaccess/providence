@@ -1013,6 +1013,7 @@
 							$va_paths = $qr_res->getMediaPaths('ca_object_representations.media', $vs_version);
 							$va_infos = $qr_res->getMediaInfos('ca_object_representations.media');
 							$va_representation_ids = $qr_res->get('ca_object_representations.representation_id', array('returnAsArray' => true));
+							$va_representation_types = $qr_res->get('ca_object_representations.type_id', array('returnAsArray' => true));
 							
 							foreach($va_paths as $vn_i => $vs_path) {
 								$vs_ext = array_pop(explode(".", $vs_path));
@@ -1020,6 +1021,7 @@
 								$vs_original_name = $va_infos[$vn_i]['ORIGINAL_FILENAME'];
 								$vn_index = (sizeof($va_paths) > 1) ? "_".($vn_i + 1) : '';
 								$vn_representation_id = $va_representation_ids[$vn_i];
+								$vs_representation_type = caGetListItemIdno($va_representation_types[$vn_i]);
 
 								// make sure we don't download representations the user isn't allowed to read
 								if(!caCanRead($this->request->user->getPrimaryKey(), 'ca_object_representations', $vn_representation_id)){ continue; }
@@ -1051,7 +1053,10 @@
 								}
 
 								if($o_media_metadata_conf->get('do_metadata_embedding_for_search_result_media_download')) {
-									if ($vs_path_with_embedding = caEmbedMediaMetadataIntoFile($vs_path, 'ca_objects', $qr_res->get('ca_objects.object_id'), caGetListItemIdno($qr_res->get('ca_objects.type_id')))) {
+									if ($vs_path_with_embedding = caEmbedMediaMetadataIntoFile($vs_path,
+										'ca_objects', $qr_res->get('ca_objects.object_id'), caGetListItemIdno($qr_res->get('ca_objects.type_id')),
+										$vn_representation_id, $vs_representation_type
+									)) {
 										$vs_path = $vs_path_with_embedding;
 									}
 								}
