@@ -10183,7 +10183,8 @@ $pa_options["display_form_field_tips"] = true;
 	 *				media2_original_filename = original file name to set for comment "media2"
 	 *				media3_original_filename = original file name to set for comment "media3"
 	 *				media4_original_filename = original file name to set for comment "media4"
-	 *  @param $ps_location [string] = location of user
+	 * @param $ps_location [string] = location of user
+	 * @return int comment_id of newly created comment, false on error or null if parameters are invalid
 	 */
 	public function addComment($ps_comment, $pn_rating=null, $pn_user_id=null, $pn_locale_id=null, $ps_name=null, $ps_email=null, $pn_access=0, $pn_moderator=null, $pa_options=null, $ps_media1=null, $ps_media2=null, $ps_media3=null, $ps_media4=null, $ps_location=null) {
 		global $g_ui_locale_id;
@@ -10230,7 +10231,7 @@ $pa_options["display_form_field_tips"] = true;
 			$this->errors = $t_comment->errors;
 			return false;
 		}
-		return true;
+		return $t_comment->getPrimaryKey();
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
