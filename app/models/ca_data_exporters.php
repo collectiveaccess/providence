@@ -941,6 +941,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		if(is_array($va_mapping_errors) && sizeof($va_mapping_errors)>0) {
 			$pa_errors = array_merge($pa_errors,$va_mapping_errors);
+			return false;
 		}
 
 		return $t_exporter;

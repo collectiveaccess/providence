@@ -147,7 +147,14 @@ class ExportExifTool extends BaseExportFormat {
 
 			$vs_element_ns = preg_replace("/\:.+$/", '', $va_item['element']);
 			if(!in_array($vs_element_ns, $va_namespace_keys)) {
-				$va_errors[] = _t('%1 is not a valid element for ExifTool exports. It must be part of one of the ExifTool namespaces.', $va_item['element']);
+				$va_errors[] = _t('%1 is not a valid element for ExifTool exports. It must be in of one of the ExifTool namespaces.', $va_item['element']);
+			}
+
+			$t_item = new ca_data_exporter_items($va_item['item_id']);
+			$va_children = $t_item->getHierarchyChildren();
+
+			if(is_array($va_children) && (sizeof($va_children) > 0)) {
+				$va_errors[] = _t("ExifTool mappings can't be hierarchical. It looks like element %1 has children.", $va_item['element']);
 			}
 		}
 
