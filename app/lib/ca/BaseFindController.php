@@ -1051,7 +1051,7 @@
 								}
 
 								if($o_media_metadata_conf->get('do_metadata_embedding_for_search_result_media_download')) {
-									if ($vs_path_with_embedding = caEmbedMetadataIntoRepresentation(new ca_objects($qr_res->get('ca_objects.object_id')), new ca_object_representations($vn_representation_id), $vs_version)) {
+									if ($vs_path_with_embedding = caEmbedMediaMetadataIntoFile($vs_path, 'ca_objects', $qr_res->get('ca_objects.object_id'), caGetListItemIdno($qr_res->get('ca_objects.type_id')))) {
 										$vs_path = $vs_path_with_embedding;
 									}
 								}

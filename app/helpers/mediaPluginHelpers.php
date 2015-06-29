@@ -747,59 +747,6 @@
 
 		return $vs_tmp_filepath;
 	}
-	/**
-	 * Embed media metadata into representation media. Embedding is performed on a copy of the representation media and placed
-	 * into the system tmp directory. The original media is never modified.
-	 *
-	 * @param BundlableLabelableBaseModelWithAttributes $po_object ca_objects instance to pull metadata from for embedding
-	 * @param ca_object_representations $po_representation ca_object_representations instance to pull metadata from for embedding
-	 * @param string $ps_version Version of media to embed into. If omitted "original" version is used.
-	 * @return bool|string Path to copy of media with embedded metadata. False is returned in the embedding failed.
-	 */
-	function caEmbedMetadataIntoRepresentation($po_object, $po_representation, $ps_version="original") {
-		require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
-
-		if (!($vs_media_metadata_config = $po_representation->getAppConfig()->get('media_metadata'))) { return false; }
-		$o_metadata_config = Configuration::load($vs_media_metadata_config);
-		if(!caExifToolInstalled()) { return false; } // we need exiftool for embedding
-		$vs_path_to_exif_tool = caGetExternalApplicationPath('exiftool');
-
-		$vs_mimetype = $po_representation->getMediaInfo('media', $ps_version, 'MIMETYPE');
-		if (!preg_match("/^image\//", $vs_mimetype)) { return false; } // Don't try to embed in files other than images
-
-		$vs_filepath = $po_representation->getMediaPath('media', $ps_version);
-		if (!file_exists($vs_filepath)) { return false; }
-
-		if(!$po_object->getPrimaryKey()) { return false; }
-
-		$va_mappings = $o_metadata_config->getAssoc('export_mappings');
-		if(!isset($va_mappings[$po_object->tablename()])) { return false; }
-
-		// make a temporary copy (we won't touch the original)
-		copy($vs_filepath, $vs_tmp_filepath = caGetTempDirPath()."/".time().md5($vs_filepath));
-
-		// figure out the mapping we're going to use (for this type or __default__)
-		if(isset($va_mappings[$po_object->tableName()][$po_object->getTypeCode()])) {
-			$vs_export_mapping = $va_mappings[$po_object->tableName()][$po_object->getTypeCode()];
-		} elseif(isset($va_mappings[$po_object->tableName()]['__default__'])) {
-			$vs_export_mapping = $va_mappings[$po_object->tableName()]['__default__'];
-		} else {
-			return false; // couldn't find a valid mapping
-		}
-
-		// run the export
-		$vs_export_filename = caGetTempFileName('mediaMetadataExport','xml');
-
-		if(!($vs_export = ca_data_exporters::exportRecord($vs_export_mapping, $po_object->getPrimaryKey()))) { return false; }
-		if(@file_put_contents($vs_export_filename, $vs_export) === false) { return false; }
-
-		exec("{$vs_path_to_exif_tool} -tagsfromfile {$vs_export_filename} -all:all ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
-
-		@unlink($vs_export_filename);
-		@unlink("{$vs_tmp_filepath}_original");
-
-		return $vs_tmp_filepath;
-	}
 	# ------------------------------------------------------------------------------------------------
 	/**
 	 * Attempt to detect faces in image files (TIFF, JPEG, PNG) using OpenCV and the php-facedetect module
