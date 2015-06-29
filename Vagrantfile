@@ -52,9 +52,9 @@ Vagrant.configure(2) do |config|
     apt-get -q -y -o Dpkg::Options::=--force-confold install php5-curl php5-mysqlnd php5-json php5-gd php5-imap php5-mcrypt
     apt-get -q -y -o Dpkg::Options::=--force-confold install htop screen vim apachetop vnstat git
     apt-get -q -y -o Dpkg::Options::=--force-confold install ffmpeg graphicsmagick python-pdfminer
-    apt-get -q -y -o Dpkg::Options::=--force-confold install ghostscript dcraw xpdf mediainfo exiftool
+    apt-get -q -y -o Dpkg::Options::=--force-confold install ghostscript dcraw xpdf mediainfo exiftool phantomjs
 
-    # slooooow setup with gmagick and libreoffice. if you want a shiny setup, uncomment it here
+    # slooooow setup with gmagick and libreoffice. if you want a shiny media processing setup, uncomment the following lines
     #
     # apt-get -q -y -o Dpkg::Options::=--force-confold install php5-dev php-pear libgraphicsmagick1-dev libreoffice abiword
 	# pecl install gmagick-1.1.7RC3
@@ -67,6 +67,10 @@ Vagrant.configure(2) do |config|
 
     echo "CREATE DATABASE IF NOT EXISTS collectiveaccess" | mysql -u root --password=root
 
+    sed -i "s/memory\_limit\ \=\ 128M/memory\_limit\ \=\ 512M/g" /etc/php5/apache2/php.ini
+    sed -i "s/post\_max\_size\ \=\ 8M/post\_max\_size\ \=\ 64M/g" /etc/php5/apache2/php.ini
+    sed -i "s/upload\_max\_filesize \=\ 2M/upload\_max\_filesize\ \=\ 64M/g" /etc/php5/apache2/php.ini
+
     if ! [ -L /var/www/html ]; then
       rm -rf /var/www/html
       ln -fs /vagrant /var/www/html
@@ -77,6 +81,13 @@ Vagrant.configure(2) do |config|
       sed -i "s/my_database_user/root/g" ${setup_php}
       sed -i "s/my_database_password/root/g" ${setup_php}
       sed -i "s/name_of_my_database/collectiveaccess/g" ${setup_php}
+      sed -i "s/INSTALLS\_\_\'\, false/INSTALLS\_\_\'\, true/g" ${setup_php}
+    fi
+
+    if ! [ -f /vagrant/app/conf/local/external_applications.conf ]; then
+      cp /vagrant/app/conf/external_applications.conf /vagrant/app/conf/local/external_applications.conf
+	  sed -i "s/pdf2txt\.py/pdf2txt/g" /vagrant/app/conf/local/external_applications.conf
+	  sed -i "s/\/usr\/local\/bin\/phantomjs/\/usr\/bin\/phantomjs/g" /vagrant/app/conf/local/external_applications.conf
     fi
 
     service apache2 restart
