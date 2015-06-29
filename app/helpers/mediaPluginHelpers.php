@@ -35,7 +35,6 @@
    */
 
  	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
-	require_once(__CA_LIB_DIR__."/core/Parsers/MediaMetadata/XMPParser.php");
 
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -699,89 +698,56 @@
 
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Embed XMP metadata into representation media. Embedding is performed on a copy of the representation media and placed
+	 * Embed media metadata into representation media. Embedding is performed on a copy of the representation media and placed
 	 * into the system tmp directory. The original media is never modified.
 	 *
-	 * @param BaseModel $po_object ca_objects instance to pull metadata from for embedding
-	 * @param BaseModel $po_representation ca_object_representations instance to pull metadata from for embedding
+	 * @param BundlableLabelableBaseModelWithAttributes $po_object ca_objects instance to pull metadata from for embedding
+	 * @param ca_object_representations $po_representation ca_object_representations instance to pull metadata from for embedding
 	 * @param string $ps_version Version of media to embed into. If omitted "original" version is used.
-	 * @return string Path to copy of media with embedded metadata. False is returned in the embedding failed.
+	 * @return bool|string Path to copy of media with embedded metadata. False is returned in the embedding failed.
 	 */
 	function caEmbedMetadataIntoRepresentation($po_object, $po_representation, $ps_version="original") {
+		require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
+
 		if (!($vs_media_metadata_config = $po_representation->getAppConfig()->get('media_metadata'))) { return false; }
 		$o_metadata_config = Configuration::load($vs_media_metadata_config);
+		if(!caExifToolInstalled()) { return false; } // we need exiftool for embedding
+		$vs_path_to_exif_tool = caGetExternalApplicationPath('exiftool');
 
 		$vs_mimetype = $po_representation->getMediaInfo('media', $ps_version, 'MIMETYPE');
-		if (!in_array($vs_mimetype, array('image/jpeg'))) { return false; }		// Don't try to embed in files other than JPEGs
+		if (!preg_match("/^image\//", $vs_mimetype)) { return false; } // Don't try to embed in files other than images
+
 		$vs_filepath = $po_representation->getMediaPath('media', $ps_version);
 		if (!file_exists($vs_filepath)) { return false; }
 
-		$va_mappings = $o_metadata_config->getAssoc('export_mappings');
-		$o_xmp = new XMPParser();
+		if(!$po_object->getPrimaryKey()) { return false; }
 
+		$va_mappings = $o_metadata_config->getAssoc('export_mappings');
+		if(!isset($va_mappings[$po_object->tablename()])) { return false; }
+
+		// make a temporary copy (we won't touch the original)
 		copy($vs_filepath, $vs_tmp_filepath = caGetTempDirPath()."/".time().md5($vs_filepath));
 
-		$o_xmp->parse($vs_tmp_filepath);
-		$o_xmp->initMetadata();
-
-		if (is_object($po_object) && isset($va_mappings['ca_objects']) && is_array($va_mappings['ca_objects'])) {
-			$va_mapping = $va_mappings['ca_objects'];
-			$vs_type = $po_object->getTypeCode();
-			if (isset($va_mapping[$vs_type]) && is_array($va_mapping[$vs_type])) {
-				$va_mapping = $va_mapping[$vs_type];
-			} else {
-				if (isset($va_mapping['__default__']) && is_array($va_mapping['__default__'])) {
-					$va_mapping = $va_mapping['__default__'];
-				} else {
-					return null;
-				}
-			}
-
-			if (is_array($va_mapping)) {
-				foreach($va_mapping as $vs_xmp => $va_ca) {
-					$va_tmp = explode(':', $vs_xmp);
-					if (sizeof($va_tmp) > 1) { $vs_xmp = $va_tmp[1];}
-					foreach($va_ca as $vs_ca => $va_opts) {
-						if (preg_match('!^static:!', $vs_ca)) {
-							$vs_val = preg_replace('!^static:!', '', $vs_ca);
-						} else {
-							$vs_val = $po_object->get($vs_ca, $va_opts);
-						}
-						if ($vs_val) { $o_xmp->set($vs_xmp, $vs_val); }
-					}
-				}
-			}
+		// figure out the mapping we're going to use (for this type or __default__)
+		if(isset($va_mappings[$po_object->tableName()][$po_object->getTypeCode()])) {
+			$vs_export_mapping = $va_mappings[$po_object->tableName()][$po_object->getTypeCode()];
+		} elseif(isset($va_mappings[$po_object->tableName()]['__default__'])) {
+			$vs_export_mapping = $va_mappings[$po_object->tableName()]['__default__'];
+		} else {
+			return false; // couldn't find a valid mapping
 		}
 
-		if (is_object($po_representation) && isset($va_mappings['ca_object_representations']) && is_array($va_mappings['ca_object_representations'])) {
-			$va_mapping = $va_mappings['ca_object_representations'];
-			$vs_type = $po_representation->getTypeCode();
-			if (isset($va_mapping[$vs_type]) && is_array($va_mapping[$vs_type])) {
-				$va_mapping = $va_mapping[$vs_type];
-			} else {
-				if (isset($va_mapping['__default__']) && is_array($va_mapping['__default__'])) {
-					$va_mapping = $va_mapping['__default__'];
-				} else {
-					return null;
-				}
-			}
+		// run the export
+		$vs_export_filename = caGetTempFileName('mediaMetadataExport','xml');
 
-			if (is_array($va_mapping)) {
-				foreach($va_mapping as $vs_xmp => $va_ca) {
-					$va_tmp = explode(':', $vs_xmp);
-					if (sizeof($va_tmp) > 1) { $vs_xmp = $va_tmp[1];}
-					foreach($va_ca as $vs_ca => $va_opts) {
-						if (preg_match('!^static:!', $vs_ca)) {
-							$vs_val = preg_replace('!^static:!', '', $vs_ca);
-						} else {
-							$vs_val = $po_representation->get($vs_ca, $va_opts);
-						}
-						if ($vs_val) { $o_xmp->set($vs_xmp, $vs_val); }
-					}
-				}
-			}
-		}
-		$o_xmp->write();
+		if(!($vs_export = ca_data_exporters::exportRecord($vs_export_mapping, $po_object->getPrimaryKey()))) { return false; }
+		if(@file_put_contents($vs_export_filename, $vs_export) === false) { return false; }
+
+		exec("{$vs_path_to_exif_tool} -tagsfromfile {$vs_export_filename} -all:all ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
+
+		@unlink($vs_export_filename);
+		@unlink("{$vs_tmp_filepath}_original");
+
 		return $vs_tmp_filepath;
 	}
 	# ------------------------------------------------------------------------------------------------

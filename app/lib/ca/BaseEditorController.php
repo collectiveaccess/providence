@@ -2057,7 +2057,7 @@ class BaseEditorController extends ActionController {
 		} else {
 			$this->view->setVar('version_path', $t_rep->getMediaPath('media', $ps_version));
 		}
-		$vn_rc = $this->render('object_representation_download_binary.php');
+		$this->render('object_representation_download_binary.php');
 		if ($vs_path) { unlink($vs_path); }
 		exit;
 	}
