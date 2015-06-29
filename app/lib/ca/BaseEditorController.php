@@ -1969,7 +1969,10 @@ class BaseEditorController extends ActionController {
 				//
 				// Perform metadata embedding
 				$t_rep = new ca_object_representations($va_rep['representation_id']);
-				if(!($vs_path = caEmbedMediaMetadataIntoFile($t_rep->getMediaPath('media', $ps_version), $t_subject->tableName(), $t_subject->getPrimaryKey(), $t_subject->getTypeCode()))) {
+				if(!($vs_path = caEmbedMediaMetadataIntoFile($t_rep->getMediaPath('media', $ps_version),
+					$t_subject->tableName(), $t_subject->getPrimaryKey(), $t_subject->getTypeCode(), // subject table info
+					$t_rep->getPrimaryKey(), $t_rep->getTypeCode() // rep info
+				))) {
 					$vs_path = $t_rep->getMediaPath('media', $ps_version);
 				}
 
@@ -2054,7 +2057,10 @@ class BaseEditorController extends ActionController {
 
 		//
 		// Perform metadata embedding
-		if ($vs_path = caEmbedMediaMetadataIntoFile($t_rep->getMediaPath('media', $ps_version), $t_object->tableName(), $t_object->getPrimaryKey(), $t_object->getTypeCode())) {
+		if ($vs_path = caEmbedMediaMetadataIntoFile($t_rep->getMediaPath('media', $ps_version),
+			$t_object->tableName(), $t_object->getPrimaryKey(), $t_object->getTypeCode(), // subject table info
+			$t_rep->getPrimaryKey(), $t_rep->getTypeCode() // representation info
+		)) {
 			$this->view->setVar('version_path', $vs_path);
 		} else {
 			$this->view->setVar('version_path', $t_rep->getMediaPath('media', $ps_version));

@@ -100,11 +100,14 @@
 					$va_paths = array();
 					while($qr_res->nextHit()) {
 						$va_original_paths = $qr_res->getMediaPaths('ca_object_representations.media', 'original');
+
 						if(sizeof($va_original_paths)>0) {
 							$va_paths[$qr_res->get('object_id')] = array(
 								'idno' => $qr_res->get('idno'),
 								'type_code' => caGetListItemIdno($qr_res->get('type_id')),
-								'paths' => $va_original_paths
+								'paths' => $va_original_paths,
+								'representation_ids' => $qr_res->get('ca_object_representations.representation_id', array('returnAsArray' => true)),
+								'representation_types' => $qr_res->get('ca_object_representations.type_id', array('returnAsArray' => true))
 							);
 						}
 					}
@@ -115,11 +118,14 @@
 						
 						foreach($va_paths as $vn_object_id => $va_path_info) {
 							$vn_c = 1;
-							foreach($va_path_info['paths'] as $vs_media_path) {
+							foreach($va_path_info['paths'] as $vn_i => $vs_media_path) {
 								if (!file_exists($vs_media_path)) { continue; }
 
 								if($o_media_metadata_conf->get('do_metadata_embedding_for_lot_media_download')) {
-									if(!($vs_path = caEmbedMediaMetadataIntoFile($vs_media_path, 'ca_objects', $vn_object_id, $va_path_info['type_code']))) {
+									if(!($vs_path = caEmbedMediaMetadataIntoFile($vs_media_path,
+										'ca_objects', $vn_object_id, $va_path_info['type_code'],
+										$va_path_info['representation_ids'][$vn_i], $va_path_info['representation_types'][$vn_i]
+									))) {
 										$vs_path = $vs_media_path;
 									}
 								} else {
