@@ -701,28 +701,26 @@
 	 * Embed media metadata into given file. Embedding is performed on a copy of the file and placed into the
 	 * system tmp directory. The given file is never modified.
 	 *
-	 * If for some reason the embedding process fails, the original file name is returned.
-	 *
 	 * @param string $ps_file The file to embed metadata into
 	 * @param string $ps_table Table name of the subject record. This is used to figure out the appropriate mapping to use from media_metadata.conf
 	 * @param int $pn_pk Primary key of the subject record. This is used to run the export for the right record.
 	 * @param string $ps_type_code Optional type code for the subject record
-	 * @return string file name of either the original or the modified file
+	 * @return string File name of a temporary file with the embedded metadata, false on failure
 	 */
 	function caEmbedMediaMetadataIntoFile($ps_file, $ps_table, $pn_pk, $ps_type_code = '__default__') {
 		require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
 		$o_app_config = Configuration::load();
 
-		if (!($vs_media_metadata_config = $o_app_config->get('media_metadata'))) { return $ps_file; }
+		if (!($vs_media_metadata_config = $o_app_config->get('media_metadata'))) { return false; }
 		$o_metadata_config = Configuration::load($vs_media_metadata_config);
-		if(!caExifToolInstalled()) { return $ps_file; } // we need exiftool for embedding
+		if(!caExifToolInstalled()) { return false; } // we need exiftool for embedding
 		$vs_path_to_exif_tool = caGetExternalApplicationPath('exiftool');
 
-		if (!file_exists($ps_file)) { return $ps_file; }
-		if (!preg_match("/^image\//", mime_content_type($ps_file))) { return $ps_file; } // Don't try to embed in files other than images
+		if (!file_exists($ps_file)) { return false; }
+		if (!preg_match("/^image\//", mime_content_type($ps_file))) { return false; } // Don't try to embed in files other than images
 
 		$va_mappings = $o_metadata_config->getAssoc('export_mappings');
-		if(!isset($va_mappings[$ps_table])) { return $ps_file; }
+		if(!isset($va_mappings[$ps_table])) { return false; }
 
 		// make a temporary copy (we won't touch the original)
 		copy($ps_file, $vs_tmp_filepath = caGetTempDirPath()."/".time().md5($ps_file));
@@ -733,14 +731,14 @@
 		} elseif(isset($va_mappings[$ps_table]['__default__'])) {
 			$vs_export_mapping = $va_mappings[$ps_table]['__default__'];
 		} else {
-			return $ps_file; // couldn't find a valid mapping
+			return false; // couldn't find a valid mapping
 		}
 
 		// run the export
 		$vs_export_filename = caGetTempFileName('mediaMetadataExport','xml');
 
-		if(!($vs_export = ca_data_exporters::exportRecord($vs_export_mapping, $pn_pk))) { return $ps_file; }
-		if(@file_put_contents($vs_export_filename, $vs_export) === false) { return $ps_file; }
+		if(!($vs_export = ca_data_exporters::exportRecord($vs_export_mapping, $pn_pk))) { return false; }
+		if(@file_put_contents($vs_export_filename, $vs_export) === false) { return false; }
 
 		exec("{$vs_path_to_exif_tool} -tagsfromfile {$vs_export_filename} -all:all ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
 
