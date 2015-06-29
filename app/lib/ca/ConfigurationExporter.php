@@ -1030,7 +1030,7 @@ final class ConfigurationExporter {
 			$t_form = new ca_search_forms($qr_forms->get("form_id"));
 
 			$vo_form = $this->opo_dom->createElement("searchForm");
-			$vo_form->setAttribute("code", $this->makeIDNO($qr_forms->get("form_code")));
+			$vo_form->setAttribute("code", $this->makeIDNOFromInstance($t_form, "form_code"));
 			$vo_form->setAttribute("type", $this->opo_dm->getTableName($qr_forms->get("table_num")));
 			$vo_form->setAttribute("system", $qr_forms->get("is_system"));
 
