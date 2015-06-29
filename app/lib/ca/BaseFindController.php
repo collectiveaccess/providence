@@ -852,9 +852,10 @@
 						$va_row_ids_to_add[$vn_row_id] = 1;
 						$vn_added_items_count++;
 						
-						if (($vn_added_items_count = $t_set->addItems(array_keys($va_row_ids_to_add))) === false) {
-							$this->view->setVar('error', join('; ', $t_set->getErrors()));
-						}
+					}
+				
+					if (($vn_added_items_count = $t_set->addItems(array_keys($va_row_ids_to_add))) === false) {
+						$this->view->setVar('error', join('; ', $t_set->getErrors()));
 					}
 					
 				} else {

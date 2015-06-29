@@ -1229,7 +1229,7 @@
 			$t_list = new ca_lists();
 			
 			// get labels
-			$va_preferred_labels = $this->get($this->tableName().".preferred_labels", array('returnAsArray' => true, 'returnAllLocales' => true, 'assumeDisplayField' => false));
+			$va_preferred_labels = $this->get($this->tableName().".preferred_labels", array('returnWithStructure' => true, 'returnAsArray' => true, 'returnAllLocales' => true, 'assumeDisplayField' => false));
 			
 			if(is_array($va_preferred_labels) && sizeof($va_preferred_labels)) {
 				$va_preferred_labels_for_export = array();
@@ -1238,14 +1238,14 @@
 						if (!($vs_locale = $t_locale->localeIDToCode($vn_locale_id))) {
 							$vs_locale = 'NONE';
 						}
-						$va_preferred_labels_for_export[$vs_locale] = $va_labels[0];
+						$va_preferred_labels_for_export[$vs_locale] = array_shift($va_labels);
 						unset($va_preferred_labels_for_export[$vs_locale]['form_element']);
 					}
 				}
 				$va_data['preferred_labels'] = $va_preferred_labels_for_export;
 			}
 			
-			$va_nonpreferred_labels = $this->get($this->tableName().".nonpreferred_labels", array('returnAsArray' => true, 'returnAllLocales' => true, 'assumeDisplayField' => false));
+			$va_nonpreferred_labels = $this->get($this->tableName().".nonpreferred_labels", array('returnWithStructure' => true, 'returnAsArray' => true, 'returnAllLocales' => true, 'assumeDisplayField' => false));
 			if(is_array($va_nonpreferred_labels) && sizeof($va_nonpreferred_labels)) {
 				$va_nonpreferred_labels_for_export = array();
 				foreach($va_nonpreferred_labels as $vn_id => $va_labels_by_locale) {

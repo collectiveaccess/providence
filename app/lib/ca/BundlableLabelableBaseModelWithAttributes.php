@@ -3996,18 +3996,26 @@ if (!$vb_batch) {
 					case 'ca_object_representation_chooser':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!is_array($va_rep_ids = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}", pArray))) { $va_rep_ids = array(); }
-									
-						if ($vs_element_code = caGetOption('elementCode', $va_bundle_settings, null)) {
-							if (!is_array($va_current_rep_ids = $this->get($vs_element_code, array('returnAsArray' => true, 'idsOnly' => true)))) { $va_current_rep_ids = array(); }
-							$va_current_rep_ids = caExtractValuesFromArrayList($va_current_rep_ids, $vs_element_code, array('preserveKeys' => true));
-						
+								
+						if ($vs_element_code = caGetOption(array('elementCode', 'element_code'), $va_bundle_settings, null)) {
+							if (!is_array($va_current_rep_ids = $this->get($this->tableName().".".$vs_element_code, array('returnAsArray' => true, 'idsOnly' => true)))) { 
+								$va_current_rep_ids = $va_current_rep_id_with_structure = array();
+							} else {
+								$va_current_rep_id_with_structure = $this->get($this->tableName().".".$vs_element_code, array('returnWithStructure' => true, 'idsOnly' => true));
+							}
+							
+							$va_rep_to_attr_id = array();
+							
 							foreach($va_rep_ids as $vn_rep_id) {
 								if (in_array($vn_rep_id, $va_current_rep_ids)) { continue; }
 								$this->addAttribute(array($vs_element_code => $vn_rep_id), $vs_element_code);
 							}
-							foreach($va_current_rep_ids as $vn_attribute_id => $vn_current_rep_id) {
-								if (!in_array($vn_current_rep_id, $va_rep_ids)) {
-									$this->removeAttribute($vn_attribute_id);
+							
+							foreach($va_current_rep_id_with_structure as $vn_id => $va_vals_by_attr_id) {
+								foreach($va_vals_by_attr_id as $vn_attribute_id => $va_val) {
+									if (!in_array($va_val[$vs_element_code], $va_rep_ids)) {
+										$this->removeAttribute($vn_attribute_id);
+									}
 								}
 							}
 						
@@ -4404,7 +4412,7 @@ if (!$vb_batch) {
 				$vs_key = $t_item_rel->primaryKey(); //'relation_id';
 				break;
 			case 2:
-				$t_item_rel = null;
+				$t_item_rel = $this->isRelationship() ? $this : null;
 				$t_rel_item = $this->getAppDatamodel()->getTableInstance($va_path[1]);
 				$vs_key = $t_rel_item->primaryKey();
 				break;
@@ -4431,14 +4439,14 @@ if (!$vb_batch) {
 		if ($t_rel_item->hasField('source_id')) { $va_selects[] = "{$vs_related_table}.source_id item_source_id"; }
 
 		// TODO: get these field names from models
-		if ($t_item_rel) {
+		if (($t_tmp = $t_item_rel) || ($t_rel_item->isRelationship() && ($t_tmp = $t_rel_item))) {
 			//define table names
-			$vs_linking_table = $t_item_rel->tableName();
+			$vs_linking_table = $t_tmp->tableName();
 
 			$va_selects[] = "{$vs_related_table}.".$t_rel_item->primaryKey();
 
 			// include dates in returned data
-			if ($t_item_rel->hasField('effective_date')) {
+			if ($t_tmp->hasField('effective_date')) {
 				$va_selects[] = $vs_linking_table.'.sdatetime';
 				$va_selects[] = $vs_linking_table.'.edatetime';
 
@@ -4450,7 +4458,7 @@ if (!$vb_batch) {
 			}
 
 
-			if ($t_item_rel->hasField('type_id')) {
+			if ($t_tmp->hasField('type_id')) {
 				$va_selects[] = $vs_linking_table.'.type_id relationship_type_id';
 
 				require_once(__CA_MODELS_DIR__.'/ca_relationship_types.php');
@@ -4906,7 +4914,13 @@ if (!$vb_batch) {
 
 			foreach($va_path as $vs_join_table) {
 				$va_rel_info = $this->getAppDatamodel()->getRelationships($vs_cur_table, $vs_join_table);
-				$va_joins[] = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
+				$vs_join = 'INNER JOIN '.$vs_join_table.' ON ';
+				
+				$va_tmp = array();
+				foreach($va_rel_info[$vs_cur_table][$vs_join_table] as $vn_i => $va_rel) {
+					$va_tmp[] = $vs_cur_table.".".$va_rel_info[$vs_cur_table][$vs_join_table][$vn_i][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][$vn_i][1]."\n";
+				}
+				$va_joins[] = $vs_join.join(' OR ', $va_tmp);
 				$vs_cur_table = $vs_join_table;
 			}
 
@@ -4938,8 +4952,8 @@ if (!$vb_batch) {
 			$qr_res = $o_db->query($vs_sql);
 			
 			if ($vb_uses_relationship_types)  {
-				$va_rel_types = $t_rel->getRelationshipInfo($t_item_rel->tableName());
-				$vs_left_table = $t_item_rel->getLeftTableName();
+				$va_rel_types = $t_rel->getRelationshipInfo($t_tmp->tableName());
+				$vs_left_table = $t_tmp->getLeftTableName();
 				$vs_direction = ($vs_left_table == $this->tableName()) ? 'ltor' : 'rtol';
 			}
 			$va_rels = array();
