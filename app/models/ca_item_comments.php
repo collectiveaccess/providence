@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/models/ca_item_comments.php : table access class for table ca_item_comments
+ * app/models/ca_item_comments.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -405,7 +405,7 @@ class ca_item_comments extends BaseModel {
 	/**
 	 *
 	 */
-	public function getComments($ps_mode='', $pn_limit=0) {
+	public function getCommentsList($ps_mode='', $pn_limit=0) {
 		$o_db = $this->getDb();
 		
 		$vs_where = '';
@@ -468,5 +468,20 @@ class ca_item_comments extends BaseModel {
 		
 	}
 	# ------------------------------------------------------
+    /**
+     * Returns instance with item to which the comment is attached
+     *
+     * @return BaseModel instance of model for item associated with comment; null if no comment is loaded; or false if the associated item cannot be fetched.
+     */
+    public function getItem() {
+        if (!$this->getPrimaryKey()) { return null; }
+
+        if (!($t_item = $this->getAppDatamodel()->getInstanceByTableNum($this->get('table_num')))) { return false; }
+
+        if ($t_item->load($this->get('row_id'))) {
+            return $t_item;
+        }
+        return false;
+    }
+    # ------------------------------------------------------
 }
-?>
