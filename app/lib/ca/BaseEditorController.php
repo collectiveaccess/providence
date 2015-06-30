@@ -1969,9 +1969,13 @@ class BaseEditorController extends ActionController {
 				//
 				// Perform metadata embedding
 				$t_rep = new ca_object_representations($va_rep['representation_id']);
-				if (!($vs_path = caEmbedMetadataIntoRepresentation($t_subject, $t_rep, $ps_version))) {
+				if(!($vs_path = caEmbedMediaMetadataIntoFile($t_rep->getMediaPath('media', $ps_version),
+					$t_subject->tableName(), $t_subject->getPrimaryKey(), $t_subject->getTypeCode(), // subject table info
+					$t_rep->getPrimaryKey(), $t_rep->getTypeCode() // rep info
+				))) {
 					$vs_path = $t_rep->getMediaPath('media', $ps_version);
 				}
+
 				$va_file_paths[$vs_path] = $vs_file_name;
 
 				$vn_c++;
@@ -2006,6 +2010,7 @@ class BaseEditorController extends ActionController {
 	 * Download single representation from currently open object
 	 */
 	public function DownloadRepresentation() {
+		/** @var BundlableLabelableBaseModelWithAttributes $t_object */
 		list($vn_object_id, $t_object) = $this->_initView();
 		$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
 		$ps_version = $this->request->getParameter('version', pString);
@@ -2052,13 +2057,16 @@ class BaseEditorController extends ActionController {
 
 		//
 		// Perform metadata embedding
-		if ($vs_path = caEmbedMetadataIntoRepresentation($t_object, $t_rep, $ps_version)) {
+		if ($vs_path = caEmbedMediaMetadataIntoFile($t_rep->getMediaPath('media', $ps_version),
+			$t_object->tableName(), $t_object->getPrimaryKey(), $t_object->getTypeCode(), // subject table info
+			$t_rep->getPrimaryKey(), $t_rep->getTypeCode() // representation info
+		)) {
 			$this->view->setVar('version_path', $vs_path);
 		} else {
 			$this->view->setVar('version_path', $t_rep->getMediaPath('media', $ps_version));
 		}
-		$vn_rc = $this->render('object_representation_download_binary.php');
-		if ($vs_path) { unlink($vs_path); }
+		$this->render('object_representation_download_binary.php');
+		if ($vs_path) { @unlink($vs_path); }
 		exit;
 	}
 	# -------------------------------------------------------

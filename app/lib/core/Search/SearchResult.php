@@ -1655,6 +1655,9 @@ class SearchResult extends BaseObject {
 		switch($va_field_info['FIELD_TYPE']) {
 			case FT_DATERANGE:
 			case FT_HISTORIC_DATERANGE:
+            case FT_TIMESTAMP:
+            case FT_DATETIME:
+            case FT_HISTORIC_DATETIME:
 				foreach($pa_value_list as $vn_locale_id => $va_values) {
 					
 					if ($pa_options['useLocaleCodes']) {
@@ -1665,8 +1668,20 @@ class SearchResult extends BaseObject {
 					
 					foreach($va_values as $vn_i => $va_value) {
 						$va_ids[] = $vn_id = $va_value[$vs_pk];
-	
-						if ($vb_get_direct_date) {
+
+                        if (in_array($va_field_info['FIELD_TYPE'], array(FT_TIMESTAMP, FT_DATETIME, FT_HISTORIC_DATETIME))) {
+                            $vs_prop = $va_value[$va_path_components['field_name']];
+
+                            if (!$vb_get_direct_date && !$vb_sortable) {
+                                $this->opo_tep->init();
+                                if ($va_field_info['FIELD_TYPE'] !== FT_HISTORIC_DATETIME) {
+                                    $this->opo_tep->setUnixTimestamps($vs_prop, $vs_prop);
+                                } else {
+                                    $this->opo_tep->setHistoricTimestamps($vs_prop, $vs_prop);
+                                }
+                                $vs_prop = $this->opo_tep->getText($pa_options);
+                            }
+                        } elseif ($vb_get_direct_date) {
 							$vs_prop = $va_value[$va_field_info['START']];
 						} elseif($vb_sortable) {
 							$vs_prop = $va_value[$va_field_info['START']];
