@@ -64,6 +64,14 @@
             </label>
           </labels>
         </item>
+        <item idno="avcollection" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Arts and Venues Collection item</name_singular>
+              <name_plural>Arts and Venues Collection items</name_plural>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="entity_types" hierarchical="1" system="0" vocabulary="0">
@@ -792,11 +800,11 @@
             </label>
           </labels>
         </item>
-        <item idno="Valdere" enabled="1" default="0">
+        <item idno="Valverde" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Valdere</name_singular>
-              <name_plural>Valdere</name_plural>
+              <name_singular>Valverde</name_singular>
+              <name_plural>Valverde</name_plural>
             </label>
           </labels>
         </item>
@@ -827,16 +835,8 @@
         <item idno="College_View" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>College View</name_singular>
-              <name_plural>College View</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="South_Platte" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>South Platte</name_singular>
-              <name_plural>South Platte</name_plural>
+              <name_singular>College View/South Platte</name_singular>
+              <name_plural>College View/South Platte</name_plural>
             </label>
           </labels>
         </item>
@@ -856,27 +856,27 @@
             </label>
           </labels>
         </item>
-        <item idno="LoDo" enabled="1" default="0">
+        <item idno="Union_Station" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>LoDo</name_singular>
-              <name_plural>LoDo</name_plural>
+              <name_singular>Union Station</name_singular>
+              <name_plural>Union Station</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="Downtown" enabled="1" default="0">
+        <item idno="CBD" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Downtown</name_singular>
-              <name_plural>Downtown</name_plural>
+              <name_singular>CBD</name_singular>
+              <name_plural>CBD</name_plural>
             </label>
           </labels>
         </item>
-        <item idno="Alamo_Placita" enabled="1" default="0">
+        <item idno="Civic_Center" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Alamo Placita</name_singular>
-              <name_plural>Alamo Placita</name_plural>
+              <name_singular>Civic Center</name_singular>
+              <name_plural>Civic Center</name_plural>
             </label>
           </labels>
         </item>
@@ -912,11 +912,11 @@
             </label>
           </labels>
         </item>
-        <item idno="Washington_Park_West" enabled="1" default="0">
+        <item idno="Wash_Park_West" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Washington Park West</name_singular>
-              <name_plural>Washington Park West</name_plural>
+              <name_singular>Wash Park West</name_singular>
+              <name_plural>Wash Park West</name_plural>
             </label>
           </labels>
         </item>
@@ -936,11 +936,11 @@
             </label>
           </labels>
         </item>
-        <item idno="Elyria" enabled="1" default="0">
+        <item idno="Elyria_Swansea" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Elyria</name_singular>
-              <name_plural>Elyria</name_plural>
+              <name_singular>Elyria/Swansea</name_singular>
+              <name_plural>Elyria/Swansea</name_plural>
             </label>
           </labels>
         </item>
@@ -984,11 +984,11 @@
             </label>
           </labels>
         </item>
-        <item idno="Washington_Park" enabled="1" default="0">
+        <item idno="Wash_Park" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Washington Park</name_singular>
-              <name_plural>Washington Park</name_plural>
+              <name_singular>Wash Park</name_singular>
+              <name_plural>Wash Park</name_plural>
             </label>
           </labels>
         </item>
@@ -997,14 +997,6 @@
             <label locale="en_US" preferred="1">
               <name_singular>University</name_singular>
               <name_plural>University</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="Swansea" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Swansea</name_singular>
-              <name_plural>Swansea</name_plural>
             </label>
           </labels>
         </item>
@@ -1064,11 +1056,11 @@
             </label>
           </labels>
         </item>
-        <item idno="Observatory_Park" enabled="1" default="0">
+        <item idno="University_Park" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Observatory Park</name_singular>
-              <name_plural>Observatory Park</name_plural>
+              <name_singular>Universtity Park</name_singular>
+              <name_plural>Universtity Park</name_plural>
             </label>
           </labels>
         </item>
@@ -1184,11 +1176,11 @@
             </label>
           </labels>
         </item>
-        <item idno="Lowry" enabled="1" default="0">
+        <item idno="Lowry_Field" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
-              <name_singular>Lowry</name_singular>
-              <name_plural>Lowry</name_plural>
+              <name_singular>Lowry Field</name_singular>
+              <name_plural>Lowry Field</name_plural>
             </label>
           </labels>
         </item>
@@ -1208,6 +1200,70 @@
             </label>
           </labels>
         </item>
+        <item idno="Bear_Valley" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Bear Valley</name_singular>
+              <name_plural>Bear Valley</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Fort_Logan" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Fort Logan</name_singular>
+              <name_plural>Fort Logan</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Marston" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Marston</name_singular>
+              <name_plural>Marston</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Southmoor_Park" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Southmoor Park</name_singular>
+              <name_plural>Southmoor Park</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Kennedy" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Kennedy</name_singular>
+              <name_plural>Kennedy</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Montbello" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Montbello</name_singular>
+              <name_plural>Montbello</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="Gateway" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Gateway/Green Valley Ranch</name_singular>
+              <name_plural>Gateway/Green Valley Ranch</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="DIA" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>DIA</name_singular>
+              <name_plural>DIA</name_plural>
+            </label>
+          </labels>
+        </item>      
       </items>
     </list>
     <list code="final_acceptance_checklist" hierarchical="1" system="0" vocabulary="0">
@@ -1283,6 +1339,30 @@
   </lists>
   <elementSets>
     <!--General Artwork Elements-->
+    <metadataElement code="colloquial_title" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Colloquial Title</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">635px</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    
     <metadataElement code="budget" datatype="Currency">
       <labels>
         <label locale="en_US">
@@ -1306,17 +1386,15 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="media" datatype="Text">
+    <metadataElement code="aat" datatype="InformationService">
       <labels>
         <label locale="en_US">
-          <name>Media</name>
+          <name>Type (Getty Art and Architecture Thesarus)</name>
         </label>
       </labels>
       <settings>
-        <setting name="fieldWidth">640px</setting>
-        <setting name="fieldHeight">1</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
+        <setting name="service">AAT</setting>
+        <setting name="fieldWidth">90</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
@@ -1329,6 +1407,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    
     <metadataElement code="materials" datatype="Text">
       <labels>
         <label locale="en_US">
@@ -1503,10 +1582,10 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="deaccession_year" datatype="DateRange">
+    <metadataElement code="deaccession_date" datatype="DateRange">
       <labels>
         <label locale="en_US">
-          <name>Year (if deaccessioned)</name>
+          <name>Date (if deaccessioned)</name>
         </label>
       </labels>
       <settings>
@@ -1553,6 +1632,15 @@
         <restriction code="r2">
           <table>ca_objects</table>
           <type>memorabilia</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r3">
+          <table>ca_objects</table>
+          <type>avcollection</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">100</setting>
@@ -1872,10 +1960,20 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="appraisal_date" datatype="DateRange">
+    <metadataElement code="appraisal_info" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Appraisal information</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="lineBreakAfterNumberOfElements">1</setting>
+      </settings>
+      <elements>
+        <metadataElement code="appraisal_date" datatype="DateRange">
           <labels>
             <label locale="en_US">
-              <name>Date</name>
+              <name>Date of appraisal</name>
             </label>
           </labels>
           <settings>
@@ -1884,41 +1982,46 @@
             <setting name="minChars">0</setting>
             <setting name="maxChars">65535</setting>
           </settings>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
         </metadataElement>
-    <metadataElement code="appraisal_amount" datatype="Currency">
+        <metadataElement code="appraiser" datatype="Text">
           <labels>
             <label locale="en_US">
-              <name>Amount</name>
+              <name>Appraised by</name>
             </label>
           </labels>
           <settings>
-            <setting name="fieldWidth">40</setting>
+            <setting name="fieldWidth">640px</setting>
             <setting name="fieldHeight">1</setting>
             <setting name="minChars">0</setting>
             <setting name="maxChars">65535</setting>
           </settings>
+        </metadataElement>
+        <metadataElement code="appraisal_amount" datatype="Currency">
+          <labels>
+            <label locale="en_US">
+              <name>Appraisal amount</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">640px</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+          </settings>
+        </metadataElement>
+      </elements>
       <typeRestrictions>
-        <restriction code="r1">
+        <restriction code="objects">
           <table>ca_objects</table>
           <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
       </typeRestrictions>
-        </metadataElement>
-
+    </metadataElement>
+    
     <!--Process Elements-->
     <metadataElement code="dcca_approval" datatype="DateRange">
       <labels>
@@ -2341,29 +2444,6 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="appraisal_value" datatype="Currency">
-      <labels>
-        <label locale="en_US">
-          <name>Appraisal value</name>
-        </label>
-      </labels>
-      <settings>
-        <setting name="fieldWidth">40</setting>
-        <setting name="fieldHeight">1</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
-      </settings>
-      <typeRestrictions>
-        <restriction code="r1">
-          <table>ca_objects</table>
-          <settings>
-            <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
-            <setting name="minimumAttributeBundlesToDisplay">1</setting>
-          </settings>
-        </restriction>
-      </typeRestrictions>
-    </metadataElement>
     <metadataElement code="additional_funding_notes" datatype="Text">
       <labels>
         <label locale="en_US">
@@ -2599,6 +2679,25 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="contract" datatype="Media">
+      <labels>
+        <label locale="en_US">
+          <name>Contract</name>
+        </label>
+      </labels>
+      <typeRestrictions>
+        <restriction code="ca_objects">
+          <table>ca_objects</table>
+          <type>denver</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    
     <metadataElement code="notice_to_proceed_date" datatype="DateRange">
       <labels>
         <label locale="en_US">
@@ -2766,6 +2865,31 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="final_acceptance" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Final acceptance</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>denver</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    
     <metadataElement code="plaque_install_date" datatype="DateRange">
       <labels>
         <label locale="en_US">
@@ -2833,7 +2957,7 @@
           <type>denver</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">3</setting>
+            <setting name="maxAttributesPerRow">255</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -2860,6 +2984,102 @@
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+
+    <metadataElement code="fund" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Fund</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>denver</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>     
+    <metadataElement code="project" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Project</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>denver</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>   
+    
+    <metadataElement code="public_art_funds_available" datatype="Currency">
+      <labels>
+        <label locale="en_US">
+          <name>Public Art funds available</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="funds_used" datatype="Currency">
+      <labels>
+        <label locale="en_US">
+          <name>Funds used (for specific project)</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -3247,7 +3467,7 @@
           <type>ind</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="maxAttributesPerRow">1</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -3274,6 +3494,102 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="facebook" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Facebook</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_entities">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="twitter" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Twitter handle</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_entities">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>    
+    <metadataElement code="hashtag" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Hashtags</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_entities">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>   
+    <metadataElement code="instagram" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Instagram</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">70</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_entities">
+          <table>ca_entities</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">10</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>    
     <metadataElement code="also_known" datatype="Text">
       <labels>
         <label locale="en_US">
@@ -3452,7 +3768,7 @@
           <type>maintenance</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">255</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -3683,6 +3999,15 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction code="r3">
+          <table>ca_objects</table>
+          <type>avcollection</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="condition" datatype="Text">
@@ -3705,6 +4030,15 @@
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r3">
+          <table>ca_objects</table>
+          <type>avcollection</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -3758,6 +4092,15 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction code="r3">
+          <table>ca_objects</table>
+          <type>avcollection</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="signed_by" datatype="Text">
@@ -3783,6 +4126,15 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction code="r3">
+          <table>ca_objects</table>
+          <type>avcollection</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="signature_location" datatype="Text">
@@ -3805,6 +4157,15 @@
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r3">
+          <table>ca_objects</table>
+          <type>avcollection</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -3881,6 +4242,15 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction code="r3">
+          <table>ca_objects</table>
+          <type>avcollection</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="received_by" datatype="Text">
@@ -3903,6 +4273,15 @@
           <settings>
             <setting name="minAttributesPerRow">0</setting>
             <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r3">
+          <table>ca_objects</table>
+          <type>avcollection</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -3994,6 +4373,65 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+        <restriction code="r3">
+          <table>ca_objects</table>
+          <type>avcollection</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+ 
+   <!--AV Collection-->
+    <metadataElement code="avdate" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Date</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <type>avcollection</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+
+    <metadataElement code="photo_credit" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Photo credit</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">640px</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_object_representations</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
       </typeRestrictions>
     </metadataElement>
     
@@ -4031,12 +4469,8 @@
                 <setting name="add_label" locale="en_US">Add title</setting>
               </settings>
             </placement>
-            <placement code="nonpreferred_labels">
-              <bundle>nonpreferred_labels</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Colloquial title</setting>
-                <setting name="add_label" locale="en_US">Add colloquial name</setting>
-              </settings>
+            <placement code="ca_attribute_colloquial_title">
+              <bundle>ca_attribute_colloquial_title</bundle>
             </placement>
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
@@ -4062,11 +4496,25 @@
                                 
               </settings>
             </placement>
+           <placement code="ca_fabricator">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Fabricators</setting>
+                <setting name="restrict_to_relationship_types">fabricator</setting>
+              </settings>
+            </placement>
+           <placement code="ca_engineers">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Engineers</setting>
+                <setting name="restrict_to_relationship_types">engineer</setting>
+              </settings>
+            </placement>            
             <placement code="ca_attribute_budget">
               <bundle>ca_attribute_budget</bundle>
             </placement>
-            <placement code="ca_attribute_media">
-              <bundle>ca_attribute_media</bundle>
+            <placement code="ca_attribute_aat">
+              <bundle>ca_attribute_aat</bundle>
             </placement>
             <placement code="ca_attribute_materials">
               <bundle>ca_attribute_materials</bundle>
@@ -4080,8 +4528,8 @@
             <placement code="ca_attribute_temporary_duration">
               <bundle>ca_attribute_temporary_duration</bundle>
             </placement>
-            <placement code="ca_attribute_deaccession_year">
-              <bundle>ca_attribute_deaccession_year</bundle>
+            <placement code="ca_attribute_deaccession_date">
+              <bundle>ca_attribute_deaccession_date</bundle>
             </placement>
             <placement code="ca_attribute_provenance">
               <bundle>ca_attribute_provenance</bundle>
@@ -4108,14 +4556,25 @@
               <bundle>ca_list_items</bundle>
               <settings>
                 <setting name="label" locale="en_US">Tags</setting>
+                <setting name="label" locale="en_US">Tags</setting>
+                <setting name="add_label" locale="en_US">Add tags</setting>
                 <setting name="add_label" locale="en_US">Add tags</setting>
                 <setting name="width">500px</setting>
+                <setting name="readonly"/>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_list_items.preferred_labels</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
                 <setting name="restrict_to_lists">tags</setting>
+                <setting name="useHierarchicalBrowser">0</setting>
+                <setting name="hierarchicalBrowserHeight">200px</setting>
+                <setting name="restrictToTermsRelatedToCollection">0</setting>
+                <setting name="restrictToTermsOnCollectionUseRelationshipType">134</setting>
               </settings>
-            </placement>
-            <placement code="ca_attribute_appraisal">
-              <bundle>ca_attribute_appraisal</bundle>
-            </placement>                         
+            </placement>                        
           </bundlePlacements>
         </screen>
         <screen idno="general_memorabilia" default="1">
@@ -4142,8 +4601,8 @@
                 <setting name="add_label" locale="en_US">Add title</setting>
               </settings>
             </placement>          
-            <placement code="ca_attribute_media">
-              <bundle>ca_attribute_media</bundle>
+            <placement code="ca_attribute_aat">
+              <bundle>ca_attribute_aat</bundle>
             </placement>
             <placement code="ca_attribute_materials">
               <bundle>ca_attribute_materials</bundle>
@@ -4226,6 +4685,92 @@
             </placement>              
           </bundlePlacements>
         </screen>
+        <screen idno="general_avcollection" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>General info</name>
+            </label>
+          </labels>
+           <typeRestrictions>
+            <restriction code="avcollection" type="avcollection"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="idno">
+              <bundle>idno</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Accession number</setting>
+                <setting name="add_label" locale="en_US">Accession number</setting>
+              </settings>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Title</setting>
+                <setting name="add_label" locale="en_US">Add title</setting>
+              </settings>
+            </placement>    
+            <placement code="artist_designer">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Artist/Designer</setting>
+                <setting name="restrict_to_relationship_types">artist</setting>
+                <setting name="restrict_to_relationship_types">designer</setting>                            
+              </settings>
+            </placement>              
+            <placement code="ca_attribute_avdate">
+              <bundle>ca_attribute_avdate</bundle>
+            </placement>
+            <placement code="ca_attribute_aat">
+              <bundle>ca_attribute_aat</bundle>
+            </placement>
+            <placement code="ca_attribute_materials">
+              <bundle>ca_attribute_materials</bundle>
+            </placement>
+            <placement code="ca_attribute_dimensions">
+              <bundle>ca_attribute_dimensions</bundle>
+            </placement>
+            <placement code="ca_attribute_framed">
+              <bundle>ca_attribute_framed</bundle>
+            </placement>   
+            <placement code="ca_attribute_condition">
+              <bundle>ca_attribute_condition</bundle>
+            </placement>       
+            <placement code="ca_attribute_signed">
+              <bundle>ca_attribute_signed</bundle>
+            </placement>     
+            <placement code="ca_attribute_signed_by">
+              <bundle>ca_attribute_signed_by</bundle>
+            </placement> 
+            <placement code="ca_attribute_signature_location">
+              <bundle>ca_attribute_signature_location</bundle>
+            </placement>   
+            <placement code="ca_attribute_date_received">
+              <bundle>ca_attribute_date_received</bundle>
+            </placement>  
+            <placement code="ca_attribute_received_by">
+              <bundle>ca_attribute_received_by</bundle>
+            </placement>              
+            <placement code="ca_attribute_provenance">
+              <bundle>ca_attribute_provenance</bundle>
+            </placement>
+            <placement code="ca_storage_locations">
+              <bundle>ca_storage_locations</bundle>
+            </placement>            
+            <placement code="donor">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Donor</setting>
+                <setting name="restrict_to_relationship_types">donor</setting>
+              </settings>
+            </placement>             
+            <placement code="ca_attribute_documents">
+              <bundle>ca_attribute_documents</bundle>
+            </placement> 
+            <placement code="ca_attribute_notes">
+              <bundle>ca_attribute_notes</bundle>
+            </placement>             
+          </bundlePlacements>
+        </screen>
         
         <screen idno="Location" default="0">
           <labels>
@@ -4268,18 +4813,8 @@
             <restriction code="denver" type="denver"/>
           </typeRestrictions>
           <bundlePlacements>
-            <placement code="ca_attribute_appraisal_date">
-              <bundle>ca_attribute_appraisal_date</bundle>
-            </placement>
-             <placement code="appraiser">
-              <bundle>ca_entities</bundle>
-              <settings>
-                <setting name="label" locale="en_US">Appraiser</setting>
-                <setting name="restrict_to_relationship_types">appraiser</setting>
-              </settings>
-            </placement>
-            <placement code="ca_attribute_appraisal_amount">
-              <bundle>ca_attribute_appraisal_amount</bundle>
+            <placement code="ca_attribute_appraisal_info">
+              <bundle>ca_attribute_appraisal_info</bundle>
             </placement>
           </bundlePlacements>
         </screen>      
@@ -4431,9 +4966,6 @@
             <placement code="ca_attribute_commission_amount">
               <bundle>ca_attribute_commission_amount</bundle>
             </placement>
-           <placement code="ca_attribute_appraisal_value">
-              <bundle>ca_attribute_appraisal_value</bundle>
-            </placement>
            <placement code="ca_attribute_additional_funding_notes">
               <bundle>ca_attribute_additional_funding_notes</bundle>
             </placement>
@@ -4458,7 +4990,19 @@
                                 
               </settings>
             </placement>                   
-           <placement code="ca_attribute_total_project_budget">
+           <placement code="ca_attribute_fund">
+              <bundle>ca_attribute_fund</bundle>
+            </placement>
+            <placement code="ca_attribute_project">
+              <bundle>ca_attribute_project</bundle>
+            </placement>
+            <placement code="ca_attribute_public_art_funds_available">
+              <bundle>ca_attribute_public_art_funds_available</bundle>
+            </placement>
+            <placement code="ca_attribute_funds_used">
+              <bundle>ca_attribute_funds_used</bundle>
+            </placement>
+            <placement code="ca_attribute_total_project_budget">
               <bundle>ca_attribute_total_project_budget</bundle>
             </placement>
            <placement code="ca_attribute_original_contract_amount">
@@ -4485,6 +5029,9 @@
            <placement code="ca_attribute_contract_execution_date">
               <bundle>ca_attribute_contract_execution_date</bundle>
             </placement>
+           <placement code="ca_attribute_contract">
+              <bundle>ca_attribute_contract</bundle>
+            </placement>            
            <placement code="ca_attribute_notice_to_proceed_date">
               <bundle>ca_attribute_notice_to_proceed_date</bundle>
             </placement>
@@ -4506,7 +5053,10 @@
            <placement code="ca_attribute_final_walkthru">
               <bundle>ca_attribute_final_walkthru</bundle>
             </placement>
-           <placement code="ca_attribute_plaque_install_date">
+           <placement code="ca_attribute_final_acceptance">
+              <bundle>ca_attribute_final_acceptance</bundle>
+            </placement>
+            <placement code="ca_attribute_plaque_install_date">
               <bundle>ca_attribute_plaque_install_date</bundle>
             </placement> 
            <placement code="ca_attribute_plaque_notes">
@@ -4677,6 +5227,18 @@
             </placement>
             <placement code="ca_attribute_email">
               <bundle>ca_attribute_email</bundle>
+            </placement>
+            <placement code="ca_attribute_facebook">
+              <bundle>ca_attribute_facebook</bundle>
+            </placement>
+            <placement code="ca_attribute_twitter">
+              <bundle>ca_attribute_twitter</bundle>
+            </placement>
+            <placement code="ca_attribute_hashtag">
+              <bundle>ca_attribute_hashtag</bundle>
+            </placement>
+            <placement code="ca_attribute_instagram">
+              <bundle>ca_attribute_instagram</bundle>
             </placement>
             <placement code="ca_attribute_website">
               <bundle>ca_attribute_website</bundle>
@@ -5222,9 +5784,6 @@
                 <setting name="add_label" locale="en_US">Add caption</setting>
               </settings>
             </placement>
-            <placement code="ca_attribute_caption">
-              <bundle>ca_attribute_caption</bundle>
-            </placement>
           </bundlePlacements>
         </screen>
       </screens>
@@ -5253,14 +5812,14 @@
             <placement code="media">
               <bundle>media</bundle>
             </placement>
+            <placement code="ca_attribute_photo_credit">
+              <bundle>ca_attribute_photo_credit</bundle>
+            </placement>            
             <placement code="access">
               <bundle>access</bundle>
             </placement>
             <placement code="status">
               <bundle>status</bundle>
-            </placement>
-            <placement code="ca_attribute_caption">
-              <bundle>ca_attribute_caption</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -5425,6 +5984,26 @@
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
         </type>
+        <type code="fabricator" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>fabricator</typename>
+              <typename_reverse>fabricator</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>   
+        <type code="engineer" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>engineer</typename>
+              <typename_reverse>engineer</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>                   
         <type code="designer" default="0">
           <labels>
             <label locale="en_US">
@@ -5445,16 +6024,6 @@
           <subTypeLeft>memorabilia</subTypeLeft>
           <subTypeRight/>
         </type>           
-        <type code="appraiser" default="0">
-          <labels>
-            <label locale="en_US">
-              <typename>appraiser</typename>
-              <typename_reverse>appraiser</typename_reverse>
-            </label>
-          </labels>
-          <subTypeLeft> </subTypeLeft>
-          <subTypeRight/>
-        </type>
         <type code="semi_finalist" default="0">
           <labels>
             <label locale="en_US">
@@ -6164,9 +6733,134 @@
       </types>
     </relationshipTable>
   </relationshipTypes>
+  <displays>
+  <display code="gen_art_display" type="ca_objects" system="1">
+    <labels>
+      <label locale="en_US">
+        <name>General Art Display</name>
+      </label>
+    </labels>
+    <userAccess>
+      <permission user="administrator" access="edit"/>
+    </userAccess>
+    <bundlePlacements>
+      <placement code="ca_objects_idno">
+        <bundle>ca_objects.idno</bundle>
+        <settings>
+          <setting name="label" locale="en_US">Accession number</setting>
+        </settings>
+      </placement>
+      <placement code="ca_objects_preferred_labels">
+        <bundle>ca_objects.preferred_labels</bundle>
+      </placement>
+      <placement code="ca_objects_colloquial_title">
+        <bundle>ca_objects.colloquial_title</bundle>
+      </placement>
+      <placement code="ca_entities">
+        <bundle>ca_entities</bundle>
+        <settings>
+          <setting name="format">&lt;l&gt;^ca_entities.preferred_labels&lt;/l&gt;&#13;
+            &lt;br/&gt;&#13;
+            &lt;unit&gt;&#13;
+            &lt;ifdef code="ca_entities.artist_business_name "&gt;&lt;b&gt;Business name:&lt;/b&gt; ^ca_entities.artist_business_name&lt;br/&gt;&lt;/ifdef&gt;&#13;
+            &lt;ifdef code="ca_entities.birth"&gt;&lt;b&gt;Birth Year:&lt;/b&gt; ^ca_entities.birth&lt;br/&gt;&lt;/ifdef&gt;&#13;
+            &lt;ifdef code="ca_entities.birthplace"&gt;&lt;b&gt;Place of birth:&lt;/b&gt; ^ca_entities.birthplace&lt;br/&gt;&lt;/ifdef&gt;&#13;
+            &lt;ifdef code="ca_entities.biography"&gt;&lt;b&gt;Biography:&lt;/b&gt; ^ca_entities.biography&lt;br/&gt;&lt;/ifdef&gt;&#13;
+            &lt;ifdef code="ca_entities.telephone"&gt;&lt;b&gt;Phone number:&lt;/b&gt; ^ca_entities.telephone&lt;br/&gt;&lt;/ifdef&gt;&#13;
+            &lt;ifdef code="ca_entities.email"&gt;&lt;b&gt;Email address:&lt;/b&gt; ^ca_entities.email&lt;br/&gt;&lt;/ifdef&gt;&#13;
+            &lt;ifdef code="ca_entities.website"&gt;&lt;b&gt;Website:&lt;/b&gt; ^ca_entities.website&lt;br/&gt;&lt;/ifdef&gt;&#13;
+            &lt;ifdef code="ca_entities.address"&gt;&lt;b&gt;Address:&lt;/b&gt; ^ca_entities.address&lt;br/&gt;&lt;/ifdef&gt;&#13;
+            &lt;ifdef code="ca_entities.deceased"&gt;&lt;b&gt;Deceased?:&lt;/b&gt; ^ca_entities.deceased&lt;br/&gt;&lt;/ifdef&gt;&#13;
+            &lt;ifdef code="ca_entities.colorado_artist"&gt;&lt;b&gt;CO artist?:&lt;/b&gt; ^ca_entities.colorado_artist&lt;br/&gt;&lt;/ifdef&gt;&#13;
+            &lt;ifdef code="ca_entities.gender"&gt;&lt;b&gt;Gender:&lt;/b&gt; ^ca_entities.gender&lt;br/&gt;&lt;/ifdef&gt;&#13;
+            &lt;ifdef code="ca_entities.also_known"&gt;&lt;b&gt;Also known for:&lt;/b&gt; ^ca_entities.also_known&lt;br/&gt;&lt;/ifdef&gt;&#13;
+            &lt;/unit&gt;</setting>
+          <setting name="label" locale="en_US">Artist</setting>
+        </settings>
+      </placement>      
+      <placement code="ca_objects_budget">
+        <bundle>ca_objects.budget</bundle>
+      </placement>
+      <placement code="ca_objects_aat">
+        <bundle>ca_objects.aat</bundle>
+      </placement>
+      <placement code="ca_objects_materials">
+        <bundle>ca_objects.materials</bundle>
+      </placement>
+      <placement code="ca_objects_dimensions">
+        <bundle>ca_objects.dimensions</bundle>
+      </placement>
+      <placement code="ca_objects_accession_status">
+        <bundle>ca_objects.accession_status</bundle>
+      </placement>
+      <placement code="ca_objects_temporary_duration">
+        <bundle>ca_objects.temporary_duration</bundle>
+      </placement>
+      <placement code="ca_objects_deaccession_date">
+        <bundle>ca_objects.deaccession_date</bundle>
+      </placement>
+      <placement code="ca_objects_provenance">
+        <bundle>ca_objects.provenance</bundle>
+      </placement>
+      <placement code="ca_objects_year_commissioned">
+        <bundle>ca_objects.year_commissioned</bundle>
+      </placement>
+      <placement code="ca_objects_year_completed">
+        <bundle>ca_objects.year_completed</bundle>
+      </placement>
+      <placement code="ca_objects_copyright">
+        <bundle>ca_objects.copyright</bundle>
+      </placement>
+      <placement code="ca_objects_description">
+        <bundle>ca_objects.description</bundle>
+      </placement>
+      <placement code="ca_objects_tour_resources">
+        <bundle>ca_objects.tour_resources</bundle>
+      </placement>
+      <placement code="ca_objects_awards">
+        <bundle>ca_objects.awards</bundle>
+      </placement>
+    </bundlePlacements>
+  </display>
+  </displays>  
   <logins>
     <login user_name="administrator" password="denver" fname="CollectiveAccess"
       lname="Administrator" email="info@collectiveaccess.org">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+    <login user_name="amy" password="denver" fname="Amy"
+      lname="Lindsey" email="amy.lindsey@denvergov.org">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+    <login user_name="brendan" password="denver" fname="Brendan"
+      lname="Picker" email="brendan.picker@denvergov.org">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+    <login user_name="mandy" password="denver" fname="Mandy"
+      lname="Renaud" email="mandy.renaud@flydenver.com">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+    <login user_name="mary" password="denver" fname="Mary"
+      lname="Valdez" email="Mary.valdez@denvergov.org">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+    <login user_name="michael" password="denver" fname="Michael"
+      lname="Chavez" email="michael.chavez@denvergov.org">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+    <login user_name="rudi" password="denver" fname="Rudi"
+      lname="Cerri" email="rudi.cerri@denvergov.org">
+      <role code="admin"/>
+      <group code="admin"/>
+    </login>
+    <login user_name="shanna" password="denver" fname="Shanna"
+      lname="Shelby" email="Shanna.Shelby@denvergov.org">
       <role code="admin"/>
       <group code="admin"/>
     </login>
