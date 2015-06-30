@@ -669,7 +669,7 @@ final class ConfigurationExporter {
 
 			// screens
 			$vo_screens = $this->opo_dom->createElement("screens");
-			$qr_screens = $this->opo_db->query("SELECT * FROM ca_editor_ui_screens WHERE parent_id IS NOT NULL AND ui_id=? ORDER BY screen_id",$qr_uis->get("ui_id"));
+			$qr_screens = $this->opo_db->query("SELECT * FROM ca_editor_ui_screens WHERE parent_id IS NOT NULL AND ui_id=? ORDER BY rank,screen_id",$qr_uis->get("ui_id"));
 
 			while($qr_screens->nextRow()) {
 				$t_screen = new ca_editor_ui_screens($qr_screens->get("screen_id"));
