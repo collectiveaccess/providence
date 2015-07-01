@@ -361,7 +361,7 @@ class ca_item_comments extends BaseModel {
 	 *
 	 */
 	public function getUnmoderatedComments() {
-		return $this->getComments('unmoderated');
+		return $this->getCommentsList('unmoderated');
 	}
 	# ------------------------------------------------------
 	/**
@@ -399,7 +399,7 @@ class ca_item_comments extends BaseModel {
 	}
 	# ------------------------------------------------------
 	public function getModeratedComments() {
-		return $this->getComments('moderated');
+		return $this->getCommentsList('moderated');
 	}
 	# ------------------------------------------------------
 	/**
