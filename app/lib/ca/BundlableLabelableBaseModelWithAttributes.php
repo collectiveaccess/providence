@@ -3998,19 +3998,20 @@ if (!$vb_batch) {
 						if (!is_array($va_rep_ids = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}", pArray))) { $va_rep_ids = array(); }
 								
 						if ($vs_element_code = caGetOption(array('elementCode', 'element_code'), $va_bundle_settings, null)) {
-							if (!is_array($va_current_rep_ids = $this->get($this->tableName().".".$vs_element_code, array('returnWithStructure' => true, 'idsOnly' => true)))) { $va_current_rep_ids = array(); }
+							if (!is_array($va_current_rep_ids = $this->get($this->tableName().".".$vs_element_code, array('returnAsArray' => true, 'idsOnly' => true)))) { 
+								$va_current_rep_ids = $va_current_rep_id_with_structure = array();
+							} else {
+								$va_current_rep_id_with_structure = $this->get($this->tableName().".".$vs_element_code, array('returnWithStructure' => true, 'idsOnly' => true));
+							}
 							
-							//$va_current_rep_ids = caExtractValuesFromArrayList($va_current_rep_ids, $vs_element_code, array('preserveKeys' => true));
 							$va_rep_to_attr_id = array();
 							
-						
-						
 							foreach($va_rep_ids as $vn_rep_id) {
 								if (in_array($vn_rep_id, $va_current_rep_ids)) { continue; }
 								$this->addAttribute(array($vs_element_code => $vn_rep_id), $vs_element_code);
 							}
 							
-							foreach($va_current_rep_ids as $vn_id => $va_vals_by_attr_id) {
+							foreach($va_current_rep_id_with_structure as $vn_id => $va_vals_by_attr_id) {
 								foreach($va_vals_by_attr_id as $vn_attribute_id => $va_val) {
 									if (!in_array($va_val[$vs_element_code], $va_rep_ids)) {
 										$this->removeAttribute($vn_attribute_id);
@@ -4404,6 +4405,8 @@ if (!$vb_batch) {
 
 		if (!is_array($pa_options)) { $pa_options = array(); }
 
+		$vb_is_combo_key_relation = false; // indicates relation is via table_num/row_id combination key
+		
 		switch(sizeof($va_path = array_keys($this->getAppDatamodel()->getPath($this->tableName(), $vs_related_table_name)))) {
 			case 3:
 				$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
@@ -4416,8 +4419,19 @@ if (!$vb_batch) {
 				$vs_key = $t_rel_item->primaryKey();
 				break;
 			default:
-				// bad related table
-				return null;
+				// is this related with row_id/table_num combo?
+				if (
+					($t_rel_item = $this->getAppDatamodel()->getTableInstance($vs_related_table_name))
+					&&
+					$t_rel_item->hasField('table_num') && $t_rel_item->hasField('row_id')
+				) {
+					$vs_key = $t_rel_item->primaryKey();
+					$vb_is_combo_key_relation = true;
+					$va_path = array($this->tableName(), $t_rel_item->tableName());
+				} else {
+					// bad related table
+					return null;
+				}
 				break;
 		}
 
@@ -4911,16 +4925,20 @@ if (!$vb_batch) {
 				}
 			}
 
-			foreach($va_path as $vs_join_table) {
-				$va_rel_info = $this->getAppDatamodel()->getRelationships($vs_cur_table, $vs_join_table);
-				$vs_join = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.';
+			if ($vb_is_combo_key_relation) {
+				$va_joins = array("INNER JOIN {$vs_related_table_name} ON {$vs_related_table_name}.row_id = ".$this->primaryKey(true)." AND {$vs_related_table_name}.table_num = ".$this->tableNum());
+			} else {
+				foreach($va_path as $vs_join_table) {
+					$va_rel_info = $this->getAppDatamodel()->getRelationships($vs_cur_table, $vs_join_table);
+					$vs_join = 'INNER JOIN '.$vs_join_table.' ON ';
 				
-				$va_tmp = array();
-				foreach($va_rel_info[$vs_cur_table][$vs_join_table] as $vn_i => $va_rel) {
-					$va_tmp[] = $va_rel_info[$vs_cur_table][$vs_join_table][$vn_i][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][$vn_i][1]."\n";
+					$va_tmp = array();
+					foreach($va_rel_info[$vs_cur_table][$vs_join_table] as $vn_i => $va_rel) {
+						$va_tmp[] = $vs_cur_table.".".$va_rel_info[$vs_cur_table][$vs_join_table][$vn_i][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][$vn_i][1]."\n";
+					}
+					$va_joins[] = $vs_join.join(' OR ', $va_tmp);
+					$vs_cur_table = $vs_join_table;
 				}
-				$va_joins[] = $vs_join.' '.join(' OR ', $va_tmp);
-				$vs_cur_table = $vs_join_table;
 			}
 
 			// If we're getting ca_set_items, we have to rename the intrinsic row_id field because the pk is named row_id below. Hence, this hack.

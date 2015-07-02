@@ -551,14 +551,24 @@ class BaseEditorController extends ActionController {
 				# trigger "DeleteItem" hook
 				$this->opo_app_plugin_manager->hookDeleteItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
 
-				# redirect to last find
-				caSetRedirect($this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $t_subject->tableName()));
+				# redirect
+				$this->redirectAfterDelete($t_subject->tableName());
 			}
 		}
 
 		$this->view->setVar('subject_name', $t_subject->getLabelForDisplay(false));
 
 		$this->render('delete_html.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 * Redirects to a sensible location after a record delete. Defaults to the last find action
+	 * for the current table, which depending on the table may not be available. Can be
+	 * overridden in subclasses/implementations.
+	 * @param string $ps_table table name
+	 */
+	protected function redirectAfterDelete($ps_table) {
+		caSetRedirect($this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $ps_table));
 	}
 	# -------------------------------------------------------
 	/**
