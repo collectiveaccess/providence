@@ -40,6 +40,7 @@ require_once(__CA_LIB_DIR__.'/core/Utils/Timer.php');
 require_once(__CA_LIB_DIR__.'/core/Utils/CLIProgressBar.php');
 require_once(__CA_LIB_DIR__.'/core/Zend/Cache.php');
 require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
+require_once(__CA_MODELS_DIR__.'/ca_search_indexing_queue.php');
 
 class SearchIndexer extends SearchBase {
 	# ------------------------------------------------
@@ -409,6 +410,19 @@ class SearchIndexer extends SearchBase {
 		return null;
 	}
 	# ------------------------------------------------
+	private function queueIndexRow($pa_row_values) {
+		$t_queue_entry = new ca_search_indexing_queue();
+		$t_queue_entry->setMode(ACCESS_WRITE);
+
+		foreach($pa_row_values as $vs_fld => $vm_val) {
+			if($t_queue_entry->hasField($vs_fld)) {
+				$t_queue_entry->set($vs_fld, $vm_val);
+			}
+		}
+
+		$t_queue_entry->insert();
+	}
+	# ------------------------------------------------
 	/**
 	 * Indexes single row in a table; this is the public call when one needs to index content.
 	 * indexRow() will analyze the dependencies of the row being indexed and automatically
@@ -429,6 +443,19 @@ class SearchIndexer extends SearchBase {
 	 */
 	public function indexRow($pn_subject_tablenum, $pn_subject_row_id, $pa_field_data, $pb_reindex_mode=false, $pa_exclusion_list=null, $pa_changed_fields=null, $pa_old_values=null, $pa_options=null) {
 		if (!$pb_reindex_mode && is_array($pa_changed_fields) && !sizeof($pa_changed_fields)) { return; }	// don't bother indexing if there are no changed fields
+
+		if(!defined('__CA_IS_INDEXING_SERVICE__') || !__CA_IS_INDEXING_SERVICE__) {
+			$this->queueIndexRow(array(
+				'table_num' => $pn_subject_tablenum,
+				'row_id' => $pn_subject_row_id,
+				'field_data' => $pa_field_data,
+				'reindex' => $pb_reindex_mode ? 1 : 0,
+				'changed_fields' => $pa_changed_fields,
+				'old_values' => $pa_old_values,
+				'options' => $pa_options
+			));
+			//return;
+		}
 
 		$vs_subject_tablename = $this->opo_datamodel->getTableName($pn_subject_tablenum);
 		$t_subject = $this->opo_datamodel->getInstanceByTableName($vs_subject_tablename, true);
