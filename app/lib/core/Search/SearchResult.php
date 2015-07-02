@@ -1809,25 +1809,6 @@ class SearchResult extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	/**
-	 *
-	 */
-	private function _getAttributeAsHTMLLink($ps_val, $ps_field, $pa_attributes=array(), $pa_options=null) {
-		if (!is_array($pa_attributes)) { $pa_attributes = array(); }
-		$vs_return_as_link_class = 	(isset($pa_options['returnAsLinkClass'])) ? (string)$pa_options['returnAsLinkClass'] : '';
-		$vs_return_as_link_get_text_from = 	(isset($pa_options['returnAsLinkGetTextFrom'])) ? (string)$pa_options['returnAsLinkGetTextFrom'] : '';
-		
-		$vs_val = $va_subvalues[$vn_attribute_id];
-		$va_tmp = explode(".", $ps_field); array_pop($va_tmp);
-		$vs_link_text = ($vs_return_as_link_get_text_from) ? $this->get(join(".", $va_tmp).".{$vs_return_as_link_get_text_from}") : $ps_val;
-
-		$va_link_attr = $pa_attributes;
-		$va_link_attr['href'] = $ps_val;
-		if ($vs_return_as_link_class) { $va_link_attr['class'] = $vs_return_as_link_class; }
-		
-		return caHTMLLink($vs_link_text, $va_link_attr);
-	}
-	# ------------------------------------------------------------------
-	/**
 	 * Move current row in result set 
 	 *
 	 * @param int $pn_index The row to move to. Rows are numbers from zero.
@@ -1835,55 +1816,6 @@ class SearchResult extends BaseObject {
 	 */
 	public function seek($pn_index) {
 		return $this->opo_engine_result->seek($pn_index);
-	}
-	# ------------------------------------------------------------------
-	/**
-	 *
-	 */
-	private function _getElementHierarchy($pt_instance, $pa_path_components) {
-		$vb_is_in_container = false;
-		if (
-			(
-				($pa_path_components['subfield_name'] === 'hierarchy') 
-				&& 
-				in_array($pt_instance->_getElementDatatype($pa_path_components['field_name']), array(__CA_ATTRIBUTE_VALUE_LIST__))
-			)
-			||
-			(
-				isset($pa_path_components['components'][3]) 
-				&& 
-				($pa_path_components['components'][3] === 'hierarchy') 
-				&& 
-				($pt_instance->_getElementDatatype($pa_path_components['field_name']) == __CA_ATTRIBUTE_VALUE_CONTAINER__)
-				&&
-				($vb_is_in_container = in_array($pt_instance->_getElementDatatype($pa_path_components['subfield_name']), array(__CA_ATTRIBUTE_VALUE_LIST__)))
-			)
-		) {
-			if ($vb_is_in_container) {
-				$va_items = $this->get($pa_path_components['table_name'].'.'.$pa_path_components['field_name'].'.'.$pa_path_components['subfield_name'], array('returnAsArray' => true));
-			} else {
-				$va_items = $this->get($pa_path_components['table_name'].'.'.$pa_path_components['field_name'], array('returnAsArray' => true));
-			}
-			if (!is_array($va_items)) { return null; }
-			$va_item_ids = caExtractValuesFromArrayList($va_items, $pa_path_components['field_name'], array('preserveKeys' => false));
-			$qr_items = caMakeSearchResult('ca_list_items', $va_item_ids);
-			
-			if (!$va_item_ids || !is_array($va_item_ids) || !sizeof($va_item_ids)) {  return array(); } 
-			$va_vals = array();
-			
-			$va_get_spec = $pa_path_components['components'];
-			array_shift($va_get_spec); array_shift($va_get_spec);
-			if ($vb_is_in_container) { array_shift($va_get_spec); }
-			array_unshift($va_get_spec, 'ca_list_items');
-			$vs_get_spec = join('.', $va_get_spec);
-			while($qr_items->nextHit()) {
-				$va_hier = $qr_items->get($vs_get_spec, array('returnAsArray' => true));
-				array_shift($va_hier);	// get rid of root
-				$va_vals[] = $va_hier;
-			}
-			return $va_vals;
-		} 
-		return null;
 	}
 	# ------------------------------------------------------------------
 	/**
