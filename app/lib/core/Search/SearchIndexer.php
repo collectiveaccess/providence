@@ -444,6 +444,15 @@ class SearchIndexer extends SearchBase {
 	public function indexRow($pn_subject_tablenum, $pn_subject_row_id, $pa_field_data, $pb_reindex_mode=false, $pa_exclusion_list=null, $pa_changed_fields=null, $pa_old_values=null, $pa_options=null) {
 		if (!$pb_reindex_mode && is_array($pa_changed_fields) && !sizeof($pa_changed_fields)) { return; }	// don't bother indexing if there are no changed fields
 
+		$vs_subject_tablename = $this->opo_datamodel->getTableName($pn_subject_tablenum);
+		$t_subject = $this->opo_datamodel->getInstanceByTableName($vs_subject_tablename, true);
+		$t_subject->setDb($this->getDb());	// force the subject instance to use the same db connection as the indexer, in case we're operating in a transaction
+
+		// Prevent endless recursive reindexing
+		if (is_array($pa_exclusion_list[$pn_subject_tablenum]) && (isset($pa_exclusion_list[$pn_subject_tablenum][$pn_subject_row_id]))) { return; }
+
+		// queue this indexing task, unless we are in the indexing microservice
+		// @todo add a config setting to disable this
 		if(!defined('__CA_IS_INDEXING_SERVICE__') || !__CA_IS_INDEXING_SERVICE__) {
 			$this->queueIndexRow(array(
 				'table_num' => $pn_subject_tablenum,
@@ -456,13 +465,6 @@ class SearchIndexer extends SearchBase {
 			));
 			//return;
 		}
-
-		$vs_subject_tablename = $this->opo_datamodel->getTableName($pn_subject_tablenum);
-		$t_subject = $this->opo_datamodel->getInstanceByTableName($vs_subject_tablename, true);
-		$t_subject->setDb($this->getDb());	// force the subject instance to use the same db connection as the indexer, in case we're operating in a transaction
-
-		// Prevent endless recursive reindexing
-		if (is_array($pa_exclusion_list[$pn_subject_tablenum]) && (isset($pa_exclusion_list[$pn_subject_tablenum][$pn_subject_row_id]))) { return; }
 
 		$pb_is_new_row = (int)caGetOption('isNewRow', $pa_options, false);
 		$vb_reindex_children = false;
