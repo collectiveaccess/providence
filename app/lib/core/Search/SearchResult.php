@@ -59,7 +59,10 @@ class SearchResult extends BaseObject {
 	// ----
 	
 	private $opa_options;
-	
+
+	/**
+	 * @var IWLPlugSearchEngineResult
+	 */
 	private $opo_engine_result;
 	protected $opa_tables;
 	
@@ -86,7 +89,10 @@ class SearchResult extends BaseObject {
 	
 	private $opb_use_identifiers_in_urls = false;
 	private $ops_subject_idno = false;
-	
+
+	# ------------------------------------------------------------------
+	private $opb_disable_get_with_template_prefetch = false;
+	static $s_template_prefetch_cache = array();
 	# ------------------------------------------------------------------
 	public function __construct($po_engine_result=null, $pa_tables=null) {
 		$this->opo_db = new Db();
@@ -158,6 +164,14 @@ class SearchResult extends BaseObject {
 		}
 		
 		$this->errors = array();
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Controls prefetching for @see SearchResult::getWithTemplate()
+	 * @param bool $pb_disable do prefetching or not?
+	 */
+	public function disableGetWithTemplatePrefetch($pb_disable=true) {
+		$this->opb_disable_get_with_template_prefetch = $pb_disable;
 	}
 	# ------------------------------------------------------------------
 	public function getDb() {
@@ -1792,10 +1806,48 @@ class SearchResult extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	/**
-	 *
+	 * Run the given display template for the current row in the result set
+	 * @param string $ps_template The display template, e.g. "^ca_objects.preferred_labels"
+	 * @param null|array $pa_options Array of options, @see caProcessTemplateForIDs
+	 * @return mixed
 	 */
-	public function getWithTemplate($ps_template, $pa_options=null) {	
-		return caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->get($this->ops_table_name.".".$this->ops_subject_pk)), $pa_options);
+	public function getWithTemplate($ps_template, $pa_options=null) {
+		if($this->opb_disable_get_with_template_prefetch) {
+			return caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->get($this->ops_table_name.".".$this->ops_subject_pk)), $pa_options);
+		}
+
+		// the assumption is that if you run getWithTemplate for the current row, you'll probably run it for the next bunch of rows too
+		// since running caProcessTemplateForIDs for every single row is slow, we prefetch a set number of rows here
+		$vs_cache_base_key = $this->getCacheKeyForGetWithTemplate($ps_template, $pa_options);
+
+		if(!isset(self::$s_template_prefetch_cache[$vs_cache_base_key][$this->opo_engine_result->currentRow()])) {
+			$this->prefetchForGetWithTemplate($ps_template, $pa_options);
+		}
+
+		return self::$s_template_prefetch_cache[$vs_cache_base_key][$this->opo_engine_result->currentRow()];
+	}
+	# ------------------------------------------------------------------
+	private function prefetchForGetWithTemplate($ps_template, $pa_options) {
+		$va_ids = $this->getRowIDsToPrefetch($this->opo_engine_result->currentRow(), 500);
+		$vs_cache_base_key = $this->getCacheKeyForGetWithTemplate($ps_template, $pa_options);
+
+		$pa_options['returnAsArray'] = true; // careful, this would change the cache key ... which is why we generate it before
+		$va_vals = caProcessTemplateForIDs($ps_template, $this->ops_table_name, $va_ids, $pa_options);
+
+		// if we're at the first hit, we don't need to offset the cache keys, so we can use $va_vals as-is
+		if($this->opo_engine_result->currentRow() == 0) {
+			self::$s_template_prefetch_cache[$vs_cache_base_key] = array_values($va_vals);
+		} else {
+			// this is kind of slow but we hope that users usually pull when the ptr is still at the first result
+			// I tried messing around with array_walk instead of this loop but that doesn't gain us much, and this is way easier to read
+			foreach($va_vals as $vn_i => $vs_val) {
+				self::$s_template_prefetch_cache[$vs_cache_base_key][$vn_i + $this->opo_engine_result->currentRow()] = $vs_val;
+			}
+		}
+	}
+	# ------------------------------------------------------------------
+	private function getCacheKeyForGetWithTemplate($ps_template, $pa_options) {
+		return $this->ops_table_name.'/'.$ps_template.'/'.md5(print_r($pa_options, true));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -1804,8 +1856,8 @@ class SearchResult extends BaseObject {
 	public function getWithTemplateForResults($ps_template, $pa_options=null) {	
 		$pn_start = caGetOption('start', $pa_options, 0);
 		$this->seek($pn_start);
-		
-		return caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->get($this->ops_table_name.".".$this->ops_subject_pk)), $pa_options);
+
+		return caProcessTemplateForIDs($ps_template, $this->ops_table_name, $this->getRowIDsToPrefetch($pn_start, $this->numHits()), array_merge($pa_options, array('returnAsArray' => true)));
 	}
 	# ------------------------------------------------------------------
 	/**
