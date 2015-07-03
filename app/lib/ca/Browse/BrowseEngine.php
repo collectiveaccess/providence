@@ -194,6 +194,19 @@
 		private function _processBrowseSettings() {
 			$va_revised_facets = array();
 			foreach($this->opa_browse_settings['facets'] as $vs_facet_name => $va_facet_info) {
+
+				global $g_ui_locale;
+				if(is_array($va_facet_info['label_singular'])) {
+					if(isset($va_facet_info['label_singular'][$g_ui_locale])) {
+						$va_facet_info['label_singular'] = $va_facet_info['label_singular'][$g_ui_locale];
+					}
+				}
+
+				if(is_array($va_facet_info['label_plural'])) {
+					if(isset($va_facet_info['label_plural'][$g_ui_locale])) {
+						$va_facet_info['label_plural'] = $va_facet_info['label_plural'][$g_ui_locale];
+					}
+				}
 			
 				// generate_facets_for_types config directive triggers auto-generation of facet config for each type of an authority item
 				// it's typically employed to provide browsing of occurrences where the various types are unrelated
@@ -884,7 +897,7 @@
 			}
 			
 			if (is_array($va_facets_with_content)) {
-				$va_facets = $this->opa_browse_settings['facets'];	
+				$va_facets = $this->opa_browse_settings['facets'];
 				$vs_facet_group = $this->getFacetGroup();
 				
 				$va_tmp = array();
