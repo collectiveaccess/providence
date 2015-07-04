@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess Providence\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-07-03 04:41+0200\n"
-"PO-Revision-Date: 2015-07-04 19:02+0200\n"
+"PO-Revision-Date: 2015-07-04 19:33+0200\n"
 "Last-Translator: Gautier Michelin <gm@ideesculture.com>\n"
 "Language-Team: French (France) (http://www.transifex.com/projects/p/"
 "collectiveaccess-providence/language/fr_FR/)\n"
@@ -194,9 +194,8 @@ msgid "Width (as percentage of image width) of text box"
 msgstr "Largeur de la boîte texte (en pourcentage de la largeur de l'image)"
 
 #: app/conf/annotation_types.conf:189
-#, fuzzy
 msgid "Text height"
-msgstr "Hauteur"
+msgstr "Hauteur du texte"
 
 #: app/conf/annotation_types.conf:190
 msgid "Height (as percentage of image height) of text box"
@@ -264,9 +263,8 @@ msgid "Locked"
 msgstr "Verrouillé"
 
 #: app/conf/annotation_types.conf:228
-#, fuzzy
 msgid "Indicates if annotation is locked"
-msgstr "Indique l'état courant de l'annotation."
+msgstr "Indique si l'annotation est verrouillée"
 
 #: app/conf/browse.conf:19 app/models/ca_object_labels.php:40
 msgid "object title"
@@ -277,38 +275,32 @@ msgid "object titles"
 msgstr "titres d'objets"
 
 #: app/conf/browse.conf:30
-#, fuzzy
 msgid "Has problems"
-msgstr "A"
+msgstr "A des problèmes"
 
 #: app/conf/browse.conf:31
-#, fuzzy
 msgid "Does not have problems"
-msgstr "%1 problèmes nécessitent votre attention"
+msgstr "N'a aucun problème"
 
 #: app/conf/browse.conf:33
-#, fuzzy
 msgid "problem"
-msgstr "%1 problème nécessite votre attention"
+msgstr "problème"
 
 #: app/conf/browse.conf:34
-#, fuzzy
 msgid "problems"
-msgstr "%1 problèmes nécessitent votre attention"
+msgstr "problèmes"
 
 #: app/conf/browse.conf:54
-#, fuzzy
 msgid "checkout"
-msgstr "Prêter"
+msgstr "emprunts"
 
 #: app/conf/browse.conf:55
 msgid "checkouts"
 msgstr "emprunts"
 
 #: app/conf/browse.conf:66 app/conf/browse.conf:67
-#, fuzzy
 msgid "deaccessioned"
-msgstr "%1 rayé de l'inventaire"
+msgstr "rayé de l'inventaire"
 
 #: app/conf/browse.conf:80
 msgid "Has media"
@@ -1275,9 +1267,8 @@ msgid "My displays"
 msgstr "Mes affichages"
 
 #: app/conf/navigation.conf:3120
-#, fuzzy
 msgid "Edit display"
-msgstr "Vous ne pouvez pas modifier cet affichage"
+msgstr "Modifier l'affichage"
 
 #: app/conf/navigation.conf:3152
 msgid "My sets"
@@ -1761,7 +1752,6 @@ msgid "Initiate search reindexing"
 msgstr "Lancer la réindexation pour les recherches"
 
 #: app/conf/user_actions.conf:60
-#, fuzzy
 msgid "Allow user recreate system search indices"
 msgstr "Autoriser l'utilisateur à recréer les indices de recherche du système"
 
@@ -1770,9 +1760,8 @@ msgid "Can use plugin tools"
 msgstr "Peut utiliser les outils du plugin"
 
 #: app/conf/user_actions.conf:64
-#, fuzzy
 msgid "Allow user to use tool plugins"
-msgstr "Autoriser l'utilisateur à utiliser le webservice de recherche JSON."
+msgstr "Autoriser l'utilisateur à utiliser les outils du plugin"
 
 #: app/conf/user_actions.conf:70
 msgid "Client interaction"
@@ -1801,9 +1790,8 @@ msgstr ""
 
 #: app/conf/user_actions.conf:81
 #: themes/default/views/library/checkout/widget_checkout_html.php:33
-#, fuzzy
 msgid "Library check out"
-msgstr "Emprunt utilisateur"
+msgstr "Emprunt type bibliothèque"
 
 #: app/conf/user_actions.conf:82
 msgid ""
@@ -2170,17 +2158,14 @@ msgid "Allow user to duplicate objects"
 msgstr "Autoriser l'utilisateur à dupliquer des objets"
 
 #: app/conf/user_actions.conf:261
-#, fuzzy
 msgid "Quick add objects"
-msgstr "Ajout rapide de lots d'objets"
+msgstr "Ajout rapide d'objets"
 
 #: app/conf/user_actions.conf:262
-#, fuzzy
 msgid ""
 "Allow user to add objects not already present while creating relationships"
 msgstr ""
-"Autorise l'utilisateur à ajouter des occurences lors de la création de "
-"relations"
+"Autorise l'utilisateur à ajouter des objets lors de la création de relations"
 
 #: app/conf/user_actions.conf:265
 msgid "Export objects"
@@ -2226,14 +2211,12 @@ msgid "Allow user to edit batches of objects"
 msgstr "Autoriser l'utilisateur à modifier par lot des objets"
 
 #: app/conf/user_actions.conf:281
-#, fuzzy
 msgid "Batch delete objects"
-msgstr "Modification par lot d'objets"
+msgstr "Suppression par lot d'objets"
 
 #: app/conf/user_actions.conf:282
-#, fuzzy
 msgid "Allow user to delete batches of objects"
-msgstr "Autoriser l'utilisateur à modifier par lot des objets"
+msgstr "Autoriser l'utilisateur à supprimer par lot des objets"
 
 #: app/conf/user_actions.conf:285
 msgid "Can see current location of object in inspector"
@@ -2252,14 +2235,13 @@ msgstr ""
 #: app/conf/user_actions.conf:619 app/conf/user_actions.conf:678
 #: app/conf/user_actions.conf:737 app/conf/user_actions.conf:796
 #: app/conf/user_actions.conf:855 app/conf/user_actions.conf:922
-#, fuzzy
 msgid "View change log"
-msgstr "entrée dans l'historique des modifications"
+msgstr "Afficher le log des modifications"
 
 #: app/conf/user_actions.conf:290
-#, fuzzy
 msgid "Allow user to view object change logs"
-msgstr "Autoriser l'utilisateur à afficher les logs du système"
+msgstr ""
+"Autoriser l'utilisateur à afficher les logs des modifications des objets"
 
 #: app/conf/user_actions.conf:296
 msgid "Object representation editing"
@@ -2350,12 +2332,10 @@ msgid "Allow user to edit batches of object representations"
 msgstr "Autoriser l'utilisateur à modifier par lot des représentations"
 
 #: app/conf/user_actions.conf:340
-#, fuzzy
 msgid "Batch delete object representations"
-msgstr "Modification par lot de représentations"
+msgstr "Suppression par lot de représentations"
 
 #: app/conf/user_actions.conf:341
-#, fuzzy
 msgid "Allow user to delete batches of object representations"
 msgstr "Autoriser l'utilisateur à supprimer des représentations d'objets"
 
@@ -2439,9 +2419,9 @@ msgstr ""
 "annotations de représentation"
 
 #: app/conf/user_actions.conf:384
-#, fuzzy
 msgid "Allow user to view annotation change logs"
-msgstr "Autoriser l'utilisateur à afficher les logs du système"
+msgstr ""
+"Autoriser l'utilisateur à afficher les logs des modifications des annotations"
 
 #: app/conf/user_actions.conf:390
 msgid "Object lot editing"
@@ -2539,19 +2519,16 @@ msgid "Allow user to edit batches of object lots"
 msgstr "Autoriser l'utilisateur à modifier par lot des lots d'objets"
 
 #: app/conf/user_actions.conf:438
-#, fuzzy
 msgid "Batch delete object lots"
-msgstr "Modification par lot de lots d'objets"
+msgstr "Suppression par lot de lots d'objets"
 
 #: app/conf/user_actions.conf:439
-#, fuzzy
 msgid "Allow user to delete batches of object lots"
 msgstr "Autoriser l'utilisateur à supprimer des lots d'objets"
 
 #: app/conf/user_actions.conf:443
-#, fuzzy
 msgid "Allow user to view lot change logs"
-msgstr "Autoriser l'utilisateur à afficher les logs du système"
+msgstr "Autoriser l'utilisateur à afficher les logs des modifications par lot"
 
 #: app/conf/user_actions.conf:449
 msgid "Entity authority editing"
@@ -2648,19 +2625,17 @@ msgid "Allow user to edit batches of entities"
 msgstr "Autoriser l'utilisateur à modifier par lot des entités"
 
 #: app/conf/user_actions.conf:497
-#, fuzzy
 msgid "Batch delete entities"
-msgstr "Modification par lot d'entités"
+msgstr "Suppression par lot d'entités"
 
 #: app/conf/user_actions.conf:498
-#, fuzzy
 msgid "Allow user to delete batches of entities"
-msgstr "Autoriser l'utilisateur à modifier par lot des entités"
+msgstr "Autoriser l'utilisateur à supprimer par lot des entités"
 
 #: app/conf/user_actions.conf:502
-#, fuzzy
 msgid "Allow user to view entity change logs"
-msgstr "Autoriser l'utilisateur à afficher les logs du système"
+msgstr ""
+"Autoriser l'utilisateur à afficher les logs de modifications des entités"
 
 #: app/conf/user_actions.conf:508
 msgid "Place authority editing"
@@ -2756,19 +2731,17 @@ msgid "Allow user to edit batches of places"
 msgstr "Autoriser l'utilisateur à modifier par lot des lieux"
 
 #: app/conf/user_actions.conf:556
-#, fuzzy
 msgid "Batch delete places"
-msgstr "Traitement par lot de lieux"
+msgstr "Suppression par lot de lieux"
 
 #: app/conf/user_actions.conf:557
-#, fuzzy
 msgid "Allow user to delete batches of places"
-msgstr "Autoriser l'utilisateur à modifier par lot des lieux"
+msgstr "Autoriser l'utilisateur à supprimer par lot des lieux"
 
 #: app/conf/user_actions.conf:561
-#, fuzzy
 msgid "Allow user to view place change logs"
-msgstr "Autoriser l'utilisateur à afficher les logs du système"
+msgstr ""
+"Autoriser l'utilisateur à afficher les logs des modifications des lieux"
 
 #: app/conf/user_actions.conf:567
 msgid "Occurrence-based authority editing"
@@ -2869,19 +2842,17 @@ msgid "Allow user to edit batches of occurrences"
 msgstr "Autoriser l'utilisateur à modifier par lot des occurrences"
 
 #: app/conf/user_actions.conf:615
-#, fuzzy
 msgid "Batch delete occurrences"
-msgstr "Traitement par lot d'occurrences"
+msgstr "Suppression par lot d'occurrences"
 
 #: app/conf/user_actions.conf:616
-#, fuzzy
 msgid "Allow user to delete batches of occurrences"
-msgstr "Autoriser l'utilisateur à modifier par lot des occurrences"
+msgstr "Autoriser l'utilisateur à supprimer par lot des occurrences"
 
 #: app/conf/user_actions.conf:620
-#, fuzzy
 msgid "Allow user to view occurrence change logs"
-msgstr "Autoriser l'utilisateur à afficher les logs du système"
+msgstr ""
+"Autoriser l'utilisateur à afficher les logs des modifications des occurrences"
 
 #: app/conf/user_actions.conf:626
 msgid "Collection authority editing"
@@ -2981,19 +2952,17 @@ msgid "Allow user to edit batches of collections"
 msgstr "Autoriser l'utilisateur à modifier par lot des collections"
 
 #: app/conf/user_actions.conf:674
-#, fuzzy
 msgid "Batch delete collections"
-msgstr "Traitement par lot des collections"
+msgstr "Suppression par lot des collections"
 
 #: app/conf/user_actions.conf:675
-#, fuzzy
 msgid "Allow user to delete batches of collections"
-msgstr "Autoriser l'utilisateur à modifier par lot des collections"
+msgstr "Autoriser l'utilisateur à supprimer par lot des collections"
 
 #: app/conf/user_actions.conf:679
-#, fuzzy
 msgid "Allow user to view collection change logs"
-msgstr "Autoriser l'utilisateur à afficher les logs du système"
+msgstr ""
+"Autoriser l'utilisateur à afficher les logs de modifications des collections"
 
 #: app/conf/user_actions.conf:685
 msgid "Storage location authority editing"
@@ -3093,14 +3062,12 @@ msgid "Allow user to edit batches of storage locations"
 msgstr "Autoriser l'utilisateur à modifier par lot des emplacements"
 
 #: app/conf/user_actions.conf:733
-#, fuzzy
 msgid "Batch delete storage locations"
-msgstr "Modification par lot d'emplacements"
+msgstr "Suppression par lot d'emplacements de stockage"
 
 #: app/conf/user_actions.conf:734
-#, fuzzy
 msgid "Allow user to delete batches of storage locations"
-msgstr "Autoriser l'utilisateur à supprimer des emplacements"
+msgstr "Autoriser l'utilisateur à supprimer par lots des emplacements"
 
 #: app/conf/user_actions.conf:738
 msgid "Allow user to view storage location change logs"
@@ -3201,19 +3168,16 @@ msgid "Allow user to edit batches of loans"
 msgstr "Autoriser l'utilisateur à modifier par lot des prêts"
 
 #: app/conf/user_actions.conf:792
-#, fuzzy
 msgid "Batch delete loans"
-msgstr "Modification par lot des prêts"
+msgstr "Suppression par lot des prêts"
 
 #: app/conf/user_actions.conf:793
-#, fuzzy
 msgid "Allow user to delete batches of loans"
-msgstr "Autoriser l'utilisateur à modifier par lot des prêts"
+msgstr "Autoriser l'utilisateur à supprimer par lot des prêts"
 
 #: app/conf/user_actions.conf:797
-#, fuzzy
 msgid "Allow user to view loan change logs"
-msgstr "Autoriser l'utilisateur à afficher les logs du système"
+msgstr "Autoriser l'utilisateur à afficher les logs de modifications des prêts"
 
 #: app/conf/user_actions.conf:803
 msgid "Movements editing"
@@ -3303,28 +3267,25 @@ msgstr ""
 "mouvements"
 
 #: app/conf/user_actions.conf:847
-#, fuzzy
 msgid "Batch edit movements"
-msgstr "Modifier les mouvements"
+msgstr "Modification par lots des mouvements"
 
 #: app/conf/user_actions.conf:848
 msgid "Allow user to edit batches of movements"
 msgstr "Autoriser l'utilisateur à modifier par lot des mouvements"
 
 #: app/conf/user_actions.conf:851
-#, fuzzy
 msgid "Batch delete movements"
-msgstr "Supprimer des mouvements"
+msgstr "Suppression par lots des mouvements"
 
 #: app/conf/user_actions.conf:852
-#, fuzzy
 msgid "Allow user to delete batches of movements"
-msgstr "Autoriser l'utilisateur à modifier par lot des mouvements"
+msgstr "Autoriser l'utilisateur à supprimer par lot des mouvements"
 
 #: app/conf/user_actions.conf:856
-#, fuzzy
 msgid "Allow user to view movements change logs"
-msgstr "Autoriser l'utilisateur à afficher les logs du système"
+msgstr ""
+"Autoriser l'utilisateur à afficher les logs de modifications des mouvements"
 
 #: app/conf/user_actions.conf:862
 msgid "Tours editing"
@@ -3433,29 +3394,25 @@ msgid "Allow user to edit batches of tour stops"
 msgstr "Autorise l'utilisateur à modifier des lots de points d'arrêts"
 
 #: app/conf/user_actions.conf:914
-#, fuzzy
 msgid "Batch delete tours"
-msgstr "[%1] Modification par lot terminée"
+msgstr "Suppression par lot des parcours"
 
 #: app/conf/user_actions.conf:915
-#, fuzzy
 msgid "Allow user to delete batches of tours"
-msgstr "Autoriser l'utilisateur à modifier les parcours existants"
+msgstr "Autoriser l'utilisateur à supprimer par lot les parcours"
 
 #: app/conf/user_actions.conf:918
-#, fuzzy
 msgid "Batch delete tour stops"
-msgstr "Modification par lots des points du parcours"
+msgstr "Suppression par les lots des points de parcours"
 
 #: app/conf/user_actions.conf:919
-#, fuzzy
 msgid "Allow user to delete batches of tour stops"
-msgstr "Autorise l'utilisateur à modifier des lots de points d'arrêts"
+msgstr "Autorise l'utilisateur à supprimer par lots des points de parcours"
 
 #: app/conf/user_actions.conf:923
-#, fuzzy
 msgid "Allow user to view tour change logs"
-msgstr "Autoriser l'utilisateur à afficher les logs du système"
+msgstr ""
+"Autoriser l'utilisateur à afficher les logs de modifications des parcours"
 
 #: app/conf/user_actions.conf:929
 msgid "List &amp; vocabulary editing"
@@ -3481,14 +3438,14 @@ msgid "Edit lists and list items"
 msgstr "Modifier des listes et des éléments de liste"
 
 #: app/conf/user_actions.conf:938
-#, fuzzy
 msgid "Allow user to edit existing non-system lists"
-msgstr "Autoriser l'utilisateur à modifier des listes existantes"
+msgstr ""
+"Autoriser l'utilisateur à modifier les listes existantes qui ne sont pas des "
+"listes système"
 
 #: app/conf/user_actions.conf:941
-#, fuzzy
 msgid "Edit system lists and system list items"
-msgstr "Modifier des listes et des éléments de liste"
+msgstr "Modifier des listes système et des éléments de liste système"
 
 #: app/conf/user_actions.conf:942
 msgid ""
@@ -3504,14 +3461,14 @@ msgid "Delete lists and list items"
 msgstr "Supprimer des listes et des éléments de liste"
 
 #: app/conf/user_actions.conf:946
-#, fuzzy
 msgid "Allow user to delete non-system lists"
-msgstr "Autoriser l'utilisateur à supprimer des listes"
+msgstr ""
+"Autoriser l'utilisateur à supprimer des listes qui ne sont pas des listes "
+"système"
 
 #: app/conf/user_actions.conf:949
-#, fuzzy
 msgid "Delete system lists and system list items"
-msgstr "Supprimer des listes et des éléments de liste"
+msgstr "Supprimer des listes système et des éléments de listes système"
 
 #: app/conf/user_actions.conf:950
 msgid ""
@@ -3539,14 +3496,12 @@ msgid "Allow user to duplicate list items"
 msgstr "Autoriser l'utilisateur à dupliquer des éléments de liste"
 
 #: app/conf/user_actions.conf:961
-#, fuzzy
 msgid "Export lists"
-msgstr "Export"
+msgstr "Exporter les listes"
 
 #: app/conf/user_actions.conf:962
-#, fuzzy
 msgid "Allow user to export lists"
-msgstr "Autoriser l'utilisateur à supprimer des objets"
+msgstr "Autoriser l'utilisateur à exporter des listes"
 
 #: app/conf/user_actions.conf:965
 msgid "Export list items"
@@ -3594,14 +3549,12 @@ msgid "Allow user to edit batches of list items"
 msgstr "Autorise l'utilisateur à modifier par lot des éléments de liste"
 
 #: app/conf/user_actions.conf:985
-#, fuzzy
 msgid "Batch delete list items"
-msgstr "Modifier des listes et des éléments de liste"
+msgstr "Supprimer par lots des éléments de liste"
 
 #: app/conf/user_actions.conf:986
-#, fuzzy
 msgid "Allow user to delete batches of list items"
-msgstr "Autorise l'utilisateur à modifier par lot des éléments de liste"
+msgstr "Autorise l'utilisateur supprimer par lots des éléments de liste"
 
 #: app/conf/user_actions.conf:992
 msgid "Web service API access"
@@ -3936,10 +3889,9 @@ msgid "Use system default"
 msgstr "Utiliser le choix par défaut du système"
 
 #: app/conf/user_pref_defs.conf:209
-#, fuzzy
 msgid "Use document viewer interface [JPEG page previews]"
 msgstr ""
-"Utilise l'interface de visionnage de documents (aperçus JPEG de chaque page)"
+"Utiliser l'interface de visionnage de documents (aperçus JPEG de chaque page)"
 
 #: app/conf/user_pref_defs.conf:210
 msgid "Use browser PDF plugin with fallback to document viewer"
@@ -4245,9 +4197,8 @@ msgid "english units"
 msgstr "unités anglaises"
 
 #: app/conf/user_pref_defs.conf:537
-#, fuzzy
 msgid "Preferred display currency"
-msgstr "Est préféré ?"
+msgstr "Devise préférée pour l'affichage"
 
 #: app/conf/user_pref_defs.conf:538
 msgid "Determines preferred currency to use for display."
@@ -7959,7 +7910,6 @@ msgstr ""
 "qu'une action invalide (\"%2\") a été spécifiée"
 
 #: app/helpers/importHelpers.php:131
-#, fuzzy
 msgid "[%3] Parent was skipped using rule \"%1\" with action \"%2\""
 msgstr "[%3] Le parent a été ignoré par la règle \"%1\" avec l'action \"%2\""
 
@@ -7972,19 +7922,18 @@ msgstr ""
 "\"%2\""
 
 #: app/helpers/importHelpers.php:189
-#, fuzzy
 msgid "[importHelpers:caProcessRefineryParents] List was not specified"
-msgstr "[importHelpers:caProcessRefineryParents] Table invalide %1"
+msgstr ""
+"[importHelpers:caProcessRefineryParents] La liste n'a pas été spécifiée"
 
 #: app/helpers/importHelpers.php:214
 msgid "[importHelpers:caProcessRefineryParents] Invalid table %1"
 msgstr "[importHelpers:caProcessRefineryParents] Table invalide %1"
 
 #: app/helpers/importHelpers.php:219
-#, fuzzy
 msgid "[%6] Got parent %1 (%2) with id %3 and type %4 for %5"
 msgstr ""
-"[%6] Parent %1 trouvé (%2) avec %3 comme collection_id et le type %4 pour %5"
+"[%6] Parent %1 trouvé (%2) avec %3 comme identifiant et le type %4 pour %5"
 
 #: app/helpers/importHelpers.php:388 app/helpers/importHelpers.php:394
 msgid "[importHelpers:caProcessRefineryRelated] No name specified for table %1"
@@ -7992,14 +7941,12 @@ msgstr ""
 "[importHelpers:caProcessRefineryRelated] Aucun nom spécifié pour la table %1"
 
 #: app/helpers/importHelpers.php:451
-#, fuzzy
 msgid "[importHelpers:caProcessRefineryRelated] List was not specified"
-msgstr "Ignorer si la valeur importée fait partie de la liste prédéfinie."
+msgstr "[importHelpers:caProcessRefineryRelated] La liste n'est pas spécifiée"
 
 #: app/helpers/importHelpers.php:460
-#, fuzzy
 msgid "[importHelpers:caProcessRefineryRelated] Invalid table %1"
-msgstr "[importHelpers:caProcessRefineryParents] Table invalide %1"
+msgstr "[importHelpers:caProcessRefineryRelated] Invalid table %1"
 
 #: app/helpers/importHelpers.php:560
 msgid ""
@@ -8014,9 +7961,8 @@ msgstr ""
 "[{$ps_refinery_name}] %1 ignoré parcequ'il est dans la liste skipIfValue"
 
 #: app/helpers/importHelpers.php:733
-#, fuzzy
 msgid "[importHelpers:caGenericImportSplitter] List was not specified"
-msgstr "Ignorer si la valeur importée fait partie de la liste prédéfinie."
+msgstr "[importHelpers:caGenericImportSplitter] La liste n'est pas spécifiée"
 
 #: app/helpers/importHelpers.php:743
 msgid ""
@@ -8028,9 +7974,8 @@ msgstr ""
 
 #: app/helpers/importHelpers.php:746 app/helpers/importHelpers.php:819
 #: app/helpers/importHelpers.php:851
-#, fuzzy
 msgid "[importHelpers:caGenericImportSplitter] Invalid table %1"
-msgstr "[importHelpers:caProcessRefineryParents] Table invalide %1"
+msgstr "[importHelpers:caGenericImportSplitter] Table invalide %1"
 
 #: app/helpers/importHelpers.php:848
 msgid ""
@@ -8620,9 +8565,8 @@ msgstr ""
 #: app/lib/ca/Attributes/Values/TimeCodeAttributeValue.php:113
 #: app/lib/ca/Attributes/Values/UrlAttributeValue.php:157
 #: app/lib/ca/Attributes/Values/WeightAttributeValue.php:114
-#, fuzzy
 msgid "Allow PDF output for individual values?"
-msgstr "Autorise les exports PDF ?"
+msgstr "Autorise les exports PDF pour les valeurs individuelles ?"
 
 #: app/lib/ca/Attributes/Values/CollectionsAttributeValue.php:115
 #: app/lib/ca/Attributes/Values/ContainerAttributeValue.php:91
@@ -9003,11 +8947,8 @@ msgid "%1 must be within %2"
 msgstr "%1 doit être à l'intérieur de %2"
 
 #: app/lib/ca/Attributes/Values/EntitiesAttributeValue.php:50
-#, fuzzy
 msgid "Check this option if you want to require that an entity be selected."
-msgstr ""
-"Cocher cette option si vous voulez que la sélection d'une collection soit "
-"obligatoire."
+msgstr "Cocher cette option si vous voulez imposer la sélection d'une entité."
 
 #: app/lib/ca/Attributes/Values/FileAttributeValue.php:55
 #: app/lib/ca/Attributes/Values/GeocodeAttributeValue.php:73
@@ -9167,9 +9108,8 @@ msgid "Could not geocode address \"%1\": [%2]"
 msgstr "Impossible de géocoder l'adresse \"%1\" : [%2]"
 
 #: app/lib/ca/Attributes/Values/GeocodeAttributeValue.php:350
-#, fuzzy
 msgid "Could not geocode address \"%1\""
-msgstr "Impossible de géocoder l'adresse \"%1\" : [%2]"
+msgstr "Impossible de géocoder l'adresse \"%1\""
 
 #: app/lib/ca/Attributes/Values/InformationServiceAttributeValue.php:54
 #: themes/default/views/client/orders/order_fulfillment_events_html.php:63
@@ -9179,18 +9119,16 @@ msgid "Service"
 msgstr "Service"
 
 #: app/lib/ca/Attributes/Values/InformationServiceAttributeValue.php:55
-#, fuzzy
 msgid "The type of information service to be accessed."
-msgstr "URL pour accéder au service d'information."
+msgstr "Type de service d'information "
 
 #: app/lib/ca/Attributes/Values/InformationServiceAttributeValue.php:79
-#, fuzzy
 msgid ""
 "Check this option if you don't want your values to be locale-specific. (The "
 "default is to not be.)"
 msgstr ""
-"Cocher cette option si vous ne voulez pas que vos GeoNames soient "
-"spécifiques à la locale. (Non par défaut)"
+"Cocher cette option si vous ne voulez pas que vos valeurs soient spécifiques "
+"à la locale. (Non par défaut)"
 
 #: app/lib/ca/Attributes/Values/InformationServiceAttributeValue.php:333
 #: app/lib/ca/Attributes/Values/InformationServiceAttributeValue.php:359
@@ -9199,9 +9137,8 @@ msgid "More &rsaquo;"
 msgstr "Plus @rsaquo;"
 
 #: app/lib/ca/Attributes/Values/InformationServiceAttributeValue.php:356
-#, fuzzy
 msgid "Less &rsaquo;"
-msgstr "Plus @rsaquo;"
+msgstr "Moins @rsaquo;"
 
 #: app/lib/ca/Attributes/Values/IntegerAttributeValue.php:50
 #: app/lib/ca/Attributes/Values/NumericAttributeValue.php:49
@@ -9287,9 +9224,8 @@ msgstr ""
 "spécifique à la locale. (Oui par défaut.)"
 
 #: app/lib/ca/Attributes/Values/IntegerAttributeValue.php:130
-#, fuzzy
 msgid "Must be unique"
-msgstr "La combinaison de %1 et de %2 doit être unique"
+msgstr "Doit être unique"
 
 #: app/lib/ca/Attributes/Values/IntegerAttributeValue.php:131
 msgid ""
@@ -9429,9 +9365,8 @@ msgid "ISO639-5 Languages"
 msgstr "Codes de langue ISO 639-5"
 
 #: app/lib/ca/Attributes/Values/LCSHAttributeValue.php:253
-#, fuzzy
 msgid "Could not connect to LCSH service for %1: %2"
-msgstr "Impossible de récupérer les résultats du service LCSH pour %1"
+msgstr "Impossible de se connecter au service LCSH pour %1 : %2"
 
 #: app/lib/ca/Attributes/Values/LCSHAttributeValue.php:275
 #: app/lib/ca/Attributes/Values/LCSHAttributeValue.php:279
