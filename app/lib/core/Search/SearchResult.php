@@ -59,7 +59,10 @@ class SearchResult extends BaseObject {
 	// ----
 	
 	private $opa_options;
-	
+
+	/**
+	 * @var IWLPlugSearchEngineResult
+	 */
 	private $opo_engine_result;
 	protected $opa_tables;
 	
@@ -86,7 +89,10 @@ class SearchResult extends BaseObject {
 	
 	private $opb_use_identifiers_in_urls = false;
 	private $ops_subject_idno = false;
-	
+
+	# ------------------------------------------------------------------
+	private $opb_disable_get_with_template_prefetch = false;
+	static $s_template_prefetch_cache = array();
 	# ------------------------------------------------------------------
 	public function __construct($po_engine_result=null, $pa_tables=null) {
 		$this->opo_db = new Db();
@@ -158,6 +164,14 @@ class SearchResult extends BaseObject {
 		}
 		
 		$this->errors = array();
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Controls prefetching for @see SearchResult::getWithTemplate()
+	 * @param bool $pb_disable do prefetching or not?
+	 */
+	public function disableGetWithTemplatePrefetch($pb_disable=true) {
+		$this->opb_disable_get_with_template_prefetch = $pb_disable;
 	}
 	# ------------------------------------------------------------------
 	public function getDb() {
@@ -1792,10 +1806,48 @@ class SearchResult extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	/**
-	 *
+	 * Run the given display template for the current row in the result set
+	 * @param string $ps_template The display template, e.g. "^ca_objects.preferred_labels"
+	 * @param null|array $pa_options Array of options, @see caProcessTemplateForIDs
+	 * @return mixed
 	 */
-	public function getWithTemplate($ps_template, $pa_options=null) {	
-		return caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->get($this->ops_table_name.".".$this->ops_subject_pk)), $pa_options);
+	public function getWithTemplate($ps_template, $pa_options=null) {
+		if($this->opb_disable_get_with_template_prefetch) {
+			return caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->get($this->ops_table_name.".".$this->ops_subject_pk)), $pa_options);
+		}
+
+		// the assumption is that if you run getWithTemplate for the current row, you'll probably run it for the next bunch of rows too
+		// since running caProcessTemplateForIDs for every single row is slow, we prefetch a set number of rows here
+		$vs_cache_base_key = $this->getCacheKeyForGetWithTemplate($ps_template, $pa_options);
+
+		if(!isset(self::$s_template_prefetch_cache[$vs_cache_base_key][$this->opo_engine_result->currentRow()])) {
+			$this->prefetchForGetWithTemplate($ps_template, $pa_options);
+		}
+
+		return self::$s_template_prefetch_cache[$vs_cache_base_key][$this->opo_engine_result->currentRow()];
+	}
+	# ------------------------------------------------------------------
+	private function prefetchForGetWithTemplate($ps_template, $pa_options) {
+		$va_ids = $this->getRowIDsToPrefetch($this->opo_engine_result->currentRow(), 500);
+		$vs_cache_base_key = $this->getCacheKeyForGetWithTemplate($ps_template, $pa_options);
+
+		$pa_options['returnAsArray'] = true; // careful, this would change the cache key ... which is why we generate it before
+		$va_vals = caProcessTemplateForIDs($ps_template, $this->ops_table_name, $va_ids, $pa_options);
+
+		// if we're at the first hit, we don't need to offset the cache keys, so we can use $va_vals as-is
+		if($this->opo_engine_result->currentRow() == 0) {
+			self::$s_template_prefetch_cache[$vs_cache_base_key] = array_values($va_vals);
+		} else {
+			// this is kind of slow but we hope that users usually pull when the ptr is still at the first result
+			// I tried messing around with array_walk instead of this loop but that doesn't gain us much, and this is way easier to read
+			foreach($va_vals as $vn_i => $vs_val) {
+				self::$s_template_prefetch_cache[$vs_cache_base_key][$vn_i + $this->opo_engine_result->currentRow()] = $vs_val;
+			}
+		}
+	}
+	# ------------------------------------------------------------------
+	private function getCacheKeyForGetWithTemplate($ps_template, $pa_options) {
+		return $this->ops_table_name.'/'.$ps_template.'/'.md5(print_r($pa_options, true));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -1804,27 +1856,8 @@ class SearchResult extends BaseObject {
 	public function getWithTemplateForResults($ps_template, $pa_options=null) {	
 		$pn_start = caGetOption('start', $pa_options, 0);
 		$this->seek($pn_start);
-		
-		return caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->get($this->ops_table_name.".".$this->ops_subject_pk)), $pa_options);
-	}
-	# ------------------------------------------------------------------
-	/**
-	 *
-	 */
-	private function _getAttributeAsHTMLLink($ps_val, $ps_field, $pa_attributes=array(), $pa_options=null) {
-		if (!is_array($pa_attributes)) { $pa_attributes = array(); }
-		$vs_return_as_link_class = 	(isset($pa_options['returnAsLinkClass'])) ? (string)$pa_options['returnAsLinkClass'] : '';
-		$vs_return_as_link_get_text_from = 	(isset($pa_options['returnAsLinkGetTextFrom'])) ? (string)$pa_options['returnAsLinkGetTextFrom'] : '';
-		
-		$vs_val = $va_subvalues[$vn_attribute_id];
-		$va_tmp = explode(".", $ps_field); array_pop($va_tmp);
-		$vs_link_text = ($vs_return_as_link_get_text_from) ? $this->get(join(".", $va_tmp).".{$vs_return_as_link_get_text_from}") : $ps_val;
 
-		$va_link_attr = $pa_attributes;
-		$va_link_attr['href'] = $ps_val;
-		if ($vs_return_as_link_class) { $va_link_attr['class'] = $vs_return_as_link_class; }
-		
-		return caHTMLLink($vs_link_text, $va_link_attr);
+		return caProcessTemplateForIDs($ps_template, $this->ops_table_name, $this->getRowIDsToPrefetch($pn_start, $this->numHits()), array_merge($pa_options, array('returnAsArray' => true)));
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -1835,55 +1868,6 @@ class SearchResult extends BaseObject {
 	 */
 	public function seek($pn_index) {
 		return $this->opo_engine_result->seek($pn_index);
-	}
-	# ------------------------------------------------------------------
-	/**
-	 *
-	 */
-	private function _getElementHierarchy($pt_instance, $pa_path_components) {
-		$vb_is_in_container = false;
-		if (
-			(
-				($pa_path_components['subfield_name'] === 'hierarchy') 
-				&& 
-				in_array($pt_instance->_getElementDatatype($pa_path_components['field_name']), array(__CA_ATTRIBUTE_VALUE_LIST__))
-			)
-			||
-			(
-				isset($pa_path_components['components'][3]) 
-				&& 
-				($pa_path_components['components'][3] === 'hierarchy') 
-				&& 
-				($pt_instance->_getElementDatatype($pa_path_components['field_name']) == __CA_ATTRIBUTE_VALUE_CONTAINER__)
-				&&
-				($vb_is_in_container = in_array($pt_instance->_getElementDatatype($pa_path_components['subfield_name']), array(__CA_ATTRIBUTE_VALUE_LIST__)))
-			)
-		) {
-			if ($vb_is_in_container) {
-				$va_items = $this->get($pa_path_components['table_name'].'.'.$pa_path_components['field_name'].'.'.$pa_path_components['subfield_name'], array('returnAsArray' => true));
-			} else {
-				$va_items = $this->get($pa_path_components['table_name'].'.'.$pa_path_components['field_name'], array('returnAsArray' => true));
-			}
-			if (!is_array($va_items)) { return null; }
-			$va_item_ids = caExtractValuesFromArrayList($va_items, $pa_path_components['field_name'], array('preserveKeys' => false));
-			$qr_items = caMakeSearchResult('ca_list_items', $va_item_ids);
-			
-			if (!$va_item_ids || !is_array($va_item_ids) || !sizeof($va_item_ids)) {  return array(); } 
-			$va_vals = array();
-			
-			$va_get_spec = $pa_path_components['components'];
-			array_shift($va_get_spec); array_shift($va_get_spec);
-			if ($vb_is_in_container) { array_shift($va_get_spec); }
-			array_unshift($va_get_spec, 'ca_list_items');
-			$vs_get_spec = join('.', $va_get_spec);
-			while($qr_items->nextHit()) {
-				$va_hier = $qr_items->get($vs_get_spec, array('returnAsArray' => true));
-				array_shift($va_hier);	// get rid of root
-				$va_vals[] = $va_hier;
-			}
-			return $va_vals;
-		} 
-		return null;
 	}
 	# ------------------------------------------------------------------
 	/**
