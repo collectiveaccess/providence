@@ -1642,11 +1642,6 @@ class Installer {
 		return $ps_password;
 	}
 	# --------------------------------------------------
-	public function __destruct() {
-		// when done installing, process search indexing queue
-		ca_search_indexing_queue::process();
-	}
-	# --------------------------------------------------
 	private function _processSettings($pt_instance, $po_settings_node) {
 		$va_settings = array();
 		if($po_settings_node){

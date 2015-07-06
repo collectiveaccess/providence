@@ -482,7 +482,9 @@ class SearchIndexer extends SearchBase {
 	 * @param null|array $pa_exclusion_list list of records to exclude from indexing
 	 * 		(to prevent endless recursive reindexing). Should always be null when called externally.
 	 * @param null|array $pa_changed_fields list of fields that have changed (and must be indexed)
-	 * @param null $pa_options
+	 * @param null|array $pa_options
+	 * 		queueIndexing -
+	 * 		isNewRow -
 	 * @throws Exception
 	 * @return bool
 	 */
@@ -497,7 +499,7 @@ class SearchIndexer extends SearchBase {
 		if (is_array($pa_exclusion_list[$pn_subject_tablenum]) && (isset($pa_exclusion_list[$pn_subject_tablenum][$pn_subject_row_id]))) { return; }
 
 		// @todo add a config setting
-		if(!caGetOption('dontQueueIndexing', $pa_options, false)) {
+		if(caGetOption('queueIndexing', $pa_options, false)) {
 			$this->queueIndexRow(array(
 				'table_num' => $pn_subject_tablenum,
 				'row_id' => $pn_subject_row_id,

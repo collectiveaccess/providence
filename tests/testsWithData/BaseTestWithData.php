@@ -90,7 +90,6 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 
 		$this->opa_record_map[$ps_table][] = $vn_return = array_shift($va_return);
 
-		ca_search_indexing_queue::process();
 		return $vn_return;
 	}
 	# -------------------------------------------------------
