@@ -72,14 +72,14 @@
 			caSetMessage("There were errors loading the database schema: ".join("; ", $vo_installer->getErrors()));
 		} else {
 		
-			$vn_progress += 5;
+			$vn_progress += 7;
 			caIncrementProgress($vn_progress, "Processing locales");
 			$vo_installer->processLocales();
 
 			caIncrementProgress($vn_progress, "Processing lists");
 			$vo_installer->processLists('caGetListToBeLoaded');
 			
-			$vn_progress += 5;
+			$vn_progress += 7;
 			caIncrementProgress($vn_progress, "Processing relationship types");
 			$vo_installer->processRelationshipTypes();
 
@@ -91,7 +91,7 @@
 			caIncrementProgress($vn_progress, "Processing metadata dictionary");
 			$vo_installer->processMetadataDictionary();
 			
-			$vn_progress += 6;
+			$vn_progress += 7;
 			caIncrementProgress($vn_progress, "Processing access roles");
 			$vo_installer->processRoles();
 			
@@ -106,21 +106,17 @@
 			caIncrementProgress($vn_progress, "Processing user interfaces");
 			$vo_installer->processUserInterfaces();
 			
-			$vn_progress += 5;
+			$vn_progress += 7;
 			caIncrementProgress($vn_progress, "Processing displays");
 			$vo_installer->processDisplays();
 			
-			$vn_progress += 5;
+			$vn_progress += 7;
 			caIncrementProgress($vn_progress, "Processing search forms");
 			$vo_installer->processSearchForms();
 			
-			$vn_progress += 5;
+			$vn_progress += 7;
 			caIncrementProgress($vn_progress, "Setting up hierarchies");
 			$vo_installer->processMiscHierarchicalSetup();
-
-			$vn_progress += 1;
-			caIncrementProgress($vn_progress, "Indexing records for search");
-			$vo_installer->processSearchIndexingQueue();
 			
 			caIncrementProgress(100, "Installation complete");
 			

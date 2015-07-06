@@ -35,7 +35,6 @@ require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
 require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_MODELS_DIR__.'/ca_users.php');
 require_once(__CA_MODELS_DIR__.'/ca_user_groups.php');
-require_once(__CA_MODELS_DIR__.'/ca_search_indexing_queue.php');
 
 class Installer {
 	# --------------------------------------------------
@@ -1613,10 +1612,6 @@ class Installer {
 			$this->addError("Errors inserting the storage location root: ".join("; ",$t_storage_location->getErrors()));
 			return;
 		}
-	}
-	# --------------------------------------------------
-	public function processSearchIndexingQueue() {
-		ca_search_indexing_queue::process();
 	}
 	# --------------------------------------------------
 	public function createAdminAccount(){
