@@ -213,7 +213,7 @@ class ca_search_indexing_queue extends BaseModel {
 				caUnserializeForDatabase($o_result->get('field_data')),
 				(bool)$o_result->get('reindex'), null,
 				caUnserializeForDatabase($o_result->get('changed_fields')),
-				array_merge(array('queueIndexing' => false), caUnserializeForDatabase($o_result->get('options')))
+				array_merge(caUnserializeForDatabase($o_result->get('options')), array('queueIndexing' => false))
 			);
 
 			$o_db->query('DELETE FROM ca_search_indexing_queue WHERE entry_id=?', $o_result->get('entry_id'));

@@ -3189,9 +3189,9 @@ if (!$vb_batch) {		// hierarchy moves are not supported in batch mode
 		$vb_is_insert = false;
 		
 		if ($this->getPrimaryKey()) {
-			$this->update();
+			$this->update(array('queueIndexing' => true));
 		} else {
-			$this->insert();
+			$this->insert(array('queueIndexing' => true));
 			$vb_is_insert = true;
 		}
 		if ($this->numErrors() > 0) {

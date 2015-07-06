@@ -2444,7 +2444,12 @@ class BaseModel extends BaseObject {
 					$vn_id = $this->getPrimaryKey();
 					
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) && !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
-						$this->doSearchIndexing($this->getFieldValuesArray(true), false, array('isNewRow' => true));
+						$va_index_options = array('isNewRow' => true);
+						if(caGetOption('queueIndexing', $pa_options, false)) {
+							$va_index_options['queueIndexing'] = true;
+						}
+
+						$this->doSearchIndexing($this->getFieldValuesArray(true), false, $va_index_options);
 					}
 
 					$this->logChange("I");
@@ -3000,7 +3005,12 @@ class BaseModel extends BaseObject {
 					}
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) &&  !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
 						# update search index
-						$this->doSearchIndexing(null, false);
+						$va_index_options = array();
+						if(caGetOption('queueIndexing', $pa_options, false)) {
+							$va_index_options['queueIndexing'] = true;
+						}
+
+						$this->doSearchIndexing(null, false, $va_index_options);
 					}
 														
 					if (is_array($va_rebuild_hierarchical_index)) {
@@ -3058,6 +3068,9 @@ class BaseModel extends BaseObject {
 	 * @return bool true on success, false on failure of indexing
 	 */
 	public function doSearchIndexing($pa_changed_field_values_array=null, $pb_reindex_mode=false, $pa_options=null) {
+		caDebug($pa_options);
+		caDebug(caPrintStacktrace());
+
 		if (defined("__CA_DONT_DO_SEARCH_INDEXING__")) { return; }
 		if (is_null($pa_changed_field_values_array)) { 
 			$pa_changed_field_values_array = $this->getChangedFieldValuesArray();
