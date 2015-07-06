@@ -49,6 +49,11 @@ class SearchIndexer extends SearchBase {
 
 	private $opo_metadata_element = null;
 
+	/**
+	 * @var null|ca_search_indexing_queue
+	 */
+	private $opo_search_indexing_queue = null;
+
 	# ------------------------------------------------
 	/**
 	 * Constructor takes Db() instance which it uses for all database access. You should pass an instance in
@@ -62,6 +67,7 @@ class SearchIndexer extends SearchBase {
 		parent::__construct($opo_db, $ps_engine);
 
 		$this->opo_metadata_element = new ca_metadata_elements();
+		$this->opo_search_indexing_queue = new ca_search_indexing_queue();
 	}
 	# -------------------------------------------------------
 	/**
@@ -411,16 +417,32 @@ class SearchIndexer extends SearchBase {
 	}
 	# ------------------------------------------------
 	private function queueIndexRow($pa_row_values) {
-		$t_queue_entry = new ca_search_indexing_queue();
-		$t_queue_entry->setMode(ACCESS_WRITE);
+		foreach($pa_row_values as $vs_fld => &$vm_val) {
+			if(!$this->opo_search_indexing_queue->hasField($vs_fld)) {
+				return false;
+			}
 
-		foreach($pa_row_values as $vs_fld => $vm_val) {
-			if($t_queue_entry->hasField($vs_fld)) {
-				$t_queue_entry->set($vs_fld, $vm_val);
+			if(is_null($vm_val)) {
+				$vm_val = array();
+			}
+
+			if(is_array($vm_val)) {
+				$vm_val = caSerializeForDatabase($vm_val);
 			}
 		}
 
-		$t_queue_entry->insert();
+		$va_insert_values = array(
+			'table_num' => $pa_row_values['table_num'],
+			'row_id' => $pa_row_values['row_id'],
+			'field_data' => $pa_row_values['field_data'],
+			'reindex' => $pa_row_values['reindex'] ? 1 : 0,
+			'changed_fields' => $pa_row_values['changed_fields'],
+			'options' => $pa_row_values['options'],
+		);
+
+		$this->opo_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, field_data, reindex, changed_fields, options) VALUES (?, ?, ?, ?, ?, ?)", $va_insert_values);
+
+		return true;
 	}
 	# ------------------------------------------------
 	/**
@@ -463,7 +485,7 @@ class SearchIndexer extends SearchBase {
 
 		// queue this indexing task, unless we are in the indexing microservice
 		// @todo add a config setting to disable this
-		/*if(!defined('__CA_IS_INDEXING_SERVICE__') || !__CA_IS_INDEXING_SERVICE__) {
+		if(!defined('__CA_IS_INDEXING_SERVICE__') || !__CA_IS_INDEXING_SERVICE__) {
 			$this->queueIndexRow(array(
 				'table_num' => $pn_subject_tablenum,
 				'row_id' => $pn_subject_row_id,
@@ -473,7 +495,7 @@ class SearchIndexer extends SearchBase {
 				'options' => $pa_options
 			));
 			//return;
-		}*/
+		}
 
 		$pb_is_new_row = (int)caGetOption('isNewRow', $pa_options, false);
 		$vb_reindex_children = false;
