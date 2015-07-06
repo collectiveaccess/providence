@@ -34,6 +34,9 @@
  *
  */
 
+require_once(__CA_LIB_DIR__.'/core/Db.php');
+require_once(__CA_LIB_DIR__.'/core/Search/SearchIndexer.php');
+
 
 BaseModel::$s_ca_models_definitions['ca_search_indexing_queue'] = array(
 	'NAME_SINGULAR' 	=> _t('search indexing queue entry'),
@@ -197,6 +200,24 @@ class ca_search_indexing_queue extends BaseModel {
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
+	}
+	# ------------------------------------------------------
+	static public function process() {
+		$o_db = new Db();
+		$o_result = $o_db->query("SELECT * FROM ca_search_indexing_queue ORDER BY entry_id");
+		$o_si = new SearchIndexer($o_db);
+
+		while($o_result->nextRow()) {
+			$o_si->indexRow(
+				$o_result->get('table_num'), $o_result->get('row_id'),
+				caUnserializeForDatabase($o_result->get('field_data')),
+				(bool)$o_result->get('reindex'), null,
+				caUnserializeForDatabase($o_result->get('changed_fields')),
+				caUnserializeForDatabase($o_result->get('options'))
+			);
+
+			$o_db->query('DELETE FROM ca_search_indexing_queue WHERE entry_id=?', $o_result->get('entry_id'));
+		}
 	}
 	# ------------------------------------------------------
 }
