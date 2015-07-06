@@ -88,13 +88,6 @@ BaseModel::$s_ca_models_definitions['ca_search_indexing_queue'] = array(
 			'DEFAULT' => '',
 			'LABEL' => 'Changed fields', 'DESCRIPTION' => 'Changed fields'
 		),
-		'old_values' => array(
-			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT,
-			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-			'IS_NULL' => false,
-			'DEFAULT' => '',
-			'LABEL' => 'Old values', 'DESCRIPTION' => 'Old values'
-		),
 		'options' => array(
 			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT,
 			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,

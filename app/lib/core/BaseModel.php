@@ -3064,7 +3064,14 @@ class BaseModel extends BaseObject {
 		}
 		
 		$o_indexer = $this->getSearchIndexer(caGetOption('engine', $pa_options, null));
-		return $o_indexer->indexRow($this->tableNum(), $this->getPrimaryKey(), $this->getFieldValuesArray(true), $pb_reindex_mode, null, $pa_changed_field_values_array, $this->_FIELD_VALUES_OLD, $pa_options);
+		return $o_indexer->indexRow(
+			$this->tableNum(), $this->getPrimaryKey(), // identify record
+			$this->getFieldValuesArray(true), // data to index
+			$pb_reindex_mode,
+			null, // esclusion list, always null in the beginning
+			$pa_changed_field_values_array, // changed valyes
+			$pa_options
+		);
 	}
 	
 	/**

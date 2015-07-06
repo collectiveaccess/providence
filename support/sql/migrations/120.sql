@@ -12,8 +12,7 @@ create table ca_search_indexing_queue
   row_id          int unsigned      not null,
   field_data      LONGTEXT          not null default '',
   reindex         tinyint unsigned  not null default 0,
-  changed_fields  LONGTEXT          not null default '',
-  old_values      LONGTEXT          not null default '',
+  changed_fields  TEXT              not null default '',
   options         LONGTEXT          not null default '',
 
   primary key (entry_id),

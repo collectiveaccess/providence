@@ -224,7 +224,7 @@ class SearchIndexer extends SearchBase {
 					}
 				}
 
-				$this->indexRow($vn_table_num, $vn_id, $va_field_data[$vn_id], true, null, array(), array());
+				$this->indexRow($vn_table_num, $vn_id, $va_field_data[$vn_id], true);
 				if ($pb_display_progress && $pb_interactive_display) {
 					CLIProgressBar::setMessage("Memory: ".caGetMemoryUsage());
 					print CLIProgressBar::next();
@@ -318,7 +318,7 @@ class SearchIndexer extends SearchBase {
 				}
 			}
 
-			$this->indexRow($vn_table_num, $vn_id, $va_field_data[$vn_id], false, null, array($vs_table_pk => true), array(), $pa_options);
+			$this->indexRow($vn_table_num, $vn_id, $va_field_data[$vn_id], false, null, array($vs_table_pk => true), $pa_options);
 
 		}
 		return true;
@@ -439,9 +439,19 @@ class SearchIndexer extends SearchBase {
 	 * or it may be a dependent row. The "content" tablenum/fieldnum/row_id parameters define the specific row and field being indexed.
 	 * This is always the actual row being indexed. $pm_content is the content to be indexed and $pa_options is an optional associative
 	 * array of indexing options passed through from the search_indices.conf (no options are defined yet - but will be soon)
-
+	 *
+	 * @param int $pn_subject_tablenum subject table number
+	 * @param int $pn_subject_row_id subject record, identified by primary key
+	 * @param array $pa_field_data array of field name => value mappings containing the data to index
+	 * @param bool $pb_reindex_mode are we in full reindex mode?
+	 * @param null|array $pa_exclusion_list list of records to exclude from indexing
+	 * 		(to prevent endless recursive reindexing). Should always be null when called externally.
+	 * @param null|array $pa_changed_fields list of fields that have changed (and must be indexed)
+	 * @param null $pa_options
+	 * @throws Exception
+	 * @return bool
 	 */
-	public function indexRow($pn_subject_tablenum, $pn_subject_row_id, $pa_field_data, $pb_reindex_mode=false, $pa_exclusion_list=null, $pa_changed_fields=null, $pa_old_values=null, $pa_options=null) {
+	public function indexRow($pn_subject_tablenum, $pn_subject_row_id, $pa_field_data, $pb_reindex_mode=false, $pa_exclusion_list=null, $pa_changed_fields=null, $pa_options=null) {
 		if (!$pb_reindex_mode && is_array($pa_changed_fields) && !sizeof($pa_changed_fields)) { return; }	// don't bother indexing if there are no changed fields
 
 		$vs_subject_tablename = $this->opo_datamodel->getTableName($pn_subject_tablenum);
@@ -453,18 +463,17 @@ class SearchIndexer extends SearchBase {
 
 		// queue this indexing task, unless we are in the indexing microservice
 		// @todo add a config setting to disable this
-		if(!defined('__CA_IS_INDEXING_SERVICE__') || !__CA_IS_INDEXING_SERVICE__) {
+		/*if(!defined('__CA_IS_INDEXING_SERVICE__') || !__CA_IS_INDEXING_SERVICE__) {
 			$this->queueIndexRow(array(
 				'table_num' => $pn_subject_tablenum,
 				'row_id' => $pn_subject_row_id,
 				'field_data' => $pa_field_data,
 				'reindex' => $pb_reindex_mode ? 1 : 0,
 				'changed_fields' => $pa_changed_fields,
-				'old_values' => $pa_old_values,
 				'options' => $pa_options
 			));
 			//return;
-		}
+		}*/
 
 		$pb_is_new_row = (int)caGetOption('isNewRow', $pa_options, false);
 		$vb_reindex_children = false;
@@ -574,7 +583,7 @@ class SearchIndexer extends SearchBase {
 								$o_indexer = new SearchIndexer($this->opo_db);
 								$qr_children_res = $t_subject->makeSearchResult($vs_subject_tablename, $va_children_ids, array('db' => $this->getDb()));
 								while($qr_children_res->nextHit()) {
-									$o_indexer->indexRow($pn_subject_tablenum, $qr_children_res->get($vs_subject_pk), array('parent_id' => $qr_children_res->get('parent_id'), $vs_field => $qr_children_res->get($vs_field)), false, $pa_exclusion_list, array($vs_field => true), null);
+									$o_indexer->indexRow($pn_subject_tablenum, $qr_children_res->get($vs_subject_pk), array('parent_id' => $qr_children_res->get('parent_id'), $vs_field => $qr_children_res->get($vs_field)), false, $pa_exclusion_list, array($vs_field => true));
 								}
 							}
 							continue;
@@ -1185,7 +1194,7 @@ class SearchIndexer extends SearchBase {
 				$o_indexer = new SearchIndexer($this->opo_db);
 				$qr_children_res = $t_subject->makeSearchResult($vs_subject_tablename, $va_children_ids, array('db' => $this->getDb()));
 				while($qr_children_res->nextHit()) {
-					$o_indexer->indexRow($pn_subject_tablenum, $vn_id=$qr_children_res->get($vs_subject_pk), array($vs_subject_pk => $vn_id, 'parent_id' => $qr_children_res->get('parent_id')), true, $pa_exclusion_list, array(), null);
+					$o_indexer->indexRow($pn_subject_tablenum, $vn_id=$qr_children_res->get($vs_subject_pk), array($vs_subject_pk => $vn_id, 'parent_id' => $qr_children_res->get('parent_id')), true, $pa_exclusion_list, array());
 				}
 			}
 		}
