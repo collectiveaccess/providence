@@ -203,9 +203,9 @@ class ca_search_indexing_queue extends BaseModel {
 	}
 	# ------------------------------------------------------
 	static public function process() {
-		$r_sem = sem_get(ftok(__FILE__, 'SearchIndexingQueue'));
+		$r_lock_file = fopen(__CA_BASE_DIR__.'/app/tmp/search_indexing_queue.lock', 'r+');
 
-		if(sem_acquire($r_sem)) {
+		if (flock($r_lock_file, LOCK_EX)) {  // acquire an exclusive lock
 			$o_db = new Db();
 			$o_result = $o_db->query("SELECT * FROM ca_search_indexing_queue ORDER BY entry_id");
 			if($o_result && $o_result->numRows()) {
@@ -224,7 +224,7 @@ class ca_search_indexing_queue extends BaseModel {
 				}
 			}
 
-			sem_release($r_sem);
+			flock($r_lock_file, LOCK_UN);    // release the lock
 		}
 	}
 	# ------------------------------------------------------
