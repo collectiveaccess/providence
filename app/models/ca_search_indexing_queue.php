@@ -203,28 +203,22 @@ class ca_search_indexing_queue extends BaseModel {
 	}
 	# ------------------------------------------------------
 	static public function process() {
-		$r_lock_file = fopen(__CA_BASE_DIR__.'/app/tmp/search_indexing_queue.lock', 'r+');
+		$o_db = new Db();
+		$o_result = $o_db->query("SELECT * FROM ca_search_indexing_queue ORDER BY entry_id");
+		if($o_result && $o_result->numRows()) {
+			$o_si = new SearchIndexer($o_db);
 
-		if (flock($r_lock_file, LOCK_EX)) {  // acquire an exclusive lock
-			$o_db = new Db();
-			$o_result = $o_db->query("SELECT * FROM ca_search_indexing_queue ORDER BY entry_id");
-			if($o_result && $o_result->numRows()) {
-				$o_si = new SearchIndexer($o_db);
+			while ($o_result->nextRow()) {
+				$o_si->indexRow(
+					$o_result->get('table_num'), $o_result->get('row_id'),
+					caUnserializeForDatabase($o_result->get('field_data')),
+					(bool)$o_result->get('reindex'), null,
+					caUnserializeForDatabase($o_result->get('changed_fields')),
+					array_merge(caUnserializeForDatabase($o_result->get('options')), array('queueIndexing' => false))
+				);
 
-				while ($o_result->nextRow()) {
-					$o_si->indexRow(
-						$o_result->get('table_num'), $o_result->get('row_id'),
-						caUnserializeForDatabase($o_result->get('field_data')),
-						(bool)$o_result->get('reindex'), null,
-						caUnserializeForDatabase($o_result->get('changed_fields')),
-						array_merge(caUnserializeForDatabase($o_result->get('options')), array('queueIndexing' => false))
-					);
-
-					$o_db->query('DELETE FROM ca_search_indexing_queue WHERE entry_id=?', $o_result->get('entry_id'));
-				}
+				$o_db->query('DELETE FROM ca_search_indexing_queue WHERE entry_id=?', $o_result->get('entry_id'));
 			}
-
-			flock($r_lock_file, LOCK_UN);    // release the lock
 		}
 	}
 	# ------------------------------------------------------
