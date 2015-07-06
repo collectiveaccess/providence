@@ -3068,9 +3068,6 @@ class BaseModel extends BaseObject {
 	 * @return bool true on success, false on failure of indexing
 	 */
 	public function doSearchIndexing($pa_changed_field_values_array=null, $pb_reindex_mode=false, $pa_options=null) {
-		caDebug($pa_options);
-		caDebug(caPrintStacktrace());
-
 		if (defined("__CA_DONT_DO_SEARCH_INDEXING__")) { return; }
 		if (is_null($pa_changed_field_values_array)) { 
 			$pa_changed_field_values_array = $this->getChangedFieldValuesArray();
@@ -3082,7 +3079,7 @@ class BaseModel extends BaseObject {
 			$this->getFieldValuesArray(true), // data to index
 			$pb_reindex_mode,
 			null, // esclusion list, always null in the beginning
-			$pa_changed_field_values_array, // changed valyes
+			$pa_changed_field_values_array, // changed values
 			$pa_options
 		);
 	}
