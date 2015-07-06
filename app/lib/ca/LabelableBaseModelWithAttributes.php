@@ -86,12 +86,14 @@
 		 * @param bool $pb_is_preferred
 		 * @param array $pa_options Options include:
 		 *		truncateLongLabels = truncate label values that exceed the maximum storable length. [Default=false]
+		 * 		queueIndexing =
 		 * @return int id for newly created label, false on error or null if no row is loaded
 		 */ 
 		public function addLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
 			
 			$vb_truncate_long_labels = caGetOption('truncateLongLabels', $pa_options, false);
+			$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);
 			
 			$vs_table_name = $this->tableName();
 			
@@ -131,7 +133,7 @@
 			
 			$this->opo_app_plugin_manager->hookBeforeLabelInsert(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 		
-			$vn_label_id = $t_label->insert();
+			$vn_label_id = $t_label->insert(array('queueIndexing' => $pb_queue_indexing));
 			
 			$this->opo_app_plugin_manager->hookAfterLabelInsert(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 		
@@ -152,12 +154,14 @@
 		 * @param bool $pb_is_preferred
 		 * @param array $pa_options Options include:
 		 *		truncateLongLabels = truncate label values that exceed the maximum storable length. [Default=false]
+		 * 		queueIndexing =
 		 * @return int id for the edited label, false on error or null if no row is loaded
 		 */
 		public function editLabel($pn_label_id, $pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
 			
 			$vb_truncate_long_labels = caGetOption('truncateLongLabels', $pa_options, false);
+			$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);
 			
 			$vs_table_name = $this->tableName();
 			
@@ -211,7 +215,7 @@
 			
 			$this->opo_app_plugin_manager->hookBeforeLabelUpdate(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 		
-			$t_label->update();
+			$t_label->update(array('queueIndexing' => $pb_queue_indexing));
 			
 			$this->opo_app_plugin_manager->hookAfterLabelUpdate(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 		

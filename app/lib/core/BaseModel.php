@@ -3109,6 +3109,7 @@ class BaseModel extends BaseObject {
 	 * @param bool $pb_delete_related delete stuff related to the record? pass non-zero value if you want to.
 	 * @param array $pa_options Options for delete process. Options are:
 	 *		hard = if true records which can support "soft" delete are really deleted rather than simply being marked as deleted
+	 *		queueIndexing =
 	 * @param array $pa_fields instead of deleting the record represented by this object instance you can
 	 * pass an array of field => value assignments which is used in a SQL-DELETE-WHERE clause.
 	 * @param array $pa_table_list this is your possibility to pass an array of table name => true assignments
