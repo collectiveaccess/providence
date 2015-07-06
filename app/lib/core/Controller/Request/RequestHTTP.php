@@ -535,13 +535,13 @@ class RequestHTTP extends Request {
 				$vn_port = 80;
 			}
 
-			$r_socket = fsockopen(__CA_SITE_HOSTNAME__, $vn_port, $errno, $err, 3);
+			$r_socket = pfsockopen(__CA_SITE_HOSTNAME__, $vn_port, $errno, $err, 3);
 			if ($r_socket) {
 				$vs_http  = "GET ".$this->getBaseUrlPath()."/index.php?processIndexingQueue=1 HTTP/1.1\r\n";
 				$vs_http .= "Host: ".__CA_SITE_HOSTNAME__."\r\n";
-				$vs_http .= "Connection: Close\r\n\r\n";
+				$vs_http .= "Connection: keep-alive\r\n\r\n";
 				fwrite($r_socket, $vs_http);
-				fclose($r_socket);
+				//fclose($r_socket);
 			}
 		}
 	}
