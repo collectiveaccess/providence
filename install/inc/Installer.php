@@ -26,15 +26,16 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__."/core/Cache/CompositeCache.php");
-require_once(__CA_LIB_DIR__."/core/Configuration.php");
-require_once(__CA_LIB_DIR__."/core/Datamodel.php");
-require_once(__CA_LIB_DIR__."/core/Db.php");
-require_once(__CA_LIB_DIR__."/core/Media/MediaVolumes.php");
-require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
-require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
-require_once(__CA_MODELS_DIR__."/ca_users.php");
-require_once(__CA_MODELS_DIR__."/ca_user_groups.php");
+require_once(__CA_LIB_DIR__.'/core/Cache/CompositeCache.php');
+require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
+require_once(__CA_LIB_DIR__.'/core/Db.php');
+require_once(__CA_LIB_DIR__.'/core/Media/MediaVolumes.php');
+require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
+require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
+require_once(__CA_MODELS_DIR__.'/ca_users.php');
+require_once(__CA_MODELS_DIR__.'/ca_user_groups.php');
+require_once(__CA_MODELS_DIR__.'/ca_search_indexing_queue.php');
 
 class Installer {
 	# --------------------------------------------------
@@ -1614,6 +1615,10 @@ class Installer {
 		}
 	}
 	# --------------------------------------------------
+	public function processSearchIndexingQueue() {
+		ca_search_indexing_queue::process();
+	}
+	# --------------------------------------------------
 	public function createAdminAccount(){
 		require_once(__CA_MODELS_DIR__."/ca_users.php");
 
@@ -1635,6 +1640,11 @@ class Installer {
 		}
 
 		return $ps_password;
+	}
+	# --------------------------------------------------
+	public function __destruct() {
+		// when done installing, process search indexing queue
+		ca_search_indexing_queue::process();
 	}
 	# --------------------------------------------------
 	private function _processSettings($pt_instance, $po_settings_node) {
@@ -1704,4 +1714,3 @@ class Installer {
 	}
 	# --------------------------------------------------
 }
-?>

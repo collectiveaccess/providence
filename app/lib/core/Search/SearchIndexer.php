@@ -54,6 +54,8 @@ class SearchIndexer extends SearchBase {
 	 */
 	private $opo_search_indexing_queue = null;
 
+	static $s_search_indexing_queue_inserts = array();
+
 	# ------------------------------------------------
 	/**
 	 * Constructor takes Db() instance which it uses for all database access. You should pass an instance in
@@ -68,6 +70,19 @@ class SearchIndexer extends SearchBase {
 
 		$this->opo_metadata_element = new ca_metadata_elements();
 		$this->opo_search_indexing_queue = new ca_search_indexing_queue();
+	}
+	# -------------------------------------------------------
+	public function __destruct() {
+		$o_db = new Db();
+		if(sizeof(self::$s_search_indexing_queue_inserts) < 1) { return; } // don't bother if nothing is queued
+
+		$va_insert_segments = array();
+		foreach(self::$s_search_indexing_queue_inserts as $va_insert_data) {
+			$va_insert_segments[] = "('" . join("','",$va_insert_data) . "')";
+		}
+
+		self::$s_search_indexing_queue_inserts = array();
+		$o_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, field_data, reindex, changed_fields, options) VALUES " . join(',',$va_insert_segments));
 	}
 	# -------------------------------------------------------
 	/**
@@ -431,7 +446,7 @@ class SearchIndexer extends SearchBase {
 			}
 		}
 
-		$va_insert_values = array(
+		self::$s_search_indexing_queue_inserts[] = array(
 			'table_num' => $pa_row_values['table_num'],
 			'row_id' => $pa_row_values['row_id'],
 			'field_data' => $pa_row_values['field_data'],
@@ -439,8 +454,6 @@ class SearchIndexer extends SearchBase {
 			'changed_fields' => $pa_row_values['changed_fields'],
 			'options' => $pa_row_values['options'],
 		);
-
-		$this->opo_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, field_data, reindex, changed_fields, options) VALUES (?, ?, ?, ?, ?, ?)", $va_insert_values);
 
 		return true;
 	}
@@ -483,9 +496,8 @@ class SearchIndexer extends SearchBase {
 		// Prevent endless recursive reindexing
 		if (is_array($pa_exclusion_list[$pn_subject_tablenum]) && (isset($pa_exclusion_list[$pn_subject_tablenum][$pn_subject_row_id]))) { return; }
 
-		// queue this indexing task, unless we are in the indexing microservice
-		// @todo add a config setting to disable this
-		if(!defined('__CA_IS_INDEXING_SERVICE__') || !__CA_IS_INDEXING_SERVICE__) {
+		// @todo add a config setting
+		if(!caGetOption('dontQueueIndexing', $pa_options, false)) {
 			$this->queueIndexRow(array(
 				'table_num' => $pn_subject_tablenum,
 				'row_id' => $pn_subject_row_id,
@@ -494,7 +506,7 @@ class SearchIndexer extends SearchBase {
 				'changed_fields' => $pa_changed_fields,
 				'options' => $pa_options
 			));
-			//return;
+			return;
 		}
 
 		$pb_is_new_row = (int)caGetOption('isNewRow', $pa_options, false);
