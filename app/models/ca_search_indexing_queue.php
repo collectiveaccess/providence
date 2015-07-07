@@ -98,6 +98,26 @@ BaseModel::$s_ca_models_definitions['ca_search_indexing_queue'] = array(
 			'DEFAULT' => '',
 			'LABEL' => 'Options', 'DESCRIPTION' => 'Options'
 		),
+		'is_unindex' => array(
+			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_CHECKBOXES,
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => 0,
+			'OPTIONS' => array(
+				_t('Yes') => 1,
+				_t('No') => 0
+			),
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'DONT_ALLOW_IN_UI' => true,
+			'LABEL' => 'Is unindex?', 'DESCRIPTION' => 'Indicates if this is a unindexing instruction'
+		),
+		'dependencies' => array(
+			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT,
+			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => 'Dependencies', 'DESCRIPTION' => 'Dependencies to unindex (only set if is_unindex = 1)'
+		),
 	)
 );
 
@@ -209,13 +229,21 @@ class ca_search_indexing_queue extends BaseModel {
 			$o_si = new SearchIndexer($o_db);
 
 			while ($o_result->nextRow()) {
-				$o_si->indexRow(
-					$o_result->get('table_num'), $o_result->get('row_id'),
-					caUnserializeForDatabase($o_result->get('field_data')),
-					(bool)$o_result->get('reindex'), null,
-					caUnserializeForDatabase($o_result->get('changed_fields')),
-					array_merge(caUnserializeForDatabase($o_result->get('options')), array('queueIndexing' => false))
-				);
+
+				if(!$o_result->get('is_unindex')) { // normal indexRow() call
+					$o_si->indexRow(
+						$o_result->get('table_num'), $o_result->get('row_id'),
+						caUnserializeForDatabase($o_result->get('field_data')),
+						(bool)$o_result->get('reindex'), null,
+						caUnserializeForDatabase($o_result->get('changed_fields')),
+						array_merge(caUnserializeForDatabase($o_result->get('options')), array('queueIndexing' => false))
+					);
+				} else { // is_unindex = 1, so it's a commitRowUnindexing() call
+					$o_si->commitRowUnIndexing(
+						$o_result->get('table_num'), $o_result->get('row_id'),
+						array('queueIndexing' => false, 'dependencies' => caUnserializeForDatabase($o_result->get('dependencies')))
+					);
+				}
 
 				$o_db->query('DELETE FROM ca_search_indexing_queue WHERE entry_id=?', $o_result->get('entry_id'));
 			}

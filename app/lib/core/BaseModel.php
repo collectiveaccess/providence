@@ -3117,6 +3117,7 @@ class BaseModel extends BaseObject {
 	 */
 	public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		if(!is_array($pa_options)) { $pa_options = array(); }
+		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);;
 		
 		$vn_id = $this->getPrimaryKey();
 		if ($this->hasField('deleted') && (!isset($pa_options['hard']) || !$pa_options['hard'])) {
@@ -3133,7 +3134,7 @@ class BaseModel extends BaseObject {
 					if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
 						$o_indexer = $this->getSearchIndexer();
 						$o_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
-						$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
+						$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id, array('queueIndexing' => $pb_queue_indexing));
 					}
 				}
 				$this->logChange("D");
@@ -3286,7 +3287,7 @@ class BaseModel extends BaseObject {
 			# --- complete delete of search index entries
 			#
 			if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
-				$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
+				$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id, array('queueIndexing' => $pb_queue_indexing));
 			}
 			
 			# cancel and pending queued tasks against this record

@@ -3286,7 +3286,7 @@ if (!$vb_batch) {
 							} else {
 								if ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_PrefLabel_'.$va_label['label_id'].'_delete', pString)) {
 									// delete
-									$this->removeLabel($va_label['label_id']);
+									$this->removeLabel($va_label['label_id'], array('queueIndexing' => true));
 								}
 							}
 						}
@@ -3328,7 +3328,7 @@ if (!$vb_batch) {
 						 				foreach($va_labels_by_locale as $vn_locale_id => $va_labels) {
 						 					foreach($va_labels as $vn_i => $va_label) {
 						 						if(isset($va_label[$this->getLabelDisplayField()]) && ($va_label[$this->getLabelDisplayField()] == '['._t('BLANK').']')) {
-						 							$this->removeLabel($va_label['label_id']);
+						 							$this->removeLabel($va_label['label_id'], array('queueIndexing' => true));
 						 						}
 						 					}
 						 				}
@@ -3413,7 +3413,7 @@ if (!$vb_batch) {
 							} else {
 								if ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPrefLabel_'.$va_label['label_id'].'_delete', pString)) {
 									// delete
-									$this->removeLabel($va_label['label_id']);
+									$this->removeLabel($va_label['label_id'], array('queueIndexing' => true));
 								}
 							}
 						}
@@ -3543,7 +3543,7 @@ if (!$vb_batch) {
 										global $g_ui_locale_id;
 										if ($t_rep->load($va_rep['representation_id'])) {
 											$t_rep->setMode(ACCESS_WRITE);
-											$t_rep->replaceLabel(array('name' => $vs_rep_label), $g_ui_locale_id, null, true);
+											$t_rep->replaceLabel(array('name' => $vs_rep_label), $g_ui_locale_id, null, true, array('queueIndexing' => true));
 											if ($t_rep->numErrors()) {
 												$po_request->addActionErrors($t_rep->errors(), $vs_f, $va_rep['representation_id']);
 											}

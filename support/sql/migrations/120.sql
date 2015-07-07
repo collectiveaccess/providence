@@ -14,6 +14,8 @@ create table ca_search_indexing_queue
   reindex         tinyint unsigned  not null default 0,
   changed_fields  TEXT              not null default '',
   options         LONGTEXT          not null default '',
+  is_unindex      tinyint unsigned  not null default 0,
+  dependencies    LONGTEXT          not null default '',
 
   primary key (entry_id),
   index i_table_num_row_id (table_num, row_id)

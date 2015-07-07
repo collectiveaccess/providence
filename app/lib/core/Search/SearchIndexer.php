@@ -55,6 +55,7 @@ class SearchIndexer extends SearchBase {
 	private $opo_search_indexing_queue = null;
 
 	static $s_search_indexing_queue_inserts = array();
+	static $s_search_unindexing_queue_inserts = array();
 
 	# ------------------------------------------------
 	/**
@@ -74,15 +75,25 @@ class SearchIndexer extends SearchBase {
 	# -------------------------------------------------------
 	public function __destruct() {
 		$o_db = new Db();
-		if(sizeof(self::$s_search_indexing_queue_inserts) < 1) { return; } // don't bother if nothing is queued
+		if(sizeof(self::$s_search_indexing_queue_inserts) > 0) {
+			$va_insert_segments = array();
+			foreach (self::$s_search_indexing_queue_inserts as $va_insert_data) {
+				$va_insert_segments[] = "('" . join("','", $va_insert_data) . "')";
+			}
+			self::$s_search_indexing_queue_inserts = array(); // nuke cache
 
-		$va_insert_segments = array();
-		foreach(self::$s_search_indexing_queue_inserts as $va_insert_data) {
-			$va_insert_segments[] = "('" . join("','",$va_insert_data) . "')";
+			$o_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, field_data, reindex, changed_fields, options) VALUES " . join(',', $va_insert_segments));
 		}
 
-		self::$s_search_indexing_queue_inserts = array();
-		$o_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, field_data, reindex, changed_fields, options) VALUES " . join(',',$va_insert_segments));
+		if(sizeof(self::$s_search_unindexing_queue_inserts) > 0) {
+			$va_insert_segments = array();
+			foreach (self::$s_search_unindexing_queue_inserts as $va_insert_data) {
+				$va_insert_segments[] = "('" . join("','", $va_insert_data) . "')";
+			}
+			self::$s_search_unindexing_queue_inserts = array(); // nuke cache
+
+			$o_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, is_unindex, dependencies) VALUES " . join(',',$va_insert_segments));
+		}
 	}
 	# -------------------------------------------------------
 	/**
@@ -453,6 +464,31 @@ class SearchIndexer extends SearchBase {
 			'reindex' => $pa_row_values['reindex'] ? 1 : 0,
 			'changed_fields' => $pa_row_values['changed_fields'],
 			'options' => $pa_row_values['options'],
+		);
+
+		return true;
+	}
+	# ------------------------------------------------
+	private function queueUnIndexRow($pa_row_values) {
+		foreach($pa_row_values as $vs_fld => &$vm_val) {
+			if(!$this->opo_search_indexing_queue->hasField($vs_fld)) {
+				return false;
+			}
+
+			if(is_null($vm_val)) {
+				$vm_val = array();
+			}
+
+			if(is_array($vm_val)) {
+				$vm_val = caSerializeForDatabase($vm_val);
+			}
+		}
+
+		self::$s_search_unindexing_queue_inserts[] = array(
+			'table_num' => $pa_row_values['table_num'],
+			'row_id' => $pa_row_values['row_id'],
+			'is_unindex' => 1,
+			'dependencies' => $pa_row_values['dependencies'],
 		);
 
 		return true;
@@ -1436,12 +1472,7 @@ class SearchIndexer extends SearchBase {
 	 * this for you during delete().)
 	 */
 	public function startRowUnIndexing($pn_subject_tablenum, $pn_subject_row_id) {
-		$vb_can_do_incremental_indexing = $this->opo_engine->can('incremental_reindexing') ? true : false;		// can the engine do incremental indexing? Or do we need to reindex the entire row every time?
-
-		$vs_subject_tablename 		= $this->opo_datamodel->getTableName($pn_subject_tablenum);
-		$t_subject 					= $this->opo_datamodel->getInstanceByTableName($vs_subject_tablename, true);
-		$vs_subject_pk 				= $t_subject->primaryKey();
-
+		$vs_subject_tablename = $this->opo_datamodel->getTableName($pn_subject_tablenum);
 		$va_deps = $this->getDependencies($vs_subject_tablename);
 
 		$va_indexed_tables = $this->getIndexedTables();
@@ -1456,8 +1487,21 @@ class SearchIndexer extends SearchBase {
 		return true;
 	}
 	# ------------------------------------------------
-	public function commitRowUnIndexing($pn_subject_tablenum, $pn_subject_row_id) {
+	public function commitRowUnIndexing($pn_subject_tablenum, $pn_subject_row_id, $pa_options = null) {
 		$vb_can_do_incremental_indexing = $this->opo_engine->can('incremental_reindexing') ? true : false;		// can the engine do incremental indexing? Or do we need to reindex the entire row every time?
+
+		if(caGetOption('queueIndexing', $pa_options, false)) {
+			$this->queueUnIndexRow(array(
+				'table_num' => $pn_subject_tablenum,
+				'row_id' => $pn_subject_row_id,
+				'dependencies' => $this->opa_dependencies_to_update
+			));
+			return;
+		}
+
+		if($va_deps = caGetOption('dependencies', $pa_options, null)) {
+			$this->opa_dependencies_to_update = $va_deps;
+		}
 
 		// delete index from subject
 		$this->opo_engine->removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id);

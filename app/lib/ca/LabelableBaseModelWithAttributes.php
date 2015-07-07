@@ -229,8 +229,9 @@
 		/**
 		 * Remove specified label
 		 */
- 		public function removeLabel($pn_label_id) {
+ 		public function removeLabel($pn_label_id, $pa_options = null) {
  			if (!$this->getPrimaryKey()) { return null; }
+			$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);
  			
  			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName()))) { return null; }
  			if ($this->inTransaction()) {
@@ -244,8 +245,8 @@
  			$t_label->setMode(ACCESS_WRITE);
  			
  			$this->opo_app_plugin_manager->hookBeforeLabelDelete(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
-		
- 			$t_label->delete();
+
+ 			$t_label->delete(false, array('queueIndexing' => $pb_queue_indexing));
  			
  			$this->opo_app_plugin_manager->hookAfterLabelDelete(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 		
@@ -264,7 +265,7 @@
 		 *
 		 * @return bool True on success, false on error
 		 */
- 		public function removeAllLabels($pn_mode=__CA_LABEL_TYPE_ANY__) {
+ 		public function removeAllLabels($pn_mode=__CA_LABEL_TYPE_ANY__, $pa_options = null) {
  			if (!$this->getPrimaryKey()) { return null; }
  			
  			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName()))) { return null; }
@@ -288,7 +289,7 @@
 									break;
 							}
 						}
- 						$vb_ret &= $this->removeLabel($va_label['label_id']);
+ 						$vb_ret &= $this->removeLabel($va_label['label_id'], $pa_options);
  					}
  				}
  			}
@@ -298,7 +299,7 @@
 		/**
 		 * 
 		 */
- 		public function replaceLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=true) {
+ 		public function replaceLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=true, $pa_options = null) {
  			if (!($vn_id = $this->getPrimaryKey())) { return null; }
  			
  			$va_labels = $this->getLabels(array($pn_locale_id), $pb_is_preferred ? __CA_LABEL_TYPE_PREFERRED__ : __CA_LABEL_TYPE_NONPREFERRED__);
@@ -307,11 +308,11 @@
  				$va_labels = caExtractValuesByUserLocale($va_labels);
  				$va_label = array_shift($va_labels);
  				return $this->editLabel(
- 					$va_label[0]['label_id'], $pa_label_values, $pn_locale_id, $pn_type_id, $pb_is_preferred
+ 					$va_label[0]['label_id'], $pa_label_values, $pn_locale_id, $pn_type_id, $pb_is_preferred, $pa_options
  				);
  			} else {
  				return $this->addLabel(
- 					$pa_label_values, $pn_locale_id, $pn_type_id, $pb_is_preferred
+ 					$pa_label_values, $pn_locale_id, $pn_type_id, $pb_is_preferred, $pa_options
  				);
  			}
  		}
