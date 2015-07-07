@@ -18,11 +18,11 @@ create table ca_user_representation_annotations
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    primary key (annotation_id),
-   constraint fk_ca_rep_annot_locale_id foreign key (locale_id)
+   constraint fk_ca_urep_annot_locale_id foreign key (locale_id)
       references ca_locales (locale_id) on delete restrict on update restrict,
-   constraint fk_ca_rep_annot_representation_id foreign key (representation_id)
+   constraint fk_ca_urep_annot_representation_id foreign key (representation_id)
       references ca_object_representations (representation_id) on delete restrict on update restrict,
-   constraint fk_ca_rep_annot_user_id foreign key (user_id)
+   constraint fk_ca_urep_annot_user_id foreign key (user_id)
       references ca_users (user_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -79,19 +79,19 @@ create table ca_user_representation_annotations_x_entities
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
    primary key (relation_id),
-   constraint fk_ca_rep_annot_x_entities_annotation_id foreign key (annotation_id)
+   constraint fk_ca_urep_annot_x_entities_annotation_id foreign key (annotation_id)
       references ca_user_representation_annotations (annotation_id) on delete restrict on update restrict,
       
-   constraint fk_ca_rep_annot_x_entities_entity_id foreign key (entity_id)
+   constraint fk_ca_urep_annot_x_entities_entity_id foreign key (entity_id)
       references ca_entities (entity_id) on delete restrict on update restrict,
       
-   constraint fk_ca_rep_annot_x_entities_type_id foreign key (type_id)
+   constraint fk_ca_urep_annot_x_entities_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
       
-   constraint fk_ca_rep_annot_x_entities_label_left_id foreign key (label_left_id)
+   constraint fk_ca_urep_annot_x_entities_label_left_id foreign key (label_left_id)
       references ca_user_representation_annotation_labels (label_id) on delete restrict on update restrict,
       
-   constraint fk_ca_rep_annot_x_entities_label_right_id foreign key (label_right_id)
+   constraint fk_ca_urep_annot_x_entities_label_right_id foreign key (label_right_id)
       references ca_entity_labels (label_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -124,19 +124,19 @@ create table ca_user_representation_annotations_x_objects
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
    primary key (relation_id),
-   constraint fk_ca_rep_annot_x_objects_annotation_id foreign key (annotation_id)
+   constraint fk_ca_urep_annot_x_objects_annotation_id foreign key (annotation_id)
       references ca_user_representation_annotations (annotation_id) on delete restrict on update restrict,
       
-   constraint fk_ca_rep_annot_x_objects_object_id foreign key (object_id)
+   constraint fk_ca_urep_annot_x_objects_object_id foreign key (object_id)
       references ca_objects (object_id) on delete restrict on update restrict,
       
-   constraint fk_ca_rep_annot_x_objects_type_id foreign key (type_id)
+   constraint fk_ca_urep_annot_x_objects_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
       
-   constraint fk_ca_rep_annot_x_objects_label_left_id foreign key (label_left_id)
+   constraint fk_ca_urep_annot_x_objects_label_left_id foreign key (label_left_id)
       references ca_user_representation_annotation_labels (label_id) on delete restrict on update restrict,
       
-   constraint fk_ca_rep_annot_x_objects_label_right_id foreign key (label_right_id)
+   constraint fk_ca_urep_annot_x_objects_label_right_id foreign key (label_right_id)
       references ca_object_labels (label_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -169,19 +169,19 @@ create table ca_user_representation_annotations_x_occurrences
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
    primary key (relation_id),
-   constraint fk_ca_rep_annot_x_occurrences_annotation_id foreign key (annotation_id)
+   constraint fk_ca_urep_annot_x_occurrences_annotation_id foreign key (annotation_id)
       references ca_user_representation_annotations (annotation_id) on delete restrict on update restrict,
       
-   constraint fk_ca_rep_annot_x_occurrences_type_id foreign key (type_id)
+   constraint fk_ca_urep_annot_x_occurrences_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
       
-   constraint fk_ca_rep_annot_x_occurrences_occurrence_id foreign key (occurrence_id)
+   constraint fk_ca_urep_annot_x_occurrences_occurrence_id foreign key (occurrence_id)
       references ca_occurrences (occurrence_id) on delete restrict on update restrict,
       
-   constraint fk_ca_rep_annot_x_occurrences_label_left_id foreign key (label_left_id)
+   constraint fk_ca_urep_annot_x_occurrences_label_left_id foreign key (label_left_id)
       references ca_user_representation_annotation_labels (label_id) on delete restrict on update restrict,
       
-   constraint fk_ca_rep_annot_x_occurrences_label_right_id foreign key (label_right_id)
+   constraint fk_ca_urep_annot_x_occurrences_label_right_id foreign key (label_right_id)
       references ca_occurrence_labels (label_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -214,19 +214,19 @@ create table ca_user_representation_annotations_x_places
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
    primary key (relation_id),
-   constraint fk_ca_rep_annot_x_places_annotation_id foreign key (annotation_id)
+   constraint fk_ca_urep_annot_x_places_annotation_id foreign key (annotation_id)
       references ca_user_representation_annotations (annotation_id) on delete restrict on update restrict,
       
-   constraint fk_ca_rep_annot_x_places_type_id foreign key (type_id)
+   constraint fk_ca_urep_annot_x_places_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
       
-   constraint fk_ca_rep_annot_x_places_place_id foreign key (place_id)
+   constraint fk_ca_urep_annot_x_places_place_id foreign key (place_id)
       references ca_places (place_id) on delete restrict on update restrict,
       
-   constraint fk_ca_rep_annot_x_places_label_left_id foreign key (label_left_id)
+   constraint fk_ca_urep_annot_x_places_label_left_id foreign key (label_left_id)
       references ca_user_representation_annotation_labels (label_id) on delete restrict on update restrict,
       
-   constraint fk_ca_rep_annot_x_places_label_right_id foreign key (label_right_id)
+   constraint fk_ca_urep_annot_x_places_label_right_id foreign key (label_right_id)
       references ca_place_labels (label_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -259,19 +259,19 @@ create table ca_user_representation_annotations_x_vocabulary_terms
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
    primary key (relation_id),
-   constraint fk_ca_rep_annot_x_vocabulary_terms_annotation_id foreign key (annotation_id)
+   constraint fk_ca_urep_annot_x_vocabulary_terms_annotation_id foreign key (annotation_id)
       references ca_user_representation_annotations (annotation_id) on delete restrict on update restrict,
       
-   constraint fk_ca_rep_annot_x_vocabulary_terms_type_id foreign key (type_id)
+   constraint fk_ca_urep_annot_x_vocabulary_terms_type_id foreign key (type_id)
       references ca_relationship_types (type_id) on delete restrict on update restrict,
       
-   constraint fk_ca_rep_annot_x_vocabulary_terms_item_id foreign key (item_id)
+   constraint fk_ca_urep_annot_x_vocabulary_terms_item_id foreign key (item_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
       
-   constraint fk_ca_rep_annot_x_vocabulary_terms_label_left_id foreign key (label_left_id)
+   constraint fk_ca_urep_annot_x_vocabulary_terms_label_left_id foreign key (label_left_id)
       references ca_user_representation_annotation_labels (label_id) on delete restrict on update restrict,
       
-   constraint fk_ca_rep_annot_x_vocabulary_terms_label_right_id foreign key (label_right_id)
+   constraint fk_ca_urep_annot_x_vocabulary_terms_label_right_id foreign key (label_right_id)
       references ca_list_item_labels (label_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
