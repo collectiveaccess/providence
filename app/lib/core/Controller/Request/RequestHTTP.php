@@ -514,18 +514,35 @@ class RequestHTTP extends Request {
 		return false;
 	}
 	# -------------------------------------------------------
- 		/**
- * 
- * Saves changes to session and user objects. You should call this at the end of every request to ensure
- * that user and session variables are saved.
- *
- * @access public 
- * @return float Seconds elapsed since request started.
- */	
+ 	/**
+	 *
+	 * Saves changes to session, user objects and sends asynchronous request for search indexing
+	 * You should call this at the end of every request to ensure that user and session variables are saved.
+	 *
+	 * @access public
+	 */
 	function close() {
 		$this->session->close();
 		if (is_object($this->user)) {
 			$this->user->close();
+		}
+
+		if(defined('__CA_SITE_HOSTNAME__') && strlen(__CA_SITE_HOSTNAME__) > 0) {
+
+			if(isset($_SERVER['SERVER_PORT']) &&  $_SERVER['SERVER_PORT']) {
+				$vn_port = $_SERVER['SERVER_PORT'];
+			} else {
+				$vn_port = 80;
+			}
+
+			$r_socket = fsockopen(__CA_SITE_HOSTNAME__, $vn_port, $errno, $err, 3);
+			if ($r_socket) {
+				$vs_http  = "GET ".$this->getBaseUrlPath()."/index.php?processIndexingQueue=1 HTTP/1.1\r\n";
+				$vs_http .= "Host: ".__CA_SITE_HOSTNAME__."\r\n";
+				$vs_http .= "Connection: Close\r\n\r\n";
+				fwrite($r_socket, $vs_http);
+				fclose($r_socket);
+			}
 		}
 	}
 	# ----------------------------------------

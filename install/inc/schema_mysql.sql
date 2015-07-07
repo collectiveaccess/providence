@@ -6534,6 +6534,7 @@ create table ca_metadata_dictionary_rule_violations (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /*==========================================================================*/
+
 create table ca_user_representation_annotations
 (
   annotation_id                  int unsigned                   not null AUTO_INCREMENT,
@@ -6819,6 +6820,24 @@ create index i_label_left_id on ca_user_representation_annotations_x_vocabulary_
 create index i_label_right_id on ca_user_representation_annotations_x_vocabulary_terms(label_right_id);
 
 /*==========================================================================*/
+
+create table ca_search_indexing_queue
+(
+  entry_id        int unsigned      not null AUTO_INCREMENT,
+  table_num       tinyint unsigned  not null,
+  row_id          int unsigned      not null,
+  field_data      LONGTEXT          not null default '',
+  reindex         tinyint unsigned  not null default 0,
+  changed_fields  LONGTEXT          not null default '',
+  options         LONGTEXT          not null default '',
+  is_unindex      tinyint unsigned  not null default 0,
+  dependencies    LONGTEXT          not null default '',
+
+  primary key (entry_id),
+  index i_table_num_row_id (table_num, row_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+/*==========================================================================*/
 /* Schema update tracking                                                   */
 /*==========================================================================*/
 create table ca_schema_updates (
@@ -6829,5 +6848,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 116 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (119, unix_timestamp());
+/* CURRENT MIGRATION: 120 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (120, unix_timestamp());

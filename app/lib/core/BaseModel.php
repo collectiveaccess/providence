@@ -2444,7 +2444,12 @@ class BaseModel extends BaseObject {
 					$vn_id = $this->getPrimaryKey();
 					
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) && !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
-						$this->doSearchIndexing($this->getFieldValuesArray(true), false, array('isNewRow' => true));
+						$va_index_options = array('isNewRow' => true);
+						if(caGetOption('queueIndexing', $pa_options, false)) {
+							$va_index_options['queueIndexing'] = true;
+						}
+
+						$this->doSearchIndexing($this->getFieldValuesArray(true), false, $va_index_options);
 					}
 
 					$this->logChange("I");
@@ -3000,7 +3005,12 @@ class BaseModel extends BaseObject {
 					}
 					if ((!isset($pa_options['dont_do_search_indexing']) || (!$pa_options['dont_do_search_indexing'])) &&  !defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
 						# update search index
-						$this->doSearchIndexing(null, false);
+						$va_index_options = array();
+						if(caGetOption('queueIndexing', $pa_options, false)) {
+							$va_index_options['queueIndexing'] = true;
+						}
+
+						$this->doSearchIndexing(null, false, $va_index_options);
 					}
 														
 					if (is_array($va_rebuild_hierarchical_index)) {
@@ -3064,7 +3074,14 @@ class BaseModel extends BaseObject {
 		}
 		
 		$o_indexer = $this->getSearchIndexer(caGetOption('engine', $pa_options, null));
-		return $o_indexer->indexRow($this->tableNum(), $this->getPrimaryKey(), $this->getFieldValuesArray(true), $pb_reindex_mode, null, $pa_changed_field_values_array, $this->_FIELD_VALUES_OLD, $pa_options);
+		return $o_indexer->indexRow(
+			$this->tableNum(), $this->getPrimaryKey(), // identify record
+			$this->getFieldValuesArray(true), // data to index
+			$pb_reindex_mode,
+			null, // esclusion list, always null in the beginning
+			$pa_changed_field_values_array, // changed values
+			$pa_options
+		);
 	}
 	
 	/**
@@ -3092,6 +3109,7 @@ class BaseModel extends BaseObject {
 	 * @param bool $pb_delete_related delete stuff related to the record? pass non-zero value if you want to.
 	 * @param array $pa_options Options for delete process. Options are:
 	 *		hard = if true records which can support "soft" delete are really deleted rather than simply being marked as deleted
+	 *		queueIndexing =
 	 * @param array $pa_fields instead of deleting the record represented by this object instance you can
 	 * pass an array of field => value assignments which is used in a SQL-DELETE-WHERE clause.
 	 * @param array $pa_table_list this is your possibility to pass an array of table name => true assignments
@@ -3099,6 +3117,7 @@ class BaseModel extends BaseObject {
 	 */
 	public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		if(!is_array($pa_options)) { $pa_options = array(); }
+		$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);;
 		
 		$vn_id = $this->getPrimaryKey();
 		if ($this->hasField('deleted') && (!isset($pa_options['hard']) || !$pa_options['hard'])) {
@@ -3115,7 +3134,7 @@ class BaseModel extends BaseObject {
 					if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
 						$o_indexer = $this->getSearchIndexer();
 						$o_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
-						$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
+						$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id, array('queueIndexing' => $pb_queue_indexing));
 					}
 				}
 				$this->logChange("D");
@@ -3268,7 +3287,7 @@ class BaseModel extends BaseObject {
 			# --- complete delete of search index entries
 			#
 			if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
-				$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id);
+				$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id, array('queueIndexing' => $pb_queue_indexing));
 			}
 			
 			# cancel and pending queued tasks against this record
