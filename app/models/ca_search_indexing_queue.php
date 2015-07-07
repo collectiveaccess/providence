@@ -223,30 +223,37 @@ class ca_search_indexing_queue extends BaseModel {
 	}
 	# ------------------------------------------------------
 	static public function process() {
-		$o_db = new Db();
-		$o_result = $o_db->query("SELECT * FROM ca_search_indexing_queue ORDER BY entry_id");
-		if($o_result && $o_result->numRows()) {
-			$o_si = new SearchIndexer($o_db);
+		$r_semaphore = sem_get(ftok(__FILE__,'CASearchIndexingQueue'));
 
-			while ($o_result->nextRow()) {
+		if(sem_acquire($r_semaphore)) {
+			$o_db = new Db();
+			$o_result = $o_db->query("SELECT * FROM ca_search_indexing_queue ORDER BY entry_id");
+			if($o_result && $o_result->numRows()) {
+				$o_si = new SearchIndexer($o_db);
 
-				if(!$o_result->get('is_unindex')) { // normal indexRow() call
-					$o_si->indexRow(
-						$o_result->get('table_num'), $o_result->get('row_id'),
-						caUnserializeForDatabase($o_result->get('field_data')),
-						(bool)$o_result->get('reindex'), null,
-						caUnserializeForDatabase($o_result->get('changed_fields')),
-						array_merge(caUnserializeForDatabase($o_result->get('options')), array('queueIndexing' => false))
-					);
-				} else { // is_unindex = 1, so it's a commitRowUnindexing() call
-					$o_si->commitRowUnIndexing(
-						$o_result->get('table_num'), $o_result->get('row_id'),
-						array('queueIndexing' => false, 'dependencies' => caUnserializeForDatabase($o_result->get('dependencies')))
-					);
+				while ($o_result->nextRow()) {
+
+					if(!$o_result->get('is_unindex')) { // normal indexRow() call
+						$o_si->indexRow(
+							$o_result->get('table_num'), $o_result->get('row_id'),
+							caUnserializeForDatabase($o_result->get('field_data')),
+							(bool)$o_result->get('reindex'), null,
+							caUnserializeForDatabase($o_result->get('changed_fields')),
+							array_merge(caUnserializeForDatabase($o_result->get('options')), array('queueIndexing' => false))
+						);
+					} else { // is_unindex = 1, so it's a commitRowUnindexing() call
+						$o_si->commitRowUnIndexing(
+							$o_result->get('table_num'), $o_result->get('row_id'),
+							array('queueIndexing' => false, 'dependencies' => caUnserializeForDatabase($o_result->get('dependencies')))
+						);
+					}
+
+					$o_db->query('DELETE FROM ca_search_indexing_queue WHERE entry_id=?', $o_result->get('entry_id'));
 				}
 
-				$o_db->query('DELETE FROM ca_search_indexing_queue WHERE entry_id=?', $o_result->get('entry_id'));
 			}
+
+			sem_release($r_semaphore);
 		}
 	}
 	# ------------------------------------------------------
