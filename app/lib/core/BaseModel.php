@@ -335,7 +335,7 @@ class BaseModel extends BaseObject {
 	/**
 	 * If set, all field values passed through BaseModel::set() are run through HTML Purifier before being stored
 	 */
-	private $opb_purify_input = false;
+	private $opb_purify_input = true;
 	
 	/**
 	 * Array of model definitions, keyed on table name
@@ -391,7 +391,7 @@ class BaseModel extends BaseObject {
 			$this->ops_locale = $vs_locale;
 		}
 		
-		$this->opb_purify_input = (bool)$this->_CONFIG->get("purify_all_text_input");
+		$this->opb_purify_input = strlen($this->_CONFIG->get("purify_all_text_input")) ? (bool)$this->_CONFIG->get("purify_all_text_input") : true;
 		
  		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 
@@ -953,7 +953,9 @@ class BaseModel extends BaseObject {
 			case (FT_HISTORIC_DATE):
 			case (FT_DATE):
 				$vn_timestamp = isset($this->_FIELD_VALUES[$ps_field]) ? $this->_FIELD_VALUES[$ps_field] : 0;
-				if (caGetOption('GET_DIRECT_DATE', $pa_options, false) || caGetOption('getDirectDate', $pa_options, false)) {
+				if (caGetOption('returnWithStructure', $pa_options, false)) {
+					$vs_prop = array('start' => $this->_FIELD_VALUES[$ps_field], 'end' => $this->_FIELD_VALUES[$ps_field]);
+				} elseif (caGetOption('GET_DIRECT_DATE', $pa_options, false) || caGetOption('getDirectDate', $pa_options, false) || caGetOption('rawDate', $pa_options, false)) {
 					$vs_prop = $this->_FIELD_VALUES[$ps_field];
 				} elseif ((isset($pa_options['sortable']) && $pa_options['sortable'])) {
 					$vs_prop = $vn_timestamp."/".$vn_timestamp;
@@ -973,7 +975,9 @@ class BaseModel extends BaseObject {
 				}
 				break;
 			case (FT_TIME):
-				if (caGetOption('GET_DIRECT_TIME', $pa_options, false) || caGetOption('getDirectTime', $pa_options, false)) {
+				if (caGetOption('returnWithStructure', $pa_options, false)) {
+					$vs_prop = array('start' => $this->_FIELD_VALUES[$ps_field], 'end' => $this->_FIELD_VALUES[$ps_field]);
+				} elseif (caGetOption('GET_DIRECT_TIME', $pa_options, false) || caGetOption('getDirectTime', $pa_options, false) || caGetOption('rawTime', $pa_options, false)) {
 					$vs_prop = $this->_FIELD_VALUES[$ps_field];
 				} else {
 					$o_tep = new TimeExpressionParser();
@@ -990,7 +994,9 @@ class BaseModel extends BaseObject {
 				
 				$vn_start_date = isset($this->_FIELD_VALUES[$vs_start_field_name]) ? $this->_FIELD_VALUES[$vs_start_field_name] : null;
 				$vn_end_date = isset($this->_FIELD_VALUES[$vs_end_field_name]) ? $this->_FIELD_VALUES[$vs_end_field_name] : null;
-				if (!caGetOption('GET_DIRECT_DATE', $pa_options, false) && !caGetOption('getDirectDate', $pa_options, false)) {
+				if (caGetOption('returnWithStructure', $pa_options, false)) {
+					$vs_prop = array('start' => $vn_start_date, 'end' => $vn_end_date);
+				} elseif (!caGetOption('GET_DIRECT_DATE', $pa_options, false) && !caGetOption('getDirectDate', $pa_options, false) && !caGetOption('rawDate', $pa_options, false)) {
 					$o_tep = new TimeExpressionParser();
 					if ($ps_field_type == FT_HISTORIC_DATERANGE) {
 						$o_tep->setHistoricTimestamps($vn_start_date, $vn_end_date);
@@ -1008,10 +1014,12 @@ class BaseModel extends BaseObject {
 				$vs_start_field_name = $this->getFieldInfo($ps_field,"START");
 				$vs_end_field_name = $this->getFieldInfo($ps_field,"END");
 				
-				
 				$vn_start_date = isset($this->_FIELD_VALUES[$vs_start_field_name]) ? $this->_FIELD_VALUES[$vs_start_field_name] : null;
 				$vn_end_date = isset($this->_FIELD_VALUES[$vs_end_field_name]) ? $this->_FIELD_VALUES[$vs_end_field_name] : null;
-				if (!caGetOption('GET_DIRECT_TIME', $pa_options, false) && !caGetOption('getDirectTime', $pa_options, false)) {
+				
+				if (caGetOption('returnWithStructure', $pa_options, false)) {
+					$vs_prop = array('start' => $vn_start_date, 'end' => $vn_end_date);
+				} elseif (!caGetOption('GET_DIRECT_TIME', $pa_options, false) && !caGetOption('getDirectTime', $pa_options, false) && !caGetOption('rawTime', $pa_options, false)) {
 					$o_tep = new TimeExpressionParser();
 					$o_tep->setTimes($vn_start_date, $vn_end_date);
 					$vs_prop = $o_tep->getText($pa_options);
@@ -7633,6 +7641,7 @@ class BaseModel extends BaseObject {
 		
 		$va_levels = $va_ids = $va_parent_ids = array();
 		
+		if (!is_array($va_hier)) { return array(); }
 		foreach($va_hier as $vn_i => $va_item) {
 			$va_levels[$vn_i] = $va_item['LEVEL'];
 			$va_ids[] = $vn_id = $va_item['NODE'][$vs_pk];
@@ -10182,7 +10191,8 @@ $pa_options["display_form_field_tips"] = true;
 	 *				media2_original_filename = original file name to set for comment "media2"
 	 *				media3_original_filename = original file name to set for comment "media3"
 	 *				media4_original_filename = original file name to set for comment "media4"
-	 *  @param $ps_location [string] = location of user
+	 * @param $ps_location [string] = location of user
+	 * @return int comment_id of newly created comment, false on error or null if parameters are invalid
 	 */
 	public function addComment($ps_comment, $pn_rating=null, $pn_user_id=null, $pn_locale_id=null, $ps_name=null, $ps_email=null, $pn_access=0, $pn_moderator=null, $pa_options=null, $ps_media1=null, $ps_media2=null, $ps_media3=null, $ps_media4=null, $ps_location=null) {
 		global $g_ui_locale_id;
@@ -10229,7 +10239,7 @@ $pa_options["display_form_field_tips"] = true;
 			$this->errors = $t_comment->errors;
 			return false;
 		}
-		return true;
+		return $t_comment->getPrimaryKey();
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
@@ -10385,12 +10395,30 @@ $pa_options["display_form_field_tips"] = true;
 	 *		Passing $pb_moderation_status = FALSE will cause only unmoderated comments to be returned
 	 *		If you want both moderated and unmoderated comments to be returned then omit the parameter or pass a null value
 	 *
-	 * @param $pn_user_id [integer] A valid ca_users.user_id value. If specified, only comments by the specified user will be returned. (optional - default is null)
-	 * @param $pn_moderation_status [boolean] To return only unmoderated comments set to FALSE; to return only moderated comments set to TRUE; to return all comments set to null or omit
-	 */
-	public function getComments($pn_user_id=null, $pb_moderation_status=null) {
+	 * @param int $pn_user_id A valid ca_users.user_id value. If specified, only comments by the specified user will be returned. (optional - default is null)
+	 * @param bool $pn_moderation_status  To return only unmoderated comments set to FALSE; to return only moderated comments set to TRUE; to return all comments set to null or omit
+	 * @param array $pa_options Options include:
+     * 	    transaction = optional Transaction instance. If set then all database access is done within the context of the transaction
+     *		returnAs = what to return; possible values are:
+     *          array                   = an array of comments
+     *			searchResult			= a search result instance (aka. a subclass of BaseSearchResult), when the calling subclass is searchable (ie. <classname>Search and <classname>SearchResult classes are defined)
+     *			ids						= an array of ids (aka. primary keys)
+     *			modelInstances			= an array of instances, one for each match. Each instance is the same class as the caller, a subclass of BaseModel
+     *			firstId					= the id (primary key) of the first match. This is the same as the first item in the array returned by 'ids'
+     *			firstModelInstance		= the instance of the first match. This is the same as the first instance in the array returned by 'modelInstances'
+     *			count					= the number of matches
+     *
+     *			The default is array
+     *
+     * @return array
+     */
+	public function getComments($pn_user_id=null, $pb_moderation_status=null, $pa_options=null) {
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
-		$o_db = $this->getDb();
+
+        $o_trans = caGetOption('transaction', $pa_options, null);
+        $vs_return_as = caGetOption('returnAs', $pa_options, 'array');
+
+		$o_db = $o_trans ? $o_trans->getDb() : $this->getDb();
 		
 		$vs_user_sql = ($pn_user_id) ? ' AND (user_id = '.intval($pn_user_id).')' : '';
 		
@@ -10404,27 +10432,54 @@ $pa_options["display_form_field_tips"] = true;
 			FROM ca_item_comments
 			WHERE
 				(table_num = ?) AND (row_id = ?) {$vs_user_sql} {$vs_moderation_sql}
-		", $this->tableNum(), $vn_row_id);
-		
-		$va_comments = array();
-		while($qr_comments->nextRow()){
-			$va_comments[$qr_comments->get("comment_id")] = $qr_comments->getRow();
-			foreach(array("media1", "media2", "media3", "media4") as $vs_media_field){
-				$va_media_versions = array();
-				$va_media_versions = $qr_comments->getMediaVersions($vs_media_field);
-				$va_media = array();
-				if(is_array($va_media_versions) && (sizeof($va_media_versions) > 0)){
-					foreach($va_media_versions as $vs_version){
-						$va_image_info = array();
-						$va_image_info  = $qr_comments->getMediaInfo($vs_media_field, $vs_version);
-						$va_image_info["TAG"] = $qr_comments->getMediaTag($vs_media_field, $vs_version);
-						$va_image_info["URL"] = $qr_comments->getMediaUrl($vs_media_field, $vs_version);
-						$va_media[$vs_version] = $va_image_info;
-					}
-					$va_comments[$qr_comments->get("comment_id")][$vs_media_field] = $va_media;
-				}
-			}
-		}
+		", array($this->tableNum(), $vn_row_id));
+
+        switch($vs_return_as) {
+            case 'count':
+                return $qr_comments->numRows();
+                break;
+            case 'ids':
+            case 'firstId':
+            case 'searchResult':
+            case 'modelInstances':
+            case 'firstModelInstance':
+                $va_ids = $qr_comments->getAllFieldValues('comment_id');
+                if ($vs_return_as === 'ids') { return $va_ids; }
+                if ($vs_return_as === 'firstId') { return array_shift($va_ids); }
+                if (($vs_return_as === 'modelInstances') || ($vs_return_as === 'firstModelInstance')) {
+                    $va_acc = array();
+                    foreach($va_ids as $vn_id) {
+                        $t_instance = new ca_item_comments($vn_id);
+                        if ($vs_return_as === 'firstModelInstance') { return $t_instance; }
+                        $va_acc[] = $t_instance;
+                    }
+                    return $va_acc;
+                }
+                return caMakeSearchResult('ca_item_comments', $va_ids);
+                break;
+            case 'array':
+            default:
+                $va_comments = array();
+                while ($qr_comments->nextRow()) {
+                    $va_comments[$qr_comments->get("comment_id")] = $qr_comments->getRow();
+                    foreach (array("media1", "media2", "media3", "media4") as $vs_media_field) {
+                        $va_media_versions = array();
+                        $va_media_versions = $qr_comments->getMediaVersions($vs_media_field);
+                        $va_media = array();
+                        if (is_array($va_media_versions) && (sizeof($va_media_versions) > 0)) {
+                            foreach ($va_media_versions as $vs_version) {
+                                $va_image_info = array();
+                                $va_image_info = $qr_comments->getMediaInfo($vs_media_field, $vs_version);
+                                $va_image_info["TAG"] = $qr_comments->getMediaTag($vs_media_field, $vs_version);
+                                $va_image_info["URL"] = $qr_comments->getMediaUrl($vs_media_field, $vs_version);
+                                $va_media[$vs_version] = $va_image_info;
+                            }
+                            $va_comments[$qr_comments->get("comment_id")][$vs_media_field] = $va_media;
+                        }
+                    }
+                }
+                break;
+        }
 		return $va_comments;
 	}
 	# --------------------------------------------------------------------------------------------

@@ -2306,8 +2306,9 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 
 		/** @var $qr_res SearchResult */
 		while($qr_res->nextHit()) {
-		
-			$vs_pk_val = $qr_res->get($vs_pk);
+			
+			$vs_pk_val = $qr_res->get($vs_pk, array('checkAccess' => $pa_check_access));
+			if (is_array($pa_check_access) && sizeof($pa_check_access) && !in_array($qr_res->get("{$ps_tablename}.access"), $pa_check_access)) { continue; }
 			$vs_template =  $ps_template;
 
 			// check if we skip this row because of skipIfExpression

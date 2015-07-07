@@ -1048,6 +1048,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @return int The item_id of the default element or null if no list was specified or loaded. If no default is set for the list in question the first item found is returned.
 	 */
 	public function getDefaultItemID($pm_list_name_or_id=null, $pa_options=null) {
+		if (!is_array($pa_options)) { $pa_options = array(); }
 		if($pm_list_name_or_id) {
 			$vn_list_id = $this->_getListID($pm_list_name_or_id);
 		} else {
