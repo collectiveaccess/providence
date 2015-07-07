@@ -2590,6 +2590,7 @@ class BaseModel extends BaseObject {
 				
 				$vn_parent_id 			= $this->get($vs_parent_id_fld);
 				
+				// Don't allow parent to be set 
 				if ($vn_parent_id == $this->getPrimaryKey()) {
 					$vn_parent_id = $this->getOriginalValue($vs_parent_id_fld);
 					if ($vn_parent_id == $this->getPrimaryKey()) { $vn_parent_id = null; }
