@@ -852,9 +852,10 @@
 						$va_row_ids_to_add[$vn_row_id] = 1;
 						$vn_added_items_count++;
 						
-						if (($vn_added_items_count = $t_set->addItems(array_keys($va_row_ids_to_add))) === false) {
-							$this->view->setVar('error', join('; ', $t_set->getErrors()));
-						}
+					}
+				
+					if (($vn_added_items_count = $t_set->addItems(array_keys($va_row_ids_to_add))) === false) {
+						$this->view->setVar('error', join('; ', $t_set->getErrors()));
 					}
 					
 				} else {
@@ -975,6 +976,8 @@
  		 */ 
  		public function DownloadRepresentations() {
  			if ($t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true)) {
+				$o_media_metadata_conf = Configuration::load($t_subject->getAppConfig()->get('media_metadata'));
+
  				$pa_ids = null;
  				if ($vs_ids = trim($this->request->getParameter($t_subject->tableName(), pString))) {
  					if ($vs_ids != 'all') {
@@ -1010,6 +1013,7 @@
 							$va_paths = $qr_res->getMediaPaths('ca_object_representations.media', $vs_version);
 							$va_infos = $qr_res->getMediaInfos('ca_object_representations.media');
 							$va_representation_ids = $qr_res->get('ca_object_representations.representation_id', array('returnAsArray' => true));
+							$va_representation_types = $qr_res->get('ca_object_representations.type_id', array('returnAsArray' => true));
 							
 							foreach($va_paths as $vn_i => $vs_path) {
 								$vs_ext = array_pop(explode(".", $vs_path));
@@ -1017,6 +1021,7 @@
 								$vs_original_name = $va_infos[$vn_i]['ORIGINAL_FILENAME'];
 								$vn_index = (sizeof($va_paths) > 1) ? "_".($vn_i + 1) : '';
 								$vn_representation_id = $va_representation_ids[$vn_i];
+								$vs_representation_type = caGetListItemIdno($va_representation_types[$vn_i]);
 
 								// make sure we don't download representations the user isn't allowed to read
 								if(!caCanRead($this->request->user->getPrimaryKey(), 'ca_object_representations', $vn_representation_id)){ continue; }
@@ -1045,25 +1050,30 @@
 											$vs_filename = "{$vs_idno_proc}_representation_{$vn_representation_id}_{$vs_version}{$vn_index}.{$vs_ext}";
 										}
 										break;
-								} 
-								//if ($vs_path_with_embedding = caEmbedMetadataIntoRepresentation(new ca_objects($qr_res->get('ca_objects.object_id')), new ca_object_representations($vn_representation_id), $vs_version)) {
-								//	$vs_path = $vs_path_with_embedding;
-								//}
+								}
+
+								if($o_media_metadata_conf->get('do_metadata_embedding_for_search_result_media_download')) {
+									if ($vs_path_with_embedding = caEmbedMediaMetadataIntoFile($vs_path,
+										'ca_objects', $qr_res->get('ca_objects.object_id'), caGetListItemIdno($qr_res->get('ca_objects.type_id')),
+										$vn_representation_id, $vs_representation_type
+									)) {
+										$vs_path = $vs_path_with_embedding;
+									}
+								}
 								if (!file_exists($vs_path)) { continue; }
 								$o_phar->addFile($vs_path, $vs_filename, 0, array('compression' => 0));
 								$vn_file_count++;
 							}
 						}
-$vs_tmp_name = $o_phar->output(ZIPFILE_FILEPATH);
+						$vs_tmp_name = $o_phar->output(ZIPFILE_FILEPATH);
 						$this->view->setVar('tmp_file', $vs_tmp_name);
 						$this->view->setVar('download_name', 'media_for_'.mb_substr(preg_replace('![^A-Za-z0-9]+!u', '_', $this->getCriteriaForDisplay()), 0, 20).'.zip');
-						
- 						set_time_limit($vn_limit);
 					}
 				}
  				
  				if ($vn_file_count > 0) {
  					$this->render('Results/object_representation_download_binary.php');
+					exit;
  				} else {
  					$this->response->setHTTPResponseCode(204, _t('No files to download'));
  				}

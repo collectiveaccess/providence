@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2013 Whirl-i-Gig
+ * Copyright 2012-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -118,7 +118,7 @@
  			
 			foreach($_FILES as $vs_param => $va_file) {
 				foreach($va_file['name'] as $vn_i => $vs_name) {
-					if ($t_importer = ca_data_importers::loadImporterFromFile($va_file['tmp_name'][$vn_i], $va_errors, array('logDirectory' => $this->request->config->get('batch_metadata_import_log_directory'), 'logLevel' => KLogger::INFO))) {
+					if ($t_importer = ca_data_importers::loadImporterFromFile($va_file['tmp_name'][$vn_i], $va_errors, array('logDirectory' => $this->request->config->get('batch_metadata_import_log_directory'), 'logLevel' => KLogger::INFO, 'originalFilename' => $vs_name))) {
 						$va_response['copied'][$vs_name] = true;
 					} else {
 						$va_response['skipped'][$vs_name] = true;
@@ -182,7 +182,8 @@
  				'fileInput' => $this->request->getParameter("fileInput", pString),
  				'fileImportPath' => $this->request->getParameter("fileImportPath", pString),
  				
- 				'importAllDatasets' => (bool)$this->request->getParameter("importAllDatasets", pInteger)
+ 				'importAllDatasets' => (bool)$this->request->getParameter("importAllDatasets", pInteger), 
+ 				'originalFilename' => $vs_name
  			);
  			
  			$va_last_settings = $va_options;
@@ -264,4 +265,3 @@
  		}
 		# ------------------------------------------------------------------
  	}
- ?>

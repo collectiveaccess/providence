@@ -47,7 +47,9 @@
 		# Data
 		# -------------------------------------------------------
 		public function lookup($pa_settings, $ps_search, $pa_options=null);
+		public function getDisplayValueFromLookupText($ps_text);
 		public function getExtendedInformation($pa_settings, $ps_url);
-		public function getExtraValuesForSearchIndexing($pa_settings, $ps_url);
+		public function getDataForSearchIndexing($pa_settings, $ps_url);
+		public function getExtraInfo($pa_settings, $ps_url);
 		# -------------------------------------------------------
 	}

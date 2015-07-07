@@ -1,13 +1,13 @@
 <?php
-/** ---------------------------------------------------------------------
- * tests/lib/ca/AttributeValues/AATInformationServiceAttributeValueTest.php
+/* ----------------------------------------------------------------------
+ * app/service/views/json.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -15,26 +15,22 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
- * 
- * @package CollectiveAccess
- * @subpackage tests
- * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
- * 
+ *
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__."/core/Plugins/InformationService/AAT.php");
 
-class AATInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase {
+	header('Content-type: application/json');
+	$va_return = array("ok" => true) + caSanitizeArray($this->getVar('content'),array('allowStdClass' => true));
 
-	public function testGetExtendedInfo() {
-		$o_service = new WLPlugInformationServiceAAT();
-		$o_service->getExtendedInformation(array(), 'http://vocab.getty.edu/aat/300225636');
+	if($this->getVar('pretty_print')){
+		print caFormatJson(json_encode($va_return));
+	} else {
+		print json_encode($va_return);
 	}
-}

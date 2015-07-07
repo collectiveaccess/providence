@@ -599,8 +599,11 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		$vn_start = caGetOption('start', $pa_options, 0, array('castTo' => 'int'));
  		$vn_max = caGetOption('max', $pa_options, 100, array('castTo' => 'int'));
  		
+ 		$va_annotation_ids = array();
  		while($qr_annotations->nextRow()) {
  			$va_tmp = $qr_annotations->getRow();
+ 			$va_annotation_ids[] = $va_tmp['annotation_id'];
+ 			
  			unset($va_tmp['props']);
  			$o_coder->setPropertyValues($qr_annotations->getVars('props'));
  			foreach($o_coder->getPropertyList() as $vs_property) {
@@ -613,34 +616,59 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  				$vs_sort_key = '_default_';
  			}
  			
- 			$va_annotations[$vs_sort_key][$qr_annotations->get('annotation_id')] = $va_tmp;
+ 			$va_annotations[$vs_sort_key][$va_tmp['annotation_id']] = $va_tmp;
  		}
+ 		if (!sizeof($va_annotation_ids)) { return array(); }
  		
  		ksort($va_annotations, SORT_NUMERIC);
  		
  		// get annotation labels
- 		$qr_annotation_labels = $o_db->query("
- 			SELECT 	cral.annotation_id, cral.locale_id, cral.name, cral.label_id
- 			FROM ca_representation_annotation_labels cral
- 			INNER JOIN ca_representation_annotations AS cra ON cra.annotation_id = cral.annotation_id
- 			WHERE
- 				cra.representation_id = ? AND cral.is_preferred = 1
- 		", (int)$vn_representation_id);
+ 		$qr_annotations = caMakeSearchResult('ca_representation_annotations', $va_annotation_ids);
+ 		$va_labels = $va_annotation_classes = array();
  		
- 		$va_labels = array();
- 		while($qr_annotation_labels->nextRow()) {
- 			$va_labels[$qr_annotation_labels->get('annotation_id')][$qr_annotation_labels->get('locale_id')][] = $qr_annotation_labels->get('name');
+ 		// Check if "class" element is configurwed, exists and is a list element
+ 		if ($vs_class_element = $this->getAppConfig()->get('annotation_class_element')) {
+ 			$t_anno = new ca_representation_annotations();
+ 			if (!$t_anno->hasElement($vs_class_element)) { 
+ 				$vs_class_element = null; 
+ 			} elseif($t_anno->_getElementDatatype($vs_class_element) != __CA_ATTRIBUTE_VALUE_LIST__)  {
+ 				// not a list element
+ 				$vs_class_element = null; 
+ 			}
  		}
  		
+ 		while($qr_annotations->nextHit()) {
+ 			$va_labels[$vn_annotation_id = $qr_annotations->get('ca_representation_annotations.annotation_id')][$qr_annotations->get('ca_representation_annotation_labels.locale_id')][] = $qr_annotations->get('ca_representation_annotations.preferred_labels.name');
+ 			
+ 			if ($vs_class_element) { 
+ 				$va_annotation_classes[$vn_annotation_id] = $qr_annotations->get("ca_representation_annotations.{$vs_class_element}", array('returnAsArray' => true));
+ 			}
+ 		}
  		$va_labels_for_locale = caExtractValuesByUserLocale($va_labels);
  		
+ 		$va_annotation_classes_flattened = array();
+ 		foreach($va_annotation_classes as $vn_annotation_id => $va_classes) {
+ 			$va_annotation_classes_flattened[$vn_annotation_id] = array_shift($va_classes);
+ 		}
  		
+ 		$va_key = array();
+ 		if ($qr_list_items = caMakeSearchResult('ca_list_items', array_values($va_annotation_classes_flattened))) {
+ 			while($qr_list_items->nextHit()) {
+ 				$va_key[$qr_list_items->get('item_id')] = array(
+ 					'name' => $qr_list_items->get('ca_list_items.preferred_labels.name_plural'),
+ 					'idno' => $qr_list_items->get('ca_list_items.idno'),
+ 					'color' => $qr_list_items->get('ca_list_items.color'),
+ 				);
+ 			}
+ 		}
+ 
  		$va_sorted_annotations = array();
  		foreach($va_annotations as $vs_key => $va_values) {
  			foreach($va_values as $va_val) {
  				$vs_label = is_array($va_labels_for_locale[$va_val['annotation_id']]) ? array_shift($va_labels_for_locale[$va_val['annotation_id']]) : '';
  				$va_val['labels'] = $va_labels[$va_val['annotation_id']] ? $va_labels[$va_val['annotation_id']] : array();
  				$va_val['label'] = $vs_label;
+ 				$va_val['key'] = $va_key[$va_annotation_classes_flattened[$va_val['annotation_id']]];
  				$va_sorted_annotations[$va_val['annotation_id']] = $va_val;
  			}
  		}
@@ -652,7 +680,6 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  				$va_sorted_annotations = array_slice($va_sorted_annotations, $vn_start);
  			}
  		}
- 		
  		return $va_sorted_annotations;
  	} 
  	# ------------------------------------------------------

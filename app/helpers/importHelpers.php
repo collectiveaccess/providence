@@ -80,7 +80,7 @@
 			$vs_type = BaseRefinery::parsePlaceholder($va_parent['type'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 
 			if (!$vs_name && !$vs_idno) { continue; }
-			if (!$vs_name) { $vs_name = $vs_idno; }
+			if (!$vs_name) { continue; }//$vs_name = $vs_idno; }
 			
 			$va_attributes = (isset($va_parent['attributes']) && is_array($va_parent['attributes'])) ? $va_parent['attributes'] : array();
 			
@@ -1054,7 +1054,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 
 		if(strlen($vs_val)>0) {
 			$vn_timestamp = PHPExcel_Shared_Date::ExcelToPHP(trim((string)$o_val->getValue())) + $pn_offset;
-			if (!($vs_return = caGetLocalizedDate((int)$vn_timestamp, null))) {
+			if (!($vs_return = caGetLocalizedDate($vn_timestamp, array('dateFormat' => 'iso8601', 'timeOmit' => false)))) {
 				$vs_return = $vs_val;
 			}
 		} else {
@@ -1133,23 +1133,9 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 
 		if($vn_pick >= 0 && ($vn_best_distance > $pn_threshold)) {
 			$va_pick = $va_hits[$vn_pick];
-			$vs_id = '';
-			if(preg_match("/[a-z]{3,4}\/[0-9]+$/", $va_pick['ID']['value'], $va_matches)) {
-				$vs_id = str_replace('/', ':', $va_matches[0]);
-			}
 
-			$vs_label = $va_pick['TermPrefLabel']['value'] . " (" . $va_pick['Parents']['value'] . ")";
-			$vs_label = preg_replace('/\,\s\.\.\.\s[A-Za-z\s]+Facet\s*/', '', $vs_label);
-
-			$va_return = array(
-				'label' => htmlentities($vs_label),
-				'id' => $vs_id,
-				'url' => $va_pick['ID']['value'],
-			);
-
-			$vs_return = join('|', $va_return);
-			MemoryCache::save($vs_cache_key, $vs_return, 'AATMatches');
-			return $vs_return;
+			MemoryCache::save($vs_cache_key, $va_pick['ID']['value'], 'AATMatches');
+			return $va_pick['ID']['value'];
 		}
 
 		return false;

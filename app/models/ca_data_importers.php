@@ -1265,7 +1265,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			return false;
 		}
 		
-		$va_reader_opts = array('basePath' => $t_mapping->getSetting('basePath'));
+		$va_reader_opts = array('basePath' => $t_mapping->getSetting('basePath'), 'originalFilename' => caGetOption('originalFilename', $pa_options, null));
 		
 		if (!$o_reader->read($ps_source, $va_reader_opts)) {
 			ca_data_importers::logImportError(_t("Could not read source %1 (format=%2)", $ps_source, $ps_format), $va_log_import_error_opts);
@@ -1399,7 +1399,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$va_env_tmp = explode("|", $va_environment_item['value']);
 			
 				if (!($o_env_reader = $t_mapping->getDataReader($ps_source, $ps_format))) { break; }
-				if(!$o_env_reader->read($ps_source, array('basePath' => ''))) { break; }
+				if(!$o_env_reader->read($ps_source, array('basePath' => '', 'originalFilename' => caGetOption('originalFilename', $pa_options, null)))) { break; }
 				$o_env_reader->setCurrentDataset($vn_dataset);
 				$o_env_reader->nextRow();
 				switch(sizeof($va_env_tmp)) {
@@ -1552,6 +1552,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					if (isset($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['formatWithTemplate']) && strlen($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['formatWithTemplate'])) {
 						$vs_label_val = caProcessTemplate($va_mapping_items[$vn_preferred_label_mapping_id]['settings']['formatWithTemplate'], $va_row);
 					}
+					if ($vs_opt = $va_mapping_items[$vn_preferred_label_mapping_id]['settings']['displaynameFormat']) {
+						$va_label_val = DataMigrationUtils::splitEntityName($vs_label_val, array('displaynameFormat' => $vs_opt));
+						$vs_label_val = $va_label_val['displayname'];
+					}
 					$va_pref_label_values[$vs_preferred_label_mapping_fld] = $vs_label_val;
 				}
 				$vs_display_label = isset($va_pref_label_values[$vs_label_display_fld]) ? $va_pref_label_values[$vs_label_display_fld] : $vs_idno;
@@ -1559,10 +1563,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				//
 				// Look for existing record?
 				//
+				
+				$vb_was_preferred_label_match = false;
+				
 				if (is_array($pa_force_import_for_primary_keys) && sizeof($pa_force_import_for_primary_keys) > 0) {
 					$vn_id = array_shift($pa_force_import_for_primary_keys);
 					if (!$t_subject->load($vn_id)) { 
-						$o_log->logInfo(_t('[%1] Skipped import because of forced primary key \'%1\' does not exist', $vn_id));
+						$o_log->logInfo(_t('[%1] Skipped import because forced primary key \'%1\' does not exist', $vn_id));
 						ca_data_importers::$s_num_records_skipped++;
 						continue;	// skip because primary key does not exist
 					}
@@ -1617,6 +1624,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
 								$t_subject->load($va_ids[0]);
 								$o_log->logInfo(_t('[%1] Merged with existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy));
+								$vb_was_preferred_label_match = true;
 							}
 							break;	
 						case 'overwrite_on_idno_and_preferred_labels':
@@ -2091,10 +2099,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$o_event->beginItem($vn_row, $t_subject->tableNum(), 'U') ;
 					// update
 					$t_subject->setMode(ACCESS_WRITE);
-					if ($vb_idno_is_template) {
-						$t_subject->setIdnoWithTemplate($vs_idno);
-					} else {
-						$t_subject->set($vs_idno_fld, $vs_idno, array('assumeIdnoStubForLotID' => true));	// assumeIdnoStubForLotID forces ca_objects.lot_id values to always be considered as a potential idno_stub first, before use as a ca_objects.lot_di
+					
+					if ($vn_idno_mapping_item_id || !$t_subject->get($vs_idno_fld)) {
+						if ($vb_idno_is_template) {
+							$t_subject->setIdnoWithTemplate($vs_idno);
+						} else {
+							$t_subject->set($vs_idno_fld, $vs_idno, array('assumeIdnoStubForLotID' => true));	// assumeIdnoStubForLotID forces ca_objects.lot_id values to always be considered as a potential idno_stub first, before use as a ca_objects.lot_di
+						}
 					}
 				
 					$t_subject->update();
@@ -2112,7 +2123,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					}
 				
 					$t_subject->clearErrors();
-					if (sizeof($va_preferred_label_mapping_ids) && ($t_subject->getPreferredLabelCount() > 0)) {
+					if (sizeof($va_preferred_label_mapping_ids) && ($t_subject->getPreferredLabelCount() > 0) && (!$vb_was_preferred_label_match)) {
 						$t_subject->removeAllLabels(__CA_LABEL_TYPE_PREFERRED__);
 						if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not update remove preferred labels from matched record"), array('dontOutputLevel' => true, 'dontPrint' => true))) {
 							ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
@@ -2174,32 +2185,33 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$t_subject->setMode(ACCESS_WRITE);
 									switch($vs_element) {
 										case 'preferred_labels':
+											if (!$vb_was_preferred_label_match) {
+												$t_subject->addLabel(
+													$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, true, array('truncateLongLabels' => $vb_truncate_long_labels)
+												);
+												if ($t_subject->numErrors() == 0) {
+													$vb_output_subject_preferred_label = true;
+												}
 										
-											$t_subject->addLabel(
-												$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, true, array('truncateLongLabels' => $vb_truncate_long_labels)
-											);
-											if ($t_subject->numErrors() == 0) {
-												$vb_output_subject_preferred_label = true;
-											}
-										
-											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add preferred label to %2. Record was deleted because no preferred label could be applied: ", $vs_idno, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-												ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
-												$t_subject->delete(true, array('hard' => false));
+												if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add preferred label to %2. Record was deleted because no preferred label could be applied: ", $vs_idno, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+													ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
+													$t_subject->delete(true, array('hard' => false));
 											
-												if ($vs_import_error_policy == 'stop') {
-													$o_log->logAlert(_t('Import stopped due to import error policy %1', $vs_import_error_policy));
+													if ($vs_import_error_policy == 'stop') {
+														$o_log->logAlert(_t('Import stopped due to import error policy %1', $vs_import_error_policy));
 												
-													$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
+														$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
 						
-													if ($o_trans) { $o_trans->rollback(); }
-													return false;
+														if ($o_trans) { $o_trans->rollback(); }
+														return false;
+													}
+													if ($vs_item_error_policy == 'stop') {
+														$o_log->logAlert(_t('Import stopped due to mapping error policy'));
+														if ($o_trans) { $o_trans->rollback(); }
+														return false;
+													}
+													continue(5);
 												}
-												if ($vs_item_error_policy == 'stop') {
-													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
-													if ($o_trans) { $o_trans->rollback(); }
-													return false;
-												}
-												continue(5);
 											}
 											break;
 										case 'nonpreferred_labels':

@@ -2087,7 +2087,8 @@ class TimeExpressionParser {
 	#	end_as_iso8601 (true|false) [if true only the end date of the range is returned, in ISO8601 format]
 	#	dontReturnValueIfOnSameDayAsStart (true|false) [Only valid in conjunction with end_as_iso8601]
 	#	startHistoricTimestamp
-	#	endHistoricTimestamp 
+	#	endHistoricTimestamp
+	#	format 			(string) Format date/time output using PHP date()-style format string. The following subset of PHP date() formtting characters are supported: Y y d j F m n t g G h H i s [Default is null; don't use format string for output]
 	public function getText($pa_options=null) {
 		if (!$pa_options) { $pa_options = array(); }
 		foreach(array(
@@ -2310,6 +2311,72 @@ class TimeExpressionParser {
 				$vb_differing_uncertainties = true;
 			} else {
 				$vb_differing_uncertainties = false;
+			}
+			
+			// catch formats
+			if ($pa_options['format']) {
+				$va_seen = array();
+				$vs_output = '';
+				for($vn_i=0; $vn_i < strlen($pa_options['format']); $vn_i++) {
+					$vb_not_handled = false;
+					switch($vs_c = $pa_options['format'][$vn_i]) {
+						case 'Y':
+							$vs_output .= (!$va_seen[$vs_c]) ? $va_start_pieces['year'] : $va_end_pieces['year'];
+							break;
+						case 'y':
+							$vs_output .= (!$va_seen[$vs_c]) ? substr($va_start_pieces['year'], 2) : substr($va_end_pieces['year'],2);
+							break;
+						case 'd':
+							$vs_output .= (!$va_seen[$vs_c]) ? sprintf("%02d", $va_start_pieces['day']) : sprintf("%02d", $va_end_pieces['day']);
+							break;
+						case 'j':
+							$vs_output .= (!$va_seen[$vs_c]) ? (int)$va_start_pieces['day'] : (int)$va_end_pieces['day'];
+							break;
+						case 'F':
+							$vs_output .= (!$va_seen[$vs_c]) ? $this->getMonthName($va_start_pieces['month']) : $this->getMonthName($va_end_pieces['month']);
+							break;
+						case 'm':
+							$vs_output .= (!$va_seen[$vs_c]) ? sprintf("%02d", $va_start_pieces['day']) : sprintf("%02d", $va_end_pieces['day']);
+							break;
+						case 'n':
+							$vs_output .= (!$va_seen[$vs_c]) ? (int)$va_start_pieces['day'] : (int)$va_end_pieces['day'];
+							break;
+						case 't':
+							$vs_output .= (!$va_seen[$vs_c]) ? $this->daysInMonth($va_start_pieces['month'], $va_start_pieces['year']) : $this->daysInMonth($va_end_pieces['month'], $va_end_pieces['year']);
+							break;
+						case 'g':
+							$vn_24h_time = (!$va_seen[$vs_c]) ? (int)$va_start_pieces['hours'] : (int)$va_end_pieces['hours'];
+							if ($vn_24h_time > 12) { $vn_24h_time -= 12; }
+							$vs_output .= $vn_24h_time;
+							break;
+						case 'G':
+							$vs_output .= (!$va_seen[$vs_c]) ? (int)$va_start_pieces['hours'] : (int)$va_end_pieces['hours'];
+							break;
+						case 'h':
+							$vn_24h_time = (!$va_seen[$vs_c]) ? (int)$va_start_pieces['hours'] : (int)$va_end_pieces['hours'];
+							if ($vn_24h_time > 12) { $vn_24h_time -= 12; }
+							$vs_output .= sprintf("%02d", $vn_24h_time);
+							break;
+						case 'H':
+							$vs_output .= (!$va_seen[$vs_c]) ? sprintf("%02d", $va_start_pieces['hours']) : sprintf("%02d", $va_end_pieces['hours']);
+							break;
+						case 'i':
+							$vs_output .= (!$va_seen[$vs_c]) ? sprintf("%02d", $va_start_pieces['minutes']) : sprintf("%02d", $va_end_pieces['minutes']);
+							break;
+						case 's':
+							$vs_output .= (!$va_seen[$vs_c]) ? sprintf("%02d", $va_start_pieces['seconds']) : sprintf("%02d", $va_end_pieces['seconds']);
+							break;
+						default:
+							$vb_not_handled = true;
+							$vs_output .= $vs_c;
+							break;
+					}
+					if (!$vb_not_handled) {
+						$va_seen[$vs_c]++;
+					}
+				}
+				
+				return $vs_output;
 			}
 
 			// catch quarter centuries

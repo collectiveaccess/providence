@@ -140,6 +140,7 @@
      */
     private function _stream($pa_options=null) {
     
+    	$vb_dont_write = $pa_options['dontWrite'];
     	
     	$vb_need_zip64 = false;
     	if (isset($pa_options['useZIP64'])) {
@@ -161,8 +162,8 @@
 				}
 			}
 		}
-
-    	$r_out = fopen("php://output", "wb");
+		
+    	$r_out = $vb_dont_write ? fopen("/dev/null", "wb") : fopen("php://output", "wb");
     	
 		if ($r_out === FALSE) {
 			return null;
@@ -209,7 +210,7 @@
 				if ($vb_need_zip64) {
 					// header
 					$vs_extended_info = "\x00\x01".pack("v", 28);
-					$vs_extended_info .= pack("P", 0).pack("P", 0).pack("P", $vn_old_offset).pack("V", 0);	
+					$vs_extended_info .= pack("P", -1).pack("P", -1).pack("P", $vn_old_offset).pack("V", 0);	
 				}
 				
 				$vs_header      .= pack('V', 0);		// crc
@@ -273,9 +274,10 @@
 	
 				$vn_new_offset = $vn_datasize;
 				
+				$vs_extended_info = '';
 				if ($vb_need_zip64) {
 					// header with file sizes
-					$vs_extended_info = "\x00\x01".pack("v", 28);
+					$vs_extended_info = "\x01\x00".pack("v", 28);
 					$vs_extended_info .= pack("P", $va_file['size']).pack("P", $vn_compressed_filesize).pack("P", $vn_old_offset).pack("V", 0);	
 				}
 	
@@ -298,16 +300,17 @@
 				$vs_central_directory_entry .= pack('v', 0 );             				 // internal file attributes
 				$vs_central_directory_entry .= pack('V', 32 );            				 // external file attributes - 'archive' bit set
 
-				$vs_central_directory_entry .= pack('V', $vn_old_offset); 				 // relative offset of local header
+				$vs_central_directory_entry .= $vb_need_zip64 ? "\xFF\xFF\xFF\xFF" : pack('V', $vn_old_offset); 				 // relative offset of local header
 				
-				$vn_old_offset = $vn_new_offset;
-
 				$vs_central_directory_entry .= $vs_name;
 				$vs_central_directory_entry .= $vs_extended_info;
 
 				// optional extra field, file comment goes here
 				// save to central directory
 				$va_ctrl_dir[] = $vs_central_directory_entry;
+				
+				
+				$vn_old_offset = $vn_new_offset;
 			}
 			fclose($r_in);
 		}
@@ -361,7 +364,7 @@
 		pack('v', sizeof($va_ctrl_dir)) .  // total # of entries "on this disk"
 		pack('v', sizeof($va_ctrl_dir)) .  // total # of entries overall
 		pack('V', strlen($vs_ctrl_dir)) .           // size of central dir
-		pack('V', $vn_new_offset) .              // offset to start of central dir
+		($vb_need_zip64 ? "\xFF\xFF\xFF\xFF" : pack('V', $vn_new_offset)).
 		"\x00\x00");
 		$vn_current_offset += strlen($vs_end_of_ctrl_dir);
 		
@@ -378,6 +381,7 @@
 	 *		compression = level of ZLIB compression to apply. Set to zero for no compression. [Default is 0]
 	 *		timeLimit = number of seconds to set PHP execution time limit too. Set to zero to suspend time limit. [Default is 0]
 	 *		useZIP64 = force use or disuse of ZIP64 format. [Default is to use ZIP64 only if archive is over 3.9gigs in size]
+	 *		dontWrite = send output to /dev/null. Used for debugging purposes [Default is false]
 	 */
 	public function stream($pa_options=null) {
 		$this->_stream($pa_options);	

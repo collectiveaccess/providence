@@ -9412,25 +9412,5 @@ Frasher Foto (Firm)
       <role code="admin"/>
       <group code="admin"/>
     </login>
-    <login user_name="Shannon" password="LaBelle" fname="Shannon" lname="LaBelle"
-      email="info@vhec.org">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="Marisa" password="Parker" fname="Marisa" lname="Parker"
-      email="info@vhec.org">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="Caitlin" password="Donaldson" fname="Caitlin" lname="Donaldson"
-      email="info@vhec.org">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
-    <login user_name="Daniel" password="Sheinin" fname="Daniel" lname="Sheinin"
-      email="info@vhec.org">
-      <role code="admin"/>
-      <group code="admin"/>
-    </login>
   </logins>
 </profile>

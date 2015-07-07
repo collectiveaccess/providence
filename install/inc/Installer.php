@@ -26,15 +26,15 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__."/core/Cache/CompositeCache.php");
-require_once(__CA_LIB_DIR__."/core/Configuration.php");
-require_once(__CA_LIB_DIR__."/core/Datamodel.php");
-require_once(__CA_LIB_DIR__."/core/Db.php");
-require_once(__CA_LIB_DIR__."/core/Media/MediaVolumes.php");
-require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
-require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
-require_once(__CA_MODELS_DIR__."/ca_users.php");
-require_once(__CA_MODELS_DIR__."/ca_user_groups.php");
+require_once(__CA_LIB_DIR__.'/core/Cache/CompositeCache.php');
+require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
+require_once(__CA_LIB_DIR__.'/core/Db.php');
+require_once(__CA_LIB_DIR__.'/core/Media/MediaVolumes.php');
+require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
+require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
+require_once(__CA_MODELS_DIR__.'/ca_users.php');
+require_once(__CA_MODELS_DIR__.'/ca_user_groups.php');
 
 class Installer {
 	# --------------------------------------------------
@@ -312,7 +312,6 @@ class Installer {
 
 		$qr_tables = $vo_db->query("SHOW TABLES");
 
-		$vb_found_schema = false;
 		while($qr_tables->nextRow()) {
 			$vs_table = $qr_tables->getFieldAtIndex(0);
 			if (in_array($vs_table, $va_ca_tables)) {
@@ -1705,4 +1704,3 @@ class Installer {
 	}
 	# --------------------------------------------------
 }
-?>

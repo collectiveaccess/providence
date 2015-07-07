@@ -200,7 +200,7 @@ class RelatedGetTest extends BaseTestWithData {
 		$vm_ret = $this->opt_object->get('ca_entities.nonpreferred_labels');
 		$this->assertEquals('Max Power', $vm_ret);
 
-		$vm_ret = $this->opt_object->get('ca_entities', array('returnAsArray' => true));
+		$vm_ret = $this->opt_object->get('ca_entities', array('returnWithStructure' => true));
 		$vm_ret2 = $this->opt_object->getRelatedItems('ca_entities');
 		$this->assertSame($vm_ret, $vm_ret2);
 
@@ -237,13 +237,13 @@ class RelatedGetTest extends BaseTestWithData {
 		$vm_ret = $this->opt_object->get('ca_objects.related.preferred_labels');
 		$this->assertEquals('My test dataset', $vm_ret);
 
-		$vm_ret = $this->opt_object->get('ca_entities', array('template' => '^ca_entities.preferred_labels (^ca_entities.internal_notes)', 'delimiter' => '; '));
+		$vm_ret = $this->opt_object->get('ca_entities', array('template' => '^ca_entities.preferred_labels.displayname (^ca_entities.internal_notes)', 'delimiter' => '; '));
 		$this->assertEquals('Homer J. Simpson (); Bart Simpson (); ACME Inc. (Test notes)', $vm_ret);
 
 		$vm_ret = $this->opt_object->get('ca_entities', array('template' => '^ca_entities.preferred_labels', 'delimiter' => '; ', 'returnAsLink' => true));
-		$this->assertRegExp("/\<a href=\'(.)+\'>Homer J. Simpson\<\/a\>/", $vm_ret);
-		$this->assertRegExp("/\<a href=\'(.)+\'>Bart Simpson\<\/a\>/", $vm_ret);
-		$this->assertRegExp("/\<a href=\'(.)+\'>ACME Inc.\<\/a\>/", $vm_ret);
+		$this->assertRegExp("/\<a href=[\"\'](.)+[\"\']>Homer J. Simpson\<\/a\>/", $vm_ret);
+		$this->assertRegExp("/\<a href=[\"\'](.)+[\"\']>Bart Simpson\<\/a\>/", $vm_ret);
+		$this->assertRegExp("/\<a href=[\"\'](.)+[\"\']>ACME Inc.\<\/a\>/", $vm_ret);
 
 
 		$va_entity_relationships = $this->opt_object->get('ca_objects_x_entities.relation_id', array('returnAsArray' => true));
@@ -255,6 +255,10 @@ class RelatedGetTest extends BaseTestWithData {
 			$this->assertEquals('0', $qr_entity_relationships->get('ca_objects.deleted'));
 			$this->assertEquals('0', $qr_entity_relationships->get('ca_entities.deleted'));
 		}
+
+		// there are no related list items
+		$vm_ret = $this->opt_object->get('ca_list_items', array('returnAsArray' => true));
+		$this->assertEmpty($vm_ret);
 	}
 	# -------------------------------------------------------
 }
