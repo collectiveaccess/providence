@@ -1847,7 +1847,8 @@ class SearchResult extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	private function getCacheKeyForGetWithTemplate($ps_template, $pa_options) {
-		return $this->ops_table_name.'/'.$ps_template.'/'.md5(print_r($pa_options, true));
+		unset($pa_options['request']);
+		return $this->ops_table_name.'/'.$ps_template.'/'.md5(serialize($pa_options));
 	}
 	# ------------------------------------------------------------------
 	/**
