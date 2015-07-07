@@ -448,12 +448,10 @@ class ca_item_comments extends BaseModel {
 				}
 			}
 			foreach(array("media1", "media2", "media3", "media4") as $vs_media_field){
-				$va_media_versions = array();
 				$va_media_versions = $qr_res->getMediaVersions($vs_media_field);
 				$va_media = array();
 				if(is_array($va_media_versions) && (sizeof($va_media_versions) > 0)){
 					foreach($va_media_versions as $vs_version){
-						$va_image_info = array();
 						$va_image_info  = $qr_res->getMediaInfo($vs_media_field, $vs_version);
 						$va_image_info["TAG"] = $qr_res->getMediaTag($vs_media_field, $vs_version);
 						$va_image_info["URL"] = $qr_res->getMediaUrl($vs_media_field, $vs_version);
