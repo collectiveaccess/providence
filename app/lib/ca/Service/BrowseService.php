@@ -47,10 +47,12 @@ class BrowseService extends BaseJSONService {
 		$va_post = $this->getRequestBodyArray();
 
 		// make sure only requests that are actually identical get pulled from cache
-		$vs_cache_key =
-			md5(print_r($va_post, true)) .
-			md5(print_r($this->opo_request->getParameters(array('POST', 'GET', 'REQUEST')), true)) .
-			$this->getRequestMethod();
+		$vs_cache_key = md5(
+			print_r($va_post, true) .
+			$this->opo_request->getFullUrlPath() .
+			print_r($this->opo_request->getParameters(array('POST', 'GET', 'REQUEST')), true) .
+			$this->getRequestMethod()
+		);
 
 		if(ExternalCache::contains($vs_cache_key, 'BrowseService')) {
 			return ExternalCache::fetch($vs_cache_key, 'BrowseService');

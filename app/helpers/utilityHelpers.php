@@ -2802,3 +2802,20 @@ function caFileIsIncludable($ps_file) {
 		return false;
 	}
 	# ----------------------------------------
+	/**
+	 * Flatten a multi-dimensional array
+	 *
+	 * @param array $pa_array The multidimensional array
+	 * @param array $pa_options Options include:
+	 *		unique = return only unique values [Default is false]
+	 *
+	 * @return array A one-dimensional array
+	 */
+	function caFlattenArray(array $pa_array, array $pa_options=null) {
+		$va_return = array();
+		array_walk_recursive($pa_array, function($a) use (&$va_return) { $va_return[] = $a; });
+		
+		if(caGetOption('unique', $pa_options, false)) { $va_return = array_unique($va_return); }
+		return $va_return;
+	}
+	# ----------------------------------------
