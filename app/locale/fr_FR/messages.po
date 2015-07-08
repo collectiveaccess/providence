@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess Providence\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-06-23 09:11-0500\n"
-"PO-Revision-Date: 2015-07-05 22:25+0200\n"
+"PO-Revision-Date: 2015-07-08 08:53+0200\n"
 "Last-Translator: Gautier Michelin <gm@ideesculture.com>\n"
 "Language-Team: French (France) (http://www.transifex.com/projects/p/collectiveaccess-providence/language/fr_FR/)\n"
 "MIME-Version: 1.0\n"
@@ -4525,7 +4525,7 @@ msgstr "Nouveau %1"
 
 #: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:2880
 msgid "Cannot do dry run save when in transaction. Try again without setting a transaction."
-msgstr "Impossible de lancer en \"dry run\" pendant une transaction. Veuillez réessayer sans définir de transaction."
+msgstr "Impossible de lancer en mode \"Répétition\" pendant une transaction. Veuillez réessayer sans définir de transaction."
 
 #: app/lib/ca/BundlableLabelableBaseModelWithAttributes.php:3151
 msgid "Could not move object under collection: %1"
@@ -5725,23 +5725,23 @@ msgstr "Il n'y a aucune représentation supprimée à traiter."
 
 #: app/lib/ca/Utils/CLIUtils.php:538
 msgid "%1 files are referenced by %2 deleted records. Both the records and the files will be deleted if you re-run the script with the -d (--delete) option and the correct permissions."
-msgstr ""
+msgstr "%1 fichiers sont référencés par %2 enregistrements supprimés. Les enregistrements et les fichiers seront supprimés si vous relancez le script avec l'option -d (--delete) et les permissions correctes."
 
 #: app/lib/ca/Utils/CLIUtils.php:539
 msgid "It is highly recommended to create a full backup before you do this!"
-msgstr ""
+msgstr "Il est vraiment recommandé de faire un backup avant de faire cela !"
 
 #: app/lib/ca/Utils/CLIUtils.php:548
 msgid "Removes representations marked as deleted. Default is false. Note that the system user that runs this script has to be able to write/delete the referenced media files if you want them to be removed."
-msgstr ""
+msgstr "Retire les représentations marquées comme supprimées. Faux par défaut. Veuillez remarquer que l'utilisateur système qui lance ce script doit avoir le droit d'écriture et de suppression sur les fichiers média si vous voulez qu'ils soient supprimés."
 
 #: app/lib/ca/Utils/CLIUtils.php:563
 msgid "Detects and, optionally, completely removes object representations marked as deleted in the database. Files referenced by these records are also removed."
-msgstr ""
+msgstr "Détecte et supprime (optionnel) les médias présents dans le répertoire média qui sont marqués comme supprimés dans la base de données. Les fichiers référencés par ces enregistrements sont aussi supprimés."
 
 #: app/lib/ca/Utils/CLIUtils.php:570
 msgid "Detects and, optionally, completely removes object representations marked as deleted in the database. Files referenced by these records are also removed. This can be useful if there has been a lot of fluctuation in your representation stock and you want to free up disk space."
-msgstr ""
+msgstr "Détecte et supprime (optionnel) les médias présents dans le répertoire média qui sont marqués comme supprimés dans la base de données. Les fichiers référencés par ces enregistrements sont aussi supprimés. Ceci peut être utile si vous avez  beaucoup de modifications dans vos représentations et que vous voulez économiser de l'espace disque."
 
 #: app/lib/ca/Utils/CLIUtils.php:580
 msgid "The PHP DOM extension is required to export profiles"
@@ -5797,7 +5797,7 @@ msgstr "Lancer sans afficher de barre de progression."
 
 #: app/lib/ca/Utils/CLIUtils.php:662
 msgid "Restart/reset unfinished tasks before queue processing. This option can be useful when the task queue script (or the whole machine) crashed and you have 'zombie' entries in your task queue. This option shouldn't interfere with any existing task queue processes that are actually running."
-msgstr ""
+msgstr "Redémarre/reset les tâches en cours avant le traitement de la file d'attente. Cette option peut être utile lorsque la file d'attente (ou tout le serveur) a crashé et que vous avez des entrées \"zombies\" dans votre file d'attente. Cette option n'interfère pas avec les tâches qui sont vraiment en cours de traitement actuellement."
 
 #: app/lib/ca/Utils/CLIUtils.php:670
 msgid "Cron"
@@ -5905,7 +5905,7 @@ msgstr "Liste séparée par des virgules des identifiants de représentation à 
 
 #: app/lib/ca/Utils/CLIUtils.php:1042
 msgid "Comma separated list of kind of media to reindex. Valid kinds are ca_object_representations (object representations), and ca_attributes (metadata elements). You may also specify \"all\" to reindex both kinds of media. Default is \"all\""
-msgstr ""
+msgstr "Liste de type de média à retraiter, séparés par des virgules. Les types de valeurs valides sont \"ca_object_representations\" (représentations objets) et \"ca_attributes\" (éléments de métadonnées). Vous pouvez également spécifier \"all\" pour retraiter tous les types de média. La valeur par défaut est \"all\"."
 
 #: app/lib/ca/Utils/CLIUtils.php:1057
 msgid "Reindex PDF media for in-viewer content search."
@@ -6118,7 +6118,7 @@ msgstr "Chemin vers le répertoire dans lequel exporter les logs. Si non défini
 
 #: app/lib/ca/Utils/CLIUtils.php:1453
 msgid "Optional logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO."
-msgstr ""
+msgstr "Sensibilité du log. Les valeurs possibles sont, par ordre croissant d'importance : DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. La valeur par défaut est INFO."
 
 #: app/lib/ca/Utils/CLIUtils.php:1454
 msgid "Switches to RDF export mode. You can use this to assemble record-level exports across authorities with multiple mappings in a single export (usually an RDF graph). -s, -i and -m are ignored and -c is required."
@@ -6218,7 +6218,7 @@ msgstr "Modification des permissions pour le répertoire média (media) pour fix
 
 #: app/lib/ca/Utils/CLIUtils.php:1736
 msgid "Fixing permissions for the HTMLPurifier definition cache directory (vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer) for ownership by \"%1\"..."
-msgstr ""
+msgstr "Modification des permissions pour le répertoire de cache des définitions de HTMLPurifier (vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer) pour fixer %1 comme propriétaire..."
 
 #: app/lib/ca/Utils/CLIUtils.php:1753
 msgid "Set ownership of directories to specifed user. If not set, an attempt will be made to determine the name of the web server user automatically. If the web server user cannot be determined the current user will be used."
@@ -6407,7 +6407,7 @@ msgstr "Vérification de la représentation %1"
 
 #: app/lib/ca/Utils/CLIUtils.php:2523
 msgid "[Object representation][MD5 mismatch] %1; version %2 [%3]"
-msgstr ""
+msgstr "[Représentation][Différence dans les signatures MD5] %1; version %2 [%3]"
 
 #: app/lib/ca/Utils/CLIUtils.php:2531
 msgid "Object representation"
@@ -6607,7 +6607,7 @@ msgstr "Quelle correspondance à utiliser pour réimporter les enregistrements U
 
 #: app/lib/ca/Utils/CLIUtils.php:3187
 msgid "Reload records imported from ULAN with the specified mapping."
-msgstr ""
+msgstr "Recharge des enregistrements importés de ULAN avec la correspondance spécifiée."
 
 #: app/lib/ca/Utils/CLIUtils.php:3194
 msgid "Reload records imported from ULAN with the specified mapping. This utility assumes that the mapping is set up with an existingRecordPolicy that ensures that existing records are matched properly. It will create duplicates if it does not match existing records so be sure to test your mapping first!"
@@ -6767,15 +6767,15 @@ msgstr "Impossible de connecter l'utilisateur %1 après authentification de la b
 
 #: app/lib/core/Auth/BaseAuthAdapter.php:46
 msgid "Authentication back-end doesn't support creating new users programmatically."
-msgstr ""
+msgstr "L'adaptateur d'authentification ne supporte pas la création de nouveaux utilisateurs par programmation."
 
 #: app/lib/core/Auth/BaseAuthAdapter.php:70
 msgid "Authentication back-end doesn't support deleting users programmatically."
-msgstr ""
+msgstr "L'adaptateur d'authentification ne supporte pas la suppressions des utilisateurs par programmation."
 
 #: app/lib/core/Auth/BaseAuthAdapter.php:83
 msgid "Authentication back-end doesn't updating existing users programmatically."
-msgstr ""
+msgstr "L'adaptateur d'authentification ne supporte pas la mise à jour des utilisateurs par programmation."
 
 #: app/lib/core/BaseModel.php:897 app/lib/core/Search/SearchEngine.php:513 app/models/ca_data_exporter_items.php:296 app/models/ca_data_exporter_items.php:310 app/models/ca_data_exporter_items.php:324 app/models/ca_data_exporter_items.php:469 app/models/ca_data_exporter_items.php:483 app/models/ca_data_exporter_items.php:497 app/models/ca_data_importer_items.php:232 app/models/ca_data_importer_items.php:272 app/models/ca_data_importer_items.php:312 app/models/ca_data_importers.php:344 app/models/ca_data_importers.php:357 app/models/ca_editor_ui_screens.php:443 app/models/ca_editor_ui_screens.php:500 app/models/ca_list_items.php:244 app/models/ca_list_items.php:259 app/models/ca_list_items.php:274 app/models/ca_list_items.php:289 app/models/ca_list_items.php:304 app/models/ca_list_items.php:319 app/models/ca_list_items.php:334 app/models/ca_list_items.php:349 app/models/ca_list_items.php:364 app/models/ca_list_items.php:379 themes/default/views/administrate/setup/locale_list_html.php:74
 msgid "yes"
@@ -7023,7 +7023,7 @@ msgstr "Impossible de mettre dans la fille d'attente de réplication '%1' pour l
 
 #: app/lib/core/BaseModel.php:5160 app/lib/core/Plugins/TaskQueueHandlers/mediaReplication.php:125 app/lib/core/Plugins/TaskQueueHandlers/mediaReplication.php:127
 msgid "Could not record replication status: %1 has no media description data"
-msgstr ""
+msgstr "Impossible d'enregistrer le statut de réplication : %1 n'a pas de données de description de média"
 
 #: app/lib/core/BaseModel.php:5180 app/lib/core/Plugins/TaskQueueHandlers/mediaReplication.php:155 app/lib/core/Plugins/TaskQueueHandlers/mediaReplication.php:157
 msgid "Media replication for %1 failed"
@@ -10319,7 +10319,7 @@ msgstr "Ignorer si expression"
 
 #: app/models/ca_data_exporter_items.php:338
 msgid "The current mapping is skipped if the given expression evaluates to true."
-msgstr ""
+msgstr "La correspondance est ignorée si l'expression est vraie."
 
 #: app/models/ca_data_exporter_items.php:358 app/models/ca_data_importer_items.php:213
 msgid "Original values"
@@ -11851,7 +11851,7 @@ msgstr "Import terminé"
 
 #: app/models/ca_data_importers.php:2622
 msgid "Rollback successful import run in \"dry run\" mode"
-msgstr "Revenir à l'état précédent un import réussi dans le mode \"dry run\""
+msgstr "Revenir à l'état précédent un import réussi dans le mode \"Répétition\""
 
 #: app/models/ca_editor_ui_bundle_placement_type_restrictions.php:46
 msgid "editor ui bundle placement type restriction"
@@ -13763,7 +13763,7 @@ msgstr "Tableau sérialisé utilisé pour stocker la source d'information pour l
 
 #: app/models/ca_movements.php:104
 msgid "Indicates if movement information is accessible to the public or not. "
-msgstr ""
+msgstr "Indique si l'information du mouvement est accessible ou non pour le public."
 
 #: app/models/ca_movements.php:120
 msgid "Indicates the current state of the movement record."
@@ -13879,7 +13879,7 @@ msgstr "code du prêt"
 
 #: app/models/ca_object_checkouts.php:57
 msgid "Unique numeric identifier used by CollectiveAccess internally to identify this object checkout entry"
-msgstr ""
+msgstr "Identifiant numérique unique utilisé par CollectiveAccess de manière interne pour identifier cet emprunt d'objet"
 
 #: app/models/ca_object_checkouts.php:80
 msgid "The user who checked out the object."
@@ -14019,7 +14019,7 @@ msgstr "Indique l'état courant de l'enregistrement de lot d'objet."
 
 #: app/models/ca_object_lots.php:134
 msgid "Administrative source of lot. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed."
-msgstr ""
+msgstr "La source administrative du lot d'objet. Cette valeur est souvent utilisée pour indiquer la subdivision administration ou la base de données d'origine dont le lot est issu, mais peut aussi être réutilisé comme outil simple de classification au besoin."
 
 #: app/models/ca_object_lots.php:148
 msgid "Indicates if the object lot is deleted or not."
@@ -14367,7 +14367,7 @@ msgstr "Classe de l'emplacement courant"
 
 #: app/models/ca_objects.php:179
 msgid "Indicates classification of last location for objects (eg. storage location, occurrence, loan, movement)"
-msgstr ""
+msgstr "Indique la classification du dernier emplacement connu de l'objet (par exemple emplacement de stockage, occurrence, prêt, mouvement)"
 
 #: app/models/ca_objects.php:186
 msgid "Current location sub-class"
@@ -14375,11 +14375,11 @@ msgstr "Sous-classe de l'emplacement courant"
 
 #: app/models/ca_objects.php:186
 msgid "Indicates sub-classification of last location for objects (eg. storage location relationship type, occurrence type, loan type, movement)"
-msgstr ""
+msgstr "Indique la sous-classification du dernier emplacement connu de l'objet (par exemple type de relation à l'emplacement de stockage, type d'occurrence, type de prêt, type de mouvement)"
 
 #: app/models/ca_objects.php:193
 msgid "Reference to record recording details of current object location."
-msgstr ""
+msgstr "Référence à l'enregistrement contenant les détails l'emplacement courant de l'objet."
 
 #: app/models/ca_objects.php:201
 msgid "Indicates accession/collection status of object. (eg. accessioned, pending accession, loan, non-accessioned item, etc.)"
@@ -14423,15 +14423,15 @@ msgstr "Détermine si les droits d'accès définis pour les collections liées s
 
 #: app/models/ca_objects.php:313
 msgid "Do not inherit item-level access control settings from parent"
-msgstr ""
+msgstr "Ne pas hériter le contrôle d'accès individuel de l'enregistrement à partir de l'objet parent"
 
 #: app/models/ca_objects.php:314
 msgid "Inherit item-level access control settings from parent"
-msgstr ""
+msgstr "Hériter le contrôle d'accès individuel de l'enregistrement à partir de l'objet parent"
 
 #: app/models/ca_objects.php:316
 msgid "Inherit item-level access control settings from parent?"
-msgstr ""
+msgstr "Hériter le contrôle d'accès individuel de l'enregistrement à partir de l'objet parent ?"
 
 #: app/models/ca_objects.php:316
 msgid "Determines whether item-level access control settings set for parent object is applied to this object."
@@ -15675,19 +15675,19 @@ msgstr "Adresse email invalide"
 
 #: app/models/ca_users.php:391
 msgid "Current authentication adapter does not support creating new users."
-msgstr ""
+msgstr "L'adaptateur d'authentification courant ne supporte pas la création de nouveaux utilisateurs."
 
 #: app/models/ca_users.php:398
 msgid "Authentication adapter could not create user. Message was: %1"
-msgstr ""
+msgstr "L'adaptateur d'authentification ne peut pas créer l'utilisateur. Le message retourné est : %1"
 
 #: app/models/ca_users.php:470
 msgid "Authentication adapter could not delete user. Message was: %1"
-msgstr ""
+msgstr "L'adaptateur d'authentification ne peut pas supprimer l'utilisateur. Le message retourné est : %1"
 
 #: app/models/ca_users.php:487
 msgid "Authentication back-end doesn't updating passwords of existing users."
-msgstr ""
+msgstr "L'adaptateur d'authentification courant ne supporte pas la modification des mots de passe pour les utilisateurs existants."
 
 #: app/models/ca_users.php:724
 msgid "Users"
@@ -16015,7 +16015,7 @@ msgstr "L'utilisateur avec l'id %1 n'existe pas"
 
 #: app/plugins/libraryServices/libraryServicesPlugin.php:115
 msgid "Invalid interval (%1) specified for coming due notices"
-msgstr ""
+msgstr "Intervalle invalide (%1) pour les notifications de retard"
 
 #: app/plugins/libraryServices/libraryServicesPlugin.php:127
 msgid "Notice of overdue items"
@@ -16111,23 +16111,23 @@ msgstr "Création de la bobine pour %1"
 
 #: app/plugins/pbcTools/lib/pbcImportSIPTool.php:254
 msgid "Could not add reel record %1: %2"
-msgstr ""
+msgstr "Impossible d'ajouter l'enregistrement de la bobine %1: %2"
 
 #: app/plugins/pbcTools/lib/pbcImportSIPTool.php:260
 msgid "Could not add label to reel record %1: %2"
-msgstr ""
+msgstr "Impossible d'ajouter le titre à l'enregistrement de la bobine %1 : %2"
 
 #: app/plugins/pbcTools/lib/pbcImportSIPTool.php:264
 msgid "Could not add artifct media %1 to reel %2: %3"
-msgstr ""
+msgstr "Impossible d'ajouter l'artefact %1 à la bobine %2 : %3"
 
 #: app/plugins/pbcTools/lib/pbcImportSIPTool.php:267
 msgid "Found existing reel record %1 for %2"
-msgstr ""
+msgstr "Trouvé l'enregistrement de bobine %1 pour %2"
 
 #: app/plugins/pbcTools/lib/pbcImportSIPTool.php:288
 msgid "Could not add remove existing media from reel %1: %2"
-msgstr ""
+msgstr "Impossible de supprimer le média existante pour la bobine %1 : %2"
 
 #: app/plugins/pbcTools/lib/pbcImportSIPTool.php:291
 msgid "Linking artifact images for %1"
@@ -16143,7 +16143,7 @@ msgstr "Image artefact %1 ajouté pour %2"
 
 #: app/plugins/pbcTools/lib/pbcImportSIPTool.php:299
 msgid "Could not add artifact media %1 to reel %2: %3"
-msgstr ""
+msgstr "Impossible d'ajouter l'artefact %1 à la bobine %2 : %3"
 
 #: app/plugins/pbcTools/lib/pbcImportSIPTool.php:309
 msgid "Adding XML for %1"
@@ -16155,7 +16155,7 @@ msgstr "Traitement XML %1"
 
 #: app/plugins/pbcTools/lib/pbcImportSIPTool.php:323
 msgid "Could not import XML file %1 into reel %2: %3"
-msgstr ""
+msgstr "Impissible d'importer le fichier XML %1 dans la bobine %2 : %3"
 
 #: app/plugins/pbcTools/lib/pbcImportSIPTool.php:330
 msgid "Creating tracks for %1"
@@ -16175,11 +16175,11 @@ msgstr "Impossible d'ajouter la piste %1 : %2"
 
 #: app/plugins/pbcTools/lib/pbcImportSIPTool.php:362
 msgid "Could not add label to track %1: %2"
-msgstr ""
+msgstr "Impossible d'ajouter le titre à la piste %1 : %2"
 
 #: app/plugins/pbcTools/lib/pbcImportSIPTool.php:365
 msgid "Found existing track record %1 for %2"
-msgstr ""
+msgstr "Piste existante %1 trouvée pour %2"
 
 #: app/plugins/pbcTools/lib/pbcImportSIPTool.php:378
 msgid "Adding track audio for %1"
@@ -16187,7 +16187,7 @@ msgstr "Ajout de la piste audio pour %1"
 
 #: app/plugins/pbcTools/lib/pbcImportSIPTool.php:383
 msgid "Could not import audio file %1 into track %2: %3"
-msgstr ""
+msgstr "Impissible d'importer le fichier audio%1 dans la piste %2 : %3"
 
 #: app/plugins/pbcTools/lib/pbcImportSIPTool.php:395
 msgid "Deleting SIP %1"
@@ -16199,11 +16199,11 @@ msgstr "Fin de l'import SIP"
 
 #: app/plugins/pbcTools/lib/pbcImportSIPTool.php:422
 msgid "Import PBC SIP audio digitization packages into CollectiveAccess"
-msgstr ""
+msgstr "Importe des paquets audio PBC SIP dans CollectiveAccess"
 
 #: app/plugins/pbcTools/lib/pbcImportSIPTool.php:436
 msgid "Import PBC SIP audio digitization packages into CollectiveAccess."
-msgstr ""
+msgstr "Importe des paquets audio PBC SIP dans CollectiveAccess."
 
 #: app/plugins/pbcTools/pbcToolsPlugin.php:43
 msgid "Tools for the PBC project."
@@ -16215,7 +16215,7 @@ msgstr "Répertoire de transcription"
 
 #: app/plugins/pier21Tools/lib/pier21OralHistoryImportTool.php:86
 msgid "Directory containing transcripts to import."
-msgstr ""
+msgstr "Répertoire contenant les transcriptions à importer."
 
 #: app/plugins/pier21Tools/lib/pier21OralHistoryImportTool.php:94
 msgid "Audio directory"
@@ -16223,7 +16223,7 @@ msgstr "Répertoire audio"
 
 #: app/plugins/pier21Tools/lib/pier21OralHistoryImportTool.php:95
 msgid "Directory containing digital audio to import."
-msgstr ""
+msgstr "Répertoire contenant les données audio numériques à importer"
 
 #: app/plugins/pier21Tools/lib/pier21OralHistoryImportTool.php:119
 msgid "Transcript directory %1 is not readable"
@@ -16243,7 +16243,7 @@ msgstr "Importe les données audio + transcription d'histoire orale numérisée 
 
 #: app/plugins/pier21Tools/lib/pier21OralHistoryImportTool.php:332
 msgid "Import Pier21 digitized oral history audio + transcripts CollectiveAccess. You must specify the directories for each type of file."
-msgstr ""
+msgstr "Importe les données audio + transcription d'histoire orale numérisée Pier 21. Vous devez spécifier les répertoires pour chaque type de fichier."
 
 #: app/plugins/pier21Tools/pier21ToolsPlugin.php:43
 msgid "Tools for Pier 21."
@@ -16251,7 +16251,7 @@ msgstr "Outils pour Pier 21"
 
 #: app/plugins/relationshipGenerator/relationshipGeneratorPlugin.php:77
 msgid "Automatically assigns an object to a collection, based upon rules you specify in the configuration file associated with the plugin"
-msgstr ""
+msgstr "Assigne automatiquement un objet à une collection, à partir des règles que vous spéficiez dans le fichier de configuration du plugin"
 
 #: app/plugins/relationshipGenerator/relationshipGeneratorPlugin.php:85 tests/plugins/relationshipGenerator/RelationshipGeneratorPluginConfigurationTest.php:60 tests/plugins/relationshipGenerator/RelationshipGeneratorPluginConfigurationTest.php:61 tests/plugins/relationshipGenerator/RelationshipGeneratorPluginConfigurationTest.php:62 tests/plugins/relationshipGenerator/RelationshipGeneratorPluginConfigurationTest.php:63 tests/plugins/relationshipGenerator/RelationshipGeneratorPluginConfigurationTest.php:64 tests/plugins/relationshipGenerator/RelationshipGeneratorPluginConfigurationTest.php:77 tests/plugins/relationshipGenerator/RelationshipGeneratorPluginConfigurationTest.php:92
 msgid "top level"
@@ -16264,15 +16264,15 @@ msgstr "règle %1"
 
 #: app/plugins/relationshipGenerator/relationshipGeneratorPlugin.php:103 tests/plugins/relationshipGenerator/RelationshipGeneratorPluginConfigurationTest.php:79 tests/plugins/relationshipGenerator/RelationshipGeneratorPluginConfigurationTest.php:94
 msgid "trigger field %1 on rule %2"
-msgstr ""
+msgstr "active le champ %1 selon la règle %2"
 
 #: app/plugins/relationshipGenerator/relationshipGeneratorPlugin.php:503
 msgid "Required configuration item `%1` missing from %2"
-msgstr ""
+msgstr "Élément de configuration requis '%1' manquant pour '%2'"
 
 #: app/plugins/relationshipGenerator/relationshipGeneratorPlugin.php:506
 msgid "Configuration item `%1` in %2 has incorrect type %3, expected %4"
-msgstr ""
+msgstr "L'élément de configuration '%1' dans '%2' a un type incorrect %3, %4 attendu"
 
 #: app/plugins/relationshipGenerator/relationshipGeneratorPlugin.php:511
 msgid "Configuration item `%1` in %2 has value \"%3\", which is an invalid %4"
@@ -16344,7 +16344,7 @@ msgstr "L'intégration Viméo est désormais configurée et prête à l'emploi !
 
 #: app/plugins/vimeo/views/auth_html.php:40
 msgid "If you authorized our app on the Vimeo page, please enter the verification code here."
-msgstr ""
+msgstr "Si vous avez autorisé l'app sur la page Viméo, veuillez saisir ici le code de vérification."
 
 #: app/plugins/vimeo/views/auth_html.php:44 themes/default/views/system/forgot_password_html.php:65 themes/default/views/system/password_reset_form_html.php:89
 msgid "Submit"
@@ -16352,7 +16352,7 @@ msgstr "Valider"
 
 #: app/plugins/vimeo/views/auth_html.php:48
 msgid "Here is the link to the Vimeo authorization page again: %1"
-msgstr ""
+msgstr "Voici le lien vers la page d'autorisation Viméo : %1"
 
 #: app/plugins/vimeo/views/auth_html.php:56
 msgid "You need to go to the Vimeo page and authorize our app to use your account."
@@ -16396,7 +16396,7 @@ msgstr "indéfini"
 
 #: app/printTemplates/summary/pdfStart.php:40
 msgid "Summary for %1 (%2)"
-msgstr ""
+msgstr "Résumé pour %1 (%2)"
 
 #: app/refineries/ATEntityGetter/ATEntityGetterRefinery.php:37
 msgid "Archivists Toolkit Entity getting"
@@ -16552,7 +16552,7 @@ msgstr "Construit une hiérarchie pour les collections."
 
 #: app/refineries/collectionHierarchyBuilder/collectionHierarchyBuilderRefinery.php:69
 msgid "collectionHierarchyBuilder refinery may only be used in imports to ca_collections"
-msgstr ""
+msgstr "Le traitement collectionHierarchyBuilder ne peut être utilisé que pour les imports dans ca_collections"
 
 #: app/refineries/collectionHierarchyBuilder/collectionHierarchyBuilderRefinery.php:108 app/refineries/collectionSplitter/collectionSplitterRefinery.php:146 app/refineries/entityHierarchyBuilder/entityHierarchyBuilderRefinery.php:107 app/refineries/entitySplitter/entitySplitterRefinery.php:145 app/refineries/listItemHierarchyBuilder/listItemHierarchyBuilderRefinery.php:117 app/refineries/listItemSplitter/listItemSplitterRefinery.php:176 app/refineries/loanSplitter/loanSplitterRefinery.php:135 app/refineries/movementSplitter/movementSplitterRefinery.php:134 app/refineries/objectHierarchyBuilder/objectHierarchyBuilderRefinery.php:108 app/refineries/objectSplitter/objectSplitterRefinery.php:135 app/refineries/occurrenceHierarchyBuilder/occurrenceHierarchyBuilderRefinery.php:108 app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:134 app/refineries/placeHierarchyBuilder/placeHierarchyBuilderRefinery.php:117 app/refineries/placeSplitter/placeSplitterRefinery.php:157 app/refineries/storageLocationHierarchyBuilder/storageLocationHierarchyBuilderRefinery.php:108 app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:156
 msgid "Parents"
@@ -16584,7 +16584,7 @@ msgstr "Ne pas créer de nouveaux enregistrements"
 
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:102 app/refineries/entitySplitter/entitySplitterRefinery.php:110 app/refineries/listItemSplitter/listItemSplitterRefinery.php:114 app/refineries/loanSplitter/loanSplitterRefinery.php:100 app/refineries/movementSplitter/movementSplitterRefinery.php:99 app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:100 app/refineries/objectSplitter/objectSplitterRefinery.php:100 app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:99 app/refineries/placeSplitter/placeSplitterRefinery.php:122 app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:103 app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:198
 msgid "If set splitter will only match on existing records and will not create new ones."
-msgstr ""
+msgstr "Si défini, le traitement ne fera une correspondance que sur les enregistrements déjà existants et ne créera pas de nouveaux enregistrements."
 
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:120
 msgid "Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.  Note for object data: if the relationship type matches that set as the hierarchy control, the object will be pulled in as a \"child\" element in the collection hierarchy."
@@ -16604,7 +16604,7 @@ msgstr "Défini ou fait correspondre les métadonnées de la collection en fonct
 
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:147
 msgid "Collection parents to create, if required"
-msgstr "Parents de la collection à créer, si requis"
+msgstr "Parents de la collection à créer, si nécessaire"
 
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:164 app/refineries/tourMaker/tourMakerRefinery.php:187
 msgid "Collection type default"
@@ -16624,7 +16624,7 @@ msgstr ""
 
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:183
 msgid "List of non-preferred labels to apply to collections."
-msgstr ""
+msgstr "Liste des titres secondaires à appliquer aux collections."
 
 #: app/refineries/dateAccuracyJoiner/dateAccuracyJoinerRefinery.php:34
 msgid "Date Accuracy"
@@ -16648,7 +16648,7 @@ msgstr "Format de date"
 
 #: app/refineries/dateAccuracyJoiner/dateAccuracyJoinerRefinery.php:120
 msgid "The format in which the input dates are expected"
-msgstr ""
+msgstr "Le format dans lequel la saisie des dates est attendue"
 
 #: app/refineries/dateAccuracyJoiner/dateAccuracyJoinerRefinery.php:128
 msgid "Date Accuracy Value: Day"
@@ -16684,11 +16684,11 @@ msgstr "Définit la valeur qui doit être retournée si la date d'entrée ne peu
 
 #: app/refineries/dateAccuracyJoiner/dateAccuracyJoinerRefinery.php:164
 msgid "Unknown Accuracy Value Return Mode"
-msgstr ""
+msgstr "Niveau de précision de la date inconnu"
 
 #: app/refineries/dateAccuracyJoiner/dateAccuracyJoinerRefinery.php:165
 msgid "Defines what should be returned if the value of the accuracy column is unknown, available values are \"null\", \"original\" and \"normalised\" (the default)"
-msgstr ""
+msgstr "Définit la valeur qui doit être retournée si la valeur de précision de la date est inconnue, les valeurs disponibles sont \"null\", \"original\" (valeur d'origine) et \"normalised\" (par défaut)"
 
 #: app/refineries/dateJoiner/dateJoinerRefinery.php:38
 msgid "Date joiner"
@@ -16752,7 +16752,7 @@ msgstr "Ignore la date de début si l'expression est vraie"
 
 #: app/refineries/dateJoiner/dateJoinerRefinery.php:250
 msgid "Omits start date from range if specified expression is true. (For Two-column range)."
-msgstr ""
+msgstr "Ignore la date de début si l'expression spécifiée est vérifiée. (Pour les plages de dates sur deux colonnes)"
 
 #: app/refineries/dateJoiner/dateJoinerRefinery.php:259
 msgid "Skip start date replacement value"
@@ -16760,7 +16760,7 @@ msgstr "Ignorer la valeur de remplacement pour la date de début"
 
 #: app/refineries/dateJoiner/dateJoinerRefinery.php:260
 msgid "Value to replace start date with when start date is skipped. (For Two-column range)."
-msgstr ""
+msgstr "Valeur pour remplacer la date de début si la date de début est ignorée (pour les plages de date sur deux colonnes)"
 
 #: app/refineries/dateJoiner/dateJoinerRefinery.php:268
 msgid "Date end"
@@ -16776,7 +16776,7 @@ msgstr "Ignore la date de fin si l'expression est vraie"
 
 #: app/refineries/dateJoiner/dateJoinerRefinery.php:278
 msgid "Omits end date from range if specified expression is true. (For Two-column range)."
-msgstr ""
+msgstr "Ignore la date de fin si l'expression spécifiée est vérifiée. (Pour les plages de dates sur deux colonnes)"
 
 #: app/refineries/dateJoiner/dateJoinerRefinery.php:286
 msgid "Skip end date replacement value"
@@ -16868,7 +16868,7 @@ msgstr "Construit une hiérarchie pour les entités"
 
 #: app/refineries/entityHierarchyBuilder/entityHierarchyBuilderRefinery.php:68
 msgid "entityHierarchyBuilder refinery may only be used in imports to ca_entities"
-msgstr ""
+msgstr "Le traitement entityHierarchyBuilder ne peut être utilisé que pour les imports dans ca_entities"
 
 #: app/refineries/entityHierarchyBuilder/entityHierarchyBuilderRefinery.php:108
 msgid "entity parents to create"
@@ -16960,7 +16960,7 @@ msgstr ""
 
 #: app/refineries/entitySplitter/entitySplitterRefinery.php:146
 msgid "Entity parents to create, if required"
-msgstr "Parents de l'entité à créer, si requis"
+msgstr "Parents de l'entité à créer, si nécessaire"
 
 #: app/refineries/entitySplitter/entitySplitterRefinery.php:191
 msgid "List of non-preferred labels to apply to entities."
@@ -16976,7 +16976,7 @@ msgstr "Construit une hiérarchie pour les éléments de liste"
 
 #: app/refineries/listItemHierarchyBuilder/listItemHierarchyBuilderRefinery.php:69
 msgid "listItemHierarchyBuilder refinery may only be used in imports to ca_list_items"
-msgstr ""
+msgstr "Le traitement listItemHierarchyBuilder peut uniquement être utilisé pour les imports dans ca_list_items"
 
 #: app/refineries/listItemHierarchyBuilder/listItemHierarchyBuilderRefinery.php:109 app/refineries/listItemSplitter/listItemSplitterRefinery.php:150
 msgid "List to add items to"
@@ -17004,15 +17004,15 @@ msgstr ""
 
 #: app/refineries/listItemIndentedHierarchyBuilder/listItemIndentedHierarchyBuilderRefinery.php:108
 msgid "listItemIndentedHierarchyBuilder requires list option be set"
-msgstr ""
+msgstr "listItemIndentedHierarchyBuilder nécessite que la liste soit définie dans les options"
 
 #: app/refineries/listItemIndentedHierarchyBuilder/listItemIndentedHierarchyBuilderRefinery.php:121
 msgid "listItemIndentedHierarchyBuilder could not create list %1: %2"
-msgstr ""
+msgstr "listItemIndentedHierarchyBuilder n'a pas pu créer la liste %1: %2"
 
 #: app/refineries/listItemIndentedHierarchyBuilder/listItemIndentedHierarchyBuilderRefinery.php:129
 msgid "listItemIndentedHierarchyBuilder could not create list label %1: %2"
-msgstr ""
+msgstr "listItemIndentedHierarchyBuilder ne peut pas créer le titre de liste %1: %2"
 
 #: app/refineries/listItemIndentedHierarchyBuilder/listItemIndentedHierarchyBuilderRefinery.php:191
 msgid "Levels"
@@ -17060,7 +17060,7 @@ msgstr "Fournit différentes fonctionnalités pour l'import d'éléments de list
 
 #: app/refineries/listItemSplitter/listItemSplitterRefinery.php:69
 msgid "[listItemSplitterRefinery] Could not find list %1; item was skipped"
-msgstr ""
+msgstr "[listItemSplitterRefinery] Impossible de trouver la liste %1 ; l'élément a été ignoré"
 
 #: app/refineries/listItemSplitter/listItemSplitterRefinery.php:131
 msgid "List item type"
@@ -17088,7 +17088,7 @@ msgstr "Définit le type de collection par défaut qui sera utilisé si aucun n'
 
 #: app/refineries/listItemSplitter/listItemSplitterRefinery.php:177
 msgid "List item parents to create, if required"
-msgstr "Parents des éléments de liste à créer, si requis"
+msgstr "Parents des éléments de liste à créer, si nécessaire"
 
 #: app/refineries/listItemSplitter/listItemSplitterRefinery.php:185 app/refineries/placeHierarchyBuilder/placeHierarchyBuilderRefinery.php:108 app/refineries/placeSplitter/placeSplitterRefinery.php:166 app/refineries/placeSplitter/placeSplitterRefinery.php:175 themes/default/views/administrate/setup/Search/search_controls_html.php:62 themes/default/views/find/Search/search_controls_html.php:63
 msgid "Hierarchy"
@@ -17096,7 +17096,7 @@ msgstr "Hiérarchie"
 
 #: app/refineries/listItemSplitter/listItemSplitterRefinery.php:186
 msgid "List hierarchy to create, if required"
-msgstr "Hiérarchie de liste à créer, si requis"
+msgstr "Hiérarchie de liste à créer, si nécessaire"
 
 #: app/refineries/listItemSplitter/listItemSplitterRefinery.php:195
 msgid "Sets or maps metadata for the interstitial vocabulary <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
@@ -17104,7 +17104,7 @@ msgstr ""
 
 #: app/refineries/listItemSplitter/listItemSplitterRefinery.php:204
 msgid "List of non-preferred labels to apply to list items."
-msgstr ""
+msgstr "Liste des titres secondaires à appliquer aux éléments de liste."
 
 #: app/refineries/loanSplitter/loanSplitterRefinery.php:35
 msgid "Loan splitter"
@@ -17128,7 +17128,7 @@ msgstr "Défini ou fait correspondre les métadonnées de la collection en fonct
 
 #: app/refineries/loanSplitter/loanSplitterRefinery.php:136
 msgid "Loan parents to create, if required"
-msgstr "Parents du prêt à créer, si requis"
+msgstr "Parents du prêt à créer, si nécessaire"
 
 #: app/refineries/loanSplitter/loanSplitterRefinery.php:153
 msgid "Loan type default"
@@ -17144,7 +17144,7 @@ msgstr ""
 
 #: app/refineries/loanSplitter/loanSplitterRefinery.php:172
 msgid "List of non-preferred labels to apply to loans."
-msgstr ""
+msgstr "Liste des titres secondaires à appliquer aux prêts."
 
 #: app/refineries/measurementsSplitter/measurementsSplitterRefinery.php:37
 msgid "Measurement splitter"
@@ -17172,7 +17172,7 @@ msgstr "Liste d'élément"
 
 #: app/refineries/movementSplitter/movementSplitterRefinery.php:35
 msgid "Movement splitter"
-msgstr ""
+msgstr "Séparateur de mouvement"
 
 #: app/refineries/movementSplitter/movementSplitterRefinery.php:36
 msgid "Provides several movement-related import functions: splitting of multiple movements in a string into individual values, mapping of type and relationship type for related movements, and merging movement data with movement names."
@@ -17184,7 +17184,7 @@ msgstr ""
 
 #: app/refineries/movementSplitter/movementSplitterRefinery.php:116
 msgid "movement type"
-msgstr ""
+msgstr "type de mouvement"
 
 #: app/refineries/movementSplitter/movementSplitterRefinery.php:117
 msgid "Accepts a constant list item idno from the list movement_types or a reference to the location in the data source where the type can be found."
@@ -17196,11 +17196,11 @@ msgstr ""
 
 #: app/refineries/movementSplitter/movementSplitterRefinery.php:135
 msgid "movement parents to create, if required"
-msgstr ""
+msgstr "Parents du mouvement à créer, si nécessaire"
 
 #: app/refineries/movementSplitter/movementSplitterRefinery.php:152
 msgid "movement type default"
-msgstr ""
+msgstr "Type de mouvement par défaut"
 
 #: app/refineries/movementSplitter/movementSplitterRefinery.php:153
 msgid "Sets the default movement type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list movement_types."
@@ -17212,35 +17212,35 @@ msgstr ""
 
 #: app/refineries/movementSplitter/movementSplitterRefinery.php:171
 msgid "List of non-preferred labels to apply to movements."
-msgstr ""
+msgstr "Liste des titres secondaires à appliquer aux mouvements."
 
 #: app/refineries/objectHierarchyBuilder/objectHierarchyBuilderRefinery.php:37
 msgid "object hierarchy builder"
-msgstr ""
+msgstr "constructeur de hiérarchie pour les objets"
 
 #: app/refineries/objectHierarchyBuilder/objectHierarchyBuilderRefinery.php:38
 msgid "Builds an object hierarchy."
-msgstr ""
+msgstr "Construit une hiérarchie pour les objets"
 
 #: app/refineries/objectHierarchyBuilder/objectHierarchyBuilderRefinery.php:69
 msgid "objectHierarchyBuilder refinery may only be used in imports to ca_objects"
-msgstr ""
+msgstr "Le post-traitement objectHierarchyBuilder ne peut être utilisé que pour les imports dans ca_objects"
 
 #: app/refineries/objectHierarchyBuilder/objectHierarchyBuilderRefinery.php:109
 msgid "object parents to create"
-msgstr ""
+msgstr "parents de l'objet à créer"
 
 #: app/refineries/objectHierarchyBuilder/objectHierarchyBuilderRefinery.php:117
 msgid "Do not match on label"
-msgstr ""
+msgstr "Pas de correspondance sur le titre"
 
 #: app/refineries/objectHierarchyBuilder/objectHierarchyBuilderRefinery.php:118
 msgid "set to prohibit matching using label"
-msgstr ""
+msgstr "ensemble à exclure de la correspondance par titre"
 
 #: app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:35
 msgid "Object lot splitter"
-msgstr ""
+msgstr "Séparateur de lot d'objets"
 
 #: app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:36
 msgid "Provides several lot-related import functions: splitting of multiple lots in a string into individual values, mapping of type and relationship type for related lots, and merging lot data with lot names."
@@ -17248,7 +17248,7 @@ msgstr ""
 
 #: app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:117
 msgid "Lot type"
-msgstr ""
+msgstr "Type de lot"
 
 #: app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:118
 msgid "Accepts a constant list item idno from the list object_lot_types or a reference to the location in the data source where the type can be found."
@@ -17256,7 +17256,7 @@ msgstr ""
 
 #: app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:126
 msgid "Lot status"
-msgstr ""
+msgstr "Statut du lot"
 
 #: app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:127
 msgid "Accepts a constant list item idno from the list object_lot_statuses or a reference to the location in the data source where the status can be found."
@@ -17268,7 +17268,7 @@ msgstr ""
 
 #: app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:153
 msgid "Lot type default"
-msgstr ""
+msgstr "Type de lot par défaut"
 
 #: app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:154
 msgid "Sets the default lot type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list object_lot_types."
@@ -17276,7 +17276,7 @@ msgstr ""
 
 #: app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:162
 msgid "Lot status default"
-msgstr ""
+msgstr "Statut par défaut du lot"
 
 #: app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:163
 msgid "Sets the default lot status that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list object_lot_statuses."
@@ -17288,15 +17288,15 @@ msgstr ""
 
 #: app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:181
 msgid "List of non-preferred labels to apply to lots."
-msgstr ""
+msgstr "Liste des titres secondaires à appliquer aux lots."
 
 #: app/refineries/objectRepresentationSplitter/objectRepresentationSplitterRefinery.php:35
 msgid "Object representation splitter"
-msgstr ""
+msgstr "Séparateur de représentations"
 
 #: app/refineries/objectRepresentationSplitter/objectRepresentationSplitterRefinery.php:36
 msgid "Splits object representations"
-msgstr ""
+msgstr "Sépare les représentations d'objet"
 
 #: app/refineries/objectRepresentationSplitter/objectRepresentationSplitterRefinery.php:99 app/refineries/objectSplitter/objectSplitterRefinery.php:117
 msgid "Object type"
@@ -17312,7 +17312,7 @@ msgstr ""
 
 #: app/refineries/objectRepresentationSplitter/objectRepresentationSplitterRefinery.php:117 app/refineries/objectSplitter/objectSplitterRefinery.php:153
 msgid "Object type default"
-msgstr ""
+msgstr "Type d'objet par défaut"
 
 #: app/refineries/objectRepresentationSplitter/objectRepresentationSplitterRefinery.php:118
 msgid "Sets the default object representation type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list object_types."
@@ -17324,15 +17324,15 @@ msgstr ""
 
 #: app/refineries/objectRepresentationSplitter/objectRepresentationSplitterRefinery.php:135
 msgid "Media prefix"
-msgstr ""
+msgstr "Préfixe pour les médias"
 
 #: app/refineries/objectSplitter/objectSplitterRefinery.php:35
 msgid "Object splitter"
-msgstr ""
+msgstr "Séparateur d'objets"
 
 #: app/refineries/objectSplitter/objectSplitterRefinery.php:36
 msgid "Splits objects"
-msgstr ""
+msgstr "Sépare les objets"
 
 #: app/refineries/objectSplitter/objectSplitterRefinery.php:109
 msgid "Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.  Note for object data: if the relationship type matches that set as the hierarchy control, the object will be pulled in as a \"child\" element in the object hierarchy."
@@ -17344,7 +17344,7 @@ msgstr ""
 
 #: app/refineries/objectSplitter/objectSplitterRefinery.php:136
 msgid "Object parents to create, if required"
-msgstr ""
+msgstr "Parents de l'objet à créer, si nécessaire"
 
 #: app/refineries/objectSplitter/objectSplitterRefinery.php:154
 msgid "Sets the default object type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list object_types."
@@ -17356,19 +17356,19 @@ msgstr ""
 
 #: app/refineries/occurrenceHierarchyBuilder/occurrenceHierarchyBuilderRefinery.php:37
 msgid "Occurrence hierarchy builder"
-msgstr ""
+msgstr "Constructeur de hiérarchie pour les occurrences"
 
 #: app/refineries/occurrenceHierarchyBuilder/occurrenceHierarchyBuilderRefinery.php:38
 msgid "Builds an occurrence hierarchy."
-msgstr ""
+msgstr "Construit une hiérarchie pour les occurrences"
 
 #: app/refineries/occurrenceHierarchyBuilder/occurrenceHierarchyBuilderRefinery.php:69
 msgid "occurrenceHierarchyBuilder refinery may only be used in imports to ca_occurrences"
-msgstr ""
+msgstr "Le traitement occurrenceHierarchyBuilder ne peut être utilisé que pour importer dans ca_occurrences"
 
 #: app/refineries/occurrenceHierarchyBuilder/occurrenceHierarchyBuilderRefinery.php:109
 msgid "Occurrence parents to create"
-msgstr ""
+msgstr "Parents de l'occurrence à créer"
 
 #: app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:35
 msgid "Occurrence splitter"
@@ -17396,7 +17396,7 @@ msgstr "Défini ou fait correspondre les métadonnées de la collection en fonct
 
 #: app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:135
 msgid "Occurrence parents to create, if required"
-msgstr "Parents de la collection à créer, si requis"
+msgstr "Parents de la collection à créer, si nécessaire"
 
 #: app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:152
 msgid "Occurrence type default"
@@ -17412,27 +17412,27 @@ msgstr ""
 
 #: app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:171
 msgid "List of non-preferred labels to apply to occurrences."
-msgstr ""
+msgstr "Liste des titres secondaires à appliquer aux occurrences."
 
 #: app/refineries/placeHierarchyBuilder/placeHierarchyBuilderRefinery.php:37
 msgid "Place hierarchy builder"
-msgstr ""
+msgstr "Constructeur de hiérarchie pour les lieux"
 
 #: app/refineries/placeHierarchyBuilder/placeHierarchyBuilderRefinery.php:38
 msgid "Builds a place hierarchy."
-msgstr ""
+msgstr "Construit une hiérarchie pour les lieux"
 
 #: app/refineries/placeHierarchyBuilder/placeHierarchyBuilderRefinery.php:69
 msgid "placeHierarchyBuilder refinery may only be used in imports to ca_places"
-msgstr ""
+msgstr "Le traitement placeHierarchyBuilder peut uniquement être utilisé pour les imports dans ca_places"
 
 #: app/refineries/placeHierarchyBuilder/placeHierarchyBuilderRefinery.php:109
 msgid "Identifies the hierarchy (list_item id or idno) to add items to."
-msgstr ""
+msgstr "Identifie la hiérarchie (code list_item ou identifiant) pour y ajouter les éléments."
 
 #: app/refineries/placeHierarchyBuilder/placeHierarchyBuilderRefinery.php:118
 msgid "Place parents to create"
-msgstr ""
+msgstr "Parents du lieu à créer"
 
 #: app/refineries/placeSplitter/placeSplitterRefinery.php:35
 msgid "Place splitter"
@@ -17444,7 +17444,7 @@ msgstr "Fournit différentes fonctions d'import liées aux lieux : séparation d
 
 #: app/refineries/placeSplitter/placeSplitterRefinery.php:72
 msgid "[placeSplitterRefinery] No place hierarchies are defined"
-msgstr ""
+msgstr "[placeSplitterRefinery] Aucune hiérarchie de lieu n'est définie"
 
 #: app/refineries/placeSplitter/placeSplitterRefinery.php:139
 msgid "Place type"
@@ -17460,15 +17460,15 @@ msgstr "Définit ou fait correspondre l'enregistrement de lieu en référençant
 
 #: app/refineries/placeSplitter/placeSplitterRefinery.php:158
 msgid "Place parents to create, if required"
-msgstr ""
+msgstr "Parents du lieu à créer, si nécessaire"
 
 #: app/refineries/placeSplitter/placeSplitterRefinery.php:167
 msgid "Place hierarchy to create, if required."
-msgstr ""
+msgstr "Hiérarchie de lieu à créer, si nécessaire"
 
 #: app/refineries/placeSplitter/placeSplitterRefinery.php:176
 msgid "Identifier of the place hierarchy to add places under."
-msgstr ""
+msgstr "Identifiant de la hiérarchie des lieux où rattacher les lieux."
 
 #: app/refineries/placeSplitter/placeSplitterRefinery.php:193
 msgid "Place type default"
@@ -17488,11 +17488,11 @@ msgstr ""
 
 #: app/refineries/storageLocationHierarchyBuilder/storageLocationHierarchyBuilderRefinery.php:37
 msgid "Storage location hierarchy builder"
-msgstr ""
+msgstr "Constructeur de hiérarchie pour les emplacements de stockage"
 
 #: app/refineries/storageLocationHierarchyBuilder/storageLocationHierarchyBuilderRefinery.php:38
 msgid "Builds a storage location hierarchy."
-msgstr ""
+msgstr "Construit une hiérarchie pour les emplacements de stockage."
 
 #: app/refineries/storageLocationHierarchyBuilder/storageLocationHierarchyBuilderRefinery.php:69
 msgid "storageLocationHierarchyBuilder refinery may only be used in imports to ca_storage_locations"
@@ -17500,7 +17500,7 @@ msgstr ""
 
 #: app/refineries/storageLocationHierarchyBuilder/storageLocationHierarchyBuilderRefinery.php:109
 msgid "Storage location parents to create"
-msgstr ""
+msgstr "Parents de l'emplacement de stockage à créer"
 
 #: app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:36
 msgid "Storage location splitter"
@@ -17536,7 +17536,7 @@ msgstr "Défini ou fait correspondre les métadonnées de la collection en fonct
 
 #: app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:157
 msgid "Storage location parents to create, if required"
-msgstr ""
+msgstr "Parents de l'emplacement de stockage à créer, si nécessaire"
 
 #: app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:174
 msgid "Storage location type default"
@@ -17552,7 +17552,7 @@ msgstr ""
 
 #: app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:193
 msgid "List of non-preferred labels to apply to storage locations."
-msgstr ""
+msgstr "Liste des titres secondaires à appliquer aux emplacements de stockage."
 
 #: app/refineries/tourMaker/tourMakerRefinery.php:39
 msgid "Tour maker"
@@ -17616,7 +17616,7 @@ msgstr "[tourStopSplitterRefinery] Impossible de trouver le parcours %1 pour y r
 
 #: app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:150
 msgid "[tourStopSplitterRefinery] No parent found for %1"
-msgstr ""
+msgstr "[tourStopSplitterRefinery] Aucun parent trouvé pour %1"
 
 #: app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:215
 msgid "Tour stop type"
@@ -17648,7 +17648,7 @@ msgstr ""
 
 #: app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:270
 msgid "List of non-preferred labels to apply to tour stops."
-msgstr ""
+msgstr "Liste des titres secondaires à appliquer aux points du parcours."
 
 #: app/widgets/advancedSearchForm/advancedSearchFormWidget.php:43
 msgid "Advanced search form"
@@ -18536,7 +18536,7 @@ msgstr "Profil d'installation"
 
 #: install/inc/page1.php:80
 msgid "Drag profiles here to add or update"
-msgstr ""
+msgstr "Glisser le profil ici pour ajouter ou mettre à jour"
 
 #: install/inc/page1.php:87
 msgid "More information about standard installation profiles is available on the CollectiveAccess <a href=\"http://docs.collectiveaccess.org/wiki/Installation_profile\" target=\"_blank\">project wiki</a>."
@@ -18560,19 +18560,19 @@ msgstr "Progression :"
 
 #: install/index.php:56
 msgid "%1 is empty"
-msgstr ""
+msgstr "%1 est vide"
 
 #: install/index.php:66
 msgid "%1 is not a valid profile"
-msgstr ""
+msgstr "%1 n'est pas un profil valide"
 
 #: install/index.php:75
 msgid "Updated %1"
-msgstr ""
+msgstr "%1 mis à jour"
 
 #: support/sql/migrations/VersionUpdate109.php:53
 msgid "The CollectiveAccess authentication back-end had a major overhaul in this update. If you previously used the stock authentication configuration, there is no further action necessary. However, if you have made changes to your authentication.conf configuration file, chances are that you won't be able to log into your system. Please take a close look at the new stock file and change your local configuration accordingly."
-msgstr ""
+msgstr "Le système d'authentification de CollectiveAccess a été profondément repris dans cette mise à jour. Si vous utilisiez auparavant la configuration par défaut de l'authentification, il n'y pas d'action supplémentaire nécessaire. Toutefois, si vous avez fait des modifications dans le fichier de configuration authentication.conf, il y a des chances que vous ne puissiez plus vous connecter au système. Veuillez examiner le nouveau fichier par défaut et modifier en fonction de celui-ci votre configuration."
 
 #: support/sql/migrations/VersionUpdate48.php:53 support/sql/migrations/VersionUpdate83.php:53 support/sql/migrations/VersionUpdate96.php:53
 msgid "You must now rebuild search indices <strong>and</strong> sort values using the administrative maintenance options shown below. These options are available under <em>Administrate</em> in the <em>Manage</em> menu.<br/><div style='text-align: center; margin: 10px;'>%1</div>"
@@ -18650,11 +18650,11 @@ msgstr "Types"
 
 #: themes/default/views/administrate/access/role_edit_html.php:74
 msgid "Sources"
-msgstr ""
+msgstr "Sources"
 
 #: themes/default/views/administrate/access/role_edit_html.php:78
 msgid "Pawtucket"
-msgstr ""
+msgstr "Pawtucket"
 
 #: themes/default/views/administrate/access/role_edit_html.php:129
 msgid "Element"
@@ -18678,15 +18678,15 @@ msgstr ""
 
 #: themes/default/views/administrate/access/role_edit_html.php:234
 msgid "Access status"
-msgstr ""
+msgstr "Contrôle d'accès"
 
 #: themes/default/views/administrate/access/role_edit_html.php:234
 msgid "Read access"
-msgstr ""
+msgstr "Accès en lecture"
 
 #: themes/default/views/administrate/access/role_edit_html.php:234
 msgid "Use Pawtucket default"
-msgstr ""
+msgstr "Utiliser la valeur par défaut de Pawtucket"
 
 #: themes/default/views/administrate/access/role_list_html.php:44
 msgid "New role"
@@ -18840,11 +18840,11 @@ msgstr "Vous parcourez : "
 
 #: themes/default/views/administrate/setup/Browse/browse_controls_html.php:102 themes/default/views/find/Browse/browse_controls_html.php:102
 msgid "start over"
-msgstr ""
+msgstr "recommencer"
 
 #: themes/default/views/administrate/setup/Browse/browse_controls_html.php:110 themes/default/views/find/Browse/browse_controls_html.php:110
 msgid "Browse by"
-msgstr ""
+msgstr "Parcourir par"
 
 #: themes/default/views/administrate/setup/Browse/browse_start_html.php:31 themes/default/views/find/Browse/browse_start_html.php:31
 msgid "Choose a selection above to begin browsing"
@@ -18876,15 +18876,15 @@ msgstr "Afficher dans la hiérarchie"
 
 #: themes/default/views/administrate/setup/Results/ca_list_items_results_list_html.php:102 themes/default/views/find/Results/ca_collections_results_list_html.php:107 themes/default/views/find/Results/ca_entities_results_list_html.php:100 themes/default/views/find/Results/ca_loans_results_list_html.php:101 themes/default/views/find/Results/ca_movements_results_list_html.php:100 themes/default/views/find/Results/ca_object_lots_results_list_html.php:99 themes/default/views/find/Results/ca_object_representations_results_list_html.php:100 themes/default/views/find/Results/ca_objects_results_list_html.php:101 themes/default/views/find/Results/ca_occurrences_results_list_html.php:101 themes/default/views/find/Results/ca_places_results_list_html.php:108 themes/default/views/find/Results/ca_storage_locations_results_list_html.php:106 themes/default/views/find/Results/ca_tour_stops_results_list_html.php:99 themes/default/views/find/Results/ca_tours_results_list_html.php:99
 msgid "Totals"
-msgstr ""
+msgstr "Totaux"
 
 #: themes/default/views/administrate/setup/Results/ca_list_items_results_list_html.php:117
 msgid "View in Hierarchy"
-msgstr ""
+msgstr "Afficher dans la hiérarchie"
 
 #: themes/default/views/administrate/setup/Results/ca_list_items_results_list_html.php:118
 msgid "Edit List Item"
-msgstr ""
+msgstr "Modifier un élément de liste"
 
 #: themes/default/views/administrate/setup/Results/ca_relationship_types_list_html.php:55
 msgid "Type name (forward sense)"
@@ -18936,11 +18936,11 @@ msgstr "Affichage"
 
 #: themes/default/views/administrate/setup/Results/search_options_html.php:134 themes/default/views/find/Results/search_options_html.php:134
 msgid "Refine Results"
-msgstr ""
+msgstr "Affiner les résultats"
 
 #: themes/default/views/administrate/setup/Results/search_options_html.php:135 themes/default/views/find/Results/search_options_html.php:135
 msgid "Export Tools"
-msgstr ""
+msgstr "Outils d'export"
 
 #: themes/default/views/administrate/setup/Search/ajax_refine_facet_html.php:198
 msgid "Jump to"
@@ -18988,11 +18988,11 @@ msgstr "Filtrer les résultats par :"
 
 #: themes/default/views/administrate/setup/Search/search_refine_html.php:49 themes/default/views/find/Search/search_refine_html.php:49
 msgid "clear all"
-msgstr ""
+msgstr "tout effacer"
 
 #: themes/default/views/administrate/setup/Search/search_sets_html.php:33 themes/default/views/find/Search/search_sets_html.php:33
 msgid "Set Tools"
-msgstr ""
+msgstr "Ensembles"
 
 #: themes/default/views/administrate/setup/Search/search_sets_html.php:42 themes/default/views/administrate/setup/Search/search_tools_html.php:90 themes/default/views/find/Search/search_sets_html.php:42
 msgid "Add checked to set"
@@ -19012,11 +19012,11 @@ msgstr "Créer l'ensemble"
 
 #: themes/default/views/administrate/setup/Search/search_sets_html.php:72 themes/default/views/find/Search/search_sets_html.php:72
 msgid "from results"
-msgstr ""
+msgstr "tous les résultats"
 
 #: themes/default/views/administrate/setup/Search/search_sets_html.php:73 themes/default/views/find/Search/search_sets_html.php:73
 msgid "from checked"
-msgstr ""
+msgstr "enregistrements cochés"
 
 #: themes/default/views/administrate/setup/Search/search_sets_html.php:80 themes/default/views/find/Search/search_sets_html.php:80 app/conf/navigation.conf:2672
 msgid "Create"
@@ -19044,7 +19044,7 @@ msgstr "Ensemble <i>^set_name</i> créé avec ^num_items ^item_type_name"
 
 #: themes/default/views/administrate/setup/Search/search_tools_html.php:38 themes/default/views/find/Search/search_tools_html.php:38
 msgid "Export results with mapping"
-msgstr ""
+msgstr "Exporter les résultats avec l'export"
 
 #: themes/default/views/administrate/setup/Search/search_tools_html.php:53 themes/default/views/find/Search/search_tools_html.php:53
 msgid "Print results as labels"
@@ -19145,7 +19145,7 @@ msgstr "Non disponible"
 
 #: themes/default/views/administrate/setup/config_check_html.php:207
 msgid "PDF Rendering Plugins"
-msgstr ""
+msgstr "Plugins de génération PDF"
 
 #: themes/default/views/administrate/setup/config_check_html.php:262
 msgid "Barcode generation"
@@ -19185,7 +19185,7 @@ msgstr "Utilisation dans l'interface utilisateur"
 
 #: themes/default/views/administrate/setup/interface_editor/summary_html.php:80 themes/default/views/administrate/setup/interface_screen_editor/summary_html.php:80 themes/default/views/administrate/setup/list_editor/summary_html.php:80 themes/default/views/administrate/setup/list_item_editor/summary_html.php:80 themes/default/views/editor/collections/summary_html.php:80 themes/default/views/editor/entities/summary_html.php:81 themes/default/views/editor/loans/summary_html.php:81 themes/default/views/editor/movements/summary_html.php:81 themes/default/views/editor/object_lots/summary_html.php:81 themes/default/views/editor/object_representations/summary_html.php:81 themes/default/views/editor/objects/summary_html.php:125 themes/default/views/editor/occurrences/summary_html.php:81 themes/default/views/editor/places/summary_html.php:81 themes/default/views/editor/representation_annotations/summary_html.php:81 themes/default/views/editor/storage_locations/summary_html.php:81 themes/default/views/editor/tour_stops/summary_html.php:80 themes/default/views/editor/tours/summary_html.php:79
 msgid "Download Summary as PDF"
-msgstr ""
+msgstr "Télécharger le résumé en PDF"
 
 #: themes/default/views/administrate/setup/interface_editor/summary_html.php:81 themes/default/views/administrate/setup/interface_screen_editor/summary_html.php:81 themes/default/views/administrate/setup/list_editor/summary_html.php:81 themes/default/views/administrate/setup/list_item_editor/summary_html.php:81 themes/default/views/editor/collections/summary_html.php:81 themes/default/views/editor/entities/summary_html.php:82 themes/default/views/editor/loans/summary_html.php:82 themes/default/views/editor/movements/summary_html.php:82 themes/default/views/editor/object_lots/summary_html.php:82 themes/default/views/editor/object_representations/summary_html.php:82 themes/default/views/editor/objects/summary_html.php:126 themes/default/views/editor/occurrences/summary_html.php:82 themes/default/views/editor/places/summary_html.php:82 themes/default/views/editor/representation_annotations/summary_html.php:82 themes/default/views/editor/storage_locations/summary_html.php:82 themes/default/views/editor/tour_stops/summary_html.php:81 themes/default/views/editor/tours/summary_html.php:80
 msgid "Download Media"
@@ -19201,11 +19201,11 @@ msgstr "Retour au navigateur"
 
 #: themes/default/views/administrate/setup/list_item_editor/screen_html.php:54
 msgid "You are not allowed to add items to this list"
-msgstr ""
+msgstr "Vous n'êtes pas autorisé à ajouter des éléments à cette liste"
 
 #: themes/default/views/administrate/setup/list_item_editor/screen_html.php:54
 msgid "You are not allowed to edit items in this list"
-msgstr ""
+msgstr "Vous n'êtes pas autorisé à modifier des éléments dans cette liste"
 
 #: themes/default/views/administrate/setup/locale_list_html.php:57
 msgid "Available for cataloguing?"
@@ -19297,11 +19297,11 @@ msgstr "Erreurs survenues"
 
 #: themes/default/views/batch/editor/batch_results_html.php:85
 msgid "Note: <strong>NO</strong> batch changes were saved due to the error."
-msgstr ""
+msgstr "Note: <strong>AUCUNE</strong> modification par lot n'a été enregistrée à cause de l'erreur."
 
 #: themes/default/views/batch/editor/batch_results_html.php:85
 msgid "Note: <strong>NO</strong> batch changes were saved due to %1 errors."
-msgstr ""
+msgstr "Note: <strong>AUCUNE</strong> modification par lot n'a été enregistrée à cause des %1 erreurs."
 
 #: themes/default/views/batch/editor/batch_results_html.php:88
 msgid "Processed successfully"
@@ -19333,7 +19333,7 @@ msgstr "Exécute les modifications par lot"
 
 #: themes/default/views/batch/editor/delete_html.php:36
 msgid "Really delete ALL records in \"%1\"?"
-msgstr ""
+msgstr "Vraiment, complètement, totalement supprimer TOUS les enregistrements dans \"%1\" ?"
 
 #: themes/default/views/batch/editor/delete_html.php:67
 msgid "Leave batch editor and delete this set"
@@ -19341,11 +19341,11 @@ msgstr "Quitter le traitement par lot et supprimer cet ensemble"
 
 #: themes/default/views/batch/editor/delete_html.php:105
 msgid "Note: The above record(s) were not deleted due to the errors."
-msgstr ""
+msgstr "Note : les enregistrements ci-dessus n'ont pas été supprimés à cause des erreurs."
 
 #: themes/default/views/batch/editor/delete_html.php:108
 msgid "Deleted successfully"
-msgstr ""
+msgstr "Suppression réussie"
 
 #: themes/default/views/batch/mediaimport/batch_queued_html.php:30
 msgid "Media import queued for background processing"
@@ -19405,7 +19405,7 @@ msgstr "Mode d'import"
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:149
 msgid "Type used for newly created %1"
-msgstr ""
+msgstr "Type utilisé pour les nouveaux %1"
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:154
 msgid "Type used for newly created object representations"
@@ -19413,7 +19413,7 @@ msgstr "Type pour les nouvelles représentations créées"
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:160
 msgid "Type used for relationship"
-msgstr ""
+msgstr "Type utilisé pour la relation"
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:185
 msgid "Add imported media to set %1"
@@ -19429,27 +19429,27 @@ msgstr "Ne pas associer les médias importés à un ensemble"
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:231 themes/default/views/batch/mediaimport/import_options_html.php:376
 msgid "%1 identifier"
-msgstr ""
+msgstr "identifiant pour un(e) %1"
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:242 themes/default/views/batch/mediaimport/import_options_html.php:387
 msgid "Set %1 identifier to %2"
-msgstr ""
+msgstr "Utiliser %1 comme identifiant pour un(e) %2"
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:250 themes/default/views/batch/mediaimport/import_options_html.php:395
 msgid "Set %1 identifier to file name"
-msgstr ""
+msgstr "Utiliser le nom de fichier comme identifiant du/de la %1"
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:258 themes/default/views/batch/mediaimport/import_options_html.php:403
 msgid "Set %1 identifier to file name without extension"
-msgstr ""
+msgstr "Utiliser le nom de fichier sans son extension comme identifiant du/de la %1"
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:266 themes/default/views/batch/mediaimport/import_options_html.php:411
 msgid "Set %1 identifier to directory and file name"
-msgstr ""
+msgstr "Utiliser le répertoire et le nom de fichier comme identifiant du/de la %1"
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:294
 msgid "Status, access &amp; metadata extraction"
-msgstr ""
+msgstr "Statut, accès &amp; extraction de métadonnées"
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:294
 msgid "Status &amp; access"
@@ -19457,15 +19457,15 @@ msgstr "Statut et accès"
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:302
 msgid "Set %1 status to<br/>%2"
-msgstr ""
+msgstr "Définir le statut du/de la %1 à <br/>%2"
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:304
 msgid "Set %1 access to<br/>%2"
-msgstr ""
+msgstr "Définir le contrôle d'accès du/de la %1 à <br/>%2"
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:308
 msgid "Extract embedded metadata into %1 using mapping<br/>%2"
-msgstr ""
+msgstr "Extrait les métadonnées internes à %1 à l'aide de l'import<br/>%2"
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:314
 msgid "Set representation status to<br/>%1"
@@ -19477,15 +19477,15 @@ msgstr "Accès de la représentation<br/>%1"
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:320
 msgid "Extract embedded metadata into representation using mapping<br/>%1"
-msgstr ""
+msgstr "Extrait les métadonnées internes vers la représentation à l'aide de l'import<br/>%1"
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:332 themes/default/views/batch/mediaimport/import_options_html.php:341
 msgid "Show advanced options"
-msgstr ""
+msgstr "Options avancées"
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:341
 msgid "Hide advanced options"
-msgstr ""
+msgstr "Masquer les options avancées"
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:354
 msgid "Matching"
@@ -19493,7 +19493,7 @@ msgstr "Correspondance"
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:366
 msgid "Limit to types"
-msgstr ""
+msgstr "Restreindre aux types "
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:444
 msgid "Relationships will be created by matching the identifier extracted from the media file name with identifiers in related records."
@@ -19517,7 +19517,7 @@ msgstr "Divers"
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:501
 msgid "Allow duplicate media?"
-msgstr ""
+msgstr "Autorise les doublons parmi les médias ?"
 
 #: themes/default/views/batch/mediaimport/import_options_html.php:527
 msgid "You are about to import files from <em>%1</em>"
@@ -19537,7 +19537,7 @@ msgstr "Réaliser un autre import de médias"
 
 #: themes/default/views/batch/metadataimport/batch_results_html.php:80
 msgid "File %1/%2 [%3]"
-msgstr ""
+msgstr "Fichier %1/%2 [%3]"
 
 #: themes/default/views/batch/metadataimport/batch_results_html.php:97
 msgid "Errors during import"
@@ -19585,15 +19585,15 @@ msgstr "Format de données"
 
 #: themes/default/views/batch/metadataimport/importer_run_html.php:63
 msgid "Import all data sets"
-msgstr ""
+msgstr "Importer tous les jeux de données"
 
 #: themes/default/views/batch/metadataimport/importer_run_html.php:80
 msgid "From a file"
-msgstr ""
+msgstr "Depuis un fichier"
 
 #: themes/default/views/batch/metadataimport/importer_run_html.php:90
 msgid "From the import directory"
-msgstr ""
+msgstr "Depuis le répertoire d'import"
 
 #: themes/default/views/batch/metadataimport/importer_run_html.php:100
 msgid "Data URL"
@@ -19601,15 +19601,15 @@ msgstr "URL des données"
 
 #: themes/default/views/batch/metadataimport/importer_run_html.php:112
 msgid "Data as text"
-msgstr ""
+msgstr "Données texte"
 
 #: themes/default/views/batch/metadataimport/importer_run_html.php:136
 msgid "Testing options"
-msgstr ""
+msgstr "Options de test"
 
 #: themes/default/views/batch/metadataimport/importer_run_html.php:143
 msgid "Dry run"
-msgstr ""
+msgstr "Répétition"
 
 #: themes/default/views/batch/metadataimport/importer_run_html.php:162
 msgid "You are about to import data using the <em>%1</em> importer"
@@ -19629,15 +19629,15 @@ msgstr "%1 imports sont définis"
 
 #: themes/default/views/bundles/authority_references_list.php:62
 msgid "%1 (%2)"
-msgstr ""
+msgstr "%1 (%2)"
 
 #: themes/default/views/bundles/authority_references_list.php:96
 msgid "... and %1 more"
-msgstr ""
+msgstr "... et %1 de plus"
 
 #: themes/default/views/bundles/authority_references_list.php:118
 msgid "No references"
-msgstr ""
+msgstr "Pas de références"
 
 #: themes/default/views/bundles/batch_change_type_html.php:57 themes/default/views/bundles/change_type_html.php:56
 msgid "Change %1 type"
@@ -19799,7 +19799,7 @@ msgstr "Ajouter un écran"
 
 #: themes/default/views/bundles/ca_entity_labels_nonpreferred.php:72 themes/default/views/bundles/ca_entity_labels_preferred.php:72
 msgid "The full name of the organization, excluding for suffixes."
-msgstr ""
+msgstr "Le nom de l'organisation, à l'exception des suffixes."
 
 #: themes/default/views/bundles/ca_list_items.php:119
 msgid "No collection terms selected"
@@ -19883,11 +19883,11 @@ msgstr "Ajouter un fichier de légende/sous-titre"
 
 #: themes/default/views/bundles/ca_object_representation_chooser_html.php:60
 msgid "No metadata element is configured"
-msgstr ""
+msgstr "Aucun élément de métadonnées est configuré"
 
 #: themes/default/views/bundles/ca_object_representations.php:110
 msgid "Number of representations: %1"
-msgstr ""
+msgstr "Nombre de représentations : %1"
 
 #: themes/default/views/bundles/ca_object_representations.php:155 themes/default/views/manage/export/export_destination_html.php:36
 msgid "File name"
@@ -20103,7 +20103,7 @@ msgstr "Créer un enregistrement enfant sous ce %1"
 
 #: themes/default/views/bundles/create_child_html.php:64
 msgid "Select a record type to add a child record under this one"
-msgstr ""
+msgstr "Sélectionner un type d'enregistrement pour ajouter une enregistrement enfant sous celui-ci"
 
 #: themes/default/views/bundles/create_child_html.php:66 themes/default/views/bundles/create_child_html.php:85
 msgid "Add a %1 under this"
@@ -20111,7 +20111,7 @@ msgstr "Ajouter un nouveau %1 en dessous de celui-ci"
 
 #: themes/default/views/bundles/hierarchy_location.php:176 themes/default/views/bundles/hierarchy_navigation.php:68
 msgid "Number of %1 in hierarchy: %2"
-msgstr ""
+msgstr "Nombre de %1 dans la hiérarchie : %2"
 
 #: themes/default/views/bundles/hierarchy_location.php:178 themes/default/views/bundles/hierarchy_location.php:402
 msgid "Show Hierarchy"
@@ -20147,7 +20147,7 @@ msgstr "Cliquer sur une flèche pour choisir l'emplacement sous lequel doit êtr
 
 #: themes/default/views/bundles/hierarchy_location.php:278
 msgid "Movement details"
-msgstr ""
+msgstr "Détails du mouvement"
 
 #: themes/default/views/bundles/hierarchy_location.php:312
 msgid "Use the controls below to create new %1 relative to this record in the hierarchy."
@@ -20207,7 +20207,7 @@ msgstr "Utiliser le navigateur pour explorer la hiérarchie. Vous pouvez modifie
 
 #: themes/default/views/bundles/intrinsic.php:91
 msgid "Inherit from parent?"
-msgstr ""
+msgstr "Hériter de l'enregistrement parent ?"
 
 #: themes/default/views/bundles/representation_media_editor/image_tools_html.php:38
 msgid "Rotation"
@@ -20263,7 +20263,7 @@ msgstr "%1  de %2"
 
 #: themes/default/views/bundles/representation_viewer_html.php:556
 msgid "Edit annotation"
-msgstr ""
+msgstr "Modifier l'annotation"
 
 #: themes/default/views/bundles/settings.php:45
 msgid "No settings"
@@ -21095,51 +21095,51 @@ msgstr "Clips"
 
 #: themes/default/views/editor/object_representations/ajax_representation_annotation_editor_html.php:83
 msgid "New clip"
-msgstr ""
+msgstr "Nouveau clip"
 
 #: themes/default/views/editor/object_representations/ajax_representation_annotation_editor_html.php:84
 msgid "start"
-msgstr ""
+msgstr "début"
 
 #: themes/default/views/editor/object_representations/ajax_representation_annotation_editor_html.php:85
 msgid "end"
-msgstr ""
+msgstr "fin"
 
 #: themes/default/views/editor/object_representations/ajax_representation_annotation_editor_html.php:88
 msgid "Set end &amp; Save"
-msgstr ""
+msgstr "Définir la fin et enregistrer"
 
 #: themes/default/views/editor/object_representations/ajax_representation_annotation_editor_html.php:234
 msgid "%1 clip"
-msgstr ""
+msgstr "clip %1"
 
 #: themes/default/views/editor/objects/component_html.php:47
 msgid "Add component %1"
-msgstr ""
+msgstr "Ajouter le composant %1"
 
 #: themes/default/views/editor/objects/component_html.php:102
 msgid "Component add %1"
-msgstr ""
+msgstr "Composant %1 ajouté"
 
 #: themes/default/views/editor/objects/object_representation_media_replication_controls_html.php:43
 msgid "Replicate media to %1"
-msgstr ""
+msgstr "Répliquer le média sur %1"
 
 #: themes/default/views/editor/objects/object_representation_media_replication_controls_html.php:44
 msgid "Start &rsaquo;"
-msgstr ""
+msgstr "Démarrer &rsaquo;"
 
 #: themes/default/views/editor/objects/object_representation_media_replication_controls_html.php:51
 msgid "Replication target"
-msgstr ""
+msgstr "Cible de la réplication"
 
 #: themes/default/views/editor/objects/object_representation_media_replication_controls_html.php:60
 msgid "Delete &rsaquo;"
-msgstr ""
+msgstr "Supprimer &rsaquo;"
 
 #: themes/default/views/editor/objects/viewer_help_html.php:3
 msgid "How to use the image viewer"
-msgstr ""
+msgstr "Comment utiliser la visionneuse d'images"
 
 #: themes/default/views/editor/objects/viewer_help_html.php:6
 msgid ""
@@ -21171,10 +21171,15 @@ msgid ""
 "\taway from any point. To remove a point click on it while holding down the option key. To add a point click on the outline, away from any point, while holding down the option key.\n"
 "\t"
 msgstr ""
+"Pour les annotations polygonales, \n"
+"\tcliquer de manière répétée sur l'image pour créer des segments de ligne à différents endroits pour créer la forme d'un polygone. La forme peut contenir autant de points et donc de côtés que voulu. Pour fermer le polygone, faire un double clic.\n"
+"\tlors de l'ajout du point final ou en cliquant sur les outils panoramique, rectangle ou point. Vous pouvez ajuster la forme en cliquant et déplaçant n'importe quel point. Pour déplacer la forme, cliquer et glisser sur la forme du polygone.\n"
+"\tcliquer à distance de n'importe quel point. Pour retirer un point cliquer sur celui-ci en maintenant appuyée la touche option. Pour ajouter un point à la forme, cliquer à distance de n'importe quel point en maintenant appuyée la touche option.\n"
+"\t"
 
 #: themes/default/views/editor/objects/viewer_help_html.php:29
 msgid "You may also drag the text box into position. Click on the text box to add text. All changes to annotations are saved automatically as you work."
-msgstr ""
+msgstr "Vous pouvez aussi glisser la boîte texte à sa position. Cliquer sur la boîte pour ajouter du texte. Toutes les modifications faites sur les annotations sont automatiquement sauvegardées au fur et à mesure."
 
 #: themes/default/views/editor/objects/viewer_help_html.php:32
 msgid "Keyboard shortcuts"
@@ -21182,55 +21187,55 @@ msgstr "Raccourcis clavier"
 
 #: themes/default/views/editor/objects/viewer_help_html.php:35
 msgid "Single-key shortcuts are available for common actions. Pressing the key is equivalent to the corresponding mouse action."
-msgstr ""
+msgstr "Des raccourcis clavier sont disponibles pour la plupart des actions. Appuyer sur la touche correspondante correspond à la même action à la souris."
 
 #: themes/default/views/editor/objects/viewer_help_html.php:38
 msgid "%1 to activate image panning"
-msgstr ""
+msgstr "%1 pour activer le mode panoramique"
 
 #: themes/default/views/editor/objects/viewer_help_html.php:39
 msgid "%1 to select the rectangle annotation tool"
-msgstr ""
+msgstr "%1 pour sélectionner l'outil rectangulaire d'annotation"
 
 #: themes/default/views/editor/objects/viewer_help_html.php:40
 msgid "%1 to select the point annotation tool"
-msgstr ""
+msgstr "%1 pour sélectionner l'outil point d'annotation"
 
 #: themes/default/views/editor/objects/viewer_help_html.php:41
 msgid "%1 to select the polygon annotation tool"
-msgstr ""
+msgstr "%1 pour sélectionner l'outil d'annotation polygonale"
 
 #: themes/default/views/editor/objects/viewer_help_html.php:42
 msgid "%1 to delete the selected annotation"
-msgstr ""
+msgstr "%1 pour supprimer l'annotation sélectionnée"
 
 #: themes/default/views/editor/objects/viewer_help_html.php:43
 msgid "%1 to toggle visibility of the image overview"
-msgstr ""
+msgstr "%1 pour activer/désactiver l'aperçu de l'image"
 
 #: themes/default/views/editor/objects/viewer_help_html.php:44
 msgid "%1 to return the image to the centered, zoomed out \"home\" position"
-msgstr ""
+msgstr "%1 pour ramener l'image au centre"
 
 #: themes/default/views/editor/objects/viewer_help_html.php:45
 msgid "%1 to toggle visibility of viewer controls"
-msgstr ""
+msgstr "%1 pour activer/désactiver les contrôles de la visionneuse"
 
 #: themes/default/views/editor/objects/viewer_help_html.php:46
 msgid "%1 to hide controls and labels"
-msgstr ""
+msgstr "%1 pour masquer les contrôles et les libellés"
 
 #: themes/default/views/editor/objects/viewer_help_html.php:47
 msgid "%1 or %2 to zoom in in small increments"
-msgstr ""
+msgstr "%1 ou %2 pour zoomer doucement"
 
 #: themes/default/views/editor/objects/viewer_help_html.php:48
 msgid "%1 or %2 to zoom out in small increments"
-msgstr ""
+msgstr "%1 ou %2 pour dézoomer doucement"
 
 #: themes/default/views/editor/objects/viewer_help_html.php:49
 msgid "%1, %2, %3 or %4 to pan the image in small increments"
-msgstr ""
+msgstr "%1, %2, %3 ou %4 pour faire un panoramique lent de l'image"
 
 #: themes/default/views/editor/representation_annotations/quickadd_html.php:48
 msgid "Delete annotation"
@@ -21302,7 +21307,7 @@ msgstr "Afficher le formulaire de recherche"
 
 #: themes/default/views/find/Search/search_advanced_form_html.php:84
 msgid "Save search as"
-msgstr ""
+msgstr "Sauver la recherche sous"
 
 #: themes/default/views/find/Search/search_controls_html.php:45 themes/default/views/find/Search/search_controls_html.php:57
 msgid "Save search"
@@ -21310,7 +21315,7 @@ msgstr "Enregistrer la recherche"
 
 #: themes/default/views/find/Search/search_tools_html.php:90
 msgid "Download media as"
-msgstr ""
+msgstr "Télécharger le média sous"
 
 #: themes/default/views/find/Search/search_tools_html.php:98
 msgid "Selected results: %1"
@@ -21326,15 +21331,15 @@ msgstr "Retour"
 
 #: themes/default/views/library/checkin/items_html.php:9
 msgid "Item name or number being returned"
-msgstr ""
+msgstr "Nom d'élément ou numéro retourné"
 
 #: themes/default/views/library/checkin/items_html.php:16
 msgid "Items to check in"
-msgstr ""
+msgstr "Éléments à retourner"
 
 #: themes/default/views/library/checkin/widget_checkin_html.php:29
 msgid "Library check in"
-msgstr ""
+msgstr "Retour de prêts type bibliothèque"
 
 #: themes/default/views/library/checkin/widget_checkin_html.php:31
 msgid "Outstanding items: %1"
@@ -21522,11 +21527,11 @@ msgstr "Paramètres invalides"
 
 #: themes/default/views/manage/export/download_feedback_html.php:33
 msgid "Upload to <i>%1</i> successful"
-msgstr ""
+msgstr "L'envoi vers <i>%1</i> est accompli"
 
 #: themes/default/views/manage/export/download_feedback_html.php:35
 msgid "There was an error while uploading to <i>%1</i>. Check the events log for more information."
-msgstr ""
+msgstr "Il y a eu une erreur lors de l'envoi vers <i>%1</i>. Vérifier les logs pour plus d'informations."
 
 #: themes/default/views/manage/export/export_destination_html.php:32
 msgid "The export has been processed. Configure your download below."
@@ -21670,7 +21675,7 @@ msgstr "Lancer l'outil"
 
 #: themes/default/views/manage/tools/confirm_html.php:69
 msgid "You are about to run <em>%1</em> in <em>%2</em>."
-msgstr ""
+msgstr "Vous êtes sur le point de lancer <em>%1</em> dans <em>%2</em>."
 
 #: themes/default/views/manage/tools/tool_run_html.php:40
 msgid "Running %1: %2"
@@ -21690,7 +21695,7 @@ msgstr "Commande"
 
 #: themes/default/views/manage/tools/tool_settings_html.php:109
 msgid "You are about to run <em>%2</em> in <em>%1</em>"
-msgstr ""
+msgstr "Vous êtes sur le point de lancer <em>%2</em> dans <em>%1</em>"
 
 #: themes/default/views/manage/tools/tools_list_html.php:58
 msgid "Tool"
@@ -22002,7 +22007,7 @@ msgstr "Retour à l'écran de connexion"
 
 #: themes/default/views/system/password_reset_instructions_html.php:54
 msgid "Thank you for your request. We will send you an email with further instructions. If you don't receive the message after submitting the form, please wait a couple of minutes and also make sure to check your spam and junk folders. If you don't receive an email within 15 minutes after submitting the form, you may have misspelled your user name. Either resubmit the previous form or contact your CollectiveAccess administrator."
-msgstr ""
+msgstr "Merci de votre demande. Nous vous enverrons un email avec de plus amples instructions. Si vous ne recevez pas le message après avoir validé, veuillez attendre quelques minutes et vérifier les répertoires spam et corbeille de votre boîte email. Si vous ne recevez pas aucun email dans les 15 minutes après avoir validé, vous avez peut-être fait une erreur de saisie. Veuillez soit valider à nouveau le formulaire ou contacter votre administrateur CollectiveAccess."
 
 #: themes/default/views/system/preferences_batch_html.php:59
 msgid "Batch user interface for %1"
