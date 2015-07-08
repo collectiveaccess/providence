@@ -35,7 +35,6 @@
    */
 
  	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
-	require_once(__CA_LIB_DIR__."/core/Parsers/MediaMetadata/XMPParser.php");
 
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -330,9 +329,9 @@
 		}
 		if (!caIsValidFilePath($ps_pdfminer_path)) { return false; }
 
-		if (!file_exists($ps_pdfminer_path."/pdf2txt.py")) { return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = false; }
+		if (!file_exists($ps_pdfminer_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = false; }
 		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
-		exec($ps_pdfminer_path."/pdf2txt.py > /dev/null",$va_output,$vn_return);
+		exec($ps_pdfminer_path." > /dev/null",$va_output,$vn_return);
 		if($vn_return == 100) {
 			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = true;
 		}
@@ -507,7 +506,7 @@
 	/**
 	 * Perform mapping of extracted media metadata to CollectiveAccess bundles.
 	 *
-	 * @param BaseModel $po_instance Model instance to insert extracted metadata into
+	 * @param BundlableLabelableBaseModelWithAttributes $po_instance Model instance to insert extracted metadata into
 	 * @param array $pa_metadata Extracted metadata
 	 * @param int $pn_locale_id The current locale as a numeric locale_id
 	 * @return bool True extracted metadata was mapped and the model changed, false if no change was made to the model
@@ -637,8 +636,11 @@
 
 		foreach($va_mapping as $vs_metadata => $va_attr) {
 			$va_tmp = explode(":", $vs_metadata);
+			$vs_delimiter = caGetOption('delimiter', $va_attr, false);
 
 			foreach($va_attr as $vs_attr) {
+				if($vs_attr == 'delimiter') { continue; }
+
 				$va_metadata =& $pa_metadata;
 				foreach($va_tmp as $vs_el) {
 					if (isset($va_metadata[$vs_el])) {
@@ -669,10 +671,21 @@
 						} else {
 							// try as attribute
 							if(sizeof($va_tmp2)==2){ // format ca_objects.foo, we only want "foo"
-								$po_instance->replaceAttribute(array(
-									$va_tmp2[1] => $va_metadata,
-									'locale_id' => $pn_locale_id
-								),$va_tmp2[1]);
+								if($vs_delimiter) {
+									$va_m = explode($vs_delimiter, $va_metadata);
+									$po_instance->removeAttributes($va_tmp2[1]);
+									foreach($va_m as $vs_m) {
+										$po_instance->addAttribute(array(
+											$va_tmp2[1] => trim($vs_m),
+											'locale_id' => $pn_locale_id
+										),$va_tmp2[1]);
+									}
+								} else {
+									$po_instance->replaceAttribute(array(
+										$va_tmp2[1] => $va_metadata,
+										'locale_id' => $pn_locale_id
+									),$va_tmp2[1]);
+								}
 							}
 						}
 				}
@@ -685,90 +698,79 @@
 
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Embed XMP metadata into representation media. Embedding is performed on a copy of the representation media and placed
-	 * into the system tmp directory. The original media is never modified.
+	 * Embed media metadata into given file. Embedding is performed on a copy of the file and placed into the
+	 * system tmp directory. The given file is never modified.
 	 *
-	 * @param BaseModel $po_object ca_objects instance to pull metadata from for embedding
-	 * @param BaseModel $po_representation ca_object_representations instance to pull metadata from for embedding
-	 * @param string $ps_version Version of media to embed into. If omitted "original" version is used.
-	 * @return string Path to copy of media with embedded metadata. False is returned in the embedding failed.
+	 * @param string $ps_file The file to embed metadata into
+	 * @param string $ps_table Table name of the subject record. This is used to figure out the appropriate mapping to use from media_metadata.conf
+	 * @param int $pn_pk Primary key of the subject record. This is used to run the export for the right record.
+	 * @param string $ps_type_code Optional type code for the subject record
+	 * @param int $pn_rep_pk Primary key of the subject representation.
+	 * 		If there are export mapping for object representations, we run them after the mapping for the subject table.
+	 * 		Fields that get exported here should overwrite fields from the subject table export.
+	 * @param string $ps_rep_type_code type code for object representation
+	 * @return string File name of a temporary file with the embedded metadata, false on failure
 	 */
-	function caEmbedMetadataIntoRepresentation($po_object, $po_representation, $ps_version="original") {
-		if (!($vs_media_metadata_config = $po_representation->getAppConfig()->get('media_metadata'))) { return false; }
+	function caEmbedMediaMetadataIntoFile($ps_file, $ps_table, $pn_pk, $ps_type_code, $pn_rep_pk, $ps_rep_type_code) {
+		require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
+		if(!caExifToolInstalled()) { return false; } // we need exiftool for embedding
+		$vs_path_to_exif_tool = caGetExternalApplicationPath('exiftool');
+
+		if (!file_exists($ps_file)) { return false; }
+		if (!preg_match("/^image\//", mime_content_type($ps_file))) { return false; } // Don't try to embed in files other than images
+
+		// make a temporary copy (we won't touch the original)
+		copy($ps_file, $vs_tmp_filepath = caGetTempDirPath()."/".time().md5($ps_file));
+
+		//
+		// SUBJECT TABLE
+		//
+
+		if($vs_subject_table_export = caExportMediaMetadataForRecord($ps_table, $ps_type_code, $pn_pk)) {
+			$vs_export_filename = caGetTempFileName('mediaMetadataSubjExport','xml');
+			if(@file_put_contents($vs_export_filename, $vs_subject_table_export) === false) { return false; }
+			exec("{$vs_path_to_exif_tool} -tagsfromfile {$vs_export_filename} -all:all ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
+			@unlink($vs_export_filename);
+			@unlink("{$vs_tmp_filepath}_original");
+		}
+
+		//
+		// REPRESENTATION
+		//
+
+		if($vs_representation_Export = caExportMediaMetadataForRecord('ca_object_representations', $ps_rep_type_code, $pn_rep_pk)) {
+			$vs_export_filename = caGetTempFileName('mediaMetadataRepExport','xml');
+			if(@file_put_contents($vs_export_filename, $vs_representation_Export) === false) { return false; }
+			exec("{$vs_path_to_exif_tool} -tagsfromfile {$vs_export_filename} -all:all ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
+			@unlink($vs_export_filename);
+			@unlink("{$vs_tmp_filepath}_original");
+		}
+
+		return $vs_tmp_filepath;
+	}
+	# ------------------------------------------------------------------------------------------------
+	function caExportMediaMetadataForRecord($ps_table, $ps_type_code, $pn_id) {
+		$o_app_config = Configuration::load();
+
+		if (!($vs_media_metadata_config = $o_app_config->get('media_metadata'))) { return false; }
 		$o_metadata_config = Configuration::load($vs_media_metadata_config);
 
-		$vs_mimetype = $po_representation->getMediaInfo('media', $ps_version, 'MIMETYPE');
-		if (!in_array($vs_mimetype, array('image/jpeg'))) { return false; }		// Don't try to embed in files other than JPEGs
-		$vs_filepath = $po_representation->getMediaPath('media', $ps_version);
-		if (!file_exists($vs_filepath)) { return false; }
-
 		$va_mappings = $o_metadata_config->getAssoc('export_mappings');
-		$o_xmp = new XMPParser();
+		if(!isset($va_mappings[$ps_table])) { return false; }
 
-		copy($vs_filepath, $vs_tmp_filepath = caGetTempDirPath()."/".time().md5($vs_filepath));
-
-		$o_xmp->parse($vs_tmp_filepath);
-		$o_xmp->initMetadata();
-
-		if (is_object($po_object) && isset($va_mappings['ca_objects']) && is_array($va_mappings['ca_objects'])) {
-			$va_mapping = $va_mappings['ca_objects'];
-			$vs_type = $po_object->getTypeCode();
-			if (isset($va_mapping[$vs_type]) && is_array($va_mapping[$vs_type])) {
-				$va_mapping = $va_mapping[$vs_type];
-			} else {
-				if (isset($va_mapping['__default__']) && is_array($va_mapping['__default__'])) {
-					$va_mapping = $va_mapping['__default__'];
-				} else {
-					return null;
-				}
-			}
-
-			if (is_array($va_mapping)) {
-				foreach($va_mapping as $vs_xmp => $va_ca) {
-					$va_tmp = explode(':', $vs_xmp);
-					if (sizeof($va_tmp) > 1) { $vs_xmp = $va_tmp[1];}
-					foreach($va_ca as $vs_ca => $va_opts) {
-						if (preg_match('!^static:!', $vs_ca)) {
-							$vs_val = preg_replace('!^static:!', '', $vs_ca);
-						} else {
-							$vs_val = $po_object->get($vs_ca, $va_opts);
-						}
-						if ($vs_val) { $o_xmp->set($vs_xmp, $vs_val); }
-					}
-				}
-			}
+		if(isset($va_mappings[$ps_table][$ps_type_code])) {
+			$vs_export_mapping = $va_mappings[$ps_table][$ps_type_code];
+		} elseif(isset($va_mappings[$ps_table]['__default__'])) {
+			$vs_export_mapping = $va_mappings[$ps_table]['__default__'];
+		} else {
+			$vs_export_mapping = false;
 		}
 
-		if (is_object($po_representation) && isset($va_mappings['ca_object_representations']) && is_array($va_mappings['ca_object_representations'])) {
-			$va_mapping = $va_mappings['ca_object_representations'];
-			$vs_type = $po_representation->getTypeCode();
-			if (isset($va_mapping[$vs_type]) && is_array($va_mapping[$vs_type])) {
-				$va_mapping = $va_mapping[$vs_type];
-			} else {
-				if (isset($va_mapping['__default__']) && is_array($va_mapping['__default__'])) {
-					$va_mapping = $va_mapping['__default__'];
-				} else {
-					return null;
-				}
-			}
-
-			if (is_array($va_mapping)) {
-				foreach($va_mapping as $vs_xmp => $va_ca) {
-					$va_tmp = explode(':', $vs_xmp);
-					if (sizeof($va_tmp) > 1) { $vs_xmp = $va_tmp[1];}
-					foreach($va_ca as $vs_ca => $va_opts) {
-						if (preg_match('!^static:!', $vs_ca)) {
-							$vs_val = preg_replace('!^static:!', '', $vs_ca);
-						} else {
-							$vs_val = $po_representation->get($vs_ca, $va_opts);
-						}
-						if ($vs_val) { $o_xmp->set($vs_xmp, $vs_val); }
-					}
-				}
-			}
+		if($vs_export_mapping) {
+			return ca_data_exporters::exportRecord($vs_export_mapping, $pn_id);
 		}
-		$o_xmp->write();
-		return $vs_tmp_filepath;
+
+		return false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**

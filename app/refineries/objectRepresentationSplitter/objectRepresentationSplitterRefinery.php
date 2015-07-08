@@ -133,7 +133,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Media prefix'),
-				'description' => _t('')
+				'description' => ''
 			)
 		);
 ?>

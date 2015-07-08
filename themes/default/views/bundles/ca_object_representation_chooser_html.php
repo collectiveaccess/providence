@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,8 +35,7 @@
 	$vb_read_only		= (bool)caGetOption('readonly', $va_settings, false);
 	
 	if ($vs_element_code	= $this->getVar('element_code')) {
-		if(!is_array($va_selected_rep_ids = $t_subject->get($vs_element_code, array('returnAsArray' => true, 'idsOnly' => true)))) { $va_selected_rep_ids = array(); }
-		$va_selected_rep_ids = caExtractValuesFromArrayList($va_selected_rep_ids, $vs_element_code, array('preserveKeys' => false));
+		if(!is_array($va_selected_rep_ids = $t_subject->get($x=$t_subject->tableName().".".$vs_element_code, array('returnAsArray' => true, 'idsOnly' => true)))) { $va_selected_rep_ids = array(); }
 ?>
 
 	<div class="caObjectRepresentationChooserContainer" id="<?php print $vs_id_prefix; ?>">

@@ -62,7 +62,7 @@ class AlhalqaSearchService extends SearchJSONService {
 
 				$va_object = array_shift($va_objects);
 				$t_rel_object = new ca_objects($va_object['object_id']);
-				$va_rep = $t_rel_object->getPrimaryRepresentation(array('preview170', 'alhalqa1000', 'alhalqa2000'));
+				$va_rep = $t_rel_object->getPrimaryRepresentation(array('preview170', 'medium', 'alhalqa1000', 'alhalqa2000'));
 				if(!is_array($va_rep) || !is_array($va_rep['urls'])) { continue; }
 
 				$va_result['reference_image_urls'] = $va_rep['urls'];
