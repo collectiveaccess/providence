@@ -897,10 +897,14 @@
 								//
 								// Standard idno lookup for most tables
 								//
+								
+								$va_find_vals = array($vs_idno_fld => $vs_idno ? $vs_idno : ($pa_label['_originalText'] ? $pa_label['_originalText'] : $vs_label));
+								if (isset($pa_values['parent_id'])) { $va_find_vals['parent_id'] = $pa_values['parent_id']; }
+							
 								if (
 									($vs_idno || trim($pa_label['_originalText'] || $vs_label)) 
 									&& 
-									($vn_id = ($vs_table_class::find(array($vs_idno_fld => $vs_idno ? $vs_idno : ($pa_label['_originalText'] ? $pa_label['_originalText'] : $vs_label)), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))
+									($vn_id = ($vs_table_class::find($va_find_vals, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))
 								) {
 									break(2);
 								}
