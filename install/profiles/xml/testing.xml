@@ -3142,7 +3142,7 @@
             </placement>
           </bundlePlacements>
         </screen>
-        <screen idno="items" default="1">
+        <screen idno="items" default="0">
           <labels>
             <label locale="en_US">
               <name>Items</name>
