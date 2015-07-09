@@ -1071,8 +1071,15 @@ class SearchResult extends BaseObject {
 								foreach($va_ids as $vn_id) {
 									if(is_array(SearchResult::$opa_hierarchy_parent_prefetch_cache[$va_path_components['table_name']][$vn_id])) {
 										$va_hier_id_list = array_merge(array($vn_id), SearchResult::$opa_hierarchy_parent_prefetch_cache[$va_path_components['table_name']][$vn_id]);
-										
+										$va_hier_id_list = array_filter($va_hier_id_list, function($v) { return $v > 0 ;});
 										if ($vs_hierarchy_direction === 'asc') { $va_hier_id_list = array_reverse($va_hier_id_list); }
+										
+										if (!is_null($vn_max_levels_from_top)) {
+											$va_hier_id_list = array_slice($va_hier_id_list, 0, $vn_max_levels_from_top, true);
+										} elseif (!is_null($vn_max_levels_from_bottom)) {
+											if (($vn_start = sizeof($va_hier_id_list) - $vn_max_levels_from_bottom) < 0) { $vn_start = 0; }
+											$va_hier_id_list = array_slice($va_hier_id_list, $vn_start, $vn_max_levels_from_bottom, true);
+										}
 										$va_hier_ids[] = $va_hier_id_list;
 									}
 								}
@@ -1082,6 +1089,13 @@ class SearchResult extends BaseObject {
 									$va_hier_ids = array_merge(array($vn_row_id), SearchResult::$opa_hierarchy_parent_prefetch_cache[$va_path_components['table_name']][$vn_row_id]);
 								} else {
 									$va_hier_ids = array($vn_row_id);
+								}
+								
+								if (!is_null($vn_max_levels_from_top)) {
+									$va_hier_ids = array_slice($va_hier_ids, 0, $vn_max_levels_from_top, true);
+								} elseif (!is_null($vn_max_levels_from_bottom)) {
+									if (($vn_start = sizeof($va_hier_ids) - $vn_max_levels_from_bottom) < 0) { $vn_start = 0; }
+									$va_hier_ids = array_slice($va_hier_ids, $vn_start, $vn_max_levels_from_bottom, true);
 								}
 								
 								if ($vs_hierarchy_direction === 'asc') { $va_hier_ids = array_reverse($va_hier_ids); }
@@ -1877,7 +1891,8 @@ class SearchResult extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	private function getCacheKeyForGetWithTemplate($ps_template, $pa_options) {
-		return $this->ops_table_name.'/'.$ps_template.'/'.md5(print_r($pa_options, true));
+		unset($pa_options['request']);
+		return $this->ops_table_name.'/'.$ps_template.'/'.md5(serialize($pa_options));
 	}
 	# ------------------------------------------------------------------
 	/**

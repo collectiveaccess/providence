@@ -100,6 +100,11 @@
 			if ($t_element->get('parent_id') > 0) { return false; }
 			$vn_element_id = $t_element->getPrimaryKey();
 			
+			if (!is_array($pa_values)) { 
+				// Try to make something of a non-array value (maybe this is a terrible idea?)
+				$pa_values = array($t_element->get('element_code') => $pa_values);
+			}
+			
 			if (!$ps_error_source) { $ps_error_source = $this->tableName().'.'.$t_element->get('element_code'); }
 			
 			// check restriction min/max settings
@@ -368,6 +373,7 @@
 		private function _commitAttributes($po_trans=null) {
 			$va_attribute_change_list = array();
 			$va_inserted_attributes_that_errored = array();
+			
 			foreach($this->opa_attributes_to_add as $va_info) {
 				if ((!($vn_attribute_id = $this->_addAttribute($va_info['values'], $va_info['element'], $po_trans, $va_info))) && !is_null($vn_attribute_id)) {
 					$va_info['values']['_errors'] = $this->_getErrorsForBundleUI($va_info['error_source']);
@@ -485,9 +491,12 @@
 				
 				// set the field values array for this instance
 				//$this->setFieldValuesArray($va_field_values_with_updated_attributes);
-				
-				$this->doSearchIndexing(array_merge($this->getFieldValuesArray(true), $va_fields_changed_array), false, array('isNewRow' => true));	
-				
+
+				$va_index_options = array('isNewRow' => true);
+				if(caGetOption('queueIndexing', $pa_options, false)) {
+					$va_index_options['queueIndexing'] = true;
+				}
+				$this->doSearchIndexing(array_merge($this->getFieldValuesArray(true), $va_fields_changed_array), false, $va_index_options);
 				
 				if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 				if ($this->numErrors() > 0) {
@@ -531,8 +540,13 @@
 				
 				// set the field values array for this instance
 				//$this->setFieldValuesArray($va_field_values_with_updated_attributes);
+
+				$va_index_options = array();
+				if(caGetOption('queueIndexing', $pa_options, false)) {
+					$va_index_options['queueIndexing'] = true;
+				}
 				
-				$this->doSearchIndexing($va_fields_changed_array);
+				$this->doSearchIndexing($va_fields_changed_array, false, $va_index_options);
 				
 				if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 				if ($this->numErrors() > 0) {

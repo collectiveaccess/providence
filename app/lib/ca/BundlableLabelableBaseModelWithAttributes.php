@@ -1548,7 +1548,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// This bundle is only available when editing objects of type ca_sets
 					case 'ca_set_items':
 						if ($vb_batch) { return null; } // not supported in batch mode
-						$vs_element .= $this->getSetItemHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
+						$vs_element .= $this->getSetItemHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options, $pa_bundle_settings);
 						break;
 					# -------------------------------
 					// This bundle is only available for types which support set membership
@@ -3189,9 +3189,9 @@ if (!$vb_batch) {		// hierarchy moves are not supported in batch mode
 		$vb_is_insert = false;
 		
 		if ($this->getPrimaryKey()) {
-			$this->update();
+			$this->update(array('queueIndexing' => true));
 		} else {
-			$this->insert();
+			$this->insert(array('queueIndexing' => true));
 			$vb_is_insert = true;
 		}
 		if ($this->numErrors() > 0) {
@@ -3268,7 +3268,7 @@ if (!$vb_batch) {
 										continue;
 									}
 									$vn_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'type_id_'.$va_label['label_id'], pInteger);
-									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, true);
+									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, true, array('queueIndexing' => true));
 									if ($this->numErrors()) {
 										foreach($this->errors() as $o_e) {
 											switch($o_e->getErrorNumber()) {
@@ -3286,7 +3286,7 @@ if (!$vb_batch) {
 							} else {
 								if ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_PrefLabel_'.$va_label['label_id'].'_delete', pString)) {
 									// delete
-									$this->removeLabel($va_label['label_id']);
+									$this->removeLabel($va_label['label_id'], array('queueIndexing' => true));
 								}
 							}
 						}
@@ -3328,7 +3328,7 @@ if (!$vb_batch) {
 						 				foreach($va_labels_by_locale as $vn_locale_id => $va_labels) {
 						 					foreach($va_labels as $vn_i => $va_label) {
 						 						if(isset($va_label[$this->getLabelDisplayField()]) && ($va_label[$this->getLabelDisplayField()] == '['._t('BLANK').']')) {
-						 							$this->removeLabel($va_label['label_id']);
+						 							$this->removeLabel($va_label['label_id'], array('queueIndexing' => true));
 						 						}
 						 					}
 						 				}
@@ -3352,7 +3352,7 @@ if (!$vb_batch) {
 								continue;
 							}
 							$vn_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'type_id_new_'.$vn_c, pInteger);
-							$this->addLabel($va_label_values, $vn_new_label_locale_id, $vn_label_type_id, true);	
+							$this->addLabel($va_label_values, $vn_new_label_locale_id, $vn_label_type_id, true, array('queueIndexing' => true));
 							if ($this->numErrors()) {
 								$po_request->addActionErrors($this->errors(), $vs_f);
 								$vb_error_inserting_pref_label = true;
@@ -3395,7 +3395,7 @@ if (!$vb_batch) {
 							if ($vn_label_locale_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'locale_id_'.$va_label['label_id'], pString)) {
 								if (is_array($va_label_values = $this->getLabelUIValuesFromRequest($po_request, $vs_placement_code.$vs_form_prefix, $va_label['label_id'], false))) {
 									$vn_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'type_id_'.$va_label['label_id'], pInteger);
-									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, false);
+									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, false, array('queueIndexing' => true));
 									if ($this->numErrors()) {
 										foreach($this->errors() as $o_e) {
 											switch($o_e->getErrorNumber()) {
@@ -3413,7 +3413,7 @@ if (!$vb_batch) {
 							} else {
 								if ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPrefLabel_'.$va_label['label_id'].'_delete', pString)) {
 									// delete
-									$this->removeLabel($va_label['label_id']);
+									$this->removeLabel($va_label['label_id'], array('queueIndexing' => true));
 								}
 							}
 						}
@@ -3449,7 +3449,7 @@ if (!$vb_batch) {
 					if ($vn_new_label_locale_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'locale_id_new_'.$vn_c, pString)) {
 						if (is_array($va_label_values = $this->getLabelUIValuesFromRequest($po_request, $vs_placement_code.$vs_form_prefix, 'new_'.$vn_c, false))) {
 							$vn_new_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'type_id_new_'.$vn_c, pInteger);
-							$this->addLabel($va_label_values, $vn_new_label_locale_id, $vn_new_label_type_id, false);	
+							$this->addLabel($va_label_values, $vn_new_label_locale_id, $vn_new_label_type_id, false, array('queueIndexing' => true));
 						
 							if ($this->numErrors()) {
 								$po_request->addActionErrors($this->errors(), $vs_f);
@@ -3543,7 +3543,7 @@ if (!$vb_batch) {
 										global $g_ui_locale_id;
 										if ($t_rep->load($va_rep['representation_id'])) {
 											$t_rep->setMode(ACCESS_WRITE);
-											$t_rep->replaceLabel(array('name' => $vs_rep_label), $g_ui_locale_id, null, true);
+											$t_rep->replaceLabel(array('name' => $vs_rep_label), $g_ui_locale_id, null, true, array('queueIndexing' => true));
 											if ($t_rep->numErrors()) {
 												$po_request->addActionErrors($t_rep->errors(), $vs_f, $va_rep['representation_id']);
 											}

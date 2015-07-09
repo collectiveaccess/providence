@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -137,6 +137,9 @@ abstract class BaseDataReader {
 				break;
 			case '__source__':
 				return pathinfo($this->ops_source, PATHINFO_BASENAME);
+				break;
+			case '__filename__':
+				return ($vs_original_filename = caGetOption('originalFilename', $pa_options, null)) ? $vs_original_filename : pathinfo($this->ops_source, PATHINFO_BASENAME);
 				break;
 		}
 		return null;
