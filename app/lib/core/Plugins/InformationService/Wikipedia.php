@@ -153,7 +153,7 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 			'titles' => self::getPageTitleFromURI($ps_url),
 			'prop' => 'pageimages|info|extracts',
 			'inprop' => 'url',
-			'piprop' => 'thumbnail',
+			'piprop' => 'name|thumbnail',
 			'pithumbsize' => '200px',
 			'format' => 'json'
 		);
@@ -185,6 +185,7 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 			'image_thumbnail' => $va_result['thumbnail']['source'],
 			'image_thumbnail_width' => $va_result['thumbnail']['width'],
 			'image_thumbnail_height' => $va_result['thumbnail']['height'],
+			'image_overlay_url' => $va_result['fullurl'] . '#/media/File:' . $va_result['pageimage'],
 			'title' => $va_result['title'],
 			'pageid' => $va_result['page_id'],
 			'fullurl' => $va_result['fullurl'],
