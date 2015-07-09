@@ -1,0 +1,209 @@
+
+== Configuration
+
+Almost every aspect of the client is configurable.  The client is built around http://pimple.sensiolabs.org[Pimple] a light-weight dependency injection container.  Most users will only need to configure a few parameters to suit their needs.
+
+However, since the container also controls all object instantiation, it is possible for users to completely change the internal components used by the client.  A user could, for example, write a custom ConnectionPool class and use that instead of the default connection pools that ship with the client
+
+=== Host Configuration
+
+A common operation will be telling the client what nodes are in your cluster.  By default, the client will connect to 'localhost:9200', which obviously doesn't work in many production environments.
+
+All configurations (both simple parameters and more advanced component-replacement) are injected into the constructor of the client.  
+
+The client accepts an array of hosts that you would like to connect to.  Each value in the array must be a string (either with or without the port number).  SSL can be enabled by prefixing the host with 'https':
+
+[source,php]
+----
+$params = array();
+$params['hosts'] = array (
+    '192.168.1.1:9200',                 // IP + Port
+    '192.168.1.2',                      // Just IP
+    'mydomain.server.com:9201',         // Domain + Port
+    'mydomain2.server.com',             // Just Domain
+    'https://localhost',                // SSL to localhost
+    'https://192.168.1.3:9200',         // SSL to IP + Port
+    'http://user:pass@localhost:9200',  // HTTP Basic Auth
+    'https://user:pass@localhost:9200',  // SSL + HTTP Basic Auth
+);
+
+$client = new Elasticsearch\Client($params);
+----
+
+This associative array holds all custom configurations that you may want to set.  Often, you'll only need to configure the hosts, but if you need more advanced behavior, read on.
+
+=== Ignoring exceptions
+The library attempts to throw exceptions for common problems.  These exceptions
+match the HTTP response code provided by Elasticsearch.  For example, attempting to
+GET a nonexistent document will throw a `MissingDocument404Exception`.
+
+Exceptions are a useful and consistent way to deal with problems like missing
+documents, syntax errors, version conflicts, etc.  But sometimes you want
+to deal with the response body rather than catch exceptions (often useful
+in test suites).
+
+If you need that behavior, you can configure an `ignore` parameter.  The
+following setting will ignore the `MissingDocument404Exception` exception and
+instead return the JSON provided by Elasticsearch:
+
+[source,php]
+----
+$client = new Client();
+
+$params = array(
+    'index'  => 'test_missing',
+    'type'   => 'test',
+    'id'     => 1,
+    'ignore' => 404 <1>
+);
+echo $client->get($params);
+
+> {"_index":"test_missing","_type":"test","_id":"1","found":false}
+
+
+$params = array(
+    'index'  => 'test_missing',
+    'type'   => 'test',
+    'ignore' => [400, 404] <2>
+);
+echo $client->get($params);
+
+> No handler found for uri [/test_missing/test/] and method [GET]
+
+----
+<1> This will ignore just the 404 missing exception
+<2> `ignore` also accepts an array of exceptions to ignore. In this example,
+the `BadRequest400Exception` is being ignored
+
+It should be noted that the response is simply a string, which may or may not
+be encoded as JSON.  In the first example, the response body was a complete
+JSON object which could be decoded.  In the second example, it was simply a string.
+
+Since the client has no way of knowing what the exception response will contain,
+no attempts to decode it are taken.
+
+=== Providing custom query parameters
+
+Sometimes you need to provide custom query params, such as authentication tokens for a third-party plugin or proxy.
+All query parameters are white-listed in Elasticsearch-php, which is to protect you from specifying a param which is
+not accepted by Elasticsearch.
+
+If you need custom parameters, you need to bypass this whitelisting mechanism.  To do so, add them to the `custom`
+parameter as an array of values:
+
+[source,php]
+----
+$getParams = array(
+    'index' => 'test',
+    'type' => 'test',
+    'id' => 1,
+    'parent' => 'abc',  // white-listed
+    'custom' => array('customToken' => 'abc', 'otherToken' => 123) // user-defined, not white listed, not checked
+);
+$exists = $client->exists($getParams);
+----
+
+=== Configuring the Logger
+By default, logging in the client is disabled for performance reasons.  If you wish to enable logging, simply set the `logging` parameter to true:
+
+[source,php]
+----
+$params = array();
+$params['logging'] = true;
+$client = new Elasticsearch\Client($params);
+----
+{zwsp} +
+
+This will enable logging to a file called `elasticsearch.log` inside your project directory.  The default logging level is `WARN`.  This is a logging level
+that only describes important events that should probably require action from you.
+
+Often, you'll want to change the logging location or set the logs file permissions to group writeable. To change these things, simply do the following:
+
+[source,php]
+----
+$params = array();
+$params['logging'] = true;
+$params['logPath'] = '/var/logs/elasticsearch/elasticsearch.log';
+$params['logPermission'] = 0664;
+$client = new Elasticsearch\Client($params);
+----
+{zwsp} +
+
+Not all parameters are strings.  For example, we can change the logging level of the client:
+
+[source,php]
+----
+$params = array();
+$params['logging']  = true;
+$params['logPath']  = '/var/logs/elasticsearch/elasticsearch.log';
+$params['logLevel'] = Psr\Log\LogLevel::INFO;
+$client = new Elasticsearch\Client($params);
+----
+{zwsp} +
+
+By default, the client uses a file-based logger provided by the https://github.com/Seldaek/monolog[Monolog] framework.  Monolog provides a variety of loggers.  For example, we can instruct the client to log to SysLog instead of a file:
+
+[source,php]
+----
+use Monolog\Logger;
+
+// Build a Monolog logger that uses the SyslogHandler
+$logger    = new Logger('log');
+$handler   = new SyslogHandler('my_user');
+$processor = new IntrospectionProcessor();
+
+$logger->pushHandler($handler);
+$logger->pushProcessor($processor);
+
+// Over-ride the client's logger object with your own
+$params['logging']   = true;
+$params['logObject'] = $logger;
+$client = new Elasticsearch\Client($params);
+----
+{zwsp} +
+
+The client uses the generic https://github.com/php-fig/log[PSR\Log interface], which means that any PSR\Log compatible loggers will work just fine in the client.
+
+Replacing the logger with another PSR\Log compatible logger is similar to the previous example of configuring a Monolog logger:
+
+[source,php]
+----
+use Monolog\Logger;
+
+$logger = new MySpecialPSRLogger();
+
+
+$params['logging'] = true;
+$params['logObject'] = $logger;
+$client = new Elasticsearch\Client($params);
+----
+{zwsp} +
+
+
+=== Full list of configurations
+
+.Default Configurations
+[source,php]
+----
+$paramDefaults = array(
+    'connectionClass'       => '\Elasticsearch\Connections\GuzzleConnection',
+    'connectionFactoryClass'=> '\Elasticsearch\Connections\ConnectionFactory',
+    'connectionPoolClass'   => '\Elasticsearch\ConnectionPool\StaticNoPingConnectionPool',
+    'selectorClass'         => '\Elasticsearch\ConnectionPool\Selectors\RoundRobinSelector',
+    'serializerClass'       => '\Elasticsearch\Serializers\SmartSerializer',
+    'sniffOnStart'          => false,
+    'connectionParams'      => array(),
+    'logging'               => false,
+    'logObject'             => null,
+    'logPath'               => 'elasticsearch.log',
+    'logLevel'              => Log\LogLevel::WARNING,
+    'traceObject'           => null,
+    'tracePath'             => 'elasticsearch.log',
+    'traceLevel'            => Log\LogLevel::WARNING,
+    'guzzleOptions'         => array(),
+    'connectionPoolParams'  => array(
+        'randomizeHosts' => true
+    ),
+    'retries'               => null
+);
+----
