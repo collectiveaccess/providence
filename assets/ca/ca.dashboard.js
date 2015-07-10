@@ -68,9 +68,6 @@ var caUI = caUI || {};
 					);
 				}
 			});
-	
-			jQuery("." + that.columnClass).disableSelection();
-			jQuery("." + that.landingClass).disableSelection();
 			
 			var edit = 0;
 			var cookieJar = jQuery.cookieJar('caCookieJar');

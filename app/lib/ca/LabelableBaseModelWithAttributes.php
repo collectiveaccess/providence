@@ -86,12 +86,14 @@
 		 * @param bool $pb_is_preferred
 		 * @param array $pa_options Options include:
 		 *		truncateLongLabels = truncate label values that exceed the maximum storable length. [Default=false]
+		 * 		queueIndexing =
 		 * @return int id for newly created label, false on error or null if no row is loaded
 		 */ 
 		public function addLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
 			
 			$vb_truncate_long_labels = caGetOption('truncateLongLabels', $pa_options, false);
+			$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);
 			
 			$vs_table_name = $this->tableName();
 			
@@ -131,7 +133,7 @@
 			
 			$this->opo_app_plugin_manager->hookBeforeLabelInsert(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 		
-			$vn_label_id = $t_label->insert();
+			$vn_label_id = $t_label->insert(array('queueIndexing' => $pb_queue_indexing));
 			
 			$this->opo_app_plugin_manager->hookAfterLabelInsert(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 		
@@ -152,12 +154,14 @@
 		 * @param bool $pb_is_preferred
 		 * @param array $pa_options Options include:
 		 *		truncateLongLabels = truncate label values that exceed the maximum storable length. [Default=false]
+		 * 		queueIndexing =
 		 * @return int id for the edited label, false on error or null if no row is loaded
 		 */
 		public function editLabel($pn_label_id, $pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=false, $pa_options=null) {
 			if (!($vn_id = $this->getPrimaryKey())) { return null; }
 			
 			$vb_truncate_long_labels = caGetOption('truncateLongLabels', $pa_options, false);
+			$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);
 			
 			$vs_table_name = $this->tableName();
 			
@@ -211,7 +215,7 @@
 			
 			$this->opo_app_plugin_manager->hookBeforeLabelUpdate(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 		
-			$t_label->update();
+			$t_label->update(array('queueIndexing' => $pb_queue_indexing));
 			
 			$this->opo_app_plugin_manager->hookAfterLabelUpdate(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 		
@@ -225,8 +229,9 @@
 		/**
 		 * Remove specified label
 		 */
- 		public function removeLabel($pn_label_id) {
+ 		public function removeLabel($pn_label_id, $pa_options = null) {
  			if (!$this->getPrimaryKey()) { return null; }
+			$pb_queue_indexing = caGetOption('queueIndexing', $pa_options, false);
  			
  			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName()))) { return null; }
  			if ($this->inTransaction()) {
@@ -240,8 +245,8 @@
  			$t_label->setMode(ACCESS_WRITE);
  			
  			$this->opo_app_plugin_manager->hookBeforeLabelDelete(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
-		
- 			$t_label->delete();
+
+ 			$t_label->delete(false, array('queueIndexing' => $pb_queue_indexing));
  			
  			$this->opo_app_plugin_manager->hookAfterLabelDelete(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 		
@@ -260,7 +265,7 @@
 		 *
 		 * @return bool True on success, false on error
 		 */
- 		public function removeAllLabels($pn_mode=__CA_LABEL_TYPE_ANY__) {
+ 		public function removeAllLabels($pn_mode=__CA_LABEL_TYPE_ANY__, $pa_options = null) {
  			if (!$this->getPrimaryKey()) { return null; }
  			
  			if (!($t_label = $this->_DATAMODEL->getInstanceByTableName($this->getLabelTableName()))) { return null; }
@@ -284,7 +289,7 @@
 									break;
 							}
 						}
- 						$vb_ret &= $this->removeLabel($va_label['label_id']);
+ 						$vb_ret &= $this->removeLabel($va_label['label_id'], $pa_options);
  					}
  				}
  			}
@@ -294,7 +299,7 @@
 		/**
 		 * 
 		 */
- 		public function replaceLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=true) {
+ 		public function replaceLabel($pa_label_values, $pn_locale_id, $pn_type_id=null, $pb_is_preferred=true, $pa_options = null) {
  			if (!($vn_id = $this->getPrimaryKey())) { return null; }
  			
  			$va_labels = $this->getLabels(array($pn_locale_id), $pb_is_preferred ? __CA_LABEL_TYPE_PREFERRED__ : __CA_LABEL_TYPE_NONPREFERRED__);
@@ -303,11 +308,11 @@
  				$va_labels = caExtractValuesByUserLocale($va_labels);
  				$va_label = array_shift($va_labels);
  				return $this->editLabel(
- 					$va_label[0]['label_id'], $pa_label_values, $pn_locale_id, $pn_type_id, $pb_is_preferred
+ 					$va_label[0]['label_id'], $pa_label_values, $pn_locale_id, $pn_type_id, $pb_is_preferred, $pa_options
  				);
  			} else {
  				return $this->addLabel(
- 					$pa_label_values, $pn_locale_id, $pn_type_id, $pb_is_preferred
+ 					$pa_label_values, $pn_locale_id, $pn_type_id, $pb_is_preferred, $pa_options
  				);
  			}
  		}
@@ -1229,7 +1234,7 @@
 			$t_list = new ca_lists();
 			
 			// get labels
-			$va_preferred_labels = $this->get($this->tableName().".preferred_labels", array('returnAsArray' => true, 'returnAllLocales' => true, 'assumeDisplayField' => false));
+			$va_preferred_labels = $this->get($this->tableName().".preferred_labels", array('returnWithStructure' => true, 'returnAsArray' => true, 'returnAllLocales' => true, 'assumeDisplayField' => false));
 			
 			if(is_array($va_preferred_labels) && sizeof($va_preferred_labels)) {
 				$va_preferred_labels_for_export = array();
@@ -1238,14 +1243,14 @@
 						if (!($vs_locale = $t_locale->localeIDToCode($vn_locale_id))) {
 							$vs_locale = 'NONE';
 						}
-						$va_preferred_labels_for_export[$vs_locale] = $va_labels[0];
+						$va_preferred_labels_for_export[$vs_locale] = array_shift($va_labels);
 						unset($va_preferred_labels_for_export[$vs_locale]['form_element']);
 					}
 				}
 				$va_data['preferred_labels'] = $va_preferred_labels_for_export;
 			}
 			
-			$va_nonpreferred_labels = $this->get($this->tableName().".nonpreferred_labels", array('returnAsArray' => true, 'returnAllLocales' => true, 'assumeDisplayField' => false));
+			$va_nonpreferred_labels = $this->get($this->tableName().".nonpreferred_labels", array('returnWithStructure' => true, 'returnAsArray' => true, 'returnAllLocales' => true, 'assumeDisplayField' => false));
 			if(is_array($va_nonpreferred_labels) && sizeof($va_nonpreferred_labels)) {
 				$va_nonpreferred_labels_for_export = array();
 				foreach($va_nonpreferred_labels as $vn_id => $va_labels_by_locale) {

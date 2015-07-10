@@ -255,6 +255,10 @@ class RelatedGetTest extends BaseTestWithData {
 			$this->assertEquals('0', $qr_entity_relationships->get('ca_objects.deleted'));
 			$this->assertEquals('0', $qr_entity_relationships->get('ca_entities.deleted'));
 		}
+
+		// there are no related list items
+		$vm_ret = $this->opt_object->get('ca_list_items', array('returnAsArray' => true));
+		$this->assertEmpty($vm_ret);
 	}
 	# -------------------------------------------------------
 }

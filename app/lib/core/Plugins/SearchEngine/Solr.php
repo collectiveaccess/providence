@@ -300,7 +300,7 @@ class WLPlugSearchEngineSolr extends BaseSearchPlugin implements IWLPlugSearchEn
 														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term((float)$vs_term, $vs_table.'.'.$vs_fld_num));
 														break;
 													default:	// everything else
-														$o_lucene_query_element->getTerm()->field = $vs_table.'.'.$vs_fld_num;
+														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vs_term, $vs_table.'.'.$vs_fld_num));
 														break;
 												}
 											} else {

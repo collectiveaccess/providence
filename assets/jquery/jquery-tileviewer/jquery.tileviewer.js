@@ -57,7 +57,6 @@ var methods = {
             thumbnail: false,//display thumbnail
             magnifier: false,//display magnifier
             debug: false,
-            pixel: true,
             magnifierViewSize: 196, //view size
             magnifierViewArea: 48, //pixel w/h sizes to zoom
             grabberSize: 12, //size of the grabber area
@@ -331,7 +330,7 @@ var methods = {
                     	if (!options.useAnnotations) { return; }
                     	
                     	if (view.isSavingAnnotations) { 
-                    		if (options.debug) { console.log("Cannot commit now; save is pending"); }
+                    		if (options.debug) { console.log("Cannot commit now; save is pending"); console.trace(); }
                     		return false; 
                     	}
                     	if ((view.annotationsToSave.length == 0) && (view.annotationsToDelete.length == 0)) {
@@ -376,7 +375,10 @@ var methods = {
                     		view.annotationsToDelete = [];
                     		
                     		view.isSavingAnnotations = false;
-                    		view.commit_annotation_changes();
+                    		
+                    		if ((view.annotationsToSave.length > 0) || (view.annotationsToDelete.length > 0)) {
+                    			view.commit_annotation_changes();
+                    		}
                     		
                     		view.needdraw = true;
                     		
@@ -384,13 +386,13 @@ var methods = {
                     	}, 'json');
                     },
 
-                    _get_annotation_by_index: function(index) {
+                    _get_annotation_by_index: function(index, returnArrayIndex) {
                     	var annotationsToCheck = jQuery.extend(true, [], view.annotations);
                         
                         index = parseInt(index);
                         for(var i in annotationsToCheck) {
                         	if (!annotationsToCheck[i]) { continue; }
-                    		if (parseInt(annotationsToCheck[i]['index']) === index) { return annotationsToCheck[i]; }
+                    		if (parseInt(annotationsToCheck[i]['index']) === index) { return returnArrayIndex ? i : annotationsToCheck[i]; }
                     	}
                     	return null;
                     },
@@ -952,10 +954,10 @@ var methods = {
 									}
 									break;
 								case 'circle':
-									console.log("Circle annotations not supported (yet)");
+									if (options.debug) { console.log("Circle annotations not supported (yet)"); }
 									break;
 								default:
-									console.log("Invalid annotation type: " + annotation.type);
+									if (options.debug) {  console.log("Invalid annotation type: " + annotation.type); }
 									break;
 									
 							}
@@ -996,7 +998,10 @@ var methods = {
                     update_textbox_position: function(e) {
                     	if (!options.useAnnotations || !options.displayAnnotations) { return; }
                     	if (view.selectedAnnotation == null) {
-							$(view.annotationTextEditor).css("display", "none").blur();
+							$(view.annotationTextEditor).css("display", "none");
+							if($('#tileviewerAnnotationTextLabel').is(':focus')) {
+								$('#tileviewerAnnotationTextLabel').blur();
+							}
 						}
 						
                     	var offset = $(view.canvas).offset();
@@ -1712,8 +1717,9 @@ var methods = {
                     },
                     
                     open_annotation_text_editor: function(inAnnotation) {
+                    	jQuery("#tileviewerAnnotationTextLabel").blur();	// ensure previously entered annotation text is saved
                     	if (options.lockAnnotationText) { return; }
-                    	if (!inAnnotation || !options.displayAnnotations) { console.log("failed to open annotation text editor"); console.trace(); return; }
+                    	if (!inAnnotation || !options.displayAnnotations) { if (options.debug) { console.log("Failed to open annotation text editor"); } return; }
                     	
                     	var curAnnotation = view._get_annotation_by_index(inAnnotation['index']); //view.annotations[inAnnotation['index']];
 						var sx = ((inAnnotation['tstartX']/100) * ((layer.info.width/factor) * (layer.tilesize/256))) + layer.xpos;
@@ -1726,7 +1732,7 @@ var methods = {
 						
 						t = "<form><textarea id='tileviewerAnnotationTextLabel'>" + tText + "</textarea> <div class='tileviewerAnnotationLockedButtonLabel'><input type='checkbox' id='tileviewerAnnotationLockedButton' value='1' " + ((parseInt(curAnnotation['locked']) > 0) ? "CHECKED='1'" : '') + "/> Locked</div>";
 						
-						if (options.annotationEditorUrl) {
+						if (options.annotationEditorUrl && curAnnotation['annotation_id']) {
 							t += "<a class='tileviewerFullAnnotationEditorLink' href='#' onclick='caRepresentationAnnotationEditor.showPanel(\"" + options.annotationEditorUrl + "/annotation_id/" + curAnnotation['annotation_id'] + "\"); return false;'>" + options.annotationEditorLink + "</a>";
 						}
 						t += "<a href='#' class='tileviewerAnnotationDeleteButton'>Delete</a>";
@@ -1741,6 +1747,9 @@ var methods = {
 								jQuery(this).html("");
 							});
 						}
+						jQuery("#tileviewerAnnotationTextLabel").on("change", function(e) {
+							view.save_annotation_text_editor_change();
+						});
 						
 						jQuery('#tileviewerAnnotationLockedButton').on("change", function(e) {	
 							curAnnotation['locked'] = (jQuery(this).is(":checked") == 1) ? 1 : 0;
@@ -1770,6 +1779,23 @@ var methods = {
 						});
 						
 						jQuery("#tileviewerAnnotationLockedButton").change();
+					},
+					
+					save_annotation_text_editor_change: function() {
+						var inAnnotation;
+						if(inAnnotation = jQuery(view.annotationTextEditor).data('dirty')) {
+							// Save changed text label
+							jQuery(view.annotationTextEditor).data('dirty', null);
+						
+							var i = view._get_annotation_by_index(inAnnotation['index'], true);
+							
+							if(i == null) { return; }	// annotation has been deleted
+							view.annotations[i]['label'] = jQuery('#tileviewerAnnotationTextLabel').val();
+							view.make_annotation_dirty(inAnnotation['index']);
+							view.save_annotations([inAnnotation['index']], []);
+							//view.draw();
+							view.draw_annotations();
+						}
 					},
 
                    	make_annotation_dirty: function(i) {
@@ -1822,9 +1848,10 @@ var methods = {
 								view.tools['polygon'] = "<a href='#' title='" + view.get_tool_tip('polygon') + "' id='" + options.id + "ControlAddPolygonAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/polygon.png' width='28' height='25'/></a>";
 								view.tools['measure'] = "<a href='#' title='" + view.get_tool_tip('measure') + "' id='" + options.id + "ControlAddMeasureAnnotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/measure.png' width='25' height='25'/></a>";	
 								view.tools['lock'] = "<a href='#' title='" + view.get_tool_tip('lock') + "' id='" + options.id + "ControlLockAnnotations' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/locked.png' width='20' height='25'/></a>";
-								if (options.useKey) {
-									view.tools['key'] = "<a href='#' title='" + view.get_tool_tip('key') + "' id='" + options.id + "ControlKey' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/key.png' width='30' height='14'/></a>";	
-								}
+								
+							}
+							if (options.useAnnotations && options.showAnnotationTools && options.useKey) {
+								view.tools['key'] = "<a href='#' title='" + view.get_tool_tip('key') + "' id='" + options.id + "ControlKey' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/key.png' width='30' height='14'/></a>";	
 							}
 							view.tools['overview'] = "<a href='#' title='" + view.get_tool_tip('overview') + "' id='" + options.id + "ControlOverview' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/navigator.png' width='27' height='23'/></a>";	
 							view.tools['expand'] = "<a href='#' title='" + view.get_tool_tip('expand') + "' id='" + options.id + "ControlFitToScreen' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/expand.png' width='25' height='25'/></a>";	
@@ -1843,7 +1870,7 @@ var methods = {
 								view.tools['rotation'] = "<a href='#' title='" + view.get_tool_tip('rotation') + "' id='" + options.id + "ControlRotation' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/rotate.png' width='23' height='25'/></a>";	
 							}
 							
-							if (options.allowAnnotationList) {
+							if (options.allowAnnotationList && options.showAnnotationTools) {
 								view.tools['list'] = "<a href='#' title='" + view.get_tool_tip('list') + "' id='" + options.id + "ControlAnnotationList' class='tileviewerControl'><img src='" + options.buttonUrlPath + "/list.png' width='28' height='25'/></a>";	
 							}
 					
@@ -2907,7 +2934,6 @@ var methods = {
             	// Begin ANNOTATIONS: init text editor
             	//
                 $(view.annotationTextEditor).addClass("tileviewerAnnotationTextEditor");
-                
 						
 				$(view.annotationTextEditor).on("blur", function(e) {
 					var inAnnotation;
@@ -3474,7 +3500,7 @@ var methods = {
             case "zoom_out":
                 break;
             default:
-                console.log("unknown mode:" + options.mode);
+                if (options.debug) { console.log("unknown mode:" + options.mode); }
                 return;
             }
 
@@ -3512,7 +3538,7 @@ var methods = {
     	var c = 1;	// our Tilepic parser always puts a tiny thumb as the first tile, which we want to skip since tileviewer doesn't encode a counterpart
     	alevel = l - level - 2;
     	for(i=0; i<alevel; i++) {
-    		if (i < 0) { console.log("Negative i=" + i); continue;}
+    		if (i < 0) { if (options.debug) {  console.log("Negative i=" + i); } continue;}
     		//if (i >= methods.tileCounts.length) { console.log("Excessive i=" + i); continue;}
     		c += methods.tileCounts[i];
     	}

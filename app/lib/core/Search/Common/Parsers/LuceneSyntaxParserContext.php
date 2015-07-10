@@ -354,7 +354,7 @@ class LuceneSyntaxParserContext {
         $query = new Zend_Search_Lucene_Search_Query_Boolean();
 
         foreach ($subqueries as $subquery) {
-            // Non-requirered entry/subquery
+            // Non-required entry/subquery
             $query->addSubquery($subquery);
         }
 
