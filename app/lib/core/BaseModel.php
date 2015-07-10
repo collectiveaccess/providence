@@ -4032,19 +4032,19 @@ class BaseModel extends BaseObject {
 			
 			$vb_allow_fetching_of_urls = (bool)$this->_CONFIG->get('allow_fetching_of_media_from_remote_urls');
 			$vb_is_fetched_file = false;
-			if ($vb_allow_fetching_of_urls && (bool)ini_get('allow_url_fopen') && isURL($this->_SET_FILES[$ps_field]['tmp_name'])) {
+			if ($vb_allow_fetching_of_urls && (bool)ini_get('allow_url_fopen') && isURL($vs_url = html_entity_decode($this->_SET_FILES[$ps_field]['tmp_name']))) {
 				$vs_tmp_file = tempnam(__CA_APP_DIR__.'/tmp', 'caUrlCopy');
-				$r_incoming_fp = @fopen($this->_SET_FILES[$ps_field]['tmp_name'], 'r');
+				$r_incoming_fp = fopen($vs_url, 'r');
 				
 				if (!$r_incoming_fp) {
-					$this->postError(1600, _t('Cannot open remote URL [%1] to fetch media', $this->_SET_FILES[$ps_field]['tmp_name']),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
+					$this->postError(1600, _t('Cannot open remote URL [%1] to fetch media', $vs_url),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 					set_time_limit($vn_max_execution_time);
 					return false;
 				}
 				
 				$r_outgoing_fp = fopen($vs_tmp_file, 'w');
 				if (!$r_outgoing_fp) {
-					$this->postError(1600, _t('Cannot open file for media fetched from URL [%1]', $this->_SET_FILES[$ps_field]['tmp_name']),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
+					$this->postError(1600, _t('Cannot open file for media fetched from URL [%1]', $vs_url),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 					set_time_limit($vn_max_execution_time);
 					return false;
 				}
@@ -4054,7 +4054,7 @@ class BaseModel extends BaseObject {
 				fclose($r_incoming_fp);
 				fclose($r_outgoing_fp);
 				
-				$vs_url_fetched_from = $this->_SET_FILES[$ps_field]['tmp_name'];
+				$vs_url_fetched_from = $vs_url;
 				$vn_url_fetched_on = time();
 				$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_tmp_file;
 				$vb_is_fetched_file = true;
