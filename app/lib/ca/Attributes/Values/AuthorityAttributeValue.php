@@ -185,7 +185,7 @@
  		 * @return string
  		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
-			$o_config = Configuration::load();
+			$t_instance = self::elementTypeToInstance($this->getType());
 
 			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth'));
 			$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : 'lookupBg');
@@ -223,8 +223,15 @@
 				return $this->getDisplayValue();
 			}
 
-			$vs_id_prefix = "testPrefix";
-			$vs_quickadd_url = caNavUrl($pa_options['request'], 'editor/entities', 'EntityQuickAdd', 'Form', array('entity_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction']));
+			$vs_id_prefix = "{fieldNamePrefix}{$pa_element_info['element_id']}";
+
+			$va_pieces = caEditorUrl($pa_options['request'], $t_instance->tableName(), 0, true);
+			$va_pieces['controller'] = str_replace('Editor', 'QuickAdd', $va_pieces['controller']);
+			$va_pieces['action'] = 'Form';
+
+			$vs_quickadd_url = caNavUrl(
+				$pa_options['request'], $va_pieces['module'], $va_pieces['controller'], $va_pieces['action'], array($t_instance->primaryKey() => 0)
+			);
 
 			$vs_element .= "
 				<div id='caRelationQuickAddPanel".$vs_id_prefix."' class='caRelationQuickAddPanel'>
