@@ -82,7 +82,7 @@ class Client
         'timeout'     => 10,
 
         'api_limit'   => 5000,
-        'api_version' => 'beta',
+        'api_version' => 'v3',
 
         'cache_dir'   => null
     );
@@ -307,22 +307,8 @@ class Client
         if (!array_key_exists($name, $this->options)) {
             throw new InvalidArgumentException(sprintf('Undefined option called: "%s"', $name));
         }
-        $supportedApiVersions = $this->getSupportedApiVersions();
-        if ('api_version' == $name && !in_array($value, $supportedApiVersions)) {
-            throw new InvalidArgumentException(sprintf('Invalid API version ("%s"), valid are: %s', $name, implode(', ', $supportedApiVersions)));
-        }
 
         $this->options[$name] = $value;
-    }
-
-    /**
-     * Returns an array of valid API versions supported by this client.
-     *
-     * @return array
-     */
-    public function getSupportedApiVersions()
-    {
-        return array('v3', 'beta');
     }
 
     /**

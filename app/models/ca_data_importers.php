@@ -1445,8 +1445,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//
 			// Get data for current row
 			//
+			$va_row = array_replace($o_reader->getRow(), $va_environment);
 			
-			$va_row = array_merge($o_reader->getRow(), $va_environment);
 			//
 			// Apply rules
 			//
@@ -1795,6 +1795,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							}
 						
 							if (isset($va_item['settings']['skipRowIfExpression']) && strlen(trim($va_item['settings']['skipRowIfExpression']))) {
+										
 								if($vm_ret = ExpressionParser::evaluate($va_item['settings']['skipRowIfExpression'], $va_row)) {
 									$o_log->logInfo(_t('[%1] Skipped row %2 because expression %3 is true', $vs_idno, $vn_row, $va_item['settings']['skipRowIfExpression']));
 									continue(4);

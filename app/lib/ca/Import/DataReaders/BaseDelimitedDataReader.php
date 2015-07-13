@@ -179,6 +179,10 @@ class BaseDelimitedDataReader extends BaseDataReader {
 	 */
 	public function getRow($pa_options=null) {
 		if (is_array($va_row = $this->opo_parser->getRow())) {
+		
+			// Make returned array 1-based to match delimiter data parser style (column numbers begin with 1)
+			array_unshift($va_row, null);
+			unset($va_row[0]);
 			return $va_row;
 		}
 		

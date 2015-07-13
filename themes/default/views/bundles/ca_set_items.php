@@ -36,6 +36,7 @@
 	$vs_type_singular 		= $this->getVar('type_singular');
 	$vs_type_plural 		= $this->getVar('type_plural');
 	$va_lookup_urls 		= $this->getVar('lookup_urls');
+	$va_settings			= $this->getVar('settings');
 	$vn_table_num 			= $t_set->get('table_num');
 	
 	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'setItemEditor');
@@ -81,6 +82,7 @@
 					initialValueOrder: <?php print json_encode(array_keys($va_items)); ?>,
 					setItemAutocompleteID: '<?php print $vs_id_prefix; ?>setItemAutocompleter',
 					rowIDListID: '<?php print $vs_id_prefix; ?>setRowIDList',
+					displayTemplate: <?php print (isset($va_settings['displayTemplate']) ? json_encode($va_settings['displayTemplate']) : ''); ?>,
 					
 					editSetItemButton: '<?php print addslashes(caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__)); ?>',
 					

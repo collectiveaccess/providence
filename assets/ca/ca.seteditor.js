@@ -42,6 +42,7 @@ var caUI = caUI || {};
 			setNoItemWarningID: 'setNoItemsWarning',
 			setItemAutocompleteID: 'setItemAutocompleter',
 			rowIDListID: 'setRowIDList',
+			displayTemplate: null,
 			
 			lookupURL: null,
 			itemInfoURL: null,
@@ -64,7 +65,7 @@ var caUI = caUI || {};
 					source: that.lookupURL,
 					minLength: 3, max: 50, html: true,
 					select: function(event, ui) {
-						jQuery.getJSON(that.itemInfoURL, {'set_id': that.setID, 'table_num': that.table_num, 'row_id': ui.item.id} , 
+						jQuery.getJSON(that.itemInfoURL, {'set_id': that.setID, 'table_num': that.table_num, 'row_id': ui.item.id, 'displayTemplate': that.displayTemplate} , 
 							function(data) { 
 								if(data.status != 'ok') { 
 									alert("Error getting item information");
