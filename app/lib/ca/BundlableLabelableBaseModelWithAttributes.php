@@ -4970,8 +4970,10 @@ if (!$vb_batch) {
 			
 			if ($vb_uses_relationship_types)  {
 				$va_rel_types = $t_rel->getRelationshipInfo($t_tmp->tableName());
-				$vs_left_table = $t_tmp->getLeftTableName();
-				$vs_direction = ($vs_left_table == $this->tableName()) ? 'ltor' : 'rtol';
+				if(method_exists($t_tmp, 'getLeftTableName')) {
+					$vs_left_table = $t_tmp->getLeftTableName();
+					$vs_direction = ($vs_left_table == $this->tableName()) ? 'ltor' : 'rtol';
+				}
 			}
 			$va_rels = array();
 			$vn_c = 0;
