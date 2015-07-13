@@ -2321,10 +2321,14 @@ class TimeExpressionParser {
 					$vb_not_handled = false;
 					switch($vs_c = $pa_options['format'][$vn_i]) {
 						case 'Y':
-							$vs_output .= (!$va_seen[$vs_c]) ? $va_start_pieces['year'] : $va_end_pieces['year'];
+							$vn_year = (!$va_seen[$vs_c]) ? $va_start_pieces['year'] : $va_end_pieces['year'];
+							if (($vn_year == TEP_START_OF_UNIVERSE) || ($vn_year == TEP_END_OF_UNIVERSE)) { $vn_year = null; }
+							$vs_output .= $vn_year;
 							break;
 						case 'y':
-							$vs_output .= (!$va_seen[$vs_c]) ? substr($va_start_pieces['year'], 2) : substr($va_end_pieces['year'],2);
+							$vn_year = (!$va_seen[$vs_c]) ? $va_start_pieces['year'] : $va_end_pieces['year'];
+							if (($vn_year == TEP_START_OF_UNIVERSE) || ($vn_year == TEP_END_OF_UNIVERSE)) { $vn_year = null; }
+							$vs_output .= substr($vn_year, 2);
 							break;
 						case 'd':
 							$vs_output .= (!$va_seen[$vs_c]) ? sprintf("%02d", $va_start_pieces['day']) : sprintf("%02d", $va_end_pieces['day']);
