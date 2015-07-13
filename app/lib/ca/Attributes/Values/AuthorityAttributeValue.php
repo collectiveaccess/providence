@@ -229,7 +229,7 @@
 			$vs_element .= "
 				<div id='caRelationQuickAddPanel".$vs_id_prefix."' class='caRelationQuickAddPanel'>
 					<div id='caRelationQuickAddPanel".$vs_id_prefix."ContentArea'>
-						<div class='dialogHeader'>TODO: REPLACE THIS HEADER</div>
+						<div class='dialogHeader'>"._t('Quick Add')."</div>
 					</div>
 				</div>
 				<script type='text/javascript'>
@@ -245,10 +245,10 @@
 								closeButtonSelector: '.close',
 								center: true,
 								onOpenCallback: function() {
-									//jQuery('#topNavContainer').hide(250);
+									jQuery('#topNavContainer').hide(250);
 								},
 								onCloseCallback: function() {
-									//jQuery('#topNavContainer').show(250);
+									jQuery('#topNavContainer').show(250);
 								}
 							});
 						}
@@ -284,8 +284,11 @@
 									var panelUrl = quickaddUrl;
 									//if (ui.item._query) { panelUrl += '/q/' + escape(ui.item._query); }
 
-									quickaddPanel.showPanel(panelUrl, null, null, {q: ui.item._query, field_name_prefix: '" . $vs_id_prefix . "'});
-
+									quickaddPanel.showPanel(panelUrl, null, null, { q: ui.item._query, field_name_prefix: '" . $vs_id_prefix . "' });
+									jQuery('#' + quickaddPanel.getPanelContentID()).data('panel', quickaddPanel);
+									jQuery('#' + quickaddPanel.getPanelContentID()).data('autocompleteInput', jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_autocomplete{n}').val());
+									jQuery('#' + quickaddPanel.getPanelContentID()).data('autocompleteInputID', '{fieldNamePrefix}{$pa_element_info['element_id']}_autocomplete{n}');
+									jQuery('#' + quickaddPanel.getPanelContentID()).data('autocompleteItemIDID', '{fieldNamePrefix}{$pa_element_info['element_id']}_{n}');
 									event.preventDefault();
 									return;
 								}
