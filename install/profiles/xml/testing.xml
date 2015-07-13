@@ -2243,6 +2243,27 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="entity_reference" datatype="Entities">
+      <labels>
+        <label locale="en_US">
+          <name>Entities (Reference)</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">90</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
   </elementSets>
   <userInterfaces>
     <userInterface code="standard_object_ui" type="ca_objects">
@@ -2275,6 +2296,9 @@
                 <setting name="label" locale="en_US">Alternate titles</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_entity_reference">
+              <bundle>ca_attribute_entity_reference</bundle>
             </placement>
             <placement code="ca_attribute_tgn">
               <bundle>ca_attribute_tgn</bundle>
