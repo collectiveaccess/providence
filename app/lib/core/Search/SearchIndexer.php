@@ -525,6 +525,7 @@ class SearchIndexer extends SearchBase {
 	 * @return bool
 	 */
 	public function indexRow($pn_subject_tablenum, $pn_subject_row_id, $pa_field_data, $pb_reindex_mode=false, $pa_exclusion_list=null, $pa_changed_fields=null, $pa_options=null) {
+		$vb_initial_reindex_mode = $pb_reindex_mode;
 		if (!$pb_reindex_mode && is_array($pa_changed_fields) && !sizeof($pa_changed_fields)) { return; }	// don't bother indexing if there are no changed fields
 
 		$vs_subject_tablename = $this->opo_datamodel->getTableName($pn_subject_tablenum);
@@ -1030,7 +1031,7 @@ class SearchIndexer extends SearchBase {
 		}
 
 
-		if ((!$pb_reindex_mode) && (sizeof($pa_changed_fields) > 0)) {
+		if ((!$vb_initial_reindex_mode) && (sizeof($pa_changed_fields) > 0)) {
 			//
 			// When not reindexing then we consider the effect of the change on this row upon related rows that use it
 			// in their indexing. This means figuring out which related tables have indexing that depend upon the subject row.
