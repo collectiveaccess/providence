@@ -211,12 +211,11 @@
 					)
 				);
 
-			$va_params = array('max' => 50);
 			if ($pa_options['request']) {
 				if($vs_restrict_to_type = caGetOption('restrictTo'.$this->ops_name_singular.'TypeIdno', $pa_element_info['settings'], null)) { 
-					$va_params = array("type" => $vs_restrict_to_type);
+					$va_params = array('max' => 50, 'type' => $vs_restrict_to_type);
 				} else {
-					$va_params = null;
+					$va_params = array('max' => 50);
 				}
 				$vs_url = caNavUrl($pa_options['request'], 'lookup', $this->ops_name_singular, 'Get', $va_params);
 			} else {
@@ -224,10 +223,36 @@
 				return $this->getDisplayValue();
 			}
 
-			
+			$vs_id_prefix = "testPrefix";
+			$vs_quickadd_url = caNavUrl($pa_options['request'], 'editor/entities', 'EntityQuickAdd', 'Form', array('entity_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction']));
+
 			$vs_element .= "
+				<div id='caRelationQuickAddPanel".$vs_id_prefix."' class='caRelationQuickAddPanel'>
+					<div id='caRelationQuickAddPanel".$vs_id_prefix."ContentArea'>
+						<div class='dialogHeader'>TODO: REPLACE THIS HEADER</div>
+					</div>
+				</div>
 				<script type='text/javascript'>
 					jQuery(document).ready(function() {
+						if (caUI.initPanel) {
+							var caRelationQuickAddPanel" . $vs_id_prefix . ";
+							caRelationQuickAddPanel" . $vs_id_prefix . " = caUI.initPanel({
+								panelID: 'caRelationQuickAddPanel" . $vs_id_prefix . "',
+								panelContentID: 'caRelationQuickAddPanel" . $vs_id_prefix . "ContentArea',
+								exposeBackgroundColor: '#000000',
+								exposeBackgroundOpacity: 0.7,
+								panelTransitionSpeed: 400,
+								closeButtonSelector: '.close',
+								center: true,
+								onOpenCallback: function() {
+									//jQuery('#topNavContainer').hide(250);
+								},
+								onCloseCallback: function() {
+									//jQuery('#topNavContainer').show(250);
+								}
+							});
+						}
+
 						var v = jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_autocomplete{n}').val();	
 						v=v.replace(/(<\/?[^>]+>)/gi, function(m, p1, offset, val) {
 							jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_display{n}').html(p1);
@@ -239,37 +264,43 @@
 						});
 						jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_autocomplete{n}').val(v.trim());
 						
-						jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_autocomplete{n}').autocomplete( 
-							{ minLength: 3, delay: 800, html: true,
-								source: function( request, response ) {
-									$.ajax({
-										url: '{$vs_url}',
-										dataType: 'json',
-										data: { term: request.term, quickadd: 0, noInline: 1 },
-										success: function( data ) {
-											response(data);
-										}
-									});
-								}, 
-								select: function( event, ui ) {
-									if(!parseInt(ui.item.id) || (ui.item.id <= 0)) {
-										jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_autocomplete{n}').val('');  // no matches so clear text input
-										event.preventDefault();
-										return;
+						jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_autocomplete{n}').autocomplete({
+							minLength: 3, delay: 800, html: true,
+							source: function( request, response ) {
+								$.ajax({
+									url: '{$vs_url}',
+									dataType: 'json',
+									data: { term: request.term, quickadd: 1, noInline: 0 },
+									success: function( data ) {
+										response(data);
 									}
-						
-									jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_{n}').val(ui.item.id);
-									jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_autocomplete{n}').val(jQuery.trim(ui.item.label.replace(/<\/?[^>]+>/gi, '')));
+								});
+							},
+							select: function( event, ui ) {
+								var quickaddPanel = caRelationQuickAddPanel".$vs_id_prefix.";
+								var quickaddUrl = '".$vs_quickadd_url."';
+
+								if(!parseInt(ui.item.id) || (ui.item.id <= 0)) {
+									var panelUrl = quickaddUrl;
+									//if (ui.item._query) { panelUrl += '/q/' + escape(ui.item._query); }
+
+									quickaddPanel.showPanel(panelUrl, null, null, {q: ui.item._query, field_name_prefix: '" . $vs_id_prefix . "'});
+
 									event.preventDefault();
-								},
-								change: function( event, ui ) {
-									//If nothing has been selected remove all content from  text input
-									if(!jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_{n}').val()) {
-										jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_autocomplete{n}').val('');
-									}
+									return;
+								}
+
+								jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_{n}').val(ui.item.id);
+								jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_autocomplete{n}').val(jQuery.trim(ui.item.label.replace(/<\/?[^>]+>/gi, '')));
+								event.preventDefault();
+							},
+							change: function( event, ui ) {
+								//If nothing has been selected remove all content from  text input
+								if(!jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_{n}').val()) {
+									jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_autocomplete{n}').val('');
 								}
 							}
-						).click(function() { this.select(); });
+						}).click(function() { this.select(); });
 					});
 				</script>
 			";
