@@ -264,7 +264,7 @@ class ca_search_indexing_queue extends BaseModel {
 	static public function lockAcquire() {
 		if((function_exists('sem_get') && caGetOSFamily() == OS_POSIX)) {
 			if(!self::$s_lock_resource) {
-				self::$s_lock_resource = sem_get(ftok(__FILE__,'CASearchIndexingQueue'));
+				self::$s_lock_resource = sem_get(ftok(__FILE__,'C'));
 			}
 
 			return sem_acquire(self::$s_lock_resource);
