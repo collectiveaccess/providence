@@ -88,7 +88,7 @@
 					<td><?php print $t_order_item->htmlFormElement('fee', $vs_currency_input_format, array('classname' => 'currencyBg', 'value' => '{fee}', 'name' => $vs_id_prefix.'_fee_{n}', 'id' => $vs_id_prefix.'_fee_{n}')); ?></td>
 					<td><?php print $t_order_item->htmlFormElement('tax',  $vs_currency_input_format, array('classname' => 'currencyBg', 'value' => '{tax}', 'name' => $vs_id_prefix.'_tax_{n}', 'id' => $vs_id_prefix.'_tax_{n}')); ?></td>
 					<td rowspan='2' align='right' valign='bottom'>
-						<a href='#' onclick='caMediaPanel.showPanel("<?php print urldecode(caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetRepresentationInfo', array('object_id' => "{object_id}"))); ?>"); return false;' >{thumbnail_tag}</a>
+						<a href='#' onclick='caMediaPanel.showPanel("<?php print urldecode(caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetMediaOverlay', array('object_id' => "{object_id}"))); ?>"); return false;' >{thumbnail_tag}</a>
 					</td>
 				</tr>
 				<tr>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,7 +41,7 @@
 		# CLI utility implementations
 		# -------------------------------------------------------
 		/**
-		 * Rebuild search indices
+		 *
 		 */
 		public static function make_list_from_excel($po_opts=null) {
 			require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
@@ -104,8 +104,17 @@
 				}
 			}
 			
+			$vs_locale = 'en_US';
+		
 			$vs_output = "<list code=\"LIST_CODE_HERE\" hierarchical=\"0\" system=\"0\" vocabulary=\"0\">\n";
+			$vs_output .= "\t<labels>
+		<label locale=\"{$vs_locale}\">
+			<name>ListNameHere</name>
+		</label>
+	</labels>\n";
+			$vs_output .= "<items>\n";
 			$vs_output .= CLITools::_makeList($va_list, 1);
+			$vs_output .= "</items>\n";
 			$vs_output .= "</list>\n";
 			
 			if ($vs_output_path) {
@@ -117,21 +126,23 @@
 			return true;
 		}
 		# -------------------------------------------------------
-		private static function _makeList($pa_list, $pn_indent=0) {
+		private static function _makeList($pa_list, $pn_indent=0, $pa_stack=null) {
+			if(!is_array($pa_stack)) { $pa_stack = array(); }
 			$vs_locale = 'en_US';
 			$vn_ident = $pn_indent ? str_repeat("\t", $pn_indent) : '';
 			$vs_buf = '';
 			foreach($pa_list as $vn_i => $va_item) {
 				$vs_label = caEscapeForXML($va_item['value']);
 				$vs_label_proc = preg_replace("![^A-Za-z0-9]+!", "_", $vs_label);
-				$vs_buf .= "{$vn_ident}<item idno=\"{$vs_label_proc}\" enabled=\"1\" default=\"0\">
+				if ($vs_label_prefix = join('_', $pa_stack)) { $vs_label_prefix .= '_'; }
+				$vs_buf .= "{$vn_ident}<item idno=\"{$vs_label_prefix}{$vs_label_proc}\" enabled=\"1\" default=\"0\">
 {$vn_ident}\t<labels>
 {$vn_ident}\t\t<label locale=\"{$vs_locale}\" preferred=\"1\">
 {$vn_ident}\t\t\t<name_singular>{$vs_label}</name_singular>
 {$vn_ident}\t\t\t<name_plural>{$vs_label}</name_plural>
 {$vn_ident}\t\t</label>
 {$vn_ident}\t</labels>".
-	((is_array($va_item['subitems']) && sizeof($va_item['subitems'])) ? "{$vn_ident}\t<items>\n{$vn_indent}".CLITools::_makeList($va_item['subitems'], $pn_indent + 2)."{$vn_ident}\t</items>" : '')."
+	((is_array($va_item['subitems']) && sizeof($va_item['subitems'])) ? "{$vn_ident}\t<items>\n{$vn_indent}".CLITools::_makeList($va_item['subitems'], $pn_indent + 2, array_merge($pa_stack, array(substr($vs_label_proc, 0, 10))))."{$vn_ident}\t</items>" : '')."
 {$vn_ident}</item>\n";
 				
 			}
@@ -172,4 +183,3 @@
 		}
 		# -------------------------------------------------------
 	}
-?>

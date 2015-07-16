@@ -107,10 +107,10 @@
 	</div>
 <?php
 		if ($t_instance->hasField('acl_inherit_from_ca_collections')) {
-			print $t_instance->getBundleFormHTML('acl_inherit_from_ca_collections', 'acl_inherit_from_ca_collections', array('forACLAccessScreen' => true), array('request' => $this->request));
+			print $t_instance->getBundleFormHTML('acl_inherit_from_ca_collections', '', array('forACLAccessScreen' => true), array('request' => $this->request));
 		}
 		if ($t_instance->hasField('acl_inherit_from_parent')) {
-			print $t_instance->getBundleFormHTML('acl_inherit_from_parent', 'acl_inherit_from_parent', array('forACLAccessScreen' => true), array('request' => $this->request));
+			print $t_instance->getBundleFormHTML('acl_inherit_from_parent', '', array('forACLAccessScreen' => true), array('request' => $this->request));
 		}
 ?>
 	</form>	

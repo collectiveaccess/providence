@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2014 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,6 +30,7 @@
 	$vs_error_source_code 		= 	$this->getVar('error_source_code');
 	$vs_render_mode 			=	$this->getVar('render_mode');
 	
+	$t_instance 				=	$this->getVar('t_instance');
 	$t_element					=	$this->getVar('t_element');
 	$va_elements 				=	$this->getVar('elements');
 	$va_element_ids 			= 	$this->getVar('element_ids');
@@ -53,8 +54,13 @@
 	// use the template to generate the initial form
 	$va_initial_values = array();
 	$va_errors = array();
+	$vs_bundle_preview = '';
 	
 	$va_template_tags = $va_element_ids;
+
+	$va_first = current($va_element_info);
+	$va_element_settings = $t_element->getSettings();
+	$vs_bundle_preview = $t_instance->getAttributesForDisplay($va_first['element_id'], null, array('showHierarchy' => true));
 	
 	if (sizeof($va_attribute_list)) {
 		$va_item_ids = array();
@@ -119,18 +125,33 @@
 	// bundle settings
 	global $g_ui_locale;
 	if (!$vs_add_label = $va_settings['add_label'][$g_ui_locale]) {
-		$vs_add_label = _t("Add %1", mb_strtolower($vs_element_set_label, 'UTF-8'));
+		$vs_add_label = _t("Add %1", $vs_element_set_label);
 	}
 	
 	if ($vb_batch) {
 		print caBatchEditorAttributeModeControl($vs_id_prefix);
 	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+		// @todo add helper to determine if a value is present in $va_initial_values or not
+		// and add the result of that helper as 4th parameter here.
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $va_initial_values));
 	}
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 ?>
 <div id="<?php print $vs_id_prefix; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
+if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['settings'], false)) {
+	$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));
+	if (sizeof($va_template_list) > 0) {
+?>
+	<div class='editorBundlePrintControl'>
+<?php
+		print (sizeof($va_template_list) > 1) ? caHTMLSelect('template', $va_template_list, array('class' => 'dontTriggerUnsavedChangeWarning', 'id' => "{$vs_id_prefix}PrintTemplate")) : caHTMLHiddenInput('template', array('value' => array_pop($va_template_list), 'id' => "{$vs_id_prefix}PrintTemplate"));
+		print "<a href='#' onclick='{$vs_id_prefix}Print(); return false;'>".caNavIcon($this->request, __CA_NAV_BUTTON_PDF_SMALL__)."</a>";
+?>
+	</div>
+<?php
+	}
+}
 	//
 	// The bundle template - used to generate each bundle in the form
 	//
@@ -166,7 +187,20 @@
 				</table>
 <?php
 			}
-		
+
+if (caGetOption('canMakePDFForValue', $va_element_info[$t_element->getPrimaryKey()]['settings'], false)) {
+	$va_template_list = caGetAvailablePrintTemplates('bundles', array('table' => $t_instance->tableName(), 'elementCode' => $t_element->get('element_code'), 'forHTMLSelect' => true));
+	if (sizeof($va_template_list) > 0) {
+?>
+	<div class='editorBundleValuePrintControl' id='<?php print $vs_id_prefix; ?>_print_control_{n}'>
+<?php
+		print (sizeof($va_template_list) > 1) ? caHTMLSelect('template', $va_template_list, array('class' => 'dontTriggerUnsavedChangeWarning', 'id' => "{$vs_id_prefix}PrintTemplate{n}")) : caHTMLHiddenInput('template', array('value' => array_pop($va_template_list), 'id' => "{$vs_id_prefix}PrintTemplate{n}"));
+		print "<a href='#' onclick='{$vs_id_prefix}Print({n}); return false;'>".caNavIcon($this->request, __CA_NAV_BUTTON_PDF_SMALL__)."</a>";
+?>
+	</div>
+<?php
+	}
+}	
 
 			if (isset($va_elements['_locale_id'])) {
 				print ($va_elements['_locale_id']['hidden']) ? $va_elements['_locale_id']['element'] : '<div class="formLabel">'._t('Locale').' '.$va_elements['_locale_id']['element'].'</div>';
@@ -208,6 +242,7 @@
 		minRepeats: <?php print ($vn_n = $this->getVar('min_num_repeats')) ? $vn_n : 0 ; ?>,
 		maxRepeats: <?php print ($vn_n = $this->getVar('max_num_repeats')) ? $vn_n : 65535; ?>,
 		defaultValues: <?php print json_encode($va_element_value_defaults); ?>,
+		bundlePreview: <?php print caEscapeForBundlePreview($vs_bundle_preview); ?>,
 		readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
 		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
 <?php	
@@ -228,13 +263,20 @@
 		minRepeats: <?php print ($vn_n = $this->getVar('min_num_repeats')) ? $vn_n : 0 ; ?>,
 		maxRepeats: <?php print ($vn_n = $this->getVar('max_num_repeats')) ? $vn_n : 65535; ?>,
 		showEmptyFormsOnLoad: <?php print intval($this->getVar('min_num_to_display')); ?>,
-		hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_download_control_'],
+		hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_download_control_', '<?php print $vs_id_prefix; ?>_print_control_',],
 		showOnNewIDList: ['<?php print $vs_id_prefix; ?>_upload_control_'],
 		defaultValues: <?php print json_encode($va_element_value_defaults); ?>,
+		bundlePreview: <?php print caEscapeForBundlePreview($vs_bundle_preview); ?>,
 		readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
 		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
 <?php
 	}
 ?>
 	});
+	
+	function <?php print $vs_id_prefix; ?>Print(attribute_id) {
+		if (!attribute_id) { attribute_id = ''; }
+		var template = jQuery('#<?php print $vs_id_prefix; ?>PrintTemplate' + attribute_id).val();
+		window.location = '<?php print caNavUrl($this->request, '*', '*', 'PrintBundle', array('element_code' => $t_element->get('element_code'), $t_instance->primaryKey() => $t_instance->getPrimaryKey())); ?>/template/' + template + '/attribute_id/' + attribute_id;
+	}
 </script>

@@ -149,7 +149,7 @@ class Zend_Search_Lucene_Search_QueryParser extends Zend_Search_Lucene_FSM
      *
      * @var integer
      */
-    private $_defaultOperator = self::B_OR;
+    private $_defaultOperator = self::B_AND;
 
 
     /** Query parser State Machine states */

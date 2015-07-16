@@ -173,19 +173,23 @@
  		}
  		# ------------------------------------------------------------------
  		/**
- 		  * Generates HTML form widget for attribute value
- 		  * 
- 		  * @param $pa_element_info array Array with information about the metadata element with which this value is associated. Keys taken to be ca_metadata_elements field names and the 'settings' field must be deserialized into an array.
- 		  * @param $pa_options array Array of options. Supported options are:
- 		  *
- 		  *
- 		  * @return string HTML code for form element
- 		  */
+ 		 * Return HTML form element for editing.
+ 		 *
+ 		 * @param array $pa_element_info An array of information about the metadata element being edited
+ 		 * @param array $pa_options array Options include:
+ 		 *			class = the CSS class to apply to all visible form elements [Default=lookupBg]
+ 		 *			width = the width of the form element [Default=field width defined in metadata element definition]
+ 		 *			height = the height of the form element [Default=field height defined in metadata element definition]
+ 		 *			request = the RequestHTTP object for the current request; required for lookups to work [Default is null]
+ 		 *
+ 		 * @return string
+ 		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
 			$o_config = Configuration::load();
 
 			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth'));
-
+			$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : 'lookupBg');
+			
 			$vs_element = 
 				"<div id='{fieldNamePrefix}{$pa_element_info['element_id']}_display{n}' style='float: right;'> </div>".
 				caHTMLTextInput(
@@ -196,7 +200,7 @@
 						'value' => '{{'.$pa_element_info['element_id'].'}}',
 						'maxlength' => 512,
 						'id' => "{fieldNamePrefix}{$pa_element_info['element_id']}_autocomplete{n}",
-						'class' => 'lookupBg'
+						'class' => $vs_class
 					)
 				).
 				caHTMLHiddenInput(
@@ -402,4 +406,3 @@
 		}
  		# ------------------------------------------------------------------
 	}
- ?>

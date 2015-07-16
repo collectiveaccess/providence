@@ -69,7 +69,7 @@ class TracedStatement
     public function checkParameters($params)
     {
         foreach ($params as &$param) {
-            if(!mb_check_encoding($param, 'UTF-8')) {
+            if (!mb_check_encoding($param, 'UTF-8')) {
                 $param = '[BINARY DATA]';
             }
         }
@@ -132,8 +132,8 @@ class TracedStatement
     public function getParameters()
     {
         $params = array();
-        foreach ($this->parameters as $param) {
-            $params[] = htmlentities($param, ENT_QUOTES, 'UTF-8', false);
+        foreach ($this->parameters as $name => $param) {
+            $params[$name] = htmlentities($param, ENT_QUOTES, 'UTF-8', false);
         }
         return $params;
     }

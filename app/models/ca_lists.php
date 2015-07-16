@@ -233,6 +233,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	static $s_list_item_get_cache = array();				// cache for results of getItemFromList()
 	static $s_item_id_cache = array();						// cache for ca_lists::getItemID()
 	static $s_item_id_to_code_cache = array();				// cache for ca_lists::itemIDsToIDNOs()
+	static $s_item_id_to_value_cache = array();				// cache for ca_lists::itemIDsToItemValues()
 	
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
@@ -292,6 +293,31 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		
+		return $vn_rc;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Override delete() to scramble the list_code before we soft-delete. This is useful
+	 * because the database field has a unique key that really enforces uniqueneness
+	 * and we might wanna reuse a code of a set we previously deleted.
+	 */
+	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		if($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
+			if(!caGetOption('hard', $pa_options, false)) { // only applies if we don't hard-delete
+				$vb_we_set_transaction = false;
+				if (!$this->inTransaction()) {
+					$o_t = new Transaction($this->getDb());
+					$this->setTransaction($o_t);
+					$vb_we_set_transaction = true;
+				}
+
+				$this->set('list_code', $this->get('list_code') . '_' . time());
+				$this->update(array('force' => true));
+
+				if ($vb_we_set_transaction) { $this->removeTransaction(true); }
+			}
+		}
+
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
@@ -367,16 +393,19 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * 
 	 * @param $pm_list_name_or_id mixed - list_code or list_id of desired list
 	 * @param $pa_options array - optional array of options. Supported options include:
-	 *			returnHierarchyLevels =		if true list is returned with 'LEVEL' field set to hierarchical level of item, and items are returned in order such that if you loop through the returned list and indent each item according to its level you get a nicely formatted hierarchical display. Default is false.
-	 * 			extractValuesByUserLocale = if true then values are processed to be appropriate for current user locale; default is false:  return values for all locales
-	 *			directChildrenOnly =	 	if true, only children immediately below the specified item are returned; [default is false]
-	 * 			includeSelf =	if true, the specified item is included in the returned set of items; [default is false]
-	 *			type_id = 		optional list item type to limit returned items by; default is to not limit by type (eg. type_id = null)
-	 *			item_id =		optional item_id to use as root of hierarchy for returned items; if this is not set (the default) then all items in the list are returned
-	 *			sort =			if set to a __CA_LISTS_SORT_BY_*__ constant, will force the list to be sorted by that criteria overriding the sort order set in the ca_lists.default_sort field
-	 *			idsOnly = 		if true, only the primary key id values of the list items are returned
-	 *			enabledOnly =	return only enabled list items [default=false]
-	 *			labelsOnly = 	if true only labels in the current locale are returns in an array key'ed on item_id
+	 *		returnHierarchyLevels =		if true list is returned with 'LEVEL' field set to hierarchical level of item, and items are returned in order such that if you loop through the returned list and indent each item according to its level you get a nicely formatted hierarchical display. Default is false.
+	 * 		extractValuesByUserLocale = if true then values are processed to be appropriate for current user locale; default is false:  return values for all locales
+	 *		directChildrenOnly =	 	if true, only children immediately below the specified item are returned; [default is false]
+	 * 		includeSelf =	if true, the specified item is included in the returned set of items; [default is false]
+	 *		type_id = 		optional list item type to limit returned items by; default is to not limit by type (eg. type_id = null)
+	 *		item_id =		optional item_id to use as root of hierarchy for returned items; if this is not set (the default) then all items in the list are returned
+	 *		sort =			if set to a __CA_LISTS_SORT_BY_*__ constant, will force the list to be sorted by that criteria overriding the sort order set in the ca_lists.default_sort field
+	 *		idsOnly = 		if true, only the primary key id values of the list items are returned
+	 *		enabledOnly =	return only enabled list items [default=false]
+	 *		omitRoot =		don't include root node [Default=false]
+	 *		labelsOnly = 	if true only labels in the current locale are returns in an array key'ed on item_id
+	 *		start = 		offset to start returning records from [default=0; no offset]
+	 *		limit = 		maximum number of records to return [default=null; no limit]
 	 *
 	 * @return array List of items indexed first on item_id and then on locale_id of label
 	 */
@@ -386,6 +415,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		if (!isset($pa_options['returnHierarchyLevels'])) { $pa_options['returnHierarchyLevels'] = false; }
 		if ((isset($pa_options['directChildrenOnly']) && $pa_options['directChildrenOnly'])) { $pa_options['returnHierarchyLevels'] = false; }
 	
+		$pn_start = caGetOption('start', $pa_options, 0);
+		$pn_limit = caGetOption('limit', $pa_options, null);
+		
+		$pb_omit_root = caGetOption('omitRoot', $pa_options, false);
 		$vb_enabled_only = caGetOption('enabledOnly', $pa_options, false);
 	
 		$vb_labels_only = false;
@@ -451,21 +484,33 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				$vs_direct_children_sql = " AND cli.parent_id = ".(int)$pn_item_id;
 			}
 			$o_db = $this->getDb();
+			
+			$vs_limit_sql = '';
+			if ($pn_limit > 0) {
+				$vs_limit_sql = ($pn_start > 0) ? "LIMIT {$pn_start}, {$pn_limit}" : "LIMIT {$pn_limit}";
+			} 
 			$vs_sql = "
 				SELECT clil.*, cli.*
 				FROM ca_list_items cli
-				INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id
+				LEFT JOIN ca_list_item_labels AS clil ON cli.item_id = clil.item_id
 				WHERE
-					(cli.deleted = 0) AND (clil.is_preferred = 1) AND (cli.list_id = ?) {$vs_type_sql} {$vs_direct_children_sql} {$vs_hier_sql} {$vs_enabled_sql}
+					(cli.deleted = 0) AND ((clil.is_preferred = 1) OR (clil.is_preferred IS NULL)) AND (cli.list_id = ?) {$vs_type_sql} {$vs_direct_children_sql} {$vs_hier_sql} {$vs_enabled_sql}
 				{$vs_order_by}
+				{$vs_limit_sql}
 			";
 			//print $vs_sql;
 			$qr_res = $o_db->query($vs_sql, (int)$vn_list_id);
 			
 			$va_seen_locales = array();
 			$va_items = array();
+			
+			if ($pn_start > 0) { $qr_res->seek($pn_start); }
+			$vn_c = 0;
 			while($qr_res->nextRow()) {
+				if ($pb_omit_root && !$qr_res->get('parent_id')) { continue; }
 				$vn_item_id = $qr_res->get('item_id');
+				$vn_c++;
+				if (($pn_limit > 0) && ($vn_c > $pn_limit)) { break; }
 				if ((isset($pa_options['idsOnly']) && $pa_options['idsOnly'])) {
 					$va_items[] = $vn_item_id;
 					continue;
@@ -512,7 +557,6 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				'additionalTableSelectFields' => array('name_singular', 'name_plural', 'locale_id'),
 				'additionalTableWheres' => array('ca_list_item_labels.is_preferred = 1')
 			));
-			
 			foreach($va_list_items as $vn_i => $va_item) {
 				if ($pn_type_id && $va_item['NODE']['type_id'] != $pn_type_id) { continue; }
 				if ($vb_enabled_only && !$va_item['NODE']['is_enabled']) { continue; }
@@ -1024,9 +1068,12 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * If no list is specified the currently loaded list is used.
 	 *
 	 * @param mixed $pm_list_name_or_id List code or list_id of list to return default item_id for. If omitted the currently loaded list will be used.
+	 * @param array $pa_options Options include options for @see ca_list_items::getItemsForList()
+	 *
 	 * @return int The item_id of the default element or null if no list was specified or loaded. If no default is set for the list in question the first item found is returned.
 	 */
-	public function getDefaultItemID($pm_list_name_or_id=null) {
+	public function getDefaultItemID($pm_list_name_or_id=null, $pa_options=null) {
+		if (!is_array($pa_options)) { $pa_options = array(); }
 		if($pm_list_name_or_id) {
 			$vn_list_id = $this->_getListID($pm_list_name_or_id);
 		} else {
@@ -1041,14 +1088,14 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			return $t_list_item->getPrimaryKey();
 		}
 		
-		return array_shift($this->getItemsForList($vn_list_id, array('idsOnly' => true)));
+		return array_shift($this->getItemsForList($vn_list_id, array_merge($pa_options, array('idsOnly' => true))));
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
 	private function _getListID($pm_list_name_or_id) {
-		return ca_lists::getListID($pm_list_name_or_id);
+		return ca_lists::getListID($pm_list_name_or_id, array('transaction' => $this->getTransaction()));
 	}
 	# ------------------------------------------------------
 	/**
@@ -1057,7 +1104,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @param mixed $pm_list_name_or_id List code or list_id
 	 * @return int list for the specified list, or null if the list does not exist
 	 */
-	static function getListID($pm_list_name_or_id) {
+	static function getListID($pm_list_name_or_id, $pa_options=null) {
 		if (ca_lists::$s_list_id_cache[$pm_list_name_or_id]) {
 			return ca_lists::$s_list_id_cache[$pm_list_name_or_id];
 		}
@@ -1065,6 +1112,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			$vn_list_id = intval($pm_list_name_or_id);
 		} else {
 			$t_list = new ca_lists();
+			$o_trans = caGetOption('transaction', $pa_options, null);
+			if ($o_trans) { $t_list->setTransaction($o_trans); }
 			if (!$t_list->load(array('list_code' => $pm_list_name_or_id))) {
 				return null;
 			}
@@ -1080,7 +1129,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * @param mixed $pm_list_name_or_id List code or list_id
 	 * @return int list for the specified list, or null if the list does not exist
 	 */
-	static function getListCode($pm_list_name_or_id) {
+	static function getListCode($pm_list_name_or_id, $pa_options=null) {
 		if (ca_lists::$s_list_code_cache[$pm_list_name_or_id]) {
 			return ca_lists::$s_list_code_cache[$pm_list_name_or_id];
 		}
@@ -1088,6 +1137,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			return $pm_list_name_or_id;
 		} else {
 			$t_list = new ca_lists();
+			$o_trans = caGetOption('transaction', $pa_options, null);
+			if ($o_trans) { $t_list->setTransaction($o_trans); }
 			if (!$t_list->load((int)$pm_list_name_or_id)) {
 				return null;
 			}
@@ -1122,6 +1173,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 *  indentForHierarchy = indicate hierarchy with indentation. [Default is true]
 	 * 	transaction = transaction to perform database operations within. [Default is null]
+	 *
+	 *  useDefaultWhenNull = if a list has a null value the default value is typically ignored and null used as the initial value; set this option to use the default in all cases [Default=false]
 	 * 
 	 * @return string - HTML code for the <select> element; empty string if the list is empty
 	 */
@@ -1233,7 +1286,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			
 			if ($va_item['is_default']) { $vn_default_val = $va_item[$pa_options['key']]; }		// get default value
 			
-			if ($va_item['is_default'] && !isset($pa_options['nullOption'])) {		// set default if needed, but only if there's not a null option set
+			if ($va_item['is_default'] && (!isset($pa_options['nullOption']) || (isset($pa_options['useDefaultWhenNull']) && (bool)$pa_options['useDefaultWhenNull']))) {		// set default if needed, but only if there's not a null option set
 				if (
 					(!is_array($pa_options['value']) && (!isset($pa_options['value']) || !strlen($pa_options['value'])))
 				) { 
@@ -1427,14 +1480,23 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				
 				$t_root_item = new ca_list_items();
 				$t_root_item->load(array('list_id' => $vn_list_id, 'parent_id' => null));
+
+				// don't set fixed container height when autoshrink is turned on, because we want it to grow/shrink with the
+				// hier browser element ... set max height for autoshrink instead
+				$vn_autoshrink_height = 180;
+				if(caGetOption('auto_shrink', $pa_options, false)) {
+					$vn_height = null;
+					$vn_autoshrink_height = (int) $va_height['dimension'];
+				}
 				
-				JavascriptLoadManager::register("hierBrowser");
+				AssetLoadManager::register("hierBrowser");
 				
-				$vs_buf = "<div style='width: {$vn_width}; height: {$vn_height};'><div id='{$ps_name}_hierarchyBrowser{n}' style='width: 100%; height: 100%;' class='".(($vs_render_as == 'vert_hierbrowser') ? 'hierarchyBrowserVertical' : 'hierarchyBrowser')."'>
+				$vs_buf = "<div style='width: {$vn_width}; ".($vn_height ? "height: {$vn_height}" : "").";'><div id='{$ps_name}_hierarchyBrowser{n}' style='width: 100%; height: 100%;' class='".(($vs_render_as == 'vert_hierbrowser') ? 'hierarchyBrowserVertical' : 'hierarchyBrowser')."'>
 					<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 				</div><!-- end hierarchyBrowser -->	</div>";
 				
-				$vs_buf .= "	<script type='text/javascript'>
+				$vs_buf .= "
+	<script type='text/javascript'>
 		jQuery(document).ready(function() { 
 			var oHierBrowser = caUI.initHierBrowser('{$ps_name}_hierarchyBrowser{n}', {
 				uiStyle: '".(($vs_render_as == 'vert_hierbrowser') ? 'vertical' : 'horizontal')."',
@@ -1453,12 +1515,16 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				defaultItemID: '".$t_list->getDefaultItemID()."',
 				useAsRootID: '".$t_root_item->getPrimaryKey()."',
 				indicatorUrl: '".$pa_options['request']->getThemeUrlPath()."/graphics/icons/indicator.gif',
+				autoShrink: '".(caGetOption('auto_shrink', $pa_options, false) ? 'true' : 'false')."',
+				autoShrinkAnimateID: '{$ps_name}_hierarchyBrowser{n}',
+				autoShrinkMaxHeightPx: {$vn_autoshrink_height},
 				
 				currentSelectionDisplayID: '{$ps_name}_browseCurrentSelectionText{n}',
 				onSelection: function(item_id, parent_id, name, display) {
 					jQuery('#{$ps_name}').val(item_id);
 				}
-			});";
+			});
+";
 			
 		if ($vs_render_as == 'horiz_hierbrowser_with_search') {
 			$vs_buf .= "jQuery('#{$ps_name}_hierarchyBrowserSearch{n}').autocomplete(
@@ -1686,10 +1752,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Converts a list of item_id's to a list of idno strings. The conversion is literal without hierarchical expansion.
 	 *
-	 * @param array $pa_list A list of relationship numeric type_ids
+	 * @param array $pa_list A list of relationship numeric item_ids
 	 * @param array $pa_options Options include:
 	 * 		transaction = transaction to perform database operations within. [Default is null]
-	 * @return array A list of corresponding type_codes 
+	 * @return array A list of corresponding idnos 
 	 */
 	 static public function itemIDsToIDNOs($pa_ids, $pa_options=null) {
 	 	if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
@@ -1704,7 +1770,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 		if (!is_numeric($pn_id)) {
 	 			$va_non_numerics[] = $pn_id;
 	 		} else {
-	 			$va_ids = (int)$pn_id;
+	 			$va_ids[] = (int)$pn_id;
 	 		}
 	 	}
 	 	
@@ -1728,5 +1794,49 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 	return ca_lists::$s_item_id_to_code_cache[$vs_key] = $va_item_ids_to_codes + $va_non_numerics;
 	}
 	# ------------------------------------------------------
+	/**
+	 * Converts a list of item_id's to a list of value strings. The conversion is literal without hierarchical expansion.
+	 *
+	 * @param array $pa_list A list of relationship numeric item_ids
+	 * @param array $pa_options Options include:
+	 * 		transaction = transaction to perform database operations within. [Default is null]
+	 * @return array A list of corresponding item values 
+	 */
+	 static public function itemIDsToItemValues($pa_ids, $pa_options=null) {
+	 	if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
+	 	
+	 	$vs_key = md5(print_r($pa_ids, true));
+	 	if (isset(ca_lists::$s_item_id_to_value_cache[$vs_key])) {
+	 		return ca_lists::$s_item_id_to_value_cache[$vs_key];
+	 	}
+	 	
+	 	$va_ids = $va_non_numerics = array();
+	 	foreach($pa_ids as $pn_id) {
+	 		if (!is_numeric($pn_id)) {
+	 			$va_non_numerics[] = $pn_id;
+	 		} else {
+	 			$va_ids[] = (int)$pn_id;
+	 		}
+	 	}
+	 	
+	 	if($o_trans = caGetOption('transaction', $pa_options, null)) {
+			$o_db = $o_trans->getDb();
+		} else {
+			$o_db = new Db();
+		}
+		
+	 	$qr_res = $o_db->query("
+	 		SELECT item_id, item_value 
+	 		FROM ca_list_items
+	 		WHERE
+	 			item_id IN (?)
+	 	", array($va_ids));
+	 	
+	 	$va_item_ids_to_values = array();
+	 	while($qr_res->nextRow()) {
+	 		$va_item_ids_to_values[$qr_res->get('item_id')] = $qr_res->get('item_value');
+	 	}
+	 	return ca_lists::$s_item_id_to_value_cache[$vs_key] = $va_item_ids_to_values + $va_non_numerics;
+	}
+	# ------------------------------------------------------
 }
-?>

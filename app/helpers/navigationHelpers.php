@@ -63,6 +63,7 @@
  	define('__CA_NAV_BUTTON_INTERSTITIAL_EDIT_BUNDLE__', 24);
  	define('__CA_NAV_BUTTON_MAKE_PRIMARY__', 25);
  	define('__CA_NAV_BUTTON_UPDATE__', 26);
+ 	define('__CA_NAV_BUTTON_PDF_SMALL__', 27);
  		
  	define('__CA_NAV_BUTTON_ICON_POS_LEFT__', 0);
  	define('__CA_NAV_BUTTON_ICON_POS_RIGHT__', 1);
@@ -292,6 +293,7 @@
 	 * 	disableUnsavedChangesWarning = if true, unsaved change warnings (when user tries to navigate away from the form before saving) are disabled. [Default is false]
 	 *	noTimestamp = if true no form timestamp (used to determine if other users have made changes while the form is being displayed) is included. [Default is false]
 	 *	disableSubmit = don't allow form to be submitted. [Default is false]
+	 *	submitOnReturn = submit form if user hits return in any form element. [Default is false]
 	 */
 	function caFormTag($po_request, $ps_action, $ps_id, $ps_module_and_controller_path=null, $ps_method='post', $ps_enctype='multipart/form-data', $ps_target='_top', $pa_options=null) {
 		if ($ps_target) {
@@ -312,9 +314,11 @@
 			$vs_buf .= caHTMLHiddenInput('form_timestamp', array('value' => time()));
 		}
 		if (!caGetOption('disableUnsavedChangesWarning', $pa_options, false)) { 
+			// tagging form elements with the CSS 'dontTriggerUnsavedChangeWarning' class lets us skip over selected form elements
+			// when applying unsaved change warning event handlers
 			$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(
 				function() {
-					jQuery('#{$ps_id} select, #{$ps_id} input, #{$ps_id} textarea').change(function() { caUI.utils.showUnsavedChangesWarning(true); });
+					jQuery('#{$ps_id} select, #{$ps_id} input, #{$ps_id} textarea').not('.dontTriggerUnsavedChangeWarning').change(function() { caUI.utils.showUnsavedChangesWarning(true); });
 					jQuery('#{$ps_id}').submit(function() { caUI.utils.disableUnsavedChangesWarning(true); });
 				}
 			);</script>";
@@ -323,6 +327,18 @@
 			$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(
 				function() {
 					jQuery('#{$ps_id}').submit(function() { return false; });
+				}
+			);</script>";
+		}
+		if (caGetOption('submitOnReturn', $pa_options, false)) { 
+			$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(
+				function() {
+					jQuery('#{$ps_id}').keydown(function(e) { 
+					   if(e && e.keyCode == 13)
+					   {
+						  jQuery('#{$ps_id}').submit();
+					   }
+					});
 				}
 			);</script>";
 		}
@@ -355,13 +371,19 @@
 		$pb_prevent_duplicate_submits = (isset($pa_options['preventDuplicateSubmits']) && $pa_options['preventDuplicateSubmits']) ? true : false;
 		
 		$vs_graphics_path = (isset($pa_options['graphicsPath']) && $pa_options['graphicsPath']) ? $pa_options['graphicsPath'] : $po_request->getThemeUrlPath()."/graphics";
-		
+
 		$vs_classname = (!$pb_no_background) ? 'form-button' : '';
+		$vs_id = (string) time();
+
+		$vs_extra = '';
+		if(caGetOption('isSaveAndReturn', $pa_options)) {
+			$vs_extra = "jQuery(\"#isSaveAndReturn\").val(\"1\");";
+		}
 		
 		if ($pb_prevent_duplicate_submits) {
-			$vs_button = "<a href='#' onclick='jQuery(\".caSubmit{$ps_id}\").fadeTo(\"fast\", 0.5).attr(\"onclick\", null); jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} caSubmit{$ps_id}'>";
+			$vs_button = "<a href='#' onclick='$vs_extra jQuery(\".caSubmit{$ps_id}\").fadeTo(\"fast\", 0.5).attr(\"onclick\", null); jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} caSubmit{$ps_id} {$vs_id}'>";
 		} else {
-			$vs_button = "<a href='#' onclick='jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname}'>";		
+			$vs_button = "<a href='#' onclick='$vs_extra jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} {$vs_id}'>";
 		}
 		
 		if (!$pb_no_background) { 
@@ -398,7 +420,7 @@
 		// We don't actually display this button or use it to submit the form; the form-button output above does that.
 		// Rather, this <input> tag is only included to force browsers to support submit-on-return-key
 		$vs_button .= "<div style='position: absolute; top: 0px; left:-5000px;'><input type='submit'/></div>";
-		
+
 		return $vs_button;
 	}
 	# ------------------------------------------------------------------------------------------------
@@ -421,6 +443,7 @@
 		$vs_classname = (!$pb_no_background) ? 'form-button' : '';
 		
 		$va_attr = array();
+		if ($ps_id) { $va_attr[] = "id='{$ps_id}'"; }
 		if (is_array($pa_attributes)) {
 			foreach($pa_attributes as $vs_name => $vs_value) {
 				$va_attr[] = $vs_name."='".($vs_value)."'";
@@ -664,6 +687,9 @@
 				break;	
 			case __CA_NAV_BUTTON_SET_CENTER__:
 				$vs_img_name = 'glyphicons_185_screenshot';
+				break;	
+			case __CA_NAV_BUTTON_PDF_SMALL__:
+				$vs_img_name = 'glyphicons_359_file_export_small';
 				break;																																							
 			default:
 				return null;
@@ -676,7 +702,7 @@
 	 * Returns an HTML to edit an item in the appropriate bundle-based editor. If no specified item is specified (eg. no id value is set)
 	 * the a link to create a new item of the specfied type is returned.
 	 *
-	 * @param HTTPRequest $po_request The current request object
+	 * @param RequestHTTP $po_request The current request object
 	 * @param string $ps_content The displayed content of the link
 	 * @param string $ps_classname CSS classname(s) to apply to the link
 	 * @param string $ps_table The name or table_num of the edited items table
@@ -685,6 +711,7 @@
 	 * @param array $pa_attributes Optional array of attributes to set on the link's <a> tag. You can use this to set the id of the link, as well as any other <a> parameter.
 	 * @param array $pa_options Optional array of options. Supported options are:
 	 * 		verifyLink - if true and $pn_id is set, then existence of record with specified id is verified before link is returned. If the id does not exist then null is returned. Default is false - no verification performed.
+	 * @return string The <a> tag as string
 	 */
 	function caEditorLink($po_request, $ps_content, $ps_classname, $ps_table, $pn_id, $pa_additional_parameters=null, $pa_attributes=null, $pa_options=null) {
 		if (!($vs_url = caEditorUrl($po_request, $ps_table, $pn_id, false, $pa_additional_parameters, $pa_options))) {
@@ -718,6 +745,7 @@
 	 * @param array $pa_attributes Optional array of attributes to set on the link's <a> tag. You can use this to set the id of the link, as well as any other <a> parameter.
 	 * @param array $pa_options Optional array of options. Supported options are:
 	 * 		verifyLink - if true and $pn_id is set, then existence of record with specified id is verified before link is returned. If the id does not exist then null is returned. Default is false - no verification performed.
+	 *		preferredDetail = 
 	 */
 	function caDetailLink($po_request, $ps_content, $ps_classname, $ps_table, $pn_id, $pa_additional_parameters=null, $pa_attributes=null, $pa_options=null) {
 		if (!($vs_url = caDetailUrl($po_request, $ps_table, $pn_id, false, $pa_additional_parameters, $pa_options))) {
@@ -872,7 +900,7 @@
 				return null;
 				break;
 		}
-		
+
 		switch($vs_table) {
 			case 'ca_relationship_types':
 				$vs_action = isset($pa_options['action']) ? $pa_options['action'] : (($po_request->isLoggedIn() && $po_request->user->canDoAction('can_configure_relationship_types')) ? 'Edit' : 'Summary'); 
@@ -880,7 +908,11 @@
 			default:
 				if(isset($pa_options['action'])){
 					$vs_action = $pa_options['action'];
-				} elseif($po_request->isLoggedIn() && $po_request->user->canAccess($vs_module,$vs_controller,"Edit",array($vs_pk => $pn_id)) && !(bool)$po_request->config->get($vs_table.'_editor_defaults_to_summary_view')) {
+				} elseif(
+					$po_request->isLoggedIn() &&
+					$po_request->user->canAccess($vs_module,$vs_controller,"Edit",array($vs_pk => $pn_id)) &&
+					!((bool)$po_request->config->get($vs_table.'_editor_defaults_to_summary_view') && $pn_id) // when the id is null/0, we go to the Edit action, even when *_editor_defaults_to_summary_view is set
+				) {
 					$vs_action = 'Edit';
 				} else {
 					$vs_action = 'Summary';
@@ -922,6 +954,7 @@
 	 * @param array $pa_options Optional array of options. Supported options are:
 	 * 		verifyLink = if true and $pn_id is set, then existence of record with specified id is verified before link is returned. If the id does not exist then null is returned. Default is false - no verification performed.
 	 *		action = if set, action of returned link will be set to the supplied value
+	 *		preferredDetail = 
 	 *		type_id = type_id of item to get detail for
 	 */
 	function caDetailUrl($po_request, $ps_table, $pn_id=null, $pb_return_url_as_pieces=false, $pa_additional_parameters=null, $pa_options=null) {
@@ -1135,4 +1168,16 @@
 		);
 	}
 	# ------------------------------------------------------------------------------------------------
-?>
+	/**
+	 * Redirect to given url
+	 * @param string $ps_url
+	 * @return bool success state
+	 */
+	function caSetRedirect($ps_url) {
+		global $g_response;
+		if(!($g_response instanceof ResponseHTTP)) { return false; }
+
+		$g_response->setRedirect($ps_url);
+		return true;
+	}
+	# ------------------------------------------------------------------------------------------------

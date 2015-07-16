@@ -125,7 +125,7 @@
 				</tr>
 			</table>
 <?php
-} else {
+	} else {
 ?>
 			<div style="float: right;"><a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a></div>
 			<div style='width: 690px; height: 160px;'>
@@ -254,7 +254,7 @@
 				closeButtonSelector: ".close",
 				center: true,
 				onOpenCallback: function() {
-				jQuery("#topNavContainer").hide(250);
+					jQuery("#topNavContainer").hide(250);
 				},
 				onCloseCallback: function() {
 					jQuery("#topNavContainer").show(250);

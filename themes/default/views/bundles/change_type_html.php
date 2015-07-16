@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
-	JavascriptLoadManager::register("panel");
+	AssetLoadManager::register("panel");
 	$t_item = $this->getVar('t_item');
 	//if (sizeof($t_item->getTypeList()) <= 1) { return ''; }
 ?>
@@ -57,7 +57,11 @@
 	<div id="caTypeChangePanelContentArea">
 		<?php print caFormTag($this->request, 'ChangeType', 'caChangeTypeForm', null, $ps_method='post', 'multipart/form-data', '_top', array()); ?>
 			<p><?php print _t('<strong>Warning:</strong> changing the %1 type will cause information in all fields not applicable to the new type to be discarded. This action cannot be undone.', $t_item->getProperty('NAME_SINGULAR')); ?></p>
-			<p><?php print _t('Change type from <em>%1</em> to %2', $t_item->getTypeName(), $t_item->getTypeListAsHTMLFormElement('type_id', array('id' => 'caChangeTypeFormTypeID'), array('omitItemsWithID' => array($t_item->getTypeID()), 'childrenOfCurrentTypeOnly' => false, 'directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'access' => __CA_BUNDLE_ACCESS_EDIT__))); ?></p>
+			<p><?php print ($vs_typename = $t_item->getTypeName()) ? 
+				_t('Change type from <em>%1</em> to %2', $vs_typename, $t_item->getTypeListAsHTMLFormElement('type_id', array('id' => 'caChangeTypeFormTypeID'), array('omitItemsWithID' => array($t_item->getTypeID()), 'childrenOfCurrentTypeOnly' => false, 'directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'access' => __CA_BUNDLE_ACCESS_EDIT__)))
+				:
+				_t('Set type to %1', $t_item->getTypeListAsHTMLFormElement('type_id', array('id' => 'caChangeTypeFormTypeID'), array('omitItemsWithID' => array($t_item->getTypeID()), 'childrenOfCurrentTypeOnly' => false, 'directChildrenOnly' => false, 'returnHierarchyLevels' => true, 'access' => __CA_BUNDLE_ACCESS_EDIT__)))
+				; ?></p>
 	
 			<div id="caTypeChangePanelControlButtons">
 				<table>

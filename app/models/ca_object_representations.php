@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -361,6 +361,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$this->BUNDLES['ca_entities'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities'));
 		$this->BUNDLES['ca_places'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related places'));
 		$this->BUNDLES['ca_occurrences'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related occurrences'));
+		$this->BUNDLES['ca_collections'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related collections'));
+		$this->BUNDLES['ca_storage_locations'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related storage locations'));
 		$this->BUNDLES['ca_representation_annotations'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related annotations'));
 		$this->BUNDLES['ca_list_items'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related vocabulary terms'));
 		$this->BUNDLES['ca_sets'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));	
@@ -370,6 +372,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 		$this->BUNDLES['ca_object_representations_media_display'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Media and preview images'));
 		$this->BUNDLES['ca_object_representation_captions'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Captions/subtitles'));
+		
+		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
 	}
 	# ------------------------------------------------------
 	public function insert($pa_options=null) {
@@ -503,6 +507,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			$t_rep = $this;
 		} else {
 			$t_rep = new ca_object_representations($pn_representation_id);
+			if($this->inTransaction()) { $t_rep->setTransaction($this->getTransaction()); }
 		}
  		
  		$va_media_info = $t_rep->getMediaInfo('media');
@@ -594,48 +599,76 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		$vn_start = caGetOption('start', $pa_options, 0, array('castTo' => 'int'));
  		$vn_max = caGetOption('max', $pa_options, 100, array('castTo' => 'int'));
  		
+ 		$va_annotation_ids = array();
  		while($qr_annotations->nextRow()) {
  			$va_tmp = $qr_annotations->getRow();
+ 			$va_annotation_ids[] = $va_tmp['annotation_id'];
+ 			
  			unset($va_tmp['props']);
  			$o_coder->setPropertyValues($qr_annotations->getVars('props'));
  			foreach($o_coder->getPropertyList() as $vs_property) {
  				$va_tmp[$vs_property] = $o_coder->getProperty($vs_property);
  				$va_tmp[$vs_property.'_raw'] = $o_coder->getProperty($vs_property, true);
- 				if ($va_tmp[$vs_property] == $va_tmp[$vs_property.'_raw']) { unset($va_tmp[$vs_property.'_raw']); }
+ 				//if ($va_tmp[$vs_property] == $va_tmp[$vs_property.'_raw']) { unset($va_tmp[$vs_property.'_raw']); }
  			}
  			
  			if (!($vs_sort_key = $va_tmp[$vs_sort_by_property])) {
  				$vs_sort_key = '_default_';
  			}
  			
- 			$va_annotations[$vs_sort_key][$qr_annotations->get('annotation_id')] = $va_tmp;
+ 			$va_annotations[$vs_sort_key][$va_tmp['annotation_id']] = $va_tmp;
  		}
+ 		if (!sizeof($va_annotation_ids)) { return array(); }
  		
  		ksort($va_annotations, SORT_NUMERIC);
  		
  		// get annotation labels
- 		$qr_annotation_labels = $o_db->query("
- 			SELECT 	cral.annotation_id, cral.locale_id, cral.name, cral.label_id
- 			FROM ca_representation_annotation_labels cral
- 			INNER JOIN ca_representation_annotations AS cra ON cra.annotation_id = cral.annotation_id
- 			WHERE
- 				cra.representation_id = ? AND cral.is_preferred = 1
- 		", (int)$vn_representation_id);
+ 		$qr_annotations = caMakeSearchResult('ca_representation_annotations', $va_annotation_ids);
+ 		$va_labels = $va_annotation_classes = array();
  		
- 		$va_labels = array();
- 		while($qr_annotation_labels->nextRow()) {
- 			$va_labels[$qr_annotation_labels->get('annotation_id')][$qr_annotation_labels->get('locale_id')][] = $qr_annotation_labels->get('name');
+ 		// Check if "class" element is configurwed, exists and is a list element
+ 		if ($vs_class_element = $this->getAppConfig()->get('annotation_class_element')) {
+ 			$t_anno = new ca_representation_annotations();
+ 			if (!$t_anno->hasElement($vs_class_element)) { 
+ 				$vs_class_element = null; 
+ 			} elseif($t_anno->_getElementDatatype($vs_class_element) != __CA_ATTRIBUTE_VALUE_LIST__)  {
+ 				// not a list element
+ 				$vs_class_element = null; 
+ 			}
  		}
  		
+ 		while($qr_annotations->nextHit()) {
+ 			$va_labels[$vn_annotation_id = $qr_annotations->get('ca_representation_annotations.annotation_id')][$qr_annotations->get('ca_representation_annotation_labels.locale_id')][] = $qr_annotations->get('ca_representation_annotations.preferred_labels.name');
+ 			
+ 			if ($vs_class_element) { 
+ 				$va_annotation_classes[$vn_annotation_id] = $qr_annotations->get("ca_representation_annotations.{$vs_class_element}", array('returnAsArray' => true));
+ 			}
+ 		}
  		$va_labels_for_locale = caExtractValuesByUserLocale($va_labels);
  		
+ 		$va_annotation_classes_flattened = array();
+ 		foreach($va_annotation_classes as $vn_annotation_id => $va_classes) {
+ 			$va_annotation_classes_flattened[$vn_annotation_id] = array_shift($va_classes);
+ 		}
  		
+ 		$va_key = array();
+ 		if ($qr_list_items = caMakeSearchResult('ca_list_items', array_values($va_annotation_classes_flattened))) {
+ 			while($qr_list_items->nextHit()) {
+ 				$va_key[$qr_list_items->get('item_id')] = array(
+ 					'name' => $qr_list_items->get('ca_list_items.preferred_labels.name_plural'),
+ 					'idno' => $qr_list_items->get('ca_list_items.idno'),
+ 					'color' => $qr_list_items->get('ca_list_items.color'),
+ 				);
+ 			}
+ 		}
+ 
  		$va_sorted_annotations = array();
  		foreach($va_annotations as $vs_key => $va_values) {
  			foreach($va_values as $va_val) {
  				$vs_label = is_array($va_labels_for_locale[$va_val['annotation_id']]) ? array_shift($va_labels_for_locale[$va_val['annotation_id']]) : '';
  				$va_val['labels'] = $va_labels[$va_val['annotation_id']] ? $va_labels[$va_val['annotation_id']] : array();
  				$va_val['label'] = $vs_label;
+ 				$va_val['key'] = $va_key[$va_annotation_classes_flattened[$va_val['annotation_id']]];
  				$va_sorted_annotations[$va_val['annotation_id']] = $va_val;
  			}
  		}
@@ -647,7 +680,6 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  				$va_sorted_annotations = array_slice($va_sorted_annotations, $vn_start);
  			}
  		}
- 		
  		return $va_sorted_annotations;
  	} 
  	# ------------------------------------------------------
@@ -676,6 +708,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		}
 		
  		$t_annotation = new ca_representation_annotations();
+ 		if($this->inTransaction()) { $t_annotation->setTransaction($this->getTransaction()); }
  		$t_annotation->setMode(ACCESS_WRITE);
  		
  		$t_annotation->set('representation_id', $vn_representation_id);
@@ -767,6 +800,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		}
 		
  		$t_annotation = new ca_representation_annotations($pn_annotation_id);
+ 		if($this->inTransaction()) { $t_annotation->setTransaction($this->getTransaction()); }
  		if ($t_annotation->getPrimaryKey() && ($t_annotation->get('representation_id') == $vn_representation_id)) {
  			foreach($o_coder->getPropertyList() as $vs_property) {
  				$t_annotation->setPropertyValue($vs_property, $o_coder->getProperty($vs_property));
@@ -830,6 +864,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		if (!($vn_representation_id = $this->getPrimaryKey())) { return null; }
  		
  		$t_annotation = new ca_representation_annotations($pn_annotation_id);
+ 		if($this->inTransaction()) { $t_annotation->setTransaction($this->getTransaction()); }
  		if ($t_annotation->get('representation_id') == $vn_representation_id) {
  			$t_annotation->setMode(ACCESS_WRITE);
  			$t_annotation->delete(true);
@@ -884,7 +919,9 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		$t_item = new ca_representation_annotations();
+		if($this->inTransaction()) { $t_item->setTransaction($this->getTransaction()); }
 		$t_item_label = new ca_representation_annotation_labels();
+		if($this->inTransaction()) { $t_item_label->setTransaction($this->getTransaction()); }
 		
 		$o_view->setVar('id_prefix', $ps_form_name);
 		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
@@ -920,13 +957,13 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		$vn_c = 0;
 		foreach($va_rel_items as $vn_id => $va_rel_item) {
 			$this->clearErrors();
-			if (strlen($vn_status = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_status_'.$va_rel_item['annotation_id'], pString))) {
-				$vn_access = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_access_'.$va_rel_item['annotation_id'], pInteger);
-				$vn_locale_id = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_locale_id_'.$va_rel_item['annotation_id'], pInteger);
+			if (strlen($vn_status = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_status_'.$va_rel_item['annotation_id'], pString))) {
+				$vn_access = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_access_'.$va_rel_item['annotation_id'], pInteger);
+				$vn_locale_id = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_locale_id_'.$va_rel_item['annotation_id'], pInteger);
 				
 				$va_properties = array();
 				foreach($o_coder->getPropertyList() as $vs_property) {
-					$va_properties[$vs_property] = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_'.$vs_property.'_'.$va_rel_item['annotation_id'], pString);
+					$va_properties[$vs_property] = $po_request->getParameter($x=$ps_placement_code.$ps_form_prefix.'_'.$vs_property.'_'.$va_rel_item['annotation_id'], pString);
 				}
 
 				// edit annotation
@@ -936,8 +973,9 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 					$po_request->addActionErrors($this->errors(), 'ca_representation_annotations', $va_rel_item['annotation_id']);
 				} else {
 					// try to add/edit label
-					if ($vs_label = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_label_'.$va_rel_item['annotation_id'], pString)) {
+					if ($vs_label = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_label_'.$va_rel_item['annotation_id'], pString)) {
 						$t_annotation = new ca_representation_annotations($va_rel_item['annotation_id']);
+						if($this->inTransaction()) { $t_annotation->setTransaction($this->getTransaction()); }
 						if ($t_annotation->getPrimaryKey()) {
 							$t_annotation->setMode(ACCESS_WRITE);
 							
@@ -965,7 +1003,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			} else {
 				// is it a delete key?
 				$this->clearErrors();
-				if (($po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_'.$va_rel_item['annotation_id'].'_delete', pInteger)) > 0) {
+				if (($po_request->getParameter($ps_placement_code.$ps_form_prefix.'_'.$va_rel_item['annotation_id'].'_delete', pInteger)) > 0) {
 					// delete!
 					$this->removeAnnotation($va_rel_item['annotation_id']);
 					if ($this->numErrors()) {
@@ -977,19 +1015,19 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		
  		// check for new annotations to add
  		foreach($_REQUEST as $vs_key => $vs_value ) {
-			if (!preg_match('/^'.$ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_status_new_([\d]+)/', $vs_key, $va_matches)) { continue; }
+			if (!preg_match('/^'.$ps_placement_code.$ps_form_prefix.'_status_new_([\d]+)/', $vs_key, $va_matches)) { continue; }
 			$vn_c = intval($va_matches[1]);
-			if (strlen($vn_status = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_status_new_'.$vn_c, pString)) > 0) {
-				$vn_access = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_access_new_'.$vn_c, pInteger);
-				$vn_locale_id = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_locale_id_new_'.$vn_c, pInteger);
+			if (strlen($vn_status = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_status_new_'.$vn_c, pString)) > 0) {
+				$vn_access = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_access_new_'.$vn_c, pInteger);
+				$vn_locale_id = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_locale_id_new_'.$vn_c, pInteger);
 				
 				$va_properties = array();
 				foreach($o_coder->getPropertyList() as $vs_property) {
-					$va_properties[$vs_property] = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_'.$vs_property.'_new_'.$vn_c, pString);
+					$va_properties[$vs_property] = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_'.$vs_property.'_new_'.$vn_c, pString);
 				}
 				
 				// create annotation
-				$vs_label = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_ca_representation_annotations_label_new_'.$vn_c, pString);
+				$vs_label = $po_request->getParameter($ps_placement_code.$ps_form_prefix.'_label_new_'.$vn_c, pString);
 				$vn_annotation_id = $this->addAnnotation($vs_label, $vn_locale_id, $po_request->getUserID(), $va_properties, $vn_status, $vn_access);
 				
 				if ($this->numErrors()) {
@@ -1047,6 +1085,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		if (!trim($ps_resource_path)) { $ps_resource_path = '/'; }
  		
  		$t_multifile = new ca_object_representation_multifiles();
+ 		if($this->inTransaction()) { $t_multifile->setTransaction($this->getTransaction()); }
  		if (!$pb_allow_duplicates) {
  			if ($t_multifile->load(array('resource_path' => $ps_resource_path, 'representation_id' => $this->getPrimaryKey()))) {
  				return null;
@@ -1074,6 +1113,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		if(!$this->getPrimaryKey()) { return null; }
  		
  		$t_multifile = new ca_object_representation_multifiles($pn_multifile_id);
+ 		if($this->inTransaction()) { $t_multifile->setTransaction($this->getTransaction()); }
  		
  		if ($t_multifile->get('representation_id') == $this->getPrimaryKey()) {
  			$t_multifile->setMode(ACCESS_WRITE);
@@ -1180,6 +1220,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		if(!$this->getPrimaryKey()) { return null; }
  	
  		$t_multifile = new ca_object_representation_multifiles($pn_multifile_id);
+ 		if($this->inTransaction()) { $t_multifile->setTransaction($this->getTransaction()); }
  		
  		if ($t_multifile->get('representation_id') == $this->getPrimaryKey()) {
  			return $t_multifile;
@@ -1220,6 +1261,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		if(!$this->getPrimaryKey()) { return null; }
  		
  		$t_caption = new ca_object_representation_captions();
+ 		if($this->inTransaction()) { $t_caption->setTransaction($this->getTransaction()); }
  		if ($t_caption->load(array('representation_id' => $this->getPrimaryKey(), 'locale_id' => $pn_locale_id))) {
  			return null;
  		}
@@ -1247,6 +1289,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		if(!$this->getPrimaryKey()) { return null; }
  		
  		$t_caption = new ca_object_representation_captions($pn_caption_id);
+ 		if($this->inTransaction()) { $t_caption->setTransaction($this->getTransaction()); }
  		
  		if ($t_caption->get('representation_id') == $this->getPrimaryKey()) {
  			$t_caption->setMode(ACCESS_WRITE);
@@ -1344,7 +1387,9 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  			
  			$va_files[$vn_caption_id]['path'] = $qr_res->getFilePath('caption_file');
  			$va_files[$vn_caption_id]['url'] = $qr_res->getFileUrl('caption_file');
- 			$va_files[$vn_caption_id]['filesize'] = caFormatFileSize(filesize($va_files[$vn_caption_id]['path']));
+			if(file_exists($va_files[$vn_caption_id]['path'])) {
+				$va_files[$vn_caption_id]['filesize'] = caFormatFileSize(filesize($va_files[$vn_caption_id]['path']));
+			}
  			$va_files[$vn_caption_id]['caption_id'] = $vn_caption_id;
  			$va_files[$vn_caption_id]['locale_id'] = $vn_locale_id;
  			$va_files[$vn_caption_id]['locale'] = $t_locale->localeIDToName($vn_locale_id);
@@ -1360,6 +1405,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		if(!$this->getPrimaryKey()) { return null; }
  	
  		$t_caption = new ca_object_representation_captions($pn_caption_id);
+ 		if($this->inTransaction()) { $t_caption->setTransaction($this->getTransaction()); }
  		
  		if ($t_caption->get('representation_id') == $this->getPrimaryKey()) {
  			return $t_caption;
@@ -1578,6 +1624,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  		}
  		return $va_export;
  	}
+ 	# ------------------------------------------------------
  	/**
  	 * 
  	 *
@@ -1587,90 +1634,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  	 * @return string HTML output
  	 */
  	public function getRepresentationViewerHTMLBundle($po_request, $pa_options=null, $pa_additional_display_options=null) {
- 		$va_access_values = (isset($pa_options['access']) && is_array($pa_options['access'])) ? $pa_options['access'] : array();	
- 		$vs_display_type = (isset($pa_options['display']) && $pa_options['display']) ? $pa_options['display'] : 'media_overlay';	
- 		$vs_container_dom_id = (isset($pa_options['containerID']) && $pa_options['containerID']) ? $pa_options['containerID'] : null;	
- 		$vn_object_id = (isset($pa_options['object_id']) && $pa_options['object_id']) ? $pa_options['object_id'] : null;
- 		$vn_item_id = (isset($pa_options['item_id']) && $pa_options['item_id']) ? $pa_options['item_id'] : null;
- 		$vn_order_item_id = (isset($pa_options['order_item_id']) && $pa_options['order_item_id']) ? $pa_options['order_item_id'] : null;
- 		$vb_media_editor = (isset($pa_options['mediaEditor']) && $pa_options['mediaEditor']) ? true : false;
- 		$vb_no_controls = (isset($pa_options['noControls']) && $pa_options['noControls']) ? true : false;
- 		
- 		$vn_item_id = (isset($pa_options['item_id']) && $pa_options['item_id']) ? $pa_options['item_id'] : null;
- 		
- 		$t_object = new ca_objects($vn_object_id);
- 		//if (!$t_object->getPrimaryKey()) { return false; }
- 		
- 		if(!$this->getPrimaryKey()) {
- 			$this->load($t_object->getPrimaryRepresentationID(array('checkAccess' => $va_access_values)));
- 		}
- 		
-		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
-		
-		$t_set_item = new ca_set_items();
-		if ($vn_item_id) { $t_set_item->load($vn_item_id); }
-		
-		$t_order_item = new ca_commerce_order_items();
-		if ($vn_order_item_id) { $t_order_item->load($vn_order_item_id); }
-		
-		$o_view->setVar('containerID', $vs_container_dom_id);
-		
-		$o_view->setVar('t_object_representation', $this);
- 		if (($vn_representation_id = $this->getPrimaryKey()) && ((!sizeof($va_access_values) || in_array($this->get('access'), $va_access_values)))) { 		// check rep access
-			$va_rep_display_info = caGetMediaDisplayInfo($vs_display_type, $this->getMediaInfo('media', 'INPUT', 'MIMETYPE'));
-			$va_rep_display_info['poster_frame_url'] = $this->getMediaUrl('media', $va_rep_display_info['poster_frame_version']);
-			
-			$o_view->setVar('num_multifiles', $this->numFiles());
-				
- 			if (isset($pa_options['use_book_viewer'])) {
- 				$va_rep_display_info['use_book_viewer'] = (bool)$pa_options['use_book_viewer'];
- 			}		
-			$o_view->setVar('display_type', $vs_display_type);
-			
-			if (is_array($pa_additional_display_options)) { $va_rep_display_info = array_merge($va_rep_display_info, $pa_additional_display_options); }
-			$o_view->setVar('display_options', $va_rep_display_info);
-			$o_view->setVar('representation_id', $vn_representation_id);
-			$o_view->setVar('t_object_representation', $this);
-			$o_view->setVar('versions', $va_versions = $this->getMediaVersions('media'));
-			
-			$t_media = new Media();
-			$o_view->setVar('version_type', $t_media->getMimetypeTypename($this->getMediaInfo('media', 'original', 'MIMETYPE')));
-		
-			if ($t_object->getPrimaryKey()) { 
-				$o_view->setVar('reps', $va_reps = $t_object->getRepresentations(array('icon'), null, array("return_with_access" => $va_access_values)));
-				
-				$vn_next_rep = $vn_prev_rep = null;
-				
-				$va_rep_list = array_values($va_reps);
-				foreach($va_rep_list as $vn_i => $va_rep) {
-					if ($va_rep['representation_id'] == $vn_representation_id) {
-						if (isset($va_rep_list[$vn_i - 1])) {
-							$vn_prev_rep = $va_rep_list[$vn_i - 1]['representation_id'];
-						}
-						if (isset($va_rep_list[$vn_i + 1])) {
-							$vn_next_rep = $va_rep_list[$vn_i + 1]['representation_id'];
-						}
-						$o_view->setVar('representation_index', $vn_i + 1);
-					}
-				}
-				$o_view->setVar('previous_representation_id', $vn_prev_rep);
-				$o_view->setVar('next_representation_id', $vn_next_rep);
-			}	
-			$ps_version 	= $po_request->getParameter('version', pString);
-			if (!in_array($ps_version, $va_versions)) { 
-				if (!($ps_version = $va_rep_display_info['display_version'])) { $ps_version = null; }
-			}
-			$o_view->setVar('version', $ps_version);
-			$o_view->setVar('version_info', $this->getMediaInfo('media', $ps_version));
-			
- 			$o_view->setVar('t_object', $t_object);
- 			$o_view->setVar('t_set_item', $t_set_item);
- 			$o_view->setVar('t_order_item', $t_order_item);
- 			//$o_view->setVar('only_show_reps_in_order', $vb_only_show_reps_in_order);
- 			$o_view->setVar('use_media_editor', $vb_media_editor);
- 			$o_view->setVar('noControls', $vb_no_controls);
-		}
-		return $o_view->render('representation_viewer_html.php');
+ 		return caRepresentationViewerHTMLBundle($this, $po_request, $pa_options, $pa_additional_display_options);
  	}
  	# ------------------------------------------------------
 	/** 
@@ -1780,4 +1744,3 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	}
 	# ------------------------------------------------------
 }
-?>

@@ -50,17 +50,27 @@
 	  * @return array An array of integer values that, if present in a record, indicate that the record should be displayed to the current user
 	  */
 	function caGetUserAccessValues($po_request, $pa_options=null) {
+		if (defined("__CA_APP_TYPE__") && (__CA_APP_TYPE__ == 'PROVIDENCE')) { return null; }
 		$vb_dont_enforce_access_settings = isset($pa_options['dont_enforce_access_settings']) ? (bool)$pa_options['dont_enforce_access_settings'] : $po_request->config->get('dont_enforce_access_settings');
 		$va_privileged_access_settings = isset($pa_options['privileged_access_settings']) && is_array($pa_options['privileged_access_settings']) ? (bool)$pa_options['privileged_access_settings'] : (array)$po_request->config->getList('privileged_access_settings');
 		$va_public_access_settings = isset($pa_options['public_access_settings']) && is_array($pa_options['public_access_settings']) ? $pa_options['public_access_settings'] : (array)$po_request->config->getList('public_access_settings');
 	
 		if (!$vb_dont_enforce_access_settings) {
+			$va_access = array();
 			$vb_is_privileged = caUserIsPrivileged($po_request, $pa_options);
 			if($vb_is_privileged) {
-				return $va_privileged_access_settings;
+				$va_access = $va_privileged_access_settings;
 			} else {
-				return $va_public_access_settings;
+				$va_access = $va_public_access_settings;
 			}
+			
+			if ($po_request->isLoggedIn()) {
+				$va_user_access = $po_request->user->getAccessStatuses(1);
+				if(is_array($va_user_access)) {
+					$va_access = array_unique(array_merge($va_access, $va_user_access));
+				}
+			}
+			return $va_access;
 		}
 		return array();
 	}
@@ -146,7 +156,7 @@
 			if (is_array($va_type_ids = $g_request->user->getTypesWithAccess($t_instance->tableName(), $vn_min_access))) {
 				$va_type_ids = caMakeTypeIDList($pm_table_name_or_num, $va_type_ids, array_merge($pa_options, array('dont_include_subtypes_in_type_restriction' => true)));
 			}
-		} 
+		}
 		// get types from config file
 		if ($va_config_types = $t_instance->getAppConfig()->getList($vs_table_name.'_restrict_to_types')) {
 			if ((bool)$o_config->get($vs_table_name.'_restrict_to_types_dont_include_subtypes')) {
@@ -577,44 +587,61 @@
 	 *
 	 * @param int $pn_user_id
 	 * @param mixed $pm_table A table name or number
-	 * @param int $pn_id The primary key value of the row
+	 * @param mixed $pm_id A primary key value of the row, or an array of values to check. If a single integer value is provided then a boolean result will be returned; if an array of values is provided then an array will be returned with all ids that are readable
 	 * @param string $ps_bundle_name An optional bundle to check access for
 	 *
-	 * @return True if user has read access, otherwise false if the user does not have access or null if one or more parameters are invalid
+	 * @return If $pm_id is an integer return true if user has read access, otherwise false if the user does not have access; if $pm_id is an array of ids, returns an array with all ids the are readable; returns null if one or more parameters are invalid
 	 */
-	function caCanRead($pn_user_id, $pm_table, $pn_id, $ps_bundle_name=null) {
+	function caCanRead($pn_user_id, $pm_table, $pm_id, $ps_bundle_name=null, $pa_options=null) {
+		$pb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
+		$t_user = new ca_users($pn_user_id, true);
+		if (!$t_user->getPrimaryKey()) { return null; }
+		
 		$o_dm = Datamodel::load();
-		$ps_table_name = (is_numeric($pm_table)) ? $o_dm->getTableName($pm_table) : $pm_table;
+		$ps_table_name = (is_numeric($pm_table)) ? $o_dm->getTableName($pm_table) : $pm_table;		
+	
+		if (!is_array($pm_id)) { $pm_id = array($pm_id); }
+		
+		if ($ps_bundle_name) {
+			if ($t_user->getBundleAccessLevel($ps_table_name, $ps_bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { 
+				return ((sizeof($pm_id) == 1) && !$pb_return_as_array) ? false : array();
+			}
+		}
 		
 		if (!($t_instance = $o_dm->getInstanceByTableName($ps_table_name, true))) { return null; }
-		if (!$t_instance->load($pn_id)) { return null; }
-		
-		$t_user = new ca_users($pn_user_id);
-		if (!$t_user->getPrimaryKey()) { return null; }
+	
+		$vb_do_type_access_check = (bool)$t_instance->getAppConfig()->get('perform_type_access_checking');
+		$vb_do_item_access_check = (bool)$t_instance->getAppConfig()->get('perform_item_level_access_checking');
 		
 		list($ps_table_name, $ps_bundle_name) = caTranslateBundlesForAccessChecking($ps_table_name, $ps_bundle_name);
 		
-		// Check type restrictions
- 		if ((bool)$t_instance->getAppConfig()->get('perform_type_access_checking')) {
-			$vn_type_access = $t_user->getTypeAccessLevel($ps_table_name, $t_instance->getTypeID());
-			if ($vn_type_access < __CA_BUNDLE_ACCESS_READONLY__) {
-				return false;
+		if (!($qr_res = caMakeSearchResult($ps_table_name, $pm_id))) { return null; }
+		
+		$va_return_values = array();
+		while($qr_res->nextHit()) {
+			$vn_id = $qr_res->getPrimaryKey();
+		
+			// Check type restrictions
+			if ($vb_do_type_access_check) {
+				$vn_type_access = $t_user->getTypeAccessLevel($ps_table_name, $qr_res->get("{$ps_table_name}.type_id"));
+				if ($vn_type_access < __CA_BUNDLE_ACCESS_READONLY__) {
+					continue;
+				}
 			}
-		}
 		
-		// Check item level restrictions
-		if ((bool)$t_instance->getAppConfig()->get('perform_item_level_access_checking')) {
-			$vn_item_access = $t_instance->checkACLAccessForUser($t_user);
-			if ($vn_item_access < __CA_ACL_READONLY_ACCESS__) {
-				return false;
+			// Check item level restrictions
+			if ($vb_do_item_access_check) {
+				$vn_item_access = $t_instance->checkACLAccessForUser($t_user, $vn_id);
+				if ($vn_item_access < __CA_ACL_READONLY_ACCESS__) {
+					continue;
+				}
 			}
+		
+			$va_return_values[] = $vn_id;
 		}
 		
-		if ($ps_bundle_name) {
-			if ($t_user->getBundleAccessLevel($ps_table_name, $ps_bundle_name) < __CA_BUNDLE_ACCESS_READONLY__) { return false; }
-		}
-		
-		return true;
+		if ((sizeof($pm_id) == 1) && !$pb_return_as_array) { return (sizeof($va_return_values) > 0) ? true : false; }
+		return $va_return_values;
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**
@@ -662,4 +689,3 @@
 		return array($ps_table_name, $ps_bundle_name); 
 	}
 	# ---------------------------------------------------------------------------------------------
- ?>

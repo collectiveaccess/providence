@@ -98,6 +98,13 @@ class RequirementsTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @requires function ReflectionMethod::setAccessible
+     */
+    public function testExistingMethod()
+    {
+    }
+
+    /**
      * @requires extension spl
      */
     public function testExistingExtension()
@@ -133,8 +140,8 @@ class RequirementsTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @requires	  extension	  spl	  
-     * @requires	  OS	  .*	      
+     * @requires	  extension	  spl
+     * @requires	  OS	  .*
      */
     public function testSpace()
     {

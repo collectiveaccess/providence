@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2014 Whirl-i-Gig
+ * Copyright 2000-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,7 +48,12 @@ class Session {
 	private $name = "";		# application name
 
 	private $start_time = 0;	# microtime session object was created - used for page performance measurements
-	private $sessionData = null;
+
+	/**
+	 * In-memory session var storage
+	 * @var array
+	 */
+	private $opa_session_vars = array();
 	
 	# ----------------------------------------
 	# --- Constructor
@@ -69,14 +74,48 @@ class Session {
 		# --- Read configuration
 		$this->name = ($vs_app_name = $o_config->get("app_name")) ? $vs_app_name : $ps_app_name;
 		$this->domain = $o_config->get("session_domain");
-		$this->lifetime = $o_config->get("session_lifetime");
+		$this->lifetime = (int) $o_config->get("session_lifetime");
+
+		if(!$this->lifetime) {
+			$this->lifetime = 3600 * 24 * 7;
+		}
 		
 		if (!$pb_dont_create_new_session) {
+			// try to get session ID from cookie. if that doesn't work, generate a new one
 			if (!($vs_session_id = $this->getSessionID())) {
 				$vs_cookiepath = ((__CA_URL_ROOT__== '') ? '/' : __CA_URL_ROOT__);
-				if (!caIsRunFromCLI()) { setcookie($this->name, $_COOKIE[$this->name] = $vs_session_id = $this->generateGUIDV4(), time() + $this->lifetime, $vs_cookiepath); }
-		 	} 
-			$this->sessionData = caGetCacheObject("ca_session_".str_replace("-", "_", $vs_session_id), 0);
+				if (!caIsRunFromCLI()) { setcookie($this->name, $_COOKIE[$this->name] = $vs_session_id = $this->generateGUIDV4(), $this->lifetime ? time() + $this->lifetime : null, $vs_cookiepath); }
+		 	}
+
+			// initialize in-memory session var storage, either restored from external cache or newly initialized
+			if($this->getSessionID() && ExternalCache::contains($this->getSessionID(), 'SessionVars')) {
+				$this->opa_session_vars = ExternalCache::fetch($this->getSessionID(), 'SessionVars');
+			} else {
+				$this->opa_session_vars = array();
+				if($this->getSessionID()) {
+					ExternalCache::delete($this->getSessionID(), 'SessionVars');
+				}
+				$this->opa_session_vars['session_end_timestamp'] = time() + $this->lifetime;
+			}
+
+			// kill session if it has ended or we don't have a timestamp
+			if(
+				!isset($this->opa_session_vars['session_end_timestamp'])
+				||
+				(is_numeric($this->opa_session_vars['session_end_timestamp']) && (time() > $this->opa_session_vars['session_end_timestamp']))
+			) {
+				$this->opa_session_vars = array();
+				ExternalCache::delete($this->getSessionID(), 'SessionVars');
+			}
+		}
+	}
+	# ----------------------------------------
+	/**
+	 * Destructor: Save session variables to permanent storage
+	 */
+	public function __destruct() {
+		if($this->getSessionID() && is_array($this->opa_session_vars) && (sizeof($this->opa_session_vars) > 0)) {
+			ExternalCache::save($this->getSessionID(), $this->opa_session_vars, 'SessionVars', 0);
 		}
 	}
 	# ----------------------------------------
@@ -98,12 +137,57 @@ class Session {
 		return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($vs_data), 4));
 	}
 	# ----------------------------------------
+	/**
+	 * Return service authentication token for this session (and create it, if none exists yet).
+	 * These tokens usually have a much shorter lifetime than the session.
+	 * @param bool $pb_dont_create_new_token dont create new auth token
+	 * @return string|bool The token, false if
+	 */
+	public function getServiceAuthToken($pb_dont_create_new_token=false) {
+		if(!$this->getSessionID()) { return false; }
+
+		if(ExternalCache::contains($this->getSessionID(), 'SessionIDToServiceAuthTokens')) {
+			return ExternalCache::fetch($this->getSessionID(), 'SessionIDToServiceAuthTokens');
+		}
+
+		if($pb_dont_create_new_token) { return false; }
+
+		// generate new token
+		$vs_token = hash('sha256', mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+
+		// save mappings in both directions for easy lookup. they are valid for 2 hrs (@todo maybe make this configurable?)
+		ExternalCache::save($this->getSessionID(), $vs_token, 'SessionIDToServiceAuthTokens', 60 * 60 * 2);
+		ExternalCache::save($vs_token, $this->getSessionID(), 'ServiceAuthTokensToSessionID', 60 * 60 * 2);
+
+		return $vs_token;
+	}
+
+	/**
+	 * Restore session form a temporary service auth token
+	 * @param string $ps_token
+	 * @param string|null $ps_name
+	 * @return Session|bool The restored session, false on failure
+	 */
+	public static function restoreFromServiceAuthToken($ps_token, $ps_name=null) {
+		$o_config = Configuration::load();
+		$vs_app_name = $o_config->get("app_name");
+
+		if(!ExternalCache::contains($ps_token, 'ServiceAuthTokensToSessionID')) {
+			return false;
+		}
+
+		$vs_session_id = ExternalCache::fetch($ps_token, 'ServiceAuthTokensToSessionID');
+		$_COOKIE[$vs_app_name] = $vs_session_id;
+
+		return new Session($vs_app_name);
+	}
+	# ----------------------------------------
 	# --- Methods
 	# ----------------------------------------
 	/**
 	 * Returns client's session_id. 
 	 */
-	public function getSessionID () {
+	public function getSessionID() {
 		return isset($_COOKIE[$this->name]) ? $_COOKIE[$this->name] : null;
 	}
 	# ----------------------------------------
@@ -112,23 +196,33 @@ class Session {
 	 * Useful for logging out users (destroying the session destroys the login)
 	 */
 	public function deleteSession() {
+		// nuke service token caches
+		if($vs_token = $this->getServiceAuthToken(true)) {
+			ExternalCache::delete($vs_token, 'ServiceAuthTokensToSessionID');
+		}
+		ExternalCache::delete($this->getSessionID(), 'SessionIDToServiceAuthTokens');
+
 		if (isset($_COOKIE[session_name()])) {
 			setcookie(session_name(), '', time()- (24 * 60 * 60),'/');
 		}
 		// Delete session data
-		$this->sessionData->remove(Zend_Cache::CLEANING_MODE_ALL);
+		ExternalCache::delete($this->getSessionID(), 'SessionVars');
 		session_destroy();
 	}
 	# ----------------------------------------
 	/**
 	 * Set session variable
-	 * Sesssion var may be number, string or array
+	 * @param string $ps_key variable key
+	 * @param mixed $pm_val Session var may be number, string or array
+	 * @param null|array $pa_options
+	 * 		ENTITY_ENCODE_INPUT =
+	 * 		URL_ENCODE_INPUT =
+	 * @return bool
 	 */
 	public function setVar($ps_key, $pm_val, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
-		if ($ps_key && $this->sessionData) {
-			$va_vars = $this->sessionData->load('vars');
+		if ($ps_key && $this->getSessionID()) {
 			if (isset($pa_options["ENTITY_ENCODE_INPUT"]) && $pa_options["ENTITY_ENCODE_INPUT"]) {
 				if (is_string($pm_val)) {
 					$vm_val = html_entity_decode($pm_val);
@@ -142,8 +236,7 @@ class Session {
 					$vm_val = $pm_val;
 				}
 			}
-			$va_vars[$ps_key] = $vm_val;
-			$this->sessionData->save($va_vars, 'vars');
+			$this->opa_session_vars[$ps_key] = $vm_val;
 			return true;
 		}
 		return false;
@@ -151,29 +244,26 @@ class Session {
 	# ----------------------------------------
 	/**
 	 * Delete session variable
+	 * @param string $ps_key
 	 */
-	public function delete ($ps_key) {
-		$va_vars = $this->sessionData->load('vars');
-		unset($va_vars[$ps_key]);
-		$this->sessionData->save($va_vars, 'vars');
+	public function delete($ps_key) {
+		unset($this->opa_session_vars[$ps_key]);
 	}
 	# ----------------------------------------
 	/**
 	 * Get value of session variable. Var may be number, string or array.
 	 */
 	public function getVar($ps_key) {
-		if (!$this->sessionData) { return null; }
-		$va_vars = $this->sessionData->load('vars');
-		return isset($va_vars[$ps_key]) ? $va_vars[$ps_key] : null;
+		if(!$this->getSessionID()) { return null; }
+
+		return isset($this->opa_session_vars[$ps_key]) ? $this->opa_session_vars[$ps_key] : null;
 	}
 	# ----------------------------------------
 	/**
 	 * Return names of all session vars
 	 */
 	public function getVarKeys() {
-		if (!$this->sessionData) { return null; }
-		$va_vars = $this->sessionData->load('vars');
-		return array_keys($va_vars);
+		return is_array($this->opa_session_vars) ? array_keys($this->opa_session_vars) : array();
 	}
 	# ----------------------------------------
 	/**
@@ -194,4 +284,3 @@ class Session {
 	}
 	# ----------------------------------------
 }
-?>

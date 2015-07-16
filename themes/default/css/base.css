@@ -190,14 +190,13 @@ h5 {
     color: #333;
     padding: 0;
     font-size: 12px;
-    border-bottom: dotted 1px #fff;
     text-transform:none; width:100%;
     font-weight:normal;
     font-family:"din-regular", arial, sans-serif;
     text-transform:uppercase;
 }
 
-#leftNav h2 a, #leftNav h2 span { display: block; padding-left: 15px; padding-top: 7px; padding-bottom: 4px; text-decoration: none; color: #666666; }
+#leftNav h2 a, #leftNav h2 span { display: block; padding-left: 15px; padding-top: 7px; padding-bottom: 4px; text-decoration: none; color: #666666; border-right:1px solid #dddddd;} 
 #leftNav h2 a:hover{
     color: #1ab3c8;
 }
@@ -328,16 +327,24 @@ h5 {
 	clear: both;
 	min-height: 26px;
 }
-#leftNav .watchThis, #leftNav #inspectorChangeType, #leftNav #inspectorCreateChild, #leftNav #caDuplicateItemButton, #leftNav #inspectorLotMediaDownloadButton {
+#leftNav .watchThis, #leftNav #inspectorChangeType, #leftNav #inspectorCreateChild, #leftNav #caDuplicateItemButton, #leftNav #inspectorLotMediaDownloadButton, #leftNav #inspectorSetMediaDownloadButton {
 	float: left;
 	margin-right: 10px;
 	width: 28px;
 	text-align: center;
 }
-#leftNav #inspectorLotMediaDownloadButton {
-	margin-top:5px;
+
+#leftNav #inspectorLotMediaDownloadButton, #leftNav #inspectorSetMediaDownloadButton {
+	margin-top:8px;
 	margin-right:8px;
+	width:22px;
+	float:left;
 } 
+#leftNav .button.info {
+	float:left;
+	width:22px;
+	margin-left:2px;
+}
 #leftNav #inspectorChangeType img {
 	width: 26px;
 	padding-top: 1px;
@@ -407,6 +414,11 @@ div.inspectorLotObjectTypeControls {
 }
 a.inspectorOnLoan {
     color: #cc0000;
+    font-style: italic;
+}
+
+div.inspectorCheckedOut {
+    color: #0000cc;
     font-style: italic;
 }
 
@@ -520,6 +532,8 @@ a.inspectorOnLoan {
 #leftNav #widgets .searchForms, 
 #leftNav #widgets .comments, 
 #leftNav #widgets .tags, 
+#leftNav h3.libraryCheckIn, 
+#leftNav h3.libraryCheckOut, 
 #leftNav h3.export, 
 #leftNav h3.metalist, 
 #leftNav h3.relTypes, 
@@ -1046,7 +1060,7 @@ div.notification-info-box {
 }
 
 div.notification-error-box {
-    background:	url('../graphics/icons/glyphicons_078_warning_sign.png') no-repeat 10px 5px;
+    background:	url('../graphics/buttons/glyphicons_078_warning_sign.png') no-repeat 10px 5px;
     text-indent: 32px;
     background-color: #eeeeee;
     padding: 5px;
@@ -1189,6 +1203,24 @@ div.hint {
     padding: 10px;
 }
 
+/* often times referred to as bundlePreview */
+.bundleContentPreview {
+	text-align:left;
+	display:inline-block;
+	color:#888888;
+	font-family: helvetica, sans-serif;
+	font-weight:normal;
+	font-size:13px;
+	padding-top:2px;
+	padding-left:10px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	width: 40%;
+	vertical-align:bottom;
+	padding-bottom:5px;
+}
+
 /* Style for labels on form fields where an error has occurred */
 .formLabelError {
     font-family: Verdana, Arial, Helvetica, sans-serif;
@@ -1317,6 +1349,7 @@ div.hint {
     padding: 0px 0px 10px 0px !important;
     margin: 0px !important;
     font-color: #000000 !important;
+    text-align:left !important;
 }
 .tooltipFormat {
 	color:#fff !important;
@@ -1326,6 +1359,7 @@ div.hint {
 	font-size:12px !important;
 	border: 0px !important;
 	font-family: "helvetica neue", arial, sans-serif;
+	text-align:left !important; 
 }
 
 /*** Button styles ***/
@@ -1613,6 +1647,7 @@ table.listtable {
     font-size: 8pt;
     width: 100%;
     text-align: left;
+    clear:both;
 }   
 #caWatchedItemsList.listtable {
 	font-size:12px;
@@ -1684,6 +1719,19 @@ table.listtable tbody tr.odd td {
     background-color:#f8f8f8;
 }
 
+#caCommentsList tbody tr td div.caUserCommentsListName, #caCommentsList tbody tr td div.caUserCommentsListComment {
+	overflow: auto;
+}
+
+#caCommentsList tbody tr td div.caUserCommentsListName {
+	width: 100px;
+}
+
+#caCommentsList tbody tr td div.caUserCommentsListComment {
+	width: 150px;
+}
+
+
 /* table footer */
 table.listtable tfoot td {
     padding: 4px;
@@ -1703,6 +1751,19 @@ td.listtableTotals {
 	width:20px;
 	padding:5px;
 }
+
+#caSetList tbody tr td div.caSetListName, #caSetList tbody tr td div.caSetListOwner {
+	overflow: auto;
+}
+
+#caSetList tbody tr td div.caSetListName {
+	width: 160px;
+}
+
+#caSetList tbody tr td div.caSetListOwner {
+	width: 90px;
+}
+
 .saveDelete {
 	width:60px;
 	white-space:nowrap;
@@ -1837,6 +1898,8 @@ div.search-hier-browser-box {
     margin-left: 0px;
     padding: 7px 5px 3px 5px;
     border-bottom: 1px solid #e9e9e9;
+    
+    position: relative;
 }
 
 .labelInfo #image{
@@ -2368,6 +2431,7 @@ select.searchToolsSelect {
     padding: 0px 8px 8px 8px;
     width:170px;
     background-color:#f7f7f7;
+    clear:both;
 }
 #leftNav #inspectorShowMedia {
 	text-align: center;
@@ -2465,7 +2529,7 @@ table.representationAnnotationListItem {
     margin: 0px;
     width: 100%;
     height: 100%;
-    overflow: auto;
+    /* overflow: auto; */
     text-align: center;
     position: relative;
 }
@@ -2756,6 +2820,32 @@ a.editorFieldListLink {
 /* container for HTML code that files #editorFieldList */
 #editorFieldListHTML {
     display: none;
+}
+
+div.editorBundlePrintControl {
+    position: absolute; 
+    top: 2px; 
+    right: 27px;
+}
+
+div.editorBundlePrintControl select {
+    font-size: 9px;
+    font-weight: normal;
+    height: 17px;
+    vertical-align: top;
+}
+
+div.editorBundleValuePrintControl {
+    position: absolute; 
+    bottom: 2px; 
+    right: 5px;
+}
+
+div.editorBundleValuePrintControl select {
+    font-size: 9px;
+    font-weight: normal;
+    height: 17px;
+    vertical-align: top;
 }
 
 #caHierarchyOverviewHeader {
@@ -3144,6 +3234,12 @@ input[type="text"], input[type="textarea"], textarea,  input[type="password"] {
 	border-radius: 3px;
 }
 
+input[type="text"]:disabled, input[type="textarea"]:disabled, textarea:disabled {
+    background-color: #F0F0F0;
+    color: #808080;
+    -webkit-text-fill-color:#808080;
+}
+
 textarea:focus{
     border: solid #666 1px;
     outline-style:none;  /** remove glow in Safari */
@@ -3395,6 +3491,15 @@ a.exploreSelected {
     padding: 5px;
     font-size: 11px;
     font-style: italic;
+}
+
+.hierarchyCountDisplay {
+    text-align:right;
+    font-style:italic;
+    color:#999999;
+    font-family:helvetica, sans-serif;
+    font-size:11px;
+    margin-top:-8px;
 }
 
 /*** hierarchy navigation on editor pages ***/
@@ -3841,6 +3946,7 @@ div.quickSearchNoResults {
     font-weight:bold;
     color:#333;
     font-size:12px;
+    line-height: 27px;
 }
 /*#browseCriteria a.close{
     text-transform:uppercase;
@@ -3859,15 +3965,15 @@ div.quickSearchNoResults {
 #browseCriteria a.startOver, #searchRefineParameters a.startOver{
     color: #aaa;
     text-decoration:none;
-    font-size:12px;
     border-radius:4px;
     -moz-border-radius:4px;
     -webkit-border-radius:4px;
     border: 1px solid #ccc;
-    padding:5px 5px 4px 5px;
+    padding:4px 5px 4px 5px;
     text-transform:uppercase;
     font-size:11px;
-    margin-left:10px;
+    line-height: 27px;
+    white-space: nowrap;
 }
 #browseCriteria a.startOver:hover{
     color:#1ab3c8;
@@ -3884,6 +3990,7 @@ div.quickSearchNoResults {
 	display:inline;
 	font-size:11px;
 	margin-right: 5px;
+	line-height: 27px;
 }
 .criteriaLink a{
 	background-color:#eee;
@@ -3897,6 +4004,9 @@ div.quickSearchNoResults {
 	padding:5px 7px 5px 7px;
 	margin-left:5px;
 	text-decoration:none;
+}
+.criteriaLink:last-of-type{
+    margin-right:15px;
 }
 /* browse pop up panel */
 #splashBrowsePanel {
@@ -4140,7 +4250,7 @@ div.searchFormElementSettingsMessage {
     width:290px;
 }
 
-/ * SEARCH FORMS */
+/* SEARCH FORMS */
 
 .searchFormSelector {
     margin-bottom: 3px;
@@ -4513,11 +4623,12 @@ span.bundleDisplayEditorPlacementListItemTitle {
 	color:#fff;
 	font-weight:normal;
 	font-size:14px;
+	text-align:left;
 }
 .elementSettingsUI {
 	position: absolute;
 	top: 40px;
-	left: 400px;
+	left: 150px;
 	overflow: auto;
 	width: 400px;
 	max-height:500px;
@@ -5194,8 +5305,14 @@ div.listRel {
     line-height:1.5em;
 }
 
+div.listRel:first-of-type {
+    margin-top:5px;
+}
+
 .caItemList {
     /* margin-top: 10px; */
+    max-height: 500px;
+    overflow-y: auto;
 }
 
 .caItemListSortControlTrigger {
@@ -5237,6 +5354,21 @@ div.listRel {
 
 .caItemListSortControls ul li a {
 	text-decoration: none;
+}
+
+div.caItemLoadNextBundles {
+	padding: 10px;
+}
+
+a.caItemLoadNextBundles {
+	text-decoration: none;
+	font-weight: bold;
+	font-size: 12px;
+}
+
+.caItemLoadNextBundlesLoadIndicator {
+	display: none;
+	margin-left: 12px;
 }
 
 .roundedRel .caDeleteItemButton, .roundedRel .caInterstitialEditButton {
@@ -5878,7 +6010,6 @@ a.caClientOrderOverviewButton:hover {
 .globalAccess .bundleContainer {
     border: 0px;
     padding-left:0px;
-
 }
 .globalAccess .labelInfo {
     background-color:#eee;
@@ -5909,6 +6040,15 @@ div.editLink {
     font-size: 12px;
     color: #134959;
     line-height:1.75em;
+}
+
+.inheritFromParent {
+	font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size:11px;
+    color: #333333;
+    font-weight: normal;
+    margin-bottom: 5px;
+    float: right;
 }
 
 /* -------------------------------------------------*/
@@ -5976,7 +6116,7 @@ div.searchlight-results div.searchlight-selected {
     color: red;
 }
 
-/ * OpenLayers */
+/* OpenLayers */
 
 .olMap {
     background-color: #999999;
@@ -6263,7 +6403,6 @@ div.quickAddDialogHeader {
 }
 
 div.quickAddErrorContainer {
-    position: fixed;
     width: 890px;
     display: none;
     z-index:33000;
@@ -6272,6 +6411,15 @@ div.quickAddErrorContainer {
 div.quickAddTypeList {
     float: left;
     margin-top: 6px;
+}
+
+div.quickAddControls {
+	float: right;
+}
+
+div.quickAddProgress {
+    float: right;
+    margin: 6px 70px 0 0;
 }
 
 input[type='text'].ui-autocomplete-loading {
@@ -6855,6 +7003,52 @@ div.caUseHistoryDate {
 	font-size: 12px;
 }
 
+div.caMetadataDictionaryViolationsList {
+	padding: 10px;
+	background-color: #fff;
+	margin: 0 0 0 15px;
+	
+	width: 33%;
+	
+    border: 2px solid #e6e6e6;
+    
+	font-weight: normal;
+	font-size: 12px;
+	
+	float: right;
+}
+
+div.caMetadataDictionaryViolationsList ol {
+	list-style:none;
+    padding-left:0;
+}
+
+div.caMetadataDictionaryViolationsListHeading {
+	font-weight: bold;
+	font-size: 12px;
+}
+
+.caMetadataDictionaryViolationCrit {
+	font-weight: bold;
+	color: Red;
+}
+
+.caMetadataDictionaryViolationErr {
+	color: Red;
+}
+
+.caMetadataDictionaryViolationWarn {
+	color: GoldenRod
+}
+
+.caMetadataDictionaryViolationNote {
+	color: Blue;
+}
+
+.caMetadataDictionaryViolationDebg {
+	color: #333;
+}
+
 /** Metadata importer **/
 table.caFileSourceControls {
 	width: 700px
@@ -6869,4 +7063,187 @@ td.caSourceFileControlRadio {
 	vertical-align: top;
 	width: 30px;
 	height: 35px;
+}
+
+/** Metadata export preview **/
+.caExportPreview {
+    max-height: 250px;
+    overflow: scroll;
+    width: 100%;
+    border: 1px solid #e6e6e6;
+}
+
+/** Library checkout **/
+div.caLibraryUIContainer {
+	position: relative;
+}
+
+div.caLibraryFindAutocompleteContainer {
+	margin: 100px 0 25px 0;
+	text-align: center;
+}
+
+div.caLibraryFindAutocompleteLabel {
+	font-size: 18px;
+	margin: 0 0 10px 0;
+}
+
+div.caLibraryFindAutocompleteContainer form input[type=text] {
+	font-size: 18px;
+}
+
+div.caLibraryTransactionListContainer {
+	display: none;
+}
+
+div.caLibraryTransactionResultsContainer {
+	display: none;
+}
+
+div.caLibraryTransactionListLabel {
+	font-size: 14px;
+	font-weight: bold;
+}
+
+div.caLibraryTransactionListItemContainer {
+	position: relative;
+	background-color: #eee;
+	padding: 10px;
+	border-radius: 4px;
+	margin: 5px 0 0 0;
+}
+
+div.caLibraryTransactionListItemMedia {
+	float: left;
+	margin: 0 10px 0 0;
+	width: 72px;
+	height: 72px;
+}
+
+div.caLibraryTransactionListItemName {
+	font-size: 12px;
+	font-style: italic;
+}
+
+div.caLibraryTransactionListItemBorrower {
+	font-size: 10px;
+}
+
+div.caLibraryTransactionListItemNotesContainer {
+	margin: 3px;
+}
+
+div.caLibraryTransactionListItemNotesLabel {
+	font-size: 11px;
+}
+
+div.caLibraryTransactionListItemRemoveButton {
+	position: absolute;
+	top: 5px;
+	right: 5px;
+}
+
+div.caLibrarySubmitListContainer {
+	text-align: center;
+}
+
+div.caLibraryTransactionResultsContainer {
+	background-color: #eee;
+	padding: 10px;
+	border-radius: 4px;
+	margin: 25px 0 0 0;
+}
+
+div.caLibraryTransactionResultsLabel {
+	font-size: 14px;
+	font-weight: bold;
+}
+
+div.caLibraryTransactionListItemDueDateContainer {
+	margin: 0 0 0 82px;
+}
+
+div.caLibraryTransactionListItemDueDateLabel {
+	font-size: 11px;
+}
+
+div.caLibraryTransactionListItemWillReserve {
+	color: #cc0000;
+	font-size: 11px;
+	font-weight: bold;
+}
+
+table.caLibraryHistory, tr.caLibraryHistory, th.caLibraryHistory, td.caLibraryHistory {
+	border: 1px solid #000;
+	border-collapse: collapse;
+	padding: 5px;
+}
+
+#leftNav div.caLibraryCheckoutList {
+	margin: 10px 0 0 0;
+}
+
+#leftNav ul.caLibraryCheckoutList { 
+	font-size: 10px;
+	list-style: circle; 
+	margin: 0 0 0 15px; 
+	padding: 3px 0px 3px 0px; 
+	display:block; 
+}
+
+div.caLibraryDashboardPanel {
+	float: left;
+	border: 1px solid #333;
+	padding: 10px;
+	border-radius: 4px;
+	width: 400px;
+	min-height: 100px;
+	margin: 10px 10px 10px 0;
+}
+
+.caLibraryDashboardCallout {
+	font-size: 24px;
+	font-weight: bold;
+	margin: 0;
+}
+
+.caLibraryDashboardCalloutDate {
+	font-size: 10px;
+	font-weight: normal;
+	font-style: italic;
+	margin: 0;
+}
+
+.caLibraryDashboardUserList {
+	font-size: 12px;
+	font-weight: normal;
+	line-height: 18px;
+	margin: 12px 0 0 0;
+}
+
+#caLibraryDashboardDetailContainer {
+	clear: both;
+	border: 1px solid #333;
+	padding: 10px;
+	border-radius: 4px;
+	width: 832px;
+	min-height: 100px;
+	margin: 10px 10px 10px 0;	
+}
+
+.authorityReferenceList ul  {
+	list-style-type: none;
+	padding: 0;
+	margin: 10px 0 0 5px;
+}
+
+.authorityReferenceList ul li {
+	padding: 0;
+	margin: 10px 0 0 5px;
+}
+
+div.authorityReferenceListContainer {
+	width: 100%;
+	overflow-y: hidden;
+	min-height: 200px;
 }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -45,16 +45,31 @@
 	$va_lookup_params = array();
 	
 	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings);
 ?>
 <div id="<?php print $vs_id_prefix; ?>">
 	<div class="bundleContainer">
+<?php
+	if (!$vb_read_only) {
+?>
 			<div class="caUseHistoryButtonBar">
+<?php
+			if(!caGetOption('hide_add_to_loan_controls', $va_settings, false)) {
+?>
 				<div style='float: left;' class='button labelInfo caAddLoanButton'><a href="#" id="<?php print $vs_id_prefix; ?>AddLoan"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print _t('Add to loan'); ?></a></div>
+<?php
+			}
+			if(!caGetOption('hide_update_location_controls', $va_settings, false)) {
+?>
 				<div style='float: left;'  class='button labelInfo caChangeLocationButton'><a href="#" id="<?php print $vs_id_prefix; ?>ChangeLocation"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print _t('Update location'); ?></a></div>
+<?php
+			}
+?>
 				<br style='clear: both;'/>
 			</div>
-			
+<?php
+	}
+?>			
 		<div class="caLocationList"> </div>
 		<div class="caLoanList"> </div>
 <?php
@@ -194,7 +209,9 @@
 	</div>
 </div>
 
-
+<?php
+	if (!$vb_read_only) {
+?>
 <script type="text/javascript">
 	var caRelationQuickAddPanel<?php print $vs_id_prefix; ?>;
 	jQuery(document).ready(function() {
@@ -292,3 +309,6 @@
 		});
 	});
 </script>
+<?php
+	}
+?>

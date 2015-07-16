@@ -69,6 +69,8 @@ class MySQLDataReader extends BaseDataReader {
 	 * @return bool
 	 */
 	public function read($ps_source, $pa_options=null) {
+		parent::read($ps_source, $pa_options);
+		
 		# mysql://username:password@localhost/database?table=tablename
 		# or limit the query using
 		# mysql://username:password@localhost/database?table=tablename&limit=100&offset=10
@@ -145,6 +147,8 @@ class MySQLDataReader extends BaseDataReader {
 	 * @return mixed
 	 */
 	public function get($ps_col, $pa_options=null) {
+		if ($vm_ret = parent::get($ps_col, $pa_options)) { return $vm_ret; }
+		
 		$va_col = explode(".", $ps_col);
 		if (sizeof($va_col) == 1) {
 			return isset($this->opa_row_buf[$ps_col]) ? $this->opa_row_buf[$ps_col] : null;
@@ -185,6 +189,15 @@ class MySQLDataReader extends BaseDataReader {
 	 * 
 	 * @return int
 	 */
+	public function currentRow() {
+		return $this->opn_current_row;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return int
+	 */
 	public function inputType() {
 		return $this->opo_rows->numRows();
 	}
@@ -199,4 +212,3 @@ class MySQLDataReader extends BaseDataReader {
 	}
 	# -------------------------------------------------------
 }
-?>

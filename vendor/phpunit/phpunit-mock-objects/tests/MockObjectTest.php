@@ -1,45 +1,11 @@
 <?php
-/**
- * PHPUnit
+/*
+ * This file is part of the PHPUnit_MockObject package.
  *
- * Copyright (c) 2010-2014, Sebastian Bergmann <sebastian@phpunit.de>.
- * All rights reserved.
+ * (c) Sebastian Bergmann <sebastian@phpunit.de>
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *
- *   * Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in
- *     the documentation and/or other materials provided with the
- *     distribution.
- *
- *   * Neither the name of Sebastian Bergmann nor the names of his
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- *
- * @package    PHPUnit_MockObject
- * @author     Sebastian Bergmann <sebastian@phpunit.de>
- * @copyright  2010-2014 Sebastian Bergmann <sebastian@phpunit.de>
- * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
- * @link       http://www.phpunit.de/
- * @since      File available since Release 3.0.0
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
 /**
@@ -49,7 +15,7 @@
  * @author     Sebastian Bergmann <sebastian@phpunit.de>
  * @author     Patrick Mueller <elias0@gmx.net>
  * @author     Frank Kleine <mikey@stubbles.net>
- * @copyright  2010-2014 Sebastian Bergmann <sebastian@phpunit.de>
+ * @copyright  Sebastian Bergmann <sebastian@phpunit.de>
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  * @version    Release: @package_version@
  * @link       http://www.phpunit.de/
@@ -103,6 +69,46 @@ class Framework_MockObjectTest extends PHPUnit_Framework_TestCase
              ->method('doSomething');
 
         $mock->doSomething();
+        $mock->doSomething();
+    }
+
+    public function testMockedMethodIsCalledAtLeastTwice()
+    {
+        $mock = $this->getMock('AnInterface');
+        $mock->expects($this->atLeast(2))
+             ->method('doSomething');
+
+        $mock->doSomething();
+        $mock->doSomething();
+    }
+
+    public function testMockedMethodIsCalledAtLeastTwice2()
+    {
+        $mock = $this->getMock('AnInterface');
+        $mock->expects($this->atLeast(2))
+             ->method('doSomething');
+
+        $mock->doSomething();
+        $mock->doSomething();
+        $mock->doSomething();
+    }
+
+    public function testMockedMethodIsCalledAtMostTwice()
+    {
+        $mock = $this->getMock('AnInterface');
+        $mock->expects($this->atMost(2))
+             ->method('doSomething');
+
+        $mock->doSomething();
+        $mock->doSomething();
+    }
+
+    public function testMockedMethodIsCalledAtMosttTwice2()
+    {
+        $mock = $this->getMock('AnInterface');
+        $mock->expects($this->atMost(2))
+             ->method('doSomething');
+
         $mock->doSomething();
     }
 
@@ -381,9 +387,24 @@ class Framework_MockObjectTest extends PHPUnit_Framework_TestCase
              ->method('doSomething');
     }
 
-    public function testGetMockForTraversableInterface()
+    public function traversableProvider()
     {
-        $mock = $this->getMock('TraversableMockTestInterface');
+        return array(
+          array('Traversable'),
+          array('\Traversable'),
+          array('TraversableMockTestInterface'),
+          array(array('Traversable')),
+          array(array('Iterator','Traversable')),
+          array(array('\Iterator','\Traversable'))
+        );
+    }
+
+    /**
+     * @dataProvider traversableProvider
+     */
+    public function testGetMockForTraversable($type)
+    {
+        $mock = $this->getMock($type);
         $this->assertInstanceOf('Traversable', $mock);
     }
 
@@ -627,6 +648,31 @@ class Framework_MockObjectTest extends PHPUnit_Framework_TestCase
         } catch (PHPUnit_Framework_ExpectationFailedException $e) {
             $this->assertSame(
                 'SomeClass::right() was not expected to be called.',
+                $e->getMessage()
+            );
+        }
+
+        $this->resetMockObjects();
+    }
+
+    /**
+     * @ticket 199
+     */
+    public function testWithAnythingInsteadOfWithAnyParameters()
+    {
+        $mock = $this->getMock('SomeClass', array('right'), array(), '', TRUE, TRUE, TRUE);
+        $mock->expects($this->once())
+             ->method('right')
+             ->with($this->anything());
+
+        try {
+            $mock->right();
+            $this->fail('Expected exception');
+        } catch (PHPUnit_Framework_ExpectationFailedException $e) {
+            $this->assertSame(
+                "Expectation failed for method name is equal to <string:right> when invoked 1 time(s)\n" .
+                "Parameter count for invocation SomeClass::right() is too low.\n" .
+                "To allow 0 or more parameters with any value, omit ->with() or use ->withAnyParameters() instead.",
                 $e->getMessage()
             );
         }

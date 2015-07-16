@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
- 	JavascriptLoadManager::register('hierBrowser');
+ 	AssetLoadManager::register('hierBrowser');
  
 	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$t_instance 		= $this->getVar('t_instance');
@@ -56,12 +56,12 @@
 	if ($vb_batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
 	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel');
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.$t_item->tableNum().'_rel', $this->getVar('initialValues')));
 	
 	}
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings);
 	
-	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort) {
+	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort && ($va_settings['list_format'] != 'list')) {
 		print caEditorBundleSortControls($this->request, $vs_id_prefix, $pa_settings);
 	}
 	
@@ -349,6 +349,8 @@
 			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'Vocabulary', 'Get', $va_lookup_params); ?>',
 			lists: <?php print json_encode($va_settings['restrict_to_lists']); ?>,
 			types: <?php print json_encode($va_settings['restrict_to_types']); ?>,
+			restrictToSearch: <?php print json_encode($va_settings['restrict_to_search']); ?>,
+			bundlePreview: <?php print (sizeof($this->getVar('initialValues')) < 50) ? caEscapeForBundlePreview($t_instance->get($t_item->tableName(), array('delimiter' => '; ', 'restrict_to_types' => $va_settings['restrict_to_types'], 'restrict_to_relationship_types' => $va_settings['restrict_to_relationship_types'], 'template' => $va_settings['display_template']))) : "''"; ?>,
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
 			isSortable: <?php print ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',

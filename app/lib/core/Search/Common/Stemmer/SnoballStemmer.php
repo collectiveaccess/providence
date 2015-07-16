@@ -128,6 +128,10 @@ class SnoballStemmer
         $result = '';
 
         $word = strtolower(caRemoveAccents($word));
+		// Strip trailing ., as in Homer J. Simpson
+		if ( substr($word, -1) == "." ) {
+			$word = substr($word, 0, -1);
+		}
 
         // Strip punctuation, etc. Keep ' and . for URLs and contractions.
         if ( substr($word, -2) == "'s" ) {

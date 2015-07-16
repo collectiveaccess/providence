@@ -56,6 +56,9 @@
 		}
 		exit();
 	}
+
+	// run garbage collector
+	GarbageCollection::gc();
 	
 	$app = AppController::getInstance();
 	
@@ -67,9 +70,9 @@
 	$resp->addHeader("Expires", "Mon, 26 Jul 1997 05:00:00 GMT");
 	
 	//
-	// Don't try to authenticate when doing a login attempt (will be done in the action, of course)
+	// Don't try to authenticate when doing a login attempt or trying to access the 'forgot password' feature
 	//
-	if (!preg_match("/^\/system\/auth\/(dologin|login)/i", $req->getPathInfo())) {
+	if (!preg_match("/^\/system\/auth\/(dologin|login|forgot|requestpassword|initreset|doreset)/i", $req->getPathInfo())) {
 		$vb_auth_success = $req->doAuthentication(array('noPublicUsers' => true));
 
 		if(!$vb_auth_success) {
@@ -88,9 +91,6 @@
 		if(!initializeLocale($g_ui_locale)) die("Error loading locale ".$g_ui_locale);
 		$req->reloadAppConfig();
 	}
-
-	global $ca_translation_cache;
-	$ca_translation_cache = array();
 	
 	//
 	// PageFormat plug-in generates header/footer shell around page content
@@ -110,5 +110,3 @@
 	//
 	$resp->sendResponse();
 	$req->close();
-	
-?>

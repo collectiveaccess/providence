@@ -537,13 +537,11 @@ create table ca_media_content_locations
    table_num                      tinyint unsigned            not null,
    row_id                         int unsigned                not null,
    content                        text                        not null,
-   page                           int unsigned                not null,
    loc                            longtext                    not null
-) engine=myisam CHARACTER SET utf8 COLLATE utf8_general_ci;
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-create index i_row_id on ca_media_content_locations(row_id, table_num, page);
+create index i_row_id on ca_media_content_locations(row_id, table_num);
 create index i_content on ca_media_content_locations(content(255));
-create fulltext index f_content on ca_media_content_locations(content);
 
 
 /*==========================================================================*/
@@ -816,7 +814,8 @@ create table ca_storage_locations
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
-   rank                             int unsigned                     not null default 0,
+   rank                           int unsigned                   not null default 0,
+   is_enabled                     tinyint unsigned               not null default 1,
    primary key (location_id),
    constraint fk_ca_storage_locations_type_id foreign key (type_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -1289,8 +1288,8 @@ create table ca_representation_annotation_labels
    annotation_id                  int unsigned                   not null,
    locale_id                      smallint unsigned              not null,
    type_id                        int unsigned                   null,
-   name                           varchar(2048)                  not null,
-   name_sort                      varchar(2048)                  not null,
+   name                           text		                     not null,
+   name_sort                      text                  		 not null,
    source_info                    longtext                       not null,
    is_preferred                   tinyint unsigned               not null,
    primary key (label_id),
@@ -1326,11 +1325,11 @@ create table ca_task_queue
    created_on                     int unsigned                   not null,
    started_on                   int unsigned,
    completed_on                   int unsigned,
-   priority                       smallint unsigned              not null,
+   priority                       smallint unsigned              not null default 0,
    handler                        varchar(20)                    not null,
    parameters                     text                           not null,
    notes                          text                           not null,
-   error_code                     smallint unsigned              not null,
+   error_code                     smallint unsigned              not null default 0,
    primary key (task_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -1545,6 +1544,7 @@ create table ca_objects
    rank                           int unsigned                   not null default 0,
    acl_inherit_from_ca_collections tinyint unsigned              not null default 0,
    acl_inherit_from_parent         tinyint unsigned              not null default 0,
+   access_inherit_from_parent      tinyint unsigned              not null default 0,
    home_location_id               int unsigned,
    accession_sdatetime            decimal(30,20),
    accession_edatetime            decimal(30,20),
@@ -6083,34 +6083,6 @@ create index i_label_right_id on ca_movements_x_object_representations(label_rig
 
 
 /*==========================================================================*/
-create table ca_mysql_fulltext_search (
-	index_id			int unsigned		not null auto_increment,
-	
-	table_num			tinyint unsigned 	not null,
-	row_id				int unsigned 		not null,
-	
-	field_table_num		tinyint unsigned	not null,
-	field_num			tinyint unsigned	not null,
-	field_row_id		int unsigned		not null,
-	rel_type_id		smallint unsigned not null default 0,
-	
-	fieldtext			longtext 			not null,
-	
-	boost				int 				not null default 1,
-	
-	PRIMARY KEY								(index_id),
-	FULLTEXT INDEX		f_fulltext			(fieldtext),
-	INDEX				i_table_num			(table_num),
-	INDEX				i_row_id			(row_id),
-	INDEX				i_field_table_num	(field_table_num),
-	INDEX				i_field_num			(field_num),
-	INDEX				i_boost				(boost),
-	INDEX				i_field_row_id		(field_row_id),
-	INDEX				i_rel_type_id		(rel_type_id)	
-) engine=myisam character set utf8 collate utf8_general_ci;
-
-
-/*==========================================================================*/
 create table ca_watch_list
 (
    watch_id                       int unsigned                   not null AUTO_INCREMENT,
@@ -6416,6 +6388,42 @@ create unique index u_all on ca_commerce_order_items_x_object_representations
 
 
 /*==========================================================================*/
+create table ca_object_checkouts (
+   checkout_id	            int unsigned					not null AUTO_INCREMENT,
+   group_uuid               char(36) not null,
+   object_id                int unsigned not null,
+   user_id                	int unsigned not null,
+   created_on				int unsigned not null,
+   checkout_date			int unsigned null,
+   due_date					int unsigned null,
+   return_date				int unsigned null,
+   checkout_notes			text not null,
+   return_notes				text not null,
+   last_sent_coming_due_email int unsigned null,
+   last_sent_overdue_email int unsigned null,
+   last_reservation_available_email int unsigned null,
+   deleted					tinyint unsigned not null,
+   
+   primary key (checkout_id),
+   index i_group_uuid (group_uuid),
+   index i_object_id (object_id),
+   index i_user_id (user_id),
+   index i_created_on (created_on),
+   index i_checkout_date (checkout_date),
+   index i_due_date (due_date),
+   index i_return_date (return_date),
+   index i_last_sent_coming_due_email (last_sent_coming_due_email),
+   index i_last_reservation_available_email (last_reservation_available_email),
+   
+   constraint fk_ca_object_checkouts_object_id foreign key (object_id)
+      references ca_objects (object_id) on delete restrict on update restrict,
+      
+   constraint fk_ca_object_checkouts_user_id foreign key (user_id)
+      references ca_users (user_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
 create table ca_sql_search_words 
 (
   word_id int(10) unsigned not null auto_increment,
@@ -6493,14 +6501,36 @@ create table ca_metadata_dictionary_entries (
 create table ca_metadata_dictionary_rules (
    rule_id                  int unsigned					not null AUTO_INCREMENT,
    entry_id                 int unsigned not null,
-   rule_name                varchar(255) not null,
+   rule_code                varchar(30) not null,
+   expression               text not null,
+   rule_level               char(4) not null,
    settings                 longtext not null,
    primary key (rule_id),
    index i_entry_id (entry_id),
-   index i_rule_name (rule_name),
+   unique index u_rule_code (rule_code),
+   index i_rule_code (rule_level),
    
    constraint fk_ca_metadata_dictionary_rules_entry_id foreign key (entry_id)
       references ca_metadata_dictionary_entries (entry_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
+create table ca_metadata_dictionary_rule_violations (
+   violation_id             int unsigned					not null AUTO_INCREMENT,
+   rule_id                  int unsigned not null,
+   table_num                tinyint unsigned not null,
+   row_id               	int unsigned not null,
+   created_on				int unsigned not null,
+   last_checked_on			int unsigned not null,
+   primary key (violation_id),
+   index i_rule_id (rule_id),
+   index i_row_id (row_id, table_num),
+   index i_created_on (created_on),
+   index i_last_checked_on (last_checked_on),
+   
+   constraint fk_ca_metadata_dictionary_rule_vio_rule_id foreign key (rule_id)
+      references ca_metadata_dictionary_rules (rule_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
@@ -6515,5 +6545,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 108 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (108, unix_timestamp());
+/* CURRENT MIGRATION: 116 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (118, unix_timestamp());

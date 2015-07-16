@@ -33,7 +33,8 @@
  /**
   *
   */
- 
+
+	require_once(__CA_APP_DIR__."/helpers/printHelpers.php");
  	require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
  	require_once(__CA_MODELS_DIR__."/ca_editor_ui_bundle_placements.php");
  	require_once(__CA_LIB_DIR__."/core/Datamodel.php");
@@ -277,9 +278,9 @@
  		 */
  		protected function _initView($pa_options=null) {
  			// load required javascript
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('imageScroller');
- 			JavascriptLoadManager::register('ckeditor');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('imageScroller');
+ 			AssetLoadManager::register('ckeditor');
 
  			if (!($t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name))) { return null; }
  			

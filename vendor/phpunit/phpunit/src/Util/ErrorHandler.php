@@ -123,4 +123,33 @@ class PHPUnit_Util_ErrorHandler
 
         throw new $exception($errstr, $errno, $errfile, $errline);
     }
+
+    /**
+     * Registers an error handler and returns a function that will restore
+     * the previous handler when invoked
+     * @param  integer   $severity PHP predefined error constant
+     * @link   http://www.php.net/manual/en/errorfunc.constants.php
+     * @throws Exception if event of specified severity is emitted
+     */
+    public static function handleErrorOnce($severity = E_WARNING)
+    {
+        $terminator = function () {
+            static $expired = false;
+            if (!$expired) {
+                $expired = true;
+                // cleans temporary error handler
+                return restore_error_handler();
+            }
+        };
+
+        set_error_handler(function ($errno, $errstr) use ($severity) {
+            if ($errno === $severity) {
+                return;
+            }
+
+            return false;
+        });
+
+        return $terminator;
+    }
 }

@@ -1,30 +1,28 @@
 language: php
+sudo: false
 
 php:
-  # Test against current PHP and previous 2 versions
   - 5.3
   - 5.4
   - 5.5
+  - 5.6
 
 env:
   # Here we list the profiles that we want to test, each one will be tested, per version of PHP, in parallel
-  - PROFILE=default
-  - PROFILE=darwincore
-  - PROFILE=dublincore
+  - PROFILE=testing
   - PROFILE=wamcmis
 
 install:
   # Initialise the database instance for the test
-  - mysqladmin -uroot create ca_test
-  - mysql -uroot -e "create user 'ca_test'@'localhost' identified by 'password';"
-  - mysql -uroot -e "grant all on ca_test.* to 'ca_test'@'localhost';"
+  - mysql -uroot -e 'create database ca_test;'
+  - mysql -uroot -e "grant all on ca_test.* to 'ca_test'@'localhost' identified by 'password';"
   # Set environment variables
   - export COLLECTIVEACCESS_HOME="$(pwd)"
   - export PATH="$PATH:$COLLECTIVEACCESS_HOME/support/bin"
   # Create setup.php
   - ln -s .travis.setup.php setup.php
-  # Install the WAM CMIS profile
-  - support/bin/caUtils install --hostname=localhost --setup="$(pwd)/tests/setup-tests.php" --skip-roles --profile-name=$PROFILE --admin-email=dev@gaiaresources.com.au
+  # Install the profile
+  - support/bin/caUtils install --hostname=localhost --setup="$(pwd)/tests/setup-tests.php" --skip-roles --profile-name=$PROFILE --admin-email=dev@gaiaresources.com.au > install.log
 
 before_script:
   # Go into the tests directory to run the tests

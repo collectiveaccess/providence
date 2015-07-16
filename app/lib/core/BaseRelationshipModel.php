@@ -300,7 +300,7 @@
 			$vs_right_table_name = $this->getRightTableName();
 			if (!in_array($ps_orientation, array($vs_left_table_name, $vs_right_table_name))) { $ps_orientation = $vs_left_table_name; }
 			
-			$va_types = $this->getRelationshipTypes($pn_sub_type_left_id, $pn_sub_type_right_id);
+			$va_types = $this->getRelationshipTypes($pn_sub_type_left_id, $pn_sub_type_right_id, $pa_options);
 			$va_options = array();
 			
 			$va_parent_ids = array();
@@ -665,7 +665,14 @@
 		/**
 		 * 
 		 */
-		public function getTypeID() {
+		public function getTypeID($pn_id = NULL) {
+			if ($pn_id) {
+				$qr_res = $this->getDb()->query("SELECT type_id FROM ".$this->tableName()." WHERE ".$this->primaryKey()." = ?", array((int)$pn_id));
+				if($qr_res->nextRow()) {
+					return $qr_res->get('type_id');
+				}
+				return null;
+			}
 			return (BaseModel::hasField('type_id')) ? BaseModel::get('type_id') : null;
 		}
 		# ------------------------------------------------------

@@ -57,7 +57,12 @@
 class PHPUnit_Framework_TestFailure
 {
     /**
-     * @var    PHPUnit_Framework_Test
+     * @var string
+     */
+    private $testName;
+
+    /**
+     * @var PHPUnit_Framework_Test|null
      */
     protected $failedTest;
 
@@ -74,7 +79,14 @@ class PHPUnit_Framework_TestFailure
      */
     public function __construct(PHPUnit_Framework_Test $failedTest, Exception $thrownException)
     {
-        $this->failedTest      = $failedTest;
+        if ($failedTest instanceof PHPUnit_Framework_SelfDescribing) {
+            $this->testName = $failedTest->toString();
+        } else {
+            $this->testName = get_class($failedTest);
+        }
+        if (!$failedTest instanceof PHPUnit_Framework_TestCase || !$failedTest->isInIsolation()) {
+            $this->failedTest = $failedTest;
+        }
         $this->thrownException = $thrownException;
     }
 
@@ -86,10 +98,9 @@ class PHPUnit_Framework_TestFailure
     public function toString()
     {
         return sprintf(
-          '%s: %s',
-
-          $this->failedTest->toString(),
-          $this->thrownException->getMessage()
+            '%s: %s',
+            $this->testName,
+            $this->thrownException->getMessage()
         );
     }
 
@@ -125,6 +136,8 @@ class PHPUnit_Framework_TestFailure
             }
         } elseif ($e instanceof PHPUnit_Framework_Error) {
             $buffer = $e->getMessage() . "\n";
+        } elseif ($e instanceof PHPUnit_Framework_ExceptionWrapper) {
+            $buffer = $e->getClassname() . ': ' . $e->getMessage() . "\n";
         } else {
             $buffer = get_class($e) . ': ' . $e->getMessage() . "\n";
         }
@@ -133,9 +146,25 @@ class PHPUnit_Framework_TestFailure
     }
 
     /**
-     * Gets the failed test.
+     * Returns the name of the failing test (including data set, if any).
      *
-     * @return PHPUnit_Framework_Test
+     * @return string
+     * @since  Method available since Release 4.3.0
+     */
+    public function getTestName()
+    {
+        return $this->testName;
+    }
+
+    /**
+     * Returns the failing test.
+     *
+     * Note: The test object is not set when the test is executed in process
+     * isolation.
+     *
+     * @see PHPUnit_Framework_Exception
+     *
+     * @return PHPUnit_Framework_Test|null
      */
     public function failedTest()
     {
