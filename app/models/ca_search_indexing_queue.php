@@ -207,6 +207,11 @@ class ca_search_indexing_queue extends BaseModel {
 
 	protected $FIELDS;
 
+	/**
+	 * @var resource|null
+	 */
+	static $s_lock_resource = null;
+
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -223,9 +228,8 @@ class ca_search_indexing_queue extends BaseModel {
 	}
 	# ------------------------------------------------------
 	static public function process() {
-		$r_semaphore = sem_get(ftok(__FILE__,'CASearchIndexingQueue'));
 
-		if(sem_acquire($r_semaphore)) {
+		if(self::lockAcquire()) {
 			$o_db = new Db();
 			$o_result = $o_db->query("SELECT * FROM ca_search_indexing_queue ORDER BY entry_id");
 			if($o_result && $o_result->numRows()) {
@@ -253,7 +257,37 @@ class ca_search_indexing_queue extends BaseModel {
 
 			}
 
-			sem_release($r_semaphore);
+			self::lockRelease();
+		}
+	}
+	# ------------------------------------------------------
+	static public function lockAcquire() {
+		if((function_exists('sem_get') && caGetOSFamily() == OS_POSIX)) {
+			if(!self::$s_lock_resource) {
+				self::$s_lock_resource = sem_get(ftok(__FILE__,'CASearchIndexingQueue'));
+			}
+
+			return sem_acquire(self::$s_lock_resource);
+		} else {
+			$vs_temp_file = caGetTempDirPath() . PATH_SEPARATOR . 'search_indexing_queue.lock';
+
+			return (bool) (self::$s_lock_resource = @fopen($vs_temp_file, 'x'));
+		}
+	}
+	# ------------------------------------------------------
+	static public function lockRelease() {
+		if((function_exists('sem_get') && caGetOSFamily() == OS_POSIX)) {
+
+			if (!self::$s_lock_resource) {
+				self::$s_lock_resource = sem_get(ftok(__FILE__, 'CASearchIndexingQueue'));
+			}
+
+			sem_release(self::$s_lock_resource);
+		} else {
+			if(is_resource(self::$s_lock_resource)) {
+				@fclose(self::$s_lock_resource);
+				@unlink(caGetTempDirPath() . PATH_SEPARATOR . 'search_indexing_queue.lock');
+			}
 		}
 	}
 	# ------------------------------------------------------
