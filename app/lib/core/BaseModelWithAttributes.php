@@ -2285,7 +2285,7 @@
 				$va_search_strings = array();
 				
 				$vn_id = $this->getPrimaryKey();
-				print_R($va_element_list);
+
 				foreach($va_element_list as $vs_table => $va_elements_by_table) {
 					foreach($va_elements_by_table as $vn_element_id => $va_element_info) {
 						$va_search_strings[$vs_table][] = "{$vs_table}.".$va_element_info['element_code'].":{$vn_id}";

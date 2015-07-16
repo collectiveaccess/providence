@@ -2243,6 +2243,69 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="entity_reference" datatype="Entities">
+      <labels>
+        <label locale="en_US">
+          <name>Entities (Reference)</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">90</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="entity_reference_2" datatype="Entities">
+      <labels>
+        <label locale="en_US">
+          <name>Entities (Reference 2)</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">90</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="collection_reference" datatype="Collections">
+      <labels>
+        <label locale="en_US">
+          <name>Collections (Reference)</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">90</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
   </elementSets>
   <userInterfaces>
     <userInterface code="standard_object_ui" type="ca_objects">
@@ -2275,6 +2338,15 @@
                 <setting name="label" locale="en_US">Alternate titles</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_entity_reference">
+              <bundle>ca_attribute_entity_reference</bundle>
+            </placement>
+            <placement code="ca_attribute_entity_reference_2">
+              <bundle>ca_attribute_entity_reference_2</bundle>
+            </placement>
+            <placement code="ca_attribute_collection_reference">
+              <bundle>ca_attribute_collection_reference</bundle>
             </placement>
             <placement code="ca_attribute_tgn">
               <bundle>ca_attribute_tgn</bundle>
@@ -3142,7 +3214,7 @@
             </placement>
           </bundlePlacements>
         </screen>
-        <screen idno="items" default="1">
+        <screen idno="items" default="0">
           <labels>
             <label locale="en_US">
               <name>Items</name>

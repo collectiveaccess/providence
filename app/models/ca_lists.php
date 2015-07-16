@@ -296,6 +296,31 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
+	/**
+	 * Override delete() to scramble the list_code before we soft-delete. This is useful
+	 * because the database field has a unique key that really enforces uniqueneness
+	 * and we might wanna reuse a code of a set we previously deleted.
+	 */
+	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		if($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
+			if(!caGetOption('hard', $pa_options, false)) { // only applies if we don't hard-delete
+				$vb_we_set_transaction = false;
+				if (!$this->inTransaction()) {
+					$o_t = new Transaction($this->getDb());
+					$this->setTransaction($o_t);
+					$vb_we_set_transaction = true;
+				}
+
+				$this->set('list_code', $this->get('list_code') . '_' . time());
+				$this->update(array('force' => true));
+
+				if ($vb_we_set_transaction) { $this->removeTransaction(true); }
+			}
+		}
+
+		return $vn_rc;
+	}
+	# ------------------------------------------------------
 	# List maintenance
 	# ------------------------------------------------------
 	/**

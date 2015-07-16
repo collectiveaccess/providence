@@ -6,6 +6,6 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    $vendorDir . '/symfony/var-dumper/Symfony/Component/VarDumper/Resources/functions/dump.php',
+    $vendorDir . '/symfony/var-dumper/Resources/functions/dump.php',
     $vendorDir . '/ezyang/htmlpurifier/library/HTMLPurifier.composer.php',
 );
