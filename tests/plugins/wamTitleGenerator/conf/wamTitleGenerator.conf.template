@@ -5,7 +5,7 @@ title_formatters = {
 		0 = {
 			types = [ %%test_object_type1%%, %%test_object_type2%%, %%test_object_type3%% ],
 			templates = {
-				name = generated: <unit><ifdef code="ca_collections">^ca_collections </ifdef></unit>^ca_objects.idno
+				name = generated: <unit><ifdef code="ca_collections">^ca_collections.preferred_labels </ifdef></unit>^ca_objects.idno
 			}
 		}
 	},
