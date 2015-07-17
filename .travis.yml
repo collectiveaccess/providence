@@ -24,7 +24,7 @@ install:
   # Use en_AU if wamcmis profile
   - if [ "$PROFILE" = "wamcmis" ]; then sed -i.bak s/en_US/en_AU/g setup.php-dist; fi
   # Install the profile
-  - support/bin/caUtils install --setup="$(pwd)/tests/setup-tests.php" --skip-roles --profile-name=$PROFILE --admin-email=dev@gaiaresources.com.au
+  - support/bin/caUtils install --hostname=localhost --setup="$(pwd)/tests/setup-tests.php" --skip-roles --profile-name=$PROFILE --admin-email=dev@gaiaresources.com.au
 
 before_script:
   # Go into the tests directory to run the tests
