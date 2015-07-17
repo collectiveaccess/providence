@@ -399,12 +399,20 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		foreach($va_field_list as $vn_i => $vs_field) {
 			if (in_array($vs_field, array($vs_idno_fld, $vs_idno_sort_fld, $vs_pk))) { continue; }		// skip idno fields
 			$va_fld_info = $t_dupe->getFieldInfo($vs_field);
-			if($va_fld_info['FIELD_TYPE'] == FT_MEDIA) { // media deserves special treatment
-				$t_dupe->set($vs_field, $this->getMediaPath($vs_field, 'original'));
-			} else {
-				$t_dupe->set($vs_field, $this->get($this->tableName().'.'.$vs_field));
+			
+			switch($va_fld_info['FIELD_TYPE']) {
+				case FT_MEDIA:		// media deserves special treatment
+					$t_dupe->set($vs_field, $this->getMediaPath($vs_field, 'original'));
+					break;
+				case FT_VARS:
+					$t_dupe->set($vs_field, $this->get($this->tableName().'.'.$vs_field, array('unserialize' => true)));
+					break;
+				default:
+					$t_dupe->set($vs_field, $this->get($this->tableName().'.'.$vs_field));
+					break;
 			}
 		}
+		
 		$t_dupe->set($this->getTypeFieldName(), $this->getTypeID());
 		
 		// Calculate identifier using numbering plugin
@@ -570,7 +578,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *		returnAsLinkTarget = Optional link target. If any plugin implementing hookGetAsLink() responds to the specified target then the plugin will be used to generate the links rather than CA's default link generator.
 	 */
 	public function get($ps_field, $pa_options=null) {
-		if ($this->hasField($ps_field)) { return BaseModel::get($ps_field, $pa_options); }
+		$vn_s = sizeof($va_tmp = explode('.', $ps_field));
+		if ((($vn_s == 1) && ($vs_field = $ps_field)) || (($vn_s == 2) && ($va_tmp[0] == $this->TABLE) && ($vs_field = $va_tmp[1]))) {
+			if ($this->hasField($vs_field)) { return BaseModel::get($vs_field, $pa_options); }
+		}
 		if($this->_rowAsSearchResult) {
 			return $this->_rowAsSearchResult->get($ps_field, $pa_options);
 		}
