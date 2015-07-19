@@ -1548,7 +1548,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// This bundle is only available when editing objects of type ca_sets
 					case 'ca_set_items':
 						if ($vb_batch) { return null; } // not supported in batch mode
-						$vs_element .= $this->getSetItemHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
+						$vs_element .= $this->getSetItemHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options, $pa_bundle_settings);
 						break;
 					# -------------------------------
 					// This bundle is only available for types which support set membership
@@ -4970,8 +4970,10 @@ if (!$vb_batch) {
 			
 			if ($vb_uses_relationship_types)  {
 				$va_rel_types = $t_rel->getRelationshipInfo($t_tmp->tableName());
-				$vs_left_table = $t_tmp->getLeftTableName();
-				$vs_direction = ($vs_left_table == $this->tableName()) ? 'ltor' : 'rtol';
+				if(method_exists($t_tmp, 'getLeftTableName')) {
+					$vs_left_table = $t_tmp->getLeftTableName();
+					$vs_direction = ($vs_left_table == $this->tableName()) ? 'ltor' : 'rtol';
+				}
 			}
 			$va_rels = array();
 			$vn_c = 0;

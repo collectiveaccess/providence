@@ -2589,6 +2589,13 @@ class BaseModel extends BaseObject {
 				$vn_orig_hier_right 	= $this->get($vs_hier_right_fld);
 				
 				$vn_parent_id 			= $this->get($vs_parent_id_fld);
+				
+				// Don't allow parent to be set 
+				if ($vn_parent_id == $this->getPrimaryKey()) {
+					$vn_parent_id = $this->getOriginalValue($vs_parent_id_fld);
+					if ($vn_parent_id == $this->getPrimaryKey()) { $vn_parent_id = null; }
+					$this->set($vs_parent_id_fld, $vn_parent_id);
+				}
 					
 				if ($vb_parent_id_changed = $this->changed($vs_parent_id_fld)) {
 					$va_parent_info = $this->_getHierarchyParent($vn_parent_id);
