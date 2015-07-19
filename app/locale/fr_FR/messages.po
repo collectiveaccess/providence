@@ -1,6 +1,7 @@
 #
 # Translators:
 # Caroline Solievna <caroline.solievna@ideesculture.com>, 2015
+# yelto, 2015
 # Gautier Michelin <gm@ideesculture.com>, 2013
 # Gautier Michelin <gm@ideesculture.com>, 2013,2015
 msgid ""
@@ -8,9 +9,9 @@ msgstr ""
 "Project-Id-Version: CollectiveAccess Providence\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-06-23 09:11-0500\n"
-"PO-Revision-Date: 2015-07-08 08:53+0200\n"
+"PO-Revision-Date: 2015-07-19 22:51+0200\n"
 "Last-Translator: Gautier Michelin <gm@ideesculture.com>\n"
-"Language-Team: French (France) (http://www.transifex.com/projects/p/collectiveaccess-providence/language/fr_FR/)\n"
+"Language-Team: French (France) (http://www.transifex.com/p/collectiveaccess-providence/language/fr_FR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -133,7 +134,7 @@ msgstr "Modifications de la métadonnée enregistrées"
 
 #: app/controllers/administrate/setup/ElementsController.php:264
 msgid "Setting %2 is not valid: %1"
-msgstr "Paramètr %2 non valide : %1"
+msgstr "Paramètre %2 non valide : %1"
 
 #: app/controllers/administrate/setup/ElementsController.php:338
 msgid "Deleted metadata element"
@@ -374,7 +375,7 @@ msgstr "La commande a été effacée"
 
 #: app/controllers/client/library/OrderEditorController.php:597 app/controllers/client/orders/OrderEditorController.php:594
 msgid "Invalid message"
-msgstr "sMessage invalide"
+msgstr "Message invalide"
 
 #: app/controllers/client/library/OrderEditorController.php:603 app/controllers/client/orders/OrderEditorController.php:600
 msgid "Message is not associated with a transaction"
@@ -5913,7 +5914,7 @@ msgstr "Réindexer les médias PDF pour la recherche depuis la visionneuse"
 
 #: app/lib/ca/Utils/CLIUtils.php:1064
 msgid "The CollectiveAccess document viewer can search text within PDFs and highlight matches. To enable this feature PDF content must be analyzed and indexed. If your database predates the introduction of in-viewer PDF search in CollectiveAccess 1.4, or search is otherwise failing to work properly, you can use this command to analyze and index PDFs in the database."
-msgstr ""
+msgstr "La visionneuse CollectiveAccess peut chercher dans le texte au sein des PDF et surligneur les résultats. Pour activer cette fonctionnalité, le contenu du PDF doit être analysé et indexé. Si votre base de données date d'avant l'introduction de la recherche au sein de la visionneuse PDF dans CollectiveAccess 1.4, ou si la recherche ne fonctionne pas efficacement, vous pouvez utiliser cette commande pour analyser et indexer les PDF dans la base de données."
 
 #: app/lib/ca/Utils/CLIUtils.php:1075
 msgid ""
@@ -6017,11 +6018,11 @@ msgstr "Si défini, l'import est réalisé sans que les données soient effectiv
 
 #: app/lib/ca/Utils/CLIUtils.php:1272
 msgid "If set import is performed without a transaction. This allows viewing of imported data during the import, which may be useful during debugging/development. It may also lead to data corruption and should only be used for testing."
-msgstr ""
+msgstr "Si défini, l'import est réalisé sans transaction. Ceci permet l'affichage de données importées durant l'import, ce qui peut être pratique durant une phase de débuggage ou de développement. "
 
 #: app/lib/ca/Utils/CLIUtils.php:1273
 msgid "If set indexing of changes made during import is not done. This may significantly reduce import time, but will neccessitate a reindex of the entire database after the import."
-msgstr ""
+msgstr "Si défini, l'indexation des modifications n'est pas faite durant l'import. Ceci peut réduire fortement temps nécessaire pour l'import, mais nécessitera une réindexation complète de la base de données après l'import."
 
 #: app/lib/ca/Utils/CLIUtils.php:1288
 msgid "Import data from many types of data sources."
@@ -6029,7 +6030,7 @@ msgstr "Importe des données depuis de nombreux types de sources"
 
 #: app/lib/ca/Utils/CLIUtils.php:1295
 msgid "Import data from many types of data sources including other CollectiveAccess systems, MySQL databases and Excel, delimited text, XML and MARC files."
-msgstr ""
+msgstr "Importe des données de nombreux types de données dont d'autres systèmes CollectiveAccess, des bases de données MySQL et Excel, du texte délimité, des fichiers XML et MARC."
 
 #: app/lib/ca/Utils/CLIUtils.php:1305
 msgid "You must specify a file!"
@@ -6262,7 +6263,7 @@ msgstr "Le schéma ElasticSearch a été créé avec succès."
 
 #: app/lib/ca/Utils/CLIUtils.php:2083 app/lib/ca/Utils/CLIUtils.php:2123
 msgid "Note that all data has been wiped from the index so you must issue a full reindex now, either using caUtils rebuild-search-index or the web-based tool under Manage > Administration > Maintenance."
-msgstr ""
+msgstr "Notez que toutes les données ont été effacez de l'index, vous devez donc réindexer toute la base maintenant, soit à l'aide de l'utilitaire caUtils soit à l'aide de l'interface dans Gérer > Administration > Maintenance."
 
 #: app/lib/ca/Utils/CLIUtils.php:2104
 msgid "Configures ElasticSearch installation for use with CollectiveAccess"
@@ -6547,7 +6548,7 @@ msgstr "Vide les répertoire de cache de l'application et le répertoire tmp"
 
 #: app/lib/ca/Utils/CLIUtils.php:2961
 msgid "CollectiveAccess stores often used values, processed configuration files, user-uploaded media and other types of data in application caches. You can clear these caches using this command."
-msgstr ""
+msgstr "CollectiveAccess stocke souvent des valeurs, des fichiers de configuration, des médias uploadés par l'utilisateur et d'autres types de données dans des caches d'application. Vous pouvez vider ces caches à l'aide de cette commande."
 
 #: app/lib/ca/Utils/CLIUtils.php:2980
 msgid "Checking media processing plugins..."
@@ -6599,7 +6600,7 @@ msgstr "Recharge les valeurs pour l'attribut lié au service (InformationService
 
 #: app/lib/ca/Utils/CLIUtils.php:3116
 msgid "InformationService attribute values store all the data CollectiveAccess needs to operate locally while keeping a reference to the referenced record at the remote web service. That means that potential changes at the remote data source are not pulled in automatically. This script explicitly performs a lookup for all existing InformationService attribute values and updates the local copy of the data with the latest values."
-msgstr ""
+msgstr "L'attribut InformationService stocke toutes les données dont CollectiveAccess a besoin pour travailler localement tout en conservant une référence à l'enregistrement distant référencé sur le web service. Ceci signifie qu'un changement potentiel sur la source de données distante n'est pas forcément rapatrié automatiquement. Ce script réalise explicitement une recherche pour toutes les valeurs d'attribut InformationService et met à jour la copie locale des données avec les dernière valeurs."
 
 #: app/lib/ca/Utils/CLIUtils.php:3169
 msgid "Which mapping to use to re-import the ULAN records."
@@ -6611,11 +6612,11 @@ msgstr "Recharge des enregistrements importés de ULAN avec la correspondance sp
 
 #: app/lib/ca/Utils/CLIUtils.php:3194
 msgid "Reload records imported from ULAN with the specified mapping. This utility assumes that the mapping is set up with an existingRecordPolicy that ensures that existing records are matched properly. It will create duplicates if it does not match existing records so be sure to test your mapping first!"
-msgstr ""
+msgstr "Recharge les enregistrements importés depuis ULAN avec la correspondance spécifiée. Cet utilitaire assume que la correspondance est prévue avec une version existingRecordPolicy qui fait que vos enregistrements actuels sont traités. Il va créer des doublons si il ne trouve pas de correspondance avec les enregistrements existants, donc soyez sûr de tester votre correspondance avant de l'utiliser."
 
 #: app/lib/ca/Utils/DataMigrationUtils.php:188
 msgid "Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno"
-msgstr ""
+msgstr "Élément de liste existant %1 (dans la liste %2) trouvé par DataMigrationUtils::getListItemID() à l'aide de l'identifiant"
 
 #: app/lib/ca/Utils/DataMigrationUtils.php:195 app/lib/ca/Utils/DataMigrationUtils.php:197
 msgid "Could not find list with list code %1"
@@ -6623,15 +6624,15 @@ msgstr "Impossible de trouver la liste correspondante au code %1"
 
 #: app/lib/ca/Utils/DataMigrationUtils.php:220
 msgid "Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using singular label %3"
-msgstr ""
+msgstr "Élément de liste existant %1 (dans la liste %2) trouvé par DataMigrationUtils::getListItemID() à l'aide du titre (singulier) %3"
 
 #: app/lib/ca/Utils/DataMigrationUtils.php:225
 msgid "Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using plural label %3"
-msgstr ""
+msgstr "Élément de liste existant %1 (dans la liste %2) trouvé par DataMigrationUtils::getListItemID() à l'aide du titre (pluriel) %3"
 
 #: app/lib/ca/Utils/DataMigrationUtils.php:236
 msgid "Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno with %3"
-msgstr ""
+msgstr "Élément de liste existant %1 (dans la liste %2) trouvé par DataMigrationUtils::getListItemID() à l'aide de l'identifiant %3"
 
 #: app/lib/ca/Utils/DataMigrationUtils.php:272 app/lib/ca/Utils/DataMigrationUtils.php:325 app/lib/ca/Utils/DataMigrationUtils.php:1027 app/lib/ca/Utils/DataMigrationUtils.php:1071
 msgid "Errors setting field values: %1"
@@ -6695,11 +6696,11 @@ msgstr "Trouvé %1 %2 par DataMigrationUtils::_getID()"
 
 #: app/lib/ca/Utils/DataMigrationUtils.php:1060
 msgid "Could not load existing %1 with id %2 (%3) in DataMigrationUtils::_getID() [THIS SHOULD NOT HAPPEN]"
-msgstr ""
+msgstr "Impossible de charger %1 existant avec le code %2 (%3) dans DataMigrationUtils::_getID() [CECI NE DEVRAIT JAMAIS SE PRODUIRE]"
 
 #: app/lib/ca/Utils/DataMigrationUtils.php:1065
 msgid "Could not set attributes for %1 with id %2 (%3) in DataMigrationUtils::_getID(): %4"
-msgstr ""
+msgstr "Impossible de définir l'attribut pour %1 avec le code %2 (%3) dans DataMigrationUtils::_getID(): %4"
 
 #: app/lib/core/ApplicationChangeLog.php:145 app/lib/core/ApplicationChangeLog.php:215 app/models/ca_change_log.php:61 app/models/ca_data_import_events.php:64 app/models/ca_data_importer_log.php:65 app/models/ca_item_comments.php:66 app/models/ca_item_views.php:65 app/models/ca_items_x_tags.php:71 app/models/ca_object_checkouts.php:80 app/models/ca_representation_annotations.php:74 app/models/ca_search_forms.php:63 app/models/ca_sets.php:78 app/models/ca_user_notes.php:80 app/models/ca_watch_list.php:71 app/widgets/lastLogins/views/main_html.php:39 themes/default/views/bundles/ca_acl_users.php:55 themes/default/views/bundles/ca_object_checkouts.php:106 themes/default/views/bundles/ca_users.php:56 themes/default/views/client/orders/order_fulfillment_events_html.php:69 themes/default/views/logs/search_html.php:63 themes/default/views/pageFormat/pageFooter.php:46
 msgid "User"
@@ -6759,7 +6760,7 @@ msgstr "Impossible de connecter l'utilisateur %1 à l'aide de la base de donnée
 
 #: app/lib/core/Auth/Adapters/ExternalDB.php:155
 msgid "Could not login user %1 using external database because external authentication failed [%2]"
-msgstr ""
+msgstr "Impossible de connecter l'utilisateur %1 à l'aide de la base de données externe parce que l'authentification externe a échoué [%2]"
 
 #: app/lib/core/Auth/Adapters/ExternalDB.php:195
 msgid "Could not login user %1 after authentication from external database because user class was not set."
@@ -8916,7 +8917,7 @@ msgstr "Afficher les conversions de devises ?"
 
 #: app/models/ca_bundle_displays.php:1088
 msgid "Check this option if you want your currency values to be displayed in both the specified and local currency."
-msgstr ""
+msgstr "Cocher cette option si vous voulez que les valeurs de devises soient affichées à la fois dans la devise spécifiée et dans la devise locale."
 
 #: app/models/ca_bundle_displays.php:1210 app/models/ca_editor_ui_screens.php:947
 msgid "Sales order"
@@ -10347,7 +10348,7 @@ msgstr "Passer le groupe si vide"
 
 #: app/models/ca_data_exporter_items.php:389
 msgid "Omit this item and all its children unless this CollectiveAccess bundle specifier returns a result."
-msgstr ""
+msgstr "Ignore cet élément et tous ses enfants à moins que le bloc CollectiveAccess retourne un résultat."
 
 #: app/models/ca_data_exporter_items.php:398
 msgid "Omit if not empty"
@@ -10355,7 +10356,7 @@ msgstr "Ignorer si non vide"
 
 #: app/models/ca_data_exporter_items.php:399
 msgid "Omit this item and all its children if this CollectiveAccess bundle specifier returns a non-empty result."
-msgstr ""
+msgstr "Ignore cet élément et tous ses enfants à moins que le bloc CollectiveAccess retourne un résultat non-vide."
 
 #: app/models/ca_data_exporter_items.php:419
 msgid "Restricts the context of the mapping to only records of the designated type. Only valid when context is set."
@@ -10371,7 +10372,7 @@ msgstr "Restreindre aux valeurs du bloc"
 
 #: app/models/ca_data_exporter_items.php:439
 msgid "Restricts the context of the mapping to only records related with the designated bundle values. Only valid when context is set."
-msgstr ""
+msgstr "Restreint le contexte de la correspondance aux seuls enregistrements liés avec les valeurs du bloc indiqué. Valide uniquement quand un contexte est défini."
 
 #: app/models/ca_data_exporter_items.php:448
 msgid "Check access"
@@ -10387,7 +10388,7 @@ msgstr "Trier"
 
 #: app/models/ca_data_exporter_items.php:459
 msgid "Sorts the values returned for a context switch on these fields. Only valid when context is set."
-msgstr ""
+msgstr "Trie les valeurs retournées pour une bascule de contexte sur ces champs. Valide uniquement lorsqu'un contexte est défini."
 
 #: app/models/ca_data_exporter_items.php:472
 msgid "Start as ISO8601"
@@ -10395,7 +10396,7 @@ msgstr "Début en ISO8601"
 
 #: app/models/ca_data_exporter_items.php:473
 msgid "If set, only the end of a date range is exported for the current mapping. Format is ISO8601. Only applies to exports of DateRange attributes."
-msgstr ""
+msgstr "Si défini, seule la date de fin d'une plage de dates est exportée pour la correspondance courante. Le format est ISO 8601. S'applique uniquement aux attributs DateRange."
 
 #: app/models/ca_data_exporter_items.php:486
 msgid "End as ISO8601"
@@ -10403,7 +10404,7 @@ msgstr "Fin en ISO8601"
 
 #: app/models/ca_data_exporter_items.php:487
 msgid "If set, only the beginning of a date range is exported for the current mapping. Format is ISO8601. Only applies to exports of DateRange attributes."
-msgstr ""
+msgstr "Si défini, seul le début d'une plage de dates est exporté pour la correspondance en court. Le format est ISO8601. Ceci s'applique uniquement à l'export des attributs DateRange."
 
 #: app/models/ca_data_exporter_items.php:500
 msgid "Do not return value if on the same day as start"
@@ -10411,7 +10412,7 @@ msgstr "Ne pas retourner de valeur si le jour de fin est le même jour que le d�
 
 #: app/models/ca_data_exporter_items.php:501
 msgid "If set, the exporter will not insert a value for this mapping if the end day of the DateRange in question is on the same day as the start. Only applias to exports of DateRange attributes and only in conjunction with end_as_iso8601."
-msgstr ""
+msgstr "Si défini, l'exporteur n'insèrera pas de valeur pour cette correspondance pour le jour de fin dans l'attribut DateRange si celui-ci correspond au même jour que la date de début. S'applique uniquement à l'export des attributs DateRange et uniquement en conjonction avec end_as_iso8601."
 
 #: app/models/ca_data_exporter_items.php:511
 msgid "Formatting option for DateRange attributes."
@@ -10531,7 +10532,7 @@ msgstr "Attention : correspondance ignorée à la ligne %1 parce que l'élément
 
 #: app/models/ca_data_exporters.php:721
 msgid "Variable name %1 is invalid. It should only contain ASCII letters, numbers, hyphens and underscores. The variable was not created."
-msgstr ""
+msgstr "Le nom de variable %1 est invalide. Il ne doit contenir que des lettres ASCII, des nombres, des tirets et des underscores. La variable n'a pas été créée."
 
 #: app/models/ca_data_exporters.php:730
 msgid "Warning: options for element %1 are not in proper JSON"
@@ -10591,11 +10592,11 @@ msgstr "L'export a échoué : %1"
 
 #: app/models/ca_data_exporters.php:1170
 msgid "Starting SearchResult-based multi-record export for mapping %1."
-msgstr ""
+msgstr "Début de l'export de multiples enregistrements pour le résultat de recherche SearchResult à partir de la correspondance %1."
 
 #: app/models/ca_data_exporters.php:1180
 msgid "SearchResult contains %1 results. Now calling single-item export for each record."
-msgstr ""
+msgstr "Le résultat de recherche contient %1 résultats. Export en cours enregistrement par enregistrement."
 
 #: app/models/ca_data_exporters.php:1187
 msgid "Processing search result"
@@ -10631,23 +10632,23 @@ msgstr "Configuration invalide"
 
 #: app/models/ca_data_exporters.php:1414
 msgid "Failed to load exporter with code '%1' for item with ID %2"
-msgstr ""
+msgstr "Impossible de charger l'export avec le code '%1' pour l'enregistrement avec l'id %2"
 
 #: app/models/ca_data_exporters.php:1418
 msgid "Successfully loaded exporter with code '%1' for item with ID %2"
-msgstr ""
+msgstr "Chargement avec succès de l'export avec le code '%1' pour l'enregistrement avec l'id %2"
 
 #: app/models/ca_data_exporters.php:1426
 msgid "The export tree for exporter code '%1' and item with ID %2 is now ready to be processed by the export format (i.e. transformed to XML, for example)."
-msgstr ""
+msgstr "L'arbre pour le code d'export '%1' et l'enregistrement ayant l'id %2 est prêt à être traité par le format d'export (par exemple transformé en XML)."
 
 #: app/models/ca_data_exporters.php:1497
 msgid "Export mapping processor called with parameters [exporter_item_id:%1 table_num:%2 record_id:%3]"
-msgstr ""
+msgstr "Processeur de correspondance d'export lancé avec les paramètres [exporter_item_id:%1 table_num:%2 record_id:%3]"
 
 #: app/models/ca_data_exporters.php:1522
 msgid "Initiating context switch to '%1' for mapping ID %2 and record ID %3. The processor now tries to find matching records for the switch and calls itself for each of those items."
-msgstr ""
+msgstr "Lancement de la bascule par contexte vers '%1' pour la correspondance avec l'id %2 et l'enregistrement avec l'id %3. Le processeur essaie maintenant de trouver les enregistrements correspondant à la bascule définie et se lance automatiquement pour chacun de ces enregistrements."
 
 #: app/models/ca_data_exporters.php:1582
 msgid "Calling getRelatedItems with options: %1."
@@ -10663,11 +10664,11 @@ msgstr "Changement de contexte pour le code d'élément : %1."
 
 #: app/models/ca_data_exporters.php:1600
 msgid "Raw attribute value array is as follows. The mapping will now be repeated for each (outer) attribute. %1"
-msgstr ""
+msgstr "La valeur brute de l'attribut est la suivante. La correspondance va désormais être répétée pour chaque attribut %1."
 
 #: app/models/ca_data_exporters.php:1607
 msgid "Switching context for element code %1 failed. Either there is no attribute with that code attached to the current row or the code is invalid. Mapping is ignored for current row."
-msgstr ""
+msgstr "Le test de contexte pour le code d'élément %1 a échoué. Soit il n'y a pas d'attribut avec ce code défini pour la ligne courant ou soit le code est invalide. La correspondance est ignorée pour la ligne courante."
 
 #: app/models/ca_data_exporters.php:1618
 msgid "The current mapping will now be repreated for these items: %1"
@@ -10675,15 +10676,15 @@ msgstr "La correspondance courante sera répétée pour ces éléments : %1"
 
 #: app/models/ca_data_exporters.php:1633
 msgid "No matching related items found for last context switch"
-msgstr ""
+msgstr "Aucun enregistrement correspondant pour le dernier test de contexte"
 
 #: app/models/ca_data_exporters.php:1716
 msgid "Processing mapping in attribute mode for attribute_id = %1."
-msgstr ""
+msgstr "Traitement de la correspondance pour l'attribut ayant l'id %1"
 
 #: app/models/ca_data_exporters.php:1730
 msgid "Trying to find code %1 in value array for the current attribute."
-msgstr ""
+msgstr "Essai de trouver le code %1 dans un tableau de valeur pour l'attribut courant."
 
 #: app/models/ca_data_exporters.php:1731
 msgid "Value array is %1."
@@ -10691,7 +10692,7 @@ msgstr "Le tableau de valeurs est %1"
 
 #: app/models/ca_data_exporters.php:1744
 msgid "Trying to match code from array %1 and the code we're looking for %2."
-msgstr ""
+msgstr "Tentative de correspondance pour le tableau %1 et recherche du code %2"
 
 #: app/models/ca_data_exporters.php:1747
 msgid "Found value %1."
@@ -10703,11 +10704,11 @@ msgstr "Source la correspondance en cours : %1"
 
 #: app/models/ca_data_exporters.php:1766
 msgid "This is a constant. Value for this mapping is '%1'"
-msgstr ""
+msgstr "Ceci est une constante. La valeur pour cette correspondance est '%1'"
 
 #: app/models/ca_data_exporters.php:1775
 msgid "Source refers to releationship type information. Value for this mapping is '%1'"
-msgstr ""
+msgstr "La source se réfère à l'information de type de relation. La valeur pour cette correspondance est '%1'."
 
 #: app/models/ca_data_exporters.php:1787
 msgid "Source is a simple get() for some bundle. Value for this mapping is '%1'"
@@ -10719,19 +10720,19 @@ msgstr "Les options de get() sont : %1"
 
 #: app/models/ca_data_exporters.php:1798
 msgid "Source is a get() that should be repeated for multiple values. Value for this mapping is '%1'. It includes the custom delimiter ';#;' that is later used to split the value into multiple values."
-msgstr ""
+msgstr "La source est un get() qui doit être répété pour de multiples valeurs. La valeur pour cette correspondance est '%1'. Ceci inclut le délimiteur ';#;' qui est ensuite utilisé pour séparer la valeur en des valeurs multiples."
 
 #: app/models/ca_data_exporters.php:1815
 msgid "Current mapping has no source but a template '%1'. Value from extracted via template processor is '%2'"
-msgstr ""
+msgstr "La correspondance courante n'a pas de source mais un modèle '%1'. La valeur extraite par le processeur de modèle est '%2'"
 
 #: app/models/ca_data_exporters.php:1823
 msgid "Current mapping has no source and no template and is probably an XML/MARC wrapper element"
-msgstr ""
+msgstr "La correspondance actuelle n'a pas de source et pas de modèle et concerne probablement une destination XML/MARC"
 
 #: app/models/ca_data_exporters.php:1835
 msgid "We're now processing other settings like default, prefix, suffix, skipIfExpression, filterByRegExp, maxLength, plugins and replacements for this mapping"
-msgstr ""
+msgstr "Nous traitons actuellement les autres paramètres tels que prefix, suffix, skipIfExpression, filterByRegExp, maxLength, plugins et les remplacements pour cette correspondance"
 
 #: app/models/ca_data_exporters.php:1836
 msgid "Local data before processing is: %1"
@@ -11015,7 +11016,7 @@ msgstr "Ignorer le groupe si l'expression suivante est vraie"
 
 #: app/models/ca_data_importer_items.php:303
 msgid "Skip all of the elements in the group if value for the expression is true."
-msgstr ""
+msgstr "Ignore tous les éléments du groupe si la valeur pour cette expression est vraie."
 
 #: app/models/ca_data_importer_items.php:315
 msgid "Skip row if empty"
@@ -11127,7 +11128,7 @@ msgstr "Correspondance sur"
 
 #: app/models/ca_data_importer_items.php:464
 msgid "List indicating sequence of checks for an existing record; values of array can be \"label\" and \"idno\". Ex. array(\"idno\", \"label\") will first try to match on idno and then label if the first match fails."
-msgstr ""
+msgstr "Liste indiquant la séquence des vérifications à faire pour tester l'existence d'un enregistrement ; les valeurs du tableau peuvent être \"label\" et \"idno\". Par exemple, le tableau array(\"idno\",\"label\") va d'abord tenter une correspondance sur l'idno et ensuite sur le titre si le premier test échoue."
 
 #: app/models/ca_data_importer_items.php:472
 msgid "Truncate long labels?"
@@ -11151,7 +11152,7 @@ msgstr "Utiliser le parent en tant que sujet"
 
 #: app/models/ca_data_importer_items.php:491
 msgid "Import parent of subject instead of subject. This option is primarily useful when you are using a hierarchy builder refinery mapped to parent_id to create the entire hierarchy (including subject) and want the bottom-most level of the hierarchy to be the subject."
-msgstr ""
+msgstr "Importe le parent du sujet au lieu du sujet. Cette option sert principalement quand vous utiliser un traitement construisant une arborescence appliquée à parent_id pour recréer l'intégralité de la hiérarchie (dont le sujet) et vous voulez que le plus petit élément de la hiérarchie soit le sujet."
 
 #: app/models/ca_data_importer_items.php:499
 msgid "Treat value as identifiers for multiple rows"
@@ -11159,7 +11160,7 @@ msgstr "Traite les valeurs comme des identifiants de différentes lignes"
 
 #: app/models/ca_data_importer_items.php:500
 msgid "Explode value on delimiter and use as identifiers for multiple rows."
-msgstr ""
+msgstr "Sépare les valeurs suivant un délimiter et utilise des identifiants pour les lignes différents."
 
 #: app/models/ca_data_importer_items.php:508 app/refineries/entitySplitter/entitySplitterRefinery.php:100
 msgid "Display name format"
@@ -11167,7 +11168,7 @@ msgstr "Modèle de nom pour l'affichage"
 
 #: app/models/ca_data_importer_items.php:509
 msgid "Transform label using options for formatting entity display names. Default is to use value as is. Other options are surnameCommaForename, forenameCommaSurname, forenameSurname. See DataMigrationUtils::splitEntityName()."
-msgstr ""
+msgstr "Transforme le titre à l'aide des options pour formater le nom de l'entité. Le comportement par défaut est d'utiliser la valeur telle que. Les autres options sont surnameCommaForename (nom de famille virgule prénom), forenameCommaSurname (prénom virgule nom de famille), forenameSurname (prénom nom de famille). Pour plus d'informations, voir DataMigrationUtils::splitEntityName()."
 
 #: app/models/ca_data_importer_labels.php:41
 msgid "importer name"
@@ -11319,7 +11320,7 @@ msgstr "Types de données pour l'import"
 
 #: app/models/ca_data_importers.php:258
 msgid "Set data types for which this importer is usable.  Ex. XLSX, XLS, MYSQL"
-msgstr ""
+msgstr "Définit les types de données pour lequel cet import est utilisable. Par exemple XLSX, XLS, MYSQL."
 
 #: app/models/ca_data_importers.php:266
 msgid "Record type"
@@ -11423,7 +11424,7 @@ msgstr "Ne pas importer"
 
 #: app/models/ca_data_importers.php:335
 msgid "If set then the mapping will be evaluated but no rows actually imported. This can be useful when you want to run a refinery over the rows of a data set but not actually perform the primary import."
-msgstr ""
+msgstr "Si défini la correspondance sera testée mais aucune ligne ne sera importée. Ceci peut être utile si vous voulez lancer un traitement sur les lignes de données mais ne réalise pas l'import principal."
 
 #: app/models/ca_data_importers.php:347
 msgid "Archive mapping?"
@@ -11451,7 +11452,7 @@ msgstr "Chemin"
 
 #: app/models/ca_data_importers.php:384
 msgid "For XML data formats, an XPath expression selecting nodes to be treated as individual records. If left blank, each XML document will be treated as a single record."
-msgstr ""
+msgstr "Pour des données XML, une expression XPath indiquant les noeuds qui doivent être traités comme des enregistrements individuels. Si laissé vide, chaque document XML sera traité comme un enregistrement unique."
 
 #: app/models/ca_data_importers.php:803
 msgid "Warning: skipped mapping at row %1 because source was not defined"
@@ -11471,11 +11472,11 @@ msgstr "[loadImporterFromFile:%1] Correspondance ignorée à la ligne %2 parce q
 
 #: app/models/ca_data_importers.php:823
 msgid "Warning: invalid options for group %1/source %2."
-msgstr ""
+msgstr "Attention : options invalides pour le groupe %1/source %2."
 
 #: app/models/ca_data_importers.php:824
 msgid "[loadImporterFromFile:%1] Invalid options for group %2/source %3. Options were: %4."
-msgstr ""
+msgstr "[loadImporterFromFile:%1] Options invalides pour le groupe %2/source %3. Les options étaient : %4."
 
 #: app/models/ca_data_importers.php:833
 msgid "Warning: refinery %1 does not exist"
@@ -11495,11 +11496,11 @@ msgstr "[loadImporterFromFile:%1] Options invalide de traitement pour le groupe 
 
 #: app/models/ca_data_importers.php:932
 msgid "Warning: invalid options for environment %1."
-msgstr ""
+msgstr "Attention : options invalides pour l'environnement %1."
 
 #: app/models/ca_data_importers.php:933
 msgid "[loadImporterFromFile:environment %1] Invalid options for environment value %1. Options were: %2."
-msgstr ""
+msgstr "[loadImporterFromFile:environment %1] Options invalides pour l'environnement %1. Les options étaient : %2."
 
 #: app/models/ca_data_importers.php:949
 msgid "You must set a code for your mapping!"
@@ -11591,11 +11592,11 @@ msgstr "La ligne a été ignorée par la règle \"%1\" avec l'action par défaut
 
 #: app/models/ca_data_importers.php:1473
 msgid "Row was skipped using rule \"%1\" with action \"%2\""
-msgstr ""
+msgstr "La ligne a été ignorée suivant la règle \"%1\" avec l'action \"%2\""
 
 #: app/models/ca_data_importers.php:1569
 msgid "[%1] Skipped import because of forced primary key '%1' does not exist"
-msgstr ""
+msgstr "[%1] Import ignoré parce que la clé primaire forcée '%1' n'existe pas"
 
 #: app/models/ca_data_importers.php:1582
 msgid "[%1] Skipped import because of existing record matched on identifier by policy %2"
@@ -11647,7 +11648,7 @@ msgstr "[%1] Groupe %2 ignoré parce que la valeur %3 est vide"
 
 #: app/models/ca_data_importers.php:1719
 msgid "[%1] Skipped mapping because value for %2 is empty"
-msgstr ""
+msgstr "[%1] Correspondance ignorée parce que la valeur pour %2 est vide"
 
 #: app/models/ca_data_importers.php:1777
 msgid "[%1] Skipped row %2 because of type restriction"
@@ -11663,19 +11664,19 @@ msgstr "[%1] Ligne %2 ignorée parce que la valeur pour %3 dans le groupe %4 n'e
 
 #: app/models/ca_data_importers.php:1795
 msgid "[%1] Skipped row %2 because expression %3 is true"
-msgstr ""
+msgstr "[%1] Ligne %2 ignorée parce que l'expression %3 est vraie"
 
 #: app/models/ca_data_importers.php:1802
 msgid "[%1] Skipped mapping %2 because value for %3 matches value %4"
-msgstr ""
+msgstr "[%1] Correspondance %2 ignorée parce que la valeur de %3 correspond à la valeur %4"
 
 #: app/models/ca_data_importers.php:1808
 msgid "[%1] Skipped mapping %2 because value %4 for %3 is not in list of values"
-msgstr ""
+msgstr "[%1] Ligne %2 ignorée parce que la valeur %4 pour %3 n'est pas dans la liste de valeurs"
 
 #: app/models/ca_data_importers.php:1814
 msgid "[%1] Skipped group %2 because expression %3 is true"
-msgstr ""
+msgstr "[%1] Groupe %2 ignoré parce que l'expression %3 est vraie"
 
 #: app/models/ca_data_importers.php:1821
 msgid "[%1] Skipped group %2 because value for %3 matches value %4"
@@ -11687,7 +11688,7 @@ msgstr "[%1] Groupe %2 ignoré parce que la valeur de %3 ne correspond pas aux v
 
 #: app/models/ca_data_importers.php:1833
 msgid "[%1] Skipped mapping because expression %2 is true"
-msgstr ""
+msgstr "[%1] Correspondance ignorée parce que l'expression %2 est vraie"
 
 #: app/models/ca_data_importers.php:1902
 msgid "[%1] Invalid refinery %2 specified"
@@ -11743,7 +11744,7 @@ msgstr "Impossible de mettre à jour l'identifiant"
 
 #: app/models/ca_data_importers.php:2189
 msgid "[%1] Could not add preferred label to %2. Record was deleted because no preferred label could be applied: "
-msgstr ""
+msgstr "[%1] Impossible d'ajouter le titre principal à %2. L'enregistrement a été supprimé parce qu'aucun label préféré n'a pu être appliqué :"
 
 #: app/models/ca_data_importers.php:2194
 msgid "Import stopped due to import error policy %1"
@@ -11755,15 +11756,15 @@ msgstr "Import interrompu suite à une erreur de correspondance (voir paramétra
 
 #: app/models/ca_data_importers.php:2215
 msgid "[%1] Could not add non-preferred label to %2:"
-msgstr ""
+msgstr "[%1] Impossible d'ajouter un titre secondaire à %2 :"
 
 #: app/models/ca_data_importers.php:2232
 msgid "[%1] Could not add intrinsic %2 to %3:"
-msgstr ""
+msgstr "[%1] Impossible d'ajouter la valeur intrinsèque %2 à %3 :"
 
 #: app/models/ca_data_importers.php:2267
 msgid "[%1] Failed to add value for %2; values were %3: "
-msgstr ""
+msgstr "[%1] Impossible d'ajouter la valeur pour %2 ; les valeurs étaient %3 :"
 
 #: app/models/ca_data_importers.php:2286
 msgid "[%1] Invalid %2; values were %3: "
@@ -11771,15 +11772,15 @@ msgstr "Date non valide"
 
 #: app/models/ca_data_importers.php:2324
 msgid "[%1] Could not add related object with relationship %2:"
-msgstr ""
+msgstr "[%1] Impossible d'ajouter l'objet lié avec la relation %2 :"
 
 #: app/models/ca_data_importers.php:2346
 msgid "[%1] Could not add related object lot with relationship %2:"
-msgstr ""
+msgstr "[%1] Impossible d'ajouter le lot d'objet lié avec la relation %2 :"
 
 #: app/models/ca_data_importers.php:2363
 msgid "[%1] Could not add related entity with relationship %2:"
-msgstr ""
+msgstr "[%1] Impossible d'ajouter l'entité liée avec la relation %2 :"
 
 #: app/models/ca_data_importers.php:2379
 msgid "[%1] Could not add related place with relationship %2:"
@@ -11803,7 +11804,7 @@ msgstr "[%1] Impossible d'ajouter l'élément de liste lié avec la relation %2:
 
 #: app/models/ca_data_importers.php:2461
 msgid "[%1] Could not add related object representation with:"
-msgstr ""
+msgstr "[%1] Impossible d'ajouter la représentation liée avec :"
 
 #: app/models/ca_data_importers.php:2502
 msgid "[%1] Could not add related loan with relationship %2:"
@@ -11815,15 +11816,15 @@ msgstr "[%1] Impossible d'ajouter le mouvement lié avec la relation %2 :"
 
 #: app/models/ca_data_importers.php:2535
 msgid "[%1] Could not instantiate related table %2"
-msgstr ""
+msgstr "[%1] Impossible d'instancier la table liée %2"
 
 #: app/models/ca_data_importers.php:2541
 msgid "[%1] Related %2 (%3) to related %4 with relationship %5"
-msgstr ""
+msgstr "[%1] %2 (%3) relié à %4 avec la relation %5"
 
 #: app/models/ca_data_importers.php:2543
 msgid "[%1] Could not add related %2 (%3) to related %4 with relationship %5:"
-msgstr ""
+msgstr "[%1] Impossible de relier %2 (%3)  à %4 avec la relation %5 :"
 
 #: app/models/ca_data_importers.php:2573
 msgid "Finished inserting content tree for %1 at %2 seconds into database"
@@ -11923,7 +11924,7 @@ msgstr "Développer/réduire si une valeur existe"
 
 #: app/models/ca_editor_ui_bundle_placements.php:105
 msgid "Controls the expand/collapse behavior when there is at least one value present."
-msgstr ""
+msgstr "Contrôle le comportement développer/réduire quand il y a au moins une valeur présente."
 
 #: app/models/ca_editor_ui_bundle_placements.php:119
 msgid "Expand/collapse if no value is present"
@@ -11931,7 +11932,7 @@ msgstr "Développer/réduire en l'absence de valeur"
 
 #: app/models/ca_editor_ui_bundle_placements.php:120
 msgid "Controls the expand/collapse behavior when there is no value present."
-msgstr ""
+msgstr "Contrôle le comportement développer/réduire quand il n'y a aucune valeur présente."
 
 #: app/models/ca_editor_ui_bundle_placements.php:125
 msgid "UI bundle placement"
@@ -12047,7 +12048,7 @@ msgstr "URL de la documentation"
 
 #: app/models/ca_editor_ui_screens.php:432 app/models/ca_editor_ui_screens.php:457
 msgid "URL pointing to documentation for this field. Leave blank if no documentation URL exists."
-msgstr ""
+msgstr "URL pointant vers la documentation de ce champ. Laisser vide s'il n'y a pas d'URL pour la documentation."
 
 #: app/models/ca_editor_ui_screens.php:469 app/models/ca_editor_ui_screens.php:570
 msgid "Sort using"
@@ -12075,7 +12076,7 @@ msgstr "Sens du tri"
 
 #: app/models/ca_editor_ui_screens.php:492
 msgid "URL pointing to documentation for this field. Leave blank if you wish to use the default URL for this metadata element."
-msgstr ""
+msgstr "URL pointant vers la documentation de ce champ. Laisser vide si vous voulez utiliser l'URL par défaut pour cet élément."
 
 #: app/models/ca_editor_ui_screens.php:502
 msgid "use default"
@@ -12095,7 +12096,7 @@ msgstr "Restreindre à l'expression de recherche"
 
 #: app/models/ca_editor_ui_screens.php:541
 msgid "Restricts display to items matching the given search expression. Leave empty for no restriction."
-msgstr ""
+msgstr "Limite l'affichage aux enregistrements qui correspondent à l'expression de recherche indiquée. Laisser vide pour retirer toute restriction."
 
 #: app/models/ca_editor_ui_screens.php:549
 msgid "Do not include sub-types in type restriction"
@@ -12163,23 +12164,23 @@ msgstr "Mise en forme de la valeur lorsqu'elle est utilisée dans un affichage (
 
 #: app/models/ca_editor_ui_screens.php:628
 msgid "URL pointing to documentation for this relationship bundle. Leave blank if no documentation URL exists."
-msgstr ""
+msgstr "URL pointant vers la documentation de ce bloc relation. Laisser vide s'il n'y a pas d'URL pour la documentation."
 
 #: app/models/ca_editor_ui_screens.php:635
 msgid "Minimum number of relationships of this kind to be associated with an item. "
-msgstr ""
+msgstr "Le nombre maximum de relations de ce type qui peuvent être associés avec un enregistrement."
 
 #: app/models/ca_editor_ui_screens.php:636
 msgid "If set to 0 a delete button will allow a cataloguer to clear all relationships.  If set to 1 or more, it will not be possible to delete all relationships once the minimum is established. Note that this is only a user interface limitations rather than constraints on the underlying data model."
-msgstr ""
+msgstr "Si défini à 0, un bouton supprimer autorisera un cataloguer à vider l'ensemble des relations. Si défini à 1 ou plus, il ne sera pas possible de supprimer toutes les relations une fois qu'une nombre minimum est atteint. A noter, ceci n'est qu'une limitation dans l'interface et n'est pas une contrainte appliquée directement sur le modèle de données sous-jacent."
 
 #: app/models/ca_editor_ui_screens.php:643
 msgid "Maximum number of relationships of this kind that can be associated with an item"
-msgstr ""
+msgstr "Le nombre maximum de relations de ce type qui peuvent être associés avec un enregistrement."
 
 #: app/models/ca_editor_ui_screens.php:644
 msgid "The extent of repeatability for the relationship will match the number entered here. Note that this is only a user interface limitations rather than constraints on the underlying data model."
-msgstr ""
+msgstr "La répétabilité pour la relation correspondra au nombre indiqué ici. A noter, ceci n'est qu'une limitation dans l'interface et n'est pas une contrainte appliquée directement sur le modèle de données sous-jacent."
 
 #: app/models/ca_editor_ui_screens.php:656
 msgid "Restrict to list"
@@ -12259,7 +12260,7 @@ msgstr "Réduire automatiquement le navigateur"
 
 #: app/models/ca_editor_ui_screens.php:834
 msgid "Check this option if you want the hierarchy browser to automatically shrink or expand based on the height of the column with the most data."
-msgstr ""
+msgstr "Cocher cette option si vous voulez que le navigateur hiérarchique s'adapte automatiquement à la hauteur de la colonne avec le plus grand nombre de données."
 
 #: app/models/ca_editor_ui_screens.php:842
 msgid "URL pointing to documentation for this hierarchy browser. Leave blank if no documentation URL exists."
@@ -12279,7 +12280,7 @@ msgstr "Modèle d'affichage d'objet"
 
 #: app/models/ca_editor_ui_screens.php:863
 msgid "Layout for referencing objects. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.idno</i>."
-msgstr ""
+msgstr "Modèle pour référencer les objets. Les codes d'éléments préfixés avec le caractère ^ peuvent être utilisés pour représenter la valeur dans le modèle. Par exemple : <i>^ca_objects.idno</i>."
 
 #: app/models/ca_editor_ui_screens.php:870
 msgid "Lot display template"
@@ -12287,7 +12288,7 @@ msgstr "Modèle d'affichage de lot"
 
 #: app/models/ca_editor_ui_screens.php:871
 msgid "Layout for referencing lots. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>."
-msgstr ""
+msgstr "Modèle pour référencer les lots. Les codes d'éléments préfixés avec le caractère ^ peuvent être utilisés pour représenter la valeur dans le modèle. Par exemple : <i>^ ca_object_lots.idno_stub </i>."
 
 #: app/models/ca_editor_ui_screens.php:878
 msgid "Entity display template"
@@ -12295,7 +12296,7 @@ msgstr "Modèle d'affichage d'entité"
 
 #: app/models/ca_editor_ui_screens.php:879
 msgid "Layout for referencing entities. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_entities.idno</i>."
-msgstr ""
+msgstr "Modèle pour référencer les entités. Les codes d'éléments préfixés avec le caractère ^ peuvent être utilisés pour représenter la valeur dans le modèle. Par exemple : <i>^ ca_entities.idno </i>."
 
 #: app/models/ca_editor_ui_screens.php:886
 msgid "Place display template"
@@ -12303,7 +12304,7 @@ msgstr "Modèle d'affichage de lieu"
 
 #: app/models/ca_editor_ui_screens.php:887
 msgid "Layout for referencing places. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_places.idno</i>."
-msgstr ""
+msgstr "Modèle pour référencer les lieux. Les codes d'éléments préfixés avec le caractère ^ peuvent être utilisés pour représenter la valeur dans le modèle. Par exemple : <i>^ ca_places.idno </i>."
 
 #: app/models/ca_editor_ui_screens.php:894
 msgid "Occurrence display template"
@@ -12311,7 +12312,7 @@ msgstr "Modèle d'affichage d'occurrence"
 
 #: app/models/ca_editor_ui_screens.php:895
 msgid "Layout for referencing occurrences. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_occurrences.idno</i>."
-msgstr ""
+msgstr "Modèle pour référencer les occurrences. Les codes d'éléments préfixés avec le caractère ^ peuvent être utilisés pour représenter la valeur dans le modèle. Par exemple : <i>^ ca_occurrences.idno </i>."
 
 #: app/models/ca_editor_ui_screens.php:902
 msgid "Collection display template"
@@ -12319,7 +12320,7 @@ msgstr "Modèle d'affichage de collection"
 
 #: app/models/ca_editor_ui_screens.php:903
 msgid "Layout for referencing collections. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_collections.idno</i>."
-msgstr ""
+msgstr "Modèle pour référencer les collections. Les codes d'éléments préfixés avec le caractère ^ peuvent être utilisés pour représenter la valeur dans le modèle. Par exemple : <i>^ ca_collections.idno </i>."
 
 #: app/models/ca_editor_ui_screens.php:910
 msgid "Loan display template"
@@ -12327,7 +12328,7 @@ msgstr "Modèle d'affichage de prêt"
 
 #: app/models/ca_editor_ui_screens.php:911
 msgid "Layout for referencing loans. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_loans.idno</i>."
-msgstr ""
+msgstr "Modèle pour référencer les prêts. Les codes d'éléments préfixés avec le caractère ^ peuvent être utilisés pour représenter la valeur dans le modèle. Par exemple : <i>^ ca_loans.idno </i>."
 
 #: app/models/ca_editor_ui_screens.php:918
 msgid "Movement display template"
@@ -12335,7 +12336,7 @@ msgstr "Modèle d'affichage de mouvement"
 
 #: app/models/ca_editor_ui_screens.php:919
 msgid "Layout for referencing movements. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_movements.idno</i>."
-msgstr ""
+msgstr "Modèle pour référencer les mouvements. Les codes d'éléments préfixés avec le caractère ^ peuvent être utilisés pour représenter la valeur dans le modèle. Par exemple : <i>^ ca_movements.idno </i>."
 
 #: app/models/ca_editor_ui_screens.php:926
 msgid "Object representation display template"
@@ -12343,7 +12344,7 @@ msgstr "Modèle d'affichage de représentation"
 
 #: app/models/ca_editor_ui_screens.php:927
 msgid "Layout for referencing object representations. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_representations.idno</i>."
-msgstr ""
+msgstr "Modèle pour référencer les représentations. Les codes d'éléments préfixés avec le caractère ^ peuvent être utilisés pour représenter la valeur dans le modèle. Par exemple : <i>^ ca_object_representations.idno </i>."
 
 #: app/models/ca_editor_ui_screens.php:934
 msgid "List item display template"
@@ -12351,7 +12352,7 @@ msgstr "Modèle d'affichage d'élément de liste"
 
 #: app/models/ca_editor_ui_screens.php:935
 msgid "Layout for referencing list items. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_list_items.idno</i>."
-msgstr ""
+msgstr "Modèle pour référencer les éléments de liste. Les codes d'éléments préfixés avec le caractère ^ peuvent être utilisés pour représenter la valeur dans le modèle. Par exemple : <i>^ ca_list_items.idno</i>."
 
 #: app/models/ca_editor_ui_screens.php:964
 msgid "Metadata element"
@@ -12359,7 +12360,7 @@ msgstr "Élément de métadonnée"
 
 #: app/models/ca_editor_ui_screens.php:965
 msgid "Metadata element to store representation selection in. Must be of type ObjectRepresentation."
-msgstr ""
+msgstr "Elément de métadonnée pour y stocker la sélection de représentation. Doit être du type ObjectRepresentation."
 
 #: app/models/ca_editor_ui_screens.php:976
 msgid "Component display template"
@@ -12367,7 +12368,7 @@ msgstr "Modèle d'affichage de composant"
 
 #: app/models/ca_editor_ui_screens.php:977
 msgid "Layout for component when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.idno</i>."
-msgstr ""
+msgstr "Modèle pour un composant lorsqu'affiché dans une liste (peut inclure du HTML). Les codes d'éléments préfixés par le caractère ^ peuvent être utilisés pour représenter la valeur dans le modèle. Par exemple : <i>^ca_objects.idno</i>."
 
 #: app/models/ca_editor_ui_screens.php:988
 msgid "storage location relationships"
@@ -12395,7 +12396,7 @@ msgstr "Modèle d'affichage des localisations d'objet"
 
 #: app/models/ca_editor_ui_screens.php:1032
 msgid "Layout for current location of object when displayed in list (can include HTML). The template is evaluated relative to the object-movement or object-storage location relationship that is current. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_movements.idno</i>."
-msgstr ""
+msgstr "Modèle pour l'emplacement courant de l'objet affiché dans une liste (peut inclure du HTML). Le modèle est évalué en fonction de la relation actuelle avec le mouvement ou l'emplacement de stockage. Les codes d'éléments préfixés par le caractère ^ peuvent être utilisés pour représenter la valeur dans le modèle. Par exemple : <i>^ ca_movements.idno</i>."
 
 #: app/models/ca_editor_ui_screens.php:1039
 msgid "Object location history template"
@@ -12403,7 +12404,7 @@ msgstr "Modèle d'affichage de l'historique des localisations"
 
 #: app/models/ca_editor_ui_screens.php:1040
 msgid "Layout for each previous location of object when displayed in history list (can include HTML). The template is evaluated relative to the object-movement or object-storage location relationship. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_movements.idno</i>."
-msgstr ""
+msgstr "Modèle pour chaque emplacement passé de l'objet lorsqu'affiché dans l'historique (peut contenir du HTML). Le modèle est évalué en fonction de la relation actuelle avec le mouvement ou l'emplacement de stockage. Les codes d'éléments préfixés par le caractère ^ peuvent être utilisés pour représenter la valeur dans le modèle. Par exemple : <i>^ca_movements.idno</i>."
 
 #: app/models/ca_editor_ui_screens.php:1048
 msgid "Color for current location"
@@ -12435,7 +12436,7 @@ msgstr "Utiliser un navigateur hiérarchique pour les emplacements de stockage ?
 
 #: app/models/ca_editor_ui_screens.php:1076
 msgid "If checked a hierarchical browser will be used to select stroage location items instead of an auto-complete lookup."
-msgstr ""
+msgstr "Si coché, un navigateur hiérarchique sera utilisé pour sélectionner les emplacements de stockage plutôt qu'un champ de saisie avec auto-complétion."
 
 #: app/models/ca_editor_ui_screens.php:1089
 msgid "Show lots"
@@ -12447,7 +12448,7 @@ msgstr "Masquer les contrôles \"Ajouter à un prêt\""
 
 #: app/models/ca_editor_ui_screens.php:1117
 msgid "Check this option if you want to to hide the \"Add to loan\" controls in this bundle placement."
-msgstr ""
+msgstr "Cocher cette option si vous voulez masquer \"Ajouter à un prêt\" soit masqué dans ce bloc."
 
 #: app/models/ca_editor_ui_screens.php:1125
 msgid "Hide \"Update Location\" controls"
@@ -12455,7 +12456,7 @@ msgstr "Masquer l'outil \"Localiser\""
 
 #: app/models/ca_editor_ui_screens.php:1126
 msgid "Check this option if you want to to hide the \"Update Location\" controls in this bundle placement."
-msgstr ""
+msgstr "Cocher cette option si vous voulez masquer \"Mettre à jour la localisation\" soit masqué dans ce bloc."
 
 #: app/models/ca_editor_ui_screens.php:1140
 msgid "Lot (%1) date"
@@ -12475,7 +12476,7 @@ msgstr "Modèle d'affichage de lot (%1)"
 
 #: app/models/ca_editor_ui_screens.php:1158
 msgid "Layout for lot when displayed in history list (can include HTML). The template is evaluated relative to the lot. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>."
-msgstr ""
+msgstr "Modèle pour le lot de l'objet lorsqu'affiché dans l'historique (peut contenir du HTML). Le modèle est évalué en fonction de la relation avec le lot. Les codes d'éléments préfixés par le caractère ^ peuvent être utilisés pour représenter la valeur dans le modèle. Par exemple : <i>^ca_object_lots.idno_stub</i>."
 
 #: app/models/ca_editor_ui_screens.php:1170
 msgid "Show occurrences"
@@ -12491,7 +12492,7 @@ msgstr "Modèle d'affichage %1"
 
 #: app/models/ca_editor_ui_screens.php:1201
 msgid "Layout for %1 when displayed in history list (can include HTML). The template is evaluated relative to the %1. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_occurrences.idno</i>."
-msgstr ""
+msgstr "Modèle pour %1 lorsqu'affiché dans l'historique (peut contenir du HTML). Le modèle est évalué en fonction de la relation avec %1. Les codes d'éléments préfixés par le caractère ^ peuvent être utilisés pour représenter la valeur dans le modèle. Par exemple : <i>^ca_occurrences .idno</i>."
 
 #: app/models/ca_editor_ui_screens.php:1213
 msgid "Show movements"
@@ -12499,7 +12500,7 @@ msgstr "Afficher les mouvements"
 
 #: app/models/ca_editor_ui_screens.php:1244
 msgid "Layout for %1 when displayed in history list (can include HTML). The template is evaluated relative to the %1. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_movements.idno</i>."
-msgstr ""
+msgstr "Modèle pour %1 lorsqu'affiché dans l'historique (peut contenir du HTML). Le modèle est évalué en fonction de la relation avec %1. Les codes d'éléments préfixés par le caractère ^ peuvent être utilisés pour représenter la valeur dans le modèle. Par exemple : <i>^ca_movements.idno</i>."
 
 #: app/models/ca_editor_ui_screens.php:1256
 msgid "Show loans"
@@ -12507,7 +12508,7 @@ msgstr "Afficher les prêts"
 
 #: app/models/ca_editor_ui_screens.php:1288
 msgid "Layout for %1 when displayed in history list (can include HTML). The template is evaluated relative to the %1. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_loans.idno</i>."
-msgstr ""
+msgstr "Modèle pour %1 lorsqu'affiché dans l'historique (peut contenir du HTML). Le modèle est évalué en fonction de la relation avec %1. Les codes d'éléments préfixés par le caractère ^ peuvent être utilisés pour représenter la valeur dans le modèle. Par exemple : <i>^ca_loans.idno</i>."
 
 #: app/models/ca_editor_ui_screens.php:1301
 msgid "Show storage locations"
@@ -12515,7 +12516,7 @@ msgstr "Afficher les emplacements de stockage"
 
 #: app/models/ca_editor_ui_screens.php:1302
 msgid "Show storage locations with selected relationship types."
-msgstr ""
+msgstr "Affiche les emplacements avec pour les types de relation sélectionnés."
 
 #: app/models/ca_editor_ui_screens.php:1310
 msgid "Color for storage location"
@@ -12523,7 +12524,7 @@ msgstr "Couleur pour les emplacements de stockage"
 
 #: app/models/ca_editor_ui_screens.php:1311
 msgid "Color to use as highlight storage location."
-msgstr ""
+msgstr "Couleur à utiliser pour mettre en évidence l'emplacement de stockage"
 
 #: app/models/ca_editor_ui_screens.php:1318
 msgid "Storage location display template"
@@ -12531,7 +12532,7 @@ msgstr "Modèle d'affichage des emplacements de stockage"
 
 #: app/models/ca_editor_ui_screens.php:1319
 msgid "Layout for storage location when displayed in history list (can include HTML). The template is evaluated relative to the object-storage location relationship. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>."
-msgstr ""
+msgstr "Modèle pour l'emplacement de stockage lorsqu'affiché dans l'historique (peut contenir du HTML). Le modèle est évalué en fonction de la relation entre l'objet et l'emplacement de stockage. Les codes d'éléments préfixés par le caractère ^ peuvent être utilisés pour représenter la valeur dans le modèle. Par exemple : <i>^ca_object_lots.idno_stub</i>."
 
 #: app/models/ca_editor_ui_screens.php:1327
 msgid "Show deaccession information"
@@ -12539,7 +12540,7 @@ msgstr "Afficher les informations de sortie de l'inventaire"
 
 #: app/models/ca_editor_ui_screens.php:1328
 msgid "If clicked deaccession information will be shown in the history."
-msgstr ""
+msgstr "Si coché, la sortie de l'inventaire sera affiché dans l'historique."
 
 #: app/models/ca_editor_ui_screens.php:1336
 msgid "Color for deaccession"
@@ -12555,7 +12556,7 @@ msgstr "Modèle d'affichage de la sortie d'inventaire"
 
 #: app/models/ca_editor_ui_screens.php:1345
 msgid "Layout for deaccession information when displayed in history list (can include HTML). The template is evaluated relative to the object. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.deaccession_notes</i>."
-msgstr ""
+msgstr "Modèle pour les informations de sortie de l'inventaire lorsqu'affichées dans l'historique (peut contenir du HTML). Le modèle est évalué en fonction de la relation avec l'objet. Les codes d'éléments préfixés par le caractère ^ peuvent être utilisés pour représenter la valeur dans le modèle. Par exemple : <i>^ca_objects.deaccession_notes</i>."
 
 #: app/models/ca_editor_ui_screens.php:1356
 msgid "URL pointing to documentation. Leave blank if no documentation URL exists."
@@ -13191,7 +13192,7 @@ msgstr "Indique si l'élément de liste est supprimé ou non."
 
 #: app/models/ca_list_items.php:209
 msgid "Administrative source of list item. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed."
-msgstr ""
+msgstr "La source administrative de l'élément de liste. Cette valeur est souvent utilisée pour indiquer la subdivision administration ou la base de données d'origine dont l'objet est issu, mais peut aussi être réutilisé comme outil simple de classification au besoin."
 
 #: app/models/ca_list_items.php:230
 msgid "Individual person"
@@ -13207,7 +13208,7 @@ msgstr "Classe de l'entité"
 
 #: app/models/ca_list_items.php:238
 msgid "The class of entity the type represents. Use <em>Individual person</em> for entities that require a fully articulated personal name. Use <em>organization</em> for group entities such as corporations, clubs and families."
-msgstr ""
+msgstr "La classe d'entité que le type représente. Utiliser <em>Individu</em> pour les entités qui nécessitent un nom composé (prénom, nom...). Utiliser <em>organisation</em> pour les groupes d'entités individuelles comme les entreprises, les associations ou les familles."
 
 #: app/models/ca_list_items.php:250 app/models/ca_list_items.php:251 app/models/ca_list_items.php:265 app/models/ca_list_items.php:266 app/models/ca_list_items.php:280 app/models/ca_list_items.php:281 app/models/ca_list_items.php:295 app/models/ca_list_items.php:296 app/models/ca_list_items.php:310 app/models/ca_list_items.php:311 app/models/ca_list_items.php:325 app/models/ca_list_items.php:326 app/models/ca_list_items.php:340 app/models/ca_list_items.php:341 app/models/ca_list_items.php:355 app/models/ca_list_items.php:356 app/models/ca_list_items.php:370 app/models/ca_list_items.php:371 app/models/ca_list_items.php:385 app/models/ca_list_items.php:386
 msgid "Render in new menu"
@@ -13339,7 +13340,7 @@ msgstr "Un identifiant alphanumérique unique pour ce prêt."
 
 #: app/models/ca_loans.php:91
 msgid "Administrative source of loan. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed."
-msgstr ""
+msgstr "La source administrative du prêt. Cette valeur est souvent utilisée pour indiquer la subdivision administration ou la base de données d'origine dont l'objet est issu, mais peut aussi être réutilisé comme outil simple de classification au besoin."
 
 #: app/models/ca_loans.php:98
 msgid "Serialized array used to store source information for loan information retrieved via web services [NOT IMPLEMENTED YET]."
@@ -13355,7 +13356,7 @@ msgstr "Identifiant du prêt qui est à la racine de la hiérarchie des prêts."
 
 #: app/models/ca_loans.php:132
 msgid "Indicates if loan information is accessible to the public or not. "
-msgstr ""
+msgstr "Indique si l'information de prêt est accessible ou non pour le public."
 
 #: app/models/ca_loans.php:148
 msgid "Indicates the current state of the loan record."
@@ -13531,11 +13532,11 @@ msgstr "Le bloc est obligatoire et une valeur valide doit être définie avant d
 
 #: app/models/ca_metadata_dictionary_entries.php:76
 msgid "Restricts entry to items of the specified type(s). Leave all unchecked for no restriction."
-msgstr ""
+msgstr "Restreint la saisie aux éléments du ou des types spécifiés. Laisser vide pour ne pas appliquer de restriction."
 
 #: app/models/ca_metadata_dictionary_entries.php:85
 msgid "Restricts entry to items related using the specified relationship type(s). Leave all unchecked for no restriction."
-msgstr ""
+msgstr "Restreint la saisie aux éléments liés à l'aide du ou des types de relations suivants. Laisser vide pour ne pas appliquer de restriction."
 
 #: app/models/ca_metadata_dictionary_entries.php:91
 msgid "Metadata dictionary entry"
@@ -13579,7 +13580,7 @@ msgstr "Description de la règle"
 
 #: app/models/ca_metadata_dictionary_rules.php:64
 msgid "Long form description of rule, used for display to user when presenting issues."
-msgstr ""
+msgstr "Message long pour présenter la règle de traitement, utilisé pour l'affichage à l'utilisateur en cas de problème liés à la règle."
 
 #: app/models/ca_metadata_dictionary_rules.php:69
 msgid "Metadata dictionary rule"
@@ -13755,7 +13756,7 @@ msgstr "Un identifiant alphanumérique unique pour ce mouvement."
 
 #: app/models/ca_movements.php:84
 msgid "Administrative source of movement. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed."
-msgstr ""
+msgstr "La source administrative du mouvement. Cette valeur est souvent utilisée pour indiquer la subdivision administration ou la base de données d'origine dont l'objet est issu, mais peut aussi être réutilisé comme outil simple de classification au besoin."
 
 #: app/models/ca_movements.php:91
 msgid "Serialized array used to store source information for movement information retrieved via web services [NOT IMPLEMENTED YET]."
@@ -14435,11 +14436,11 @@ msgstr "Hériter le contrôle d'accès individuel de l'enregistrement à partir 
 
 #: app/models/ca_objects.php:316
 msgid "Determines whether item-level access control settings set for parent object is applied to this object."
-msgstr ""
+msgstr "Détermine si les droits d'accès définis pour l'objet parent s'appliquent à cet objet."
 
 #: app/models/ca_objects.php:329
 msgid "Determines whether front-end access settings set for parent object is applied to this object."
-msgstr ""
+msgstr "Détermine si les droits d'accès définis pour l'affichage public de l'objet parent s'appliquent à cet objet."
 
 #: app/models/ca_objects.php:526
 msgid "Components"
@@ -14791,7 +14792,7 @@ msgstr "Restriction de type pour le côté \"gauche\" de la relation"
 
 #: app/models/ca_relationship_types.php:56
 msgid "Type restriction for \"left\" side of relationship (eg. if relationship is object ��� entity, then the restriction controls for which types of objects this relationship type is valid."
-msgstr ""
+msgstr "Restriction de type pour le côté \"gauche\" de la relation (par exemple si la relation objet ⇔ entité, alors la restriction contrôle les types d'objets pour lesquels cette relation est valide)."
 
 #: app/models/ca_relationship_types.php:63
 msgid "Type restriction for \"right\" side of relationship"
@@ -14799,7 +14800,7 @@ msgstr "Restriction de type pour le côté \"droite\" de la relation"
 
 #: app/models/ca_relationship_types.php:63
 msgid "Type restriction for \"right\" side of relationship (eg. if relationship is object ��� entity, then the restriction controls for which types of entities this relationship type is valid."
-msgstr ""
+msgstr "Restriction de type pour le côté \"droite\" de la relation (par exemple si la relation objet ⇔ entité, alors la restriction contrôle les types de personnes pour lesquels cette relation est valide)."
 
 #: app/models/ca_relationship_types.php:78
 msgid "Relationship type hierarchy identifier"
@@ -15215,7 +15216,7 @@ msgstr "Un identifiant alphanumérique unique pour cette emplacement."
 
 #: app/models/ca_storage_locations.php:92
 msgid "Administrative source of storage location. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed."
-msgstr ""
+msgstr "La source administrative de l'emplacement de stockage. Cette valeur est souvent utilisée pour indiquer la subdivision administration ou la base de données d'origine dont l'objet est issu, mais peut aussi être réutilisé comme outil simple de classification au besoin."
 
 #: app/models/ca_storage_locations.php:126
 msgid "Indicates if location information is accessible to the public or not. "
@@ -15231,7 +15232,7 @@ msgstr "Indique si l'élément de liste est supprimé ou non."
 
 #: app/models/ca_storage_locations.php:179
 msgid "If unchecked this item is disabled and can't be edited or used in new relationships"
-msgstr ""
+msgstr "Si décoché, cet élément est désactivé et ne peut être modifié ni peut être utilisé dans de nouvelles relations."
 
 #: app/models/ca_storage_locations_x_storage_locations.php:40
 msgid "storage locations ⇔ storage locations relationship"
@@ -15423,7 +15424,7 @@ msgstr "Indique l'état courant du parcours"
 
 #: app/models/ca_tours.php:132
 msgid "Administrative source of tour. This value is often used to indicate the administrative sub-division or legacy database from which the object originates, but can also be re-tasked for use as a simple classification tool if needed."
-msgstr ""
+msgstr "La source administrative du parcours. Cette valeur est souvent utilisée pour indiquer la subdivision administration ou la base de données d'origine dont l'objet est issu, mais peut aussi être réutilisé comme outil simple de classification au besoin."
 
 #: app/models/ca_tours.php:513
 msgid "Could not reorder stop %1: %2"
@@ -15755,7 +15756,7 @@ msgstr "AUCUN"
 
 #: app/models/ca_users.php:2707
 msgid "User %1 was permanently deactivated because the maximum number of consecutive unsuccessful password reset attemps was reached."
-msgstr ""
+msgstr "L'utilisateur %1 a été désactivé de manière permanente parce que le nombre maximum de tentative de connexion avec un mot de passe erroné a été atteint."
 
 #: app/models/ca_users.php:2714
 msgid "Information regarding your account"
@@ -15767,11 +15768,11 @@ msgstr "Information à propos de votre mot de passe"
 
 #: app/models/ca_users.php:2830
 msgid "There was an error while trying to fetch information for a new user from the current authentication backend. The message was %1 : %2"
-msgstr ""
+msgstr "Il y a eu une erreur lors du rapatriement des informations pour le nouvel utilisateur depuis le système d'authentification actuel. Le message était %1 : %2"
 
 #: app/models/ca_users.php:2851
 msgid "User could not be created after getting info from authentication adapter. API message was: %1"
-msgstr ""
+msgstr "L'utilisateur n'a pas pu être créé après réception des informations depuis l'adaptateur d'authentification. Le message de l'API était : %1."
 
 #: app/models/ca_users_x_groups.php:40
 msgid "user-group assocation"
@@ -15843,7 +15844,7 @@ msgstr "Import à l'aide de"
 
 #: app/plugins/ULAN/themes/default/views/import_settings_html.php:55
 msgid "You must load at least one ULAN mapping before you can import"
-msgstr ""
+msgstr "Vous devez au moins charger un import ULAN avant de pouvoir importer des données."
 
 #: app/plugins/ULAN/themes/default/views/import_settings_html.php:69
 msgid "Enter a ULAN search above to begin"
@@ -15999,11 +16000,11 @@ msgstr "Notification de prêts en retard"
 
 #: app/plugins/libraryServices/libraryServicesPlugin.php:98
 msgid "Could not mark checkout coming due message sent time because update failed: %1"
-msgstr ""
+msgstr "Impossible d'enregistrer la date et heure d'envoi du message de durée de prêt bientôt dépassée parce que la mise à jour a échoué : %1"
 
 #: app/plugins/libraryServices/libraryServicesPlugin.php:101
 msgid "Could not mark checkout coming due message sent time because checkout id %1 was not found"
-msgstr ""
+msgstr "Impossible d'enregistrer la date et heure d'envoi du message de durée de prêt bientôt dépassée parce que le prêt %1 n'a pas été trouvé dans la base."
 
 #: app/plugins/libraryServices/libraryServicesPlugin.php:107 app/plugins/libraryServices/libraryServicesPlugin.php:145 app/plugins/libraryServices/libraryServicesPlugin.php:183
 msgid "No email address set for user %1 (%2)"
@@ -16023,11 +16024,11 @@ msgstr "Avertissement d'emprunts en retard"
 
 #: app/plugins/libraryServices/libraryServicesPlugin.php:136
 msgid "Could not mark checkout overdue message sent time because update failed: %1"
-msgstr ""
+msgstr "Impossible d'enregistrer la date et heure d'envoi du message de prêt en retard parce que la mise à jour a échoué : %1"
 
 #: app/plugins/libraryServices/libraryServicesPlugin.php:139
 msgid "Could not mark checkout overdue message sent time because checkout id %1 was not found"
-msgstr ""
+msgstr "Impossible d'enregistrer la date et heure d'envoi du message de prêt en retard parce que le prêt %1 n'a pas été trouvé dans la base."
 
 #: app/plugins/libraryServices/libraryServicesPlugin.php:153
 msgid "Failed to get overdue list"
@@ -16039,11 +16040,11 @@ msgstr "Avertissement pour les objets réservés et disponibles"
 
 #: app/plugins/libraryServices/libraryServicesPlugin.php:174
 msgid "Could not mark reserved available message sent time because update failed: %1"
-msgstr ""
+msgstr "Impossible de noter la date et heure d'envoi du message de réservation disponible parce que la mise à jour a échoué : %1"
 
 #: app/plugins/libraryServices/libraryServicesPlugin.php:177
 msgid "Could not mark reserved available message sent time because checkout id %1 was not found"
-msgstr ""
+msgstr "Impossible d'enregistrer la date et heure d'envoi du message de réservation disponible parce que le prêt %1 n'a pas été trouvé dans la base."
 
 #: app/plugins/libraryServices/libraryServicesPlugin.php:191
 msgid "Failed to get reserved available list"
@@ -16276,7 +16277,7 @@ msgstr "L'élément de configuration '%1' dans '%2' a un type incorrect %3, %4 a
 
 #: app/plugins/relationshipGenerator/relationshipGeneratorPlugin.php:511
 msgid "Configuration item `%1` in %2 has value \"%3\", which is an invalid %4"
-msgstr ""
+msgstr "L'élément de configuration \"%1\" dans %2 a la valeur \"%3\", %4 invalide "
 
 #: app/plugins/statisticsViewer/controllers/StatisticsController.php:178
 msgid "No corresponding table (or stat universe) declared."
@@ -16412,7 +16413,7 @@ msgstr "Clé étrangère dans ArchDescriptionNames à utiliser (par exemple Reso
 
 #: app/refineries/ATEntityGetter/ATEntityGetterRefinery.php:208 app/refineries/ATSubjectGetter/ATSubjectGetterRefinery.php:226 app/refineries/entityJoiner/entityJoinerRefinery.php:262 app/refineries/entitySplitter/entitySplitterRefinery.php:119 app/refineries/listItemSplitter/listItemSplitterRefinery.php:123 app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:109 app/refineries/placeSplitter/placeSplitterRefinery.php:131 app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:130 app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:207
 msgid "Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found."
-msgstr "Accepte un code du type constante pour le type de relation ou une référence à l'emplacement dans la source de données ou le type peut être trouvé."
+msgstr "Accepte un code du type constante pour le type de relation ou une référence à l'emplacement dans la source de données où le type peut être trouvé."
 
 #: app/refineries/ATEntityGetter/ATEntityGetterRefinery.php:216
 msgid "Entity types"
@@ -16576,7 +16577,7 @@ msgstr "Défini la valeur du séparateur, qui délimite les valeurs des données
 
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:93 app/refineries/entitySplitter/entitySplitterRefinery.php:92 app/refineries/listItemSplitter/listItemSplitterRefinery.php:105 app/refineries/loanSplitter/loanSplitterRefinery.php:91 app/refineries/movementSplitter/movementSplitterRefinery.php:90 app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:91 app/refineries/objectRepresentationSplitter/objectRepresentationSplitterRefinery.php:91 app/refineries/objectSplitter/objectSplitterRefinery.php:91 app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:90 app/refineries/placeSplitter/placeSplitterRefinery.php:113 app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:94 app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:189
 msgid "List indicating sequence of checks for an existing record; values of array can be \"label\" and \"idno\". Ex. array(\"idno\", \"label\") will first try to match on idno and then label if the first match fails"
-msgstr ""
+msgstr "Liste indiquant la séquence des vérifications à faire pour tester l'existence d'un enregistrement ; les valeurs du tableau peuvent être \"label\" et \"idno\". Par exemple, le tableau array(\"idno\",\"label\") va d'abord tenter une correspondance sur l'idno et ensuite sur le titre si le premier test échoue."
 
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:101 app/refineries/entitySplitter/entitySplitterRefinery.php:109 app/refineries/listItemSplitter/listItemSplitterRefinery.php:113 app/refineries/loanSplitter/loanSplitterRefinery.php:99 app/refineries/movementSplitter/movementSplitterRefinery.php:98 app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:99 app/refineries/objectSplitter/objectSplitterRefinery.php:99 app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:98 app/refineries/placeSplitter/placeSplitterRefinery.php:121 app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:102 app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:197
 msgid "Do not create new records"
@@ -16588,7 +16589,7 @@ msgstr "Si défini, le traitement ne fera une correspondance que sur les enregis
 
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:120
 msgid "Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.  Note for object data: if the relationship type matches that set as the hierarchy control, the object will be pulled in as a \"child\" element in the collection hierarchy."
-msgstr "Accepte un code sous la forme d'une constante pour le type de relation ou une référence à l'emplacement dans les données source ou le type peut être trouvé. Note pour les données : si le type de relation correspond à celui qui est défini pour le contrôle de hiérarchie, l'objet sera rangé en tant qu'élément \"enfant\" dans la hiérarchie des collections."
+msgstr "Accepte un code sous la forme d'une constante pour le type de relation ou une référence à l'emplacement dans les données source où le type peut être trouvé. Note pour les données : si le type de relation correspond à celui qui est défini pour le contrôle de hiérarchie, l'objet sera rangé en tant qu'élément \"enfant\" dans la hiérarchie des collections."
 
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:128 app/refineries/tourMaker/tourMakerRefinery.php:169
 msgid "Collection type"
@@ -16596,7 +16597,7 @@ msgstr "Type de collection"
 
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:129
 msgid "Accepts a constant list item idno from the list collection_types or a reference to the location in the data source where the type can be found."
-msgstr "Accepte un élément sous la forme d'une constante pour le type de collection ou la référence à un emplacement dans les données d'origine ou le type peut être trouvé."
+msgstr "Accepte un élément sous la forme d'une constante pour le type de collection ou la référence à un emplacement dans les données d'origine où le type peut être trouvé."
 
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:138
 msgid "Sets or maps metadata for the collection record by referencing the metadataElement code and the location in the data source where the data values can be found."
@@ -16620,7 +16621,7 @@ msgstr "Attributs intersticiels"
 
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:174
 msgid "Sets or maps metadata for the interstitial collection <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
-msgstr ""
+msgstr "Définit ou fait correspondre les métadonnées de la <em>relation</em> interstitielle à la collection en référençant le code metadataElement et l'emplacement dans la source de données où les valeurs peuvent être trouvées."
 
 #: app/refineries/collectionSplitter/collectionSplitterRefinery.php:183
 msgid "List of non-preferred labels to apply to collections."
@@ -16640,7 +16641,7 @@ msgstr "Champ de précision de la date"
 
 #: app/refineries/dateAccuracyJoiner/dateAccuracyJoinerRefinery.php:111
 msgid "The field in which the date accuracy is stored (case-insensitive values are defined by accuracyValueDay, accuracyValueMonth and accuracyValueYear settings)"
-msgstr ""
+msgstr "Le champ dans lequel la précision de la date est enregistré (les valeurs insensibles à la casse sont définies par les paramètres accuracyValueDay, accuracyValueMonth et accuracyValueYear)."
 
 #: app/refineries/dateAccuracyJoiner/dateAccuracyJoinerRefinery.php:119
 msgid "Date Format"
@@ -16784,7 +16785,7 @@ msgstr "Ignorer la valeur de remplacement pour la date de fin"
 
 #: app/refineries/dateJoiner/dateJoinerRefinery.php:287
 msgid "Value to replace end date with when end date is skipped. (For Two-column range)."
-msgstr ""
+msgstr "Valeur pour remplacer la date de fin si la date de fin est ignorée (pour les plages de date sur deux colonnes)"
 
 #: app/refineries/dateJoiner/dateJoinerRefinery.php:295
 msgid "Date start day"
@@ -16956,7 +16957,7 @@ msgstr "Définit la valeur du délimiteur utilisé pour séparer les valeurs de 
 
 #: app/refineries/entitySplitter/entitySplitterRefinery.php:101
 msgid "Format to force entity display name to after parsing. You can pass a template using name element prefixed with carets (^) or one of the following: surnameCommaForename, forenameCommaSurname, forenameSurname, original."
-msgstr ""
+msgstr "Format pour définir l'affichage du nom après le traitement. Vous pouvez fournir un modèle à l'aide des codes d'éléments précédés par des accents circonflexes (^) ou un des choix suivants : surnameCommaForename, forenameCommaSurname, forenameSurname, original."
 
 #: app/refineries/entitySplitter/entitySplitterRefinery.php:146
 msgid "Entity parents to create, if required"
@@ -16992,15 +16993,15 @@ msgstr "Constructeur de hiérarchie pour les éléments de liste indexés"
 
 #: app/refineries/listItemIndentedHierarchyBuilder/listItemIndentedHierarchyBuilderRefinery.php:49
 msgid "Imports spreadsheets with hierarchies expressed indented values spread across several columns as hierarchical lists."
-msgstr ""
+msgstr "Importe des feuilles de calcul avec des hiérarchies sous la forme de valeurs indentées à travers différents colonnes comme liste hiérarchique."
 
 #: app/refineries/listItemIndentedHierarchyBuilder/listItemIndentedHierarchyBuilderRefinery.php:85
 msgid "listItemIndentedHierarchyBuilder refinery may only be used in imports to ca_list_items"
-msgstr ""
+msgstr "Le traitement listItemIndentedHierarchyBuilder peut uniquement être utilisé pour les imports dans ca_list_items"
 
 #: app/refineries/listItemIndentedHierarchyBuilder/listItemIndentedHierarchyBuilderRefinery.php:98
 msgid "listItemIndentedHierarchyBuilder requires levels option be set to a list of data source placeholders"
-msgstr ""
+msgstr "Le traitement listItemIndentedHierarchyBuilder nécessite que l'option de niveau soit défini sur une liste d'emplacement dans la source de données"
 
 #: app/refineries/listItemIndentedHierarchyBuilder/listItemIndentedHierarchyBuilderRefinery.php:108
 msgid "listItemIndentedHierarchyBuilder requires list option be set"
@@ -17048,7 +17049,7 @@ msgstr "Mode de traitement"
 
 #: app/refineries/listItemIndentedHierarchyBuilder/listItemIndentedHierarchyBuilderRefinery.php:223
 msgid "Set to \"returnData\" to return the id of lowest item in the hierarchy to the importer; set to \"processOnly\" to create the list items in the hierarchy but not return values to the importer. Default is to process only."
-msgstr ""
+msgstr "Définir à \"returnData\" pour retourner l'id du plus petit élément de la hiérarchie à l'import ; définir à \"processOnly\" pour créer les éléments dans la hiérarchie sans retourner aucune valeur à l'import. La valeur par défaut est \"processOnly\"."
 
 #: app/refineries/listItemSplitter/listItemSplitterRefinery.php:35
 msgid "List item splitter"
@@ -17068,7 +17069,7 @@ msgstr "Type d'élément de liste"
 
 #: app/refineries/listItemSplitter/listItemSplitterRefinery.php:132
 msgid "Accepts a constant list item idno from the list list_item_types or a reference to the location in the data source where the type can be found."
-msgstr "Accepte un élément sous la forme d'une constante pour le type de collection ou la référence à un emplacement dans les données d'origine ou le type peut être trouvé."
+msgstr "Accepte un élément sous la forme d'une constante pour le type de collection ou la référence à un emplacement dans les données d'origine où le type peut être trouvé."
 
 #: app/refineries/listItemSplitter/listItemSplitterRefinery.php:141 app/refineries/measurementsSplitter/measurementsSplitterRefinery.php:159
 msgid "Sets or maps metadata for the list item record by referencing the metadataElement code and the location in the data source where the data values can be found."
@@ -17100,7 +17101,7 @@ msgstr "Hiérarchie de liste à créer, si nécessaire"
 
 #: app/refineries/listItemSplitter/listItemSplitterRefinery.php:195
 msgid "Sets or maps metadata for the interstitial vocabulary <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
-msgstr ""
+msgstr "Définit ou fait correspondre les métadonnées de l'enregistrement de <em>relation</em> interstitielle au vocabulaire en utilisant le code metadataElement et l'emplacement dans la source de données où les valeurs peuvent être trouvées."
 
 #: app/refineries/listItemSplitter/listItemSplitterRefinery.php:204
 msgid "List of non-preferred labels to apply to list items."
@@ -17116,11 +17117,11 @@ msgstr "Fournit différentes fonctions d'import liées aux prêts : séparation 
 
 #: app/refineries/loanSplitter/loanSplitterRefinery.php:109
 msgid "Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.  Note for object data: if the relationship type matches that set as the hierarchy control, the object will be pulled in as a \"child\" element in the loan hierarchy."
-msgstr "Accepte un code sous la forme d'une constante pour le type de relation ou une référence à l'emplacement dans les données source ou le type peut être trouvé. Note pour les données : si le type de relation correspond à celui qui est défini pour le contrôle de hiérarchie, l'objet sera rangé en tant qu'élément \"enfant\" dans la hiérarchie des collections."
+msgstr "Accepte un code sous la forme d'une constante pour le type de relation ou une référence à l'emplacement dans les données source où le type peut être trouvé. Note pour les données : si le type de relation correspond à celui qui est défini pour le contrôle de hiérarchie, l'objet sera rangé en tant qu'élément \"enfant\" dans la hiérarchie des collections."
 
 #: app/refineries/loanSplitter/loanSplitterRefinery.php:118
 msgid "Accepts a constant list item idno from the list loan_types or a reference to the location in the data source where the type can be found."
-msgstr "Accepte un élément sous la forme d'une constante pour le type de collection ou la référence à un emplacement dans les données d'origine ou le type peut être trouvé."
+msgstr "Accepte un élément sous la forme d'une constante pour le type de collection ou la référence à un emplacement dans les données d'origine où le type peut être trouvé."
 
 #: app/refineries/loanSplitter/loanSplitterRefinery.php:127
 msgid "Sets or maps metadata for the loan record by referencing the metadataElement code and the location in the data source where the data values can be found."
@@ -17140,7 +17141,7 @@ msgstr "Définit le type de collection par défaut qui sera utilisé si aucun n'
 
 #: app/refineries/loanSplitter/loanSplitterRefinery.php:163
 msgid "Sets or maps metadata for the interstitial loan <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
-msgstr ""
+msgstr "Définit ou fait correspondre les métadonnées de l'enregistrement de <em>relation</em> interstitielle au prêt en utilisant le code metadataElement et l'emplacement dans la source de données où les valeurs peuvent être trouvées."
 
 #: app/refineries/loanSplitter/loanSplitterRefinery.php:172
 msgid "List of non-preferred labels to apply to loans."
@@ -17176,11 +17177,11 @@ msgstr "Séparateur de mouvement"
 
 #: app/refineries/movementSplitter/movementSplitterRefinery.php:36
 msgid "Provides several movement-related import functions: splitting of multiple movements in a string into individual values, mapping of type and relationship type for related movements, and merging movement data with movement names."
-msgstr ""
+msgstr "Fournit différentes fonctions d'import liées aux mouvements : séparation de multiples mouvements dans une chaîne en valeurs individuelles, correspondance de type et de type de relation pour les mouvements liés et fusion des données des mouvements en fonction du nom."
 
 #: app/refineries/movementSplitter/movementSplitterRefinery.php:108
 msgid "Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.  Note for object data: if the relationship type matches that set as the hierarchy control, the object will be pulled in as a \"child\" element in the movement hierarchy."
-msgstr ""
+msgstr "Accepte un code sous la forme d'une constante pour le type de relation ou une référence à l'emplacement dans les données source où le type peut être trouvé. Note pour les données : si le type de relation correspond à celui qui est défini pour le contrôle de hiérarchie, l'objet sera rangé en tant qu'élément \"enfant\" dans la hiérarchie des collections."
 
 #: app/refineries/movementSplitter/movementSplitterRefinery.php:116
 msgid "movement type"
@@ -17188,11 +17189,11 @@ msgstr "type de mouvement"
 
 #: app/refineries/movementSplitter/movementSplitterRefinery.php:117
 msgid "Accepts a constant list item idno from the list movement_types or a reference to the location in the data source where the type can be found."
-msgstr ""
+msgstr "Accepte un identifiant sous la forme d'une constante de la liste movement_types ou l'emplacement dans les données source où le type peut être trouvé"
 
 #: app/refineries/movementSplitter/movementSplitterRefinery.php:126
 msgid "Sets or maps metadata for the movement record by referencing the metadataElement code and the location in the data source where the data values can be found."
-msgstr ""
+msgstr "Définit ou fait correspondre les métadonnées de l'enregistrement mouvement en utilisant le code metadataElement et l'emplacement dans la source de données où les valeurs peuvent être trouvées."
 
 #: app/refineries/movementSplitter/movementSplitterRefinery.php:135
 msgid "movement parents to create, if required"
@@ -17204,11 +17205,11 @@ msgstr "Type de mouvement par défaut"
 
 #: app/refineries/movementSplitter/movementSplitterRefinery.php:153
 msgid "Sets the default movement type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list movement_types."
-msgstr ""
+msgstr "Définit le type de mouvement par défaut qui sera utilisé si aucun n'est défini ou si les valeurs de la source de données ne correspondent à aucune valeur de la liste movement_types de CollectiveAccess."
 
 #: app/refineries/movementSplitter/movementSplitterRefinery.php:162
 msgid "Sets or maps metadata for the interstitial movement <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
-msgstr ""
+msgstr "Définit ou fait correspondre les métadonnées de l'enregistrement de <em>relation</em> interstitielle à un mouvement en utilisant le code metadataElement et l'emplacement dans la source de données où les valeurs peuvent être trouvées."
 
 #: app/refineries/movementSplitter/movementSplitterRefinery.php:171
 msgid "List of non-preferred labels to apply to movements."
@@ -17244,7 +17245,7 @@ msgstr "Séparateur de lot d'objets"
 
 #: app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:36
 msgid "Provides several lot-related import functions: splitting of multiple lots in a string into individual values, mapping of type and relationship type for related lots, and merging lot data with lot names."
-msgstr ""
+msgstr "Fournit différentes fonctions d'import liées aux lots : séparation de multiples lots dans une chaîne en valeurs individuelles, correspondance de type et de type de relation pour les lots liés et fusion des données des collections en fonction du nom."
 
 #: app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:117
 msgid "Lot type"
@@ -17252,7 +17253,7 @@ msgstr "Type de lot"
 
 #: app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:118
 msgid "Accepts a constant list item idno from the list object_lot_types or a reference to the location in the data source where the type can be found."
-msgstr ""
+msgstr "Accepte un identifiant sous la forme d'une constante de la liste object_lot_types ou l'emplacement dans les données source où le type peut être trouvé"
 
 #: app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:126
 msgid "Lot status"
@@ -17260,11 +17261,11 @@ msgstr "Statut du lot"
 
 #: app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:127
 msgid "Accepts a constant list item idno from the list object_lot_statuses or a reference to the location in the data source where the status can be found."
-msgstr ""
+msgstr "Accepte un identifiant sous la forme d'une constante de la liste object_lot_statuses ou l'emplacement dans les données source ou le type peut être trouvé"
 
 #: app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:136
 msgid "Sets or maps metadata for the lot record by referencing the metadataElement code and the location in the data source where the data values can be found."
-msgstr ""
+msgstr "Définit ou fait correspondre l'enregistrement de lot en utilisant le code metadataElement et l'emplacement dans la source de données où les valeurs peuvent être trouvées"
 
 #: app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:153
 msgid "Lot type default"
@@ -17272,7 +17273,7 @@ msgstr "Type de lot par défaut"
 
 #: app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:154
 msgid "Sets the default lot type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list object_lot_types."
-msgstr ""
+msgstr "Définit le type de lot par défaut qui sera utilisé si aucun n'est défini ou si les valeurs de la source de données ne correspondent à aucune valeur de la liste object_lot_types de CollectiveAccess."
 
 #: app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:162
 msgid "Lot status default"
@@ -17280,11 +17281,11 @@ msgstr "Statut par défaut du lot"
 
 #: app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:163
 msgid "Sets the default lot status that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list object_lot_statuses."
-msgstr ""
+msgstr "Définit le statut de lot par défaut qui sera utilisé si aucun n'est défini ou si les valeurs de la source de données ne correspondent à aucune valeur de la liste object_lot_statuses de CollectiveAccess."
 
 #: app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:172
 msgid "Sets or maps metadata for the interstitial lot <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
-msgstr ""
+msgstr "Définit ou fait correspondre les métadonnées de l'enregistrement de <em>relation</em> interstitielle à un lot en utilisant le code metadataElement et l'emplacement dans la source de données où les valeurs peuvent être trouvées."
 
 #: app/refineries/objectLotSplitter/objectLotSplitterRefinery.php:181
 msgid "List of non-preferred labels to apply to lots."
@@ -17304,11 +17305,11 @@ msgstr "Type d'objet"
 
 #: app/refineries/objectRepresentationSplitter/objectRepresentationSplitterRefinery.php:100
 msgid "Accepts a constant list item idno from the list object_representation_types or a reference to the location in the data source where the type can be found."
-msgstr ""
+msgstr "Accepte un identifiant sous la forme d'une constante de la liste object_representation_types ou l'emplacement dans les données source où le type peut être trouvé"
 
 #: app/refineries/objectRepresentationSplitter/objectRepresentationSplitterRefinery.php:109 app/refineries/objectSplitter/objectSplitterRefinery.php:127
 msgid "Sets or maps metadata for the object record by referencing the metadataElement code and the location in the data source where the data values can be found."
-msgstr ""
+msgstr "Définit ou fait correspondre l'enregistrement d'objet en utilisant le code metadataElement et l'emplacement dans la source de données où les valeurs peuvent être trouvées"
 
 #: app/refineries/objectRepresentationSplitter/objectRepresentationSplitterRefinery.php:117 app/refineries/objectSplitter/objectSplitterRefinery.php:153
 msgid "Object type default"
@@ -17316,11 +17317,11 @@ msgstr "Type d'objet par défaut"
 
 #: app/refineries/objectRepresentationSplitter/objectRepresentationSplitterRefinery.php:118
 msgid "Sets the default object representation type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list object_types."
-msgstr ""
+msgstr "Définit le type de représentation par défaut qui sera utilisé si aucun n'est défini ou si les valeurs de la source de données ne correspondent à aucune valeur de la liste object_types de CollectiveAccess."
 
 #: app/refineries/objectRepresentationSplitter/objectRepresentationSplitterRefinery.php:127
 msgid "Sets or maps metadata for the interstitial object representation <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
-msgstr ""
+msgstr "Définit ou fait correspondre les métadonnées de l'enregistrement de <em>relation</em> interstitielle à une représentation en utilisant le code metadataElement et l'emplacement dans la source de données où les valeurs peuvent être trouvées."
 
 #: app/refineries/objectRepresentationSplitter/objectRepresentationSplitterRefinery.php:135
 msgid "Media prefix"
@@ -17336,11 +17337,11 @@ msgstr "Sépare les objets"
 
 #: app/refineries/objectSplitter/objectSplitterRefinery.php:109
 msgid "Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.  Note for object data: if the relationship type matches that set as the hierarchy control, the object will be pulled in as a \"child\" element in the object hierarchy."
-msgstr ""
+msgstr "Accepte un code sous la forme d'une constante pour le type de relation ou une référence à l'emplacement dans les données source où le type peut être trouvé. Note pour les données : si le type de relation correspond à celui qui est défini pour le contrôle de hiérarchie, l'objet sera rangé en tant qu'élément \"enfant\" dans la hiérarchie des collections."
 
 #: app/refineries/objectSplitter/objectSplitterRefinery.php:118
 msgid "Accepts a constant list item idno from the list object_types or a reference to the location in the data source where the type can be found."
-msgstr ""
+msgstr "Accepte un identifiant sous la forme d'une constante de la liste object_types ou l'emplacement dans les données source où le type peut être trouvé"
 
 #: app/refineries/objectSplitter/objectSplitterRefinery.php:136
 msgid "Object parents to create, if required"
@@ -17348,11 +17349,11 @@ msgstr "Parents de l'objet à créer, si nécessaire"
 
 #: app/refineries/objectSplitter/objectSplitterRefinery.php:154
 msgid "Sets the default object type that will be used if none are defined or if the data source values do not match any values in the CollectiveAccess list object_types."
-msgstr ""
+msgstr "Définit le type d'objet par défaut qui sera utilisé si aucun n'est défini ou si les valeurs de la source de données ne correspondent à aucune valeur de la liste object_types de CollectiveAccess."
 
 #: app/refineries/objectSplitter/objectSplitterRefinery.php:163
 msgid "Sets or maps metadata for the interstitial object <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
-msgstr ""
+msgstr "Définit ou fait correspondre les métadonnées de l'enregistrement de <em>relation</em> interstitielle à un objet en utilisant le code metadataElement et l'emplacement dans la source de données où les valeurs peuvent être trouvées."
 
 #: app/refineries/occurrenceHierarchyBuilder/occurrenceHierarchyBuilderRefinery.php:37
 msgid "Occurrence hierarchy builder"
@@ -17380,7 +17381,7 @@ msgstr "Fournit différentes fonctions d'import liées aux occurrences : sépara
 
 #: app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:108
 msgid "Accepts a constant type code for the relationship type or a reference to the location in the data source where the type can be found.  Note for object data: if the relationship type matches that set as the hierarchy control, the object will be pulled in as a \"child\" element in the occurrence hierarchy."
-msgstr "Accepte un code sous la forme d'une constante pour le type de relation ou une référence à l'emplacement dans les données source ou le type peut être trouvé. Note pour les données : si le type de relation correspond à celui qui est défini pour le contrôle de hiérarchie, l'objet sera rangé en tant qu'élément \"enfant\" dans la hiérarchie des collections."
+msgstr "Accepte un code sous la forme d'une constante pour le type de relation ou une référence à l'emplacement dans les données source où le type peut être trouvé. Note pour les données : si le type de relation correspond à celui qui est défini pour le contrôle de hiérarchie, l'objet sera rangé en tant qu'élément \"enfant\" dans la hiérarchie des collections."
 
 #: app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:116
 msgid "Occurrence type"
@@ -17388,7 +17389,7 @@ msgstr "Type d'occurrence"
 
 #: app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:117
 msgid "Accepts a constant list item idno from the list occurrence_types or a reference to the location in the data source where the type can be found."
-msgstr "Accepte un élément sous la forme d'une constante pour le type de collection ou la référence à un emplacement dans les données d'origine ou le type peut être trouvé."
+msgstr "Accepte un élément sous la forme d'une constante pour le type de collection ou la référence à un emplacement dans les données d'origine où le type peut être trouvé."
 
 #: app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:126
 msgid "Sets or maps metadata for the occurrence record by referencing the metadataElement code and the location in the data source where the data values can be found."
@@ -17408,7 +17409,7 @@ msgstr "Définit le type de collection par défaut qui sera utilisé si aucun n'
 
 #: app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:162
 msgid "Sets or maps metadata for the interstitial occurrence <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
-msgstr ""
+msgstr "Définit ou fait correspondre les métadonnées de l'enregistrement de <em>relation</em> interstitielle à une occurrence en utilisant le code metadataElement et l'emplacement dans la source de données où les valeurs peuvent être trouvées."
 
 #: app/refineries/occurrenceSplitter/occurrenceSplitterRefinery.php:171
 msgid "List of non-preferred labels to apply to occurrences."
@@ -17480,11 +17481,11 @@ msgstr "Définit le type de lieu par défaut qui sera utilisé si aucun n'est d�
 
 #: app/refineries/placeSplitter/placeSplitterRefinery.php:212
 msgid "Sets or maps metadata for the interstitial place <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
-msgstr ""
+msgstr "Définit ou fait correspondre les métadonnées de l'enregistrement de <em>relation</em> interstitielle à un lieu en utilisant le code metadataElement et l'emplacement dans la source de données où les valeurs peuvent être trouvées."
 
 #: app/refineries/placeSplitter/placeSplitterRefinery.php:221
 msgid "List of non-preferred labels to apply to places."
-msgstr ""
+msgstr "Liste des titres secondaires à appliquer aux lieux."
 
 #: app/refineries/storageLocationHierarchyBuilder/storageLocationHierarchyBuilderRefinery.php:37
 msgid "Storage location hierarchy builder"
@@ -17496,7 +17497,7 @@ msgstr "Construit une hiérarchie pour les emplacements de stockage."
 
 #: app/refineries/storageLocationHierarchyBuilder/storageLocationHierarchyBuilderRefinery.php:69
 msgid "storageLocationHierarchyBuilder refinery may only be used in imports to ca_storage_locations"
-msgstr ""
+msgstr "Le traitement storageLocationHierarchyBuilder ne peut être utilisé que pour les imports dans ca_storage_locations"
 
 #: app/refineries/storageLocationHierarchyBuilder/storageLocationHierarchyBuilderRefinery.php:109
 msgid "Storage location parents to create"
@@ -17528,7 +17529,7 @@ msgstr "Type d'emplacement de stockage par défaut"
 
 #: app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:139
 msgid "Accepts a constant list item idno from the list storage_location_types or a reference to the location in the data source where the type can be found."
-msgstr "Accepte un élément sous la forme d'une constante pour le type de collection ou la référence à un emplacement dans les données d'origine ou le type peut être trouvé."
+msgstr "Accepte un élément sous la forme d'une constante pour le type de collection ou la référence à un emplacement dans les données d'origine où le type peut être trouvé."
 
 #: app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:148
 msgid "Sets or maps metadata for the storage location record by referencing the metadataElement code and the location in the data source where the data values can be found."
@@ -17548,7 +17549,7 @@ msgstr "Définit le type d'emplacement de stockage qui sera utilisé si aucun n'
 
 #: app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:184
 msgid "Sets or maps metadata for the interstitial storage location <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
-msgstr ""
+msgstr "Définit ou fait correspondre les métadonnées de l'enregistrement de <em>relation</em> interstitielle à un emplacement de stockage en utilisant le code metadataElement et l'emplacement dans la source de données où les valeurs peuvent être trouvées."
 
 #: app/refineries/storageLocationSplitter/storageLocationSplitterRefinery.php:193
 msgid "List of non-preferred labels to apply to storage locations."
@@ -17584,7 +17585,7 @@ msgstr "[tourMakerRefinery] Impossible d'enregistrer les données pour le parcou
 
 #: app/refineries/tourMaker/tourMakerRefinery.php:170
 msgid "Accepts a constant list item idno from the list tour_types or a reference to the location in the data source where the type can be found."
-msgstr "Accepte un élément sous la forme d'une constante pour le type de collection ou la référence à un emplacement dans les données d'origine ou le type peut être trouvé."
+msgstr "Accepte un élément sous la forme d'une constante pour le type de collection ou la référence à un emplacement dans les données d'origine où le type peut être trouvé."
 
 #: app/refineries/tourMaker/tourMakerRefinery.php:179
 msgid "Sets or maps metadata for the tour record by referencing the metadataElement code or the location in the data source where the data values can be found."
@@ -17600,7 +17601,7 @@ msgstr "nom du point du parcours"
 
 #: app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:36
 msgid "Provides several tourstop location-related import functions."
-msgstr ""
+msgstr "Fournit différentes fonctions d'import liées aux emplacements de points d'arrêt de parcours."
 
 #: app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:108
 msgid "[tourStopSplitterRefinery] No relationship type is set for tour stop %1"
@@ -17644,7 +17645,7 @@ msgstr "Définit le type d'arrêt du parcours par défaut qui sera utilisé si a
 
 #: app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:261
 msgid "Sets or maps metadata for the interstitial tour stop <em>relationship</em> record by referencing the metadataElement code and the location in the data source where the data values can be found."
-msgstr ""
+msgstr "Définit ou fait correspondre les métadonnées de l'enregistrement de <em>relation</em> interstitielle à un point de parcours en utilisant le code metadataElement et l'emplacement dans la source de données où les valeurs peuvent être trouvées."
 
 #: app/refineries/tourStopSplitter/tourStopSplitterRefinery.php:270
 msgid "List of non-preferred labels to apply to tour stops."
@@ -18540,11 +18541,11 @@ msgstr "Glisser le profil ici pour ajouter ou mettre à jour"
 
 #: install/inc/page1.php:87
 msgid "More information about standard installation profiles is available on the CollectiveAccess <a href=\"http://docs.collectiveaccess.org/wiki/Installation_profile\" target=\"_blank\">project wiki</a>."
-msgstr ""
+msgstr "Des informations complémentaires à propos des profils standards d'installation sont disponible sur le <a href=\"http://docs.collectiveaccess.org/wiki/Installation_profile\" target=\"_blank\">wiki du projet</a> CollectiveAccess."
 
 #: install/inc/page1.php:91
 msgid "Don't see a suitable profile? Browse our <a href=\"http://www.CollectiveAccess.org/configuration\" target=\"_blank\">installation profile library</a> for additional configurations developed by the CollectiveAccess user community. To install a new profile simply copy the file into the <i>install/profiles/xml</i> directory on your server and reload the installer in your web browser."
-msgstr ""
+msgstr "Vous ne trouvez pas un profil adéquat ? Vous pouvez parcourir notre <a href=\"http://www.CollectiveAccess.org/configuration\" target=\"_blank\">répertoire des profils d'installation</a> pour d'autres configurations développées par la communauté des utilisateurs de CollectiveAccess. Pour installer un nouveau profil, copiez tout simplement le fichier dans le répertoire <i>install/profiles/xml</i> sur le serveur et lancez à nouveau le programme d'installation dans votre navigateur."
 
 #: install/inc/page1.php:101
 msgid "Overwrite existing installation?"
@@ -18674,7 +18675,7 @@ msgstr "Accès en lecture/modification"
 
 #: themes/default/views/administrate/access/role_edit_html.php:231
 msgid "Access values are used to control if and to whom a record should be displayed in a public-facing Pawtucket-based interface. Users logged into the Pawtucket interface will be given the levels of access specified here. If you wish to use the default Pawtucket access policy for an access value set the level to \"Use Pawtucket default.\""
-msgstr ""
+msgstr "Les valeurs d'accès sont utilisées pour contrôler si et par qui un enregistrement peut être affiché dans l'interface publique. Les utilisateurs connectés dans l'interface publique Pawtucket peuvent recevoir des niveaux d'accès différents spécifiés ici. Si vous voulez utiliser la gestion des accès prévue par défaut dans Pawtucket définissez ici la valeur \"Utiliser les valeurs Pawtucket par défaut\"."
 
 #: themes/default/views/administrate/access/role_edit_html.php:234
 msgid "Access status"
@@ -18820,7 +18821,7 @@ msgstr "Aucune facette n'a été définie"
 
 #: themes/default/views/administrate/setup/Browse/ajax_browse_facet_html.php:84 themes/default/views/find/Browse/ajax_browse_facet_html.php:84
 msgid "Click on a %1 to see more specific %2 within that %3, or use the search field. Click on the arrow next to a %4 to find %5 related to it."
-msgstr ""
+msgstr "Cliquer sur un %1 pour afficher des %2 spécifiques dans %3, ou utiliser le champ de recherche. Cliquer sur la flèche à côté d'un %4 pour trouver les %5 qui sont liés."
 
 #: themes/default/views/administrate/setup/Browse/ajax_browse_facet_html.php:101 themes/default/views/find/Browse/ajax_browse_facet_html.php:101 themes/default/views/find/Search/ajax_refine_facet_html.php:96
 msgid "Browse with this term"
@@ -21148,20 +21149,26 @@ msgid ""
 "\tdetail as you zoom. The more you zoom the more detail will be visible.\n"
 "\t"
 msgstr ""
+"Cliquer et glisser avec la souris pour faire un panoramique sur l'image. Vous pouvez utiliser la molette de la souris ou le trackpad pour zoomer ou dézoomer dans l'image.\n"
+"⇥Les boutons <code>+</code> et <code>-</code> et la barre de zoom en haut de l'écran peuvent aussi être utilisés. La visionneuse affiche l'image à sa résolution maximale, en\n"
+"⇥chargeant les données détaillées en fonction du zoom. Plus vous zoomez, plus les détails deviennent visibles.\n"
+"⇥"
 
 #: themes/default/views/editor/objects/viewer_help_html.php:12
 msgid ""
 "You may add text annotations to the image. Each annotation is associated with a point, rectangular or polygon area on the image. To create an annotation\n"
 "\tselect the point (line icon), rectangle or polygon tool from the tool bar, then click on the location you wish to annotate. "
 msgstr ""
+"Vous pouvez ajouter des annotations textes à l'image. Chaque annotation est associée avec un point, un rectangle ou une zone polygonale dans l'image. Pour créer une annotation\n"
+"⇥sélectionner le point (icône ligne), le rectangle ou l'outil polygone depuis la barre d'outils, cliquer ensuite à l'endroit où vous voulez placer l'annotation."
 
 #: themes/default/views/editor/objects/viewer_help_html.php:16
 msgid "For point annotations a line will appear connecting the location with a text box. The location will also be highlighted with a red translucent circle. You may drag both the point of the line and the text box to adjust position."
-msgstr ""
+msgstr "Pour les annotations par point, une ligne va apparaître, reliant l'emplacement avec une boîte de texte. L'emplacement sera également repéré par un cercle translucide rouge. Vous pouvez déplacer à la fois le point et la boîte de texte pour en modifier les positions."
 
 #: themes/default/views/editor/objects/viewer_help_html.php:19
 msgid "For rectangular annotations a rectangle will appear with a text box below and adjacent. Drag on the edges at the highlighted locations to resize the rectangle. Drag the rectangle on its interior to reposition it."
-msgstr ""
+msgstr "Pour les annotations rectangulaires, un rectangle apparaîtra avec une boîte de saisie située juste en dessous. Cliquer et glisser sur les angles pour redimensionner le rectangle. Cliquer et glisser à l'intérieur du rectangle pour le repositionner."
 
 #: themes/default/views/editor/objects/viewer_help_html.php:22
 msgid ""
