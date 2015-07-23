@@ -91,6 +91,15 @@
 				'label' => _t('Match on'),
 				'description' => _t('List indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails')
 			),
+			'entitySplitter_ignoreParent' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Ignore parent when trying to match row'),
+				'description' => _t('gnore parent when trying to match row.')
+			),
 			'entitySplitter_displaynameFormat' => array(
 				'formatType' => FT_TEXT,
 				'displayType' => DT_SELECT,
