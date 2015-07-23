@@ -520,17 +520,7 @@ class ca_data_exporter_items extends BaseModel {
 			'label' => _t('ID'),
 			'description' => _t('ID of item as set in mapping.')
 		);
-		
-		$va_settings['_id'] = array(
-			'formatType' => FT_TEXT,
-			'displayType' => DT_FIELD,
-			'width' => 10, 'height' => 1,
-			'takesLocale' => false,
-			'default' => '',
-			'label' => _t('ID'),
-			'description' => _t('ID of item as set in mapping.')
-		);
-		
+
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
 	# ------------------------------------------------------

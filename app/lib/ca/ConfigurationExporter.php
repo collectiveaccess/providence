@@ -240,7 +240,7 @@ final class ConfigurationExporter {
 			$vo_item = $this->opo_dom->createElement("item");
 			$vs_idno = $this->makeIDNOFromInstance($qr_items,'idno');
 
-			$vo_item->setAttribute("idno", $this->makeIDNOFromInstance($qr_items,'idno'));
+			$vo_item->setAttribute("idno", $vs_idno);
 			$vo_item->setAttribute("enabled", $qr_items->get("is_enabled"));
 			$vo_item->setAttribute("default", $qr_items->get("is_default"));
 			if(is_numeric($vn_value = $qr_items->get("item_value"))) {
@@ -1315,7 +1315,7 @@ final class ConfigurationExporter {
 				return false;
 		}
 	}
-
+	# --------------------------------------------------
 	/**
 	 * @param BaseModel $po_model_instance
 	 * @param string $ps_field_name
@@ -1328,6 +1328,5 @@ final class ConfigurationExporter {
 		$vs_value = $po_model_instance->get($ps_field_name);
 		return $this->makeIDNO($vs_value, $vn_max_length);
 	}
-	# --------------------------------------------------
 }
 ?>
