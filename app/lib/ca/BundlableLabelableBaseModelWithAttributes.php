@@ -4144,13 +4144,6 @@ if (!$vb_batch) {
 			}		
 		}
 
-		// prepopulate fields
-		$vs_prepopulate_cfg = $this->getAppConfig()->get('prepopulate_config');
-		$o_prepopulate_conf = Configuration::load($vs_prepopulate_cfg);
-		if($o_prepopulate_conf->get('prepopulate_fields_on_save')) {
-			$this->prepopulateFields(array('prepopulateConfig' => $vs_prepopulate_cfg));
-		}
-
 		if ($vb_dryrun) { $this->removeTransaction(false); }
 		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 		
