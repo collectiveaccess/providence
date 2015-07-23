@@ -729,10 +729,10 @@ class Configuration {
 		$this->ops_error = "";
 
 		$vs_tmp = $this->getScalar($ps_key);
-		if (!$vs_tmp) {
+		if (!strlen($vs_tmp)) {
 			$vs_tmp = $this->getList($ps_key);
 		}
-		if (!$vs_tmp) {
+		if (!is_array($vs_tmp) && !strlen($vs_tmp)) {
 			$vs_tmp = $this->getAssoc($ps_key);
 		}
 		Configuration::$s_get_cache[$this->ops_md5_path][$ps_key] = $vs_tmp;
