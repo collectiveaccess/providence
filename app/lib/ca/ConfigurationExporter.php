@@ -1329,17 +1329,5 @@ final class ConfigurationExporter {
 		return $this->makeIDNO($vs_value, $vn_max_length);
 	}
 	# --------------------------------------------------
-	/**
-	 * @param BaseModel $po_model_instance
-	 * @param string $ps_field_name
-	 * @return string normalised idno
-	 */
-	private function makeIDNOFromInstance($po_model_instance, $ps_field_name) {
-		$va_length = $po_model_instance->getFieldInfo($ps_field_name, 'BOUNDS_LENGTH');
-		// Previously this was always 30, so let's be conservative
-		$vn_max_length = isset($va_length[1]) ? $va_length[1] : 30;
-		$vs_value = $po_model_instance->get($ps_field_name);
-		return $this->makeIDNO($vs_value, $vn_max_length);
-	}
 }
 ?>
