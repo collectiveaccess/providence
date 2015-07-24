@@ -366,7 +366,7 @@ class ExpressionParser {
 		$va_funcs = array();
 		
 		while($va_token = $this->peekToken()) {
-			if ($this->getParseError()) { print $this->getParseErrorMessage(); break; }
+			if ($this->getParseError()) { break; }
 			switch($vn_state) {
 				# -------------------------------------------------------
 				case EEP_STATE_BEGIN:
