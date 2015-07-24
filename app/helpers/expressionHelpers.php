@@ -43,43 +43,105 @@ function caGetFunctionParamCount() {
 }
 # ---------------------------------------
 /**
- * Age calculation
- * @param string $ps_dob valid TimeExpressionParser expression for date of birth, or total life date range
- * @param string|null $ps_dod valid TimeExpressionParser expression for date of death (optional)
- * @return int
+ * DateTime diff calculation with arbitrary number of parameters.
+ * Calculates the time between the earliest and the latest date in the argument list
+ * and returns it as DateInterval. An arbitrary number of parameters is allowed.
+ * If there's only one parameter, the current date is added to the list to calculate a valid diff.
+ * @return bool|DateInterval
  */
-function caCalculateAge($ps_dob, $ps_dod=null) {
+function caGetDateTimeDiff($va_dates) {
+	if(!is_array($va_dates)) { return false; }
+
+	$vn_min_timestamp = $vn_max_timestamp = null;
 	$o_tep = new TimeExpressionParser();
 
-	if(!$o_tep->parse($ps_dob)) {
-		return false;
-	}
-	$va_start_timestamps = $o_tep->getHistoricTimestamps();
-	$va_start_parts = $o_tep->getHistoricDateParts($va_start_timestamps['start']);
-	$vs_start = $o_tep->getISODateTime($va_start_parts);
-
-	$va_start_parts_end = $o_tep->getHistoricDateParts($va_start_timestamps['end']);
-
-	// if the first parameter ($ps_dob) is a long date range, treat it as start and end of the life span
-	if($va_start_parts['year'] != $va_start_parts_end['year']) {
-		$ps_dod = $o_tep->getISODateTime($va_start_parts_end);
-	}
-
-	if($ps_dod) {
-		if(!$o_tep->parse($ps_dod)) {
+	foreach($va_dates as $vs_date) {
+		if(!$o_tep->parse($vs_date)) {
 			return false;
 		}
-		$va_end_timestamps = $o_tep->getHistoricTimestamps();
-		$va_end_parts = $o_tep->getHistoricDateParts($va_end_timestamps['end']);
-		$vs_end = $o_tep->getISODateTime($va_end_parts);
-	} else { // fallback: use now
-		$vs_end = date('c');
+
+		$va_arg_historic_stamps = $o_tep->getHistoricTimestamps();
+
+		if(!$vn_min_timestamp) { $vn_min_timestamp = (float) $va_arg_historic_stamps['start']; }
+		if(!$vn_max_timestamp) { $vn_max_timestamp = (float) $va_arg_historic_stamps['end']; }
+
+		if(((float) $va_arg_historic_stamps['end']) > $vn_max_timestamp) {
+			$vn_max_timestamp = (float) $va_arg_historic_stamps['end'];
+		}
+
+		if(((float) $va_arg_historic_stamps['start']) < $vn_min_timestamp) {
+			$vn_min_timestamp = (float) $va_arg_historic_stamps['start'];
+		}
 	}
+
+	$va_start_parts = $o_tep->getHistoricDateParts((string) $vn_min_timestamp);
+	$va_end_parts = $o_tep->getHistoricDateParts((string) $vn_max_timestamp);
+
+	$vs_start = $o_tep->getISODateTime($va_start_parts);
+	$vs_end = $o_tep->getISODateTime($va_end_parts);
 
 	$o_start = new DateTime($vs_start);
 	$o_end = new DateTime($vs_end);
-	$o_diff = $o_start->diff($o_end);
+	return $o_start->diff($o_end);
 
+}
+# ---------------------------------------
+/**
+ * Age calculation (in years) with arbitrary number of params. @see caGetDateTimeDiff
+ * @return int
+ */
+function caCalculateAgeInYears() {
+	$va_args = func_get_args();
+	$o_diff = caGetDateTimeDiff($va_args);
+	if(!($o_diff instanceof DateInterval)) { return false; }
+	if(!($vn_potential_return = $o_diff->y)) { // retry with 'now' added
+		array_push($va_args, 'now');
+		$o_diff = caGetDateTimeDiff($va_args);
+		if(!($o_diff instanceof DateInterval)) { return false; }
+	}
 	return $o_diff->y;
+}
+# ---------------------------------------
+/**
+ * Age calculation (in days) with arbitrary number of params. @see caGetDateTimeDiff
+ * @return int
+ */
+function caCalulateAgeInDays() {
+	$va_args = func_get_args();
+	$o_diff = caGetDateTimeDiff($va_args);
+	if(!($o_diff instanceof DateInterval)) { return false; }
+	return $o_diff->days;
+}
+# ---------------------------------------
+function caCalculateDateRangeAvgInDays() {
+	$va_date_ranges = func_get_args();
+
+	$o_tep = new TimeExpressionParser();
+	$va_days = array();
+
+	foreach($va_date_ranges as $vs_date_range) {
+		if(!$o_tep->parse($vs_date_range)) {
+			print "no parse $vs_date_range";
+			return false;
+		}
+
+		$va_arg_historic_stamps = $o_tep->getHistoricTimestamps();
+
+		$va_start_parts = $o_tep->getHistoricDateParts($va_arg_historic_stamps['start']);
+		$va_end_parts = $o_tep->getHistoricDateParts($va_arg_historic_stamps['end']);
+
+		$vs_start = $o_tep->getISODateTime($va_start_parts);
+		$vs_end = $o_tep->getISODateTime($va_end_parts);
+
+		$o_start = new DateTime($vs_start);
+		$o_end = new DateTime($vs_end);
+		$va_days[] = $o_start->diff($o_end)->days;
+	}
+
+	if(sizeof($va_days)) {
+		return array_sum($va_days) / sizeof($va_days);
+	} else {
+		return false;
+	}
 }
 # ---------------------------------------
