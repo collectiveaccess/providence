@@ -135,22 +135,34 @@ class DisplayHelpersTest extends BaseTestWithData {
 	# -------------------------------------------------------
 	public function testExpressionTag() {
 		// unit tag inside expression
-		$this->assertEquals($this->opn_entity_id, caProcessTemplateForIDs('<expression>max(<unit relativeTo="ca_entities" delimiter=",">^ca_entities.entity_id</unit>)</expression>', 'ca_objects', array($this->opt_object->getPrimaryKey())));
+		$this->assertEquals($this->opn_entity_id, caProcessTemplateForIDs(
+			'<expression>max(<unit relativeTo="ca_entities" delimiter=",">^ca_entities.entity_id</unit>)</expression>'
+		, 'ca_objects', array($this->opt_object->getPrimaryKey())));
 
 		// just a plain tag .. 'My test image' is 13 chars
-		$this->assertEquals(13, caProcessTemplateForIDs('<expression>length(^ca_objects.preferred_labels)</expression>', 'ca_objects', array($this->opt_object->getPrimaryKey())));
+		$this->assertEquals(13, caProcessTemplateForIDs(
+			'<expression>length(^ca_objects.preferred_labels)</expression>'
+		, 'ca_objects', array($this->opt_object->getPrimaryKey())));
 
 		// plain old scalars
-		$this->assertEquals(9, caProcessTemplateForIDs('<expression>5 + 4</expression>', 'ca_objects', array($this->opt_object->getPrimaryKey())));
+		$this->assertEquals(9, caProcessTemplateForIDs(
+			'<expression>5 + 4</expression>',
+		'ca_objects', array($this->opt_object->getPrimaryKey())));
 
 		// get entity names and their string lengths
-		$this->assertEquals('Homer J. Simpson, 16; Bart Simpson, 12', caProcessTemplateForIDs('<unit relativeTo="ca_entities">^ca_entities.preferred_labels, <expression>length(^ca_entities.preferred_labels)</expression></unit>', 'ca_objects', array($this->opt_object->getPrimaryKey())));
+		$this->assertEquals('Homer J. Simpson, 16; Bart Simpson, 12', caProcessTemplateForIDs(
+			'<unit relativeTo="ca_entities">^ca_entities.preferred_labels, <expression>length(^ca_entities.preferred_labels)</expression></unit>'
+		, 'ca_objects', array($this->opt_object->getPrimaryKey())));
 
 		// scalars in ifdef (false)
-		$this->assertEmpty(caProcessTemplateForIDs('<ifdef code="ca_objects.description"><expression>5+9</expression></ifdef>', 'ca_objects', array($this->opt_object->getPrimaryKey())));
+		$this->assertEmpty(caProcessTemplateForIDs(
+			'<ifdef code="ca_objects.description"><expression>5+9</expression></ifdef>'
+		, 'ca_objects', array($this->opt_object->getPrimaryKey())));
 
 		// scalars in ifdef (true)
-		$this->assertEquals(9, caProcessTemplateForIDs('<ifdef code="ca_entities"><expression>5+4</expression></ifdef>', 'ca_objects', array($this->opt_object->getPrimaryKey())));
+		$this->assertEquals(9, caProcessTemplateForIDs(
+			'<ifdef code="ca_entities"><expression>5+4</expression></ifdef>'
+		, 'ca_objects', array($this->opt_object->getPrimaryKey())));
 	}
 	# -------------------------------------------------------
 }
