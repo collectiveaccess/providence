@@ -787,6 +787,7 @@
 		 *				  forceUpdate = update attributes set in $pa_values even if row already exists. [Default=false; no values are updated in existing rows]
 		 *				  matchMediaFilesWithoutExtension = For ca_object_representations, if media path is invalid, attempt to find media in referenced directory and sub-directories that has a matching name, regardless of file extension. [default=false] 
 		 *                log = if KLogger instance is passed then actions will be logged
+		 *				  ignoreParent = Don't take into account parent_id value when looking for matching rows [Default is false]
 		 * @return bool|BaseModel|mixed|null
 		 */
 		private static function _getID($ps_table, $pa_label, $pn_parent_id, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
@@ -808,6 +809,7 @@
 			$pa_match_on 					= caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
 			$ps_event_source 				= caGetOption('importEventSource', $pa_options, '?'); 
 			$pb_match_media_without_ext 	= caGetOption('matchMediaFilesWithoutExtension', $pa_options, false);
+			$pb_ignore_parent			 	= caGetOption('ignoreParent', $pa_options, false);
 			
 			$vn_parent_id 					= ($pn_parent_id ? $pn_parent_id : caGetOption('parent_id', $pa_values, null));
 			
@@ -899,7 +901,7 @@
 								//
 								
 								$va_find_vals = array($vs_idno_fld => $vs_idno ? $vs_idno : ($pa_label['_originalText'] ? $pa_label['_originalText'] : $vs_label));
-								if (isset($pa_values['parent_id'])) { $va_find_vals['parent_id'] = $pa_values['parent_id']; }
+								if (!$pb_ignore_parent && isset($pa_values['parent_id'])) { $va_find_vals['parent_id'] = $pa_values['parent_id']; }
 							
 								if (
 									($vs_idno || trim($pa_label['_originalText'] || $vs_label)) 
@@ -915,12 +917,21 @@
 					case 'labels':
 						if ($pb_match_on_displayname && (strlen(trim($pa_label['displayname'])) > 0)) {
 							// entities only
-							$vn_id = $vs_table_class::find(array('preferred_labels' => array('displayname' => $pa_label['displayname']),'type_id' => $pn_type_id, 'parent_id' => $vn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
+							$va_params = array('preferred_labels' => array('displayname' => $pa_label['displayname']),'type_id' => $pn_type_id);
+							if (!$pb_ignore_parent) { $va_params['parent_id'] = $vn_parent_id; }
+							print_R($va_params); die;
+							$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
 						} elseif($vs_table_class == 'ca_entities') {
 							// entities only
-							$vn_id = $vs_table_class::find(array('preferred_labels' => array('forename' => $pa_label['forename'], 'middlename' => $pa_label['middlename'], 'surname' => $pa_label['surname']), 'type_id' => $pn_type_id, 'parent_id' => $vn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
+							$va_params = array('preferred_labels' => array('forename' => $pa_label['forename'], 'middlename' => $pa_label['middlename'], 'surname' => $pa_label['surname']), 'type_id' => $pn_type_id);
+							if (!$pb_ignore_parent) { $va_params['parent_id'] = $vn_parent_id; }
+							
+							$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
 						} else {
-							$vn_id = ($vs_table_class::find(array('preferred_labels' => array($vs_label_display_fld => $pa_label[$vs_label_display_fld]), 'parent_id' => $vn_parent_id, 'type_id' => $pn_type_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
+							$va_params = array('preferred_labels' => array($vs_label_display_fld => $pa_label[$vs_label_display_fld]), 'type_id' => $pn_type_id);
+							if (!$pb_ignore_parent) { $va_params['parent_id'] = $vn_parent_id; }
+							
+							$vn_id = ($vs_table_class::find($va_params, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
 						}
 						if ($vn_id) { break(2); }
 						break;
@@ -928,15 +939,24 @@
 					// For entities only
 					//
 					case 'surname':
-						$vn_id = $vs_table_class::find(array('preferred_labels' => array('surname' => $pa_label['surname']), 'type_id' => $pn_type_id, 'parent_id' => $vn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
+						$va_params = array('preferred_labels' => array('surname' => $pa_label['surname']), 'type_id' => $pn_type_id);
+						if (!$pb_ignore_parent) { $va_params['parent_id'] = $vn_parent_id; }
+						
+						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
 						if ($vn_id) { break(2); }
 						break;
 					case 'forename':
-						$vn_id = $vs_table_class::find(array('preferred_labels' => array('forename' => $pa_label['forename']), 'type_id' => $pn_type_id, 'parent_id' => $vn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
+						$va_params = array('preferred_labels' => array('forename' => $pa_label['forename']), 'type_id' => $pn_type_id);
+						if (!$pb_ignore_parent) { $va_params['parent_id'] = $vn_parent_id; }
+						
+						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
 						if ($vn_id) { break(2); }
 						break;
 					case 'displayname':
-						$vn_id = $vs_table_class::find(array('preferred_labels' => array('displayname' => $pa_label['displayname']), 'type_id' => $pn_type_id, 'parent_id' => $vn_parent_id), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
+						$va_params = array('preferred_labels' => array('displayname' => $pa_label['displayname']), 'type_id' => $pn_type_id);
+						if (!$pb_ignore_parent) { $va_params['parent_id'] = $vn_parent_id; }
+						
+						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
 						if ($vn_id) { break(2); }
 						break;
 				}
