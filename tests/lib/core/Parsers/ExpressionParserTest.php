@@ -55,11 +55,11 @@ class ExpressionParserTest extends PHPUnit_Framework_TestCase {
 
 	public function testAndOr() {
 		$this->assertFalse(ExpressionParser::evaluate('(5 > 10) AND ("seth" = "seth")'));
-		//$this->assertFalse(ExpressionParser::evaluate('(5 > 10) OR ("seth" = "seth")'));
+		$this->assertTrue(ExpressionParser::evaluate('(5 > 10) OR ("seth" = "seth")'));
 	}
 
-	public function testMathOperators() {
+	public function testOperators() {
 		$this->assertEquals(9, ExpressionParser::evaluate('5 + 4'));
-		//$this->assertEquals('Julia and Allison', ExpressionParsex::evaluate('"Julia" + " and " + "Allison"'));
+		$this->assertEquals('Hello World !', ExpressionParser::evaluate('"Hello" + (" World " + "!")'));
 	}
 }
