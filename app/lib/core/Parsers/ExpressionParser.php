@@ -30,6 +30,8 @@
  * ----------------------------------------------------------------------
  */
 
+require_once(__CA_APP_DIR__.'/helpers/expressionHelpers.php');
+
 define("EEP_TOKEN_OPEN_PAREN", 0);
 define("EEP_TOKEN_CLOSE_PAREN", 1);
 define("EEP_TOKEN_STRING_LITERAL", 2);
@@ -81,7 +83,9 @@ class ExpressionParser {
             'future'		=> 'caDateEndsInFuture',
             'wc'			=> 'str_word_count',
             'length'		=> 'strlen',
-            'date'			=> 'caDateToHistoricTimestamp'
+            'date'			=> 'caDateToHistoricTimestamp',
+			'sizeof'		=> 'caGetFunctionParamCount',
+			'age'			=> 'caCalculateAge'
     );
     
     private $opa_tokens;

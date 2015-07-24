@@ -62,4 +62,8 @@ class ExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(9, ExpressionParser::evaluate('5 + 4'));
 		$this->assertEquals('Hello World !', ExpressionParser::evaluate('"Hello" + (" World " + "!")'));
 	}
+
+	public function testFunctions() {
+		$this->assertEquals(4, ExpressionParser::evaluate('sizeof(5,3,4,6)'));
+	}
 }

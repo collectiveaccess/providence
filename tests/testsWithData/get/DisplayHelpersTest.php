@@ -163,6 +163,26 @@ class DisplayHelpersTest extends BaseTestWithData {
 		$this->assertEquals(9, caProcessTemplateForIDs(
 			'<ifdef code="ca_entities"><expression>5+4</expression></ifdef>'
 		, 'ca_objects', array($this->opt_object->getPrimaryKey())));
+
+		// hacked up way to count number of relationships
+		$this->assertEquals(2, caProcessTemplateForIDs(
+			'<expression>sizeof(<unit relativeTo="ca_entities" delimiter=",">^ca_entities.entity_id</unit>)</expression>'
+		, 'ca_objects', array($this->opt_object->getPrimaryKey())));
+
+		// no relationships exist for collections
+		$this->assertEquals(0, caProcessTemplateForIDs(
+			'<expression>sizeof(<unit relativeTo="ca_collections" delimiter=",">^ca_collections.collection_id</unit>)</expression>'
+		, 'ca_objects', array($this->opt_object->getPrimaryKey())));
+
+		// no relationships exist for collections
+		$this->assertEquals(0, caProcessTemplateForIDs(
+			'<expression>sizeof(<unit relativeTo="ca_collections" delimiter=",">^ca_collections.collection_id</unit>)</expression>'
+		, 'ca_objects', array($this->opt_object->getPrimaryKey())));
+
+		// age calculation
+		$this->assertEquals(41, caProcessTemplateForIDs(
+			'<expression>age("23 June 1912", "7 June 1954")</expression>'
+		, 'ca_objects', array($this->opt_object->getPrimaryKey())));
 	}
 	# -------------------------------------------------------
 }
