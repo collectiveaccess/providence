@@ -37,7 +37,7 @@
 	
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_sets', 'preferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
 
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'Labels');
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix.'Labels', $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.'Labels', $va_initial_values));
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.'Labels', $va_settings);
 ?>
 <div id="<?php print $vs_id_prefix; ?>Labels">
@@ -79,6 +79,7 @@
 		addButtonClassName: 'caAddLabelButton',
 		deleteButtonClassName: 'caDeleteLabelButton',
 		readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
+		bundlePreview: <?php $va_cur = current($va_initial_values); print caEscapeForBundlePreview($va_cur['name']); ?>,
 		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
 	});
 </script>

@@ -382,7 +382,7 @@
 								color: jQuery('#".$pa_options["name"]."').val()
 							})}); </script>\n";
 							
-							JavascriptLoadManager::register('jquery', 'colorpicker');
+							AssetLoadManager::register('jquery', 'colorpicker');
 							
 					break;
 				# --------------------------------------------
@@ -469,7 +469,7 @@
 								_t('Order created') => 'relation_id',		// forces sorting by relationship primary key  - aka order relationships were created
 								_t('Preferred label') => $va_properties['showSortableBundlesFor'].".preferred_labels.".$t_rel->getLabelDisplayField()
 							);
-							if ($vs_idno_fld = $t_rel->getProperty('ID_NUMBERING_ID_FIELD')) {
+							if (($vs_idno_fld = $t_rel->getProperty('ID_NUMBERING_SORT_FIELD')) || ($vs_idno_fld = $t_rel->getProperty('ID_NUMBERING_ID_FIELD'))) {
 								$va_select_opts[$t_rel->getFieldInfo($vs_idno_fld, 'LABEL')] = $vs_idno_fld;
 							}
 							

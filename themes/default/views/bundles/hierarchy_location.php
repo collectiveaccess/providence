@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,8 +26,8 @@
  * ----------------------------------------------------------------------
  */
  
-	JavascriptLoadManager::register('hierBrowser');
-	JavascriptLoadManager::register('tabUI');
+	AssetLoadManager::register('hierBrowser');
+	AssetLoadManager::register('tabUI');
 	
 	$t_subject 			= $this->getVar('t_subject');
 	$vs_subject_label	= $t_subject->getLabelForDisplay();
@@ -37,6 +37,8 @@
 	$pa_ancestors 		= $this->getVar('ancestors');
 	$pn_id 				= $this->getVar('id');
 	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+	$vn_items_in_hier 	= $t_subject->getHierarchySize();
+	$vs_bundle_preview	= '('.$vn_items_in_hier. ') '. caProcessTemplateForIDs("^preferred_labels", $t_subject->tableName(), array($t_subject->getPrimaryKey()));
 	
 	switch($vs_priv_table) {
 		case 'ca_relationship_types':
@@ -158,7 +160,7 @@
 	});
 </script>
 <?php
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $pa_bundle_settings, false, $vs_bundle_preview);
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 ?>
 <div id="<?php print $vs_id_prefix; ?>">
@@ -171,6 +173,7 @@
 	
 			if ($pn_id > 0) {
 ?>
+				<div class="hierarchyCountDisplay"><?php if($vn_items_in_hier > 0) { print _t("Number of %1 in hierarchy: %2", caGetTableDisplayName($t_subject->tableName(), true), $vn_items_in_hier); } ?></div>
 				<div class="buttonPosition">
 					<a href="#" id="<?php print $vs_id_prefix; ?>browseToggle" class="form-button"><span class="form-button"><?php print _t('Show Hierarchy'); ?></span></a>
 				</div>			
@@ -266,35 +269,36 @@
 					</div><!-- end hierbrowser -->				
 <?php
 		if (($t_subject->tableName() == 'ca_storage_locations') && (bool)$t_subject->getAppConfig()->get('record_movement_information_when_moving_storage_location')) {
-			//
-			// Add movement form
-			//
+			if ($t_ui = ca_editor_uis::loadDefaultUI('ca_movements', $this->request, null, array('editorPref' => 'quickadd'))) {
+				//
+				// Add movement form
+				//
 ?>
 			<div id="<?php print $vs_id_prefix; ?>StorageLocationMovementForm" style="width: 98%; margin: 5px 0px 2px 6px;">
 				<h3><?php print _t('Movement details'); ?></h3>
 <?php
-			$t_ui = ca_editor_uis::loadDefaultUI('ca_movements', $this->request, null, array('editorPref' => 'quickadd'));
-			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
-				array(),
-				array()
-			);
+				$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, null, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
+					array(),
+					array()
+				);
 	
-			$t_movement = new ca_movements();
-			$va_form_elements = $t_movement->getBundleFormHTMLForScreen($va_nav['defaultScreen'], array(
-					'request' => $this->request, 
-					'formName' => $vs_id_prefix.'StorageLocationMovementForm',
-					'omit' => array('ca_storage_locations')
-			));
-			print caHTMLHiddenInput($vs_id_prefix.'_movement_screen', array('value' => $va_nav['defaultScreen']));
-			print caHTMLHiddenInput($vs_id_prefix.'_movement_form_name', array('value' => $vs_id_prefix.'StorageLocationMovementForm'));
+				$t_movement = new ca_movements();
+				$va_form_elements = $t_movement->getBundleFormHTMLForScreen($va_nav['defaultScreen'], array(
+						'request' => $this->request, 
+						'formName' => $vs_id_prefix.'StorageLocationMovementForm',
+						'omit' => array('ca_storage_locations')
+				));
+				print caHTMLHiddenInput($vs_id_prefix.'_movement_screen', array('value' => $va_nav['defaultScreen']));
+				print caHTMLHiddenInput($vs_id_prefix.'_movement_form_name', array('value' => $vs_id_prefix.'StorageLocationMovementForm'));
 			
-			print join("\n", $va_form_elements);
+				print join("\n", $va_form_elements);
 ?>
 			</div>
 			<script type="text/javascript">
 				jQuery("#<?php print $vs_id_prefix; ?>StorageLocationMovementForm textarea, #<?php print $vs_id_prefix; ?>StorageLocationMovementForm input").css("max-width", "600px");
 			</script>
 <?php
+			}
 		}
 ?>
 		</div>
@@ -457,15 +461,17 @@
 				dontAllowEditForFirstLevel: <?php print (in_array($t_subject->tableName(), array('ca_places', 'ca_storage_locations', 'ca_list_items', 'ca_relationship_types')) ? 'true' : 'false'); ?>,
 				
 				readOnly: false, //<?php print $vb_read_only ? 1 : 0; ?>,
+				disabledItems: 'hide',
 				
 				editUrl: '<?php print $vs_edit_url; ?>',
 				editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
 				disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
 
-				
 				initItemID: '<?php print $vn_init_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
-				displayCurrentSelectionOnLoad: false
+				displayCurrentSelectionOnLoad: false,
+				autoShrink: <?php print (caGetOption('auto_shrink', $pa_bundle_settings, false) ? 'true' : 'false'); ?>,
+				autoShrinkAnimateID: '<?php print $vs_id_prefix; ?>ExploreHierarchyBrowser'
 			});
 		}
 	}
@@ -483,6 +489,7 @@
 				initDataUrl: '<?php print $va_lookup_urls['ancestorList']; ?>',
 				
 				readOnly: <?php print $vb_read_only ? 1 : 0; ?>,
+				disabledItems: 'hide',
 				
 				initItemID: '<?php print $vn_init_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
@@ -514,7 +521,9 @@
 					if (caUI.utils.showUnsavedChangesWarning) { caUI.utils.showUnsavedChangesWarning(true); }
 				},
 				
-				displayCurrentSelectionOnLoad: false
+				displayCurrentSelectionOnLoad: false,
+				autoShrink: <?php print (caGetOption('auto_shrink', $pa_bundle_settings, false) ? 'true' : 'false'); ?>,
+				autoShrinkAnimateID: '<?php print $vs_id_prefix; ?>MoveHierarchyBrowser'
 			});
 		}
 	}
@@ -534,10 +543,13 @@
 				
 				readOnly: true,
 				allowSelection: false,
+				disabledItems: 'hide',
 				
 				initItemID: '<?php print $vn_init_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
-				displayCurrentSelectionOnLoad: true
+				displayCurrentSelectionOnLoad: true,
+				autoShrink: <?php print (caGetOption('auto_shrink', $pa_bundle_settings, false) ? 'true' : 'false'); ?>,
+				autoShrinkAnimateID: '<?php print $vs_id_prefix; ?>AddHierarchyBrowser'
 			});
 		}
 	}
@@ -560,7 +572,9 @@
 				
 				initItemID: '<?php print $vn_init_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
-				displayCurrentSelectionOnLoad: true
+				displayCurrentSelectionOnLoad: true,
+				autoShrink: <?php print (caGetOption('auto_shrink', $pa_bundle_settings, false) ? 'true' : 'false'); ?>,
+				autoShrinkAnimateID: '<?php print $vs_id_prefix; ?>AddObjectHierarchyBrowser'
 			});
 		}
 	}

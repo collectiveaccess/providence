@@ -316,6 +316,8 @@
 						}
 						$vn_c = 0;
 						
+						$vn_item_count = $qr_children->numRows();
+						
 						$qr_children->seek($vn_start);
 						while($qr_children->nextRow()) {
 							$va_tmp = array(
@@ -350,7 +352,8 @@
 						
 						if ($t_item->tableName() == 'ca_collections') {
 							$va_cross_table_items = $t_item->getRelatedItems('ca_objects');
-					
+							$vn_item_count += sizeof($va_cross_table_items);
+							
 							$va_ids = array();
 							foreach($va_cross_table_items as $vn_x_item_id => $va_x_item) {
 								$va_items['ca_objects-'.$vn_x_item_id][$va_x_item['locale_id']] = $va_x_item;
@@ -411,7 +414,7 @@
 						}
 					}
 				}
-				$vn_item_count += sizeof($va_items_for_locale);
+				
  				$va_items_for_locale['_sortOrder'] = array_keys($va_items_for_locale);
 				$va_items_for_locale['_primaryKey'] = $t_item->primaryKey();	// pass the name of the primary key so the hierbrowser knows where to look for item_id's
  				$va_items_for_locale['_itemCount'] = $vn_item_count; //$qr_children ? $qr_children->numRows() : 0;

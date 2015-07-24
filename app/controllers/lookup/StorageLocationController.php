@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,5 +34,10 @@
  		protected $ops_name_singular = 'storage_location';
  		protected $ops_search_class = 'StorageLocationSearch';
  		# -------------------------------------------------------
+		public function Get($pa_additional_query_params=null, $pa_options=null) {
+			if(!is_array($pa_additional_query_params)) { $pa_additional_query_params = array(); }
+			// only return enabled storage locations in autocomplete lookups
+			parent::Get(array_merge(array('ca_storage_locations.is_enabled:1'), $pa_additional_query_params), $pa_options);
+		}
+		# -------------------------------------------------------
  	}
- ?>

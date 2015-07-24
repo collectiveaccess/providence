@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -266,7 +266,7 @@ class ca_loans extends BaseObjectLocationModel implements IBundleProvider {
 	# ------------------------------------------------------
 	# Self-relations
 	# ------------------------------------------------------
-	protected $SELF_RELATION_TABLE_NAME = null;
+	protected $SELF_RELATION_TABLE_NAME = 'ca_loans_x_loans';
 	
 	# ------------------------------------------------------
 	# ID numbering
@@ -320,6 +320,8 @@ class ca_loans extends BaseObjectLocationModel implements IBundleProvider {
 		$this->BUNDLES['ca_storage_locations'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related storage locations'));
 		
 		$this->BUNDLES['ca_list_items'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related vocabulary terms'));
+		
+		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
 	}
 	# ------------------------------------------------------
 }

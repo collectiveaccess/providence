@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -144,7 +144,7 @@
  			if (is_array($va_coordinates = $po_data_object->get($ps_georeference_field_name, array('coordinates' => true, 'returnAsArray' => true)))) {
 				foreach($va_coordinates as $vn_i => $va_geoname) {
 					$va_coordinate = isset($va_geoname[$vs_field_name]) ? $va_geoname[$vs_field_name] : $va_geoname;
-					
+
 					$vs_label = $vs_content = $vs_ajax_content = null;
 							
 					if (!is_null($pa_options['labelTemplate'])) {
@@ -173,7 +173,7 @@
 							$vs_content = $o_view->render($pa_options['contentView']);
 						} else {
 							if (!is_null($pa_options['contentTemplate'])) {
-								$vs_content = caProcessTemplateForIDs($pa_options['contentTemplate'], $po_data_object->tableName(), $po_data_object->get($po_data_object->tableName().".".$po_data_object->primaryKey(), array('returnAsArray' => true)), array('returnAsLink' => (strpos($pa_options['contentTemplate'], "<l>") !== false)));
+								$vs_content = caProcessTemplateForIDs($pa_options['contentTemplate'], $po_data_object->tableName(), $po_data_object->get($po_data_object->tableName().".".$po_data_object->primaryKey(), array('returnAsArray' => true)), array());
 							} else {
 								if (!is_null($pa_options['content'])) {
 									if ($pa_options['content']){ 
@@ -227,7 +227,7 @@
  					}
  				}
  				
- 				if ($va_coordinates = $po_data_object->get($ps_georeference_field_name, array('coordinates' => true, 'returnAsArray' => true, 'returnAllLocales' => true))) {
+ 				if ($va_coordinates = $po_data_object->get($ps_georeference_field_name, array('coordinates' => true, 'returnWithStructure' => true, 'returnAllLocales' => true))) {
  					$vn_id = $po_data_object->get("{$vs_table}.{$vs_pk}");
  					$vs_table = $po_data_object->tableName();
  					foreach($va_coordinates as $vn_element_id => $va_geonames_by_locale) {
@@ -239,7 +239,7 @@
 					
 								
 								if (!is_null($pa_options['labelTemplate'])) {
-									$vs_label = caProcessTemplateForIDs($pa_options['labelTemplate'], $vs_table, array($vn_id), array('returnAsLink' => $vb_render_label_as_link || (strpos($pa_options['contentTemplate'], "<l>") !== false)));
+									$vs_label = caProcessTemplateForIDs($pa_options['labelTemplate'], $vs_table, array($vn_id), array());
 								} else {
 									if (!is_null($pa_options['label'])) {
 										$vs_label = $po_data_object->get($pa_options['label'], array('returnAsLink' => $vb_render_label_as_link || (strpos($pa_options['contentTemplate'], "<l>") !== false)));
@@ -264,7 +264,7 @@
 										$vs_content = $o_view->render($pa_options['contentView']);
 									} else {
 										if (!is_null($pa_options['contentTemplate'])) {
-											$vs_content = caProcessTemplateForIDs($pa_options['contentTemplate'], $po_data_object->tableName(), $po_data_object->get($po_data_object->tableName().".".$po_data_object->primaryKey(), array('returnAsArray' => true)), array('returnAsLink' => (strpos($pa_options['contentTemplate'], "<l>") !== false)));
+											$vs_content = caProcessTemplateForIDs($pa_options['contentTemplate'], $po_data_object->tableName(), $po_data_object->get($po_data_object->tableName().".".$po_data_object->primaryKey(), array('returnAsArray' => true)), array());
 										} else {
 											if (!is_null($pa_options['content'])) {
 												if ($pa_options['content']){ 

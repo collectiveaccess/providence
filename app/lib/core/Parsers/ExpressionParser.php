@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -78,7 +78,10 @@ class ExpressionParser {
             'round'         => 'round',
             'random'		=> 'rand',
             'current'		=> 'caIsCurrentDate',
-            'future'		=> 'caDateEndsInFuture'
+            'future'		=> 'caDateEndsInFuture',
+            'wc'			=> 'str_word_count',
+            'length'		=> 'strlen',
+            'date'			=> 'caDateToHistoricTimestamp'
     );
     
     private $opa_tokens;
@@ -110,7 +113,9 @@ class ExpressionParser {
         	}
         	switch($vs_c) {
         		case '^':
-        			if ($vs_buf == '') {
+        			if ($vb_in_regex) {
+        				$vs_buf .= $vs_c;
+        			} elseif ($vs_buf == '') {
         				$vb_in_variable_name = true;
         				$vs_buf .= $vs_c;
         			}
@@ -142,10 +147,8 @@ class ExpressionParser {
 						$vs_buf = '';
 						break;
 					} else {
-						if ($vs_c !== '/') {
-							$vs_buf .= $vs_c;
-							break;
-						}
+						$vs_buf .= $vs_c;
+						break;
 					}
         		case '(':
         		case ')':
@@ -341,7 +344,10 @@ class ExpressionParser {
      *
      */
 	public function parse($ps_expression, $pa_variables=null) {
+		$ps_expression = preg_replace("!(\=~|\!~|\=)!", " \\1 ", $ps_expression);
+		
 		$this->tokenize($ps_expression);
+		
 		if (is_array($pa_variables)) { $this->setVariables($pa_variables); }
 		
 		return $this->parseExpression();
@@ -541,6 +547,7 @@ class ExpressionParser {
 				# -------------------------------------------------------
 			}
 		}
+		
 		if(sizeof($va_acc) > 0) { 
 			return $this->processTerm($va_acc, $va_ops); 
 		}
@@ -688,6 +695,9 @@ class ExpressionParser {
 						case '=~':
 							foreach($va_operand1 as $vm_operand1) {
 								foreach($va_operand2 as $vm_operand2) {
+									if ($vm_operand2[0] !== '/') { $vm_operand2 = '/'.$vm_operand2; }
+									if ($vm_operand2[strlen($vm_operand2)-1] !== '/') { $vm_operand2 = $vm_operand2.'/'; }
+									
 									if(preg_match($vm_operand2, $vm_operand1)) { return true; }
 								}		
 							}
@@ -696,6 +706,8 @@ class ExpressionParser {
 						case '!~':
 							foreach($va_operand1 as $vm_operand1) {
 								foreach($va_operand2 as $vm_operand2) {
+									if ($vm_operand2[0] !== '/') { $vm_operand2 = '/'.$vm_operand2; }
+									if ($vm_operand2[strlen($vm_operand2)-1] !== '/') { $vm_operand2 = $vm_operand2.'/'; }
 									if(!preg_match($vm_operand2, $vm_operand1)) { return true; }
 								}
 							}
@@ -820,4 +832,3 @@ class ExpressionParser {
     }
 	# -------------------------------------------------------------------
 }
-?>

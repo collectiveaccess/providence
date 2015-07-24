@@ -48,7 +48,6 @@ class dateAccuracyJoinerRefinery extends BaseRefinery {
 		);
 	}
 	# -------------------------------------------------------
-
 	public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options = null) {
 		// Extract and normalise the original date value
 		$vs_source_value = $pa_source_data[$pa_item['source']];

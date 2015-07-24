@@ -1,46 +1,16 @@
 <?php
-/**
- * PHPUnit
+/*
+ * This file is part of the PHPUnit_MockObject package.
  *
- * Copyright (c) 2010-2014, Sebastian Bergmann <sebastian@phpunit.de>.
- * All rights reserved.
+ * (c) Sebastian Bergmann <sebastian@phpunit.de>
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *
- *   * Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in
- *     the documentation and/or other materials provided with the
- *     distribution.
- *
- *   * Neither the name of Sebastian Bergmann nor the names of his
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- *
- * @package    PHPUnit_MockObject
- * @author     Sebastian Bergmann <sebastian@phpunit.de>
- * @copyright  2010-2014 Sebastian Bergmann <sebastian@phpunit.de>
- * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
- * @link       http://github.com/sebastianbergmann/phpunit-mock-objects
- * @since      File available since Release 1.0.0
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
+
+use Doctrine\Instantiator\Instantiator;
+use Doctrine\Instantiator\Exception\InvalidArgumentException as InstantiatorInvalidArgumentException;
+use Doctrine\Instantiator\Exception\UnexpectedValueException as InstantiatorUnexpectedValueException;
 
 if (!function_exists('trait_exists')) {
     function trait_exists($traitname, $autoload = true)
@@ -54,7 +24,7 @@ if (!function_exists('trait_exists')) {
  *
  * @package    PHPUnit_MockObject
  * @author     Sebastian Bergmann <sebastian@phpunit.de>
- * @copyright  2010-2014 Sebastian Bergmann <sebastian@phpunit.de>
+ * @copyright  Sebastian Bergmann <sebastian@phpunit.de>
  * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
  * @version    Release: @package_version@
  * @link       http://github.com/sebastianbergmann/phpunit-mock-objects
@@ -186,6 +156,25 @@ class PHPUnit_Framework_MockObject_Generator
             throw new InvalidArgumentException;
         }
 
+        if ($type === 'Traversable' || $type === '\\Traversable') {
+            $type = 'Iterator';
+        }
+
+        if (is_array($type)) {
+            $type = array_unique(array_map(
+              function ($type) {
+                  if ($type === 'Traversable' ||
+                      $type === '\\Traversable' ||
+                      $type === '\\Iterator') {
+                      return 'Iterator';
+                  }
+
+                  return $type;
+              },
+              $type
+            ));
+        }
+
         if (NULL !== $methods) {
             foreach ($methods as $method) {
                 if (!preg_match('~[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*~', $method)) {
@@ -268,24 +257,21 @@ class PHPUnit_Framework_MockObject_Generator
                 $object = $class->newInstanceArgs($arguments);
             }
         } else {
-            $class = new ReflectionClass('ReflectionClass');
-            $hasNewInstanceWithoutConstructor = $class->hasMethod('newInstanceWithoutConstructor');;
+            try {
+                $instantiator = new Instantiator;
+                $object       = $instantiator->instantiate($className);
+            } catch (InstantiatorUnexpectedValueException $exception) {
+                if($exception->getPrevious()) {
+                    $exception = $exception->getPrevious();
+                }
 
-            $class      = new ReflectionClass($className);
-            $isInternal = $this->isInternalClass($class);
-
-            if ($isInternal && !$this->unserializeHackIsSupported()) {
                 throw new PHPUnit_Framework_MockObject_RuntimeException(
-                    'Internal classes cannot be mocked without invoking their constructor in PHP ' . PHP_VERSION
+                  $exception->getMessage()
                 );
-            }
-
-            if ($isInternal || !$hasNewInstanceWithoutConstructor) {
-                $object = unserialize(
-                    sprintf('O:%d:"%s":0:{}', strlen($className), $className)
+            } catch (InstantiatorInvalidArgumentException $exception) {
+                throw new PHPUnit_Framework_MockObject_RuntimeException(
+                  $exception->getMessage()
                 );
-            } else {
-                $object = $class->newInstanceWithoutConstructor();
             }
         }
 
@@ -349,8 +335,8 @@ class PHPUnit_Framework_MockObject_Generator
             $reflector = new ReflectionClass($originalClassName);
             $methods   = $mockedMethods;
 
-            foreach ($reflector->getMethods() as $method) {
-                if ($method->isAbstract() && !in_array($method->getName(), $methods)) {
+            foreach ($reflector->getMethods(ReflectionMethod::IS_ABSTRACT) as $method) {
+                if (!in_array($method->getName(), $methods)) {
                     $methods[] = $method->getName();
                 }
             }
@@ -558,7 +544,7 @@ class PHPUnit_Framework_MockObject_Generator
         }
 
         if ($this->soapLoaded) {
-            $options = array_merge($options, array('cache_wsdl'=>FALSE));
+            $options = array_merge($options, array('cache_wsdl' => WSDL_CACHE_NONE));
             $client   = new SoapClient($wsdlFile, $options);
             $_methods = array_unique($client->__getFunctions());
             unset($client);
@@ -891,12 +877,20 @@ class PHPUnit_Framework_MockObject_Generator
 
         if ($isInterface) {
             $buffer .= sprintf(
-              "%s implements %s, %s%s",
+              "%s implements %s",
               $mockClassName['className'],
-              $interfaces,
-              !empty($mockClassName['namespaceName']) ? $mockClassName['namespaceName'] . '\\' : '',
-              $mockClassName['originalClassName']
+              $interfaces
             );
+
+            if (!in_array($mockClassName['originalClassName'], $additionalInterfaces)) {
+                $buffer .= ', ';
+
+                if (!empty($mockClassName['namespaceName'])) {
+                    $buffer .= $mockClassName['namespaceName'] . '\\';
+                }
+
+                $buffer .= $mockClassName['originalClassName'];
+            }
         } else {
             $buffer .= sprintf(
               "%s extends %s%s implements %s",
@@ -1031,6 +1025,14 @@ class PHPUnit_Framework_MockObject_Generator
                 $name = '$arg' . $i;
             }
 
+            if ($this->isVariadic($parameter)) {
+                if ($forCall) {
+                    continue;
+                } else {
+                    $name = '...' . $name;
+                }
+            }
+
             $default   = '';
             $reference = '';
             $typeHint  = '';
@@ -1062,11 +1064,13 @@ class PHPUnit_Framework_MockObject_Generator
                     }
                 }
 
-                if ($parameter->isDefaultValueAvailable()) {
-                    $value   = $parameter->getDefaultValue();
-                    $default = ' = ' . var_export($value, TRUE);
-                } elseif ($parameter->isOptional()) {
-                    $default = ' = null';
+                if (!$this->isVariadic($parameter)) {
+                    if ($parameter->isDefaultValueAvailable()) {
+                        $value = $parameter->getDefaultValue();
+                        $default = ' = ' . var_export($value, TRUE);
+                    } elseif ($parameter->isOptional()) {
+                        $default = ' = null';
+                    }
                 }
             }
 
@@ -1081,34 +1085,12 @@ class PHPUnit_Framework_MockObject_Generator
     }
 
     /**
-     * @param  ReflectionClass $class
+     * @param  ReflectionParameter $parameter
      * @return boolean
-     * @since  Method available since Release 2.0.8
+     * @since  Method available since Release 2.2.1
      */
-    private function isInternalClass(ReflectionClass $class)
+    private function isVariadic(ReflectionParameter $parameter)
     {
-        while ($class) {
-            if ($class->isInternal()) {
-                return true;
-            }
-
-            $class = $class->getParentClass();
-        }
-
-        return false;
-    }
-
-    /**
-     * @return boolean
-     * @since  Method available since Release 2.0.9
-     */
-    private function unserializeHackIsSupported()
-    {
-        if (PHP_VERSION == '5.4.29' || PHP_VERSION == '5.5.13' ||
-            version_compare(PHP_VERSION, '5.6.0', '>=')) {
-            return FALSE;
-        }
-
-        return TRUE;
+        return method_exists('ReflectionParameter', 'isVariadic') && $parameter->isVariadic();
     }
 }

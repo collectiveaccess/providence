@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -302,7 +302,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	 * @return ca_editor_uis instance loaded with default UI on success, false on failure
 	 */
 	static public function loadDefaultUI($pm_table_name_or_num, $po_request, $pn_type_id=null, $pa_options=null) {
-		if (ca_editor_uis::$s_default_ui_cache[$pm_table_name_or_num.'/'.$pn_type_id]) { return ca_editor_uis::$s_default_ui_cache[$pm_table_name_or_num.'/'.$pn_type_id]; }
+		if (isset(ca_editor_uis::$s_default_ui_cache[$pm_table_name_or_num.'/'.$pn_type_id])) { return ca_editor_uis::$s_default_ui_cache[$pm_table_name_or_num.'/'.$pn_type_id]; }
 		
 		$o_dm = Datamodel::load();
 		if (is_numeric($pm_table_name_or_num)) {
@@ -310,7 +310,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		} else {
 			$t_instance = $o_dm->getInstanceByTableName($pm_table_name_or_num, true);
 		}
-		if (!$t_instance) { return false; }
+		if (!$t_instance) { return ca_editor_uis::$s_default_ui_cache[$pm_table_name_or_num.'/'.$pn_type_id] = false; }
 			
 		$vs_table_name = $t_instance->tableName();
 		$vn_table_num = $t_instance->tableNum();
@@ -327,30 +327,36 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		}
 		$va_available_uis_by_type = $po_request->user->_getUIListByType($vn_table_num);
 
-		if ($pn_type_id && $va_uis_by_type) {
+		$vn_type_id = $pn_type_id;
+		if ($vn_type_id && $va_uis_by_type) {
 			if (!is_array($va_uis_by_type)) { 
-				if (!isset($va_available_uis_by_type[$pn_type_id][$va_uis_by_type]) && !isset($va_available_uis_by_type['__all__'][$va_uis_by_type])) {
-					$pn_type_id = null;
+				if (!isset($va_available_uis_by_type[$vn_type_id][$va_uis_by_type]) && !isset($va_available_uis_by_type['__all__'][$va_uis_by_type])) {
+					$vn_type_id = null;
 				}
 				$va_uis_by_type = array(); 
 			} else {
-				if (!isset($va_available_uis_by_type[$pn_type_id][$va_uis_by_type[$pn_type_id]]) && !isset($va_available_uis_by_type['__all__'][$va_uis_by_type[$pn_type_id]])) {
-					$pn_type_id = null;
+				if (!isset($va_available_uis_by_type[$vn_type_id][$va_uis_by_type[$vn_type_id]]) && !isset($va_available_uis_by_type['__all__'][$va_uis_by_type[$vn_type_id]])) {
+					$vn_type_id = null;
 				}
 			}
 		}
 	
 		$t_ui = new ca_editor_uis();
 		
-		if (!$pn_type_id || !($vn_rc = $t_ui->load($va_uis_by_type[$pn_type_id]))) {
-			$va_ui_ids = ca_editor_uis::getAvailableUIs($vn_table_num, $po_request, $pn_type_id, true);
+		// If table supports null types take type_id=null to be  "none" rather than a signal to allow any type of editor
+		if (!$vn_type_id && (bool)$t_instance->getFieldInfo($t_instance->getTypeFieldName(), 'IS_NULL')) {
+			$vn_type_id = '_NONE_';
+		}
+		
+		if (!$vn_type_id || !($vn_rc = $t_ui->load($va_uis_by_type[$vn_type_id]))) {
+			$va_ui_ids = ca_editor_uis::getAvailableUIs($vn_table_num, $po_request, $vn_type_id, true);
 			
-			if (sizeof($va_ui_ids) == 0) { return false; }
+			if (sizeof($va_ui_ids) == 0) { return ca_editor_uis::$s_default_ui_cache[$pm_table_name_or_num.'/'.$pn_type_id] = false; }
 			$va_tmp = array_keys($va_ui_ids);
 			if ($t_ui->load($va_tmp[0])) {
 				return ca_editor_uis::$s_default_ui_cache[$pm_table_name_or_num.'/'.$pn_type_id] = $t_ui;
 			}
-			return false;
+			return ca_editor_uis::$s_default_ui_cache[$pm_table_name_or_num.'/'.$pn_type_id] = false;
 		}
 		return ca_editor_uis::$s_default_ui_cache[$pm_table_name_or_num.'/'.$pn_type_id] = $t_ui;
 	}
@@ -369,8 +375,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function getScreens($po_request=null, $pn_type_id=null, $pa_options=null) {
 		if (!$this->getPrimaryKey()) { return false; }
-		
-		$vs_opts_md5 = caMakeCacheKeyFromOptions($pa_options);
+
 		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('editor_type')))) { return null; }
 		
 		if($t_instance instanceof BaseRelationshipModel) {
@@ -708,7 +713,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			SELECT cauis.screen_id, cauis.rank
 			FROM ca_editor_ui_screens cauis
 			WHERE
-				cauis.ui_id = ?
+				cauis.ui_id = ? AND cauis.parent_id IS NOT NULL
 			ORDER BY 
 				cauis.rank ASC
 		", (int)$vn_ui_id);
@@ -1072,4 +1077,3 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ----------------------------------------
 }
-?>

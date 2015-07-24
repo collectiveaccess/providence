@@ -150,7 +150,10 @@
  			$t_subject->set('type_id', $vn_type_id);
  			
  			$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $vn_type_id, array('editorPref' => 'quickadd'));
- 			
+ 			if (!$t_ui) {
+ 				$this->postError(1100, _t('No interface defined for %1', $this->ops_table_name), 'BaseQuickAddController->Form');
+ 				return;
+ 			}
  			// Get default screen (this is all we show in quickadd, even if the UI has multiple screens)
  			$va_nav = $t_ui->getScreensAsNavConfigFragment($this->request, $vn_type_id, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(),
 				array(),
@@ -415,9 +418,9 @@
  		 */
  		protected function _initView($pa_options=null) {
  			// load required javascript
- 			JavascriptLoadManager::register('bundleableEditor');
- 			JavascriptLoadManager::register('imageScroller');
- 			JavascriptLoadManager::register('ckeditor');
+ 			AssetLoadManager::register('bundleableEditor');
+ 			AssetLoadManager::register('imageScroller');
+ 			AssetLoadManager::register('ckeditor');
  			
  			$t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_table_name);
  			

@@ -399,7 +399,7 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	}
 	# ------------------------------------------------------
 	/**
-	 * Override BundlableLabelableBaseModelWithAttribute::get() to allow getting 
+	 * Override BundlableLabelableBaseModelWithAttributes::get() to allow getting 
 	 * annotation properties in simple get()-style notations like
 	 *   ca_representations_annotations.props.w
 	 */
@@ -412,7 +412,33 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 		}
 
 		if((sizeof($va_tmp)==2) && isset($va_tmp[0]) && ($va_tmp[0] == 'props')) {
-			$vm_prop = $this->getPropertyValue($va_tmp[1]);
+
+			if($va_tmp[1] == 'display') {
+				return $this->getPropertiesForDisplay($pa_options);
+			}
+
+			$vm_val = $this->getPropertyValue($va_tmp[1]);
+			
+			// this should be moved into the property implementation but for now, points is the only occurrence 
+			// of this kind of thing and getProperty() doesn't support any options so this is a reasonable quick&dirty way. 
+			if(is_array($vm_val) && !caGetOption('returnAsArray',$pa_options)) {
+				switch($va_tmp[1]) {
+					case 'points' :
+						$va_return = array();
+						foreach($vm_val as $va_point) {
+							// round values for display
+							$va_return[] = round($va_point['x'],2).','.round($va_point['y'],2);
+						}
+						if(!($vs_delimiter = caGetOption('delimiter',$pa_options))){
+							$vs_delimiter = '; ';
+						}
+						return join($vs_delimiter, $va_return);
+						break;
+					default:
+						return $vm_val;
+				}
+			}
+			return $vm_val;
 		}
 
 		return parent::get($ps_field, $pa_options);
@@ -457,6 +483,14 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
  	# ------------------------------------------------------
  	public function getPropertyValues() {
  		return $this->opo_annotations_properties->getPropertyValues();
+ 	}
+ 	# ------------------------------------------------------
+ 	public function getPropertiesForDisplay($pa_options=null) {
+ 		if($this->opo_annotations_properties instanceof IRepresentationAnnotationPropertyCoder) {
+ 			return $this->opo_annotations_properties->getPropertiesForDisplay($pa_options);	
+ 		} else {
+ 			return '';
+ 		}
  	}
  	# ------------------------------------------------------
  	public function setPropertyValue($ps_property, $pm_value) {

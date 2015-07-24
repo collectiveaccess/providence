@@ -172,9 +172,29 @@ class RequestDispatcher extends BaseObject {
 						// ... next check "_root_" plugin directory
 						// plugins in here act as if the are in the app/controllers directory
 						if (!file_exists($this->ops_application_plugins_path.'/_root_/controllers/'.join('/', $this->opa_module_path).'/'.$vs_classname.'.php') || !include_once($this->ops_application_plugins_path.'/_root_/controllers/'.join('/', $this->opa_module_path).'/'.$vs_classname.'.php')) {					
-							// Invalid controller path
-							$this->postError(2300, _t("Invalid controller path"), "RequestDispatcher->dispatch()");
-							return false;
+							// Try to load "Default" controller in controllers directory and call method with controller name
+							if (file_exists($this->ops_controller_path.'/DefaultController.php') && include_once($this->ops_controller_path.'/DefaultController.php')) {
+								
+								$vs_default_method = $this->ops_controller;
+								
+								// Set DefaultController as controller class
+								$vs_classname = 'DefaultController';	
+								
+								// Take rest of path and pass as params to DefaultController __call()
+								$va_params = array($this->ops_action);
+  								if ($this->ops_action_extra) { $va_params[] = $this->ops_action_extra; } 
+								
+								$va_path_params = $this->opo_request->getParameters(array('PATH'));
+								foreach($va_path_params as $vs_param => $vs_value) {
+									if (!$vs_param) { $va_params[] = $vs_param; }
+									if (!$vs_value) { $va_params[] = $vs_value; }
+								}
+								$this->ops_action = $vs_default_method;
+							} else {
+								// Invalid controller path
+								$this->postError(2300, _t("Invalid controller path"), "RequestDispatcher->dispatch()");
+								return false;
+							}
 						}
 					}
 				}
@@ -203,35 +223,37 @@ class RequestDispatcher extends BaseObject {
 
 				$this->opo_request->setIsDispatched(true);
 				
-				$vb_plugin_cancelled_dispatch = false;
-				foreach($pa_plugins as $vo_plugin) {
-					$va_ret = $vo_plugin->preDispatch();
-					if (is_array($va_ret) && isset($va_ret['dont_dispatch']) && $va_ret['dont_dispatch']) {
-						$vb_plugin_cancelled_dispatch = true;
+				if (!$this->opo_response->isRedirect()) {
+					$vb_plugin_cancelled_dispatch = false;
+					foreach($pa_plugins as $vo_plugin) {
+						$va_ret = $vo_plugin->preDispatch();
+						if (is_array($va_ret) && isset($va_ret['dont_dispatch']) && $va_ret['dont_dispatch']) {
+							$vb_plugin_cancelled_dispatch = true;
+						}
 					}
-				}
 				
-				if (!$vb_plugin_cancelled_dispatch) {
-					if (!$this->ops_action || !(method_exists($o_action_controller, $this->ops_action) || method_exists($o_action_controller, '__call'))) { 
-						$this->postError(2310, _t("Not dispatchable"), "RequestDispatcher->dispatch()");
-						return false;
+					if (!$vb_plugin_cancelled_dispatch) {
+						if (!$this->ops_action || !(method_exists($o_action_controller, $this->ops_action) || method_exists($o_action_controller, '__call'))) { 
+							$this->postError(2310, _t("Not dispatchable"), "RequestDispatcher->dispatch()");
+							return false;
+						}
+						$o_action_controller->{$this->ops_action}($va_params);
+						if ($o_action_controller->numErrors()) {
+							$this->errors = $o_action_controller->errors();
+							return false;
+						}
 					}
-					$o_action_controller->{$this->ops_action}();
-					if ($o_action_controller->numErrors()) {
-						$this->errors = $o_action_controller->errors();
-						return false;
+				
+					// reload plugins in case controller we dispatched to has changed them
+					$pa_plugins = $this->getPlugins($pa_plugins);
+				
+					foreach($pa_plugins as $vo_plugin) {
+						$vo_plugin->postDispatch();
 					}
-				}
-				
-				// reload plugins in case controller we dispatched to has changed them
-				$pa_plugins = $this->getPlugins($pa_plugins);
-				
-				foreach($pa_plugins as $vo_plugin) {
-					$vo_plugin->postDispatch();
-				}
 
-				if (!$this->opo_request->isDispatched()) {
-					$this->parseRequest();
+					if (!$this->opo_request->isDispatched()) {
+						$this->parseRequest();
+					}
 				}
 			} while($this->opo_request->isDispatched() == false);
 			
@@ -246,4 +268,3 @@ class RequestDispatcher extends BaseObject {
 	}
 	# -------------------------------------------------------
 }
- ?>

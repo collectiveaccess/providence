@@ -97,36 +97,12 @@
 					// uBio
 					$vo_conf = new Configuration();
 					$vs_ubio_keycode = trim($vo_conf->get("ubio_keycode"));
-					if(strlen($vs_ubio_keycode)>0){
+					if(strlen($vs_ubio_keycode)>0) {
 
 						$vs_url = "http://www.ubio.org/webservices/service.php?function=namebank_search&searchName={$ps_query}&sci=1&vern=1&keyCode={$vs_ubio_keycode}";
-
-						if($vs_proxy = $vo_conf->get('web_services_proxy_url')){ /* proxy server is configured */
-
-							if(($vs_proxy_user = $vo_conf->get('web_services_proxy_auth_user')) && ($vs_proxy_pass = $vo_conf->get('web_services_proxy_auth_pw'))){
-								$vs_proxy_auth = base64_encode("{$vs_proxy_user}:{$vs_proxy_pass}");
-							}
-
-							$va_context_options = array( 'http' => array(
-								'proxy' => $vs_proxy,
-								'request_fulluri' => true,
-								'timeout' => 5,
-								'header' => 'User-agent: CollectiveAccess web service lookup',
-							));
-
-							if($vs_proxy_auth){
-								$va_context_options['http']['header'] = "Proxy-Authorization: Basic {$vs_proxy_auth}";
-							}
-
-							$vo_context = stream_context_create($va_context_options);
-							$vs_result = @file_get_contents($vs_url, false, $vo_context);
-
-						} else {
-							$vs_result = @file_get_contents($vs_url);
-						}
+						$vs_result = caQueryExternalWebservice($vs_url);
 
 						$vo_doc = new DOMDocument();
-					
 						if(strlen($vs_result)>0){
 							$vo_doc->loadXML($vs_result);
 							$vo_resultlist = $vo_doc->getElementsByTagName("value");
@@ -184,10 +160,23 @@
 									}
 								}
 							} else {
-								$va_items['error_ubio'] = array(
-									'label' => _t('No results found for %1.', $ps_query),
-									'id' => null
-								);
+								if($vo_errors = $vo_doc->getElementsByTagName('error')) {
+									$vs_err = '';
+									foreach($vo_errors as $vo_result){
+										if($vo_result->textContent) {
+											$vs_err .= $vo_result->textContent;
+										}
+									}
+									$va_items['error_ubio'] = array(
+										'label' => $vs_err,
+										'id' => null
+									);
+								} else {
+									$va_items['error_ubio'] = array(
+										'label' => _t('No results found for %1.', $ps_query),
+										'id' => null
+									);
+								}
 							}
 						} else {
 							$va_items['error_ubio'] = array(
@@ -208,7 +197,7 @@
 					);
 				}
 			}
-			
+
 			$this->view->setVar('taxonomy_list', $va_items);
  			return $this->render('ajax_taxonomy_list_html.php');
 		}

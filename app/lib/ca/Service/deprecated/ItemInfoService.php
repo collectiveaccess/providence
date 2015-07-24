@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -417,20 +417,31 @@ class ItemInfoService extends BaseService {
 		}
 		if(method_exists($t_subject_instance,"getRelatedItems")){
 			$va_items = $t_subject_instance->getRelatedItems($related_type, $options);
+			
+			
 			if(is_array($options["bundles"])){
 				$t_related_instance = $this->getTableInstance($related_type);
-				$qr_result = $t_related_instance->makeSearchResult($related_type, array_keys($va_items));
+				$vs_rel_pk = $t_related_instance->primaryKey();
+				
+				$va_item_ids = $va_item_id_to_index = array();
+				foreach($va_items as $vs_index => $va_item) {
+					$va_item_ids[] = $va_item[$vs_rel_pk];
+					$va_item_id_to_index[$va_item[$vs_rel_pk]] = $vs_index;
+				}
+				
+				$qr_result = $t_related_instance->makeSearchResult($related_type, $va_item_ids);
+				
 				while($qr_result->nextHit()){
 					foreach($options["bundles"] as $vs_bundle => $va_bundle_options){
 						if($this->_isBadBundle($vs_bundle)){
 							continue;
 						}
-						$va_items[$qr_result->get($t_related_instance->primaryKey())][$vs_bundle] = $qr_result->get($vs_bundle,$va_bundle_options);
+						$va_items[$va_item_id_to_index[$qr_result->get($t_related_instance->primaryKey())]][$vs_bundle] = $qr_result->get($vs_bundle,$va_bundle_options);
 					}
 				}
 			}
 			
-			return $va_items;
+			return array_values($va_items);
 		} else {
 			throw new SoapFault("Server", "Invalid type");
 		}

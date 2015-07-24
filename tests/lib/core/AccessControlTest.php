@@ -42,11 +42,17 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 	# -------------------------------------------------------
 	private $ops_username;
 	private $ops_password;
-	private $opt_user;
-	private $opt_role;
+	/**
+	 * @var ca_users
+	 */
+	var $opt_user;
+	/**
+	 * @var ca_user_roles
+	 */
+	var $opt_role;
 	# -------------------------------------------------------
 	protected function setUp(){
-		$o_dm = new DataModel(true); // PHPUnit seems to barf on the caching code if we don't instanciate a Datamodel instance
+		$o_dm = new Datamodel(true); // PHPUnit seems to barf on the caching code if we don't instanciate a Datamodel instance
 		$o_dm->getTableNum("ca_objects");
 
 		// set up test role
@@ -88,16 +94,22 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 		global $req, $resp;
 		$resp = new ResponseHTTP();
 		$req = new RequestHTTP($resp,array("dont_create_new_session" => true));
+
+		$this->assertInstanceOf('ca_users', $this->opt_user);
+		$this->assertInstanceOf('ca_user_roles', $this->opt_role);
 	}
 	# -------------------------------------------------------
-	protected function tearDown(){
+	public function tearDown() {
 		//the cascading delete code in BaseModel causes problems in unit
 		//tests so we delete user and role by hand
-		$vo_db = new Db();
-		$vo_db->query("DELETE FROM ca_users_x_roles WHERE role_id=?",$this->opt_role->getPrimaryKey());
-		$vo_db->query("DELETE FROM ca_users_x_roles WHERE user_id=?",$this->opt_user->getPrimaryKey());
-		$vo_db->query("DELETE FROM ca_user_roles WHERE role_id=?",$this->opt_role->getPrimaryKey());
-		$vo_db->query("DELETE FROM ca_users WHERE user_id=?",$this->opt_user->getPrimaryKey());
+
+		if(($this->opt_user instanceof BaseModel) && ($this->opt_role instanceof BaseModel)) {
+			$vo_db = new Db();
+			$vo_db->query("DELETE FROM ca_users_x_roles WHERE role_id=?", $this->opt_role->getPrimaryKey());
+			$vo_db->query("DELETE FROM ca_users_x_roles WHERE user_id=?", $this->opt_user->getPrimaryKey());
+			$vo_db->query("DELETE FROM ca_user_roles WHERE role_id=?", $this->opt_role->getPrimaryKey());
+			$vo_db->query("DELETE FROM ca_users WHERE user_id=?", $this->opt_user->getPrimaryKey());
+		}
 	}
 	# -------------------------------------------------------
 	public function testActionLevelAccessControlWithoutParams(){
@@ -528,5 +540,3 @@ class AccessControlTest extends PHPUnit_Framework_TestCase {
 	}
 	# -------------------------------------------------------
 }
-
-?>

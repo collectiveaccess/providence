@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -98,6 +98,8 @@ class BaseDelimitedDataReader extends BaseDataReader {
 	 * @return bool
 	 */
 	public function read($ps_source, $pa_options=null) {
+		parent::read($ps_source, $pa_options);
+		
 		$this->opn_current_row = 0;
 		
 		if($this->opo_parser->parse($ps_source)) {
@@ -159,10 +161,12 @@ class BaseDelimitedDataReader extends BaseDataReader {
 	 * @return mixed
 	 */
 	public function get($ps_spec, $pa_options=null) {
+		if ($vm_ret = parent::get($ps_spec, $pa_options)) { return $vm_ret; }
+		
 		$vb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
 		$vs_delimiter = caGetOption('delimiter', $pa_options, ';');
 		
-		$vs_value = $this->opo_parser($ps_spec);
+		$vs_value = $this->opo_parser->getRowValue($ps_spec);
 	
 		if ($vb_return_as_array) { return array($vs_value); }
 		return $vs_value;
@@ -195,6 +199,15 @@ class BaseDelimitedDataReader extends BaseDataReader {
 	 * 
 	 * @return int
 	 */
+	public function currentRow() {
+		return $this->opn_current_row;
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 * 
+	 * @return int
+	 */
 	public function getInputType() {
 		return __CA_DATA_READER_INPUT_FILE__;
 	}
@@ -209,4 +222,3 @@ class BaseDelimitedDataReader extends BaseDataReader {
 	}
 	# -------------------------------------------------------
 }
-?>

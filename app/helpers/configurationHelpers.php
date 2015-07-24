@@ -40,10 +40,11 @@ require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 	/**
 	  * Returns a sorted list of XML profiles. Keys are display names and values are profile codes (filename without .xml extension).
 	  *
+	  * @param string $ps_install_dir_prefix optional prefix for install dir
 	  * @return array List of available profiles
 	  */
-	function caGetAvailableXMLProfiles() {
-		$va_files = caGetDirectoryContentsAsList('./profiles/xml', false);
+	function caGetAvailableXMLProfiles($ps_install_dir_prefix='.') {
+		$va_files = caGetDirectoryContentsAsList($ps_install_dir_prefix.'/profiles/xml', false);
 		$va_profiles = array();
 		
 		foreach($va_files as $vs_filepath) {
@@ -51,7 +52,7 @@ require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 				$va_tmp = explode('/', $vs_filepath);
 				$va_tmp2 = explode('.', array_pop($va_tmp));
 				$vs_file = array_shift($va_tmp2);
-				$va_profile_info = Installer::getProfileInfo("./profiles/xml", $vs_file);
+				$va_profile_info = Installer::getProfileInfo($ps_install_dir_prefix.'/profiles/xml', $vs_file);
 				if (!$va_profile_info['useForConfiguration']) { continue; }
 				$va_profiles[$va_profile_info['display']] = $vs_file; 
 			}
@@ -70,4 +71,3 @@ require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 		flush();
 	}
 	# ----------------------------------------------------------------
-?>

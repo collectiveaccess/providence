@@ -30,7 +30,7 @@
  	$o_result_context 	= $this->getVar('result_context');
 ?>
 <div class='setTools'>
-	<a href="#" id='searchSetToolsShow' onclick="$('.setTools').hide(); return caShowSearchSetTools();"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_SETS__); ?>Set Tools</a>
+	<a href="#" id='searchSetToolsShow' onclick="$('.setTools').hide(); return caShowSearchSetTools();"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_SETS__); print _t("Set Tools"); ?></a>
 </div><!-- end setTools -->
 
 <div id="searchSetTools">
@@ -69,8 +69,8 @@
 			print " ";
 			print caHTMLSelect('set_create_mode', 
 				array(
-					'from results' => _t('from_results'),
-					'from checked' => _t('from_checked')
+					_t('from results') => 'from_results',
+					_t('from checked') => 'from_checked'
 				), 
 				array('id' => 'caCreateSetFromResultsMode', 'class' => 'searchSetsSelect'),
 				array('value' => null, 'width' => '140px')

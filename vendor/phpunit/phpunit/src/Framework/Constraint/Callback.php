@@ -65,7 +65,8 @@ class PHPUnit_Framework_Constraint_Callback extends PHPUnit_Framework_Constraint
     {
         if (!is_callable($callback)) {
             throw PHPUnit_Util_InvalidArgumentHelper::factory(
-                1, 'callable'
+                1,
+                'callable'
             );
         }
 
@@ -94,23 +95,5 @@ class PHPUnit_Framework_Constraint_Callback extends PHPUnit_Framework_Constraint
     public function toString()
     {
         return 'is accepted by specified callback';
-    }
-
-    private function callbackToString($callback)
-    {
-        if (!is_array($callback)) {
-            return $callback;
-        }
-        if (empty($callback)) {
-            return "empty array";
-        }
-        if (!isset($callback[0]) || !isset($callback[1])) {
-            return "array without indexes 0 and 1 set";
-        }
-        if (is_object($callback[0])) {
-            $callback[0] = get_class($callback[0]);
-        }
-
-        return $callback[0] . '::' . $callback[1];
     }
 }
