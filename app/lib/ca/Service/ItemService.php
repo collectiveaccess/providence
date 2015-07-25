@@ -36,6 +36,9 @@
 
 require_once(__CA_LIB_DIR__."/ca/Service/BaseJSONService.php");
 require_once(__CA_MODELS_DIR__."/ca_lists.php");
+require_once(__CA_MODELS_DIR__."/ca_locales.php");
+require_once(__CA_APP_DIR__."/helpers/listHelpers.php");
+require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 
 class ItemService extends BaseJSONService {
 	# -------------------------------------------------------
@@ -928,6 +931,50 @@ class ItemService extends BaseJSONService {
 				}
 			}
 		}
+
+        // representations, actually only handled for objects here
+        if($va_post["remove_all_representations"]) {
+            if($this->getTableName() == "ca_objects") {
+                $t_instance->removeAllRepresentations();
+            }
+        }
+
+        if(is_array($va_post["add_representations"])) {
+            if($this->getTableName() == "ca_objects") {
+                //die("we have a representation and the object is in ca_objects.");
+                foreach($va_post["add_representations"] as $va_representation) {
+                    // Media path is mandatory
+                    if (!isset($va_representation["media_path"])) continue;
+                    // Only URL are supported for now
+                    if (!isURL($va_representation["media_path"])) continue;
+
+                    if (!($t_instance->addRepresentation(
+                        // media_path - the path to the media you want to add
+                        $va_representation["media_path"],
+                        // type_id - the item_id of the representation type, in the ca_list with list_code 'object_represention_types'
+                        isset($va_representation["type_id"]) ? $va_representation["type_id"] : caGetDefaultItemID('object_representation_types'),
+                        // locale_id - the locale_id of the locale of the representation
+                        isset($va_representation["locale"]) ? ca_locales::localeCodeToID($va_representation["locale"]) : ca_locales::getDefaultCataloguingLocaleID(),
+                        // status - the status code for the representation (as defined in item_value fields of items in the 'workflow_statuses' ca_list)
+                        caGetDefaultItemID('workflow_statuses'),
+                        // access - the access code for the representation (as defined in item_value fields of items in the 'access_statuses' ca_list)
+                        caGetDefaultItemID('access_statuses'),
+                        // is_primary - if set to true, representation is designated "primary." Primary representation are used in cases where only one representation is required (such as search results). If a primary representation is already attached to this item, then it will be changed to non-primary as only one representation can be primary at any given time. If no primary representations exist, then the new representation will always be marked primary no matter what the setting of this parameter (there must always be a primary representation, if representations are defined).
+                        (isset($va_representation["primary"]) && ($va_representation["primary"])) ? true : false,
+                        // values - array of attributes to attach to new representation ; not supported for now
+                        array(),
+                        /* options
+                         * original_filename (the name of the file being uploaded) ; rank (numeric rank used to order the representations when listed) ;
+                         * centerX (Horizontal position of image center used when cropping as a percentage expressed as a decimal between 0 and 1) ;
+                         * center Y (same for vertical position)
+                         */
+                        array()))
+                    ) {
+                        $vs_error = join("; ", $t_subject->getErrors());
+                    }
+                }
+            }
+        }
 
 		if($t_instance->numErrors()>0) {
 			foreach($t_instance->getErrors() as $vs_error) {
