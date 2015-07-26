@@ -939,18 +939,53 @@ class ItemService extends BaseJSONService {
             }
         }
 
+        if ($va_post["remove_representations"]) {
+            foreach($va_post["remove_representations"] as $va_representation_id) {
+                $t_instance->removeRepresentation($va_representation_id);
+            }
+        }
+
         if(is_array($va_post["add_representations"])) {
             if($this->getTableName() == "ca_objects") {
-                //die("we have a representation and the object is in ca_objects.");
-                foreach($va_post["add_representations"] as $va_representation) {
-                    // Media path is mandatory
-                    if (!isset($va_representation["media_path"])) continue;
-                    // Only URL are supported for now
-                    if (!isURL($va_representation["media_path"])) continue;
+                // Numbering the representations to allow temp file easier naming
+                $vn_representation_file = 1;
 
+                foreach($va_post["add_representations"] as $va_representation) {
+                    // One of media path or media content is mandatory
+                    if (!(isset($va_representation["media_path"]) || isset($va_representation["media_content"]))) continue;
+
+                    // If we have a submitted filename, add it to the options
+                    if ($va_representation["filename"]) {
+                        $va_options = array("original_filename" => $va_representation["filename"]);
+                    } else {
+                        $va_options = array();
+                    }
+
+                    if (isURL($va_representation["media_path"])) {
+                        // We have an URL
+                        $vs_media_path = $va_representation["media_path"];
+                    } elseif ($va_representation["media_content"]) {
+                        // We have a base64 media encoded
+                        $vs_temp_extension = pathinfo($va_representation["filename"], PATHINFO_EXTENSION);
+                        $vs_temp_path = caGetTempFileName("media".$vn_representation_file, $vs_temp_extension);
+                        $vs_temp_file_pointer = fopen($vs_temp_path, 'w');
+                        if (!fwrite($vs_temp_file_pointer, base64_decode($va_representation["media_content"]))) {
+                            $vs_error = join("; ", _t("unable to write media to temp file:").$vs_temp_path);
+                        }
+                        fclose($vs_temp_file_pointer);
+                        $vs_media_path = $vs_temp_path;
+
+                        // Avoid treating empty temp files
+                        if (!filesize($vs_temp_path)) {
+                            $vs_error = join("; ", _t("empty temp file:").$vs_temp_path);
+                            continue;
+                        }
+                    }
+
+                    // Inserting the representation
                     if (!($t_instance->addRepresentation(
                         // media_path - the path to the media you want to add
-                        $va_representation["media_path"],
+                        $vs_media_path,
                         // type_id - the item_id of the representation type, in the ca_list with list_code 'object_represention_types'
                         isset($va_representation["type_id"]) ? $va_representation["type_id"] : caGetDefaultItemID('object_representation_types'),
                         // locale_id - the locale_id of the locale of the representation
@@ -961,17 +996,20 @@ class ItemService extends BaseJSONService {
                         caGetDefaultItemID('access_statuses'),
                         // is_primary - if set to true, representation is designated "primary." Primary representation are used in cases where only one representation is required (such as search results). If a primary representation is already attached to this item, then it will be changed to non-primary as only one representation can be primary at any given time. If no primary representations exist, then the new representation will always be marked primary no matter what the setting of this parameter (there must always be a primary representation, if representations are defined).
                         (isset($va_representation["primary"]) && ($va_representation["primary"])) ? true : false,
-                        // values - array of attributes to attach to new representation ; not supported for now
+                        // values - array of attributes to attach to new representation ; not handled here for now
                         array(),
                         /* options
                          * original_filename (the name of the file being uploaded) ; rank (numeric rank used to order the representations when listed) ;
                          * centerX (Horizontal position of image center used when cropping as a percentage expressed as a decimal between 0 and 1) ;
                          * center Y (same for vertical position)
                          */
-                        array()))
+                        $va_options
+                        ))
                     ) {
                         $vs_error = join("; ", $t_subject->getErrors());
                     }
+                        // file numbering for temp file easier naming
+                    $vn_representation_file++;
                 }
             }
         }
