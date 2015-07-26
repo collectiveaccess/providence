@@ -49,12 +49,19 @@ class AlhalqaSearchService extends SearchJSONService {
 		$va_return = parent::search($pa_bundles);
 		if(($this->getTableName() == 'ca_objects') && is_array($va_return['results']) && sizeof($va_return['results'])>0) {
 
-			foreach($va_return['results'] as &$va_result) {
+			$pb_only_with_likes = (bool) $this->opo_request->getParameter('likesOnly', pInteger);
+
+			foreach($va_return['results'] as $vn_k => &$va_result) {
 				$t_object = new ca_objects($va_result['object_id']);
 				if(!$t_object->getPrimaryKey()) { continue; }
 
 				// include number of 'likes' (comments)
 				$va_result['likes'] = (int) $t_object->getNumComments(null);
+
+				if($pb_only_with_likes && !$va_result['likes']) {
+					unset($va_return['results'][$vn_k]);
+					continue;
+				}
 
 				// include urls for reference img
 				$va_objects = $t_object->getRelatedItems('ca_objects', array('restrictToRelationshipTypes' => 'reference'));
@@ -66,6 +73,12 @@ class AlhalqaSearchService extends SearchJSONService {
 				if(!is_array($va_rep) || !is_array($va_rep['urls'])) { continue; }
 
 				$va_result['reference_image_urls'] = $va_rep['urls'];
+			}
+
+			if($this->opo_request->getParameter('sort', pString) == 'likes') {
+				usort($va_return['results'], function($a, $b) {
+					return $b['likes'] - $a['likes'];
+				});
 			}
 		}
 
