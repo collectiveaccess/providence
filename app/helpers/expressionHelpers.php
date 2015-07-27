@@ -110,6 +110,11 @@ function caCalulateAgeInDays() {
 	$va_args = func_get_args();
 	$o_diff = caGetDateTimeDiff($va_args);
 	if(!($o_diff instanceof DateInterval)) { return false; }
+	if(!($vn_potential_return = $o_diff->days)) { // retry with 'now' added
+		array_push($va_args, 'now');
+		$o_diff = caGetDateTimeDiff($va_args);
+		if(!($o_diff instanceof DateInterval)) { return false; }
+	}
 	return $o_diff->days;
 }
 # ---------------------------------------
