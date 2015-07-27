@@ -30,6 +30,8 @@
  * ----------------------------------------------------------------------
  */
 
+require_once(__CA_APP_DIR__.'/helpers/expressionHelpers.php');
+
 define("EEP_TOKEN_OPEN_PAREN", 0);
 define("EEP_TOKEN_CLOSE_PAREN", 1);
 define("EEP_TOKEN_STRING_LITERAL", 2);
@@ -81,7 +83,12 @@ class ExpressionParser {
             'future'		=> 'caDateEndsInFuture',
             'wc'			=> 'str_word_count',
             'length'		=> 'strlen',
-            'date'			=> 'caDateToHistoricTimestamp'
+            'date'			=> 'caDateToHistoricTimestamp',
+			'sizeof'		=> 'caGetFunctionParamCount',
+			'age'			=> 'caCalculateAgeInYears',
+			'age_years'		=> 'caCalculateAgeInYears',
+			'age_days'		=> 'caCalculateAgeInDays',
+			'avg_days'		=> 'caCalculateDateRangeAvgInDays'
     );
     
     private $opa_tokens;
@@ -231,7 +238,7 @@ class ExpressionParser {
         	$vn_i++;
         }
         if (strlen($vs_buf) > 0) { array_push($this->opa_tokens, $vs_buf); }
-        
+
 		return sizeof($this->opa_tokens);
 	}
 	# -------------------------------------------------------------------
@@ -248,9 +255,9 @@ class ExpressionParser {
 			// no more tokens
 			return false;
 		}
-		
-		$vs_token = trim(array_shift($this->opa_tokens));
-		$vs_token_lc = mb_strtolower($vs_token, 'UTF-8');
+
+		$vs_token = array_shift($this->opa_tokens);
+		$vs_token_lc = trim(mb_strtolower($vs_token, 'UTF-8'));
 		
 		// function
 		if (isset($this->opa_functions[$vs_token_lc])) {
@@ -548,7 +555,7 @@ class ExpressionParser {
 			}
 		}
 		
-		if(sizeof($va_acc) > 0) { 
+		if(sizeof($va_acc) > 0) {
 			return $this->processTerm($va_acc, $va_ops); 
 		}
 		return false;
@@ -564,7 +571,7 @@ class ExpressionParser {
 		while(sizeof($pa_operators)) {
 			$va_op = array_pop($pa_operators);
 			$va_operand2 = array_pop($pa_operands); 
-			$va_operand1 = array_pop($pa_operands); 
+			$va_operand1 = array_pop($pa_operands);
 		
 			if (!is_array($va_operand1)) { $va_operand1 = array($va_operand1); }
 			if (!is_array($va_operand2)) { $va_operand2 = array($va_operand2); }
@@ -581,6 +588,7 @@ class ExpressionParser {
 									$vm_res1 += (float)$vm_operand1;
 								}
 							}
+
 							$vm_res2 = null;
 							foreach($va_operand2 as $vm_operand2) {
 								if (!is_numeric($vm_operand2)) {
