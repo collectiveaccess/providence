@@ -50,13 +50,13 @@ class ExpressionHelpersTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(41, caCalculateAgeInYears('1912/06/23 - 1954/06/07'));
 
 		// same thing in days
-		$this->assertEquals(15324, caCalulateAgeInDays('23 June 1912', '7 June 1954'));
-		$this->assertEquals(15324, caCalulateAgeInDays('7 June 1954', '23 June 1912'));
-		$this->assertEquals(15324, caCalulateAgeInDays('7 June 1954', '9 May 1945', '23 June 1912'));
-		$this->assertEquals(15324, caCalulateAgeInDays('1912/06/23 - 1954/06/07'));
+		$this->assertEquals(15324, caCalculateAgeInDays('23 June 1912', '7 June 1954'));
+		$this->assertEquals(15324, caCalculateAgeInDays('7 June 1954', '23 June 1912'));
+		$this->assertEquals(15324, caCalculateAgeInDays('7 June 1954', '9 May 1945', '23 June 1912'));
+		$this->assertEquals(15324, caCalculateAgeInDays('1912/06/23 - 1954/06/07'));
 
 		// as of 2015/7/27, Alan Turings birthday was 37654 days ago :-)
-		$this->assertGreaterThan(37653, caCalulateAgeInDays('1912/06/23'));
+		$this->assertGreaterThan(37653, caCalculateAgeInDays('1912/06/23'));
 	}
 	# -------------------------------------------------------
 	public function testAvgCalculation() {

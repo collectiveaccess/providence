@@ -65,5 +65,34 @@ class ExpressionParserTest extends PHPUnit_Framework_TestCase {
 
 	public function testFunctions() {
 		$this->assertEquals(4, ExpressionParser::evaluate('sizeof(5,3,4,6)'));
+
+		// Alan Turing, pre-Unix time
+		$this->assertEquals(41, ExpressionParser::evaluate('age("23 June 1912", "7 June 1954")'));
+
+		// should still work the other way around
+		$this->assertEquals(41, ExpressionParser::evaluate('age("7 June 1954", "23 June 1912")'));
+
+		// should still work with another dummy date in between
+		$this->assertEquals(41, ExpressionParser::evaluate('age("7 June 1954", "9 May 1945", "23 June 1912")'));
+
+		// Alan Turing, as single date range
+		$this->assertEquals(41, ExpressionParser::evaluate('age("1912/06/23 - 1954/06/07")'));
+
+		// Alias
+		$this->assertEquals(41, ExpressionParser::evaluate('age_years("1912/06/23 - 1954/06/07")'));
+
+		// same thing in days
+		$this->assertEquals(15324, ExpressionParser::evaluate('age_days("23 June 1912", "7 June 1954")'));
+		$this->assertEquals(15324, ExpressionParser::evaluate('age_days("7 June 1954", "23 June 1912")'));
+		$this->assertEquals(15324, ExpressionParser::evaluate('age_days("7 June 1954", "9 May 1945", "23 June 1912")'));
+		$this->assertEquals(15324, ExpressionParser::evaluate('age_days("1912/06/23 - 1954/06/07")'));
+
+		// as of 2015/7/27, Alan Turings birthday was 37654 days ago :-)
+		$this->assertGreaterThan(37653, ExpressionParser::evaluate('age_days("1912/06/23")'));
+
+		// avg days
+		$this->assertEquals(13229, ExpressionParser::evaluate('avg_days("1912/06/23 - 1954/06/07", "1985/01/28 - 2015/07/24")'));
+		$this->assertEquals(0, ExpressionParser::evaluate('avg_days("1945/01/02", "1985/01/28"'));
+		$this->assertEquals(1, ExpressionParser::evaluate('avg_days("1945/01/02 - 1945/01/03", "1985/01/28 - 1985/01/29")'));
 	}
 }

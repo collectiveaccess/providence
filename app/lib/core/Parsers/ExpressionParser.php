@@ -86,9 +86,9 @@ class ExpressionParser {
             'date'			=> 'caDateToHistoricTimestamp',
 			'sizeof'		=> 'caGetFunctionParamCount',
 			'age'			=> 'caCalculateAgeInYears',
-			'ageYears'		=> 'caCalculateAgeInYears',
-			'ageDays'		=> 'caCalculateAgeInDays',
-			'avgDays'		=> 'caCalculateDateRangeAvgInDays'
+			'age_years'		=> 'caCalculateAgeInYears',
+			'age_days'		=> 'caCalculateAgeInDays',
+			'avg_days'		=> 'caCalculateDateRangeAvgInDays'
     );
     
     private $opa_tokens;

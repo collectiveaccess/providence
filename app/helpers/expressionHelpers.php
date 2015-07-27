@@ -106,7 +106,7 @@ function caCalculateAgeInYears() {
  * Age calculation (in days) with arbitrary number of params. @see caGetDateTimeDiff
  * @return int
  */
-function caCalulateAgeInDays() {
+function caCalculateAgeInDays() {
 	$va_args = func_get_args();
 	$o_diff = caGetDateTimeDiff($va_args);
 	if(!($o_diff instanceof DateInterval)) { return false; }
