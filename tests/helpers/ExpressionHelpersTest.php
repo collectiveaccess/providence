@@ -59,6 +59,8 @@ class ExpressionHelpersTest extends PHPUnit_Framework_TestCase {
 	# -------------------------------------------------------
 	public function testAvgCalculation() {
 		$this->assertEquals(13229, caCalculateDateRangeAvgInDays('1912/06/23 - 1954/06/07', '1985/01/28 - 2015/07/24'));
+		$this->assertEquals(0, caCalculateDateRangeAvgInDays('1945/01/02', '1985/01/28'));
+		$this->assertEquals(1, caCalculateDateRangeAvgInDays('1945/01/02 - 1945/01/03', '1985/01/28 - 1985/01/29'));
 	}
 	# -------------------------------------------------------
 }
