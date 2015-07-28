@@ -34,6 +34,15 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
 
 class ExpressionParserTest extends PHPUnit_Framework_TestCase {
 
+	public function testParens() {
+		$this->assertEquals(13, ExpressionParser::evaluate('5 + (4 * 2)'));
+		// doesn't work :-(
+		//$this->assertEquals(13, ExpressionParser::evaluate('5 + 4 * 2'));
+		//$this->assertEquals(14, ExpressionParser::evaluate('5 * 2 + 4'));
+		$this->assertEquals(18, ExpressionParser::evaluate('(5 + 4) * 2'));
+		$this->assertEquals(18, ExpressionParser::evaluate('(5 + 4) * (1 + 1)'));
+	}
+
 	public function testRegex() {
 		$this->assertTrue(ExpressionParser::evaluate('"Software is great" =~ /Soft/'));
 		$this->assertFalse(ExpressionParser::evaluate('"Software is great" =~ /soft/'));
