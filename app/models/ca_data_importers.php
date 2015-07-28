@@ -1445,8 +1445,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//
 			// Get data for current row
 			//
-			
-			$va_row = array_merge($o_reader->getRow(), $va_environment);
+			$va_row = $o_reader->getRow();
+			if(is_array($va_environment) && is_array($va_row)) {
+				$va_row = $va_row + $va_environment;
+			}
+
 			//
 			// Apply rules
 			//

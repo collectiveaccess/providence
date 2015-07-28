@@ -179,7 +179,7 @@ class BaseDelimitedDataReader extends BaseDataReader {
 	 */
 	public function getRow($pa_options=null) {
 		if (is_array($va_row = $this->opo_parser->getRow())) {
-			return $va_row;
+			return array_combine(range(1, count($va_row)), array_values($va_row));
 		}
 		
 		return null;	
