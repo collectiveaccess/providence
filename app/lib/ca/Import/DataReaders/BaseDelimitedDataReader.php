@@ -184,8 +184,8 @@ class BaseDelimitedDataReader extends BaseDataReader {
 			unset($va_row[0]);
 			return $va_row;
 		}
-		
-		return null;	
+
+		return null;
 	}
 	# -------------------------------------------------------
 	/**
