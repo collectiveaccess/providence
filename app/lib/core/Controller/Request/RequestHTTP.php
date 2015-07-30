@@ -727,7 +727,7 @@ class RequestHTTP extends Request {
 				$this->opo_response->setRedirect($pa_options['redirect']);
 				$this->opo_response->sendResponse();
 				exit;
-		}
+			}
 
 			if (!$pa_options["dont_redirect_to_welcome"]) {
 				// redirect to "welcome" page
