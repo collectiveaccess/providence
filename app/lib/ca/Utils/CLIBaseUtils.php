@@ -209,6 +209,10 @@
 			if (!isset(self::$ansiForegroundColors[$ps_color])) {
 				return $ps_string;
 			}
+            // Disabling color printing under Windows
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                return $ps_string;
+            }
 			return "\033[".self::$ansiForegroundColors[$ps_color]."m".$ps_string."\033[0m";
 		}
 		# -------------------------------------------------------
@@ -223,7 +227,10 @@
 			if (!isset(self::$background[$color])) {
 				return $ps_string;
 			}
-
+            // Disabling color printing under Windows
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                return $ps_string;
+            }
 			return "\033[".self::$ansiBackgroundColors[$ps_color].'m'.$ps_string."\033[0m";
 		}
 		# -------------------------------------------------------
