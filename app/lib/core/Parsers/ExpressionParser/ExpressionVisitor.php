@@ -119,7 +119,7 @@ class ExpressionVisitor implements Visitor\Visit {
 				$f_function = $this->getFunction($vs_name);
 				$va_args = array();
 
-				foreach ($va_children as $o_child) {
+				foreach($va_children as $o_child) {
 					$o_child->accept($this, $_, $f_eldnah);
 					$va_args[] = $_();
 					unset($_);
@@ -130,6 +130,53 @@ class ExpressionVisitor implements Visitor\Visit {
 				};
 
 				break;
+
+			case '#in_op':
+				$vs_needle = array_shift($va_children)->accept($this, $in, $f_eldnah);
+				$va_haystack = array();
+
+				$in = $f_handle;
+
+				$o_op = array_shift($va_children);
+				if($o_op->getValueToken() !== 'in_op') {
+					throw new Exception('invalid syntax');
+				}
+
+				foreach($va_children as $o_child) {
+					$o_child->accept($this, $in, $f_eldnah);
+					$va_haystack[] = $in();
+					unset($in);
+				}
+
+				$f_acc = function () use ($vs_needle, $va_haystack, $f_acc) {
+					return $f_acc(in_array($vs_needle, $va_haystack));
+				};
+
+				break;
+
+			case '#notin_op':
+				$vs_needle = array_shift($va_children)->accept($this, $in, $f_eldnah);
+				$va_haystack = array();
+
+				$in = $f_handle;
+
+				$o_op = array_shift($va_children);
+				if($o_op->getValueToken() !== 'notin_op') {
+					throw new Exception('invalid syntax');
+				}
+
+				foreach($va_children as $o_child) {
+					$o_child->accept($this, $in, $f_eldnah);
+					$va_haystack[] = $in();
+					unset($in);
+				}
+
+				$f_acc = function () use ($vs_needle, $va_haystack, $f_acc) {
+					return $f_acc(!in_array($vs_needle, $va_haystack));
+				};
+
+				break;
+
 
 			case '#stradd':
 				$va_children[0]->accept($this, $a, $f_eldnah);
@@ -259,9 +306,7 @@ class ExpressionVisitor implements Visitor\Visit {
 				break;
 		}
 
-		if ($po_element->getParent() === null) {
-			return $f_acc();
-		}
+		return $f_acc();
 
 	}
 

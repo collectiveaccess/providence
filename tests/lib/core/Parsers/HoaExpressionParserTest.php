@@ -62,7 +62,15 @@ class HoaExpressionParserTest extends PHPUnit_Framework_TestCase {
 
 	public function testVisitor() {
 
+		$this->assertEquals(true, $this->parseAndVisitExpression('"Seth" IN ("Julia", "Allison", "Sophie", "Maria", "Angie", "Seth")'));
+		$this->assertEquals(false, $this->parseAndVisitExpression('"Joe" IN ("Julia", "Allison", "Sophie", "Maria", "Angie", "Seth")'));
+
+		$this->assertEquals(false, $this->parseAndVisitExpression('"Seth" NOT IN ("Julia", "Allison", "Sophie", "Maria", "Angie", "Seth")'));
+		$this->assertEquals(true, $this->parseAndVisitExpression('"Joe" NOT IN ("Julia", "Allison", "Sophie", "Maria", "Angie", "Seth")'));
+
 		$this->assertEquals(3.1725, $this->parseAndVisitExpression('avg(abs(-1.345), max(4,5))'));
+		$this->assertEquals(4, $this->parseAndVisitExpression('length("test")'));
+		$this->assertEquals(1, $this->parseAndVisitExpression('length(4)'));
 
 		$this->assertEquals('Stefan parses', $this->parseAndVisitExpression('"Stefan" + " parses"'));
 
@@ -99,7 +107,7 @@ class HoaExpressionParserTest extends PHPUnit_Framework_TestCase {
 		// this throws an exception if it fails, so no assertions necessary
 		$o_ast = $o_compiler->parse($ps_expr);
 
-		$o_dumper = new Hoa\Compiler\Visitor\Dump();
+		//$o_dumper = new Hoa\Compiler\Visitor\Dump();
 		//print $o_dumper->visit($o_ast);
 
 		// use our visitor
