@@ -36,6 +36,7 @@
 
  	require_once(__CA_LIB_DIR__.'/core/Utils/CLIProgressBar.php');
  	require_once(__CA_APP_DIR__.'/helpers/CLIHelpers.php');
+    require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
  	require_once(__CA_APP_DIR__.'/helpers/mediaPluginHelpers.php');
 	require_once(__CA_LIB_DIR__."/core/Zend/Console/Getopt.php");
 	require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
@@ -209,6 +210,10 @@
 			if (!isset(self::$ansiForegroundColors[$ps_color])) {
 				return $ps_string;
 			}
+            // Disabling color printing under Windows
+            if (caGetOSFamily() == OS_WIN32) {
+                return $ps_string;
+            }
 			return "\033[".self::$ansiForegroundColors[$ps_color]."m".$ps_string."\033[0m";
 		}
 		# -------------------------------------------------------
@@ -223,7 +228,10 @@
 			if (!isset(self::$background[$color])) {
 				return $ps_string;
 			}
-
+            // Disabling color printing under Windows
+            if (caGetOSFamily() == OS_WIN32) {
+                return $ps_string;
+            }
 			return "\033[".self::$ansiBackgroundColors[$ps_color].'m'.$ps_string."\033[0m";
 		}
 		# -------------------------------------------------------
