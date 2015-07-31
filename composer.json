@@ -6,6 +6,7 @@
         "elasticsearch/elasticsearch": "~1.0",
         "knplabs/github-api": "~1.2",
         "ezyang/htmlpurifier": "~4.6",
-        "easyrdf/easyrdf": "0.9.*"
+        "easyrdf/easyrdf": "0.9.*",
+        "hoa/math": "~0.0"
     }
 }
