@@ -36,7 +36,6 @@ class HoaExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->parseExpression('^ca_objects.preferred_labels = "foo"');
 		$this->parseExpression('^5 = "foo"');
 
-		return;
 		$this->parseExpression('"Joe" NOT IN ("Julia", "Allison", "Sophie", "Maria", "Angie", "Seth")');
 
 		$this->parseExpression('"Seth" IN ("Julia", "Allison", "Sophie", "Maria", "Angie", "Seth")');
@@ -61,7 +60,7 @@ class HoaExpressionParserTest extends PHPUnit_Framework_TestCase {
 
 	private function parseExpression($ps_expr) {
 		$o_compiler = Hoa\Compiler\Llk::load(
-			new Hoa\File\Read(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser/Expression.pp')
+			new Hoa\File\Read(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser/ExpressionGrammar.pp')
 		);
 
 		// this throws an exception if it fails, so no assertions necessary
