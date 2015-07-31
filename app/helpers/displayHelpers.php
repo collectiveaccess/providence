@@ -2253,7 +2253,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		$o_ifnotdefs = $o_doc("ifnotdef");			// if not defined
 		$o_mores = $o_doc("more");					// more tags - content suppressed if there are no defined values following the tag pair
 		$o_betweens = $o_doc("between");			// between tags - content suppressed if there are not defined values on both sides of the tag pair
-		
+		$o_expressions = $o_doc("expression");		// expression tags - content is run through the ExpressionParser and output as-is
+
 		$va_if = array();
 		foreach($o_ifs as $o_if) {
 			if (!$o_if) { continue; }
@@ -2297,6 +2298,15 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 			$vs_content = $o_between->getInnerText();
 			
 			$va_betweens[] = array('directive' => $vs_html, 'content' => $vs_content);
+		}
+
+		$va_expressions = array();
+		foreach($o_expressions as $o_expression) {
+			if (!$o_expression) { continue; }
+			$vs_html = str_replace("<~root~>", "", str_replace("</~root~>", "", $o_expression->html()));
+			$vs_content = $o_expression->getInnerText();
+
+			$va_expressions[] = array('directive' => $vs_html, 'content' => $vs_content);
 		}
 		
 		$va_resolve_links_using_row_ids = array();
@@ -2451,7 +2461,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 			}
 			
 			$va_proc_templates[$vn_i] = $vs_template;
-			foreach($va_units as $k=> $va_unit) {
+			foreach($va_units as $k => $va_unit) {
 				if (!$va_unit['content']) { continue; }
 				$va_relative_to_tmp = $va_unit['relativeTo'] ? explode(".", $va_unit['relativeTo']) : array($ps_tablename);
 				if (!($t_rel_instance = $o_dm->getInstanceByTableName($va_relative_to_tmp[0], true))) { continue; }
@@ -2558,6 +2568,15 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 			}
 			
 			if (!strlen(trim($va_proc_templates[$vn_i]))) { $va_proc_templates[$vn_i] = null; }
+
+			// process expressions that *dont* have tags, because they either only had <unit> tag parameters (processed) above or only used scalar values in the first place
+			// expressions with tags are processed below, after $va_tags_list and $va_tag_val_list have been assembled
+			$o_parsed_template_expr = str_get_dom($va_proc_templates[$vn_i]);
+			$va_exp_tags_tmp = $o_parsed_template_expr('expression');
+			foreach($va_exp_tags_tmp as $vo_exp_tag_tmp) {
+				if(sizeof(caGetTemplateTags($vs_text = $vo_exp_tag_tmp->getInnerText()))) { continue; }
+				$va_proc_templates[$vn_i] = str_ireplace($vo_exp_tag_tmp->html(), ExpressionParser::evaluate($vs_text), $va_proc_templates[$vn_i]);
+			}
 			
 			if(!sizeof($va_tags)) { $vn_i++; continue; } 	// if there are no tags in the template then we don't need to process further
 		
@@ -2955,7 +2974,22 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 						$vs_template = str_replace($va_def_con['directive'], '', $vs_template);
 					}
 				}
-				
+
+				// Process <expression>
+				foreach($va_expressions as $va_exp) {
+					$va_expr_tags = $va_expression_tags = caGetTemplateTags($va_exp['content']);
+					$va_expr_vars = array();
+
+					foreach($va_expr_tags as $vs_expr_tag) {
+						if(!isset($va_expr_vars[$vs_expr_tag])) {
+							$va_expr_vars[$vs_expr_tag] = isset($va_tags[$vs_expr_tag]) ? $va_tags[$vs_expr_tag] : null;
+						}
+					}
+
+					$vs_expr_eval = ExpressionParser::evaluate($va_exp['content'], $va_expr_vars);
+					$vs_template = str_replace($va_exp['directive'], $vs_expr_eval, $vs_template);
+				}
+
 
 				// Process <more> tags
 				foreach($va_mores as $vn_more_index => $va_more) {
@@ -3051,7 +3085,12 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		}
 		
 		// Transform links
-		$va_proc_templates = caCreateLinksFromText($va_proc_templates, $ps_resolve_links_using, ($ps_resolve_links_using != $ps_tablename) ? $va_resolve_links_using_row_ids : $pa_row_ids, null, caGetOption('linkTarget', $pa_options, null), $pa_options);
+		$va_proc_templates = caCreateLinksFromText(
+			$va_proc_templates, $ps_resolve_links_using,
+			($ps_resolve_links_using != $ps_tablename) ? $va_resolve_links_using_row_ids : $pa_row_ids,
+			null, caGetOption('linkTarget', $pa_options, null),
+			array_merge(array('addRelParameter' => true), $pa_options)
+		);
 		
 		// Kill any lingering tags (just in case)
 		foreach($va_proc_templates as $vn_i => $vs_proc_template) {

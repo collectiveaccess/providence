@@ -51,10 +51,6 @@ class RelatedGetTest extends BaseTestWithData {
 		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
 		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 		 */
-		/**
-		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
-		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
-		 */
 		$vn_object_id = $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
@@ -107,7 +103,7 @@ class RelatedGetTest extends BaseTestWithData {
 		$vn_entity_id = $this->addTestRecord('ca_entities', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'ind',
-				'idno' => 'hjs',
+				'idno' => 'bs',
 			),
 			'preferred_labels' => array(
 				array(

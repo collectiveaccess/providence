@@ -713,9 +713,9 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 						return false;
 					}
 					//$w->evaluateImage(imagick::COMPOSITE_MINUS, $vn_opacity, imagick::CHANNEL_OPACITY) ; [seems broken with latest imagick circa March 2010?]
-					if(method_exists($w, "setImageOpacity")){ // added in ImageMagick 6.3.1
-						$w->setImageOpacity($vn_opacity_setting);
-					}
+					//if(method_exists($w, "setImageOpacity")){ // added in ImageMagick 6.3.1
+					//	$w->setImageOpacity($vn_opacity_setting); [ Imagick::setImageOpacity() appears to be broken with recent versions as of July 2015 ]
+					//}
 					$d->composite(imagick::COMPOSITE_DISSOLVE,$vn_watermark_x,$vn_watermark_y,$vn_watermark_width,$vn_watermark_height, $w);
 					$this->handle->drawImage($d);
 					break;
