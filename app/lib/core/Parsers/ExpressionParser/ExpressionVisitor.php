@@ -32,9 +32,13 @@
 
 require_once(__CA_APP_DIR__.'/helpers/expressionHelpers.php');
 
-use Hoa\Math;
 use Hoa\Visitor;
 
+/**
+ * Class ExpressionVisitor
+ *
+ * Most of the artithmetic function parsing code was taken from Hoa\Math\Visitor\Arithmetic
+ */
 class ExpressionVisitor implements Visitor\Visit {
 
 	protected $opa_functions = array();
@@ -91,12 +95,187 @@ class ExpressionVisitor implements Visitor\Visit {
 	 * Evaluate given AST as CollectiveAccess expression
 	 *
 	 * @param Visitor\Element $po_element
-	 * @param null $o_handle
-	 * @param null $o_eldnah
+	 * @param Hoa\Core\Consistency\Xcallable $f_handle
+	 * @param Hoa\Core\Consistency\Xcallable $f_eldnah
 	 * @return mixed
 	 */
-	public function visit(Visitor\Element $po_element, &$o_handle = null, $o_eldnah  = null) {
+	public function visit(Visitor\Element $po_element, &$f_handle = null, $f_eldnah  = null) {
+		$vs_type = $po_element->getId();
+		$va_children = $po_element->getChildren();
 
+		// if no handle passed, use identity
+		if ($f_handle === null) {
+			$f_handle = function ($x) {
+				return $x;
+			};
+		}
+
+		$f_acc = &$f_handle;
+
+		switch ($vs_type) {
+
+			case '#function':
+				$vs_name = array_shift($va_children)->accept($this, $_, $f_eldnah);
+				$f_function = $this->getFunction($vs_name);
+				$va_args = array();
+
+				foreach ($va_children as $o_child) {
+					$o_child->accept($this, $_, $f_eldnah);
+					$va_args[] = $_();
+					unset($_);
+				}
+
+				$f_acc = function () use ($f_function, $va_args, $f_acc) {
+					return $f_acc($f_function->distributeArguments($va_args));
+				};
+
+				break;
+
+			case '#stradd':
+				$va_children[0]->accept($this, $a, $f_eldnah);
+
+				$f_acc = function ($b) use ($a, $f_acc) {
+					return $f_acc($a() . $b);
+				};
+
+				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				break;
+
+			case '#negative':
+				$va_children[0]->accept($this, $a, $f_eldnah);
+
+				$f_acc = function () use ($a, $f_acc) {
+					return $f_acc(-$a());
+				};
+
+				break;
+
+			case '#addition':
+				$va_children[0]->accept($this, $a, $f_eldnah);
+
+				$f_acc = function ($b) use ($a, $f_acc) {
+					return $f_acc($a() + $b);
+				};
+
+				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+
+				break;
+
+			case '#substraction':
+				$va_children[0]->accept($this, $a, $f_eldnah);
+
+				$f_acc = function ($b) use ($a, $f_acc) {
+					return $f_acc($a()) - $b;
+				};
+
+				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+
+				break;
+
+			case '#multiplication':
+				$va_children[0]->accept($this, $a, $f_eldnah);
+
+				$f_acc = function ($b) use ($a, $f_acc) {
+					return $f_acc($a() * $b);
+				};
+
+				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+
+				break;
+
+			case '#division':
+				$va_children[0]->accept($this, $a, $f_eldnah);
+				$parent = $po_element->getParent();
+
+				if (null  === $parent ||
+					$type === $parent->getId()) {
+					$f_acc = function ($b) use ($a, $f_acc) {
+						if (0 === $b) {
+							throw new \RuntimeException(
+								'Division by zero is not possible.'
+							);
+						}
+
+						return $f_acc($a()) / $b;
+					};
+				} else {
+					if ('#fakegroup' !== $parent->getId()) {
+						$classname = get_class($po_element);
+						$group     = new $classname(
+							'#fakegroup',
+							null,
+							[$po_element],
+							$parent
+						);
+						$po_element->setParent($group);
+
+						$this->visit($group, $f_acc, $f_eldnah);
+
+						break;
+					} else {
+						$f_acc = function ($b) use ($a, $f_acc) {
+							if (0 === $b) {
+								throw new \RuntimeException(
+									'Division by zero is not possible.'
+								);
+							}
+
+							return $f_acc($a() / $b);
+						};
+					}
+				}
+
+				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+
+				break;
+
+			case '#fakegroup':
+			case '#group':
+				$va_children[0]->accept($this, $a, $f_eldnah);
+
+				$f_acc = function () use ($a, $f_acc) {
+					return $f_acc($a());
+				};
+
+				break;
+
+			case 'token':
+				$value = $po_element->getValueValue();
+				$token = $po_element->getValueToken();
+				$out = null;
+
+				if ($token === 'id') {
+					return $value;
+				} elseif($token === 'string') {
+					$out = preg_replace('/(^"|"$)/', '', $value);
+				} else {
+					$out = (float) $value;
+				}
+
+				$f_acc = function () use ($out, $f_acc) {
+					return $f_acc($out);
+				};
+
+				break;
+		}
+
+		if ($po_element->getParent() === null) {
+			return $f_acc();
+		}
+
+	}
+
+	/**
+	 * Get callable function by name
+	 * @param string $ps_name
+	 * @return Hoa\Core\Consistency\Xcallable
+	 * @throws Exception
+	 */
+	public function getFunction($ps_name) {
+		if(!isset($this->opa_functions[$ps_name])) {
+			throw new Exception('Invalid function name');
+		}
+		return $this->opa_functions[$ps_name];
 	}
 
 }

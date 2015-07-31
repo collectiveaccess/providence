@@ -30,6 +30,8 @@
  * ----------------------------------------------------------------------
  */
 
+require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser/ExpressionVisitor.php');
+
 class HoaExpressionParserTest extends PHPUnit_Framework_TestCase {
 
 	public function testParseExpressions() {
@@ -58,7 +60,38 @@ class HoaExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->parseExpression('1 ÷ 2 ÷ 3 + 4 * (5 * 2 - 6) * 3.14 ÷ avg(7, 8, 9)');
 	}
 
+	public function testVisitor() {
+
+		$this->assertEquals(3.1725, $this->parseAndVisitExpression('avg(abs(-1.345), max(4,5))'));
+
+		$this->assertEquals('Stefan parses', $this->parseAndVisitExpression('"Stefan" + " parses"'));
+
+		$this->assertEquals(11, $this->parseAndVisitExpression('6 + 5'));
+		$this->assertEquals(15, $this->parseAndVisitExpression('6 + 5 + 4'));
+		$this->assertEquals(1, $this->parseAndVisitExpression('6 - 5'));
+		$this->assertEquals(30, $this->parseAndVisitExpression('6 * 5'));
+		$this->assertEquals(2, $this->parseAndVisitExpression('4 ÷ 2'));
+
+		$this->assertEquals(49.5, $this->parseAndVisitExpression('1 ÷ 2 ÷ 3 + 4 * (5 * 2 - 6) * 3'));
+
+		$this->assertEquals(13, $this->parseAndVisitExpression('5 + 4 * 2'));
+		$this->assertEquals(14, $this->parseAndVisitExpression('5 * 2 + 4'));
+	}
+
 	private function parseExpression($ps_expr) {
+		$o_compiler = Hoa\Compiler\Llk::load(
+			new Hoa\File\Read(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser/ExpressionGrammar.pp')
+		);
+
+		// this throws an exception if it fails, so no assertions necessary
+		$o_compiler->parse($ps_expr);
+
+		// just dump the syntax tree in easy-to-read-format
+		//$o_dumper = new Hoa\Compiler\Visitor\Dump();
+		//print $o_dumper->visit($o_ast);
+	}
+
+	private function parseAndVisitExpression($ps_expr) {
 		$o_compiler = Hoa\Compiler\Llk::load(
 			new Hoa\File\Read(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser/ExpressionGrammar.pp')
 		);
@@ -66,9 +99,12 @@ class HoaExpressionParserTest extends PHPUnit_Framework_TestCase {
 		// this throws an exception if it fails, so no assertions necessary
 		$o_ast = $o_compiler->parse($ps_expr);
 
-		// just dump the syntax tree
-		//$o_dumper = new Hoa\Compiler\Visitor\Dump();
+		$o_dumper = new Hoa\Compiler\Visitor\Dump();
 		//print $o_dumper->visit($o_ast);
+
+		// use our visitor
+		$o_expr = new ExpressionVisitor();
+		return $o_expr->visit($o_ast);
 	}
 
 }
