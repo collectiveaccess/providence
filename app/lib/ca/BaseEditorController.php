@@ -181,13 +181,6 @@ class BaseEditorController extends ActionController {
 		if ($vn_subject_id) {
 			// set last edited
 			$this->request->session->setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id);
-
-			// prepopulate fields
-			$vs_prepopulate_cfg = $t_subject->getAppConfig()->get('prepopulate_config');
-			$o_prepopulate_conf = Configuration::load($vs_prepopulate_cfg);
-			if($o_prepopulate_conf->get('prepopulate_fields_on_edit')) {
-				$t_subject->prepopulateFields(array('prepopulateConfig' => $vs_prepopulate_cfg));
-			}
 		}
 
 		# trigger "EditItem" hook

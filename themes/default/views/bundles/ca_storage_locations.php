@@ -45,7 +45,8 @@
 	$vs_sort			=	((isset($va_settings['sort']) && $va_settings['sort'])) ? $va_settings['sort'] : '';
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_storage_locations') == __CA_BUNDLE_ACCESS_READONLY__));
 	$vb_dont_show_del	=	((isset($va_settings['dontShowDeleteButton']) && $va_settings['dontShowDeleteButton'])) ? true : false;
-	
+	$vs_disabled_items_mode = $t_instance->getAppConfig()->get($t_instance->tableName() . '_hierarchy_browser_disabled_items_mode');
+	$vs_disabled_items_mode = $vs_disabled_items_mode ? $vs_disabled_items_mode : 'hide';
 	$va_initial_values	= $this->getVar('initialValues');
 	
 	// params to pass during occurrence lookup
@@ -180,7 +181,7 @@
 						browserWidth: "<?php print $va_settings['hierarchicalBrowserWidth']; ?>",
 						
 						dontAllowEditForFirstLevel: false,
-						disabledItems: 'hide',
+						disabledItems: '<?php print $vs_disabled_items_mode; ?>',
 						
 						className: 'hierarchyBrowserLevel',
 						classNameContainer: 'hierarchyBrowserContainer',

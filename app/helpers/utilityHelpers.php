@@ -543,8 +543,9 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	function caEscapeForBundlePreview($ps_text, $pn_limit=100) {
+		$ps_text = preg_replace("![^\X]+$!", " ", $ps_text);
 		if(strlen($ps_text) > $pn_limit) {
-			$ps_text = substr($ps_text, 0, $pn_limit) . " ...";
+			$ps_text = mb_substr($ps_text, 0, $pn_limit) . " ...";
 		}
 		return json_encode(html_entity_decode(strip_tags($ps_text), ENT_QUOTES | ENT_HTML5));
 	}
@@ -1825,12 +1826,14 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 * @param array $pa_array The array to sanitize
 	 * @param array $pa_options
-	 *        allowStdClass = stdClass object array values are allowed. This is useful for arrays that are about to be passed to json_encode
+	 *        allowStdClass = stdClass object array values are allowed. This is useful for arrays that are about to be passed to json_encode [Default=false]
+	 *		  removeNonCharacterData = remove non-character data from all array value. This option leaves all character data in-place [Default=false]
 	 * @return array The sanitized array
 	 */
 	function caSanitizeArray($pa_array, $pa_options=null) {
 		if (!is_array($pa_array)) { return array(); }
-		$vb_allow_stdclass = caGetOption('allowStdClass',$pa_options,false);
+		$vb_allow_stdclass = caGetOption('allowStdClass', $pa_options, false);
+		$vb_remove_noncharacter_data = caGetOption('removeNonCharacterData', $pa_options, false);
 
 		foreach($pa_array as $vn_k => $vm_v) {
 			if (is_array($vm_v)) {
@@ -1842,6 +1845,11 @@ function caFileIsIncludable($ps_file) {
 
 				if ((!preg_match("!^\X+$!", $vm_v)) || (!mb_detect_encoding($vm_v))) {
 					unset($pa_array[$vn_k]);
+					continue;
+				}
+				
+				if ($vb_remove_noncharacter_data) {
+					$pa_array[$vn_k] = preg_replace("![^\X]+!", "", $pa_array[$vn_k]);
 				}
 			}
 		}
