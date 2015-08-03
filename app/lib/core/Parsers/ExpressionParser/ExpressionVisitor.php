@@ -63,14 +63,14 @@ class ExpressionVisitor implements Visitor\Visit {
 		};
 
 		$this->opa_functions  = array(
-			'abs'           => xcallable('abs'),
-			'ceil'          => xcallable('ceil'),
-			'floor'         => xcallable('floor'),
-			'int'           => xcallable('intval'),
-			'max'           => xcallable('max'),
-			'min'           => xcallable('min'),
-			'rand'          => xcallable('rand'),
-			'round'         => xcallable('round'),
+			'abs'			=> xcallable('abs'),
+			'ceil'			=> xcallable('ceil'),
+			'floor'			=> xcallable('floor'),
+			'int'			=> xcallable('intval'),
+			'max'			=> xcallable('max'),
+			'min'			=> xcallable('min'),
+			'rand'			=> xcallable('rand'),
+			'round'			=> xcallable('round'),
 			'random'		=> xcallable('rand'),
 			'current'		=> xcallable('caIsCurrentDate'),
 			'future'		=> xcallable('caDateEndsInFuture'),
@@ -129,6 +129,66 @@ class ExpressionVisitor implements Visitor\Visit {
 					return $f_acc($f_function->distributeArguments($va_args));
 				};
 
+				break;
+
+			case '#comp_gt':
+				$va_children[0]->accept($this, $a, $f_eldnah);
+
+				$f_acc = function ($b) use ($a, $f_acc) {
+					return $f_acc($a() > $b);
+				};
+
+				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				break;
+
+			case '#comp_gte':
+				$va_children[0]->accept($this, $a, $f_eldnah);
+
+				$f_acc = function ($b) use ($a, $f_acc) {
+					return $f_acc($a() >= $b);
+				};
+
+				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				break;
+
+			case '#comp_lt':
+				$va_children[0]->accept($this, $a, $f_eldnah);
+
+				$f_acc = function ($b) use ($a, $f_acc) {
+					return $f_acc($a() < $b);
+				};
+
+				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				break;
+
+			case '#comp_lte':
+				$va_children[0]->accept($this, $a, $f_eldnah);
+
+				$f_acc = function ($b) use ($a, $f_acc) {
+					return $f_acc($a() <= $b);
+				};
+
+				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				break;
+
+			case '#comp_neq':
+				$va_children[0]->accept($this, $a, $f_eldnah);
+
+				$f_acc = function ($b) use ($a, $f_acc) {
+					return $f_acc($a() != $b);
+				};
+
+				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				break;
+
+			case '#comp_eq':
+				$va_children[0]->accept($this, $a, $f_eldnah);
+
+				$f_acc = function ($b) use ($a, $f_acc) {
+					return $f_acc($a() == $b);
+				};
+
+				$va_children[1]->accept($this, $f_acc, $f_eldnah);
 				break;
 
 			case '#in_op':
