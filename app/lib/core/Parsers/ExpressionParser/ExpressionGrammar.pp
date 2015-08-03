@@ -111,22 +111,22 @@ comparison:
     comp_gt() | comp_gte() | comp_lt() | comp_lte() | comp_neq() | comp_eq()
 
 comp_gt:
-    scalar() <gt> #comp_gt scalar()
+    scalar() ::gt:: #comp_gt scalar()
 
 comp_gte:
-    scalar() <gte> #comp_gte scalar()
+    scalar() ::gte:: #comp_gte scalar()
 
 comp_lt:
-    scalar() <lt> #comp_lt scalar()
+    scalar() ::lt:: #comp_lt scalar()
 
 comp_lte:
-    scalar() <lte> #comp_lte scalar()
+    scalar() ::lte:: #comp_lte scalar()
 
 comp_neq:
-    scalar() <neq> #comp_neq scalar()
+    scalar() ::neq:: #comp_neq scalar()
 
 comp_eq:
-    scalar() <eq> #comp_eq scalar()
+    scalar() ::eq:: #comp_eq scalar()
 
 scalar:
     (primary() ( ::plus:: #addition scalar() )?)
