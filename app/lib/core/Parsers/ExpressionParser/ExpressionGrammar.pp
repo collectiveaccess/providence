@@ -67,7 +67,12 @@
 %token  regex_op  (\=\~|\!\~)
 
 // Comparison operators
-%token  comp      (\>|\<|\>\=|\<\=|\<\>|\!\=)|\=
+%token  gte       \>\=
+%token  lte       \<\=
+%token  eq        \=
+%token  neq       \!\=|\<\>
+%token  gt        \>
+%token  lt        \<
 
 // Boolean
 %token  bool_op   AND|OR
@@ -103,7 +108,25 @@ regex_comparison:
     scalar() <regex_op> #regex <regex>
 
 comparison:
-    scalar() <comp> #comparison scalar()
+    comp_gt() | comp_gte() | comp_lt() | comp_lte() | comp_neq() | comp_eq()
+
+comp_gt:
+    scalar() <gt> #comp_gt scalar()
+
+comp_gte:
+    scalar() <gte> #comp_gte scalar()
+
+comp_lt:
+    scalar() <lt> #comp_lt scalar()
+
+comp_lte:
+    scalar() <lte> #comp_lte scalar()
+
+comp_neq:
+    scalar() <neq> #comp_neq scalar()
+
+comp_eq:
+    scalar() <eq> #comp_eq scalar()
 
 scalar:
     (primary() ( ::plus:: #addition scalar() )?)
