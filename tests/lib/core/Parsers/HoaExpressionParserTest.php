@@ -66,8 +66,6 @@ class HoaExpressionParserTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function testVisitor() {
-		return;
-
 		$this->assertEquals(true, $this->parseAndVisitExpression('5 > 1'));
 		$this->assertEquals(false, $this->parseAndVisitExpression('5 > 6'));
 

@@ -142,7 +142,6 @@ scalar:
     (primary() ( ::plus:: #addition scalar() )?)
   | <string> ( ::plus:: #stradd <string>)*
   | <variable>
-  | ( ::bracket_:: scalar() ::_bracket:: #group )
 
 primary:
     secondary() ( ::minus:: #substraction scalar() )?
@@ -155,7 +154,8 @@ ternary:
 
 
 term:
-    number()
+    ( ::bracket_:: scalar() ::_bracket:: #group )
+  | number()
   | ( ::minus:: #negative | ::plus:: ) term()
   | function()
 
