@@ -34,10 +34,6 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
 
 class ExpressionParserTest extends PHPUnit_Framework_TestCase {
 
-	public function testFirst() {
-	//	$this->assertFalse(ExpressionParser::evaluate('(5 > 10) AND ("seth" = "seth")'));
-	}
-
 	public function testParens() {
 		$this->assertEquals(13, ExpressionParser::evaluate('5 + (4 * 2)'));
 		$this->assertEquals(13, ExpressionParser::evaluate('5 + 4 * 2'));
