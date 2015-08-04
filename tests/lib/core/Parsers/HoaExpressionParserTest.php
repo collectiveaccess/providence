@@ -38,14 +38,16 @@ class HoaExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->parseExpression('^ca_objects.preferred_labels = "foo"');
 		$this->parseExpression('^5 = "foo"');
 
-		$this->parseExpression('"Joe" NOT IN ("Julia", "Allison", "Sophie", "Maria", "Angie", "Seth")');
+		//$this->parseExpression('"Joe" NOT IN ("Julia", "Allison", "Sophie", "Maria", "Angie", "Seth")');
 
-		$this->parseExpression('"Seth" IN ("Julia", "Allison", "Sophie", "Maria", "Angie", "Seth")');
-		$this->parseExpression('5 IN (1,2,3,4,5)');
+		//$this->parseExpression('"Seth" IN ("Julia", "Allison", "Sophie", "Maria", "Angie", "Seth")');
+		//$this->parseExpression('5 IN (1,2,3,4,5)');
 
 
 		$this->parseExpression('("seth" = "seth")');
-		$this->parseExpression('(5 > 10) OR ("seth" = "seth")');
+		$this->parseExpression('5 > 10 OR "seth" = "seth"');
+		$this->parseExpression('(5 = 10) AND ("seth" = "seth") AND (6 > 1)');
+		//$this->parseExpression('((5 > 10) AND ("seth" = "seth")) OR (6 > 1)');
 
 		$this->parseExpression('5 =~ /foo/');
 		$this->parseExpression('5 =~ /test test/');
@@ -56,11 +58,36 @@ class HoaExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->parseExpression('"foo" + "bar"');
 
 		$this->parseExpression('5 > 4');
+		$this->parseExpression('5 >= 4');
+		$this->parseExpression('5 != 4');
+		$this->parseExpression('5 = 4');
+		$this->parseExpression('5+5 >= 4');
 		$this->parseExpression('avg(abs(1.345), max(4,5))');
 		$this->parseExpression('1 ÷ 2 ÷ 3 + 4 * (5 * 2 - 6) * 3.14 ÷ avg(7, 8, 9)');
 	}
 
 	public function testVisitor() {
+		return;
+
+		$this->assertEquals(true, $this->parseAndVisitExpression('5 > 1'));
+		$this->assertEquals(false, $this->parseAndVisitExpression('5 > 6'));
+
+		$this->assertEquals(false, $this->parseAndVisitExpression('5 < 1'));
+		$this->assertEquals(true, $this->parseAndVisitExpression('5 < 6'));
+
+		$this->assertEquals(false, $this->parseAndVisitExpression('5 <= 1'));
+		$this->assertEquals(true, $this->parseAndVisitExpression('5 <= 6'));
+		$this->assertEquals(true, $this->parseAndVisitExpression('5 <= 5'));
+
+		$this->assertEquals(true, $this->parseAndVisitExpression('5 >= 1'));
+		$this->assertEquals(false, $this->parseAndVisitExpression('5 >= 6'));
+		$this->assertEquals(true, $this->parseAndVisitExpression('5 >= 5'));
+
+		$this->assertEquals(true, $this->parseAndVisitExpression('5 != 1'));
+		$this->assertEquals(false, $this->parseAndVisitExpression('5 != 5'));
+
+		$this->assertEquals(false, $this->parseAndVisitExpression('5 = 1'));
+		$this->assertEquals(true, $this->parseAndVisitExpression('5 = 5'));
 
 		$this->assertEquals(true, $this->parseAndVisitExpression('"Seth" IN ("Julia", "Allison", "Sophie", "Maria", "Angie", "Seth")'));
 		$this->assertEquals(false, $this->parseAndVisitExpression('"Joe" IN ("Julia", "Allison", "Sophie", "Maria", "Angie", "Seth")'));
@@ -92,7 +119,7 @@ class HoaExpressionParserTest extends PHPUnit_Framework_TestCase {
 		);
 
 		// this throws an exception if it fails, so no assertions necessary
-		$o_compiler->parse($ps_expr);
+		$o_ast = $o_compiler->parse($ps_expr);
 
 		// just dump the syntax tree in easy-to-read-format
 		//$o_dumper = new Hoa\Compiler\Visitor\Dump();

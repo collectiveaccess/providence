@@ -75,7 +75,8 @@
 %token  lt        \<
 
 // Boolean
-%token  bool_op   AND|OR
+%token  bool_and  AND
+%token  bool_or   OR
 %token  in_op     IN
 %token  notin_op  NOT\ IN
 
@@ -85,15 +86,18 @@
 %token  id        \w+
 
 expression:
-    scalar()
-  | boolean_expression()
-  | boolean_expression() (<bool_op> boolean_expression() #bool_op)+
-  | in_expression() | notin_expression()
+    expr() (::bool_or:: expr() #bool_or )?
   | ( ::bracket_:: expression() ::_bracket:: #group )
 
-boolean_expression:
-    regex_comparison() | comparison()
-  | ( ::bracket_:: boolean_expression() ::_bracket:: #group )
+expr:
+    factor() (::bool_and:: expr() #bool_and )?
+
+factor:
+    regex_comparison()
+  | comparison()
+  | scalar()
+  | in_expression()
+  | notin_expression()
 
 in_expression:
     scalar() <in_op> list_of_values() #in_op
@@ -102,11 +106,13 @@ notin_expression:
     scalar() <notin_op> list_of_values() #notin_op
 
 list_of_values:
-	::bracket_:: ( scalar() ( ::comma:: scalar() )* )? ::_bracket::
+    ::bracket_:: scalar() ( ::comma:: scalar() )+ ::_bracket::
 
 regex_comparison:
     scalar() <regex_op> #regex <regex>
 
+// we break these out by operator to make it easier to access the operator
+// in the AST. makes for an ugly grammar but for neat-er AST processing code
 comparison:
     comp_gt() | comp_gte() | comp_lt() | comp_lte() | comp_neq() | comp_eq()
 
