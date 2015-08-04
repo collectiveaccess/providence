@@ -36,8 +36,8 @@
 
 namespace Hoa\Ustring\Test\Unit;
 
-use Hoa\Ustring as LUT;
 use Hoa\Test;
+use Hoa\Ustring as LUT;
 
 /**
  * Class \Hoa\Ustring\Test\Unit\Ustring.
@@ -49,7 +49,16 @@ use Hoa\Test;
  */
 class Ustring extends Test\Unit\Suite
 {
-    public function case_no_mbstring()
+    public function case_check_mbstring()
+    {
+        $this
+            ->given($this->function->function_exists = true)
+            ->then
+                ->boolean(LUT::checkMbString())
+                    ->isTrue();
+    }
+
+    public function case_check_no_mbstring()
     {
         $this
             ->given(
@@ -890,6 +899,20 @@ class Ustring extends Test\Unit\Suite
             ->then
                 ->string($result)
                     ->isEqualTo('11110000100111111001001010101001');
+    }
+
+    public function case_transcode_no_iconv()
+    {
+        $this
+            ->given(
+                $this->function->function_exists = function ($name) {
+                    return 'iconv' !== $name;
+                }
+            )
+            ->exception(function () {
+                LUT::transcode('foo', 'UTF-8');
+            })
+                ->isInstanceOf('Hoa\Ustring\Exception');
     }
 
     public function case_transcode_and_isUtf8()

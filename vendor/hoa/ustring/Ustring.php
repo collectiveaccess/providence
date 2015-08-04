@@ -204,19 +204,31 @@ class Ustring implements \ArrayAccess, \Countable, \IteratorAggregate
      */
     public function __construct($string = null)
     {
-        if (false === function_exists('mb_substr')) {
-            throw new Exception(
-                '%s needs the mbstring extension.',
-                0,
-                get_class($this)
-            );
-        }
-
         if (null !== $string) {
             $this->append($string);
         }
 
         return;
+    }
+
+    /**
+     * Check if ext/mbstring is available.
+     *
+     * @return  bool
+     */
+    public static function checkMbString()
+    {
+        return function_exists('mb_substr');
+    }
+
+    /**
+     * Check if ext/iconv is available.
+     *
+     * @return  bool
+     */
+    public static function checkIconv()
+    {
+        return function_exists('iconv');
     }
 
     /**
@@ -504,7 +516,7 @@ class Ustring implements \ArrayAccess, \Countable, \IteratorAggregate
                 throw new Exception(
                     '%s needs the class Normalizer to work properly, ' .
                     'or you can force a try by using %1$s(true).',
-                    1,
+                    0,
                     __METHOD__
                 );
             }
@@ -537,7 +549,7 @@ class Ustring implements \ArrayAccess, \Countable, \IteratorAggregate
         if (null === $transliterator = static::getTransliterator($identifier)) {
             throw new Exception(
                 '%s needs the class Transliterator to work properly.',
-                2,
+                1,
                 __METHOD__
             );
         }
@@ -993,9 +1005,18 @@ class Ustring implements \ArrayAccess, \Countable, \IteratorAggregate
      * @param   string  $from      Original encoding.
      * @param   string  $to        Final encoding.
      * @return  string
+     * @throws  \Hoa\Ustring\Exception
      */
     public static function transcode($string, $from, $to = 'UTF-8')
     {
+        if (false === static::checkIconv()) {
+            throw new Exception(
+                '%s needs the iconv extension.',
+                2,
+                __CLASS__
+            );
+        }
+
         return iconv($from, $to, $string);
     }
 
@@ -1035,3 +1056,11 @@ class Ustring implements \ArrayAccess, \Countable, \IteratorAggregate
  * Flex entity.
  */
 Core\Consistency::flexEntity('Hoa\Ustring\Ustring');
+
+if (false === Ustring::checkMbString()) {
+    throw new Exception(
+        '%s needs the mbstring extension.',
+        0,
+        __NAMESPACE__ . '\Ustring'
+    );
+}
