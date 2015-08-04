@@ -101,6 +101,12 @@ class ExpressionParser {
     public function evaluateExpression($ps_expression, $pa_variables=null) {
         $o_ast = $this->parse($ps_expression, $pa_variables);
 
+		// dump the syntax tree in easy-to-read-format ... useful for debugging
+		//$o_dumper = new Hoa\Compiler\Visitor\Dump();
+		//print $o_dumper->visit($o_ast);
+
+		self::$s_visitor->setVariables($pa_variables);
+
 		return self::$s_visitor->visit($o_ast);
     }
     # -------------------------------------------------------------------

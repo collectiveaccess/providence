@@ -42,6 +42,7 @@ use Hoa\Visitor;
 class ExpressionVisitor implements Visitor\Visit {
 
 	protected $opa_functions = array();
+	protected $opa_variables = array();
 
 	public function __construct() {
 		$this->initializeFunctions();
@@ -92,6 +93,39 @@ class ExpressionVisitor implements Visitor\Visit {
 	}
 
 	/**
+	 * Reset variables
+	 */
+	public function resetVariables() {
+		$this->opa_variables = array();
+	}
+
+	/**
+	 * Set variables, overwriting any previously set variables
+	 * @param array $pa_vars
+	 */
+	public function setVariables($pa_vars) {
+		$this->opa_variables = $pa_vars;
+	}
+
+	/**
+	 * Set one variable, leaving all others in place
+	 * @param string $ps_var
+	 * @param mixed $pm_val
+	 */
+	public function setVariable($ps_var, $pm_val) {
+		$this->opa_variables[$ps_var] = $pm_val;
+	}
+
+	/**
+	 * Get variable value
+	 * @param string $ps_var
+	 * @return bool|mixed
+	 */
+	public function getVariable($ps_var) {
+		return isset($this->opa_variables[$ps_var]) ? $this->opa_variables[$ps_var] : false;
+	}
+
+	/**
 	 * Evaluate given AST as CollectiveAccess expression
 	 *
 	 * @param Visitor\Element $po_element
@@ -119,7 +153,7 @@ class ExpressionVisitor implements Visitor\Visit {
 				$f_function = $this->getFunction($vs_name);
 				$va_args = array();
 
-				foreach($va_children as $o_child) {
+				foreach ($va_children as $o_child) {
 					$o_child->accept($this, $_, $f_eldnah);
 					$va_args[] = $_();
 					unset($_);
@@ -129,6 +163,46 @@ class ExpressionVisitor implements Visitor\Visit {
 					return $f_acc($f_function->distributeArguments($va_args));
 				};
 
+				break;
+
+			case '#bool_and':
+				$va_children[0]->accept($this, $a, $f_eldnah);
+
+				$f_acc = function ($b) use ($a, $f_acc) {
+					return $f_acc($a() && $b);
+				};
+
+				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				break;
+
+			case '#bool_or':
+				$va_children[0]->accept($this, $a, $f_eldnah);
+
+				$f_acc = function ($b) use ($a, $f_acc) {
+					return $f_acc($a() || $b);
+				};
+
+				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				break;
+
+			case '#regex_match':
+				$va_children[0]->accept($this, $a, $f_eldnah);
+
+				$f_acc = function ($b) use ($a, $f_acc) {
+					return $f_acc((bool)@preg_match($b, $a()));
+				};
+
+				$va_children[1]->accept($this, $f_acc, $f_eldnah);
+				break;
+
+			case '#regex_nomatch':
+				$va_children[0]->accept($this, $a, $f_eldnah);
+
+				$f_acc = function ($b) use ($a, $f_acc) {
+					return $f_acc(!((bool) @preg_match($b, $a())));
+				};
+
+				$va_children[1]->accept($this, $f_acc, $f_eldnah);
 				break;
 
 			case '#comp_gt':
@@ -198,11 +272,11 @@ class ExpressionVisitor implements Visitor\Visit {
 				$in = $f_handle;
 
 				$o_op = array_shift($va_children);
-				if($o_op->getValueToken() !== 'in_op') {
+				if ($o_op->getValueToken() !== 'in_op') {
 					throw new Exception('invalid syntax');
 				}
 
-				foreach($va_children as $o_child) {
+				foreach ($va_children as $o_child) {
 					$o_child->accept($this, $in, $f_eldnah);
 					$va_haystack[] = $in();
 					unset($in);
@@ -221,11 +295,11 @@ class ExpressionVisitor implements Visitor\Visit {
 				$in = $f_handle;
 
 				$o_op = array_shift($va_children);
-				if($o_op->getValueToken() !== 'notin_op') {
+				if ($o_op->getValueToken() !== 'notin_op') {
 					throw new Exception('invalid syntax');
 				}
 
-				foreach($va_children as $o_child) {
+				foreach ($va_children as $o_child) {
 					$o_child->accept($this, $in, $f_eldnah);
 					$va_haystack[] = $in();
 					unset($in);
@@ -294,8 +368,9 @@ class ExpressionVisitor implements Visitor\Visit {
 				$va_children[0]->accept($this, $a, $f_eldnah);
 				$parent = $po_element->getParent();
 
-				if (null  === $parent ||
-					$type === $parent->getId()) {
+				if (null === $parent ||
+					$type === $parent->getId()
+				) {
 					$f_acc = function ($b) use ($a, $f_acc) {
 						if (0 === $b) {
 							throw new \RuntimeException(
@@ -308,7 +383,7 @@ class ExpressionVisitor implements Visitor\Visit {
 				} else {
 					if ('#fakegroup' !== $parent->getId()) {
 						$classname = get_class($po_element);
-						$group     = new $classname(
+						$group = new $classname(
 							'#fakegroup',
 							null,
 							[$po_element],
@@ -351,12 +426,23 @@ class ExpressionVisitor implements Visitor\Visit {
 				$token = $po_element->getValueToken();
 				$out = null;
 
-				if ($token === 'id') {
-					return $value;
-				} elseif($token === 'string') {
-					$out = preg_replace('/(^"|"$)/', '', $value);
-				} else {
-					$out = (float) $value;
+				switch($token) {
+					case 'id':
+						return $value;
+					case 'string':
+						$out = preg_replace('/(^"|"$)/', '', $value);
+						break;
+					case 'regex':
+						// @todo maybe mangle regex?
+						$out = (string) $value;
+						break;
+					case 'variable':
+						$vs_var = mb_substr((string) $value, 1); // get rid of caret ^
+						$out = $this->getVariable($vs_var);
+						break;
+					default:
+						$out = (float) $value;
+						break;
 				}
 
 				$f_acc = function () use ($out, $f_acc) {
@@ -367,7 +453,6 @@ class ExpressionVisitor implements Visitor\Visit {
 		}
 
 		return $f_acc();
-
 	}
 
 	/**

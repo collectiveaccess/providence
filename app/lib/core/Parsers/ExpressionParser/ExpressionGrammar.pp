@@ -66,7 +66,8 @@
 
 // Regular expressions
 %token  regex     /.+/
-%token  regex_op  (\=\~|\!\~)
+%token  regex_match      \=\~
+%token  regex_nomatch    \!\~
 
 // Comparison operators
 %token  gte       \>\=
@@ -112,11 +113,18 @@ notin_expression:
 list_of_values:
     ::sqbracket_:: scalar() ( ::comma:: scalar() )+ ::_sqbracket::
 
-regex_comparison:
-    scalar() <regex_op> #regex <regex>
-
 // we break these out by operator to make it easier to access the operator
 // in the AST. makes for an ugly grammar but for neat-er AST processing code
+// same for comparison() below
+regex_comparison:
+    regex_match() | regex_nomatch()
+
+regex_match:
+    scalar() ::regex_match:: <regex> #regex_match
+
+regex_nomatch:
+    scalar() ::regex_nomatch:: <regex> #regex_nomatch
+
 comparison:
     comp_gt() | comp_gte() | comp_lt() | comp_lte() | comp_neq() | comp_eq()
 
@@ -140,7 +148,7 @@ comp_eq:
 
 scalar:
     (primary() ( ::plus:: #addition scalar() )?)
-  | <string> ( ::plus:: #stradd <string>)*
+  | (<string> ( ::plus:: #stradd scalar())?)
   | <variable>
 
 primary:
