@@ -49,6 +49,8 @@
 
 %token  bracket_  \(
 %token _bracket   \)
+%token  sqbracket_  \[
+%token _sqbracket   \]
 %token  comma     ,
 
 // Literals
@@ -91,6 +93,7 @@ expression:
 
 expr:
     factor() (::bool_and:: expr() #bool_and )?
+  | ( ::bracket_:: expr() ::_bracket:: #group )
 
 factor:
     regex_comparison()
@@ -98,6 +101,7 @@ factor:
   | scalar()
   | in_expression()
   | notin_expression()
+  | ( ::bracket_:: factor() ::_bracket:: #group )
 
 in_expression:
     scalar() <in_op> list_of_values() #in_op
@@ -106,7 +110,7 @@ notin_expression:
     scalar() <notin_op> list_of_values() #notin_op
 
 list_of_values:
-    ::bracket_:: scalar() ( ::comma:: scalar() )+ ::_bracket::
+    ::sqbracket_:: scalar() ( ::comma:: scalar() )+ ::_sqbracket::
 
 regex_comparison:
     scalar() <regex_op> #regex <regex>
@@ -138,6 +142,7 @@ scalar:
     (primary() ( ::plus:: #addition scalar() )?)
   | <string> ( ::plus:: #stradd <string>)*
   | <variable>
+  | ( ::bracket_:: scalar() ::_bracket:: #group )
 
 primary:
     secondary() ( ::minus:: #substraction scalar() )?
@@ -150,8 +155,7 @@ ternary:
 
 
 term:
-    ( ::bracket_:: scalar() ::_bracket:: #group )
-  | number()
+    number()
   | ( ::minus:: #negative | ::plus:: ) term()
   | function()
 

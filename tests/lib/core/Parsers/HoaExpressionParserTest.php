@@ -38,16 +38,15 @@ class HoaExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->parseExpression('^ca_objects.preferred_labels = "foo"');
 		$this->parseExpression('^5 = "foo"');
 
-		//$this->parseExpression('"Joe" NOT IN ("Julia", "Allison", "Sophie", "Maria", "Angie", "Seth")');
-
-		//$this->parseExpression('"Seth" IN ("Julia", "Allison", "Sophie", "Maria", "Angie", "Seth")');
-		//$this->parseExpression('5 IN (1,2,3,4,5)');
+		$this->parseExpression('"Joe" NOT IN ["Julia", "Allison", "Sophie", "Maria", "Angie", "Seth"]');
+		$this->parseExpression('"Seth" IN ["Julia", "Allison", "Sophie", "Maria", "Angie", "Seth"]');
+		$this->parseExpression('5 IN [1,2,3,4,5]');
 
 
 		$this->parseExpression('("seth" = "seth")');
 		$this->parseExpression('5 > 10 OR "seth" = "seth"');
 		$this->parseExpression('(5 = 10) AND ("seth" = "seth") AND (6 > 1)');
-		//$this->parseExpression('((5 > 10) AND ("seth" = "seth")) OR (6 > 1)');
+		$this->parseExpression('((5 > 10) AND ("seth" = "seth")) OR (6 > 1)');
 
 		$this->parseExpression('5 =~ /foo/');
 		$this->parseExpression('5 =~ /test test/');
@@ -89,11 +88,11 @@ class HoaExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(false, $this->parseAndVisitExpression('5 = 1'));
 		$this->assertEquals(true, $this->parseAndVisitExpression('5 = 5'));
 
-		$this->assertEquals(true, $this->parseAndVisitExpression('"Seth" IN ("Julia", "Allison", "Sophie", "Maria", "Angie", "Seth")'));
-		$this->assertEquals(false, $this->parseAndVisitExpression('"Joe" IN ("Julia", "Allison", "Sophie", "Maria", "Angie", "Seth")'));
+		$this->assertEquals(true, $this->parseAndVisitExpression('"Seth" IN ["Julia", "Allison", "Sophie", "Maria", "Angie", "Seth"]'));
+		$this->assertEquals(false, $this->parseAndVisitExpression('"Joe" IN ["Julia", "Allison", "Sophie", "Maria", "Angie", "Seth"]'));
 
-		$this->assertEquals(false, $this->parseAndVisitExpression('"Seth" NOT IN ("Julia", "Allison", "Sophie", "Maria", "Angie", "Seth")'));
-		$this->assertEquals(true, $this->parseAndVisitExpression('"Joe" NOT IN ("Julia", "Allison", "Sophie", "Maria", "Angie", "Seth")'));
+		$this->assertEquals(false, $this->parseAndVisitExpression('"Seth" NOT IN ["Julia", "Allison", "Sophie", "Maria", "Angie", "Seth"]'));
+		$this->assertEquals(true, $this->parseAndVisitExpression('"Joe" NOT IN ["Julia", "Allison", "Sophie", "Maria", "Angie", "Seth"]'));
 
 		$this->assertEquals(3.1725, $this->parseAndVisitExpression('avg(abs(-1.345), max(4,5))'));
 		$this->assertEquals(4, $this->parseAndVisitExpression('length("test")'));
@@ -122,6 +121,7 @@ class HoaExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$o_ast = $o_compiler->parse($ps_expr);
 
 		// just dump the syntax tree in easy-to-read-format
+		//var_dump($ps_expr);
 		//$o_dumper = new Hoa\Compiler\Visitor\Dump();
 		//print $o_dumper->visit($o_ast);
 	}
