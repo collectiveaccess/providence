@@ -439,6 +439,7 @@ class ExpressionVisitor implements Visitor\Visit {
 					case 'variable':
 						$vs_var = mb_substr((string) $value, 1); // get rid of caret ^
 						$out = $this->getVariable($vs_var);
+						if(is_array($out)) { $out = join("", $out); }	// we need to join multiple values
 						break;
 					default:
 						$out = (float) $value;
