@@ -35,14 +35,6 @@
 require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 # ---------------------------------------
 /**
-* Returns the number of parameters passed
-* @return int
-*/
-function caGetFunctionParamCount() {
-	return func_num_args();
-}
-# ---------------------------------------
-/**
  * DateTime diff calculation with arbitrary number of parameters.
  * Calculates the time between the earliest and the latest date in the argument list
  * and returns it as DateInterval. An arbitrary number of parameters is allowed.
