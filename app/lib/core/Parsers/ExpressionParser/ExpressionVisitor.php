@@ -78,6 +78,8 @@ class ExpressionVisitor implements Visitor\Visit {
 			'wc'			=> xcallable('str_word_count'),
 			'length'		=> xcallable('strlen'),
 			'date'			=> xcallable('caDateToHistoricTimestamp'),
+			'formatdate'	=> xcallable('caFormatDate'),
+			'formatgmdate'	=> xcallable('caFormatGMDate'),
 			'sizeof'		=> xcallable(function () { return count(func_get_args()); }),
 			'count'			=> xcallable(function () { return count(func_get_args()); }),
 			'age'			=> xcallable('caCalculateAgeInYears'),

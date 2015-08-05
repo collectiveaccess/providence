@@ -1660,6 +1660,38 @@ function caFileIsIncludable($ps_file) {
 			'end' => $o_tep->getText(array_merge($pa_options, array('end_as_iso8601' => true)))
 		);
 	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Format time expression parser expression using date().
+	 * @see http://php.net/manual/en/function.date.php
+	 * @see http://docs.collectiveaccess.org/wiki/Date_and_Time_Formats
+	 *
+	 * @param string $ps_date_expression valid TEP expression
+	 * @param string $ps_format date() format string
+	 * @return null|string
+	 */
+	function caFormatDate($ps_date_expression, $ps_format = 'c') {
+		$va_unix_timestamps = caDateToUnixTimestamps($ps_date_expression);
+		if(!is_numeric($va_unix_timestamps['start'])) { return null; }
+
+		return date($ps_format, (int) $va_unix_timestamps['start']);
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Format time expression parser expression using gmdate().
+	 * @see http://php.net/manual/en/function.gmdate.php
+	 * @see http://docs.collectiveaccess.org/wiki/Date_and_Time_Formats
+	 *
+	 * @param string $ps_date_expression valid TEP expression
+	 * @param string $ps_format gmdate() format string
+	 * @return null|string
+	 */
+	function caFormatGMDate($ps_date_expression, $ps_format = 'c') {
+		$va_unix_timestamps = caDateToUnixTimestamps($ps_date_expression);
+		if(!is_numeric($va_unix_timestamps['start'])) { return null; }
+
+		return gmdate($ps_format, (int) $va_unix_timestamps['start']);
+	}
 	# ----------------------------------------
 	/**
 	 *

@@ -107,6 +107,10 @@ class ExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(13229, ExpressionParser::evaluate('avgdays("1912/06/23 - 1954/06/07", "1985/01/28 - 2015/07/24")'));
 		$this->assertEquals(0, ExpressionParser::evaluate('avgdays("1945/01/02", "1985/01/28")'));
 		$this->assertEquals(1, ExpressionParser::evaluate('avgdays("1945/01/02 - 1945/01/03", "1985/01/28 - 1985/01/29")'));
+
+		// date formatting
+		$this->assertRegExp("/^1985\-01\-28T/", ExpressionParser::evaluate('formatdate("1985/01/28")'));
+		$this->assertRegExp("/^1985\-01\-28T/", ExpressionParser::evaluate('formatgmdate("1985/01/28")'));
 	}
 
 	/**
