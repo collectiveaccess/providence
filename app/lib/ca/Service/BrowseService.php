@@ -121,7 +121,10 @@ class BrowseService extends BaseJSONService {
 		}
 
 		$va_return = array();
-		$vo_result = $o_browse->getResults();
+		$vo_result = $o_browse->getResults(array(
+			'sort' => $this->opo_request->getParameter('sort', pString), 		// user-specified sort
+			'sortDirection' => $this->opo_request->getParameter('sortDirection', pString),
+		));
 		$t_instance = $this->_getTableInstance($this->getTableName());
 
 		while($vo_result->nextHit()) {
