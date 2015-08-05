@@ -83,7 +83,7 @@ class AlhalqaSearchService extends SearchJSONService {
 					});
 
 				} else { // default is desc
-					
+
 					usort($va_return['results'], function($a, $b) {
 						return $b['likes'] - $a['likes'];
 					});

@@ -67,6 +67,21 @@ class AlhalqaBrowseService extends BrowseService {
 
 				$va_result['reference_image_urls'] = $va_rep['urls'];
 			}
+
+			if($this->opo_request->getParameter('sort', pString) == 'likes') {
+				if(strtolower($this->opo_request->getParameter('sortDirection', pString)) == 'asc') {
+
+					usort($va_return['results'], function($a, $b) {
+						return $a['likes'] - $b['likes'];
+					});
+
+				} else { // default is desc
+
+					usort($va_return['results'], function($a, $b) {
+						return $b['likes'] - $a['likes'];
+					});
+				}
+			}
 		}
 
 		return $va_return;
