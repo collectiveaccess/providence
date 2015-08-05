@@ -900,7 +900,10 @@
 								// Standard idno lookup for most tables
 								//
 								
-								$va_find_vals = array($vs_idno_fld => $vs_idno ? $vs_idno : ($pa_label['_originalText'] ? $pa_label['_originalText'] : $vs_label));
+								$va_find_vals = array(
+									$vs_idno_fld => $vs_idno ? $vs_idno : ($pa_label['_originalText'] ? $pa_label['_originalText'] : $vs_label),
+									'type_id' => $pn_type_id
+								);
 								if (!$pb_ignore_parent && isset($pa_values['parent_id'])) { $va_find_vals['parent_id'] = $pa_values['parent_id']; }
 							
 								if (
