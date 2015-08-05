@@ -76,9 +76,18 @@ class AlhalqaSearchService extends SearchJSONService {
 			}
 
 			if($this->opo_request->getParameter('sort', pString) == 'likes') {
-				usort($va_return['results'], function($a, $b) {
-					return $b['likes'] - $a['likes'];
-				});
+				if(strtolower($this->opo_request->getParameter('sortDirection', pString)) == 'asc') {
+
+					usort($va_return['results'], function($a, $b) {
+						return $a['likes'] - $b['likes'];
+					});
+
+				} else { // default is desc
+					
+					usort($va_return['results'], function($a, $b) {
+						return $b['likes'] - $a['likes'];
+					});
+				}
 			}
 		}
 
