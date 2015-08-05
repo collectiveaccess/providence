@@ -1343,7 +1343,7 @@ function caFileIsIncludable($ps_file) {
 			$vo_formatter->format();
 			rewind($vr_output);
 			return stream_get_contents($vr_output)."\n";
-		} catch (EXception $e) {
+		} catch (Exception $e) {
 			return false;
 		}
 	}
@@ -1355,6 +1355,11 @@ function caFileIsIncludable($ps_file) {
 	  * @return array The start and end timestamps for the parsed date/time range. Array contains values key'ed under 0 and 1 and 'start' and 'end'; null is returned if expression cannot be parsed.
 	  */
 	function caDateToUnixTimestamps($ps_date_expression) {
+		// don't mangle unix timestamps
+		if(preg_match('/^[0-9]{10}$/', $ps_date_expression)) {
+			return array('start' => (int) $ps_date_expression, 'end' => (int) $ps_date_expression);
+		}
+
 		$o_tep = new TimeExpressionParser();
 		if ($o_tep->parse($ps_date_expression)) {
 			return $o_tep->getUnixTimestamps();
