@@ -174,6 +174,7 @@ return array(
     'PHP_CodeCoverage' => $vendorDir . '/phpunit/php-code-coverage/src/CodeCoverage.php',
     'PHP_CodeCoverage_Driver' => $vendorDir . '/phpunit/php-code-coverage/src/CodeCoverage/Driver.php',
     'PHP_CodeCoverage_Driver_HHVM' => $vendorDir . '/phpunit/php-code-coverage/src/CodeCoverage/Driver/HHVM.php',
+    'PHP_CodeCoverage_Driver_PHPDBG' => $vendorDir . '/phpunit/php-code-coverage/src/CodeCoverage/Driver/PHPDBG.php',
     'PHP_CodeCoverage_Driver_Xdebug' => $vendorDir . '/phpunit/php-code-coverage/src/CodeCoverage/Driver/Xdebug.php',
     'PHP_CodeCoverage_Exception' => $vendorDir . '/phpunit/php-code-coverage/src/CodeCoverage/Exception.php',
     'PHP_CodeCoverage_Exception_UnintentionallyCoveredCode' => $vendorDir . '/phpunit/php-code-coverage/src/CodeCoverage/Exception/UnintentionallyCoveredCode.php',
