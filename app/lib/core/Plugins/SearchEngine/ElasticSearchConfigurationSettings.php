@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,10 +29,6 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 
 # ------------------------------------------------
 /* is ElasticSearch running?  */
@@ -48,7 +44,7 @@ require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
 require_once(__CA_LIB_DIR__.'/core/Zend/Http/Client.php');
 require_once(__CA_LIB_DIR__.'/core/Zend/Http/Response.php');
 # ------------------------------------------------
-class OldElasticSearchConfigurationSettings extends ASearchConfigurationSettings {
+class ElasticSearchConfigurationSettings extends ASearchConfigurationSettings {
 	# ------------------------------------------------
 	private $opo_app_config;
 	private $opo_search_config;
@@ -183,4 +179,3 @@ class OldElasticSearchConfigurationSettings extends ASearchConfigurationSettings
 	}
 	# ------------------------------------------------
 }
-?>

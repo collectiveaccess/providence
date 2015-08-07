@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,24 +29,21 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 
 include_once(__CA_LIB_DIR__.'/core/Datamodel.php');
 include_once(__CA_LIB_DIR__.'/core/Plugins/WLPlug.php');
 include_once(__CA_LIB_DIR__.'/core/Plugins/IWLPlugSearchEngineResult.php');
 
-class WLPlugSearchEngineOldElasticSearchResult extends WLPlug implements IWLPlugSearchEngineResult {
+class WLPlugSearchEngineElasticSearchResult extends WLPlug implements IWLPlugSearchEngineResult {
 	# -------------------------------------------------------
 	private $opa_hits;
 	private $opn_current_row;
-	private $opa_query_terms;
 	private $opn_subject_tablenum;
 	private $ops_subject_primary_key;
 	# -------------------------------------------------------
 	public function __construct($pa_hits, $pn_table_num){
+		parent::__construct();
+
 		$this->opn_subject_tablenum = $pn_table_num;
 		$this->setHits($pa_hits);
 	}
@@ -120,4 +117,3 @@ class WLPlugSearchEngineOldElasticSearchResult extends WLPlug implements IWLPlug
 	}
 	# -------------------------------------------------------
 }
-?>
