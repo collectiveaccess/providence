@@ -98,6 +98,7 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 			'intrinsic_fields' => array(
 				'type_id' => 'ind',
 				'idno' => 'hjs',
+				'lifespan' => '12/17/1989 -'
 			),
 			'preferred_labels' => array(
 				array(
@@ -161,21 +162,61 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 	# -------------------------------------------------------
 	public function testExpressionTag() {
 		
-		// Get fields for primary rows
+		// Get fields for primary rows (single row)
 		$vm_ret = DisplayTemplateParser::evaluate("Name: ^ca_objects.preferred_labels.name (^ca_objects.idno)", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertEquals('Name: My test image (TEST.1)', $vm_ret[0]);
 		
-		// Get fields for primary rows with <ifdef>
+		// Get fields for primary rows with <ifdef> (single row)
 		$vm_ret = DisplayTemplateParser::evaluate("Name: ^ca_objects.preferred_labels.name<ifdef code='ca_objects.idno'> (^ca_objects.idno)</ifdef>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertEquals('Name: My test image (TEST.1)', $vm_ret[0]);
 		
-		// Get fields for primary rows with <ifnotdef>
+		// Get fields for primary rows with <ifnotdef> (single row)
 		$vm_ret = DisplayTemplateParser::evaluate("Name: ^ca_objects.preferred_labels.name<ifnotdef code='ca_objects.idno'> (^ca_objects.idno)</ifnotdef>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertEquals('Name: My test image', $vm_ret[0]);
-
+		
+		// Get fields for primary rows (multiple rows)
+		$vm_ret = DisplayTemplateParser::evaluate("Name: ^ca_objects.preferred_labels.name (^ca_objects.idno)", "ca_objects", array($this->opn_object_id, $this->opn_rel_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(2, $vm_ret);
+		$this->assertEquals('Name: My test image (TEST.1)', $vm_ret[0]);
+		$this->assertEquals('Name: Another image (TEST.2)', $vm_ret[1]);
+		
+		// Get fields for primary rows with <ifdef> (multiple row)
+		$vm_ret = DisplayTemplateParser::evaluate("Name: ^ca_objects.preferred_labels.name<ifdef code='ca_objects.idno'> (^ca_objects.idno)</ifdef>", "ca_objects", array($this->opn_object_id, $this->opn_rel_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(2, $vm_ret);
+		$this->assertEquals('Name: My test image (TEST.1)', $vm_ret[0]);
+		$this->assertEquals('Name: Another image (TEST.2)', $vm_ret[1]);
+		
+		// Get fields for primary rows with <ifnotdef> (multiple row)
+		$vm_ret = DisplayTemplateParser::evaluate("Name: ^ca_objects.preferred_labels.name<ifnotdef code='ca_objects.idno'> (^ca_objects.idno)</ifnotdef>", "ca_objects", array($this->opn_object_id, $this->opn_rel_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(2, $vm_ret);
+		$this->assertEquals('Name: My test image', $vm_ret[0]);
+		$this->assertEquals('Name: Another image', $vm_ret[1]);
+		
+		// Get related values
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name (^ca_objects.idno) => ^ca_entities.preferred_labels.displayname", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertEquals('My test image (TEST.1) => Homer J. Simpson;Bart Simpson', $vm_ret[0]);
+		
+		// Get related values with tag-option delimiter
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name (^ca_objects.idno) => ^ca_entities.preferred_labels.displayname%delimiter=,_", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertEquals('My test image (TEST.1) => Homer J. Simpson, Bart Simpson', $vm_ret[0]);
+		
+		// Get related values in <unit>
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name (^ca_objects.idno) => <unit relativeTo='ca_entities' delimiter=', '>^ca_entities.preferred_labels.displayname (^ca_entities.lifespan)</unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertEquals('My test image (TEST.1) => Homer J. Simpson (after December 17 1989), Bart Simpson ()', $vm_ret[0]);
+		
+		// Get related values in <unit> with <ifdef>
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name (^ca_objects.idno) => <unit relativeTo='ca_entities' delimiter=', '>^ca_entities.preferred_labels.displayname<ifdef code='ca_entities.lifespan'> (^ca_entities.lifespan)</ifdef></unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertEquals('My test image (TEST.1) => Homer J. Simpson (after December 17 1989), Bart Simpson', $vm_ret[0]);
 	}
 	# -------------------------------------------------------
 }
