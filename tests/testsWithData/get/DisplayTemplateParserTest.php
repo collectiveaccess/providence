@@ -160,7 +160,7 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$this->opn_entity_id = $vn_entity_id;
 	}
 	# -------------------------------------------------------
-	public function testExpressionTag() {
+	public function testBasicFormats() {
 		
 		// Get fields for primary rows (single row)
 		$vm_ret = DisplayTemplateParser::evaluate("Name: ^ca_objects.preferred_labels.name (^ca_objects.idno)", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
@@ -197,7 +197,9 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$this->assertCount(2, $vm_ret);
 		$this->assertEquals('Name: My test image', $vm_ret[0]);
 		$this->assertEquals('Name: Another image', $vm_ret[1]);
-		
+	}
+	# -------------------------------------------------------
+	public function testFormatsWithRelated() {	
 		// Get related values
 		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name (^ca_objects.idno) => ^ca_entities.preferred_labels.displayname", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);
@@ -207,7 +209,9 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name (^ca_objects.idno) => ^ca_entities.preferred_labels.displayname%delimiter=,_", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertEquals('My test image (TEST.1) => Homer J. Simpson, Bart Simpson', $vm_ret[0]);
-		
+	}
+	# -------------------------------------------------------
+	public function testFormatsWithUnits() {
 		// Get related values in <unit>
 		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name (^ca_objects.idno) => <unit relativeTo='ca_entities' delimiter=', '>^ca_entities.preferred_labels.displayname (^ca_entities.lifespan)</unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);
@@ -217,6 +221,67 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name (^ca_objects.idno) => <unit relativeTo='ca_entities' delimiter=', '>^ca_entities.preferred_labels.displayname<ifdef code='ca_entities.lifespan'> (^ca_entities.lifespan)</ifdef></unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertEquals('My test image (TEST.1) => Homer J. Simpson (after December 17 1989), Bart Simpson', $vm_ret[0]);
+	}	
+	# -------------------------------------------------------
+	public function testFormatsWithIfCount() {
+		// <ifcount>
+		$vm_ret = DisplayTemplateParser::evaluate("<ifcount code='ca_entities' min='0' max='2'>^ca_entities.preferred_labels.displayname</ifcount>", "ca_objects", array($this->opn_object_id, $this->opn_rel_object_id), array('returnAsArray' => true, 'delimiter' => ', '));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertEquals('Homer J. Simpson, Bart Simpson', $vm_ret[0]);
+		
+		// <ifcount>
+		$vm_ret = DisplayTemplateParser::evaluate("<ifcount code='ca_entities' min='1' max='1'>^ca_entities.preferred_labels.displayname</ifcount>", "ca_objects", array($this->opn_object_id, $this->opn_rel_object_id), array('returnAsArray' => true, 'delimiter' => ', '));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(0, $vm_ret);
+		
+		// <ifcount> with restrictToRelationshipTypes
+		$vm_ret = DisplayTemplateParser::evaluate("<ifcount restrictToRelationshipTypes='publisher' code='ca_entities' min='1' max='1'>^ca_entities.preferred_labels.displayname%restrictToRelationshipTypes=publisher</ifcount>", "ca_objects", array($this->opn_object_id, $this->opn_rel_object_id), array('returnAsArray' => true, 'delimiter' => ', '));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+	}
+	# -------------------------------------------------------
+	public function testFormatsWithIfCountAndIncludeBlanks() {
+		// <ifcount>
+		$vm_ret = DisplayTemplateParser::evaluate("<ifcount code='ca_entities' min='1' max='1'>^ca_entities.preferred_labels.displayname</ifcount>", "ca_objects", array($this->opn_object_id, $this->opn_rel_object_id), array('returnAsArray' => true, 'delimiter' => ', ', 'includeBlankValuesInArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(2, $vm_ret);
+		
+		// <ifcount> with restrictToRelationshipTypes
+		$vm_ret = DisplayTemplateParser::evaluate("<ifcount restrictToRelationshipTypes='publisher' code='ca_entities' min='1' max='1'>^ca_entities.preferred_labels.displayname%restrictToRelationshipTypes=publisher</ifcount>", "ca_objects", array($this->opn_object_id, $this->opn_rel_object_id), array('returnAsArray' => true, 'delimiter' => ', ', 'includeBlankValuesInArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(2, $vm_ret);
+	}
+	# -------------------------------------------------------
+	public function testFormatsWithCase() {
+		$vm_ret = DisplayTemplateParser::evaluate("
+			<case>
+				<ifcount code='ca_entities' min='1' max='1'>^ca_entities.preferred_labels.displayname</ifcount>
+				<ifdef code='ca_objects.description'>Description was ^ca_objects.description</ifdef>
+				<ifdef code='ca_objects.idno'>Idno was ^ca_objects.idno</ifdef>
+				<ifdef code='ca_objects.preferred_labels.name'>Label was ^ca_objects.preferred_labels.name</ifdef>
+			</case>
+		", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true, 'delimiter' => ', ', 'includeBlankValuesInArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertContains('Idno was TEST.1', $vm_ret[0]);
+		
+		
+		$vm_ret = DisplayTemplateParser::evaluate("
+			<case>
+				<ifcount code='ca_entities' min='1' max='1'>^ca_entities.preferred_labels.displayname</ifcount>
+				<ifdef code='ca_objects.description'>Description was ^ca_objects.description</ifdef>
+				<ifdef code='ca_objects.preferred_labels.name'>Label was ^ca_objects.preferred_labels.name</ifdef>
+				<ifdef code='ca_objects.idno'>Idno was ^ca_objects.idno</ifdef>
+			</case>
+		", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true, 'delimiter' => ', ', 'includeBlankValuesInArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertContains('Label was My test image', $vm_ret[0]);
+	}
+	# -------------------------------------------------------
+	public function testFormatsWithHTML() {
+		// Get fields for primary rows (single row)
+		$vm_ret = DisplayTemplateParser::evaluate("Name: <b>^ca_objects.preferred_labels.name</b> (^ca_objects.idno)", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertEquals('Name: <b>My test image</b> (TEST.1)', $vm_ret[0]);
 	}
 	# -------------------------------------------------------
 }

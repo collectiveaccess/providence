@@ -63,8 +63,6 @@ class DisplayTemplateParser {
 		if(isset(DisplayTemplateParser::$template_cache[$vs_cache_key])) { return DisplayTemplateParser::$template_cache[$vs_cache_key]; }
 		
 		$ps_template_original = $ps_template;
-		$ps_template = str_replace("^_parent", "^{$ps_resolve_links_using}.parent.preferred_labels", $ps_template);
-		$ps_template = str_replace("^_hierarchy", "^{$ps_resolve_links_using}._hierarchyName", $ps_template);
 		
 		// Parse template
 		$o_doc = str_get_dom($ps_template);	
@@ -142,6 +140,8 @@ class DisplayTemplateParser {
 			if(!in_array($ps_sort_direction, array('ASC', 'DESC'))) { $ps_sort_direction = 'ASC'; }
 		
 			$ps_delimiter = caGetOption('delimiter', $pa_options, '; ');
+			
+			$pb_include_blanks = caGetOption('includeBlankValuesInArray', $pa_options, false);
 		
 		// Bail if no rows or template are set
 		if (!is_array($pa_row_ids) || !sizeof($pa_row_ids) || !$ps_template) {
@@ -168,7 +168,6 @@ class DisplayTemplateParser {
 		$va_proc_templates = [];
 		while($qr_res->nextHit()) {
 			// check access
-			
 			if ($pa_check_access && !in_array($qr_res->get("{$ps_tablename}.access"), $pa_check_access)) { continue; }
 			
 			// check if we skip this row because of skipIfExpression
@@ -193,6 +192,8 @@ class DisplayTemplateParser {
 			array_merge(['addRelParameter' => true, 'requireLinkTags' => true], $pa_options)
 		);
 		
+		if (!$pb_include_blanks) { $va_proc_templates = array_filter($va_proc_templates, 'strlen'); }
+		
 		if (!$pb_return_as_array) {
 			return join($ps_delimiter, $va_proc_templates);
 		}
@@ -211,12 +212,19 @@ class DisplayTemplateParser {
 		$o_dm = Datamodel::load();
 		$t_instance = $o_dm->getInstanceByTableName($ps_tablename, true);
 		$ps_delimiter = caGetOption('delimiter', $pa_options, '; ');
+		$pb_is_case = caGetOption('isCase', $pa_options, false, ['castTo' => 'boolean']);
 		
 		foreach($po_nodes as $vn_index => $o_node) {
 			switch($vs_tag = $o_node->tag) {
+				case 'case':
+					if (!$pb_is_case) {
+						$vs_acc .= DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, array_merge($pa_options, ['isCase' => true]));	
+					}
+					break;
 				case 'if':
 					if (strlen($vs_rule = $o_node->rule) && ExpressionParser::evaluate($vs_rule, $pa_vals)) {
-						$vs_acc .= DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, $pa_options);		
+						$vs_acc .= DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, $pa_options);	
+						if ($pb_is_case) { break(2); }
 					}
 					break;
 				case 'ifdef':
@@ -224,6 +232,7 @@ class DisplayTemplateParser {
 					$va_vals = DisplayTemplateParser::_getValuesForCodeAttribute($pr_res, $o_node);
 					if ((($vs_tag == 'ifdef') && sizeof($va_vals)) || (($vs_tag == 'ifnotdef') && !sizeof($va_vals))) {
 						$vs_acc .= DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, $pa_options);
+						if ($pb_is_case) { break(2); }
 					}
 					break;
 				case 'ifcount':
@@ -231,10 +240,10 @@ class DisplayTemplateParser {
 					$vn_max = (int)$o_node->max;
 					$va_vals = $pr_res->get($o_node->code, ['returnAsArray' => true]);
 					
-					$va_codes = DisplayTemplateParser::_getCodesFromAttribute($o_node);
+					if(!is_array($va_codes = DisplayTemplateParser::_getCodesFromAttribute($o_node)) || !sizeof($va_codes)) { break; }
 					$va_restrict_to_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToTypes']); 
 					$va_restrict_to_relationship_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToRelationshipTypes']); 
-					
+				
 					$vn_count = 0;
 					foreach($va_codes as $vs_code) {
 						$va_vals = $pr_res->get($vs_code, ['returnAsArray' => true, 'restrictToTypes' => $va_restrict_to_types, 'restrictToRelationshipTypes' => $va_restrict_to_relationship_types]);
@@ -243,6 +252,7 @@ class DisplayTemplateParser {
 					
 					if (($vn_min <= $vn_count) && (($vn_max >= $vn_count) || !$vn_max)) {
 						$vs_acc .= DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, $pa_options);
+						if ($pb_is_case) { break(2); }
 					}
 					break;
 				case 'more':
@@ -255,6 +265,7 @@ class DisplayTemplateParser {
 							foreach($va_following_tags as $vs_following_tag) {
 								if(isset($pa_vals[$vs_following_tag]) && strlen($pa_vals[$vs_following_tag])) {
 									$vs_acc .= DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, $pa_options);
+									if ($pb_is_case) { break(2); }
 								}
 							}
 						}
@@ -284,7 +295,8 @@ class DisplayTemplateParser {
 							
 								foreach($va_following_tags as $vs_following_tag) {
 									if(isset($pa_vals[$vs_following_tag]) && strlen($pa_vals[$vs_following_tag])) {
-										$vs_acc .= DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_val, $pa_optionss);
+										$vs_acc .= DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_val, $pa_options);
+										if ($pb_is_case) { break(2); }
 									}
 									break;
 								}
@@ -295,9 +307,11 @@ class DisplayTemplateParser {
 				case 'expression':
 					if ($vs_exp = trim($o_node->children[0]->text)) {
 						$vs_acc .= ExpressionParser::evaluate($vs_exp, $pa_vals);
+						if ($pb_is_case) { break(2); }
 					}
 					break;
 				case 'unit':
+					if ($pb_is_case) { break; }
 					$va_relative_to_tmp = $o_node->relativeTo ? explode(".", $o_node->relativeTo) : [$ps_tablename];
 					if (!($t_rel_instance = $o_dm->getInstanceByTableName($va_relative_to_tmp[0], true))) { continue; }
 					
@@ -405,7 +419,7 @@ class DisplayTemplateParser {
 				
 					break;
 				default:
-					$vs_acc .= caProcessTemplate($o_node->text, $pa_vals);
+					$vs_acc .= caProcessTemplate($o_node->html(), $pa_vals);
 					break;
 			}
 		}
@@ -420,6 +434,8 @@ class DisplayTemplateParser {
 	static private function _getValues(SearchResult $pr_res, array $pa_tags, array $pa_options=null) {
 		unset($pa_options['returnAsArray']);
 		unset($pa_options['returnWithStructure']);
+		
+		$pb_include_blanks = caGetOption('includeBlankValuesInArray', $pa_options, false);
 	
 		$va_vals = [];
 		foreach(array_keys($pa_tags) as $vs_tag) {
@@ -436,7 +452,12 @@ class DisplayTemplateParser {
 				$vs_get_spec = $va_parsed_tag_opts['tag'];
 			}
 			
-			$va_vals[$vs_tag] = $pr_res->get($vs_get_spec, array_merge($pa_options, $va_parsed_tag_opts['options']));
+			$va_val_list = $pr_res->get($vs_get_spec, $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
+			
+			$vs_delimiter = caGetOption('delimiter', $va_opts, ';');
+			if(!$pb_include_blanks) { $va_val_list = array_filter($va_val_list, 'strlen'); }
+			
+			$va_vals[$vs_tag] = join($vs_delimiter, $va_val_list);
 		}
 		return $va_vals;
 	}
@@ -460,8 +481,8 @@ class DisplayTemplateParser {
 	static private function _getCodesFromAttribute($po_node, array $pa_options=null) {
 		$vs_attribute = caGetOption('attribute', $pa_options, 'code'); 
 		$vs_code_list = $po_node->{$vs_attribute};
-		if (!$po_node || !$po_node->code) { return null; }
-		$va_codes = preg_split("![ ,;]+!", $po_node->code);
+		if (!$po_node || !$po_node->{$vs_attribute}) { return null; }
+		$va_codes = preg_split("![ ,;]+!", $po_node->{$vs_attribute});
 		if (!$va_codes || !sizeof($va_codes)) { return null; }
 		
 		return $va_codes;
