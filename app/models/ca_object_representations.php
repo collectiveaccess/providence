@@ -493,6 +493,14 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		return true;
 	}
 	# ------------------------------------------------------
+	/**
+	 * The media field is mandatory for representations
+	 * @return array
+	 */
+	public function getMandatoryFields() {
+		return array_merge(parent::getMandatoryFields(), array('media'));
+	}
+	# ------------------------------------------------------
 	# Annotations
 	# ------------------------------------------------------
 	/**
