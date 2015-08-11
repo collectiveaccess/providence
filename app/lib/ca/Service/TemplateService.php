@@ -45,8 +45,7 @@ class TemplateService  {
 
 		switch($va_endpoint_config['type']) {
 			case 'search':
-				throw new Exception('not implemented yet');
-				break;
+				return self::runSearchEndpoint($va_endpoint_config, $po_request);
 			case 'detail':
 			default:
 				return self::runDetailEndpoint($va_endpoint_config, $po_request);
@@ -74,13 +73,13 @@ class TemplateService  {
 		}
 
 		if(!$t_instance->getPrimaryKey()) {
-			throw new Exception('couldnt load record');
+			throw new Exception('Could not load record');
 		}
 
 		// restrictToTypes
 		if($pa_config['restrictToTypes'] && is_array($pa_config['restrictToTypes']) && (sizeof($pa_config['restrictToTypes']) > 0)) {
 			if(!in_array($t_instance->getTypeCode(), $pa_config['restrictToTypes'])) {
-				throw new Exception('invalid type');
+				throw new Exception('Invalid parameters');
 			}
 		}
 
@@ -90,6 +89,53 @@ class TemplateService  {
 		}
 
 		return $va_return;
+	}
+	# -------------------------------------------------------
+	/**
+	 * @param array $pa_config
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	private static function runSearchEndpoint($pa_config, $po_request) {
+		$o_dm = Datamodel::load();
+
+		// load blank instance
+		$t_instance = $o_dm->getInstance($pa_config['table']);
+		if(!($t_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
+			throw new Exception('invalid table');
+		}
+
+		if(!($ps_q = $po_request->getParameter('q', pString))) {
+			throw new Exception('No query specified');
+		}
+
+		$o_search = caGetSearchInstance($pa_config['table']);
+
+		// restrictToTypes
+		if($pa_config['restrictToTypes'] && is_array($pa_config['restrictToTypes']) && (sizeof($pa_config['restrictToTypes']) > 0)) {
+			$va_type_filter = array();
+			foreach($pa_config['restrictToTypes'] as $vs_type_code) {
+				$va_type_filter[] = caGetListItemID($t_instance->getTypeListCode(), $vs_type_code);
+			}
+			$o_search->addResultFilter($t_instance->tableName().'.type_id', 'IN', join(",",$va_type_filter));
+		}
+
+		$o_res = $o_search->search($ps_q);
+
+		$va_return = array();
+		while($o_res->nextHit()) {
+			$va_hit = array();
+
+			foreach($pa_config['content'] as $vs_key => $vs_template) {
+				$va_hit[self::sanitizeKey($vs_key)] = $o_res->getWithTemplate($vs_template);
+			}
+
+			$va_return[$o_res->get($t_instance->primaryKey(true))] = $va_hit;
+		}
+
+		return $va_return;
+
 	}
 	# -------------------------------------------------------
 	/**
@@ -108,15 +154,19 @@ class TemplateService  {
 			throw new Exception('Invalid service endpoint');
 		}
 
+		if(!isset($va_endpoints[$ps_endpoint]['type']) || !in_array($va_endpoints[$ps_endpoint]['type'], array('search', 'detail'))) {
+			throw new Exception('Service endpoint config is invalid: type must be search or detail');
+		}
+
 		if(!isset($va_endpoints[$ps_endpoint]['content']) || !is_array($va_endpoints[$ps_endpoint]['content'])) {
-			throw new Exception('Service endpoint config is invalid');
+			throw new Exception('Service endpoint config is invalid: No display content defined');
 		}
 
 		return $va_endpoints[$ps_endpoint];
 	}
 	# -------------------------------------------------------
 	private static function sanitizeKey($ps_key) {
-		return preg_replace('[^A-Za-z0-9\-\_\.]', '', $ps_key);
+		return preg_replace('[^A-Za-z0-9\-\_\.\:]', '', $ps_key);
 	}
 	# -------------------------------------------------------
 }

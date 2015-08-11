@@ -35,7 +35,13 @@ class TemplateController extends BaseServiceController {
 	}
 	# -------------------------------------------------------
 	public function __call($ps_endpoint, $pa_args) {
-		$va_content = TemplateService::dispatch($ps_endpoint, $this->getRequest());
+		try {
+			$va_content = TemplateService::dispatch($ps_endpoint, $this->getRequest());
+		} catch(Exception $e) {
+			$this->getView()->setVar('errors', array($e->getMessage()));
+			$this->render('json_error.php');
+			return;
+		}
 
 		if(intval($this->getRequest()->getParameter('pretty', pInteger))>0) {
 			$this->getView()->setVar('pretty_print', true);
