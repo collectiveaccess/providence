@@ -31,4 +31,4 @@ branches:
     - develop
     - master
     - master-fix
-    - dev/expressionParserImprovements
+    - dev/simpleServiceAPI
