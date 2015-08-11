@@ -40,13 +40,60 @@ class TemplateService  {
 	 * @throws Exception
 	 */
 	public static function dispatch($ps_endpoint, $po_request) {
-		$va_endpoint_config = self::getEndpointConfig($ps_endpoint);
 
-		return array();
+		$va_endpoint_config = self::getEndpointConfig($ps_endpoint); // throws exception if it can't be found
+
+		switch($va_endpoint_config['type']) {
+			case 'search':
+				throw new Exception('not implemented yet');
+				break;
+			case 'detail':
+			default:
+				return self::runDetailEndpoint($va_endpoint_config, $po_request);
+		}
 	}
 	# -------------------------------------------------------
 	/**
-	 * Get configuration for endpoint
+	 * @param array $pa_config
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	private static function runDetailEndpoint($pa_config, $po_request) {
+		$o_dm = Datamodel::load();
+
+		// load instance
+		$t_instance = $o_dm->getInstance($pa_config['table']);
+		if(!($t_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
+			throw new Exception('invalid table');
+		}
+
+		$pm_id = $po_request->getParameter('id', pString);
+		if(!$t_instance->load($pm_id)) {
+			$t_instance->load(array($t_instance->getProperty('ID_NUMBERING_ID_FIELD') => $pm_id));
+		}
+
+		if(!$t_instance->getPrimaryKey()) {
+			throw new Exception('couldnt load record');
+		}
+
+		// restrictToTypes
+		if($pa_config['restrictToTypes'] && is_array($pa_config['restrictToTypes']) && (sizeof($pa_config['restrictToTypes']) > 0)) {
+			if(!in_array($t_instance->getTypeCode(), $pa_config['restrictToTypes'])) {
+				throw new Exception('invalid type');
+			}
+		}
+
+		$va_return = array();
+		foreach($pa_config['content'] as $vs_key => $vs_template) {
+			$va_return[self::sanitizeKey($vs_key)] = $t_instance->getWithTemplate($vs_template);
+		}
+
+		return $va_return;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Get configuration for endpoint. Also does config validation.
 	 * @param string $ps_endpoint
 	 * @return array
 	 * @throws Exception
@@ -61,7 +108,15 @@ class TemplateService  {
 			throw new Exception('Invalid service endpoint');
 		}
 
+		if(!isset($va_endpoints[$ps_endpoint]['content']) || !is_array($va_endpoints[$ps_endpoint]['content'])) {
+			throw new Exception('Service endpoint config is invalid');
+		}
+
 		return $va_endpoints[$ps_endpoint];
+	}
+	# -------------------------------------------------------
+	private static function sanitizeKey($ps_key) {
+		return preg_replace('[^A-Za-z0-9\-\_\.]', '', $ps_key);
 	}
 	# -------------------------------------------------------
 }
