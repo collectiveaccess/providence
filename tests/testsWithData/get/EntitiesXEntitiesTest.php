@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/testsWithData/get/ObjectsXObjectsTest.php
+ * tests/testsWithData/get/EntitiesXEntitiesTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,19 +33,19 @@
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
 /**
- * Class ObjectsXObjectsTest
+ * Class EntitiesXEntitiesTest
  * Note: Requires testing profile!
  */
-class ObjectsXObjectsTest extends BaseTestWithData {
+class EntitiesXEntitiesTest extends BaseTestWithData {
 	# -------------------------------------------------------
 	/**
 	 * @var BundlableLabelableBaseModelWithAttributes
 	 */
-	private $opt_object_left = null;
+	private $opt_homer = null;
 	/**
 	 * @var BundlableLabelableBaseModelWithAttributes
 	 */
-	private $opt_object_right = null;
+	private $opt_bart = null;
 	# -------------------------------------------------------
 	public function setUp() {
 		// don't forget to call parent so that the request is set up
@@ -55,81 +55,90 @@ class ObjectsXObjectsTest extends BaseTestWithData {
 		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
 		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 		 */
-		$vn_object_left = $this->addTestRecord('ca_objects', array(
+		$vn_homer_id = $this->addTestRecord('ca_entities', array(
 			'intrinsic_fields' => array(
-				'type_id' => 'image',
-				'idno' => 'test_img'
+				'type_id' => 'ind',
+				'idno' => 'hjs',
 			),
 			'preferred_labels' => array(
 				array(
 					"locale" => "en_US",
-					"name" => "Test Image",
+					"forename" => "Homer",
+					"middlename" => "J.",
+					"surname" => "Simpson",
 				),
 			),
 		));
 
-		$this->assertGreaterThan(0, $vn_object_left);
+		$this->assertGreaterThan(0, $vn_homer_id);
 
-		$vn_object_right = $this->addTestRecord('ca_objects', array(
+		$vn_bart_id = $this->addTestRecord('ca_entities', array(
 			'intrinsic_fields' => array(
-				'type_id' => 'dataset',
-				'idno' => 'test_dataset'
+				'type_id' => 'ind',
+				'idno' => 'bs',
 			),
 			'preferred_labels' => array(
 				array(
 					"locale" => "en_US",
-					"name" => "Test Dataset",
+					"forename" => "Bart",
+					"surname" => "Simpson",
 				),
 			),
 			'related' => array(
-				'ca_objects' => array(
+				'ca_entities' => array(
 					array(
-						'object_id' => $vn_object_left,
+						'entity_id' => $vn_homer_id,
 						'type_id' => 'related',
-						'effective_date' => 'January 28 1985',
-						'direction' => 'rtol'
+						'effective_date' => '2015',
+						'source_info' => 'Me'
 					)
 				),
 			),
 		));
 
-		$this->assertGreaterThan(0, $vn_object_right);
+		$this->assertGreaterThan(0, $vn_bart_id);
 
-		$this->opt_object_left = new ca_objects($vn_object_left);
-		$this->opt_object_right = new ca_objects($vn_object_right);
+
+		$this->opt_homer = new ca_entities($vn_homer_id);
+		$this->opt_bart = new ca_entities($vn_bart_id);
 	}
 	# -------------------------------------------------------
 	public function testInterstitialTemplateProcessing() {
 
 		// should only be one
-		$vn_relation_id = $this->opt_object_left->get('ca_objects_x_objects.relation_id');
+		$vn_relation_id = $this->opt_homer->get('ca_entities_x_entities.relation_id');
 		$this->assertTrue(is_numeric($vn_relation_id));
 
 		$va_opts = array(
-			'resolveLinksUsing' => 'ca_objects',
+			'resolveLinksUsing' => 'ca_entities',
 			'primaryIDs' =>
 				array (
-					'ca_objects' => array ($this->opt_object_left->getPrimaryKey()),
+					'ca_entities' => array($this->opt_bart->getPrimaryKey()),
 				),
 		);
 
-		// we're reading from the left side, so the right side pop up
+		// we're reading from Bart, so Homer should pop up
 
-		$this->assertEquals('Test Dataset', caProcessTemplateForIDs(
-			'^ca_objects.preferred_labels',
-			'ca_objects_x_objects', array($vn_relation_id), $va_opts
+		$this->assertEquals('Homer J. Simpson', caProcessTemplateForIDs(
+			'^ca_entities.preferred_labels',
+			'ca_entities_x_entities', array($vn_relation_id), $va_opts
 		));
+
+		// Try getting the rel type from the relationship record
+		// We don't need $va_opts to do that, by the way!
 
 		$this->assertEquals('is related to', caProcessTemplateForIDs(
 			'^relationship_typename',
-			'ca_objects_x_objects', array($vn_relation_id), $va_opts
+			'ca_entities_x_entities', array($vn_relation_id)
 		));
+
+		// Try getting the rel type from the Homer record
+		// We don't need $va_opts to do that either
 
 		$this->assertEquals('is related to', caProcessTemplateForIDs(
-			'<unit relativeTo="ca_objects_x_objects">^relationship_typename</unit>',
-			'ca_objects', array($this->opt_object_left->getPrimaryKey()), $va_opts
+			'<unit relativeTo="ca_entities_x_entities">^relationship_typename</unit>',
+			'ca_entities', array($this->opt_homer->getPrimaryKey())
 		));
-
 	}
 	# -------------------------------------------------------
 }
