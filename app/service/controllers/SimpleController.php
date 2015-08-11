@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/service/controllers/TemplateController.php :
+ * app/service/controllers/SimpleController.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -26,9 +26,9 @@
  * ----------------------------------------------------------------------
  */
 require_once(__CA_LIB_DIR__.'/ca/Service/BaseServiceController.php');
-require_once(__CA_LIB_DIR__.'/ca/Service/TemplateService.php');
+require_once(__CA_LIB_DIR__.'/ca/Service/SimpleService.php');
 
-class TemplateController extends BaseServiceController {
+class SimpleController extends BaseServiceController {
 	# -------------------------------------------------------
 	public function __construct(&$po_request, &$po_response, $pa_view_paths) {
 		parent::__construct($po_request, $po_response, $pa_view_paths);
@@ -36,7 +36,7 @@ class TemplateController extends BaseServiceController {
 	# -------------------------------------------------------
 	public function __call($ps_endpoint, $pa_args) {
 		try {
-			$va_content = TemplateService::dispatch($ps_endpoint, $this->getRequest());
+			$va_content = SimpleService::dispatch($ps_endpoint, $this->getRequest());
 		} catch(Exception $e) {
 			$this->getView()->setVar('errors', array($e->getMessage()));
 			$this->render('json_error.php');

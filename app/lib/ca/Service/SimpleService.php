@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/ca/Service/TemplateService.php
+ * app/lib/ca/Service/SimpleService.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,7 +30,7 @@
  * ----------------------------------------------------------------------
  */
 
-class TemplateService  {
+class SimpleService {
 	# -------------------------------------------------------
 	/**
 	 * Dispatch service call
@@ -148,7 +148,7 @@ class TemplateService  {
 		$o_app_conf = Configuration::load();
 		$o_service_conf = Configuration::load($o_app_conf->get('services_config'));
 
-		$va_endpoints = $o_service_conf->get('template_api_endpoints');
+		$va_endpoints = $o_service_conf->get('simple_api_endpoints');
 
 		if(!is_array($va_endpoints) || !isset($va_endpoints[$ps_endpoint]) || !is_array($va_endpoints[$ps_endpoint])) {
 			throw new Exception('Invalid service endpoint');
