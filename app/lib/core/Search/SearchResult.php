@@ -133,6 +133,8 @@ class SearchResult extends BaseObject {
 		
 		
 		$this->opo_tep = $GLOBALS["_DbResult_time_expression_parser"];
+		
+		self::$s_template_prefetch_cache = array();
 	}
 	# ------------------------------------------------------------------
 	public function cloneInit() {
