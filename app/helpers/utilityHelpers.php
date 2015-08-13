@@ -543,8 +543,9 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	function caEscapeForBundlePreview($ps_text, $pn_limit=100) {
+		$ps_text = preg_replace("![^\X]+$!", " ", $ps_text);
 		if(strlen($ps_text) > $pn_limit) {
-			$ps_text = substr($ps_text, 0, $pn_limit) . " ...";
+			$ps_text = mb_substr($ps_text, 0, $pn_limit) . " ...";
 		}
 		return json_encode(html_entity_decode(strip_tags($ps_text), ENT_QUOTES | ENT_HTML5));
 	}
@@ -1796,12 +1797,14 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 * @param array $pa_array The array to sanitize
 	 * @param array $pa_options
-	 *        allowStdClass = stdClass object array values are allowed. This is useful for arrays that are about to be passed to json_encode
+	 *        allowStdClass = stdClass object array values are allowed. This is useful for arrays that are about to be passed to json_encode [Default=false]
+	 *		  removeNonCharacterData = remove non-character data from all array value. This option leaves all character data in-place [Default=false]
 	 * @return array The sanitized array
 	 */
 	function caSanitizeArray($pa_array, $pa_options=null) {
 		if (!is_array($pa_array)) { return array(); }
-		$vb_allow_stdclass = caGetOption('allowStdClass',$pa_options,false);
+		$vb_allow_stdclass = caGetOption('allowStdClass', $pa_options, false);
+		$vb_remove_noncharacter_data = caGetOption('removeNonCharacterData', $pa_options, false);
 
 		foreach($pa_array as $vn_k => $vm_v) {
 			if (is_array($vm_v)) {
@@ -1813,6 +1816,11 @@ function caFileIsIncludable($ps_file) {
 
 				if ((!preg_match("!^\X+$!", $vm_v)) || (!mb_detect_encoding($vm_v))) {
 					unset($pa_array[$vn_k]);
+					continue;
+				}
+				
+				if ($vb_remove_noncharacter_data) {
+					$pa_array[$vn_k] = preg_replace("![^\X]+!", "", $pa_array[$vn_k]);
 				}
 			}
 		}
@@ -2769,5 +2777,53 @@ function caFileIsIncludable($ps_file) {
 		}
 
 		return join('&', $va_return);
+	}
+	# ----------------------------------------
+	/**
+	 * Get modified timestamp for given file
+	 * @param string $ps_file absolute file path
+	 * @return bool|int timestamp, false on error
+	 */
+	function caGetFileMTime($ps_file) {
+		$va_stat = @stat($ps_file);
+		if(!is_array($va_stat) || !isset($va_stat['mtime'])) { return false; }
+		return $va_stat['mtime'];
+	}
+	# ----------------------------------------
+	/**
+	 * Check if setup.php has changed since we last cached the mtime.
+	 * If it has, cache the new mtime
+	 * @return bool
+	 */
+	function caSetupPhpHasChanged() {
+		$vn_setup_mtime = caGetFileMTime(__CA_BASE_DIR__.'/setup.php');
+
+		if(
+			!CompositeCache::contains('setup_php_mtime')
+			||
+			($vn_setup_mtime != CompositeCache::fetch('setup_php_mtime'))
+		) {
+			CompositeCache::save('setup_php_mtime', $vn_setup_mtime, 'default', 0);
+			return true;
+		}
+
+		return false;
+	}
+	# ----------------------------------------
+	/**
+	 * Flatten a multi-dimensional array
+	 *
+	 * @param array $pa_array The multidimensional array
+	 * @param array $pa_options Options include:
+	 *		unique = return only unique values [Default is false]
+	 *
+	 * @return array A one-dimensional array
+	 */
+	function caFlattenArray(array $pa_array, array $pa_options=null) {
+		$va_return = array();
+		array_walk_recursive($pa_array, function($a) use (&$va_return) { $va_return[] = $a; });
+		
+		if(caGetOption('unique', $pa_options, false)) { $va_return = array_unique($va_return); }
+		return $va_return;
 	}
 	# ----------------------------------------

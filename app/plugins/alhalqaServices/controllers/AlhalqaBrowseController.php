@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * themes/default/views/manage/sets/ajax_set_item_info_json.php :
+ * app/plugins/aboutDrawingServices/controllers/AlhalqaBrowseController.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,23 +25,27 @@
  *
  * ----------------------------------------------------------------------
  */
-	$va_errors = $this->getVar('errors');
-	
-	if (sizeof($va_errors)) {
-		print json_encode(array('status' => 'error', 'errors' => $va_errors, 'set_id' => $this->getVar('set_id'), 'row_id' => $this->getVar('row_id')));
-	} else {
-		print json_encode(array(
-			'status' => 'ok',
-			'set_id' => $this->getVar('set_id'),
-			'row_id' => $this->getVar('row_id'),
-			'idno' => $this->getVar('idno'),
-			'idno_sort' => $this->getVar('idno_sort'),
-			'representation_tag' => $this->getVar('representation_tag'),
-			'representation_url' => $this->getVar('representation_url'),
-			'representation_width' => $this->getVar('representation_width'),
-			'representation_height' => $this->getVar('representation_height'),
-			'set_item_label' => $this->getVar('set_item_label'),
-			'displayTemplate' => $this->getVar('displayTemplate'),
-		));
+ 	require_once(__CA_APP_DIR__.'/plugins/alhalqaServices/services/AlhalqaBrowseService.php');
+	require_once(__CA_APP_DIR__.'/service/controllers/BrowseController.php');
+
+	class AlhalqaBrowseController extends BrowseController {
+
+		# -------------------------------------------------------
+		public function __call($ps_table, $pa_args){
+			$vo_service = new AlhalqaBrowseService($this->request,$ps_table);
+			$va_content = $vo_service->dispatch();
+
+			if(intval($this->request->getParameter("pretty",pInteger))>0){
+				$this->view->setVar("pretty_print",true);
+			}
+
+			if($vo_service->hasErrors()){
+				$this->view->setVar("errors",$vo_service->getErrors());
+				$this->render("json_error.php");
+			} else {
+				$this->view->setVar("content",$va_content);
+				$this->render("json.php");
+			}
+		}
+		# -------------------------------------------------------
 	}
-?>

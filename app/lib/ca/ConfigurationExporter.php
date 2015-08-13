@@ -711,7 +711,7 @@ final class ConfigurationExporter {
 
 			// screens
 			$vo_screens = $this->opo_dom->createElement("screens");
-			$qr_screens = $this->opo_db->query("SELECT * FROM ca_editor_ui_screens WHERE parent_id IS NOT NULL AND ui_id=? ORDER BY screen_id",$qr_uis->get("ui_id"));
+			$qr_screens = $this->opo_db->query("SELECT * FROM ca_editor_ui_screens WHERE parent_id IS NOT NULL AND ui_id=? ORDER BY rank,screen_id",$qr_uis->get("ui_id"));
 
 			$t_screen = new ca_editor_ui_screens();
 
@@ -795,7 +795,7 @@ final class ConfigurationExporter {
 								if(!is_array($va_values)) { $va_values = array($va_values); }
 
 								// account for legacy settings
-								if($vs_setting=="restrict_to_type") $vs_setting = "restrict_to_types";
+								if($vs_setting == "restrict_to_type") { $vs_setting = "restrict_to_types"; }
 
 								foreach($va_values as $vs_key => $vs_value) {
 									switch($vs_setting) {
@@ -819,11 +819,13 @@ final class ConfigurationExporter {
 											break;
 									}
 									if(strlen($vs_value)>0) {
-										if($vs_value === 0 || $vs_value === "0") { // caEscapeForXML mangles zero values for some reason -> catch them here.
+										// caEscapeForXML mangles zero values for some reason -> catch them here.
+										if($vs_value === 0 || $vs_value === "0") {
 											$vs_setting_val = $vs_value;
 										} else {
 											$vs_setting_val = caEscapeForXML($vs_value);
 										}
+
 										$vo_setting = @$this->opo_dom->createElement("setting", $vs_setting_val);
 
 										$vo_setting->setAttribute("name", $vs_setting);
@@ -831,13 +833,13 @@ final class ConfigurationExporter {
 											if(preg_match("/^[a-z]{2,3}\_[A-Z]{2,3}$/",$vs_key)) {
 												$vo_setting->setAttribute("locale", $vs_key);
 											} else {
-												$vo_setting->setAttribute("locale", "en_US");
+												continue;
 											}
 										}
+
 										$vo_settings->appendChild($vo_setting);
 									}
 								}
-
 
 							}
 
@@ -896,6 +898,7 @@ final class ConfigurationExporter {
 					if($this->opn_modified_after && !$vo_types->childNodes->length) {
 						continue;
 					}
+
 					$vo_table->appendChild($vo_types);
 					$vo_rel_types->appendChild($vo_table);
 				}
@@ -1114,7 +1117,7 @@ final class ConfigurationExporter {
 			}
 
 			$vo_form = $this->opo_dom->createElement("searchForm");
-			$vo_form->setAttribute("code", $this->makeIDNO($qr_forms->get("form_code")));
+			$vo_form->setAttribute("code", $this->makeIDNOFromInstance($t_form, "form_code"));
 			$vo_form->setAttribute("type", $this->opo_dm->getTableName($qr_forms->get("table_num")));
 			$vo_form->setAttribute("system", $qr_forms->get("is_system"));
 

@@ -1041,16 +1041,14 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$vn_table_num = $this->get('table_num');
 		
-		if (!$this->inTransaction()) {
-			$o_trans = new Transaction($this->getDb());
-			$vb_web_set_transaction = true;
-		} else {
+		$o_trans = null;
+		if ($this->inTransaction()) {
 			$o_trans = $this->getTransaction();
 		}
 		
 		// Verify existance of row before adding to set
 		$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($vn_table_num, true);
-		$t_instance->setTransaction($o_trans);
+		if ($o_trans) { $t_instance->setTransaction($o_trans); }
 		if (!$t_instance->load($pn_row_id)) {
 			$this->postError(750, _t('Item does not exist'), 'ca_sets->addItem()');
 			return false;
@@ -1058,7 +1056,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		// Add it to the set
 		$t_item = new ca_set_items();
-		$t_item->setTransaction($o_trans);
+		if ($o_trans) { $t_item->setTransaction($o_trans); }
 		$t_item->setMode(ACCESS_WRITE);
 		$t_item->set('set_id', $this->getPrimaryKey());
 		$t_item->set('table_num', $vn_table_num);
@@ -1094,6 +1092,12 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$t_item->addLabel(array(
 				'caption' => _t('[BLANK]'),
 			), $g_ui_locale_id);
+			
+			if ($t_item->numErrors()) {
+				$t_item->delete();
+				$this->errors = $t_item->errors;
+				return false;
+			}
 		}
 		return (int)$t_item->getPrimaryKey();
 	}
@@ -1424,6 +1428,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *			returnItemIdsOnly = If true a simple array of item_ids (keys for the ca_set_items rows themselves) is returned rather than full item-level info for each set member.
 	 *			returnItemAttributes = A list of attribute element codes for the ca_set_item record to return values for.
 	 *			idsOnly = Return a simple numerically indexed array of row_ids
+	 * 			template =
 	 *
 	 * @return array An array of items. The format varies depending upon the options set. If returnRowIdsOnly or returnItemIdsOnly are set then the returned array is a 
 	 *			simple list of ids. The full return array is key'ed on ca_set_items.item_id and then on locale_id. The values are arrays with keys set to a number of fields including:
@@ -1565,8 +1570,13 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 				casi.rank ASC
 			{$vs_limit_sql}
 		", (int)$vn_set_id);
-		
+
+		if($ps_template = caGetOption('template', $pa_options, null)) {
+			$qr_ids = $o_db->query("SELECT row_id FROM ca_set_items WHERE set_id = ? ORDER BY rank ASC", $this->getPrimaryKey());
+			$va_processed_templates = caProcessTemplateForIDs($ps_template, $t_rel_table->tableName(), $qr_ids->getAllFieldValues('row_id'), array('returnAsArray' => true));
+		}
 		$va_items = array();
+
 		while($qr_res->nextRow()) {
 			$va_row = $qr_res->getRow();
 			
@@ -1637,6 +1647,10 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 				}
 				
 				$va_row['set_item_label'] = $t_item->getLabelForDisplay(false);
+			}
+
+			if($ps_template) {
+				$va_row['displayTemplate'] = array_shift($va_processed_templates);
 			}
 		
 			$va_items[$qr_res->get('item_id')][($qr_res->get('rel_locale_id') ? $qr_res->get('rel_locale_id') : 0)] = $va_row;
@@ -1773,7 +1787,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 	 *
 	 * @return string Rendered HTML bundle for display
 	 */
-	public function getSetItemHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null) {
+	public function getSetItemHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null, $pa_bundle_settings=null) {
 		if ($this->getItemCount() > 50) {
 			$vs_thumbnail_version = 'tiny';
 		} else {
@@ -1787,10 +1801,17 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		$o_view->setVar('request', $po_request);
 		
 		if ($this->getPrimaryKey()) {
-			$o_view->setVar('items', caExtractValuesByUserLocale($this->getItems(array('thumbnailVersion' => $vs_thumbnail_version, 'user_id' => $po_request->getUserID())), null, null, array()));
+			$va_items = caExtractValuesByUserLocale($this->getItems(array(
+				'thumbnailVersion' => $vs_thumbnail_version,
+				'user_id' => $po_request->getUserID(),
+				'template' => caGetOption('displayTemplate', $pa_bundle_settings, null)
+			)), null, null, array());
+			$o_view->setVar('items', $va_items);
 		} else {
 			$o_view->setVar('items', array());
 		}
+
+		$o_view->setVar('settings', $pa_bundle_settings);
 		
 		if ($t_row = $this->getItemTypeInstance()) {
 			$o_view->setVar('t_row', $t_row);

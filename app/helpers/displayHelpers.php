@@ -2306,8 +2306,9 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 
 		/** @var $qr_res SearchResult */
 		while($qr_res->nextHit()) {
-		
-			$vs_pk_val = $qr_res->get($vs_pk);
+			
+			$vs_pk_val = $qr_res->get($vs_pk, array('checkAccess' => $pa_check_access));
+			if (is_array($pa_check_access) && sizeof($pa_check_access) && !in_array($qr_res->get("{$ps_tablename}.access"), $pa_check_access)) { continue; }
 			$vs_template =  $ps_template;
 
 			// check if we skip this row because of skipIfExpression
@@ -3050,7 +3051,12 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		}
 		
 		// Transform links
-		$va_proc_templates = caCreateLinksFromText($va_proc_templates, $ps_resolve_links_using, ($ps_resolve_links_using != $ps_tablename) ? $va_resolve_links_using_row_ids : $pa_row_ids, null, caGetOption('linkTarget', $pa_options, null), $pa_options);
+		$va_proc_templates = caCreateLinksFromText(
+			$va_proc_templates, $ps_resolve_links_using,
+			($ps_resolve_links_using != $ps_tablename) ? $va_resolve_links_using_row_ids : $pa_row_ids,
+			null, caGetOption('linkTarget', $pa_options, null),
+			array_merge(array('addRelParameter' => true), $pa_options)
+		);
 		
 		// Kill any lingering tags (just in case)
 		foreach($va_proc_templates as $vn_i => $vs_proc_template) {

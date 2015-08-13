@@ -42,6 +42,7 @@ var caUI = caUI || {};
 			setNoItemWarningID: 'setNoItemsWarning',
 			setItemAutocompleteID: 'setItemAutocompleter',
 			rowIDListID: 'setRowIDList',
+			displayTemplate: null,
 			
 			lookupURL: null,
 			itemInfoURL: null,
@@ -64,7 +65,7 @@ var caUI = caUI || {};
 					source: that.lookupURL,
 					minLength: 3, max: 50, html: true,
 					select: function(event, ui) {
-						jQuery.getJSON(that.itemInfoURL, {'set_id': that.setID, 'table_num': that.table_num, 'row_id': ui.item.id} , 
+						jQuery.getJSON(that.itemInfoURL, {'set_id': that.setID, 'table_num': that.table_num, 'row_id': ui.item.id, 'displayTemplate': that.displayTemplate} , 
 							function(data) { 
 								if(data.status != 'ok') { 
 									alert("Error getting item information");
@@ -112,7 +113,13 @@ var caUI = caUI || {};
 			
 			var itemHTML = "<li class='setItem' id='" + that.fieldNamePrefix + "setItem" + rID +"'><div id='" + that.fieldNamePrefix + "setItemContainer" + rID + "' class='imagecontainer'>";
 			if (itemID > 0)  { itemHTML += "<div class='remove'><a href='#' class='setDeleteButton' id='" + that.fieldNamePrefix + "setItemDelete" + itemID + "'>&nbsp;</a></div>"; }
-			itemHTML += "<div class='setItemThumbnail'>" + editLinkHTML + repHTML + "</div><div class='setItemCaption'>" + valueArray.set_item_label + " [<span class='setItemIdentifier'>" + valueArray.idno + "</span>]</div><div class='setItemIdentifierSortable'>" + valueArray.idno_sort + "</div></div><br style='clear: both;'/></li>";
+			var displayLabel;
+			if(valueArray.displayTemplate) {
+				displayLabel = valueArray.displayTemplate;
+			} else {
+				displayLabel = valueArray.set_item_label + " [<span class='setItemIdentifier'>" + valueArray.idno + "</span>]";
+			}
+			itemHTML += "<div class='setItemThumbnail'>" + editLinkHTML + repHTML + "</div><div class='setItemCaption'>" + displayLabel + "</div><div class='setItemIdentifierSortable'>" + valueArray.idno_sort + "</div></div><br style='clear: both;'/></li>";
 			
 			if (prepend) {
 				jQuery('#' + that.fieldNamePrefix + that.setItemListID).prepend(itemHTML);

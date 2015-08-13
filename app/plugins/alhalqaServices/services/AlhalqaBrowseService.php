@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/plugins/aboutDrawingServices/services/AlhalqaSearchService.php
+ * app/plugins/aboutDrawingServices/services/AlhalqaBrowseService.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,10 +34,10 @@
   *
   */
   
-require_once(__CA_LIB_DIR__."/ca/Service/SearchJSONService.php");
+require_once(__CA_LIB_DIR__."/ca/Service/BrowseService.php");
 require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 
-class AlhalqaSearchService extends SearchJSONService {
+class AlhalqaBrowseService extends BrowseService {
 
 	public function __construct($po_request,$ps_table="") {
 		parent::__construct($po_request,$ps_table);
@@ -45,8 +45,8 @@ class AlhalqaSearchService extends SearchJSONService {
 	# -------------------------------------------------------
 
 
-	protected function search($pa_bundles=null) {
-		$va_return = parent::search($pa_bundles);
+	protected function getBrowseResults() {
+		$va_return = parent::getBrowseResults();
 		if(($this->getTableName() == 'ca_objects') && is_array($va_return['results']) && sizeof($va_return['results'])>0) {
 
 			$pb_only_with_likes = (bool) $this->opo_request->getParameter('likesOnly', pInteger);

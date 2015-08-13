@@ -405,7 +405,7 @@ class ca_item_comments extends BaseModel {
 	/**
 	 *
 	 */
-	public function getComments($ps_mode='', $pn_limit=0) {
+	public function getComments($ps_mode = null, $pn_limit = null, $pa_options = null) {
 		$o_db = $this->getDb();
 		
 		$vs_where = '';

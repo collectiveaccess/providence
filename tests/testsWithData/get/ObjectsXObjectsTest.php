@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/testsWithData/get/SimpleGetTest.php
+ * tests/testsWithData/get/ObjectsXObjectsTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,15 +33,19 @@
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
 /**
- * Class SimpleGetTest
+ * Class ObjectsXObjectsTest
  * Note: Requires testing profile!
  */
-class SimpleGetTest extends BaseTestWithData {
+class ObjectsXObjectsTest extends BaseTestWithData {
 	# -------------------------------------------------------
 	/**
 	 * @var BundlableLabelableBaseModelWithAttributes
 	 */
-	private $opt_object = null;
+	private $opt_object_left = null;
+	/**
+	 * @var BundlableLabelableBaseModelWithAttributes
+	 */
+	private $opt_object_right = null;
 	# -------------------------------------------------------
 	public function setUp() {
 		// don't forget to call parent so that the request is set up
@@ -51,51 +55,81 @@ class SimpleGetTest extends BaseTestWithData {
 		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
 		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 		 */
-		$vn_test_record = $this->addTestRecord('ca_objects', array(
+		$vn_object_left = $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
-				'type_id' => 'moving_image',
+				'type_id' => 'image',
+				'idno' => 'test_img'
 			),
 			'preferred_labels' => array(
 				array(
 					"locale" => "en_US",
-					"name" => "My test moving image",
+					"name" => "Test Image",
 				),
 			),
-			'attributes' => array(
-				'duration' => array(
+		));
+
+		$this->assertGreaterThan(0, $vn_object_left);
+
+		$vn_object_right = $this->addTestRecord('ca_objects', array(
+			'intrinsic_fields' => array(
+				'type_id' => 'dataset',
+				'idno' => 'test_dataset'
+			),
+			'preferred_labels' => array(
+				array(
+					"locale" => "en_US",
+					"name" => "Test Dataset",
+				),
+			),
+			'related' => array(
+				'ca_objects' => array(
 					array(
-						'duration' => '00:23:28'
+						'object_id' => $vn_object_left,
+						'type_id' => 'related',
+						'effective_date' => 'January 28 1985',
+						'direction' => 'rtol'
 					)
 				),
 			),
 		));
 
-		$this->assertGreaterThan(0, $vn_test_record);
+		$this->assertGreaterThan(0, $vn_object_right);
 
-		$this->opt_object = new ca_objects($vn_test_record);
-		$vn_comment_id = $this->opt_object->addComment("I like this very much.", 4);
-		$this->setRecordMapEntry('ca_item_comments', $vn_comment_id);
+		$this->opt_object_left = new ca_objects($vn_object_left);
+		$this->opt_object_right = new ca_objects($vn_object_right);
 	}
 	# -------------------------------------------------------
-	public function testGets() {
-		$vm_ret = $this->opt_object->get('ca_objects.type_id', array('convertCodesToDisplayText' => true));
-		$this->assertEquals('Moving Image', $vm_ret);
+	public function testInterstitialTemplateProcessing() {
 
-		$vm_ret = $this->opt_object->get('ca_objects.preferred_labels');
-		$this->assertEquals('My test moving image', $vm_ret);
+		// should only be one
+		$vn_relation_id = $this->opt_object_left->get('ca_objects_x_objects.relation_id');
+		$this->assertTrue(is_numeric($vn_relation_id));
 
-		$vm_ret = $this->opt_object->get('ca_objects.duration');
-		$this->assertEquals('0:23:28', $vm_ret);
-		
-		$vm_ret = $this->opt_object->get('ca_item_comments.comment');
-		$this->assertEquals('I like this very much.', $vm_ret);
-		$this->assertTrue(!is_numeric($this->opt_object->get('ca_item_comments.created_on')));		// should always be current date/time as text
-		
-		$o_tep = new TimeExpressionParser(); $vn_now = time();
-		$vm_ret = $this->opt_object->get('ca_objects.lastModified');
-		$this->assertTrue($o_tep->parse($vm_ret));
-		$va_modified_unix = $o_tep->getUnixTimestamps();
-		//$this->assertEquals($vn_now, $va_modified_unix['start'], 'lastModified timestamp cannot be more than 1 minute off', 60);
+		$va_opts = array(
+			'resolveLinksUsing' => 'ca_objects',
+			'primaryIDs' =>
+				array (
+					'ca_objects' => array ($this->opt_object_left->getPrimaryKey()),
+				),
+		);
+
+		// we're reading from the left side, so the right side pop up
+
+		$this->assertEquals('Test Dataset', caProcessTemplateForIDs(
+			'^ca_objects.preferred_labels',
+			'ca_objects_x_objects', array($vn_relation_id), $va_opts
+		));
+
+		$this->assertEquals('is related to', caProcessTemplateForIDs(
+			'^relationship_typename',
+			'ca_objects_x_objects', array($vn_relation_id), $va_opts
+		));
+
+		$this->assertEquals('is related to', caProcessTemplateForIDs(
+			'<unit relativeTo="ca_objects_x_objects">^relationship_typename</unit>',
+			'ca_objects', array($this->opt_object_left->getPrimaryKey()), $va_opts
+		));
+
 	}
 	# -------------------------------------------------------
 }
