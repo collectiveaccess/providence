@@ -2078,7 +2078,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					}
 				
 					foreach($va_mandatory_field_mapping_ids as $vs_mandatory_field => $vn_mandatory_mapping_item_id) {
-						$t_subject->set($vs_mandatory_field, $va_mandatory_field_values[$vs_mandatory_field], array('assumeIdnoStubForLotID' => true));
+						$va_field_info = $t_subject->getFieldInfo($vs_mandatory_field);
+						$va_opts = array('assumeIdnoStubForLotID' => true);
+						if($va_field_info['FIELD_TYPE'] == FT_MEDIA) {
+							$va_opts['original_filename'] = basename($va_mandatory_field_values[$vs_mandatory_field]);
+						}
+						$t_subject->set($vs_mandatory_field, $va_mandatory_field_values[$vs_mandatory_field], $va_opts);
 					}
 				
 					$t_subject->insert();
@@ -2236,7 +2241,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											break;
 										default:
 											if ($t_subject->hasField($vs_element)) {
-												$t_subject->set($vs_element, $va_element_content[$vs_element], array('assumeIdnoStubForLotID' => true));
+												$va_field_info = $t_subject->getFieldInfo($vs_element);
+												$va_opts = array('assumeIdnoStubForLotID' => true);
+												if($va_field_info['FIELD_TYPE'] == FT_MEDIA) {
+													$va_opts['original_filename'] = basename($va_element_content[$vs_element]);
+												}
+
+												$t_subject->set($vs_element, $va_element_content[$vs_element], $va_opts);
 												$t_subject->update();
 												if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add intrinsic %2 to %3:", $vs_idno, $vs_elenent, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 													ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
