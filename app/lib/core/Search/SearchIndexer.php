@@ -535,8 +535,7 @@ class SearchIndexer extends SearchBase {
 		// Prevent endless recursive reindexing
 		if (is_array($pa_exclusion_list[$pn_subject_tablenum]) && (isset($pa_exclusion_list[$pn_subject_tablenum][$pn_subject_row_id]))) { return; }
 
-		// @todo add a config setting
-		if(caGetOption('queueIndexing', $pa_options, false)) {
+		if(caGetOption('queueIndexing', $pa_options, false) && !$t_subject->getAppConfig()->get('disable_out_of_process_search_indexing')) {
 			$this->queueIndexRow(array(
 				'table_num' => $pn_subject_tablenum,
 				'row_id' => $pn_subject_row_id,
