@@ -1820,8 +1820,6 @@
 										$this->postError(2900, _t("Invalid search type"), "BrowseEngine->execute()");
 										break;
 									}
-									$vs_pk = $t_item->primaryKey();
-
 
 									if (is_array($va_type_ids = $this->getTypeRestrictionList()) && sizeof($va_type_ids)) {
 										$o_search->setTypeRestrictions($va_type_ids);
@@ -1836,9 +1834,7 @@
 									$o_search->setOption('strictPhraseSearching', caGetOption('strictPhraseSearching', $va_options, true));
 									$qr_res = $o_search->search($va_row_ids[0], $va_options);
 
-									if ($qr_res->numHits() > 0) {
-										$va_acc[$vn_i] = $qr_res->getPrimaryKeyValues();
-									}
+									$va_acc[$vn_i] = $qr_res->getPrimaryKeyValues();
 									$vn_i++;
 								} else {
 									$this->postError(2900, _t("Invalid criteria type"), "BrowseEngine->execute()");
