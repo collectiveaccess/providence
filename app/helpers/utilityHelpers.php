@@ -1857,6 +1857,33 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ---------------------------------------
 	/**
+	 * Process all string values in an array with HTMLPurifier. Arrays may be of any depth. If a string is passed it will be purified and returned.
+	 *
+	 * @param array $pm_array The array or string to purify
+	 * @param array $pa_options Array of options:
+	 *		purifier = HTMLPurifier instance to use for processing. If null a new instance will be used. [Default is null]
+	 * @return array The purified array
+	 */
+	function caPurifyArray($pa_array, $pa_options=null) {
+		if (!is_array($pa_array)) { return array(); }
+
+		if (!(($o_purifier = caGetOption('purifier', $pa_options, null)) instanceof HTMLPurifier)) {
+			$o_purifier = new HTMLPurifier();	
+		}	
+		
+		if (!is_array($pa_array)) { return $o_purifier->purify($pa_array); }	
+		
+		foreach($pa_array as $vn_k => $vm_v) {
+			if (is_array($vm_v)) {
+				$pa_array[$vn_k] = caPurifyArray($vm_v, $pa_options);
+			} else {
+				$pa_array[$vn_k] = $o_purifier->purify($vm_v);
+			}
+		}
+		return $pa_array;
+	}
+	# ---------------------------------------
+	/**
 	 * Returns a regexp string to check if a string is a valid roman number
 	 *
 	 * @return string The PCRE regexp
