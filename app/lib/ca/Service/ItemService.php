@@ -749,38 +749,47 @@ class ItemService extends BaseJSONService {
 		// relationships
 		if(is_array($pa_data["related"]) && sizeof($pa_data["related"])>0) {
 			foreach($pa_data["related"] as $vs_table => $va_relationships) {
-				foreach($va_relationships as $va_relationship) {
-					$vs_source_info = isset($va_relationship["source_info"]) ? $va_relationship["source_info"] : null;
-					$vs_effective_date = isset($va_relationship["effective_date"]) ? $va_relationship["effective_date"] : null;
-					$vs_direction = isset($va_relationship["direction"]) ? $va_relationship["direction"] : null;
+				if($vs_table == 'ca_sets') {
+					foreach($va_relationships as $va_relationship) {
+						$t_set = new ca_sets();
+						if ($t_set->load($va_relationship)) {
+							$t_set->addItem($t_instance->getPrimaryKey());
+						}
+					}
+				} else {
+					foreach($va_relationships as $va_relationship) {
+						$vs_source_info = isset($va_relationship["source_info"]) ? $va_relationship["source_info"] : null;
+						$vs_effective_date = isset($va_relationship["effective_date"]) ? $va_relationship["effective_date"] : null;
+						$vs_direction = isset($va_relationship["direction"]) ? $va_relationship["direction"] : null;
 
-					$t_rel_instance = $this->_getTableInstance($vs_table);
+						$t_rel_instance = $this->_getTableInstance($vs_table);
 
-					$vs_pk = isset($va_relationship[$t_rel_instance->primaryKey()]) ? $va_relationship[$t_rel_instance->primaryKey()] : null;
-					$vs_type_id = isset($va_relationship["type_id"]) ? $va_relationship["type_id"] : null;
+						$vs_pk = isset($va_relationship[$t_rel_instance->primaryKey()]) ? $va_relationship[$t_rel_instance->primaryKey()] : null;
+						$vs_type_id = isset($va_relationship["type_id"]) ? $va_relationship["type_id"] : null;
 
-					$t_rel = $t_instance->addRelationship($vs_table,$vs_pk,$vs_type_id,$vs_effective_date,$vs_source_info,$vs_direction);
+						$t_rel = $t_instance->addRelationship($vs_table,$vs_pk,$vs_type_id,$vs_effective_date,$vs_source_info,$vs_direction);
 
-					// deal with interstitial attributes
-					if($t_rel instanceof BaseRelationshipModel) {
+						// deal with interstitial attributes
+						if($t_rel instanceof BaseRelationshipModel) {
 
-						$vb_have_to_update = false;
-						if(is_array($va_relationship["attributes"]) && sizeof($va_relationship["attributes"])) {
-							foreach($va_relationship["attributes"] as $vs_attribute_name => $va_values) {
-								foreach($va_values as $va_value) {
-									if($va_value["locale"]) {
-										$va_value["locale_id"] = $t_locales->localeCodeToID($va_value["locale"]);
-										unset($va_value["locale"]);
+							$vb_have_to_update = false;
+							if(is_array($va_relationship["attributes"]) && sizeof($va_relationship["attributes"])) {
+								foreach($va_relationship["attributes"] as $vs_attribute_name => $va_values) {
+									foreach($va_values as $va_value) {
+										if($va_value["locale"]) {
+											$va_value["locale_id"] = $t_locales->localeCodeToID($va_value["locale"]);
+											unset($va_value["locale"]);
+										}
+										$t_rel->addAttribute($va_value,$vs_attribute_name);
+										$vb_have_to_update = true;
 									}
-									$t_rel->addAttribute($va_value,$vs_attribute_name);
-									$vb_have_to_update = true;
 								}
 							}
-						}
 
-						if($vb_have_to_update) {
-							$t_rel->setMode(ACCESS_WRITE);
-							$t_rel->update();
+							if($vb_have_to_update) {
+								$t_rel->setMode(ACCESS_WRITE);
+								$t_rel->update();
+							}
 						}
 					}
 				}
