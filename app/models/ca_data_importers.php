@@ -2328,8 +2328,19 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								switch($vs_table_name) {
 									case 'ca_objects':
 										if ($vn_rel_id = DataMigrationUtils::getObjectID($va_element_data['preferred_labels']['name'], $va_element_data['_parent_id'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
-									
-											if (!($vs_rel_type = $va_element_data['_relationship_type']) && !($vs_rel_type = $va_element_data['idno']['_relationship_type'])) { break; }
+
+											// kill it if no relationship type is set ... unless its objects_x_representations
+											// (from the representation side), where the rel type is optional
+											if (
+												!($vs_rel_type = $va_element_data['_relationship_type'])
+												&&
+												!($vs_rel_type = $va_element_data['idno']['_relationship_type'])
+												&&
+												($t_subject->tableName() != 'ca_object_representations')
+											) {
+												$o_log->logError(_t('Reltionship type is missing for ca_objects relationship'));
+												break;
+											}
 											$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']), null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
 										
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related object with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
