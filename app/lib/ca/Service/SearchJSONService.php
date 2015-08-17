@@ -59,8 +59,10 @@ class SearchJSONService extends BaseJSONService {
 			$this->getRequestMethod()
 		);
 
-		if(ExternalCache::contains($vs_cache_key, 'SearchJSONService')) {
-			return ExternalCache::fetch($vs_cache_key, 'SearchJSONService');
+		if(!$this->opo_request->getParameter('noCache', pInteger)) {
+			if(ExternalCache::contains($vs_cache_key, 'SearchJSONService')) {
+				return ExternalCache::fetch($vs_cache_key, 'SearchJSONService');
+			}
 		}
 
 		switch($this->getRequestMethod()) {
