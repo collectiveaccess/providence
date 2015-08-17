@@ -46,7 +46,16 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 	 */
 	private $opn_entity_id = null;
 	
+	/**
+	 * primary key ID of the first created object
+	 * @var int
+	 */
 	private $opn_object_id = null;
+	
+	/**
+	 * primary key ID of the last created object (the "related" object)
+	 * @var int
+	 */
 	private $opn_rel_object_id = null;
 	# -------------------------------------------------------
 	public function setUp() {
