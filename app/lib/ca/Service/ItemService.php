@@ -794,6 +794,26 @@ class ItemService extends BaseJSONService {
 					}
 				}
 			}
+
+			if(($t_instance instanceof RepresentableBaseModel) && isset($pa_data['representations']) && is_array($pa_data['representations'])) {
+				foreach($pa_data['representations'] as $va_rep) {
+					if(!isset($va_rep['media']) || (!file_exists($va_rep['media']) && !isURL($va_rep['media']))) { continue; }
+
+					if(!($vn_rep_locale_id = $t_locales->localeCodeToID($va_rep['locale']))) {
+						$vn_rep_locale_id = $t_locales->localeCodeToID('en_US');
+					}
+
+					$t_instance->addRepresentation(
+						$va_rep['media'],
+						caGetOption('type', $va_rep, 'front'), // this might be retarded but most people don't change the representation type list
+						$vn_rep_locale_id,
+						caGetOption('status', $va_rep, 0),
+						caGetOption('access', $va_rep, 0),
+						(bool)$va_rep['primary'],
+						is_array($va_rep['values']) ? $va_rep['values'] : null
+					);
+				}
+			}
 		}
 
 		if($t_instance->numErrors()>0) {
