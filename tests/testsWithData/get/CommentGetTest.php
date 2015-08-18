@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/testsWithData/get/SimpleGetTest.php
+ * tests/testsWithData/get/CommentGetTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,10 +33,10 @@
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
 /**
- * Class SimpleGetTest
+ * Class CommentGetTest
  * Note: Requires testing profile!
  */
-class SimpleGetTest extends BaseTestWithData {
+class CommentGetTest extends BaseTestWithData {
 	# -------------------------------------------------------
 	/**
 	 * @var BundlableLabelableBaseModelWithAttributes
@@ -61,35 +61,21 @@ class SimpleGetTest extends BaseTestWithData {
 					"name" => "My test moving image",
 				),
 			),
-			'attributes' => array(
-				'duration' => array(
-					array(
-						'duration' => '00:23:28'
-					)
-				),
-			),
 		));
 
 		$this->assertGreaterThan(0, $vn_test_record);
 
 		$this->opt_object = new ca_objects($vn_test_record);
+		$t_comment = $this->opt_object->addComment("I like this very much.", 4);
+
+		// make sure the comment is deleted on tearDown() by adding it to the global record map
+		$this->setRecordMapEntry('ca_item_comments', $t_comment->getPrimaryKey());
 	}
 	# -------------------------------------------------------
-	public function testGets() {
-		$vm_ret = $this->opt_object->get('ca_objects.type_id', array('convertCodesToDisplayText' => true));
-		$this->assertEquals('Moving Image', $vm_ret);
-
-		$vm_ret = $this->opt_object->get('ca_objects.preferred_labels');
-		$this->assertEquals('My test moving image', $vm_ret);
-
-		$vm_ret = $this->opt_object->get('ca_objects.duration');
-		$this->assertEquals('0:23:28', $vm_ret);
-		
-		$o_tep = new TimeExpressionParser(); $vn_now = time();
-		$vm_ret = $this->opt_object->get('ca_objects.lastModified');
-		$this->assertTrue($o_tep->parse($vm_ret));
-		$va_modified_unix = $o_tep->getUnixTimestamps();
-		//$this->assertEquals($vn_now, $va_modified_unix['start'], 'lastModified timestamp cannot be more than 1 minute off', 60);
+	public function testComment() {
+		$vm_ret = $this->opt_object->get('ca_item_comments.comment');
+		$this->assertEquals('I like this very much.', $vm_ret);
+		$this->assertTrue(!is_numeric($this->opt_object->get('ca_item_comments.created_on')));		// should always be current date/time as tex
 	}
 	# -------------------------------------------------------
 }
