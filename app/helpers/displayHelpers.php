@@ -2032,12 +2032,14 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 	 *			prefix = string to add to beginning of tags extracted from template before doing lookup into value array
 	 *			removePrefix = string to remove from tags extracted from template before doing lookup into value array
 	 *			getFrom = a model instance to draw data from. If set, $pa_values is ignored.
+	 *			quote = quote replacement values (Eg. ^ca_objects.idno becomes "2015.001" rather than 2015.001). Value containing quotes will be escaped with a backslash. [Default is false]
 	 *
 	 * @return string Output of processed template
 	 */
 	function caProcessTemplate($ps_template, $pa_values, $pa_options=null) {
-		$vs_prefix = isset($pa_options['prefix']) ? $pa_options['prefix'] : null;
-		$vs_remove_prefix = isset($pa_options['removePrefix']) ? $pa_options['removePrefix'] : null;
+		$ps_prefix = caGetOption('prefix', $pa_options, null);
+		$ps_remove_prefix = caGetOption('removePrefix', $pa_options, null);
+		$pb_quote = caGetOption('quote', $pa_options, false);
 		
 		$va_tags = caGetTemplateTags($ps_template);
 		
@@ -2049,11 +2051,11 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		foreach($va_tags as $vs_tag) {
 			$va_tmp = explode("~", $vs_tag);
 			$vs_proc_tag = array_shift($va_tmp);
-			if ($vs_remove_prefix) {
-				$vs_proc_tag = str_replace($vs_remove_prefix, '', $vs_proc_tag);
+			if ($ps_remove_prefix) {
+				$vs_proc_tag = str_replace($ps_remove_prefix, '', $vs_proc_tag);
 			}
-			if ($vs_prefix) {
-				$vs_proc_tag = $vs_prefix.$vs_proc_tag;
+			if ($ps_prefix) {
+				$vs_proc_tag = $ps_prefix.$vs_proc_tag;
 			}
 			
 			if ($t_instance && ($vs_gotten_val = $t_instance->get($vs_proc_tag, $pa_options))) {
@@ -2064,7 +2066,10 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 					// If value is an array try to make a string of it
 					$vs_val = join(" ", $vs_val);
 				}
+				
 				$vs_val = caProcessTemplateTagDirectives($vs_val, $va_tmp);
+				
+				if ($pb_quote) { $vs_val = '"'.addslashes($vs_val).'"'; }
 				$ps_template = preg_replace("!\^(?={$vs_tag}[^A-Za-z0-9]+|{$vs_tag}$){$vs_tag}!", $vs_val, $ps_template);
 			}
 		}
