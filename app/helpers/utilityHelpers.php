@@ -1343,7 +1343,7 @@ function caFileIsIncludable($ps_file) {
 			$vo_formatter->format();
 			rewind($vr_output);
 			return stream_get_contents($vr_output)."\n";
-		} catch (EXception $e) {
+		} catch (Exception $e) {
 			return false;
 		}
 	}
@@ -1355,6 +1355,11 @@ function caFileIsIncludable($ps_file) {
 	  * @return array The start and end timestamps for the parsed date/time range. Array contains values key'ed under 0 and 1 and 'start' and 'end'; null is returned if expression cannot be parsed.
 	  */
 	function caDateToUnixTimestamps($ps_date_expression) {
+		// don't mangle unix timestamps
+		if(preg_match('/^[0-9]{10}$/', $ps_date_expression)) {
+			return array('start' => (int) $ps_date_expression, 'end' => (int) $ps_date_expression);
+		}
+
 		$o_tep = new TimeExpressionParser();
 		if ($o_tep->parse($ps_date_expression)) {
 			return $o_tep->getUnixTimestamps();
@@ -1659,6 +1664,38 @@ function caFileIsIncludable($ps_file) {
 			'start' => $o_tep->getText(array_merge($pa_options, array('start_as_iso8601' => true))),
 			'end' => $o_tep->getText(array_merge($pa_options, array('end_as_iso8601' => true)))
 		);
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Format time expression parser expression using date().
+	 * @see http://php.net/manual/en/function.date.php
+	 * @see http://docs.collectiveaccess.org/wiki/Date_and_Time_Formats
+	 *
+	 * @param string $ps_date_expression valid TEP expression
+	 * @param string $ps_format date() format string
+	 * @return null|string
+	 */
+	function caFormatDate($ps_date_expression, $ps_format = 'c') {
+		$va_unix_timestamps = caDateToUnixTimestamps($ps_date_expression);
+		if(!is_numeric($va_unix_timestamps['start'])) { return null; }
+
+		return date($ps_format, (int) $va_unix_timestamps['start']);
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Format time expression parser expression using gmdate().
+	 * @see http://php.net/manual/en/function.gmdate.php
+	 * @see http://docs.collectiveaccess.org/wiki/Date_and_Time_Formats
+	 *
+	 * @param string $ps_date_expression valid TEP expression
+	 * @param string $ps_format gmdate() format string
+	 * @return null|string
+	 */
+	function caFormatGMDate($ps_date_expression, $ps_format = 'c') {
+		$va_unix_timestamps = caDateToUnixTimestamps($ps_date_expression);
+		if(!is_numeric($va_unix_timestamps['start'])) { return null; }
+
+		return gmdate($ps_format, (int) $va_unix_timestamps['start']);
 	}
 	# ----------------------------------------
 	/**
