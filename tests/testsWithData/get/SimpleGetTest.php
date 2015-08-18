@@ -73,8 +73,8 @@ class SimpleGetTest extends BaseTestWithData {
 		$this->assertGreaterThan(0, $vn_test_record);
 
 		$this->opt_object = new ca_objects($vn_test_record);
-		$vn_comment_id = $this->opt_object->addComment("I like this very much.", 4);
-		$this->setRecordMapEntry('ca_item_comments', $vn_comment_id);
+		//$vn_comment_id = $this->opt_object->addComment("I like this very much.", 4);
+		//$this->setRecordMapEntry('ca_item_comments', $vn_comment_id);
 	}
 	# -------------------------------------------------------
 	public function testGets() {
@@ -87,9 +87,9 @@ class SimpleGetTest extends BaseTestWithData {
 		$vm_ret = $this->opt_object->get('ca_objects.duration');
 		$this->assertEquals('0:23:28', $vm_ret);
 		
-		$vm_ret = $this->opt_object->get('ca_item_comments.comment');
-		$this->assertEquals('I like this very much.', $vm_ret);
-		$this->assertTrue(!is_numeric($this->opt_object->get('ca_item_comments.created_on')));		// should always be current date/time as text
+		//$vm_ret = $this->opt_object->get('ca_item_comments.comment');
+		//$this->assertEquals('I like this very much.', $vm_ret);
+		//$this->assertTrue(!is_numeric($this->opt_object->get('ca_item_comments.created_on')));		// should always be current date/time as text
 		
 		$o_tep = new TimeExpressionParser(); $vn_now = time();
 		$vm_ret = $this->opt_object->get('ca_objects.lastModified');

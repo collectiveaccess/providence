@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/testsWithData/get/ObjectsXObjectsTest.php
+ * tests/lib/ca/Service/SimpleServiceTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -31,21 +31,23 @@
  */
 
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
+require_once(__CA_LIB_DIR__.'/ca/Service/SimpleService.php');
 
 /**
- * Class ObjectsXObjectsTest
+ * Class SimpleServiceTest
  * Note: Requires testing profile!
  */
-class ObjectsXObjectsTest extends BaseTestWithData {
+class SimpleServiceTest extends BaseTestWithData {
 	# -------------------------------------------------------
 	/**
 	 * @var BundlableLabelableBaseModelWithAttributes
 	 */
-	private $opt_object_left = null;
+	private $opt_image = null;
 	/**
 	 * @var BundlableLabelableBaseModelWithAttributes
 	 */
-	private $opt_object_right = null;
+	private $opt_moving_image = null;
+
 	# -------------------------------------------------------
 	public function setUp() {
 		// don't forget to call parent so that the request is set up
@@ -55,81 +57,86 @@ class ObjectsXObjectsTest extends BaseTestWithData {
 		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
 		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 		 */
-		$vn_object_left = $this->addTestRecord('ca_objects', array(
+		$vn_img = $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
-				'idno' => 'test_img'
 			),
 			'preferred_labels' => array(
 				array(
 					"locale" => "en_US",
-					"name" => "Test Image",
+					"name" => "My test image",
 				),
 			),
 		));
 
-		$this->assertGreaterThan(0, $vn_object_left);
+		$this->assertGreaterThan(0, $vn_img);
 
-		$vn_object_right = $this->addTestRecord('ca_objects', array(
+		$this->opt_image = new ca_objects($vn_img);
+
+		$vn_moving_img = $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
-				'type_id' => 'dataset',
-				'idno' => 'test_dataset'
+				'type_id' => 'moving_image',
 			),
 			'preferred_labels' => array(
 				array(
 					"locale" => "en_US",
-					"name" => "Test Dataset",
-				),
-			),
-			'related' => array(
-				'ca_objects' => array(
-					array(
-						'object_id' => $vn_object_left,
-						'type_id' => 'related',
-						'effective_date' => 'January 28 1985',
-						'direction' => 'rtol'
-					)
+					"name" => "My test moving image",
 				),
 			),
 		));
 
-		$this->assertGreaterThan(0, $vn_object_right);
+		$this->assertGreaterThan(0, $vn_moving_img);
 
-		$this->opt_object_left = new ca_objects($vn_object_left);
-		$this->opt_object_right = new ca_objects($vn_object_right);
+		$this->opt_moving_image = new ca_objects($vn_moving_img);
 	}
 	# -------------------------------------------------------
-	public function testInterstitialTemplateProcessing() {
+	public function testDetailDispatch() {
+		global $g_request;
+		$g_request->setParameter('id', $this->opt_image->getPrimaryKey(), 'GET');
 
-		// should only be one
-		$vn_relation_id = $this->opt_object_left->get('ca_objects_x_objects.relation_id');
-		$this->assertTrue(is_numeric($vn_relation_id));
+		$va_ret = SimpleService::dispatch('testDetail', $g_request);
 
-		$va_opts = array(
-			'resolveLinksUsing' => 'ca_objects',
-			'primaryIDs' =>
-				array (
-					'ca_objects' => array ($this->opt_object_left->getPrimaryKey()),
-				),
-		);
+		$this->assertEquals($this->opt_image->getPrimaryKey(), $va_ret['object_id']);
+		$this->assertEquals('My test image', $va_ret['display_label']);
+	}
+	# -------------------------------------------------------
+	/**
+	 * @expectedException Exception
+	 */
+	public function testDetailDispatchWithInvalidType() {
+		global $g_request;
+		$g_request->setParameter('id', $this->opt_moving_image->getPrimaryKey(), 'GET');
 
-		// we're reading from the left side, so the right side pop up
+		SimpleService::dispatch('testDetail', $g_request);
+	}
+	# -------------------------------------------------------
+	public function testSearchDispatch() {
+		global $g_request;
+		$g_request->setParameter('q', 'test', 'GET');
 
-		$this->assertEquals('Test Dataset', caProcessTemplateForIDs(
-			'^ca_objects.preferred_labels',
-			'ca_objects_x_objects', array($vn_relation_id), $va_opts
-		));
+		$va_ret = SimpleService::dispatch('testSearch', $g_request);
 
-		$this->assertEquals('is related to', caProcessTemplateForIDs(
-			'^relationship_typename',
-			'ca_objects_x_objects', array($vn_relation_id), $va_opts
-		));
+		$this->assertEquals(2, sizeof($va_ret));
 
-		$this->assertEquals('is related to', caProcessTemplateForIDs(
-			'<unit relativeTo="ca_objects_x_objects">^relationship_typename</unit>',
-			'ca_objects', array($this->opt_object_left->getPrimaryKey()), $va_opts
-		));
+		foreach($va_ret as $va_result) {
+			$this->assertArrayHasKey('display_label', $va_result);
+			$this->assertArrayHasKey('object_id', $va_result);
+		}
+	}
+	# -------------------------------------------------------
+	public function testSearchDispatchWithRestriction() {
+		global $g_request;
+		$g_request->setParameter('q', 'test', 'GET');
 
+		$va_ret = SimpleService::dispatch('testSearchWithRestriction', $g_request);
+
+		$this->assertEquals(1, sizeof($va_ret));
+
+		foreach($va_ret as $va_result) {
+			$this->assertArrayHasKey('display_label', $va_result);
+			$this->assertArrayHasKey('object_id', $va_result);
+		}
 	}
 	# -------------------------------------------------------
 }
+

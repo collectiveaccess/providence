@@ -53,7 +53,7 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 		define('__CA_APP_TYPE__', 'PROVIDENCE');
 
 		// ensure there are no lingering records
-		$va_tables = array('ca_objects', 'ca_entities', 'ca_occurrences', 'ca_movements', 'ca_loans', 'ca_object_lots', 'ca_storage_locations', 'ca_places', 'ca_item_comments');
+		$va_tables = array('ca_objects', 'ca_entities', 'ca_occurrences', 'ca_movements', 'ca_loans', 'ca_object_lots', 'ca_storage_locations', 'ca_places'); // 'ca_item_comments'
 		$o_db = new Db();
 		foreach($va_tables as $vs_table) {
 			$qr_rows = $o_db->query("SELECT count(*) AS c FROM {$vs_table}");

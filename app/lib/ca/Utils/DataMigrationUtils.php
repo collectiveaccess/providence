@@ -216,12 +216,12 @@
 						if (trim($vs_singular_label) || trim($vs_plural_label)) {
 							$va_criteria = array('preferred_labels' => array('name_singular' => $vs_singular_label), 'list_id' => $vn_list_id);
 							if ($vn_parent_id !== false) { $va_criteria['parent_id'] = $vn_parent_id; }
-							if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+							if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])))) {
 								if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using singular label %3", $ps_item_idno, $pm_list_code_or_id, $vs_singular_label)); }
 								break(2);
 							} else {
 								$va_criteria['preferred_labels'] = array('name_plural' => $vs_plural_label);
-								if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+								if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])))) {
 									if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using plural label %3", $ps_item_idno, $pm_list_code_or_id, $vs_plural_label)); }
 									break(2);
 								}
@@ -232,7 +232,7 @@
 						if ($ps_item_idno == '%') { break; }	// don't try to match on an unreplaced idno placeholder
 						$va_criteria = array('idno' => $ps_item_idno ? $ps_item_idno : $vs_plural_label, 'list_id' => $vn_list_id);
 						if ($vn_parent_id !== false) { $va_criteria['parent_id'] = $vn_parent_id; }
-						if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+						if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])))) {
 							if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno with %3", $ps_item_idno, $pm_list_code_or_id, $ps_item_idno)); }
 							break(2);
 						}
@@ -879,7 +879,7 @@
 											foreach($va_idnos_to_match as $vs_idno_match) {
 												if(!$vs_idno_match) { continue; }
 												if (preg_match('!'.$vs_regex.'!', $vs_idno_match, $va_matches)) {
-													if ($vn_id = (ca_object_representations::find(array('idno' => $va_matches[1]), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+													if ($vn_id = (ca_object_representations::find(array('idno' => $va_matches[1]), array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])))) {
 														break(5);
 													}
 												}
@@ -889,7 +889,7 @@
 								} else {
 									foreach($va_idnos_to_match as $vs_idno_match) {
 										if(!$vs_idno_match) { continue; }
-										if ($vn_id = (ca_object_representations::find(array('idno' => $vs_idno_match), array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])))) {
+										if ($vn_id = (ca_object_representations::find(array('idno' => $vs_idno_match), array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])))) {
 											break(3);
 										}
 									}
@@ -909,7 +909,7 @@
 								if (
 									($vs_idno || trim($pa_label['_originalText'] || $vs_label)) 
 									&& 
-									($vn_id = ($vs_table_class::find($va_find_vals, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']))))
+									($vn_id = ($vs_table_class::find($va_find_vals, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction']))))
 								) {
 									break(2);
 								}
@@ -923,18 +923,18 @@
 							$va_params = array('preferred_labels' => array('displayname' => $pa_label['displayname']),'type_id' => $pn_type_id);
 							if (!$pb_ignore_parent) { $va_params['parent_id'] = $vn_parent_id; }
 							print_R($va_params); die;
-							$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
+							$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction']));
 						} elseif($vs_table_class == 'ca_entities') {
 							// entities only
 							$va_params = array('preferred_labels' => array('forename' => $pa_label['forename'], 'middlename' => $pa_label['middlename'], 'surname' => $pa_label['surname']), 'type_id' => $pn_type_id);
 							if (!$pb_ignore_parent) { $va_params['parent_id'] = $vn_parent_id; }
 							
-							$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
+							$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction']));
 						} else {
 							$va_params = array('preferred_labels' => array($vs_label_display_fld => $pa_label[$vs_label_display_fld]), 'type_id' => $pn_type_id);
 							if (!$pb_ignore_parent) { $va_params['parent_id'] = $vn_parent_id; }
 							
-							$vn_id = ($vs_table_class::find($va_params, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction'])));
+							$vn_id = ($vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])));
 						}
 						if ($vn_id) { break(2); }
 						break;
@@ -945,21 +945,21 @@
 						$va_params = array('preferred_labels' => array('surname' => $pa_label['surname']), 'type_id' => $pn_type_id);
 						if (!$pb_ignore_parent) { $va_params['parent_id'] = $vn_parent_id; }
 						
-						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
+						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction']));
 						if ($vn_id) { break(2); }
 						break;
 					case 'forename':
 						$va_params = array('preferred_labels' => array('forename' => $pa_label['forename']), 'type_id' => $pn_type_id);
 						if (!$pb_ignore_parent) { $va_params['parent_id'] = $vn_parent_id; }
 						
-						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
+						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction']));
 						if ($vn_id) { break(2); }
 						break;
 					case 'displayname':
 						$va_params = array('preferred_labels' => array('displayname' => $pa_label['displayname']), 'type_id' => $pn_type_id);
 						if (!$pb_ignore_parent) { $va_params['parent_id'] = $vn_parent_id; }
 						
-						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'transaction' => $pa_options['transaction']));
+						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction']));
 						if ($vn_id) { break(2); }
 						break;
 				}

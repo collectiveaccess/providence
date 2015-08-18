@@ -3151,7 +3151,7 @@ if (!$vb_batch) {		// hierarchy moves are not supported in batch mode
 			if ($this->getPrimaryKey() && $this->HIERARCHY_PARENT_ID_FLD && ($vn_parent_id > 0)) {
 			
 				if ($vs_parent_table == $this->tableName()) {
-					$this->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id);
+					if ($vn_parent_id != $this->getPrimaryKey()) { $this->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id); }
 				} else {
 					if ((bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($vs_parent_table == 'ca_collections') && ($this->tableName() == 'ca_objects') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))) {
 						// link object to collection

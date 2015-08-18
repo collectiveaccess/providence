@@ -11398,6 +11398,8 @@ $pa_options["display_form_field_tips"] = true;
 	 *		sort = field to sort on. Must be in <table>.<field> or <field> format and be an intrinsic field in the primary table. Sort order can be set using the sortDirection option.
 	 *		sortDirection = the direction of the sort. Values are ASC (ascending) and DESC (descending). Default is ASC.
 	 *		allowWildcards = consider "%" as a wildcard when searching. Any term including a "%" character will be queried using the SQL LIKE operator. [Default is false]
+	 *		purify = process text with HTMLPurifier before search. Purifier encodes &, < and > characters, and performs other transformations that can cause searches on literal text to fail. If you are purifying all input (the default) then leave this set true. [Default is true]
+	 *		purifyWithFallback = executes the search with "purify" set and falls back to search with unpurified text if nothing is found. [Default is false]
 	 *
 	 * @return mixed Depending upon the returnAs option setting, an array, subclass of BaseModel or integer may be returned.
 	 */
@@ -11419,6 +11421,11 @@ $pa_options["display_form_field_tips"] = true;
 		if ($o_trans) { $t_instance->setTransaction($o_trans); }
 		
 		$va_sql_wheres = array();
+		
+		$vb_purify_with_fallback = caGetOption('purifyWithFallback', $pa_options, false);
+		$vb_purify = $vb_purify_with_fallback ? true : caGetOption('purify', $pa_options, true);
+		
+		if ($vb_purify) { $pa_values = caPurifyArray($pa_values); }
 		
 		//
 		// Convert type id
@@ -11545,6 +11552,11 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
 		
 		$qr_res = $o_db->query($vs_sql);
+		
+		if ($vb_purify_with_fallback && ($qr_res->numRows() == 0)) {
+			return self::find($pa_values, array_merge($pa_options, ['purifyWithFallback' => false, 'purify' => false]));
+		}
+		
 		$vn_c = 0;
 	
 		$vs_pk = $t_instance->primaryKey();
