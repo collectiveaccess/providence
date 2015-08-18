@@ -120,6 +120,16 @@ class ObjectsXObjectsTest extends BaseTestWithData {
 			'ca_objects_x_objects', array($vn_relation_id), $va_opts
 		));
 
+		$this->assertEquals('is related to', caProcessTemplateForIDs(
+			'^relationship_typename',
+			'ca_objects_x_objects', array($vn_relation_id), $va_opts
+		));
+
+		$this->assertEquals('is related to', caProcessTemplateForIDs(
+			'<unit relativeTo="ca_objects_x_objects">^relationship_typename</unit>',
+			'ca_objects', array($this->opt_object_left->getPrimaryKey()), $va_opts
+		));
+
 	}
 	# -------------------------------------------------------
 }

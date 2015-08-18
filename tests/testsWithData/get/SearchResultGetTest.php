@@ -38,11 +38,6 @@ require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
  */
 class SearchResultGetTest extends BaseTestWithData {
 	# -------------------------------------------------------
-	/**
-	 * @var BundlableLabelableBaseModelWithAttributes
-	 */
-	private $opt_object = null;
-	# -------------------------------------------------------
 	public function setUp() {
 		// don't forget to call parent so that the request is set up
 		parent::setUp();
@@ -60,7 +55,7 @@ class SearchResultGetTest extends BaseTestWithData {
 				'preferred_labels' => array(
 					array(
 						"locale" => "en_US",
-						"name" => "My test moving image $i",
+						"name" => "My test moving image " . (string) $i,
 					),
 				),
 				'attributes' => array(
