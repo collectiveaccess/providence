@@ -827,6 +827,7 @@ class ItemService extends BaseJSONService {
 			}
 			return false;
 		} else {
+			$t_instance->doSearchIndexing(null, true);
 			return array($t_instance->primaryKey() => $t_instance->getPrimaryKey());
 		}
 	}

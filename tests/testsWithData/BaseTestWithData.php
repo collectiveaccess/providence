@@ -116,10 +116,8 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 		$o_db->query("DELETE FROM ca_storage_locations WHERE location_id>1 ORDER BY location_id DESC");
 
 		// reindex
-		foreach(array_keys($this->opa_record_map) as $vs_table_name) {
-			$o_si = new SearchIndexer();
-			$o_si->reindex(array($vs_table_name), array('showProgress' => false, 'interactiveProgressDisplay' => false));
-		}
+		$o_si = new SearchIndexer();
+		$o_si->reindex(array_keys($this->opa_record_map), array('showProgress' => false, 'interactiveProgressDisplay' => false));
 
 		// check record counts again (make sure there are no lingering records)
 		$this->checkRecordCounts();
