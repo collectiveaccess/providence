@@ -508,13 +508,19 @@ class DisplayTemplateParser {
 
 		$va_vals = [];
 		foreach(array_keys($pa_tags) as $vs_tag) {
-			$va_tag = explode(".", $vs_tag);
-			$vs_get_spec = $vs_tag;
-			if (isset($pa_options['placeholderPrefix']) && $pa_options['placeholderPrefix'] && (!$o_dm->tableExists($va_tag[0])) &&  (!preg_match("!^".$pa_options['placeholderPrefix']."\.!", $vs_tag)) && (sizeof($va_tag) > 0)) {
-				$vs_get_spec = $pa_options['placeholderPrefix'].".".array_shift($va_tag);
-				if(sizeof($va_tag) > 0) {
-					$vs_get_spec .= ".".join(".", $va_tag);
+			
+			// Apply placeholder prefix to any tag except the "specials"
+			if (!in_array(strtolower($vs_tag), ['relationship_typename', 'relationship_type_id', 'relationship_typecode', 'relationship_type_code', 'date'])) {
+				$va_tag = explode(".", $vs_tag);
+				$vs_get_spec = $vs_tag;
+				if (isset($pa_options['placeholderPrefix']) && $pa_options['placeholderPrefix'] && (!$o_dm->tableExists($va_tag[0])) &&  (!preg_match("!^".$pa_options['placeholderPrefix']."\.!", $vs_tag)) && (sizeof($va_tag) > 0)) {
+					$vs_get_spec = $pa_options['placeholderPrefix'].".".array_shift($va_tag);
+					if(sizeof($va_tag) > 0) {
+						$vs_get_spec .= ".".join(".", $va_tag);
+					}
 				}
+			} else {
+				$vs_get_spec = $vs_tag;
 			}
 		
 			// Get trailing options (eg. ca_entities.preferred_labels.displayname%delimiter=;_)
@@ -522,8 +528,18 @@ class DisplayTemplateParser {
 				$vs_get_spec = $va_parsed_tag_opts['tag'];
 			}
 			
-			switch($vs_get_spec) {
-				case 'DATE':		// allows embedding of current date
+			switch(strtolower($vs_get_spec)) {
+				case 'relationship_typename':
+					$va_val_list = $pr_res->get('ca_relationship_types.preferred_labels.'.((caGetOption('orientation', $pa_options, 'LTOR') == 'LTOR') ? 'typename' : 'typename_reverse'), $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
+					break;
+				case 'relationship_type_id':
+					$va_val_list = $pr_res->get('ca_relationship_types.type_id', $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
+					break;
+				case 'relationship_typecode':
+				case 'relationship_type_code':
+					$va_val_list = $pr_res->get('ca_relationship_types.type_code', $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
+					break;
+				case 'date':		// allows embedding of current date
 					$va_val_list = [date(caGetOption('format', $va_parsed_tag_opts['options'], 'd M Y'))];
 					break;
 				default:
