@@ -729,6 +729,10 @@ class ItemService extends BaseJSONService {
 			}
 		}
 
+		if(!$t_instance->getPreferredLabelCount()) {
+			$t_instance->addDefaultLabel();
+		}
+
 		// nonpreferred labels
 		if(is_array($pa_data["nonpreferred_labels"]) && sizeof($pa_data["nonpreferred_labels"])) {
 			foreach($pa_data["nonpreferred_labels"] as $va_label) {
@@ -827,7 +831,6 @@ class ItemService extends BaseJSONService {
 			}
 			return false;
 		} else {
-			$t_instance->doSearchIndexing(null, true);
 			return array($t_instance->primaryKey() => $t_instance->getPrimaryKey());
 		}
 	}
