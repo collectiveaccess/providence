@@ -116,6 +116,7 @@ require_once(__CA_LIB_DIR__."/core/Db/Transaction.php");
 require_once(__CA_LIB_DIR__."/core/Media/MediaProcessingSettings.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/gisHelpers.php");
+require_once(__CA_APP_DIR__."/helpers/printHelpers.php");
 require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__."/ca/MediaContentLocationIndexer.php");
 require_once(__CA_LIB_DIR__.'/ca/MediaReplicator.php');
@@ -874,6 +875,16 @@ class BaseModel extends BaseObject {
 						break;
 				}	
 			} else {
+            	$va_rels = $this->getRelatedItems($va_tmp[0]);
+				$va_vals = array();
+				if(is_array($va_rels)) {
+					foreach($va_rels as $va_rel_item) {
+						if (isset($va_rel_item[$va_tmp[1]])) {
+							$va_vals[] = $va_rel_item[$va_tmp[1]];
+						}
+					}
+					return $vb_return_as_array ? $va_vals : join(caGetOption('delimiter', $pa_options, ';'), $va_vals);
+				}
 				// can't pull fields from other tables!
 				return $vb_return_as_array ? array() : null;
 			}
@@ -2047,7 +2058,7 @@ class BaseModel extends BaseObject {
 	 */
 	public function insert ($pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
-		
+	
 		$vb_we_set_transaction = false;
 		$this->clearErrors();
 		if ($this->getMode() == ACCESS_WRITE) {
@@ -2062,7 +2073,7 @@ class BaseModel extends BaseObject {
 
 			$va_media_fields = array();
 			$va_file_fields = array();
-
+			
 			//
 			// Set any auto-set hierarchical fields (eg. HIERARCHY_LEFT_INDEX_FLD and HIERARCHY_RIGHT_INDEX_FLD indexing for all and HIERARCHY_ID_FLD for ad-hoc hierarchies) here
 			//
@@ -2123,7 +2134,7 @@ class BaseModel extends BaseObject {
 
 			$va_need_to_set_rank_for = array();
 			foreach($this->FIELDS as $vs_field => $va_attr) {
-			
+	
 				$vs_field_type = $va_attr["FIELD_TYPE"];				# field type
 				$vs_field_value = $this->get($vs_field, array("TIMECODE_FORMAT" => "RAW"));
 				
@@ -2138,6 +2149,7 @@ class BaseModel extends BaseObject {
 					# can return a list of *all* input errors to the caller; this is perfect listing all form input errors in
 					# a form-based user interface
 				}
+				
 				if ($pb_need_reload) {
 					$vs_field_value = $this->get($vs_field, array("TIMECODE_FORMAT" => "RAW"));	// reload value since verifyFieldValue() may force the value to a default
 				}
@@ -2151,7 +2163,7 @@ class BaseModel extends BaseObject {
 						}
 					}
 				}
-
+				
 				# --- check ->one relations
 				if (isset($va_many_to_one_relations[$vs_field]) && $va_many_to_one_relations[$vs_field]) {
 					# Nothing to verify if key is null
@@ -2373,7 +2385,7 @@ class BaseModel extends BaseObject {
 					}
 				}
 			}
-
+			
 			if ($this->numErrors() == 0) {
 				$vs_fields = substr($vs_fields,0,strlen($vs_fields)-1);	# remove trailing comma
 				$vs_values = substr($vs_values,0,strlen($vs_values)-1);	# remove trailing comma
@@ -2383,10 +2395,10 @@ class BaseModel extends BaseObject {
 				if ($this->debug) echo $vs_sql;
 				
 				$o_db->query($vs_sql);
+				
 				if ($o_db->numErrors() == 0) {
 					if ($this->getFieldInfo($vs_pk = $this->primaryKey(), "IDENTITY")) {
 						$this->_FIELD_VALUES[$vs_pk] = $vn_new_id = $o_db->getLastInsertID();
-						
 						if (sizeof($va_need_to_set_rank_for)) {
 							$va_sql_sets = array();
 							foreach($va_need_to_set_rank_for as $vs_rank_fld) {
@@ -2407,7 +2419,7 @@ class BaseModel extends BaseObject {
 								}
 							}
 						}
-
+						
 						if (sizeof($va_file_fields) > 0) {
 							foreach($va_file_fields as $f) {
 								if($vs_msql = $this->_processFiles($f)) {
@@ -2451,7 +2463,7 @@ class BaseModel extends BaseObject {
 
 						$this->doSearchIndexing($this->getFieldValuesArray(true), false, $va_index_options);
 					}
-
+					
 					$this->logChange("I");
 
 					if ($vb_we_set_transaction) { $this->removeTransaction(true); }
@@ -2461,7 +2473,7 @@ class BaseModel extends BaseObject {
 					if (sizeof(BaseModel::$s_instance_cache[$vs_table_name = $this->tableName()]) > 100) { 	// Limit cache to 100 instances per table
 						BaseModel::$s_instance_cache[$vs_table_name] = array_slice(BaseModel::$s_instance_cache[$vs_table_name], 0, 50, true);
 					}
-					
+						
 					// Update instance cache
 					BaseModel::$s_instance_cache[$vs_table_name][(int)$vn_id] = $this->_FIELD_VALUES;
 					return $vn_id;
@@ -4020,6 +4032,12 @@ class BaseModel extends BaseObject {
 			$this->_FIELD_VALUES[$ps_field] = null;
 			$vs_sql =  "{$ps_field} = ".$this->quote(caSerializeForDatabase($this->_FILES[$ps_field], true)).",";
 		} else {
+			// Bail if no file is actually set
+			if(!isset($this->_SET_FILES[$ps_field]['tmp_name'])) { return false; }
+			
+			$o_tq = new TaskQueue();
+			$o_media_proc_settings = new MediaProcessingSettings($this, $ps_field);
+		
 			//
 			// Process incoming files
 			//
@@ -4975,7 +4993,6 @@ class BaseModel extends BaseObject {
 		$va_media_info['_CENTER']['x'] = $pn_center_x;
 		$va_media_info['_CENTER']['y'] = $pn_center_y;
 		
-		// Regenerate derivatives 
 		$this->setMode(ACCESS_WRITE);
 		$this->setMediaInfo($ps_field, $va_media_info);
 		$this->update();
@@ -4983,6 +5000,58 @@ class BaseModel extends BaseObject {
 		$this->update();
 		
 		return $this->numErrors() ? false : true;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Set scaling conversion factor for media. Allows physical measurements to be derived from image pixel measurements.
+	 * A measurement with physical units of the kind passable to caConvertMeasurementToPoints() (Eg. "55mm", "5 ft", "10km") and
+	 * the percentage of the image *width* the measurement covers are passed, from which the scale factor is calculated and stored.
+	 *
+	 * @param string $ps_field The name of the media field
+	 * @param string $ps_dimension A measurement with dimensional units (ex. "55mm", "5 ft", "10km")
+	 * @param float $pn_percent_of_image_width Percentage of image *width* the measurement covers from 0 to 1. If you pass a value > 1 it will be divided by 100 for calculations. [Default is 1]
+	 * @param array $pa_options An array of options. No options are currently implemented.
+	 *
+	 * @return bool True on success, false if an error occurred.
+	 */
+	public function setMediaScale($ps_field, $ps_dimension, $pn_percent_of_image_width=1, $pa_options=null) {
+		if ($pn_percent_of_image_width > 1) { $pn_percent_of_image_width /= 100; }
+		if ($pn_percent_of_image_width <= 0) { $pn_percent_of_image_width = 1; }
+		$va_media_info = $this->getMediaInfo($ps_field);
+		if (!is_array($va_media_info)) {
+			return null;
+		}
+		
+		$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
+		
+		$vn_dim = caConvertMeasurementToPoints($ps_dimension);
+		
+		$va_media_info['_SCALE'] = $vn_dim/$pn_percent_of_image_width;
+		
+		$this->setMode(ACCESS_WRITE);
+		$this->setMediaInfo($ps_field, $va_media_info);
+		$this->update();
+		$this->set('media', $this->getMediaPath('media', 'original'), array('original_filename' => $vs_original_filename));
+		$this->update();
+		
+		return $this->numErrors() ? false : true;
+	}
+	# --------------------------------------------------------------------------------
+	/**
+	 * Returns scaling conversion factor for media. Allows physical measurements to be derived from image pixel measurements.
+	 *
+	 * @param string $ps_field The name of the media field
+	 * @param array $pa_options An array of options. No options are currently implemented.
+	 *
+	 * @return float Value or null if not set
+	 */
+	public function getMediaScale($ps_field, $pa_options=null) {
+		$va_media_info = $this->getMediaInfo($ps_field);
+		if (!is_array($va_media_info)) {
+			return null;
+		}
+		
+		return caGetOption('_SCALE', $va_media_info, null);
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -10218,7 +10287,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *				media3_original_filename = original file name to set for comment "media3"
 	 *				media4_original_filename = original file name to set for comment "media4"
 	 * @param $ps_location [string] = location of user
-	 * @return int comment_id of newly created comment, false on error or null if parameters are invalid
+	 * @return ca_item_comments BaseModel representation of newly created comment, false on error or null if parameters are invalid
 	 */
 	public function addComment($ps_comment, $pn_rating=null, $pn_user_id=null, $pn_locale_id=null, $ps_name=null, $ps_email=null, $pn_access=0, $pn_moderator=null, $pa_options=null, $ps_media1=null, $ps_media2=null, $ps_media3=null, $ps_media4=null, $ps_location=null) {
 		global $g_ui_locale_id;
@@ -10265,7 +10334,8 @@ $pa_options["display_form_field_tips"] = true;
 			$this->errors = $t_comment->errors;
 			return false;
 		}
-		return $t_comment->getPrimaryKey();
+		
+		return $t_comment;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
@@ -10559,6 +10629,36 @@ $pa_options["display_form_field_tips"] = true;
 		} else {
 			return null;
 		}
+	}
+	# --------------------------------------------------------------------------------------------
+	/** 
+	 * Returns number of user comments for items with ids
+	 */ 
+	static public function getNumCommentsForIDs($pa_ids, $pb_moderation_status=true, $pa_options=null) {
+		if(!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
+
+		$vs_moderation_sql = '';
+		if (!is_null($pb_moderation_status)) {
+			$vs_moderation_sql = ($pb_moderation_status) ? ' AND (ca_item_comments.moderated_on IS NOT NULL)' : ' AND (ca_item_comments.moderated_on IS NULL)';
+		}
+		
+		$o_dm = Datamodel::load();
+		if (!($vn_table_num = $o_dm->getTableNum(get_called_class()))) { return null; }
+		
+		$o_db = ($o_trans = caGetOption('transaction', $pa_options, null)) ? $o_trans->getDb() : new Db();
+		$qr_comments = $o_db->query("
+			SELECT row_id, count(*) c
+			FROM ca_item_comments
+			WHERE
+				(comment != '') AND (table_num = ?) AND (row_id IN (?)) {$vs_moderation_sql}
+			GROUP BY row_id
+		", array($vn_table_num, $pa_ids));
+		
+		$va_counts = array();
+		while ($qr_comments->nextRow()) {
+			$va_counts[(int)$qr_comments->get('row_id')] = (int)$qr_comments->get('c');
+		}
+		return $va_counts;
 	}
 	# --------------------------------------------------------------------------------------------
 	/** 
@@ -11298,6 +11398,8 @@ $pa_options["display_form_field_tips"] = true;
 	 *		sort = field to sort on. Must be in <table>.<field> or <field> format and be an intrinsic field in the primary table. Sort order can be set using the sortDirection option.
 	 *		sortDirection = the direction of the sort. Values are ASC (ascending) and DESC (descending). Default is ASC.
 	 *		allowWildcards = consider "%" as a wildcard when searching. Any term including a "%" character will be queried using the SQL LIKE operator. [Default is false]
+	 *		purify = process text with HTMLPurifier before search. Purifier encodes &, < and > characters, and performs other transformations that can cause searches on literal text to fail. If you are purifying all input (the default) then leave this set true. [Default is true]
+	 *		purifyWithFallback = executes the search with "purify" set and falls back to search with unpurified text if nothing is found. [Default is false]
 	 *
 	 * @return mixed Depending upon the returnAs option setting, an array, subclass of BaseModel or integer may be returned.
 	 */
@@ -11319,6 +11421,11 @@ $pa_options["display_form_field_tips"] = true;
 		if ($o_trans) { $t_instance->setTransaction($o_trans); }
 		
 		$va_sql_wheres = array();
+		
+		$vb_purify_with_fallback = caGetOption('purifyWithFallback', $pa_options, false);
+		$vb_purify = $vb_purify_with_fallback ? true : caGetOption('purify', $pa_options, true);
+		
+		if ($vb_purify) { $pa_values = caPurifyArray($pa_values); }
 		
 		//
 		// Convert type id
@@ -11445,6 +11552,11 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
 		
 		$qr_res = $o_db->query($vs_sql);
+		
+		if ($vb_purify_with_fallback && ($qr_res->numRows() == 0)) {
+			return self::find($pa_values, array_merge($pa_options, ['purifyWithFallback' => false, 'purify' => false]));
+		}
+		
 		$vn_c = 0;
 	
 		$vs_pk = $t_instance->primaryKey();

@@ -79,6 +79,7 @@ create table ca_user_representation_annotations_x_entities
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
    primary key (relation_id),
+
    constraint fk_ca_urep_annot_x_entities_annotation_id foreign key (annotation_id)
       references ca_user_representation_annotations (annotation_id) on delete restrict on update restrict,
       
@@ -124,6 +125,7 @@ create table ca_user_representation_annotations_x_objects
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
    primary key (relation_id),
+   
    constraint fk_ca_urep_annot_x_objects_annotation_id foreign key (annotation_id)
       references ca_user_representation_annotations (annotation_id) on delete restrict on update restrict,
       
@@ -214,6 +216,7 @@ create table ca_user_representation_annotations_x_places
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
    primary key (relation_id),
+   
    constraint fk_ca_urep_annot_x_places_annotation_id foreign key (annotation_id)
       references ca_user_representation_annotations (annotation_id) on delete restrict on update restrict,
       
@@ -259,6 +262,7 @@ create table ca_user_representation_annotations_x_vocabulary_terms
    label_right_id                 int unsigned                   null,
    rank                           int unsigned                   not null default 0,
    primary key (relation_id),
+   
    constraint fk_ca_urep_annot_x_vocabulary_terms_annotation_id foreign key (annotation_id)
       references ca_user_representation_annotations (annotation_id) on delete restrict on update restrict,
       

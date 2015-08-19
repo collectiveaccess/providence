@@ -53,14 +53,16 @@ class SearchJSONService extends BaseJSONService {
 
 		// make sure only requests that are actually identical get pulled from cache
 		$vs_cache_key = md5(
-			print_r($va_post, true) .
+			serialize($va_post) .
 			$this->opo_request->getFullUrlPath() .
-			print_r($this->opo_request->getParameters(array('POST', 'GET', 'REQUEST')), true) .
+			serialize($this->opo_request->getParameters(array('POST', 'GET', 'REQUEST'))) .
 			$this->getRequestMethod()
 		);
 
-		if(ExternalCache::contains($vs_cache_key, 'SearchJSONService')) {
-			return ExternalCache::fetch($vs_cache_key, 'SearchJSONService');
+		if(!$this->opo_request->getParameter('noCache', pInteger)) {
+			if(ExternalCache::contains($vs_cache_key, 'SearchJSONService')) {
+				return ExternalCache::fetch($vs_cache_key, 'SearchJSONService');
+			}
 		}
 
 		switch($this->getRequestMethod()) {
@@ -102,8 +104,9 @@ class SearchJSONService extends BaseJSONService {
 		$va_return = array();
 		$vo_result = $vo_search->search($this->ops_query, array(
 			'deletedOnly' => $this->opb_deleted_only,
-			'sort' => $this->opo_request->getParameter('sort', pString))		// user-specified sort
-		);
+			'sort' => $this->opo_request->getParameter('sort', pString), 		// user-specified sort
+			'sortDirection' => $this->opo_request->getParameter('sortDirection', pString),
+		));
 
 		$vs_template = $this->opo_request->getParameter('template', pString);		// allow user-defined template to be passed; allows flexible formatting of returned label
 		while($vo_result->nextHit()) {

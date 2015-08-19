@@ -133,6 +133,8 @@ class SearchResult extends BaseObject {
 		
 		
 		$this->opo_tep = $GLOBALS["_DbResult_time_expression_parser"];
+		
+		self::$s_template_prefetch_cache = array();
 	}
 	# ------------------------------------------------------------------
 	public function cloneInit() {
@@ -1876,6 +1878,7 @@ class SearchResult extends BaseObject {
 		$vs_cache_base_key = $this->getCacheKeyForGetWithTemplate($ps_template, $pa_options);
 
 		$pa_options['returnAsArray'] = true; // careful, this would change the cache key ... which is why we generate it before
+		$pa_options['includeBlankValuesInArray'] = true; // if we don't set this blank values are omitted and array offsets following a blank value will be incorrect. A recipe for a bad day.
 		$va_vals = caProcessTemplateForIDs($ps_template, $this->ops_table_name, $va_ids, $pa_options);
 
 		// if we're at the first hit, we don't need to offset the cache keys, so we can use $va_vals as-is

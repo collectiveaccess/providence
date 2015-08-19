@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -82,7 +82,7 @@
 					initialValueOrder: <?php print json_encode(array_keys($va_items)); ?>,
 					setItemAutocompleteID: '<?php print $vs_id_prefix; ?>setItemAutocompleter',
 					rowIDListID: '<?php print $vs_id_prefix; ?>setRowIDList',
-					displayTemplate: <?php print (isset($va_settings['displayTemplate']) ? json_encode($va_settings['displayTemplate']) : ''); ?>,
+					displayTemplate: <?php print (isset($va_settings['displayTemplate']) ? json_encode($va_settings['displayTemplate']) : 'null'); ?>,
 					
 					editSetItemButton: '<?php print addslashes(caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__)); ?>',
 					

@@ -142,7 +142,8 @@
 			}
 			
 			$va_match_on = caGetOption("{$ps_refinery_name}_dontMatchOnLabel", $pa_item['settings'], false) ? array('idno') : array('idno', 'label');
-			$pa_options = array_merge(array('matchOn' => $va_match_on), $pa_options);
+			$vb_ignore_parent = caGetOption("{$ps_refinery_name}_ignoreParent", $pa_item['settings'], false);
+			$pa_options = array_merge(array('matchOn' => $va_match_on, 'ignoreParent' => $vb_ignore_parent), $pa_options);
 			
 			switch($ps_table) {
 				case 'ca_objects':
@@ -531,6 +532,10 @@
 			$pa_options['matchOn'] = $va_match_on;
 		}
 		
+		if (isset($pa_item['settings']["{$ps_refinery_name}_ignoreParent"])) {
+			$pa_options['ignoreParent'] = $pa_item['settings']["{$ps_refinery_name}_ignoreParent"];
+		}
+		
 		$pb_dont_create = caGetOption('dontCreate', $pa_options, (bool)$pa_item['settings']["{$ps_refinery_name}_dontCreate"]);
 		
 		$va_vals = array();
@@ -857,6 +862,7 @@
 					}
 					$va_val['_matchOn'] = $va_match_on;
 					if ($pb_dont_create) { $va_val['_dontCreate'] = 1; }
+					if (isset($pa_options['ignoreParent']) && $pa_options['ignoreParent']) { $va_val['_ignoreParent'] = 1; }
 					$va_vals[] = $va_val;
 					$vn_c++;
 				}

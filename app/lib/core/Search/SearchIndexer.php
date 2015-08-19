@@ -525,6 +525,7 @@ class SearchIndexer extends SearchBase {
 	 * @return bool
 	 */
 	public function indexRow($pn_subject_tablenum, $pn_subject_row_id, $pa_field_data, $pb_reindex_mode=false, $pa_exclusion_list=null, $pa_changed_fields=null, $pa_options=null) {
+		$vb_initial_reindex_mode = $pb_reindex_mode;
 		if (!$pb_reindex_mode && is_array($pa_changed_fields) && !sizeof($pa_changed_fields)) { return; }	// don't bother indexing if there are no changed fields
 
 		$vs_subject_tablename = $this->opo_datamodel->getTableName($pn_subject_tablenum);
@@ -534,8 +535,7 @@ class SearchIndexer extends SearchBase {
 		// Prevent endless recursive reindexing
 		if (is_array($pa_exclusion_list[$pn_subject_tablenum]) && (isset($pa_exclusion_list[$pn_subject_tablenum][$pn_subject_row_id]))) { return; }
 
-		// @todo add a config setting
-		if(caGetOption('queueIndexing', $pa_options, false)) {
+		if(caGetOption('queueIndexing', $pa_options, false) && !$t_subject->getAppConfig()->get('disable_out_of_process_search_indexing')) {
 			$this->queueIndexRow(array(
 				'table_num' => $pn_subject_tablenum,
 				'row_id' => $pn_subject_row_id,
@@ -1030,7 +1030,7 @@ class SearchIndexer extends SearchBase {
 		}
 
 
-		if ((!$pb_reindex_mode) && (sizeof($pa_changed_fields) > 0)) {
+		if ((!$vb_initial_reindex_mode) && (sizeof($pa_changed_fields) > 0)) {
 			//
 			// When not reindexing then we consider the effect of the change on this row upon related rows that use it
 			// in their indexing. This means figuring out which related tables have indexing that depend upon the subject row.
@@ -1490,7 +1490,7 @@ class SearchIndexer extends SearchBase {
 	public function commitRowUnIndexing($pn_subject_tablenum, $pn_subject_row_id, $pa_options = null) {
 		$vb_can_do_incremental_indexing = $this->opo_engine->can('incremental_reindexing') ? true : false;		// can the engine do incremental indexing? Or do we need to reindex the entire row every time?
 
-		if(caGetOption('queueIndexing', $pa_options, false)) {
+		if(caGetOption('queueIndexing', $pa_options, false) && !$this->opo_app_config->get('disable_out_of_process_search_indexing')) {
 			$this->queueUnIndexRow(array(
 				'table_num' => $pn_subject_tablenum,
 				'row_id' => $pn_subject_row_id,
