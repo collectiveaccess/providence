@@ -220,23 +220,6 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Detects if AbiWord executable is available at specified path
-	 *
-	 * @param $ps_path_to_abiword - full path to AbiWord including executable name
-	 * @return boolean - true if available, false if not
-	 */
-	function caMediaPluginAbiwordInstalled($ps_path_to_abiword=null) {
-		if(!$ps_path_to_abiword) { $ps_path_to_abiword = caGetExternalApplicationPath('abiword'); }
-
-		if (!caIsValidFilePath($ps_path_to_abiword)) { return false; }
-		exec($ps_path_to_abiword." --version 2> /dev/null", $va_output, $vn_return);
-		if (($vn_return >= 0) && ($vn_return < 127)) {
-			return true;
-		}
-		return false;
-	}
-	# ------------------------------------------------------------------------------------------------
-	/**
 	 * Detects if LibreOffice executable is available at specified path
 	 *
 	 * @param $ps_path_to_libreoffice - full path to LibreOffice including executable name
