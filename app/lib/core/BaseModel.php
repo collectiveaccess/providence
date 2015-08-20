@@ -3150,7 +3150,7 @@ class BaseModel extends BaseObject {
 				$this->setMode(ACCESS_WRITE);
 				$this->set('deleted', 1);
 				if ($vn_rc = $this->update(array('force' => true))) {
-					if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
+					if(!defined('__CA_DONT_DO_SEARCH_INDEXING__') || !__CA_DONT_DO_SEARCH_INDEXING__) {
 						$o_indexer = $this->getSearchIndexer();
 						$o_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
 						$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id, array('queueIndexing' => $pb_queue_indexing));
@@ -10287,7 +10287,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *				media3_original_filename = original file name to set for comment "media3"
 	 *				media4_original_filename = original file name to set for comment "media4"
 	 * @param $ps_location [string] = location of user
-	 * @return int comment_id of newly created comment, false on error or null if parameters are invalid
+	 * @return ca_item_comments BaseModel representation of newly created comment, false on error or null if parameters are invalid
 	 */
 	public function addComment($ps_comment, $pn_rating=null, $pn_user_id=null, $pn_locale_id=null, $ps_name=null, $ps_email=null, $pn_access=0, $pn_moderator=null, $pa_options=null, $ps_media1=null, $ps_media2=null, $ps_media3=null, $ps_media4=null, $ps_location=null) {
 		global $g_ui_locale_id;

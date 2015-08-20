@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/testsWithData/queries/LabelSearchQueryTest.php
+ * tests/testsWithData/get/CommentGetTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,51 +30,52 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php');
+require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
 /**
- * Class LabelSearchQueryTest
+ * Class CommentGetTest
  * Note: Requires testing profile!
  */
-class LabelSearchQueryTest extends AbstractSearchQueryTest {
+class CommentGetTest extends BaseTestWithData {
+	# -------------------------------------------------------
+	/**
+	 * @var BundlableLabelableBaseModelWithAttributes
+	 */
+	private $opt_object = null;
 	# -------------------------------------------------------
 	public function setUp() {
-		// don't forget to call parent so that request is set up correctly
+		// don't forget to call parent so that the request is set up
 		parent::setUp();
-
-		// search subject table
-		$this->setPrimaryTable('ca_objects');
 
 		/**
 		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
 		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 		 */
-		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
+		$vn_test_record = $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
-				'type_id' => 'image',
+				'type_id' => 'moving_image',
 			),
 			'preferred_labels' => array(
 				array(
 					"locale" => "en_US",
-					"name" => "My test image",
+					"name" => "My test moving image",
 				),
 			),
-		)));
-
-		// no label!
-		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
-			'intrinsic_fields' => array(
-				'type_id' => 'dataset',
-			),
-		)));
-
-		// search queries
-		$this->setSearchQueries(array(
-			'My Test Image' => 1,
-			'ca_object_labels.name:image' => 1,
-			'ca_object_labels.name:"[BLANK]"' => 1,
-			'ca_object_labels.name:[BLANK]' => 1,
 		));
+
+		$this->assertGreaterThan(0, $vn_test_record);
+
+		$this->opt_object = new ca_objects($vn_test_record);
+		$t_comment = $this->opt_object->addComment("I like this very much.", 4);
+
+		// make sure the comment is deleted on tearDown() by adding it to the global record map
+		$this->setRecordMapEntry('ca_item_comments', $t_comment->getPrimaryKey());
+	}
+	# -------------------------------------------------------
+	public function testComment() {
+		$vm_ret = $this->opt_object->get('ca_item_comments.comment');
+		$this->assertEquals('I like this very much.', $vm_ret);
+		$this->assertTrue(!is_numeric($this->opt_object->get('ca_item_comments.created_on')));		// should always be current date/time as tex
 	}
 	# -------------------------------------------------------
 }
