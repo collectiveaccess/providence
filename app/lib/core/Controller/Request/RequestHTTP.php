@@ -536,9 +536,9 @@ class RequestHTTP extends Request {
 			}
 			
 			if($vn_port == 443) {
-				$vs_proto = 'ssl://';
+				$vs_proto = 'tls://';
 			} else {
-				$vs_proto = ''; // 'tcp://' may be in order here but leaving it blank seems to work too
+				$vs_proto = 'tcp://'; // 'tcp://' may be in order here but leaving it blank seems to work too
 			}
 
 			// trigger async search indexing
