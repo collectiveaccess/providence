@@ -9,6 +9,8 @@ class TestInsertSearchDelete < Test::Unit::TestCase
 
   def test_insert_search_delete
     b = Watir::Browser.new
+    b.window.maximize
+
     login_as 'http://providence.dev/', b, 'administrator', 'dublincore'
 
     b.link(:class => 'sf-with-ul').hover # open "New"
@@ -38,6 +40,23 @@ class TestInsertSearchDelete < Test::Unit::TestCase
     b.text_field(:id, 'caQuickSearchFormText').send_keys "test123\n"
 
     assert b.title.include? 'Editing Image'
+    assert b.html.include? 'My new test image'
+    assert b.html.include? 'test123'
+
+    b.link(:class => 'form-button deleteButton').click
+
+    assert b.text.include? 'Really delete'
+
+    b.form(:id => 'caDeleteForm').submit
+
+    assert b.text.include? 'Image was deleted'
+
+    b.text_field(:id, 'caQuickSearchFormText').clear
+    b.text_field(:id, 'caQuickSearchFormText').send_keys "test123\n"
+
+    sleep 2
+
+    assert b.text.include? 'Objects (0)'
+
   end
 end
-
