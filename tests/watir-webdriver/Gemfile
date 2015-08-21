@@ -1,4 +1,4 @@
 source 'http://rubygems.org'
 
 gem 'watir-webdriver'
-gem 'shoulda'
+gem 'test-unit'
