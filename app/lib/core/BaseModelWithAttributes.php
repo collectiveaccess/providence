@@ -1232,6 +1232,7 @@
 		 * @param array $pa_options An array of options. Supported options are anything supported by ca_lists::getListAsHTMLFormElement as well as:
 		 *		childrenOfCurrentTypeOnly = Returns only types below the current type
 		 *		restrictToTypes = Array of type_ids to restrict type list to
+		 *		inUse = Return only types that are used by at least one record. [Default is false]
 		 * @return string HTML for list element
 		 */ 
 		public function getTypeListAsHTMLFormElement($ps_name, $pa_attributes=null, $pa_options=null) {
@@ -1241,6 +1242,15 @@
 			}
 			
 			$pa_options['limitToItemsWithID'] = caGetTypeRestrictionsForUser($this->tableName(), $pa_options);
+			
+			if (caGetOption('inUse', $pa_options, false)) {
+				$qr_types_in_use = $this->getDb()->query("SELECT DISTINCT type_id FROM ".$this->tableName().($this->hasField('deleted') ? " WHERE deleted = 0" : ""));
+				if(!is_array($pa_options['limitToItemsWithID'])) { $pa_options['limitToItemsWithID'] = array(); }
+				
+				if($qr_types_in_use->numRows() > 0) {
+					$pa_options['limitToItemsWithID'] += $qr_types_in_use->getAllFieldValues('type_id');
+				}
+			}
 			
 			if (isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
 				$pa_options['restrictToTypes'] = caMakeTypeIDList($this->tableName(), $pa_options['restrictToTypes'], $pa_options);
@@ -1300,7 +1310,7 @@
 			$va_tmp = explode('.', $ps_field);
 			
 			if ($va_tmp[1] == $this->getTypeFieldName()) {
-				return $this->getTypeListAsHTMLFormElement($ps_field, null, array_merge($pa_options, array('nullOption' => '-')));
+				return $this->getTypeListAsHTMLFormElement($ps_field, array('class' => caGetOption('class', $pa_options, null)), array_merge($pa_options, array('nullOption' => '-')));
 			}
 			
 			if (!in_array($va_tmp[0], array('created', 'modified'))) {		// let change log searches filter down to BaseModel
