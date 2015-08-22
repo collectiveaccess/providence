@@ -1274,6 +1274,21 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			$va_options[''] = $pa_options['nullOption'];
 		}
 		
+		
+		if (is_array($pa_options['limitToItemsWithID']) && sizeof($pa_options['limitToItemsWithID'])) {
+			// expand limit list to include parents of items that are included
+			$va_to_add = array();
+			foreach($va_list_items as $vn_item_id => $va_item) {
+				if (($vn_parent_id = $va_item['parent_id']) && in_array($vn_item_id, $pa_options['limitToItemsWithID'])) {
+					$va_to_add[$vn_parent_id] = true;
+					while($vn_parent_id = $va_list_items[$vn_parent_id]['parent_id']) {
+						if($va_list_items[$vn_parent_id]['parent_id']) { $va_to_add[$va_list_items[$vn_parent_id]['parent_id']] = true; }
+					}
+				}
+			}	
+			$pa_options['limitToItemsWithID'] += array_keys($va_to_add);
+		}
+		
 		$va_colors = array();
 		$vn_default_val = null;
 		foreach($va_list_items as $vn_item_id => $va_item) {
