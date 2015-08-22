@@ -1010,7 +1010,7 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Parses string for form element dimension. If a simple integer is passed then it is considered
 	 * to be expressed as the number of characters to display. If an integer suffixed with 'px' is passed
-	 * then the dimension is considered to be expressed in pixesl. If non-integers are passed they will
+	 * then the dimension is considered to be expressed in pixels. If non-integers are passed they will
 	 * be cast to integers.
 	 *
 	 * An array is always returned, with two keys: 
@@ -1034,6 +1034,47 @@ function caFileIsIncludable($ps_file) {
 		return array(
 			'dimension' => (int)$ps_dimension,
 			'type' => 'characters'
+		);
+	}
+	# ---------------------------------------
+	/**
+	 * Parses string for element dimension. If a simple integer is passed then it is considered
+	 * to be expressed as pixels. If an integer suffixed with 'px' is passed. Percentages are parsed as relative dimensions.
+	 * then the dimension is considered to be expressed in pixels. If non-integers are passed they will
+	 * be cast to integers.
+	 *
+	 * An array is always returned, with three keys: 
+	 *		dimension = the integer value of the dimension
+	 *		expression = CSS dimension (eg. 500px or 100%)
+	 *		type = either 'pixels' or 'relative'
+	 *
+	 * @param string $ps_dimension
+	 * @return array An array describing the parsed value or null if no value was passed
+	*/
+	function caParseElementDimension($ps_dimension) {
+		$ps_dimension = trim($ps_dimension);
+		if (!$ps_dimension) { return null; }
+		
+		if (preg_match('!^([\d]+)[ ]*px$!', $ps_dimension, $va_matches)) {
+			return array(
+				'dimension' => (int)$va_matches[1],
+				'expression' => $ps_dimension,
+				'type' => 'pixels'
+			);
+		}
+		
+		if (preg_match('!^([\d\.]+)[ ]*%$!', $ps_dimension, $va_matches)) {
+			return array(
+				'dimension' => (int)$va_matches[1],
+				'expression' => $ps_dimension,
+				'type' => 'relative'
+			);
+		}
+		
+		return array(
+			'dimension' => (int)$ps_dimension,
+			'expression' => "{$ps_dimension} px",
+			'type' => 'pixels'
 		);
 	}
 	# ---------------------------------------
@@ -2901,6 +2942,29 @@ function caFileIsIncludable($ps_file) {
 		}
 
 		return false;
+	}
+	# ----------------------------------------
+	/**
+	 * Display-and-die
+	 *
+	 * @param mixed $pm_val Value to dump
+	 * @param array $pa_options Option include:
+	 *		live = Don't die [default is to false]
+	 *
+	 */
+	function dd($pm_val, $pa_options=null) {
+		print "<pre>".print_r($pm_val, true)."</pre>\n";
+		if (!caGetOption('live', $pa_options, false)) { die; }
+	}
+	# ----------------------------------------
+	/**
+	 * Output content in HTML <pre> tags
+	 *
+	 * @param mixed $pm_val Value to dump
+	 *
+	 */
+	function pre($pm_val) {
+		dd($pm_val, array('live' => true));
 	}
 	# ----------------------------------------
 	/**
