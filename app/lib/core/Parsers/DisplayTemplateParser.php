@@ -255,7 +255,7 @@ class DisplayTemplateParser {
 		unset($pa_options['quote']);
 		
 		foreach($po_nodes as $vn_index => $o_node) {
-			switch($vs_tag = $o_node->tag) {
+			switch($vs_tag = strtolower($o_node->tag)) {
 				case 'case':
 					if (!$pb_is_case) {
 						$vs_acc .= DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, array_merge($pa_options, ['isCase' => true]));	
@@ -492,15 +492,17 @@ class DisplayTemplateParser {
 						$vs_proc_template = DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, $pa_options);
 					} else {
 						$vs_proc_template = caProcessTemplate($o_node->html(), $pa_vals, ['quote' => $pb_quote]);
-					}	
+					}
 					
-					if (strtolower($o_node->tag) === 'l') {
+					if ($vs_tag === 'l') {
 						$va_proc_templates = caCreateLinksFromText(
 							["{$vs_proc_template}"], $ps_tablename, [$pr_res->getPrimaryKey()],
 							null, caGetOption('linkTarget', $pa_options, null),
 							array_merge(['addRelParameter' => true, 'requireLinkTags' => false], $pa_options)
 						);
 						$vs_proc_template = array_shift($va_proc_templates);	
+					} else {
+						if (strlen($vs_tag) && ($vs_tag[0] !=='~')) { $vs_proc_template = "<{$vs_tag}>{$vs_proc_template}</{$vs_tag}>"; }
 					}
 					
 					$vs_acc .= $vs_proc_template;

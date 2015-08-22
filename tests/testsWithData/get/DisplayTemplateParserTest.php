@@ -41,10 +41,16 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 	private $opt_object = null;
 
 	/**
+	 * primary key ID of the first created entity
+	 * @var int
+	 */
+	private $opn_entity_id1 = null;
+	
+	/**
 	 * primary key ID of the last created entity
 	 * @var int
 	 */
-	private $opn_entity_id = null;
+	private $opn_entity_id2 = null;
 	
 	/**
 	 * primary key ID of the first created object
@@ -189,6 +195,8 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		));
 
 		$this->assertGreaterThan(0, $vn_entity_id);
+		
+		$this->opn_entity_id1 = $vn_entity_id;
 
 		$vn_entity_id = $this->addTestRecord('ca_entities', array(
 			'intrinsic_fields' => array(
@@ -216,7 +224,7 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		));
 
 		$this->assertGreaterThan(0, $vn_entity_id);
-		$this->opn_entity_id = $vn_entity_id;
+		$this->opn_entity_id2 = $vn_entity_id;
 	}
 	# -------------------------------------------------------
 	public function testBasicFieldsSingleRow() {
@@ -426,7 +434,7 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$vm_ret = DisplayTemplateParser::evaluate("URL: <l>^ca_objects.preferred_labels.name</l> (^ca_objects.idno)", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(1, $vm_ret);
-		$this->assertContains("editor/objects/ObjectEditor/Summary/object_id/{$this->opn_object_id}/rel/1'>My test image</a> (TEST.1)", $vm_ret[0]);
+		$this->assertContains("editor/objects/ObjectEditor/Summary/object_id/{$this->opn_object_id}\">My test image</a> (TEST.1)", $vm_ret[0]);
 		
 		$vm_ret = DisplayTemplateParser::evaluate("URL: ^ca_objects.preferred_labels.name (^ca_objects.idno)", "ca_objects", array($this->opn_object_id), array('requireLinkTags' => false, 'returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);
@@ -566,6 +574,20 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$vm_ret = DisplayTemplateParser::evaluate("Name: ^ca_objects.preferred_labels.name<ifnotdef code='ca_objects.idno'> (^ca_objects.idno)</ifnotdef>", "ca_objects", array($this->opn_object_id, $this->opn_rel_object_id), array('returnAsArray' => false));
 		$this->assertInternalType('string', $vm_ret);
 		$this->assertEquals('Name: My test image; Name: Another image', $vm_ret);
+	}
+	# -------------------------------------------------------
+	public function testDirectivesNestedInStaticHTMLForDisplay() {
+		// Relative to relationship table as is done for displays
+		$va_relation_ids = $this->opt_object->get('ca_objects_x_entities.relation_id', ['returnAsArray' => true]);
+	
+		$vm_ret = DisplayTemplateParser::evaluate('<ul style="list-style-type:none"><li><unit relativeTo="ca_entities"><l>^ca_entities.preferred_labels.displayname</l> (^ca_entities.idno)</li></unit></ul>', "ca_objects_x_entities", $va_relation_ids, array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(2, $vm_ret);
+		$this->assertInternalType('string', $vm_ret[0]);
+		$this->assertInternalType('string', $vm_ret[1]);
+	
+		$this->assertContains("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id1."\">Homer J. Simpson</a> (hjs)</li></ul>", $vm_ret[0]);
+		$this->assertContains("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id2."\">Bart Simpson</a> (bs)</li></ul>", $vm_ret[1]);
 	}
 	# -------------------------------------------------------
 }
