@@ -1420,8 +1420,10 @@ class SearchResult extends BaseObject {
 			if (is_null($vm_val)) { continue; } // Skip null values; indicates that there was no related value
 			
 			if ($pa_options['returnWithStructure']) {
+				if (!is_array($vm_val)) { $vm_val = [$vm_val]; }
 				$va_return_values = array_merge($va_return_values, $vm_val);
 			} elseif ($pa_options['returnAsArray']) {
+				if (!is_array($vm_val)) { $vm_val = [$vm_val]; }
 				foreach($vm_val as $vn_i => $vs_val) {
 					// We include blanks in arrays so various get() calls on different fields in the same record set align
 					$va_return_values[] = $vs_val;
