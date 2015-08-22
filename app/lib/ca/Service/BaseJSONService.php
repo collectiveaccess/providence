@@ -140,7 +140,7 @@ class BaseJSONService {
 	 * Get BaseModel instance for given table and optionally load the record with the specified ID
 	 * @param string $ps_table table name, e.g. "ca_objects"
 	 * @param mixed $pn_id integer primary key value of the record to load, or string idno value for the record to load 
-	 * @return BaseModel
+	 * @return BundlableLabelableBaseModelWithAttributes
 	 */
 	protected function _getTableInstance($ps_table,$pn_id=null){		// $pn_id might be a string if the user is fetching by idno
 		if(!in_array($ps_table, $this->opa_valid_tables)){

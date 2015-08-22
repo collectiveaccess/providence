@@ -3150,7 +3150,7 @@ class BaseModel extends BaseObject {
 				$this->setMode(ACCESS_WRITE);
 				$this->set('deleted', 1);
 				if ($vn_rc = $this->update(array('force' => true))) {
-					if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
+					if(!defined('__CA_DONT_DO_SEARCH_INDEXING__') || !__CA_DONT_DO_SEARCH_INDEXING__) {
 						$o_indexer = $this->getSearchIndexer();
 						$o_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
 						$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id, array('queueIndexing' => $pb_queue_indexing));
@@ -3801,6 +3801,8 @@ class BaseModel extends BaseObject {
 				unset($va_media_desc["_undo_"]);
 				unset($va_media_desc["TRANSFORMATION_HISTORY"]);
 				unset($va_media_desc["_CENTER"]);
+				unset($va_media_desc["_SCALE"]);
+				unset($va_media_desc["_SCALE_UNITS"]);
 				return array_keys($va_media_desc);
 			}
 		} else {
@@ -4241,6 +4243,8 @@ class BaseModel extends BaseObject {
 				$media_desc = array(
 					"ORIGINAL_FILENAME" => $this->_SET_FILES[$ps_field]['original_filename'],
 					"_CENTER" => $va_center,
+					"_SCALE" => caGetOption('_SCALE', $va_tmp, array()),
+					"_SCALE_UNITS" => caGetOption('_SCALE_UNITS', $va_tmp, array()),
 					"INPUT" => array(
 						"MIMETYPE" => $m->get("mimetype"),
 						"WIDTH" => $m->get("width"),
@@ -5022,12 +5026,11 @@ class BaseModel extends BaseObject {
 			return null;
 		}
 		
-		$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
+		$va_dim = caParseMeasurement($ps_dimension);
 		
-		$vn_dim = caConvertMeasurementToPoints($ps_dimension);
-		
-		$va_media_info['_SCALE'] = $vn_dim/$pn_percent_of_image_width;
-		
+		$va_media_info['_SCALE'] = $pn_percent_of_image_width/$va_dim['value'];
+		$va_media_info['_SCALE_UNITS'] = $va_dim['units'];
+	
 		$this->setMode(ACCESS_WRITE);
 		$this->setMediaInfo($ps_field, $va_media_info);
 		$this->update();
@@ -5043,7 +5046,7 @@ class BaseModel extends BaseObject {
 	 * @param string $ps_field The name of the media field
 	 * @param array $pa_options An array of options. No options are currently implemented.
 	 *
-	 * @return float Value or null if not set
+	 * @return array Value or null if not set
 	 */
 	public function getMediaScale($ps_field, $pa_options=null) {
 		$va_media_info = $this->getMediaInfo($ps_field);
@@ -5051,7 +5054,7 @@ class BaseModel extends BaseObject {
 			return null;
 		}
 		
-		return caGetOption('_SCALE', $va_media_info, null);
+		return array('scale' => caGetOption('_SCALE', $va_media_info, null), 'measurementUnits' => caGetOption('_SCALE_UNITS', $va_media_info, null));;
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -10287,7 +10290,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *				media3_original_filename = original file name to set for comment "media3"
 	 *				media4_original_filename = original file name to set for comment "media4"
 	 * @param $ps_location [string] = location of user
-	 * @return int comment_id of newly created comment, false on error or null if parameters are invalid
+	 * @return ca_item_comments BaseModel representation of newly created comment, false on error or null if parameters are invalid
 	 */
 	public function addComment($ps_comment, $pn_rating=null, $pn_user_id=null, $pn_locale_id=null, $ps_name=null, $ps_email=null, $pn_access=0, $pn_moderator=null, $pa_options=null, $ps_media1=null, $ps_media2=null, $ps_media3=null, $ps_media4=null, $ps_location=null) {
 		global $g_ui_locale_id;

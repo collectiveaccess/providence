@@ -477,9 +477,10 @@ class BundlableLabelableBaseModelWithAttributesTest extends PHPUnit_Framework_Te
 	public function tearDown() {
 		$o_dm = Datamodel::load();
 		foreach($this->opa_test_record_ids as $vs_table => $va_record_ids) {
+			$t_instance = $o_dm->getInstance($vs_table);
+			$t_instance->setMode(ACCESS_WRITE);
+
 			foreach($va_record_ids as $vn_record_id) {
-				$t_instance = $o_dm->getInstance($vs_table);
-				$t_instance->setMode(ACCESS_WRITE);
 				$t_instance->load($vn_record_id);
 				$t_instance->delete(true, array('hard' => true));
 			}

@@ -51,30 +51,6 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Detects if CoreImageTool executable is available at specified path
-	 *
-	 * @param string $ps_path_to_coreimage - full path to CoreImageTool including executable name
-	 * @return boolean - true if available, false if not
-	 */
-	function caMediaPluginCoreImageInstalled($ps_path_to_coreimage=null) {
-		if(!$ps_path_to_coreimage) { $ps_path_to_coreimage = caGetExternalApplicationPath('coreimagetool'); }
-
-		global $_MEDIAHELPER_PLUGIN_CACHE_COREIMAGE;
-		if (isset($_MEDIAHELPER_PLUGIN_CACHE_COREIMAGE[$ps_path_to_coreimage])) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_COREIMAGE[$ps_path_to_coreimage];
-		} else {
-			$_MEDIAHELPER_PLUGIN_CACHE_COREIMAGE = array();
-		}
-		if (!caIsValidFilePath($ps_path_to_coreimage)) { return false; }
-
-		exec($ps_path_to_coreimage.' 2> /dev/null', $va_output, $vn_return);
-		if (($vn_return >= 0) && ($vn_return < 127)) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_COREIMAGE[$ps_path_to_coreimage] = true;
-		}
-		return $_MEDIAHELPER_PLUGIN_CACHE_COREIMAGE[$ps_path_to_coreimage] = false;
-	}
-	# ------------------------------------------------------------------------------------------------
-	/**
 	 * Detects if ImageMagick executables is available within specified directory path
 	 *
 	 * @param $ps_imagemagick_path - path to directory containing ImageMagick executables
@@ -213,23 +189,6 @@
 
 		if (!caIsValidFilePath($ps_path_to_pdf_to_text)) { return false; }
 		exec($ps_path_to_pdf_to_text." -v 2> /dev/null", $va_output, $vn_return);
-		if (($vn_return >= 0) && ($vn_return < 127)) {
-			return true;
-		}
-		return false;
-	}
-	# ------------------------------------------------------------------------------------------------
-	/**
-	 * Detects if AbiWord executable is available at specified path
-	 *
-	 * @param $ps_path_to_abiword - full path to AbiWord including executable name
-	 * @return boolean - true if available, false if not
-	 */
-	function caMediaPluginAbiwordInstalled($ps_path_to_abiword=null) {
-		if(!$ps_path_to_abiword) { $ps_path_to_abiword = caGetExternalApplicationPath('abiword'); }
-
-		if (!caIsValidFilePath($ps_path_to_abiword)) { return false; }
-		exec($ps_path_to_abiword." --version 2> /dev/null", $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
 			return true;
 		}
