@@ -808,14 +808,16 @@ class SearchResult extends BaseObject {
 	 * 	@return mixed String or array
 	 */
 	public function get($ps_field, $pa_options=null) {
+		$vb_return_as_array = isset($pa_options['returnAsArray']) ? (bool)$pa_options['returnAsArray'] : false;
+		$vb_return_with_structure = isset($pa_options['returnWithStructure']) ? (bool)$pa_options['returnWithStructure'] : false;
 		// Return primary key of primary table as quickly as possible
 		if (($ps_field == $this->ops_table_pk) || ($ps_field == $this->ops_table_name.'.'.$this->ops_table_pk)) {
-			return $this->opo_engine_result->get($this->ops_table_pk);
+			$vn_id = $this->opo_engine_result->get($this->ops_table_pk);
+			return ($vb_return_as_array || $vb_return_with_structure) ? array($vn_id) : $vn_id;
 		}
 		
 		//$t = new Timer();
 		if(!is_array($pa_options)) { $pa_options = array(); }
-		$vb_return_as_array = isset($pa_options['returnAsArray']) ? (bool)$pa_options['returnAsArray'] : false;
 		$va_filters = is_array($pa_options['filters']) ? $pa_options['filters'] : array();
 		
 		// Add table name to field specs that lack it
@@ -1457,10 +1459,10 @@ class SearchResult extends BaseObject {
 			if (is_null($vm_val)) { continue; } // Skip null values; indicates that there was no related value
 			
 			if ($pa_options['returnWithStructure']) {
-				if (!is_array($vm_val)) { $vm_val = [$vm_val]; }
+				if (!is_array($vm_val)) { $vm_val = array($vm_val); }
 				$va_return_values = array_merge($va_return_values, $vm_val);
 			} elseif ($pa_options['returnAsArray']) {
-				if (!is_array($vm_val)) { $vm_val = [$vm_val]; }
+				if (!is_array($vm_val)) { $vm_val = array($vm_val); }
 				foreach($vm_val as $vn_i => $vs_val) {
 					// We include blanks in arrays so various get() calls on different fields in the same record set align
 					$va_return_values[] = $vs_val;
