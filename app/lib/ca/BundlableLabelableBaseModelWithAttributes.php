@@ -2080,45 +2080,45 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				case 2:		// table_name.field_name
 				case 3:		// table_name.field_name.sub_element	
 					if (!($t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true))) { return null; }
-					
-					switch($va_tmp[1]) {
-						# --------------------
-						case 'preferred_labels':		
-						case 'nonpreferred_labels':
-							return caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
-							break;
-						# --------------------
-						default:
-							if ($va_tmp[0] != $this->tableName()) {
-								switch(sizeof($va_tmp)) {
-									case 1:
-										return caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
-									case 2:
-									case 3:
-										if (caGetOption('select', $pa_options, false)) {
-											$va_access = caGetOption('checkAccess', $pa_options, null);
-											if (!($t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true))) { return null; }
-											
-											$vs_label_display_field = $t_instance->getLabelDisplayField();
-											$qr_res = call_user_func_array($va_tmp[0].'::find', array(array('deleted' => 0, 'parent_id' => null), array('sort' => caGetOption('sort', $pa_options, $t_instance->getLabelTableName().'.'.$vs_label_display_field), 'returnAs' => 'searchResult')));
-						
-											$vs_pk = $t_instance->primaryKey();
-											$va_opts = array('-' => '');
-											while($qr_res->nextHit()) {
-												if (is_array($va_access) && !in_array($qr_res->get($va_tmp[0].'.access'), $va_access)) { continue; }
-												$va_opts[$qr_res->get($va_tmp[0].".preferred_labels.{$vs_label_display_field}")] = $qr_res->get($ps_field);
+										
+					if ($va_tmp[0] != $this->tableName()) {
+						switch(sizeof($va_tmp)) {
+							case 1:
+								return caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
+							case 2:
+							case 3:
+								if (caGetOption('select', $pa_options, false)) {
+									$va_access = caGetOption('checkAccess', $pa_options, null);
+									if (!($t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true))) { return null; }
+								
+									$vs_label_display_field = $t_instance->getLabelDisplayField();
+									$va_find_params = array('parent_id' => null);
+								
+									switch($va_tmp[0]) {
+										case 'ca_list_items':
+											if ($vs_list = caGetOption('list', $pa_options, null)) {
+												if ($vn_list_id = caGetListID($vs_list)) { $va_find_params = array('list_id' => $vn_list_id); }
 											}
-						
-											return caHTMLSelect($ps_field.($vb_as_array_element ? "[]" : ""), $va_opts, array('value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
-										} else {
-											return $t_instance->htmlFormElementForSearch($po_request, $ps_field, $pa_options);
-										}
-										break;
+											break;
+									}
+									
+									$qr_res = call_user_func_array($va_tmp[0].'::find', array($va_find_params, array('sort' => caGetOption('sort', $pa_options, $t_instance->getLabelTableName().'.'.$vs_label_display_field), 'returnAs' => 'searchResult')));
+			
+									$vs_pk = $t_instance->primaryKey();
+									$va_opts = array('-' => '');
+									while($qr_res->nextHit()) {
+										if (($va_tmp[0] == 'ca_list_items') && (!$qr_res->get('parent_id'))) { continue; }
+										if (is_array($va_access) && !in_array($qr_res->get($va_tmp[0].'.access'), $va_access)) { continue; }
+										$va_opts[$qr_res->get($va_tmp[0].".preferred_labels.{$vs_label_display_field}")] = $qr_res->get($ps_field);
+									}
+			
+									return caHTMLSelect($ps_field.($vb_as_array_element ? "[]" : ""), $va_opts, array('value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
+								} else {
+									return $t_instance->htmlFormElementForSearch($po_request, $ps_field, $pa_options);
 								}
-							}
-							break;
-						# --------------------
-					}	
+								break;
+						}
+					}
 						
 					break;
 				# -------------------------------------
