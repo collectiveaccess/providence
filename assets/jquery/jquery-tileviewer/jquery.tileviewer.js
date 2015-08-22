@@ -8,7 +8,7 @@ TileViewer HTML5 client
     * JQuery.HotKeys
     * Brandon Aaron's (http://brandonaaron.net) mousewheel jquery plugin 3.0.3
     * Circular-Slider (https://github.com/princejwesley/circular-slider)
-    * HammerJS (http://hammerjs.github.io)
+    * HammerJS (http://hammerjs.github.io) [In progress]
 
 The MIT License
 
@@ -54,14 +54,10 @@ var methods = {
         	id: 'tileviewer',
             src: null,
             empty: "#cccccc", //color of empty (loading) tile - if no subtile is available
-            width: 400, //canvas width - not image width
-            height: 300, //canvas height - not image height
             zoomSensitivity: 16, 
             thumbnail: false,//display thumbnail
             debug: false,
-            grabberSize: 12, //size of the grabber area
             maximumPixelsize: 4,//set this to >1 if you want to let user to zoom image after reaching its original resolution 
-            thumbDepth: 2, //level depth when thumbnail should appear
             
             toolbar: ['zoomIn', 'zoomOut', 'pan', 'toggleAnnotations', 'rect', 'point', 'polygon', 'measure', 'lock', 'separator',  'overview', 'rotation', 'expand', 'separator', 'list', 'download', 'help', 'key'],
             toolbarIcons: {
@@ -109,9 +105,9 @@ var methods = {
             lockAnnotations: false,						// lock annotations on load - will display but cannot add, remove or drag existing annotations
             lockAnnotationText: false,					// lock annotation text on load - will display text but not be editable
             showAnnotationTools: true,					// show annotation tools on load
-            annotationTextDisplayMode: 'mouseover',		// how to display annotation text: 'simultaneous' = show all annotation text all the time [DEFAULT]; 'mouseover' = show annotation text only when mouse is over the annotation or it is selected; 'selected' = show annotation text only when it is selected
-			annotationColor: "000000", //"EE7B19",
-			annotationColorSelected: "CC0000",
+            annotationTextDisplayMode: 'mouseover',		// how to display annotation text: 'simultaneous' = show all annotation text all the time; 'mouseover' = show annotation text only when mouse is over the annotation or it is selected; 'selected' = show annotation text only when it is selected
+			annotationColor: "#000000", //"EE7B19",
+			annotationColorSelected: "#CC0000",
 			highlightPointsWithCircles: true,			// draw circles around point label locations?
 			allowDraggableTextBoxesForRects: true,		// allow draggable text boxes for rectangular annotations?
 			
@@ -123,7 +119,7 @@ var methods = {
 			
 			annotationEditorPanel: null,					// instance of ca.panel to open full annotation editor in
 			annotationEditorUrl: null,						// url to load full annotation editor form
-			annotationEditorLink: 'Edit more',				// content of full annotation editor link
+			annotationEditorLink: 'More',				// content of full annotation editor link
 			
 			annotationDisplayMode: 'center',				// perimeter, center 
 			annotationDisplayModeCenterColor: "rgba(175, 0, 0, 0.4)",	// when perimeter is "center", the color/opacity of the dot used to mark the center, as an rgba() string
@@ -304,7 +300,7 @@ var methods = {
                     },
                     
                     load_annotations: function() {     
-                    	if (!options.useAnnotations || !options.annotationLoadUrl.trim()) { return; }
+                    	if (!options.useAnnotations || !options.annotationLoadUrl || !options.annotationLoadUrl.trim()) { return; }
                     	
                     	jQuery.getJSON(options.annotationLoadUrl, function(data) {
                     		view.annotations = [];
@@ -663,14 +659,14 @@ var methods = {
                         	
                         	// is annotation the current selection?
                         	if (selectedAnnotation == i) {
-                        		ctx.strokeStyle = '#' + options.annotationColorSelected;
+                        		ctx.strokeStyle = options.annotationColorSelected;
                         		
                         		if(options.allowAnnotationList) {
                         			// highlight in annotation list
                         			jQuery($this).find("li.tileviewerAnnotationListItem_" + annotation['annotation_id']).addClass('tileviewerAnnotationListItemSelected');
                         		}
                         	} else {
-                        		ctx.strokeStyle = '#' + ((annotation.key && annotation.key.color) ? annotation.key.color : options.annotationColor); 
+                        		ctx.strokeStyle = ((annotation.key && annotation.key.color) ? annotation.key.color : options.annotationColor); 
                         		
                         		jQuery($this).find("li.tileviewerAnnotationListItem_" + annotation['annotation_id']).removeClass('tileviewerAnnotationListItemSelected');
                         	}
