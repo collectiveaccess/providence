@@ -250,6 +250,8 @@ class DisplayTemplateParser {
 		$ps_delimiter = caGetOption('delimiter', $pa_options, '; ');
 		$pb_is_case = caGetOption('isCase', $pa_options, false, ['castTo' => 'boolean']);
 		$pb_quote = caGetOption('quote', $pa_options, false, ['castTo' => 'boolean']);
+		$pa_primary_ids = caGetOption('primaryIDs', $pa_options, null);
+		
 		unset($pa_options['quote']);
 		
 		foreach($po_nodes as $vn_index => $o_node) {
@@ -456,10 +458,10 @@ class DisplayTemplateParser {
 								$va_relative_ids = array_values($va_relative_ids);
 								break;
 							default:
-								if (method_exists($t_instance, 'isSelfRelationship') && $t_instance->isSelfRelationship()) {
-									$va_relative_ids = array_values($t_instance->getRelatedIDsForSelfRelationship($va_primary_ids[$t_rel_instance->tableName()], array($vs_pk_val)));
+								if (method_exists($t_instance, 'isSelfRelationship') && $t_instance->isSelfRelationship() && is_array($pa_primary_ids) && isset($pa_primary_ids[$t_rel_instance->tableName()])) {
+									$va_relative_ids = array_values($t_instance->getRelatedIDsForSelfRelationship($pa_primary_ids[$t_rel_instance->tableName()], array($pr_res->getPrimaryKey())));
 								} else {
-									$va_relative_ids = array_values($pr_res->get($t_rel_instance->tableName().".".$t_rel_instance->primaryKey(), $va_get_options));
+									$va_relative_ids = array_values($pr_res->get($t_rel_instance->primaryKey(true), $va_get_options));
 								}
 							
 								break;
@@ -486,7 +488,22 @@ class DisplayTemplateParser {
 				
 					break;
 				default:
-					$vs_acc .= caProcessTemplate($o_node->html(), $pa_vals, ['quote' => $pb_quote]);
+					if ($o_node->children && (sizeof($o_node->children) > 0)) {
+						$vs_proc_template = DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, $pa_options);
+					} else {
+						$vs_proc_template = caProcessTemplate($o_node->html(), $pa_vals, ['quote' => $pb_quote]);
+					}	
+					
+					if (strtolower($o_node->tag) === 'l') {
+						$va_proc_templates = caCreateLinksFromText(
+							["{$vs_proc_template}"], $ps_tablename, [$pr_res->getPrimaryKey()],
+							null, caGetOption('linkTarget', $pa_options, null),
+							array_merge(['addRelParameter' => true, 'requireLinkTags' => false], $pa_options)
+						);
+						$vs_proc_template = array_shift($va_proc_templates);	
+					}
+					
+					$vs_acc .= $vs_proc_template;
 					break;
 			}
 		}
