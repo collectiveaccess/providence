@@ -58,5 +58,6 @@ class TestInsertSearchDelete < Test::Unit::TestCase
 
     assert b.text.include? 'Objects (0)'
 
+    b.close
   end
 end
