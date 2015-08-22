@@ -4552,6 +4552,7 @@ if (!$vb_batch) {
 			}
 			$pa_options['excludeTypes'][] = $pa_options['excludeType'];
 		}
+
 		if (isset($pa_options['excludeTypes']) && is_array($pa_options['excludeTypes'])) {
 			$va_type_ids = caMakeTypeIDList($vs_related_table, $pa_options['excludeTypes']);
 
@@ -4863,6 +4864,7 @@ if (!$vb_batch) {
 					}
 
 					$vn_locale_id = $qr_res->get('locale_id');
+
 					if ($vb_use_locale_codes) {
 						$va_rels[$vs_v]['locale_id'] = $vn_locale_id = $t_locale->localeIDToCode($vn_locale_id);
 					}

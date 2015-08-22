@@ -3801,6 +3801,8 @@ class BaseModel extends BaseObject {
 				unset($va_media_desc["_undo_"]);
 				unset($va_media_desc["TRANSFORMATION_HISTORY"]);
 				unset($va_media_desc["_CENTER"]);
+				unset($va_media_desc["_SCALE"]);
+				unset($va_media_desc["_SCALE_UNITS"]);
 				return array_keys($va_media_desc);
 			}
 		} else {
@@ -4241,6 +4243,8 @@ class BaseModel extends BaseObject {
 				$media_desc = array(
 					"ORIGINAL_FILENAME" => $this->_SET_FILES[$ps_field]['original_filename'],
 					"_CENTER" => $va_center,
+					"_SCALE" => caGetOption('_SCALE', $va_tmp, array()),
+					"_SCALE_UNITS" => caGetOption('_SCALE_UNITS', $va_tmp, array()),
 					"INPUT" => array(
 						"MIMETYPE" => $m->get("mimetype"),
 						"WIDTH" => $m->get("width"),
@@ -5022,12 +5026,11 @@ class BaseModel extends BaseObject {
 			return null;
 		}
 		
-		$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
+		$va_dim = caParseMeasurement($ps_dimension);
 		
-		$vn_dim = caConvertMeasurementToPoints($ps_dimension);
-		
-		$va_media_info['_SCALE'] = $vn_dim/$pn_percent_of_image_width;
-		
+		$va_media_info['_SCALE'] = $pn_percent_of_image_width/$va_dim['value'];
+		$va_media_info['_SCALE_UNITS'] = $va_dim['units'];
+	
 		$this->setMode(ACCESS_WRITE);
 		$this->setMediaInfo($ps_field, $va_media_info);
 		$this->update();
@@ -5043,7 +5046,7 @@ class BaseModel extends BaseObject {
 	 * @param string $ps_field The name of the media field
 	 * @param array $pa_options An array of options. No options are currently implemented.
 	 *
-	 * @return float Value or null if not set
+	 * @return array Value or null if not set
 	 */
 	public function getMediaScale($ps_field, $pa_options=null) {
 		$va_media_info = $this->getMediaInfo($ps_field);
@@ -5051,7 +5054,7 @@ class BaseModel extends BaseObject {
 			return null;
 		}
 		
-		return caGetOption('_SCALE', $va_media_info, null);
+		return array('scale' => caGetOption('_SCALE', $va_media_info, null), 'measurementUnits' => caGetOption('_SCALE_UNITS', $va_media_info, null));;
 	}
 	# --------------------------------------------------------------------------------
 	/**
