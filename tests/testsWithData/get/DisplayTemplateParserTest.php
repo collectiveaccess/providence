@@ -510,6 +510,42 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$this->assertEquals('Here are the descriptions: First description, Second description, Third description', $vm_ret[0]);
 	}
 	# -------------------------------------------------------
+	public function testFormatsWithPrimary() {
+		$vm_ret = DisplayTemplateParser::evaluate("The current primary is ^primary. This has nothing to do with object ^ca_objects.idno", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("The current primary is ca_objects. This has nothing to do with object TEST.1", $vm_ret[0]);	
+		
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities' delimiter=' '>The current primary is ^primary.</unit> This has nothing to do with object ^ca_objects.idno", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("The current primary is ca_entities. The current primary is ca_entities. This has nothing to do with object TEST.1", $vm_ret[0]);	
+	}
+	# -------------------------------------------------------
+	public function testFormatsWithCount() {
+		$vm_ret = DisplayTemplateParser::evaluate("The current count is ^count. This has nothing to do with object ^ca_objects.idno", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("The current count is 1. This has nothing to do with object TEST.1", $vm_ret[0]);	
+		
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities' delimiter=' '>The current count is ^count.</unit> This has nothing to do with object ^ca_objects.idno", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("The current count is 2. The current count is 2. This has nothing to do with object TEST.1", $vm_ret[0]);	
+	}
+	# -------------------------------------------------------
+	public function testFormatsWithIndex() {
+		$vm_ret = DisplayTemplateParser::evaluate("This is row ^index of ^count", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("This is row 1 of 1", $vm_ret[0]);	
+			
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities' delimiter=' '>^ca_entities.preferred_labels.displayname is row ^index of ^count.</unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("Homer J. Simpson is row 1 of 2. Bart Simpson is row 2 of 2.", $vm_ret[0]);	
+	}
+	# -------------------------------------------------------
 	public function testFormatsWithDate() {
 		$vs_date = date('d M Y'); // you execute this test right at the stroke of midnight it might fail...
 		$vm_ret = DisplayTemplateParser::evaluate("The current date is ^DATE. This has nothing to do with object ^ca_objects.idno", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));

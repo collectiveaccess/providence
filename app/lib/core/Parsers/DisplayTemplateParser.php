@@ -529,7 +529,7 @@ class DisplayTemplateParser {
 		foreach(array_keys($pa_tags) as $vs_tag) {
 			
 			// Apply placeholder prefix to any tag except the "specials"
-			if (!in_array(strtolower($vs_tag), ['relationship_typename', 'relationship_type_id', 'relationship_typecode', 'relationship_type_code', 'date'])) {
+			if (!in_array(strtolower($vs_tag), ['relationship_typename', 'relationship_type_id', 'relationship_typecode', 'relationship_type_code', 'date', 'primary', 'count', 'index'])) {
 				$va_tag = explode(".", $vs_tag);
 				$vs_get_spec = $vs_tag;
 				if (isset($pa_options['placeholderPrefix']) && $pa_options['placeholderPrefix'] && (!$o_dm->tableExists($va_tag[0])) &&  (!preg_match("!^".$pa_options['placeholderPrefix']."\.!", $vs_tag)) && (sizeof($va_tag) > 0)) {
@@ -560,6 +560,15 @@ class DisplayTemplateParser {
 					break;
 				case 'date':		// allows embedding of current date
 					$va_val_list = [date(caGetOption('format', $va_parsed_tag_opts['options'], 'd M Y'))];
+					break;
+				case 'primary':
+					$va_val_list = [$pr_res->tableName()];
+					break;
+				case 'count':
+					$va_val_list = [$pr_res->numHits()];
+					break;
+				case 'index':
+					$va_val_list = [$pr_res->currentIndex() + 1];
 					break;
 				default:
 					$va_val_list = $pr_res->get($vs_get_spec, $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
