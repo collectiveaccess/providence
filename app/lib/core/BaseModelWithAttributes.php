@@ -2167,7 +2167,7 @@
 
 			$vs_table = $this->tableName();
 			foreach($va_elements as $vn_element_id => $vs_element_code) {
-				$va_vals = $this->get("{$vs_table}.{$vs_element_code}", array("returnAsArray" => true, "returnAllLocales" => true, 'forDuplication' => true));
+				$va_vals = $this->get("{$vs_table}.{$vs_element_code}", array("returnAsArray" => true, "returnWithStructure" => true, "returnAllLocales" => true, 'forDuplication' => true));
 				if (!is_array($va_vals)) { continue; }
 				if (sizeof($va_restrictToAttributesByCodes)>0 || sizeof($va_restrictToAttributesByIds)>0) {
 					if (!(in_array($vs_element_code,$va_restrictToAttributesByCodes) || in_array($vn_element_id,$va_restrictToAttributesByIds))) {
