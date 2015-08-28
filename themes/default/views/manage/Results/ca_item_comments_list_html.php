@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -78,6 +78,7 @@
 ?>
 				<tr>
 					<td>
+						<div class="caUserCommentsListName">
 <?php 
 						if($vo_result->get('ca_item_comments.user_id')){
 							print $vo_result->get('ca_users.fname')." ".$vo_result->get('ca_users.lname')."<br/>".$vo_result->get('ca_users.email');
@@ -85,9 +86,12 @@
 							print $vo_result->get('ca_item_comments.name')."<br/>".$vo_result->get('ca_item_comments.user_email');
 						}
 ?>
+						</div>
 					</td>
 					<td>
-						<?php print $vo_result->get('ca_item_comments.comment'); ?>
+						<div class="caUserCommentsListComment">
+							<?php print $vo_result->get('ca_item_comments.comment'); ?>
+						</div>
 					</td>	
 					<td>
 <?php

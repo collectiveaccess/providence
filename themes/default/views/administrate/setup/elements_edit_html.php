@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -45,10 +45,14 @@
 
 	print caFormTag($this->request, 'Save', 'ElementsForm');
 ?>
-	<div class='formLabel'><span id="_ca_metadata_element_labels_"><?php print _t("Labels"); ?></span><br/></div>
+
+<div class="bundleLabel">
+	<span class="formLabelText" id="_ca_metadata_element_labels_"><?php print _t("Labels"); ?></span>
 <?php
 	print $t_element->getPreferredLabelHTMLFormBundle($this->request,'element_labels','element_labels');
-
+?>
+</div>
+<?php
 	$va_lookup_url_info = caJSONLookupServiceUrl($this->request, $t_element->tableName());
 	$va_options =	array(							
 							'error_icon' 					=> $this->request->getThemeUrlPath()."/graphics/icons/warning_small.gif",

@@ -45,7 +45,8 @@
 	$vs_sort			=	((isset($va_settings['sort']) && $va_settings['sort'])) ? $va_settings['sort'] : '';
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_storage_locations') == __CA_BUNDLE_ACCESS_READONLY__));
 	$vb_dont_show_del	=	((isset($va_settings['dontShowDeleteButton']) && $va_settings['dontShowDeleteButton'])) ? true : false;
-	
+	$vs_disabled_items_mode = $t_instance->getAppConfig()->get($t_instance->tableName() . '_hierarchy_browser_disabled_items_mode');
+	$vs_disabled_items_mode = $vs_disabled_items_mode ? $vs_disabled_items_mode : 'hide';
 	$va_initial_values	= $this->getVar('initialValues');
 	
 	// params to pass during occurrence lookup
@@ -180,7 +181,7 @@
 						browserWidth: "<?php print $va_settings['hierarchicalBrowserWidth']; ?>",
 						
 						dontAllowEditForFirstLevel: false,
-						disabledItems: 'hide',
+						disabledItems: '<?php print $vs_disabled_items_mode; ?>',
 						
 						className: 'hierarchyBrowserLevel',
 						classNameContainer: 'hierarchyBrowserContainer',
@@ -313,7 +314,7 @@
 			relationshipTypes: <?php print json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
 			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'StorageLocation', 'Get', $va_lookup_params); ?>',
 			minChars:1,
-			bundlePreview: <?php print caEscapeForBundlePreview($t_instance->get($t_item->tableName(), array('delimiter' => '; ', 'restrict_to_types' => $va_settings['restrict_to_types'], 'restrict_to_relationship_types' => $va_settings['restrict_to_relationship_types'], 'template' => $va_settings['display_template']))); ?>,
+			bundlePreview: <?php print (sizeof($this->getVar('initialValues')) < 50) ? caEscapeForBundlePreview($t_instance->get($t_item->tableName(), array('delimiter' => '; ', 'restrict_to_types' => $va_settings['restrict_to_types'], 'restrict_to_relationship_types' => $va_settings['restrict_to_relationship_types'], 'template' => $va_settings['display_template']))) : "''"; ?>,
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
 			isSortable: <?php print ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',

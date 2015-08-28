@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -113,8 +113,10 @@ $va_attribute_types = $this->getVar('attribute_types');
 ?>
 			</td>
 			<td>
-				<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'editIcon', 'administrate/setup', 'Elements', 'Edit', array('element_id' => $va_element['element_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-				<?php print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'deleteIcon', 'administrate/setup', 'Elements', 'Delete', array('element_id' => $va_element['element_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+				<div class="saveDelete">
+					<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'editIcon', 'administrate/setup', 'Elements', 'Edit', array('element_id' => $va_element['element_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?php print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'deleteIcon', 'administrate/setup', 'Elements', 'Delete', array('element_id' => $va_element['element_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+				</div>
 			</td>
 		</tr>
 <?php

@@ -142,7 +142,8 @@
 			}
 			
 			$va_match_on = caGetOption("{$ps_refinery_name}_dontMatchOnLabel", $pa_item['settings'], false) ? array('idno') : array('idno', 'label');
-			$pa_options = array_merge(array('matchOn' => $va_match_on), $pa_options);
+			$vb_ignore_parent = caGetOption("{$ps_refinery_name}_ignoreParent", $pa_item['settings'], false);
+			$pa_options = array_merge(array('matchOn' => $va_match_on, 'ignoreParent' => $vb_ignore_parent), $pa_options);
 			
 			switch($ps_table) {
 				case 'ca_objects':
@@ -531,6 +532,10 @@
 			$pa_options['matchOn'] = $va_match_on;
 		}
 		
+		if (isset($pa_item['settings']["{$ps_refinery_name}_ignoreParent"])) {
+			$pa_options['ignoreParent'] = $pa_item['settings']["{$ps_refinery_name}_ignoreParent"];
+		}
+		
 		$pb_dont_create = caGetOption('dontCreate', $pa_options, (bool)$pa_item['settings']["{$ps_refinery_name}_dontCreate"]);
 		
 		$va_vals = array();
@@ -857,6 +862,7 @@
 					}
 					$va_val['_matchOn'] = $va_match_on;
 					if ($pb_dont_create) { $va_val['_dontCreate'] = 1; }
+					if (isset($pa_options['ignoreParent']) && $pa_options['ignoreParent']) { $va_val['_ignoreParent'] = 1; }
 					$va_vals[] = $va_val;
 					$vn_c++;
 				}
@@ -1054,7 +1060,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 
 		if(strlen($vs_val)>0) {
 			$vn_timestamp = PHPExcel_Shared_Date::ExcelToPHP(trim((string)$o_val->getValue())) + $pn_offset;
-			if (!($vs_return = caGetLocalizedDate((int)$vn_timestamp, null))) {
+			if (!($vs_return = caGetLocalizedDate($vn_timestamp, array('dateFormat' => 'iso8601', 'timeOmit' => false)))) {
 				$vs_return = $vs_val;
 			}
 		} else {
@@ -1133,24 +1139,9 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 
 		if($vn_pick >= 0 && ($vn_best_distance > $pn_threshold)) {
 			$va_pick = $va_hits[$vn_pick];
-			$vs_id = '';
-			if(preg_match("/[a-z]{3,4}\/[0-9]+$/", $va_pick['ID']['value'], $va_matches)) {
-				$vs_id = str_replace('/', ':', $va_matches[0]);
-			}
 
-			$vs_label = '['. str_replace('aat:', '', $vs_id) . '] ' . $va_pick['TermPrefLabel']['value'] . " [" . $va_pick['Parents']['value'] . "]";
-			$vs_label = preg_replace('/\,\s\.\.\.\s[A-Za-z\s]+Facet\s*/', '', $vs_label);
-			$vs_label = preg_replace('/[\<\>]/', '', $vs_label);
-
-			$va_return = array(
-				'label' => htmlentities($vs_label),
-				'id' => $vs_id,
-				'url' => $va_pick['ID']['value'],
-			);
-
-			$vs_return = join('|', $va_return);
-			MemoryCache::save($vs_cache_key, $vs_return, 'AATMatches');
-			return $vs_return;
+			MemoryCache::save($vs_cache_key, $va_pick['ID']['value'], 'AATMatches');
+			return $va_pick['ID']['value'];
 		}
 
 		return false;

@@ -135,7 +135,7 @@
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
 				dontAllowEditForFirstLevel: <?php print (in_array($t_subject->tableName(), array('ca_places', 'ca_storage_locations', 'ca_list_items', 'ca_relationship_types')) ? 'true' : 'false'); ?>,
 
-				disabledItems: 'hide',
+				disabledItems: '<?php print $vs_disabled_items_mode; ?>',
 				
 				editUrl: '<?php print $vs_edit_url; ?>',
 				editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",

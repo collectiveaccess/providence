@@ -104,7 +104,7 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 		);
 
 		$vs_content = caQueryExternalWebservice(
-			$vs_url = 'http://'.$vs_lang.'.wikipedia.org/w/api.php?' . caConcatGetParams($va_get_params)
+			$vs_url = 'https://'.$vs_lang.'.wikipedia.org/w/api.php?' . caConcatGetParams($va_get_params)
 		);
 
 		$va_content = @json_decode($vs_content, true);
@@ -153,13 +153,13 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 			'titles' => self::getPageTitleFromURI($ps_url),
 			'prop' => 'pageimages|info|extracts',
 			'inprop' => 'url',
-			'piprop' => 'thumbnail',
+			'piprop' => 'name|thumbnail',
 			'pithumbsize' => '200px',
 			'format' => 'json'
 		);
 
 		$vs_content = caQueryExternalWebservice(
-			'http://'.$vs_lang.'.wikipedia.org/w/api.php?' . caConcatGetParams($va_get_params)
+			'https://'.$vs_lang.'.wikipedia.org/w/api.php?' . caConcatGetParams($va_get_params)
 		);
 
 		$va_content = @json_decode($vs_content, true);
@@ -185,6 +185,7 @@ class WLPlugInformationServiceWikipedia Extends BaseInformationServicePlugin Imp
 			'image_thumbnail' => $va_result['thumbnail']['source'],
 			'image_thumbnail_width' => $va_result['thumbnail']['width'],
 			'image_thumbnail_height' => $va_result['thumbnail']['height'],
+			'image_viewer_url' => $va_result['fullurl'] . '#/media/File:' . $va_result['pageimage'],
 			'title' => $va_result['title'],
 			'pageid' => $va_result['page_id'],
 			'fullurl' => $va_result['fullurl'],

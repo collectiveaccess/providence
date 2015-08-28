@@ -84,7 +84,7 @@ class SimpleGetTest extends BaseTestWithData {
 
 		$vm_ret = $this->opt_object->get('ca_objects.duration');
 		$this->assertEquals('0:23:28', $vm_ret);
-
+		
 		$o_tep = new TimeExpressionParser(); $vn_now = time();
 		$vm_ret = $this->opt_object->get('ca_objects.lastModified');
 		$this->assertTrue($o_tep->parse($vm_ret));

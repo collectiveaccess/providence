@@ -296,6 +296,31 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
+	/**
+	 * Override delete() to scramble the list_code before we soft-delete. This is useful
+	 * because the database field has a unique key that really enforces uniqueneness
+	 * and we might wanna reuse a code of a set we previously deleted.
+	 */
+	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		if($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
+			if(!caGetOption('hard', $pa_options, false)) { // only applies if we don't hard-delete
+				$vb_we_set_transaction = false;
+				if (!$this->inTransaction()) {
+					$o_t = new Transaction($this->getDb());
+					$this->setTransaction($o_t);
+					$vb_we_set_transaction = true;
+				}
+
+				$this->set('list_code', $this->get('list_code') . '_' . time());
+				$this->update(array('force' => true));
+
+				if ($vb_we_set_transaction) { $this->removeTransaction(true); }
+			}
+		}
+
+		return $vn_rc;
+	}
+	# ------------------------------------------------------
 	# List maintenance
 	# ------------------------------------------------------
 	/**
@@ -377,6 +402,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *		sort =			if set to a __CA_LISTS_SORT_BY_*__ constant, will force the list to be sorted by that criteria overriding the sort order set in the ca_lists.default_sort field
 	 *		idsOnly = 		if true, only the primary key id values of the list items are returned
 	 *		enabledOnly =	return only enabled list items [default=false]
+	 *		omitRoot =		don't include root node [Default=false]
 	 *		labelsOnly = 	if true only labels in the current locale are returns in an array key'ed on item_id
 	 *		start = 		offset to start returning records from [default=0; no offset]
 	 *		limit = 		maximum number of records to return [default=null; no limit]
@@ -392,6 +418,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$pn_start = caGetOption('start', $pa_options, 0);
 		$pn_limit = caGetOption('limit', $pa_options, null);
 		
+		$pb_omit_root = caGetOption('omitRoot', $pa_options, false);
 		$vb_enabled_only = caGetOption('enabledOnly', $pa_options, false);
 	
 		$vb_labels_only = false;
@@ -480,6 +507,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			if ($pn_start > 0) { $qr_res->seek($pn_start); }
 			$vn_c = 0;
 			while($qr_res->nextRow()) {
+				if ($pb_omit_root && !$qr_res->get('parent_id')) { continue; }
 				$vn_item_id = $qr_res->get('item_id');
 				$vn_c++;
 				if (($pn_limit > 0) && ($vn_c > $pn_limit)) { break; }
@@ -1040,9 +1068,12 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 * If no list is specified the currently loaded list is used.
 	 *
 	 * @param mixed $pm_list_name_or_id List code or list_id of list to return default item_id for. If omitted the currently loaded list will be used.
+	 * @param array $pa_options Options include options for @see ca_list_items::getItemsForList()
+	 *
 	 * @return int The item_id of the default element or null if no list was specified or loaded. If no default is set for the list in question the first item found is returned.
 	 */
-	public function getDefaultItemID($pm_list_name_or_id=null) {
+	public function getDefaultItemID($pm_list_name_or_id=null, $pa_options=null) {
+		if (!is_array($pa_options)) { $pa_options = array(); }
 		if($pm_list_name_or_id) {
 			$vn_list_id = $this->_getListID($pm_list_name_or_id);
 		} else {
@@ -1057,7 +1088,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			return $t_list_item->getPrimaryKey();
 		}
 		
-		return array_shift($this->getItemsForList($vn_list_id, array('idsOnly' => true)));
+		return array_shift($this->getItemsForList($vn_list_id, array_merge($pa_options, array('idsOnly' => true))));
 	}
 	# ------------------------------------------------------
 	/**
@@ -1241,6 +1272,21 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	
 		if ((isset($pa_options['nullOption']) && $pa_options['nullOption']) && ($vs_render_as != 'checklist')) {
 			$va_options[''] = $pa_options['nullOption'];
+		}
+		
+		
+		if (is_array($pa_options['limitToItemsWithID']) && sizeof($pa_options['limitToItemsWithID'])) {
+			// expand limit list to include parents of items that are included
+			$va_to_add = array();
+			foreach($va_list_items as $vn_item_id => $va_item) {
+				if (($vn_parent_id = $va_item['parent_id']) && in_array($vn_item_id, $pa_options['limitToItemsWithID'])) {
+					$va_to_add[$vn_parent_id] = true;
+					while($vn_parent_id = $va_list_items[$vn_parent_id]['parent_id']) {
+						if($va_list_items[$vn_parent_id]['parent_id']) { $va_to_add[$va_list_items[$vn_parent_id]['parent_id']] = true; }
+					}
+				}
+			}	
+			$pa_options['limitToItemsWithID'] += array_keys($va_to_add);
 		}
 		
 		$va_colors = array();

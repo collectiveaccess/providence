@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -67,6 +67,8 @@ var caUI = caUI || {};
 			that.setZoom(that.allowMobileSafariZooming);
 			that.isChanging = true;
 			
+			// Set reference to panel in <div> being used
+			jQuery('#' + that.panelID).data("panel", that);
 			
 			if (that.center || that.centerHorizontal) {
 				jQuery('#' + that.panelID).css("left", ((jQuery(window).width() - jQuery('#' + that.panelID).width())/2) + "px");

@@ -990,7 +990,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'default' => 'ca_movements',
 										'width' => "275px", 'height' => 1,
 										'label' => _t('Track location using'),
-										'description' => _t('')
+										'description' => ''
 									),
 									'ca_movements_dateElement' => array(
 										'formatType' => FT_TEXT,
@@ -1001,7 +1001,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'default' => '',
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('Movement date'),
-										'description' => _t('')
+										'description' => ''
 									),
 									'ca_movements_relationshipType' => array(
 										'formatType' => FT_TEXT,
@@ -1011,7 +1011,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'default' => '',
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('Limit movement tracking to relationship types'),
-										'description' => _t('')
+										'description' => ''
 									),
 									'ca_storage_locations_relationshipType' => array(
 										'formatType' => FT_TEXT,
@@ -1021,7 +1021,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'default' => '',
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('Limit storage location tracking to relationship types'),
-										'description' => _t('')
+										'description' => ''
 									),
 									'displayTemplate' => array(
 										'formatType' => FT_TEXT,
@@ -1087,7 +1087,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'default' => '',
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('Show lots'),
-										'description' => _t('')
+										'description' => ''
 									),
 									// no 'classic' expand/collapse for this bundle
 									'expand_collapse_value' => false,
@@ -1138,7 +1138,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'default' => '',
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('Lot (%1) date', $va_type['name_singular']),
-										'description' => _t('')
+										'description' => ''
 									);
 									$va_additional_settings["ca_object_lots_{$va_type['idno']}_color"] = array(
 										'formatType' => FT_TEXT,
@@ -1168,7 +1168,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									'default' => '',
 									'width' => "275px", 'height' => "75px",
 									'label' => _t('Show occurrences'),
-									'description' => _t('')
+									'description' => ''
 								);
 								$va_types = caGetTypeList("ca_occurrences");
 								foreach($va_types as $vn_type_id => $va_type) {
@@ -1181,7 +1181,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'default' => '',
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('%1 date', $va_type['name_singular']),
-										'description' => _t('')
+										'description' => ''
 									);
 									$va_additional_settings["ca_occurrences_{$va_type['idno']}_color"] = array(
 										'formatType' => FT_TEXT,
@@ -1211,7 +1211,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									'default' => '',
 									'width' => "275px", 'height' => "75px",
 									'label' => _t('Show movements'),
-									'description' => _t('')
+									'description' => ''
 								);
 								$va_types = caGetTypeList("ca_movements");
 								foreach($va_types as $vn_type_id => $va_type) {
@@ -1224,7 +1224,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'default' => '',
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('%1 date', $va_type['name_singular']),
-										'description' => _t('')
+										'description' => ''
 									);
 									$va_additional_settings["ca_movements_{$va_type['idno']}_color"] = array(
 										'formatType' => FT_TEXT,
@@ -1254,7 +1254,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									'default' => '',
 									'width' => "275px", 'height' => "75px",
 									'label' => _t('Show loans'),
-									'description' => _t('')
+									'description' => ''
 								);
 								$va_types = caGetTypeList("ca_loans");
 							
@@ -1268,7 +1268,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'default' => '',
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('%1 date', $va_type['name_singular']),
-										'description' => _t('')
+										'description' => ''
 									);
 									$va_additional_settings["ca_loans_{$va_type['idno']}_color"] = array(
 										'formatType' => FT_TEXT,
@@ -1343,6 +1343,18 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "275px", 'height' => 4,
 										'label' => _t('Deaccession display template'),
 										'description' => _t('Layout for deaccession information when displayed in history list (can include HTML). The template is evaluated relative to the object. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.deaccession_notes</i>.')
+									)
+								);
+								break;
+							case 'ca_set_items':
+								$va_additional_settings = array(
+									'displayTemplate' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Display template'),
+										'description' => _t('Layout for set item information when used in a display list. For example: <i>^ca_objects.deaccession_notes</i>.')
 									)
 								);
 								break;
