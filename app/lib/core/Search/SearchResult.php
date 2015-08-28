@@ -133,6 +133,8 @@ class SearchResult extends BaseObject {
 		
 		
 		$this->opo_tep = $GLOBALS["_DbResult_time_expression_parser"];
+		
+		self::$s_template_prefetch_cache = array();
 	}
 	# ------------------------------------------------------------------
 	public function cloneInit() {
@@ -708,6 +710,35 @@ class SearchResult extends BaseObject {
 	}
 	# ------------------------------------------------------------------
 	/**
+	  * Returns a list of values for the specified field from all rows in the result set. 
+	  * If you need to extract all values from single field in a result set this method provides a convenient means to do so.
+	  *
+	  * @param mixed $ps_field Array of field names or single name of field to fetch
+	  * @return array List of values for the specified fields
+	  */
+	public function getAllFieldValues($pm_field, $pa_options=null) {
+		$vn_current_row = $this->currentIndex();
+		$this->seek(0);
+		
+		$va_values = array();
+		if(!is_array($pm_field)) {
+			while($this->nextHit()) {
+				$va_values[] = $this->get($pm_field, $pa_options);
+			}
+		} else {
+			while($this->nextHit()) {
+				foreach($pm_field as $vs_field) {
+					$va_values[$vs_field][] = $this->get($vs_field, $pa_options);
+				}
+			}
+		}
+		
+		$this->seek($vn_current_row - 1);
+		
+		return $va_values;
+	}
+	# ------------------------------------------------------------------
+	/**
 	 * Returns a value from the query result. This can be a single value if it is a field in the subject table (eg. objects table in an objects search), or
 	 * perhaps multiple related values (eg. related entities in an objects search). 
 	 *
@@ -777,8 +808,16 @@ class SearchResult extends BaseObject {
 	 * 	@return mixed String or array
 	 */
 	public function get($ps_field, $pa_options=null) {
-		if(!is_array($pa_options)) { $pa_options = array(); }
 		$vb_return_as_array = isset($pa_options['returnAsArray']) ? (bool)$pa_options['returnAsArray'] : false;
+		$vb_return_with_structure = isset($pa_options['returnWithStructure']) ? (bool)$pa_options['returnWithStructure'] : false;
+		// Return primary key of primary table as quickly as possible
+		if (($ps_field == $this->ops_table_pk) || ($ps_field == $this->ops_table_name.'.'.$this->ops_table_pk)) {
+			$vn_id = $this->opo_engine_result->get($this->ops_table_pk);
+			return ($vb_return_as_array || $vb_return_with_structure) ? array($vn_id) : $vn_id;
+		}
+		
+		//$t = new Timer();
+		if(!is_array($pa_options)) { $pa_options = array(); }
 		$va_filters = is_array($pa_options['filters']) ? $pa_options['filters'] : array();
 		
 		// Add table name to field specs that lack it
@@ -1551,6 +1590,7 @@ class SearchResult extends BaseObject {
 		
 		if (is_array($pa_value_list) && sizeof($pa_value_list)) {
 			foreach($pa_value_list as $o_attribute) {
+				$va_acc = array();
 				$va_values = $o_attribute->getValues();
 				
 				if ($pa_options['useLocaleCodes']) {
@@ -1560,9 +1600,13 @@ class SearchResult extends BaseObject {
 				}
 				
 				foreach($va_values as $o_value) {
+					$vb_dont_return_value = false;
 					$vs_element_code = $o_value->getElementCode();
 					if ($va_path_components['subfield_name']) {
-						if ($va_path_components['subfield_name'] && ($va_path_components['subfield_name'] !== $vs_element_code) && !($o_value instanceof InformationServiceAttributeValue)) { continue; }
+						if ($va_path_components['subfield_name'] && ($va_path_components['subfield_name'] !== $vs_element_code) && !($o_value instanceof InformationServiceAttributeValue)) { 
+							$vb_dont_return_value = true;
+							if (!$pa_options['filter']) { continue; }
+						}
 					}
 				
 					switch($o_value->getType()) {
@@ -1598,12 +1642,37 @@ class SearchResult extends BaseObject {
 							break;
 					}
 					
-					if($pa_options['makeLink']) { $vs_val_proc = array_shift(caCreateLinksFromText(array($vs_val_proc), $vs_table_name, array($vn_id))); }
+					$va_spec = $va_path_components['components'];
 					
-					if ($pa_options['returnWithStructure']) {
-						$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][$vs_element_code] = $vs_val_proc;
-					} else { 
-						$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()] = $vs_val_proc;	
+					array_pop($va_spec);
+					$va_acc[join('.', $va_spec).'.'.$vs_element_code] = $o_value->getDisplayValue(array_merge($pa_options, array('output' => 'idno')));
+					
+					if (!$vb_dont_return_value) {
+						if($pa_options['makeLink']) { $vs_val_proc = array_shift(caCreateLinksFromText(array($vs_val_proc), $vs_table_name, array($vn_id))); }
+					
+						if ($pa_options['returnWithStructure']) {
+							$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][$vs_element_code] = $vs_val_proc;
+						} else { 
+							$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()] = $vs_val_proc;	
+						}
+					}
+				}
+				
+				if ($pa_options['filter']) {
+					$va_tags = caGetTemplateTags($pa_options['filter']);
+			
+					$va_vars = array();
+					foreach($va_tags as $vs_tag) {
+						if (isset($va_acc[$vs_tag])) { 
+							$va_vars[$vs_tag] = $va_acc[$vs_tag];
+						}  else {
+							$va_vars[$vs_tag] = $this->get($vs_tag, array('convertCodesToIdno' => true));
+						}
+					}
+					
+					if (ExpressionParser::evaluate($pa_options['filter'], $va_vars)) {
+						unset($va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()]);
+						continue;
 					}
 				}
 			}
@@ -1945,6 +2014,51 @@ class SearchResult extends BaseObject {
 		}
 		return $vs_prop;
 	}
+	# ------------------------------------------------
+	/**
+	 * Determines if there is any data in the result for the specified data field(s)
+	 * Typically used to determine if a result set can be used for visualization (Eg. does a result set have mappable data?)
+	 *
+	 * @param mixed $pa_fields Field or list of fields to check
+	 * @param array $pa_options Options include:
+	 *		limit = number of rows to check before giving up; should be capped at a reasonable value for large empty result sets to avoid timeouts [Default=10000]
+	 *
+	 * @return bool True result set includes data for any of the fields in $pa_fields
+	 */
+	public function hasData($pa_fields, $pa_options=null) {
+		if(!$pa_fields) { return null; }
+		
+		$vn_cur_pos = $this->currentIndex();
+		if ($vn_cur_pos < 0) { $vn_cur_pos = 0; }
+		$this->seek(0);
+		
+		$o_dm = Datamodel::load();
+		
+		if(!is_array($pa_fields) && ($pa_fields)) { $pa_fields = array($pa_fields); }
+		
+		//
+		// Make sure fields actually exist
+		//
+		foreach($pa_fields as $vn_i => $vs_field) {
+			$va_tmp = explode('.', $vs_field);
+			if (!($t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true))) { unset($pa_fields[$vn_i]); continue; } 
+			if (!$t_instance->hasField($va_tmp[1]) && (!$t_instance->hasElement($va_tmp[1]))) { unset($pa_fields[$vn_i]); }
+		}
+		
+		$vn_c = 0;
+		if (($vn_limit = caGetOption('limit', $pa_options, 10000)) < 1) { $vn_limit = 10000; }
+		while($this->nextHit() && ($vn_c < $vn_limit)) {
+			foreach($pa_fields as $vn_i => $vs_field) {
+				if (trim($this->get($vs_field))) {
+					$this->seek($vn_cur_pos);
+					return true;
+				}
+			}
+			$vn_c++;
+		}
+		$this->seek($vn_cur_pos);
+		return false;
+	}
 	# ------------------------------------------------------------------
 	#  Field value accessors (allow you to get specialized values out of encoded fields such as uploaded media and files, dates/date ranges, timecode, etc.) 
 	# ------------------------------------------------------------------
@@ -2094,6 +2208,15 @@ class SearchResult extends BaseObject {
 	function hasMedia($ps_field) {  
 		$va_field = $this->getFieldInfo($ps_field);
 		return $GLOBALS["_DbResult_mediainfocoder"]->hasMedia(array_shift($this->get($va_field["field"], array("unserialize" => true, 'returnWithStructure' => true))));
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * 
+	 */
+	function getMediaScale($ps_field) {  
+		$va_media_infos = $this->get($ps_field, array("unserialize" => true, 'returnWithStructure' => true));
+
+		return $GLOBALS["_DbResult_mediainfocoder"]->getMediaScale(array_shift($va_media_infos), $pa_options);	
 	}
 	# ------------------------------------------------------------------
 	/**

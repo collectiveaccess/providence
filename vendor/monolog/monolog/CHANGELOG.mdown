@@ -1,3 +1,21 @@
+### 1.15.0 (2015-07-12)
+
+  * Added addTags and setTags methods to change a TagProcessor
+  * Added automatic creation of directories if they are missing for a StreamHandler to open a log file
+  * Added retry functionality to Loggly, Cube and Mandrill handlers so they retry up to 5 times in case of network failure
+  * Fixed process exit code being incorrectly reset to 0 if ErrorHandler::registerExceptionHandler was used
+  * Fixed HTML/JS escaping in BrowserConsoleHandler
+  * Fixed JSON encoding errors being silently suppressed (PHP 5.5+ only)
+
+### 1.14.0 (2015-06-19)
+
+  * Added PHPConsoleHandler to send record to Chrome's PHP Console extension and library
+  * Added support for objects implementing __toString in the NormalizerFormatter
+  * Added support for HipChat's v2 API in HipChatHandler
+  * Added Logger::setTimezone() to initialize the timezone monolog should use in case date.timezone isn't correct for your app
+  * Added an option to send formatted message instead of the raw record on PushoverHandler via ->useFormattedMessage(true)
+  * Fixed curl errors being silently suppressed
+
 ### 1.13.1 (2015-03-09)
 
   * Fixed regression in HipChat requiring a new token to be created

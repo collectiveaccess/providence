@@ -216,7 +216,6 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"image/dng"		=> "image/x-adobe-dng"
 	);
 	
-	private $ops_CoreImage_path;
 	private $ops_dcraw_path;
 	
 	# ------------------------------------------------
@@ -230,13 +229,8 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$this->opo_config = Configuration::load();
 		$vs_external_app_config_path = $this->opo_config->get('external_applications');
 		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
-		$this->ops_CoreImage_path = $this->opo_external_app_config->get('coreimagetool_app');
 		
 		$this->ops_dcraw_path = $this->opo_external_app_config->get('dcraw_app');
-		
-		if (caMediaPluginCoreImageInstalled($this->ops_CoreImage_path)) {
-			return null;	// don't use if CoreImage executable are available
-		}
 		
 		if (caMediaPluginGmagickInstalled()) {
 			return null;	// don't use if Gmagick extension is available
@@ -256,10 +250,6 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if ($this->register()) {
 			$va_status['available'] = true;
 		} else {
-			if (caMediaPluginCoreImageInstalled($this->ops_CoreImage_path)) {
-				$va_status['unused'] = true;
-				$va_status['warnings'][] = _t("Didn't load because CoreImageTool is available and preferred");
-			} 
 			if (caMediaPluginGmagickInstalled()) {
 				$va_status['unused'] = true;
 				$va_status['warnings'][] = _t("Didn't load because Gmagick is available and preferred");
@@ -713,9 +703,9 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 						return false;
 					}
 					//$w->evaluateImage(imagick::COMPOSITE_MINUS, $vn_opacity, imagick::CHANNEL_OPACITY) ; [seems broken with latest imagick circa March 2010?]
-					if(method_exists($w, "setImageOpacity")){ // added in ImageMagick 6.3.1
-						$w->setImageOpacity($vn_opacity_setting);
-					}
+					//if(method_exists($w, "setImageOpacity")){ // added in ImageMagick 6.3.1
+					//	$w->setImageOpacity($vn_opacity_setting); [ Imagick::setImageOpacity() appears to be broken with recent versions as of July 2015 ]
+					//}
 					$d->composite(imagick::COMPOSITE_DISSOLVE,$vn_watermark_x,$vn_watermark_y,$vn_watermark_width,$vn_watermark_height, $w);
 					$this->handle->drawImage($d);
 					break;

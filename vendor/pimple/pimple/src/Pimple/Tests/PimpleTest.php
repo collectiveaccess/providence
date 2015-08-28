@@ -184,6 +184,12 @@ class PimpleTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($pimple->raw('foo'));
     }
 
+    public function testFluentRegister()
+    {
+        $pimple = new Container();
+        $this->assertSame($pimple, $pimple->register($this->getMock('Pimple\ServiceProviderInterface')));
+    }
+
     /**
      * @expectedException \InvalidArgumentException
      * @expectedExceptionMessage Identifier "foo" is not defined.
@@ -334,7 +340,7 @@ class PimpleTest extends \PHPUnit_Framework_TestCase
     {
         return array(
           array(123),
-          array(new Fixtures\NonInvokable())
+          array(new Fixtures\NonInvokable()),
         );
     }
 
@@ -350,7 +356,7 @@ class PimpleTest extends \PHPUnit_Framework_TestCase
 
                 return $service;
             }),
-            array(new Fixtures\Invokable())
+            array(new Fixtures\Invokable()),
         );
     }
 
@@ -369,7 +375,7 @@ class PimpleTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException RuntimeException
+     * @expectedException \RuntimeException
      * @expectedExceptionMessage Cannot override frozen service "foo".
      */
     public function testOverridingServiceAfterFreeze()

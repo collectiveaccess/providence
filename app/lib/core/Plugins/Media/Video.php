@@ -68,7 +68,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 	var $info = array(
 		"IMPORT" => array(
-			"audio/x-realaudio" 				=> "rm",
 			"video/x-ms-asf" 					=> "asf",
 			"video/x-ms-wmv"					=> "wmv",
 			"video/quicktime" 					=> "mov",
@@ -82,7 +81,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		),
 
 		"EXPORT" => array(
-			"audio/x-realaudio" 				=> "rm",
 			"video/x-ms-asf" 					=> "asf",
 			"video/x-ms-wmv"					=> "wmv",
 			"video/quicktime" 					=> "mov",
@@ -146,7 +144,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	);
 
 	var $typenames = array(
-		"audio/x-realaudio" 				=> "RealMedia",
 		"video/x-ms-asf" 					=> "WindowsMedia",
 		"video/x-ms-wmv"					=> "WindowsMedia",
 		"video/quicktime" 					=> "QuickTime",
@@ -416,60 +413,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 			# -- get bandwidth
 			switch($this->properties["mimetype"]) {
-				case 'audio/x-realaudio':
-					$video_streams = array();
-					$audio_streams = array();
-					if (is_array($this->handle["real"]["chunks"])) {
-						foreach($this->handle["real"]["chunks"] as $chunk) {
-							if ($chunk["name"] == "MDPR") {
-								if (in_array($chunk["mime_type"], array("video/x-pn-realvideo", "video/x-pn-multirate-realvideo"))) {
-									$video_streams[] = $chunk["max_bit_rate"];
-								} else {
-									if (in_array($chunk["mime_type"], array("audio/x-pn-realaudio", "audio/x-pn-multirate-realaudio"))) {
-										$audio_streams[] = $chunk["max_bit_rate"];
-									}
-								}
-							}
-						}
-
-						sort($video_streams);
-						sort($audio_streams);
-
-						$this->properties["has_video"] = (sizeof($video_streams) ? 1 : 0);
-						$this->properties["has_audio"] = (sizeof($audio_streams) ? 1 : 0);
-					} else {
-						// old real format
-						if (is_array($this->handle["real"]["old_ra_header"])) {
-							if (($this->properties["filesize"] - $this->handle["real"]["old_ra_header"]["audio_bytes"]) > 0) {
-								$this->properties["has_video"] = 1;
-								$video_streams[] = (($this->properties["filesize"] - $this->handle["real"]["old_ra_header"]["audio_bytes"]) * 8) / $this->properties["duration"];
-							} else {
-								$this->properties["has_video"] = 0;
-							}
-							if ($this->handle["real"]["old_ra_header"]["audio_bytes"] > 0) {
-								$this->properties["has_audio"] = 1;
-								$audio_streams[] = ($this->handle["real"]["old_ra_header"]["audio_bytes"] * 8) / $this->properties["duration"];
-							} else {
-								$this->properties["has_audio"] = 0;
-							}
-						} else {
-							$this->properties["has_video"] = 0;
-							$this->properties["has_audio"] = 0;
-						}
-					}
-
-					$this->properties["type_specific"] = array("real" => $this->handle["real"]);
-
-					$this->properties["title"] = 		$this->handle["real"]["comments"]["title"];
-					$this->properties["author"] = 		$this->handle["real"]["comments"]["artist"];
-					$this->properties["copyright"] = 	"";
-					$this->properties["description"] = 	$this->handle["real"]["comments"]["comment"];
-
-					$this->properties["bandwidth"] = array(
-						"min" => (sizeof($video_streams) ? $video_streams[0] : 0) + (sizeof($audio_streams) ? $audio_streams[0] : 0),
-						"max" => (sizeof($video_streams) ? $video_streams[sizeof($video_streams) - 1] : 0)+ (sizeof($audio_streams) ? $audio_streams[sizeof($audio_streams) - 1] : 0)
-					);
-					break;
 				case 'video/x-ms-asf':
 				case 'video/x-ms-wmv':
 					$this->properties["has_video"] = (sizeof($this->handle["asf"]["video_media"]) ? 1 : 0);
@@ -1083,64 +1026,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		}
 		
 		switch($pa_properties["mimetype"]) {
-			# ------------------------------------------------
-			case 'audio/x-realaudio':
-				$vs_name = $pa_options["name"] ? $pa_options["name"] : "prm";
-
-				$vb_show_controls = (isset($pa_options["show_controls"]) && $pa_options["show_controls"]) ? 1 : 0;
-				if ($pa_options["text_only"]) {
-					return "<a href='".(isset($pa_options["url"]) ? $pa_options["url"] : $ps_url)."'>".(($pa_options["text_only"]) ? $pa_options["text_only"] : "View Realmedia")."</a>";
-				} else {
-					ob_start();
-		?>
-					<table>
-						<tr>
-							<td>
-								<object id="<?php print $vs_name; ?>" width="<?php print $pa_properties["width"]; ?>" height="<?php print $pa_properties["height"]; ?>" classid="clsid:CFCDAA03-8BE4-11cf-B84B-0020AFBBCCFA">
-									<param name="controls" value="ImageWindow">
-		<?php
-			if ($vb_show_controls) {
-		?>
-									<param name="console" value="<?php print $vs_name; ?>_controls">
-		<?php
-			}
-		?>
-									<param name="autostart" value="true">
-									<param name="type" value="audio/x-pn-realaudio-plugin">
-									<param name="autogotourl" value="false">
-									<param name="src" value="<?php print isset($pa_options["url"]) ? $pa_options["url"] : $ps_url; ?>">
-
-									<embed name="<?php print $vs_name; ?>" src="<?php print isset($pa_options["url"]) ? $pa_options["url"] : $ps_url; ?>" width="<?php print $pa_properties["width"]; ?>" height="<?php print $pa_properties["height"]; ?>"
-										controls="ImageWindow" nojava="false"
-										showdisplay="0" showstatusbar="1" autostart="true" type="audio/x-pn-realaudio-plugin">
-									</embed>
-								</object>
-							</td>
-						</tr>
-<?php
-					if ($vb_show_controls) {
-?>
-						<tr>
-							<td>
-								<object id="<?php print $vs_name; ?>_controls" width="<?php print $pa_properties["width"]; ?>" height="32" classid="clsid:CFCDAA03-8BE4-11cf-B84B-0020AFBBCCFA">
-									<param name="controls" value="ControlPanel">
-									<param name="type" value="audio/x-pn-realaudio-plugin">
-									<param name="src" value="<?php print isset($pa_options["url"]) ? $pa_options["url"] : $ps_url; ?>">
-
-									<embed name="id_<?php print $vs_name; ?>_controls" src="<?php print isset($pa_options["url"]) ? $pa_options["url"] : $ps_url; ?>" width="<?php print $pa_properties["width"]; ?>" height="32"
-										console="Clip1" controls="ControlPanel" type="audio/x-pn-realaudio-plugin">
-									</embed>
-								</object>
-							</td>
-						</tr>
-<?php
-					}
-?>
-					</table>
-<?php
-					return ob_get_clean();
-				}
-				break;
 			# ------------------------------------------------
 			case 'video/x-ms-asf':
 			case 'video/x-ms-wmv':
