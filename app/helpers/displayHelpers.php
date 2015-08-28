@@ -2015,7 +2015,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		if (preg_match_all(__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__, $ps_template, $va_matches)) {
 			foreach($va_matches[1] as $vn_i => $vs_possible_tag) {
 				if (strpos($vs_possible_tag, "~") !== false) { continue; }	// don't clip trailing characters when there's a tag directive specified
-				$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.");	// remove trailing slashes and periods
+				$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.%");	// remove trailing slashes, periods and percent signs as they're potentially valid tag characters that are never meant to be at the end
 			}
 			$va_tags = $va_matches[1];
 		}
