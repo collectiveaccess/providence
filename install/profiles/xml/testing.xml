@@ -32,7 +32,7 @@
         </item>
       </items>
     </list>
-    <list code="object_types" hierarchical="1" system="0" vocabulary="1">
+    <list code="object_types" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
           <name>Object Types</name>
@@ -330,7 +330,7 @@
         </item>
       </items>
     </list>
-    <list code="languages" hierarchical="0" system="0" vocabulary="1">
+    <list code="languages" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
           <name>Languages</name>
@@ -735,7 +735,7 @@
       </item>
       </items>
     </list>
-    <list code="date_types" hierarchical="0" system="0" vocabulary="1">
+    <list code="date_types" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
           <name>Date Types</name>
@@ -815,7 +815,28 @@
           </labels>
         </item>
       </items>
-    </list>   
+    </list>
+    <list code="test_vocab" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Test Vocabulary</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="test" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Foo</name_singular>
+              <name_plural>Foo</name_plural>
+            </label>
+            <label locale="en_US" preferred="0">
+              <name_singular>Bar</name_singular>
+              <name_plural>Bar</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
   </lists>
   <elementSets>
     <!--Basic Elements-->
@@ -4322,6 +4343,11 @@
       lname="Administrator" email="info@collectiveaccess.org">
       <role code="admin"/>
       <group code="admin"/>
+    </login>
+    <login user_name="cataloguer" password="cataloguer" fname="CollectiveAccess"
+           lname="Cataloguer" email="support@collectiveaccess.org">
+      <role code="cataloguer"/>
+      <group code="cataloguer"/>
     </login>
   </logins>
 </profile>

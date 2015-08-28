@@ -2014,7 +2014,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		if (preg_match_all(__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__, $ps_template, $va_matches)) {
 			foreach($va_matches[1] as $vn_i => $vs_possible_tag) {
 				if (strpos($vs_possible_tag, "~") !== false) { continue; }	// don't clip trailing characters when there's a tag directive specified
-				$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.");	// remove trailing slashes and periods
+				$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.%");	// remove trailing slashes, periods and percent signs as they're potentially valid tag characters that are never meant to be at the end
 			}
 			$va_tags = $va_matches[1];
 		}
@@ -3053,7 +3053,12 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		}
 		
 		// Transform links
-		$va_proc_templates = caCreateLinksFromText($va_proc_templates, $ps_resolve_links_using, ($ps_resolve_links_using != $ps_tablename) ? $va_resolve_links_using_row_ids : $va_ids_with_access, null, caGetOption('linkTarget', $pa_options, null), $pa_options);
+		$va_proc_templates = caCreateLinksFromText(
+			$va_proc_templates, $ps_resolve_links_using,
+			($ps_resolve_links_using != $ps_tablename) ? $va_resolve_links_using_row_ids : $pa_row_ids,
+			null, caGetOption('linkTarget', $pa_options, null),
+			array_merge(array('addRelParameter' => true), $pa_options)
+		);
 		
 		// Kill any lingering tags (just in case)
 		foreach($va_proc_templates as $vn_i => $vs_proc_template) {

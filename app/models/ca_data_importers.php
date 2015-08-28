@@ -1445,8 +1445,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			//
 			// Get data for current row
 			//
-			
-			$va_row = array_merge($o_reader->getRow(), $va_environment);
+			$va_row = array_replace($o_reader->getRow(), $va_environment);
+
 			//
 			// Apply rules
 			//
@@ -2073,7 +2073,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					}
 				
 					foreach($va_mandatory_field_mapping_ids as $vs_mandatory_field => $vn_mandatory_mapping_item_id) {
-						$t_subject->set($vs_mandatory_field, $va_mandatory_field_values[$vs_mandatory_field], array('assumeIdnoStubForLotID' => true));
+						$va_field_info = $t_subject->getFieldInfo($vs_mandatory_field);
+						$va_opts = array('assumeIdnoStubForLotID' => true);
+						if($va_field_info['FIELD_TYPE'] == FT_MEDIA) {
+							$va_opts['original_filename'] = basename($va_mandatory_field_values[$vs_mandatory_field]);
+						}
+						$t_subject->set($vs_mandatory_field, $va_mandatory_field_values[$vs_mandatory_field], $va_opts);
 					}
 				
 					$t_subject->insert();
@@ -2227,7 +2232,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											break;
 										default:
 											if ($t_subject->hasField($vs_element)) {
-												$t_subject->set($vs_element, $va_element_content[$vs_element], array('assumeIdnoStubForLotID' => true));
+												$va_field_info = $t_subject->getFieldInfo($vs_element);
+												$va_opts = array('assumeIdnoStubForLotID' => true);
+												if($va_field_info['FIELD_TYPE'] == FT_MEDIA) {
+													$va_opts['original_filename'] = basename($va_element_content[$vs_element]);
+												}
+
+												$t_subject->set($vs_element, $va_element_content[$vs_element], $va_opts);
 												$t_subject->update();
 												if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add intrinsic %2 to %3:", $vs_idno, $vs_elenent, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 													ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
@@ -2317,8 +2328,19 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								switch($vs_table_name) {
 									case 'ca_objects':
 										if ($vn_rel_id = DataMigrationUtils::getObjectID($va_element_data['preferred_labels']['name'], $va_element_data['_parent_id'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
-									
-											if (!($vs_rel_type = $va_element_data['_relationship_type']) && !($vs_rel_type = $va_element_data['idno']['_relationship_type'])) { break; }
+
+											// kill it if no relationship type is set ... unless its objects_x_representations
+											// (from the representation side), where the rel type is optional
+											if (
+												!($vs_rel_type = $va_element_data['_relationship_type'])
+												&&
+												!($vs_rel_type = $va_element_data['idno']['_relationship_type'])
+												&&
+												($t_subject->tableName() != 'ca_object_representations')
+											) {
+												$o_log->logError(_t('Reltionship type is missing for ca_objects relationship'));
+												break;
+											}
 											$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']), null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
 										
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related object with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
