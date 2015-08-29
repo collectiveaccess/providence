@@ -56,27 +56,30 @@
 		 *
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
+
 			$o_log = (isset($pa_options['log']) && is_object($pa_options['log'])) ? $pa_options['log'] : null;
 			
 			$va_group_dest = explode(".", $pa_group['destination']);
 			$vs_terminal = array_pop($va_group_dest);
 			$pm_value = $pa_source_data[$pa_item['source']];
-			
-			$pm_value = preg_replace("![^\d\.A-Za-z\"\"’”]+!", "", $pm_value);
-			
+			// do not remove the separator or we'll have nothing to separate...
+			$vs_delimiter = $pa_item['settings']['measurementsSplitter_delimiter'];
+
+			$pm_value = preg_replace("![^\d\.\,A-Za-z\"\"’”".preg_quote($vs_delimiter)."]+!", "", $pm_value);
 			$vs_units = $pa_item['settings']['measurementsSplitter_units'];
-			
+
 			if (is_array($pm_value)) {
 				$va_measurements = $pm_value;	// for input formats that support repeating values
 			} else {
-				if ($vs_delimiter = $pa_item['settings']['measurementsSplitter_delimiter']) {
+				if ($vs_delimiter) {
 					$va_measurements = explode($vs_delimiter, $pm_value);
+
 				} else {
 					$vs_delimiter = '';
 					$va_measurements = array($pm_value);
 				}
 			}
-		
+
 			$va_val = array();	
 			if(is_array($va_elements = $pa_item['settings']['measurementsSplitter_elements'])) {
 				foreach($va_elements as $vn_i => $va_element) {
@@ -84,18 +87,17 @@
 					if (!sizeof($va_measurements)) { break; }
 				
 					$vs_measurement = array_shift($va_measurements);
-					if (trim($vs_measurement) && !preg_match("![^\d\.{$vs_delimiter} ]+!", $vs_measurement)) {
+					if (trim($vs_measurement) && !preg_match("![^\d\.\,{$vs_delimiter} ]+!", $vs_measurement)) {
 						$vs_measurement .= " {$vs_units}";
 					}
 					$vs_measurement = preg_replace("![ ]+!", " ", $vs_measurement);
-			
+
 					// Set label
 					$va_val[$va_element['quantityElement']] = $vs_measurement;
 					if (isset($va_element['typeElement']) && $va_element['typeElement']) {
 						$va_val[$va_element['typeElement']] = BaseRefinery::parsePlaceholder($va_element["type"], $pa_source_data, $pa_item, $vn_c, array('reader' => caGetOption('reader', $pa_options, null), 'returnAsString' => true, 'delimiter' => ' '));
 					}
 				}
-			
 				// Set attributes
 				if (is_array($pa_item['settings']['measurementsSplitter_attributes'])) {
 					$va_attr_vals = array();
