@@ -1955,7 +1955,9 @@ function caFileIsIncludable($ps_file) {
 			if (is_array($vm_v)) {
 				$pa_array[$vn_k] = caPurifyArray($vm_v, $pa_options);
 			} else {
-				$pa_array[$vn_k] = $o_purifier->purify($vm_v);
+				if (!is_null($vm_v)) {
+					$pa_array[$vn_k] = $o_purifier->purify($vm_v);
+				}
 			}
 		}
 		return $pa_array;

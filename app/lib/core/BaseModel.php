@@ -11492,7 +11492,9 @@ $pa_options["display_form_field_tips"] = true;
 							$vm_value[$vn_i] = intval($vm_ivalue);
 						}
 					} else {
-						$vm_value = intval($vm_value);
+						if(!is_null($vm_value)) {
+							$vm_value = intval($vm_value);
+						}
 					}
 				}
 			} else {
