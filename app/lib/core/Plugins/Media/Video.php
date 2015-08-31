@@ -77,7 +77,8 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"video/mpeg" 						=> "mpeg",
 			"video/mp4" 						=> "m4v",
 			"video/ogg"							=> "ogg",
-			"video/x-matroska"					=> "webm"
+			"video/x-matroska"					=> "webm",
+			"video/x-dv"						=> "dv",
 		),
 
 		"EXPORT" => array(
@@ -93,7 +94,8 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"image/png"							=> "png",
 			"video/mp4" 						=> "m4v",
 			"video/ogg"							=> "ogg",
-			"video/x-matroska"					=> "webm"
+			"video/x-matroska"					=> "webm",
+			"video/x-dv"						=> "dv",
 		),
 
 		"TRANSFORMATIONS" => array(
@@ -155,7 +157,8 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"image/png"							=> "PNG",
 		"video/mp4" 						=> "MPEG-4",
 		"video/ogg"							=> "Ogg Theora",
-		"video/x-matroska"					=> "WebM"
+		"video/x-matroska"					=> "WebM",
+		"video/x-dv"						=> "DIF (DV)"
 	);
 
 	# ------------------------------------------------
@@ -197,6 +200,19 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 	public function divineFileFormat($filepath) {
+
+		// first try mediainfo
+		if($vs_mimetype = caMediaInfoGuessFileFormat($filepath)) {
+			$va_media_metadata = caExtractMetadataWithMediaInfo($filepath);
+
+			$va_media_metadata['filepath'] = $filepath;
+			$va_media_metadata['mime_type'] = $vs_mimetype;
+
+			$this->handle = $this->ohandle = $va_media_metadata;
+			return $vs_mimetype;
+		}
+
+		// then getID3
 		$ID3 = new getID3();
 		$ID3->option_max_2gb_check = false;
 		$info = $ID3->analyze($filepath);
@@ -220,19 +236,19 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			$this->metadata = $info;	// populate with getID3 data because it's handy
 			
 			return $info["mime_type"];
-		} else {
-			// is it Ogg?
-			$info = new OggParser($filepath);
-			if (!$info->LastError && is_array($info->Streams) && (sizeof($info->Streams) > 0)) {
-				if (isset($info->Streams['theora'])) {
-					$this->handle = $this->ohandle = $info->Streams;
-					return $this->handle['mime_type'] = 'video/ogg';
-				}
-			}
-			
-			# file format is not supported by this plug-in
-			return '';
 		}
+
+		// lastly, try ogg/ogv parser
+		$info = new OggParser($filepath);
+		if (!$info->LastError && is_array($info->Streams) && (sizeof($info->Streams) > 0)) {
+			if (isset($info->Streams['theora'])) {
+				$this->handle = $this->ohandle = $info->Streams;
+				return $this->handle['mime_type'] = 'video/ogg';
+			}
+		}
+
+		# file format is not supported by this plug-in
+		return '';
 	}
 	# ----------------------------------------------------------
 	private function _isMPEG4($pa_info) {
@@ -316,31 +332,43 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			return false;
 		}
 		if (!(($this->handle) && ($this->handle["filepath"] == $filepath))) {
-			$ID3 = new getID3();
-			$ID3->option_max_2gb_check = false;
-			$this->handle = $this->ohandle = $ID3->analyze($filepath);
-			
-			if($this->opb_mediainfo_available){
-				$this->metadata = caExtractMetadataWithMediaInfo($filepath);
+
+			// first try mediainfo
+			if($vs_mimetype = caMediaInfoGuessFileFormat($filepath)) {
+				$va_media_metadata = caExtractMetadataWithMediaInfo($filepath);
+
+				$va_media_metadata['filepath'] = $filepath;
+				$va_media_metadata['mime_type'] = $vs_mimetype;
+
+				$this->handle = $this->ohandle = $va_media_metadata;
 			} else {
-				$this->metadata = $this->handle;
-			}
-			if (!$this->handle['mime_type']) {
-				// is it Ogg?
-				$info = new OggParser($filepath);
-				if (!$info->LastError) {
-					$this->handle = $this->ohandle = $info->Streams;
-					$this->handle['mime_type'] = 'video/ogg';
-					$this->handle['playtime_seconds'] = $this->handle['duration'];
+				// then getID3
+				$ID3 = new getID3();
+				$ID3->option_max_2gb_check = false;
+				$this->handle = $this->ohandle = $ID3->analyze($filepath);
+
+				if($this->opb_mediainfo_available){
+					$this->metadata = caExtractMetadataWithMediaInfo($filepath);
+				} else {
+					$this->metadata = $this->handle;
 				}
-			}
-			
-			// force MPEG-4 files to use video/mp4 mimetype rather than the video/quicktime
-			// mimetype getID3 returns. This will allow us to distinguish MPEG-4 files, which can
-			// be played in HTML5 and Flash players from older Quicktime files which cannot.
-			if ($this->handle["mime_type"] === 'video/quicktime') {
-				if ($this->_isMPEG4($this->handle)) {
-					$this->handle["mime_type"] = 'video/mp4';
+				if (!$this->handle['mime_type']) {
+					// is it Ogg?
+					$info = new OggParser($filepath);
+					if (!$info->LastError) {
+						$this->handle = $this->ohandle = $info->Streams;
+						$this->handle['mime_type'] = 'video/ogg';
+						$this->handle['playtime_seconds'] = $this->handle['duration'];
+					}
+				}
+
+				// force MPEG-4 files to use video/mp4 mimetype rather than the video/quicktime
+				// mimetype getID3 returns. This will allow us to distinguish MPEG-4 files, which can
+				// be played in HTML5 and Flash players from older Quicktime files which cannot.
+				if ($this->handle["mime_type"] === 'video/quicktime') {
+					if ($this->_isMPEG4($this->handle)) {
+						$this->handle["mime_type"] = 'video/mp4';
+					}
 				}
 			}
 		}
@@ -395,6 +423,15 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 					}
 				}
 			}
+			// maybe it came from mediainfo?
+			if (!$w || !$h) {
+				if(isset($this->handle['VIDEO']['Width'])) {
+					$w = preg_replace("/[\D]/", '', $this->handle['VIDEO']['Width']);
+				}
+				if(isset($this->handle['VIDEO']['Height'])) {
+					$h = preg_replace("/[\D]/", '', $this->handle['VIDEO']['Height']);
+				}
+			}
 
 			$this->properties["width"] = $w;
 			$this->properties["height"] = $h;
@@ -413,6 +450,22 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 			# -- get bandwidth
 			switch($this->properties["mimetype"]) {
+				// in this case $this->handle definitely came from mediainfo
+				// so the array structure is a little different than getID3
+				case 'video/x-dv':
+					$this->properties["has_video"] = isset($this->handle["VIDEO"]["Duration"]) ? 1 : 0;
+					$this->properties["has_audio"] = isset($this->handle["AUDIO"]["Duration"]) ? 1 : 0;
+
+					$this->properties["type_specific"] = array();
+
+					$this->properties["title"] = 		$this->handle["GENERAL"]["Complete name"];
+					$this->properties["author"] = 		"";
+					$this->properties["copyright"] = 	"";
+					$this->properties["description"] = 	"";
+
+					$vn_bitrate = preg_replace("/[\D]/", '', $this->handle['VIDEO']['Bit rate']);
+					$this->properties["bandwidth"] = array("min" => 0, "max" => $vn_bitrate);
+					break;
 				case 'video/x-ms-asf':
 				case 'video/x-ms-wmv':
 					$this->properties["has_video"] = (sizeof($this->handle["asf"]["video_media"]) ? 1 : 0);
@@ -673,8 +726,10 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				}
 				break;
 			# ------------------------------------
+			// only support "command" option...
 			case 'video/mpeg':
-			case 'video/ogg':		// only support "command" option...
+			case 'video/ogg':
+			case 'video/x-dv':
 				if (caMediaPluginFFfmpegInstalled($this->ops_path_to_ffmpeg)) {
 					$va_ffmpeg_params = array();
 

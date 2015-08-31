@@ -879,4 +879,27 @@
 		return array('size' => $vs_selected_size, 'width' => $va_tmp[0], 'height' => $va_tmp[1]);
 	}
 	# ------------------------------------------------------------------------------------------------
-?>
+	/**
+	 * Divine file format with media info
+	 * @param string $ps_path
+	 * @return string mime type usable for media processing back-end, e.g. video/mp4
+	 */
+	function caMediaInfoGuessFileFormat($ps_path) {
+		if(!caMediaInfoInstalled()) { return false; }
+
+		$va_media_metadata = caExtractMetadataWithMediaInfo($ps_path);
+		switch($va_media_metadata['VIDEO']['Format']) {
+			case 'DV':
+				if($va_media_metadata['VIDEO']['Commercial name'] == 'DVCPRO') {
+					return 'video/x-dv';
+				}
+				break;
+			// @todo add more popular formats here!
+			default:
+				return false;
+		}
+
+		// couldn't figure it out :-(
+		return false;
+	}
+	# ------------------------------------------------------------------------------------------------
