@@ -16,9 +16,13 @@ class TestAdministrateAccess < Test::Unit::TestCase
   end
 
   def run_urls(user, password, should_deny)
-    base_url = 'http://providence.dev'
+    if ENV['COLLECTIVEACCESS_BASE_URL']
+      base_url = ENV['COLLECTIVEACCESS_BASE_URL']
+    else
+      base_url = 'http://providence.dev' # hardcoded default for testing
+    end
 
-    b = Watir::Browser.new
+    b = Watir::Browser.new :phantomjs
     b.window.maximize
 
     login_as base_url, b, user, password

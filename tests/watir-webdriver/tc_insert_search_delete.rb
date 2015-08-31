@@ -8,10 +8,16 @@ class TestInsertSearchDelete < Test::Unit::TestCase
   include CaLogin
 
   def test_insert_search_delete
-    b = Watir::Browser.new
+    b = Watir::Browser.new :phantomjs
     b.window.maximize
 
-    login_as 'http://providence.dev/', b, 'administrator', 'dublincore'
+    if ENV['COLLECTIVEACCESS_BASE_URL']
+      base_url = ENV['COLLECTIVEACCESS_BASE_URL']
+    else
+      base_url = 'http://providence.dev' # hardcoded default for testing
+    end
+
+    login_as base_url, b, 'administrator', 'dublincore'
 
     b.link(:class => 'sf-with-ul').hover # open "New"
     b.link(:class => 'sf-with-ul', :index => 2).hover # open "Object"
