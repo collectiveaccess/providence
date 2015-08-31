@@ -385,7 +385,11 @@
 	function caExtractMetadataWithMediaInfo($ps_filepath, $ps_mediainfo_path=null){
 		if(!$ps_mediainfo_path) { $ps_mediainfo_path = caGetExternalApplicationPath('mediainfo'); }
 		if (!caIsValidFilePath($ps_mediainfo_path)) { return false; }
-		
+
+		if(MemoryCache::contains($ps_filepath, 'MediaInfoMetadata')) {
+			return MemoryCache::fetch($ps_filepath, 'MediaInfoMetadata');
+		}
+
 		//
 		// TODO: why don't we parse this from the XML output like civilized people?
 		//
@@ -407,6 +411,7 @@
 			}
 		}
 
+		MemoryCache::save($ps_filepath, $va_return, 'MediaInfoMetadata');
 		return $va_return;
 	}
 	# ------------------------------------------------------------------------------------------------
