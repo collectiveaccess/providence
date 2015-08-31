@@ -502,7 +502,10 @@ class DisplayTemplateParser {
 						);
 						$vs_proc_template = array_shift($va_proc_templates);	
 					} else {
-						if (strlen($vs_tag) && ($vs_tag[0] !=='~')) { $vs_proc_template = "<{$vs_tag}>{$vs_proc_template}</{$vs_tag}>"; }
+						if (strlen($vs_tag) && ($vs_tag[0] !=='~')) { 
+							$vs_attr = trim(_caHTMLMakeAttributeString($o_node->attributes));
+							$vs_proc_template = "<{$vs_tag}".($vs_attr ? " {$vs_attr}" : '').">{$vs_proc_template}</{$vs_tag}>"; 
+						}
 					}
 					
 					$vs_acc .= $vs_proc_template;
