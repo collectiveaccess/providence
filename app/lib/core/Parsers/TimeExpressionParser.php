@@ -687,6 +687,14 @@ class TimeExpressionParser {
 	}
 	# -------------------------------------------------------------------
 	private function preprocess($ps_expression) {
+
+		// Trigger TimeExpressionParser preprocess hook
+		$o_app_plugin_manager = new ApplicationPluginManager();
+		$va_hook_result = $o_app_plugin_manager->hookTimeExpressionParserPreprocessBefore(array("expression"=>$ps_expression));
+		if ($va_hook_result["expression"] != $ps_expression) {
+			$ps_expression = $va_hook_result["expression"];
+		}
+
 		# convert
 		$va_dict = $this->opo_datetime_settings->getAssoc("expressions");
 		$vs_lc_expression = mb_strtolower($ps_expression);
@@ -820,7 +828,7 @@ class TimeExpressionParser {
 
 		// Trigger TimeExpressionParser preprocess hook
 		$o_app_plugin_manager = new ApplicationPluginManager();
-		$va_hook_result = $o_app_plugin_manager->hookTimeExpressionParserPreprocess(array("expression"=>$ps_expression));
+		$va_hook_result = $o_app_plugin_manager->hookTimeExpressionParserPreprocessAfter(array("expression"=>$ps_expression));
 		if ($va_hook_result["expression"] != $ps_expression) {
 			$ps_expression = $va_hook_result["expression"];
 		}
