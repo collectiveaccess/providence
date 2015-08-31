@@ -336,6 +336,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			// first try mediainfo
 			if($vs_mimetype = caMediaInfoGuessFileFormat($filepath)) {
 				$va_media_metadata = caExtractMetadataWithMediaInfo($filepath);
+				$this->metadata = $va_media_metadata;
 
 				$va_media_metadata['filepath'] = $filepath;
 				$va_media_metadata['mime_type'] = $vs_mimetype;
