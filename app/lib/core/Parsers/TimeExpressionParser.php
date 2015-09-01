@@ -827,7 +827,6 @@ class TimeExpressionParser {
 		$ps_expression = preg_replace("/([\d]{4}#[\d]{2}#[\d]{2})\/([\d]{4}#[\d]{2}#[\d]{2})/", "$1 - $2", $ps_expression);
 
 		// Trigger TimeExpressionParser preprocess hook
-		$o_app_plugin_manager = new ApplicationPluginManager();
 		$va_hook_result = $o_app_plugin_manager->hookTimeExpressionParserPreprocessAfter(array("expression"=>$ps_expression));
 		if ($va_hook_result["expression"] != $ps_expression) {
 			$ps_expression = $va_hook_result["expression"];
