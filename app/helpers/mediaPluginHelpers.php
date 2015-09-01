@@ -132,7 +132,7 @@
 	 * @param $ps_path_to_ffmpeg - full path to ffmpeg including executable name
 	 * @return boolean - true if available, false if not
 	 */
-	function caMediaPluginFFfmpegInstalled($ps_path_to_ffmpeg=null) {
+	function caMediaPluginFFmpegInstalled($ps_path_to_ffmpeg=null) {
 		if(!$ps_path_to_ffmpeg) { $ps_path_to_ffmpeg = caGetExternalApplicationPath('ffmpeg'); }
 
 		global $_MEDIAHELPER_PLUGIN_CACHE_FFMPEG;
@@ -280,21 +280,21 @@
 	function caPDFMinerInstalled($ps_pdfminer_path=null) {
 		if(!$ps_pdfminer_path) { $ps_pdfminer_path = caGetExternalApplicationPath('pdfminer'); }
 
-		global $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO;
-		if (isset($_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path])) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path];
+		global $_MEDIAHELPER_PLUGIN_CACHE_PDFMINER;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_PDFMINER[$ps_pdfminer_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_PDFMINER[$ps_pdfminer_path];
 		} else {
-			$_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO = array();
+			$_MEDIAHELPER_PLUGIN_CACHE_PDFMINER = array();
 		}
 		if (!caIsValidFilePath($ps_pdfminer_path)) { return false; }
 
-		if (!file_exists($ps_pdfminer_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = false; }
+		if (!file_exists($ps_pdfminer_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_PDFMINER[$ps_pdfminer_path] = false; }
 		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
 		exec($ps_pdfminer_path." > /dev/null",$va_output,$vn_return);
 		if($vn_return == 100) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = true;
+			return $_MEDIAHELPER_PLUGIN_CACHE_PDFMINER[$ps_pdfminer_path] = true;
 		}
-		return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = false;
+		return $_MEDIAHELPER_PLUGIN_CACHE_PDFMINER[$ps_pdfminer_path] = false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -305,21 +305,21 @@
 	function caPhantomJSInstalled($ps_phantomjs_path=null) {
 		if(!$ps_phantomjs_path) { $ps_phantomjs_path = caGetExternalApplicationPath('phantomjs'); }
 		
-		global $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO;
-		if (isset($_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_phantomjs_path])) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_phantomjs_path];
+		global $_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS[$ps_phantomjs_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS[$ps_phantomjs_path];
 		} else {
-			$_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO = array();
+			$_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS = array();
 		}
 		if (!trim($ps_phantomjs_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_phantomjs_path)) || !file_exists($ps_phantomjs_path)) { return false; }
 		
-		if (!file_exists($ps_phantomjs_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_phantomjs_path] = false; }
+		if (!file_exists($ps_phantomjs_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS[$ps_phantomjs_path] = false; }
 		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
 		exec($ps_phantomjs_path." > /dev/null",$va_output,$vn_return);
 		if($vn_return == 0) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_phantomjs_path] = true;
+			return $_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS[$ps_phantomjs_path] = true;
 		}
-		return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_phantomjs_path] = false;
+		return $_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS[$ps_phantomjs_path] = false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -330,21 +330,21 @@
 	function caWkhtmltopdfInstalled($ps_wkhtmltopdf_path=null) {
 		if(!$ps_wkhtmltopdf_path) { $ps_wkhtmltopdf_path = caGetExternalApplicationPath('wkhtmltopdf'); }
 		
-		global $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO;
-		if (isset($_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path])) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path];
+		global $_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF[$ps_wkhtmltopdf_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF[$ps_wkhtmltopdf_path];
 		} else {
-			$_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO = array();
+			$_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF = array();
 		}
 		if (!trim($ps_wkhtmltopdf_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_wkhtmltopdf_path)) || !file_exists($ps_wkhtmltopdf_path)) { return false; }
 		
-		if (!file_exists($ps_wkhtmltopdf_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path] = false; }
+		if (!file_exists($ps_wkhtmltopdf_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF[$ps_wkhtmltopdf_path] = false; }
 		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
 		exec($ps_wkhtmltopdf_path." > /dev/null",$va_output,$vn_return);
 		if(($vn_return == 0) || ($vn_return == 1)) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path] = true;
+			return $_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF[$ps_wkhtmltopdf_path] = true;
 		}
-		return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path] = false;
+		return $_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF[$ps_wkhtmltopdf_path] = false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -372,70 +372,6 @@
 			return $_MEDIAHELPER_PLUGIN_CACHE_EXIFTOOL[$ps_exiftool_path] = true;
 		}
 		return $_MEDIAHELPER_PLUGIN_CACHE_EXIFTOOL[$ps_exiftool_path] = false;
-	}
-	# ------------------------------------------------------------------------------------------------
-	/**
-	 * Extracts media metadata using MediaInfo
-	 *
-	 * @param string $ps_filepath file path
-	 * @param string $ps_mediainfo_path optional path to MediaInfo binary. If omitted the path configured in external_applications.conf is used.
-	 *
-	 * @return array Extracted metadata
-	 */
-	function caExtractMetadataWithMediaInfo($ps_filepath, $ps_mediainfo_path=null){
-		if(!$ps_mediainfo_path) { $ps_mediainfo_path = caGetExternalApplicationPath('mediainfo'); }
-		if (!caIsValidFilePath($ps_mediainfo_path)) { return false; }
-
-		if(MemoryCache::contains($ps_filepath, 'MediaInfoMetadata')) {
-			return MemoryCache::fetch($ps_filepath, 'MediaInfoMetadata');
-		}
-
-		//
-		// TODO: why don't we parse this from the XML output like civilized people?
-		//
-		exec($ps_mediainfo_path." ".caEscapeShellArg($ps_filepath), $va_output, $vn_return);
-		$vs_cat = "GENERIC";
-		$va_return = array();
-		foreach($va_output as $vs_line){
-			$va_split = explode(":",$vs_line);
-			$vs_left = trim(array_shift($va_split));
-			$vs_right = trim(join(":", $va_split));
-			if(strlen($vs_right) == 0){ // category line
-				$vs_cat = strtoupper($vs_left);
-				continue;
-			}
-			if(strlen($vs_left) && strlen($vs_right)) {
-				if($vs_left!="Complete name"){ // we probably don't want to display temporary filenames
-					$va_return[$vs_cat][$vs_left] = $vs_right;
-				}
-			}
-		}
-
-		MemoryCache::save($ps_filepath, $va_return, 'MediaInfoMetadata');
-		return $va_return;
-	}
-	# ------------------------------------------------------------------------------------------------
-	/**
-	 * Extract video duration using MediaInfo. This can be used as a fallback to getID3
-	 * @param string $ps_filepath
-	 * @param string|null $ps_mediainfo_path
-	 *
-	 * @return float|null
-	 */
-	function caExtractVideoFileDurationWithMediaInfo($ps_filepath, $ps_mediainfo_path=null) {
-		if(!$ps_mediainfo_path) { $ps_mediainfo_path = caGetExternalApplicationPath('mediainfo'); }
-		if(!caMediaInfoInstalled($ps_mediainfo_path)) { return null; }
-
-		$va_output = array();
-		exec($ps_mediainfo_path.' --Inform="Video;%Duration/String3%" '.caEscapeShellArg($ps_filepath), $va_output, $vn_return);
-		if(!is_array($va_output) || (sizeof($va_output) != 1)) { return null; }
-		$va_tmp = explode(':', array_shift($va_output));
-
-		if(sizeof($va_tmp)==3) { // should have hours, minutes, seconds
-			return round(intval($va_tmp[0]) * 3600 + intval($va_tmp[1]) * 60 + floatval($va_tmp[2]));
-		}
-
-		return null;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -882,29 +818,5 @@
 		}
 		$va_tmp = explode('x', $vs_selected_size);
 		return array('size' => $vs_selected_size, 'width' => $va_tmp[0], 'height' => $va_tmp[1]);
-	}
-	# ------------------------------------------------------------------------------------------------
-	/**
-	 * Divine file format with media info
-	 * @param string $ps_path
-	 * @return string mime type usable for media processing back-end, e.g. video/mp4
-	 */
-	function caMediaInfoGuessFileFormat($ps_path) {
-		if(!caMediaInfoInstalled()) { return false; }
-
-		$va_media_metadata = caExtractMetadataWithMediaInfo($ps_path);
-		switch($va_media_metadata['VIDEO']['Format']) {
-			case 'DV':
-				if($va_media_metadata['VIDEO']['Commercial name'] == 'DVCPRO') {
-					return 'video/x-dv';
-				}
-				break;
-			// @todo add more popular formats here!
-			default:
-				return false;
-		}
-
-		// couldn't figure it out :-(
-		return false;
 	}
 	# ------------------------------------------------------------------------------------------------
