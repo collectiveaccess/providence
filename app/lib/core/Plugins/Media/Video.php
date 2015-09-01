@@ -40,9 +40,7 @@
 
 include_once(__CA_LIB_DIR__."/core/Plugins/Media/BaseMediaPlugin.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugMedia.php");
-include_once(__CA_LIB_DIR__."/core/Parsers/getid3/getid3.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/TimecodeParser.php");
-include_once(__CA_LIB_DIR__."/core/Parsers/OggParser.php");
 include_once(__CA_LIB_DIR__."/core/Configuration.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 include_once(__CA_APP_DIR__."/helpers/avHelpers.php");
@@ -187,78 +185,26 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 		// first try mediainfo
 		if($vs_mimetype = caMediaInfoGuessFileFormat($filepath)) {
-			$va_media_metadata = caExtractMetadataWithMediaInfo($filepath);
-
-			$va_media_metadata['filepath'] = $filepath;
-			$va_media_metadata['mime_type'] = $vs_mimetype;
-
-			$this->opa_media_metadata = $va_media_metadata;
-			return $vs_mimetype;
+			if($this->info["IMPORT"][$vs_mimetype]) {
+				return $vs_mimetype;
+			}
 		}
 
 		// then getID3
-		$ID3 = new getID3();
-		$ID3->option_max_2gb_check = false;
-		$info = $ID3->analyze($filepath);
-		if (($info["mime_type"]) && $this->info["IMPORT"][$info["mime_type"]]) {
-			$this->opa_media_metadata = $info;
-				
-			// force MPEG-4 files to use video/mp4 mimetype rather than the video/quicktime
-			// mimetype getID3 returns. This will allow us to distinguish MPEG-4 files, which can
-			// be played in HTML5 and Flash players from older Quicktime files which cannot.
-			if ($info["mime_type"] === 'video/quicktime') {
-				if (isset($info['video']['dataformat']) && ($info['video']['dataformat'] == 'quicktimevr')) {
-					// don't attempt to handle QuicktimeVR - it's not video!
-					return '';
-				}
-				if ($this->_isMPEG4($info)) {
-					$info["mime_type"] = 'video/mp4';
-				}
+		if($vs_mimetype = caGetID3GuessFileFormat($filepath)) {
+			if($this->info["IMPORT"][$vs_mimetype]) {
+				return $vs_mimetype;
 			}
-			
-			unset($info['quicktime']['moov']);	// remove voluminous parse of Quicktime files from metadata
-
-			return $info["mime_type"];
 		}
 
-		// lastly, try ogg/ogv parser
-		$info = new OggParser($filepath);
-		if (!$info->LastError && is_array($info->Streams) && (sizeof($info->Streams) > 0)) {
-			if (isset($info->Streams['theora'])) {
-				$this->opa_media_metadata = $info->Streams;
-				return $this->opa_media_metadata['mime_type'] = 'video/ogg';
+		// lastly, OggParser
+		if($vs_mimetype = caOggParserGuessFileFormat($filepath)) {
+			if($this->info["IMPORT"][$vs_mimetype]) {
+				return $vs_mimetype;
 			}
 		}
 
 		# file format is not supported by this plug-in
-		return '';
-	}
-	# ----------------------------------------------------------
-	private function _isMPEG4($pa_info) {
-		if ($pa_info['fileformat'] == 'mp4') {
-			return true;
-		}
-		if (substr(0, 3, $pa_info['quicktime']['ftyp']['signature'] == 'mp4')) {
-			return true;
-		}
-		if (substr(0, 3, $pa_info['quicktime']['ftyp']['fourcc'] == 'mp4')) {
-			return true;
-		}
-		if ($pa_info['video']['dataformat'] == 'mpeg4') {
-			return true;
-		}
-		if ($pa_info['video']['fourcc'] == 'mp4v') {
-			return true;
-		}
-		if ($pa_info['audio']['dataformat'] == 'mpeg4') {
-			return true;
-		}
-
-		if (preg_match('!H\.264!i', $pa_info['video']['codec'])) {
-			return true;
-		}
-
-
 		return false;
 	}
 	# ----------------------------------------------------------
@@ -305,7 +251,7 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 */
 	public function getExtractedMetadata() {
 		// $this->opa_media_metadata might be extracted by mediainfo at this point or it might not
-		// so we do it again. all calls are cached anyway, so this should be too bad as far as performance
+		// so we do it again. all calls are cached anyway so this should be too bad as far as performance
 		if(caMediaInfoInstalled()) {
 			return caExtractMetadataWithMediaInfo($this->filepath);
 		} else {
@@ -316,8 +262,8 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 	public function read ($filepath) {
 		if (!file_exists($filepath)) {
 			$this->postError(1650, _t("File %1 does not exist", $filepath), "WLPlugVideo->read()");
-			$this->opa_media_metadata = "";
-			$this->filepath = "";
+			$this->opa_media_metadata = array();
+			$this->filepath = null;
 			return false;
 		}
 		if (!(($this->opa_media_metadata) && ($this->opa_media_metadata["filepath"] == $filepath))) {
@@ -330,49 +276,16 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$va_media_metadata['mime_type'] = $vs_mimetype;
 
 				$this->opa_media_metadata = $va_media_metadata;
+			} elseif($vs_mimetype = caGetID3GuessFileFormat($filepath)) {
+				// then try getid3
+				$this->opa_media_metadata = caExtractMetadataWithGetID3($filepath);
 			} else {
-				// then getID3
-				$ID3 = new getID3();
-				$ID3->option_max_2gb_check = false;
-				$this->opa_media_metadata = $ID3->analyze($filepath);
-
-				if (!$this->opa_media_metadata['mime_type']) {
-					// is it Ogg?
-					$info = new OggParser($filepath);
-					if (!$info->LastError) {
-						$this->opa_media_metadata = $info->Streams;
-						$this->opa_media_metadata['mime_type'] = 'video/ogg';
-						$this->opa_media_metadata['playtime_seconds'] = $this->opa_media_metadata['duration'];
-					}
-				}
-
-				// force MPEG-4 files to use video/mp4 mimetype rather than the video/quicktime
-				// mimetype getID3 returns. This will allow us to distinguish MPEG-4 files, which can
-				// be played in HTML5 and Flash players from older Quicktime files which cannot.
-				if ($this->opa_media_metadata["mime_type"] === 'video/quicktime') {
-					if ($this->_isMPEG4($this->opa_media_metadata)) {
-						$this->opa_media_metadata["mime_type"] = 'video/mp4';
-					}
-				}
+				// lastly, try ogg/ogv
+				$this->opa_media_metadata = caExtractMediaMetadataWithOggParser($filepath);
 			}
 		}
 
-		//
-		// Versions of getID3 to at least 1.7.7 throw an error that should be a warning
-		// when parsing MPEG-4 files, so we supress it here, otherwise we'd never be able
-		// to parse MPEG-4 files.
-		//
-		if ((isset($this->opa_media_metadata["error"])) && (is_array($this->opa_media_metadata["error"])) && (sizeof($this->opa_media_metadata["error"]) == 1)) {
-			if (preg_match("/does not fully support MPEG-4/", $this->opa_media_metadata['error'][0])) {
-				$this->opa_media_metadata['error'] = array();
-			}
-			if (preg_match("/claims to go beyond end-of-file/", $this->opa_media_metadata['error'][0])) {
-				$this->opa_media_metadata['error'] = array();
-			}
-			if (preg_match("/because beyond 2GB limit of PHP filesystem functions/", $this->opa_media_metadata['error'][0])) {
-				$this->opa_media_metadata['error'] = array();
-			}
-		}
+		if(!$this->opa_media_metadata['mime_type']) { return false; } // divineFileFormat() should prevent that, but you never know
 
 		$w = $h = null;
 		

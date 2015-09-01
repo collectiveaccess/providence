@@ -30,6 +30,9 @@
  * ----------------------------------------------------------------------
  */
 
+require_once(__CA_LIB_DIR__."/core/Parsers/getid3/getid3.php");
+require_once(__CA_LIB_DIR__."/core/Parsers/OggParser.php");
+
 # ------------------------------------------------------------------------------------------------
 /**
  * Divine file format with media info
@@ -53,6 +56,106 @@ function caMediaInfoGuessFileFormat($ps_path) {
 		default:
 			return false;
 	}
+}
+# ------------------------------------------------------------------------------------------------
+/**
+ * Divine file format with getID3
+ * @param $ps_path
+ * @return bool|string
+ */
+function caGetID3GuessFileFormat($ps_path) {
+	if($va_getid3_info = caExtractMetadataWithGetID3($ps_path)) {
+		if($va_getid3_info['mime_type']) {
+			return $va_getid3_info["mime_type"];
+		}
+	}
+
+	return false;
+}
+# ------------------------------------------------------------------------------------------------
+/**
+ * Divine file format with OggParser
+ * @param $ps_path
+ * @return bool|string
+ */
+function caOggParserGuessFileFormat($ps_path) {
+	$va_ogg_info = caExtractMediaMetadataWithOggParser($ps_path);
+
+	if (is_array($va_ogg_info) && (sizeof($va_ogg_info) > 0)) {
+		if (isset($va_ogg_info['theora'])) {
+			return 'video/ogg';
+		}
+	}
+
+	return false;
+}
+# ------------------------------------------------------------------------------------------------
+/**
+ * Extract media metadata with OggParser
+ * @param string $ps_filepath
+ * @return array|bool
+ */
+function caExtractMediaMetadataWithOggParser($ps_filepath) {
+	if(MemoryCache::contains($ps_filepath, 'OggParserMediaMetadata')) {
+		return MemoryCache::fetch($ps_filepath, 'OggParserMediaMetadata');
+	}
+
+	$o_ogg = new OggParser($ps_filepath);
+	if ($o_ogg->LastError) { return false; }
+
+	$va_ogg_info = $o_ogg->Streams;
+	$va_ogg_info['mime_type'] = 'video/ogg';
+	$va_ogg_info['playtime_seconds'] = $va_ogg_info['duration'];
+
+	MemoryCache::save($ps_filepath, $va_ogg_info, 'OggParserMediaMetadata');
+
+	return $va_ogg_info;
+}
+# ------------------------------------------------------------------------------------------------
+/**
+ * Extract media metadata with get id3
+ * @param string $ps_filepath
+ * @return array|bool
+ */
+function caExtractMetadataWithGetID3($ps_filepath) {
+	if(MemoryCache::contains($ps_filepath, 'GetID3MediaMetadata')) {
+		return MemoryCache::fetch($ps_filepath, 'GetID3MediaMetadata');
+	}
+
+	$ID3 = new getID3();
+	$ID3->option_max_2gb_check = false;
+	$va_getid3_info = $ID3->analyze($ps_filepath);
+	if (!isset($va_getid3_info["mime_type"])) { return false; }
+
+	// force MPEG-4 files to use video/mp4 mimetype rather than the video/quicktime
+	// mimetype getID3 returns. This will allow us to distinguish MPEG-4 files, which can
+	// be played in HTML5 and Flash players from older Quicktime files which cannot.
+	if ($va_getid3_info["mime_type"] === 'video/quicktime') {
+		if (caGetID3IsMpeg4($va_getid3_info)) {
+			$va_getid3_info["mime_type"] = 'video/mp4';
+		}
+	}
+
+	//
+	// Versions of getID3 to at least 1.7.7 throw an error that should be a warning
+	// when parsing MPEG-4 files, so we supress it here, otherwise we'd never be able
+	// to parse MPEG-4 files.
+	//
+	if ((isset($va_getid3_info["error"])) && (is_array($va_getid3_info["error"])) && (sizeof($va_getid3_info["error"]) == 1)) {
+		if (preg_match("/does not fully support MPEG-4/", $va_getid3_info['error'][0])) {
+			$va_getid3_info['error'] = array();
+		}
+		if (preg_match("/claims to go beyond end-of-file/", $va_getid3_info['error'][0])) {
+			$va_getid3_info['error'] = array();
+		}
+		if (preg_match("/because beyond 2GB limit of PHP filesystem functions/", $va_getid3_info['error'][0])) {
+			$va_getid3_info['error'] = array();
+		}
+	}
+
+	MemoryCache::save($ps_filepath, $va_getid3_info, 'GetID3MediaMetadata');
+
+	return $va_getid3_info;
 }
 # ------------------------------------------------------------------------------------------------
 /**
@@ -116,5 +219,38 @@ function caExtractVideoFileDurationWithMediaInfo($ps_filepath) {
 	}
 
 	return null;
+}
+# ------------------------------------------------------------------------------------------------
+/**
+ * Figure out if a file analyzed by getID3 is actually mpeg4
+ *
+ * @param array $pa_getid3_info
+ * @return bool
+ */
+function caGetID3IsMpeg4($pa_getid3_info) {
+	if ($pa_getid3_info['fileformat'] == 'mp4') {
+		return true;
+	}
+	if (substr(0, 3, $pa_getid3_info['quicktime']['ftyp']['signature'] == 'mp4')) {
+		return true;
+	}
+	if (substr(0, 3, $pa_getid3_info['quicktime']['ftyp']['fourcc'] == 'mp4')) {
+		return true;
+	}
+	if ($pa_getid3_info['video']['dataformat'] == 'mpeg4') {
+		return true;
+	}
+	if ($pa_getid3_info['video']['fourcc'] == 'mp4v') {
+		return true;
+	}
+	if ($pa_getid3_info['audio']['dataformat'] == 'mpeg4') {
+		return true;
+	}
+
+	if (preg_match('!H\.264!i', $pa_getid3_info['video']['codec'])) {
+		return true;
+	}
+
+	return false;
 }
 # ------------------------------------------------------------------------------------------------
