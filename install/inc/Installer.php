@@ -405,6 +405,14 @@ class Installer {
 
 			$this->opa_locales[$vs_language."_".$vs_country] = $t_locale->getPrimaryKey();
 		}
+
+		$va_locales = $t_locale->getAppConfig()->getList('locale_defaults');
+		$vn_locale_id = $t_locale->localeCodeToID($va_locales[0]);
+
+		if(!$vn_locale_id) {
+			throw new Exception("The locale default is set to a non-existing locale. Try adding '". $va_locales[0] . "' to your profile.");
+		}
+
 		return true;
 	}
 	# --------------------------------------------------
