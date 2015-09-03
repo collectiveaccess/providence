@@ -100,7 +100,7 @@ class DbStatement extends DbBase {
 	 * @param string $ps_sql the SQL statement
 	 * @param array $po_options options array
 	 */
-	function DbStatement($po_db, $ps_sql, $po_options=null) {
+	function __construct($po_db, $ps_sql, $po_options=null) {
 		$this->opo_db = $po_db;
 		$this->ops_sql = $ps_sql;
 	
@@ -238,4 +238,3 @@ class DbStatement extends DbBase {
 		//print "DESTRUCT db statement\n";
 	}
 }
-?>

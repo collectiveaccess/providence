@@ -44,14 +44,14 @@ class BrowseService extends BaseJSONService {
 	}
 	# -------------------------------------------------------
 	public function dispatch() {
-		$va_post = $this->getRequestBodyArray();
-
 		// make sure only requests that are actually identical get pulled from cache
 		$vs_cache_key = md5(
-			print_r($va_post, true) .
+			serialize($this->opo_request->getParameters(array('POST', 'GET', 'REQUEST'))) .
+			$this->opo_request->getRawPostData() .
+			$this->opo_request->getRequestMethod() .
 			$this->opo_request->getFullUrlPath() .
-			print_r($this->opo_request->getParameters(array('POST', 'GET', 'REQUEST')), true) .
-			$this->getRequestMethod()
+			$this->opo_request->getScriptName() .
+			($this->opo_request->isLoggedIn() ? $this->opo_request->getUserID() : '')
 		);
 
 		if(ExternalCache::contains($vs_cache_key, 'BrowseService')) {
@@ -121,10 +121,15 @@ class BrowseService extends BaseJSONService {
 		}
 
 		$va_return = array();
+		$va_return["results"] = array();
+
 		$vo_result = $o_browse->getResults(array(
 			'sort' => $this->opo_request->getParameter('sort', pString), 		// user-specified sort
 			'sortDirection' => $this->opo_request->getParameter('sortDirection', pString),
+			'start' => $this->opo_request->getParameter('start', pInteger),
+			'limit' => $this->opo_request->getParameter('limit', pInteger),
 		));
+
 		$t_instance = $this->_getTableInstance($this->getTableName());
 
 		while($vo_result->nextHit()) {
@@ -226,5 +231,3 @@ class BrowseService extends BaseJSONService {
 	}
 	# -------------------------------------------------------
 }
-
-?>

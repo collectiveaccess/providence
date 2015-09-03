@@ -3150,7 +3150,7 @@ class BaseModel extends BaseObject {
 				$this->setMode(ACCESS_WRITE);
 				$this->set('deleted', 1);
 				if ($vn_rc = $this->update(array('force' => true))) {
-					if(!defined('__CA_DONT_DO_SEARCH_INDEXING__')) {
+					if(!defined('__CA_DONT_DO_SEARCH_INDEXING__') || !__CA_DONT_DO_SEARCH_INDEXING__) {
 						$o_indexer = $this->getSearchIndexer();
 						$o_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
 						$o_indexer->commitRowUnIndexing($this->tableNum(), $vn_id, array('queueIndexing' => $pb_queue_indexing));
@@ -3801,6 +3801,8 @@ class BaseModel extends BaseObject {
 				unset($va_media_desc["_undo_"]);
 				unset($va_media_desc["TRANSFORMATION_HISTORY"]);
 				unset($va_media_desc["_CENTER"]);
+				unset($va_media_desc["_SCALE"]);
+				unset($va_media_desc["_SCALE_UNITS"]);
 				return array_keys($va_media_desc);
 			}
 		} else {
@@ -4241,6 +4243,8 @@ class BaseModel extends BaseObject {
 				$media_desc = array(
 					"ORIGINAL_FILENAME" => $this->_SET_FILES[$ps_field]['original_filename'],
 					"_CENTER" => $va_center,
+					"_SCALE" => caGetOption('_SCALE', $va_tmp, array()),
+					"_SCALE_UNITS" => caGetOption('_SCALE_UNITS', $va_tmp, array()),
 					"INPUT" => array(
 						"MIMETYPE" => $m->get("mimetype"),
 						"WIDTH" => $m->get("width"),
@@ -5022,12 +5026,11 @@ class BaseModel extends BaseObject {
 			return null;
 		}
 		
-		$vs_original_filename = $va_media_info['ORIGINAL_FILENAME'];
+		$va_dim = caParseMeasurement($ps_dimension);
 		
-		$vn_dim = caConvertMeasurementToPoints($ps_dimension);
-		
-		$va_media_info['_SCALE'] = $vn_dim/$pn_percent_of_image_width;
-		
+		$va_media_info['_SCALE'] = $pn_percent_of_image_width/$va_dim['value'];
+		$va_media_info['_SCALE_UNITS'] = $va_dim['units'];
+	
 		$this->setMode(ACCESS_WRITE);
 		$this->setMediaInfo($ps_field, $va_media_info);
 		$this->update();
@@ -5043,7 +5046,7 @@ class BaseModel extends BaseObject {
 	 * @param string $ps_field The name of the media field
 	 * @param array $pa_options An array of options. No options are currently implemented.
 	 *
-	 * @return float Value or null if not set
+	 * @return array Value or null if not set
 	 */
 	public function getMediaScale($ps_field, $pa_options=null) {
 		$va_media_info = $this->getMediaInfo($ps_field);
@@ -5051,7 +5054,7 @@ class BaseModel extends BaseObject {
 			return null;
 		}
 		
-		return caGetOption('_SCALE', $va_media_info, null);
+		return array('scale' => caGetOption('_SCALE', $va_media_info, null), 'measurementUnits' => caGetOption('_SCALE_UNITS', $va_media_info, null));;
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -7739,13 +7742,13 @@ class BaseModel extends BaseObject {
 		if (!is_array($va_hier)) { return array(); }
 		foreach($va_hier as $vn_i => $va_item) {
 			$va_levels[$vn_i] = $va_item['LEVEL'];
-			$va_ids[] = $vn_id = $va_item['NODE'][$vs_pk];
+			$va_ids[$vn_i] = $vn_id = $va_item['NODE'][$vs_pk];
 			$va_parent_ids[$vn_id] = $va_item['NODE']['parent_id'];
 		}
 		
 		$va_hierarchy_data = array();
 		
-		$va_vals = caProcessTemplateForIDs($ps_template, $this->tableName(), $va_ids, array_merge($pa_options, array('returnAsArray'=> true)));
+		$va_vals = caProcessTemplateForIDs($ps_template, $this->tableName(), $va_ids, array_merge($pa_options, array('includeBlankValuesInArray' => true, 'returnAsArray'=> true)));
 		
 		$pa_sort = caGetOption('sort', $pa_options, null);
 		if (!is_array($pa_sort) && $pa_sort) { $pa_sort = explode(";", $pa_sort); }
@@ -10287,7 +10290,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *				media3_original_filename = original file name to set for comment "media3"
 	 *				media4_original_filename = original file name to set for comment "media4"
 	 * @param $ps_location [string] = location of user
-	 * @return int comment_id of newly created comment, false on error or null if parameters are invalid
+	 * @return ca_item_comments BaseModel representation of newly created comment, false on error or null if parameters are invalid
 	 */
 	public function addComment($ps_comment, $pn_rating=null, $pn_user_id=null, $pn_locale_id=null, $ps_name=null, $ps_email=null, $pn_access=0, $pn_moderator=null, $pa_options=null, $ps_media1=null, $ps_media2=null, $ps_media3=null, $ps_media4=null, $ps_location=null) {
 		global $g_ui_locale_id;
@@ -11398,6 +11401,8 @@ $pa_options["display_form_field_tips"] = true;
 	 *		sort = field to sort on. Must be in <table>.<field> or <field> format and be an intrinsic field in the primary table. Sort order can be set using the sortDirection option.
 	 *		sortDirection = the direction of the sort. Values are ASC (ascending) and DESC (descending). Default is ASC.
 	 *		allowWildcards = consider "%" as a wildcard when searching. Any term including a "%" character will be queried using the SQL LIKE operator. [Default is false]
+	 *		purify = process text with HTMLPurifier before search. Purifier encodes &, < and > characters, and performs other transformations that can cause searches on literal text to fail. If you are purifying all input (the default) then leave this set true. [Default is true]
+	 *		purifyWithFallback = executes the search with "purify" set and falls back to search with unpurified text if nothing is found. [Default is false]
 	 *
 	 * @return mixed Depending upon the returnAs option setting, an array, subclass of BaseModel or integer may be returned.
 	 */
@@ -11419,6 +11424,11 @@ $pa_options["display_form_field_tips"] = true;
 		if ($o_trans) { $t_instance->setTransaction($o_trans); }
 		
 		$va_sql_wheres = array();
+		
+		$vb_purify_with_fallback = caGetOption('purifyWithFallback', $pa_options, false);
+		$vb_purify = $vb_purify_with_fallback ? true : caGetOption('purify', $pa_options, true);
+		
+		if ($vb_purify) { $pa_values = caPurifyArray($pa_values); }
 		
 		//
 		// Convert type id
@@ -11482,7 +11492,9 @@ $pa_options["display_form_field_tips"] = true;
 							$vm_value[$vn_i] = intval($vm_ivalue);
 						}
 					} else {
-						$vm_value = intval($vm_value);
+						if(!is_null($vm_value)) {
+							$vm_value = intval($vm_value);
+						}
 					}
 				}
 			} else {
@@ -11545,6 +11557,11 @@ $pa_options["display_form_field_tips"] = true;
 		$vn_limit = (isset($pa_options['limit']) && ((int)$pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
 		
 		$qr_res = $o_db->query($vs_sql);
+		
+		if ($vb_purify_with_fallback && ($qr_res->numRows() == 0)) {
+			return self::find($pa_values, array_merge($pa_options, ['purifyWithFallback' => false, 'purify' => false]));
+		}
+		
 		$vn_c = 0;
 	
 		$vs_pk = $t_instance->primaryKey();

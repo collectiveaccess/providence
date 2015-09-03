@@ -175,11 +175,14 @@
 						'ca_loans', 'ca_movements', 'ca_lists', 'ca_list_items', 'ca_tours', 'ca_tour_stops', 'ca_sets', 'ca_bundle_displays'
 					) as $vs_table) {
 						foreach($this->request->user->getValidPreferences($vs_group) as $vs_pref) {
+							if(!$this->getRequest()->getUser()->isValidPreference("{$vs_table}_{$vs_pref}")) { continue; }
+
 							if ($vs_pref == 'duplicate_relationships') {
 								$vs_val = $this->request->getParameter("pref_{$vs_table}_{$vs_pref}", pArray);
 							} else {
 								$vs_val = $this->request->getParameter("pref_{$vs_table}_{$vs_pref}", pString);
 							}
+
 							$this->request->user->setPreference("{$vs_table}_{$vs_pref}", $vs_val);
 						}
 					}

@@ -6501,13 +6501,13 @@ create table ca_metadata_dictionary_entries (
 create table ca_metadata_dictionary_rules (
    rule_id                  int unsigned					not null AUTO_INCREMENT,
    entry_id                 int unsigned not null,
-   rule_code                varchar(30) not null,
+   rule_code                varchar(100) not null,
    expression               text not null,
    rule_level               char(4) not null,
    settings                 longtext not null,
    primary key (rule_id),
    index i_entry_id (entry_id),
-   unique index u_rule_code (rule_code),
+   unique index u_rule_code (entry_id, rule_code),
    index i_rule_code (rule_level),
    
    constraint fk_ca_metadata_dictionary_rules_entry_id foreign key (entry_id)
@@ -6848,5 +6848,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 121 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (121, unix_timestamp());
+/* CURRENT MIGRATION: 122 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (122, unix_timestamp());
