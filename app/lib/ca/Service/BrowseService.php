@@ -55,7 +55,7 @@ class BrowseService extends BaseJSONService {
 		);
 
 		if(ExternalCache::contains($vs_cache_key, 'BrowseService')) {
-			//return ExternalCache::fetch($vs_cache_key, 'BrowseService');
+			return ExternalCache::fetch($vs_cache_key, 'BrowseService');
 		}
 
 		switch($this->getRequestMethod()) {
