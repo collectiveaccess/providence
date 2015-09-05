@@ -54,7 +54,7 @@
 		 */
 		static public function getRoleActionList() {
 			return array(
-				'can_use_about_drawing_search_service' => array(
+				'can_use_alhalqa_community_service' => array(
 					'label' => "Can use Alhalqa JSON community service",
 					'description' => "Allow user to use Alhalqa JSON community service"
 				),
