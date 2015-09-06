@@ -1057,6 +1057,11 @@
       <xs:field xpath="@code"/>
     </xs:unique>
 
+    <xs:unique name="listCodeUnique">
+      <xs:selector xpath=".//list"/>
+      <xs:field xpath="@code"/>
+    </xs:unique>
+
   </xs:element>
 
 </xs:schema>
