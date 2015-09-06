@@ -66,4 +66,61 @@ class ConfigurationUpdateTest extends PHPUnit_Framework_TestCase {
 		$t_locale->update();
 		$this->assertTrue((bool) $t_locale->get('dont_use_for_cataloguing'));
 	}
+
+	public function testAddNewItemToExistingList() {
+		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/lists/add_new_item_to_existing_list.xml'));
+		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer->processLocales();
+		$o_installer->processLists();
+
+		$this->assertGreaterThan(0, ($vn_item_id = caGetListItemID('object_types', 'test_object_type', array('dontCache' => true))));
+		$t_item = new ca_list_items($vn_item_id);
+		$this->assertEquals('Test', $t_item->get('ca_list_items.preferred_labels'));
+		$t_item->setMode(ACCESS_WRITE);
+		$this->assertTrue($t_item->delete(true, array('hard' => true)));
+	}
+
+	public function testEditItemInExistingList() {
+		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/lists/edit_item_in_existing_list.xml'));
+		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer->processLocales();
+		$o_installer->processLists();
+
+		$this->assertGreaterThan(0, ($vn_item_id = caGetListItemID('object_types', 'image', array('dontCache' => true))));
+		$t_item = new ca_list_items($vn_item_id);
+
+		$this->assertEquals(0, $t_item->get('is_enabled'));
+		$this->assertEquals(1, $t_item->get('is_default'));
+
+		$t_item->set('enabled', 1);
+		$t_item->set('default', 0);
+		$t_item->setMode(ACCESS_WRITE);
+		$t_item->update();
+	}
+
+	public function testAddNewList() {
+		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/lists/add_new_list_with_items.xml'));
+		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer->processLocales();
+		$o_installer->processLists();
+
+		$t_list = new ca_lists();
+		$t_list->load(array('list_code' => 'diff_test_list'));
+		$this->assertGreaterThan(0, $t_list->getPrimaryKey());
+
+		$this->assertGreaterThan(0, ($vn_item_id = caGetListItemID('diff_test_list', 'test_item_one', array('dontCache' => true))));
+
+		$t_item = new ca_list_items($vn_item_id);
+		$t_item->setMode(ACCESS_WRITE);
+		$t_item->delete(true, array('hard'=>true));
+
+		$this->assertGreaterThan(0, ($vn_item_id = caGetListItemID('diff_test_list', 'test_item_two', array('dontCache' => true))));
+
+		$t_item = new ca_list_items($vn_item_id);
+		$t_item->setMode(ACCESS_WRITE);
+		$t_item->delete(true, array('hard'=>true));
+
+		$t_list->setMode(ACCESS_WRITE);
+		$t_list->delete(true, array('hard' => true));
+	}
 }

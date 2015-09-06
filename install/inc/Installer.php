@@ -47,11 +47,6 @@ class Installer {
 
 	protected $ops_admin_email;
 	protected $opb_overwrite;
-
-	/**
-	 * @var bool We are installing
-	 */
-	protected $opb_updating = false;
 	# --------------------------------------------------
 	/** @var  SimpleXMLElement */
 	protected $opo_profile;
@@ -272,25 +267,25 @@ class Installer {
 			return false;
 		}
 		/** @var LabelableBaseModelWithAttributes $t_instance */
-		foreach($po_labels->children() as $vo_label){
+		foreach($po_labels->children() as $vo_label) {
 			$va_label_values = array();
 			$vs_locale = self::getAttribute($vo_label, "locale");
 			$vn_locale_id = $pa_locales[$vs_locale];
 
 			$vb_preferred = self::getAttribute($vo_label, "preferred");
-			if($pb_force_preferred || (bool)$vb_preferred || is_null($vb_preferred)){
+			if($pb_force_preferred || (bool)$vb_preferred || is_null($vb_preferred)) {
 				$vb_preferred = true;
 			} else {
 				$vb_preferred = false;
 			}
 
-			foreach($vo_label->children() as $vo_field){
+			foreach($vo_label->children() as $vo_field) {
 				$va_label_values[$vo_field->getName()] = (string) $vo_field;
 			}
 			$va_existing_labels = $vb_preferred ? $t_instance->getPreferredLabels(array($vn_locale_id)) : $t_instance->getNonPreferredLabels(array($vn_locale_id));
-			if($va_existing_labels && $vn_label_id = $va_existing_labels[(int)$t_instance->getPrimaryKey()][(int)$vn_locale_id][0]['label_id']){
+			if($va_existing_labels && $vn_label_id = $va_existing_labels[(int)$t_instance->getPrimaryKey()][(int)$vn_locale_id][0]['label_id']) {
 				$t_instance->editLabel($vn_label_id, $va_label_values, $vn_locale_id, null, $vb_preferred);
-			}else {
+			} else {
 				$t_instance->addLabel($va_label_values, $vn_locale_id, false, $vb_preferred);
 			}
 		}
@@ -457,16 +452,16 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
-	public function processLists($f_callback=null){
+	public function processLists($f_callback=null) {
 		require_once(__CA_MODELS_DIR__."/ca_lists.php");
 		require_once(__CA_MODELS_DIR__."/ca_list_items.php");
 
-		if($this->ops_base_name){ // "merge" profile and its base
+		if($this->ops_base_name) { // "merge" profile and its base
 			$va_lists = array();
-			foreach($this->opo_base->lists->children() as $vo_list){
+			foreach($this->opo_base->lists->children() as $vo_list) {
 				$va_lists[self::getAttribute($vo_list, "code")] = $vo_list;
 			}
-			foreach($this->opo_profile->lists->children() as $vo_list){
+			foreach($this->opo_profile->lists->children() as $vo_list) {
 				$va_lists[self::getAttribute($vo_list, "code")] = $vo_list;
 			}
 		} else {
@@ -475,11 +470,11 @@ class Installer {
 
 		$vn_i = 0;
 		$vn_num_lists = sizeof($va_lists);
-		foreach($va_lists as $vo_list){
+		foreach($va_lists as $vo_list) {
 			$vs_list_code = self::getAttribute($vo_list, "code");
-			$t_list = $this->opb_updating ? ca_lists::find(array('list_code' => $vs_list_code), array('returnAs' => 'firstModelInstance')) : $this->opb_updating;
-			// if it doesn't exist create a new one
-			$t_list = $t_list ? $t_list: new ca_lists();
+			if(!($t_list = ca_lists::find(array('list_code' => $vs_list_code), array('returnAs' => 'firstModelInstance')))) {
+				$t_list = new ca_lists();
+			}
 			$t_list->setMode(ACCESS_WRITE);
 			$vb_hierarchical = self::getAttribute($vo_list, "hierarchical");
 			$vb_system = self::getAttribute($vo_list, "system");
@@ -497,12 +492,11 @@ class Installer {
 			$t_list->set("is_hierarchical",$vb_hierarchical);
 			$t_list->set("use_as_vocabulary",$vb_voc);
 			if($vn_def_sort) $t_list->set("default_sort",(int)$vn_def_sort);
-			if($t_list->getPrimaryKey()){
+			if($t_list->getPrimaryKey()) {
 				$t_list->update();
-			}else {
+			} else {
 				$t_list->insert();
 			}
-
 
 			if ($t_list->numErrors()) {
 				$this->addError("There was an error while inserting list {$vs_list_code}: ".join(" ",$t_list->getErrors()));
@@ -511,8 +505,8 @@ class Installer {
 				if ($t_list->numErrors()) {
 					$this->addError("There was an error while inserting list label for {$vs_list_code}: ".join(" ",$t_list->getErrors()));
 				}
-				if($vo_list->items){
-					if(!$this->processListItems($t_list, $vo_list->items, null)){
+				if($vo_list->items) {
+					if(!$this->processListItems($t_list, $vo_list->items, null)) {
 						return false;
 					}
 				}
@@ -528,7 +522,7 @@ class Installer {
 	 * @param $pn_parent_id int
 	 * @return bool
 	 */
-	protected  function processListItems($t_list, $po_items, $pn_parent_id){
+	protected  function processListItems($t_list, $po_items, $pn_parent_id) {
 		foreach($po_items->children() as $vo_item){
 			$vs_item_value = self::getAttribute($vo_item, "value");
 			$vs_item_idno = self::getAttribute($vo_item, "idno");
@@ -548,12 +542,15 @@ class Installer {
 				$vn_type_id = $t_list->getItemIDFromList('list_item_types', $vs_type);
 			}
 
-
 			if (!isset($vs_status)) { $vs_status = 0; }
 			if (!isset($vs_access)) { $vs_access = 0; }
 			if (!isset($vs_rank)) { $vs_rank = 0; }
 
-			$t_item = $t_list->addItem($vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vn_type_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank);
+			if($vn_item_id = caGetListItemID($t_list->get('list_code'), $vs_item_idno, array('dontCache' => true))) {
+				$t_item = $t_list->editItem($vn_item_id, $vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank);
+			} else {
+				$t_item = $t_list->addItem($vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vn_type_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank);
+			}
 
 			if (($t_list->numErrors() > 0) || !is_object($t_item)) {
 				$this->addError("There was an error while inserting list item {$vs_item_idno}: ".join(" ",$t_list->getErrors()));

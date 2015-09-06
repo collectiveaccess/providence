@@ -83,8 +83,10 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 */
 	$g_list_item_id_cache = array();
 	function caGetListItemID($ps_list_code, $ps_idno, $pa_options=null) {
-		global $g_list_item_id_cache;
-		if(isset($g_list_item_id_cache[$ps_list_code.'/'.$ps_idno])) { return $g_list_item_id_cache[$ps_list_code.'/'.$ps_idno]; }
+		if(!caGetOption('dontCache', $pa_options, false)) {
+			global $g_list_item_id_cache;
+			if(isset($g_list_item_id_cache[$ps_list_code.'/'.$ps_idno])) { return $g_list_item_id_cache[$ps_list_code.'/'.$ps_idno]; }
+		}
 		$t_list = new ca_lists();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
 		

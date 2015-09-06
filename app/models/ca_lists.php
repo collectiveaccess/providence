@@ -357,10 +357,48 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 *
+	 * Edit existing list item
+	 * @param int $pn_item_id
+	 * @param string $ps_value
+	 * @param bool $pb_is_enabled
+	 * @param bool $pb_is_default
+	 * @param int $pn_parent_id
+	 * @param int $pn_type_id
+	 * @param string $ps_idno
+	 * @param string $ps_validation_format
+	 * @param int $pn_status
+	 * @param int $pn_access
+	 * @param int $pn_rank
+	 * @return bool|ca_list_items
 	 */
-	public function editItem($pn_item_id, $ps_value, $pb_is_enabled=true, $pb_is_default=false, $pn_parent_id=null, $pn_type_id=null, $ps_idno=null, $ps_validation_format='', $pn_status=0, $pn_access=0, $pn_rank=null) {
-		die("Not implemented");
+	public function editItem($pn_item_id, $ps_value, $pb_is_enabled=true, $pb_is_default=false, $pn_parent_id=null, $ps_idno=null, $ps_validation_format='', $pn_status=0, $pn_access=0, $pn_rank=null) {
+		if(!($vn_list_id = $this->getPrimaryKey())) { return false; }
+
+		$t_item = new ca_list_items($pn_item_id);
+		if(!$t_item->getPrimaryKey()) { return false; }
+		if($t_item->get('list_id') != $this->getPrimaryKey()) { return false; } // don't allow editing items in other lists
+
+		$t_item->setMode(ACCESS_WRITE);
+		if ($this->inTransaction()) { $t_item->setTransaction($this->getTransaction()); }
+
+		$t_item->set('item_value', $ps_value);
+		$t_item->set('is_enabled', $pb_is_enabled ? 1 : 0);
+		$t_item->set('is_default', $pb_is_default ? 1 : 0);
+		$t_item->set('parent_id', $pn_parent_id);
+		$t_item->set('idno', $ps_idno);
+		$t_item->set('validation_format', $ps_validation_format);
+		$t_item->set('status', $pn_status);
+		$t_item->set('access', $pn_access);
+		if (!is_null($pn_rank)) { $t_item->set('rank', $pn_rank); }
+
+		$t_item->update();
+
+		if ($t_item->numErrors()) {
+			$this->errors = array_merge($this->errors, $t_item->errors);
+			return false;
+		}
+
+		return $t_item;
 	}
 	# ------------------------------------------------------
 	/**

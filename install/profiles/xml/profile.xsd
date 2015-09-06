@@ -543,6 +543,13 @@
                                 use="required"/>
                   <xs:attribute name="defaultSort" type="xs:int" use="optional"/>
                 </xs:complexType>
+
+                <!-- list item idnos must be unique inside a list -->
+                <xs:unique name="listItemIdnoUnique">
+                  <xs:selector xpath=".//item"/>
+                  <xs:field xpath="@idno"/>
+                </xs:unique>
+
               </xs:element>
             </xs:sequence>
           </xs:complexType>
