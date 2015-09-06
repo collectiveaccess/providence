@@ -219,44 +219,6 @@
 		public static function installShortHelp() {
 			return _t("Performs a fresh installation of CollectiveAccess using the configured values in setup.php.");
 		}
-
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public static function update_installation_profileUtilityClass() {
-			return _t('Configuration - Experimental');
-		}
-		# -------------------------------------------------------
-		public static function update_installation_profileParamList() {
-			$va_params = self::installParamList();
-			unset($va_params['overwrite']);
-			unset($va_params['admin-email|e=s']);
-			return $va_params;
-		}
-		# -------------------------------------------------------
-		public static function update_installation_profile($po_opts=null) {
-			require_once(__CA_BASE_DIR__ . '/install/inc/Updater.php');
-			self::install($po_opts, false);
-			return true;
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public static function update_installation_profileHelp() {
-			return _t("EXPERIMENTAL - Updates the installation profile to match a supplied profile name.") ."\n".
-			"\t" . _t("This function only creates new values and is useful if you want to append changes from one profile onto another.")."\n".
-			"\t" . _t("Your new profile must exist in a directory that contains the profile.xsd schema and must validate against that schema in order for the update to apply successfully.");
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public static function update_installation_profileShortHelp() {
-			return _t("EXPERIMENTAL - Updates the installation profile to match a supplied profile name.");
-		}
-
 		# -------------------------------------------------------
 		/**
 		 * Rebuild search indices
