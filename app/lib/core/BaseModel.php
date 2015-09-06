@@ -2626,7 +2626,7 @@ class BaseModel extends BaseObject {
 							}
 							
 							// Moving between hierarchies
-							if ($this->get($vs_hier_id_fld) != $va_parent_info[$vs_hier_id_fld]) {
+							if (is_array($va_parent_info) && ($this->get($vs_hier_id_fld) != $va_parent_info[$vs_hier_id_fld])) {
 								$vn_hierarchy_id = $va_parent_info[$vs_hier_id_fld];
 								$this->set($this->getProperty('HIERARCHY_ID_FLD'), $vn_hierarchy_id);
 						
