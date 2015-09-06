@@ -37,6 +37,7 @@
     </testsuite>
     <testsuite name="Install Test Suite">
       <directory>install/</directory>
+      <exclude>install/ConfigurationUpdateTest.php</exclude>
     </testsuite>
     <testsuite name="Tests With Data Suite">
       <directory>testsWithData/</directory>
