@@ -2137,14 +2137,14 @@
             </label>
           </labels>
           <items>
-            <item idno="coastal" enabled="1" default="0">
+            <!--<item idno="coastal" enabled="1" default="0">
               <labels>
                 <label locale="en_CA" preferred="1">
                   <name_singular>coastal</name_singular>
                   <name_plural>coastal</name_plural>
                 </label>
               </labels>
-            </item>
+            </item>-->
             <item idno="deep_sea" enabled="1" default="0">
               <labels>
                 <label locale="en_CA" preferred="1">

@@ -222,7 +222,7 @@
         </item>
       </items>
     </list>
-    <list code="collection_sources" hierarchical="1" system="0" vocabulary="0">
+    <!--<list code="collection_sources" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
           <name>Collection sources</name>
@@ -238,7 +238,7 @@
           </labels>
         </item>
       </items>
-    </list>
+    </list>-->
     <list code="occurrence_types" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -929,7 +929,7 @@
         </item>
       </items>
     </list>
-    <list code="date_types" hierarchical="0" system="0" vocabulary="1">
+    <!--<list code="date_types" hierarchical="0" system="0" vocabulary="1">
       <labels>
         <label locale="en_US">
           <name>Date Types</name>
@@ -1068,7 +1068,7 @@
           </labels>
         </item>
       </items>
-    </list>
+    </list>-->
     <list code="vhec_vocab" hierarchical="0" system="0" vocabulary="0" defaultSort="1">
       <labels>
         <label locale="en_US">

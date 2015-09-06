@@ -6747,7 +6747,7 @@
         </item>
       </items>
     </list>
-    <list code="object_deaccession_types" hierarchical="0" system="0" vocabulary="0">
+    <!--<list code="object_deaccession_types" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
           <name>Object deaccession types</name>
@@ -6796,6 +6796,7 @@
         </item>
       </items>
     </list>
+    -->
     <list code="dimension_types" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">

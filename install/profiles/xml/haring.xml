@@ -968,7 +968,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="Other" enabled="1" default="0">
+            <item idno="PersonalPapers_Other" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Other</name_singular>
@@ -1034,7 +1034,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="Other" enabled="1" default="0">
+            <item idno="Press_Other" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Other</name_singular>
@@ -1084,7 +1084,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="Other" enabled="1" default="0">
+            <item idno="Personal_Other" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Other</name_singular>
@@ -1274,7 +1274,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="Other" enabled="1" default="0">
+            <item idno="Pubfiles_Other" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Other</name_singular>
@@ -1324,7 +1324,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="SubjectFiles" enabled="1" default="0">
+            <item idno="KeithSubjectFiles" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Subject files</name_singular>
@@ -1398,7 +1398,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="Press" enabled="1" default="0">
+            <item idno="Oversize_Press" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Press</name_singular>
@@ -1406,7 +1406,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="Objects" enabled="1" default="0">
+            <item idno="Oversize_Objects" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Object</name_singular>
@@ -1456,7 +1456,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="Other" enabled="1" default="0">
+            <item idno="ProdDev_Other" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Other</name_singular>
@@ -1524,7 +1524,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="SpecialProjects" enabled="1" default="0">
+            <item idno="Books_SpecialProjects" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Special Project</name_singular>
@@ -3351,7 +3351,7 @@
             </label>
           </labels>
         </item>
-        <item idno="MickeyMouse" enabled="1" default="0">
+        <item idno="MickeyMouse_wo_ears" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Mickey Mouse without ears</name_singular>
@@ -3508,14 +3508,6 @@
             <label locale="en_US" preferred="1">
               <name_singular>communication</name_singular>
               <name_plural>communication</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="telephone" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>telephone</name_singular>
-              <name_plural>telephone</name_plural>
             </label>
           </labels>
         </item>
