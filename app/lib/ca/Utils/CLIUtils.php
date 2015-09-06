@@ -49,7 +49,6 @@
 		 */
 		public static function install($po_opts=null, $pb_installing = true) {
 			require_once(__CA_BASE_DIR__ . '/install/inc/Installer.php');
-			require_once(__CA_BASE_DIR__ . '/install/inc/Updater.php');
 
 			if ($pb_installing && !$po_opts->getOption('profile-name')) {
 				CLIUtils::addError(_t("Missing required parameter: profile-name"));
