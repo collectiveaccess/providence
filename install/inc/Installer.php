@@ -399,17 +399,17 @@ class Installer {
 	# --------------------------------------------------
 	# PROFILE CONTENT PROCESSING
 	# --------------------------------------------------
-	public function processLocales(){
+	public function processLocales() {
 		require_once(__CA_MODELS_DIR__."/ca_locales.php");
 
 		$t_locale = new ca_locales();
 		$t_locale->setMode(ACCESS_WRITE);
 		// Find any existing locales
 		$va_locales = $t_locale->getLocaleList(array('index_by_code' => true));
-		foreach($va_locales as $vs_code => $va_locale){
+		foreach($va_locales as $vs_code => $va_locale) {
 			$this->opa_locales[$vs_code] = $va_locale['locale_id'];
 		}
-		if($this->ops_base_name){
+		if($this->ops_base_name) {
 			$va_locales = array();
 			foreach($this->opo_profile->locales->children() as $vo_locale){
 				$va_locales[] = $vo_locale;
@@ -421,22 +421,24 @@ class Installer {
 			$va_locales = $this->opo_profile->locales->children();
 		}
 
-		foreach($va_locales as $vo_locale){
+		foreach($va_locales as $vo_locale) {
+			$t_locale->clear();
 			$vs_language = self::getAttribute($vo_locale, "lang");
 			$vs_dialect = self::getAttribute($vo_locale, "dialect");
 			$vs_country = self::getAttribute($vo_locale, "country");
 			$vb_dont_use_for_cataloguing = self::getAttribute($vo_locale, "dontUseForCataloguing");
 
-			if(isset($this->opa_locales[$vs_language."_".$vs_country])){ // don't insert duplicate locales
-				continue;
+			if(isset($this->opa_locales[$vs_language."_".$vs_country]) && ($vn_locale_id = $this->opa_locales[$vs_language."_".$vs_country])) { // don't insert duplicate locales
+				$t_locale->load($vn_locale_id); // load locale so that we can 'overwrite' any existing attributes/fields
 			}
+
 			$t_locale->set('name', (string)$vo_locale);
 			$t_locale->set('country', $vs_country);
 			$t_locale->set('language', $vs_language);
 			if($vs_dialect) $t_locale->set('dialect', $vs_dialect);
 			$t_locale->set('dont_use_for_cataloguing', (bool)$vb_dont_use_for_cataloguing);
 
-			$t_locale->insert();
+			($t_locale->getPrimaryKey() > 0) ? $t_locale->update() : $t_locale->insert();
 
 			if ($t_locale->numErrors()) {
 				$this->addError("There was an error while inserting locale {$vs_language}_{$vs_country}: ".join(" ",$t_locale->getErrors()));
