@@ -71,8 +71,9 @@ class Installer {
 	 * @param string $ps_admin_email e-mail address for the initial administrator account
 	 * @param boolean $pb_overwrite overwrite existing install? optional, defaults to false
 	 * @param boolean $pb_debug enable or disable debugging mode
+	 * @param boolean $pb_skip_load dont actually load profile (useful if you want to fill in some gaps by hand)
 	 */
-	public function  __construct($ps_profile_dir,$ps_profile_name,$ps_admin_email=null,$pb_overwrite=false,$pb_debug=false) {
+	public function  __construct($ps_profile_dir,$ps_profile_name,$ps_admin_email=null,$pb_overwrite=false,$pb_debug=false,$pb_skip_load=false) {
 		$this->ops_profile_dir = $ps_profile_dir;
 		$this->ops_profile_name = $ps_profile_name;
 		$this->ops_admin_email = $ps_admin_email;
@@ -81,14 +82,35 @@ class Installer {
 
 		$this->opa_locales = array();
 
-		if($this->loadProfile($ps_profile_dir, $ps_profile_name)){
-			$this->extractAndLoadBase();
+		if(!$pb_skip_load) {
+			if($this->loadProfile($ps_profile_dir, $ps_profile_name)){
+				$this->extractAndLoadBase();
 
-			if(!$this->validateProfile()){
-				$this->addError("Profile validation failed. Your profile doesn't conform to the required XML schema.");
+				if(!$this->validateProfile()){
+					$this->addError("Profile validation failed. Your profile doesn't conform to the required XML schema.");
+				}
+			} else {
+				$this->addError("Could not read profile '{$ps_profile_name}'. Please check the file permissions.");
 			}
+		}
+	}
+	# --------------------------------------------------
+	/**
+	 * Get an installer instance from just a XML string. This allows initializing
+	 * a system without having to write the profile to a file first.
+	 *
+	 * @param string $ps_profile_xml
+	 * @param string $ps_admin_email
+	 * @param bool $pb_overwrite
+	 * @return Installer|false
+	 */
+	public static function getFromString($ps_profile_xml, $ps_admin_email='', $pb_overwrite=false) {
+		$o_installer = new Installer(__CA_BASE_DIR__.'/install/profiles/xml', 'export', $ps_admin_email, $pb_overwrite, false, true);
+		if($o_installer->loadProfileFromString($ps_profile_xml, true)) {
+			$o_installer->extractAndLoadBase();
+			return $o_installer;
 		} else {
-			$this->addError("Could not read profile '{$ps_profile_name}'. Please check the file permissions.");
+			return false;
 		}
 	}
 	# --------------------------------------------------
@@ -138,7 +160,7 @@ class Installer {
 		return $vb_return;
 	}
 	# --------------------------------------------------
-	private function loadProfile($ps_profile_dir, $ps_profile_name) {
+	public function loadProfile($ps_profile_dir, $ps_profile_name) {
 		$vs_file = $ps_profile_dir."/".$ps_profile_name.".xml";
 
 		if(is_readable($vs_file)){
@@ -149,7 +171,24 @@ class Installer {
 		}
 	}
 	# --------------------------------------------------
-	private function extractAndLoadBase(){
+	public function loadProfileFromString($ps_xml, $pb_skip_validation=false) {
+		if(!$pb_skip_validation) {
+			$o_dom = new DOMDocument();
+			$o_dom->loadXML($ps_xml);
+			if(!@$o_dom->schemaValidate(__CA_BASE_DIR__.'/install/profiles/xml/profile.xsd')) {
+				$this->addError("Profile validation failed. Your profile doesn't conform to the required XML schema.");
+				return false;
+			}
+		}
+		$this->opo_profile = @simplexml_load_string($ps_xml);
+		if(!$this->opo_profile) {
+			throw new Exception('Something went wrong while initializing Installer. Did you send valid XML?');
+		}
+
+		return (bool) $this->opo_profile;
+	}
+	# --------------------------------------------------
+	public function extractAndLoadBase() {
 		$this->ops_base_name = self::getAttribute($this->opo_profile, "base");
 		if($this->ops_base_name) {
 			$this->opo_base = simplexml_load_file($this->ops_profile_dir."/".$this->ops_base_name.".xml");
@@ -1712,4 +1751,3 @@ class Installer {
 	}
 	# --------------------------------------------------
 }
-?>

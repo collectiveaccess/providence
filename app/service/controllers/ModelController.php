@@ -29,6 +29,8 @@ require_once(__CA_LIB_DIR__.'/ca/Service/BaseServiceController.php');
 require_once(__CA_LIB_DIR__.'/ca/Service/ModelService.php');
 require_once(__CA_LIB_DIR__.'/ca/ConfigurationExporter.php');
 
+require_once(__CA_BASE_DIR__.'/install/inc/Installer.php');
+
 class ModelController extends BaseServiceController {
 	# -------------------------------------------------------
 	public function __construct(&$po_request, &$po_response, $pa_view_paths) {
@@ -38,10 +40,14 @@ class ModelController extends BaseServiceController {
 	public function exportConfig() {
 		$vn_timestamp = null;
 		if($vs_after = $this->opo_request->getParameter('modifiedAfter', pString)) {
-			$o_tep = new TimeExpressionParser();
-			if($o_tep->parse($vs_after)) {
-				$va_timestamps = $o_tep->getUnixTimestamps();
-				$vn_timestamp = $va_timestamps['start'];
+			if(is_numeric($vs_after) && (strlen($vs_after) == 10)) {
+				$vn_timestamp = (int) $vs_after;
+			} else {
+				$o_tep = new TimeExpressionParser();
+				if($o_tep->parse($vs_after)) {
+					$va_timestamps = $o_tep->getUnixTimestamps();
+					$vn_timestamp = $va_timestamps['start'];
+				}
 			}
 		}
 
@@ -64,6 +70,11 @@ class ModelController extends BaseServiceController {
 			$this->view->setVar("content",$va_content);
 			$this->render("json.php");
 		}
+	}
+	# -------------------------------------------------------
+	public function updateConfig() {
+		$vs_post_data = $this->getRequest()->getRawPostData();
+		$o_installer = Installer::getFromString($vs_post_data);
 	}
 	# -------------------------------------------------------
 }

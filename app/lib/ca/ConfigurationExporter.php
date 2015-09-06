@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -717,7 +717,7 @@ final class ConfigurationExporter {
 
 			while($qr_screens->nextRow()) {
 				if($this->opn_modified_after) {
-					if($t_screen->getLastChangeTimestampAsInt($qr_screens->get('element_id')) < $this->opn_modified_after) {
+					if($t_screen->getLastChangeTimestampAsInt($qr_screens->get('screen_id')) < $this->opn_modified_after) {
 						continue;
 					}
 				}
