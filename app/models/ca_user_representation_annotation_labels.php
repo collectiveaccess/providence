@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/models/ca_entity_labels.php : table access class for table ca_entity_labels
+ * app/models/ca_user_representation_annotation_labels.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,12 +35,11 @@
    */
 
 require_once(__CA_LIB_DIR__.'/ca/BaseLabel.php');
-require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
 
 
-BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
- 	'NAME_SINGULAR' 	=> _t('entity name'),
- 	'NAME_PLURAL' 		=> _t('entity names'),
+BaseModel::$s_ca_models_definitions['ca_user_representation_annotation_labels'] = array(
+ 	'NAME_SINGULAR' 	=> _t('user representation annotation title'),
+ 	'NAME_PLURAL' 		=> _t('user representation annotation titles'),
  	'FIELDS' 			=> array(
  		'label_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
@@ -49,16 +48,16 @@ BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
 				'DEFAULT' => '',
 				'LABEL' => 'Label id', 'DESCRIPTION' => 'Identifier for Label'
 		),
-		'entity_id' => array(
+		'annotation_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'Entity id', 'DESCRIPTION' => 'Identifier for Entity'
+				'LABEL' => 'Annotation id', 'DESCRIPTION' => 'Identifier for Annotation'
 		),
 		'locale_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
-				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'DISPLAY_FIELD' => array('ca_locales.name'),
@@ -70,75 +69,27 @@ BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
 				
-				'LIST_CODE' => 'entity_label_types',
-				'LABEL' => _t('Type'), 'DESCRIPTION' => _t('Indicates type of label and how it should be employed.')
+				'LIST_CODE' => 'representation_annotation_label_types',
+				'LABEL' => _t('Type'), 'DESCRIPTION' => _t('Indicates the type of label and how it should be employed.')
 		),
-		'displayname' => array(
+		'name' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 3,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => _t('Display name'), 'DESCRIPTION' => _t('Name as it should be formatted for display (eg. in catalogues and exhibition label text). If you leave this blank the display name will be automatically derived from the input of other, more specific, fields.'),
-				'BOUNDS_LENGTH' => array(0,512)
-		),
-		'forename' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Forename'), 'DESCRIPTION' => _t('A given name that specifies and differentiates between members of a group of individuals, especially in a family, all of whose members usually share the same family name (surname). It is typically a name given to a person, as opposed to an inherited one such as a family name. You should place the primary forename - in cases where there is more than one this is usually the first listed - here.'),
-				'BOUNDS_LENGTH' => array(0,100)
-		),
-		'other_forenames' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Other forenames'), 'DESCRIPTION' => _t('Enter forenames other than the primary forename here.'),
-				'BOUNDS_LENGTH' => array(0,100)
-		),
-		'middlename' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 15, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Middle Name'), 'DESCRIPTION' => _t('Many names include one or more middle names, placed between the forename and the surname. In the Western world, a middle name is effectively a second given name. You should enter all middle names here. If there is more than one separate the names with spaces.'),
-				'BOUNDS_LENGTH' => array(0,100)
-		),
-		'surname' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 20, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Surname/organization'), 'DESCRIPTION' => _t('A surname is a name added to a given name and is part of a personal name. In many cases a surname is a family name. For organizations this should be set to the full name.'),
-				'BOUNDS_LENGTH' => array(0,100)
-		),
-		'prefix' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Prefix'), 'DESCRIPTION' => _t('A prefix may be added to a name to signify veneration, a social position, an official position or a professional or academic qualification.'),
-				'BOUNDS_LENGTH' => array(0,100)
-		),
-		'suffix' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Suffix'), 'DESCRIPTION' => _t('A suffix may be added to a name to signify veneration, a social position, an official position or a professional or academic qualification.'),
-				'BOUNDS_LENGTH' => array(0,100)
+				'LABEL' => _t('Title'), 'DESCRIPTION' => _t('Title for annotation. This is usually a short description of the annotation content.'),
+				'BOUNDS_LENGTH' => array(1,65535)
 		),
 		'name_sort' => array(
 				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 512, 'DISPLAY_HEIGHT' => 1,
+				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'Sort order', 'DESCRIPTION' => 'Sortable version of name value',
-				'BOUNDS_LENGTH' => array(0,512)
+				'LABEL' => _t('Sort order'), 'DESCRIPTION' => _t('Sortable version of name value'),
+				'BOUNDS_LENGTH' => array(0,65535)
 		),
 		'source_info' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
@@ -154,7 +105,7 @@ BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
  	)
 );
 
-class ca_entity_labels extends BaseLabel {
+class ca_user_representation_annotation_labels extends BaseLabel {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -166,7 +117,7 @@ class ca_entity_labels extends BaseLabel {
 	# --- Basic object parameters
 	# ------------------------------------------------------
 	# what table does this class represent?
-	protected $TABLE = 'ca_entity_labels';
+	protected $TABLE = 'ca_user_representation_annotation_labels';
 	      
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'label_id';
@@ -180,7 +131,7 @@ class ca_entity_labels extends BaseLabel {
 	# ------------------------------------------------------
 
 	# Array of fields to display in a listing of records from this table
-	protected $LIST_FIELDS = array('displayname');
+	protected $LIST_FIELDS = array('name');
 
 	# When the list of "list fields" above contains more than one field,
 	# the LIST_DELIMITER text is displayed between fields as a delimiter.
@@ -195,7 +146,7 @@ class ca_entity_labels extends BaseLabel {
 
 	# List of fields to sort listing of records by; you can use 
 	# SQL 'ASC' and 'DESC' here if you like.
-	protected $ORDER_BY = array('displayname');
+	protected $ORDER_BY = array('name');
 
 	# Maximum number of record to display per page in a listing
 	protected $MAX_RECORDS_PER_PAGE = 20; 
@@ -228,28 +179,27 @@ class ca_entity_labels extends BaseLabel {
 	protected $LOG_CHANGES_TO_SELF = false;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-			'entity_id'
+			'annotation_id'
 		),
 		"RELATED_TABLES" => array(
 		
 		)
 	);
 	
-	
 	# ------------------------------------------------------
 	# Labels
 	# ------------------------------------------------------
 	# --- List of fields used in label user interface
 	protected $LABEL_UI_FIELDS = array(
-		'forename', 'other_forenames', 'middlename', 'surname', 'prefix', 'suffix', 'displayname'
+		'name'
 	);
-	protected $LABEL_DISPLAY_FIELD = 'displayname';
+	protected $LABEL_DISPLAY_FIELD = 'name';
 	
 	# --- Name of field used for sorting purposes
 	protected $LABEL_SORT_FIELD = 'name_sort';
 	
 	# --- Name of table this table contains label for
-	protected $LABEL_SUBJECT_TABLE = 'ca_entities';
+	protected $LABEL_SUBJECT_TABLE = 'ca_user_representation_annotations';
 	
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
@@ -270,44 +220,6 @@ class ca_entity_labels extends BaseLabel {
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
-	}
-	# ------------------------------------------------------
-	public function insert($pa_options=null) {
-		if (!trim($this->get('surname')) && !trim($this->get('forename'))) {
-			// auto-split entity name if displayname is set
-			if($vs_display_name = trim($this->get('displayname'))) {
-				$va_label = DataMigrationUtils::splitEntityName($vs_display_name);
-				if(is_array($va_label)) {
-					unset($va_label['displayname']); // just make sure we don't mangle the user-entered displayname
-
-					foreach($va_label as $vs_fld => $vs_val) {
-						$this->set($vs_fld, $vs_val);
-					}
-				} else {
-					$this->postError(1100, _t('Something went wrong when splitting displayname'), 'ca_entity_labels->insert()');
-					return false;
-				}
-			} else {
-				$this->postError(1100, _t('Surname, forename or displayname must be set'), 'ca_entity_labels->insert()');
-				return false;
-			}
-		}
-
-		if (!$this->get('displayname')) {
-			$this->set('displayname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
-		}
-		return parent::insert($pa_options);
-	}
-	# ------------------------------------------------------
-	public function update($pa_options=null) {
-		if (!trim($this->get('surname')) && !trim($this->get('forename'))) {
-			$this->postError(1100, _t('Surname or forename must be set'), 'ca_entity_labels->insert()');
-			return false;
-		}
-		if (!$this->get('displayname')) {
-			$this->set('displayname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
-		}
-		return parent::update($pa_options);
 	}
 	# ------------------------------------------------------
 }

@@ -1820,8 +1820,6 @@
 										$this->postError(2900, _t("Invalid search type"), "BrowseEngine->execute()");
 										break;
 									}
-									$vs_pk = $t_item->primaryKey();
-
 
 									if (is_array($va_type_ids = $this->getTypeRestrictionList()) && sizeof($va_type_ids)) {
 										$o_search->setTypeRestrictions($va_type_ids);
@@ -1836,9 +1834,7 @@
 									$o_search->setOption('strictPhraseSearching', caGetOption('strictPhraseSearching', $va_options, true));
 									$qr_res = $o_search->search($va_row_ids[0], $va_options);
 
-									if ($qr_res->numHits() > 0) {
-										$va_acc[$vn_i] = $qr_res->getPrimaryKeyValues();
-									}
+									$va_acc[$vn_i] = $qr_res->getPrimaryKeyValues();
 									$vn_i++;
 								} else {
 									$this->postError(2900, _t("Invalid criteria type"), "BrowseEngine->execute()");
@@ -4923,9 +4919,8 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 				}
 
 				if (isset($pa_options['limit']) && ($vn_limit = $pa_options['limit'])) {
-					if (isset($pa_options['start']) && ($vn_start = $pa_options['start'])) {
-						$va_results = array_slice($va_results, $vn_start, $vn_limit);
-					}
+					$vn_start = (int) caGetOption($pa_options, 'start', 0);
+					$va_results = array_slice($va_results, $vn_start, $vn_limit);
 				}
 			}
 			if (!is_array($va_results)) { $va_results = array(); }

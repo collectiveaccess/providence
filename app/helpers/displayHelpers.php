@@ -2014,7 +2014,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		if (preg_match_all(__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__, $ps_template, $va_matches)) {
 			foreach($va_matches[1] as $vn_i => $vs_possible_tag) {
 				if (strpos($vs_possible_tag, "~") !== false) { continue; }	// don't clip trailing characters when there's a tag directive specified
-				$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.");	// remove trailing slashes and periods
+				$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.%");	// remove trailing slashes, periods and percent signs as they're potentially valid tag characters that are never meant to be at the end
 			}
 			$va_tags = $va_matches[1];
 		}
@@ -2305,11 +2305,13 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		$va_expression_vars = array();
 
 		/** @var $qr_res SearchResult */
+		$va_ids_with_access = array();
 		while($qr_res->nextHit()) {
 			
 			$vs_pk_val = $qr_res->get($vs_pk, array('checkAccess' => $pa_check_access));
 			if (is_array($pa_check_access) && sizeof($pa_check_access) && !in_array($qr_res->get("{$ps_tablename}.access"), $pa_check_access)) { continue; }
 			$vs_template =  $ps_template;
+			$va_ids_with_access[] = $vs_pk_val;
 
 			// check if we skip this row because of skipIfExpression
 			if(strlen($ps_skip_if_expression) > 0) {
