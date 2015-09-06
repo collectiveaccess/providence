@@ -252,12 +252,6 @@ final class ConfigurationExporter {
 		$vo_items = $this->opo_dom->createElement("items");
 		$vs_default_locale = $this->opt_locale->localeIDToCode($this->opt_locale->getDefaultCataloguingLocaleID());
 		while($qr_items->nextRow()) {
-			if($this->opn_modified_after) {
-				if($t_list_item->getLastChangeTimestampAsInt($qr_items->get('item_id')) < $this->opn_modified_after) {
-					continue;
-				}
-			}
-
 			$vo_item = $this->opo_dom->createElement("item");
 			$vs_idno = $this->makeIDNOFromInstance($qr_items,'idno');
 
@@ -294,6 +288,13 @@ final class ConfigurationExporter {
 
 			if($vo_sub_items = $this->getListItemsAsDOM($qr_items->get("item_id"))) {
 				$vo_item->appendChild($vo_sub_items);
+			}
+
+			// if we're only exporting changes, don't export list item if no sub-items are exported AND the item itself hasn't changed
+			if($this->opn_modified_after && !$vo_sub_items->childNodes->length) {
+				if($t_list_item->getLastChangeTimestampAsInt($qr_items->get('item_id')) < $this->opn_modified_after) {
+					continue;
+				}
 			}
 
 			$vo_items->appendChild($vo_item);
