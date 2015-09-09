@@ -1527,7 +1527,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 			//
 			
 			if ($vs_table_name === 'ca_commerce_orders') {
-				$o_client_services_config = Configuration::load($po_view->request->config->get('client_services_config'));
+				$o_client_services_config = Configuration::load(__CA_CONF_DIR__.'/client_services.conf');
 				$va_order_totals = $t_item->getOrderTotals();
 				if (($va_order_totals['fee'] + $va_order_totals['tax']+ $va_order_totals['shipping']+ $va_order_totals['handling'] + $va_order_totals['additional_order_fees'] + $va_order_totals['additional_item_fees']) != 0) {	
 					$vs_currency_symbol = $o_client_services_config->get('currency_symbol');
@@ -2629,7 +2629,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 	 */
 	function caGetMediaMimetypeToDisplayClassMap($ps_context) {
 		$o_config = Configuration::load();
-		$o_media_display_config = Configuration::load($o_config->get('media_display'));
+		$o_media_display_config = Configuration::load(__CA_CONF_DIR__.'/media_display.conf');
 		
 		if (!is_array($va_context = $o_media_display_config->getAssoc($ps_context))) { return null; }
 		
