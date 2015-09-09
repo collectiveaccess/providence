@@ -1609,8 +1609,20 @@ class TimeExpressionParser {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_CIRCA);
 		}
 		
-		// W3C datetime (http://www.w3.org/TR/NOTE-datetime)
+		// EXIF date
+		if (preg_match("/^([\d]{4}):([\d]{2}):([\d]{2})$/", $vs_token, $va_matches)) {
+			return(array('value' => $vs_token, 'month' => $va_matches[2], 'day' => $va_matches[3], 'year' => $va_matches[1], 'type' => TEP_TOKEN_DATE));
+		}
 		
+		// EXIF time
+		if (preg_match("/^([\d]{2}):([\d]{2}):([\d]{2}[\.]{0,1}[\d]*)$/", $vs_token, $va_matches)) {
+			// year-month
+			if ((($va_matches[1] >= 0) && ($va_matches[1] <= 23)) && (($va_matches[2] >= 0) && ($va_matches[2] <= 59))  && (($va_matches[3] >= 0) && ($va_matches[3] < 60))) {
+				return(array('value' => $vs_token, 'minutes' => $va_matches[2], 'seconds' => floor($va_matches[3]), 'hours' => $va_matches[1], 'type' => TEP_TOKEN_TIME));
+			}
+		}
+		
+		// W3C datetime (http://www.w3.org/TR/NOTE-datetime)
 		if (preg_match("/^([\d]{4})#([\d]{2})$/", $vs_token, $va_matches)) {
 			// year-month
 			if ((($va_matches[1] >= 1000) && ($va_matches[1] <= 2999)) && (($va_matches[2] >= 1) && ($va_matches[2] <= 12))) {
