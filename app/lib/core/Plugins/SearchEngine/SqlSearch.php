@@ -594,7 +594,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$qr_res = $this->opo_db->query($vs_sql);
 							break;
 					}
-					
+					$vn_i++;
 					$this->_dropTempTable('ca_sql_search_temp_'.$pn_level);
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Term':

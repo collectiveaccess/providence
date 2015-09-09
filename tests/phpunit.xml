@@ -36,6 +36,7 @@
     </testsuite>
     <testsuite name="Tests With Data Suite">
       <directory>testsWithData/</directory>
+      <exclude>testsWithData/get/VideoProcessingTest.php</exclude>
     </testsuite>
   </testsuites>
 
