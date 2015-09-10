@@ -407,7 +407,7 @@ function caFileIsIncludable($ps_file) {
 		if ($handle = @opendir($dir)) {
 			while (false !== ($item = readdir($handle))) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
-					if (is_dir("{$dir}/{$item}")) { 
+					if (is_dir("{$dir}/{$item}")) {
 						$va_dir_list = array_merge($va_dir_list, caGetSubDirectoryList("{$dir}/{$item}", true, $pb_include_hidden_files));
 					}  else {
 						$vn_file_count++;
@@ -423,6 +423,18 @@ function caFileIsIncludable($ps_file) {
 		
 		ksort($va_dir_list);
 		return $va_dir_list;
+	}
+	# ----------------------------------------
+	/**
+	 * Checks if a given directory is empty (i.e. doesn't have any subdirectories or files in it)
+	 * @param string $vs_dir The directory to check
+	 * @return bool false if it's not a readable directory or if it's not empty, otherwise true
+	 */
+	function caDirectoryIsEmpty($vs_dir) {
+		if(!is_readable($vs_dir) || !is_dir($vs_dir)) { return false; }
+
+		$o_iterator = new \FilesystemIterator($vs_dir);
+		return !$o_iterator->valid();
 	}
 	# ----------------------------------------
 	function caZipDirectory($ps_directory, $ps_name, $ps_output_file) {

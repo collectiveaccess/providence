@@ -4919,9 +4919,8 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 				}
 
 				if (isset($pa_options['limit']) && ($vn_limit = $pa_options['limit'])) {
-					if (isset($pa_options['start']) && ($vn_start = $pa_options['start'])) {
-						$va_results = array_slice($va_results, $vn_start, $vn_limit);
-					}
+					$vn_start = (int) caGetOption($pa_options, 'start', 0);
+					$va_results = array_slice($va_results, $vn_start, $vn_limit);
 				}
 			}
 			if (!is_array($va_results)) { $va_results = array(); }
