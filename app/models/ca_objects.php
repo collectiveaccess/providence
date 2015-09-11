@@ -40,8 +40,6 @@ require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
 require_once(__CA_MODELS_DIR__."/ca_objects_x_object_representations.php");
 require_once(__CA_MODELS_DIR__."/ca_loans_x_objects.php");
 require_once(__CA_MODELS_DIR__."/ca_objects_x_storage_locations.php");
-require_once(__CA_MODELS_DIR__."/ca_commerce_orders.php");
-require_once(__CA_MODELS_DIR__."/ca_commerce_order_items.php");
 require_once(__CA_MODELS_DIR__."/ca_object_checkouts.php");
 require_once(__CA_MODELS_DIR__."/ca_object_lots.php");
 require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
@@ -522,7 +520,6 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
 		
-		$this->BUNDLES['ca_commerce_order_history'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Order history'));
 		$this->BUNDLES['ca_objects_components_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Components'));
 		$this->BUNDLES['ca_objects_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object location'));
 		$this->BUNDLES['ca_objects_history'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object use history'));
@@ -645,120 +642,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		return $t_dupe;
 	}
  	# ------------------------------------------------------
- 	# Client services
- 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
- 	public function isOnLoan() {
- 		if (!$this->getPrimaryKey()) { return null; }
- 		$t_order = new ca_commerce_orders();
- 		if (is_array($va_orders = $t_order->getOrders(array('object_id' => $this->getPrimaryKey(), 'type' => 'L'))) && sizeof($va_orders)) {
- 			$va_order = array_shift($va_orders);
- 			$t_order_item = new ca_commerce_order_items();
- 			if ($t_order_item->load(array('order_id' => $va_order['order_id'], 'object_id' => $this->getPrimaryKey()))) {
- 				if (!$t_order_item->get('loan_return_date', array('getDirectDate' => true))) {
- 					return array(
- 						'loan_checkout_date' => $t_order_item->get('loan_checkout_date'),
- 						'loan_checkout_date_raw' => $t_order_item->get('loan_checkout_date', array('getDirectDate' => true)),
- 						'loan_due_date' => $t_order_item->get('loan_due_date'),
- 						'loan_due_date_raw' => $t_order_item->get('loan_due_date', array('getDirectDate' => true)),
- 						'client' => $va_order['billing_fname'].' '.$va_order['billing_lname']." (".$va_order['billing_email'].")",
- 						'billing_fname' => $va_order['billing_fname'],
- 						'billing_lname' => $va_order['billing_lname'],
- 						'billing_email' => $va_order['billing_email'],
- 						'order_id' => $va_order['order_id']
- 					);
- 				}
- 			}
- 		}
- 		return false;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Returns history of client orders. Orders are sorted most recent first.
- 	 *
- 	 * @param string $ps_order_type Type of order to return history for. L=loans, O=sales orders. If set to any other value all types of orders will be returned.
- 	 * @return array List of orders
- 	 */
- 	public function getClientHistory($ps_order_type) {
- 		if (!$this->getPrimaryKey()) { return null; }
- 		$vn_object_id = $this->getPrimaryKey();
- 		$ps_order_type = strtoupper($ps_order_type);
- 		
- 		$va_options = array();
- 		if (!in_array($ps_order_type, array('O', 'L'))) { $ps_order_type = null; } else { $va_options['type'] = $ps_order_type; }
- 		
- 		$va_orders = ca_commerce_orders::getUsageOfItemInOrders($vn_object_id, $va_options);
- 		
- 		$va_history = array();
-		foreach($va_orders as $vn_id => $va_order) {
-			$va_order['loan_checkout_date_raw'] = $va_order['loan_checkout_date'];
-			$va_order['loan_checkout_date'] = caGetLocalizedDate($va_order['loan_checkout_date'], array('timeOmit' => true, 'dateFormat' => 'delimited')); 
-			
-			$va_order['loan_due_date_raw'] = $va_order['loan_due_date'];
-			$va_order['loan_due_date'] = $va_order['loan_due_date'] ? caGetLocalizedDate($va_order['loan_due_date'], array('timeOmit' => true, 'dateFormat' => 'delimited')) : ''; 
-			
-			$va_order['loan_return_date_raw'] = $va_order['loan_return_date'];
-			$va_order['loan_return_date'] = $va_order['loan_return_date'] ? caGetLocalizedDate($va_order['loan_return_date'], array('timeOmit' => true, 'dateFormat' => 'delimited')) : ''; 
-			
-			$va_order['order_number'] = ca_commerce_orders::generateOrderNumber($va_order['order_id'], $va_order['created_on']);
-			$va_history[$va_order['loan_checkout_date']] = $va_order;
-		}
-		ksort($va_history);
-		return array_reverse($va_history);;
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Return history for client loans of the currently loaded object
- 	 *
- 	 * @return array Loan history
- 	 */
- 	public function getClientLoanHistory() {
- 		return $this->getClientHistory('L');
- 	}
- 	# ------------------------------------------------------
- 	/**
- 	 * Return history for client sales orders that include the currently loaded object
- 	 *
- 	 * @return array Loan history
- 	 */
- 	public function getClientOrderHistory() {
- 		return $this->getClientHistory('O');
- 	}
- 	# ------------------------------------------------------
  	# HTML form bundles
- 	# ------------------------------------------------------
-	/** 
-	 * Returns HTML form bundle listing order history for object
-	 *
-	 * @param HTTPRequest $po_request The current request
-	 * @param string $ps_form_name
-	 * @param string $ps_placement_code
-	 * @param array $pa_bundle_settings
-	 * @param array $pa_options Array of options. Supported options are 
-	 *			noCache = If set to true then label cache is bypassed; default is true
-	 *
-	 * @return string Rendered HTML bundle
-	 */
-	public function getCommerceOrderHistoryHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
-		global $g_ui_locale;
-		
-		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
-		
-		if(!is_array($pa_options)) { $pa_options = array(); }
-		
-		$o_view->setVar('id_prefix', $ps_form_name.'_commerce_order_history');
-		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
-		
-		$o_view->setVar('settings', $pa_bundle_settings);
-		
-		$o_view->setVar('t_subject', $this);
-		
-		
-		
-		return $o_view->render('ca_commerce_order_history.php');
-	}
 	# ------------------------------------------------------
 	/** 
 	 * Returns HTML form bundle for object deaccession information

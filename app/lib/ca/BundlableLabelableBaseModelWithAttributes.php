@@ -1665,14 +1665,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						break;
 					# -------------------------------
 					// This bundle is only available for objects
-					case 'ca_commerce_order_history':
-						if ($vb_batch) { return null; } // not supported in batch mode
-						if (!$pa_options['request']->user->canDoAction('can_manage_clients')) { break; }
-						$vs_label_text = ($pa_bundle_settings['order_type'][0] == 'O') ? _t('Order history') : _t('Loan history');
-						$vs_element .= $this->getCommerceOrderHistoryHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
-						break;
-					# -------------------------------
-					// This bundle is only available for objects
 					case 'ca_objects_components_list':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }

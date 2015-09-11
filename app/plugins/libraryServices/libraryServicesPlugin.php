@@ -58,7 +58,7 @@
 		}
 		# -------------------------------------------------------
 		/**
-		 * Perform client services-related periodic tasks
+		 * Perform library services-related periodic tasks
 		 */
 		public function hookPeriodicTask(&$pa_params) {
 			$t_log = new Eventlog();
