@@ -721,7 +721,7 @@ class DisplayTemplateParser {
 		
 		$va_tmp = explode('.', $ps_get_spec);
 		$vs_last_element = $va_tmp[sizeof($va_tmp)-1];
-		$va_tag_opt_tmp = explode("%", $vs_last_element);
+		$va_tag_opt_tmp = preg_split("![\%\&]{1}!", $vs_last_element);
 		if (sizeof($va_tag_opt_tmp) > 1) {
 			$vs_tag_bit = array_shift($va_tag_opt_tmp); // get rid of getspec
 			foreach($va_tag_opt_tmp as $vs_tag_opt_raw) {

@@ -800,6 +800,15 @@ class SearchResult extends BaseObject {
 	 *			convertCodesToIdno = Convert list item_ids to idno's (ca_list_items.idno). If convertCodesToDisplayText is also set then it will take precedence. [Default is false]
 	 *			output = Convert list item_ids to display text in user's preferred locale ("text") or idno ("idno"). This is an easier to type alternative to the convertCodesToDisplayText and convertCodesToIdno options. [Default is null]
 	 *			sort = Array list of bundles to sort returned values on. Currently sort is only supported when getting related values via simple related <table_name> and <table_name>.related bundle specifiers. Eg. from a ca_objects results you can sort when fetching 'ca_entities', 'ca_entities.related', 'ca_objects.related', etc.. The sortable bundle specifiers are fields with or without tablename. Only those fields returned for the related tables (intrinsics and label fields) are sortable. You cannot currenty sort on attributes. [Default is null]
+	*
+	 *		[Formatting for strings only]
+ 	 *			toUpper = Force all values to upper case. [Default is false]
+	 *			toLower = Force all values to lower case. [Default is false]
+	 *			makeFirstUpper = Force first character of all values to upper case. [Default is false]
+	 *			start = Return all values trimmed to start at the specified character. [Default is null]
+	 *			length = Return all values truncated to a maximum length. [Default is null]
+	 *			truncate = Return all values from the beginning truncated to a maximum length; equivalent of passing start=0 and length. [Default is null]
+	 *			ellipsis = Add ellipsis ("...") to truncated values. Values will be set to the truncated length including the ellipsis. Eg. a value truncated to 12 characters will include 9 characters of text and 3 characters of ellipsis. [Default is false]
 	 *
 	 *		[Formatting options for hierarchies]
 	 *			maxLevelsFromTop = Restrict the number of levels returned to the top-most beginning with the root. [Default is null]
@@ -811,7 +820,6 @@ class SearchResult extends BaseObject {
 	 *		[Front-end access control]		
 	 *			checkAccess = Array of access values to filter returned values on. Available for any table with an "access" field (ca_objects, ca_entities, etc.). If omitted no filtering is performed. [Default is null]
  	 *
-	 *
 	 *	@param string $ps_field 
 	 *	@param array $pa_options Options as described above
 	 * 	@return mixed String or array
@@ -1895,7 +1903,14 @@ class SearchResult extends BaseObject {
 	 * Flatten value of returned values subject to get() options.
 	 *
 	 * @param array $pa_array
-	 * @param array $pa_options
+	 * @param array $pa_options Options include:
+	 *		toUpper = Force all values to upper case. [Default is false]
+	 *		toLower = Force all values to lower case. [Default is false]
+	 *		makeFirstUpper = Force first character of all values to upper case. [Default is false]
+	 *		start = Return all values trimmed to start at the specified character. [Default is null]
+	 *		length = Return all values truncated to a maximum length. [Default is null]
+	 *		truncate = Return all values from the beginning truncated to a maximum length; equivalent of passing start=0 and length. [Default is null]
+	 *		ellipsis = Add ellipsis ("...") to truncated values. Values will be set to the truncated length including the ellipsis. Eg. a value truncated to 12 characters will include 9 characters of text and 3 characters of ellipsis. [Default is false]
 	 *
 	 * @return array
 	 */
@@ -1906,14 +1921,67 @@ class SearchResult extends BaseObject {
 			foreach($pa_array as $va_by_attr) {
 				if (!is_array($va_by_attr)) { $va_flattened_values[] = $va_by_attr; continue;  }
 				foreach($va_by_attr as $vs_val) {
-					$va_flattened_values[] = (is_array($vs_val) && sizeof($vs_val) == 1) ? array_shift($vs_val) : $vs_val;
+					if (is_array($vs_val) && sizeof($vs_val) == 1) { $vs_val = array_shift($vs_val); }
+					
+					if($pa_options['toUpper'] || $pa_options['toUpper']) {
+						$vs_val = mb_strtoupper($vs_val);
+					}
+					if($pa_options['toLower'] || $pa_options['tolower']) {
+						$vs_val = mb_strtolower($vs_val);
+					}
+					if($pa_options['makeFirstUpper'] || $pa_options['makefirstupper']) {
+						$vs_val = ucfirst($vs_val);
+					}
+					if ($pa_options['truncate'] && ($pa_options['truncate'] > 0)) { 
+						$pa_options['start'] = 0;
+						$pa_options['length'] = (int)$pa_options['truncate'];
+					}
+					$vn_start = (strlen($pa_options['start']) && is_numeric($pa_options['start'])) ? (int)$pa_options['start'] : 0;
+					$vn_length = (strlen($pa_options['length']) && ($pa_options['length'] > 0)) ? (int)$pa_options['length'] : null;
+					
+					$vb_needs_ellipsis = false;
+					if(($vn_start > 0) || (!is_null($vn_length))) {
+						if ($pa_options['ellipsis'] && (strlen($vs_val) > ($vn_start + $vn_length))) {
+							$vb_needs_ellipsis = true; $vn_length -= 3;
+						}
+						$vs_val = mb_substr($vs_val, $vn_start, $vn_length).($vb_needs_ellipsis ? '...' : '');
+					}
+					
+					
+					$va_flattened_values[] = $vs_val;
 				}
 			}	
 		} else {
 			foreach($pa_array as $va_vals) {
 				if(!is_array($va_vals)) { $va_flattened_values[] = $va_vals; continue; }
 				foreach($va_vals as $vs_val) {
-					$va_flattened_values[] = (is_array($vs_val) && sizeof($vs_val) == 1) ? array_shift($vs_val) : $vs_val;
+					if (is_array($vs_val) && sizeof($vs_val) == 1) { $vs_val = array_shift($vs_val); }
+					
+					if($pa_options['toUpper'] || $pa_options['toupper']) {
+						$vs_val = mb_strtoupper($vs_val);
+					}
+					if($pa_options['toLower'] || $pa_options['tolower']) {
+						$vs_val = mb_strtolower($vs_val);
+					}
+					if($pa_options['makeFirstUpper'] || $pa_options['makefirstupper']) {
+						$vs_val = ucfirst($vs_val);
+					}
+					if ($pa_options['truncate'] && ($pa_options['truncate'] > 0)) { 
+						$pa_options['start'] = 0;
+						$pa_options['length'] = (int)$pa_options['truncate'];
+					}
+					$vn_start = (strlen($pa_options['start']) && is_numeric($pa_options['start'])) ? (int)$pa_options['start'] : 0;
+					$vn_length = (strlen($pa_options['length']) && ($pa_options['length'] > 0)) ? (int)$pa_options['length'] : null;
+					
+					$vb_needs_ellipsis = false;
+					if(($vn_start > 0) || (!is_null($vn_length))) {
+						if ($pa_options['ellipsis'] && (strlen($vs_val) > ($vn_start + $vn_length))) {
+							$vb_needs_ellipsis = true; $vn_length -= 3;
+						}
+						$vs_val = mb_substr($vs_val, $vn_start, $vn_length).($vb_needs_ellipsis ? '...' : '');
+					}
+					
+					$va_flattened_values[] = $vs_val;
 				}
 			}	
 		}
