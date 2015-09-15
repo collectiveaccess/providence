@@ -3133,7 +3133,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
  		}
  		
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
-		
+	
+		require_once(__CA_MODELS_DIR__.'/ca_set_items.php');	
 		$t_set_item = new ca_set_items();
 		if ($vn_item_id) { $t_set_item->load($vn_item_id); }
 		
