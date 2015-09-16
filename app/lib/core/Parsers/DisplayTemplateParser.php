@@ -119,7 +119,7 @@ class DisplayTemplateParser {
 			foreach(array(
 				'request', 
 				'template',	// we pass through options to get() and don't want templates 
-				'restrictToTypes', 'restrict_to_types', 'restrict_to_relationship_types', 'restrictToRelationshipTypes',
+				'restrict_to_relationship_types', 'restrictToRelationshipTypes',
 				'useLocaleCodes') as $vs_k) {
 				unset($pa_options[$vs_k]);
 			}
@@ -289,6 +289,8 @@ class DisplayTemplateParser {
 		
 		unset($pa_options['quote']);
 		
+		$vn_last_unit_omit_count = null;
+		
 		foreach($po_nodes as $vn_index => $o_node) {
 			switch($vs_tag = strtolower($o_node->tag)) {
 				case 'case':
@@ -414,10 +416,15 @@ class DisplayTemplateParser {
 				
 					if ($va_relative_to_tmp[0] && !($t_rel_instance = $o_dm->getInstanceByTableName($va_relative_to_tmp[0], true))) { continue; }
 					
+					$vn_last_unit_omit_count = 0;
+					
 					// <unit> attributes
 					$vs_unit_delimiter = $o_node->delimiter ? (string)$o_node->delimiter : $ps_delimiter;
 					$vb_unique = $o_node->unique ? (bool)$o_node->unique : false;
 					$vs_unit_skip_if_expression = (string)$o_node->skipIfExpression;
+					
+					$vn_start = (int)$o_node->start;
+					$vn_length = (int)$o_node->length;
 					
 					$pa_check_access = ($t_instance->hasField('access')) ? caGetOption('checkAccess', $pa_options, null) : null;
 					if (!is_array($pa_check_access) || !sizeof($pa_check_access)) { $pa_check_access = null; }
@@ -452,6 +459,10 @@ class DisplayTemplateParser {
 								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().".children.".$t_rel_instance->primaryKey(), $va_get_options);
 								$va_relative_ids = array_values($va_relative_ids);
 								break;
+							case 'siblings':
+								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().".siblings.".$t_rel_instance->primaryKey(), $va_get_options);
+								$va_relative_ids = array_values($va_relative_ids);
+								break;
 							default:
 								$va_relative_ids = array($pr_res->getPrimaryKey());
 								break;
@@ -468,11 +479,17 @@ class DisplayTemplateParser {
 									'delimiter' => $vs_unit_delimiter,
 									'skipIfExpression' => $vs_unit_skip_if_expression,
 									'placeholderPrefix' => (string)$o_node->relativeTo,
-									'isUnit' => true
+									'restrictToTypes' => $va_get_options['restrictToTypes'],
+									'isUnit' => true,
+									'unitStart' => $vn_start,
+									'unitLength' => $vn_length
 								]
 							)
 						);
 						if ($vb_unique) { $va_tmpl_val = array_unique($va_tmpl_val); }
+						if (($vn_start > 0) || !is_null($vn_length)) { 
+							$vn_last_unit_omit_count = sizeof($va_tmpl_val) - ($vn_length - $vn_start);
+						}
 					
 						$vs_acc .= join($vs_unit_delimiter, $va_tmpl_val);
 						if ($pb_is_case) { break(2); }
@@ -488,6 +505,10 @@ class DisplayTemplateParser {
 								break;
 							case 'children':
 								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().".children.".$t_rel_instance->primaryKey(), $va_get_options);
+								$va_relative_ids = array_values($va_relative_ids);
+								break;
+							case 'siblings':
+								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().".siblings.".$t_rel_instance->primaryKey(), $va_get_options);
 								$va_relative_ids = array_values($va_relative_ids);
 								break;
 							case 'related':
@@ -515,16 +536,30 @@ class DisplayTemplateParser {
 									'returnAsArray' => true,
 									'skipIfExpression' => $vs_unit_skip_if_expression,
 									'placeholderPrefix' => (string)$o_node->relativeTo,
-									'isUnit' => true
+									'restrictToTypes' => $va_get_options['restrictToTypes'],
+									'isUnit' => true,
+									'unitStart' => $vn_start,
+									'unitLength' => $vn_length
 								]
 							)
 						);	
 						if ($vb_unique) { $va_tmpl_val = array_unique($va_tmpl_val); }
+						if (($vn_start > 0) || !is_null($vn_length)) { 
+							$vn_num_vals = sizeof($va_tmpl_val);
+							$va_tmpl_val = array_slice($va_tmpl_val, $vn_start, ($vn_length > 0) ? $vn_length : null); 
+							$vn_last_unit_omit_count = $vn_num_vals -  ($vn_length - $vn_start);
+						}
 						
 						$vs_acc .= join($vs_unit_delimiter, $va_tmpl_val);
 						if ($pb_is_case) { break(2); }
 					}
 				
+					break;
+				case 'whenunitomits':
+					if ($vn_last_unit_omit_count > 0) {
+						$vs_proc_template = caProcessTemplate($o_node->getInnerText(), array_merge($pa_vals, ['omitcount' => (int)$vn_last_unit_omit_count]), ['quote' => $pb_quote]);
+						$vs_acc .= $vs_proc_template;
+					}
 					break;
 				default:
 					if ($o_node->children && (sizeof($o_node->children) > 0)) {
@@ -568,7 +603,7 @@ class DisplayTemplateParser {
 		foreach(array_keys($pa_tags) as $vs_tag) {
 			
 			// Apply placeholder prefix to any tag except the "specials"
-			if (!in_array(strtolower($vs_tag), ['relationship_typename', 'relationship_type_id', 'relationship_typecode', 'relationship_type_code', 'date', 'primary', 'count', 'index'])) {
+			if (!in_array(strtolower($vs_tag), ['relationship_typename', 'relationship_type_id', 'relationship_typecode', 'relationship_type_code', 'date', 'primary', 'count', 'index', 'omitcount'])) {
 				$va_tag = explode(".", $vs_tag);
 				$vs_get_spec = $vs_tag;
 				if (isset($pa_options['placeholderPrefix']) && $pa_options['placeholderPrefix'] && (!$o_dm->tableExists($va_tag[0])) &&  (!preg_match("!^".$pa_options['placeholderPrefix']."\.!", $vs_tag)) && (sizeof($va_tag) > 0)) {
@@ -585,6 +620,9 @@ class DisplayTemplateParser {
 			if (is_array($va_parsed_tag_opts = DisplayTemplateParser::_parseTagOpts($vs_get_spec))) {
 				$vs_get_spec = $va_parsed_tag_opts['tag'];
 			}
+			
+			$vn_start = caGetOption('unitStart', $pa_options, 0, ['castTo' => 'int']);
+			$vn_length = caGetOption('unitLength', $pa_options, 0, ['castTo' => 'int']);
 			
 			switch(strtolower($vs_get_spec)) {
 				case 'relationship_typename':
@@ -606,11 +644,18 @@ class DisplayTemplateParser {
 				case 'count':
 					$va_val_list = [$pr_res->numHits()];
 					break;
+				case 'omitcount':
+					$va_val_list = [(int)$pr_res->numHits() - ($vn_length - $vn_start)];
+					break;
 				case 'index':
 					$va_val_list = [$pr_res->currentIndex() + 1];
 					break;
 				default:
 					$va_val_list = $pr_res->get($vs_get_spec, $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
+					
+					if ((($vn_start > 0) || ($vn_length > 0)) && ($vn_start < sizeof($va_val_list)) && (!$vn_length || ($vn_start + $vn_length < sizeof($va_val_list)))) {
+						$va_val_list = array_slice($va_val_list, $vn_start, ($vn_length > 0) ? $vn_length : null);
+					}
 					break;
 			}
 			$ps_delimiter = caGetOption('delimiter', $va_opts, ';');

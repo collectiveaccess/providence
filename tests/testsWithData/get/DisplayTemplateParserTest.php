@@ -668,4 +668,49 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$this->assertEquals("my test ima", $vm_ret[0]);
 	}
 	# -------------------------------------------------------
+	public function testUnitStartLength() {
+		if(false){
+		// Repeating attribute
+		$vm_ret = DisplayTemplateParser::evaluate("Here are the descriptions: <unit delimiter='... ' start='0' length='1'>^ca_objects.description</unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals('Here are the descriptions: First description', $vm_ret[0]);
+		
+		$vm_ret = DisplayTemplateParser::evaluate("Here are the descriptions: <unit delimiter='... ' start='1' length='2'>^ca_objects.description</unit><whenunitomits>omit=^omitcount</whenunitomits>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret); 
+		$this->assertEquals('Here are the descriptions: Second description... Third description', $vm_ret[0]);
+
+		// Related tables
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities' delimiter=' ' start='0' length='1'>^ca_entities.preferred_labels.displayname is row ^index of ^count.</unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("Homer J. Simpson is row 1 of 2.", $vm_ret[0]);	
+		}
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities' delimiter=' ' start='1' length='1'>^ca_entities.preferred_labels.displayname is row ^index of ^count.</unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("Bart Simpson is row 2 of 2.", $vm_ret[0]);	
+		
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities' delimiter=' ' start='0' length='2'>^ca_entities.preferred_labels.displayname is row ^index of ^count.</unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("Homer J. Simpson is row 1 of 2. Bart Simpson is row 2 of 2.", $vm_ret[0]);	
+		
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities' delimiter=' ' start='1' length='2'>^ca_entities.preferred_labels.displayname</unit><whenunitomits> and ^omitcount more</whenunitomits>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("Bart Simpson and 1 more", $vm_ret[0]);	
+		
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities' delimiter=' ' start='0' length='2'>^ca_entities.preferred_labels.displayname</unit><whenunitomits> and ^omitcount more</whenunitomits>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("Homer J. Simpson Bart Simpson", $vm_ret[0]);	
+		
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities' delimiter=' ' start='0' length='1'>^ca_entities.preferred_labels.displayname</unit><whenunitomits> and ^omitcount more</whenunitomits>; <unit relativeTo='ca_entities' delimiter=' ' start='1' length='2'>^ca_entities.preferred_labels.displayname</unit><whenunitomits> and ^omitcount more</whenunitomits>; <unit relativeTo='ca_entities' delimiter=' ' start='0' length='2'>^ca_entities.preferred_labels.displayname</unit><whenunitomits> and ^omitcount more</whenunitomits>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("Homer J. Simpson and 1 more; Bart Simpson and 1 more; Homer J. Simpson Bart Simpson", $vm_ret[0]);	
+	}
+	# -------------------------------------------------------
 }
