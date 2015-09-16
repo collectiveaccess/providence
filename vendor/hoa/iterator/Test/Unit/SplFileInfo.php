@@ -103,19 +103,20 @@ class SplFileInfo extends Test\Unit\Suite
     {
         $this
             ->given(
-                $timestamp  = $this->realdom->boundinteger(
+                $timestamp = $this->realdom->boundinteger(
                     $this->realdom->timestamp('yesterday'),
                     $this->realdom->timestamp('tomorrow')
                 ),
-                $atime      = $this->sample($timestamp),
-                $ctime      = $this->sample($timestamp),
-                $mtime      = $this->sample($timestamp),
-                $pathname   = 'hoa://Test/Vfs/Foo.bar?' .
-                               http_build_query([
-                                   'atime' => $atime,
-                                   'ctime' => $ctime,
-                                   'mtime' => $mtime
-                               ])
+                $atime    = $this->sample($timestamp),
+                $ctime    = $this->sample($timestamp),
+                $mtime    = $this->sample($timestamp),
+                $pathname =
+                    'hoa://Test/Vfs/Foo.bar?' .
+                    http_build_query([
+                        'atime' => $atime,
+                        'ctime' => $ctime,
+                        'mtime' => $mtime
+                    ])
             )
             ->when($result = new LUT\SplFileInfo($pathname))
             ->then

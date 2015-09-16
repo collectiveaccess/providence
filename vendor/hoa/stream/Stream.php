@@ -438,6 +438,20 @@ abstract class Stream implements Core\Event\Listenable
     }
 
     /**
+     * Check whether the connection has timed out or not.
+     * This is basically a shortcut of `getStreamMetaData` + the `timed_out`
+     * index, but the resulting code is more readable.
+     *
+     * @return bool
+     */
+    public function hasTimedOut()
+    {
+        $metaData = $this->getStreamMetaData();
+
+        return true === $metaData['timed_out'];
+    }
+
+    /**
      * Set blocking/non-blocking mode.
      *
      * @param   bool    $mode    Blocking mode.

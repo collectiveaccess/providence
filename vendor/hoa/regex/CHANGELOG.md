@@ -1,3 +1,9 @@
+# 0.15.08.13
+
+  * Fix non-breaking space character encoding. (Metalaka, 2015-08-13T08:01:24+02:00)
+  * Fix generatation of space (`\s`) characters. (Metalaka, 2015-08-11T21:04:15+02:00)
+  * Add a `.gitignore` file. (Stéphane HULARD, 2015-08-03T11:43:58+02:00)
+
 # 0.15.05.29
 
   * Move to `Hoa\Ustring`. (Ivan Enderlin, 2015-05-29T14:51:52+02:00)

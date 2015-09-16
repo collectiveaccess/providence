@@ -1,3 +1,8 @@
+# 0.15.08.25
+
+  * Fix valid arithmetic space definition in an expression. (Ivan Enderlin, 2015-08-25T07:50:36+02:00)
+  * Add a `.gitignore` file. (Stéphane HULARD, 2015-08-03T11:38:11+02:00)
+
 # 0.15.05.29
 
   * Move to PSR-1 and PSR-2. (Ivan Enderlin, 2015-05-18T09:15:09+02:00)

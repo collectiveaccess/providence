@@ -1,3 +1,8 @@
+# 1.15.09.08
+
+  * Format code. (Ivan Enderlin, 2015-08-27T09:29:13+02:00)
+  * Add a `.gitignore` file. (Stéphane HULARD, 2015-08-03T11:33:46+02:00)
+
 # 1.15.05.29
 
   * Move to PSR-1 and PSR-2. (Ivan Enderlin, 2015-05-05T09:26:53+02:00)
