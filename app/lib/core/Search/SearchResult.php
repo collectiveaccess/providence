@@ -837,6 +837,7 @@ class SearchResult extends BaseObject {
  	 *			toUpper = Force all values to upper case. [Default is false]
 	 *			toLower = Force all values to lower case. [Default is false]
 	 *			makeFirstUpper = Force first character of all values to upper case. [Default is false]
+	 *			trim = Trim white space from beginning and end of string. [Default is false]
 	 *			start = Return all values trimmed to start at the specified character. [Default is null]
 	 *			length = Return all values truncated to a maximum length. [Default is null]
 	 *			truncate = Return all values from the beginning truncated to a maximum length; equivalent of passing start=0 and length. [Default is null]
@@ -1941,6 +1942,7 @@ class SearchResult extends BaseObject {
 	 *		toUpper = Force all values to upper case. [Default is false]
 	 *		toLower = Force all values to lower case. [Default is false]
 	 *		makeFirstUpper = Force first character of all values to upper case. [Default is false]
+	 *		trim = Trim white space from beginning and end of string. [Default is false]
 	 *		start = Return all values trimmed to start at the specified character. [Default is null]
 	 *		length = Return all values truncated to a maximum length. [Default is null]
 	 *		truncate = Return all values from the beginning truncated to a maximum length; equivalent of passing start=0 and length. [Default is null]
@@ -1956,7 +1958,7 @@ class SearchResult extends BaseObject {
 				if (!is_array($va_by_attr)) { $va_flattened_values[] = $va_by_attr; continue;  }
 				foreach($va_by_attr as $vs_val) {
 					if (is_array($vs_val) && sizeof($vs_val) == 1) { $vs_val = array_shift($vs_val); }
-					
+				
 					if($pa_options['toUpper'] || $pa_options['toUpper']) {
 						$vs_val = mb_strtoupper($vs_val);
 					}
@@ -1978,8 +1980,13 @@ class SearchResult extends BaseObject {
 						if ($pa_options['ellipsis'] && (strlen($vs_val) > ($vn_start + $vn_length))) {
 							$vb_needs_ellipsis = true; $vn_length -= 3;
 						}
-						$vs_val = mb_substr($vs_val, $vn_start, $vn_length).($vb_needs_ellipsis ? '...' : '');
+						$vs_val = mb_substr($vs_val, $vn_start, $vn_length);
 					}
+					if($pa_options['trim']) {
+						$vs_val = trim($vs_val);
+					}
+					
+					$vs_val .= ($vb_needs_ellipsis ? '...' : '');
 					
 					
 					$va_flattened_values[] = $vs_val;
@@ -2012,8 +2019,13 @@ class SearchResult extends BaseObject {
 						if ($pa_options['ellipsis'] && (strlen($vs_val) > ($vn_start + $vn_length))) {
 							$vb_needs_ellipsis = true; $vn_length -= 3;
 						}
-						$vs_val = mb_substr($vs_val, $vn_start, $vn_length).($vb_needs_ellipsis ? '...' : '');
+						$vs_val = mb_substr($vs_val, $vn_start, $vn_length);
+					} 
+					if($pa_options['trim']) {
+						$vs_val = trim($vs_val);
 					}
+					
+					$vs_val .= ($vb_needs_ellipsis ? '...' : '');
 					
 					$va_flattened_values[] = $vs_val;
 				}

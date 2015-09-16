@@ -637,17 +637,17 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals("my test image", $vm_ret[0]);	
 		
-		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name%toUpper=1&start=1&length=5", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name%toUpper&start=1&length=5", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals("Y TES", $vm_ret[0]);	
 		
-		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name%length=10&ellipsis=1", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name%length=10&ellipsis", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals("My test...", $vm_ret[0]);	
 		
-		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name%length=13&ellipsis=1", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name%length=13&ellipsis", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals("My test image", $vm_ret[0]);
@@ -657,10 +657,15 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals("My test i...", $vm_ret[0]);	
 		
-		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name%length=11&ellipsis=1&toLower=1", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name%length=11&ellipsis=1&toLower", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(1, $vm_ret);
 		$this->assertEquals("my test ...", $vm_ret[0]);	
+		
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name%length=11&ellipsis=1&toLower&trim", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("my test...", $vm_ret[0]);	
 		
 		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name%length=11&ellipsis=0&toLower=1", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);

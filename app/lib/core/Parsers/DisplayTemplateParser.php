@@ -778,6 +778,7 @@ class DisplayTemplateParser {
 				}
 				$va_tag_tmp = explode("=", $vs_tag_opt_raw);
 				$va_tag_tmp[0] = trim($va_tag_tmp[0]);
+				if(sizeof($va_tag_tmp) == 1) { $va_tag_tmp[1] = true; }	// value-less options are considered "true"
 				
 				if (in_array($va_tag_tmp[0], $va_skip_opts)) { continue; }
 				
