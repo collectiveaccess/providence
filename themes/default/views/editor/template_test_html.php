@@ -38,7 +38,7 @@ $t_item = $this->getVar('t_subject');
 				<textarea id="displayTemplate" style="width: 300px; height: 200px;" placeholder="Enter display template here ..."></textarea>
 			</th>
 			<th>
-				<pre id="templatePreview" style="width: 420px; height: 200px; border: 1px solid grey; overflow: ">Result will go here ...</pre>
+				<pre id="templatePreview" style="width: 420px; height: 200px; border: 1px solid grey; overflow: scroll;">Result will go here ...</pre>
 			</th>
 		</tr>
 	</table>
