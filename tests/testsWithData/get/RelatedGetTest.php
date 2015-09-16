@@ -233,8 +233,14 @@ class RelatedGetTest extends BaseTestWithData {
 		$vm_ret = $this->opt_object->get('ca_objects.related.preferred_labels');
 		$this->assertEquals('My test dataset', $vm_ret);
 
-		$vm_ret = $this->opt_object->get('ca_entities', array('template' => '^ca_entities.preferred_labels.displayname (^ca_entities.internal_notes)', 'delimiter' => '; '));
+		// <unit> with relativeTo to repeat template once per entity (this is different from the old pre-1.6 template behavior)
+		$vm_ret = $this->opt_object->get('ca_entities', array('template' => '<unit relativeTo="ca_entities">^ca_entities.preferred_labels.displayname (^ca_entities.internal_notes)</unit>', 'delimiter' => '; '));
 		$this->assertEquals('Homer J. Simpson (); Bart Simpson (); ACME Inc. (Test notes)', $vm_ret);
+
+		// Pre-1.6 test without units returns straight text get() output for each tag (this used to return the output in the previous test)
+		$vm_ret = $this->opt_object->get('ca_entities', array('template' => '^ca_entities.preferred_labels.displayname (^ca_entities.internal_notes)', 'delimiter' => '; '));
+		$this->assertEquals('Homer J. Simpson; Bart Simpson; ACME Inc. (Test notes)', $vm_ret);
+
 
 		$vm_ret = $this->opt_object->get('ca_entities', array('template' => '^ca_entities.preferred_labels', 'delimiter' => '; ', 'returnAsLink' => true));
 		$this->assertRegExp("/\<a href=[\"\'](.)+[\"\']>Homer J. Simpson\<\/a\>/", $vm_ret);

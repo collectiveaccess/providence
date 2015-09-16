@@ -1232,6 +1232,7 @@
 		 * @param array $pa_options An array of options. Supported options are anything supported by ca_lists::getListAsHTMLFormElement as well as:
 		 *		childrenOfCurrentTypeOnly = Returns only types below the current type
 		 *		restrictToTypes = Array of type_ids to restrict type list to
+		 *		inUse = Return only types that are used by at least one record. [Default is false]
 		 * @return string HTML for list element
 		 */ 
 		public function getTypeListAsHTMLFormElement($ps_name, $pa_attributes=null, $pa_options=null) {
@@ -1241,6 +1242,15 @@
 			}
 			
 			$pa_options['limitToItemsWithID'] = caGetTypeRestrictionsForUser($this->tableName(), $pa_options);
+			
+			if (caGetOption('inUse', $pa_options, false)) {
+				$qr_types_in_use = $this->getDb()->query("SELECT DISTINCT type_id FROM ".$this->tableName().($this->hasField('deleted') ? " WHERE deleted = 0" : ""));
+				if(!is_array($pa_options['limitToItemsWithID'])) { $pa_options['limitToItemsWithID'] = array(); }
+				
+				if($qr_types_in_use->numRows() > 0) {
+					$pa_options['limitToItemsWithID'] += $qr_types_in_use->getAllFieldValues('type_id');
+				}
+			}
 			
 			if (isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
 				$pa_options['restrictToTypes'] = caMakeTypeIDList($this->tableName(), $pa_options['restrictToTypes'], $pa_options);
@@ -1300,7 +1310,7 @@
 			$va_tmp = explode('.', $ps_field);
 			
 			if ($va_tmp[1] == $this->getTypeFieldName()) {
-				return $this->getTypeListAsHTMLFormElement($ps_field, null, array_merge($pa_options, array('nullOption' => '-')));
+				return $this->getTypeListAsHTMLFormElement($ps_field, array('class' => caGetOption('class', $pa_options, null)), array_merge($pa_options, array('nullOption' => '-')));
 			}
 			
 			if (!in_array($va_tmp[0], array('created', 'modified'))) {		// let change log searches filter down to BaseModel
@@ -2157,7 +2167,7 @@
 
 			$vs_table = $this->tableName();
 			foreach($va_elements as $vn_element_id => $vs_element_code) {
-				$va_vals = $this->get("{$vs_table}.{$vs_element_code}", array("returnAsArray" => true, "returnAllLocales" => true, 'forDuplication' => true));
+				$va_vals = $this->get("{$vs_table}.{$vs_element_code}", array("returnAsArray" => true, "returnWithStructure" => true, "returnAllLocales" => true, 'forDuplication' => true));
 				if (!is_array($va_vals)) { continue; }
 				if (sizeof($va_restrictToAttributesByCodes)>0 || sizeof($va_restrictToAttributesByIds)>0) {
 					if (!(in_array($vs_element_code,$va_restrictToAttributesByCodes) || in_array($vn_element_id,$va_restrictToAttributesByIds))) {
@@ -2441,7 +2451,7 @@
 				$va_row_ids = array_keys($va_rows);
 				if ((sizeof($va_row_ids) > 0) && $t_instance = $o_dm->getInstanceByTableNum($vn_table_num, true)) {
 					$vs_pk = $t_instance->primaryKey();
-					$qr_del = $o_db->query("SELECT {$vs_pk} FROM ".$t_instance->tableName()." WHERE {$vs_pk} IN (?) AND deleted = 1", array($va_row_ids));
+					$qr_del = $o_db->query("SELECT {$vs_pk} FROM ".$t_instance->tableName()." WHERE {$vs_pk} IN (?)".($t_instance->hasField('deleted') ? "AND deleted = 1" : ''), array($va_row_ids));
 					
 					while($qr_del && $qr_del->nextRow()) {
 						unset($va_references[$vn_table_num][$qr_del->get($vs_pk)]);

@@ -61,16 +61,10 @@ class LabelSearchQueryTest extends AbstractSearchQueryTest {
 			),
 		)));
 
-		// blank label
+		// no label!
 		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'dataset',
-			),
-			'preferred_labels' => array(
-				array(
-					"locale" => "en_US",
-					"name" => "[BLANK]",
-				),
 			),
 		)));
 

@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/controllers/client/library/CheckOutController.php :
+ * app/controllers/library/CheckOutController.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

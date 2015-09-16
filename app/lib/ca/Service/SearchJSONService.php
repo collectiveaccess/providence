@@ -59,8 +59,10 @@ class SearchJSONService extends BaseJSONService {
 			$this->getRequestMethod()
 		);
 
-		if(ExternalCache::contains($vs_cache_key, 'SearchJSONService')) {
-			return ExternalCache::fetch($vs_cache_key, 'SearchJSONService');
+		if(!$this->opo_request->getParameter('noCache', pInteger)) {
+			if(ExternalCache::contains($vs_cache_key, 'SearchJSONService')) {
+				return ExternalCache::fetch($vs_cache_key, 'SearchJSONService');
+			}
 		}
 
 		switch($this->getRequestMethod()) {
@@ -104,6 +106,8 @@ class SearchJSONService extends BaseJSONService {
 			'deletedOnly' => $this->opb_deleted_only,
 			'sort' => $this->opo_request->getParameter('sort', pString), 		// user-specified sort
 			'sortDirection' => $this->opo_request->getParameter('sortDirection', pString),
+			'start' => $this->opo_request->getParameter('start', pInteger),
+			'limit' => $this->opo_request->getParameter('limit', pInteger)
 		));
 
 		$vs_template = $this->opo_request->getParameter('template', pString);		// allow user-defined template to be passed; allows flexible formatting of returned label

@@ -534,14 +534,23 @@ class RequestHTTP extends Request {
 			} else {
 				$vn_port = 80;
 			}
+			
+			if($vn_port == 443) {
+				$vs_proto = 'tls://';
+			} else {
+				$vs_proto = 'tcp://'; // 'tcp://' may be in order here but leaving it blank seems to work too
+			}
 
-			$r_socket = fsockopen(__CA_SITE_HOSTNAME__, $vn_port, $errno, $err, 3);
-			if ($r_socket) {
-				$vs_http  = "GET ".$this->getBaseUrlPath()."/index.php?processIndexingQueue=1 HTTP/1.1\r\n";
-				$vs_http .= "Host: ".__CA_SITE_HOSTNAME__."\r\n";
-				$vs_http .= "Connection: Close\r\n\r\n";
-				fwrite($r_socket, $vs_http);
-				fclose($r_socket);
+			// trigger async search indexing
+			if(!$this->isAjax() && !$this->getAppConfig()->get('disable_out_of_process_search_indexing')) {
+				$r_socket = fsockopen($vs_proto . __CA_SITE_HOSTNAME__, $vn_port, $errno, $err, 3);
+				if ($r_socket) {
+					$vs_http  = "GET ".$this->getBaseUrlPath()."/index.php?processIndexingQueue=1 HTTP/1.1\r\n";
+					$vs_http .= "Host: ".__CA_SITE_HOSTNAME__."\r\n";
+					$vs_http .= "Connection: Close\r\n\r\n";
+					fwrite($r_socket, $vs_http);
+					fclose($r_socket);
+				}
 			}
 		}
 	}
@@ -799,4 +808,20 @@ class RequestHTTP extends Request {
 		return false;
 	}
 	# ----------------------------------------
- }
+	/**
+	 * Returns a unique key identifying this request for caching purposes
+	 *
+	 * @return string
+	 */
+	public function getHash() {
+		return md5(
+			serialize($this->getParameters(array('POST', 'GET', 'REQUEST'))) .
+			$this->getRawPostData() .
+			$this->getRequestMethod() .
+			$this->getFullUrlPath() .
+			$this->getScriptName() .
+			($this->isLoggedIn() ? $this->getUserID() : '')
+		);
+	}
+	# ----------------------------------------
+}
