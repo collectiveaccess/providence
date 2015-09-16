@@ -34,11 +34,11 @@ $t_item = $this->getVar('t_subject');
 	<h3><?php print _t('Test display templates below'); ?>&colon;</h3>
 	<table style="width:100%">
 		<tr>
-			<th style="width:45%">
-				<textarea id="displayTemplate" style="width: 90%; height: 200px;" placeholder="Enter display template here ..."></textarea>
+			<th>
+				<textarea id="displayTemplate" style="width: 300px; height: 200px;" placeholder="Enter display template here ..."></textarea>
 			</th>
-			<th style="width:55%">
-				<pre id="templatePreview" style="width: 100%; height: 200px; border: 1px solid grey;">Result will go here ...</pre>
+			<th>
+				<pre id="templatePreview" style="width: 420px; height: 200px; border: 1px solid grey; overflow: ">Result will go here ...</pre>
 			</th>
 		</tr>
 	</table>
