@@ -83,7 +83,11 @@
 		/**
 		 * Sets and saves form element settings, taking parameters off of the request as needed. Does an update()
 		 * on the ca_search_forms instance to save settings to the database
-		 */ 
+		 *
+		 * @param RequestHTTP $po_request
+		 * @param array|null $pa_options
+		 * @return mixed
+		 */
 		public function setSettingsFromHTMLForm($po_request, $pa_options=null) {
 			$va_locales = ca_locales::getLocaleList(array('sort_field' => '', 'sort_order' => 'asc', 'index_by_code' => true, 'available_for_cataloguing_only' => true)); 
 			$va_available_settings = $this->getAvailableSettings();
@@ -112,9 +116,20 @@
 					) {
 						$va_values[$vs_setting] = $po_request->getParameter("{$vs_placement_code}{$vs_id_prefix}{$vs_setting}", pArray);
 					} else {
-						$va_values = array(
-							$vs_setting => $po_request->getParameter("{$vs_placement_code}{$vs_id_prefix}{$vs_setting}", pString)
-						);
+						switch($va_properties['formatType']) {
+							case FT_BIT:
+								// skip bits if they're not set in the form; otherwise they default to 'No' even
+								// though the default might be set to 'Yes' the settings definition.
+								$vs_val = $po_request->getParameter("{$vs_placement_code}{$vs_id_prefix}{$vs_setting}", pString);
+								if($vs_val == '') { continue; }
+
+								$va_values[$vs_setting] = $vs_val;
+								break;
+							default:
+								$va_values[$vs_setting] = $po_request->getParameter("{$vs_placement_code}{$vs_id_prefix}{$vs_setting}", pString);
+								break;
+						}
+
 					}
 				}
 				
