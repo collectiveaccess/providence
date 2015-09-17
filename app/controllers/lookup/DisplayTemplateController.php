@@ -45,6 +45,6 @@ class DisplayTemplateController extends ActionController {
 			return false;
 		}
 
-		print $t_instance->getWithTemplate($ps_template);
+		print @$t_instance->getWithTemplate($ps_template);
 	}
 }
