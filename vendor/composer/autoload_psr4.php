@@ -10,6 +10,7 @@ return array(
     'Symfony\\Component\\VarDumper\\' => array($vendorDir . '/symfony/var-dumper'),
     'Symfony\\Component\\EventDispatcher\\' => array($vendorDir . '/symfony/event-dispatcher'),
     'React\\Promise\\' => array($vendorDir . '/react/promise/src'),
+    'Monolog\\' => array($vendorDir . '/monolog/monolog/src/Monolog'),
     'Hoa\\Visitor\\' => array($vendorDir . '/hoa/visitor'),
     'Hoa\\Ustring\\' => array($vendorDir . '/hoa/ustring'),
     'Hoa\\Stream\\' => array($vendorDir . '/hoa/stream'),
