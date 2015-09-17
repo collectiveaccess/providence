@@ -44,6 +44,11 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	protected $opn_indexing_subject_row_id = null;
 	protected $ops_indexing_subject_tablename = null;
 
+	/**
+	 * @var \Elasticsearch\Client
+	 */
+	protected $opo_client;
+
 	static $s_doc_content_buffer = array();
 	# -------------------------------------------------------
 	public function __construct($po_db=null) {
@@ -62,6 +67,47 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		} else {
 			$this->ops_elasticsearch_index_name = $this->opo_search_config->get('search_elasticsearch_index_name');
 		}
+
+		$o_logger = Elasticsearch\ClientBuilder::defaultLogger(__CA_APP_DIR__.'/log/elasticsearch.log', Logger::DEBUG);
+
+		$this->opo_client = Elasticsearch\ClientBuilder::create()
+			->setHosts([$this->ops_elasticsearch_base_url])
+			->setRetries(2)
+			->setLogger($o_logger)
+			->build();
+	}
+	# -------------------------------------------------------
+	/**
+	 * Get ElasticSearch index name
+	 * @return string
+	 */
+	protected function getIndexName() {
+		return $this->ops_elasticsearch_index_name;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Build parameter array for the ElasticSearch query
+	 * @param string $ps_type The table name
+	 * @param array $pa_body The request body
+	 * @param null $pn_id The primary key id (if applicable)
+	 * @return array|bool false on error
+	 */
+	protected function buildParams($ps_type, $pa_body = array(), $pn_id = null) {
+		if(!strlen($ps_type)) { return false; }
+		$va_params = array();
+		$va_params['index'] = $this->getIndexName();
+		$va_params['type'] = $ps_type;
+		if(is_array($pa_body) && (sizeof($pa_body) > 0)) { $va_params['body'] = $pa_body; }
+		if($pn_id && is_numeric($pn_id)) { $va_params['id'] = $pn_id; }
+		return $va_params;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Get ElasticSearch client
+	 * @return \Elasticsearch\Client
+	 */
+	protected function getClient() {
+		return $this->opo_client;
 	}
 	# -------------------------------------------------------
 	public function init() {
@@ -93,7 +139,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 
 	# -------------------------------------------------------
 	public function setTableNum($pn_table_num) {
-		$this->opn_subject_tablenum = $pn_table_num;
+		$this->opn_indexing_subject_tablenum = $pn_table_num;
 	}
 	# -------------------------------------------------------
 	public function __destruct() {
@@ -177,6 +223,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		foreach(WLPlugSearchEngineElasticSearch::$s_doc_content_buffer as $vs_key => $va_doc_content_buffer) {
 
 		}
+
+		// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
+		// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_indexing_documents.html#_bulk_indexing
 
 		$this->opa_doc_content_buffer = array();
 		WLPlugSearchEngineElasticSearch::$s_doc_content_buffer = array();
