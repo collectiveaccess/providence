@@ -34,6 +34,7 @@ require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
 require_once(__CA_LIB_DIR__.'/core/Plugins/WLPlug.php');
 require_once(__CA_LIB_DIR__.'/core/Plugins/IWLPlugSearchEngine.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/BaseSearchPlugin.php');
 require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearchResult.php');
 
 class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlugSearchEngine {
@@ -68,7 +69,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$this->ops_elasticsearch_index_name = $this->opo_search_config->get('search_elasticsearch_index_name');
 		}
 
-		$o_logger = Elasticsearch\ClientBuilder::defaultLogger(__CA_APP_DIR__.'/log/elasticsearch.log', Logger::DEBUG);
+		$o_logger = Elasticsearch\ClientBuilder::defaultLogger(__CA_APP_DIR__.'/log/elasticsearch.log', Monolog\Logger::DEBUG);
 
 		$this->opo_client = Elasticsearch\ClientBuilder::create()
 			->setHosts([$this->ops_elasticsearch_base_url])
@@ -103,6 +104,23 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	}
 	# -------------------------------------------------------
 	/**
+	 *
+	 *
+	 * @param int $pn_subject_tablenum
+	 * @param array $pa_subject_row_ids
+	 * @param int $pn_content_tablenum
+	 * @param string $ps_content_fieldnum
+	 * @param int $pn_content_row_id
+	 * @param string $ps_content
+	 * @param array $pa_options
+	 *		literalContent = array of text content to be applied without tokenization
+	 *		BOOST = Indexing boost to apply
+	 *		PRIVATE = Set indexing to private
+	 */
+	public function updateIndexingInPlace($pn_subject_tablenum, $pa_subject_row_ids, $pn_content_tablenum, $ps_content_fieldnum, $pn_content_row_id, $ps_content, $pa_options=null) {
+	}
+	# -------------------------------------------------------
+	/**
 	 * Get ElasticSearch client
 	 * @return \Elasticsearch\Client
 	 */
@@ -112,7 +130,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	# -------------------------------------------------------
 	public function init() {
 		if(($vn_max_indexing_buffer_size = (int)$this->opo_search_config->get('max_indexing_buffer_size')) < 1) {
-			$vn_max_indexing_buffer_size = 100;
+			$vn_max_indexing_buffer_size = 1000;
 		}
 
 		$this->opa_options = array(
@@ -133,7 +151,14 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @return bool
 	 */
 	public function truncateIndex($pn_table_num = null) {
-
+		if(!$pn_table_num) {
+			$this->getClient()->indices()->delete(['index' => $this->getIndexName()]);
+			$this->getClient()->indices()->create(['index' => $this->getIndexName()]);
+		} else {
+			// @todo use scroll API to find all records in
+			// a (table) mapping and then use bulk API to kill them
+			// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-scroll.html
+		}
 		return true;
 	}
 
@@ -169,8 +194,11 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @param int $pn_subject_tablenum
 	 * @param int $pn_subject_row_id
 	 */
-	public function startRowIndexing($pn_subject_tablenum, $pn_subject_row_id) {
-
+	public function startRowIndexing($pn_subject_tablenum, $pn_subject_row_id){
+		$this->opa_doc_content_buffer = array();
+		$this->opn_indexing_subject_tablenum = $pn_subject_tablenum;
+		$this->opn_indexing_subject_row_id = $pn_subject_row_id;
+		$this->ops_indexing_subject_tablename = $this->opo_datamodel->getTableName($pn_subject_tablenum);
 	}
 	# -------------------------------------------------------
 	/**
@@ -183,7 +211,10 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @return null
 	 */
 	public function indexField($pn_content_tablenum, $ps_content_fieldname, $pn_content_row_id, $pm_content, $pa_options) {
+		$vn_rel_type_id = caGetOption('relationship_type_id', $pa_options, null);
+		$ps_content_tablename = $this->opo_datamodel->getTableName($pn_content_tablenum);
 
+		$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname][] = $pm_content;
 	}
 	# -------------------------------------------------------
 	/**
@@ -218,14 +249,30 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	# ------------------------------------------------
 	/**
 	 * Flush content buffer and write to index
+	 * @throws Elasticsearch\Common\Exceptions\NoNodesAvailableException
 	 */
 	public function flushContentBuffer() {
-		foreach(WLPlugSearchEngineElasticSearch::$s_doc_content_buffer as $vs_key => $va_doc_content_buffer) {
+		$va_bulk_params = array();
 
+		foreach(WLPlugSearchEngineElasticSearch::$s_doc_content_buffer as $vs_key => $va_doc_content_buffer) {
+			$va_tmp = explode('/', $vs_key);
+			$vs_table_name = $va_tmp[0];
+			$vn_primary_key = intval($va_tmp[1]);
+
+			$va_bulk_params['body'][] = array(
+				'index' => array(
+					'_index' => $this->getIndexName(),
+					'_type' => $vs_table_name,
+					'_id' => $vn_primary_key
+				)
+			);
+
+			$va_bulk_params['body'][] = $va_doc_content_buffer;
 		}
 
 		// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
 		// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_indexing_documents.html#_bulk_indexing
+		$this->getClient()->bulk($va_bulk_params);
 
 		$this->opa_doc_content_buffer = array();
 		WLPlugSearchEngineElasticSearch::$s_doc_content_buffer = array();
