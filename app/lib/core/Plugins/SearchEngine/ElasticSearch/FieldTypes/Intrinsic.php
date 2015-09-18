@@ -103,4 +103,13 @@ class Intrinsic implements FieldType {
 	public function setContent($opm_content) {
 		$this->opm_content = $opm_content;
 	}
+
+	/**
+	 * @return array
+	 */
+	public function getDocumentFragment() {
+		return array(
+			$this->getTableName() . '.' . $this->getFieldName() => $this->getContent()
+		);
+	}
 }

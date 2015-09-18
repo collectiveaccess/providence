@@ -200,7 +200,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	public function indexField($pn_content_tablenum, $ps_content_fieldname, $pn_content_row_id, $pm_content, $pa_options) {
 		$o_field = new ElasticSearch\Field($pn_content_tablenum, $ps_content_fieldname, $pm_content, $pa_options);
 
-		$this->opa_doc_content_buffer[$o_field->getName()][] = $o_field->getContent();
+		foreach($o_field->getDocumentFragment() as $vs_key => $vm_val) {
+			$this->opa_doc_content_buffer[$vs_key][] = $vm_val;
+		}
 	}
 	# -------------------------------------------------------
 	/**
@@ -240,6 +242,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	public function flushContentBuffer() {
 		$va_bulk_params = array();
 
+		var_dump(WLPlugSearchEngineElasticSearch::$s_doc_content_buffer);
 		foreach(WLPlugSearchEngineElasticSearch::$s_doc_content_buffer as $vs_key => $va_doc_content_buffer) {
 			$va_tmp = explode('/', $vs_key);
 			$vs_table_name = $va_tmp[0];

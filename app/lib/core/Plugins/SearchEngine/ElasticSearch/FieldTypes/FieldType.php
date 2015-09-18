@@ -34,5 +34,5 @@ namespace ElasticSearch\FieldTypes;
 
 interface FieldType {
 	public function __construct($ops_table_name, $ops_field_name, $opm_content);
-	public function getContent();
+	public function getDocumentFragment();
 }

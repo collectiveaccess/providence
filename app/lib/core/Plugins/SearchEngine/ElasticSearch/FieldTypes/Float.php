@@ -36,4 +36,14 @@ class Float extends GenericElement {
 	public function __construct($ps_table_name, $ps_element_code, $pm_content) {
 		parent::__construct($ps_table_name, $ps_element_code, $pm_content);
 	}
+
+	public function getContent() {
+		$vm_content = parent::getContent();
+
+		if (is_array($vm_content)) {
+			$vm_content = serialize($vm_content);
+		}
+
+		return (float) $vm_content;
+	}
 }

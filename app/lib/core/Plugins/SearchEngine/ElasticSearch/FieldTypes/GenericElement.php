@@ -38,13 +38,19 @@ class GenericElement implements FieldType {
 	 * Metadata element code
 	 * @var string
 	 */
-	protected $ps_element_code;
+	protected $ops_element_code;
 
 	/**
 	 * Field content
 	 * @var mixed
 	 */
-	protected $pm_content;
+	protected $opm_content;
+
+	/**
+	 * Table name
+	 * @var string
+	 */
+	protected $ops_table_name;
 
 	/**
 	 * Generic constructor.
@@ -53,36 +59,53 @@ class GenericElement implements FieldType {
 	 * @param mixed $pm_content
 	 */
 	public function __construct($ps_table_name, $ps_element_code, $pm_content) {
-		$this->ps_element_code = $ps_element_code;
-		$this->pm_content = $pm_content;
+		$this->ops_table_name = $ps_table_name;
+		$this->ops_element_code = $ps_element_code;
+		$this->opm_content = $pm_content;
 	}
 
 	/**
 	 * @return mixed
 	 */
 	public function getContent() {
-		return $this->pm_content;
+		return $this->opm_content;
 	}
 
 	/**
 	 * @param mixed $pm_content
 	 */
 	public function setContent($pm_content) {
-		$this->pm_content = $pm_content;
+		$this->opm_content = $pm_content;
 	}
 
 	/**
 	 * @return string
 	 */
 	public function getElementCode() {
-		return $this->ps_element_code;
+		return $this->ops_element_code;
 	}
 
 	/**
 	 * @param string $ps_element_code
 	 */
 	public function setElementCode($ps_element_code) {
-		$this->ps_element_code = $ps_element_code;
+		$this->ops_element_code = $ps_element_code;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getTableName() {
+		return $this->ops_table_name;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getDocumentFragment() {
+		return array(
+			$this->getTableName() . '.' . $this->getElementCode() => $this->getContent()
+		);
 	}
 
 }

@@ -99,6 +99,8 @@ class Field {
 			$vn_field_num_proc = (int)substr($this->getIndexingFieldName(), 1);
 
 			if (!$va_element_info = $this->getMetadataElement($vn_field_num_proc)) { return null; }
+			$this->ops_content_fieldname = $va_element_info['element_code'];
+
 			switch($va_element_info['datatype']) {
 				case 2:
 					$this->opo_field_type = new FieldTypes\DateRange(
@@ -143,7 +145,6 @@ class Field {
 					);
 					break;
 			}
-			$this->ops_content_fieldname = $va_element_info['element_code'];
 		} else {
 			// Plain intrinsic
 			$vn_field_num_proc = (int)substr($this->getIndexingFieldName(), 1);
@@ -168,7 +169,7 @@ class Field {
 	 * @return int
 	 */
 	private function getContentTableName() {
-		return $this->opn_content_tablenum;
+		return $this->ops_content_tablename;
 	}
 
 	/**
@@ -181,13 +182,15 @@ class Field {
 	/**
 	 * @return mixed
 	 */
-	public function getContent() {
+	private function getContent() {
 		return $this->opm_content;
 	}
 
-
-	public function getName() {
-		return $this->getContentTableName() . '.' . $this->getContentFieldName();
+	/**
+	 * @return array
+	 */
+	public function getDocumentFragment() {
+		return $this->opo_field_type->getDocumentFragment();
 	}
 
 	/**
