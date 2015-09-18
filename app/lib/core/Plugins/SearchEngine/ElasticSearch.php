@@ -37,6 +37,8 @@ require_once(__CA_LIB_DIR__.'/core/Plugins/IWLPlugSearchEngine.php');
 require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/BaseSearchPlugin.php');
 require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearchResult.php');
 
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/Field.php');
+
 class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlugSearchEngine {
 	# -------------------------------------------------------
 	protected $opa_doc_content_buffer = array();
@@ -51,6 +53,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	protected $opo_client;
 
 	static $s_doc_content_buffer = array();
+	static $s_element_code_cache = array();
 	# -------------------------------------------------------
 	public function __construct($po_db=null) {
 		parent::__construct($po_db);
@@ -87,23 +90,6 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	}
 	# -------------------------------------------------------
 	/**
-	 * Build parameter array for the ElasticSearch query
-	 * @param string $ps_type The table name
-	 * @param array $pa_body The request body
-	 * @param null $pn_id The primary key id (if applicable)
-	 * @return array|bool false on error
-	 */
-	protected function buildParams($ps_type, $pa_body = array(), $pn_id = null) {
-		if(!strlen($ps_type)) { return false; }
-		$va_params = array();
-		$va_params['index'] = $this->getIndexName();
-		$va_params['type'] = $ps_type;
-		if(is_array($pa_body) && (sizeof($pa_body) > 0)) { $va_params['body'] = $pa_body; }
-		if($pn_id && is_numeric($pn_id)) { $va_params['id'] = $pn_id; }
-		return $va_params;
-	}
-	# -------------------------------------------------------
-	/**
 	 *
 	 *
 	 * @param int $pn_subject_tablenum
@@ -117,8 +103,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 *		BOOST = Indexing boost to apply
 	 *		PRIVATE = Set indexing to private
 	 */
-	public function updateIndexingInPlace($pn_subject_tablenum, $pa_subject_row_ids, $pn_content_tablenum, $ps_content_fieldnum, $pn_content_row_id, $ps_content, $pa_options=null) {
-	}
+	/*public function updateIndexingInPlace($pn_subject_tablenum, $pa_subject_row_ids, $pn_content_tablenum, $ps_content_fieldnum, $pn_content_row_id, $ps_content, $pa_options=null) {
+	}*/
 	# -------------------------------------------------------
 	/**
 	 * Get ElasticSearch client
@@ -140,7 +126,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		);
 
 		$this->opa_capabilities = array(
-			'incremental_reindexing' => true
+			'incremental_reindexing' => false // @todo implement updateIndexingInPlace()
 		);
 	}
 	# -------------------------------------------------------
@@ -152,6 +138,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 */
 	public function truncateIndex($pn_table_num = null) {
 		if(!$pn_table_num) {
+			// nuke the entire index
 			$this->getClient()->indices()->delete(['index' => $this->getIndexName()]);
 			$this->getClient()->indices()->create(['index' => $this->getIndexName()]);
 		} else {
@@ -184,7 +171,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 */
 	public function search($pn_subject_tablenum, $ps_search_expression, $pa_filters=array(), $po_rewritten_query=null) {
 
-
+		Debug::msg($ps_search_expression);
 
 		return new WLPlugSearchEngineElasticSearchResult(array(), $pn_subject_tablenum);
 	}
@@ -211,10 +198,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @return null
 	 */
 	public function indexField($pn_content_tablenum, $ps_content_fieldname, $pn_content_row_id, $pm_content, $pa_options) {
-		$vn_rel_type_id = caGetOption('relationship_type_id', $pa_options, null);
-		$ps_content_tablename = $this->opo_datamodel->getTableName($pn_content_tablenum);
+		$o_field = new ElasticSearch\Field($pn_content_tablenum, $ps_content_fieldname, $pm_content, $pa_options);
 
-		$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname][] = $pm_content;
+		$this->opa_doc_content_buffer[$o_field->getName()][] = $o_field->getContent();
 	}
 	# -------------------------------------------------------
 	/**
@@ -325,5 +311,4 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 
 		return $va_hits;
 	}
-	# --------------------------------------------------
 }
