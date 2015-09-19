@@ -718,4 +718,116 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$this->assertEquals("Homer J. Simpson and 1 more; Bart Simpson and 1 more; Homer J. Simpson Bart Simpson", $vm_ret[0]);	
 	}
 	# -------------------------------------------------------
+	public function testTemplateWithNewLines() {
+	
+		$vm_ret = DisplayTemplateParser::evaluate('<ifcount code="ca_entities" min="1"><p><strong>People</strong><br/><unit delimiter="; " relativeTo="ca_entities"><a href="/index.php/MultiSearch/Index/search/ca_entities.entity_id:^ca_entities.entity_id">^ca_entities.preferred_labels.displayname</a></unit></p></ifcount>', "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		
+		$this->assertContains("/MultiSearch/Index/search/ca_entities.entity_id:".$this->opn_entity_id1."\">Homer J. Simpson</a>", $vm_ret[0]);
+		$this->assertContains("/MultiSearch/Index/search/ca_entities.entity_id:".$this->opn_entity_id2."\">Bart Simpson</a>", $vm_ret[0]);
+		
+		
+		$vm_ret = DisplayTemplateParser::evaluate('<ifcount code="ca_entities.related" min="1">
+				<ifcount code="ca_entities.related" min="1" max="1"><img src="left1.png"><strong>Related person</strong><img src="right1.png"><br/></ifcount>
+				<ifcount code="ca_entities.related" min="2"><img src="left2.png"><strong>Related people</strong><img src="right2.png"><br/></ifcount>
+				<unit relativeTo="ca_entities.related" delimiter="<br/>"><l>^ca_entities.preferred_labels.displayname</l></unit><br/><br/>
+				</ifcount>', "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);	
+		$this->assertContains("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id1."\">Homer J. Simpson</a>", $vm_ret[0]);
+		$this->assertContains("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id2."\">Bart Simpson</a>", $vm_ret[0]);
+		$this->assertContains('<img src="left2.png" /><strong>Related people</strong><img src="right2.png" />', $vm_ret[0]);
+		
+		$vm_ret = DisplayTemplateParser::evaluate("<ifcount code=\"ca_entities\" min=\"1\">
+			<script type='text/javascript'>
+				jQuery(document).ready(function() {
+					/*
+					Carousel initialization
+					*/
+					$('.jcarousel')
+						.jcarousel({
+							// Options go here
+						});
+			
+					/*
+					 Prev control initialization
+					 */
+					$('#detailScrollButtonPrevious')
+						.on('jcarouselcontrol:active', function() {
+							$(this).removeClass('inactive');
+						})
+						.on('jcarouselcontrol:inactive', function() {
+							$(this).addClass('inactive');
+						})
+						.jcarouselControl({
+							// Options go here
+							target: '-=1'
+						});
+			
+					/*
+					 Next control initialization
+					 */
+					$('#detailScrollButtonNext')
+						.on('jcarouselcontrol:active', function() {
+							$(this).removeClass('inactive');
+						})
+						.on('jcarouselcontrol:inactive', function() {
+							$(this).addClass('inactive');
+						})
+						.jcarouselControl({
+							// Options go here
+							target: '+=1'
+						});
+				});
+			</script></ifcount>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+	
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);	
+		
+		$this->assertEquals("
+			<script type=\"text/javascript\">
+				jQuery(document).ready(function() {
+					/*
+					Carousel initialization
+					*/
+					$('.jcarousel')
+						.jcarousel({
+							// Options go here
+						});
+			
+					/*
+					 Prev control initialization
+					 */
+					$('#detailScrollButtonPrevious')
+						.on('jcarouselcontrol:active', function() {
+							$(this).removeClass('inactive');
+						})
+						.on('jcarouselcontrol:inactive', function() {
+							$(this).addClass('inactive');
+						})
+						.jcarouselControl({
+							// Options go here
+							target: '-=1'
+						});
+			
+					/*
+					 Next control initialization
+					 */
+					$('#detailScrollButtonNext')
+						.on('jcarouselcontrol:active', function() {
+							$(this).removeClass('inactive');
+						})
+						.on('jcarouselcontrol:inactive', function() {
+							$(this).addClass('inactive');
+						})
+						.jcarouselControl({
+							// Options go here
+							target: '+=1'
+						});
+				});
+			</script>", $vm_ret[0]);	
+	}
+	# -------------------------------------------------------
 }

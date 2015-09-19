@@ -321,13 +321,16 @@ class DisplayTemplateParser {
 					
 					if(!is_array($va_codes = DisplayTemplateParser::_getCodesFromAttribute($o_node)) || !sizeof($va_codes)) { break; }
 					
+					$pa_check_access = ($t_instance->hasField('access')) ? caGetOption('checkAccess', $pa_options, null) : null;
+					if (!is_array($pa_check_access) || !sizeof($pa_check_access)) { $pa_check_access = null; }
+					
 					$vb_bool = DisplayTemplateParser::_getCodesBooleanModeAttribute($o_node);
 					$va_restrict_to_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToTypes']); 
 					$va_restrict_to_relationship_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToRelationshipTypes']); 
-				
+		
 					$vm_count = ($vb_bool == 'AND') ? 0 : [];
 					foreach($va_codes as $vs_code) {
-						$va_vals = $pr_res->get($vs_code, ['returnAsArray' => true, 'restrictToTypes' => $va_restrict_to_types, 'restrictToRelationshipTypes' => $va_restrict_to_relationship_types]);
+						$va_vals = $pr_res->get($vs_code, ['checkAccess' => $pa_check_access, 'returnAsArray' => true, 'restrictToTypes' => $va_restrict_to_types, 'restrictToRelationshipTypes' => $va_restrict_to_relationship_types]);
 						if (is_array($va_vals)) { 
 							if ($vb_bool == 'AND') {
 								$vm_count += sizeof($va_vals); 
@@ -336,6 +339,7 @@ class DisplayTemplateParser {
 							}
 						}
 					}
+					
 					if ($vb_bool == 'AND') {
 						if (($vn_min <= $vm_count) && (($vn_max >= $vm_count) || !$vn_max)) {
 							$vs_acc .= DisplayTemplateParser::_processChildren($pr_res, $o_node->children, DisplayTemplateParser::_getValues($pr_res, DisplayTemplateParser::_getTags($o_node->children, $pa_options), $pa_options), $pa_options);
@@ -575,8 +579,18 @@ class DisplayTemplateParser {
 							array_merge(['addRelParameter' => true, 'requireLinkTags' => false], $pa_options)
 						);
 						$vs_proc_template = array_shift($va_proc_templates);	
-					} else {
-						if (strlen($vs_tag) && ($vs_tag[0] !=='~')) { $vs_proc_template = "<{$vs_tag}>{$vs_proc_template}</{$vs_tag}>"; }
+					} elseif(strlen($vs_tag) && ($vs_tag[0] !=='~')) { 
+						if ($o_node->children && (sizeof($o_node->children) > 0)) {
+							$vs_attr = '';
+							if ($o_node->attributes) {
+								foreach($o_node->attributes as $attribute => $value) {
+									$vs_attr .=  " {$attribute}=\"".htmlspecialchars(caProcessTemplate($value, $pa_vals, ['quote' => $pb_quote]))."\""; 
+								}
+							}
+							$vs_proc_template = "<{$vs_tag}{$vs_attr}>{$vs_proc_template}</{$vs_tag}>"; 
+						} else {
+							$vs_proc_template = $o_node->html();
+						}
 					}
 					
 					$vs_acc .= $vs_proc_template;
