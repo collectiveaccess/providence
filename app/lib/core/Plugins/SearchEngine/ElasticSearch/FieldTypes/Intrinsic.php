@@ -32,6 +32,8 @@
 
 namespace ElasticSearch\FieldTypes;
 
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/FieldType.php');
+
 class Intrinsic implements FieldType {
 
 	/**

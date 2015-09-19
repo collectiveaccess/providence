@@ -32,6 +32,8 @@
 
 namespace ElasticSearch\FieldTypes;
 
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/GenericElement.php');
+
 class Float extends GenericElement {
 	public function __construct($ps_table_name, $ps_element_code, $pm_content) {
 		parent::__construct($ps_table_name, $ps_element_code, $pm_content);
