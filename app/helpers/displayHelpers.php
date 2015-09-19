@@ -2629,10 +2629,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		}
 		
 		// Parse template
-		$o_dom = new DOMDocument('1.0', 'utf-8');
-		$o_dom->preserveWhiteSpace = true;
-		libxml_use_internal_errors(true);								// don't reported mangled HTML errors
-		
+		$o_doc = str_get_dom($ps_template);	
 		
 		$va_links = array();
 		
@@ -2640,21 +2637,14 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		if (!$g_request) { return $pa_text; }
 		
 		foreach($pa_text as $vn_i => $vs_text) {
-			$vs_text = preg_replace("!([A-Za-z0-9]+)='([^']*)'!", "$1=\"$2\"", $vs_text);		// DomDcoument converts single quotes around attributes to double quotes so we do the same to the template
-			$vs_text = preg_replace("![ ]+/>!", "/>", $vs_text);
-			$vs_text = preg_replace("![\r\n]+!", "", $vs_text);							// DomDocument removes newlines so we do the same here to the template
-			
-		
-			$o_dom->loadHTML('<?xml encoding="utf-8">'.mb_convert_encoding($vs_text, 'HTML-ENTITIES', 'UTF-8'));		// Needs XML declaration to force it to consider the text as UTF-8. Please don't ask why. No one knows.
-			$o_dom->encoding = 'utf-8';
-			libxml_clear_errors();
-			
+			$vs_text = preg_replace("!([A-Za-z0-9]+)='([^']*)'!", "$1=\"$2\"", $vs_text);	
 			$va_l_tags = array();
-			$o_links = $o_dom->getElementsByTagName("l");				// l=link
-		
+			$o_links = $o_doc('l');
+			
 			foreach($o_links as $o_link) {
 				if (!$o_link) { continue; }
-				$vs_html = $o_dom->saveXML($o_link);
+				$vs_html = $o_link->html();
+				
 				$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
 				$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
 		
