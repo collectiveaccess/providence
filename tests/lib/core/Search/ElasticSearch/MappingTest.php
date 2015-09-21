@@ -54,4 +54,13 @@ class MappingTest extends PHPUnit_Framework_TestCase {
 			$this->assertTrue(in_array($vn_element_id, $va_element_ids), "Expected element id {$vn_element_id} to be part of " . print_r($va_element_ids, true));
 		}
 	}
+
+	public function testGetConfigForIntrinsic() {
+		$o_mapping = new ElasticSearch\Mapping();
+		$o_mapping->getConfigForIntrinsic('ca_object_labels', 4, array());
+	}
+
+	public function testGet() {
+		$va_mapping = ElasticSearch\Mapping::get();
+	}
 }

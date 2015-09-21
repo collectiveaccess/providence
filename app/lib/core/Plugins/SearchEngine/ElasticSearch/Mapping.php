@@ -62,7 +62,9 @@ class Mapping {
 	 */
 	public function __construct() {
 		$this->opo_datamodel = \Datamodel::load();
-		$this->opo_indexing_conf = \Configuration::load(\Configuration::load()->get('search_indexing_config'));
+
+		$o_search_conf = \Configuration::load(\Configuration::load()->get('search_config'));
+		$this->opo_indexing_conf = \Configuration::load($o_search_conf->get('search_indexing_config'));
 		$this->opo_search_base = new \SearchBase();
 		$this->opo_db = new \Db();
 
@@ -226,7 +228,7 @@ class Mapping {
 	 * @param array $pa_element_info @see Mapping::getElementInfo()
 	 * @return array
 	 */
-	public function getPropertyConfigForElement($pn_element_id, $pa_element_info) {
+	public function getConfigForElement($pn_element_id, $pa_element_info) {
 		if(!is_numeric($pn_element_id) && (intval($pn_element_id) > 0)) { return array(); }
 
 		// init: we never store -- all SearchResult::get() operations are now done on our database tables
@@ -338,5 +340,33 @@ class Mapping {
 		}
 
 		return $va_field_options;
+	}
+
+	/**
+	 * Put it all together
+	 * @return array
+	 */
+	public static function get() {
+		$o_mapping = new Mapping();
+		$va_mapping_config = array();
+
+		foreach($o_mapping->getTables() as $vs_table) {
+			$va_mapping_config[$vs_table]['_source']['enabled'] = false;
+
+			foreach($o_mapping->getFieldsToIndex($vs_table) as $vs_field => $va_indexing_info) {
+				if(preg_match("/^ca[\_a-z]+\.A([0-9]+)$/", $vs_field, $va_matches)) { // attribute
+					$va_mapping_config[$vs_table]['properties'][$vs_field] =
+						$o_mapping->getConfigForElement(
+							(int)$va_matches[1],
+							$o_mapping->getElementInfo((int)$va_matches[1])
+						);
+				} elseif(preg_match("/^(ca[\_a-z]+)\.I([0-9]+)$/", $vs_field, $va_matches)) { // intrinsic
+					$va_mapping_config[$vs_table]['properties'][$vs_field] =
+						$o_mapping->getConfigForIntrinsic($va_matches[1], (int) $va_matches[2], $va_indexing_info);
+				}
+			}
+		}
+
+		return $va_mapping_config;
 	}
 }
