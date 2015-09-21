@@ -555,11 +555,16 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	function caEscapeForBundlePreview($ps_text, $pn_limit=100) {
-		$ps_text = preg_replace("![^\X]+$!", " ", $ps_text);
-		if(strlen($ps_text) > $pn_limit) {
+		$ps_text = caSanitizeStringForJsonEncode($ps_text);
+		if(mb_strlen($ps_text) > $pn_limit) {
 			$ps_text = mb_substr($ps_text, 0, $pn_limit) . " ...";
 		}
-		return json_encode(html_entity_decode(strip_tags($ps_text), ENT_QUOTES | ENT_HTML5));
+		return json_encode(html_entity_decode($ps_text, ENT_QUOTES | ENT_HTML5));
+	}
+	# ----------------------------------------
+	function caSanitizeStringForJsonEncode($ps_text) {
+		// @see http://php.net/manual/en/regexp.reference.unicode.php
+		return preg_replace("/[^\p{L}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}]/", '', strip_tags($ps_text));
 	}
 	# ----------------------------------------
 	/**
@@ -1832,7 +1837,7 @@ function caFileIsIncludable($ps_file) {
 				}
 				
 				if ($vb_remove_noncharacter_data) {
-					$pa_array[$vn_k] = preg_replace("![^\X]+!", "", $pa_array[$vn_k]);
+					$pa_array[$vn_k] = caSanitizeStringForJsonEncode($pa_array[$vn_k]);
 				}
 			}
 		}
