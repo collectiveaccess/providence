@@ -31,6 +31,7 @@
  */
 
 require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/Mapping.php');
+require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 
 class MappingTest extends PHPUnit_Framework_TestCase {
 	public function testGetFieldsToIndex() {
@@ -61,6 +62,7 @@ class MappingTest extends PHPUnit_Framework_TestCase {
 	}
 
 	public function testGet() {
-		$va_mapping = ElasticSearch\Mapping::get();
+		$o_mapping = new ElasticSearch\Mapping();
+		$va_mapping = $o_mapping->get();
 	}
 }

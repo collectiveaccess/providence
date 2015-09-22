@@ -38,6 +38,7 @@ require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/BaseSearchPlugin.php');
 require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearchResult.php');
 
 require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/Field.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/Mapping.php');
 
 class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlugSearchEngine {
 	# -------------------------------------------------------
@@ -79,6 +80,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			->setRetries(2)
 			->setLogger($o_logger)
 			->build();
+
+		$this->refreshMapping();
 	}
 	# -------------------------------------------------------
 	/**
@@ -87,6 +90,24 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 */
 	protected function getIndexName() {
 		return $this->ops_elasticsearch_index_name;
+	}
+	# -------------------------------------------------------
+	protected function refreshMapping() {
+		$o_mapping = new ElasticSearch\Mapping();
+		if($o_mapping->needsRefresh()) {
+			try {
+				$this->getClient()->indices()->create(array('index' => $this->getIndexName()));
+			} catch (Elasticsearch\Common\Exceptions\BadRequest400Exception $e) {
+				// noop -- the exception happens when the index already exists, which is good
+			}
+			foreach($o_mapping->get() as $vs_table => $va_config) {
+				$this->getClient()->indices()->putMapping(array(
+					'index' => $this->getIndexName(),
+					'type' => $vs_table,
+					'body' => array($vs_table => $va_config)
+				));
+			}
+		}
 	}
 	# -------------------------------------------------------
 	/**
