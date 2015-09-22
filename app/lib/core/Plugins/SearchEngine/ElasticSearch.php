@@ -73,7 +73,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$this->ops_elasticsearch_index_name = $this->opo_search_config->get('search_elasticsearch_index_name');
 		}
 
-		$o_logger = Elasticsearch\ClientBuilder::defaultLogger(__CA_APP_DIR__.'/log/elasticsearch.log', Monolog\Logger::DEBUG);
+		if(is_writable(__CA_APP_DIR__.'/log/elasticsearch.log')) {
+			$o_logger = Elasticsearch\ClientBuilder::defaultLogger(__CA_APP_DIR__.'/log/elasticsearch.log', Monolog\Logger::DEBUG);
+		}
 
 		$this->opo_client = Elasticsearch\ClientBuilder::create()
 			->setHosts([$this->ops_elasticsearch_base_url])
@@ -160,12 +162,67 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	public function truncateIndex($pn_table_num = null) {
 		if(!$pn_table_num) {
 			// nuke the entire index
-			$this->getClient()->indices()->delete(['index' => $this->getIndexName()]);
-			$this->getClient()->indices()->create(['index' => $this->getIndexName()]);
+			try {
+				$this->getClient()->indices()->delete(['index' => $this->getIndexName()]);
+			} catch(Elasticsearch\Common\Exceptions\Missing404Exception $e) {
+				// noop
+			} finally {
+				$this->getClient()->indices()->create(['index' => $this->getIndexName()]);
+			}
 		} else {
-			// @todo use scroll API to find all records in
-			// a (table) mapping and then use bulk API to kill them
+			// use scoll API to find all documents in a particular mapping/table and delete them
 			// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-scroll.html
+			// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_search_operations.html#_scan_scroll
+
+			if(!$vs_table_name = $this->opo_datamodel->getTableName($pn_table_num)) { return false; }
+
+			$va_search_params = array(
+				'search_type' => 'scan',    // use search_type=scan
+				'scroll' => '1m',          // how long between scroll requests. should be small!
+				'index' => $this->getIndexName(),
+				'type' => $vs_table_name,
+				'body' => array(
+					'query' => array(
+						'match_all' => array()
+					)
+				)
+			);
+
+			$va_tmp = $this->getClient()->search($va_search_params);   // Execute the search
+			$vs_scroll_id = $va_tmp['_scroll_id'];   // The response will contain no results, just a _scroll_id
+
+			// Now we loop until the scroll "cursors" are exhausted
+			$va_delete_params = array();
+			while (\true) {
+
+				$va_response = $this->getClient()->scroll([
+						'scroll_id' => $vs_scroll_id,  //...using our previously obtained _scroll_id
+						'scroll' => '1m'           // and the same timeout window
+					]
+				);
+
+				if (sizeof($va_response['hits']['hits']) > 0) {
+					foreach($va_response['hits']['hits'] as $va_result) {
+						$va_delete_params['body'][] = array(
+							'delete' => array(
+								'_index' => $this->getIndexName(),
+								'_type' => $vs_table_name,
+								'_id' => $va_result['_id']
+							)
+						);
+					}
+
+					// Must always refresh your _scroll_id!  It can change sometimes
+					$vs_scroll_id = $va_response['_scroll_id'];
+				} else {
+					// No results, scroll cursor is empty.  You've exported all the data
+					break;
+				}
+			}
+
+			if(sizeof($va_delete_params) > 0) {
+				$this->getClient()->bulk($va_delete_params);
+			}
 		}
 		return true;
 	}
@@ -263,7 +320,6 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	public function flushContentBuffer() {
 		$va_bulk_params = array();
 
-		var_dump(WLPlugSearchEngineElasticSearch::$s_doc_content_buffer);
 		foreach(WLPlugSearchEngineElasticSearch::$s_doc_content_buffer as $vs_key => $va_doc_content_buffer) {
 			$va_tmp = explode('/', $vs_key);
 			$vs_table_name = $va_tmp[0];
