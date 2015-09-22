@@ -94,9 +94,13 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		return $this->ops_elasticsearch_index_name;
 	}
 	# -------------------------------------------------------
-	protected function refreshMapping() {
+	/**
+	 * Refresh ElasticSearch mapping if necessary
+	 * @param bool $pb_force force refresh if set to true [default is false]
+	 */
+	protected function refreshMapping($pb_force=false) {
 		$o_mapping = new ElasticSearch\Mapping();
-		if($o_mapping->needsRefresh()) {
+		if($o_mapping->needsRefresh() || $pb_force) {
 			try {
 				$this->getClient()->indices()->create(array('index' => $this->getIndexName()));
 			} catch (Elasticsearch\Common\Exceptions\BadRequest400Exception $e) {
@@ -168,9 +172,10 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				// noop
 			} finally {
 				$this->getClient()->indices()->create(['index' => $this->getIndexName()]);
+				$this->refreshMapping(true);
 			}
 		} else {
-			// use scoll API to find all documents in a particular mapping/table and delete them
+			// use scoll API to find all documents in a particular mapping/table and delete them using bulk API
 			// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-scroll.html
 			// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_search_operations.html#_scan_scroll
 
@@ -215,7 +220,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 					// Must always refresh your _scroll_id!  It can change sometimes
 					$vs_scroll_id = $va_response['_scroll_id'];
 				} else {
-					// No results, scroll cursor is empty.  You've exported all the data
+					// No results, scroll cursor is empty
 					break;
 				}
 			}
@@ -248,10 +253,20 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @return WLPlugSearchEngineElasticSearchResult
 	 */
 	public function search($pn_subject_tablenum, $ps_search_expression, $pa_filters=array(), $po_rewritten_query=null) {
+		$va_search_params = [
+			'index' => $this->getIndexName(),
+			'type' => $this->opo_datamodel->getTableName($pn_subject_tablenum),
+			'body' => [
+				'query' => [
+					'match_all' => []
+				]
+			]
+		];
 
 		Debug::msg($ps_search_expression);
 
-		return new WLPlugSearchEngineElasticSearchResult(array(), $pn_subject_tablenum);
+		$va_results = $this->getClient()->search($va_search_params);
+		return new WLPlugSearchEngineElasticSearchResult($va_results['hits']['hits'], $pn_subject_tablenum);
 	}
 	# -------------------------------------------------------
 	/**
@@ -311,6 +326,15 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @param int $pn_subject_row_id
 	 */
 	public function removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id) {
+		try {
+			$this->getClient()->delete($va_params = array(
+				'index' => $this->getIndexName(),
+				'type' => $this->opo_datamodel->getTableName($pn_subject_tablenum),
+				'id' => $pn_subject_row_id
+			));
+		} catch (Elasticsearch\Common\Exceptions\Missing404Exception $e) {
+			// noop
+		}
 	}
 	# ------------------------------------------------
 	/**
@@ -366,29 +390,16 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @return Array - an array of results is returned keyed by primary key id. The array values boolean true. This is done to ensure no duplicate row_ids
 	 *
 	 */
-	public function quickSearch($pn_table_num, $ps_search, $pa_options=null) {
+	public function quickSearch($pn_table_num, $ps_search, $pa_options=array()) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
+		$vn_limit = caGetOption('limit', $pa_options, 0);
 
-		$t_instance = $this->opo_datamodel->getInstanceByTableNum($pn_table_num, true);
-		$vs_pk = $t_instance->primaryKey();
-
-		$vn_limit = 0;
-		if (isset($pa_options['limit']) && ($pa_options['limit'] > 0)) {
-			$vn_limit = intval($pa_options['limit']);
+		$o_result = $this->search($pn_table_num, $ps_search);
+		$va_pks = $o_result->getPrimaryKeyValues();
+		if($vn_limit) {
+			$va_pks = array_slice($va_pks, 0, $vn_limit);
 		}
 
-		// TODO: just do a standard search for now... we'll have to think harder about
-		// how to optimize this for ElasticSearch later
-		$o_results = $this->search($pn_table_num, $ps_search);
-
-		$va_hits = array();
-		$vn_i = 0;
-		while($o_results->nextHit()) {
-			if (($vn_limit > 0) && ($vn_limit <= $vn_i)) { break; }
-			$va_hits[$o_results->get($vs_pk)] = true;
-			$vn_i++;
-		}
-
-		return $va_hits;
+		return array_flip($va_pks);
 	}
 }
