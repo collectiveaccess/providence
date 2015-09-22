@@ -31,16 +31,13 @@
  */
 
 require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
+require_once(__CA_LIB_DIR__.'/ca/Search/ObjectSearch.php');
 
 class ElasticSearchTest extends PHPUnit_Framework_TestCase {
 
-	public function testTruncateIndex() {
-		$o_el = new WLPlugSearchEngineElasticSearch();
-		$o_el->truncateIndex();
-	}
-	public function testTruncateIndexWithTableNum() {
-		$o_el = new WLPlugSearchEngineElasticSearch();
-		$o_el->truncateIndex(57);
+	public function testSearch() {
+		$o_search = new ObjectSearch();
+		$o_result = $o_search->search('ca_objects.idno:"sdfsdf"');
 	}
 
 }
