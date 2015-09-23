@@ -46,22 +46,15 @@ class Intrinsic implements FieldType {
 	 * @var string
 	 */
 	protected $ops_field_name;
-	/**
-	 * Field content
-	 * @var mixed
-	 */
-	protected $opm_content;
 
 	/**
 	 * Intrinsic constructor.
 	 * @param string $ops_table_name
 	 * @param string $ops_field_name
-	 * @param mixed $opm_content
 	 */
-	public function __construct($ops_table_name, $ops_field_name, $opm_content) {
+	public function __construct($ops_table_name, $ops_field_name) {
 		$this->ops_table_name = $ops_table_name;
 		$this->ops_field_name = $ops_field_name;
-		$this->opm_content = $opm_content;
 	}
 
 	/**
@@ -93,25 +86,22 @@ class Intrinsic implements FieldType {
 	}
 
 	/**
-	 * @return mixed
-	 */
-	public function getContent() {
-		return $this->opm_content;
-	}
-
-	/**
-	 * @param mixed $opm_content
-	 */
-	public function setContent($opm_content) {
-		$this->opm_content = $opm_content;
-	}
-
-	/**
+	 * @param mixed $pm_content
 	 * @return array
 	 */
-	public function getDocumentFragment() {
+	public function getIndexingFragment($pm_content) {
+		if(is_array($pm_content)) { $pm_content = serialize($pm_content); }
+
 		return array(
-			$this->getTableName() . '.' . $this->getFieldName() => $this->getContent()
+			$this->getTableName() . '.' . $this->getFieldName() => $pm_content
 		);
+	}
+
+	/**
+	 * @param \Zend_Search_Lucene_Search_Query $po_term
+	 * @return string
+	 */
+	public function getQueryString($po_term) {
+		return '';
 	}
 }

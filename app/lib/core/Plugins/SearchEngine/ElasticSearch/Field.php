@@ -102,43 +102,37 @@ class Field {
 				case 2:
 					$this->opo_field_type = new FieldTypes\DateRange(
 						$this->getContentTableName(),
-						$this->getContentFieldName(),
-						$this->getContent()
+						$this->getContentFieldName()
 					);
 					break;
 				case 4:
 					$this->opo_field_type = new FieldTypes\Geocode(
 						$this->getContentTableName(),
-						$this->getContentFieldName(),
-						$this->getContent()
+						$this->getContentFieldName()
 					);
 					break;
 				case 10:
 					$this->opo_field_type = new FieldTypes\Timecode(
 						$this->getContentTableName(),
-						$this->getContentFieldName(),
-						$this->getContent()
+						$this->getContentFieldName()
 					);
 					break;
 				case 11:
 					$this->opo_field_type = new FieldTypes\Integer(
 						$this->getContentTableName(),
-						$this->getContentFieldName(),
-						$this->getContent()
+						$this->getContentFieldName()
 					);
 					break;
 				case 12:
 					$this->opo_field_type = new FieldTypes\Float(
 						$this->getContentTableName(),
-						$this->getContentFieldName(),
-						$this->getContent()
+						$this->getContentFieldName()
 					);
 					break;
 				default:
 					$this->opo_field_type = new FieldTypes\GenericElement(
 						$this->getContentTableName(),
-						$this->getContentFieldName(),
-						$this->getContent()
+						$this->getContentFieldName()
 					);
 					break;
 			}
@@ -149,10 +143,11 @@ class Field {
 
 			$this->opo_field_type = new FieldTypes\Intrinsic(
 				$this->getContentTableName(),
-				$this->getContentFieldName(),
-				$this->getContent()
+				$this->getContentFieldName()
 			);
 		}
+
+
 	}
 
 	/**
@@ -186,8 +181,8 @@ class Field {
 	/**
 	 * @return array
 	 */
-	public function getDocumentFragment() {
-		return $this->opo_field_type->getDocumentFragment();
+	public function getIndexingFragment() {
+		return $this->opo_field_type->getIndexingFragment($this->getContent());
 	}
 
 	/**

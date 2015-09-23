@@ -293,7 +293,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	public function indexField($pn_content_tablenum, $ps_content_fieldname, $pn_content_row_id, $pm_content, $pa_options) {
 		$o_field = new ElasticSearch\Field($pn_content_tablenum, $ps_content_fieldname, $pm_content, $pa_options);
 
-		foreach($o_field->getDocumentFragment() as $vs_key => $vm_val) {
+		foreach($o_field->getIndexingFragment() as $vs_key => $vm_val) {
 			$this->opa_doc_content_buffer[$vs_key][] = $vm_val;
 		}
 	}

@@ -43,12 +43,6 @@ class GenericElement implements FieldType {
 	protected $ops_element_code;
 
 	/**
-	 * Field content
-	 * @var mixed
-	 */
-	protected $opm_content;
-
-	/**
 	 * Table name
 	 * @var string
 	 */
@@ -58,26 +52,10 @@ class GenericElement implements FieldType {
 	 * Generic constructor.
 	 * @param string $ps_table_name
 	 * @param string $ps_element_code
-	 * @param mixed $pm_content
 	 */
-	public function __construct($ps_table_name, $ps_element_code, $pm_content) {
+	public function __construct($ps_table_name, $ps_element_code) {
 		$this->ops_table_name = $ps_table_name;
 		$this->ops_element_code = $ps_element_code;
-		$this->opm_content = $pm_content;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getContent() {
-		return $this->opm_content;
-	}
-
-	/**
-	 * @param mixed $pm_content
-	 */
-	public function setContent($pm_content) {
-		$this->opm_content = $pm_content;
 	}
 
 	/**
@@ -102,12 +80,22 @@ class GenericElement implements FieldType {
 	}
 
 	/**
+	 * @param mixed $pm_content
 	 * @return array
 	 */
-	public function getDocumentFragment() {
+	public function getIndexingFragment($pm_content) {
+		if(is_array($pm_content)) { $pm_content = serialize($pm_content); }
+
 		return array(
-			$this->getTableName() . '.' . $this->getElementCode() => $this->getContent()
+			$this->getTableName() . '.' . $this->getElementCode() => $pm_content
 		);
 	}
 
+	/**
+	 * @param \Zend_Search_Lucene_Search_Query $po_term
+	 * @return string
+	 */
+	public function getQueryString($po_term) {
+		return '';
+	}
 }

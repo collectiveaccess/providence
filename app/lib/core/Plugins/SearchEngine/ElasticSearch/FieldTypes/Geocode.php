@@ -36,24 +36,31 @@ require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/GeocodeAttributeValue.php');
 
 class Geocode extends GenericElement {
-	public function __construct($ps_table_name, $ps_element_code, $pm_content) {
-		parent::__construct($ps_table_name, $ps_element_code, $pm_content);
+	public function __construct($ps_table_name, $ps_element_code) {
+		parent::__construct($ps_table_name, $ps_element_code);
 	}
 
-	public function getDocumentFragment() {
-		$vm_content = parent::getContent();
-		if (is_array($vm_content)) { $vm_content = serialize($vm_content); }
+	public function getIndexingFragment($pm_content) {
+		if (is_array($pm_content)) { $pm_content = serialize($pm_content); }
 		$va_return = array();
 
 		$o_geocode_parser = new \GeocodeAttributeValue();
 
-		$va_return[$this->getTableName().'.'.$this->getElementCode().'_text'] = $vm_content;
-		if ($va_coords = $o_geocode_parser->parseValue($vm_content, array())) {
+		$va_return[$this->getTableName().'.'.$this->getElementCode().'_text'] = $pm_content;
+		if ($va_coords = $o_geocode_parser->parseValue($pm_content, array())) {
 			if (isset($va_coords['value_longtext2']) && $va_coords['value_longtext2']) {
 				$va_return[$this->getTableName().'.'.$this->getElementCode()] = explode(':', $va_coords['value_longtext2']);
 			}
 		}
 
 		return $va_return;
+	}
+
+	/**
+	 * @param \Zend_Search_Lucene_Search_Query $po_term
+	 * @return string
+	 */
+	public function getQueryString($po_term) {
+		return '';
 	}
 }

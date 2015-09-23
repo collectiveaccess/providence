@@ -33,6 +33,9 @@
 namespace ElasticSearch\FieldTypes;
 
 interface FieldType {
-	public function __construct($ops_table_name, $ops_field_name, $opm_content);
-	public function getDocumentFragment();
+	public function __construct($ops_table_name, $ops_field_name);
+
+	public function getIndexingFragment($pm_content);
+	public function getQueryString($po_lucene_query_element);
+
 }

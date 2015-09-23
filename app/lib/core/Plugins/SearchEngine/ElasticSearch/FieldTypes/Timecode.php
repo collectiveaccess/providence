@@ -35,18 +35,23 @@ namespace ElasticSearch\FieldTypes;
 require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/GenericElement.php');
 
 class Timecode extends GenericElement {
-	public function __construct($ps_table_name, $ps_element_code, $pm_content) {
-		parent::__construct($ps_table_name, $ps_element_code, $pm_content);
+
+	public function __construct($ps_table_name, $ps_element_code) {
+		parent::__construct($ps_table_name, $ps_element_code);
 	}
 
-	public function getContent() {
-		$vm_content = parent::getContent();
+	public function getIndexingFragment($pm_content) {
+		if (is_array($pm_content)) { $pm_content = serialize($pm_content); }
 
-		if (is_array($vm_content)) {
-			$vm_content = serialize($vm_content);
-		}
+		return parent::getIndexingFragment((float) $pm_content);
+	}
 
-		return (float) $vm_content;
+	/**
+	 * @param \Zend_Search_Lucene_Search_Query $po_term
+	 * @return string
+	 */
+	public function getQueryString($po_term) {
+		return '';
 	}
 
 }

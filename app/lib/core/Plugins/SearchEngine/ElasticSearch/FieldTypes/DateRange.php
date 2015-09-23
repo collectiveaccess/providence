@@ -35,22 +35,26 @@ namespace ElasticSearch\FieldTypes;
 require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/GenericElement.php');
 
 class DateRange extends GenericElement {
-	public function __construct($ps_table_name, $ps_element_code, $pm_content) {
-		parent::__construct($ps_table_name, $ps_element_code, $pm_content);
+	public function __construct($ps_table_name, $ps_element_code) {
+		parent::__construct($ps_table_name, $ps_element_code);
 	}
 
-	public function getDocumentFragment() {
-		$vm_content = parent::getContent();
+	public function getIndexingFragment($pm_content) {
+		if(is_array($pm_content)) { $pm_content = serialize($pm_content); }
 		$va_return = array();
 
-		if (!is_array($pa_parsed_content = caGetISODates($vm_content))) { return array(); }
-		$va_return[$this->getTableName().'.'.$this->getElementCode().'_text'] = $vm_content;
+		if (!is_array($pa_parsed_content = caGetISODates($pm_content))) { return array(); }
+		$va_return[$this->getTableName().'.'.$this->getElementCode().'_text'] = $pm_content;
 
 		$ps_rewritten_start = $this->_rewriteDate($pa_parsed_content["start"], true);
 		$ps_rewritten_end = $this->_rewriteDate($pa_parsed_content["end"], false);
 
 		$va_return[$this->getTableName().'.'.$this->getElementCode()] = array($ps_rewritten_start,$ps_rewritten_end);
 		return $va_return;
+	}
+
+	public function getQueryString($po_term) {
+		return '';
 	}
 
 	/**
