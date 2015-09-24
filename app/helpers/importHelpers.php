@@ -142,7 +142,8 @@
 			}
 			
 			$va_match_on = caGetOption("{$ps_refinery_name}_dontMatchOnLabel", $pa_item['settings'], false) ? array('idno') : array('idno', 'label');
-			$pa_options = array_merge(array('matchOn' => $va_match_on), $pa_options);
+			$vb_ignore_parent = caGetOption("{$ps_refinery_name}_ignoreParent", $pa_item['settings'], false);
+			$pa_options = array_merge(array('matchOn' => $va_match_on, 'ignoreParent' => $vb_ignore_parent), $pa_options);
 			
 			switch($ps_table) {
 				case 'ca_objects':
@@ -531,6 +532,10 @@
 			$pa_options['matchOn'] = $va_match_on;
 		}
 		
+		if (isset($pa_item['settings']["{$ps_refinery_name}_ignoreParent"])) {
+			$pa_options['ignoreParent'] = $pa_item['settings']["{$ps_refinery_name}_ignoreParent"];
+		}
+		
 		$pb_dont_create = caGetOption('dontCreate', $pa_options, (bool)$pa_item['settings']["{$ps_refinery_name}_dontCreate"]);
 		
 		$va_vals = array();
@@ -808,12 +813,12 @@
 							case 'ca_object_representations':
 								if (!($vs_batch_media_directory = $t_instance->getAppConfig()->get('batch_media_import_root_directory'))) { break; }
 							
-								if(!isset($va_val['preferred_labels'])) { $va_val['preferred_labels'] = array('name' => $vs_item); }
+								if(!isset($va_val['preferred_labels'])) { $va_val['preferred_labels'] = array('name' => pathinfo($vs_item, PATHINFO_FILENAME)); }
 							
 								if (isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) && $pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] && isset($va_val['media']['media']) && ($va_val['media']['media'])) {
 									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'].'/'.$va_val['media']['media'];
 								}
-								if(!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
+								if(!isset($va_val['idno'])) { $va_val['idno'] = pathinfo($vs_item, PATHINFO_FILENAME); }
 								break;
 							default:
 								if ($o_log) { $o_log->logDebug(_t('[importHelpers:caGenericImportSplitter] Invalid table %1', $ps_table)); }
@@ -857,6 +862,7 @@
 					}
 					$va_val['_matchOn'] = $va_match_on;
 					if ($pb_dont_create) { $va_val['_dontCreate'] = 1; }
+					if (isset($pa_options['ignoreParent']) && $pa_options['ignoreParent']) { $va_val['_ignoreParent'] = 1; }
 					$va_vals[] = $va_val;
 					$vn_c++;
 				}

@@ -36,6 +36,7 @@
 
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
+require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 
 # --- Token types
 define("TEP_TOKEN_INTEGER", 0);
@@ -156,7 +157,7 @@ class TimeExpressionParser {
 		global $g_ui_locale;
 		
 		$o_config = Configuration::load();
-		$this->opo_datetime_settings = Configuration::load($o_config->get('datetime_config'));
+		$this->opo_datetime_settings = Configuration::load(__CA_CONF_DIR__.'/datetime.conf');
 		
 		if (!$ps_iso_code) { $ps_iso_code = $g_ui_locale; }
 		if (!$ps_iso_code) { $ps_iso_code = 'en_US'; }
@@ -686,6 +687,14 @@ class TimeExpressionParser {
 	}
 	# -------------------------------------------------------------------
 	private function preprocess($ps_expression) {
+
+		// Trigger TimeExpressionParser preprocess hook
+		$o_app_plugin_manager = new ApplicationPluginManager();
+		$va_hook_result = $o_app_plugin_manager->hookTimeExpressionParserPreprocessBefore(array("expression"=>$ps_expression));
+		if ($va_hook_result["expression"] != $ps_expression) {
+			$ps_expression = $va_hook_result["expression"];
+		}
+
 		# convert
 		$va_dict = $this->opo_datetime_settings->getAssoc("expressions");
 		$vs_lc_expression = mb_strtolower($ps_expression);
@@ -816,6 +825,12 @@ class TimeExpressionParser {
 
 		// support date entry in the form yyyy-mm-dd/yyy-mm-dd (HSP)
 		$ps_expression = preg_replace("/([\d]{4}#[\d]{2}#[\d]{2})\/([\d]{4}#[\d]{2}#[\d]{2})/", "$1 - $2", $ps_expression);
+
+		// Trigger TimeExpressionParser preprocess hook
+		$va_hook_result = $o_app_plugin_manager->hookTimeExpressionParserPreprocessAfter(array("expression"=>$ps_expression));
+		if ($va_hook_result["expression"] != $ps_expression) {
+			$ps_expression = $va_hook_result["expression"];
+		}
 
 		return trim($ps_expression);
 	}
@@ -1594,8 +1609,20 @@ class TimeExpressionParser {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_CIRCA);
 		}
 		
-		// W3C datetime (http://www.w3.org/TR/NOTE-datetime)
+		// EXIF date
+		if (preg_match("/^([\d]{4}):([\d]{2}):([\d]{2})$/", $vs_token, $va_matches)) {
+			return(array('value' => $vs_token, 'month' => $va_matches[2], 'day' => $va_matches[3], 'year' => $va_matches[1], 'type' => TEP_TOKEN_DATE));
+		}
 		
+		// EXIF time
+		if (preg_match("/^([\d]{2}):([\d]{2}):([\d]{2}[\.]{0,1}[\d]*)$/", $vs_token, $va_matches)) {
+			// year-month
+			if ((($va_matches[1] >= 0) && ($va_matches[1] <= 23)) && (($va_matches[2] >= 0) && ($va_matches[2] <= 59))  && (($va_matches[3] >= 0) && ($va_matches[3] < 60))) {
+				return(array('value' => $vs_token, 'minutes' => $va_matches[2], 'seconds' => floor($va_matches[3]), 'hours' => $va_matches[1], 'type' => TEP_TOKEN_TIME));
+			}
+		}
+		
+		// W3C datetime (http://www.w3.org/TR/NOTE-datetime)
 		if (preg_match("/^([\d]{4})#([\d]{2})$/", $vs_token, $va_matches)) {
 			// year-month
 			if ((($va_matches[1] >= 1000) && ($va_matches[1] <= 2999)) && (($va_matches[2] >= 1) && ($va_matches[2] <= 12))) {
@@ -2321,10 +2348,14 @@ class TimeExpressionParser {
 					$vb_not_handled = false;
 					switch($vs_c = $pa_options['format'][$vn_i]) {
 						case 'Y':
-							$vs_output .= (!$va_seen[$vs_c]) ? $va_start_pieces['year'] : $va_end_pieces['year'];
+							$vn_year = (!$va_seen[$vs_c]) ? $va_start_pieces['year'] : $va_end_pieces['year'];
+							if (($vn_year == TEP_START_OF_UNIVERSE) || ($vn_year == TEP_END_OF_UNIVERSE)) { $vn_year = null; }
+							$vs_output .= $vn_year;
 							break;
 						case 'y':
-							$vs_output .= (!$va_seen[$vs_c]) ? substr($va_start_pieces['year'], 2) : substr($va_end_pieces['year'],2);
+							$vn_year = (!$va_seen[$vs_c]) ? $va_start_pieces['year'] : $va_end_pieces['year'];
+							if (($vn_year == TEP_START_OF_UNIVERSE) || ($vn_year == TEP_END_OF_UNIVERSE)) { $vn_year = null; }
+							$vs_output .= substr($vn_year, 2);
 							break;
 						case 'd':
 							$vs_output .= (!$va_seen[$vs_c]) ? sprintf("%02d", $va_start_pieces['day']) : sprintf("%02d", $va_end_pieces['day']);
@@ -2611,9 +2642,15 @@ class TimeExpressionParser {
 						if ((($va_start_pieces['year'] % 100) == 0) && ($va_end_pieces['year'] == ($va_start_pieces['year'] + 99))) {
 							$vn_century = intval($va_start_pieces['year']/100) + 1;
 							$va_ordinals = $this->opo_language_settings->getList("ordinalSuffixes");
+							$va_ordinal_exceptions = $this->opo_language_settings->get("ordinalSuffixExceptions");
+							$vs_ordinal_default = $this->opo_language_settings->get("ordinalSuffixDefault");
 
-							if (!($vs_ordinal = $va_ordinals[$vn_century])) {
-								$vs_ordinal = $this->opo_language_settings->get("ordinalSuffixDefault");
+							$vn_x = intval(substr((string)$vn_century, -1));
+
+							if(is_array($va_ordinal_exceptions) && isset($va_ordinal_exceptions[$vn_century])) {
+								$vs_ordinal = $va_ordinal_exceptions[$vn_century];
+							} else {
+								$vs_ordinal = isset($va_ordinals[$vn_x]) ? $va_ordinals[$vn_x] : $vs_ordinal_default;
 							}
 
 							$va_century_indicators = $this->opo_language_settings->getList("centuryIndicator");
@@ -3100,20 +3137,26 @@ class TimeExpressionParser {
 				
 				$vn_s = intval($vn_s/100) * 100;
 				$vn_e = intval($vn_e/100) * 100;
-				
+
 				if ($vn_s <= $vn_e) {
 					$va_century_indicators = 	$this->opo_language_settings->getList("centuryIndicator");
 					$va_ordinals = 				$this->opo_language_settings->getList("ordinalSuffixes");
 					$vs_ordinal_default = 		$this->opo_language_settings->get("ordinalSuffixDefault");
 					$vs_bc_indicator = 			$this->opo_language_settings->get("dateBCIndicator");
-					
+					$va_ordinal_exceptions =	$this->opo_language_settings->get("ordinalSuffixExceptions");
+
 					for($vn_y=$vn_s; $vn_y <= $vn_e; $vn_y+= 100) {
-						
+
 						$vn_century_num = abs(floor($vn_y/100)) + 1;
 						if ($vn_century_num == 0)  { continue; }
-						$vn_x = substr((string)$vn_century_num, strlen($vn_century_num) - 1, 1); 
-						$vs_ordinal_to_display = isset($va_ordinals[$vn_x]) ? $va_ordinals[$vn_x] : $vs_ordinal_default;
-						
+						$vn_x = substr((string)$vn_century_num, strlen($vn_century_num) - 1, 1);
+
+						if(is_array($va_ordinal_exceptions) && isset($va_ordinal_exceptions[$vn_century_num])) {
+							$vs_ordinal_to_display = $va_ordinal_exceptions[$vn_century_num];
+						} else {
+							$vs_ordinal_to_display = isset($va_ordinals[$vn_x]) ? $va_ordinals[$vn_x] : $vs_ordinal_default;
+						}
+
 						$va_values[(int)$vn_y] = ($vn_century_num).$vs_ordinal_to_display.' '.$va_century_indicators[0].((floor($vn_y/100) < 0) ? ' '.$vs_bc_indicator : '');
 					}
 				}

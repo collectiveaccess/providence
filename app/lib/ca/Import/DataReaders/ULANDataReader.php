@@ -38,7 +38,7 @@
 	require_once(__CA_LIB_DIR__.'/ca/Import/DataReaders/BaseXMLDataReader.php');
 	
 	// Pull in Guzzle library (web services client)
-	require_once(__CA_LIB_DIR__.'/vendor/autoload.php');
+	require_once(__CA_BASE_DIR__.'/vendor/autoload.php');
 	use Guzzle\Http\Client;
 
 
@@ -226,7 +226,7 @@ class ULANDataReader extends BaseXMLDataReader {
 	}
 	# -------------------------------------------------------
 	public function get($ps_spec, $pa_options=null) {
-		$vm_ret = parent::get($ps_spec, $pa_options);
+		$vm_ret = BaseDataReader::get($ps_spec, $pa_options);
 
 		if(is_array($vm_ret)) {
 			foreach($vm_ret as &$vs_val) {

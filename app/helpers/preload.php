@@ -51,7 +51,6 @@ if (isset($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) {
 
 require_once(__CA_APP_DIR__."/helpers/navigationHelpers.php");
 require_once(__CA_APP_DIR__."/helpers/mailHelpers.php");
-require_once(__CA_APP_DIR__."/helpers/clientServicesHelpers.php");
 
 require_once(__CA_LIB_DIR__."/core/ApplicationMonitor.php");
 require_once(__CA_LIB_DIR__."/core/BaseModel.php");

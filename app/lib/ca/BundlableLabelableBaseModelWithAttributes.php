@@ -399,12 +399,20 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		foreach($va_field_list as $vn_i => $vs_field) {
 			if (in_array($vs_field, array($vs_idno_fld, $vs_idno_sort_fld, $vs_pk))) { continue; }		// skip idno fields
 			$va_fld_info = $t_dupe->getFieldInfo($vs_field);
-			if($va_fld_info['FIELD_TYPE'] == FT_MEDIA) { // media deserves special treatment
-				$t_dupe->set($vs_field, $this->getMediaPath($vs_field, 'original'));
-			} else {
-				$t_dupe->set($vs_field, $this->get($this->tableName().'.'.$vs_field));
+			
+			switch($va_fld_info['FIELD_TYPE']) {
+				case FT_MEDIA:		// media deserves special treatment
+					$t_dupe->set($vs_field, $this->getMediaPath($vs_field, 'original'));
+					break;
+				case FT_VARS:
+					$t_dupe->set($vs_field, $this->get($this->tableName().'.'.$vs_field, array('unserialize' => true)));
+					break;
+				default:
+					$t_dupe->set($vs_field, $this->get($this->tableName().'.'.$vs_field));
+					break;
 			}
 		}
+		
 		$t_dupe->set($this->getTypeFieldName(), $this->getTypeID());
 		
 		// Calculate identifier using numbering plugin
@@ -570,7 +578,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *		returnAsLinkTarget = Optional link target. If any plugin implementing hookGetAsLink() responds to the specified target then the plugin will be used to generate the links rather than CA's default link generator.
 	 */
 	public function get($ps_field, $pa_options=null) {
-		if ($this->hasField($ps_field)) { return BaseModel::get($ps_field, $pa_options); }
+		$vn_s = sizeof($va_tmp = explode('.', $ps_field));
+		if ((($vn_s == 1) && ($vs_field = $ps_field)) || (($vn_s == 2) && ($va_tmp[0] == $this->TABLE) && ($vs_field = $va_tmp[1]))) {
+			if ($this->hasField($vs_field)) { return BaseModel::get($vs_field, $pa_options); }
+		}
 		if($this->_rowAsSearchResult) {
 			return $this->_rowAsSearchResult->get($ps_field, $pa_options);
 		}
@@ -1654,14 +1665,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						break;
 					# -------------------------------
 					// This bundle is only available for objects
-					case 'ca_commerce_order_history':
-						if ($vb_batch) { return null; } // not supported in batch mode
-						if (!$pa_options['request']->user->canDoAction('can_manage_clients')) { break; }
-						$vs_label_text = ($pa_bundle_settings['order_type'][0] == 'O') ? _t('Order history') : _t('Loan history');
-						$vs_element .= $this->getCommerceOrderHistoryHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
-						break;
-					# -------------------------------
-					// This bundle is only available for objects
 					case 'ca_objects_components_list':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$pa_options['request']->user->canDoAction('can_edit_ca_objects')) { break; }
@@ -2069,45 +2072,45 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				case 2:		// table_name.field_name
 				case 3:		// table_name.field_name.sub_element	
 					if (!($t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true))) { return null; }
-					
-					switch($va_tmp[1]) {
-						# --------------------
-						case 'preferred_labels':		
-						case 'nonpreferred_labels':
-							return caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
-							break;
-						# --------------------
-						default:
-							if ($va_tmp[0] != $this->tableName()) {
-								switch(sizeof($va_tmp)) {
-									case 1:
-										return caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
-									case 2:
-									case 3:
-										if (caGetOption('select', $pa_options, false)) {
-											$va_access = caGetOption('checkAccess', $pa_options, null);
-											if (!($t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true))) { return null; }
-											
-											$vs_label_display_field = $t_instance->getLabelDisplayField();
-											$qr_res = call_user_func_array($va_tmp[0].'::find', array(array('deleted' => 0, 'parent_id' => null), array('sort' => caGetOption('sort', $pa_options, $t_instance->getLabelTableName().'.'.$vs_label_display_field), 'returnAs' => 'searchResult')));
-						
-											$vs_pk = $t_instance->primaryKey();
-											$va_opts = array('-' => '');
-											while($qr_res->nextHit()) {
-												if (is_array($va_access) && !in_array($qr_res->get($va_tmp[0].'.access'), $va_access)) { continue; }
-												$va_opts[$qr_res->get($va_tmp[0].".preferred_labels.{$vs_label_display_field}")] = $qr_res->get($ps_field);
+										
+					if ($va_tmp[0] != $this->tableName()) {
+						switch(sizeof($va_tmp)) {
+							case 1:
+								return caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
+							case 2:
+							case 3:
+								if (caGetOption('select', $pa_options, false)) {
+									$va_access = caGetOption('checkAccess', $pa_options, null);
+									if (!($t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true))) { return null; }
+								
+									$vs_label_display_field = $t_instance->getLabelDisplayField();
+									$va_find_params = array('parent_id' => null);
+								
+									switch($va_tmp[0]) {
+										case 'ca_list_items':
+											if ($vs_list = caGetOption('list', $pa_options, null)) {
+												if ($vn_list_id = caGetListID($vs_list)) { $va_find_params = array('list_id' => $vn_list_id); }
 											}
-						
-											return caHTMLSelect($ps_field.($vb_as_array_element ? "[]" : ""), $va_opts, array('value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
-										} else {
-											return $t_instance->htmlFormElementForSearch($po_request, $ps_field, $pa_options);
-										}
-										break;
+											break;
+									}
+									
+									$qr_res = call_user_func_array($va_tmp[0].'::find', array($va_find_params, array('sort' => caGetOption('sort', $pa_options, $t_instance->getLabelTableName().'.'.$vs_label_display_field), 'returnAs' => 'searchResult')));
+			
+									$vs_pk = $t_instance->primaryKey();
+									$va_opts = array('-' => '');
+									while($qr_res->nextHit()) {
+										if (($va_tmp[0] == 'ca_list_items') && (!$qr_res->get('parent_id'))) { continue; }
+										if (is_array($va_access) && !in_array($qr_res->get($va_tmp[0].'.access'), $va_access)) { continue; }
+										$va_opts[$qr_res->get($va_tmp[0].".preferred_labels.{$vs_label_display_field}")] = $qr_res->get($ps_field);
+									}
+			
+									return caHTMLSelect($ps_field.($vb_as_array_element ? "[]" : ""), $va_opts, array('value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
+								} else {
+									return $t_instance->htmlFormElementForSearch($po_request, $ps_field, $pa_options);
 								}
-							}
-							break;
-						# --------------------
-					}	
+								break;
+						}
+					}
 						
 					break;
 				# -------------------------------------
@@ -3140,7 +3143,7 @@ if (!$vb_batch) {		// hierarchy moves are not supported in batch mode
 			if ($this->getPrimaryKey() && $this->HIERARCHY_PARENT_ID_FLD && ($vn_parent_id > 0)) {
 			
 				if ($vs_parent_table == $this->tableName()) {
-					$this->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id);
+					if ($vn_parent_id != $this->getPrimaryKey()) { $this->set($this->HIERARCHY_PARENT_ID_FLD, $vn_parent_id); }
 				} else {
 					if ((bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($vs_parent_table == 'ca_collections') && ($this->tableName() == 'ca_objects') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))) {
 						// link object to collection
@@ -4133,13 +4136,6 @@ if (!$vb_batch) {
 			}		
 		}
 
-		// prepopulate fields
-		$vs_prepopulate_cfg = $this->getAppConfig()->get('prepopulate_config');
-		$o_prepopulate_conf = Configuration::load($vs_prepopulate_cfg);
-		if($o_prepopulate_conf->get('prepopulate_fields_on_save')) {
-			$this->prepopulateFields(array('prepopulateConfig' => $vs_prepopulate_cfg));
-		}
-
 		if ($vb_dryrun) { $this->removeTransaction(false); }
 		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 		
@@ -4548,6 +4544,7 @@ if (!$vb_batch) {
 			}
 			$pa_options['excludeTypes'][] = $pa_options['excludeType'];
 		}
+
 		if (isset($pa_options['excludeTypes']) && is_array($pa_options['excludeTypes'])) {
 			$va_type_ids = caMakeTypeIDList($vs_related_table, $pa_options['excludeTypes']);
 
@@ -4859,6 +4856,7 @@ if (!$vb_batch) {
 					}
 
 					$vn_locale_id = $qr_res->get('locale_id');
+
 					if ($vb_use_locale_codes) {
 						$va_rels[$vs_v]['locale_id'] = $vn_locale_id = $t_locale->localeIDToCode($vn_locale_id);
 					}
@@ -4970,8 +4968,10 @@ if (!$vb_batch) {
 			
 			if ($vb_uses_relationship_types)  {
 				$va_rel_types = $t_rel->getRelationshipInfo($t_tmp->tableName());
-				$vs_left_table = $t_tmp->getLeftTableName();
-				$vs_direction = ($vs_left_table == $this->tableName()) ? 'ltor' : 'rtol';
+				if(method_exists($t_tmp, 'getLeftTableName')) {
+					$vs_left_table = $t_tmp->getLeftTableName();
+					$vs_direction = ($vs_left_table == $this->tableName()) ? 'ltor' : 'rtol';
+				}
 			}
 			$va_rels = array();
 			$vn_c = 0;
@@ -5359,21 +5359,22 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param array $pa_options Optional array of options to pass through to SearchResult::init(). If you need the search result to connect to the database with a specific database transaction you should pass the Db instance used by the transaction here in the 'db' option. Other options include:
 	 *		sort = field or attribute to sort on in <table name>.<field or attribute name> format (eg. ca_objects.idno); default is to sort on relevance (aka. sort='_natural')
 	 *		sortDirection = direction to sort results by, either 'asc' for ascending order or 'desc' for descending order; default is 'asc'
-	 *
+	 *		instance = An instance of the model for $pm_rel_table_name_or_num; if passed makeSearchResult can use it to directly extract model information potentially saving time [Default is null]
 	 * @return SearchResult A search result of for the specified table
 	 */
 	public function makeSearchResult($pm_rel_table_name_or_num, $pa_ids, $pa_options=null) {
 		if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
-		$pn_table_num = $this->getAppDatamodel()->getTableNum($pm_rel_table_name_or_num);
-		if (!($t_instance = $this->getAppDatamodel()->getInstanceByTableNum($pn_table_num))) { return null; }
-	
+		
+		if (!isset($pa_options['instance']) || !($t_instance = $pa_options['instance'])) {
+			$pn_table_num = $this->getAppDataModel()->getTableNum($pm_rel_table_name_or_num);
+			if (!($t_instance = $this->getAppDataModel()->getInstanceByTableNum($pn_table_num, true))) { return null; }
+		}
 		$va_ids = array();
 		foreach($pa_ids as $vn_id) {
 			if (is_numeric($vn_id)) { 
 				$va_ids[] = $vn_id;
 			}
 		}
-		
 		// sort?
 		if ($pa_sort = caGetOption('sort', $pa_options, null)) {
 			if (!is_array($pa_sort)) { $pa_sort = array($pa_sort); }
@@ -5381,13 +5382,11 @@ $pa_options["display_form_field_tips"] = true;
 			$vo_sort = new BaseFindEngine($this->getDb());
 			$va_ids = $vo_sort->sortHits($va_ids, $t_instance->tableName(), join(';', $pa_sort), caGetOption('sortDirection', $pa_options, 'asc'), $pa_options);
 		}
-	
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
-		require_once(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php');
+		if (!class_exists($vs_search_result_class)) { include(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php'); }
 		$o_data = new WLPlugSearchEngineCachedResult($va_ids, $t_instance->tableNum());
 		$o_res = new $vs_search_result_class($t_instance->tableName());	// we pass the table name here so generic multi-table search classes such as InterstitialSearch know what table they're operating over
 		$o_res->init($o_data, array(), $pa_options);
-		
 		return $o_res;
 	}
 	# ------------------------------------------------------------------
@@ -6362,258 +6361,6 @@ side. For many self-relations the direction determines the nature and display te
 		
 		return $va_violations;
 	 }
-	# --------------------------------------------------------------------------------------------
-	/**
-	 * Prepopulate record fields according to rules in prepopulate.conf
-	 *
-	 * @param array $pa_options Options array. Available options are:
-	 * 		prepopulateConfig = override path to prepopulate.conf, e.g. for testing purposes
-	 * @return bool success or not
-	 */
-	public function prepopulateFields($pa_options=null) {
-		if(!$this->getPrimaryKey()) { return false; }
-		if(!($vs_prepopulate_cfg = caGetOption('prepopulateConfig', $pa_options, null))) {
-			$vs_prepopulate_cfg = $this->getAppConfig()->get('prepopulate_config');
-		}
-		$o_prepopulate_conf = Configuration::load($vs_prepopulate_cfg);
-		if(!($o_prepopulate_conf->get('prepopulate_fields_on_save') || $o_prepopulate_conf->get('prepopulate_fields_on_load'))) {
-			return false;
-		}
-
-		$va_rules = $o_prepopulate_conf->get('prepopulate_rules');
-		if(!$va_rules || (!is_array($va_rules)) || (sizeof($va_rules)<1)) { return false; }
-
-		global $g_ui_locale_id;
-
-		// we need to unset the form timestamp to disable the 'Changes have been made since you loaded this data' warning when we update() $this
-		// the warning makes sense because an update()/insert() is called before we arrive here but after the form_timestamp ... but we chose to ignore it
-		$vn_timestamp = $_REQUEST['form_timestamp'];
-		unset($_REQUEST['form_timestamp']);
-
-		$vb_we_set_transaction = true;
-		if (!$this->inTransaction()) {
-			$this->setTransaction(new Transaction($this->getDb()));
-			$vb_we_set_transaction = true;
-		}
-
-		// process rules
-		$va_expression_vars = array(); // we only process those if and when we need them
-		foreach($va_rules as $vs_rule_key => $va_rule) {
-			if($this->tableName() != $va_rule['table']) { continue; }
-
-			// check target
-			$vs_target = $va_rule['target'];
-			if(strlen($vs_target)<1) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because target is not set"); continue; }
-
-			// check template
-			$vs_template = $va_rule['template'];
-			if(strlen($vs_template)<1) { Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because template is not set"); continue; }
-
-			$vs_mode = caGetOption('mode', $va_rule, 'merge');
-
-			// respect restrictToTypes option
-			if($va_rule['restrictToTypes'] && is_array($va_rule['restrictToTypes']) && (sizeof($va_rule['restrictToTypes']) > 0)) {
-				if(!in_array($this->getTypeCode(), $va_rule['restrictToTypes'])) {
-					Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because current record type ".$this->getTypeCode()." is not in restrictToTypes");
-					continue;
-				}
-			}
-
-			// skip this rule if expression is true
-			if($va_rule['skipIfExpression'] && (strlen($va_rule['skipIfExpression'])>0)) {
-				$va_tags = caGetTemplateTags($va_rule['skipIfExpression']);
-
-				foreach($va_tags as $vs_tag) {
-					if(!isset($va_expression_vars[$vs_tag])) {
-						$va_expression_vars[$vs_tag] = $this->get($vs_tag, array('returnIdno' => true, 'delimiter' => ';'));
-					}
-				}
-
-				if(ExpressionParser::evaluate($va_rule['skipIfExpression'], $va_expression_vars)) {
-					Debug::msg("[prepopulateFields()] skipping rule $vs_rule_key because skipIfExpression evaluated true");
-					continue;
-				}
-			}
-
-			// evaluate template
-			$vs_value = caProcessTemplateForIDs($vs_template, $this->tableNum(), array($this->getPrimaryKey()), array('path' => true));
-			Debug::msg("[prepopulateFields()] processed template for rule $vs_rule_key value is: ".$vs_value);
-
-			// inject into target
-			$va_parts = explode('.', $vs_target);
-// intrinsic or simple (non-container) attribute
-			if(sizeof($va_parts) == 2) {
-// intrinsic
-				if($this->hasField($va_parts[1])) {
-					switch(strtolower($vs_mode)) {
-						case 'overwrite': // always set
-							$this->set($va_parts[1], $vs_value);
-							break;
-						case 'addifempty':
-						default:
-							if(!$this->get($va_parts[1])) {
-								$this->set($va_parts[1], $vs_value);
-							} else {
-								Debug::msg("[prepopulateFields()] rule {$vs_rule_key}: intrinsic skipped because it already has value and mode is addIfEmpty or merge");
-							}
-							break;
-					}
-// attribute/element
-				} elseif($this->hasElement($va_parts[1])) {
-
-					$va_attributes = $this->getAttributesByElement($va_parts[1]);
-					if(sizeof($va_attributes)>1) {
-						Debug::msg("[prepopulateFields()] containers with multiple values are not supported");
-						continue;
-					}
-
-					switch(strtolower($vs_mode)) {
-						case 'overwrite': // always replace first value we find
-							$this->replaceAttribute(array(
-								$va_parts[1] => $vs_value,
-								'locale_id' => $g_ui_locale_id
-							), $va_parts[1]);
-							break;
-						default:
-						case 'addifempty': // only add value if none exists
-							if(!$this->get($vs_target)) {
-								$this->replaceAttribute(array(
-									$va_parts[1] => $vs_value,
-									'locale_id' => $g_ui_locale_id
-								), $va_parts[1]);
-							}
-							break;
-					}
-				}
-// "container"
-			} elseif(sizeof($va_parts)==3) {
-// actual container
-				if($this->hasElement($va_parts[1])) {
-					$va_attr = $this->getAttributesByElement($va_parts[1]);
-					switch (sizeof($va_attr)) {
-						case 1:
-							switch (strtolower($vs_mode)) {
-								case 'overwrite':
-									$vo_attr = array_pop($va_attr);
-									$va_value = array($va_parts[2] => $vs_value);
-
-									foreach ($vo_attr->getValues() as $o_val) {
-										if ($o_val->getElementCode() != $va_parts[2]) {
-											$va_value[$o_val->getElementCode()] = $o_val->getDisplayValue();
-										}
-									}
-
-									$this->_editAttribute($vo_attr->getAttributeID(), $va_value);
-									break;
-								case 'addifempty':
-									$vo_attr = array_pop($va_attr);
-									$va_value = array($va_parts[2] => $vs_value);
-									$vb_update = false;
-									foreach ($vo_attr->getValues() as $o_val) {
-										if ($o_val->getElementCode() != $va_parts[2]) {
-											$va_value[$o_val->getElementCode()] = $o_val->getDisplayValue();
-										} else {
-											if (!$o_val->getDisplayValue()) {
-												$vb_update = true;
-											}
-										}
-									}
-
-									if ($vb_update) {
-										$this->editAttribute($vo_attr->getAttributeID(), $va_parts[1], $va_value);
-									}
-									break;
-								default:
-									Debug::msg("[prepopulateFields()] unsupported mode {$vs_mode} for target bundle");
-									break;
-							}
-							break;
-						case 0: // if no container value exists, always add it (ignoring mode)
-							$this->addAttribute(array(
-								$va_parts[2] => $vs_value,
-								'locale_id' => $g_ui_locale_id
-							), $va_parts[1]);
-							break;
-						default:
-							Debug::msg("[prepopulateFields()] containers with multiple values are not supported");
-							break;
-					}
-// labels
-				} elseif($va_parts[1] == 'preferred_labels' || $va_parts[1] == 'nonpreferred_labels') {
-					$vb_preferred = ($va_parts[1] == 'preferred_labels');
-					if (!($t_label = $this->getAppDatamodel()->getInstanceByTableName($this->getLabelTableName(), true))) { continue; }
-					if(!$t_label->hasField($va_parts[2])) { continue; }
-
-					switch($this->getLabelCount($vb_preferred)) {
-						case 0: // if no value exists, always add it (ignoring mode)
-							$this->addLabel(array(
-								$va_parts[2] => $vs_value,
-							), $g_ui_locale_id, null, $vb_preferred);
-							break;
-						case 1:
-							switch (strtolower($vs_mode)) {
-								case 'overwrite':
-								case 'addifempty':
-									$va_labels = $this->getLabels(null, $vb_preferred ? __CA_LABEL_TYPE_PREFERRED__ : __CA_LABEL_TYPE_NONPREFERRED__);
-									if (sizeof($va_labels)) {
-										$va_labels = caExtractValuesByUserLocale($va_labels);
-										$va_label = array_shift($va_labels);
-										$va_label = $va_label[0];
-										$va_label[$va_parts[2]] = $vs_value;
-
-										$vb_update = false;
-										if(strtolower($vs_mode) == 'overwrite') {
-											$va_label[$va_parts[2]] = $vs_value;
-											$vb_update = true;
-										} else {
-											if(strlen(trim($va_label[$va_parts[2]])) == 0) { // in addifempty mode only edit label when field is not set
-												$va_label[$va_parts[2]] = $vs_value;
-												$vb_update = true;
-											}
-										}
-
-										if($vb_update) {
-											$this->editLabel(
-												$va_label['label_id'], $va_label, $g_ui_locale_id, null, $vb_preferred
-											);
-										}
-									} else {
-										$this->addLabel(array(
-											$va_parts[2] => $vs_value,
-										), $g_ui_locale_id, null, $vb_preferred);
-									}
-									break;
-								default:
-									Debug::msg("[prepopulateFields()] unsupported mode {$vs_mode} for target bundle");
-									break;
-							}
-							break;
-						default:
-							Debug::msg("[prepopulateFields()] records with multiple labels are not supported");
-							break;
-					}
-				}
-			}
-		}
-
-		$vn_old_mode = $this->getMode();
-		$this->setMode(ACCESS_WRITE);
-		$this->update();
-		$this->setMode($vn_old_mode);
-
-		$_REQUEST['form_timestamp'] = $vn_timestamp;
-
-		if($this->numErrors() > 0) {
-			foreach($this->getErrors() as $vs_error) {
-				Debug::msg("[prepopulateFields()] there was an error while updating the record: ".$vs_error);
-			}
-			if ($vb_we_set_transaction) { $this->removeTransaction(false); }
-			return false;
-		}
-
-		if ($vb_we_set_transaction) { $this->removeTransaction(true); }
-		return true;
-	}
 	# --------------------------------------------------------------------------------------------
 	/**
 	 * Method calls by SearchResult::get() on models when bundle to fetch is not an intrinsic but is listed in the 

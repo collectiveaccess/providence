@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2015 Whirl-i-Gig
  *
  * Portions derived from the PHP JPEG Metadata Toolkit (http://electronics.ozhiker.com)
  * Copyright 2004 Evan Hunter
@@ -212,7 +212,7 @@ class XMPParser extends BaseMediaMetadataParser {
 		if (!sizeof($va_jpeg_header_data)) {
 			$this->opo_old_metadata = null;
 		} else {
-			$this->opo_old_metadata = simplexml_load_string($this->getXMPData($va_jpeg_header_data));
+			$this->opo_old_metadata = @simplexml_load_string($this->getXMPData($va_jpeg_header_data));
 		}
 		if (is_object($this->opo_old_metadata)) {
 			$va_namespaces = $this->opo_old_metadata->getNameSpaces(true);

@@ -181,13 +181,6 @@ class BaseEditorController extends ActionController {
 		if ($vn_subject_id) {
 			// set last edited
 			$this->request->session->setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id);
-
-			// prepopulate fields
-			$vs_prepopulate_cfg = $t_subject->getAppConfig()->get('prepopulate_config');
-			$o_prepopulate_conf = Configuration::load($vs_prepopulate_cfg);
-			if($o_prepopulate_conf->get('prepopulate_fields_on_edit')) {
-				$t_subject->prepopulateFields(array('prepopulateConfig' => $vs_prepopulate_cfg));
-			}
 		}
 
 		# trigger "EditItem" hook
@@ -584,6 +577,9 @@ class BaseEditorController extends ActionController {
 
 		if (!$this->_checkAccess($t_subject)) { return false; }
 
+		if(defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
+			$this->render('../template_test_html.php');
+		}
 
 		$t_display = new ca_bundle_displays();
 		$va_displays = $t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID())));

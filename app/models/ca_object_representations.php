@@ -40,7 +40,6 @@ require_once(__CA_MODELS_DIR__."/ca_representation_annotations.php");
 require_once(__CA_MODELS_DIR__."/ca_representation_annotation_labels.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representation_multifiles.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representation_captions.php");
-require_once(__CA_MODELS_DIR__."/ca_commerce_order_items.php");
 require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
 
@@ -397,6 +396,15 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			caExtractEmbeddedMetadata($this, $va_metadata, $this->get('locale_id'));
 			
 			$vn_rc = parent::update();
+
+			// Trigger automatic replication
+			$va_auto_targets = $this->getAvailableMediaReplicationTargets('media', 'original', array('trigger' => 'auto', 'access' => $this->get('access')));
+			if(is_array($va_auto_targets)) {
+				foreach($va_auto_targets as $vs_target => $va_target_info) {
+					$this->replicateMedia('media', $vs_target);
+				}
+			}
+
 		}
 		
 		return $vn_rc;
@@ -491,6 +499,14 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			}
 		}
 		return true;
+	}
+	# ------------------------------------------------------
+	/**
+	 * The media field is mandatory for representations
+	 * @return array
+	 */
+	public function getMandatoryFields() {
+		return array_merge(parent::getMandatoryFields(), array('media'));
 	}
 	# ------------------------------------------------------
 	# Annotations
