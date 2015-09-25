@@ -106,6 +106,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			} catch (Elasticsearch\Common\Exceptions\BadRequest400Exception $e) {
 				// noop -- the exception happens when the index already exists, which is good
 			}
+
+			$this->setIndexSettings();
+
 			foreach($o_mapping->get() as $vs_table => $va_config) {
 				$this->getClient()->indices()->putMapping(array(
 					'index' => $this->getIndexName(),
@@ -114,6 +117,31 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				));
 			}
 		}
+	}
+	# -------------------------------------------------------
+	protected function setIndexSettings() {
+		$this->getClient()->indices()->close(array(
+			'index' => $this->getIndexName()
+		));
+
+		$this->getClient()->indices()->putSettings(array(
+				'index' => $this->getIndexName(),
+				'body' => array(
+					'analysis' => array(
+						'analyzer' => array(
+							'analyzer_keyword' => array(
+								'tokenizer' => 'keyword',
+								'filter' => 'lowercase'
+							)
+						)
+					)
+				)
+			)
+		);
+
+		$this->getClient()->indices()->open(array(
+			'index' => $this->getIndexName()
+		));
 	}
 	# -------------------------------------------------------
 	/**
@@ -254,6 +282,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 */
 	public function search($pn_subject_tablenum, $ps_search_expression, $pa_filters=array(), $po_rewritten_query=null) {
 		Debug::msg("[ElasticSearch] incoming search query is: {$ps_search_expression}");
+		$o_query = new ElasticSearch\Query($pn_subject_tablenum, $ps_search_expression, $po_rewritten_query, $pa_filters);
 
 		$va_search_params = [
 			'index' => $this->getIndexName(),
@@ -291,9 +320,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @return null
 	 */
 	public function indexField($pn_content_tablenum, $ps_content_fieldname, $pn_content_row_id, $pm_content, $pa_options) {
-		$o_field = new ElasticSearch\Field($pn_content_tablenum, $ps_content_fieldname, $pm_content, $pa_options);
+		$o_field = new ElasticSearch\Field($pn_content_tablenum, $ps_content_fieldname);
 
-		foreach($o_field->getIndexingFragment() as $vs_key => $vm_val) {
+		foreach($o_field->getIndexingFragment($pm_content, $pa_options) as $vs_key => $vm_val) {
 			$this->opa_doc_content_buffer[$vs_key][] = $vm_val;
 		}
 	}

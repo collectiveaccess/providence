@@ -62,17 +62,6 @@ class Field {
 	 */
 	protected $ops_content_fieldname;
 	/**
-	 * The actual field content -- can be basically any builtin type
-	 * @var mixed
-	 */
-	protected $opm_content;
-	/**
-	 * options array
-	 * @var array
-	 */
-	protected $opa_options;
-
-	/**
 	 * @var FieldTypes\FieldType
 	 */
 	protected $opo_field_type;
@@ -81,14 +70,10 @@ class Field {
 	 * Field constructor.
 	 * @param int $opn_content_tablenum
 	 * @param string $ops_indexing_fieldname
-	 * @param mixed $opm_content
-	 * @param array $opa_options
 	 */
-	public function __construct($opn_content_tablenum, $ops_indexing_fieldname, $opm_content, array $opa_options) {
+	public function __construct($opn_content_tablenum, $ops_indexing_fieldname) {
 		$this->opn_content_tablenum = $opn_content_tablenum;
 		$this->ops_indexing_fieldname = $ops_indexing_fieldname;
-		$this->opm_content = $opm_content;
-		$this->opa_options = $opa_options;
 
 		$this->ops_content_tablename = \Datamodel::load()->getTableName($this->getContentTableNum());
 
@@ -172,24 +157,12 @@ class Field {
 	}
 
 	/**
-	 * @return mixed
-	 */
-	private function getContent() {
-		return $this->opm_content;
-	}
-
-	/**
+	 * @param mixed $pm_content
+	 * @param array $pa_options
 	 * @return array
 	 */
-	public function getIndexingFragment() {
-		return $this->opo_field_type->getIndexingFragment($this->getContent());
-	}
-
-	/**
-	 * @return array
-	 */
-	private function getOptions() {
-		return $this->opa_options;
+	public function getIndexingFragment($pm_content, $pa_options=array()) {
+		return $this->opo_field_type->getIndexingFragment($pm_content);
 	}
 
 	/**
