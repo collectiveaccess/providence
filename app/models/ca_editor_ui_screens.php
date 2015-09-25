@@ -936,22 +936,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									)
 								);
 								break;
-							case 'ca_commerce_order_history':
-								$va_additional_settings = array(
-									'orderType' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_SELECT,
-										'takesLocale' => false,
-										'default' => '',
-										'options' => array(
-											_t('Sales order') => 'O',
-											_t('Loan') => 'L'
-										),
-										'label' => _t('Type of order'),
-										'description' => _t('Determines which type of order is displayed.')
-									)		
-								);
-								break;
 							case 'ca_object_representation_chooser':
 								$va_additional_settings = array(
 									'elementCode' => array(

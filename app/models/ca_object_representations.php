@@ -40,7 +40,6 @@ require_once(__CA_MODELS_DIR__."/ca_representation_annotations.php");
 require_once(__CA_MODELS_DIR__."/ca_representation_annotation_labels.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representation_multifiles.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representation_captions.php");
-require_once(__CA_MODELS_DIR__."/ca_commerce_order_items.php");
 require_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
 
 

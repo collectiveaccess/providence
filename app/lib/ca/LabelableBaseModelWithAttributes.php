@@ -593,7 +593,9 @@
 									$vm_value[$vn_i] = intval($vm_ivalue);
 								}
 							} else {
-								$vm_value = intval($vm_value);
+								if (!is_null($vm_value)) {
+									$vm_value = intval($vm_value);
+								}
 							}
 						}
 					}
@@ -640,10 +642,12 @@
 								}
 								break;
 							case 3:	// list
-								$vn_item_id = is_numeric($vm_value) ? (int)$vm_value : (int)caGetListItemID($vm_value);
+								if ($t_element = $t_instance->_getElementInstance($vs_field)) {
+									$vn_item_id = is_numeric($vm_value) ? (int)$vm_value : (int)caGetListItemID($t_element->get('list_id'), $vm_value);
 								
-								$vs_q .= "(ca_attribute_values.item_id = ?)";
-								$va_sql_params[] = $vn_item_id;
+									$vs_q .= "(ca_attribute_values.item_id = ?)";
+									$va_sql_params[] = $vn_item_id;
+								}
 								break;
 							default:
 								if (!($vs_fld = Attribute::getSortFieldForDatatype($vn_datatype))) { $vs_fld = 'value_longtext1'; }

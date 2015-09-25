@@ -626,4 +626,208 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$this->assertContains("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id2."\">Bart Simpson</a> (bs)</li></ul>", $vm_ret[1]);
 	}
 	# -------------------------------------------------------
+	public function testStringFormattingTagOpts() {
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name%toUpper=1", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("MY TEST IMAGE", $vm_ret[0]);	
+		
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name%toLower=1", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("my test image", $vm_ret[0]);	
+		
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name%toUpper&start=1&length=5", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("Y TES", $vm_ret[0]);	
+		
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name%length=10&ellipsis", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("My test...", $vm_ret[0]);	
+		
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name%length=13&ellipsis", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("My test image", $vm_ret[0]);
+		
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name%length=12&ellipsis=1", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("My test i...", $vm_ret[0]);	
+		
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name%length=11&ellipsis=1&toLower", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("my test ...", $vm_ret[0]);	
+		
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name%length=11&ellipsis=1&toLower&trim", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("my test...", $vm_ret[0]);	
+		
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name%length=11&ellipsis=0&toLower=1", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("my test ima", $vm_ret[0]);
+	}
+	# -------------------------------------------------------
+	public function testUnitStartLength() {
+		if(false){
+		// Repeating attribute
+		$vm_ret = DisplayTemplateParser::evaluate("Here are the descriptions: <unit delimiter='... ' start='0' length='1'>^ca_objects.description</unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals('Here are the descriptions: First description', $vm_ret[0]);
+		
+		$vm_ret = DisplayTemplateParser::evaluate("Here are the descriptions: <unit delimiter='... ' start='1' length='2'>^ca_objects.description</unit><whenunitomits>omit=^omitcount</whenunitomits>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret); 
+		$this->assertEquals('Here are the descriptions: Second description... Third description', $vm_ret[0]);
+
+		// Related tables
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities' delimiter=' ' start='0' length='1'>^ca_entities.preferred_labels.displayname is row ^index of ^count.</unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("Homer J. Simpson is row 1 of 2.", $vm_ret[0]);	
+		}
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities' delimiter=' ' start='1' length='1'>^ca_entities.preferred_labels.displayname is row ^index of ^count.</unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("Bart Simpson is row 2 of 2.", $vm_ret[0]);	
+		
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities' delimiter=' ' start='0' length='2'>^ca_entities.preferred_labels.displayname is row ^index of ^count.</unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("Homer J. Simpson is row 1 of 2. Bart Simpson is row 2 of 2.", $vm_ret[0]);	
+		
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities' delimiter=' ' start='1' length='2'>^ca_entities.preferred_labels.displayname</unit><whenunitomits> and ^omitcount more</whenunitomits>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("Bart Simpson and 1 more", $vm_ret[0]);	
+		
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities' delimiter=' ' start='0' length='2'>^ca_entities.preferred_labels.displayname</unit><whenunitomits> and ^omitcount more</whenunitomits>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("Homer J. Simpson Bart Simpson", $vm_ret[0]);	
+		
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities' delimiter=' ' start='0' length='1'>^ca_entities.preferred_labels.displayname</unit><whenunitomits> and ^omitcount more</whenunitomits>; <unit relativeTo='ca_entities' delimiter=' ' start='1' length='2'>^ca_entities.preferred_labels.displayname</unit><whenunitomits> and ^omitcount more</whenunitomits>; <unit relativeTo='ca_entities' delimiter=' ' start='0' length='2'>^ca_entities.preferred_labels.displayname</unit><whenunitomits> and ^omitcount more</whenunitomits>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("Homer J. Simpson and 1 more; Bart Simpson and 1 more; Homer J. Simpson Bart Simpson", $vm_ret[0]);	
+	}
+	# -------------------------------------------------------
+	public function testTemplateWithNewLines() {
+	
+		$vm_ret = DisplayTemplateParser::evaluate('<ifcount code="ca_entities" min="1"><p><strong>People</strong><br/><unit delimiter="; " relativeTo="ca_entities"><a href="/index.php/MultiSearch/Index/search/ca_entities.entity_id:^ca_entities.entity_id">^ca_entities.preferred_labels.displayname</a></unit></p></ifcount>', "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		
+		$this->assertContains("/MultiSearch/Index/search/ca_entities.entity_id:".$this->opn_entity_id1."\">Homer J. Simpson</a>", $vm_ret[0]);
+		$this->assertContains("/MultiSearch/Index/search/ca_entities.entity_id:".$this->opn_entity_id2."\">Bart Simpson</a>", $vm_ret[0]);
+		
+		
+		$vm_ret = DisplayTemplateParser::evaluate('<ifcount code="ca_entities.related" min="1">
+				<ifcount code="ca_entities.related" min="1" max="1"><img src="left1.png"><strong>Related person</strong><img src="right1.png"><br/></ifcount>
+				<ifcount code="ca_entities.related" min="2"><img src="left2.png"><strong>Related people</strong><img src="right2.png"><br/></ifcount>
+				<unit relativeTo="ca_entities.related" delimiter="<br/>"><l>^ca_entities.preferred_labels.displayname</l></unit><br/><br/>
+				</ifcount>', "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);	
+		$this->assertContains("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id1."\">Homer J. Simpson</a>", $vm_ret[0]);
+		$this->assertContains("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id2."\">Bart Simpson</a>", $vm_ret[0]);
+		$this->assertContains('<img src="left2.png" /><strong>Related people</strong><img src="right2.png" />', $vm_ret[0]);
+		
+		$vm_ret = DisplayTemplateParser::evaluate("<ifcount code=\"ca_entities\" min=\"1\">
+			<script type='text/javascript'>
+				jQuery(document).ready(function() {
+					/*
+					Carousel initialization
+					*/
+					$('.jcarousel')
+						.jcarousel({
+							// Options go here
+						});
+			
+					/*
+					 Prev control initialization
+					 */
+					$('#detailScrollButtonPrevious')
+						.on('jcarouselcontrol:active', function() {
+							$(this).removeClass('inactive');
+						})
+						.on('jcarouselcontrol:inactive', function() {
+							$(this).addClass('inactive');
+						})
+						.jcarouselControl({
+							// Options go here
+							target: '-=1'
+						});
+			
+					/*
+					 Next control initialization
+					 */
+					$('#detailScrollButtonNext')
+						.on('jcarouselcontrol:active', function() {
+							$(this).removeClass('inactive');
+						})
+						.on('jcarouselcontrol:inactive', function() {
+							$(this).addClass('inactive');
+						})
+						.jcarouselControl({
+							// Options go here
+							target: '+=1'
+						});
+				});
+			</script></ifcount>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+	
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);	
+		
+		$this->assertEquals("
+			<script type=\"text/javascript\">
+				jQuery(document).ready(function() {
+					/*
+					Carousel initialization
+					*/
+					$('.jcarousel')
+						.jcarousel({
+							// Options go here
+						});
+			
+					/*
+					 Prev control initialization
+					 */
+					$('#detailScrollButtonPrevious')
+						.on('jcarouselcontrol:active', function() {
+							$(this).removeClass('inactive');
+						})
+						.on('jcarouselcontrol:inactive', function() {
+							$(this).addClass('inactive');
+						})
+						.jcarouselControl({
+							// Options go here
+							target: '-=1'
+						});
+			
+					/*
+					 Next control initialization
+					 */
+					$('#detailScrollButtonNext')
+						.on('jcarouselcontrol:active', function() {
+							$(this).removeClass('inactive');
+						})
+						.on('jcarouselcontrol:inactive', function() {
+							$(this).addClass('inactive');
+						})
+						.jcarouselControl({
+							// Options go here
+							target: '+=1'
+						});
+				});
+			</script>", $vm_ret[0]);	
+	}
+	# -------------------------------------------------------
 }

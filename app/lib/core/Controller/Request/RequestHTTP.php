@@ -808,4 +808,20 @@ class RequestHTTP extends Request {
 		return false;
 	}
 	# ----------------------------------------
- }
+	/**
+	 * Returns a unique key identifying this request for caching purposes
+	 *
+	 * @return string
+	 */
+	public function getHash() {
+		return md5(
+			serialize($this->getParameters(array('POST', 'GET', 'REQUEST'))) .
+			$this->getRawPostData() .
+			$this->getRequestMethod() .
+			$this->getFullUrlPath() .
+			$this->getScriptName() .
+			($this->isLoggedIn() ? $this->getUserID() : '')
+		);
+	}
+	# ----------------------------------------
+}

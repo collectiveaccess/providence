@@ -813,12 +813,12 @@
 							case 'ca_object_representations':
 								if (!($vs_batch_media_directory = $t_instance->getAppConfig()->get('batch_media_import_root_directory'))) { break; }
 							
-								if(!isset($va_val['preferred_labels'])) { $va_val['preferred_labels'] = array('name' => $vs_item); }
+								if(!isset($va_val['preferred_labels'])) { $va_val['preferred_labels'] = array('name' => pathinfo($vs_item, PATHINFO_FILENAME)); }
 							
 								if (isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) && $pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] && isset($va_val['media']['media']) && ($va_val['media']['media'])) {
 									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'].'/'.$va_val['media']['media'];
 								}
-								if(!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
+								if(!isset($va_val['idno'])) { $va_val['idno'] = pathinfo($vs_item, PATHINFO_FILENAME); }
 								break;
 							default:
 								if ($o_log) { $o_log->logDebug(_t('[importHelpers:caGenericImportSplitter] Invalid table %1', $ps_table)); }

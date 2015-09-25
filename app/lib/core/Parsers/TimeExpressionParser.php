@@ -36,6 +36,7 @@
 
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
+require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 
 # --- Token types
 define("TEP_TOKEN_INTEGER", 0);
@@ -686,6 +687,14 @@ class TimeExpressionParser {
 	}
 	# -------------------------------------------------------------------
 	private function preprocess($ps_expression) {
+
+		// Trigger TimeExpressionParser preprocess hook
+		$o_app_plugin_manager = new ApplicationPluginManager();
+		$va_hook_result = $o_app_plugin_manager->hookTimeExpressionParserPreprocessBefore(array("expression"=>$ps_expression));
+		if ($va_hook_result["expression"] != $ps_expression) {
+			$ps_expression = $va_hook_result["expression"];
+		}
+
 		# convert
 		$va_dict = $this->opo_datetime_settings->getAssoc("expressions");
 		$vs_lc_expression = mb_strtolower($ps_expression);
@@ -816,6 +825,12 @@ class TimeExpressionParser {
 
 		// support date entry in the form yyyy-mm-dd/yyy-mm-dd (HSP)
 		$ps_expression = preg_replace("/([\d]{4}#[\d]{2}#[\d]{2})\/([\d]{4}#[\d]{2}#[\d]{2})/", "$1 - $2", $ps_expression);
+
+		// Trigger TimeExpressionParser preprocess hook
+		$va_hook_result = $o_app_plugin_manager->hookTimeExpressionParserPreprocessAfter(array("expression"=>$ps_expression));
+		if ($va_hook_result["expression"] != $ps_expression) {
+			$ps_expression = $va_hook_result["expression"];
+		}
 
 		return trim($ps_expression);
 	}
@@ -1594,8 +1609,20 @@ class TimeExpressionParser {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_CIRCA);
 		}
 		
-		// W3C datetime (http://www.w3.org/TR/NOTE-datetime)
+		// EXIF date
+		if (preg_match("/^([\d]{4}):([\d]{2}):([\d]{2})$/", $vs_token, $va_matches)) {
+			return(array('value' => $vs_token, 'month' => $va_matches[2], 'day' => $va_matches[3], 'year' => $va_matches[1], 'type' => TEP_TOKEN_DATE));
+		}
 		
+		// EXIF time
+		if (preg_match("/^([\d]{2}):([\d]{2}):([\d]{2}[\.]{0,1}[\d]*)$/", $vs_token, $va_matches)) {
+			// year-month
+			if ((($va_matches[1] >= 0) && ($va_matches[1] <= 23)) && (($va_matches[2] >= 0) && ($va_matches[2] <= 59))  && (($va_matches[3] >= 0) && ($va_matches[3] < 60))) {
+				return(array('value' => $vs_token, 'minutes' => $va_matches[2], 'seconds' => floor($va_matches[3]), 'hours' => $va_matches[1], 'type' => TEP_TOKEN_TIME));
+			}
+		}
+		
+		// W3C datetime (http://www.w3.org/TR/NOTE-datetime)
 		if (preg_match("/^([\d]{4})#([\d]{2})$/", $vs_token, $va_matches)) {
 			// year-month
 			if ((($va_matches[1] >= 1000) && ($va_matches[1] <= 2999)) && (($va_matches[2] >= 1) && ($va_matches[2] <= 12))) {

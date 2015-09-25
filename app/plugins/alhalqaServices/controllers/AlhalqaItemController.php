@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/controllers/lookup/DisplayTemplateController.php :
+ * app/plugins/aboutDrawingServices/controllers/AlhalqaItemController.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2015 Whirl-i-Gig
+ * Copyright 2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,27 +25,29 @@
  *
  * ----------------------------------------------------------------------
  */
-require_once(__CA_LIB_DIR__ . '/core/Controller/ActionController.php');
+ 	require_once(__CA_APP_DIR__.'/plugins/alhalqaServices/services/AlhalqaItemService.php');
+	require_once(__CA_APP_DIR__.'/service/controllers/ItemController.php');
 
-class DisplayTemplateController extends ActionController {
-	# -------------------------------------------------------
-	public function Get() {
-		$ps_template = $this->getRequest()->getParameter('template', pString);
-		$ps_table = $this->getRequest()->getParameter('table', pString);
-		$pn_id = $this->getRequest()->getParameter('id', pString);
+	class AlhalqaItemController extends ItemController {
 
-		$o_dm = Datamodel::load();
+		# -------------------------------------------------------
+		public function __call($ps_table, $pa_args) {
+			$vo_service = new AlhalqaItemService($this->request,$ps_table);
+			$va_content = $vo_service->dispatch();
 
-		$t_instance = $o_dm->getInstance($ps_table);
-		if(!($t_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
-			return false;
+			if(intval($this->request->getParameter("pretty",pInteger))>0){
+				$this->view->setVar("pretty_print",true);
+			}
+
+			if($vo_service->hasErrors()){
+				$this->view->setVar("errors",$vo_service->getErrors());
+				$this->render("json_error.php");
+			} else {
+				$this->view->setVar("content",$va_content);
+				$this->render("json.php");
+			}
 		}
+		# -------------------------------------------------------
 
-		if(!($t_instance->load($pn_id))) {
-			return false;
-		}
 
-		print @$t_instance->getWithTemplate($ps_template);
 	}
-	# -------------------------------------------------------
-}

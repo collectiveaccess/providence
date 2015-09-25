@@ -35,7 +35,6 @@
 	$va_reps 					= $this->getVar('reps');							// list of representations to display (if displaying representations)
 	
 	$t_set_item 				= $this->getVar('t_set_item');						// ca_set_items instance (if being used with selectable representations in a set item)
-	$t_order_item 				= $this->getVar('t_order_item');					// ca_commerce_order_items instance (if being used with selectable representations in an e-commerce order item)
 	
 	$va_versions 				= $this->getVar('versions');						// available media versions
 	
@@ -104,11 +103,7 @@
 			$va_selected_reps = array();
 			if ($t_set_item && ($vb_set_is_loaded = $t_set_item->getPrimaryKey())) {
 				$va_selected_reps = $t_set_item->getSelectedRepresentationIDs();
-			} else {
-				if ($t_order_item && ($vb_set_is_loaded = $t_order_item->getPrimaryKey())) {
-					$va_selected_reps = $t_order_item->getRepresentationIDs();
-				}
-			}
+			} 
 			
 			foreach($va_reps as $vn_id => $va_file) {
 				$va_pages[] = array(
@@ -328,7 +323,6 @@
 		$o_view->setVar('t_attribute_value', $t_value);
 		
 		$o_view->setVar('item_id', $t_set_item ? $t_set_item->getPrimaryKey() : null);
-		$o_view->setVar('order_item_id', $t_order_item ? $t_order_item->getPrimaryKey() : null);
 		
 		$o_view->setVar('pages', $va_pages);
 		$o_view->setVar('sections', $va_sections);

@@ -59,9 +59,9 @@
 	$va_template_tags = $va_element_ids;
 
 	$va_first = current($va_element_info);
-	$va_element_settings = $t_element->getSettings();
+	//$va_element_settings = $t_element->getSettings();
 	$vs_bundle_preview = $t_instance->getAttributesForDisplay($va_first['element_id'], null, array('showHierarchy' => true));
-	
+
 	if (sizeof($va_attribute_list)) {
 		$va_item_ids = array();
 		foreach ($va_attribute_list as $o_attr) {
