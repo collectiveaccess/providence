@@ -1925,14 +1925,17 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$va_val_list = preg_split("!(".join("|", $va_item['settings']['delimiter']).")!", $vm_val);
 						
 									// Add delimited values
+									$vn_orig_c = $vn_c;
 									foreach($va_val_list as $vs_list_val) {
 										$vs_list_val = trim(ca_data_importers::replaceValue($vs_list_val, $va_item));
 										if ($vn_max_length && (mb_strlen($vs_list_val) > $vn_max_length)) {
 											$vs_list_val = mb_substr($vs_list_val, 0, $vn_max_length);
 										}
-										$va_group_buf[$vn_c] = array($vs_item_terminal => $vs_list_val, '_errorPolicy' => $vs_item_error_policy);
+										if (!is_array($va_group_buf[$vn_c])) { $va_group_buf[$vn_c] = array(); }
+										$va_group_buf[$vn_c] = array_merge($va_group_buf[$vn_c], array($vs_item_terminal => $vs_list_val, '_errorPolicy' => $vs_item_error_policy));
 										$vn_c++;
 									}
+									$vn_c = $vn_orig_c;
 						
 									continue;	// Don't add "regular" value below
 								}

@@ -64,6 +64,9 @@
 		public function Get($pa_additional_query_params=null, $pa_options=null) {
 			header("Content-type: application/json");
 			
+			$o_config = Configuration::load();
+			$o_search_config = caGetSearchConfig();
+				
 			if (!$this->ops_search_class) { return null; }
 			$ps_query = $this->request->getParameter('term', pString); 
 			
@@ -150,6 +153,10 @@
 					}
 				}
 				
+				if (!$pb_exact) {
+					$ps_query = trim(preg_replace("![".str_replace("!", "\\!", $o_search_config->get('search_tokenizer_regex'))."]+!", " ", $ps_query));
+				}
+				
 				// do search
 				if($vs_additional_query_params || $vs_restrict_to_search) {
 					$vs_search = '('.trim($ps_query).(intval($pb_exact) ? '' : '*').')'.$vs_additional_query_params.$vs_restrict_to_search;
@@ -157,14 +164,13 @@
 					$vs_search = trim($ps_query).(intval($pb_exact) ? '' : '*');
 				}
 				
-				$qr_res = $o_search->search($vs_search, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
-		
+				$qr_res = $o_search->search($vs_search);
+				
 				$qr_res->setOption('prefetch', $pn_limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);
 				
 				$va_opts = array('exclude' => $va_excludes, 'limit' => $pn_limit);
-				$o_conf = Configuration::load();
-				if(!$pb_no_inline && ($pb_quickadd || (!strlen($pb_quickadd) && $this->request->user && $this->request->user->canDoAction('can_quickadd_'.$this->opo_item_instance->tableName()) && !((bool) $o_conf->get($this->opo_item_instance->tableName().'_disable_quickadd'))))) {
+				if(!$pb_no_inline && ($pb_quickadd || (!strlen($pb_quickadd) && $this->request->user && $this->request->user->canDoAction('can_quickadd_'.$this->opo_item_instance->tableName()) && !((bool) $o_config->get($this->opo_item_instance->tableName().'_disable_quickadd'))))) {
 					// if the lookup was restricted by search, try the lookup without the restriction
 					// so that we can notify the user that he might be about to create a duplicate
 					if((strlen($ps_restrict_to_search) > 0)) {
@@ -200,6 +206,8 @@
  		 */
  		public function GetHierarchyLevel() {
  			header("Content-type: application/json");
+ 			
+			$o_config = Configuration::load();
  			
 			$ps_bundle = (string)$this->request->getParameter('bundle', pString);
 			$pa_ids = explode(";", $ps_ids = $this->request->getParameter('id', pString));
@@ -242,7 +250,6 @@
 							$va_additional_wheres[] = "(({$vs_label_table_name}.is_preferred = 1) OR ({$vs_label_table_name}.is_preferred IS NULL))";
 						}
 						
-						$o_config = Configuration::load();
 						if (!(is_array($va_sorts = $o_config->getList($this->ops_table_name.'_hierarchy_browser_sort_values'))) || !sizeof($va_sorts)) { $va_sorts = array(); }
 						foreach($va_sorts as $vn_i => $vs_sort_fld) {
 							$va_tmp = explode(".", $vs_sort_fld);
