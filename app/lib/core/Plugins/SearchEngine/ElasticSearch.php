@@ -39,6 +39,7 @@ require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearchResult.php'
 
 require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/Field.php');
 require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/Mapping.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/Query.php');
 
 class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlugSearchEngine {
 	# -------------------------------------------------------
@@ -73,14 +74,14 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$this->ops_elasticsearch_index_name = $this->opo_search_config->get('search_elasticsearch_index_name');
 		}
 
-		if(is_writable(__CA_APP_DIR__.'/log/elasticsearch.log')) {
-			$o_logger = Elasticsearch\ClientBuilder::defaultLogger(__CA_APP_DIR__.'/log/elasticsearch.log', Monolog\Logger::DEBUG);
-		}
+//		if(is_writable(__CA_APP_DIR__.'/log/elasticsearch.log')) {
+//			$o_logger = Elasticsearch\ClientBuilder::defaultLogger(__CA_APP_DIR__.'/log/elasticsearch.log', Monolog\Logger::DEBUG);
+//		}
 
 		$this->opo_client = Elasticsearch\ClientBuilder::create()
 			->setHosts([$this->ops_elasticsearch_base_url])
 			->setRetries(2)
-			->setLogger($o_logger)
+//			->setLogger($o_logger)
 			->build();
 
 		$this->refreshMapping();
@@ -116,32 +117,11 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 					'body' => array($vs_table => $va_config)
 				));
 			}
+
+			// resets the mapping cache key so that needsRefresh() returns
+			// false for a while, depending on __CA_CACHE_TTL__
+			$o_mapping->ping();
 		}
-	}
-	# -------------------------------------------------------
-	protected function setIndexSettings() {
-		$this->getClient()->indices()->close(array(
-			'index' => $this->getIndexName()
-		));
-
-		$this->getClient()->indices()->putSettings(array(
-				'index' => $this->getIndexName(),
-				'body' => array(
-					'analysis' => array(
-						'analyzer' => array(
-							'analyzer_keyword' => array(
-								'tokenizer' => 'keyword',
-								'filter' => 'lowercase'
-							)
-						)
-					)
-				)
-			)
-		);
-
-		$this->getClient()->indices()->open(array(
-			'index' => $this->getIndexName()
-		));
 	}
 	# -------------------------------------------------------
 	/**
@@ -203,7 +183,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				$this->refreshMapping(true);
 			}
 		} else {
-			// use scoll API to find all documents in a particular mapping/table and delete them using bulk API
+			// use scoll API to find all documents in a particular mapping/table and delete them using the bulk API
 			// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-scroll.html
 			// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_search_operations.html#_scan_scroll
 
@@ -287,11 +267,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		$va_search_params = [
 			'index' => $this->getIndexName(),
 			'type' => $this->opo_datamodel->getTableName($pn_subject_tablenum),
-			'body' => [
-				'query' => [
-					'match_all' => []
-				]
-			]
+			'q' => $o_query->get()
 		];
 
 		$va_results = $this->getClient()->search($va_search_params);
@@ -397,14 +373,44 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		WLPlugSearchEngineElasticSearch::$s_doc_content_buffer = array();
 	}
 	# -------------------------------------------------------
-	public function optimizeIndex($pn_tablenum) {
-		// noop
+	/**
+	 * Set additional index-level settings like analyzers or token filters
+	 */
+	protected function setIndexSettings() {
+		$this->getClient()->indices()->close(array(
+			'index' => $this->getIndexName()
+		));
+
+		$this->getClient()->indices()->putSettings(array(
+				'index' => $this->getIndexName(),
+				'body' => array(
+					'analysis' => array(
+						'analyzer' => array(
+							'analyzer_keyword' => array(
+								'tokenizer' => 'keyword',
+								'filter' => 'lowercase'
+							)
+						)
+					)
+				)
+			)
+		);
+
+		$this->getClient()->indices()->open(array(
+			'index' => $this->getIndexName()
+		));
 	}
-	# --------------------------------------------------
+	# -------------------------------------------------------
+	public function optimizeIndex($pn_tablenum) {
+		$this->getClient()->indices()->optimize(array(
+			'index' => $this->getIndexName()
+		));
+	}
+	# -------------------------------------------------------
 	public function engineName() {
 		return 'ElasticSearch';
 	}
-	# --------------------------------------------------
+	# -------------------------------------------------------
 	/**
 	 * Performs the quickest possible search on the index for the specfied table_num in $pn_table_num
 	 * using the text in $ps_search. Unlike the search() method, quickSearch doesn't support
@@ -431,4 +437,5 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 
 		return array_flip($va_pks);
 	}
+	# -------------------------------------------------------
 }
