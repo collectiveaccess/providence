@@ -105,6 +105,66 @@ class Query {
 			//var_dump($o_subquery);
 		}
 
-		return $this->getSearchExpression();
+		$vs_search_expression = $this->getSearchExpression();
+
+		if ($vs_filter_query = $this->getFilterQuery()) {
+			$vs_search_expression = "({$vs_search_expression}) AND ({$vs_filter_query})";
+		}
+
+		return $vs_search_expression;
+	}
+
+	protected function getFilterQuery() {
+		$va_terms = array();
+		foreach($this->getFilters() as $va_filter) {
+			switch($va_filter['operator']) {
+				case '=':
+					$va_terms[] = $va_filter['field'].':'.$va_filter['value'];
+					break;
+				case '<':
+					$va_terms[] = $va_filter['field'].':{-'.pow(2,32).' TO '.$va_filter['value'].'}';
+					break;
+				case '<=':
+					$va_terms[] = $va_filter['field'].':['.pow(2,32).' TO '.$va_filter['value'].']';
+					break;
+				case '>':
+					$va_terms[] = $va_filter['field'].':{'.$va_filter['value'].' TO '.pow(2,32).'}';
+					break;
+				case '>=':
+					$va_terms[] = $va_filter['field'].':['.$va_filter['value'].' TO '.pow(2,32).']';
+					break;
+				case '<>':
+					$va_terms[] = 'NOT '.$va_filter['field'].':'.$va_filter['value'];
+					break;
+				case '-':
+					$va_tmp = explode(',', $va_filter['value']);
+					$va_terms[] = $va_filter['field'].':['.$va_tmp[0].' TO '.$va_tmp[1].']';
+					break;
+				case 'in':
+					$va_tmp = explode(',', $va_filter['value']);
+					$va_list = array();
+					foreach($va_tmp as $vs_item) {
+						// this case specifically happens when filtering list item search results by type id
+						// (if type based access control is enabled, that is). The filter is something like
+						// type_id IN 2,3,4,NULL. So we have to allow for empty values, which is a little bit
+						// different in ElasticSearch.
+						if(strtolower($vs_item) == 'null') {
+							$va_list[] = '_missing_:' . $va_filter['field'];
+						} else {
+							$va_list[] = $va_filter['field'].':'.$vs_item;
+						}
+
+					}
+
+					$va_terms[] = '('.join(' OR ', $va_list).')';
+					break;
+				default:
+				case 'is':
+				case 'is not':
+					// noop
+					break;
+			}
+		}
+		return join(' AND ', $va_terms);
 	}
 }

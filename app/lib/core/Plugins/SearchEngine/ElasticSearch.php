@@ -257,17 +257,22 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @param int $pn_subject_tablenum
 	 * @param string $ps_search_expression
 	 * @param array $pa_filters
-	 * @param null|Zend_Search_Lucene_Search_Query $po_rewritten_query
+	 * @param null|Zend_Search_Lucene_Search_Query_Boolean $po_rewritten_query
 	 * @return WLPlugSearchEngineElasticSearchResult
 	 */
 	public function search($pn_subject_tablenum, $ps_search_expression, $pa_filters=array(), $po_rewritten_query=null) {
 		Debug::msg("[ElasticSearch] incoming search query is: {$ps_search_expression}");
+		Debug::msg("[ElasticSearch] incoming query filters are: " . print_r($pa_filters, true));
+
 		$o_query = new ElasticSearch\Query($pn_subject_tablenum, $ps_search_expression, $po_rewritten_query, $pa_filters);
+		$vs_query = $o_query->get();
+
+		Debug::msg("[ElasticSearch] actual search query sent to ES: {$vs_query}");
 
 		$va_search_params = [
 			'index' => $this->getIndexName(),
 			'type' => $this->opo_datamodel->getTableName($pn_subject_tablenum),
-			'q' => $o_query->get()
+			'q' => $vs_query
 		];
 
 		$va_results = $this->getClient()->search($va_search_params);
@@ -361,6 +366,25 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 					'_id' => $vn_primary_key
 				)
 			);
+
+			$qr_res = $this->opo_db->query("
+				SELECT ccl.log_id, ccl.log_datetime, ccl.changetype, ccl.user_id
+				FROM ca_change_log ccl
+				WHERE
+					(ccl.logged_table_num = ?) AND (ccl.logged_row_id = ?)
+					AND
+					(ccl.changetype <> 'D')
+			", $this->opo_datamodel->getTableNum($vs_table_name), $vn_primary_key);
+
+			while($qr_res->nextRow()) {
+				if ($qr_res->get('changetype') == 'I') {
+					$va_doc_content_buffer["{$vs_table_name}.created"][] = date("c", $qr_res->get('log_datetime'));
+					$va_doc_content_buffer["{$vs_table_name}.created_user_id"][] = $qr_res->get('user_id');
+				} else {
+					$va_doc_content_buffer["{$vs_table_name}.modified"][] = date("c", $qr_res->get('log_datetime'));
+					$va_doc_content_buffer["{$vs_table_name}.modified_user_id"][] = $qr_res->get('user_id');
+				}
+			}
 
 			$va_bulk_params['body'][] = $va_doc_content_buffer;
 		}
