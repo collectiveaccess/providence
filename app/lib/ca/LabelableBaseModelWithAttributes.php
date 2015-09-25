@@ -133,7 +133,7 @@
 			
 			$this->opo_app_plugin_manager->hookBeforeLabelInsert(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 		
-			$vn_label_id = $t_label->insert(array('queueIndexing' => $pb_queue_indexing));
+			$vn_label_id = $t_label->insert(array('queueIndexing' => $pb_queue_indexing, 'subject' => $this));
 			
 			$this->opo_app_plugin_manager->hookAfterLabelInsert(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 		
@@ -215,7 +215,7 @@
 			
 			$this->opo_app_plugin_manager->hookBeforeLabelUpdate(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 		
-			$t_label->update(array('queueIndexing' => $pb_queue_indexing));
+			$t_label->update(array('queueIndexing' => $pb_queue_indexing, 'subject' => $this));
 			
 			$this->opo_app_plugin_manager->hookAfterLabelUpdate(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this, 'label_instance' => $t_label));
 		

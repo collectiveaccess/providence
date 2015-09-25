@@ -130,6 +130,11 @@
 				if (($vn_restrict_to_hier_id = $this->request->getParameter('currentHierarchyOnly', pInteger))) {
 					$o_object_search->addResultFilter('ca_objects.hier_object_id', '=', (int)$vn_restrict_to_hier_id);
 				}
+				
+				if (!$pb_exact) {
+					$ps_query = trim(preg_replace("![".str_replace("!", "\\!", $o_search_config->get('search_tokenizer_regex'))."]+!", " ", $ps_query));
+				}
+				
 				$qr_res = $o_object_search->search('('.$ps_query.(intval($pb_exact) ? '' : '*').')'.$vs_type_query.$vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => 'ca_objects.idno_sort'));
 				
 				$qr_res->setOption('prefetch', $pn_limit);
@@ -351,9 +356,9 @@
 						}
 						
 						if ($t_item->tableName() == 'ca_collections') {
-							$va_cross_table_items = $t_item->getRelatedItems('ca_objects');
+							$vs_object_collection_rel_type = $o_config->get('ca_objects_x_collections_hierarchy_relationship_type');
+							$va_cross_table_items = $t_item->getRelatedItems('ca_objects', array('restrictToRelationshipTypes' => array($vs_object_collection_rel_type)));
 							$vn_item_count += sizeof($va_cross_table_items);
-							
 							$va_ids = array();
 							foreach($va_cross_table_items as $vn_x_item_id => $va_x_item) {
 								$va_items['ca_objects-'.$vn_x_item_id][$va_x_item['locale_id']] = $va_x_item;
