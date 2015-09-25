@@ -580,7 +580,7 @@ class DisplayTemplateParser {
 						);
 						$vs_proc_template = array_shift($va_proc_templates);	
 					} elseif(strlen($vs_tag) && ($vs_tag[0] !=='~')) { 
-						if ($o_node->children && (sizeof($o_node->children) > 0)) {
+						if (($o_node->attributes && (sizeof($o_node->attributes) > 0)) || ($o_node->children && (sizeof($o_node->children) > 0))) {
 							$vs_attr = '';
 							if ($o_node->attributes) {
 								foreach($o_node->attributes as $attribute => $value) {
