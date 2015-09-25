@@ -351,9 +351,9 @@
 						}
 						
 						if ($t_item->tableName() == 'ca_collections') {
-							$va_cross_table_items = $t_item->getRelatedItems('ca_objects');
+							$vs_object_collection_rel_type = $o_config->get('ca_objects_x_collections_hierarchy_relationship_type');
+							$va_cross_table_items = $t_item->getRelatedItems('ca_objects', array('restrictToRelationshipTypes' => array($vs_object_collection_rel_type)));
 							$vn_item_count += sizeof($va_cross_table_items);
-							
 							$va_ids = array();
 							foreach($va_cross_table_items as $vn_x_item_id => $va_x_item) {
 								$va_items['ca_objects-'.$vn_x_item_id][$va_x_item['locale_id']] = $va_x_item;
