@@ -34,7 +34,7 @@ namespace ElasticSearch\FieldTypes;
 
 require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/FieldType.php');
 
-class GenericElement implements FieldType {
+class GenericElement extends FieldType {
 
 	/**
 	 * Metadata element code
@@ -92,10 +92,10 @@ class GenericElement implements FieldType {
 	}
 
 	/**
-	 * @param \Zend_Search_Lucene_Search_Query $po_term
-	 * @return string
+	 * @param \Zend_Search_Lucene_Index_Term $po_term
+	 * @return \Zend_Search_Lucene_Index_Term
 	 */
-	public function getQueryString($po_term) {
-		return '';
+	public function getRewrittenTerm($po_term) {
+		return $po_term;
 	}
 }

@@ -55,12 +55,4 @@ class Geocode extends GenericElement {
 
 		return $va_return;
 	}
-
-	/**
-	 * @param \Zend_Search_Lucene_Search_Query $po_term
-	 * @return string
-	 */
-	public function getQueryString($po_term) {
-		return '';
-	}
 }

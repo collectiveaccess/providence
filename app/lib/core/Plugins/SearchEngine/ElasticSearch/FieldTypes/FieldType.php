@@ -32,10 +32,56 @@
 
 namespace ElasticSearch\FieldTypes;
 
-interface FieldType {
-	public function __construct($ops_table_name, $ops_field_name);
+abstract class FieldType {
 
-	public function getIndexingFragment($pm_content);
-	public function getQueryString($po_lucene_query_element);
+	abstract public function getIndexingFragment($pm_content);
+	abstract public function getRewrittenTerm($po_term);
+
+
+	/**
+	 * @param string $ps_table
+	 * @param string $ps_content_fieldname
+	 * @return \ElasticSearch\FieldTypes\FieldType
+	 */
+	public static function getInstance($ps_table, $ps_content_fieldname) {
+
+		// if this is an indexing field name, rewrite it
+		if(preg_match("/^(I|A)[0-9]+$/", $ps_content_fieldname)) {
+
+			if ($ps_content_fieldname[0] === 'A') { // Metadata attribute
+				$vn_field_num_proc = (int)substr($ps_content_fieldname, 1);
+
+				$t_element = new \ca_metadata_elements($vn_field_num_proc);
+				if(!$t_element->getPrimaryKey()) { return null; }
+				$ps_content_fieldname = $t_element->get('element_code');
+			} else {
+				// Plain intrinsic
+				$vn_field_num_proc = (int)substr($ps_content_fieldname, 1);
+				$ps_content_fieldname = \Datamodel::load()->getFieldName($ps_table, $vn_field_num_proc);
+			}
+
+		}
+
+		if($vn_datatype = \ca_metadata_elements::getDataTypeForElementCode($ps_content_fieldname)) {
+			switch($vn_datatype) {
+				case 2:
+					return new DateRange($ps_table, $ps_content_fieldname);
+				case 4:
+					return new Geocode($ps_table, $ps_content_fieldname);
+				case 10:
+					return new Timecode($ps_table, $ps_content_fieldname);
+				case 11:
+					return new Integer($ps_table, $ps_content_fieldname);
+				case 12:
+					return new Float($ps_table, $ps_content_fieldname);
+				default:
+					return new GenericElement($ps_table, $ps_content_fieldname);
+			}
+		} else if(preg_match("/^(modified|created)(\..+)?$/", $ps_content_fieldname)) {
+			return new Timestamp($ps_table, $ps_content_fieldname);
+		} else {
+			return new Intrinsic($ps_table, $ps_content_fieldname);
+		}
+	}
 
 }

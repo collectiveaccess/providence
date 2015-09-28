@@ -32,7 +32,18 @@
 
 namespace ElasticSearch;
 
+use ElasticSearch\FieldTypes\Timestamp;
+
 require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/Field.php');
+require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
+
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/Intrinsic.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/DateRange.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/Float.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/Geocode.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/Integer.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/Timecode.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/Timestamp.php');
 
 class Query {
 
@@ -99,19 +110,67 @@ class Query {
 		return $this->opa_filters;
 	}
 
+	/**
+	 * Get a ElasticSearch-ready query as string
+	 * @return string
+	 */
 	public function get() {
 
-		foreach($this->getRewrittenQuery()->getSubqueries() as $o_subquery) {
-			//var_dump($o_subquery);
-		}
-
 		$vs_search_expression = $this->getSearchExpression();
+
+		// find terms in subqueries and run them through FieldType rewriting and then re-construct the same
+		// subqueries to replace them in the query string, taking advantage of their __toString() method
+		foreach($this->getRewrittenQuery()->getSubqueries() as $o_subquery) {
+			switch(get_class($o_subquery)) {
+				case 'Zend_Search_Lucene_Search_Query_Range':
+					/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Range */
+					$o_lower_term = $o_subquery->getLowerTerm();
+					$o_lower_fld = $this->getFieldTypeForTerm($o_lower_term);
+					$o_upper_term = $o_subquery->getUpperTerm();
+					$o_upper_fld = $this->getFieldTypeForTerm($o_upper_term);
+
+					$o_new_subquery = new \Zend_Search_Lucene_Search_Query_Range(
+						$o_lower_fld->getRewrittenTerm($o_lower_term),
+						$o_upper_fld->getRewrittenTerm($o_upper_term),
+						$o_subquery->isInclusive()
+					);
+					$vs_search_expression = str_replace((string) $o_subquery, (string) $o_new_subquery, $vs_search_expression);
+					break;
+				case 'Zend_Search_Lucene_Search_Query_Term':
+					/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Range */
+					$o_term = $o_subquery->getTerm();
+					$o_fld = $this->getFieldTypeForTerm($o_term);
+					$o_new_subquery = new \Zend_Search_Lucene_Search_Query_Term($o_fld->getRewrittenTerm($o_term));
+					$vs_search_expression = str_replace((string) $o_subquery, (string) $o_new_subquery, $vs_search_expression);
+					break;
+				case 'Zend_Search_Lucene_Search_Query_Phrase':
+					$o_new_subquery = new \Zend_Search_Lucene_Search_Query_Phrase();
+					foreach($o_subquery->getTerms() as $o_term) {
+						$o_fld = $this->getFieldTypeForTerm($o_term);
+						$o_new_subquery->addTerm($o_fld->getRewrittenTerm($o_term));
+					}
+					$vs_search_expression = str_replace((string) $o_subquery, (string) $o_new_subquery, $vs_search_expression);
+					break;
+			}
+		}
 
 		if ($vs_filter_query = $this->getFilterQuery()) {
 			$vs_search_expression = "({$vs_search_expression}) AND ({$vs_filter_query})";
 		}
 
 		return $vs_search_expression;
+	}
+
+	/**
+	 * @param \Zend_Search_Lucene_Index_Term $po_term
+	 * @return \ElasticSearch\FieldTypes\FieldType
+	 */
+	protected function getFieldTypeForTerm($po_term) {
+		$va_parts = explode('.', $po_term->field);
+		$vs_table = $va_parts[0];
+		unset($va_parts[0]);
+		$vs_fld = join('.', $va_parts);
+		return FieldTypes\FieldType::getInstance($vs_table, $vs_fld);
 	}
 
 	protected function getFilterQuery() {

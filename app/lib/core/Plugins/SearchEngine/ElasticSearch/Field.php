@@ -57,11 +57,6 @@ class Field {
 	 */
 	protected $ops_indexing_fieldname;
 	/**
-	 * Actual field name, e.g. 'type_id' or 'description'
-	 * @var string
-	 */
-	protected $ops_content_fieldname;
-	/**
 	 * @var FieldTypes\FieldType
 	 */
 	protected $opo_field_type;
@@ -73,66 +68,10 @@ class Field {
 	 */
 	public function __construct($opn_content_tablenum, $ops_indexing_fieldname) {
 		$this->opn_content_tablenum = $opn_content_tablenum;
-		$this->ops_indexing_fieldname = $ops_indexing_fieldname;
 
 		$this->ops_content_tablename = \Datamodel::load()->getTableName($this->getContentTableNum());
 
-		if ($this->getIndexingFieldName()[0] === 'A') { // Metadata attribute
-			$vn_field_num_proc = (int)substr($this->getIndexingFieldName(), 1);
-
-			if (!$va_element_info = $this->getMetadataElement($vn_field_num_proc)) { return null; }
-			$this->ops_content_fieldname = $va_element_info['element_code'];
-
-			switch($va_element_info['datatype']) {
-				case 2:
-					$this->opo_field_type = new FieldTypes\DateRange(
-						$this->getContentTableName(),
-						$this->getContentFieldName()
-					);
-					break;
-				case 4:
-					$this->opo_field_type = new FieldTypes\Geocode(
-						$this->getContentTableName(),
-						$this->getContentFieldName()
-					);
-					break;
-				case 10:
-					$this->opo_field_type = new FieldTypes\Timecode(
-						$this->getContentTableName(),
-						$this->getContentFieldName()
-					);
-					break;
-				case 11:
-					$this->opo_field_type = new FieldTypes\Integer(
-						$this->getContentTableName(),
-						$this->getContentFieldName()
-					);
-					break;
-				case 12:
-					$this->opo_field_type = new FieldTypes\Float(
-						$this->getContentTableName(),
-						$this->getContentFieldName()
-					);
-					break;
-				default:
-					$this->opo_field_type = new FieldTypes\GenericElement(
-						$this->getContentTableName(),
-						$this->getContentFieldName()
-					);
-					break;
-			}
-		} else {
-			// Plain intrinsic
-			$vn_field_num_proc = (int)substr($this->getIndexingFieldName(), 1);
-			$this->ops_content_fieldname = \Datamodel::load()->getFieldName($this->getContentTableName(), $vn_field_num_proc);
-
-			$this->opo_field_type = new FieldTypes\Intrinsic(
-				$this->getContentTableName(),
-				$this->getContentFieldName()
-			);
-		}
-
-
+		$this->opo_field_type = FieldTypes\FieldType::getInstance($this->getContentTableName(), $ops_indexing_fieldname);
 	}
 
 	/**
@@ -150,13 +89,6 @@ class Field {
 	}
 
 	/**
-	 * @return string
-	 */
-	private function getIndexingFieldName() {
-		return $this->ops_indexing_fieldname;
-	}
-
-	/**
 	 * @param mixed $pm_content
 	 * @param array $pa_options
 	 * @return array
@@ -164,31 +96,4 @@ class Field {
 	public function getIndexingFragment($pm_content, $pa_options=array()) {
 		return $this->opo_field_type->getIndexingFragment($pm_content);
 	}
-
-	/**
-	 * @return string
-	 */
-	private function getContentFieldName() {
-		return $this->ops_content_fieldname;
-	}
-
-	# --------------------------------------------------
-	/**
-	 * Get info about metadata element
-	 * @param int $pn_element_id
-	 * @return array|null
-	 */
-	private function getMetadataElement($pn_element_id) {
-		$t_element = new \ca_metadata_elements($pn_element_id);
-		if (!($vn_element_id = $t_element->getPrimaryKey())) {
-			return null;
-		}
-
-		return array(
-			'element_id' => $vn_element_id,
-			'element_code' => $t_element->get('element_code'),
-			'datatype' => $t_element->get('datatype')
-		);
-	}
-	# -------------------------------------------------------
 }

@@ -53,10 +53,6 @@ class DateRange extends GenericElement {
 		return $va_return;
 	}
 
-	public function getQueryString($po_term) {
-		return '';
-	}
-
 	/**
 	 * ElasticSearch won't accept dates where day or month is zero, so we have to
 	 * rewrite certain dates, especially when dealing with "open-ended" date ranges,

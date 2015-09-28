@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/Intrinsic.php :
+ * app/lib/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/Timestamp.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -34,7 +34,7 @@ namespace ElasticSearch\FieldTypes;
 
 require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/FieldType.php');
 
-class Intrinsic extends FieldType {
+class Timestamp extends FieldType {
 
 	/**
 	 * Table name
@@ -48,7 +48,7 @@ class Intrinsic extends FieldType {
 	protected $ops_field_name;
 
 	/**
-	 * Intrinsic constructor.
+	 * Timestamp constructor.
 	 * @param string $ops_table_name
 	 * @param string $ops_field_name
 	 */

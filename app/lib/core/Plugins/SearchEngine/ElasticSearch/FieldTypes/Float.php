@@ -45,12 +45,4 @@ class Float extends GenericElement {
 
 		return parent::getIndexingFragment((float) $pm_content);
 	}
-
-	/**
-	 * @param \Zend_Search_Lucene_Search_Query $po_term
-	 * @return string
-	 */
-	public function getQueryString($po_term) {
-		return '';
-	}
 }
