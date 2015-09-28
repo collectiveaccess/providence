@@ -66,7 +66,6 @@ class Currency extends GenericElement {
 		$va_parsed_currency = $o_curr->parseValue($po_term->text, array());
 
 		if(is_array($va_parsed_currency) && isset($va_parsed_currency['value_decimal1'])) {
-			var_dump($va_parsed_currency);
 			return new \Zend_Search_Lucene_Index_Term(
 				$va_parsed_currency['value_decimal1'].'.00',
 				$po_term->field
