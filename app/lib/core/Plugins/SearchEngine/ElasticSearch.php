@@ -368,8 +368,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			);
 
 			$qr_res = $this->opo_db->query("
-				SELECT ccl.log_id, ccl.log_datetime, ccl.changetype, ccl.user_id
+				SELECT ccl.log_id, ccl.log_datetime, ccl.changetype, u.user_name
 				FROM ca_change_log ccl
+				INNER JOIN ca_users AS u ON ccl.user_id = u.user_id
 				WHERE
 					(ccl.logged_table_num = ?) AND (ccl.logged_row_id = ?)
 					AND
@@ -379,10 +380,10 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			while($qr_res->nextRow()) {
 				if ($qr_res->get('changetype') == 'I') {
 					$va_doc_content_buffer["{$vs_table_name}.created"][] = date("c", $qr_res->get('log_datetime'));
-					$va_doc_content_buffer["{$vs_table_name}.created_user_id"][] = $qr_res->get('user_id');
+					$va_doc_content_buffer["{$vs_table_name}.created.{$qr_res->get('user_name')}"][] = date("c", $qr_res->get('log_datetime'));
 				} else {
 					$va_doc_content_buffer["{$vs_table_name}.modified"][] = date("c", $qr_res->get('log_datetime'));
-					$va_doc_content_buffer["{$vs_table_name}.modified_user_id"][] = $qr_res->get('user_id');
+					$va_doc_content_buffer["{$vs_table_name}.modified.{$qr_res->get('user_name')}"][] = date("c", $qr_res->get('log_datetime'));
 				}
 			}
 
