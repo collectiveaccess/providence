@@ -73,9 +73,8 @@ class Mapping {
 		$this->opo_search_base = new \SearchBase($this->opo_db, null, false);
 
 		$this->opa_element_info = array();
-		foreach($this->getTables() as $vs_table) {
-			$this->prefetchElementInfo($vs_table);
-		}
+
+		$this->prefetchElementInfo();
 	}
 
 	/**
@@ -83,6 +82,7 @@ class Mapping {
 	 * @return bool
 	 */
 	public function needsRefresh() {
+		return true;
 		return !\ExternalCache::contains('LastPing', 'ElasticSearchMapping');
 	}
 
@@ -168,56 +168,24 @@ class Mapping {
 	}
 
 	/**
-	 * Get all applicable element ids for a given table
-	 * @param string $ps_table
-	 * @return array
-	 */
-	public function getElementIDsForTable($ps_table) {
-		if(!$this->getDatamodel()->tableExists($ps_table)) { return array(); }
-		$va_table_fields = $this->getSearchBase()->getFieldsToIndex($ps_table);
-		if(!is_array($va_table_fields)) { return array(); }
-
-		$va_return = array();
-		foreach($va_table_fields as $vs_fld => $va_info) {
-			if (preg_match('!^_ca_attribute_([\d]*)$!', $vs_fld, $va_matches)) {
-				$va_return[] = intval($va_matches[1]);
-			}
-		}
-
-		return array_unique($va_return);
-	}
-
-	/**
-	 * Prefetch element info for given table. This is more efficient than running a db query every
+	 * Prefetch all element info. This is more efficient than running a db query every
 	 * time @see Mapping::getElementInfo() is called. Also @see $opa_element_info.
-	 * @param string $ps_table
 	 */
-	protected function prefetchElementInfo($ps_table) {
-		if(isset($this->opa_element_info[$ps_table]) && is_array($this->opa_element_info[$ps_table])) { return; }
-		if(!$this->getDatamodel()->tableExists($ps_table)) { return; }
-		$pn_table_num = $this->getDatamodel()->getTableNum($ps_table);
+	protected function prefetchElementInfo() {
+		if(is_array($this->opa_element_info) && (sizeof($this->opa_element_info) > 0)) { return; }
 
-		$va_attributes = array();
-		foreach($this->getElementIDsForTable($ps_table) as $vn_id) {
-			$qr_type_restrictions = $this->getDb()->query('
-				SELECT DISTINCT came.*
-				FROM ca_metadata_type_restrictions camtr
-				INNER JOIN ca_metadata_elements as came ON came.element_id = camtr.element_id
-				WHERE camtr.table_num = ? AND came.element_id = ?
-			',(int)$pn_table_num, $vn_id);
+		$qr_elements = $this->getDb()->query('SELECT * FROM ca_metadata_elements');
 
-			while($qr_type_restrictions->nextRow()) {
-				$vn_element_id = $qr_type_restrictions->get('element_id');
+		$this->opa_element_info = array();
+		while($qr_elements->nextRow()) {
+			$vn_element_id = $qr_elements->get('element_id');
 
-				$va_attributes[$vn_element_id] = array(
-					'element_id' => $vn_element_id,
-					'element_code' => $qr_type_restrictions->get('element_code'),
-					'datatype' => $qr_type_restrictions->get('datatype')
-				);
-			}
+			$this->opa_element_info[$vn_element_id] = array(
+				'element_id' => $vn_element_id,
+				'element_code' => $qr_elements->get('element_code'),
+				'datatype' => $qr_elements->get('datatype')
+			);
 		}
-
-		$this->opa_element_info = array_merge($this->opa_element_info, $va_attributes);
 	}
 
 	/**
@@ -261,7 +229,6 @@ class Mapping {
 		);
 
 		// @todo break this out into separate classes in the ElasticSearch\FieldTypes namespace!?
-
 		switch($pa_element_info['datatype']) {
 			case 2:	// daterange
 				$va_element_config[$ps_table.'.'.$vs_element_code]['type'] = 'date';
@@ -274,10 +241,14 @@ class Mapping {
 				$va_element_config[$ps_table.'.'.$vs_element_code.'_text'] = array('type' => 'string', 'store' => false);
 				break;
 			case 6: // currency
-			case 8: // length
-				// we may want to do range searches on those!? -> index as double and store unit separately
+				// we want to do range searches on currency too, so we gotta store the currency identified (USD) separately
 				$va_element_config[$ps_table.'.'.$vs_element_code]['type'] = 'double';
-				$va_element_config[$ps_table.'.'.$vs_element_code.'_text'] = array('type' => 'string', 'store' => false);
+				$va_element_config[$ps_table.'.'.$vs_element_code.'_currency'] = array('type' => 'string', 'store' => false);
+				break;
+			case 8: // length
+			case 9: // weight
+				// we don't index units here -- we always index in meters / kg, so it's just a float
+				$va_element_config[$ps_table.'.'.$vs_element_code]['type'] = 'double';
 				break;
 			case 10:	// timecode
 			case 12:	// numeric/float
@@ -289,7 +260,6 @@ class Mapping {
 			case 1: // text
 			case 3:	// list
 			case 5:	// url
-			case 9: // weight
 			case 13: // LCSH
 			case 14: // geonames
 			case 15: // file
