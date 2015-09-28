@@ -120,7 +120,6 @@ class Query {
 		// find terms in subqueries and run them through FieldType rewriting and then re-construct the same
 		// subqueries to replace them in the query string, taking advantage of their __toString() method
 		foreach($this->getRewrittenQuery()->getSubqueries() as $o_subquery) {
-			var_dump(get_class($o_subquery));
 			switch(get_class($o_subquery)) {
 				case 'Zend_Search_Lucene_Search_Query_Range':
 					/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Range */
@@ -174,8 +173,6 @@ class Query {
 		if ($vs_filter_query = $this->getFilterQuery()) {
 			$vs_search_expression = "({$vs_search_expression}) AND ({$vs_filter_query})";
 		}
-
-		var_dump('-------------------' . $vs_search_expression);
 
 		return $vs_search_expression;
 	}
