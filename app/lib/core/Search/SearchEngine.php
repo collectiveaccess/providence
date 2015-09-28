@@ -268,7 +268,7 @@ class SearchEngine extends SearchBase {
 					$this->opo_engine->setOption('restrictSearchToFields', $va_restrict_to_fields);
 				}
 
-				$o_res =  $this->opo_engine->search($this->opn_tablenum, $vs_search, $this->opa_result_filters, $o_rewritten_query);
+				$o_res =  $this->opo_engine->search($this->opn_tablenum, $vs_search, array_unique($this->opa_result_filters), $o_rewritten_query);
 			
 				// cache the results
 				$va_hits = $o_res->getPrimaryKeyValues($vn_limit);
