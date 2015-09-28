@@ -32,8 +32,6 @@
 
 namespace ElasticSearch;
 
-use ElasticSearch\FieldTypes\Timestamp;
-
 require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/Field.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 
@@ -113,6 +111,7 @@ class Query {
 	/**
 	 * Get a ElasticSearch-ready query as string
 	 * @return string
+	 * @throws \Exception
 	 */
 	public function get() {
 
@@ -121,6 +120,7 @@ class Query {
 		// find terms in subqueries and run them through FieldType rewriting and then re-construct the same
 		// subqueries to replace them in the query string, taking advantage of their __toString() method
 		foreach($this->getRewrittenQuery()->getSubqueries() as $o_subquery) {
+			var_dump(get_class($o_subquery));
 			switch(get_class($o_subquery)) {
 				case 'Zend_Search_Lucene_Search_Query_Range':
 					/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Range */
@@ -134,6 +134,7 @@ class Query {
 						$o_upper_fld->getRewrittenTerm($o_upper_term),
 						$o_subquery->isInclusive()
 					);
+
 					$vs_search_expression = str_replace((string) $o_subquery, (string) $o_new_subquery, $vs_search_expression);
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Term':
@@ -141,6 +142,19 @@ class Query {
 					$o_term = $o_subquery->getTerm();
 					$o_fld = $this->getFieldTypeForTerm($o_term);
 					$o_new_subquery = new \Zend_Search_Lucene_Search_Query_Term($o_fld->getRewrittenTerm($o_term));
+
+					// if there are additional terms, we have to rebuild the subquery as boolean with the new terms
+					if(($va_additional_terms = $o_fld->getAdditionalTerms($o_term)) && is_array($va_additional_terms)) {
+
+						// we cant use the index terms as is, so we have to construct term queries
+						$va_additional_term_queries = array($o_new_subquery);
+						foreach($va_additional_terms as $o_additional_term) {
+							$va_additional_term_queries[] = new \Zend_Search_Lucene_Search_Query_Term($o_additional_term);
+						}
+
+						$o_new_subquery = join(' AND ', $va_additional_term_queries);
+					}
+
 					$vs_search_expression = str_replace((string) $o_subquery, (string) $o_new_subquery, $vs_search_expression);
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Phrase':
@@ -151,12 +165,17 @@ class Query {
 					}
 					$vs_search_expression = str_replace((string) $o_subquery, (string) $o_new_subquery, $vs_search_expression);
 					break;
+				default:
+					throw new \Exception('Encountered unknown Zend query type in ElasticSearch\Query: ' . get_class($o_subquery));
+					break;
 			}
 		}
 
 		if ($vs_filter_query = $this->getFilterQuery()) {
 			$vs_search_expression = "({$vs_search_expression}) AND ({$vs_filter_query})";
 		}
+
+		var_dump('-------------------' . $vs_search_expression);
 
 		return $vs_search_expression;
 	}

@@ -32,11 +32,26 @@
 
 namespace ElasticSearch\FieldTypes;
 
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/DateRange.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/Geocode.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/Currency.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/Length.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/Weight.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/Timecode.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/Integer.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/Float.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/GenericElement.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/Intrinsic.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/Timestamp.php');
+
 abstract class FieldType {
 
 	abstract public function getIndexingFragment($pm_content);
 	abstract public function getRewrittenTerm($po_term);
 
+	public function getAdditionalTerms($po_term) {
+		return false;
+	}
 
 	/**
 	 * @param string $ps_table
@@ -68,6 +83,12 @@ abstract class FieldType {
 					return new DateRange($ps_table, $ps_content_fieldname);
 				case 4:
 					return new Geocode($ps_table, $ps_content_fieldname);
+				case 6:
+					return new Currency($ps_table, $ps_content_fieldname);
+				case 8:
+					return new Length($ps_table, $ps_content_fieldname);
+				case 9:
+					return new Weight($ps_table, $ps_content_fieldname);
 				case 10:
 					return new Timecode($ps_table, $ps_content_fieldname);
 				case 11:
