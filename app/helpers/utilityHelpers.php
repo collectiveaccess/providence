@@ -772,13 +772,24 @@ function caFileIsIncludable($ps_file) {
 	# ---------------------------------------
 	/**
 	 * Checks URL for apparent well-formedness. Return true if it looks like a valid URL, false if not. This function does
-	 * not actually connect to the URL to confirm its validity. It only validates at text content for well-formedness.
+	 * not actually connect to the URL to confirm its validity. It only validates text content for well-formedness.
+	 * By default will return true if a url is anywhere in the $ps_url parameter. Set the 'strict' option if you want to 
+	 * only return true for strings that are valid urls without any extra text.
 	 *
 	 * @param string $ps_url The URL to check
+	 * @param array $pa_options Options include:
+	 *		strict = only consider text a valid url if text contains only the url [Default is false]
 	 * @return boolean true if it appears to be valid URL, false if not
 	 */
-	function isURL($ps_url) {
-		if (preg_match("!(http|ftp|https|rtmp|rtsp|mysql):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?!", $ps_url, $va_matches)) {
+	function isURL($ps_url, $pa_options=null) {
+	
+		if (
+			caGetOption('strict', $pa_options, false)
+			?
+				preg_match("!^(http|ftp|https|rtmp|rtsp|mysql):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?$!", $ps_url, $va_matches)
+				:
+				preg_match("!(http|ftp|https|rtmp|rtsp|mysql):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?!", $ps_url, $va_matches)
+			) {
 			return array(
 				'protocol' => $va_matches[1],
 				'url' => $ps_url
