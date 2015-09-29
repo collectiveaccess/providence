@@ -37,6 +37,7 @@
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/ca/LabelableBaseModelWithAttributes.php");
 require_once(__CA_LIB_DIR__."/core/Plugins/SearchEngine/CachedResult.php");
+require_once(__CA_LIB_DIR__."/core/Search/SearchResult.php");
 
 require_once(__CA_LIB_DIR__."/ca/IDNumbering.php");
 require_once(__CA_APP_DIR__."/helpers/accessHelpers.php");
