@@ -559,12 +559,17 @@ function caFileIsIncludable($ps_file) {
 		if(mb_strlen($ps_text) > $pn_limit) {
 			$ps_text = mb_substr($ps_text, 0, $pn_limit) . " ...";
 		}
-		return json_encode(html_entity_decode($ps_text, ENT_QUOTES | ENT_HTML5));
+
+		if($ps_text = json_encode(html_entity_decode($ps_text, ENT_QUOTES | ENT_HTML5))) {
+			return $ps_text;
+		} else {
+			return '""';
+		}
 	}
 	# ----------------------------------------
 	function caSanitizeStringForJsonEncode($ps_text) {
 		// @see http://php.net/manual/en/regexp.reference.unicode.php
-		return preg_replace("/[^\p{L}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}]/", '', strip_tags($ps_text));
+		return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}]|➔/", '', strip_tags($ps_text));
 	}
 	# ----------------------------------------
 	/**
