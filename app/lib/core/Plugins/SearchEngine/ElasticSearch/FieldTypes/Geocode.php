@@ -43,17 +43,57 @@ class Geocode extends GenericElement {
 	public function getIndexingFragment($pm_content) {
 		if (is_array($pm_content)) { $pm_content = serialize($pm_content); }
 		$va_return = array();
-		return $va_return; // @todo: fix
 
 		$o_geocode_parser = new \GeocodeAttributeValue();
 
 		$va_return[$this->getTableName().'.'.$this->getElementCode().'_text'] = $pm_content;
+
+		//@see https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-geo-shape-type.html
 		if ($va_coords = $o_geocode_parser->parseValue($pm_content, array())) {
+			// Features and points within features are delimited by : and ; respectively. We have to break those apart first.
 			if (isset($va_coords['value_longtext2']) && $va_coords['value_longtext2']) {
-				$va_return[$this->getTableName().'.'.$this->getElementCode()] = explode(':', $va_coords['value_longtext2']);
+				$va_points = preg_split("[\:\;]", $va_coords['value_longtext2']);
+				// fun fact: ElasticSearch expects GeoJSON -- which has pairs of longitude, latitude.
+				// google maps and others usually return latitude, longitude
+				if(sizeof($va_points) == 1) {
+					$va_tmp = explode(',', $va_points[0]);
+					$va_return[$this->getTableName().'.'.$this->getElementCode()] = array(
+						'type' => 'point',
+						'coordinates' => array((float)$va_tmp[1],(float)$va_tmp[0])
+					);
+				} elseif(sizeof($va_points) > 1) {
+					// @todo might want to index as multipolygon to break apart features?
+					$va_coordinates_for_es = array();
+					foreach($va_points as $vs_point) {
+						$va_tmp = explode(',', $vs_point);
+						$va_coordinates_for_es[] = array((float)$va_tmp[1],(float)$va_tmp[0]);
+					}
+
+					$va_return[$this->getTableName().'.'.$this->getElementCode()] = array(
+						'type' => 'polygon',
+						'coordinates' => $va_coordinates_for_es
+					);
+				}
 			}
 		}
 
 		return $va_return;
+	}
+
+	/**
+	 * @param \Zend_Search_Lucene_Index_Term $po_term
+	 * @return \Zend_Search_Lucene_Index_Term
+	 */
+	public function getRewrittenTerm($po_term) {
+		return null;
+	}
+
+	/**
+	 * Allows implementations to add ElasticSearch query filters
+	 * @param \Zend_Search_Lucene_Index_Term $po_term
+	 * @return bool
+	 */
+	public function getQueryFilters($po_term) {
+		return false;
 	}
 }

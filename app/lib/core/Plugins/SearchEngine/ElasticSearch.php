@@ -265,15 +265,26 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		Debug::msg("[ElasticSearch] incoming query filters are: " . print_r($pa_filters, true));
 
 		$o_query = new ElasticSearch\Query($pn_subject_tablenum, $ps_search_expression, $po_rewritten_query, $pa_filters);
-		$vs_query = $o_query->get();
+		$vs_query = $o_query->getSearchExpression();
 
 		Debug::msg("[ElasticSearch] actual search query sent to ES: {$vs_query}");
 
-		$va_search_params = [
+		$va_search_params = array(
 			'index' => $this->getIndexName(),
 			'type' => $this->opo_datamodel->getTableName($pn_subject_tablenum),
-			'q' => $vs_query
-		];
+			'body' => array(
+				'query' => array(
+					'filtered' => array(
+						'query' => array(
+							'query_string' => array( 'query' => $vs_query )
+						),
+						'filter' => array(
+
+						)
+					)
+				)
+			)
+		);
 
 		$va_results = $this->getClient()->search($va_search_params);
 		return new WLPlugSearchEngineElasticSearchResult($va_results['hits']['hits'], $pn_subject_tablenum);

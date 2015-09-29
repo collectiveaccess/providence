@@ -61,10 +61,16 @@ class Query {
 	 */
 	protected $opo_rewritten_query;
 	/**
-	 * Filters
+	 * Filters set by search engine
 	 * @var array
 	 */
 	protected $opa_filters;
+
+	/**
+	 * Filters ready for ElasticSearch
+	 * @var array
+	 */
+	protected $opa_additional_filters;
 
 	/**
 	 * Query constructor.
@@ -78,6 +84,9 @@ class Query {
 		$this->ops_search_expression = $ops_search_expression;
 		$this->opo_rewritten_query = $opo_rewritten_query;
 		$this->opa_filters = $opa_filters;
+		$this->opa_additional_filters = array();
+
+		$this->rewrite();
 	}
 
 	/**
@@ -90,7 +99,7 @@ class Query {
 	/**
 	 * @return string
 	 */
-	protected function getSearchExpression() {
+	public function getSearchExpression() {
 		return $this->ops_search_expression;
 	}
 
@@ -109,12 +118,18 @@ class Query {
 	}
 
 	/**
-	 * Get a ElasticSearch-ready query as string
-	 * @return string
-	 * @throws \Exception
+	 * @return array
 	 */
-	public function get() {
+	public function getAdditionalFilters() {
+		return $this->opa_additional_filters;
+	}
 
+	/**
+	 * Rewrite query
+	 * @throws \Exception
+	 * @throws \Zend_Search_Lucene_Exception
+	 */
+	protected function rewrite() {
 		$vs_search_expression = $this->getSearchExpression();
 
 		// find terms in subqueries and run them through FieldType rewriting and then re-construct the same
@@ -128,40 +143,55 @@ class Query {
 					$o_upper_term = $o_subquery->getUpperTerm();
 					$o_upper_fld = $this->getFieldTypeForTerm($o_upper_term);
 
-					$o_new_subquery = new \Zend_Search_Lucene_Search_Query_Range(
-						$o_lower_fld->getRewrittenTerm($o_lower_term),
-						$o_upper_fld->getRewrittenTerm($o_upper_term),
-						$o_subquery->isInclusive()
-					);
+					$o_new_subquery = null;
+					if($o_lower_fld instanceof FieldTypes\Geocode) {
+						// @todo
+					} else {
+						$o_lower_rewritten_term = $o_lower_fld->getRewrittenTerm($o_lower_term);
+						$o_upper_rewritten_term = $o_upper_fld->getRewrittenTerm($o_upper_term);
 
+						if($o_lower_rewritten_term && $o_upper_rewritten_term) {
+							$o_new_subquery = new \Zend_Search_Lucene_Search_Query_Range(
+								$o_lower_fld->getRewrittenTerm($o_lower_term),
+								$o_upper_fld->getRewrittenTerm($o_upper_term),
+								$o_subquery->isInclusive()
+							);
+						}
+					}
+
+					$o_new_subquery = $this->getSubqueryWithAdditionalTerms($o_new_subquery, $o_lower_fld, $o_lower_term);
+
+					$this->addQueryFiltersForTerm($o_lower_fld, $o_lower_term);
+					$this->addQueryFiltersForTerm($o_upper_fld, $o_upper_term);
 					$vs_search_expression = str_replace((string) $o_subquery, (string) $o_new_subquery, $vs_search_expression);
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Term':
 					/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Range */
 					$o_term = $o_subquery->getTerm();
 					$o_fld = $this->getFieldTypeForTerm($o_term);
-					$o_new_subquery = new \Zend_Search_Lucene_Search_Query_Term($o_fld->getRewrittenTerm($o_term));
 
-					// if there are additional terms, we have to rebuild the subquery as boolean with the new terms
-					if(($va_additional_terms = $o_fld->getAdditionalTerms($o_term)) && is_array($va_additional_terms)) {
-
-						// we cant use the index terms as is, so we have to construct term queries
-						$va_additional_term_queries = array($o_new_subquery);
-						foreach($va_additional_terms as $o_additional_term) {
-							$va_additional_term_queries[] = new \Zend_Search_Lucene_Search_Query_Term($o_additional_term);
-						}
-
-						$o_new_subquery = join(' AND ', $va_additional_term_queries);
+					$o_new_subquery = null;
+					if($o_rewritten_term = $o_fld->getRewrittenTerm($o_term)) {
+						$o_new_subquery = new \Zend_Search_Lucene_Search_Query_Term($o_fld->getRewrittenTerm($o_term));
 					}
 
+					$o_new_subquery = $this->getSubqueryWithAdditionalTerms($o_new_subquery, $o_fld, $o_term);
+
+					$this->addQueryFiltersForTerm($o_fld, $o_term);
 					$vs_search_expression = str_replace((string) $o_subquery, (string) $o_new_subquery, $vs_search_expression);
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Phrase':
+					/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Phrase */
 					$o_new_subquery = new \Zend_Search_Lucene_Search_Query_Phrase();
 					foreach($o_subquery->getTerms() as $o_term) {
 						$o_fld = $this->getFieldTypeForTerm($o_term);
-						$o_new_subquery->addTerm($o_fld->getRewrittenTerm($o_term));
+						$this->addQueryFiltersForTerm($o_fld, $o_term);
+						if($o_rewritten_term = $o_fld->getRewrittenTerm($o_term)) {
+							$o_new_subquery->addTerm($o_rewritten_term);
+						}
 					}
+
+					$o_new_subquery = $this->getSubqueryWithAdditionalTerms($o_new_subquery, $o_fld, $o_term);
 					$vs_search_expression = str_replace((string) $o_subquery, (string) $o_new_subquery, $vs_search_expression);
 					break;
 				default:
@@ -174,7 +204,39 @@ class Query {
 			$vs_search_expression = "({$vs_search_expression}) AND ({$vs_filter_query})";
 		}
 
-		return $vs_search_expression;
+		$this->ops_search_expression = $vs_search_expression;
+	}
+
+	/**
+	 * @param FieldTypes\FieldType $po_fld
+	 * @param \Zend_Search_Lucene_Index_Term $po_term
+	 */
+	protected function addQueryFiltersForTerm($po_fld, $po_term) {
+		if(($va_query_filters = $po_fld->getQueryFilters($po_term)) && is_array($va_query_filters)) {
+			$this->opa_additional_filters = array_merge($this->opa_additional_filters, $va_query_filters);
+		}
+	}
+
+	/**
+	 * @param \Zend_Search_Lucene_Search_Query $po_original_subquery
+	 * @param FieldTypes\FieldType $po_fld
+	 * @param \Zend_Search_Lucene_Index_Term $po_term
+	 * @return string
+	 */
+	protected function getSubqueryWithAdditionalTerms($po_original_subquery, $po_fld, $po_term) {
+		if(($va_additional_terms = $po_fld->getAdditionalTerms($po_term)) && is_array($va_additional_terms)) {
+
+			// we cant use the index terms as is; have to construct term queries
+			$va_additional_term_queries = array();
+			if($po_original_subquery) { $va_additional_term_queries[] = $po_original_subquery; }
+			foreach($va_additional_terms as $o_additional_term) {
+				$va_additional_term_queries[] = new \Zend_Search_Lucene_Search_Query_Term($o_additional_term);
+			}
+
+			return join(' AND ', $va_additional_term_queries);
+		} else {
+			return (string) $po_original_subquery;
+		}
 	}
 
 	/**

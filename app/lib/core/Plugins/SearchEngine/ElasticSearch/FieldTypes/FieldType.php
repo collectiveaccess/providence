@@ -49,7 +49,21 @@ abstract class FieldType {
 	abstract public function getIndexingFragment($pm_content);
 	abstract public function getRewrittenTerm($po_term);
 
+	/**
+	 * Allows implementations to add additional terms to the query
+	 * @param \Zend_Search_Lucene_Index_Term $po_term
+	 * @return bool
+	 */
 	public function getAdditionalTerms($po_term) {
+		return false;
+	}
+
+	/**
+	 * Allows implementations to add ElasticSearch query filters
+	 * @param \Zend_Search_Lucene_Index_Term $po_term
+	 * @return bool
+	 */
+	public function getQueryFilters($po_term) {
 		return false;
 	}
 

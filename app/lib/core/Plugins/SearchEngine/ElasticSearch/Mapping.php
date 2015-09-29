@@ -237,7 +237,13 @@ class Mapping {
 				$va_element_config[$ps_table.'.'.$vs_element_code.'_text'] = array('type' => 'string', 'store' => false);
 				break;
 			case 4:	// geocode
-				$va_element_config[$ps_table.'.'.$vs_element_code]['type'] = 'geo_point';
+				//@see https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-geo-shape-type.html
+				$va_element_config[$ps_table.'.'.$vs_element_code] = array(
+					'type' => 'geo_shape',
+					'store' => false,
+					'prevision' => '3m'
+				);
+				// index text content as is -- sometimes useful for full text place search
 				$va_element_config[$ps_table.'.'.$vs_element_code.'_text'] = array('type' => 'string', 'store' => false);
 				break;
 			case 6: // currency
