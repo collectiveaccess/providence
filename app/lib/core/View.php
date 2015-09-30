@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/View.php : 
+ * app/lib/core/View.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -15,10 +15,10 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
@@ -29,44 +29,44 @@
  *
  * ----------------------------------------------------------------------
  */
- 
+
  /**
   *
   */
- 
+
 require_once(__CA_LIB_DIR__."/core/BaseObject.php");
- 
+
 class View extends BaseObject {
 	# -------------------------------------------------------
 	private $opa_view_paths;
-	
+
 	private $opa_view_vars;
 	private $opo_request;
 	private $opo_appconfig;
-	
+
 	private $ops_character_encoding;
-	
+
 	private $ops_last_render = null;
-	
+
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
 	public function __construct($po_request, $pm_path=null, $ps_character_encoding='UTF8', $pa_options=null) {
 		parent::__construct();
-		
+
 		$this->opo_request = $po_request;
 		$this->opa_view_paths = array();
 		$this->opa_view_vars = array();
-		
+
 		$this->opo_appconfig = Configuration::load();
-		
+
 		$this->ops_character_encoding = $ps_character_encoding;
-		
+
 		if (!$pm_path) { $pm_path = array(); }
-		
+
 		$vs_suffix = null;
-		if (!is_array($pm_path)) { 
+		if (!is_array($pm_path)) {
 			$pm_path = array($pm_path);
 		}
 		foreach($pm_path as $ps_path) {
@@ -78,16 +78,16 @@ class View extends BaseObject {
 				if ($vs_path_element == 'views') { break; }
 				array_push($va_suffix_bits, $vs_path_element);
 			}
-			if ($vs_suffix = join("/", $va_suffix_bits)) { $vs_suffix = '/'.$vs_suffix; break;}
+			if ($vs_suffix = join("/", array_reverse($va_suffix_bits))) { $vs_suffix = '/'.$vs_suffix; break;}
 		}
-		
+
 		if (caGetOption('includeDefaultThemePath', $pa_options, true)) {
 			$vs_default_theme_path = $po_request->getDefaultThemeDirectoryPath().'/views'.$vs_suffix;
 			if (!in_array($vs_default_theme_path, $pm_path) && !in_array($vs_default_theme_path.'/', $pm_path)) {
 				array_unshift($pm_path, $vs_default_theme_path);
 			}
 		}
-		
+
 		if (sizeof($pm_path) > 0) {
 			$this->setViewPath($pm_path);
 		}
@@ -156,7 +156,7 @@ class View extends BaseObject {
 	 *
 	 * @param string $ps_filename Filename of view
 	 * @param boolean - return true if view exists, false if not
-	 */ 
+	 */
 	public function viewExists($ps_filename) {
 		foreach(array_reverse($this->opa_view_paths) as $vs_path) {
 			if (file_exists($vs_path.'/'.$ps_filename)) {
@@ -173,12 +173,12 @@ class View extends BaseObject {
 		$vs_compiled_path = __CA_APP_DIR__."/tmp/caCompiledView".md5($ps_filepath);
 		if (!file_exists($vs_compiled_path)) { return false; }
 		if (filesize($vs_compiled_path) === 0) { return false; }
-		
+
 		// Check if template change date is newer than compiled
 		$va_view_stat = @stat($ps_filepath);
 		$va_compiled_stat = @stat($vs_compiled_path);
 		if ($va_view_stat['mtime'] > $va_compiled_stat['mtime']) { return false; }
-		
+
 		return $vs_compiled_path;
 	}
 	# -------------------------------------------------------
@@ -186,25 +186,25 @@ class View extends BaseObject {
 	 *
 	 */
 	public function compile($ps_filepath, $pb_force_recompile=false) {
-		if (!$pb_force_recompile && ($vs_compiled_path = $this->isCompiled($ps_filepath))) { 
+		if (!$pb_force_recompile && ($vs_compiled_path = $this->isCompiled($ps_filepath))) {
 			$va_tags = json_decode(file_get_contents($vs_compiled_path), true);
 			if (is_array($va_tags)) { return $va_tags; }
 		}
-		
+
 		$vs_buf = $this->_render($ps_filepath);
-		
+
 		$vs_compiled_path = __CA_APP_DIR__."/tmp/caCompiledView".md5($ps_filepath);
 		preg_match_all("!(?<=\{\{\{)(?s)(.*?)(?=\}\}\})!", $vs_buf, $va_matches);
-		
+
 		$va_tags = $va_matches[1];
-		
+
 		$vs_raw_buf = file_get_contents($ps_filepath);
 		preg_match_all("!(?<=\{\{\{)(?s)(.*?)(?=\}\}\})!", $vs_raw_buf, $va_matches);
 		$va_tags += $va_matches[1];
 		$va_tags = array_unique($va_tags);
-		
+
 		if (!is_array($va_tags)) { $va_tags = array(); }
-		
+
 		if($vs_tags = json_encode($va_tags)) {
 			file_put_contents($vs_compiled_path, $vs_tags);
 		} else {
@@ -218,9 +218,9 @@ class View extends BaseObject {
 	 */
 	public function getTagList($ps_filename) {
 		global $g_ui_locale;
-		
+
 		$vb_output = false;
-		
+
 		$va_tags = null;
 		foreach(array_reverse($this->opa_view_paths) as $vs_path) {
 			if (file_exists($vs_path.'/'.$ps_filename.".".$g_ui_locale)) {
@@ -237,7 +237,7 @@ class View extends BaseObject {
 				break;
 			}
 		}
-		
+
 		return $va_tags;
 	}
 	# -------------------------------------------------------
@@ -246,7 +246,7 @@ class View extends BaseObject {
 	 */
 	public function clearViewTagsVars($ps_filename) {
 		$va_tags = $this->getTagList($ps_filename);
-		
+
 		foreach($va_tags as $vs_tag) {
 			unset($this->opa_view_vars[$vs_tag]);
 		}
@@ -258,7 +258,7 @@ class View extends BaseObject {
 	public function render($ps_filename, $pb_dont_do_var_replacement=false, $pa_options=null) {
 		global $g_ui_locale;
 		$this->ops_last_render = null;
-		
+
 		$vb_output = false;
 		$vs_buf = null;
 		if ($ps_filename[0] == '/') { 	// absolute path
@@ -285,16 +285,16 @@ class View extends BaseObject {
 		}
 		if (!$pb_dont_do_var_replacement && $vb_output) {
 			$va_compile = $this->compile($vs_path.'/'.$ps_filename);
-			
+
 			$va_vars = $this->getAllVars();
-			
+
 			foreach($va_compile as $vs_var) {
 				$vm_val = isset($va_vars[$vs_var]) ? $va_vars[$vs_var] : '';
 				$vn_count = 0;
-				$vs_buf = str_replace('{{{'.$vs_var.'}}}', $vm_val, $vs_buf, $vn_count);				
+				$vs_buf = str_replace('{{{'.$vs_var.'}}}', $vm_val, $vs_buf, $vn_count);
 			}
 		}
-		
+
 		return $vs_buf;
 	}
 	# -------------------------------------------------------
@@ -305,9 +305,9 @@ class View extends BaseObject {
 		if ($this->ops_last_render) { return $this->ops_last_render; }
 		if (!file_exists($ps_filename)) { return null; }
 		ob_start();
-		
+
 		require($ps_filename);
-		
+
 		return $this->ops_last_render = ob_get_clean();
 	}
 	# -------------------------------------------------------
