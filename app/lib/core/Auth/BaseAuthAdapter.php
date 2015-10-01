@@ -42,7 +42,7 @@ abstract class BaseAuthAdapter implements IAuthAdapter {
 	 * @throws AuthClassFeatureException
 	 * @return string
 	 */
-	public static function createUserAndGetPassword($ps_username, $ps_password) {
+	public function createUserAndGetPassword($ps_username, $ps_password) {
 		throw new AuthClassFeatureException(_t("Authentication back-end doesn't support creating new users programmatically."));
 	}
 
@@ -54,7 +54,7 @@ abstract class BaseAuthAdapter implements IAuthAdapter {
 	 * @return array
 	 * @throws AuthClassFeatureException
 	 */
-	public static function getUserInfo($ps_username, $ps_password) {
+	public function getUserInfo($ps_username, $ps_password) {
 		throw new AuthClassFeatureException();
 	}
 
@@ -66,7 +66,7 @@ abstract class BaseAuthAdapter implements IAuthAdapter {
 	 * @throws AuthClassFeatureException
 	 * @return bool
 	 */
-	public static function deleteUser($ps_username) {
+	public function deleteUser($ps_username) {
 		throw new AuthClassFeatureException(_t("Authentication back-end doesn't support deleting users programmatically."));
 	}
 
@@ -79,7 +79,7 @@ abstract class BaseAuthAdapter implements IAuthAdapter {
 	 * @throws AuthClassFeatureException
 	 * @return string
 	 */
-	public static function updatePassword($ps_username, $ps_password) {
+	public function updatePassword($ps_username, $ps_password) {
 		throw new AuthClassFeatureException(_t("Authentication back-end doesn't updating existing users programmatically."));
 	}
 
@@ -89,7 +89,7 @@ abstract class BaseAuthAdapter implements IAuthAdapter {
 	 * @param int $pn_feature
 	 * @return bool
 	 */
-	public static function supports($pn_feature) {
+	public function supports($pn_feature) {
 		return false;
 	}
 
@@ -98,7 +98,7 @@ abstract class BaseAuthAdapter implements IAuthAdapter {
 	 *
 	 * @return false|string
 	 */
-	public static function getAccountManagementLink() {
+	public function getAccountManagementLink() {
 		return false;
 	}
 }
