@@ -96,6 +96,12 @@ class GenericElement extends FieldType {
 	 * @return \Zend_Search_Lucene_Index_Term
 	 */
 	public function getRewrittenTerm($po_term) {
-		return $po_term;
+		if(strtolower($po_term->text) === '[blank]') {
+			return new \Zend_Search_Lucene_Index_Term(
+				$po_term->field, '_missing_'
+			);
+		} else {
+			return $po_term;
+		}
 	}
 }
