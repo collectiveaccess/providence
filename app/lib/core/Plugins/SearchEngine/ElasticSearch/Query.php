@@ -144,8 +144,12 @@ class Query {
 					$o_upper_fld = $this->getFieldTypeForTerm($o_upper_term);
 
 					$o_new_subquery = null;
+					// so for Geocode range queries we actually have to build a relatively complicated filter where we have to
+					// look at both terms at once, which is why we have this special case here. we should probably streamline
+					// the API design to allow for that without a hack like this, but so far it's been the only case.
 					if($o_lower_fld instanceof FieldTypes\Geocode) {
-						// @todo
+						$this->opa_additional_filters['geo_shape'] =
+							$o_lower_fld->getFilterForRangeQuery($o_lower_term, $o_upper_term);
 					} else {
 						$o_lower_rewritten_term = $o_lower_fld->getRewrittenTerm($o_lower_term);
 						$o_upper_rewritten_term = $o_upper_fld->getRewrittenTerm($o_upper_term);
@@ -166,7 +170,7 @@ class Query {
 					$vs_search_expression = str_replace((string) $o_subquery, (string) $o_new_subquery, $vs_search_expression);
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Term':
-					/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Range */
+					/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Term */
 					$o_term = $o_subquery->getTerm();
 					$o_fld = $this->getFieldTypeForTerm($o_term);
 
@@ -185,9 +189,17 @@ class Query {
 					$o_new_subquery = new \Zend_Search_Lucene_Search_Query_Phrase();
 					foreach($o_subquery->getTerms() as $o_term) {
 						$o_fld = $this->getFieldTypeForTerm($o_term);
-						$this->addQueryFiltersForTerm($o_fld, $o_term);
-						if($o_rewritten_term = $o_fld->getRewrittenTerm($o_term)) {
-							$o_new_subquery->addTerm($o_rewritten_term);
+
+						if($o_fld instanceof FieldTypes\Geocode) {
+							$o_new_subquery = null;
+							$this->opa_additional_filters['geo_shape'] =
+								$o_fld->getFilterForPhraseQuery($o_subquery);
+							break;
+						} else {
+							$this->addQueryFiltersForTerm($o_fld, $o_term);
+							if($o_rewritten_term = $o_fld->getRewrittenTerm($o_term)) {
+								$o_new_subquery->addTerm($o_rewritten_term);
+							}
 						}
 					}
 
@@ -201,7 +213,11 @@ class Query {
 		}
 
 		if ($vs_filter_query = $this->getFilterQuery()) {
-			$vs_search_expression = "({$vs_search_expression}) AND ({$vs_filter_query})";
+			if($vs_search_expression == '()') {
+				$vs_search_expression = $vs_filter_query;
+			} else {
+				$vs_search_expression = "({$vs_search_expression}) AND ({$vs_filter_query})";
+			}
 		}
 
 		$this->ops_search_expression = $vs_search_expression;

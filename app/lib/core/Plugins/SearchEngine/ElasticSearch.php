@@ -74,14 +74,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$this->ops_elasticsearch_index_name = $this->opo_search_config->get('search_elasticsearch_index_name');
 		}
 
-//		if(is_writable(__CA_APP_DIR__.'/log/elasticsearch.log')) {
-//			$o_logger = Elasticsearch\ClientBuilder::defaultLogger(__CA_APP_DIR__.'/log/elasticsearch.log', Monolog\Logger::DEBUG);
-//		}
-
 		$this->opo_client = Elasticsearch\ClientBuilder::create()
 			->setHosts([$this->ops_elasticsearch_base_url])
 			->setRetries(2)
-//			->setLogger($o_logger)
 			->build();
 
 		$this->refreshMapping();
@@ -278,13 +273,19 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 						'query' => array(
 							'query_string' => array( 'query' => $vs_query )
 						),
-						'filter' => array(
-
-						)
+						'filter' => array() // leave empty for now, see below
 					)
 				)
 			)
 		);
+
+		// apply additional filters that may have been set by the query
+		if(($va_additional_filters = $o_query->getAdditionalFilters()) && is_array($va_additional_filters) && (sizeof($va_additional_filters) > 0)) {
+			// yeah ... the array structure is ridiculous
+			$va_search_params['body']['query']['filtered']['filter']['bool']['must'] = $va_additional_filters;
+		}
+
+		Debug::msg("[ElasticSearch] actual query filters are: " . print_r($va_additional_filters, true));
 
 		$va_results = $this->getClient()->search($va_search_params);
 		return new WLPlugSearchEngineElasticSearchResult($va_results['hits']['hits'], $pn_subject_tablenum);

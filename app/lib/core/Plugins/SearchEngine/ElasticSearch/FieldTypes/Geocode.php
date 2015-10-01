@@ -54,7 +54,7 @@ class Geocode extends GenericElement {
 			if (isset($va_coords['value_longtext2']) && $va_coords['value_longtext2']) {
 				$va_points = preg_split("[\:\;]", $va_coords['value_longtext2']);
 				// fun fact: ElasticSearch expects GeoJSON -- which has pairs of longitude, latitude.
-				// google maps and others usually return latitude, longitude
+				// google maps and others usually return latitude, longitude, which is also what we store
 				if(sizeof($va_points) == 1) {
 					$va_tmp = explode(',', $va_points[0]);
 					$va_return[$this->getTableName().'.'.$this->getElementCode()] = array(
@@ -85,15 +85,49 @@ class Geocode extends GenericElement {
 	 * @return \Zend_Search_Lucene_Index_Term
 	 */
 	public function getRewrittenTerm($po_term) {
+		// so yeah, it's impossible to query geo_shape fields in a query string in ElasticSearch. You *have to* use filters
 		return null;
 	}
 
+	public function getFilterForRangeQuery($o_lower_term, $o_upper_term) {
+		$va_return = array();
+
+		$va_lower_coords = explode(',', $o_lower_term->text);
+		$va_upper_coords = explode(',', $o_upper_term->text);
+
+		$va_return[$o_lower_term->field] = array(
+			'shape' => array(
+				'type' => 'envelope',
+				'coordinates' => array(
+					array((float) $va_lower_coords[1], (float) $va_lower_coords[0]),
+					array((float) $va_upper_coords[1], (float) $va_upper_coords[0]),
+				)
+			)
+		);
+		return $va_return;
+	}
+
 	/**
-	 * Allows implementations to add ElasticSearch query filters
-	 * @param \Zend_Search_Lucene_Index_Term $po_term
-	 * @return bool
+	 * @param \Zend_Search_Lucene_Search_Query_Phrase $o_subquery
+	 * @return mixed
 	 */
-	public function getQueryFilters($po_term) {
-		return false;
+	public function getFilterForPhraseQuery($o_subquery) {
+		$va_terms = array();
+		foreach($o_subquery->getQueryTerms() as $o_term) {
+			$va_terms[] = $o_term->text;
+		}
+
+		$va_parsed_search = caParseGISSearch(join(' ', $va_terms));
+
+		$va_return[$o_term->field] = array(
+			'shape' => array(
+				'type' => 'envelope',
+				'coordinates' => array(
+					array((float) $va_parsed_search['min_longitude'], (float) $va_parsed_search['min_latitude']),
+					array((float) $va_parsed_search['max_longitude'], (float) $va_parsed_search['max_latitude']),
+				)
+			)
+		);
+		return $va_return;
 	}
 }

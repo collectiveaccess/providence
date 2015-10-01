@@ -241,7 +241,7 @@ class Mapping {
 				$va_element_config[$ps_table.'.'.$vs_element_code] = array(
 					'type' => 'geo_shape',
 					'store' => false,
-					'prevision' => '3m'
+					'precision' => '3m'
 				);
 				// index text content as is -- sometimes useful for full text place search
 				$va_element_config[$ps_table.'.'.$vs_element_code.'_text'] = array('type' => 'string', 'store' => false);
