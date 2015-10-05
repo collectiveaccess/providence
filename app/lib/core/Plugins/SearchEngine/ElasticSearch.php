@@ -417,6 +417,12 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * Set additional index-level settings like analyzers or token filters
 	 */
 	protected function setIndexSettings() {
+		/*
+		 * Turns out we can do this without a custom analyzer.
+		 * @see https://www.elastic.co/guide/en/elasticsearch/guide/current/mapping-intro.html
+		 * and look for "not_analyzed"
+		 * We'll keep the code here for reference, just in case
+		 *
 		$this->getClient()->indices()->close(array(
 			'index' => $this->getIndexName()
 		));
@@ -438,7 +444,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 
 		$this->getClient()->indices()->open(array(
 			'index' => $this->getIndexName()
-		));
+		));*/
 	}
 	# -------------------------------------------------------
 	public function optimizeIndex($pn_tablenum) {

@@ -312,7 +312,7 @@ class Mapping {
 		}
 
 		if(in_array('DONT_TOKENIZE',$pa_indexing_config)){
-			$va_field_options[$ps_table.'.'.$vs_field_name]['analyzer'] = 'analyzer_keyword';
+			$va_field_options[$ps_table.'.'.$vs_field_name]['index'] = 'not_analyzed';
 		}
 
 		switch($t_instance->getFieldInfo($vs_field_name, 'FIELD_TYPE')){
@@ -327,8 +327,11 @@ class Mapping {
 			case (FT_TIME):
 			case (FT_TIMERANGE):
 			case (FT_TIMECODE):
-				if ($t_instance->getFieldInfo($vs_field_name, 'LIST_CODE')) {	// list-based intrinsics get indexed with both item_id and label text
+				// list-based intrinsics get indexed with both item_id and label text, like so:
+				// image Image 24 -- for a ca_objects type_id image
+				if ($t_instance->getFieldInfo($vs_field_name, 'LIST_CODE')) {
 					$va_field_options[$ps_table.'.'.$vs_field_name]['type'] = 'string';
+					$va_field_options[$ps_table.'.'.$vs_field_name]['index'] = 'analyzed';
 				} else {
 					$va_field_options[$ps_table.'.'.$vs_field_name]['type'] = 'double';
 				}
@@ -364,7 +367,7 @@ class Mapping {
 		$va_mapping_config = array();
 
 		foreach($this->getTables() as $vs_table) {
-			$va_mapping_config[$vs_table]['_source']['enabled'] = false;
+			$va_mapping_config[$vs_table]['_source']['enabled'] = true;
 			$va_mapping_config[$vs_table]['properties'] = array();
 
 			foreach($this->getFieldsToIndex($vs_table) as $vs_field => $va_indexing_info) {

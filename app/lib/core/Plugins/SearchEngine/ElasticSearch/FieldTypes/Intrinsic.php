@@ -91,6 +91,26 @@ class Intrinsic extends FieldType {
 	 */
 	public function getIndexingFragment($pm_content) {
 		if(is_array($pm_content)) { $pm_content = serialize($pm_content); }
+		if($pm_content == '') { $pm_content = null; }
+
+		$va_field_info = \Datamodel::load()->getFieldInfo($this->getTableName(), $this->getFieldName());
+
+		switch($va_field_info['FIELD_TYPE']) {
+			case (FT_BIT):
+				$pm_content = (bool) $pm_content;
+				break;
+			case (FT_NUMBER):
+			case (FT_TIME):
+			case (FT_TIMERANGE):
+			case (FT_TIMECODE):
+				if (!isset($va_field_info['LIST_CODE'])) {
+					$pm_content = (float) $pm_content;
+				}
+				break;
+			default:
+				// noop (pm_content is just pm_content)
+				break;
+		}
 
 		return array(
 			$this->getTableName() . '.' . $this->getFieldName() => $pm_content
@@ -102,6 +122,20 @@ class Intrinsic extends FieldType {
 	 * @return \Zend_Search_Lucene_Index_Term
 	 */
 	public function getRewrittenTerm($po_term) {
-		return $po_term;
+		$t_instance = \Datamodel::load()->getInstance($this->getTableName());
+
+		if((strtolower($po_term->text) === '[blank]')) {
+			if($t_instance instanceof \BaseLabel) {
+				return new \Zend_Search_Lucene_Index_Term(
+					'"'.$po_term->text.'"', $po_term->field
+				);
+			} else {
+				return new \Zend_Search_Lucene_Index_Term(
+					$po_term->field, '_missing_'
+				);
+			}
+		} else {
+			return $po_term;
+		}
 	}
 }
