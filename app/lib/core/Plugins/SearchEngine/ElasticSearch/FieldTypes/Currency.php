@@ -42,6 +42,7 @@ class Currency extends GenericElement {
 
 	public function getIndexingFragment($pm_content) {
 		if (is_array($pm_content)) { $pm_content = serialize($pm_content); }
+		if ($pm_content == '') { return parent::getIndexingFragment($pm_content); }
 
 		// we index currencys as float number and the 3-char currency code in a separate text field
 		$o_curr = new \CurrencyAttributeValue();
@@ -62,6 +63,12 @@ class Currency extends GenericElement {
 	 * @return \Zend_Search_Lucene_Index_Term
 	 */
 	public function getRewrittenTerm($po_term) {
+		if(strtolower($po_term->text) === '[blank]') {
+			return new \Zend_Search_Lucene_Index_Term(
+				$po_term->field, '_missing_'
+			);
+		}
+
 		$o_curr = new \CurrencyAttributeValue();
 		$va_parsed_currency = $o_curr->parseValue($po_term->text, array());
 

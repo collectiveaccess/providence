@@ -42,6 +42,7 @@ class Geocode extends GenericElement {
 
 	public function getIndexingFragment($pm_content) {
 		if (is_array($pm_content)) { $pm_content = serialize($pm_content); }
+		if ($pm_content == '') { return parent::getIndexingFragment($pm_content); }
 		$va_return = array();
 
 		$o_geocode_parser = new \GeocodeAttributeValue();
@@ -85,6 +86,12 @@ class Geocode extends GenericElement {
 	 * @return \Zend_Search_Lucene_Index_Term
 	 */
 	public function getRewrittenTerm($po_term) {
+		if(strtolower($po_term->text) === '[blank]') {
+			return new \Zend_Search_Lucene_Index_Term(
+				$po_term->field, '_missing_'
+			);
+		}
+
 		// so yeah, it's impossible to query geo_shape fields in a query string in ElasticSearch. You *have to* use filters
 		return null;
 	}

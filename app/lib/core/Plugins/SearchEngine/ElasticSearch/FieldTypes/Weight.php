@@ -42,6 +42,7 @@ class Weight extends GenericElement {
 
 	public function getIndexingFragment($pm_content) {
 		if (is_array($pm_content)) { $pm_content = serialize($pm_content); }
+		if ($pm_content == '') { return parent::getIndexingFragment($pm_content); }
 
 		// we index lengths as float in meters --that way we can do range searches etc.
 		try {
@@ -57,6 +58,12 @@ class Weight extends GenericElement {
 	 * @return \Zend_Search_Lucene_Index_Term
 	 */
 	public function getRewrittenTerm($po_term) {
+		if(strtolower($po_term->text) === '[blank]') {
+			return new \Zend_Search_Lucene_Index_Term(
+				$po_term->field, '_missing_'
+			);
+		}
+
 		// convert incoming text to meters so that we can query our standardized indexing (see above)
 		try {
 			return new \Zend_Search_Lucene_Index_Term(
