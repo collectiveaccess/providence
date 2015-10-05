@@ -85,6 +85,11 @@ class GenericElement extends FieldType {
 	 */
 	public function getIndexingFragment($pm_content) {
 		if(is_array($pm_content)) { $pm_content = serialize($pm_content); }
+		// make sure empty strings are indexed as null, so ElasticSearch's
+		// _missing_ and _exists_ filters work as expected. If a field type
+		// needs to have them indexed differently, it can do so in its own
+		// FieldType implementation
+		if($pm_content === '') { $pm_content = null; }
 
 		return array(
 			$this->getTableName() . '.' . $this->getElementCode() => $pm_content
