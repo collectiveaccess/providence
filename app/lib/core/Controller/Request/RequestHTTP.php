@@ -747,12 +747,19 @@ class RequestHTTP extends Request {
 			
 			//$this->user->close(); ** will be called externally **
 			$AUTH_CURRENT_USER_ID = $vn_user_id;
+
 			if ($pa_options['redirect']) {
-				$this->opo_response->addHeader("Location", $pa_options['redirect']);
-			} elseif (!$pa_options["dont_redirect_to_welcome"]) {
-				//header("Location: ".$this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_welcome_path"));				// redirect to "welcome" page
-				$this->opo_response->addHeader("Location", $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_welcome_path"));
-				//exit;
+				// redirect to specified URL
+				$this->opo_response->setRedirect($pa_options['redirect']);
+				$this->opo_response->sendResponse();
+				exit;
+			}
+
+			if (!$pa_options["dont_redirect_to_welcome"]) {
+				// redirect to "welcome" page
+				$this->opo_response->setRedirect($this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_welcome_path"));
+				$this->opo_response->sendResponse();
+				exit;
 			}
 			
 			return true;

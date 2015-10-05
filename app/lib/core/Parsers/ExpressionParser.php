@@ -128,7 +128,7 @@ class ExpressionParser {
 	 * @return array
 	 */
 	static public function getVariableList($ps_expression) {
-		return array();
+		return caGetTemplateTags($ps_expression);
 	}
 	# -------------------------------------------------------------------
 }
