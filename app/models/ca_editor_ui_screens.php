@@ -1332,7 +1332,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								break;
 							case 'ca_set_items':
 								$va_additional_settings = array(
-									'displayTemplate' => array(
+									'display_template' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
 										'default' => '',
