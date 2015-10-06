@@ -409,6 +409,10 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_indexing_documents.html#_bulk_indexing
 		$this->getClient()->bulk($va_bulk_params);
 
+		// @todo get rid of this statement -- we usually don't need indexing to be available *immediately*
+		// unless we're running automated tests in development of course :-)
+		$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
+
 		$this->opa_doc_content_buffer = array();
 		WLPlugSearchEngineElasticSearch::$s_doc_content_buffer = array();
 	}
@@ -421,7 +425,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		 * Turns out we can do this without a custom analyzer.
 		 * @see https://www.elastic.co/guide/en/elasticsearch/guide/current/mapping-intro.html
 		 * and look for "not_analyzed"
-		 * We'll keep the code here for reference, just in case
+		 * We'll keep the code here for reference, just in case.
+		 * Also, we ultimately might need other index-level settings.
 		 *
 		$this->getClient()->indices()->close(array(
 			'index' => $this->getIndexName()
