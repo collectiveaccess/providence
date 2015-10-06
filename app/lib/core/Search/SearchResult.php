@@ -1286,7 +1286,11 @@ class SearchResult extends BaseObject {
 					}
 			
 					if ($vb_return_as_array) {
-						$vm_val = self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id];
+						if($va_path_components['subfield_name']) {
+							$vm_val = [self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id][$va_path_components['subfield_name']]];
+						} else {
+							$vm_val = self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id];
+						}
 						goto filter;
 					} else {
 						$vs_subfield = $va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : 'timestamp';
@@ -1310,7 +1314,11 @@ class SearchResult extends BaseObject {
 					}
 			
 					if ($vb_return_as_array) {
-						$vm_val = self::$s_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id];
+						if($va_path_components['subfield_name']) {
+							$vm_val = [self::$s_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id][$va_path_components['subfield_name']]];
+						} else {
+							$vm_val = self::$s_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id];
+						}
 						goto filter;
 					} else {
 						$vs_subfield = $va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : 'timestamp';
