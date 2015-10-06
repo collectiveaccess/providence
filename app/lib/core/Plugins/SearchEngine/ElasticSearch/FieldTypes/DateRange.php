@@ -78,5 +78,33 @@ class DateRange extends GenericElement {
 
 		return $vs_return;
 	}
-	# -------------------------------------------------------
+
+	public function getRangeQueryForTerm($po_term) {
+		$va_parsed_values = caGetISODates($po_term->text);
+
+		$o_upper_term = new \Zend_Search_Lucene_Index_Term($this->_rewriteDate($va_parsed_values['start']), $po_term->field);
+		$o_lower_term = new \Zend_Search_Lucene_Index_Term($this->_rewriteDate($va_parsed_values['end']), $po_term->field);
+
+		return new \Zend_Search_Lucene_Search_Query_Range($o_upper_term, $o_lower_term, false);
+	}
+
+	/**
+	 * @param \Zend_Search_Lucene_Search_Query_Phrase $po_query
+	 * @return mixed
+	 */
+	public function getRangeQueryForPhraseSearch($po_query) {
+		$va_terms = array();
+		$vs_fld = null;
+		foreach($po_query->getQueryTerms() as $o_term) {
+			$vs_fld = $o_term->field;
+			$va_terms[] = $o_term->text;
+		}
+
+		$va_parsed_values = caGetISODates(join(' ', $va_terms));
+		$o_upper_term = new \Zend_Search_Lucene_Index_Term($this->_rewriteDate($va_parsed_values['start']), $vs_fld);
+		$o_lower_term = new \Zend_Search_Lucene_Index_Term($this->_rewriteDate($va_parsed_values['end']), $vs_fld);
+
+		return new \Zend_Search_Lucene_Search_Query_Range($o_upper_term, $o_lower_term, false);
+	}
+
 }

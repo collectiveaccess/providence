@@ -144,7 +144,6 @@ class Query {
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Boolean':
 					/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Boolean. */
-
 					$va_new_subqueries = array();
 					foreach($o_subquery->getSubqueries() as $o_subsubquery) {
 						$va_new_subqueries[] = $this->rewriteSubquery($o_subsubquery);
@@ -211,8 +210,12 @@ class Query {
 				$o_fld = $this->getFieldTypeForTerm($o_term);
 
 				$o_new_subquery = null;
-				if($o_rewritten_term = $o_fld->getRewrittenTerm($o_term)) {
-					$o_new_subquery = new \Zend_Search_Lucene_Search_Query_Term($o_fld->getRewrittenTerm($o_term));
+				if($o_fld instanceof FieldTypes\DateRange) {
+					$o_new_subquery = $o_fld->getRangeQueryForTerm($o_term);
+				} else {
+					if($o_rewritten_term = $o_fld->getRewrittenTerm($o_term)) {
+						$o_new_subquery = new \Zend_Search_Lucene_Search_Query_Term($o_fld->getRewrittenTerm($o_term));
+					}
 				}
 
 				return $this->getSubqueryWithAdditionalTerms($o_new_subquery, $o_fld, $o_term);
@@ -226,6 +229,10 @@ class Query {
 						$o_new_subquery = null;
 						$this->opa_additional_filters['geo_shape'] =
 							$o_fld->getFilterForPhraseQuery($o_subquery);
+						break;
+					} elseif($o_fld instanceof FieldTypes\DateRange) {
+
+						$o_new_subquery = $o_fld->getRangeQueryForPhraseSearch($o_subquery);
 						break;
 					} else {
 						if($o_rewritten_term = $o_fld->getRewrittenTerm($o_term)) {
