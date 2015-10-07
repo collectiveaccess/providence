@@ -146,6 +146,9 @@
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Setting up hierarchies")); }
 			$vo_installer->processMiscHierarchicalSetup();
 
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Performing post install tasks")); }
+			$vo_installer->performPostInstallTasks();
+
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Installation complete")); }
 
 			$vs_time = _t("Installation took %1 seconds", $t_total->getTime(0));

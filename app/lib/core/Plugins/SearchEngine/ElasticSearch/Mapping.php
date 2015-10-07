@@ -82,7 +82,6 @@ class Mapping {
 	 * @return bool
 	 */
 	public function needsRefresh() {
-		return true;
 		return !\ExternalCache::contains('LastPing', 'ElasticSearchMapping');
 	}
 
