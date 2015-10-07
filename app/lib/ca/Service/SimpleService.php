@@ -109,21 +109,33 @@ class SimpleService {
 		if(!($ps_q = $po_request->getParameter('q', pString))) {
 			throw new Exception('No query specified');
 		}
+		
+		if (($pn_limit = $po_request->getParameter('limit', pInteger)) < 1) {
+			$pn_limit = 0;
+		}
+		if (($pn_start = $po_request->getParameter('start', pInteger)) < 1) {
+			$pn_start = 0;
+		}
+		
+		$ps_sort = (isset($pa_config['sort']) && $pa_config['sort']) ? $pa_config['sort'] : $po_request->getParameter('sort', pString);
+		$ps_sort_direction = (isset($pa_config['sortDirection']) && $pa_config['sortDirection']) ? $pa_config['sortDirection'] : $po_request->getParameter('sortDirection', pString);
 
 		$o_search = caGetSearchInstance($pa_config['table']);
 
 		// restrictToTypes
 		if($pa_config['restrictToTypes'] && is_array($pa_config['restrictToTypes']) && (sizeof($pa_config['restrictToTypes']) > 0)) {
-			$va_type_filter = array();
-			foreach($pa_config['restrictToTypes'] as $vs_type_code) {
-				$va_type_filter[] = caGetListItemID($t_instance->getTypeListCode(), $vs_type_code);
-			}
-			$o_search->addResultFilter($t_instance->tableName().'.type_id', 'IN', join(",",$va_type_filter));
+			$o_search->setTypeRestrictions($pa_config['restrictToTypes']);
 		}
 
-		$o_res = $o_search->search($ps_q);
+		$o_res = $o_search->search($ps_q, ['limit' => $ps_sort ? 0 : $pn_limit, 'sort' => $ps_sort, 'sortDirection' => $ps_sort_direction]);
+		if ($pn_start > 0) { $o_res->seek($pn_start); }
 
 		$va_return = array();
+		$vn_c = 0;
+		
+		// TODO: why is template prefetching making things *SLOWER*?
+		$o_res->disableGetWithTemplatePrefetch(true);
+		
 		while($o_res->nextHit()) {
 			$va_hit = array();
 
@@ -131,7 +143,11 @@ class SimpleService {
 				$va_hit[self::sanitizeKey($vs_key)] = $o_res->getWithTemplate($vs_template);
 			}
 
-			$va_return[$o_res->get($t_instance->primaryKey(true))] = $va_hit;
+			$va_return['data'][] = $va_hit;
+			
+			$vn_c++;
+			
+			if ($vn_c == $pn_limit) { break; }
 		}
 
 		return $va_return;
