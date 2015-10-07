@@ -40,14 +40,14 @@ class Length extends GenericElement {
 		parent::__construct($ps_table_name, $ps_element_code);
 	}
 
-	public function getIndexingFragment($pm_content) {
+	public function getIndexingFragment($pm_content, $pa_options) {
 		if (is_array($pm_content)) { $pm_content = serialize($pm_content); }
-		if ($pm_content == '') { return parent::getIndexingFragment($pm_content); }
+		if ($pm_content == '') { return parent::getIndexingFragment($pm_content, $pa_options); }
 
 		// we index lengths as float in meters --that way we can do range searches etc.
 		try {
 			$o_parsed_length = caParseLengthDimension($pm_content);
-			return parent::getIndexingFragment((float) $o_parsed_length->convertTo('METER',6, 'en_US'));
+			return parent::getIndexingFragment((float) $o_parsed_length->convertTo('METER',6, 'en_US'), $pa_options);
 		} catch (\Exception $e) {
 			return array();
 		}

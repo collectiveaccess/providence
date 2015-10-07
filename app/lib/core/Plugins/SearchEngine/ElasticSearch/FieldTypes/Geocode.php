@@ -40,9 +40,9 @@ class Geocode extends GenericElement {
 		parent::__construct($ps_table_name, $ps_element_code);
 	}
 
-	public function getIndexingFragment($pm_content) {
+	public function getIndexingFragment($pm_content, $pa_options) {
 		if (is_array($pm_content)) { $pm_content = serialize($pm_content); }
-		if ($pm_content == '') { return parent::getIndexingFragment($pm_content); }
+		if ($pm_content == '') { return parent::getIndexingFragment($pm_content, $pa_options); }
 		$va_return = array();
 
 		$o_geocode_parser = new \GeocodeAttributeValue();

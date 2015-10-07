@@ -87,9 +87,10 @@ class Timestamp extends FieldType {
 
 	/**
 	 * @param mixed $pm_content
+	 * @param array $pa_options
 	 * @return array
 	 */
-	public function getIndexingFragment($pm_content) {
+	public function getIndexingFragment($pm_content, $pa_options) {
 		if(is_array($pm_content)) { $pm_content = serialize($pm_content); }
 
 		return array(

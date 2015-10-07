@@ -40,10 +40,10 @@ class Timecode extends GenericElement {
 		parent::__construct($ps_table_name, $ps_element_code);
 	}
 
-	public function getIndexingFragment($pm_content) {
+	public function getIndexingFragment($pm_content, $pa_options) {
 		if (is_array($pm_content)) { $pm_content = serialize($pm_content); }
 
-		return parent::getIndexingFragment((float) $pm_content);
+		return parent::getIndexingFragment((float) $pm_content, $pa_options);
 	}
 
 }

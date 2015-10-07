@@ -139,6 +139,7 @@ class Query {
 				case 'Zend_Search_Lucene_Search_Query_Range':
 				case 'Zend_Search_Lucene_Search_Query_Term':
 				case 'Zend_Search_Lucene_Search_Query_Phrase':
+				case 'Zend_Search_Lucene_Search_Query_MultiTerm':
 					$o_new_subquery = $this->rewriteSubquery($o_subquery);
 					$vs_search_expression = str_replace((string) $o_subquery, (string) $o_new_subquery, $vs_search_expression);
 					break;
@@ -244,6 +245,18 @@ class Query {
 					}
 				}
 
+				return $this->getSubqueryWithAdditionalTerms($o_new_subquery, $o_fld, $o_term);
+			case 'Zend_Search_Lucene_Search_Query_MultiTerm':
+				/** @var @o_subquery \Zend_Search_Lucene_Search_Query_MultiTerm */
+				$va_terms = $o_subquery->getTerms();
+
+				$va_new_terms = array();
+				foreach($va_terms as $o_term) {
+					$o_fld = $this->getFieldTypeForTerm($o_term);
+					$va_new_terms[] = $o_fld->getRewrittenTerm($o_term);
+				}
+
+				$o_new_subquery = new \Zend_Search_Lucene_Search_Query_MultiTerm($va_new_terms, $o_subquery->getSigns());
 				return $this->getSubqueryWithAdditionalTerms($o_new_subquery, $o_fld, $o_term);
 			default:
 				throw new \Exception('Encountered unknown Zend subquery type in ElasticSearch\Query: ' . get_class($o_subquery));

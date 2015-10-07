@@ -46,7 +46,7 @@ require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes
 
 abstract class FieldType {
 
-	abstract public function getIndexingFragment($pm_content);
+	abstract public function getIndexingFragment($pm_content, $pa_options);
 	abstract public function getRewrittenTerm($po_term);
 
 	/**

@@ -81,9 +81,10 @@ class GenericElement extends FieldType {
 
 	/**
 	 * @param mixed $pm_content
+	 * @param array $pa_options
 	 * @return array
 	 */
-	public function getIndexingFragment($pm_content) {
+	public function getIndexingFragment($pm_content, $pa_options) {
 		if(is_array($pm_content)) { $pm_content = serialize($pm_content); }
 		// make sure empty strings are indexed as null, so ElasticSearch's
 		// _missing_ and _exists_ filters work as expected. If a field type

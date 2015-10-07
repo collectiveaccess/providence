@@ -87,9 +87,10 @@ class Intrinsic extends FieldType {
 
 	/**
 	 * @param mixed $pm_content
+	 * @param array $pa_options
 	 * @return array
 	 */
-	public function getIndexingFragment($pm_content) {
+	public function getIndexingFragment($pm_content, $pa_options) {
 		if(is_array($pm_content)) { $pm_content = serialize($pm_content); }
 		if($pm_content == '') { $pm_content = null; }
 
@@ -112,9 +113,18 @@ class Intrinsic extends FieldType {
 				break;
 		}
 
-		return array(
+		$va_return = array(
 			$this->getTableName() . '.' . $this->getFieldName() => $pm_content
 		);
+
+		if($vn_rel_type_id = caGetOption('relationship_type_id', $pa_options)) {
+			// elasticsearch doesn't allow slashes in field names, so we use a pipe instead
+			$va_return[
+				$this->getTableName() . '.' . $this->getFieldName() . '|' . caGetRelationshipTypeCode($vn_rel_type_id)
+			] = $pm_content;
+		}
+
+		return $va_return;
 	}
 
 	/**
@@ -124,8 +134,10 @@ class Intrinsic extends FieldType {
 	public function getRewrittenTerm($po_term) {
 		$t_instance = \Datamodel::load()->getInstance($this->getTableName());
 
+		$va_field_components = explode('.', $po_term->field);
+
 		if((strtolower($po_term->text) === '[blank]')) {
-			if($t_instance instanceof \BaseLabel) {
+			if($t_instance instanceof \BaseLabel) { // labels usually have actual [BLANK] values
 				return new \Zend_Search_Lucene_Index_Term(
 					'"'.$po_term->text.'"', $po_term->field
 				);
@@ -134,8 +146,22 @@ class Intrinsic extends FieldType {
 					$po_term->field, '_missing_'
 				);
 			}
-		} else {
-			return $po_term;
+		} elseif(stripos($po_term->field, '/') !== false) {
+			// elasticsearch doesn't allow slashes in field names, so we use a pipe instead.
+			// rewrite ca_entity_labels.displayname/creator to ca_entity_labels.displayname|creator here
+			// note that there are (hopefully) no other cases where we need slashes
+			return new \Zend_Search_Lucene_Index_Term(
+				$po_term->text, str_replace('/', '|', $po_term->field)
+			);
+		} elseif(
+			isset($va_field_components[1]) &&
+			($t_instance->getProperty('ID_NUMBERING_ID_FIELD') == $va_field_components[1])
+		) {
+			return new \Zend_Search_Lucene_Index_Term(
+				'"'.$po_term->text.'"', $po_term->field
+			);
 		}
+
+		return $po_term;
 	}
 }

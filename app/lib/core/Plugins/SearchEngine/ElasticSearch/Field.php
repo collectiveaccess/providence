@@ -32,6 +32,8 @@
 
 namespace ElasticSearch;
 
+require_once(__CA_APP_DIR__.'/helpers/listHelpers.php');
+
 class Field {
 
 	/**
@@ -87,6 +89,6 @@ class Field {
 	 * @return array
 	 */
 	public function getIndexingFragment($pm_content, $pa_options=array()) {
-		return $this->opo_field_type->getIndexingFragment($pm_content);
+		return $this->opo_field_type->getIndexingFragment($pm_content, $pa_options);
 	}
 }
