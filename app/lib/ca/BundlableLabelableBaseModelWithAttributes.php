@@ -37,6 +37,7 @@
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/ca/LabelableBaseModelWithAttributes.php");
 require_once(__CA_LIB_DIR__."/core/Plugins/SearchEngine/CachedResult.php");
+require_once(__CA_LIB_DIR__."/core/Search/SearchResult.php");
 
 require_once(__CA_LIB_DIR__."/ca/IDNumbering.php");
 require_once(__CA_APP_DIR__."/helpers/accessHelpers.php");
@@ -1662,14 +1663,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$this->representationIsOfClass("video")) { return ''; }
 						$vs_element .= $this->getCaptionHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
-						break;
-					# -------------------------------
-					// This bundle is only available for objects
-					case 'ca_commerce_order_history':
-						if ($vb_batch) { return null; } // not supported in batch mode
-						if (!$pa_options['request']->user->canDoAction('can_manage_clients')) { break; }
-						$vs_label_text = ($pa_bundle_settings['order_type'][0] == 'O') ? _t('Order history') : _t('Loan history');
-						$vs_element .= $this->getCommerceOrderHistoryHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
 					# -------------------------------
 					// This bundle is only available for objects
@@ -5367,21 +5360,22 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param array $pa_options Optional array of options to pass through to SearchResult::init(). If you need the search result to connect to the database with a specific database transaction you should pass the Db instance used by the transaction here in the 'db' option. Other options include:
 	 *		sort = field or attribute to sort on in <table name>.<field or attribute name> format (eg. ca_objects.idno); default is to sort on relevance (aka. sort='_natural')
 	 *		sortDirection = direction to sort results by, either 'asc' for ascending order or 'desc' for descending order; default is 'asc'
-	 *
+	 *		instance = An instance of the model for $pm_rel_table_name_or_num; if passed makeSearchResult can use it to directly extract model information potentially saving time [Default is null]
 	 * @return SearchResult A search result of for the specified table
 	 */
 	public function makeSearchResult($pm_rel_table_name_or_num, $pa_ids, $pa_options=null) {
 		if (!is_array($pa_ids) || !sizeof($pa_ids)) { return null; }
-		$pn_table_num = $this->getAppDatamodel()->getTableNum($pm_rel_table_name_or_num);
-		if (!($t_instance = $this->getAppDatamodel()->getInstanceByTableNum($pn_table_num))) { return null; }
-	
+		
+		if (!isset($pa_options['instance']) || !($t_instance = $pa_options['instance'])) {
+			$pn_table_num = $this->getAppDataModel()->getTableNum($pm_rel_table_name_or_num);
+			if (!($t_instance = $this->getAppDataModel()->getInstanceByTableNum($pn_table_num, true))) { return null; }
+		}
 		$va_ids = array();
 		foreach($pa_ids as $vn_id) {
 			if (is_numeric($vn_id)) { 
 				$va_ids[] = $vn_id;
 			}
 		}
-		
 		// sort?
 		if ($pa_sort = caGetOption('sort', $pa_options, null)) {
 			if (!is_array($pa_sort)) { $pa_sort = array($pa_sort); }
@@ -5389,13 +5383,11 @@ $pa_options["display_form_field_tips"] = true;
 			$vo_sort = new BaseFindEngine($this->getDb());
 			$va_ids = $vo_sort->sortHits($va_ids, $t_instance->tableName(), join(';', $pa_sort), caGetOption('sortDirection', $pa_options, 'asc'), $pa_options);
 		}
-	
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
-		require_once(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php');
+		if (!class_exists($vs_search_result_class)) { include(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php'); }
 		$o_data = new WLPlugSearchEngineCachedResult($va_ids, $t_instance->tableNum());
 		$o_res = new $vs_search_result_class($t_instance->tableName());	// we pass the table name here so generic multi-table search classes such as InterstitialSearch know what table they're operating over
 		$o_res->init($o_data, array(), $pa_options);
-		
 		return $o_res;
 	}
 	# ------------------------------------------------------------------

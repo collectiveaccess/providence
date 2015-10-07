@@ -1700,9 +1700,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					foreach($va_items as $vn_item_id => $va_item) {
 						if ($vb_use_as_single_value = caGetOption('useAsSingleValue', $va_item['settings'], false)) {
 							// Force repeating values to be imported as a single value
-							$va_vals = array(ca_data_importers::getValueFromSource($va_item, $o_reader, array('delimiter' => caGetOption('delimiter', $va_item['settings'], ''), 'returnAsArray' => false, 'lookahead' => caGetOption('lookahead', $va_item['settings'], 0))));
+							$va_vals = array(ca_data_importers::getValueFromSource($va_item, $o_reader, array('delimiter' => caGetOption('delimiter', $va_item['settings'], ''), 'returnAsArray' => false, 'lookahead' => caGetOption('lookahead', $va_item['settings'], 0), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $va_item['settings'], null))));
 						} else {
-							$va_vals = ca_data_importers::getValueFromSource($va_item, $o_reader, array('returnAsArray' => true, 'environment' => $va_environment, 'lookahead' => caGetOption('lookahead', $va_item['settings'], 0)));
+							$va_vals = ca_data_importers::getValueFromSource($va_item, $o_reader, array('returnAsArray' => true, 'environment' => $va_environment, 'lookahead' => caGetOption('lookahead', $va_item['settings'], 0), 'restrictToRelationshipTypes' => caGetOption('restrictToRelationshipTypes', $va_item['settings'], null)));
 						}
 					
 						if (!sizeof($va_vals)) { $va_vals = array(0 => null); }	// consider missing values equivalent to blanks
@@ -1925,14 +1925,17 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$va_val_list = preg_split("!(".join("|", $va_item['settings']['delimiter']).")!", $vm_val);
 						
 									// Add delimited values
+									$vn_orig_c = $vn_c;
 									foreach($va_val_list as $vs_list_val) {
 										$vs_list_val = trim(ca_data_importers::replaceValue($vs_list_val, $va_item));
 										if ($vn_max_length && (mb_strlen($vs_list_val) > $vn_max_length)) {
 											$vs_list_val = mb_substr($vs_list_val, 0, $vn_max_length);
 										}
-										$va_group_buf[$vn_c] = array($vs_item_terminal => $vs_list_val, '_errorPolicy' => $vs_item_error_policy);
+										if (!is_array($va_group_buf[$vn_c])) { $va_group_buf[$vn_c] = array(); }
+										$va_group_buf[$vn_c] = array_merge($va_group_buf[$vn_c], array($vs_item_terminal => $vs_list_val, '_errorPolicy' => $vs_item_error_policy));
 										$vn_c++;
 									}
+									$vn_c = $vn_orig_c;
 						
 									continue;	// Don't add "regular" value below
 								}
@@ -2694,6 +2697,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	static public function getValueFromSource($pa_item, $po_reader, $pa_options=null) {
 		$pb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
+		$va_restrict_to_relationship_types = caGetOption('restrictToRelationshipTypes', $pa_options, false); 	// supported by CollectiveAccessDataReader
 		$pa_environment = caGetOption('environment', $pa_options, array(), array('castTo' => 'array'));
 		$ps_delimiter = caGetOption('delimiter', $pa_options, ';');
 		$pn_lookahead = caGetOption('lookahead', $pa_options, 0, array('castTo' => 'int'));
@@ -2711,7 +2715,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$vb_did_seek = true;
 			}
 			if ($po_reader->valuesCanRepeat()) {
-				$vm_value = $po_reader->get($pa_item['source'], array('returnAsArray' => true));
+				$vm_value = $po_reader->get($pa_item['source'], array('returnAsArray' => true, 'restrictToRelationshipTypes' => $va_restrict_to_relationship_types));
 				if (!is_array($vm_value)) { return $pb_return_as_array ? array() : null; }
 				foreach($vm_value as $vs_k => $vs_v) {
 					$vs_v = stripslashes($vs_v);
@@ -2723,7 +2727,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					return join($ps_delimiter, $vm_value);
 				}
 			} else {
-				$vm_value = trim($po_reader->get($pa_item['source']));
+				$vm_value = trim($po_reader->get($pa_item['source'], array('restrictToRelationshipTypes' => $va_restrict_to_relationship_types)));
 			}
 			
 			if ($vb_did_seek) { $po_reader->seek($vn_cur_pos); }

@@ -407,7 +407,7 @@ function caFileIsIncludable($ps_file) {
 		if ($handle = @opendir($dir)) {
 			while (false !== ($item = readdir($handle))) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
-					if (is_dir("{$dir}/{$item}")) { 
+					if (is_dir("{$dir}/{$item}")) {
 						$va_dir_list = array_merge($va_dir_list, caGetSubDirectoryList("{$dir}/{$item}", true, $pb_include_hidden_files));
 					}  else {
 						$vn_file_count++;
@@ -423,6 +423,18 @@ function caFileIsIncludable($ps_file) {
 		
 		ksort($va_dir_list);
 		return $va_dir_list;
+	}
+	# ----------------------------------------
+	/**
+	 * Checks if a given directory is empty (i.e. doesn't have any subdirectories or files in it)
+	 * @param string $vs_dir The directory to check
+	 * @return bool false if it's not a readable directory or if it's not empty, otherwise true
+	 */
+	function caDirectoryIsEmpty($vs_dir) {
+		if(!is_readable($vs_dir) || !is_dir($vs_dir)) { return false; }
+
+		$o_iterator = new \FilesystemIterator($vs_dir);
+		return !$o_iterator->valid();
 	}
 	# ----------------------------------------
 	function caZipDirectory($ps_directory, $ps_name, $ps_output_file) {
@@ -543,11 +555,21 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	function caEscapeForBundlePreview($ps_text, $pn_limit=100) {
-		$ps_text = preg_replace("![^\X]+$!", " ", $ps_text);
-		if(strlen($ps_text) > $pn_limit) {
+		$ps_text = caSanitizeStringForJsonEncode($ps_text);
+		if(mb_strlen($ps_text) > $pn_limit) {
 			$ps_text = mb_substr($ps_text, 0, $pn_limit) . " ...";
 		}
-		return json_encode(html_entity_decode(strip_tags($ps_text), ENT_QUOTES | ENT_HTML5));
+
+		if($ps_text = json_encode(html_entity_decode($ps_text, ENT_QUOTES | ENT_HTML5))) {
+			return $ps_text;
+		} else {
+			return '""';
+		}
+	}
+	# ----------------------------------------
+	function caSanitizeStringForJsonEncode($ps_text) {
+		// @see http://php.net/manual/en/regexp.reference.unicode.php
+		return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}]|➔/", '', strip_tags($ps_text));
 	}
 	# ----------------------------------------
 	/**
@@ -750,13 +772,24 @@ function caFileIsIncludable($ps_file) {
 	# ---------------------------------------
 	/**
 	 * Checks URL for apparent well-formedness. Return true if it looks like a valid URL, false if not. This function does
-	 * not actually connect to the URL to confirm its validity. It only validates at text content for well-formedness.
+	 * not actually connect to the URL to confirm its validity. It only validates text content for well-formedness.
+	 * By default will return true if a url is anywhere in the $ps_url parameter. Set the 'strict' option if you want to 
+	 * only return true for strings that are valid urls without any extra text.
 	 *
 	 * @param string $ps_url The URL to check
+	 * @param array $pa_options Options include:
+	 *		strict = only consider text a valid url if text contains only the url [Default is false]
 	 * @return boolean true if it appears to be valid URL, false if not
 	 */
-	function isURL($ps_url) {
-		if (preg_match("!(http|ftp|https|rtmp|rtsp|mysql):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?!", $ps_url, $va_matches)) {
+	function isURL($ps_url, $pa_options=null) {
+	
+		if (
+			caGetOption('strict', $pa_options, false)
+			?
+				preg_match("!^(http|ftp|https|rtmp|rtsp|mysql):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?$!", $ps_url, $va_matches)
+				:
+				preg_match("!(http|ftp|https|rtmp|rtsp|mysql):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?!", $ps_url, $va_matches)
+			) {
 			return array(
 				'protocol' => $va_matches[1],
 				'url' => $ps_url
@@ -1927,7 +1960,7 @@ function caFileIsIncludable($ps_file) {
 				}
 				
 				if ($vb_remove_noncharacter_data) {
-					$pa_array[$vn_k] = preg_replace("![^\X]+!", "", $pa_array[$vn_k]);
+					$pa_array[$vn_k] = caSanitizeStringForJsonEncode($pa_array[$vn_k]);
 				}
 			}
 		}

@@ -41,15 +41,29 @@ class SimpleService {
 	 */
 	public static function dispatch($ps_endpoint, $po_request) {
 
+		$vs_cache_key = $po_request->getHash();
+
+		if(!$po_request->getParameter('noCache', pInteger)) {
+			if(ExternalCache::contains($vs_cache_key, "SimpleAPI_{$ps_endpoint}")) {
+				return ExternalCache::fetch($vs_cache_key, "SimpleAPI_{$ps_endpoint}");
+			}
+		}
+
 		$va_endpoint_config = self::getEndpointConfig($ps_endpoint); // throws exception if it can't be found
 
 		switch($va_endpoint_config['type']) {
 			case 'search':
-				return self::runSearchEndpoint($va_endpoint_config, $po_request);
+				$vm_return = self::runSearchEndpoint($va_endpoint_config, $po_request);
+				break;
 			case 'detail':
 			default:
-				return self::runDetailEndpoint($va_endpoint_config, $po_request);
+				$vm_return = self::runDetailEndpoint($va_endpoint_config, $po_request);
+				break;
 		}
+
+		$vn_ttl = defined('__CA_SERVICE_API_CACHE_TTL__') ? __CA_SERVICE_API_CACHE_TTL__ : 60*60; // save for an hour by default
+		ExternalCache::save($vs_cache_key, $vm_return, "SimpleAPI_{$ps_endpoint}", $vn_ttl);
+		return $vm_return;
 	}
 	# -------------------------------------------------------
 	/**
@@ -127,8 +141,17 @@ class SimpleService {
 			$o_search->setTypeRestrictions($pa_config['restrictToTypes']);
 		}
 
-		$o_res = $o_search->search($ps_q, ['limit' => $ps_sort ? 0 : $pn_limit, 'sort' => $ps_sort, 'sortDirection' => $ps_sort_direction]);
-		if ($pn_start > 0) { $o_res->seek($pn_start); }
+
+#		$o_res = $o_search->search($ps_q, ['limit' => $ps_sort ? 0 : $pn_limit, 'sort' => $ps_sort, 'sortDirection' => $ps_sort_direction]);
+#		if ($pn_start > 0) { $o_res->seek($pn_start); }
+
+		$o_res = $o_search->search($ps_q, array(
+			'sort' => $po_request->getParameter('sort', pString),
+			'sortDirection' => $po_request->getParameter('sortDirection', pString),
+			'start' => $po_request->getParameter('start', pInteger),
+			'limit' => $po_request->getParameter('limit', pInteger)
+		));
+
 
 		$va_return = array();
 		$vn_c = 0;

@@ -63,6 +63,10 @@ class AlhalqaBrowseService extends BrowseService {
 					continue;
 				}
 
+				// include copyright holder
+				$vs_copyright_holder = $t_object->get('ca_entities.preferred_labels', array('restrictToRelationshipTypes' => 'copyright'));
+				if($vs_copyright_holder) { $va_result['copyright_holder'] = $vs_copyright_holder; }
+
 				// include urls for reference img
 				$va_objects = $t_object->getRelatedItems('ca_objects', array('restrictToRelationshipTypes' => 'reference'));
 				if(!is_array($va_objects) || sizeof($va_objects) != 1) { continue; }
