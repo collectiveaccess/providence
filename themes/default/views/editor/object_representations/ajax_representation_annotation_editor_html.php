@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -80,7 +80,6 @@
 		print $this->getVar('player');
 ?>
 		<div class="caAnnoMediaPlayerControlsLeft">
-			<?php print caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("New clip"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorNewInButton", "onclick" => "caAnnoEditorEdit(0, caAnnoEditorGetPlayerTime(), caAnnoEditorGetPlayerTime() + 10, \"PLAY\")")); ?>
 			<?php print "<span id='caAnnoEditorInOutButtonLabel'>"._t('Set').': </span>'.caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("start"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorInButton", "onclick" => "caAnnoEditorSetInTime(caAnnoEditorGetPlayerTime(), \"PLAY\")")); ?>
 			<?php print caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("end"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorOutPauseButton", "onclick" => "caAnnoEditorSetOutTime(caAnnoEditorGetPlayerTime(), \"PAUSE\")")); ?>
 		</div>
@@ -324,14 +323,14 @@
 	
 	function caAnnoEditorSetInTime(inTime, state) {
 		caAnnoEditorEnableAnnotationForm();
-		jQuery("input[name=startTimecode]").val(caConvertSecondsToTimecode(inTime));
+		jQuery("input#startTimecode").val(caConvertSecondsToTimecode(inTime));
 		if (state === 'PLAY') caAnnoEditorPlayerPlay();
 		if (state === 'PAUSE') caAnnoEditorPlayerPause();
 	}
 
 	function caAnnoEditorSetOutTime(outTime, state, save) {
 		caAnnoEditorEnableAnnotationForm();
-		jQuery("input[name=endTimecode]").val(caConvertSecondsToTimecode(outTime));
+		jQuery("input#endTimecode").val(caConvertSecondsToTimecode(outTime));
 		if (state === 'PLAY') caAnnoEditorPlayerPlay();
 		if (state === 'PAUSE') caAnnoEditorPlayerPause();
 		if (save) {

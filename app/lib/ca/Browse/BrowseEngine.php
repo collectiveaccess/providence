@@ -3154,7 +3154,7 @@
 										}
 										$va_values[$vs_id = "{$vs_loc_class}:{$vs_loc_subclass}:{$vn_id}"] = array(
 											'id' => $vs_id,
-											'label' => $qr_res->getWithTemplate($vs_template)
+											'label' => $qr_res->getWithTemplate($vs_template, $va_config)
 										);
 									}
 								}
