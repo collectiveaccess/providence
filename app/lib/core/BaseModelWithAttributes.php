@@ -2696,10 +2696,10 @@
 		/**
 		 *
 		 */
-		 public function isValidMetadataElement($pn_element_code_or_id) {
+		 public function isValidMetadataElement($pn_element_code_or_id, $pb_include_sub_element_codes=false) {
 		 	$vn_element_id = $this->_getElementID($pn_element_code_or_id);
-		 	$va_codes = $this->getApplicableElementCodes(null, false, false);
-		 	
+		 	$va_codes = $this->getApplicableElementCodes(null, $pb_include_sub_element_codes, false);
+		
 		 	return (bool)$va_codes[$vn_element_id];
 		 }
 		# ------------------------------------------------------------------
