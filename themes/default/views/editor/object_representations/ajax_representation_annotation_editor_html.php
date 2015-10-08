@@ -80,7 +80,6 @@
 		print $this->getVar('player');
 ?>
 		<div class="caAnnoMediaPlayerControlsLeft">
-			<?php print caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("New clip"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorNewInButton", "onclick" => "caAnnoEditorEdit(0, caAnnoEditorGetPlayerTime(), caAnnoEditorGetPlayerTime() + 10, \"PLAY\")")); ?>
 			<?php print "<span id='caAnnoEditorInOutButtonLabel'>"._t('Set').': </span>'.caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("start"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorInButton", "onclick" => "caAnnoEditorSetInTime(caAnnoEditorGetPlayerTime(), \"PLAY\")")); ?>
 			<?php print caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("end"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorOutPauseButton", "onclick" => "caAnnoEditorSetOutTime(caAnnoEditorGetPlayerTime(), \"PAUSE\")")); ?>
 		</div>
