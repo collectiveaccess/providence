@@ -350,7 +350,7 @@
 			lists: <?php print json_encode($va_settings['restrict_to_lists']); ?>,
 			types: <?php print json_encode($va_settings['restrict_to_types']); ?>,
 			restrictToSearch: <?php print json_encode($va_settings['restrict_to_search']); ?>,
-			bundlePreview: <?php print (sizeof($this->getVar('initialValues')) < 50) ? caEscapeForBundlePreview($t_instance->get($t_item->tableName(), array('delimiter' => '; ', 'restrict_to_types' => $va_settings['restrict_to_types'], 'restrict_to_relationship_types' => $va_settings['restrict_to_relationship_types'], 'template' => $va_settings['display_template']))) : "''"; ?>,
+			bundlePreview: <?php print caGetBundlePreviewForRelationshipBundle($t_item, $va_initial_values, $va_settings['display_template']); ?>,
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
 			isSortable: <?php print ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',
