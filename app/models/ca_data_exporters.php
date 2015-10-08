@@ -1746,8 +1746,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						$t_element = ca_metadata_elements::getInstance($t_attr->get('element_id'));
 						$va_display_val_options = array('list_id' => $t_element->get('list_id'));
 
-						if($t_exporter_item->getSetting('returnIdno')) {
-							$va_display_val_options['returnIdno'] = true;
+						if($t_exporter_item->getSetting('returnIdno') || $t_exporter_item->getSetting('convertCodesToIdno')) {
+							$va_display_val_options['output'] = 'idno';
+						} elseif($t_exporter_item->getSetting('convertCodesToDisplayText')) {
+							$va_display_val_options['output'] = 'text';
 						}
 					}
 
