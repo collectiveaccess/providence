@@ -94,6 +94,7 @@ class Intrinsic extends FieldType {
 		if(is_array($pm_content)) { $pm_content = serialize($pm_content); }
 		if($pm_content == '') { $pm_content = null; }
 
+		$t_instance = \Datamodel::load()->getInstance($this->getTableName());
 		$va_field_info = \Datamodel::load()->getFieldInfo($this->getTableName(), $this->getFieldName());
 
 		switch($va_field_info['FIELD_TYPE']) {
@@ -116,6 +117,12 @@ class Intrinsic extends FieldType {
 		$va_return = array(
 			$this->getTableName() . '.' . $this->getFieldName() => $pm_content
 		);
+
+		if($t_instance->getProperty('ID_NUMBERING_ID_FIELD') == $this->getFieldName()) {
+			$va_return = array(
+				$this->getTableName() . '.' . $this->getFieldName() => explode(' ', $pm_content)
+			);
+		}
 
 		if($vn_rel_type_id = caGetOption('relationship_type_id', $pa_options)) {
 			// elasticsearch doesn't allow slashes in field names, so we use a pipe instead

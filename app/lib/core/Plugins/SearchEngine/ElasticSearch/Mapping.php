@@ -314,6 +314,11 @@ class Mapping {
 			$va_field_options[$ps_table.'.'.$vs_field_name]['index'] = 'not_analyzed';
 		}
 
+		if(in_array('INDEX_AS_IDNO', $pa_indexing_config)) {
+			unset($va_field_options[$ps_table.'.'.$vs_field_name]['index']);
+			$va_field_options[$ps_table.'.'.$vs_field_name]['analyzer'] = 'keyword_lowercase';
+		}
+
 		switch($t_instance->getFieldInfo($vs_field_name, 'FIELD_TYPE')){
 			case (FT_TEXT):
 			case (FT_MEDIA):
