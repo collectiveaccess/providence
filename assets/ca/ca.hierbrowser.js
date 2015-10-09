@@ -106,6 +106,9 @@ var caUI = caUI || {};
 
 			maxItemsPerHierarchyLevelPage: 500	// maximum number of items to load at one time into a level
 		}, options);
+		
+		
+		that.useAsRootID = parseInt(that.useAsRootID);
 
 		if (!that.levelDataUrl) {
 			alert("No level data url specified for " + that.name + "!");
@@ -155,7 +158,7 @@ var caUI = caUI || {};
 				if (data.length) {
 					that.selectedItemIDs = data.join(';').split(';');
 
-					if (that.useAsRootID > 0) {
+					if ((that.useAsRootID > 0) && (that.useAsRootID !== data[0])) {
 						that.selectedItemIDs.shift();
 						if (jQuery.inArray(that.useAsRootID, data) == -1) {
 							data.unshift(that.useAsRootID);
@@ -167,9 +170,6 @@ var caUI = caUI || {};
 					data = [that.useAsRootID ? that.useAsRootID : 0];
 				}
 
-				if (data[0] == data[1]) {	// workaround for jQuery(?) but that replicates first item of list in json array
-				//	data.shift();
-				}
 				var l = 0;
 				jQuery.each(data, function(i, id) {
 					that.setUpHierarchyLevel(i, id, 1, item_id);
