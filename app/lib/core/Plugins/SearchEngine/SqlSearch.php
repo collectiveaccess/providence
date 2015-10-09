@@ -594,7 +594,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$qr_res = $this->opo_db->query($vs_sql);
 							break;
 					}
-					
+					$vn_i++;
 					$this->_dropTempTable('ca_sql_search_temp_'.$pn_level);
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Term':
@@ -1378,7 +1378,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						
 						$t = new Timer();
 						$this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array());
-
+						$vn_i++;
 						if ($this->debug) { Debug::msg('FIRST: '.$vs_sql." [$pn_subject_tablenum] ".$t->GetTime(4)); }
 					} else {
 						switch($vs_op) {
@@ -1422,6 +1422,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								} else { // we don't have any results left, ie. our AND query should yield an empty result
 									$this->opo_db->query("DELETE FROM {$ps_dest_table}");
 								}
+								
+								$vn_i++;
 								break;
 							case 'NOT':
 								if ($vs_direct_sql_query) {
@@ -1450,6 +1452,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									if ($this->debug) { Debug::msg('NOT '.$vs_sql); }
 									$qr_res = $this->opo_db->query($vs_sql, array($va_ids));
 								}
+								
+								$vn_i++;
 								break;
 							default:
 							case 'OR':
@@ -1474,6 +1478,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	
 								if ($this->debug) { Debug::msg('OR '.$vs_sql); }
 								
+								$vn_i++;
 								$qr_res = $this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum));
 								break;
 						}
@@ -1489,7 +1494,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					//print get_class($o_lucene_query_element);
 					break;
 			}
-			$vn_i++;
 		}	
 	}
 	# -------------------------------------------------------
