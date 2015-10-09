@@ -43,7 +43,7 @@ require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/Query.php'
 
 class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlugSearchEngine {
 	# -------------------------------------------------------
-	protected $opa_doc_content_buffer = array();
+	protected $opa_index_content_buffer = array();
 
 	protected $opn_indexing_subject_tablenum = null;
 	protected $opn_indexing_subject_row_id = null;
@@ -56,6 +56,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 
 	static $s_doc_content_buffer = array();
 	static $s_element_code_cache = array();
+	static $s_update_content_buffer = array();
 	# -------------------------------------------------------
 	public function __construct($po_db=null) {
 		parent::__construct($po_db);
@@ -136,8 +137,21 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 *		BOOST = Indexing boost to apply
 	 *		PRIVATE = Set indexing to private
 	 */
-	/*public function updateIndexingInPlace($pn_subject_tablenum, $pa_subject_row_ids, $pn_content_tablenum, $ps_content_fieldnum, $pn_content_row_id, $ps_content, $pa_options=null) {
-	}*/
+	public function updateIndexingInPlace($pn_subject_tablenum, $pa_subject_row_ids, $pn_content_tablenum, $ps_content_fieldnum, $pn_content_row_id, $ps_content, $pa_options=null) {
+		$vs_table_name = $this->opo_datamodel->getTableName($pn_subject_tablenum);
+		$o_field = new ElasticSearch\Field($pn_content_tablenum, $ps_content_fieldnum);
+		$va_fragment = $o_field->getIndexingFragment($ps_content, $pa_options);
+
+		foreach($pa_subject_row_ids as $pn_subject_row_id) {
+			foreach($va_fragment as $vs_key => $vm_val) {
+				self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key] = $vm_val;
+			}
+		}
+
+		//if ((sizeof(self::$s_doc_content_buffer) + sizeof(self::$s_update_content_buffer)) > $this->getOption('maxIndexingBufferSize')) {
+			$this->flushContentBuffer();
+		//}
+	}
 	# -------------------------------------------------------
 	/**
 	 * Get ElasticSearch client
@@ -159,7 +173,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		);
 
 		$this->opa_capabilities = array(
-			'incremental_reindexing' => false // @todo implement updateIndexingInPlace()
+			'incremental_reindexing' => true
 		);
 	}
 	# -------------------------------------------------------
@@ -299,7 +313,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @param int $pn_subject_row_id
 	 */
 	public function startRowIndexing($pn_subject_tablenum, $pn_subject_row_id){
-		$this->opa_doc_content_buffer = array();
+		$this->opa_index_content_buffer = array();
 		$this->opn_indexing_subject_tablenum = $pn_subject_tablenum;
 		$this->opn_indexing_subject_row_id = $pn_subject_row_id;
 		$this->ops_indexing_subject_tablename = $this->opo_datamodel->getTableName($pn_subject_tablenum);
@@ -318,7 +332,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		$o_field = new ElasticSearch\Field($pn_content_tablenum, $ps_content_fieldname);
 
 		foreach($o_field->getIndexingFragment($pm_content, $pa_options) as $vs_key => $vm_val) {
-			$this->opa_doc_content_buffer[$vs_key][] = $vm_val;
+			$this->opa_index_content_buffer[$vs_key][] = $vm_val;
 		}
 	}
 	# -------------------------------------------------------
@@ -328,18 +342,18 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * We still keep the data local until the document buffer is full.
 	 */
 	public function commitRowIndexing() {
-		if(sizeof($this->opa_doc_content_buffer) > 0) {
+		if(sizeof($this->opa_index_content_buffer) > 0) {
 			WLPlugSearchEngineElasticSearch::$s_doc_content_buffer[
 				$this->ops_indexing_subject_tablename.'/'.
 				$this->opn_indexing_subject_row_id
-			] = $this->opa_doc_content_buffer;
+			] = $this->opa_index_content_buffer;
 		}
 
 		unset($this->opn_indexing_subject_tablenum);
 		unset($this->opn_indexing_subject_row_id);
 		unset($this->ops_indexing_subject_tablename);
 
-		if (sizeof(WLPlugSearchEngineElasticSearch::$s_doc_content_buffer) > $this->getOption('maxIndexingBufferSize')) {
+		if ((sizeof(self::$s_doc_content_buffer) + sizeof(self::$s_update_content_buffer)) > $this->getOption('maxIndexingBufferSize')) {
 			$this->flushContentBuffer();
 		}
 	}
@@ -368,6 +382,10 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	public function flushContentBuffer() {
 		$va_bulk_params = array();
 
+		// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
+		// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_indexing_documents.html#_bulk_indexing
+
+		// newly indexed docs
 		foreach(WLPlugSearchEngineElasticSearch::$s_doc_content_buffer as $vs_key => $va_doc_content_buffer) {
 			$va_tmp = explode('/', $vs_key);
 			$vs_table_name = $va_tmp[0];
@@ -404,16 +422,31 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$va_bulk_params['body'][] = $va_doc_content_buffer;
 		}
 
-		// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
-		// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_indexing_documents.html#_bulk_indexing
+		// update existing docs
+		foreach(self::$s_update_content_buffer as $vs_table_name => $va_rows) {
+			foreach($va_rows as $vn_row_id => $va_fragment) {
+
+				$va_bulk_params['body'][] = array(
+					'update' => array(
+						'_index' => $this->getIndexName(),
+						'_type' => $vs_table_name,
+						'_id' => (int) $vn_row_id
+					)
+				);
+
+				$va_bulk_params['body'][] = array('doc' => $va_fragment);
+			}
+		}
+		
 		$this->getClient()->bulk($va_bulk_params);
 
 		// @todo get rid of this statement -- we usually don't need indexing to be available *immediately*
 		// unless we're running automated tests in development of course :-)
 		$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
 
-		$this->opa_doc_content_buffer = array();
-		WLPlugSearchEngineElasticSearch::$s_doc_content_buffer = array();
+		$this->opa_index_content_buffer = array();
+		self::$s_doc_content_buffer = array();
+		self::$s_update_content_buffer = array();
 	}
 	# -------------------------------------------------------
 	/**
