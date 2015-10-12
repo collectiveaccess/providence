@@ -533,7 +533,7 @@
 			if (!in_array(strtolower($ps_direction), array('asc', 'desc'))) { $ps_direction = 'asc'; }
 			$va_sorted_rows = array();
 			
-			if (sizeof($pa_hits) < 1000) {
+			if (sizeof($pa_hits) < 5000) {
 				//
 				// Perform sort in-memory
 				//
@@ -546,7 +546,7 @@
 					}
 					$va_sort_buffer[$vs_key.str_pad($vn_hit, 12, ' ', STR_PAD_LEFT)] = $vn_hit;
 				}
-				ksort($va_sort_buffer);
+				ksort($va_sort_buffer, SORT_NATURAL | SORT_FLAG_CASE);
 				$va_sort_buffer = array_values($va_sort_buffer);
 				if ($ps_direction == 'desc') { $va_sort_buffer = array_reverse($va_sort_buffer); }
 				return $va_sort_buffer;
