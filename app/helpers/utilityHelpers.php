@@ -3034,7 +3034,7 @@ function caFileIsIncludable($ps_file) {
 		$num %= $pn_denom;
 
 		if (!$num) {
-			return "$int";
+			return "$int in";
 		}
 
 		if ($pb_reduce) {
