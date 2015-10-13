@@ -110,7 +110,6 @@ var caUI = caUI || {};
                                         break;
                                 }
                             } catch(e) {
-                                //console.log(e);
                                 // noop - replace tag with existing value
                                 t=t.replace(tag, val);
                             }
@@ -149,7 +148,9 @@ var caUI = caUI || {};
                     val = parseFloat(matches[2])/parseFloat(matches[3]);
                 }
 
-                val += parseFloat(matches[1]);
+                if(parseFloat(matches[1]) > 0) {
+                    val += parseFloat(matches[1]);
+                }
 
                 fractionalExpression = fractionalExpression.replace(matches[0], val);
             }
@@ -164,7 +165,6 @@ var caUI = caUI || {};
          * @returns {string}
          */
         that.convertLengthToFractions = function(inches, denom) {
-
             var inches_as_float = parseFloat(inches.replace(/[^0-9\.]+/, ''));
 
             var num = Math.round(inches_as_float * denom);
