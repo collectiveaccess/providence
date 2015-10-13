@@ -219,23 +219,6 @@ if (!defined("__CA_SITE_HOSTNAME__")) {
 	define("__CA_SITE_HOSTNAME__", isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '');
 }
 
-#
-# If you use PayPal for e-commerce payments then you can set your account information 
-# below by uncommenting the __CA_PAYPAL* lines and assigning them appropriate values
-#
-#if (!defined("__CA_PAYPAL_API_USERNAME__")) {
-#	define("__CA_PAYPAL_API_USERNAME__", "your_paypal_api_username");
-#}
-#if (!defined("__CA_PAYPAL_API_PASSWORD__")) {
-#	define("__CA_PAYPAL_API_PASSWORD__", "your_paypal_api_password");
-#}
-#if (!defined("__CA_PAYPAL_API_SIGNATURE__")) {
-#	define("__CA_PAYPAL_API_SIGNATURE__", "your_paypal_api_signature");
-#}
-#if (!defined("__CA_PAYPAL_API_ENVIRONMENT__")) {
-#	define("__CA_PAYPAL_API_ENVIRONMENT__", "sandbox");
-#}		// "sandbox" for testing or "live" for production use
-
 # --------------------------------------------------------------------------------------------
 # IT IS VERY UNLIKELY THAT YOU WILL NEED TO CHANGE ANYTHING UNDER THIS LINE
 # --------------------------------------------------------------------------------------------

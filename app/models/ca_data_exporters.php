@@ -1721,6 +1721,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_get_options['dateFormat'] = $vs_date_format;
 		}
 
+		// context was switched to attribute
 		if($vn_attribute_id) {
 
 			$o_log->logInfo(_t("Processing mapping in attribute mode for attribute_id = %1.", $vn_attribute_id));
@@ -1743,21 +1744,24 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				foreach($va_values as $vo_val) {
 					$va_display_val_options = array();
 					if($vo_val instanceof ListAttributeValue) {
-						$t_element = ca_metadata_elements::getInstance($t_attr->get('element_id'));
+						// figure out list_id -- without it we can't pull display values
+						$t_element = new ca_metadata_elements($vo_val->getElementID());
 						$va_display_val_options = array('list_id' => $t_element->get('list_id'));
 
-						if($t_exporter_item->getSetting('returnIdno')) {
-							$va_display_val_options['returnIdno'] = true;
+						if($t_exporter_item->getSetting('returnIdno') || $t_exporter_item->getSetting('convertCodesToIdno')) {
+							$va_display_val_options['output'] = 'idno';
+						} elseif($t_exporter_item->getSetting('convertCodesToDisplayText')) {
+							$va_display_val_options['output'] = 'text';
 						}
 					}
 
 					$o_log->logDebug(_t("Trying to match code from array %1 and the code we're looking for %2.", $vo_val->getElementCode(), $vs_source));
 					if($vo_val->getElementCode() == $vs_source) {
-
-						$o_log->logDebug(_t("Found value %1.", $vo_val->getDisplayValue($va_display_val_options)));
+						$vs_display_value = $vo_val->getDisplayValue($va_display_val_options);
+						$o_log->logDebug(_t("Found value %1.", $vs_display_value));
 
 						$va_item_info[] = array(
-							'text' => $vo_val->getDisplayValue($va_display_val_options),
+							'text' => $vs_display_value,
 							'element' => $vs_element,
 						);
 					}
