@@ -7,7 +7,7 @@
 #  \____\___/|_|_|\___|\___|\__|_| \_/ \___/_/   \_\___\___\___||___/___/
 #
 #               Open-source collections management software
-#               Version 1.4
+#               Version 1.6
 #				
 # -------------------------------------------------------------------------------------------
 # Need help setting up? Visit http://www.collectiveaccess.org/forum
@@ -411,7 +411,7 @@ if (!defined('__CA_ENABLE_DEBUG_OUTPUT__')) {
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -429,4 +429,3 @@ if (!defined('__CA_ENABLE_DEBUG_OUTPUT__')) {
  *
  * ----------------------------------------------------------------------
  */
-?>
