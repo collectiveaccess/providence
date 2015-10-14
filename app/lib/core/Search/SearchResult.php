@@ -2060,6 +2060,7 @@ class SearchResult extends BaseObject {
 	 */
 	public function getWithTemplate($ps_template, $pa_options=null) {
 		unset($pa_options['request']);
+		unset($pa_options['primaryIDs']);
 		if($this->opb_disable_get_with_template_prefetch) {
 			if(!is_array($pa_options)) { $pa_options = array(); }
 			return caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->get($this->ops_table_name.".".$this->ops_subject_pk)), array_merge($pa_options, ['dontPrefetchRelated' => true]));
