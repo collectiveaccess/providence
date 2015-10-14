@@ -69,8 +69,12 @@ class DisplayTemplateParser {
 						$va_get_options = ['returnAsArray' => true, 'checkAccess' => caGetOption('checkAccess', $pa_options, null)];
 				
 						$va_get_options['restrictToTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToTypes']); 
-						$va_get_options['restrictToRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToRelationshipTypes']); 
-					
+						$va_get_options['restrictToRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToRelationshipTypes']);
+
+						$va_search_result_opts = array();
+						if($o_node->includeNonPrimaryRepresentations) {
+							$va_search_result_opts['filterNonPrimaryRepresentations'] = false;
+						}
 					
 						if ($o_node->sort) {
 							$va_get_options['sort'] = preg_split('![ ,;]+!', $o_node->sort);
@@ -81,7 +85,7 @@ class DisplayTemplateParser {
 						$va_row_ids = DisplayTemplateParser::_getRelativeIDsForRowIDs($ps_tablename, $vs_relative_to, $pa_row_ids, 'related', $va_get_options);
 				
 						if (!sizeof($va_row_ids)) { return; }
-						$qr_res = caMakeSearchResult($ps_tablename, $pa_row_ids);
+						$qr_res = caMakeSearchResult($ps_tablename, $pa_row_ids, $va_search_result_opts);
 						if (!$qr_res) { return; }
 						
 						
