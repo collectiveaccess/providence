@@ -1830,7 +1830,9 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		$vs_val = '';
-		if($pa_options['template']) {
+		if($vs_template = trim($pa_options['template'])) {
+			unset($pa_options['template']);
+			
 			if ($t_instance = $this->getAppDatamodel()->getInstanceByTableName($va_bundle_bits[0], true)) {
 				$va_bundle_bits_proc = $va_bundle_bits;
 				$vb_is_related = false;
@@ -1860,17 +1862,17 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 							case 3:
 								// For regular relationships just evaluate the template relative to the relationship record
 								// this way the template can reference interstitial data
-								$vs_val = $po_result->getWithTemplate($vs_unit_tag.$pa_options['template']."</unit>", $pa_options);
+								$vs_val = $po_result->getWithTemplate($vs_unit_tag.$vs_template."</unit>", $pa_options);
 								break;
 							case 2:
 								$t_rel = $o_dm->getInstanceByTableName($va_path[1], true);
 								if (method_exists($t_rel, 'isSelfRelationship') && $t_rel->isSelfRelationship()) {
 									// is a self-relationship
-									$vs_val = $po_result->getWithTemplate($vs_unit_tag.$pa_options['template']."</unit>", array_merge($pa_options, array('primaryIDs' => array($po_result->tableName() => array($po_result->getPrimaryKey())))));
+									$vs_val = $po_result->getWithTemplate($vs_unit_tag.$vs_template."</unit>", array_merge($pa_options, array('primaryIDs' => array($po_result->tableName() => array($po_result->getPrimaryKey())))));
 								} else {
 									// is a many-one relationship; evaluate the template for these relative
 									// to the related record
-									$vs_val = $po_result->getWithTemplate($vs_unit_tag.$pa_options['template']."</unit>", $pa_options);
+									$vs_val = $po_result->getWithTemplate($vs_unit_tag.$vs_template."</unit>", $pa_options);
 								}
 								break;
 							default:
@@ -1880,7 +1882,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					}
 				} else {
 					// resolve template relative to current record
-					$vs_val = $po_result->getWithTemplate($pa_options['template']);
+					$vs_val = $po_result->getWithTemplate($vs_template);
 				}
 				
 			}
@@ -1890,8 +1892,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		if (isset($pa_options['purify']) && $pa_options['purify']) {
-			$o_purifier = new HTMLPurifier();
-    		$vs_val = $o_purifier->purify($vs_val);
+    		$vs_val = ca_bundle_displays::getPurifier()->purify($vs_val);
 		}
 		
 		return $vs_val;
