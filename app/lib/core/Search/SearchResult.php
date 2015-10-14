@@ -2060,7 +2060,6 @@ class SearchResult extends BaseObject {
 	 */
 	public function getWithTemplate($ps_template, $pa_options=null) {
 		unset($pa_options['request']);
-		unset($pa_options['primaryIDs']);
 		if($this->opb_disable_get_with_template_prefetch) {
 			if(!is_array($pa_options)) { $pa_options = array(); }
 			return caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->get($this->ops_table_name.".".$this->ops_subject_pk)), array_merge($pa_options, ['dontPrefetchRelated' => true]));
@@ -2113,8 +2112,8 @@ class SearchResult extends BaseObject {
 	private function getCacheKeyForGetWithTemplate($ps_template, $pa_options) {
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		foreach($pa_options as $vs_k => $vs_v) {
-			if (!in_array($vs_k, array('useSingular', 'maximumLength', 'delimiter', 'purify', 'restrict_to_types', 'restrict_to_relationship_types',  'restrictToTypes', 'restrictToRelationshipTypes', 'returnAsArray'))) { continue; }
-			unset($vs_k);
+			if (in_array($vs_k, array('useSingular', 'maximumLength', 'delimiter', 'purify', 'restrict_to_types', 'restrict_to_relationship_types',  'restrictToTypes', 'restrictToRelationshipTypes', 'returnAsArray'))) { continue; }
+			unset($pa_options[$vs_k]);
 		}
 		return md5($this->ops_table_name.'/'.$ps_template.'/'.serialize($pa_options));
 	}
