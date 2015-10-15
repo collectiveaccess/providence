@@ -138,6 +138,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 *		PRIVATE = Set indexing to private
 	 */
 	public function updateIndexingInPlace($pn_subject_tablenum, $pa_subject_row_ids, $pn_content_tablenum, $ps_content_fieldnum, $pn_content_row_id, $ps_content, $pa_options=null) {
+		var_dump(func_get_args());
 		$vs_table_name = $this->opo_datamodel->getTableName($pn_subject_tablenum);
 		$o_field = new ElasticSearch\Field($pn_content_tablenum, $ps_content_fieldnum);
 		$va_fragment = $o_field->getIndexingFragment($ps_content, $pa_options);
@@ -173,7 +174,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		);
 
 		$this->opa_capabilities = array(
-			'incremental_reindexing' => true
+			'incremental_reindexing' => false
 		);
 	}
 	# -------------------------------------------------------
@@ -329,7 +330,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @return null
 	 */
 	public function indexField($pn_content_tablenum, $ps_content_fieldname, $pn_content_row_id, $pm_content, $pa_options) {
-		$o_field = new ElasticSearch\Field($pn_content_tablenum, $ps_content_fieldname);
+		$o_field = new ElasticSearch\Field($pn_content_tablenum, $ps_content_fieldname, $pn_content_row_id);
 
 		foreach($o_field->getIndexingFragment($pm_content, $pa_options) as $vs_key => $vm_val) {
 			$this->opa_index_content_buffer[$vs_key][] = $vm_val;

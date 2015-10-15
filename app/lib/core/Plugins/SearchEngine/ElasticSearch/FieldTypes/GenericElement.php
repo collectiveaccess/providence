@@ -49,13 +49,21 @@ class GenericElement extends FieldType {
 	protected $ops_table_name;
 
 	/**
+	 * Content row id
+	 * @var int
+	 */
+	protected $opn_content_row_id;
+
+	/**
 	 * Generic constructor.
 	 * @param string $ps_table_name
+	 * @param int $pn_content_row_id
 	 * @param string $ps_element_code
 	 */
-	public function __construct($ps_table_name, $ps_element_code) {
+	public function __construct($ps_table_name, $pn_content_row_id, $ps_element_code) {
 		$this->ops_table_name = $ps_table_name;
 		$this->ops_element_code = $ps_element_code;
+		$this->opn_content_row_id = $pn_content_row_id;
 	}
 
 	/**
@@ -77,6 +85,13 @@ class GenericElement extends FieldType {
 	 */
 	public function getTableName() {
 		return $this->ops_table_name;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getContentRowId() {
+		return $this->opn_content_row_id;
 	}
 
 	/**

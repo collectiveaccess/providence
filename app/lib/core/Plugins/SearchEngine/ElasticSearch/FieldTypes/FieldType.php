@@ -69,10 +69,11 @@ abstract class FieldType {
 
 	/**
 	 * @param string $ps_table
+	 * @param int $pn_content_row_id
 	 * @param string $ps_content_fieldname
 	 * @return \ElasticSearch\FieldTypes\FieldType
 	 */
-	public static function getInstance($ps_table, $ps_content_fieldname) {
+	public static function getInstance($ps_table, $pn_content_row_id, $ps_content_fieldname) {
 
 		// if this is an indexing field name, rewrite it
 		if(preg_match("/^(I|A)[0-9]+$/", $ps_content_fieldname)) {
@@ -94,28 +95,28 @@ abstract class FieldType {
 		if($vn_datatype = \ca_metadata_elements::getDataTypeForElementCode($ps_content_fieldname)) {
 			switch($vn_datatype) {
 				case 2:
-					return new DateRange($ps_table, $ps_content_fieldname);
+					return new DateRange($ps_table, $pn_content_row_id, $ps_content_fieldname);
 				case 4:
-					return new Geocode($ps_table, $ps_content_fieldname);
+					return new Geocode($ps_table, $pn_content_row_id, $ps_content_fieldname);
 				case 6:
-					return new Currency($ps_table, $ps_content_fieldname);
+					return new Currency($ps_table, $pn_content_row_id, $ps_content_fieldname);
 				case 8:
-					return new Length($ps_table, $ps_content_fieldname);
+					return new Length($ps_table, $pn_content_row_id, $ps_content_fieldname);
 				case 9:
-					return new Weight($ps_table, $ps_content_fieldname);
+					return new Weight($ps_table, $pn_content_row_id, $ps_content_fieldname);
 				case 10:
-					return new Timecode($ps_table, $ps_content_fieldname);
+					return new Timecode($ps_table, $pn_content_row_id, $ps_content_fieldname);
 				case 11:
-					return new Integer($ps_table, $ps_content_fieldname);
+					return new Integer($ps_table, $pn_content_row_id, $ps_content_fieldname);
 				case 12:
-					return new Float($ps_table, $ps_content_fieldname);
+					return new Float($ps_table, $pn_content_row_id, $ps_content_fieldname);
 				default:
-					return new GenericElement($ps_table, $ps_content_fieldname);
+					return new GenericElement($ps_table, $pn_content_row_id, $ps_content_fieldname);
 			}
 		} else if(preg_match("/^(modified|created)(\..+)?$/", $ps_content_fieldname)) {
-			return new Timestamp($ps_table, $ps_content_fieldname);
+			return new Timestamp($ps_table, $pn_content_row_id, $ps_content_fieldname);
 		} else {
-			return new Intrinsic($ps_table, $ps_content_fieldname);
+			return new Intrinsic($ps_table, $pn_content_row_id, $ps_content_fieldname);
 		}
 	}
 

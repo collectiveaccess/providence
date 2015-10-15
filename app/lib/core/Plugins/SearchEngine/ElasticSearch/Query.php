@@ -296,7 +296,7 @@ class Query {
 		$vs_table = $va_parts[0];
 		unset($va_parts[0]);
 		$vs_fld = join('.', $va_parts);
-		return FieldTypes\FieldType::getInstance($vs_table, $vs_fld);
+		return FieldTypes\FieldType::getInstance($vs_table, null, $vs_fld);
 	}
 
 	protected function getFilterQuery() {

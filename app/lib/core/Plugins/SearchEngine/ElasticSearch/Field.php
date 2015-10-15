@@ -57,16 +57,31 @@ class Field {
 	protected $opo_field_type;
 
 	/**
+	 * Primary key identifier for content row
+	 * @var int
+	 */
+	protected $opn_content_row_id;
+
+	/**
 	 * Field constructor.
 	 * @param int $opn_content_tablenum
 	 * @param string $ops_indexing_fieldname
+	 * @param int $pn_content_row_id
 	 */
-	public function __construct($opn_content_tablenum, $ops_indexing_fieldname) {
+	public function __construct($opn_content_tablenum, $ops_indexing_fieldname, $pn_content_row_id) {
 		$this->opn_content_tablenum = $opn_content_tablenum;
+		$this->opn_content_row_id = $pn_content_row_id;
 
 		$this->ops_content_tablename = \Datamodel::load()->getTableName($this->getContentTableNum());
 
-		$this->opo_field_type = FieldTypes\FieldType::getInstance($this->getContentTableName(), $ops_indexing_fieldname);
+		$this->opo_field_type = FieldTypes\FieldType::getInstance($this->getContentTableName(), $this->getContentRowId(), $ops_indexing_fieldname);
+	}
+
+	/**
+	 * @return int
+	 */
+	private function getContentRowId() {
+		return $this->opn_content_row_id;
 	}
 
 	/**
