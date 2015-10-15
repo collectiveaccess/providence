@@ -2059,6 +2059,7 @@ class SearchResult extends BaseObject {
 	 * @return mixed
 	 */
 	public function getWithTemplate($ps_template, $pa_options=null) {
+		unset($pa_options['request']);
 		if($this->opb_disable_get_with_template_prefetch) {
 			if(!is_array($pa_options)) { $pa_options = array(); }
 			return caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->get($this->ops_table_name.".".$this->ops_subject_pk)), array_merge($pa_options, ['dontPrefetchRelated' => true]));
@@ -2067,7 +2068,6 @@ class SearchResult extends BaseObject {
 		// the assumption is that if you run getWithTemplate for the current row, you'll probably run it for the next bunch of rows too
 		// since running caProcessTemplateForIDs for every single row is slow, we prefetch a set number of rows here
 		$vs_cache_base_key = $this->getCacheKeyForGetWithTemplate($ps_template, $pa_options);
-
 		if(!isset(self::$s_template_prefetch_cache[$vs_cache_base_key][$vn_cur_row = $this->opo_engine_result->currentRow()])) {
 			$this->prefetchForGetWithTemplate($ps_template, $pa_options);
 		}
@@ -2081,7 +2081,6 @@ class SearchResult extends BaseObject {
 	private function prefetchForGetWithTemplate($ps_template, $pa_options) {
 		$va_ids = $this->getRowIDsToPrefetch($this->opo_engine_result->currentRow(), 500);
 		$vs_cache_base_key = $this->getCacheKeyForGetWithTemplate($ps_template, $pa_options);
-
 		$pa_options['returnAsArray'] = true; // careful, this would change the cache key ... which is why we generate it before
 		$pa_options['includeBlankValuesInTopLevelForPrefetch'] = true; // if we don't set this blank values are omitted and array offsets following a blank value will be incorrect. A recipe for a bad day.
 		$va_vals = caProcessTemplateForIDs($ps_template, $this->ops_table_name, $va_ids, $pa_options);
@@ -2111,8 +2110,12 @@ class SearchResult extends BaseObject {
 	 *
 	 */
 	private function getCacheKeyForGetWithTemplate($ps_template, $pa_options) {
-		unset($pa_options['request']);
-		return $this->ops_table_name.'/'.$ps_template.'/'.md5(serialize($pa_options));
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		foreach($pa_options as $vs_k => $vs_v) {
+			if (in_array($vs_k, array('useSingular', 'maximumLength', 'delimiter', 'purify', 'restrict_to_types', 'restrict_to_relationship_types',  'restrictToTypes', 'restrictToRelationshipTypes', 'returnAsArray'))) { continue; }
+			unset($pa_options[$vs_k]);
+		}
+		return md5($this->ops_table_name.'/'.$ps_template.'/'.serialize($pa_options));
 	}
 	# ------------------------------------------------------------------
 	/**
