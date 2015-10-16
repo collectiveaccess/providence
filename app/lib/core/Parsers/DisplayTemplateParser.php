@@ -613,6 +613,8 @@ class DisplayTemplateParser {
 					if ($o_node->children && (sizeof($o_node->children) > 0)) {
 						$vs_proc_template = DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, $pa_options);
 					} else {
+						//print "meow=".$o_node->html();
+						//print_r($pa_vals);
 						$vs_proc_template = caProcessTemplate($o_node->html(), $pa_vals, ['quote' => $pb_quote]);
 					}
 					
@@ -664,7 +666,8 @@ class DisplayTemplateParser {
 		
 		$pb_include_blanks = caGetOption('includeBlankValuesInArray', $pa_options, false);
 		$ps_prefix = caGetOption(['placeholderPrefix', 'relativeTo', 'prefix'], $pa_options, null);
-	
+		$pn_index = caGetOption('index', $pa_options, null);
+		
 		$vs_cache_key = md5($pr_res->tableName()."/".$pr_res->getPrimaryKey()."/".print_r($pa_tags, true)."/".print_r($pa_options, true));
 		
 		$va_get_specs = [];
@@ -717,8 +720,8 @@ class DisplayTemplateParser {
 				DisplayTemplateParser::$value_cache[$vs_cache_key] = $va_tag_vals;
 			}
 			
-			if(strlen($vn_index = caGetOption('index', $pa_options, null))) {
-				$va_tag_vals = $va_tag_vals[$vn_index];	
+			if(strlen($pn_index)) {
+				$va_tag_vals = $va_tag_vals[$pn_index];	
 				$vs_relative_to_container = null;
 			}
 		}
@@ -762,6 +765,8 @@ class DisplayTemplateParser {
 					default:
 						if ($vs_relative_to_container) {
 							$va_val_list = [$va_tag_vals[$vn_c][$vs_tag]];
+						} elseif(strlen($pn_index)) {
+							$va_val_list = [$va_tag_vals[$vs_tag]];
 						} else {
 							$va_val_list = $pr_res->get($vs_get_spec, $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
 					
@@ -781,6 +786,7 @@ class DisplayTemplateParser {
 				}
 			}
 		}
+		
 		return $va_vals;
 	}
 	# -------------------------------------------------------------------
