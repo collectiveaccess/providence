@@ -143,7 +143,6 @@ var caUI = caUI || {};
 			jQuery.getJSON(that.initDataUrl, { id: item_id, bundle: that.bundle}, function(data, e, x) {
 				if (typeof data === 'object') {
 					var dataAsList = [];
-					console.log(data);
 					for(var o in data) {
 						if (data.hasOwnProperty(o)) {
 							dataAsList.push(parseInt(data[o]));
@@ -151,8 +150,8 @@ var caUI = caUI || {};
 					}
 					data = dataAsList;
 				}
-			
-			
+
+
 				if (data.length) {
 					that.selectedItemIDs = data.join(';').split(';');
 
@@ -173,7 +172,6 @@ var caUI = caUI || {};
 				}
 				var l = 0;
 				jQuery.each(data, function(i, id) {
-				console.log("load", i, id);
 					that.setUpHierarchyLevel(i, id, 1, item_id);
 					l++;
 				});
@@ -373,7 +371,6 @@ var caUI = caUI || {};
 			if (!id_list.length) { that.isLoadingLevel = false; return; }
 
 			var start = 0;
-			console.log("url", that.levelDataUrl, { id: id_list.join(';'), bundle: that.bundle, init: is_init ? 1 : '', root_item_id: that.selectedItemIDs[0] ? that.selectedItemIDs[0] : '', start: start * that.maxItemsPerHierarchyLevelPage, max: (that.uiStyle == 'vertical') ? 0 : that.maxItemsPerHierarchyLevelPage }); 
 			jQuery.getJSON(that.levelDataUrl, { id: id_list.join(';'), bundle: that.bundle, init: is_init ? 1 : '', root_item_id: that.selectedItemIDs[0] ? that.selectedItemIDs[0] : '', start: start * that.maxItemsPerHierarchyLevelPage, max: (that.uiStyle == 'vertical') ? 0 : that.maxItemsPerHierarchyLevelPage }, function(dataForLevels) {
 				var longestLevel = 0;
 				jQuery.each(dataForLevels, function(key, data) {
