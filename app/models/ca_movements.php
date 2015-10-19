@@ -298,4 +298,3 @@ class ca_movements extends BaseObjectLocationModel implements IBundleProvider {
 	}
 	# ------------------------------------------------------
 }
-?>
