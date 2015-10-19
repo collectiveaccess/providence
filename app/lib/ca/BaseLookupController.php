@@ -319,7 +319,7 @@
 					
 					$va_sorted_items = array();
 					foreach($va_items_for_locale as $vn_id => $va_node) {
-						$vs_key = mb_strtolower(preg_replace('![^A-Za-z0-9]!', '_', caRemoveAccents($va_node['name'])))."_".$vn_id;
+						$vs_key = caSortableValue(mb_strtolower(preg_replace('![^A-Za-z0-9]!', '_', caRemoveAccents($va_node['name']))))."_".$vn_id;
 					
 						if (isset($va_node['sort']) && $va_node['sort']) {
 							$va_sorted_items[$va_node['sort']][$vs_key] = $va_node;

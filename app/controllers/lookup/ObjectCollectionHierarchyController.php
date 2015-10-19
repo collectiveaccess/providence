@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2013 Whirl-i-Gig
+ * Copyright 2012-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -325,7 +325,6 @@
 								'item_id' => $vs_table.'-'.$vn_id,
 								'parent_id' => $qr_children->get($vs_table.'.parent_id'),
 								'idno' => $qr_children->get($vs_table.'.idno'),
-								//$vs_label_display_field_name => $qr_children->get($vs_table.'.preferred_labels.'.$vs_label_display_field_name),
 								'locale_id' => $qr_children->get($vs_table.'.'.'locale_id')
 							);
 							if (!$va_tmp[$vs_label_display_field_name]) { $va_tmp[$vs_label_display_field_name] = $va_tmp['idno']; }
@@ -357,8 +356,6 @@
 							$va_ids = array();
 							foreach($va_cross_table_items as $vn_x_item_id => $va_x_item) {
 								$va_items['ca_objects-'.$vn_x_item_id][$va_x_item['locale_id']] = $va_x_item;
-								//$va_x_item_extracted = caExtractValuesByUserLocale(array(0 => $va_x_item['labels']));
-								//$va_items[$va_x_item['object_id']][$va_x_item['locale_id']]['name'] = $va_x_item_extracted[0];
 							
 								$va_items['ca_objects-'.$va_x_item['object_id']][$va_x_item['locale_id']]['item_id'] = 'ca_objects-'.$va_x_item['object_id'];
 								$va_items['ca_objects-'.$va_x_item['object_id']][$va_x_item['locale_id']]['parent_id'] = $vn_id;
@@ -391,7 +388,7 @@
 					
 						$va_sorted_items = array();
 						foreach($va_items_for_locale as $vn_id => $va_node) {
-							$vs_key = preg_replace('![^A-Za-z0-9]!', '_', $va_node['name']);
+							$vs_key = caSortableValue(mb_strtolower(preg_replace('![^A-Za-z0-9]!', '_', caRemoveAccents($va_node['name']))))."_".$vn_id;
 					
 							if (isset($va_node['sort']) && $va_node['sort']) {
 								$va_sorted_items[$va_node['sort']][$vs_key] = $va_node;
@@ -454,7 +451,7 @@
  			if ($vs_table == 'ca_objects') {
  				
  				$t_item->load($vn_top_id);
- 				// try to pull related collections ��� the first one is considered the parent
+ 				// try to pull related collections - the first one is considered the parent
  				$va_cross_table_items = $t_item->getRelatedItems('ca_collections');
  				
  				if(is_array($va_cross_table_items)) {
@@ -523,4 +520,3 @@
  		}
  		# -------------------------------------------------------
  	}
- ?>
