@@ -1673,19 +1673,21 @@ class SearchResult extends BaseObject {
 			foreach($pa_value_list as $o_attribute) {
 				$va_acc = array();
 				$va_values = $o_attribute->getValues();
-				
+				//print "FOR ".$o_attribute->getAttributeID()."<br>\n";
 				if ($pa_options['useLocaleCodes']) {
 					if (!$o_attribute->getLocaleID() || !($vm_locale_id = SearchResult::$opo_locales->localeIDToCode($o_attribute->getLocaleID()))) { $vm_locale_id = __CA_DEFAULT_LOCALE__; }; 
 				} else {
 					if (!($vm_locale_id = $o_attribute->getLocaleID())) { $vm_locale_id = SearchResult::$opo_locales->localeCodeToID(__CA_DEFAULT_LOCALE__); }; 
 				}
 				
+				$vb_did_return_value = false;
 				foreach($va_values as $o_value) {
 					$vb_dont_return_value = false;
 					$vs_element_code = $o_value->getElementCode();
 					if ($va_path_components['subfield_name']) {
 						if ($va_path_components['subfield_name'] && ($va_path_components['subfield_name'] !== $vs_element_code) && !($o_value instanceof InformationServiceAttributeValue)) { 
 							$vb_dont_return_value = true;
+							//print "RETURN $vs_element_code<br>\n";
 							if (!$pa_options['filter']) { continue; }
 						}
 					}
@@ -1729,6 +1731,7 @@ class SearchResult extends BaseObject {
 					$va_acc[join('.', $va_spec).'.'.$vs_element_code] = $o_value->getDisplayValue(array_merge($pa_options, array('output' => 'idno')));
 					
 					if (!$vb_dont_return_value) {
+						$vb_did_return_value = true;
 						if($pa_options['makeLink']) { $vs_val_proc = array_shift(caCreateLinksFromText(array($vs_val_proc), $vs_table_name, array($vn_id))); }
 					
 						if ($pa_options['returnWithStructure']) {
@@ -1736,6 +1739,15 @@ class SearchResult extends BaseObject {
 						} else { 
 							$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()] = $vs_val_proc;	
 						}
+					}
+				}
+				
+				if ($va_path_components['subfield_name'] && $pa_options['returnBlankValues'] && !$vb_did_return_value) {
+					// value is missing so insert blank
+					if ($pa_options['returnWithStructure']) {
+						$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][$va_path_components['subfield_name']] = '';
+					} else { 
+						$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()] = '';	
 					}
 				}
 				
@@ -1773,7 +1785,7 @@ class SearchResult extends BaseObject {
 		// Flatten array for return as string or simple array value
 		// 
 		$va_flattened_values = $this->_flattenArray($va_return_values, $pa_options);
-		
+		//print "VALUES=".print_R($va_flattened_values, true)."<br>\n\n";
 		if ($pa_options['returnAsArray']) {
 			return $va_flattened_values;
 		} else {
@@ -2059,6 +2071,7 @@ class SearchResult extends BaseObject {
 	 * @return mixed
 	 */
 	public function getWithTemplate($ps_template, $pa_options=null) {
+		unset($pa_options['request']);
 		if($this->opb_disable_get_with_template_prefetch) {
 			if(!is_array($pa_options)) { $pa_options = array(); }
 			return caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->get($this->ops_table_name.".".$this->ops_subject_pk)), array_merge($pa_options, ['dontPrefetchRelated' => true]));
@@ -2067,7 +2080,6 @@ class SearchResult extends BaseObject {
 		// the assumption is that if you run getWithTemplate for the current row, you'll probably run it for the next bunch of rows too
 		// since running caProcessTemplateForIDs for every single row is slow, we prefetch a set number of rows here
 		$vs_cache_base_key = $this->getCacheKeyForGetWithTemplate($ps_template, $pa_options);
-
 		if(!isset(self::$s_template_prefetch_cache[$vs_cache_base_key][$vn_cur_row = $this->opo_engine_result->currentRow()])) {
 			$this->prefetchForGetWithTemplate($ps_template, $pa_options);
 		}
@@ -2081,7 +2093,6 @@ class SearchResult extends BaseObject {
 	private function prefetchForGetWithTemplate($ps_template, $pa_options) {
 		$va_ids = $this->getRowIDsToPrefetch($this->opo_engine_result->currentRow(), 500);
 		$vs_cache_base_key = $this->getCacheKeyForGetWithTemplate($ps_template, $pa_options);
-
 		$pa_options['returnAsArray'] = true; // careful, this would change the cache key ... which is why we generate it before
 		$pa_options['includeBlankValuesInTopLevelForPrefetch'] = true; // if we don't set this blank values are omitted and array offsets following a blank value will be incorrect. A recipe for a bad day.
 		$va_vals = caProcessTemplateForIDs($ps_template, $this->ops_table_name, $va_ids, $pa_options);
@@ -2111,8 +2122,12 @@ class SearchResult extends BaseObject {
 	 *
 	 */
 	private function getCacheKeyForGetWithTemplate($ps_template, $pa_options) {
-		unset($pa_options['request']);
-		return $this->ops_table_name.'/'.$ps_template.'/'.md5(serialize($pa_options));
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		foreach($pa_options as $vs_k => $vs_v) {
+			if (in_array($vs_k, array('useSingular', 'maximumLength', 'delimiter', 'purify', 'restrict_to_types', 'restrict_to_relationship_types',  'restrictToTypes', 'restrictToRelationshipTypes', 'returnAsArray'))) { continue; }
+			unset($pa_options[$vs_k]);
+		}
+		return md5($this->ops_table_name.'/'.$ps_template.'/'.serialize($pa_options));
 	}
 	# ------------------------------------------------------------------
 	/**

@@ -3034,7 +3034,7 @@ function caFileIsIncludable($ps_file) {
 		$num %= $pn_denom;
 
 		if (!$num) {
-			return "$int";
+			return "$int in";
 		}
 
 		if ($pb_reduce) {
@@ -3060,5 +3060,39 @@ function caFileIsIncludable($ps_file) {
 		}
 
 		return "$num/$pn_denom in";
+	}
+	# ----------------------------------------
+	/**
+	 * Convert text into string suitable for sorting, by moving articles to end of string, etc.
+	 *
+	 * @param string $ps_text Text to convert to sortable value
+	 * @param array $pa_options Options include:
+	 *		locale = Locale settings to use. If omitted current default locale is used. [Default is current locale]
+	 *
+	 * @return string Converted text. If locale cannot be found $ps_text is returned unchanged.
+	 */
+	function caSortableValue($ps_text, $pa_options=null) {
+		global $g_ui_locale;
+		$ps_locale = caGetOption('locale', $pa_options, $g_ui_locale);
+		if (!$ps_locale) { return $ps_text; }
+		
+		$o_locale_settings = TimeExpressionParser::getSettingsForLanguage($ps_locale);
+		
+		$vs_display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $ps_text));
+		
+		$va_definite_articles = $o_locale_settings->get('definiteArticles');
+		$va_indefinite_articles = $o_locale_settings->get('indefiniteArticles');
+		
+		foreach(array($va_definite_articles, $va_indefinite_articles) as $va_articles) {
+			if (is_array($va_articles)) {
+				foreach($va_articles as $vs_article) {
+					if (preg_match('!^('.$vs_article.')[ ]+!i', $vs_display_value, $va_matches)) {
+						$vs_display_value = trim(str_replace($va_matches[1], '', $vs_display_value).', '.$va_matches[1]);
+						break(2);
+					}
+				}
+			}
+		}
+		return $vs_display_value;
 	}
 	# ----------------------------------------

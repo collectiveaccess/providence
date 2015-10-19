@@ -183,8 +183,14 @@
  		private $ops_text_value;
  		private $opn_start_date;
  		private $opn_end_date;
- 		
+
+		/**
+		 * @var TimeExpressionParser
+		 */
  		static private $o_tep;
+		/**
+		 * @var array
+		 */
  		static private $s_date_cache = array();
  		# ------------------------------------------------------------------
  		public function __construct($pa_value_array=null) {
@@ -207,7 +213,12 @@
 		public function getDisplayValue($pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if (isset($pa_options['rawDate']) && $pa_options['rawDate']) {
-				return array(0 => $this->opn_start_date, 1 => $this->opn_end_date, 'start' => $this->opn_start_date, 'end' =>$this->opn_end_date);
+				return array(
+					0 => $this->opn_start_date,
+					1 => $this->opn_end_date,
+					'start' => $this->opn_start_date,
+					'end' =>$this->opn_end_date
+				);
 			}
 			if (caGetOption('GET_DIRECT_DATE', $pa_options, false) || caGetOption('getDirectDate', $pa_options, false)) {
 				return $this->opn_start_date;
@@ -219,17 +230,28 @@
 			}
 			
 			$o_date_config = Configuration::load(__CA_CONF_DIR__.'/datetime.conf');
-			
-			if(isset(DateRangeAttributeValue::$s_date_cache[$vs_date_format = $o_date_config->get('dateFormat')][$this->opn_start_date.'/'.$this->opn_end_date])) {
-				return DateRangeAttributeValue::$s_date_cache[$vs_date_format][$this->opn_start_date.'/'.$this->opn_end_date];
+
+			$vs_date_format = $o_date_config->get('dateFormat');
+			$vs_cache_key = md5($vs_date_format . $this->opn_start_date . $this->opn_end_date);
+
+			// pull from cache
+			if(isset(DateRangeAttributeValue::$s_date_cache[$vs_cache_key])) {
+				return DateRangeAttributeValue::$s_date_cache[$vs_cache_key];
 			}
-			if ($vs_date_format == 'original') {
-				return DateRangeAttributeValue::$s_date_cache[$vs_date_format][$this->opn_start_date.'/'.$this->opn_end_date] = $this->ops_text_value;
+
+			// if neither start nor end date are set, the setHistoricTimestamps() call below will
+			// fail and the TEP will return the text for whatever happened to be parsed previously.
+			if($this->opn_start_date || $this->opn_end_date) {
+				if ($vs_date_format == 'original') {
+					return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = $this->ops_text_value;
+				} else {
+					$va_settings = MemoryCache::fetch($this->getElementID(), 'ElementSettings');
+					DateRangeAttributeValue::$o_tep->setHistoricTimestamps($this->opn_start_date, $this->opn_end_date);
+					return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = DateRangeAttributeValue::$o_tep->getText(array_merge(array('isLifespan' => $va_settings['isLifespan']), $pa_options)); //$this->ops_text_value;
+				}
 			} else {
-				$va_settings = MemoryCache::fetch($this->getElementID(), 'ElementSettings');
-				DateRangeAttributeValue::$o_tep->setHistoricTimestamps($this->opn_start_date, $this->opn_end_date);
-				return DateRangeAttributeValue::$s_date_cache[$vs_date_format][$this->opn_start_date.'/'.$this->opn_end_date] = DateRangeAttributeValue::$o_tep->getText(array_merge(array('isLifespan' => $va_settings['isLifespan']), $pa_options)); //$this->ops_text_value;
- 			}
+				return null;
+			}
 		}
  		# ------------------------------------------------------------------
 		public function getHistoricTimestamps() {
