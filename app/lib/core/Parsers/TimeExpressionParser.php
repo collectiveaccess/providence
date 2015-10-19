@@ -2959,6 +2959,20 @@ class TimeExpressionParser {
 		return $this->opo_language_settings;
 	}
 	# -------------------------------------------------------------------
+	/**
+	 * Returns a Configuration object with the date/time localization  
+	 * settings for the specified locale
+	 *
+	 * @param string $ps_iso_code ISO code (ex. en_US) 
+	 * @return Configuration Settings for the specified locale or null if the locale is not defined.
+	 */
+	static public function getSettingsForLanguage($ps_iso_code) {
+		$vs_config_path = __CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser/'.$ps_iso_code.'.lang';
+		if(!file_exists($vs_config_path)) { return null; }
+		
+		return Configuration::load($vs_config_path);
+	}
+	# -------------------------------------------------------------------
 	# Error handling
 	# -------------------------------------------------------------------
 	private function setParseError($pa_token, $pn_error) {

@@ -153,8 +153,8 @@ var caUI = caUI || {};
 					}
 					data = dataAsList;
 				}
-			
-			
+
+
 				if (data.length) {
 					that.selectedItemIDs = data.join(';').split(';');
 
