@@ -11624,6 +11624,32 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		return null;
 	}
+	# ------------------------------------------------------
+	/**
+	 * Check if record with primary key id or idno exists. Will check box, giving preference to primary key id unless the 'idOnly' option is set
+	 * in which case it will only consider primary key ids. If the 'idnoOnly' option is set and the model supports idno's then only idno's will
+	 * be considered
+	 *
+	 * @param mixed $pm_id Numeric primary key id or alphanumeric idno to search for.
+	 * @param array $pa_options Options include:
+	 *		idOnly = Only consider primary key ids. [Default is false]
+	 *		idnoOnly = Only consider idnos. [Default is false]
+	 * @return bool
+	 */
+	public static function exists($pm_id, $pa_options=null) {	
+		$o_dm = Datamodel::load();
+		if (is_numeric($pm_id) && $pm_id > 0) {
+			$vn_c = self::find([$o_dm->primaryKey(get_called_class()) => $pm_id], ['returnAs' => 'count']);
+			if ($vn_c > 0) { return true; }
+		}
+		
+		if (!caGetOption('idOnly', $pa_options, false) && ($vs_idno_fld = $o_dm->getTableProperty(get_called_class(), 'ID_NUMBERING_ID_FIELD'))) {
+			$vn_c = self::find([$vs_idno_fld => $pm_id], ['returnAs' => 'count']);
+			if ($vn_c > 0) { return true; }
+		}
+		
+		return false;
+	}
 	# --------------------------------------------------------------------------------------------
 	/**
 	 * Destructor
