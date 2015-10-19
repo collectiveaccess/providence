@@ -124,41 +124,104 @@
 		 */
 		private function _setCurrent($pm_rel_table_name_or_num, $pn_rel_id) {
 			
-			switch ($this->tableName()) {
+			if(!($vs_rel_table = $this->getAppDatamodel()->getTableName($pm_rel_table_name_or_num))) { return null; }
+			
+			switch ($vs_table = $this->tableName()) {
 				case 'ca_movements':
-					// Calcuate current flag for relationships to storage locations and objects
-					
+					//
+					// Calcuate current flag for movement-object relationships
+					//
+					//		Each object can have only one "current" movement at any time
+					//
 					if (
 						($vs_date_element = $this->getAppConfig()->get('movement_storage_location_date_element'))
 						&&
-						(($vs_rel_table = $this->getAppDatamodel()->getTableName($pm_rel_table_name_or_num)) == 'ca_objects')
+						($vs_rel_table == 'ca_objects')
 					) {
 						// get all other movements for this object
-						$t_object = new ca_objects();
-						$t_object->setTransaction($this->getTransaction());
 			
-						if ($t_object->load($pn_rel_id)) {
-							if ($qr_movements_for_object = ca_movements_x_objects::find(array('object_id' => $pn_rel_id), array('returnAs' => 'SearchResult'))) {
-								$va_list = array();
+						if (ca_objects::exists($pn_rel_id, ['idOnly' => true])) {
+							if ($qr_movements_for_object = ca_movements_x_objects::find(array('object_id' => $pn_rel_id), array('returnAs' => 'SearchResult', 'transaction' => $this->getTransaction()))) {
+								$va_list = $va_rel_ids = array();
 								while($qr_movements_for_object->nextHit()) {
-									$va_list[$qr_movements_for_object->get("ca_movements.{$vs_date_element}", array('sortable' => true))] = $qr_movements_for_object->get('ca_movements_x_objects.relation_id');
+									$va_list[$qr_movements_for_object->get("ca_movements.{$vs_date_element}", array('sortable' => true))] = $vn_rel_id = $qr_movements_for_object->get('ca_movements_x_objects.relation_id');
+									$va_rel_ids[] = $vn_rel_id;
 								}
 								ksort($va_list, SORT_NUMERIC);
-								$vn_current = array_pop($va_list);
+								$vn_current = end((array_values($va_list)));
 					
 								if(sizeof($va_list)) { 
-									$t_object->getDb()->query("UPDATE ca_movements_x_objects SET source_info = '' WHERE relation_id IN (?)", array(array_values($va_list)));
-									$t_object->getDb()->query("UPDATE ca_movements_x_storage_locations SET source_info = '' WHERE movement_id IN (SELECT movement_id FROM ca_movements_x_objects WHERE relation_id IN (?))", array(array_values($va_list)));
+									$this->getDb()->query("UPDATE ca_movements_x_objects SET source_info = '' WHERE relation_id IN (?)", array($va_rel_ids));
 								}
 								if ($vn_current) {
-									$t_object->getDb()->query("UPDATE ca_movements_x_objects SET source_info = 'current' WHERE relation_id = ?", array($vn_current));
-									$t_object->getDb()->query("UPDATE ca_movements_x_storage_locations SET source_info = 'current' WHERE movement_id IN (SELECT movement_id FROM ca_movements_x_objects WHERE relation_id = ?)", array($vn_current));
+									$this->getDb()->query("UPDATE ca_movements_x_objects SET source_info = 'current' WHERE relation_id = ?", array($vn_current));
+								}
+							}
+						}
+					}
+					break;
+				case 'ca_objects':
+					//
+					// Calcuate current flag for object-storage_location relationships
+					//
+					//		Each object can have only one "current" location at any time
+					//
+					if (
+						($vs_rel_table == 'ca_storage_locations')
+					) {
+						// get all other locations for this object
+						if (ca_storage_locations::exists($pn_rel_id, ['idOnly' => true])) {
+							if ($qr_locations_for_object = ca_objects_x_storage_locations::find(array('object_id' => $this->getPrimaryKey()), array('returnAs' => 'SearchResult', 'transaction' => $this->getTransaction()))) {
+								$va_list = $va_rel_ids = array();
+								while($qr_locations_for_object->nextHit()) {
+									$va_list[$qr_locations_for_object->get("ca_objects_x_storage_locations.sdatetime", array('sortable' => true))] = $vn_rel_id = $qr_locations_for_object->get('ca_objects_x_storage_locations.relation_id');
+									$va_rel_ids[] = $vn_rel_id;
+								}
+								ksort($va_list, SORT_NUMERIC);
+								$vn_current = end((array_values($va_list)));
+								
+								if(sizeof($va_list)) { 
+									$this->getDb()->query("UPDATE ca_objects_x_storage_locations SET source_info = '' WHERE relation_id IN (?)", array($va_rel_ids));
+								}
+								if ($vn_current) {
+									$this->getDb()->query("UPDATE ca_objects_x_storage_locations SET source_info = 'current' WHERE relation_id = ?", array($vn_current));
+								}
+							}
+						}
+					}
+					break;
+				case 'ca_storage_locations':
+					//
+					// Calcuate current flag for object-storage_location relationships
+					//
+					//		Each object can have only one "current" location at any time
+					//
+					if (
+						($vs_rel_table == 'ca_objects')
+					) {
+						// get all other locations for this object
+						if (ca_objects::exists($pn_rel_id, ['idOnly' => true])) {
+							if ($qr_locations_for_object = ca_objects_x_storage_locations::find(array('object_id' => $pn_rel_id), array('returnAs' => 'SearchResult', 'transaction' => $this->getTransaction()))) {
+								$va_list = $va_rel_ids = array();
+								while($qr_locations_for_object->nextHit()) {
+									$va_list[$qr_locations_for_object->get("ca_objects_x_storage_locations.sdatetime", array('sortable' => true))] = $vn_rel_id = $qr_locations_for_object->get('ca_objects_x_storage_locations.relation_id');
+									$va_rel_ids[] = $vn_rel_id;
+								}
+								ksort($va_list, SORT_NUMERIC);
+								$vn_current = end((array_values($va_list)));
+								
+								if(sizeof($va_list)) { 
+									$this->getDb()->query("UPDATE ca_objects_x_storage_locations SET source_info = '' WHERE relation_id IN (?)", array($va_rel_ids));
+								}
+								if ($vn_current) {
+									$this->getDb()->query("UPDATE ca_objects_x_storage_locations SET source_info = 'current' WHERE relation_id = ?", array($vn_current));
 								}
 							}
 						}
 					}
 					break;
 			}
+			return true;
 		}
 		# -------------------------------------------------------
 	}
