@@ -139,7 +139,7 @@
 				$vs_display_field = $this->getProperty('LABEL_DISPLAY_FIELD');
 				
 				$t_locale = new ca_locales();
-				$vs_display_value = caSortableValue($this->get($vs_display_field), ['locale' => $t_locale->localeIDToCode($this->get('locale_id'))]);
+				$vs_display_value = caSortableValue($this->get($vs_display_field), array('locale' => $t_locale->localeIDToCode($this->get('locale_id'))));
 			
 				$this->set($vs_sort_field, $vs_display_value);
 			}
