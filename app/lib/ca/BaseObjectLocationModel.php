@@ -125,6 +125,7 @@
 		private function _setCurrent($pm_rel_table_name_or_num, $pn_rel_id) {
 			
 			if(!($vs_rel_table = $this->getAppDatamodel()->getTableName($pm_rel_table_name_or_num))) { return null; }
+			$vn_now = TimeExpressionParser::now();
 			
 			switch ($vs_table = $this->tableName()) {
 				case 'ca_movements':
@@ -140,11 +141,14 @@
 					) {
 						// get all other movements for this object
 			
-						if (ca_objects::exists($pn_rel_id, ['idOnly' => true])) {
+						if (ca_objects::exists($pn_rel_id, ['idOnly' => true, 'transaction' => $this->getTransaction()])) {
 							if ($qr_movements_for_object = ca_movements_x_objects::find(array('object_id' => $pn_rel_id), array('returnAs' => 'SearchResult', 'transaction' => $this->getTransaction()))) {
 								$va_list = $va_rel_ids = array();
 								while($qr_movements_for_object->nextHit()) {
-									$va_list[$qr_movements_for_object->get("ca_movements.{$vs_date_element}", array('sortable' => true))] = $vn_rel_id = $qr_movements_for_object->get('ca_movements_x_objects.relation_id');
+									$vn_date = $qr_movements_for_object->get("ca_movements.{$vs_date_element}", array('sortable' => true));
+									if ($vn_date > $vn_now) { continue; }  // omit future moves
+									
+									$va_list[$vn_date] = $vn_rel_id = $qr_movements_for_object->get('ca_movements_x_objects.relation_id');
 									$va_rel_ids[] = $vn_rel_id;
 								}
 								ksort($va_list, SORT_NUMERIC);
@@ -170,11 +174,14 @@
 						($vs_rel_table == 'ca_storage_locations')
 					) {
 						// get all other locations for this object
-						if (ca_storage_locations::exists($pn_rel_id, ['idOnly' => true])) {
+						if (ca_storage_locations::exists($pn_rel_id, ['idOnly' => true, 'transaction' => $this->getTransaction()])) {
 							if ($qr_locations_for_object = ca_objects_x_storage_locations::find(array('object_id' => $this->getPrimaryKey()), array('returnAs' => 'SearchResult', 'transaction' => $this->getTransaction()))) {
 								$va_list = $va_rel_ids = array();
 								while($qr_locations_for_object->nextHit()) {
-									$va_list[$qr_locations_for_object->get("ca_objects_x_storage_locations.sdatetime", array('sortable' => true))] = $vn_rel_id = $qr_locations_for_object->get('ca_objects_x_storage_locations.relation_id');
+									$vn_date = $qr_locations_for_object->get("ca_objects_x_storage_locations.sdatetime", array('sortable' => true));
+									if ($vn_date > $vn_now) { continue; }  // omit future moves
+									
+									$va_list[$vn_date] = $vn_rel_id = $qr_locations_for_object->get('ca_objects_x_storage_locations.relation_id');
 									$va_rel_ids[] = $vn_rel_id;
 								}
 								ksort($va_list, SORT_NUMERIC);
@@ -200,11 +207,14 @@
 						($vs_rel_table == 'ca_objects')
 					) {
 						// get all other locations for this object
-						if (ca_objects::exists($pn_rel_id, ['idOnly' => true])) {
+						if (ca_objects::exists($pn_rel_id, ['idOnly' => true, 'transaction' => $this->getTransaction()])) {
 							if ($qr_locations_for_object = ca_objects_x_storage_locations::find(array('object_id' => $pn_rel_id), array('returnAs' => 'SearchResult', 'transaction' => $this->getTransaction()))) {
 								$va_list = $va_rel_ids = array();
 								while($qr_locations_for_object->nextHit()) {
-									$va_list[$qr_locations_for_object->get("ca_objects_x_storage_locations.sdatetime", array('sortable' => true))] = $vn_rel_id = $qr_locations_for_object->get('ca_objects_x_storage_locations.relation_id');
+									$vn_date = $qr_locations_for_object->get("ca_objects_x_storage_locations.sdatetime", array('sortable' => true));
+									if ($vn_date > $vn_now) { continue; }  // omit future moves
+									
+									$va_list[$vn_date] = $vn_rel_id = $qr_locations_for_object->get('ca_objects_x_storage_locations.relation_id');
 									$va_rel_ids[] = $vn_rel_id;
 								}
 								ksort($va_list, SORT_NUMERIC);
