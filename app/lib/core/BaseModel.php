@@ -11634,17 +11634,19 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param array $pa_options Options include:
 	 *		idOnly = Only consider primary key ids. [Default is false]
 	 *		idnoOnly = Only consider idnos. [Default is false]
+	 *		transaction = Transaction to use. [Default is no transaction]
 	 * @return bool
 	 */
 	public static function exists($pm_id, $pa_options=null) {	
 		$o_dm = Datamodel::load();
+		$o_trans = caGetOption('transaction', $pa_option, null);
 		if (is_numeric($pm_id) && $pm_id > 0) {
-			$vn_c = self::find([$o_dm->primaryKey(get_called_class()) => $pm_id], ['returnAs' => 'count']);
+			$vn_c = self::find([$o_dm->primaryKey(get_called_class()) => $pm_id], ['returnAs' => 'count', 'transaction' => $o_trans]);
 			if ($vn_c > 0) { return true; }
 		}
 		
 		if (!caGetOption('idOnly', $pa_options, false) && ($vs_idno_fld = $o_dm->getTableProperty(get_called_class(), 'ID_NUMBERING_ID_FIELD'))) {
-			$vn_c = self::find([$vs_idno_fld => $pm_id], ['returnAs' => 'count']);
+			$vn_c = self::find([$vs_idno_fld => $pm_id], ['returnAs' => 'count', 'transaction' => $o_trans]);
 			if ($vn_c > 0) { return true; }
 		}
 		
