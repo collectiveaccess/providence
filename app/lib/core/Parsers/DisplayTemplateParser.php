@@ -824,7 +824,7 @@ class DisplayTemplateParser {
 		
 		$vb_has_value = null;
 		foreach($va_codes as $vs_code => $vs_bool) {
-			$va_val_list = $pr_res->get($vs_code, ['returnAsArray' => true]);
+			$va_val_list = $pr_res->get($vs_code, ['returnAsArray' => true, 'returnBlankValues' => true]);
 			
 			if(!is_array($va_val_list)) {  // no value
 				$vb_value_present = false;
