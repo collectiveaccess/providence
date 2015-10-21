@@ -9960,16 +9960,14 @@ $pa_options["display_form_field_tips"] = true;
 			foreach($va_one_to_many_relations as $vs_many_table => $va_info) {
 				foreach($va_info as $va_relationship) {
 					# do any records exist?
-					$t_related = $this->_DATAMODEL->getInstanceByTableName($vs_many_table, true);
-					if ($this->inTransaction()) { $t_related->setTransaction($o_trans); }
-					$vs_rel_pk = $t_related->primaryKey();
+					$vs_rel_pk = $this->_DATAMODEL->primaryKey($vs_many_table);
 					
 					$qr_record_check = $o_db->query($x="
 						SELECT {$vs_rel_pk}
 						FROM {$vs_many_table}
 						WHERE
 							({$va_relationship['many_table_field']} = ?)"
-					, (int)$vn_id);
+					, array((int)$vn_id));
 					
 					if (($vn_count = $qr_record_check->numRows()) > 0) {
 						$va_tables[$vs_many_table] = $vn_count;	
