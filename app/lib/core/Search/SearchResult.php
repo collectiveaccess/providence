@@ -1663,6 +1663,7 @@ class SearchResult extends BaseObject {
 	 */
 	private function _getAttributeValue($pa_value_list, $pt_instance, $pa_options) {
 		$va_path_components			=& $pa_options['pathComponents'];
+		$vs_delimiter				= isset($pa_options['delimiter']) ? $pa_options['delimiter'] : ';';
 		$va_return_values = array();
 		
 		
@@ -1671,9 +1672,12 @@ class SearchResult extends BaseObject {
 		
 		if (is_array($pa_value_list) && sizeof($pa_value_list)) {
 			foreach($pa_value_list as $o_attribute) {
+				$t_attr_element = $pt_instance->_getElementInstance($o_attribute->getElementID());
+				$vn_attr_type = $t_attr_element->get('data_type');
+				
 				$va_acc = array();
 				$va_values = $o_attribute->getValues();
-				//print "FOR ".$o_attribute->getAttributeID()."<br>\n";
+				
 				if ($pa_options['useLocaleCodes']) {
 					if (!$o_attribute->getLocaleID() || !($vm_locale_id = SearchResult::$opo_locales->localeIDToCode($o_attribute->getLocaleID()))) { $vm_locale_id = __CA_DEFAULT_LOCALE__; }; 
 				} else {
@@ -1687,11 +1691,10 @@ class SearchResult extends BaseObject {
 					if ($va_path_components['subfield_name']) {
 						if ($va_path_components['subfield_name'] && ($va_path_components['subfield_name'] !== $vs_element_code) && !($o_value instanceof InformationServiceAttributeValue)) { 
 							$vb_dont_return_value = true;
-							//print "RETURN $vs_element_code<br>\n";
 							if (!$pa_options['filter']) { continue; }
 						}
 					}
-				
+
 					switch($o_value->getType()) {
 						case __CA_ATTRIBUTE_VALUE_LIST__:
 							$t_element = $pt_instance->_getElementInstance($o_value->getElementID());
@@ -1724,6 +1727,11 @@ class SearchResult extends BaseObject {
 							$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'])));
 							break;
 					}
+					
+					if (($vn_attr_type == __CA_ATTRIBUTE_VALUE_CONTAINER__) && strlen($vs_val_proc) && !$va_path_components['subfield_name']) {
+						$va_val_proc[] = $vs_val_proc;
+						$vs_val_proc = join($vs_delimiter, $va_val_proc);
+					} 
 					
 					$va_spec = $va_path_components['components'];
 					
