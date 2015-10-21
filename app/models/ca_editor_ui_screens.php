@@ -704,30 +704,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						);
 					}
 					
-					if (($vs_bundle == 'ca_movements') && ($t_instance->tableName() == 'ca_storage_locations')) {
-						$va_additional_settings['showCurrentOnly'] = array(
-							'formatType' => FT_TEXT,
-							'displayType' => DT_CHECKBOXES,
-							'width' => "10", 'height' => "1",
-							'takesLocale' => false,
-							'default' => '0',
-							'label' => _t('Show current only?'),
-							'description' => _t('If checked only current movements are displayed.')
-						);
-					}
-					
-					if (($vs_bundle == 'ca_storage_locations') && ($t_instance->tableName() == 'ca_movements')) {
-						$va_additional_settings['showCurrentOnly'] = array(
-							'formatType' => FT_TEXT,
-							'displayType' => DT_CHECKBOXES,
-							'width' => "10", 'height' => "1",
-							'takesLocale' => false,
-							'default' => '0',
-							'label' => _t('Show current only?'),
-							'description' => _t('If checked only current objects are displayed.')
-						);
-					}
-					
 					if (($vs_bundle == 'ca_storage_locations') && ($t_instance->tableName() == 'ca_objects')) {
 						$va_additional_settings['showCurrentOnly'] = array(
 							'formatType' => FT_TEXT,

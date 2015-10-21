@@ -38,6 +38,11 @@ require_once(__CA_LIB_DIR__."/core/Configuration.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 
+/**
+ * Constant for expression that will parse as current date/time independent of current locale.
+ */
+define("__TEP_NOW__", "__NOW__");
+
 # --- Token types
 define("TEP_TOKEN_INTEGER", 0);
 define("TEP_TOKEN_ALPHA", 1);
@@ -213,7 +218,9 @@ class TimeExpressionParser {
 	}
 	# -------------------------------------------------------------------
 	public function parse($ps_expression, $pa_options=null) {
-	
+		if ($ps_expression == __TEP_NOW__) {
+			$ps_expression = array_shift($this->opo_language_settings->getList("nowDate"));		
+		}
 		$ps_expression = caRemoveAccents($ps_expression);
 		
 		if (!$pa_options) { $pa_options = array(); }
@@ -3291,5 +3298,33 @@ class TimeExpressionParser {
         return(array_combine($k,explode(":",
                 date('s:i:G:j:w:n:Y:z:l:F:U',is_null($ts)?time():intval($ts)))));
     } 
+    
+	# -------------------------------------------------------------------
+	/**
+	 * Return current date/time 
+	 *
+	 * @param array $pa_options Options include:
+	 *		format = format of return value. Options are:
+	 *				unix = Unix-timestamp
+	 *				historic = Historic timestamp 
+	 *				[Default is historic]
+	 *				
+	 */
+	public static function now($pa_options=null) {
+		$ps_format = caGetOption('format', $pa_options, null, ['toLowerCase' => true]);
+		$o_tep = new TimeExpressionParser();
+		$o_tep->parse(__TEP_NOW__);
+		
+		switch($ps_format) {
+			case 'unix':
+				return array_shift($o_tep->getUnixTimestamps());
+				break;
+			case 'historic':
+			default:
+				return array_shift($o_tep->getHistoricTimestamps());
+				break;
+		}
+		return null;
+	}
  	# -------------------------------------------------------------------
 }

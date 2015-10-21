@@ -201,7 +201,7 @@ class DisplayTemplateParser {
 			if ($pa_options['relativeToContainer']) {
 				$va_vals = DisplayTemplateParser::_getValues($qr_res, $va_template['tags'], $pa_options);
 				foreach($va_vals as $vn_index => $va_val_list) {
-					$va_proc_templates[] = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['index' => $vn_index]));
+					$va_proc_templates[] = is_array($va_val_list) ? DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['index' => $vn_index])) : '';
 				}
 			} else {
 				$va_proc_templates[] = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, DisplayTemplateParser::_getValues($qr_res, $va_template['tags'], $pa_options), $pa_options);
