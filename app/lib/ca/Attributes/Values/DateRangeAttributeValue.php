@@ -240,17 +240,15 @@
 			}
 
 			// if neither start nor end date are set, the setHistoricTimestamps() call below will
-			// fail and the TEP will return the text for whatever happened to be parsed previously.
-			if($this->opn_start_date || $this->opn_end_date) {
-				if ($vs_date_format == 'original') {
-					return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = $this->ops_text_value;
-				} else {
-					$va_settings = MemoryCache::fetch($this->getElementID(), 'ElementSettings');
-					DateRangeAttributeValue::$o_tep->setHistoricTimestamps($this->opn_start_date, $this->opn_end_date);
-					return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = DateRangeAttributeValue::$o_tep->getText(array_merge(array('isLifespan' => $va_settings['isLifespan']), $pa_options)); //$this->ops_text_value;
-				}
+			// fail and the TEP will return the text for whatever happened to be parsed previously 
+			// so we have to init() before trying
+			DateRangeAttributeValue::$o_tep->init();
+			if ($vs_date_format == 'original') {
+				return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = $this->ops_text_value;
 			} else {
-				return null;
+				$va_settings = MemoryCache::fetch($this->getElementID(), 'ElementSettings');
+				DateRangeAttributeValue::$o_tep->setHistoricTimestamps($this->opn_start_date, $this->opn_end_date);
+				return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = DateRangeAttributeValue::$o_tep->getText(array_merge(array('isLifespan' => $va_settings['isLifespan']), $pa_options)); //$this->ops_text_value;
 			}
 		}
  		# ------------------------------------------------------------------
