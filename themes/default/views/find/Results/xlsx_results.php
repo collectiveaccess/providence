@@ -177,6 +177,6 @@
 	
  	$o_writer = new PHPExcel_Writer_Excel2007($workbook);
 
- 	header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
- 	header('Content-Disposition:inline;filename=Export.xlsx ');
+ 	@header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+ 	@header('Content-Disposition:inline;filename=Export.xlsx ');
  	$o_writer->save('php://output');

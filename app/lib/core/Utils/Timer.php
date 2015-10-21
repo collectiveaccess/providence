@@ -121,6 +121,20 @@
 		}
 		# ----------------------------------------------------------------------
 		/**
+		 * Reset a timer with the specified name to zero. If timer does not already exist it will be created.
+		 *
+		 * @param string $ps_name Name of timer
+		 * @param array $pa_option No options are currently supported
+		 *
+		 * @return Timer
+		 */
+		static function reset($ps_name, $pa_options=null) {
+			Timer::$s_timers_enabled[$ps_name] = true;
+			if (Timer::$s_timers[$ps_name]) { Timer::$s_timers[$ps_name]->elapsed = 0; Timer::$s_timers[$ps_name]->start = microtime(true); return Timer::$s_timers[$ps_name]; }
+			return Timer::$s_timers[$ps_name] = new Timer();
+		}
+		# ----------------------------------------------------------------------
+		/**
 		 * Remove the timer with the specified name. The timer will no longer be available.
 		 *
 		 * @param string $ps_name Name of timer

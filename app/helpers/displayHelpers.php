@@ -47,7 +47,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
  * More about bundle display templates here: http://docs.collectiveaccess.org/wiki/Bundle_Display_Templates
  */
 
-define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/]+[~]{1}[A-Za-z0-9]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/]+)/");
+define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/\:]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/:]+[~]{1}[A-Za-z0-9]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/:]+)/");
 	
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -1998,7 +1998,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 				$vs_val = caProcessTemplateTagDirectives($vs_val, $va_tmp);
 				
 				if ($pb_quote) { $vs_val = '"'.addslashes($vs_val).'"'; }
-				$ps_template = preg_replace("!\^(?={$vs_tag}[^A-Za-z0-9]+|{$vs_tag}$){$vs_tag}!", $vs_val, $ps_template);
+				$ps_template = preg_replace("!\^(?={$vs_tag}[^A-Za-z0-9]+|{$vs_tag}$){$vs_tag}!", str_replace("$", "\\$", $vs_val), $ps_template);	// escape "$" to prevent interpretation as backreferences
 			}
 		}
 		return $ps_template;

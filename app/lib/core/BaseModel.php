@@ -545,6 +545,16 @@ class BaseModel extends BaseObject {
 	}
 	# --------------------------------------------------------------------------------
 	/**
+	 * Return HTMLPurifier instance
+	 *
+	 * @return HTMLPurifier Returns instance
+	 */
+	static public function getPurifier() {
+		if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
+		return BaseModel::$html_purifier;
+	}
+	# --------------------------------------------------------------------------------
+	/**
 	 * Sets whether changes are written to the change log or not. Default is to write changes to the log.
 	 *
 	 * @param bool $pb_log_changes If true, changes will be recorded in the change log. By default changes are logged unless explicitly set not to. If omitted then the current state of logging is returned.
@@ -1450,8 +1460,7 @@ class BaseModel extends BaseObject {
 						}
 						
 						if ((isset($pa_options['purify']) && ($pa_options['purify'])) || ((bool)$this->opb_purify_input) || ($this->getFieldInfo($vs_field, "PURIFY"))) {
-							if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
-    						$vm_value = BaseModel::$html_purifier->purify((string)$vm_value);
+							$vm_value = BaseModel::getPurifier()->purify((string)$vm_value);
 						}
 						
 						if ($this->getFieldInfo($vs_field, "DISPLAY_TYPE") == DT_LIST_MULTIPLE) {
@@ -1490,8 +1499,7 @@ class BaseModel extends BaseObject {
 						break;
 					case (FT_PASSWORD):
 						if ((isset($pa_options['purify']) && ($pa_options['purify'])) || ((bool)$this->opb_purify_input) || ($this->getFieldInfo($vs_field, "PURIFY"))) {
-							if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
-    						$vm_value = BaseModel::$html_purifier->purify((string)$vm_value);
+							$vm_value = BaseModel::getPurifier()->purify((string)$vm_value);
 						}
 						if (!$vm_value) { // store blank passwords as blank,
 							$this->_FIELD_VALUES[$vs_field] = "";
@@ -1522,9 +1530,8 @@ class BaseModel extends BaseObject {
 						}
 						
 						if ((isset($pa_options['purify']) && ($pa_options['purify'])) || ((bool)$this->opb_purify_input) || ($this->getFieldInfo($vs_field, "PURIFY"))) {
-							if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
-    						$pa_options["original_filename"] = BaseModel::$html_purifier->purify((string)$pa_options["original_filename"]);
-    						$vm_value = BaseModel::$html_purifier->purify((string)$vm_value);
+							$pa_options["original_filename"] = BaseModel::getPurifier()->purify((string)$pa_options["original_filename"]);
+    						$vm_value = BaseModel::getPurifier()->purify((string)$vm_value);
 						}
 						
 						$va_matches = null;
@@ -10059,8 +10066,7 @@ $pa_options["display_form_field_tips"] = true;
 		if(!isset($pa_options['purify'])) { $pa_options['purify'] = true; }
 		
 		if ($this->purify() || (bool)$pa_options['purify']) {
-			if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
-    		$ps_tag = BaseModel::$html_purifier->purify($ps_tag);
+    		$ps_tag = BaseModel::getPurifier()->purify($ps_tag);
 		}
 		
 		$t_tag = new ca_item_tags();
@@ -10298,10 +10304,9 @@ $pa_options["display_form_field_tips"] = true;
 		if(!isset($pa_options['purify'])) { $pa_options['purify'] = true; }
 		
 		if ((bool)$pa_options['purify']) {
-			if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
-    		$ps_comment = BaseModel::$html_purifier->purify($ps_comment);
-    		$ps_name = BaseModel::$html_purifier->purify($ps_name);
-    		$ps_email = BaseModel::$html_purifier->purify($ps_email);
+    		$ps_comment = BaseModel::getPurifier()->purify($ps_comment);
+    		$ps_name = BaseModel::getPurifier()->purify($ps_name);
+    		$ps_email = BaseModel::getPurifier()->purify($ps_email);
 		}
 		
 		$t_comment = new ca_item_comments();
@@ -10388,10 +10393,9 @@ $pa_options["display_form_field_tips"] = true;
 		$t_comment->purify($this->purify() || $pa_options['purify']);
 		
 		if ((bool)$pa_options['purify']) {
-			if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
-    		$ps_comment = BaseModel::$html_purifier->purify($ps_comment);
-    		$ps_name = BaseModel::$html_purifier->purify($ps_name);
-    		$ps_email = BaseModel::$html_purifier->purify($ps_email);
+    		$ps_comment = BaseModel::getPurifier()->purify($ps_comment);
+    		$ps_name = BaseModel::getPurifier()->purify($ps_name);
+    		$ps_email = BaseModel::getPurifier()->purify($ps_email);
 		}
 		
 		
