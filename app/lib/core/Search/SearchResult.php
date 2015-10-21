@@ -1671,9 +1671,10 @@ class SearchResult extends BaseObject {
 		$vs_table_name = $pt_instance->tableName();
 		
 		if (is_array($pa_value_list) && sizeof($pa_value_list)) {
+			$va_val_proc = array();
 			foreach($pa_value_list as $o_attribute) {
 				$t_attr_element = $pt_instance->_getElementInstance($o_attribute->getElementID());
-				$vn_attr_type = $t_attr_element->get('data_type');
+				$vn_attr_type = $t_attr_element->get('datatype');
 				
 				$va_acc = array();
 				$va_values = $o_attribute->getValues();
@@ -1728,8 +1729,8 @@ class SearchResult extends BaseObject {
 							break;
 					}
 					
-					if (($vn_attr_type == __CA_ATTRIBUTE_VALUE_CONTAINER__) && strlen($vs_val_proc) && !$va_path_components['subfield_name']) {
-						$va_val_proc[] = $vs_val_proc;
+					if (($vn_attr_type == __CA_ATTRIBUTE_VALUE_CONTAINER__) && !$va_path_components['subfield_name']) {
+						if (strlen($vs_val_proc) > 0)  {$va_val_proc[] = $vs_val_proc; }
 						$vs_val_proc = join($vs_delimiter, $va_val_proc);
 					} 
 					
