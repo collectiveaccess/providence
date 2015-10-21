@@ -1751,7 +1751,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								if(is_array($va_item['settings']['applyRegularExpressions'])) {
 									foreach($va_item['settings']['applyRegularExpressions'] as $vn_regex_index => $va_regex) {
 										if (!strlen($va_regex['match'])) { continue; }
-										$vm_val = preg_replace("!".str_replace("!", "\\!", $va_regex['match'])."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i') , $va_regex['replaceWith'], $vm_val);
+										$va_regex['match'] = str_replace($va_regex['match'], '\\', '\x5c');
+										$vm_val = preg_replace("!".preg_quote($va_regex['match'], "!")."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i') , $va_regex['replaceWith'], $vm_val);
 									}
 								}
 							}
@@ -1925,14 +1926,17 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									$va_val_list = preg_split("!(".join("|", $va_item['settings']['delimiter']).")!", $vm_val);
 						
 									// Add delimited values
+									$vn_orig_c = $vn_c;
 									foreach($va_val_list as $vs_list_val) {
 										$vs_list_val = trim(ca_data_importers::replaceValue($vs_list_val, $va_item));
 										if ($vn_max_length && (mb_strlen($vs_list_val) > $vn_max_length)) {
 											$vs_list_val = mb_substr($vs_list_val, 0, $vn_max_length);
 										}
-										$va_group_buf[$vn_c] = array($vs_item_terminal => $vs_list_val, '_errorPolicy' => $vs_item_error_policy);
+										if (!is_array($va_group_buf[$vn_c])) { $va_group_buf[$vn_c] = array(); }
+										$va_group_buf[$vn_c] = array_merge($va_group_buf[$vn_c], array($vs_item_terminal => $vs_list_val, '_errorPolicy' => $vs_item_error_policy));
 										$vn_c++;
 									}
+									$vn_c = $vn_orig_c;
 						
 									continue;	// Don't add "regular" value below
 								}
@@ -2374,7 +2378,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											$vs_idno_stub = isset($va_element_data['idno_stub']) ? $va_element_data['idno_stub'] : '';
 										}
 										if ($vn_rel_id = DataMigrationUtils::getObjectLotID($vs_idno_stub, $va_element_data['preferred_labels']['name'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
-											if (!($vs_rel_type = $va_element_data['_relationship_type']) && !($vs_rel_type = $va_element_data['idno_stub']['_relationship_type'])) { break; }
+											if (!($vs_rel_type = $va_element_data['_relationship_type']) && !(is_array($va_element_data['idno_stub']) && ($vs_rel_type = $va_element_data['idno_stub']['_relationship_type']))) { break; }
 											$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']), null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
 										
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related object lot with relationship %2:", $vs_idno, trim($va_element_data['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {

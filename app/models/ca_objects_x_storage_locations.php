@@ -162,6 +162,11 @@ class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
 	protected $HIERARCHY_POLY_TABLE			=	null;
 	
 	# ------------------------------------------------------
+	# --- "Current" status flag (used to distinguish old vs. current relationships for location tracking)
+	# ------------------------------------------------------
+	protected $SUPPORTS_CURRENT_FLAG = true;
+	
+	# ------------------------------------------------------
 	# Change logging
 	# ------------------------------------------------------
 	protected $UNIT_ID_FIELD = null;

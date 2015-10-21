@@ -37,6 +37,7 @@
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/ca/RepresentableBaseModel.php");
 require_once(__CA_LIB_DIR__.'/ca/IHierarchy.php');
+require_once(__CA_LIB_DIR__."/ca/BaseObjectLocationModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
@@ -182,7 +183,7 @@ BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
  	)
 );
 
-class ca_storage_locations extends RepresentableBaseModel implements IBundleProvider, IHierarchy {
+class ca_storage_locations extends BaseObjectLocationModel implements IBundleProvider, IHierarchy {
 	# ------------------------------------------------------
 	# --- Object attribute properties
 	# ------------------------------------------------------
@@ -403,10 +404,24 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 					(slxm.location_id = ?)
 					
 			", array((int)$this->getPrimaryKey()));
-		$va_ids = array();
-		while($qr_objects->nextRow()) {
-			$va_ids[] = $qr_objects->get('object_id');
-		}
+		$va_ids = $qr_objects->getAllFieldValues('object_id');
+		
+		// HAVING clause limits to most recently added
+		// TODO: do we need to filter out future dates?
+		$qr_objects = $this->getDb()->query("
+				SELECT cxsl.object_id, cxsl.sdatetime
+				FROM ca_objects_x_storage_locations cxsl
+				WHERE
+					(cxsl.location_id = ?)
+				GROUP BY 
+					cxsl.object_id
+				HAVING
+					(cxsl.sdatetime = MAX(cxsl.sdatetime)) OR (MAX(cxsl.sdatetime) IS NULL)
+					
+			", array((int)$this->getPrimaryKey()));
+			
+		$va_ids = array_unique(array_merge($va_ids, $qr_objects->getAllFieldValues('object_id')));	
+	
 		return $va_ids;
 	}
 	# ------------------------------------------------------
@@ -414,7 +429,8 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 	 *
 	 */
 	public function saveBundlesForScreen($pm_screen, $po_request, &$pa_options) {
-		if ($vn_rc = parent::saveBundlesForScreen($pm_screen, $po_request, $pa_options)) {
+		$vb_parent_changed = $this->changed('parent_id');
+		if (($vn_rc = parent::saveBundlesForScreen($pm_screen, $po_request, $pa_options)) && $vb_parent_changed) {
 			unset($pa_options['ui_instance']);
 			
 			// get list of objects currently associated with this storage location
@@ -423,7 +439,6 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 			$vs_movement_storage_location_relationship_type = $this->getAppConfig()->get('record_movement_information_when_moving_storage_location_movement_to_storage_location_relationship_type');
 			$vs_movement_object_relationship_type = $this->getAppConfig()->get('record_movement_information_when_moving_storage_location_movement_to_object_relationship_type');
 			
-			
 			foreach($_REQUEST as $vs_key => $vs_val) {
 				if (preg_match('!^(.*)_movement_form_name$!', $vs_key, $va_matches)) {
 					$vs_form_name = $po_request->getParameter($va_matches[1].'_movement_form_name', pString);
@@ -431,14 +446,17 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 					
 					if (is_array($va_object_ids) && sizeof($va_object_ids)) {
 						$t_movement = new ca_movements();
+						
+						if($this->inTransaction()) { $t_movement->setTransaction($this->getTransaction()); }
 						$t_movement->set('type_id', $t_movement->getDefaultTypeID());
 						
 						$va_movement_opts = array_merge($pa_options, array('formName' => $vs_form_name));
 						$t_movement->saveBundlesForScreen($vs_screen, $po_request, $va_movement_opts);
-			
+		
 						if ($vs_movement_storage_location_relationship_type) {
 							$t_movement->addRelationship('ca_storage_locations', $this->getPrimaryKey(), $vs_movement_storage_location_relationship_type);
 						}
+						
 						if ($vs_movement_object_relationship_type) {
 							foreach($va_object_ids as $vn_object_id) {
 								$t_movement->addRelationship('ca_objects', $vn_object_id, $vs_movement_object_relationship_type);
@@ -452,4 +470,3 @@ class ca_storage_locations extends RepresentableBaseModel implements IBundleProv
 	}
 	# ------------------------------------------------------
 }
-?>

@@ -704,30 +704,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						);
 					}
 					
-					if (($vs_bundle == 'ca_movements') && ($t_instance->tableName() == 'ca_storage_locations')) {
-						$va_additional_settings['showCurrentOnly'] = array(
-							'formatType' => FT_TEXT,
-							'displayType' => DT_CHECKBOXES,
-							'width' => "10", 'height' => "1",
-							'takesLocale' => false,
-							'default' => '0',
-							'label' => _t('Show current only?'),
-							'description' => _t('If checked only current movements are displayed.')
-						);
-					}
-					
-					if (($vs_bundle == 'ca_storage_locations') && ($t_instance->tableName() == 'ca_movements')) {
-						$va_additional_settings['showCurrentOnly'] = array(
-							'formatType' => FT_TEXT,
-							'displayType' => DT_CHECKBOXES,
-							'width' => "10", 'height' => "1",
-							'takesLocale' => false,
-							'default' => '0',
-							'label' => _t('Show current only?'),
-							'description' => _t('If checked only current objects are displayed.')
-						);
-					}
-					
 					if (($vs_bundle == 'ca_storage_locations') && ($t_instance->tableName() == 'ca_objects')) {
 						$va_additional_settings['showCurrentOnly'] = array(
 							'formatType' => FT_TEXT,
@@ -934,22 +910,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('List item display template'),
 										'description' => _t('Layout for referencing list items. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_list_items.idno</i>.')
 									)
-								);
-								break;
-							case 'ca_commerce_order_history':
-								$va_additional_settings = array(
-									'orderType' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_SELECT,
-										'takesLocale' => false,
-										'default' => '',
-										'options' => array(
-											_t('Sales order') => 'O',
-											_t('Loan') => 'L'
-										),
-										'label' => _t('Type of order'),
-										'description' => _t('Determines which type of order is displayed.')
-									)		
 								);
 								break;
 							case 'ca_object_representation_chooser':
@@ -1348,7 +1308,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								break;
 							case 'ca_set_items':
 								$va_additional_settings = array(
-									'displayTemplate' => array(
+									'display_template' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
 										'default' => '',

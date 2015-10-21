@@ -144,7 +144,7 @@
 					}
 
 				}
-			} elseif ($vs_display_text = $t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request, 'purify' => true), is_array($va_info['settings']) ? $va_info['settings'] : $va_info['settings']))) {
+			} elseif ($vs_display_text = $t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request, 'purify' => true), is_array($va_info['settings']) ? $va_info['settings'] : array()))) {
 				
 				$o_sheet->setCellValue($vs_supercol.$vs_column.$vn_line, html_entity_decode(strip_tags(br2nl($vs_display_text)), ENT_QUOTES | ENT_HTML5));
 				// We trust the autosizing up to a certain point, but
@@ -177,6 +177,6 @@
 	
  	$o_writer = new PHPExcel_Writer_Excel2007($workbook);
 
- 	header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
- 	header('Content-Disposition:inline;filename=Export.xlsx ');
+ 	@header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+ 	@header('Content-Disposition:inline;filename=Export.xlsx ');
  	$o_writer->save('php://output');

@@ -37,6 +37,7 @@
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/ca/LabelableBaseModelWithAttributes.php");
 require_once(__CA_LIB_DIR__."/core/Plugins/SearchEngine/CachedResult.php");
+require_once(__CA_LIB_DIR__."/core/Search/SearchResult.php");
 
 require_once(__CA_LIB_DIR__."/ca/IDNumbering.php");
 require_once(__CA_APP_DIR__."/helpers/accessHelpers.php");
@@ -1662,14 +1663,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$this->representationIsOfClass("video")) { return ''; }
 						$vs_element .= $this->getCaptionHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
-						break;
-					# -------------------------------
-					// This bundle is only available for objects
-					case 'ca_commerce_order_history':
-						if ($vb_batch) { return null; } // not supported in batch mode
-						if (!$pa_options['request']->user->canDoAction('can_manage_clients')) { break; }
-						$vs_label_text = ($pa_bundle_settings['order_type'][0] == 'O') ? _t('Order history') : _t('Loan history');
-						$vs_element .= $this->getCommerceOrderHistoryHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
 					# -------------------------------
 					// This bundle is only available for objects
@@ -4049,6 +4042,9 @@ if (!$vb_batch) {
 								if ($this->numErrors()) {
 									$po_request->addActionErrors($this->errors(), 'ca_objects_location', 'general');
 								}
+							} else {
+								$o_error = new Error(2593, _t('No relationship type configured'), 'BundleableLabelableBaseModelWithAttributes->saveBundlesForScreen', 'general', false, false);
+								$po_request->addActionError($o_error, 'ca_objects_location', 'general');
 							}
 						}
 						
@@ -4627,7 +4623,7 @@ if (!$vb_batch) {
 			}
 		}
 		
-		if ($vb_show_current_only && $t_item_rel && $t_item_rel->hasField('source_info') && ($t_item_rel->tableName() == 'ca_movements_x_objects')) {	// TODO: table check is temporary hack while we get "current" support into non-movement relationships
+		if ($vb_show_current_only && $t_item_rel && $t_item_rel->hasField('source_info') && ($t_item_rel->getProperty('SUPPORTS_CURRENT_FLAG'))) {
 			$va_wheres[] = '('.$t_item_rel->tableName().'.source_info = \'current\')';
 		}
 
@@ -6344,7 +6340,7 @@ side. For many self-relations the direction determines the nature and display te
 				$t_violation = $t_found;
 			}
 					
-			if (!$vb_skip && ExpressionParser::evaluate($va_rule['expression'], $va_row)) {
+			if (!$vb_skip && ExpressionParser::evaluate(html_entity_decode($va_rule['expression']), $va_row)) {
 				// violation
 				if ($t_violation->getPrimaryKey()) {
 					$t_violation->setMode(ACCESS_WRITE);

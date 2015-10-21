@@ -407,7 +407,7 @@ function caFileIsIncludable($ps_file) {
 		if ($handle = @opendir($dir)) {
 			while (false !== ($item = readdir($handle))) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
-					if (is_dir("{$dir}/{$item}")) { 
+					if (is_dir("{$dir}/{$item}")) {
 						$va_dir_list = array_merge($va_dir_list, caGetSubDirectoryList("{$dir}/{$item}", true, $pb_include_hidden_files));
 					}  else {
 						$vn_file_count++;
@@ -423,6 +423,18 @@ function caFileIsIncludable($ps_file) {
 		
 		ksort($va_dir_list);
 		return $va_dir_list;
+	}
+	# ----------------------------------------
+	/**
+	 * Checks if a given directory is empty (i.e. doesn't have any subdirectories or files in it)
+	 * @param string $vs_dir The directory to check
+	 * @return bool false if it's not a readable directory or if it's not empty, otherwise true
+	 */
+	function caDirectoryIsEmpty($vs_dir) {
+		if(!is_readable($vs_dir) || !is_dir($vs_dir)) { return false; }
+
+		$o_iterator = new \FilesystemIterator($vs_dir);
+		return !$o_iterator->valid();
 	}
 	# ----------------------------------------
 	function caZipDirectory($ps_directory, $ps_name, $ps_output_file) {
@@ -543,11 +555,21 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	function caEscapeForBundlePreview($ps_text, $pn_limit=100) {
-		$ps_text = preg_replace("![^\X]+$!", " ", $ps_text);
-		if(strlen($ps_text) > $pn_limit) {
+		$ps_text = caSanitizeStringForJsonEncode($ps_text);
+		if(mb_strlen($ps_text) > $pn_limit) {
 			$ps_text = mb_substr($ps_text, 0, $pn_limit) . " ...";
 		}
-		return json_encode(html_entity_decode(strip_tags($ps_text), ENT_QUOTES | ENT_HTML5));
+
+		if($ps_text = json_encode(html_entity_decode($ps_text, ENT_QUOTES | ENT_HTML5))) {
+			return $ps_text;
+		} else {
+			return '""';
+		}
+	}
+	# ----------------------------------------
+	function caSanitizeStringForJsonEncode($ps_text) {
+		// @see http://php.net/manual/en/regexp.reference.unicode.php
+		return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}]|➔/", '', strip_tags($ps_text));
 	}
 	# ----------------------------------------
 	/**
@@ -750,13 +772,24 @@ function caFileIsIncludable($ps_file) {
 	# ---------------------------------------
 	/**
 	 * Checks URL for apparent well-formedness. Return true if it looks like a valid URL, false if not. This function does
-	 * not actually connect to the URL to confirm its validity. It only validates at text content for well-formedness.
+	 * not actually connect to the URL to confirm its validity. It only validates text content for well-formedness.
+	 * By default will return true if a url is anywhere in the $ps_url parameter. Set the 'strict' option if you want to 
+	 * only return true for strings that are valid urls without any extra text.
 	 *
 	 * @param string $ps_url The URL to check
+	 * @param array $pa_options Options include:
+	 *		strict = only consider text a valid url if text contains only the url [Default is false]
 	 * @return boolean true if it appears to be valid URL, false if not
 	 */
-	function isURL($ps_url) {
-		if (preg_match("!(http|ftp|https|rtmp|rtsp|mysql):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?!", $ps_url, $va_matches)) {
+	function isURL($ps_url, $pa_options=null) {
+	
+		if (
+			caGetOption('strict', $pa_options, false)
+			?
+				preg_match("!^(http|ftp|https|rtmp|rtsp|mysql):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?$!", $ps_url, $va_matches)
+				:
+				preg_match("!(http|ftp|https|rtmp|rtsp|mysql):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?!", $ps_url, $va_matches)
+			) {
 			return array(
 				'protocol' => $va_matches[1],
 				'url' => $ps_url
@@ -1927,7 +1960,7 @@ function caFileIsIncludable($ps_file) {
 				}
 				
 				if ($vb_remove_noncharacter_data) {
-					$pa_array[$vn_k] = preg_replace("![^\X]+!", "", $pa_array[$vn_k]);
+					$pa_array[$vn_k] = caSanitizeStringForJsonEncode($pa_array[$vn_k]);
 				}
 			}
 		}
@@ -2984,5 +3017,82 @@ function caFileIsIncludable($ps_file) {
 		
 		if(caGetOption('unique', $pa_options, false)) { $va_return = array_unique($va_return); }
 		return $va_return;
+	}
+	# ----------------------------------------
+	/**
+	 * Converts a (float) measurement in inches to fractions, up to the given denominator, e.g. 1/16th
+	 * @see http://stackoverflow.com/questions/13811108/function-to-round-mm-to-the-nearest-32nd-of-an-inch
+	 *
+	 * @param float $pn_inches_as_float
+	 * @param int $pn_denom
+	 * @param bool $pb_reduce
+	 * @return string
+	 */
+	function caLengthToFractions($pn_inches_as_float, $pn_denom, $pb_reduce = true) {
+		$num = round($pn_inches_as_float * $pn_denom);
+		$int = (int)($num / $pn_denom);
+		$num %= $pn_denom;
+
+		if (!$num) {
+			return "$int in";
+		}
+
+		if ($pb_reduce) {
+			// Use Euclid's algorithm to find the GCD.
+			$a = $num < 0 ? -$num : $num;
+			$b = $pn_denom;
+			while ($b) {
+				$t = $b;
+				$b = $a % $t;
+				$a = $t;
+			}
+
+			$num /= $a;
+			$pn_denom /= $a;
+		}
+
+		if ($int) {
+			// Suppress minus sign in numerator; keep it only in the integer part.
+			if ($num < 0) {
+				$num *= -1;
+			}
+			return "$int $num/$pn_denom in";
+		}
+
+		return "$num/$pn_denom in";
+	}
+	# ----------------------------------------
+	/**
+	 * Convert text into string suitable for sorting, by moving articles to end of string, etc.
+	 *
+	 * @param string $ps_text Text to convert to sortable value
+	 * @param array $pa_options Options include:
+	 *		locale = Locale settings to use. If omitted current default locale is used. [Default is current locale]
+	 *
+	 * @return string Converted text. If locale cannot be found $ps_text is returned unchanged.
+	 */
+	function caSortableValue($ps_text, $pa_options=null) {
+		global $g_ui_locale;
+		$ps_locale = caGetOption('locale', $pa_options, $g_ui_locale);
+		if (!$ps_locale) { return $ps_text; }
+		
+		$o_locale_settings = TimeExpressionParser::getSettingsForLanguage($ps_locale);
+		
+		$vs_display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $ps_text));
+		
+		$va_definite_articles = $o_locale_settings->get('definiteArticles');
+		$va_indefinite_articles = $o_locale_settings->get('indefiniteArticles');
+		
+		foreach(array($va_definite_articles, $va_indefinite_articles) as $va_articles) {
+			if (is_array($va_articles)) {
+				foreach($va_articles as $vs_article) {
+					if (preg_match('!^('.$vs_article.')[ ]+!i', $vs_display_value, $va_matches)) {
+						$vs_display_value = trim(str_replace($va_matches[1], '', $vs_display_value).', '.$va_matches[1]);
+						break(2);
+					}
+				}
+			}
+		}
+		return $vs_display_value;
 	}
 	# ----------------------------------------
