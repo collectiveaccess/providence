@@ -328,7 +328,7 @@ class DisplayTemplateParser {
 					break;
 				case 'ifdef':
 				case 'ifnotdef':
-					$vb_defined = DisplayTemplateParser::_evaluateCodeAttribute($pr_res, $o_node, ['mode' => ($vs_tag == 'ifdef') ? 'present' : 'not_present']);
+					$vb_defined = DisplayTemplateParser::_evaluateCodeAttribute($pr_res, $o_node, ['index' => caGetOption('index', $pa_options, null), 'mode' => ($vs_tag == 'ifdef') ? 'present' : 'not_present']);
 					
 					if ((($vs_tag == 'ifdef') && $vb_defined) || (($vs_tag == 'ifnotdef') && $vb_defined)) {
 						// Make sure returned values are not empty
@@ -820,12 +820,22 @@ class DisplayTemplateParser {
 		$pb_include_blanks = caGetOption('includeBlankValuesInArray', $pa_options, false);
 		$ps_delimiter = caGetOption('delimiter', $pa_options, ';');
 		$pb_mode = caGetOption('mode', $pa_options, 'present');	// value 'present' or 'not_present'
+		$pn_index = caGetOption('index', $pa_options, null);
 		
 		$vb_has_value = null;
 		foreach($va_codes as $vs_code => $vs_bool) {
-			$va_val_list = $pr_res->get($vs_code, ['returnAsArray' => true]);
+			$va_val_list = $pr_res->get($vs_code, ['returnAsArray' => true, 'returnBlankValues' => true]);
+			
 			if(!is_array($va_val_list)) {  // no value
 				$vb_value_present = false;
+			}
+			
+			if(!is_null($pn_index)) {
+				if (!isset($va_val_list[$pn_index])) {
+					$vb_value_present = false;			// no value
+				} else {
+					$va_val_list = array($va_val_list[$pn_index]);
+				}
 			}
 			
 			if (!$pb_include_blanks) {
