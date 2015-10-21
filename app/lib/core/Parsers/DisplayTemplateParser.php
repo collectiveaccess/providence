@@ -613,8 +613,6 @@ class DisplayTemplateParser {
 					if ($o_node->children && (sizeof($o_node->children) > 0)) {
 						$vs_proc_template = DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, $pa_options);
 					} else {
-						//print "meow=".$o_node->html();
-						//print_r($pa_vals);
 						$vs_proc_template = caProcessTemplate($o_node->html(), $pa_vals, ['quote' => $pb_quote]);
 					}
 					
