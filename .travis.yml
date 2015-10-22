@@ -31,4 +31,3 @@ branches:
     - develop
     - master
     - master-fix
-    - dev/simpleServiceAPI

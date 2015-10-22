@@ -730,26 +730,39 @@
 				$va_params = array();
 
 				if (sizeof($va_ids)) {
-					$vs_sql_where = "WHERE representation_id IN (?)";
+					$vs_sql_where = "WHERE ca_object_representations.representation_id IN (?)";
 					$va_params[] = $va_ids;
 				} else {
 					if (
 						(($vn_start > 0) && ($vn_end > 0) && ($vn_start <= $vn_end)) || (($vn_start > 0) && ($vn_end == null))
 					) {
-						$vs_sql_where = "WHERE representation_id >= ?";
+						$vs_sql_where = "WHERE ca_object_representations.representation_id >= ?";
 						$va_params[] = $vn_start;
 						if ($vn_end) {
-							$vs_sql_where .= " AND representation_id <= ?";
+							$vs_sql_where .= " AND ca_object_representations.representation_id <= ?";
 							$va_params[] = $vn_end;
 						}
 					}
 				}
 
+				$vs_sql_joins = '';
+				if ($vs_object_ids = (string)$po_opts->getOption('object_ids')) {
+					$va_object_ids = explode(",", $vs_object_ids);
+					foreach($va_object_ids as $vn_i => $vn_object_id) {
+						$va_object_id[$vn_i] = (int)$vn_object_id;
+					}
+					
+					$vs_sql_where = ($vs_sql_where ? "WHERE " : " AND ")."(ca_objects_x_object_representations.object_id IN (?))";
+					$vs_sql_joins = "INNER JOIN ca_objects_x_object_representations ON ca_objects_x_object_representations.representation_id = ca_object_representations.representation_id";
+					$va_params[] = $va_object_ids;
+				}
+
 				$qr_reps = $o_db->query("
 					SELECT *
 					FROM ca_object_representations
+					{$vs_sql_joins}
 					{$vs_sql_where}
-					ORDER BY representation_id
+					ORDER BY ca_object_representations.representation_id
 				", $va_params);
 
 				print CLIProgressBar::start($qr_reps->numRows(), _t('Re-processing representation media'));
@@ -847,6 +860,7 @@
 				"end_id|e-n" => _t('Representation id to end reloading at'),
 				"id|i-n" => _t('Representation id to reload'),
 				"ids|l-s" => _t('Comma separated list of representation ids to reload'),
+				"object_ids|o-s" => _t('Comma separated list of object ids to reload'),
 				"kinds|k-s" => _t('Comma separated list of kind of media to reprocess. Valid kinds are ca_object_representations (object representations), and ca_attributes (metadata elements). You may also specify "all" to reprocess both kinds of media. Default is "all"')
 			);
 		}

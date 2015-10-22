@@ -545,6 +545,16 @@ class BaseModel extends BaseObject {
 	}
 	# --------------------------------------------------------------------------------
 	/**
+	 * Return HTMLPurifier instance
+	 *
+	 * @return HTMLPurifier Returns instance
+	 */
+	static public function getPurifier() {
+		if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
+		return BaseModel::$html_purifier;
+	}
+	# --------------------------------------------------------------------------------
+	/**
 	 * Sets whether changes are written to the change log or not. Default is to write changes to the log.
 	 *
 	 * @param bool $pb_log_changes If true, changes will be recorded in the change log. By default changes are logged unless explicitly set not to. If omitted then the current state of logging is returned.
@@ -1450,8 +1460,7 @@ class BaseModel extends BaseObject {
 						}
 						
 						if ((isset($pa_options['purify']) && ($pa_options['purify'])) || ((bool)$this->opb_purify_input) || ($this->getFieldInfo($vs_field, "PURIFY"))) {
-							if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
-    						$vm_value = BaseModel::$html_purifier->purify((string)$vm_value);
+							$vm_value = BaseModel::getPurifier()->purify((string)$vm_value);
 						}
 						
 						if ($this->getFieldInfo($vs_field, "DISPLAY_TYPE") == DT_LIST_MULTIPLE) {
@@ -1490,8 +1499,7 @@ class BaseModel extends BaseObject {
 						break;
 					case (FT_PASSWORD):
 						if ((isset($pa_options['purify']) && ($pa_options['purify'])) || ((bool)$this->opb_purify_input) || ($this->getFieldInfo($vs_field, "PURIFY"))) {
-							if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
-    						$vm_value = BaseModel::$html_purifier->purify((string)$vm_value);
+							$vm_value = BaseModel::getPurifier()->purify((string)$vm_value);
 						}
 						if (!$vm_value) { // store blank passwords as blank,
 							$this->_FIELD_VALUES[$vs_field] = "";
@@ -1522,9 +1530,8 @@ class BaseModel extends BaseObject {
 						}
 						
 						if ((isset($pa_options['purify']) && ($pa_options['purify'])) || ((bool)$this->opb_purify_input) || ($this->getFieldInfo($vs_field, "PURIFY"))) {
-							if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
-    						$pa_options["original_filename"] = BaseModel::$html_purifier->purify((string)$pa_options["original_filename"]);
-    						$vm_value = BaseModel::$html_purifier->purify((string)$vm_value);
+							$pa_options["original_filename"] = BaseModel::getPurifier()->purify((string)$pa_options["original_filename"]);
+    						$vm_value = BaseModel::getPurifier()->purify((string)$vm_value);
 						}
 						
 						$va_matches = null;
@@ -9960,16 +9967,14 @@ $pa_options["display_form_field_tips"] = true;
 			foreach($va_one_to_many_relations as $vs_many_table => $va_info) {
 				foreach($va_info as $va_relationship) {
 					# do any records exist?
-					$t_related = $this->_DATAMODEL->getInstanceByTableName($vs_many_table, true);
-					if ($this->inTransaction()) { $t_related->setTransaction($o_trans); }
-					$vs_rel_pk = $t_related->primaryKey();
+					$vs_rel_pk = $this->_DATAMODEL->primaryKey($vs_many_table);
 					
 					$qr_record_check = $o_db->query($x="
 						SELECT {$vs_rel_pk}
 						FROM {$vs_many_table}
 						WHERE
 							({$va_relationship['many_table_field']} = ?)"
-					, (int)$vn_id);
+					, array((int)$vn_id));
 					
 					if (($vn_count = $qr_record_check->numRows()) > 0) {
 						$va_tables[$vs_many_table] = $vn_count;	
@@ -10061,8 +10066,7 @@ $pa_options["display_form_field_tips"] = true;
 		if(!isset($pa_options['purify'])) { $pa_options['purify'] = true; }
 		
 		if ($this->purify() || (bool)$pa_options['purify']) {
-			if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
-    		$ps_tag = BaseModel::$html_purifier->purify($ps_tag);
+    		$ps_tag = BaseModel::getPurifier()->purify($ps_tag);
 		}
 		
 		$t_tag = new ca_item_tags();
@@ -10300,10 +10304,9 @@ $pa_options["display_form_field_tips"] = true;
 		if(!isset($pa_options['purify'])) { $pa_options['purify'] = true; }
 		
 		if ((bool)$pa_options['purify']) {
-			if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
-    		$ps_comment = BaseModel::$html_purifier->purify($ps_comment);
-    		$ps_name = BaseModel::$html_purifier->purify($ps_name);
-    		$ps_email = BaseModel::$html_purifier->purify($ps_email);
+    		$ps_comment = BaseModel::getPurifier()->purify($ps_comment);
+    		$ps_name = BaseModel::getPurifier()->purify($ps_name);
+    		$ps_email = BaseModel::getPurifier()->purify($ps_email);
 		}
 		
 		$t_comment = new ca_item_comments();
@@ -10390,10 +10393,9 @@ $pa_options["display_form_field_tips"] = true;
 		$t_comment->purify($this->purify() || $pa_options['purify']);
 		
 		if ((bool)$pa_options['purify']) {
-			if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
-    		$ps_comment = BaseModel::$html_purifier->purify($ps_comment);
-    		$ps_name = BaseModel::$html_purifier->purify($ps_name);
-    		$ps_email = BaseModel::$html_purifier->purify($ps_email);
+    		$ps_comment = BaseModel::getPurifier()->purify($ps_comment);
+    		$ps_name = BaseModel::getPurifier()->purify($ps_name);
+    		$ps_email = BaseModel::getPurifier()->purify($ps_email);
 		}
 		
 		
@@ -11619,6 +11621,34 @@ $pa_options["display_form_field_tips"] = true;
 				break;
 		}
 		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Check if record with primary key id or idno exists. Will check box, giving preference to primary key id unless the 'idOnly' option is set
+	 * in which case it will only consider primary key ids. If the 'idnoOnly' option is set and the model supports idno's then only idno's will
+	 * be considered
+	 *
+	 * @param mixed $pm_id Numeric primary key id or alphanumeric idno to search for.
+	 * @param array $pa_options Options include:
+	 *		idOnly = Only consider primary key ids. [Default is false]
+	 *		idnoOnly = Only consider idnos. [Default is false]
+	 *		transaction = Transaction to use. [Default is no transaction]
+	 * @return bool
+	 */
+	public static function exists($pm_id, $pa_options=null) {	
+		$o_dm = Datamodel::load();
+		$o_trans = caGetOption('transaction', $pa_option, null);
+		if (is_numeric($pm_id) && $pm_id > 0) {
+			$vn_c = self::find([$o_dm->primaryKey(get_called_class()) => $pm_id], ['returnAs' => 'count', 'transaction' => $o_trans]);
+			if ($vn_c > 0) { return true; }
+		}
+		
+		if (!caGetOption('idOnly', $pa_options, false) && ($vs_idno_fld = $o_dm->getTableProperty(get_called_class(), 'ID_NUMBERING_ID_FIELD'))) {
+			$vn_c = self::find([$vs_idno_fld => $pm_id], ['returnAs' => 'count', 'transaction' => $o_trans]);
+			if ($vn_c > 0) { return true; }
+		}
+		
+		return false;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**

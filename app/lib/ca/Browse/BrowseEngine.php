@@ -153,7 +153,7 @@
 			}
 
 			$this->opo_config = Configuration::load();
-			$this->opo_ca_browse_config = Configuration::load($this->opo_config->get('browse_config'));
+			$this->opo_ca_browse_config = Configuration::load(__CA_CONF_DIR__.'/browse.conf');
 			$this->opa_browse_settings = $this->opo_ca_browse_config->getAssoc($this->ops_browse_table_name);
 
 			// Add "virtual" search facet - allows one to seed a browse with a search
@@ -2104,7 +2104,8 @@
 				$va_facet_cache = array_slice($va_facet_cache, (int)$pn_start);
 			}
 
-			if ($va_facet_content && is_array($va_facet_content)) {
+			if($vb_needs_caching) {
+				if(!is_array($va_facet_content)) { $va_facet_content = array(); }
 				$this->opo_ca_browse_cache->setFacet($ps_facet_name, $va_facet_content);
 				$this->opo_ca_browse_cache->save();
 			}
@@ -2742,12 +2743,16 @@
 							FROM {$vs_label_table_name} l
 								{$vs_join_sql}
 								{$vs_where_sql}
+							ORDER BY l.{$vs_label_display_field}
 						";
+
 						$qr_res = $this->opo_db->query($vs_sql);
 
 						$va_values = array();
 						$va_child_counts = array();
 						$vn_parent_id = null;
+
+						$va_unique_values = array();
 						while($qr_res->nextRow()) {
 							$vn_id = $qr_res->get($t_item->primaryKey());
 
@@ -2755,10 +2760,15 @@
 								$vn_parent_id = $qr_res->get($vs_parent_fld);
 								if ($vn_parent_id) { $va_child_counts[$vn_parent_id]++; }
 							}
+
+							$vs_label = trim($qr_res->get($vs_label_display_field));
+							if (isset($va_unique_values[$vs_label])) { continue; }
+							$va_unique_values[$vs_label] = true;
+
 							$va_values[$vn_id][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array(
 								'id' => $vn_id,
 								'parent_id' => $vn_parent_id,
-								'label' => $qr_res->get($vs_label_display_field)
+								'label' => $vs_label
 							));
 							if (!is_null($vs_single_value) && ($vn_id == $vs_single_value)) {
 								$vb_single_value_is_present = true;
@@ -3154,7 +3164,7 @@
 										}
 										$va_values[$vs_id = "{$vs_loc_class}:{$vs_loc_subclass}:{$vn_id}"] = array(
 											'id' => $vs_id,
-											'label' => $qr_res->getWithTemplate($vs_template)
+											'label' => $qr_res->getWithTemplate($vs_template, $va_config)
 										);
 									}
 								}
@@ -4919,9 +4929,8 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 				}
 
 				if (isset($pa_options['limit']) && ($vn_limit = $pa_options['limit'])) {
-					if (isset($pa_options['start']) && ($vn_start = $pa_options['start'])) {
-						$va_results = array_slice($va_results, $vn_start, $vn_limit);
-					}
+					$vn_start = (int) caGetOption($pa_options, 'start', 0);
+					$va_results = array_slice($va_results, $vn_start, $vn_limit);
 				}
 			}
 			if (!is_array($va_results)) { $va_results = array(); }

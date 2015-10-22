@@ -106,6 +106,9 @@ var caUI = caUI || {};
 
 			maxItemsPerHierarchyLevelPage: 500	// maximum number of items to load at one time into a level
 		}, options);
+		
+		
+		that.useAsRootID = parseInt(that.useAsRootID);
 
 		if (!that.levelDataUrl) {
 			alert("No level data url specified for " + that.name + "!");
@@ -141,24 +144,32 @@ var caUI = caUI || {};
 			that.levelLists = [];
 			that.selectedItemIDs = [];
 			jQuery.getJSON(that.initDataUrl, { id: item_id, bundle: that.bundle}, function(data, e, x) {
+				if (typeof data === 'object') {
+					var dataAsList = [];
+					for(var o in data) {
+						if (data.hasOwnProperty(o)) {
+							dataAsList.push(data[o]);
+						}
+					}
+					data = dataAsList;
+				}
+
+
 				if (data.length) {
 					that.selectedItemIDs = data.join(';').split(';');
 
-					if (that.useAsRootID > 0) {
+					if ((that.useAsRootID > 0) && (that.useAsRootID !== data[0])) {
 						that.selectedItemIDs.shift();
 						if (jQuery.inArray(that.useAsRootID, data) == -1) {
 							data.unshift(that.useAsRootID);
 						}
 					} else {
-						data.unshift(0);
+						if (!that.useAsRootID) { data.unshift(0); }
 					}
 				} else {
 					data = [that.useAsRootID ? that.useAsRootID : 0];
 				}
 
-				if (data[0] == data[1]) {	// workaround for jQuery(?) but that replicates first item of list in json array
-					data.shift();
-				}
 				var l = 0;
 				jQuery.each(data, function(i, id) {
 					that.setUpHierarchyLevel(i, id, 1, item_id);

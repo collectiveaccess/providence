@@ -186,6 +186,11 @@ class ca_movements_x_objects extends ObjectRelationshipBaseModel {
 	protected $RELATIONSHIP_TYPE_FIELDNAME = 'type_id';
 	
 	# ------------------------------------------------------
+	# --- "Current" status flag (used to distinguish old vs. current relationships for location tracking)
+	# ------------------------------------------------------
+	protected $SUPPORTS_CURRENT_FLAG = true;
+	
+	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
 	# are listed here is the order in which they will be returned using getFields()
 
@@ -207,4 +212,3 @@ class ca_movements_x_objects extends ObjectRelationshipBaseModel {
 	}
 	# ------------------------------------------------------
 }
-?>

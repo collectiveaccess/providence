@@ -253,7 +253,9 @@
 			if ($vo_result) {
 				if ($vb_criteria_have_changed || $vb_sort_has_changed) {
 					// Put the results id list into the results context - we used this for previous/next navigation
-					$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
+					$vo_full_result = $this->opo_browse->getResults(array('sort' => $vs_sort, 'sort_direction' => $vs_sort_direction));
+					$this->opo_result_context->setResultList($vo_full_result->getPrimaryKeyValues());
+					unset($vo_full_result);
 					$this->opo_result_context->setParameter('availableVisualizationChecked', 0);
 				}
 				

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -45,6 +45,7 @@ class DisplayTemplateController extends ActionController {
 			return false;
 		}
 
-		print $t_instance->getWithTemplate($ps_template);
+		print @$t_instance->getWithTemplate($ps_template);
 	}
+	# -------------------------------------------------------
 }

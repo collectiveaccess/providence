@@ -41,15 +41,29 @@ class SimpleService {
 	 */
 	public static function dispatch($ps_endpoint, $po_request) {
 
+		$vs_cache_key = $po_request->getHash();
+
+		if(!$po_request->getParameter('noCache', pInteger)) {
+			if(ExternalCache::contains($vs_cache_key, "SimpleAPI_{$ps_endpoint}")) {
+				return ExternalCache::fetch($vs_cache_key, "SimpleAPI_{$ps_endpoint}");
+			}
+		}
+
 		$va_endpoint_config = self::getEndpointConfig($ps_endpoint); // throws exception if it can't be found
 
 		switch($va_endpoint_config['type']) {
 			case 'search':
-				return self::runSearchEndpoint($va_endpoint_config, $po_request);
+				$vm_return = self::runSearchEndpoint($va_endpoint_config, $po_request);
+				break;
 			case 'detail':
 			default:
-				return self::runDetailEndpoint($va_endpoint_config, $po_request);
+				$vm_return = self::runDetailEndpoint($va_endpoint_config, $po_request);
+				break;
 		}
+
+		$vn_ttl = defined('__CA_SERVICE_API_CACHE_TTL__') ? __CA_SERVICE_API_CACHE_TTL__ : 60*60; // save for an hour by default
+		ExternalCache::save($vs_cache_key, $vm_return, "SimpleAPI_{$ps_endpoint}", $vn_ttl);
+		return $vm_return;
 	}
 	# -------------------------------------------------------
 	/**
@@ -74,6 +88,13 @@ class SimpleService {
 
 		if(!$t_instance->getPrimaryKey()) {
 			throw new Exception('Could not load record');
+		}
+
+		// checkAccess
+		if(isset($pa_config['checkAccess']) && is_array($pa_config['checkAccess'])) {
+			if(!in_array($t_instance->get('access'), $pa_config['checkAccess'])) {
+				throw new Exception('Invalid parameters');
+			}
 		}
 
 		// restrictToTypes
@@ -121,7 +142,13 @@ class SimpleService {
 			$o_search->addResultFilter($t_instance->tableName().'.type_id', 'IN', join(",",$va_type_filter));
 		}
 
-		$o_res = $o_search->search($ps_q);
+		$o_res = $o_search->search($ps_q, array(
+			'sort' => $po_request->getParameter('sort', pString),
+			'sortDirection' => $po_request->getParameter('sortDirection', pString),
+			'start' => $po_request->getParameter('start', pInteger),
+			'limit' => $po_request->getParameter('limit', pInteger),
+			'checkAccess' => $pa_config['checkAccess'],
+		));
 
 		$va_return = array();
 		while($o_res->nextHit()) {
