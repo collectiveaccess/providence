@@ -4101,6 +4101,9 @@ if (!$vb_batch) {
 								if ($this->numErrors()) {
 									$po_request->addActionErrors($this->errors(), 'ca_objects_location', 'general');
 								}
+							} else {
+								$o_error = new Error(2593, _t('No relationship type configured'), 'BundleableLabelableBaseModelWithAttributes->saveBundlesForScreen', 'general', false, false);
+								$po_request->addActionError($o_error, 'ca_objects_location', 'general');
 							}
 						}
 						
