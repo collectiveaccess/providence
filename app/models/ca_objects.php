@@ -1311,9 +1311,26 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  				av.value_decimal1 DESC, cmo.relation_id DESC
  		", array($vn_object_id, (int)$t_element->getPrimaryKey(), $vn_movements_table_num));
  		
- 		
  		$va_relation_ids = $qr_res->getAllFieldValues('relation_id');
- 		$va_displays = caProcessTemplateForIDs($ps_display_template, 'ca_movements_x_objects', $va_relation_ids, array('returnAsArray' => true));
+ 	
+		$va_paths = $va_location_ids = array();
+ 		if(sizeof($va_relation_ids)) {
+			// get location paths
+			$qr_paths = $o_db->query("
+				SELECT cmo.relation_id, cmo.movement_id, cxsl.source_info
+				FROM ca_movements_x_objects cmo
+				INNER JOIN ca_movements_x_storage_locations AS cxsl ON cxsl.movement_id = cmo.movement_id
+				WHERE
+					(cmo.relation_id IN (?))
+			", array($va_relation_ids));
+		
+			while($qr_paths->nextRow()) {
+				$va_data = caUnserializeForDatabase($qr_paths->get('source_info'));
+				$va_paths[$qr_paths->get('movement_id')] = is_array($va_data['path']) ? join(" ➜ ", $va_data['path']) : $qr_paths->get('ca_storage_locations.hierarchy.preferred_labels.name', array('delimiter' => ' ➜ '));
+				$va_location_ids[$qr_paths->get('movement_id')] = $va_data['ids'];
+			}
+ 		}
+ 		$va_displays = caProcessTemplateForIDs($ps_display_template, 'ca_movements_x_objects', $va_relation_ids, array('returnAsArray' => true, 'forceValues' => array('ca_storage_locations.hierarchy.preferred_labels.name' => $va_paths)));
  
 		$qr_res->seek(0);
  		$va_items = array();

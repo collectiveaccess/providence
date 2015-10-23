@@ -47,6 +47,21 @@ define('__CA_BUNDLE_ACCESS_NONE__', 0);
 define('__CA_BUNDLE_ACCESS_READONLY__', 1);
 define('__CA_BUNDLE_ACCESS_EDIT__', 2);
 
+/**
+ * Returned by BundlableLabelableBaseModelWithAttributes::saveBundlesForScreenWillChangeParent() when parent will not be changed
+ */
+define('__CA_PARENT_UNCHANGED__', 0);
+
+/**
+ * Returned by BundlableLabelableBaseModelWithAttributes::saveBundlesForScreenWillChangeParent() when parent will be changed
+ */
+define('__CA_PARENT_CHANGED__', 1);
+
+/**
+ * Returned by BundlableLabelableBaseModelWithAttributes::saveBundlesForScreenWillChangeParent() when parent will be changed to a related collection in a object-collection hierarchy
+ */
+define('__CA_PARENT_COLLECTION_CHANGED__', 2);
+
 class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAttributes implements IBundleProvider {
 	# ------------------------------------------------------
 	/**
@@ -1719,6 +1734,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$vs_element .= $this->getRepresentationChooserHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
 					# -------------------------------
+					// This bundle is only available for storage locations
+					case 'ca_storage_locations_contents':		// objects in storage location via ca_objects_x_storage_locations or ca_movements_x_objects
+						if ($vb_batch) { return null; } 				// not supported in batch mode
+						if (!$this->getPrimaryKey()) { return null; }	// not supported for new records
+						if (!$pa_options['request']->user->canDoAction('can_edit_ca_storage_locations')) { break; }
+					
+						$vs_element .= $this->getLocationContentsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						
+						break;
+					# -------------------------------
 					// This bundle is only available items that can be used as authority references (object, entities, occurrences, list items, etc.)
 					case 'authority_references_list':
 						$vs_element .= $this->getAuthorityReferenceListHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
@@ -2844,6 +2869,40 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		
 		return $va_values;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function saveBundlesForScreenWillChangeParent($pm_screen, $po_request, &$pa_options) {
+		$vs_form_prefix = caGetOption('formName', $pa_options, $po_request->getParameter('_formName', pString));
+			
+		foreach($_REQUEST as $vs_k => $vs_v) {
+			if (!preg_match("!{$vs_form_prefix}_new_parent_id$!", $vs_k)) { continue; }
+			
+			$va_parent_tmp = explode("-", $po_request->getParameter($vs_k, pString));
+	
+			// Hierarchy browser sets new_parent_id param to "X" if user wants to extract item from hierarchy
+			$vn_parent_id = (($vn_parent_id = array_pop($va_parent_tmp)) == 'X') ? -1 : (int)$vn_parent_id;
+			if (sizeof($va_parent_tmp) > 0) { $vs_parent_table = array_pop($va_parent_tmp); } else { $vs_parent_table = $this->tableName(); }
+	
+			if ($this->getPrimaryKey() && $this->HIERARCHY_PARENT_ID_FLD && ($vn_parent_id > 0)) {
+		
+				if ($vs_parent_table == $this->tableName()) {
+					if ($vn_parent_id != $this->getPrimaryKey()) { return __CA_PARENT_CHANGED__; }
+				} else {
+					if ((bool)$this->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled') && ($vs_parent_table == 'ca_collections') && ($this->tableName() == 'ca_objects') && ($vs_coll_rel_type = $this->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type'))) {
+						return __CA_PARENT_COLLECTION_CHANGED__;
+					}
+				}
+			} else {
+				if ($this->getPrimaryKey() && $this->HIERARCHY_PARENT_ID_FLD && ($this->HIERARCHY_TYPE == __CA_HIER_TYPE_ADHOC_MONO__) && isset($_REQUEST[$vs_k]) && ($vn_parent_id <= 0)) {
+					return __CA_PARENT_COLLECTION_CHANGED__;
+				}
+			}
+			break;
+		}
+		return __CA_PARENT_UNCHANGED__;
 	}
 	# ------------------------------------------------------
 	/**
@@ -4304,7 +4363,8 @@ if (!$vb_batch) {
  	 *			restrictToBundleValues = Restrict returned items to those with specified bundle values. Specify an associative array with keys set to bundle names and key values set to arrays of values to filter on (eg. [bundle_name1 => [value1, value2, ...]]). [Default is null]
  	 *			where = Restrict returned items to specified field values. The fields must be intrinsic and in the related table. This option can be useful when you want to efficiently fetch specific rows from a related table. Note that multiple fields/values are logically AND'ed together – all must match for a row to be returned - and that only equivalence is supported. [Default is null]			
  	 *			criteria = Restrict returned items using SQL criteria appended directly onto the query. Criteria is used as-is and must be compatible with the generated SQL query. [Default is null]
- 	 *
+ 	 *			showCurrentOnly = Returns only relationships with the latest effective date for their row_id that is not greater than the current date. Note that effective dates are treated as point dates, not ranges, when analyzed for "current-ness". That is, the more recent dates in the past, even if the "end" date is in the past are treated as current. This option is only supported for standard many-many non-self relations and is ignored for all other kinds of relationships. [Default is false]
+ 	 *		
  	 *		[Options controlling scope of data in return value]
  	 *			restrictToTypes = Restrict returned items to those of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]
  	 *			restrictToRelationshipTypes =  Restrict returned items to those related using the specified relationship types. An array of relationship type idnos and/or type_ids may be specified. [Default is null]
@@ -4404,15 +4464,25 @@ if (!$vb_batch) {
 
 		$vb_is_combo_key_relation = false; // indicates relation is via table_num/row_id combination key
 		
-		switch(sizeof($va_path = array_keys($this->getAppDatamodel()->getPath($this->tableName(), $vs_related_table_name)))) {
+		$vs_subject_table_name = $this->tableName();
+		$vs_item_rel_table_name = $vs_rel_item_table_name = null;
+		switch(sizeof($va_path = array_keys($this->getAppDatamodel()->getPath($vs_subject_table_name, $vs_related_table_name)))) {
 			case 3:
 				$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+				$vs_item_rel_table_name = $t_item_rel->tableName();
+				
 				$t_rel_item = $this->getAppDatamodel()->getTableInstance($va_path[2]);
+				$vs_rel_item_table_name = $t_rel_item->tableName();
+				
 				$vs_key = $t_item_rel->primaryKey(); //'relation_id';
 				break;
 			case 2:
 				$t_item_rel = $this->isRelationship() ? $this : null;
+				$vs_item_rel_table_name = $t_item_rel ? $t_item_rel->tableName() : null;
+				
 				$t_rel_item = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+				$vs_rel_item_table_name = $t_rel_item->tableName();
+				
 				$vs_key = $t_rel_item->primaryKey();
 				break;
 			default:
@@ -4423,8 +4493,10 @@ if (!$vb_batch) {
 					$t_rel_item->hasField('table_num') && $t_rel_item->hasField('row_id')
 				) {
 					$vs_key = $t_rel_item->primaryKey();
+					$vs_rel_item_table_name = $t_rel_item->tableName();
+					
 					$vb_is_combo_key_relation = true;
-					$va_path = array($this->tableName(), $t_rel_item->tableName());
+					$va_path = array($vs_subject_table_name, $vs_rel_item_table_name);
 				} else {
 					// bad related table
 					return null;
@@ -4434,17 +4506,20 @@ if (!$vb_batch) {
 
 		// check for self relationship
 		$vb_self_relationship = false;
-		if($this->tableName() == $vs_related_table_name) {
+		if($vs_subject_table_name == $vs_related_table_name) {
 			$vb_self_relationship = true;
-			$t_rel_item = $this->getAppDatamodel()->getTableInstance($va_path[0]);
 			$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+			$vs_item_rel_table_name = $t_item_rel->tableName();
+			
+			$t_rel_item = $this->getAppDatamodel()->getTableInstance($va_path[0]);
+			$vs_rel_item_table_name = $t_rel_item->tableName();
 		}
 
 		$va_wheres = array();
 		$va_selects = array();
 		$va_joins_post_add = array();
 
-		$vs_related_table = $t_rel_item->tableName();
+		$vs_related_table = $vs_rel_item_table_name;
 		if ($t_rel_item->hasField('type_id')) { $va_selects[] = "{$vs_related_table}.type_id item_type_id"; }
 		if ($t_rel_item->hasField('source_id')) { $va_selects[] = "{$vs_related_table}.source_id item_source_id"; }
 
@@ -4619,10 +4694,6 @@ if (!$vb_batch) {
 				}
 			}
 		}
-		
-		if ($vb_show_current_only && $t_item_rel && $t_item_rel->hasField('source_info') && ($t_item_rel->getProperty('SUPPORTS_CURRENT_FLAG'))) {
-			$va_wheres[] = '('.$t_item_rel->tableName().'.source_info = \'current\')';
-		}
 
 		// return source info in returned data
 		if ($t_item_rel && $t_item_rel->hasField('source_info')) {
@@ -4669,9 +4740,9 @@ if (!$vb_batch) {
 				$vs_order_by = '';
 				$vs_sort_fld = '';
 				if ($t_item_rel && $t_item_rel->hasField('rank')) {
-					$vs_order_by = ' ORDER BY '.$t_item_rel->tableName().'.rank';
+					$vs_order_by = " ORDER BY {$vs_item_rel_table_name}.rank";
 					$vs_sort_fld = 'rank';
-					$va_selects[] = $t_item_rel->tableName().".rank";
+					$va_selects[] = "{$vs_item_rel_table_name}.rank";
 				} else {
 					if ($t_rel_item && ($vs_sort = $t_rel_item->getProperty('ID_NUMBERING_SORT_FIELD'))) {
 						$vs_order_by = " ORDER BY {$vs_related_table}.{$vs_sort}";
@@ -4778,7 +4849,7 @@ if (!$vb_batch) {
 			// START - from self relation itself (Eg. get related ca_objects from ca_objects_x_objects); in this case there are two possible paths (keys) to check, "left" and "right"
 			//
 			
-			$va_wheres[] = "(".$this->tableName().'.'.$this->primaryKey()." IN (".join(",", $va_row_ids)."))";
+			$va_wheres[] = "({$vs_subject_table_name}.".$this->primaryKey()." IN (".join(",", $va_row_ids)."))";
 			$vs_cur_table = array_shift($va_path);
 			$vs_rel_table = array_shift($va_path);
 			
@@ -4797,11 +4868,11 @@ if (!$vb_batch) {
 					$vs_base_table = $vs_join_table;
 				}
 				
-				$va_selects[] = $this->tableName().'.'.$this->primaryKey().' AS row_id';
+				$va_selects[] = $vs_subject_table_name.'.'.$this->primaryKey().' AS row_id';
 
 				$vs_order_by = '';
 				if ($t_item_rel && $t_item_rel->hasField('rank')) {
-					$vs_order_by = ' ORDER BY '.$t_item_rel->tableName().'.rank';
+					$vs_order_by = " ORDER BY {$vs_item_rel_table_name}.rank";
 				} else {
 					if ($t_rel_item && ($vs_sort = $t_rel_item->getProperty('ID_NUMBERING_SORT_FIELD'))) {
 						$vs_order_by = " ORDER BY {$vs_related_table}.{$vs_sort}";
@@ -4810,7 +4881,7 @@ if (!$vb_batch) {
 
 				$vs_sql = "
 					SELECT DISTINCT ".join(', ', $va_selects)."
-					FROM ".$this->tableName()."
+					FROM {$vs_subject_table_name}
 					".join("\n", array_merge($va_joins, $va_joins_post_add))."
 					WHERE
 						".join(' AND ', $va_wheres)."
@@ -4821,9 +4892,9 @@ if (!$vb_batch) {
 				$qr_res = $o_db->query($vs_sql);
 				
 				if ($vb_uses_relationship_types)  {
-					$va_rel_types = $t_rel->getRelationshipInfo($t_item_rel->tableName());
+					$va_rel_types = $t_rel->getRelationshipInfo($vs_item_rel_table_name);
 					$vs_left_table = $t_item_rel->getLeftTableName();
-					$vs_direction = ($vs_left_table == $this->tableName()) ? 'ltor' : 'rtol';
+					$vs_direction = ($vs_left_table == $vs_subject_table_name) ? 'ltor' : 'rtol';
 				}
 				
 				$vn_c = 0;
@@ -4909,7 +4980,7 @@ if (!$vb_batch) {
 			//
 			// BEGIN - non-self relation
 			//
-			$va_wheres[] = "(".$this->tableName().'.'.$this->primaryKey()." IN (".join(",", $va_row_ids)."))";
+			$va_wheres[] = "({$vs_subject_table_name}.".$this->primaryKey()." IN (".join(",", $va_row_ids)."))";
 			$vs_cur_table = array_shift($va_path);
 			$va_joins = array();
 
@@ -4945,33 +5016,51 @@ if (!$vb_batch) {
 				$va_selects[] = 'ca_set_items.row_id AS record_id';
 			}
 
-			$va_selects[] = $this->tableName().'.'.$this->primaryKey().' AS row_id';
+			$va_selects[] = $vs_subject_table_name.'.'.$this->primaryKey().' AS row_id';
+			
+			//
+			// Filter to only current relationships
+			//
+			if ($vb_show_current_only && $vb_uses_effective_dates) {
+				$vs_filter_to_current_join = "
+					INNER JOIN (
+						SELECT {$vs_item_rel_table_name}.".$this->primaryKey().", max({$vs_item_rel_table_name}.edatetime) edatetime
+						FROM {$vs_subject_table_name}
+						".join("\n", array_merge($va_joins, $va_joins_post_add))."
+						WHERE
+							".join(' AND ', array_merge($va_wheres, array("({$vs_item_rel_table_name}.sdatetime <= ".TimeExpressionParser::now().")")))."
+						GROUP BY 
+							{$vs_item_rel_table_name}.".$this->primaryKey()."
+					) AS _filter_current ON _filter_current.".$this->primaryKey()." = {$vs_item_rel_table_name}.".$this->primaryKey()." AND _filter_current.edatetime = {$vs_item_rel_table_name}.edatetime
+				";
+				$va_joins[] = $vs_filter_to_current_join;
+			}
 
 			$vs_order_by = '';
 			if ($t_item_rel && $t_item_rel->hasField('rank')) {
-				$vs_order_by = ' ORDER BY '.$t_item_rel->tableName().'.rank';
+				$vs_order_by = " ORDER BY {$vs_item_rel_table_name}.rank";
 			} else {
 				if ($t_rel_item && ($vs_sort = $t_rel_item->getProperty('ID_NUMBERING_SORT_FIELD'))) {
 					$vs_order_by = " ORDER BY {$vs_related_table}.{$vs_sort}";
 				}
 			}
-
+			
 			$vs_sql = "
 				SELECT DISTINCT ".join(', ', $va_selects)."
-				FROM ".$this->tableName()."
+				FROM {$vs_subject_table_name}
 				".join("\n", array_merge($va_joins, $va_joins_post_add))."
 				WHERE
 					".join(' AND ', $va_wheres)."
 				{$vs_order_by}
 			";
-
-			$qr_res = $o_db->query($vs_sql);
 			
+			$qr_res = $o_db->query($vs_sql);
+			//print "<pre>$vs_sql</pre>";
 			if ($vb_uses_relationship_types)  {
 				$va_rel_types = $t_rel->getRelationshipInfo($t_tmp->tableName());
 				if(method_exists($t_tmp, 'getLeftTableName')) {
 					$vs_left_table = $t_tmp->getLeftTableName();
-					$vs_direction = ($vs_left_table == $this->tableName()) ? 'ltor' : 'rtol';
+					$vs_direction = ($vs_left_table == $vs_subject_table_name) ? 'ltor' : 'rtol';
 				}
 			}
 			$va_rels = array();
@@ -5003,6 +5092,12 @@ if (!$vb_batch) {
 					if ($va_rels[$vs_v]['sdatetime'] || $va_rels[$vs_v]['edatetime']) {
 						$o_tep->setHistoricTimestamps($va_rels[$vs_v]['sdatetime'], $va_rels[$vs_v]['edatetime']);
 						$va_rels[$vs_v]['effective_date'] = $o_tep->getText();
+					}
+					
+					
+		
+					if ($vb_show_current_only && $vb_uses_effective_dates) {
+			
 					}
 				}
 
@@ -5110,7 +5205,7 @@ if (!$vb_batch) {
 			foreach($va_sort_fields as $vn_x => $vs_sort_field) {
 				if ($vs_sort_field == 'relation_id') { // sort by relationship primary key
 					if ($t_item_rel) {
-						$va_sort_fields[$vn_x] = $vs_sort_field = $t_item_rel->tableName().'.'.$t_item_rel->primaryKey();
+						$va_sort_fields[$vn_x] = $vs_sort_field = $vs_item_rel_table_name.'.'.$t_item_rel->primaryKey();
 					}
 					continue;
 				}

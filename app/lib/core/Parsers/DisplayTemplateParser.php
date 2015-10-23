@@ -124,6 +124,8 @@ class DisplayTemplateParser {
 	 * 		skipIfExpression = skip the elements in $pa_row_ids for which the given expression does not evaluate true
 	 *		includeBlankValuesInArray = include blank template values in primary template and all <unit>s in returned array when returnAsArray is set. If you need the returned array of values to line up with the row_ids in $pa_row_ids this should be set. [Default is false]
 	 *		includeBlankValuesInTopLevelForPrefetch = include blank template values in *primary template* (not <unit>s) in returned array when returnAsArray is set. Used by template prefetcher to ensure returned values align with id indices. [Default is false]
+	 *		forceValues = Optional array of values indexed by placeholder without caret (eg. ca_objects.idno) and row_id. When present these values will be used in place of the placeholders, rather than whatever value normal processing would result in. [Default is null]
+	 *
 	 * @return mixed Output of processed templates
 	 *
 	 * TODO: sort and sortDirection are not currently supported! They are ignored for the time being
@@ -613,8 +615,6 @@ class DisplayTemplateParser {
 					if ($o_node->children && (sizeof($o_node->children) > 0)) {
 						$vs_proc_template = DisplayTemplateParser::_processChildren($pr_res, $o_node->children, $pa_vals, $pa_options);
 					} else {
-						//print "meow=".$o_node->html();
-						//print_r($pa_vals);
 						$vs_proc_template = caProcessTemplate($o_node->html(), $pa_vals, ['quote' => $pb_quote]);
 					}
 					
@@ -763,7 +763,9 @@ class DisplayTemplateParser {
 						$va_val_list = [$pr_res->currentIndex() + 1];
 						break;
 					default:
-						if ($vs_relative_to_container) {
+						if(isset($pa_options['forceValues'][$vs_get_spec][$pr_res->getPrimaryKey()])) { 
+							$va_val_list = [$pa_options['forceValues'][$vs_get_spec][$pr_res->getPrimaryKey()]];
+						} elseif ($vs_relative_to_container) {
 							$va_val_list = [$va_tag_vals[$vn_c][$vs_tag]];
 						} elseif(strlen($pn_index)) {
 							$va_val_list = [$va_tag_vals[$vs_tag]];
