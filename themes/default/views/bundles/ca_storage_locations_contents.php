@@ -47,12 +47,11 @@
 	}
 ?>
 <div id="<?php print $vs_id_prefix.$t_subject->tableNum().'_rel'; ?>">
-<?php
-	if ($qr_result && $qr_result->numHits() > 0) {
-?>
 	<div class="bundleContainer">
 		<div class="caItemList">
 <?php
+	if ($qr_result && $qr_result->numHits() > 0) {
+
 	//
 	// Template to generate display for existing items
 	//
@@ -86,14 +85,12 @@
 			}
 			break;
 		}
-?>
-		</div>
-	</div>
-<?php
 	} else {
 ?>
-	<div><?php print _t('Location is empty'); ?></div>
+		<div class="labelInfo"><table><tr><td><?php print _t('Location is empty'); ?></td></tr></table></div>
 <?php
 	}
 ?>
+		</div>
+	</div>
 </div>
