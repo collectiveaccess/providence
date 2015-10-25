@@ -433,8 +433,12 @@ function caFileIsIncludable($ps_file) {
 	function caDirectoryIsEmpty($vs_dir) {
 		if(!is_readable($vs_dir) || !is_dir($vs_dir)) { return false; }
 
-		$o_iterator = new \FilesystemIterator($vs_dir);
-		return !$o_iterator->valid();
+		try {
+			$o_iterator = new \FilesystemIterator($vs_dir);
+			return !$o_iterator->valid();
+		} catch (Exception $e) {
+			return false;
+		}
 	}
 	# ----------------------------------------
 	function caZipDirectory($ps_directory, $ps_name, $ps_output_file) {
