@@ -9967,16 +9967,14 @@ $pa_options["display_form_field_tips"] = true;
 			foreach($va_one_to_many_relations as $vs_many_table => $va_info) {
 				foreach($va_info as $va_relationship) {
 					# do any records exist?
-					$t_related = $this->_DATAMODEL->getInstanceByTableName($vs_many_table, true);
-					if ($this->inTransaction()) { $t_related->setTransaction($o_trans); }
-					$vs_rel_pk = $t_related->primaryKey();
+					$vs_rel_pk = $this->_DATAMODEL->primaryKey($vs_many_table);
 					
 					$qr_record_check = $o_db->query($x="
 						SELECT {$vs_rel_pk}
 						FROM {$vs_many_table}
 						WHERE
 							({$va_relationship['many_table_field']} = ?)"
-					, (int)$vn_id);
+					, array((int)$vn_id));
 					
 					if (($vn_count = $qr_record_check->numRows()) > 0) {
 						$va_tables[$vs_many_table] = $vn_count;	
@@ -11623,6 +11621,34 @@ $pa_options["display_form_field_tips"] = true;
 				break;
 		}
 		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Check if record with primary key id or idno exists. Will check box, giving preference to primary key id unless the 'idOnly' option is set
+	 * in which case it will only consider primary key ids. If the 'idnoOnly' option is set and the model supports idno's then only idno's will
+	 * be considered
+	 *
+	 * @param mixed $pm_id Numeric primary key id or alphanumeric idno to search for.
+	 * @param array $pa_options Options include:
+	 *		idOnly = Only consider primary key ids. [Default is false]
+	 *		idnoOnly = Only consider idnos. [Default is false]
+	 *		transaction = Transaction to use. [Default is no transaction]
+	 * @return bool
+	 */
+	public static function exists($pm_id, $pa_options=null) {	
+		$o_dm = Datamodel::load();
+		$o_trans = caGetOption('transaction', $pa_option, null);
+		if (is_numeric($pm_id) && $pm_id > 0) {
+			$vn_c = self::find([$o_dm->primaryKey(get_called_class()) => $pm_id], ['returnAs' => 'count', 'transaction' => $o_trans]);
+			if ($vn_c > 0) { return true; }
+		}
+		
+		if (!caGetOption('idOnly', $pa_options, false) && ($vs_idno_fld = $o_dm->getTableProperty(get_called_class(), 'ID_NUMBERING_ID_FIELD'))) {
+			$vn_c = self::find([$vs_idno_fld => $pm_id], ['returnAs' => 'count', 'transaction' => $o_trans]);
+			if ($vn_c > 0) { return true; }
+		}
+		
+		return false;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
