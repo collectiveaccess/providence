@@ -267,7 +267,6 @@
  		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
  			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'minChars', 'maxChars', 'suggestExistingValues', 'usewysiwygeditor', 'isDependentValue', 'dependentValueTemplate'));
-			AssetLoadManager::register('displayTemplateParser');
 
  			if (isset($pa_options['usewysiwygeditor'])) {
  				$va_settings['usewysiwygeditor'] = $pa_options['usewysiwygeditor'];
