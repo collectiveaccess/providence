@@ -410,7 +410,7 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 				// get list of objects on these movements...
 				$t_movement = new ca_movements();
 				$va_object_ids = $t_movement->getRelatedItems('ca_objects', array('idsOnly' => true, 'showCurrentOnly' => true, 'row_ids' => $va_movement_ids));
-				print_R($va_object_ids);
+	
 				// ... then get the list of objects for which the *current* movement is one of ours
 				$t_object = new ca_objects();
 				$va_current_movement_ids = $t_object->getRelatedItems('ca_movements', array('idsOnly' => false, 'showCurrentOnly' => true, 'row_ids' => $va_object_ids));
