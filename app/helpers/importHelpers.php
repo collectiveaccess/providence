@@ -554,16 +554,21 @@
 
 				foreach($va_items as $vn_i => $vs_item) {
 					$va_parents = $pa_item['settings']["{$ps_refinery_name}_parents"];
+
+					// Set label
+					$va_val = array();
 					
+					$vs_laddered_type = null;
 					if (!($vs_item = trim($vs_item))) { 
 						if (is_array($va_parents) && (sizeof($va_parents) > 0)) {
 							// try to ladder up the parents hierarchy since the base value is blank (see PROV-972)
 							$vs_display_field = $t_instance->getLabelDisplayField();
 							while(sizeof($va_parents) > 0) {
-								$va_p = array_pop($va_parents);
+								$va_p = array_shift($va_parents);
 								if ($vs_laddered_val = BaseRefinery::parsePlaceholder($va_p[$vs_display_field], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnDelimitedValueAt' => $vn_x))) {
 									if ($o_log) { $o_log->logDebug(_t('[{$ps_refinery_name}] Used parent value %1 because the mapped value was blank', $vs_item)); }
 									$vs_item = $vs_laddered_val;
+									$va_val['_type'] = BaseRefinery::parsePlaceholder($va_p['type'], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnDelimitedValueAt' => $vn_x));
 									break;
 								}
 							}
@@ -576,9 +581,6 @@
 						if ($o_log) { $o_log->logDebug(_t('[{$ps_refinery_name}] Skipped %1 because it was in the skipIfValue list', $vs_item)); }
 						continue;
 					}
-			
-					// Set label
-					$va_val = array();
 				
 					// Set value as hierarchy
 					if ($va_hierarchy_setting = $pa_item['settings']["{$ps_refinery_name}_hierarchy"]) {
@@ -588,6 +590,8 @@
 		
 						// Set type
 						if (
+							(!isset($va_val['_type']) || !$va_val['_type'])
+							&&
 							($vs_type_opt = $pa_item['settings']["{$ps_refinery_name}_{$ps_item_prefix}Type"])
 						) {
 							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader));
@@ -816,7 +820,7 @@
 								if(!isset($va_val['preferred_labels'])) { $va_val['preferred_labels'] = array('name' => pathinfo($vs_item, PATHINFO_FILENAME)); }
 							
 								if (isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) && $pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] && isset($va_val['media']['media']) && ($va_val['media']['media'])) {
-									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'].'/'.$va_val['media']['media'];
+									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'].'/'.str_replace("\\", "/", $va_val['media']['media']);
 								}
 								if(!isset($va_val['idno'])) { $va_val['idno'] = pathinfo($vs_item, PATHINFO_FILENAME); }
 								break;
@@ -924,14 +928,16 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 					foreach($pm_value as $vn_i => $vs_value) {
 						foreach($pa_item_settings['applyRegularExpressions'] as $vn_c => $va_regex) {
 							if (!strlen($va_regex['match'])) { continue; }
-							$vs_value = preg_replace("!".str_replace("!", "\\!", $va_regex['match'])."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i'), $va_regex['replaceWith'], $vs_value);
+							$va_regex['match'] = str_replace($va_regex['match'], '\\', '\x5c');
+							$vs_value = preg_replace("!".preg_quote($va_regex['match'], "!")."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i'), $va_regex['replaceWith'], $vs_value);
 						}
 						$pm_value[$vn_i] = $vs_value;
 					}
 				} else {
 					foreach($pa_item_settings['applyRegularExpressions'] as $vn_i => $va_regex) {
 						if (!strlen($va_regex['match'])) { continue; }
-						$pm_value = preg_replace("!".str_replace("!", "\\!", $va_regex['match'])."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i'), $va_regex['replaceWith'], $pm_value);
+						$va_regex['match'] = str_replace($va_regex['match'], '\\', '\x5c');
+						$pm_value = preg_replace("!".preg_quote($va_regex['match'], "!")."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i'), $va_regex['replaceWith'], $pm_value);
 					}
 				}
 			}

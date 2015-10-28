@@ -36,6 +36,7 @@
 
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/ca/RepresentableBaseModel.php");
+require_once(__CA_LIB_DIR__."/ca/BaseObjectLocationModel.php");
 require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
 require_once(__CA_MODELS_DIR__."/ca_objects_x_object_representations.php");
 require_once(__CA_MODELS_DIR__."/ca_loans_x_objects.php");
@@ -329,7 +330,7 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 	)
 );
 
-class ca_objects extends RepresentableBaseModel implements IBundleProvider {
+class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 	# ------------------------------------------------------
 	# --- Object attribute properties
 	# ------------------------------------------------------
@@ -746,16 +747,26 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		switch($vs_mode) {
 			case 'ca_storage_locations':
 				$t_last_location = $this->getLastLocation(array());
+				
+				if (!$vs_display_template) { $vs_display_template = "<unit relativeTo='ca_storage_locations'><l>^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_</l></unit> (^ca_objects_x_storage_locations.effective_date)"; }
 				$o_view->setVar('current_location', $t_last_location ? $t_last_location->getWithTemplate($vs_display_template) : null);
+				
+				if (!$vs_history_template) { $vs_history_template = $vs_display_template; }
 				$o_view->setVar('location_history', $this->getLocationHistory(array('template' => $vs_history_template)));
+				
 				$o_view->setVar('location_relationship_type', is_array($pa_bundle_settings['ca_storage_locations_relationshipType']) ? addslashes($pa_bundle_settings['ca_storage_locations_relationshipType'][0]) : '');
 				$o_view->setVar('location_change_url',  null);
 				break;
 			case 'ca_movements':
 			default:
 				$t_last_movement = $this->getLastMovement(array('dateElement' => caGetOption('ca_movements_dateElement', $pa_bundle_settings, null)));
+				$vs_movement_date_element = caGetOption('ca_movements_dateElement', $pa_bundle_settings, null);
+				
+				if (!$vs_display_template) { $vs_display_template = "<l>^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_</l> (^ca_movements.{$vs_movement_date_element})"; }
 				$o_view->setVar('current_location', $t_last_movement ? $t_last_movement->getWithTemplate($vs_display_template) : null);
-				$o_view->setVar('location_history', $this->getMovementHistory(array('dateElement' => caGetOption('ca_movements_dateElement', $pa_bundle_settings, null), 'template' => $vs_history_template)));
+				
+				if (!$vs_history_template) { $vs_history_template = $vs_display_template; }
+				$o_view->setVar('location_history', $this->getMovementHistory(array('dateElement' => $vs_movement_date_element, 'template' => $vs_history_template)));
 				
 				$o_view->setVar('location_relationship_type', is_array($pa_bundle_settings['ca_movements_relationshipType']) ? addslashes($pa_bundle_settings['ca_movements_relationshipType'][0]) : '');
 				$o_view->setVar('location_change_url', caNavUrl($po_request, 'editor/movements', 'MovementQuickAdd', 'Form', array('movement_id' => 0)));
@@ -798,9 +809,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$vs_display_template		= caGetOption('display_template', $pa_bundle_settings, _t('No template defined'));
 		$vs_history_template		= caGetOption('history_template', $pa_bundle_settings, $vs_display_template);
 		
-		
-		
-		$vn_current_date = caDateToHistoricTimestamp(_t('now'));
+		$vn_current_date = TimeExpressionParser::now();
 
 		$o_media_coder = new MediaInfoCoder();
 				
@@ -1245,8 +1254,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  		if (!($ps_date_element = caGetOption('dateElement', $pa_options, null))) { return null; }
  		if (!($t_element = $this->_getElementInstance($ps_date_element))) { return null; }
  		
- 		$va_current_date = caDateToHistoricTimestamps(_t('now'));
- 		$vn_current_date = $va_current_date['start'];
+ 		$vn_current_date = TimeExpressionParser::now();
  		
  		$o_db = $this->getDb();
  		$qr_res = $o_db->query("
@@ -1285,9 +1293,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  		if (!($ps_date_element = caGetOption('dateElement', $pa_options, null))) { return null; }
  		if (!($t_element = $this->_getElementInstance($ps_date_element))) { return null; }
  		
- 		$va_current_date = caDateToHistoricTimestamps(_t('now'));
- 		$vn_current_date = $va_current_date['start'];
- 		
+ 		$vn_current_date = TimeExpressionParser::now();
  		
  		//
  		// Directly query the date attribute for performance
@@ -1310,9 +1316,26 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  				av.value_decimal1 DESC, cmo.relation_id DESC
  		", array($vn_object_id, (int)$t_element->getPrimaryKey(), $vn_movements_table_num));
  		
- 		
  		$va_relation_ids = $qr_res->getAllFieldValues('relation_id');
- 		$va_displays = caProcessTemplateForIDs($ps_display_template, 'ca_movements_x_objects', $va_relation_ids, array('returnAsArray' => true));
+ 	
+		$va_paths = $va_location_ids = array();
+ 		if(sizeof($va_relation_ids)) {
+			// get location paths
+			$qr_paths = $o_db->query("
+				SELECT cmo.relation_id, cmo.movement_id, cxsl.source_info
+				FROM ca_movements_x_objects cmo
+				INNER JOIN ca_movements_x_storage_locations AS cxsl ON cxsl.movement_id = cmo.movement_id
+				WHERE
+					(cmo.relation_id IN (?))
+			", array($va_relation_ids));
+		
+			while($qr_paths->nextRow()) {
+				$va_data = caUnserializeForDatabase($qr_paths->get('source_info'));
+				$va_paths[$qr_paths->get('movement_id')] = is_array($va_data['path']) ? join(" ➜ ", $va_data['path']) : $qr_paths->get('ca_storage_locations.hierarchy.preferred_labels.name', array('delimiter' => ' ➜ '));
+				$va_location_ids[$qr_paths->get('movement_id')] = $va_data['ids'];
+			}
+ 		}
+ 		$va_displays = caProcessTemplateForIDs($ps_display_template, 'ca_movements_x_objects', $va_relation_ids, array('returnAsArray' => true, 'forceValues' => array('ca_storage_locations.hierarchy.preferred_labels.name' => $va_paths)));
  
 		$qr_res->seek(0);
  		$va_items = array();
@@ -1346,8 +1369,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  		$pn_object = caGetOption('object_id', $pa_options, null);
  		if (!($vn_object_id = ($pn_object_id > 0) ? $pn_object_id : $this->getPrimaryKey())) { return null; }
  		
- 		$va_current_date = caDateToHistoricTimestamps(_t('now'));
- 		$vn_current_date = $va_current_date['start'];
+ 		$vn_current_date = TimeExpressionParser::now();
  		
  		$o_db = $this->getDb();
  		$qr_res = $o_db->query("
@@ -1392,9 +1414,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  		
  		$ps_display_template = caGetOption('template', $pa_options, '^ca_objects_x_storage_locations.relation_id');
  		
- 		$va_current_date = caDateToHistoricTimestamps(_t('now'));
- 		$vn_current_date = $va_current_date['start'];
- 		
+ 		$vn_current_date = TimeExpressionParser::now();
  		
  		//
  		// Directly query the date field for performance
@@ -1402,7 +1422,7 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
  		
  		$o_db = $this->getDb();
  		$qr_res = $o_db->query("
- 			SELECT csl.relation_id, csl.location_id, csl.object_id, csl.sdatetime, csl.edatetime
+ 			SELECT csl.relation_id, csl.location_id, csl.object_id, csl.sdatetime, csl.edatetime, csl.source_info
  			FROM ca_objects_x_storage_locations csl
  			INNER JOIN ca_storage_locations AS sl ON sl.location_id = csl.location_id
  			WHERE
@@ -1419,16 +1439,16 @@ class ca_objects extends RepresentableBaseModel implements IBundleProvider {
 		$qr_res->seek(0);
  		$va_items = array();
  		
- 		$vb_have_seen_the_present = false;
  		while($qr_res->nextRow()) {
  			$va_row = $qr_res->getRow();
  			$vn_relation_id = $va_row['relation_id'];
  			
  			if ($va_row['sdatetime'] > $vn_current_date) { 
  				$vs_status = 'FUTURE';
+ 			} elseif ($va_row['source_info'] == 'current') {
+ 				$vs_status = 'PRESENT';
  			} else {
- 				$vs_status = $vb_have_seen_the_present ? 'PAST' : 'PRESENT';
- 				$vb_have_seen_the_present = true;
+ 				$vs_status = 'PAST';
  			}
  			
  			$va_items[$vn_relation_id] = array(

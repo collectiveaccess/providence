@@ -1663,6 +1663,7 @@ class SearchResult extends BaseObject {
 	 */
 	private function _getAttributeValue($pa_value_list, $pt_instance, $pa_options) {
 		$va_path_components			=& $pa_options['pathComponents'];
+		$vs_delimiter				= isset($pa_options['delimiter']) ? $pa_options['delimiter'] : ';';
 		$va_return_values = array();
 		
 		
@@ -1670,7 +1671,11 @@ class SearchResult extends BaseObject {
 		$vs_table_name = $pt_instance->tableName();
 		
 		if (is_array($pa_value_list) && sizeof($pa_value_list)) {
+			$va_val_proc = array();
 			foreach($pa_value_list as $o_attribute) {
+				$t_attr_element = $pt_instance->_getElementInstance($o_attribute->getElementID());
+				$vn_attr_type = $t_attr_element->get('datatype');
+				
 				$va_acc = array();
 				$va_values = $o_attribute->getValues();
 				
@@ -1680,6 +1685,7 @@ class SearchResult extends BaseObject {
 					if (!($vm_locale_id = $o_attribute->getLocaleID())) { $vm_locale_id = SearchResult::$opo_locales->localeCodeToID(__CA_DEFAULT_LOCALE__); }; 
 				}
 				
+				$vb_did_return_value = false;
 				foreach($va_values as $o_value) {
 					$vb_dont_return_value = false;
 					$vs_element_code = $o_value->getElementCode();
@@ -1689,7 +1695,7 @@ class SearchResult extends BaseObject {
 							if (!$pa_options['filter']) { continue; }
 						}
 					}
-				
+
 					switch($o_value->getType()) {
 						case __CA_ATTRIBUTE_VALUE_LIST__:
 							$t_element = $pt_instance->_getElementInstance($o_value->getElementID());
@@ -1723,12 +1729,18 @@ class SearchResult extends BaseObject {
 							break;
 					}
 					
+					if (($vn_attr_type == __CA_ATTRIBUTE_VALUE_CONTAINER__) && !$va_path_components['subfield_name']) {
+						if (strlen($vs_val_proc) > 0)  {$va_val_proc[] = $vs_val_proc; }
+						$vs_val_proc = join($vs_delimiter, $va_val_proc);
+					} 
+					
 					$va_spec = $va_path_components['components'];
 					
 					array_pop($va_spec);
 					$va_acc[join('.', $va_spec).'.'.$vs_element_code] = $o_value->getDisplayValue(array_merge($pa_options, array('output' => 'idno')));
 					
 					if (!$vb_dont_return_value) {
+						$vb_did_return_value = true;
 						if($pa_options['makeLink']) { $vs_val_proc = array_shift(caCreateLinksFromText(array($vs_val_proc), $vs_table_name, array($vn_id))); }
 					
 						if ($pa_options['returnWithStructure']) {
@@ -1736,6 +1748,15 @@ class SearchResult extends BaseObject {
 						} else { 
 							$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()] = $vs_val_proc;	
 						}
+					}
+				}
+				
+				if ($va_path_components['subfield_name'] && $pa_options['returnBlankValues'] && !$vb_did_return_value) {
+					// value is missing so insert blank
+					if ($pa_options['returnWithStructure']) {
+						$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()][$va_path_components['subfield_name']] = '';
+					} else { 
+						$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()] = '';	
 					}
 				}
 				
@@ -1773,7 +1794,7 @@ class SearchResult extends BaseObject {
 		// Flatten array for return as string or simple array value
 		// 
 		$va_flattened_values = $this->_flattenArray($va_return_values, $pa_options);
-		
+		//print "VALUES=".print_R($va_flattened_values, true)."<br>\n\n";
 		if ($pa_options['returnAsArray']) {
 			return $va_flattened_values;
 		} else {

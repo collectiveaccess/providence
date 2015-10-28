@@ -153,8 +153,8 @@ var caUI = caUI || {};
 					}
 					data = dataAsList;
 				}
-			
-			
+
+
 				if (data.length) {
 					that.selectedItemIDs = data.join(';').split(';');
 
@@ -164,7 +164,7 @@ var caUI = caUI || {};
 							data.unshift(that.useAsRootID);
 						}
 					} else {
-						data.unshift(0);
+						if (!that.useAsRootID) { data.unshift(0); }
 					}
 				} else {
 					data = [that.useAsRootID ? that.useAsRootID : 0];
