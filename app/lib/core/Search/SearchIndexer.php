@@ -1584,6 +1584,7 @@ class SearchIndexer extends SearchBase {
 		foreach($va_deps as $vs_dep_table) {
 
 			$t_dep 				= $this->opo_datamodel->getInstanceByTableName($vs_dep_table, true);
+			if (!$t_dep) { continue; }
 			$vs_dep_pk 			= $t_dep->primaryKey();
 			$vn_dep_tablenum 	= $t_dep->tableNum();
 
