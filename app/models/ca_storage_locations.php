@@ -516,13 +516,30 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 		switch($vs_mode) {
 			case 'ca_storage_locations':
 				// Get current storage locations
+				
 				$o_view->setVar('t_subject_rel', new ca_objects_x_storage_locations());
-				
-				
+				// Get current objects for location
+				$va_object_ids = $this->getRelatedItems('ca_objects', array('idsOnly' => true));
+				if (is_array($va_object_ids) && sizeof($va_object_ids)) {
+					// check each object for current location
+					
+					// ... then get the list of objects for which the *current* movement is one of ours
+					$t_object = new ca_objects();
+					$va_current_locations_ids = $t_object->getRelatedItems('ca_storage_locations', array('idsOnly' => false, 'showCurrentOnly' => true, 'row_ids' => $va_object_ids));
+					
+					$va_object_rels = array(); 
+					foreach($va_current_locations_ids as $vn_relation_id => $va_location_info) {
+						if ($va_location_info['location_id'] == $this->getPrimaryKey()) { $va_object_rels[] = $vn_relation_id; }
+					}
+					
+					$o_view->setVar('qr_result', sizeof($va_object_rels) ? caMakeSearchResult('ca_objects_x_storage_locations', $va_object_rels) : null);
+					
+				}
 				break;
 			case 'ca_movements':
 			default:
 				// Get current movements for location
+				
 				$va_movement_ids = $this->getRelatedItems('ca_movements', array('idsOnly' => true));
 				if (is_array($va_movement_ids) && sizeof($va_movement_ids)) {
 					// get list of objects on these movements...

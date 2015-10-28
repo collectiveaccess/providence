@@ -70,7 +70,7 @@ BaseModel::$s_ca_models_definitions['ca_objects_x_storage_locations'] = array(
 				'LABEL' => 'Location id', 'DESCRIPTION' => 'Identifier for Location'
 		),
 		'source_info' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
