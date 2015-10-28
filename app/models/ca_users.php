@@ -1513,7 +1513,7 @@ class ca_users extends BaseModel {
 		if ($this->isValidPreference($ps_pref)) {
 			if ($this->purify()) {
 				if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
-				$ps_val = BaseModel::$html_purifier->purify($ps_val);
+				if(!is_array($ps_val)) { $ps_val = BaseModel::$html_purifier->purify($ps_val); }
 			}
 			if ($this->isValidPreferenceValue($ps_pref, $ps_val, 1)) {
 				$va_prefs = $this->getVar("_user_preferences");
@@ -2874,9 +2874,17 @@ class ca_users extends BaseModel {
 			}
 		}
 
-		if(AuthenticationManager::authenticate($ps_username, $ps_password, $pa_options)) {
-			$this->load($ps_username);
-			return true;
+		try {
+			if(AuthenticationManager::authenticate($ps_username, $ps_password, $pa_options)) {
+				$this->load($ps_username);
+				return true;
+			}
+		}  catch (Exception $e) {
+			$this->opo_log->log(array(
+				'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
+				'MESSAGE' => _t('There was an error while trying to authenticate user %1: The message was %2 : %3', $ps_username, get_class($e), $e->getMessage())
+			));
+			return false;
 		}
 		
 		// check ips
