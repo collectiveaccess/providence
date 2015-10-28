@@ -237,6 +237,7 @@ class WLPlugInformationServiceALANSL extends BaseInformationServicePlugin implem
 		// We can't use the original URL as the embed=true parameter does not survive the redirection
 		// The original URL comes in the format https://biodiversity.org.au/boa/name/apni/54563/api/apc-format?embed=true
 		// and we want it to go to https://biodiversity.org.au/nsl/services/name/apni/54563/api/apc-format?embed=true
+		// TODO: Remove this replace when {formatname}-format-embed is implemented within the service
 		$vs_format = caGetOption('extraInfoFormat', $pa_settings, 'apc-format');
 		$vs_request_url = str_replace('/boa/name/', '/nsl/services/name/', $ps_url) . '/api/' . $vs_format . '?embed=true';
 		$vs_display = $this->getClient()->get($vs_request_url)->send()->getBody(true);
