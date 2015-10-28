@@ -75,6 +75,7 @@ class WLPlugInformationServiceALANSL extends BaseInformationServicePlugin implem
 {
 	/** @var array of settings */
 	static $s_settings;
+	const NSL_SERVICES_BASE = 'https://biodiversity.org.au';
 	const NSL_SERVICES_URL = 'https://biodiversity.org.au/nsl/services';
 	private $pa_available_search_fields;
 
@@ -240,7 +241,7 @@ class WLPlugInformationServiceALANSL extends BaseInformationServicePlugin implem
 		// TODO: Remove this replace when {formatname}-format-embed is implemented within the service
 		$vs_format = caGetOption('extraInfoFormat', $pa_settings, 'apc-format');
 		$vs_request_url = str_replace('/boa/name/', '/nsl/services/name/', $ps_url) . '/api/' . $vs_format . '?embed=true';
-		$vs_display = $this->getClient()->get($vs_request_url)->send()->getBody(true);
+		$vs_display = $this->relativeToAbsoluteUrls($this->getClient()->get($vs_request_url)->send()->getBody(true), self::NSL_SERVICES_BASE);
 		return array('display' => $vs_display);
 	}
 
@@ -255,5 +256,9 @@ class WLPlugInformationServiceALANSL extends BaseInformationServicePlugin implem
 	public function getExtraInfo($pa_settings, $ps_url) {
 		$va_extra_info = $this->getClient()->get($ps_url . '/api/simple-name')->addHeader('Accept', 'application/json')->send()->json();
 		return $va_extra_info['nslSimpleName'];
+	}
+
+	private function relativeToAbsoluteUrls($ps_html, $ps_base){
+		return preg_replace('/((?:href|src)=[\'"])([^:"\']*[\'"])/i', '$1' . $ps_base . '$2',$ps_html);
 	}
 }
