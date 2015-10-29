@@ -754,7 +754,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				if (!$vs_history_template) { $vs_history_template = $vs_display_template; }
 				$o_view->setVar('location_history', $this->getLocationHistory(array('template' => $vs_history_template)));
 				
-				$o_view->setVar('location_relationship_type', is_array($pa_bundle_settings['ca_storage_locations_relationshipType']) ? addslashes($pa_bundle_settings['ca_storage_locations_relationshipType'][0]) : '');
+				$o_view->setVar('location_relationship_type', $this->getAppConfig()->get('object_storage_location_tracking_relationship_type'));
 				$o_view->setVar('location_change_url',  null);
 				break;
 			case 'ca_movements':
@@ -1224,7 +1224,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 			case 'ca_storage_locations':
 				$t_last_location = $this->getLastLocation(array());
 				$o_view->setVar('current_location', $t_last_location ? $t_last_location->getWithTemplate($vs_display_template) : null);
-				$o_view->setVar('location_relationship_type', is_array($pa_bundle_settings['ca_storage_locations_relationshipType']) ? addslashes($pa_bundle_settings['ca_storage_locations_relationshipType'][0]) : '');
+				$o_view->setVar('location_relationship_type', $this->getAppConfig()->get('object_storage_location_tracking_relationship_type'));
 				$o_view->setVar('location_change_url',  null);
 				break;
 			case 'ca_movements':
