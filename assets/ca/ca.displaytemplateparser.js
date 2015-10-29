@@ -27,7 +27,7 @@
 
 var caUI = caUI || {};
 
-(function ($) {
+(function (jQuery) {
     caUI.initDisplayTemplateParser = function(options) {
         // --------------------------------------------------------------------------------
         // setup options
@@ -119,21 +119,21 @@ var caUI = caUI || {};
             });
 
             // Process <ifdef> tags
-            var $h = jQuery("<div>" + t + "</div>");
+            var h = jQuery("<div>" + t + "</div>");
             jQuery.each(tagList, function(k, tag) {
                 var tagBits = tag.split(/\~/);
                 var tagRoot = tagBits[0].replace("^", "");
                 var val = jQuery(values[tagRoot]).val();
 
                 if(val && (val.length > 0)) {
-                    jQuery.each($h.find("ifdef[code=" + tagRoot + "]"), function(k, v) {
+                    jQuery.each(h.find("ifdef[code=" + tagRoot + "]"), function(k, v) {
                         jQuery(v).replaceWith(jQuery(v).html());
                     });
                 } else {
-                    $h.find("ifdef[code=" + tagRoot + "]").remove();
+                    h.find("ifdef[code=" + tagRoot + "]").remove();
                 }
             });
-            return $h.html().trim();
+            return h.html().trim();
         };
         // --------------------------------------------------------------------------------
         // helpers
