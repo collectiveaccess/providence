@@ -933,16 +933,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Movement date'),
 										'description' => ''
 									),
-									'ca_movements_relationshipType' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_SELECT,
-										'useRelationshipTypeList' => 'ca_movements_x_objects',
-										'takesLocale' => false,
-										'default' => '',
-										'width' => "275px", 'height' => "75px",
-										'label' => _t('Limit movement tracking to relationship types'),
-										'description' => ''
-									),
 									'displayTemplate' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
@@ -1302,17 +1292,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "275px", 'height' => "75px",
 										'label' => _t('Movement date'),
 										'description' => ''
-									),
-									'ca_movements_relationshipType' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_SELECT,
-										'useRelationshipTypeList' => 'ca_movements_x_objects',
-										'takesLocale' => false,
-										'default' => '',
-										'width' => "275px", 'height' => "75px",
-										'label' => _t('Limit movement tracking to relationship types'),
-										'description' => ''
-									),								
+									),							
 									'colorItem' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_COLORPICKER,
