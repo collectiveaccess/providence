@@ -224,7 +224,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 		}
 
 		$vs_return = join('; ', $va_return);
-		CompositeCache::save($vs_cache_key, $vs_return, 'GettyRDFLiterals');
+		CompositeCache::save($vs_cache_key, $vs_return, 'GettyRDFLiterals', 60 * 60 * 24 * 7);
 
 		return $vs_return;
 	}
