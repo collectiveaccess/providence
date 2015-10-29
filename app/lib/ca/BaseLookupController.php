@@ -145,6 +145,10 @@
 					}
 				}
 				
+				if ($this->ops_table_name == 'ca_entities') {
+					$ps_query = "name:{$ps_query}";
+				}
+				
 				// do search
 				$qr_res = $o_search->search(trim($ps_query).(intval($pb_exact) ? '' : '*').$vs_type_query.$vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $vs_sort));
 		
