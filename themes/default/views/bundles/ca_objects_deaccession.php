@@ -37,7 +37,7 @@
 	if (!($vs_add_label 		= $this->getVar('add_label'))) { $vs_add_label = _t('Update location'); }
 
 	
-	print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+	print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, (bool)$t_subject->get('is_deaccessioned'), ((bool)$t_subject->get('is_deaccessioned') ? _t('Yes') : _t('No')));
 ?>
 <div id="<?php print $vs_id_prefix; ?>">
 	<div class="bundleContainer">

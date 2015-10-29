@@ -38,7 +38,7 @@ use InvalidArgumentException;
 class Registry
 {
     /**
-     * List of all loggers in the registry (ba named indexes)
+     * List of all loggers in the registry (by named indexes)
      *
      * @var Logger[]
      */
@@ -61,6 +61,22 @@ class Registry
         }
 
         self::$loggers[$name] = $logger;
+    }
+
+    /**
+     * Checks if such logging channel exists by name or instance
+     *
+     * @param string|Logger $logger Name or logger instance
+     */
+    public static function hasLogger($logger)
+    {
+        if ($logger instanceof Logger) {
+            $index = array_search($logger, self::$loggers, true);
+
+            return false !== $index;
+        } else {
+            return isset(self::$loggers[$logger]);
+        }
     }
 
     /**

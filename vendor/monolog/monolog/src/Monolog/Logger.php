@@ -152,10 +152,12 @@ class Logger implements LoggerInterface
      * Pushes a handler on to the stack.
      *
      * @param HandlerInterface $handler
+     * @return $this
      */
     public function pushHandler(HandlerInterface $handler)
     {
         array_unshift($this->handlers, $handler);
+        return $this;
     }
 
     /**
@@ -184,6 +186,7 @@ class Logger implements LoggerInterface
      * Adds a processor on to the stack.
      *
      * @param callable $callback
+     * @return $this
      */
     public function pushProcessor($callback)
     {
@@ -191,6 +194,7 @@ class Logger implements LoggerInterface
             throw new \InvalidArgumentException('Processors must be valid callables (callback or object with an __invoke method), '.var_export($callback, true).' given');
         }
         array_unshift($this->processors, $callback);
+        return $this;
     }
 
     /**
@@ -229,6 +233,21 @@ class Logger implements LoggerInterface
             $this->pushHandler(new StreamHandler('php://stderr', static::DEBUG));
         }
 
+        $levelName = static::getLevelName($level);
+
+        // check if any handler will handle this message so we can return early and save cycles
+        $handlerKey = null;
+        foreach ($this->handlers as $key => $handler) {
+            if ($handler->isHandling(array('level' => $level))) {
+                $handlerKey = $key;
+                break;
+            }
+        }
+
+        if (null === $handlerKey) {
+            return false;
+        }
+
         if (!static::$timezone) {
             static::$timezone = new \DateTimeZone(date_default_timezone_get() ?: 'UTC');
         }
@@ -237,25 +256,12 @@ class Logger implements LoggerInterface
             'message' => (string) $message,
             'context' => $context,
             'level' => $level,
-            'level_name' => static::getLevelName($level),
+            'level_name' => $levelName,
             'channel' => $this->name,
             'datetime' => \DateTime::createFromFormat('U.u', sprintf('%.6F', microtime(true)), static::$timezone)->setTimezone(static::$timezone),
             'extra' => array(),
         );
-        // check if any handler will handle this message
-        $handlerKey = null;
-        foreach ($this->handlers as $key => $handler) {
-            if ($handler->isHandling($record)) {
-                $handlerKey = $key;
-                break;
-            }
-        }
-        // none found
-        if (null === $handlerKey) {
-            return false;
-        }
 
-        // found at least one, process message and dispatch it
         foreach ($this->processors as $processor) {
             $record = call_user_func($processor, $record);
         }
@@ -436,9 +442,7 @@ class Logger implements LoggerInterface
      */
     public function log($level, $message, array $context = array())
     {
-        if (is_string($level) && defined(__CLASS__.'::'.strtoupper($level))) {
-            $level = constant(__CLASS__.'::'.strtoupper($level));
-        }
+        $level = static::toMonologLevel($level);
 
         return $this->addRecord($level, $message, $context);
     }
@@ -472,7 +476,7 @@ class Logger implements LoggerInterface
     }
 
     /**
-     * Adds a log record at the INFO level.
+     * Adds a log record at the NOTICE level.
      *
      * This method allows for compatibility with common interfaces.
      *
@@ -609,5 +613,17 @@ class Logger implements LoggerInterface
     public function emergency($message, array $context = array())
     {
         return $this->addRecord(static::EMERGENCY, $message, $context);
+    }
+
+    /**
+     * Set the timezone to be used for the timestamp of log records.
+     *
+     * This is stored globally for all Logger instances
+     *
+     * @param \DateTimeZone $tz Timezone object
+     */
+    public static function setTimezone(\DateTimeZone $tz)
+    {
+        self::$timezone = $tz;
     }
 }

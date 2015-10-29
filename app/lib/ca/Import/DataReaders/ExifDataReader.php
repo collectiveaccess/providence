@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -66,6 +66,8 @@ class ExifDataReader extends BaseDataReader {
 	 * @return bool
 	 */
 	public function read($ps_source, $pa_options=null) {
+		parent::read($ps_source, $pa_options);
+		
 		$vs_path_to_exif_tool = caGetExternalApplicationPath("exiftool");
 	
 		$this->opn_current_row = -1;
@@ -113,6 +115,8 @@ class ExifDataReader extends BaseDataReader {
 	 * @return mixed
 	 */
 	public function get($ps_field, $pa_options=null) {
+		if ($vm_ret = parent::get($ps_field, $pa_options)) { return $vm_ret; }
+		
 		if ($this->opn_current_row !== 0) { return null; }
 		if(!is_array($this->opa_row_buf)) { return null; }
 		
@@ -124,6 +128,10 @@ class ExifDataReader extends BaseDataReader {
 				if (!isset($va_ptr[$vs_key])) { return null; }
 				$va_ptr =& $va_ptr[$vs_key];
 			}
+		}
+		
+		if (caGetOption('returnAsArray', $pa_options, false)) {
+			return is_array($va_ptr) ? $va_ptr : array($va_ptr);
 		}
 		
 		return $va_ptr;	
@@ -169,6 +177,15 @@ class ExifDataReader extends BaseDataReader {
 	public function getInputType() {
 		return __CA_DATA_READER_INPUT_FILE__;
 	}
+	
+	# -------------------------------------------------------
+	/**
+	 * Values can repeat for XML files
+	 * 
+	 * @return bool
+	 */
+	public function valuesCanRepeat() {
+		return true;
+	}
 	# -------------------------------------------------------
 }
-?>

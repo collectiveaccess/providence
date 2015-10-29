@@ -82,7 +82,6 @@ class BaseEditorController extends ActionController {
 		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
 		$vs_mode = $this->request->getParameter('mode', pString);
 
-
 		if (!$this->_checkAccess($t_subject)) { return false; }
 
 		//
@@ -179,7 +178,10 @@ class BaseEditorController extends ActionController {
 		}
 		$this->view->setVar('t_ui', $t_ui);
 
-		if ($vn_subject_id) { $this->request->session->setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id); } 	// set last edited
+		if ($vn_subject_id) {
+			// set last edited
+			$this->request->session->setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id);
+		}
 
 		# trigger "EditItem" hook
 		$this->opo_app_plugin_manager->hookEditItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
@@ -189,16 +191,18 @@ class BaseEditorController extends ActionController {
 		}
 
 		// save where we are in session, for "Save and return" button
-		$va_save_and_return = $this->getRequest()->session->getVar('save_and_return_locations');
-		if(!is_array($va_save_and_return)) { $va_save_and_return = array(); }
+		if($vn_subject_id) { // don't save "empty" / new record editor location. pk has to be set
+			$va_save_and_return = $this->getRequest()->session->getVar('save_and_return_locations');
+			if(!is_array($va_save_and_return)) { $va_save_and_return = array(); }
 
-		$va_save = array(
-			'table' => $t_subject->tableName(),
-			'key' => $vn_subject_id,
-			'url_path' => $this->getRequest()->getFullUrlPath()
-		);
+			$va_save = array(
+				'table' => $t_subject->tableName(),
+				'key' => $vn_subject_id,
+				'url_path' => $this->getRequest()->getFullUrlPath()
+			);
 
-		$this->getRequest()->session->setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, __CA_SAVE_AND_RETURN_STACK_SIZE__));
+			$this->getRequest()->session->setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, __CA_SAVE_AND_RETURN_STACK_SIZE__));
+		}
 
 		// if we came here through a rel link, show save and return button
 		$this->getView()->setVar('show_save_and_return', (bool) $this->getRequest()->getParameter('rel', pInteger));
@@ -212,7 +216,8 @@ class BaseEditorController extends ActionController {
 	 * @param array $pa_options Array of options passed through to _initView and saveBundlesForScreen()
 	 */
 	public function Save($pa_options=null) {
-		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id) = $this->_initView($pa_options);
+		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vs_rel_table, $vn_rel_type_id, $vn_rel_id) = $this->_initView($pa_options);
+		/** @var $t_subject BundlableLabelableBaseModelWithAttributes */
 		if (!is_array($pa_options)) { $pa_options = array(); }
 
 		if (!$this->_checkAccess($t_subject)) { return false; }
@@ -226,7 +231,17 @@ class BaseEditorController extends ActionController {
 			}
 		}
 
-		$vs_auth_table_name = $this->ops_table_name;
+		// relate existing records via Save() link
+		if($vn_subject_id && $vs_rel_table && $vn_rel_type_id && $vn_rel_id) {
+			if($this->opo_datamodel->tableExists($vs_rel_table)) {
+				Debug::msg("[Save()] Relating new record using parameters from request: $vs_rel_table / $vn_rel_type_id / $vn_rel_id");
+				$t_subject->addRelationship($vs_rel_table, $vn_rel_id, $vn_rel_type_id, _t('now'));
+			}
+			$this->notification->addNotification(_t("Added relationship"), __NOTIFICATION_TYPE_INFO__);
+			$this->render('screen_html.php');
+			return;
+		}
+
 		if (in_array($this->ops_table_name, array('ca_representation_annotations'))) { $vs_auth_table_name = 'ca_objects'; }
 
 		if(!sizeof($_POST)) {
@@ -275,16 +290,24 @@ class BaseEditorController extends ActionController {
 		}
 		$this->view->setVar('t_ui', $t_ui);
 
-		if(!$vn_subject_id) {
+		if(!$vn_subject_id) { // this was an insert
 			$vn_subject_id = $t_subject->getPrimaryKey();
-			if (!$vb_save_rc) {
+			if (!$vb_save_rc) { // failed insert
 				$vs_message = _t("Could not save %1", $vs_type_name);
-			} else {
+			} else { // ok insert
 				$vs_message = _t("Added %1", $vs_type_name);
 				$this->request->setParameter($t_subject->primaryKey(), $vn_subject_id, 'GET');
 				$this->view->setVar($t_subject->primaryKey(), $vn_subject_id);
 				$this->view->setVar('subject_id', $vn_subject_id);
 				$this->request->session->setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id);	// set last edited
+
+				// relate newly created record if requested
+				if($vs_rel_table && $vn_rel_type_id && $vn_rel_id) {
+					if($this->opo_datamodel->tableExists($vs_rel_table)) {
+						Debug::msg("[Save()] Relating new record using parameters from request: $vs_rel_table / $vn_rel_type_id / $vn_rel_id");
+						$t_subject->addRelationship($vs_rel_table, $vn_rel_id, $vn_rel_type_id);
+					}
+				}
 
 				// Set ACL for newly created record
 				if ($t_subject->getAppConfig()->get('perform_item_level_access_checking') && !$t_subject->getAppConfig()->get("{$this->ops_table_name}_dont_do_item_level_access_control")) {
@@ -346,28 +369,36 @@ class BaseEditorController extends ActionController {
 
 		$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => $vb_is_insert));
 
+		if (method_exists($this, "postSave")) {
+			$this->postSave($t_subject, $vb_is_insert);
+		}
+
 		// redirect back to previous item on stack if it's a valid "save and return" request
-		if((bool) $this->getRequest()->getParameter('is_save_and_return', pInteger)) {
+		$vb_has_errors = (is_array($va_errors) && (sizeof($va_errors) > 0)); // don't redirect back when there were form errors
+		if(((bool) $this->getRequest()->getParameter('is_save_and_return', pInteger)) && !$vb_has_errors) {
 			$va_save_and_return = $this->getRequest()->session->getVar('save_and_return_locations');
 			if(is_array($va_save_and_return)) {
 				// get rid of all the navigational steps in the current item
 				do {
 					$va_pop = array_pop($va_save_and_return);
-				} while (($va_pop['table'] == $t_subject->tableName()) && ($va_pop['key'] == $vn_subject_id));
+				} while (
+					sizeof($va_save_and_return)>0 && // only keep going if there are more saved locations
+					(
+						!$va_pop['key'] || // keep going if key is empty (i.e. it was a "create new record" screen)
+						(($va_pop['table'] == $t_subject->tableName()) && ($va_pop['key'] == $vn_subject_id)) // keep going if the record is the current one
+					)
+				);
 
-				if(sizeof($va_save_and_return)>0) {
+				// the last pop must be from a different table or record for the redirect to kick in
+				// (which might not be the case because $va_save_and_return might have just run out of items for some reason)
+				if(($va_pop['table'] != $t_subject->tableName()) || ($va_pop['key'] != $vn_subject_id)) {
 					if(isset($va_pop['url_path']) && (strlen($va_pop['url_path']) > 0)) {
 						$this->getResponse()->setRedirect($va_pop['url_path']);
 					} else {
 						$this->getResponse()->setRedirect(caEditorUrl($this->getRequest(), $va_pop['table'], $va_pop['key']));
 					}
-					return;
 				}
 			}
-		}
-
-		if (method_exists($this, "postSave")) {
-			$this->postSave($t_subject, $vb_is_insert);
 		}
 
 		// save where we are in session for "Save and return" button
@@ -377,7 +408,9 @@ class BaseEditorController extends ActionController {
 
 			$va_save = array(
 				'table' => $t_subject->tableName(),
-				'key' => $vn_subject_id
+				'key' => $vn_subject_id,
+				// dont't direct back to Save action
+				'url_path' => str_replace('/Save/', '/Edit/', $this->getRequest()->getFullUrlPath()).$vn_subject_id
 			);
 
 			$this->getRequest()->session->setVar('save_and_return_locations', caPushToStack($va_save, $va_save_and_return, __CA_SAVE_AND_RETURN_STACK_SIZE__));
@@ -522,12 +555,25 @@ class BaseEditorController extends ActionController {
 
 				# trigger "DeleteItem" hook
 				$this->opo_app_plugin_manager->hookDeleteItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
+
+				# redirect
+				$this->redirectAfterDelete($t_subject->tableName());
 			}
 		}
 
 		$this->view->setVar('subject_name', $t_subject->getLabelForDisplay(false));
 
 		$this->render('delete_html.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 * Redirects to a sensible location after a record delete. Defaults to the last find action
+	 * for the current table, which depending on the table may not be available. Can be
+	 * overridden in subclasses/implementations.
+	 * @param string $ps_table table name
+	 */
+	protected function redirectAfterDelete($ps_table) {
+		caSetRedirect($this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $ps_table));
 	}
 	# -------------------------------------------------------
 	/**
@@ -543,6 +589,9 @@ class BaseEditorController extends ActionController {
 
 		if (!$this->_checkAccess($t_subject)) { return false; }
 
+		if(defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
+			$this->render('../template_test_html.php');
+		}
 
 		$t_display = new ca_bundle_displays();
 		$va_displays = $t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID())));
@@ -988,7 +1037,9 @@ class BaseEditorController extends ActionController {
 			}
 
 			// then set the empty row's type_id
-			$t_subject->set($t_subject->getTypeFieldName(), $vn_type_id);
+			if($t_subject->hasField($t_subject->getTypeFieldName())) {
+				$t_subject->set($t_subject->getTypeFieldName(), $vn_type_id);
+			}
 
 			// then reload the definitions (which includes bundle specs)
 			$t_subject->reloadLabelDefinitions();
@@ -1003,6 +1054,21 @@ class BaseEditorController extends ActionController {
 		$this->view->setVar('t_subject', $t_subject);
 
 		MetaTagManager::setWindowTitle(_t("Editing %1 : %2", ($vs_type = $t_subject->getTypeName()) ? $vs_type : $t_subject->getProperty('NAME_SINGULAR'), ($vn_subject_id) ? $t_subject->getLabelForDisplay(true) : _t('new %1', $t_subject->getTypeName())));
+
+		// pass relationship parameters to Save() action from Edit() so
+		// that we can create a relationship for a newly created object
+		if($vs_rel_table = $this->getRequest()->getParameter('rel_table', pString)) {
+			$vn_rel_type_id = $this->getRequest()->getParameter('rel_type_id', pString);
+			$vn_rel_id = $this->getRequest()->getParameter('rel_id', pInteger);
+
+			if($vs_rel_table && $vn_rel_type_id && $vn_rel_id) {
+				$this->view->setVar('rel_table', $vs_rel_table);
+				$this->view->setVar('rel_type_id', $vn_rel_type_id);
+				$this->view->setVar('rel_id', $vn_rel_id);
+			}
+
+			return array($vn_subject_id, $t_subject, $t_ui, null, null, $vs_rel_table, $vn_rel_type_id, $vn_rel_id);
+		}
 
 		if ($vs_parent_id_fld = $t_subject->getProperty('HIERARCHY_PARENT_ID_FLD')) {
 			$this->view->setVar('parent_id', $vn_parent_id = $this->request->getParameter($vs_parent_id_fld, pInteger));
@@ -1094,6 +1160,13 @@ class BaseEditorController extends ActionController {
 			$vn_root_id = $t_list->getRootItemIDForList($t_subject->getTypeListCode());
 
 			foreach($va_hier as $vn_item_id => $va_item) {
+				if($va_item['settings']) {
+					$va_settings = caUnserializeForDatabase($va_item['settings']);
+					if(is_array($va_settings) && isset($va_settings['render_in_new_menu']) && !((bool) $va_settings['render_in_new_menu'])) {
+						unset($va_hier[$vn_item_id]);
+						continue;
+					}
+				}
 				if ($vn_item_id == $vn_root_id) { continue; } // skip root
 				$va_types_by_parent_id[$va_item['parent_id']][] = $va_item;
 			}
@@ -1353,6 +1426,23 @@ class BaseEditorController extends ActionController {
 		$this->response->addContent(json_encode($t_subject->getBundleFormValues($ps_bundle_name, "{$pn_placement_id}", $t_placement->get('settings'), array('start' => $pn_start, 'limit' => $pn_limit, 'request' => $this->request, 'contentOnly' => true))));
 	}
 	# ------------------------------------------------------------------
+	/**
+	 * JSON service that returns a processed display template for the current record
+	 * @return bool
+	 */
+	public function processTemplate() {
+		list($vn_subject_id, $t_subject) = $this->_initView();
+
+		if (!$this->_checkAccess($t_subject)) { return false; }
+
+		// http://providence.dev/index.php/editor/objects/ObjectEditor/processTemplate/object_id/1/template/^ca_objects.idno
+		$ps_template = $this->request->getParameter("template", pString);
+		$this->view->setVar('processed_template', json_encode(caProcessTemplateForIDs($ps_template, $t_subject->tableNum(), array($vn_subject_id))));
+		$this->render("../generic/ajax_process_template.php");
+
+		return true;
+	}
+	# ------------------------------------------------------------------
 	# Sidebar info handler
 	# ------------------------------------------------------------------
 	/**
@@ -1423,7 +1513,9 @@ class BaseEditorController extends ActionController {
 				$this->view->setVar('children', $va_children);
 			}
 		} else {
-			$t_item->set('type_id', $vn_type_id);
+			if($t_item->hasField('type_id')) {
+				$t_item->set('type_id', $vn_type_id);
+			}
 		}
 		$this->view->setVar('t_item', $t_item);
 		$this->view->setVar('screen', $this->request->getActionExtra());						// name of screen
@@ -1676,7 +1768,8 @@ class BaseEditorController extends ActionController {
 				'description' => 	caGetOption('description', $va_annotation, '', array('castTo' => 'string')),
 				'type' => 			caGetOption('type', $va_annotation, 'rect', array('castTo' => 'string')),
 				'locked' => 		caGetOption('locked', $va_annotation, '0', array('castTo' => 'string')),
-				'options' => 		caGetOption('options', $va_annotation, array(), array('castTo' => 'array'))
+				'options' => 		caGetOption('options', $va_annotation, array(), array('castTo' => 'array')),
+				'key' =>			caGetOption('key', $va_annotation, null)
 			);
 		}
 
@@ -1884,9 +1977,13 @@ class BaseEditorController extends ActionController {
 				//
 				// Perform metadata embedding
 				$t_rep = new ca_object_representations($va_rep['representation_id']);
-				if (!($vs_path = caEmbedMetadataIntoRepresentation($t_subject, $t_rep, $ps_version))) {
+				if(!($vs_path = caEmbedMediaMetadataIntoFile($t_rep->getMediaPath('media', $ps_version),
+					$t_subject->tableName(), $t_subject->getPrimaryKey(), $t_subject->getTypeCode(), // subject table info
+					$t_rep->getPrimaryKey(), $t_rep->getTypeCode() // rep info
+				))) {
 					$vs_path = $t_rep->getMediaPath('media', $ps_version);
 				}
+
 				$va_file_paths[$vs_path] = $vs_file_name;
 
 				$vn_c++;
@@ -1921,6 +2018,7 @@ class BaseEditorController extends ActionController {
 	 * Download single representation from currently open object
 	 */
 	public function DownloadRepresentation() {
+		/** @var BundlableLabelableBaseModelWithAttributes $t_object */
 		list($vn_object_id, $t_object) = $this->_initView();
 		$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
 		$ps_version = $this->request->getParameter('version', pString);
@@ -1967,13 +2065,16 @@ class BaseEditorController extends ActionController {
 
 		//
 		// Perform metadata embedding
-		if ($vs_path = caEmbedMetadataIntoRepresentation($t_object, $t_rep, $ps_version)) {
+		if ($vs_path = caEmbedMediaMetadataIntoFile($t_rep->getMediaPath('media', $ps_version),
+			$t_object->tableName(), $t_object->getPrimaryKey(), $t_object->getTypeCode(), // subject table info
+			$t_rep->getPrimaryKey(), $t_rep->getTypeCode() // representation info
+		)) {
 			$this->view->setVar('version_path', $vs_path);
 		} else {
 			$this->view->setVar('version_path', $t_rep->getMediaPath('media', $ps_version));
 		}
-		$vn_rc = $this->render('object_representation_download_binary.php');
-		if ($vs_path) { unlink($vs_path); }
+		$this->render('object_representation_download_binary.php');
+		if ($vs_path) { @unlink($vs_path); }
 		exit;
 	}
 	# -------------------------------------------------------

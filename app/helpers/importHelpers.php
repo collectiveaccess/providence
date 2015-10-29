@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,11 +30,14 @@
  * ----------------------------------------------------------------------
  */
 
- /**
-   *
-   */
-   require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
-   require_once(__CA_LIB_DIR__.'/ca/Import/BaseDataReader.php');
+	require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
+	require_once(__CA_LIB_DIR__.'/ca/Import/BaseDataReader.php');
+	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
+	require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
+
+	require_once(__CA_LIB_DIR__.'/core/Plugins/InformationService/TGN.php');
+	require_once(__CA_LIB_DIR__.'/core/Plugins/InformationService/AAT.php');
+	require_once(__CA_LIB_DIR__.'/core/Plugins/InformationService/ULAN.php');
 
 	# ---------------------------------------
 	/**
@@ -68,12 +71,16 @@
 		
 		$pa_parents = array_reverse($pa_parents);
 		foreach($pa_parents as $vn_i => $va_parent) {
+			if (!is_array($va_parent)) {
+				$o_log->logWarn(_t('[%2] Parents options invalid. Did you forget to pass a list? Parents list passed was: %1', print_r($pa_parents, true), $ps_refinery_name));
+				break;
+			}
 			$vs_name = BaseRefinery::parsePlaceholder($va_parent['name'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 			$vs_idno = BaseRefinery::parsePlaceholder($va_parent['idno'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 			$vs_type = BaseRefinery::parsePlaceholder($va_parent['type'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 
 			if (!$vs_name && !$vs_idno) { continue; }
-			if (!$vs_name) { $vs_name = $vs_idno; }
+			if (!$vs_name) { continue; }//$vs_name = $vs_idno; }
 			
 			$va_attributes = (isset($va_parent['attributes']) && is_array($va_parent['attributes'])) ? $va_parent['attributes'] : array();
 			
@@ -135,7 +142,8 @@
 			}
 			
 			$va_match_on = caGetOption("{$ps_refinery_name}_dontMatchOnLabel", $pa_item['settings'], false) ? array('idno') : array('idno', 'label');
-			$pa_options = array_merge(array('matchOn' => $va_match_on), $pa_options);
+			$vb_ignore_parent = caGetOption("{$ps_refinery_name}_ignoreParent", $pa_item['settings'], false);
+			$pa_options = array_merge(array('matchOn' => $va_match_on, 'ignoreParent' => $vb_ignore_parent), $pa_options);
 			
 			switch($ps_table) {
 				case 'ca_objects':
@@ -143,7 +151,7 @@
 					$va_attributes['preferred_labels']['name'] = $va_attributes['_preferred_labels'] = $vs_name;
 					break;
 				case 'ca_entities':
-					$vn_id = DataMigrationUtils::getEntityID($va_entity_label = DataMigrationUtils::splitEntityName($vs_name), $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
+					$vn_id = DataMigrationUtils::getEntityID($va_entity_label = DataMigrationUtils::splitEntityName($vs_name, $pa_options), $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					$va_attributes['preferred_labels'] = $va_entity_label;
 					$va_attributes['_preferred_labels'] = $vs_name;
 					break;
@@ -374,7 +382,7 @@
 						$va_name[$vs_label_fld] = BaseRefinery::parsePlaceholder($pa_related_options[$vs_label_fld], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader));
 					}
 				} else {
-					$va_name = DataMigrationUtils::splitEntityName($vs_name);
+					$va_name = DataMigrationUtils::splitEntityName($vs_name, $pa_options);
 				} 
 			
 				if (!is_array($va_name) || !$va_name) { 
@@ -524,6 +532,10 @@
 			$pa_options['matchOn'] = $va_match_on;
 		}
 		
+		if (isset($pa_item['settings']["{$ps_refinery_name}_ignoreParent"])) {
+			$pa_options['ignoreParent'] = $pa_item['settings']["{$ps_refinery_name}_ignoreParent"];
+		}
+		
 		$pb_dont_create = caGetOption('dontCreate', $pa_options, (bool)$pa_item['settings']["{$ps_refinery_name}_dontCreate"]);
 		
 		$va_vals = array();
@@ -542,16 +554,21 @@
 
 				foreach($va_items as $vn_i => $vs_item) {
 					$va_parents = $pa_item['settings']["{$ps_refinery_name}_parents"];
+
+					// Set label
+					$va_val = array();
 					
+					$vs_laddered_type = null;
 					if (!($vs_item = trim($vs_item))) { 
 						if (is_array($va_parents) && (sizeof($va_parents) > 0)) {
 							// try to ladder up the parents hierarchy since the base value is blank (see PROV-972)
 							$vs_display_field = $t_instance->getLabelDisplayField();
 							while(sizeof($va_parents) > 0) {
-								$va_p = array_pop($va_parents);
+								$va_p = array_shift($va_parents);
 								if ($vs_laddered_val = BaseRefinery::parsePlaceholder($va_p[$vs_display_field], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnDelimitedValueAt' => $vn_x))) {
 									if ($o_log) { $o_log->logDebug(_t('[{$ps_refinery_name}] Used parent value %1 because the mapped value was blank', $vs_item)); }
 									$vs_item = $vs_laddered_val;
+									$va_val['_type'] = BaseRefinery::parsePlaceholder($va_p['type'], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnDelimitedValueAt' => $vn_x));
 									break;
 								}
 							}
@@ -564,9 +581,6 @@
 						if ($o_log) { $o_log->logDebug(_t('[{$ps_refinery_name}] Skipped %1 because it was in the skipIfValue list', $vs_item)); }
 						continue;
 					}
-			
-					// Set label
-					$va_val = array();
 				
 					// Set value as hierarchy
 					if ($va_hierarchy_setting = $pa_item['settings']["{$ps_refinery_name}_hierarchy"]) {
@@ -576,6 +590,8 @@
 		
 						// Set type
 						if (
+							(!isset($va_val['_type']) || !$va_val['_type'])
+							&&
 							($vs_type_opt = $pa_item['settings']["{$ps_refinery_name}_{$ps_item_prefix}Type"])
 						) {
 							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader));
@@ -704,7 +720,7 @@
 								$vn_item_id = DataMigrationUtils::getObjectLotID($vs_item, $vs_item, $va_val['_type'], $g_ui_locale_id, $va_attr_vals, $pa_options);
 								break;
 							case 'ca_entities':
-								$vn_item_id = DataMigrationUtils::getEntityID(DataMigrationUtils::splitEntityName($vs_item), $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
+								$vn_item_id = DataMigrationUtils::getEntityID(DataMigrationUtils::splitEntityName($vs_item, $pa_options), $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
 								break;
 							case 'ca_places':
 								$vn_item_id = DataMigrationUtils::getPlaceID($vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
@@ -771,7 +787,7 @@
 	
 						switch($ps_table) {
 							case 'ca_entities':
-								$va_val['preferred_labels'] = DataMigrationUtils::splitEntityName($vs_item);
+								$va_val['preferred_labels'] = DataMigrationUtils::splitEntityName($vs_item, $pa_options);
 								if(!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
 								break;
 							case 'ca_list_items':
@@ -801,12 +817,12 @@
 							case 'ca_object_representations':
 								if (!($vs_batch_media_directory = $t_instance->getAppConfig()->get('batch_media_import_root_directory'))) { break; }
 							
-								if(!isset($va_val['preferred_labels'])) { $va_val['preferred_labels'] = array('name' => $vs_item); }
+								if(!isset($va_val['preferred_labels'])) { $va_val['preferred_labels'] = array('name' => pathinfo($vs_item, PATHINFO_FILENAME)); }
 							
 								if (isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) && $pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] && isset($va_val['media']['media']) && ($va_val['media']['media'])) {
-									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'].'/'.$va_val['media']['media'];
+									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'].'/'.str_replace("\\", "/", $va_val['media']['media']);
 								}
-								if(!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
+								if(!isset($va_val['idno'])) { $va_val['idno'] = pathinfo($vs_item, PATHINFO_FILENAME); }
 								break;
 							default:
 								if ($o_log) { $o_log->logDebug(_t('[importHelpers:caGenericImportSplitter] Invalid table %1', $ps_table)); }
@@ -820,7 +836,7 @@
 					
 						switch($ps_table) {
 							case 'ca_entities':
-								$va_val = DataMigrationUtils::splitEntityName($vs_item);
+								$va_val = DataMigrationUtils::splitEntityName($vs_item, $pa_options);
 								break;
 							case 'ca_list_items':
 								$va_val = array('name_singular' => $vs_item, 'name_plural' => $vs_item);
@@ -850,6 +866,7 @@
 					}
 					$va_val['_matchOn'] = $va_match_on;
 					if ($pb_dont_create) { $va_val['_dontCreate'] = 1; }
+					if (isset($pa_options['ignoreParent']) && $pa_options['ignoreParent']) { $va_val['_ignoreParent'] = 1; }
 					$va_vals[] = $va_val;
 					$vn_c++;
 				}
@@ -911,14 +928,16 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 					foreach($pm_value as $vn_i => $vs_value) {
 						foreach($pa_item_settings['applyRegularExpressions'] as $vn_c => $va_regex) {
 							if (!strlen($va_regex['match'])) { continue; }
-							$vs_value = preg_replace("!".str_replace("!", "\\!", $va_regex['match'])."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i'), $va_regex['replaceWith'], $vs_value);
+							$va_regex['match'] = str_replace($va_regex['match'], '\\', '\x5c');
+							$vs_value = preg_replace("!".preg_quote($va_regex['match'], "!")."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i'), $va_regex['replaceWith'], $vs_value);
 						}
 						$pm_value[$vn_i] = $vs_value;
 					}
 				} else {
 					foreach($pa_item_settings['applyRegularExpressions'] as $vn_i => $va_regex) {
 						if (!strlen($va_regex['match'])) { continue; }
-						$pm_value = preg_replace("!".str_replace("!", "\\!", $va_regex['match'])."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i'), $va_regex['replaceWith'], $pm_value);
+						$va_regex['match'] = str_replace($va_regex['match'], '\\', '\x5c');
+						$pm_value = preg_replace("!".preg_quote($va_regex['match'], "!")."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i'), $va_regex['replaceWith'], $pm_value);
 					}
 				}
 			}
@@ -941,4 +960,195 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 		);
 	}
 	# ---------------------------------------
-?>
+	/**
+	 * Loads the given file into a PHPExcel object using common settings for preserving memory and performance
+	 * @param string $ps_xlsx file name
+	 * @return PHPExcel
+	 */
+	function caPhpExcelLoadFile($ps_xlsx){
+		if(MemoryCache::contains($ps_xlsx, 'CAPHPExcel')) {
+			return MemoryCache::fetch($ps_xlsx, 'CAPHPExcel');
+		} else {
+			if(!file_exists($ps_xlsx)) { return false; }
+
+			// check mimetype
+			if(function_exists('mime_content_type')) { // function is deprecated
+				$vs_mimetype = mime_content_type($ps_xlsx);
+				if(!in_array($vs_mimetype, array(
+					'application/vnd.ms-office',
+					'application/octet-stream',
+					'application/vnd.oasis.opendocument.spreadsheet',
+					'application/zip',
+					'application/vnd.ms-excel',
+					'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+				))){
+					return false;
+				}
+			}
+
+			/**  Identify the type  **/
+			$vs_input_filetype = PHPExcel_IOFactory::identify($ps_xlsx);
+			/**  Create a new Reader of that very type  **/
+			$o_reader = PHPExcel_IOFactory::createReader($vs_input_filetype);
+			$o_reader->setReadDataOnly(true);
+			$o_excel = $o_reader->load($ps_xlsx);
+
+			MemoryCache::save($ps_xlsx, $o_excel, 'CAPHPExcel');
+			return $o_excel;
+		}
+	}
+	# ---------------------------------------------------------------------
+	/**
+	 * Counts non-empty rows in PHPExcel spreadsheet
+	 *
+	 * @param string $ps_xlsx absolute path to spreadsheet
+	 * @param null|string $ps_sheet optional sheet name to use for counting
+	 * @return int row count
+	 */
+	function caPhpExcelCountNonEmptyRows($ps_xlsx,$ps_sheet=null) {
+		if(MemoryCache::contains($ps_xlsx, 'CAPHPExcelRowCounts')) {
+			return MemoryCache::fetch($ps_xlsx, 'CAPHPExcelRowCounts');
+		} else {
+			$o_excel = caPhpExcelLoadFile($ps_xlsx);
+			if($ps_sheet){
+				$o_sheet = $o_excel->getSheetByName($ps_sheet);
+			} else {
+				$o_sheet = $o_excel->getActiveSheet();
+			}
+
+			$vn_highest_row = intval($o_sheet->getHighestRow());
+			MemoryCache::save($ps_xlsx, $vn_highest_row, 'CAPHPExcelRowCounts');
+			return $vn_highest_row;
+		}
+	}
+	# ---------------------------------------------------------------------
+	/**
+	 * Get content from cell as trimmed string
+	 * @param PHPExcel_Worksheet $po_sheet
+	 * @param int $pn_row_num row number (zero indexed)
+	 * @param string|int $pm_col either column number (zero indexed) or column letter ('A', 'BC')
+	 * @throws PHPExcel_Exception
+	 * @return string the trimmed cell content
+	 */
+	function caPhpExcelGetCellContentAsString($po_sheet, $pn_row_num, $pm_col) {
+		if(!is_numeric($pm_col)) {
+			$pm_col = PHPExcel_Cell::columnIndexFromString($pm_col)-1;
+		}
+
+		$vs_cache_key = spl_object_hash($po_sheet)."/{$pm_col}/{$pn_row_num}";
+
+		if(MemoryCache::contains($vs_cache_key, 'PHPExcelCellContents')) {
+			return MemoryCache::fetch($vs_cache_key, 'PHPExcelCellContents');
+		} else {
+			$vs_return = trim((string)$po_sheet->getCellByColumnAndRow($pm_col, $pn_row_num));
+			MemoryCache::save($vs_cache_key, $vs_return, 'PHPExcelCellContents');
+			return $vs_return;
+		}
+	}
+	# ---------------------------------------------------------------------
+	/**
+	 * Get date from Excel sheet for given column and row. Convert Excel date to format acceptable by TimeExpressionParser if necessary.
+	 * @param PHPExcel_Worksheet $po_sheet The work sheet
+	 * @param int $pn_row_num row number (zero indexed)
+	 * @param string|int $pm_col either column number (zero indexed) or column letter ('A', 'BC')
+	 * @param int $pn_offset Offset to adf to the timestamp (can be used to fix timezone issues or simple to move dates around a little bit)
+	 * @return string|null the date, if a value exists
+	 */
+	function caPhpExcelGetDateCellContent($po_sheet, $pn_row_num, $pm_col, $pn_offset=0) {
+		if(!is_int($pn_offset)) { $pn_offset = 0; }
+
+		if(!is_numeric($pm_col)) {
+			$pm_col = PHPExcel_Cell::columnIndexFromString($pm_col)-1;
+		}
+
+		$o_val = $po_sheet->getCellByColumnAndRow($pm_col, $pn_row_num);
+		$vs_val = trim((string)$o_val);
+
+		if(strlen($vs_val)>0) {
+			$vn_timestamp = PHPExcel_Shared_Date::ExcelToPHP(trim((string)$o_val->getValue())) + $pn_offset;
+			if (!($vs_return = caGetLocalizedDate($vn_timestamp, array('dateFormat' => 'iso8601', 'timeOmit' => false)))) {
+				$vs_return = $vs_val;
+			}
+		} else {
+			$vs_return = null;
+		}
+
+		return $vs_return;
+	}
+	# ---------------------------------------------------------------------
+	/**
+	 * Try to match given (partial) hierarchy path to a single subject in getty linked data AAT service
+	 * @param array $pa_hierarchy_path
+	 * @param int $pn_threshold
+	 * @param array $pa_options
+	 * 		removeParensFromLabels = Remove parens from labels for search and string comparison. This can improve results in specific cases.
+	 * @return bool|string
+	 */
+	function caMatchAAT($pa_hierarchy_path, $pn_threshold=180, $pa_options = array()) {
+		$vs_cache_key = md5(print_r($pa_hierarchy_path, true));
+		if(MemoryCache::contains($vs_cache_key, 'AATMatches')) {
+			return MemoryCache::fetch($vs_cache_key, 'AATMatches');
+		}
+
+		if(!is_array($pa_hierarchy_path)) { return false; }
+
+		$pb_remove_parens_from_labels = caGetOption('removeParensFromLabels', $pa_options, false);
+
+		// search the bottom-most component (the actual term)
+		$vs_bot = trim(array_pop($pa_hierarchy_path));
+
+		if($pb_remove_parens_from_labels) {
+			$vs_lookup = trim(preg_replace("/\([\p{L}\-\_\s]+\)/", '', $vs_bot));
+		} else {
+			$vs_lookup = $vs_bot;
+		}
+
+		$o_service = new WLPlugInformationServiceAAT();
+
+		$va_hits = $o_service->lookup(array(), $vs_lookup, array('phrase' => true, 'raw' => true, 'limit' => 2000));
+		if(!is_array($va_hits)) { return false; }
+
+		$vn_best_distance = 0;
+		$vn_pick = -1;
+		foreach($va_hits as $vn_i => $va_hit) {
+			if(stripos($va_hit['TermPrefLabel']['value'], $vs_lookup) !== false) { // only consider terms that match what we searched
+
+				// calculate similarity as a number by comparing both the term and the parent string
+				$vs_label_with_parens = $va_hit['TermPrefLabel']['value'];
+				$vs_label_without_parens = trim(preg_replace("/\([\p{L}\s]+\)/", '', $vs_label_with_parens));
+				$va_label_percentages = array();
+
+				// we try every combination with and without parens on both sides
+				// unfortunately this code gets rather ugly because getting the similarity
+				// as percentage is only possible by passing a reference parameter :-(
+				similar_text($vs_label_with_parens, $vs_bot, $vn_label_percent);
+				$va_label_percentages[] = $vn_label_percent;
+				similar_text($vs_label_with_parens, $vs_lookup, $vn_label_percent);
+				$va_label_percentages[] = $vn_label_percent;
+				similar_text($vs_label_without_parens, $vs_bot, $vn_label_percent);
+				$va_label_percentages[] = $vn_label_percent;
+				similar_text($vs_label_without_parens, $vs_lookup, $vn_label_percent);
+				$va_label_percentages[] = $vn_label_percent;
+
+				// similarity to parent path
+				similar_text($va_hit['ParentsFull']['value'], join(' ', array_reverse($pa_hierarchy_path)), $vn_parent_percent);
+
+				// it's a weighted sum because the term label is more important than the exact path
+				$vn_tmp = 2*max($va_label_percentages) + $vn_parent_percent;
+				//var_dump($va_hit); var_dump($vn_tmp);
+				if($vn_tmp > $vn_best_distance) {
+					$vn_best_distance = $vn_tmp;
+					$vn_pick = $vn_i;
+				}
+			}
+		}
+
+		if($vn_pick >= 0 && ($vn_best_distance > $pn_threshold)) {
+			$va_pick = $va_hits[$vn_pick];
+
+			MemoryCache::save($vs_cache_key, $va_pick['ID']['value'], 'AATMatches');
+			return $va_pick['ID']['value'];
+		}
+
+		return false;
+	}

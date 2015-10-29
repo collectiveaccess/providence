@@ -68,6 +68,7 @@ class ExcelDataReader extends BaseDataReader {
 	 * @return bool
 	 */
 	public function read($ps_source, $pa_options=null) {
+		parent::read($ps_source, $pa_options);
 		try {
 			$this->opo_handle = PHPExcel_IOFactory::load($ps_source);
 			$this->opo_handle->setActiveSheetIndex(caGetOption('dataset', $pa_options, 0));
@@ -112,7 +113,9 @@ class ExcelDataReader extends BaseDataReader {
 				foreach ($o_cells as $o_cell) {
 					if (PHPExcel_Shared_Date::isDateTime($o_cell)) {
 						if (!($vs_val = caGetLocalizedDate(PHPExcel_Shared_Date::ExcelToPHP(trim((string)$o_cell->getValue()))))) {
-							$vs_val = trim((string)$o_cell->getValue());
+							if (!($vs_val = trim(PHPExcel_Style_NumberFormat::toFormattedString((string)$o_cell->getValue(),'YYYY-MM-DD')))) {
+								$vs_val = trim((string)$o_cell->getValue());
+							}
 						}
 						$this->opa_row_buf[] = $vs_val;
 					} else {
@@ -156,6 +159,12 @@ class ExcelDataReader extends BaseDataReader {
 	 * @return mixed
 	 */
 	public function get($pn_col, $pa_options=null) {
+		if ($vm_ret = parent::get($pn_col, $pa_options)) { return $vm_ret; }
+		
+		if(!is_numeric($pn_col)) {
+			$pn_col = PHPExcel_Cell::columnIndexFromString($pn_col);
+		}
+
 		if (is_array($this->opa_row_buf) && ((int)$pn_col > 0) && ((int)$pn_col <= sizeof($this->opa_row_buf))) {
 			return $this->opa_row_buf[(int)$pn_col];
 		}

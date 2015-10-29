@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,7 +35,8 @@
   */
  
  	require_once(__CA_LIB_DIR__.'/core/ApplicationVars.php'); 	
- 	require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php'); 	
+ 	require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
+	require_once(__CA_APP_DIR__.'/helpers/importHelpers.php');
  
 	abstract class BaseRefinery {
 		# -------------------------------------------------------
@@ -145,12 +146,20 @@
 			
 			if (($ps_placeholder[0] == '^') && (strpos($ps_placeholder, '^', 1) === false)) {
 				// Placeholder is a single caret-value
+				$va_tag = explode('~', $vs_key);
 				if ($o_reader) {
-					$vm_val = $o_reader->get($vs_key, array('returnAsArray' => true));
+					$vm_val = $o_reader->get($va_tag[0], array('returnAsArray' => true));
 				} else {
-					if (!isset($pa_source_data[substr($ps_placeholder, 1)])) { return null; }
-					$vm_val = $pa_source_data[substr($ps_placeholder, 1)];
+					if (!isset($pa_source_data[$va_tag[0]])) { return null; }
+					$vm_val = $pa_source_data[$va_tag[0]];
 				}
+				
+				if ($va_tag[1]) { 
+					foreach($vm_val as $vn_i => $vs_val) {
+						$vm_val[$vn_i] = caProcessTemplateTagDirectives($vs_val, [$va_tag[1]]);
+					}
+				}
+				
 			} elseif(strpos($ps_placeholder, '^') !== false) {
 				// Placeholder is a full template – requires extra processing
 				if ($o_reader) {
@@ -165,10 +174,13 @@
 					}
 					// Make sure all tags are in source data array, otherwise try to pull them from the reader.
 					// Some formats, mainly XML, can take expressions (XPath for XML) that are not precalculated in the array
+					//print "p=$ps_placeholder\n";
+					//print_R($va_tags);
 					foreach($va_tags as $vs_tag) {
-						if (isset($pa_source_data[$vs_tag])) { continue; }
-						$va_val = $o_reader->get($vs_key, array('returnAsArray' => true));
-						$pa_source_data[$vs_tag] = $va_val[$pn_index];
+						$va_tag = explode('~', $vs_tag);
+						if (isset($pa_source_data[$va_tag[0]])) { continue; }
+						$va_val = $o_reader->get($va_tag[0], array('returnAsArray' => true));
+						$pa_source_data[$va_tag[0]] = $va_val[$pn_index];
 					}
 					$vm_val = caProcessTemplate($ps_placeholder, $pa_source_data);
 				} else {

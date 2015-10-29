@@ -730,26 +730,39 @@
 				$va_params = array();
 
 				if (sizeof($va_ids)) {
-					$vs_sql_where = "WHERE representation_id IN (?)";
+					$vs_sql_where = "WHERE ca_object_representations.representation_id IN (?)";
 					$va_params[] = $va_ids;
 				} else {
 					if (
 						(($vn_start > 0) && ($vn_end > 0) && ($vn_start <= $vn_end)) || (($vn_start > 0) && ($vn_end == null))
 					) {
-						$vs_sql_where = "WHERE representation_id >= ?";
+						$vs_sql_where = "WHERE ca_object_representations.representation_id >= ?";
 						$va_params[] = $vn_start;
 						if ($vn_end) {
-							$vs_sql_where .= " AND representation_id <= ?";
+							$vs_sql_where .= " AND ca_object_representations.representation_id <= ?";
 							$va_params[] = $vn_end;
 						}
 					}
 				}
 
+				$vs_sql_joins = '';
+				if ($vs_object_ids = (string)$po_opts->getOption('object_ids')) {
+					$va_object_ids = explode(",", $vs_object_ids);
+					foreach($va_object_ids as $vn_i => $vn_object_id) {
+						$va_object_id[$vn_i] = (int)$vn_object_id;
+					}
+					
+					$vs_sql_where = ($vs_sql_where ? "WHERE " : " AND ")."(ca_objects_x_object_representations.object_id IN (?))";
+					$vs_sql_joins = "INNER JOIN ca_objects_x_object_representations ON ca_objects_x_object_representations.representation_id = ca_object_representations.representation_id";
+					$va_params[] = $va_object_ids;
+				}
+
 				$qr_reps = $o_db->query("
 					SELECT *
 					FROM ca_object_representations
+					{$vs_sql_joins}
 					{$vs_sql_where}
-					ORDER BY representation_id
+					ORDER BY ca_object_representations.representation_id
 				", $va_params);
 
 				print CLIProgressBar::start($qr_reps->numRows(), _t('Re-processing representation media'));
@@ -847,6 +860,7 @@
 				"end_id|e-n" => _t('Representation id to end reloading at'),
 				"id|i-n" => _t('Representation id to reload'),
 				"ids|l-s" => _t('Comma separated list of representation ids to reload'),
+				"object_ids|o-s" => _t('Comma separated list of object ids to reload'),
 				"kinds|k-s" => _t('Comma separated list of kind of media to reprocess. Valid kinds are ca_object_representations (object representations), and ca_attributes (metadata elements). You may also specify "all" to reprocess both kinds of media. Default is "all"')
 			);
 		}
@@ -1733,8 +1747,8 @@
 				chmod($vs_path, 0775);
 			}
 
-			if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the HTMLPurifier definition cache directory (app/lib/core/Parsers/htmlpurifier/standalone/HTMLPurifier/DefinitionCache) for ownership by \"%1\"...", $vs_user)); }
-			$va_files = caGetDirectoryContentsAsList($vs_path = __CA_LIB_DIR__.'/core/Parsers/htmlpurifier/standalone/HTMLPurifier/DefinitionCache', true, false, false, true);
+			if (!$po_opts->getOption("quiet")) { CLIUtils::addMessage(_t("Fixing permissions for the HTMLPurifier definition cache directory (vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer) for ownership by \"%1\"...", $vs_user)); }
+			$va_files = caGetDirectoryContentsAsList($vs_path = __CA_BASE_DIR__.'/vendor/ezyang/htmlpurifier/library/HTMLPurifier/DefinitionCache/Serializer', true, false, false, true);
 
 			foreach($va_files as $vs_path) {
 				chown($vs_path, $vs_user);
@@ -2834,6 +2848,46 @@
 		/**
 		 *
 		 */
+		public static function process_indexing_queue($po_opts=null) {
+			require_once(__CA_MODELS_DIR__.'/ca_search_indexing_queue.php');
+
+			ca_search_indexing_queue::process();
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function process_indexing_queueParamList() {
+			return array(
+
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function process_indexing_queueUtilityClass() {
+			return _t('Search');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function process_indexing_queueShortHelp() {
+			return _t('Process search indexing queue.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function process_indexing_queueHelp() {
+			return _t('Process search indexing queue.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
 		public static function reload_object_current_locations($po_opts=null) {
 			require_once(__CA_LIB_DIR__."/core/Db.php");
 			require_once(__CA_MODELS_DIR__."/ca_objects.php");
@@ -3049,5 +3103,236 @@
 			return _t('CollectiveAccess requires certain PHP configuration options to be set and for file permissions in several directories to be web-server writable. This command will check these settings and file permissions and return warnings if configuration appears to be incorrect.');
 		}
 		# -------------------------------------------------------
+		public static function reload_service_values($po_opts=null) {
+			$va_infoservice_elements = ca_metadata_elements::getElementsAsList(
+				false, null, null, true, false, false, array(__CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__)
+			);
+
+			$o_db = new Db();
+
+			foreach($va_infoservice_elements as $va_element) {
+				$qr_values = $o_db->query("
+					SELECT * FROM ca_attribute_values
+					WHERE element_id = ?
+				", $va_element['element_id']);
+
+				print CLIProgressBar::start($qr_values->numRows(), "Reloading values for element code ".$va_element['element_code']);
+				$t_value = new ca_attribute_values();
+
+				while($qr_values->nextRow()) {
+					$o_val = new InformationServiceAttributeValue($qr_values->getRow());
+					$vs_uri = $o_val->getUri();
+
+					print CLIProgressBar::next(); // inc before first continuation point
+
+					if(!$vs_uri || !strlen($vs_uri)) { continue; }
+					if(!$t_value->load($qr_values->get('value_id'))) { continue; }
+
+					$t_value->editValue($vs_uri);
+
+					if($t_value->numErrors() > 0) {
+						print _t('There were errors updating an attribute row: ') . join(' ', $t_value->getErrors());
+					}
+				}
+
+				print CLIProgressBar::finish();
+			}
+
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_service_valuesParamList() {
+			return array();
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_service_valuesUtilityClass() {
+			return _t('Maintenance');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_service_valuesShortHelp() {
+			return _t('Reload InformationService attribute values from referenced URLs.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_service_valuesHelp() {
+			return _t('InformationService attribute values store all the data CollectiveAccess needs to operate locally while keeping a reference to the referenced record at the remote web service. That means that potential changes at the remote data source are not pulled in automatically. This script explicitly performs a lookup for all existing InformationService attribute values and updates the local copy of the data with the latest values.');
+		}
+		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function reload_ulan_records($po_opts=null) {
+			require_once(__CA_MODELS_DIR__.'/ca_data_importers.php');
+
+			if(!($vs_mapping = $po_opts->getOption('mapping'))) {
+				CLIUtils::addError("\t\tNo mapping found. Please use the -m parameter to specify a ULAN mapping.");
+				return false;
+			}
+
+			if (!(ca_data_importers::mappingExists($vs_mapping))) {
+				CLIUtils::addError("\t\tMapping $vs_mapping does not exist");
+				return false;
+			}
+
+			$vs_log_dir = $po_opts->getOption('log');
+			$vn_log_level = CLIUtils::getLogLevel($po_opts);
+
+			$o_db = new Db();
+			$qr_items = $o_db->query("
+				SELECT DISTINCT source FROM ca_data_import_events WHERE type_code = 'ULAN'
+			");
+
+			$va_sources = array();
+
+			while($qr_items->nextRow()) {
+				$vs_source = $qr_items->get('source');
+				if(!isURL($vs_source)) {
+					continue;
+				}
+
+				if(!preg_match("/http\:\/\/vocab\.getty\.edu\/ulan\//", $vs_source)) {
+					continue;
+				}
+
+				$va_sources[] = $vs_source;
+			}
+
+			ca_data_importers::importDataFromSource(join(',', $va_sources), $vs_mapping, array('format' => 'ULAN', 'showCLIProgressBar' => true, 'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level));
+
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_ulan_recordsParamList() {
+			return array(
+				"mapping|m=s" => _t('Which mapping to use to re-import the ULAN records.'),
+				"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
+				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_ulan_recordsUtilityClass() {
+			return _t('Maintenance');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_ulan_recordsShortHelp() {
+			return _t('Reload records imported from ULAN with the specified mapping.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_ulan_recordsHelp() {
+			return _t('Reload records imported from ULAN with the specified mapping. This utility assumes that the mapping is set up with an existingRecordPolicy that ensures that existing records are matched properly. It will create duplicates if it does not match existing records so be sure to test your mapping first!');
+		}
+		# -------------------------------------------------------
+		public static function reload_object_current_location_dates($po_opts=null) {
+			require_once(__CA_MODELS_DIR__."/ca_movements.php");
+			require_once(__CA_MODELS_DIR__."/ca_movements_x_objects.php");
+			require_once(__CA_MODELS_DIR__."/ca_movements_x_storage_locations.php");
+			
+			$o_config = Configuration::load();
+			$o_db = new Db();
+			
+			// Reload movements-objects
+			if ($vs_movement_storage_element = $o_config->get('movement_storage_location_date_element')) {
+				$qr_movements = ca_movements::find(['deleted' => 0], ['returnAs' => 'searchResult']);
+			
+				print CLIProgressBar::start($qr_movements->numHits(), "Reloading movement dates");
+				
+				while($qr_movements->nextHit()) {
+					if ($va_dates = $qr_movements->get("ca_movements.{$vs_movement_storage_element}", ['returnAsArray' => true, 'rawDate' => true])) {
+						$va_date = array_shift($va_dates);
+						
+						// get movement-object relationships
+						if (is_array($va_rel_ids = $qr_movements->get('ca_movements_x_objects.relation_id', ['returnAsArray' => true])) && sizeof($va_rel_ids)) {						
+							$qr_res = $o_db->query(
+								"UPDATE ca_movements_x_objects SET sdatetime = ?, edatetime = ? WHERE relation_id IN (?)", 
+								array($va_date['start'], $va_date['end'], $va_rel_ids)
+							);
+						}
+						// get movement-location relationships
+						if (is_array($va_rel_ids = $qr_movements->get('ca_movements_x_storage_locations.relation_id', ['returnAsArray' => true])) && sizeof($va_rel_ids)) {						
+							$qr_res = $o_db->query(
+								"UPDATE ca_movements_x_storage_locations SET sdatetime = ?, edatetime = ? WHERE relation_id IN (?)", 
+								array($va_date['start'], $va_date['end'], $va_rel_ids)
+							);
+							
+							// check to see if archived storage locations are set in ca_movements_x_storage_locations.source_info
+							// Databases created prior to the October 2015 location tracking changes won't have this
+							$qr_rels = caMakeSearchResult('ca_movements_x_storage_locations', $va_rel_ids);
+							while($qr_rels->nextHit()) {
+								if (!is_array($va_source_info = $qr_rels->get('source_info')) || !isset($va_source_info['path'])) {
+									$vn_rel_id = $qr_rels->get('ca_movements_x_storage_locations.relation_id');
+									$qr_res = $o_db->query(
+										"UPDATE ca_movements_x_storage_locations SET source_info = ? WHERE relation_id = ?", 
+											array(caSerializeForDatabase(array(
+												'path' => $qr_rels->get('ca_storage_locations.hierarchy.preferred_labels.name', array('returnAsArray' => true)),
+												'ids' => $qr_rels->get('ca_storage_locations.hierarchy.location_id',  array('returnAsArray' => true))
+											)), $vn_rel_id)
+									);
+								}
+							}
+						}
+						print CLIProgressBar::next();
+					}
+				}
+				
+				print CLIProgressBar::finish();
+			}
+	
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_location_datesParamList() {
+			return array();
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_location_datesUtilityClass() {
+			return _t('Maintenance');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_location_datesShortHelp() {
+			return _t('Regenerate date/time stamps for movement and object-based location tracking.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_location_datesHelp() {
+			return _t('Regenerate date/time stamps for movement and object-based location tracking.');
+		}
+		# -------------------------------------------------------
 	}
-?>

@@ -102,7 +102,7 @@
 			$va_type_restriction_filters = $this->_getRestrictionSQL($vs_linking_table, (int)$vn_id, $pa_options);
 		
 			$qr_reps = $o_db->query("
-				SELECT caor.representation_id, caor.media, caoor.is_primary, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id, caor.idno, caor.idno_sort, caor.md5, caor.mimetype, caor.original_filename, caoor.rank
+				SELECT caor.representation_id, caor.media, caoor.is_primary, caor.access, caor.status, l.name, caor.locale_id, caor.media_metadata, caor.type_id, caor.idno, caor.idno_sort, caor.md5, caor.mimetype, caor.original_filename, caoor.rank, caoor.relation_id
 				FROM ca_object_representations caor
 				INNER JOIN {$vs_linking_table} AS caoor ON caor.representation_id = caoor.representation_id
 				LEFT JOIN ca_locales AS l ON caor.locale_id = l.locale_id
@@ -156,11 +156,14 @@
 				
 					$va_tmp['dimensions'][$vs_version] = caGetRepresentationDimensionsForDisplay($qr_reps, 'original', array());
 				}
-			
 				
 				if (isset($va_info['INPUT']['FETCHED_FROM']) && ($vs_fetched_from_url = $va_info['INPUT']['FETCHED_FROM'])) {
 					$va_tmp['fetched_from'] = $vs_fetched_from_url;
 					$va_tmp['fetched_on'] = (int)$va_info['INPUT']['FETCHED_ON'];
+				}
+
+				if (isset($va_info['REPLICATION_KEYS'])) {
+					$va_tmp['REPLICATION_KEYS'] = $va_info['REPLICATION_KEYS'];
 				}
 			
 				$va_tmp['num_multifiles'] = $t_rep->numFiles($vn_rep_id);
@@ -496,9 +499,7 @@
 		
 			$t_rep = new ca_object_representations();
 		
-			if ($this->inTransaction()) {
-				$t_rep->setTransaction($this->getTransaction());
-			}
+			if ($this->inTransaction()) { $t_rep->setTransaction($this->getTransaction()); }
 				
 			$vn_rep_id = null;
 			if(is_array($va_match_on = caGetOption('matchOn', $pa_options, null))) {
@@ -529,6 +530,9 @@
 				$t_rep->set('status', $pn_status);
 				$t_rep->set('access', $pn_access);
 				$t_rep->set('media', $ps_media_path, $pa_options);
+		
+				$o_idno = $t_rep->getIDNoPlugInInstance();
+				$t_rep->setIdnoWithTemplate($o_idno->makeTemplateFromValue(''));
 		
 				if (is_array($pa_values)) {
 					if (isset($pa_values['idno'])) {
@@ -623,9 +627,7 @@
 			if (!($t_oxor = $this->_getRepresentationRelationshipTableInstance())) { return null; }
 			$vs_pk = $this->primaryKey();
 			
-			if ($this->inTransaction()) {
-				$t_oxor->setTransaction($this->getTransaction());
-			}
+			if ($this->inTransaction()) { $t_oxor->setTransaction($this->getTransaction()); }
 			$t_oxor->setMode(ACCESS_WRITE);
 			$t_oxor->set($vs_pk, $vn_id);
 			$t_oxor->set('representation_id', $t_rep->getPrimaryKey());
@@ -651,15 +653,6 @@
 			$va_metadata = $t_rep->get('media_metadata', array('binary' => true));
 			if (caExtractEmbeddedMetadata($this, $va_metadata, $pn_locale_id)) {
 				$this->update();
-			}
-			
-			
-			// Trigger automatic replication
-			$va_auto_targets = $t_rep->getAvailableMediaReplicationTargets('media', 'original', array('trigger' => 'auto', 'access' => $t_rep->get('access')));
-			if(is_array($va_auto_targets)) {
-				foreach($va_auto_targets as $vs_target => $va_target_info) {
-					$t_rep->replicateMedia('media', $vs_target);
-				}
 			}
 		
 			if (isset($pa_options['returnRepresentation']) && (bool)$pa_options['returnRepresentation']) {
@@ -689,9 +682,7 @@
 			$va_old_replication_keys = array();
 			
 			$t_rep = new ca_object_representations();
-			if ($this->inTransaction()) {
-				$t_rep->setTransaction($this->getTransaction());
-			}
+			if ($this->inTransaction()) { $t_rep->setTransaction($this->getTransaction());}
 			if (!$t_rep->load(array('representation_id' => $pn_representation_id))) {
 				$this->postError(750, _t("Representation id=%1 does not exist", $pn_representation_id), "RepresentableBaseModel->editRepresentation()");
 				return false;
@@ -765,6 +756,8 @@
 				if (!($t_oxor = $this->_getRepresentationRelationshipTableInstance())) { return null; }
 				$vs_pk = $this->primaryKey();
 				
+				if ($this->inTransaction()) { $t_oxor->setTransaction($this->getTransaction());}
+				
 				if (!$t_oxor->load(array($vs_pk => $vn_id, 'representation_id' => $pn_representation_id))) {
 					$this->postError(750, _t("Representation id=%1 is not related to %3 id=%2", $pn_representation_id, $vn_id, $this->getProperty('NAME_SINGULAR')), "RepresentableBaseModel->editRepresentation()");
 					return false;
@@ -831,7 +824,7 @@
 				if(is_array($va_rels) && isset($va_rels['ca_object_representation_labels'])){ // labels don't count as relationships in this case
 					unset($va_rels['ca_object_representation_labels']);
 				}
-				if(is_array($va_rels) && isset($va_rels['ca_objects_x_object_representations']) && ($va_rels['ca_objects_x_object_representations'] <= 1)){
+				if(is_array($va_rels) && isset($va_rels['ca_objects_x_object_representations']) && ($va_rels['ca_objects_x_object_representations'] < 1)){
 					unset($va_rels['ca_objects_x_object_representations']);
 				}
 

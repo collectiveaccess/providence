@@ -28,6 +28,9 @@ class NormalizerFormatterTest extends \PHPUnit_Framework_TestCase
             'context' => array(
                 'foo' => 'bar',
                 'baz' => 'qux',
+                'inf' => INF,
+                '-inf' => -INF,
+                'nan' => acos(4),
             ),
         ));
 
@@ -38,13 +41,16 @@ class NormalizerFormatterTest extends \PHPUnit_Framework_TestCase
             'datetime' => date('Y-m-d'),
             'extra' => array(
                 'foo' => '[object] (Monolog\\Formatter\\TestFooNorm: {"foo":"foo"})',
-                'bar' => '[object] (Monolog\\Formatter\\TestBarNorm: {})',
+                'bar' => '[object] (Monolog\\Formatter\\TestBarNorm: bar)',
                 'baz' => array(),
                 'res' => '[resource]',
             ),
             'context' => array(
                 'foo' => 'bar',
                 'baz' => 'qux',
+                'inf' => 'INF',
+                '-inf' => '-INF',
+                'nan' => 'NaN',
             )
         ), $formatted);
     }
@@ -66,7 +72,8 @@ class NormalizerFormatterTest extends \PHPUnit_Framework_TestCase
             'exception' => array(
                 'class'   => get_class($e2),
                 'message' => $e2->getMessage(),
-                'file'   => $e2->getFile().':'.$e2->getLine(),
+                'code'    => $e2->getCode(),
+                'file'    => $e2->getFile().':'.$e2->getLine(),
             )
         ), $formatted);
     }
@@ -166,6 +173,68 @@ class NormalizerFormatterTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(@json_encode(array($resource)), $res);
     }
+
+    /**
+     * @expectedException RuntimeException
+     */
+    public function testThrowsOnInvalidEncoding()
+    {
+        $formatter = new NormalizerFormatter();
+        $reflMethod = new \ReflectionMethod($formatter, 'toJson');
+        $reflMethod->setAccessible(true);
+
+        // send an invalid unicode sequence
+        $res = $reflMethod->invoke($formatter, array('message' => "\xB1\x31"));
+        if (PHP_VERSION_ID < 50500 && $res === '{"message":null}') {
+            throw new \RuntimeException('PHP 5.3/5.4 throw a warning and null the value instead of returning false entirely');
+        }
+    }
+
+    public function testExceptionTraceWithArgs()
+    {
+        if (defined('HHVM_VERSION')) {
+            $this->markTestSkipped('Not supported in HHVM since it detects errors differently');
+        }
+
+        // This happens i.e. in React promises or Guzzle streams where stream wrappers are registered
+        // and no file or line are included in the trace because it's treated as internal function
+        set_error_handler(function ($errno, $errstr, $errfile, $errline) {
+            throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
+        });
+
+        try {
+            // This will contain $resource and $wrappedResource as arguments in the trace item
+            $resource = fopen('php://memory', 'rw+');
+            fwrite($resource, 'test_resource');
+            $wrappedResource = new TestFooNorm;
+            $wrappedResource->foo = $resource;
+            // Just do something stupid with a resource/wrapped resource as argument
+            array_keys($wrappedResource);
+        } catch (\Exception $e) {
+            restore_error_handler();
+        }
+
+        $formatter = new NormalizerFormatter();
+        $record = array('context' => array('exception' => $e));
+        $result = $formatter->format($record);
+
+        $this->assertRegExp(
+            '%"resource":"\[resource\]"%',
+            $result['context']['exception']['trace'][0]
+        );
+
+        if (version_compare(PHP_VERSION, '5.5.0', '>=')) {
+            $pattern = '%"wrappedResource":"\[object\] \(Monolog\\\\\\\\Formatter\\\\\\\\TestFooNorm: \)"%';
+        } else {
+            $pattern = '%\\\\"foo\\\\":null%';
+        }
+
+        // Tests that the wrapped resource is ignored while encoding, only works for PHP <= 5.4
+        $this->assertRegExp(
+            $pattern,
+            $result['context']['exception']['trace'][0]
+        );
+    }
 }
 
 class TestFooNorm
@@ -178,5 +247,24 @@ class TestBarNorm
     public function __toString()
     {
         return 'bar';
+    }
+}
+
+class TestStreamFoo
+{
+    public $foo;
+    public $resource;
+
+    public function __construct($resource)
+    {
+        $this->resource = $resource;
+        $this->foo = 'BAR';
+    }
+
+    public function __toString()
+    {
+        fseek($this->resource, 0);
+
+        return $this->foo . ' - ' . (string) stream_get_contents($this->resource);
     }
 }

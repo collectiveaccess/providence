@@ -162,7 +162,7 @@
  			
  			$va_access_values = caGetUserAccessValues($this->request);
  			$vb_no_cache = (bool)$this->request->getParameter('no_cache', pInteger);
- 			if (!$this->request->user->canDoAction('can_search_'.$ps_type)) { return ''; }
+ 			if (!$this->request->user->canDoAction('can_search_'.(($ps_type == 'ca_tour_stops') ? 'ca_tours' : $ps_type))) { return ''; }
  			switch($ps_type) {
  				case 'ca_objects':
  					$o_object_search = new ObjectSearch();
@@ -190,7 +190,7 @@
 					break;
 				case 'ca_storage_locations':
 					$o_storage_location_search = new StorageLocationSearch();
-					return $o_storage_location_search->search($ps_search, array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
+					return $o_storage_location_search->search('('.$ps_search.') AND (ca_storage_locations.is_enabled:1)', array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_loans':
 					$o_loan_search = new LoanSearch();

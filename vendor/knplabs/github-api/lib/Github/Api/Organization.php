@@ -2,6 +2,7 @@
 
 namespace Github\Api;
 
+use Github\Api\Organization\Hooks;
 use Github\Api\Organization\Members;
 use Github\Api\Organization\Teams;
 
@@ -15,7 +16,8 @@ use Github\Api\Organization\Teams;
 class Organization extends AbstractApi
 {
     /**
-     * Get extended information about an organization by its name
+     * Get extended information about an organization by its name.
+     *
      * @link http://developer.github.com/v3/orgs/#get
      *
      * @param string $organization the organization to show
@@ -33,7 +35,8 @@ class Organization extends AbstractApi
     }
 
     /**
-     * List all repositories across all the organizations that you can access
+     * List all repositories across all the organizations that you can access.
+     *
      * @link http://developer.github.com/v3/repos/#list-organization-repositories
      *
      * @param string $organization the user name
@@ -54,6 +57,14 @@ class Organization extends AbstractApi
     public function members()
     {
         return new Members($this->client);
+    }
+
+    /**
+     * @return Hooks
+     */
+    public function hooks()
+    {
+        return new Hooks($this->client);
     }
 
     /**

@@ -814,7 +814,8 @@ create table ca_storage_locations
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    deleted                        tinyint unsigned               not null default 0,
-   rank                             int unsigned                     not null default 0,
+   rank                           int unsigned                   not null default 0,
+   is_enabled                     tinyint unsigned               not null default 1,
    primary key (location_id),
    constraint fk_ca_storage_locations_type_id foreign key (type_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -6155,238 +6156,6 @@ create index i_folder_id on ca_bookmarks(folder_id);
 
 
 /*==========================================================================*/
-create table ca_commerce_transactions 
-(
-  transaction_id int(10) unsigned not null auto_increment,
-  user_id int unsigned not null,
-  short_description text not null,
-  notes text not null,
-  set_id int unsigned null,
-  deleted tinyint unsigned not null default 0,
-  created_on int unsigned not null,
-  
-  primary key (transaction_id),
-  
-   constraint fk_ca_commerce_transactions_set_id foreign key (set_id)
-      references ca_sets (set_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_commerce_transactions_user_id foreign key (user_id)
-      references ca_users (user_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_user_id on ca_commerce_transactions(user_id);
-create index i_set_id on ca_commerce_transactions(set_id);
-
-
-/*==========================================================================*/
-create table ca_commerce_communications
-(
-  communication_id int(10) unsigned not null auto_increment,
-  transaction_id int unsigned not null,
-  source char(1) not null, 
-  communication_type char(1) not null default 'O', 
-  created_on int unsigned not null,
-  from_user_id int unsigned null,
-  subject varchar(255) not null,
-  message text not null,
-  set_snapshot longtext not null,
-  deleted tinyint unsigned not null default 0,
-  read_on int unsigned null,
-  
-  primary key (communication_id),
-      
-   constraint fk_ca_commerce_communications_transaction_id foreign key (transaction_id)
-      references ca_commerce_transactions (transaction_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_commerce_communications_from_user_id foreign key (from_user_id)
-      references ca_users (user_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_transaction_id on ca_commerce_communications(transaction_id);
-create index i_read_on on ca_commerce_communications(read_on);
-create index i_from_user_id on ca_commerce_communications(from_user_id);
-create index i_communication_type on ca_commerce_communications(communication_type);
-
-
-/*==========================================================================*/
-create table ca_commerce_communications_read_log
-(
-  log_id int(10) unsigned not null auto_increment,
-  communication_id int unsigned not null,
-  read_on int unsigned null,
-  read_by_user_id int unsigned null,
-  
-  primary key (log_id),
-   constraint fk_ca_commerce_communications_read_log_communication_id foreign key (communication_id)
-      references ca_commerce_communications (communication_id) on delete restrict on update restrict,
-      
-   constraint ca_commerce_communications_read_log_read_by_user_id foreign key (read_by_user_id)
-      references ca_users (user_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_communication_id on ca_commerce_communications_read_log(communication_id);
-create index i_read_on on ca_commerce_communications_read_log(read_on);
-create index i_read_by_user_id on ca_commerce_communications_read_log(read_by_user_id);
-
-
-/*==========================================================================*/
-create table ca_commerce_orders
-(
-  order_id int(10) unsigned not null auto_increment,
-  transaction_id int unsigned not null,
-  created_on int unsigned not null,
-  
-  order_status varchar(40) not null,	
-  order_number varchar(255) not null,	
-  order_type char(1) not null default 'O',	
-   
-  shipping_fname varchar(255) not null,
-  shipping_lname varchar(255) not null,
-  shipping_organization varchar(255) not null,
-  shipping_address1 varchar(255) not null,
-  shipping_address2 varchar(255) not null,
-  shipping_city varchar(255) not null,
-  shipping_zone varchar(255) not null,
-  shipping_postal_code varchar(255) not null,
-  shipping_country varchar(255) not null,
-  shipping_phone varchar(255) not null,
-  shipping_fax varchar(255) not null,
-  shipping_email varchar(255) not null,
-  
-  billing_fname varchar(255) not null,
-  billing_lname varchar(255) not null,
-  billing_organization varchar(255) not null,
-  billing_address1 varchar(255) not null,
-  billing_address2 varchar(255) not null,
-  billing_city varchar(255) not null,
-  billing_zone varchar(255) not null,
-  billing_postal_code varchar(255) not null,
-  billing_country varchar(255) not null,
-  billing_phone varchar(255) not null,
-  billing_fax varchar(255) not null,
-  billing_email varchar(255) not null,
-  
-  payment_method varchar(40) not null,
-  payment_status varchar(40) not null,
-  payment_details longblob not null,
-  payment_response longblob not null,
-  payment_received_on int unsigned null,
-  
-  shipping_method varchar(40) not null,	
-  shipping_cost decimal(8,2) null,
-  handling_cost decimal(8,2) null,
-  shipping_notes text not null,
-  shipping_date int unsigned null,
-  shipped_on_date int unsigned null,
-  
-  sales_agent varchar(1024) not null,
-  
-  additional_fees longtext not null,
-   
-  refund_date int unsigned null,
-  refund_notes text not null,
-  refund_amount decimal(8,2) null,
-  
-  deleted tinyint unsigned not null default 0,
-  
-  primary key (order_id),
-   constraint fk_ca_commerce_orders_transaction_id foreign key (transaction_id)
-      references ca_commerce_transactions (transaction_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_transaction_id on ca_commerce_orders(transaction_id);
-create index i_order_type on ca_commerce_orders(order_type);
-
-
-/*==========================================================================*/
-create table ca_commerce_order_items
-(
-   item_id                        int unsigned                   not null AUTO_INCREMENT,
-   order_id                       int unsigned                   not null,
-   object_id                      int unsigned                   null,
-   service                    	  varchar(40)                  null,	
-   fullfillment_method            varchar(40)                   null,	
-   fee                            decimal(8,2) null,
-   tax                            decimal(8,2) null,
-   notes                          text                                 not null,
-   restrictions                   text                                 not null,
-   shipping_cost                  decimal(8,2) null,
-   handling_cost                  decimal(8,2) null,
-   shipping_notes                 text not null,
-   
-   refund_date                    int unsigned null,
-   refund_notes                   text not null,
-   refund_amount                  decimal(8,2) null,
-   
-   loan_checkout_date             int unsigned null DEFAULT '0',
-   loan_due_date                  int unsigned null DEFAULT '0',
-   loan_return_date               int unsigned null DEFAULT '0',
-   
-   additional_fees                longtext not null,
-   
-   rank                           int unsigned                   not null default 0,
-   primary key (item_id),
-   constraint fk_ca_commerce_order_items_object_id foreign key (object_id)
-      references ca_objects (object_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_commerce_order_items_order_id foreign key (order_id)
-      references ca_commerce_orders (order_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_object_id on ca_commerce_order_items(object_id);
-create index i_order_id on ca_commerce_order_items(order_id);
-create index i_loan_checkout_date on ca_commerce_order_items(loan_checkout_date);
-create index i_loan_due_date on ca_commerce_order_items(loan_due_date);
-create index i_loan_return_date on ca_commerce_order_items(loan_return_date);
-
-
-/*==========================================================================*/
-create table ca_commerce_fulfillment_events
-(
-   event_id                       int unsigned                   not null AUTO_INCREMENT,
-   order_id                       int unsigned                   not null,
-   item_id                        int unsigned                   null,
-   fulfillment_method             varchar(40)                    not null,		
-   fulfillment_details            blob                           not null,								
-   occurred_on                    int unsigned                   not null,
-   notes                          text                           not null,
-   
-   primary key (event_id),
-   constraint fk_ca_commerce_fulfillment_events_order_id foreign key (order_id)
-      references ca_commerce_orders (order_id) on delete restrict on update restrict,
-      
-   constraint fk_ca_commerce_fulfillment_events_item_id foreign key (item_id)
-      references ca_commerce_order_items (item_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_order_id on ca_commerce_fulfillment_events(order_id);
-create index i_item_id on ca_commerce_fulfillment_events(item_id);
-
-
-/*==========================================================================*/
-create table ca_commerce_order_items_x_object_representations 
-(
-   relation_id                    int unsigned                   not null AUTO_INCREMENT,
-   item_id                        int unsigned                   not null,
-   representation_id              int unsigned                   not null,
-   rank                           int unsigned                   not null default 0,
-   primary key (relation_id),
-   constraint fk_ca_commerce_order_items_x_object_reps_item_id foreign key (item_id)
-      references ca_commerce_order_items (item_id) on delete restrict on update restrict,
-   constraint fk_ca_commerce_order_items_x_object_reps_rep_id foreign key (representation_id)
-      references ca_object_representations (representation_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create index i_item_id on ca_commerce_order_items_x_object_representations(item_id);
-create index i_representation_id on ca_commerce_order_items_x_object_representations(representation_id);
-create unique index u_all on ca_commerce_order_items_x_object_representations
-(
-   item_id,
-   representation_id
-);
-
-
-/*==========================================================================*/
 create table ca_object_checkouts (
    checkout_id	            int unsigned					not null AUTO_INCREMENT,
    group_uuid               char(36) not null,
@@ -6500,13 +6269,13 @@ create table ca_metadata_dictionary_entries (
 create table ca_metadata_dictionary_rules (
    rule_id                  int unsigned					not null AUTO_INCREMENT,
    entry_id                 int unsigned not null,
-   rule_code                varchar(30) not null,
+   rule_code                varchar(100) not null,
    expression               text not null,
    rule_level               char(4) not null,
    settings                 longtext not null,
    primary key (rule_id),
    index i_entry_id (entry_id),
-   unique index u_rule_code (rule_code),
+   unique index u_rule_code (entry_id, rule_code),
    index i_rule_code (rule_level),
    
    constraint fk_ca_metadata_dictionary_rules_entry_id foreign key (entry_id)
@@ -6532,6 +6301,309 @@ create table ca_metadata_dictionary_rule_violations (
       references ca_metadata_dictionary_rules (rule_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+/*==========================================================================*/
+
+create table ca_user_representation_annotations
+(
+  annotation_id                  int unsigned                   not null AUTO_INCREMENT,
+  representation_id              int unsigned                   not null,
+  locale_id                      smallint unsigned,
+  user_id                        int unsigned                   null,
+  type_code                      varchar(30)                    not null,
+  props                          longtext                       not null,
+  preview                        longblob                       not null,
+  source_info                    longtext                       not null,
+  access                         tinyint unsigned               not null default 0,
+  status                         tinyint unsigned               not null default 0,
+  primary key (annotation_id),
+  constraint fk_ca_urep_annot_locale_id foreign key (locale_id)
+  references ca_locales (locale_id) on delete restrict on update restrict,
+  constraint fk_ca_urep_annot_representation_id foreign key (representation_id)
+  references ca_object_representations (representation_id) on delete restrict on update restrict,
+  constraint fk_ca_urep_annot_user_id foreign key (user_id)
+  references ca_users (user_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+create index i_representation_id on ca_user_representation_annotations(representation_id);
+create index i_locale_id on ca_user_representation_annotations(locale_id);
+create index i_user_id on ca_user_representation_annotations(user_id);
+
+
+/*==========================================================================*/
+create table ca_user_representation_annotation_labels
+(
+  label_id                       int unsigned                   not null AUTO_INCREMENT,
+  annotation_id                  int unsigned                   not null,
+  locale_id                      smallint unsigned              not null,
+  type_id                        int unsigned                   null,
+  name                           text		                     not null,
+  name_sort                      text                  		 not null,
+  source_info                    longtext                       not null,
+  is_preferred                   tinyint unsigned               not null,
+  primary key (label_id),
+  constraint fk_ca_user_representation_annotation_labels_annotation_id foreign key (annotation_id)
+  references ca_user_representation_annotations (annotation_id) on delete restrict on update restrict,
+  constraint fk_ca_user_representation_annotation_labels_locale_id foreign key (locale_id)
+  references ca_locales (locale_id) on delete restrict on update restrict,
+  constraint fk_ca_user_representation_annotation_labels_type_id foreign key (type_id)
+  references ca_list_items (item_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+create index i_annotation_id on ca_user_representation_annotation_labels(annotation_id);
+create index i_name on ca_user_representation_annotation_labels(name(128));
+create unique index u_all on ca_user_representation_annotation_labels
+(
+  name(128),
+  locale_id,
+  type_id,
+  annotation_id
+);
+create index i_locale_id on ca_user_representation_annotation_labels(locale_id);
+create index i_name_sort on ca_user_representation_annotation_labels(name_sort(128));
+create index i_type_id on ca_user_representation_annotation_labels(type_id);
+
+
+/*==========================================================================*/
+create table ca_user_representation_annotations_x_entities
+(
+  relation_id                    int unsigned                   not null AUTO_INCREMENT,
+  annotation_id                  int unsigned                   not null,
+  entity_id                      int unsigned               not null,
+  type_id                        smallint unsigned              not null,
+  source_info                    longtext                       not null,
+  sdatetime                      decimal(30,20),
+  edatetime                      decimal(30,20),
+  label_left_id                  int unsigned                   null,
+  label_right_id                 int unsigned                   null,
+  rank                           int unsigned                   not null default 0,
+  primary key (relation_id),
+  constraint fk_ca_urep_annot_x_entities_annotation_id foreign key (annotation_id)
+  references ca_user_representation_annotations (annotation_id) on delete restrict on update restrict,
+
+  constraint fk_ca_urep_annot_x_entities_entity_id foreign key (entity_id)
+  references ca_entities (entity_id) on delete restrict on update restrict,
+
+  constraint fk_ca_urep_annot_x_entities_type_id foreign key (type_id)
+  references ca_relationship_types (type_id) on delete restrict on update restrict,
+
+  constraint fk_ca_urep_annot_x_entities_label_left_id foreign key (label_left_id)
+  references ca_user_representation_annotation_labels (label_id) on delete restrict on update restrict,
+
+  constraint fk_ca_urep_annot_x_entities_label_right_id foreign key (label_right_id)
+  references ca_entity_labels (label_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+create index i_entity_id on ca_user_representation_annotations_x_entities(entity_id);
+create index i_annotation_id on ca_user_representation_annotations_x_entities(annotation_id);
+create index i_type_id on ca_user_representation_annotations_x_entities(type_id);
+create unique index u_all on ca_user_representation_annotations_x_entities
+(
+  entity_id,
+  type_id,
+  annotation_id,
+  sdatetime,
+  edatetime
+);
+create index i_label_left_id on ca_user_representation_annotations_x_entities(label_left_id);
+create index i_label_right_id on ca_user_representation_annotations_x_entities(label_right_id);
+
+
+/*==========================================================================*/
+create table ca_user_representation_annotations_x_objects
+(
+  relation_id                    int unsigned                   not null AUTO_INCREMENT,
+  annotation_id                        int unsigned                   not null,
+  object_id                      int unsigned               not null,
+  type_id                        smallint unsigned              not null,
+  source_info                    longtext                       not null,
+  sdatetime                      decimal(30,20),
+  edatetime                      decimal(30,20),
+  label_left_id                  int unsigned                   null,
+  label_right_id                 int unsigned                   null,
+  rank                           int unsigned                   not null default 0,
+  primary key (relation_id),
+  constraint fk_ca_urep_annot_x_objects_annotation_id foreign key (annotation_id)
+  references ca_user_representation_annotations (annotation_id) on delete restrict on update restrict,
+
+  constraint fk_ca_urep_annot_x_objects_object_id foreign key (object_id)
+  references ca_objects (object_id) on delete restrict on update restrict,
+
+  constraint fk_ca_urep_annot_x_objects_type_id foreign key (type_id)
+  references ca_relationship_types (type_id) on delete restrict on update restrict,
+
+  constraint fk_ca_urep_annot_x_objects_label_left_id foreign key (label_left_id)
+  references ca_user_representation_annotation_labels (label_id) on delete restrict on update restrict,
+
+  constraint fk_ca_urep_annot_x_objects_label_right_id foreign key (label_right_id)
+  references ca_object_labels (label_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+create index i_object_id on ca_user_representation_annotations_x_objects(object_id);
+create index i_annotation_id on ca_user_representation_annotations_x_objects(annotation_id);
+create index i_type_id on ca_user_representation_annotations_x_objects(type_id);
+create unique index u_all on ca_user_representation_annotations_x_objects
+(
+  object_id,
+  type_id,
+  annotation_id,
+  sdatetime,
+  edatetime
+);
+create index i_label_left_id on ca_user_representation_annotations_x_objects(label_left_id);
+create index i_label_right_id on ca_user_representation_annotations_x_objects(label_right_id);
+
+
+/*==========================================================================*/
+create table ca_user_representation_annotations_x_occurrences
+(
+  relation_id                    int unsigned                   not null AUTO_INCREMENT,
+  annotation_id                        int unsigned                   not null,
+  occurrence_id                  int unsigned               not null,
+  type_id                        smallint unsigned              not null,
+  source_info                    longtext                       not null,
+  sdatetime                      decimal(30,20),
+  edatetime                      decimal(30,20),
+  label_left_id                  int unsigned                   null,
+  label_right_id                 int unsigned                   null,
+  rank                           int unsigned                   not null default 0,
+  primary key (relation_id),
+  constraint fk_ca_urep_annot_x_occurrences_annotation_id foreign key (annotation_id)
+  references ca_user_representation_annotations (annotation_id) on delete restrict on update restrict,
+
+  constraint fk_ca_urep_annot_x_occurrences_type_id foreign key (type_id)
+  references ca_relationship_types (type_id) on delete restrict on update restrict,
+
+  constraint fk_ca_urep_annot_x_occurrences_occurrence_id foreign key (occurrence_id)
+  references ca_occurrences (occurrence_id) on delete restrict on update restrict,
+
+  constraint fk_ca_urep_annot_x_occurrences_label_left_id foreign key (label_left_id)
+  references ca_user_representation_annotation_labels (label_id) on delete restrict on update restrict,
+
+  constraint fk_ca_urep_annot_x_occurrences_label_right_id foreign key (label_right_id)
+  references ca_occurrence_labels (label_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+create index i_occurrence_id on ca_user_representation_annotations_x_occurrences(occurrence_id);
+create index i_annotation_id on ca_user_representation_annotations_x_occurrences(annotation_id);
+create index i_type_id on ca_user_representation_annotations_x_occurrences(type_id);
+create unique index u_all on ca_user_representation_annotations_x_occurrences
+(
+  occurrence_id,
+  type_id,
+  annotation_id,
+  sdatetime,
+  edatetime
+);
+create index i_label_left_id on ca_user_representation_annotations_x_occurrences(label_left_id);
+create index i_label_right_id on ca_user_representation_annotations_x_occurrences(label_right_id);
+
+
+/*==========================================================================*/
+create table ca_user_representation_annotations_x_places
+(
+  relation_id                    int unsigned                   not null AUTO_INCREMENT,
+  annotation_id                        int unsigned                   not null,
+  place_id                       int unsigned               not null,
+  type_id                        smallint unsigned              not null,
+  source_info                    longtext                       not null,
+  sdatetime                      decimal(30,20),
+  edatetime                      decimal(30,20),
+  label_left_id                  int unsigned                   null,
+  label_right_id                 int unsigned                   null,
+  rank                           int unsigned                   not null default 0,
+  primary key (relation_id),
+  constraint fk_ca_urep_annot_x_places_annotation_id foreign key (annotation_id)
+  references ca_user_representation_annotations (annotation_id) on delete restrict on update restrict,
+
+  constraint fk_ca_urep_annot_x_places_type_id foreign key (type_id)
+  references ca_relationship_types (type_id) on delete restrict on update restrict,
+
+  constraint fk_ca_urep_annot_x_places_place_id foreign key (place_id)
+  references ca_places (place_id) on delete restrict on update restrict,
+
+  constraint fk_ca_urep_annot_x_places_label_left_id foreign key (label_left_id)
+  references ca_user_representation_annotation_labels (label_id) on delete restrict on update restrict,
+
+  constraint fk_ca_urep_annot_x_places_label_right_id foreign key (label_right_id)
+  references ca_place_labels (label_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+create index i_place_id on ca_user_representation_annotations_x_places(place_id);
+create index i_annotation_id on ca_user_representation_annotations_x_places(annotation_id);
+create index i_type_id on ca_user_representation_annotations_x_places(type_id);
+create unique index u_all on ca_user_representation_annotations_x_places
+(
+  place_id,
+  type_id,
+  annotation_id,
+  sdatetime,
+  edatetime
+);
+create index i_label_left_id on ca_user_representation_annotations_x_places(label_left_id);
+create index i_label_right_id on ca_user_representation_annotations_x_places(label_right_id);
+
+
+/*==========================================================================*/
+create table ca_user_representation_annotations_x_vocabulary_terms
+(
+  relation_id                    int unsigned                   not null AUTO_INCREMENT,
+  annotation_id                  int unsigned                   not null,
+  type_id                        smallint unsigned              not null,
+  item_id                        int unsigned                   not null,
+  source_info                    longtext                       not null,
+  sdatetime                      decimal(30,20),
+  edatetime                      decimal(30,20),
+  label_left_id                  int unsigned                   null,
+  label_right_id                 int unsigned                   null,
+  rank                           int unsigned                   not null default 0,
+  primary key (relation_id),
+  constraint fk_ca_urep_annot_x_vocabulary_terms_annotation_id foreign key (annotation_id)
+  references ca_user_representation_annotations (annotation_id) on delete restrict on update restrict,
+
+  constraint fk_ca_urep_annot_x_vocabulary_terms_type_id foreign key (type_id)
+  references ca_relationship_types (type_id) on delete restrict on update restrict,
+
+  constraint fk_ca_urep_annot_x_vocabulary_terms_item_id foreign key (item_id)
+  references ca_list_items (item_id) on delete restrict on update restrict,
+
+  constraint fk_ca_urep_annot_x_vocabulary_terms_label_left_id foreign key (label_left_id)
+  references ca_user_representation_annotation_labels (label_id) on delete restrict on update restrict,
+
+  constraint fk_ca_urep_annot_x_vocabulary_terms_label_right_id foreign key (label_right_id)
+  references ca_list_item_labels (label_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+create index i_item_id on ca_user_representation_annotations_x_vocabulary_terms(item_id);
+create index i_annotation_id on ca_user_representation_annotations_x_vocabulary_terms(annotation_id);
+create index i_type_id on ca_user_representation_annotations_x_vocabulary_terms(type_id);
+create unique index u_all on ca_user_representation_annotations_x_vocabulary_terms
+(
+  type_id,
+  annotation_id,
+  sdatetime,
+  edatetime,
+  item_id
+);
+create index i_label_left_id on ca_user_representation_annotations_x_vocabulary_terms(label_left_id);
+create index i_label_right_id on ca_user_representation_annotations_x_vocabulary_terms(label_right_id);
+
+/*==========================================================================*/
+
+create table ca_search_indexing_queue
+(
+  entry_id        int unsigned      not null AUTO_INCREMENT,
+  table_num       tinyint unsigned  not null,
+  row_id          int unsigned      not null,
+  field_data      LONGTEXT          null,
+  reindex         tinyint unsigned  not null default 0,
+  changed_fields  LONGTEXT          null,
+  options         LONGTEXT          null,
+  is_unindex      tinyint unsigned  not null default 0,
+  dependencies    LONGTEXT          null,
+
+  primary key (entry_id),
+  index i_table_num_row_id (table_num, row_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /*==========================================================================*/
 /* Schema update tracking                                                   */
@@ -6544,5 +6616,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 116 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (117, unix_timestamp());
+/* CURRENT MIGRATION: 122 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (122, unix_timestamp());

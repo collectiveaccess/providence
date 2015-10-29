@@ -58,14 +58,10 @@
 	
 	$va_template_tags = $va_element_ids;
 
-	if(sizeof($va_element_info)>0) { // Container
-		$va_first = current($va_element_info);
-		$va_element_settings = $t_element->getSettings();
-		$vs_bundle_preview = $t_instance->getAttributesForDisplay($va_first['element_id'], $va_element_settings['displayTemplate']);
-	} else {
-		$vs_bundle_preview = $t_instance->getAttributesForDisplay($va_first['element_id']);
-	}
-	
+	$va_first = current($va_element_info);
+	//$va_element_settings = $t_element->getSettings();
+	$vs_bundle_preview = $t_instance->getAttributesForDisplay($va_first['element_id'], null, array('showHierarchy' => true));
+
 	if (sizeof($va_attribute_list)) {
 		$va_item_ids = array();
 		foreach ($va_attribute_list as $o_attr) {
@@ -129,13 +125,15 @@
 	// bundle settings
 	global $g_ui_locale;
 	if (!$vs_add_label = $va_settings['add_label'][$g_ui_locale]) {
-		$vs_add_label = _t("Add %1", mb_strtolower($vs_element_set_label, 'UTF-8'));
+		$vs_add_label = _t("Add %1", $vs_element_set_label);
 	}
 	
 	if ($vb_batch) {
 		print caBatchEditorAttributeModeControl($vs_id_prefix);
 	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
+		// @todo add helper to determine if a value is present in $va_initial_values or not
+		// and add the result of that helper as 4th parameter here.
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $va_initial_values));
 	}
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
 ?>

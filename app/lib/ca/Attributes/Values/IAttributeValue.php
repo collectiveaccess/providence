@@ -79,5 +79,7 @@
  		
  		// Return type constant for value
  		public function getType();
+
+		// Get extra info to add to search index
+		public function getDataForSearchIndexing();
 	}
- ?>

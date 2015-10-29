@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2014 Whirl-i-Gig
+ * Copyright 2011-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -63,7 +63,7 @@
 <?php
 		foreach($va_placements as $vn_placement_id => $va_info) {
 			$vs_class = "";
-			if (!strlen($vs_display_value = $t_display->getDisplayValue($t_item, $vn_placement_id, array('request' => $this->request)))) {
+			if (!strlen($vs_display_value = $t_display->getDisplayValue($t_item, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array())))) {
 				if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }
 				$vs_display_value = "&lt;"._t('not defined')."&gt;";
 				$vs_class = " notDefined";

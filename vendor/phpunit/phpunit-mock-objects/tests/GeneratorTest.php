@@ -63,8 +63,13 @@ class Framework_MockObject_GeneratorTest extends PHPUnit_Framework_TestCase
     public function testGetMockForAbstractClassWithNonExistentMethods()
     {
         $mock = $this->generator->getMockForAbstractClass(
-            'AbstractMockTestClass', array(), '',  true,
-            true, true, array('nonexistentMethod')
+            'AbstractMockTestClass',
+            array(),
+            '',
+            true,
+            true,
+            true,
+            array('nonexistentMethod')
         );
 
         $this->assertTrue(method_exists($mock, 'nonexistentMethod'));
@@ -100,7 +105,7 @@ class Framework_MockObject_GeneratorTest extends PHPUnit_Framework_TestCase
      * @covers PHPUnit_Framework_MockObject_Generator::getMockForAbstractClass
      * @expectedException PHPUnit_Framework_MockObject_RuntimeException
      */
-    public function testGetMockForAbstractClassAnstractClassDoesNotExist()
+    public function testGetMockForAbstractClassAbstractClassDoesNotExist()
     {
         $mock = $this->generator->getMockForAbstractClass('Tux');
     }
@@ -123,8 +128,13 @@ class Framework_MockObject_GeneratorTest extends PHPUnit_Framework_TestCase
     public function testGetMockForTraitWithNonExistentMethodsAndNonAbstractMethods()
     {
         $mock = $this->generator->getMockForTrait(
-            'AbstractTrait', array(), '',  true,
-            true, true, array('nonexistentMethod')
+            'AbstractTrait',
+            array(),
+            '',
+            true,
+            true,
+            true,
+            array('nonexistentMethod')
         );
 
         $this->assertTrue(method_exists($mock, 'nonexistentMethod'));

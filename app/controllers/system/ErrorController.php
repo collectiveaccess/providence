@@ -25,8 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	require_once(__CA_LIB_DIR__."/core/Parsers/htmlpurifier/HTMLPurifier.standalone.php");
+
 	require_once(__CA_LIB_DIR__."/core/Error.php");
  
  	class ErrorController extends ActionController {

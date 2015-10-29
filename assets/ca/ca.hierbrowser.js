@@ -78,6 +78,13 @@ var caUI = caUI || {};
 			autoShrinkMaxHeightPx: 180,
 			autoShrinkAnimateID: '',
 
+			/* how do we treat disabled items in the browser? can be
+			 *  - 'disable' : list items default behavior - i.e. show the item but don't make it a clickable link
+			 *  - 'hide' : completely hide them from the browser
+			 *  - 'full' : don't treat disabled items any differently
+			 */
+			disabledItems: 'disable',
+
 			displayCurrentSelectionOnLoad: true,
 			typeMenuID: '',
 
@@ -99,6 +106,9 @@ var caUI = caUI || {};
 
 			maxItemsPerHierarchyLevelPage: 500	// maximum number of items to load at one time into a level
 		}, options);
+		
+		
+		that.useAsRootID = parseInt(that.useAsRootID);
 
 		if (!that.levelDataUrl) {
 			alert("No level data url specified for " + that.name + "!");
@@ -134,24 +144,32 @@ var caUI = caUI || {};
 			that.levelLists = [];
 			that.selectedItemIDs = [];
 			jQuery.getJSON(that.initDataUrl, { id: item_id, bundle: that.bundle}, function(data, e, x) {
+				if (typeof data === 'object') {
+					var dataAsList = [];
+					for(var o in data) {
+						if (data.hasOwnProperty(o)) {
+							dataAsList.push(data[o]);
+						}
+					}
+					data = dataAsList;
+				}
+
+
 				if (data.length) {
 					that.selectedItemIDs = data.join(';').split(';');
 
-					if (that.useAsRootID > 0) {
+					if ((that.useAsRootID > 0) && (that.useAsRootID !== data[0])) {
 						that.selectedItemIDs.shift();
 						if (jQuery.inArray(that.useAsRootID, data) == -1) {
 							data.unshift(that.useAsRootID);
 						}
 					} else {
-						data.unshift(0);
+						if (!that.useAsRootID) { data.unshift(0); }
 					}
 				} else {
 					data = [that.useAsRootID ? that.useAsRootID : 0];
 				}
 
-				if (data[0] == data[1]) {	// workaround for jQuery(?) but that replicates first item of list in json array
-					data.shift();
-				}
 				var l = 0;
 				jQuery.each(data, function(i, id) {
 					that.setUpHierarchyLevel(i, id, 1, item_id);
@@ -395,10 +413,24 @@ var caUI = caUI || {};
 									moreButton += "<div style='float: right; margin-right: 5px; opacity: 0.3;' id='hierBrowser_" + that.name + "_extract_container'><a href='#' id='hierBrowser_" + that.name + "_extract'>" + that.extractFromHierarchyButtonIcon + "</a></div>";
 								}
 
+								var skipNextLevelNav = false;
 								if ((item.is_enabled !== undefined) && (parseInt(item.is_enabled) === 0)) {
-									jQuery('#' + newLevelListID).append(
-										"<li class='" + that.className + "'>" + moreButton +  item.name + "</li>"
-									);
+									switch (that.disabledItems) {
+										case 'full':
+											jQuery('#' + newLevelListID).append(
+												"<li class='" + that.className + "'>" + moreButton + "<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item.name + "</a></li>"
+											);
+											break;
+										case 'hide': // item is hidden -> noop
+											skipNextLevelNav = true; // skip adding the "navigate to the next level" code
+											break;
+										case 'disabled':
+										default:
+											jQuery('#' + newLevelListID).append(
+												"<li class='" + that.className + "'>" + moreButton +  item.name + "</li>"
+											);
+											break;
+									}
 								} else if ((!((level == 0) && that.dontAllowEditForFirstLevel))) {
 									jQuery('#' + newLevelListID).append(
 										"<li class='" + that.className + "'>" + moreButton +"<a href='#' id='hierBrowser_" + that.name + '_level_' + level + '_item_' + item['item_id'] + "' class='" + that.className + "'>"  +  item.name + "</a></li>"
@@ -409,18 +441,28 @@ var caUI = caUI || {};
 									);
 								}
 
-								jQuery('#' + newLevelListID + " li:last a").data('item_id', item['item_id']);
-								jQuery('#' + newLevelListID + " li:last a").data('item', item);
-								if(that.editDataForFirstLevel) {
-									jQuery('#' + newLevelListID + " li:last a").data(that.editDataForFirstLevel, item[that.editDataForFirstLevel]);
+								if(!skipNextLevelNav) {
+									jQuery('#' + newLevelListID + " li:last a").data('item_id', item['item_id']);
+									jQuery('#' + newLevelListID + " li:last a").data('item', item);
+									if(that.editDataForFirstLevel) {
+										jQuery('#' + newLevelListID + " li:last a").data(that.editDataForFirstLevel, item[that.editDataForFirstLevel]);
+									}
+
+									if (that.hasChildrenIndicator) {
+										jQuery('#' + newLevelListID + " li:last a").data('has_children', item[that.hasChildrenIndicator] ? true : false);
+									}
 								}
 
-								if (that.hasChildrenIndicator) {
-									jQuery('#' + newLevelListID + " li:last a").data('has_children', item[that.hasChildrenIndicator] ? true : false);
-								}
-
-								// edit button
-								if ((!((level == 0) && that.dontAllowEditForFirstLevel)) && ((item.is_enabled === undefined) || (parseInt(item.is_enabled) === 1))) {
+								// edit button, if .. (trying to make this readable ...)
+								if (
+									(!((level == 0) && that.dontAllowEditForFirstLevel)) // this is not the first level or it is but we allow editing the first level, AND ..
+									&&
+									(
+										(item.is_enabled === undefined) || 		// the item doesn't have a is_enabled property (e.g. places) OR ...
+										(parseInt(item.is_enabled) === 1) || 	// it's enabled OR ...
+										((parseInt(item.is_enabled) === 0) && that.disabledItems == 'full') // it's disabled, but the render mode tells us to not treat disabled items differently
+									)
+								) {
 									var editUrl = '';
 									var editData = 'item_id';
 									if (that.editUrlForFirstLevel && (level == 0)) {

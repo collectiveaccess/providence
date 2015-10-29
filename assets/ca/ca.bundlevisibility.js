@@ -41,33 +41,49 @@ var caUI = caUI || {};
 		// --------------------------------------------------------------------------------
 		// Define methods
 		// --------------------------------------------------------------------------------
-		that.registerBundle = function(id) {
+		/**
+		 * Register a bundle
+		 * @param id
+		 * @param force
+		 */
+		that.registerBundle = function(id, force) {
 			that.bundles.push(id);
-			that.bundleStates[id] = (that.cookieJar.get(id) == 'closed') ? "closed" : "open";	// default to open
-			that.bundleDictionaryStates[id] = (that.cookieJar.get(id + 'DictionaryEntry') == 'open') ? "open" : "closed";	// default to closed
+			var bundleState;
 
-			if (that.bundleStates[id] == "closed") {
+			if(force) { // if override is set, use it
+				bundleState = force;
+			} else { // otherwise use cookiejar and default to open
+				bundleState = (that.cookieJar.get(id) == 'closed') ? 'closed' : 'open';
+			}
+
+			that.bundleStates[id] = bundleState;
+			that.bundleDictionaryStates[id] = (that.cookieJar.get(id + 'DictionaryEntry') == 'open') ? 'closed' : 'open';	// default to closed
+
+			// actually open/close elements
+			if (that.bundleStates[id] == 'closed') {
 				that.close(id, true);
 			} else {
 				that.open(id, true);
 			}
-			if (that.bundleDictionaryStates[id] == "closed") {
+			if (that.bundleDictionaryStates[id] == 'closed') {
 				that.closeDictionaryEntry(id, true);
 			} else {
 				that.openDictionaryEntry(id, true);
 			}
-		}
+		};
 
 		// Set initial visibility of all registered bundles
 		that.setAll = function() {
 			jQuery.each(that.bundles, function(k, id) {
+				var container = jQuery("#" + id);
+
 				if(that.bundleStates[id] == 'closed') {
-					jQuery("#" + id).hide();
+					container.hide();
 				} else {
-					jQuery("#" + id).show();
+					container.show();
 				}
 			});
-		}
+		};
 
 		// Toggle bundle
 		that.toggle = function(id) {
@@ -77,7 +93,7 @@ var caUI = caUI || {};
 				that.close(id);
 			}
 			return false;
-		}
+		};
 
 		// Open bundle
 		that.open = function(id, dontAnimate) {
@@ -104,7 +120,7 @@ var caUI = caUI || {};
 				}
 			}
 			return false;
-		}
+		};
 
 		// Close bundle
 		that.close = function(id, dontAnimate) {
@@ -131,7 +147,7 @@ var caUI = caUI || {};
 				}
 			}
 			return false;
-		}
+		};
 
 		// Toggle dictionary entry
 		that.toggleDictionaryEntry = function(id) {
@@ -141,7 +157,7 @@ var caUI = caUI || {};
 				that.closeDictionaryEntry(id);
 			}
 			return false;
-		}
+		};
 
 		// Open dictionary entry
 		that.openDictionaryEntry = function(id, dontAnimate) {
@@ -167,7 +183,7 @@ var caUI = caUI || {};
 			}
 
 			return false;
-		}
+		};
 
 		// Close dictionary entry
 		that.closeDictionaryEntry = function(id, dontAnimate) {
@@ -188,7 +204,7 @@ var caUI = caUI || {};
 				}
 			}
 			return false;
-		}
+		};
 
 		// --------------------------------------------------------------------------------
 

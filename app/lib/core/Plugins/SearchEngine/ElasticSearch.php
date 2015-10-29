@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2014 Whirl-i-Gig
+ * Copyright 2012-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -61,8 +61,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	static $s_doc_content_buffer = array();			// content buffer used when indexing
 	static $s_element_code_cache = array();
 	# -------------------------------------------------------
-	public function __construct(){
-		parent::__construct();
+	public function __construct($po_db=null){
+		parent::__construct($po_db);
 		
 		$this->opo_db = new Db();
 		$this->opo_tep = new TimeExpressionParser();	
@@ -224,6 +224,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 								if (!$vs_fld_num) { // probably attribute
 									$t_element = new ca_metadata_elements();
 									if ($t_element->load(array('element_code' => ($vs_sub_field ? $vs_sub_field : $vs_field)))) {
+										// query only subfield in containers, i.e. ca_objects.date_range instead of
+										// ca_objects.dates.date_range because that's how we index these fields ...
+										if($vs_sub_field) { $vs_access_point = $vs_table . '.' . $vs_sub_field; }
 										//
 										// For certain types of attributes we can directly query the
 										// attributes in the database rather than using the full text index
@@ -286,6 +289,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 											case 12:	// decimal
 												$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term((float)$vs_term, $vs_access_point));
 												break;
+											default:	// everything else
+												$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('"'.$vs_term.'"', $vs_access_point));
+												break;
 										}
 									}
 								}
@@ -294,7 +300,6 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 					}					
 					break;
 			}
-				
 			$va_terms[] = $o_lucene_query_element;
 			$va_signs[] = is_array($va_old_signs) ? (array_key_exists($vn_i, $va_old_signs) ? $va_old_signs[$vn_i] : true) : true;
 
@@ -302,7 +307,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$vn_i++;
 		}
 		
-		$o_rewritten_query = new Zend_Search_Lucene_Search_Query_Boolean($va_terms, $va_signs);	
+		$o_rewritten_query = new Zend_Search_Lucene_Search_Query_Boolean($va_terms, $va_signs);
 		$ps_search_expression = $this->_queryToString($o_rewritten_query);
 		if ($vs_filter_query = $this->_filterValueToQueryValue($pa_filters)) {
 			$ps_search_expression = "({$ps_search_expression}) AND ({$vs_filter_query})";
@@ -622,11 +627,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$this->ops_elasticsearch_index_name."/".
 			$this->opo_datamodel->getTableName($pn_subject_tablenum)."/".$pn_subject_row_id
 		);
-
-		$vo_http_client->setEncType('text/json')->request('DELETE');
 		
 		try {
-			$vo_http_client->request();
+			$vo_http_client->setEncType('text/json')->request('DELETE');
 		} catch (Exception $e){
 			caLogEvent('ERR', _t('Commit of index delete failed: %1', $e->getMessage()), 'ElasticSearch->removeRowIndexing()');
 		}
@@ -680,7 +683,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				$this->ops_elasticsearch_index_name."/".
 				$va_key[0]."/".$va_key[2]
 			);
-
+			
 			try {
 				$vo_http_client->setRawData(json_encode($va_post_json))->setEncType('text/json')->request('POST');
 				$vo_http_response = $vo_http_client->request();

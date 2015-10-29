@@ -282,6 +282,11 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	protected $ID_NUMBERING_SORT_FIELD = null;			// name of field containing version of identifier for sorting (is normalized with padding to sort numbers properly)
 	protected $ID_NUMBERING_CONTEXT_FIELD = null;		// name of field to use value of for "context" when checking for duplicate identifier values; if not set identifer is assumed to be global in scope; if set identifer is checked for uniqueness (if required) within the value of this field
 
+	# ------------------------------------------------------
+	# Search
+	# ------------------------------------------------------
+	protected $SEARCH_CLASSNAME = 'SetSearch';
+	protected $SEARCH_RESULT_CLASSNAME = 'SetSearchResult';
 	
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
@@ -1036,16 +1041,14 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		$vn_table_num = $this->get('table_num');
 		
-		if (!$this->inTransaction()) {
-			$o_trans = new Transaction($this->getDb());
-			$vb_web_set_transaction = true;
-		} else {
+		$o_trans = null;
+		if ($this->inTransaction()) {
 			$o_trans = $this->getTransaction();
 		}
 		
 		// Verify existance of row before adding to set
 		$t_instance = $this->getAppDatamodel()->getInstanceByTableNum($vn_table_num, true);
-		$t_instance->setTransaction($o_trans);
+		if ($o_trans) { $t_instance->setTransaction($o_trans); }
 		if (!$t_instance->load($pn_row_id)) {
 			$this->postError(750, _t('Item does not exist'), 'ca_sets->addItem()');
 			return false;
@@ -1053,7 +1056,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		// Add it to the set
 		$t_item = new ca_set_items();
-		$t_item->setTransaction($o_trans);
+		if ($o_trans) { $t_item->setTransaction($o_trans); }
 		$t_item->setMode(ACCESS_WRITE);
 		$t_item->set('set_id', $this->getPrimaryKey());
 		$t_item->set('table_num', $vn_table_num);
@@ -1089,6 +1092,12 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			$t_item->addLabel(array(
 				'caption' => _t('[BLANK]'),
 			), $g_ui_locale_id);
+			
+			if ($t_item->numErrors()) {
+				$t_item->delete();
+				$this->errors = $t_item->errors;
+				return false;
+			}
 		}
 		return (int)$t_item->getPrimaryKey();
 	}
@@ -1280,6 +1289,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * @param array $pa_options An optional array of options. Supported options include:
 	 *			user_id = the user_id of the current user; used to determine which sets the user has access to
 	 *			treatRowIDsAsRIDs = assume combination row_id/item_id indices in $pa_row_ids array instead of solely row_ids. Since a set can potentially contain multiple instances of the same row_id, only "rIDs" – a combination of the row_id and the set item_id (row_id + "_" + item_id) – are guaranteed to be unique. [Default=false]
+	 * 			deleteExcludedItems = should the set items not passed in pa_row_ids be deleted?  default is false
 	 * @return array An array of errors. If the array is empty then no errors occurred
 	 */
 	public function reorderItems($pa_row_ids, $pa_options=null) {
@@ -1288,7 +1298,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		}
 		
 		$vn_user_id = isset($pa_options['user_id']) ? (int)$pa_options['user_id'] : null; 
-		$vb_treat_row_ids_as_rids = caGetOption('treatRowIDsAsRIDs', $pa_options, false);
+		$vb_treat_row_ids_as_rids = caGetOption('treatRowIDsAsRIDs', $pa_options, false); 
+		$vb_delete_excluded_items = caGetOption('deleteExcludedItems', $pa_options, false);
 		
 		// does user have edit access to set?
 		if ($vn_user_id && !$this->haveAccessToSet($vn_user_id, __CA_SET_EDIT_ACCESS__)) {
@@ -1313,42 +1324,66 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		
 		// delete rows not present in $pa_row_ids
-		$va_to_delete = array();
+		$va_excluded_item_ids = array();
 		foreach($va_row_ranks as $vn_row_id => $va_rank) {
 			if (!in_array($vn_row_id, $pa_row_ids)) {
 				
 				if ($vb_treat_row_ids_as_rids) {
 					$va_tmp = explode("_", $vn_row_id);
 					if ($t_set_item->load(array('set_id' => $vn_set_id, 'row_id' => $va_tmp[0], 'item_id' => $va_tmp[1]))) {
-						$t_set_item->delete(true);
+						$va_excluded_item_ids[$t_set_item->get("rank")] = $t_set_item->get("item_id");
+						if($vb_delete_excluded_items){
+							$t_set_item->delete(true);
+						}
 					}
 				} else {
 					if ($t_set_item->load(array('set_id' => $vn_set_id, 'row_id' => $vn_row_id))) {
-						$t_set_item->delete(true);
+						$va_excluded_item_ids[$t_set_item->get("rank")] = $t_set_item->get("item_id");
+						if($vb_delete_excluded_items){
+							$t_set_item->delete(true);
+						}
 					}
 				}
+				if(($vn_k = array_search($pa_row_ids, $pa_row_ids)) !== false) {
+					unset($pa_row_ids[$vn_k]);
+				}
+				unset($va_row_ranks[$vn_row_id]);
 			}
 		}
 		
-		
+	
 		// rewrite ranks
+		$va_existing_ranks = array_values($va_row_ranks);
+		$vn_rank_acc = end(array_values($va_row_ranks));
+		
+		$va_rank_updates = array();
 		foreach($pa_row_ids as $vn_rank => $vn_row_id) {
-			$vn_rank_inc = $vn_rank + 1;
-			if ($vb_treat_row_ids_as_rids) { $va_tmp = explode("_", $vn_row_id); }
-			if (isset($va_row_ranks[$vn_row_id]) && $t_set_item->load($vb_treat_row_ids_as_rids ? array('set_id' => $vn_set_id, 'row_id' => $va_tmp[0], 'item_id' => $va_tmp[1]) : array('set_id' => $vn_set_id, 'row_id' => $vn_row_id))) {
-				if ($va_row_ranks[$vn_row_id] != $vn_rank_inc) {
-					$t_set_item->set('rank', $vn_rank_inc);
-					$t_set_item->update();
-				
-					if ($t_set_item->numErrors()) {
-						$va_errors[$vn_row_id] = _t('Could not reorder item %1: %2', $vn_row_id, join('; ', $t_set_item->getErrors()));
-					}
-				}
+			if (isset($va_existing_ranks[$vn_rank])) {
+				$vn_rank_inc = $va_existing_ranks[$vn_rank];
 			} else {
+				$vn_rank_acc++;
+				$vn_rank_inc = $vn_rank_acc;
+			}
+			
+			if ($vb_treat_row_ids_as_rids) { $va_tmp = explode("_", $vn_row_id); }
+			if (isset($va_row_ranks[$vn_row_id]) && ($va_row_ranks[$vn_row_id] != $vn_rank_inc)) {
+				$va_rank_updates[$vn_row_id] = $vn_rank_inc;
+			} elseif(!isset($va_row_ranks[$vn_row_id])) {
 				// add item to set
 				$this->addItem($vb_treat_row_ids_as_rids ? $va_tmp[0] : $vn_row_id, null, $vn_user_id, $vn_rank_inc);
 			}
 		}
+		
+		foreach($va_rank_updates as $vn_row_id => $vn_new_rank) {
+			if($vb_treat_row_ids_as_rids) {
+				$va_tmp = explode("_", $vn_row_id);
+				$this->getDb()->query("UPDATE ca_set_items SET rank = ? WHERE set_id = ? AND row_id = ? AND item_id = ?", $x=array($vn_new_rank, $vn_set_id, $va_tmp[0], $va_tmp[1]));
+
+			} else {
+				$this->getDb()->query("UPDATE ca_set_items SET rank = ? WHERE set_id = ? AND row_id = ?", array($vn_set_id, $vn_new_rank));
+			}
+		}
+		
 		
 		if(sizeof($va_errors)) {
 			if ($vb_web_set_transaction) { $o_trans->rollback(); }
@@ -1393,6 +1428,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *			returnItemIdsOnly = If true a simple array of item_ids (keys for the ca_set_items rows themselves) is returned rather than full item-level info for each set member.
 	 *			returnItemAttributes = A list of attribute element codes for the ca_set_item record to return values for.
 	 *			idsOnly = Return a simple numerically indexed array of row_ids
+	 * 			template =
 	 *
 	 * @return array An array of items. The format varies depending upon the options set. If returnRowIdsOnly or returnItemIdsOnly are set then the returned array is a 
 	 *			simple list of ids. The full return array is key'ed on ca_set_items.item_id and then on locale_id. The values are arrays with keys set to a number of fields including:
@@ -1534,8 +1570,13 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 				casi.rank ASC
 			{$vs_limit_sql}
 		", (int)$vn_set_id);
-		
+
+		if($ps_template = caGetOption('template', $pa_options, null)) {
+			$qr_ids = $o_db->query("SELECT row_id FROM ca_set_items WHERE set_id = ? ORDER BY rank ASC", $this->getPrimaryKey());
+			$va_processed_templates = caProcessTemplateForIDs($ps_template, $t_rel_table->tableName(), $qr_ids->getAllFieldValues('row_id'), array('returnAsArray' => true));
+		}
 		$va_items = array();
+
 		while($qr_res->nextRow()) {
 			$va_row = $qr_res->getRow();
 			
@@ -1606,6 +1647,10 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 				}
 				
 				$va_row['set_item_label'] = $t_item->getLabelForDisplay(false);
+			}
+
+			if($ps_template) {
+				$va_row['displayTemplate'] = array_shift($va_processed_templates);
 			}
 		
 			$va_items[$qr_res->get('item_id')][($qr_res->get('rel_locale_id') ? $qr_res->get('rel_locale_id') : 0)] = $va_row;
@@ -1742,7 +1787,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 	 *
 	 * @return string Rendered HTML bundle for display
 	 */
-	public function getSetItemHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null) {
+	public function getSetItemHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null, $pa_bundle_settings=null) {
 		if ($this->getItemCount() > 50) {
 			$vs_thumbnail_version = 'tiny';
 		} else {
@@ -1756,10 +1801,17 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		$o_view->setVar('request', $po_request);
 		
 		if ($this->getPrimaryKey()) {
-			$o_view->setVar('items', caExtractValuesByUserLocale($this->getItems(array('thumbnailVersion' => $vs_thumbnail_version, 'user_id' => $po_request->getUserID())), null, null, array()));
+			$va_items = caExtractValuesByUserLocale($this->getItems(array(
+				'thumbnailVersion' => $vs_thumbnail_version,
+				'user_id' => $po_request->getUserID(),
+				'template' => caGetOption('displayTemplate', $pa_bundle_settings, null)
+			)), null, null, array());
+			$o_view->setVar('items', $va_items);
 		} else {
 			$o_view->setVar('items', array());
 		}
+
+		$o_view->setVar('settings', $pa_bundle_settings);
 		
 		if ($t_row = $this->getItemTypeInstance()) {
 			$o_view->setVar('t_row', $t_row);

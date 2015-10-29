@@ -3,10 +3,10 @@ Pimple
 
 .. caution::
 
-    This is the documentation for Pimple 2.x. If you are using Pimple 1.x, read
+    This is the documentation for Pimple 3.x. If you are using Pimple 1.x, read
     the `Pimple 1.x documentation`_. Reading the Pimple 1.x code is also a good
     way to learn more about how to create a simple Dependency Injection
-    Container (Pimple 2.x implementation being more focused on performance).
+    Container (recent versions of Pimple are more focused on performance).
 
 Pimple is a small Dependency Injection Container for PHP.
 
@@ -17,13 +17,14 @@ Before using Pimple in your project, add it to your ``composer.json`` file:
 
 .. code-block:: bash
 
-    $ ./composer.phar require pimple/pimple ~2.1
+    $ ./composer.phar require pimple/pimple ~3.0
 
 Alternatively, Pimple is also available as a PHP C extension:
 
 .. code-block:: bash
 
-    $ cd ext/pimple
+    $ git clone https://github.com/silexphp/Pimple
+    $ cd Pimple/ext/pimple
     $ phpize
     $ ./configure
     $ make
@@ -39,12 +40,6 @@ Creating a container is a matter of creating a ``Container`` instance:
     use Pimple\Container;
 
     $container = new Container();
-
-.. note::
-
-    In Pimple 2.0, the class ``Pimple\Container`` was named ``Pimple`` (a class
-    alias is automatically registered to keep backward compatibility, but you
-    should upgrade your code.)
 
 As many other dependency injection containers, Pimple manages two different
 kind of data: **services** and **parameters**.
@@ -157,17 +152,13 @@ run on your service just after it is created:
         $storage->...();
 
         return $storage;
-    };
+    });
 
 The first argument is the name of the service to extend, the second a function
 that gets access to the object instance and the container.
 
 Extending a Container
 ~~~~~~~~~~~~~~~~~~~~~
-
-.. versionadded:: 2.1
-
-    Support for extending a container was introduced in Pimple 2.1.
 
 If you use the same libraries over and over, you might want to reuse some
 services from one project to the next one; package your services into a
@@ -207,4 +198,4 @@ raw access to this function, you can use the ``raw()`` method:
 
     $sessionFunction = $container->raw('session');
 
-.. _Pimple 1.x documentation: https://github.com/fabpot/Pimple/tree/1.1
+.. _Pimple 1.x documentation: https://github.com/silexphp/Pimple/tree/1.1

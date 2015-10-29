@@ -86,6 +86,7 @@
  			//if ((bool)$this->request->config->get('allow_download_of_all_object_media_in_a_lot')) {
  				set_time_limit(600); // allow a lot of time for this because the sets can be potentially large
 				$t_lot = new ca_object_lots($this->request->getParameter('lot_id', pInteger));
+				$o_media_metadata_conf = Configuration::load($t_lot->getAppConfig()->get('media_metadata'));
 				if ($t_lot->getPrimaryKey()) {
 					$va_object_ids = $t_lot->get('ca_objects.object_id', array('returnAsArray' => true, 'limit' => 100000));
 					if(!is_array($va_object_ids) || !sizeof($va_object_ids)) {
@@ -99,10 +100,14 @@
 					$va_paths = array();
 					while($qr_res->nextHit()) {
 						$va_original_paths = $qr_res->getMediaPaths('ca_object_representations.media', 'original');
+
 						if(sizeof($va_original_paths)>0) {
 							$va_paths[$qr_res->get('object_id')] = array(
 								'idno' => $qr_res->get('idno'),
-								'paths' => $va_original_paths
+								'type_code' => caGetListItemIdno($qr_res->get('type_id')),
+								'paths' => $va_original_paths,
+								'representation_ids' => $qr_res->get('ca_object_representations.representation_id', array('returnAsArray' => true)),
+								'representation_types' => $qr_res->get('ca_object_representations.type_id', array('returnAsArray' => true))
 							);
 						}
 					}
@@ -113,12 +118,24 @@
 						
 						foreach($va_paths as $vn_object_id => $va_path_info) {
 							$vn_c = 1;
-							foreach($va_path_info['paths'] as $vs_path) {
-								if (!file_exists($vs_path)) { continue; }
+							foreach($va_path_info['paths'] as $vn_i => $vs_media_path) {
+								if (!file_exists($vs_media_path)) { continue; }
+
+								if($o_media_metadata_conf->get('do_metadata_embedding_for_lot_media_download')) {
+									if(!($vs_path = caEmbedMediaMetadataIntoFile($vs_media_path,
+										'ca_objects', $vn_object_id, $va_path_info['type_code'],
+										$va_path_info['representation_ids'][$vn_i], $va_path_info['representation_types'][$vn_i]
+									))) {
+										$vs_path = $vs_media_path;
+									}
+								} else {
+									$vs_path = $vs_media_path;
+								}
+
 								$vs_filename = $va_path_info['idno'] ? $va_path_info['idno'] : $vn_object_id;
 								$vs_filename .= "_{$vn_c}";
 								
-								if ($vs_ext = pathinfo($vs_path, PATHINFO_EXTENSION)) {
+								if ($vs_ext = pathinfo($vs_media_path, PATHINFO_EXTENSION)) {
 									$vs_filename .= ".{$vs_ext}";
 								}
 								$o_phar->addFile($vs_path, $vs_filename);

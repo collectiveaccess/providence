@@ -253,7 +253,9 @@
 			if ($vo_result) {
 				if ($vb_criteria_have_changed || $vb_sort_has_changed) {
 					// Put the results id list into the results context - we used this for previous/next navigation
-					$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
+					$vo_full_result = $this->opo_browse->getResults(array('sort' => $vs_sort, 'sort_direction' => $vs_sort_direction));
+					$this->opo_result_context->setResultList($vo_full_result->getPrimaryKeyValues());
+					unset($vo_full_result);
 					$this->opo_result_context->setParameter('availableVisualizationChecked', 0);
 				}
 				
@@ -526,19 +528,19 @@
 									$va_children = $t_item->getHierarchyChildren(null, array('idsOnly' => true));
 									$va_child_counts = $t_item->getHierarchyChildCountsForIDs($va_children);
 									$qr_res = caMakeSearchResult('ca_list_items', $va_children);
-								
+									
 									$vs_pk = $t_model->primaryKey();
 			
 									if ($qr_res) {										
 										// expand facet
-										$va_ancestors = $t_item->getHierarchyAncestorsForIDs(array_keys($va_facet), array('returnAs' => 'ids'));
+										$va_ancestors = $t_item->getHierarchyAncestorsForIDs(array_keys($va_facet), array('returnAs' => 'ids', 'includeSelf' => true));
 										while($qr_res->nextHit()) {
 											$vn_parent_id = $qr_res->get('ca_list_items.parent_id');
 											$vn_item_id = $qr_res->get('ca_list_items.item_id');
 											$vn_access = $qr_res->get('ca_list_items.access');
-											if (!in_array($vn_access, $va_access_values)) { continue; }
-											if (!in_array($vn_item_id, $va_ancestors)) { continue; }
-										
+											if (is_array($va_access_values) && !in_array($vn_access, $va_access_values)) { continue; }
+											if (!is_array($va_ancestors) || !in_array($vn_item_id, $va_ancestors)) { continue; }
+								
 											$va_item = array();
 											$va_item['item_id'] = $vn_item_id;
 											$va_item['name'] = $qr_res->get('ca_list_items.preferred_labels');
@@ -575,7 +577,7 @@
 									if ($vn_start <= $vn_c) {
 										$va_item['item_id'] = $va_item[$t_item->primaryKey()];
 										if (!isset($va_facet[$va_item['item_id']]) && ($vn_root == $va_item['item_id'])) { continue; }
-										if(isset($va_item['access']) && (!in_array($va_item['access'], $va_access_values))) { continue; }
+										if(is_array($va_access_values) && isset($va_item['access']) && (!in_array($va_item['access'], $va_access_values))) { continue; }
 										unset($va_item['parent_id']);
 										unset($va_item['label']);
 										$va_json_data[$va_item['item_id']] = $va_item;

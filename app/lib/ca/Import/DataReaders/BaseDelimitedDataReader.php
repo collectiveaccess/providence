@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -98,13 +98,16 @@ class BaseDelimitedDataReader extends BaseDataReader {
 	 * @return bool
 	 */
 	public function read($ps_source, $pa_options=null) {
+		parent::read($ps_source, $pa_options);
+		
 		$this->opn_current_row = 0;
 		
 		if($this->opo_parser->parse($ps_source)) {
 			$r_f = fopen($ps_source, 'rb');
 			$this->opn_num_rows = 0;
 			while (!feof($r_f)) {
-				$this->opn_num_rows += substr_count(fread($r_f, 8192), "\n");
+				$vs_buf = fread($r_f, 8192);
+				$this->opn_num_rows += (substr_count($vs_buf, "\n") + (substr_count($vs_buf, "\r")));
 			}
 			fclose($r_f);
 			
@@ -159,10 +162,12 @@ class BaseDelimitedDataReader extends BaseDataReader {
 	 * @return mixed
 	 */
 	public function get($ps_spec, $pa_options=null) {
+		if ($vm_ret = parent::get($ps_spec, $pa_options)) { return $vm_ret; }
+		
 		$vb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
 		$vs_delimiter = caGetOption('delimiter', $pa_options, ';');
 		
-		$vs_value = $this->opo_parser($ps_spec);
+		$vs_value = $this->opo_parser->getRowValue($ps_spec);
 	
 		if ($vb_return_as_array) { return array($vs_value); }
 		return $vs_value;
@@ -175,10 +180,13 @@ class BaseDelimitedDataReader extends BaseDataReader {
 	 */
 	public function getRow($pa_options=null) {
 		if (is_array($va_row = $this->opo_parser->getRow())) {
+			// Make returned array 1-based to match delimiter data parser style (column numbers begin with 1)
+			array_unshift($va_row, null);
+			unset($va_row[0]);
 			return $va_row;
 		}
-		
-		return null;	
+
+		return null;
 	}
 	# -------------------------------------------------------
 	/**

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -119,7 +119,7 @@ class WLPlugMediaQuicktimeVR Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
 		$this->ops_path_to_ffmpeg = $this->opo_external_app_config->get('ffmpeg_app');
 
-		if (!caMediaPluginFFfmpegInstalled($this->ops_path_to_ffmpeg)) { return null; }
+		if (!caMediaPluginFFmpegInstalled($this->ops_path_to_ffmpeg)) { return null; }
 
 		$this->info["INSTANCE"] = $this;
 		return $this->info;
@@ -131,7 +131,7 @@ class WLPlugMediaQuicktimeVR Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if ($this->register()) {
 			$va_status['available'] = true;
 		} else {
-			if (!caMediaPluginFFfmpegInstalled($this->ops_path_to_ffmpeg)) { 
+			if (!caMediaPluginFFmpegInstalled($this->ops_path_to_ffmpeg)) {
 				$va_status['errors'][] = _t("Didn't load because ffmpeg is not installed");
 			}
 		}
@@ -363,11 +363,11 @@ class WLPlugMediaQuicktimeVR Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$vn_preview_width = $this->properties["width"];
 				$vn_preview_height = $this->properties["height"];
 
-				if (caMediaPluginFFfmpegInstalled($this->ops_path_to_ffmpeg)) {
+				if (caMediaPluginFFmpegInstalled($this->ops_path_to_ffmpeg)) {
 					if (($vn_start_secs = $this->properties["duration"]/8) > 120) { 
 						$vn_start_secs = 120;		// always take a frame from the first two minutes to ensure performance (ffmpeg gets slow if it has to seek far into a movie to extract a frame)
 					}
-					exec($this->ops_path_to_ffmpeg." -ss ".($vn_start_secs)." -i ".caEscapeShellArg($this->filepath)." -f mjpeg -t 0.001 -y ".caEscapeShellArg($filepath.".".$ext), $va_output, $vn_return);
+					exec($this->ops_path_to_ffmpeg." -ss ".($vn_start_secs)." -i ".caEscapeShellArg($this->filepath)." -f mjpeg -t 0.001 -y ".caEscapeShellArg($filepath.".".$ext).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 					if (($vn_return < 0) || ($vn_return > 1) || (!@filesize($filepath.".".$ext))) {
 						@unlink($filepath.".".$ext);
 						// don't throw error as ffmpeg cannot generate frame still from all files
@@ -489,7 +489,7 @@ class WLPlugMediaQuicktimeVR Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$vs_output_file_prefix = tempnam($vs_tmp_dir, 'caQuicktimeVRPreview');
 		$vs_output_file = $vs_output_file_prefix.'%05d.jpg';
 		
-		exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." -f image2 -r ".$vs_freq." -ss {$vn_s} -t {$vn_previewed_duration} -s ".$vn_preview_width."x".$vn_preview_height." -y ".caEscapeShellArg($vs_output_file), $va_output, $vn_return);
+		exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." -f image2 -r ".$vs_freq." -ss {$vn_s} -t {$vn_previewed_duration} -s ".$vn_preview_width."x".$vn_preview_height." -y ".caEscapeShellArg($vs_output_file).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
 		$vn_i = 1;
 		
 		$va_files = array();

@@ -65,7 +65,7 @@
 	if ($vb_batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
 	} else {
-		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel');
+		print caEditorBundleShowHideControl($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings, caInitialValuesArrayHasValue($vs_id_prefix.$t_item->tableNum().'_rel', $this->getVar('initialValues')));
 	}
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings);
 	
@@ -335,7 +335,8 @@
 			hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_edit_related_'],
 			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'ObjectLot', 'Get', $va_lookup_params); ?>',
 			types: <?php print json_encode($va_settings['restrict_to_types']); ?>,
-			bundlePreview: <?php print caEscapeForBundlePreview($t_instance->get($t_item->tableName(), array('delimiter' => '; ', 'restrict_to_types' => $va_settings['restrict_to_types'], 'restrict_to_relationship_types' => $va_settings['restrict_to_relationship_types']))); ?>,
+			restrictToSearch: <?php print json_encode($va_settings['restrict_to_search']); ?>,
+			bundlePreview: <?php print caGetBundlePreviewForRelationshipBundle($t_item, $this->getVar('initialValues'), $va_settings['display_template']); ?>,
 <?php
 	if ($t_subject->tableName() == 'ca_objects') {
 ?>

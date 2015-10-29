@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -78,6 +78,7 @@ var caUI = caUI || {};
 			
 			sortInitialValuesBy: null,
 			firstItemColor: null,
+			itemColor: null,
 			lastItemColor: null,
 			
 			isSortable: false,
@@ -103,9 +104,7 @@ var caUI = caUI || {};
 		that.showUnsavedChangesWarning = function(b) {
 			if(caUI && caUI.utils && typeof caUI.utils.showUnsavedChangesWarning === 'function') {
 				if (b === undefined) { b = true; }
-				if (caUI.utils.getDisableUnsavedChangesWarning()) {
-					caUI.utils.showUnsavedChangesWarning(b);
-				}
+				caUI.utils.showUnsavedChangesWarning(b);
 			}
 		}
 		
@@ -426,8 +425,8 @@ var caUI = caUI || {};
 			}
 			
 			// colorize
-			if ((options.firstItemColor) || (options.lastItemColor)) {
-				jQuery(this.container + " ." + options.listItemClassName).css('background-color', '');
+			if ((options.firstItemColor) || (options.lastItemColor) || (options.itemColor)) {
+				jQuery(this.container + " ." + options.listItemClassName).css('background-color', options.itemColor ? options.itemColor : '');
 				if (options.firstItemColor) {
 					jQuery(this.container + " ." + options.listItemClassName + ":first").css('background-color', '#' + options.firstItemColor);
 				}

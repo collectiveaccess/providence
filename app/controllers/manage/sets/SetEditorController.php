@@ -133,7 +133,11 @@
  			$this->view->setVar('row_id', $pn_row_id);
  			$this->view->setVar('idno', $t_row->get($t_row->getProperty('ID_NUMBERING_ID_FIELD')));
  			$this->view->setVar('idno_sort', $t_row->get($t_row->getProperty('ID_NUMBERING_SORT_FIELD')));
- 			$this->view->setVar('set_item_label', $t_row->getLabelForDisplay(false));
+			$this->view->setVar('set_item_label', $t_row->getLabelForDisplay(false));
+
+			if($vs_template = $this->getRequest()->getParameter('displayTemplate', pString)) {
+				$this->view->setVar('displayTemplate', $t_row->getWithTemplate($vs_template));
+			}
 
  			$this->view->setVar('representation_tag', '');
  			if (method_exists($t_row, 'getRepresentations')) {

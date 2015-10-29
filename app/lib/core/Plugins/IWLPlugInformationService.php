@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -47,6 +47,9 @@
 		# Data
 		# -------------------------------------------------------
 		public function lookup($pa_settings, $ps_search, $pa_options=null);
-		public function getExtendedInformation($pa_settings, $ps_id);
+		public function getDisplayValueFromLookupText($ps_text);
+		public function getExtendedInformation($pa_settings, $ps_url);
+		public function getDataForSearchIndexing($pa_settings, $ps_url);
+		public function getExtraInfo($pa_settings, $ps_url);
+		# -------------------------------------------------------
 	}
-?>

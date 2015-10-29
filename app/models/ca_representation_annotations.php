@@ -471,7 +471,8 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 		$o_view->setVar('id_prefix', $ps_form_name);
 		$o_view->setVar('placement_code', $ps_placement_code);
 		
-		$pa_attributes['name'] = $pa_attributes['id'] = "{$ps_placement_code}{$ps_form_name}{$ps_property}";
+		$pa_attributes['name'] = "{$ps_placement_code}{$ps_form_name}{$ps_property}";
+		$pa_attributes['id'] = $ps_property;
  		$o_view->setVar('form_element', $this->getPropertyHTMLFormElement($ps_property, $pa_attributes));
  		
 		return $o_view->render('ca_representation_annotation_properties.php');
