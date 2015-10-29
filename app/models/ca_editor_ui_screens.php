@@ -593,6 +593,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'label' => _t('First item color'),
 							'description' => _t('If set first item in list will use this color.')
 						),
+						'colorItem' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_COLORPICKER,
+							'width' => "10", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '',
+							'label' => _t('Item color'),
+							'description' => _t('If set item that are not first or last in list will use this color.')
+						),
 						'colorLastItem' => array(
 							'formatType' => FT_TEXT,
 							'displayType' => DT_COLORPICKER,
@@ -642,6 +651,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'default' => '',
 							'label' => _t('Maximum number of relationships of this kind that can be associated with an item'),
 							'description' => _t('The extent of repeatability for the relationship will match the number entered here. Note that this is only a user interface limitations rather than constraints on the underlying data model.')
+						),
+						'showCurrentOnly' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_CHECKBOXES,
+							'width' => "10", 'height' => "1",
+							'takesLocale' => false,
+							'default' => '0',
+							'label' => _t('Show current only?'),
+							'description' => _t('If checked only the most recently dated relationship displayed.')
 						)
 					);
 					
@@ -677,78 +695,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'label' => _t('Height of hierarchical browser'),
 							'description' => _t('Height of hierarchical browser.')
 						
-						);
-					}
-					
-					if (($vs_bundle == 'ca_movements') && ($t_instance->tableName() == 'ca_objects')) {
-						$va_additional_settings['showCurrentOnly'] = array(
-							'formatType' => FT_TEXT,
-							'displayType' => DT_CHECKBOXES,
-							'width' => "10", 'height' => "1",
-							'takesLocale' => false,
-							'default' => '0',
-							'label' => _t('Show current only?'),
-							'description' => _t('If checked only current movements are displayed.')
-						);
-					}
-					
-					if (($vs_bundle == 'ca_objects') && ($t_instance->tableName() == 'ca_movements')) {
-						$va_additional_settings['showCurrentOnly'] = array(
-							'formatType' => FT_TEXT,
-							'displayType' => DT_CHECKBOXES,
-							'width' => "10", 'height' => "1",
-							'takesLocale' => false,
-							'default' => '0',
-							'label' => _t('Show current only?'),
-							'description' => _t('If checked only current objects are displayed.')
-						);
-					}
-					
-					if (($vs_bundle == 'ca_movements') && ($t_instance->tableName() == 'ca_storage_locations')) {
-						$va_additional_settings['showCurrentOnly'] = array(
-							'formatType' => FT_TEXT,
-							'displayType' => DT_CHECKBOXES,
-							'width' => "10", 'height' => "1",
-							'takesLocale' => false,
-							'default' => '0',
-							'label' => _t('Show current only?'),
-							'description' => _t('If checked only current movements are displayed.')
-						);
-					}
-					
-					if (($vs_bundle == 'ca_storage_locations') && ($t_instance->tableName() == 'ca_movements')) {
-						$va_additional_settings['showCurrentOnly'] = array(
-							'formatType' => FT_TEXT,
-							'displayType' => DT_CHECKBOXES,
-							'width' => "10", 'height' => "1",
-							'takesLocale' => false,
-							'default' => '0',
-							'label' => _t('Show current only?'),
-							'description' => _t('If checked only current objects are displayed.')
-						);
-					}
-					
-					if (($vs_bundle == 'ca_storage_locations') && ($t_instance->tableName() == 'ca_objects')) {
-						$va_additional_settings['showCurrentOnly'] = array(
-							'formatType' => FT_TEXT,
-							'displayType' => DT_CHECKBOXES,
-							'width' => "10", 'height' => "1",
-							'takesLocale' => false,
-							'default' => '0',
-							'label' => _t('Show current only?'),
-							'description' => _t('If checked only current storage locations are displayed.')
-						);
-					}
-					
-					if (($vs_bundle == 'ca_objects') && ($t_instance->tableName() == 'ca_storage_locations')) {
-						$va_additional_settings['showCurrentOnly'] = array(
-							'formatType' => FT_TEXT,
-							'displayType' => DT_CHECKBOXES,
-							'width' => "10", 'height' => "1",
-							'takesLocale' => false,
-							'default' => '0',
-							'label' => _t('Show current only?'),
-							'description' => _t('If checked only current objects are displayed.')
 						);
 					}
 					
@@ -976,37 +922,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Track location using'),
 										'description' => ''
 									),
-									'ca_movements_dateElement' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_SELECT,
-										'table' => 'ca_movements',
-										'showMetadataElementsWithDataType' => 2,
-										'takesLocale' => false,
-										'default' => '',
-										'width' => "275px", 'height' => "75px",
-										'label' => _t('Movement date'),
-										'description' => ''
-									),
-									'ca_movements_relationshipType' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_SELECT,
-										'useRelationshipTypeList' => 'ca_movements_x_objects',
-										'takesLocale' => false,
-										'default' => '',
-										'width' => "275px", 'height' => "75px",
-										'label' => _t('Limit movement tracking to relationship types'),
-										'description' => ''
-									),
-									'ca_storage_locations_relationshipType' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_SELECT,
-										'useRelationshipTypeList' => 'ca_objects_x_storage_locations',
-										'takesLocale' => false,
-										'default' => '',
-										'width' => "275px", 'height' => "75px",
-										'label' => _t('Limit storage location tracking to relationship types'),
-										'description' => ''
-									),
 									'displayTemplate' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
@@ -1057,7 +972,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '1',
 										'label' => _t('Use hierarchy browser for storage locations?'),
-										'description' => _t('If checked a hierarchical browser will be used to select stroage location items instead of an auto-complete lookup.')
+										'description' => _t('If checked a hierarchical browser will be used to select storage location items rather than an auto-complete lookup.')
 									)
 								);
 								break;
@@ -1327,6 +1242,51 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "275px", 'height' => 4,
 										'label' => _t('Deaccession display template'),
 										'description' => _t('Layout for deaccession information when displayed in history list (can include HTML). The template is evaluated relative to the object. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.deaccession_notes</i>.')
+									)
+								);
+								break;
+							case 'ca_storage_locations_contents':
+								$va_additional_settings = array(
+									'list_format' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'options' => array(
+											_t('bubbles') => 'bubbles',
+											_t('list') => 'list'
+										),
+										'default' => 'bubbles',
+										'width' => "200px", 'height' => 1,
+										'label' => _t('Format of contents list'),
+										'description' => _t('.')
+									),
+									'locationTrackingMode' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'options' => array(
+											_t('movements') => 'ca_movements',
+											_t('object-location relationships') => 'ca_storage_locations'
+										),
+										'default' => 'ca_movements',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('Track location using'),
+										'description' => ''
+									),							
+									'colorItem' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_COLORPICKER,
+										'width' => "10", 'height' => "1",
+										'takesLocale' => false,
+										'default' => '#ffffff',
+										'label' => _t('Object color'),
+										'description' => _t('If set object in list will use this color.')
+									),
+									'displayTemplate' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Display template'),
+										'description' => _t('Layout for each object in the storage location (can include HTML). The template is evaluated relative to each object-movement or object-location relationship. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.idno</i>.')
 									)
 								);
 								break;

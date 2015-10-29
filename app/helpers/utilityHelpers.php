@@ -433,8 +433,12 @@ function caFileIsIncludable($ps_file) {
 	function caDirectoryIsEmpty($vs_dir) {
 		if(!is_readable($vs_dir) || !is_dir($vs_dir)) { return false; }
 
-		$o_iterator = new \FilesystemIterator($vs_dir);
-		return !$o_iterator->valid();
+		try {
+			$o_iterator = new \FilesystemIterator($vs_dir);
+			return !$o_iterator->valid();
+		} catch (Exception $e) {
+			return false;
+		}
 	}
 	# ----------------------------------------
 	function caZipDirectory($ps_directory, $ps_name, $ps_output_file) {
@@ -3017,5 +3021,82 @@ function caFileIsIncludable($ps_file) {
 		
 		if(caGetOption('unique', $pa_options, false)) { $va_return = array_unique($va_return); }
 		return $va_return;
+	}
+	# ----------------------------------------
+	/**
+	 * Converts a (float) measurement in inches to fractions, up to the given denominator, e.g. 1/16th
+	 * @see http://stackoverflow.com/questions/13811108/function-to-round-mm-to-the-nearest-32nd-of-an-inch
+	 *
+	 * @param float $pn_inches_as_float
+	 * @param int $pn_denom
+	 * @param bool $pb_reduce
+	 * @return string
+	 */
+	function caLengthToFractions($pn_inches_as_float, $pn_denom, $pb_reduce = true) {
+		$num = round($pn_inches_as_float * $pn_denom);
+		$int = (int)($num / $pn_denom);
+		$num %= $pn_denom;
+
+		if (!$num) {
+			return "$int in";
+		}
+
+		if ($pb_reduce) {
+			// Use Euclid's algorithm to find the GCD.
+			$a = $num < 0 ? -$num : $num;
+			$b = $pn_denom;
+			while ($b) {
+				$t = $b;
+				$b = $a % $t;
+				$a = $t;
+			}
+
+			$num /= $a;
+			$pn_denom /= $a;
+		}
+
+		if ($int) {
+			// Suppress minus sign in numerator; keep it only in the integer part.
+			if ($num < 0) {
+				$num *= -1;
+			}
+			return "$int $num/$pn_denom in";
+		}
+
+		return "$num/$pn_denom in";
+	}
+	# ----------------------------------------
+	/**
+	 * Convert text into string suitable for sorting, by moving articles to end of string, etc.
+	 *
+	 * @param string $ps_text Text to convert to sortable value
+	 * @param array $pa_options Options include:
+	 *		locale = Locale settings to use. If omitted current default locale is used. [Default is current locale]
+	 *
+	 * @return string Converted text. If locale cannot be found $ps_text is returned unchanged.
+	 */
+	function caSortableValue($ps_text, $pa_options=null) {
+		global $g_ui_locale;
+		$ps_locale = caGetOption('locale', $pa_options, $g_ui_locale);
+		if (!$ps_locale) { return $ps_text; }
+		
+		$o_locale_settings = TimeExpressionParser::getSettingsForLanguage($ps_locale);
+		
+		$vs_display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $ps_text));
+		
+		$va_definite_articles = $o_locale_settings->get('definiteArticles');
+		$va_indefinite_articles = $o_locale_settings->get('indefiniteArticles');
+		
+		foreach(array($va_definite_articles, $va_indefinite_articles) as $va_articles) {
+			if (is_array($va_articles)) {
+				foreach($va_articles as $vs_article) {
+					if (preg_match('!^('.$vs_article.')[ ]+!i', $vs_display_value, $va_matches)) {
+						$vs_display_value = trim(str_replace($va_matches[1], '', $vs_display_value).', '.$va_matches[1]);
+						break(2);
+					}
+				}
+			}
+		}
+		return $vs_display_value;
 	}
 	# ----------------------------------------

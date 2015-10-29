@@ -313,9 +313,7 @@
 								}
 								$va_tmp['sort'] = join(";", $vs_sort_acc);
 							}
-
 							$va_items[$va_tmp[$vs_pk]][$va_tmp['locale_id']] = $va_tmp;
-
 							$vn_c++;
 						}
 
@@ -326,8 +324,8 @@
 
 					$va_sorted_items = array();
 					foreach($va_items_for_locale as $vn_id => $va_node) {
-						$vs_key = preg_replace('![^A-Za-z0-9]!', '_', $va_node['name']);
-
+						$vs_key = caSortableValue(mb_strtolower(preg_replace('![^A-Za-z0-9]!', '_', caRemoveAccents($va_node['name']))))."_".$vn_id;
+						
 						if (isset($va_node['sort']) && $va_node['sort']) {
 							$va_sorted_items[$va_node['sort']][$vs_key] = $va_node;
 						} else {
