@@ -121,11 +121,11 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 		if(!isset($va_service_conf['additional_indexing_info']) || !is_array($va_service_conf['additional_indexing_info'])) { return array(); }
 
 		$va_return = array();
-		foreach($va_service_conf['additional_indexing_info'] as $va_node) {
+		foreach($va_service_conf['additional_indexing_info'] as $vs_key => $va_node) {
 			if(!isset($va_node['literal'])) { continue; }
 
 			$vs_uri_for_pull = isset($va_node['uri']) ? $va_node['uri'] : null;
-			$va_return[] = str_replace('; ', ' ', self::getLiteralFromRDFNode($ps_url, $va_node['literal'], $vs_uri_for_pull));
+			$va_return[$vs_key] = str_replace('; ', ' ', self::getLiteralFromRDFNode($ps_url, $va_node['literal'], $vs_uri_for_pull, $va_node));
 		}
 
 		return $va_return;
@@ -147,7 +147,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 			if(!isset($va_node['literal'])) { continue; }
 
 			$vs_uri_for_pull = isset($va_node['uri']) ? $va_node['uri'] : null;
-			$va_return[$vs_key] = str_replace('; ', ' ', self::getLiteralFromRDFNode($ps_url, $va_node['literal'], $vs_uri_for_pull));
+			$va_return[$vs_key] = str_replace('; ', ' ', self::getLiteralFromRDFNode($ps_url, $va_node['literal'], $vs_uri_for_pull, $va_node));
 		}
 
 		return $va_return;
@@ -170,36 +170,24 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 		if(!isURL($ps_base_node)) { return false; }
 		if(!is_array($pa_options)) { $pa_options = array(); }
 
-		$vs_cache_key = md5($ps_base_node . $ps_literal_propery . $ps_node_uri . print_r($pa_options, true));
+		$vs_cache_key = md5($ps_base_node . $ps_literal_propery . $ps_node_uri . serialize($pa_options));
 		if(CompositeCache::contains($vs_cache_key, 'GettyRDFLiterals')) {
-			//return CompositeCache::fetch($vs_cache_key, 'GettyRDFLiterals');
+			return CompositeCache::fetch($vs_cache_key, 'GettyRDFLiterals');
 		}
 
 		$pn_limit = (int) caGetOption('limit', $pa_options, 10);
 		$pb_strip_after_last_comma = (bool) caGetOption('stripAfterLastComma', $pa_options, false);
 		$pb_invert = (bool) caGetOption('invert', $pa_options, false);
+		$pb_recursive = (bool) caGetOption('recursive', $pa_options, false);
 
 		if(!($o_graph = self::getURIAsRDFGraph($ps_base_node))) { return false; }
 
-		$va_pull_graphs = array();
-		// if we're pulling from a related node, add those graphs (technically nodes) to the list
-		// (we pull from all of them)
+		// if we're pulling from a related node, add those graphs (technically nodes) to the list (we pull from all of them)
 		if(strlen($ps_node_uri) > 0) {
-			$o_related_nodes = $o_graph->all($ps_base_node, $ps_node_uri);
-
-			if(is_array($o_related_nodes)) {
-				$vn_i = 0;
-				foreach($o_related_nodes as $o_related_node) {
-					$vs_pull_uri = (string) $o_related_node;
-					if(!($o_pull_graph = self::getURIAsRDFGraph($vs_pull_uri))) { return false; }
-					$va_pull_graphs[$vs_pull_uri] = $o_pull_graph;
-
-					if((++$vn_i) >= $pn_limit) { break; }
-				}
-			}
+			$va_pull_graphs = self::getListOfRelatedGraphs($o_graph, $ps_base_node, $ps_node_uri, $pn_limit, $pb_recursive);
 		} else {
 			// the only graph/node we pull from is the base node
-			$va_pull_graphs[$ps_base_node] = $o_graph;
+			$va_pull_graphs = array($ps_base_node => $o_graph);
 		}
 
 		$va_return = array();
@@ -262,6 +250,41 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 
 		CompositeCache::save($ps_uri, $o_graph, 'GettyLinkedDataRDFGraphs');
 		return $o_graph;
+	}
+	# ------------------------------------------------
+	/**
+	 * @param EasyRdf_Graph $po_graph
+	 * @param string $ps_base_node
+	 * @param string $ps_node_uri
+	 * @param int $pn_limit
+	 * @param bool $pb_recursive
+	 * @return array
+	 */
+	static function getListOfRelatedGraphs($po_graph, $ps_base_node, $ps_node_uri, $pn_limit, $pb_recursive=false) {
+		$va_related_nodes = $po_graph->all($ps_base_node, $ps_node_uri);
+		$va_pull_graphs = array();
+
+		if(is_array($va_related_nodes)) {
+			$vn_i = 0;
+			foreach($va_related_nodes as $o_related_node) {
+				$vs_pull_uri = (string) $o_related_node;
+				if(!($o_pull_graph = self::getURIAsRDFGraph($vs_pull_uri))) { return false; }
+				$va_pull_graphs[$vs_pull_uri] = $o_pull_graph;
+
+				if((++$vn_i) >= $pn_limit) { break; }
+			}
+		}
+
+		if($pb_recursive) {
+			$va_sub_pull_graphs = array();
+			foreach($va_pull_graphs as $vs_pull_uri => $o_pull_graph) {
+				$va_sub_pull_graphs = array_merge($va_sub_pull_graphs, self::getListOfRelatedGraphs($o_pull_graph, $vs_pull_uri, $ps_node_uri, $pn_limit, true));
+			}
+
+			$va_pull_graphs = array_merge($va_pull_graphs, $va_sub_pull_graphs);
+		}
+
+		return $va_pull_graphs;
 	}
 	# ------------------------------------------------
 }

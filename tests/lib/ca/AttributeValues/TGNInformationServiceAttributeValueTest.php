@@ -92,4 +92,10 @@ class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase
 		$o_service = new WLPlugInformationServiceTGN();
 		$o_service->getExtraInfo(array(), 'http://vocab.getty.edu/tgn/7015849');
 	}
+
+	public function testGetSearchIndexing() {
+		$o_service = new WLPlugInformationServiceTGN();
+		$o_service->getDataForSearchIndexing(array(), 'http://vocab.getty.edu/tgn/7015849');
+	}
+
 }
