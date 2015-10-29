@@ -190,6 +190,8 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 			$va_pull_graphs = array($ps_base_node => $o_graph);
 		}
 
+		if(!is_array($va_pull_graphs)) { return false; }
+
 		$va_return = array();
 
 		$vn_j = 0;
