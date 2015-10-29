@@ -27,7 +27,7 @@
 
 var caUI = caUI || {};
 
-(function ($) {
+(function (jQuery) {
     caUI.initDisplayTemplateParser = function(options) {
         // --------------------------------------------------------------------------------
         // setup options
