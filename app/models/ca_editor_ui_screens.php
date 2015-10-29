@@ -922,17 +922,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Track location using'),
 										'description' => ''
 									),
-									'ca_movements_dateElement' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_SELECT,
-										'table' => 'ca_movements',
-										'showMetadataElementsWithDataType' => 2,
-										'takesLocale' => false,
-										'default' => '',
-										'width' => "275px", 'height' => "75px",
-										'label' => _t('Movement date'),
-										'description' => ''
-									),
 									'displayTemplate' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
@@ -983,7 +972,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'takesLocale' => false,
 										'default' => '1',
 										'label' => _t('Use hierarchy browser for storage locations?'),
-										'description' => _t('If checked a hierarchical browser will be used to select stroage location items instead of an auto-complete lookup.')
+										'description' => _t('If checked a hierarchical browser will be used to select storage location items rather than an auto-complete lookup.')
 									)
 								);
 								break;
@@ -1281,26 +1270,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "275px", 'height' => 1,
 										'label' => _t('Track location using'),
 										'description' => ''
-									),
-									'ca_movements_dateElement' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_SELECT,
-										'table' => 'ca_movements',
-										'showMetadataElementsWithDataType' => 2,
-										'takesLocale' => false,
-										'default' => '',
-										'width' => "275px", 'height' => "75px",
-										'label' => _t('Movement date'),
-										'description' => ''
 									),							
 									'colorItem' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_COLORPICKER,
 										'width' => "10", 'height' => "1",
 										'takesLocale' => false,
-										'default' => '',
-										'label' => _t('Item color'),
-										'description' => _t('If set items in list will use this color.')
+										'default' => '#ffffff',
+										'label' => _t('Object color'),
+										'description' => _t('If set object in list will use this color.')
 									),
 									'displayTemplate' => array(
 										'formatType' => FT_TEXT,

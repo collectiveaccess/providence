@@ -759,8 +759,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				break;
 			case 'ca_movements':
 			default:
-				$t_last_movement = $this->getLastMovement(array('dateElement' => caGetOption('ca_movements_dateElement', $pa_bundle_settings, null)));
-				$vs_movement_date_element = caGetOption('ca_movements_dateElement', $pa_bundle_settings, null);
+				$t_last_movement = $this->getLastMovement(array('dateElement' => $vs_movement_date_element = $this->getAppConfig()->get('movement_storage_location_date_element')));
 				
 				if (!$vs_display_template) { $vs_display_template = "<l>^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_</l> (^ca_movements.{$vs_movement_date_element})"; }
 				$o_view->setVar('current_location', $t_last_movement ? $t_last_movement->getWithTemplate($vs_display_template) : null);
@@ -1229,7 +1228,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				break;
 			case 'ca_movements':
 			default:
-				$t_last_movement = $this->getLastMovement(array('dateElement' => caGetOption('ca_movements_dateElement', $pa_bundle_settings, null)));
+				$t_last_movement = $this->getLastMovement(array('dateElement' => $this->getAppConfig()->get('movement_storage_location_date_element')));
 				$o_view->setVar('current_location', $t_last_movement ? $t_last_movement->getWithTemplate($vs_display_template) : null);
 				
 				$o_view->setVar('location_relationship_type', $this->getAppConfig()->get('movement_storage_location_tracking_relationship_type'));
