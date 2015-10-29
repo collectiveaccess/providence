@@ -2447,7 +2447,7 @@ class ca_users extends BaseModel {
 	 * @param mixed $ps_user_name_or_id The user name or numeric user_id of the user
 	 * @return boolean True if user exists, false if not
 	 */
-	public function exists($ps_user_name_or_id) {
+	public function exists($ps_user_name_or_id, $pa_options=null) {
 		$t_user = new ca_users();
 		if ($t_user->load($ps_user_name_or_id)) {
 			return true;
