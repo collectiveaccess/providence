@@ -186,8 +186,9 @@ class AttributeGetTest extends BaseTestWithData {
 		// 'flat' informationservice attribues
 		$this->assertEquals('Coney Island', $this->opt_object->get('ca_objects.tgn'));
 		$this->assertContains('Aaron Burr', $this->opt_object->get('ca_objects.wikipedia'));
-		// new subfield notation
+		// subfield notation for "extra info"
 		$this->assertContains('Burr killed his political rival Alexander Hamilton in a famous duel', $this->opt_object->get('ca_objects.wikipedia.abstract'));
+		$this->assertEquals('40.5667', $this->opt_object->get('ca_objects.tgn.lat'));
 
 		// informationservice attributes in container
 		$this->assertEquals('[500024253] Haring, Keith (Persons, Artists) - American painter, muralist, and cartoonist, 1958-1990', $this->opt_object->get('ca_objects.informationservice.ulan_container'));
