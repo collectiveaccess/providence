@@ -38,7 +38,7 @@ class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase
 		$o_service = new WLPlugInformationServiceTGN();
 
 		$va_return = $o_service->lookup(array(), 'Brooklyn');
-		$this->assertEquals(79, sizeof($va_return['results']));
+		$this->assertEquals(97, sizeof($va_return['results']));
 
 		$va_labels = array();
 		foreach($va_return['results'] as $va_record) {
