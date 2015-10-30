@@ -828,6 +828,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				if (!$vs_color || ($vs_color == '000000')) {
 					$vs_color = caGetOption("ca_object_lots_{$va_lot_type_info[$vn_type_id]['idno']}_color", $pa_bundle_settings, 'ffffff');
 				}
+				$vs_color = str_replace("#", "", $vs_color);
 			
 				$va_dates = array();
 				
@@ -924,6 +925,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					if (!$vs_color || ($vs_color == '000000')) {
 						$vs_color = caGetOption("ca_loans_{$va_loan_type_info[$vn_type_id]['idno']}_color", $pa_bundle_settings, 'ffffff');
 					}
+					$vs_color = str_replace("#", "", $vs_color);
 					
 					$va_history[$va_date['sortable']][] = array(
 						'type' => 'ca_loans',
@@ -991,6 +993,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					if (!$vs_color || ($vs_color == '000000')) {
 						$vs_color = caGetOption("ca_movements_{$va_movement_type_info[$vn_type_id]['idno']}_color", $pa_bundle_settings, 'ffffff');
 					}
+					$vs_color = str_replace("#", "", $vs_color);
 					
 					$va_history[$va_date['sortable']][] = array(
 						'type' => 'ca_movements',
@@ -1059,6 +1062,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					if (!$vs_color || ($vs_color == '000000')) {
 						$vs_color = caGetOption("ca_occurrences_{$va_occurrence_type_info[$vn_type_id]['idno']}_color", $pa_bundle_settings, 'ffffff');
 					}
+					$vs_color = str_replace("#", "", $vs_color);
 					
 					$va_history[$va_date['sortable']][] = array(
 						'type' => 'ca_occurrences',
@@ -1111,6 +1115,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				if (!$vs_color || ($vs_color == '000000')) {
 					$vs_color = caGetOption("ca_storage_locations_color", $pa_bundle_settings, 'ffffff');
 				}
+				$vs_color = str_replace("#", "", $vs_color);
 				
 				$va_history[$va_date['sortable']][] = array(
 					'type' => 'ca_storage_locations',
@@ -1132,6 +1137,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		// Deaccession
 		if ($this->get('is_deaccessioned') && caGetOption('showDeaccessionInformation', $pa_bundle_settings, false)) {
 			$vs_color = caGetOption('deaccession_color', $pa_bundle_settings, 'cccccc');
+			$vs_color = str_replace("#", "", $vs_color);
 			
 			$vn_date = $this->get('deaccession_date', array('getDirectDate'=> true));
 			

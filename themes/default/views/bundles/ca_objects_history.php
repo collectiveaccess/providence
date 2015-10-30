@@ -183,7 +183,7 @@
 }
 if(!caGetOption('hide_add_to_loan_controls', $va_settings, false)) {
 ?>
-<textarea class='caSetLoanTemplate' style='display: none;'>
+	<textarea class='caSetLoanTemplate' style='display: none;'>
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 		<div id="<?php print $vs_id_prefix; ?>Loan_{n}" class="labelInfo caRelatedLoan">
 			<table class="caListItem">
