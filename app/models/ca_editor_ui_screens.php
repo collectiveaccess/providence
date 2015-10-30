@@ -977,7 +977,21 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								);
 								break;
 							case 'ca_objects_history':
+								$va_to_hide_when_using_defaults = array(
+									'ca_object_lots_showTypes', 'ca_occurrences_showTypes', 'ca_loans_showTypes', 'ca_movements_showTypes',
+									'ca_storage_locations_showRelationshipTypes', 'ca_storage_locations_color', 'ca_storage_locations_displayTemplate',
+									'showDeaccessionInformation', 'deaccession_color', 'deaccession_displayTemplate'
+								);
 								$va_additional_settings = array(
+									'useAppConfDefaults' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_CHECKBOXES,
+										'width' => "10", 'height' => "1",
+										'takesLocale' => false,
+										'default' => '1',
+										'label' => _t('Use defaults from application configuration (app.conf)?'),
+										'description' => _t('If checked all settings are taken from the main application configuration file (app.conf).')
+									),
 									'locationTrackingMode' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_SELECT,
@@ -988,16 +1002,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'default' => 'ca_movements',
 										'width' => "275px", 'height' => 1,
 										'label' => _t('Track location using'),
-										'description' => ''
-									),
-									'ca_object_lots_showTypes' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_SELECT,
-										'useList' => 'object_lot_types',
-										'takesLocale' => false,
-										'default' => '',
-										'width' => "275px", 'height' => "75px",
-										'label' => _t('Show lots'),
 										'description' => ''
 									),
 									// no 'classic' expand/collapse for this bundle
@@ -1044,6 +1048,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'default' => '1',
 										'label' => _t('Use hierarchy browser for storage locations?'),
 										'description' => _t('If checked a hierarchical browser will be used to select storage location items rather than an auto-complete lookup.')
+									),
+									'ca_object_lots_showTypes' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'useList' => 'object_lot_types',
+										'takesLocale' => false,
+										'default' => '',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Show lots'),
+										'description' => ''
 									)
 								);
 								
@@ -1076,8 +1090,10 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "275px", 'height' => 4,
 										'label' => _t('Lot (%1) display template', $va_type['name_singular']),
 										'description' => _t('Layout for lot when displayed in history list (can include HTML). The template is evaluated relative to the lot. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_object_lots.idno_stub</i>.')
-
 									);
+									$va_to_hide_when_using_defaults[] = "ca_object_lots_{$va_type['idno']}_dateElement";
+									$va_to_hide_when_using_defaults[] = "ca_object_lots_{$va_type['idno']}_color";
+									$va_to_hide_when_using_defaults[] = "ca_object_lots_{$va_type['idno']}_displayTemplate";
 								}
 								
 								$va_additional_settings['ca_occurrences_showTypes'] = array(
@@ -1119,8 +1135,11 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "275px", 'height' => 4,
 										'label' => _t('%1 display template', $va_type['name_singular']),
 										'description' => _t('Layout for %1 when displayed in history list (can include HTML). The template is evaluated relative to the %1. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_occurrences.idno</i>.', $va_type['name_singular'])
-
 									);
+									
+									$va_to_hide_when_using_defaults[] = "ca_occurrences_{$va_type['idno']}_dateElement";
+									$va_to_hide_when_using_defaults[] = "ca_occurrences_{$va_type['idno']}_color";
+									$va_to_hide_when_using_defaults[] = "ca_occurrences_{$va_type['idno']}_displayTemplate";
 								}
 								
 								$va_additional_settings['ca_movements_showTypes'] = array(
@@ -1162,8 +1181,11 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "275px", 'height' => 4,
 										'label' => _t('%1 display template', $va_type['name_singular']),
 										'description' => _t('Layout for %1 when displayed in history list (can include HTML). The template is evaluated relative to the %1. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_movements.idno</i>.', $va_type['name_singular'])
-
 									);
+									
+									$va_to_hide_when_using_defaults[] = "ca_movements_{$va_type['idno']}_dateElement";
+									$va_to_hide_when_using_defaults[] = "ca_movements_{$va_type['idno']}_color";
+									$va_to_hide_when_using_defaults[] = "ca_movements_{$va_type['idno']}_displayTemplate";
 								}
 								
 								$va_additional_settings['ca_loans_showTypes'] = array(
@@ -1206,8 +1228,11 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'width' => "275px", 'height' => 4,
 										'label' => _t('%1 display template', $va_type['name_singular']),
 										'description' => _t('Layout for %1 when displayed in history list (can include HTML). The template is evaluated relative to the %1. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_loans.idno</i>.', $va_type['name_singular'])
-
 									);
+									
+									$va_to_hide_when_using_defaults[] = "ca_loans_{$va_type['idno']}_dateElement";
+									$va_to_hide_when_using_defaults[] = "ca_loans_{$va_type['idno']}_color";
+									$va_to_hide_when_using_defaults[] = "ca_loans_{$va_type['idno']}_displayTemplate";
 								}
 									
 								$va_additional_settings += array(
@@ -1265,6 +1290,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'description' => _t('Layout for deaccession information when displayed in history list (can include HTML). The template is evaluated relative to the object. Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^ca_objects.deaccession_notes</i>.')
 									)
 								);
+								
+								$va_additional_settings['useAppConfDefaults']['hideOnSelect'] = $va_to_hide_when_using_defaults;
 								break;
 							case 'ca_storage_locations_contents':
 								$va_additional_settings = array(
