@@ -978,6 +978,18 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								break;
 							case 'ca_objects_history':
 								$va_additional_settings = array(
+									'locationTrackingMode' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'options' => array(
+											_t('movements') => 'ca_movements',
+											_t('storage location relationships') => 'ca_storage_locations'
+										),
+										'default' => 'ca_movements',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('Track location using'),
+										'description' => ''
+									),
 									'ca_object_lots_showTypes' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_SELECT,
@@ -1024,6 +1036,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Hide "Update Location" controls'),
 										'description' => _t('Check this option if you want to to hide the "Update Location" controls in this bundle placement.')
 									),
+									'useHierarchicalBrowser' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_CHECKBOXES,
+										'width' => "10", 'height' => "1",
+										'takesLocale' => false,
+										'default' => '1',
+										'label' => _t('Use hierarchy browser for storage locations?'),
+										'description' => _t('If checked a hierarchical browser will be used to select storage location items rather than an auto-complete lookup.')
+									)
 								);
 								
 								$va_types = caGetTypeList("ca_object_lots");

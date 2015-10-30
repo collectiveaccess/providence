@@ -34,13 +34,14 @@
 
 	$vb_read_only				= (isset($va_settings['readonly']) && $va_settings['readonly']);
 	
-	if (!($vs_add_label 		= $this->getVar('add_label'))) { $vs_add_label = _t('Update location'); }
-	
 	$va_history					= $this->getVar('history');
 	
 	$vs_mode					= $this->getVar('mode');
 	$vs_relationship_type		= $this->getVar('location_relationship_type');
 	$vs_change_location_url		= $this->getVar('location_change_url');
+	
+	
+	if (!($vs_add_label = $this->getVar('add_label'))) { $vs_add_label = _t('Update location'); }
 	
 	$va_lookup_params = array();
 	
@@ -147,7 +148,8 @@
 						className: 'hierarchyBrowserLevel',
 						classNameContainer: 'hierarchyBrowserContainer',
 						
-						editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/arrow_grey_right.gif" border="0" title="Edit"/>',
+						editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
+						disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
 						
 						indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
 						
@@ -225,7 +227,7 @@
 				closeButtonSelector: ".close",
 				center: true,
 				onOpenCallback: function() {
-				jQuery("#topNavContainer").hide(250);
+					jQuery("#topNavContainer").hide(250);
 				},
 				onCloseCallback: function() {
 					jQuery("#topNavContainer").show(250);
@@ -311,4 +313,3 @@
 </script>
 <?php
 	}
-?>
