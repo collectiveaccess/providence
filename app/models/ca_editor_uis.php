@@ -384,10 +384,49 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			$va_types = $t_instance->getTypeList();	
 		}
 		
+		$va_sql_params = array((int)$this->getPrimaryKey());
+		
 		$o_db = $this->getDb();
 		$va_type_list = caMakeTypeIDList($this->get('editor_type'), array($pn_type_id), array('dontIncludeSubtypesInTypeRestriction' => true));
 		if (!sizeof($va_type_list)) { $va_type_list = array($pn_type_id); }
 		$vs_type_sql = ((int)$pn_type_id) ? "AND (ceustr.type_id IS NULL OR ceustr.type_id IN (".join(",", $va_type_list)."))" : '';
+	
+		$vs_access_sql = '';
+		if ($po_request && ($vn_user_id = $po_request->getUserID()) && ($t_user = $po_request->getUser())) {
+			$vs_access_sql = " AND ((ceus.screen_id IN 
+					(
+						SELECT screen_id 
+						FROM ca_editor_ui_screens_x_users
+						WHERE
+							user_id = ?
+					)
+				)";
+				$va_sql_params[] = $vn_user_id;
+				
+			$va_groups = $t_user->getUserGroups();
+			if (is_array($va_groups) && sizeof($va_groups)) {
+				$vs_access_sql .= " OR (ceus.screen_id IN 
+					(
+						SELECT screen_id 
+						FROM ca_editor_ui_screens_x_user_groups
+						WHERE
+							group_id IN (?)
+					)
+				)";
+				$va_sql_params[] = array_keys($va_groups);
+			}
+			$vs_access_sql .= "
+				OR (
+					ceus.screen_id NOT IN (
+						SELECT screen_id FROM ca_editor_ui_screens_x_users
+					)
+					AND
+					ceus.screen_id NOT IN (
+						SELECT screen_id FROM ca_editor_ui_screens_x_user_groups
+					)
+				)
+			)";
+		}
 	
 		$qr_res = $o_db->query("
 			SELECT ceus.*, ceusl.*, ceustr.type_id restriction_type_id
@@ -396,9 +435,10 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			LEFT JOIN ca_editor_ui_screen_type_restrictions AS ceustr ON ceus.screen_id = ceustr.screen_id
 			WHERE
 				(ceus.ui_id = ?) {$vs_type_sql}
+				{$vs_access_sql}
 			ORDER BY 
 				ceus.rank, ceus.screen_id
-		", (int)$this->getPrimaryKey());
+		", $va_sql_params);
 		
 		$va_screens = array();
 		
@@ -447,6 +487,54 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		return caExtractValuesByUserLocale($va_screens);
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	public function getAccessForScreen($po_request, $pm_screen) {
+		$vn_screen_id = intval(str_replace('Screen', '', $pm_screen));
+		
+		if ($vn_user_id = $po_request->getUserID()) {
+			// Check for user access
+			$qr_users = $this->getDb()->query("
+				SELECT screen_id, user_id, access 
+				FROM ca_editor_ui_screens_x_users
+				WHERE
+					user_id = ? AND screen_id = ?", array($vn_user_id, $vn_screen_id));
+					
+			if ($qr_users->nextRow()) {
+				return $qr_users->get('access');
+			}
+			
+			// Check for group access
+			
+			if (($t_user = $po_request->getUser()) && (is_array($va_groups = $t_user->getUserGroups())) && sizeof($va_groups)) {
+				$qr_groups = $this->getDb()->query("
+					SELECT screen_id, group_id, access 
+					FROM ca_editor_ui_screens_x_user_groups
+					WHERE
+						group_id IN (?) AND screen_id = ?", array(array_keys($va_groups), $vn_screen_id));
+						
+				if ($qr_groups->nextRow()) {
+					return $qr_groups->get('access');
+				}
+			}			
+		}
+		
+		$qr_all = $this->getDb()->query("
+			SELECT screen_id FROM ca_editor_ui_screens_x_users WHERE screen_id = ?
+		", array($vn_screen_id));
+		if (!$qr_all->nextRow()) {
+			$qr_all = $this->getDb()->query("
+				SELECT screen_id FROM ca_editor_ui_screens_x_user_groups WHERE screen_id = ?
+			", array($vn_screen_id));
+			if (!$qr_all->nextRow()) {
+				return 2; // no user or group access control applied to this screen...  allow editing
+			}
+		}
+		
+		return false; // no access
 	}
 	# ----------------------------------------
 	/**

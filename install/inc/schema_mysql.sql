@@ -4233,6 +4233,32 @@ create table ca_editor_ui_screen_labels (
 
 
 /*==========================================================================*/
+create table ca_editor_ui_screens_x_user_groups (
+	relation_id int unsigned not null auto_increment,
+	screen_id int unsigned not null references ca_editor_ui_screens(screen_id),
+	group_id int unsigned not null references ca_user_groups(group_id),
+	access 			tinyint unsigned not null default 0,
+	
+	primary key 				(relation_id),
+	index i_screen_id			(screen_id),
+	index i_group_id			(group_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
+create table ca_editor_ui_screens_x_users (
+	relation_id int unsigned not null auto_increment,
+	screen_id int unsigned not null references ca_editor_ui_screens(screen_id),
+	user_id int unsigned not null references ca_users(user_id),
+	access 			tinyint unsigned not null default 0,
+	
+	primary key 				(relation_id),
+	index i_screen_id			(screen_id),
+	index i_user_id				(user_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
 create table ca_editor_ui_bundle_placements (
 	placement_id int unsigned not null auto_increment,
 	screen_id int unsigned not null references ca_editor_ui_screens(screen_id),
@@ -6616,5 +6642,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 122 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (122, unix_timestamp());
+/* CURRENT MIGRATION: 123 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (123, unix_timestamp());

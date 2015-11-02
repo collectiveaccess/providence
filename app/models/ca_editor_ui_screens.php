@@ -192,6 +192,13 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			
 		)
 	);
+	
+	# ------------------------------------------------------
+	# Group-based access control
+	# ------------------------------------------------------
+	protected $USERS_RELATIONSHIP_TABLE = 'ca_editor_ui_screens_x_users';
+	protected $USER_GROUPS_RELATIONSHIP_TABLE = 'ca_editor_ui_screens_x_user_groups';
+	
 	# ------------------------------------------------------
 	# Labeling
 	# ------------------------------------------------------
@@ -214,6 +221,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	protected function initLabelDefinitions($pa_options=null) {
 		parent::initLabelDefinitions($pa_options);
+		
+		$this->BUNDLES['ca_users'] = array('type' => 'special', 'repeating' => true, 'label' => _t('User access'));
+		$this->BUNDLES['ca_user_groups'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Group access'));
 		
 		$this->BUNDLES['ca_editor_ui_bundle_placements'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Screen content'));
 		$this->BUNDLES['ca_editor_ui_screen_type_restrictions'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Type restrictions'));

@@ -2286,7 +2286,7 @@
 			
 			$o_db = $this->getDb();
 			
-			$qr_res = $o_db->query($x="
+			$qr_res = $o_db->query("
 				DELETE FROM {$vs_group_rel_table}
 				WHERE
 					{$vs_pk} = ?
@@ -2547,4 +2547,3 @@
 		}
 		# ------------------------------------------------------
 	}
-?>
