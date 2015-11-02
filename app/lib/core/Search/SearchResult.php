@@ -406,6 +406,7 @@ class SearchResult extends BaseObject {
 		$vn_level = 0;
 		
 		while(true) {
+			if (!is_array($va_params) || !sizeof($va_params) || !is_array($va_params[0]) || !sizeof($va_params[0])) { break; }
 			$qr_rel = $this->opo_subject_instance->getDb()->query($vs_sql, $va_params);
 			
 			if (!$qr_rel || ($qr_rel->numRows() == 0)) { break;}
@@ -1794,7 +1795,7 @@ class SearchResult extends BaseObject {
 		// Flatten array for return as string or simple array value
 		// 
 		$va_flattened_values = $this->_flattenArray($va_return_values, $pa_options);
-		//print "VALUES=".print_R($va_flattened_values, true)."<br>\n\n";
+		
 		if ($pa_options['returnAsArray']) {
 			return $va_flattened_values;
 		} else {
