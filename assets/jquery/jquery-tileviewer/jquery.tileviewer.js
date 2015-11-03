@@ -3368,10 +3368,11 @@ var methods = {
     // Convert viewer level/tile specification into Tilepic tile number
     getTilepicTileNum: function(level, tile, layer) {
     	if (level < 0) { return; }
-    	var w = layer.info.width;
-    	var h = layer.info.height;
-    	var ts = layer.info.tilesize;
-    	var l = layer.info.levels;
+    
+    	var w = parseInt(layer.info.width);
+    	var h = parseInt(layer.info.height);
+    	var ts = parseInt(layer.info.tilesize);
+    	var l = parseInt(layer.info.levels);
     	
     	if (!methods.tileCounts) {
 			var map = [];

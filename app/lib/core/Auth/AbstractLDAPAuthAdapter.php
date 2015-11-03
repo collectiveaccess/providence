@@ -240,6 +240,10 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
             return false;
         }
 
+		if(strlen($ps_password) == 0) {
+			throw new LDAPException(_t("Password for directory bind cannot be empty!"));
+		}
+
         // ldap config
         $vs_user_ou = $this->getConfigValue("ldap_user_ou");
         $vs_base_dn = $this->getConfigValue("ldap_base_dn");

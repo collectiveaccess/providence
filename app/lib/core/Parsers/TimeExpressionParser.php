@@ -2544,9 +2544,15 @@ class TimeExpressionParser {
 						if ((($va_start_pieces['year'] % 100) == 0) && ($va_end_pieces['year'] == ($va_start_pieces['year'] + 99))) {
 							$vn_century = intval($va_start_pieces['year']/100) + 1;
 							$va_ordinals = $this->opo_language_settings->getList("ordinalSuffixes");
+							$va_ordinal_exceptions = $this->opo_language_settings->get("ordinalSuffixExceptions");
+							$vs_ordinal_default = $this->opo_language_settings->get("ordinalSuffixDefault");
 
-							if (!($vs_ordinal = $va_ordinals[$vn_century])) {
-								$vs_ordinal = $this->opo_language_settings->get("ordinalSuffixDefault");
+							$vn_x = intval(substr((string)$vn_century, -1));
+
+							if(is_array($va_ordinal_exceptions) && isset($va_ordinal_exceptions[$vn_century])) {
+								$vs_ordinal = $va_ordinal_exceptions[$vn_century];
+							} else {
+								$vs_ordinal = isset($va_ordinals[$vn_x]) ? $va_ordinals[$vn_x] : $vs_ordinal_default;
 							}
 
 							$va_century_indicators = $this->opo_language_settings->getList("centuryIndicator");
@@ -2855,6 +2861,20 @@ class TimeExpressionParser {
 		return $this->opo_language_settings;
 	}
 	# -------------------------------------------------------------------
+	/**
+	 * Returns a Configuration object with the date/time localization  
+	 * settings for the specified locale
+	 *
+	 * @param string $ps_iso_code ISO code (ex. en_US) 
+	 * @return Configuration Settings for the specified locale or null if the locale is not defined.
+	 */
+	static public function getSettingsForLanguage($ps_iso_code) {
+		$vs_config_path = __CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser/'.$ps_iso_code.'.lang';
+		if(!file_exists($vs_config_path)) { return null; }
+		
+		return Configuration::load($vs_config_path);
+	}
+	# -------------------------------------------------------------------
 	# Error handling
 	# -------------------------------------------------------------------
 	private function setParseError($pa_token, $pn_error) {
@@ -3033,20 +3053,26 @@ class TimeExpressionParser {
 				
 				$vn_s = intval($vn_s/100) * 100;
 				$vn_e = intval($vn_e/100) * 100;
-				
+
 				if ($vn_s <= $vn_e) {
 					$va_century_indicators = 	$this->opo_language_settings->getList("centuryIndicator");
 					$va_ordinals = 				$this->opo_language_settings->getList("ordinalSuffixes");
 					$vs_ordinal_default = 		$this->opo_language_settings->get("ordinalSuffixDefault");
 					$vs_bc_indicator = 			$this->opo_language_settings->get("dateBCIndicator");
-					
+					$va_ordinal_exceptions =	$this->opo_language_settings->get("ordinalSuffixExceptions");
+
 					for($vn_y=$vn_s; $vn_y <= $vn_e; $vn_y+= 100) {
-						
+
 						$vn_century_num = abs(floor($vn_y/100)) + 1;
 						if ($vn_century_num == 0)  { continue; }
-						$vn_x = substr((string)$vn_century_num, strlen($vn_century_num) - 1, 1); 
-						$vs_ordinal_to_display = isset($va_ordinals[$vn_x]) ? $va_ordinals[$vn_x] : $vs_ordinal_default;
-						
+						$vn_x = substr((string)$vn_century_num, strlen($vn_century_num) - 1, 1);
+
+						if(is_array($va_ordinal_exceptions) && isset($va_ordinal_exceptions[$vn_century_num])) {
+							$vs_ordinal_to_display = $va_ordinal_exceptions[$vn_century_num];
+						} else {
+							$vs_ordinal_to_display = isset($va_ordinals[$vn_x]) ? $va_ordinals[$vn_x] : $vs_ordinal_default;
+						}
+
 						$va_values[(int)$vn_y] = ($vn_century_num).$vs_ordinal_to_display.' '.$va_century_indicators[0].((floor($vn_y/100) < 0) ? ' '.$vs_bc_indicator : '');
 					}
 				}

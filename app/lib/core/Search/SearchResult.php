@@ -919,7 +919,7 @@ class SearchResult extends BaseObject {
 		$pa_options['makeLink'] = $vb_return_as_link;
 		
 		$vn_max_levels_from_top 			= isset($pa_options['maxLevelsFromTop']) ? (int)$pa_options['maxLevelsFromTop'] : null;
-		$vn_max_levels_from_bottom 			= isset($pa_options['maxLevelsFromBottom']) ? (int)$pa_options['maxLevelsFromBottom'] : null;
+		$vn_max_levels_from_bottom 			= caGetOption(array('maxLevelsFromBottom', 'maxLevels', 'level_limit', 'hierarchy_limit'), $pa_options, null);
 		$vn_remove_first_items 				= isset($pa_options['removeFirstItems']) ? (int)$pa_options['removeFirstItems'] : 0;
 
 		$va_check_access 					= isset($pa_options['checkAccess']) ? (is_array($pa_options['checkAccess']) ? $pa_options['checkAccess'] : array($pa_options['checkAccess'])) : null;
@@ -1420,8 +1420,10 @@ class SearchResult extends BaseObject {
 			if (is_null($vm_val)) { continue; } // Skip null values; indicates that there was no related value
 			
 			if ($pa_options['returnWithStructure']) {
+				if (!is_array($vm_val)) { $vm_val = array($vm_val); }
 				$va_return_values = array_merge($va_return_values, $vm_val);
 			} elseif ($pa_options['returnAsArray']) {
+				if (!is_array($vm_val)) { $vm_val = array($vm_val); }
 				foreach($vm_val as $vn_i => $vs_val) {
 					// We include blanks in arrays so various get() calls on different fields in the same record set align
 					$va_return_values[] = $vs_val;
@@ -1846,6 +1848,7 @@ class SearchResult extends BaseObject {
 		$vs_cache_base_key = $this->getCacheKeyForGetWithTemplate($ps_template, $pa_options);
 
 		$pa_options['returnAsArray'] = true; // careful, this would change the cache key ... which is why we generate it before
+		$pa_options['includeBlankValuesInArray'] = true; // if we don't set this blank values are omitted and array offsets following a blank value will be incorrect. A recipe for a bad day.
 		$va_vals = caProcessTemplateForIDs($ps_template, $this->ops_table_name, $va_ids, $pa_options);
 
 		// if we're at the first hit, we don't need to offset the cache keys, so we can use $va_vals as-is

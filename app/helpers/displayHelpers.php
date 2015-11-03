@@ -2014,7 +2014,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		if (preg_match_all(__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__, $ps_template, $va_matches)) {
 			foreach($va_matches[1] as $vn_i => $vs_possible_tag) {
 				if (strpos($vs_possible_tag, "~") !== false) { continue; }	// don't clip trailing characters when there's a tag directive specified
-				$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.");	// remove trailing slashes and periods
+				$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.%");	// remove trailing slashes, periods and percent signs as they're potentially valid tag characters that are never meant to be at the end
 			}
 			$va_tags = $va_matches[1];
 		}
@@ -2305,11 +2305,13 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		$va_expression_vars = array();
 
 		/** @var $qr_res SearchResult */
+		$va_ids_with_access = array();
 		while($qr_res->nextHit()) {
 			
 			$vs_pk_val = $qr_res->get($vs_pk, array('checkAccess' => $pa_check_access));
 			if (is_array($pa_check_access) && sizeof($pa_check_access) && !in_array($qr_res->get("{$ps_tablename}.access"), $pa_check_access)) { continue; }
 			$vs_template =  $ps_template;
+			$va_ids_with_access[] = $vs_pk_val;
 
 			// check if we skip this row because of skipIfExpression
 			if(strlen($ps_skip_if_expression) > 0) {
@@ -2329,7 +2331,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 			// Grab values for codes used in ifdef and ifnotdef directives
 			$va_directive_tag_vals = array();	
 			foreach($va_directive_tags as $vs_directive_tag) {
-				$va_directive_tag_vals[$vs_directive_tag] = $qr_res->get($vs_directive_tag, array('assumeDisplayField' => true, 'convertCodesToDisplayText' => true, 'dontUseElementTemplate' => true));
+				$va_directive_tag_vals[$vs_directive_tag] = $qr_res->get($vs_directive_tag, array('assumeDisplayField' => true, 'convertCodesToDisplayText' => true, 'dontUseElementTemplate' => true, 'primaryIDs' => $va_primary_ids));
 			}
 			
 			
@@ -3051,7 +3053,12 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		}
 		
 		// Transform links
-		$va_proc_templates = caCreateLinksFromText($va_proc_templates, $ps_resolve_links_using, ($ps_resolve_links_using != $ps_tablename) ? $va_resolve_links_using_row_ids : $pa_row_ids, null, caGetOption('linkTarget', $pa_options, null), $pa_options);
+		$va_proc_templates = caCreateLinksFromText(
+			$va_proc_templates, $ps_resolve_links_using,
+			($ps_resolve_links_using != $ps_tablename) ? $va_resolve_links_using_row_ids : $pa_row_ids,
+			null, caGetOption('linkTarget', $pa_options, null),
+			array_merge(array('addRelParameter' => true), $pa_options)
+		);
 		
 		// Kill any lingering tags (just in case)
 		foreach($va_proc_templates as $vn_i => $vs_proc_template) {
@@ -4239,5 +4246,40 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		$vs_buf .= "});\n</script>\n";
 
 		return $vs_buf;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Get bundle preview for a relationship bundle
+	 * @param BundlableLabelableBaseModelWithAttributes $t_rel_instance
+	 * @param array $pa_initial_values
+	 * @param string $ps_template
+	 * @param string $ps_delimiter
+	 * @return string
+	 */
+	function caGetBundlePreviewForRelationshipBundle($t_rel_instance, $pa_initial_values, $ps_template, $ps_delimiter='; ') {
+		if(!is_array($pa_initial_values) || sizeof($pa_initial_values) == 0) {
+			return '""';
+		}
+
+		// it's very unlikely that the preview will fit more then 10 items
+		if(sizeof($pa_initial_values) > 10) {
+			$pa_initial_values = array_slice($pa_initial_values, 0, 10);
+		}
+		if(!($t_rel_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
+			return '""';
+		}
+
+		$va_ids = $va_previews = array();
+		foreach($pa_initial_values as $va_item) {
+			$va_ids[] = $va_item['id'];
+		}
+
+		$o_res = $t_rel_instance->makeSearchResult($t_rel_instance->tableName(),$va_ids);
+
+		while($o_res->nextHit()) {
+			$va_previews[] = $o_res->getWithTemplate($ps_template);
+		}
+
+		return caEscapeForBundlePreview(join($ps_delimiter, $va_previews));
 	}
 	# ------------------------------------------------------------------
