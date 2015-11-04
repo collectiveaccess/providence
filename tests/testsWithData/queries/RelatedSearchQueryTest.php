@@ -141,7 +141,7 @@ class RelatedSearchQueryTest extends AbstractSearchQueryTest {
 		// search queries
 		$this->setSearchQueries(array(
 			// establish we're actually searching objects
-			'My test image' => 1,
+//			'My test image' => 1,
 			'My test' => 2,
 
 			// search on entity data

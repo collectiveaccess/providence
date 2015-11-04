@@ -604,6 +604,14 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 				$t_locale = new ca_locales();
 				$va_locales = $this->getAppConfig()->getList('locale_defaults');
 				$vn_locale_id = $t_locale->localeCodeToID($va_locales[0]);
+
+				if(!$vn_locale_id) {
+					$this->postError(750, _t('Locale %1 does not exist', $va_locales[0]), 'ca_list_items->insert()');
+					if ($vb_web_set_transaction) {
+						$this->getTransaction()->rollback();
+					}
+					return false;
+				}
 				
 				// create root in ca_places
 				$t_place = new ca_places();
