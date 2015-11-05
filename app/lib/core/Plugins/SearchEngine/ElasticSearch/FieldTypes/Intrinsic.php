@@ -48,20 +48,13 @@ class Intrinsic extends FieldType {
 	protected $ops_field_name;
 
 	/**
-	 * Content row id
-	 * @var int
-	 */
-	protected $opn_content_row_id;
-
-	/**
 	 * Intrinsic constructor.
 	 * @param string $ops_table_name
 	 * @param string $ops_field_name
 	 */
-	public function __construct($ops_table_name, $pn_content_row_id, $ops_field_name) {
+	public function __construct($ops_table_name, $ops_field_name) {
 		$this->ops_table_name = $ops_table_name;
 		$this->ops_field_name = $ops_field_name;
-		$this->opn_content_row_id = $pn_content_row_id;
 	}
 
 	/**
@@ -83,13 +76,6 @@ class Intrinsic extends FieldType {
 	 */
 	public function getFieldName() {
 		return $this->ops_field_name;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getContentRowId() {
-		return $this->opn_content_row_id;
 	}
 
 	/**

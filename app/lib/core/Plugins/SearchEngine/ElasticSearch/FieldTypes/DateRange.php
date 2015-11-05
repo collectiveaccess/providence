@@ -35,8 +35,8 @@ namespace ElasticSearch\FieldTypes;
 require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/GenericElement.php');
 
 class DateRange extends GenericElement {
-	public function __construct($ps_table_name, $pn_content_row_id, $ps_element_code) {
-		parent::__construct($ps_table_name, $pn_content_row_id, $ps_element_code);
+	public function __construct($ps_table_name, $ps_element_code) {
+		parent::__construct($ps_table_name, $ps_element_code);
 	}
 
 	public function getIndexingFragment($pm_content, $pa_options) {
