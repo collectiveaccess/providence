@@ -446,8 +446,8 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 			// get list of objects currently associated with this storage location
 			$va_object_ids = $this->getCurrentObjectIDs();
 
-			$vs_movement_storage_location_relationship_type = $this->getAppConfig()->get('record_movement_information_when_moving_storage_location_movement_to_storage_location_relationship_type');
-			$vs_movement_object_relationship_type = $this->getAppConfig()->get('record_movement_information_when_moving_storage_location_movement_to_object_relationship_type');
+			$vs_movement_storage_location_relationship_type = $this->getAppConfig()->get('movement_storage_location_tracking_relationship_type');
+			$vs_movement_object_relationship_type = $this->getAppConfig()->get('movement_object_tracking_relationship_type');
 			
 			foreach($_REQUEST as $vs_key => $vs_val) {
 				if (preg_match('!^(.*)_movement_form_name$!', $vs_key, $va_matches)) {

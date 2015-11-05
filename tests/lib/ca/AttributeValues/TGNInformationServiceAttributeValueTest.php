@@ -38,7 +38,7 @@ class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase
 		$o_service = new WLPlugInformationServiceTGN();
 
 		$va_return = $o_service->lookup(array(), 'Brooklyn');
-		$this->assertEquals(79, sizeof($va_return['results']));
+		$this->assertEquals(97, sizeof($va_return['results']));
 
 		$va_labels = array();
 		foreach($va_return['results'] as $va_record) {
@@ -87,4 +87,15 @@ class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase
 		$o_service = new WLPlugInformationServiceTGN();
 		$o_service->getExtendedInformation(array(), 'gibberish');
 	}
+
+	public function testGetExtraInfo() {
+		$o_service = new WLPlugInformationServiceTGN();
+		$o_service->getExtraInfo(array(), 'http://vocab.getty.edu/tgn/7015849');
+	}
+
+	public function testGetSearchIndexing() {
+		$o_service = new WLPlugInformationServiceTGN();
+		$o_service->getDataForSearchIndexing(array(), 'http://vocab.getty.edu/tgn/7015849');
+	}
+
 }

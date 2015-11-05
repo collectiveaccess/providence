@@ -2447,11 +2447,8 @@ class ca_users extends BaseModel {
 	 * @param mixed $ps_user_name_or_id The user name or numeric user_id of the user
 	 * @return boolean True if user exists, false if not
 	 */
-	static public function exists($ps_user_name_or_id) {
+	 static public function exists($ps_user_name_or_id, $pa_options=null) {
 		if (parent::exists($ps_user_name_or_id)) {
-			return true;
-		}
-		if (($vn_c = ca_users::find(['user_name' => $ps_user_name_or_id], ['returnAs' => 'count'])) > 0) {
 			return true;
 		}
 		return false;
