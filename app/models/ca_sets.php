@@ -400,6 +400,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * and we might wanna reuse a code of a set we previously deleted.
 	 */
 	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		$vb_web_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
+
 		if($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
 			if(!caGetOption('hard', $pa_options, false)) { // only applies if we don't hard-delete
 				$vb_we_set_transaction = false;
@@ -408,13 +410,14 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					$this->setTransaction($o_t);
 					$vb_we_set_transaction = true;
 				}
-
 				$this->set('set_code', $this->get('set_code') . '_' . time());
 				$this->update(array('force' => true));
 
 				if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 			}
 		}
+
+		if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 
 		return $vn_rc;
 	}
