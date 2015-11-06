@@ -730,26 +730,39 @@
 				$va_params = array();
 
 				if (sizeof($va_ids)) {
-					$vs_sql_where = "WHERE representation_id IN (?)";
+					$vs_sql_where = "WHERE ca_object_representations.representation_id IN (?)";
 					$va_params[] = $va_ids;
 				} else {
 					if (
 						(($vn_start > 0) && ($vn_end > 0) && ($vn_start <= $vn_end)) || (($vn_start > 0) && ($vn_end == null))
 					) {
-						$vs_sql_where = "WHERE representation_id >= ?";
+						$vs_sql_where = "WHERE ca_object_representations.representation_id >= ?";
 						$va_params[] = $vn_start;
 						if ($vn_end) {
-							$vs_sql_where .= " AND representation_id <= ?";
+							$vs_sql_where .= " AND ca_object_representations.representation_id <= ?";
 							$va_params[] = $vn_end;
 						}
 					}
 				}
 
+				$vs_sql_joins = '';
+				if ($vs_object_ids = (string)$po_opts->getOption('object_ids')) {
+					$va_object_ids = explode(",", $vs_object_ids);
+					foreach($va_object_ids as $vn_i => $vn_object_id) {
+						$va_object_id[$vn_i] = (int)$vn_object_id;
+					}
+					
+					$vs_sql_where = ($vs_sql_where ? "WHERE " : " AND ")."(ca_objects_x_object_representations.object_id IN (?))";
+					$vs_sql_joins = "INNER JOIN ca_objects_x_object_representations ON ca_objects_x_object_representations.representation_id = ca_object_representations.representation_id";
+					$va_params[] = $va_object_ids;
+				}
+
 				$qr_reps = $o_db->query("
 					SELECT *
 					FROM ca_object_representations
+					{$vs_sql_joins}
 					{$vs_sql_where}
-					ORDER BY representation_id
+					ORDER BY ca_object_representations.representation_id
 				", $va_params);
 
 				print CLIProgressBar::start($qr_reps->numRows(), _t('Re-processing representation media'));
@@ -847,6 +860,7 @@
 				"end_id|e-n" => _t('Representation id to end reloading at'),
 				"id|i-n" => _t('Representation id to reload'),
 				"ids|l-s" => _t('Comma separated list of representation ids to reload'),
+				"object_ids|o-s" => _t('Comma separated list of object ids to reload'),
 				"kinds|k-s" => _t('Comma separated list of kind of media to reprocess. Valid kinds are ca_object_representations (object representations), and ca_attributes (metadata elements). You may also specify "all" to reprocess both kinds of media. Default is "all"')
 			);
 		}
@@ -2834,6 +2848,46 @@
 		/**
 		 *
 		 */
+		public static function process_indexing_queue($po_opts=null) {
+			require_once(__CA_MODELS_DIR__.'/ca_search_indexing_queue.php');
+
+			ca_search_indexing_queue::process();
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function process_indexing_queueParamList() {
+			return array(
+
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function process_indexing_queueUtilityClass() {
+			return _t('Search');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function process_indexing_queueShortHelp() {
+			return _t('Process search indexing queue.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function process_indexing_queueHelp() {
+			return _t('Process search indexing queue.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
 		public static function reload_object_current_locations($po_opts=null) {
 			require_once(__CA_LIB_DIR__."/core/Db.php");
 			require_once(__CA_MODELS_DIR__."/ca_objects.php");
@@ -3192,6 +3246,93 @@
 		 */
 		public static function reload_ulan_recordsHelp() {
 			return _t('Reload records imported from ULAN with the specified mapping. This utility assumes that the mapping is set up with an existingRecordPolicy that ensures that existing records are matched properly. It will create duplicates if it does not match existing records so be sure to test your mapping first!');
+		}
+		# -------------------------------------------------------
+		public static function reload_object_current_location_dates($po_opts=null) {
+			require_once(__CA_MODELS_DIR__."/ca_movements.php");
+			require_once(__CA_MODELS_DIR__."/ca_movements_x_objects.php");
+			require_once(__CA_MODELS_DIR__."/ca_movements_x_storage_locations.php");
+			
+			$o_config = Configuration::load();
+			$o_db = new Db();
+			
+			// Reload movements-objects
+			if ($vs_movement_storage_element = $o_config->get('movement_storage_location_date_element')) {
+				$qr_movements = ca_movements::find(['deleted' => 0], ['returnAs' => 'searchResult']);
+			
+				print CLIProgressBar::start($qr_movements->numHits(), "Reloading movement dates");
+				
+				while($qr_movements->nextHit()) {
+					if ($va_dates = $qr_movements->get("ca_movements.{$vs_movement_storage_element}", ['returnAsArray' => true, 'rawDate' => true])) {
+						$va_date = array_shift($va_dates);
+						
+						// get movement-object relationships
+						if (is_array($va_rel_ids = $qr_movements->get('ca_movements_x_objects.relation_id', ['returnAsArray' => true])) && sizeof($va_rel_ids)) {						
+							$qr_res = $o_db->query(
+								"UPDATE ca_movements_x_objects SET sdatetime = ?, edatetime = ? WHERE relation_id IN (?)", 
+								array($va_date['start'], $va_date['end'], $va_rel_ids)
+							);
+						}
+						// get movement-location relationships
+						if (is_array($va_rel_ids = $qr_movements->get('ca_movements_x_storage_locations.relation_id', ['returnAsArray' => true])) && sizeof($va_rel_ids)) {						
+							$qr_res = $o_db->query(
+								"UPDATE ca_movements_x_storage_locations SET sdatetime = ?, edatetime = ? WHERE relation_id IN (?)", 
+								array($va_date['start'], $va_date['end'], $va_rel_ids)
+							);
+							
+							// check to see if archived storage locations are set in ca_movements_x_storage_locations.source_info
+							// Databases created prior to the October 2015 location tracking changes won't have this
+							$qr_rels = caMakeSearchResult('ca_movements_x_storage_locations', $va_rel_ids);
+							while($qr_rels->nextHit()) {
+								if (!is_array($va_source_info = $qr_rels->get('source_info')) || !isset($va_source_info['path'])) {
+									$vn_rel_id = $qr_rels->get('ca_movements_x_storage_locations.relation_id');
+									$qr_res = $o_db->query(
+										"UPDATE ca_movements_x_storage_locations SET source_info = ? WHERE relation_id = ?", 
+											array(caSerializeForDatabase(array(
+												'path' => $qr_rels->get('ca_storage_locations.hierarchy.preferred_labels.name', array('returnAsArray' => true)),
+												'ids' => $qr_rels->get('ca_storage_locations.hierarchy.location_id',  array('returnAsArray' => true))
+											)), $vn_rel_id)
+									);
+								}
+							}
+						}
+						print CLIProgressBar::next();
+					}
+				}
+				
+				print CLIProgressBar::finish();
+			}
+	
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_location_datesParamList() {
+			return array();
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_location_datesUtilityClass() {
+			return _t('Maintenance');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_location_datesShortHelp() {
+			return _t('Regenerate date/time stamps for movement and object-based location tracking.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_location_datesHelp() {
+			return _t('Regenerate date/time stamps for movement and object-based location tracking.');
 		}
 		# -------------------------------------------------------
 	}

@@ -1513,7 +1513,7 @@ class ca_users extends BaseModel {
 		if ($this->isValidPreference($ps_pref)) {
 			if ($this->purify()) {
 				if (!BaseModel::$html_purifier) { BaseModel::$html_purifier = new HTMLPurifier(); }
-				$ps_val = BaseModel::$html_purifier->purify($ps_val);
+				if(!is_array($ps_val)) { $ps_val = BaseModel::$html_purifier->purify($ps_val); }
 			}
 			if ($this->isValidPreferenceValue($ps_pref, $ps_val, 1)) {
 				$va_prefs = $this->getVar("_user_preferences");
@@ -2447,14 +2447,9 @@ class ca_users extends BaseModel {
 	 * @param mixed $ps_user_name_or_id The user name or numeric user_id of the user
 	 * @return boolean True if user exists, false if not
 	 */
-	public function exists($ps_user_name_or_id) {
-		$t_user = new ca_users();
-		if ($t_user->load($ps_user_name_or_id)) {
+	 static public function exists($ps_user_name_or_id, $pa_options=null) {
+		if (parent::exists($ps_user_name_or_id)) {
 			return true;
-		} else {
-			if ($t_user->load(array("user_name" => $ps_user_name_or_id))) {
-				return true;
-			}
 		}
 		return false;
 	}
@@ -2874,9 +2869,17 @@ class ca_users extends BaseModel {
 			}
 		}
 
-		if(AuthenticationManager::authenticate($ps_username, $ps_password, $pa_options)) {
-			$this->load($ps_username);
-			return true;
+		try {
+			if(AuthenticationManager::authenticate($ps_username, $ps_password, $pa_options)) {
+				$this->load($ps_username);
+				return true;
+			}
+		}  catch (Exception $e) {
+			$this->opo_log->log(array(
+				'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
+				'MESSAGE' => _t('There was an error while trying to authenticate user %1: The message was %2 : %3', $ps_username, get_class($e), $e->getMessage())
+			));
+			return false;
 		}
 		
 		// check ips
@@ -3083,6 +3086,10 @@ class ca_users extends BaseModel {
 	 *		__CA_BUNDLE_ACCESS_EDIT__ (implies ability to view and change bundle content)
 	 *		__CA_BUNDLE_ACCESS_READONLY__ (implies ability to view bundle content only)
 	 *		__CA_BUNDLE_ACCESS_NONE__ (indicates that the user has no access to bundle)
+	 *
+	 * @param string $ps_table_name
+	 * @param string $ps_bundle_name
+	 * @return int
 	 */
 	public function getBundleAccessLevel($ps_table_name, $ps_bundle_name) {
 		$vs_cache_key = $ps_table_name.'/'.$ps_bundle_name."/".$this->getPrimaryKey();
@@ -3106,8 +3113,16 @@ class ca_users extends BaseModel {
 							if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
 						}
 					}
+				} else {
+					// for roles that don't have 'bundle_access_settings' set, use default.
+					// those are most likely roles that came from a profile, didn't have bundle-level
+					// access settings set in the profile and haven't been saved through the UI
+					$vn_access = $this->getAppConfig()->get('default_bundle_access_level');
+
+					if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
 				}
 			}
+
 			if ($vn_access < 0) {
 				$vn_access = (int)$this->getAppConfig()->get('default_bundle_access_level');
 			}
@@ -3153,6 +3168,13 @@ class ca_users extends BaseModel {
 						
 						if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
 					}
+				} else {
+					// for roles that don't have 'type_access_settings' set, use default.
+					// those are most likely roles that came from a profile, didn't have type-level
+					// access settings set in the profile and haven't been saved through the UI
+					$vn_access = $this->getAppConfig()->get('default_type_access_level');
+
+					if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
 				}
 			}
 			
@@ -3246,6 +3268,13 @@ class ca_users extends BaseModel {
 						
 						if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
 					}
+				} else {
+					// for roles that don't have 'source_access_settings' set, use default.
+					// those are most likely roles that came from a profile, didn't have source-level
+					// access settings set in the profile and haven't been saved through the UI
+					$vn_access = $this->getAppConfig()->get('default_source_access_level');
+
+					if ($vn_access == __CA_BUNDLE_ACCESS_EDIT__) { break; }	// already at max
 				}
 			}
 			

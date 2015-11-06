@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -150,81 +150,6 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 	}
 	# -------------------------------------------------------
 	/**
-	 * Extract XML values recursively
-	 */
-	protected function _extractXMLValues($o_row, $ps_base_key='') {
-		$vn_l = (int)$o_row->childNodes->length;
-		
-		$vn_index = 0;
-		for($vn_i=0; $vn_i < $vn_l; $vn_i++) {
-			$o_node = $o_row->childNodes->item($vn_i);
-			if ($o_node->nodeName !== 'COL') { continue; }
-			
-			$vb_found_data = false;
-			$vs_key = $ps_base_key.'/'.$this->opa_metadata[$vn_index];
-			
-			$vn_lx = $o_node->childNodes->length;
-			for($vn_j=0; $vn_j < $vn_lx; $vn_j++) {
-				if ((string)$o_node->childNodes->item($vn_j)->nodeName === 'DATA') {
-					$o_data = $o_node->childNodes->item($vn_j);
-					$vs_val = trim((string)$o_data->nodeValue);
-					if (strlen($vs_val) == 0) { // && is_array($this->opa_row_buf[$vs_key]) && sizeof($this->opa_row_buf[$vs_key])) {
-						continue;
-					}
-					
-					$this->opa_row_buf[$vs_key][] = $vs_val;
-					if ($this->opb_tag_names_as_case_insensitive && (strtolower($vs_key) != $vs_key)) { 
-						$this->opa_row_buf[strtolower($vs_key)][] = $vs_val; 
-					}
-			
-					$vb_found_data = true;
-					
-					//break;
-				}
-			}
-			if (!$vb_found_data) {
-				$this->opa_row_buf[$vs_key][] = '';
-				if ($this->opb_tag_names_as_case_insensitive && (strtolower($vs_key) != $vs_key)) { 
-					$this->opa_row_buf[strtolower($vs_key)][] = ''; 
-				}
-			}
-			$vn_index++;
-		}
-	}
-	# -------------------------------------------------------
-	/**
-	 * 
-	 * 
-	 * @param string $ps_source
-	 * @param array $pa_options
-	 * @return bool
-	 */
-	public function nextRow() {
-		if (!($o_row = $this->opo_handle->item($this->opn_current_row))) { return false; }
-		
-		$this->opa_row_buf = array();
-		$this->_extractXMLValues($o_row);
-		
-		$this->opn_current_row++;
-		if ($this->opn_current_row > $this->numRows()) { return false; }
-		return true;
-	}
-	# -------------------------------------------------------
-	/**
-	 * 
-	 * 
-	 * @param string $ps_source
-	 * @param array $pa_options
-	 * @return bool
-	 */
-	public function seek($pn_row_num) {
-		if ($pn_row_num > $this->numRows()) { return false; }
-		
-		$this->opn_current_row = $pn_row_num;
-		return true;
-	}
-	# -------------------------------------------------------
-	/**
 	 * 
 	 * 
 	 * @param string $ps_spec
@@ -237,6 +162,7 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 		$vb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
 		$vs_delimiter = caGetOption('delimiter', $pa_options, ';');
 		
+		//$ps_spec = str_replace("/", "", $ps_spec);
 		if ($this->opb_tag_names_as_case_insensitive) { $ps_spec = strtolower($ps_spec); }
 		if (is_array($this->opa_row_buf) && ($ps_spec) && (isset($this->opa_row_buf[$ps_spec]))) {
 			if($vb_return_as_array) {
@@ -246,33 +172,6 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 			}
 		}
 		return null;	
-	}
-	# -------------------------------------------------------
-	/**
-	 * 
-	 * 
-	 * @return mixed
-	 */
-	public function getRow($pa_options=null) {
-		if (is_array($this->opa_row_buf)) {
-			$va_row = $this->opa_row_buf;
-			foreach($va_row as $vs_k => $vs_v) {
-				if ($vs_k[0] == "/") { continue; }
-				$va_row[(($vs_k[0] == "/") ? '' : '/').$vs_k] = $vs_v;
-			}
-			return $va_row;
-		}
-		
-		return null;	
-	}
-	# -------------------------------------------------------
-	/**
-	 * 
-	 * 
-	 * @return int
-	 */
-	public function numRows() {
-		return (int)$this->opo_handle->length;
 	}
 	# -------------------------------------------------------
 	/**
@@ -294,4 +193,3 @@ class FMPXMLResultReader extends BaseXMLDataReader {
 	}
 	# -------------------------------------------------------
 }
-?>

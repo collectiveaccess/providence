@@ -513,6 +513,7 @@ PHP_METHOD(Pimple, protect)
 	pobj = (pimple_object *)zend_object_store_get_object(getThis() TSRMLS_CC);
 
 	if (zend_hash_index_update(&pobj->protected, bucket.handle_num, (void *)&bucket, sizeof(pimple_bucket_value), NULL) == SUCCESS) {
+		Z_ADDREF_P(protected);
 		RETURN_ZVAL(protected, 1 , 0);
 	} else {
 		pimple_free_bucket(&bucket);
@@ -768,6 +769,8 @@ PHP_METHOD(Pimple, register)
 		return;
 	}
 
+	RETVAL_ZVAL(getThis(), 1, 0);
+
 	zend_call_method_with_1_params(&provider, Z_OBJCE_P(provider), NULL, "register", &retval, getThis());
 
 	if (retval) {
@@ -785,8 +788,6 @@ PHP_METHOD(Pimple, register)
 		pimple_object_write_dimension(getThis(), &key, *data TSRMLS_CC);
 		zend_hash_move_forward_ex(array, &pos);
 	}
-
-	RETVAL_ZVAL(getThis(), 1, 0);
 }
 
 PHP_METHOD(Pimple, __construct)

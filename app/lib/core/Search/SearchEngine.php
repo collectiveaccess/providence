@@ -180,7 +180,7 @@ class SearchEngine extends SearchBase {
 		
 		$t_table = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
 		
-		$vs_cache_key = md5($ps_search."/".print_R($this->getTypeRestrictionList(), true));
+		$vs_cache_key = md5($ps_search."/".print_R($this->getTypeRestrictionList($pa_options), true));
 		$o_cache = new SearchCache();
 		$vb_from_cache = false;
 
@@ -287,7 +287,7 @@ class SearchEngine extends SearchBase {
 			}
 			
 			if ($vs_sort && ($vs_sort !== '_natural')) {
-				$va_hits = $this->sortHits($va_hits, $t_table->tableName(), $pa_options['sort'], (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
+				$va_hits = $this->sortHits($va_hits, $t_table->tableName(), $pa_options['sort'], $vs_sort_direction);
 			} elseif (($vs_sort == '_natural') && ($vs_sort_direction == 'desc')) {
 				$va_hits = array_reverse($va_hits);
 			}
@@ -812,6 +812,8 @@ class SearchEngine extends SearchBase {
 					$va_ids = $t_item->getHierarchyChildren(null, array('idsOnly' => true));
 					$va_ids[] = $vn_type_id;
 					$this->opa_search_type_ids = array_merge($this->opa_search_type_ids, $va_ids);
+				} else {
+					$this->opa_search_type_ids[] = $vn_type_id;
 				}
 			}
 		}
@@ -824,9 +826,9 @@ class SearchEngine extends SearchBase {
 	 *
 	 * @return array List of type_id values to restrict search to.
 	 */
-	public function getTypeRestrictionList() {
+	public function getTypeRestrictionList($pa_options=null) {
 		if (function_exists("caGetTypeRestrictionsForUser")) {
-			$va_pervasive_types = caGetTypeRestrictionsForUser($this->ops_tablename);	// restrictions set in app.conf or by associated user role
+			$va_pervasive_types = caGetTypeRestrictionsForUser($this->ops_tablename, $pa_options);	// restrictions set in app.conf or by associated user role
 			if (!is_array($va_pervasive_types) || !sizeof($va_pervasive_types)) { return $this->opa_search_type_ids; }
 				
 			if (is_array($this->opa_search_type_ids) && sizeof($this->opa_search_type_ids)) {

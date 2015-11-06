@@ -38,7 +38,7 @@
 	require_once(__CA_LIB_DIR__.'/ca/Import/DataReaders/BaseXMLDataReader.php');
 	
 	// Pull in Guzzle library (web services client)
-	require_once(__CA_LIB_DIR__.'/vendor/autoload.php');
+	require_once(__CA_BASE_DIR__.'/vendor/autoload.php');
 	use Guzzle\Http\Client;
 
 
@@ -200,7 +200,7 @@ class WorldCatDataReader extends BaseXMLDataReader {
 					yaz_range($r_conn, 1, 10);
 					yaz_search($r_conn, "rpn", '@attr 1=12 @attr 4=2 "'.str_replace('"','', $vn_worldcat_id).'"');
 					yaz_wait();
-					$vs_data = yaz_record($r_conn, 1,  "xml; charset=marc-8,utf-8");
+					$vs_data = simplexml_load_string(yaz_record($r_conn, 1,  "xml; charset=marc-8,utf-8"));
 				} elseif ($this->ops_api_key) {
 					$o_request = $o_client->get("{$vn_worldcat_id}?wskey=".$this->ops_api_key);
 					$o_response = $o_request->send();

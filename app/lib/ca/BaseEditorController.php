@@ -181,13 +181,6 @@ class BaseEditorController extends ActionController {
 		if ($vn_subject_id) {
 			// set last edited
 			$this->request->session->setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id);
-
-			// prepopulate fields
-			$vs_prepopulate_cfg = $t_subject->getAppConfig()->get('prepopulate_config');
-			$o_prepopulate_conf = Configuration::load($vs_prepopulate_cfg);
-			if($o_prepopulate_conf->get('prepopulate_fields_on_edit')) {
-				$t_subject->prepopulateFields(array('prepopulateConfig' => $vs_prepopulate_cfg));
-			}
 		}
 
 		# trigger "EditItem" hook
@@ -224,6 +217,7 @@ class BaseEditorController extends ActionController {
 	 */
 	public function Save($pa_options=null) {
 		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vs_rel_table, $vn_rel_type_id, $vn_rel_id) = $this->_initView($pa_options);
+		/** @var $t_subject BundlableLabelableBaseModelWithAttributes */
 		if (!is_array($pa_options)) { $pa_options = array(); }
 
 		if (!$this->_checkAccess($t_subject)) { return false; }
@@ -235,6 +229,17 @@ class BaseEditorController extends ActionController {
 				$this->request->setParameter($vs_parent_id_fld, $vn_parent_id);
 				$this->view->setVar('parent_id', $vn_parent_id);
 			}
+		}
+
+		// relate existing records via Save() link
+		if($vn_subject_id && $vs_rel_table && $vn_rel_type_id && $vn_rel_id) {
+			if($this->opo_datamodel->tableExists($vs_rel_table)) {
+				Debug::msg("[Save()] Relating new record using parameters from request: $vs_rel_table / $vn_rel_type_id / $vn_rel_id");
+				$t_subject->addRelationship($vs_rel_table, $vn_rel_id, $vn_rel_type_id, _t('now'));
+			}
+			$this->notification->addNotification(_t("Added relationship"), __NOTIFICATION_TYPE_INFO__);
+			$this->render('screen_html.php');
+			return;
 		}
 
 		if (in_array($this->ops_table_name, array('ca_representation_annotations'))) { $vs_auth_table_name = 'ca_objects'; }
@@ -551,14 +556,24 @@ class BaseEditorController extends ActionController {
 				# trigger "DeleteItem" hook
 				$this->opo_app_plugin_manager->hookDeleteItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
 
-				# redirect to last find
-				caSetRedirect($this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $t_subject->tableName()));
+				# redirect
+				$this->redirectAfterDelete($t_subject->tableName());
 			}
 		}
 
 		$this->view->setVar('subject_name', $t_subject->getLabelForDisplay(false));
 
 		$this->render('delete_html.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 * Redirects to a sensible location after a record delete. Defaults to the last find action
+	 * for the current table, which depending on the table may not be available. Can be
+	 * overridden in subclasses/implementations.
+	 * @param string $ps_table table name
+	 */
+	protected function redirectAfterDelete($ps_table) {
+		caSetRedirect($this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $ps_table));
 	}
 	# -------------------------------------------------------
 	/**
@@ -574,6 +589,9 @@ class BaseEditorController extends ActionController {
 
 		if (!$this->_checkAccess($t_subject)) { return false; }
 
+		if(defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
+			$this->render('../template_test_html.php');
+		}
 
 		$t_display = new ca_bundle_displays();
 		$va_displays = $t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID())));
@@ -1959,9 +1977,13 @@ class BaseEditorController extends ActionController {
 				//
 				// Perform metadata embedding
 				$t_rep = new ca_object_representations($va_rep['representation_id']);
-				if (!($vs_path = caEmbedMetadataIntoRepresentation($t_subject, $t_rep, $ps_version))) {
+				if(!($vs_path = caEmbedMediaMetadataIntoFile($t_rep->getMediaPath('media', $ps_version),
+					$t_subject->tableName(), $t_subject->getPrimaryKey(), $t_subject->getTypeCode(), // subject table info
+					$t_rep->getPrimaryKey(), $t_rep->getTypeCode() // rep info
+				))) {
 					$vs_path = $t_rep->getMediaPath('media', $ps_version);
 				}
+
 				$va_file_paths[$vs_path] = $vs_file_name;
 
 				$vn_c++;
@@ -1996,6 +2018,7 @@ class BaseEditorController extends ActionController {
 	 * Download single representation from currently open object
 	 */
 	public function DownloadRepresentation() {
+		/** @var BundlableLabelableBaseModelWithAttributes $t_object */
 		list($vn_object_id, $t_object) = $this->_initView();
 		$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
 		$ps_version = $this->request->getParameter('version', pString);
@@ -2042,13 +2065,16 @@ class BaseEditorController extends ActionController {
 
 		//
 		// Perform metadata embedding
-		if ($vs_path = caEmbedMetadataIntoRepresentation($t_object, $t_rep, $ps_version)) {
+		if ($vs_path = caEmbedMediaMetadataIntoFile($t_rep->getMediaPath('media', $ps_version),
+			$t_object->tableName(), $t_object->getPrimaryKey(), $t_object->getTypeCode(), // subject table info
+			$t_rep->getPrimaryKey(), $t_rep->getTypeCode() // representation info
+		)) {
 			$this->view->setVar('version_path', $vs_path);
 		} else {
 			$this->view->setVar('version_path', $t_rep->getMediaPath('media', $ps_version));
 		}
-		$vn_rc = $this->render('object_representation_download_binary.php');
-		if ($vs_path) { unlink($vs_path); }
+		$this->render('object_representation_download_binary.php');
+		if ($vs_path) { @unlink($vs_path); }
 		exit;
 	}
 	# -------------------------------------------------------

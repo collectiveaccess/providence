@@ -369,6 +369,15 @@ class ca_data_importer_items extends BaseModel {
 			'label' => _t('Restrict to types'),
 			'description' => _t('Restricts the the mapping to only records of the designated type.  For example the Duration field is only applicable to objects of the type moving_image and not photograph.')
 		);
+		$va_settings['restrictToRelationshipTypes'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Restrict to relationship types'),
+			'description' => _t('Restricts the mapping to pull only records related with the designated relatonship types from the source. This option is only supported by sources that have a notion of related data and relationship types, most notably (and for now only) the CollectiveAccessDataReader.')
+		);
 		$va_settings['prefix'] = array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,

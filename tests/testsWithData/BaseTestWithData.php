@@ -31,7 +31,8 @@
  */
 
 require_once(__CA_LIB_DIR__.'/ca/Service/ItemService.php');
-require_once(__CA_LIB_DIR__."/core/Search/SearchIndexer.php");
+require_once(__CA_LIB_DIR__.'/core/Search/SearchIndexer.php');
+require_once(__CA_MODELS_DIR__.'/ca_search_indexing_queue.php');
 
 abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 	/**
@@ -39,7 +40,12 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 	 */
 	private $opa_record_map = array();
 
+	/**
+	 * @var null|RequestHTTP
+	 */
 	private $opo_request = null;
+
+	static $opa_valid_tables = array('ca_objects', 'ca_entities', 'ca_occurrences', 'ca_movements', 'ca_loans', 'ca_object_lots', 'ca_storage_locations', 'ca_places', 'ca_item_comments');
 	# -------------------------------------------------------
 	/**
 	 * Inserts test data set by implementation
@@ -51,22 +57,8 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 
 		define('__CA_APP_TYPE__', 'PROVIDENCE');
 
-		// ensure there are no lingering records
-		$va_tables = array('ca_objects', 'ca_entities', 'ca_occurrences', 'ca_movements', 'ca_loans', 'ca_object_lots', 'ca_storage_locations', 'ca_places');
-		$o_db = new Db();
-		foreach($va_tables as $vs_table) {
-			$qr_rows = $o_db->query("SELECT count(*) AS c FROM {$vs_table}");
-			$qr_rows->nextRow();
-
-			// these two are allowed to have hierarchy roots
-			if(in_array($vs_table, array('ca_storage_locations', 'ca_places'))) {
-				$vn_allowed_records = 1;
-			} else {
-				$vn_allowed_records = 0;
-			}
-
-			$this->assertEquals($vn_allowed_records, $qr_rows->get('c'), "Table {$vs_table} should be empty to avoid side effects between tests");
-		}
+		// make sure there are no side-effects caused by lingering recods
+		$this->checkRecordCounts();
 	}
 	# -------------------------------------------------------
 	/**
@@ -88,11 +80,16 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 		}
 
 		$this->opa_record_map[$ps_table][] = $vn_return = array_shift($va_return);
+
 		return $vn_return;
 	}
 	# -------------------------------------------------------
 	protected function getRecordMap() {
 		return $this->opa_record_map;
+	}
+	# -------------------------------------------------------
+	protected function setRecordMapEntry($ps_table, $pn_id) {
+		$this->opa_record_map[$ps_table][] = $pn_id;
 	}
 	# -------------------------------------------------------
 	/**
@@ -109,16 +106,38 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 				}
 			}
 
-			// hack to get around storage loation delete weirdness (which is probably worth a separate test)
-			if($vs_table == 'ca_storage_locations') {
-				$o_db = new Db();
-				$o_db->query("DELETE FROM ca_objects_x_storage_locations");
-				$o_db->query("DELETE FROM ca_storage_location_labels");
-				$o_db->query("DELETE FROM ca_storage_locations WHERE location_id>1 ORDER BY location_id DESC");
+		}
+
+		// hack to get around storage loation delete weirdness
+		// (which is caused by hiearchical relationships - they'd have to be deleted in the right order; but why bother, right?)
+		$o_db = new Db();
+		$o_db->query("DELETE FROM ca_objects_x_storage_locations");
+		$o_db->query("DELETE FROM ca_storage_location_labels");
+		$o_db->query("DELETE FROM ca_storage_locations WHERE location_id>1 ORDER BY location_id DESC");
+
+		// reindex
+		$o_si = new SearchIndexer();
+		$o_si->reindex(array_keys($this->opa_record_map), array('showProgress' => false, 'interactiveProgressDisplay' => false));
+
+		// check record counts again (make sure there are no lingering records)
+		$this->checkRecordCounts();
+	}
+	# -------------------------------------------------------
+	private function checkRecordCounts() {
+		// ensure there are no lingering records
+		$o_db = new Db();
+		foreach(self::$opa_valid_tables as $vs_table) {
+			$qr_rows = $o_db->query("SELECT count(*) AS c FROM {$vs_table}");
+			$qr_rows->nextRow();
+
+			// these two are allowed to have hierarchy roots
+			if(in_array($vs_table, array('ca_storage_locations', 'ca_places'))) {
+				$vn_allowed_records = 1;
+			} else {
+				$vn_allowed_records = 0;
 			}
 
-			$o_si = new SearchIndexer();
-			$o_si->reindex(array($vs_table), array('showProgress' => false, 'interactiveProgressDisplay' => false));
+			$this->assertEquals($vn_allowed_records, $qr_rows->get('c'), "Table {$vs_table} should be empty to avoid side effects between tests");
 		}
 	}
 	# -------------------------------------------------------
