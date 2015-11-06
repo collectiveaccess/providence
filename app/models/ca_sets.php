@@ -400,6 +400,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * and we might wanna reuse a code of a set we previously deleted.
 	 */
 	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		if(!is_array($pa_options)) { $pa_options = array(); }
 		$vb_web_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
 
 		if($pb_delete_related) {
@@ -426,12 +427,11 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 
 			// remove search indexing for deleted set items
 			foreach($va_item_ids as $vn_item_id) {
-				$this->getSearchIndexer()->startRowUnIndexing($this->tableNum(), $vn_item_id);
-				$this->getSearchIndexer()->commitRowUnIndexing($this->tableNum(), $vn_item_id);
+				$this->getSearchIndexer()->commitRowUnIndexing($this->tableNum(), $vn_item_id, array('queueIndexing' => true));
 			}
 		}
 
-		if($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
+		if($vn_rc = parent::delete($pb_delete_related, array_merge(array('queueIndexing' => true), $pa_options), $pa_fields, $pa_table_list)) {
 			if(!caGetOption('hard', $pa_options, false)) { // only applies if we don't hard-delete
 				$vb_we_set_transaction = false;
 				if (!$this->inTransaction()) {
@@ -1189,7 +1189,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 			
 			// Index the links
-			$this->getSearchIndexer()->reindexRows('ca_set_items', $va_item_ids);
+			$this->getSearchIndexer()->reindexRows('ca_set_items', $va_item_ids, array('queueIndexing' => true));
 		}
 		
 		return sizeof($va_item_values);
