@@ -538,11 +538,11 @@ class RequestHTTP extends Request {
 			if($vn_port == 443) {
 				$vs_proto = 'tls://';
 			} else {
-				$vs_proto = 'tcp://'; // 'tcp://' may be in order here but leaving it blank seems to work too
+				$vs_proto = 'tcp://';
 			}
 
 			// trigger async search indexing
-			if(!$this->isAjax() && !$this->getAppConfig()->get('disable_out_of_process_search_indexing')) {
+			if(!$this->getAppConfig()->get('disable_out_of_process_search_indexing')) {
 				$r_socket = fsockopen($vs_proto . __CA_SITE_HOSTNAME__, $vn_port, $errno, $err, 3);
 				if ($r_socket) {
 					$vs_http  = "GET ".$this->getBaseUrlPath()."/index.php?processIndexingQueue=1 HTTP/1.1\r\n";
