@@ -402,31 +402,33 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
 		$vb_web_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
 
-		// quickly delete all labels for all set items in this set
-		$this->getDb()->query('DELETE FROM ca_set_item_labels WHERE item_id IN (SELECT item_id FROM ca_set_items WHERE set_id=?)', $this->getPrimaryKey());
+		if($pb_delete_related) {
+			// quickly delete all labels for all set items in this set
+			$this->getDb()->query('DELETE FROM ca_set_item_labels WHERE item_id IN (SELECT item_id FROM ca_set_items WHERE set_id=?)', $this->getPrimaryKey());
 
-		// quickly delete attribute values
-		$this->getDb()->query('
-			DELETE FROM ca_attribute_values WHERE attribute_id IN
-			(SELECT attribute_id FROM ca_attributes WHERE table_num=? and row_id IN (SELECT item_id FROM ca_set_items WHERE set_id=7))
-		', $this->tableNum(), $this->getPrimaryKey());
+			// quickly delete attribute values
+			$this->getDb()->query('
+				DELETE FROM ca_attribute_values WHERE attribute_id IN
+				(SELECT attribute_id FROM ca_attributes WHERE table_num=? and row_id IN (SELECT item_id FROM ca_set_items WHERE set_id=7))
+			', $this->tableNum(), $this->getPrimaryKey());
 
-		// quickly delete attributes
-		$this->getDb()->query('
-			DELETE FROM ca_attributes WHERE table_num=? and row_id IN (SELECT item_id FROM ca_set_items WHERE set_id=7)
-		', $this->tableNum(), $this->getPrimaryKey());
+			// quickly delete attributes
+			$this->getDb()->query('
+				DELETE FROM ca_attributes WHERE table_num=? and row_id IN (SELECT item_id FROM ca_set_items WHERE set_id=7)
+			', $this->tableNum(), $this->getPrimaryKey());
 
-		// get list of set item ids
-		$qr_items = $this->getDb()->query('SELECT item_id FROM ca_set_items WHERE set_id=?', $this->getPrimaryKey());
-		$va_item_ids = $qr_items->getAllFieldValues('item_id');
+			// get list of set item ids
+			$qr_items = $this->getDb()->query('SELECT item_id FROM ca_set_items WHERE set_id=?', $this->getPrimaryKey());
+			$va_item_ids = $qr_items->getAllFieldValues('item_id');
 
-		// nuke set items
-		$this->getDb()->query('DELETE FROM ca_set_items WHERE set_id=?', $this->getPrimaryKey());
+			// nuke set items
+			$this->getDb()->query('DELETE FROM ca_set_items WHERE set_id=?', $this->getPrimaryKey());
 
-		// remove search indexing for deleted set items
-		foreach($va_item_ids as $vn_item_id) {
-			$this->getSearchIndexer()->startRowUnIndexing($this->tableNum(), $vn_item_id);
-			$this->getSearchIndexer()->commitRowUnIndexing($this->tableNum(), $vn_item_id);
+			// remove search indexing for deleted set items
+			foreach($va_item_ids as $vn_item_id) {
+				$this->getSearchIndexer()->startRowUnIndexing($this->tableNum(), $vn_item_id);
+				$this->getSearchIndexer()->commitRowUnIndexing($this->tableNum(), $vn_item_id);
+			}
 		}
 
 		if($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
