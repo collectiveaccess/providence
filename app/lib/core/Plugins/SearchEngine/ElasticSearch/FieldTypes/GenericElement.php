@@ -93,7 +93,7 @@ class GenericElement extends FieldType {
 		if($pm_content === '') { $pm_content = null; }
 
 		return array(
-			$this->getTableName() . '.' . $this->getElementCode() => $pm_content
+			$this->getTableName() . '/' . $this->getElementCode() => $pm_content
 		);
 	}
 

@@ -115,19 +115,19 @@ class Intrinsic extends FieldType {
 		}
 
 		$va_return = array(
-			$this->getTableName() . '.' . $this->getFieldName() => $pm_content
+			$this->getTableName() . '/' . $this->getFieldName() => $pm_content
 		);
 
 		if($t_instance->getProperty('ID_NUMBERING_ID_FIELD') == $this->getFieldName()) {
 			$va_return = array(
-				$this->getTableName() . '.' . $this->getFieldName() => explode(' ', $pm_content)
+				$this->getTableName() . '/' . $this->getFieldName() => explode(' ', $pm_content)
 			);
 		}
 
 		if($vn_rel_type_id = caGetOption('relationship_type_id', $pa_options)) {
 			// elasticsearch doesn't allow slashes in field names, so we use a pipe instead
 			$va_return[
-				$this->getTableName() . '.' . $this->getFieldName() . '|' . caGetRelationshipTypeCode($vn_rel_type_id)
+				$this->getTableName() . '/' . $this->getFieldName() . '|' . caGetRelationshipTypeCode($vn_rel_type_id)
 			] = $pm_content;
 		}
 
@@ -141,7 +141,7 @@ class Intrinsic extends FieldType {
 	public function getRewrittenTerm($po_term) {
 		$t_instance = \Datamodel::load()->getInstance($this->getTableName());
 
-		$va_field_components = explode('.', $po_term->field);
+		$va_field_components = explode('/', $po_term->field);
 
 		if((strtolower($po_term->text) === '[blank]')) {
 			if($t_instance instanceof \BaseLabel) { // labels usually have actual [BLANK] values

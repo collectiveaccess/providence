@@ -50,7 +50,6 @@ class Timestamp extends FieldType {
 	/**
 	 * Timestamp constructor.
 	 * @param string $ops_table_name
-	 * @param int $pn_content_row_id
 	 * @param string $ops_field_name
 	 */
 	public function __construct($ops_table_name, $ops_field_name) {
@@ -95,7 +94,7 @@ class Timestamp extends FieldType {
 		if(is_array($pm_content)) { $pm_content = serialize($pm_content); }
 
 		return array(
-			$this->getTableName() . '.' . $this->getFieldName() => $pm_content
+			$this->getTableName() . '/' . $this->getFieldName() => $pm_content
 		);
 	}
 

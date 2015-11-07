@@ -113,7 +113,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				$this->getClient()->indices()->putMapping(array(
 					'index' => $this->getIndexName(),
 					'type' => $vs_table,
-					'body' => array($vs_table => $va_config)
+					'body' => array($vs_table => $va_config),
+					'update_all_types' => true
 				));
 			}
 
@@ -333,7 +334,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		$o_field = new ElasticSearch\Field($pn_content_tablenum, $ps_content_fieldname);
 
 		foreach($o_field->getIndexingFragment($pm_content, $pa_options) as $vs_key => $vm_val) {
-			$this->opa_index_content_buffer[$vs_key][$pn_content_row_id] = $vm_val;
+			$this->opa_index_content_buffer[$vs_key][] = $vm_val;
+			$this->opa_index_content_buffer[$vs_key.'_content_ids'][] = $pn_content_row_id;
 		}
 	}
 	# -------------------------------------------------------

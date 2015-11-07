@@ -223,45 +223,43 @@ class Mapping {
 
 		// init: we never store -- all SearchResult::get() operations are now done on our database tables
 		$va_element_config = array(
-			$ps_table.'.'.$vs_element_code => array(
-				'store' => false
+			$ps_table.'/'.$vs_element_code => array(
 			)
 		);
 
 		// @todo break this out into separate classes in the ElasticSearch\FieldTypes namespace!?
 		switch($pa_element_info['datatype']) {
 			case 2:	// daterange
-				$va_element_config[$ps_table.'.'.$vs_element_code]['type'] = 'date';
-				$va_element_config[$ps_table.'.'.$vs_element_code]['format'] = 'dateOptionalTime';
-				$va_element_config[$ps_table.'.'.$vs_element_code]['ignore_malformed'] = false;
-				$va_element_config[$ps_table.'.'.$vs_element_code.'_text'] = array('type' => 'string', 'store' => false);
+				$va_element_config[$ps_table.'/'.$vs_element_code]['type'] = 'date';
+				$va_element_config[$ps_table.'/'.$vs_element_code]['format'] = 'dateOptionalTime';
+				$va_element_config[$ps_table.'/'.$vs_element_code]['ignore_malformed'] = false;
+				$va_element_config[$ps_table.'/'.$vs_element_code.'_text'] = array('type' => 'string');
 				break;
 			case 4:	// geocode
 				//@see https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-geo-shape-type.html
-				$va_element_config[$ps_table.'.'.$vs_element_code] = array(
+				$va_element_config[$ps_table.'/'.$vs_element_code] = array(
 					'type' => 'geo_shape',
-					'store' => false,
 					'precision' => '3m'
 				);
 				// index text content as is -- sometimes useful for full text place search
-				$va_element_config[$ps_table.'.'.$vs_element_code.'_text'] = array('type' => 'string', 'store' => false);
+				$va_element_config[$ps_table.'/'.$vs_element_code.'_text'] = array('type' => 'string');
 				break;
 			case 6: // currency
 				// we want to do range searches on currency too, so we gotta store the currency identified (USD) separately
-				$va_element_config[$ps_table.'.'.$vs_element_code]['type'] = 'double';
-				$va_element_config[$ps_table.'.'.$vs_element_code.'_currency'] = array('type' => 'string', 'store' => false);
+				$va_element_config[$ps_table.'/'.$vs_element_code]['type'] = 'double';
+				$va_element_config[$ps_table.'/'.$vs_element_code.'_currency'] = array('type' => 'string');
 				break;
 			case 8: // length
 			case 9: // weight
 				// we don't index units here -- we always index in meters / kg, so it's just a float
-				$va_element_config[$ps_table.'.'.$vs_element_code]['type'] = 'double';
+				$va_element_config[$ps_table.'/'.$vs_element_code]['type'] = 'double';
 				break;
 			case 10:	// timecode
 			case 12:	// numeric/float
-				$va_element_config[$ps_table.'.'.$vs_element_code]['type'] = 'double';
+				$va_element_config[$ps_table.'/'.$vs_element_code]['type'] = 'double';
 				break;
 			case 11:	// integer
-				$va_element_config[$ps_table.'.'.$vs_element_code]['type'] = 'long';
+				$va_element_config[$ps_table.'/'.$vs_element_code]['type'] = 'long';
 				break;
 			case 1: // text
 			case 3:	// list
@@ -283,7 +281,7 @@ class Mapping {
 			case 29: // objects
 			case 30: // object lots
 			default:
-				$va_element_config[$ps_table.'.'.$vs_element_code]['type'] = 'string';
+				$va_element_config[$ps_table.'/'.$vs_element_code]['type'] = 'string';
 				break;
 		}
 		return $va_element_config;
@@ -302,22 +300,21 @@ class Mapping {
 		$t_instance = $this->getDatamodel()->getInstance($ps_table);
 
 		$va_field_options = array(
-			$ps_table.'.'.$vs_field_name => array(
-				'store' => false
+			$ps_table.'/'.$vs_field_name => array(
 			)
 		);
 
 		if($pa_indexing_config['BOOST']){
-			$va_field_options[$ps_table.'.'.$vs_field_name]['boost'] = floatval($pa_indexing_config['BOOST']);
+			$va_field_options[$ps_table.'/'.$vs_field_name]['boost'] = floatval($pa_indexing_config['BOOST']);
 		}
 
 		if(in_array('DONT_TOKENIZE',$pa_indexing_config)){
-			$va_field_options[$ps_table.'.'.$vs_field_name]['index'] = 'not_analyzed';
+			$va_field_options[$ps_table.'/'.$vs_field_name]['index'] = 'not_analyzed';
 		}
 
 		if(in_array('INDEX_AS_IDNO', $pa_indexing_config)) {
-			unset($va_field_options[$ps_table.'.'.$vs_field_name]['index']);
-			$va_field_options[$ps_table.'.'.$vs_field_name]['analyzer'] = 'keyword_lowercase';
+			unset($va_field_options[$ps_table.'/'.$vs_field_name]['index']);
+			$va_field_options[$ps_table.'/'.$vs_field_name]['analyzer'] = 'keyword_lowercase';
 		}
 
 		switch($t_instance->getFieldInfo($vs_field_name, 'FIELD_TYPE')){
@@ -326,7 +323,7 @@ class Mapping {
 			case (FT_FILE):
 			case (FT_PASSWORD):
 			case (FT_VARS):
-				$va_field_options[$ps_table.'.'.$vs_field_name]['type'] = 'string';
+				$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'string';
 				break;
 			case (FT_NUMBER):
 			case (FT_TIME):
@@ -335,10 +332,10 @@ class Mapping {
 				// list-based intrinsics get indexed with both item_id and label text, like so:
 				// image Image 24 -- for a ca_objects type_id image
 				if ($t_instance->getFieldInfo($vs_field_name, 'LIST_CODE')) {
-					$va_field_options[$ps_table.'.'.$vs_field_name]['type'] = 'string';
-					$va_field_options[$ps_table.'.'.$vs_field_name]['index'] = 'analyzed';
+					$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'string';
+					$va_field_options[$ps_table.'/'.$vs_field_name]['index'] = 'analyzed';
 				} else {
-					$va_field_options[$ps_table.'.'.$vs_field_name]['type'] = 'double';
+					$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'double';
 				}
 				break;
 			case (FT_TIMESTAMP):
@@ -348,15 +345,15 @@ class Mapping {
 			case (FT_HISTORIC_DATE):
 			case (FT_DATERANGE):
 			case (FT_HISTORIC_DATERANGE):
-				$va_field_options[$ps_table.'.'.$vs_field_name]['type'] = 'date';
-				$va_field_options[$ps_table.'.'.$vs_field_name]['format'] = 'dateOptionalTime';
-				$va_field_options[$ps_table.'.'.$vs_field_name]['ignore_malformed'] = false;
+				$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'date';
+				$va_field_options[$ps_table.'/'.$vs_field_name]['format'] = 'dateOptionalTime';
+				$va_field_options[$ps_table.'/'.$vs_field_name]['ignore_malformed'] = false;
 				break;
 			case (FT_BIT):
-				$va_field_options[$ps_table.'.'.$vs_field_name]['type'] = 'boolean';
+				$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'boolean';
 				break;
 			default:
-				$va_field_options[$ps_table.'.'.$vs_field_name]['type'] = 'string';
+				$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'string';
 				break;
 		}
 
@@ -400,10 +397,10 @@ class Mapping {
 			}
 
 			// add config for modified and created, which are always indexed
-			$va_mapping_config[$vs_table]['properties']["{$vs_table}.modified"] = array(
+			$va_mapping_config[$vs_table]['properties']["{$vs_table}/modified"] = array(
 				'type' => 'date'
 			);
-			$va_mapping_config[$vs_table]['properties']["{$vs_table}.created"] = array(
+			$va_mapping_config[$vs_table]['properties']["{$vs_table}/created"] = array(
 				'type' => 'date'
 			);
 		}

@@ -179,9 +179,9 @@ class Query {
 		switch(get_class($o_subquery)) {
 			case 'Zend_Search_Lucene_Search_Query_Range':
 				/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Range */
-				$o_lower_term = $o_subquery->getLowerTerm();
+				$o_lower_term = caRewriteElasticSearchTermFieldSpec($o_subquery->getLowerTerm());
 				$o_lower_fld = $this->getFieldTypeForTerm($o_lower_term);
-				$o_upper_term = $o_subquery->getUpperTerm();
+				$o_upper_term = caRewriteElasticSearchTermFieldSpec($o_subquery->getUpperTerm());
 				$o_upper_fld = $this->getFieldTypeForTerm($o_upper_term);
 
 				$o_new_subquery = null;
@@ -205,7 +205,7 @@ class Query {
 				return $this->getSubqueryWithAdditionalTerms($o_new_subquery, $o_lower_fld, $o_lower_term);
 			case 'Zend_Search_Lucene_Search_Query_Term':
 				/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Term */
-				$o_term = $o_subquery->getTerm();
+				$o_term = caRewriteElasticSearchTermFieldSpec($o_subquery->getTerm());
 				$o_fld = $this->getFieldTypeForTerm($o_term);
 
 				$o_new_subquery = null;
@@ -224,6 +224,7 @@ class Query {
 				/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Phrase */
 				$o_new_subquery = new \Zend_Search_Lucene_Search_Query_Phrase();
 				foreach($o_subquery->getTerms() as $o_term) {
+					$o_term = caRewriteElasticSearchTermFieldSpec($o_term);
 					$o_fld = $this->getFieldTypeForTerm($o_term);
 
 					if($o_fld instanceof FieldTypes\Geocode) {
@@ -252,6 +253,7 @@ class Query {
 
 				$va_new_terms = array();
 				foreach($va_terms as $o_term) {
+					$o_term = caRewriteElasticSearchTermFieldSpec($o_term);
 					$o_fld = $this->getFieldTypeForTerm($o_term);
 					$va_new_terms[] = $o_fld->getRewrittenTerm($o_term);
 				}
@@ -292,11 +294,11 @@ class Query {
 	 * @return \ElasticSearch\FieldTypes\FieldType
 	 */
 	protected function getFieldTypeForTerm($po_term) {
-		$va_parts = explode('.', $po_term->field);
+		$va_parts = explode('/', $po_term->field);
 		$vs_table = $va_parts[0];
 		unset($va_parts[0]);
-		$vs_fld = join('.', $va_parts);
-		return FieldTypes\FieldType::getInstance($vs_table, null, $vs_fld);
+		$vs_fld = join('/', $va_parts);
+		return FieldTypes\FieldType::getInstance($vs_table, $vs_fld);
 	}
 
 	protected function getFilterQuery() {

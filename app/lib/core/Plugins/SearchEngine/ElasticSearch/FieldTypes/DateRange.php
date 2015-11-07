@@ -44,12 +44,12 @@ class DateRange extends GenericElement {
 		$va_return = array();
 
 		if (!is_array($pa_parsed_content = caGetISODates($pm_content))) { return array(); }
-		$va_return[$this->getTableName().'.'.$this->getElementCode().'_text'] = $pm_content;
+		$va_return[$this->getTableName().'/'.$this->getElementCode().'_text'] = $pm_content;
 
 		$ps_rewritten_start = $this->_rewriteDate($pa_parsed_content["start"], true);
 		$ps_rewritten_end = $this->_rewriteDate($pa_parsed_content["end"], false);
 
-		$va_return[$this->getTableName().'.'.$this->getElementCode()] = array($ps_rewritten_start,$ps_rewritten_end);
+		$va_return[$this->getTableName().'/'.$this->getElementCode()] = array($ps_rewritten_start,$ps_rewritten_end);
 		return $va_return;
 	}
 
@@ -87,6 +87,7 @@ class DateRange extends GenericElement {
 		$va_terms = $va_return = array();
 		$vs_fld = null;
 		foreach($po_query->getQueryTerms() as $o_term) {
+			$o_term = caRewriteElasticSearchTermFieldSpec($o_term);
 			$vs_fld = $o_term->field;
 			$va_terms[] = $o_term->text;
 		}

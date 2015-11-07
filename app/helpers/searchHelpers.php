@@ -341,4 +341,13 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 		return Configuration::load(__CA_APP_DIR__.'/conf/search.conf');
 	}
 	# ---------------------------------------
-?>
+	/**
+	 * @param Zend_Search_Lucene_Index_Term $po_term
+	 * @return Zend_Search_Lucene_Index_Term
+	 */
+	function caRewriteElasticSearchTermFieldSpec($po_term) {
+		return new Zend_Search_Lucene_Index_Term(
+			$po_term->text, str_replace('.', '/', $po_term->field)
+		);
+	}
+	# ---------------------------------------

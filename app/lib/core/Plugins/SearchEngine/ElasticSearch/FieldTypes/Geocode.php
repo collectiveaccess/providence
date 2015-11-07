@@ -47,7 +47,7 @@ class Geocode extends GenericElement {
 
 		$o_geocode_parser = new \GeocodeAttributeValue();
 
-		$va_return[$this->getTableName().'.'.$this->getElementCode().'_text'] = $pm_content;
+		$va_return[$this->getTableName().'/'.$this->getElementCode().'_text'] = $pm_content;
 
 		//@see https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-geo-shape-type.html
 		if ($va_coords = $o_geocode_parser->parseValue($pm_content, array())) {
@@ -58,7 +58,7 @@ class Geocode extends GenericElement {
 				// google maps and others usually return latitude, longitude, which is also what we store
 				if(sizeof($va_points) == 1) {
 					$va_tmp = explode(',', $va_points[0]);
-					$va_return[$this->getTableName().'.'.$this->getElementCode()] = array(
+					$va_return[$this->getTableName().'/'.$this->getElementCode()] = array(
 						'type' => 'point',
 						'coordinates' => array((float)$va_tmp[1],(float)$va_tmp[0])
 					);
@@ -70,7 +70,7 @@ class Geocode extends GenericElement {
 						$va_coordinates_for_es[] = array((float)$va_tmp[1],(float)$va_tmp[0]);
 					}
 
-					$va_return[$this->getTableName().'.'.$this->getElementCode()] = array(
+					$va_return[$this->getTableName().'/'.$this->getElementCode()] = array(
 						'type' => 'polygon',
 						'coordinates' => $va_coordinates_for_es
 					);
@@ -121,6 +121,7 @@ class Geocode extends GenericElement {
 	public function getFilterForPhraseQuery($o_subquery) {
 		$va_terms = array();
 		foreach($o_subquery->getQueryTerms() as $o_term) {
+			$o_term = caRewriteElasticSearchTermFieldSpec($o_term);
 			$va_terms[] = $o_term->text;
 		}
 
