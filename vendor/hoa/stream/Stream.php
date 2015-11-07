@@ -347,7 +347,7 @@ abstract class Stream implements Core\Event\Listenable
      *
      * @return  resource
      */
-    protected function getStream()
+    public function getStream()
     {
         if (empty($this->_bucket)) {
             return null;

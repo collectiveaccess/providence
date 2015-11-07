@@ -52,7 +52,7 @@ class SplFileInfo extends Test\Unit\Suite
     public function case_file()
     {
         $this
-            ->given($pathname = 'hoa://Test/Vfs/Foo.bar')
+            ->given($pathname = 'hoa://Test/Vfs/Foo.bar?type=file')
             ->when($result = new LUT\SplFileInfo($pathname))
             ->then
                 ->boolean($result->isFile())
@@ -81,22 +81,22 @@ class SplFileInfo extends Test\Unit\Suite
                 $relativePathname = 'C/Foo.bar',
                 $pathname         = $relativePath . $relativePathname
             )
-            ->when($result = new LUT\SplFileInfo($pathname, $relativePath))
+            ->when($result = new LUT\SplFileInfo($pathname . '?type=file', $relativePath))
             ->then
                 ->boolean($result->isFile())
                     ->isTrue()
                 ->string($result->getBasename())
-                    ->isEqualTo('Foo.bar')
+                    ->isEqualTo('Foo.bar?type=file')
                 ->string($result->getExtension())
-                    ->isEqualTo('bar')
+                    ->isEqualTo('bar?type=file')
                 ->string($result->getRelativePath())
                     ->isEqualTo($relativePath)
                 ->string($result->getRelativePathname())
-                    ->isEqualTo($relativePathname)
+                    ->isEqualTo($relativePathname . '?type=file')
                 ->string($result->getPath())
                     ->isEqualTo('hoa://Test/Vfs/A/B/C')
                 ->string($result->getPathname())
-                    ->isEqualTo($pathname);
+                    ->isEqualTo($pathname . '?type=file');
     }
 
     public function case_times()
@@ -113,6 +113,7 @@ class SplFileInfo extends Test\Unit\Suite
                 $pathname =
                     'hoa://Test/Vfs/Foo.bar?' .
                     http_build_query([
+                        'type'  => 'file',
                         'atime' => $atime,
                         'ctime' => $ctime,
                         'mtime' => $mtime
@@ -131,7 +132,7 @@ class SplFileInfo extends Test\Unit\Suite
     public function case_permissions()
     {
         $this
-            ->given($pathname = 'hoa://Test/Vfs/Fo.bar?permissions=0744')
+            ->given($pathname = 'hoa://Test/Vfs/Fo.bar?type=file&permissions=0744')
             ->when($result = new LUT\SplFileInfo($pathname))
             ->then
                 ->boolean($result->isReadable())
@@ -141,7 +142,7 @@ class SplFileInfo extends Test\Unit\Suite
                 ->boolean($result->isExecutable())
                     ->isTrue()
 
-            ->given($pathname = 'hoa://Test/Vfs/Foo.bar?permissions=0644')
+            ->given($pathname = 'hoa://Test/Vfs/Foo.bar?type=file&permissions=0644')
             ->when($result = new LUT\SplFileInfo($pathname))
             ->then
                 ->boolean($result->isReadable())
@@ -151,7 +152,7 @@ class SplFileInfo extends Test\Unit\Suite
                 ->boolean($result->isExecutable())
                     ->isFalse()
 
-            ->given($pathname = 'hoa://Test/Vfs/Fooo.bar?permissions=0444')
+            ->given($pathname = 'hoa://Test/Vfs/Fooo.bar?type=file&permissions=0444')
             ->when($result = new LUT\SplFileInfo($pathname))
             ->then
                 ->boolean($result->isReadable())
@@ -161,7 +162,7 @@ class SplFileInfo extends Test\Unit\Suite
                 ->boolean($result->isExecutable())
                     ->isFalse()
 
-            ->given($pathname = 'hoa://Test/Vfs/Foooo.bar?permissions=0044')
+            ->given($pathname = 'hoa://Test/Vfs/Foooo.bar?type=file&permissions=0044')
             ->when($result = new LUT\SplFileInfo($pathname))
             ->then
                 ->boolean($result->isReadable())

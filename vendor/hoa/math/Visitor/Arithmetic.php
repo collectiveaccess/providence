@@ -51,32 +51,47 @@ use Hoa\Visitor;
 class Arithmetic implements Visitor\Visit
 {
     /**
-     * List of supported functions: identifier => values as callable
+     * Visitor context containing the list of supported functions, constants and variables
      *
-     * @var \ArrayObject
+     * @var \Hoa\Math\Context
      */
-    protected $_functions = null;
+    protected $_context = null;
 
     /**
-     * List of constants supported
-     *
-     * @var \ArrayObject
-     */
-    protected $_constants = null;
-
-
-
-    /**
-     * Initialize constants and functions.
+     * Initializes context.
      *
      * @return  void
      */
     public function __construct()
     {
-        $this->initializeConstants();
-        $this->initializeFunctions();
+        $this->initializeContext();
 
         return;
+    }
+
+    /**
+     * Set visitor's context
+     *
+     * @param \Hoa\Math\Context $context
+     * @return \Hoa\Math\Context
+     */
+    public function setContext(Math\Context $context)
+    {
+        $old = $this->_context;
+
+        $this->_context = $context;
+
+        return $old;
+    }
+
+    /**
+     * Get visitor's context
+     *
+     * @return \Hoa\Math\Context
+     */
+    public function getContext()
+    {
+        return $this->_context;
     }
 
     /**
@@ -219,6 +234,15 @@ class Arithmetic implements Visitor\Visit
 
                 break;
 
+            case '#variable':
+                $out = $this->getVariable($children[0]->getValueValue());
+
+                $acc = function () use ($out, $acc) {
+                    return $acc($out);
+                };
+
+                break;
+
             case 'token':
                 $value = $element->getValueValue();
                 $out   = null;
@@ -254,7 +278,7 @@ class Arithmetic implements Visitor\Visit
      */
     public function getFunctions()
     {
-        return $this->_functions;
+        return $this->_context->getFunctions();
     }
 
     /**
@@ -266,15 +290,7 @@ class Arithmetic implements Visitor\Visit
      */
     public function getFunction($name)
     {
-        if (false === $this->_functions->offsetExists($name)) {
-            throw new Math\Exception\UnknownFunction(
-                'Function %s does not exist.',
-                0,
-                $name
-            );
-        }
-
-        return $this->_functions[$name];
+        return $this->_context->getFunction($name);
     }
 
     /**
@@ -284,7 +300,7 @@ class Arithmetic implements Visitor\Visit
      */
     public function getConstants()
     {
-        return $this->_constants;
+        return $this->_context->getConstants();
     }
 
     /**
@@ -296,87 +312,36 @@ class Arithmetic implements Visitor\Visit
      */
     public function getConstant($name)
     {
-        if (false === $this->_constants->offsetExists($name)) {
-            throw new Math\Exception\UnknownConstant(
-                'Constant %s does not exist',
-                1,
-                $name
-            );
-        }
-
-        return $this->_constants[$name];
+        return $this->_context->getConstant($name);
     }
 
     /**
-     * Initialize functions mapping.
+     * Get variables.
      *
-     * @return void
+     * @return \ArrayObject
      */
-    protected function initializeFunctions()
+    public function getVariables()
     {
-        static $_functions = null;
-
-        if (null === $_functions) {
-            $average = function () {
-                $arguments = func_get_args();
-
-                return array_sum($arguments) / count($arguments);
-            };
-
-            $_functions = new \ArrayObject([
-                'abs'     => xcallable('abs'),
-                'acos'    => xcallable('acos'),
-                'asin'    => xcallable('asin'),
-                'atan'    => xcallable('atan'),
-                'average' => xcallable($average),
-                'avg'     => xcallable($average),
-                'ceil'    => xcallable('ceil'),
-                'cos'     => xcallable('cos'),
-                'count'   => xcallable(function () { return count(func_get_args()); }),
-                'deg2rad' => xcallable('deg2rad'),
-                'exp'     => xcallable('exp'),
-                'floor'   => xcallable('floor'),
-                'ln'      => xcallable('log'),
-                'log'     => xcallable(function ($value, $base = 10) { return log($value, $base); }),
-                'max'     => xcallable('max'),
-                'min'     => xcallable('min'),
-                'pow'     => xcallable('pow'),
-                'rad2deg' => xcallable('rad2deg'),
-                'sin'     => xcallable('sin'),
-                'sqrt'    => xcallable('sqrt'),
-                'sum'     => xcallable(function () { return array_sum(func_get_args()); }),
-                'tan'     => xcallable('tan')
-            ]);
-        }
-
-        $this->_functions = $_functions;
-
-        return;
+        return $this->_context->getVariables();
     }
 
     /**
-     * Initialize constants mapping.
+     * Get a variable.
      *
-     * @return void
+     * @param  string   $name Variable name.
+     * @return callable
+     * @throws Math\Exception\UnknownVariable
      */
-    protected function initializeConstants()
+    public function getVariable($name)
     {
-        static $_constants = null;
+        return $this->_context->getVariable($name);
+    }
 
-        if (null === $_constants) {
-            $_constants = new \ArrayObject([
-                'PI'      => M_PI,
-                'PI_2'    => M_PI_2,
-                'PI_4'    => M_PI_4,
-                'E'       => M_E,
-                'SQRT_PI' => M_SQRTPI,
-                'SQRT_2'  => M_SQRT2,
-                'SQRT_3'  => M_SQRT3,
-                'LN_PI'   => M_LNPI
-            ]);
+    protected function initializeContext()
+    {
+        if (null === $this->_context) {
+            $this->_context = new Math\Context();
         }
-
-        $this->_constants = $_constants;
 
         return;
     }
@@ -390,21 +355,7 @@ class Arithmetic implements Visitor\Visit
      */
     public function addFunction($name, $callable = null)
     {
-        if (null === $callable) {
-            if (false === function_exists($name)) {
-                throw new Math\UnknownFunction(
-                    'Function %s does not exist, cannot add it.',
-                    2,
-                    $name
-                );
-            }
-
-            $callable = $name;
-        }
-
-        $this->_functions[$name] = xcallable($callable);
-
-        return;
+        return $this->_context->addFunction($name, $callable);
     }
 
     /**
@@ -416,8 +367,18 @@ class Arithmetic implements Visitor\Visit
      */
     public function addConstant($name, $value)
     {
-        $this->_constants[$name] = $value;
+        return $this->_context->addConstant($name, $value);
+    }
 
-        return;
+    /**
+     * Add a variable.
+     *
+     * @param   string   $name     Variable name.
+     * @param   callable $callable Callable.
+     * @return  void
+     */
+    public function addVariable($name, callable $callable)
+    {
+        return $this->_context->addVariable($name, $callable);
     }
 }

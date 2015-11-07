@@ -162,7 +162,7 @@ Array
 
 ### Search for a document
 
-Searching is a hallmark of elasticsearch, so let's perform a search.  We are going to use the Match query as a demonstration:
+Searching is a hallmark of Elasticsearch, so let's perform a search.  We are going to use the Match query as a demonstration:
 
 ```php
 $params = [
@@ -251,7 +251,7 @@ Array
 
 ### Delete an index
 
-Due to the dynamic nature of elasticsearch, the first document we added automatically built an index with some default settings.  Let's delete that index because we want to specify our own settings later:
+Due to the dynamic nature of Elasticsearch, the first document we added automatically built an index with some default settings.  Let's delete that index because we want to specify our own settings later:
 
 ```php
 $deleteParams = [
@@ -315,7 +315,7 @@ Available Licenses
 -------
 
 Starting with version 1.3.1, Elasticsearch-PHP is available under two licenses: Apache v2.0 and LGPL v2.1.  Versions
-prior to 1.3.1 are still licensed with only Apache v2.0
+prior to 1.3.1 are still licensed with only Apache v2.0.
 
 The user may choose which license they wish to use.  Since there is no discriminating executable or distribution bundle
 to differentiate licensing, the user should document their license choice externally, in case the library is re-distributed.

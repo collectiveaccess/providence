@@ -1,3 +1,7 @@
+# 1.15.10.29
+
+  * Test: Specify file type with `hoa://Test/Vfs`. (Ivan Enderlin, 2015-10-29T22:20:43+01:00)
+
 # 1.15.09.08
 
   * Format code. (Ivan Enderlin, 2015-08-27T09:29:13+02:00)

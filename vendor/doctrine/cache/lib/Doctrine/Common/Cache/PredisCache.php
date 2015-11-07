@@ -46,8 +46,9 @@ class PredisCache extends CacheProvider
     {
         $fetchedItems = call_user_func_array(array($this->client, 'mget'), $keys);
 
-        return array_filter(array_combine($keys, array_map('unserialize', $fetchedItems)));
+        return array_map('unserialize', array_filter(array_combine($keys, $fetchedItems)));
     }
+
     /**
      * {@inheritdoc}
      */
@@ -76,7 +77,7 @@ class PredisCache extends CacheProvider
      */
     protected function doDelete($id)
     {
-        return $this->client->del($id) > 0;
+        return $this->client->del($id) >= 0;
     }
 
     /**

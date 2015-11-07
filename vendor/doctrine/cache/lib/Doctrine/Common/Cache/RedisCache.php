@@ -71,7 +71,14 @@ class RedisCache extends CacheProvider
      */
     protected function doFetchMultiple(array $keys)
     {
-        return array_filter(array_combine($keys, $this->redis->mget($keys)));
+        $fetchedItems = $this->redis->mget($keys);
+
+        return array_filter(
+            array_combine($keys, $fetchedItems),
+            function ($value) {
+                return $value !== false;
+            }
+        );
     }
 
     /**
@@ -99,7 +106,7 @@ class RedisCache extends CacheProvider
      */
     protected function doDelete($id)
     {
-        return $this->redis->delete($id) > 0;
+        return $this->redis->delete($id) >= 0;
     }
 
     /**

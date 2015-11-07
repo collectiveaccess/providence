@@ -307,7 +307,7 @@ if (typeof(PhpDebugBar) == 'undefined') {
                         continue;
                     }
                     filters.push(data[i].label);
-                    $('<a href="javascript:" />')
+                    $('<a />')
                         .addClass(csscls('filter'))
                         .text(data[i].label)
                         .attr('rel', data[i].label)
@@ -367,8 +367,8 @@ if (typeof(PhpDebugBar) == 'undefined') {
                         var measure = data.measures[i];
                         var m = $('<div />').addClass(csscls('measure')),
                             li = $('<li />'),
-                            left = Math.round(measure.relative_start * 100 / data.duration),
-                            width = Math.min(Math.round(measure.duration * 100 / data.duration), 100 - left);
+                            left = (measure.relative_start * 100 / data.duration).toFixed(2),
+                            width = Math.min((measure.duration * 100 / data.duration).toFixed(2), 100 - left);
 
                         m.append($('<span />').addClass(csscls('value')).css({
                             left: left + "%",

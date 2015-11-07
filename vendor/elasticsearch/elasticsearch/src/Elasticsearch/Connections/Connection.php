@@ -19,8 +19,6 @@ use Elasticsearch\Common\Exceptions\TransportException;
 use Elasticsearch\Serializers\SerializerInterface;
 use Elasticsearch\Transport;
 use GuzzleHttp\Ring\Core;
-use GuzzleHttp\Ring\Exception\ConnectException;
-use GuzzleHttp\Ring\Exception\RingException;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -100,12 +98,12 @@ class Connection implements ConnectionInterface
             $this->transportSchema = $hostDetails['scheme'];
         }
 
-        $auth = '';
         if (isset($hostDetails['user']) && isset($hostDetails['pass'])) {
-            $auth = $hostDetails['user'].':'.$hostDetails['pass'].'@';
+            $connectionParams['client']['curl'][CURLOPT_HTTPAUTH] = CURLAUTH_BASIC;
+            $connectionParams['client']['curl'][CURLOPT_USERPWD] = $hostDetails['user'].':'.$hostDetails['pass'];
         }
 
-        $host = $auth.$hostDetails['host'].':'.$hostDetails['port'];
+        $host = $hostDetails['host'].':'.$hostDetails['port'];
         if (isset($hostDetails['path']) === true) {
             $host .= $hostDetails['path'];
         }
@@ -167,8 +165,14 @@ class Connection implements ConnectionInterface
     private function wrapHandler(callable $handler, LoggerInterface $logger, LoggerInterface $tracer)
     {
         return function (array $request, Connection $connection, Transport $transport = null, $options) use ($handler, $logger, $tracer) {
+
+            $this->lastRequest = [];
+            $this->lastRequest['request'] = $request;
+
             // Send the request using the wrapped handler.
             $response =  Core::proxy($handler($request), function ($response) use ($connection, $transport, $logger, $tracer, $request, $options) {
+
+                $this->lastRequest['response'] = $response;
 
                 if (isset($response['error']) === true) {
                     if ($response['error'] instanceof ConnectException || $response['error'] instanceof RingException) {
@@ -201,6 +205,7 @@ class Connection implements ConnectionInterface
 
                     if (isset($response['body']) === true) {
                         $response['body'] = stream_get_contents($response['body']);
+                        $this->lastRequest['response']['body'] = $response['body'];
                     }
 
                     if ($response['status'] >= 400 && $response['status'] < 500) {
@@ -429,12 +434,10 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     * @param $curlErrorNumber
-     * @param $message
+     * @param $request
+     * @param $response
+     * @throws \Elasticsearch\Common\Exceptions\Curl\CouldNotConnectToHost|\Elasticsearch\Common\Exceptions\Curl\CouldNotResolveHostException|\Elasticsearch\Common\Exceptions\Curl\OperationTimeoutException|\Elasticsearch\Common\Exceptions\TransportException
      *
-     * @throws \Elasticsearch\Common\Exceptions\TransportException
-     * @throws \Elasticsearch\Common\Exceptions\Curl\CouldNotResolveHostException
-     * @throws \Elasticsearch\Common\Exceptions\Curl\CouldNotConnectToHost
      */
     protected function throwCurlException($request, $response)
     {
@@ -506,11 +509,13 @@ class Connection implements ConnectionInterface
         $statusCode = $response['status'];
         $responseBody = $response['body'];
 
+        /** @var \Exception $exception */
+        $exception = $this->tryDeserialize400Error($response);
+
         if (array_search($response['status'], $ignore) !== false) {
             return;
         }
 
-        $exception = null;
         if ($statusCode === 400 && strpos($responseBody, "AlreadyExpiredException") !== false) {
             $exception = new AlreadyExpiredException($responseBody, $statusCode);
         } elseif ($statusCode === 403) {
@@ -521,8 +526,6 @@ class Connection implements ConnectionInterface
             $exception = new Conflict409Exception($responseBody, $statusCode);
         } elseif ($statusCode === 400 && strpos($responseBody, 'script_lang not supported') !== false) {
             $exception = new ScriptLangNotSupportedException($responseBody. $statusCode);
-        } elseif ($statusCode === 400) {
-            $exception = new BadRequest400Exception($responseBody, $statusCode);
         }
 
         $this->logRequestFail(
@@ -549,7 +552,9 @@ class Connection implements ConnectionInterface
     {
         $statusCode = $response['status'];
         $responseBody = $response['body'];
-        $exception = $this->tryDeserializeError($response);
+
+        /** @var \Exception $exception */
+        $exception = $this->tryDeserialize500Error($response);
 
         $exceptionText = "[$statusCode Server Exception] ".$exception->getMessage();
         $this->log->error($exceptionText);
@@ -581,32 +586,48 @@ class Connection implements ConnectionInterface
         throw $exception;
     }
 
-    private function tryDeserializeError($response) {
+    private function tryDeserialize400Error($response) {
+        return $this->tryDeserializeError($response, 'Elasticsearch\Common\Exceptions\BadRequest400Exception');
+    }
+
+    private function tryDeserialize500Error($response) {
+        return $this->tryDeserializeError($response, 'Elasticsearch\Common\Exceptions\ServerErrorResponseException');
+    }
+
+    private function tryDeserializeError($response, $errorClass) {
         $error = $this->serializer->deserialize($response['body'], $response['transfer_stats']);
         if (is_array($error) === true) {
             // 2.0 structured exceptions
             if (isset($error['error']['reason']) === true) {
-                $original = new ServerErrorResponseException($response['body'], $response['status']);
 
-                $cause = $error['error']['reason'];
-                $type = $error['error']['type'];
+                // Try to use root cause first (only grabs the first root cause)
+                $root = $error['error']['root_cause'];
+                if (isset($root) && isset($root[0])) {
+                    $cause = $root[0]['reason'];
+                    $type = $root[0]['type'];
+                } else {
+                    $cause = $error['error']['reason'];
+                    $type = $error['error']['type'];
+                }
 
-                return new ServerErrorResponseException("$type: $cause", $response['status'], $original);
+                $original = new $errorClass($response['body'], $response['status']);
+
+                return new $errorClass("$type: $cause", $response['status'], $original);
 
             } elseif (isset($error['error']) === true) {
                 // <2.0 semi-structured exceptions
-                $original = new ServerErrorResponseException($response['body'], $response['status']);
+                $original = new $errorClass($response['body'], $response['status']);
 
-                return new ServerErrorResponseException($error['error'], $response['status'], $original);
+                return new $errorClass($error['error'], $response['status'], $original);
             }
 
             // <2.0 "i just blew up" nonstructured exception
             // $error is an array but we don't know the format, reuse the response body instead
-            return new ServerErrorResponseException($response['body'], $response['status']);
+            return new $errorClass($response['body'], $response['status']);
 
         }
 
         // <2.0 "i just blew up" nonstructured exception
-        return new ServerErrorResponseException($error, $response['status']);
+        return new $errorClass($error, $response['status']);
     }
 }

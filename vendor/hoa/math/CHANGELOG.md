@@ -1,3 +1,8 @@
+# 0.15.10.26
+
+  * Fix CS. (Ivan Enderlin, 2015-10-26T16:18:44+01:00)
+  * Added support for constants, variables and functions through the `Context`. (jubianchi, 2015-10-25T14:34:20+01:00)
+
 # 0.15.08.25
 
   * Fix valid arithmetic space definition in an expression. (Ivan Enderlin, 2015-08-25T07:50:36+02:00)
