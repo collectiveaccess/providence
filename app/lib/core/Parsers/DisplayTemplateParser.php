@@ -639,7 +639,26 @@ class DisplayTemplateParser {
 							foreach($o_node->attributes as $attribute => $value) {
 								$vs_attr .=  " {$attribute}=\"".htmlspecialchars(caProcessTemplate($value, $pa_vals, ['quote' => $pb_quote]))."\""; 
 							}
-							$vs_proc_template = "<{$vs_tag}{$vs_attr}></{$vs_tag}>"; 
+							
+							switch(strtolower($vs_tag)) {
+								case 'br':
+								case 'hr':
+								case 'meta':
+								case 'link':
+								case 'base':
+								case 'img':
+								case 'embed':
+								case 'param':
+								case 'area':
+								case 'col':
+								case 'input':
+									$vs_proc_template = "<{$vs_tag}{$vs_attr} />"; 
+									break;
+								default:
+									$vs_proc_template = "<{$vs_tag}{$vs_attr}></{$vs_tag}>"; 
+									break;
+							}
+							
 						} else {
 							$vs_proc_template = $o_node->html();
 						}
