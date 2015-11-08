@@ -377,7 +377,7 @@
 
  				$vs_element .= "<script type='text/javascript'>
  					jQuery(document).ready(function() {
- 						jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').datepicker({constrainInput: false});
+ 						jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').daterangepicker({dateFormat: 'dd MM yy',datepickerOptions: { minDate: null, maxDate: null}});
  					});
  				</script>\n";
 
