@@ -4194,6 +4194,19 @@ create table ca_editor_uis_x_users (
 
 
 /*==========================================================================*/
+create table ca_editor_uis_x_roles (
+	relation_id int unsigned not null auto_increment,
+	ui_id int unsigned not null references ca_editor_uis(ui_id),
+	role_id int unsigned not null references ca_user_roles(role_id),
+	access 			tinyint unsigned not null default 0,
+	
+	primary key 				(relation_id),
+	index i_ui_id				(ui_id),
+	index i_role_id				(role_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
 create table ca_editor_ui_screens (
 	screen_id int unsigned not null auto_increment,
 	parent_id int unsigned null,
@@ -4255,6 +4268,19 @@ create table ca_editor_ui_screens_x_users (
 	primary key 				(relation_id),
 	index i_screen_id			(screen_id),
 	index i_user_id				(user_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
+create table ca_editor_ui_screens_x_roles (
+	relation_id int unsigned not null auto_increment,
+	screen_id int unsigned not null references ca_editor_ui_screens(screen_id),
+	role_id int unsigned not null references ca_user_roles(role_id),
+	access 			tinyint unsigned not null default 0,
+	
+	primary key 				(relation_id),
+	index i_screen_id			(screen_id),
+	index i_role_id				(role_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
@@ -6642,5 +6668,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 123 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (123, unix_timestamp());
+/* CURRENT MIGRATION: 124 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (124, unix_timestamp());

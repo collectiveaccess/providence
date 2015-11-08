@@ -201,6 +201,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	protected $USERS_RELATIONSHIP_TABLE = 'ca_editor_uis_x_users';
 	protected $USER_GROUPS_RELATIONSHIP_TABLE = 'ca_editor_uis_x_user_groups';
+	protected $USER_ROLES_RELATIONSHIP_TABLE = 'ca_editor_uis_x_roles';
 	
 	# ------------------------------------------------------
 	# Labeling
@@ -249,6 +250,8 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		
 		$this->BUNDLES['ca_users'] = array('type' => 'special', 'repeating' => true, 'label' => _t('User access'));
 		$this->BUNDLES['ca_user_groups'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Group access'));
+		$this->BUNDLES['ca_user_roles'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Role access'));
+		
 		$this->BUNDLES['ca_editor_ui_screens'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Screens'));
 		$this->BUNDLES['ca_editor_ui_type_restrictions'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Type restrictions'));
 	}
@@ -417,6 +420,19 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 				)";
 				$va_sql_params[] = array_keys($va_groups);
 			}
+			
+			$va_roles = $t_user->getUserRoles();
+			if (is_array($va_roles) && sizeof($va_roles)) {
+				$vs_access_sql .= " OR (ceus.screen_id IN 
+					(
+						SELECT screen_id 
+						FROM ca_editor_ui_screens_x_roles
+						WHERE
+							role_id IN (?)
+					)
+				)";
+				$va_sql_params[] = array_keys($va_roles);
+			}
 			$vs_access_sql .= "
 				OR (
 					ceus.screen_id NOT IN (
@@ -425,6 +441,10 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 					AND
 					ceus.screen_id NOT IN (
 						SELECT screen_id FROM ca_editor_ui_screens_x_user_groups
+					)
+					AND
+					ceus.screen_id NOT IN (
+						SELECT screen_id FROM ca_editor_ui_screens_x_roles
 					)
 				)
 			)";
@@ -498,6 +518,8 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		$vn_screen_id = intval(str_replace('Screen', '', $pm_screen));
 		
 		if ($vn_user_id = $po_request->getUserID()) {
+			$t_user = $po_request->getUser();
+			
 			// Check for user access
 			$qr_users = $this->getDb()->query("
 				SELECT screen_id, user_id, access 
@@ -511,7 +533,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			
 			// Check for group access
 			
-			if (($t_user = $po_request->getUser()) && (is_array($va_groups = $t_user->getUserGroups())) && sizeof($va_groups)) {
+			if ((is_array($va_groups = $t_user->getUserGroups())) && sizeof($va_groups)) {
 				$qr_groups = $this->getDb()->query("
 					SELECT screen_id, group_id, access 
 					FROM ca_editor_ui_screens_x_user_groups
@@ -520,6 +542,20 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 						
 				if ($qr_groups->nextRow()) {
 					return $qr_groups->get('access');
+				}
+			}		
+			
+			// Check for role access
+			
+			if ((is_array($va_roles = $t_user->getUserRoles())) && sizeof($va_roles)) {
+				$qr_roles = $this->getDb()->query("
+					SELECT screen_id, role_id, access 
+					FROM ca_editor_ui_screens_x_roles
+					WHERE
+						role_id IN (?) AND screen_id = ?", array(array_keys($va_roles), $vn_screen_id));
+						
+				if ($qr_roles->nextRow()) {
+					return $qr_roles->get('access');
 				}
 			}			
 		}
@@ -532,7 +568,12 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 				SELECT screen_id FROM ca_editor_ui_screens_x_user_groups WHERE screen_id = ?
 			", array($vn_screen_id));
 			if (!$qr_all->nextRow()) {
-				return 2; // no user or group access control applied to this screen...  allow editing
+				$qr_all = $this->getDb()->query("
+					SELECT screen_id FROM ca_editor_ui_screens_x_roles WHERE screen_id = ?
+				", array($vn_screen_id));
+				if (!$qr_all->nextRow()) {
+					return 2; // no user, group or role access control applied to this screen...  allow editing
+				}
 			}
 		}
 		
