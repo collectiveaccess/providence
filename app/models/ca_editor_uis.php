@@ -366,16 +366,16 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Returns list of screens for a given UI. 
 	 *
-	 * @param RequestHTTP $po_request The current request
 	 * @param int $pn_type_id Optional type to restrict screens to
 	 * @param array $pa_options Options include:
 	 *		showAll = Include screens that do not have placements. Default is false.
+	 *		user_id = User_id to apply access control for
 	 *
 	 * @return array List of screens for this user interface
 	 */
-	public function getScreens($po_request=null, $pn_type_id=null, $pa_options=null) {
+	public function getScreens($pn_type_id=null, $pa_options=null) {
 		if (!$this->getPrimaryKey()) { return false; }
-
+		
 		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('editor_type')))) { return null; }
 		
 		if($t_instance instanceof BaseRelationshipModel) {
@@ -392,7 +392,9 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		$vs_type_sql = ((int)$pn_type_id) ? "AND (ceustr.type_id IS NULL OR ceustr.type_id IN (".join(",", $va_type_list)."))" : '';
 	
 		$vs_access_sql = '';
-		if ($po_request && ($vn_user_id = $po_request->getUserID()) && ($t_user = $po_request->getUser())) {
+		
+		$t_user = new ca_users();
+		if (($vn_user_id = caGetOption('user_id', $pa_options, null)) && ($t_user->load($vn_user_id))) {
 			$vs_access_sql = " AND ((ceus.screen_id IN 
 					(
 						SELECT screen_id 
@@ -547,7 +549,8 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	  * @return array Default screen information as an array
 	  */
 	public function getDefaultScreen($po_request=null, $pn_type_id=null, $pa_options=null) {
-		$va_screens = $this->getScreens($po_request, $pn_type_id, $pa_options);
+		if(!caGetOption('user_id', $pa_options, null) && $po_request) { $pa_options['user_id'] = $po_request->getUserID(); }
+		$va_screens = $this->getScreens($pn_type_id, $pa_options);
 		
 		foreach($va_screens as $vn_screen_id => $va_screen) {
 			if (isset($va_screen['isDefault']) && $va_screen['isDefault']) {
@@ -561,13 +564,18 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	  * Return number of screens configured for currently loaded UI 
 	  *
 	  * @param int $pn_type_id Optional type_id used when and per-screen type restrictions are enforced; if not set (the default) then all screens are returned - no type restrictions are enforced.
+	  * @param array $pa_options Options include:
+	  *		user_id = User_id to apply access control for
 	  * @return int Number of screens configured for the current UI
 	  */
-	public function getScreenCount($pn_type_id=null) {
+	public function getScreenCount($pn_type_id=null, $pa_options=null) {
 		if (!$this->getPrimaryKey()) { return 0; }
+		if(!caGetOption('user_id', $pa_options, null) && $po_request) { $pa_options['user_id'] = $po_request->getUserID(); }
+		$pa_options['showAll'] = true;
+		
 		$vs_opts_md5 = md5(print_r(array('showAll' => true), true));
 		
-		return sizeof($this->getScreens(null, $pn_type_id, array('showAll' => true)));
+		return sizeof($this->getScreens($pn_type_id, $pa_options));
 	}
 	# ----------------------------------------
 	/**
@@ -605,11 +613,17 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Returns screen name for the first screen in the currently loaded UI 
 	 * that contains the bundle named by $ps_bundle_name
+	 *
+	 * @param string $ps_bundle_name
+	 * @param RequestHTTP $po_request
+	 * @param array $pa_options Options include:
+	 *		user_id = User_id to apply access control for
 	 */
-	public function getScreenWithBundle($ps_bundle_name, $po_request=null) {
+	public function getScreenWithBundle($ps_bundle_name, $po_request=null, $pa_options=null) {
 		if (!$this->getPrimaryKey()) { return null; }
+		if(!caGetOption('user_id', $pa_options, null) && $po_request) { $pa_options['user_id'] = $po_request->getUserID(); }
 		
-		foreach($this->getScreens($po_request) as $va_screen) {
+		foreach($this->getScreens(null, $pa_options) as $va_screen) {
 			$vn_screen_id = $va_screen['screen_id'];
 			$va_placements = $this->getScreenBundlePlacements('Screen'.$vn_screen_id);
 			
@@ -629,14 +643,17 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @param string $ps_bundle_name The bundle name
 	 * @param RequestHTTP $po_request The current request
+	 * @param array $pa_options Options include:
+	 *		user_id = User_id to apply access control for
 	 *
 	 * @return array A list of placement info, one for each placement in the editor
 	 */
-	public function getPlacementsForBundle($ps_bundle_name, $po_request=null) {
+	public function getPlacementsForBundle($ps_bundle_name, $po_request=null, $pa_options=null) {
 		if (!$this->getPrimaryKey()) { return null; }
+		if(!caGetOption('user_id', $pa_options, null) && $po_request) { $pa_options['user_id'] = $po_request->getUserID(); }
 		
 		$va_found = array();
-		foreach($this->getScreens($po_request) as $va_screen) {
+		foreach($this->getScreens(null, $pa_options) as $va_screen) {
 			$vn_screen_id = $va_screen['screen_id'];
 			$va_placements = $this->getScreenBundlePlacements('Screen'.$vn_screen_id);
 			
@@ -664,10 +681,12 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	 * @param array $pa_options	Values to include in returned array for each screen. Values are returned as-is. Specific options also have the following effects:
 	 *		returnTypeRestrictions = return list of type restrictions for screen. Default is false. 
 	 *		restrictToTypes = 
+	 *		user_id = User_id to apply access control for
 	 * @return array
 	 */
 	public function getScreensAsNavConfigFragment($po_request, $pn_type_id, $ps_module_path, $ps_controller, $ps_action, $pa_parameters, $pa_requirements, $pb_disable_options=false, $pa_options=null) {
-		if (!($va_screens = $this->getScreens($po_request, $pn_type_id))) { return false; }
+		if(!caGetOption('user_id', $pa_options, null) && $po_request) { $pa_options['user_id'] = $po_request->getUserID(); }
+		if (!($va_screens = $this->getScreens($pn_type_id, $pa_options))) { return false; }
 		
 		$va_nav = array();
 		$vn_default_screen_id = null;
@@ -1105,7 +1124,8 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @return string Rendered HTML bundle for display
 	 */
-	public function getScreenHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null) {
+	public function getScreenHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code) {
+		
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
 		$o_view->setVar('t_ui', $this);		
@@ -1115,7 +1135,8 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		$o_view->setVar('request', $po_request);
 		
 		if ($this->getPrimaryKey()) {
-			$o_view->setVar('screens', $this->getScreens($po_request, null, array('showAll' => true)));
+			// We don't filter screens based upon user access in the configuration interface
+			$o_view->setVar('screens', $this->getScreens(null, array('showAll' => true)));
 		} else {
 			$o_view->setVar('screens', array());
 		}
