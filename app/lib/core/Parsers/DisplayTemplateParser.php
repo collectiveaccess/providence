@@ -639,7 +639,7 @@ class DisplayTemplateParser {
 							foreach($o_node->attributes as $attribute => $value) {
 								$vs_attr .=  " {$attribute}=\"".htmlspecialchars(caProcessTemplate($value, $pa_vals, ['quote' => $pb_quote]))."\""; 
 							}
-							$vs_proc_template = "<{$vs_tag}{$vs_attr} />"; 
+							$vs_proc_template = "<{$vs_tag}{$vs_attr}></{$vs_tag}>"; 
 						} else {
 							$vs_proc_template = $o_node->html();
 						}
