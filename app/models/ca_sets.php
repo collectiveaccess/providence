@@ -400,7 +400,38 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 * and we might wanna reuse a code of a set we previously deleted.
 	 */
 	public function delete($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
-		if($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		$vb_web_set_change_log_unit_id = BaseModel::setChangeLogUnitID();
+
+		if($pb_delete_related) {
+			// quickly delete all labels for all set items in this set
+			$this->getDb()->query('DELETE FROM ca_set_item_labels WHERE item_id IN (SELECT item_id FROM ca_set_items WHERE set_id=?)', $this->getPrimaryKey());
+
+			// quickly delete attribute values
+			$this->getDb()->query('
+				DELETE FROM ca_attribute_values WHERE attribute_id IN
+				(SELECT attribute_id FROM ca_attributes WHERE table_num=? and row_id IN (SELECT item_id FROM ca_set_items WHERE set_id=7))
+			', $this->tableNum(), $this->getPrimaryKey());
+
+			// quickly delete attributes
+			$this->getDb()->query('
+				DELETE FROM ca_attributes WHERE table_num=? and row_id IN (SELECT item_id FROM ca_set_items WHERE set_id=7)
+			', $this->tableNum(), $this->getPrimaryKey());
+
+			// get list of set item ids
+			$qr_items = $this->getDb()->query('SELECT item_id FROM ca_set_items WHERE set_id=?', $this->getPrimaryKey());
+			$va_item_ids = $qr_items->getAllFieldValues('item_id');
+
+			// nuke set items
+			$this->getDb()->query('DELETE FROM ca_set_items WHERE set_id=?', $this->getPrimaryKey());
+
+			// remove search indexing for deleted set items
+			foreach($va_item_ids as $vn_item_id) {
+				$this->getSearchIndexer()->commitRowUnIndexing($this->tableNum(), $vn_item_id, array('queueIndexing' => true));
+			}
+		}
+
+		if($vn_rc = parent::delete($pb_delete_related, array_merge(array('queueIndexing' => true), $pa_options), $pa_fields, $pa_table_list)) {
 			if(!caGetOption('hard', $pa_options, false)) { // only applies if we don't hard-delete
 				$vb_we_set_transaction = false;
 				if (!$this->inTransaction()) {
@@ -408,13 +439,14 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					$this->setTransaction($o_t);
 					$vb_we_set_transaction = true;
 				}
-
 				$this->set('set_code', $this->get('set_code') . '_' . time());
 				$this->update(array('force' => true));
 
 				if ($vb_we_set_transaction) { $this->removeTransaction(true); }
 			}
 		}
+
+		if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 
 		return $vn_rc;
 	}
@@ -1157,8 +1189,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			}
 			
 			// Index the links
-			$o_indexer = new SearchIndexer($this->getDb());
-			$o_indexer->reindexRows('ca_set_items', $va_item_ids);
+			$this->getSearchIndexer()->reindexRows('ca_set_items', $va_item_ids, array('queueIndexing' => true));
 		}
 		
 		return sizeof($va_item_values);
