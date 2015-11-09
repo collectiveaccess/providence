@@ -38,6 +38,61 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		date_default_timezone_set('America/New_York');
 	}
 
+	public function testUnknownYearAACR2() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+
+		$vb_res = $o_tep->parse('199-');
+		$this->assertEquals($vb_res, true);
+
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals("1990.010100000000", $va_parse['start']);
+		$this->assertEquals("1999.123123595900", $va_parse['end']);
+	}
+
+	public function testUncertainDates() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+
+		$vb_res = $o_tep->parse('199?');
+		$this->assertEquals($vb_res, true);
+
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals("199.010100000010", $va_parse['start']);
+		$this->assertEquals("199.123123595910", $va_parse['end']);
+	}
+
+	public function testEarlyCEDatesWithoutEra() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+
+		$vb_res = $o_tep->parse('12/22/199');
+		$this->assertEquals($vb_res, true);
+
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals("199.122200000000", $va_parse['start']);
+		$this->assertEquals("199.122223595900", $va_parse['end']);
+	}
+
+	public function testEarlyCEDatesWithoutEraAussieStyle() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_AU');
+
+		$vb_res = $o_tep->parse('22/12/199');
+		$this->assertEquals($vb_res, true);
+
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals("199.122200000000", $va_parse['start']);
+		$this->assertEquals("199.122223595900", $va_parse['end']);
+
+		$vb_res = $o_tep->parse('22.12.199');
+		$this->assertEquals($vb_res, true);
+
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals("199.122200000000", $va_parse['start']);
+		$this->assertEquals("199.122223595900", $va_parse['end']);
+	}
+
 	public function testImplicitCenturyDates() {
 		$o_tep = new TimeExpressionParser();
 		$o_tep->setLanguage('en_US');
