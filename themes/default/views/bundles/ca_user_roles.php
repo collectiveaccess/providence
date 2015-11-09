@@ -59,7 +59,7 @@
 						foreach($va_role_list as $vn_role_id => $va_role_info) {
 							if ($vn_c == 0) { print "<tr>"; }
 							print "<td width='33%'><div class='formLabel'>\n";
-							print "{$va_role_info['name']} ".$t_rel->htmlFormElement('access', '^ELEMENT', array('name' => $vs_id_prefix."_access_{$vn_role_id}", 'id' => "{$vs_id_prefix}_access_{$vn_role_id}", 'no_tooltips' => true, 'value' => '{{access}}'));
+							print "{$va_role_info['name']}<br/>".$t_rel->htmlFormElement('access', '^ELEMENT', array('name' => $vs_id_prefix."_access_{$vn_role_id}", 'id' => "{$vs_id_prefix}_access_{$vn_role_id}", 'no_tooltips' => true, 'value' => '{{access}}'));
 							print "</div></td>";
 							$vn_c++;
 							
