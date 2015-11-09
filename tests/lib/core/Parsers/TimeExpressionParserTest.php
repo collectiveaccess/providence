@@ -38,6 +38,18 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		date_default_timezone_set('America/New_York');
 	}
 
+	public function testImplicitCenturyDates() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+
+		$vb_res = $o_tep->parse('2/19/16');
+		$this->assertEquals($vb_res, true);
+
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals("2016.021900000000", $va_parse['start']);
+		$this->assertEquals("2016.021923595900", $va_parse['end']);
+	}
+
 	public function testQuarterCenturyDates() {
 		$o_tep = new TimeExpressionParser();
 		$o_tep->setLanguage('en_US');

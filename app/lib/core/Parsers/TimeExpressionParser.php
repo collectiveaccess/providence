@@ -1831,7 +1831,7 @@ class TimeExpressionParser {
 				$pa_dates['end']['month'] = $pa_dates['start']['month'];
 				$pa_dates['end']['day'] = $pa_dates['start']['day'];
 			}
-			
+
 			// Two-digit year windowing
 			if (
 				(!isset($pa_dates['start']['dont_window']) || !$pa_dates['start']['dont_window'])
@@ -1841,8 +1841,8 @@ class TimeExpressionParser {
 				$va_tmp = $this->gmgetdate();
 				$vn_current_year = intval(substr($va_tmp['year'], 2, 2));		// get last two digits of current year
 				$vn_current_century = intval(substr($va_tmp['year'], 0, 2)) * 100;
-				
-				if ($pa_dates['start']['year'] <= $vn_current_year) {
+
+				if ($pa_dates['start']['year'] <= ($vn_current_year + 10)) {
 					$pa_dates['start']['year'] += $vn_current_century;
 				} else {
 					$pa_dates['start']['year'] += ($vn_current_century - 100);
@@ -1853,7 +1853,8 @@ class TimeExpressionParser {
 				$va_tmp = $this->gmgetdate();
 				$vn_current_year = intval(substr($va_tmp['year'], 2, 2));		// get last two digits of current year
 				$vn_current_century = intval(substr($va_tmp['year'], 0, 2)) * 100;
-				if ($pa_dates['end']['year'] <= $vn_current_year) {
+
+				if ($pa_dates['end']['year'] <= ($vn_current_year + 10)) {
 					$pa_dates['end']['year'] += $vn_current_century;
 				} else {
 					$pa_dates['end']['year'] += ($vn_current_century - 100);
