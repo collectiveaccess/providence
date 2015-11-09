@@ -88,7 +88,7 @@ class DateRange extends GenericElement {
 		$vs_fld = null;
 		foreach($po_query->getQueryTerms() as $o_term) {
 			$o_term = caRewriteElasticSearchTermFieldSpec($o_term);
-			$vs_fld = $o_term->field;
+			$vs_fld = str_replace('\\', '', $o_term->field);
 			$va_terms[] = $o_term->text;
 		}
 
@@ -117,7 +117,7 @@ class DateRange extends GenericElement {
 		$va_return = array();
 		$va_parsed_values = caGetISODates($po_term->text);
 
-		$va_return[$po_term->field] = array(
+		$va_return[str_replace('\\', '', $po_term->field)] = array(
 			'gte' => $va_parsed_values['start'],
 			'lte' => $va_parsed_values['end'],
 		);

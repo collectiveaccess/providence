@@ -294,7 +294,7 @@ class Query {
 	 * @return \ElasticSearch\FieldTypes\FieldType
 	 */
 	protected function getFieldTypeForTerm($po_term) {
-		$va_parts = explode('/', $po_term->field);
+		$va_parts = preg_split("!(\\\)?/!", $po_term->field);
 		$vs_table = $va_parts[0];
 		unset($va_parts[0]);
 		$vs_fld = join('/', $va_parts);
@@ -304,6 +304,7 @@ class Query {
 	protected function getFilterQuery() {
 		$va_terms = array();
 		foreach($this->getFilters() as $va_filter) {
+			$va_filter['field'] = str_replace('.', '\/', $va_filter['field']);
 			switch($va_filter['operator']) {
 				case '=':
 					$va_terms[] = $va_filter['field'].':'.$va_filter['value'];

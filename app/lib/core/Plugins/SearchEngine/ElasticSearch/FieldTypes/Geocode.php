@@ -102,7 +102,7 @@ class Geocode extends GenericElement {
 		$va_lower_coords = explode(',', $o_lower_term->text);
 		$va_upper_coords = explode(',', $o_upper_term->text);
 
-		$va_return[$o_lower_term->field] = array(
+		$va_return[str_replace('\\', '', $o_lower_term->field)] = array(
 			'shape' => array(
 				'type' => 'envelope',
 				'coordinates' => array(
@@ -127,7 +127,7 @@ class Geocode extends GenericElement {
 
 		$va_parsed_search = caParseGISSearch(join(' ', $va_terms));
 
-		$va_return[$o_term->field] = array(
+		$va_return[str_replace('\\', '', $o_term->field)] = array(
 			'shape' => array(
 				'type' => 'envelope',
 				'coordinates' => array(

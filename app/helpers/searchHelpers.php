@@ -347,7 +347,7 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 	 */
 	function caRewriteElasticSearchTermFieldSpec($po_term) {
 		return new Zend_Search_Lucene_Index_Term(
-			$po_term->text, str_replace('.', '/', $po_term->field)
+			$po_term->text, (strlen($po_term->field) > 0) ? str_replace('.', '\/', str_replace('/', '|', $po_term->field)) : $po_term->field
 		);
 	}
 	# ---------------------------------------

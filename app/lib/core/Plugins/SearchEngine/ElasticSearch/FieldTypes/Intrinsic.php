@@ -125,7 +125,7 @@ class Intrinsic extends FieldType {
 		}
 
 		if($vn_rel_type_id = caGetOption('relationship_type_id', $pa_options)) {
-			// elasticsearch doesn't allow slashes in field names, so we use a pipe instead
+			// we use slashes as table_name/field_name delimiter, so let's use something else for the relationship type code
 			$va_return[
 				$this->getTableName() . '/' . $this->getFieldName() . '|' . caGetRelationshipTypeCode($vn_rel_type_id)
 			] = $pm_content;
@@ -153,22 +153,19 @@ class Intrinsic extends FieldType {
 					$po_term->field, '_missing_'
 				);
 			}
-		} elseif(stripos($po_term->field, '/') !== false) {
-			// elasticsearch doesn't allow slashes in field names, so we use a pipe instead.
-			// rewrite ca_entity_labels.displayname/creator to ca_entity_labels.displayname|creator here
-			// note that there are (hopefully) no other cases where we need slashes
-			return new \Zend_Search_Lucene_Index_Term(
-				$po_term->text, str_replace('/', '|', $po_term->field)
-			);
 		} elseif(
+			($t_instance instanceof \BaseModel) &&
 			isset($va_field_components[1]) &&
 			($t_instance->getProperty('ID_NUMBERING_ID_FIELD') == $va_field_components[1])
 		) {
 			return new \Zend_Search_Lucene_Index_Term(
 				'"'.$po_term->text.'"', $po_term->field
 			);
+		} else {
+			return new \Zend_Search_Lucene_Index_Term(
+				str_replace('/', '\\/', $po_term->text),
+				$po_term->field
+			);
 		}
-
-		return $po_term;
 	}
 }

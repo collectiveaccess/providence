@@ -89,7 +89,7 @@ class Currency extends GenericElement {
 		if(is_array($va_parsed_currency) && isset($va_parsed_currency['value_longtext1'])) {
 			return array(new \Zend_Search_Lucene_Index_Term(
 				$va_parsed_currency['value_longtext1'],
-				$this->getTableName() . '/' . $this->getElementCode() . '_currency'
+				$this->getTableName() . '\\/' . $this->getElementCode() . '_currency'
 			));
 		} else {
 			return false;

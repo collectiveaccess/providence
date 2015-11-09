@@ -102,7 +102,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				$this->getClient()->indices()->create(array('index' => $this->getIndexName()));
 				// if we don't refresh() after creating, ES throws a IndexPrimaryShardNotAllocatedException
 				// @see https://groups.google.com/forum/#!msg/elasticsearch/hvMhx162E-A/on-3druwehwJ
-				$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
+				//$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
 			} catch (Elasticsearch\Common\Exceptions\BadRequest400Exception $e) {
 				// noop -- the exception happens when the index already exists, which is good
 			}
@@ -139,7 +139,6 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 *		PRIVATE = Set indexing to private
 	 */
 	public function updateIndexingInPlace($pn_subject_tablenum, $pa_subject_row_ids, $pn_content_tablenum, $ps_content_fieldnum, $pn_content_row_id, $ps_content, $pa_options=null) {
-		var_dump(func_get_args());
 		$vs_table_name = $this->opo_datamodel->getTableName($pn_subject_tablenum);
 		$o_field = new ElasticSearch\Field($pn_content_tablenum, $ps_content_fieldnum);
 		$va_fragment = $o_field->getIndexingFragment($ps_content, $pa_options);
@@ -288,11 +287,10 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			'type' => $this->opo_datamodel->getTableName($pn_subject_tablenum),
 			'body' => array(
 				'query' => array(
-					'filtered' => array(
-						'query' => array(
+					'bool' => array(
+						'must' => array(
 							'query_string' => array( 'query' => $vs_query )
-						),
-						'filter' => array() // leave empty for now, see below
+						)
 					)
 				)
 			)
@@ -300,10 +298,10 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 
 		// apply additional filters that may have been set by the query
 		if(($va_additional_filters = $o_query->getAdditionalFilters()) && is_array($va_additional_filters) && (sizeof($va_additional_filters) > 0)) {
-			// yeah ... the array structure is ridiculous
-			$va_search_params['body']['query']['filtered']['filter']['bool']['must'] = $va_additional_filters;
+			foreach($va_additional_filters as $vs_filter_name => $va_filter) {
+				$va_search_params['body']['query']['bool']['filter'][$vs_filter_name] = $va_filter;
+			}
 		}
-
 		Debug::msg("[ElasticSearch] actual query filters are: " . print_r($va_additional_filters, true));
 		$va_results = $this->getClient()->search($va_search_params);
 		return new WLPlugSearchEngineElasticSearchResult($va_results['hits']['hits'], $pn_subject_tablenum);
@@ -440,7 +438,6 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				$va_bulk_params['body'][] = array('doc' => $va_fragment);
 			}
 		}
-		var_dump($va_bulk_params);
 		
 		$this->getClient()->bulk($va_bulk_params);
 

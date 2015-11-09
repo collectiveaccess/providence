@@ -82,7 +82,6 @@ class Mapping {
 	 * @return bool
 	 */
 	public function needsRefresh() {
-		return true;
 		return !\ExternalCache::contains('LastPing', 'ElasticSearchMapping');
 	}
 
@@ -231,7 +230,7 @@ class Mapping {
 		switch($pa_element_info['datatype']) {
 			case 2:	// daterange
 				$va_element_config[$ps_table.'/'.$vs_element_code]['type'] = 'date';
-				$va_element_config[$ps_table.'/'.$vs_element_code]['format'] = 'dateOptionalTime';
+				$va_element_config[$ps_table.'/'.$vs_element_code]['format'] = 'date_time_no_millis';
 				$va_element_config[$ps_table.'/'.$vs_element_code]['ignore_malformed'] = false;
 				$va_element_config[$ps_table.'/'.$vs_element_code.'_text'] = array('type' => 'string');
 				break;
@@ -346,7 +345,7 @@ class Mapping {
 			case (FT_DATERANGE):
 			case (FT_HISTORIC_DATERANGE):
 				$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'date';
-				$va_field_options[$ps_table.'/'.$vs_field_name]['format'] = 'dateOptionalTime';
+				$va_field_options[$ps_table.'/'.$vs_field_name]['format'] = 'date_time_no_millis';
 				$va_field_options[$ps_table.'/'.$vs_field_name]['ignore_malformed'] = false;
 				break;
 			case (FT_BIT):
