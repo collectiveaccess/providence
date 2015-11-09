@@ -179,6 +179,18 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_parse[1], 80.1231235959);
 	}
 
+	public function testEarlyCEDatesWithEra() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+
+		$vb_res = $o_tep->parse('12/22/99 CE');
+		$this->assertEquals($vb_res, true);
+
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals("99.122200000000", $va_parse['start']);
+		$this->assertEquals("99.122223595900", $va_parse['end']);
+	}
+
 	public function testSeasonDates() {
 		$o_tep = new TimeExpressionParser();
 		$o_tep->setLanguage('en_US');
