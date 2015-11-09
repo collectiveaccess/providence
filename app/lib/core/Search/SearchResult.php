@@ -98,6 +98,22 @@ class SearchResult extends BaseObject {
 	private $opb_disable_get_with_template_prefetch = false;
 	static $s_template_prefetch_cache;
 	# ------------------------------------------------------------------
+
+	public static function clearCaches() {
+		self::$s_prefetch_cache = array();
+		self::$s_instance_cache = array();
+		self::$s_timestamp_cache = array();
+		self::$s_rel_prefetch_cache = array();
+		self::$s_parsed_field_component_cache = array();
+		self::$opa_hierarchy_parent_prefetch_cache = array();
+		self::$opa_hierarchy_children_prefetch_cache = array();
+		self::$opa_hierarchy_parent_prefetch_cache_index = array();
+		self::$opa_hierarchy_children_prefetch_cache_index = array();
+		self::$opa_hierarchy_siblings_prefetch_cache = array();
+		self::$opa_hierarchy_siblings_prefetch_cache_index = array();
+		self::$s_template_prefetch_cache;
+	}
+
 	public function __construct($po_engine_result=null, $pa_tables=null) {
 		if (!SearchResult::$opo_datamodel) { SearchResult::$opo_datamodel = Datamodel::load(); }
 		
