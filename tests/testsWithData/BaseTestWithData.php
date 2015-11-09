@@ -51,7 +51,7 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 	 * at the indexing after the test ran.
 	 * @var bool
 	 */
-	private $opb_care_about_side_effects = true;
+	private $opb_care_about_side_effects = false;
 
 	static $opa_valid_tables = array('ca_objects', 'ca_entities', 'ca_occurrences', 'ca_movements', 'ca_loans', 'ca_object_lots', 'ca_storage_locations', 'ca_places', 'ca_item_comments');
 	# -------------------------------------------------------

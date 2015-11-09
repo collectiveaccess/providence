@@ -140,12 +140,25 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 */
 	public function updateIndexingInPlace($pn_subject_tablenum, $pa_subject_row_ids, $pn_content_tablenum, $ps_content_fieldnum, $pn_content_row_id, $ps_content, $pa_options=null) {
 		$vs_table_name = $this->opo_datamodel->getTableName($pn_subject_tablenum);
+
 		$o_field = new ElasticSearch\Field($pn_content_tablenum, $ps_content_fieldnum);
 		$va_fragment = $o_field->getIndexingFragment($ps_content, $pa_options);
 
 		foreach($pa_subject_row_ids as $pn_subject_row_id) {
+
+			// fetch the record
+			$va_record = $this->getClient()->get([
+					'index' => $this->getIndexName(),
+					'type' => $vs_table_name,
+					'id' => $pn_subject_row_id
+			])['_source'];
+
 			foreach($va_fragment as $vs_key => $vm_val) {
-				self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key] = $vm_val;
+				if(isset($va_record[$vs_key])) {
+					// @todo if there's an actual value, get the index for this $pn_content_row_id from _content_ids field and replace it
+				} else { // this field wasn't indexed yet -- just add it
+					self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key][] = $vm_val;
+				}
 			}
 		}
 
@@ -174,7 +187,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		);
 
 		$this->opa_capabilities = array(
-			'incremental_reindexing' => false
+			'incremental_reindexing' => true
 		);
 	}
 	# -------------------------------------------------------
@@ -333,6 +346,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 
 		foreach($o_field->getIndexingFragment($pm_content, $pa_options) as $vs_key => $vm_val) {
 			$this->opa_index_content_buffer[$vs_key][] = $vm_val;
+			// this list basically indexes the values above by content row id. we need that to have a chance
+			// to update indexing for specific values [content row ids] in place
 			$this->opa_index_content_buffer[$vs_key.'_content_ids'][] = $pn_content_row_id;
 		}
 	}
@@ -441,9 +456,10 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		
 		$this->getClient()->bulk($va_bulk_params);
 
-		// @todo get rid of this statement -- we usually don't need indexing to be available *immediately*
-		// unless we're running automated tests in development of course :-)
-		$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
+		// we usually don't need indexing to be available *immediately* unless we're running automated tests of course :-)
+		if(caIsRunFromCLI()) {
+ 			$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
+		}
 
 		$this->opa_index_content_buffer = array();
 		self::$s_doc_content_buffer = array();
