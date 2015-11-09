@@ -514,65 +514,146 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public function getAccessForScreen($po_request, $pm_screen) {
-		$vn_screen_id = intval(str_replace('Screen', '', $pm_screen));
+	public static function getAccessForUI($po_request, $pm_ui_id) {
+		
+		if (!is_numeric($pm_ui_id) || !($t_ui = ca_editor_uis::find(array('ui_id' => $pm_ui_id), array('returnAs' => 'firstModelInstance')))) {
+			$t_ui = ca_editor_uis::find(array('editor_code' => $pm_ui_id), array('returnAs' => 'firstModelInstance'));
+		}
+		if (!$t_ui) { return null; }
+		$vn_ui_id = $t_ui->getPrimaryKey();
 		
 		if ($vn_user_id = $po_request->getUserID()) {
 			$t_user = $po_request->getUser();
 			
 			// Check for user access
-			$qr_users = $this->getDb()->query("
-				SELECT screen_id, user_id, access 
-				FROM ca_editor_ui_screens_x_users
+			$qr_users = $t_user->getDb()->query("
+				SELECT ui_id, user_id, access 
+				FROM ca_editor_uis_x_users
 				WHERE
-					user_id = ? AND screen_id = ?", array($vn_user_id, $vn_screen_id));
+					user_id = ? AND ui_id = ?", array($vn_user_id, $vn_ui_id));
 					
 			if ($qr_users->nextRow()) {
-				return $qr_users->get('access');
+				return (int)$qr_users->get('access');
 			}
 			
 			// Check for group access
 			
 			if ((is_array($va_groups = $t_user->getUserGroups())) && sizeof($va_groups)) {
-				$qr_groups = $this->getDb()->query("
-					SELECT screen_id, group_id, access 
-					FROM ca_editor_ui_screens_x_user_groups
+				$qr_groups = $t_user->getDb()->query("
+					SELECT ui_id, group_id, access 
+					FROM ca_editor_uis_x_user_groups
 					WHERE
-						group_id IN (?) AND screen_id = ?", array(array_keys($va_groups), $vn_screen_id));
+						group_id IN (?) AND ui_id = ?", array(array_keys($va_groups), $vn_ui_id));
 						
 				if ($qr_groups->nextRow()) {
-					return $qr_groups->get('access');
+					return (int)$qr_groups->get('access');
 				}
 			}		
 			
 			// Check for role access
 			
 			if ((is_array($va_roles = $t_user->getUserRoles())) && sizeof($va_roles)) {
-				$qr_roles = $this->getDb()->query("
+				$qr_roles = $t_user->getDb()->query("
+					SELECT ui_id, role_id, access 
+					FROM ca_editor_uis_x_roles
+					WHERE
+						role_id IN (?) AND ui_id = ?", array(array_keys($va_roles), $vn_ui_id));
+						
+				if ($qr_roles->nextRow()) {
+					return (int)$qr_roles->get('access');
+				}
+			}			
+		}
+		
+		$qr_all = $t_user->getDb()->query("
+			SELECT ui_id FROM ca_editor_uis_x_users WHERE ui_id = ?
+		", array($vn_ui_id));
+		if (!$qr_all->nextRow()) {
+			$qr_all = $t_user->getDb()->query("
+				SELECT ui_id FROM ca_editor_uis_x_user_groups WHERE ui_id = ?
+			", array($vn_ui_id));
+			if (!$qr_all->nextRow()) {
+				$qr_all = $t_user->getDb()->query("
+					SELECT ui_id FROM ca_editor_uis_x_roles WHERE ui_id = ?
+				", array($vn_ui_id));
+				if (!$qr_all->nextRow()) {
+					return __CA_BUNDLE_ACCESS_EDIT__; // no user, group or role access control applied to this screen...  allow editing
+				}
+			}
+		}
+		
+		return false; // no access
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	public static function getAccessForScreen($po_request, $pm_screen) {
+		$vn_screen_id = intval(str_replace('Screen', '', $pm_screen));
+		
+		if ($vn_user_id = $po_request->getUserID()) {
+			$t_user = $po_request->getUser();
+			
+			// Check for user access
+			$qr_users = $t_user->getDb()->query("
+				SELECT screen_id, user_id, access 
+				FROM ca_editor_ui_screens_x_users
+				WHERE
+					user_id = ? AND screen_id = ?", array($vn_user_id, $vn_screen_id));
+					
+			if ($qr_users->nextRow()) {
+				return (int)$qr_users->get('access');
+			}
+			
+			// Check for group access
+			
+			if ((is_array($va_groups = $t_user->getUserGroups())) && sizeof($va_groups)) {
+				$qr_groups = $t_user->getDb()->query("
+					SELECT screen_id, group_id, access 
+					FROM ca_editor_ui_screens_x_user_groups
+					WHERE
+						group_id IN (?) AND screen_id = ?", array(array_keys($va_groups), $vn_screen_id));
+						
+				if ($qr_groups->nextRow()) {
+					return (int)$qr_groups->get('access');
+				}
+			}		
+			
+			// Check for role access
+			
+			if ((is_array($va_roles = $t_user->getUserRoles())) && sizeof($va_roles)) {
+				$qr_roles = $t_user->getDb()->query("
 					SELECT screen_id, role_id, access 
 					FROM ca_editor_ui_screens_x_roles
 					WHERE
 						role_id IN (?) AND screen_id = ?", array(array_keys($va_roles), $vn_screen_id));
 						
 				if ($qr_roles->nextRow()) {
-					return $qr_roles->get('access');
+					return (int)$qr_roles->get('access');
 				}
 			}			
 		}
 		
-		$qr_all = $this->getDb()->query("
+		$qr_all = $t_user->getDb()->query("
 			SELECT screen_id FROM ca_editor_ui_screens_x_users WHERE screen_id = ?
 		", array($vn_screen_id));
 		if (!$qr_all->nextRow()) {
-			$qr_all = $this->getDb()->query("
+			$qr_all = $t_user->getDb()->query("
 				SELECT screen_id FROM ca_editor_ui_screens_x_user_groups WHERE screen_id = ?
 			", array($vn_screen_id));
 			if (!$qr_all->nextRow()) {
-				$qr_all = $this->getDb()->query("
+				$qr_all = $t_user->getDb()->query("
 					SELECT screen_id FROM ca_editor_ui_screens_x_roles WHERE screen_id = ?
 				", array($vn_screen_id));
 				if (!$qr_all->nextRow()) {
-					return 2; // no user, group or role access control applied to this screen...  allow editing
+					$qr_all = $t_user->getDb()->query("
+						SELECT ui_id FROM ca_editor_ui_screens WHERE screen_id = ?
+					", array($vn_screen_id));
+					
+					if ($qr_all->nextRow()) {
+						// Inherit access from UI screen is part of
+						return ca_editor_uis::getAccessForUI($po_request, $qr_all->get('ui_id'));
+					}
 				}
 			}
 		}

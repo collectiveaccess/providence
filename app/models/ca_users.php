@@ -2117,6 +2117,19 @@ class ca_users extends BaseModel {
 			) OR ";
 		}
 		
+		$vs_role_sql = '';
+		if (is_array($va_roles = $this->getUserRoles()) && sizeof($va_roles)) {
+			$vs_role_sql = " (
+				(ceui.ui_id IN (
+						SELECT ui_id 
+						FROM ca_editor_uis_x_roles
+						WHERE 
+							role_id IN (".join(',', array_keys($va_roles)).")
+					)
+				)
+			) OR ";
+		}
+		
 		$o_db = $this->getDb();
 		$qr_uis = $o_db->query("
 			SELECT ceui.ui_id, ceuil.name, ceuil.locale_id, ceuitr.type_id
@@ -2128,6 +2141,7 @@ class ca_users extends BaseModel {
 					ceui.user_id = ? OR 
 					ceui.is_system_ui = 1 OR
 					{$vs_group_sql}
+					{$vs_role_sql}
 					(ceui.ui_id IN (
 							SELECT ui_id 
 							FROM ca_editor_uis_x_users 
@@ -2166,6 +2180,19 @@ class ca_users extends BaseModel {
 			) OR ";
 		}
 		
+		$vs_role_sql = '';
+		if (is_array($va_roles = $this->getUserRoles()) && sizeof($va_roles)) {
+			$vs_role_sql = " (
+				(ceui.ui_id IN (
+						SELECT ui_id 
+						FROM ca_editor_uis_x_roles
+						WHERE 
+							role_id IN (".join(',', array_keys($va_roles)).")
+					)
+				)
+			) OR ";
+		}
+		
 		$o_db = $this->getDb();
 		$qr_uis = $o_db->query("
 			SELECT *
@@ -2176,6 +2203,7 @@ class ca_users extends BaseModel {
 					ceui.user_id = ? OR 
 					ceui.is_system_ui = 1 OR
 					{$vs_group_sql}
+					{$vs_role_sql}
 					(ceui.ui_id IN (
 							SELECT ui_id 
 							FROM ca_editor_uis_x_users 

@@ -2249,7 +2249,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		}
  		if (!$t_ui) { return false; }
  		
- 		if (!($vn_screen_access = $t_ui->getAccessForScreen($pa_options['request'], $pm_screen))) {
+ 		if (($vn_ui_access = ca_editor_uis::getAccessForUI($pa_options['request'], $t_ui->getPrimaryKey())) === __CA_BUNDLE_ACCESS_NONE__) {
+ 			// no access to UI
+ 			$this->postError(2320, _t('Access denied to UI %1', $t_ui->get('editor_code')), "BundlableLabelableBaseModelWithAttributes->getBundleFormHTMLForScreen()");				
+			return false;
+ 		}
+ 		
+ 		if (($vn_screen_access = ca_editor_uis::getAccessForScreen($pa_options['request'], $pm_screen)) === __CA_BUNDLE_ACCESS_NONE__) {
  			// no access to screen
  			$this->postError(2320, _t('Access denied to screen %1', $pm_screen), "BundlableLabelableBaseModelWithAttributes->getBundleFormHTMLForScreen()");				
 			return false;
@@ -2313,7 +2319,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						continue;
 					}
 				}
-				
 				// Test for user action restrictions on intrinsic fields
 				$vb_output_bundle = true;
 				if ($this->hasField($va_bundle['bundle_name'])) {
@@ -2327,15 +2332,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					}
 				}
 				if (!$vb_output_bundle) { continue; }
-				
-				if ($vn_screen_access == __CA_BUNDLE_ACCESS_READONLY__) {
+			
+				if ($vn_screen_access === __CA_BUNDLE_ACCESS_READONLY__) {
 					$va_bundle['settings']['readonly'] = true;	// force all bundles to read-only when user has "Read" access to screen
-				} elseif ($vn_screen_access != __CA_BUNDLE_ACCESS_EDIT__) {
+				} elseif ($vn_screen_access !== __CA_BUNDLE_ACCESS_EDIT__) {
 					// no edit access so bail
 					$this->postError(2320, _t('Access denied to screen %1', $pm_screen), "BundlableLabelableBaseModelWithAttributes->getBundleFormHTMLForScreen()");				
 					return false;
 				}
-				
 				
 				$va_bundle['settings']['placement_id'] = $va_bundle['placement_id'];
 				if ($vs_bundle_form_html = $this->getBundleFormHTML($va_bundle['bundle_name'], 'P'.$va_bundle['placement_id'], $va_bundle['settings'], $pa_options, $vs_bundle_display_name)) {
