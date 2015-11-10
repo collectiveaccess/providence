@@ -731,8 +731,12 @@ class DisplayTemplateParser {
 					$vs_get_spec = $va_get_specs[$vs_tag]['spec'];
 					$va_parsed_tag_opts = $va_get_specs[$vs_tag]['parsed'];
 					
-					foreach($pr_res->get($vs_get_spec, array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnBlankValues' => true])) as $vn_index => $vs_val) {
-						$va_tag_vals[$vn_index][$vs_tag] = $vs_val;
+					$va_vals = $pr_res->get($vs_get_spec, array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnBlankValues' => true]));
+					
+					if (is_array($va_vals)) {
+						foreach($va_vals as $vn_index => $vs_val) {
+							$va_tag_vals[$vn_index][$vs_tag] = $vs_val;
+						}
 					}
 				}
 			
