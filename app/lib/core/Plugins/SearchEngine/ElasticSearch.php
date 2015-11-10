@@ -155,16 +155,22 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 
 			foreach($va_fragment as $vs_key => $vm_val) {
 				if(isset($va_record[$vs_key])) {
-					// @todo if there's an actual value, get the index for this $pn_content_row_id from _content_ids field and replace it
+					// find the index for this content row id in our _content_ids index list
+					$vn_index = array_search($pn_content_row_id, $va_record[$vs_key.'_content_ids']);
+					// replace that very index in the value array for this field -- all the other values, including the indexes stay intact
+					$va_value = $va_record[$vs_key];
+					$va_value[$vn_index] = $vm_val;
+					self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key] = $va_value;
 				} else { // this field wasn't indexed yet -- just add it
 					self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key][] = $vm_val;
+					self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key.'_content_ids'][] = $pn_content_row_id;
 				}
 			}
 		}
 
-		//if ((sizeof(self::$s_doc_content_buffer) + sizeof(self::$s_update_content_buffer)) > $this->getOption('maxIndexingBufferSize')) {
+		if (((sizeof(self::$s_doc_content_buffer) + sizeof(self::$s_update_content_buffer)) > $this->getOption('maxIndexingBufferSize')) || caIsRunFromCLI()) {
 			$this->flushContentBuffer();
-		//}
+		}
 	}
 	# -------------------------------------------------------
 	/**
@@ -369,7 +375,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		unset($this->opn_indexing_subject_row_id);
 		unset($this->ops_indexing_subject_tablename);
 
-		if ((sizeof(self::$s_doc_content_buffer) + sizeof(self::$s_update_content_buffer)) > $this->getOption('maxIndexingBufferSize')) {
+		if (((sizeof(self::$s_doc_content_buffer) + sizeof(self::$s_update_content_buffer)) > $this->getOption('maxIndexingBufferSize')) || caIsRunFromCLI()) {
 			$this->flushContentBuffer();
 		}
 	}
@@ -378,16 +384,58 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * Delete indexing for row
 	 * @param int $pn_subject_tablenum
 	 * @param int $pn_subject_row_id
+	 * @param int|null $pn_field_tablenum
+	 * @param int|null|array $pm_field_nums
+	 * @param int|null $pn_content_row_id
 	 */
-	public function removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id) {
-		try {
-			$this->getClient()->delete($va_params = array(
-				'index' => $this->getIndexName(),
-				'type' => $this->opo_datamodel->getTableName($pn_subject_tablenum),
-				'id' => $pn_subject_row_id
-			));
-		} catch (Elasticsearch\Common\Exceptions\Missing404Exception $e) {
-			// noop
+	public function removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id, $pn_field_tablenum=null, $pm_field_nums=null, $pn_content_row_id=null) {
+		$vs_table_name = $this->opo_datamodel->getTableName($pn_subject_tablenum);
+		// if the field table num is set, we only remove content for this field and don't nuke the entire record!
+		if($pn_field_tablenum) {
+			foreach($pm_field_nums as $ps_content_fieldnum) {
+				$o_field = new ElasticSearch\Field($pn_field_tablenum, $ps_content_fieldnum);
+				$va_fragment = $o_field->getIndexingFragment('');
+
+				// fetch the record
+				try {
+				$va_record = $this->getClient()->get([
+					'index' => $this->getIndexName(),
+					'type' => $vs_table_name,
+					'id' => $pn_subject_row_id
+				])['_source'];
+				} catch (\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
+					continue;
+				}
+
+				foreach($va_fragment as $vs_key => $vm_val) {
+					if(isset($va_record[$vs_key])) {
+						// find the index for this content row id in our _content_ids index list
+						$va_values = $va_record[$vs_key];
+						$va_indexes = $va_record[$vs_key.'_content_ids'];
+						$vn_index = array_search($pn_content_row_id, $va_indexes);
+						// nuke that very index in the value array for this field -- all the other values, including the indexes stay intact
+						unset($va_values[$vn_index]);
+						unset($va_indexes[$vn_index]);
+						self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key] = $va_values;
+						self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key.'_content_ids'] = $va_indexes;
+					}
+				}
+			}
+
+			if (((sizeof(self::$s_doc_content_buffer) + sizeof(self::$s_update_content_buffer)) > $this->getOption('maxIndexingBufferSize')) || caIsRunFromCLI()) {
+				$this->flushContentBuffer();
+			}
+
+		} else {
+			try {
+				$this->getClient()->delete($va_params = array(
+					'index' => $this->getIndexName(),
+					'type' => $vs_table_name,
+					'id' => $pn_subject_row_id
+				));
+			} catch (Elasticsearch\Common\Exceptions\Missing404Exception $e) {
+				// noop
+			}
 		}
 	}
 	# ------------------------------------------------
@@ -438,11 +486,20 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$va_bulk_params['body'][] = $va_doc_content_buffer;
 		}
 
+		if(sizeof($va_bulk_params)) {
+			$this->getClient()->bulk($va_bulk_params);
+		}
+
+		// we usually don't need indexing to be available *immediately* unless we're running automated tests of course :-)
+		if(caIsRunFromCLI()) {
+ 			$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
+		}
+
 		// update existing docs
 		foreach(self::$s_update_content_buffer as $vs_table_name => $va_rows) {
 			foreach($va_rows as $vn_row_id => $va_fragment) {
 
-				$va_bulk_params['body'][] = array(
+				/*$va_bulk_params['body'][] = array(
 					'update' => array(
 						'_index' => $this->getIndexName(),
 						'_type' => $vs_table_name,
@@ -450,15 +507,22 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 					)
 				);
 
-				$va_bulk_params['body'][] = array('doc' => $va_fragment);
+				$va_bulk_params['body'][] = array('doc' => $va_fragment);*/
+
+				$this->getClient()->update($va_doc = array(
+					'index' => $this->getIndexName(),
+					'type' => $vs_table_name,
+					'id' => (int) $vn_row_id,
+					'body' => array(
+						'doc' => $va_fragment
+					)
+				));
 			}
 		}
-		
-		$this->getClient()->bulk($va_bulk_params);
 
 		// we usually don't need indexing to be available *immediately* unless we're running automated tests of course :-)
 		if(caIsRunFromCLI()) {
- 			$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
+			$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
 		}
 
 		$this->opa_index_content_buffer = array();
