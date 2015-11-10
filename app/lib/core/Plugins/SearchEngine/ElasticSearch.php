@@ -486,20 +486,11 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$va_bulk_params['body'][] = $va_doc_content_buffer;
 		}
 
-		if(sizeof($va_bulk_params)) {
-			$this->getClient()->bulk($va_bulk_params);
-		}
-
-		// we usually don't need indexing to be available *immediately* unless we're running automated tests of course :-)
-		if(caIsRunFromCLI()) {
- 			$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
-		}
-
 		// update existing docs
 		foreach(self::$s_update_content_buffer as $vs_table_name => $va_rows) {
 			foreach($va_rows as $vn_row_id => $va_fragment) {
 
-				/*$va_bulk_params['body'][] = array(
+				$va_bulk_params['body'][] = array(
 					'update' => array(
 						'_index' => $this->getIndexName(),
 						'_type' => $vs_table_name,
@@ -507,22 +498,17 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 					)
 				);
 
-				$va_bulk_params['body'][] = array('doc' => $va_fragment);*/
-
-				$this->getClient()->update($va_doc = array(
-					'index' => $this->getIndexName(),
-					'type' => $vs_table_name,
-					'id' => (int) $vn_row_id,
-					'body' => array(
-						'doc' => $va_fragment
-					)
-				));
+				$va_bulk_params['body'][] = array('doc' => $va_fragment);
 			}
+		}
+
+		if(sizeof($va_bulk_params)) {
+			$this->getClient()->bulk($va_bulk_params);
 		}
 
 		// we usually don't need indexing to be available *immediately* unless we're running automated tests of course :-)
 		if(caIsRunFromCLI()) {
-			$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
+ 			$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
 		}
 
 		$this->opa_index_content_buffer = array();
