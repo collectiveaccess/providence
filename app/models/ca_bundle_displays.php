@@ -1823,6 +1823,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		$pa_options['restrictToRelationshipTypes'] = 	caGetOption('restrict_to_relationship_types', $va_settings, null);
 		$pa_options['restrictToTypes'] =				caGetOption('restrict_to_types', $va_settings, null);
 		
+		unset($pa_options['format']);	// don't pass format strings to get() here
 		if ((sizeof($va_bundle_bits) == 1) || ((sizeof($va_bundle_bits) == 2) && ($va_bundle_bits[1] == 'related'))) {
 			$pa_options['template'] = caGetOption('format', $va_settings, $this->getAppConfig()->get($va_bundle_bits[0].'_relationship_display_format'));;
 		} else {
