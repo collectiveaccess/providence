@@ -111,7 +111,7 @@ class SearchResult extends BaseObject {
 		self::$opa_hierarchy_children_prefetch_cache_index = array();
 		self::$opa_hierarchy_siblings_prefetch_cache = array();
 		self::$opa_hierarchy_siblings_prefetch_cache_index = array();
-		self::$s_template_prefetch_cache;
+		self::$s_template_prefetch_cache = array();
 	}
 
 	public function __construct($po_engine_result=null, $pa_tables=null) {
