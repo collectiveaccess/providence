@@ -4928,8 +4928,9 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 					$this->opo_ca_browse_cache->save();
 				}
 
-				if (isset($pa_options['limit']) && ($vn_limit = $pa_options['limit'])) {
-					$vn_start = (int) caGetOption($pa_options, 'start', 0);
+				$vn_start = (int) caGetOption($pa_options, 'start', 0);
+				$vn_limit = (int) caGetOption($pa_options, 'limit', 0);
+				if (($vn_start > 0) || ($vn_limit > 0)) {
 					$va_results = array_slice($va_results, $vn_start, $vn_limit);
 				}
 			}

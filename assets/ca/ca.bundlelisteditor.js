@@ -62,8 +62,7 @@ var caUI = caUI || {};
 			});
 			
 			jQuery('#' + that.toDisplayListID)
-				.html(displayListText)
-				.find("input:checked").change();	// trigger change handler to hide anything affected by hideOnSelect option for checkboxes
+				.html(displayListText);
 			
 			displayListText = '';
 			jQuery.each(that.availableDisplayList, function(k, v) {
@@ -149,7 +148,10 @@ var caUI = caUI || {};
 	// Lazily insert popup settings form HTML from map.
 	caUI.bundlelisteditor.initSettingsForm = function (id) {
 		if (caUI.bundlelisteditor.settingsForms[id]) {
-			$('#displayElementSettings_' + id.replace('.', '\\.') + ' .settingsFormContainer').html(caUI.bundlelisteditor.settingsForms[id]);	// don't forget to escape periods in DOM id's
+			$('#displayElementSettings_' + id.replace('.', '\\.') + ' .settingsFormContainer')		// don't forget to escape periods in DOM ids
+				.html(caUI.bundlelisteditor
+				.settingsForms[id])					
+				.find("input:checked").change();	// trigger change handler to hide anything affected by hideOnSelect option for checkboxes
 			delete caUI.bundlelisteditor.settingsForms[id];
 		}
 	}

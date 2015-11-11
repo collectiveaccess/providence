@@ -1662,6 +1662,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$vs_element .= $this->getUserGroupHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $this->tableNum(), $this->getPrimaryKey(), $pa_options['request']->getUserID(), $pa_options);
 						break;
 					# -------------------------------
+					// 
+					case 'ca_user_roles':
+						if (!$pa_options['request']->user->canDoAction('is_administrator') && ($pa_options['request']->getUserID() != $this->get('user_id'))) { return ''; }	// don't allow setting of group access if user is not owner
+						$vs_element .= $this->getUserRoleHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $this->tableNum(), $this->getPrimaryKey(), $pa_options['request']->getUserID(), $pa_options);
+						break;
+					# -------------------------------
 					case 'settings':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						$vs_element .= $this->getHTMLSettingFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $this->tableNum(), $pa_options);
@@ -2242,6 +2248,19 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  			$t_ui = ca_editor_uis::loadDefaultUI($vs_table_name, $pa_options['request'], $this->getTypeID());
  		}
  		if (!$t_ui) { return false; }
+ 		
+ 		if (($vn_ui_access = ca_editor_uis::getAccessForUI($pa_options['request'], $t_ui->getPrimaryKey())) === __CA_BUNDLE_ACCESS_NONE__) {
+ 			// no access to UI
+ 			$this->postError(2320, _t('Access denied to UI %1', $t_ui->get('editor_code')), "BundlableLabelableBaseModelWithAttributes->getBundleFormHTMLForScreen()");				
+			return false;
+ 		}
+ 		
+ 		if (($vn_screen_access = ca_editor_uis::getAccessForScreen($pa_options['request'], $pm_screen)) === __CA_BUNDLE_ACCESS_NONE__) {
+ 			// no access to screen
+ 			$this->postError(2320, _t('Access denied to screen %1', $pm_screen), "BundlableLabelableBaseModelWithAttributes->getBundleFormHTMLForScreen()");				
+			return false;
+ 		}
+ 		
  		if (isset($pa_options['bundles']) && is_array($pa_options['bundles'])) {
  			$va_bundles = $pa_options['bundles'];
  		} else {
@@ -2300,7 +2319,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						continue;
 					}
 				}
-				
 				// Test for user action restrictions on intrinsic fields
 				$vb_output_bundle = true;
 				if ($this->hasField($va_bundle['bundle_name'])) {
@@ -2314,6 +2332,14 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					}
 				}
 				if (!$vb_output_bundle) { continue; }
+			
+				if ($vn_screen_access === __CA_BUNDLE_ACCESS_READONLY__) {
+					$va_bundle['settings']['readonly'] = true;	// force all bundles to read-only when user has "Read" access to screen
+				} elseif ($vn_screen_access !== __CA_BUNDLE_ACCESS_EDIT__) {
+					// no edit access so bail
+					$this->postError(2320, _t('Access denied to screen %1', $pm_screen), "BundlableLabelableBaseModelWithAttributes->getBundleFormHTMLForScreen()");				
+					return false;
+				}
 				
 				$va_bundle['settings']['placement_id'] = $va_bundle['placement_id'];
 				if ($vs_bundle_form_html = $this->getBundleFormHTML($va_bundle['bundle_name'], 'P'.$va_bundle['placement_id'], $va_bundle['settings'], $pa_options, $vs_bundle_display_name)) {
@@ -3962,6 +3988,29 @@ if (!$vb_batch) {
 						}
 						
 						$this->setUsers($va_users_to_set, $va_user_effective_dates);
+						
+						break;
+					# -------------------------------------
+					case 'ca_user_roles':
+						if ($vb_batch) { break; } // not supported in batch mode
+						if (!$po_request->user->canDoAction('is_administrator') && ($po_request->getUserID() != $this->get('user_id'))) { break; }	// don't save if user is not owner
+						require_once(__CA_MODELS_DIR__.'/ca_user_roles.php');
+	
+						$va_roles_to_set = $va_roles_to_remove = array();
+						foreach($_REQUEST as $vs_key => $vs_val) { 
+							if (preg_match("!^{$vs_placement_code}{$vs_form_prefix}_access_([\d]+)$!", $vs_key, $va_matches)) {
+								$vn_role_id = $va_matches[1];
+								$vn_access = $po_request->getParameter($vs_key, pInteger);
+								if ($vn_access > 0) {
+									$va_roles_to_set[$vn_role_id] = $vn_access;
+								} else {
+									$va_roles_to_remove[$vn_role_id] = true;
+								}
+							}
+						}
+						
+						$this->removeUserRoles(array_keys($va_roles_to_remove));
+						$this->setUserRoles($va_roles_to_set, array('user_id' => $po_request->getUserID()));
 						
 						break;
 					# -------------------------------------

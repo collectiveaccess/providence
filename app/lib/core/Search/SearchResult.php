@@ -98,6 +98,22 @@ class SearchResult extends BaseObject {
 	private $opb_disable_get_with_template_prefetch = false;
 	static $s_template_prefetch_cache;
 	# ------------------------------------------------------------------
+
+	public static function clearCaches() {
+		self::$s_prefetch_cache = array();
+		self::$s_instance_cache = array();
+		self::$s_timestamp_cache = array();
+		self::$s_rel_prefetch_cache = array();
+		self::$s_parsed_field_component_cache = array();
+		self::$opa_hierarchy_parent_prefetch_cache = array();
+		self::$opa_hierarchy_children_prefetch_cache = array();
+		self::$opa_hierarchy_parent_prefetch_cache_index = array();
+		self::$opa_hierarchy_children_prefetch_cache_index = array();
+		self::$opa_hierarchy_siblings_prefetch_cache = array();
+		self::$opa_hierarchy_siblings_prefetch_cache_index = array();
+		self::$s_template_prefetch_cache = array();
+	}
+
 	public function __construct($po_engine_result=null, $pa_tables=null) {
 		if (!SearchResult::$opo_datamodel) { SearchResult::$opo_datamodel = Datamodel::load(); }
 		
@@ -406,6 +422,7 @@ class SearchResult extends BaseObject {
 		$vn_level = 0;
 		
 		while(true) {
+			if (!is_array($va_params) || !sizeof($va_params) || !is_array($va_params[0]) || !sizeof($va_params[0])) { break; }
 			$qr_rel = $this->opo_subject_instance->getDb()->query($vs_sql, $va_params);
 			
 			if (!$qr_rel || ($qr_rel->numRows() == 0)) { break;}
@@ -1729,7 +1746,7 @@ class SearchResult extends BaseObject {
 							break;
 					}
 					
-					if (($vn_attr_type == __CA_ATTRIBUTE_VALUE_CONTAINER__) && !$va_path_components['subfield_name']) {
+					if (($vn_attr_type == __CA_ATTRIBUTE_VALUE_CONTAINER__) && !$va_path_components['subfield_name'] && !$pa_options['returnWithStructure']) {
 						if (strlen($vs_val_proc) > 0)  {$va_val_proc[] = $vs_val_proc; }
 						$vs_val_proc = join($vs_delimiter, $va_val_proc);
 					} 
@@ -1794,7 +1811,7 @@ class SearchResult extends BaseObject {
 		// Flatten array for return as string or simple array value
 		// 
 		$va_flattened_values = $this->_flattenArray($va_return_values, $pa_options);
-		//print "VALUES=".print_R($va_flattened_values, true)."<br>\n\n";
+		
 		if ($pa_options['returnAsArray']) {
 			return $va_flattened_values;
 		} else {
