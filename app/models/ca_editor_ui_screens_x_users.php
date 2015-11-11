@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/models/ca_editor_uis_x_users.php
+ * app/models/ca_editor_ui_screens_x_users.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2012 Whirl-i-Gig
+ * Copyright 2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,9 +36,9 @@
 require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
 
 
-BaseModel::$s_ca_models_definitions['ca_editor_uis_x_users'] = array(
- 	'NAME_SINGULAR' 	=> _t('editor UIs ⇔ user association'),
- 	'NAME_PLURAL' 		=> _t('editor UIs ⇔ user associations'),
+BaseModel::$s_ca_models_definitions['ca_editor_ui_screens_x_users'] = array(
+ 	'NAME_SINGULAR' 	=> _t('editor UI screens ⇔ user association'),
+ 	'NAME_PLURAL' 		=> _t('editor UI screens ⇔ user associations'),
  	'FIELDS' 			=> array(
  		'relation_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
@@ -47,12 +47,12 @@ BaseModel::$s_ca_models_definitions['ca_editor_uis_x_users'] = array(
 				'DEFAULT' => '',
 				'LABEL' => 'Relation id', 'DESCRIPTION' => 'Identifier for Relation'
 		),
-		'ui_id' => array(
+		'screen_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'Ui id', 'DESCRIPTION' => 'Identifier for Ui'
+				'LABEL' => 'Screen id', 'DESCRIPTION' => 'Identifier for UI screen'
 		),
 		'user_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
@@ -75,7 +75,7 @@ BaseModel::$s_ca_models_definitions['ca_editor_uis_x_users'] = array(
  	)
 );
 
-class ca_editor_uis_x_users extends BaseRelationshipModel {
+class ca_editor_ui_screens_x_users extends BaseRelationshipModel {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -87,7 +87,7 @@ class ca_editor_uis_x_users extends BaseRelationshipModel {
 	# --- Basic object parameters
 	# ------------------------------------------------------
 	# what table does this class represent?
-	protected $TABLE = 'ca_editor_uis_x_users';
+	protected $TABLE = 'ca_editor_ui_screens_x_users';
 	      
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'relation_id';
@@ -140,7 +140,7 @@ class ca_editor_uis_x_users extends BaseRelationshipModel {
 	protected $LOG_CHANGES_TO_SELF = false;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-			"ui_id"
+			"screen_id"
 		),
 		"RELATED_TABLES" => array(
 		
@@ -150,9 +150,9 @@ class ca_editor_uis_x_users extends BaseRelationshipModel {
 	# ------------------------------------------------------
 	# --- Relationship info
 	# ------------------------------------------------------
-	protected $RELATIONSHIP_LEFT_TABLENAME = 'ca_editor_uis';
+	protected $RELATIONSHIP_LEFT_TABLENAME = 'ca_editor_ui_screens';
 	protected $RELATIONSHIP_RIGHT_TABLENAME = 'ca_users';
-	protected $RELATIONSHIP_LEFT_FIELDNAME = 'ui_id';
+	protected $RELATIONSHIP_LEFT_FIELDNAME = 'screen_id';
 	protected $RELATIONSHIP_RIGHT_FIELDNAME = 'user_id';
 	protected $RELATIONSHIP_TYPE_FIELDNAME = null;
 	
@@ -168,4 +168,3 @@ class ca_editor_uis_x_users extends BaseRelationshipModel {
 	}
 	# ----------------------------------------
 }
-?>

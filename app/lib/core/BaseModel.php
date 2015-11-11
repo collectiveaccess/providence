@@ -1055,10 +1055,20 @@ class BaseModel extends BaseObject {
 				break;
 			case (FT_MEDIA):
 			case (FT_FILE):
-				if (isset($pa_options["USE_MEDIA_FIELD_VALUES"]) && $pa_options["USE_MEDIA_FIELD_VALUES"]) {
-					$vs_prop = $this->_FIELD_VALUES[$ps_field];
+				if (caGetOption('returnWithStructure', $pa_options, false) || $pa_options["USE_MEDIA_FIELD_VALUES"]) {
+					if (isset($pa_options["USE_MEDIA_FIELD_VALUES"]) && $pa_options["USE_MEDIA_FIELD_VALUES"]) {
+						$vs_prop = $this->_FIELD_VALUES[$ps_field];
+					} else {
+						$vs_prop = (isset($this->_SET_FILES[$ps_field]['tmp_name']) && $this->_SET_FILES[$ps_field]['tmp_name']) ? $this->_SET_FILES[$ps_field]['tmp_name'] : $this->_FIELD_VALUES[$ps_field];
+					}
 				} else {
-					$vs_prop = (isset($this->_SET_FILES[$ps_field]['tmp_name']) && $this->_SET_FILES[$ps_field]['tmp_name']) ? $this->_SET_FILES[$ps_field]['tmp_name'] : $this->_FIELD_VALUES[$ps_field];
+					$va_versions = $this->getMediaVersions($ps_field);
+					$vs_tag = $this->getMediaTag($ps_field, array_shift($va_versions));
+					if ($vb_return_as_array) {
+						return array($vs_tag);
+					} else {
+						return $vs_tag;
+					}
 				}
 				break;
 			case (FT_VARS):
@@ -3377,7 +3387,7 @@ class BaseModel extends BaseObject {
 	 * @return bool
 	 */
 	public function mediaIsMirrored($field, $version) {
-		$media_info = $this->get($field);
+		$media_info = $this->get($field, array('returnWithStructure' => true));
 		if (!is_array($media_info)) {
 			return "";
 		}
@@ -3400,7 +3410,7 @@ class BaseModel extends BaseObject {
 	 * @return mixed media mirror status
 	 */
 	public function getMediaMirrorStatus($field, $version, $mirror="") {
-		$media_info = $this->get($field);
+		$media_info = $this->get($field, array('returnWithStructure' => true));
 		if (!is_array($media_info)) {
 			return "";
 		}
@@ -3425,7 +3435,7 @@ class BaseModel extends BaseObject {
 	public function retryMediaMirror($ps_field, $ps_version) {
 		global $AUTH_CURRENT_USER_ID;
 		
-		$va_media_info = $this->get($ps_field);
+		$va_media_info = $this->get($ps_field, array('returnWithStructure' => true));
 		if (!is_array($va_media_info)) {
 			return "";
 		}
@@ -3799,7 +3809,7 @@ class BaseModel extends BaseObject {
 	public function getMediaVersions($ps_field, $ps_mimetype=null) {
 		if (!$ps_mimetype) {
 			# figure out mimetype from field content
-			$va_media_desc = $this->get($ps_field);
+			$va_media_desc = $this->get($ps_field, array('returnWithStructure' => true));
 			
 			if (is_array($va_media_desc)) {
 				unset($va_media_desc["ORIGINAL_FILENAME"]);
@@ -3856,7 +3866,7 @@ class BaseModel extends BaseObject {
 
 		if (!$ps_mimetype) {
 			# figure out mimetype from field content
-			$va_media_desc = $this->get($ps_field);
+			$va_media_desc = $this->get($ps_field, array('returnWithStructure' => true));
 			if ($vs_media_type = $o_media_proc_settings->canAccept($va_media_desc["INPUT"]["MIMETYPE"])) {
 				return $o_media_proc_settings->getMediaTypeInfo($vs_media_type);
 			}

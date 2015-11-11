@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/models/ca_editor_uis_x_users.php
+ * app/models/ca_editor_ui_screens_x_roles.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2012 Whirl-i-Gig
+ * Copyright 2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,46 +36,48 @@
 require_once(__CA_LIB_DIR__.'/core/BaseRelationshipModel.php');
 
 
-BaseModel::$s_ca_models_definitions['ca_editor_uis_x_users'] = array(
- 	'NAME_SINGULAR' 	=> _t('editor UIs ⇔ user association'),
- 	'NAME_PLURAL' 		=> _t('editor UIs ⇔ user associations'),
+BaseModel::$s_ca_models_definitions['ca_editor_ui_screens_x_roles'] = array(
+ 	'NAME_SINGULAR' 	=> _t('editor screen ⇔ role association'),
+ 	'NAME_PLURAL' 		=> _t('editor screen ⇔ role associations'),
  	'FIELDS' 			=> array(
  		'relation_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
 				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'Relation id', 'DESCRIPTION' => 'Identifier for Relation'
+				'LABEL' => 'Link id', 'DESCRIPTION' => 'Identifier for Link'
 		),
-		'ui_id' => array(
+		'screen_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'Ui id', 'DESCRIPTION' => 'Identifier for Ui'
+				'LABEL' => 'Screen id', 'DESCRIPTION' => 'Identifier for screen'
 		),
-		'user_id' => array(
+		'role_id' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
-				'LABEL' => 'User id', 'DESCRIPTION' => 'Identifier for user'
+				'LABEL' => 'Role id', 'DESCRIPTION' => 'Identifier for Role',
+				'BOUNDS_VALUE' => array(0,65535)
 		),
 		'access' => array(
 				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
 				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
-				'DEFAULT' => 1,
+				'DEFAULT' => 0,
 				'BOUNDS_CHOICE_LIST' => array(
+					_t('has no access set') => __CA_BUNDLE_ACCESS_NONE__,
 					_t('can read') => __CA_BUNDLE_ACCESS_READONLY__,
 					_t('can edit') => __CA_BUNDLE_ACCESS_EDIT__
 				),
-				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates user&apos;s level of access to the display. ')
+				'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates role&apos;s level of access to the editor UI screen.')
 		)
- 	)
+	)
 );
 
-class ca_editor_uis_x_users extends BaseRelationshipModel {
+class ca_editor_ui_screens_x_roles extends BaseRelationshipModel {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -87,7 +89,7 @@ class ca_editor_uis_x_users extends BaseRelationshipModel {
 	# --- Basic object parameters
 	# ------------------------------------------------------
 	# what table does this class represent?
-	protected $TABLE = 'ca_editor_uis_x_users';
+	protected $TABLE = 'ca_editor_ui_screens_x_roles';
 	      
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'relation_id';
@@ -101,7 +103,7 @@ class ca_editor_uis_x_users extends BaseRelationshipModel {
 	# ------------------------------------------------------
 
 	# Array of fields to display in a listing of records from this table
-	protected $LIST_FIELDS = array('relation_id');
+	protected $LIST_FIELDS = array();
 
 	# When the list of "list fields" above contains more than one field,
 	# the LIST_DELIMITER text is displayed between fields as a delimiter.
@@ -116,11 +118,20 @@ class ca_editor_uis_x_users extends BaseRelationshipModel {
 
 	# List of fields to sort listing of records by; you can use 
 	# SQL 'ASC' and 'DESC' here if you like.
-	protected $ORDER_BY = array('relation_id');
+	protected $ORDER_BY = array();
+
+	# Maximum number of record to display per page in a listing
+	protected $MAX_RECORDS_PER_PAGE = 20; 
+
+	# How do you want to page through records in a listing: by number pages ordered
+	# according to your setting above? Or alphabetically by the letters of the first
+	# LIST_FIELD?
+	protected $PAGE_SCHEME = 'alpha'; # alpha [alphabetical] or num [numbered pages; default]
 
 	# If you want to order records arbitrarily, add a numeric field to the table and place
 	# its name here. The generic list scripts can then use it to order table records.
-	protected $RANK = '';
+	protected $RANK = 'rank';
+	
 	
 	# ------------------------------------------------------
 	# Hierarchical table properties
@@ -140,7 +151,7 @@ class ca_editor_uis_x_users extends BaseRelationshipModel {
 	protected $LOG_CHANGES_TO_SELF = false;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-			"ui_id"
+		
 		),
 		"RELATED_TABLES" => array(
 		
@@ -150,10 +161,10 @@ class ca_editor_uis_x_users extends BaseRelationshipModel {
 	# ------------------------------------------------------
 	# --- Relationship info
 	# ------------------------------------------------------
-	protected $RELATIONSHIP_LEFT_TABLENAME = 'ca_editor_uis';
-	protected $RELATIONSHIP_RIGHT_TABLENAME = 'ca_users';
-	protected $RELATIONSHIP_LEFT_FIELDNAME = 'ui_id';
-	protected $RELATIONSHIP_RIGHT_FIELDNAME = 'user_id';
+	protected $RELATIONSHIP_LEFT_TABLENAME = 'ca_editor_ui_screens';
+	protected $RELATIONSHIP_RIGHT_TABLENAME = 'ca_user_roles';
+	protected $RELATIONSHIP_LEFT_FIELDNAME = 'screen_id';
+	protected $RELATIONSHIP_RIGHT_FIELDNAME = 'role_id';
 	protected $RELATIONSHIP_TYPE_FIELDNAME = null;
 	
 	# ------------------------------------------------------
@@ -162,10 +173,19 @@ class ca_editor_uis_x_users extends BaseRelationshipModel {
 
 	protected $FIELDS;
 	
-	# ----------------------------------------
-	function __construct($pn_id=null) {
-		parent::__construct($pn_id);
+	# ------------------------------------------------------
+	# --- Constructor
+	#
+	# This is a function called when a new instance of this object is created. This
+	# standard constructor supports three calling modes:
+	#
+	# 1. If called without parameters, simply creates a new, empty objects object
+	# 2. If called with a single, valid primary key value, creates a new objects object and loads
+	#    the record identified by the primary key value
+	#
+	# ------------------------------------------------------
+	public function __construct($pn_id=null) {
+		parent::__construct($pn_id);	# call superclass constructor
 	}
-	# ----------------------------------------
+	# ------------------------------------------------------
 }
-?>
