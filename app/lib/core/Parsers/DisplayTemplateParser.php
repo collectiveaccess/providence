@@ -852,25 +852,29 @@ class DisplayTemplateParser {
 		
 		$vb_has_value = null;
 		foreach($va_codes as $vs_code => $vs_bool) {
-			$va_val_list = $pr_res->get($vs_code, ['returnAsArray' => true, 'returnBlankValues' => true]);
-			
+			$va_val_list = $pr_res->get($vs_code, ['returnAsArray' => true, 'returnBlankValues' => true, 'convertCodesToDisplayText' => true, 'returnAsDecimal' => true, 'getDirectDate' => true]);
 			if(!is_array($va_val_list)) {  // no value
 				$vb_value_present = false;
-			}
-			
-			if(!is_null($pn_index)) {
-				if (!isset($va_val_list[$pn_index])) {
-					$vb_value_present = false;			// no value
+			} else {
+				if(!is_null($pn_index)) {
+					if (!isset($va_val_list[$pn_index]) || ((is_numeric($va_val_list[$pn_index]) && (float)$va_val_list[$pn_index] == 0) || !strlen(trim($va_val_list[$pn_index])))) {
+						$vb_value_present = false;			// no value
+					} else {
+						$va_val_list = array($va_val_list[$pn_index]);
+						if (!$pb_include_blanks) { $va_val_list = array_filter($va_val_list); }
+						$vb_value_present = (bool)(sizeof($va_val_list));
+					}
 				} else {
-					$va_val_list = array($va_val_list[$pn_index]);
+					if (!$pb_include_blanks) { 
+						foreach($va_val_list as $vn_i => $vm_val) {
+							if ((is_numeric($vm_val) && (float)$vm_val == 0) || !strlen(trim($vm_val))) {
+								unset($va_val_list[$vn_i]);
+							}
+						}
+					}
+					$vb_value_present = (bool)(sizeof($va_val_list));
 				}
 			}
-			
-			if (!$pb_include_blanks) {
-				$va_val_list = array_filter($va_val_list);
-			}
-			
-			$vb_value_present = (bool)(sizeof($va_val_list));
 			if ($pb_mode !== 'present') { $vb_value_present = !$vb_value_present; }
 			
 			if (is_null($vb_has_value)) { $vb_has_value = $vb_value_present; }
@@ -890,7 +894,7 @@ class DisplayTemplateParser {
 		$vs_code_list = $po_node->{$vs_attribute};
 		if (!$po_node || !$po_node->{$vs_attribute}) { return null; }
 		$va_codes = preg_split("![ ,;\|]+!", $po_node->{$vs_attribute});
-		if ($pb_include_booleans) { preg_match("![ ,;\|]+!", $po_node->{$vs_attribute}, $va_matches); }
+		if ($pb_include_booleans) { preg_match_all("![ ,;\|]+!", $po_node->{$vs_attribute}, $va_matches); $va_matches = array_shift($va_matches); }
 		if (!$va_codes || !sizeof($va_codes)) { return null; }
 		
 		if ($pb_include_booleans) {
