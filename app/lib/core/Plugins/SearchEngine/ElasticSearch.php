@@ -147,20 +147,31 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		foreach($pa_subject_row_ids as $pn_subject_row_id) {
 
 			// fetch the record
-			$va_record = $this->getClient()->get([
-					'index' => $this->getIndexName(),
-					'type' => $vs_table_name,
-					'id' => $pn_subject_row_id
-			])['_source'];
+			try {
+				$va_record = $this->getClient()->get([
+						'index' => $this->getIndexName(),
+						'type' => $vs_table_name,
+						'id' => $pn_subject_row_id
+				])['_source'];
+ 			} catch(\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
+				$va_record = array(); // record doesn't exist yet --> the update API will create it
+			}
 
 			foreach($va_fragment as $vs_key => $vm_val) {
 				if(isset($va_record[$vs_key])) {
 					// find the index for this content row id in our _content_ids index list
-					$vn_index = array_search($pn_content_row_id, $va_record[$vs_key.'_content_ids']);
-					// replace that very index in the value array for this field -- all the other values, including the indexes stay intact
-					$va_value = $va_record[$vs_key];
-					$va_value[$vn_index] = $vm_val;
-					self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key] = $va_value;
+					$va_values = $va_record[$vs_key];
+					$va_indexes = $va_record[$vs_key.'_content_ids'];
+					$vn_index = array_search($pn_content_row_id, $va_indexes);
+					if($vn_index !== false) {
+						// replace that very index in the value array for this field -- all the other values, including the indexes stay intact
+						$va_values[$vn_index] = $vm_val;
+					} else { // this particular content row id hasn't been indexed yet --> just add it
+						$va_values[] = $vm_val;
+						$va_indexes[] = $pn_content_row_id;
+						self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key.'_content_ids'] = $va_indexes;
+					}
+					self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key] = $va_values;
 				} else { // this field wasn't indexed yet -- just add it
 					self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key][] = $vm_val;
 					self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key.'_content_ids'][] = $pn_content_row_id;
