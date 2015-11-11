@@ -55,8 +55,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	protected $opo_client;
 
 	static $s_doc_content_buffer = array();
-	static $s_element_code_cache = array();
 	static $s_update_content_buffer = array();
+	static $s_delete_buffer = array();
 	# -------------------------------------------------------
 	public function __construct($po_db=null) {
 		parent::__construct($po_db);
@@ -168,7 +168,12 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			}
 		}
 
-		if (((sizeof(self::$s_doc_content_buffer) + sizeof(self::$s_update_content_buffer)) > $this->getOption('maxIndexingBufferSize')) || caIsRunFromCLI()) {
+		if ((
+				sizeof(self::$s_doc_content_buffer) +
+				sizeof(self::$s_update_content_buffer) +
+				sizeof(self::$s_delete_buffer)
+			) > $this->getOption('maxIndexingBufferSize'))
+		{
 			$this->flushContentBuffer();
 		}
 	}
@@ -278,9 +283,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	}
 	# -------------------------------------------------------
 	public function __destruct() {
-		if (is_array(WLPlugSearchEngineElasticSearch::$s_doc_content_buffer) && sizeof(WLPlugSearchEngineElasticSearch::$s_doc_content_buffer)) {
-			$this->flushContentBuffer();
-		}
+		$this->flushContentBuffer();
 	}
 	# -------------------------------------------------------
 	/**
@@ -375,7 +378,12 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		unset($this->opn_indexing_subject_row_id);
 		unset($this->ops_indexing_subject_tablename);
 
-		if (((sizeof(self::$s_doc_content_buffer) + sizeof(self::$s_update_content_buffer)) > $this->getOption('maxIndexingBufferSize')) || caIsRunFromCLI()) {
+		if ((
+				sizeof(self::$s_doc_content_buffer) +
+				sizeof(self::$s_update_content_buffer) +
+				sizeof(self::$s_delete_buffer)
+			) > $this->getOption('maxIndexingBufferSize'))
+		{
 			$this->flushContentBuffer();
 		}
 	}
@@ -398,12 +406,14 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 
 				// fetch the record
 				try {
-				$va_record = $this->getClient()->get([
-					'index' => $this->getIndexName(),
-					'type' => $vs_table_name,
-					'id' => $pn_subject_row_id
-				])['_source'];
+					$va_record = $this->getClient()->get([
+						'index' => $this->getIndexName(),
+						'type' => $vs_table_name,
+						'id' => $pn_subject_row_id
+					])['_source'];
 				} catch (\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
+					// record is gone?
+					unset(self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id]);
 					continue;
 				}
 
@@ -422,20 +432,19 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				}
 			}
 
-			if (((sizeof(self::$s_doc_content_buffer) + sizeof(self::$s_update_content_buffer)) > $this->getOption('maxIndexingBufferSize')) || caIsRunFromCLI()) {
+			if ((
+					sizeof(self::$s_doc_content_buffer) +
+					sizeof(self::$s_update_content_buffer) +
+					sizeof(self::$s_delete_buffer)
+				) > $this->getOption('maxIndexingBufferSize'))
+			{
 				$this->flushContentBuffer();
 			}
 
 		} else {
-			try {
-				$this->getClient()->delete($va_params = array(
-					'index' => $this->getIndexName(),
-					'type' => $vs_table_name,
-					'id' => $pn_subject_row_id
-				));
-			} catch (Elasticsearch\Common\Exceptions\Missing404Exception $e) {
-				// noop
-			}
+			// queue record for removal -- also make sure we don't try do any unecessary indexing
+			unset(self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id]);
+			self::$s_delete_buffer[$vs_table_name][] = $pn_subject_row_id;
 		}
 	}
 	# ------------------------------------------------
@@ -449,8 +458,24 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
 		// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_indexing_documents.html#_bulk_indexing
 
+		// delete docs
+		foreach(self::$s_delete_buffer as $vs_table_name => $va_rows) {
+			foreach(array_unique($va_rows) as $vn_row_id) {
+				$va_bulk_params['body'][] = array(
+					'delete' => array(
+						'_index' => $this->getIndexName(),
+						'_type' => $vs_table_name,
+						'_id' => $vn_row_id
+					)
+				);
+
+				// also make sure we don't do unessecary indexing for this record below
+				unset(self::$s_update_content_buffer[$vs_table_name][$vn_row_id]);
+			}
+		}
+
 		// newly indexed docs
-		foreach(WLPlugSearchEngineElasticSearch::$s_doc_content_buffer as $vs_key => $va_doc_content_buffer) {
+		foreach(self::$s_doc_content_buffer as $vs_key => $va_doc_content_buffer) {
 			$va_tmp = explode('/', $vs_key);
 			$vs_table_name = $va_tmp[0];
 			$vn_primary_key = intval($va_tmp[1]);
@@ -514,6 +539,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		$this->opa_index_content_buffer = array();
 		self::$s_doc_content_buffer = array();
 		self::$s_update_content_buffer = array();
+		self::$s_delete_buffer = array();
 	}
 	# -------------------------------------------------------
 	/**

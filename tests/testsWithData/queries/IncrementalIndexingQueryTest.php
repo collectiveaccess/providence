@@ -84,15 +84,45 @@ class IncrementalIndexingQueryTest extends BaseTestWithData {
 		$this->assertEquals(0, $o_result->numHits(), 'foo should not be indexed anymore');
 		$o_result = $o_search->search('bar');
 		$this->assertEquals(1, $o_result->numHits(), 'bar should now be indexed instead');
-
-		$this->opt_object->setMode(ACCESS_WRITE);
-		$this->opt_object->delete(true, array('hard' => true));
-
-		$o_result = $o_search->search('foo');
-		$this->assertEquals(0, $o_result->numHits(), 'foo should not be indexed anymore');
-		$o_result = $o_search->search('bar');
-		$this->assertEquals(0, $o_result->numHits(), 'bar should not be indexed anymore');
-
 	}
 	# -------------------------------------------------------
+	public function testDelete() {
+		$va_objects = array();
+
+		$this->assertGreaterThan(0, $va_objects[] = $this->addTestRecord('ca_objects', array(
+			'intrinsic_fields' => array(
+				'type_id' => 'dataset',
+			),
+			'preferred_labels' => array(
+				array(
+					"locale" => "en_US",
+					"name" => "My test dataset",
+				),
+			),
+		)));
+
+		$this->assertGreaterThan(0, $va_objects[] = $this->addTestRecord('ca_objects', array(
+			'intrinsic_fields' => array(
+				'type_id' => 'physical_object',
+			),
+			'preferred_labels' => array(
+				array(
+					"locale" => "en_US",
+					"name" => "Test physical object",
+				),
+			),
+		)));
+
+		foreach($va_objects as $vn_object_id) {
+			$t_object = new ca_objects($vn_object_id);
+			$t_object->setMode(ACCESS_WRITE);
+			$t_object->delete(true, array('hard' => true));
+		}
+
+		$o_search = caGetSearchInstance('ca_objects');
+		$o_result = $o_search->search('dataset');
+		$this->assertEquals(0, $o_result->numHits(), 'dataset should not be indexed anymore');
+		$o_result = $o_search->search('physical');
+		$this->assertEquals(0, $o_result->numHits(), 'physical object should not be indexed anymore');
+	}
 }
