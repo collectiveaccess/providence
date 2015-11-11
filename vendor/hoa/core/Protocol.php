@@ -208,6 +208,7 @@ abstract class Protocol implements \ArrayAccess, \IteratorAggregate
                     $path = '/';
                 }
             }
+
             return $path;
         }
 

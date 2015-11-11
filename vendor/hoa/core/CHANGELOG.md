@@ -1,3 +1,7 @@
+# 2.15.11.09
+
+  * Fix CS. (Ivan Enderlin, 2015-10-29T22:03:18+01:00)
+
 # 2.15.09.03
 
   * Remove the `bin` property in `composer.json`. (Ivan Enderlin, 2015-09-03T10:21:32+02:00)

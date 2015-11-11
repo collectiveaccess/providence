@@ -746,68 +746,6 @@
         ]
     },
     {
-        "name": "hoa/file",
-        "version": "0.15.05.27",
-        "version_normalized": "0.15.05.27",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/hoaproject/File.git",
-            "reference": "bd82aff5e81f16971c5fc99301a5c5717b1fd4da"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/hoaproject/File/zipball/bd82aff5e81f16971c5fc99301a5c5717b1fd4da",
-            "reference": "bd82aff5e81f16971c5fc99301a5c5717b1fd4da",
-            "shasum": ""
-        },
-        "require": {
-            "hoa/core": "~2.0",
-            "hoa/iterator": "~1.0",
-            "hoa/stream": "~0.0"
-        },
-        "require-dev": {
-            "hoa/test": "~1.0"
-        },
-        "time": "2015-05-27 09:18:31",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "0.x-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "psr-4": {
-                "Hoa\\File\\": "."
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "BSD-3-Clause"
-        ],
-        "authors": [
-            {
-                "name": "Ivan Enderlin",
-                "email": "ivan.enderlin@hoa-project.net"
-            },
-            {
-                "name": "Hoa community",
-                "homepage": "http://hoa-project.net/"
-            }
-        ],
-        "description": "The Hoa\\File library.",
-        "homepage": "http://hoa-project.net/",
-        "keywords": [
-            "Socket",
-            "directory",
-            "file",
-            "finder",
-            "library",
-            "link",
-            "temporary"
-        ]
-    },
-    {
         "name": "sebastian/environment",
         "version": "1.3.2",
         "version_normalized": "1.3.2.0",
@@ -857,67 +795,6 @@
             "Xdebug",
             "environment",
             "hhvm"
-        ]
-    },
-    {
-        "name": "hoa/ustring",
-        "version": "3.15.08.03",
-        "version_normalized": "3.15.08.03",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/hoaproject/Ustring.git",
-            "reference": "261d5bfc53df8e895793d330f0fb96929fca355d"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/hoaproject/Ustring/zipball/261d5bfc53df8e895793d330f0fb96929fca355d",
-            "reference": "261d5bfc53df8e895793d330f0fb96929fca355d",
-            "shasum": ""
-        },
-        "require": {
-            "hoa/core": "~2.0"
-        },
-        "require-dev": {
-            "hoa/test": "~1.0"
-        },
-        "suggest": {
-            "ext-iconv": "ext/iconv must be present (or a third implementation) to use Hoa\\Ustring::transcode().",
-            "ext-intl": "To get a better Hoa\\Ustring::toAscii() and Hoa\\Ustring::compareTo()."
-        },
-        "time": "2015-08-03 07:49:50",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "3.x-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "psr-4": {
-                "Hoa\\Ustring\\": "."
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "BSD-3-Clause"
-        ],
-        "authors": [
-            {
-                "name": "Ivan Enderlin",
-                "email": "ivan.enderlin@hoa-project.net"
-            },
-            {
-                "name": "Hoa community",
-                "homepage": "http://hoa-project.net/"
-            }
-        ],
-        "description": "The Hoa\\Ustring library.",
-        "homepage": "http://hoa-project.net/",
-        "keywords": [
-            "library",
-            "search",
-            "string",
-            "unicode"
         ]
     },
     {
@@ -1115,75 +992,6 @@
         "homepage": "http://htmlpurifier.org/",
         "keywords": [
             "html"
-        ]
-    },
-    {
-        "name": "hoa/core",
-        "version": "2.15.09.03",
-        "version_normalized": "2.15.09.03",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/hoaproject/Core.git",
-            "reference": "305a881847478d635f3cf565fd5e8ef382c21a70"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/hoaproject/Core/zipball/305a881847478d635f3cf565fd5e8ef382c21a70",
-            "reference": "305a881847478d635f3cf565fd5e8ef382c21a70",
-            "shasum": ""
-        },
-        "require": {
-            "ext-spl": "*",
-            "php": ">=5.4.0"
-        },
-        "require-dev": {
-            "hoa/test": "~1.0"
-        },
-        "suggest": {
-            "ext-mbstring": "ext/mbstring must be present (or a third implementation).",
-            "hoa/cli": "To use the `hoa` script."
-        },
-        "time": "2015-09-03 08:28:53",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "2.x-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "psr-4": {
-                "Hoa\\Core\\": "."
-            },
-            "files": [
-                "Core.php"
-            ]
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "BSD-3-Clause"
-        ],
-        "authors": [
-            {
-                "name": "Ivan Enderlin",
-                "email": "ivan.enderlin@hoa-project.net"
-            },
-            {
-                "name": "Hoa community",
-                "homepage": "http://hoa-project.net/"
-            }
-        ],
-        "description": "The Hoa\\Core library.",
-        "homepage": "http://hoa-project.net/",
-        "keywords": [
-            "consistency",
-            "core",
-            "data",
-            "event",
-            "library",
-            "listener",
-            "parameter",
-            "protocol"
         ]
     },
     {
@@ -2224,6 +2032,198 @@
             "protocol",
             "stream",
             "wrapper"
+        ]
+    },
+    {
+        "name": "hoa/core",
+        "version": "2.15.11.09",
+        "version_normalized": "2.15.11.09",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/hoaproject/Core.git",
+            "reference": "5538b1e90e2c66c90df5cc45e03fb85d047be900"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/hoaproject/Core/zipball/5538b1e90e2c66c90df5cc45e03fb85d047be900",
+            "reference": "5538b1e90e2c66c90df5cc45e03fb85d047be900",
+            "shasum": ""
+        },
+        "require": {
+            "ext-spl": "*",
+            "php": ">=5.4.0"
+        },
+        "require-dev": {
+            "hoa/test": "~1.0"
+        },
+        "suggest": {
+            "ext-mbstring": "ext/mbstring must be present (or a third implementation).",
+            "hoa/cli": "To use the `hoa` script."
+        },
+        "time": "2015-11-09 06:51:06",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Hoa\\Core\\": "."
+            },
+            "files": [
+                "Core.php"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Ivan Enderlin",
+                "email": "ivan.enderlin@hoa-project.net"
+            },
+            {
+                "name": "Hoa community",
+                "homepage": "http://hoa-project.net/"
+            }
+        ],
+        "description": "The Hoa\\Core library.",
+        "homepage": "http://hoa-project.net/",
+        "keywords": [
+            "consistency",
+            "core",
+            "data",
+            "event",
+            "library",
+            "listener",
+            "parameter",
+            "protocol"
+        ]
+    },
+    {
+        "name": "hoa/file",
+        "version": "0.15.11.09",
+        "version_normalized": "0.15.11.09",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/hoaproject/File.git",
+            "reference": "f46fe552ff79cb6c93a2ff9c25cfbc134fbd57ee"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/hoaproject/File/zipball/f46fe552ff79cb6c93a2ff9c25cfbc134fbd57ee",
+            "reference": "f46fe552ff79cb6c93a2ff9c25cfbc134fbd57ee",
+            "shasum": ""
+        },
+        "require": {
+            "hoa/core": "~2.0",
+            "hoa/iterator": "~1.0",
+            "hoa/stream": "~0.0"
+        },
+        "require-dev": {
+            "hoa/test": "~1.0"
+        },
+        "time": "2015-11-09 06:55:20",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "0.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Hoa\\File\\": "."
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Ivan Enderlin",
+                "email": "ivan.enderlin@hoa-project.net"
+            },
+            {
+                "name": "Hoa community",
+                "homepage": "http://hoa-project.net/"
+            }
+        ],
+        "description": "The Hoa\\File library.",
+        "homepage": "http://hoa-project.net/",
+        "keywords": [
+            "Socket",
+            "directory",
+            "file",
+            "finder",
+            "library",
+            "link",
+            "temporary"
+        ]
+    },
+    {
+        "name": "hoa/ustring",
+        "version": "3.15.11.09",
+        "version_normalized": "3.15.11.09",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/hoaproject/Ustring.git",
+            "reference": "8506be4910212b1a2beb9014763a8a4fbd871001"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/hoaproject/Ustring/zipball/8506be4910212b1a2beb9014763a8a4fbd871001",
+            "reference": "8506be4910212b1a2beb9014763a8a4fbd871001",
+            "shasum": ""
+        },
+        "require": {
+            "hoa/core": "~2.0"
+        },
+        "require-dev": {
+            "hoa/test": "~1.0"
+        },
+        "suggest": {
+            "ext-iconv": "ext/iconv must be present (or a third implementation) to use Hoa\\Ustring::transcode().",
+            "ext-intl": "To get a better Hoa\\Ustring::toAscii() and Hoa\\Ustring::compareTo()."
+        },
+        "time": "2015-11-09 06:44:33",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "3.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Hoa\\Ustring\\": "."
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Ivan Enderlin",
+                "email": "ivan.enderlin@hoa-project.net"
+            },
+            {
+                "name": "Hoa community",
+                "homepage": "http://hoa-project.net/"
+            }
+        ],
+        "description": "The Hoa\\Ustring library.",
+        "homepage": "http://hoa-project.net/",
+        "keywords": [
+            "library",
+            "search",
+            "string",
+            "unicode"
         ]
     }
 ]
