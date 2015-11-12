@@ -429,7 +429,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				$vs_where_sql = " WHERE ".join(" AND ", $va_wheres);
 			}
 			$vs_sql = "
-				SELECT DISTINCT row_id
+				SELECT DISTINCT boost, row_id
 				FROM ca_sql_search_search_final
 				{$vs_join_sql}
 				{$vs_where_sql}
