@@ -2307,8 +2307,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					$va_valid_element_codes = null;
 				}
 			}
-			
-			$vn_c = 0;
+
 			foreach($va_bundles as $va_bundle) {
 				if ($va_bundle['bundle_name'] === $vs_type_id_fld) { continue; }	// skip type_id
 				if ((!$vn_pk_id) && ($va_bundle['bundle_name'] === $vs_hier_parent_id_fld)) { continue; }
@@ -2343,17 +2342,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				$va_bundle['settings']['placement_id'] = $va_bundle['placement_id'];
 				if ($vs_bundle_form_html = $this->getBundleFormHTML($va_bundle['bundle_name'], 'P'.$va_bundle['placement_id'], $va_bundle['settings'], $pa_options, $vs_bundle_display_name)) {
-					$va_bundle_html[$va_bundle['placement_code']] = "<a name=\"{$pm_screen}_{$vn_c}\"></a>{$vs_bundle_form_html}";
+					$va_bundle_html[$va_bundle['placement_code']] = "<a name=\"{$pm_screen}_{$va_bundle['placement_id']}\"></a>{$vs_bundle_form_html}";
 					$va_bundles_present[$va_bundle['bundle_name']] = true;
 					
-					$pa_placements["{$pm_screen}_{$vn_c}"] = array(
+					$pa_placements["{$pm_screen}_{$va_bundle['placement_id']}"] = array(
 						'name' => $vs_bundle_display_name ? $vs_bundle_display_name : $this->getDisplayLabel($vs_table_name.".".$va_bundle['bundle_name']),
 						'placement_id' => $va_bundle['placement_id'],
 						'bundle' => $va_bundle['bundle_name'],
 						'id' => 'P'.$va_bundle['placement_id'].caGetOption('formName', $pa_options, '')
 					);
 				}
-				$vn_c++;
 			}
 		}
 		
