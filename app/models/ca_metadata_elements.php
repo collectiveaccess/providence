@@ -392,7 +392,10 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 */
 	public function getAvailableSettings() {
 		$t_attr_val = Attribute::getValueInstance((int)$this->get('datatype'));
-		return $t_attr_val ? $t_attr_val->getAvailableSettings($this->getSettings()) : null;
+		$va_element_info = $this->getSettings();
+		$va_element_info['list_id'] = $this->get('list_id');
+		$va_element_info['element_id'] = $this->getPrimaryKey();
+		return $t_attr_val ? $t_attr_val->getAvailableSettings($va_element_info) : null;
 	}
 	# ------------------------------------------------------
 	/**

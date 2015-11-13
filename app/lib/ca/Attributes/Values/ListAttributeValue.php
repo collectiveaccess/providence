@@ -184,6 +184,8 @@
 			'description' => _t('Delimiter to use between multiple values when used in a display.')
 		)
 	);
+
+
  
 	class ListAttributeValue extends AttributeValue implements IAttributeValue {
  		# ------------------------------------------------------------------
@@ -398,9 +400,67 @@
  		}
  		# ------------------------------------------------------------------
  		public function getAvailableSettings($pa_element_info=null) {
- 			global $_ca_attribute_settings;
- 			
- 			return $_ca_attribute_settings['ListAttributeValue'];
+ 			global $_ca_attribute_settings, $g_request;
+
+			$va_element_settings = $_ca_attribute_settings['ListAttributeValue'];
+
+
+			/*
+			 * For the dependent field visibility feature we need to add a select-able list of all applicable
+			 * UI bundle placements here ... for each item in that list!
+			 */
+			if(Configuration::load()->get('enable_dependant_field_visibility') && is_array($pa_element_info) && isset($pa_element_info['list_id'])) {
+				$va_options_for_settings = array();
+
+				// @todo: firgure out relevant UIs / screens / placements
+				$t_mde = new ca_metadata_elements($pa_element_info['element_id']);
+				$va_restrictions = $t_mde->getTypeRestrictions();
+
+				$va_tables = array();
+				foreach($va_restrictions as $va_restriction) {
+					$va_tables[] = $va_restriction['table_num'];
+				}
+
+				$t_ui = new ca_editor_uis();
+				foreach(array_unique($va_tables) as $vn_table_num) {
+					// get UIs
+					$va_ui_list = $t_ui->getAvailableUIs($vn_table_num, $g_request);
+					foreach($va_ui_list as $vn_ui_id => $vs_ui_name) {
+						$t_ui->load($vn_ui_id);
+						// add to list
+						$va_options_for_settings['-- '.$vs_ui_name] = $t_ui->get('editor_code');
+
+						// get screens
+						foreach($t_ui->getScreens() as $va_screen) {
+							$va_options_for_settings['---- '.$va_screen['name']] = $va_screen['idno'];
+
+							// get placements
+							foreach($t_ui->getScreenBundlePlacements($va_screen['screen_id']) as $va_placement) {
+								$va_options_for_settings[$va_placement['placement_code']] = $va_screen['idno'] . '.' . $va_placement['placement_code'];
+							}
+						}
+					}
+				}
+
+
+				$t_list = new ca_lists();
+				foreach($t_list->getItemsForList($pa_element_info['list_id']) as $va_items_by_locale) {
+					foreach($va_items_by_locale as $vn_locale_id => $va_item) {
+						$va_element_settings['hideIfSelected_'.$va_item['idno']] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'options' => $va_options_for_settings,
+							'takesLocale' => false,
+							'default' => '',
+							'width' => "400px", 'height' => 10,
+							'label' => _t('Hide bundles if "%1" is selected', $va_item['name_singular']),
+							'description' => _t('Select bundles from the list below')
+						);
+					}
+				}
+			}
+
+ 			return $va_element_settings;
  		}
  		# ------------------------------------------------------------------
 		/**
