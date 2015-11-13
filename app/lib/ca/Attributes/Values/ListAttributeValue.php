@@ -484,14 +484,11 @@
 					$va_ui_list = ca_editor_uis::getAvailableUIs($vn_table_num, $g_request);
 					foreach($va_ui_list as $vn_ui_id => $vs_ui_name) {
 						$t_ui->load($vn_ui_id);
-						// add to list
-						$va_options_for_settings['-- '.$vs_ui_name] = $t_ui->get('editor_code');
-
 						// get screens
 						foreach($t_ui->getScreens() as $va_screen) {
 							// get placements
 							foreach($t_ui->getScreenBundlePlacements($va_screen['screen_id']) as $va_placement) {
-								$va_options_for_settings[$va_screen['idno'] .'/' .$va_placement['placement_code']] = $va_screen['screen_id'] . '/' . $va_placement['placement_id'];
+								$va_options_for_settings[$t_ui->get('editor_code') . '/'. $va_screen['idno'] . '/' . $va_placement['placement_code']] = $va_screen['screen_id'] . '/' . $va_placement['placement_id'];
 							}
 						}
 					}
