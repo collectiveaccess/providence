@@ -405,7 +405,7 @@
 				$t_list = new ca_lists();
 				foreach($t_list->getItemsForList($pa_element_info['list_id']) as $va_items_by_locale) {
 					foreach ($va_items_by_locale as $vn_locale_id => $va_item) {
-						$vs_hide_js = "jQuery('div.bundleLabel').show();\n";
+						$vs_hide_js = '';
 
 						if(is_array($pa_element_info['settings']['hideIfSelected_'.$va_item['item_id']])) {
 							// @todo maybe only generate JS for bundles on current screen? could figure that out from request
@@ -422,10 +422,11 @@
 								$vs_selector_for_val = "jQuery('input[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]:checked').val()";
 								break;
 							case 'select':
-							default:
 								$vs_select = "jQuery('#{fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}')";
 								$vs_selector_for_val = "jQuery(this).find(':selected').val()";
 								break;
+							default:
+								continue;
 						}
 
 
@@ -437,11 +438,14 @@
 		var select = $vs_select;
 		select.change(function() {
 			if (".$vs_selector_for_val." === '" . $va_item['item_id'] . "') {
+				jQuery('div.bundleLabel').show();
 				" . $vs_hide_js . "
 			}
 		});
 
-		select.trigger('change');
+		if (".$vs_selector_for_val." === '" . $va_item['item_id'] . "') {
+			" . $vs_hide_js . "
+		}
     });
 </script>
 ";
@@ -464,6 +468,8 @@
 				Configuration::load()->get('enable_dependant_field_visibility') &&
 				is_array($pa_element_info) &&
 				isset($pa_element_info['list_id']) &&
+				is_array($pa_element_info['settings']) &&
+				in_array($pa_element_info['settings']['render'], array('select', 'radio_buttons')) &&
 				$g_request && ($g_request instanceof RequestHTTP)
 			) {
 				$va_options_for_settings = array();
@@ -558,7 +564,14 @@
 					}
 					break;
 			}
-			
+
+			if(preg_match("/^hideIfSelected/", $ps_setting_key)) {
+				if(!in_array($pa_element_info['settings']['render'], array('radio_buttons', 'select'))) {
+					$ps_error = _t("dependent field visibility is only supported for radio buttons and drop-down (select) menus");
+					return false;
+				}
+			}
+
 			return true;
 		}
  		# ------------------------------------------------------------------
