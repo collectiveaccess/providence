@@ -401,7 +401,7 @@
 			);
 
 			// dependant field visibility
-			if(Configuration::load()->get('enable_dependant_field_visibility')) {
+			if(Configuration::load()->get('enable_dependent_field_visibility')) {
 				$t_list = new ca_lists();
 				foreach($t_list->getItemsForList($pa_element_info['list_id']) as $va_items_by_locale) {
 					foreach ($va_items_by_locale as $vn_locale_id => $va_item) {
@@ -467,7 +467,7 @@
 			 */
 
 			if(
-				Configuration::load()->get('enable_dependant_field_visibility') &&
+				Configuration::load()->get('enable_dependent_field_visibility') &&
 				is_array($pa_element_info) &&
 				isset($pa_element_info['list_id']) &&
 				// select is the default, so empty does count
@@ -517,7 +517,7 @@
 						);
 					}
 				}
-			} elseif(defined('__CollectiveAccess_Installer__') && Configuration::load()->get('enable_dependant_field_visibility')) {
+			} elseif(defined('__CollectiveAccess_Installer__') && Configuration::load()->get('enable_dependent_field_visibility')) {
 				// when installing, UIs, screens and placements are not yet available when we process elementSets, so
 				// we just add the hideIfSelected_* as available settings (without actual settings) so that the validation doesn't fail
 				$t_list = new ca_lists();
