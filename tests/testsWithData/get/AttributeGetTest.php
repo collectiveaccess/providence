@@ -90,7 +90,7 @@ class AttributeGetTest extends BaseTestWithData {
 				// Integer
 				'integer_test' => array(
 					array(
-						'integer_test' => -23,
+						'integer_test' => 23,
 					),
 					array(
 						'integer_test' => 1984,
@@ -161,7 +161,7 @@ class AttributeGetTest extends BaseTestWithData {
 		$this->assertEquals("2.0000 lb", $vm_ret);
 
 		$vm_ret = $this->opt_object->get('ca_objects.integer_test', array('delimiter' => ' / '));
-		$this->assertEquals("-23 / 1984", $vm_ret);
+		$this->assertEquals("23 / 1984", $vm_ret);
 
 		$vm_ret = $this->opt_object->get('ca_objects.currency_test');
 		$this->assertEquals("USD 100.00", $vm_ret);
@@ -186,8 +186,9 @@ class AttributeGetTest extends BaseTestWithData {
 		// 'flat' informationservice attribues
 		$this->assertEquals('Coney Island', $this->opt_object->get('ca_objects.tgn'));
 		$this->assertContains('Aaron Burr', $this->opt_object->get('ca_objects.wikipedia'));
-		// new subfield notation
+		// subfield notation for "extra info"
 		$this->assertContains('Burr killed his political rival Alexander Hamilton in a famous duel', $this->opt_object->get('ca_objects.wikipedia.abstract'));
+		$this->assertEquals('40.5667', $this->opt_object->get('ca_objects.tgn.lat'));
 
 		// informationservice attributes in container
 		$this->assertEquals('[500024253] Haring, Keith (Persons, Artists) - American painter, muralist, and cartoonist, 1958-1990', $this->opt_object->get('ca_objects.informationservice.ulan_container'));

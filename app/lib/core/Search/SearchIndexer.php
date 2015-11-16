@@ -1503,6 +1503,13 @@ class SearchIndexer extends SearchBase {
 			$this->opa_dependencies_to_update = $va_deps;
 		}
 
+		// if dependencies have not been set at this point -- either by startRowUnindexing
+		// (which may have been skipped) or by passing the dependencies option -- then get them now
+		if(!$this->opa_dependencies_to_update) {
+			$va_deps = $this->getDependencies($this->opo_datamodel->getTableName($pn_subject_tablenum));
+			$this->opa_dependencies_to_update = $this->_getDependentRowsForSubject($pn_subject_tablenum, $pn_subject_row_id, $va_deps);
+		}
+
 		// delete index from subject
 		$this->opo_engine->removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id);
 

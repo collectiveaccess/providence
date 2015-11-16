@@ -217,6 +217,7 @@ class BaseEditorController extends ActionController {
 	 */
 	public function Save($pa_options=null) {
 		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vs_rel_table, $vn_rel_type_id, $vn_rel_id) = $this->_initView($pa_options);
+		/** @var $t_subject BundlableLabelableBaseModelWithAttributes */
 		if (!is_array($pa_options)) { $pa_options = array(); }
 
 		if (!$this->_checkAccess($t_subject)) { return false; }
@@ -228,6 +229,17 @@ class BaseEditorController extends ActionController {
 				$this->request->setParameter($vs_parent_id_fld, $vn_parent_id);
 				$this->view->setVar('parent_id', $vn_parent_id);
 			}
+		}
+
+		// relate existing records via Save() link
+		if($vn_subject_id && $vs_rel_table && $vn_rel_type_id && $vn_rel_id) {
+			if($this->opo_datamodel->tableExists($vs_rel_table)) {
+				Debug::msg("[Save()] Relating new record using parameters from request: $vs_rel_table / $vn_rel_type_id / $vn_rel_id");
+				$t_subject->addRelationship($vs_rel_table, $vn_rel_id, $vn_rel_type_id, _t('now'));
+			}
+			$this->notification->addNotification(_t("Added relationship"), __NOTIFICATION_TYPE_INFO__);
+			$this->render('screen_html.php');
+			return;
 		}
 
 		if (in_array($this->ops_table_name, array('ca_representation_annotations'))) { $vs_auth_table_name = 'ca_objects'; }

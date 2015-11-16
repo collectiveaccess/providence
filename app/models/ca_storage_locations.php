@@ -339,6 +339,8 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 
 		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
+		
+		$this->BUNDLES['ca_storage_locations_contents'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Current contents of location'));
 	}
 	# ------------------------------------------------------
 	public function insert($pa_options=null) {
@@ -396,48 +398,56 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 	 */
 	public function getCurrentObjectIDs() {
 		if (!$this->getPrimaryKey()) { return array(); }
-		$qr_objects = $this->getDb()->query("
-				SELECT cxo.object_id
-				FROM ca_movements_x_objects cxo
-				INNER JOIN ca_movements_x_storage_locations AS slxm ON slxm.movement_id = cxo.movement_id
-				WHERE
-					(slxm.location_id = ?)
-					
-			", array((int)$this->getPrimaryKey()));
-		$va_ids = $qr_objects->getAllFieldValues('object_id');
 		
-		// HAVING clause limits to most recently added
-		// TODO: do we need to filter out future dates?
-		$qr_objects = $this->getDb()->query("
-				SELECT cxsl.object_id, cxsl.sdatetime
-				FROM ca_objects_x_storage_locations cxsl
-				WHERE
-					(cxsl.location_id = ?)
-				GROUP BY 
-					cxsl.object_id
-				HAVING
-					(cxsl.sdatetime = MAX(cxsl.sdatetime)) OR (MAX(cxsl.sdatetime) IS NULL)
-					
-			", array((int)$this->getPrimaryKey()));
-			
-		$va_ids = array_unique(array_merge($va_ids, $qr_objects->getAllFieldValues('object_id')));	
+		$va_object_ids = array();
+		//
+		// Get objects referenced via movements
+		//
+		if ($vs_movement_storage_element = $this->getAppConfig()->get('movement_storage_location_date_element')) {
+			// Get current movements for location
+			$va_movement_ids = $this->getRelatedItems('ca_movements', array('idsOnly' => true));
+			if (is_array($va_movement_ids) && sizeof($va_movement_ids)) {
+				// get list of objects on these movements...
+				$t_movement = new ca_movements();
+				$va_object_ids = $t_movement->getRelatedItems('ca_objects', array('idsOnly' => true, 'showCurrentOnly' => true, 'row_ids' => $va_movement_ids));
 	
-		return $va_ids;
+				// ... then get the list of objects for which the *current* movement is one of ours
+				$t_object = new ca_objects();
+				$va_current_movement_ids = $t_object->getRelatedItems('ca_movements', array('idsOnly' => false, 'showCurrentOnly' => true, 'row_ids' => $va_object_ids));
+				
+				$va_movement_rels = array(); 
+				foreach($va_current_movement_ids as $vn_relation_id => $va_movement_info) {
+					if (in_array($va_movement_info['movement_id'], $va_movement_ids)) { $va_movement_rels[] = $vn_relation_id; }
+				}
+				
+				$qr_object_rels = caMakeSearchResult('ca_movements_x_objects', $va_movement_rels);
+				$va_object_ids = $qr_object_rels->getAllFieldValues('ca_movements_x_objects.object_id');
+			}
+		}
+		
+		//
+		// Get objects referenced via object-location relationships
+		//
+		$va_direct_object_ids = $this->getRelatedItems('ca_objects', array('idsOnly' => true, 'showCurrentOnly' => true));
+		
+		// Dedupe and return
+		return array_unique(array_merge($va_object_ids, $va_direct_object_ids));
 	}
 	# ------------------------------------------------------
 	/**
-	 *
+	 * Override BundleableLabelableBaseModelWithAttributes::saveBundlesForScreen() to create
+	 * related movement record when storage location is moved
 	 */
 	public function saveBundlesForScreen($pm_screen, $po_request, &$pa_options) {
-		$vb_parent_changed = $this->changed('parent_id');
+		$vb_parent_changed = (parent::saveBundlesForScreenWillChangeParent($pm_screen, $po_request, $pa_options) == __CA_PARENT_CHANGED__); 
 		if (($vn_rc = parent::saveBundlesForScreen($pm_screen, $po_request, $pa_options)) && $vb_parent_changed) {
 			unset($pa_options['ui_instance']);
-			
+	
 			// get list of objects currently associated with this storage location
 			$va_object_ids = $this->getCurrentObjectIDs();
 
-			$vs_movement_storage_location_relationship_type = $this->getAppConfig()->get('record_movement_information_when_moving_storage_location_movement_to_storage_location_relationship_type');
-			$vs_movement_object_relationship_type = $this->getAppConfig()->get('record_movement_information_when_moving_storage_location_movement_to_object_relationship_type');
+			$vs_movement_storage_location_relationship_type = $this->getAppConfig()->get('movement_storage_location_tracking_relationship_type');
+			$vs_movement_object_relationship_type = $this->getAppConfig()->get('movement_object_tracking_relationship_type');
 			
 			foreach($_REQUEST as $vs_key => $vs_val) {
 				if (preg_match('!^(.*)_movement_form_name$!', $vs_key, $va_matches)) {
@@ -468,5 +478,92 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 		}
 		return $vn_rc;
 	}
+	# ------------------------------------------------------
+ 	/**
+ 	 * Returns HTML form bundle for location contents
+	 *
+	 * @param HTTPRequest $po_request The current request
+	 * @param string $ps_form_name
+	 * @param string $ps_placement_code
+	 * @param array $pa_bundle_settings
+	 * @param array $pa_options Array of options. Options include:
+	 *			None yet.
+	 *
+	 * @return string Rendered HTML bundle
+ 	 */
+ 	public function getLocationContentsHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
+ 		require_once(__CA_MODELS_DIR__."/ca_movements.php");
+ 		require_once(__CA_MODELS_DIR__."/ca_movements_x_objects.php");
+ 		require_once(__CA_MODELS_DIR__."/ca_objects_x_storage_locations.php");
+ 		global $g_ui_locale;
+		
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		
+		$vs_display_template		= caGetOption('displayTemplate', $pa_bundle_settings, _t('No template defined'));
+		
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		
+		$o_view->setVar('settings', $pa_bundle_settings);
+		
+		$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
+		$o_view->setVar('t_subject', $this);
+		
+		$o_view->setVar('mode', $vs_mode = caGetOption('locationTrackingMode', $pa_bundle_settings, 'ca_movements'));
+		
+		switch($vs_mode) {
+			case 'ca_storage_locations':
+				// Get current storage locations
+				
+				$o_view->setVar('t_subject_rel', new ca_objects_x_storage_locations());
+				// Get current objects for location
+				$va_object_ids = $this->getRelatedItems('ca_objects', array('idsOnly' => true));
+				if (is_array($va_object_ids) && sizeof($va_object_ids)) {
+					// check each object for current location
+					
+					// ... then get the list of objects for which the *current* movement is one of ours
+					$t_object = new ca_objects();
+					$va_current_locations_ids = $t_object->getRelatedItems('ca_storage_locations', array('idsOnly' => false, 'showCurrentOnly' => true, 'row_ids' => $va_object_ids));
+					
+					$va_object_rels = array(); 
+					foreach($va_current_locations_ids as $vn_relation_id => $va_location_info) {
+						if ($va_location_info['location_id'] == $this->getPrimaryKey()) { $va_object_rels[] = $vn_relation_id; }
+					}
+					
+					$o_view->setVar('qr_result', sizeof($va_object_rels) ? caMakeSearchResult('ca_objects_x_storage_locations', $va_object_rels) : null);
+					
+				}
+				break;
+			case 'ca_movements':
+			default:
+				// Get current movements for location
+				
+				$va_movement_ids = $this->getRelatedItems('ca_movements', array('idsOnly' => true));
+				if (is_array($va_movement_ids) && sizeof($va_movement_ids)) {
+					// get list of objects on these movements...
+					$t_movement = new ca_movements();
+					$va_object_ids = $t_movement->getRelatedItems('ca_objects', array('idsOnly' => true, 'showCurrentOnly' => true, 'row_ids' => $va_movement_ids));
+					
+					// ... then get the list of objects for which the *current* movement is one of ours
+					$t_object = new ca_objects();
+					$va_current_movement_ids = $t_object->getRelatedItems('ca_movements', array('idsOnly' => false, 'showCurrentOnly' => true, 'row_ids' => $va_object_ids));
+					
+					$va_movement_rels = array(); 
+					foreach($va_current_movement_ids as $vn_relation_id => $va_movement_info) {
+						if (in_array($va_movement_info['movement_id'], $va_movement_ids)) { $va_movement_rels[] = $vn_relation_id; }
+					}
+					
+					$o_view->setVar('qr_result', sizeof($va_movement_rels) ? caMakeSearchResult('ca_movements_x_objects', $va_movement_rels) : null);
+					
+				}
+				
+				$o_view->setVar('t_subject_rel', new ca_movements_x_objects());
+				break;
+		}
+		
+		return $o_view->render('ca_storage_locations_contents.php');
+ 	}
 	# ------------------------------------------------------
 }

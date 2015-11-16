@@ -390,6 +390,9 @@ final class ConfigurationCheck {
 		if (!class_exists('PharData')) {
 			self::addError(_t("The PHP phar module is required for CollectiveAccess to run. Please install it."));
 		}
+		if (!function_exists("curl_exec")){
+			self::addError(_t("The PHP cURL module is required for CollectiveAccess to run. Please install it."));
+		}
 		
 		if (@preg_match('/\p{L}/u', 'a') != 1) {
 			self::addError(_t("Your version of the PHP PCRE module lacks unicode features. Please install a module version with UTF-8 support."));

@@ -37,6 +37,9 @@
 			case 'domPDF'
 ?>
 <div id='header'>
+
+	<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" /> 
+	
 <?php
 	if(file_exists($this->request->getThemeDirectoryPath()."/graphics/logos/".$this->request->config->get('report_img'))){
 		print '<img src="'.$this->request->getThemeDirectoryPath().'/graphics/logos/'.$this->request->config->get('report_img').'" class="headerImg"/>';

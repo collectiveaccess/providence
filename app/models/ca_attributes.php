@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -729,7 +729,8 @@ class ca_attributes extends BaseModel {
 			SELECT count(*) c
 			FROM ca_attributes caa
 			WHERE
-				(caa.table_num = ?) AND (caa.row_id = ?) AND (caa.element_id = ?)
+				(caa.table_num = ?) AND (caa.row_id = ?) AND (caa.element_id = ?) AND
+				(caa.item_id IS NOT NULL OR caa.value_longtext1 IS NOT NULL OR caa.value_decimal1 IS NOT NULL OR caa.value_integer1 IS NOT NULL OR caa.value_blob IS NOT NULL)
 		", (int)$pn_table_num, (int)$pn_row_id, (int)$pn_element_id);
 		if ($po_db->numErrors()) {
 			//$this->errors = $po_db->errors;

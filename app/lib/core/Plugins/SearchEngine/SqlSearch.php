@@ -429,7 +429,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				$vs_where_sql = " WHERE ".join(" AND ", $va_wheres);
 			}
 			$vs_sql = "
-				SELECT DISTINCT row_id
+				SELECT DISTINCT boost, row_id
 				FROM ca_sql_search_search_final
 				{$vs_join_sql}
 				{$vs_where_sql}
@@ -521,7 +521,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		$va_old_signs = $po_rewritten_query->getSigns();
 		foreach($va_elements as $o_lucene_query_element) {
-			$vb_is_blank_search = false;
+			$vb_is_blank_search = $vb_is_not_blank_search = false;
 			
 			if (is_null($va_old_signs)) {	// if array is null then according to Zend Lucene all subqueries should be "are required"... so we AND them
 				$vs_op = "AND";
@@ -607,6 +607,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 
 					$vs_access_point = '';
 					$va_raw_terms = array();
+					
+					$vs_fld_num = $vs_table_num = $t_table = null;
+					
 					switch(get_class($o_lucene_query_element)) {
 						case 'Zend_Search_Lucene_Search_Query_Range':
 							$va_lower_term = $o_lucene_query_element->getLowerTerm();
@@ -845,8 +848,15 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										$vs_term = _t('blank');
 									} else {
 										$vb_is_blank_search = true;
+										$vs_table_num = $va_access_point_info['table_num'];
+										$vs_fld_num = $va_access_point_info['field_num'];
 										break;
 									} 
+								} elseif ($vs_access_point && (mb_strtoupper($vs_term) == _t('[SET]'))) {
+									$vb_is_not_blank_search = true;
+									$vs_table_num = $va_access_point_info['table_num'];
+									$vs_fld_num = $va_access_point_info['field_num'];
+									break;
 								}
 								
 								$va_terms = array($vs_term); //$this->_tokenize($vs_term, true, $vn_i);
@@ -890,7 +900,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							break;
 					}
 					
-					$vs_fld_num = $vs_table_num = $t_table = null;
 					$vb_ft_bit_optimization = false;
 					if ($vs_access_point) {
 						list($vs_table, $vs_field, $vs_sub_field) = explode('.', $vs_access_point);
@@ -951,7 +960,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									break;
 							}
 						} else {
-							if ($vs_table && $vs_field && ($t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true)) ) {
+							if ((!$vb_is_blank_search && !$vb_is_not_blank_search) && $vs_table && $vs_field && ($t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true)) ) {
 								$vs_table_num = $t_table->tableNum();
 								if (is_numeric($vs_field)) {
 									$vs_fld_num = 'I'.$vs_field;
@@ -959,8 +968,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								} else {
 									$vn_fld_num = $this->getFieldNum($vs_table, $vs_field);
 									$vs_fld_num = 'I'.$vn_fld_num;
-								
-									$vn_direct_sql_target_table_num = $vs_table_num; 
 									
 									if (!strlen($vn_fld_num)) {
 										$t_element = new ca_metadata_elements();
@@ -972,7 +979,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 											if (!isset($va_indexed_fields['_ca_attribute_'.$vn_fld_num]) && (!$vn_root_element_id || ($vn_root_element_id && !isset($va_indexed_fields['_ca_attribute_'.$vn_root_element_id])))) { break(2); } // skip if not indexed
 											$vs_fld_num = 'A'.$vn_fld_num;
 										
-											if (!$vb_is_blank_search) {
+											if (!$vb_is_blank_search && !$vb_is_not_blank_search) {
 												//
 												// For certain types of attributes we can directly query the
 												// attributes in the database rather than using the full text index
@@ -1009,6 +1016,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																		)
 																	
 																";
+																$vn_direct_sql_target_table_num = $vs_table_num; 
 															}
 														} else {
 															if ($this->opo_tep->parse($vs_raw_term)) {
@@ -1030,6 +1038,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																		)
 																	
 																";
+																
+																$vn_direct_sql_target_table_num = $vs_table_num; 
 															}
 														}
 														break;
@@ -1055,6 +1065,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																	(cav.value_decimal2 BETWEEN {$va_coords['min_longitude']} AND {$va_coords['max_longitude']})
 																
 															";
+															$vn_direct_sql_target_table_num = $vs_table_num; 
 														}
 														break;
 													case __CA_ATTRIBUTE_VALUE_CURRENCY__:
@@ -1076,6 +1087,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																(cav.value_longtext1 = '".$this->opo_db->escape($vs_currency)."')
 															
 														";
+														$vn_direct_sql_target_table_num = $vs_table_num; 
 														break;
 													case __CA_ATTRIBUTE_VALUE_LENGTH__:
 														// If it looks like a dimension that has been tokenized by Lucene
@@ -1109,6 +1121,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																(cav.value_decimal1 = ".floatval($vn_len).")
 															
 														";
+														$vn_direct_sql_target_table_num = $vs_table_num; 
 														break;
 													case __CA_ATTRIBUTE_VALUE_WEIGHT__:
 														// If it looks like a weight that has been tokenized by Lucene
@@ -1143,6 +1156,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																(cav.value_decimal1 = ".floatval($vn_weight).")
 															
 														";
+														$vn_direct_sql_target_table_num = $vs_table_num; 
 														break;
 													case __CA_ATTRIBUTE_VALUE_TIMECODE__:
 														$t_timecode = new TimecodeAttributeValue();
@@ -1160,6 +1174,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																(cav.value_decimal1 = ".floatval($vn_timecode).")
 															
 														";
+														$vn_direct_sql_target_table_num = $vs_table_num; 
 														break;
 													case __CA_ATTRIBUTE_VALUE_INTEGER__:
 														$vs_direct_sql_query = "
@@ -1173,6 +1188,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																(cav.value_integer1 = ".intval(array_shift($va_raw_terms)).")
 															
 														";
+														$vn_direct_sql_target_table_num = $vs_table_num; 
 														break;
 													case __CA_ATTRIBUTE_VALUE_NUMERIC__:
 														$vs_direct_sql_query = "
@@ -1186,6 +1202,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																(cav.value_decimal1 = ".floatval(array_shift($va_raw_terms)).")
 															
 														";
+														$vn_direct_sql_target_table_num = $vs_table_num; 
 														break;
 												}
 											}	
@@ -1259,6 +1276,11 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					//
 					if ($vb_is_blank_search) {
 						$va_sql_where[] = "((swi.field_table_num = ".intval($vs_table_num).") AND (swi.field_num = '{$vs_fld_num}') AND (swi.word_id = 0))";
+						
+						if (!sizeof($va_sql_where)) { continue; }
+						$vs_sql_where = join(' OR ', $va_sql_where);
+					} elseif ($vb_is_not_blank_search) {
+						$va_sql_where[] = "((swi.field_table_num = ".intval($vs_table_num).") AND (swi.field_num = '{$vs_fld_num}') AND (swi.word_id > 0))";
 						
 						if (!sizeof($va_sql_where)) { continue; }
 						$vs_sql_where = join(' OR ', $va_sql_where);
@@ -1342,7 +1364,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						
 							// Next we rewrite the key we're pulling to be from our subject
 							$vs_direct_sql_query = str_replace("SELECT ca.row_id", "SELECT ".$this->opo_datamodel->primaryKey($pn_subject_tablenum, true), $vs_direct_sql_query);
-						
 							// Finally we pray
 						}
 					}
@@ -1359,7 +1380,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								INSERT IGNORE INTO {$ps_dest_table}
 								SELECT swi.row_id, SUM(swi.boost)
 								FROM ca_sql_search_word_index swi
-								".((!$vb_is_blank_search) ? "INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id" : '')."
+								".((!$vb_is_blank_search && !$vb_is_not_blank_search) ? "INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id" : '')."
 								WHERE
 									{$vs_sql_where}
 									AND
@@ -1390,7 +1411,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										array_unshift($va_join, "INNER JOIN {$ps_dest_table} AS ftmp1 ON ftmp1.row_id = ca.row_id");
 									}
 									$vs_direct_sql_query = str_replace('^JOIN', join("\n", $va_join), $vs_direct_sql_query);
-									$pa_direct_sql_query_params = array(($vn_direct_sql_target_table_num != $pn_subject_tablenum) ? $vn_direct_sql_target_table_num : (int)$pn_subject_tablenum);
+									
+									if((strpos($vs_direct_sql_query, '?') !== false)) {
+										$pa_direct_sql_query_params = array(($vn_direct_sql_target_table_num != $pn_subject_tablenum) ? $vn_direct_sql_target_table_num : (int)$pn_subject_tablenum);
+									}
 								}
 								$vs_sql = ($vs_direct_sql_query) ? "{$vs_direct_sql_query}" : "
 									SELECT swi.row_id

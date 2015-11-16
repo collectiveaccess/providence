@@ -3248,4 +3248,91 @@
 			return _t('Reload records imported from ULAN with the specified mapping. This utility assumes that the mapping is set up with an existingRecordPolicy that ensures that existing records are matched properly. It will create duplicates if it does not match existing records so be sure to test your mapping first!');
 		}
 		# -------------------------------------------------------
+		public static function reload_object_current_location_dates($po_opts=null) {
+			require_once(__CA_MODELS_DIR__."/ca_movements.php");
+			require_once(__CA_MODELS_DIR__."/ca_movements_x_objects.php");
+			require_once(__CA_MODELS_DIR__."/ca_movements_x_storage_locations.php");
+			
+			$o_config = Configuration::load();
+			$o_db = new Db();
+			
+			// Reload movements-objects
+			if ($vs_movement_storage_element = $o_config->get('movement_storage_location_date_element')) {
+				$qr_movements = ca_movements::find(['deleted' => 0], ['returnAs' => 'searchResult']);
+			
+				print CLIProgressBar::start($qr_movements->numHits(), "Reloading movement dates");
+				
+				while($qr_movements->nextHit()) {
+					if ($va_dates = $qr_movements->get("ca_movements.{$vs_movement_storage_element}", ['returnAsArray' => true, 'rawDate' => true])) {
+						$va_date = array_shift($va_dates);
+						
+						// get movement-object relationships
+						if (is_array($va_rel_ids = $qr_movements->get('ca_movements_x_objects.relation_id', ['returnAsArray' => true])) && sizeof($va_rel_ids)) {						
+							$qr_res = $o_db->query(
+								"UPDATE ca_movements_x_objects SET sdatetime = ?, edatetime = ? WHERE relation_id IN (?)", 
+								array($va_date['start'], $va_date['end'], $va_rel_ids)
+							);
+						}
+						// get movement-location relationships
+						if (is_array($va_rel_ids = $qr_movements->get('ca_movements_x_storage_locations.relation_id', ['returnAsArray' => true])) && sizeof($va_rel_ids)) {						
+							$qr_res = $o_db->query(
+								"UPDATE ca_movements_x_storage_locations SET sdatetime = ?, edatetime = ? WHERE relation_id IN (?)", 
+								array($va_date['start'], $va_date['end'], $va_rel_ids)
+							);
+							
+							// check to see if archived storage locations are set in ca_movements_x_storage_locations.source_info
+							// Databases created prior to the October 2015 location tracking changes won't have this
+							$qr_rels = caMakeSearchResult('ca_movements_x_storage_locations', $va_rel_ids);
+							while($qr_rels->nextHit()) {
+								if (!is_array($va_source_info = $qr_rels->get('source_info')) || !isset($va_source_info['path'])) {
+									$vn_rel_id = $qr_rels->get('ca_movements_x_storage_locations.relation_id');
+									$qr_res = $o_db->query(
+										"UPDATE ca_movements_x_storage_locations SET source_info = ? WHERE relation_id = ?", 
+											array(caSerializeForDatabase(array(
+												'path' => $qr_rels->get('ca_storage_locations.hierarchy.preferred_labels.name', array('returnAsArray' => true)),
+												'ids' => $qr_rels->get('ca_storage_locations.hierarchy.location_id',  array('returnAsArray' => true))
+											)), $vn_rel_id)
+									);
+								}
+							}
+						}
+						print CLIProgressBar::next();
+					}
+				}
+				
+				print CLIProgressBar::finish();
+			}
+	
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_location_datesParamList() {
+			return array();
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_location_datesUtilityClass() {
+			return _t('Maintenance');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_location_datesShortHelp() {
+			return _t('Regenerate date/time stamps for movement and object-based location tracking.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_location_datesHelp() {
+			return _t('Regenerate date/time stamps for movement and object-based location tracking.');
+		}
+		# -------------------------------------------------------
 	}

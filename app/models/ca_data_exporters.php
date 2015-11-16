@@ -213,6 +213,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	protected $opo_app_plugin_manager;
 
 	# ------------------------------------------------------
+	public static function clearCaches() {
+		self::$s_exporter_cache = array();
+		self::$s_exporter_item_cache = array();
+		self::$s_mapping_check_cache = array();
+		self::$s_instance_cache = array();
+		self::$s_variables = array();
+	}
+	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 
@@ -1158,6 +1166,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$vb_show_cli_progress_bar = (isset($pa_options['showCLIProgressBar']) && ($pa_options['showCLIProgressBar']));
 		$po_request = caGetOption('request', $pa_options, null);
+		$vb_have_request = ($po_request instanceof RequestHTTP);
 
 		if(!$t_mapping = ca_data_exporters::loadExporterByCode($ps_exporter_code)) {
 			return false;
@@ -1220,9 +1229,16 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			file_put_contents($ps_filename, join(",", $va_header)."\n", FILE_APPEND);
 		}
 
+		$i = 0;
 		while($po_result->nextHit()) {
 
-			if($po_request instanceof RequestHTTP) {
+			// clear caches every once in a while. doesn't make much sense to keep them around while exporting
+			if((++$i % 1000) == 0) {
+				SearchResult::clearCaches();
+				ca_data_exporters::clearCaches();
+			}
+
+			if($vb_have_request) {
 				if(!caCanRead($po_request->getUserID(), $t_instance->tableNum(), $po_result->get($t_instance->primaryKey()))) {
 					continue;
 				}
@@ -1237,7 +1253,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			$vn_num_processed++;
 
-			if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
+			if ($vb_have_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
 				$ps_callback($po_request, $vn_num_processed, $vn_num_items, _t("Exporting ... [%1/%2]", $vn_num_processed, $vn_num_items), (time() - $vn_start_time), memory_get_usage(true), $vn_num_processed);
 			}
 		}

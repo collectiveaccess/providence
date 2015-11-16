@@ -78,6 +78,7 @@ var caUI = caUI || {};
 			
 			sortInitialValuesBy: null,
 			firstItemColor: null,
+			itemColor: null,
 			lastItemColor: null,
 			
 			isSortable: false,
@@ -424,8 +425,8 @@ var caUI = caUI || {};
 			}
 			
 			// colorize
-			if ((options.firstItemColor) || (options.lastItemColor)) {
-				jQuery(this.container + " ." + options.listItemClassName).css('background-color', '');
+			if ((options.firstItemColor) || (options.lastItemColor) || (options.itemColor)) {
+				jQuery(this.container + " ." + options.listItemClassName).css('background-color', options.itemColor ? options.itemColor : '');
 				if (options.firstItemColor) {
 					jQuery(this.container + " ." + options.listItemClassName + ":first").css('background-color', '#' + options.firstItemColor);
 				}

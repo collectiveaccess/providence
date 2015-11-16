@@ -2117,6 +2117,19 @@ class ca_users extends BaseModel {
 			) OR ";
 		}
 		
+		$vs_role_sql = '';
+		if (is_array($va_roles = $this->getUserRoles()) && sizeof($va_roles)) {
+			$vs_role_sql = " (
+				(ceui.ui_id IN (
+						SELECT ui_id 
+						FROM ca_editor_uis_x_roles
+						WHERE 
+							role_id IN (".join(',', array_keys($va_roles)).")
+					)
+				)
+			) OR ";
+		}
+		
 		$o_db = $this->getDb();
 		$qr_uis = $o_db->query("
 			SELECT ceui.ui_id, ceuil.name, ceuil.locale_id, ceuitr.type_id
@@ -2128,6 +2141,7 @@ class ca_users extends BaseModel {
 					ceui.user_id = ? OR 
 					ceui.is_system_ui = 1 OR
 					{$vs_group_sql}
+					{$vs_role_sql}
 					(ceui.ui_id IN (
 							SELECT ui_id 
 							FROM ca_editor_uis_x_users 
@@ -2166,6 +2180,19 @@ class ca_users extends BaseModel {
 			) OR ";
 		}
 		
+		$vs_role_sql = '';
+		if (is_array($va_roles = $this->getUserRoles()) && sizeof($va_roles)) {
+			$vs_role_sql = " (
+				(ceui.ui_id IN (
+						SELECT ui_id 
+						FROM ca_editor_uis_x_roles
+						WHERE 
+							role_id IN (".join(',', array_keys($va_roles)).")
+					)
+				)
+			) OR ";
+		}
+		
 		$o_db = $this->getDb();
 		$qr_uis = $o_db->query("
 			SELECT *
@@ -2176,6 +2203,7 @@ class ca_users extends BaseModel {
 					ceui.user_id = ? OR 
 					ceui.is_system_ui = 1 OR
 					{$vs_group_sql}
+					{$vs_role_sql}
 					(ceui.ui_id IN (
 							SELECT ui_id 
 							FROM ca_editor_uis_x_users 
@@ -2447,11 +2475,8 @@ class ca_users extends BaseModel {
 	 * @param mixed $ps_user_name_or_id The user name or numeric user_id of the user
 	 * @return boolean True if user exists, false if not
 	 */
-	static public function exists($ps_user_name_or_id) {
+	 static public function exists($ps_user_name_or_id, $pa_options=null) {
 		if (parent::exists($ps_user_name_or_id)) {
-			return true;
-		}
-		if (($vn_c = ca_users::find(['user_name' => $ps_user_name_or_id], ['returnAs' => 'count'])) > 0) {
 			return true;
 		}
 		return false;
