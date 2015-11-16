@@ -53,7 +53,7 @@ class WLPlugSearchEngineSqlSearchResult extends WLPlug implements IWLPlugSearchE
 	}
 	# -------------------------------------------------------
 	public function setHits($pa_hits) {
-		$this->opa_hits = $pa_hits;
+		$this->opa_hits = array_unique($pa_hits);
 		$this->opn_current_row = -1;
 		
 		if (sizeof($this->opa_hits)) {

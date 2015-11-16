@@ -572,6 +572,9 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	function caSanitizeStringForJsonEncode($ps_text) {
+		// Remove invalid UTF-8
+		mb_substitute_character(0xFFFD);
+		$ps_text = mb_convert_encoding($ps_text, 'UTF-8', 'UTF-8');
 		// @see http://php.net/manual/en/regexp.reference.unicode.php
 		return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}]|➔/", '', strip_tags($ps_text));
 	}
@@ -2507,60 +2510,37 @@ function caFileIsIncludable($ps_file) {
  	 * Query external web service and return whatever body it returns as string
  	 * @param string $ps_url URL of the web service to query
 	 * @return string
+	 * @throws \Exception
  	 */
 	function caQueryExternalWebservice($ps_url) {
 		if(!isURL($ps_url)) { return false; }
-
 		$o_conf = Configuration::load();
 
+		$vo_curl = curl_init();
+		curl_setopt($vo_curl, CURLOPT_URL, $ps_url);
+
 		if($vs_proxy = $o_conf->get('web_services_proxy_url')){ /* proxy server is configured */
-
-			$vs_proxy_auth = null;
-			if(($vs_proxy_user = $o_conf->get('web_services_proxy_auth_user')) && ($vs_proxy_pass = $o_conf->get('web_services_proxy_auth_pw'))){
-				$vs_proxy_auth = base64_encode("{$vs_proxy_user}:{$vs_proxy_pass}");
-			}
-
-			// non-authed proxy requests go through curl to properly support https queries
-			// everything else is still handled via file_get_contents and stream contexts
-			if(is_null($vs_proxy_auth) && function_exists('curl_exec')) {
-				$vo_curl = curl_init();
-				curl_setopt($vo_curl, CURLOPT_URL, $ps_url);
-				curl_setopt($vo_curl, CURLOPT_PROXY, $vs_proxy);
-				curl_setopt($vo_curl, CURLOPT_SSL_VERIFYHOST, 0);
-				curl_setopt($vo_curl, CURLOPT_SSL_VERIFYPEER, false);
-				curl_setopt($vo_curl, CURLOPT_FOLLOWLOCATION, true);
-				curl_setopt($vo_curl, CURLOPT_RETURNTRANSFER, 1);
-				curl_setopt($vo_curl, CURLOPT_AUTOREFERER, true);
-				curl_setopt($vo_curl, CURLOPT_CONNECTTIMEOUT, 120);
-				curl_setopt($vo_curl, CURLOPT_TIMEOUT, 120);
-				curl_setopt($vo_curl, CURLOPT_MAXREDIRS, 10);
-				curl_setopt($vo_curl, CURLOPT_USERAGENT, 'CollectiveAccess web service lookup');
-
-				$vs_content = curl_exec($vo_curl);
-				curl_close($vo_curl);
-				return $vs_content;
-			} else {
-				$va_context_options = array( 'http' => array(
-					'proxy' => $vs_proxy,
-					'request_fulluri' => true,
-					'header' => 'User-agent: CollectiveAccess web service lookup',
-				));
-
-				if($vs_proxy_auth){
-					$va_context_options['http']['header'] = "Proxy-Authorization: Basic {$vs_proxy_auth}";
-				}
-
-				$vo_context = stream_context_create($va_context_options);
-				return @file_get_contents($ps_url, false, $vo_context);
-			}
-		} else {
-			return @file_get_contents($ps_url, false, stream_context_create(array(
-				"ssl"=>array(
-					"verify_peer"=>false,
-					"verify_peer_name"=>false,
-				),
-			)));
+			curl_setopt($vo_curl, CURLOPT_PROXY, $vs_proxy);
 		}
+
+		curl_setopt($vo_curl, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($vo_curl, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($vo_curl, CURLOPT_FOLLOWLOCATION, true);
+		curl_setopt($vo_curl, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($vo_curl, CURLOPT_AUTOREFERER, true);
+		curl_setopt($vo_curl, CURLOPT_CONNECTTIMEOUT, 120);
+		curl_setopt($vo_curl, CURLOPT_TIMEOUT, 120);
+		curl_setopt($vo_curl, CURLOPT_MAXREDIRS, 10);
+		curl_setopt($vo_curl, CURLOPT_USERAGENT, 'CollectiveAccess web service lookup');
+
+		$vs_content = curl_exec($vo_curl);
+
+		if(curl_getinfo($vo_curl, CURLINFO_HTTP_CODE) !== 200) {
+			throw new \Exception(_t('An error occurred while querying an external webservice'));
+		}
+
+		curl_close($vo_curl);
+		return $vs_content;
 	}
 	# ----------------------------------------
 	/**
@@ -3084,6 +3064,7 @@ function caFileIsIncludable($ps_file) {
 		
 		$vs_display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $ps_text));
 		
+		// Move articles to end of string
 		$va_definite_articles = $o_locale_settings->get('definiteArticles');
 		$va_indefinite_articles = $o_locale_settings->get('indefiniteArticles');
 		
@@ -3095,6 +3076,14 @@ function caFileIsIncludable($ps_file) {
 						break(2);
 					}
 				}
+			}
+		}
+		
+		// Left-pad numbers
+		if (preg_match("![\d]+!", $vs_display_value, $va_matches)) {
+			for($i=0; $i<sizeof($va_matches); $i++) {
+				$vs_padded = str_pad($va_matches[$i], 15, 0, STR_PAD_LEFT);
+				$vs_display_value = str_replace($va_matches[$i], $vs_padded, $vs_display_value);
 			}
 		}
 		return $vs_display_value;

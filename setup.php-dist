@@ -323,7 +323,9 @@ if (!defined("__CA_THEME_URL__")) {
 # part of the standard CollectiveAccess configuration check. If you do
 # configure them here and your setup doesn't have the extension, you
 # may see critical errors.
-define('__CA_CACHE_BACKEND__', 'file');
+if (!defined('__CA_CACHE_BACKEND__')) { 
+	define('__CA_CACHE_BACKEND__', 'file');
+}
 
 # File path for file-based caching. The default works but in some setups you may want to move this
 # to the fastest available storage (in terms of random access time), like an SSD

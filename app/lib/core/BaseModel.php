@@ -697,10 +697,11 @@ class BaseModel extends BaseObject {
 		if (!$ps_field) return null;
 		if (!is_array($pa_options)) { $pa_options = array();}
 		
-		$vb_return_as_array = 		(isset($pa_options['returnAsArray'])) ? (bool)$pa_options['returnAsArray'] : false;
-		$vb_return_all_locales = 	(isset($pa_options['returnAllLocales'])) ? (bool)$pa_options['returnAllLocales'] : false;
-		$vs_delimiter =				(isset($pa_options['delimiter'])) ? $pa_options['delimiter'] : ' ';
-		if ($vb_return_all_locales && !$vb_return_as_array) { $vb_return_as_array = true; }
+		$vb_return_as_array = 		caGetOption('returnAsArray', $pa_options, false);
+		$vb_return_with_structure = caGetOption('returnWithStructure', $pa_options, false);
+		$vb_return_all_locales = 	caGetOption('returnAllLocales', $pa_options, false);
+		$vs_delimiter =				caGetOption('delimiter', $pa_options, ' ');
+		if (($vb_return_with_structure || $vb_return_all_locales) && !$vb_return_as_array) { $vb_return_as_array = true; }
 		
 		$vn_row_id = $this->getPrimaryKey();
 		
@@ -893,7 +894,7 @@ class BaseModel extends BaseObject {
 							$va_vals[] = $va_rel_item[$va_tmp[1]];
 						}
 					}
-					return $vb_return_as_array ? $va_vals : join(caGetOption('delimiter', $pa_options, ';'), $va_vals);
+					return $vb_return_as_array ? $va_vals : join($vs_delimiter, $va_vals);
 				}
 				// can't pull fields from other tables!
 				return $vb_return_as_array ? array() : null;
@@ -974,7 +975,7 @@ class BaseModel extends BaseObject {
 			case (FT_HISTORIC_DATE):
 			case (FT_DATE):
 				$vn_timestamp = isset($this->_FIELD_VALUES[$ps_field]) ? $this->_FIELD_VALUES[$ps_field] : 0;
-				if (caGetOption('returnWithStructure', $pa_options, false)) {
+				if ($vb_return_with_structure) {
 					$vs_prop = array('start' => $this->_FIELD_VALUES[$ps_field], 'end' => $this->_FIELD_VALUES[$ps_field]);
 				} elseif (caGetOption('GET_DIRECT_DATE', $pa_options, false) || caGetOption('getDirectDate', $pa_options, false) || caGetOption('rawDate', $pa_options, false)) {
 					$vs_prop = $this->_FIELD_VALUES[$ps_field];
@@ -996,7 +997,7 @@ class BaseModel extends BaseObject {
 				}
 				break;
 			case (FT_TIME):
-				if (caGetOption('returnWithStructure', $pa_options, false)) {
+				if ($vb_return_with_structure) {
 					$vs_prop = array('start' => $this->_FIELD_VALUES[$ps_field], 'end' => $this->_FIELD_VALUES[$ps_field]);
 				} elseif (caGetOption('GET_DIRECT_TIME', $pa_options, false) || caGetOption('getDirectTime', $pa_options, false) || caGetOption('rawTime', $pa_options, false)) {
 					$vs_prop = $this->_FIELD_VALUES[$ps_field];
@@ -1015,7 +1016,7 @@ class BaseModel extends BaseObject {
 				
 				$vn_start_date = isset($this->_FIELD_VALUES[$vs_start_field_name]) ? $this->_FIELD_VALUES[$vs_start_field_name] : null;
 				$vn_end_date = isset($this->_FIELD_VALUES[$vs_end_field_name]) ? $this->_FIELD_VALUES[$vs_end_field_name] : null;
-				if (caGetOption('returnWithStructure', $pa_options, false)) {
+				if ($vb_return_with_structure) {
 					$vs_prop = array('start' => $vn_start_date, 'end' => $vn_end_date);
 				} elseif (!caGetOption('GET_DIRECT_DATE', $pa_options, false) && !caGetOption('getDirectDate', $pa_options, false) && !caGetOption('rawDate', $pa_options, false)) {
 					$o_tep = new TimeExpressionParser();
@@ -1038,7 +1039,7 @@ class BaseModel extends BaseObject {
 				$vn_start_date = isset($this->_FIELD_VALUES[$vs_start_field_name]) ? $this->_FIELD_VALUES[$vs_start_field_name] : null;
 				$vn_end_date = isset($this->_FIELD_VALUES[$vs_end_field_name]) ? $this->_FIELD_VALUES[$vs_end_field_name] : null;
 				
-				if (caGetOption('returnWithStructure', $pa_options, false)) {
+				if ($vb_return_with_structure) {
 					$vs_prop = array('start' => $vn_start_date, 'end' => $vn_end_date);
 				} elseif (!caGetOption('GET_DIRECT_TIME', $pa_options, false) && !caGetOption('getDirectTime', $pa_options, false) && !caGetOption('rawTime', $pa_options, false)) {
 					$o_tep = new TimeExpressionParser();
@@ -1055,10 +1056,20 @@ class BaseModel extends BaseObject {
 				break;
 			case (FT_MEDIA):
 			case (FT_FILE):
-				if (isset($pa_options["USE_MEDIA_FIELD_VALUES"]) && $pa_options["USE_MEDIA_FIELD_VALUES"]) {
-					$vs_prop = $this->_FIELD_VALUES[$ps_field];
+				if ($vb_return_with_structure || $pa_options["USE_MEDIA_FIELD_VALUES"]) {
+					if (isset($pa_options["USE_MEDIA_FIELD_VALUES"]) && $pa_options["USE_MEDIA_FIELD_VALUES"]) {
+						$vs_prop = $this->_FIELD_VALUES[$ps_field];
+					} else {
+						$vs_prop = (isset($this->_SET_FILES[$ps_field]['tmp_name']) && $this->_SET_FILES[$ps_field]['tmp_name']) ? $this->_SET_FILES[$ps_field]['tmp_name'] : $this->_FIELD_VALUES[$ps_field];
+					}
 				} else {
-					$vs_prop = (isset($this->_SET_FILES[$ps_field]['tmp_name']) && $this->_SET_FILES[$ps_field]['tmp_name']) ? $this->_SET_FILES[$ps_field]['tmp_name'] : $this->_FIELD_VALUES[$ps_field];
+					$va_versions = $this->getMediaVersions($ps_field);
+					$vs_tag = $this->getMediaTag($ps_field, array_shift($va_versions));
+					if ($vb_return_as_array) {
+						return array($vs_tag);
+					} else {
+						return $vs_tag;
+					}
 				}
 				break;
 			case (FT_VARS):
@@ -3377,7 +3388,7 @@ class BaseModel extends BaseObject {
 	 * @return bool
 	 */
 	public function mediaIsMirrored($field, $version) {
-		$media_info = $this->get($field);
+		$media_info = $this->get($field, array('returnWithStructure' => true));
 		if (!is_array($media_info)) {
 			return "";
 		}
@@ -3400,7 +3411,7 @@ class BaseModel extends BaseObject {
 	 * @return mixed media mirror status
 	 */
 	public function getMediaMirrorStatus($field, $version, $mirror="") {
-		$media_info = $this->get($field);
+		$media_info = $this->get($field, array('returnWithStructure' => true));
 		if (!is_array($media_info)) {
 			return "";
 		}
@@ -3425,7 +3436,7 @@ class BaseModel extends BaseObject {
 	public function retryMediaMirror($ps_field, $ps_version) {
 		global $AUTH_CURRENT_USER_ID;
 		
-		$va_media_info = $this->get($ps_field);
+		$va_media_info = $this->get($ps_field, array('returnWithStructure' => true));
 		if (!is_array($va_media_info)) {
 			return "";
 		}
@@ -3799,7 +3810,7 @@ class BaseModel extends BaseObject {
 	public function getMediaVersions($ps_field, $ps_mimetype=null) {
 		if (!$ps_mimetype) {
 			# figure out mimetype from field content
-			$va_media_desc = $this->get($ps_field);
+			$va_media_desc = $this->get($ps_field, array('returnWithStructure' => true));
 			
 			if (is_array($va_media_desc)) {
 				unset($va_media_desc["ORIGINAL_FILENAME"]);
@@ -3856,7 +3867,7 @@ class BaseModel extends BaseObject {
 
 		if (!$ps_mimetype) {
 			# figure out mimetype from field content
-			$va_media_desc = $this->get($ps_field);
+			$va_media_desc = $this->get($ps_field, array('returnWithStructure' => true));
 			if ($vs_media_type = $o_media_proc_settings->canAccept($va_media_desc["INPUT"]["MIMETYPE"])) {
 				return $o_media_proc_settings->getMediaTypeInfo($vs_media_type);
 			}
