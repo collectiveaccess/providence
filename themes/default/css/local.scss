@@ -2,7 +2,8 @@
 @import "vars";
 @import "mixin";
 
-
+@import "pure/grids";
+@import "pure/responsive-grids";
 
 @import "topNavContainer";
 	@import "suckerfish";
@@ -23,12 +24,7 @@
 		@import "caColorbox";
 		@import "toolIcons";
 
-
-	
-
-
 	@import "footerContainer";
-
 
 @import "icons";
 @import "form";
