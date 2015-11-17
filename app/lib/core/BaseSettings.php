@@ -514,10 +514,10 @@
 						} else {
 							// Regular drop-down with configured options
 							if ($vn_height > 1) { $va_attr['multiple'] = 1; $vs_input_name .= '[]'; }
-						
+
 							$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
 							if(!isset($va_opts['value'])) { $va_opts['value'] = -1; }		// make sure default list item is never selected
-							$vs_select_element = caHTMLSelect($vs_input_name, $va_properties['options'], array(), $va_opts);
+							$vs_select_element = caHTMLSelect($vs_input_name, $va_properties['options'], $va_attr, $va_opts);
 						}
 					}
 					

@@ -51,6 +51,8 @@
 			require_once(__CA_BASE_DIR__ . '/install/inc/Installer.php');
 			require_once(__CA_BASE_DIR__ . '/install/inc/Updater.php');
 
+			define('__CollectiveAccess_Installer__', 1);
+
 			if ($pb_installing && !$po_opts->getOption('profile-name')) {
 				CLIUtils::addError(_t("Missing required parameter: profile-name"));
 				return false;

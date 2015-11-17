@@ -184,6 +184,8 @@
 			'description' => _t('Delimiter to use between multiple values when used in a display.')
 		)
 	);
+
+
  
 	class ListAttributeValue extends AttributeValue implements IAttributeValue {
  		# ------------------------------------------------------------------
@@ -361,6 +363,8 @@
  		  * @return string HTML code for form element
  		  */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
+			/** @var RequestHTTP $o_request */
+			$o_request = $pa_options['request'];
  			$vb_require_value = (is_null($pa_element_info['settings']['requireValue'])) ? true : (bool)$pa_element_info['settings']['requireValue'];
  			if (($pa_element_info['parent_id']) && ($pa_element_info['settings']['render'] == 'checklist')) { $pa_element_info['settings']['render'] = ''; }	// checklists can only be top-level
  			if ((!isset($pa_options['width']) || !strlen($pa_options['width'])) && isset($pa_element_info['settings']['listWidth']) && strlen($pa_element_info['settings']['listWidth']) > 0) { $pa_options['width'] = $pa_element_info['settings']['listWidth']; }
@@ -383,7 +387,7 @@
  				$pa_options['useDefaultWhenNull'] = isset($pa_element_info['settings']['useDefaultWhenNull']) ? (bool)$pa_element_info['settings']['useDefaultWhenNull'] : false;
  			}
  			
- 			return ca_lists::getListAsHTMLFormElement(
+ 			$vs_element = ca_lists::getListAsHTMLFormElement(
 				$pa_element_info['list_id'],
 				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
 				array(
@@ -395,12 +399,137 @@
 					array('render' => $vs_render, 'maxColumns' => $vn_max_columns, 'element_id' => $pa_element_info['element_id'], 'nullOption' => $vb_null_option, 'auto_shrink' => $vb_auto_shrink)
 				)
 			);
+
+			// dependant field visibility
+			if(Configuration::load()->get('enable_dependent_field_visibility')) {
+				$t_list = new ca_lists();
+				foreach($t_list->getItemsForList($pa_element_info['list_id']) as $va_items_by_locale) {
+					foreach ($va_items_by_locale as $vn_locale_id => $va_item) {
+						$vs_hide_js = '';
+						if(is_array($pa_element_info['settings']['hideIfSelected_'.$va_item['idno']])) {
+							// @todo maybe only generate JS for bundles on current screen? could figure that out from request
+							foreach($pa_element_info['settings']['hideIfSelected_'.$va_item['idno']] as $vs_key) {
+								$va_tmp = self::resolveHideIfSelectedKey($vs_key);
+								if(!is_array($va_tmp)) { continue; }
+
+								$vs_hide_js .= "jQuery(\"a[name='Screen".$va_tmp[0]."_".$va_tmp[1]."']\").next().hide();\n";
+							}
+						}
+
+						switch($pa_element_info['settings']['render']) {
+							case 'radio_buttons':
+								$vs_select = "jQuery('[id^={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]')";
+								$vs_selector_for_val = "jQuery('input[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]:checked').val()";
+								break;
+							case 'select':
+							case null:
+								$vs_select = "jQuery('#{fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}')";
+								$vs_selector_for_val = "jQuery(this).find(':selected').val()";
+								break;
+							default:
+								continue;
+						}
+
+
+
+
+						$vs_element .= "
+<script type='text/javascript'>
+	jQuery(document).ready(function() {
+		var select = $vs_select;
+		select.change(function() {
+			if (".$vs_selector_for_val." === '" . $va_item['item_id'] . "') {
+				jQuery('div.bundleLabel').show();
+				" . $vs_hide_js . "
+			}
+		});
+
+		if (".$vs_selector_for_val." === '" . $va_item['item_id'] . "') {
+			" . $vs_hide_js . "
+		}
+    });
+</script>
+";
+					}
+				}
+			}
+
+			return $vs_element;
  		}
  		# ------------------------------------------------------------------
  		public function getAvailableSettings($pa_element_info=null) {
- 			global $_ca_attribute_settings;
- 			
- 			return $_ca_attribute_settings['ListAttributeValue'];
+ 			global $_ca_attribute_settings, $g_request;
+			$va_element_settings = $_ca_attribute_settings['ListAttributeValue'];
+
+			/*
+			 * For the dependent field visibility feature we need to add a select-able list of all applicable
+			 * UI bundle placements here ... for each item in that list!
+			 */
+
+			if(
+				Configuration::load()->get('enable_dependent_field_visibility') &&
+				is_array($pa_element_info) &&
+				isset($pa_element_info['list_id']) &&
+				// select is the default, so empty does count
+				(!( $pa_element_info['settings']['render']) || in_array($pa_element_info['settings']['render'], array('select', 'radio_buttons'))) &&
+				$g_request && ($g_request instanceof RequestHTTP)
+			) {
+				$va_options_for_settings = array();
+
+				$t_mde = new ca_metadata_elements($pa_element_info['element_id']);
+				$va_restrictions = $t_mde->getTypeRestrictions();
+
+				$va_tables = array();
+				if(is_array($va_restrictions) && sizeof($va_restrictions)) {
+					foreach($va_restrictions as $va_restriction) {
+						$va_tables[] = $va_restriction['table_num'];
+					}
+				}
+
+				$t_ui = new ca_editor_uis();
+				foreach(array_unique($va_tables) as $vn_table_num) {
+					// get UIs
+					$va_ui_list = ca_editor_uis::getAvailableUIs($vn_table_num, $g_request);
+					foreach($va_ui_list as $vn_ui_id => $vs_ui_name) {
+						$t_ui->load($vn_ui_id);
+						// get screens
+						foreach($t_ui->getScreens() as $va_screen) {
+							// get placements
+							foreach($t_ui->getScreenBundlePlacements($va_screen['screen_id']) as $va_placement) {
+								$va_options_for_settings[$t_ui->get('editor_code') . '/'. $va_screen['idno'] . '/' . $va_placement['placement_code']] = $t_ui->get('editor_code') . '/'. $va_screen['idno'] . '/' . $va_placement['placement_code'];
+							}
+						}
+					}
+				}
+
+				$t_list = new ca_lists();
+				foreach($t_list->getItemsForList($pa_element_info['list_id']) as $va_items_by_locale) {
+					foreach($va_items_by_locale as $vn_locale_id => $va_item) {
+						$va_element_settings['hideIfSelected_'.$va_item['idno']] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'options' => $va_options_for_settings,
+							'takesLocale' => false,
+							'default' => '',
+							'width' => "400px", 'height' => 10,
+							'label' => _t('Hide bundles if "%1" is selected', $va_item['name_singular']),
+							'description' => _t('Select bundles from the list below')
+						);
+					}
+				}
+			} elseif(defined('__CollectiveAccess_Installer__') && Configuration::load()->get('enable_dependent_field_visibility')) {
+				// when installing, UIs, screens and placements are not yet available when we process elementSets, so
+				// we just add the hideIfSelected_* as available settings (without actual settings) so that the validation doesn't fail
+				$t_list = new ca_lists();
+				foreach($t_list->getItemsForList($pa_element_info['list_id']) as $va_items_by_locale) {
+					foreach($va_items_by_locale as $vn_locale_id => $va_item) {
+						$va_element_settings['hideIfSelected_'.$va_item['idno']] = true;
+					}
+				}
+			}
+
+
+ 			return $va_element_settings;
  		}
  		# ------------------------------------------------------------------
 		/**
@@ -446,7 +575,16 @@
 					}
 					break;
 			}
-			
+
+			if(preg_match("/^hideIfSelected/", $ps_setting_key)) {
+				if(isset($pa_element_info['settings']['render']) && !is_null($pa_element_info['settings']['render'])) {
+					if (!in_array($pa_element_info['settings']['render'], array('radio_buttons', 'select'))) {
+						$ps_error = _t("dependent field visibility is only supported for radio buttons and drop-down (select) menus");
+						return false;
+					}
+				}
+			}
+
 			return true;
 		}
  		# ------------------------------------------------------------------
@@ -459,4 +597,44 @@
 			return __CA_ATTRIBUTE_VALUE_LIST__;
 		}
  		# ------------------------------------------------------------------
+		/**
+		 * Returns a list of ui id, screen id and placement id for a given setting key (editor_code/screen_idno/placement_code)
+		 * @param string $ps_key
+		 * @return array|bool
+		 */
+		public static function resolveHideIfSelectedKey($ps_key) {
+			if(CompositeCache::contains($ps_key, 'ListAttrHideIfSelected')) {
+				return CompositeCache::fetch($ps_key, 'ListAttrHideIfSelected');
+			}
+
+			$va_tmp = explode('/', $ps_key);
+			if(!sizeof($va_tmp) == 3) { return false; }
+
+			// ui
+			$t_ui = new ca_editor_uis();
+			if(!$t_ui->load(array('editor_code' => $va_tmp[0]))) {
+				return false;
+			}
+
+			// screen
+			$t_screen = new ca_editor_ui_screens();
+			if(!$t_screen->load(array('ui_id' => $t_ui->getPrimaryKey(), 'idno' => $va_tmp[1]))) {
+				return false;
+			}
+
+			// placement
+			$t_placement = new ca_editor_ui_bundle_placements();
+			if(!$t_placement->load(array('screen_id' => $t_screen->getPrimaryKey(), 'placement_code' => $va_tmp[2]))) {
+				return false;
+			}
+
+			$va_ret = array(
+				$t_screen->getPrimaryKey(),
+				$t_placement->getPrimaryKey()
+			);
+
+			CompositeCache::save($ps_key, $va_ret, 'ListAttrHideIfSelected');
+			return $va_ret;
+		}
+		# ------------------------------------------------------------------
 	}
