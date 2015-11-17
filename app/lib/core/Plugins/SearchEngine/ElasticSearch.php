@@ -227,7 +227,6 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			} catch(Elasticsearch\Common\Exceptions\Missing404Exception $e) {
 				// noop
 			} finally {
-				$this->getClient()->indices()->create(['index' => $this->getIndexName()]);
 				$this->refreshMapping(true);
 			}
 		} else {
