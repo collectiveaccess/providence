@@ -1,0 +1,42 @@
+.grid {
+    display: block;
+    width: 100%;
+    font-size: 0; // Prevents rendering of formatting whitespace between cells
+}
+
+.grid:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.grid > [class *= 'cell-'] {
+    display: inline-block;
+    vertical-align: top;
+    font-size: medium;
+}
+
+.grid > .cell-1 { width: 1 / 24 * 100%; }
+.grid > .cell-2 { width: 2 / 24 * 100%; }
+.grid > .cell-3 { width: 3 / 24 * 100%; }
+.grid > .cell-4 { width: 4 / 24 * 100%; }
+.grid > .cell-5 { width: 5 / 24 * 100%; }
+.grid > .cell-6 { width: 6 / 24 * 100%; }
+.grid > .cell-7 { width: 7 / 24 * 100%; }
+.grid > .cell-8 { width: 8 / 24 * 100%; }
+.grid > .cell-9 { width: 9 / 24 * 100%; }
+.grid > .cell-10 { width: 10 / 24 * 100%; }
+.grid > .cell-11 { width: 11 / 24 * 100%; }
+.grid > .cell-12 { width: 12 / 24 * 100%; }
+.grid > .cell-13 { width: 13 / 24 * 100%; }
+.grid > .cell-14 { width: 14 / 24 * 100%; }
+.grid > .cell-15 { width: 15 / 24 * 100%; }
+.grid > .cell-16 { width: 16 / 24 * 100%; }
+.grid > .cell-17 { width: 17 / 24 * 100%; }
+.grid > .cell-18 { width: 18 / 24 * 100%; }
+.grid > .cell-19 { width: 19 / 24 * 100%; }
+.grid > .cell-20 { width: 20 / 24 * 100%; }
+.grid > .cell-21 { width: 21 / 24 * 100%; }
+.grid > .cell-22 { width: 22 / 24 * 100%; }
+.grid > .cell-23 { width: 23 / 24 * 100%; }
+.grid > .cell-24 { width: 24 / 24 * 100%; }
