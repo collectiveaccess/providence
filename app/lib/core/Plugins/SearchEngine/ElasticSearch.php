@@ -164,13 +164,13 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 					$va_indexes = $va_record[$vs_key.'_content_ids'];
 					$vn_index = array_search($pn_content_row_id, $va_indexes);
 					if($vn_index !== false) {
-						// replace that very index in the value array for this field -- all the other values, including the indexes stay intact
+						// replace that very index in the value array for this field -- all the other values stay intact
 						$va_values[$vn_index] = $vm_val;
 					} else { // this particular content row id hasn't been indexed yet --> just add it
 						$va_values[] = $vm_val;
 						$va_indexes[] = $pn_content_row_id;
-						self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key.'_content_ids'] = $va_indexes;
 					}
+					self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key.'_content_ids'] = $va_indexes;
 					self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key] = $va_values;
 				} else { // this field wasn't indexed yet -- just add it
 					self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key][] = $vm_val;
@@ -368,6 +368,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$this->opa_index_content_buffer[$vs_key][] = $vm_val;
 			// this list basically indexes the values above by content row id. we need that to have a chance
 			// to update indexing for specific values [content row ids] in place
+			if(!$pn_content_row_id) { var_dump('boo'); }
 			$this->opa_index_content_buffer[$vs_key.'_content_ids'][] = $pn_content_row_id;
 		}
 	}
@@ -433,10 +434,22 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 						// find the index for this content row id in our _content_ids index list
 						$va_values = $va_record[$vs_key];
 						$va_indexes = $va_record[$vs_key.'_content_ids'];
-						$vn_index = array_search($pn_content_row_id, $va_indexes);
-						// nuke that very index in the value array for this field -- all the other values, including the indexes stay intact
-						unset($va_values[$vn_index]);
-						unset($va_indexes[$vn_index]);
+						if(is_array($va_indexes)) {
+							$vn_index = array_search($pn_content_row_id, $va_indexes);
+							// nuke that very index in the value array for this field -- all the other values, including the indexes stay intact
+							unset($va_values[$vn_index]);
+							unset($va_indexes[$vn_index]);
+						} else {
+							if(sizeof($va_values) == 1) {
+								$va_values = array();
+								$va_indexes = array();
+							} else {
+								var_dump('no index array for these values. key was ' . $vs_key);
+								var_dump($va_values);
+								//print caPrintStacktrace();
+							}
+						}
+
 						// we reindex both value and index arrays here, starting at 0
 						// json_encode seems to treat something like array(1=>'foo') as object/hash, rather than a list .. which is not good
 						self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key] = array_values($va_values);
