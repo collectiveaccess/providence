@@ -368,7 +368,6 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$this->opa_index_content_buffer[$vs_key][] = $vm_val;
 			// this list basically indexes the values above by content row id. we need that to have a chance
 			// to update indexing for specific values [content row ids] in place
-			if(!$pn_content_row_id) { var_dump('boo'); }
 			$this->opa_index_content_buffer[$vs_key.'_content_ids'][] = $pn_content_row_id;
 		}
 	}
@@ -443,10 +442,6 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 							if(sizeof($va_values) == 1) {
 								$va_values = array();
 								$va_indexes = array();
-							} else {
-								var_dump('no index array for these values. key was ' . $vs_key);
-								var_dump($va_values);
-								//print caPrintStacktrace();
 							}
 						}
 
