@@ -54,10 +54,10 @@ class FileSystem extends Test\Unit\Suite
         $this
             ->given(
                 $root = resolve('hoa://Test/Vfs/Root?type=directory'),
-                resolve('hoa://Test/Vfs/Root/.'),
-                resolve('hoa://Test/Vfs/Root/..'),
-                resolve('hoa://Test/Vfs/Root/A'),
-                resolve('hoa://Test/Vfs/Root/B'),
+                resolve('hoa://Test/Vfs/Root/.?type=directory'),
+                resolve('hoa://Test/Vfs/Root/..?type=directory'),
+                resolve('hoa://Test/Vfs/Root/A?type=file'),
+                resolve('hoa://Test/Vfs/Root/B?type=file'),
                 $iterator = new LUT\FileSystem($root),
                 $result   = []
             )
@@ -83,12 +83,12 @@ class FileSystem extends Test\Unit\Suite
             ->given(
                 $splFileInfo = 'Hoa\Iterator\SplFileInfo',
                 $root        = resolve('hoa://Test/Vfs/Root?type=directory'),
-                resolve('hoa://Test/Vfs/Root/a'),
-                resolve('hoa://Test/Vfs/Root/b'),
-                resolve('hoa://Test/Vfs/Root/c'),
-                resolve('hoa://Test/Vfs/Root/d'),
-                resolve('hoa://Test/Vfs/Root/e'),
-                resolve('hoa://Test/Vfs/Root/f'),
+                resolve('hoa://Test/Vfs/Root/a?type=file'),
+                resolve('hoa://Test/Vfs/Root/b?type=file'),
+                resolve('hoa://Test/Vfs/Root/c?type=file'),
+                resolve('hoa://Test/Vfs/Root/d?type=file'),
+                resolve('hoa://Test/Vfs/Root/e?type=file'),
+                resolve('hoa://Test/Vfs/Root/f?type=file'),
                 $iterator = new LUT\FileSystem(
                     $root,
                     LUT\FileSystem::CURRENT_AS_FILEINFO,

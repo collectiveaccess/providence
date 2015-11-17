@@ -268,3 +268,21 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		return $t_list->getRootListItemID($ps_list_code);
 	}
 	# ---------------------------------------
+	/**
+	 * Fetch the type code for a given relationship type id (primary key value)
+	 * @param $pn_type_id
+	 * @return Array|bool|mixed|null|string
+	 */
+	function caGetRelationshipTypeCode($pn_type_id) {
+		if(CompositeCache::contains($pn_type_id, 'RelationshipIDsToCodes')) {
+			return CompositeCache::fetch($pn_type_id, 'RelationshipIDsToCodes');
+		}
+
+		$t_rel_types = new ca_relationship_types($pn_type_id);
+		if(!$t_rel_types->getPrimaryKey()) { return false; }
+
+		$vs_code = $t_rel_types->get('type_code');
+		CompositeCache::save($pn_type_id, $vs_code, 'RelationshipIDsToCodes');
+		return $vs_code;
+	}
+	# ---------------------------------------

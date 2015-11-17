@@ -43,7 +43,7 @@
 //
 
 
-%skip   space     \s
+%skip   space     [\x20\x09]+
 %token  bracket_  \(
 %token _bracket   \)
 %token  comma     ,
