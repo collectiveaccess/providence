@@ -44,8 +44,6 @@
   background-image:      -o-linear-gradient($style, $start, $end);
 }
 
-
-
 @mixin wam-font-heading($weight: 400, $transform: uppercase) {
   font-family: 'Oswald', sans-serif;
   font-weight: $weight;
@@ -53,7 +51,6 @@
 }
 
 @mixin wam-font-size() {
-
   h1 {
     font-size: 3em;
   }

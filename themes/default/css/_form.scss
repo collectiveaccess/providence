@@ -2,36 +2,26 @@ input[type="text"],
 input[type="textarea"], 
 textarea, 
 input[type="password"] {
-
 	font-family: inherit;
 	font-size: inherit;
 }
 
-
-
-
 .labelInfo {
 	background-color: transparent;
-	margin-left: 0px;
-	padding: 7px 28px 3px 5px;
-	border-bottom: 1px solid $white-dark;
-
+	margin-left: 0;
+	padding: 0 28px 0 0;
 
 	&:last-of-type {
 		border-bottom: 0;
-		
 	}
-	
+
 	&.button {
-		border-top: 1px solid $white-dark;
 		img{
 			max-height: 1.2em;
 			vertical-align: middle;
 		}
-	}	
-	
+	}
 }
-
 
 a.form-button, 
 span.form-button, 
@@ -55,17 +45,9 @@ del.form-button span {
 	padding: 0.5em 1em;
 }
 
-
 a.form-button:hover span {
 	background: $grey;
 	color: $white;
-}
-
-
-
-.ui-autocomplete-input {
-	height: 2em !important;
-
 }
 
 .caDeleteItemButton,
@@ -101,23 +83,21 @@ a.caNodecLabelButton {
 	color: inherit;
 }
 
-
 .formLabelText {
 	@include wam-font-heading();
 	color: $grey-dark;
 	font-size: 0.8em;
+	padding: 0 0 0 0;
 }
 
-
 div.button {
-	font-size: inherit;
-
+	padding-left: 0;
 
 	img {
 		vertical-align: initial;
 	}
 
-	a{
+	a {
 		font-size: 0.9em;
 		font-family: inherit;
 		font-weight: 600;
@@ -138,6 +118,9 @@ div.button {
 table.attributeListItem {
 	width: 100%;
 
+	td {
+		padding: 0;
+	}
 }
 
 .attributeListItem td {
@@ -160,6 +143,7 @@ table.attributeListItem {
 .formSettings {
 	border: 1px solid $white-dark;
 }
+
 #idno_year,
 #idno_job_number,
 #idno_assignment_number,
@@ -167,15 +151,18 @@ table.attributeListItem {
 	font-size: 1em;
 	width: 40px !important;
 }
+
 #idno_prefix{
 	font-size: 1em;
 	width: 60px !important;
 }
+
 #idno_object_number{
 	width: 180px !important;
 	margin-left: 6px;
 	margin-right: 3px;
 }
+
 #idno_serial_number,
 #idno_suffix {
 	width: 80px !important;

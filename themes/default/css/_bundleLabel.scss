@@ -1,19 +1,25 @@
-
-
 .bundleLabel {
 	font-size: inherit;
 	font-family: inherit;
 	color: inherit;
 	background-color: white;
-	border: 1px solid white;
-	box-shadow: 0 0 3px 1px rgb(220,220,220);
+	border: none;
+	border-bottom: 1px solid $white-off;
+	padding: 0 0 8px 0;
+	margin: 0 0 8px 0;
 
-  border-radius: 3px;
-  margin-bottom: 1em;
-
+	input[type="text"],
+	input[type="textarea"],
+	textarea,
+	input[type="password"],
+	select {
+		width: 100% !important;
+	}
 }
 
-
+.bundleInner {
+	letter-spacing: normal;
+}
 
 .bundleContainer {
 	background: inherit;
@@ -21,17 +27,16 @@
 
 div.roundedRel {
 	font-size: 0.9em;
-	border: 1px solid $white-dark;
 	background: $white-off;
 	float: none;
 	margin-right: 28px;
 
-	&:last-of-type{
-		border-bottom: 1px solid $white-dark !important;
-	} 
-
 	a {
 		font-size: inherit;
-
 	}
+}
+
+.caItemList {
+	max-height: none;
+	overflow-y: hidden;
 }
