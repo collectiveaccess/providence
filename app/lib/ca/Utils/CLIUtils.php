@@ -1797,46 +1797,6 @@
 		}
 		# -------------------------------------------------------
 		/**
-		 * Generate mappings for Solr based upon currently configured search indexing
-		 */
-		public static function generate_solr_configuration($po_opts=null) {
-				require_once(__CA_LIB_DIR__."/core/Search/Solr/SolrConfiguration.php");
-				SolrConfiguration::updateSolrConfiguration(true);
-
-				// @TODO what if something goes wrong!?
-				CLIUtils::addMessage(_t('Solr schema was created successfully!'), array('color' => 'bold_green'));
-				CLIUtils::addMessage(_t("Note that all data has been wiped from the index so you must issue a full reindex now, either using caUtils rebuild-search-index or the web-based tool under Manage > Administration > Maintenance."), array('color' => 'red'));
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public static function generate_solr_configurationParamList() {
-			return array();
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public static function generate_solr_configurationUtilityClass() {
-			return _t('Search');
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public static function generate_solr_configurationShortHelp() {
-			return _t('Configures Solr installation for use with CollectiveAccess');
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public static function generate_solr_configurationHelp() {
-			return _t('Configures Solr installation for use with CollectiveAccess, setting up indices and mappings. You must run this before reindexing your database.');
-		}
-		# -------------------------------------------------------
-		/**
 		 * Reset user password
 		 */
 		public static function reset_password($po_opts=null) {

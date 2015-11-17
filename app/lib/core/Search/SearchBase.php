@@ -74,7 +74,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 		/** 
 		 * Get search engine instance
 		 *
-		 * @param string $ps_plugin_name A valid plugin file name (eg. 'Solr'), not the actual class name (eg. WLPlugSearchEngineSolr)
+		 * @param string $ps_plugin_name A valid plugin file name (eg. 'ElasticSearch'), not the actual class name (eg. WLPlugSearchEngineElasticSearch)
 		 * @return WLPlugSearchEngine instance or null if engine is invalid
 		 */
 		static public function newSearchEngine($ps_plugin_name=null, $po_db=null) {		
