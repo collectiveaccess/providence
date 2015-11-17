@@ -1,5 +1,3 @@
-//_simple-search-box.scss
-
 #advancedSearchFormContainer {
 	div.simple-search-box {
 		background: white;
@@ -8,17 +6,14 @@
 		border-radius: 3px; 
 		margin-top: 0;
 
-
 		input[type="text"], 
-		input[type="textarea"], 
-		textarea, 
 		input[type="password"],
+		input[type="textarea"],
+		textarea,
 		select,
 		select#ca_objects_languageAffiliation {
 			width: 100% !important;
 		}
-
-
 	}
 }
 
@@ -31,7 +26,6 @@ div.searchFormLineModeElementLabel {
 	font-size: inherit;
 	font-weight: 600;
 }
-
 
 #advancedSearchFormContainer {
 	.saveAs {
@@ -50,7 +44,3 @@ div.searchFormLineModeElementLabel {
 		}
 	}
 }
-
-
-
-

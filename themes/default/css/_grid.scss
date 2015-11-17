@@ -1,19 +1,19 @@
 .grid {
-    display: block;
-    width: 100%;
-    font-size: 0; // Prevents rendering of formatting whitespace between cells
+	display: block;
+	width: 100%;
+	font-size: 0; // Prevents rendering of formatting whitespace between cells
 }
 
 .grid:after {
-    content: "";
-    display: table;
-    clear: both;
+	content: "";
+	display: table;
+	clear: both;
 }
 
 .grid > [class *= 'cell-'] {
-    display: inline-block;
-    vertical-align: top;
-    font-size: medium;
+	display: inline-block;
+	vertical-align: top;
+	font-size: medium;
 }
 
 .grid > .cell-1 { width: 1 / 24 * 100%; }

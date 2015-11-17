@@ -1,11 +1,8 @@
-
-
 div.control-box {
 	width: 100%;
 	background-color: $black;
 	float: none;
 	color: white;
-
 
 	a {
 		color: white;
@@ -15,7 +12,6 @@ div.control-box {
 			color: white;
 		}
 	}
-
 
 	a.form-button {
 		padding-bottom: 0;
@@ -27,13 +23,11 @@ div.control-box {
 	span.form-button input, 
 	del.form-button span {
 		padding: 6px 12px 6px 12px;
-
-	line-height: 1.5
-
+		line-height: 1.5
 	}
 	
 	img.form-button-left{
-    margin-top: 0;
+		margin-top: 0;
 	}
 
 	input[type="text"], input[type="textarea"], textarea, input[type="password"] {
@@ -68,8 +62,6 @@ a.form-button:hover, span.form-button:hover, a.form-button:focus, a.dom-button-f
 	height: auto;
 }
 
-
-
 div.form-header-button {
 	background-color: transparent;
 }
@@ -78,8 +70,6 @@ a.button {
 	font-family: inherit;
 	font-size: inherit;
 }
-
-
 
 div.control-box-middle-content {
 	font-size: inherit;

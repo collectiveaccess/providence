@@ -1,9 +1,5 @@
-
-
-
 #widgets {
 	background: $white;
-
 	padding-bottom: 1em;
 }
 
@@ -20,7 +16,6 @@
 	background: transparent;
 }
 
-
 #leftNav .resultCount, 
 #leftNav .resultLink {
 	width: auto;
@@ -30,7 +25,6 @@
 #leftNav h3.nextPrevious a {
 	color: inherit;
 }
-
 
 #leftNav h3.nextPrevious a.next,
 #leftNav h3.nextPrevious span.next,
@@ -44,7 +38,6 @@
 	position: absolute;
 	background: $white-off;
 	border: 1px solid $white-dark;
-	//color: white;
 	padding: 7px 5px;
 }
 
