@@ -498,7 +498,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 	 **/
 	public function mediaIsEmpty() {
 		if (!($vs_media_path = $this->getMediaPath('media', 'original'))) {
-			$vs_media_path = $this->get('media');
+			$vs_media_path = array_shift($this->get('media', array('returnWithStructure' => true)));
 		}
 		if ($vs_media_path) {
 			if (file_exists($vs_media_path) && (abs(filesize($vs_media_path)) > 0)) {

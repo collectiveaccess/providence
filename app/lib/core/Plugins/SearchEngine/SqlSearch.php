@@ -1595,7 +1595,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		$vb_incremental_reindexing = (bool)$this->can('incremental_reindexing');
 		
 		if (!defined("__CollectiveAccess_IS_REINDEXING__") && $vb_incremental_reindexing) {
-			$this->removeRowIndexing($this->opn_indexing_subject_tablenum, $this->opn_indexing_subject_row_id, $pn_content_tablenum, $ps_content_fieldname);
+			$this->removeRowIndexing($this->opn_indexing_subject_tablenum, $this->opn_indexing_subject_row_id, $pn_content_tablenum, array($ps_content_fieldname));
 		}
 		if (!$va_words) {
 			WLPlugSearchEngineSqlSearch::$s_doc_content_buffer[] = '('.$this->opn_indexing_subject_tablenum.','.$this->opn_indexing_subject_row_id.','.$pn_content_tablenum.',\''.$ps_content_fieldname.'\','.$pn_content_row_id.',0,0,'.$vn_private.','.$vn_rel_type_id.')';
@@ -1674,22 +1674,30 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		}
 	}
 	# ------------------------------------------------
-	public function removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id, $pn_field_tablenum=null, $pn_field_num=null, $pn_field_row_id=null) {
-	
-		//print "[SqlSearchDebug] removeRowIndexing: $pn_subject_tablenum/$pn_subject_row_id<br>\n"; 
-		
+	public function removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id, $pn_field_tablenum=null, $pa_field_nums=null, $pn_field_row_id=null) {
+
+		//print "[SqlSearchDebug] removeRowIndexing: $pn_subject_tablenum/$pn_subject_row_id<br>\n";
+
 		// remove dependent row indexing
-		if ($pn_subject_tablenum && $pn_subject_row_id && $pn_field_tablenum && $pn_field_row_id && strlen($pn_field_num)) {
-			//print "DELETE ROW WITH FIELD NUM $pn_subject_tablenum/$pn_subject_row_id/$pn_field_tablenum/$pn_field_num/$pn_field_row_id<br>";
-			return $this->opqr_delete_with_field_row_id_and_num->execute((int)$pn_subject_tablenum, (int)$pn_subject_row_id, (int)$pn_field_tablenum, (string)$pn_field_num, (int)$pn_field_row_id);
+		if ($pn_subject_tablenum && $pn_subject_row_id && $pn_field_tablenum && $pn_field_row_id && is_array($pa_field_nums) && sizeof($pa_field_nums)) {
+			foreach($pa_field_nums as $pn_field_num) {
+				if(!$pn_field_num) { continue; }
+				//print "DELETE ROW WITH FIELD NUM $pn_subject_tablenum/$pn_subject_row_id/$pn_field_tablenum/$pn_field_num/$pn_field_row_id<br>";
+				$this->opqr_delete_with_field_row_id_and_num->execute((int)$pn_subject_tablenum, (int)$pn_subject_row_id, (int)$pn_field_tablenum, (string)$pn_field_num, (int)$pn_field_row_id);
+			}
+			return true;
 		} else {
 			if ($pn_subject_tablenum && $pn_subject_row_id && $pn_field_tablenum && $pn_field_row_id) {
 				//print "DELETE ROW $pn_subject_tablenum/$pn_subject_row_id/$pn_field_tablenum/$pn_field_row_id<br>";
 				return $this->opqr_delete_with_field_row_id->execute((int)$pn_subject_tablenum, (int)$pn_subject_row_id, (int)$pn_field_tablenum, (int)$pn_field_row_id);
 			} else {
-				if ($pn_field_tablenum && !is_null($pn_field_num)) {
-					//print "DELETE FIELD $pn_subject_tablenum/$pn_subject_row_id/$pn_field_tablenum/$pn_field_num<br>";
-					return $this->opqr_delete_with_field_num->execute((int)$pn_subject_tablenum, (int)$pn_subject_row_id, (int)$pn_field_tablenum, (string)$pn_field_num);
+				if ($pn_field_tablenum && is_array($pa_field_nums) && sizeof($pa_field_nums)) {
+					foreach($pa_field_nums as $pn_field_num) {
+						if(!$pn_field_num) { continue; }
+						//print "DELETE FIELD $pn_subject_tablenum/$pn_subject_row_id/$pn_field_tablenum/$pn_field_num<br>";
+						$this->opqr_delete_with_field_num->execute((int)$pn_subject_tablenum, (int)$pn_subject_row_id, (int)$pn_field_tablenum, (string)$pn_field_num);
+					}
+					return true;
 				} else {
 					if (!$pn_subject_tablenum && !$pn_subject_row_id && $pn_field_tablenum && $pn_field_row_id) {
 						//print "DELETE DEP $pn_field_tablenum/$pn_field_row_id<br>";
@@ -1721,7 +1729,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		// Find existing indexing for this subject and content 	
 		foreach($pa_subject_row_ids as $vn_subject_row_id) {
-			$this->removeRowIndexing($pn_subject_tablenum, $vn_subject_row_id, $pn_content_tablenum, $ps_content_fieldnum, $pn_content_row_id);
+			$this->removeRowIndexing($pn_subject_tablenum, $vn_subject_row_id, $pn_content_tablenum, array($ps_content_fieldnum), $pn_content_row_id);
 		}
 		
 		if (caGetOption("DONT_TOKENIZE", $pa_options, false) || in_array('DONT_TOKENIZE', $pa_options)) {

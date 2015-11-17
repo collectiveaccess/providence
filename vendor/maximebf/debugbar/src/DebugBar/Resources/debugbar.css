@@ -1,3 +1,10 @@
+/* Hide debugbar when printing a page */
+@media print {
+  div.phpdebugbar {
+    display: none;
+  }
+}
+
 div.phpdebugbar {
   position: fixed;
   bottom: 0;
@@ -11,6 +18,11 @@ div.phpdebugbar {
   color: #000;
   text-align: left;
   line-height: 1;
+}
+
+div.phpdebugbar a,
+div.phpdebugbar-openhandler {
+  cursor: pointer;
 }
 
 div.phpdebugbar-drag-capture {
