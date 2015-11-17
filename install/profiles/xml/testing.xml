@@ -4339,15 +4339,23 @@
   </searchForms>
   
   <logins>
-    <login user_name="administrator" password="dublincore" fname="CollectiveAccess"
-      lname="Administrator" email="info@collectiveaccess.org">
+    <login user_name="administrator" password="dublincore" fname="CollectiveAccess" 
+           lname="Administrator" email="info@collectiveaccess.org">
       <role code="admin"/>
       <group code="admin"/>
     </login>
-    <login user_name="cataloguer" password="cataloguer" fname="CollectiveAccess"
+    <login user_name="cataloguer" password="cataloguer" fname="CollectiveAccess" 
            lname="Cataloguer" email="support@collectiveaccess.org">
       <role code="cataloguer"/>
       <group code="cataloguer"/>
+    </login>
+    <login user_name="researcher" password="researcher" fname="CollectiveAccess"
+           lname="Researcher" email="support@collectiveaccess.org">
+      <role code="researcher"/>
+    </login>
+    <login user_name="moderator" password="moderator" fname="CollectiveAccess"
+           lname="Moderator" email="support@collectiveaccess.org">
+      <role code="moderator"/>
     </login>
   </logins>
 </profile>
