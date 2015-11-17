@@ -1128,7 +1128,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					'type' => 'ca_storage_locations',
 					'id' => $vn_location_id,
 					'relation_id' => $qr_locations->get('relation_id'),
-					'display' => $qr_locations->getWithTemplate("<unit relativeTo='ca_storage_locations'>{$vs_display_template}</unit>"),
+					'display' => $qr_locations->getWithTemplate($vs_display_template),
 					'color' => $vs_color,
 					'icon_url' => $vs_icon_url = $o_media_coder->getMediaTag($va_location_type_info[$vn_type_id]['icon'], 'icon'),
 					'typename_singular' => $vs_name_singular, //$vs_typename = $va_location_type_info[$vn_type_id]['name_singular'],
@@ -1155,7 +1155,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				$va_history[$vn_date][] = array(
 					'type' => 'ca_objects_deaccession',
 					'id' => $this->getPrimaryKey(),
-					'display' => $this->getWithTemplate("<unit>{$vs_display_template}</unit>"),
+					'display' => $this->getWithTemplate($vs_display_template),
 					'color' => $vs_color,
 					'icon_url' => '',
 					'typename_singular' => $vs_name_singular = _t('deaccession'), 
