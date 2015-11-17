@@ -180,6 +180,13 @@ BaseModel::$s_ca_models_definitions['ca_storage_locations'] = array(
 				'LABEL' => _t('Is enabled?'), 'DESCRIPTION' => _t("If unchecked this item is disabled and can't be edited or used in new relationships"),
 				'BOUNDS_VALUE' => array(0,1)
 		),
+		'view_count' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
+		)
  	)
 );
 

@@ -326,6 +326,13 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 					_t('Inherit access settings from parent') => 1
 				),
 				'LABEL' => _t('Inherit access settings from parent?'), 'DESCRIPTION' => _t('Determines whether front-end access settings set for parent object is applied to this object.')
+		),
+		'view_count' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
 		)
 	)
 );

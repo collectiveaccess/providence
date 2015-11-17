@@ -323,7 +323,7 @@ class ca_users extends BaseModel {
 	public function __construct($pn_id=null, $pb_use_cache=false) {
 		parent::__construct($pn_id, $pb_use_cache);	# call superclass constructor	
 		
-		$this->opo_auth_config = Configuration::load($this->getAppConfig()->get("authentication_config"));
+		$this->opo_auth_config = Configuration::load(__CA_CONF_DIR__.'/authentication.conf');
 		$this->opo_log = new Eventlog();
 	}
 	# ----------------------------------------
