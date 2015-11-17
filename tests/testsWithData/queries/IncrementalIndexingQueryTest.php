@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/testsWithData/queries/SimpleSearchQueryTest.php
+ * tests/testsWithData/queries/IncrementalIndexingQueryTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

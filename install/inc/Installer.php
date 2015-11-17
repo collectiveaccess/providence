@@ -81,10 +81,6 @@ class Installer {
 
 		$this->opa_locales = array();
 
-		// don't do search indexing during install. we do a full reindex at the end instead,
-		// otherwise we run into open file issues with ElasticSearch
-		define('__CA_DONT_DO_SEARCH_INDEXING__', true);
-
 		if($this->loadProfile($ps_profile_dir, $ps_profile_name)){
 			$this->extractAndLoadBase();
 
@@ -303,9 +299,7 @@ class Installer {
 	}
 	# --------------------------------------------------
 	public function performPostInstallTasks() {
-		// trigger full reindex!
-		$o_si = new SearchIndexer();
-		$o_si->reindex(null, array('showProgress' => false, 'interactiveProgressDisplay' => false));
+		// noop, for now
 	}
 	# --------------------------------------------------
 	/**
