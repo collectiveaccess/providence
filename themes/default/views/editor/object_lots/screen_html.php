@@ -25,37 +25,39 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_lot 				= $this->getVar('t_subject');
-	$vn_lot_id 			= $this->getVar('subject_id');
+$t_lot 				= $this->getVar('t_subject');
+$vn_lot_id 			= $this->getVar('subject_id');
 
-	$vb_can_edit	 	= $t_lot->isSaveable($this->request);
-	$vb_can_delete		= $t_lot->isDeletable($this->request);
+$vb_can_edit	 	= $t_lot->isSaveable($this->request);
+$vb_can_delete		= $t_lot->isDeletable($this->request);
 
-	$vs_rel_table		= $this->getVar('rel_table');
-	$vn_rel_type_id		= $this->getVar('rel_type_id');
-	$vn_rel_id			= $this->getVar('rel_id');
-	
-	if ($vb_can_edit) {
-		$va_cancel_parameters = ($vn_lot_id ? array('lot_id' => $vn_lot_id) : array('type_id' => $t_lot->getTypeID()));
-		print $vs_control_box = caFormControlBox(
-			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'ObjectLotEditorForm').' '.
-			($this->getVar('show_save_and_return') ? caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save and return"), 'ObjectLotEditorForm', array('isSaveAndReturn' => true)) : '').' '.
-			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'editor/object_lots', 'ObjectLotEditor', 'Edit/'.$this->request->getActionExtra(), $va_cancel_parameters),
-			'', 
-			((intval($vn_lot_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'editor/object_lots', 'ObjectLotEditor', 'Delete/'.$this->request->getActionExtra(), array('lot_id' => $vn_lot_id)) : ''
-		);
-	}
+$vs_rel_table		= $this->getVar('rel_table');
+$vn_rel_type_id		= $this->getVar('rel_type_id');
+$vn_rel_id			= $this->getVar('rel_id');
+
+if ($vb_can_edit) {
+	$va_cancel_parameters = ($vn_lot_id ? array('lot_id' => $vn_lot_id) : array('type_id' => $t_lot->getTypeID()));
+	print $vs_control_box = caFormControlBox(
+		caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'ObjectLotEditorForm').' '.
+		($this->getVar('show_save_and_return') ? caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save and return"), 'ObjectLotEditorForm', array('isSaveAndReturn' => true)) : '').' '.
+		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'editor/object_lots', 'ObjectLotEditor', 'Edit/'.$this->request->getActionExtra(), $va_cancel_parameters),
+		'',
+		((intval($vn_lot_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'editor/object_lots', 'ObjectLotEditor', 'Delete/'.$this->request->getActionExtra(), array('lot_id' => $vn_lot_id)) : ''
+	);
+}
 ?>
-	<div class="sectionBox">
+<div class="sectionBox">
 <?php
-			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/lot_id/'.$vn_lot_id, 'ObjectLotEditorForm', null, 'POST', 'multipart/form-data');
-			
+	print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/lot_id/'.$vn_lot_id, 'ObjectLotEditorForm', null, 'POST', 'multipart/form-data');
+?>
+		<div class="grid">
+<?php
 			$va_form_elements = $t_lot->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
-									'request' => $this->request, 
+									'request' => $this->request,
 									'formName' => 'ObjectLotEditorForm'), $va_bundle_list);
-									
+
 			print join("\n", $va_form_elements);
-			
+
 			if ($vb_can_edit) { print $vs_control_box; }
 ?>
 			<input type='hidden' name='lot_id' value='<?php print $vn_lot_id; ?>'/>
@@ -70,9 +72,10 @@
 <?php
 			}
 ?>
-		</form>
-	</div>
+		</div>
+	</form>
+</div>
 
-	<div class="editorBottomPadding"><!-- empty --></div>
-	
-	<?php print caSetupEditorScreenOverlays($this->request, $t_lot, $va_bundle_list); ?>
+<div class="editorBottomPadding"><!-- empty --></div>
+
+<?php print caSetupEditorScreenOverlays($this->request, $t_lot, $va_bundle_list); ?>

@@ -25,27 +25,29 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_set = $this->getVar('t_subject');
-	$vn_set_id = $this->getVar('subject_id');
-	$can_delete = $this->getVar('can_delete');
-	
-	$t_ui = $this->getVar('t_ui');	
+$t_set = $this->getVar('t_subject');
+$vn_set_id = $this->getVar('subject_id');
+$can_delete = $this->getVar('can_delete');
+
+$t_ui = $this->getVar('t_ui');
 ?>
-	<div class="sectionBox">
+<div class="sectionBox">
 <?php
-		print $vs_control_box = caFormControlBox(
-			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'SetEditorForm').' '.
-			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'manage/sets', 'SetEditor', 'Edit/'.$this->request->getActionExtra(), array('set_id' => $vn_set_id)), 
-			'', 
-			((intval($vn_set_id) > 0) && ($can_delete)) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'manage/sets', 'SetEditor', 'Delete/'.$this->request->getActionExtra(), array('set_id' => $vn_set_id)) : ''
-		);
-		
-			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/set_id/'.$vn_set_id, 'SetEditorForm', null, 'POST', 'multipart/form-data');
-			
+	print $vs_control_box = caFormControlBox(
+		caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'SetEditorForm').' '.
+		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'manage/sets', 'SetEditor', 'Edit/'.$this->request->getActionExtra(), array('set_id' => $vn_set_id)),
+		'',
+		((intval($vn_set_id) > 0) && ($can_delete)) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'manage/sets', 'SetEditor', 'Delete/'.$this->request->getActionExtra(), array('set_id' => $vn_set_id)) : ''
+	);
+
+	print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/set_id/'.$vn_set_id, 'SetEditorForm', null, 'POST', 'multipart/form-data');
+?>
+		<div class="grid">
+<?php
 			$va_form_elements = $t_set->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
-									'request' => $this->request, 
+									'request' => $this->request,
 									'formName' => 'SetEditorForm'));
-									
+
 			if (!$vn_set_id) {
 				// For new sets, show mandatory fields...
 				// ... BUT ...
@@ -60,15 +62,16 @@
 					}
 				}
 			}
-			
+
 			print join("\n", $va_form_elements);
-			
+
 			print $vs_control_box;
 ?>
 			<input type='hidden' name='set_id' value='<?php print $vn_set_id; ?>'/>
-		</form>
-	
-		<div class="editorBottomPadding"><!-- empty --></div>
-	</div>
+		</div>
+	</form>
 
 	<div class="editorBottomPadding"><!-- empty --></div>
+</div>
+
+<div class="editorBottomPadding"><!-- empty --></div>

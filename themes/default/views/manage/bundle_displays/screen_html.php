@@ -25,26 +25,28 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_display = $this->getVar('t_subject');
-	$vn_display_id = $this->getVar('subject_id');
-	
-	$t_ui = $this->getVar('t_ui');	
+$t_display = $this->getVar('t_subject');
+$vn_display_id = $this->getVar('subject_id');
+
+$t_ui = $this->getVar('t_ui');
 ?>
-	<div class="sectionBox">
+<div class="sectionBox">
 <?php
-		print $vs_control_box = caFormControlBox(
-			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'BundleDisplayEditorForm').' '.
-			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'manage/bundle_displays', 'BundleDisplayEditor', 'Edit/'.$this->request->getActionExtra(), array('display_id' => $vn_display_id)), 
-			'', 
-			(intval($vn_display_id) > 0) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'manage/bundle_displays', 'BundleDisplayEditor', 'Delete/'.$this->request->getActionExtra(), array('display_id' => $vn_display_id)) : ''
-		);
-		
-			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/display_id/'.$vn_display_id, 'BundleDisplayEditorForm', null, 'POST', 'multipart/form-data');
-			
+	print $vs_control_box = caFormControlBox(
+		caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'BundleDisplayEditorForm').' '.
+		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'manage/bundle_displays', 'BundleDisplayEditor', 'Edit/'.$this->request->getActionExtra(), array('display_id' => $vn_display_id)),
+		'',
+		(intval($vn_display_id) > 0) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'manage/bundle_displays', 'BundleDisplayEditor', 'Delete/'.$this->request->getActionExtra(), array('display_id' => $vn_display_id)) : ''
+	);
+
+	print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/display_id/'.$vn_display_id, 'BundleDisplayEditorForm', null, 'POST', 'multipart/form-data');
+?>
+		<div class="grid">
+<?php
 			$va_form_elements = $t_display->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
-									'request' => $this->request, 
+									'request' => $this->request,
 									'formName' => 'BundleDisplayEditorForm'));
-					
+
 			if (!$vn_form_id) {
 				// For new displays, show mandatory fields...
 				// ... BUT ...
@@ -59,16 +61,17 @@
 					}
 				}
 			}
-			
+
 			print join("\n", $va_form_elements);
-			
+
 			print $vs_control_box;
 ?>
 			<input type='hidden' name='table_num' value='<?php print $t_display->get('table_num'); ?>'/>
 			<input type='hidden' name='display_id' value='<?php print $vn_display_id; ?>'/>
-		</form>
-	
-		<div class="editorBottomPadding"><!-- empty --></div>
-	</div>
+		</div>
+	</form>
 
 	<div class="editorBottomPadding"><!-- empty --></div>
+</div>
+
+<div class="editorBottomPadding"><!-- empty --></div>

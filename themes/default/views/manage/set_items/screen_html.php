@@ -25,35 +25,33 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_set_item = $this->getVar('t_subject');
-	$vn_item_id = $this->getVar('subject_id');
-	
-	$t_ui = $this->getVar('t_ui');
-	
+$t_set_item = $this->getVar('t_subject');
+$vn_item_id = $this->getVar('subject_id');
+
+$t_ui = $this->getVar('t_ui');
 ?>
 <div class="sectionBox">
 <?php
 	print $vs_control_box = caFormControlBox(
 		caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'SetItemEditorForm').' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'manage/set_items', 'SetItemEditor', 'Edit/'.$this->request->getActionExtra(), array('item_id' => $vn_item_id)), 
-		'', 
+		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'manage/set_items', 'SetItemEditor', 'Edit/'.$this->request->getActionExtra(), array('item_id' => $vn_item_id)),
+		'',
 		(intval($vn_item_id) > 0) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'manage/set_items', 'SetItemEditor', 'Delete/'.$this->request->getActionExtra(), array('item_id' => $vn_item_id)) : ''
 	);
+
+	print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/item_id/'.$vn_item_id, 'SetItemEditorForm', null, 'POST', 'multipart/form-data');
 ?>
+		<div class="grid">
 <?php
-		print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/item_id/'.$vn_item_id, 'SetItemEditorForm', null, 'POST', 'multipart/form-data');
-		
-		$va_form_elements = $t_set_item->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
-								'request' => $this->request, 
-								'formName' => 'SetItemEditorForm'));
-										
-		print join("\n", $va_form_elements);
-		
-		print $vs_control_box;
+			$va_form_elements = $t_set_item->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
+									'request' => $this->request,
+									'formName' => 'SetItemEditorForm'));
+
+			print join("\n", $va_form_elements);
+
+			print $vs_control_box;
 ?>
-		<input type='hidden' name='item_id' value='<?php print $vn_item_id; ?>'/>
+			<input type='hidden' name='item_id' value='<?php print $vn_item_id; ?>'/>
+		</div>
 	</form>
-<?php
-	//print $vs_control_box;
-?>
 </div>

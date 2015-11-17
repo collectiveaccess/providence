@@ -25,38 +25,40 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_collection 		= $this->getVar('t_subject');
-	$vn_collection_id 	= $this->getVar('subject_id');
-	$vn_above_id 		= $this->getVar('above_id');
+$t_collection 		= $this->getVar('t_subject');
+$vn_collection_id 	= $this->getVar('subject_id');
+$vn_above_id 		= $this->getVar('above_id');
 
-	$vb_can_edit	 	= $t_collection->isSaveable($this->request);
-	$vb_can_delete		= $t_collection->isDeletable($this->request);
+$vb_can_edit	 	= $t_collection->isSaveable($this->request);
+$vb_can_delete		= $t_collection->isDeletable($this->request);
 
-	$vs_rel_table		= $this->getVar('rel_table');
-	$vn_rel_type_id		= $this->getVar('rel_type_id');
-	$vn_rel_id			= $this->getVar('rel_id');
-	
-	if ($vb_can_edit) {
-		$va_cancel_parameters = ($vn_collection_id ? array('collection_id' => $vn_collection_id) : array('type_id' => $t_collection->getTypeID()));
-		print $vs_control_box = caFormControlBox(
-			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'CollectionEditorForm').' '.
-			($this->getVar('show_save_and_return') ? caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save and return"), 'CollectionEditorForm', array('isSaveAndReturn' => true)) : '').' '.
-			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'editor/collections', 'CollectionEditor', 'Edit/'.$this->request->getActionExtra(), $va_cancel_parameters),
-			'', 
-			((intval($vn_collection_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'editor/collections', 'CollectionEditor', 'Delete/'.$this->request->getActionExtra(), array('collection_id' => $vn_collection_id)) : ''
-		);
-	}
+$vs_rel_table		= $this->getVar('rel_table');
+$vn_rel_type_id		= $this->getVar('rel_type_id');
+$vn_rel_id			= $this->getVar('rel_id');
+
+if ($vb_can_edit) {
+	$va_cancel_parameters = ($vn_collection_id ? array('collection_id' => $vn_collection_id) : array('type_id' => $t_collection->getTypeID()));
+	print $vs_control_box = caFormControlBox(
+		caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'CollectionEditorForm').' '.
+		($this->getVar('show_save_and_return') ? caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save and return"), 'CollectionEditorForm', array('isSaveAndReturn' => true)) : '').' '.
+		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'editor/collections', 'CollectionEditor', 'Edit/'.$this->request->getActionExtra(), $va_cancel_parameters),
+		'',
+		((intval($vn_collection_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'editor/collections', 'CollectionEditor', 'Delete/'.$this->request->getActionExtra(), array('collection_id' => $vn_collection_id)) : ''
+	);
+}
 ?>
-	<div class="sectionBox">
+<div class="sectionBox">
 <?php
-			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/collection_id/'.$vn_collection_id, 'CollectionEditorForm', null, 'POST', 'multipart/form-data');
-			
+	print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/collection_id/'.$vn_collection_id, 'CollectionEditorForm', null, 'POST', 'multipart/form-data');
+?>
+		<div class="grid">
+<?php
 			$va_form_elements = $t_collection->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
-									'request' => $this->request, 
+									'request' => $this->request,
 									'formName' => 'CollectionEditorForm'), $va_bundle_list);
-												
+
 			print join("\n", $va_form_elements);
-			
+
 			if ($vb_can_edit) { print $vs_control_box; }
 ?>
 			<input type='hidden' name='collection_id' value='<?php print $vn_collection_id; ?>'/>
@@ -72,9 +74,10 @@
 <?php
 			}
 ?>
-		</form>
-	</div>
+		</div>
+	</form>
+</div>
 
-	<div class="editorBottomPadding"><!-- empty --></div>
-	
-	<?php print caSetupEditorScreenOverlays($this->request, $t_collection, $va_bundle_list); ?>
+<div class="editorBottomPadding"><!-- empty --></div>
+
+<?php print caSetupEditorScreenOverlays($this->request, $t_collection, $va_bundle_list); ?>
