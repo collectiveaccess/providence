@@ -8,6 +8,6 @@ module CaLogin
 
     browser.form(:id => 'login').submit
 
-    assert browser.text.include? 'You are now logged in'
+    assert browser.text.include? 'This is your CollectiveAccess dashboard'
   end
 end
