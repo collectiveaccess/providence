@@ -5178,10 +5178,10 @@ if (!$vb_batch) {
 					
 					
 					// Only allow one current item per row_id
-					if ($pb_show_current_only && isset($va_seen_row_ids[$va_row['row_id']])) {
-						unset($va_rels[$vs_v]); 
-						continue;
-					}
+					//if ($pb_show_current_only && isset($va_seen_row_ids[$va_row['row_id']])) {
+					//	unset($va_rels[$vs_v]); 
+					//	continue;
+					//}
 				}
 
 				$vn_locale_id = $qr_res->get('locale_id');
