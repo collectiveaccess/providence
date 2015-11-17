@@ -413,7 +413,8 @@
 		 *		allowWildcards = consider "%" as a wildcard when searching. Any term including a "%" character will be queried using the SQL LIKE operator. [Default is false]
 		 *		purify = process text with HTMLPurifier before search. Purifier encodes &, < and > characters, and performs other transformations that can cause searches on literal text to fail. If you are purifying all input (the default) then leave this set true. [Default is true]
 		 *		purifyWithFallback = executes the search with "purify" set and falls back to search with unpurified text if nothing is found. [Default is false]
-		 *
+		 *		checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for <table_name>.hierarchy.preferred_labels and <table_name>.children.preferred_labels because these returns sets of items. For <table_name>.parent.preferred_labels, which returns a single row at most, you should do access checking yourself. (Everything here applies equally to nonpreferred_labels)
+ 	 	 *
 		 * @return mixed Depending upon the returnAs option setting, an array, subclass of LabelableBaseModelWithAttributes or integer may be returned.
 		 */
 		public static function find($pa_values, $pa_options=null) {
@@ -432,7 +433,8 @@
 			$ps_boolean = caGetOption('boolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
 			$ps_label_boolean = caGetOption('labelBoolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
 			$ps_sort = caGetOption('sort', $pa_options, null);
-		
+			$pa_check_access = caGetOption('checkAccess', $pa_options, null);
+			
 			if (!$t_instance) { $t_instance = new $vs_table; }
 			$vn_table_num = $t_instance->tableNum();
 			$vs_table_pk = $t_instance->primaryKey();
@@ -669,6 +671,12 @@
 			}
 			
 			if (!sizeof($va_label_sql)) { return null; }
+			
+			
+			if (is_array($pa_check_access) && sizeof($pa_check_access) && $t_instance->hasField('access')) {
+				$va_label_sql[] = "({$vs_table}.access IN (?))";
+				$va_sql_params[] = $pa_check_access;
+			}
 			
 			$vs_deleted_sql = ($t_instance->hasField('deleted')) ? "({$vs_table}.deleted = 0) AND " : '';
 			$vs_sql = "SELECT * FROM {$vs_table}";
