@@ -438,8 +438,10 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 						// nuke that very index in the value array for this field -- all the other values, including the indexes stay intact
 						unset($va_values[$vn_index]);
 						unset($va_indexes[$vn_index]);
-						self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key] = $va_values;
-						self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key.'_content_ids'] = $va_indexes;
+						// we reindex both value and index arrays here, starting at 0
+						// json_encode seems to treat something like array(1=>'foo') as object/hash, rather than a list .. which is not good
+						self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key] = array_values($va_values);
+						self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key.'_content_ids'] = array_values($va_indexes);
 					}
 				}
 			}
@@ -539,13 +541,13 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			}
 		}
 
-		if(sizeof($va_bulk_params)) {
+		if(sizeof($va_bulk_params['body'])) {
 			$this->getClient()->bulk($va_bulk_params);
-		}
 
-		// we usually don't need indexing to be available *immediately* unless we're running automated tests of course :-)
-		if(caIsRunFromCLI()) {
- 			$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
+			// we usually don't need indexing to be available *immediately* unless we're running automated tests of course :-)
+			if(caIsRunFromCLI() && $this->getIndexName()) {
+				$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
+			}
 		}
 
 		$this->opa_index_content_buffer = array();
