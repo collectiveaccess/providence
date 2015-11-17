@@ -1,24 +1,28 @@
 .bundleLabel {
-	font-size: inherit;
-	font-family: inherit;
-	color: inherit;
-	background-color: white;
+	background-color: transparent;
 	border: none;
-	border-bottom: 1px solid $white-off;
-	padding: 0 0 8px 0;
-	margin: 0 0 8px 0;
+    padding: 0;
+    margin: 0;
 
-	input[type="text"],
-	input[type="textarea"],
-	textarea,
+    .bundleInner {
+        border-top: 1px solid $white-off;
+       	padding: 8px;
+       	margin: 8px 0 0 0;
+    }
+
+    input[type="text"],
 	input[type="password"],
+    input[type="textarea"],
+   	textarea,
 	select {
 		width: 100% !important;
 	}
 }
 
-.bundleInner {
-	letter-spacing: normal;
+// As a fallback, make children that don't have a `cell-*` class like a 100% wide cell.  See `_grid.scss`
+.grid > .bundleLabel:not([class *= 'cell-']) {
+    width: 100%;
+    font-size: medium;
 }
 
 .bundleContainer {

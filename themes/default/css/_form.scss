@@ -1,7 +1,7 @@
-input[type="text"], 
-input[type="textarea"], 
-textarea, 
-input[type="password"] {
+input[type="text"],
+input[type="password"],
+input[type="textarea"],
+textarea {
 	font-family: inherit;
 	font-size: inherit;
 }
@@ -78,7 +78,6 @@ a.caNodecLabelButton {
 
 .labelDisplay {
 	font-family: inherit;
-	//font-weight: 600;
 	font-size: inherit;
 	color: inherit;
 }
@@ -86,8 +85,8 @@ a.caNodecLabelButton {
 .formLabelText {
 	@include wam-font-heading();
 	color: $grey-dark;
-	font-size: 0.8em;
-	padding: 0 0 0 0;
+	font-size: 12px;
+	padding: 0;
 }
 
 div.button {
