@@ -21,12 +21,21 @@
 
 // As a fallback, make children that don't have a `cell-*` class like a 100% wide cell.  See `_grid.scss`
 .grid > .bundleLabel:not([class *= 'cell-']) {
-	width: 100%;
+	display: inline-block;
+	vertical-align: top;
 	font-size: medium;
+	width: 100%;
 }
 
 .bundleContainer {
 	background: inherit;
+}
+
+.bundleShowHideControl {
+	position: absolute;
+	top: 20px;
+	right: 10px;
+	opacity: .5;
 }
 
 div.roundedRel {
@@ -42,5 +51,5 @@ div.roundedRel {
 
 .caItemList {
 	max-height: none;
-	overflow-y: hidden;
+	overflow-y: unset;
 }
