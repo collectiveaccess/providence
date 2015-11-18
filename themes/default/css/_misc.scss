@@ -160,3 +160,29 @@ img {
 div.delete_warning_box {
 	height: 32px;
 }
+
+.navBreadCrumbs {
+	height: auto;
+
+	.crumbtext {
+		padding-top: 1px;
+		height: 19px;
+	}
+
+	.expandCollapse {
+		margin: 0;
+		padding: 0 5px;
+		height: 19px;
+
+		img {
+			margin: 0;
+			display: inline-block;
+		}
+	}
+}
+
+.navBreadCrumbs:after {
+	content: "";
+	display: table;
+	clear: both;
+}
