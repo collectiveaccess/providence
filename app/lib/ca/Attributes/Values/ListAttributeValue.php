@@ -402,38 +402,49 @@
 
 			// dependant field visibility
 			if(Configuration::load()->get('enable_dependent_field_visibility')) {
-				$t_list = new ca_lists();
-				foreach($t_list->getItemsForList($pa_element_info['list_id']) as $va_items_by_locale) {
-					foreach ($va_items_by_locale as $vn_locale_id => $va_item) {
-						$vs_hide_js = '';
-						if(is_array($pa_element_info['settings']['hideIfSelected_'.$va_item['idno']])) {
-							// @todo maybe only generate JS for bundles on current screen? could figure that out from request
-							foreach($pa_element_info['settings']['hideIfSelected_'.$va_item['idno']] as $vs_key) {
-								$va_tmp = self::resolveHideIfSelectedKey($vs_key);
-								if(!is_array($va_tmp)) { continue; }
+				// only get into outputting all the JS below if hideIfSelected is set for at least one list item for this element
+				$vb_print_js = false;
+				if(is_array($pa_element_info['settings'])) {
+					foreach($pa_element_info['settings'] as $vs_setting_key => $vm_setting_val) {
+						if(preg_match('/^hideIfSelected/', $vs_setting_key)) {
+							$vb_print_js = true;
+						}
+					}
+				}
 
-								$vs_hide_js .= "jQuery(\"a[name='Screen".$va_tmp[0]."_".$va_tmp[1]."']\").next().hide();\n";
+				if($vb_print_js) {
+					$t_list = new ca_lists();
+					foreach($t_list->getItemsForList($pa_element_info['list_id']) as $va_items_by_locale) {
+						foreach ($va_items_by_locale as $vn_locale_id => $va_item) {
+							$vs_hide_js = '';
+							if(is_array($pa_element_info['settings']['hideIfSelected_'.$va_item['idno']])) {
+								// @todo maybe only generate JS for bundles on current screen? could figure that out from request
+								foreach($pa_element_info['settings']['hideIfSelected_'.$va_item['idno']] as $vs_key) {
+									$va_tmp = self::resolveHideIfSelectedKey($vs_key);
+									if(!is_array($va_tmp)) { continue; }
+
+									$vs_hide_js .= "jQuery(\"a[name='Screen".$va_tmp[0]."_".$va_tmp[1]."']\").next().hide();\n";
+								}
 							}
-						}
 
-						switch($pa_element_info['settings']['render']) {
-							case 'radio_buttons':
-								$vs_select = "jQuery('[id^={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]')";
-								$vs_selector_for_val = "jQuery('input[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]:checked').val()";
-								break;
-							case 'select':
-							case null:
-								$vs_select = "jQuery('#{fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}')";
-								$vs_selector_for_val = "jQuery(this).find(':selected').val()";
-								break;
-							default:
-								continue;
-						}
-
+							switch($pa_element_info['settings']['render']) {
+								case 'radio_buttons':
+									$vs_select = "jQuery('[id^={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]')";
+									$vs_selector_for_val = "jQuery('input[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]:checked').val()";
+									break;
+								case 'select':
+								case null:
+									$vs_select = "jQuery('#{fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}')";
+									$vs_selector_for_val = "jQuery(this).find(':selected').val()";
+									break;
+								default:
+									continue;
+							}
 
 
 
-						$vs_element .= "
+
+							$vs_element .= "
 <script type='text/javascript'>
 	jQuery(document).ready(function() {
 		var select = $vs_select;
@@ -447,9 +458,10 @@
 		if (".$vs_selector_for_val." === '" . $va_item['item_id'] . "') {
 			" . $vs_hide_js . "
 		}
-    });
+	});
 </script>
-";
+	";
+						}
 					}
 				}
 			}
