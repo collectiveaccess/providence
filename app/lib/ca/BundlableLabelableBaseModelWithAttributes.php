@@ -1760,6 +1760,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
 		$vs_css_classes = '';
 		if (isset($pa_bundle_settings['css_classes'])) {
+			// Remove quote marks (single and double) from value, to prevent HTML/JS injection
 			$vs_css_classes = preg_replace('/["\']/', '', $pa_bundle_settings['css_classes']);
 		}
 
