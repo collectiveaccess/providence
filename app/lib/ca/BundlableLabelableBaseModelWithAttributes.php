@@ -1753,17 +1753,21 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 			$vs_documentation_link = "<a class='bundleDocumentationLink' href='$vs_documentation_url' target='_blank'>documentation</a>";
 		}
-		
-		
+
 		if (is_array($va_violations) && sizeof($va_violations)) {
 			$vs_label .= "<img src='".$pa_options['request']->getThemeUrlPath()."/graphics/icons/warning_small.gif' style='margin-left: 5px;' onclick='jQuery(this).parent().find(\".caMetadataDictionaryDefinitionToggle\").click();  return false;'/>";
-		} 
+		}
+
+		$vs_css_classes = '';
+		if (isset($pa_bundle_settings['css_classes'])) {
+			$vs_css_classes = preg_replace('/["\']/', '', $pa_bundle_settings['css_classes']);
+		}
 
 		$vs_output = str_replace("^ELEMENT", $vs_element, $vs_display_format);
 		$vs_output = str_replace("^ERRORS", join('; ', $va_errors), $vs_output);
 		$vs_output = str_replace("^LABEL", $vs_label, $vs_output);
 		$vs_output = str_replace("^DOCUMENTATIONLINK", $vs_documentation_link, $vs_output);
-		$vs_output = str_replace("^CSSCLASSES", (isset($pa_bundle_settings['css_classes']) ? $pa_bundle_settings['css_classes'] : ''), $vs_output);
+		$vs_output = str_replace("^CSSCLASSES", $vs_css_classes, $vs_output);
 
 		$ps_bundle_label = $vs_label_text;
 		
