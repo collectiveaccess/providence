@@ -1763,6 +1763,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		$vs_output = str_replace("^ERRORS", join('; ', $va_errors), $vs_output);
 		$vs_output = str_replace("^LABEL", $vs_label, $vs_output);
 		$vs_output = str_replace("^DOCUMENTATIONLINK", $vs_documentation_link, $vs_output);
+		$vs_output = str_replace("^CSSCLASSES", (isset($pa_bundle_settings['css_classes']) ? $pa_bundle_settings['css_classes'] : ''), $vs_output);
 
 		$ps_bundle_label = $vs_label_text;
 		

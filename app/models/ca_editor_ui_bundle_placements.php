@@ -80,6 +80,15 @@ $_ca_editor_ui_bundle_placement_settings = array(		// global
 		'label' => _t('Height'),
 		'description' => _t('Width, in characters or pixels, of search form elements.')
 	),
+	'css_classes' => array(
+		'formatType' => FT_TEXT,
+		'displayType' => DT_FIELD,
+		'width' => 30, 'height' => 1,
+		'takesLocale' => false,
+		'default' => '',
+		'label' => _t('CSS Classes'),
+		'description' => _t('CSS classes to apply to form elements.')
+	),
 	'readonly' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_CHECKBOXES,
