@@ -290,7 +290,7 @@ class SearchIndexer extends SearchBase {
 
 		if ($pb_display_progress) {
 			print "\n\n\nDone! [Indexing for ".join(", ", $va_names)." took ".caFormatInterval((float)$t_timer->getTime(4))."]\n";
-			print "Note that if you're using an external search service like Apache Solr, the data may only now be sent to the actual service because it was buffered until now. So you still might have to wait a while for the script to finish.\n";
+			print "Note that if you're using an external search service like ElasticSearch, the data may only now be sent to the actual service because it was buffered until now. So you still might have to wait a while for the script to finish.\n";
 		}
 		if ($ps_callback) {
 			$ps_callback(
@@ -1543,7 +1543,7 @@ class SearchIndexer extends SearchBase {
 				// delete from index where other subjects reference it 
 
 				foreach($this->opa_dependencies_to_update as $va_item) {
-					$this->opo_engine->removeRowIndexing($va_item['table_num'], $va_item['row_id'], $va_item['field_table_num'], null, $va_item['field_row_id']);
+					$this->opo_engine->removeRowIndexing($va_item['table_num'], $va_item['row_id'], $va_item['field_table_num'], $va_item['field_nums'], $va_item['field_row_id']);
 				}
 			}
 		}

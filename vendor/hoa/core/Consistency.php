@@ -428,7 +428,7 @@ class Consistency
             $this->_roots[$from] = [];
         }
 
-        foreach (explode(';', $root) as $r) {
+        foreach (explode(RS, $root) as $r) {
             $this->_roots[$from][] = rtrim($r, '/\\') . DS;
         }
 
@@ -941,7 +941,7 @@ if (!function_exists('trait_exists')) {
     }
 }
 
-if (70000 > PHP_VERSION_ID) {
+if (70000 > PHP_VERSION_ID && false === interface_exists('Throwable', false)) {
     /**
      * Implement a fake Throwable class, introduced in PHP7.0.
      */

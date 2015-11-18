@@ -2087,6 +2087,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				break;
 		}
 		
+		if ($vs_rel_types = join(";", caGetOption('restrictToRelationshipTypes', $pa_options, array()))) { $vs_rel_types = "/{$vs_rel_types}"; }
+	
 		if (!in_array($va_tmp[0], array('created', 'modified'))) {
 			switch(sizeof($va_tmp)) {
 				# -------------------------------------
@@ -2097,7 +2099,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						if (!isset($pa_options['values'])) { $pa_options['values'] = array(); }
 						if (!isset($pa_options['values'][$ps_field])) { $pa_options['values'][$ps_field] = ''; }
 					
-						return caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
+						return caHTMLTextInput($ps_field.$vs_rel_types.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
 					}
 					break;
 				# -------------------------------------
@@ -2111,6 +2113,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 								return caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
 							case 2:
 							case 3:
+								if ($ps_render = caGetOption('render', $pa_options, null)) {
+									switch($ps_render) {
+										case 'is_set':
+											return caHTMLCheckboxInput($ps_field.$vs_rel_types, array('value' => '[SET]'));
+											break;
+									}
+								}
 								if (caGetOption('select', $pa_options, false)) {
 									$va_access = caGetOption('checkAccess', $pa_options, null);
 									if (!($t_instance = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true))) { return null; }
@@ -2130,13 +2139,39 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			
 									$vs_pk = $t_instance->primaryKey();
 									$va_opts = array('-' => '');
+									
+									$va_in_use_list = null;
+									if (caGetOption('inUse', $pa_options, false)) {
+										if (is_array($va_path = $this->_DATAMODEL->getPath($this->tableName(), 'ca_list_items'))) {
+										$va_path = array_keys($va_path);
+											if (sizeof($va_path) == 3) {
+												$vs_table = $this->tableName();
+												$vs_pk = $this->primaryKey();
+											
+												$va_sql_wheres = array();
+												$va_sql_params = array();
+												if ($this->hasField('deleted')) { $va_sql_wheres[] = "(t.deleted = 0)"; }
+												if ($this->hasField('access') && is_array($va_access) && sizeof($va_access)) { $va_sql_wheres[] = "(t.access IN (?))"; $va_sql_params[] = $va_access; }
+											
+												$qr_in_use = $this->getDb()->query("
+													SELECT DISTINCT l.item_id
+													FROM {$va_path[1]} l
+													INNER JOIN {$vs_table} AS t ON t.{$vs_pk} = l.{$vs_pk}
+													".((sizeof($va_sql_wheres) > 0) ? "WHERE ".join(" AND ", $va_sql_wheres) : "")."		
+												", $va_sql_params);
+												$va_in_use_list = $qr_in_use->getAllFieldValues('item_id');
+											}
+										}
+									}
+									
 									while($qr_res->nextHit()) {
 										if (($va_tmp[0] == 'ca_list_items') && (!$qr_res->get('parent_id'))) { continue; }
 										if (is_array($va_access) && !in_array($qr_res->get($va_tmp[0].'.access'), $va_access)) { continue; }
+										if (is_array($va_in_use_list) && !in_array($vn_item_id = $qr_res->get('item_id'), $va_in_use_list)) { continue; }
 										$va_opts[$qr_res->get($va_tmp[0].".preferred_labels.{$vs_label_display_field}")] = $qr_res->get($ps_field);
 									}
-			
-									return caHTMLSelect($ps_field.($vb_as_array_element ? "[]" : ""), $va_opts, array('value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
+									uksort($va_opts, "strnatcasecmp");
+									return caHTMLSelect($ps_field.$vs_rel_types.($vb_as_array_element ? "[]" : ""), $va_opts, array('value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
 								} else {
 									return $t_instance->htmlFormElementForSearch($po_request, $ps_field, $pa_options);
 								}
@@ -2319,6 +2354,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						continue;
 					}
 				}
+				
 				// Test for user action restrictions on intrinsic fields
 				$vb_output_bundle = true;
 				if ($this->hasField($va_bundle['bundle_name'])) {
@@ -2343,17 +2379,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				$va_bundle['settings']['placement_id'] = $va_bundle['placement_id'];
 				if ($vs_bundle_form_html = $this->getBundleFormHTML($va_bundle['bundle_name'], 'P'.$va_bundle['placement_id'], $va_bundle['settings'], $pa_options, $vs_bundle_display_name)) {
-					$va_bundle_html[$va_bundle['placement_code']] = "<a name=\"{$pm_screen}_{$vn_c}\"></a>{$vs_bundle_form_html}";
+					$va_bundle_html[$va_bundle['placement_code']] = "<a name=\"{$pm_screen}_{$va_bundle['placement_id']}\"></a>{$vs_bundle_form_html}";
 					$va_bundles_present[$va_bundle['bundle_name']] = true;
 					
-					$pa_placements["{$pm_screen}_{$vn_c}"] = array(
+					$pa_placements["{$pm_screen}_{$va_bundle['placement_id']}"] = array(
 						'name' => $vs_bundle_display_name ? $vs_bundle_display_name : $this->getDisplayLabel($vs_table_name.".".$va_bundle['bundle_name']),
 						'placement_id' => $va_bundle['placement_id'],
 						'bundle' => $va_bundle['bundle_name'],
 						'id' => 'P'.$va_bundle['placement_id'].caGetOption('formName', $pa_options, '')
 					);
 				}
-				$vn_c++;
 			}
 		}
 		
@@ -5178,10 +5213,10 @@ if (!$vb_batch) {
 					
 					
 					// Only allow one current item per row_id
-					if ($pb_show_current_only && isset($va_seen_row_ids[$va_row['row_id']])) {
-						unset($va_rels[$vs_v]); 
-						continue;
-					}
+					//if ($pb_show_current_only && isset($va_seen_row_ids[$va_row['row_id']])) {
+					//	unset($va_rels[$vs_v]); 
+					//	continue;
+					//}
 				}
 
 				$vn_locale_id = $qr_res->get('locale_id');
