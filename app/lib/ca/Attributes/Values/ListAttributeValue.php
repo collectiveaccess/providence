@@ -414,6 +414,7 @@ class ListAttributeValue extends AttributeValue implements IAttributeValue {
 
 			if($vb_print_js) {
 				$t_list = new ca_lists();
+				$vb_yes_was_set = false; $vs_select = '';
 				foreach($t_list->getItemsForList($pa_element_info['list_id']) as $va_items_by_locale) {
 					foreach ($va_items_by_locale as $vn_locale_id => $va_item) {
 						$vs_hide_js = '';
@@ -431,11 +432,22 @@ class ListAttributeValue extends AttributeValue implements IAttributeValue {
 							case 'radio_buttons':
 								$vs_select = "jQuery('[id^={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]')";
 								$vs_selector_for_val = "jQuery('input[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]:checked').val()";
+								$vs_condition = $vs_selector_for_val . " === '" . $va_item['item_id'] . "'";
+								break;
+							case 'yes_no_checkboxes':
+								$vs_select = "jQuery('[id^={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]')";
+								if($vb_yes_was_set) {
+									$vs_condition = "!(jQuery('input[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]').is(':checked'))";
+								} else {
+									$vb_yes_was_set = true;
+									$vs_condition = "jQuery('input[name={fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}]').is(':checked')";
+								}
 								break;
 							case 'select':
 							case null:
 								$vs_select = "jQuery('#{fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}')";
 								$vs_selector_for_val = "jQuery(this).find(':selected').val()";
+								$vs_condition = $vs_selector_for_val . " === '" . $va_item['item_id'] . "'";
 								break;
 							default:
 								continue;
@@ -444,16 +456,16 @@ class ListAttributeValue extends AttributeValue implements IAttributeValue {
 						$vs_element .= "
 <script type='text/javascript'>
 	jQuery(document).ready(function() {
-		var select = $vs_select;
+		var select = {$vs_select};
 		select.change(function() {
-			if (".$vs_selector_for_val." === '" . $va_item['item_id'] . "') {
+			if ({$vs_condition}) {
 				jQuery('div.bundleLabel').show();
-				" . $vs_hide_js . "
+				{$vs_hide_js}
 			}
 		});
 
-		if (".$vs_selector_for_val." === '" . $va_item['item_id'] . "') {
-			" . $vs_hide_js . "
+		if ({$vs_condition}) {
+			{$vs_hide_js}
 		}
 	});
 </script>
@@ -480,7 +492,7 @@ class ListAttributeValue extends AttributeValue implements IAttributeValue {
 			is_array($pa_element_info) &&
 			isset($pa_element_info['list_id']) &&
 			// select is the default, so empty does count
-			(!( $pa_element_info['settings']['render']) || in_array($pa_element_info['settings']['render'], array('select', 'radio_buttons'))) &&
+			(!( $pa_element_info['settings']['render']) || in_array($pa_element_info['settings']['render'], array('select', 'radio_buttons', 'yes_no_checkboxes'))) &&
 			$g_request && ($g_request instanceof RequestHTTP)
 		) {
 			$va_options_for_settings = array();
@@ -587,7 +599,7 @@ class ListAttributeValue extends AttributeValue implements IAttributeValue {
 
 		if(preg_match("/^hideIfSelected/", $ps_setting_key)) {
 			if(isset($pa_element_info['settings']['render']) && !is_null($pa_element_info['settings']['render'])) {
-				if (!in_array($pa_element_info['settings']['render'], array('radio_buttons', 'select'))) {
+				if (!in_array($pa_element_info['settings']['render'], array('radio_buttons', 'select', 'yes_no_checkboxes'))) {
 					$ps_error = _t("dependent field visibility is only supported for radio buttons and drop-down (select) menus");
 					return false;
 				}
