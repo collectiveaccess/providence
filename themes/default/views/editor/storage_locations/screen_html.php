@@ -50,18 +50,17 @@ $vn_rel_id			= $this->getVar('rel_id');
 		);
 	}
 ?>
-<?php
-	print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/location_id/'.$vn_location_id, 'StorageLocationEditorForm', null, 'POST', 'multipart/form-data');
-?>
+	<?php print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/location_id/'.$vn_location_id, 'StorageLocationEditorForm', null, 'POST', 'multipart/form-data'); ?>
 		<div class="grid">
 <?php
-			$va_form_elements = $t_location->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
-									'request' => $this->request,
-									'formName' => 'StorageLocationEditorForm'), $va_bundle_list);
-
-			print join("\n", $va_form_elements);
-
-			if ($vb_can_edit) { print $vs_control_box; }
+			print join("\n", $t_location->getBundleFormHTMLForScreen(
+				$this->request->getActionExtra(),
+				array(
+					'request' => $this->request,
+					'formName' => 'StorageLocationEditorForm'
+				),
+				$va_bundle_list
+			));
 ?>
 			<input type='hidden' name='location_id' value='<?php print $vn_location_id; ?>'/>
 			<input type='hidden' name='above_id' value='<?php print $vn_above_id; ?>'/>
@@ -79,7 +78,6 @@ $vn_rel_id			= $this->getVar('rel_id');
 		</div>
 	</form>
 </div>
-
+<?php if ($vb_can_edit) { print $vs_control_box; } ?>
 <div class="editorBottomPadding"><!-- empty --></div>
-
 <?php print caSetupEditorScreenOverlays($this->request, $t_location, $va_bundle_list); ?>

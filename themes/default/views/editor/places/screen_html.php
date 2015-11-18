@@ -49,20 +49,18 @@ if ($vb_can_edit) {
 }
 ?>
 <div class="sectionBox">
-<?php
-	print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/place_id/'.$vn_place_id, 'PlaceEditorForm', null, 'POST', 'multipart/form-data');
-?>
+	<?php print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/place_id/'.$vn_place_id, 'PlaceEditorForm', null, 'POST', 'multipart/form-data'); ?>
 		<div class="grid">
 <?php
-			$va_form_elements = $t_place->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
-									'request' => $this->request,
-									'formName' => 'PlaceEditorForm',
-									'context_id' => $vs_context_id
-								), $va_bundle_list);
-
-			print join("\n", $va_form_elements);
-
-			if ($vb_can_edit) { print $vs_control_box; }
+			print join("\n", $t_place->getBundleFormHTMLForScreen(
+				$this->request->getActionExtra(),
+				array(
+					'request' => $this->request,
+					'formName' => 'PlaceEditorForm',
+					'context_id' => $vs_context_id
+				),
+				$va_bundle_list
+			));
 ?>
 			<input type='hidden' name='_context_id' value='<?php print $this->getVar('_context_id'); ?>'/>
 			<input type='hidden' name='place_id' value='<?php print $vn_place_id; ?>'/>
@@ -72,7 +70,7 @@ if ($vb_can_edit) {
 			<input type='hidden' name='rel_type_id' value='<?php print $vn_rel_type_id; ?>'/>
 			<input type='hidden' name='rel_id' value='<?php print $vn_rel_id; ?>'/>
 <?php
-			if($this->request->getParameter('rel', pInteger)) {
+			if ($this->request->getParameter('rel', pInteger)) {
 ?>
 				<input type='hidden' name='rel' value='1'/>
 <?php
@@ -81,7 +79,6 @@ if ($vb_can_edit) {
 		</div>
 	</form>
 </div>
-
+<?php if ($vb_can_edit) { print $vs_control_box; } ?>
 <div class="editorBottomPadding"><!-- empty --></div>
-
 <?php print caSetupEditorScreenOverlays($this->request, $t_place, $va_bundle_list); ?>
