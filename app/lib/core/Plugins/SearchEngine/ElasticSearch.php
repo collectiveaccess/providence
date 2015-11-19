@@ -198,8 +198,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	}
 	# -------------------------------------------------------
 	public function init() {
-		if(($vn_max_indexing_buffer_size = (int)$this->opo_search_config->get('max_indexing_buffer_size')) < 1) {
-			$vn_max_indexing_buffer_size = 1000;
+		if(($vn_max_indexing_buffer_size = (int)$this->opo_search_config->get('elasticsearch_indexing_buffer_size')) < 1) {
+			$vn_max_indexing_buffer_size = 250;
 		}
 
 		$this->opa_options = array(

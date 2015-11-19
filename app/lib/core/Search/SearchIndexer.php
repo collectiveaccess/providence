@@ -205,9 +205,7 @@ class SearchIndexer extends SearchBase {
 
 		foreach($va_table_names as $vn_table_num => $va_table_info) {
 			$vs_table = $va_table_info['name'];
-			$t_table_timer = new Timer();
 			$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
-			$vs_table_pk = $t_instance->primaryKey();
 
 			$vn_table_num = $t_instance->tableNum();
 
@@ -254,6 +252,8 @@ class SearchIndexer extends SearchBase {
 					while($qr_field_data->nextRow()) {
 						$va_field_data[(int)$qr_field_data->get($vs_table_pk)] = $qr_field_data->getRow();
 					}
+
+					SearchResult::clearCaches();
 				}
 
 				$this->indexRow($vn_table_num, $vn_id, $va_field_data[$vn_id], true);
