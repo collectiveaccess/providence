@@ -25,44 +25,44 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_object 			= $this->getVar('t_subject');
-	$vn_object_id 		= $this->getVar('subject_id');
-	$vn_above_id 		= $this->getVar('above_id');
+$t_object = $this->getVar('t_subject');
+$vn_object_id = $this->getVar('subject_id');
+$vn_above_id = $this->getVar('above_id');
 
-	$vb_can_edit	 	= $t_object->isSaveable($this->request);
-	$vb_can_delete		= $t_object->isDeletable($this->request);
+$vb_can_edit = $t_object->isSaveable($this->request);
+$vb_can_delete = $t_object->isDeletable($this->request);
 
-	$vs_rel_table		= $this->getVar('rel_table');
-	$vn_rel_type_id		= $this->getVar('rel_type_id');
-	$vn_rel_id			= $this->getVar('rel_id');
-	
-	if ($vb_can_edit) {
-		$va_cancel_parameters = ($vn_object_id ? array('object_id' => $vn_object_id) : array('type_id' => $t_object->getTypeID()));
-		print $vs_control_box = caFormControlBox(
-			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'ObjectEditorForm').' '.
-			($this->getVar('show_save_and_return') ? caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save and return"), 'ObjectEditorForm', array('isSaveAndReturn' => true)) : '').' '.
-			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'editor/objects', 'ObjectEditor', 'Edit/'.$this->request->getActionExtra(), $va_cancel_parameters),
-			'', 
-			((intval($vn_object_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'form-button deleteButton', 'editor/objects', 'ObjectEditor', 'Delete/'.$this->request->getActionExtra(), array('object_id' => $vn_object_id)) : ''
-		);
-	}
+$vs_rel_table = $this->getVar('rel_table');
+$vn_rel_type_id = $this->getVar('rel_type_id');
+$vn_rel_id = $this->getVar('rel_id');
+
+$vs_control_box = '';
+if ($vb_can_edit) {
+	$vs_control_box = caFormControlBox(
+		caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'ObjectEditorForm').' '.
+		($this->getVar('show_save_and_return') ? caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save and return"), 'ObjectEditorForm', array('isSaveAndReturn' => true)) : '').' '.
+		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'editor/objects', 'ObjectEditor', 'Edit/'.$this->request->getActionExtra(), ($vn_object_id ? array('object_id' => $vn_object_id) : array('type_id' => $t_object->getTypeID()))),
+		'',
+		((intval($vn_object_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'form-button deleteButton', 'editor/objects', 'ObjectEditor', 'Delete/'.$this->request->getActionExtra(), array('object_id' => $vn_object_id)) : ''
+	);
+}
+
+$va_bundle_list = array();
+$va_form_elements = $t_object->getBundleFormHTMLForScreen(
+	$this->request->getActionExtra(),
+	array(
+		'request' => $this->request,
+		'formName' => 'ObjectEditorForm',
+		'forceHidden' => array('lot_id')
+	),
+	$va_bundle_list
+);
 ?>
-	<div class="sectionBox">
-<?php
-
-			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/object_id/'.$vn_object_id, 'ObjectEditorForm', null, 'POST', 'multipart/form-data');
-		
-			$va_bundle_list = array();
-			$va_form_elements = $t_object->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
-									'request' => $this->request, 
-									'formName' => 'ObjectEditorForm',
-									'forceHidden' => array('lot_id')
-								), $va_bundle_list);
-			
-			print join("\n", $va_form_elements);
-			
-			if ($vb_can_edit) { print $vs_control_box; }
-?>
+<?php print $vs_control_box; ?>
+<div class="sectionBox">
+	<?php print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/object_id/'.$vn_object_id, 'ObjectEditorForm', null, 'POST', 'multipart/form-data'); ?>
+		<div class="grid">
+			<?php print join("\n", $va_form_elements); ?>
 			<input type='hidden' name='object_id' value='<?php print $vn_object_id; ?>'/>
 			<input type='hidden' name='collection_id' value='<?php print $this->request->getParameter('collection_id', pInteger); ?>'/>
 			<input type='hidden' name='above_id' value='<?php print $vn_above_id; ?>'/>
@@ -77,9 +77,9 @@
 <?php
 			}
 ?>
-		</form>
-	</div>
-
-	<div class="editorBottomPadding"><!-- empty --></div>
-	
-	<?php print caSetupEditorScreenOverlays($this->request, $t_object, $va_bundle_list); ?>
+		</div>
+	</form>
+</div>
+<?php print $vs_control_box; ?>
+<div class="editorBottomPadding"><!-- empty --></div>
+<?php print caSetupEditorScreenOverlays($this->request, $t_object, $va_bundle_list); ?>

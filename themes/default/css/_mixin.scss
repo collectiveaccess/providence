@@ -1,69 +1,66 @@
 @mixin breakpoint($point) {
-  @if $point == goldilocks {
-    @media only screen and (min-width: 40em) { @content; }
-  }
-  @if $point == baby-bear {
-    @media only screen and (min-width: 50em) { @content; }
-  }
-  @if $point == mama-bear {
-    @media only screen and (min-width: 60em)  { @content; }
-  }
-  @else if $point == papa-bear {
-    @media only screen and (min-width: 70em) { @content; }
-  }
-  @else if $point == supa-bear {
-    @media only screen and (min-width: 80em) { @content; }
-  }
+	@if $point == goldilocks {
+		@media only screen and (min-width: 40em) { @content; }
+	}
+	@if $point == baby-bear {
+		@media only screen and (min-width: 50em) { @content; }
+	}
+	@if $point == mama-bear {
+		@media only screen and (min-width: 60em)  { @content; }
+	}
+	@else if $point == papa-bear {
+		@media only screen and (min-width: 70em) { @content; }
+	}
+	@else if $point == supa-bear {
+		@media only screen and (min-width: 80em) { @content; }
+	}
 }
 
 @mixin max-image() {
-  max-width: 100%;
-  height: auto;
-  width: auto\9; /* ie8 */
+	max-width: 100%;
+	height: auto;
+	width: auto\9; /* ie8 */
 }
 
 @mixin clearfix-micro() {
-  & {
-    *zoom: 1;
-  }
-  &:before,
-  &:after {
-    content: "";
-    display: table;
-  }
-  &:after {
-    clear: both;
-  }
+	& {
+		*zoom: 1;
+	}
+	&:before,
+	&:after {
+		content: "";
+		display: table;
+	}
+	&:after {
+		clear: both;
+	}
 }
 
 @mixin wam-gradient($start, $end, $style: top) {
-  background-color: $start;
-  background-image: -webkit-linear-gradient($style, $start, $end);
-  background-image:    -moz-linear-gradient($style, $start, $end);
-  background-image:     -ms-linear-gradient($style, $start, $end);
-  background-image:      -o-linear-gradient($style, $start, $end);
+	background-color: $start;
+	background-image: -webkit-linear-gradient($style, $start, $end);
+	background-image:    -moz-linear-gradient($style, $start, $end);
+	background-image:     -ms-linear-gradient($style, $start, $end);
+	background-image:      -o-linear-gradient($style, $start, $end);
 }
 
-
-
 @mixin wam-font-heading($weight: 400, $transform: uppercase) {
-  font-family: 'Oswald', sans-serif;
-  font-weight: $weight;
-  text-transform: $transform;
+	font-family: 'Oswald', sans-serif;
+	font-weight: $weight;
+	text-transform: $transform;
 }
 
 @mixin wam-font-size() {
-
-  h1 {
-    font-size: 3em;
-  }
-  h2 {
-    font-size: 2.5em
-  }
-  h3 {
-    font-size: 2em;
-  }
-  h4 {
-    font-size: 1.5em;
-  }
+	h1 {
+		font-size: 3em;
+	}
+	h2 {
+		font-size: 2.5em
+	}
+	h3 {
+		font-size: 2em;
+	}
+	h4 {
+		font-size: 1.5em;
+	}
 }

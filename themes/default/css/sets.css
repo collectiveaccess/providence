@@ -10,7 +10,6 @@
 }
 .orderControls a{
 	color:#134959;
-	font-size:12px;
 	text-decoration:underline;
 }
 .orderControls a:hover{
@@ -60,7 +59,6 @@
 }
 
 .setItems .remove a{
-	font-size: 9px;
 	color: #333;
 	text-decoration:none;
 	cursor: pointer;
@@ -78,7 +76,6 @@ a.setItemEditButton img{
 
 .setItems .setItemCaption {
 	padding:10px;
-	font-size:11px;
 }
 
 .setItemIdentifierSortable {
@@ -88,8 +85,7 @@ a.setItemEditButton img{
 .colorbox { 
 	margin: 0px; 
 	padding: 10px 10px 10px 8px;
-	font-size: 12px;  
-	text-transform:uppercase; 
+	text-transform:uppercase;
 	text-align: left;
 	display: block; 
 	color: #333;

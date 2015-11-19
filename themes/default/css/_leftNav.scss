@@ -1,20 +1,15 @@
 #leftNav {
 	background: $grey-dark;
-}
 
-
-#leftNav {
 	width: 100%;
 	padding: 0;
 	position: relative;
-	
+
 	width: 35%;
 	position: absolute;
 	top: 0;
 	left: 0;
 	bottom: 0;
-
-
 
 	@include breakpoint(baby-bear) {
 		
@@ -28,7 +23,6 @@
 	@include breakpoint(supa-bear) {
 		width: 25%
 	}
-
 
 	#leftNavSidebar {
 		width: 100%;
@@ -104,7 +98,6 @@
 		text-transform: none;
 		width: 100%;
 		font-weight: normal;
-		font-family: inherit;
 		text-transform: uppercase;
 
 
@@ -133,13 +126,11 @@
 		}
 	}
 
-
 	.sf-menu-selected, 
 	.sf-menu li li a.sf-menu-selected, 
 	.sf-menu li li li a.sf-menu-selected {
 		background: $black;
 	}
-
 
 	h3 {
 		font-size: inherit;
@@ -149,18 +140,14 @@
 		font-size: inherit;
 		color: inherit;
 	}
-
-	
 }
-
-
 
 #leftNav #inspectorInfo {
 	width: 100%;
 	background-color: $white;
 	border-top: 1px solid $white-dark;
 }
+
 .inspectorChangeDateList {
-	font-family: inherit;
 	font-size: 0.9em;
 }

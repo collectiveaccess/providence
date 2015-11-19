@@ -25,41 +25,42 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_location 		= $this->getVar('t_subject');
-	$vn_location_id 	= $this->getVar('subject_id');
-	$vn_above_id 		= $this->getVar('above_id');
+$t_location 		= $this->getVar('t_subject');
+$vn_location_id 	= $this->getVar('subject_id');
+$vn_above_id 		= $this->getVar('above_id');
 
-	$vb_can_edit	 	= $t_location->isSaveable($this->request);
-	$vb_can_delete		= $t_location->isDeletable($this->request);
+$vb_can_edit	 	= $t_location->isSaveable($this->request);
+$vb_can_delete		= $t_location->isDeletable($this->request);
 
-	$vs_rel_table		= $this->getVar('rel_table');
-	$vn_rel_type_id		= $this->getVar('rel_type_id');
-	$vn_rel_id			= $this->getVar('rel_id');
+$vs_rel_table		= $this->getVar('rel_table');
+$vn_rel_type_id		= $this->getVar('rel_type_id');
+$vn_rel_id			= $this->getVar('rel_id');
 
 ?>
-	<div class="sectionBox">
+<div class="sectionBox">
 <?php
-		if ($vb_can_edit) {
-			$va_cancel_parameters = ($vn_location_id ? array('location_id' => $vn_location_id) : array('type_id' => $t_location->getTypeID()));
-			print $vs_control_box = caFormControlBox(
-				caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'StorageLocationEditorForm').' '.
-				($this->getVar('show_save_and_return') ? caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save and return"), 'StorageLocationEditorForm', array('isSaveAndReturn' => true)) : '').' '.
-				caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'editor/storage_locations', 'StorageLocationEditor', 'Edit/'.$this->request->getActionExtra(), $va_cancel_parameters),
-				'', 
-				((intval($vn_location_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'editor/storage_locations', 'StorageLocationEditor', 'Delete/'.$this->request->getActionExtra(), array('location_id' => $vn_location_id)) : ''
-			);
-		}
-	?>
+	if ($vb_can_edit) {
+		$va_cancel_parameters = ($vn_location_id ? array('location_id' => $vn_location_id) : array('type_id' => $t_location->getTypeID()));
+		print $vs_control_box = caFormControlBox(
+			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'StorageLocationEditorForm').' '.
+			($this->getVar('show_save_and_return') ? caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save and return"), 'StorageLocationEditorForm', array('isSaveAndReturn' => true)) : '').' '.
+			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'editor/storage_locations', 'StorageLocationEditor', 'Edit/'.$this->request->getActionExtra(), $va_cancel_parameters),
+			'',
+			((intval($vn_location_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'editor/storage_locations', 'StorageLocationEditor', 'Delete/'.$this->request->getActionExtra(), array('location_id' => $vn_location_id)) : ''
+		);
+	}
+?>
+	<?php print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/location_id/'.$vn_location_id, 'StorageLocationEditorForm', null, 'POST', 'multipart/form-data'); ?>
+		<div class="grid">
 <?php
-			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/location_id/'.$vn_location_id, 'StorageLocationEditorForm', null, 'POST', 'multipart/form-data');
-			
-			$va_form_elements = $t_location->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
-									'request' => $this->request, 
-									'formName' => 'StorageLocationEditorForm'), $va_bundle_list);
-									
-			print join("\n", $va_form_elements);
-			
-			if ($vb_can_edit) { print $vs_control_box; }
+			print join("\n", $t_location->getBundleFormHTMLForScreen(
+				$this->request->getActionExtra(),
+				array(
+					'request' => $this->request,
+					'formName' => 'StorageLocationEditorForm'
+				),
+				$va_bundle_list
+			));
 ?>
 			<input type='hidden' name='location_id' value='<?php print $vn_location_id; ?>'/>
 			<input type='hidden' name='above_id' value='<?php print $vn_above_id; ?>'/>
@@ -74,9 +75,9 @@
 <?php
 			}
 ?>
-		</form>
-	</div>
-
-	<div class="editorBottomPadding"><!-- empty --></div>
-	
-	<?php print caSetupEditorScreenOverlays($this->request, $t_location, $va_bundle_list); ?>
+		</div>
+	</form>
+</div>
+<?php if ($vb_can_edit) { print $vs_control_box; } ?>
+<div class="editorBottomPadding"><!-- empty --></div>
+<?php print caSetupEditorScreenOverlays($this->request, $t_location, $va_bundle_list); ?>

@@ -1,32 +1,30 @@
-
-
 *, *:before, *:after {
-  -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
-
+	-moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
 }
-
 
 html,
 body {
-  font-family: 'Source Sans Pro', sans-serif;
-  font-size: 1em;
-  line-height: 1.5;
-  min-height: 100%;
-  min-width: 37.9em;
-  color: $black;
+	font-family: 'Source Sans Pro', sans-serif;
+	font-size: small;
+	line-height: 1.5;
+	min-height: 100%;
+	min-width: 37.9em;
+	color: $black;
 }
-
 
 .width {
 	width: 100%;
 }
 
 .title--alt {
-  font-family: 'Oswald', sans-serif;
-  font-weight: 400;
-  text-transform: uppercase;
+	font-family: 'Oswald', sans-serif;
+	font-weight: 400;
+	text-transform: uppercase;
 }
 
+.idno .formLabel {
+	font-size: xx-large;
+}
 
 h1 {
 	@include wam-font-heading();
@@ -38,12 +36,6 @@ h2 {
 	color: $grey-mid;
 }
 
-
-
-
-
-
-
 .hierarchyPanelHeader {
 	font-size: inherit;
 
@@ -52,11 +44,9 @@ h2 {
 	}
 }
 
-
 #summary .heading {
 	font-size: inherit;
 	font-weight: 600;
-	font-family: inherit;
 	color: inherit;
 }
 
@@ -96,14 +86,12 @@ a.browseSelectPanelListGroupHeading:hover {
 	color: $link;
 }
 
-
 .searchNav a.button {
 	color: $link;
 }
 a.button:hover {
 	color: darken($link, 20%);
 }
-
 
 .required {
 	color: $red;
@@ -139,7 +127,6 @@ div.roundedRel {
 	background: lighten($link, 52%)!important;
 }
 
-
 .table-bordered {
 	width: 100%;
 	border-collapse: collapse;
@@ -161,7 +148,6 @@ a.caDeleteItemButton {
 	float: right;
 }
 
-
 table {
 	clear: both;
 }
@@ -178,3 +164,12 @@ div.delete_warning_box {
 	height: 32px;
 }
 
+div.bundleDisplayEditorPlacementList {
+	font-size: small;
+	margin-right: 0;
+	width: unset;
+
+	div.bundleDisplayEditorPlacement {
+		width: unset;
+	}
+}

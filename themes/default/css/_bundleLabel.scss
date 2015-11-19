@@ -1,37 +1,53 @@
-
-
 .bundleLabel {
-	font-size: inherit;
-	font-family: inherit;
-	color: inherit;
-	background-color: white;
-	border: 1px solid white;
-	box-shadow: 0 0 3px 1px rgb(220,220,220);
+	background-color: transparent;
+	border: none;
+	padding: 0;
+	margin: 0;
 
-  border-radius: 3px;
-  margin-bottom: 1em;
+	.bundleInner {
+		border-top: 1px solid $white-off;
+		padding: 8px;
+		margin: 8px 0 0 0;
+	}
 
+	input[type="text"],
+	input[type="password"],
+	input[type="textarea"],
+	textarea,
+	select {
+		font-family: 'Source Sans Pro', sans-serif;
+		font-size: small;
+		width: 100% !important;
+	}
 }
 
-
+// As a fallback, make children that don't have a `cell-*` class like a 100% wide cell.  See `_grid.scss`
+.grid > .bundleLabel:not([class *= 'cell-']) {
+	display: inline-block;
+	vertical-align: top;
+	font-size: medium;
+	width: 100%;
+}
 
 .bundleContainer {
 	background: inherit;
 }
 
+.bundleShowHideControl {
+	position: absolute;
+	top: 20px;
+	right: 10px;
+	opacity: .5;
+}
+
 div.roundedRel {
-	font-size: 0.9em;
-	border: 1px solid $white-dark;
+	font-size: small;
 	background: $white-off;
 	float: none;
 	margin-right: 28px;
+}
 
-	&:last-of-type{
-		border-bottom: 1px solid $white-dark !important;
-	} 
-
-	a {
-		font-size: inherit;
-
-	}
+.caItemList {
+	max-height: none;
+	overflow-y: unset;
 }

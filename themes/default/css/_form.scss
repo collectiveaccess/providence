@@ -1,37 +1,27 @@
-input[type="text"], 
-input[type="textarea"], 
-textarea, 
-input[type="password"] {
-
-	font-family: inherit;
-	font-size: inherit;
+form select {
+	background-position: 99% 50%;
 }
-
-
-
 
 .labelInfo {
 	background-color: transparent;
-	margin-left: 0px;
-	padding: 7px 28px 3px 5px;
-	border-bottom: 1px solid $white-dark;
-
+	margin-left: 0;
+	padding: 0 28px 0 0;
+	border-bottom: none;
+	font-size: medium;
 
 	&:last-of-type {
 		border-bottom: 0;
-		
 	}
-	
+
 	&.button {
-		border-top: 1px solid $white-dark;
+		font-size: small;
+
 		img{
 			max-height: 1.2em;
 			vertical-align: middle;
 		}
-	}	
-	
+	}
 }
-
 
 a.form-button, 
 span.form-button, 
@@ -49,23 +39,13 @@ a.form-button span,
 span.form-button button, 
 span.form-button input, 
 del.form-button span {
-	font-size: inherit !important;
-	font-family: inherit;
 	font-weight: 600;
 	padding: 0.5em 1em;
 }
 
-
 a.form-button:hover span {
 	background: $grey;
 	color: $white;
-}
-
-
-
-.ui-autocomplete-input {
-	height: 2em !important;
-
 }
 
 .caDeleteItemButton,
@@ -89,37 +69,25 @@ a.caNodecLabelButton {
 }
 
 .formLabel {
-	font-family: inherit;
 	font-weight: 600;
 	color: inherit;
 }
 
-.labelDisplay {
-	font-family: inherit;
-	//font-weight: 600;
-	font-size: inherit;
-	color: inherit;
-}
-
-
 .formLabelText {
 	@include wam-font-heading();
+	font-size: small;
 	color: $grey-dark;
-	font-size: 0.8em;
+	padding: 0;
 }
 
-
 div.button {
-	font-size: inherit;
-
+	padding-left: 0;
 
 	img {
 		vertical-align: initial;
 	}
 
-	a{
-		font-size: 0.9em;
-		font-family: inherit;
+	a {
 		font-weight: 600;
 		color: inherit;
 		border: 1px solid $grey-light;
@@ -138,6 +106,9 @@ div.button {
 table.attributeListItem {
 	width: 100%;
 
+	td {
+		padding: 0;
+	}
 }
 
 .attributeListItem td {
@@ -151,6 +122,10 @@ table.attributeListItem {
 
 .caListItem {
 	width: 100%;
+
+	td {
+		padding: 0;
+	}
 }
 
 #P284OccurrenceEditorFormItem_new_0 {
@@ -160,6 +135,7 @@ table.attributeListItem {
 .formSettings {
 	border: 1px solid $white-dark;
 }
+
 #idno_year,
 #idno_job_number,
 #idno_assignment_number,
@@ -167,15 +143,18 @@ table.attributeListItem {
 	font-size: 1em;
 	width: 40px !important;
 }
+
 #idno_prefix{
 	font-size: 1em;
 	width: 60px !important;
 }
+
 #idno_object_number{
 	width: 180px !important;
 	margin-left: 6px;
 	margin-right: 3px;
 }
+
 #idno_serial_number,
 #idno_suffix {
 	width: 80px !important;

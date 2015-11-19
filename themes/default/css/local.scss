@@ -1,9 +1,7 @@
 @import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700|Oswald);
 @import "vars";
 @import "mixin";
-
-@import "pure/grids";
-@import "pure/responsive-grids";
+@import "grid";
 
 @import "topNavContainer";
 	@import "suckerfish";
@@ -30,4 +28,3 @@
 @import "form";
 @import "links";
 @import "misc";
-

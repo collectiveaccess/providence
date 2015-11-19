@@ -1,15 +1,8 @@
-
-
-
-
-
-
 .hierarchyBrowserContainer,
 div.hierarchyBrowseTab,
-.caRelatedItem>div:nth-child(2){
+.caRelatedItem>div:nth-child(2) {
 	width: 100% !important;
 }
-
 
 .hierarchyBrowserLevel li {
 	line-height: 1.2;
@@ -17,13 +10,14 @@ div.hierarchyBrowseTab,
 	padding-bottom: 5px;
 }
 
-
 a.hierarchyBrowserLevel {
-	font-size: 0.9em;
+	font-size: small;
 }
-
 
 a.hierarchyBrowserLevelSelected {
 	font-weight: 600;
+}
 
+.hierarchyBrowserSearchBar {
+	margin: 0;
 }

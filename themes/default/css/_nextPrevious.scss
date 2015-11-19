@@ -1,14 +1,9 @@
-
-
-
 #widgets {
 	background: $white;
-
 	padding-bottom: 1em;
 }
 
 #leftNav h3.nextPrevious {
-	font-family: inherit;
 	font-size: inherit;
 	height: auto;
 	font-weight: 600;
@@ -20,7 +15,6 @@
 	background: transparent;
 }
 
-
 #leftNav .resultCount, 
 #leftNav .resultLink {
 	width: auto;
@@ -31,7 +25,6 @@
 	color: inherit;
 }
 
-
 #leftNav h3.nextPrevious a.next,
 #leftNav h3.nextPrevious span.next,
 #leftNav h3.nextPrevious a.prev,
@@ -40,11 +33,9 @@
 	height: 50px;
 	text-align: center;
 	line-height: 1;
-	font-size: 0.9em;
 	position: absolute;
 	background: $white-off;
 	border: 1px solid $white-dark;
-	//color: white;
 	padding: 7px 5px;
 }
 
