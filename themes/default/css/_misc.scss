@@ -163,3 +163,13 @@ img {
 div.delete_warning_box {
 	height: 32px;
 }
+
+div.bundleDisplayEditorPlacementList {
+	font-size: small;
+	margin-right: 0;
+	width: unset;
+
+	div.bundleDisplayEditorPlacement {
+		width: unset;
+	}
+}
