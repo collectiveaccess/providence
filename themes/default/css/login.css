@@ -43,25 +43,25 @@ a:hover{
 #systemTitle{
 	padding:30px 0px 10px 60px;
 	font-weight:normal;
-	font-size:22px;
+	font-size:x-large;
 	font-family: 'DIN-Regular';
 }
 
 .smallContent {
-    font-size: 14px;
+    font-size: small;
     margin-right: 68px;
     text-align: justify;
 }
 
 .notificationContent {
-    font-size: 18px;
+    font-size: large;
     margin-right: 68px;
     font-weight: bold;
     color: darkred;
 }
 
 .loginFormElement{
-	font-size:14px;
+	font-size:medium;
 	line-height:2.3em;
 	margin-bottom:10px;
 }
@@ -69,7 +69,7 @@ a:hover{
 	padding-top:15px;
 }
 #loginForm form input[type="text"], #loginForm form input[type="password"]{
-	font-size:16px;
+	font-size:medium;
 	font-family: "Helvetica Neue", Arial, sans-serif;
 	border:1px solid #999999;
 	padding:0px;
@@ -81,19 +81,15 @@ a:hover{
 	padding-left:5px;
 }
 
-.loginAgainLink{
-	font-size: 14px;
-}
-
 /*** Button styles ***/
 div.button{
 	padding-left:10px;
-	font-size: 11px;
+	font-size: small;
 }
 div.button a{
 	color: #134959;
 	text-decoration: none;
-	font-size: 11px;
+	font-size: small;
 	font-weight:bold;
 }
 
@@ -107,7 +103,7 @@ div.button img{
 a.button{
 	color: #134959;
 	text-decoration: none;
-	font-size: 11px;
+	font-size: small;
 	font-weight:bold;
 }
 
@@ -149,7 +145,6 @@ a.form-button span, span.form-button button, span.form-button input, del.form-bu
 }
 
 a.form-button span, span.form-button button, span.form-button input, del.form-button span{
-
     white-space:nowrap;
     cursor:pointer;
     color:#222;
@@ -157,7 +152,6 @@ a.form-button span, span.form-button button, span.form-button input, del.form-bu
     display:inline-block;
     line-height:1;
     letter-spacing:0 !important;
-    font-size:12px !important;
     font-style:normal;
     font-family: 'DIN-Regular';
     font-weight:bold;
