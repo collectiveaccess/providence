@@ -25,41 +25,40 @@
  *
  * ----------------------------------------------------------------------
  */
-$t_movement 			= $this->getVar('t_subject');
-$vn_movement_id 		= $this->getVar('subject_id');
+$t_movement = $this->getVar('t_subject');
+$vn_movement_id = $this->getVar('subject_id');
 
-$vb_can_edit	 	= $t_movement->isSaveable($this->request);
-$vb_can_delete		= $t_movement->isDeletable($this->request);
+$vb_can_edit = $t_movement->isSaveable($this->request);
+$vb_can_delete = $t_movement->isDeletable($this->request);
 
-$vs_rel_table		= $this->getVar('rel_table');
-$vn_rel_type_id		= $this->getVar('rel_type_id');
-$vn_rel_id			= $this->getVar('rel_id');
+$vs_rel_table = $this->getVar('rel_table');
+$vn_rel_type_id = $this->getVar('rel_type_id');
+$vn_rel_id = $this->getVar('rel_id');
 
+$vs_control_box = '';
 if ($vb_can_edit) {
-	$va_cancel_parameters = ($vn_movement_id ? array('movement_id' => $vn_movement_id) : array('type_id' => $t_movement->getTypeID()));
-	print $vs_control_box = caFormControlBox(
+	$vs_control_box = caFormControlBox(
 		caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'MovementEditorForm').' '.
 		($this->getVar('show_save_and_return') ? caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save and return"), 'MovementEditorForm', array('isSaveAndReturn' => true)) : '').' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'editor/movements', 'MovementEditor', 'Edit/'.$this->request->getActionExtra(), $va_cancel_parameters),
+		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'editor/movements', 'MovementEditor', 'Edit/'.$this->request->getActionExtra(), ($vn_movement_id ? array('movement_id' => $vn_movement_id) : array('type_id' => $t_movement->getTypeID()))),
 		'',
 		((intval($vn_movement_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'editor/movements', 'MovementEditor', 'Delete/'.$this->request->getActionExtra(), array('movement_id' => $vn_movement_id)) : ''
 	);
 }
+
+$va_form_elements = $t_movement->getBundleFormHTMLForScreen(
+	$this->request->getActionExtra(),
+	array(
+		'request' => $this->request,
+		'formName' => 'MovementEditorForm'
+	),
+	$va_bundle_list
+);
 ?>
 <div class="sectionBox">
-<?php
-	print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/movement_id/'.$vn_movement_id, 'MovementEditorForm', null, 'POST', 'multipart/form-data');
-?>
+	<?php print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/movement_id/'.$vn_movement_id, 'MovementEditorForm', null, 'POST', 'multipart/form-data'); ?>
 		<div class="grid">
-<?php
-		$va_form_elements = $t_movement->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
-								'request' => $this->request,
-								'formName' => 'MovementEditorForm'), $va_bundle_list);
-
-		print join("\n", $va_form_elements);
-
-		if ($vb_can_edit) { print $vs_control_box; }
-?>
+			<?php print join("\n", $va_form_elements); ?>
 			<input type='hidden' name='movement_id' value='<?php print $vn_movement_id; ?>'/>
 			<input id='isSaveAndReturn' type='hidden' name='is_save_and_return' value='0'/>
 			<input type='hidden' name='rel_table' value='<?php print $vs_rel_table; ?>'/>
@@ -75,7 +74,6 @@ if ($vb_can_edit) {
 		</div>
 	</form>
 </div>
-
+<?php if ($vb_can_edit) { print $vs_control_box; } ?>
 <div class="editorBottomPadding"><!-- empty --></div>
-
 <?php print caSetupEditorScreenOverlays($this->request, $t_movement, $va_bundle_list); ?>

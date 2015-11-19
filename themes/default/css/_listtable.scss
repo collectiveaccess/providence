@@ -4,10 +4,10 @@ table.listtable {
 
 table.listtable thead tr th,
 .table.listtable {
-	font-size: 0.9em;
+	font-size: small;
 }
 
-#caSetList.listtable thead tr th, 
+#caSetList.listtable thead tr th,
 #caGroupList.listtable thead tr th, 
 #caWatchedItemsList.listtable thead tr th, 
 #caBundleList.listtable thead tr th, 
@@ -22,6 +22,5 @@ table.listtable thead tr th,
 #caElementList.listtable thead tr th, 
 #caUIList.listtable thead tr th, 
 #caSavedSearchesList.listtable thead tr th {
-	font-family: inherit;
 	font-weight: 600;
 }

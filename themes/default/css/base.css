@@ -1,14 +1,12 @@
 /* @import url("//hello.myfonts.net/count/28ec2c"); */
 
-@font-face {font-family: 'DIN-Regular';src: url('fonts/28EC2C_0_0.eot');src: url('fonts/28EC2C_0_0.eot?#iefix') format('embedded-opentype'),url('fonts/28EC2C_0_0.woff') format('woff'),url('fonts/28EC2C_0_0.ttf') format('truetype');}
+@font-face {/*REMOVEME font-family: 'DIN-Regular';src: url('fonts/28EC2C_0_0.eot');src: url('fonts/28EC2C_0_0.eot?#iefix') format('embedded-opentype'),url('fonts/28EC2C_0_0.woff') format('woff'),url('fonts/28EC2C_0_0.ttf') format('truetype');*/}
 
 /*  dark gray #4b4a4a - teal #134959 - turquoise #1FAA99 - med gray #DDDDDD - light gray #EEEEEE */
 html, body {
-    font: 12px "Helvetica Neue", Arial, Helvetica, Sans-serif;
     background-color: #fff;
-    margin:0px;
-    padding:0px;
-    /*background-image:url('../graphics/backgrounds/bg.png');*/
+    margin:0;
+    padding:0;
     height: 100%;
 }
 
@@ -45,12 +43,12 @@ a:hover{
 .unit a:hover {
     color: #858585;
 }
-h1 { font-family: 'DIN-Regular', arial, sans-serif;}
-h2 { font-size: 13px; color: #666; }
+h1 { /*REMOVEME font-family: 'DIN-Regular', arial, sans-serif;*/}
+h2 { /*REMOVEME font-size: 13px;*/ color: #666; }
 
 h5 {
     margin: 0px;
-    font-size: 13px;
+    /*REMOVEME font-size: 13px;*/
     color: #666;
     -webkit-margin-before: 0em;
     -webkit-margin-after: .5em;
@@ -64,13 +62,13 @@ h5 {
 }
 
 .title {
-    font-size: 16px;
+    /*REMOVEME font-size: 16px;*/
     font-weight: bold;
     color: #444444;
 }
 .subTitle {
-    font-family: "Helvetica Neue", sans-serif;
-    font-size:14px;
+    /*REMOVEME font-family: "Helvetica Neue", sans-serif;*/
+    /*REMOVEME font-size:14px;*/
     color: #333;
     font-weight: bold;
     text-align: left;
@@ -94,7 +92,7 @@ h5 {
 #topNav {
     color: #FFFFFF;
     background-color:#fff;
-    font-size: 13px;
+    /*REMOVEME font-size: 13px;*/
     z-index:1;
     position: fixed;
     top: 0px;
@@ -102,7 +100,7 @@ h5 {
     width: 100%;
     margin-left: auto;
     margin-right: auto;
-    font-family:arial;
+    /*REMOVEME font-family:arial;*/
     background-image: none;
     border: 0px;
     border-radius: 0;
@@ -189,10 +187,10 @@ h5 {
     background-color: #fff;
     color: #333;
     padding: 0;
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     text-transform:none; width:100%;
     font-weight:normal;
-    font-family:"din-regular", arial, sans-serif;
+    /*REMOVEME font-family:"din-regular", arial, sans-serif;*/
     text-transform:uppercase;
 }
 
@@ -205,7 +203,7 @@ h5 {
 }
 #leftNav ul { list-style: none; margin: 0px; padding: 3px 0px 3px 0px; display:none; }
 #leftNav ul.selected { list-style: none; margin: 0px; padding: 3px 0px 3px 0px; display:block; }
-#leftNav ul.arrow { border-top: solid 1px #dce2e9; border-bottom: solid 1px #fff; font-size: 11px; }
+#leftNav ul.arrow { border-top: solid 1px #dce2e9; border-bottom: solid 1px #fff; /*REMOVEME font-size: 11px;*/ }
 #leftNav ul.arrow li { list-style: none; font-weight: normal; border: 0; padding: 0; margin: 0; }
 #leftNav ul.arrow li a, #leftNav ul.arrow li span { _height: 15px; text-decoration: none; display: block; padding: 3px 0; background: transparent url('../graphics/icons/arrow_gray.gif') no-repeat 20px 8px; padding-left: 30px; padding-right: 5px; margin: 0; }
 #leftNav ul li a:hover { background-color: #fff; }
@@ -216,7 +214,7 @@ h5 {
     margin: 0px;
     background-color: #fff;
     padding: 0px;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
     text-transform:uppercase;
     text-align: left;
     display: block;
@@ -226,7 +224,7 @@ h5 {
     margin: 0px;
     background-color: #fff;
     padding: 0px 0px 0px 15px;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
     text-transform:uppercase;
     text-align: left;
     display: block;
@@ -235,7 +233,7 @@ h5 {
 #leftNav h3.nextPrevious {
     padding:0px;
     text-align:center;
-    font-family: "DIN-Regular";
+    /*REMOVEME font-family: "DIN-Regular";*/
 	font-weight: bold;
 	height: 38px;
 }
@@ -276,10 +274,10 @@ h5 {
 	width: 110px;
 }
 #leftNav .creatingNew {
-	font-family: "DIN-Regular", Helvetica, sans-serif;
+	/*REMOVEME font-family: "DIN-Regular", Helvetica, sans-serif;*/
 	padding-top: 15px;
 	font-weight: bold;
-	font-size: 13px;
+	/*REMOVEME font-size: 13px;*/
 	line-height: 1.4em;
 }
 #leftNav div.visualize, #leftNav div.setTools {
@@ -289,9 +287,9 @@ h5 {
 	-moz-border-radius: 4px;
 	padding: 12px 10px 5px 20px;
 	margin: 10px 10px 10px 10px;
-	font-family: "DIN-Regular";
+	/*REMOVEME font-family: "DIN-Regular";*/
 	text-transform:capitalize;
-	font-size:14px;
+	/*REMOVEME font-size:14px;*/
 }
 #leftNav div.setTools img {
 	padding-right:5px;
@@ -302,15 +300,15 @@ h5 {
 #caColorbox {
     margin: 0px;
     padding: 10px 10px 0px 8px;
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     text-transform:uppercase;
     text-align: left;
     display: block;
     color: #333;
-    font-family:"Helvetica Neue", arial, sans-serif;
+    /*REMOVEME font-family:"Helvetica Neue", arial, sans-serif;*/
 }
 #caColorbox strong{
-	font-family: "din-regular";
+	/*REMOVEME font-family: "din-regular";*/
 }
 #inspectoricon {
     margin: -10px 5px 0px -8px;
@@ -319,7 +317,7 @@ h5 {
 
 .inspectorExportControls select {
     width: 130px;
-    font-size: 9px;
+    /*REMOVEME font-size: 9px;*/
 }
 #leftNav #toolIcons {
 	margin-bottom:5px;
@@ -351,7 +349,7 @@ h5 {
 }
 #inspectorChangeTypeButton {
     float: right;
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     margin: 0px;
     text-align:right;
 }
@@ -371,7 +369,7 @@ h5 {
 
 #inspectorLotMediaDownloadButton {
     float: right;
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     padding: 2px !important;
     margin: 0px;
     text-align:right;
@@ -380,18 +378,18 @@ h5 {
 div.inspectorLotObjectTypeControls {
     padding: 3px;
     margin-top: 8px;
-    font-size: 9px;
+    /*REMOVEME font-size: 9px;*/
 }
 
 .inspectorLotObjectTypeControls select {
     width: 80px;
-    font-size: 9px;
+    /*REMOVEME font-size: 9px;*/
 }
 
 .inspectorChangeDateList {
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     margin-top: 0px;
-    font-family: 'DIN-Regular', helvetica, sans-serif;
+    /*REMOVEME font-family: 'DIN-Regular', helvetica, sans-serif;*/
 }
 
 .inspectorChangeDateListLine {
@@ -430,7 +428,7 @@ div.inspectorCheckedOut {
 .inspectorCurrentLocation {
     color: #aaa;
     font-style: italic;
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
 }
 
 .inspectorFlag {
@@ -470,7 +468,7 @@ div.inspectorCheckedOut {
 }
 
 #leftNav #hierarchyInfo form select {
-    font-size: 9px;
+    /*REMOVEME font-size: 9px;*/
 }
 
 #leftNav #inspectorMedia #image{
@@ -549,14 +547,14 @@ div.inspectorCheckedOut {
 #leftNav h3.loans,
 #leftNav h3.entities,
 #leftNav h3.collections {
-	font-family: 'din-regular';
+	/*REMOVEME font-family: 'din-regular';*/
 	font-weight: bold;
 	margin-top: 15px;
 	margin-bottom: 5px;
-	font-size: 14px;
+	/*REMOVEME font-size: 14px;*/
 }
 .setStats div, .groupList div, .yourDisplays div, .searchForms div, .comments div, .tags div, .export div, h3.metalist div, h3.relTypes div, .importers div, .savedSearches div, .searchTours div{
-	font-size:12px;
+	/*REMOVEME font-size:12px;*/
 	line-height:1.7em;
 }
 #leftNav h3.searchHistory, #leftNav h3.searchSaved, #leftNav h3.searchTools, #leftNav h3.tools{
@@ -594,7 +592,7 @@ div.inspectorCheckedOut {
     background-color: #444;
     width:1000px;
     color: #fff;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
     padding: 6px 0px 3px 0px;
     text-align:left;
 
@@ -605,7 +603,7 @@ div.inspectorCheckedOut {
     width:784px;
     margin-left:auto;
     margin-right: auto;
-    font-family: 'DIN-Regular';
+    /*REMOVEME font-family: 'DIN-Regular';*/
 }
 #footer a{
     color: #fff;
@@ -617,7 +615,7 @@ div.inspectorCheckedOut {
 a.feed-icon {
     float:right;
     text-decoration: none;
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     height:14px;
 }
 a.feed-icon img{
@@ -663,7 +661,7 @@ a.feed-icon img{
 .sf-menu a {
     display:		block;
     position:		relative;
-    font-family: 'DIN-Regular';
+    /*REMOVEME font-family: 'DIN-Regular';*/
 }
 .sf-menu li:hover ul,
 .sf-menu li.sfHover ul {
@@ -804,7 +802,7 @@ a.sf-menu-disabled {
     padding-right: 	1em;
     min-width:		1px; /* trigger IE7 hasLayout so spans position accurately */
     text-transform:uppercase;
-    font-family: 'DIN-Regular';
+    /*REMOVEME font-family: 'DIN-Regular';*/
 }
 .sf-menu ul li a.sf-with-ul {
     text-transform: none;
@@ -1001,8 +999,8 @@ li.sfHover > a > .sf-sub-indicator {
 	background-color: #ccc !important;
 	background-image:none !important;
 	border:0px !important;
-	font-family: "din-regular", arial, sans-serif !important;
-	font-size:14px !important;
+	/*REMOVEME font-family: "din-regular", arial, sans-serif !important;*/
+	/*REMOVEME font-size:14px !important;*/
 }
 .ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
 	background-color: #eee !important;
@@ -1034,12 +1032,12 @@ li.sfHover > a > .sf-sub-indicator {
 	border-top: 0px !important;
 }
 .ui-widget {
-	font-family: "helvetica neue", arial, sans-serif !important;
-	font-size:1em !important;
-	font-weight:regular !important;
+	/*REMOVEME font-family: "helvetica neue", arial, sans-serif !important;*/
+	/*REMOVEME font-size:1em !important;*/
+	font-weight:normal !important;
 }
 .ui-tabs .ui-tabs-nav li {
-	font-size:13px !important;
+	/*REMOVEME font-size:13px !important;*/
 }
 
 /*** NOTIFICATIONS ***/
@@ -1090,23 +1088,23 @@ ul.notification-error-box, ul.notification-warning-box, ul.notification-info-box
 li.notification-info-box {
     font-weight: bold;
     color: #1ab3c8;
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     text-indent: 10px;
-    font-family: 'din-regular';
+    /*REMOVEME font-family: 'din-regular';*/
 	padding-top: 2px;
 }
 
 li.notification-warning-box {
     font-weight: bold;
     color: #333;
-    font-size: 13px;
+    /*REMOVEME font-size: 13px;*/
     text-indent: 10px;
 }
 
 li.notification-error-box {
     font-weight: bold;
     color: #cc0000;
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     text-indent: 10px;
 }
 
@@ -1135,8 +1133,8 @@ div.hint {
 
 /* Style for labels on standard form fields (ie. no error) */
 .formLabel {
-    font-family: "Helvetica Neue", Arial, sans-serif;
-    font-size:11px;
+    /*REMOVEME font-family: "Helvetica Neue", Arial, sans-serif;*/
+    /*REMOVEME font-size:11px;*/
     color: #333333;
     margin-bottom: 5px;
     font-weight: bold;
@@ -1144,8 +1142,8 @@ div.hint {
 }
 
 .formLabelPlain {
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size:11px;
+    /*REMOVEME font-family: Verdana, Arial, Helvetica, sans-serif;*/
+    /*REMOVEME font-size:11px;*/
     color: #333333;
     margin-bottom: 5px;
     font-weight: normal;
@@ -1161,14 +1159,14 @@ div.hint {
 .formLabelSubtext {
     padding-left:5px;
     font-weight: normal;
-    font-size: 9px;
+    /*REMOVEME font-size: 9px;*/
 }
 
 .bundleLabel {
 	position: relative;
 	
-    font-family: "DIN-Regular", sans-serif;
-    font-size:13px;
+    /*REMOVEME font-family: "DIN-Regular", sans-serif;*/
+    /*REMOVEME font-size:13px;*/
     color: #333;
     margin-bottom: 10px;
     padding-top: 5px;
@@ -1208,9 +1206,9 @@ div.hint {
 	text-align:left;
 	display:inline-block;
 	color:#888888;
-	font-family: helvetica, sans-serif;
+	/*REMOVEME font-family: helvetica, sans-serif;*/
 	font-weight:normal;
-	font-size:13px;
+	/*REMOVEME font-size:13px;*/
 	padding-top:2px;
 	padding-left:10px;
 	overflow: hidden;
@@ -1223,16 +1221,16 @@ div.hint {
 
 /* Style for labels on form fields where an error has occurred */
 .formLabelError {
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size:10px;
+    /*REMOVEME font-family: Verdana, Arial, Helvetica, sans-serif;*/
+    /*REMOVEME font-size:10px;*/
     color: #cc0000;
     margin-bottom: 5px;
     text-align: left;
 }
 
 .bundleLabelError {
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size:11px;
+    /*REMOVEME font-family: Verdana, Arial, Helvetica, sans-serif;*/
+    /*REMOVEME font-size:11px;*/
     color: #cc0000;
     margin-bottom: 5px;
     text-align: left;
@@ -1249,8 +1247,8 @@ div.hint {
 	display: inline-block;
 }
 #summary #title{
-    font-family: 'din-regular', Arial, Helvetica, sans-serif;
-    font-size:15px;
+    /*REMOVEME font-family: 'din-regular', Arial, Helvetica, sans-serif;*/
+    /*REMOVEME font-size:15px;*/
     color: #333;
     margin-bottom: 10px;
     padding-bottom:10px;
@@ -1260,7 +1258,7 @@ div.hint {
 }
 #summary .searchFormSelector {
 	margin-bottom: 3px; 
-	font-size: 11px;
+	/*REMOVEME font-size: 11px;*/
 	display:inline;
 }
 #summary #printButton{
@@ -1270,14 +1268,14 @@ div.hint {
 }
 #summary .unit{
     margin-bottom:10px;
-    font-size:13px;
+    /*REMOVEME font-size:13px;*/
     clear:both;
     border-bottom:1px solid #ccc;
     padding-bottom:5px;
 }
 #summary .heading{
-	font-family: 'DIN-Regular', Helvetica, sans-serif;
-	font-size: 13px;
+	/*REMOVEME font-family: 'DIN-Regular', Helvetica, sans-serif;*/
+	/*REMOVEME font-size: 13px;*/
 	color: #333333;
 	text-transform:uppercase;
 	text-align: left;
@@ -1289,7 +1287,7 @@ div.hint {
 #summary .summaryData{
 	width: 70%;
 	display: inline-block;
-	font-family: 'DIN-Regular', Helvetica, sans-serif;
+	/*REMOVEME font-family: 'DIN-Regular', Helvetica, sans-serif;*/
 	color:#333;
 }
 #summary .thumbnailsImageContainer{
@@ -1322,12 +1320,12 @@ div.hint {
 }
 
 .quick-search-form-container input {
-    font-size: 14px;
+    /*REMOVEME font-size: 14px;*/
     width: 150px;
 }
 
 .quick-search-form-container a {
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     padding: 0em 0em;
     border: none;
     text-decoration: none;
@@ -1337,7 +1335,7 @@ div.hint {
 }
 
 .quick-search-form-container a:hover {
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     background: none;
     background-color: transparent;
     outline: 0;
@@ -1356,22 +1354,22 @@ div.hint {
 	background-color:#333 !important;
 	background-image:none !important;
 	border-radius:4px !important;
-	font-size:12px !important;
+	/*REMOVEME font-size:12px !important;*/
 	border: 0px !important;
-	font-family: "helvetica neue", arial, sans-serif;
+	/*REMOVEME font-family: "helvetica neue", arial, sans-serif;*/
 	text-align:left !important; 
 }
 
 /*** Button styles ***/
 div.button{
     padding-left:10px;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
 }
 div.button a{
     color: #134959;
     text-decoration: none;
-    font-size: 11px;
-    font-family: Din-regular;
+    /*REMOVEME font-size: 11px;*/
+    /*REMOVEME font-family: Din-regular;*/
 }
 
 div.button a:hover{
@@ -1385,9 +1383,9 @@ div.button img{
 a.button{
     color: #1ab3c8;
     text-decoration: none;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
     font-weight:normal;
-    font-family: "DIN-Regular";
+    /*REMOVEME font-family: "DIN-Regular";*/
 }
 #leftNav a.button {
     color: #134959;
@@ -1405,7 +1403,7 @@ a.form-button, span.form-button, del.form-button{
     display:inline-block;
     cursor:pointer;
     border:none;
-    font-size:0;
+    /*REMOVEME font-size:0;*/
     line-height:0;
 
     /*
@@ -1442,9 +1440,9 @@ a.form-button span, span.form-button button, span.form-button input, del.form-bu
 	display: inline-block;
 	line-height: 1;
 	letter-spacing: 0 !important;
-	font-size: 12px !important;
+	/*REMOVEME font-size: 12px !important;*/
 	font-style: normal;
-	font-family: 'DIN-Regular';
+	/*REMOVEME font-family: 'DIN-Regular';*/
 	font-weight: bold;
 	background-color: transparent;
 	background-position: 100% 0;
@@ -1534,7 +1532,7 @@ html.safari span.form-button button:focus{
 #caTypeChangePanelControlButtons .saveButton {
 	width:100px;
 	float:left;
-	font-family: 'DIN-Regular';
+	/*REMOVEME font-family: 'DIN-Regular';*/
 	font-weight: bold;
 	vertical-align: top;
 	padding-top: 10px;
@@ -1644,20 +1642,20 @@ img.form-button-left{  /** used to align images to the left **/
 table.listtable {
     background-color: #CDCDCD;
     margin:10px 0pt 15px;
-    font-size: 8pt;
+    /*REMOVEME font-size: 8pt;*/
     width: 100%;
     text-align: left;
     clear:both;
 }   
 #caWatchedItemsList.listtable {
-	font-size:12px;
+	/*REMOVEME font-size:12px;*/
 } 
 
 
 /* table headers */
 
 table.listtable thead tr th {
-    font-size: 9pt;
+    /*REMOVEME font-size: 9pt;*/
     padding: 4px 18px 4px 4px;
     background-repeat: no-repeat;
     background-position: center right;
@@ -1680,7 +1678,7 @@ table.listtable thead tr th {
 #caSavedSearchesList.listtable thead tr th {
 	white-space: nowrap;
 	padding-top:8px;
-	font-family: 'DIN-Regular', helvetica, sans-serif;
+	/*REMOVEME font-family: 'DIN-Regular', helvetica, sans-serif;*/
 }
 th.list-header-unsorted {
     background-image: url('../graphics/icons/bg.gif');
@@ -1829,14 +1827,14 @@ div.control-box-middle-content {
     text-align: center;
     margin: 10px;
     float: left;
-    font-size:12px;
+    /*REMOVEME font-size:12px;*/
     font-weight: bold;
 }
 
 div.control-box-right-content {
     float: right;
     margin-top: 3px;
-    font-family: 'DIN-Regular';
+    /*REMOVEME font-family: 'DIN-Regular';*/
 }
 a.deleteButton span{
 	color: red;
@@ -1857,12 +1855,12 @@ div.delete-control-box {
 div.delete_warning_box {
     background:	url('../graphics/buttons/warning.png') no-repeat 10px 5px;
     text-indent: 42px;
-    font-size: 14px;
+    /*REMOVEME font-size: 14px;*/
 	color: red;
     padding-top: 10px;
     width: 400px;
     height: 26px;
-    font-family:'din-regular';
+    /*REMOVEME font-family:'din-regular';*/
 }
 
 div.delete_remapping_controls {
@@ -1917,12 +1915,12 @@ div.search-hier-browser-box {
 */
 
 .labelLocale {
-    font-size: 8px;
+    /*REMOVEME font-size: 8px;*/
 }
 
 .labelDisplay {
     padding-left:10px;
-    font-size: 13px;
+    /*REMOVEME font-size: 13px;*/
     margin:auto;
 }
 
@@ -1932,7 +1930,7 @@ div.search-hier-browser-box {
 .searchNav{
     text-align:center;
     margin:5px 0px 3px 0px;
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
 	color: #444;
 }
 .searchNav form{
@@ -1942,8 +1940,8 @@ div.search-hier-browser-box {
     margin:0px;
 }
 .searchNav form input[type="text"]{
-    font-size:9px;
-    font-family: Verdana, Arial, Helvetica, sans-serif;
+    /*REMOVEME font-size:9px;*/
+    /*REMOVEME font-family: Verdana, Arial, Helvetica, sans-serif;*/
     border:1px solid #999999;
     padding:0px;
     margin:0px;
@@ -1957,8 +1955,8 @@ div.search-hier-browser-box {
 }
 
 div.searchNoResults {
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size:14px;
+    /*REMOVEME font-family: Verdana, Arial, Helvetica, sans-serif;*/
+    /*REMOVEME font-size:14px;*/
     color: #134959;
     margin-bottom: 5px;
     font-weight: bold;
@@ -1966,8 +1964,8 @@ div.searchNoResults {
 }
 
 div.searchSuggestion {
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size:12px;
+    /*REMOVEME font-family: Verdana, Arial, Helvetica, sans-serif;*/
+    /*REMOVEME font-size:12px;*/
     font-weight: normal;
     font-style: italic;
     color: #134959;
@@ -1976,8 +1974,8 @@ div.searchSuggestion {
 }
 
 a.searchSuggestion {
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size:12px;
+    /*REMOVEME font-family: Verdana, Arial, Helvetica, sans-serif;*/
+    /*REMOVEME font-size:12px;*/
     color: #cc0000;
     margin-bottom: 5px;
     font-style: italic;
@@ -1986,16 +1984,16 @@ a.searchSuggestion {
 
 select.searchHistorySelect {
     width: 130px;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
 }
 
 select.savedSearchSelect {
     width: 130px;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
 }
 select.searchSetSelect {
     width: 130px;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
 }
 
 /* search options col */
@@ -2007,7 +2005,7 @@ select.searchSetSelect {
 }
 #searchOptionsCol .title{
     text-transform: uppercase;
-    font-size:14px;
+    /*REMOVEME font-size:14px;*/
     font-weight:normal;
     color: #828282;
     margin:0px 0px 5px 0px;
@@ -2026,7 +2024,7 @@ select.searchSetSelect {
     text-decoration:none;
     text-transform:uppercase;
     color:#828282;
-    font-size:9px;
+    /*REMOVEME font-size:9px;*/
 
 }
 #hideOptions{
@@ -2035,7 +2033,7 @@ select.searchSetSelect {
     text-decoration:none;
     text-transform:uppercase;
     color:#828282;
-    font-size:12px;
+    /*REMOVEME font-size:12px;*/
 }
 
 #saveOptions{
@@ -2044,18 +2042,18 @@ select.searchSetSelect {
     text-decoration:none;
     text-transform:uppercase;
     color:#333;
-    font-size:12px;
+    /*REMOVEME font-size:12px;*/
 }
 
 #searchOptionsBox{
     clear:both;
     margin: 0px 0px 0px 0px;
     display:none;
-    font-size:12px;
+    /*REMOVEME font-size:12px;*/
     color:#828282;
     margin: 0px 0px 0px 0px;
 	display: none;
-	font-size: 14px;
+	/*REMOVEME font-size: 14px;*/
 	color: #333;
 	line-height: 1.4em;
 	position: absolute;
@@ -2092,13 +2090,13 @@ select.searchSetSelect {
     text-decoration:none;
     text-transform:uppercase;
     color:#828282;
-    font-size:9px;
+    /*REMOVEME font-size:9px;*/
 }
 #searchRefineBox{
     clear:both;
     margin: 10px 0px 10px 0px;
     display:none;
-	font-size: 12px;
+	/*REMOVEME font-size: 12px;*/
 	color: #333;
 	line-height: 1.4em;
 	width: 100%;
@@ -2118,7 +2116,7 @@ select.searchSetSelect {
 }
 #searchRefineBox .startBrowsingBy{
 	padding-bottom: 10px;
-	font-family: 'din-regular';
+	/*REMOVEME font-family: 'din-regular';*/
 	text-transform: uppercase;
 	padding-left:0px;
 }
@@ -2140,7 +2138,7 @@ a#hideRefine {
 	text-decoration: none;
 	text-transform: uppercase;
 	color: #333;
-	font-size: 12px;
+	/*REMOVEME font-size: 12px;*/
 	border: 0px;
 	text-align: right;
 	padding-right: 10px;
@@ -2166,7 +2164,7 @@ a#hideRefine img {
 }
 #searchRefineParameters a.button{
     color: #666666;
-    font-size:11px;
+    /*REMOVEME font-size:11px;*/
     text-decoration:underline;
     margin:0px;
     padding:0px;
@@ -2199,7 +2197,7 @@ a#hideRefine img {
     text-decoration:none;
     text-transform:uppercase;
     color:#828282;
-    font-size:9px;
+    /*REMOVEME font-size:9px;*/
 
 }
 #hideTools {
@@ -2209,11 +2207,11 @@ a#hideRefine img {
     clear:both;
     margin: 0px 0px 0px 0px;
     display:none;
-    font-size:12px;
+    /*REMOVEME font-size:12px;*/
     color:#828282;
     margin: 0px 0px 0px 0px;
 	display: none;
-	font-size: 14px;
+	/*REMOVEME font-size: 14px;*/
 	color: #333;
 	line-height: 1.4em;
 	position: absolute;
@@ -2240,7 +2238,7 @@ a#hideRefine img {
 
 select.searchToolsSelect {
     width: 165px;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
 }
 /* Set Tools */
 
@@ -2260,7 +2258,7 @@ select.searchToolsSelect {
 	margin-bottom:15px;
 }
 #searchSetTools .header {
-	font-family: 'din-regular', helvetica, sans-serif;
+	/*REMOVEME font-family: 'din-regular', helvetica, sans-serif;*/
 	font-weight:bold;
 }
 #searchSetTools a{
@@ -2274,7 +2272,7 @@ select.searchToolsSelect {
 	text-align: left;
 	margin-bottom: 15px;
 	margin-top: -14px;
-	font-size: 10px;
+	/*REMOVEME font-size: 10px;*/
 }
 
 #caCreateSetFromResultsIndicator, #caAddToSetIDIndicator {
@@ -2292,7 +2290,7 @@ select.searchToolsSelect {
 }
 .qlButtonContainerThumbnail{
 	width: 76px;
-	font-size: 11px;
+	/*REMOVEME font-size: 11px;*/
 	padding: 5px 5px 2px 5px;
 	background-color: #eee;
 	position: absolute;
@@ -2306,7 +2304,7 @@ select.searchToolsSelect {
 }
 .qlButtonContainerFull{
 	width: 76px;
-	font-size: 11px;
+	/*REMOVEME font-size: 11px;*/
 	padding: 5px 5px 2px 5px;
 	background-color: #eee;
 	position: absolute;
@@ -2319,12 +2317,12 @@ select.searchToolsSelect {
 	box-shadow: 0 0 5px #888;
 }
 .qlButtonContainerThumbnail a, .qlButtonContainerFull a{
-	font-size: 11px;
+	/*REMOVEME font-size: 11px;*/
 	text-decoration: none;
 	text-transform: uppercase;
 	font-weight: bold;
 	color: #333;
-	font-family: 'din-regular';
+	/*REMOVEME font-family: 'din-regular';*/
 	cursor: pointer;
 }
 .qlButtonContainerThumbnail a:hover, .qlButtonContainerFull a:hover{
@@ -2347,25 +2345,25 @@ select.searchToolsSelect {
 .thumbCaption {
 	width:185px; 
 	overflow:hidden;
-	font-size:12px;
+	/*REMOVEME font-size:12px;*/
 }
 .thumbCaption a{
 	text-transform: underline;
 }
 .objectFullText{
 	text-align: left;
-	font-size: 13px;
+	/*REMOVEME font-size: 13px;*/
 	line-height: 1.7em;
 }
 .objectFullText .formLabel {
-	font-family: 'DIN-Regular', Helvetica, sans-serif;
-	font-size: 13px;
+	/*REMOVEME font-family: 'DIN-Regular', Helvetica, sans-serif;*/
+	/*REMOVEME font-size: 13px;*/
 	border-bottom: 1px solid #333;
 }
 .objectFullTextTitle{
 	text-align: left;
-	font-family: "Helvetica Neue", sans-serif;
-	font-size: 15px;
+	/*REMOVEME font-family: "Helvetica Neue", sans-serif;*/
+	/*REMOVEME font-size: 15px;*/
 	color: #134959;
 	margin-top: 10px;
 	font-weight: bold;
@@ -2536,7 +2534,7 @@ table.representationAnnotationListItem {
 
 #caMediaPanelProgress {
     display: none;
-    font-size:36px;
+    /*REMOVEME font-size:36px;*/
     font-weight: bold;
     text-align: center;
     width: 300px;
@@ -2546,7 +2544,7 @@ table.representationAnnotationListItem {
 div.caMediaOverlayControls {
     background-color: #000;
     color:#FFF;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
     text-align:center;
     position:absolute;
     padding: 10px 0px 10px 0px;
@@ -2561,7 +2559,7 @@ div.caMediaOverlayControls {
 div.caMediaOverlayControls a{
     text-decoration:none;
     font-weight:bold;
-    font-size:16px;
+    /*REMOVEME font-size:16px;*/
     color:#FFF;
 }
 div.caMediaOverlayControls a:hover{
@@ -2584,7 +2582,7 @@ div.caMediaOverlayControls .download{
     margin-left:20px;
 }
 div.caMediaOverlayControls .objectInfo{
-    font-size:11px;
+    /*REMOVEME font-size:11px;*/
     color:#FFF;
     padding-left:10px;
     text-align:left;
@@ -2593,7 +2591,7 @@ div.caMediaOverlayControls .objectInfo{
 }
 
 div.caMediaOverlayControls .repNav {
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     width: 100px;
     float:left;
 }
@@ -2630,7 +2628,7 @@ div.caMediaOverlayControls .caRepTools {
     margin-top: 4px;
     width: 290px;
     text-align: center;
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
 }
 
 img.caRepToolsRotateControlButton {
@@ -2659,7 +2657,7 @@ img.caRepToolsRotateControlButton:hover {
     display: none;
     padding: 0px;
 
-    font-size:14px;
+    /*REMOVEME font-size:14px;*/
     font-weight: bold;
     text-align: center;
 }
@@ -2703,7 +2701,7 @@ img.caRepToolsRotateControlButton:hover {
 }
 #quickLookPanel #close a{
     text-decoration:none;
-    font-size:16px;
+    /*REMOVEME font-size:16px;*/
 }
 
 #quickLookPanelContentArea {
@@ -2747,7 +2745,7 @@ table.attributeListItem {
 
 .editorBatchModeControl {
     float: right;
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     font-weight: normal;
 }
 
@@ -2760,12 +2758,12 @@ table.attributeListItem {
 }
 
 .editorBatchModeControl select {
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     font-weight: normal;
 }
 
 #editorFieldListHeader {
-    font-size: 13px;
+    /*REMOVEME font-size: 13px;*/
     font-weight: bold;
     text-align: center;
     color: #666;
@@ -2792,17 +2790,17 @@ table.attributeListItem {
 }
 
 a.editorFieldListLink {
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     text-decoration: none;
-    font-family: Verdana, Arial, Helvetica, sans-serif;
+    /*REMOVEME font-family: Verdana, Arial, Helvetica, sans-serif;*/
     line-height: 18px;
 }
 
 #editorFieldListContentArea {
     overflow: auto;
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     text-decoration: none;
-    font-family: Verdana, Arial, Helvetica, sans-serif;
+    /*REMOVEME font-family: Verdana, Arial, Helvetica, sans-serif;*/
     line-height: 18px;
 
     width: 100%;
@@ -2829,7 +2827,7 @@ div.editorBundlePrintControl {
 }
 
 div.editorBundlePrintControl select {
-    font-size: 9px;
+    /*REMOVEME font-size: 9px;*/
     font-weight: normal;
     height: 17px;
     vertical-align: top;
@@ -2842,14 +2840,14 @@ div.editorBundleValuePrintControl {
 }
 
 div.editorBundleValuePrintControl select {
-    font-size: 9px;
+    /*REMOVEME font-size: 9px;*/
     font-weight: normal;
     height: 17px;
     vertical-align: top;
 }
 
 #caHierarchyOverviewHeader {
-    font-size: 13px;
+    /*REMOVEME font-size: 13px;*/
     font-weight: bold;
     text-align: left;
     color: #666;
@@ -2878,17 +2876,17 @@ div.editorBundleValuePrintControl select {
 }
 
 a.caHierarchyOverviewLink {
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     text-decoration: none;
-    font-family: Verdana, Arial, Helvetica, sans-serif;
+    /*REMOVEME font-family: Verdana, Arial, Helvetica, sans-serif;*/
     line-height: 18px;
 }
 
 #caHierarchyOverviewContentArea {
     overflow: auto;
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     text-decoration: none;
-    font-family: Verdana, Arial, Helvetica, sans-serif;
+    /*REMOVEME font-family: Verdana, Arial, Helvetica, sans-serif;*/
     line-height: 18px;
 
     width: 100%;
@@ -2921,31 +2919,31 @@ div.caObjectRepresentationMetadata {
 	margin-top:5px;
 }
 div.caObjectRepresentationMetadata h3 {
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     font-weight: bold;
     display: inline;
 }
 
 div.caObjectRepresentationMD5Display h3 {
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     font-weight: bold;
     display: inline;
 }
 
 div.caObjectRepresentationSourceDisplay h3 {
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     font-weight: bold;
     display: inline;
 }
 
 div.caObjectRepresentationListInfoSubDisplay {
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     font-weight: normal;
     padding-top: 3px;
 }
 
 div.caObjectRepresentationListInfoSubDisplay h3 {
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     font-weight: bold;
     display: inline;
 }
@@ -2956,20 +2954,20 @@ a.caObjectRepresentationListInfoSubDisplayFilename {
 }
 
 div.caObjectRepresentationMetadataDisplay {
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     font-weight: normal;
 }
 
 a.caObjectRepresentationMetadataButton {
     text-decoration: none;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
     font-weight: bold;
     margin-right: 20px;
 }
 
 div.caObjectRepresentationMetadata {
 	background: #fbfbfb;
-	font-size: 10px;
+	/*REMOVEME font-size: 10px;*/
 	width: 714px;
 	height: 200px;
 	overflow: auto;
@@ -2985,13 +2983,13 @@ div.caObjectRepresentationMetadata {
 
 span.caObjectRepresentationPrimaryDisplay {
     color: #cc0000;
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     font-weight: bold;
 }
 
 div.caObjectRepresentationPrimaryIndicator {
     color: #cc0000;
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     font-weight: bold;
     font-style: italic;
     display: none;
@@ -3002,7 +3000,7 @@ div.caObjectRepresentationPrimaryIndicator {
 }
 div.caObjectRepresentationChangeIndicator {
     color: #cc0000;
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     font-weight: bold;
     font-style: italic;
     display: none;
@@ -3023,13 +3021,13 @@ div.caObjectRepresentationListInfo {
     margin:0px;
 
     font-weight:bold;
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     color:#000000;
 }
 
 div.caObjectRepresentationListInfo a {
     font-weight:bold;
-    font-size: 14px;
+    /*REMOVEME font-size: 14px;*/
     color:#000000;
     text-decoration: none;
 }
@@ -3037,7 +3035,7 @@ div.caObjectRepresentationListInfo a {
 div.caObjectRepresentationListActionButton {
     margin: 10px 0 0 0;
     font-weight: normal;
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
 }
 .caObjectRepresentationListActionButton img{
 	margin-right:5px;
@@ -3049,23 +3047,23 @@ div.caObjectRepresentationListActionButton span a {
 
 div.caObjectRepresentationDetailEditorElement {
     float: left;
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     margin-right: 5px;
 }
 
 div.caObjectRepresentationDetailEditorElement div select{
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
 }
 
 div.caObjectRepresentationDetailEditorHeading {
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
     font-weight: bold;
 }
 
 div.caObjectRepresentationDetailEditorContainer{
     display: none;
     width: 400px;
-	font-size: 10px;
+	/*REMOVEME font-size: 10px;*/
 	overflow: auto;
 	padding: 8px;
 	line-height: 14px;
@@ -3115,7 +3113,7 @@ div.caMediaOverlayMultifileFileList {
 
 div.caMediaOverlayMultifileMetadata {
     background: #ffffff;
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     overflow: auto;
     width: 565px;
     height: 515px;
@@ -3139,7 +3137,7 @@ div.caMediaOverlayMultifileMetadata {
 }
 
 .filename {
-    font-size:16px;
+    /*REMOVEME font-size:16px;*/
     font-weight: bold;
     padding:5px;
 }
@@ -3174,14 +3172,14 @@ div.attributeMediaInfo {
 }
 
 .caMappingBase {
-    font-size:11px;
-    font-family: Verdana, Arial, Helvetica, sans-serif;
+    /*REMOVEME font-size:11px;*/
+    /*REMOVEME font-family: Verdana, Arial, Helvetica, sans-serif;*/
     font-weight:normal;
 }
 
 .caMappingGroupInfo {
-    font-size:11px;
-    font-family: Verdana, Arial, Helvetica, sans-serif;
+    /*REMOVEME font-size:11px;*/
+    /*REMOVEME font-family: Verdana, Arial, Helvetica, sans-serif;*/
     font-weight:normal;
     text-align: left;
 }
@@ -3199,14 +3197,14 @@ input.caMappingBase {
 }
 
 .externalMappingBase {
-    font-size:11px;
-    font-family: Verdana, Arial, Helvetica, sans-serif;
+    /*REMOVEME font-size:11px;*/
+    /*REMOVEME font-family: Verdana, Arial, Helvetica, sans-serif;*/
     font-weight:normal;
 }
 
 .uiMappingHeader {
-    font-size: 15px;
-    font-family: Verdana, Arial, Helvetica, sans-serif;
+    /*REMOVEME font-size: 15px;*/
+    /*REMOVEME font-family: Verdana, Arial, Helvetica, sans-serif;*/
     font-weight: bold;
 }
 
@@ -3216,8 +3214,8 @@ input.externalMappingBase {
 
 /*** FORM ELEMENTS ***/
 input[type="text"], input[type="textarea"], textarea,  input[type="password"] {
-    font-size:12px;
-    font-family: Verdana, Arial, Helvetica, sans-serif;
+    /*REMOVEME font-size:12px;*/
+    /*REMOVEME font-family: Verdana, Arial, Helvetica, sans-serif;*/
     border:1px solid #ddd;
     padding:3px;
     font-weight:normal;
@@ -3246,8 +3244,8 @@ textarea:focus{
 }
 
 #caQuickSearchFormText {
-    font-size:12px;
-    font-family: Verdana, Arial, Helvetica, sans-serif;
+    /*REMOVEME font-size:12px;*/
+    /*REMOVEME font-family: Verdana, Arial, Helvetica, sans-serif;*/
     padding:1px 3px 3px 3px;
     font-weight:normal;
     border: 0px;
@@ -3375,7 +3373,7 @@ div.hierarchyBrowserLevelVertical {
     background: #FFFFFF;
     overflow: none;
     text-align: center;
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
 }
 
 .hierarchyBrowserLevel ul {
@@ -3446,7 +3444,7 @@ div.hierarchyBrowserSearchBar {
 }
 
 input.hierarchyBrowserSearchBar {
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
 }
 
 ul.explore {
@@ -3489,7 +3487,7 @@ a.exploreSelected {
 
 .hierarchyBrowserHelpText {
     padding: 5px;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
     font-style: italic;
 }
 
@@ -3497,8 +3495,8 @@ a.exploreSelected {
     text-align:right;
     font-style:italic;
     color:#999999;
-    font-family:helvetica, sans-serif;
-    font-size:11px;
+    /*REMOVEME font-family:helvetica, sans-serif;*/
+    /*REMOVEME font-size:11px;*/
     margin-top:-8px;
 }
 
@@ -3561,13 +3559,13 @@ a.exploreSelected {
     float:left;
     margin: -12px 100px 0px 0px;
     color:#333333;
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     position:relative;
 }
 .hierarchyPanelHeader { /*  used in browse and details with browse */
     position: relative;
     margin-bottom: 15px;
-    font-size:12px;
+    /*REMOVEME font-size:12px;*/
     color:#333333;
     font-weight:normal;
     height: 20px;
@@ -3576,7 +3574,7 @@ a.exploreSelected {
 }
 .hierarchyPanelHeader a { /*  used in browse and details with browse */
     text-decoration:none;
-    font-size:14px;
+    /*REMOVEME font-size:14px;*/
     color:#1ab3c8;
     font-weight:normal;
     padding-right:4px;
@@ -3653,7 +3651,7 @@ div.directoryBrowserLevelVertical {
     background: #FFFFFF;
     overflow: none;
     text-align: center;
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
 }
 
 .directoryBrowserLevel ul {
@@ -3751,16 +3749,16 @@ span.directoryBrowserCurrentSelectionText {
 }
 
 div.quickSearchHeader {
-    font-size: 14px;
+    /*REMOVEME font-size: 14px;*/
     font-weight: bold;
-    font-family: 'din-regular', helvetica, sans-serif;
+    /*REMOVEME font-family: 'din-regular', helvetica, sans-serif;*/
 }
 div.quickSearchFullResultsLink {
     float:right;
     padding-top:2px;
 }
 div.quickSearchFullResultsLink a {
-    font-size:12px;
+    /*REMOVEME font-size:12px;*/
     font-weight:normal;
     text-decoration:none;
 }
@@ -3794,7 +3792,7 @@ a.quickSearchResultHeader {
     font-color: #333;
 }
 div.quickSearchResultHeader {
-    font-size: 14px;
+    /*REMOVEME font-size: 14px;*/
     font-weight: bold;
     margin:10px 0px 10px 0px;
 	padding: 7px 5px 6px 10px;
@@ -3803,7 +3801,7 @@ div.quickSearchResultHeader {
     border-radius:4px !important;
     -webkit-border-radius:4px !important;
     -moz-border-radius:4px !important;    
-    font-family: 'din-regular', helvetica, sans-serif;
+    /*REMOVEME font-family: 'din-regular', helvetica, sans-serif;*/
 }
 .quickSearchResultHeader img{
 	height:16px;
@@ -3816,7 +3814,7 @@ div.quickSearchResultHeader {
 	width:16px;
 }
 div.quickSearchNoResults {
-    font-size: 14px;
+    /*REMOVEME font-size: 14px;*/
     font-weight: bold;
     color: #999;
     margin: 10px 0px 10px 0px;
@@ -3826,10 +3824,10 @@ div.quickSearchNoResults {
     border-radius:4px !important;
     -webkit-border-radius:4px !important;
     -moz-border-radius:4px !important;    
-    font-family: 'din-regular', helvetica, sans-serif;
+    /*REMOVEME font-family: 'din-regular', helvetica, sans-serif;*/
 }
 .quickSearchResultHide {
-    font-size: 9px;
+    /*REMOVEME font-size: 9px;*/
     color: #999;
     margin:0px 4px 3px 0px;
     text-decoration: none;
@@ -3847,11 +3845,11 @@ div.quickSearchNoResults {
 }
 .startBrowsingBy{
 	color: #333;
-	font-size: 15px;
+	/*REMOVEME font-size: 15px;*/
 	padding: 7px 5px 3px 10px;
 	margin-left: -10px;
 	margin-bottom: 5px;
-	font-family: Helvetica, sans-serif;
+	/*REMOVEME font-family: Helvetica, sans-serif;*/
 	font-weight:bold;
 }
 .facetHeadingLink{
@@ -3870,12 +3868,12 @@ div.quickSearchNoResults {
 	background-color:#aaa;
 }
 .facetHeadingLink a{
-	font-size: 12px;
+	/*REMOVEME font-size: 12px;*/
 	font-weight:bold;
 	text-decoration: none;
 	color: #333;
 	text-transform: uppercase;
-	font-family: 'din-regular';
+	/*REMOVEME font-family: 'din-regular';*/
 }
 .facetHeadingLink a:hover{
     color:#000;
@@ -3901,11 +3899,11 @@ div.quickSearchNoResults {
 }
 #refineBrowse .refineHeading{
 	color: #333;
-	font-size: 15px;
+	/*REMOVEME font-size: 15px;*/
 	padding: 7px 5px 3px 10px;
 	margin-left: -10px;
 	margin-bottom: 5px;
-	font-family: Helvetica, sans-serif;
+	/*REMOVEME font-family: Helvetica, sans-serif;*/
 	font-weight:bold;
 	display: block;
 }
@@ -3922,7 +3920,7 @@ div.quickSearchNoResults {
 	-webkit-border-radius:4px;
 	color:#333;
 	text-transform:uppercase;
-	font-family: 'DIN-Regular', Helvetica, sans-serif;
+	/*REMOVEME font-family: 'DIN-Regular', Helvetica, sans-serif;*/
 	font-weight: bold;
 }
 #refineBrowse a.facetLink.active{
@@ -3937,7 +3935,7 @@ div.quickSearchNoResults {
 #browseCriteria{
     margin:0px;
     color:#828282;
-    font-size:12px;
+    /*REMOVEME font-size:12px;*/
     float: left;
 	width: 660px;
 	padding-bottom:10px;
@@ -3945,13 +3943,13 @@ div.quickSearchNoResults {
 #browseCriteria .criteriaHeading, #searchRefineParameters .criteriaHeading{
     font-weight:bold;
     color:#333;
-    font-size:12px;
+    /*REMOVEME font-size:12px;*/
     line-height: 27px;
 }
 /*#browseCriteria a.close{
     text-transform:uppercase;
     color: #FFFFFF;
-    font-size:9px;
+    /*REMOVEME font-size:9px;*/
     text-decoration:none;
     padding: 2px 4px 2px 4px;
     margin:0px 5px 0px 3px;
@@ -3971,7 +3969,7 @@ div.quickSearchNoResults {
     border: 1px solid #ccc;
     padding:4px 5px 4px 5px;
     text-transform:uppercase;
-    font-size:11px;
+    /*REMOVEME font-size:11px;*/
     line-height: 27px;
     white-space: nowrap;
 }
@@ -3988,7 +3986,7 @@ div.quickSearchNoResults {
 	padding:5px 0px 5px 5px;
 	width:auto;
 	display:inline;
-	font-size:11px;
+	/*REMOVEME font-size:11px;*/
 	margin-right: 5px;
 	line-height: 27px;
 }
@@ -4037,15 +4035,15 @@ h2.browse {
 	margin: 0px;
 	padding: 0px 10px 5px 0px;
 	float: left;
-	font-family: 'DIN-Regular', helvetica, sans-serif;
+	/*REMOVEME font-family: 'DIN-Regular', helvetica, sans-serif;*/
 	color: #333;
-	font-size: 16px;
+	/*REMOVEME font-size: 16px;*/
 	text-transform: uppercase;
 }
 .jumpToGroup {
 	float:left;
-	font-family: 'DIN-Regular', helvetica, sans-serif;
-	font-size:14px;
+	/*REMOVEME font-family: 'DIN-Regular', helvetica, sans-serif;*/
+	/*REMOVEME font-size:14px;*/
 }
 .jumpToGroup a{
 	text-decoration:none;
@@ -4053,8 +4051,8 @@ h2.browse {
 	white-space: nowrap;
 }
 #browseFacetGroupingControls {
-	font-family: 'DIN-Regular', helvetica, sans-serif;
-	font-size:13px;
+	/*REMOVEME font-family: 'DIN-Regular', helvetica, sans-serif;*/
+	/*REMOVEME font-size:13px;*/
 	padding: 10px 5px 0px 0px;
 }
 #browseFacetGroupingControls a{
@@ -4092,11 +4090,11 @@ table.browseSelectPanelListTable {
     border-spacing:10px;
 }
 div.browseSelectPanelListGroupHeading {
-	font-size: 15px;
+	/*REMOVEME font-size: 15px;*/
 	font-weight: bold;
 	padding-top: 5px;
 	margin-bottom: 10px;
-	font-family: 'DIN-Regular', helvetica, sans-serif;
+	/*REMOVEME font-family: 'DIN-Regular', helvetica, sans-serif;*/
 	background-color: #1ab3c8;
 	padding-left: 10px;
 	border-radius: 4px;
@@ -4120,25 +4118,25 @@ a.browseSelectPanelButton img{
 }
 
 a.browseSelectPanelLink {
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     text-decoration: none;
 }
 
 .browseSelectPanelFacetGroup {
     text-decoration: none;
-    font-size: 14px;
+    /*REMOVEME font-size: 14px;*/
 }
 
 .browseSelectPanelFacetGroupSelected {
     font-weight: bold;
     font-style: italic;
     text-decoration: none;
-    font-size: 14px;
+    /*REMOVEME font-size: 14px;*/
 }
 
 div.browseHeading {
     font-weight: bold;
-    font-size: 14px;
+    /*REMOVEME font-size: 14px;*/
     float: left;
 }
 
@@ -4175,7 +4173,7 @@ div.browseCriterion {
 
 .searchFormElementEditorGroupHeading {
     color: #000000;
-    font-size: 14px;
+    /*REMOVEME font-size: 14px;*/
     margin-bottom: 5px;
 }
 
@@ -4195,7 +4193,7 @@ div.browseCriterion {
 div.searchFormEditorElementList {
     margin-left: 25px;
     line-height: 25px;
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     color: #333333;
     font-weight: normal;
 }
@@ -4254,23 +4252,23 @@ div.searchFormElementSettingsMessage {
 
 .searchFormSelector {
     margin-bottom: 3px;
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
 }
 
 select.searchFormSelector {
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
 }
 
 #advancedSearchFormContainer div.control-box {
 	margin-top:10px;
 }
 #advancedSearchFormContainer .saveAs {
-	font-size:12px;
+	/*REMOVEME font-size:12px;*/
 	color:#333	
 }
 #advancedSearchFormContainer .saveAs a{
 	font-weight:bold;
-	font-size:12px;
+	/*REMOVEME font-size:12px;*/
 }
 
 /* Search form "group mode" */
@@ -4313,8 +4311,8 @@ div.searchFormLineModeContainer {
 }
 
 div.searchFormLineModeElementLabel {
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size:12px;
+    /*REMOVEME font-family: Verdana, Arial, Helvetica, sans-serif;*/
+    /*REMOVEME font-size:12px;*/
     color: #333333;
     margin-bottom: 5px;
     font-weight: bold;
@@ -4322,8 +4320,8 @@ div.searchFormLineModeElementLabel {
 }
 
 .searchFormLineModeElementSubLabel {
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size:10px;
+    /*REMOVEME font-family: Verdana, Arial, Helvetica, sans-serif;*/
+    /*REMOVEME font-size:10px;*/
     color: #333333;
     margin-bottom: 5px;
     font-weight: normal;
@@ -4335,7 +4333,7 @@ div.searchFormLineModeElementLabel {
 div.navBreadCrumbContainer {
     margin: 5px 0px 10px 0px;
     clear:both;
-    font-family: 'DIN-Regular';
+    /*REMOVEME font-family: 'DIN-Regular';*/
 }
 div.navBreadCrumbs {
     background-color: #eee;
@@ -4345,7 +4343,7 @@ div.navBreadCrumbs {
     float:left;
     vertical-align: bottom;
     color: #333;
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     height:19px;
 
     background-color:#D1D3D4;
@@ -4354,7 +4352,7 @@ div.navBreadCrumbs {
     float:left;
     vertical-align: bottom;
     color: #333;
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     height:19px;
     background-color: #eee;
 }
@@ -4391,7 +4389,7 @@ span.logChangeLabel {
 
 .displayItemDiv {
     background-color: #DDDDDD;
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
 }
 
 ul#displayItemList {
@@ -4405,7 +4403,7 @@ ul#displayItemList {
     overflow: hidden;
     position: absolute;
     background: url(../graphics/colorpicker/colorpicker_background.png);
-    font-family: Arial, Helvetica, sans-serif;
+    /*REMOVEME font-family: Arial, Helvetica, sans-serif;*/
     display: none;
 }
 .colorpicker_color {
@@ -4473,8 +4471,8 @@ ul#displayItemList {
     background-color: transparent;
     border: 1px solid transparent;
     position: absolute;
-    font-size: 10px;
-    font-family: Arial, Helvetica, sans-serif;
+    /*REMOVEME font-size: 10px;*/
+    /*REMOVEME font-family: Arial, Helvetica, sans-serif;*/
     color: #898989;
     top: 4px;
     right: 11px;
@@ -4601,7 +4599,7 @@ div.bundleDisplayEditorPlacement {
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
     background-size:14px 14px;
-    font-size:12px;
+    /*REMOVEME font-size:12px;*/
 }
 div.bundleDisplayEditorPlacement img{
 	width:16px;
@@ -4622,7 +4620,7 @@ span.bundleDisplayEditorPlacementListItemTitle {
 	padding:0px 0px 5px 0px;
 	color:#fff;
 	font-weight:normal;
-	font-size:14px;
+	/*REMOVEME font-size:14px;*/
 	text-align:left;
 }
 .elementSettingsUI {
@@ -4678,7 +4676,7 @@ div.bundleDisplayPlacementEditorSettingsMessage {
 }
 
 div.bundleDisplayTemplateKey {
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     font-weight: normal;
     color: #000000;
 }
@@ -4689,7 +4687,7 @@ div.bundleDisplayElementSettingsControl {
 }
 
 .bundleDisplayElementBundleName {
-    font-size: 9px;
+    /*REMOVEME font-size: 9px;*/
     font-style: italic;
 }
 
@@ -4704,7 +4702,7 @@ table.uiScreenItem {
 }
 
 .uiScreenInfo {
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     font-weight: normal;
     color: #000000;
 }
@@ -4753,29 +4751,29 @@ table.uiScreenItem {
     padding: 3px;
 }
 #dashboardWidgetPanelContent {
-    font-family:arial;
-    font-size: 16px;
+    /*REMOVEME font-family:arial;*/
+    /*REMOVEME font-size: 16px;*/
     height: 350px;
     overflow-x: hidden;
     overflow-y: auto;
 }
 #dashboardWidgetPanelContent a{
-	font-family: 'din-regular', helvetica, sans-serif;
-	font-size: 14px;
+	/*REMOVEME font-family: 'din-regular', helvetica, sans-serif;*/
+	/*REMOVEME font-size: 14px;*/
     text-decoration:none;
 }
 #dashboardWidgetPanelContent img {
 	padding-right:3px;
 }
 #dashboardWidgetPanelTitle {
-	font-family: 'din-regular', helvetica, sans-serif;
-	font-size: 18px;
+	/*REMOVEME font-family: 'din-regular', helvetica, sans-serif;*/
+	/*REMOVEME font-size: 18px;*/
 	margin-bottom: 15px;
 	font-weight: bold;
 }
 #widgetDescription {
     color:#999;
-    font-size:12px;
+    /*REMOVEME font-size:12px;*/
     margin:0px 0px 10px 18px;
 }
 
@@ -4794,12 +4792,12 @@ table.uiScreenItem {
 .dashboard a {text-decoration: none;}
 
 #dashboardControls {text-align: right; padding:0px 0px 0px 10px;}
-a.dashboardControl {font-weight:normal; padding-right:10px; text-decoration:none; font-size:11px; color: #777;}
+a.dashboardControl {font-weight:normal; padding-right:10px; text-decoration:none; /*REMOVEME font-size:11px;*/ color: #777;}
 
 .portlet { margin:.5em 1em 1.5em 1em; /*background-color: #f8f8f8; border: 3px #ddd solid; padding:0px 0px .3em .3em*/}
 .portlet-header {
-	font-family: "DIN-Regular", Arial, Helvetica, sans-serif;
-	font-size: 13px;
+	/*REMOVEME font-family: "DIN-Regular", Arial, Helvetica, sans-serif;*/
+	/*REMOVEME font-size: 13px;*/
 	color: #333;
 	margin-bottom: 0px;
 	padding: 7px 0px 2px 10px;
@@ -4825,7 +4823,7 @@ a.dashboardControl {font-weight:normal; padding-right:10px; text-decoration:none
 	padding: 20px;
 	margin: 10px;
 	line-height: 1.5em;
-	font-size: 13px;
+	/*REMOVEME font-size: 13px;*/
 	display: none;
 	background-color: #f7f7f7;
 	color: #333;
@@ -4835,7 +4833,7 @@ a.dashboardControl {font-weight:normal; padding-right:10px; text-decoration:none
     color:#c6c6c6;
     margin: 5px 2px 2px 2px;
     padding: 5px 5px 100px 5px;
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     line-height: 100px;
     text-align: center;
     display: none;
@@ -4882,7 +4880,7 @@ a.dashboardRemoveWidget {
 }
 .dashboardWidgetContentContainer ul li a{
     font-weight: normal;
-	font-size: 12px;
+	/*REMOVEME font-size: 12px;*/
 }
 
 
@@ -4911,16 +4909,16 @@ a.dashboardRemoveWidget {
     background-color:#f2f2f2;
 }
 .dashboardWidgetHeading{
-    font-size:14px;
+    /*REMOVEME font-size:14px;*/
     margin:0px 10px 10px 0px;
     line-height:1.3em;
 }
 .dashboardWidgetClock{
 	color: #1ab3c8;
-	font-size: 48px;
+	/*REMOVEME font-size: 48px;*/
 	font-weight: bold;
 	text-align: center;
-	font-family: 'din-regular', arial, sans-serif;
+	/*REMOVEME font-family: 'din-regular', arial, sans-serif;*/
 	padding: 10px 5px 5px 5px;
 }
 
@@ -4947,7 +4945,7 @@ a.dashboardRemoveWidget {
 .mapCoordinateDisplay {
     background-color: transparent;
     border: none;
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
 
     width: 688px;
     padding: 3px;
@@ -4966,12 +4964,12 @@ a.dashboardRemoveWidget {
 
 /* Classes used in access control user role administration */
 span.roleCheckAllNoneButtons {
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     font-weight: normal;
 }
 
 a.roleCheckAllNoneButton {
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     font-weight: normal;
 }
 
@@ -5005,18 +5003,18 @@ input.addItemToSetControlInThumbnails {
     padding: 5px;
     background-color: #eeeeee;
     font-weight: normal;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
 }
 
 .objectRepresentationMediaDisplayDerivativeHeader {
     margin-top: 5px;
     font-weight: bold;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
 }
 
 .objectRepresentationMediaDisplayDerivativeHelpText {
     font-weight: normal;
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     padding: 5px;
     margin: 0px 15px 0px 15px;
 }
@@ -5030,7 +5028,7 @@ div.jGrowl {
     padding: 			10px;
     z-index: 			9999;
     color: 				#fff;
-    font-size: 			12px;
+    /*REMOVEME font-size: 			12px;*/
 }
 
 /** Special IE6 Style Positioning **/
@@ -5122,8 +5120,8 @@ div.jGrowl div.jGrowl-notification, div.jGrowl div.jGrowl-closer {
     padding: 				10px;
     margin-top: 			40px;
     margin-bottom: 			5px;
-    font-family: 			Arial, Helvetica, sans-serif;
-    font-size: 				1em;
+    /*REMOVEME font-family: 			Arial, Helvetica, sans-serif;*/
+    /*REMOVEME font-size: 				1em;*/
     text-align: 			left;
     display: 				none;
     -moz-border-radius: 	5px;
@@ -5137,14 +5135,14 @@ div.jGrowl div.jGrowl-notification {
 
 div.jGrowl div.jGrowl-notification div.header {
     font-weight: 			bold;
-    font-size:				.85em;
+    /*REMOVEME font-size:				.85em;*/
 }
 
 div.jGrowl div.jGrowl-notification div.close {
     z-index:				99;
     float: 					right;
     font-weight: 			bold;
-    font-size: 				1em;
+    /*REMOVEME font-size: 				1em;*/
     cursor:					pointer;
 }
 
@@ -5152,7 +5150,7 @@ div.jGrowl div.jGrowl-closer {
     padding-top: 			4px;
     padding-bottom: 		4px;
     cursor: 				pointer;
-    font-size:				.9em;
+    /*REMOVEME font-size:				.9em;*/
     font-weight: 			bold;
     text-align: 			center;
 }
@@ -5185,11 +5183,11 @@ div.jGrowl div.jGrowl-closer {
 .ui-datepicker .ui-datepicker-next-hover { right:1px; }
 .ui-datepicker .ui-datepicker-prev span, .ui-datepicker .ui-datepicker-next span { display: block; position: absolute; left: 50%; margin-left: -8px; top: 50%; margin-top: -8px;  }
 .ui-datepicker .ui-datepicker-title { margin: 0 2.3em; line-height: 1.8em; text-align: center; }
-.ui-datepicker .ui-datepicker-title select { font-size:1em; margin:1px 0; }
+.ui-datepicker .ui-datepicker-title select { /*REMOVEME font-size:1em;*/ margin:1px 0; }
 .ui-datepicker select.ui-datepicker-month-year {width: 100%;}
 .ui-datepicker select.ui-datepicker-month,
 .ui-datepicker select.ui-datepicker-year { width: 49%;}
-.ui-datepicker table {width: 100%; font-size: .9em; border-collapse: collapse; margin:0 0 .4em; }
+.ui-datepicker table {width: 100%; /*REMOVEME font-size: .9em;*/ border-collapse: collapse; margin:0 0 .4em; }
 .ui-datepicker th { padding: .7em .3em; text-align: center; font-weight: bold; border: 0;  }
 .ui-datepicker td { border: 0; padding: 1px; }
 .ui-datepicker td span, .ui-datepicker td a { display: block; padding: .2em; text-align: right; text-decoration: none; }
@@ -5265,7 +5263,7 @@ a.quickaddMenuItem {
 }
 
 div.roundedRel {
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     font-weight: normal;
     padding: 2px 4px 4px 8px;
     margin: 5px;
@@ -5281,7 +5279,7 @@ div.roundedRel {
 }
 div.roundedRel a{
 	color: #333;
-	font-size:12px;
+	/*REMOVEME font-size:12px;*/
 }
 .listRelEditButton img{
 	width:14px;
@@ -5290,7 +5288,7 @@ div.roundedRel a{
 	padding-left:2px;
 }
 div.listRel {
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
     font-weight: normal;
     padding: 10px;
     margin: 0 0 5px 7px;
@@ -5316,7 +5314,7 @@ div.listRel:first-of-type {
 }
 
 .caItemListSortControlTrigger {
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
     padding: 4px;
 }
 
@@ -5333,7 +5331,7 @@ div.listRel:first-of-type {
     display: none;
 
     line-height: 17px;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
     padding: 3px 5px 5px 5px;
     background-color: #fff;
     
@@ -5363,7 +5361,7 @@ div.caItemLoadNextBundles {
 a.caItemLoadNextBundles {
 	text-decoration: none;
 	font-weight: bold;
-	font-size: 12px;
+	/*REMOVEME font-size: 12px;*/
 }
 
 .caItemLoadNextBundlesLoadIndicator {
@@ -5395,7 +5393,7 @@ div.preferenceSectionDivider {
     padding:20px;
     margin:20px;
     line-height:1.3em;
-    font-size:13px;
+    /*REMOVEME font-size:13px;*/
 	background-color: #f7f7f7;
 	border-radius: 4px;
 	-moz-border-radius: 4px;
@@ -5403,18 +5401,18 @@ div.preferenceSectionDivider {
 }
 
 .searchReindexStatus {
-    font-size:16px;
+    /*REMOVEME font-size:16px;*/
     color: #828282;
     text-align: center;
     padding: 10px;
     line-height:1.3em;
     overflow: hidden;
-    font-family: 'DIN-Regular', arial, sans-serif;
+    /*REMOVEME font-family: 'DIN-Regular', arial, sans-serif;*/
 }
 
 .searchReindexElapsedTime {
     float: right;
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     margin-top: 5px;
 }
 
@@ -5426,12 +5424,12 @@ div.preferenceSectionDivider {
     padding:20px;
     margin:20px;
     line-height:1.3em;
-    font-size:13px;
+    /*REMOVEME font-size:13px;*/
     border:3px solid #cccccc;
 }
 
 .batchProcessingStatus {
-    font-size:16px;
+    /*REMOVEME font-size:16px;*/
     color: #828282;
     text-align: left;
     padding: 10px;
@@ -5442,19 +5440,19 @@ div.preferenceSectionDivider {
 
 #batchProcessingElapsedTime {
     float: left;
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     margin-top: 0px;
 }
 
 #batchProcessingCounts {
     float: right;
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     margin-top: 0px;
 }
 
 #batchProcessingFileCount {
     float: right;
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     margin-top: 0px;
 }
 
@@ -5469,18 +5467,18 @@ div.preferenceSectionDivider {
     min-height: 30px;
     margin: 20px auto 0px auto;
     padding: 10px;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
     display: none;
 }
 
 .batchProcessingReportSectionHead {
     font-weight: bold;
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
 }
 
 .batchProcessingReportSectionWarning {
     font-style: italic;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
     margin: 10px 0 10px 0;
 }
 
@@ -5490,7 +5488,7 @@ div.preferenceSectionDivider {
 
 #batchProcessingMore {
     display: none;
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     text-align: center;
 }
 
@@ -5498,7 +5496,7 @@ div.preferenceSectionDivider {
     padding:20px;
     margin:20px;
     line-height:1.3em;
-    font-size:13px;
+    /*REMOVEME font-size:13px;*/
     border:3px solid #cccccc;
 }
 img.batchIcon {
@@ -5554,7 +5552,7 @@ a.caDeleteLabelButton {
     overflow: auto;
 }
 .caClientCommunicationsMessageDisplayHelpText{
-    font-size:14px;
+    /*REMOVEME font-size:14px;*/
     text-align:center;
     padding-top:40px;
     font-weight:bold;
@@ -5580,7 +5578,7 @@ a.caDeleteLabelButton {
     padding:0px 2px 2px 2px;
     float:right;
     line-height:1.1em;
-    font-size:11px;
+    /*REMOVEME font-size:11px;*/
     cursor:pointer;
 
     -moz-border-radius-bottomleft: 3px;
@@ -5595,15 +5593,15 @@ a.caDeleteLabelButton {
 }
 .caClientCommunicationsMessageSummaryHeading {
     font-weight:bold;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
 }
 .caClientCommunicationsMessageSummaryFrom, .caClientCommunicationsMessageSummarySubject, .caClientCommunicationsMessageSummaryDate {
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
 }
 
 .caClientCommunicationsMessageSummaryText {
     margin-top: 3px;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
     color: #666666;
 }
 
@@ -5618,16 +5616,16 @@ a.caDeleteLabelButton {
 }
 
 .caClientCommunicationsMessageHeading {
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     font-weight:bold;
 }
 .caClientCommunicationsMessageFrom, .caClientCommunicationsMessageSubject, .caClientCommunicationsMessageDate {
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     margin-left:10px;
 }
 a.caClientCommunicationsMessageReplyButton {
     text-decoration:none;
-    font-size:12px;
+    /*REMOVEME font-size:12px;*/
     color: #FFFFFF;
     background-color: #134959;
     font-weight:bold;
@@ -5644,7 +5642,7 @@ a.caClientCommunicationsMessageReplyButton:hover {
 .caClientCommunicationsMessageText {
     margin-top: 10px;
     padding: 15px;
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     line-height:1.5em;
     background-color:#e2e2e2;
     -moz-border-radius: 10px;
@@ -5691,11 +5689,11 @@ a.caClientCommunicationsMessageSummaryCounter {
 }
 #caClientCommunicationsReplyForm .replyMessageHeader{
     margin:5px 0px 0px 0px;
-    font-size:12px;
+    /*REMOVEME font-size:12px;*/
 }
 #caClientCommunicationsReplyForm .replyMessageHeaderHeading{
     font-weight:bold;
-    font-size:12px;
+    /*REMOVEME font-size:12px;*/
 }
 #caClientCommunicationsReplyForm input[type="text"], #caClientCommunicationsReplyForm input[type="textarea"], #caClientCommunicationsReplyForm textarea{
     width:450px;
@@ -5725,7 +5723,7 @@ a.caClientCommunicationsMessageSummaryCounter {
 }
 #caClientCommunicationsViewerPanel #close a{
     text-decoration:none;
-    font-size:15px;
+    /*REMOVEME font-size:15px;*/
 }
 #caClientCommunicationsViewerPanelContentArea {
     overflow: auto;
@@ -5744,7 +5742,7 @@ a.caClientCommunicationsMessageSummaryCounter {
 
 a.caClientCommunicationsAttachedMediaControl {
     text-decoration:none;
-    font-size:12px;
+    /*REMOVEME font-size:12px;*/
     color: #134959;
     font-weight:bold;
     padding-left: 10px;
@@ -5753,7 +5751,7 @@ a.caClientCommunicationsAttachedMediaControl {
 
 a.caClientCommunicationsNewOrderButton {
     text-decoration:none;
-    font-size:11px;
+    /*REMOVEME font-size:11px;*/
     color: #FFFFFF;
     background-color: #134959;
     font-weight:bold;
@@ -5792,7 +5790,7 @@ a.caClientCommunicationsNewOrderButton:hover {
 }
 
 .caClientCommunicationsAttachedMediaItems div{
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     margin: 5px 0px 0px 0px;
     width:140px;
     text-align:left;
@@ -5812,7 +5810,7 @@ a.caClientCommunicationsNewOrderButton:hover {
 }
 
 .caClientCommunicationsAttachedMediaItems .remove a{
-    font-size: 9px;
+    /*REMOVEME font-size: 9px;*/
     color: #828282;
     text-decoration:none;
     font-weight:bold;
@@ -5848,7 +5846,7 @@ a.caClientCommunicationsNewOrderButton:hover {
     float:right;
     margin:0px;
     padding:0px;
-    font-size:11px;
+    /*REMOVEME font-size:11px;*/
     font-weight:normal;
 }
 #caClientOrderPaymentForm .formLabel, #caClientOrderShippingForm .formLabel{
@@ -5871,7 +5869,7 @@ a.caClientCommunicationsNewOrderButton:hover {
     background-color:#ffffff;
     padding:2px 0px 0px 5px;
     line-height:1.3em;
-    font-size:12px;
+    /*REMOVEME font-size:12px;*/
     margin: 0px 0px 15px 0px;
     float:left;
 }
@@ -5887,7 +5885,7 @@ a.caClientCommunicationsNewOrderButton:hover {
 }
 a.caClientOrderOverviewButton {
     text-decoration:none;
-    font-size:12px;
+    /*REMOVEME font-size:12px;*/
     color: #FFFFFF;
     background-color: #134959;
     font-weight:bold;
@@ -5903,16 +5901,16 @@ a.caClientOrderOverviewButton:hover {
 #commerceOrderStatusMessage {
     width:500px;
     float:left;
-    font-size:1.5em;
+    /*REMOVEME font-size:1.5em;*/
 }
 #caClientOrderOverview .overviewItem {
     padding:0px 0px 10px 0px;
-    font-size:12px;
+    /*REMOVEME font-size:12px;*/
 }
 
 #caClientOrderProcessingIndicator {
     display: none;
-    font-size: 14px;
+    /*REMOVEME font-size: 14px;*/
     font-style: italic;
     width: 100%;
     margin-top: 25px;
@@ -5931,7 +5929,7 @@ a.caClientOrderOverviewButton:hover {
 }
 #caClientOrdersComposeButton{
     text-decoration:none;
-    font-size:12px;
+    /*REMOVEME font-size:12px;*/
     color: #FFFFFF;
     background-color: #134959;
     font-weight:bold;
@@ -5980,13 +5978,13 @@ a.caClientOrderOverviewButton:hover {
 
 .caClientOrderHistoryHeader {
     font-weight: bold;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
     text-transform: uppercase;
     background-color: #f1f1f1;
 }
 .caClientOrderHistoryText {
     font-weight: normal;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
     padding: 5px;
 }
 
@@ -6003,8 +6001,8 @@ a.caClientOrderOverviewButton:hover {
     margin-bottom: 15px;
 }
 .globalAccess .title {
-    font-size: 18px;
-    font-family: arial;
+    /*REMOVEME font-size: 18px;*/
+    /*REMOVEME font-family: arial;*/
     font-weight: normal;
 }
 .globalAccess .bundleContainer {
@@ -6018,7 +6016,7 @@ a.caClientOrderOverviewButton:hover {
 .globalAccess h2 {
     padding-top:10px;
     border-top: dotted 1px #ccc;
-    font-family: arial;
+    /*REMOVEME font-family: arial;*/
     font-weight: normal;
 }
 #editGlobalAccess {
@@ -6029,7 +6027,7 @@ a.caClientOrderOverviewButton:hover {
 }
 .editLink a{
     text-decoration:none;
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
 }
 div.editLink {
     padding-top:25px;
@@ -6037,14 +6035,14 @@ div.editLink {
 }
 .accessName {
     font-weight: bold;
-    font-size: 12px;
+    /*REMOVEME font-size: 12px;*/
     color: #134959;
     line-height:1.75em;
 }
 
 .inheritFromParent {
-	font-family: "Helvetica Neue", Arial, sans-serif;
-    font-size:11px;
+	/*REMOVEME font-family: "Helvetica Neue", Arial, sans-serif;*/
+    /*REMOVEME font-size:11px;*/
     color: #333333;
     font-weight: normal;
     margin-bottom: 5px;
@@ -6090,7 +6088,7 @@ div.searchlight-results div.searchlight-selected {
     color: #fff;
 }
 #caClientOrderOverview .loanTitle {
-    font-size: 13px;
+    /*REMOVEME font-size: 13px;*/
     font-weight: bold;
     color: #333;
     padding: 0px 5px 0px 5px;
@@ -6204,8 +6202,8 @@ div.searchlight-results div.searchlight-selected {
 }
 
 .olMapSearchText {
-    font-size:12px;
-    font-family: Verdana, Arial, Helvetica, sans-serif;
+    /*REMOVEME font-size:12px;*/
+    /*REMOVEME font-family: Verdana, Arial, Helvetica, sans-serif;*/
     padding:1px 3px 3px 3px;
     font-weight:normal;
     border: 0px;
@@ -6259,7 +6257,7 @@ div.searchlight-results div.searchlight-selected {
 
 #caConfirmBatchExecutionPanel .close a{
     text-decoration:none;
-    font-size:16px;
+    /*REMOVEME font-size:16px;*/
 }
 
 #caConfirmBatchExecutionPanelContentArea {
@@ -6276,12 +6274,12 @@ div.searchlight-results div.searchlight-selected {
 }
 
 .caConfirmBatchExecutionPanelAlertText {
-    font-size: 14px;
+    /*REMOVEME font-size: 14px;*/
     padding: 15px;
 }
 
 .caConfirmBatchExecutionPanelAlertControls {
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
     height: 25px;
     margin-bottom: 10px;
 }
@@ -6292,7 +6290,7 @@ table.caConfirmBatchExecutionPanelAlertControls {
 }
 
 .caConfirmBatchExecutionPanelAlertControl {
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
 }
 
 /* Type change */
@@ -6313,7 +6311,7 @@ table.caConfirmBatchExecutionPanelAlertControls {
 
 #caTypeChangePanel .close a, #caCreateChildPanel .close a{
     text-decoration:none;
-    font-size:16px;
+    /*REMOVEME font-size:16px;*/
 }
 
 #caTypeChangePanelContentArea, #caCreateChildPanelContentArea {
@@ -6343,11 +6341,11 @@ table.caConfirmBatchExecutionPanelAlertControls {
 }
 div.dialogHeader {
     background-color: #eee;
-    font-size: 13px;
+    /*REMOVEME font-size: 13px;*/
     font-weight: bold !important;
     padding: 7px 5px 5px 5px;
     margin: 0px;
-    font-family: "DIN-Regular";
+    /*REMOVEME font-family: "DIN-Regular";*/
     border-radius:4px;
     -moz-border-radius:4px;
     -webkit-border-radius:4px;
@@ -6371,7 +6369,7 @@ div.dialogHeader {
 
 #caRelationQuickAddPanel .close a{
     text-decoration:none;
-    font-size:16px;
+    /*REMOVEME font-size:16px;*/
 }
 
 #caRelationQuickAddPanelContentArea {
@@ -6393,7 +6391,7 @@ div.quickAddFormTopPadding {
 
 div.quickAddDialogHeader {
 	background-color: #cccccc;
-    font-size: 13px;
+    /*REMOVEME font-size: 13px;*/
     font-weight: bold !important;
     padding: 5px;
     
@@ -6441,7 +6439,7 @@ div.debug {
 }
 
 div.debugLabel {
-    font-size: 14px;
+    /*REMOVEME font-size: 14px;*/
     color: green;
     font-weight: bold;
 }
@@ -6492,7 +6490,7 @@ a.caResultsEditorToggleFullScreenButton {
     float: right;
     color: #134959;
     text-decoration: none;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
     padding: 10px;
 }
 
@@ -6500,7 +6498,7 @@ a.caResultsEditorToggleExitFullScreenButton {
     float: right;
     color: #134959;
     text-decoration: none;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
     font-weight:bold;
     display: none;
     padding: 10px;
@@ -6520,14 +6518,14 @@ a.caResultsEditorToggleExitFullScreenButton:hover{
 
 #caResultsEditorStatusDisplay {
     margin-top: 10px;
-    font-size: 12px;
-    font-family: Verdana, Arial, Helvetica, sans-serif;
+    /*REMOVEME font-size: 12px;*/
+    /*REMOVEME font-family: Verdana, Arial, Helvetica, sans-serif;*/
     font-weight: bold;
 }
 
 #caResultsEditorFullScreenStatusDisplay {
-    font-size: 14px;
-    font-family: Verdana, Arial, Helvetica, sans-serif;
+    /*REMOVEME font-size: 14px;*/
+    /*REMOVEME font-family: Verdana, Arial, Helvetica, sans-serif;*/
     font-weight: bold;
     color: #fff;
 }
@@ -6552,7 +6550,7 @@ a.caResultsEditorToggleExitFullScreenButton:hover{
 div.caResultsEditorControls {
     background-color: #000;
     color:#FFF;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
     text-align:center;
     position:absolute;
     padding: 10px 0px 10px 0px;
@@ -6568,7 +6566,7 @@ div.caResultsEditorControls {
 div.caResultsEditorControls a{
     text-decoration:none;
     font-weight:bold;
-    font-size:16px;
+    /*REMOVEME font-size:16px;*/
     color:#FFF;
 }
 div.caResultsEditorControls a:hover{
@@ -6592,7 +6590,7 @@ div.caResultsEditorControls .download{
 }
 
 div.caResultsEditorControls .info{
-    font-size:11px;
+    /*REMOVEME font-size:11px;*/
     color:#FFF;
     padding-left:10px;
     text-align:left;
@@ -6644,7 +6642,7 @@ div.caInformationServiceDetail {
     width: 100%;
     display:none;
     font-weight: normal;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
     margin-left: 8px;
 }
 
@@ -6680,14 +6678,14 @@ div.caRepresentationMediaReplication {
 
 a.caRepresentationMediaReplicationButton {
     text-decoration: none;
-    font-size: 11px;
+    /*REMOVEME font-size: 11px;*/
     font-weight: bold;
     margin-right: 20px;
 }
 
 div.caRepresentationMediaReplicationControls {
     background: #fbfbfb;
-    font-size: 10px;
+    /*REMOVEME font-size: 10px;*/
     width: 680px;
     overflow: auto;
     padding: 8px;
@@ -6706,8 +6704,8 @@ div.caRepresentationMediaReplicationControls {
  #exporterUploadArea {
  	border: 1px dashed #ccc;
  	display:none;
- 	font-family: 'DIN-Regular', helvetica, sans-serif;
- 	font-size:16px;
+ 	/*REMOVEME font-family: 'DIN-Regular', helvetica, sans-serif;*/
+ 	/*REMOVEME font-size:16px;*/
  	color:#333;
  	text-align: center;
 	padding: 10px;
@@ -6783,23 +6781,23 @@ div.caRepresentationMediaReplicationControls {
     border: 2px solid #cc0000;
 }
 .caAnnoEditorTlAnnotationContainer div.title {
-    font-size:12px;
+    /*REMOVEME font-size:12px;*/
     margin:3px 3px 0px 3px;
     height:35px;
     overflow:hidden;
 }
 .caAnnoEditorTlAnnotationContainer div.title a {
-    font-size:12px;
+    /*REMOVEME font-size:12px;*/
   	text-decoration: none;
 }
 .caAnnoEditorTlAnnotationContainer div.timecode a {
-    font-size:9px;
+    /*REMOVEME font-size:9px;*/
     font-weight:normal;
     margin:5px 5px 0px 5px;
     position:relative;
 }
 .caAnnoEditorTlAnnotationContainer div.timecode a {
-    font-size:9px;
+    /*REMOVEME font-size:9px;*/
     text-decoration: none;
 }
 .caAnnoEditorTlAnnotationContainer div.editAnnoButton {
@@ -6870,7 +6868,7 @@ div.caRepresentationMediaReplicationControls {
 	left: 15px; 
 	min-width: 60px; 
 	padding: 5px 5px 5px 10px; 
-	font-size:12px;
+	/*REMOVEME font-size:12px;*/
 	line-height:1em;
 	white-space:nowrap;
 	color:#FFFFFF;
@@ -6919,7 +6917,7 @@ div.caRepresentationMediaReplicationControls {
 /** Tool plugins **/
 .toolPluginHelpText {
     margin: 5px 0 5px 0px;
-    font-size:13px;
+    /*REMOVEME font-size:13px;*/
 }
 
 /** Object location tracking **/
@@ -6945,7 +6943,7 @@ div.caUseHistoryEntry {
 	display: table; 
 	overflow: hidden;
 	font-weight: normal;
-	font-size: 11px;
+	/*REMOVEME font-size: 11px;*/
 	
 	width: 730px;
 	
@@ -6979,7 +6977,7 @@ div.caUseHistoryIcon {
 
 div.caUseHistoryIconText {
 	text-align: center;
-	font-size: 11px;
+	/*REMOVEME font-size: 11px;*/
 	font-style: italic;
 }
 
@@ -6989,7 +6987,7 @@ div.caUseHistoryDate {
 	right: 3px;
 	
 	font-style: italic;
-	font-size: 9px;
+	/*REMOVEME font-size: 9px;*/
 }
 
 /** Metadata dictionary **/
@@ -7000,7 +6998,7 @@ div.caUseHistoryDate {
     border: 2px solid #e6e6e6;
     
 	font-weight: normal;
-	font-size: 12px;
+	/*REMOVEME font-size: 12px;*/
 }
 
 div.caMetadataDictionaryViolationsList {
@@ -7013,7 +7011,7 @@ div.caMetadataDictionaryViolationsList {
     border: 2px solid #e6e6e6;
     
 	font-weight: normal;
-	font-size: 12px;
+	/*REMOVEME font-size: 12px;*/
 	
 	float: right;
 }
@@ -7025,7 +7023,7 @@ div.caMetadataDictionaryViolationsList ol {
 
 div.caMetadataDictionaryViolationsListHeading {
 	font-weight: bold;
-	font-size: 12px;
+	/*REMOVEME font-size: 12px;*/
 }
 
 .caMetadataDictionaryViolationCrit {
@@ -7084,12 +7082,12 @@ div.caLibraryFindAutocompleteContainer {
 }
 
 div.caLibraryFindAutocompleteLabel {
-	font-size: 18px;
+	/*REMOVEME font-size: 18px;*/
 	margin: 0 0 10px 0;
 }
 
 div.caLibraryFindAutocompleteContainer form input[type=text] {
-	font-size: 18px;
+	/*REMOVEME font-size: 18px;*/
 }
 
 div.caLibraryTransactionListContainer {
@@ -7101,7 +7099,7 @@ div.caLibraryTransactionResultsContainer {
 }
 
 div.caLibraryTransactionListLabel {
-	font-size: 14px;
+	/*REMOVEME font-size: 14px;*/
 	font-weight: bold;
 }
 
@@ -7121,12 +7119,12 @@ div.caLibraryTransactionListItemMedia {
 }
 
 div.caLibraryTransactionListItemName {
-	font-size: 12px;
+	/*REMOVEME font-size: 12px;*/
 	font-style: italic;
 }
 
 div.caLibraryTransactionListItemBorrower {
-	font-size: 10px;
+	/*REMOVEME font-size: 10px;*/
 }
 
 div.caLibraryTransactionListItemNotesContainer {
@@ -7134,7 +7132,7 @@ div.caLibraryTransactionListItemNotesContainer {
 }
 
 div.caLibraryTransactionListItemNotesLabel {
-	font-size: 11px;
+	/*REMOVEME font-size: 11px;*/
 }
 
 div.caLibraryTransactionListItemRemoveButton {
@@ -7155,7 +7153,7 @@ div.caLibraryTransactionResultsContainer {
 }
 
 div.caLibraryTransactionResultsLabel {
-	font-size: 14px;
+	/*REMOVEME font-size: 14px;*/
 	font-weight: bold;
 }
 
@@ -7164,12 +7162,12 @@ div.caLibraryTransactionListItemDueDateContainer {
 }
 
 div.caLibraryTransactionListItemDueDateLabel {
-	font-size: 11px;
+	/*REMOVEME font-size: 11px;*/
 }
 
 div.caLibraryTransactionListItemWillReserve {
 	color: #cc0000;
-	font-size: 11px;
+	/*REMOVEME font-size: 11px;*/
 	font-weight: bold;
 }
 
@@ -7184,7 +7182,7 @@ table.caLibraryHistory, tr.caLibraryHistory, th.caLibraryHistory, td.caLibraryHi
 }
 
 #leftNav ul.caLibraryCheckoutList { 
-	font-size: 10px;
+	/*REMOVEME font-size: 10px;*/
 	list-style: circle; 
 	margin: 0 0 0 15px; 
 	padding: 3px 0px 3px 0px; 
@@ -7202,20 +7200,20 @@ div.caLibraryDashboardPanel {
 }
 
 .caLibraryDashboardCallout {
-	font-size: 24px;
+	/*REMOVEME font-size: 24px;*/
 	font-weight: bold;
 	margin: 0;
 }
 
 .caLibraryDashboardCalloutDate {
-	font-size: 10px;
+	/*REMOVEME font-size: 10px;*/
 	font-weight: normal;
 	font-style: italic;
 	margin: 0;
 }
 
 .caLibraryDashboardUserList {
-	font-size: 12px;
+	/*REMOVEME font-size: 12px;*/
 	font-weight: normal;
 	line-height: 18px;
 	margin: 12px 0 0 0;

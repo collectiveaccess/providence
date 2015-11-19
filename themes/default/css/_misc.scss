@@ -5,7 +5,7 @@
 html,
 body {
 	font-family: 'Source Sans Pro', sans-serif;
-	font-size: 1em;
+	font-size: small;
 	line-height: 1.5;
 	min-height: 100%;
 	min-width: 37.9em;
@@ -20,6 +20,10 @@ body {
 	font-family: 'Oswald', sans-serif;
 	font-weight: 400;
 	text-transform: uppercase;
+}
+
+.idno .formLabel {
+	font-size: xx-large;
 }
 
 h1 {
@@ -43,7 +47,6 @@ h2 {
 #summary .heading {
 	font-size: inherit;
 	font-weight: 600;
-	font-family: inherit;
 	color: inherit;
 }
 
@@ -159,6 +162,16 @@ img {
 
 div.delete_warning_box {
 	height: 32px;
+}
+
+div.bundleDisplayEditorPlacementList {
+	font-size: small;
+	margin-right: 0;
+	width: unset;
+
+	div.bundleDisplayEditorPlacement {
+		width: unset;
+	}
 }
 
 .navBreadCrumbs {

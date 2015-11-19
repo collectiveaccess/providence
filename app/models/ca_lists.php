@@ -1541,7 +1541,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	</script>";
 	
 				if ($vs_render_as == 'horiz_hierbrowser_with_search') {
-					$vs_buf .= "<div class='hierarchyBrowserSearchBar'>"._t('Search').": <input type='text' id='{$ps_name}_hierarchyBrowserSearch{n}' class='hierarchyBrowserSearchBar' name='search' value='' size='20'/></div>";
+					$vs_buf .= "<input type='text' id='{$ps_name}_hierarchyBrowserSearch{n}' class='hierarchyBrowserSearchBar' name='search' value='' size='20' placeholder='" . _t('Search') . "' />";
 				}
 				
 				if ($vs_render_as != 'vert_hierbrowser') {

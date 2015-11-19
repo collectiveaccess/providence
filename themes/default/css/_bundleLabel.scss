@@ -15,6 +15,8 @@
 	input[type="textarea"],
 	textarea,
 	select {
+		font-family: 'Source Sans Pro', sans-serif;
+		font-size: small;
 		width: 100% !important;
 	}
 }
@@ -39,14 +41,10 @@
 }
 
 div.roundedRel {
-	font-size: 0.9em;
+	font-size: small;
 	background: $white-off;
 	float: none;
 	margin-right: 28px;
-
-	a {
-		font-size: inherit;
-	}
 }
 
 .caItemList {

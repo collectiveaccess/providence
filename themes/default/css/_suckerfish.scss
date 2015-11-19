@@ -32,7 +32,7 @@
 .sf-menu a {
 //     display:		block;
 //     position:		relative;
-    font-family: inherit;
+//    font-family: inherit;
 
     &:hover {
     	text-decoration: underline;
@@ -176,12 +176,12 @@ li.sfHover > a.sf-menu-selected:link, li.sfHover > a.sf-menu-selected:visited {
 // }
 
 // /*** arrows **/
-.sf-menu a.sf-with-ul {
+//.sf-menu a.sf-with-ul {
 //     padding-right: 	1em;
 //     min-width:		1px; /* trigger IE7 hasLayout so spans position accurately */
 //     text-transform:uppercase;
-    font-family: inherit;
-}
+//    font-family: inherit;
+//}
 // .sf-menu ul li a.sf-with-ul {
 //     text-transform: none;
 // }
