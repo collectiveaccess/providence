@@ -2328,7 +2328,7 @@ class ca_users extends BaseModel {
 	
 	public function loadUserPrefDefs($pb_force_reload=false) {
 		if (!$this->_user_pref_defs || $pb_force_reload) {
-			if ($vs_user_pref_def_path = __CA_THEME_DIR__."/user_pref_defs.conf") {
+			if ($vs_user_pref_def_path = __CA_CONF_DIR__."/user_pref_defs.conf") {
 				$this->_user_pref_defs = Configuration::load($vs_user_pref_def_path, $pb_force_reload);
 				return true;
 			}
