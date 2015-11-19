@@ -563,6 +563,7 @@
 
  			$vs_import_mode 					= $pa_options['importMode'];
  			$vs_match_mode 						= $pa_options['matchMode'];
+ 			$vs_match_type						= $pa_options['matchType'];
  			$vn_type_id 						= $pa_options[$vs_import_target.'_type_id'];
  			$vn_rep_type_id 					= $pa_options['ca_object_representations_type_id'];
 
@@ -797,10 +798,25 @@
 										$vs_bool = 'OR';
 										$va_values = array();
 										foreach($va_fields_to_match_on as $vs_fld) {
+											switch($vs_match_type) {
+												case 'STARTS':
+													$vs_match_value = $va_matches[1]."%";
+													break;
+												case 'ENDS':
+													$vs_match_value = "%".$va_matches[1];
+													break;
+												case 'CONTAINS':
+													$vs_match_value = "%".$va_matches[1]."%";
+													break;
+												case 'EXACT':
+												default:
+													$vs_match_value = $va_matches[1];
+													break;
+											}
 											if (in_array($vs_fld, array('preferred_labels', 'nonpreferred_labels'))) {
-												$va_values[$vs_fld] = array($vs_fld => array('name' => $va_matches[1]));
+												$va_values[$vs_fld] = array($vs_fld => array('name' => $vs_match_value));
 											} else {
-												$va_values[$vs_fld] = $va_matches[1];
+												$va_values[$vs_fld] = $vs_match_value;
 											}
 										}
 
@@ -811,7 +827,7 @@
 
 										$o_log->logDebug("Trying to find records using boolean {$vs_bool} and values ".print_r($va_values,true));
 
-										if (class_exists($vs_import_target) && ($vn_id = $vs_import_target::find($va_values, array('returnAs' => 'firstId', 'boolean' => $vs_bool)))) {
+										if (class_exists($vs_import_target) && ($vn_id = $vs_import_target::find($va_values, array('returnAs' => 'firstId', 'allowWildcards' => true, 'boolean' => $vs_bool)))) {
 											if ($t_instance->load($vn_id)) {
 												$va_notices[$vs_relative_directory.'/'.$vs_match_name.'_match'] = array(
 													'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
