@@ -144,12 +144,13 @@ table.attributeListItem {
 	width: 40px !important;
 }
 
-#idno_prefix{
-	font-size: 1em;
+#idno_prefix {
+	font-size: xx-large;
 	width: 60px !important;
 }
 
-#idno_object_number{
+#idno_object_number {
+	font-size: xx-large;
 	width: 180px !important;
 	margin-left: 6px;
 	margin-right: 3px;
@@ -157,6 +158,7 @@ table.attributeListItem {
 
 #idno_serial_number,
 #idno_suffix {
+	font-size: xx-large;
 	width: 80px !important;
 	margin-left: 3px;
 }
