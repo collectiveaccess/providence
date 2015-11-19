@@ -1076,7 +1076,7 @@ class MultipartIDNumber extends IDNumber {
 				} else {
 					if ($vs_element_value == '') {
 						$vs_next_num = $this->getNextValue($ps_element_name, null, true);
-						$vs_element .= '&lt;'._t('Will be assigned %1 when saved', $vs_next_num).'&gt;';
+						$vs_element .= '&laquo;'.$vs_next_num.'&raquo;';
 					} else {
 						if ($va_element_info['editable']) {
 							$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'" maxlength="'.$vn_width.'"'.($pa_options['readonly'] ? ' disabled="1" ' : '').'/>';
