@@ -29,10 +29,8 @@
         "hoa/test": "~1.0"
     },
     "suggest": {
-        "hoa/console"   : "To use the `hoa` script.",
-        "hoa/dispatcher": "To use the `hoa` script.",
-        "hoa/router"    : "To use the `hoa` script.",
-        "ext-mbstring"  : "ext/mbstring must be present (or a third implementation)."
+        "hoa/cli"     : "To use the `hoa` script.",
+        "ext-mbstring": "ext/mbstring must be present (or a third implementation)."
     },
     "autoload": {
         "psr-4": {
@@ -40,7 +38,6 @@
         },
         "files": ["Core.php"]
     },
-    "bin"  : ["Bin/hoa"],
     "extra": {
         "branch-alias": {
             "dev-master": "2.x-dev"

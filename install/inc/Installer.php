@@ -288,7 +288,18 @@ class Installer {
 				}
 			}
 		}
+
+		// nuke search index if we're not using SqlSearch (the SqlSearch index is nuked when we drop the database)
+		if ($o_config->get('search_engine_plugin') != 'SqlSearch') {
+			$o_si = new SearchIndexer();
+			$o_si->truncateIndex();
+		}
+
 		return true;
+	}
+	# --------------------------------------------------
+	public function performPostInstallTasks() {
+		// noop, for now
 	}
 	# --------------------------------------------------
 	/**

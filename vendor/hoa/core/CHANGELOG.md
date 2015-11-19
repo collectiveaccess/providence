@@ -1,3 +1,22 @@
+# 2.15.11.09
+
+  * Fix CS. (Ivan Enderlin, 2015-10-29T22:03:18+01:00)
+
+# 2.15.09.03
+
+  * Remove the `bin` property in `composer.json`. (Ivan Enderlin, 2015-09-03T10:21:32+02:00)
+
+# 2.15.09.01
+
+  * Fix `resolve` use. (Metalaka, 2015-07-15T19:10:30+02:00)
+  * Return `resolve` path without trailing DS. (Metalaka, 2014-12-09T21:48:08+01:00)
+  * Fix CS. (Ivan Enderlin, 2015-08-05T08:51:19+02:00)
+  * Constantize: Change ';' into constant `RS` as `RootSeparator`. (agerlier, 2014-05-27T13:39:16+02:00)
+  * Add a `.gitignore` file. (Stéphane HULARD, 2015-08-03T11:24:10+02:00)
+  * Check whether Throwable already exists. (Metalaka, 2015-07-21T15:23:00+02:00)
+  * Update composer.json (jubianchi, 2015-07-13T16:20:31+02:00)
+  * Remove binaries to prepare for hoa/cli (jubianchi, 2015-07-13T16:18:45+02:00)
+
 # 2.15.07.07
 
   * Update retro-compatibility with PHP7. (Ivan Enderlin, 2015-07-07T14:11:11+02:00)

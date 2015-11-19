@@ -1,51 +1,5 @@
 [
     {
-        "name": "ezyang/htmlpurifier",
-        "version": "v4.6.0",
-        "version_normalized": "4.6.0.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/ezyang/htmlpurifier.git",
-            "reference": "6f389f0f25b90d0b495308efcfa073981177f0fd"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/ezyang/htmlpurifier/zipball/6f389f0f25b90d0b495308efcfa073981177f0fd",
-            "reference": "6f389f0f25b90d0b495308efcfa073981177f0fd",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=5.2"
-        },
-        "time": "2013-11-30 08:25:19",
-        "type": "library",
-        "installation-source": "dist",
-        "autoload": {
-            "psr-0": {
-                "HTMLPurifier": "library/"
-            },
-            "files": [
-                "library/HTMLPurifier.composer.php"
-            ]
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "LGPL"
-        ],
-        "authors": [
-            {
-                "name": "Edward Z. Yang",
-                "email": "admin@htmlpurifier.org",
-                "homepage": "http://ezyang.com"
-            }
-        ],
-        "description": "Standards compliant HTML filter written in PHP",
-        "homepage": "http://htmlpurifier.org/",
-        "keywords": [
-            "html"
-        ]
-    },
-    {
         "name": "sebastian/version",
         "version": "1.0.6",
         "version_normalized": "1.0.6.0",
@@ -236,57 +190,6 @@
         ]
     },
     {
-        "name": "phpunit/php-token-stream",
-        "version": "1.4.3",
-        "version_normalized": "1.4.3.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/sebastianbergmann/php-token-stream.git",
-            "reference": "7a9b0969488c3c54fd62b4d504b3ec758fd005d9"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/sebastianbergmann/php-token-stream/zipball/7a9b0969488c3c54fd62b4d504b3ec758fd005d9",
-            "reference": "7a9b0969488c3c54fd62b4d504b3ec758fd005d9",
-            "shasum": ""
-        },
-        "require": {
-            "ext-tokenizer": "*",
-            "php": ">=5.3.3"
-        },
-        "require-dev": {
-            "phpunit/phpunit": "~4.2"
-        },
-        "time": "2015-06-19 03:43:16",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "1.4-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "classmap": [
-                "src/"
-            ]
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "BSD-3-Clause"
-        ],
-        "authors": [
-            {
-                "name": "Sebastian Bergmann",
-                "email": "sebastian@phpunit.de"
-            }
-        ],
-        "description": "Wrapper around PHP's tokenizer extension.",
-        "homepage": "https://github.com/sebastianbergmann/php-token-stream/",
-        "keywords": [
-            "tokenizer"
-        ]
-    },
-    {
         "name": "phpunit/php-file-iterator",
         "version": "1.3.4",
         "version_normalized": "1.3.4.0",
@@ -450,136 +353,6 @@
         ]
     },
     {
-        "name": "maximebf/debugbar",
-        "version": "v1.10.4",
-        "version_normalized": "1.10.4.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/maximebf/php-debugbar.git",
-            "reference": "7b2006e6e095126b5a061ec33fca3d90ea8a8219"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/maximebf/php-debugbar/zipball/7b2006e6e095126b5a061ec33fca3d90ea8a8219",
-            "reference": "7b2006e6e095126b5a061ec33fca3d90ea8a8219",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=5.3.0",
-            "psr/log": "~1.0",
-            "symfony/var-dumper": "~2.6"
-        },
-        "require-dev": {
-            "phpunit/phpunit": "~4.0"
-        },
-        "suggest": {
-            "kriswallsmith/assetic": "The best way to manage assets",
-            "monolog/monolog": "Log using Monolog",
-            "predis/predis": "Redis storage"
-        },
-        "time": "2015-02-05 07:51:20",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "1.10-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "psr-0": {
-                "DebugBar": "src/"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Maxime Bouroumeau-Fuseau",
-                "email": "maxime.bouroumeau@gmail.com",
-                "homepage": "http://maximebf.com"
-            }
-        ],
-        "description": "Debug bar in the browser for php application",
-        "homepage": "https://github.com/maximebf/php-debugbar",
-        "keywords": [
-            "debug"
-        ]
-    },
-    {
-        "name": "doctrine/cache",
-        "version": "v1.4.1",
-        "version_normalized": "1.4.1.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/doctrine/cache.git",
-            "reference": "c9eadeb743ac6199f7eec423cb9426bc518b7b03"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/doctrine/cache/zipball/c9eadeb743ac6199f7eec423cb9426bc518b7b03",
-            "reference": "c9eadeb743ac6199f7eec423cb9426bc518b7b03",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=5.3.2"
-        },
-        "conflict": {
-            "doctrine/common": ">2.2,<2.4"
-        },
-        "require-dev": {
-            "phpunit/phpunit": ">=3.7",
-            "predis/predis": "~1.0",
-            "satooshi/php-coveralls": "~0.6"
-        },
-        "time": "2015-04-15 00:11:59",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "1.5.x-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "psr-0": {
-                "Doctrine\\Common\\Cache\\": "lib/"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Roman Borschel",
-                "email": "roman@code-factory.org"
-            },
-            {
-                "name": "Benjamin Eberlei",
-                "email": "kontakt@beberlei.de"
-            },
-            {
-                "name": "Guilherme Blanco",
-                "email": "guilhermeblanco@gmail.com"
-            },
-            {
-                "name": "Jonathan Wage",
-                "email": "jonwage@gmail.com"
-            },
-            {
-                "name": "Johannes Schmitt",
-                "email": "schmittjoh@gmail.com"
-            }
-        ],
-        "description": "Caching library offering an object-oriented API for many cache backends",
-        "homepage": "http://www.doctrine-project.org",
-        "keywords": [
-            "cache",
-            "caching"
-        ]
-    },
-    {
         "name": "guzzle/guzzle",
         "version": "v3.9.3",
         "version_normalized": "3.9.3.0",
@@ -674,126 +447,6 @@
             "http client",
             "rest",
             "web service"
-        ]
-    },
-    {
-        "name": "elasticsearch/elasticsearch",
-        "version": "v1.3.4",
-        "version_normalized": "1.3.4.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/elastic/elasticsearch-php.git",
-            "reference": "b2fc513757f6805635a34988dca97646f0ea6a4d"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/elastic/elasticsearch-php/zipball/b2fc513757f6805635a34988dca97646f0ea6a4d",
-            "reference": "b2fc513757f6805635a34988dca97646f0ea6a4d",
-            "shasum": ""
-        },
-        "require": {
-            "ext-curl": "*",
-            "guzzle/guzzle": "~3.0",
-            "monolog/monolog": "~1.11",
-            "php": ">=5.3.9",
-            "pimple/pimple": "~3.0",
-            "psr/log": "~1.0"
-        },
-        "require-dev": {
-            "athletic/athletic": "~0.1",
-            "cpliakas/git-wrapper": "~1.0",
-            "mikey179/vfsstream": "~1.2",
-            "mockery/mockery": "0.9.4",
-            "phpunit/phpunit": "3.7.*",
-            "satooshi/php-coveralls": "dev-master",
-            "symfony/yaml": "2.4.3 as 2.4.2",
-            "twig/twig": "1.*"
-        },
-        "time": "2015-04-09 09:19:23",
-        "type": "library",
-        "installation-source": "dist",
-        "autoload": {
-            "psr-4": {
-                "Elasticsearch\\": "src/Elasticsearch/"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "Apache 2"
-        ],
-        "authors": [
-            {
-                "name": "Zachary Tong"
-            }
-        ],
-        "description": "PHP Client for Elasticsearch",
-        "keywords": [
-            "client",
-            "elasticsearch",
-            "search"
-        ]
-    },
-    {
-        "name": "knplabs/github-api",
-        "version": "1.4.14",
-        "version_normalized": "1.4.14.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/KnpLabs/php-github-api.git",
-            "reference": "9010dbe21f4b0bae0edae26bbe031d7d91347938"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/KnpLabs/php-github-api/zipball/9010dbe21f4b0bae0edae26bbe031d7d91347938",
-            "reference": "9010dbe21f4b0bae0edae26bbe031d7d91347938",
-            "shasum": ""
-        },
-        "require": {
-            "ext-curl": "*",
-            "guzzle/guzzle": "~3.7",
-            "php": ">=5.3.2"
-        },
-        "require-dev": {
-            "phpunit/phpunit": "~4.0"
-        },
-        "suggest": {
-            "knplabs/gaufrette": "Needed for optional Gaufrette cache"
-        },
-        "time": "2015-07-03 14:59:20",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "1.4.x-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "psr-4": {
-                "Github\\": "lib/Github/"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Thibault Duplessis",
-                "email": "thibault.duplessis@gmail.com",
-                "homepage": "http://ornicar.github.com"
-            },
-            {
-                "name": "KnpLabs Team",
-                "homepage": "http://knplabs.com"
-            }
-        ],
-        "description": "GitHub API v3 client",
-        "homepage": "https://github.com/KnpLabs/php-github-api",
-        "keywords": [
-            "api",
-            "gh",
-            "gist",
-            "github"
         ]
     },
     {
@@ -1027,64 +680,6 @@
         ]
     },
     {
-        "name": "phpunit/phpunit-mock-objects",
-        "version": "2.3.6",
-        "version_normalized": "2.3.6.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/sebastianbergmann/phpunit-mock-objects.git",
-            "reference": "18dfbcb81d05e2296c0bcddd4db96cade75e6f42"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/sebastianbergmann/phpunit-mock-objects/zipball/18dfbcb81d05e2296c0bcddd4db96cade75e6f42",
-            "reference": "18dfbcb81d05e2296c0bcddd4db96cade75e6f42",
-            "shasum": ""
-        },
-        "require": {
-            "doctrine/instantiator": "~1.0,>=1.0.2",
-            "php": ">=5.3.3",
-            "phpunit/php-text-template": "~1.2",
-            "sebastian/exporter": "~1.2"
-        },
-        "require-dev": {
-            "phpunit/phpunit": "~4.4"
-        },
-        "suggest": {
-            "ext-soap": "*"
-        },
-        "time": "2015-07-10 06:54:24",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "2.3.x-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "classmap": [
-                "src/"
-            ]
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "BSD-3-Clause"
-        ],
-        "authors": [
-            {
-                "name": "Sebastian Bergmann",
-                "email": "sb@sebastian-bergmann.de",
-                "role": "lead"
-            }
-        ],
-        "description": "Mock Object library for PHPUnit",
-        "homepage": "https://github.com/sebastianbergmann/phpunit-mock-objects/",
-        "keywords": [
-            "mock",
-            "xunit"
-        ]
-    },
-    {
         "name": "sebastian/comparator",
         "version": "1.2.0",
         "version_normalized": "1.2.0.0",
@@ -1151,37 +746,135 @@
         ]
     },
     {
-        "name": "symfony/yaml",
-        "version": "v2.7.3",
-        "version_normalized": "2.7.3.0",
+        "name": "sebastian/environment",
+        "version": "1.3.2",
+        "version_normalized": "1.3.2.0",
         "source": {
             "type": "git",
-            "url": "https://github.com/symfony/Yaml.git",
-            "reference": "71340e996171474a53f3d29111d046be4ad8a0ff"
+            "url": "https://github.com/sebastianbergmann/environment.git",
+            "reference": "6324c907ce7a52478eeeaede764f48733ef5ae44"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/symfony/Yaml/zipball/71340e996171474a53f3d29111d046be4ad8a0ff",
-            "reference": "71340e996171474a53f3d29111d046be4ad8a0ff",
+            "url": "https://api.github.com/repos/sebastianbergmann/environment/zipball/6324c907ce7a52478eeeaede764f48733ef5ae44",
+            "reference": "6324c907ce7a52478eeeaede764f48733ef5ae44",
             "shasum": ""
         },
         "require": {
-            "php": ">=5.3.9"
+            "php": ">=5.3.3"
         },
         "require-dev": {
-            "symfony/phpunit-bridge": "~2.7"
+            "phpunit/phpunit": "~4.4"
         },
-        "time": "2015-07-28 14:07:07",
+        "time": "2015-08-03 06:14:51",
         "type": "library",
         "extra": {
             "branch-alias": {
-                "dev-master": "2.7-dev"
+                "dev-master": "1.3.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "classmap": [
+                "src/"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Sebastian Bergmann",
+                "email": "sebastian@phpunit.de"
+            }
+        ],
+        "description": "Provides functionality to handle HHVM/PHP environments",
+        "homepage": "http://www.github.com/sebastianbergmann/environment",
+        "keywords": [
+            "Xdebug",
+            "environment",
+            "hhvm"
+        ]
+    },
+    {
+        "name": "react/promise",
+        "version": "v2.2.1",
+        "version_normalized": "2.2.1.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/reactphp/promise.git",
+            "reference": "3b6fca09c7d56321057fa8867c8dbe1abf648627"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/reactphp/promise/zipball/3b6fca09c7d56321057fa8867c8dbe1abf648627",
+            "reference": "3b6fca09c7d56321057fa8867c8dbe1abf648627",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.4.0"
+        },
+        "time": "2015-07-03 13:48:55",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.0-dev"
             }
         },
         "installation-source": "dist",
         "autoload": {
             "psr-4": {
-                "Symfony\\Component\\Yaml\\": ""
+                "React\\Promise\\": "src/"
+            },
+            "files": [
+                "src/functions_include.php"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Jan Sorgalla",
+                "email": "jsorgalla@gmail.com"
+            }
+        ],
+        "description": "A lightweight implementation of CommonJS Promises/A for PHP"
+    },
+    {
+        "name": "guzzlehttp/streams",
+        "version": "3.0.0",
+        "version_normalized": "3.0.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/guzzle/streams.git",
+            "reference": "47aaa48e27dae43d39fc1cea0ccf0d84ac1a2ba5"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/guzzle/streams/zipball/47aaa48e27dae43d39fc1cea0ccf0d84ac1a2ba5",
+            "reference": "47aaa48e27dae43d39fc1cea0ccf0d84ac1a2ba5",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.4.0"
+        },
+        "require-dev": {
+            "phpunit/phpunit": "~4.0"
+        },
+        "time": "2014-10-12 19:18:40",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "3.0-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "GuzzleHttp\\Stream\\": "src/"
             }
         },
         "notification-url": "https://packagist.org/downloads/",
@@ -1190,42 +883,303 @@
         ],
         "authors": [
             {
-                "name": "Fabien Potencier",
-                "email": "fabien@symfony.com"
-            },
-            {
-                "name": "Symfony Community",
-                "homepage": "https://symfony.com/contributors"
+                "name": "Michael Dowling",
+                "email": "mtdowling@gmail.com",
+                "homepage": "https://github.com/mtdowling"
             }
         ],
-        "description": "Symfony Yaml Component",
-        "homepage": "https://symfony.com"
+        "description": "Provides a simple abstraction over streams of data",
+        "homepage": "http://guzzlephp.org/",
+        "keywords": [
+            "Guzzle",
+            "stream"
+        ]
     },
     {
-        "name": "symfony/var-dumper",
-        "version": "v2.7.3",
-        "version_normalized": "2.7.3.0",
+        "name": "guzzlehttp/ringphp",
+        "version": "1.1.0",
+        "version_normalized": "1.1.0.0",
         "source": {
             "type": "git",
-            "url": "https://github.com/symfony/var-dumper.git",
-            "reference": "e8903ebba5eb019f5886ffce739ea9e3b7519579"
+            "url": "https://github.com/guzzle/RingPHP.git",
+            "reference": "dbbb91d7f6c191e5e405e900e3102ac7f261bc0b"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/symfony/var-dumper/zipball/e8903ebba5eb019f5886ffce739ea9e3b7519579",
-            "reference": "e8903ebba5eb019f5886ffce739ea9e3b7519579",
+            "url": "https://api.github.com/repos/guzzle/RingPHP/zipball/dbbb91d7f6c191e5e405e900e3102ac7f261bc0b",
+            "reference": "dbbb91d7f6c191e5e405e900e3102ac7f261bc0b",
+            "shasum": ""
+        },
+        "require": {
+            "guzzlehttp/streams": "~3.0",
+            "php": ">=5.4.0",
+            "react/promise": "~2.0"
+        },
+        "require-dev": {
+            "ext-curl": "*",
+            "phpunit/phpunit": "~4.0"
+        },
+        "suggest": {
+            "ext-curl": "Guzzle will use specific adapters if cURL is present"
+        },
+        "time": "2015-05-20 03:37:09",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "1.1-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "GuzzleHttp\\Ring\\": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Michael Dowling",
+                "email": "mtdowling@gmail.com",
+                "homepage": "https://github.com/mtdowling"
+            }
+        ],
+        "description": "Provides a simple API and specification that abstracts away the details of HTTP into a single PHP function."
+    },
+    {
+        "name": "ezyang/htmlpurifier",
+        "version": "v4.7.0",
+        "version_normalized": "4.7.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/ezyang/htmlpurifier.git",
+            "reference": "ae1828d955112356f7677c465f94f7deb7d27a40"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/ezyang/htmlpurifier/zipball/ae1828d955112356f7677c465f94f7deb7d27a40",
+            "reference": "ae1828d955112356f7677c465f94f7deb7d27a40",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.2"
+        },
+        "time": "2015-08-05 01:03:42",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "HTMLPurifier": "library/"
+            },
+            "files": [
+                "library/HTMLPurifier.composer.php"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "LGPL"
+        ],
+        "authors": [
+            {
+                "name": "Edward Z. Yang",
+                "email": "admin@htmlpurifier.org",
+                "homepage": "http://ezyang.com"
+            }
+        ],
+        "description": "Standards compliant HTML filter written in PHP",
+        "homepage": "http://htmlpurifier.org/",
+        "keywords": [
+            "html"
+        ]
+    },
+    {
+        "name": "hoa/visitor",
+        "version": "1.15.08.17",
+        "version_normalized": "1.15.08.17",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/hoaproject/Visitor.git",
+            "reference": "e30bfff741f71979f6476a41548e34afe8053c67"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/hoaproject/Visitor/zipball/e30bfff741f71979f6476a41548e34afe8053c67",
+            "reference": "e30bfff741f71979f6476a41548e34afe8053c67",
+            "shasum": ""
+        },
+        "require": {
+            "hoa/core": "~2.0"
+        },
+        "require-dev": {
+            "hoa/test": "~1.0"
+        },
+        "time": "2015-08-17 06:30:58",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "1.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Hoa\\Visitor\\": "."
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Ivan Enderlin",
+                "email": "ivan.enderlin@hoa-project.net"
+            },
+            {
+                "name": "Hoa community",
+                "homepage": "http://hoa-project.net/"
+            }
+        ],
+        "description": "The Hoa\\Visitor library.",
+        "homepage": "http://hoa-project.net/",
+        "keywords": [
+            "library",
+            "structure",
+            "visit",
+            "visitor"
+        ]
+    },
+    {
+        "name": "hoa/regex",
+        "version": "0.15.08.13",
+        "version_normalized": "0.15.08.13",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/hoaproject/Regex.git",
+            "reference": "2ef8a77ef3885ca202fcd9c31a8e54c44cd04232"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/hoaproject/Regex/zipball/2ef8a77ef3885ca202fcd9c31a8e54c44cd04232",
+            "reference": "2ef8a77ef3885ca202fcd9c31a8e54c44cd04232",
+            "shasum": ""
+        },
+        "require": {
+            "hoa/core": "~2.0",
+            "hoa/math": "~0.0",
+            "hoa/ustring": "~3.0",
+            "hoa/visitor": "~1.0"
+        },
+        "time": "2015-08-13 06:48:47",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "0.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Hoa\\Regex\\": "."
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Ivan Enderlin",
+                "email": "ivan.enderlin@hoa-project.net"
+            },
+            {
+                "name": "Hoa community",
+                "homepage": "http://hoa-project.net/"
+            }
+        ],
+        "description": "The Hoa\\Regex library.",
+        "homepage": "http://hoa-project.net/",
+        "keywords": [
+            "compiler",
+            "library",
+            "regex"
+        ]
+    },
+    {
+        "name": "phpunit/php-token-stream",
+        "version": "1.4.8",
+        "version_normalized": "1.4.8.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/sebastianbergmann/php-token-stream.git",
+            "reference": "3144ae21711fb6cac0b1ab4cbe63b75ce3d4e8da"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/sebastianbergmann/php-token-stream/zipball/3144ae21711fb6cac0b1ab4cbe63b75ce3d4e8da",
+            "reference": "3144ae21711fb6cac0b1ab4cbe63b75ce3d4e8da",
+            "shasum": ""
+        },
+        "require": {
+            "ext-tokenizer": "*",
+            "php": ">=5.3.3"
+        },
+        "require-dev": {
+            "phpunit/phpunit": "~4.2"
+        },
+        "time": "2015-09-15 10:49:45",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "1.4-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "classmap": [
+                "src/"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Sebastian Bergmann",
+                "email": "sebastian@phpunit.de"
+            }
+        ],
+        "description": "Wrapper around PHP's tokenizer extension.",
+        "homepage": "https://github.com/sebastianbergmann/php-token-stream/",
+        "keywords": [
+            "tokenizer"
+        ]
+    },
+    {
+        "name": "symfony/var-dumper",
+        "version": "v2.7.6",
+        "version_normalized": "2.7.6.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/symfony/var-dumper.git",
+            "reference": "eb033050050916b6bfa51be71009ef67b16046c9"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/symfony/var-dumper/zipball/eb033050050916b6bfa51be71009ef67b16046c9",
+            "reference": "eb033050050916b6bfa51be71009ef67b16046c9",
             "shasum": ""
         },
         "require": {
             "php": ">=5.3.9"
         },
-        "require-dev": {
-            "symfony/phpunit-bridge": "~2.7"
-        },
         "suggest": {
             "ext-symfony_debug": ""
         },
-        "time": "2015-07-28 15:18:12",
+        "time": "2015-10-25 17:17:38",
         "type": "library",
         "extra": {
             "branch-alias": {
@@ -1263,18 +1217,204 @@
         ]
     },
     {
-        "name": "monolog/monolog",
-        "version": "1.15.0",
-        "version_normalized": "1.15.0.0",
+        "name": "maximebf/debugbar",
+        "version": "v1.10.5",
+        "version_normalized": "1.10.5.0",
         "source": {
             "type": "git",
-            "url": "https://github.com/Seldaek/monolog.git",
-            "reference": "dc5150cc608f2334c72c3b6a553ec9668a4156b0"
+            "url": "https://github.com/maximebf/php-debugbar.git",
+            "reference": "30e53e8a28284b69dd223c9f5ee8957befd72636"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/Seldaek/monolog/zipball/dc5150cc608f2334c72c3b6a553ec9668a4156b0",
-            "reference": "dc5150cc608f2334c72c3b6a553ec9668a4156b0",
+            "url": "https://api.github.com/repos/maximebf/php-debugbar/zipball/30e53e8a28284b69dd223c9f5ee8957befd72636",
+            "reference": "30e53e8a28284b69dd223c9f5ee8957befd72636",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.0",
+            "psr/log": "~1.0",
+            "symfony/var-dumper": "~2.6"
+        },
+        "require-dev": {
+            "phpunit/phpunit": "~4.0"
+        },
+        "suggest": {
+            "kriswallsmith/assetic": "The best way to manage assets",
+            "monolog/monolog": "Log using Monolog",
+            "predis/predis": "Redis storage"
+        },
+        "time": "2015-10-19 20:35:12",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "1.10-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "DebugBar": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Maxime Bouroumeau-Fuseau",
+                "email": "maxime.bouroumeau@gmail.com",
+                "homepage": "http://maximebf.com"
+            }
+        ],
+        "description": "Debug bar in the browser for php application",
+        "homepage": "https://github.com/maximebf/php-debugbar",
+        "keywords": [
+            "debug"
+        ]
+    },
+    {
+        "name": "doctrine/cache",
+        "version": "v1.4.4",
+        "version_normalized": "1.4.4.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/doctrine/cache.git",
+            "reference": "6433826dd02c9e5be8a127320dc13e7e6625d020"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/doctrine/cache/zipball/6433826dd02c9e5be8a127320dc13e7e6625d020",
+            "reference": "6433826dd02c9e5be8a127320dc13e7e6625d020",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.2"
+        },
+        "conflict": {
+            "doctrine/common": ">2.2,<2.4"
+        },
+        "require-dev": {
+            "phpunit/phpunit": ">=3.7",
+            "predis/predis": "~1.0",
+            "satooshi/php-coveralls": "~0.6"
+        },
+        "time": "2015-11-02 18:33:51",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "1.5.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "Doctrine\\Common\\Cache\\": "lib/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Roman Borschel",
+                "email": "roman@code-factory.org"
+            },
+            {
+                "name": "Benjamin Eberlei",
+                "email": "kontakt@beberlei.de"
+            },
+            {
+                "name": "Guilherme Blanco",
+                "email": "guilhermeblanco@gmail.com"
+            },
+            {
+                "name": "Jonathan Wage",
+                "email": "jonwage@gmail.com"
+            },
+            {
+                "name": "Johannes Schmitt",
+                "email": "schmittjoh@gmail.com"
+            }
+        ],
+        "description": "Caching library offering an object-oriented API for many cache backends",
+        "homepage": "http://www.doctrine-project.org",
+        "keywords": [
+            "cache",
+            "caching"
+        ]
+    },
+    {
+        "name": "elasticsearch/elasticsearch",
+        "version": "v2.0.3",
+        "version_normalized": "2.0.3.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/elastic/elasticsearch-php.git",
+            "reference": "9ce5bd7606f6c185d434de4f80863f998f74e179"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/elastic/elasticsearch-php/zipball/9ce5bd7606f6c185d434de4f80863f998f74e179",
+            "reference": "9ce5bd7606f6c185d434de4f80863f998f74e179",
+            "shasum": ""
+        },
+        "require": {
+            "guzzlehttp/ringphp": "~1.0",
+            "php": ">=5.4",
+            "psr/log": "~1.0"
+        },
+        "require-dev": {
+            "athletic/athletic": "~0.1",
+            "cpliakas/git-wrapper": "~1.0",
+            "mockery/mockery": "dev-master@dev",
+            "phpunit/phpunit": "3.7.*",
+            "symfony/yaml": "2.4.3 as 2.4.2",
+            "twig/twig": "1.*"
+        },
+        "suggest": {
+            "ext-curl": "*",
+            "monolog/monolog": "Allows for client-level logging and tracing"
+        },
+        "time": "2015-11-05 15:29:21",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Elasticsearch\\": "src/Elasticsearch/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "Apache 2"
+        ],
+        "authors": [
+            {
+                "name": "Zachary Tong"
+            }
+        ],
+        "description": "PHP Client for Elasticsearch",
+        "keywords": [
+            "client",
+            "elasticsearch",
+            "search"
+        ]
+    },
+    {
+        "name": "monolog/monolog",
+        "version": "1.17.2",
+        "version_normalized": "1.17.2.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/Seldaek/monolog.git",
+            "reference": "bee7f0dc9c3e0b69a6039697533dca1e845c8c24"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/Seldaek/monolog/zipball/bee7f0dc9c3e0b69a6039697533dca1e845c8c24",
+            "reference": "bee7f0dc9c3e0b69a6039697533dca1e845c8c24",
             "shasum": ""
         },
         "require": {
@@ -1288,10 +1428,11 @@
             "aws/aws-sdk-php": "^2.4.9",
             "doctrine/couchdb": "~1.0@dev",
             "graylog2/gelf-php": "~1.0",
+            "jakub-onderka/php-parallel-lint": "0.9",
             "php-console/php-console": "^3.1.3",
             "phpunit/phpunit": "~4.5",
             "phpunit/phpunit-mock-objects": "2.3.0",
-            "raven/raven": "~0.8",
+            "raven/raven": "^0.13",
             "ruflin/elastica": ">=0.90 <3.0",
             "swiftmailer/swiftmailer": "~5.3",
             "videlalvaro/php-amqplib": "~2.4"
@@ -1308,11 +1449,11 @@
             "ruflin/elastica": "Allow sending log messages to an Elastic Search server",
             "videlalvaro/php-amqplib": "Allow sending log messages to an AMQP server using php-amqplib"
         },
-        "time": "2015-07-12 13:54:09",
+        "time": "2015-10-14 12:51:02",
         "type": "library",
         "extra": {
             "branch-alias": {
-                "dev-master": "1.15.x-dev"
+                "dev-master": "1.16.x-dev"
             }
         },
         "installation-source": "dist",
@@ -1341,66 +1482,18 @@
         ]
     },
     {
-        "name": "pimple/pimple",
-        "version": "v3.0.1",
-        "version_normalized": "3.0.1.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/silexphp/Pimple.git",
-            "reference": "3313af5935dbc560fab845b76a1ca351b47855af"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/silexphp/Pimple/zipball/3313af5935dbc560fab845b76a1ca351b47855af",
-            "reference": "3313af5935dbc560fab845b76a1ca351b47855af",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=5.3.0"
-        },
-        "time": "2015-07-30 09:57:46",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "3.0.x-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "psr-0": {
-                "Pimple": "src/"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "MIT"
-        ],
-        "authors": [
-            {
-                "name": "Fabien Potencier",
-                "email": "fabien@symfony.com"
-            }
-        ],
-        "description": "Pimple is a simple Dependency Injection Container for PHP 5.3",
-        "homepage": "http://pimple.sensiolabs.org",
-        "keywords": [
-            "container",
-            "dependency injection"
-        ]
-    },
-    {
         "name": "symfony/event-dispatcher",
-        "version": "v2.7.3",
-        "version_normalized": "2.7.3.0",
+        "version": "v2.7.6",
+        "version_normalized": "2.7.6.0",
         "source": {
             "type": "git",
-            "url": "https://github.com/symfony/EventDispatcher.git",
-            "reference": "9310b5f9a87ec2ea75d20fec0b0017c77c66dac3"
+            "url": "https://github.com/symfony/event-dispatcher.git",
+            "reference": "87a5db5ea887763fa3a31a5471b512ff1596d9b8"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/symfony/EventDispatcher/zipball/9310b5f9a87ec2ea75d20fec0b0017c77c66dac3",
-            "reference": "9310b5f9a87ec2ea75d20fec0b0017c77c66dac3",
+            "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/87a5db5ea887763fa3a31a5471b512ff1596d9b8",
+            "reference": "87a5db5ea887763fa3a31a5471b512ff1596d9b8",
             "shasum": ""
         },
         "require": {
@@ -1411,14 +1504,13 @@
             "symfony/config": "~2.0,>=2.0.5",
             "symfony/dependency-injection": "~2.6",
             "symfony/expression-language": "~2.6",
-            "symfony/phpunit-bridge": "~2.7",
             "symfony/stopwatch": "~2.3"
         },
         "suggest": {
             "symfony/dependency-injection": "",
             "symfony/http-kernel": ""
         },
-        "time": "2015-06-18 19:21:56",
+        "time": "2015-10-11 09:39:48",
         "type": "library",
         "extra": {
             "branch-alias": {
@@ -1449,50 +1541,111 @@
         "homepage": "https://symfony.com"
     },
     {
-        "name": "hoa/core",
-        "version": "2.15.07.07",
-        "version_normalized": "2.15.07.07",
+        "name": "knplabs/github-api",
+        "version": "1.5.1",
+        "version_normalized": "1.5.1.0",
         "source": {
             "type": "git",
-            "url": "https://github.com/hoaproject/Core.git",
-            "reference": "df1f75e6a98d52b879bf36bc1ea8744433458f09"
+            "url": "https://github.com/KnpLabs/php-github-api.git",
+            "reference": "832b7be695ed2733741cd5c79166b4a88fb50786"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/hoaproject/Core/zipball/df1f75e6a98d52b879bf36bc1ea8744433458f09",
-            "reference": "df1f75e6a98d52b879bf36bc1ea8744433458f09",
+            "url": "https://api.github.com/repos/KnpLabs/php-github-api/zipball/832b7be695ed2733741cd5c79166b4a88fb50786",
+            "reference": "832b7be695ed2733741cd5c79166b4a88fb50786",
             "shasum": ""
         },
         "require": {
-            "ext-spl": "*",
-            "php": ">=5.4.0"
+            "ext-curl": "*",
+            "guzzle/guzzle": "~3.7",
+            "php": ">=5.3.2"
         },
         "require-dev": {
-            "hoa/test": "~1.0"
+            "phpunit/phpunit": "~4.0"
         },
         "suggest": {
-            "ext-mbstring": "ext/mbstring must be present (or a third implementation).",
-            "hoa/console": "To use the `hoa` script.",
-            "hoa/dispatcher": "To use the `hoa` script.",
-            "hoa/router": "To use the `hoa` script."
+            "knplabs/gaufrette": "Needed for optional Gaufrette cache"
         },
-        "time": "2015-07-07 13:18:26",
-        "bin": [
-            "Bin/hoa"
-        ],
+        "time": "2015-10-11 02:38:28",
         "type": "library",
         "extra": {
             "branch-alias": {
-                "dev-master": "2.x-dev"
+                "dev-master": "1.4.x-dev"
             }
         },
         "installation-source": "dist",
         "autoload": {
             "psr-4": {
-                "Hoa\\Core\\": "."
+                "Github\\": "lib/Github/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Thibault Duplessis",
+                "email": "thibault.duplessis@gmail.com",
+                "homepage": "http://ornicar.github.com"
             },
-            "files": [
-                "Core.php"
+            {
+                "name": "KnpLabs Team",
+                "homepage": "http://knplabs.com"
+            }
+        ],
+        "description": "GitHub API v3 client",
+        "homepage": "https://github.com/KnpLabs/php-github-api",
+        "keywords": [
+            "api",
+            "gh",
+            "gist",
+            "github"
+        ]
+    },
+    {
+        "name": "phpunit/php-code-coverage",
+        "version": "2.2.4",
+        "version_normalized": "2.2.4.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
+            "reference": "eabf68b476ac7d0f73793aada060f1c1a9bf8979"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/eabf68b476ac7d0f73793aada060f1c1a9bf8979",
+            "reference": "eabf68b476ac7d0f73793aada060f1c1a9bf8979",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.3",
+            "phpunit/php-file-iterator": "~1.3",
+            "phpunit/php-text-template": "~1.2",
+            "phpunit/php-token-stream": "~1.3",
+            "sebastian/environment": "^1.3.2",
+            "sebastian/version": "~1.0"
+        },
+        "require-dev": {
+            "ext-xdebug": ">=2.1.4",
+            "phpunit/phpunit": "~4"
+        },
+        "suggest": {
+            "ext-dom": "*",
+            "ext-xdebug": ">=2.2.1",
+            "ext-xmlwriter": "*"
+        },
+        "time": "2015-10-06 15:47:00",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.2.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "classmap": [
+                "src/"
             ]
         },
         "notification-url": "https://packagist.org/downloads/",
@@ -1501,40 +1654,138 @@
         ],
         "authors": [
             {
-                "name": "Ivan Enderlin",
-                "email": "ivan.enderlin@hoa-project.net"
-            },
-            {
-                "name": "Hoa community",
-                "homepage": "http://hoa-project.net/"
+                "name": "Sebastian Bergmann",
+                "email": "sb@sebastian-bergmann.de",
+                "role": "lead"
             }
         ],
-        "description": "The Hoa\\Core library.",
-        "homepage": "http://hoa-project.net/",
+        "description": "Library that provides collection, processing, and rendering functionality for PHP code coverage information.",
+        "homepage": "https://github.com/sebastianbergmann/php-code-coverage",
         "keywords": [
-            "consistency",
-            "core",
-            "data",
-            "event",
-            "library",
-            "listener",
-            "parameter",
-            "protocol"
+            "coverage",
+            "testing",
+            "xunit"
         ]
     },
     {
-        "name": "hoa/visitor",
-        "version": "1.15.05.29",
-        "version_normalized": "1.15.05.29",
+        "name": "phpunit/phpunit-mock-objects",
+        "version": "2.3.8",
+        "version_normalized": "2.3.8.0",
         "source": {
             "type": "git",
-            "url": "https://github.com/hoaproject/Visitor.git",
-            "reference": "8211aaefedb158068c2349a491e2186e238b043b"
+            "url": "https://github.com/sebastianbergmann/phpunit-mock-objects.git",
+            "reference": "ac8e7a3db35738d56ee9a76e78a4e03d97628983"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/hoaproject/Visitor/zipball/8211aaefedb158068c2349a491e2186e238b043b",
-            "reference": "8211aaefedb158068c2349a491e2186e238b043b",
+            "url": "https://api.github.com/repos/sebastianbergmann/phpunit-mock-objects/zipball/ac8e7a3db35738d56ee9a76e78a4e03d97628983",
+            "reference": "ac8e7a3db35738d56ee9a76e78a4e03d97628983",
+            "shasum": ""
+        },
+        "require": {
+            "doctrine/instantiator": "^1.0.2",
+            "php": ">=5.3.3",
+            "phpunit/php-text-template": "~1.2",
+            "sebastian/exporter": "~1.2"
+        },
+        "require-dev": {
+            "phpunit/phpunit": "~4.4"
+        },
+        "suggest": {
+            "ext-soap": "*"
+        },
+        "time": "2015-10-02 06:51:40",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.3.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "classmap": [
+                "src/"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Sebastian Bergmann",
+                "email": "sb@sebastian-bergmann.de",
+                "role": "lead"
+            }
+        ],
+        "description": "Mock Object library for PHPUnit",
+        "homepage": "https://github.com/sebastianbergmann/phpunit-mock-objects/",
+        "keywords": [
+            "mock",
+            "xunit"
+        ]
+    },
+    {
+        "name": "symfony/yaml",
+        "version": "v2.7.6",
+        "version_normalized": "2.7.6.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/symfony/yaml.git",
+            "reference": "eca9019c88fbe250164affd107bc8057771f3f4d"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/symfony/yaml/zipball/eca9019c88fbe250164affd107bc8057771f3f4d",
+            "reference": "eca9019c88fbe250164affd107bc8057771f3f4d",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.9"
+        },
+        "time": "2015-10-11 09:39:48",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.7-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Symfony\\Component\\Yaml\\": ""
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Fabien Potencier",
+                "email": "fabien@symfony.com"
+            },
+            {
+                "name": "Symfony Community",
+                "homepage": "https://symfony.com/contributors"
+            }
+        ],
+        "description": "Symfony Yaml Component",
+        "homepage": "https://symfony.com"
+    },
+    {
+        "name": "hoa/iterator",
+        "version": "1.15.10.29",
+        "version_normalized": "1.15.10.29",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/hoaproject/Iterator.git",
+            "reference": "a64ed9fd62579a34e4450134d6d1abdf77d54435"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/hoaproject/Iterator/zipball/a64ed9fd62579a34e4450134d6d1abdf77d54435",
+            "reference": "a64ed9fd62579a34e4450134d6d1abdf77d54435",
             "shasum": ""
         },
         "require": {
@@ -1543,7 +1794,7 @@
         "require-dev": {
             "hoa/test": "~1.0"
         },
-        "time": "2015-05-29 14:18:25",
+        "time": "2015-10-29 21:37:16",
         "type": "library",
         "extra": {
             "branch-alias": {
@@ -1553,7 +1804,7 @@
         "installation-source": "dist",
         "autoload": {
             "psr-4": {
-                "Hoa\\Visitor\\": "."
+                "Hoa\\Iterator\\": "."
             }
         },
         "notification-url": "https://packagist.org/downloads/",
@@ -1570,28 +1821,90 @@
                 "homepage": "http://hoa-project.net/"
             }
         ],
-        "description": "The Hoa\\Visitor library.",
+        "description": "The Hoa\\Iterator library.",
         "homepage": "http://hoa-project.net/",
         "keywords": [
+            "iterator",
+            "library"
+        ]
+    },
+    {
+        "name": "hoa/math",
+        "version": "0.15.10.26",
+        "version_normalized": "0.15.10.26",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/hoaproject/Math.git",
+            "reference": "62631c65d9a4f1b8bb4c4a3d6cdff0e8971d684e"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/hoaproject/Math/zipball/62631c65d9a4f1b8bb4c4a3d6cdff0e8971d684e",
+            "reference": "62631c65d9a4f1b8bb4c4a3d6cdff0e8971d684e",
+            "shasum": ""
+        },
+        "require": {
+            "hoa/compiler": "~2.0",
+            "hoa/core": "~2.0",
+            "hoa/iterator": "~1.0"
+        },
+        "require-dev": {
+            "hoa/test": "~1.0"
+        },
+        "time": "2015-10-26 15:22:52",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "0.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Hoa\\Math\\": "."
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Ivan Enderlin",
+                "email": "ivan.enderlin@hoa-project.net"
+            },
+            {
+                "name": "Hoa community",
+                "homepage": "http://hoa-project.net/"
+            }
+        ],
+        "description": "The Hoa\\Math library.",
+        "homepage": "http://hoa-project.net/",
+        "keywords": [
+            "arrangement",
+            "combination",
+            "combinatorics",
+            "counting",
             "library",
-            "structure",
-            "visit",
-            "visitor"
+            "math",
+            "permutation",
+            "sampler",
+            "set"
         ]
     },
     {
         "name": "hoa/compiler",
-        "version": "2.15.05.29",
-        "version_normalized": "2.15.05.29",
+        "version": "2.15.10.29",
+        "version_normalized": "2.15.10.29",
         "source": {
             "type": "git",
             "url": "https://github.com/hoaproject/Compiler.git",
-            "reference": "4b448762461dc115ff8f63d0fede34a0dce45e4a"
+            "reference": "ec0849fd3c1472fbcd86c3c961981f0cfe1f8d39"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/hoaproject/Compiler/zipball/4b448762461dc115ff8f63d0fede34a0dce45e4a",
-            "reference": "4b448762461dc115ff8f63d0fede34a0dce45e4a",
+            "url": "https://api.github.com/repos/hoaproject/Compiler/zipball/ec0849fd3c1472fbcd86c3c961981f0cfe1f8d39",
+            "reference": "ec0849fd3c1472fbcd86c3c961981f0cfe1f8d39",
             "shasum": ""
         },
         "require": {
@@ -1606,7 +1919,7 @@
             "hoa/json": "~1.0",
             "hoa/test": "~1.0"
         },
-        "time": "2015-05-29 13:43:46",
+        "time": "2015-10-29 21:35:12",
         "type": "library",
         "extra": {
             "branch-alias": {
@@ -1662,199 +1975,24 @@
         ]
     },
     {
-        "name": "hoa/regex",
-        "version": "0.15.05.29",
-        "version_normalized": "0.15.05.29",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/hoaproject/Regex.git",
-            "reference": "2b194c1bc105b29bf31d387198340feeb9949340"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/hoaproject/Regex/zipball/2b194c1bc105b29bf31d387198340feeb9949340",
-            "reference": "2b194c1bc105b29bf31d387198340feeb9949340",
-            "shasum": ""
-        },
-        "require": {
-            "hoa/core": "~2.0",
-            "hoa/math": "~0.0",
-            "hoa/ustring": "~3.0",
-            "hoa/visitor": "~1.0"
-        },
-        "time": "2015-05-29 14:06:08",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "0.x-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "psr-4": {
-                "Hoa\\Regex\\": "."
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "BSD-3-Clause"
-        ],
-        "authors": [
-            {
-                "name": "Ivan Enderlin",
-                "email": "ivan.enderlin@hoa-project.net"
-            },
-            {
-                "name": "Hoa community",
-                "homepage": "http://hoa-project.net/"
-            }
-        ],
-        "description": "The Hoa\\Regex library.",
-        "homepage": "http://hoa-project.net/",
-        "keywords": [
-            "compiler",
-            "library",
-            "regex"
-        ]
-    },
-    {
-        "name": "hoa/math",
-        "version": "0.15.05.29",
-        "version_normalized": "0.15.05.29",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/hoaproject/Math.git",
-            "reference": "7d159567f4ee10de7391f5042dc957fd041f9dec"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/hoaproject/Math/zipball/7d159567f4ee10de7391f5042dc957fd041f9dec",
-            "reference": "7d159567f4ee10de7391f5042dc957fd041f9dec",
-            "shasum": ""
-        },
-        "require": {
-            "hoa/compiler": "~2.0",
-            "hoa/core": "~2.0",
-            "hoa/iterator": "~1.0"
-        },
-        "require-dev": {
-            "hoa/test": "~1.0"
-        },
-        "time": "2015-05-29 14:00:38",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "0.x-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "psr-4": {
-                "Hoa\\Math\\": "."
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "BSD-3-Clause"
-        ],
-        "authors": [
-            {
-                "name": "Ivan Enderlin",
-                "email": "ivan.enderlin@hoa-project.net"
-            },
-            {
-                "name": "Hoa community",
-                "homepage": "http://hoa-project.net/"
-            }
-        ],
-        "description": "The Hoa\\Math library.",
-        "homepage": "http://hoa-project.net/",
-        "keywords": [
-            "arrangement",
-            "combination",
-            "combinatorics",
-            "counting",
-            "library",
-            "math",
-            "permutation",
-            "sampler",
-            "set"
-        ]
-    },
-    {
-        "name": "hoa/iterator",
-        "version": "1.15.05.29",
-        "version_normalized": "1.15.05.29",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/hoaproject/Iterator.git",
-            "reference": "57f548be192b365890d14c23f37810deaa77574d"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/hoaproject/Iterator/zipball/57f548be192b365890d14c23f37810deaa77574d",
-            "reference": "57f548be192b365890d14c23f37810deaa77574d",
-            "shasum": ""
-        },
-        "require": {
-            "hoa/core": "~2.0"
-        },
-        "require-dev": {
-            "hoa/test": "~1.0"
-        },
-        "time": "2015-05-29 13:56:28",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "1.x-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "psr-4": {
-                "Hoa\\Iterator\\": "."
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "BSD-3-Clause"
-        ],
-        "authors": [
-            {
-                "name": "Ivan Enderlin",
-                "email": "ivan.enderlin@hoa-project.net"
-            },
-            {
-                "name": "Hoa community",
-                "homepage": "http://hoa-project.net/"
-            }
-        ],
-        "description": "The Hoa\\Iterator library.",
-        "homepage": "http://hoa-project.net/",
-        "keywords": [
-            "iterator",
-            "library"
-        ]
-    },
-    {
         "name": "hoa/stream",
-        "version": "0.15.05.29",
-        "version_normalized": "0.15.05.29",
+        "version": "0.15.10.26",
+        "version_normalized": "0.15.10.26",
         "source": {
             "type": "git",
             "url": "https://github.com/hoaproject/Stream.git",
-            "reference": "38b2ece5a0683f5cd91e4062dcf45f4885a3a826"
+            "reference": "011ab91d942f1d7096deade4c8a10fe57d51c5b3"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/hoaproject/Stream/zipball/38b2ece5a0683f5cd91e4062dcf45f4885a3a826",
-            "reference": "38b2ece5a0683f5cd91e4062dcf45f4885a3a826",
+            "url": "https://api.github.com/repos/hoaproject/Stream/zipball/011ab91d942f1d7096deade4c8a10fe57d51c5b3",
+            "reference": "011ab91d942f1d7096deade4c8a10fe57d51c5b3",
             "shasum": ""
         },
         "require": {
             "hoa/core": "~2.0"
         },
-        "time": "2015-05-29 14:11:35",
+        "time": "2015-10-22 06:30:43",
         "type": "library",
         "extra": {
             "branch-alias": {
@@ -1897,18 +2035,87 @@
         ]
     },
     {
-        "name": "hoa/file",
-        "version": "0.15.05.27",
-        "version_normalized": "0.15.05.27",
+        "name": "hoa/core",
+        "version": "2.15.11.09",
+        "version_normalized": "2.15.11.09",
         "source": {
             "type": "git",
-            "url": "https://github.com/hoaproject/File.git",
-            "reference": "bd82aff5e81f16971c5fc99301a5c5717b1fd4da"
+            "url": "https://github.com/hoaproject/Core.git",
+            "reference": "5538b1e90e2c66c90df5cc45e03fb85d047be900"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/hoaproject/File/zipball/bd82aff5e81f16971c5fc99301a5c5717b1fd4da",
-            "reference": "bd82aff5e81f16971c5fc99301a5c5717b1fd4da",
+            "url": "https://api.github.com/repos/hoaproject/Core/zipball/5538b1e90e2c66c90df5cc45e03fb85d047be900",
+            "reference": "5538b1e90e2c66c90df5cc45e03fb85d047be900",
+            "shasum": ""
+        },
+        "require": {
+            "ext-spl": "*",
+            "php": ">=5.4.0"
+        },
+        "require-dev": {
+            "hoa/test": "~1.0"
+        },
+        "suggest": {
+            "ext-mbstring": "ext/mbstring must be present (or a third implementation).",
+            "hoa/cli": "To use the `hoa` script."
+        },
+        "time": "2015-11-09 06:51:06",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Hoa\\Core\\": "."
+            },
+            "files": [
+                "Core.php"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Ivan Enderlin",
+                "email": "ivan.enderlin@hoa-project.net"
+            },
+            {
+                "name": "Hoa community",
+                "homepage": "http://hoa-project.net/"
+            }
+        ],
+        "description": "The Hoa\\Core library.",
+        "homepage": "http://hoa-project.net/",
+        "keywords": [
+            "consistency",
+            "core",
+            "data",
+            "event",
+            "library",
+            "listener",
+            "parameter",
+            "protocol"
+        ]
+    },
+    {
+        "name": "hoa/file",
+        "version": "0.15.11.09",
+        "version_normalized": "0.15.11.09",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/hoaproject/File.git",
+            "reference": "f46fe552ff79cb6c93a2ff9c25cfbc134fbd57ee"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/hoaproject/File/zipball/f46fe552ff79cb6c93a2ff9c25cfbc134fbd57ee",
+            "reference": "f46fe552ff79cb6c93a2ff9c25cfbc134fbd57ee",
             "shasum": ""
         },
         "require": {
@@ -1919,7 +2126,7 @@
         "require-dev": {
             "hoa/test": "~1.0"
         },
-        "time": "2015-05-27 09:18:31",
+        "time": "2015-11-09 06:55:20",
         "type": "library",
         "extra": {
             "branch-alias": {
@@ -1959,134 +2166,18 @@
         ]
     },
     {
-        "name": "sebastian/environment",
-        "version": "1.3.2",
-        "version_normalized": "1.3.2.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/sebastianbergmann/environment.git",
-            "reference": "6324c907ce7a52478eeeaede764f48733ef5ae44"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/sebastianbergmann/environment/zipball/6324c907ce7a52478eeeaede764f48733ef5ae44",
-            "reference": "6324c907ce7a52478eeeaede764f48733ef5ae44",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=5.3.3"
-        },
-        "require-dev": {
-            "phpunit/phpunit": "~4.4"
-        },
-        "time": "2015-08-03 06:14:51",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "1.3.x-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "classmap": [
-                "src/"
-            ]
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "BSD-3-Clause"
-        ],
-        "authors": [
-            {
-                "name": "Sebastian Bergmann",
-                "email": "sebastian@phpunit.de"
-            }
-        ],
-        "description": "Provides functionality to handle HHVM/PHP environments",
-        "homepage": "http://www.github.com/sebastianbergmann/environment",
-        "keywords": [
-            "Xdebug",
-            "environment",
-            "hhvm"
-        ]
-    },
-    {
-        "name": "phpunit/php-code-coverage",
-        "version": "2.2.2",
-        "version_normalized": "2.2.2.0",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-            "reference": "2d7c03c0e4e080901b8f33b2897b0577be18a13c"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/2d7c03c0e4e080901b8f33b2897b0577be18a13c",
-            "reference": "2d7c03c0e4e080901b8f33b2897b0577be18a13c",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=5.3.3",
-            "phpunit/php-file-iterator": "~1.3",
-            "phpunit/php-text-template": "~1.2",
-            "phpunit/php-token-stream": "~1.3",
-            "sebastian/environment": "^1.3.2",
-            "sebastian/version": "~1.0"
-        },
-        "require-dev": {
-            "ext-xdebug": ">=2.1.4",
-            "phpunit/phpunit": "~4"
-        },
-        "suggest": {
-            "ext-dom": "*",
-            "ext-xdebug": ">=2.2.1",
-            "ext-xmlwriter": "*"
-        },
-        "time": "2015-08-04 03:42:39",
-        "type": "library",
-        "extra": {
-            "branch-alias": {
-                "dev-master": "2.2.x-dev"
-            }
-        },
-        "installation-source": "dist",
-        "autoload": {
-            "classmap": [
-                "src/"
-            ]
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "BSD-3-Clause"
-        ],
-        "authors": [
-            {
-                "name": "Sebastian Bergmann",
-                "email": "sb@sebastian-bergmann.de",
-                "role": "lead"
-            }
-        ],
-        "description": "Library that provides collection, processing, and rendering functionality for PHP code coverage information.",
-        "homepage": "https://github.com/sebastianbergmann/php-code-coverage",
-        "keywords": [
-            "coverage",
-            "testing",
-            "xunit"
-        ]
-    },
-    {
         "name": "hoa/ustring",
-        "version": "3.15.08.03",
-        "version_normalized": "3.15.08.03",
+        "version": "3.15.11.09",
+        "version_normalized": "3.15.11.09",
         "source": {
             "type": "git",
             "url": "https://github.com/hoaproject/Ustring.git",
-            "reference": "261d5bfc53df8e895793d330f0fb96929fca355d"
+            "reference": "8506be4910212b1a2beb9014763a8a4fbd871001"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/hoaproject/Ustring/zipball/261d5bfc53df8e895793d330f0fb96929fca355d",
-            "reference": "261d5bfc53df8e895793d330f0fb96929fca355d",
+            "url": "https://api.github.com/repos/hoaproject/Ustring/zipball/8506be4910212b1a2beb9014763a8a4fbd871001",
+            "reference": "8506be4910212b1a2beb9014763a8a4fbd871001",
             "shasum": ""
         },
         "require": {
@@ -2099,7 +2190,7 @@
             "ext-iconv": "ext/iconv must be present (or a third implementation) to use Hoa\\Ustring::transcode().",
             "ext-intl": "To get a better Hoa\\Ustring::toAscii() and Hoa\\Ustring::compareTo()."
         },
-        "time": "2015-08-03 07:49:50",
+        "time": "2015-11-09 06:44:33",
         "type": "library",
         "extra": {
             "branch-alias": {

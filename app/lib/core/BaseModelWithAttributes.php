@@ -1318,12 +1318,13 @@
 			if(!$pa_options) { $pa_options = array(); }
 			$va_tmp = explode('.', $ps_field);
 			
+			if ($vs_rel_types = join(";", caGetOption('restrictToRelationshipTypes', $pa_options, array()))) { $vs_rel_types = "/{$vs_rel_types}"; }
 			if ($va_tmp[1] == $this->getTypeFieldName()) {
-				return $this->getTypeListAsHTMLFormElement($ps_field, array('class' => caGetOption('class', $pa_options, null)), array_merge($pa_options, array('nullOption' => '-')));
+				return $this->getTypeListAsHTMLFormElement($ps_field.$vs_rel_types, array('class' => caGetOption('class', $pa_options, null)), array_merge($pa_options, array('nullOption' => '-')));
 			}
 											
 			if (in_array($va_tmp[1], array('preferred_labels', 'nonpreferred_labels'))) {
-				return caHTMLTextInput($ps_field.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'size' => $pa_options['width'], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)));
+				return caHTMLTextInput($ps_field.$vs_rel_types.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)), $pa_options);
 			}
 			
 			if (!in_array($va_tmp[0], array('created', 'modified'))) {		// let change log searches filter down to BaseModel
@@ -1635,6 +1636,8 @@
 			}
 			$pa_options['format'] = $vs_format;
 			
+			if ($vs_rel_types = join(";", caGetOption('restrictToRelationshipTypes', $pa_options, array()))) { $vs_rel_types = "/{$vs_rel_types}"; }
+			
 			foreach($va_element_set as $va_element) {
 				$va_override_options = array();
 				if ($va_element['datatype'] == 0) {		// containers are not active form elements
@@ -1670,7 +1673,7 @@
 				$va_element_opts['values'] = '';
 				
 				// ... replace name of form element
-				$vs_fld_name = $vs_subelement_code; //str_replace('.', '_', $vs_subelement_code);
+				$vs_fld_name = $vs_subelement_code.$vs_rel_types; //str_replace('.', '_', $vs_subelement_code);
 				if (caGetOption('asArrayElement', $pa_options, false)) { $vs_fld_name .= "[]"; } 
 				
 				if ($vs_force_value = caGetOption('force', $pa_options, false)) {
