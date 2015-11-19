@@ -123,7 +123,7 @@
 				
 			<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 			<div style="float: right;">
-				<div class='hierarchyBrowserSearchBar'><?php print _t('Search'); ?>: <input type='text' id='<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}' class='hierarchyBrowserSearchBar' name='search' value='' size='40'/></div>
+				<input type='text' id='<?php print $vs_id_prefix; ?>_hierarchyBrowserSearch{n}' class='hierarchyBrowserSearchBar' name='search' value='' size='40' placeholder='<?php print _t('Search'); ?>' />
 			</div>
 			<div style="float: left;" class="hierarchyBrowserCurrentSelectionText">
 				<input type="hidden" name="<?php print $vs_id_prefix; ?>_location_id{n}" id="<?php print $vs_id_prefix; ?>_location_id{n}" value="{id}"/>
