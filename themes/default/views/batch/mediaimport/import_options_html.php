@@ -359,6 +359,8 @@
 								<td class='formLabel'>
 									<?php
 									print $this->getVar('match_mode');
+									print "\n<br/>\n";
+									print _t('where identifier %1 value', $this->getVar('match_type'));
 									?>
 								</td>
 								<td class='formLabel'>
