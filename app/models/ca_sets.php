@@ -1956,7 +1956,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
  		
  		$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
  		
-		return $o_view->render('ca_sets.php');
+		return $o_view->render('ca_sets_checklist.php');
 	}
 	# ------------------------------------------------------
 	# Utilities

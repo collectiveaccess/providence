@@ -1579,7 +1579,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						break;
 					# -------------------------------
 					// This bundle is only available for types which support set membership
-					case 'ca_sets':
+					case 'ca_sets_checklist':
 						require_once(__CA_MODELS_DIR__."/ca_sets.php");	// need to include here to avoid dependency errors on parse/compile
 						$t_set = new ca_sets();
 						$vs_element .= $t_set->getItemSetMembershipHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $this->tableNum(), $this->getPrimaryKey(), $pa_options['request']->getUserID(), $pa_bundle_settings, $pa_options);
@@ -3817,7 +3817,7 @@ if (!$vb_batch) {
 						break;
 					# -------------------------------------
 					// This bundle is only available for types which support set membership
-					case 'ca_sets':
+					case 'ca_sets_checklist':
 						// check for existing labels to delete (no updating supported)
 						require_once(__CA_MODELS_DIR__.'/ca_sets.php');
 						require_once(__CA_MODELS_DIR__.'/ca_set_items.php');
