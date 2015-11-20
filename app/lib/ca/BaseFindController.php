@@ -889,8 +889,13 @@
 			
 				$t_set = new ca_sets();
 				$t_set->setMode(ACCESS_WRITE);
+				if($vn_set_type_id = $this->getRequest()->getParameter('set_type_id', pInteger)) {
+					$t_set->set('type_id', $vn_set_type_id);
+				} else {
+					$t_set->set('type_id', $this->getRequest()->getAppConfig()->get('ca_sets_default_type'));
+				}
+
 				$t_set->set('user_id', $this->request->getUserID());
-				$t_set->set('type_id', $this->request->config->get('ca_sets_default_type'));
 				$t_set->set('table_num', $t_model->tableNum());
 				$t_set->set('set_code', $vs_set_code = mb_substr(preg_replace("![^A-Za-z0-9_\-]+!", "_", $vs_set_name), 0, 100));
 			

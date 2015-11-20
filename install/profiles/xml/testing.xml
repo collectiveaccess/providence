@@ -2505,6 +2505,9 @@
             </label>
           </labels>
           <bundlePlacements>
+            <placement code="ca_sets">
+              <bundle>ca_sets</bundle>
+            </placement>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
             </placement>
