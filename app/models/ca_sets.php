@@ -2455,4 +2455,51 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		return $va_set_ids;
 	}
 	# ---------------------------------------------------------------
+	/**
+	 * Check if currently loaded row is save-able
+	 *
+	 * @param RequestHTTP $po_request
+	 * @param string $ps_bundle_name Optional bundle name to test write-ability on. If omitted write-ability is considered for the item as a whole.
+	 * @return bool True if record can be saved, false if not
+	 */
+	public function isSaveable($po_request, $ps_bundle_name=null) {
+		// Check type restrictions
+		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
+			$vn_type_access = $po_request->user->getTypeAccessLevel($this->tableName(), $this->getTypeID());
+			if ($vn_type_access != __CA_BUNDLE_ACCESS_EDIT__) {
+				return false;
+			}
+		}
+
+		// Check source restrictions
+		if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
+			$vn_source_access = $po_request->user->getSourceAccessLevel($this->tableName(), $this->getSourceID());
+			if ($vn_source_access < __CA_BUNDLE_ACCESS_EDIT__) {
+				return false;
+			}
+		}
+
+		// Check item level restrictions
+		if ((bool)$this->getAppConfig()->get('perform_item_level_access_checking') && $this->getPrimaryKey()) {
+			$vn_item_access = $this->checkACLAccessForUser($po_request->user);
+			if ($vn_item_access < __CA_ACL_EDIT_ACCESS__) {
+				return false;
+			}
+		}
+
+		// Check actions
+		if (!$this->getPrimaryKey() && !$po_request->user->canDoAction('can_create_sets')) {
+			return false;
+		}
+		if ($this->getPrimaryKey() && !$po_request->user->canDoAction('can_edit_sets')) {
+			return false;
+		}
+
+		if ($ps_bundle_name) {
+			if ($po_request->user->getBundleAccessLevel($this->tableName(), $ps_bundle_name) < __CA_BUNDLE_ACCESS_EDIT__) { return false; }
+		}
+
+		return true;
+	}
+	# ---------------------------------------------------------------
 }
