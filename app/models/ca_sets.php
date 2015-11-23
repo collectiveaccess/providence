@@ -982,7 +982,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		// If user is admin or has set admin privs allow them access to the set
 		//
 		$t_user = new ca_users();
-		if ($t_user->load($pn_user_id) && ($t_user->canDoAction('is_administrator') || $t_user->canDoAction('can_administrate_sets'))) { 
+		if ($t_user->load($pn_user_id) && ($t_user->canDoAction('is_administrator') || $t_user->canDoAction('can_administrate_sets'))) {
 			return ca_sets::$s_have_access_to_set_cache[$vn_set_id.'/'.$pn_user_id.'/'.$pn_access] = true;
 		}
 		
