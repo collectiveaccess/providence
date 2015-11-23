@@ -92,6 +92,5 @@
 		<input type='hidden' name='screen' value='<?php print htmlspecialchars($this->getVar('screen')); ?>'/>
 		<input type='hidden' name='types' value='<?php print htmlspecialchars(is_array($va_restrict_to_types) ? join(',', $va_restrict_to_types) : ''); ?>'/>
 		<input type='hidden' name='table_num' value='<?php print $this->request->getParameter('table_num', pInteger); ?>'/>
-		<input type='hidden' name='user_id' value='<?php print $this->request->getUserID(); ?>'/>
 	</div>
 </form>
