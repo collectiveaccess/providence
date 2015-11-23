@@ -574,6 +574,9 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$ps_set_name = isset($pa_options['name']) ? $pa_options['name'] : null;
 		
 		$pn_row_id = (isset($pa_options['row_id']) && ((int)$pa_options['row_id'])) ? (int)$pa_options['row_id'] : null;
+
+		$ps_sort = caGetOption('sort', $pa_options, null);
+		$ps_sort_direction = caGetOption('sortDirection', $pa_options, null);
 		
 		$pa_public_access = isset($pa_options['checkAccess']) ? $pa_options['checkAccess'] : null;
 		if ($pa_public_access && is_numeric($pa_public_access) && !is_array($pa_public_access)) {
@@ -801,6 +804,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					
 					$va_sets[$qr_res->get('set_id')][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array('item_count' => intval($va_item_counts[$qr_res->get('set_id')]), 'set_content_type' => $vs_set_type, 'set_type' => $vs_type));
 				}
+
 				return $va_sets;
 			}
 			
