@@ -6494,7 +6494,10 @@ div.caUseHistoryEntry {
 
 div.caUseHistoryButtonBar {
 	padding: 10px;
-	border-bottom: 1px dotted #e6e6e6;
+}
+
+.caChangeLocationButton, .caAddLoanButton {
+	margin-top: 5px;
 }
 
 div.caUseHistoryIconContainer {

@@ -91,9 +91,9 @@
 					<?php print $va_form['search_form_content_type']; ?>
 				</td>
 				<td>
-					<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'editIcon', 'manage/search_forms', 'SearchFormEditor', 'Edit', array('form_id' => $va_form['form_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), '', 'manage/search_forms', 'SearchFormEditor', 'Edit', array('form_id' => $va_form['form_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 					
-					<?php print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'deleteIcon', 'manage/search_forms', 'SearchFormEditor', 'Delete', array('form_id' => $va_form['form_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?php print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'manage/search_forms', 'SearchFormEditor', 'Delete', array('form_id' => $va_form['form_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 				</td>
 			</tr>
 <?php

@@ -847,7 +847,7 @@
           <description>An account of the resource. Description may include but is not limited to: an abstract, a table of contents, a graphical representation, or a free-text account of the resource.</description>
         </label>
       </labels>
-      <documentationUrl>http://dublincore.org/documents/dcmi-terms/#terms-description</documentationUrl>      
+      <documentationUrl>http://dublincore.org/documents/dcmi-terms/#terms-description</documentationUrl>
       <settings>
         <setting name="usewysiwygeditor">1</setting>
         <setting name="fieldWidth">640px</setting>
@@ -1022,7 +1022,7 @@
           <description>A point or period of time associated with an event in the life cycle of the resource.</description>
         </label>
       </labels>
-      <documentationUrl>http://dublincore.org/documents/dcmi-terms/#terms-date</documentationUrl>      
+      <documentationUrl>http://dublincore.org/documents/dcmi-terms/#terms-date</documentationUrl>
       <elements>
         <metadataElement code="dates_value" datatype="DateRange">
           <labels>
@@ -1230,7 +1230,7 @@
           </settings>
         </restriction>
       </typeRestrictions>
-    </metadataElement>    
+    </metadataElement>
     <!--Coverage Elements-->
     <metadataElement code="georeference" datatype="Geocode">
       <labels>
@@ -1272,7 +1272,7 @@
           </settings>
         </restriction>
       </typeRestrictions>
-    </metadataElement>    
+    </metadataElement>
     <metadataElement code="coverageNotes" datatype="Text">
       <labels>
         <label locale="en_US">
@@ -1409,10 +1409,8 @@
       </labels>
       <documentationUrl>http://dublincore.org/documents/dcmi-terms/#terms-format</documentationUrl>
       <settings>
-        <setting name="fieldWidth">80</setting>
-        <setting name="fieldHeight">1</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
+        <setting name="hideIfSelected_image_gif">standard_object_ui/format/ca_attribute_formatNotes</setting>
+        <setting name="hideIfSelected_image_gif">standard_object_ui/format/ca_attribute_dimensions</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
@@ -1514,7 +1512,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    
+
     <metadataElement code="formatNotes" datatype="Text">
       <labels>
         <label locale="en_US">
@@ -1691,7 +1689,7 @@
           </settings>
         </restriction>
       </typeRestrictions>
-    </metadataElement>    
+    </metadataElement>
     <!--Subject Elements-->
     <metadataElement code="lcsh_terms" datatype="LCSH">
       <labels>
@@ -4411,15 +4409,23 @@
   </searchForms>
   
   <logins>
-    <login user_name="administrator" password="dublincore" fname="CollectiveAccess"
-      lname="Administrator" email="info@collectiveaccess.org">
+    <login user_name="administrator" password="dublincore" fname="CollectiveAccess" 
+           lname="Administrator" email="info@collectiveaccess.org">
       <role code="admin"/>
       <group code="admin"/>
     </login>
-    <login user_name="cataloguer" password="cataloguer" fname="CollectiveAccess"
+    <login user_name="cataloguer" password="cataloguer" fname="CollectiveAccess" 
            lname="Cataloguer" email="support@collectiveaccess.org">
       <role code="cataloguer"/>
       <group code="cataloguer"/>
+    </login>
+    <login user_name="researcher" password="researcher" fname="CollectiveAccess"
+           lname="Researcher" email="support@collectiveaccess.org">
+      <role code="researcher"/>
+    </login>
+    <login user_name="moderator" password="moderator" fname="CollectiveAccess"
+           lname="Moderator" email="support@collectiveaccess.org">
+      <role code="moderator"/>
     </login>
   </logins>
 </profile>

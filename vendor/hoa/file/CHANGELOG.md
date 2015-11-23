@@ -1,3 +1,7 @@
+# 0.15.11.09
+
+  * Add a `.gitignore` file. (Stéphane HULARD, 2015-08-03T11:30:34+02:00)
+
 # 0.15.05.27
 
   * `getSize` returns `false` if stream is unstatable. (Ivan Enderlin, 2015-05-27T11:05:46+02:00)

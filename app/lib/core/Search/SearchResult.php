@@ -98,6 +98,22 @@ class SearchResult extends BaseObject {
 	private $opb_disable_get_with_template_prefetch = false;
 	static $s_template_prefetch_cache;
 	# ------------------------------------------------------------------
+
+	public static function clearCaches() {
+		self::$s_prefetch_cache = array();
+		self::$s_instance_cache = array();
+		self::$s_timestamp_cache = array();
+		self::$s_rel_prefetch_cache = array();
+		self::$s_parsed_field_component_cache = array();
+		self::$opa_hierarchy_parent_prefetch_cache = array();
+		self::$opa_hierarchy_children_prefetch_cache = array();
+		self::$opa_hierarchy_parent_prefetch_cache_index = array();
+		self::$opa_hierarchy_children_prefetch_cache_index = array();
+		self::$opa_hierarchy_siblings_prefetch_cache = array();
+		self::$opa_hierarchy_siblings_prefetch_cache_index = array();
+		self::$s_template_prefetch_cache = array();
+	}
+
 	public function __construct($po_engine_result=null, $pa_tables=null) {
 		if (!SearchResult::$opo_datamodel) { SearchResult::$opo_datamodel = Datamodel::load(); }
 		
@@ -406,6 +422,7 @@ class SearchResult extends BaseObject {
 		$vn_level = 0;
 		
 		while(true) {
+			if (!is_array($va_params) || !sizeof($va_params) || !is_array($va_params[0]) || !sizeof($va_params[0])) { break; }
 			$qr_rel = $this->opo_subject_instance->getDb()->query($vs_sql, $va_params);
 			
 			if (!$qr_rel || ($qr_rel->numRows() == 0)) { break;}
@@ -847,6 +864,7 @@ class SearchResult extends BaseObject {
 	 *			maxLevelsFromTop = Restrict the number of levels returned to the top-most beginning with the root. [Default is null]
 	 *			maxLevelsFromBottom = Restrict the number of levels returned to the bottom-most starting with the lowest leaf node. [Default is null]
 	 *			maxLevels = synonym for maxLevelsFromBottom. [Default is null]
+	 *			removeFirstItems = Number of levels from top of hierarchy before returning. [Default is null]
 	 *			hierarchyDirection = Order in which to return hierarchical levels. Set to either "asc" or "desc". "Asc"ending returns hierarchy beginning with the root; "desc"ending begins with the child furthest from the root. [Default is asc]
  	 *			allDescendants = Return all items from the full depth of the hierarchy when fetching children. By default only immediate children are returned. [Default is false]
  	 *
@@ -1663,6 +1681,7 @@ class SearchResult extends BaseObject {
 	 */
 	private function _getAttributeValue($pa_value_list, $pt_instance, $pa_options) {
 		$va_path_components			=& $pa_options['pathComponents'];
+		$vs_delimiter				= isset($pa_options['delimiter']) ? $pa_options['delimiter'] : ';';
 		$va_return_values = array();
 		
 		
@@ -1670,10 +1689,14 @@ class SearchResult extends BaseObject {
 		$vs_table_name = $pt_instance->tableName();
 		
 		if (is_array($pa_value_list) && sizeof($pa_value_list)) {
+			$va_val_proc = array();
 			foreach($pa_value_list as $o_attribute) {
+				$t_attr_element = $pt_instance->_getElementInstance($o_attribute->getElementID());
+				$vn_attr_type = $t_attr_element->get('datatype');
+				
 				$va_acc = array();
 				$va_values = $o_attribute->getValues();
-				//print "FOR ".$o_attribute->getAttributeID()."<br>\n";
+				
 				if ($pa_options['useLocaleCodes']) {
 					if (!$o_attribute->getLocaleID() || !($vm_locale_id = SearchResult::$opo_locales->localeIDToCode($o_attribute->getLocaleID()))) { $vm_locale_id = __CA_DEFAULT_LOCALE__; }; 
 				} else {
@@ -1687,11 +1710,10 @@ class SearchResult extends BaseObject {
 					if ($va_path_components['subfield_name']) {
 						if ($va_path_components['subfield_name'] && ($va_path_components['subfield_name'] !== $vs_element_code) && !($o_value instanceof InformationServiceAttributeValue)) { 
 							$vb_dont_return_value = true;
-							//print "RETURN $vs_element_code<br>\n";
 							if (!$pa_options['filter']) { continue; }
 						}
 					}
-				
+
 					switch($o_value->getType()) {
 						case __CA_ATTRIBUTE_VALUE_LIST__:
 							$t_element = $pt_instance->_getElementInstance($o_value->getElementID());
@@ -1724,6 +1746,11 @@ class SearchResult extends BaseObject {
 							$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'])));
 							break;
 					}
+					
+					if (($vn_attr_type == __CA_ATTRIBUTE_VALUE_CONTAINER__) && !$va_path_components['subfield_name'] && !$pa_options['returnWithStructure']) {
+						if (strlen($vs_val_proc) > 0)  {$va_val_proc[] = $vs_val_proc; }
+						$vs_val_proc = join($vs_delimiter, $va_val_proc);
+					} 
 					
 					$va_spec = $va_path_components['components'];
 					
@@ -1785,7 +1812,7 @@ class SearchResult extends BaseObject {
 		// Flatten array for return as string or simple array value
 		// 
 		$va_flattened_values = $this->_flattenArray($va_return_values, $pa_options);
-		//print "VALUES=".print_R($va_flattened_values, true)."<br>\n\n";
+		
 		if ($pa_options['returnAsArray']) {
 			return $va_flattened_values;
 		} else {

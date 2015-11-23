@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -186,11 +186,6 @@ class ca_movements_x_objects extends ObjectRelationshipBaseModel {
 	protected $RELATIONSHIP_TYPE_FIELDNAME = 'type_id';
 	
 	# ------------------------------------------------------
-	# --- "Current" status flag (used to distinguish old vs. current relationships for location tracking)
-	# ------------------------------------------------------
-	protected $SUPPORTS_CURRENT_FLAG = true;
-	
-	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
 	# are listed here is the order in which they will be returned using getFields()
 
@@ -209,6 +204,40 @@ class ca_movements_x_objects extends ObjectRelationshipBaseModel {
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function insert($pa_options=null) {
+		if (!$this->get('effective_date', array('getDirectDate' => true))) {  
+			$this->set('effective_date', $this->_getMovementDate()); 
+		}
+		return parent::insert($pa_options);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	public function update($pa_options=null) {
+		if (!$this->get('effective_date', array('getDirectDate' => true))) { 
+			$this->set('effective_date',  $this->_getMovementDate()); 
+		}
+		return parent::update($pa_options);
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getMovementDate() {
+	 	$vs_date = null;
+	 	if ($vs_movement_storage_element = $this->getAppConfig()->get('movement_storage_location_date_element')) {
+			$t_movement = new ca_movements($this->get('movement_id'));
+			if ($t_movement->getPrimaryKey()) {
+				$vs_date = $t_movement->get("ca_movements.{$vs_movement_storage_element}");
+			}
+		}
+		return ($vs_date) ? $vs_date : _t('now');
 	}
 	# ------------------------------------------------------
 }

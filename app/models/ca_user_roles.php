@@ -461,7 +461,7 @@ class ca_user_roles extends BaseModel {
 	public static function loadRoleActionList() {
 		if (!ca_user_roles::$s_action_list) {
 			$o_config = Configuration::load();
-			$o_actions_config = Configuration::load($o_config->get('user_actions'));
+			$o_actions_config = Configuration::load(__CA_CONF_DIR__.'/user_actions.conf');
 			$vo_datamodel = Datamodel::load();
 			
 			$va_raw_actions = $o_actions_config->getAssoc('user_actions');

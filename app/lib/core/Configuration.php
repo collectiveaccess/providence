@@ -404,15 +404,20 @@ class Configuration {
 						switch($vs_token) {
 							# -------------------
 							case '"':
-								if (!$vn_in_quote) {
-									$vn_in_quote = 1;
+								if ($vb_escape_set) {
+									$vs_assoc_key .= '"';
 								} else {
-									$vn_in_quote = 0;
+									if (!$vn_in_quote) {
+										$vn_in_quote = 1;
+									} else {
+										$vn_in_quote = 0;
+									}
 								}
+								$vb_escape_set = false;
 								break;
 							# -------------------
 							case '=':
-								if ($vn_in_quote) {
+								if ($vn_in_quote || $vb_escape_set) {
 									$vs_assoc_key .= "=";
 								} else {
 									if ($this->opb_debug) { print "CONFIG DEBUG: STATE=40; Got associative key '$vs_assoc_key'\n"; }
@@ -426,10 +431,11 @@ class Configuration {
 
 									$vn_state = 50;
 								}
+								$vb_escape_set = false;
 								break;
 							# -------------------
 							case ',':
-								if ($vn_in_quote) {
+								if ($vn_in_quote || $vb_escape_set) {
 									$vs_assoc_key .= ",";
 								} else {
 									if ($this->opb_debug) { print "CONFIG DEBUG: STATE=40; Got associative comma\n"; }
@@ -444,7 +450,7 @@ class Configuration {
 								break;
 							# -------------------
 							case '}':
-								if ($vn_in_quote) {
+								if ($vn_in_quote || $vb_escape_set) {
 									$vs_scalar_value .= "}";
 								} else {
 									if ($this->opb_debug) { print "CONFIG DEBUG: STATE=40; Got close }; KEY IS '$vs_assoc_key'\n"; }
@@ -467,10 +473,18 @@ class Configuration {
 								$vb_escape_set = false;
 								break;
 							# -------------------
+							case '\\':
+								if ($vb_escape_set) {
+									$vs_assoc_key .= $vs_token;
+								} else {
+									$vb_escape_set = true;
+								}
+								break;
 							default:
 								if (preg_match("/^#/", trim($vs_token))) {
 									// comment
 								} else {
+									$vb_escape_set = false;
 									$vs_assoc_key .= $vs_token;
 								}
 								break;

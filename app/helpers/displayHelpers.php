@@ -2022,7 +2022,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		if (!is_array($pa_directives) || !sizeof($pa_directives)) { return $ps_value; }
 		foreach($pa_directives as $vs_directive) {
 			$va_tmp = explode(":", $vs_directive);
-			switch($va_tmp[0]) {
+			switch(strtoupper($va_tmp[0])) {
 				case 'LP':		// left padding
 					$va_params = explode("/", $va_tmp[1]);
 					$vn_len = (int)$va_params[1];
@@ -2050,6 +2050,12 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 					if ((strlen($ps_value) > 0) && (strlen($va_tmp[1]))) {
 						$ps_value = $ps_value.$va_tmp[1];
 					}
+					break;
+				case 'LOWER':
+					$ps_value = strtolower($ps_value);
+					break;
+				case 'UPPER':
+					$ps_value = strtoupper($ps_value);
 					break;
 			}
 		}
@@ -2804,6 +2810,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		$vs_buf .= "</span>\n";	
 		
 		$vs_buf .= "<div id='{$ps_id_prefix}DictionaryEntry' class='caMetadataDictionaryDefinition'>{$vs_definition}</div>";
+		$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}'); }); </script>";	
 		
 		return $vs_buf;
 	}

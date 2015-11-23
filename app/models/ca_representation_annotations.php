@@ -133,6 +133,13 @@ BaseModel::$s_ca_models_definitions['ca_representation_annotations'] = array(
 				),
 				'LIST' => 'workflow_statuses',
 				'LABEL' => _t('Status'), 'DESCRIPTION' => _t('Indicates the current state of the annotation .')
+		),
+		'view_count' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
 		)
  	)
 );
@@ -274,7 +281,7 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 		parent::__construct($pn_id);	# call superclass constructor
 		
  		$o_config = $this->getAppConfig();
- 		$this->opo_type_config = Configuration::load($o_config->get('annotation_type_config'));
+ 		$this->opo_type_config = Configuration::load(__CA_CONF_DIR__.'/annotation_types.conf');
 	}
 	# ------------------------------------------------------
 	protected function initLabelDefinitions($pa_options=null) {
