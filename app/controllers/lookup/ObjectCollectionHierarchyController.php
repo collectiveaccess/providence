@@ -132,6 +132,7 @@
 				}
 				
 				if (!$pb_exact) {
+					$o_search_config = caGetSearchConfig();
 					$ps_query = trim(preg_replace("![".str_replace("!", "\\!", $o_search_config->get('search_tokenizer_regex'))."]+!", " ", $ps_query));
 				}
 				

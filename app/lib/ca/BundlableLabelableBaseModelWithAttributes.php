@@ -2375,8 +2375,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					$va_bundle['settings']['readonly'] = true;	// force all bundles to read-only when user has "Read" access to screen
 				} elseif ($vn_screen_access !== __CA_BUNDLE_ACCESS_EDIT__) {
 					// no edit access so bail
-					$this->postError(2320, _t('Access denied to screen %1', $pm_screen), "BundlableLabelableBaseModelWithAttributes->getBundleFormHTMLForScreen()");				
-					return false;
+					//$this->postError(2320, _t('Access denied to screen %1', $pm_screen), "BundlableLabelableBaseModelWithAttributes->getBundleFormHTMLForScreen()");				
+					continue;
 				}
 				
 				$va_bundle['settings']['placement_id'] = $va_bundle['placement_id'];
