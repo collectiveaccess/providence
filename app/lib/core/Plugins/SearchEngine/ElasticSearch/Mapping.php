@@ -396,11 +396,13 @@ class Mapping {
 			}
 
 			// add config for modified and created, which are always indexed
-			$va_mapping_config[$vs_table]['properties']["{$vs_table}/modified"] = array(
-				'type' => 'date'
+			$va_mapping_config[$vs_table]['properties']["modified"] = array(
+				'type' => 'date',
+				'format' => 'date_time_no_millis'
 			);
-			$va_mapping_config[$vs_table]['properties']["{$vs_table}/created"] = array(
-				'type' => 'date'
+			$va_mapping_config[$vs_table]['properties']["created"] = array(
+				'type' => 'date',
+				'format' => 'date_time_no_millis'
 			);
 		}
 

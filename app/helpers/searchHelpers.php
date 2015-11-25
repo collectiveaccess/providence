@@ -393,3 +393,40 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 		}
 	}
 	# ---------------------------------------
+	/**
+	 * @param Db $po_db
+	 * @param int $pn_table_num
+	 * @param int $pn_row_id
+	 * @return array
+	 */
+	function caGetChangeLogForElasticSearch($po_db, $pn_table_num, $pn_row_id) {
+		$qr_res = $po_db->query("
+				SELECT ccl.log_id, ccl.log_datetime, ccl.changetype, u.user_name
+				FROM ca_change_log ccl
+				LEFT JOIN ca_users AS u ON ccl.user_id = u.user_id
+				WHERE
+					(ccl.logged_table_num = ?) AND (ccl.logged_row_id = ?)
+					AND
+					(ccl.changetype <> 'D')
+			", $pn_table_num, $pn_row_id);
+
+		$va_return = array();
+		while($qr_res->nextRow()) {
+			$vs_change_date = caGetISODates(date("c", $qr_res->get('log_datetime')))['start'];
+			if ($qr_res->get('changetype') == 'I') {
+				$va_return["created"][] = $vs_change_date;
+
+				if($vs_user = $qr_res->get('user_name')) {
+					$va_return["created/{$qr_res->get('user_name')}"][] = $vs_change_date;
+				}
+			} else {
+				$va_return["modified"][] = $vs_change_date;
+
+				if($vs_user = $qr_res->get('user_name')) {
+					$va_return["modified/{$qr_res->get('user_name')}"][] = $vs_change_date;
+				}
+			}
+		}
+
+		return $va_return;
+	}

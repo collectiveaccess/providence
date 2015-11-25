@@ -209,7 +209,7 @@ class Query {
 				$o_fld = $this->getFieldTypeForTerm($o_term);
 
 				$o_new_subquery = null;
-				if($o_fld instanceof FieldTypes\DateRange) {
+				if(($o_fld instanceof FieldTypes\DateRange) || ($o_fld instanceof FieldTypes\Timestamp)) {
 					$o_new_subquery = null;
 					$this->opa_additional_filters['range'] = $o_fld->getFilterForTerm($o_term);
 					break;
@@ -232,7 +232,7 @@ class Query {
 						$this->opa_additional_filters['geo_shape'] =
 							$o_fld->getFilterForPhraseQuery($o_subquery);
 						break;
-					} elseif($o_fld instanceof FieldTypes\DateRange) {
+					} elseif(($o_fld instanceof FieldTypes\DateRange) || ($o_fld instanceof FieldTypes\Timestamp)) {
 						$o_new_subquery = null;
 
 						foreach($o_fld->getFiltersForPhraseQuery($o_subquery) as $va_filter) {
