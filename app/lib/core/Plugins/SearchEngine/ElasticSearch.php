@@ -99,9 +99,12 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		$o_mapping = new ElasticSearch\Mapping();
 		if($o_mapping->needsRefresh() || $pb_force) {
 			try {
-				$this->getClient()->indices()->create(array('index' => $this->getIndexName()));
+				if(!$this->getClient()->indices()->exists(array('index' => $this->getIndexName()))) {
+					$this->getClient()->indices()->create(array('index' => $this->getIndexName()));
+				}
 				// if we don't refresh() after creating, ES throws a IndexPrimaryShardNotAllocatedException
 				// @see https://groups.google.com/forum/#!msg/elasticsearch/hvMhx162E-A/on-3druwehwJ
+				// -- seems to be fixed in 2.x
 				//$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
 			} catch (Elasticsearch\Common\Exceptions\BadRequest400Exception $e) {
 				// noop -- the exception happens when the index already exists, which is good

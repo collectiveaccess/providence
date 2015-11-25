@@ -89,7 +89,7 @@ class Mapping {
 	 * Ping the ElasticSearch mapping, effectively resetting the refresh time
 	 */
 	public function ping() {
-		\ExternalCache::save('LastPing', 'meow', 'ElasticSearchMapping');
+		\ExternalCache::save('LastPing', 'meow', 'ElasticSearchMapping', 24 * 60 * 60);
 	}
 
 	/**
