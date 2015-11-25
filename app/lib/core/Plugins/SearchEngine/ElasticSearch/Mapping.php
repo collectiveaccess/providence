@@ -89,7 +89,7 @@ class Mapping {
 	 * Ping the ElasticSearch mapping, effectively resetting the refresh time
 	 */
 	public function ping() {
-		\ExternalCache::save('LastPing', 'meow', 'ElasticSearchMapping');
+		\ExternalCache::save('LastPing', 'meow', 'ElasticSearchMapping', 24 * 60 * 60);
 	}
 
 	/**
@@ -231,7 +231,7 @@ class Mapping {
 			case 2:	// daterange
 				$va_element_config[$ps_table.'/'.$vs_element_code]['type'] = 'date';
 				$va_element_config[$ps_table.'/'.$vs_element_code]['format'] = 'date_time_no_millis';
-				$va_element_config[$ps_table.'/'.$vs_element_code]['ignore_malformed'] = false;
+				$va_element_config[$ps_table.'/'.$vs_element_code]['ignore_malformed'] = true;
 				$va_element_config[$ps_table.'/'.$vs_element_code.'_text'] = array('type' => 'string');
 				break;
 			case 4:	// geocode
@@ -346,7 +346,7 @@ class Mapping {
 			case (FT_HISTORIC_DATERANGE):
 				$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'date';
 				$va_field_options[$ps_table.'/'.$vs_field_name]['format'] = 'date_time_no_millis';
-				$va_field_options[$ps_table.'/'.$vs_field_name]['ignore_malformed'] = false;
+				$va_field_options[$ps_table.'/'.$vs_field_name]['ignore_malformed'] = true;
 				break;
 			case (FT_BIT):
 				$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'boolean';
@@ -396,11 +396,13 @@ class Mapping {
 			}
 
 			// add config for modified and created, which are always indexed
-			$va_mapping_config[$vs_table]['properties']["{$vs_table}/modified"] = array(
-				'type' => 'date'
+			$va_mapping_config[$vs_table]['properties']["modified"] = array(
+				'type' => 'date',
+				'format' => 'date_time_no_millis'
 			);
-			$va_mapping_config[$vs_table]['properties']["{$vs_table}/created"] = array(
-				'type' => 'date'
+			$va_mapping_config[$vs_table]['properties']["created"] = array(
+				'type' => 'date',
+				'format' => 'date_time_no_millis'
 			);
 		}
 

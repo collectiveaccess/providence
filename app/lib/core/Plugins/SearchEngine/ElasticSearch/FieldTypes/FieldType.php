@@ -73,6 +73,9 @@ abstract class FieldType {
 	 * @return \ElasticSearch\FieldTypes\FieldType
 	 */
 	public static function getInstance($ps_table, $ps_content_fieldname) {
+		if($ps_table == 'created' || $ps_table == 'modified') {
+			return new Timestamp($ps_table);
+		}
 
 		// if this is an indexing field name, rewrite it
 		if(preg_match("/^(I|A)[0-9]+$/", $ps_content_fieldname)) {
@@ -92,7 +95,7 @@ abstract class FieldType {
 		}
 
 		if($vn_datatype = \ca_metadata_elements::getDataTypeForElementCode($ps_content_fieldname)) {
-			switch($vn_datatype) {
+			switch ($vn_datatype) {
 				case 2:
 					return new DateRange($ps_table, $ps_content_fieldname);
 				case 4:
@@ -112,8 +115,6 @@ abstract class FieldType {
 				default:
 					return new GenericElement($ps_table, $ps_content_fieldname);
 			}
-		} else if(preg_match("/^(modified|created)(\..+)?$/", $ps_content_fieldname)) {
-			return new Timestamp($ps_table, $ps_content_fieldname);
 		} else {
 			return new Intrinsic($ps_table, $ps_content_fieldname);
 		}

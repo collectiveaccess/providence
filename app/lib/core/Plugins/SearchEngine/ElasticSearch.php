@@ -99,9 +99,12 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		$o_mapping = new ElasticSearch\Mapping();
 		if($o_mapping->needsRefresh() || $pb_force) {
 			try {
-				$this->getClient()->indices()->create(array('index' => $this->getIndexName()));
+				if(!$this->getClient()->indices()->exists(array('index' => $this->getIndexName()))) {
+					$this->getClient()->indices()->create(array('index' => $this->getIndexName()));
+				}
 				// if we don't refresh() after creating, ES throws a IndexPrimaryShardNotAllocatedException
 				// @see https://groups.google.com/forum/#!msg/elasticsearch/hvMhx162E-A/on-3druwehwJ
+				// -- seems to be fixed in 2.x
 				//$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
 			} catch (Elasticsearch\Common\Exceptions\BadRequest400Exception $e) {
 				// noop -- the exception happens when the index already exists, which is good
@@ -511,25 +514,15 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				)
 			);
 
-			$qr_res = $this->opo_db->query("
-				SELECT ccl.log_id, ccl.log_datetime, ccl.changetype, u.user_name
-				FROM ca_change_log ccl
-				INNER JOIN ca_users AS u ON ccl.user_id = u.user_id
-				WHERE
-					(ccl.logged_table_num = ?) AND (ccl.logged_row_id = ?)
-					AND
-					(ccl.changetype <> 'D')
-			", $this->opo_datamodel->getTableNum($vs_table_name), $vn_primary_key);
-
-			while($qr_res->nextRow()) {
-				if ($qr_res->get('changetype') == 'I') {
-					$va_doc_content_buffer["{$vs_table_name}/created"][] = date("c", $qr_res->get('log_datetime'));
-					$va_doc_content_buffer["{$vs_table_name}/created/{$qr_res->get('user_name')}"][] = date("c", $qr_res->get('log_datetime'));
-				} else {
-					$va_doc_content_buffer["{$vs_table_name}/modified"][] = date("c", $qr_res->get('log_datetime'));
-					$va_doc_content_buffer["{$vs_table_name}/modified/{$qr_res->get('user_name')}"][] = date("c", $qr_res->get('log_datetime'));
-				}
-			}
+			// add changelog to index
+			$va_doc_content_buffer = array_merge(
+				$va_doc_content_buffer,
+				caGetChangeLogForElasticSearch(
+					$this->opo_db,
+					$this->opo_datamodel->getTableNum($vs_table_name),
+					$vn_primary_key
+				)
+			);
 
 			$va_bulk_params['body'][] = $va_doc_content_buffer;
 		}
@@ -543,6 +536,16 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 						'_index' => $this->getIndexName(),
 						'_type' => $vs_table_name,
 						'_id' => (int) $vn_row_id
+					)
+				);
+
+				// add changelog to fragment
+				$va_fragment = array_merge(
+					$va_fragment,
+					caGetChangeLogForElasticSearch(
+						$this->opo_db,
+						$this->opo_datamodel->getTableNum($vs_table_name),
+						$vn_row_id
 					)
 				);
 
