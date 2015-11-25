@@ -1,13 +1,13 @@
 <?php
-/* ----------------------------------------------------------------------
- * app/controllers/lookup/SetController.php : 
+/** ---------------------------------------------------------------------
+ * tests/helpers/SearchHelpersTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -22,17 +22,26 @@
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
- *
+ * 
+ * @package CollectiveAccess
+ * @subpackage tests
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ * 
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/ca/BaseLookupController.php");
- 
- 	class SetController extends BaseLookupController {
- 		# -------------------------------------------------------
- 		protected $opb_uses_hierarchy_browser = false;
- 		protected $ops_table_name = 'ca_sets';		// name of "subject" table (what we're editing)
- 		protected $ops_name_singular = 'set';
- 		protected $ops_search_class = 'SetSearch';
- 		# -------------------------------------------------------
- 	}
- ?>
+require_once(__CA_APP_DIR__."/helpers/searchHelpers.php");
+
+class SearchHelpersTest extends PHPUnit_Framework_TestCase {
+	# -------------------------------------------------------
+	public function testESDateRewrite() {
+		// day-less
+		$this->assertEquals('2014-04-01T00:00:00Z', caRewriteDateForElasticSearch('2014-04-00T00:00:00Z', true));
+		$this->assertEquals('2014-04-30T00:00:00Z', caRewriteDateForElasticSearch('2014-04-00T00:00:00Z', false));
+
+		// month- and day-less
+		$this->assertEquals('2014-01-01T00:00:00Z', caRewriteDateForElasticSearch('2014-00-00T00:00:00Z', true));
+		$this->assertEquals('2014-12-31T00:00:00Z', caRewriteDateForElasticSearch('2014-00-00T00:00:00Z', false));
+
+	}
+	# -------------------------------------------------------
+}

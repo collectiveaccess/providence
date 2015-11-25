@@ -727,10 +727,11 @@ class ca_attributes extends BaseModel {
 	static public function getAttributeCount($po_db, $pn_table_num, $pn_row_id, $pn_element_id) {
 		$qr_attrs = $po_db->query("
 			SELECT count(*) c
-			FROM ca_attributes caa
+			FROM ca_attributes caa, ca_attribute_values cav
 			WHERE
+				(cav.attribute_id = caa.attribute_id) AND
 				(caa.table_num = ?) AND (caa.row_id = ?) AND (caa.element_id = ?) AND
-				(caa.item_id IS NOT NULL OR caa.value_longtext1 IS NOT NULL OR caa.value_decimal1 IS NOT NULL OR caa.value_integer1 IS NOT NULL OR caa.value_blob IS NOT NULL)
+				(cav.item_id IS NOT NULL OR cav.value_longtext1 IS NOT NULL OR cav.value_decimal1 IS NOT NULL OR cav.value_integer1 IS NOT NULL OR cav.value_blob IS NOT NULL)
 		", (int)$pn_table_num, (int)$pn_row_id, (int)$pn_element_id);
 		if ($po_db->numErrors()) {
 			//$this->errors = $po_db->errors;

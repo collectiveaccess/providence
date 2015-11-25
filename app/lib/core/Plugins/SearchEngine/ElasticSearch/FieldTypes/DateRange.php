@@ -46,37 +46,11 @@ class DateRange extends GenericElement {
 		if (!is_array($pa_parsed_content = caGetISODates($pm_content))) { return array(); }
 		$va_return[$this->getTableName().'/'.$this->getElementCode().'_text'] = $pm_content;
 
-		$ps_rewritten_start = $this->_rewriteDate($pa_parsed_content["start"], true);
-		$ps_rewritten_end = $this->_rewriteDate($pa_parsed_content["end"], false);
+		$ps_rewritten_start = caRewriteDateForElasticSearch($pa_parsed_content["start"], true);
+		$ps_rewritten_end = caRewriteDateForElasticSearch($pa_parsed_content["end"], false);
 
 		$va_return[$this->getTableName().'/'.$this->getElementCode()] = array($ps_rewritten_start,$ps_rewritten_end);
 		return $va_return;
-	}
-
-	/**
-	 * ElasticSearch won't accept dates where day or month is zero, so we have to
-	 * rewrite certain dates, especially when dealing with "open-ended" date ranges,
-	 * e.g. "before 1998", "after 2012"
-	 *
-	 * @param string $ps_date
-	 * @param bool $vb_is_start
-	 * @return mixed
-	 */
-	private function _rewriteDate($ps_date, $vb_is_start=true){
-		if($vb_is_start){
-			$vs_return = str_replace("-00-", "-01-", $ps_date);
-			$vs_return = str_replace("-00T", "-01T", $vs_return);
-		} else {
-			$vs_return = str_replace("-00-", "-12-", $ps_date);
-			// the following may produce something like "February 31st" but that doesn't seem to bother ElasticSearch
-			$vs_return = str_replace("-00T", "-31T", $vs_return);
-		}
-
-		// substitute start and end of universe values with ElasticSearch's builtin boundaries
-		$vs_return = str_replace(TEP_START_OF_UNIVERSE,"-292275054",$vs_return);
-		$vs_return = str_replace(TEP_END_OF_UNIVERSE,"292278993",$vs_return);
-
-		return $vs_return;
 	}
 
 	/**

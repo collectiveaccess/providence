@@ -94,7 +94,7 @@ class Timestamp extends FieldType {
 		if(is_array($pm_content)) { $pm_content = serialize($pm_content); }
 
 		return array(
-			$this->getTableName() . '/' . $this->getFieldName() => $pm_content
+			$this->getTableName() . '/' . str_replace('.', '/', $this->getFieldName()) => $pm_content
 		);
 	}
 

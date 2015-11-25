@@ -318,6 +318,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			'index' => $this->getIndexName(),
 			'type' => $this->opo_datamodel->getTableName($pn_subject_tablenum),
 			'body' => array(
+				// we do paging in our code
+				'from' => 0, 'size' => 2147483647, // size is Java's 32bit int, for ElasticSearch
 				'query' => array(
 					'bool' => array(
 						'must' => array(
@@ -521,11 +523,11 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 
 			while($qr_res->nextRow()) {
 				if ($qr_res->get('changetype') == 'I') {
-					$va_doc_content_buffer["{$vs_table_name}.created"][] = date("c", $qr_res->get('log_datetime'));
-					$va_doc_content_buffer["{$vs_table_name}.created.{$qr_res->get('user_name')}"][] = date("c", $qr_res->get('log_datetime'));
+					$va_doc_content_buffer["{$vs_table_name}/created"][] = date("c", $qr_res->get('log_datetime'));
+					$va_doc_content_buffer["{$vs_table_name}/created/{$qr_res->get('user_name')}"][] = date("c", $qr_res->get('log_datetime'));
 				} else {
-					$va_doc_content_buffer["{$vs_table_name}.modified"][] = date("c", $qr_res->get('log_datetime'));
-					$va_doc_content_buffer["{$vs_table_name}.modified.{$qr_res->get('user_name')}"][] = date("c", $qr_res->get('log_datetime'));
+					$va_doc_content_buffer["{$vs_table_name}/modified"][] = date("c", $qr_res->get('log_datetime'));
+					$va_doc_content_buffer["{$vs_table_name}/modified/{$qr_res->get('user_name')}"][] = date("c", $qr_res->get('log_datetime'));
 				}
 			}
 
