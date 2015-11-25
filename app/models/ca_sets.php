@@ -574,6 +574,9 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$ps_set_name = isset($pa_options['name']) ? $pa_options['name'] : null;
 		
 		$pn_row_id = (isset($pa_options['row_id']) && ((int)$pa_options['row_id'])) ? (int)$pa_options['row_id'] : null;
+
+		$ps_sort = caGetOption('sort', $pa_options, null);
+		$ps_sort_direction = caGetOption('sortDirection', $pa_options, null);
 		
 		$pa_public_access = isset($pa_options['checkAccess']) ? $pa_options['checkAccess'] : null;
 		if ($pa_public_access && is_numeric($pa_public_access) && !is_array($pa_public_access)) {
@@ -801,6 +804,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 					
 					$va_sets[$qr_res->get('set_id')][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array('item_count' => intval($va_item_counts[$qr_res->get('set_id')]), 'set_content_type' => $vs_set_type, 'set_type' => $vs_type));
 				}
+
 				return $va_sets;
 			}
 			
@@ -978,7 +982,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		// If user is admin or has set admin privs allow them access to the set
 		//
 		$t_user = new ca_users();
-		if ($t_user->load($pn_user_id) && ($t_user->canDoAction('is_administrator') || $t_user->canDoAction('can_administrate_sets'))) { 
+		if ($t_user->load($pn_user_id) && ($t_user->canDoAction('is_administrator') || $t_user->canDoAction('can_administrate_sets'))) {
 			return ca_sets::$s_have_access_to_set_cache[$vn_set_id.'/'.$pn_user_id.'/'.$pn_access] = true;
 		}
 		
@@ -1956,7 +1960,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
  		
  		$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
  		
-		return $o_view->render('ca_sets.php');
+		return $o_view->render('ca_sets_checklist.php');
 	}
 	# ------------------------------------------------------
 	# Utilities
@@ -2449,6 +2453,53 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			}
 		}
 		return $va_set_ids;
+	}
+	# ---------------------------------------------------------------
+	/**
+	 * Check if currently loaded row is save-able
+	 *
+	 * @param RequestHTTP $po_request
+	 * @param string $ps_bundle_name Optional bundle name to test write-ability on. If omitted write-ability is considered for the item as a whole.
+	 * @return bool True if record can be saved, false if not
+	 */
+	public function isSaveable($po_request, $ps_bundle_name=null) {
+		// Check type restrictions
+		if ((bool)$this->getAppConfig()->get('perform_type_access_checking')) {
+			$vn_type_access = $po_request->user->getTypeAccessLevel($this->tableName(), $this->getTypeID());
+			if ($vn_type_access != __CA_BUNDLE_ACCESS_EDIT__) {
+				return false;
+			}
+		}
+
+		// Check source restrictions
+		if ((bool)$this->getAppConfig()->get('perform_source_access_checking')) {
+			$vn_source_access = $po_request->user->getSourceAccessLevel($this->tableName(), $this->getSourceID());
+			if ($vn_source_access < __CA_BUNDLE_ACCESS_EDIT__) {
+				return false;
+			}
+		}
+
+		// Check item level restrictions
+		if ((bool)$this->getAppConfig()->get('perform_item_level_access_checking') && $this->getPrimaryKey()) {
+			$vn_item_access = $this->checkACLAccessForUser($po_request->user);
+			if ($vn_item_access < __CA_ACL_EDIT_ACCESS__) {
+				return false;
+			}
+		}
+
+		// Check actions
+		if (!$this->getPrimaryKey() && !$po_request->user->canDoAction('can_create_sets')) {
+			return false;
+		}
+		if ($this->getPrimaryKey() && !$po_request->user->canDoAction('can_edit_sets')) {
+			return false;
+		}
+
+		if ($ps_bundle_name) {
+			if ($po_request->user->getBundleAccessLevel($this->tableName(), $ps_bundle_name) < __CA_BUNDLE_ACCESS_EDIT__) { return false; }
+		}
+
+		return true;
 	}
 	# ---------------------------------------------------------------
 }

@@ -1188,6 +1188,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'ca_loans':
 					case 'ca_movements':
 					case 'ca_tour_stops':
+					case 'ca_sets':
 						return $this->getRelatedBundleFormValues($pa_options['request'], $pa_options['formName'], $ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
 					# -------------------------------
@@ -1506,6 +1507,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'ca_loans':
 					case 'ca_movements':
 					case 'ca_tour_stops':
+					case 'ca_sets':
 						if (($this->_CONFIG->get($ps_bundle_name.'_disable'))) { return ''; }		// don't display if master "disable" switch is set
 						$pa_options['start'] = 0;
 						$vs_element = $this->getRelatedHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);	
@@ -1579,7 +1581,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						break;
 					# -------------------------------
 					// This bundle is only available for types which support set membership
-					case 'ca_sets':
+					case 'ca_sets_checklist':
 						require_once(__CA_MODELS_DIR__."/ca_sets.php");	// need to include here to avoid dependency errors on parse/compile
 						$t_set = new ca_sets();
 						$vs_element .= $t_set->getItemSetMembershipHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $this->tableNum(), $this->getPrimaryKey(), $pa_options['request']->getUserID(), $pa_bundle_settings, $pa_options);
@@ -2607,13 +2609,20 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		return $o_view;
 	}
 	# ------------------------------------------------------
- 	/**
- 	 *
- 	 */
+	/**
+	 * @param RequestHTTP $po_request
+	 * @param string $ps_form_name
+	 * @param string $ps_related_table
+	 * @param null|string $ps_placement_code
+	 * @param null|array $pa_bundle_settings
+	 * @param null|arrau $pa_options
+	 * @return array|mixed
+	 */
 	public function getRelatedBundleFormValues($po_request, $ps_form_name, $ps_related_table, $ps_placement_code=null, $pa_bundle_settings=null, $pa_options=null) {
 		if(!is_array($pa_bundle_settings)) { $pa_bundle_settings = array(); }
 		if(!is_array($pa_options)) { $pa_options = array(); }
 
+		/** @var BundlableLabelableBaseModelWithAttributes $t_item */
 		$t_item = $this->getAppDatamodel()->getTableInstance($ps_related_table);
 		$vb_is_many_many = false;
 		
@@ -2648,30 +2657,52 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$va_get_related_opts['sort'] = $pa_bundle_settings['sort'];
 			$va_get_related_opts['sortDirection'] = $pa_bundle_settings['sortDirection'];
 		}
-		if (sizeof($va_items = $this->getRelatedItems($ps_related_table, $va_get_related_opts))) {
-			$t_rel = $this->getAppDatamodel()->getInstanceByTableName($ps_related_table, true);
-			$vs_rel_pk = $t_rel->primaryKey();
-			
-			$va_opts = array('relatedItems' => $va_items, 'stripTags' => true);
-			if ($vb_is_many_many) {
-				$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, 'relation_id');
-				$qr_rel_items = $t_item->makeSearchResult($t_item_rel->tableNum(), $va_ids);
-				$va_opts['table'] = $t_rel->tableName();
-				$va_opts['primaryKey'] = $t_rel->primaryKey();
-			} else {
-				$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, $vs_rel_pk);
-				$qr_rel_items = $t_item->makeSearchResult($t_rel->tableNum(), $va_ids);	
+
+		if($ps_related_table == 'ca_sets') {
+			$t_set = new ca_sets();
+			$va_items = caExtractValuesByUserLocale($t_set->getSetsForItem($this->tableNum(), $this->getPrimaryKey()));
+
+			// sort
+			if($ps_sort = caGetOption('sort', $va_get_related_opts, null)) {
+				$va_items = caSortArrayByKeyInValue($va_items, array($ps_sort), caGetOption('sortDirectio ', $va_get_related_opts, 'ASC'));
 			}
-				
-			$va_opts['template'] = caGetBundleDisplayTemplate($this, $ps_related_table, $pa_bundle_settings);
-			$va_opts['primaryIDs'] = array($this->tableName() => array($this->getPrimaryKey()));
-			$va_opts['request'] = $po_request;	
-			
-			$va_vals = caProcessRelationshipLookupLabel($qr_rel_items, $t_item_rel, $va_opts);
-			
+
+			$va_vals = array();
+			$vs_template = caGetBundleDisplayTemplate($this, 'ca_sets', $pa_bundle_settings);
+			if(is_array($va_items) && sizeof($va_items)) {
+				foreach($va_items as $vn_id => $va_item) {
+					$va_item['_display'] = caProcessTemplateForIDs($vs_template, 'ca_sets', array($vn_id));
+					$va_vals[$vn_id] = $va_item;
+				}
+			}
+
 			return $va_vals;
+		} else {
+			if (sizeof($va_items = $this->getRelatedItems($ps_related_table, $va_get_related_opts))) {
+				$t_rel = $this->getAppDatamodel()->getInstanceByTableName($ps_related_table, true);
+				$vs_rel_pk = $t_rel->primaryKey();
+
+				$va_opts = array('relatedItems' => $va_items, 'stripTags' => true);
+				if ($vb_is_many_many) {
+					$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, 'relation_id');
+					$qr_rel_items = $t_item->makeSearchResult($t_item_rel->tableNum(), $va_ids);
+					$va_opts['table'] = $t_rel->tableName();
+					$va_opts['primaryKey'] = $t_rel->primaryKey();
+				} else {
+					$va_ids = caExtractArrayValuesFromArrayOfArrays($va_items, $vs_rel_pk);
+					$qr_rel_items = $t_item->makeSearchResult($t_rel->tableNum(), $va_ids);
+				}
+
+				$va_opts['template'] = caGetBundleDisplayTemplate($this, $ps_related_table, $pa_bundle_settings);
+				$va_opts['primaryIDs'] = array($this->tableName() => array($this->getPrimaryKey()));
+				$va_opts['request'] = $po_request;
+
+				$va_vals = caProcessRelationshipLookupLabel($qr_rel_items, $t_item_rel, $va_opts);
+
+				return $va_vals;
+			}
 		}
-		
+
 		return array();
 	}
  	# ------------------------------------------------------
@@ -2708,7 +2739,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
 					break;
 				default:
-					$t_item_rel = null;
+					if($ps_related_table == 'ca_sets') {
+						$t_item_rel = new ca_sets();
+					} else {
+						$t_item_rel = null;
+					}
 					break;
 			}
 		}
@@ -2740,9 +2775,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$o_view->setVar('relationship_types_by_sub_type', $t_item_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
 		}
 		$o_view->setVar('t_subject', $this);
-		
+
 		$va_initial_values = $this->getRelatedBundleFormValues($po_request, $ps_form_name, $ps_related_table, $ps_placement_code, $pa_bundle_settings, $pa_options);
-		
 
 		$va_force_new_values = array();
 		if (isset($pa_options['force']) && is_array($pa_options['force'])) {
@@ -3777,6 +3811,10 @@ if (!$vb_batch) {
 						$this->_processRelated($po_request, $vs_f, $vs_form_prefix, $vs_placement_code, array('batch' => $vb_batch, 'settings' => $va_bundle_settings));
 						break;
 					# -------------------------------------
+					case 'ca_sets':
+						$this->_processRelatedSets($po_request, $vs_form_prefix, $vs_placement_code);
+						break;
+					# -------------------------------------
 					case 'ca_representation_annotations':
 						if ($vb_batch) { break; } // not supported in batch mode
 						$this->_processRepresentationAnnotations($po_request, $vs_form_prefix, $vs_placement_code);
@@ -3817,7 +3855,7 @@ if (!$vb_batch) {
 						break;
 					# -------------------------------------
 					// This bundle is only available for types which support set membership
-					case 'ca_sets':
+					case 'ca_sets_checklist':
 						// check for existing labels to delete (no updating supported)
 						require_once(__CA_MODELS_DIR__.'/ca_sets.php');
 						require_once(__CA_MODELS_DIR__.'/ca_set_items.php');
@@ -4420,6 +4458,35 @@ if (!$vb_batch) {
 		
 		return true;
  	}
+
+	/**
+	 * @param RequestHTTP $po_request
+	 * @param string $ps_form_prefix
+	 * @param string $ps_placement_code
+	 */
+	public function _processRelatedSets($po_request, $ps_form_prefix, $ps_placement_code) {
+		require_once(__CA_MODELS_DIR__ . '/ca_sets.php');
+
+		foreach($_REQUEST as $vs_key => $vs_value ) {
+			// check for new relationships to add
+			if (preg_match("/^{$ps_placement_code}{$ps_form_prefix}_idnew_([\d]+)/", $vs_key, $va_matches)) {
+				$vn_c = intval($va_matches[1]);
+				if ($vn_new_id = $po_request->getParameter("{$ps_placement_code}{$ps_form_prefix}_idnew_{$vn_c}", pString)) {
+					$t_set = new ca_sets($vn_new_id);
+					$t_set->addItem($this->getPrimaryKey(), null, $po_request->getUserID());
+				}
+			}
+
+			// check for delete keys
+			if (preg_match("/^{$ps_placement_code}{$ps_form_prefix}_([\d]+)_delete/", $vs_key, $va_matches)) {
+				$vn_c = intval($va_matches[1]);
+				$t_set = new ca_sets($vn_c);
+				$t_set->removeItem($this->getPrimaryKey());
+			}
+
+
+		}
+	}
  	# ------------------------------------------------------
  	/**
  	 *
