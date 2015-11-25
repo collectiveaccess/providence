@@ -231,7 +231,7 @@ class Mapping {
 			case 2:	// daterange
 				$va_element_config[$ps_table.'/'.$vs_element_code]['type'] = 'date';
 				$va_element_config[$ps_table.'/'.$vs_element_code]['format'] = 'date_time_no_millis';
-				$va_element_config[$ps_table.'/'.$vs_element_code]['ignore_malformed'] = false;
+				$va_element_config[$ps_table.'/'.$vs_element_code]['ignore_malformed'] = true;
 				$va_element_config[$ps_table.'/'.$vs_element_code.'_text'] = array('type' => 'string');
 				break;
 			case 4:	// geocode
@@ -346,7 +346,7 @@ class Mapping {
 			case (FT_HISTORIC_DATERANGE):
 				$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'date';
 				$va_field_options[$ps_table.'/'.$vs_field_name]['format'] = 'date_time_no_millis';
-				$va_field_options[$ps_table.'/'.$vs_field_name]['ignore_malformed'] = false;
+				$va_field_options[$ps_table.'/'.$vs_field_name]['ignore_malformed'] = true;
 				break;
 			case (FT_BIT):
 				$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'boolean';
