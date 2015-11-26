@@ -413,7 +413,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 		
 		$vs_bgcolor = (isset($pa_options["background_color"]) && $pa_options["background_color"]) ? preg_replace("![^A-Fa-f0-9]+!", "", $pa_options["background_color"]) : "CCCCCC";
 		
-		$vs_progress_id = (isset($pa_options["progress_id"]) && $pa_options["progress_id"]) ? $pa_options["progress_id"] : "msMediaOverlayProgress";
+		$vs_progress_id = (isset($pa_options["progress_id"]) && $pa_options["progress_id"]) ? $pa_options["progress_id"] : "caMediaOverlayProgress";
 		
 		$vn_progress_total_filesize = (isset($pa_options["progress_total_filesize"]) && ($pa_options["progress_total_filesize"] > 0)) ? $pa_options["progress_total_filesize"] : 0;
 		
@@ -480,15 +480,9 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 					mesh.receiveShadow = false;
 
 					scene.add( mesh );
-					
-					var intensity = 2.5;
-					var rng = 225;
-					flashlight = new THREE.SpotLight(0x777777,intensity,rng,Math.PI);
-					flashlight.position.set( 200, 200, 200 );
-					flashlight2 = new THREE.SpotLight(0x777777,intensity,rng,Math.PI);
-					flashlight2.position.set( -200, -200, -200 );
-					mesh.add(flashlight);
-					mesh.add(flashlight2);
+				
+					var light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 0.7 );
+					scene.add( light );
 				
 					jQuery('#<?php print $vs_progress_id; ?> div').html("Loaded model");
 					setTimeout(function() {
@@ -498,6 +492,7 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 				}
 				
 				function loadProgressMonitor( event ) {
+						jQuery('#<?php print $vs_progress_id; ?>').show();
 						var msg = "Loaded " + caUI.utils.formatFilesize(event.loaded/5.2, true);
 						if(total_filesize > 0) {
 							msg += " (" + Math.ceil((event.loaded/total_filesize) * 100) + "%)";
