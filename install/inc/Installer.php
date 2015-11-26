@@ -840,13 +840,34 @@ class Installer {
 				$va_available_bundles = $t_ui_screens->getAvailableBundles(null,array('dontCache' => true));
 
 				// create ui bundle placements
+				$vn_i = 0;
 				foreach($vo_screen->bundlePlacements->children() as $vo_placement) {
+					$vn_i ++;
 					$vs_placement_code = self::getAttribute($vo_placement, "code");
 					$vs_bundle = trim((string)$vo_placement->bundle);
-
+					// If we're updating, try an find a matching placement and update it
 					$va_settings = $this->_processSettings(null, $vo_placement->settings);
+					$t_placement = $this->opb_updating ? ca_editor_ui_bundle_placements::find(array(
+						'placement_code' => $vs_placement_code,
+						'bundle_name' => $vs_bundle,
+						'screen_id' => $t_ui_screens->getPrimaryKey()
+					), array('returnAs' => 'firstModelInstance')) : null;
+					if($t_placement){
+						$t_placement->setMode(ACCESS_WRITE);
+						$t_placement->set('rank', $vn_i);
+						if (is_array($va_settings)) {
+							foreach($t_placement->getAvailableSettings() as $vs_setting => $va_setting_info) {
+								$vs_val = isset($va_settings[$vs_setting]) ? $va_settings[$vs_setting] : null;
 
-					$t_ui_screens->addPlacement($vs_bundle, $vs_placement_code, $va_settings, null, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
+								$t_placement->setSetting($vs_setting, $vs_val);
+							}
+						}
+						$t_placement->update();
+					} else {
+						$vn_rank = $this->opb_updating? $vn_i : null;
+						$t_ui_screens->addPlacement($vs_bundle, $vs_placement_code, $va_settings, $vn_rank, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
+					}
+
 				}
 
 				// create ui screen type restrictions
