@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,7 +28,7 @@
 
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	require_once(__CA_LIB_DIR__."/ca/BaseEditorController.php");
-
+	require_once(__CA_LIB_DIR__.'/core/Parsers/ZipStream.php');
 
  	class SetEditorController extends BaseEditorController {
  		# -------------------------------------------------------
@@ -195,8 +195,7 @@
 			}
 
 			if (sizeof($va_paths) > 0){
-				$vs_tmp_name = caGetTempFileName('DownloadSetMedia', 'zip');
-				$o_phar = new PharData($vs_tmp_name, null, null, Phar::ZIP);
+				$o_zip = new ZipStream();
 
 				foreach($va_paths as $vn_pk => $va_path_info) {
 					$vn_c = 1;
@@ -208,7 +207,7 @@
 						if ($vs_ext = pathinfo($vs_path, PATHINFO_EXTENSION)) {
 							$vs_filename .= ".{$vs_ext}";
 						}
-						$o_phar->addFile($vs_path, $vs_filename);
+						$o_zip->addFile($vs_path, $vs_filename);
 
 						$vn_c++;
 					}
@@ -216,16 +215,13 @@
 
 				$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
 
-				// send download
-				$vs_set_code = $t_set->get('set_code');
-
-				$o_view->setVar('tmp_file', $vs_tmp_name);
-				$o_view->setVar('download_name', 'media_for_'.mb_substr(preg_replace('![^A-Za-z0-9]+!u', '_', $vs_set_code ? $vs_set_code : $t_set->getPrimaryKey()), 0, 20).'.zip');
-
-				$this->response->addContent($o_view->render('ca_sets_download_media.php'));
+				// send files
+				$o_view->setVar('zip_stream', $o_zip);
+				$o_view->setVar('archive_name', 'media_for_'.mb_substr(preg_replace('![^A-Za-z0-9]+!u', '_', ($vs_set_code = $t_set->get('set_code')) ? $vs_set_code : $t_set->getPrimaryKey()), 0, 20).'.zip');
+				$this->response->addContent($o_view->render('download_file_binary.php'));
 				return;
 			} else {
-				$this->notification->addNotification(_t('No media is available for download'), __NOTIFICATION_TYPE_ERROR__);
+				$this->notification->addNotification(_t('No files to download'), __NOTIFICATION_TYPE_ERROR__);
 				$this->opo_response->setRedirect(caEditorUrl($this->opo_request, 'ca_sets', $t_set->getPrimaryKey()));
 				return;
 			}
