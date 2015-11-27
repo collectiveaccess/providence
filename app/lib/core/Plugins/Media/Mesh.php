@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -310,31 +310,28 @@ class WLPlugMediaMesh extends BaseMediaPlugin implements IWLPlugMedia {
 
 		switch($ps_mimetype) {
 			case 'application/ctm':
-				if(file_exists($this->filepath)){
-					if (file_exists("/usr/local/bin/ctmconv")) {
-						exec("/usr/local/bin/ctmconv ".$this->filepath." {$ps_filepath}.ctm --method MG2 --level 9 2>&1", $va_output);
-						
-						return $ps_filepath.'.ctm';	
-					} else {
-						@unlink($ps_filepath.'.ctm');
-						$this->postError(1610, _t("Couldn't convert %1 model to ctm", $this->properties['mimetype']), "WLPlugMediaMesh->write()");
-						return false;
-					}
+				if(file_exists($this->filepath) && caOpenCTMInstalled()){
+					exec(caGetExternalApplicationPath('openctm').' '.caEscapeShellArg($this->filepath)." ".caEscapeShellArg($ps_filepath).".ctm --method MG2 --level 9 2>&1", $va_output);
+					return "{$ps_filepath}.ctm";	
+				} else {
+					@unlink("{$ps_filepath}.ctm");
+					//$this->postError(1610, _t("Couldn't convert %1 model to ctm", $this->properties['mimetype']), "WLPlugMediaMesh->write()");
+					//return false;
 				}
 				break;
 			default:
 				# pretty restricted, but we can convert ply to stl!
 				if(($this->properties['mimetype'] == 'application/ply') && ($ps_mimetype == 'application/stl')){
 					if(file_exists($this->filepath)){
-						if (file_exists("/usr/local/bin/meshlabserver")) {
+						if (caMeshlabServerInstalled()) {
 							putenv("DISPLAY=:0");
 							chdir('/usr/local/bin');
-							exec("/usr/local/bin/meshlabserver -i ".$this->filepath." -o {$ps_filepath}.stl 2>&1", $va_output);
-							return $ps_filepath.'.stl';	
+							exec(caGetExternalApplicationPath('meshlabserver')." -i ".caEscapeShellArg($this->filepath)." -o ".caEscapeShellArg($ps_filepath).".stl 2>&1", $va_output);
+							return "{$ps_filepath}.stl";	
 						} elseif(PlyToStl::convert($this->filepath,$ps_filepath.'.stl')){
-							return $ps_filepath.'.stl';	
+							return "{$ps_filepath}.stl";	
 						} else {
-							@unlink($ps_filepath.'.stl');
+							@unlink("{$ps_filepath}.stl");
 							$this->postError(1610, _t("Couldn't convert ply model to stl"), "WLPlugMediaMesh->write()");
 							return false;
 						}
