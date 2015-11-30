@@ -1904,7 +1904,7 @@ class SearchResult extends BaseObject {
 			$vs_prop = caGetListItemIdno($vs_prop); 
 		} else {
 			if (isset($pa_options['convertCodesToIdno']) && $pa_options['convertCodesToIdno'] && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST"))) {
-				$vs_prop = $this->opt_list->caGetListItemIDForValue($vs_list_code, $vs_prop);
+				$vs_prop = caGetListItemIDForValue($vs_list_code, $vs_prop);
 			} 
 		}
 		return $vs_prop;
