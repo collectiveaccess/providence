@@ -266,9 +266,8 @@
  		 * @return string
  		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
- 			
  			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'minChars', 'maxChars', 'suggestExistingValues', 'usewysiwygeditor', 'isDependentValue', 'dependentValueTemplate'));
- 			
+
  			if (isset($pa_options['usewysiwygeditor'])) {
  				$va_settings['usewysiwygeditor'] = $pa_options['usewysiwygeditor'];
  			}
@@ -327,9 +326,7 @@
  				$va_opts
  			);
  			
- 			if ($va_settings['isDependentValue']) {
- 				AssetLoadManager::register('displayTemplateParser');
- 				
+ 			if ($va_settings['isDependentValue'] || $pa_options['isDependentValue']) {
  				$t_element = new ca_metadata_elements($pa_element_info['element_id']);
  				$va_elements = $t_element->getElementsInSet($t_element->getHierarchyRootID());
  				$va_element_dom_ids = array();

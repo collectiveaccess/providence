@@ -3154,7 +3154,7 @@
 										}
 										$va_values[$vs_id = "{$vs_loc_class}:{$vs_loc_subclass}:{$vn_id}"] = array(
 											'id' => $vs_id,
-											'label' => $qr_res->getWithTemplate($vs_template)
+											'label' => $qr_res->getWithTemplate($vs_template, $va_config)
 										);
 									}
 								}
@@ -4918,8 +4918,9 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 					$this->opo_ca_browse_cache->save();
 				}
 
-				if (isset($pa_options['limit']) && ($vn_limit = $pa_options['limit'])) {
-					$vn_start = (int) caGetOption($pa_options, 'start', 0);
+				$vn_start = (int) caGetOption('start', $pa_options, 0);
+				$vn_limit = (int) caGetOption('limit', $pa_options, 0);
+				if (($vn_start > 0) || ($vn_limit > 0)) {
 					$va_results = array_slice($va_results, $vn_start, $vn_limit);
 				}
 			}
@@ -5410,12 +5411,12 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true);
 
 			switch(sizeof($va_path = array_keys($this->opo_datamodel->getPath($ps_relative_to_table, $this->ops_browse_table_name)))) {
-				case __CA_ATTRIBUTE_VALUE_LIST__:
+				case 3:
 					$t_item_rel = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
 					$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[2], true);
 					$vs_key = 'relation_id';
 					break;
-				case __CA_ATTRIBUTE_VALUE_DATERANGE__:
+				case 2:
 					$t_item_rel = null;
 					$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
 					$vs_key = $t_rel_item->primaryKey();
@@ -5434,6 +5435,7 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 				$va_joins[] = 'INNER JOIN '.$vs_join_table.' ON '.$vs_cur_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][0].' = '.$vs_join_table.'.'.$va_rel_info[$vs_cur_table][$vs_join_table][0][1]."\n";
 				$vs_cur_table = $vs_join_table;
 			}
+
 			if (isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_item->hasField('access')) {
 				$va_wheres[] = "(".$this->ops_browse_table_name.".access IN (".join(',', $pa_options['checkAccess'])."))";
 			}
@@ -5444,10 +5446,9 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 				$va_relative_to_join[] = "INNER JOIN ".$t_item_rel->tableName()." ON ".$t_item_rel->tableName().".".$t_item->primaryKey()." = ".$this->ops_browse_table_name.'.'.$t_item->primaryKey();
 				$va_relative_to_join[] = "INNER JOIN {$ps_relative_to_table} ON {$ps_relative_to_table}.{$vs_target_browse_table_pk} = ".$t_item_rel->tableName().".".$t_target->primaryKey();
 			} else { // path of length 2, i.e. direct relationship like ca_objects.lot_id = ca_object_lots.lot_id ==> join relative_to and browse target tables directly
-				$va_relative_to_join[] = "INNER JOIN {$ps_relative_to_table} ON {$ps_relative_to_table}.{$vs_target_browse_table_pk} = ".$t_rel_item->tableName().".".$t_target->primaryKey();
+				$va_rel_info = $this->opo_datamodel->getRelationships($ps_relative_to_table, $t_rel_item->tableName());
+				$va_relative_to_join[] = "INNER JOIN {$ps_relative_to_table} ON {$ps_relative_to_table}.{$va_rel_info[$t_rel_item->tableName()][$ps_relative_to_table][0][0]} = {$t_rel_item->tableName()}.{$va_rel_info[$ps_relative_to_table][$t_rel_item->tableName()][0][0]}";
 			}
-
-			$vs_relative_to_join = join("\n", $va_relative_to_join);
 
 			return array(
 				'joins' => $va_joins, 'wheres' => $va_wheres, 'relative_joins' => $va_relative_to_join,

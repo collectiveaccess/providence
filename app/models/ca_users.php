@@ -2447,7 +2447,7 @@ class ca_users extends BaseModel {
 	 * @param mixed $ps_user_name_or_id The user name or numeric user_id of the user
 	 * @return boolean True if user exists, false if not
 	 */
-	public function exists($ps_user_name_or_id) {
+	static public function exists($ps_user_name_or_id, $pa_options=null) {
 		$t_user = new ca_users();
 		if ($t_user->load($ps_user_name_or_id)) {
 			return true;
@@ -2874,9 +2874,17 @@ class ca_users extends BaseModel {
 			}
 		}
 
-		if(AuthenticationManager::authenticate($ps_username, $ps_password, $pa_options)) {
-			$this->load($ps_username);
-			return true;
+		try {
+			if(AuthenticationManager::authenticate($ps_username, $ps_password, $pa_options)) {
+				$this->load($ps_username);
+				return true;
+			}
+		}  catch (Exception $e) {
+			$this->opo_log->log(array(
+				'CODE' => 'SYS', 'SOURCE' => 'ca_users/authenticate',
+				'MESSAGE' => _t('There was an error while trying to authenticate user %1: The message was %2 : %3', $ps_username, get_class($e), $e->getMessage())
+			));
+			return false;
 		}
 		
 		// check ips

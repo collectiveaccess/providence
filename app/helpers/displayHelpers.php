@@ -2331,7 +2331,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 			// Grab values for codes used in ifdef and ifnotdef directives
 			$va_directive_tag_vals = array();	
 			foreach($va_directive_tags as $vs_directive_tag) {
-				$va_directive_tag_vals[$vs_directive_tag] = $qr_res->get($vs_directive_tag, array('assumeDisplayField' => true, 'convertCodesToDisplayText' => true, 'dontUseElementTemplate' => true));
+				$va_directive_tag_vals[$vs_directive_tag] = $qr_res->get($vs_directive_tag, array('assumeDisplayField' => true, 'convertCodesToDisplayText' => true, 'dontUseElementTemplate' => true, 'primaryIDs' => $va_primary_ids));
 			}
 			
 			
@@ -2694,7 +2694,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 								}
 								
 								if ($va_spec_bits[1] != '_hierarchyName') {
-									$va_val = $qr_res->get($vs_get_spec, array_merge($pa_options, $va_additional_options, array('returnWithStructure' => true, 'returnBlankValues' => true, 'returnAllLocales' => true, 'useLocaleCodes' => false, 'filters' => $va_tag_filters, 'primaryIDs' => $va_primary_ids)));
+									$va_val = $qr_res->get($vs_get_spec, array_merge($va_additional_options, $pa_options, array('returnWithStructure' => true, 'returnBlankValues' => true, 'returnAllLocales' => true, 'useLocaleCodes' => false, 'filters' => $va_tag_filters, 'primaryIDs' => $va_primary_ids)));
 								} else {
 									$va_val = array();
 								}
@@ -4246,5 +4246,40 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		$vs_buf .= "});\n</script>\n";
 
 		return $vs_buf;
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Get bundle preview for a relationship bundle
+	 * @param BundlableLabelableBaseModelWithAttributes $t_rel_instance
+	 * @param array $pa_initial_values
+	 * @param string $ps_template
+	 * @param string $ps_delimiter
+	 * @return string
+	 */
+	function caGetBundlePreviewForRelationshipBundle($t_rel_instance, $pa_initial_values, $ps_template, $ps_delimiter='; ') {
+		if(!is_array($pa_initial_values) || sizeof($pa_initial_values) == 0) {
+			return '""';
+		}
+
+		// it's very unlikely that the preview will fit more then 10 items
+		if(sizeof($pa_initial_values) > 10) {
+			$pa_initial_values = array_slice($pa_initial_values, 0, 10);
+		}
+		if(!($t_rel_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
+			return '""';
+		}
+
+		$va_ids = $va_previews = array();
+		foreach($pa_initial_values as $va_item) {
+			$va_ids[] = $va_item['id'];
+		}
+
+		$o_res = $t_rel_instance->makeSearchResult($t_rel_instance->tableName(),$va_ids);
+
+		while($o_res->nextHit()) {
+			$va_previews[] = $o_res->getWithTemplate($ps_template);
+		}
+
+		return caEscapeForBundlePreview(join($ps_delimiter, $va_previews));
 	}
 	# ------------------------------------------------------------------

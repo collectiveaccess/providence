@@ -36,7 +36,7 @@ require_once(__CA_MODELS_DIR__.'/ca_users.php');
 
 class CaUsersAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	# --------------------------------------------------------------------------------
-	public static function authenticate($ps_username, $ps_password = '', $pa_options=null) {
+	public function authenticate($ps_username, $ps_password = '', $pa_options=null) {
 
 		$t_user = new ca_users();
 
@@ -66,12 +66,12 @@ class CaUsersAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		}
 	}
 	# --------------------------------------------------------------------------------
-	public static function createUserAndGetPassword($ps_username, $ps_password) {
+	public function createUserAndGetPassword($ps_username, $ps_password) {
 		// ca_users takes care of creating the backend record for us. There's nothing else to do here
 		return create_hash($ps_password);
 	}
 	# --------------------------------------------------------------------------------
-	public static function supports($pn_feature) {
+	public function supports($pn_feature) {
 		switch($pn_feature){
 			case __CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__:
 			case __CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__:
@@ -82,12 +82,12 @@ class CaUsersAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 		}
 	}
 	# --------------------------------------------------------------------------------
-	public static function updatePassword($ps_username, $ps_password) {
+	public function updatePassword($ps_username, $ps_password) {
 		// ca_users takes care of creating the backend record for us. There's nothing else to do here
 		return create_hash($ps_password);
 	}
 	# --------------------------------------------------------------------------------
-	public static function deleteUser($ps_username) {
+	public function deleteUser($ps_username) {
 		// ca_users takes care of deleting the db row for us. Nothing else to do here.
 		return true;
 	}
