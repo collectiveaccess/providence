@@ -313,11 +313,6 @@ final class ConfigurationExporter {
 		$t_element = new ca_metadata_elements();
 
 		while($qr_elements->nextRow()) {
-			if($this->opn_modified_after) {
-				if($t_element->getLastChangeTimestampAsInt($qr_elements->get('element_id')) < $this->opn_modified_after) {
-					continue;
-				}
-			}
 
 			$vo_element = $this->opo_dom->createElement("metadataElement");
 
@@ -366,7 +361,16 @@ final class ConfigurationExporter {
 			}
 
 			$vo_sub_elements = $this->getElementAsDOM($qr_elements->get("element_id"));
-			if($vo_sub_elements) {
+
+			// if we're only exporting changes, don't export element if no sub-items are exported AND the item itself hasn't changed
+			if($this->opn_modified_after && !$vo_sub_elements->childNodes->length) {
+				if($t_element->getLastChangeTimestampAsInt($qr_elements->get('element_id')) < $this->opn_modified_after) {
+					continue;
+				}
+			}
+
+			// but IF we're exporting this item, always export ALL sub-items
+			if($vo_sub_elements = $this->getElementAsDOM($qr_elements->get("element_id"), true)) {
 				$vo_element->appendChild($vo_sub_elements);
 			}
 
@@ -414,14 +418,13 @@ final class ConfigurationExporter {
 			}
 
 			$vo_element->appendChild($vo_restrictions);
-
 			$vo_elements->appendChild($vo_element);
 		}
 
 		return $vo_elements;
 	}
 	# -------------------------------------------------------
-	private function getElementAsDOM($pn_parent_id) {
+	private function getElementAsDOM($pn_parent_id, $pb_ignore_timestamp=false) {
 		$t_element = new ca_metadata_elements();
 		$t_list = new ca_lists();
 
@@ -475,7 +478,16 @@ final class ConfigurationExporter {
 			$vo_element->appendChild($vo_settings);
 
 			$vo_sub_elements = $this->getElementAsDOM($qr_elements->get("element_id"));
-			if($vo_sub_elements) {
+
+			// if we're only exporting changes, don't export element if no sub-items are exported AND the item itself hasn't changed
+			if($this->opn_modified_after && !$vo_sub_elements->childNodes->length && !$pb_ignore_timestamp) {
+				if($t_element->getLastChangeTimestampAsInt() < $this->opn_modified_after) {
+					continue;
+				}
+			}
+
+			// but IF we're exporting this item, always export ALL sub-items
+			if($vo_sub_elements = $this->getElementAsDOM($qr_elements->get("element_id"), true)) {
 				$vo_element->appendChild($vo_sub_elements);
 			}
 
@@ -881,7 +893,7 @@ final class ConfigurationExporter {
 	public function getRelationshipTypesAsDOM() {
 		$vo_rel_types = $this->opo_dom->createElement("relationshipTypes");
 
-		$qr_tables = $this->opo_db->query("SELECT DISTINCT table_num FROM ca_relationship_types ORDER BY type_id");
+		$qr_tables = $this->opo_db->query("SELECT DISTINCT table_num FROM ca_relationship_types");
 
 		while($qr_tables->nextRow()) {
 			$vo_table = $this->opo_dom->createElement("relationshipTable");
