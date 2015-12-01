@@ -64,9 +64,27 @@
 <div id="tableContent"></div>
 <script type="text/javascript">
 	jQuery(document).ready(function() {
-		jQuery.get('<?php print caNavUrl($this->request, 'find', 'ObjectTable', 'Index', array('ids' => array_keys($va_initial_values))); ?>', function( data ) {
+		function caFoo(data) {
 			jQuery('#tableContent').html( data );
-		});
+
+			jQuery('#tableContent .list-header-unsorted a').click(function(event) {
+				event.preventDefault();
+				jQuery.get(event.target + '/ids/<?php print join(';', array_keys($va_initial_values)); ?>', caFoo);
+			});
+
+			jQuery('#tableContent form').submit(function(event) {
+				event.preventDefault();
+
+				jQuery.ajax({
+					type: 'POST',
+					url: event.target.action + '/ids/<?php print join(';', array_keys($va_initial_values)); ?>',
+					data: $(this).serialize(),
+					success: caFoo
+				});
+			});
+		}
+
+		jQuery.get('<?php print caNavUrl($this->request, 'find', 'ObjectTable', 'Index', array('ids' => array_keys($va_initial_values))); ?>', caFoo);
 	});
 </script>
 <div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
