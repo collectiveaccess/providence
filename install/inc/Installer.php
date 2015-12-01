@@ -260,7 +260,7 @@ class Installer {
 	 * @param bool $pb_force_preferred
 	 * @return bool
 	 */
-	protected static function addLabelsFromXMLElement($t_instance,$po_labels,$pa_locales, $pb_force_preferred=false){
+	protected static function addLabelsFromXMLElement($t_instance,$po_labels, $pa_locales, $pb_force_preferred=false){
 		require_once(__CA_LIB_DIR__."/ca/LabelableBaseModelWithAttributes.php");
 
 		if(!($t_instance instanceof LabelableBaseModelWithAttributes)){
@@ -580,7 +580,7 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
-	public function processMetadataElements(){
+	public function processMetadataElements() {
 		require_once(__CA_MODELS_DIR__."/ca_lists.php");
 		require_once(__CA_MODELS_DIR__."/ca_list_items.php");
 		require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
@@ -666,9 +666,8 @@ class Installer {
 
 		$t_lists = new ca_lists();
 
-		if($this->opb_updating) {
-			$t_md_element = ca_metadata_elements::getInstance($vs_element_code) ? ca_metadata_elements::getInstance($vs_element_code) : new ca_metadata_elements();
-		} else {
+		// try to load element by code for potential update. codes are unique, globally
+		if(!($t_md_element = ca_metadata_elements::getInstance($vs_element_code))) {
 			$t_md_element = new ca_metadata_elements();
 		}
 

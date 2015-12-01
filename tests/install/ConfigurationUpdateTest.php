@@ -123,4 +123,19 @@ class ConfigurationUpdateTest extends PHPUnit_Framework_TestCase {
 		$t_list->setMode(ACCESS_WRITE);
 		$t_list->delete(true, array('hard' => true));
 	}
+
+	public function testAddNewElement() {
+		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/elements/add_new_element.xml'));
+		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer->processLocales();
+		$o_installer->processMetadataElements();
+
+		$t_instance = ca_metadata_elements::getInstance('new_element_test');
+		$this->assertInstanceOf('ca_metadata_elements', $t_instance);
+		$this->assertGreaterThan(0, $t_instance->getPrimaryKey());
+		$this->assertEquals(__CA_ATTRIBUTE_VALUE_TEXT__, $t_instance->get('datatype'));
+
+		$t_instance->setMode(ACCESS_WRITE);
+		$t_instance->delete(true, array('hard' => true));
+	}
 }
