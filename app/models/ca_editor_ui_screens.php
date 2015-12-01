@@ -1362,6 +1362,50 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									)
 								);
 								break;
+							case 'ca_objects_table':
+								$va_path = array_keys($this->_DATAMODEL->getPath($t_instance->tableName(), 'ca_objects'));
+								/** @var ca_objects $t_object */
+								$t_object = $this->getAppDatamodel()->getInstance('ca_objects', true);
+								$va_additional_settings = array(
+									'restrict_to_relationship_types' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'useRelationshipTypeList' => $va_path[1],
+										'width' => "275px", 'height' => "75px",
+										'takesLocale' => false,
+										'default' => '',
+										'label' => _t('Restrict to relationship types'),
+										'description' => _t('Restricts display to items related using the specified relationship type(s). Leave all unselected for no restriction.')
+									),
+									'restrict_to_types' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'useList' => $t_object->getTypeListCode(),
+										'width' => "275px", 'height' => "75px",
+										'takesLocale' => false,
+										'default' => '',
+										'label' => _t('Restrict to types'),
+										'description' => _t('Restricts display to items of the specified type(s). Leave all unselected for no restriction.')
+									),
+									'restrict_to_search' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_FIELD,
+										'default' => '',
+										'width' => "275px", 'height' => 1,
+										'label' => _t('Restrict to search expression'),
+										'description' => _t('Restricts display to items matching the given search expression. Leave empty for no restriction.')
+									),
+									'dontShowDeleteButton' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_CHECKBOXES,
+										'width' => "10", 'height' => "1",
+										'takesLocale' => false,
+										'default' => '0',
+										'label' => _t('Do not show delete button'),
+										'description' => _t('If checked the delete relationship control will not be provided.')
+									),
+								);
+								break;
 						}
 						$va_additional_settings['documentation_url'] = array(
 							'formatType' => FT_TEXT,

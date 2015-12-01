@@ -200,6 +200,9 @@
 				} else {
 					$vo_result = $po_search->search($vs_search, $va_search_opts);
 				}
+
+				$vo_result = isset($pa_options['result']) ? $pa_options['result'] : $vo_result;
+
 				$this->opo_result_context->validateCache();
 				
 				// Only prefetch what we need
