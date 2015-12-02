@@ -99,13 +99,25 @@ class ObjectTableController extends BaseSearchController {
 		AssetLoadManager::register('imageScroller');
 		AssetLoadManager::register('tabUI');
 		AssetLoadManager::register('panel');
-		$va_ids = explode(';', $this->getRequest()->getParameter('ids', pString));
+		$va_relation_ids = explode(';', $this->getRequest()->getParameter('ids', pString));
 		$va_access_values = caGetUserAccessValues($this->getRequest());
 
 		if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) {
 			$va_tmp = array_keys($this->opa_sorts);
 			$vs_sort = array_shift($va_tmp);
 		}
+
+		// we need the rel table to translate the incoming relation_ids to object ids for the list search result
+		$vs_rel_table = $this->getRequest()->getParameter('rel_table', pString);
+		$o_interstitial_res = caMakeSearchResult($vs_rel_table, $va_relation_ids);
+
+		$va_ids = array();
+		while($o_interstitial_res->nextHit()) {
+			$va_ids[$o_interstitial_res->get('relation_id')] = $o_interstitial_res->get('ca_objects.object_id');
+		}
+
+		$o_interstitial_res->seek(0);
+		$this->getView()->setVar('interstitialResult', $o_interstitial_res);
 
 		$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
 

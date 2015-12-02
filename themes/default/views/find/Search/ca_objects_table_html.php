@@ -30,7 +30,7 @@
  	
  	print $this->render('Search/search_controls_html.php');
  ?>
- 	<div id="resultBox" style="margin-bottom:0">
+ 	<div id="resultBox" style="margin-bottom:13px"><!-- override margin from base.css so that the bottom paging controls barely fit -->
 <?php
 	if($vo_result) {
 		$vs_view = $this->getVar('current_view');
@@ -49,7 +49,7 @@
 				break;
 			case 'list':
 			default:
-				print $this->render('Results/ca_objects_results_list_html.php');
+				print $this->render('Results/ca_objects_results_table_html.php');
 				break;
 		}
 ?>		

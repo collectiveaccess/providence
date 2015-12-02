@@ -44,9 +44,15 @@
 	$va_initial_values	= $this->getVar('initialValues');
 	$vs_interstitial_selector = $vs_id_prefix . 'Item_';
 
-	$va_object_ids = array();
-	foreach($va_initial_values as $va_object) {
-		$va_object_ids[] = $va_object['object_id'];
+	$va_additional_search_controller_params = array(
+		'ids' => join(';', array_keys($va_initial_values)),
+		'interstitialPrefix' => $vs_interstitial_selector,
+		'rel_table' => $t_item_rel->tableName()
+	);
+
+	$vs_url_string = '';
+	foreach($va_additional_search_controller_params as $vs_key => $vs_val) {
+		$vs_url_string .= '/' . $vs_key . '/' . urlencode($vs_val);
 	}
 
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_objects') == __CA_BUNDLE_ACCESS_READONLY__));
@@ -79,7 +85,7 @@
 
 		jQuery('#tableContent .list-header-unsorted a').click(function(event) {
 			event.preventDefault();
-			jQuery.get(event.target + '/ids/<?php print join(';', $va_object_ids); ?>/interstitialPrefix/<?php print urlencode($vs_interstitial_selector); ?>', caHackSearchResultForm);
+			jQuery.get(event.target + '<?php print $vs_url_string; ?>', caHackSearchResultForm);
 		});
 
 		jQuery('#tableContent form').submit(function(event) {
@@ -87,7 +93,7 @@
 
 			jQuery.ajax({
 				type: 'POST',
-				url: event.target.action + '/ids/<?php print join(';', $va_object_ids); ?>/interstitialPrefix/<?php print urlencode($vs_interstitial_selector); ?>',
+				url: event.target.action + '<?php print $vs_url_string; ?>',
 				data: $(this).serialize(),
 				success: caHackSearchResultForm
 			});
@@ -98,7 +104,7 @@
 	if(sizeof($va_initial_values)) {
 ?>
 		jQuery(document).ready(function() {
-			jQuery.get('<?php print caNavUrl($this->request, 'find', 'ObjectTable', 'Index', array('ids' => $va_object_ids, 'interstitialPrefix' => $vs_interstitial_selector)); ?>', caHackSearchResultForm);
+			jQuery.get('<?php print caNavUrl($this->request, 'find', 'ObjectTable', 'Index', $va_additional_search_controller_params); ?>', caHackSearchResultForm);
 		});
 <?php
 	}
