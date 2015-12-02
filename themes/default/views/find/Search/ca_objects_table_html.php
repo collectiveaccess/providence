@@ -59,5 +59,3 @@
 	}
 ?>
 </div><!-- end resultbox -->
-	
-<div class="editorBottomPadding"><!-- empty --></div>

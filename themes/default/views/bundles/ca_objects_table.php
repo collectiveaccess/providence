@@ -42,6 +42,7 @@
 	$t_display 			= $this->getVar('display');
 	$va_display_list	= $this->getVar('display_list');
 	$va_initial_values	= $this->getVar('initialValues');
+	$vs_interstitial_selector = $vs_id_prefix . 'Item_';
 
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_objects') == __CA_BUNDLE_ACCESS_READONLY__));
 	$vb_dont_show_del	=	((isset($va_settings['dontShowDeleteButton']) && $va_settings['dontShowDeleteButton'])) ? true : false;
@@ -64,12 +65,14 @@
 <div id="tableContent"></div>
 <script type="text/javascript">
 	jQuery(document).ready(function() {
-		function caFoo(data) {
-			jQuery('#tableContent').html( data );
+		function caHackSearchResultForm(data) {
+			jQuery('#tableContent').html(data);
+			// have to re-init the relation bundle because the interstitial buttons have only now been loaded
+			caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', initiRelationBundleOptions);
 
 			jQuery('#tableContent .list-header-unsorted a').click(function(event) {
 				event.preventDefault();
-				jQuery.get(event.target + '/ids/<?php print join(';', array_keys($va_initial_values)); ?>', caFoo);
+				jQuery.get(event.target + '/ids/<?php print join(';', array_keys($va_initial_values)); ?>/interstitialPrefix/<?php print urlencode($vs_interstitial_selector); ?>', caHackSearchResultForm);
 			});
 
 			jQuery('#tableContent form').submit(function(event) {
@@ -77,14 +80,14 @@
 
 				jQuery.ajax({
 					type: 'POST',
-					url: event.target.action + '/ids/<?php print join(';', array_keys($va_initial_values)); ?>',
+					url: event.target.action + '/ids/<?php print join(';', array_keys($va_initial_values)); ?>/interstitialPrefix/<?php print urlencode($vs_interstitial_selector); ?>',
 					data: $(this).serialize(),
-					success: caFoo
+					success: caHackSearchResultForm
 				});
 			});
 		}
 
-		jQuery.get('<?php print caNavUrl($this->request, 'find', 'ObjectTable', 'Index', array('ids' => array_keys($va_initial_values))); ?>', caFoo);
+		jQuery.get('<?php print caNavUrl($this->request, 'find', 'ObjectTable', 'Index', array('ids' => array_keys($va_initial_values), 'interstitialPrefix' => $vs_interstitial_selector)); ?>', caHackSearchResultForm);
 	});
 </script>
 <div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
@@ -163,6 +166,7 @@
 	
 <script type="text/javascript">
 	var caRelationBundle<?php print $vs_id_prefix; ?>;
+	var initiRelationBundleOptions;
 	jQuery(document).ready(function() {
 		if (caUI.initPanel) {
 			caRelationQuickAddPanel<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
@@ -196,8 +200,8 @@
 				}
 			});
 		}
-		
-		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', {
+
+		initiRelationBundleOptions = {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 			initialValues: <?php print json_encode($this->getVar('initialValues')); ?>,
 			initialValueOrder: <?php print json_encode(array_keys($this->getVar('initialValues'))); ?>,
@@ -217,10 +221,10 @@
 			bundlePreview: <?php print caGetBundlePreviewForRelationshipBundle($t_item, $this->getVar('initialValues'), $va_settings['display_template']); ?>,
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
 			isSortable: false,
-			
+
 			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
 			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/objects', 'ObjectQuickAdd', 'Form', array('object_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'])); ?>',
-			
+
 			interstitialButtonClassName: 'caInterstitialEditButton',
 			interstitialPanel: caRelationEditorPanel<?php print $vs_id_prefix; ?>,
 			interstitialUrl: '<?php print caNavUrl($this->request, 'editor', 'Interstitial', 'Form', array('t' => $t_item_rel->tableName())); ?>',
@@ -229,9 +233,11 @@
 
 			relationshipTypes: <?php print json_encode($this->getVar('relationship_types_by_sub_type')); ?>,
 			templateValues: ['label', 'id', 'type_id'],
-			
+
 			minRepeats: <?php print caGetOption('minRelationshipsPerRow', $va_settings, 0); ?>,
 			maxRepeats: <?php print caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>
-		});
+		};
+
+		// don't init bundle here, we do it when the content is loaded
 	});
 </script>

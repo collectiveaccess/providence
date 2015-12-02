@@ -77,7 +77,19 @@
 ?>
 				<tr <?php print ($i ==1) ? "class='odd'" : ""; ?>>
 					<td style="width:10px">
-						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_object_id; ?>' class="addItemToSetControl" />
+<?php
+						if($vs_interstitial_prefix = $this->request->getParameter('interstitialPrefix', pString)) {
+?>
+							<div id="<?php print $vs_interstitial_prefix.$vn_object_id; ?>">
+								<a href="#" class="caInterstitialEditButton listRelEditButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_INTERSTITIAL_EDIT_BUNDLE__); ?></a>
+							</div>
+<?php
+						} else {
+?>
+							<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_object_id; ?>' class="addItemToSetControl" />
+<?php
+						}
+?>
 					</td>
 <?php
 					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_objects', $vn_object_id, array(), array())."</td>";;

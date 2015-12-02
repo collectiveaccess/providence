@@ -32,6 +32,11 @@
 	
 	$va_previous_link_params 	= array('page' => $this->getVar('page') - 1);
 	$va_next_link_params 		= array('page' => $this->getVar('page') + 1);
+	// for object "table" bundle
+	if($vs_ids = $this->request->getParameter('ids', pString)) {
+		$va_previous_link_params['ids'] = $vs_ids;
+		$va_next_link_params['ids'] = $vs_ids;
+	}
 	$va_jump_to_params 			= array();
 ?>
 	<br/><div class='divide'><!-- empty --></div>
