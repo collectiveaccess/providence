@@ -54,16 +54,6 @@
 			</div></div><!-- end footer -->
 		</div><!-- end footerContainer -->
 		</div><!-- end center -->
-		
-		<script type="text/javascript">
-			// force content to fill window height
-			$(function() {
-				var wamtop = $('#topNav').height();
-				var wamfoot = $('#footerContainer').height();
-				$('#mainContent').css('min-height', (window.innerHeight - (wamtop + wamfoot)) + 'px');
-				$('#mainContentFull').css('min-height', (window.innerHeight - (wamtop + wamfoot)) + 'px');
-			});
-		</script>
 <?php
 	print TooltipManager::getLoadHTML();
 	print FooterManager::getLoadHTML();

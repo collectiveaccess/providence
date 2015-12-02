@@ -15,6 +15,7 @@ body {
 	font-size: 1em;
 	line-height: 1.5;
 	min-height: 100%;
+	height: auto;
 	min-width: 37.9em;
 	color: $black;
 }
@@ -22,7 +23,7 @@ body {
 body {
 	background: #f0f0f0 url(images/escheresque.png) 0 0 repeat;
 	background-attachment: fixed;
-	padding-top: 100px;
+	padding: 100px 0;
 } 
 
 #loginBox {

@@ -1,16 +1,10 @@
 <script type="text/javascript">
-	jQuery(document).ready(function() {
-		caResizeSideNav();
-	});
-	function caResizeSideNav() {
-		jQuery("#leftNavSidebar").animate({'height': (jQuery("#leftNav").height() - jQuery("#widgets").height() - 70) + "px"}, 300);
-	}
+function caResizeSideNav() {}
 </script>
 <?php
 	# --- when viewing dashboard have content area of page extend full width - do not show left nav column
 	if(!in_array($this->request->getController(), array("Dashboard", "Auth"))){
 ?>
-<div>
 <div id="leftNav">
 <?php
 	if ($this->request->isLoggedIn()) {
@@ -20,8 +14,6 @@
 		print "<div id='leftNavSidebar'>".$this->getVar('nav')->getHTMLSideNav('sidebar')."<div class='editorBottomPadding'><!-- empty --></div></div>";
 	}
 ?>
-
-</div><!-- end leftNav -->
 </div>
 <?php
 	}

@@ -1,15 +1,15 @@
 @mixin breakpoint($point) {
 	@if $point == goldilocks {
-		@media only screen and (min-width: 40em) { @content; }
+		@media only screen and (max-width: 50em) { @content; }
 	}
 	@if $point == baby-bear {
-		@media only screen and (min-width: 50em) { @content; }
+		@media only screen and (min-width: 50em) and (max-width: 60em) { @content; }
 	}
 	@if $point == mama-bear {
-		@media only screen and (min-width: 60em)  { @content; }
+		@media only screen and (min-width: 60em) and (max-width: 70em)  { @content; }
 	}
 	@else if $point == papa-bear {
-		@media only screen and (min-width: 70em) { @content; }
+		@media only screen and (min-width: 70em) and (max-width: 80em) { @content; }
 	}
 	@else if $point == supa-bear {
 		@media only screen and (min-width: 80em) { @content; }
