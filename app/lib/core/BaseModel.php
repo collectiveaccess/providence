@@ -5535,7 +5535,7 @@ class BaseModel extends BaseObject {
 	public function getFileConversions($ps_field) {
 		$va_file_info = $this->get($ps_field, array('returnWithStructure' => true));
 		if (!is_array($va_file_info) || !is_array($va_file_info = array_shift($va_file_info))) {
-			return null;
+			return array();
 		}
 		if (!is_array($va_file_info["CONVERSIONS"])) {
 			return array();
