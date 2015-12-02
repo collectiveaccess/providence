@@ -36,7 +36,7 @@
 		$vs_view = $this->getVar('current_view');
 		if ($vo_result->numHits() == 0) { $vs_view = 'no_results'; }
 		$this->setVar('dontShowPages', false);
-		//print $this->render('Results/paging_controls_html.php');
+		print $this->render('Results/ca_objects_table_paging_controls_html.php');
 		print $this->render('Results/search_options_html.php');
 ?>
 
@@ -55,7 +55,7 @@
 ?>		
 	</div><!-- end sectionbox -->
 <?php
-		print $this->render('Results/paging_controls_minimal_html.php');
+		print $this->render('Results/ca_objects_table_paging_controls_html.php');
 	}
 ?>
 </div><!-- end resultbox -->

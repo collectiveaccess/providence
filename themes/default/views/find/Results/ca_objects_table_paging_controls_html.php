@@ -32,6 +32,11 @@
 	
 	$va_previous_link_params 	= array('page' => $this->getVar('page') - 1);
 	$va_next_link_params 		= array('page' => $this->getVar('page') + 1);
+	// for object "table" bundle
+	if($vs_ids = $this->request->getParameter('ids', pString)) {
+		$va_previous_link_params['ids'] = $vs_ids;
+		$va_next_link_params['ids'] = $vs_ids;
+	}
 	$va_jump_to_params 			= array();
 ?>
 	<br/><div class='divide'><!-- empty --></div>
@@ -47,16 +52,15 @@
 	if(($this->getVar('num_pages') > 1) && !$this->getVar('dontShowPages')){
 		$vs_searchNav .= "<div class='nav'>";
 		if ($this->getVar('page') > 1) {
-			$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"".caNavUrl($this->request, 'find', $this->request->getController(), $this->request->getAction(), $va_previous_link_params)."\"); return false;' class='button'>&lsaquo; Previous</a>";
+			$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"".caNavUrl($this->request, 'find', $this->request->getController(), $this->request->getAction(), $va_previous_link_params)."\", function() { if(typeof caHackSearchResultForm == \"function\") { caHackSearchResultForm(false); }}); return false;' class='button'>&lsaquo; Previous</a>";
 		}
 		$vs_searchNav .= '&nbsp;&nbsp;&nbsp;Page '.$this->getVar('page').'/'.$this->getVar('num_pages').'&nbsp;&nbsp;&nbsp;';
 		if ($this->getVar('page') < $this->getVar('num_pages')) {
-			$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"".caNavUrl($this->request, 'find', $this->request->getController(), $this->request->getAction(), $va_next_link_params)."\"); return false;' class='button'>Next &rsaquo;</a>";
+			$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"".caNavUrl($this->request, 'find', $this->request->getController(), $this->request->getAction(), $va_next_link_params)."\", function() { if(typeof caHackSearchResultForm == \"function\") { caHackSearchResultForm(false); }}); return false;' class='button'>Next &rsaquo;</a>";
 		}
 		$vs_searchNav .= "</div>";
 	}
 	$vs_searchNav .= "</div>";
 	print $vs_searchNav;
 ?>
-<div class="editorBottomPadding"><!-- empty --></div>
-<div class="editorBottomPadding"><!-- empty --></div>
+<div class="divide"><!-- empty --></div>

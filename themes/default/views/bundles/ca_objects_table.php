@@ -64,29 +64,32 @@
 ?>
 <div id="tableContent"></div>
 <script type="text/javascript">
-	jQuery(document).ready(function() {
-		function caHackSearchResultForm(data) {
+	function caHackSearchResultForm(data) {
+		if(data) {
 			jQuery('#tableContent').html(data);
-			// have to re-init the relation bundle because the interstitial buttons have only now been loaded
-			caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', initiRelationBundleOptions);
-
-			jQuery('#tableContent .list-header-unsorted a').click(function(event) {
-				event.preventDefault();
-				jQuery.get(event.target + '/ids/<?php print join(';', array_keys($va_initial_values)); ?>/interstitialPrefix/<?php print urlencode($vs_interstitial_selector); ?>', caHackSearchResultForm);
-			});
-
-			jQuery('#tableContent form').submit(function(event) {
-				event.preventDefault();
-
-				jQuery.ajax({
-					type: 'POST',
-					url: event.target.action + '/ids/<?php print join(';', array_keys($va_initial_values)); ?>/interstitialPrefix/<?php print urlencode($vs_interstitial_selector); ?>',
-					data: $(this).serialize(),
-					success: caHackSearchResultForm
-				});
-			});
 		}
 
+		// have to re-init the relation bundle because the interstitial buttons have only now been loaded
+		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', initiRelationBundleOptions);
+
+		jQuery('#tableContent .list-header-unsorted a').click(function(event) {
+			event.preventDefault();
+			jQuery.get(event.target + '/ids/<?php print join(';', array_keys($va_initial_values)); ?>/interstitialPrefix/<?php print urlencode($vs_interstitial_selector); ?>', caHackSearchResultForm);
+		});
+
+		jQuery('#tableContent form').submit(function(event) {
+			event.preventDefault();
+
+			jQuery.ajax({
+				type: 'POST',
+				url: event.target.action + '/ids/<?php print join(';', array_keys($va_initial_values)); ?>/interstitialPrefix/<?php print urlencode($vs_interstitial_selector); ?>',
+				data: $(this).serialize(),
+				success: caHackSearchResultForm
+			});
+		});
+	}
+
+	jQuery(document).ready(function() {
 		jQuery.get('<?php print caNavUrl($this->request, 'find', 'ObjectTable', 'Index', array('ids' => array_keys($va_initial_values), 'interstitialPrefix' => $vs_interstitial_selector)); ?>', caHackSearchResultForm);
 	});
 </script>
