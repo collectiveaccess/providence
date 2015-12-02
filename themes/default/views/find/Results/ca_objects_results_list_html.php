@@ -33,6 +33,7 @@
 	$vs_current_sort 		= $this->getVar('current_sort');
 	$vs_default_action		= $this->getVar('default_action');
 	$vo_ar					= $this->getVar('access_restrictions');
+	$vs_interstitial_prefix	= $this->request->getParameter('interstitialPrefix', pString)
 	
 ?>
 <div id="scrollingResults">
@@ -75,14 +76,14 @@
 				
 				($i == 2) ? $i = 0 : "";
 ?>
-				<tr <?php print ($i ==1) ? "class='odd'" : ""; ?>>
+
+				<tr <?php print ($i ==1) ? "class='odd'" : ""; ?> <?php print ($vs_interstitial_prefix ? "id='{$vs_interstitial_prefix}{$vn_object_id}'" : ''); ?>>
 					<td style="width:10px">
 <?php
-						if($vs_interstitial_prefix = $this->request->getParameter('interstitialPrefix', pString)) {
+						if($vs_interstitial_prefix) {
 ?>
-							<div id="<?php print $vs_interstitial_prefix.$vn_object_id; ?>">
-								<a href="#" class="caInterstitialEditButton listRelEditButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_INTERSTITIAL_EDIT_BUNDLE__); ?></a>
-							</div>
+							<a href="#" class="caInterstitialEditButton listRelEditButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_INTERSTITIAL_EDIT_BUNDLE__); ?></a>
+							<a href="#" class="caDeleteItemButton listRelDeleteButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
 <?php
 						} else {
 ?>
