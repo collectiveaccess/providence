@@ -44,10 +44,10 @@
 			<thead>
 			<tr>
 			<th style="width:10px; text-align:center;" class='list-header-nosort'><!-- column for interstitial and delete buttons --></th>
-			<th style="width:10px; text-align:center;" class='list-header-nosort'><?php print _t('Relationship type'); ?></th>
 			<th class='list-header-nosort'>
 				<?php print ($vs_default_action	== "Edit" ? _t("Edit") : _t("View")); ?>
 			</th>
+			<th style="text-align:center;" class='list-header-nosort'></th>
 <?php
 			// output headers
 			$vn_id_count = 0;
@@ -84,11 +84,13 @@
 						<a href="#" class="caInterstitialEditButton listRelEditButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_INTERSTITIAL_EDIT_BUNDLE__); ?></a>
 						<a href="#" class="caDeleteItemButton listRelDeleteButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
 					</td>
-					<td style="width:10px">
+<?php
+					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_objects', $vn_object_id, array(), array())."</td>";;
+?>
+					<td style="padding-left: 5px; padding-right: 5px;">
 						<?php print $vo_interstitial_result->getWithTemplate('^relationship_typename'); ?>
 					</td>
 <?php
-					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_objects', $vn_object_id, array(), array())."</td>";;
 						
 					foreach($va_display_list as $vn_placement_id => $va_info) {
                         print "<td><span class=\"read-more\">".$t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array()))."</span></td>";
