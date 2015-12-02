@@ -6,9 +6,13 @@
 	position: unset !important;
 	float: left;
 
+	@include breakpoint(goldilocks) {
+		margin: 0 3%;
+		width: 100%;
+	}
 	@include breakpoint(baby-bear) {
 		margin: 0 3%;
-		width: 59%;
+		width: 100%;
 	}
 	@include breakpoint(mama-bear) {
 		margin: 0 3%;

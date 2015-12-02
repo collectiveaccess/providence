@@ -6,17 +6,20 @@
 	float: left;
 	height: auto;
 
+	@include breakpoint(goldilocks) {
+		width: 100%;
+	}
 	@include breakpoint(baby-bear) {
-		width: 35%;
+		width: 100%;
 	}
 	@include breakpoint(mama-bear) {
 		width: 30%;
 	}
 	@include breakpoint(papa-bear) {
-		width: 25%
+		width: 25%;
 	}
 	@include breakpoint(supa-bear) {
-		width: 25%
+		width: 25%;
 	}
 
 	#leftNavSidebar {
@@ -154,10 +157,27 @@
 	background-color: #282828;
 	position: fixed;
 	top: 0;
-	height: 100%;
 	left: 0;
-	width: 25%;
 	z-index: 1;
 	border-left: 2px solid #DDD;
 	border-right: 2px solid #DDD;
+
+	@include breakpoint(goldilocks) {
+		display: none;
+	}
+	@include breakpoint(baby-bear) {
+		display: none;
+	}
+	@include breakpoint(mama-bear) {
+		width: 30%;
+		height: 100%;
+	}
+	@include breakpoint(papa-bear) {
+		width: 25%;
+		height: 100%;
+	}
+	@include breakpoint(supa-bear) {
+		width: 25%;
+		height: 100%;
+	}
 }
