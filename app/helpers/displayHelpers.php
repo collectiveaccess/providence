@@ -1638,7 +1638,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 					inspectorCookieJar.set('inspectorMoreInfoIsOpen', (this.style.display == 'block') ? 1 : 0); 
 					jQuery('#inspectorMoreInfo').html((this.style.display == 'block') ? '".addslashes(caNavIcon($po_view->request, __CA_NAV_BUTTON_COLLAPSE__))."' : '".addslashes(caNavIcon($po_view->request, __CA_NAV_BUTTON_INFO2__))."');
 					caResizeSideNav();
-				}); 
+				});
 				return false;
 			});
 		";
@@ -1657,9 +1657,9 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		jQuery('#caColorbox').on('click', function(e) {
 			if (e.altKey) {
 				jQuery('#inspectorMedia').slideToggle(200, function() { 
-					inspectorCookieJar.set('inspectorShowMediaIsOpen', (this.style.display == 'block') ? 1 : 0); 
+					inspectorCookieJar.set('inspectorShowMediaIsOpen', (this.style.display == 'block') ? 1 : 0);
 						caResizeSideNav();
-				}); 
+				});
 				return false;
 			}
 		});

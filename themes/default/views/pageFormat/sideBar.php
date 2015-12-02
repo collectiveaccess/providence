@@ -1,10 +1,5 @@
 <script type="text/javascript">
-	jQuery(document).ready(function() {
-		caResizeSideNav();
-	});
-	function caResizeSideNav() {
-		jQuery("#leftNavSidebar").animate({'height': (jQuery("#leftNav").height() - jQuery("#widgets").height() - 70) + "px"}, 300);
-	}
+function caResizeSideNav() {}
 </script>
 <?php
 	# --- when viewing dashboard have content area of page extend full width - do not show left nav column
