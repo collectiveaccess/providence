@@ -2,25 +2,24 @@
 	background-color: transparent;
 	padding: 1em 0;
 	border-right: 0;
-	min-height: 1000px;
-	position:relative;
-	margin: 0 3% 0 36%;
-	width: 59%;
+	min-height: unset;
+	position: unset !important;
+	float: left;
 
 	@include breakpoint(baby-bear) {
-		margin: 0 3% 0 38%;
+		margin: 0 3%;
 		width: 59%;
 	}
 	@include breakpoint(mama-bear) {
-		margin: 0 3% 0 33%;
+		margin: 0 3%;
 		width: 64%;
 	}
 	@include breakpoint(papa-bear) {
-		margin: 0 5% 0 30%;
+		margin: 0 5%;
 		width: 65%
 	}
 	@include breakpoint(supa-bear) {
-		margin: 0 10% 0 35%;
+		margin: 0 10%;
 		width: 55%
 	}
 }

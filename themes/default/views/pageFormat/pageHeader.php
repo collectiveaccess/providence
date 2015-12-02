@@ -111,4 +111,5 @@
 		<!-- super fish end menus -->
 	</head>	
 	<body>
+		<div id="leftNavBackground"></div>
 		<div align="center">

@@ -1,18 +1,13 @@
 #leftNav {
 	background: $grey-dark;
-
-	width: 100%;
 	padding: 0;
 	position: relative;
-
-	width: 35%;
-	position: absolute;
-	top: 0;
-	left: 0;
-	bottom: 0;
+	z-index: 2;
+	float: left;
+	height: auto;
 
 	@include breakpoint(baby-bear) {
-		
+		width: 35%;
 	}
 	@include breakpoint(mama-bear) {
 		width: 30%;
@@ -95,11 +90,13 @@
 		color: inherit;
 		font-size: inherit;
 		border-bottom: dotted 1px $grey;
-		text-transform: none;
 		width: 100%;
 		font-weight: normal;
 		text-transform: uppercase;
 
+		a {
+			border-right: none;
+		}
 
 		a.sf-menu-selected {
 			height: auto;
@@ -150,4 +147,17 @@
 
 .inspectorChangeDateList {
 	font-size: 0.9em;
+}
+
+// See pageHeader.php
+#leftNavBackground {
+	background-color: #282828;
+	position: fixed;
+	top: 0;
+	height: 100%;
+	left: 0;
+	width: 25%;
+	z-index: 1;
+	border-left: 2px solid #DDD;
+	border-right: 2px solid #DDD;
 }
