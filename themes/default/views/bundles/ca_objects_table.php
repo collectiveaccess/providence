@@ -44,6 +44,11 @@
 	$va_initial_values	= $this->getVar('initialValues');
 	$vs_interstitial_selector = $vs_id_prefix . 'Item_';
 
+	$va_object_ids = array();
+	foreach($va_initial_values as $va_object) {
+		$va_object_ids[] = $va_object['object_id'];
+	}
+
 	$vb_read_only		=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($t_instance->tableName(), 'ca_objects') == __CA_BUNDLE_ACCESS_READONLY__));
 	$vb_dont_show_del	=	((isset($va_settings['dontShowDeleteButton']) && $va_settings['dontShowDeleteButton'])) ? true : false;
 	
@@ -62,7 +67,7 @@
 		$va_errors[] = $o_error->getErrorDescription();
 	}
 ?>
-<div id="tableContent"></div>
+<div id="tableContent" class="labelInfo"></div>
 <script type="text/javascript">
 	function caHackSearchResultForm(data) {
 		if(data) {
@@ -74,7 +79,7 @@
 
 		jQuery('#tableContent .list-header-unsorted a').click(function(event) {
 			event.preventDefault();
-			jQuery.get(event.target + '/ids/<?php print join(';', array_keys($va_initial_values)); ?>/interstitialPrefix/<?php print urlencode($vs_interstitial_selector); ?>', caHackSearchResultForm);
+			jQuery.get(event.target + '/ids/<?php print join(';', $va_object_ids); ?>/interstitialPrefix/<?php print urlencode($vs_interstitial_selector); ?>', caHackSearchResultForm);
 		});
 
 		jQuery('#tableContent form').submit(function(event) {
@@ -82,16 +87,22 @@
 
 			jQuery.ajax({
 				type: 'POST',
-				url: event.target.action + '/ids/<?php print join(';', array_keys($va_initial_values)); ?>/interstitialPrefix/<?php print urlencode($vs_interstitial_selector); ?>',
+				url: event.target.action + '/ids/<?php print join(';', $va_object_ids); ?>/interstitialPrefix/<?php print urlencode($vs_interstitial_selector); ?>',
 				data: $(this).serialize(),
 				success: caHackSearchResultForm
 			});
 		});
 	}
 
-	jQuery(document).ready(function() {
-		jQuery.get('<?php print caNavUrl($this->request, 'find', 'ObjectTable', 'Index', array('ids' => array_keys($va_initial_values), 'interstitialPrefix' => $vs_interstitial_selector)); ?>', caHackSearchResultForm);
-	});
+<?php
+	if(sizeof($va_initial_values)) {
+?>
+		jQuery(document).ready(function() {
+			jQuery.get('<?php print caNavUrl($this->request, 'find', 'ObjectTable', 'Index', array('ids' => $va_object_ids, 'interstitialPrefix' => $vs_interstitial_selector)); ?>', caHackSearchResultForm);
+		});
+<?php
+	}
+?>
 </script>
 <div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
 <?php
@@ -241,6 +252,13 @@
 			maxRepeats: <?php print caGetOption('maxRelationshipsPerRow', $va_settings, 65535); ?>
 		};
 
-		// don't init bundle here, we do it when the content is loaded
+		// only init bundle if there are no values, otherwise we do it after the content is loaded
+<?php
+		if(!sizeof($va_initial_values)) {
+?>
+			caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', initiRelationBundleOptions);
+<?php
+		}
+?>
 	});
 </script>

@@ -1189,6 +1189,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'ca_movements':
 					case 'ca_tour_stops':
 					case 'ca_sets':
+					case 'ca_objects_table':
 						return $this->getRelatedBundleFormValues($pa_options['request'], $pa_options['formName'], $ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
 					# -------------------------------
@@ -1533,6 +1534,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
 						break;
 					# -------------------------------
+					case 'ca_objects_table':
+						if (($this->_CONFIG->get('ca_objects_disable'))) { return ''; }		// don't display if master "disable" switch is set
+						$pa_options['start'] = 0;
+						$vs_element = $this->getRelatedObjectsTableHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						break;
+					# -------------------------------
 					default:
 						$vs_element = "'{$ps_bundle_name}' is not a valid related-table bundle name";
 						break;
@@ -1755,12 +1762,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// This bundle is only available items that can be used as authority references (object, entities, occurrences, list items, etc.)
 					case 'authority_references_list':
 						$vs_element .= $this->getAuthorityReferenceListHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
-						break;
-					# -------------------------------
-					case 'ca_objects_table':
-						if (($this->_CONFIG->get('ca_objects_disable'))) { return ''; }		// don't display if master "disable" switch is set
-						$pa_options['start'] = 0;
-						$vs_element = $this->getRelatedObjectsTableHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
 					# -------------------------------
 					default:
@@ -3675,7 +3676,7 @@ if (!$vb_batch) {
 		// save data in related tables
 		if (isset($va_fields_by_type['related_table']) && is_array($va_fields_by_type['related_table'])) {
 			foreach($va_fields_by_type['related_table'] as $vs_placement_code => $vs_f) {
-				$vn_table_num = $this->_DATAMODEL->getTableNum($vs_f);
+				if($vs_f == 'ca_objects_table') { $vs_f = 'ca_objects'; }
 				
 				// get settings
 				$va_bundle_settings = array();

@@ -63,4 +63,3 @@
 	$vs_searchNav .= "</div>";
 	print $vs_searchNav;
 ?>
-<div class="divide"><!-- empty --></div>

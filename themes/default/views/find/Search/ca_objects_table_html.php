@@ -30,7 +30,7 @@
  	
  	print $this->render('Search/search_controls_html.php');
  ?>
- 	<div id="resultBox">
+ 	<div id="resultBox" style="margin-bottom:0">
 <?php
 	if($vo_result) {
 		$vs_view = $this->getVar('current_view');

@@ -1926,6 +1926,10 @@ div.search-hier-browser-box {
     margin:auto;
 }
 
+#tableContent {
+    padding-bottom:-10px;
+}
+
 /*** SEARCH RESULTS ***/
 
 /* searchnav is used on all result pages with pages navigation **/
