@@ -428,8 +428,12 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 					if (in_array($va_movement_info['movement_id'], $va_movement_ids)) { $va_movement_rels[] = $vn_relation_id; }
 				}
 				
-				$qr_object_rels = caMakeSearchResult('ca_movements_x_objects', $va_movement_rels);
-				$va_object_ids = $qr_object_rels->getAllFieldValues('ca_movements_x_objects.object_id');
+				if (sizeof($va_movement_rels) > 0) {
+					$qr_object_rels = caMakeSearchResult('ca_movements_x_objects', $va_movement_rels);
+					$va_object_ids = $qr_object_rels->getAllFieldValues('ca_movements_x_objects.object_id');
+				} else {
+					$va_object_ids = array();
+				}
 			}
 		}
 		
