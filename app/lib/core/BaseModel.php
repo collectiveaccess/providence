@@ -6497,6 +6497,13 @@ class BaseModel extends BaseObject {
 					}
 				}
 			}
+
+			// log to self
+			if($vb_log_changes_to_self) {
+				if (($vn_id = $this->getPrimaryKey()) > 0) {
+					$va_subjects[$this->tableNum()][] = $vn_id;
+				}
+			}
 		}
 
 		if (!sizeof($va_subjects) && !$vb_log_changes_to_self) { return true; }
@@ -6570,6 +6577,7 @@ class BaseModel extends BaseObject {
 			}
 
 			foreach($va_subjects as $vn_subject_table_num => $va_subject_ids) {
+				$va_subject_ids = array_unique($va_subject_ids);
 				foreach($va_subject_ids as $vn_subject_row_id) {
 					$this->opqs_change_log_subjects->execute($vn_log_id, $vn_subject_table_num, $vn_subject_row_id);
 				}
