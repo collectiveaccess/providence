@@ -1247,6 +1247,18 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 					$vs_buf .= "<strong>"._t("Type of content")."</strong>: ".caGetTableDisplayName($vn_set_table_num)."<br/>\n";
 					
 					$vs_buf .= "</div>\n";
+
+					$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" ></div>';
+					$vs_buf .= caFormTag($po_view->request, 'DuplicateItems', 'caDupeSetItemsForm', 'manage/sets/SetEditor', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+					$vs_buf .= _t("Duplicate items in this set and add to")." ";
+					$vs_buf .= caHTMLSelect('setForDupes', array(
+						_t('current set') => 'current',
+						_t('new set') => 'new',
+					));
+					$vs_buf .= caHTMLHiddenInput('set_id', array('value' => $t_item->getPrimaryKey()));
+					$vs_buf .= caFormSubmitLink($po_view->request, _t('Go')." &rsaquo;", "button", "caDupeSetItemsForm");
+					$vs_buf .= "</form>";
+					$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" ></div>';
 				} else {
 					if ($vn_set_table_num = $po_view->request->getParameter('table_num', pInteger)) {
 						$vs_buf .= "<div><strong>"._t("Type of content")."</strong>: ".caGetTableDisplayName($vn_set_table_num)."<br/>\n";
