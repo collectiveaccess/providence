@@ -2863,6 +2863,9 @@
             </label>
           </labels>
           <bundlePlacements>
+            <placement code="ca_objects_table">
+              <bundle>ca_objects_table</bundle>
+            </placement>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
             </placement>
