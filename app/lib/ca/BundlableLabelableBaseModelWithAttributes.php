@@ -5476,7 +5476,7 @@ if (!$vb_batch) {
 		switch($ps_return_as) {
 			case 'firstmodelinstance':
 				foreach($va_rels as $vn_id) {
-					$o_instance = new $vs_subject_table_name;
+					$o_instance = new $vs_related_table_name;
 					if ($o_instance->load($vn_id)) {
 						return $o_instance;
 					}
@@ -5486,7 +5486,7 @@ if (!$vb_batch) {
 			case 'modelinstances':
 				$va_instances = array();
 				foreach($va_rels as $vn_id) {
-					$o_instance = new $vs_subject_table_name;
+					$o_instance = new $vs_related_table_name;
 					if ($o_instance->load($vn_id)) {
 						$va_instances[] = $o_instance;
 					}
@@ -5504,7 +5504,7 @@ if (!$vb_batch) {
 				break;
 			case 'searchresult':
 				if (sizeof($va_rels) > 0) {
-					return caMakeSearchResult($vs_subject_table_name, $va_rels);
+					return caMakeSearchResult($vs_related_table_name, $va_rels);
 				}
 				return null;
 				break;
