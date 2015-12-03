@@ -4804,9 +4804,11 @@ if (!$vb_batch) {
 				$vs_order_by = '';
 				if ($t_item_rel && $t_item_rel->hasField('rank')) {
 					$vs_order_by = ' ORDER BY '.$t_item_rel->tableName().'.rank';
+					$va_selects[] = $t_item_rel->tableName().'.rank';
 				} else {
 					if ($t_rel_item && ($vs_sort = $t_rel_item->getProperty('ID_NUMBERING_SORT_FIELD'))) {
 						$vs_order_by = " ORDER BY {$vs_related_table}.{$vs_sort}";
+						$va_selects[] = "{$vs_related_table}.{$vs_sort}";
 					}
 				}
 
@@ -4951,9 +4953,11 @@ if (!$vb_batch) {
 			$vs_order_by = '';
 			if ($t_item_rel && $t_item_rel->hasField('rank')) {
 				$vs_order_by = ' ORDER BY '.$t_item_rel->tableName().'.rank';
+				$va_selects[] = $t_item_rel->tableName().'.rank';
 			} else {
 				if ($t_rel_item && ($vs_sort = $t_rel_item->getProperty('ID_NUMBERING_SORT_FIELD'))) {
 					$vs_order_by = " ORDER BY {$vs_related_table}.{$vs_sort}";
+					$va_selects[] = "{$vs_related_table}.{$vs_sort}";
 				}
 			}
 

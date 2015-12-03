@@ -38,7 +38,7 @@ class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase
 		$o_service = new WLPlugInformationServiceTGN();
 
 		$va_return = $o_service->lookup(array(), 'Brooklyn');
-		$this->assertEquals(79, sizeof($va_return['results']));
+		$this->assertEquals(97, sizeof($va_return['results']));
 
 		$va_labels = array();
 		foreach($va_return['results'] as $va_record) {
@@ -63,7 +63,7 @@ class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase
 
 		$this->assertContains('[7015849] Coney Island; Brooklyn, New York (neighborhoods)', $va_labels);
 		$this->assertContains('[2252267] Coney Island Creek; Kings, New York (creeks (bodies of water))', $va_labels);
-		$this->assertContains('[7454829] Coney Island; Armagh, Northern Ireland (islands (landforms))', $va_labels);
+		$this->assertContains('[7454829] Coney Island; Armagh, Banbridge and Craigavon, Northern Ireland (islands (landforms))', $va_labels);
 	}
 
 	public function testRubbishQuery() {
