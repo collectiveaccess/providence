@@ -239,6 +239,7 @@
 				$pa_dupe_options = array('addToCurrentSet' => false);
 			}
 
+			unset($_REQUEST['form_timestamp']);
 			$t_dupe_set = $t_set->duplicateItemsInSet($this->getRequest()->getUserID(), $pa_dupe_options);
 			if(!$t_dupe_set) {
 				$this->notification->addNotification(_t('Could not duplicate items in set: %1', join(';', $t_set->getErrors())), __NOTIFICATION_TYPE_ERROR__);
@@ -246,7 +247,7 @@
 				return;
 			}
 
-			$this->notification->addNotification(_t('%1 items have been successfully duplicated and added to set', $t_dupe_set->getItemCount()), __NOTIFICATION_TYPE_INFO__);
+			$this->notification->addNotification(_t('Records have been successfully duplicated and added to set'), __NOTIFICATION_TYPE_INFO__);
 			$this->opo_response->setRedirect(caEditorUrl($this->getRequest(), 'ca_sets', $t_dupe_set->getPrimaryKey()));
 			return;
 		}
