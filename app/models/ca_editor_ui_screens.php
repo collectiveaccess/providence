@@ -521,9 +521,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					}
 					break;
 				case 'related_table':
-					if (!($t_rel = $this->_DATAMODEL->getInstanceByTableName($vs_bundle, true))) { continue; }
-					$va_path = array_keys($this->_DATAMODEL->getPath($t_instance->tableName(), $vs_bundle));
 					if($vs_bundle == 'ca_objects_table') {
+						$t_rel = $this->_DATAMODEL->getInstanceByTableName('ca_objects', true);
+						$va_path = array_keys($this->_DATAMODEL->getPath($t_instance->tableName(), 'ca_objects'));
 						$va_additional_settings = array(
 							'restrict_to_relationship_types' => array(
 								'formatType' => FT_TEXT,
@@ -565,6 +565,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 						);
 						break;
 					} else {
+						if (!($t_rel = $this->_DATAMODEL->getInstanceByTableName($vs_bundle, true))) { continue; }
+						$va_path = array_keys($this->_DATAMODEL->getPath($t_instance->tableName(), $vs_bundle));
 						$va_additional_settings = array(
 							'restrict_to_relationship_types' => array(
 								'formatType' => FT_TEXT,
