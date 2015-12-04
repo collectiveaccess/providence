@@ -228,6 +228,29 @@
 
 			return $this->Edit();
 		}
+		# -------------------------------------------------------
+		public function DuplicateItems() {
+			$t_set = new ca_sets($this->getRequest()->getParameter('set_id', pInteger));
+			if(!$t_set->getPrimaryKey()) { return; }
+
+			if($this->getRequest()->getParameter('setForDupes', pString) == 'current') {
+				$pa_dupe_options = array('addToCurrentSet' => true);
+			} else {
+				$pa_dupe_options = array('addToCurrentSet' => false);
+			}
+
+			unset($_REQUEST['form_timestamp']);
+			$t_dupe_set = $t_set->duplicateItemsInSet($this->getRequest()->getUserID(), $pa_dupe_options);
+			if(!$t_dupe_set) {
+				$this->notification->addNotification(_t('Could not duplicate items in set: %1', join(';', $t_set->getErrors())), __NOTIFICATION_TYPE_ERROR__);
+				$this->Edit();
+				return;
+			}
+
+			$this->notification->addNotification(_t('Records have been successfully duplicated and added to set'), __NOTIFICATION_TYPE_INFO__);
+			$this->opo_response->setRedirect(caEditorUrl($this->getRequest(), 'ca_sets', $t_dupe_set->getPrimaryKey()));
+			return;
+		}
  		# -------------------------------------------------------
  		# Sidebar info handler
  		# -------------------------------------------------------

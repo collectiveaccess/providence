@@ -43,6 +43,7 @@ function caMediaInfoGuessFileFormat($ps_path) {
 	if(!caMediaInfoInstalled()) { return false; }
 
 	$va_media_metadata = caExtractMetadataWithMediaInfo($ps_path);
+	
 	switch($va_media_metadata['VIDEO']['Format']) {
 		case 'DV':
 			return 'video/x-dv';
@@ -52,6 +53,8 @@ function caMediaInfoGuessFileFormat($ps_path) {
 			return 'video/avi';
 		case 'Matroska':
 			return 'video/x-matroska';
+		case 'AVC':
+			return 'video/quicktime';
 		// @todo add more popular formats here!
 		default:
 			return false;

@@ -2502,4 +2502,67 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		return true;
 	}
 	# ---------------------------------------------------------------
+	/**
+	 * Duplicate all items in this set
+	 * @param int $pn_user_id
+	 * @param array $pa_options
+	 * @return ca_sets|bool
+	 */
+	public function duplicateItemsInSet($pn_user_id, $pa_options=array()) {
+		if(!$this->getPrimaryKey()) { return false; }
+		if($this->getItemCount() < 1) { return false; }
+		$t_user = new ca_users($pn_user_id);
+		if(!$t_user->getPrimaryKey()) { return false; } // we need a user for duplication
+		global $g_ui_locale_id;
+
+		if(caGetOption('addToCurrentSet', $pa_options, false)) {
+			$t_set_to_add_dupes_to = $this;
+		} else { // create new set for dupes
+			$t_set_to_add_dupes_to = new ca_sets();
+			$t_set_to_add_dupes_to->set('type_id', $this->get('type_id'));
+			$t_set_to_add_dupes_to->set('table_num', $this->get('table_num'));
+			$t_set_to_add_dupes_to->set('user_id', $this->get('user_id'));
+			$t_set_to_add_dupes_to->set('set_code', $this->get('set_code').'-'._t('dupes'));
+			$t_set_to_add_dupes_to->setMode(ACCESS_WRITE);
+			$t_set_to_add_dupes_to->insert();
+			if(!$t_set_to_add_dupes_to->getPrimaryKey()) {
+				$this->errors = $t_set_to_add_dupes_to->errors;
+				return false;
+			}
+
+			$t_set_to_add_dupes_to->addLabel(array('name' => $this->getLabelForDisplay().' '._t('[Duplicates]')),$g_ui_locale_id, null, true);
+		}
+
+		$va_items = array_keys($this->getItemRowIDs());
+		$va_dupes = array();
+
+		foreach($va_items as $vn_row_id) {
+			/** @var BundlableLabelableBaseModelWithAttributes $t_instance */
+			$t_instance = $this->getAppDatamodel()->getInstance($this->get('table_num'));
+			if(!$t_user->canDoAction('can_duplicate_' . $t_instance->tableName())) {
+				$this->postError(2580, _t('You do not have permission to duplicate these items'), 'ca_sets->duplicateItemsInSet()');
+				return false;
+			}
+			if(!$t_instance->load($vn_row_id)) { continue; }
+
+			// let's dupe
+			$t_dupe = $t_instance->duplicate(array(
+				'user_id' => $pn_user_id,
+				'duplicate_nonpreferred_labels' => $t_user->getPreference($t_instance->tableName().'_duplicate_nonpreferred_labels'),
+				'duplicate_attributes' => $t_user->getPreference($t_instance->tableName().'_duplicate_attributes'),
+				'duplicate_relationships' => $t_user->getPreference($t_instance->tableName().'_duplicate_relationships'),
+				'duplicate_media' => $t_user->getPreference($t_instance->tableName().'_duplicate_media'),
+				'duplicate_subitems' => $t_user->getPreference($t_instance->tableName().'_duplicate_subitems')
+			));
+
+			if($t_dupe instanceof BaseModel) {
+				$va_dupes[] = $t_dupe->getPrimaryKey();
+			}
+		}
+
+		$t_set_to_add_dupes_to->addItems($va_dupes);
+
+		return $t_set_to_add_dupes_to;
+	}
+	# ---------------------------------------------------------------
 }
