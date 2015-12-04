@@ -3273,7 +3273,7 @@
 						}
 
 						if (is_array($va_criteria) && sizeof($va_criteria)) {
-							$va_wheres[] = "(li.item_id NOT IN (".caQuoteList(join(",", array_keys($va_criteria)))."))";
+							$va_wheres[] = "(li.item_id NOT IN (".join(",", caQuoteList(array_keys($va_criteria)))."))";
 						}
 
 						if ($this->opo_config->get('perform_item_level_access_checking')) {
@@ -5474,12 +5474,12 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 			$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_browse_table_name, true);
 
 			switch(sizeof($va_path = array_keys($this->opo_datamodel->getPath($ps_relative_to_table, $this->ops_browse_table_name)))) {
-				case 3:
+				case __CA_ATTRIBUTE_VALUE_LIST__:
 					$t_item_rel = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
 					$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[2], true);
 					$vs_key = 'relation_id';
 					break;
-				case 2:
+				case __CA_ATTRIBUTE_VALUE_DATERANGE__:
 					$t_item_rel = null;
 					$t_rel_item = $this->opo_datamodel->getInstanceByTableName($va_path[1], true);
 					$vs_key = $t_rel_item->primaryKey();
