@@ -299,7 +299,10 @@ class Installer {
 	}
 	# --------------------------------------------------
 	public function performPostInstallTasks() {
-		// noop, for now
+		// generate system GUID -- used to identify systems in data sync protocol
+		$o_vars = new ApplicationVars();
+		$o_vars->setVar('system_guid', caGenerateGUID());
+		$o_vars->save();
 	}
 	# --------------------------------------------------
 	/**
