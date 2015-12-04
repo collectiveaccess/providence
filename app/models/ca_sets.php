@@ -2533,12 +2533,16 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			$t_set_to_add_dupes_to->addLabel(array('name' => $this->getLabelForDisplay().' '._t('[Duplicates]')),$g_ui_locale_id, null, true);
 		}
 
-		$va_items = $this->getItemRowIDs();
+		$va_items = array_keys($this->getItemRowIDs());
 		$va_dupes = array();
 
 		foreach($va_items as $vn_row_id) {
 			/** @var BundlableLabelableBaseModelWithAttributes $t_instance */
 			$t_instance = $this->getAppDatamodel()->getInstance($this->get('table_num'));
+			if(!$t_user->canDoAction('can_duplicate_' . $t_instance->tableName())) {
+				$this->postError(2580, _t('You do not have permission to duplicate these items'), 'ca_sets->duplicateItemsInSet()');
+				return false;
+			}
 			if(!$t_instance->load($vn_row_id)) { continue; }
 
 			// let's dupe
