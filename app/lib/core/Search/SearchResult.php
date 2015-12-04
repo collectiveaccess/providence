@@ -1962,7 +1962,7 @@ class SearchResult extends BaseObject {
 					}
 				}
 				break;
-		}	
+		}
 		
 		if (!$pa_options['returnAllLocales']) { $va_return_values = caExtractValuesByUserLocale($va_return_values); } 	
 		if ($pa_options['returnWithStructure']) { 
@@ -2190,10 +2190,10 @@ class SearchResult extends BaseObject {
 			$pt_instance->setLabelTypeList($this->opo_subject_instance->getAppConfig()->get(($pa_path_components['field_name'] == 'nonpreferred_labels') ? "{$vs_table_name}_nonpreferred_label_type_list" : "{$vs_table_name}_preferred_label_type_list"));
 		}
 		if (isset($pa_options['convertCodesToIdno']) && $pa_options['convertCodesToIdno'] && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST_CODE"))) {
-			$vs_prop = caGetListItemIdno($vs_prop); 
+			$vs_prop = caGetListItemIdno($vs_prop);
 		} else {
 			if (isset($pa_options['convertCodesToIdno']) && $pa_options['convertCodesToIdno'] && ($vs_list_code = $pt_instance->getFieldInfo($vs_field_name,"LIST"))) {
-				$vs_prop = caGetListItemIDForValue($vs_list_code, $vs_prop);
+				$vs_prop = caGetListItemIdno(caGetListItemIDForValue($vs_list_code, $vs_prop));
 			}
 		}
 		return $vs_prop;
