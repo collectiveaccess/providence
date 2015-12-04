@@ -158,16 +158,19 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 *		transaction = transaction to execute queries within. [Default=null]
 	 * @return int item_id of list item or null if no matching item was found
 	 */
-	$g_list_item_id_for_value_cache = array();
 	function caGetListItemIDForValue($ps_list_code, $ps_value, $pa_options=null) {
-		global $g_list_item_id_for_value_cache;
-		if(isset($g_list_item_id_for_value_cache[$ps_list_code.'/'.$ps_value])) { return $g_list_item_id_for_value_cache[$ps_list_code.'/'.$ps_value]; }
+		$vs_cache_key = md5($ps_list_code . $ps_value . serialize($pa_options));
+		if(MemoryCache::contains($vs_cache_key, 'ListItemIDsForValues')) {
+			return MemoryCache::fetch($vs_cache_key, 'ListItemIDsForValues');
+		}
+
 		$t_list = new ca_lists();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
 		
-		if ($g_list_item_id_for_value_cache[$ps_list_code.'/'.$ps_value] = $t_list->getItemFromListByItemValue($ps_list_code, $ps_value)) {
-			$va_tmp = array_keys($g_list_item_id_for_value_cache[$ps_list_code.'/'.$ps_value]);
-			return array_shift($va_tmp); 
+		if ($va_item = $t_list->getItemFromListByItemValue($ps_list_code, $ps_value)) {
+			$vs_ret = array_shift(array_keys($va_item));
+			MemoryCache::save($vs_cache_key, $vs_ret, 'ListItemIDsForValues');
+			return $vs_ret;
 		}
 		return null;
 	}
