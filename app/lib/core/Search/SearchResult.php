@@ -408,6 +408,9 @@ class SearchResult extends BaseObject {
 			$vs_type_sql = " AND (type_id IN (?)".($t_rel_instance->getFieldInfo('type_id', 'IS_NULL') ? " OR ({$vs_related_table}.type_id IS NULL)" : '').')';;
 			$va_params[] = $va_type_ids;
 		}
+		if(isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_instance->hasField('access')) {
+			$vs_access_sql = " AND ({$ps_tablename}.access IN (".join(",", $pa_options['checkAccess']) ."))";	
+		}
 		
 		$vs_pk = $t_rel_instance->primaryKey();
 		$vs_parent_id_fld = $t_rel_instance->getProperty('HIERARCHY_PARENT_ID_FLD');
@@ -417,6 +420,7 @@ class SearchResult extends BaseObject {
 			WHERE
 				 {$vs_parent_id_fld} IN (?)".($t_rel_instance->hasField('deleted') ? " AND (deleted = 0)" : "")."
 				 {$vs_type_sql}
+				 {$vs_access_sql}
 		";
 		$va_row_id_map = null;
 		$vn_level = 0;
@@ -425,6 +429,7 @@ class SearchResult extends BaseObject {
 			if (!is_array($va_params) || !sizeof($va_params) || !is_array($va_params[0]) || !sizeof($va_params[0])) { break; }
 			$qr_rel = $this->opo_subject_instance->getDb()->query($vs_sql, $va_params);
 			
+			$va_row_ids += $va_row_ids_in_current_level;
 			if (!$qr_rel || ($qr_rel->numRows() == 0)) { break;}
 			
 			$va_row_ids_in_current_level = array(); 
@@ -442,7 +447,6 @@ class SearchResult extends BaseObject {
 				SearchResult::$opa_hierarchy_children_prefetch_cache[$ps_tablename][$va_row_id_map[$va_row[$vs_parent_id_fld]]][$vs_opt_md5][] =
 					$va_row_ids_in_current_level[] = $va_row[$vs_pk];
 			}
-			$va_row_ids += $va_row_ids_in_current_level;
 			$vn_level++;
 			
 			if ((!isset($pa_options['allDescendants']) || !$pa_options['allDescendants']) && ($vn_level > 0)) {
@@ -491,6 +495,10 @@ class SearchResult extends BaseObject {
 			$va_params[] = $va_type_ids;
 		}
 		
+		if(isset($pa_options['checkAccess']) && is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']) && $t_rel_instance->hasField('access')) {
+			$vs_access_sql = " AND ({$ps_tablename}.access IN (".join(",", $pa_options['checkAccess']) ."))";	
+		}
+		
 		$vs_pk = $t_rel_instance->primaryKey();
 		$vs_parent_id_fld = $t_rel_instance->getProperty('HIERARCHY_PARENT_ID_FLD');
 		$vs_sql = "
@@ -499,7 +507,7 @@ class SearchResult extends BaseObject {
 			INNER JOIN {$ps_tablename} AS p ON t.{$vs_parent_id_fld} = p.{$vs_parent_id_fld}
 			WHERE
 				 t.{$vs_pk} IN (?)".($t_rel_instance->hasField('deleted') ? " AND (t.deleted = 0) AND (p.deleted = 0)" : "")."
-				 {$vs_type_sql}
+				 {$vs_type_sql} {$vs_access_sql}
 		";
 		
 		$qr_rel = $this->opo_subject_instance->getDb()->query($vs_sql, $va_params);
@@ -692,6 +700,7 @@ class SearchResult extends BaseObject {
 	 * 
 	 */
 	public function prefetchRelated($ps_tablename, $pn_start, $pn_num_rows, $pa_options) {
+		if (!is_array($pa_options)) { $pa_options = array(); }
 		if (!method_exists($this->opo_subject_instance, "getRelatedItems")) { return false; }
 		unset($pa_options['request']);
 		if (sizeof($va_row_ids = $this->getRowIDsToPrefetch($pn_start, $pn_num_rows)) == 0) { return false; }
