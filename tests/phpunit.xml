@@ -35,12 +35,11 @@
     <testsuite name="Plugins Test Suite">
       <directory>plugins/</directory>
     </testsuite>
-    <testsuite name="Install Test Suite">
-      <directory>install/</directory>
-      <exclude>install/ConfigurationUpdateTest.php</exclude>
-    </testsuite>
     <testsuite name="Tests With Data Suite">
       <directory>testsWithData/</directory>
+    </testsuite>
+    <testsuite name="Install Test Suite">
+      <directory>install/</directory>
     </testsuite>
   </testsuites>
 

@@ -606,6 +606,13 @@ class Installer {
 		foreach($va_elements as $vs_element_code => $vo_element){
 
 			if($vn_element_id = $this->processMetadataElement($vo_element, null)){
+				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
+				// if we're updating, we expect the list of restrictions to include all restrictions!
+				if(sizeof($vo_element->typeRestrictions->children())) {
+					$o_db = new Db();
+					$o_db->query('DELETE FROM ca_metadata_type_restrictions WHERE element_id=?', $vn_element_id);
+				}
+
 				// handle restrictions
 				foreach($vo_element->typeRestrictions->children() as $vo_restriction){
 					$vs_restriction_code = self::getAttribute($vo_restriction, "code");
@@ -630,8 +637,9 @@ class Installer {
 					}
 
 					// add restriction
-					$t_restriction = $this->opb_updating ? ca_metadata_type_restrictions::find(array('table_num' => $vn_table_num, 'type_id' => $vn_type_id, 'element_id' => $vn_element_id), array('returnAs' => 'firstModelInstance')) : false;
-					$t_restriction = $t_restriction ? $t_restriction : new ca_metadata_type_restrictions();
+					if(!($t_restriction = ca_metadata_type_restrictions::find(array('table_num' => $vn_table_num, 'type_id' => $vn_type_id, 'element_id' => $vn_element_id), array('returnAs' => 'firstModelInstance')))) {
+						$t_restriction = new ca_metadata_type_restrictions();
+					}
 					$t_restriction->setMode(ACCESS_WRITE);
 					$t_restriction->set('table_num', $vn_table_num);
 					$t_restriction->set('include_subtypes', (bool)$vo_restriction->includeSubtypes ? 1 : 0);

@@ -138,4 +138,53 @@ class ConfigurationUpdateTest extends PHPUnit_Framework_TestCase {
 		$t_instance->setMode(ACCESS_WRITE);
 		$t_instance->delete(true, array('hard' => true));
 	}
+
+	public function testAddElementExistingContainer() {
+		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/elements/add_new_element_to_existing_container.xml'));
+		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer->processLocales();
+		$o_installer->processMetadataElements();
+
+		$t_instance = ca_metadata_elements::getInstance('date');
+		$this->assertInstanceOf('ca_metadata_elements', $t_instance);
+		$this->assertGreaterThan(0, $t_instance->getPrimaryKey());
+		$this->assertEquals(__CA_ATTRIBUTE_VALUE_CONTAINER__, $t_instance->get('datatype'));
+
+		$va_elements_in_set = $t_instance->getElementsInSet();
+
+		$this->assertEquals(4, sizeof($va_elements_in_set));
+
+		foreach($va_elements_in_set as $va_element) {
+			$this->assertTrue(in_array(
+				$va_element['element_code'],
+				array('date', 'dates_value', 'dc_dates_types', 'dates_description')
+			), "Failed to assert that {$va_element['element_code']} is in predefined list.");
+		}
+	}
+
+	public function testEditElementExistingContainer() {
+		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/elements/edit_element_in_existing_container.xml'));
+		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer->processLocales();
+		$o_installer->processMetadataElements();
+
+		$t_instance = ca_metadata_elements::getInstance('external_link');
+		$this->assertInstanceOf('ca_metadata_elements', $t_instance);
+		$this->assertGreaterThan(0, $t_instance->getPrimaryKey());
+		$this->assertEquals(__CA_ATTRIBUTE_VALUE_CONTAINER__, $t_instance->get('datatype'));
+
+		$va_elements_in_set = $t_instance->getElementsInSet();
+		$this->assertEquals(5, sizeof($va_elements_in_set));
+
+		// check a few of the changed properties (labels, whatever)
+		$this->assertEquals('URI', $va_elements_in_set[4]['display_label']);
+		$this->assertEquals('500px', $va_elements_in_set[2]['settings']['fieldWidth']);
+		$this->assertEquals('500px', $va_elements_in_set[2]['settings']['fieldWidth']);
+
+		// try to find the restriction we added (storage locations), which should now be the only restriction (we nuked all the others)
+		$va_restrictions = $t_instance->getTypeRestrictions();
+		$this->assertEquals(1, sizeof($va_restrictions));
+		$va_newest_restriction = array_pop($va_restrictions);
+		$this->assertEquals($va_newest_restriction['table_num'], Datamodel::load()->getTableNum('ca_storage_locations'));
+	}
 }
