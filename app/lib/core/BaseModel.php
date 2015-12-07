@@ -3387,15 +3387,12 @@ class BaseModel extends BaseObject {
 	 *
 	 * @return bool
 	 */
-	public function mediaIsMirrored($field, $version) {
-		$media_info = $this->get($field, array('returnWithStructure' => true));
-		if (!is_array($media_info)) {
-			return "";
-		}
-		$vi = $this->_MEDIA_VOLUMES->getVolumeInformation($media_info[$version]["VOLUME"]);
-		if (!is_array($vi)) {
-			return "";
-		}
+	public function mediaIsMirrored($ps_field, $ps_version) {
+		$va_media_info = $this->get($ps_field, array('returnWithStructure' => true));
+		if (!is_array($va_media_info) || !is_array($va_media_info = array_shift($va_media_info))) { return null; }
+		
+		$vi = $this->_MEDIA_VOLUMES->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
+		if (!is_array($vi)) { return null; }
 		if (is_array($vi["mirrors"])) {
 			return true;
 		} else {
@@ -3410,19 +3407,18 @@ class BaseModel extends BaseObject {
 	 * @param string media mirror name, as defined in media_volumes.conf
 	 * @return mixed media mirror status
 	 */
-	public function getMediaMirrorStatus($field, $version, $mirror="") {
-		$media_info = $this->get($field, array('returnWithStructure' => true));
-		if (!is_array($media_info)) {
-			return "";
-		}
-		$vi = $this->_MEDIA_VOLUMES->getVolumeInformation($media_info[$version]["VOLUME"]);
+	public function getMediaMirrorStatus($ps_field, $ps_version, $mirror="") {
+		$va_media_info = $this->get($ps_field, array('returnWithStructure' => true));
+		if (!is_array($va_media_info) || !is_array($va_media_info = array_shift($va_media_info))) { return null; }
+		
+		$vi = $this->_MEDIA_VOLUMES->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
 		if (!is_array($vi)) {
 			return "";
 		}
-		if ($mirror) {
-			return $media_info["MIRROR_STATUS"][$mirror];
+		if ($ps_mirror) {
+			return $va_media_info["MIRROR_STATUS"][$ps_mirror];
 		} else {
-			return $media_info["MIRROR_STATUS"][$vi["accessUsingMirror"]];
+			return $va_media_info["MIRROR_STATUS"][$vi["accessUsingMirror"]];
 		}
 	}
 	
@@ -3437,13 +3433,10 @@ class BaseModel extends BaseObject {
 		global $AUTH_CURRENT_USER_ID;
 		
 		$va_media_info = $this->get($ps_field, array('returnWithStructure' => true));
-		if (!is_array($va_media_info)) {
-			return "";
-		}
+		if (!is_array($va_media_info) || !is_array($va_media_info = array_shift($va_media_info))) { return null; }
+		
 		$va_volume_info = $this->_MEDIA_VOLUMES->getVolumeInformation($va_media_info[$ps_version]["VOLUME"]);
-		if (!is_array($va_volume_info)) {
-			return "";
-		}
+		if (!is_array($va_volume_info)) { return null; }
 
 		$o_tq = new TaskQueue();
 		$vs_row_key = join("/", array($this->tableName(), $this->getPrimaryKey()));
@@ -3514,9 +3507,7 @@ class BaseModel extends BaseObject {
 	 */
 	public function getMediaUrl($ps_field, $ps_version, $pn_page=1, $pa_options=null) {
 		$va_media_info = $this->getMediaInfo($ps_field);
-		if (!is_array($va_media_info)) {
-			return "";
-		}
+		if (!is_array($va_media_info)) { return null; }
 
 		#
 		# Use icon
@@ -3587,9 +3578,7 @@ class BaseModel extends BaseObject {
 	 */
 	public function getMediaPath($ps_field, $ps_version, $pn_page=1) {
 		$va_media_info = $this->getMediaInfo($ps_field);
-		if (!is_array($va_media_info)) {
-			return "";
-		}
+		if (!is_array($va_media_info)) { return null; }
 
 		#
 		# Use icon
@@ -3640,10 +3629,8 @@ class BaseModel extends BaseObject {
 	 * @return string html tag
 	 */
 	public function getMediaTag($ps_field, $ps_version, $pa_options=null) {
-		if (!is_array($va_media_info = $this->getMediaInfo($ps_field))) { return ""; }
-		if (!is_array($va_media_info[$ps_version])) {
-			return "";
-		}
+		if (!is_array($va_media_info = $this->getMediaInfo($ps_field))) { return null; }
+		if (!is_array($va_media_info[$ps_version])) { return null; }
 
 		#
 		# Use icon
@@ -3688,10 +3675,8 @@ class BaseModel extends BaseObject {
 	 * @return mixed media information
 	 */
 	public function &getMediaInfo($ps_field, $ps_version=null, $ps_property=null) {
-		$va_media_info = self::get($ps_field, array('USE_MEDIA_FIELD_VALUES' => true));
-		if (!is_array($va_media_info)) {
-			return '';
-		}
+		$va_media_info = self::get($ps_field, array('returnWithStructure' => true, 'USE_MEDIA_FIELD_VALUES' => true));
+		if (!is_array($va_media_info) || !is_array($va_media_info = array_shift($va_media_info))) { return null; }
 		
 		#
 		# Use icon
@@ -3812,7 +3797,8 @@ class BaseModel extends BaseObject {
 			# figure out mimetype from field content
 			$va_media_desc = $this->get($ps_field, array('returnWithStructure' => true));
 			
-			if (is_array($va_media_desc)) {
+			if (is_array($va_media_desc) && is_array($va_media_desc = array_shift($va_media_desc))) {
+				
 				unset($va_media_desc["ORIGINAL_FILENAME"]);
 				unset($va_media_desc["INPUT"]);
 				unset($va_media_desc["VOLUME"]);
@@ -3868,6 +3854,8 @@ class BaseModel extends BaseObject {
 		if (!$ps_mimetype) {
 			# figure out mimetype from field content
 			$va_media_desc = $this->get($ps_field, array('returnWithStructure' => true));
+			if (!is_array($va_media_desc) || !is_array($va_media_desc = array_shift($va_media_desc))) { return array(); }
+			
 			if ($vs_media_type = $o_media_proc_settings->canAccept($va_media_desc["INPUT"]["MIMETYPE"])) {
 				return $o_media_proc_settings->getMediaTypeInfo($vs_media_type);
 			}
@@ -5473,9 +5461,8 @@ class BaseModel extends BaseObject {
 	 * @return string file url
 	 */ 
 	public function getFileUrl($ps_field) {
-		$va_file_info = $this->get($ps_field);
-		
-		if (!is_array($va_file_info)) {
+		$va_file_info = $this->get($ps_field, array('returnWithStructure' => true));
+		if (!is_array($va_file_info) || !is_array($va_file_info = array_shift($va_file_info))) {
 			return null;
 		}
 
@@ -5498,11 +5485,10 @@ class BaseModel extends BaseObject {
 	 * @return string path in local filesystem
 	 */
 	public function getFilePath($ps_field) {
-		$va_file_info = $this->get($ps_field);
-		if (!is_array($va_file_info)) {
+		$va_file_info = $this->get($ps_field, array('returnWithStructure' => true));
+		if (!is_array($va_file_info) || !is_array($va_file_info = array_shift($va_file_info))) {
 			return null;
 		}
-
 		$va_volume_info = $this->_FILE_VOLUMES->getVolumeInformation($va_file_info["VOLUME"]);
 		
 		if (!is_array($va_volume_info)) {
@@ -5519,8 +5505,8 @@ class BaseModel extends BaseObject {
 	 * @return array file information
 	 */
 	public function &getFileInfo($ps_field) {
-		$va_file_info = $this->get($ps_field);
-		if (!is_array($va_file_info)) {
+		$va_file_info = $this->get($ps_field, array('returnWithStructure' => true));
+		if (!is_array($va_file_info) || !is_array($va_file_info = array_shift($va_file_info))) {
 			return null;
 		}
 		return $va_file_info;
@@ -5547,11 +5533,14 @@ class BaseModel extends BaseObject {
 	 * @return array
 	 */ 
 	public function getFileConversions($ps_field) {
-		$va_info = $this->getFileInfo($ps_field);
-		if (!is_array($va_info["CONVERSIONS"])) {
+		$va_file_info = $this->get($ps_field, array('returnWithStructure' => true));
+		if (!is_array($va_file_info) || !is_array($va_file_info = array_shift($va_file_info))) {
 			return array();
 		}
-		return $va_info["CONVERSIONS"];
+		if (!is_array($va_file_info["CONVERSIONS"])) {
+			return array();
+		}
+		return $va_file_info["CONVERSIONS"];
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -5563,12 +5552,12 @@ class BaseModel extends BaseObject {
 	 * @return string file path
 	 */ 
 	public function getFileConversionPath($ps_field, $ps_format) {
-		$va_info = $this->getFileInfo($ps_field);
-		if (!is_array($va_info)) {
-			return "";
+		$va_file_info = $this->get($ps_field, array('returnWithStructure' => true));
+		if (!is_array($va_file_info) || !is_array($va_file_info = array_shift($va_file_info))) {
+			return null;
 		}
 
-		$vi = $this->_FILE_VOLUMES->getVolumeInformation($va_info["VOLUME"]);
+		$vi = $this->_FILE_VOLUMES->getVolumeInformation($va_file_info["VOLUME"]);
 
 		if (!is_array($vi)) {
 			return "";
@@ -5576,7 +5565,7 @@ class BaseModel extends BaseObject {
 		$va_conversions = $this->getFileConversions($ps_field);
 
 		if ($va_conversions[$ps_format]) {
-			return join("/",array($vi["absolutePath"], $va_info["HASH"], $va_info["MAGIC"]."_".$va_conversions[$ps_format]["FILENAME"]));
+			return join("/",array($vi["absolutePath"], $va_file_info["HASH"], $va_file_info["MAGIC"]."_".$va_conversions[$ps_format]["FILENAME"]));
 		} else {
 			return "";
 		}
@@ -5591,12 +5580,12 @@ class BaseModel extends BaseObject {
 	 * @return string url
 	 */
 	public function getFileConversionUrl($ps_field, $ps_format) {
-		$va_info = $this->getFileInfo($ps_field);
-		if (!is_array($va_info)) {
-			return "";
+		$va_file_info = $this->get($ps_field, array('returnWithStructure' => true));
+		if (!is_array($va_file_info) || !is_array($va_file_info = array_shift($va_file_info))) {
+			return null;
 		}
 
-		$vi = $this->_FILE_VOLUMES->getVolumeInformation($va_info["VOLUME"]);
+		$vi = $this->_FILE_VOLUMES->getVolumeInformation($va_file_info["VOLUME"]);
 
 		if (!is_array($vi)) {
 			return "";
@@ -5605,7 +5594,7 @@ class BaseModel extends BaseObject {
 
 
 		if ($va_conversions[$ps_format]) {
-			return $vi["protocol"]."://".join("/", array($vi["hostname"], $vi["urlPath"], $va_info["HASH"], $va_info["MAGIC"]."_".$va_conversions[$ps_format]["FILENAME"]));
+			return $vi["protocol"]."://".join("/", array($vi["hostname"], $vi["urlPath"], $va_file_info["HASH"], $va_file_info["MAGIC"]."_".$va_conversions[$ps_format]["FILENAME"]));
 		} else {
 			return "";
 		}

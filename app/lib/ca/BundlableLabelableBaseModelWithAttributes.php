@@ -1189,6 +1189,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'ca_movements':
 					case 'ca_tour_stops':
 					case 'ca_sets':
+					case 'ca_objects_table':
 						return $this->getRelatedBundleFormValues($pa_options['request'], $pa_options['formName'], $ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
 					# -------------------------------
@@ -1531,6 +1532,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						
 						$vs_element = $this->getRepresentationAnnotationHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);	
 
+						break;
+					# -------------------------------
+					case 'ca_objects_table':
+						if (($this->_CONFIG->get('ca_objects_disable'))) { return ''; }		// don't display if master "disable" switch is set
+						$pa_options['start'] = 0;
+						$vs_element = $this->getRelatedObjectsTableHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
 						break;
 					# -------------------------------
 					default:
@@ -2809,6 +2816,53 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	}
 	# ------------------------------------------------------
 	/**
+	 * @param RequestHTTP $po_request
+	 * @param string $ps_form_name
+	 * @param null|string $ps_placement_code
+	 * @param null|array $pa_bundle_settings
+	 * @param null|array $pa_options
+	 * @return mixed|null|string
+	 */
+	public function getRelatedObjectsTableHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code=null, $pa_bundle_settings=null, $pa_options=null) {
+		global $g_ui_locale;
+
+		if(!is_array($pa_bundle_settings)) { $pa_bundle_settings = array(); }
+		if(!is_array($pa_options)) { $pa_options = array(); }
+
+		$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
+		$o_view = new View($po_request, "{$vs_view_path}/bundles/");
+
+		$va_path = array_keys($this->getAppDatamodel()->getPath($this->tableName(), 'ca_objects'));
+		$t_item = new ca_objects;
+		/** @var BaseRelationshipModel $t_item_rel */
+		$t_item_rel = $this->getAppDatamodel()->getTableInstance($va_path[1]);
+
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('t_instance', $this);
+		$o_view->setVar('t_subject', $this);
+		$o_view->setVar('t_item', $t_item);
+		$o_view->setVar('t_item_rel', $t_item_rel);
+
+		$vb_read_only = ($po_request->user->getBundleAccessLevel($this->tableName(), 'ca_objects_table') == __CA_BUNDLE_ACCESS_READONLY__) ? true : false;
+		if (!$pa_bundle_settings['readonly']) { $pa_bundle_settings['readonly'] = (!isset($pa_bundle_settings['readonly']) || !$pa_bundle_settings['readonly']) ? $vb_read_only : true;	}
+
+		$o_view->setVar('settings', $pa_bundle_settings);
+		$o_view->setVar('placement_code', $ps_placement_code);
+		$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
+
+		$o_view->setVar('relationship_types', $t_item_rel->getRelationshipTypes(null, null,  array_merge($pa_options, $pa_bundle_settings)));
+		$o_view->setVar('relationship_types_by_sub_type', $t_item_rel->getRelationshipTypesBySubtype($this->tableName(), $this->get('type_id'),  array_merge($pa_options, $pa_bundle_settings)));
+
+		$va_initial_values = $this->getRelatedBundleFormValues($po_request, $ps_form_name, 'ca_objects', $ps_placement_code, $pa_bundle_settings, $pa_options);
+
+		$o_view->setVar('initialValues', $va_initial_values);
+		$o_view->setVar('result', caMakeSearchResult('ca_objects', array_keys($va_initial_values)));
+		$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
+
+		return $o_view->render('ca_objects_table.php');
+	}
+	# ------------------------------------------------------
+	/**
 	 *
 	 */
 	protected function getBundleListsForScreen($pm_screen, $po_request, $t_ui, $pa_options=null) {
@@ -3622,7 +3676,7 @@ if (!$vb_batch) {
 		// save data in related tables
 		if (isset($va_fields_by_type['related_table']) && is_array($va_fields_by_type['related_table'])) {
 			foreach($va_fields_by_type['related_table'] as $vs_placement_code => $vs_f) {
-				$vn_table_num = $this->_DATAMODEL->getTableNum($vs_f);
+				if($vs_f == 'ca_objects_table') { $vs_f = 'ca_objects'; }
 				
 				// get settings
 				$va_bundle_settings = array();
@@ -5422,7 +5476,7 @@ if (!$vb_batch) {
 		switch($ps_return_as) {
 			case 'firstmodelinstance':
 				foreach($va_rels as $vn_id) {
-					$o_instance = new $vs_subject_table_name;
+					$o_instance = new $vs_related_table_name;
 					if ($o_instance->load($vn_id)) {
 						return $o_instance;
 					}
@@ -5432,7 +5486,7 @@ if (!$vb_batch) {
 			case 'modelinstances':
 				$va_instances = array();
 				foreach($va_rels as $vn_id) {
-					$o_instance = new $vs_subject_table_name;
+					$o_instance = new $vs_related_table_name;
 					if ($o_instance->load($vn_id)) {
 						$va_instances[] = $o_instance;
 					}
@@ -5450,7 +5504,7 @@ if (!$vb_batch) {
 				break;
 			case 'searchresult':
 				if (sizeof($va_rels) > 0) {
-					return caMakeSearchResult($vs_subject_table_name, $va_rels);
+					return caMakeSearchResult($vs_related_table_name, $va_rels);
 				}
 				return null;
 				break;

@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * bundles/ca_object_lots_download_media.php :
+ * themes/default/views/find/Search/ca_objects_table_html.php.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2015 Whirl-i-Gig
+ * Copyright 2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,24 +24,38 @@
  * http://www.CollectiveAccess.org
  *
  * ----------------------------------------------------------------------
- */
- 
-	$vs_file_path = $this->getVar('tmp_file');
+ */ 
+	$vo_result 				= $this->getVar('result');
+ 	$vo_result_context 		= $this->getVar('result_context');
+ 	
+ 	print $this->render('Search/search_controls_html.php');
+ ?>
+ 	<div id="resultBox" style="margin-bottom:13px"><!-- override margin from base.css so that the bottom paging controls barely fit -->
+<?php
+	if($vo_result) {
+		$vs_view = $this->getVar('current_view');
+		if ($vo_result->numHits() == 0) { $vs_view = 'no_results'; }
+		$this->setVar('dontShowPages', false);
+		print $this->render('Results/ca_objects_table_paging_controls_html.php');
+		print $this->render('Results/search_options_html.php');
+?>
 
-	header("Content-type: application/zip");
-	header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-	header("Cache-Control: no-store, no-cache, must-revalidate");
-	header("Cache-Control: post-check=0, pre-check=0", false);
-	header("Pragma: no-cache");
-	header("Cache-control: private");
-	header('Content-Length: ' . filesize($vs_file_path));
-	header("Content-Disposition: attachment; filename=".preg_replace('![^A-Za-z0-9\.\-]+!', '_', $this->getVar('download_name')));
+	<div class="sectionBox">
+<?php
+		switch($vs_view) {
 
-	set_time_limit(0);
-	$o_fp = @fopen($vs_file_path,"rb");
-	while(is_resource($o_fp) && !feof($o_fp)) {
-		print(@fread($o_fp, 1024*8));
-		ob_flush();
-		flush();
+			case 'no_results':
+				print $this->render('Results/no_results_html.php');
+				break;
+			case 'list':
+			default:
+				print $this->render('Results/ca_objects_results_table_html.php');
+				break;
+		}
+?>		
+	</div><!-- end sectionbox -->
+<?php
+		print $this->render('Results/ca_objects_table_paging_controls_html.php');
 	}
-	exit();
+?>
+</div><!-- end resultbox -->

@@ -625,7 +625,7 @@ class MultipartIDNumber extends IDNumber {
 				}
 			}
 		} elseif(is_array($pm_value)) {
-			$va_element_vals = array_keys($pm_value);
+			$va_element_vals = array_values($pm_value);
 		} else {
 			$va_element_vals = $this->explodeValue($pm_value);
 		}
