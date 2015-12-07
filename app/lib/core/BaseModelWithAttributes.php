@@ -2365,10 +2365,10 @@
 		 * @return mixed 
 		 */
 		public function getAuthorityElementList($pa_options=null) {
-			if (!($vn_datatype = $this->authorityElementDatatype())) { return null; }
+			if (!($vn_datatype = $this->authorityElementDatatype())) { return array(); }
 			if (!($vn_id = caGetOption('row_id', $pa_options, null))) { 
-				if (!($vn_id = $this->getPrimaryKey())) { 
-					return null; 
+				if (!($vn_id = $this->getPrimaryKey())) {
+					return array();
 				}
 			}
 			
