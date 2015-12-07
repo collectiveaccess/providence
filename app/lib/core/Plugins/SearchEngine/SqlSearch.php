@@ -745,13 +745,11 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							break;
 						case 'Zend_Search_Lucene_Search_Query_Phrase':
 	if ($this->getOption('strictPhraseSearching')) {
-							$vs_search_tokenizer_regex = $this->opo_search_config->get('search_tokenizer_regex');
-							
 						 	$va_words = array();
 						 	foreach($o_lucene_query_element->getQueryTerms() as $o_term) {
 								if (!$vs_access_point && ($vs_field = $o_term->field)) { $vs_access_point = $vs_field; }
 								
-								$va_terms = preg_split("![{$vs_search_tokenizer_regex}]+!u", (string)$o_term->text);
+								$va_terms = preg_split("![".$this->ops_search_tokenizer_regex."]+!u", (string)$o_term->text);
 								$va_raw_terms[] = (string)$o_term->text;
 								foreach($va_terms as $vs_term) {
 									if (strlen($vs_escaped_text = $this->opo_db->escape($vs_term))) {
@@ -839,7 +837,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$va_access_point_info = $this->_getElementIDForAccessPoint($pn_subject_tablenum, $o_term->field);
 								$vs_access_point = $va_access_point_info['access_point'];
 							
-								$vs_term = $o_term->text;
+								//$vs_term = $o_term->text;
+								$vs_term = preg_replace("![".$this->ops_search_tokenizer_regex."]+!u", '', (string)$o_term->text);
 					
 								if ($vs_access_point && (mb_strtoupper($vs_term) == _t('[BLANK]'))) {
 									$t_ap = $this->opo_datamodel->getInstanceByTableNum($va_access_point_info['table_num'], true);
@@ -857,6 +856,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$vs_table_num = $va_access_point_info['table_num'];
 									$vs_fld_num = $va_access_point_info['field_num'];
 									break;
+								} elseif ($vs_access_point) {
+									$vs_table_num = $va_access_point_info['table_num'];
+									$vs_fld_num = $va_access_point_info['field_num'];
 								}
 								
 								$va_terms = array($vs_term); //$this->_tokenize($vs_term, true, $vn_i);
@@ -1352,11 +1354,12 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$va_path = array_keys($this->opo_datamodel->getPath($vn_direct_sql_target_table_num, $pn_subject_tablenum));
 							
 							$vs_left_table = array_shift($va_path);
+							$va_join[] = "INNER JOIN {$vs_left_table} ON {$vs_left_table}.".$this->opo_datamodel->primaryKey($vs_left_table)." = ca.row_id";
 							
 							$vn_cj = 0;
 							foreach($va_path as $vs_right_table) {
 								if (sizeof($va_rels = $this->opo_datamodel->getRelationships($vs_left_table, $vs_right_table)) > 0) {
-									$va_join[] = "INNER JOIN {$vs_right_table} ON {$vs_right_table}.".$va_rels[$vs_left_table][$vs_right_table][0][1]." = ".(($vn_cj == 0) ? 'ca.row_id' : "{$vs_left_table}.".$va_rels[$vs_left_table][$vs_right_table][0][0]);
+									$va_join[] = "INNER JOIN {$vs_right_table} ON {$vs_right_table}.".$va_rels[$vs_left_table][$vs_right_table][0][1]." = ".("{$vs_left_table}.".$va_rels[$vs_left_table][$vs_right_table][0][0]);
 								}
 								$vs_left_table = $vs_right_table;
 								$vn_cj++;
@@ -1398,6 +1401,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						}
 						
 						$t = new Timer();
+						
 						$this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array());
 						$vn_i++;
 						if ($this->debug) { Debug::msg('FIRST: '.$vs_sql." [$pn_subject_tablenum] ".$t->GetTime(4)); }
