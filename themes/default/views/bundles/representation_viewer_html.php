@@ -476,6 +476,10 @@
 	}
 ?>
 	<div id="<?php print ($vs_display_type == 'media_overlay') ? 'caMediaOverlayContent' : 'caMediaDisplayContent'; ?>">
+		<div class="caMediaOverlayProgress" id="caMediaOverlayProgress">
+			<div class="caMediaOverlayProgressContent">
+			</div>
+		</div>
 <?php
 	// return standard tag
 	if (!is_array($va_display_options)) { $va_display_options = array(); }
@@ -490,7 +494,7 @@
 			'help_load_url' => caNavUrl($this->request, '*', '*', 'ViewerHelp', array()),
 			'annotationEditorPanel' => 'caRepresentationAnnotationEditor',
 			'annotationEditorUrl' => caNavUrl($this->request, 'editor/representation_annotations', 'RepresentationAnnotationQuickAdd', 'Form', array('representation_id' => (int)$t_rep->getPrimaryKey())),
-			'captions' => $t_rep->getCaptionFileList()
+			'captions' => $t_rep->getCaptionFileList(), 'progress_id' => 'caMediaOverlayProgress'
 		)));
 	} else {
 		$vs_tag = $t_value->getMediaTag('value_blob', $vs_show_version, array_merge($va_display_options, array(

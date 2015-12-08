@@ -273,6 +273,54 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Detects if OpenCTM (http://openctm.sourceforge.net) is installed in the given path.
+	 * @param string $ps_openctm_path path to OpenCTM ctmconv binary
+	 * @return bool
+	 */
+	function caOpenCTMInstalled($ps_openctm_ctmconv_path=null) {
+		if(!$ps_openctm_ctmconv_path) { $ps_openctm_ctmconv_path = caGetExternalApplicationPath('openctm'); }
+
+		global $_MEDIAHELPER_PLUGIN_CACHE_OPENCTM;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_OPENCTM[$ps_openctm_ctmconv_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_OPENCTM[$ps_openctm_ctmconv_path];
+		} else {
+			$_MEDIAHELPER_PLUGIN_CACHE_OPENCTM = array();
+		}
+		if (!caIsValidFilePath($ps_openctm_ctmconv_path)) { return false; }
+		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
+		exec($ps_openctm_ctmconv_path." --help > /dev/null",$va_output,$vn_return);
+		if($vn_return == 0) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_OPENCTM[$ps_openctm_ctmconv_path] = true;
+		}
+		return $_MEDIAHELPER_PLUGIN_CACHE_OPENCTM[$ps_openctm_ctmconv_path] = false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Detects if Meshlab (http://meshlab.sourceforge.net), and specifically the meshlabserver command line tool, is installed in the given path.
+	 * @param string $ps_meshlabserver_path path to the meshlabserver binary
+	 * @return bool
+	 */
+	function caMeshlabServerInstalled($ps_meshlabserver_path=null) {
+		if(!$ps_meshlabserver_path) { $ps_meshlabserver_path = caGetExternalApplicationPath('meshlabserver'); }
+
+		global $_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER[$ps_meshlabserver_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER[$ps_meshlabserver_path];
+		} else {
+			$_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER = array();
+		}
+		if (!caIsValidFilePath($ps_meshlabserver_path)) { return false; }
+		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
+		putenv("DISPLAY=:0");
+		chdir('/usr/local/bin');
+		exec($ps_meshlabserver_path." --help > /dev/null",$va_output,$vn_return);
+		if($vn_return == 1) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER[$ps_meshlabserver_path] = true;
+		}
+		return $_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER[$ps_meshlabserver_path] = false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Detects if PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/index.html) is installed in the given path.
 	 * @param string $ps_pdfminer_path path to PDFMiner
 	 * @return boolean

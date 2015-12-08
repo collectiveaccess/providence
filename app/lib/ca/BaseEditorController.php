@@ -64,6 +64,7 @@ class BaseEditorController extends ActionController {
 		AssetLoadManager::register('panel');
 		AssetLoadManager::register('maps');
 		AssetLoadManager::register('openlayers');
+		AssetLoadManager::register('3dmodels');
 
 		$this->opo_datamodel = Datamodel::load();
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
