@@ -261,6 +261,15 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$this->_FIELD_VALUES[$this->primaryKey()] = null;		// clear primary key set by BaseModel::insert()
 			return false;
 		}
+
+		// generate and set GUID
+		$t_guid = $this->getAppDatamodel()->getInstance('ca_guids');
+		$t_guid->setMode(ACCESS_WRITE);
+		$t_guid->setTransaction($this->getTransaction());
+		$t_guid->set('table_num', $this->tableNum());
+		$t_guid->set('row_id', $this->getPrimaryKey());
+		$t_guid->set('guid', caGenerateGUID());
+		$t_guid->insert();
 		
 		if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 	
@@ -354,8 +363,20 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				return false;
 			}
 		}
+
+		$vn_primary_key = $this->getPrimaryKey();
 		SearchResult::clearResultCacheForRow($this->tableName(), $this->getPrimaryKey());
-		return parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
+		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
+
+		if($vn_primary_key && $vn_rc && caGetOption('hard', $pa_options, false)) {
+			$t_guid = $this->getAppDatamodel()->getInstance('ca_guids');
+			if($t_guid->load(array('table_num' => $this->tableNum(), 'row_id' => $vn_primary_key))) {
+				$t_guid->setMode(ACCESS_WRITE);
+				$t_guid->delete();
+			}
+		}
+
+		return $vn_rc;
 	}
 	# ------------------------------------------------------------------
 	/**
