@@ -6665,6 +6665,20 @@ create table ca_guids
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /*==========================================================================*/
+
+create table ca_replication_log
+(
+  entry_id        int unsigned      not null AUTO_INCREMENT,
+  source_guid     VARCHAR(36)       not null,
+  log_id          int unsigned      not null,
+  status          char(1)           not null,
+  vars            longtext          null,
+
+  primary key (entry_id),
+  index i_source_log (source_guid, log_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+/*==========================================================================*/
 /* Schema update tracking                                                   */
 /*==========================================================================*/
 create table ca_schema_updates (

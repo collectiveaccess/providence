@@ -1,7 +1,7 @@
 /*
-	Date: 4 December 2015
+	Date: 8 December 2015
 	Migration: 126
-	Description: Add GUID table
+	Description: Add tables for data replication
 */
 
 /*==========================================================================*/
@@ -16,6 +16,18 @@ create table ca_guids
   primary key (guid_id),
   index i_table_num_row_id (table_num, row_id),
   unique index u_guid (guid)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+create table ca_replication_log
+(
+  entry_id        int unsigned      not null AUTO_INCREMENT,
+  source_guid     VARCHAR(36)       not null,
+  log_id          int unsigned      not null,
+  status          char(1)           not null,
+  vars            longtext          null,
+
+  primary key (entry_id),
+  index i_source_log (source_guid, log_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /*==========================================================================*/
