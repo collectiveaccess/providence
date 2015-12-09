@@ -70,6 +70,8 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 			unset(ApplicationPluginManager::$s_application_plugin_instances[$vs_plugin_name]);
 			unset(ApplicationPluginManager::$s_application_plugin_hooks[$vs_plugin_name]);
 		}
+		$this->_disableChangeLogForMappings($pa_params);
+
 		foreach ($pa_params['content_tree'] as $vs_table_name => $va_table_content_tree) {
 			// We need to _processBundles first as it replaces $pa_params['content_tree'] with values from $va_table_content
 			foreach ($va_table_content_tree as $vs_table_content_index => $va_table_content) {
@@ -318,6 +320,16 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 					break;
 				default;
 					//noop
+			}
+		}
+	}
+
+	private function _disableChangeLogForMappings( $pa_params ) {
+		if(!defined('__CA_DONT_LOG_CHANGES__')){
+			$vo_mapping = $pa_params['mapping'];
+			$va_mappings_to_disable = $this->opo_config->getList('disableChangeLogForImports');
+			if (in_array($vo_mapping->get('importer_code'), $va_mappings_to_disable)){
+				define('__CA_DONT_LOG_CHANGES__', true);
 			}
 		}
 	}
