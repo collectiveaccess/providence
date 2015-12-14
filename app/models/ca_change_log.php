@@ -93,6 +93,8 @@ BaseModel::$s_ca_models_definitions['ca_change_log'] = array(
 	)
 );
 
+require_once(__CA_MODELS_DIR__ . '/ca_guids.php');
+
 class ca_change_log extends BaseModel {
 	# ---------------------------------
 	# --- Object attribute properties
@@ -194,5 +196,48 @@ class ca_change_log extends BaseModel {
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
+	public static function getLog($pn_from, $pn_limit=null) {
+		if(!is_null($pn_limit)) {
+			$vs_limit_sql = "LIMIT $pn_limit";
+		} else {
+			$vs_limit_sql = '';
+		}
+
+		$o_db = new Db();
+
+		$qr_results = $o_db->query("
+			SELECT * FROM ca_change_log cl, ca_change_log_snapshots cls
+			WHERE cl.log_id = cls.log_id AND cl.log_id>=?
+			ORDER BY cl.log_id
+			{$vs_limit_sql}
+		", $pn_from);
+
+		$va_ret = array();
+		while($qr_results->nextRow()) {
+			$va_row = $qr_results->getRow();
+
+			// skip rows without GUID -- we don't care about those
+			if(!($vs_guid = ca_guids::getForRow($va_row['logged_table_num'], $va_row['logged_row_id']))) {
+				continue;
+			}
+
+			$va_row['guid'] = $vs_guid;
+
+			// decode snapshot
+			$va_row['snapshot'] =
+				caUnserializeForDatabase($qr_results->get('snapshot'));
+
+			// get subjects
+			$qr_subjects = $o_db->query("SELECT * FROM ca_change_log_subjects WHERE log_id=?", $qr_results->get('log_id'));
+
+			while($qr_subjects->nextRow()) {
+				$va_row['subjects'][] = $qr_subjects->getRow();
+			}
+
+			$va_ret[(int) $qr_results->get('log_id')] = $va_row;
+		}
+
+		return $va_ret;
+	}
+	# ------------------------------------------------------
 }
-?>
