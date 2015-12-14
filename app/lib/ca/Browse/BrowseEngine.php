@@ -3316,17 +3316,37 @@
 							$qr_res = $this->opo_db->query($vs_sql, $vs_list_name);
 							return ((int)$qr_res->numRows() > 1) ? true : false;
 						} else {
-							// Get label ordering fields
-							$va_ordering_fields_to_fetch = (isset($va_facet_info['order_by_label_fields']) && is_array($va_facet_info['order_by_label_fields'])) ? $va_facet_info['order_by_label_fields'] : array();
-
 							$va_orderbys = array();
-							$t_rel_item_label = new ca_list_item_labels();
-							foreach($va_ordering_fields_to_fetch as $vs_sort_by_field) {
-								if (!$t_rel_item_label->hasField($vs_sort_by_field)) { continue; }
-								$va_orderbys[] = $va_label_selects[] = 'lil.'.$vs_sort_by_field;
+							
+							// Get label ordering fields
+							if (isset($va_facet_info['order_by_label_fields']) && is_array($va_facet_info['order_by_label_fields']) && sizeof($va_facet_info['order_by_label_fields'])) {
+								$t_rel_item_label = new ca_list_item_labels();
+								foreach($va_facet_info['order_by_label_fields'] as $vs_sort_by_field) {
+									if (!$t_rel_item_label->hasField($vs_sort_by_field)) { continue; }
+									$va_orderbys[] = $va_label_selects[] = 'lil.'.$vs_sort_by_field;
+								}
+							} else {
+								$t_list->load(array('list_code' => $vs_list_name));
+								$vn_sort = $t_list->get('default_sort');
+								switch($vn_sort) {
+									default:
+									case __CA_LISTS_SORT_BY_LABEL__:	// by label
+										$va_orderbys[] = 'lil.name_plural';
+										break;
+									case __CA_LISTS_SORT_BY_RANK__:	// by rank
+										$va_orderbys[] = 'li.rank';
+										break;
+									case __CA_LISTS_SORT_BY_VALUE__:	// by value
+										$va_orderbys[] = 'li.item_value';
+										break;
+									case __CA_LISTS_SORT_BY_IDENTIFIER__:	// by identifier
+										$va_orderbys[] = 'li.idno_sort';
+										break;
+								}
 							}
-
+							
 							$vs_order_by = (sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
+							
 							$vs_sql = "
 								SELECT DISTINCT lil.item_id, lil.name_singular, lil.name_plural, lil.locale_id
 								FROM ca_list_items li
