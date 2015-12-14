@@ -32,6 +32,7 @@
 	$va_annotation_map 			= $this->getVar('annotation_map');
 	
 	$vn_annotation_count		= $this->getVar('annotation_count');
+	$vn_timecode_offset 		= $this->getVar('timecode_offset');
 
 	$vb_can_edit	 			= $t_rep->isSaveable($this->request);
 	$vb_can_delete				= $t_rep->isDeletable($this->request);
@@ -204,8 +205,8 @@
 				var startTimecode = v['startTimecode_raw'];
 			
 				var item = "<div id='caAnnoEditorTlAnnotationContainer" + annotation_id + "' class='caAnnoEditorTlAnnotationContainer'>" + 
-					"<div class='title'><a href='#' onclick='caAnnoEditorPlayerPlay(" + startTimecode + "); return false;'>" + label + "</a></div>" + 
-					"<div class='timecode'><a href='#' onclick='caAnnoEditorPlayerPlay(" + startTimecode + "); return false;'>" + timecode + "</a></div>" + 
+					"<div class='title'><a href='#' onclick='caAnnoEditorPlayerPlay(" + (startTimecode - v['timecodeOffset']) + "); return false;'>" + label + "</a></div>" + 
+					"<div class='timecode'><a href='#' onclick='caAnnoEditorPlayerPlay(" + (startTimecode - v['timecodeOffset']) + "); return false;'>" + timecode + "</a></div>" + 
 					"<div class='editAnnoButton'><a href='#' onclick='caAnnoEditorEdit(" + annotation_id + "); event.preventDefault(); return false;'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__); ?></a></div>" + 
 					"<div class='deleteAnnoButton'><a href='#' onclick='caAnnoEditorDelete(" + annotation_id + "); event.preventDefault(); return false;'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a></div>";
 			
@@ -323,14 +324,14 @@
 	
 	function caAnnoEditorSetInTime(inTime, state) {
 		caAnnoEditorEnableAnnotationForm();
-		jQuery("input#startTimecode").val(caConvertSecondsToTimecode(inTime));
+		jQuery("input#startTimecode").val(caConvertSecondsToTimecode(inTime + <?php print $vn_timecode_offset; ?>));
 		if (state === 'PLAY') caAnnoEditorPlayerPlay();
 		if (state === 'PAUSE') caAnnoEditorPlayerPause();
 	}
 
 	function caAnnoEditorSetOutTime(outTime, state, save) {
 		caAnnoEditorEnableAnnotationForm();
-		jQuery("input#endTimecode").val(caConvertSecondsToTimecode(outTime));
+		jQuery("input#endTimecode").val(caConvertSecondsToTimecode(outTime + <?php print $vn_timecode_offset; ?>));
 		if (state === 'PLAY') caAnnoEditorPlayerPlay();
 		if (state === 'PAUSE') caAnnoEditorPlayerPause();
 		if (save) {
@@ -395,11 +396,16 @@
 		p.paused ? p.play() : p.pause();
 	}
 
-	function caAnnoEditorGetPlayerTime() {
+	function caAnnoEditorGetPlayerTime(includeTimecodeOffset) {
 		var p = caAnnoEditorGetPlayer();
 		var mediaType = caAnnoEditorGetMediaType();
 		
-		if (p) { return (mediaType == 'AUDIO') ? p.currentTime : p.currentTime(); }
+		var ct;
+		if (p) { 
+			ct = (mediaType == 'AUDIO') ? p.currentTime : p.currentTime(); 
+			return includeTimecodeOffset ? (<?php print $vn_timecode_offset; ?> + ct) : ct;
+		}
+		
 		return null;
 	}
 

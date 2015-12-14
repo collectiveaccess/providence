@@ -1754,25 +1754,27 @@ class BaseEditorController extends ActionController {
 		$va_annotations_raw = $t_rep->getAnnotations();
 		$va_annotations = array();
 
-		foreach($va_annotations_raw as $vn_annotation_id => $va_annotation) {
-			$va_annotations[] = array(
-				'annotation_id' => $va_annotation['annotation_id'],
-				'x' => 				caGetOption('x', $va_annotation, 0, array('castTo' => 'float')),
-				'y' => 				caGetOption('y', $va_annotation, 0, array('castTo' => 'float')),
-				'w' => 				caGetOption('w', $va_annotation, 0, array('castTo' => 'float')),
-				'h' => 				caGetOption('h', $va_annotation, 0, array('castTo' => 'float')),
-				'tx' => 			caGetOption('tx', $va_annotation, 0, array('castTo' => 'float')),
-				'ty' => 			caGetOption('ty', $va_annotation, 0, array('castTo' => 'float')),
-				'tw' => 			caGetOption('tw', $va_annotation, 0, array('castTo' => 'float')),
-				'th' => 			caGetOption('th', $va_annotation, 0, array('castTo' => 'float')),
-				'points' => 		caGetOption('points', $va_annotation, array(), array('castTo' => 'array')),
-				'label' => 			caGetOption('label', $va_annotation, '', array('castTo' => 'string')),
-				'description' => 	caGetOption('description', $va_annotation, '', array('castTo' => 'string')),
-				'type' => 			caGetOption('type', $va_annotation, 'rect', array('castTo' => 'string')),
-				'locked' => 		caGetOption('locked', $va_annotation, '0', array('castTo' => 'string')),
-				'options' => 		caGetOption('options', $va_annotation, array(), array('castTo' => 'array')),
-				'key' =>			caGetOption('key', $va_annotation, null)
-			);
+		if(is_array($va_annotations_raw)) {
+			foreach($va_annotations_raw as $vn_annotation_id => $va_annotation) {
+				$va_annotations[] = array(
+					'annotation_id' => $va_annotation['annotation_id'],
+					'x' => 				caGetOption('x', $va_annotation, 0, array('castTo' => 'float')),
+					'y' => 				caGetOption('y', $va_annotation, 0, array('castTo' => 'float')),
+					'w' => 				caGetOption('w', $va_annotation, 0, array('castTo' => 'float')),
+					'h' => 				caGetOption('h', $va_annotation, 0, array('castTo' => 'float')),
+					'tx' => 			caGetOption('tx', $va_annotation, 0, array('castTo' => 'float')),
+					'ty' => 			caGetOption('ty', $va_annotation, 0, array('castTo' => 'float')),
+					'tw' => 			caGetOption('tw', $va_annotation, 0, array('castTo' => 'float')),
+					'th' => 			caGetOption('th', $va_annotation, 0, array('castTo' => 'float')),
+					'points' => 		caGetOption('points', $va_annotation, array(), array('castTo' => 'array')),
+					'label' => 			caGetOption('label', $va_annotation, '', array('castTo' => 'string')),
+					'description' => 	caGetOption('description', $va_annotation, '', array('castTo' => 'string')),
+					'type' => 			caGetOption('type', $va_annotation, 'rect', array('castTo' => 'string')),
+					'locked' => 		caGetOption('locked', $va_annotation, '0', array('castTo' => 'string')),
+					'options' => 		caGetOption('options', $va_annotation, array(), array('castTo' => 'array')),
+					'key' =>			caGetOption('key', $va_annotation, null)
+				);
+			}
 		}
 
 		$this->view->setVar('annotations', $va_annotations);

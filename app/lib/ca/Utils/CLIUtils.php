@@ -1003,7 +1003,7 @@
 					FROM ca_attribute_values
 					WHERE
 						element_id in (?)
-				", caExtractValuesFromArrayList($va_elements, 'element_id', array('preserveKeys' => false)));
+				", array(caExtractValuesFromArrayList($va_elements, 'element_id', array('preserveKeys' => false))));
 				if ($qr_c->nextRow()) { $vn_count = $qr_c->get('c'); } else { $vn_count = 0; }
 
 
