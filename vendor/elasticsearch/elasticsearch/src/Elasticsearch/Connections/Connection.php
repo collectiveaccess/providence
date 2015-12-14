@@ -9,9 +9,11 @@ use Elasticsearch\Common\Exceptions\Curl\CouldNotConnectToHost;
 use Elasticsearch\Common\Exceptions\Curl\CouldNotResolveHostException;
 use Elasticsearch\Common\Exceptions\Curl\OperationTimeoutException;
 use Elasticsearch\Common\Exceptions\Forbidden403Exception;
+use Elasticsearch\Common\Exceptions\MaxRetriesException;
 use Elasticsearch\Common\Exceptions\Missing404Exception;
 use Elasticsearch\Common\Exceptions\NoDocumentsToGetException;
 use Elasticsearch\Common\Exceptions\NoShardAvailableException;
+use Elasticsearch\Common\Exceptions\RequestTimeout408Exception;
 use Elasticsearch\Common\Exceptions\RoutingMissingException;
 use Elasticsearch\Common\Exceptions\ScriptLangNotSupportedException;
 use Elasticsearch\Common\Exceptions\ServerErrorResponseException;
@@ -19,6 +21,8 @@ use Elasticsearch\Common\Exceptions\TransportException;
 use Elasticsearch\Serializers\SerializerInterface;
 use Elasticsearch\Transport;
 use GuzzleHttp\Ring\Core;
+use GuzzleHttp\Ring\Exception\ConnectException;
+use GuzzleHttp\Ring\Exception\RingException;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -176,12 +180,32 @@ class Connection implements ConnectionInterface
 
                 if (isset($response['error']) === true) {
                     if ($response['error'] instanceof ConnectException || $response['error'] instanceof RingException) {
+
+                        $this->log->warning("Curl exception encountered.");
+
+                        $exception = $this->getCurlRetryException($request, $response);
+
+                        $this->logRequestFail(
+                            $request['http_method'],
+                            $response['effective_url'],
+                            $request['body'],
+                            $request['headers'],
+                            $response['status'],
+                            $response['body'],
+                            $response['transfer_stats']['total_time'],
+                            $exception
+                        );
+
+                        $node = $connection->getHost();
+                        $this->log->warning("Marking node $node dead.");
                         $connection->markDead();
                         $transport->connectionPool->scheduleCheck();
 
                         $neverRetry = isset($request['client']['never_retry']) ? $request['client']['never_retry'] : false;
                         $shouldRetry = $transport->shouldRetry($request);
+                        $shouldRetryText = ($shouldRetry) ? 'true' : 'false';
 
+                        $this->log->warning("Retries left? $shouldRetryText");
                         if ($shouldRetry && !$neverRetry) {
                             return $transport->performRequest(
                                 $request['http_method'],
@@ -192,13 +216,23 @@ class Connection implements ConnectionInterface
                             );
                         }
 
-                        // Due to the magic of futures, this will only be invoked if the final retry fails, since
-                        // successful resolutions will go down the alternate `else` path the second time through
-                        // the proxy
-                        $this->throwCurlException($request, $response);
+                        $this->log->warning("Out of retries, throwing exception from $node");
+                        // Only throw if we run out of retries
+                        throw $exception;
                     } else {
                         // Something went seriously wrong, bail
-                        throw new TransportException($response['error']->getMessage());
+                        $exception = new TransportException($response['error']->getMessage());
+                        $this->logRequestFail(
+                            $request['http_method'],
+                            $response['effective_url'],
+                            $request['body'],
+                            $request['headers'],
+                            $response['status'],
+                            $response['body'],
+                            $response['transfer_stats']['total_time'],
+                            $exception
+                        );
+                        throw $exception;
                     }
                 } else {
                     $connection->markAlive();
@@ -298,18 +332,18 @@ class Connection implements ConnectionInterface
     /**
      * Log a a failed request
      *
-     * @param string      $method
-     * @param string      $fullURI
-     * @param string      $body
-     * @param array       $headers
-     * @param string      $duration
+     * @param string $method
+     * @param string $fullURI
+     * @param string $body
+     * @param array $headers
      * @param null|string $statusCode
      * @param null|string $response
-     * @param null|string $exception
+     * @param string $duration
+     * @param \Exception|null $exception
      *
      * @return void
      */
-    public function logRequestFail($method, $fullURI, $body, $headers, $statusCode, $response, $duration, $exception)
+    public function logRequestFail($method, $fullURI, $body, $headers, $statusCode, $response, $duration, \Exception $exception)
     {
         $this->log->debug('Request Body', array($body));
         $this->log->warning(
@@ -320,7 +354,7 @@ class Connection implements ConnectionInterface
                 'headers'   => $headers,
                 'HTTP code' => $statusCode,
                 'duration'  => $duration,
-                'error'     => $exception,
+                'error'     => $exception->getMessage(),
             )
         );
         $this->log->warning('Response', array($response));
@@ -436,39 +470,26 @@ class Connection implements ConnectionInterface
     /**
      * @param $request
      * @param $response
-     * @throws \Elasticsearch\Common\Exceptions\Curl\CouldNotConnectToHost|\Elasticsearch\Common\Exceptions\Curl\CouldNotResolveHostException|\Elasticsearch\Common\Exceptions\Curl\OperationTimeoutException|\Elasticsearch\Common\Exceptions\TransportException
-     *
+     * @return \Elasticsearch\Common\Exceptions\Curl\CouldNotConnectToHost|\Elasticsearch\Common\Exceptions\Curl\CouldNotResolveHostException|\Elasticsearch\Common\Exceptions\Curl\OperationTimeoutException|\Elasticsearch\Common\Exceptions\MaxRetriesException
      */
-    protected function throwCurlException($request, $response)
+    protected function getCurlRetryException($request, $response)
     {
         $exception = null;
         $message = $response['error']->getMessage();
+        $exception = new MaxRetriesException($message);
         switch ($response['curl']['errno']) {
             case 6:
-                $exception = new CouldNotResolveHostException($message);
+                $exception = new CouldNotResolveHostException($message, null, $exception);
                 break;
             case 7:
-                $exception = new CouldNotConnectToHost($message);
+                $exception = new CouldNotConnectToHost($message, null, $exception);
                 break;
             case 28:
-                $exception = new OperationTimeoutException($message);
+                $exception = new OperationTimeoutException($message, null, $exception);
                 break;
-            default:
-                $exception = new TransportException($message);
         }
 
-        $this->logRequestFail(
-            $request['http_method'],
-            $response['effective_url'],
-            $request['body'],
-            $request['headers'],
-            $response['status'],
-            $response['body'],
-            $response['transfer_stats']['total_time'],
-            $exception
-        );
-
-        throw $exception;
+        return $exception;
     }
 
     /**
@@ -526,6 +547,8 @@ class Connection implements ConnectionInterface
             $exception = new Conflict409Exception($responseBody, $statusCode);
         } elseif ($statusCode === 400 && strpos($responseBody, 'script_lang not supported') !== false) {
             $exception = new ScriptLangNotSupportedException($responseBody. $statusCode);
+        } elseif ($statusCode === 408 ) {
+            $exception = new RequestTimeout408Exception($responseBody, $statusCode);
         }
 
         $this->logRequestFail(
