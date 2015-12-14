@@ -1496,7 +1496,7 @@ class BaseEditorController extends ActionController {
 				$this->view->setVar('object_collection_collection_ancestors', array()); // collections to display as object parents when ca_objects_x_collections_hierarchy_enabled is enabled
 				if (($t_item->tableName() == 'ca_objects') && $t_item->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled')) {
 					// Is object part of a collection?
-					if(is_array($va_collections = $t_item->getRelatedItems('ca_collections'))) {
+					if(is_array($va_collections = $t_item->getRelatedItems('ca_collections', array('restrictToRelationshipTypes' => array($t_item->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type')))))) {
 						$this->view->setVar('object_collection_collection_ancestors', $va_collections);
 					}
 				}
