@@ -153,9 +153,9 @@
 					}
 				}
 				
-				if (!$pb_exact) {
-					$ps_query = trim(preg_replace("![".str_replace("!", "\\!", $o_search_config->get('search_tokenizer_regex'))."]+!", " ", $ps_query));
-				}
+				//if (!$pb_exact) {
+				//	$ps_query = trim(preg_replace("![".str_replace("!", "\\!", $o_search_config->get('search_tokenizer_regex'))."]+!", " ", $ps_query));
+				//}
 				
 				// do search
 				if($vs_additional_query_params || $vs_restrict_to_search) {
@@ -169,7 +169,7 @@
 				$qr_res->setOption('prefetch', $pn_limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);
 				
-				$va_opts = array('exclude' => $va_excludes, 'limit' => $pn_limit);
+				$va_opts = array('exclude' => $va_excludes, 'limit' => $pn_limit, 'request' => $this->getRequest());
 				if(!$pb_no_inline && ($pb_quickadd || (!strlen($pb_quickadd) && $this->request->user && $this->request->user->canDoAction('can_quickadd_'.$this->opo_item_instance->tableName()) && !((bool) $o_config->get($this->opo_item_instance->tableName().'_disable_quickadd'))))) {
 					// if the lookup was restricted by search, try the lookup without the restriction
 					// so that we can notify the user that he might be about to create a duplicate
@@ -313,9 +313,7 @@
 								}
 								$va_tmp['sort'] = join(";", $vs_sort_acc);
 							}
-
 							$va_items[$va_tmp[$vs_pk]][$va_tmp['locale_id']] = $va_tmp;
-
 							$vn_c++;
 						}
 
@@ -326,8 +324,8 @@
 
 					$va_sorted_items = array();
 					foreach($va_items_for_locale as $vn_id => $va_node) {
-						$vs_key = preg_replace('![^A-Za-z0-9]!', '_', $va_node['name']);
-
+						$vs_key = caSortableValue(mb_strtolower(preg_replace('![^A-Za-z0-9]!', '_', caRemoveAccents($va_node['name']))))."_".$vn_id;
+						
 						if (isset($va_node['sort']) && $va_node['sort']) {
 							$va_sorted_items[$va_node['sort']][$vs_key] = $va_node;
 						} else {

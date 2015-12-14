@@ -38,6 +38,11 @@ require_once(__CA_LIB_DIR__."/core/Configuration.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 
+/**
+ * Constant for expression that will parse as current date/time independent of current locale.
+ */
+define("__TEP_NOW__", "__NOW__");
+
 # --- Token types
 define("TEP_TOKEN_INTEGER", 0);
 define("TEP_TOKEN_ALPHA", 1);
@@ -213,7 +218,9 @@ class TimeExpressionParser {
 	}
 	# -------------------------------------------------------------------
 	public function parse($ps_expression, $pa_options=null) {
-	
+		if ($ps_expression == __TEP_NOW__) {
+			$ps_expression = array_shift($this->opo_language_settings->getList("nowDate"));		
+		}
 		$ps_expression = caRemoveAccents($ps_expression);
 		
 		if (!$pa_options) { $pa_options = array(); }
@@ -1858,7 +1865,7 @@ class TimeExpressionParser {
 				$pa_dates['end']['month'] = $pa_dates['start']['month'];
 				$pa_dates['end']['day'] = $pa_dates['start']['day'];
 			}
-			
+
 			// Two-digit year windowing
 			if (
 				(!isset($pa_dates['start']['dont_window']) || !$pa_dates['start']['dont_window'])
@@ -1868,8 +1875,8 @@ class TimeExpressionParser {
 				$va_tmp = $this->gmgetdate();
 				$vn_current_year = intval(substr($va_tmp['year'], 2, 2));		// get last two digits of current year
 				$vn_current_century = intval(substr($va_tmp['year'], 0, 2)) * 100;
-				
-				if ($pa_dates['start']['year'] <= $vn_current_year) {
+
+				if ($pa_dates['start']['year'] <= ($vn_current_year + 10)) {
 					$pa_dates['start']['year'] += $vn_current_century;
 				} else {
 					$pa_dates['start']['year'] += ($vn_current_century - 100);
@@ -1880,7 +1887,8 @@ class TimeExpressionParser {
 				$va_tmp = $this->gmgetdate();
 				$vn_current_year = intval(substr($va_tmp['year'], 2, 2));		// get last two digits of current year
 				$vn_current_century = intval(substr($va_tmp['year'], 0, 2)) * 100;
-				if ($pa_dates['end']['year'] <= $vn_current_year) {
+
+				if ($pa_dates['end']['year'] <= ($vn_current_year + 10)) {
 					$pa_dates['end']['year'] += $vn_current_century;
 				} else {
 					$pa_dates['end']['year'] += ($vn_current_century - 100);
@@ -2959,6 +2967,20 @@ class TimeExpressionParser {
 		return $this->opo_language_settings;
 	}
 	# -------------------------------------------------------------------
+	/**
+	 * Returns a Configuration object with the date/time localization  
+	 * settings for the specified locale
+	 *
+	 * @param string $ps_iso_code ISO code (ex. en_US) 
+	 * @return Configuration Settings for the specified locale or null if the locale is not defined.
+	 */
+	static public function getSettingsForLanguage($ps_iso_code) {
+		$vs_config_path = __CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser/'.$ps_iso_code.'.lang';
+		if(!file_exists($vs_config_path)) { return null; }
+		
+		return Configuration::load($vs_config_path);
+	}
+	# -------------------------------------------------------------------
 	# Error handling
 	# -------------------------------------------------------------------
 	private function setParseError($pa_token, $pn_error) {
@@ -3000,6 +3022,10 @@ class TimeExpressionParser {
 			if (preg_match('!^[\?]+$!', $pn_year)) { $pn_year = 0; }
 		}
 		return date("t", mktime(0, 0, 0, $pn_month, 1, $pn_year));
+	}
+	# -------------------------------------------------------------------
+	public function daysInYear($pn_year) {
+		return ((($year % 4) == 0) && ((($year % 100) != 0) || (($year %400) == 0))) ? 366 : 365;
 	}
 	# -------------------------------------------------------------------
 	public function getDayList() {
@@ -3108,7 +3134,7 @@ class TimeExpressionParser {
 				if ($vn_s <= TEP_START_OF_UNIVERSE) { $vn_s = $vn_e; }
 				if ($vn_e >= TEP_END_OF_UNIVERSE) { $vn_e = $vn_s; }
 				
-				if (($vn_s <= TEP_START_OF_UNIVERSE) || ($vn_e >= TEP_END_OF_UNIVERSE)) { break; }
+				if (($vn_s <= TEP_START_OF_UNIVERSE) || ($vn_e >= TEP_END_OF_UNIVERSE) || ($vn_s == 0) || ($vn_e == 0)) { break; }
 				
 				$vn_s = intval($vn_s/10) * 10;
 				$vn_e = intval($vn_e/10) * 10;
@@ -3133,11 +3159,11 @@ class TimeExpressionParser {
 				if ($vn_s <= TEP_START_OF_UNIVERSE) { $vn_s = $vn_e; }
 				if ($vn_e >= TEP_END_OF_UNIVERSE) { $vn_e = $vn_s; }
 				
-				if (($vn_s <= TEP_START_OF_UNIVERSE) || ($vn_e >= TEP_END_OF_UNIVERSE)) { break; }
+				if (($vn_s <= TEP_START_OF_UNIVERSE) || ($vn_e >= TEP_END_OF_UNIVERSE) || ($vn_s == 0) || ($vn_e == 0)) { break; }
 				
 				$vn_s = intval($vn_s/100) * 100;
 				$vn_e = intval($vn_e/100) * 100;
-
+				
 				if ($vn_s <= $vn_e) {
 					$va_century_indicators = 	$this->opo_language_settings->getList("centuryIndicator");
 					$va_ordinals = 				$this->opo_language_settings->getList("ordinalSuffixes");
@@ -3269,13 +3295,76 @@ class TimeExpressionParser {
 	}
 	# -------------------------------------------------------------------
 	/**
+	 * Return current date/time 
+	 *
+	 * @param array $pa_options Options include:
+	 *		returnAs = time units of return value. Valid values are: days, hours, minutes, seconds. [Default is seconds]
+	 * @return int Time in interval
+	 */
+	public function interval($pa_options=null) {
+		if (!$this->opn_start_historic || !$this->opn_end_historic) { return null; }
+		if ($this->opn_start_historic > $this->opn_end_historic) { return null; }
+		$va_start = $this->getHistoricDateParts($this->opn_start_historic);
+		$va_end = $this->getHistoricDateParts($this->opn_end_historic);
+		
+		$vo_start = new DateTime($this->getISODateTime($va_start, 'FULL'));
+		$vo_end = new DateTime($this->getISODateTime($va_end, 'FULL'));
+		
+		$vo_interval = $vo_start->diff($vo_end);
+		
+		switch(strtolower(caGetOption('returnAs', $pa_options, 'seconds'))) {
+			case 'days':
+				return $vo_interval->days + (($vo_interval->h >= 12) ? 1 : 0);
+				break;
+			case 'hours':
+				return ($vo_interval->days * 24 * 60 * 60) + ($vo_interval->h * 60 * 60) + (($vo_interval->m >= 30) ? 1 : 0);
+				break;
+			case 'minutes':
+				return ($vo_interval->days * 24 * 60 * 60) + ($vo_interval->h * 60 * 60) + ($vo_interval->m * 60) + (($vo_interval->s >= 30) ? 1 : 0);
+				break;
+			case 'seconds':
+			default:
+				return ($vo_interval->days * 24 * 60 * 60) + ($vo_interval->h * 60 * 60) + ($vo_interval->m * 60) + $vo_interval->s;
+				break;
+		}
+		return null;
+	}
+	# -------------------------------------------------------------------
+	/**
 	 * Timezone-less version of getDate()
 	 */
-	function gmgetdate($ts = null){ 
+	public function gmgetdate($ts = null){ 
         $k = array('seconds','minutes','hours','mday', 
                 'wday','mon','year','yday','weekday','month',0);
         return(array_combine($k,explode(":",
                 date('s:i:G:j:w:n:Y:z:l:F:U',is_null($ts)?time():intval($ts)))));
     } 
+ 	# -------------------------------------------------------------------
+	/**
+	 * Return current date/time 
+	 *
+	 * @param array $pa_options Options include:
+	 *		format = format of return value. Options are:
+	 *				unix = Unix-timestamp
+	 *				historic = Historic timestamp 
+	 *				[Default is historic]
+	 *				
+	 */
+	public static function now($pa_options=null) {
+		$ps_format = caGetOption('format', $pa_options, null, ['toLowerCase' => true]);
+		$o_tep = new TimeExpressionParser();
+		$o_tep->parse(__TEP_NOW__);
+		
+		switch($ps_format) {
+			case 'unix':
+				return array_shift($o_tep->getUnixTimestamps());
+				break;
+			case 'historic':
+			default:
+				return array_shift($o_tep->getHistoricTimestamps());
+				break;
+		}
+		return null;
+	}
  	# -------------------------------------------------------------------
 }

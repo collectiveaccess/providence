@@ -62,7 +62,7 @@ GRAMMAR;
 
         $this
             ->given(
-                $grammar = new File\ReadWrite('hoa://Test/Vfs/WithoutUnification.pp'),
+                $grammar = new File\ReadWrite('hoa://Test/Vfs/WithoutUnification.pp?type=file'),
                 $grammar->writeAll($_grammar),
                 $compiler = LUT\Llk::load($grammar)
             )
@@ -99,7 +99,7 @@ GRAMMAR;
 
         $this
             ->given(
-                $grammar = new File\ReadWrite('hoa://Test/Vfs/Unification.pp'),
+                $grammar = new File\ReadWrite('hoa://Test/Vfs/Unification.pp?type=file'),
                 $grammar->writeAll($_grammar),
                 $compiler = LUT\Llk::load($grammar)
             )
@@ -114,13 +114,11 @@ GRAMMAR;
                     ->isTrue()
 
             ->exception(function () use (&$compiler) {
-
                 $compiler->parse('\'foo"', null, false);
             })
                 ->isInstanceOf('Hoa\Compiler\Exception\UnexpectedToken')
 
             ->exception(function () use (&$compiler) {
-
                 $compiler->parse('"foo\'', null, false);
             })
                 ->isInstanceOf('Hoa\Compiler\Exception\UnexpectedToken');
@@ -137,7 +135,7 @@ GRAMMAR;
 
         $this
             ->given(
-                $grammar = new File\ReadWrite('hoa://Test/Vfs/Palindrome.pp'),
+                $grammar = new File\ReadWrite('hoa://Test/Vfs/Palindrome.pp?type=file'),
                 $grammar->writeAll($_grammar),
                 $compiler = LUT\Llk::load($grammar)
             )
@@ -162,7 +160,6 @@ GRAMMAR;
                     ->isTrue()
 
             ->exception(function () use (&$compiler) {
-
                 $compiler->parse('abcdcba', null, false);
             })
                 ->isInstanceOf('Hoa\Compiler\Exception\UnexpectedToken');

@@ -90,6 +90,13 @@ class SimpleService {
 			throw new Exception('Could not load record');
 		}
 
+		// checkAccess
+		if(isset($pa_config['checkAccess']) && is_array($pa_config['checkAccess'])) {
+			if(!in_array($t_instance->get('access'), $pa_config['checkAccess'])) {
+				throw new Exception('Invalid parameters');
+			}
+		}
+
 		// restrictToTypes
 		if($pa_config['restrictToTypes'] && is_array($pa_config['restrictToTypes']) && (sizeof($pa_config['restrictToTypes']) > 0)) {
 			if(!in_array($t_instance->getTypeCode(), $pa_config['restrictToTypes'])) {
@@ -139,7 +146,8 @@ class SimpleService {
 			'sort' => $po_request->getParameter('sort', pString),
 			'sortDirection' => $po_request->getParameter('sortDirection', pString),
 			'start' => $po_request->getParameter('start', pInteger),
-			'limit' => $po_request->getParameter('limit', pInteger)
+			'limit' => $po_request->getParameter('limit', pInteger),
+			'checkAccess' => $pa_config['checkAccess'],
 		));
 
 		$va_return = array();

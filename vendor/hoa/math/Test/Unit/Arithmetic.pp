@@ -42,7 +42,7 @@
 //
 
 
-%skip   space     \s
+%skip   space     [\x20\x09]+
 %token  bracket_  \(
 %token _bracket   \)
 %token  comma     ,
@@ -51,8 +51,6 @@
 %token  minus     \-
 %token  times     \*
 %token  div       /
-%token  constant  [A-Z_]+[A-Z0-9_]+
-%token  id        \w+
 
 expression:
     primary() ( ::plus:: #addition expression() )?

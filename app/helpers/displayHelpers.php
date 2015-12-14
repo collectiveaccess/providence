@@ -47,7 +47,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
  * More about bundle display templates here: http://docs.collectiveaccess.org/wiki/Bundle_Display_Templates
  */
 
-define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/]+[~]{1}[A-Za-z0-9]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/]+)/");
+define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/\:]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/:]+[~]{1}[A-Za-z0-9]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/:]+)/");
 	
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -883,6 +883,22 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 					$vs_buf .= caProcessTemplateForIDs($vs_get_spec, $vs_table_name, array($t_item->getPrimaryKey()));
 				}
 			}
+
+			//
+			// Output configurable additional info from config, if set
+			//
+
+			if ($vs_additional_info = $po_view->request->config->get("{$vs_table_name}_inspector_additional_info")) {
+				if(is_array($vs_additional_info)){
+					$vs_buf .= "<br/>";
+					foreach($vs_additional_info as $vs_info){
+						$vs_buf .= caProcessTemplateForIDs($vs_info, $vs_table_name, array($t_item->getPrimaryKey()),array('requireLinkTags' => true))."<br/>\n";
+					}
+				} else {
+					$vs_buf .= "<br/>".caProcessTemplateForIDs($vs_additional_info, $vs_table_name, array($t_item->getPrimaryKey()),array('requireLinkTags' => true))."<br/>\n";
+				}
+
+			}
 			
 			$vs_buf .= "<div id='toolIcons'>";	
 			
@@ -1247,6 +1263,20 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 					$vs_buf .= "<strong>"._t("Type of content")."</strong>: ".caGetTableDisplayName($vn_set_table_num)."<br/>\n";
 					
 					$vs_buf .= "</div>\n";
+
+					if($po_view->request->user->canDoAction('can_duplicate_' . $vs_set_table_name)) {
+						$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" ></div>';
+						$vs_buf .= caFormTag($po_view->request, 'DuplicateItems', 'caDupeSetItemsForm', 'manage/sets/SetEditor', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
+						$vs_buf .= _t("Duplicate items in this set and add to") . " ";
+						$vs_buf .= caHTMLSelect('setForDupes', array(
+							_t('current set') => 'current',
+							_t('new set') => 'new',
+						));
+						$vs_buf .= caHTMLHiddenInput('set_id', array('value' => $t_item->getPrimaryKey()));
+						$vs_buf .= caFormSubmitLink($po_view->request, _t('Go') . " &rsaquo;", "button", "caDupeSetItemsForm");
+						$vs_buf .= "</form>";
+						$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" ></div>';
+					}
 				} else {
 					if ($vn_set_table_num = $po_view->request->getParameter('table_num', pInteger)) {
 						$vs_buf .= "<div><strong>"._t("Type of content")."</strong>: ".caGetTableDisplayName($vn_set_table_num)."<br/>\n";
@@ -1499,7 +1529,6 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 				} else {
 					$vs_buf .= "<br/>".caProcessTemplateForIDs($vs_additional_info, $vs_table_name, array($t_item->getPrimaryKey()),array('requireLinkTags' => true))."<br/>\n";
 				}
-				
 			}
 			
 		// -------------------------------------------------------------------------------------
@@ -1998,7 +2027,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 				$vs_val = caProcessTemplateTagDirectives($vs_val, $va_tmp);
 				
 				if ($pb_quote) { $vs_val = '"'.addslashes($vs_val).'"'; }
-				$ps_template = preg_replace("!\^(?={$vs_tag}[^A-Za-z0-9]+|{$vs_tag}$){$vs_tag}!", $vs_val, $ps_template);
+				$ps_template = preg_replace("!\^(?={$vs_tag}[^A-Za-z0-9]+|{$vs_tag}$){$vs_tag}!", str_replace("$", "\\$", $vs_val), $ps_template);	// escape "$" to prevent interpretation as backreferences
 			}
 		}
 		return $ps_template;
@@ -2022,7 +2051,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		if (!is_array($pa_directives) || !sizeof($pa_directives)) { return $ps_value; }
 		foreach($pa_directives as $vs_directive) {
 			$va_tmp = explode(":", $vs_directive);
-			switch($va_tmp[0]) {
+			switch(strtoupper($va_tmp[0])) {
 				case 'LP':		// left padding
 					$va_params = explode("/", $va_tmp[1]);
 					$vn_len = (int)$va_params[1];
@@ -2050,6 +2079,12 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 					if ((strlen($ps_value) > 0) && (strlen($va_tmp[1]))) {
 						$ps_value = $ps_value.$va_tmp[1];
 					}
+					break;
+				case 'LOWER':
+					$ps_value = strtolower($ps_value);
+					break;
+				case 'UPPER':
+					$ps_value = strtoupper($ps_value);
 					break;
 			}
 		}
@@ -2382,6 +2417,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		$vs_template =								caGetOption('template', $pa_options, null);
 		
 		$va_exclude = 								caGetOption('exclude', $pa_options, array(), array('castTo' => 'array'));
+		$po_request = 								caGetOption('request', $pa_options, null);
+		if(!$po_request) { global $g_request; $po_request = $g_request; }
 		
 	
 		$va_display_format = $o_config->getList("{$vs_rel_table}_lookup_settings");
@@ -2393,6 +2430,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		
 		$o_dm = Datamodel::load();
 		$t_rel = $o_dm->getInstanceByTableName($vs_rel_table, true);
+		/** @var ca_sets $t_set */
+		$t_set = $o_dm->getInstance('ca_sets', true);
 		$vs_type_id_fld = method_exists($t_rel, 'getTypeFieldName') ? $t_rel->getTypeFieldName() : null;
 		
 		$vn_c = 0;
@@ -2417,6 +2456,11 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 				
 				while($qr_rel_items->nextHit()) {
 					$vn_id = $qr_rel_items->get("{$vs_rel_table}.{$vs_rel_pk}");
+					if(($qr_rel_items->tableName() == 'ca_sets') && ($po_request instanceof RequestHTTP)) {
+						if(!$t_set->haveAccessToSet($po_request->getUserID(), __CA_ACL_EDIT_ACCESS__, $vn_id)) {
+							continue;
+						}
+					}
 					if(in_array($vn_id, $va_exclude)) { continue; }
 					
 					$va_item = array(
@@ -2804,6 +2848,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		$vs_buf .= "</span>\n";	
 		
 		$vs_buf .= "<div id='{$ps_id_prefix}DictionaryEntry' class='caMetadataDictionaryDefinition'>{$vs_definition}</div>";
+		$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}'); }); </script>";	
 		
 		return $vs_buf;
 	}

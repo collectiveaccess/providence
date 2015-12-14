@@ -104,6 +104,8 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"mimetype" 			=> 'R',
 			"typename"			=> 'R',
 			"bandwidth"			=> 'R',
+			"framerate"			=> 'R',
+			"timecode_offset"	=> 'R',
 			"video_bitrate"		=> 'W',
 			"audio_bitrate"		=> 'W',
 			"audio_sample_freq"	=> 'W',
@@ -274,14 +276,25 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 
 				$va_media_metadata['filepath'] = $filepath;
 				$va_media_metadata['mime_type'] = $vs_mimetype;
+				
+				// Set properties for framerate and starting timecode
+				$o_tc = new TimecodeParser();
+				$o_tc->setTimebase($vn_framerate = trim(str_replace("fps", "", $va_media_metadata['VIDEO']['Frame rate'])));
+				$o_tc->parse($va_media_metadata['OTHER']['Time code of first frame']);
+				$this->properties['timecode_offset'] = (int)$o_tc->getSeconds();
+				$this->properties['framerate'] = $vn_framerate;
 
 				$this->opa_media_metadata = $va_media_metadata;
 			} elseif($vs_mimetype = caGetID3GuessFileFormat($filepath)) {
 				// then try getid3
 				$this->opa_media_metadata = caExtractMetadataWithGetID3($filepath);
+				$this->properties['timecode_offset'] = 0; // getID3 doesn't return offsets 
+				$this->properties['framerate'] = (float)$this->opa_media_metadata['video']['frame_rate'];
 			} else {
 				// lastly, try ogg/ogv
 				$this->opa_media_metadata = caExtractMediaMetadataWithOggParser($filepath);
+				$this->properties['timecode_offset'] = 0; // OggParser doesn't return offsets 
+				$this->properties['framerate'] = ((float)$this->opa_media_metadata['duration'] > 0) ? (float)$this->opa_media_metadata['framecount']/(float)$this->opa_media_metadata['duration'] : 0;
 			}
 		}
 
@@ -1091,47 +1104,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				ob_start();
 	
 			$vs_config = 'config={"playlist":[{"url":"'.$vs_poster_frame_url.'", "scaling": "fit"}, {"url": "'.$ps_url.'","autoPlay":false,"autoBuffering":true, "scaling": "fit"}]};';
-			$vb_is_rtmp = false;
-			
-			if(($vb_is_rtmp = (substr($ps_url, 0, 7) === 'rtmp://'))) { //  && (isset($pa_options['always_use_flash']) && $pa_options['always_use_flash'])) {
-				$pa_options['always_use_flash'] = true;
-				
-				switch($pa_properties["mimetype"]) {
-					case "video/x-flv":
-						$vs_type = 'flv';
-						break;
-					case 'audio/mpeg':
-						$vs_type = 'mp3';
-						break;
-					case 'video/mpeg':
-					case 'video/mp4':
-					default:
-						$vs_type = 'mp4';
-						break;
-				}
-				
-				if ($vb_is_rtmp) {
-					$va_volume_info =  (isset($pa_volume_info['accessUsingMirror']) && (bool)$pa_volume_info['accessUsingMirror']) ? $pa_volume_info['mirrors'][$pa_volume_info['accessUsingMirror']] : $pa_volume_info;
-				
-					$va_tmp = explode('/', $ps_url);
-					$va_filename = explode('.', array_pop($va_tmp));
-					$vs_ext = $va_filename[1];
-					
-					$vs_stub = ((isset($va_volume_info['accessProtocol']) ? $va_volume_info['accessProtocol'] : $va_volume_info['protocol'])).'://'.((isset($va_volume_info['accessHostname']) ? $va_volume_info['accessHostname'] : $va_volume_info['hostname'])).((isset($va_volume_info['accessUrlPath']) ? $va_volume_info['accessUrlPath'] : $va_volume_info['urlPath']));
-
-					$vs_file_path = str_replace($vs_stub, '', $ps_url);
-					$vs_file_path = preg_replace('!\.'.$vs_ext.'$!', '', $vs_file_path);
-					
-					
-					$vs_config = '{ "playlist":[ {"url": "'.$va_volume_info['rtmpContentPath'].$vs_file_path.'", "provider": "streaming_server"} ], "plugins" : { "streaming_server" : { "url": "flowplayer.rtmp-3.2.3.swf", "netConnectionUrl": "'.((isset($va_volume_info['accessProtocol']) ? $va_volume_info['accessProtocol'] : $va_volume_info['protocol'])).'://'.((isset($va_volume_info['accessHostname']) ? $va_volume_info['accessHostname'] : $va_volume_info['hostname'])).$va_volume_info['rtmpMediaPrefix'].'" } } }';
-				}
-?>
-				<div id="<?php print $vs_id; ?>" style="width: <?php print $vn_width; ?>px; height: <?php print $vn_height; ?>px;"> </div>
-				<script type="text/javascript">
-					flowplayer("<?php print $vs_id; ?>", "<?php print $viewer_base_url; ?>/viewers/apps/flowplayer-3.2.7.swf", <?php print $vs_config; ?>);
-				</script>
-<?php
-			} else {
 ?>
 			<!-- Begin VideoJS -->
 			 <video id="<?php print $vs_id; ?>" class="video-js vjs-default-skin"  
@@ -1153,10 +1125,6 @@ class WLPlugMediaVideo Extends BaseMediaPlugin Implements IWLPlugMedia {
 				_V_("<?php print $vs_id; ?>", {}, function() {});
 			</script>
 			<!-- End VideoJS -->
-<?php
-		}
-?>
-
 <?php
 				return ob_get_clean();
 				break;

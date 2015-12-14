@@ -78,6 +78,7 @@ var caUI = caUI || {};
 			
 			sortInitialValuesBy: null,
 			firstItemColor: null,
+			itemColor: null,
 			lastItemColor: null,
 			
 			isSortable: false,
@@ -337,7 +338,7 @@ var caUI = caUI || {};
 			// attach interstitial edit button
 			if (this.interstitialButtonClassName) {
 				if (!this.readonly && ('hasInterstitialUI' in initialValues) && (initialValues['hasInterstitialUI'] == true)) {
-					jQuery(this.container + " #" +this.itemID + templateValues.n + " ." + this.interstitialButtonClassName).on('click', null,  {}, function(e) { 
+					jQuery("#" +this.itemID + templateValues.n).find("." + this.interstitialButtonClassName).on('click', null,  {}, function(e) {
 						// Trigger interstitial edit panel
 						var u = options.interstitialUrl + "/relation_id/" + initialValues['relation_id'] + "/placement_id/" + that.placementID + "/n/" + templateValues.n + "/field_name_prefix/" + that.fieldNamePrefix;
 						if (that.interstitialPrimaryTable && that.interstitialPrimaryID) {	// table and id for record from which interstitial was launched
@@ -349,15 +350,15 @@ var caUI = caUI || {};
 						return false; 
 					});
 				} else {
-					jQuery(this.container + " #" +this.itemID + templateValues.n + " ." + this.interstitialButtonClassName).css("display", "none");
+					jQuery("#" +this.itemID + templateValues.n).find("." + this.interstitialButtonClassName).css("display", "none");
 				}
 			}
 		
 			// attach delete button
 			if (!this.readonly) {
-				jQuery(this.container + " #" +this.itemID + templateValues.n + " ." + this.deleteButtonClassName).on('click', null, {}, function(e) { that.deleteFromBundle(templateValues.n); e.preventDefault(); return false; });
+				jQuery("#" +this.itemID + templateValues.n).find("." + this.deleteButtonClassName).on('click', null, {}, function(e) { that.deleteFromBundle(templateValues.n); e.preventDefault(); return false; });
 			} else {
-				jQuery(this.container + " #" +this.itemID + templateValues.n + " ." + this.deleteButtonClassName).css("display", "none");
+				jQuery("#" +this.itemID + templateValues.n).find("." + this.deleteButtonClassName).css("display", "none");
 			}
 			
 			// set default locale for new
@@ -424,8 +425,8 @@ var caUI = caUI || {};
 			}
 			
 			// colorize
-			if ((options.firstItemColor) || (options.lastItemColor)) {
-				jQuery(this.container + " ." + options.listItemClassName).css('background-color', '');
+			if ((options.firstItemColor) || (options.lastItemColor) || (options.itemColor)) {
+				jQuery(this.container + " ." + options.listItemClassName).css('background-color', options.itemColor ? options.itemColor : '');
 				if (options.firstItemColor) {
 					jQuery(this.container + " ." + options.listItemClassName + ":first").css('background-color', '#' + options.firstItemColor);
 				}
@@ -437,7 +438,7 @@ var caUI = caUI || {};
 		};
 		
 		that.deleteFromBundle = function(id) {
-			jQuery(this.container + ' #' + this.itemID + id).remove();
+			jQuery('#' + this.itemID + id).remove();
 			jQuery(this.container).append("<input type='hidden' name='" + that.fieldNamePrefix + id + "_delete' value='1'/>");
 			
 			this.decrementCount();

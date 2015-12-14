@@ -84,19 +84,16 @@ class IdnoSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.idno:"D.99/2-40"' => 0,
 			'ca_objects.idno:"D.99/2-"' => 0,
 
-			'D.99' => 3,
-			'D.99/2-39' => 1,
-    		'D' => 3,
-    		'D.99/2' => 2,
-			'D. 99' => 0,
+			'ca_objects.idno:"D.99"' => 3,
+    		'ca_objects.idno:"D"' => 3,
+    		'ca_objects.idno:"D.99/2"' => 2,
 
-			'D.99/0000001' => 1,
-			'D.99/1' => 1,
+			'ca_objects.idno:"D.99/0000001"' => 1,
+			'ca_objects.idno:"D.99/1"' => 1,
 
-			'01 02 03 04' => 1,
-			'01 02' => 1,
-			'03 04' => 1,
-			'1 2 3 4' => 1,
+			'ca_objects.idno:"01 02 03 04"' => 1,
+			'ca_objects.idno:"01 02"' => 1,
+			'ca_objects.idno:"03 04"' => 1,
 		));
 	}
 	# -------------------------------------------------------

@@ -1233,6 +1233,7 @@
 		 *		childrenOfCurrentTypeOnly = Returns only types below the current type
 		 *		restrictToTypes = Array of type_ids to restrict type list to
 		 *		inUse = Return only types that are used by at least one record. [Default is false]
+		 *		checkAccess = Array of access values to filter returned values on. Available for any related table with an "access" field (ca_objects, ca_entities, etc.). If omitted no filtering is performed. [Default is null]
 		 * @return string HTML for list element
 		 */ 
 		public function getTypeListAsHTMLFormElement($ps_name, $pa_attributes=null, $pa_options=null) {
@@ -1244,7 +1245,15 @@
 			$pa_options['limitToItemsWithID'] = caGetTypeRestrictionsForUser($this->tableName(), $pa_options);
 			
 			if (caGetOption('inUse', $pa_options, false)) {
-				$qr_types_in_use = $this->getDb()->query("SELECT DISTINCT type_id FROM ".$this->tableName().($this->hasField('deleted') ? " WHERE deleted = 0" : ""));
+				$vs_access_sql = '';
+				$va_sql_params = array();
+				if (($va_check_access = caGetOption('checkAccess', $pa_options, null)) && is_array($va_check_access) && sizeof($va_check_access) && $this->hasField('access')) {
+					array_walk($va_check_access, function(&$pm_item, $ps_key) { $pm_item = (int)$pm_item; });
+					$vs_access_sql = " AND (access IN (?))";
+					$va_sql_params[] = $va_check_access;
+					
+					$qr_types_in_use = $this->getDb()->query("SELECT DISTINCT type_id FROM ".$this->tableName().($this->hasField('deleted') ? " WHERE deleted = 0 {$vs_access_sql}" : ""), $va_sql_params);
+				}
 				if(!is_array($pa_options['limitToItemsWithID'])) { $pa_options['limitToItemsWithID'] = array(); }
 				
 				if($qr_types_in_use->numRows() > 0) {
@@ -1309,8 +1318,13 @@
 			if(!$pa_options) { $pa_options = array(); }
 			$va_tmp = explode('.', $ps_field);
 			
+			if ($vs_rel_types = join(";", caGetOption('restrictToRelationshipTypes', $pa_options, array()))) { $vs_rel_types = "/{$vs_rel_types}"; }
 			if ($va_tmp[1] == $this->getTypeFieldName()) {
-				return $this->getTypeListAsHTMLFormElement($ps_field, array('class' => caGetOption('class', $pa_options, null)), array_merge($pa_options, array('nullOption' => '-')));
+				return $this->getTypeListAsHTMLFormElement($ps_field.$vs_rel_types, array('class' => caGetOption('class', $pa_options, null)), array_merge($pa_options, array('nullOption' => '-')));
+			}
+											
+			if (in_array($va_tmp[1], array('preferred_labels', 'nonpreferred_labels'))) {
+				return caHTMLTextInput($ps_field.$vs_rel_types.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)), $pa_options);
 			}
 			
 			if (!in_array($va_tmp[0], array('created', 'modified'))) {		// let change log searches filter down to BaseModel
@@ -1622,6 +1636,8 @@
 			}
 			$pa_options['format'] = $vs_format;
 			
+			if ($vs_rel_types = join(";", caGetOption('restrictToRelationshipTypes', $pa_options, array()))) { $vs_rel_types = "/{$vs_rel_types}"; }
+			
 			foreach($va_element_set as $va_element) {
 				$va_override_options = array();
 				if ($va_element['datatype'] == 0) {		// containers are not active form elements
@@ -1638,6 +1654,7 @@
 					'label' => $va_label['name'],
 					'description' => $va_label['description'],
 					't_subject' => $this,
+					'table' => $this->tableName(),
 					'request' => $po_request,
 					'class' => $pa_options['class'],
 					'nullOption' => '-',
@@ -1656,7 +1673,7 @@
 				$va_element_opts['values'] = '';
 				
 				// ... replace name of form element
-				$vs_fld_name = $vs_subelement_code; //str_replace('.', '_', $vs_subelement_code);
+				$vs_fld_name = $vs_subelement_code.$vs_rel_types; //str_replace('.', '_', $vs_subelement_code);
 				if (caGetOption('asArrayElement', $pa_options, false)) { $vs_fld_name .= "[]"; } 
 				
 				if ($vs_force_value = caGetOption('force', $pa_options, false)) {
@@ -2348,10 +2365,10 @@
 		 * @return mixed 
 		 */
 		public function getAuthorityElementList($pa_options=null) {
-			if (!($vn_datatype = $this->authorityElementDatatype())) { return null; }
+			if (!($vn_datatype = $this->authorityElementDatatype())) { return array(); }
 			if (!($vn_id = caGetOption('row_id', $pa_options, null))) { 
-				if (!($vn_id = $this->getPrimaryKey())) { 
-					return null; 
+				if (!($vn_id = $this->getPrimaryKey())) {
+					return array();
 				}
 			}
 			
@@ -2450,6 +2467,7 @@
 			foreach($va_references as $vn_table_num => $va_rows) {
 				$va_row_ids = array_keys($va_rows);
 				if ((sizeof($va_row_ids) > 0) && $t_instance = $o_dm->getInstanceByTableNum($vn_table_num, true)) {
+					if (!$t_instance->hasField('deleted')) { continue; }
 					$vs_pk = $t_instance->primaryKey();
 					$qr_del = $o_db->query("SELECT {$vs_pk} FROM ".$t_instance->tableName()." WHERE {$vs_pk} IN (?)".($t_instance->hasField('deleted') ? "AND deleted = 1" : ''), array($va_row_ids));
 					

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -727,9 +727,11 @@ class ca_attributes extends BaseModel {
 	static public function getAttributeCount($po_db, $pn_table_num, $pn_row_id, $pn_element_id) {
 		$qr_attrs = $po_db->query("
 			SELECT count(*) c
-			FROM ca_attributes caa
+			FROM ca_attributes caa, ca_attribute_values cav
 			WHERE
-				(caa.table_num = ?) AND (caa.row_id = ?) AND (caa.element_id = ?)
+				(cav.attribute_id = caa.attribute_id) AND
+				(caa.table_num = ?) AND (caa.row_id = ?) AND (caa.element_id = ?) AND
+				(cav.item_id IS NOT NULL OR cav.value_longtext1 IS NOT NULL OR cav.value_decimal1 IS NOT NULL OR cav.value_integer1 IS NOT NULL OR cav.value_blob IS NOT NULL)
 		", (int)$pn_table_num, (int)$pn_row_id, (int)$pn_element_id);
 		if ($po_db->numErrors()) {
 			//$this->errors = $po_db->errors;

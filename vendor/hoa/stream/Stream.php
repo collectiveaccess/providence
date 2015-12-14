@@ -347,7 +347,7 @@ abstract class Stream implements Core\Event\Listenable
      *
      * @return  resource
      */
-    protected function getStream()
+    public function getStream()
     {
         if (empty($this->_bucket)) {
             return null;
@@ -435,6 +435,20 @@ abstract class Stream implements Core\Event\Listenable
     public function setStreamTimeout($seconds, $microseconds = 0)
     {
         return stream_set_timeout($this->getStream(), $seconds, $microseconds);
+    }
+
+    /**
+     * Check whether the connection has timed out or not.
+     * This is basically a shortcut of `getStreamMetaData` + the `timed_out`
+     * index, but the resulting code is more readable.
+     *
+     * @return bool
+     */
+    public function hasTimedOut()
+    {
+        $metaData = $this->getStreamMetaData();
+
+        return true === $metaData['timed_out'];
     }
 
     /**
