@@ -347,7 +347,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		$t_ui = new ca_editor_uis();
 		
 		// If table supports null types take type_id=null to be  "none" rather than a signal to allow any type of editor
-		if (!$vn_type_id && (bool)$t_instance->getFieldInfo($t_instance->getTypeFieldName(), 'IS_NULL')) {
+		if (!$vn_type_id && method_exists($t_instance, "getTypeFieldName") && (bool)$t_instance->getFieldInfo($t_instance->getTypeFieldName(), 'IS_NULL')) {
 			$vn_type_id = '_NONE_';
 		}
 		

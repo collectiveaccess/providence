@@ -56,9 +56,6 @@
 			case 'list':
 				print $this->render('Results/ca_objects_results_list_html.php');
 				break;
-			case 'map':
-				print $this->render('Results/ca_objects_results_map_html.php');
-				break;
 			case 'no_results':
 				print $this->render('Results/no_results_html.php');
 				break;

@@ -3647,6 +3647,14 @@ div.directoryBrowserLevel {
     overflow: auto;
 }
 
+div.directoryBrowserLevel li img {
+	height:14px;
+}
+
+div.directoryBrowserLevel li img.disabled {
+	height:10px;
+}
+
 div.directoryBrowserLevelVertical {
     padding: 0px;
     margin: 5px;
