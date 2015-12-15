@@ -2198,7 +2198,7 @@ class SearchResult extends BaseObject {
 	private function getCacheKeyForGetWithTemplate($ps_template, $pa_options) {
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		foreach($pa_options as $vs_k => $vs_v) {
-			if (in_array($vs_k, array('useSingular', 'maximumLength', 'delimiter', 'purify', 'restrict_to_types', 'restrict_to_relationship_types',  'restrictToTypes', 'restrictToRelationshipTypes', 'returnAsArray'))) { continue; }
+			if (in_array($vs_k, array('useSingular', 'maximumLength', 'delimiter', 'purify', 'restrict_to_types', 'restrict_to_relationship_types',  'restrictToTypes', 'restrictToRelationshipTypes', 'returnAsArray',  'excludeTypes', 'excludeRelationshipTypes'))) { continue; }
 			unset($pa_options[$vs_k]);
 		}
 		return md5($this->ops_table_name.'/'.$ps_template.'/'.serialize($pa_options));
