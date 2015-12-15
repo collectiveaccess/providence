@@ -384,7 +384,7 @@ var caUI = caUI || {};
 			}
 
 			// Add bundle preview value text
-			if(this.bundlePreview.length > 0) {
+			if(this.bundlePreview && (this.bundlePreview.length > 0)) {
 				jQuery('#' + this.fieldNamePrefix + 'BundleContentPreview').text(this.bundlePreview);
 			}
 			
