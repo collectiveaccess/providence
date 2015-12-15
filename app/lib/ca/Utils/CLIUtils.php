@@ -1800,28 +1800,80 @@
 		 * Reset user password
 		 */
 		public static function reset_password($po_opts=null) {
-			if ($vs_user_name = (string)$po_opts->getOption('user')) {
-				if (!($vs_password = (string)$po_opts->getOption('password'))) {
-					CLIUtils::addError(_t("You must specify a password"));
-					return false;
-				}
-				$t_user = new ca_users();
-				if ((!$t_user->load(array("user_name" => $vs_user_name)))) {
-					CLIUtils::addError(_t("User name %1 does not exist", $vs_user_name));
-					return false;
-				}
-				$t_user->setMode(ACCESS_WRITE);
-				$t_user->set('password', $vs_password);
-				$t_user->update();
-				if ($t_user->numErrors()) {
-					CLIUtils::addError(_t("Password change for user %1 failed: %2", $vs_user_name, join("; ", $t_user->getErrors())));
-					return false;
-				}
-				CLIUtils::addMessage(_t('Changed password for user %1', $vs_user_name), array('color' => 'bold_green'));
-				return true;
+			if (!($vs_user_name = (string)$po_opts->getOption('user')) && !($vs_user_name = (string)$po_opts->getOption('username'))) {
+				$vs_user_name = readline("User: ");
 			}
+			if (!$vs_user_name) {
+				CLIUtils::addError(_t("You must specify a user"));
+				return false;
+			}
+			
+			$t_user = new ca_users();
+			if ((!$t_user->load(array("user_name" => $vs_user_name)))) {
+				CLIUtils::addError(_t("User name %1 does not exist", $vs_user_name));
+				return false;
+			}
+			
+			if (!($vs_password = (string)$po_opts->getOption('password'))) {
+				$vs_password = CLIUtils::_getPassword(_t('Password: '), true);
+				print "\n\n";
+			}
+			if(!$vs_password) {
+				CLIUtils::addError(_t("You must specify a password"));
+				return false;
+			}
+			
+			$t_user->setMode(ACCESS_WRITE);
+			$t_user->set('password', $vs_password);
+			$t_user->update();
+			if ($t_user->numErrors()) {
+				CLIUtils::addError(_t("Password change for user %1 failed: %2", $vs_user_name, join("; ", $t_user->getErrors())));
+				return false;
+			}
+			CLIUtils::addMessage(_t('Changed password for user %1', $vs_user_name), array('color' => 'bold_green'));
+			return true;
+			
 			CLIUtils::addError(_t("You must specify a user"));
 			return false;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Grab password from STDIN without showing input on STDOUT
+		 */
+		public static function _getPassword($ps_prompt, $pb_stars = false) {
+			if ($ps_prompt) fwrite(STDOUT, $ps_prompt);
+			// Get current style
+			$vs_old_style = shell_exec('stty -g');
+
+			if ($pb_stars === false) {
+				shell_exec('stty -echo');
+				$vs_password = rtrim(fgets(STDIN), "\n");
+			} else {
+				shell_exec('stty -icanon -echo min 1 time 0');
+
+				$vs_password = '';
+				while (true) {
+					$vs_char = fgetc(STDIN);
+
+					if ($vs_char === "\n") {
+						break;
+					} else if (ord($vs_char) === 127) {
+						if (strlen($vs_password) > 0) {
+							fwrite(STDOUT, "\x08 \x08");
+							$vs_password = substr($vs_password, 0, -1);
+						}
+					} else {
+						fwrite(STDOUT, "*");
+						$vs_password .= $vs_char;
+					}
+				}
+			}
+
+			// Reset old style
+			shell_exec('stty ' . $vs_old_style);
+
+			// Return the password
+			return $vs_password;
 		}
 		# -------------------------------------------------------
 		/**
@@ -1829,6 +1881,7 @@
 		 */
 		public static function reset_passwordParamList() {
 			return array(
+				"username" => _t("User name to reset password for."),
 				"user|u=s" => _t("User name to reset password for."),
 				"password|p=s" => _t("New password for user")
 			);
