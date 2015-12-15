@@ -1341,7 +1341,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		// Analyze mapping for figure out where type, idno, preferred label and other mandatory fields are coming from
 		$vn_type_id_mapping_item_id = $vn_idno_mapping_item_id = null;
-		$va_preferred_label_mapping_ids = array();
+		$va_preferred_label_mapping_ids = $va_nonpreferred_label_mapping_ids = array();
 		$va_mandatory_field_mapping_ids = array();
 		
 		$va_mandatory_fields = $t_subject->getMandatoryFields();
@@ -1355,6 +1355,14 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						$va_preferred_label_mapping_ids[$vn_item_id] = $va_dest_tmp[2];
 					} else {
 						$va_preferred_label_mapping_ids[$vn_item_id] = $vs_label_display_fld;
+					}
+					continue;
+				}
+				if (($va_dest_tmp[0] == $vs_subject_table) && ($va_dest_tmp[1] == 'nonpreferred_labels')) {
+					if (isset($va_dest_tmp[2])) {
+						$va_nonpreferred_label_mapping_ids[$vn_item_id] = $va_dest_tmp[2];
+					} else {
+						$va_nonpreferred_label_mapping_ids[$vn_item_id] = $vs_label_display_fld;
 					}
 					continue;
 				}
@@ -2123,7 +2131,21 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$t_subject->clearErrors();
 					if (sizeof($va_preferred_label_mapping_ids) && ($t_subject->getPreferredLabelCount() > 0)) {
 						$t_subject->removeAllLabels(__CA_LABEL_TYPE_PREFERRED__);
-						if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not update remove preferred labels from matched record"), array('dontOutputLevel' => true, 'dontPrint' => true))) {
+						if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not remove preferred labels from matched record"), array('dontOutputLevel' => true, 'dontPrint' => true))) {
+							ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
+							if ($vs_import_error_policy == 'stop') {
+								$o_log->logAlert(_t('Import stopped due to import error policy'));
+							
+								$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
+						
+								if ($o_trans) { $o_trans->rollback(); }
+								return false;
+							}
+						}
+					}
+					if (sizeof($va_nonpreferred_label_mapping_ids) && ($t_subject->getNonPreferredLabelCount() > 0)) {
+						$t_subject->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__);
+						if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not remove nonpreferred labels from matched record"), array('dontOutputLevel' => true, 'dontPrint' => true))) {
 							ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 							if ($vs_import_error_policy == 'stop') {
 								$o_log->logAlert(_t('Import stopped due to import error policy'));
@@ -2227,6 +2249,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													if ($o_trans) { $o_trans->rollback(); }
 													return false;
 												}
+												continue(5);
 											}
 
 											break;
