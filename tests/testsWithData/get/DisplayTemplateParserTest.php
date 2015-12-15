@@ -397,9 +397,9 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(1, $vm_ret);
 		
-		$vm_ret = DisplayTemplateParser::evaluate("<ifcount restrictToRelationshipTypes='publisher,creator' code='ca_entities' min='1' max='1'>^ca_entities.preferred_labels.displayname%restrictToRelationshipTypes=publisher</ifcount>", "ca_objects", array($this->opn_object_id, $this->opn_rel_object_id), array('returnAsArray' => true, 'delimiter' => ', '));
+		$vm_ret = DisplayTemplateParser::evaluate("<ifcount restrictToRelationshipTypes='publisher,creator' code='ca_entities' min='1' max='1'>^ca_entities.preferred_labels.displayname%restrictToRelationshipTypes=creator,publisher</ifcount>", "ca_objects", array($this->opn_object_id, $this->opn_rel_object_id), array('returnAsArray' => true, 'delimiter' => ', '));
 		$this->assertInternalType('array', $vm_ret);
-		$this->assertCount(2, $vm_ret);
+		$this->assertCount(0, $vm_ret);
 	}
 	# -------------------------------------------------------
 	public function testFormatsWithIfCountAndExcludeRelationshipTypes() {
