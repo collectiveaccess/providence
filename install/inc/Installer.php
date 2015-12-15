@@ -59,6 +59,11 @@ class Installer {
 	protected $opa_locales;
 	# --------------------------------------------------
 	/**
+	 * @var Db
+	 */
+	protected $opo_db;
+	# --------------------------------------------------
+	/**
 	 * Constructor
 	 *
 	 * @param string $ps_profile_dir path to a directory containing profiles and XML schema
@@ -76,6 +81,8 @@ class Installer {
 		$this->opb_debug = $pb_debug;
 
 		$this->opa_locales = array();
+
+		$this->opo_db = new Db();
 
 		if(!$pb_skip_load) {
 			if($this->loadProfile($ps_profile_dir, $ps_profile_name)){
@@ -335,16 +342,15 @@ class Installer {
 
 		$vo_config = Configuration::load();
 		$vo_dm = Datamodel::load();
-		$vo_db = new Db();
 		if (defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__') && __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ && ($this->opb_overwrite)) {
-			$vo_db->query('DROP DATABASE IF EXISTS `'.__CA_DB_DATABASE__.'`');
-			$vo_db->query('CREATE DATABASE `'.__CA_DB_DATABASE__.'`');
-			$vo_db->query('USE `'.__CA_DB_DATABASE__.'`');
+			$this->opo_db->query('DROP DATABASE IF EXISTS `'.__CA_DB_DATABASE__.'`');
+			$this->opo_db->query('CREATE DATABASE `'.__CA_DB_DATABASE__.'`');
+			$this->opo_db->query('USE `'.__CA_DB_DATABASE__.'`');
 		}
 
 		$va_ca_tables = $vo_dm->getTableNames();
 
-		$qr_tables = $vo_db->query("SHOW TABLES");
+		$qr_tables = $this->opo_db->query("SHOW TABLES");
 
 		while($qr_tables->nextRow()) {
 			$vs_table = $qr_tables->getFieldAtIndex(0);
@@ -384,9 +390,9 @@ class Installer {
 				}
 				$f_callback($vs_statement, $vs_table, $vn_i, $vn_num_tables);
 			}
-			$vo_db->query($vs_statement);
-			if ($vo_db->numErrors()) {
-				$this->addError("Error while loading the database schema: ".join("; ",$vo_db->getErrors()));
+			$this->opo_db->query($vs_statement);
+			if ($this->opo_db->numErrors()) {
+				$this->addError("Error while loading the database schema: ".join("; ",$this->opo_db->getErrors()));
 				return false;
 			}
 		}
@@ -609,8 +615,7 @@ class Installer {
 				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
 				// if we're updating, we expect the list of restrictions to include all restrictions!
 				if(sizeof($vo_element->typeRestrictions->children())) {
-					$o_db = new Db();
-					$o_db->query('DELETE FROM ca_metadata_type_restrictions WHERE element_id=?', $vn_element_id);
+					$this->opo_db->query('DELETE FROM ca_metadata_type_restrictions WHERE element_id=?', $vn_element_id);
 				}
 
 				// handle restrictions
@@ -975,8 +980,7 @@ class Installer {
 			}
 		}
 
-		$o_db = new Db();
-		$qr_lists = $o_db->query("SELECT * FROM ca_lists");
+		$qr_lists = $this->opo_db->query("SELECT * FROM ca_lists");
 
 		$va_list_names = array();
 		$va_list_item_ids = array();
@@ -985,7 +989,7 @@ class Installer {
 		}
 
 		// get list items
-		$qr_list_item_result = $o_db->query("SELECT * FROM ca_list_items cli INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id");
+		$qr_list_item_result = $this->opo_db->query("SELECT * FROM ca_list_items cli INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id");
 		while($qr_list_item_result->nextRow()) {
 			$vs_type_code = $va_list_names[$qr_list_item_result->get('list_id')];
 			$va_list_item_ids[$vs_type_code][$qr_list_item_result->get('item_value')] = $qr_list_item_result->get('item_id');
