@@ -1287,6 +1287,12 @@
 													$va_item_ids[] = (int)$vs_v;
 													$va_attr_sql[] = "(ca_attribute_values.{$vs_f} IN (?))";
 													$va_attr_values[] = $va_item_ids;
+												} elseif($vn_datatype == __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__) {
+													if($vs_f == '_dont_save') {
+														$va_attr_sql[] = "(ca_attribute_values.value_longtext1 = ?)";
+														$va_attr_values[] = $vn_row_id;
+														break;
+													}
 												} else {
 													$va_attr_sql[] = "(ca_attribute_values.{$vs_f} ".(is_null($vs_v) ? " IS " : " = ")." ?)";
 													$va_attr_values[] = $vs_v;

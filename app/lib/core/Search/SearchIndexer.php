@@ -524,7 +524,7 @@ class SearchIndexer extends SearchBase {
 						continue;
 					}
 
-					if (!($vn_fld_num = $t_subject->fieldNum($vs_field))) { continue; }
+					if (is_null($vn_fld_num = $t_subject->fieldNum($vs_field))) { continue; }
 
 					//
 					// Hierarchical indexing in primary table
