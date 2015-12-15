@@ -111,13 +111,17 @@ class ObjectTableController extends BaseSearchController {
 		$vs_rel_table = $this->getRequest()->getParameter('rel_table', pString);
 		$o_interstitial_res = caMakeSearchResult($vs_rel_table, $va_relation_ids);
 
-		$va_ids = array();
+		$va_ids = array(); $va_relation_id_map = array();
 		while($o_interstitial_res->nextHit()) {
 			$va_ids[$o_interstitial_res->get('relation_id')] = $o_interstitial_res->get('ca_objects.object_id');
+			$va_relation_id_map[$o_interstitial_res->get('ca_objects.object_id')] = array(
+				'relation_id' => $o_interstitial_res->get('relation_id'),
+				'relationship_typename' => $o_interstitial_res->getWithTemplate('^relationship_typename')
+			);
 		}
 
 		$o_interstitial_res->seek(0);
-		$this->getView()->setVar('interstitialResult', $o_interstitial_res);
+		$this->getView()->setVar('relationIdMap', $va_relation_id_map);
 
 		$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
 
@@ -128,7 +132,7 @@ class ObjectTableController extends BaseSearchController {
 			'no_cache' => true,
 		);
 
-		$o_res = caMakeSearchResult('ca_objects', $va_ids, $va_search_opts);
+		$o_res = caMakeSearchResult('ca_objects', array_values($va_ids), $va_search_opts);
 
 		$pa_options['result'] = $o_res;
 		$pa_options['view'] = 'Search/ca_objects_table_html.php'; // override render
