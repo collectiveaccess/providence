@@ -3052,6 +3052,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param string $ps_text Text to convert to sortable value
 	 * @param array $pa_options Options include:
 	 *		locale = Locale settings to use. If omitted current default locale is used. [Default is current locale]
+	 *		omitArticle = Omit leading definite and indefinited articles, rather than moving them to the end of the text [Default is true]
 	 *
 	 * @return string Converted text. If locale cannot be found $ps_text is returned unchanged.
 	 */
@@ -3059,6 +3060,8 @@ function caFileIsIncludable($ps_file) {
 		global $g_ui_locale;
 		$ps_locale = caGetOption('locale', $pa_options, $g_ui_locale);
 		if (!$ps_locale) { return $ps_text; }
+		
+		$pb_omit_article = caGetOption('omitArticle', $pa_options, true);
 		
 		$o_locale_settings = TimeExpressionParser::getSettingsForLanguage($ps_locale);
 		
@@ -3072,7 +3075,7 @@ function caFileIsIncludable($ps_file) {
 			if (is_array($va_articles)) {
 				foreach($va_articles as $vs_article) {
 					if (preg_match('!^('.$vs_article.')[ ]+!i', $vs_display_value, $va_matches)) {
-						$vs_display_value = trim(str_replace($va_matches[1], '', $vs_display_value).', '.$va_matches[1]);
+						$vs_display_value = trim(str_replace($va_matches[1], '', $vs_display_value).($pb_omit_article ? '' : ', '.$va_matches[1]));
 						break(2);
 					}
 				}

@@ -4594,7 +4594,7 @@ if (!$vb_batch) {
  	 *
  	 *		[Options controlling format of data in return value]
  	 *			useLocaleCodes = Return locale values as codes (Ex. en_US) rather than numeric database-specific locale_ids. [Default is false]
- 	 *			sort = Array list of bundles to sort returned values on. The sortable bundle specifiers are fields with or without tablename. Only those fields returned for the related tables (intrinsics, attributes and label fields) are sortable. [Default is null]
+ 	 *			sort = Array list of bundles to sort returned values on. The sortable bundle specifiers are fields with or without tablename. Only those fields returned for the related table (intrinsics, attributes and label fields) are sortable. [Default is null]
 	 *			sortDirection = Direction of sort. Use "asc" (ascending) or "desc" (descending). [Default is asc]
  	 *			groupFields = Groups together fields in an arrangement that is easier for import to another system. Used by the ItemInfo web service when in "import" mode. [Default is false]
  	 *
@@ -4902,7 +4902,7 @@ if (!$vb_batch) {
 				$t_rel_item_label = $this->getAppDatamodel()->getTableInstance($vs_label_table_name);
 				$vs_label_display_field = $t_rel_item_label->getDisplayField();
 
-				if($pb_return_labels_as_array || (is_array($va_sort_fields) && sizeof($va_sort_fields))) {
+				if($pb_return_labels_as_array || (is_array($pa_sort_fields) && sizeof($pa_sort_fields))) {
 					$va_selects[] = $vs_label_table_name.'.*';
 				} else {
 					$va_selects[] = $vs_label_table_name.'.'.$vs_label_display_field;
@@ -5435,42 +5435,24 @@ if (!$vb_batch) {
 		//
 		// Sort on fields if specified
 		//
-		if (is_array($va_sort_fields) && sizeof($va_rels)) {
+		if (is_array($pa_sort_fields) && sizeof($va_rels)) {
 			$va_ids = array();
 			$vs_rel_pk = $t_rel_item->primaryKey();
 			foreach($va_rels as $vn_i => $va_rel) {
-				$va_ids[] = $va_rel[$vs_rel_pk];
+				$va_ids[$vn_i] = $va_rel[$vs_rel_pk];
 			}
-
-			// Handle sorting on attribute values
-			$vs_rel_pk = $t_rel_item->primaryKey();
-			foreach($va_sort_fields as $vn_x => $vs_sort_field) {
-				if ($vs_sort_field == 'relation_id') { // sort by relationship primary key
-					if ($t_item_rel) {
-						$va_sort_fields[$vn_x] = $vs_sort_field = $vs_item_rel_table_name.'.'.$t_item_rel->primaryKey();
-					}
-					continue;
+			if (sizeof($va_ids) > 0) {
+				$qr_sort = caMakeSearchResult($vs_related_table_name, array_values($va_ids), array('sort' => $pa_sort_fields));
+				
+				$va_ids_to_rel_ids = array_flip($va_ids);
+				$va_rels_sorted = array();
+				
+				$vs_rel_pk_full = $t_rel_item->primaryKey(true);
+				while($qr_sort->nextHit()) {
+					$va_rels_sorted[$vn_id = $va_ids_to_rel_ids[$qr_sort->get($vs_rel_pk_full)]] = $va_rels[$vn_id];
 				}
-				$va_tmp = explode('.', $vs_sort_field);
-				if ($va_tmp[0] == $vs_related_table_name) {
-					$qr_rel = $t_rel_item->makeSearchResult($va_tmp[0], $va_ids);
-
-					$vs_table = array_shift($va_tmp);
-					$vs_key = join(".", $va_tmp);
-					while($qr_rel->nextHit()) {
-						$vn_pk_val = $qr_rel->get($vs_table.".".$vs_rel_pk);
-						foreach($va_rels as $vn_rel_id => $va_rel) {
-							if ($va_rel[$vs_rel_pk] == $vn_pk_val) {
-								$va_rels[$vn_rel_id][$vs_key] = $qr_rel->get($vs_sort_field, array("delimiter" => ";", 'sortable' => 1));
-								break;
-							}
-						}
-					}
-				}
+				$va_rels = $va_rels_sorted;
 			}
-
-			// Perform sort
-			$va_rels = caSortArrayByKeyInValue($va_rels, $va_sort_fields, $ps_sort_direction);
 		}
 		
 		switch($ps_return_as) {

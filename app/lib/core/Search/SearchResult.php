@@ -1720,44 +1720,75 @@ class SearchResult extends BaseObject {
 				foreach($va_values as $o_value) {
 					$vb_dont_return_value = false;
 					$vs_element_code = $o_value->getElementCode();
+					
+					
+					$vs_val_proc = $va_auth_spec = null; 
+					if (is_a($o_value, "AuthorityAttributeValue")) {
+						$va_auth_spec = $va_path_components['components'];
+						if ($pt_instance->hasElement($va_path_components['subfield_name'])) {
+							array_shift($va_auth_spec); array_shift($va_auth_spec); array_shift($va_auth_spec);
+						} elseif ($pt_instance->hasElement($va_path_components['field_name'])) {
+							array_shift($va_auth_spec); array_shift($va_auth_spec); 
+							$va_path_components['subfield_name'] = null;
+						}
+					}
+					
 					if ($va_path_components['subfield_name']) {
 						if ($va_path_components['subfield_name'] && ($va_path_components['subfield_name'] !== $vs_element_code) && !($o_value instanceof InformationServiceAttributeValue)) { 
 							$vb_dont_return_value = true;
 							if (!$pa_options['filter']) { continue; }
 						}
 					}
-
-					switch($o_value->getType()) {
-						case __CA_ATTRIBUTE_VALUE_LIST__:
-							$t_element = $pt_instance->_getElementInstance($o_value->getElementID());
-							$vn_list_id = $t_element->get('list_id');
+										
+					if (is_a($o_value, "AuthorityAttributeValue") && sizeof($va_auth_spec) > 0) {
+						array_unshift($va_auth_spec, $vs_auth_table_name = $o_value->tableName());
+						if ($qr_res = caMakeSearchResult($vs_auth_table_name, array($o_value->getID()))) {
+							if ($qr_res->nextHit()) {
+								unset($va_options['returnWithStructure']);
+								$va_options['returnAsArray'] = true;
+								$va_val_proc = $qr_res->get(join(".", $va_auth_spec), $va_options);
 						
-							$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
-							break;
-						case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
-							//ca_objects.informationservice.ulan_container
-							
-							// support subfield notations like ca_objects.wikipedia.abstract, but only if we're not already at subfield-level, e.g. ca_objects.container.wikipedia
-							if($va_path_components['subfield_name'] && ($vs_element_code != $va_path_components['subfield_name']) && ($vs_element_code == $va_path_components['field_name'])) {
-								$vs_val_proc = $o_value->getExtraInfo($va_path_components['subfield_name']);
-								break;
+								foreach($va_val_proc as $vn_i => $vs_v) {
+									$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()."_{$vn_i}"][$vs_element_code] = $vs_v;
+								}
 							}
+						}
+						continue;
+					}
+					
+					if (is_null($vs_val_proc)) {
+						switch($o_value->getType()) {
+							case __CA_ATTRIBUTE_VALUE_LIST__:
+								$t_element = $pt_instance->_getElementInstance($o_value->getElementID());
+								$vn_list_id = $t_element->get('list_id');
+						
+								$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
+								break;
+							case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
+								//ca_objects.informationservice.ulan_container
+							
+								// support subfield notations like ca_objects.wikipedia.abstract, but only if we're not already at subfield-level, e.g. ca_objects.container.wikipedia
+								if($va_path_components['subfield_name'] && ($vs_element_code != $va_path_components['subfield_name']) && ($vs_element_code == $va_path_components['field_name'])) {
+									$vs_val_proc = $o_value->getExtraInfo($va_path_components['subfield_name']);
+									break;
+								}
 
-							// support ca_objects.container.wikipedia.abstract
-							if(($vs_element_code == $va_path_components['subfield_name']) && ($va_path_components['num_components'] == 4)) {
-								$vs_val_proc = $o_value->getExtraInfo($va_path_components['components'][3]);
-								break;
-							}
+								// support ca_objects.container.wikipedia.abstract
+								if(($vs_element_code == $va_path_components['subfield_name']) && ($va_path_components['num_components'] == 4)) {
+									$vs_val_proc = $o_value->getExtraInfo($va_path_components['components'][3]);
+									break;
+								}
 							
-							// support ca_objects.wikipedia or ca_objects.container.wikipedia (Eg. no "extra" value specified)
-							if (($vs_element_code == $va_path_components['field_name']) || $vs_element_code == $va_path_components['subfield_name']) {
+								// support ca_objects.wikipedia or ca_objects.container.wikipedia (Eg. no "extra" value specified)
+								if (($vs_element_code == $va_path_components['field_name']) || $vs_element_code == $va_path_components['subfield_name']) {
+									$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'])));
+									break;
+								}
+								continue;
+							default:
 								$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'])));
 								break;
-							}
-							continue;
-						default:
-							$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'])));
-							break;
+						}
 					}
 					
 					if (($vn_attr_type == __CA_ATTRIBUTE_VALUE_CONTAINER__) && !$va_path_components['subfield_name'] && !$pa_options['returnWithStructure']) {
