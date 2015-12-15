@@ -1717,12 +1717,13 @@ class SearchResult extends BaseObject {
 				}
 				
 				$vb_did_return_value = false;
+				$vs_val_proc = null;
 				foreach($va_values as $o_value) {
 					$vb_dont_return_value = false;
 					$vs_element_code = $o_value->getElementCode();
 					
 					
-					$vs_val_proc = $va_auth_spec = null; 
+					$va_auth_spec = null; 
 					if (is_a($o_value, "AuthorityAttributeValue")) {
 						$va_auth_spec = $va_path_components['components'];
 						if ($pt_instance->hasElement($va_path_components['subfield_name'])) {
@@ -1733,11 +1734,9 @@ class SearchResult extends BaseObject {
 						}
 					}
 					
-					if ($va_path_components['subfield_name']) {
-						if ($va_path_components['subfield_name'] && ($va_path_components['subfield_name'] !== $vs_element_code) && !($o_value instanceof InformationServiceAttributeValue)) { 
-							$vb_dont_return_value = true;
-							if (!$pa_options['filter']) { continue; }
-						}
+					if ($va_path_components['subfield_name'] && ($va_path_components['subfield_name'] !== $vs_element_code) && !($o_value instanceof InformationServiceAttributeValue)) { 
+						$vb_dont_return_value = true;
+						if (!$pa_options['filter']) { continue; }
 					}
 										
 					if (is_a($o_value, "AuthorityAttributeValue") && sizeof($va_auth_spec) > 0) {
@@ -1780,7 +1779,7 @@ class SearchResult extends BaseObject {
 								}
 							
 								// support ca_objects.wikipedia or ca_objects.container.wikipedia (Eg. no "extra" value specified)
-								if (($vs_element_code == $va_path_components['field_name']) || $vs_element_code == $va_path_components['subfield_name']) {
+								if (($vs_element_code == $va_path_components['field_name']) || ($vs_element_code == $va_path_components['subfield_name'])) {
 									$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'])));
 									break;
 								}
