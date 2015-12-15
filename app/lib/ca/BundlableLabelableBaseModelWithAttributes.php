@@ -2667,7 +2667,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
 		if($ps_related_table == 'ca_sets') {
 			$t_set = new ca_sets();
-			$va_items = caExtractValuesByUserLocale($t_set->getSetsForItem($this->tableNum(), $this->getPrimaryKey()));
+			$va_items = caExtractValuesByUserLocale($t_set->getSetsForItem($this->tableNum(), $this->getPrimaryKey(), $va_get_related_opts));
 
 			// sort
 			if($ps_sort = caGetOption('sort', $va_get_related_opts, null)) {

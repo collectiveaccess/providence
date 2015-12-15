@@ -684,6 +684,26 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				}
 			}
 		}
+
+		if($va_restrict_to_types = caGetOption('restrict_to_types', $pa_options, false)) {
+			$va_restrict_to_type_ids = array();
+			foreach($va_restrict_to_types as $vm_type) {
+				if(is_numeric($vm_type)){
+					$va_restrict_to_type_ids[] = (int)$vm_type;
+				} else {
+					# --- look up code of set type
+					$vn_type_id = caGetListItemID('set_types', $pm_type);
+					if($vn_type_id){
+						$va_restrict_to_type_ids[] = (int) $vn_type_id;
+					}
+				}
+			}
+
+			if(sizeof($va_restrict_to_type_ids)) {
+				$va_sql_wheres[] = "(cs.type_id IN (?))";
+				$va_sql_params[] = $va_restrict_to_type_ids;
+			}
+		}
 		
 		if ($pn_row_id > 0) {
 			$va_sql_wheres[] = "((csi.row_id = ?) AND (csi.table_num = ?))";

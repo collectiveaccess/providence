@@ -719,6 +719,11 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							)
 						);
 					}
+
+					if($vs_bundle == 'ca_sets') {
+						unset($va_additional_settings['restrict_to_relationship_types']);
+						unset($va_additional_settings['restrict_to_search']);
+					}
 					
 					if ($vs_bundle == 'ca_list_items') {
 						$va_additional_settings['restrict_to_lists'] = array(
