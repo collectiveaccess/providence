@@ -893,4 +893,16 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 			</script>", $vm_ret[0]);	
 	}
 	# -------------------------------------------------------
+	public function testAttributesWithHTML() {
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities' delimiter='<br/>'>^ca_entities.preferred_labels.displayname</unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("Homer J. Simpson<br/>Bart Simpson", $vm_ret[0]);	
+		
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities' delimiter='  <br/>  '>^ca_entities.preferred_labels.displayname</unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("Homer J. Simpson  <br/>  Bart Simpson", $vm_ret[0]);	
+	}
+	# -------------------------------------------------------
 }
