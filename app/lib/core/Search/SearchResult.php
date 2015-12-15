@@ -1717,11 +1717,10 @@ class SearchResult extends BaseObject {
 				}
 				
 				$vb_did_return_value = false;
-				$vs_val_proc = null;
 				foreach($va_values as $o_value) {
+					$vs_val_proc = null;
 					$vb_dont_return_value = false;
 					$vs_element_code = $o_value->getElementCode();
-					
 					
 					$va_auth_spec = null; 
 					if (is_a($o_value, "AuthorityAttributeValue")) {
@@ -1738,7 +1737,7 @@ class SearchResult extends BaseObject {
 						$vb_dont_return_value = true;
 						if (!$pa_options['filter']) { continue; }
 					}
-										
+									
 					if (is_a($o_value, "AuthorityAttributeValue") && sizeof($va_auth_spec) > 0) {
 						array_unshift($va_auth_spec, $vs_auth_table_name = $o_value->tableName());
 						if ($qr_res = caMakeSearchResult($vs_auth_table_name, array($o_value->getID()))) {
@@ -1769,21 +1768,24 @@ class SearchResult extends BaseObject {
 								// support subfield notations like ca_objects.wikipedia.abstract, but only if we're not already at subfield-level, e.g. ca_objects.container.wikipedia
 								if($va_path_components['subfield_name'] && ($vs_element_code != $va_path_components['subfield_name']) && ($vs_element_code == $va_path_components['field_name'])) {
 									$vs_val_proc = $o_value->getExtraInfo($va_path_components['subfield_name']);
+									$vb_dont_return_value = false;
 									break;
 								}
 
 								// support ca_objects.container.wikipedia.abstract
 								if(($vs_element_code == $va_path_components['subfield_name']) && ($va_path_components['num_components'] == 4)) {
 									$vs_val_proc = $o_value->getExtraInfo($va_path_components['components'][3]);
+									$vb_dont_return_value = false;
 									break;
 								}
 							
 								// support ca_objects.wikipedia or ca_objects.container.wikipedia (Eg. no "extra" value specified)
 								if (($vs_element_code == $va_path_components['field_name']) || ($vs_element_code == $va_path_components['subfield_name'])) {
 									$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'])));
+									$vb_dont_return_value = false;
 									break;
 								}
-								continue;
+								continue(2);
 							default:
 								$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'])));
 								break;
