@@ -130,6 +130,7 @@ class DisplayTemplateParser {
 	 *		includeBlankValuesInArray = include blank template values in primary template and all <unit>s in returned array when returnAsArray is set. If you need the returned array of values to line up with the row_ids in $pa_row_ids this should be set. [Default is false]
 	 *		includeBlankValuesInTopLevelForPrefetch = include blank template values in *primary template* (not <unit>s) in returned array when returnAsArray is set. Used by template prefetcher to ensure returned values align with id indices. [Default is false]
 	 *		forceValues = Optional array of values indexed by placeholder without caret (eg. ca_objects.idno) and row_id. When present these values will be used in place of the placeholders, rather than whatever value normal processing would result in. [Default is null]
+	 *		aggregateUnique = Remove duplicate values. If set then array of evaluated templates may not correspond one-to-one with the original list of row_ids set in $pa_row_ids. [Default is false]
 	 *
 	 * @return mixed Output of processed templates
 	 *
