@@ -70,6 +70,7 @@ class DisplayTemplateParser {
 				
 						$va_get_options['restrictToTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToTypes']); 
 						$va_get_options['restrictToRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToRelationshipTypes']);
+						$va_get_options['excludeRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeRelationshipTypes']);
 
 						$va_search_result_opts = array();
 						if($o_node->includeNonPrimaryRepresentations) {
@@ -138,7 +139,7 @@ class DisplayTemplateParser {
 			foreach(array(
 				'request', 
 				'template',	// we pass through options to get() and don't want templates 
-				'restrict_to_relationship_types', 'restrictToRelationshipTypes',
+				'restrict_to_relationship_types', 'restrictToRelationshipTypes', 'excludeRelationshipTypes',
 				'useLocaleCodes') as $vs_k) {
 				unset($pa_options[$vs_k]);
 			}
@@ -353,10 +354,11 @@ class DisplayTemplateParser {
 					$vb_bool = DisplayTemplateParser::_getCodesBooleanModeAttribute($o_node);
 					$va_restrict_to_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToTypes']); 
 					$va_restrict_to_relationship_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToRelationshipTypes']); 
+					$va_exclude_to_relationship_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeRelationshipTypes']); 
 		
 					$vm_count = ($vb_bool == 'AND') ? 0 : [];
 					foreach($va_codes as $vs_code) {
-						$va_vals = $pr_res->get($vs_code, ['checkAccess' => $pa_check_access, 'returnAsArray' => true, 'restrictToTypes' => $va_restrict_to_types, 'restrictToRelationshipTypes' => $va_restrict_to_relationship_types]);
+						$va_vals = $pr_res->get($vs_code, ['checkAccess' => $pa_check_access, 'returnAsArray' => true, 'restrictToTypes' => $va_restrict_to_types, 'restrictToRelationshipTypes' => $va_restrict_to_relationship_types, 'excludeRelationshipTypes' => $va_exclude_to_relationship_types]);
 						if (is_array($va_vals)) { 
 							if ($vb_bool == 'AND') {
 								$vm_count += sizeof($va_vals); 
@@ -464,6 +466,7 @@ class DisplayTemplateParser {
 				
 					$va_get_options['restrictToTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToTypes']); 
 					$va_get_options['restrictToRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToRelationshipTypes']); 
+					$va_get_options['excludeRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeRelationshipTypes']); 
 					
 					
 					if ($o_node->sort) {
@@ -1038,13 +1041,21 @@ class DisplayTemplateParser {
 				} elseif($vs_link = $t_instance->getSelfRelationTableName()) {
 					// self relation
 					
-					$vs_relationship_type_sql = null;
+					$vs_relationship_type_sql = '';
 					if ($va_relationship_types = caGetOption('restrictToRelationshipTypes', $pa_options, null)) {
 						$t_rel_type = new ca_relationship_types();
 						$va_relationship_type_ids = $t_rel_type->relationshipTypeListToIDs($vs_link, $va_relationship_types);
 						if (is_array($va_relationship_type_ids) && sizeof($va_relationship_type_ids)) {
 							$va_params[] = $va_relationship_type_ids;
 							$vs_relationship_type_sql = " AND ({$vs_link}.type_id IN (?))";
+						}		
+					}
+					if ($va_relationship_types = caGetOption('excludeRelationshipTypes', $pa_options, null)) {
+						$t_rel_type = new ca_relationship_types();
+						$va_relationship_type_ids = $t_rel_type->relationshipTypeListToIDs($vs_link, $va_relationship_types);
+						if (is_array($va_relationship_type_ids) && sizeof($va_relationship_type_ids)) {
+							$va_params[] = $va_relationship_type_ids;
+							$vs_relationship_type_sql .= " AND ({$vs_link}.type_id NOT IN (?))";
 						}		
 					}
 					
