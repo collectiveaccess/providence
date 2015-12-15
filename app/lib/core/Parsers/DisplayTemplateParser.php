@@ -208,12 +208,26 @@ class DisplayTemplateParser {
 			if ($pa_options['relativeToContainer']) {
 				$va_vals = DisplayTemplateParser::_getValues($qr_res, $va_template['tags'], $pa_options);
 				foreach($va_vals as $vn_index => $va_val_list) {
-					$va_proc_templates[] = is_array($va_val_list) ? DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['index' => $vn_index])) : '';
+					$va_proc_templates[] = is_array($va_val_list) ? DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['index' => $vn_index, 'returnAsArray' => $pa_options['aggregateUnique']])) : '';
 				}
 			} else {
-				$va_proc_templates[] = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, DisplayTemplateParser::_getValues($qr_res, $va_template['tags'], $pa_options), $pa_options);
+				$va_proc_templates[] = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, DisplayTemplateParser::_getValues($qr_res, $va_template['tags'], $pa_options), array_merge($pa_options, ['returnAsArray' => $pa_options['aggregateUnique']]));
 			}
 		}
+		
+		if ($pa_options['aggregateUnique']) {
+			$va_acc = [];
+			foreach($va_proc_templates as $va_val_list) {
+				if(is_array($va_val_list)) { 
+					$va_acc = array_merge($va_acc, $va_val_list); 
+				} else {
+					$va_acc[] = $va_val_list;
+				}
+			}
+			$va_proc_templates = array_unique($va_acc);
+		}
+		
+		if (!$pb_include_blanks && !$pb_include_blanks_for_prefetch) { $va_proc_templates = array_filter($va_proc_templates, 'strlen'); }
 		
 		// Transform links
 		$va_proc_templates = caCreateLinksFromText(
@@ -455,6 +469,7 @@ class DisplayTemplateParser {
 					// <unit> attributes
 					$vs_unit_delimiter = $o_node->delimiter ? (string)$o_node->delimiter : $ps_delimiter;
 					$vb_unique = $o_node->unique ? (bool)$o_node->unique : false;
+					$vb_aggregate_unique = $o_node->aggregateUnique ? (bool)$o_node->aggregateUnique : false;
 					$vs_unit_skip_if_expression = (string)$o_node->skipIfExpression;
 					
 					$vn_start = (int)$o_node->start;
@@ -541,7 +556,10 @@ class DisplayTemplateParser {
 									'isUnit' => true,
 									'unitStart' => $vn_start,
 									'unitLength' => $vn_length,
-									'relativeToContainer' => $vs_relative_to_container
+									'relativeToContainer' => $vs_relative_to_container,
+									'includeBlankValuesInTopLevelForPrefetch' => false,
+									'unique' => $vb_unique,
+									'aggregateUnique' => $vb_aggregate_unique
 								]
 							)
 						);
@@ -550,7 +568,7 @@ class DisplayTemplateParser {
 						if (($vn_start > 0) || !is_null($vn_length)) { 
 							$vn_last_unit_omit_count = sizeof($va_tmpl_val) - ($vn_length - $vn_start);
 						}
-					
+						if (caGetOption('returnAsArray', $pa_options, false)) { return $va_tmpl_val; }
 						$vs_acc .= join($vs_unit_delimiter, $va_tmpl_val);
 						if ($pb_is_case) { break(2); }
 					} else { 
@@ -579,7 +597,8 @@ class DisplayTemplateParser {
 								if (method_exists($t_instance, 'isSelfRelationship') && $t_instance->isSelfRelationship() && is_array($pa_primary_ids) && isset($pa_primary_ids[$t_rel_instance->tableName()])) {
 									$va_relative_ids = array_values($t_instance->getRelatedIDsForSelfRelationship($pa_primary_ids[$t_rel_instance->tableName()], array($pr_res->getPrimaryKey())));
 								} else {
-									$va_relative_ids = array_values($pr_res->get($t_rel_instance->primaryKey(true), $va_get_options));
+									$va_relative_ids = $pr_res->get($t_rel_instance->primaryKey(true), $va_get_options);
+									$va_relative_ids = is_array($va_relative_ids) ? array_values($va_relative_ids) : array();
 								}
 							
 								break;
@@ -600,7 +619,10 @@ class DisplayTemplateParser {
 									'excludeTypes' => $va_get_options['excludeTypes'],
 									'isUnit' => true,
 									'unitStart' => $vn_start,
-									'unitLength' => $vn_length
+									'unitLength' => $vn_length,
+									'includeBlankValuesInTopLevelForPrefetch' => false,
+									'unique' => $vb_unique,
+									'aggregateUnique' => $vb_aggregate_unique
 								]
 							)
 						);	
@@ -611,6 +633,7 @@ class DisplayTemplateParser {
 							$vn_last_unit_omit_count = $vn_num_vals -  ($vn_length - $vn_start);
 						}
 						
+						if (caGetOption('returnAsArray', $pa_options, false)) { return $va_tmpl_val; }
 						$vs_acc .= join($vs_unit_delimiter, $va_tmpl_val);
 						if ($pb_is_case) { break(2); }
 					}
