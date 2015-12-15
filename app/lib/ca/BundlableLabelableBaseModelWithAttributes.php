@@ -4280,7 +4280,7 @@ if (!$vb_batch) {
 									$po_request->addActionErrors($this->errors(), 'ca_objects_location', 'general');
 								}
 							} else {
-								$o_error = new Error(2593, _t('No relationship type configured'), 'BundleableLabelableBaseModelWithAttributes->saveBundlesForScreen', 'general', false, false);
+								$o_error = new ApplicationError(2593, _t('No relationship type configured'), 'BundleableLabelableBaseModelWithAttributes->saveBundlesForScreen', 'general', false, false);
 								$po_request->addActionError($o_error, 'ca_objects_location', 'general');
 							}
 						}
@@ -4370,7 +4370,7 @@ if (!$vb_batch) {
 					foreach($va_errs_by_bundle as $vn_i => $va_rule) {
 						$vs_bundle = str_replace($this->tableName().".", "", $vs_bundle);
 				
-						$po_request->addActionErrors(array(new Error(1100, $va_rule['rule_settings']['violationMessage'], "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", 'MetadataDictionary', false,false)), $vs_bundle, 'general');
+						$po_request->addActionErrors(array(new ApplicationError(1100, $va_rule['rule_settings']['violationMessage'], "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", 'MetadataDictionary', false,false)), $vs_bundle, 'general');
 					}
 				}
 				return false; 
@@ -4488,11 +4488,11 @@ if (!$vb_batch) {
 		// Check min/max
 		$vn_total_rel_count = (sizeof($va_rel_items) + sizeof($va_rels_to_add) - sizeof($va_rels_to_delete));
 		if ($vn_min_relationships && ($vn_total_rel_count < $vn_min_relationships)) {
-			$po_request->addActionErrors(array(new Error(2590, ($vn_min_relationships == 1) ? _t('There must be at least %1 relationship for %2', $vn_min_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')) : _t('There must be at least %1 relationships for %2', $vn_min_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundle_name);
+			$po_request->addActionErrors(array(new ApplicationError(2590, ($vn_min_relationships == 1) ? _t('There must be at least %1 relationship for %2', $vn_min_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')) : _t('There must be at least %1 relationships for %2', $vn_min_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundle_name);
 			return false;
 		}
 		if ($vn_max_relationships && ($vn_total_rel_count > $vn_max_relationships)) {
-			$po_request->addActionErrors(array(new Error(2590, ($vn_max_relationships == 1) ? _t('There must be no more than %1 relationship for %2', $vn_max_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')) : _t('There must be no more than %1 relationships for %2', $vn_max_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundle_name);
+			$po_request->addActionErrors(array(new ApplicationError(2590, ($vn_max_relationships == 1) ? _t('There must be no more than %1 relationship for %2', $vn_max_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')) : _t('There must be no more than %1 relationships for %2', $vn_max_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundle_name);
 			return false;
 		}
 		
