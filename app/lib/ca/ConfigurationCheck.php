@@ -366,8 +366,8 @@ final class ConfigurationCheck {
 		if (!function_exists("iconv")) {
 			self::addError(_t("PHP iconv module is required for CollectiveAccess to run. Please install it."));
 		}
-		if (!function_exists("mysql_query")) {
-			self::addError(_t("PHP mysql module is required for CollectiveAccess to run. Please install it."));
+		if (!function_exists("mysql_query") && !function_exists("mysqli_query")) {
+			self::addError(_t("PHP mysql or mysqli module is required for CollectiveAccess to run. Please install it."));
 		}
 		if (!function_exists("gzcompress")){
 			self::addError(_t("PHP zlib module is required for CollectiveAccess to run. Please install it."));
