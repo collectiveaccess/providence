@@ -34,6 +34,11 @@ require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 
 class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase {
 
+	public function testGetDisplayLabelFromLookupText() {
+		$o_service = new WLPlugInformationServiceTGN();
+		$this->assertEquals('Coney Island', $o_service->getDisplayValueFromLookupText('[7015849] Coney Island; Brooklyn, New York (neighborhoods)'));
+	}
+
 	public function testBrooklynQuery() {
 		$o_service = new WLPlugInformationServiceTGN();
 
