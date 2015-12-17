@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/testsWithData/get/DisplayTemplateParserTest.php
+ * tests/testsWithData/get/EntityReferencesForSetsTemplateTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,7 +33,7 @@
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 
-class DisplayTemplateParserTest extends BaseTestWithData {
+class EntityReferencesForSetsTemplateTest extends BaseTestWithData {
 	# -------------------------------------------------------
 	/**
 	 * @var ca_sets
