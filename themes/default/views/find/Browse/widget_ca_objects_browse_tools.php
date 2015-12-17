@@ -32,11 +32,7 @@
 <h3 class='searchType' >
 	<?php print _t("Browse %1", $this->getVar('mode_type_plural'))."<br/>\n"; ?>
 </h3>
-<?php 
-	if ($vo_result) {
-		print $this->render('Search/search_sets_html.php'); 
-	}
-	
+<?php
 	if($vo_result) {
 		if ($vs_viz_list = Visualizer::getAvailableVisualizationsAsHTMLFormElement($vo_result->tableName(), 'viz', array('id' => 'caSearchVizOpts'), array('resultContext' => $vo_result_context, 'data' => $vo_result, 'restrictToTypes' => array($vo_result_context->getTypeRestriction($vb_type_restriction_has_changed))))) {
 ?>

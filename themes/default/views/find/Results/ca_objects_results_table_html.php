@@ -29,13 +29,13 @@
 	$t_display				= $this->getVar('t_display');
 	$va_display_list 		= $this->getVar('display_list');
 	$vo_result 				= $this->getVar('result');
-	$vo_interstitial_result = $this->getVar('interstitialResult');
 	$vn_items_per_page 		= $this->getVar('current_items_per_page');
 	$vs_current_sort 		= $this->getVar('current_sort');
 	$vs_default_action		= $this->getVar('default_action');
 	$vo_ar					= $this->getVar('access_restrictions');
 	$vs_interstitial_prefix	= $this->request->getParameter('interstitialPrefix', pString);
-	$va_relation_id_map		= $this->getVar('relationIdMap');
+	$va_relation_id_map 	= $this->getVar('relationIdMap');
+
 	
 ?>
 <div id="scrollingResults">
@@ -72,9 +72,9 @@
 			$i = 0;
 			$vn_item_count = 0;
 			
-			while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit() && $vo_interstitial_result->nextHit()) {
+			while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit()) {
 				$vn_object_id = $vo_result->get('object_id');
-				$vn_relation_id = $vo_interstitial_result->get('relation_id');
+				$vn_relation_id = $va_relation_id_map[$vn_object_id]['relation_id'];
 				
 				($i == 2) ? $i = 0 : "";
 ?>
@@ -88,7 +88,7 @@
 					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_objects', $vn_object_id, array(), array())."</td>";;
 ?>
 					<td style="padding-left: 5px; padding-right: 5px;">
-						<?php print $vo_interstitial_result->getWithTemplate('^relationship_typename'); ?>
+						<?php print $va_relation_id_map[$vn_object_id]['relationship_typename']; ?>
 					</td>
 <?php
 						

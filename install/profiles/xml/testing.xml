@@ -2281,6 +2281,14 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+          <restriction code="r2">
+              <table>ca_sets</table>
+              <settings>
+                  <setting name="minAttributesPerRow">0</setting>
+                  <setting name="maxAttributesPerRow">255</setting>
+                  <setting name="minimumAttributeBundlesToDisplay">1</setting>
+              </settings>
+          </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="entity_reference_2" datatype="Entities">
