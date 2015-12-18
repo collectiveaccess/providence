@@ -2149,34 +2149,37 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 									$vs_pk = $t_instance->primaryKey();
 									$va_opts = array('-' => '');
 									
-									$va_in_use_list = null;
+									$va_in_use_list = $vs_rel_pk = null;
 									if (caGetOption('inUse', $pa_options, false)) {
-										if (is_array($va_path = $this->_DATAMODEL->getPath($this->tableName(), 'ca_list_items'))) {
-										$va_path = array_keys($va_path);
+										if (is_array($va_path = $this->_DATAMODEL->getPath($this->tableName(), $va_tmp[0]))) {
+											$va_path = array_keys($va_path);
 											if (sizeof($va_path) == 3) {
-												$vs_table = $this->tableName();
-												$vs_pk = $this->primaryKey();
+												if ($t_rel = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true)) {
+													$vs_table = $this->tableName();
+													$vs_pk = $this->primaryKey();
 											
-												$va_sql_wheres = array();
-												$va_sql_params = array();
-												if ($this->hasField('deleted')) { $va_sql_wheres[] = "(t.deleted = 0)"; }
-												if ($this->hasField('access') && is_array($va_access) && sizeof($va_access)) { $va_sql_wheres[] = "(t.access IN (?))"; $va_sql_params[] = $va_access; }
+													$va_sql_wheres = array();
+													$va_sql_params = array();
+													if ($this->hasField('deleted')) { $va_sql_wheres[] = "(t.deleted = 0)"; }
+													if ($this->hasField('access') && is_array($va_access) && sizeof($va_access)) { $va_sql_wheres[] = "(t.access IN (?))"; $va_sql_params[] = $va_access; }
 											
-												$qr_in_use = $this->getDb()->query("
-													SELECT DISTINCT l.item_id
-													FROM {$va_path[1]} l
-													INNER JOIN {$vs_table} AS t ON t.{$vs_pk} = l.{$vs_pk}
-													".((sizeof($va_sql_wheres) > 0) ? "WHERE ".join(" AND ", $va_sql_wheres) : "")."		
-												", $va_sql_params);
-												$va_in_use_list = $qr_in_use->getAllFieldValues('item_id');
+													$vs_rel_pk = $t_rel->primaryKey();
+													$qr_in_use = $this->getDb()->query("
+														SELECT DISTINCT l.{$vs_rel_pk}
+														FROM {$va_path[1]} l
+														INNER JOIN {$vs_table} AS t ON t.{$vs_pk} = l.{$vs_pk}
+														".((sizeof($va_sql_wheres) > 0) ? "WHERE ".join(" AND ", $va_sql_wheres) : "")."		
+													", $va_sql_params);
+													$va_in_use_list = $qr_in_use->getAllFieldValues($vs_rel_pk);
+												}
 											}
 										}
 									}
 									
 									while($qr_res->nextHit()) {
 										if (($va_tmp[0] == 'ca_list_items') && (!$qr_res->get('parent_id'))) { continue; }
-										if (is_array($va_access) && !in_array($qr_res->get($va_tmp[0].'.access'), $va_access)) { continue; }
-										if (is_array($va_in_use_list) && !in_array($vn_item_id = $qr_res->get('item_id'), $va_in_use_list)) { continue; }
+										if (is_array($va_access) && sizeof($va_access) && !in_array($qr_res->get($va_tmp[0].'.access'), $va_access)) { continue; }
+										if (is_array($va_in_use_list) && !in_array($vn_item_id = $qr_res->get($vs_rel_pk), $va_in_use_list)) { continue; }
 										$va_opts[$qr_res->get($va_tmp[0].".preferred_labels.{$vs_label_display_field}")] = $qr_res->get($ps_field);
 									}
 									uksort($va_opts, "strnatcasecmp");
@@ -5442,7 +5445,7 @@ if (!$vb_batch) {
 				$va_ids[$vn_i] = $va_rel[$vs_rel_pk];
 			}
 			if (sizeof($va_ids) > 0) {
-				$qr_sort = caMakeSearchResult($vs_related_table_name, array_values($va_ids), array('sort' => $pa_sort_fields));
+				$qr_sort = caMakeSearchResult($vs_related_table_name, array_values($va_ids), array('sort' => $pa_sort_fields, 'sortDirection' => $ps_sort_direction));
 				
 				$va_ids_to_rel_ids = array_flip($va_ids);
 				$va_rels_sorted = array();
