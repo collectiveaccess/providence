@@ -687,16 +687,6 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$vs_poster_frame = _t("View PDF document");
 				}
 				
-				$vs_buf = "<script type='text/javascript'>jQuery(document).ready(function() {
-	new PDFObject({
-		url: '{$ps_url}',
-		id: '{$vs_id}',
-		width: '{$vn_viewer_width}px',
-		height: '{$vn_viewer_height}px',
-	}).embed('{$vs_id}_div');
-});</script>
-	<div id='{$vs_id}_div'><a href='$ps_url' target='_pdf'>".$vs_poster_frame."</a></div>
-";
 				return $vs_buf;
 			} else {
 				if (!is_array($pa_options)) { $pa_options = array(); }
@@ -723,4 +713,3 @@ function WLPlugOfficeShutdown() {
 }
 
 register_shutdown_function("WLPlugOfficeShutdown");
-?>
