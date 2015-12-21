@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -57,9 +57,6 @@
 		<link href="<?php print $this->request->getBaseUrlPath(); ?>/plain.css" media="screen" rel="stylesheet" type="text/css" />
 		<![endif]-->
 		<link rel="stylesheet" href="<?php print $this->request->getBaseUrlPath(); ?>/assets/jquery/jquery-tileviewer/jquery.tileviewer.css" type="text/css" media="screen" />
-		<!-- disabling systematic call to fullcalendar.css as it is now called through AssetLoadManager:register('calendar') inside app/controllers/client/library/ListController.php (L52)
-        <link rel="stylesheet" href="<?php print $this->request->getBaseUrlPath(); ?>/assets/jquery/fullcalendar/fullcalendar.css" type="text/css" media="screen" />
-        -->
 
 <?php
 	print AssetLoadManager::getLoadHTML($this->request);

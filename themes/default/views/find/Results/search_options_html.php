@@ -43,7 +43,8 @@ if($vo_result->numHits() > 0) {
 }
 ?>
 <div style="clear: both;"><!-- empty --></div>
- 
+
+<a href='#' id='showResultsEditor' onclick='caResultsEditorPanel.showPanel("<?php print caNavUrl($this->request, '*', '*', 'resultsEditor'); ?>"); return false;'>Edit</a> 
 <a href='#' id='showOptions' onclick='return caHandleResultsUIBoxes("display", "show");'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_SETTINGS__); ?></a>
 
 <?php
