@@ -3,7 +3,7 @@
 	padding: 1em 0;
 	border-right: 0;
 	min-height: unset;
-	position: unset !important;
+	position: relative;
 	float: left;
 
 	@include breakpoint(goldilocks) {
