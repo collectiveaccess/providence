@@ -112,4 +112,4 @@
 	</head>	
 	<body <?php if(!in_array($this->request->getController(), array('Dashboard', 'Auth'))) :?>class="withSidebar"<?php endif?>>
 		<div id="leftNavBackground"></div>
-		<div id="centered">
+		<div class="centered">
