@@ -32,7 +32,7 @@
         </item>
       </items>
     </list>
-    <list code="object_types" hierarchical="1" system="0" vocabulary="1">
+    <list code="object_types" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
           <name>Object Types</name>
@@ -330,7 +330,7 @@
         </item>
       </items>
     </list>
-    <list code="languages" hierarchical="0" system="0" vocabulary="1">
+    <list code="languages" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
           <name>Languages</name>
@@ -735,7 +735,7 @@
       </item>
       </items>
     </list>
-    <list code="date_types" hierarchical="0" system="0" vocabulary="1">
+    <list code="date_types" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
           <name>Date Types</name>
@@ -815,7 +815,28 @@
           </labels>
         </item>
       </items>
-    </list>   
+    </list>
+    <list code="test_vocab" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Test Vocabulary</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="test" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Foo</name_singular>
+              <name_plural>Foo</name_plural>
+            </label>
+            <label locale="en_US" preferred="0">
+              <name_singular>Bar</name_singular>
+              <name_plural>Bar</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
   </lists>
   <elementSets>
     <!--Basic Elements-->
@@ -826,7 +847,7 @@
           <description>An account of the resource. Description may include but is not limited to: an abstract, a table of contents, a graphical representation, or a free-text account of the resource.</description>
         </label>
       </labels>
-      <documentationUrl>http://dublincore.org/documents/dcmi-terms/#terms-description</documentationUrl>      
+      <documentationUrl>http://dublincore.org/documents/dcmi-terms/#terms-description</documentationUrl>
       <settings>
         <setting name="usewysiwygeditor">1</setting>
         <setting name="fieldWidth">640px</setting>
@@ -1001,7 +1022,7 @@
           <description>A point or period of time associated with an event in the life cycle of the resource.</description>
         </label>
       </labels>
-      <documentationUrl>http://dublincore.org/documents/dcmi-terms/#terms-date</documentationUrl>      
+      <documentationUrl>http://dublincore.org/documents/dcmi-terms/#terms-date</documentationUrl>
       <elements>
         <metadataElement code="dates_value" datatype="DateRange">
           <labels>
@@ -1209,7 +1230,7 @@
           </settings>
         </restriction>
       </typeRestrictions>
-    </metadataElement>    
+    </metadataElement>
     <!--Coverage Elements-->
     <metadataElement code="georeference" datatype="Geocode">
       <labels>
@@ -1251,7 +1272,7 @@
           </settings>
         </restriction>
       </typeRestrictions>
-    </metadataElement>    
+    </metadataElement>
     <metadataElement code="coverageNotes" datatype="Text">
       <labels>
         <label locale="en_US">
@@ -1388,10 +1409,8 @@
       </labels>
       <documentationUrl>http://dublincore.org/documents/dcmi-terms/#terms-format</documentationUrl>
       <settings>
-        <setting name="fieldWidth">80</setting>
-        <setting name="fieldHeight">1</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
+        <setting name="hideIfSelected_image_gif">standard_object_ui/format/ca_attribute_formatNotes</setting>
+        <setting name="hideIfSelected_image_gif">standard_object_ui/format/ca_attribute_dimensions</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
@@ -1493,7 +1512,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    
+
     <metadataElement code="formatNotes" datatype="Text">
       <labels>
         <label locale="en_US">
@@ -1615,7 +1634,7 @@
           <type>image</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">10</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -1624,7 +1643,7 @@
           <type>physical_object</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">10</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -1670,7 +1689,7 @@
           </settings>
         </restriction>
       </typeRestrictions>
-    </metadataElement>    
+    </metadataElement>
     <!--Subject Elements-->
     <metadataElement code="lcsh_terms" datatype="LCSH">
       <labels>
@@ -2243,6 +2262,77 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="entity_reference" datatype="Entities">
+      <labels>
+        <label locale="en_US">
+          <name>Entities (Reference)</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">90</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+          <restriction code="r2">
+              <table>ca_sets</table>
+              <settings>
+                  <setting name="minAttributesPerRow">0</setting>
+                  <setting name="maxAttributesPerRow">255</setting>
+                  <setting name="minimumAttributeBundlesToDisplay">1</setting>
+              </settings>
+          </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="entity_reference_2" datatype="Entities">
+      <labels>
+        <label locale="en_US">
+          <name>Entities (Reference 2)</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">90</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="collection_reference" datatype="Collections">
+      <labels>
+        <label locale="en_US">
+          <name>Collections (Reference)</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">90</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
   </elementSets>
   <userInterfaces>
     <userInterface code="standard_object_ui" type="ca_objects">
@@ -2275,6 +2365,15 @@
                 <setting name="label" locale="en_US">Alternate titles</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_entity_reference">
+              <bundle>ca_attribute_entity_reference</bundle>
+            </placement>
+            <placement code="ca_attribute_entity_reference_2">
+              <bundle>ca_attribute_entity_reference_2</bundle>
+            </placement>
+            <placement code="ca_attribute_collection_reference">
+              <bundle>ca_attribute_collection_reference</bundle>
             </placement>
             <placement code="ca_attribute_tgn">
               <bundle>ca_attribute_tgn</bundle>
@@ -2414,6 +2513,9 @@
             </label>
           </labels>
           <bundlePlacements>
+            <placement code="ca_sets_checklist">
+              <bundle>ca_sets_checklist</bundle>
+            </placement>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
             </placement>
@@ -2769,6 +2871,9 @@
             </label>
           </labels>
           <bundlePlacements>
+            <placement code="ca_objects_table">
+              <bundle>ca_objects_table</bundle>
+            </placement>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
             </placement>
@@ -3142,7 +3247,7 @@
             </placement>
           </bundlePlacements>
         </screen>
-        <screen idno="items" default="1">
+        <screen idno="items" default="0">
           <labels>
             <label locale="en_US">
               <name>Items</name>
@@ -4318,10 +4423,23 @@
   </searchForms>
   
   <logins>
-    <login user_name="administrator" password="dublincore" fname="CollectiveAccess"
-      lname="Administrator" email="info@collectiveaccess.org">
+    <login user_name="administrator" password="dublincore" fname="CollectiveAccess" 
+           lname="Administrator" email="info@collectiveaccess.org">
       <role code="admin"/>
       <group code="admin"/>
+    </login>
+    <login user_name="cataloguer" password="cataloguer" fname="CollectiveAccess" 
+           lname="Cataloguer" email="support@collectiveaccess.org">
+      <role code="cataloguer"/>
+      <group code="cataloguer"/>
+    </login>
+    <login user_name="researcher" password="researcher" fname="CollectiveAccess"
+           lname="Researcher" email="support@collectiveaccess.org">
+      <role code="researcher"/>
+    </login>
+    <login user_name="moderator" password="moderator" fname="CollectiveAccess"
+           lname="Moderator" email="support@collectiveaccess.org">
+      <role code="moderator"/>
     </login>
   </logins>
 </profile>

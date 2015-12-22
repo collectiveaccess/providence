@@ -26,15 +26,15 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_LIB_DIR__."/core/Cache/CompositeCache.php");
-require_once(__CA_LIB_DIR__."/core/Configuration.php");
-require_once(__CA_LIB_DIR__."/core/Datamodel.php");
-require_once(__CA_LIB_DIR__."/core/Db.php");
-require_once(__CA_LIB_DIR__."/core/Media/MediaVolumes.php");
-require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
-require_once(__CA_LIB_DIR__."/ca/BundlableLabelableBaseModelWithAttributes.php");
-require_once(__CA_MODELS_DIR__."/ca_users.php");
-require_once(__CA_MODELS_DIR__."/ca_user_groups.php");
+require_once(__CA_LIB_DIR__.'/core/Cache/CompositeCache.php');
+require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
+require_once(__CA_LIB_DIR__.'/core/Db.php');
+require_once(__CA_LIB_DIR__.'/core/Media/MediaVolumes.php');
+require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
+require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
+require_once(__CA_MODELS_DIR__.'/ca_users.php');
+require_once(__CA_MODELS_DIR__.'/ca_user_groups.php');
 
 class Installer {
 	# --------------------------------------------------
@@ -288,7 +288,18 @@ class Installer {
 				}
 			}
 		}
+
+		// nuke search index if we're not using SqlSearch (the SqlSearch index is nuked when we drop the database)
+		if ($o_config->get('search_engine_plugin') != 'SqlSearch') {
+			$o_si = new SearchIndexer();
+			$o_si->truncateIndex();
+		}
+
 		return true;
+	}
+	# --------------------------------------------------
+	public function performPostInstallTasks() {
+		// noop, for now
 	}
 	# --------------------------------------------------
 	/**
@@ -405,6 +416,14 @@ class Installer {
 
 			$this->opa_locales[$vs_language."_".$vs_country] = $t_locale->getPrimaryKey();
 		}
+
+		$va_locales = $t_locale->getAppConfig()->getList('locale_defaults');
+		$vn_locale_id = $t_locale->localeCodeToID($va_locales[0]);
+
+		if(!$vn_locale_id) {
+			throw new Exception("The locale default is set to a non-existing locale. Try adding '". $va_locales[0] . "' to your profile.");
+		}
+
 		return true;
 	}
 	# --------------------------------------------------
@@ -1704,4 +1723,3 @@ class Installer {
 	}
 	# --------------------------------------------------
 }
-?>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -89,7 +89,7 @@
 
 			if(AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__)) {
 				if ($this->request->getParameter('password', pString) != $this->request->getParameter('password_confirm', pString)) {
-					$this->request->addActionError(new Error(1050, _t("Password does not match confirmation. Please try again."), "administrate/UserController->Save()", '', false, false), 'field_password');
+					$this->request->addActionError(new ApplicationError(1050, _t("Password does not match confirmation. Please try again."), "administrate/UserController->Save()", '', false, false), 'field_password');
 				}
 			}
  			
@@ -219,9 +219,8 @@
  			} else {
  				$this->request->user->setVar('ca_users_default_userclass', $vn_userclass);
  			}
- 			if ((!$vn_userclass) || ($vn_userclass < 0) || ($vn_userclass >= 2)) { $vn_userclass = 0; }
+ 			if ((!$vn_userclass) || ($vn_userclass < 0) || ($vn_userclass > 255)) { $vn_userclass = 0; }
  			$t_user = $this->getUserObject();
- 			
  			$this->view->setVar('userclass', $vn_userclass);
  			$this->view->setVar('userclass_displayname', $t_user->getChoiceListValue('userclass', $vn_userclass));
  			

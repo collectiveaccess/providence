@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -50,7 +50,9 @@
 	  * @return array An array of integer values that, if present in a record, indicate that the record should be displayed to the current user
 	  */
 	function caGetUserAccessValues($po_request, $pa_options=null) {
-		if (defined("__CA_APP_TYPE__") && (__CA_APP_TYPE__ == 'PROVIDENCE')) { return null; }
+		if(!caGetOption('ignoreProvidence', $pa_options, false)) {
+			if (defined("__CA_APP_TYPE__") && (__CA_APP_TYPE__ == 'PROVIDENCE')) { return null; }
+		}
 		$vb_dont_enforce_access_settings = isset($pa_options['dont_enforce_access_settings']) ? (bool)$pa_options['dont_enforce_access_settings'] : $po_request->config->get('dont_enforce_access_settings');
 		$va_privileged_access_settings = isset($pa_options['privileged_access_settings']) && is_array($pa_options['privileged_access_settings']) ? (bool)$pa_options['privileged_access_settings'] : (array)$po_request->config->getList('privileged_access_settings');
 		$va_public_access_settings = isset($pa_options['public_access_settings']) && is_array($pa_options['public_access_settings']) ? $pa_options['public_access_settings'] : (array)$po_request->config->getList('public_access_settings');
@@ -302,6 +304,7 @@
 	 * @return array List of numeric type_ids
 	 */
 	function caMakeTypeIDList($pm_table_name_or_num, $pa_types, $pa_options=null) {
+		if (!is_array($pa_types) || !sizeof($pa_types)) { return array(); }
 		$o_dm = Datamodel::load();
 		if(isset($pa_options['dontIncludeSubtypesInTypeRestriction']) && (!isset($pa_options['dont_include_subtypes_in_type_restriction']) || !$pa_options['dont_include_subtypes_in_type_restriction'])) { $pa_options['dont_include_subtypes_in_type_restriction'] = $pa_options['dontIncludeSubtypesInTypeRestriction']; }
 	 	
@@ -531,15 +534,18 @@
 	 *		__CA_BUNDLE_ACCESS_READONLY__ (1)
 	 *		__CA_BUNDLE_ACCESS_EDIT__ (2)
 	 */
+$g_bundle_access_level_cache = array();
 	function caGetBundleAccessLevel($ps_table_name, $ps_bundle_name) {
+		global $g_request, $g_bundle_access_level_cache;
+		if (isset($g_bundle_access_level_cache[$ps_table_name][$ps_bundle_name])) { return $g_bundle_access_level_cache[$ps_table_name][$ps_bundle_name]; }
 		list($ps_table_name, $ps_bundle_name) = caTranslateBundlesForAccessChecking($ps_table_name, $ps_bundle_name);
-		global $g_request;
+
 		if ($g_request) {
-			return $g_request->user->getBundleAccessLevel($ps_table_name, $ps_bundle_name);
+			return $g_bundle_access_level_cache[$ps_table_name][$ps_bundle_name] = $g_request->user->getBundleAccessLevel($ps_table_name, $ps_bundle_name);
 		}
 		
 		$o_config = Configuration::load();
-		return (int)$o_config->get('default_bundle_access_level');
+		return $g_bundle_access_level_cache[$ps_table_name][$ps_bundle_name] = (int)$o_config->get('default_bundle_access_level');
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**
@@ -552,14 +558,16 @@
 	 *		__CA_BUNDLE_ACCESS_READONLY__ (1)
 	 *		__CA_BUNDLE_ACCESS_EDIT__ (2)
 	 */
+$g_type_access_level_cache = array();
 	function caGetTypeAccessLevel($ps_table_name, $pm_type_code_or_id) {
-		global $g_request;
+		global $g_request, $g_type_access_level_cache;
+		if (isset($g_type_access_level_cache[$ps_table_name][$pm_type_code_or_id])) { return $g_type_access_level_cache[$ps_table_name][$pm_type_code_or_id]; }
 		if ($g_request) {
-			return $g_request->user->getTypeAccessLevel($ps_table_name, $pm_type_code_or_id);
+			return $g_type_access_level_cache[$ps_table_name][$pm_type_code_or_id] = $g_request->user->getTypeAccessLevel($ps_table_name, $pm_type_code_or_id);
 		}
 		
 		$o_config = Configuration::load();
-		return (int)$o_config->get('default_type_access_level');
+		return $g_type_access_level_cache[$ps_table_name][$pm_type_code_or_id] = (int)$o_config->get('default_type_access_level');
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**
@@ -572,14 +580,16 @@
 	 *		__CA_BUNDLE_ACCESS_READONLY__ (1)
 	 *		__CA_BUNDLE_ACCESS_EDIT__ (2)
 	 */
+$g_source_access_level_cache = array();
 	function caGetSourceAccessLevel($ps_table_name, $pm_source_code_or_id) {
-		global $g_request;
+		global $g_request, $g_source_access_level_cache;
+		if (isset($g_source_access_level_cache[$ps_table_name][$pm_source_code_or_id])) { return $g_source_access_level_cache[$ps_table_name][$pm_source_code_or_id]; }
 		if ($g_request) {
-			return $g_request->user->getSourceAccessLevel($ps_table_name, $pm_source_code_or_id);
+			return $g_source_access_level_cache[$ps_table_name][$pm_source_code_or_id] = $g_request->user->getSourceAccessLevel($ps_table_name, $pm_source_code_or_id);
 		}
 		
 		$o_config = Configuration::load();
-		return (int)$o_config->get('default_source_access_level');
+		return $g_source_access_level_cache[$ps_table_name][$pm_source_code_or_id] = (int)$o_config->get('default_source_access_level');
 	}
 	# ---------------------------------------------------------------------------------------------
 	/**

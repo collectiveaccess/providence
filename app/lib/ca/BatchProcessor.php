@@ -563,6 +563,7 @@
 
  			$vs_import_mode 					= $pa_options['importMode'];
  			$vs_match_mode 						= $pa_options['matchMode'];
+ 			$vs_match_type						= $pa_options['matchType'];
  			$vn_type_id 						= $pa_options[$vs_import_target.'_type_id'];
  			$vn_rep_type_id 					= $pa_options['ca_object_representations_type_id'];
 
@@ -797,10 +798,25 @@
 										$vs_bool = 'OR';
 										$va_values = array();
 										foreach($va_fields_to_match_on as $vs_fld) {
+											switch($vs_match_type) {
+												case 'STARTS':
+													$vs_match_value = $va_matches[1]."%";
+													break;
+												case 'ENDS':
+													$vs_match_value = "%".$va_matches[1];
+													break;
+												case 'CONTAINS':
+													$vs_match_value = "%".$va_matches[1]."%";
+													break;
+												case 'EXACT':
+												default:
+													$vs_match_value = $va_matches[1];
+													break;
+											}
 											if (in_array($vs_fld, array('preferred_labels', 'nonpreferred_labels'))) {
-												$va_values[$vs_fld] = array($vs_fld => array('name' => $va_matches[1]));
+												$va_values[$vs_fld] = array($vs_fld => array('name' => $vs_match_value));
 											} else {
-												$va_values[$vs_fld] = $va_matches[1];
+												$va_values[$vs_fld] = $vs_match_value;
 											}
 										}
 
@@ -811,7 +827,7 @@
 
 										$o_log->logDebug("Trying to find records using boolean {$vs_bool} and values ".print_r($va_values,true));
 
-										if (class_exists($vs_import_target) && ($vn_id = $vs_import_target::find($va_values, array('returnAs' => 'firstId', 'boolean' => $vs_bool)))) {
+										if (class_exists($vs_import_target) && ($vn_id = $vs_import_target::find($va_values, array('returnAs' => 'firstId', 'allowWildcards' => true, 'boolean' => $vs_bool)))) {
 											if ($t_instance->load($vn_id)) {
 												$va_notices[$vs_relative_directory.'/'.$vs_match_name.'_match'] = array(
 													'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
@@ -1157,6 +1173,7 @@
 		 *		dryRun = 
 		 *		importAllDatasets = 
 		 *		log = log directory path
+		 *		originalFilename = filename reported by client for uploaded data files
 		 *		logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO. Constants are, in descending order of shrillness:
 		 *			KLogger::EMERG = Emergency messages (system is unusable)
 		 *			KLogger::ALERT = Alert messages (action must be taken immediately)
@@ -1200,7 +1217,7 @@
 			$vn_file_num = 0;
 			foreach($va_sources as $vs_source) {
 				$vn_file_num++;
-				if (!ca_data_importers::importDataFromSource($vs_source, $ps_importer, array('fileNumber' => $vn_file_num, 'numberOfFiles' => sizeof($va_sources), 'logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'useNcurses' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'dryRun' => $vb_dry_run, 'importAllDatasets' => $vb_import_all_datasets))) {
+				if (!ca_data_importers::importDataFromSource($vs_source, $ps_importer, array('originalFilename' => caGetOption('originalFilename', $pa_options, null), 'fileNumber' => $vn_file_num, 'numberOfFiles' => sizeof($va_sources), 'logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'useNcurses' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'dryRun' => $vb_dry_run, 'importAllDatasets' => $vb_import_all_datasets))) {
 					$va_errors['general'][] = array(
 						'idno' => "*",
 						'label' => "*",

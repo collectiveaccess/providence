@@ -1,0 +1,43 @@
+{
+    "name"       : "hoa/ustring",
+    "description": "The Hoa\\Ustring library.",
+    "type"       : "library",
+    "keywords"   : ["library", "string", "unicode", "search"],
+    "homepage"   : "http://hoa-project.net/",
+    "license"    : "BSD-3-Clause",
+    "authors"    : [
+        {
+            "name" : "Ivan Enderlin",
+            "email": "ivan.enderlin@hoa-project.net"
+        },
+        {
+            "name"    : "Hoa community",
+            "homepage": "http://hoa-project.net/"
+        }
+    ],
+    "support": {
+        "email" : "support@lists.hoa-project.net",
+        "irc"   : "irc://irc.freenode.org/hoaproject",
+        "source": "http://git.hoa-project.net/"
+    },
+    "require": {
+        "hoa/core": "~2.0"
+    },
+    "require-dev": {
+        "hoa/test": "~1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Hoa\\Ustring\\": "."
+        }
+    },
+    "suggest": {
+        "ext-iconv": "ext/iconv must be present (or a third implementation) to use Hoa\\Ustring::transcode().",
+        "ext-intl" : "To get a better Hoa\\Ustring::toAscii() and Hoa\\Ustring::compareTo()."
+    },
+    "extra"     : {
+        "branch-alias": {
+            "dev-master": "3.x-dev"
+        }
+    }
+}

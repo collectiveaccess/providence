@@ -44,7 +44,7 @@ include_once(__CA_LIB_DIR__."/core/Media.php");
 include_once(__CA_LIB_DIR__."/core/Media/MediaVolumes.php");
 include_once(__CA_LIB_DIR__."/core/Media/MediaProcessingSettings.php");
 include_once(__CA_LIB_DIR__."/core/Datamodel.php");
-include_once(__CA_LIB_DIR__."/core/Error.php");
+include_once(__CA_LIB_DIR__."/core/ApplicationError.php");
 include_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 	
 	class WLPlugTaskQueueHandlermediaproc Extends WLPlug Implements IWLPlugTaskQueueHandler {
@@ -57,7 +57,7 @@ include_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 		 *
 		 */
 		public function __construct() {
-			$this->error = new Error();
+			$this->error = new ApplicationError();
 			$this->error->setErrorOutput(0);
 		}
 		# --------------------------------------------------------------------------------

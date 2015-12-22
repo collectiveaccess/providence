@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,7 +28,7 @@
 
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
  	require_once(__CA_LIB_DIR__."/ca/BaseEditorController.php");
-
+	require_once(__CA_LIB_DIR__.'/core/Parsers/ZipStream.php');
 
  	class SetEditorController extends BaseEditorController {
  		# -------------------------------------------------------
@@ -133,7 +133,11 @@
  			$this->view->setVar('row_id', $pn_row_id);
  			$this->view->setVar('idno', $t_row->get($t_row->getProperty('ID_NUMBERING_ID_FIELD')));
  			$this->view->setVar('idno_sort', $t_row->get($t_row->getProperty('ID_NUMBERING_SORT_FIELD')));
- 			$this->view->setVar('set_item_label', $t_row->getLabelForDisplay(false));
+			$this->view->setVar('set_item_label', $t_row->getLabelForDisplay(false));
+
+			if($vs_template = $this->getRequest()->getParameter('displayTemplate', pString)) {
+				$this->view->setVar('displayTemplate', $t_row->getWithTemplate($vs_template));
+			}
 
  			$this->view->setVar('representation_tag', '');
  			if (method_exists($t_row, 'getRepresentations')) {
@@ -191,8 +195,7 @@
 			}
 
 			if (sizeof($va_paths) > 0){
-				$vs_tmp_name = caGetTempFileName('DownloadSetMedia', 'zip');
-				$o_phar = new PharData($vs_tmp_name, null, null, Phar::ZIP);
+				$o_zip = new ZipStream();
 
 				foreach($va_paths as $vn_pk => $va_path_info) {
 					$vn_c = 1;
@@ -204,7 +207,7 @@
 						if ($vs_ext = pathinfo($vs_path, PATHINFO_EXTENSION)) {
 							$vs_filename .= ".{$vs_ext}";
 						}
-						$o_phar->addFile($vs_path, $vs_filename);
+						$o_zip->addFile($vs_path, $vs_filename);
 
 						$vn_c++;
 					}
@@ -212,21 +215,41 @@
 
 				$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
 
-				// send download
-				$vs_set_code = $t_set->get('set_code');
-
-				$o_view->setVar('tmp_file', $vs_tmp_name);
-				$o_view->setVar('download_name', 'media_for_'.mb_substr(preg_replace('![^A-Za-z0-9]+!u', '_', $vs_set_code ? $vs_set_code : $t_set->getPrimaryKey()), 0, 20).'.zip');
-
-				$this->response->addContent($o_view->render('ca_sets_download_media.php'));
+				// send files
+				$o_view->setVar('zip_stream', $o_zip);
+				$o_view->setVar('archive_name', 'media_for_'.mb_substr(preg_replace('![^A-Za-z0-9]+!u', '_', ($vs_set_code = $t_set->get('set_code')) ? $vs_set_code : $t_set->getPrimaryKey()), 0, 20).'.zip');
+				$this->response->addContent($o_view->render('download_file_binary.php'));
 				return;
 			} else {
-				$this->notification->addNotification(_t('No media is available for download'), __NOTIFICATION_TYPE_ERROR__);
+				$this->notification->addNotification(_t('No files to download'), __NOTIFICATION_TYPE_ERROR__);
 				$this->opo_response->setRedirect(caEditorUrl($this->opo_request, 'ca_sets', $t_set->getPrimaryKey()));
 				return;
 			}
 
 			return $this->Edit();
+		}
+		# -------------------------------------------------------
+		public function DuplicateItems() {
+			$t_set = new ca_sets($this->getRequest()->getParameter('set_id', pInteger));
+			if(!$t_set->getPrimaryKey()) { return; }
+
+			if($this->getRequest()->getParameter('setForDupes', pString) == 'current') {
+				$pa_dupe_options = array('addToCurrentSet' => true);
+			} else {
+				$pa_dupe_options = array('addToCurrentSet' => false);
+			}
+
+			unset($_REQUEST['form_timestamp']);
+			$t_dupe_set = $t_set->duplicateItemsInSet($this->getRequest()->getUserID(), $pa_dupe_options);
+			if(!$t_dupe_set) {
+				$this->notification->addNotification(_t('Could not duplicate items in set: %1', join(';', $t_set->getErrors())), __NOTIFICATION_TYPE_ERROR__);
+				$this->Edit();
+				return;
+			}
+
+			$this->notification->addNotification(_t('Records have been successfully duplicated and added to set'), __NOTIFICATION_TYPE_INFO__);
+			$this->opo_response->setRedirect(caEditorUrl($this->getRequest(), 'ca_sets', $t_dupe_set->getPrimaryKey()));
+			return;
 		}
  		# -------------------------------------------------------
  		# Sidebar info handler

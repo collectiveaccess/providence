@@ -100,6 +100,11 @@
 			if ($t_element->get('parent_id') > 0) { return false; }
 			$vn_element_id = $t_element->getPrimaryKey();
 			
+			if (!is_array($pa_values)) { 
+				// Try to make something of a non-array value (maybe this is a terrible idea?)
+				$pa_values = array($t_element->get('element_code') => $pa_values);
+			}
+			
 			if (!$ps_error_source) { $ps_error_source = $this->tableName().'.'.$t_element->get('element_code'); }
 			
 			// check restriction min/max settings
@@ -368,6 +373,7 @@
 		private function _commitAttributes($po_trans=null) {
 			$va_attribute_change_list = array();
 			$va_inserted_attributes_that_errored = array();
+			
 			foreach($this->opa_attributes_to_add as $va_info) {
 				if ((!($vn_attribute_id = $this->_addAttribute($va_info['values'], $va_info['element'], $po_trans, $va_info))) && !is_null($vn_attribute_id)) {
 					$va_info['values']['_errors'] = $this->_getErrorsForBundleUI($va_info['error_source']);
@@ -485,9 +491,12 @@
 				
 				// set the field values array for this instance
 				//$this->setFieldValuesArray($va_field_values_with_updated_attributes);
-				
-				$this->doSearchIndexing(array_merge($this->getFieldValuesArray(true), $va_fields_changed_array), false, array('isNewRow' => true));	
-				
+
+				$va_index_options = array('isNewRow' => true);
+				if(caGetOption('queueIndexing', $pa_options, false)) {
+					$va_index_options['queueIndexing'] = true;
+				}
+				$this->doSearchIndexing(array_merge($this->getFieldValuesArray(true), $va_fields_changed_array), false, $va_index_options);
 				
 				if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 				if ($this->numErrors() > 0) {
@@ -531,8 +540,13 @@
 				
 				// set the field values array for this instance
 				//$this->setFieldValuesArray($va_field_values_with_updated_attributes);
+
+				$va_index_options = array();
+				if(caGetOption('queueIndexing', $pa_options, false)) {
+					$va_index_options['queueIndexing'] = true;
+				}
 				
-				$this->doSearchIndexing($va_fields_changed_array);
+				$this->doSearchIndexing($va_fields_changed_array, false, $va_index_options);
 				
 				if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 				if ($this->numErrors() > 0) {
@@ -641,9 +655,11 @@
 			
 			// get attributes
 			foreach($va_codes as $vs_code) {
-				if ($va_v = $this->get($this->tableName().'.'.$vs_code, array('returnAllLocales' => true, 'returnAsArray' => true, 'return' => 'url', 'version' => 'original'))) {
+				if ($va_v = $this->get($this->tableName().'.'.$vs_code, array('returnWithStructure' => true, 'returnAllLocales' => true, 'returnAsArray' => true, 'return' => 'url', 'version' => 'original'))) {
 					foreach($va_v as $vn_id => $va_v_by_locale) {
 						foreach($va_v_by_locale as $vn_locale_id => $va_v_list) {
+							if(!is_array($va_v_list)) { continue; }
+							
 							if (!($vs_locale = $t_locale->localeIDToCode($vn_locale_id))) {
 								$vs_locale = 'NONE';
 							}
@@ -818,7 +834,7 @@
 									if ($vs_template) {
 										$va_values_tmp = array();
 										foreach($va_values as $vn_i => $va_value_list) {
-											$va_values_tmp[] = caProcessTemplateForIDs($vs_template, $va_tmp[0], array($vn_row_id), array_merge($pa_options, array('returnAsArray' => false, 'placeholderPrefix' => $va_tmp[1])));
+											$va_values_tmp[] = caProcessTemplateForIDs($vs_template, $va_tmp[0], array($vn_row_id), array_merge($pa_options, array('returnAsArray' => false, 'placeholderPrefix' => array_slice($va_tmp, 0, 2))));
 										}
 				
 										$va_values = $va_values_tmp;
@@ -893,7 +909,7 @@
 											foreach($va_attribute_values as $vn_attribute_id => $va_data) {
 												if(isset($va_data[$va_tmp[2]])) {
 													if ($vs_template) { 
-														$va_subvalues[$vn_attribute_id] = caProcessTemplateForIDs($vs_template, $va_tmp[0], array($vn_row_id), array_merge($pa_options, array('requireLinkTags' => true, 'returnAsArray' => false, 'placeholderPrefix' => $va_tmp[1])));
+														$va_subvalues[$vn_attribute_id] = caProcessTemplateForIDs($vs_template, $va_tmp[0], array($vn_row_id), array_merge($pa_options, array('requireLinkTags' => true, 'returnAsArray' => false, 'placeholderPrefix' => array_slice($va_tmp, 0, 2))));
 													} else {
 														$va_subvalues[$vn_attribute_id] = $va_data[$va_tmp[2]];
 													}
@@ -1216,6 +1232,8 @@
 		 * @param array $pa_options An array of options. Supported options are anything supported by ca_lists::getListAsHTMLFormElement as well as:
 		 *		childrenOfCurrentTypeOnly = Returns only types below the current type
 		 *		restrictToTypes = Array of type_ids to restrict type list to
+		 *		inUse = Return only types that are used by at least one record. [Default is false]
+		 *		checkAccess = Array of access values to filter returned values on. Available for any related table with an "access" field (ca_objects, ca_entities, etc.). If omitted no filtering is performed. [Default is null]
 		 * @return string HTML for list element
 		 */ 
 		public function getTypeListAsHTMLFormElement($ps_name, $pa_attributes=null, $pa_options=null) {
@@ -1225,6 +1243,23 @@
 			}
 			
 			$pa_options['limitToItemsWithID'] = caGetTypeRestrictionsForUser($this->tableName(), $pa_options);
+			
+			if (caGetOption('inUse', $pa_options, false)) {
+				$vs_access_sql = '';
+				$va_sql_params = array();
+				if (($va_check_access = caGetOption('checkAccess', $pa_options, null)) && is_array($va_check_access) && sizeof($va_check_access) && $this->hasField('access')) {
+					array_walk($va_check_access, function(&$pm_item, $ps_key) { $pm_item = (int)$pm_item; });
+					$vs_access_sql = " AND (access IN (?))";
+					$va_sql_params[] = $va_check_access;
+					
+					$qr_types_in_use = $this->getDb()->query("SELECT DISTINCT type_id FROM ".$this->tableName().($this->hasField('deleted') ? " WHERE deleted = 0 {$vs_access_sql}" : ""), $va_sql_params);
+				}
+				if(!is_array($pa_options['limitToItemsWithID'])) { $pa_options['limitToItemsWithID'] = array(); }
+				
+				if($qr_types_in_use->numRows() > 0) {
+					$pa_options['limitToItemsWithID'] += $qr_types_in_use->getAllFieldValues('type_id');
+				}
+			}
 			
 			if (isset($pa_options['restrictToTypes']) && is_array($pa_options['restrictToTypes'])) {
 				$pa_options['restrictToTypes'] = caMakeTypeIDList($this->tableName(), $pa_options['restrictToTypes'], $pa_options);
@@ -1283,8 +1318,13 @@
 			if(!$pa_options) { $pa_options = array(); }
 			$va_tmp = explode('.', $ps_field);
 			
+			if ($vs_rel_types = join(";", caGetOption('restrictToRelationshipTypes', $pa_options, array()))) { $vs_rel_types = "/{$vs_rel_types}"; }
 			if ($va_tmp[1] == $this->getTypeFieldName()) {
-				return $this->getTypeListAsHTMLFormElement($ps_field, null, array_merge($pa_options, array('nullOption' => '-')));
+				return $this->getTypeListAsHTMLFormElement($ps_field.$vs_rel_types, array('class' => caGetOption('class', $pa_options, null)), array_merge($pa_options, array('nullOption' => '-')));
+			}
+											
+			if (in_array($va_tmp[1], array('preferred_labels', 'nonpreferred_labels'))) {
+				return caHTMLTextInput($ps_field.$vs_rel_types.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)), $pa_options);
 			}
 			
 			if (!in_array($va_tmp[0], array('created', 'modified'))) {		// let change log searches filter down to BaseModel
@@ -1596,6 +1636,8 @@
 			}
 			$pa_options['format'] = $vs_format;
 			
+			if ($vs_rel_types = join(";", caGetOption('restrictToRelationshipTypes', $pa_options, array()))) { $vs_rel_types = "/{$vs_rel_types}"; }
+			
 			foreach($va_element_set as $va_element) {
 				$va_override_options = array();
 				if ($va_element['datatype'] == 0) {		// containers are not active form elements
@@ -1612,6 +1654,7 @@
 					'label' => $va_label['name'],
 					'description' => $va_label['description'],
 					't_subject' => $this,
+					'table' => $this->tableName(),
 					'request' => $po_request,
 					'class' => $pa_options['class'],
 					'nullOption' => '-',
@@ -1630,7 +1673,7 @@
 				$va_element_opts['values'] = '';
 				
 				// ... replace name of form element
-				$vs_fld_name = $vs_subelement_code; //str_replace('.', '_', $vs_subelement_code);
+				$vs_fld_name = $vs_subelement_code.$vs_rel_types; //str_replace('.', '_', $vs_subelement_code);
 				if (caGetOption('asArrayElement', $pa_options, false)) { $vs_fld_name .= "[]"; } 
 				
 				if ($vs_force_value = caGetOption('force', $pa_options, false)) {
@@ -2068,7 +2111,7 @@
 			
 			if ($ps_template) {
 				unset($pa_options['template']);
-				return caProcessTemplateForIDs($ps_template, $this->tableNum(), array($vn_row_id), array_merge($pa_options, array('requireLinkTags' => true, 'placeholderPrefix' => $t_element->get('element_code'))));
+				return caProcessTemplateForIDs($ps_template, $this->tableNum(), array($vn_row_id), array_merge($pa_options, array('requireLinkTags' => true, 'placeholderPrefix' => $this->tableName().'.'.$t_element->get('element_code'))));
 			} else {
 				// no template
 				$va_attribute_list = array();
@@ -2141,7 +2184,7 @@
 
 			$vs_table = $this->tableName();
 			foreach($va_elements as $vn_element_id => $vs_element_code) {
-				$va_vals = $this->get("{$vs_table}.{$vs_element_code}", array("returnAsArray" => true, "returnAllLocales" => true, 'forDuplication' => true));
+				$va_vals = $this->get("{$vs_table}.{$vs_element_code}", array("returnAsArray" => true, "returnWithStructure" => true, "returnAllLocales" => true, 'forDuplication' => true));
 				if (!is_array($va_vals)) { continue; }
 				if (sizeof($va_restrictToAttributesByCodes)>0 || sizeof($va_restrictToAttributesByIds)>0) {
 					if (!(in_array($vs_element_code,$va_restrictToAttributesByCodes) || in_array($vn_element_id,$va_restrictToAttributesByIds))) {
@@ -2269,7 +2312,7 @@
 				$va_search_strings = array();
 				
 				$vn_id = $this->getPrimaryKey();
-				print_R($va_element_list);
+
 				foreach($va_element_list as $vs_table => $va_elements_by_table) {
 					foreach($va_elements_by_table as $vn_element_id => $va_element_info) {
 						$va_search_strings[$vs_table][] = "{$vs_table}.".$va_element_info['element_code'].":{$vn_id}";
@@ -2322,10 +2365,10 @@
 		 * @return mixed 
 		 */
 		public function getAuthorityElementList($pa_options=null) {
-			if (!($vn_datatype = $this->authorityElementDatatype())) { return null; }
+			if (!($vn_datatype = $this->authorityElementDatatype())) { return array(); }
 			if (!($vn_id = caGetOption('row_id', $pa_options, null))) { 
-				if (!($vn_id = $this->getPrimaryKey())) { 
-					return null; 
+				if (!($vn_id = $this->getPrimaryKey())) {
+					return array();
 				}
 			}
 			
@@ -2424,8 +2467,9 @@
 			foreach($va_references as $vn_table_num => $va_rows) {
 				$va_row_ids = array_keys($va_rows);
 				if ((sizeof($va_row_ids) > 0) && $t_instance = $o_dm->getInstanceByTableNum($vn_table_num, true)) {
+					if (!$t_instance->hasField('deleted')) { continue; }
 					$vs_pk = $t_instance->primaryKey();
-					$qr_del = $o_db->query("SELECT {$vs_pk} FROM ".$t_instance->tableName()." WHERE {$vs_pk} IN (?) AND deleted = 1", array($va_row_ids));
+					$qr_del = $o_db->query("SELECT {$vs_pk} FROM ".$t_instance->tableName()." WHERE {$vs_pk} IN (?)".($t_instance->hasField('deleted') ? "AND deleted = 1" : ''), array($va_row_ids));
 					
 					while($qr_del && $qr_del->nextRow()) {
 						unset($va_references[$vn_table_num][$qr_del->get($vs_pk)]);
@@ -2670,10 +2714,10 @@
 		/**
 		 *
 		 */
-		 public function isValidMetadataElement($pn_element_code_or_id) {
+		 public function isValidMetadataElement($pn_element_code_or_id, $pb_include_sub_element_codes=false) {
 		 	$vn_element_id = $this->_getElementID($pn_element_code_or_id);
-		 	$va_codes = $this->getApplicableElementCodes(null, false, false);
-		 	
+		 	$va_codes = $this->getApplicableElementCodes(null, $pb_include_sub_element_codes, false);
+		
 		 	return (bool)$va_codes[$vn_element_id];
 		 }
 		# ------------------------------------------------------------------

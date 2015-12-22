@@ -45,6 +45,7 @@ require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
 require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 require_once(__CA_LIB_DIR__.'/core/Print/PDFRenderer.php');
+require_once(__CA_LIB_DIR__.'/core/Parsers/ZipStream.php');
 
 define('__CA_SAVE_AND_RETURN_STACK_SIZE__', 30);
 
@@ -63,6 +64,7 @@ class BaseEditorController extends ActionController {
 		AssetLoadManager::register('panel');
 		AssetLoadManager::register('maps');
 		AssetLoadManager::register('openlayers');
+		AssetLoadManager::register('3dmodels');
 
 		$this->opo_datamodel = Datamodel::load();
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
@@ -181,13 +183,6 @@ class BaseEditorController extends ActionController {
 		if ($vn_subject_id) {
 			// set last edited
 			$this->request->session->setVar($this->ops_table_name.'_browse_last_id', $vn_subject_id);
-
-			// prepopulate fields
-			$vs_prepopulate_cfg = $t_subject->getAppConfig()->get('prepopulate_config');
-			$o_prepopulate_conf = Configuration::load($vs_prepopulate_cfg);
-			if($o_prepopulate_conf->get('prepopulate_fields_on_edit')) {
-				$t_subject->prepopulateFields(array('prepopulateConfig' => $vs_prepopulate_cfg));
-			}
 		}
 
 		# trigger "EditItem" hook
@@ -224,6 +219,7 @@ class BaseEditorController extends ActionController {
 	 */
 	public function Save($pa_options=null) {
 		list($vn_subject_id, $t_subject, $t_ui, $vn_parent_id, $vn_above_id, $vs_rel_table, $vn_rel_type_id, $vn_rel_id) = $this->_initView($pa_options);
+		/** @var $t_subject BundlableLabelableBaseModelWithAttributes */
 		if (!is_array($pa_options)) { $pa_options = array(); }
 
 		if (!$this->_checkAccess($t_subject)) { return false; }
@@ -235,6 +231,17 @@ class BaseEditorController extends ActionController {
 				$this->request->setParameter($vs_parent_id_fld, $vn_parent_id);
 				$this->view->setVar('parent_id', $vn_parent_id);
 			}
+		}
+
+		// relate existing records via Save() link
+		if($vn_subject_id && $vs_rel_table && $vn_rel_type_id && $vn_rel_id) {
+			if($this->opo_datamodel->tableExists($vs_rel_table)) {
+				Debug::msg("[Save()] Relating new record using parameters from request: $vs_rel_table / $vn_rel_type_id / $vn_rel_id");
+				$t_subject->addRelationship($vs_rel_table, $vn_rel_id, $vn_rel_type_id, _t('now'));
+			}
+			$this->notification->addNotification(_t("Added relationship"), __NOTIFICATION_TYPE_INFO__);
+			$this->render('screen_html.php');
+			return;
 		}
 
 		if (in_array($this->ops_table_name, array('ca_representation_annotations'))) { $vs_auth_table_name = 'ca_objects'; }
@@ -551,14 +558,24 @@ class BaseEditorController extends ActionController {
 				# trigger "DeleteItem" hook
 				$this->opo_app_plugin_manager->hookDeleteItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject));
 
-				# redirect to last find
-				caSetRedirect($this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $t_subject->tableName()));
+				# redirect
+				$this->redirectAfterDelete($t_subject->tableName());
 			}
 		}
 
 		$this->view->setVar('subject_name', $t_subject->getLabelForDisplay(false));
 
 		$this->render('delete_html.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 * Redirects to a sensible location after a record delete. Defaults to the last find action
+	 * for the current table, which depending on the table may not be available. Can be
+	 * overridden in subclasses/implementations.
+	 * @param string $ps_table table name
+	 */
+	protected function redirectAfterDelete($ps_table) {
+		caSetRedirect($this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $ps_table));
 	}
 	# -------------------------------------------------------
 	/**
@@ -574,6 +591,9 @@ class BaseEditorController extends ActionController {
 
 		if (!$this->_checkAccess($t_subject)) { return false; }
 
+		if(defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
+			$this->render('../template_test_html.php');
+		}
 
 		$t_display = new ca_bundle_displays();
 		$va_displays = $t_display->getBundleDisplays(array('table' => $t_subject->tableNum(), 'user_id' => $this->request->getUserID(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'restrictToTypes' => array($t_subject->getTypeID())));
@@ -1476,7 +1496,7 @@ class BaseEditorController extends ActionController {
 				$this->view->setVar('object_collection_collection_ancestors', array()); // collections to display as object parents when ca_objects_x_collections_hierarchy_enabled is enabled
 				if (($t_item->tableName() == 'ca_objects') && $t_item->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled')) {
 					// Is object part of a collection?
-					if(is_array($va_collections = $t_item->getRelatedItems('ca_collections'))) {
+					if(is_array($va_collections = $t_item->getRelatedItems('ca_collections', array('restrictToRelationshipTypes' => array($t_item->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type')))))) {
 						$this->view->setVar('object_collection_collection_ancestors', $va_collections);
 					}
 				}
@@ -1734,25 +1754,27 @@ class BaseEditorController extends ActionController {
 		$va_annotations_raw = $t_rep->getAnnotations();
 		$va_annotations = array();
 
-		foreach($va_annotations_raw as $vn_annotation_id => $va_annotation) {
-			$va_annotations[] = array(
-				'annotation_id' => $va_annotation['annotation_id'],
-				'x' => 				caGetOption('x', $va_annotation, 0, array('castTo' => 'float')),
-				'y' => 				caGetOption('y', $va_annotation, 0, array('castTo' => 'float')),
-				'w' => 				caGetOption('w', $va_annotation, 0, array('castTo' => 'float')),
-				'h' => 				caGetOption('h', $va_annotation, 0, array('castTo' => 'float')),
-				'tx' => 			caGetOption('tx', $va_annotation, 0, array('castTo' => 'float')),
-				'ty' => 			caGetOption('ty', $va_annotation, 0, array('castTo' => 'float')),
-				'tw' => 			caGetOption('tw', $va_annotation, 0, array('castTo' => 'float')),
-				'th' => 			caGetOption('th', $va_annotation, 0, array('castTo' => 'float')),
-				'points' => 		caGetOption('points', $va_annotation, array(), array('castTo' => 'array')),
-				'label' => 			caGetOption('label', $va_annotation, '', array('castTo' => 'string')),
-				'description' => 	caGetOption('description', $va_annotation, '', array('castTo' => 'string')),
-				'type' => 			caGetOption('type', $va_annotation, 'rect', array('castTo' => 'string')),
-				'locked' => 		caGetOption('locked', $va_annotation, '0', array('castTo' => 'string')),
-				'options' => 		caGetOption('options', $va_annotation, array(), array('castTo' => 'array')),
-				'key' =>			caGetOption('key', $va_annotation, null)
-			);
+		if(is_array($va_annotations_raw)) {
+			foreach($va_annotations_raw as $vn_annotation_id => $va_annotation) {
+				$va_annotations[] = array(
+					'annotation_id' => $va_annotation['annotation_id'],
+					'x' => 				caGetOption('x', $va_annotation, 0, array('castTo' => 'float')),
+					'y' => 				caGetOption('y', $va_annotation, 0, array('castTo' => 'float')),
+					'w' => 				caGetOption('w', $va_annotation, 0, array('castTo' => 'float')),
+					'h' => 				caGetOption('h', $va_annotation, 0, array('castTo' => 'float')),
+					'tx' => 			caGetOption('tx', $va_annotation, 0, array('castTo' => 'float')),
+					'ty' => 			caGetOption('ty', $va_annotation, 0, array('castTo' => 'float')),
+					'tw' => 			caGetOption('tw', $va_annotation, 0, array('castTo' => 'float')),
+					'th' => 			caGetOption('th', $va_annotation, 0, array('castTo' => 'float')),
+					'points' => 		caGetOption('points', $va_annotation, array(), array('castTo' => 'array')),
+					'label' => 			caGetOption('label', $va_annotation, '', array('castTo' => 'string')),
+					'description' => 	caGetOption('description', $va_annotation, '', array('castTo' => 'string')),
+					'type' => 			caGetOption('type', $va_annotation, 'rect', array('castTo' => 'string')),
+					'locked' => 		caGetOption('locked', $va_annotation, '0', array('castTo' => 'string')),
+					'options' => 		caGetOption('options', $va_annotation, array(), array('castTo' => 'array')),
+					'key' =>			caGetOption('key', $va_annotation, null)
+				);
+			}
 		}
 
 		$this->view->setVar('annotations', $va_annotations);
@@ -1867,192 +1889,6 @@ class BaseEditorController extends ActionController {
 	}
 	# -------------------------------------------------------
 	/**
-	 * Download all media attached to specified object (not necessarily open for editing)
-	 * Includes all representation media attached to the specified object + any media attached to oter
-	 * objects in the same object hierarchy as the specified object. Used by the book viewer interfacce to
-	 * initiate a download.
-	 */
-	public function DownloadMedia($pa_options=null) {
-		list($vn_subject_id, $t_subject) = $this->_initView();
-		$pn_representation_id 	= $this->request->getParameter('representation_id', pInteger);
-		$pn_value_id = $this->request->getParameter('value_id', pInteger);
-		if ($pn_value_id) {
-			return $this->DownloadAttributeMedia();
-		}
-		$ps_version = $this->request->getParameter('version', pString);
-		if (!$vn_subject_id) { return; }
-
-		$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
-
-		if (!$ps_version) { $ps_version = 'original'; }
-		$o_view->setVar('version', $ps_version);
-
-		$va_ancestor_ids = ($t_subject->isHierarchical()) ? $t_subject->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true)) : array($vn_subject_id);
-		if ($vn_parent_id = array_pop($va_ancestor_ids)) {
-			$t_subject->load($vn_parent_id);
-			array_unshift($va_ancestor_ids, $vn_parent_id);
-		}
-
-		$va_child_ids = ($t_subject->isHierarchical()) ? $t_subject->getHierarchyChildren(null, array('idsOnly' => true)) : array($vn_subject_id);
-
-		foreach($va_ancestor_ids as $vn_id) {
-			array_unshift($va_child_ids, $vn_id);
-		}
-
-		$vn_c = 1;
-		$va_file_names = array();
-		$va_file_paths = array();
-
-		foreach($va_child_ids as $vn_child_id) {
-			if (!$t_subject->load($vn_child_id)) { continue; }
-
-			if ($t_subject->tableName() == 'ca_object_representations') {
-				$va_reps = array(
-					$vn_child_id => array(
-						'representation_id' => $vn_child_id,
-						'info' => array($ps_version => $t_subject->getMediaInfo('media', $ps_version))
-					)
-				);
-			} else {
-				$va_reps = $t_subject->getRepresentations(array($ps_version));
-			}
-			$vs_idno = $t_subject->get('idno');
-
-			foreach($va_reps as $vn_representation_id => $va_rep) {
-				if ($pn_representation_id && ($pn_representation_id != $vn_representation_id)) { continue; }
-				$va_rep_info = $va_rep['info'][$ps_version];
-				$vs_idno_proc = preg_replace('![^A-Za-z0-9_\-]+!', '_', $vs_idno);
-				switch($this->request->user->getPreference('downloaded_file_naming')) {
-					case 'idno':
-						$vs_file_name = $vs_idno_proc.'_'.$vn_c.'.'.$va_rep_info['EXTENSION'];
-						break;
-					case 'idno_and_version':
-						$vs_file_name = $vs_idno_proc.'_'.$ps_version.'_'.$vn_c.'.'.$va_rep_info['EXTENSION'];
-						break;
-					case 'idno_and_rep_id_and_version':
-						$vs_file_name = $vs_idno_proc.'_representation_'.$vn_representation_id.'_'.$ps_version.'.'.$va_rep_info['EXTENSION'];
-						break;
-					case 'original_name':
-					default:
-						if ($va_rep['info']['original_filename']) {
-							$va_tmp = explode('.', $va_rep['info']['original_filename']);
-							if (sizeof($va_tmp) > 1) {
-								if (strlen($vs_ext = array_pop($va_tmp)) < 3) {
-									$va_tmp[] = $vs_ext;
-								}
-							}
-							$vs_file_name = join('_', $va_tmp);
-						} else {
-							$vs_file_name = $vs_idno_proc.'_representation_'.$vn_representation_id.'_'.$ps_version;
-						}
-
-						if (isset($va_file_names[$vs_file_name.'.'.$va_rep_info['EXTENSION']])) {
-							$vs_file_name.= "_{$vn_c}";
-						}
-						$vs_file_name .= '.'.$va_rep_info['EXTENSION'];
-						break;
-				}
-
-				$va_file_names[$vs_file_name] = true;
-				$o_view->setVar('version_download_name', $vs_file_name);
-
-				//
-				// Perform metadata embedding
-				$t_rep = new ca_object_representations($va_rep['representation_id']);
-				if (!($vs_path = caEmbedMetadataIntoRepresentation($t_subject, $t_rep, $ps_version))) {
-					$vs_path = $t_rep->getMediaPath('media', $ps_version);
-				}
-				$va_file_paths[$vs_path] = $vs_file_name;
-
-				$vn_c++;
-			}
-		}
-
-		if (sizeof($va_file_paths) > 1) {
-			if (!($vn_limit = ini_get('max_execution_time'))) { $vn_limit = 30; }
-			set_time_limit($vn_limit * 2);
-			$vs_tmp_name = caGetTempFileName('DownloadMedia', 'zip');
-			$o_phar = new PharData($vs_tmp_name, null, null, Phar::ZIP);
-			foreach($va_file_paths as $vs_path => $vs_name) {
-				$o_phar->addFile($vs_path, $vs_name);
-			}
-			$o_view->setVar('archive_path', $vs_tmp_name);
-			$o_view->setVar('archive_name', preg_replace('![^A-Za-z0-9\.\-]+!', '_', $t_subject->get('idno')).'.zip');
-
-			$this->response->addContent($o_view->render('download_media_binary.php'));
-
-			if ($vs_tmp_name) { @unlink($vs_tmp_name); }
-		} else {
-			foreach($va_file_paths as $vs_path => $vs_name) {
-				$o_view->setVar('archive_path', $vs_path);
-				$o_view->setVar('archive_name', $vs_name);
-			}
-
-			$this->response->addContent($o_view->render('download_media_binary.php'));
-		}
-	}
-	# -------------------------------------------------------
-	/**
-	 * Download single representation from currently open object
-	 */
-	public function DownloadRepresentation() {
-		list($vn_object_id, $t_object) = $this->_initView();
-		$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
-		$ps_version = $this->request->getParameter('version', pString);
-
-		$this->view->setVar('representation_id', $pn_representation_id);
-		$t_rep = new ca_object_representations($pn_representation_id);
-		$this->view->setVar('t_object_representation', $t_rep);
-
-		$va_versions = $t_rep->getMediaVersions('media');
-
-		if (!in_array($ps_version, $va_versions)) { $ps_version = $va_versions[0]; }
-		$this->view->setVar('version', $ps_version);
-
-		$va_rep_info = $t_rep->getMediaInfo('media', $ps_version);
-		$this->view->setVar('version_info', $va_rep_info);
-
-		$va_info = $t_rep->getMediaInfo('media');
-		$vs_idno_proc = preg_replace('![^A-Za-z0-9_\-]+!', '_', $t_object->get('idno'));
-		switch($this->request->user->getPreference('downloaded_file_naming')) {
-			case 'idno':
-				$this->view->setVar('version_download_name', $vs_idno_proc.'.'.$va_rep_info['EXTENSION']);
-				break;
-			case 'idno_and_version':
-				$this->view->setVar('version_download_name', $vs_idno_proc.'_'.$ps_version.'.'.$va_rep_info['EXTENSION']);
-				break;
-			case 'idno_and_rep_id_and_version':
-				$this->view->setVar('version_download_name', $vs_idno_proc.'_representation_'.$pn_representation_id.'_'.$ps_version.'.'.$va_rep_info['EXTENSION']);
-				break;
-			case 'original_name':
-			default:
-				if ($va_info['ORIGINAL_FILENAME']) {
-					$va_tmp = explode('.', $va_info['ORIGINAL_FILENAME']);
-					if (sizeof($va_tmp) > 1) {
-						if (strlen($vs_ext = array_pop($va_tmp)) < 3) {
-							$va_tmp[] = $vs_ext;
-						}
-					}
-					$this->view->setVar('version_download_name', join('_', $va_tmp).'.'.$va_rep_info['EXTENSION']);
-				} else {
-					$this->view->setVar('version_download_name', $vs_idno_proc.'_representation_'.$pn_representation_id.'_'.$ps_version.'.'.$va_rep_info['EXTENSION']);
-				}
-				break;
-		}
-
-		//
-		// Perform metadata embedding
-		if ($vs_path = caEmbedMetadataIntoRepresentation($t_object, $t_rep, $ps_version)) {
-			$this->view->setVar('version_path', $vs_path);
-		} else {
-			$this->view->setVar('version_path', $t_rep->getMediaPath('media', $ps_version));
-		}
-		$vn_rc = $this->render('object_representation_download_binary.php');
-		if ($vs_path) { unlink($vs_path); }
-		exit;
-	}
-	# -------------------------------------------------------
-	/**
 	 * Return list of page images for representation or media attribute value to display in document viewer interface
 	 */
 	public function GetPageListAsJSON() {
@@ -2157,7 +1993,125 @@ class BaseEditorController extends ActionController {
 		$this->MediaReplicationControls($t_rep);
 	}
 	# -------------------------------------------------------
-	# File attribute bundle download
+	# File download
+	# -------------------------------------------------------
+	/**
+	 * Download all media attached to specified object (not necessarily open for editing)
+	 * Includes all representation media attached to the specified object + any media attached to other
+	 * objects in the same object hierarchy as the specified object. 
+	 */
+	public function DownloadMedia($pa_options=null) {
+		list($vn_subject_id, $t_subject) = $this->_initView();
+		$pn_representation_id 	= $this->request->getParameter('representation_id', pInteger);
+		$pn_value_id = $this->request->getParameter('value_id', pInteger);
+		if ($pn_value_id) {
+			return $this->DownloadAttributeFile();
+		}
+		$ps_version = $this->request->getParameter('version', pString);
+		if (!$vn_subject_id) { return; }
+
+		$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
+
+		if (!$ps_version) { $ps_version = 'original'; }
+		$o_view->setVar('version', $ps_version);
+
+		$va_ancestor_ids = ($t_subject->isHierarchical()) ? $t_subject->getHierarchyAncestors(null, array('idsOnly' => true, 'includeSelf' => true)) : array($vn_subject_id);
+		if ($vn_parent_id = array_pop($va_ancestor_ids)) {
+			$t_subject->load($vn_parent_id);
+			array_unshift($va_ancestor_ids, $vn_parent_id);
+		}
+
+		$va_child_ids = ($t_subject->isHierarchical()) ? $t_subject->getHierarchyChildren(null, array('idsOnly' => true)) : array($vn_subject_id);
+
+		foreach($va_ancestor_ids as $vn_id) {
+			array_unshift($va_child_ids, $vn_id);
+		}
+
+		$vn_c = 1;
+		$va_file_names = array();
+		$va_file_paths = array();
+
+		foreach($va_child_ids as $vn_child_id) {
+			if (!$t_subject->load($vn_child_id)) { continue; }
+
+			if ($t_subject->tableName() == 'ca_object_representations') {
+				$va_reps = array(
+					$vn_child_id => array(
+						'representation_id' => $vn_child_id,
+						'info' => array($ps_version => $t_subject->getMediaInfo('media', $ps_version))
+					)
+				);
+			} else {
+				$va_reps = $t_subject->getRepresentations(array($ps_version));
+			}
+			$vs_idno = $t_subject->get('idno');
+
+			foreach($va_reps as $vn_representation_id => $va_rep) {
+				if ($pn_representation_id && ($pn_representation_id != $vn_representation_id)) { continue; }
+				$va_rep_info = $va_rep['info'][$ps_version];
+				$vs_idno_proc = preg_replace('![^A-Za-z0-9_\-]+!', '_', $vs_idno);
+				switch($this->request->user->getPreference('downloaded_file_naming')) {
+					case 'idno':
+						$vs_file_name = $vs_idno_proc.'_'.$vn_c.'.'.$va_rep_info['EXTENSION'];
+						break;
+					case 'idno_and_version':
+						$vs_file_name = $vs_idno_proc.'_'.$ps_version.'_'.$vn_c.'.'.$va_rep_info['EXTENSION'];
+						break;
+					case 'idno_and_rep_id_and_version':
+						$vs_file_name = $vs_idno_proc.'_representation_'.$vn_representation_id.'_'.$ps_version.'.'.$va_rep_info['EXTENSION'];
+						break;
+					case 'original_name':
+					default:
+						if ($va_rep['info']['original_filename']) {
+							$va_tmp = explode('.', $va_rep['info']['original_filename']);
+							if (sizeof($va_tmp) > 1) {
+								if (strlen($vs_ext = array_pop($va_tmp)) < 3) {
+									$va_tmp[] = $vs_ext;
+								}
+							}
+							$vs_file_name = join('_', $va_tmp);
+						} else {
+							$vs_file_name = $vs_idno_proc.'_representation_'.$vn_representation_id.'_'.$ps_version;
+						}
+
+						if (isset($va_file_names[$vs_file_name.'.'.$va_rep_info['EXTENSION']])) {
+							$vs_file_name.= "_{$vn_c}";
+						}
+						$vs_file_name .= '.'.$va_rep_info['EXTENSION'];
+						break;
+				}
+
+				$va_file_names[$vs_file_name] = true;
+				$o_view->setVar('version_download_name', $vs_file_name);
+
+				//
+				// Perform metadata embedding
+				$t_rep = new ca_object_representations($va_rep['representation_id']);
+				if(!($vs_path = caEmbedMediaMetadataIntoFile($t_rep->getMediaPath('media', $ps_version),
+					$t_subject->tableName(), $t_subject->getPrimaryKey(), $t_subject->getTypeCode(), // subject table info
+					$t_rep->getPrimaryKey(), $t_rep->getTypeCode() // rep info
+				))) {
+					$vs_path = $t_rep->getMediaPath('media', $ps_version);
+				}
+
+				$va_file_paths[$vs_path] = $vs_file_name;
+
+				$vn_c++;
+			}
+		}
+
+		if (!($vn_limit = ini_get('max_execution_time'))) { $vn_limit = 30; }
+		set_time_limit($vn_limit * 2);
+		$o_zip = new ZipStream();
+		foreach($va_file_paths as $vs_path => $vs_name) {
+			$o_zip->addFile($vs_path, $vs_name);
+		}
+		$o_view->setVar('zip_stream', $o_zip);
+		$o_view->setVar('archive_name', preg_replace('![^A-Za-z0-9\.\-]+!', '_', $t_subject->get('idno')).'.zip');
+
+		$this->response->addContent($o_view->render('download_file_binary.php'));
+		set_time_limit($vn_limit);
+	}
 	# -------------------------------------------------------
 	/**
 	 * Initiates user download of file stored in a file attribute, returning file in response to request.
@@ -2192,89 +2146,43 @@ class BaseEditorController extends ActionController {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
 			return;
 		}
-
-		$t_attr_val->useBlobAsFileField(true);
-
+		
 		$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
 
 		// get value
 		$t_element = new ca_metadata_elements($t_attr_val->get('element_id'));
-		// check that value is a file attribute
-		if ($t_element->get('datatype') != 15) { 	// 15=file
-			return;
+		switch($t_element->get('datatype')) {
+			case __CA_ATTRIBUTE_VALUE_FILE__:
+				$t_attr_val->useBlobAsFileField(true);
+			
+				if (!($vs_name = trim($t_attr_val->get('value_longtext2')))) { $vs_name = _t("downloaded_file"); }
+				$vs_path = $t_attr_val->getFilePath('value_blob');
+				break;
+			case __CA_ATTRIBUTE_VALUE_MEDIA__:
+				$t_attr_val->useBlobAsMediaField(true);
+				if (!in_array($ps_version, $t_attr_val->getMediaVersions('value_blob'))) { $ps_version = 'original'; }
+				
+				$vs_path = $t_attr_val->getMediaPath('value_blob', $ps_version);
+				$vs_path_ext = pathinfo($vs_path, PATHINFO_EXTENSION);
+				if ($vs_name = trim($t_attr_val->get('value_longtext2'))) {
+					$vs_file_name = pathinfo($vs_name, PATHINFO_FILENAME);
+					$vs_name = "{$vs_file_name}.{$vs_path_ext}";
+				} else {
+					$vs_name = _t("downloaded_file.%1", $vs_path_ext);
+				}
+				break;
+			default:
+				// invalid element type
+				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode(_t('Invalid file')));
+				break;		
 		}
+		
 
-		$o_view->setVar('file_path', $t_attr_val->getFilePath('value_blob'));
-		$o_view->setVar('file_name', ($vs_name = trim($t_attr_val->get('value_longtext2'))) ? $vs_name : _t("downloaded_file"));
-
+		$o_view->setVar('archive_path', $vs_path);
+		$o_view->setVar('archive_name', $vs_name);
+		
 		// send download
-		$this->response->addContent($o_view->render('ca_attributes_download_file.php'));
-	}
-	# -------------------------------------------------------
-	# Media attribute bundle download
-	# -------------------------------------------------------
-	/**
-	 * Initiates user download of media stored in a media attribute, returning file in response to request.
-	 * Adds download output to response directly. No view is used.
-	 *
-	 * @param array $pa_options Array of options passed through to _initView
-	 */
-	public function DownloadAttributeMedia($pa_options=null) {
-		if (!($pn_value_id = $this->request->getParameter('value_id', pInteger))) { return; }
-		$t_attr_val = new ca_attribute_values($pn_value_id);
-		if (!$t_attr_val->getPrimaryKey()) { return; }
-		$t_attr = new ca_attributes($t_attr_val->get('attribute_id'));
-
-		$vn_table_num = $this->opo_datamodel->getTableNum($this->ops_table_name);
-		if ($t_attr->get('table_num') !=  $vn_table_num) {
-			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
-			return;
-		}
-		$t_element = new ca_metadata_elements($t_attr->get('element_id'));
-		$this->request->setParameter($this->opo_datamodel->getTablePrimaryKeyName($vn_table_num), $t_attr->get('row_id'));
-
-		list($vn_subject_id, $t_subject) = $this->_initView($pa_options);
-		$ps_version = $this->request->getParameter('version', pString);
-
-
-		if (!$this->_checkAccess($t_subject)) { return false; }
-
-
-		//
-		// Does user have access to bundle?
-		//
-		if (($this->request->user->getBundleAccessLevel($this->ops_table_name, $t_element->get('element_code'))) < __CA_BUNDLE_ACCESS_READONLY__) {
-			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2580?r='.urlencode($this->request->getFullUrlPath()));
-			return;
-		}
-
-		$t_attr_val->useBlobAsMediaField(true);
-		if (!in_array($ps_version, $t_attr_val->getMediaVersions('value_blob'))) { $ps_version = 'original'; }
-
-		$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
-
-		// get value
-		$t_element = new ca_metadata_elements($t_attr_val->get('element_id'));
-
-		// check that value is a media attribute
-		if ($t_element->get('datatype') != 16) { 	// 16=media
-			return;
-		}
-
-		$vs_path = $t_attr_val->getMediaPath('value_blob', $ps_version);
-		$vs_path_ext = pathinfo($vs_path, PATHINFO_EXTENSION);
-		if ($vs_name = trim($t_attr_val->get('value_longtext2'))) {
-			$vs_file_name = pathinfo($vs_name, PATHINFO_FILENAME);
-			$vs_name = "{$vs_file_name}.{$vs_path_ext}";
-		} else {
-			$vs_name = _t("downloaded_file.%1", $vs_path_ext);
-		}
-
-		$o_view->setVar('file_path', $vs_path);
-		$o_view->setVar('file_name', $vs_name);
-
-		// send download
-		$this->response->addContent($o_view->render('ca_attributes_download_media.php'));
+		$this->response->addContent($o_view->render('download_file_binary.php'));
 	}
 	# -------------------------------------------------------
 	/**

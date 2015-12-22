@@ -37,7 +37,7 @@
 if($vo_result->numHits() > 0) {
 	print $this->render('Search/search_tools_html.php');
 
-	if(($this->getVar('mode') === 'search') && ($this->request->user->canDoAction('can_browse_'.$vs_table))){
+	if(($this->getVar('mode') === 'search') && ($this->request->user->canDoAction('can_browse_'.$vs_table)) && !($this->getVar('noRefine'))) {
 		print $this->render('Search/search_refine_html.php');
 	}
 }
@@ -48,7 +48,7 @@ if($vo_result->numHits() > 0) {
 
 <?php
 	if($vo_result->numHits() > 0) {
-		if($this->getVar('mode') === 'search' && ($this->request->user->canDoAction('can_browse_'.$vs_table))){
+		if($this->getVar('mode') === 'search' && ($this->request->user->canDoAction('can_browse_'.$vs_table)) && !($this->getVar('noRefine'))) {
 ?>
 			<a href='#' id='showRefine' onclick='return caHandleResultsUIBoxes("refine", "show");'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_FILTER__); ?></a>
 <?php

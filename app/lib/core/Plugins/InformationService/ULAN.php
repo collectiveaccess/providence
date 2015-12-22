@@ -84,12 +84,12 @@ class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements 
 		if(!is_array($pa_options)) { $pa_options = array(); }
 
 		$vn_start = (int) caGetOption('start', $pa_options, 0);
-		$vn_limit = (int) caGetOption('limit', $pa_options, 50);
 		$pb_phrase = (bool) caGetOption('phrase', $pa_options, false);
 		$pb_raw = (bool) caGetOption('raw', $pa_options, false);
 
 		$va_service_conf = $this->opo_linked_data_conf->get('tgn');
 		$vs_search_field = (isset($va_service_conf['search_text']) && $va_service_conf['search_text']) ? 'luc:text' : 'luc:term';
+		$pn_limit = (int) caGetOption('limit', $pa_options, ($va_service_conf['result_limit']) ? $va_service_conf['result_limit'] : 50);
 
 		/**
 		 * Contrary to what the Getty documentation says the terms seem to get combined by OR, not AND, so if you pass
@@ -112,7 +112,7 @@ class WLPlugInformationServiceULAN extends BaseGettyLODServicePlugin implements 
     gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
     {?ID foaf:focus/gvp:biographyPreferred/schema:description ?Bio}
     {?ID gvp:parentStringAbbrev ?Parents}
-} OFFSET '.$vn_start.' LIMIT '.$vn_limit);
+} OFFSET '.$vn_start.' LIMIT '.$pn_limit);
 
 		$va_results = parent::queryGetty($vs_query);
 		if(!is_array($va_results)) { return false; }

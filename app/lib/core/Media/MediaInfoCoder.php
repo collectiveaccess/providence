@@ -216,16 +216,6 @@ class MediaInfoCoder {
 			$vs_url_path = 	$va_volume_info["urlPath"];
 		}
 		
-		$o_config = Configuration::load();
-		if ($o_config->get('use_pdfjs_viewer')) {
-			foreach($va_media_info as $vs_version => $va_info) {
-				if (isset($va_info['MIMETYPE']) && ($va_info['MIMETYPE'] == 'application/pdf')) {
-					AssetLoadManager::register("pdfjs");
-				}
-			}
-		}
-		
-		
 		if ($va_media_info[$ps_version]["FILENAME"]) {
 			if (isset($va_media_info[$ps_version]["PAGES"]) && ($va_media_info[$ps_version]["PAGES"] > 1)) {
 				if ($vn_page < 1) { $vn_page = 1; }
@@ -276,14 +266,6 @@ class MediaInfoCoder {
 		if (isset($pa_options['width'])) { $va_properties['width'] = $pa_options['width']; }
 		if (isset($pa_options['height'])) { $va_properties['height'] = $pa_options['height']; }
 		
-		$o_config = Configuration::load();
-		if ($o_config->get('use_pdfjs_viewer')) {
-			foreach($va_media_info as $vs_version => $va_info) {
-				if (isset($va_info['MIMETYPE']) && ($va_info['MIMETYPE'] == 'application/pdf')) {
-					AssetLoadManager::register("pdfjs");
-				}
-			}
-		}
 		
 		return $o_media->htmlTag($va_media_info[$ps_version]["MIMETYPE"], $vs_url, $va_properties, $pa_options, $va_volume);
 	}
@@ -299,6 +281,9 @@ class MediaInfoCoder {
 		unset($va_media_info["_undo_"]);
 		unset($va_media_info["TRANSFORMATION_HISTORY"]);
 		unset($va_media_info["_CENTER"]);
+		unset($va_media_info["REPLICATION_KEYS"]);
+		unset($va_media_info["REPLICATION_STATUS"]);
+		unset($va_media_info["REPLICATION_LOG"]);
 		
 		return array_keys($va_media_info);		
 	}
@@ -347,4 +332,3 @@ class MediaInfoCoder {
 	}
 	# ---------------------------------------------------------------------------
 }
-?>

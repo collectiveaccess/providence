@@ -47,7 +47,7 @@
 			if (($vn_subject_id > 0) && (preg_match("!timebased!i", $t_subject->getAnnotationType()))) {
 				print "<div style='float: right;'>".caJSButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete annotation"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caConfirmDeleteAnnotation(true);"))."</div>\n";
 			}
-			print "<div style='float: left;'>".caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save annotation"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("id" => "caAnnoEditorScreenSaveButton", "onclick" => "caSaveAnnotation{$vs_form_name}{$vs_field_name_prefix}{$vs_n}(event);"))
+			print "<div style='float: left;'>".caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save annotation"), "caAnnoEditorScreenSaveButton", array( "onclick" => "caSaveAnnotation{$vs_form_name}{$vs_field_name_prefix}{$vs_n}(event);"))
 				.' '.caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "return caAnnoEditorDisableAnnotationForm();"))."</div><br style='clear: both;'/>\n";
 		}
 ?>
@@ -117,7 +117,7 @@
 	}
 ?>
 						// Get new form with current in-point
-						caAnnoEditorEdit(0, caAnnoEditorGetPlayerTime(), caAnnoEditorGetPlayerTime() + 10);
+						caAnnoEditorEdit(0, caAnnoEditorGetPlayerTime(true), caAnnoEditorGetPlayerTime(true) + 10);
 					} else {
 						// error
 						var content = '<div class="notification-error-box rounded"><ul class="notification-error-box">';

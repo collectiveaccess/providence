@@ -53,6 +53,8 @@
 	}
 	
 	$vb_objects_x_collections_hierarchy_enabled = (bool)$t_subject->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled');
+	$vs_disabled_items_mode = $t_subject->getAppConfig()->get($t_subject->tableName() . '_hierarchy_browser_disabled_items_mode');
+	$vs_disabled_items_mode = $vs_disabled_items_mode ? $vs_disabled_items_mode : 'hide';
 	$t_object = new ca_objects();
 	
 	$va_search_lookup_extra_params = array('noInline' => 1);
@@ -461,7 +463,7 @@
 				dontAllowEditForFirstLevel: <?php print (in_array($t_subject->tableName(), array('ca_places', 'ca_storage_locations', 'ca_list_items', 'ca_relationship_types')) ? 'true' : 'false'); ?>,
 				
 				readOnly: false, //<?php print $vb_read_only ? 1 : 0; ?>,
-				disabledItems: 'hide',
+				disabledItems: '<?php print $vs_disabled_items_mode; ?>',
 				
 				editUrl: '<?php print $vs_edit_url; ?>',
 				editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
@@ -489,7 +491,7 @@
 				initDataUrl: '<?php print $va_lookup_urls['ancestorList']; ?>',
 				
 				readOnly: <?php print $vb_read_only ? 1 : 0; ?>,
-				disabledItems: 'hide',
+				disabledItems: '<?php print $vs_disabled_items_mode; ?>',
 				
 				initItemID: '<?php print $vn_init_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
@@ -543,7 +545,7 @@
 				
 				readOnly: true,
 				allowSelection: false,
-				disabledItems: 'hide',
+				disabledItems: '<?php print $vs_disabled_items_mode; ?>',
 				
 				initItemID: '<?php print $vn_init_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',

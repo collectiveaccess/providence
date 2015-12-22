@@ -7,7 +7,7 @@
 #  \____\___/|_|_|\___|\___|\__|_| \_/ \___/_/   \_\___\___\___||___/___/
 #
 #               Open-source collections management software
-#               Version 1.4
+#               Version 1.6
 #				
 # -------------------------------------------------------------------------------------------
 # Need help setting up? Visit http://www.collectiveaccess.org/forum
@@ -219,23 +219,6 @@ if (!defined("__CA_SITE_HOSTNAME__")) {
 	define("__CA_SITE_HOSTNAME__", isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '');
 }
 
-#
-# If you use PayPal for e-commerce payments then you can set your account information 
-# below by uncommenting the __CA_PAYPAL* lines and assigning them appropriate values
-#
-#if (!defined("__CA_PAYPAL_API_USERNAME__")) {
-#	define("__CA_PAYPAL_API_USERNAME__", "your_paypal_api_username");
-#}
-#if (!defined("__CA_PAYPAL_API_PASSWORD__")) {
-#	define("__CA_PAYPAL_API_PASSWORD__", "your_paypal_api_password");
-#}
-#if (!defined("__CA_PAYPAL_API_SIGNATURE__")) {
-#	define("__CA_PAYPAL_API_SIGNATURE__", "your_paypal_api_signature");
-#}
-#if (!defined("__CA_PAYPAL_API_ENVIRONMENT__")) {
-#	define("__CA_PAYPAL_API_ENVIRONMENT__", "sandbox");
-#}		// "sandbox" for testing or "live" for production use
-
 # --------------------------------------------------------------------------------------------
 # IT IS VERY UNLIKELY THAT YOU WILL NEED TO CHANGE ANYTHING UNDER THIS LINE
 # --------------------------------------------------------------------------------------------
@@ -340,7 +323,9 @@ if (!defined("__CA_THEME_URL__")) {
 # part of the standard CollectiveAccess configuration check. If you do
 # configure them here and your setup doesn't have the extension, you
 # may see critical errors.
-define('__CA_CACHE_BACKEND__', 'file');
+if (!defined('__CA_CACHE_BACKEND__')) { 
+	define('__CA_CACHE_BACKEND__', 'file');
+}
 
 # File path for file-based caching. The default works but in some setups you may want to move this
 # to the fastest available storage (in terms of random access time), like an SSD
@@ -361,14 +346,14 @@ define('__CA_REDIS_PORT__', 6379);
 # include version number
 require_once(__CA_APP_DIR__.'/version.php');
 
-# includes commonly used classes
-require_once(__CA_APP_DIR__.'/helpers/preload.php');
-
 if (defined('E_DEPRECATED')) {	// PHP 5.3/5.4
 	error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
 } else {	// PHP <= 5.2
 	error_reporting(E_ALL & ~E_NOTICE);
 }
+
+# includes commonly used classes
+require_once(__CA_APP_DIR__.'/helpers/preload.php');
 
 # If you set this to true the installer will be able to overwrite an existing installation.
 # Only set this to true if you're debugging code or an installation profile.
@@ -428,7 +413,7 @@ if (!defined('__CA_ENABLE_DEBUG_OUTPUT__')) {
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -446,4 +431,3 @@ if (!defined('__CA_ENABLE_DEBUG_OUTPUT__')) {
  *
  * ----------------------------------------------------------------------
  */
-?>

@@ -35,7 +35,7 @@
   */
  
 require_once(__CA_LIB_DIR__.'/core/Configuration.php');
-require_once(__CA_LIB_DIR__.'/core/Error.php');
+require_once(__CA_LIB_DIR__.'/core/ApplicationError.php');
 require_once(__CA_LIB_DIR__.'/core/Print/PrintForms/PrintFormElements.php');
 
 class PrintFormTextElement extends PrintFormElements {
