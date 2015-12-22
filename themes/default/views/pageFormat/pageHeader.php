@@ -110,6 +110,6 @@
 			<![endif]-->
 		<!-- super fish end menus -->
 	</head>	
-	<body>
+	<body <?php if(!in_array($this->request->getController(), array('Dashboard', 'Auth'))) :?>class="withSidebar"<?php endif?>>
 		<div id="leftNavBackground"></div>
-		<div align="center">
+		<div id="centered">
