@@ -281,7 +281,6 @@
  			$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '');
 			$vs_element = '';
 
-// 			Disabling this as we'll either set the width as px values or use classes for elements
  			if (!preg_match("!^[\d\.]+px$!i", $vs_width) && $vs_width) {
  				$vs_width = ((int)$vs_width * 6)."px";
  			}
