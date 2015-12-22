@@ -68,7 +68,7 @@
 		'fieldWidth' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_FIELD,
-			'default' => 40,
+			'default' => '',
 			'width' => 5, 'height' => 1,
 			'label' => _t('Width of data entry field in user interface'),
 			'description' => _t('Width, in characters, of the field when displayed in a user interface.')
@@ -76,7 +76,7 @@
 		'fieldHeight' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_FIELD,
-			'default' => 1,
+			'default' => '',
 			'width' => 5, 'height' => 1,
 			'label' => _t('Height of data entry field in user interface'),
 			'description' => _t('Height, in characters, of the field when displayed in a user interface.')
@@ -282,12 +282,12 @@
 			$vs_element = '';
 
 // 			Disabling this as we'll either set the width as px values or use classes for elements
-// 			if (!preg_match("!^[\d\.]+px$!i", $vs_width)) {
-// 				$vs_width = ((int)$vs_width * 6)."px";
-// 			}
-// 			if (!preg_match("!^[\d\.]+px$!i", $vs_height)) {
-// 				$vs_height = ((int)$vs_height * 16)."px";
-// 			}
+ 			if (!preg_match("!^[\d\.]+px$!i", $vs_width) && $vs_width) {
+ 				$vs_width = ((int)$vs_width * 6)."px";
+ 			}
+ 			if (!preg_match("!^[\d\.]+px$!i", $vs_height) && $vs_height) {
+ 				$vs_height = ((int)$vs_height * 16)."px";
+ 			}
  			
  			if ($va_settings['usewysiwygeditor']) {
  				$o_config = Configuration::load();
