@@ -1828,6 +1828,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	  * Returns associative array with descriptive information about the bundle
  	  */
  	public function getBundleInfo($ps_bundle_name) {
+ 		if (isset($this->BUNDLES[$ps_bundle_name])) { return $this->BUNDLES[$ps_bundle_name]; }
+ 		$ps_bundle_name = str_replace($this->tableName().".", "ca_attribute_", $ps_bundle_name);
  		return isset($this->BUNDLES[$ps_bundle_name]) ? $this->BUNDLES[$ps_bundle_name] : null;
  	}
  	# --------------------------------------------------------------------------------------------
@@ -2869,8 +2871,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *
 	 */
 	protected function getBundleListsForScreen($pm_screen, $po_request, $t_ui, $pa_options=null) {
-		if(!$t_ui) { return; }
-		$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen);
+		if (!(($va_bundles = caGetOption('bundles', $pa_options, null)) && is_array($va_bundles))) {
+			if(!$t_ui) { return; }
+			$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen);
+		}
 		
 		// sort fields by type
 		$va_fields_by_type = array();
@@ -3076,6 +3080,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	* @param mixed $pm_screen
 	* @param RequestHTTP $ps_request
 	* @param array $pa_options Options are:
+	*		formName = 
 	*		dryRun = Go through the motions of saving but don't actually write information to the database
 	*		batch = Process save in "batch" mode. Specifically this means honoring batch mode settings (add, replace, remove), skipping bundles that are not supported in batch mode and ignoring updates
 	*		existingRepresentationMap = an array of representation_ids key'ed on file path. If set saveBundlesForScreen() use link the specified representation to the row it is saving rather than processing the uploaded file. saveBundlesForScreen() will build the map as it goes, adding newly uploaded files. If you want it to process a file in a batch situation where it should be processed the first time and linked subsequently then pass an empty array here. saveBundlesForScreen() will use the empty array to build the map.
@@ -3123,6 +3128,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				}
 			}
 		}
+		
 		$va_bundles = $va_bundle_lists['bundles'];
 		$va_fields_by_type = $va_bundle_lists['fields_by_type'];
 
@@ -3200,8 +3206,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$va_inserted_attributes = array();
 			$reserved_elements = array();
 			foreach($va_fields_by_type['attribute'] as $vs_placement_code => $vs_f) {
-				$vs_element_set_code = preg_replace("/^ca_attribute_/", "", $vs_f);
-				//does the attribute's datatype have a saveElement method - if so, use that instead
+				$vs_element_set_code = preg_replace("/^(ca_attribute_|".$this->tableName()."\.)/", "", $vs_f);
+				
+				// does the attribute's datatype have a saveElement method? If so, use that instead
 				$vs_element = $this->_getElementInstance($vs_element_set_code);
 				$vn_element_id = $vs_element->getPrimaryKey();
 				$vs_element_datatype = $vs_element->get('datatype');

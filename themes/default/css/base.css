@@ -2020,6 +2020,13 @@ select.searchSetSelect {
     margin-bottom:10px;
 }
 /* search/browse options box - horizontal show hide */
+#showResultsEditor{
+    margin: 15px 0 0 0;
+    text-decoration:none;
+    text-transform:uppercase;
+    color:#828282;
+}
+
 #showOptions{
     float:right;
     margin: 1px 2px 0px 15px;
@@ -2027,8 +2034,8 @@ select.searchSetSelect {
     text-transform:uppercase;
     color:#828282;
     font-size:9px;
-
 }
+
 #hideOptions{
     float:right;
     margin: 2px 0px 0px 0px;
@@ -6692,9 +6699,31 @@ div.authorityReferenceListContainer {
     margin: 0px;
     padding: 0px;
     z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+    overflow: hidden;
 }
 
 #caResultsEditorPanelContentArea {
     width: 100%;
     height: 100%;
+    background-color: #fff;
+    overflow: hidden;
+}
+
+#caResultsEditorGrid {
+	width: 100%;
+	height: 100%;
+}
+
+#caResultsEditorWrapper .close {
+	float: right;
+	text-decoration: none;
+	margin: 0 10px 0 0;
+}
+
+#caResultsEditorWrapper .close a {
+	color: #000;
+}
+
+#caResultsEditorWrapper .caResultsEditorStatus {
+	float: left;
 }

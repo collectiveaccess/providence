@@ -39,6 +39,8 @@ var caUI = caUI || {};
 			columnSorting: true,
 			
 			dataLoadUrl: null,
+			numRowsPerLoad: 20,
+			
 			dataSaveUrl: null,
 			editLinkFormat: null,
 			
@@ -47,10 +49,11 @@ var caUI = caUI || {};
 			columns: null,
 			colWidths: null,
 			
+			gridClassName: 'caResultsEditorContent',
 			currentRowClassName: 'caResultsEditorCurrentRow',
 			currentColClassName: 'caResultsEditorCurrentCol',
 			readOnlyCellClassName: 'caResultsEditorReadOnlyCell',
-			statusDisplayClassName: 'caResultsEditorStatusDisplay',
+			statusDisplayClassName: 'caResultsEditorStatus',
 			
 			saveMessage: "Saving...",
 			errorMessagePrefix: "[Error]",
@@ -74,38 +77,6 @@ var caUI = caUI || {};
 			jQuery(td).empty().append(value);
 			return td;
 		};
-		
-		that.caResultsEditorOpenFullScreen = function() {
-			var ht = jQuery(that.container).data('handsontable');
-			jQuery(that.container).toggleClass('caResultsEditorContentFullScreen');
-		
-			caResultsEditorPanel.showPanel();
-			
-			jQuery('#scrollingResults').toggleClass('caResultsEditorContainerFullScreen').prependTo('#caResultsEditorPanelContentArea'); 
-		
-			jQuery('.caResultsEditorToggleFullScreenButton').hide();
-			jQuery("#caResultsEditorControls").show();
-		
-			ht.updateSettings({width: jQuery("#caResultsEditorPanelContentArea").width() - 15, height: jQuery("#caResultsEditorPanelContentArea").height() - 32});
-			jQuery(that.container).width(jQuery("#caResultsEditorPanelContentArea").width() - 15).height(jQuery("#caResultsEditorPanelContentArea").height() - 32).resize();
-		
-			ht.render();
-		}
-	
-		that.caResultsEditorCloseFullScreen = function(dontDoHide) {
-			if (!dontDoHide) { caResultsEditorPanel.hidePanel(); }
-			var ht = jQuery(that.container).data('handsontable');
-	
-			jQuery('#scrollingResults').toggleClass('caResultsEditorContainerFullScreen').prependTo('#caResultsEditorWrapper'); 
-			jQuery(that.container).toggleClass('caResultsEditorContentFullScreen');
-	
-			jQuery('.caResultsEditorToggleFullScreenButton').show();
-			jQuery("#caResultsEditorControls").hide();
-	
-			ht.updateSettings({width: 740, height: 500 });
-			jQuery(that.container).width(740).height(500).resize();
-			ht.render();
-		}
 		// --------------------------------------------------------------------------------
 		
 		that.colWidths = [];
@@ -137,7 +108,6 @@ var caUI = caUI || {};
 									
 								},
 								success: function (response) {
-									console.log("r", response);
 									var labels = [];
 									that.lastLookupIDMap = {};
 									for(var k in response) {
@@ -179,7 +149,7 @@ var caUI = caUI || {};
 				return false;
 			}
 			
-			var ht = jQuery(that.container).data('handsontable');
+			var ht = jQuery(that.container + " ." + that.gridClassName).data('handsontable');
 			
 			// make map from item_id to row, and vice-versa
 			var rowToItemID = {}, itemIDToRow = {}, rowData = {};
@@ -217,49 +187,67 @@ var caUI = caUI || {};
 		};
 		// --------------------------------------------------------------------------------
 		
-		var ht = jQuery(that.container).handsontable({
-			data: that.initialData,
-			rowHeaders: that.rowHeaders,
-			colHeaders: that.colHeaders,
-			
-			minRows: that.rowCount,
-			maxRows: that.rowCount,
-			contextMenu: that.contextMenu,
-			columnSorting: that.columnSorting,
-			
-			currentRowClassName: that.currentRowClassName,
-			currentColClassName: that.currentColClassName,
-			
-			stretchH: "all",
-			columns: that.columns,
-			colWidths: that.colWidths,
-			
-			dataLoadUrl: that.dataLoadUrl,
-			editLinkFormat: that.editLinkFormat,
-			statusDisplayClassName: that.statusDisplayClassName,
-			
-			onChange: function (change, source) {
-				if ((source === 'loadData') || (source === 'updateAfterRequest') || (source === 'external')) {
-				  return; //don't save this change
-				}
-				jQuery("." + that.statusDisplayClassName).html(that.saveMessage).fadeIn(500);
+		// Calculate full window dimensions
+		var $window = jQuery(window);
+		var availableWidth = $window.width() + $window.scrollLeft();
+		var availableHeight = $window.height() + $window.scrollTop() - 30;	// leave 30 pixels of space for status bar
+		
+		// Set up HOT and load first batch of data
+		jQuery.getJSON(that.dataLoadUrl, {s:0, c:that.numRowsPerLoad}, function(data) {
+			that.initialData = data;
+			var ht = jQuery(that.container + " ." + that.gridClassName).handsontable({
+				data: that.initialData,
+				columns: that.columns,
 				
-				var item_id = this.getDataAtRowProp(parseInt(change[0]), 'item_id');
+				rowHeaders: true, //that.rowHeaders,
+				colHeaders: that.colHeaders,
+	
+				contextMenu: that.contextMenu,
+				columnSorting: that.columnSorting,
+				width: (that.width > 0) ? that.width : availableWidth,
+				height: (that.height > 0) ? that.height : availableHeight,
+		
+				currentRowClassName: that.currentRowClassName,
+				currentColClassName: that.currentColClassName,
+		
+				stretchH: "all",
+				colWidths: that.colWidths,
 				
-				var pieces = (change[0] instanceof Array) ? change[0][1].split("-") : change[1].split("-");
-				var table = pieces.shift();
-				var bundle = pieces.join('-');
 				
-				if (that.lastLookupIDMap) {
-					if (that.lastLookupIDMap[change[0][3]]) {
-						change[0][3] = that.lastLookupIDMap[change[0][3]];
+				afterChange: function (change, source) {
+					if (source === 'loadData') {
+						return; //don't save this change
+					}
+					for(var i in change) {
+						var r = change[i][0];
+						var row_id = that.initialData[r]['id'];
+						that.save({'change': change[i], 'id': row_id});
 					}
 				}
-				that.lastLookupIDMap = null;
-				
-				that.save({ 'table' : table, 'bundle': bundle, 'id': item_id, 'value' : change[0][3], 'change' : change, 'source': source });
+			});
+			
+			// Load additional data in chunks
+			var rowsLoaded = that.numRowsPerLoad;
+			var _loadData = function(s, c) {
+				if (that.statusDisplayClassName) { jQuery(that.container + " ." + that.statusDisplayClassName).html("Loading " + s + " - " + (s + c)); }	
+				jQuery.getJSON(that.dataLoadUrl, {s:s, c:c}, function(data) {
+					rowsLoaded += data.length;
+					
+					if (that.statusDisplayClassName) { jQuery(that.container + " ." + that.statusDisplayClassName).html("Loading complete"); }	
+					jQuery.merge(that.initialData, data);
+					
+					var hot = jQuery(that.container + " ." + that.gridClassName).data('handsontable');
+					hot.render();
+					if (that.rowCount > rowsLoaded) {
+						_loadData(rowsLoaded, that.numRowsPerLoad);
+					}
+				});
+			};
+		
+			if (that.rowCount > rowsLoaded) {
+				_loadData(rowsLoaded, that.numRowsPerLoad);
 			}
-		});
+		});		
 		
 		return that;
 		
