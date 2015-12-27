@@ -207,8 +207,8 @@
 				var item = "<div id='caAnnoEditorTlAnnotationContainer" + annotation_id + "' class='caAnnoEditorTlAnnotationContainer'>" + 
 					"<div class='title'><a href='#' onclick='caAnnoEditorPlayerPlay(" + (startTimecode - v['timecodeOffset']) + "); return false;'>" + label + "</a></div>" + 
 					"<div class='timecode'><a href='#' onclick='caAnnoEditorPlayerPlay(" + (startTimecode - v['timecodeOffset']) + "); return false;'>" + timecode + "</a></div>" + 
-					"<div class='editAnnoButton'><a href='#' onclick='caAnnoEditorEdit(" + annotation_id + "); event.preventDefault(); return false;'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__); ?></a></div>" + 
-					"<div class='deleteAnnoButton'><a href='#' onclick='caAnnoEditorDelete(" + annotation_id + "); event.preventDefault(); return false;'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a></div>";
+					"<div class='editAnnoButton'><a href='#' onclick='caAnnoEditorEdit(" + annotation_id + "); event.preventDefault(); return false;'><?php print caNavIcon(__CA_NAV_BUTTON_EDIT__, 1); ?></a></div>" + 
+					"<div class='deleteAnnoButton'><a href='#' onclick='caAnnoEditorDelete(" + annotation_id + "); event.preventDefault(); return false;'><?php print caNavIcon(__CA_NAV_BUTTON_DEL_BUNDLE__, 1); ?></a></div>";
 			
 				// does the item already exist?
 				if (items.eq(i).length > 0) {

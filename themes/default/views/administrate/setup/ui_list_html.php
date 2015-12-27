@@ -29,7 +29,7 @@ $va_editor_ui_list = $this->getVar('editor_ui_list');
 
 $vs_type_menu = '<div class="sf-small-menu form-header-button rounded">'.
 							'<div style="float:right; margin: 3px;">'.
-								'<a href="#" onclick="_navigateToNewForm(jQuery(\'#tableList\').val());">'.caNavIcon($this->request, __CA_NAV_BUTTON_ADD_LARGE__).'</a>'.
+								'<a href="#" onclick="_navigateToNewForm(jQuery(\'#tableList\').val());">'.caNavIcon(__CA_NAV_BUTTON_ADD_LARGE__, 1).'</a>'.
 							'</div>'.
 						'<form action="#">'._t('New interface for ').' '.caHTMLSelect('editor_type', $this->getVar('table_list'), array('id' => 'tableList')).'</form>'.
 						'</div>';

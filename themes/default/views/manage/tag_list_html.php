@@ -47,8 +47,8 @@
 			
 			<table id="caTagsList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
 				<div style="text-align:right;">
-					<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#tagListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Tags', 'Approve'); ?>").submit();' class='form-button'><span class='form-button approve'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_APPROVE__); ?><span class='formtext'><?php print _t("Approve"); ?></span></span></a>
-					<a href='#' onclick='jQuery("#tagListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'tags', 'Delete'); ?>").submit();' class='form-button'><span class='form-button delete'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DELETE__); ?><span class='formtext'><?php print _t("Delete"); ?></span></span></a>
+					<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#tagListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Tags', 'Approve'); ?>").submit();' class='form-button'><span class='form-button approve'><?php print caNavIcon(__CA_NAV_BUTTON_APPROVE__, 1); ?><span class='formtext'><?php print _t("Approve"); ?></span></span></a>
+					<a href='#' onclick='jQuery("#tagListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'tags', 'Delete'); ?>").submit();' class='form-button'><span class='form-button delete'><?php print caNavIcon(__CA_NAV_BUTTON_DELETE__, 1); ?><span class='formtext'><?php print _t("Delete"); ?></span></span></a>
 				</div>
 				<thead>
 					<tr>

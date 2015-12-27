@@ -69,7 +69,7 @@
 					<form action='#'>
 	<?php	
 						print "<div>";
-						print _t('Add under %2 new %1', $this->getVar('type_menu').' <a href="#" onclick="_navigateToNewForm(jQuery(\'#hierTypeList\').val())">'.caNavIcon($this->request, __CA_NAV_BUTTON_ADD__)."</a>", "<span id='browseCurrentSelection'></span>");
+						print _t('Add under %2 new %1', $this->getVar('type_menu').' <a href="#" onclick="_navigateToNewForm(jQuery(\'#hierTypeList\').val())">'.caNavIcon(__CA_NAV_BUTTON_ADD__, 1)."</a>", "<span id='browseCurrentSelection'></span>");
 						print "</div>";
 	?>
 					</form>
@@ -102,8 +102,8 @@
 						initDataUrl: '<?php print $va_lookup_urls['ancestorList']; ?>',
 						
 						editUrl: '<?php print caEditorUrl($this->request, $vs_table, null, false, array(), array('action' => $this->getVar('default_action'))); ?>',
-						editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
-						disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
+						editButtonIcon: "<?php print caNavIcon(__CA_NAV_BUTTON_RIGHT_ARROW__, 1); ?>",
+						disabledButtonIcon: "<?php print caNavIcon(__CA_NAV_BUTTON_DOT__, 1); ?>",
 
 						disabledItems: 'full',
 						

@@ -189,7 +189,7 @@
 		# ------------------------------------------------------------
 	}
 ?>
-	<a href="#" onclick="$('#showRefine').show(); caUIBrowsePanel.hideBrowsePanel(); " class="browseSelectPanelButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a>
+	<a href="#" onclick="$('#showRefine').show(); caUIBrowsePanel.hideBrowsePanel(); " class="browseSelectPanelButton"><?php print caNavIcon(__CA_NAV_BUTTON_COLLAPSE__, 1); ?></a>
 	<div style='clear:both;width:100%'></div>
 
 </div>

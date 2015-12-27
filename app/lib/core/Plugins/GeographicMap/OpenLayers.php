@@ -416,7 +416,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		if ($po_request) {
 			$vs_element .= 		'<div class="olMapSearchBox">';
 			$vs_element .=				'<input type="text" class="olMapSearchText" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_search"  id="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_search" size="30" value="" autocomplete="off" onfocus="this.value = \'\';" onkeypress="return map_geocode_'.$vs_id.'(event);"/>';
-			$vs_element .= 				"<a href='#' onclick='map_geocode_{$vs_id}();'><img src='".$po_request->getThemeUrlPath()."/graphics/buttons/glass.png' border='0' width='11' height='11' alt='"._t('Search')."' class='olMapSearchBoxIcon' id='{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search_button'/></a>";
+			$vs_element .= 				"<a href='#' onclick='map_geocode_{$vs_id}();'>".caNavIcon(__CA_NAV_BUTTON_SEARCH__, 1, array('class' => 'olMapSearchBoxIcon', 'id' => "{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search_button"))."</a>";
 			$vs_element .= 		'</div>';
 		}
 		$vs_element .= 			'<div class="olMapKmlControl" id="{fieldNamePrefix}showKmlControl_{n}">';
@@ -601,7 +601,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 			jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search_button').attr('src', '".$po_request->getThemeUrlPath()."/graphics/icons/indicator.gif');
 			var geocoder = new google.maps.Geocoder();
 			geocoder.geocode( { 'address': t}, function(results, status) {
-				jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search_button').attr('src', '".$po_request->getThemeUrlPath()."/graphics/buttons/glass.png');
+				//jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search_button').attr('src', '".$po_request->getThemeUrlPath()."/graphics/buttons/glass.png');
 				if (status == google.maps.GeocoderStatus.OK) {
 					var loc = results[0]['geometry']['location'];
 					var pt = new OpenLayers.LonLat(loc.lng(), loc.lat()).transform(new OpenLayers.Projection('EPSG:4326'),map_{$vs_id}.getProjectionObject());

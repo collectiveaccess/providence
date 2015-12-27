@@ -65,7 +65,7 @@
 			
 			dataLoadUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "getPartialResult"); ?>',
 			dataSaveUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "saveInlineEdit"); ?>',
-			editLinkFormat: "<?php print urldecode(caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), 'caResultsEditorEditLink', $vs_subject_table, '%1')); ?>",
+			editLinkFormat: "<?php print urldecode(caEditorLink($this->request, caNavIcon(__CA_NAV_BUTTON_EDIT__, 1), 'caResultsEditorEditLink', $vs_subject_table, '%1')); ?>",
 			
 			rowHeaders: <?php print json_encode($va_row_headers); ?>,
 			colHeaders: <?php print json_encode($va_column_headers); ?>,

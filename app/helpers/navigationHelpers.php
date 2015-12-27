@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2014 Whirl-i-Gig
+ * Copyright 2007-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -45,7 +45,6 @@
  	define('__CA_NAV_BUTTON_SEARCH__', 6);
  	define('__CA_NAV_BUTTON_INFO__', 7);
  	define('__CA_NAV_BUTTON_DOWNLOAD__', 8);
- 	define('__CA_NAV_BUTTON_MESSAGE__', 9);
  	define('__CA_NAV_BUTTON_LOGIN__', 10);
  	define('__CA_NAV_BUTTON_SAVE__', 11);
  	define('__CA_NAV_BUTTON_HELP__', 12);
@@ -64,6 +63,9 @@
  	define('__CA_NAV_BUTTON_MAKE_PRIMARY__', 25);
  	define('__CA_NAV_BUTTON_UPDATE__', 26);
  	define('__CA_NAV_BUTTON_PDF_SMALL__', 27);
+ 	define('__CA_NAV_BUTTON_EXPORT__', 28);
+ 	define('__CA_NAV_BUTTON_FILTER__', 29);
+ 	define('__CA_NAV_BUTTON_SETTINGS__', 30);
  		
  	define('__CA_NAV_BUTTON_ICON_POS_LEFT__', 0);
  	define('__CA_NAV_BUTTON_ICON_POS_RIGHT__', 1);
@@ -193,18 +195,12 @@
 		} else {
 			$vs_alt = $vs_title = '';
 		}
-		if (is_array($va_img = _caNavTypeToImgName($pn_type))) {
-			$va_img_attr['title'] = $vs_title;
-			$va_img_attr['alt'] = $vs_alt;
-			if ($va_img['classname']) { $va_img_attr['class'] = $va_img['classname']; }
-			
-			$vs_tag .= caHTMLImage("{$vs_graphics_path}/buttons/".$va_img['filename'].".png", $va_img_attr);
-			if (!$pb_dont_show_content) {
-				$vs_tag .= $ps_content;
-			}
-		} else {
+		
+		$vs_tag .= caNavIcon($pn_type, 2).' ';
+		if (!$pb_dont_show_content) {
 			$vs_tag .= $ps_content;
 		}
+	
 		if (!$pb_no_background) {
 			$vs_tag .= "</span>";
 		}
@@ -257,9 +253,7 @@
 		);
 		$vs_img_tag_stuff = " padding= '{$vn_padding}px'";
 		
-		if (is_array($va_img = _caNavTypeToImgName($pn_type))) {
-			if ($va_img['classname']) { $va_img_attr['class'] = $va_img['classname']; }
-			$vs_icon_tag = caHTMLImage("{$vs_graphics_path}/buttons/".$va_img['filename'].".png", $va_img_attr); 
+		if ($vs_icon_tag = caNavIcon($pn_type, 2)) {
 			$vs_content = (!$pb_dont_show_content) ? $ps_content : '';
 			
 			switch($ps_icon_pos) {
@@ -349,9 +343,7 @@
 	 *
 	 */
 	function caFormSubmitLink($po_request, $ps_content, $ps_classname, $ps_form_id, $ps_id=null) {
-		$vs_button = "<a href='#' onclick='document.getElementById(\"{$ps_form_id}\").submit();' class='{$ps_classname}' ".($ps_id ? "id='{$ps_id}'" : '').">".$ps_content."</a>";
-		
-		return $vs_button;
+		return "<a href='#' onclick='document.getElementById(\"{$ps_form_id}\").submit();' class='{$ps_classname}' ".($ps_id ? "id='{$ps_id}'" : '').">".$ps_content."</a>";
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -399,16 +391,12 @@
 			'class' => 'form-button-left',
 			'style' => "padding-right: {$vn_padding}px"
 		);
-		if (is_array($va_img = _caNavTypeToImgName($pn_type))) {
-			if ($va_img['classname']) { $va_img_attr['class'] .= ' '.$va_img['classname']; }
-			$vs_button .= caHTMLImage("{$vs_graphics_path}/buttons/".$va_img['filename'].".png", $va_img_attr);
-			
-			if (!$pb_dont_show_content) {
-				$vs_button .= $ps_content;
-			}
-		} else {
-			$vs_button = $ps_content;
+		
+		$vs_button .= caNavIcon($pn_type, 2).' ';
+		if (!$pb_dont_show_content) {
+			$vs_button .= $ps_content;
 		}
+		
 		
 		if (!$pb_no_background) { 
 			$vs_button .= "</span>";
@@ -465,15 +453,9 @@
 			'style' => "padding-right: {$vn_padding}px"
 		);
 		
-		if (is_array($va_img = _caNavTypeToImgName($pn_type))) {
-			if ($va_img['classname']) { $va_img_attr['class'] .= ' '.$va_img['classname']; }
-			$vs_button .= caHTMLImage("{$vs_graphics_path}/buttons/".$va_img['filename'].".png", $va_img_attr);
-			
-			if (!$pb_dont_show_content) {
-				$vs_button .= $ps_content;
-			}
-		} else {
-			$vs_button = $ps_content;
+		$vs_button .= caNavIcon($pn_type, 2).' ';
+		if (!$pb_dont_show_content) {
+			$vs_button .= $ps_content;
 		}
 		
 		if (!$pb_no_background) { 
@@ -503,199 +485,191 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * @param array $pa_options Options are:
-	 *		graphicsPath =
+	 *
+	 * @param int $pn_type
+	 * @param int $pn_size
+	 * @param array $pa_attributes
+	 * @param array $pa_options No options are currently supported.
+	 * 
+	 * @return string
 	 */
-	function caNavIcon($po_request, $pn_type, $pa_attributes=null, $pa_options=null) {
+	function caNavIcon($pn_type, $pn_size=2, $pa_attributes=null, $pa_options=null) {
 		if (!is_array($pa_attributes)) { $pa_attributes = array(); }
 		
-		$vs_graphics_path = (isset($pa_options['graphicsPath']) && $pa_options['graphicsPath']) ? $pa_options['graphicsPath'] : $po_request->getThemeUrlPath()."/graphics";
-	
-		$vs_button = '';
-		if (is_array($va_img = _caNavTypeToImgName($pn_type))) {
-			if (!isset($pa_attributes['alt'])) {
-				$pa_attributes['alt'] = $va_img['filename'];
-			}
-			if(!isset($pa_attributes['border'])) { $pa_attributes['border'] = '0'; }
-			$vs_button = caHTMLImage("{$vs_graphics_path}/buttons/".$va_img['filename'].".png", $pa_attributes);
+		$vs_opt_class = $pa_attributes['class'] ? ' '.$pa_attributes['class'] : '';
+		unset($pa_attributes['class']);
+		$vs_attr = _caHTMLMakeAttributeString($pa_attributes);
+		
+		if (is_array($va_icon = _caNavTypeToName($pn_type))) {
+			return "<i class='fa {$va_icon['class']} fa-{$pn_size}x{$vs_opt_class}' {$vs_attr}></i> ";
 		}
-		return $vs_button;
+		
+		return '???';
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
 	 *
 	 */
-	function _caNavTypeToImgName($pn_type) {
+	function _caNavTypeToName($pn_type) {
 	
 		$vs_classname = '';
 		switch($pn_type) {
 			case __CA_NAV_BUTTON_ADD__:
-				$vs_img_name = 'glyphicons_190_circle_plus_small';	
+				$vs_img_name = 'fa-plus-circle';	
 				break;
 			case __CA_NAV_BUTTON_DELETE__:
-				$vs_img_name = 'glyphicons_199_ban';
+				$vs_img_name = 'fa-minus-circle';
 				$vs_classname = 'deleteIcon'; 
 				break;
 			case __CA_NAV_BUTTON_CANCEL__:
-				$vs_img_name = 'glyphicons_445_floppy_remove';
+				$vs_img_name = 'fa fa-times';
 				$vs_classname = 'cancelIcon';
 				break;
 			case __CA_NAV_BUTTON_REMOVE__:
-				$vs_img_name = 'glyphicons_192_circle_remove';
+				$vs_img_name = 'fa-minus-circle';
 				break;				
 			case __CA_NAV_BUTTON_EDIT__:
-				$vs_img_name = 'glyphicons_036_file';
+				$vs_img_name = 'fa-pencil-square-o';
 				$vs_classname = 'editIcon'; 
 				break;
 			case __CA_NAV_BUTTON_BATCH_EDIT__:
-				$vs_img_name = 'glyphicons_319_sort';
+				$vs_img_name = 'fa-cubes';
 				$vs_classname = 'batchIcon'; 
 				break;
 			case __CA_NAV_BUTTON_ALERT__:
-				$vs_img_name = 'alert';
+				$vs_img_name = 'fa-exclamation-triangle';
 				break;
 			case __CA_NAV_BUTTON_SEARCH__:
-				$vs_img_name = 'glyphicons_027_search';
-				break;
-			case __CA_NAV_BUTTON_GLASS__:
-				$vs_img_name = 'glass';
+				$vs_img_name = 'fa-search';
 				break;
 			case __CA_NAV_BUTTON_INFO__:
-				$vs_img_name = 'info';
+				$vs_img_name = 'fa-info-circle';
 				break;
 			case __CA_NAV_BUTTON_DOWNLOAD__:
-				$vs_img_name = 'glyphicons_446_floppy_save';
+				$vs_img_name = 'fa-download';
 				break;
 			case __CA_NAV_BUTTON_MAKE_PRIMARY__:
-				$vs_img_name = 'glyphicons_206_ok_2';
+				$vs_img_name = 'fa-upload';
 				break;
 			case __CA_NAV_BUTTON_APPROVE__:
-				$vs_img_name = 'glyphicons_206_ok_2';
+				$vs_img_name = 'fa-thumbs-o-up';
 				break;	
 			case __CA_NAV_BUTTON_UPDATE__:
-				$vs_img_name = 'glyphicons_415_disk_open';
+				$vs_img_name = 'fa-refresh';
 				$vs_classname = 'updateIcon'; 
 				break;
-			case __CA_NAV_BUTTON_MESSAGE__:
-				$vs_img_name = 'msg';
-				break;
 			case __CA_NAV_BUTTON_LOGIN__:
-				$vs_img_name = 'glyphicons_206_ok_2';
+				$vs_img_name = 'fa-check-circle-o';
 				break;
 			case __CA_NAV_BUTTON_SAVE__:
-				$vs_img_name = 'glyphicons_198_ok';
+				$vs_img_name = 'fa-check-circle-o';
 				break;
 			case __CA_NAV_BUTTON_HELP__:
-				$vs_img_name = 'help';
+				$vs_img_name = 'fa-life-ring';
 				break;
 			case __CA_NAV_BUTTON_GO__:
-				$vs_img_name = 'glyphicons_426_git_merge';
+				$vs_img_name = 'fa-play-circle-o';
 				$vs_classname = 'hierarchyIcon';
 				break;
 			case __CA_NAV_BUTTON_DEL_BUNDLE__:
-				$vs_img_name = 'glyphicons_192_circle_remove_gray';
+				$vs_img_name = 'fa-minus-circle';
 				break;
 			case __CA_NAV_BUTTON_CLOSE__:
-				$vs_img_name = 'close';
+				$vs_img_name = 'fa-times';
 				break;
 			case __CA_NAV_BUTTON_WATCH__:
-				$vs_img_name = 'glyphicons_051_eye_open_gray';
+				$vs_img_name = 'fa-eye';
 				break;
 			case __CA_NAV_BUTTON_UNWATCH__:
-				$vs_img_name = 'glyphicons_051_eye_open_small';
+				$vs_img_name = 'fa-eye-slash';
 				break;
 			case __CA_NAV_BUTTON_ADD_LARGE__:
-				$vs_img_name = 'glyphicons_298_hospital';
+				$vs_img_name = 'fa-plus-square-o';
 				break;	
 			case __CA_NAV_BUTTON_ZOOM_IN__:
-				$vs_img_name = 'zoom_in';
+				$vs_img_name = 'fa-search-plus';
 				break;
 			case __CA_NAV_BUTTON_ZOOM_OUT__:
-				$vs_img_name = 'zoom_out';
+				$vs_img_name = 'fa-search-minus';
 				break;
 			case __CA_NAV_BUTTON_MAGNIFY__:
-				$vs_img_name = 'magnify';
+				$vs_img_name = 'fa-search';
 				break;
 			case __CA_NAV_BUTTON_OVERVIEW__:
-				$vs_img_name = 'overview';
+				$vs_img_name = 'fa-picture-o';
 				break;
 			case __CA_NAV_BUTTON_PAN__:
-				$vs_img_name = 'pan';
+				$vs_img_name = 'fa-arrows';
 				break;
 			case __CA_NAV_BUTTON_CHANGE__:
-				$vs_img_name = 'glyphicons_229_retweet_2';
+				$vs_img_name = 'fa-retweet';
 				break;
 			case __CA_NAV_BUTTON_INTERSTITIAL_EDIT_BUNDLE__:
-				$vs_img_name = 'glyphicons_062_paperclip';
+				$vs_img_name = 'fa-paperclip';
 				break;
 			case __CA_NAV_BUTTON_COLLAPSE__:
-				$vs_img_name = 'glyphicons_191_circle_minus';
+				$vs_img_name = 'fa-minus-circle';
 				break;
 			case __CA_NAV_BUTTON_EXPAND__:
-				$vs_img_name = 'glyphicons_190_circle_plus';
+				$vs_img_name = 'fa-expand';
 				break;					
 			case __CA_NAV_BUTTON_COMMIT__:
-				$vs_img_name = 'glyphicons_193_circle_ok';
+				$vs_img_name = 'fa-check-circle-o';
 				break;	
 			case __CA_NAV_BUTTON_SETTINGS__:
-				$vs_img_name = 'glyphicons_136_cogwheel';
+				$vs_img_name = 'fa-cog';
 				break;
 			case __CA_NAV_BUTTON_FILTER__:
-				$vs_img_name = 'glyphicons_119_table';
+				$vs_img_name = 'fa-table';
 				break;	
 			case __CA_NAV_BUTTON_EXPORT__:
-				$vs_img_name = 'glyphicons_134_inbox_in';
+				$vs_img_name = 'fa-inbox';
 				break;
 			case __CA_NAV_BUTTON_SETS__:
-				$vs_img_name = 'glyphicons_154_more_windows';
+				$vs_img_name = 'fa-shopping-bag';
 				break;	
 			case __CA_NAV_BUTTON_RIGHT_ARROW__:
-				$vs_img_name = 'glyphicons_223_chevron-right';
+				$vs_img_name = 'fa-chevron-circle-right';
 				break;	
 			case __CA_NAV_BUTTON_VISUALIZE__:
-				$vs_img_name = 'glyphicons_040_stats';
+				$vs_img_name = 'fa-line-chart';
 				break;	
 			case __CA_NAV_BUTTON_ADD_WIDGET__:
-				$vs_img_name = 'glyphicons_190_circle_plus_small';
+				$vs_img_name = 'fa-plus-circle';
 				break;	
 			case __CA_NAV_BUTTON_DUPLICATE__:
-				$vs_img_name = 'glyphicons_318_more_items';
+				$vs_img_name = 'fa-files-o';
 				break;	
 			case __CA_NAV_BUTTON_CHILD__:
-				$vs_img_name = 'glyphicons_367_expand';
-				break;	
-			case __CA_NAV_BUTTON_INFO2__:
-				$vs_img_name = 'glyphicons_195_circle_info';
+				$vs_img_name = 'fa-child';
 				break;	
 			case __CA_NAV_BUTTON_SCROLL_RT__:
-				$vs_img_name = 'glyphicons_223_chevron-right';
+				$vs_img_name = 'fa-chevron-circle-right';
 				break;	
 			case __CA_NAV_BUTTON_SCROLL_LT__:
-				$vs_img_name = 'glyphicons_224_chevron-left';
+				$vs_img_name = 'fa-chevron-circle-left';
 				break;	
 			case __CA_NAV_BUTTON_MOVE__:
-				$vs_img_name = 'glyphicons_186_move';
+				$vs_img_name = 'fa-truck';
 				break;	
 			case __CA_NAV_BUTTON_IMAGE__:
-				$vs_img_name = 'glyphicons_138_picture';
+				$vs_img_name = 'fa-file-image-o';
 				break;	
 			case __CA_NAV_BUTTON_DOT__:
-				$vs_img_name = 'dot';
+				$vs_img_name = 'fa-dot-cirle-o';
 				break;	
 			case __CA_NAV_BUTTON_PDF__:
-				$vs_img_name = 'glyphicons_359_file_export';
+				$vs_img_name = 'fa-file-pdf-o';
 				break;	
 			case __CA_NAV_BUTTON_SET_CENTER__:
-				$vs_img_name = 'glyphicons_185_screenshot';
-				break;	
-			case __CA_NAV_BUTTON_PDF_SMALL__:
-				$vs_img_name = 'glyphicons_359_file_export_small';
+				$vs_img_name = 'fa-bullseye';
 				break;																																							
 			default:
+				print "INVALID CONSTANT $pn_type<br>\n";
 				return null;
 				break;
 		}
-		return array('filename' => $vs_img_name, 'classname' => $vs_classname);
+		return array('class' => $vs_img_name);
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**

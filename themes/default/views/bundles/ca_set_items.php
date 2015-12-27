@@ -84,7 +84,7 @@
 					rowIDListID: '<?php print $vs_id_prefix; ?>setRowIDList',
 					displayTemplate: <?php print (isset($va_settings['displayTemplate']) ? json_encode($va_settings['displayTemplate']) : 'null'); ?>,
 					
-					editSetItemButton: '<?php print addslashes(caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__)); ?>',
+					editSetItemButton: '<?php print addslashes(caNavIcon(__CA_NAV_BUTTON_EDIT__, 1)); ?>',
 					
 					lookupURL: '<?php print $va_lookup_urls['search']; ?>',
 					itemInfoURL: '<?php print caNavUrl($this->request, 'manage/sets', 'SetEditor', 'GetItemInfo'); ?>',

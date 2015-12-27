@@ -159,7 +159,7 @@
 				$vs_val = "<div class='attributeFileInfoContainer'>";
 				$vs_val .= "<div class='attributeFileFileName'>{$vs_filename}</div><div class='attributeFileFileInfo'>{$vs_dimensions}";
 				if (is_object($pa_options['request'])) {
-					$vs_val .= caNavLink($pa_options['request'], caNavIcon($pa_options['request'], __CA_NAV_BUTTON_DOWNLOAD__, array('align' => 'middle')), '', $pa_options['request']->getModulePath(), $pa_options['request']->getController(), 'DownloadAttributeFile', array('download' => 1, 'value_id' => $this->opn_value_id), array('class' => 'attributeDownloadButton'));
+					$vs_val .= caNavLink($pa_options['request'], caNavIcon(__CA_NAV_BUTTON_DOWNLOAD__, 1, array('align' => 'middle')), '', $pa_options['request']->getModulePath(), $pa_options['request']->getController(), 'DownloadAttributeFile', array('download' => 1, 'value_id' => $this->opn_value_id), array('class' => 'attributeDownloadButton'));
 				}
 				$vs_val .= "</div></div>";
 			}

@@ -55,7 +55,7 @@ if (sizeof($va_criteria) > 1) {
 ?>
 	<div id="searchRefineBox"><div class="bg">
 			<div id="searchRefineContent"><img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif" alt="<?php print htmlspecialchars(_t('Loading...')); ?>"/></div>
-			<a href='#' id="hideRefine" onclick='return caHandleResultsUIBoxes("refine", "hide");'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a>
+			<a href='#' id="hideRefine" onclick='return caHandleResultsUIBoxes("refine", "hide");'><?php print caNavIcon(__CA_NAV_BUTTON_COLLAPSE__, 1); ?></a>
 			<div style='clear:both;'></div>
 		</div><!-- end bg --></div><!-- end searchRefineBox -->
 

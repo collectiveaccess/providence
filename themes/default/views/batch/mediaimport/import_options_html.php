@@ -79,8 +79,8 @@
 			levelDataUrl: '<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryLevel'); ?>',
 			initDataUrl: '<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryAncestorList'); ?>',
 
-			openDirectoryIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
-			disabledDirectoryIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__, array('class' => 'disabled')); ?>",
+			openDirectoryIcon: "<?php print caNavIcon(__CA_NAV_BUTTON_RIGHT_ARROW__, 1); ?>",
+			disabledDirectoryIcon: "<?php print caNavIcon(__CA_NAV_BUTTON_DOT__, 1, array('class' => 'disabled')); ?>",
 
 			folderIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/folder_small.png" border="0" title="Folder" style="margin-right: 7px;"/>',
 			fileIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/file_small.png" border="0" title="File" style="margin-right: 7px;"/>',

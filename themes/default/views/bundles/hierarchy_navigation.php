@@ -138,8 +138,8 @@
 				disabledItems: '<?php print $vs_disabled_items_mode; ?>',
 				
 				editUrl: '<?php print $vs_edit_url; ?>',
-				editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
-				disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
+				editButtonIcon: "<?php print caNavIcon(__CA_NAV_BUTTON_RIGHT_ARROW__, 1); ?>",
+				disabledButtonIcon: "<?php print caNavIcon(__CA_NAV_BUTTON_DOT__, 1); ?>",
 				
 				currentSelectionDisplayID: 'browseCurrentSelection',
 

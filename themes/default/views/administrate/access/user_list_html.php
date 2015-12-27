@@ -48,7 +48,7 @@
 <?php
 	if(sizeof($va_user_list)){	
 ?>	
-		<a href='#' id='showTools' style="float:left;margin-top:10px;" onclick='jQuery("#searchToolsBox").slideDown(250); jQuery("#showTools").hide(); return false;'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_SETTINGS__);?></a>
+		<a href='#' id='showTools' style="float:left;margin-top:10px;" onclick='jQuery("#searchToolsBox").slideDown(250); jQuery("#showTools").hide(); return false;'><?php print caNavIcon(__CA_NAV_BUTTON_SETTINGS__, 1);?></a>
 <?php
 		print $this->render('user_tools_html.php');
 	}

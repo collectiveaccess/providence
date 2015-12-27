@@ -38,14 +38,14 @@
 ?>
 			<div class='visualize'>
 				<div id='vizLink'>
-					<?php print "<a href='#'  onclick='jQuery(\"#caSearchVizOptsContainer\").slideToggle(250); jQuery(\"#vizLink\").hide();return false;'>".caNavIcon($this->request, __CA_NAV_BUTTON_VISUALIZE__)." "._t("Visualize")."</a>"; ?>
+					<?php print "<a href='#'  onclick='jQuery(\"#caSearchVizOptsContainer\").slideToggle(250); jQuery(\"#vizLink\").hide();return false;'>".caNavIcon(__CA_NAV_BUTTON_VISUALIZE__, 1)." "._t("Visualize")."</a>"; ?>
 					<div class='clear:both;'></div>
 				</div>
 				<div id='caSearchVizOptsContainer' style="display:none;">
 					<?php print $vs_viz_list; ?>
 					<?php print "<a href='#'  onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'Viz', array())."/viz/\" + jQuery(\"#caSearchVizOpts\").val()); return false;'>"._t("Go")."</a>"; ?>
 					
-					<a href='#' id='hideViz' onclick='$("#caSearchVizOptsContainer").slideUp(250); $("#vizLink").slideDown(250); '><?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a>
+					<a href='#' id='hideViz' onclick='$("#caSearchVizOptsContainer").slideUp(250); $("#vizLink").slideDown(250); '><?php print caNavIcon(__CA_NAV_BUTTON_COLLAPSE__, 1); ?></a>
 					<div class='clear:both;width:100%;'></div>
 				</div>
 

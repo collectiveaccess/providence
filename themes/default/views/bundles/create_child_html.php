@@ -65,7 +65,7 @@
 					$vs_buf .= caFormTag($this->request, 'Edit', 'NewChildForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
 					$vs_buf .= _t('Add a %1 under this', $vs_type_list).caHTMLHiddenInput($t_item->primaryKey(), array('value' => '0')).caHTMLHiddenInput('parent_id', array('value' => $t_item->getPrimaryKey()));
 					$vs_buf .= '<div id="caTypeChangePanelControlButtons">';
-					$vs_buf .= '<div class="saveButton">'.caFormSubmitLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_SAVE__), '', 'NewChildForm')." "._t('Save')."</div>";					
+					$vs_buf .= '<div class="saveButton">'.caFormSubmitLink($this->request, caNavIcon(__CA_NAV_BUTTON_SAVE__, 1), '', 'NewChildForm')." "._t('Save')."</div>";					
 					$vs_buf .= caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t('Cancel'), 'caChangeTypeFormCancelButton', array('onclick' => 'caCreateChildPanel.hidePanel(); return false;'), array());
 					$vs_buf .= "</div>";
 					$vs_buf .= "</form></div>\n";
@@ -84,7 +84,7 @@
 					$vs_buf .= caFormTag($this->request, 'Edit', 'NewChildObjectForm', 'editor/objects/ObjectEditor', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
 					$vs_buf .= _t('Add a %1 under this', $vs_type_list).caHTMLHiddenInput('object_id', array('value' => '0')).caHTMLHiddenInput('collection_id', array('value' => $t_item->getPrimaryKey()));
 					$vs_buf .= '<div id="caTypeChangePanelControlButtons">';
-					$vs_buf .= '<div class="saveButton">'.caFormSubmitLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_SAVE__), '', 'NewChildObjectForm')." "._t('Save')."</div>";					
+					$vs_buf .= '<div class="saveButton">'.caFormSubmitLink($this->request, caNavIcon(__CA_NAV_BUTTON_SAVE__, 1), '', 'NewChildObjectForm')." "._t('Save')."</div>";					
 					$vs_buf .= caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t('Cancel'), 'caChangeTypeFormCancelButton', array('onclick' => 'caCreateChildPanel.hidePanel(); return false;'), array());
 					$vs_buf .= "</div>";
 					$vs_buf .= "</form></div>\n";

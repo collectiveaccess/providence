@@ -71,12 +71,12 @@
 			if($vs_table == 'ca_list_items') {
 ?>
 						<div style="float: right;">
-							<?php print caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_ADD__).' '._t('Add new list'), 'list-link', 'administrate/setup/list_editor', 'ListEditor', 'Edit', array('list_id' => 0)); ?>
+							<?php print caNavLink($this->request, caNavIcon(__CA_NAV_BUTTON_ADD__, 1).' '._t('Add new list'), 'list-link', 'administrate/setup/list_editor', 'ListEditor', 'Edit', array('list_id' => 0)); ?>
 						</div>
 <?php	
 			}
 						print "<div>";
-						print _t('Add under %2 new %1', $this->getVar('type_menu').' <a href="#" onclick="_navigateToNewForm(jQuery(\'#hierTypeList\').val())">'.caNavIcon($this->request, __CA_NAV_BUTTON_ADD__)."</a>", "<span id='browseCurrentSelection'>?</span>");
+						print _t('Add under %2 new %1', $this->getVar('type_menu').' <a href="#" onclick="_navigateToNewForm(jQuery(\'#hierTypeList\').val())">'.caNavIcon(__CA_NAV_BUTTON_ADD__, 1)."</a>", "<span id='browseCurrentSelection'>?</span>");
 						print "</div>";
 ?>
 					</form>
@@ -88,15 +88,15 @@
 			if($vs_table == 'ca_list_items') {
 ?>
 						<div style="float: right;">
-							<?php print caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_ADD__).' '._t('Add new list'), 'list-link', 'administrate/setup/list_editor', 'ListEditor', 'Edit', array('list_id' => 0)); ?>
+							<?php print caNavLink($this->request, caNavIcon(__CA_NAV_BUTTON_ADD__, 1).' '._t('Add new list'), 'list-link', 'administrate/setup/list_editor', 'ListEditor', 'Edit', array('list_id' => 0)); ?>
 						</div>
 <?php	
 			}
 					print "<div>";
 					if ($this->getVar('num_types') > 0) {
-						print _t('Add under %2 new %1', $this->getVar('type_menu').' <a href="#" onclick="_navigateToNewForm(jQuery(\'#hierTypeList\').val())">'.caNavIcon($this->request, __CA_NAV_BUTTON_ADD__)."</a>", "<span id='browseCurrentSelection'>?</span>");
+						print _t('Add under %2 new %1', $this->getVar('type_menu').' <a href="#" onclick="_navigateToNewForm(jQuery(\'#hierTypeList\').val())">'.caNavIcon(__CA_NAV_BUTTON_ADD__, 1)."</a>", "<span id='browseCurrentSelection'>?</span>");
 					} else {
-						print _t('Add under %2 new %1', _t('item').' <a href="#" onclick="_navigateToNewForm(0)">'.caNavIcon($this->request, __CA_NAV_BUTTON_ADD__)."</a>", "<span id='browseCurrentSelection'>?</span>");
+						print _t('Add under %2 new %1', _t('item').' <a href="#" onclick="_navigateToNewForm(0)">'.caNavIcon(__CA_NAV_BUTTON_ADD__, 1)."</a>", "<span id='browseCurrentSelection'>?</span>");
 					}
 					print "</div>";
 ?>
@@ -142,8 +142,8 @@
 						initDataUrl: '<?php print $va_lookup_urls['ancestorList']; ?>',
 						
 						editUrl: '<?php print caEditorUrl($this->request, $vs_table); ?>',
-						editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__);?>",
-						disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
+						editButtonIcon: "<?php print caNavIcon(__CA_NAV_BUTTON_RIGHT_ARROW__, 1);?>",
+						disabledButtonIcon: "<?php print caNavIcon(__CA_NAV_BUTTON_DOT__, 1); ?>",
 						
 						disabledItems: 'full',
 						

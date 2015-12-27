@@ -84,9 +84,9 @@ if (!$this->getVar('no_hierarchies_defined')) {
 						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_place_id; ?>' class="addItemToSetControl" />
 					</td>
 <?php
-					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_places', $vn_place_id, array())."</td>";
+					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon(__CA_NAV_BUTTON_EDIT__, 1), '', 'ca_places', $vn_place_id, array())."</td>";
 					if ($vs_mode == 'search') { 
-						print " <a href='#' onclick='caOpenBrowserWith(".$vn_place_id.");'>".caNavIcon($this->request, __CA_NAV_BUTTON_HIER__)."</a>";
+						print " <a href='#' onclick='caOpenBrowserWith(".$vn_place_id.");'>".caNavIcon(__CA_NAV_BUTTON_HIER__, 1)."</a>";
 					}
 					print "</td>";	
 					foreach($va_display_list as $vn_placement_id => $va_info) {

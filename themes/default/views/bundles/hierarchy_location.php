@@ -327,11 +327,11 @@
 							print "<div id='{$vs_id_prefix}HierarchyBrowseAdd'>"._t("Add a new %1 %2 <em>%3</em>", $vs_type_selector, caHTMLSelect('add_type', $va_add_types, array('id' => "{$vs_id_prefix}addType")), $vs_subject_label);
 		
 							// Note the jQuery(\"#{$vs_id_prefix}childTypeList\").val() which grabs the value of the type
-							print " <a href='#' onclick='_navigateToNewForm(jQuery(\"#{$vs_id_prefix}typeList\").val(), jQuery(\"#{$vs_id_prefix}addType\").val(), (jQuery(\"#{$vs_id_prefix}addType\").val() == \"next_to\") ? ".intval($pn_parent_id)." : ".intval($pn_id).")'>".caNavIcon($this->request, __CA_NAV_BUTTON_ADD__)."</a></div>";
+							print " <a href='#' onclick='_navigateToNewForm(jQuery(\"#{$vs_id_prefix}typeList\").val(), jQuery(\"#{$vs_id_prefix}addType\").val(), (jQuery(\"#{$vs_id_prefix}addType\").val() == \"next_to\") ? ".intval($pn_parent_id)." : ".intval($pn_id).")'>".caNavIcon(__CA_NAV_BUTTON_ADD__, 1)."</a></div>";
 						} else {
 							// for items without types
 							print "<div id='{$vs_id_prefix}HierarchyBrowseAdd'>"._t("Add a new %1 %2 <em>%3</em>",  $t_subject->getProperty('NAME_SINGULAR'), caHTMLSelect('add_type', $va_add_types, array('id' => "{$vs_id_prefix}addType")), $vs_subject_label);
-							print " <a href='#' onclick='_navigateToNewForm(0, jQuery(\"#{$vs_id_prefix}addType\").val(), (jQuery(\"#{$vs_id_prefix}addType\").val() == \"next_to\") ? ".intval($pn_parent_id)." : ".intval($pn_id).")'>".caNavIcon($this->request, __CA_NAV_BUTTON_ADD__)."</a></div>";
+							print " <a href='#' onclick='_navigateToNewForm(0, jQuery(\"#{$vs_id_prefix}addType\").val(), (jQuery(\"#{$vs_id_prefix}addType\").val() == \"next_to\") ? ".intval($pn_parent_id)." : ".intval($pn_id).")'>".caNavIcon(__CA_NAV_BUTTON_ADD__, 1)."</a></div>";
 						}
 ?>
 					</div>
@@ -358,7 +358,7 @@
 							print "<div id='{$vs_id_prefix}HierarchyBrowseAdd'>"._t("Add a new %1 under <em>%2</em>", $vs_type_selector, $vs_subject_label);
 		
 							// Note the jQuery(\"#{$vs_id_prefix}childTypeList\").val() which grabs the value of the type
-							print " <a href='#' onclick='_navigateToNewObjectForm(jQuery(\"#{$vs_id_prefix}objectTypeList\").val(), ".intval($pn_id).")'>".caNavIcon($this->request, __CA_NAV_BUTTON_ADD__)."</a></div>";				
+							print " <a href='#' onclick='_navigateToNewObjectForm(jQuery(\"#{$vs_id_prefix}objectTypeList\").val(), ".intval($pn_id).")'>".caNavIcon(__CA_NAV_BUTTON_ADD__, 1)."</a></div>";				
 ?>
 					</div>
 				</div>
@@ -466,8 +466,8 @@
 				disabledItems: '<?php print $vs_disabled_items_mode; ?>',
 				
 				editUrl: '<?php print $vs_edit_url; ?>',
-				editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
-				disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
+				editButtonIcon: "<?php print caNavIcon(__CA_NAV_BUTTON_RIGHT_ARROW__, 1); ?>",
+				disabledButtonIcon: "<?php print caNavIcon(__CA_NAV_BUTTON_DOT__, 1); ?>",
 
 				initItemID: '<?php print $vn_init_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
@@ -495,8 +495,8 @@
 				
 				initItemID: '<?php print $vn_init_id; ?>',
 				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
-				editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
-				disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
+				editButtonIcon: "<?php print caNavIcon(__CA_NAV_BUTTON_RIGHT_ARROW__, 1); ?>",
+				disabledButtonIcon: "<?php print caNavIcon(__CA_NAV_BUTTON_DOT__, 1); ?>",
 		
 				currentSelectionIDID: '<?php print $vs_id_prefix; ?>_new_parent_id',
 				currentSelectionDisplayID: '<?php print $vs_id_prefix; ?>HierarchyBrowserSelectionMessage',
