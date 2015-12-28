@@ -1524,11 +1524,6 @@ html.safari span.form-button button:focus{
 	font-family: 'DIN-Regular';
 	font-weight: bold;
 	vertical-align: top;
-	padding-top: 10px;
-}
-#caTypeChangePanelControlButtons .saveButton img{
-	margin-top: -10px;
-	margin-right: 4px;
 }
 
 del.form-button{

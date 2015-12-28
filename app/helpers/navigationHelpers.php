@@ -91,6 +91,9 @@
  	define('__CA_NAV_ICON_VISIBILITY_TOGGLE__', 49);
  	define('__CA_NAV_ICON_UP__', 50);
  	define('__CA_NAV_ICON_DOWN__', 51);
+ 	define('__CA_NAV_ICON_FOLDER__', 52);
+ 	define('__CA_NAV_ICON_FOLDER_OPEN__', 53);
+ 	define('__CA_NAV_ICON_FILE__', 54);
  	
  	/**
  	 * Icon position constants
@@ -301,7 +304,7 @@
 		);
 		$vs_img_tag_stuff = " padding= '{$vn_padding}px'";
 		
-		if ($vs_icon_tag = caNavIcon($pn_type, 2)) {
+		if ($vs_icon_tag = caNavIcon($pn_type, '30px')) {
 			$vs_content = (!$pb_dont_show_content) ? $ps_content : '';
 			
 			switch($ps_icon_pos) {
@@ -497,7 +500,7 @@
 			'style' => "padding-right: {$vn_padding}px"
 		);
 		
-		$vs_button .= caNavIcon($pn_type, 2).' ';
+		$vs_button .= caNavIcon($pn_type, '30px').' ';
 		if (!$pb_dont_show_content) {
 			$vs_button .= $ps_content;
 		}
@@ -723,7 +726,16 @@
  				break;	
 			case __CA_NAV_ICON_DOWN__:
  				$vs_fa_class = 'fa-arrow-circle-down';
- 				break;																																						
+ 				break;				
+ 			case __CA_NAV_ICON_FOLDER__:
+ 				$vs_fa_class = 'fa-folder';	
+ 				break;				
+ 			case __CA_NAV_ICON_FOLDER_OPEN__:
+ 				$vs_fa_class = 'fa-folder-open';	
+ 				break;							
+ 			case __CA_NAV_ICON_FILE__:
+ 				$vs_fa_class = 'fa-file';	
+ 				break;																																	
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
 				return null;
