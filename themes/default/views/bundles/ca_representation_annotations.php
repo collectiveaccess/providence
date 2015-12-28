@@ -125,7 +125,7 @@ if (	// don't show bundle if this representation doesn't use bundles to edit ann
 					<td><a href="#" onclick="jQuery('#{fieldNamePrefix}moreOptions_{n}').slideToggle(250); return false;" class="button"><?php print _t('More'); ?> &rsaquo;</a></td>
 					
 					<td>
-						<a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_BUTTON_DEL_BUNDLE__, 1); ?></a>						
+						<a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>						
 					</td>
 				</tr>
 			</table>
@@ -135,7 +135,7 @@ if (	// don't show bundle if this representation doesn't use bundles to edit ann
 						<td><?php print $t_item_label->htmlFormElement('locale_id', null, array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}locale_id_{n}", 'name' => "{fieldNamePrefix}locale_id_{n}", "value" => "", 'no_tooltips' => false, 'WHERE' => array('(dont_use_for_cataloguing = 0)'))); ?></td>
 						<td><?php print $t_item->htmlFormElement('status', null, array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}status_{n}", 'name' => "{fieldNamePrefix}status_{n}", "value" => "", 'no_tooltips' => false)); ?></td>
 						<td><?php print $t_item->htmlFormElement('access', null, array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", "value" => "", 'no_tooltips' => false)); ?></td>
-						<td><?php print urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_BUTTON_EDIT__, 1), '', 'editor/representation_annotations', 'RepresentationAnnotationEditor', 'Edit', array('annotation_id' => "{n}"), array('id' => "{fieldNamePrefix}edit_{n}"))); ?></td>
+						<td><?php print urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 1), '', 'editor/representation_annotations', 'RepresentationAnnotationEditor', 'Edit', array('annotation_id' => "{n}"), array('id' => "{fieldNamePrefix}edit_{n}"))); ?></td>
 					</tr>
 				</table>
 			</div>
@@ -143,7 +143,7 @@ if (	// don't show bundle if this representation doesn't use bundles to edit ann
 	</textarea>
 	
 	<div class="bundleContainer">	
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_BUTTON_ADD__, 1); ?> <?php print _t("Add annotation"); ?> &rsaquo;</a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, 1); ?> <?php print _t("Add annotation"); ?> &rsaquo;</a></div>
 		<div class="caItemList" style="width: 100%; overflow-y: auto; min-height: 300px;";>
 		
 		</div>

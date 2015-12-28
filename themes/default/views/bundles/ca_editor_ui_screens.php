@@ -65,8 +65,8 @@
 					</td>
 					<td>
 						<div style="float:right;">
-							<span id="{fieldNamePrefix}edit_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_BUTTON_EDIT__, 1), '', 'administrate/setup/interface_screen_editor', 'InterfaceScreenEditor', 'Edit', array('screen_id' => '{screen_id}'))); ?></span>
-							<a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_BUTTON_DELETE__, 1); ?></a>
+							<span id="{fieldNamePrefix}edit_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 1), '', 'administrate/setup/interface_screen_editor', 'InterfaceScreenEditor', 'Edit', array('screen_id' => '{screen_id}'))); ?></span>
+							<a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DELETE__, 1); ?></a>
 						</div>
 					</td>
 				</tr>
@@ -81,7 +81,7 @@
 		<div class="caItemList">
 		
 		</div>
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_BUTTON_ADD__, 1); ?> <?php print _t("Add screen"); ?> &rsaquo;</a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, 1); ?> <?php print _t("Add screen"); ?> &rsaquo;</a></div>
 	</div>
 </div>
 

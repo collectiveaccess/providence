@@ -32,10 +32,10 @@
 <div class="sectionBox">
 <?php
 	print $vs_control_box = caFormControlBox(
-		caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'GroupsForm').' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'manage', 'groups', 'ListGroups', array('group_id' => 0)), 
+		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'GroupsForm').' '.
+		caNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'manage', 'groups', 'ListGroups', array('group_id' => 0)), 
 		'', 
-		caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'manage', 'groups', 'Delete', array('group_id' => $vn_group_id))
+		caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage', 'groups', 'Delete', array('group_id' => $vn_group_id))
 	);
 ?>
 <?php

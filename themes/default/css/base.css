@@ -363,7 +363,6 @@ h5 {
 	width:28px; 
 	text-align:center; 
 	margin-right:10px; 
-	padding-top:12px;
 }
 #inspectorLotMediaDownload {
     width: 190px;
@@ -1188,11 +1187,6 @@ div.hint {
     width:22px;
     height:12px;
     display:inline-block;
-    overflow:hidden;
-    background-image: url('../graphics/icons/doc.png');
-    background-size:20px 12px;
-    background-repeat: no-repeat;
-    text-indent: 30px;
 }
 .bundleLabel .expand img{
 	width:16px;
@@ -1422,7 +1416,7 @@ a.form-button, span.form-button, del.form-button{
     padding:0 10px 0 0;
     vertical-align:middle;
 
-    padding-top: 0px; /* was -2 */
+    padding-top: -2px; /* was -2 */
     _position:relative;
     _width:10px;
     _overflow-y:hidden;
@@ -1455,14 +1449,7 @@ a.form-button span, span.form-button button, span.form-button input, del.form-bu
 	border: none;
 	vertical-align: text-top;
 	zoom: 1;
-	_position: relative;
-	_padding-left: 0px;
-	_padding-right: 12px;
-	_margin-right: -10px;
-	_display: block;
-	_top: 0;
-	_right: -5px;
-	padding: 12px 12px 0px 6px;
+	padding: 3px 12px 0px 6px;
 	border-radius: 4px;
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
@@ -6726,4 +6713,13 @@ div.authorityReferenceListContainer {
 
 #caResultsEditorWrapper .caResultsEditorStatus {
 	float: left;
+}
+
+.caIcon {
+	color :#000;
+	text-decoration: none;
+}
+
+.caIcon:hover {
+	color: #cc0000;
 }

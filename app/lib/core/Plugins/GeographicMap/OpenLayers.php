@@ -416,7 +416,7 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		if ($po_request) {
 			$vs_element .= 		'<div class="olMapSearchBox">';
 			$vs_element .=				'<input type="text" class="olMapSearchText" name="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_search"  id="{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}_search" size="30" value="" autocomplete="off" onfocus="this.value = \'\';" onkeypress="return map_geocode_'.$vs_id.'(event);"/>';
-			$vs_element .= 				"<a href='#' onclick='map_geocode_{$vs_id}();'>".caNavIcon(__CA_NAV_BUTTON_SEARCH__, 1, array('class' => 'olMapSearchBoxIcon', 'id' => "{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search_button"))."</a>";
+			$vs_element .= 				"<a href='#' onclick='map_geocode_{$vs_id}();'>".caNavIcon(__CA_NAV_ICON_SEARCH__, 1, array('class' => 'olMapSearchBoxIcon', 'id' => "{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search_button"))."</a>";
 			$vs_element .= 		'</div>';
 		}
 		$vs_element .= 			'<div class="olMapKmlControl" id="{fieldNamePrefix}showKmlControl_{n}">';

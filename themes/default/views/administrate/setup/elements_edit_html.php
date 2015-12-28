@@ -36,10 +36,10 @@
 <div class="sectionBox">
 <?php
 	print $vs_control_box = caFormControlBox(
-		caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'ElementsForm').' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'administrate/setup', 'Elements', 'Index', array('element_id' => 0)),
+		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'ElementsForm').' '.
+		caNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/setup', 'Elements', 'Index', array('element_id' => 0)),
 		'',
-		caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'administrate/setup', 'Elements', 'Delete', array('element_id' => $vn_element_id))
+		caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/setup', 'Elements', 'Delete', array('element_id' => $vn_element_id))
 	);
 
 
@@ -107,7 +107,7 @@
 							}
 						?></td>
 						<td>
-							<a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_BUTTON_DEL_BUNDLE__, 1); ?></a>
+							<a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 						</td>
 					</tr>
 				</table>
@@ -117,7 +117,7 @@
 			<div class="caItemList">
 			
 			</div>
-			<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_BUTTON_ADD__, 1); ?> <?php print _t("Add type restriction"); ?> &rsaquo;</a></div>
+			<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, 1); ?> <?php print _t("Add type restriction"); ?> &rsaquo;</a></div>
 		</div>
 	</div>
 <?php
@@ -170,8 +170,8 @@ if(is_array($va_sub_elements)):
 		<div class="labelInfo">
 			<a href="<?php print caNavUrl($this->request,'administrate/setup','Elements','MoveElementUp',array('parent_id' => $vn_element_id, 'element_id' => $va_sub_element['element_id'])); ?>" class="caDeleteLabelButton"><?php print "⬆"; ?></a>
 			<a href="<?php print caNavUrl($this->request,'administrate/setup','Elements','MoveElementDown',array('parent_id' => $vn_element_id, 'element_id' => $va_sub_element['element_id'])); ?>" class="caDeleteLabelButton"><?php print "⬇"; ?></a>
-			<a href="<?php print caNavUrl($this->request,'administrate/setup','Elements','Edit',array('parent_id' => $vn_element_id, 'element_id' => $va_sub_element['element_id'])); ?>" class="caDeleteLabelButton"><?php print caNavIcon(__CA_NAV_BUTTON_EDIT__, 1); ?></a>
-			<a href="<?php print caNavUrl($this->request,'administrate/setup','Elements','Delete',array('parent_id' => $vn_element_id, 'element_id' => $va_sub_element['element_id'])); ?>" class="caDeleteLabelButton"><?php print caNavIcon(__CA_NAV_BUTTON_DEL_BUNDLE__, 1); ?></a>
+			<a href="<?php print caNavUrl($this->request,'administrate/setup','Elements','Edit',array('parent_id' => $vn_element_id, 'element_id' => $va_sub_element['element_id'])); ?>" class="caDeleteLabelButton"><?php print caNavIcon(__CA_NAV_ICON_EDIT__, 1); ?></a>
+			<a href="<?php print caNavUrl($this->request,'administrate/setup','Elements','Delete',array('parent_id' => $vn_element_id, 'element_id' => $va_sub_element['element_id'])); ?>" class="caDeleteLabelButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 			<span class="labelDisplay">
 				<?php print $va_sub_element['name'].' ('.$va_sub_element['element_code'].') ['.ca_metadata_elements::getAttributeNameForTypeCode($va_sub_element['datatype']).']'; ?>
 			</span>
@@ -182,7 +182,7 @@ if(is_array($va_sub_elements)):
 		</div>
 		<div class="button labelInfo caAddLabelButton">
 			<a href="<?php print caNavUrl($this->request,'administrate/setup','Elements','Edit',array('parent_id' => $vn_element_id, 'element_id' => 0)); ?>">
-				<?php print caNavIcon(__CA_NAV_BUTTON_ADD__, 1); ?> <?php print _t("Add sub-element"); ?> &rsaquo;
+				<?php print caNavIcon(__CA_NAV_ICON_ADD__, 1); ?> <?php print _t("Add sub-element"); ?> &rsaquo;
 			</a>
 		</div>
 	</div>

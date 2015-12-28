@@ -31,8 +31,8 @@
 	$vn_set_id	 		= $this->getVar('set_id');
 	
 	print $vs_control_box = caFormControlBox(
-		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute batch edit"), 'caBatchEditorFormButton', array('onclick' => 'caConfirmBatchExecutionPanel.showPanel(); return false;')).' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'batch', 'Editor', 'Edit/'.$this->request->getActionExtra(), array('set_id' => $vn_set_id)),
+		caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t("Execute batch edit"), 'caBatchEditorFormButton', array('onclick' => 'caConfirmBatchExecutionPanel.showPanel(); return false;')).' '.
+		caNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'batch', 'Editor', 'Edit/'.$this->request->getActionExtra(), array('set_id' => $vn_set_id)),
 		'', 
 		''
 	);

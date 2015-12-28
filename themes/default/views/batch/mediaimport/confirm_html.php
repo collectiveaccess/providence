@@ -135,8 +135,8 @@
 			<div id="caConfirmBatchExecutionPanelControlButtons">
 				<table>
 					<tr>
-						<td align="right"><?php print caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t('Execute media import'), 'caConfirmBatchExecutionFormExecuteButton', array('onclick' => 'caExecuteBatch(); return false;'), array()); ?></td>
-						<td align="left"><?php print caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t('Cancel'), 'caConfirmBatchExecutionFormCancelButton', array('onclick' => 'caConfirmBatchExecutionPanel.hidePanel(); return false;'), array()); ?></td>
+						<td align="right"><?php print caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Execute media import'), 'caConfirmBatchExecutionFormExecuteButton', array('onclick' => 'caExecuteBatch(); return false;'), array()); ?></td>
+						<td align="left"><?php print caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caConfirmBatchExecutionFormCancelButton', array('onclick' => 'caConfirmBatchExecutionPanel.hidePanel(); return false;'), array()); ?></td>
 					</tr>
 				</table>
 			</div>

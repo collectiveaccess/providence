@@ -19,7 +19,7 @@
 			</ol>
 		</div>
 		<div class="caLibrarySubmitListContainer" id="transactionSubmitContainer">
-			<?php print caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t('Check in'), 'transactionSubmit', array(), array()); ?>
+			<?php print caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Check in'), 'transactionSubmit', array(), array()); ?>
 		</div>
 	
 		<div class="caLibraryTransactionResultsContainer" id="transactionResultsContainer">

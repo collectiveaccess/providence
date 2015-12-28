@@ -93,7 +93,7 @@
 					initDataUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyAncestorList', array('facet' => $vs_facet_name)); ?>',
 					
 					editUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addCriteria', array('facet' => $vs_facet_name, 'id' => '')); ?>',
-					editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/glyphicons_223_chevron-right.png" border="0" title="<?php print _t("Browse with this term"); ?>">',
+					editButtonIcon: '<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__ ,1); ?>',
 					
 					initItemID: '<?php print $this->getVar('browse_last_id'); ?>',
 					indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
@@ -189,7 +189,7 @@
 		# ------------------------------------------------------------
 	}
 ?>
-	<a href="#" onclick="$('#showRefine').show(); caUIBrowsePanel.hideBrowsePanel(); " class="browseSelectPanelButton"><?php print caNavIcon(__CA_NAV_BUTTON_COLLAPSE__, 1); ?></a>
+	<a href="#" onclick="$('#showRefine').show(); caUIBrowsePanel.hideBrowsePanel(); " class="browseSelectPanelButton"><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, '18px'); ?></a>
 	<div style='clear:both;width:100%'></div>
 
 </div>

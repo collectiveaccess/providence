@@ -29,7 +29,7 @@ $va_editor_ui_list = $this->getVar('editor_ui_list');
 
 $vs_type_menu = '<div class="sf-small-menu form-header-button rounded">'.
 							'<div style="float:right; margin: 3px;">'.
-								'<a href="#" onclick="_navigateToNewForm(jQuery(\'#tableList\').val());">'.caNavIcon(__CA_NAV_BUTTON_ADD_LARGE__, 1).'</a>'.
+								'<a href="#" onclick="_navigateToNewForm(jQuery(\'#tableList\').val());">'.caNavIcon(__CA_NAV_ICON_ADD__, 1).'</a>'.
 							'</div>'.
 						'<form action="#">'._t('New interface for ').' '.caHTMLSelect('editor_type', $this->getVar('table_list'), array('id' => 'tableList')).'</form>'.
 						'</div>';
@@ -90,7 +90,7 @@ $vs_type_menu = '<div class="sf-small-menu form-header-button rounded">'.
 				<?php print $va_ui['is_system_ui'] ? _t('Yes') : _t('No'); ?>
 			</td>
 			<td>
-				<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), '', 'administrate/setup/interface_editor', 'InterfaceEditor', 'Edit', array('ui_id' => $va_ui['ui_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+				<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'administrate/setup/interface_editor', 'InterfaceEditor', 'Edit', array('ui_id' => $va_ui['ui_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 			</td>
 		</tr>
 <?php

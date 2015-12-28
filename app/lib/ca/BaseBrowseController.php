@@ -314,7 +314,7 @@
 	
 						$vn_item_count++;
 	
-						$va_row_headers[] = ($vn_item_count)." ".caEditorLink($this->request, caNavIcon(__CA_NAV_BUTTON_EDIT__, 1), 'caResultsEditorEditLink', $this->ops_tablename, $vn_id);
+						$va_row_headers[] = ($vn_item_count)." ".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), 'caResultsEditorEditLink', $this->ops_tablename, $vn_id);
 	
 					}
 				}

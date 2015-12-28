@@ -57,12 +57,12 @@
 <?php
 			if(!caGetOption('hide_add_to_loan_controls', $va_settings, false)) {
 ?>
-				<div style='float: left;' class='button caAddLoanButton'><a href="#" id="<?php print $vs_id_prefix; ?>AddLoan"><?php print caNavIcon(__CA_NAV_BUTTON_ADD__, 1); ?> <?php print _t('Add to loan'); ?></a></div>
+				<div style='float: left;' class='button caAddLoanButton'><a href="#" id="<?php print $vs_id_prefix; ?>AddLoan"><?php print caNavIcon(__CA_NAV_ICON_ADD__, 1); ?> <?php print _t('Add to loan'); ?></a></div>
 <?php
 			}
 			if(!caGetOption('hide_update_location_controls', $va_settings, false)) {
 ?>
-				<div style='float: left;'  class='button caChangeLocationButton'><a href="#" id="<?php print $vs_id_prefix; ?>ChangeLocation"><?php print caNavIcon(__CA_NAV_BUTTON_ADD__, 1); ?> <?php print _t('Update location'); ?></a></div>
+				<div style='float: left;'  class='button caChangeLocationButton'><a href="#" id="<?php print $vs_id_prefix; ?>ChangeLocation"><?php print caNavIcon(__CA_NAV_ICON_ADD__, 1); ?> <?php print _t('Update location'); ?></a></div>
 <?php
 			}
 ?>
@@ -108,14 +108,14 @@
 						<input type="hidden" name="<?php print $vs_id_prefix; ?>_location_id{n}" id="<?php print $vs_id_prefix; ?>_location_id{n}" value="{id}"/>
 					</td>
 					<td>
-						<a href="#" class="caDeleteLocationButton"><?php print caNavIcon(__CA_NAV_BUTTON_DEL_BUNDLE__, 1); ?></a>
+						<a href="#" class="caDeleteLocationButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 					</td>
 				</tr>
 			</table>
 <?php
 	} else {
 ?>
-			<div style="float: right;"><a href="#" class="caDeleteLocationButton"><?php print caNavIcon(__CA_NAV_BUTTON_DEL_BUNDLE__, 1); ?></a></div>
+			<div style="float: right;"><a href="#" class="caDeleteLocationButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 			<div style='width: 690px; height: 160px;'>
 				
 				<div id='<?php print $vs_id_prefix; ?>_hierarchyBrowser{n}' style='width: 100%; height: 100%;' class='hierarchyBrowser'>
@@ -148,8 +148,8 @@
 						className: 'hierarchyBrowserLevel',
 						classNameContainer: 'hierarchyBrowserContainer',
 						
-						editButtonIcon: "<?php print caNavIcon(__CA_NAV_BUTTON_RIGHT_ARROW__, 1); ?>",
-						disabledButtonIcon: "<?php print caNavIcon(__CA_NAV_BUTTON_DOT__, 1); ?>",
+						editButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
+						disabledButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_DOT__, 1); ?>",
 						
 						indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
 						
@@ -197,7 +197,7 @@ if(!caGetOption('hide_add_to_loan_controls', $va_settings, false)) {
 						<input type="hidden" name="<?php print $vs_id_prefix; ?>_loan_id{n}" id="<?php print $vs_id_prefix; ?>_loan_id{n}" value="{id}"/>
 					</td>
 					<td>
-						<a href="#" class="caDeleteLoanButton"><?php print caNavIcon(__CA_NAV_BUTTON_DEL_BUNDLE__, 1); ?></a>
+						<a href="#" class="caDeleteLoanButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 					</td>
 				</tr>
 			</table>

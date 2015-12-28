@@ -37,43 +37,81 @@
  	require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
  	
  	# ------------------------------------------------------------------------------------------------
- 	define('__CA_NAV_BUTTON_ADD__', 1);
- 	define('__CA_NAV_BUTTON_DELETE__', 2);
- 	define('__CA_NAV_BUTTON_CANCEL__', 3);
- 	define('__CA_NAV_BUTTON_EDIT__', 4);
- 	define('__CA_NAV_BUTTON_ALERT__', 5);
- 	define('__CA_NAV_BUTTON_SEARCH__', 6);
- 	define('__CA_NAV_BUTTON_INFO__', 7);
- 	define('__CA_NAV_BUTTON_DOWNLOAD__', 8);
- 	define('__CA_NAV_BUTTON_LOGIN__', 10);
- 	define('__CA_NAV_BUTTON_SAVE__', 11);
- 	define('__CA_NAV_BUTTON_HELP__', 12);
- 	define('__CA_NAV_BUTTON_GO__', 13);
- 	define('__CA_NAV_BUTTON_DEL_BUNDLE__', 14);
- 	define('__CA_NAV_BUTTON_CLOSE__', 15);
- 	define('__CA_NAV_BUTTON_ADD_LARGE__', 16);
- 	define('__CA_NAV_BUTTON_ZOOM_IN__', 17);
- 	define('__CA_NAV_BUTTON_ZOOM_OUT__', 18);
- 	define('__CA_NAV_BUTTON_MAGNIFY__', 19);
- 	define('__CA_NAV_BUTTON_OVERVIEW__', 20);
- 	define('__CA_NAV_BUTTON_PAN__', 21);
- 	define('__CA_NAV_BUTTON_CHANGE__', 22);
- 	define('__CA_NAV_BUTTON_BATCH_EDIT__', 23);
- 	define('__CA_NAV_BUTTON_INTERSTITIAL_EDIT_BUNDLE__', 24);
- 	define('__CA_NAV_BUTTON_MAKE_PRIMARY__', 25);
- 	define('__CA_NAV_BUTTON_UPDATE__', 26);
- 	define('__CA_NAV_BUTTON_PDF_SMALL__', 27);
- 	define('__CA_NAV_BUTTON_EXPORT__', 28);
- 	define('__CA_NAV_BUTTON_FILTER__', 29);
- 	define('__CA_NAV_BUTTON_SETTINGS__', 30);
- 		
- 	define('__CA_NAV_BUTTON_ICON_POS_LEFT__', 0);
- 	define('__CA_NAV_BUTTON_ICON_POS_RIGHT__', 1);
- 	define('__CA_NAV_BUTTON_ICON_POS_TOP__', 2);
- 	define('__CA_NAV_BUTTON_ICON_POS_BOTTOM__', 3);
+ 	/**
+ 	 * Icon constants
+ 	 */
+ 	define('__CA_NAV_ICON_ADD__', 1);
+ 	define('__CA_NAV_ICON_DELETE__', 2);
+ 	define('__CA_NAV_ICON_CANCEL__', 3);
+ 	define('__CA_NAV_ICON_EDIT__', 4);
+ 	define('__CA_NAV_ICON_ALERT__', 5);
+ 	define('__CA_NAV_ICON_SEARCH__', 6);
+ 	define('__CA_NAV_ICON_INFO__', 7);
+ 	define('__CA_NAV_ICON_DOWNLOAD__', 8);
+ 	define('__CA_NAV_ICON_SET_CENTER__', 9);
+ 	define('__CA_NAV_ICON_LOGIN__', 10);
+ 	define('__CA_NAV_ICON_SAVE__', 11);
+ 	define('__CA_NAV_ICON_HELP__', 12);
+ 	define('__CA_NAV_ICON_GO__', 13);
+ 	define('__CA_NAV_ICON_DEL_BUNDLE__', 14);
+ 	define('__CA_NAV_ICON_CLOSE__', 15);
+ 	define('__CA_NAV_ICON_ADD__', 16);
+ 	define('__CA_NAV_ICON_ZOOM_IN__', 17);
+ 	define('__CA_NAV_ICON_ZOOM_OUT__', 18);
+ 	define('__CA_NAV_ICON_MAGNIFY__', 19);
+ 	define('__CA_NAV_ICON_OVERVIEW__', 20);
+ 	define('__CA_NAV_ICON_PAN__', 21);
+ 	define('__CA_NAV_ICON_CHANGE__', 22);
+ 	define('__CA_NAV_ICON_BATCH_EDIT__', 23);
+ 	define('__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__', 24);
+ 	define('__CA_NAV_ICON_MAKE_PRIMARY__', 25);
+ 	define('__CA_NAV_ICON_UPDATE__', 26);
+ 	define('__CA_NAV_ICON_PDF__', 27);
+ 	define('__CA_NAV_ICON_EXPORT__', 28);
+ 	define('__CA_NAV_ICON_FILTER__', 29);
+ 	define('__CA_NAV_ICON_SETTINGS__', 30);
+ 	define('__CA_NAV_ICON_DOT__', 31);
+ 	define('__CA_NAV_ICON_IMAGE__', 32);
+ 	define('__CA_NAV_ICON_MOVE__', 33);
+ 	define('__CA_NAV_ICON_SCROLL_RT__', 34);
+ 	define('__CA_NAV_ICON_SCROLL_LT__', 35);
+ 	define('__CA_NAV_ICON_CHILD__', 36);
+ 	define('__CA_NAV_ICON_DUPLICATE__', 37);
+ 	define('__CA_NAV_ICON_APPROVE__', 38);
+ 	define('__CA_NAV_ICON_WATCH__', 39);
+ 	define('__CA_NAV_ICON_UNWATCH__', 40);
+ 	define('__CA_NAV_ICON_COLLAPSE__', 41);
+ 	define('__CA_NAV_ICON_EXPAND__', 42);
+ 	define('__CA_NAV_ICON_COMMIT__', 43);
+ 	define('__CA_NAV_ICON_SETS__', 44);
+ 	define('__CA_NAV_ICON_RIGHT_ARROW__', 45);
+ 	define('__CA_NAV_ICON_APPROVE__', 46);
+ 	define('__CA_NAV_ICON_VISUALIZE__', 47);
+ 	define('__CA_NAV_ICON_ADD_WIDGET__', 48);	
+ 	define('__CA_NAV_ICON_VISIBILITY_TOGGLE__', 49);
+ 	define('__CA_NAV_ICON_UP__', 50);
+ 	define('__CA_NAV_ICON_DOWN__', 51);
+ 	
+ 	/**
+ 	 * Icon position constants
+ 	 */ 
+ 	define('__CA_NAV_ICON_ICON_POS_LEFT__', 0);
+ 	define('__CA_NAV_ICON_ICON_POS_RIGHT__', 1);
+ 	define('__CA_NAV_ICON_ICON_POS_TOP__', 2);
+ 	define('__CA_NAV_ICON_ICON_POS_BOTTOM__', 3);
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Return URL for given module/controller/action
 	 *
+	 * @param RequestHTTP $po_request
+	 * @param string $ps_module_path
+	 * @param string $ps_controller
+	 * @param string $ps_action
+	 * @param array $pa_other_params Array of additional parameters to include in URL
+	 * @param array $pa_options Options include:
+	 *		dontURLEncodeParameters = Don't apply url encoding to parameters in URL [Default is false]
+	 *
+	 * @return string
 	 */
 	function caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_options=null) {
 
@@ -117,26 +155,41 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Return HTML link for given module/controller/action
 	 *
+	 * @param RequestHTTP $po_request
+	 * @param string $ps_content Link display content
+	 * @param string $ps_classname CSS class to apply to link
+	 * @param string $ps_module_path
+	 * @param string $ps_controller
+	 * @param string $ps_action
+	 * @param array $pa_other_params Array of additional parameters to include in URL
+	 * @param array $pa_options Options include:
+	 *		dontURLEncodeParameters = Don't apply url encoding to parameters in URL [Default is false]
+	 *
+	 * @return string
 	 */
 	function caNavLink($po_request, $ps_content, $ps_classname, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_attributes=null, $pa_options=null) {
 		if (!($vs_url = caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params, $pa_options))) {
 			return "<strong>Error: no url for navigation</strong>";
 		}
 		
-		$vs_tag = "<a href='".$vs_url."'";
+		$vs_tag = "<a href='{$vs_url}'";
 		
-		if ($ps_classname) { $vs_tag .= " class='$ps_classname'"; }
+		if ($ps_classname) { $pa_attributes['class'] = $ps_classname; }
 		if (is_array($pa_attributes)) {
 			$vs_tag .= _caHTMLMakeAttributeString($pa_attributes);
 		}
 		
-		$vs_tag .= '>'.$ps_content.'</a>';
+		$vs_tag .= ">{$ps_content}</a>";
 		
 		return $vs_tag;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * 
+	 *
+	 *
 	 * @param array $pa_options Options are:
 	 *		icon_position =
 	 *		no_background = 
@@ -152,9 +205,7 @@
 			$vs_url = '';
 		}
 		
-		$vs_graphics_path = (isset($pa_options['graphicsPath']) && $pa_options['graphicsPath']) ? $pa_options['graphicsPath'] : $po_request->getThemeUrlPath()."/graphics";
-		
-		$ps_icon_pos = isset($pa_options['icon_position']) ? $pa_options['icon_position'] : __CA_NAV_BUTTON_ICON_POS_LEFT__;
+		$ps_icon_pos = isset($pa_options['icon_position']) ? $pa_options['icon_position'] : __CA_NAV_ICON_ICON_POS_LEFT__;
 		$pb_no_background = (isset($pa_options['no_background']) && $pa_options['no_background']) ? true : false;
 		$pb_dont_show_content = (isset($pa_options['dont_show_content']) && $pa_options['dont_show_content']) ? true : false;
 		
@@ -196,7 +247,7 @@
 			$vs_alt = $vs_title = '';
 		}
 		
-		$vs_tag .= caNavIcon($pn_type, 2).' ';
+		$vs_tag .= caNavIcon($pn_type, '30px').' ';
 		if (!$pb_dont_show_content) {
 			$vs_tag .= $ps_content;
 		}
@@ -223,12 +274,9 @@
 			return "<strong>Error: no url for navigation</strong>";
 		}
 		
-		$ps_icon_pos = isset($pa_options['icon_position']) ? $pa_options['icon_position'] : __CA_NAV_BUTTON_ICON_POS_LEFT__;
+		$ps_icon_pos = isset($pa_options['icon_position']) ? $pa_options['icon_position'] : __CA_NAV_ICON_ICON_POS_LEFT__;
 		$ps_use_classname = isset($pa_options['class']) ? $pa_options['class'] : '';
 		$pb_dont_show_content = (isset($pa_options['dont_show_content']) && $pa_options['dont_show_content']) ? true : false;
-		
-		$vs_graphics_path = (isset($pa_options['graphicsPath']) && $pa_options['graphicsPath']) ? $pa_options['graphicsPath'] : $po_request->getThemeUrlPath()."/graphics";
-		
 		
 		if ($ps_use_classname) {
 			$vs_classname = $ps_use_classname;
@@ -257,13 +305,13 @@
 			$vs_content = (!$pb_dont_show_content) ? $ps_content : '';
 			
 			switch($ps_icon_pos) {
-				case __CA_NAV_BUTTON_ICON_POS_LEFT__:
+				case __CA_NAV_ICON_ICON_POS_LEFT__:
 					$vs_tag .= $vs_icon_tag.$vs_content;
 					break;
-				case __CA_NAV_BUTTON_ICON_POS_BOTTOM__:
+				case __CA_NAV_ICON_ICON_POS_BOTTOM__:
 					$vs_tag .= $vs_content.'<br/>'.$vs_icon_tag;
 					break;
-				case __CA_NAV_BUTTON_ICON_POS_TOP__:
+				case __CA_NAV_ICON_ICON_POS_TOP__:
 				default:
 					$vs_tag .= $vs_icon_tag.'<br/>'.$vs_content;
 					break;
@@ -356,14 +404,12 @@
 	 *		preventDuplicateSubmits = default is false
 	 */
 	function caFormSubmitButton($po_request, $pn_type, $ps_content, $ps_id, $pa_options=null) {
-		$ps_icon_pos = isset($pa_options['icon_position']) ? $pa_options['icon_position'] : __CA_NAV_BUTTON_ICON_POS_LEFT__;
+		$ps_icon_pos = isset($pa_options['icon_position']) ? $pa_options['icon_position'] : __CA_NAV_ICON_ICON_POS_LEFT__;
 		$ps_use_classname = isset($pa_options['class']) ? $pa_options['class'] : '';
 		$pb_no_background = (isset($pa_options['no_background']) && $pa_options['no_background']) ? true : false;
 		$pb_dont_show_content = (isset($pa_options['dont_show_content']) && $pa_options['dont_show_content']) ? true : false;
 		$pb_prevent_duplicate_submits = (isset($pa_options['preventDuplicateSubmits']) && $pa_options['preventDuplicateSubmits']) ? true : false;
 		
-		$vs_graphics_path = (isset($pa_options['graphicsPath']) && $pa_options['graphicsPath']) ? $pa_options['graphicsPath'] : $po_request->getThemeUrlPath()."/graphics";
-
 		$vs_classname = (!$pb_no_background) ? 'form-button' : '';
 		$vs_id = (string) time();
 
@@ -392,7 +438,7 @@
 			'style' => "padding-right: {$vn_padding}px"
 		);
 		
-		$vs_button .= caNavIcon($pn_type, 2).' ';
+		$vs_button .= caNavIcon($pn_type, '30px').' ';
 		if (!$pb_dont_show_content) {
 			$vs_button .= $ps_content;
 		}
@@ -421,12 +467,10 @@
 	 *		graphicsPath =
 	 */
 	function caJSButton($po_request, $pn_type, $ps_content, $ps_id, $pa_attributes=null, $pa_options=null) {
-		$ps_icon_pos = isset($pa_options['icon_position']) ? $pa_options['icon_position'] : __CA_NAV_BUTTON_ICON_POS_LEFT__;
+		$ps_icon_pos = isset($pa_options['icon_position']) ? $pa_options['icon_position'] : __CA_NAV_ICON_ICON_POS_LEFT__;
 		$ps_use_classname = isset($pa_options['class']) ? $pa_options['class'] : '';
 		$pb_no_background = (isset($pa_options['no_background']) && $pa_options['no_background']) ? true : false;
 		$pb_dont_show_content = (isset($pa_options['dont_show_content']) && $pa_options['dont_show_content']) ? true : false;
-		
-		$vs_graphics_path = (isset($pa_options['graphicsPath']) && $pa_options['graphicsPath']) ? $pa_options['graphicsPath'] : $po_request->getThemeUrlPath()."/graphics";
 		
 		$vs_classname = (!$pb_no_background) ? 'form-button' : '';
 		
@@ -485,191 +529,207 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Return system icon as HTML
 	 *
-	 * @param int $pn_type
-	 * @param int $pn_size
-	 * @param array $pa_attributes
+	 * @param int $pn_type Icon type constant (ex. __CA_NAV_ICON_ADD__)
+	 * @param mixed $pn_size Size of icon expressed as FontAwesome magnification level (Ex. 2) or pixel height (Ex. 24px). [Default is 2]
+	 * @param array $pa_attributes Array of additional parameters to include in URL [Default is null]
 	 * @param array $pa_options No options are currently supported.
 	 * 
 	 * @return string
 	 */
-	function caNavIcon($pn_type, $pn_size=2, $pa_attributes=null, $pa_options=null) {
+	function caNavIcon($pn_type, $pm_size=2, $pa_attributes=null, $pa_options=null) {
 		if (!is_array($pa_attributes)) { $pa_attributes = array(); }
 		
 		$vs_opt_class = $pa_attributes['class'] ? ' '.$pa_attributes['class'] : '';
 		unset($pa_attributes['class']);
-		$vs_attr = _caHTMLMakeAttributeString($pa_attributes);
-		
-		if (is_array($va_icon = _caNavTypeToName($pn_type))) {
-			return "<i class='fa {$va_icon['class']} fa-{$pn_size}x{$vs_opt_class}' {$vs_attr}></i> ";
+		if(is_array($pm_size)) print caPrintStackTrace();
+		if (is_array($va_icon = _caNavIconTypeToName($pn_type))) {
+			$vs_size = '';
+			if (is_integer($pm_size)) {
+				$vs_size = "fa-{$pm_size}x";
+			} elseif(substr(strtolower($pm_size), -2) == 'px') {
+				if (!isset($pa_attributes['style'])) { $pa_attributes['style'] = ''; }
+				$pa_attributes['style'] = "font-size: {$pm_size};".$pa_attributes['style'];
+			}
+			$vs_attr = _caHTMLMakeAttributeString($pa_attributes);
+			
+			return "<i class='caIcon fa {$va_icon['class']} {$vs_size}{$vs_opt_class}' {$vs_attr}></i> ";
 		}
 		
 		return '???';
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Convert icon type constant to FontAwesome class
 	 *
+	 * @param int $pn_type Icon type constant (ex. __CA_NAV_ICON_ADD__)
+	 *
+	 * @return array
 	 */
-	function _caNavTypeToName($pn_type) {
+	function _caNavIconTypeToName($pn_type) {
 	
-		$vs_classname = '';
+		$vs_ca_class = '';
 		switch($pn_type) {
-			case __CA_NAV_BUTTON_ADD__:
-				$vs_img_name = 'fa-plus-circle';	
+			case __CA_NAV_ICON_ADD__:
+				$vs_fa_class = 'fa-plus-circle';	
 				break;
-			case __CA_NAV_BUTTON_DELETE__:
-				$vs_img_name = 'fa-minus-circle';
-				$vs_classname = 'deleteIcon'; 
+			case __CA_NAV_ICON_DELETE__:
+				$vs_fa_class = 'fa-minus-circle';
+				$vs_ca_class = 'deleteIcon'; 
 				break;
-			case __CA_NAV_BUTTON_CANCEL__:
-				$vs_img_name = 'fa fa-times';
-				$vs_classname = 'cancelIcon';
+			case __CA_NAV_ICON_CANCEL__:
+				$vs_fa_class = 'fa fa-times';
+				$vs_ca_class = 'cancelIcon';
+				break;			
+			case __CA_NAV_ICON_EDIT__:
+				$vs_fa_class = 'fa-pencil-square-o';
+				$vs_ca_class = 'editIcon'; 
 				break;
-			case __CA_NAV_BUTTON_REMOVE__:
-				$vs_img_name = 'fa-minus-circle';
-				break;				
-			case __CA_NAV_BUTTON_EDIT__:
-				$vs_img_name = 'fa-pencil-square-o';
-				$vs_classname = 'editIcon'; 
+			case __CA_NAV_ICON_BATCH_EDIT__:
+				$vs_fa_class = 'fa-cubes';
+				$vs_ca_class = 'batchIcon'; 
 				break;
-			case __CA_NAV_BUTTON_BATCH_EDIT__:
-				$vs_img_name = 'fa-cubes';
-				$vs_classname = 'batchIcon'; 
+			case __CA_NAV_ICON_ALERT__:
+				$vs_fa_class = 'fa-exclamation-triangle';
 				break;
-			case __CA_NAV_BUTTON_ALERT__:
-				$vs_img_name = 'fa-exclamation-triangle';
+			case __CA_NAV_ICON_SEARCH__:
+				$vs_fa_class = 'fa-search';
 				break;
-			case __CA_NAV_BUTTON_SEARCH__:
-				$vs_img_name = 'fa-search';
+			case __CA_NAV_ICON_INFO__:
+				$vs_fa_class = 'fa-info-circle';
 				break;
-			case __CA_NAV_BUTTON_INFO__:
-				$vs_img_name = 'fa-info-circle';
+			case __CA_NAV_ICON_DOWNLOAD__:
+				$vs_fa_class = 'fa-download';
 				break;
-			case __CA_NAV_BUTTON_DOWNLOAD__:
-				$vs_img_name = 'fa-download';
+			case __CA_NAV_ICON_MAKE_PRIMARY__:
+				$vs_fa_class = 'fa-upload';
 				break;
-			case __CA_NAV_BUTTON_MAKE_PRIMARY__:
-				$vs_img_name = 'fa-upload';
-				break;
-			case __CA_NAV_BUTTON_APPROVE__:
-				$vs_img_name = 'fa-thumbs-o-up';
+			case __CA_NAV_ICON_APPROVE__:
+				$vs_fa_class = 'fa-thumbs-o-up';
 				break;	
-			case __CA_NAV_BUTTON_UPDATE__:
-				$vs_img_name = 'fa-refresh';
-				$vs_classname = 'updateIcon'; 
+			case __CA_NAV_ICON_UPDATE__:
+				$vs_fa_class = 'fa-refresh';
+				$vs_ca_class = 'updateIcon'; 
 				break;
-			case __CA_NAV_BUTTON_LOGIN__:
-				$vs_img_name = 'fa-check-circle-o';
+			case __CA_NAV_ICON_LOGIN__:
+				$vs_fa_class = 'fa-check-circle-o';
 				break;
-			case __CA_NAV_BUTTON_SAVE__:
-				$vs_img_name = 'fa-check-circle-o';
+			case __CA_NAV_ICON_SAVE__:
+				$vs_fa_class = 'fa-check-circle-o';
 				break;
-			case __CA_NAV_BUTTON_HELP__:
-				$vs_img_name = 'fa-life-ring';
+			case __CA_NAV_ICON_HELP__:
+				$vs_fa_class = 'fa-life-ring';
 				break;
-			case __CA_NAV_BUTTON_GO__:
-				$vs_img_name = 'fa-play-circle-o';
-				$vs_classname = 'hierarchyIcon';
+			case __CA_NAV_ICON_GO__:
+				$vs_fa_class = 'fa-play-circle-o';
+				$vs_ca_class = 'hierarchyIcon';
 				break;
-			case __CA_NAV_BUTTON_DEL_BUNDLE__:
-				$vs_img_name = 'fa-minus-circle';
+			case __CA_NAV_ICON_DEL_BUNDLE__:
+				$vs_fa_class = 'fa-minus-circle';
 				break;
-			case __CA_NAV_BUTTON_CLOSE__:
-				$vs_img_name = 'fa-times';
+			case __CA_NAV_ICON_CLOSE__:
+				$vs_fa_class = 'fa-times';
 				break;
-			case __CA_NAV_BUTTON_WATCH__:
-				$vs_img_name = 'fa-eye';
+			case __CA_NAV_ICON_WATCH__:
+				$vs_fa_class = 'fa-eye';
 				break;
-			case __CA_NAV_BUTTON_UNWATCH__:
-				$vs_img_name = 'fa-eye-slash';
+			case __CA_NAV_ICON_UNWATCH__:
+				$vs_fa_class = 'fa-eye-slash';
 				break;
-			case __CA_NAV_BUTTON_ADD_LARGE__:
-				$vs_img_name = 'fa-plus-square-o';
-				break;	
-			case __CA_NAV_BUTTON_ZOOM_IN__:
-				$vs_img_name = 'fa-search-plus';
+			case __CA_NAV_ICON_ZOOM_IN__:
+				$vs_fa_class = 'fa-search-plus';
 				break;
-			case __CA_NAV_BUTTON_ZOOM_OUT__:
-				$vs_img_name = 'fa-search-minus';
+			case __CA_NAV_ICON_ZOOM_OUT__:
+				$vs_fa_class = 'fa-search-minus';
 				break;
-			case __CA_NAV_BUTTON_MAGNIFY__:
-				$vs_img_name = 'fa-search';
+			case __CA_NAV_ICON_MAGNIFY__:
+				$vs_fa_class = 'fa-search';
 				break;
-			case __CA_NAV_BUTTON_OVERVIEW__:
-				$vs_img_name = 'fa-picture-o';
+			case __CA_NAV_ICON_OVERVIEW__:
+				$vs_fa_class = 'fa-picture-o';
 				break;
-			case __CA_NAV_BUTTON_PAN__:
-				$vs_img_name = 'fa-arrows';
+			case __CA_NAV_ICON_PAN__:
+				$vs_fa_class = 'fa-arrows';
 				break;
-			case __CA_NAV_BUTTON_CHANGE__:
-				$vs_img_name = 'fa-retweet';
+			case __CA_NAV_ICON_CHANGE__:
+				$vs_fa_class = 'fa-retweet';
 				break;
-			case __CA_NAV_BUTTON_INTERSTITIAL_EDIT_BUNDLE__:
-				$vs_img_name = 'fa-paperclip';
+			case __CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__:
+				$vs_fa_class = 'fa-paperclip';
 				break;
-			case __CA_NAV_BUTTON_COLLAPSE__:
-				$vs_img_name = 'fa-minus-circle';
+			case __CA_NAV_ICON_COLLAPSE__:
+				$vs_fa_class = 'fa-minus-circle';
 				break;
-			case __CA_NAV_BUTTON_EXPAND__:
-				$vs_img_name = 'fa-expand';
+			case __CA_NAV_ICON_EXPAND__:
+				$vs_fa_class = 'fa-expand';
 				break;					
-			case __CA_NAV_BUTTON_COMMIT__:
-				$vs_img_name = 'fa-check-circle-o';
+			case __CA_NAV_ICON_COMMIT__:
+				$vs_fa_class = 'fa-check-circle-o';
 				break;	
-			case __CA_NAV_BUTTON_SETTINGS__:
-				$vs_img_name = 'fa-cog';
+			case __CA_NAV_ICON_SETTINGS__:
+				$vs_fa_class = 'fa-cog';
 				break;
-			case __CA_NAV_BUTTON_FILTER__:
-				$vs_img_name = 'fa-table';
+			case __CA_NAV_ICON_FILTER__:
+				$vs_fa_class = 'fa-table';
 				break;	
-			case __CA_NAV_BUTTON_EXPORT__:
-				$vs_img_name = 'fa-inbox';
+			case __CA_NAV_ICON_EXPORT__:
+				$vs_fa_class = 'fa-inbox';
 				break;
-			case __CA_NAV_BUTTON_SETS__:
-				$vs_img_name = 'fa-shopping-bag';
+			case __CA_NAV_ICON_SETS__:
+				$vs_fa_class = 'fa-shopping-bag';
 				break;	
-			case __CA_NAV_BUTTON_RIGHT_ARROW__:
-				$vs_img_name = 'fa-chevron-circle-right';
+			case __CA_NAV_ICON_RIGHT_ARROW__:
+				$vs_fa_class = 'fa-chevron-circle-right';
 				break;	
-			case __CA_NAV_BUTTON_VISUALIZE__:
-				$vs_img_name = 'fa-line-chart';
+			case __CA_NAV_ICON_VISUALIZE__:
+				$vs_fa_class = 'fa-line-chart';
 				break;	
-			case __CA_NAV_BUTTON_ADD_WIDGET__:
-				$vs_img_name = 'fa-plus-circle';
+			case __CA_NAV_ICON_ADD_WIDGET__:
+				$vs_fa_class = 'fa-plus-circle';
 				break;	
-			case __CA_NAV_BUTTON_DUPLICATE__:
-				$vs_img_name = 'fa-files-o';
+			case __CA_NAV_ICON_DUPLICATE__:
+				$vs_fa_class = 'fa-files-o';
 				break;	
-			case __CA_NAV_BUTTON_CHILD__:
-				$vs_img_name = 'fa-child';
+			case __CA_NAV_ICON_CHILD__:
+				$vs_fa_class = 'fa-child';
 				break;	
-			case __CA_NAV_BUTTON_SCROLL_RT__:
-				$vs_img_name = 'fa-chevron-circle-right';
+			case __CA_NAV_ICON_SCROLL_RT__:
+				$vs_fa_class = 'fa-chevron-circle-right';
 				break;	
-			case __CA_NAV_BUTTON_SCROLL_LT__:
-				$vs_img_name = 'fa-chevron-circle-left';
+			case __CA_NAV_ICON_SCROLL_LT__:
+				$vs_fa_class = 'fa-chevron-circle-left';
 				break;	
-			case __CA_NAV_BUTTON_MOVE__:
-				$vs_img_name = 'fa-truck';
+			case __CA_NAV_ICON_MOVE__:
+				$vs_fa_class = 'fa-truck';
 				break;	
-			case __CA_NAV_BUTTON_IMAGE__:
-				$vs_img_name = 'fa-file-image-o';
+			case __CA_NAV_ICON_IMAGE__:
+				$vs_fa_class = 'fa-file-image-o';
 				break;	
-			case __CA_NAV_BUTTON_DOT__:
-				$vs_img_name = 'fa-dot-cirle-o';
+			case __CA_NAV_ICON_DOT__:
+				$vs_fa_class = 'fa-dot-cirle-o';
 				break;	
-			case __CA_NAV_BUTTON_PDF__:
-				$vs_img_name = 'fa-file-pdf-o';
+			case __CA_NAV_ICON_PDF__:
+				$vs_fa_class = 'fa-file-pdf-o';
 				break;	
-			case __CA_NAV_BUTTON_SET_CENTER__:
-				$vs_img_name = 'fa-bullseye';
-				break;																																							
+			case __CA_NAV_ICON_SET_CENTER__:
+				$vs_fa_class = 'fa-bullseye';
+				break;	
+			case __CA_NAV_ICON_VISIBILITY_TOGGLE__:
+ 				$vs_fa_class = 'fa-arrow-circle-up';
+ 				break;
+			case __CA_NAV_ICON_UP__:
+ 				$vs_fa_class = 'fa-arrow-circle-up';
+ 				break;	
+			case __CA_NAV_ICON_DOWN__:
+ 				$vs_fa_class = 'fa-arrow-circle-down';
+ 				break;																																						
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
 				return null;
 				break;
 		}
-		return array('class' => $vs_img_name);
+		return array('class' => $vs_fa_class);
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**

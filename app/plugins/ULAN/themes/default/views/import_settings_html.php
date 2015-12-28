@@ -31,8 +31,8 @@
  	$vb_importers_available = (is_array($va_importer_list) && sizeof($va_importer_list));
  	
  	print $vs_control_box = caFormControlBox(
-		($vb_importers_available ? (caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Import"), 'caULANResultsForm')) : '').' '.
-		(caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', '*', '*', 'Index')),
+		($vb_importers_available ? (caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Import"), 'caULANResultsForm')) : '').' '.
+		(caNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', '*', '*', 'Index')),
 		'',
 		''
 	);

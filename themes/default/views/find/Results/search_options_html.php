@@ -45,17 +45,17 @@ if($vo_result->numHits() > 0) {
 <div style="clear: both;"><!-- empty --></div>
 
 <a href='#' id='showResultsEditor' onclick='caResultsEditorPanel.showPanel("<?php print caNavUrl($this->request, '*', '*', 'resultsEditor'); ?>"); return false;'><i class="fa fa-pencil-square-o fa-2x"></i></a> 
-<a href='#' id='showOptions' onclick='return caHandleResultsUIBoxes("display", "show");'><?php print caNavIcon(__CA_NAV_BUTTON_SETTINGS__, 1); ?></a>
+<a href='#' id='showOptions' onclick='return caHandleResultsUIBoxes("display", "show");'><?php print caNavIcon(__CA_NAV_ICON_SETTINGS__, "24px"); ?></a>
 
 <?php
 	if($vo_result->numHits() > 0) {
 		if($this->getVar('mode') === 'search' && ($this->request->user->canDoAction('can_browse_'.$vs_table)) && !($this->getVar('noRefine'))) {
 ?>
-			<a href='#' id='showRefine' onclick='return caHandleResultsUIBoxes("refine", "show");'><?php print caNavIcon(__CA_NAV_BUTTON_FILTER__, 1); ?></a>
+			<a href='#' id='showRefine' onclick='return caHandleResultsUIBoxes("refine", "show");'><?php print caNavIcon(__CA_NAV_ICON_FILTER__, "24px"); ?></a>
 <?php
 		}
 ?>
-		<a href='#' id='showTools' onclick='return caHandleResultsUIBoxes("tools", "show");'><?php print caNavIcon(__CA_NAV_BUTTON_EXPORT__, 1); ?></a>
+		<a href='#' id='showTools' onclick='return caHandleResultsUIBoxes("tools", "show");'><?php print caNavIcon(__CA_NAV_ICON_EXPORT__, "24px"); ?></a>
 <?php
 	}
 ?>
@@ -120,9 +120,9 @@ if($vo_result->numHits() > 0) {
 		print "</div>";		
 		
 
-		print "<a href='#' id='saveOptions' onclick='jQuery(\"#caSearchOptionsForm\").submit();'>".caNavIcon(__CA_NAV_BUTTON_COMMIT__, 1).'</a>';
+		print "<a href='#' id='saveOptions' onclick='jQuery(\"#caSearchOptionsForm\").submit();'>".caNavIcon(__CA_NAV_ICON_COMMIT__, "18px").'</a>';
 ?>		
-		<a href='#' id='hideOptions' onclick='return caHandleResultsUIBoxes("display", "hide");'><?php print caNavIcon(__CA_NAV_BUTTON_COLLAPSE__, 1); ?></a>
+		<a href='#' id='hideOptions' onclick='return caHandleResultsUIBoxes("display", "hide");'><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, "18px"); ?></a>
 <?php		
 		print "</form>\n";
 ?>
