@@ -1073,6 +1073,12 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$vn_element_id = $this->getHierarchyRootID(null);
 		}	
 		
+		$vs_key = "{$pn_table_num}/{$pn_type_id}/{$vn_element_id}";
+		
+		if (CompositeCache::contains($vs_key, 'ElementTypeRestrictions')) { 
+			return CompositeCache::fetch($vs_key, 'ElementTypeRestrictions');
+		}
+		
 		$o_db = $this->getDb();
 		
 		$vs_table_type_sql = '';
@@ -1098,6 +1104,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		while($qr_res->nextRow()) {
 			$va_restrictions[] = $qr_res->getRow();
 		}
+		CompositeCache::save($vs_key, $va_restrictions, 'ElementTypeRestrictions');
 		return $va_restrictions;
 	}
 	# ------------------------------------------------------
