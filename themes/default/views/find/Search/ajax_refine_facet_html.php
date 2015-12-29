@@ -96,7 +96,7 @@
 					editButtonIcon: '<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__ ,1); ?>',
 					
 					initItemID: '<?php print $this->getVar('browse_last_id'); ?>',
-					indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+					indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 					
 					currentSelectionDisplayID: 'browseCurrentSelection'
 				});

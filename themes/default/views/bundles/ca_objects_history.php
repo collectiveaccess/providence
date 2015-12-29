@@ -151,7 +151,7 @@
 						editButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
 						disabledButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_DOT__, 1); ?>",
 						
-						indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+						indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 						
 						displayCurrentSelectionOnLoad: false,
 						currentSelectionDisplayID: '<?php print $vs_id_prefix; ?>_browseCurrentSelectionText{n}',

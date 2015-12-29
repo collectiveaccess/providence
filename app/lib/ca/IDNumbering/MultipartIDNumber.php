@@ -996,8 +996,8 @@ class MultipartIDNumber extends IDNumber {
 			$va_lookup_url_info = caJSONLookupServiceUrl($pa_options['request'], $pa_options['table']);
 			$vs_js .= "
 				caUI.initIDNoChecker({
-					errorIcon: '".$pa_options['error_icon']."',
-					processIndicator: '".$pa_options['progress_indicator']."',
+					errorIcon: \"".$pa_options['error_icon']."\",
+					processIndicator: \"".$pa_options['progress_indicator']."\",
 					idnoStatusID: 'idnoStatus',
 					lookupUrl: '".$va_lookup_url_info['idno']."',
 					searchUrl: '".$pa_options['search_url']."',

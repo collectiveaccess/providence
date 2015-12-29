@@ -375,12 +375,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 	 * Returns HTML <img> tag displaying spinning "I'm doing something" icon
 	 */
 	function caBusyIndicatorIcon($po_request, $pa_attributes=null) {
-		if (!is_array($pa_attributes)) { $pa_attributes = array(); }
-		
-		$vs_attr = _caHTMLMakeAttributeString($pa_attributes);
-		$vs_button = "<img src='".$po_request->getThemeUrlPath()."/graphics/icons/indicator.gif' border='0' {$vs_attr}/> ";
-	
-		return $vs_button;
+		return caNavIcon(__CA_NAV_ICON_SPINNER__, 1, $pa_attributes);
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -2844,7 +2839,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		
 		$vs_buf = '';
 		$vs_buf .= "<span style='position: absolute; top: 2px; right: 26px;'>";
-		$vs_buf .= "<a href='#' class='caMetadataDictionaryDefinitionToggle' onclick='caBundleVisibilityManager.toggleDictionaryEntry(\"{$ps_id_prefix}\");  return false;'><img src=\"".$po_request->getThemeUrlPath()."/graphics/icons/info.png\" border=\"0\" id=\"{$ps_id_prefix}MetadataDictionaryToggleButton\"/></a>";
+		$vs_buf .= "<a href='#' class='caMetadataDictionaryDefinitionToggle' onclick='caBundleVisibilityManager.toggleDictionaryEntry(\"{$ps_id_prefix}\");  return false;'>".caNavIcon(__CA_NAV_ICON_INFO__, 1, array('id' => "{$ps_id_prefix}MetadataDictionaryToggleButton"))."</a>";
 		$vs_buf .= "</span>\n";	
 		
 		$vs_buf .= "<div id='{$ps_id_prefix}DictionaryEntry' class='caMetadataDictionaryDefinition'>{$vs_definition}</div>";

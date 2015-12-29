@@ -37,7 +37,7 @@
 ?>
 <div id="caResultsEditorWrapper">
 	<div class='caResultsEditorStatus'></div>
-	<div class='close'><a href="#" onclick="caResultsEditorPanel.hidePanel(); return false;" title="close"><i class="fa fa-times-circle-o fa-2x"></i></a></div>
+	<div class='close'><a href="#" onclick="caResultsEditorPanel.hidePanel(); return false;" title="close"><?php print caNavIcon(__CA_NAV_ICON_CLOSE__); ?></a></div>
 	
 	<div class="caResultsEditorContainer">
 		<div class="caResultsEditorContent"></div>

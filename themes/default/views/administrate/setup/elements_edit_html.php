@@ -55,10 +55,10 @@
 <?php
 	$va_lookup_url_info = caJSONLookupServiceUrl($this->request, $t_element->tableName());
 	$va_options =	array(							
-							'error_icon' 					=> $this->request->getThemeUrlPath()."/graphics/icons/warning_small.gif",
-							'progress_indicator'		=> $this->request->getThemeUrlPath()."/graphics/icons/indicator.gif",
-							'lookup_url' 					=> $va_lookup_url_info['intrinsic'],
-							'no_tooltips' => false
+							'error_icon' 				=> caNavIcon(__CA_NAV_ICON_ALERT__, 1),
+							'progress_indicator'		=> caNavIcon(__CA_NAV_ICON_SPINNER__, 1),
+							'lookup_url' 				=> $va_lookup_url_info['intrinsic'],
+							'no_tooltips' 				=> false
 						);
 	foreach($t_element->getFormFields() as $vs_f => $va_user_info) {
 		print $t_element->htmlFormElement($vs_f, null, array_merge($va_options, array('field_errors' => $this->request->getActionErrors('field_'.$vs_f))));

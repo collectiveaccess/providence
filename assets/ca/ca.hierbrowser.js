@@ -88,7 +88,9 @@ var caUI = caUI || {};
 			displayCurrentSelectionOnLoad: true,
 			typeMenuID: '',
 
+			indicator: '',	
 			indicatorUrl: '',
+			
 			editButtonIcon: '',
 			disabledButtonIcon: '',
 
@@ -713,27 +715,37 @@ var caUI = caUI || {};
 		// @param string newLevelDivID The ID of the <div> containing the level
 		//
 		that.showIndicator = function(newLevelDivID) {
-			if (!that.indicatorUrl) { return; }
-			if (jQuery('#' + newLevelDivID + ' img._indicator').length > 0) {
-				jQuery('#' + newLevelDivID + ' img._indicator').show();
+			if (!that.indicatorUrl && !that.indicator) { return; }
+			
+			if (jQuery('#' + newLevelDivID + ' div._indicator').length > 0) {
+				jQuery('#' + newLevelDivID + ' div._indicator').show();
 				return;
 			}
+			
 			var level = jQuery('#' + newLevelDivID).data('level');
+				
+			if (that.indicatorUrl) {
+				var img = document.createElement('img');
+				img.src = that.indicatorUrl;
+				img.className = '_indicatorImg';
+				
+				that.indicator = that.indicatorUrl;
+			} 
+				
+				
+			var indicator = document.createElement('div');
 			if (that.uiStyle == 'vertical') {
-				var indicator = document.createElement('img');
-				indicator.src = that.indicatorUrl;
-				indicator.className = '_indicator';
 				if (level == 0) { jQuery('#' + newLevelDivID).append("<br/>"); }
-				jQuery('#' + newLevelDivID).append(indicator);
 			} else {
-				var indicator = document.createElement('img');
-				indicator.src = that.indicatorUrl;
+				jQuery(indicator).append(that.indicator);
 				indicator.className = '_indicator';
 				indicator.style.position = 'absolute';
 				indicator.style.left = '50%';
 				indicator.style.top = '50%';
-				jQuery('#' + newLevelDivID).append(indicator);
 			}
+			jQuery('#' + newLevelDivID).append(indicator);
+			
+			return;
 		}
 		// --------------------------------------------------------------------------------
 		// Remove spinning progress indicator from specified level <div>
@@ -741,7 +753,9 @@ var caUI = caUI || {};
 		// @param string newLevelDivID The ID of the <div> containing the level
 		//
 		that.hideIndicator = function(newLevelDivID) {
-			jQuery('#' + newLevelDivID + ' img._indicator').hide();		// hide loading indicator
+			if (!that.indicatorUrl && !that.indicator) { return; }
+			
+			jQuery('#' + newLevelDivID + ' div._indicator').hide();		// hide loading indicator
 		}
 		// --------------------------------------------------------------------------------
 		// Returns database id (the primary key in the database, *NOT* the DOM ID) of currently selected item

@@ -1557,7 +1557,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				initItemID: '{".$pa_options['element_id']."}',
 				defaultItemID: '".$t_list->getDefaultItemID()."',
 				useAsRootID: '".$t_root_item->getPrimaryKey()."',
-				indicatorUrl: '".$pa_options['request']->getThemeUrlPath()."/graphics/icons/indicator.gif',
+				indicator: \"".caNavIcon(__CA_NAV_ICON_SPINNER__, 1)."\",
 				autoShrink: '".(caGetOption('auto_shrink', $pa_options, false) ? 'true' : 'false')."',
 				autoShrinkAnimateID: '{$ps_name}_hierarchyBrowser{n}',
 				autoShrinkMaxHeightPx: {$vn_autoshrink_height},

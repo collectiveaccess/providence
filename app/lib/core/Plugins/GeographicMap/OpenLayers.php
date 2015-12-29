@@ -598,10 +598,8 @@ class WLPlugGeographicMapOpenLayers Extends BaseGeographicMapPlugIn Implements I
 		function map_geocode_{$vs_id}(e) {
 			if (e && ((e.keyCode || e.which || e.charCode || 0) !== 13)) { return true; }
 			var t = jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search').val();
-			jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search_button').attr('src', '".$po_request->getThemeUrlPath()."/graphics/icons/indicator.gif');
 			var geocoder = new google.maps.Geocoder();
 			geocoder.geocode( { 'address': t}, function(results, status) {
-				//jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_search_button').attr('src', '".$po_request->getThemeUrlPath()."/graphics/buttons/glass.png');
 				if (status == google.maps.GeocoderStatus.OK) {
 					var loc = results[0]['geometry']['location'];
 					var pt = new OpenLayers.LonLat(loc.lng(), loc.lat()).transform(new OpenLayers.Projection('EPSG:4326'),map_{$vs_id}.getProjectionObject());

@@ -52,7 +52,7 @@
 	<div class="caAnnoEditorTlInfo">
 		<div class="caAnnoEditorInfo"><?php print _t("%1 clips", $vn_annotation_count); ?></div>
 		<div class="caAnnoEditorTlSyncControl">
-			<a href='#' id='caAnnoEditorTlSyncButton'><img src='<?php print __CA_URL_ROOT__; ?>/themes/default/graphics/buttons/clock.png' border='0' title='sync timelines'></a>
+			<a href='#' id='caAnnoEditorTlSyncButton'><?php print caNavIcon(__CA_NAV_ICON_CLOCK__); ?></a>
 		</div>
 	</div><!-- end caAnnoEditorTlInfo -->
 	<div class="caAnnoEditorTl">

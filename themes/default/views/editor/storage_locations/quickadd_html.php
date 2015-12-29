@@ -98,7 +98,7 @@
 							selectOnLoad: true,
 							
 							initItemID: '<?php print (int)$this->getVar("default_parent_id"); ?>',
-							indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+							indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 							displayCurrentSelectionOnLoad: true,
 							
 							currentSelectionIDID: '<?php print $vs_form_name; ?>_parent_id',

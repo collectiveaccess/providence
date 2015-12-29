@@ -242,7 +242,7 @@
 							
 							//initItemID: <?php print $vn_browse_last_id; ?>,
 							useAsRootID: <?php print $vn_use_as_root_id; ?>,
-							indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+							indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 							
 							displayCurrentSelectionOnLoad: false,
 							currentSelectionDisplayID: '<?php print $vs_id_prefix; ?>_browseCurrentSelectionText{n}',

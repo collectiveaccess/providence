@@ -132,7 +132,7 @@
 				initDataUrl: '<?php print $va_lookup_urls['ancestorList']; ?>',
 				readOnly: false,
 				initItemID: '<?php print $vn_init_id; ?>',
-				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+				indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 				dontAllowEditForFirstLevel: <?php print (in_array($t_subject->tableName(), array('ca_places', 'ca_storage_locations', 'ca_list_items', 'ca_relationship_types')) ? 'true' : 'false'); ?>,
 
 				disabledItems: '<?php print $vs_disabled_items_mode; ?>',

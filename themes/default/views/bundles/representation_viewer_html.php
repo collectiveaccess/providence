@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2014 Whirl-i-Gig
+ * Copyright 2011-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -360,7 +360,7 @@
 						// -- provide user with a choice of versions to download
 						print caFormTag($this->request, 'DownloadMedia', 'caMediaDownloadForm', $va_url['module'].'/'.$va_url['controller'], 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 						print caHTMLSelect('version', $va_versions, array('style' => 'font-size: 9px;'));
-						print caFormSubmitLink($this->request, "<img src='".$this->request->getThemeUrlPath()."/graphics/buttons/downloadWhite.png' border='0' title='"._t("Download media")."' valign='bottom'/>", '', 'caMediaDownloadForm', 'caMediaDownloadFormButton');
+						print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1, null, array('color' => 'white')), '', 'caMediaDownloadForm', 'caMediaDownloadFormButton');
 						print caHTMLHiddenInput($t_subject->primaryKey(), array('value' => $t_subject->getPrimaryKey()));
 						if ($vn_representation_id) { print caHTMLHiddenInput("representation_id", array('value' => $vn_representation_id)); }
 						if ($vn_value_id) { print caHTMLHiddenInput("value_id", array('value' => $vn_value_id)); }
@@ -420,7 +420,7 @@
 						// -- provide user with a choice of versions to download
 						print caFormTag($this->request, 'DownloadMedia', 'caMediaDownloadForm', $va_url['module'].'/'.$va_url['controller'], 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 						print caHTMLSelect('version', $va_versions, array('style' => 'font-size: 9px;'));
-						print caFormSubmitLink($this->request, "<img src='".$this->request->getThemeUrlPath()."/graphics/buttons/downloadWhite.png' border='0' title='"._t("Download media")."' valign='bottom'/>", '', 'caMediaDownloadForm', 'caMediaDownloadFormButton');
+						print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1, null, array('color' => 'white')), '', 'caMediaDownloadForm', 'caMediaDownloadFormButton');
 						print caHTMLHiddenInput($t_subject->primaryKey(), array('value' => $t_subject->getPrimaryKey()));
 						if ($vn_representation_id) { print caHTMLHiddenInput("representation_id", array('value' => $vn_representation_id)); }
 						if ($vn_value_id) { print caHTMLHiddenInput("value_id", array('value' => $vn_value_id)); }

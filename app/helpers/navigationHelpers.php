@@ -94,6 +94,8 @@
  	define('__CA_NAV_ICON_FOLDER__', 52);
  	define('__CA_NAV_ICON_FOLDER_OPEN__', 53);
  	define('__CA_NAV_ICON_FILE__', 54);
+ 	define('__CA_NAV_ICON_CLOCK__', 55);
+ 	define('__CA_NAV_ICON_SPINNER__', 56);
  	
  	/**
  	 * Icon position constants
@@ -537,7 +539,8 @@
 	 * @param int $pn_type Icon type constant (ex. __CA_NAV_ICON_ADD__)
 	 * @param mixed $pn_size Size of icon expressed as FontAwesome magnification level (Ex. 2) or pixel height (Ex. 24px). [Default is 2]
 	 * @param array $pa_attributes Array of additional parameters to include in URL [Default is null]
-	 * @param array $pa_options No options are currently supported.
+	 * @param array $pa_options Options include:
+	 *		color = hex color for icon [Default is #fff]
 	 * 
 	 * @return string
 	 */
@@ -546,6 +549,13 @@
 		
 		$vs_opt_class = $pa_attributes['class'] ? ' '.$pa_attributes['class'] : '';
 		unset($pa_attributes['class']);
+		
+		if ($vs_color = caGetOption('color', $pa_options, null)) {
+			if (is_integer($vs_color[0])) { $vs_color = "#{$vs_color}"; }
+			if (!isset($pa_attributes['style'])) { $pa_attributes['style'] = ''; }
+			$pa_attributes['style'] = "color: {$vs_color};".$pa_attributes['style'];
+		}
+		
 		if(is_array($pm_size)) print caPrintStackTrace();
 		if (is_array($va_icon = _caNavIconTypeToName($pn_type))) {
 			$vs_size = '';
@@ -571,7 +581,6 @@
 	 * @return array
 	 */
 	function _caNavIconTypeToName($pn_type) {
-	
 		$vs_ca_class = '';
 		switch($pn_type) {
 			case __CA_NAV_ICON_ADD__:
@@ -735,7 +744,13 @@
  				break;							
  			case __CA_NAV_ICON_FILE__:
  				$vs_fa_class = 'fa-file';	
- 				break;																																	
+ 				break;		
+ 			case __CA_NAV_ICON_CLOCK__:
+ 				$vs_fa_class = 'fa-clock-o';	
+ 				break;				
+ 			case __CA_NAV_ICON_SPINNER__:
+ 				$vs_fa_class = 'fa fa-cog fa-spin';	
+ 				break;																											
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
 				return null;

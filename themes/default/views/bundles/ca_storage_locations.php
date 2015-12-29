@@ -191,7 +191,7 @@
 						disabledButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_DOT__, 1); ?>",
 						
 						//initItemID: <?php print (int)$this->request->session->getVar('ca_storage_locations_browse_last_id'); ?>,
-						indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+						indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 						
 						displayCurrentSelectionOnLoad: false,
 						currentSelectionDisplayID: '<?php print $vs_id_prefix; ?>_browseCurrentSelectionText{n}',

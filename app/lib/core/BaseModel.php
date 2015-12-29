@@ -6346,8 +6346,8 @@ class BaseModel extends BaseObject {
 				$va_lookup_url_info = caJSONLookupServiceUrl($po_request, $this->tableName());
 				return $this->htmlFormElement($va_tmp[1], $this->getAppConfig()->get('idno_element_display_format_without_label'), array_merge($pa_options, array(
 						'name' => $ps_field,
-						'error_icon' 				=> $po_request->getThemeUrlPath()."/graphics/icons/warning_small.gif",
-						'progress_indicator'		=> $po_request->getThemeUrlPath()."/graphics/icons/indicator.gif",
+						'error_icon' 				=> caNavIcon(__CA_NAV_ICON_ALERT__, 1),
+						'progress_indicator'		=> caNavIcon(__CA_NAV_ICON_SPINNER__, 1),
 						'id' => str_replace(".", "_", $ps_field),
 						'classname' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
 						'value' => (isset($pa_options['values'][$ps_field]) ? $pa_options['values'][$ps_field] : ''),

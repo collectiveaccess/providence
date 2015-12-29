@@ -96,7 +96,7 @@
 			dragAndDropUploadUrl: "<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'UploadFiles'); ?>",
 
 			initItemID: '<?php print addslashes($va_last_settings['importFromDirectory']); ?>',
-			indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+			indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 
 			currentSelectionDisplayID: 'browseCurrentSelection',
 

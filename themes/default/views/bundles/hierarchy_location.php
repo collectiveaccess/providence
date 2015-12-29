@@ -470,7 +470,7 @@
 				disabledButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_DOT__, 1); ?>",
 
 				initItemID: '<?php print $vn_init_id; ?>',
-				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+				indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 				displayCurrentSelectionOnLoad: false,
 				autoShrink: <?php print (caGetOption('auto_shrink', $pa_bundle_settings, false) ? 'true' : 'false'); ?>,
 				autoShrinkAnimateID: '<?php print $vs_id_prefix; ?>ExploreHierarchyBrowser'
@@ -494,7 +494,7 @@
 				disabledItems: '<?php print $vs_disabled_items_mode; ?>',
 				
 				initItemID: '<?php print $vn_init_id; ?>',
-				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+				indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 				editButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
 				disabledButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_DOT__, 1); ?>",
 		
@@ -548,7 +548,7 @@
 				disabledItems: '<?php print $vs_disabled_items_mode; ?>',
 				
 				initItemID: '<?php print $vn_init_id; ?>',
-				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+				indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 				displayCurrentSelectionOnLoad: true,
 				autoShrink: <?php print (caGetOption('auto_shrink', $pa_bundle_settings, false) ? 'true' : 'false'); ?>,
 				autoShrinkAnimateID: '<?php print $vs_id_prefix; ?>AddHierarchyBrowser'
@@ -573,7 +573,7 @@
 				allowSelection: false,
 				
 				initItemID: '<?php print $vn_init_id; ?>',
-				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+				indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 				displayCurrentSelectionOnLoad: true,
 				autoShrink: <?php print (caGetOption('auto_shrink', $pa_bundle_settings, false) ? 'true' : 'false'); ?>,
 				autoShrinkAnimateID: '<?php print $vs_id_prefix; ?>AddObjectHierarchyBrowser'
