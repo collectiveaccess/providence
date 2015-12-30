@@ -828,7 +828,14 @@
  			while($qr_res->nextHit()) {
  				$va_row = ['id' => $qr_res->getPrimaryKey()];
  				foreach($va_display_list as $va_display_item) {
- 					$va_row[$vs_bundle = str_replace(".", "-", $va_display_item['bundle_name'])] = $t_display->getDisplayValue($qr_res, $va_display_item['placement_id']); //$qr_res->get($va_display_item['bundle_name'], array_merge(array('convertCodesToDisplayText' => true), $va_display_item['settings']));
+ 					$va_display_value = $t_display->getDisplayValue($qr_res, $va_display_item['placement_id'], ['returnInfo' => true]);
+ 					
+ 					// Handsontable uses "." as a delimiter for nested object data sources
+ 					// which forces us to convert .'s in bundle names to something else... how about a comma?
+ 					$va_row[$vs_bundle = str_replace(".", ",", $va_display_item['bundle_name'])] = $va_display_value['value']; 
+ 					
+ 					// Flag how each field is editable
+ 					$va_row["{$vs_bundle}_edit_mode"] = $va_display_value['inlineEditable'] ? "inline" : "overlay";
  				}
  				$va_data[] = $va_row;
  				$vn_c++;
@@ -856,52 +863,75 @@
  						
  						$va_bundles = $this->_makeBundles(array($va_change['change'][1]));
  						
+ 						$vb_set_value = false;
  						foreach($va_bundles as $va_bundle) {
  		 					//$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_set_id
  		 					$va_bundle_info = $t_model->getBundleInfo($va_bundle['bundle_name']);
- 		 					
  		 					switch($va_bundle_info['type']) {
+ 		 						case 'intrinsic':
+ 		 							
+ 		 							break;
+ 		 						case 'preferred_label':
+ 		 							$vs_label_id = null;
+ 		 							if (
+ 		 								is_array($va_tmp = $t_model->get($va_bundle['bundle_name'], ['returnWithStructure' => true]))
+ 		 								&&
+ 		 								is_array($va_vals = array_shift($va_tmp))
+ 		 								&&
+ 		 								is_array($va_label_ids = array_keys($va_vals))
+ 		 								&& 
+ 		 								(sizeof($va_label_ids) > 0)
+ 		 							) {
+ 		 								$vs_label_id = array_shift($va_label_ids);
+ 		 							} else {
+ 		 								$vs_label_id = 'new_0';
+ 		 							}
+ 		 							$vs_key_stub = 'P'.$va_bundle['placement_id'].'_resultsEditor_Pref';'name_'.$vs_label_id;
+ 		 							$vs_key = $vs_key_stub.'name_'.$vs_label_id;
+ 									$this->request->setParameter($vs_locale_key = $vs_key_stub.'locale_id_'.$vs_label_id, $_REQUEST[$vs_locale_key] = 1);
+ 									
+ 		 							break;
  		 						case 'attribute':
- 		 						default:
  		 							$va_tmp = explode(".", $va_bundle['bundle_name']);
  		 							$t_element = $t_model->_getElementInstance($va_tmp[1]);
- 									$vs_key = $va_bundle['placement_code'].'_resultsEditor_attribute_'.$t_element->getPrimaryKey();
+ 		 							$vn_element_id = $t_element->getPrimaryKey();
+ 		 							
+ 		 							$vs_attribute_id = null;
+ 		 							if (
+ 		 								is_array($va_tmp = $t_model->get($va_bundle['bundle_name'], ['returnWithStructure' => true]))
+ 		 								&&
+ 		 								is_array($va_vals = array_shift($va_tmp))
+ 		 								&&
+ 		 								is_array($va_attr_ids = array_keys($va_vals))
+ 		 								&& 
+ 		 								(sizeof($va_attr_ids) > 0)
+ 		 							) {
+ 		 								$vs_attribute_id = array_shift($va_attr_ids);
+ 		 							} else {
+ 		 								$vs_attribute_id = 'new_0';
+ 		 							}
+ 									$vs_key = 'P'.$va_bundle['placement_id'].'_resultsEditor_attribute_'.$vn_element_id.'_'.$vn_element_id.'_'.$vs_attribute_id;
  									break;
+ 								default:
+ 									// noop
+ 									continue(2);
  							}
- 							$_REQUEST[$vs_key] = $va_change['change'][3];
+ 							
+ 							$vb_set_value = true;
+ 							$this->request->setParameter($vs_key, $_REQUEST[$vs_key] = $va_change['change'][3]);
  						}
- 						$t_model->saveBundlesForScreen(null, $this->request, $va_options = array(
- 							'bundles' => $va_bundles, 'formName' => '_resultsEditor_'
- 						));
+ 						
+ 						if($vb_set_value) { 
+							$t_model->saveBundlesForScreen(null, $this->request, $va_options = array(
+								'bundles' => $va_bundles, 'formName' => '_resultsEditor'
+							));
+						}
  					}
  				}
  			}
- 			
  		
  			$this->view->setVar('data', $va_data);
  			$this->render("Results/ajax_save_results_editable_data_json.php");
- 		}
- 		# ------------------------------------------------------------------
- 		/**
- 		 *
- 		 */
- 		private function _makeBundles($pa_bundles) {
- 		 	$va_placements = array();
- 		 	
- 		 	$vn_i = 1;
- 		 	foreach($pa_bundles as $vs_field) {
- 		 		$vs_bundle = str_replace("-", ".", $vs_field);
- 		 		
- 		 		$va_placements[] = array(
- 		 			'placement_id' => -1*$vn_i,
- 		 			'screen_id' => -1,
- 		 			'placement_code' => "{$vs_field}_{$vn_i}",
- 		 			'bundle_name' => $vs_bundle
- 		 		);
- 		 		$vn_i++;
- 		 	}
- 		 	
- 		 	return $va_placements;
  		}
  		# ------------------------------------------------------------------
  		/**
@@ -918,16 +948,15 @@
 				if (!(bool)$pa_display_list[$vn_placement_id]['allowInlineEditing']) {
 					// Read only
 					$va_column_spec[] = array(
-						'data' => str_replace(".", "-", $vs_bundle_name), 
+						'data' => str_replace(".", ",", $vs_bundle_name), 
 						'readOnly' => !(bool)$pa_display_list[$vn_placement_id]['allowInlineEditing']
 					);
 					continue;
 				}
-		
 				switch($pa_display_list[$vn_placement_id]['inlineEditingType']) {
 					case DT_SELECT:
 						$va_column_spec[] = array(
-							'data' => str_replace(".", "-", $vs_bundle_name), 
+							'data' => str_replace(".", ",", $vs_bundle_name), 
 							'readOnly' => false,
 							'type' => 'DT_SELECT',
 							'source' => $pa_display_list[$vn_placement_id]['inlineEditingListValues'],
@@ -938,7 +967,7 @@
 						if ($po_request) {
 							$va_urls = caJSONLookupServiceUrl($po_request, 'ca_list_items');
 							$va_column_spec[] = array(
-								'data' => str_replace(".", "-", $vs_bundle_name), 
+								'data' => str_replace(".", ",", $vs_bundle_name), 
 								'readOnly' => false,
 								'type' => 'DT_LOOKUP',
 								'list' => $pa_display_list[$vn_placement_id]['inlineEditingList'],
@@ -949,7 +978,7 @@
 						break;
 					default:
 						$va_column_spec[] = array(
-							'data' => str_replace(".", "-", $vs_bundle_name), 
+							'data' => str_replace(".", ",", $vs_bundle_name), 
 							'readOnly' => false,
 							'type' => 'DT_FIELD'
 						);
@@ -959,6 +988,29 @@
 			
 			return $va_column_spec;
 		}
+		# ------------------------------------------------------------------
+ 		/**
+ 		 *
+ 		 */
+ 		private function _makeBundles($pa_bundles) {
+ 		 	$va_placements = array();
+ 		 	
+ 		 	$vn_i = 1;
+ 		 	foreach($pa_bundles as $vs_field) {
+ 		 		$vs_bundle = str_replace(",", ".", $vs_field);
+ 		 		$vs_placement = str_replace(",", "_", $vs_field);
+ 		 		
+ 		 		$va_placements[] = array(
+ 		 			'placement_id' => -1*$vn_i,
+ 		 			'screen_id' => -1,
+ 		 			'placement_code' => "{$vs_placement}_{$vn_i}",
+ 		 			'bundle_name' => $vs_bundle
+ 		 		);
+ 		 		$vn_i++;
+ 		 	}
+ 		 	
+ 		 	return $va_placements;
+ 		}
  		# ------------------------------------------------------------------
  		/**
  		 *
@@ -968,12 +1020,13 @@
 			$t_display = $this->opo_datamodel->getInstanceByTableName('ca_bundle_displays', true); 
 			$t_display->load($pn_display_id);
 			
- 			$t_model 				= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+ 			$t_model 		= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
  			
 			$vs_view = $this->opo_result_context->getCurrentView();
 			
 			if ($pn_display_id && ($t_display->haveAccessToDisplay($this->request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
 				$va_placements = $t_display->getPlacements(array('settingsOnly' => true));
+			
 				foreach($va_placements as $vn_placement_id => $va_display_item) {
 					$va_settings = caUnserializeForDatabase($va_display_item['settings']);
 					
@@ -985,13 +1038,14 @@
 					}
 					
 					$va_display_list[$vn_placement_id] = array(
-						'placement_id' => $vn_placement_id,
-						'bundle_name' => $va_display_item['bundle_name'],
-						'display' => $vs_header,
-						'settings' => $va_settings,
-						'allowInlineEditing' => $va_display_item['allowInlineEditing'],
-						'inlineEditingType' => $va_display_item['inlineEditingType'],
-						'inlineEditingListValues' => $va_display_item['inlineEditingListValues']
+						'placement_id' => 				$vn_placement_id,
+						'bundle_name' => 				$va_display_item['bundle_name'],
+						'display' => 					$vs_header,
+						'settings' => 					$va_settings,
+						'allowInlineEditing' => 		$va_display_item['allowInlineEditing'],
+						'inlineEditingType' => 			$va_display_item['inlineEditingType'],
+						'inlineEditingList' => 			$va_display_item['inlineEditingList'],
+						'inlineEditingListValues' => 	$va_display_item['inlineEditingListValues']
 					);
 				}
 			}
@@ -1003,26 +1057,26 @@
 				if ($vs_idno_fld = $t_model->getProperty('ID_NUMBERING_ID_FIELD')) {
 					$va_multipart_id = new MultipartIDNumber($this->ops_tablename, '__default__', null, $t_model->getDb());
 					$va_display_list[$this->ops_tablename.'.'.$vs_idno_fld] = array(
-						'placement_id' => $this->ops_tablename.'.'.$vs_idno_fld,
-						'bundle_name' => $this->ops_tablename.'.'.$vs_idno_fld,
-						'display' => $t_model->getDisplayLabel($this->ops_tablename.'.'.$vs_idno_fld),
-						'settings' => array(),
-						'allowInlineEditing' => $va_multipart_id->isFormatEditable($this->ops_tablename),
-						'inlineEditingType' => DT_FIELD,
-						'inlineEditingListValues' => array()
+						'placement_id' => 				$this->ops_tablename.'.'.$vs_idno_fld,
+						'bundle_name' => 				$this->ops_tablename.'.'.$vs_idno_fld,
+						'display' => 					$t_model->getDisplayLabel($this->ops_tablename.'.'.$vs_idno_fld),
+						'settings' => 					array(),
+						'allowInlineEditing' => 		$va_multipart_id->isFormatEditable($this->ops_tablename),
+						'inlineEditingType' => 			DT_FIELD,
+						'inlineEditingListValues' => 	array()
 					);
 				}
 				
 				if (method_exists($t_model, 'getLabelTableInstance') && !(($this->ops_tablename === 'ca_objects') && ($this->request->config->get('ca_objects_dont_use_labels')))) {
 					$t_label = $t_model->getLabelTableInstance();
 					$va_display_list[$this->ops_tablename.'.preferred_labels'] = array(
-						'placement_id' => $this->ops_tablename.'.preferred_labels',
-						'bundle_name' => $this->ops_tablename.'.preferred_labels',
-						'display' => $t_label->getDisplayLabel($t_label->tableName().'.'.$t_label->getDisplayField()),
-						'settings' => array(),
-						'allowInlineEditing' => true,
-						'inlineEditingType' => DT_FIELD,
-						'inlineEditingListValues' => array()
+						'placement_id' => 				$this->ops_tablename.'.preferred_labels',
+						'bundle_name' => 				$this->ops_tablename.'.preferred_labels',
+						'display' => 					$t_label->getDisplayLabel($t_label->tableName().'.'.$t_label->getDisplayField()),
+						'settings' => 					array(),
+						'allowInlineEditing' => 		true,
+						'inlineEditingType' => 			DT_FIELD,
+						'inlineEditingListValues' => 	array()
 					);
 				}
 			}

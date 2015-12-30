@@ -6717,3 +6717,15 @@ div.authorityReferenceListContainer {
 .caIcon:hover {
 	color: #cc0000;
 }
+
+.caResultsEditorReadOnlyCell {
+	position: relative;
+}
+
+.caResultsEditorOverlayIcon {
+	position: absolute;
+	width: 14px;
+	height: 14px;
+	top: 0px;
+	right: 0px;
+}

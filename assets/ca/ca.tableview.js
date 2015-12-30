@@ -44,7 +44,6 @@ var caUI = caUI || {};
 			dataSaveUrl: null,
 			editLinkFormat: null,
 			
-			rowHeaders: null,
 			colHeaders: null,
 			columns: null,
 			colWidths: null,
@@ -53,6 +52,7 @@ var caUI = caUI || {};
 			currentRowClassName: 'caResultsEditorCurrentRow',
 			currentColClassName: 'caResultsEditorCurrentCol',
 			readOnlyCellClassName: 'caResultsEditorReadOnlyCell',
+			overlayEditorIconClassName: 'caResultsEditorOverlayIcon',
 			statusDisplayClassName: 'caResultsEditorStatus',
 			
 			saveMessage: "Saving...",
@@ -74,12 +74,19 @@ var caUI = caUI || {};
 			if (cellProperties.readOnly) {
 				td.className = that.readOnlyCellClassName;
 			}
+			
+			// Add "click to edit" icon
+			if (cellProperties.editMode == 'overlay') {
+				value += ' <div class="' + that.overlayEditorIconClassName + '"><i class="fa fa-pencil-square-o"></i></div>';
+			}
+			
 			jQuery(td).empty().append(value);
 			return td;
 		};
 		// --------------------------------------------------------------------------------
 		
 		that.colWidths = [];
+		console.log(that.columns);
 		jQuery.each(that.columns, function(i, v) {
 			that.colWidths.push(200);
 			switch(that.columns[i]['type']) {
@@ -160,7 +167,7 @@ var caUI = caUI || {};
 			});
 			
 			that.saveQueue = [];
-			jQuery.getJSON(that.dataSaveUrl, { changes: q },
+			jQuery.post(that.dataSaveUrl, { changes: q },
 				function(data) {
 					if (data.errors && (data.errors instanceof Object)) {
 						var errorMessages = [];
@@ -172,15 +179,18 @@ var caUI = caUI || {};
 					} else {
 						jQuery("." + that.statusDisplayClassName).html(that.saveSuccessMessage);
 						
-						jQuery.each(data.messages, function(k, v) {
-							ht.setDataAtRowProp(itemIDToRow[k], rowData[itemIDToRow[k]]['change'][0][1], v['value'], 'external');
-						});
-						setTimeout(function() { jQuery('.' + that.statusDisplayClassName).fadeOut(500); }, 5000);
+						if (data.messages) {
+							jQuery.each(data.messages, function(k, v) {
+								ht.setDataAtRowProp(itemIDToRow[k], rowData[itemIDToRow[k]]['change'][0][1], v['value'], 'external');
+							});
+							setTimeout(function() { jQuery('.' + that.statusDisplayClassName).fadeOut(500); }, 5000);
+						}
 					}
 					
 					that.saveQueueIsRunning = false;
 					that._runSaveQueue(); // anything else to save?
-				}
+				},
+				'json'
 			);
 			
 			return true;
@@ -199,7 +209,6 @@ var caUI = caUI || {};
 				data: that.initialData,
 				columns: that.columns,
 				
-				rowHeaders: true, //that.rowHeaders,
 				colHeaders: that.colHeaders,
 	
 				contextMenu: that.contextMenu,
@@ -213,11 +222,21 @@ var caUI = caUI || {};
 				stretchH: "all",
 				colWidths: that.colWidths,
 				
-				
+				cells: function (row, col, prop) {
+					var cellProperties = {};
+					
+					cellProperties['editMode'] = that.initialData[row][prop + "_edit_mode"];
+					cellProperties['readOnly'] = !(cellProperties['editMode'] == 'inline');
+					
+					return cellProperties;
+				},
 				afterChange: function (change, source) {
 					if (source === 'loadData') {
 						return; //don't save this change
 					}
+					
+					//console.log("changes", change, source);
+				
 					for(var i in change) {
 						var r = change[i][0];
 						var row_id = that.initialData[r]['id'];
@@ -237,7 +256,7 @@ var caUI = caUI || {};
 					jQuery.merge(that.initialData, data);
 					
 					var hot = jQuery(that.container + " ." + that.gridClassName).data('handsontable');
-					hot.render();
+					if (hot) hot.render();
 					if (that.rowCount > rowsLoaded) {
 						_loadData(rowsLoaded, that.numRowsPerLoad);
 					}
