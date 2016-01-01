@@ -570,12 +570,25 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 
 							switch($t_subject->getFieldInfo($va_bundle_name[1], 'DISPLAY_TYPE')) {
 								case 'DT_SELECT':
-									if (($vs_list_code = $t_subject->getFieldInfo($va_bundle_name[1], 'LIST')) || ($vs_list_code = $t_subject->getFieldInfo($va_bundle_name[1], 'LIST_CODE'))) {
+									if ($vs_list_code = $t_subject->getFieldInfo($va_bundle_name[1], 'LIST')) {
+										$vb_use_item_values = true;
+									} else {
+										$vs_list_code = $t_subject->getFieldInfo($va_bundle_name[1], 'LIST_CODE');
+									}
+									if ($vs_list_code) {
 										$va_placements[$vn_placement_id]['inlineEditingType'] = DT_SELECT;
-										if (!is_array($va_list_labels = $t_list->getItemsForList($vs_list_code, array('labelsOnly' => true)))) {
-											$va_list_labels = array();
+										if (!is_array($va_list_items = $t_list->getItemsForList($vs_list_code))) {
+											break;
 										}
-										$va_placements[$vn_placement_id]['inlineEditingListValues'] = array_values($va_list_labels);
+										$va_list_items = caExtractValuesByUserLocale($va_list_items);
+										
+										$va_list_item_labels = array();
+										foreach($va_list_items as $vn_item_id => $va_list_item) {
+											$va_list_item_labels[$vb_use_item_values ? $va_list_item['item_value'] : $vn_item_id] = $va_list_item['name_plural'];
+										}
+										
+										$va_placements[$vn_placement_id]['inlineEditingListValues'] = array_values($va_list_item_labels);
+										$va_placements[$vn_placement_id]['inlineEditingListValueMap'] = array_flip($va_list_item_labels);
 									} else {
 										$va_placements[$vn_placement_id]['inlineEditingType'] = DT_FIELD;
 									}
@@ -603,7 +616,10 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 											case 'checklist':
 												$va_placements[$vn_placement_id]['allowInlineEditing'] = true;
 												$va_placements[$vn_placement_id]['inlineEditingType'] = DT_SELECT;
-												$va_placements[$vn_placement_id]['inlineEditingListValues'] = array_values($t_list->getItemsForList($t_element->get("list_id"), array('labelsOnly' => true)));
+												
+												$va_list_values = $t_list->getItemsForList($t_element->get("list_id"), array('labelsOnly' => true));
+												$va_placements[$vn_placement_id]['inlineEditingListValues'] = array_values($va_list_values);
+												$va_placements[$vn_placement_id]['inlineEditingListValueMap'] = array_flip($va_list_values);
 												break;
 											case 'lookup':
 											case 'horiz_hierbrowser':
@@ -1953,7 +1969,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					'maxCount' => 1,
 					'count' => 1,
 					'ids' => null,
-					'inlineEditable' => true
+					'inlineEditable' => $vb_editable
 				);
 			} elseif ($t_instance->hasElement($va_bundle_bits[1])) {
 				// attributes

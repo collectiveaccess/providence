@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2015 Whirl-i-Gig
+ * Copyright 2013-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,11 +39,13 @@ var caUI = caUI || {};
 			columnSorting: true,
 			
 			dataLoadUrl: null,
-			numRowsPerLoad: 20,
+			numRowsForFirstLoad: 20,
+			numRowsPerLoad: 200,
 			
 			dataSaveUrl: null,
 			editLinkFormat: null,
 			
+			rowHeaders: null,
 			colHeaders: null,
 			columns: null,
 			colWidths: null,
@@ -61,10 +63,11 @@ var caUI = caUI || {};
 			
 			lastLookupIDMap: null,
 			
+			restoreOriginalValueOnError: false,
+			
 			saveQueue: [],
 			saveQueueIsRunning: false
 		}, options);
-		
 	
 		// --------------------------------------------------------------------------------
 		// Define methods
@@ -75,25 +78,33 @@ var caUI = caUI || {};
 				td.className = that.readOnlyCellClassName;
 			}
 			
+			if (!value) { value = ''; }
+			
 			// Add "click to edit" icon
 			if (cellProperties.editMode == 'overlay') {
 				value += ' <div class="' + that.overlayEditorIconClassName + '"><i class="fa fa-pencil-square-o"></i></div>';
 			}
 			
 			jQuery(td).empty().append(value);
+			
+			if (cellProperties.error) {
+				jQuery(td).css('border', '2px dashed #cc0000');	
+			}
+			
 			return td;
 		};
 		// --------------------------------------------------------------------------------
 		
 		that.colWidths = [];
-		console.log(that.columns);
+		
 		jQuery.each(that.columns, function(i, v) {
 			that.colWidths.push(200);
 			switch(that.columns[i]['type']) {
 				case 'DT_SELECT':
 					delete(that.columns[i]['type']);
-					that.columns[i]['type'] = 'autocomplete';
-					that.columns[i]['editor'] = 'dropdown';
+					that.columns[i]['type'] = 'dropdown';
+					that.columns[i]['allowInvalid'] = false;
+					
 					break;
 				case 'DT_LOOKUP':
 					var d = that.columns[i]['data'];
@@ -135,7 +146,15 @@ var caUI = caUI || {};
 			}
 		});
 		// --------------------------------------------------------------------------------
-		
+
+		that.getColumnForField = function(f, returnIndex) {
+			for(var i in that.columns) {
+				if (that.columns[i]['data'] === f) { return returnIndex ? i : that.columns[i]; }
+			} 
+			return null;
+		};
+		// --------------------------------------------------------------------------------
+
 		that.save = function(change) {
 			that.saveQueue.push(change);
 			that._runSaveQueue();
@@ -161,31 +180,58 @@ var caUI = caUI || {};
 			// make map from item_id to row, and vice-versa
 			var rowToItemID = {}, itemIDToRow = {}, rowData = {};
 			jQuery.each(q, function(k, v) {
-				rowToItemID[v['change'][0][0]] = v['id'];
-				itemIDToRow[v['id']] = v['change'][0][0];
-				rowData[v['change'][0][0]] = v;
+				// transform list values to ids?
+				var c;
+				if (c = that.getColumnForField(v['change'][1])) {
+					if (c.sourceMap && (v['change'][3] in c.sourceMap)) {
+						v['change'][3] = c.sourceMap[v['change'][3]];
+					}
+				}
+			
+				rowToItemID[v['change'][0]] = v['id'];
+				itemIDToRow[v['id']] = v['change'][0];
+				rowData[v['change'][0]] = v;
 			});
 			
 			that.saveQueue = [];
 			jQuery.post(that.dataSaveUrl, { changes: q },
 				function(data) {
-					if (data.errors && (data.errors instanceof Object)) {
+					if (data.status == 'error') {
 						var errorMessages = [];
-						jQuery.each(data.errors, function(k, v) {
-							errorMessages.push(that.errorMessagePrefix + ": " + v.message);
-							ht.setDataAtRowProp(itemIDToRow[k], rowData[itemIDToRow[k]]['change'][0][1], rowData[itemIDToRow[k]]['change'][0][2], 'external');
-						});
-						jQuery("." + that.statusDisplayClassName).html(errorMessages.join('; '));
-					} else {
-						jQuery("." + that.statusDisplayClassName).html(that.saveSuccessMessage);
-						
-						if (data.messages) {
-							jQuery.each(data.messages, function(k, v) {
-								ht.setDataAtRowProp(itemIDToRow[k], rowData[itemIDToRow[k]]['change'][0][1], v['value'], 'external');
+						jQuery.each(data.errors, function(f, errorList) {
+							jQuery.each(errorList, function(id, error) {
+        						var row = parseInt(itemIDToRow[id]);
+        						var col = that.getColumnForField(rowData[row]['change'][1], true);
+								
+								errorMessages.push(that.errorMessagePrefix + ": " + error);
+								
+								if (that.restoreOriginalValueOnError) {
+									// Restore original value
+									ht.setDataAtRowProp(itemIDToRow[id], rowData[itemIDToRow[id]]['change'][1], rowData[itemIDToRow[id]]['change'][2], 'external');
+								}
+								
+								ht.setCellMeta(row, col, 'comment', error);	// display error on cell
+								ht.setCellMeta(row, col, 'error', true);
 							});
-							setTimeout(function() { jQuery('.' + that.statusDisplayClassName).fadeOut(500); }, 5000);
-						}
+						});
+						
+        				ht.render();
+        				
+						jQuery("." + that.statusDisplayClassName).html(errorMessages.join('; ')).show();
+					} else {
+						jQuery("." + that.statusDisplayClassName).html(that.saveSuccessMessage).show();
+						
+						jQuery.each(data.request.changes, function(i, c) {
+							var row = parseInt(itemIDToRow[c['id']]);
+							var col = that.getColumnForField(c['change'][1], true);
+							
+        					ht.setCellMeta(row, col, 'comment', null);  // clear comment
+        					ht.setCellMeta(row, col, 'error', false);
+        				});
+        				ht.render();
 					}
+					
+					setTimeout(function() { jQuery('.' + that.statusDisplayClassName).fadeOut(500); }, 5000);
 					
 					that.saveQueueIsRunning = false;
 					that._runSaveQueue(); // anything else to save?
@@ -203,13 +249,17 @@ var caUI = caUI || {};
 		var availableHeight = $window.height() + $window.scrollTop() - 30;	// leave 30 pixels of space for status bar
 		
 		// Set up HOT and load first batch of data
-		jQuery.getJSON(that.dataLoadUrl, {s:0, c:that.numRowsPerLoad}, function(data) {
+		jQuery.getJSON(that.dataLoadUrl, {s:0, c:that.numRowsForFirstLoad}, function(data) {
 			that.initialData = data;
 			var ht = jQuery(that.container + " ." + that.gridClassName).handsontable({
 				data: that.initialData,
 				columns: that.columns,
 				
+				rowHeaders: that.rowHeaders,
 				colHeaders: that.colHeaders,
+				
+				autoRowSize: true,
+				comments: true,
 	
 				contextMenu: that.contextMenu,
 				columnSorting: that.columnSorting,
@@ -224,48 +274,52 @@ var caUI = caUI || {};
 				
 				cells: function (row, col, prop) {
 					var cellProperties = {};
-					
 					cellProperties['editMode'] = that.initialData[row][prop + "_edit_mode"];
-					cellProperties['readOnly'] = !(cellProperties['editMode'] == 'inline');
+					if (that.columns[col] && !that.columns[col]['readOnly']) { cellProperties['readOnly'] = !(cellProperties['editMode'] == 'inline'); }
 					
 					return cellProperties;
 				},
 				afterChange: function (change, source) {
-					if (source === 'loadData') {
-						return; //don't save this change
-					}
-					
-					//console.log("changes", change, source);
-				
-					for(var i in change) {
-						var r = change[i][0];
-						var row_id = that.initialData[r]['id'];
-						that.save({'change': change[i], 'id': row_id});
+					if (source === 'edit') { // only save edits
+						for(var i in change) {
+							var r = change[i][0];
+							var row_id = that.initialData[r]['id'];
+							that.save({'change': change[i], 'id': row_id});
+						}
 					}
 				}
 			});
 			
+			// Ensure comments on cells are visible and non-editable
+			jQuery('.htCommentsContainer, .htComments').css('zIndex', '99000');
+			jQuery(".htCommentTextArea").attr("disabled","disabled");
+			
 			// Load additional data in chunks
-			var rowsLoaded = that.numRowsPerLoad;
+			var rowsLoaded = that.numRowsForFirstLoad;
 			var _loadData = function(s, c) {
-				if (that.statusDisplayClassName) { jQuery(that.container + " ." + that.statusDisplayClassName).html("Loading " + s + " - " + (s + c)); }	
+				var percentLoaded = parseInt((s/that.rowCount) * 100);
+				if (percentLoaded > 100) percentLoaded = 100;
+				
+				if (that.statusDisplayClassName) { jQuery(that.container + " ." + that.statusDisplayClassName).html("Loading " + percentLoaded + "%").show(); }	
 				jQuery.getJSON(that.dataLoadUrl, {s:s, c:c}, function(data) {
 					rowsLoaded += data.length;
 					
-					if (that.statusDisplayClassName) { jQuery(that.container + " ." + that.statusDisplayClassName).html("Loading complete"); }	
+					if (that.statusDisplayClassName) { jQuery(that.container + " ." + that.statusDisplayClassName).html("Loading complete").show(); }	
 					jQuery.merge(that.initialData, data);
 					
 					var hot = jQuery(that.container + " ." + that.gridClassName).data('handsontable');
 					if (hot) hot.render();
 					if (that.rowCount > rowsLoaded) {
 						_loadData(rowsLoaded, that.numRowsPerLoad);
+					} else {
+						setTimeout(function() { jQuery('.' + that.statusDisplayClassName).fadeOut(500); }, 5000);
 					}
 				});
 			};
 		
 			if (that.rowCount > rowsLoaded) {
 				_loadData(rowsLoaded, that.numRowsPerLoad);
-			}
+			} 
 		});		
 		
 		return that;

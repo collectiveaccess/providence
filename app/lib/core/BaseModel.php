@@ -1227,6 +1227,7 @@ class BaseModel extends BaseObject {
 		}
 
 		foreach($pa_fields as $vs_field => $vm_value) {
+			if (strpos($vs_field, '.') !== false) { $va_tmp = explode('.', $vs_field); $vs_field = $va_tmp[1]; }
 			if (array_key_exists($vs_field, $this->FIELDS)) {
 				$pa_fields_type = $this->getFieldInfo($vs_field,"FIELD_TYPE");
 				$pb_need_reload = false;

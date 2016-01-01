@@ -869,6 +869,7 @@
  		 					$va_bundle_info = $t_model->getBundleInfo($va_bundle['bundle_name']);
  		 					switch($va_bundle_info['type']) {
  		 						case 'intrinsic':
+ 		 							$vs_key = 'P'.$va_bundle['placement_id'].'_resultsEditor'.$va_bundle['bundle_name'];
  		 							
  		 							break;
  		 						case 'preferred_label':
@@ -911,6 +912,7 @@
  		 								$vs_attribute_id = 'new_0';
  		 							}
  									$vs_key = 'P'.$va_bundle['placement_id'].'_resultsEditor_attribute_'.$vn_element_id.'_'.$vn_element_id.'_'.$vs_attribute_id;
+ 									
  									break;
  								default:
  									// noop
@@ -926,11 +928,21 @@
 								'bundles' => $va_bundles, 'formName' => '_resultsEditor'
 							));
 						}
+						if ($this->request->numActionErrors()) { 
+							$va_bundles = $this->request->getActionErrorSources();
+							foreach($va_bundles as $vs_bundle) {
+								$va_errors_for_bundle = array();
+								foreach($this->request->getActionErrors($vs_bundle) as $o_error) {
+									$va_errors_for_bundle[$vn_id] = $o_error->getErrorDescription();
+								}
+								$va_errors[$vs_bundle] = $va_errors_for_bundle;
+							}
+						}
  					}
  				}
  			}
  		
- 			$this->view->setVar('data', $va_data);
+ 			$this->view->setVar('errors', $va_errors);
  			$this->render("Results/ajax_save_results_editable_data_json.php");
  		}
  		# ------------------------------------------------------------------
@@ -960,6 +972,7 @@
 							'readOnly' => false,
 							'type' => 'DT_SELECT',
 							'source' => $pa_display_list[$vn_placement_id]['inlineEditingListValues'],
+							'sourceMap' => $pa_display_list[$vn_placement_id]['inlineEditingListValueMap'],
 							'strict' => true
 						);
 						break;
@@ -971,6 +984,7 @@
 								'readOnly' => false,
 								'type' => 'DT_LOOKUP',
 								'list' => $pa_display_list[$vn_placement_id]['inlineEditingList'],
+								'sourceMap' => $pa_display_list[$vn_placement_id]['inlineEditingListValueMap'],
 								'lookupURL' => $va_urls['search'],
 								'strict' => false
 							);
@@ -1045,7 +1059,8 @@
 						'allowInlineEditing' => 		$va_display_item['allowInlineEditing'],
 						'inlineEditingType' => 			$va_display_item['inlineEditingType'],
 						'inlineEditingList' => 			$va_display_item['inlineEditingList'],
-						'inlineEditingListValues' => 	$va_display_item['inlineEditingListValues']
+						'inlineEditingListValues' => 	$va_display_item['inlineEditingListValues'],
+						'inlineEditingListValueMap' => 	$va_display_item['inlineEditingListValueMap']
 					);
 				}
 			}
@@ -1063,7 +1078,8 @@
 						'settings' => 					array(),
 						'allowInlineEditing' => 		$va_multipart_id->isFormatEditable($this->ops_tablename),
 						'inlineEditingType' => 			DT_FIELD,
-						'inlineEditingListValues' => 	array()
+						'inlineEditingListValues' => 	array(),
+						'inlineEditingListValueMap' => 	array()
 					);
 				}
 				
@@ -1076,7 +1092,8 @@
 						'settings' => 					array(),
 						'allowInlineEditing' => 		true,
 						'inlineEditingType' => 			DT_FIELD,
-						'inlineEditingListValues' => 	array()
+						'inlineEditingListValues' => 	array(),
+						'inlineEditingListValueMap' => 	array()
 					);
 				}
 			}

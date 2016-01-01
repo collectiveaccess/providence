@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * themes/default/views/find/results_editable_html.php 
+ * themes/default/views/find/Results/results_editable_html.php 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,9 +36,11 @@
 
 ?>
 <div id="caResultsEditorWrapper">
-	<div class='caResultsEditorStatus'></div>
-	<div class='close'><a href="#" onclick="caResultsEditorPanel.hidePanel(); return false;" title="close"><?php print caNavIcon(__CA_NAV_ICON_CLOSE__); ?></a></div>
-	
+	<div class='caResultsEditorStatusBar'>
+		<div class='caResultsEditorStatus'></div>
+		<div class='close'><a href="#" onclick="caResultsEditorPanel.hidePanel(); return false;" title="close"><?php print caNavIcon(__CA_NAV_ICON_CLOSE__); ?></a></div>
+		<br style='clear'/>
+	</div>
 	<div class="caResultsEditorContainer">
 		<div class="caResultsEditorContent"></div>
 	</div><!--end scrollingResults -->
@@ -50,7 +52,7 @@
 		caUI.initTableView('#caResultsEditorWrapper', {
 			dataLoadUrl: '<?php print caNavUrl($this->request, '*', '*', 'getResultsEditorData'); ?>',
 			dataSaveUrl: '<?php print caNavUrl($this->request, '*', '*', 'saveResultsEditorData'); ?>',
-			//rowHeaders: <?php print json_encode($va_row_headers); ?>,
+			rowHeaders: true,
 			
 			colHeaders: <?php print json_encode($va_column_headers); ?>,
 			columns: <?php print json_encode($va_columns); ?>,
