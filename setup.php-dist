@@ -141,6 +141,17 @@ if (!defined("__CA_DEFAULT_LOCALE__")) {
 	define("__CA_DEFAULT_LOCALE__", "en_US");
 }
 
+#
+# __CA_USE_CLEAN_URLS__ = Determines if clean urls should be generated.
+#
+# If you have mod_rewrite on your server you may be this to a non-zero value
+# to have Providence use "clean" urls – urls without the index.php handler included
+#
+# Only set this if your web server includes mod_rewrite and it is enabled using
+# the provided .htaccess file
+# 
+define("__CA_USE_CLEAN_URLS__", 1);
+
 
 #
 # __CA_APP_NAME__ = a short name alphanumeric-only (no spaces or punctuation) name for this CollectiveAccess installation

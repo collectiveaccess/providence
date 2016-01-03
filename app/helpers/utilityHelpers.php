@@ -710,6 +710,22 @@ function caFileIsIncludable($ps_file) {
 		}
 	}
 	# ----------------------------------------
+	/**
+	 * Check if mod_rewrite web server module is available 
+	 *
+	 * @return bool
+	 */
+	$g_mod_write_is_available = null;
+	function caModRewriteIsAvailable() {
+		global $g_mod_write_is_available;
+		if (is_bool($g_mod_write_is_available)) { return $g_mod_write_is_available; }
+		if (function_exists('apache_get_modules')) {
+			return $g_mod_write_is_available = (bool)in_array('mod_rewrite', apache_get_modules());
+		} else {
+			return $g_mod_write_is_available = (bool)((getenv('HTTP_MOD_REWRITE') == 'On') ? true : false);
+		}
+	}
+	# ----------------------------------------
 	function caConvertHTMLBreaks($ps_text) {
 		# check for tags before converting breaks
 		preg_match_all("/<[A-Za-z0-9]+/", $ps_text, $va_tags);

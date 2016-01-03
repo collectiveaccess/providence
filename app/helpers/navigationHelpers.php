@@ -96,6 +96,7 @@
  	define('__CA_NAV_ICON_FILE__', 54);
  	define('__CA_NAV_ICON_CLOCK__', 55);
  	define('__CA_NAV_ICON_SPINNER__', 56);
+ 	define('__CA_NAV_ICON_HIER__', 57);
  	
  	/**
  	 * Icon position constants
@@ -120,7 +121,7 @@
 	 */
 	function caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_options=null) {
 
-		if(defined('__CA_USE_CLEAN_URLS__') && (__CA_USE_CLEAN_URLS__)) {
+		if(caUseCleanUrls()) {
 			$vs_url = $po_request->getBaseUrlPath();
 		} else {
 			$vs_url = $po_request->getBaseUrlPath().'/'.$po_request->getScriptName();
@@ -176,7 +177,8 @@
 	 */
 	function caNavLink($po_request, $ps_content, $ps_classname, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_attributes=null, $pa_options=null) {
 		if (!($vs_url = caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params, $pa_options))) {
-			return "<strong>Error: no url for navigation</strong>";
+			//return "<strong>Error: no url for navigation</strong>";
+			$vs_url = '/';
 		}
 		
 		$vs_tag = "<a href='{$vs_url}'";
@@ -204,7 +206,7 @@
 	function caNavButton($po_request, $pn_type, $ps_content, $ps_classname, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_attributes=null, $pa_options=null) {
 		if ($ps_module_path && $ps_controller && $ps_action) {
 			if (!($vs_url = caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params))) {
-				return "<strong>Error: no url for navigation</strong>";
+				return '';//<strong>Error: no url for navigation</strong>";
 			}
 		} else {
 			$vs_url = '';
@@ -276,7 +278,7 @@
 	 */
 	function caNavHeaderButton($po_request, $pn_type, $ps_content, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_attributes=null, $pa_options=null) {
 		if (!($vs_url = caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params))) {
-			return "<strong>Error: no url for navigation</strong>";
+			return ''; //<strong>Error: no url for navigation</strong>";
 		}
 		
 		$ps_icon_pos = isset($pa_options['icon_position']) ? $pa_options['icon_position'] : __CA_NAV_ICON_ICON_POS_LEFT__;
@@ -350,9 +352,15 @@
 		}
 		
 		if ($ps_module_and_controller_path) {
-			$vs_action = $po_request->getBaseUrlPath().'/'.$po_request->getScriptName().'/'.$ps_module_and_controller_path.'/'.$ps_action;
+			$vs_action = (caUseCleanUrls()) ?
+				$po_request->getBaseUrlPath().'/'.$ps_module_and_controller_path.'/'.$ps_action
+				:					
+				$po_request->getBaseUrlPath().'/'.$po_request->getScriptName().'/'.$ps_module_and_controller_path.'/'.$ps_action;
 		} else {
-			$vs_action = $po_request->getControllerUrl().'/'.$ps_action;
+			$vs_action = (caUseCleanUrls()) ?
+				str_replace("/".$po_request->getScriptName(), "", $po_request->getControllerUrl()).'/'.$ps_action
+				:
+				$po_request->getControllerUrl().'/'.$ps_action;
 		}
 		
 		$vs_buf = "<form action='".$vs_action."' method='".$ps_method."' id='".$ps_id."' $vs_target enctype='".$ps_enctype."'>\n<input type='hidden' name='_formName' value='{$ps_id}'/>\n";
@@ -750,7 +758,10 @@
  				break;				
  			case __CA_NAV_ICON_SPINNER__:
  				$vs_fa_class = 'fa fa-cog fa-spin';	
- 				break;																											
+ 				break;								
+ 			case __CA_NAV_ICON_HIER__:
+ 				$vs_fa_class = 'fa fa-sitemap';
+ 				break;																	
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
 				return null;
@@ -1028,8 +1039,6 @@
 		$vs_pk = $t_table->primaryKey();
 		$vs_table = $ps_table;
 		
-		$vb_id_exists = null;
-		
 		$vs_module = 'Detail';
 		$vs_action = 'Show';
 		switch($ps_table) {
@@ -1240,5 +1249,15 @@
 
 		$g_response->setRedirect($ps_url);
 		return true;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 *
+	 */
+	$g_use_clean_urls = null;
+	function caUseCleanUrls() {
+		global $g_use_clean_urls;
+		if (is_bool($g_use_clean_urls)) { return $g_use_clean_urls; }
+		return $g_use_clean_urls = (defined('__CA_USE_CLEAN_URLS__') && (__CA_USE_CLEAN_URLS__) && caModRewriteIsAvailable());
 	}
 	# ------------------------------------------------------------------------------------------------

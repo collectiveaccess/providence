@@ -13,3 +13,15 @@ Allow from all
 <FilesMatch "^.*\.(css|gif|jpg|png|js|woff|ttf|swf|map|m4v|xml|ply|stl)$">
         Allow from all
 </FilesMatch>
+
+<IfModule mod_rewrite.c>
+	RewriteEngine on
+	SetEnv HTTP_MOD_REWRITE On
+	
+	# Pass all requests not referring directly 
+	# to files in the filesystem to index.php.
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteCond %{REQUEST_URI} !=/favicon.ico
+	RewriteRule ^ index.php%{REQUEST_URI} [L]	
+</IfModule>

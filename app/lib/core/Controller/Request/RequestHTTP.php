@@ -163,7 +163,7 @@ class RequestHTTP extends Request {
 		$this->opa_params['GET'] =& $_GET;
 		$this->opa_params['POST'] =& $_POST;
 		$this->opa_params['COOKIE'] =& $_COOKIE;
-		$this->opa_params['URL'] = array();
+		$this->opa_params['PATH'] = array();
 		
 		$this->ops_request_method = (isset($_SERVER["REQUEST_METHOD"]) ? $_SERVER["REQUEST_METHOD"] : null);
 		
@@ -185,7 +185,7 @@ class RequestHTTP extends Request {
 		
 		$this->ops_base_path = join('/', $va_tmp);
 		$this->ops_full_path = $_SERVER['REQUEST_URI'];
-		if (!preg_match("!/index.php!", $this->ops_full_path) && !preg_match("!/service.php!", $this->ops_full_path)) { $this->ops_full_path = rtrim($this->ops_full_path, "/")."/index.php"; }
+		if (!caUseCleanUrls() && !preg_match("!/index.php!", $this->ops_full_path) && !preg_match("!/service.php!", $this->ops_full_path)) { $this->ops_full_path = rtrim($this->ops_full_path, "/")."/index.php"; }
 		$vs_path_info = str_replace($_SERVER['SCRIPT_NAME'], "", str_replace("?".$_SERVER['QUERY_STRING'], "", $this->ops_full_path));
 		
 		$this->ops_path_info = $vs_path_info ? $vs_path_info : (isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '');
