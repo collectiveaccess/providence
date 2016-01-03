@@ -894,8 +894,8 @@
  		 							} else {
  		 								$vs_label_id = 'new_0';
  		 							}
- 		 							$vs_key_stub = 'P'.$va_bundle['placement_id'].'_resultsEditor_Pref';'name_'.$vs_label_id;
- 		 							$vs_key = $vs_key_stub.'name_'.$vs_label_id;
+ 		 							$vs_key_stub = 'P'.$va_bundle['placement_id'].'_resultsEditor_Pref';
+ 		 							$vs_key = $vs_key_stub.$t_model->getLabelDisplayField().'_'.$vs_label_id;
  									$this->request->setParameter($vs_locale_key = $vs_key_stub.'locale_id_'.$vs_label_id, $_REQUEST[$vs_locale_key] = 1);
  									
  		 							break;
