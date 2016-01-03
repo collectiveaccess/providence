@@ -31,8 +31,6 @@
 	
 	$va_columns		 		= $this->getVar('columns');
 	$va_column_headers 		= $this->getVar('column_headers');
-	
-	//$va_row_headers 		= $this->getVar('row_headers');
 
 ?>
 <div id="caResultsEditorWrapper">
@@ -46,10 +44,7 @@
 	</div><!--end scrollingResults -->
 	
 
-	<div id="caResultsComplexDataEditorPanel" class="caRelationQuickAddPanel"> 
-		<div class='dialogHeader'>
-			<?php print _t('Edit data'); ?>
-		</div>
+	<div id="caResultsComplexDataEditorPanel" class="caResultsComplexDataEditorPanel"> 
 		<div id="caResultsComplexDataEditorPanelContent">
 		
 		</div>

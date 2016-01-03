@@ -48,8 +48,21 @@
 	
 	print caFormTag($this->request, '#', 'caEditableResultsComplexDataForm', null, 'POST', 'multipart/form-data', null, array('disableUnsavedChangesWarning' => true, 'disableSubmit' => true));
 ?>
-		<div class="quickAddErrorContainer" id="caEditableResultsComplexDataFormErrors"> </div>
-		<div class="quickAddSectionBox">
+		<div class="caResultsComplexDataEditorErrorContainer" id="caEditableResultsComplexDataFormErrors"> </div>
+		
+		<div id="caResultsComplexDataEditorPanelControlButtons">
+<?php
+		if ($vb_can_edit) {
+			print caFormControlBox(caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), "caEditableResultsComplexDataFormSaveButton", array("onclick" => "caEditableResultsComplexDataFormHandler.save(event);"))
+				.' '.caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), "caEditableResultsComplexDataFormCancelButton", array("onclick" => "jQuery(\"#caEditableResultsComplexDataForm\").parent().parent().data(\"panel\").hidePanel();")), 
+				'',
+				''
+			);
+		}
+?>
+		</div>
+		<div class="caResultsComplexDataEditorSectionBox">
+			<div style="margin: 5px;"> </div>
 <?php
 		print join("\n", $va_form_elements); 
 
@@ -57,11 +70,6 @@
 		print caHTMLHiddenInput('bundle', array('value' => $vs_bundle));
 		print caHTMLHiddenInput('row', array('value' => $vn_row));
 		print caHTMLHiddenInput('col', array('value' => $vn_col));
-
-		if ($vb_can_edit) {
-			print "<div class='quickAddControls'>".caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), "caEditableResultsComplexDataFormSaveButton", array("onclick" => "caEditableResultsComplexDataFormHandler.save(event);"))
-				.' '.caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), "caEditableResultsComplexDataFormCancelButton", array("onclick" => "jQuery(\"#caEditableResultsComplexDataForm\").parent().parent().data(\"panel\").hidePanel();"))."</div>\n";
-		}
 ?>
 		</div>
 	</form>
@@ -84,6 +92,8 @@
 					var ht = jQuery("#caResultsEditorWrapper .caResultsEditorContent").data('handsontable');
 					ht.setDataAtCell(<?php print (int)$vn_row; ?>, <?php print (int)$vn_col; ?>, resp.display, 'external');
 					if (jQuery("#caEditableResultsComplexDataForm") && jQuery("#caEditableResultsComplexDataForm").parent() && jQuery("#caEditableResultsComplexDataForm").parent().parent() && jQuery("#caEditableResultsComplexDataForm").parent().parent().data("panel")) { jQuery("#caEditableResultsComplexDataForm").parent().parent().data("panel").hidePanel();  }
+					jQuery(".caResultsEditorStatus").html("Saved changes").show();
+					setTimeout(function() { jQuery('.caResultsEditorStatus').fadeOut(500); }, 5000);
 				} else {
 					caEditableResultsComplexDataFormHandler.setErrors(resp.errors);
 					jQuery("#caEditableResultsComplexDataForm input[name=form_timestamp]").val(resp.time);	// update form timestamp

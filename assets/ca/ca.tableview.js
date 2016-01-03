@@ -53,7 +53,8 @@ var caUI = caUI || {};
 			gridClassName: 'caResultsEditorContent',
 			currentRowClassName: 'caResultsEditorCurrentRow',
 			currentColClassName: 'caResultsEditorCurrentCol',
-			readOnlyCellClassName: 'caResultsEditorReadOnlyCell',
+			readOnlyCellClassName: 'caResultsEditorReadOnlyCell',			// "readonly" is for any cell that cannot be edited inline (ie. readonly in Handsontable)
+			nonEditableCellClassName: 'caResultsEditorNonEditableCell',		// "nonEditable" is for a cell that cannot be edited inline or with an overlay
 			overlayEditorIconClassName: 'caResultsEditorOverlayIcon',
 			statusDisplayClassName: 'caResultsEditorStatus',
 			errorCellClassName: 'caResultsEditorErrorCell',
@@ -78,36 +79,38 @@ var caUI = caUI || {};
 		// --------------------------------------------------------------------------------
 
 		that.htmlRenderer = function(instance, td, row, col, prop, value, cellProperties) {
-			if (cellProperties.readOnly) {
-				td.className = that.readOnlyCellClassName;
-			}
-			
 			var colSpec = that.getColumnForField(prop);
+			var jTd = jQuery(td);
 			
 			if (!value) { value = ''; }
-			jQuery(td).empty().off('click');
-					
-			// Add "click to edit" icon
-			if ((colSpec['allowEditing'] == true) && (cellProperties.editMode == 'overlay')) {
+			jTd.empty().off('click'); // clear cell
+			
+			if (cellProperties.readOnly) { jTd.addClass(that.readOnlyCellClassName); }
+			if (colSpec['allowEditing'] === false) { jTd.addClass(that.nonEditableCellClassName);}
+			if (cellProperties.error) {
+				jTd.addClass(that.errorCellClassName);	
+			} else {
+				jTd.removeClass(that.errorCellClassName);
+			}
+			
+			// Add "click to edit" icon and overlay handler
+			if ((colSpec['allowEditing'] === true) && (cellProperties.editMode == 'overlay')) {
 				value += ' <div class="' + that.overlayEditorIconClassName + '"><i class="fa fa-pencil-square-o"></i></div>';
 				
 				if (that.dataEditorPanel) {
 					var p = prop, r = row, c = col, element = td;
 					jQuery(element).on('click', function(e) {
 						if (that.getColumnForField(p)) {
-							var rowData = that.initialData[r];
+							var ht = jQuery(that.container + " ." + that.gridClassName).data('handsontable');
+							ht.selectCell(r,c);
+							var physicalIndex = ht.sortIndex[r] ? ht.sortIndex[r][0] : r;		// need to do translation in case user has sorted on a column
+							var rowData = that.initialData[physicalIndex];
 							that.dataEditorPanel.showPanel(that.dataEditUrl + "/bundle/" + p + "/id/" + rowData['id'] + '/row/' + r + '/col/' + c);
 						}
 					});
 				}
 			}
-			jQuery(td).append(value);
-			
-			if (cellProperties.error) {
-				jQuery(td).addClass(that.errorCellClassName);	
-			} else {
-				jQuery(td).removeClass(that.errorCellClassName);
-			}
+			jTd.append(value);
 			
 			return td;
 		};
@@ -196,7 +199,7 @@ var caUI = caUI || {};
 			var ht = jQuery(that.container + " ." + that.gridClassName).data('handsontable');
 			
 			// make map from item_id to row, and vice-versa
-			var rowToItemID = {}, itemIDToRow = {}, rowData = {};
+			var itemIDToRow = {}, rowData = {};
 			jQuery.each(q, function(k, v) {
 				// transform list values to ids?
 				var c;
@@ -206,7 +209,6 @@ var caUI = caUI || {};
 					}
 				}
 			
-				rowToItemID[v['change'][0]] = v['id'];
 				itemIDToRow[v['id']] = v['change'][0];
 				rowData[v['change'][0]] = v;
 			});
@@ -301,7 +303,11 @@ var caUI = caUI || {};
 					if (source === 'edit') { // only save edits
 						for(var i in change) {
 							var r = change[i][0];
-							var row_id = that.initialData[r]['id'];
+							var ht = jQuery(that.container + " ." + that.gridClassName).data('handsontable');
+							
+							var physicalIndex =  ht.sortIndex[r] ? ht.sortIndex[r][0] : r;		// need to do translation in case user has sorted on a column
+				
+							var row_id = that.initialData[physicalIndex]['id'];
 							that.save({'change': change[i], 'id': row_id});
 						}
 					}

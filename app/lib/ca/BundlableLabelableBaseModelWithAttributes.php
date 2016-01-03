@@ -2287,7 +2287,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	 *		omit = list of bundles to omit from form in the event they are included in the UI
  	 *		restrictToTypes = 
  	 *		bundles = 
- 	 *		dontAllowBundleShowHide = [Default is false]
+ 	 *		dontAllowBundleShowHide = Do not provide per-bundle show/hide control. [Default is false]
  	 *	@return array List of bundle HTML to display in form, keyed on placement code
  	 */
  	public function getBundleFormHTMLForScreen($pm_screen, $pa_options, &$pa_placements=null) {

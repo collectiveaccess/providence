@@ -236,7 +236,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 			$vs_output .= '<div class="clear"><!--empty--></div>'.$ps_second_row_content;
 		}
 		
-	$vs_output .= '</div>
+		$vs_output .= '</div>
 	<div class="clear"><!--empty--></div>'."\n";
 	
 		return $vs_output;
