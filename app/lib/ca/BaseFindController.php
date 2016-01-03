@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,6 +43,7 @@
 	require_once(__CA_LIB_DIR__.'/core/Parsers/ZipStream.php');
  	require_once(__CA_LIB_DIR__.'/core/Print/PDFRenderer.php');
 	require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
+ 	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
  	
 	class BaseFindController extends ActionController {
 		# ------------------------------------------------------------------
@@ -57,6 +58,8 @@
 		
  		protected $opb_type_restriction_has_changed = false;
  		protected $opn_type_restriction_id = null;
+ 		
+ 		protected $opo_app_plugin_manager;
 		# ------------------------------------------------------------------
 		/**
 		 *
@@ -65,6 +68,10 @@
 			AssetLoadManager::register("timelineJS");
  			AssetLoadManager::register('panel');
  			AssetLoadManager::register("tableview");
+ 			AssetLoadManager::register("bundleableEditor");
+ 			AssetLoadManager::register("bundleListEditorUI");
+ 			
+ 			$this->opo_app_plugin_manager = new ApplicationPluginManager();
  			
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			$this->opo_datamodel = Datamodel::load();
@@ -856,6 +863,7 @@
  			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
  			
  			if (is_array($va_changes = $this->request->getParameter('changes', pArray))) {
+ 				// If "changes" is set this is a simple inline edit
  				foreach($va_changes as $va_change) {
  					$vn_id = $va_change['id'];
  					if ($t_model->load($vn_id)) {
@@ -865,7 +873,6 @@
  						
  						$vb_set_value = false;
  						foreach($va_bundles as $va_bundle) {
- 		 					//$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_set_id
  		 					$va_bundle_info = $t_model->getBundleInfo($va_bundle['bundle_name']);
  		 					switch($va_bundle_info['type']) {
  		 						case 'intrinsic':
@@ -940,10 +947,204 @@
 						}
  					}
  				}
+ 			} else {
+ 				$this->saveResultsEditorComplexData();
+ 				return;
  			}
  		
  			$this->view->setVar('errors', $va_errors);
  			$this->render("Results/ajax_save_results_editable_data_json.php");
+ 		}
+ 		# ------------------------------------------------------------------
+ 		/**
+ 		 * 
+ 		 *
+ 		 */ 
+ 		public function resultsComplexDataEditor() {
+ 			$t_model 				= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+ 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
+ 			
+ 			$ps_bundle = $this->request->getParameter('bundle', pString);
+ 			$pn_id = $this->request->getParameter('id', pInteger);
+ 			$pn_col = $this->request->getParameter('col', pInteger);
+ 			$pn_row = $this->request->getParameter('row', pInteger);
+ 			
+ 			// TODO: can we read this id?
+ 			$t_model->load($pn_id);
+ 			
+ 			$this->view->setVar('row', $pn_row);
+ 			$this->view->setVar('col', $pn_col);
+ 			$this->view->setVar('bundle', $ps_bundle);
+ 			$this->view->setVar('bundles', $va_bundles = $this->_makeBundles(array($ps_bundle)));
+ 			$this->view->setVar('t_subject', $t_model);
+ 			
+ 			$this->render("Results/ajax_results_editable_complex_data_form_html.php");
+ 		}
+ 		# -------------------------------------------------------
+ 		/**
+ 		 * Saves the content of a form editing new or existing records. It returns the same form + status messages rendered into the current view, inherited from ActionController
+ 		 *
+ 		 * @param array $pa_options Array of options passed through to _initView and saveBundlesForScreen()
+ 		 */
+ 		public function saveResultsEditorComplexData($pa_options=null) {
+ 			$t_subject = 			$this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+ 			
+ 			$ps_bundle = 			$this->request->getParameter('bundle', pString);
+ 			$pn_id = 				$this->request->getParameter('id', pInteger);
+ 			$pn_row = 				$this->request->getParameter('row', pInteger);
+ 			$pn_col = 				$this->request->getParameter('col', pInteger);
+ 			
+ 			$vn_display_id = 		$this->opo_result_context->getCurrentBundleDisplay();
+ 			$va_display_list = 		array_values($this->_getDisplayList($vn_display_id));
+ 			$t_display =			$this->view->getVar('t_display'); // set by _getDisplayList()
+ 			$vn_placement_id = 		$va_display_list[$pn_col]['placement_id'];
+ 			
+ 			if (!$t_subject->load($pn_id)) {
+ 				$va_response = array(
+ 					'status' => 30,
+  					'id' => null,
+					'row' => $pn_row, 'col' => $pn_col,
+ 					'table' => $t_subject->tableName(),
+ 					'type_id' => null,
+ 					'display' => null,
+ 					'time' => time(),
+ 					'errors' => array_flip(array(_t("Invalid ID")))
+ 				);
+ 				$this->view->setVar('response', $va_response);
+ 				
+ 				$this->render('Results/ajax_save_results_editable_complex_data_result_json.php');
+ 				return;
+ 			}
+ 			
+ 			//
+ 			// Is record of correct type?
+ 			// 
+ 			$va_restrict_to_types = null;
+ 			if ($t_subject->getAppConfig()->get('perform_type_access_checking')) {
+ 				$va_restrict_to_types = caGetTypeRestrictionsForUser($this->ops_tablename, array('access' => __CA_BUNDLE_ACCESS_EDIT__));
+ 			}
+ 			if (is_array($va_restrict_to_types) && !in_array($t_subject->get('type_id'), $va_restrict_to_types)) {
+ 				$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2560?r='.urlencode($this->request->getFullUrlPath()));
+ 				return;
+ 			}
+ 			
+ 			//
+ 			// Is record from correct source?
+ 			// 
+ 			$va_restrict_to_sources = null;
+ 			if ($t_subject->getAppConfig()->get('perform_source_access_checking')) {
+ 				if (is_array($va_restrict_to_sources = caGetSourceRestrictionsForUser($this->ops_tablename, array('access' => __CA_BUNDLE_ACCESS_EDIT__)))) {
+					if (
+						(!$t_subject->get('source_id'))
+						||
+						($t_subject->get('source_id') && !in_array($t_subject->get('source_id'), $va_restrict_to_sources))
+						||
+						((strlen($vn_source_id = $this->request->getParameter('source_id', pInteger))) && !in_array($vn_source_id, $va_restrict_to_sources))
+					) {
+						$t_subject->set('source_id', $t_subject->getDefaultSourceID(array('request' => $this->request)));
+					}
+			
+					if (is_array($va_restrict_to_sources) && !in_array($t_subject->get('source_id'), $va_restrict_to_sources)) {
+						$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2562?r='.urlencode($this->request->getFullUrlPath()));
+						return;
+					}
+				}
+			}
+ 			
+ 			// Make sure request isn't empty
+ 			if(!sizeof($_POST)) {
+ 				$va_response = array(
+					'status' => 20,
+					'id' => null,
+ 					'row' => $pn_row, 'col' => $pn_col,
+					'table' => $t_subject->tableName(),
+					'type_id' => null,
+					'display' => null,
+ 					'time' => time(),
+					'errors' => array_flip(array(_t("Cannot save using empty request. Are you using a bookmark?")))
+				);
+				
+				$this->view->setVar('response', $va_response);
+				
+				$this->render('Results/ajax_save_results_editable_complex_data_result_json.php');
+				return;
+ 			}
+ 			
+ 			// Set "context" id from those editors that need to restrict idno lookups to within the context of another field value (eg. idno's for ca_list_items are only unique within a given list_id)
+ 			$vn_context_id = null;
+ 			if ($vs_idno_context_field = $t_subject->getProperty('ID_NUMBERING_CONTEXT_FIELD')) {
+ 				if ($t_subject->getPrimaryKey() > 0) {
+ 					$this->view->setVar('_context_id', $vn_context_id = $t_subject->get($vs_idno_context_field));
+ 				} else {
+ 					if ($vn_parent_id > 0) {
+ 						$t_parent = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename);
+ 						if ($t_parent->load($vn_parent_id)) {
+ 							$this->view->setVar('_context_id', $vn_context_id = $t_parent->get($vs_idno_context_field));
+ 						}
+ 					}
+ 				}
+ 				
+ 				if ($vn_context_id) { $t_subject->set($vs_idno_context_field, $vn_context_id); }
+ 			}
+ 			
+ 			// Set type name for display
+ 			if (!($vs_type_name = $t_subject->getTypeName())) {
+ 				$vs_type_name = $t_subject->getProperty('NAME_SINGULAR');
+ 			}
+ 			
+ 			# trigger "BeforeSaveItem" hook 
+			$this->opo_app_plugin_manager->hookBeforeSaveItem(array('id' => null, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => false));
+ 			
+ 			//$vn_parent_id = $this->request->getParameter('parent_id', pInteger);
+ 			//$t_subject->set('parent_id', $vn_parent_id);
+ 			//$this->opo_result_context->setParameter($t_subject->tableName().'_last_parent_id', $vn_parent_id);
+ 			
+ 			//$va_opts = array_merge($pa_options, array('ui_instance' => $t_ui));
+ 			$vb_save_rc = $t_subject->saveBundlesForScreen(null, $this->request, $va_options = array('bundles' => $this->_makeBundles(array($ps_bundle)), 'formName' => 'complex'));
+			
+ 			$vs_message = _t("Saved changes to %1", $vs_type_name);
+ 			
+ 			$va_errors = $this->request->getActionErrors();							// all errors from all sources
+ 			$va_general_errors = $this->request->getActionErrors('general');		// just "general" errors - ones that are not attached to a specific part of the form
+ 			
+ 			if(sizeof($va_errors) - sizeof($va_general_errors) > 0) {
+ 				$va_error_list = array();
+ 				$vb_no_save_error = false;
+ 				foreach($va_errors as $o_e) {
+ 					$va_error_list[$o_e->getErrorDescription()] = $o_e->getErrorDescription()."\n";
+ 					
+ 					switch($o_e->getErrorNumber()) {
+ 						case 1100:	// duplicate/invalid idno
+ 							if (!$vn_subject_id) {		// can't save new record if idno is not valid (when updating everything but idno is saved if it is invalid)
+ 								$vb_no_save_error = true;
+ 							}
+ 							break;
+ 					}
+ 				}
+ 			} else {
+ 				$this->opo_result_context->invalidateCache();
+ 			}
+  			$this->opo_result_context->saveContext();
+ 			
+ 			# trigger "SaveItem" hook 
+			$this->opo_app_plugin_manager->hookSaveItem(array('id' => $vn_subject_id, 'table_num' => $t_subject->tableNum(), 'table_name' => $t_subject->tableName(), 'instance' => $t_subject, 'is_insert' => false));
+ 			
+ 			$vn_id = $t_subject->getPrimaryKey();
+ 			
+ 			$va_response = array(
+ 				'status' => sizeof($va_error_list) ? 10 : 0,
+ 				'id' => $vn_id,
+ 				'row' => $pn_row, 'col' => $pn_col,
+ 				'table' => $t_subject->tableName(),
+				'type_id' => method_exists($t_subject, "getTypeID") ? $t_subject->getTypeID() : null,
+ 				'display' => $t_display->getDisplayValue($t_subject, $vn_placement_id),
+ 				'time' => time(),
+ 				'errors' => $va_error_list
+ 			);
+ 			
+ 			$this->view->setVar('response', $va_response);
+ 			
+ 			$this->render('Results/ajax_save_results_editable_complex_data_result_json.php');
  		}
  		# ------------------------------------------------------------------
  		/**
@@ -961,7 +1162,8 @@
 					// Read only
 					$va_column_spec[] = array(
 						'data' => str_replace(".", ",", $vs_bundle_name), 
-						'readOnly' => !(bool)$pa_display_list[$vn_placement_id]['allowInlineEditing']
+						'readOnly' => !(bool)$pa_display_list[$vn_placement_id]['allowInlineEditing'],
+						'allowEditing' => $pa_display_list[$vn_placement_id]['allowEditing']
 					);
 					continue;
 				}
@@ -973,7 +1175,8 @@
 							'type' => 'DT_SELECT',
 							'source' => $pa_display_list[$vn_placement_id]['inlineEditingListValues'],
 							'sourceMap' => $pa_display_list[$vn_placement_id]['inlineEditingListValueMap'],
-							'strict' => true
+							'strict' => true,
+							'allowEditing' => $pa_display_list[$vn_placement_id]['allowEditing']
 						);
 						break;
 					case DT_LOOKUP:
@@ -986,7 +1189,8 @@
 								'list' => $pa_display_list[$vn_placement_id]['inlineEditingList'],
 								'sourceMap' => $pa_display_list[$vn_placement_id]['inlineEditingListValueMap'],
 								'lookupURL' => $va_urls['search'],
-								'strict' => false
+								'strict' => false,
+								'allowEditing' => $pa_display_list[$vn_placement_id]['allowEditing']
 							);
 						}
 						break;
@@ -994,7 +1198,8 @@
 						$va_column_spec[] = array(
 							'data' => str_replace(".", ",", $vs_bundle_name), 
 							'readOnly' => false,
-							'type' => 'DT_FIELD'
+							'type' => 'DT_FIELD',
+							'allowEditing' => $pa_display_list[$vn_placement_id]['allowEditing']
 						);
 						break;
 				}
@@ -1015,7 +1220,7 @@
  		 		$vs_placement = str_replace(",", "_", $vs_field);
  		 		
  		 		$va_placements[] = array(
- 		 			'placement_id' => -1*$vn_i,
+ 		 			'placement_id' => 'X'.$vn_i,
  		 			'screen_id' => -1,
  		 			'placement_code' => "{$vs_placement}_{$vn_i}",
  		 			'bundle_name' => $vs_bundle
@@ -1056,6 +1261,7 @@
 						'bundle_name' => 				$va_display_item['bundle_name'],
 						'display' => 					$vs_header,
 						'settings' => 					$va_settings,
+						'allowEditing' =>				$va_display_item['allowEditing'],
 						'allowInlineEditing' => 		$va_display_item['allowInlineEditing'],
 						'inlineEditingType' => 			$va_display_item['inlineEditingType'],
 						'inlineEditingList' => 			$va_display_item['inlineEditingList'],
@@ -1076,6 +1282,7 @@
 						'bundle_name' => 				$this->ops_tablename.'.'.$vs_idno_fld,
 						'display' => 					$t_model->getDisplayLabel($this->ops_tablename.'.'.$vs_idno_fld),
 						'settings' => 					array(),
+						'allowEditing' =>				true,
 						'allowInlineEditing' => 		$va_multipart_id->isFormatEditable($this->ops_tablename),
 						'inlineEditingType' => 			DT_FIELD,
 						'inlineEditingListValues' => 	array(),
@@ -1090,6 +1297,7 @@
 						'bundle_name' => 				$this->ops_tablename.'.preferred_labels',
 						'display' => 					$t_label->getDisplayLabel($t_label->tableName().'.'.$t_label->getDisplayField()),
 						'settings' => 					array(),
+						'allowEditing' =>				true,
 						'allowInlineEditing' => 		true,
 						'inlineEditingType' => 			DT_FIELD,
 						'inlineEditingListValues' => 	array(),

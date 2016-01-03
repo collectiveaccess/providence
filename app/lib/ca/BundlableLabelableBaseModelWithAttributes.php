@@ -2286,10 +2286,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	 *		forceHidden = list of *intrinsic* fields to force onto form as hidden <input> elements if they are not included in the UI; NOTE: only intrinsic fields may be specified
  	 *		omit = list of bundles to omit from form in the event they are included in the UI
  	 *		restrictToTypes = 
+ 	 *		bundles = 
+ 	 *		dontAllowBundleShowHide = [Default is false]
  	 *	@return array List of bundle HTML to display in form, keyed on placement code
  	 */
  	public function getBundleFormHTMLForScreen($pm_screen, $pa_options, &$pa_placements=null) {
  		$va_omit_bundles = (isset($pa_options['omit']) && is_array($pa_options['omit'])) ? $pa_options['omit'] : array();
+ 		$vb_dont_allow_bundle_show_hide = caGetOption('dontAllowBundleShowHide', $pa_options, false);
  		
  		$vs_table_name = $this->tableName();
  		
@@ -2306,16 +2309,18 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			return false;
  		}
  		
- 		if (($vn_screen_access = ca_editor_uis::getAccessForScreen($pa_options['request'], $pm_screen)) === __CA_BUNDLE_ACCESS_NONE__) {
- 			// no access to screen
- 			$this->postError(2320, _t('Access denied to screen %1', $pm_screen), "BundlableLabelableBaseModelWithAttributes->getBundleFormHTMLForScreen()");				
-			return false;
- 		}
- 		
  		if (isset($pa_options['bundles']) && is_array($pa_options['bundles'])) {
  			$va_bundles = $pa_options['bundles'];
+ 			$vn_screen_access = __CA_BUNDLE_ACCESS_EDIT__;
  		} else {
  			$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen);
+ 			
+ 		
+			if (($vn_screen_access = ca_editor_uis::getAccessForScreen($pa_options['request'], $pm_screen)) === __CA_BUNDLE_ACCESS_NONE__) {
+				// no access to screen
+				$this->postError(2320, _t('Access denied to screen %1', $pm_screen), "BundlableLabelableBaseModelWithAttributes->getBundleFormHTMLForScreen()");				
+				return false;
+			}
  		}
  		
  		$vs_form_name = caGetOption('formName', $pa_options, '');
@@ -2365,6 +2370,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if ((!$vn_pk_id) && ($va_bundle['bundle_name'] === $vs_hier_parent_id_fld)) { continue; }
 				if (in_array($va_bundle['bundle_name'], $va_omit_bundles)) { continue; }
 				
+				
+				if ($vs_element_set_code = preg_replace("/^(ca_attribute_|".$this->tableName()."\.)/", "", $va_bundle['bundle_name'])) {
+					if ($o_element = $this->_getElementInstance($vs_element_set_code)) {
+						$va_bundle['bundle_name'] = "ca_attribute_{$vs_element_set_code}";
+					}
+				}
+				
 				if ($va_valid_element_codes && (substr($va_bundle['bundle_name'],0, 13) == 'ca_attribute_')) {
 					if (!in_array(substr($va_bundle['bundle_name'],13), $va_valid_element_codes)) {
 						continue;
@@ -2391,6 +2403,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					// no edit access so bail
 					//$this->postError(2320, _t('Access denied to screen %1', $pm_screen), "BundlableLabelableBaseModelWithAttributes->getBundleFormHTMLForScreen()");				
 					continue;
+				}
+				
+				if ($vb_dont_allow_bundle_show_hide) {
+					$va_bundle['settings']['dont_allow_bundle_show_hide'] = true;
 				}
 				
 				$va_bundle['settings']['placement_id'] = $va_bundle['placement_id'];

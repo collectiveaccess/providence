@@ -44,6 +44,16 @@
 	<div class="caResultsEditorContainer">
 		<div class="caResultsEditorContent"></div>
 	</div><!--end scrollingResults -->
+	
+
+	<div id="caResultsComplexDataEditorPanel" class="caRelationQuickAddPanel"> 
+		<div class='dialogHeader'>
+			<?php print _t('Edit data'); ?>
+		</div>
+		<div id="caResultsComplexDataEditorPanelContent">
+		
+		</div>
+	</div>
 </div>
 
 
@@ -52,7 +62,9 @@
 		caUI.initTableView('#caResultsEditorWrapper', {
 			dataLoadUrl: '<?php print caNavUrl($this->request, '*', '*', 'getResultsEditorData'); ?>',
 			dataSaveUrl: '<?php print caNavUrl($this->request, '*', '*', 'saveResultsEditorData'); ?>',
+			dataEditUrl: '<?php print caNavUrl($this->request, '*', '*', 'resultsComplexDataEditor'); ?>',
 			rowHeaders: true,
+			dataEditorID: 'caResultsComplexDataEditorPanel',
 			
 			colHeaders: <?php print json_encode($va_column_headers); ?>,
 			columns: <?php print json_encode($va_columns); ?>,

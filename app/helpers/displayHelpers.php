@@ -2791,9 +2791,12 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 	 * @return string HTML implementing the control
 	 */
 	function caEditorBundleShowHideControl($po_request, $ps_id_prefix, $pa_settings=null, $pb_has_value=false, $ps_preview_init="&nbsp;") {
+		if (caGetOption('dont_allow_bundle_show_hide', $pa_settings, false)) { return ''; }
 		$vs_expand_collapse_value = caGetOption('expand_collapse_value', $pa_settings, 'dont_force');
 		$vs_expand_collapse_no_value = caGetOption('expand_collapse_no_value', $pa_settings, 'dont_force');
 		$vs_expand_collapse = caGetOption('expand_collapse', $pa_settings, false);
+		
+		
 
 		if(!$vs_expand_collapse) {
 			$vs_expand_collapse = ($pb_has_value ? $vs_expand_collapse_value : $vs_expand_collapse_no_value);

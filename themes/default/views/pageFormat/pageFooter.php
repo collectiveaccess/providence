@@ -101,7 +101,7 @@
 				exposeBackgroundColor: '#000000',				/* color (in hex notation) of background masking out page content; include the leading '#' in the color spec */
 				exposeBackgroundOpacity: 0.7,					/* opacity of background color masking out page content; 1.0 is opaque */
 				panelTransitionSpeed: 400,						/* time it takes the panel to fade in/out in milliseconds */
-				closeButtonSelector: '.close',					/* anything with the CSS classname "close" will trigger the panel to close */
+				closeButtonSelector: '#caMediaPanelContentArea .close',					/* anything with the CSS classname "close" will trigger the panel to close */
 				onOpenCallback: function() {
 					jQuery('#topNavContainer').hide(250);
 				},
@@ -116,7 +116,7 @@
 				exposeBackgroundColor: '#000000',				/* color (in hex notation) of background masking out page content; include the leading '#' in the color spec */
 				exposeBackgroundOpacity: 0.7,					/* opacity of background color masking out page content; 1.0 is opaque */
 				panelTransitionSpeed: 100,						/* time it takes the panel to fade in/out in milliseconds */
-				closeButtonSelector: '.close',					/* anything with the CSS classname "close" will trigger the panel to close */
+				closeButtonSelector: '#caResultsEditorPanelContentArea .close',					/* anything with the CSS classname "close" will trigger the panel to close */
 				onOpenCallback: function() {
 					jQuery('#topNavContainer').hide(250);
 				},
@@ -131,7 +131,7 @@
 				exposeBackgroundColor: '#000000',				/* color (in hex notation) of background masking out page content; include the leading '#' in the color spec */
 				exposeBackgroundOpacity: 0.7,					/* opacity of background color masking out page content; 1.0 is opaque */
 				panelTransitionSpeed: 200,						/* time it takes the panel to fade in/out in milliseconds */
-				closeButtonSelector: '.close',					/* anything with the CSS classname "close" will trigger the panel to close */
+				closeButtonSelector: '#editorFieldListContentArea .close',					/* anything with the CSS classname "close" will trigger the panel to close */
 				center: true
 			});
 			
@@ -141,7 +141,7 @@
 				exposeBackgroundColor: '#000000',				/* color (in hex notation) of background masking out page content; include the leading '#' in the color spec */
 				exposeBackgroundOpacity: 0.7,					/* opacity of background color masking out page content; 1.0 is opaque */
 				panelTransitionSpeed: 200,						/* time it takes the panel to fade in/out in milliseconds */
-				closeButtonSelector: '.close',					/* anything with the CSS classname "close" will trigger the panel to close */
+				closeButtonSelector: '#caHierarchyOverviewContentArea .close',					/* anything with the CSS classname "close" will trigger the panel to close */
 				center: true
 			});
 		}

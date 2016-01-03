@@ -529,6 +529,8 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				
 				$va_placements[$vn_placement_id = (int)$qr_res->get('placement_id')] = $qr_res->getRow();
 				$va_placements[$vn_placement_id]['settings'] = $va_settings = caUnserializeForDatabase($qr_res->get('settings'));
+				$va_placements[$vn_placement_id]['allowEditing'] = true;
+							
 				if (!$pb_settings_only) {
 					$t_placement->setSettingDefinitionsForPlacement($va_available_bundles[$vs_bundle_name]['settings']);
 					$va_placements[$vn_placement_id]['display'] = $va_available_bundles[$vs_bundle_name]['display'];
@@ -552,6 +554,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 						//
 						if ($va_bundle_name[1] == $t_subject->getTypeFieldName()) {
 							$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
+							$va_placements[$vn_placement_id]['allowEditing'] = false;
 							$va_placements[$vn_placement_id]['inlineEditingType'] = null;
 						} else {
 							if(isset($va_bundle_name[1])){
@@ -563,6 +566,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 								// b). consists of multiple elements
 								if(($va_bundle_name[1] == $t_subject->getProperty('ID_NUMBERING_ID_FIELD')) && ($vb_id_editable == false)) {
 									$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
+									$va_placements[$vn_placement_id]['allowEditing'] = false;
 								} else {
 									$va_placements[$vn_placement_id]['allowInlineEditing'] = true;
 								}
@@ -649,6 +653,11 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					// Related bundles are never inline-editable (for now)
 					$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
 					$va_placements[$vn_placement_id]['inlineEditingType'] = null;
+					
+					// representation media bundles aren't editable at all
+					if (($va_bundle_name[0] == 'ca_object_representations') && ($va_bundle_name[1] == 'media')) {
+						$va_placements[$vn_placement_id]['allowEditing'] = false;
+					}
 				}
 			}
 		} else {

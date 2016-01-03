@@ -43,7 +43,7 @@ var caUI = caUI || {};
 			numRowsPerLoad: 200,
 			
 			dataSaveUrl: null,
-			editLinkFormat: null,
+			dataEditUrl: null,
 			
 			rowHeaders: null,
 			colHeaders: null,
@@ -56,6 +56,9 @@ var caUI = caUI || {};
 			readOnlyCellClassName: 'caResultsEditorReadOnlyCell',
 			overlayEditorIconClassName: 'caResultsEditorOverlayIcon',
 			statusDisplayClassName: 'caResultsEditorStatus',
+			errorCellClassName: 'caResultsEditorErrorCell',
+			
+			dataEditorID: null,
 			
 			saveMessage: "Saving...",
 			errorMessagePrefix: "[Error]",
@@ -66,7 +69,8 @@ var caUI = caUI || {};
 			restoreOriginalValueOnError: false,
 			
 			saveQueue: [],
-			saveQueueIsRunning: false
+			saveQueueIsRunning: false,
+			dataEditorPanel: null
 		}, options);
 	
 		// --------------------------------------------------------------------------------
@@ -78,17 +82,31 @@ var caUI = caUI || {};
 				td.className = that.readOnlyCellClassName;
 			}
 			
+			var colSpec = that.getColumnForField(prop);
+			
 			if (!value) { value = ''; }
-			
+			jQuery(td).empty().off('click');
+					
 			// Add "click to edit" icon
-			if (cellProperties.editMode == 'overlay') {
+			if ((colSpec['allowEditing'] == true) && (cellProperties.editMode == 'overlay')) {
 				value += ' <div class="' + that.overlayEditorIconClassName + '"><i class="fa fa-pencil-square-o"></i></div>';
+				
+				if (that.dataEditorPanel) {
+					var p = prop, r = row, c = col, element = td;
+					jQuery(element).on('click', function(e) {
+						if (that.getColumnForField(p)) {
+							var rowData = that.initialData[r];
+							that.dataEditorPanel.showPanel(that.dataEditUrl + "/bundle/" + p + "/id/" + rowData['id'] + '/row/' + r + '/col/' + c);
+						}
+					});
+				}
 			}
-			
-			jQuery(td).empty().append(value);
+			jQuery(td).append(value);
 			
 			if (cellProperties.error) {
-				jQuery(td).css('border', '2px dashed #cc0000');	
+				jQuery(td).addClass(that.errorCellClassName);	
+			} else {
+				jQuery(td).removeClass(that.errorCellClassName);
 			}
 			
 			return td;
@@ -289,6 +307,18 @@ var caUI = caUI || {};
 					}
 				}
 			});
+			
+			if (that.dataEditorID) {
+				that.dataEditorPanel = caUI.initPanel({ 
+					panelID: that.dataEditorID,									/* DOM ID of the <div> enclosing the panel */
+					panelContentID: that.dataEditorID + "Content",				/* DOM ID of the content area <div> in the panel */
+					exposeBackgroundColor: "#000000",				
+					exposeBackgroundOpacity: 0.7,					
+					panelTransitionSpeed: 250,						
+					closeButtonSelector: "#" +  that.dataEditorID + " .caResultsComplexDataEditorPanelClose",
+					center: true
+				});
+			}
 			
 			// Ensure comments on cells are visible and non-editable
 			jQuery('.htCommentsContainer, .htComments').css('zIndex', '99000');
