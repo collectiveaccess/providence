@@ -6721,6 +6721,10 @@ div.authorityReferenceListContainer {
 	position: relative;
 }
 
+.caResultsEditorErrorCell {
+	border: 2px dashed #cc0000 !important;
+}
+
 .caResultsEditorOverlayIcon {
 	position: absolute;
 	width: 14px;
