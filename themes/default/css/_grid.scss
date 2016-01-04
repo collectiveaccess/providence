@@ -2,6 +2,7 @@
 	display: block;
 	width: 100%;
 	font-size: 0; // Prevents rendering of formatting whitespace between cells
+	text-align: left;
 }
 
 .grid:after {
