@@ -478,12 +478,12 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 					&&
 					!($po_request->getAppConfig()->get($vs_table_name.'_editor_defaults_to_summary_view'))
 				){
-					$vs_buf .= caNavLink($po_request, '&#60; prev', 'prev', $po_request->getModulePath(), $po_request->getController(), 'Edit'.'/'.$po_request->getActionExtra(), array($vs_pk => $vn_prev_id)).'&nbsp;';
+					$vs_buf .= caNavLink($po_request, _t('&#60; prev'), 'prev', $po_request->getModulePath(), $po_request->getController(), 'Edit'.'/'.$po_request->getActionExtra(), array($vs_pk => $vn_prev_id)).'&nbsp;';
 				} else {
-					$vs_buf .= caNavLink($po_request, '&#60; prev', 'prev', $po_request->getModulePath(), $po_request->getController(), 'Summary', array($vs_pk => $vn_prev_id)).'&nbsp;';
+					$vs_buf .= caNavLink($po_request, _t('&#60; prev'), 'prev', $po_request->getModulePath(), $po_request->getController(), 'Summary', array($vs_pk => $vn_prev_id)).'&nbsp;';
 				}
 			} else {
-				$vs_buf .=  '<span class="prev disabled">&#60; prev</span>';
+				$vs_buf .=  '<span class="prev disabled">'._t('&#60; prev').'</span>';
 			}
 				
 			$vs_buf .= "<span class='resultCount'>".ResultContext::getResultsLinkForLastFind($po_request, $vs_table_name,  $vs_back_text, ''). " (".($vn_current_pos)."/".sizeof($va_found_ids).")</span>";
@@ -495,12 +495,12 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 					&&
 					!($po_request->getAppConfig()->get($vs_table_name.'_editor_defaults_to_summary_view'))
 				){
-					$vs_buf .= '&nbsp;'.caNavLink($po_request, '&#62; next', 'next', $po_request->getModulePath(), $po_request->getController(), 'Edit'.'/'.$po_request->getActionExtra(), array($vs_pk => $vn_next_id));
+					$vs_buf .= '&nbsp;'.caNavLink($po_request, _t('&#62; next'), 'next', $po_request->getModulePath(), $po_request->getController(), 'Edit'.'/'.$po_request->getActionExtra(), array($vs_pk => $vn_next_id));
 				} else {
-					$vs_buf .= '&nbsp;'.caNavLink($po_request, '&#62; next', 'next', $po_request->getModulePath(), $po_request->getController(), 'Summary', array($vs_pk => $vn_next_id));
+					$vs_buf .= '&nbsp;'.caNavLink($po_request, _t('&#62; next'), 'next', $po_request->getModulePath(), $po_request->getController(), 'Summary', array($vs_pk => $vn_next_id));
 				}
 			} else {
-				$vs_buf .=  '<span class="next disabled">&#62; next</span>';
+				$vs_buf .=  '<span class="next disabled">'._t('&#62; next').'</span>';
 			}
 		} elseif ($vn_item_id) {
 			$vs_buf .= ResultContext::getResultsLinkForLastFind($po_request, $vs_table_name,  $vs_back_text, '');
