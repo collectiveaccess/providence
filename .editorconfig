@@ -10,11 +10,6 @@ end_of_line = lf
 insert_final_newline = true
 charset = utf-8
 
-# Matches the exact files either package.json or .travis.yml
-[*.{json,gs}]
-indent_style = space
-indent_size = 2
-
-[profiles/*.xml]
+[install/profiles/xml/*.xml]
 indent_style = space
 indent_size = 4
