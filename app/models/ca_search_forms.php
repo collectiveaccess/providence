@@ -1135,8 +1135,8 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 					$va_output[] = array(
 						'element' => $t_subject->htmlFormElementForSearch($po_request, $va_element['bundle_name'], array(
 							'values' => $pa_form_data,
-							'width' => (isset($va_element['settings']['width']) && ($va_element['settings']['width'] > 0)) ? $va_element['settings']['width'] : 0,
-							'height' => (isset($va_element['settings']['height']) && ($va_element['settings']['height'] > 0)) ? $va_element['settings']['height'] : 0,
+							'width' => (isset($va_element['settings']['width']) && ($va_element['settings']['width'] > 0)) ? $va_element['settings']['width'] : "100px",
+							'height' => (isset($va_element['settings']['height']) && ($va_element['settings']['height'] > 0)) ? $va_element['settings']['height'] : 1,
 
 							'format' => '^ELEMENT',
 							'multivalueFormat' => '<i>^LABEL</i><br/>^ELEMENT',
