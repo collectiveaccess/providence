@@ -1126,7 +1126,8 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 								'height' => (isset($va_element['settings']['height']) && ($va_element['settings']['height'] > 0)) ? $va_element['settings']['height'] : 1
 							)),
 						'label' => $vs_field_label,
-						'name' => $va_element['bundle_name']
+						'name' => $va_element['bundle_name'],
+						'css_classes' => (isset($va_element['settings']['css_classes']) && $va_element['settings']['css_classes']) ? $va_element['settings']['css_classes'] : null
 					);
 					continue(2);
 				case 'created':
@@ -1134,15 +1135,16 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 					$va_output[] = array(
 						'element' => $t_subject->htmlFormElementForSearch($po_request, $va_element['bundle_name'], array(
 							'values' => $pa_form_data,
-							'width' => (isset($va_element['settings']['width']) && ($va_element['settings']['width'] > 0)) ? $va_element['settings']['width'] : "100px",
-							'height' => (isset($va_element['settings']['height']) && ($va_element['settings']['height'] > 0)) ? $va_element['settings']['height'] : 1,
+							'width' => (isset($va_element['settings']['width']) && ($va_element['settings']['width'] > 0)) ? $va_element['settings']['width'] : 0,
+							'height' => (isset($va_element['settings']['height']) && ($va_element['settings']['height'] > 0)) ? $va_element['settings']['height'] : 0,
 
 							'format' => '^ELEMENT',
 							'multivalueFormat' => '<i>^LABEL</i><br/>^ELEMENT',
 							'id' => str_replace('.', '_', $va_element['bundle_name'])
 						)),
 						'label' => ($vs_field_label) ? $vs_field_label : $t_subject->getDisplayLabel($va_element['bundle_name']),
-						'name' => $va_element['bundle_name']
+						'name' => $va_element['bundle_name'],
+						'css_classes' => (isset($va_element['settings']['css_classes']) && $va_element['settings']['css_classes']) ? $va_element['settings']['css_classes'] : null
 					);
 					continue(2);
 			}
@@ -1173,7 +1175,8 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 								'height' => (isset($va_element['settings']['height']) && ($va_element['settings']['height'] > 0)) ? $va_element['settings']['height'] : 1
 							)),
 						'label' => $vs_label,
-						'name' => $vs_field
+						'name' => $vs_field,
+						'css_classes' => (isset($va_element['settings']['css_classes']) && $va_element['settings']['css_classes']) ? $va_element['settings']['css_classes'] : null
 					);
 				}
 				continue;
@@ -1190,10 +1193,10 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 					'id' => str_replace('.', '_', $vs_field)
 				)),
 				'label' => ($vs_field_label) ? $vs_field_label :  $t_instance->getDisplayLabel($vs_field),
-				'name' => $vs_field
+				'name' => $vs_field,
+				'css_classes' => (isset($va_element['settings']['css_classes']) && $va_element['settings']['css_classes']) ? $va_element['settings']['css_classes'] : null
 			);
 		}
-
 		return $va_output;
 	}
 	# ------------------------------------------------------

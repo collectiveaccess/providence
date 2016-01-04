@@ -80,9 +80,26 @@
 			});
 		}
 	};
+	wam.advancedSearchFormFixes = function () {
+		// Convert textareas to act like text inputs
+		$('#AdvancedSearchForm').find('textarea')
+			.attr('rows', 1)
+			.removeAttr('style')
+			.keypress(function (e) {
+				e = e || event;
+				var code = (e.keyCode ? e.keyCode : e.which);
+				if (code === 13) {
+					$(this).parents('form').submit();
+					return false;
+				}
+				return true;
+			}
+		);
+	};
 
 	wam.init = function() {
 		wam.initDatepickers();
+		wam.advancedSearchFormFixes();
 		wam.initConditionRecommendationTypes();
 	};
 
