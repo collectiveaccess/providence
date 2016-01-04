@@ -575,7 +575,7 @@
 			}
 			$vs_attr = _caHTMLMakeAttributeString($pa_attributes);
 			
-			return "<i class='caIcon fa {$va_icon['class']} {$vs_size}{$vs_opt_class}' {$vs_attr}></i> ";
+			return "<i class='caIcon fa {$va_icon['class']} {$vs_size}{$vs_opt_class}' {$vs_attr}></i>";
 		}
 		
 		return '???';
