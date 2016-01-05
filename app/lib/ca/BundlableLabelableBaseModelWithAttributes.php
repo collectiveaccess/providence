@@ -1270,6 +1270,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			}
 		}
 		
+		// convert intrinsics to bare field names if they include tablename (eg. ca_objects.idno => idno)
+		$va_tmp = explode('.', $ps_bundle_name);
+		if (($this->tableName() === $va_tmp[0]) && $this->hasField($va_tmp[1])) {
+			$ps_bundle_name = $va_tmp[1];
+		}
+		
 		$va_info = $this->getBundleInfo($ps_bundle_name);
 		if (!($vs_type = $va_info['type'])) { return null; }
 		
@@ -3154,6 +3160,13 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		if (is_array($va_fields_by_type['intrinsic'])) {
 			$vs_idno_field = $this->getProperty('ID_NUMBERING_ID_FIELD');
 			foreach($va_fields_by_type['intrinsic'] as $vs_placement_code => $vs_f) {
+				
+				// convert intrinsics to bare field names if they include tablename (eg. ca_objects.idno => idno)
+				$va_tmp = explode('.', $vs_f);
+				if (($this->tableName() === $va_tmp[0]) && $this->hasField($va_tmp[1])) {
+					$vs_f = $va_tmp[1];
+				}
+		
 				if ($vb_batch) { 
 					$vs_batch_mode = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_batch_mode", pString);
 					if($vs_batch_mode == '_disabled_') { continue; }

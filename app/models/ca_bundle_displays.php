@@ -558,15 +558,15 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 							$va_placements[$vn_placement_id]['inlineEditingType'] = null;
 						} else {
 							if(isset($va_bundle_name[1])){
-								// check if identifier is editable
-								$vb_id_editable = $t_subject->opo_idno_plugin_instance->isFormatEditable($vs_subject_table);
-
 								// Do not allow in-line editing if the intrinsic element is identifier and
 								// a). is not editable (editable = 0 in multipart_id_numbering.conf)
 								// b). consists of multiple elements
-								if(($va_bundle_name[1] == $t_subject->getProperty('ID_NUMBERING_ID_FIELD')) && ($vb_id_editable == false)) {
+								if($va_bundle_name[1] == $t_subject->getProperty('ID_NUMBERING_ID_FIELD')) {
+									// check if identifier is editable
+									$vb_id_editable = $t_subject->opo_idno_plugin_instance->isFormatEditable($vs_subject_table);
+									
 									$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
-									$va_placements[$vn_placement_id]['allowEditing'] = false;
+									$va_placements[$vn_placement_id]['allowEditing'] = $vb_id_editable;
 								} else {
 									$va_placements[$vn_placement_id]['allowInlineEditing'] = true;
 								}
@@ -1962,8 +1962,8 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				);
 			} elseif ($t_instance->hasField($va_bundle_bits[1])) {
 				$vb_editable = true;
-				if (($t_instance->getProperty('ID_NUMBERING_ID_FIELD') === $va_bundle_bits[1]) && (!$t_instance->opo_idno_plugin_instance->isFormatEditable($va_bundle_bits[0]))) {
-					// ... except for idno's when not configured to be editable
+				if ($t_instance->getProperty('ID_NUMBERING_ID_FIELD') === $va_bundle_bits[1]) {
+					// ... except for idno's 
 					$vb_editable = false;
 				} elseif($va_bundle_bits[1] === $t_instance->getTypeFieldName()) {
 					// ... and type_id fields, which are never inline editable

@@ -1452,18 +1452,18 @@ class MultipartIDNumber extends IDNumber {
 	 * Also, if the identifier consists of multiple elements, false will be returned.
 	 *
 	 * @param string $ps_format_name Name of format
+	 * @param array $pa_options Options include:
+	 *		singleElementsOnly = Only consider formats with a single editable element to be editable. [Default is false]
 	 * @return bool
 	 */
-	public function isFormatEditable($ps_format_name) {
-		$va_elements = $this->getElements();
-		if(sizeof($va_elements) == 1 ){
-			$vs_edit_info = $this->opa_formats[$ps_format_name][$this->getType()]['elements'][key($va_elements)];
-			switch($vs_edit_info['editable']){
-				case 1:
-					return true;
-				default:
-					return false;
-			}
+	public function isFormatEditable($ps_format_name, $pa_options=null) {
+		if (!is_array($va_elements = $this->getElements())) { return false; }
+		
+		$vb_single_elements_only = caGetOption('singleElementsOnly', $pa_options, false);
+		
+		foreach($va_elements as $vs_element => $va_element_info) {
+			if (isset($va_element_info['editable']) && (bool)$va_element_info['editable']) { return true; }
+			if ($vb_single_elements_only) { return false; }
 		}
 		return false;
 	}

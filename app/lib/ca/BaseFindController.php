@@ -876,10 +876,12 @@
  		 					$va_bundle_info = $t_model->getBundleInfo($va_bundle['bundle_name']);
  		 					switch($va_bundle_info['type']) {
  		 						case 'intrinsic':
- 		 							$vs_key = 'P'.$va_bundle['placement_id'].'_resultsEditor'.$va_bundle['bundle_name'];
+ 		 							$va_tmp = explode('.', $va_bundle['bundle_name']);
+ 		 							$vs_key = 'P'.$va_bundle['placement_id'].'_resultsEditor'.$va_tmp[1]; // bare field name for intrinsics
  		 							
  		 							break;
  		 						case 'preferred_label':
+ 		 						case 'nonpreferred_label':
  		 							$vs_label_id = null;
  		 							if (
  		 								is_array($va_tmp = $t_model->get($va_bundle['bundle_name'], ['returnWithStructure' => true]))
@@ -894,7 +896,7 @@
  		 							} else {
  		 								$vs_label_id = 'new_0';
  		 							}
- 		 							$vs_key_stub = 'P'.$va_bundle['placement_id'].'_resultsEditor_Pref';
+ 		 							$vs_key_stub = 'P'.$va_bundle['placement_id'].(($va_bundle_info['type'] == 'nonpreferred_label') ? '_resultsEditor_NPref' : '_resultsEditor_Pref');
  		 							$vs_key = $vs_key_stub.$t_model->getLabelDisplayField().'_'.$vs_label_id;
  									$this->request->setParameter($vs_locale_key = $vs_key_stub.'locale_id_'.$vs_label_id, $_REQUEST[$vs_locale_key] = 1);
  									
