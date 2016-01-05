@@ -320,7 +320,7 @@ var caUI = caUI || {};
 					panelContentID: that.dataEditorID + "Content",				/* DOM ID of the content area <div> in the panel */
 					exposeBackgroundColor: "#000000",				
 					exposeBackgroundOpacity: 0.7,					
-					panelTransitionSpeed: 250,						
+					panelTransitionSpeed: 100,						
 					closeButtonSelector: "#" +  that.dataEditorID + " .caResultsComplexDataEditorPanelClose",
 					center: true
 				});
