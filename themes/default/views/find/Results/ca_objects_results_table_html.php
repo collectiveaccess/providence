@@ -26,6 +26,7 @@
  * ----------------------------------------------------------------------
  */
 
+	/** @var ca_bundle_displays $t_display */
 	$t_display				= $this->getVar('t_display');
 	$va_display_list 		= $this->getVar('display_list');
 	$vo_result 				= $this->getVar('result');
@@ -33,8 +34,12 @@
 	$vs_current_sort 		= $this->getVar('current_sort');
 	$vs_default_action		= $this->getVar('default_action');
 	$vo_ar					= $this->getVar('access_restrictions');
-	$vs_interstitial_prefix	= $this->request->getParameter('interstitialPrefix', pString);
 	$va_relation_id_map 	= $this->getVar('relationIdMap');
+
+	$vs_interstitial_prefix	= $this->getVar('interstitialPrefix');
+	$vs_primary_table		= $this->getVar('primaryTable');
+	$vn_primary_id			= $this->getVar('primaryID');
+	$vs_rel_table			= $this->getVar('relTable');
 
 	
 ?>
@@ -93,7 +98,23 @@
 <?php
 						
 					foreach($va_display_list as $vn_placement_id => $va_info) {
-                        print "<td><span class=\"read-more\">".$t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array()))."</span></td>";
+                        print "<td><span class=\"read-more\">";
+
+						// if there's a template, evaluate template against relationship
+						if($vs_template = $va_info['settings']['format']) {
+							$va_opts = array_merge($va_info, array(
+								'resolveLinksUsing' => $vs_primary_table,
+								'primaryIDs' =>
+									array (
+										$vs_primary_table => array($vn_primary_id),
+									),
+							));
+							print caProcessTemplateForIDs($vs_template, $vs_rel_table, array($vn_relation_id), $va_opts);
+						} else {
+							print $t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array()));
+						}
+
+						print "</span></td>";
                     }
 ?>	
 				</tr>

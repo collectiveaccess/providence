@@ -47,7 +47,9 @@
 	$va_additional_search_controller_params = array(
 		'ids' => join(';', array_keys($va_initial_values)),
 		'interstitialPrefix' => $vs_interstitial_selector,
-		'rel_table' => $t_item_rel->tableName()
+		'relTable' => $t_item_rel->tableName(),
+		'primaryTable' => $t_subject->tableName(),
+		'primaryID' => $t_subject->getPrimaryKey()
 	);
 
 	$vs_url_string = '';
