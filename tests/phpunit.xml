@@ -29,6 +29,7 @@
       <exclude>lib/core/Models/ModelTest.php</exclude>
       <exclude>lib/core/SearchResult/SearchResultTest.php</exclude>
       <exclude>lib/ca/Service/ItemServiceTest.php</exclude>
+      <exclude>lib/ca/AttributeValues/TGNInformationServiceAttributeValueTest.php</exclude>
     </testsuite>
     <testsuite name="Models Test Suite">
       <directory>models/</directory>

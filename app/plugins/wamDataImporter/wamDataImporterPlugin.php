@@ -328,7 +328,7 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 		if(!defined('__CA_DONT_LOG_CHANGES__')){
 			$vo_mapping = $pa_params['mapping'];
 			$va_mappings_to_disable = $this->opo_config->getList('disableChangeLogForImports');
-			if (in_array($vo_mapping->get('importer_code'), $va_mappings_to_disable)){
+			if ($vo_mapping && in_array($vo_mapping->get('importer_code'), $va_mappings_to_disable)){
 				define('__CA_DONT_LOG_CHANGES__', true);
 			}
 		}
