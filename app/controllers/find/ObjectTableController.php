@@ -99,7 +99,14 @@ class ObjectTableController extends BaseSearchController {
 		AssetLoadManager::register('imageScroller');
 		AssetLoadManager::register('tabUI');
 		AssetLoadManager::register('panel');
+
+		// get request data
 		$va_relation_ids = explode(';', $this->getRequest()->getParameter('ids', pString));
+		$vs_rel_table = $this->getRequest()->getParameter('relTable', pString);
+		$vs_interstitial_prefix = $this->getRequest()->getParameter('interstitialPrefix', pString);
+		$vs_primary_table = $this->getRequest()->getParameter('primaryTable', pString);
+		$vn_primary_id = $this->getRequest()->getParameter('primaryID', pInteger);
+
 		$va_access_values = caGetUserAccessValues($this->getRequest());
 
 		if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) {
@@ -108,7 +115,7 @@ class ObjectTableController extends BaseSearchController {
 		}
 
 		// we need the rel table to translate the incoming relation_ids to object ids for the list search result
-		$vs_rel_table = $this->getRequest()->getParameter('rel_table', pString);
+
 		$o_interstitial_res = caMakeSearchResult($vs_rel_table, $va_relation_ids);
 
 		$va_ids = array(); $va_relation_id_map = array();
@@ -120,8 +127,11 @@ class ObjectTableController extends BaseSearchController {
 			);
 		}
 
-		$o_interstitial_res->seek(0);
 		$this->getView()->setVar('relationIdMap', $va_relation_id_map);
+		$this->getView()->setVar('interstitialPrefix', $vs_interstitial_prefix);
+		$this->getView()->setVar('relTable', $vs_rel_table);
+		$this->getView()->setVar('primaryTable', $vs_primary_table);
+		$this->getView()->setVar('primaryID', $vn_primary_id);
 
 		$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
 
