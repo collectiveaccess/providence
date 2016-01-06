@@ -3031,7 +3031,6 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 						break;
 					case 11:	// integer
 					case 12:	// numeric (decimal)
-					default:
 						$va_values = $pr_res->get($vs_subelement, array('returnAsArray' => true));
 						
 						if(is_array($va_values)) {

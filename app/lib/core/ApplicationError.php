@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Error.php : 
+ * app/lib/core/ApplicationError.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2009 Whirl-i-Gig
+ * Copyright 2000-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,7 +43,7 @@ require_once(__CA_LIB_DIR__."/core/Configuration.php");
  * redirecting to "site down" page upon error.
  *
  */
-class Error {
+class ApplicationError {
 /**
  * Numeric code of current error
  *

@@ -622,7 +622,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'displayType' => DT_SELECT,
 								'width' => "200px", 'height' => "1",
 								'takesLocale' => false,
-								'default' => '1',
+								'default' => '',
 								'label' => _t('Sort using'),
 								'showSortableBundlesFor' => $t_rel->tableName(),
 								'description' => _t('Method used to sort related items.')
