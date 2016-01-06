@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/testsWithData/get/AttributeGetTest.php
+ * tests/testsWithData/get/GettyGetTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,10 +33,10 @@
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
 /**
- * Class AttributeGetTest
+ * Class GettyGetTest
  * Note: Requires testing profile!
  */
-class AttributeGetTest extends BaseTestWithData {
+class GettyGetTest extends BaseTestWithData {
 	# -------------------------------------------------------
 	/**
 	 * @var ca_objects
