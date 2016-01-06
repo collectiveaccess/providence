@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -286,6 +286,8 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 		if($pb_recursive) {
 			$va_sub_pull_graphs = array();
 			foreach($va_pull_graphs as $vs_pull_uri => $o_pull_graph) {
+				// avoid circular references
+				if(isset($va_pull_graphs[$vs_pull_uri]) || isset($va_sub_pull_graphs[$vs_pull_uri])) { continue; }
 				$va_sub_pull_graphs = array_merge($va_sub_pull_graphs, self::getListOfRelatedGraphs($o_pull_graph, $vs_pull_uri, $ps_node_uri, $pn_limit, true));
 			}
 
