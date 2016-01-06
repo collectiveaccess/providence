@@ -5439,20 +5439,22 @@ if (!$vb_batch) {
 		// Sort on fields if specified
 		//
 		if (is_array($pa_sort_fields) && sizeof($va_rels)) {
-			$va_ids = array();
+			$va_ids = $va_ids_to_rel_ids = array();
 			$vs_rel_pk = $t_rel_item->primaryKey();
 			foreach($va_rels as $vn_i => $va_rel) {
 				$va_ids[$vn_i] = $va_rel[$vs_rel_pk];
+				$va_ids_to_rel_ids[$va_rel[$vs_rel_pk]][] = $vn_i;
 			}
 			if (sizeof($va_ids) > 0) {
 				$qr_sort = caMakeSearchResult($vs_related_table_name, array_values($va_ids), array('sort' => $pa_sort_fields, 'sortDirection' => $ps_sort_direction));
 				
-				$va_ids_to_rel_ids = array_flip($va_ids);
 				$va_rels_sorted = array();
 				
 				$vs_rel_pk_full = $t_rel_item->primaryKey(true);
 				while($qr_sort->nextHit()) {
-					$va_rels_sorted[$vn_id = $va_ids_to_rel_ids[$qr_sort->get($vs_rel_pk_full)]] = $va_rels[$vn_id];
+					foreach($va_ids_to_rel_ids[$qr_sort->get($vs_rel_pk_full)] as $vn_rel_id) {
+						$va_rels_sorted[$vn_rel_id] = $va_rels[$vn_rel_id];
+					}
 				}
 				$va_rels = $va_rels_sorted;
 			}
@@ -5498,8 +5500,6 @@ if (!$vb_batch) {
 				return $va_rels;
 				break;
 		}
-
-		return $va_rels;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
