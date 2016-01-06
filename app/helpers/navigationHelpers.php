@@ -97,6 +97,7 @@
  	define('__CA_NAV_ICON_CLOCK__', 55);
  	define('__CA_NAV_ICON_SPINNER__', 56);
  	define('__CA_NAV_ICON_HIER__', 57);
+ 	define('__CA_NAV_ICON_SPREADSHEET__', 58);
  	
  	/**
  	 * Icon position constants
@@ -691,7 +692,7 @@
 				$vs_fa_class = 'fa-cog';
 				break;
 			case __CA_NAV_ICON_FILTER__:
-				$vs_fa_class = 'fa-table';
+				$vs_fa_class = 'fa-filter';
 				break;	
 			case __CA_NAV_ICON_EXPORT__:
 				$vs_fa_class = 'fa-inbox';
@@ -761,7 +762,10 @@
  				break;								
  			case __CA_NAV_ICON_HIER__:
  				$vs_fa_class = 'fa fa-sitemap';
- 				break;																	
+ 				break;	
+			case __CA_NAV_ICON_SPREADSHEET__:
+				$vs_fa_class = 'fa-table';
+				break;																	
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
 				return null;

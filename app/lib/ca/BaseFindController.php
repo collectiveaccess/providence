@@ -1188,7 +1188,7 @@
 								'data' => str_replace(".", ",", $vs_bundle_name), 
 								'readOnly' => false,
 								'type' => 'DT_LOOKUP',
-								'list' => $pa_display_list[$vn_placement_id]['inlineEditingList'],
+								'list' => caGetListCode($pa_display_list[$vn_placement_id]['inlineEditingList']),
 								'sourceMap' => $pa_display_list[$vn_placement_id]['inlineEditingListValueMap'],
 								'lookupURL' => $va_urls['search'],
 								'strict' => false,

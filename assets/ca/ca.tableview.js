@@ -127,39 +127,6 @@ var caUI = caUI || {};
 					that.columns[i]['allowInvalid'] = false;
 					
 					break;
-				case 'DT_LOOKUP':
-					var d = that.columns[i]['data'];
-					var lookupUrl = that.columns[i]['lookupURL'];
-					var list = that.columns[i]['list'];
-					that.columns[i] = {
-						'data' : d,
-						'type': 'autocomplete',
-						'strict': false,
-						'source' : function (query, process) {
-							if (!query) { return; }
-							$.ajax({
-								url: lookupUrl,
-								data: {
-									term: query,
-									list: list,
-									simple: 0,
-									
-									
-								},
-								success: function (response) {
-									var labels = [];
-									that.lastLookupIDMap = {};
-									for(var k in response) {
-										labels.push(response[k]['label']);
-										that.lastLookupIDMap[response[k]['label']] = k;
-									}
-									if (labels.length > 0) {
-										process(labels);
-									}
-								}
-							})
-					}};
-					break;
 				default:
 					delete(that.columns[i]['type']);
 					that.columns[i]['renderer'] = that.htmlRenderer;

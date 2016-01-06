@@ -30,10 +30,8 @@
  	$vo_result_context 		= $this->getVar('result_context');
  	$t_subject 				= $this->getVar('t_subject');
  	$vs_table 				= $t_subject->tableName();
- ?>
- 
- 
- <?php
+
+
 if($vo_result->numHits() > 0) {
 	print $this->render('Search/search_tools_html.php');
 
@@ -44,7 +42,7 @@ if($vo_result->numHits() > 0) {
 ?>
 <div style="clear: both;"><!-- empty --></div>
 
-<a href='#' id='showResultsEditor' onclick='caResultsEditorPanel.showPanel("<?php print caNavUrl($this->request, '*', '*', 'resultsEditor'); ?>"); return false;'><i class="fa fa-pencil-square-o fa-2x"></i></a> 
+<a href='#' id='showResultsEditor' onclick='caResultsEditorPanel.showPanel("<?php print caNavUrl($this->request, '*', '*', 'resultsEditor'); ?>"); return false;'><?php print caNavIcon(__CA_NAV_ICON_SPREADSHEET__, "24px"); ?></a> 
 <a href='#' id='showOptions' onclick='return caHandleResultsUIBoxes("display", "show");'><?php print caNavIcon(__CA_NAV_ICON_SETTINGS__, "24px"); ?></a>
 
 <?php
