@@ -693,6 +693,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 						$va_ids[] = $vs_id;
 					}
 
+
 					if($vs_parent_id = trim((string)$o_parent->getValue())){
 						if(!in_array($vs_parent_id, $va_ids) && ($vs_parent_id != $vs_id)){
 							$pa_errors[] = _t("Warning: skipped mapping at row %1 because parent id was invalid",$vn_row);
@@ -743,14 +744,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					);
 
 					// allow mapping repetition
-					if($vs_mode == 'RepeatMappings'){
-						if(strlen($vs_source)<1) {// ignore repitition rows without value
+					if($vs_mode == 'RepeatMappings') {
+						if(strlen($vs_source) < 1) { // ignore repitition rows without value
 							continue;
 						}
 
 						$va_new_items = array();
 
-						$va_mapping_items_to_repeat = explode(",",$vs_source);
+						$va_mapping_items_to_repeat = explode(',', $vs_source);
 
 						foreach($va_mapping_items_to_repeat as $vs_mapping_item_to_repeat) {
 							$vs_mapping_item_to_repeat = trim($vs_mapping_item_to_repeat);
@@ -777,10 +778,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 									$va_new_items[$vs_key."_:_".$vs_item_key]['parent_id'] = $vs_key . ($va_item['parent_id'] ? "_:_".$va_item['parent_id'] : "");
 								}
 							}
-
 						}
 
-						$va_mapping = array_merge($va_mapping,$va_new_items);
+						$va_mapping = $va_mapping + $va_new_items;
 					}
 
 					break;
@@ -920,9 +920,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					
 				}
 			}
-			
+
 			$vn_parent_id = null;
-			if($va_info['parent_id']){ $vn_parent_id = $va_id_map[$va_info['parent_id']]; }
+			if($va_info['parent_id']) { $vn_parent_id = $va_id_map[$va_info['parent_id']]; }
 			
 			$t_item = $t_exporter->addItem($vn_parent_id,$va_info['element'],$va_info['source'],$va_item_settings);
 
@@ -936,7 +936,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$va_mapping_errors = ca_data_exporters::checkMapping($t_exporter->get('exporter_code'));
 
-		if(is_array($va_mapping_errors) && sizeof($va_mapping_errors)>0){
+		if(is_array($va_mapping_errors) && sizeof($va_mapping_errors)>0) {
 			$pa_errors = array_merge($pa_errors,$va_mapping_errors);
 		}
 
