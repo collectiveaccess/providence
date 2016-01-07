@@ -98,6 +98,9 @@
  	define('__CA_NAV_ICON_SPINNER__', 56);
  	define('__CA_NAV_ICON_HIER__', 57);
  	define('__CA_NAV_ICON_SPREADSHEET__', 58);
+ 	define('__CA_NAV_ICON_VERTICAL_ARROWS__', 59);
+ 	define('__CA_NAV_ICON_EXTRACT__', 60);
+ 	define('__CA_NAV_ICON_ROTATE__', 61);
  	
  	/**
  	 * Icon position constants
@@ -565,7 +568,6 @@
 			$pa_attributes['style'] = "color: {$vs_color};".$pa_attributes['style'];
 		}
 		
-		if(is_array($pm_size)) print caPrintStackTrace();
 		if (is_array($va_icon = _caNavIconTypeToName($pn_type))) {
 			$vs_size = '';
 			if (is_integer($pm_size)) {
@@ -574,9 +576,15 @@
 				if (!isset($pa_attributes['style'])) { $pa_attributes['style'] = ''; }
 				$pa_attributes['style'] = "font-size: {$pm_size};".$pa_attributes['style'];
 			}
+			
+			$vs_rotate_class = '';
+			if (isset($pa_options['rotate']) && in_array((int)$pa_options['rotate'], array(0, 90, 270))) {
+				$vs_rotate_class = ' fa-rotate-'.$pa_options['rotate'];
+			}
+			
 			$vs_attr = _caHTMLMakeAttributeString($pa_attributes);
 			
-			return "<i class='caIcon fa {$va_icon['class']} {$vs_size}{$vs_opt_class}' {$vs_attr}></i>";
+			return "<i class='caIcon fa {$va_icon['class']} {$vs_size}{$vs_opt_class}{$vs_rotate_class}' {$vs_attr}></i>";
 		}
 		
 		return '???';
@@ -765,7 +773,16 @@
  				break;	
 			case __CA_NAV_ICON_SPREADSHEET__:
 				$vs_fa_class = 'fa-table';
-				break;																	
+				break;	
+			case __CA_NAV_ICON_VERTICAL_ARROWS__:
+				$vs_fa_class = 'fa-arrows-v';
+				break;				
+			case __CA_NAV_ICON_EXTRACT__:
+				$vs_fa_class = 'fa-scissors';
+				break;					
+			case __CA_NAV_ICON_ROTATE__:
+				$vs_fa_class = 'fa-undo';
+				break;						
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
 				return null;

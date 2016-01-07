@@ -56,7 +56,6 @@
 		<link href="<?php print $this->request->getBaseUrlPath(); ?>/viewer.css" media="screen" rel="stylesheet" type="text/css" />
 		<link href="<?php print $this->request->getBaseUrlPath(); ?>/plain.css" media="screen" rel="stylesheet" type="text/css" />
 		<![endif]-->
-		<link rel="stylesheet" href="<?php print $this->request->getBaseUrlPath(); ?>/assets/jquery/jquery-tileviewer/jquery.tileviewer.css" type="text/css" media="screen" />
 
 <?php
 	print AssetLoadManager::getLoadHTML($this->request);

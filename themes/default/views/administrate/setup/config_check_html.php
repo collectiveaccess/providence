@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -135,7 +135,7 @@ while($va_search_config_settings->nextSetting()){
 		foreach($va_general_config_errors as $vs_error){
 ?>
 			<tr>
-				<td><?php print "<img src='".$this->request->getThemeUrlPath()."/graphics/icons/vorsicht.gif' alt='Error'/>"; ?></td>
+				<td><?php print caNavIcon(__CA_NAV_ICON_ALERT__, 2); ?></td>
 				<td><?php print $vs_error; ?></td>
 			</tr>
 <?php

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2014 Whirl-i-Gig
+ * Copyright 2011-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -59,12 +59,12 @@
 		docURL: '<?php print caNavUrl($this->request, $va_url['module'], $va_url['controller'], 'GetPageListAsJSON', array($va_url['_pk'] => $vn_subject_id, 'representation_id' => $vn_representation_id, 'content_mode' => $vs_content_mode, 'download' => 1)); ?>/data/documentData.json',
 		page: <?php print $vn_initial_page; ?>,
 		sidebar: <?php print ((sizeof($va_sections) > 0) && !isset($va_display_options['no_overlay'])) ? "true" : "false"; ?>,
-		closeButton: '<?php print (!isset($va_display_options['no_overlay'])) ? '<img src="'.$this->request->getThemeUrlPath().'/graphics/buttons/x.png" alt="'._t('Close').'"/>' : ''; ?>',
-		editButton: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/edit.png" alt="<?php print _t('Edit'); ?>"/>',
+		closeButton: '<?php print (!isset($va_display_options['no_overlay'])) ? caNavIcon(__CA_NAV_ICON_CLOSE__, 1) : ''; ?>',
+		editButton: '<?php print caNavIcon(__CA_NAV_ICON_EDIT__, 1); ?>',
 <?php
 		if($this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
 ?>
-		downloadButton: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/download.png" alt="<?php print _t('Download'); ?>"/>',
+		downloadButton: '<?php print caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1); ?>',
 <?php
 		}
 ?>
@@ -80,9 +80,9 @@
 		docURL: '<?php print caNavUrl($this->request, $va_url['module'], $va_url['controller'], 'GetPageListAsJSON', array($va_url['_pk'] => $vn_subject_id, 'value_id' => $vn_value_id, 'content_mode' => $vs_content_mode, 'download' => 1)); ?>/data/documentData.json',
 		page: <?php print $vn_initial_page; ?>,
 		sidebar: <?php print ((sizeof($va_sections) > 0) && !isset($va_display_options['no_overlay'])) ? "true" : "false"; ?>,
-		closeButton: '<?php print (!isset($va_display_options['no_overlay'])) ? '<img src="'.$this->request->getThemeUrlPath().'/graphics/buttons/x.png" alt="'._t('Close').'"/>' : ''; ?>',
-		editButton: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/edit.png" alt="<?php print _t('Edit'); ?>"/>',
-		downloadButton: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/download.png" alt="<?php print _t('Download'); ?>"/>',
+		closeButton: '<?php print (!isset($va_display_options['no_overlay'])) ? '<?php print caNavIcon(__CA_NAV_ICON_CLOSE__, 1); ?>' : ''; ?>',
+		editButton: '<?php print caNavIcon(__CA_NAV_ICON_EDIT__, 1); ?>',
+		downloadButton: '<?php print caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1); ?>',
 		sectionsAreSelectable: <?php print ((sizeof($va_sections) > 0) && isset($va_display_options['sectionsAreSelectable']) && ($va_display_options['sectionsAreSelectable'])) ? "true" : "false"; ?>
 
 	});

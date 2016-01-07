@@ -92,7 +92,7 @@
 						o<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowser = caUI.initHierBrowser('caQuickAdd<?php print $vs_form_name.$vs_field_name_prefix; ?>HierarchyBrowser', {
 							levelDataUrl: '<?php print $va_lookup_urls['levelList']; ?>',
 							initDataUrl: '<?php print $va_lookup_urls['ancestorList']; ?>',
-							editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/arrow_grey_right.gif" border="0" title="Edit storage location">',
+							editButtonIcon: '<?php print caNavIcon(__CA_NAV_ICON_EDIT__, 1); ?>',
 						
 							readOnly: false,
 							selectOnLoad: true,

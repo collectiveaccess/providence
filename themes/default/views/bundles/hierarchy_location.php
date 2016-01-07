@@ -503,7 +503,7 @@
 				currentSelectionDisplayFormat: '<?php print addslashes(_t('Will be moved under <em>%1</em> after next save.')); ?>',
 				
 				allowExtractionFromHierarchy: <?php print ($t_subject->getProperty('HIERARCHY_TYPE') == __CA_HIER_TYPE_ADHOC_MONO__) ? 'true' : 'false'; ?>,
-				extractFromHierarchyButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/arrow_grey_up.gif" border="0" title="<?php print _t("Extract from hierarchy"); ?>">',
+				extractFromHierarchyButtonIcon: '<?php print caNavIcon(__CA_NAV_ICON_EXTRACT__, 1); ?>">',
 				extractFromHierarchyMessage: '<?php print addslashes(_t('Will be placed at the top of its own hierarchy after next save.')); ?>',
 				
 				onSelection: function(id, parent_id, name, formattedDisplay) {

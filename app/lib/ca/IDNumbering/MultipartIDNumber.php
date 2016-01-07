@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2015 Whirl-i-Gig
+ * Copyright 2007-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -964,9 +964,9 @@ class MultipartIDNumber extends IDNumber {
 			if (($pa_options['show_errors']) && (isset($pa_errors[$vs_element_name]))) {
 				$vs_error_message = preg_replace("/[\"\']+/", "", $pa_errors[$vs_element_name]);
 				if ($pa_options['error_icon']) {
-					$vs_tmp .= "<a href='#'\" id='caIdno_{$vs_id_prefix}_{$ps_name}'><img src='".$pa_options['error_icon']."' border='0'/></a>";
+					$vs_tmp .= "<a href='#' id='caIdno_{$vs_id_prefix}_{$ps_name}'>".$pa_options['error_icon']."</a>";
 				} else {
-					$vs_tmp .= "<a href='#'\" id='caIdno_{$vs_id_prefix}_{$ps_name}'>["._t('Error')."]</a>";
+					$vs_tmp .= "<a href='#' id='caIdno_{$vs_id_prefix}_{$ps_name}'>["._t('Error')."]</a>";
 				}
 				TooltipManager::add("#caIdno_{$vs_id_prefix}_{$ps_name}", "<h2>"._t('Error')."</h2>{$vs_error_message}");
 			}

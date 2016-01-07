@@ -35,7 +35,7 @@
 ?>
 	<!-- Controls - only for media editor -->
 	<div class="caRepTools">
-		<a href="#" id="caRepToolsButton"><img src="<?php print $this->request->getThemeUrlPath()."/graphics/buttons/rotate16.png"; ?>" alt="<?php print htmlspecialchars(_t('Rotation'), ENT_QUOTES, "utf-8"); ?>" border="0"/></a>
+		<a href="#" id="caRepToolsButton"><?php print caNavIcon(__CA_NAV_ICON_ROTATE__, "16px"); ?></a>
 		<div id="caRepRotationToolPanel">
 			<div class="caRepToolsClose"> </div>
 			
@@ -44,19 +44,19 @@
 					<table width="100%">
 						<tr valign="bottom">
 							<td width="25%" align="center">
-								<a href="#" rel="0" id="caRepToolsButtonRotate0" class="<?php print ($vn_rotation == 0) ? 'caRepToolsRotateControlButtonSelected' : 'caRepToolsRotateControlButton'; ?>"><img src="<?php print $this->request->getThemeUrlPath()."/graphics/icons/rotate_0.png"; ?>" alt="<?php print htmlspecialchars(_t('No rotation'), ENT_QUOTES, "utf-8"); ?>" class="<?php print ($vn_rotation == 0) ? 'caRepToolsRotateControlButtonSelected' : 'caRepToolsRotateControlButton'; ?>" border="0"/></a>
+								<a href="#" rel="0" id="caRepToolsButtonRotate0" class="<?php print ($vn_rotation == 0) ? 'caRepToolsRotateControlButtonSelected' : 'caRepToolsRotateControlButton'; ?>"><?php print caNavIcon(__CA_NAV_ICON_OVERVIEW__, "32px"); ?></a>
 								<br/><?php print _t("0°"); ?>
 							</td>
 							<td width="25%" align="center">
-								<a href="#" rel="90" id="caRepToolsButtonRotate90" class="<?php print ($vn_rotation == 90) ? 'caRepToolsRotateControlButtonSelected' : 'caRepToolsRotateControlButton'; ?>"><img src="<?php print $this->request->getThemeUrlPath()."/graphics/icons/rotate_cw_90.png"; ?>" alt="<?php print htmlspecialchars(_t('Rotate 90 CW'), ENT_QUOTES, "utf-8"); ?>"  class="<?php print ($vn_rotation == 90) ? 'caRepToolsRotateControlButtonSelected' : 'caRepToolsRotateControlButton'; ?>" border="0"/></a>
+								<a href="#" rel="90" id="caRepToolsButtonRotate90" class="<?php print ($vn_rotation == 90) ? 'caRepToolsRotateControlButtonSelected' : 'caRepToolsRotateControlButton'; ?>"><?php print caNavIcon(__CA_NAV_ICON_OVERVIEW__, "32px", [], ['rotate' => 90]); ?></a>
 								<br/><?php print _t("90° CW"); ?>
 							</td>
 							<td width="25%" align="center">
-								<a href="#" rel="180" id="caRepToolsButtonRotate180" class="<?php print ($vn_rotation == 180) ? 'caRepToolsRotateControlButtonSelected' : 'caRepToolsRotateControlButton'; ?>"><img src="<?php print $this->request->getThemeUrlPath()."/graphics/icons/rotate_180.png"; ?>" alt="<?php print htmlspecialchars(_t('Rotate 180'), ENT_QUOTES, "utf-8"); ?>"  class="<?php print ($vn_rotation == 180) ? 'caRepToolsRotateControlButtonSelected' : 'caRepToolsRotateControlButton'; ?>" border="0"/></a>
+								<a href="#" rel="180" id="caRepToolsButtonRotate180" class="<?php print ($vn_rotation == 180) ? 'caRepToolsRotateControlButtonSelected' : 'caRepToolsRotateControlButton'; ?>"><?php print caNavIcon(__CA_NAV_ICON_OVERVIEW__, "32px", [], ['rotate' => 180]); ?></a>
 								<br/><?php print _t("180°"); ?>
 							</td>
 							<td width="25%" align="center">
-								<a href="#" rel="270" id="caRepToolsButtonRotate270" class="<?php print ($vn_rotation == 270) ? 'caRepToolsRotateControlButtonSelected' : 'caRepToolsRotateControlButton'; ?>"><img src="<?php print $this->request->getThemeUrlPath()."/graphics/icons/rotate_ccw_90.png"; ?>" alt="<?php print htmlspecialchars(_t('Rotate 90 CCW'), ENT_QUOTES, "utf-8"); ?>"  class="<?php print ($vn_rotation == 270) ? 'caRepToolsRotateControlButtonSelected' : 'caRepToolsRotateControlButton'; ?>" border="0"/></a>
+								<a href="#" rel="270" id="caRepToolsButtonRotate270" class="<?php print ($vn_rotation == 270) ? 'caRepToolsRotateControlButtonSelected' : 'caRepToolsRotateControlButton'; ?>"><?php print caNavIcon(__CA_NAV_ICON_OVERVIEW__, "32px", [], ['rotate' => 270]); ?></a>
 								<br/><?php print _t("90° CCW"); ?>
 							</td>
 						</tr>
@@ -65,7 +65,7 @@
 				<br style="clear: both;"/>
 				
 				<div id='caRepToolsRotateProgress'>
-					<img src="<?php print $this->request->getThemeUrlPath()."/graphics/icons/indicator_bar.gif"; ?>" alt="<?php print htmlspecialchars(_t('Rotating...'), ENT_QUOTES, "utf-8"); ?>" class="caRepToolsRotateProgress"/>
+					<?php print caBusyIndicatorIcon($this->request, ['class' => 'caRepToolsRotateProgress']); ?>
 				</div>
 			</div>
 		</div>
