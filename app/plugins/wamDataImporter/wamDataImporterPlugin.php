@@ -289,7 +289,6 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 		/**
 		 * @var $vo_mapping ca_data_importers
 		 */
-		$vo_mapping = caGetOption('mapping', $pa_params);
 		if($vo_mapping = $pa_params['mapping']){
 
 			switch ($vo_mapping->get('importer_code')){
