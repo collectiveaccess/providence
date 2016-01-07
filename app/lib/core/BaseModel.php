@@ -6933,8 +6933,9 @@ class BaseModel extends BaseObject {
 				// passed in $pn_hierarchy_id
 				
 				if (!$pn_hierarchy_id) {	// if hierarchy_id is not explicitly set use the value in the currently loaded row
-					$pn_hierarchy_id = $this->get($this->getProperty('HIERARCHY_PARENT_ID_FLD'));
+					$pn_hierarchy_id = $this->get($this->getProperty('HIERARCHY_ID_FLD'));
 				}
+				
 				$qr_res = $o_db->query("
 					SELECT ".$this->primaryKey()." 
 					FROM ".$this->tableName()." 
