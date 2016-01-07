@@ -231,6 +231,49 @@ class WamDataImporterPluginIntegrationTest extends AbstractPluginIntegrationTest
 		// CLEANUP
 		self::_cleanupCreatedRecords($va_created_records);
 	}
+	public function testIdentificationOfExistingListItemByBlankEntity() {
+		// ARRANGE
+		$vo_plugin = new wamDataImporterPlugin(__DIR__ . '/conf/integration');
+		$vs_idno = 'test_object';
+		$t_entities = new ca_entities();
+		$vn_initial_count = $t_entities->getCount();
+		$va_params = array(
+			'content_tree' => array(
+				'ca_list_items' =>  array(
+					array(
+						'_type' => self::_getIdno('scientific_name'),
+						'_interstitial' => array(
+							self::_getIdno('identifiedBy') => '',
+							'_translations' => array(
+								self::_getIdno('identifiedBy') => json_encode(array(
+									'table' => 'ca_entities',
+									'delimiters' => array( '&', ';', ' and ' ),
+									'entityType' => self::_getIdno('test_entity_type')
+								))
+							)
+						),
+						'_interstitial_table' => 'ca_objects_x_vocabulary_terms',
+						'_relationship_type' => self::_getIdno('identification'),
+						'preferred_labels' => array(
+							'name_singular' => 'Aus bus',
+							'name_plural' => 'Aus bus'
+						)
+					)
+				)
+			),
+			'idno' => $vs_idno
+		);
+		// ACT
+		$vo_plugin->hookDataImportContentTree($va_params);
+		// ASSERT
+
+		$va_identified_by = $va_params['content_tree']['ca_list_items'][0]['_interstitial'][self::_getIdno('identifiedBy')];
+		foreach($va_identified_by as $vn_i => $vs_identified_by){
+			$this->assertEmpty($vs_identified_by, _t('No entity id should have been returned.'));
+		}
+		$this->assertEquals($vn_initial_count, $t_entities->getCount(), _t('No entities should have been created.'));
+		// CLEANUP
+	}
 
 	public function testIdentificationOfExistingListItemByMultipleNewEntities() {
 		// ARRANGE
