@@ -175,27 +175,29 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 	/**
 	 * @param $table_content array
 	 * @param $translation_settings array
-	 * @param $value mixed
+	 * @param $vs_value mixed
 	 * @param $vs_name string name
 	 * @param $value_index int
 	 * @param null/ca_data_import_events $po_import_event
 	 * @param null/array $pa_import_event_source
 	 */
-	protected function _processEntityBundle(&$table_content, $translation_settings, $value, $vs_name, $value_index, $po_import_event = null, $pa_import_event_source = null) {
-		$vs_entity_type = caGetOption('entityType', $translation_settings, 'ind');
-		$table_content[$vs_name][$value_index] = DataMigrationUtils::getEntityID(
-				DataMigrationUtils::splitEntityName($value),
+	protected function _processEntityBundle(&$table_content, $translation_settings, $vs_value, $vs_name, $value_index, $po_import_event = null, $pa_import_event_source = null) {
+		if($vs_value){
+			$vs_entity_type = caGetOption('entityType', $translation_settings, 'ind');
+			$table_content[$vs_name][$value_index] = DataMigrationUtils::getEntityID(
+				DataMigrationUtils::splitEntityName($vs_value),
 				$vs_entity_type,
 				ca_locales::getDefaultCataloguingLocaleID(),
 				null,
 				array('matchOnDisplayName' => true, 'importEvent' => $po_import_event, 'importEventSource' => $pa_import_event_source)
-		);
+			);
+		}
 	}
 
 	/**
 	 * @param $pa_table_content array
 	 * @param $pa_translation_settings array
-	 * @param $value mixed
+	 * @param $vm_value mixed
 	 * @param $vs_name string name
 	 * @param $value_index int
 	 * @param $o_import_event null/ca_data_import_events
@@ -203,36 +205,37 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 	 * @param $pa_params array
 	 * @param $o_log null/KLogger
 	 */
-	protected function _processListItemBundle(&$pa_table_content, $pa_translation_settings, $value, $vs_name, $value_index, $o_import_event, $pa_event_source, &$pa_params, $o_log) {
-		$vs_list_code = caGetOption('list', $pa_translation_settings);
-		if (!isset($vs_list_code) && $o_log) {
-			$o_log->logError(sprintf('No list set in "%s" translation type "%s" on "%s" for idno "%s"', $pa_translation_settings['table'], $vs_name, $pa_params['idno']));
-			return;
-		}
-		$vn_list_id = caGetListID($vs_list_code);
-		if (!$vn_list_id) {
-			// No list = bail!
-			if ($o_log) {
-				$o_log->logError(_t('[_proccesListItemBundle] Could not find list %1; item was skipped', $vs_list_code));
+	protected function _processListItemBundle(&$pa_table_content, $pa_translation_settings, $vm_value, $vs_name, $value_index, $o_import_event, $pa_event_source, &$pa_params, $o_log) {
+		if ($vm_value){
+			$vs_list_code = caGetOption('list', $pa_translation_settings);
+			if (!isset($vs_list_code) && $o_log) {
+				$o_log->logError(sprintf('No list set in "%s" translation type "%s" on "%s" for idno "%s"', $pa_translation_settings['table'], $vs_name, $pa_params['idno']));
+				return;
 			}
-			return;
-		}
-		//We almost always want 'concepts'
-		$ps_type = caGetOption('type', $pa_translation_settings, 'concept');
-		$va_attr_vals_with_parent = is_array($value) ? $value : array('preferred_labels' => array('name_singular' => $value));
-		$vn_parent_id = caGetOption('parent_id', $pa_params, caGetListRootID($vs_list_code));
+			$vn_list_id = caGetListID($vs_list_code);
+			if (!$vn_list_id) {
+				// No list = bail!
+				if ($o_log) {
+					$o_log->logError(_t('[_proccesListItemBundle] Could not find list %1; item was skipped', $vs_list_code));
+				}
+				return;
+			}
+			//We almost always want 'concepts'
+			$ps_type = caGetOption('type', $pa_translation_settings, 'concept');
+			$va_attr_vals_with_parent = is_array($vm_value) ? $vm_value : array('preferred_labels' => array('name_singular' => $vm_value));
+			$vn_parent_id = caGetOption('parent_id', $pa_params, caGetListRootID($vs_list_code));
 
-		$va_attr_vals_with_parent['parent_id'] = $vn_parent_id;
-		$va_attr_vals_with_parent['is_enabled'] = 1;
-		$vs_item_idno = caGetOption('idno', $va_attr_vals_with_parent, is_array($value) ? null : $value);
+			$va_attr_vals_with_parent['parent_id'] = $vn_parent_id;
+			$va_attr_vals_with_parent['is_enabled'] = 1;
+			$vs_item_idno = caGetOption('idno', $va_attr_vals_with_parent, is_array($vm_value) ? null : $vm_value);
 
-		$pa_options = array(
+			$pa_options = array(
 				'matchOn' => array('label', 'idno'),
 				'importEvent' => $o_import_event,
 				'importEventSource' => $pa_event_source,
-		);
-
-		$pa_table_content[$vs_name][$value_index] = DataMigrationUtils::getListItemID($vs_list_code, $vs_item_idno, $ps_type, ca_locales::getDefaultCataloguingLocaleID(), $va_attr_vals_with_parent, $pa_options);
+			);
+			$pa_table_content[$vs_name][$value_index] = DataMigrationUtils::getListItemID($vs_list_code, $vs_item_idno, $ps_type, ca_locales::getDefaultCataloguingLocaleID(), $va_attr_vals_with_parent, $pa_options);
+		}
 	}
 
 	/**
@@ -245,7 +248,6 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 		/**
 		 * @var $vo_mapping ca_data_importers
 		 */
-		$vo_mapping = caGetOption('mapping', $pa_params);
 		if($vo_mapping = $pa_params['mapping']){
 
 			switch ($vo_mapping->get('importer_code')){
@@ -286,7 +288,6 @@ class wamDataImporterPlugin extends BaseApplicationPlugin {
 		/**
 		 * @var $vo_mapping ca_data_importers
 		 */
-		$vo_mapping = caGetOption('mapping', $pa_params);
 		if($vo_mapping = $pa_params['mapping']){
 
 			switch ($vo_mapping->get('importer_code')){
