@@ -265,8 +265,8 @@ final class ConfigurationCheck {
 	 */
 	public static function PHPVersionQuickCheck() {
 		$va_php_version = caGetPHPVersion();
-		if($va_php_version["versionInt"]<50106){
-			self::addError(_t("CollectiveAccess requires PHP version 5.1.6 or higher to function properly. You're running %1. Please upgrade.",$va_php_version["version"]));
+		if($va_php_version["versionInt"]<50400){
+			self::addError(_t("CollectiveAccess requires PHP version 5.4 or higher to function properly. You're running %1. Please upgrade.",$va_php_version["version"]));
 		}
 		return true;
 	}
