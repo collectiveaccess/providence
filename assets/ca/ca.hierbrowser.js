@@ -82,11 +82,12 @@ var caUI = caUI || {};
 			autoShrinkAnimateID: '',
 
 			/* how do we treat disabled items in the browser? can be
-			 *  - 'disable' : list items default behavior - i.e. show the item but don't make it a clickable link
+			 *  - 'disable' : list items default behavior - i.e. show the item but don't make it a clickable link and apply the disabled class ('classNameDisabled' option)
 			 *  - 'hide' : completely hide them from the browser
 			 *  - 'full' : don't treat disabled items any differently
 			 */
 			disabledItems: 'disable',
+			classNameDisabled: 'hierarchyBrowserLevelDisabled',
 
 			displayCurrentSelectionOnLoad: true,
 			typeMenuID: '',
@@ -435,7 +436,7 @@ var caUI = caUI || {};
 										case 'disabled':
 										default:
 											jQuery('#' + newLevelListID).append(
-												"<li class='" + that.className + "'>" + moreButton +  item.name + "</li>"
+												"<li class='" + that.className + "'>" + moreButton +  '<span class="' + that.classNameDisabled + '">' + item.name + "</span></li>"
 											);
 											break;
 									}
