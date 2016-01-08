@@ -3417,6 +3417,13 @@ a.hierarchyBrowserLevelSelected {
     font-style: normal;
 }
 
+span.hierarchyBrowserLevelDisabled {
+    color: #ccc;
+    text-decoration: none;
+    font-weight: normal;
+    font-style: normal;
+}
+
 a.hierarchyBrowserLevelEditButton {
     text-decoration: none;
     font-weight: bold;
