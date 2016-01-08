@@ -153,10 +153,6 @@
 					}
 				}
 				
-				if (!$pb_exact) {
-					$ps_query = trim(preg_replace("![".str_replace("!", "\\!", $o_search_config->get('search_tokenizer_regex'))."]+!u", " ", $ps_query));
-				}
-				
 				// do search
 				if($vs_additional_query_params || $vs_restrict_to_search) {
 					$vs_search = '('.trim($ps_query).(intval($pb_exact) ? '' : '*').')'.$vs_additional_query_params.$vs_restrict_to_search;
