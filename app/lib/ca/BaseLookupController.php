@@ -68,7 +68,7 @@
 			$o_search_config = caGetSearchConfig();
 				
 			if (!$this->ops_search_class) { return null; }
-			$ps_query = $this->request->getParameter('term', pString); 
+			$ps_query = $this->request->getParameter('term', pString);
 			
 			$pb_exact = $this->request->getParameter('exact', pInteger);
 			$ps_exclude = $this->request->getParameter('exclude', pString);
@@ -154,7 +154,7 @@
 				}
 				
 				if (!$pb_exact) {
-					$ps_query = trim(preg_replace("![".str_replace("!", "\\!", $o_search_config->get('search_tokenizer_regex'))."]+!", " ", $ps_query));
+					$ps_query = trim(preg_replace("![".str_replace("!", "\\!", $o_search_config->get('search_tokenizer_regex'))."]+!u", " ", $ps_query));
 				}
 				
 				// do search
