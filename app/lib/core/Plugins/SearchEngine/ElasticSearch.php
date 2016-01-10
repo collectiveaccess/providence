@@ -582,6 +582,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$this->getClient()->indices()->putSettings(array(
 					'index' => $this->getIndexName(),
 					'body' => array(
+						'max_result_window' => 2147483647,
 						'analysis' => array(
 							'analyzer' => array(
 								'keyword_lowercase' => array(
