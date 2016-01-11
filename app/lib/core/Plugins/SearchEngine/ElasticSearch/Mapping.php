@@ -62,6 +62,11 @@ class Mapping {
 	protected $opa_element_info;
 
 	/**
+	 * @var \ApplicationVars
+	 */
+	protected $opo_app_vars;
+
+	/**
 	 * Mapping constructor.
 	 */
 	public function __construct() {
@@ -74,6 +79,8 @@ class Mapping {
 
 		$this->opa_element_info = array();
 
+		$this->opo_app_vars = new \ApplicationVars($this->opo_db);
+
 		$this->prefetchElementInfo();
 	}
 
@@ -82,14 +89,15 @@ class Mapping {
 	 * @return bool
 	 */
 	public function needsRefresh() {
-		return !\ExternalCache::contains('LastPing', 'ElasticSearchMapping');
+		return (time() > $this->opo_app_vars->getVar('ElasticSearchMappingRefresh'));
 	}
 
 	/**
 	 * Ping the ElasticSearch mapping, effectively resetting the refresh time
 	 */
 	public function ping() {
-		\ExternalCache::save('LastPing', 'meow', 'ElasticSearchMapping', 24 * 60 * 60);
+		$this->opo_app_vars->setVar('ElasticSearchMappingRefresh', time() + 24 * 60 * 60);
+		$this->opo_app_vars->save();
 	}
 
 	/**
