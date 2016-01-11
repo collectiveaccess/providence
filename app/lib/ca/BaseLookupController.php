@@ -235,6 +235,7 @@
 						$va_item = array_shift($va_items_for_locale);
 						$vn_id = $va_item['item_id'];
 					} else {
+						$va_items_for_locale = array();
 						$vb_gen = false;
 					}
 				}
