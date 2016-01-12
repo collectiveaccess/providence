@@ -3149,6 +3149,13 @@ div.editorBottomPadding {
     height: 25px;
 }
 
+/* read-only containers */
+div.caReadonlyContainerDisplay {
+    padding: 10px 10px 10px 10px;
+    font-weight: normal;
+    border-bottom: 1px solid
+}
+
 /* File and media attribute styles */
 a.attributeDownloadButton {
     padding: 10px;
