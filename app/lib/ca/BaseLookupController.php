@@ -225,13 +225,14 @@
 					$vn_id = (int)$this->request->getParameter('root_item_id', pInteger);
 					$t_item->load($vn_id);
 					// no id so by default return list of available hierarchies
-					$va_items_for_locale = $t_item->getHierarchyList();
-
+					if(!is_array($va_items_for_locale = $t_item->getHierarchyList())) { 
+						$va_items_for_locale = array();
+					}
+					
 					if((sizeof($va_items_for_locale) == 1) && $this->request->getAppConfig()->get($t_item->tableName().'_hierarchy_browser_hide_root')) {
 						$va_item = array_shift($va_items_for_locale);
 						$vn_id = $va_item['item_id'];
 					} else {
-						$va_items_for_locale = array();
 						$vb_gen = false;
 					}
 				}
