@@ -152,10 +152,6 @@
 						$o_search->addResultFilter($va_filter[0], $va_filter[1], $va_filter[2]);
 					}
 				}
-
-				//if (!$pb_exact) {
-				//	$ps_query = trim(preg_replace("![".str_replace("!", "\\!", $o_search_config->get('search_tokenizer_regex'))."]+!", " ", $ps_query));
-				//}
 				
 				// do search
 				if($vs_additional_query_params || $vs_restrict_to_search) {
