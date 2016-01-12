@@ -7,11 +7,13 @@ use Elasticsearch\Common\Exceptions\BadRequest400Exception;
 use Elasticsearch\Common\Exceptions\Conflict409Exception;
 use Elasticsearch\Common\Exceptions\Forbidden403Exception;
 use Elasticsearch\Common\Exceptions\Missing404Exception;
+use Elasticsearch\Common\Exceptions\RequestTimeout408Exception;
 use Elasticsearch\Common\Exceptions\ServerErrorResponseException;
 use FilesystemIterator;
 use GuzzleHttp\Ring\Future\FutureArrayInterface;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use ReflectionClass;
 use Symfony\Component\Process\Exception\RuntimeException;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Parser;
@@ -37,6 +39,8 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
 
     /** @var  string */
     public static $esVersion;
+
+    private static $testCounter = 0;
 
     /**
      * @return mixed
@@ -102,6 +106,13 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
 
         $response = curl_exec($ch);
         curl_close($ch);
+
+        // TODO ewwww...
+        shell_exec('rm -rf /tmp/test_repo_create_1_loc');
+        shell_exec('rm -rf /tmp/test_repo_restore_1_loc');
+        shell_exec('rm -rf /tmp/test_cat_repo_1_loc');
+        shell_exec('rm -rf /tmp/test_cat_repo_2_loc');
+        shell_exec('rm -rf /tmp/test_cat_snapshots_1_loc');
 
         $this->waitForYellow();
     }
@@ -213,8 +224,12 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
         $files = func_get_args();
 
         foreach ($files as $testFile) {
-            echo "$testFile\n";
+            $counter = YamlRunnerTest::$testCounter;
+
+            echo "--------------------------------------------------------------------------\n";
+            echo "#$counter : $testFile\n";
             ob_flush();
+            YamlRunnerTest::$testCounter += 1;
 
             if ($this->skipTest($testFile) === true) {
                 $this->markTestSkipped('Skipped due to skip-list');
@@ -264,6 +279,9 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
                     }
                 }
                 $this->executeTestCase($doc['values'], $testFile, false);
+
+                echo "Success\n\n";
+                ob_flush();
             }
         }
     }
@@ -424,63 +442,12 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
                         if (isset($expectedError) === true) {
                             $this->fail("Expected Exception not thrown: $expectedError");
                         }
-                    } catch (Missing404Exception $exception) {
-                        if ($expectedError === 'missing') {
-                            $this->assertTrue(true);
-                        } else {
-                            $this->fail($exception->getMessage());
-                        }
-                        $response = json_decode($exception->getMessage(), true);
-                    } catch (Conflict409Exception $exception) {
-                        if ($expectedError === 'conflict') {
-                            $this->assertTrue(true);
-                        } else {
-                            $this->fail($exception->getMessage());
-                        }
-                        $response = json_decode($exception->getMessage(), true);
-                    } catch (Forbidden403Exception $exception) {
-                        if ($expectedError === 'forbidden') {
-                            $this->assertTrue(true);
-                        } else {
-                            $this->fail($exception->getMessage());
-                        }
-                        $response = json_decode($exception->getMessage(), true);
-                    } catch (BadRequest400Exception $exception) {
-                        if ($expectedError === 'request') {
-                            $this->assertTrue(true);
-                        } elseif (isset($expectedError) === true && preg_match("/$expectedError/", $exception->getMessage()) === 1) {
-                            $this->assertTrue(true);
-                        } else {
-                            $this->fail($exception->getMessage());
-                        }
-                        $response = json_decode($exception->getMessage(), true);
-                    } catch (ServerErrorResponseException $exception) {
-                        if ($expectedError === 'request') {
-                            $this->assertTrue(true);
-                        } elseif (isset($expectedError) === true && preg_match("/$expectedError/", $exception->getMessage()) === 1) {
-                            $this->assertTrue(true);
-                        } else {
-                            $this->fail($exception->getMessage());
-                        }
-                        $response = json_decode($exception->getMessage(), true);
-                    } catch (Elasticsearch\Common\Exceptions\RuntimeException $exception) {
-                        if ($expectedError === 'param') {
-                            $this->assertTrue(true);
-                        } elseif (isset($expectedError) === true && preg_match("/$expectedError/", $exception->getMessage()) === 1) {
-                            $this->assertTrue(true);
-                        } else {
-                            $this->fail($exception->getMessage());
-                        }
-                        $response = json_decode($exception->getMessage(), true);
                     } catch (\Exception $exception) {
                         if ($expectedError === null) {
                             $this->fail($exception->getMessage());
-                        } elseif (preg_match("/$expectedError/", $exception->getMessage()) === 1) {
-                            $this->assertTrue(true);
-                        } else {
-                            $this->fail($exception->getMessage());
                         }
-                        $response = json_decode($exception->getMessage(), true);
+
+                        $response = $this->handleCaughtException($exception, $expectedError);
                     }
                 } elseif ($operator === 'match') {
                     $expected = $this->getValue($settings, key($settings));
@@ -608,6 +575,56 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    private function handleCaughtException(\Exception $exception, $expectedError) {
+        $reflect = new ReflectionClass($exception);
+        $caught = $reflect->getShortName();
+        $passed = false;
+
+
+        if ($caught === 'Missing404Exception' && $expectedError === 'missing') {
+            $passed = true;
+        } elseif ($caught === 'Conflict409Exception' && $expectedError === 'conflict') {
+            $passed = true;
+        } elseif ($caught === 'Missing404Exception' && $expectedError === 'missing') {
+            $passed = true;
+        } elseif ($caught === 'Forbidden403Exception' && $expectedError === 'forbidden') {
+            $passed = true;
+        } elseif ($caught === 'RequestTimeout408Exception' && $expectedError === 'request_timeout') {
+            $passed = true;
+        } elseif ($caught === 'BadRequest400Exception' && $expectedError === 'request') {
+            $passed = true;
+        } elseif ($caught === 'ServerErrorResponseException' && $expectedError === 'request') {
+            $passed = true;
+        } elseif ($caught === 'RuntimeException' && $expectedError === 'param') {
+            $passed = true;
+        } elseif ($caught === 'Missing404Exception' && $expectedError === 'missing') {
+            $passed = true;
+        }
+
+        if ($passed === false) {
+            if (YamlRunnerTest::checkExceptionRegex($expectedError, $exception)) {
+                $passed = true;
+            } elseif ($exception->getPrevious() !== null) { // try second level
+                if (YamlRunnerTest::checkExceptionRegex($expectedError, $exception->getPrevious())) {
+                    $passed = true;
+                }
+            }
+        }
+
+        if ($passed === true) {
+            $this->assertTrue(true);
+            return json_decode($exception->getMessage(), true);
+        }
+
+        //$this->fail("Tried to match exception, failed.  Exception: ".$exception->getMessage());
+        throw $exception;
+    }
+
+
+    private static function checkExceptionRegex($expectedError, \Exception $exception) {
+        return isset($expectedError) === true && preg_match("/$expectedError/", $exception->getMessage()) === 1;
+    }
+
     private function callMethod($method, $hash, $future)
     {
         $ret = array();
@@ -629,8 +646,9 @@ class YamlRunnerTest extends \PHPUnit_Framework_TestCase
         }
 
         if (count($methodParts) > 1) {
-            $methodParts[1] = $this->snakeToCamel($methodParts[1]);
-            $ret = $this->client->$methodParts[0]()->$methodParts[1]($hash);
+            $methodName = $methodParts[0];
+            $methodArgs = $this->snakeToCamel($methodParts[1]);
+            $ret = $this->client->$methodName()->$methodArgs($hash);
         } else {
             $method = $this->snakeToCamel($method);
             $ret = $this->client->$method($hash);
@@ -740,12 +758,8 @@ EOF;
     {
         //all_path_options
         $skipList = array(
-            'indices.delete_mapping/all_path_options.yaml',
-            'indices.exists_type/10_basic.yaml',
-            'indices.get_mapping/10_basic.yaml',
-            'indices.create/10_basic.yaml',
-            'indices.get_alias/10_basic.yaml',
-            'cat.allocation/10_basic.yaml'      //regex breaks PHP
+            'cat.nodeattrs/10_basic.yaml',
+            'cat.repositories/10_basic.yaml'
         );
 
         foreach ($skipList as $skip) {
