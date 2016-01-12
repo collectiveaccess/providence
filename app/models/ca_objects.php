@@ -510,6 +510,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		parent::initLabelDefinitions($pa_options);
 		$this->BUNDLES['ca_object_representations'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Media representations'));
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
+		$this->BUNDLES['ca_objects_table'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects table'));
 		$this->BUNDLES['ca_entities'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities'));
 		$this->BUNDLES['ca_places'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related places'));
 		$this->BUNDLES['ca_occurrences'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related occurrences'));
@@ -523,7 +524,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		$this->BUNDLES['ca_object_lots'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related lot'));
 		
 		$this->BUNDLES['ca_list_items'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related vocabulary terms'));
-		$this->BUNDLES['ca_sets'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));
+		$this->BUNDLES['ca_sets'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related sets'));
+		$this->BUNDLES['ca_sets_checklist'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));
 		
 		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
@@ -549,6 +551,20 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 			}
 		}
 		return parent::insert($pa_options);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Override update() to set child records to the same lot as parent
+	 */ 
+	public function update($pa_options=null) {
+		if ($vn_parent_id = $this->get('parent_id')) {
+			$t_parent = new ca_objects();
+			if ($this->inTransaction()) { $t_parent->setTransaction($this->getTransaction()); }
+			if ($t_parent->load($vn_parent_id) && ($vn_lot_id = $t_parent->get('lot_id'))) {
+				$this->set('lot_id', $vn_lot_id);
+			}
+		}
+		return parent::update($pa_options);
 	}
 	# ------------------------------------------------------
 	/**
@@ -774,7 +790,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				if (!$vs_history_template) { $vs_history_template = $vs_display_template; }
 				$o_view->setVar('location_history', $this->getMovementHistory(array('dateElement' => $vs_movement_date_element, 'template' => $vs_history_template)));
 				
-				$o_view->setVar('location_relationship_type', $this->getAppConfig()->get('movement_storage_location_tracking_relationship_type'));
+				$o_view->setVar('location_relationship_type', $this->getAppConfig()->get('movement_object_tracking_relationship_type'));
 				$o_view->setVar('location_change_url', caNavUrl($po_request, 'editor/movements', 'MovementQuickAdd', 'Form', array('movement_id' => 0)));
 				break;
 		}
@@ -1667,6 +1683,26 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		if (!is_array($va_container_types) || !sizeof($va_container_types)) { return false; }
 		if (in_array('*', $va_container_types)) { return true; }
 		return in_array($this->getTypeCode(), $va_container_types);
+	}
+	# ------------------------------------------------------
+	/** 
+	 * Check if currently loaded object is a component 
+	 *	
+	 * @return bool 
+	 */
+	public function isComponent() {
+		$va_container_types = $this->getAppConfig()->getList('ca_objects_container_types');
+		$va_component_types = $this->getAppConfig()->getList('ca_objects_component_types');
+		if (!is_array($va_container_types) || !sizeof($va_container_types)) { return false; }
+		if (!is_array($va_component_types) || !sizeof($va_component_types)) { return false; }
+		if (!($vn_parent_id = $this->get('parent_id'))) { return false; }		// component must be in a container
+		
+		if (!in_array($this->getTypeCode(), $va_component_types) && !in_array('*', $va_component_types)) { return false; }	// check component type
+		$t_parent = new ca_objects($vn_parent_id);
+		if (!$t_parent->getPrimaryKey()) { return false; }
+		if (!in_array($t_parent->getTypeCode(), $va_container_types) && !in_array('*', $va_container_types)) { return false; }	// check container type
+		
+		return true;
 	}
  	# ------------------------------------------------------
  	# Current location browse support

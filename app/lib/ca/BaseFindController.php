@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,7 +40,7 @@
  	require_once(__CA_MODELS_DIR__."/ca_sets.php");
 	require_once(__CA_LIB_DIR__."/core/AccessRestrictions.php");
  	require_once(__CA_LIB_DIR__.'/ca/Visualizer.php');
- 	require_once(__CA_LIB_DIR__.'/core/Parsers/ZipFile.php');
+	require_once(__CA_LIB_DIR__.'/core/Parsers/ZipStream.php');
  	require_once(__CA_LIB_DIR__.'/core/Print/PDFRenderer.php');
 	require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
  	
@@ -72,8 +72,16 @@
 				$this->opo_result_context = new ResultContext($po_request, $this->ops_tablename, $this->ops_find_type);
 
 				if ($this->opn_type_restriction_id = $this->opo_result_context->getTypeRestriction($pb_type_restriction_has_changed)) {
+					
+					if ($pb_type_restriction_has_changed) {
+						$this->request->session->setVar($this->ops_tablename.'_type_id', $this->opn_type_restriction_id);
+					} elseif($vn_type_id = $this->request->session->getVar($this->ops_tablename.'_type_id')) {
+						$this->opn_type_restriction_id = $vn_type_id;
+					}
+					
 					$_GET['type_id'] = $this->opn_type_restriction_id;								// push type_id into globals so breadcrumb trail can pick it up
 					$this->opb_type_restriction_has_changed =  $pb_type_restriction_has_changed;	// get change status
+					
 				}
 			}
  		}
@@ -203,7 +211,7 @@
 						(($va_tmp[0] == $this->ops_tablename) && ($va_tmp[1] === 'preferred_labels'))
 					) {
 						$va_display_list[$vn_i]['is_sortable'] = true;
-						$va_display_list[$vn_i]['bundle_sort'] = $vs_label_table_name.'.'.$vs_label_display_field;
+						$va_display_list[$vn_i]['bundle_sort'] = $vs_label_table_name.'.'.$t_model->getLabelSortField();
 						continue;
 					}
 					
@@ -889,8 +897,13 @@
 			
 				$t_set = new ca_sets();
 				$t_set->setMode(ACCESS_WRITE);
+				if($vn_set_type_id = $this->getRequest()->getParameter('set_type_id', pInteger)) {
+					$t_set->set('type_id', $vn_set_type_id);
+				} else {
+					$t_set->set('type_id', $this->getRequest()->getAppConfig()->get('ca_sets_default_type'));
+				}
+
 				$t_set->set('user_id', $this->request->getUserID());
-				$t_set->set('type_id', $this->request->config->get('ca_sets_default_type'));
 				$t_set->set('table_num', $t_model->tableNum());
 				$t_set->set('set_code', $vs_set_code = mb_substr(preg_replace("![^A-Za-z0-9_\-]+!", "_", $vs_set_name), 0, 100));
 			
@@ -994,16 +1007,16 @@
  				}
  				
 				$vn_file_count = 0;
+				
+				$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
 						
  				if (is_array($pa_ids) && sizeof($pa_ids)) {
  					$ps_version = $this->request->getParameter('version', pString);
 					if ($qr_res = $t_subject->makeSearchResult($t_subject->tableName(), $pa_ids, array('filterNonPrimaryRepresentations' => false))) {
-						//$vs_tmp_name = caGetTempFileName('DownloadRepresentations', 'zip');
-						//$o_phar = new PharData($vs_tmp_name, null, null, Phar::ZIP);
-						$o_phar = new ZipFile();
-						//if (!($vn_limit = ini_get('max_execution_time'))) { $vn_limit = 30; }
-						//set_time_limit($vn_limit * 2);
-						set_time_limit(7200);
+						
+						if (!($vn_limit = ini_get('max_execution_time'))) { $vn_limit = 30; }
+						set_time_limit($vn_limit * 10);
+						$o_zip = new ZipStream();
 						while($qr_res->nextHit()) {
 							if (!is_array($va_version_list = $qr_res->getMediaVersions('ca_object_representations.media')) || !in_array($ps_version, $va_version_list)) {
 								$vs_version = 'original';
@@ -1061,19 +1074,21 @@
 									}
 								}
 								if (!file_exists($vs_path)) { continue; }
-								$o_phar->addFile($vs_path, $vs_filename, 0, array('compression' => 0));
+								$o_zip->addFile($vs_path, $vs_filename);
 								$vn_file_count++;
 							}
 						}
-						$vs_tmp_name = $o_phar->output(ZIPFILE_FILEPATH);
-						$this->view->setVar('tmp_file', $vs_tmp_name);
-						$this->view->setVar('download_name', 'media_for_'.mb_substr(preg_replace('![^A-Za-z0-9]+!u', '_', $this->getCriteriaForDisplay()), 0, 20).'.zip');
 					}
 				}
- 				
- 				if ($vn_file_count > 0) {
- 					$this->render('Results/object_representation_download_binary.php');
-					exit;
+				 				
+ 				if ($o_zip && ($vn_file_count > 0)) {
+ 					$o_view->setVar('zip_stream', $o_zip);
+					$o_view->setVar('archive_name', 'media_for_'.mb_substr(preg_replace('![^A-Za-z0-9]+!u', '_', $this->getCriteriaForDisplay()), 0, 20).'.zip');
+
+					$this->response->addContent($o_view->render('download_file_binary.php'));
+					set_time_limit($vn_limit);
+
+ 					//$this->render('Results/object_representation_download_binary.php');
  				} else {
  					$this->response->setHTTPResponseCode(204, _t('No files to download'));
  				}
@@ -1081,7 +1096,7 @@
  			}
  			
  			// post error
- 			$this->postError(3100, _t("Could not generate ZIP file for download"),"BaseEditorController->DownloadRepresentation()");
+ 			$this->postError(3100, _t("Could not generate ZIP file for download"),"BaseFindController->DownloadRepresentation()");
  		}
  		# ------------------------------------------------------------------
  		/**

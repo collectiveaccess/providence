@@ -2281,6 +2281,14 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
+          <restriction code="r2">
+              <table>ca_sets</table>
+              <settings>
+                  <setting name="minAttributesPerRow">0</setting>
+                  <setting name="maxAttributesPerRow">255</setting>
+                  <setting name="minimumAttributeBundlesToDisplay">1</setting>
+              </settings>
+          </restriction>
       </typeRestrictions>
     </metadataElement>
     <metadataElement code="entity_reference_2" datatype="Entities">
@@ -2505,6 +2513,9 @@
             </label>
           </labels>
           <bundlePlacements>
+            <placement code="ca_sets_checklist">
+              <bundle>ca_sets_checklist</bundle>
+            </placement>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
             </placement>
@@ -2860,6 +2871,9 @@
             </label>
           </labels>
           <bundlePlacements>
+            <placement code="ca_objects_table">
+              <bundle>ca_objects_table</bundle>
+            </placement>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
             </placement>

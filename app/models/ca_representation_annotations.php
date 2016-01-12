@@ -287,6 +287,7 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	protected function initLabelDefinitions($pa_options=null) {
 		parent::initLabelDefinitions($pa_options);
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
+		$this->BUNDLES['ca_objects_table'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects table'));
 		$this->BUNDLES['ca_entities'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities'));
 		$this->BUNDLES['ca_places'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related places'));
 		$this->BUNDLES['ca_occurrences'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related occurrences'));
@@ -363,6 +364,10 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	 */
 	public function update($pa_options=null) {
 		$this->set('type_code', $vs_type = $this->getAnnotationType());
+		if (!$this->opo_annotations_properties) {
+			$this->postError(1101, _t('No type code set'), 'ca_representation_annotations->update');
+			return false;
+		}
 		if (!$this->opo_annotations_properties->validate()) {
 			$this->errors = $this->opo_annotations_properties->errors;
 			return false;

@@ -117,7 +117,7 @@
 	}
 ?>
 						// Get new form with current in-point
-						caAnnoEditorEdit(0, caAnnoEditorGetPlayerTime(), caAnnoEditorGetPlayerTime() + 10);
+						caAnnoEditorEdit(0, caAnnoEditorGetPlayerTime(true), caAnnoEditorGetPlayerTime(true) + 10);
 					} else {
 						// error
 						var content = '<div class="notification-error-box rounded"><ul class="notification-error-box">';

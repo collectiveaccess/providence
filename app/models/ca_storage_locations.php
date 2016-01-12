@@ -329,6 +329,7 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 		parent::initLabelDefinitions($pa_options);
 		$this->BUNDLES['ca_object_representations'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Media representations'));
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
+		$this->BUNDLES['ca_objects_table'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects table'));
 		$this->BUNDLES['ca_object_lots'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related lots'));
 		$this->BUNDLES['ca_entities'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities'));
 		$this->BUNDLES['ca_places'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related places'));
@@ -340,7 +341,8 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 		$this->BUNDLES['ca_movements'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related movements'));
 		
 		$this->BUNDLES['ca_list_items'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related vocabulary terms'));
-		$this->BUNDLES['ca_sets'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));
+		$this->BUNDLES['ca_sets'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related sets'));
+		$this->BUNDLES['ca_sets_checklist'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));
 		
 		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
 
@@ -427,8 +429,12 @@ class ca_storage_locations extends BaseObjectLocationModel implements IBundlePro
 					if (in_array($va_movement_info['movement_id'], $va_movement_ids)) { $va_movement_rels[] = $vn_relation_id; }
 				}
 				
-				$qr_object_rels = caMakeSearchResult('ca_movements_x_objects', $va_movement_rels);
-				$va_object_ids = $qr_object_rels->getAllFieldValues('ca_movements_x_objects.object_id');
+				if (sizeof($va_movement_rels) > 0) {
+					$qr_object_rels = caMakeSearchResult('ca_movements_x_objects', $va_movement_rels);
+					$va_object_ids = $qr_object_rels->getAllFieldValues('ca_movements_x_objects.object_id');
+				} else {
+					$va_object_ids = array();
+				}
 			}
 		}
 		

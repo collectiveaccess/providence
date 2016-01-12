@@ -195,7 +195,7 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 			// Same thing without quotes
 			// These are being replaces with a phrase search for "[BLANK]"
 			// in SearchEngine.php, but we should keep these tests around
-			// just in case somebody decides to remove that like from the
+			// just in case somebody decides to remove that from the
 			// SearchEngine :-)
 			'ca_objects.coverageNotes:[BLANK]' => 1,		// actually has a blank value
 			'ca_objects.description:[BLANK]' => 1,			// has no value at all

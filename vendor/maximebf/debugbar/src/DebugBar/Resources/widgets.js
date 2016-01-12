@@ -291,7 +291,7 @@ if (typeof(PhpDebugBar) == 'undefined') {
             }});
 
             this.$list.$el.appendTo(this.$el);
-            this.$toolbar = $('<div><i class="fa fa-search"></i></div>').addClass(csscls('toolbar')).appendTo(this.$el);
+            this.$toolbar = $('<div><i class="phpdebugbar-fa phpdebugbar-fa-search"></i></div>').addClass(csscls('toolbar')).appendTo(this.$el);
 
             $('<input type="text" />')
                 .on('change', function() { self.set('search', this.value); })
@@ -318,12 +318,19 @@ if (typeof(PhpDebugBar) == 'undefined') {
 
             this.bindAttr(['exclude', 'search'], function() {
                 var data = this.get('data'),
-                    exclude = this.get('exclude'), 
+                    exclude = this.get('exclude'),
                     search = this.get('search'),
+                    caseless = false,
                     fdata = [];
 
+                if (search && search === search.toLowerCase()) {
+                    caseless = true;
+                }
+
                 for (var i = 0; i < data.length; i++) {
-                    if ((!data[i].label || $.inArray(data[i].label, exclude) === -1) && (!search || data[i].message.indexOf(search) > -1)) {
+                    var message = caseless ? data[i].message.toLowerCase() : data[i].message;
+
+                    if ((!data[i].label || $.inArray(data[i].label, exclude) === -1) && (!search || message.indexOf(search) > -1)) {
                         fdata.push(data[i]);
                     }
                 }

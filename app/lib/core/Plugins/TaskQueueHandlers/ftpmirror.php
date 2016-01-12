@@ -44,7 +44,7 @@ include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugTaskQueueHandler.php");
 include_once(__CA_LIB_DIR__."/core/Media.php");
 include_once(__CA_LIB_DIR__."/core/Media/MediaVolumes.php");
 include_once(__CA_LIB_DIR__."/core/Datamodel.php");
-include_once(__CA_LIB_DIR__."/core/Error.php");
+include_once(__CA_LIB_DIR__."/core/ApplicationError.php");
 include_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 	
 	class WLPlugTaskQueueHandlerftpmirror Extends WLPlug Implements IWLPlugTaskQueueHandler {
@@ -56,7 +56,7 @@ include_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 		# Constructor - all task queue handlers must implement this
 		#
 		public function __construct() {
-			$this->error = new Error();
+			$this->error = new ApplicationError();
 			$this->error->setErrorOutput(0);
 		}
 		# --------------------------------------------------------------------------------

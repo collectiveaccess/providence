@@ -289,6 +289,7 @@ class RequestHTTP extends Request {
 		} else {
 			$vs_theme = $this->config->get('theme');		// default theme
 		}
+		if (!$vs_theme) { $vs_theme = $this->config->get('theme'); }
 		return $this->config->get('themes_url').'/'.$vs_theme;
 	}
 	# -------------------------------------------------------
@@ -299,6 +300,7 @@ class RequestHTTP extends Request {
 		} else {
 			$vs_theme = $this->config->get('theme');		// default theme
 		}
+		if (!$vs_theme) { $vs_theme = $this->config->get('theme'); }
 		return $this->config->get('themes_directory').'/'.$vs_theme;
 	}
 	# -------------------------------------------------------
@@ -724,10 +726,7 @@ class RequestHTTP extends Request {
 			}
 			if (!$pa_options["dont_redirect_to_login"]) {
 				$vs_auth_login_url = $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_path");
-				//header("Location: ".$vs_auth_login_url.(($pa_options["user_name"]) ? "&lf=1" : ""));
 				$this->opo_response->addHeader("Location", $vs_auth_login_url);
-				
-				//exit;
 			}
 			return false;
 		} else {		

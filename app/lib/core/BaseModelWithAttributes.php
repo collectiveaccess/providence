@@ -1791,7 +1791,7 @@
 			$va_attribute_list =  is_array($va_attributes[$vn_element_id]) ? $va_attributes[$vn_element_id] : array();
 		
 			$vs_sort_dir = (isset($pa_options['sort']) && (in_array(strtolower($pa_options['sortDirection']), array('asc', 'desc')))) ? strtolower($pa_options['sortDirection']) : 'asc';	
-			if (isset($pa_options['sort']) && ($vs_sort = $pa_options['sort'])) {
+			if ((isset($pa_options['sort']) && ($vs_sort = $pa_options['sort'])) || ($vs_sort_dir == 'desc')) {
 				$va_tmp = array();
 				foreach($va_attribute_list as $vn_id => $o_attribute) {
 					$va_attribute_values = $o_attribute->getValues();
@@ -1804,10 +1804,10 @@
 						}
 					}
 					
-					// If the sort key was not valid for some reason we default to using the first attribute value
-					// since if we don't then the attribute will disppear from the UI. We need to have *something* to order on...
+					// If the sort key was not valid for some reason we default to using the attribute id
+					// since if we don't then the attribute will disppear from the UI. We need to have something to order on.
 					if (!$vb_isset) {
-						$va_tmp[$va_attribute_values[0]->getSortValue()][$vn_id] = $o_attribute;
+						$va_tmp[$vn_id][$vn_id] = $o_attribute;
 					}
 				}
 				
@@ -2365,10 +2365,10 @@
 		 * @return mixed 
 		 */
 		public function getAuthorityElementList($pa_options=null) {
-			if (!($vn_datatype = $this->authorityElementDatatype())) { return null; }
+			if (!($vn_datatype = $this->authorityElementDatatype())) { return array(); }
 			if (!($vn_id = caGetOption('row_id', $pa_options, null))) { 
-				if (!($vn_id = $this->getPrimaryKey())) { 
-					return null; 
+				if (!($vn_id = $this->getPrimaryKey())) {
+					return array();
 				}
 			}
 			

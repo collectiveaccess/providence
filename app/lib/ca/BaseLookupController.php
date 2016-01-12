@@ -68,7 +68,7 @@
 			$o_search_config = caGetSearchConfig();
 				
 			if (!$this->ops_search_class) { return null; }
-			$ps_query = $this->request->getParameter('term', pString); 
+			$ps_query = $this->request->getParameter('term', pString);
 			
 			$pb_exact = $this->request->getParameter('exact', pInteger);
 			$ps_exclude = $this->request->getParameter('exclude', pString);
@@ -152,7 +152,7 @@
 						$o_search->addResultFilter($va_filter[0], $va_filter[1], $va_filter[2]);
 					}
 				}
-				
+
 				//if (!$pb_exact) {
 				//	$ps_query = trim(preg_replace("![".str_replace("!", "\\!", $o_search_config->get('search_tokenizer_regex'))."]+!", " ", $ps_query));
 				//}
@@ -169,7 +169,7 @@
 				$qr_res->setOption('prefetch', $pn_limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);
 				
-				$va_opts = array('exclude' => $va_excludes, 'limit' => $pn_limit);
+				$va_opts = array('exclude' => $va_excludes, 'limit' => $pn_limit, 'request' => $this->getRequest());
 				if(!$pb_no_inline && ($pb_quickadd || (!strlen($pb_quickadd) && $this->request->user && $this->request->user->canDoAction('can_quickadd_'.$this->opo_item_instance->tableName()) && !((bool) $o_config->get($this->opo_item_instance->tableName().'_disable_quickadd'))))) {
 					// if the lookup was restricted by search, try the lookup without the restriction
 					// so that we can notify the user that he might be about to create a duplicate
@@ -235,6 +235,7 @@
 						$va_item = array_shift($va_items_for_locale);
 						$vn_id = $va_item['item_id'];
 					} else {
+						$va_items_for_locale = array();
 						$vb_gen = false;
 					}
 				}

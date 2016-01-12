@@ -3024,6 +3024,10 @@ class TimeExpressionParser {
 		return date("t", mktime(0, 0, 0, $pn_month, 1, $pn_year));
 	}
 	# -------------------------------------------------------------------
+	public function daysInYear($pn_year) {
+		return ((($year % 4) == 0) && ((($year % 100) != 0) || (($year %400) == 0))) ? 366 : 365;
+	}
+	# -------------------------------------------------------------------
 	public function getDayList() {
 		return $this->opo_language_settings->getList('dayListDisplay');
 	}
@@ -3130,7 +3134,7 @@ class TimeExpressionParser {
 				if ($vn_s <= TEP_START_OF_UNIVERSE) { $vn_s = $vn_e; }
 				if ($vn_e >= TEP_END_OF_UNIVERSE) { $vn_e = $vn_s; }
 				
-				if (($vn_s <= TEP_START_OF_UNIVERSE) || ($vn_e >= TEP_END_OF_UNIVERSE)) { break; }
+				if (($vn_s <= TEP_START_OF_UNIVERSE) || ($vn_e >= TEP_END_OF_UNIVERSE) || ($vn_s == 0) || ($vn_e == 0)) { break; }
 				
 				$vn_s = intval($vn_s/10) * 10;
 				$vn_e = intval($vn_e/10) * 10;
@@ -3155,11 +3159,11 @@ class TimeExpressionParser {
 				if ($vn_s <= TEP_START_OF_UNIVERSE) { $vn_s = $vn_e; }
 				if ($vn_e >= TEP_END_OF_UNIVERSE) { $vn_e = $vn_s; }
 				
-				if (($vn_s <= TEP_START_OF_UNIVERSE) || ($vn_e >= TEP_END_OF_UNIVERSE)) { break; }
+				if (($vn_s <= TEP_START_OF_UNIVERSE) || ($vn_e >= TEP_END_OF_UNIVERSE) || ($vn_s == 0) || ($vn_e == 0)) { break; }
 				
 				$vn_s = intval($vn_s/100) * 100;
 				$vn_e = intval($vn_e/100) * 100;
-
+				
 				if ($vn_s <= $vn_e) {
 					$va_century_indicators = 	$this->opo_language_settings->getList("centuryIndicator");
 					$va_ordinals = 				$this->opo_language_settings->getList("ordinalSuffixes");
@@ -3291,16 +3295,51 @@ class TimeExpressionParser {
 	}
 	# -------------------------------------------------------------------
 	/**
+	 * Return current date/time 
+	 *
+	 * @param array $pa_options Options include:
+	 *		returnAs = time units of return value. Valid values are: days, hours, minutes, seconds. [Default is seconds]
+	 * @return int Time in interval
+	 */
+	public function interval($pa_options=null) {
+		if (!$this->opn_start_historic || !$this->opn_end_historic) { return null; }
+		if ($this->opn_start_historic > $this->opn_end_historic) { return null; }
+		$va_start = $this->getHistoricDateParts($this->opn_start_historic);
+		$va_end = $this->getHistoricDateParts($this->opn_end_historic);
+		
+		$vo_start = new DateTime($this->getISODateTime($va_start, 'FULL'));
+		$vo_end = new DateTime($this->getISODateTime($va_end, 'FULL'));
+		
+		$vo_interval = $vo_start->diff($vo_end);
+		
+		switch(strtolower(caGetOption('returnAs', $pa_options, 'seconds'))) {
+			case 'days':
+				return $vo_interval->days + (($vo_interval->h >= 12) ? 1 : 0);
+				break;
+			case 'hours':
+				return ($vo_interval->days * 24 * 60 * 60) + ($vo_interval->h * 60 * 60) + (($vo_interval->m >= 30) ? 1 : 0);
+				break;
+			case 'minutes':
+				return ($vo_interval->days * 24 * 60 * 60) + ($vo_interval->h * 60 * 60) + ($vo_interval->m * 60) + (($vo_interval->s >= 30) ? 1 : 0);
+				break;
+			case 'seconds':
+			default:
+				return ($vo_interval->days * 24 * 60 * 60) + ($vo_interval->h * 60 * 60) + ($vo_interval->m * 60) + $vo_interval->s;
+				break;
+		}
+		return null;
+	}
+	# -------------------------------------------------------------------
+	/**
 	 * Timezone-less version of getDate()
 	 */
-	function gmgetdate($ts = null){ 
+	public function gmgetdate($ts = null){ 
         $k = array('seconds','minutes','hours','mday', 
                 'wday','mon','year','yday','weekday','month',0);
         return(array_combine($k,explode(":",
                 date('s:i:G:j:w:n:Y:z:l:F:U',is_null($ts)?time():intval($ts)))));
     } 
-    
-	# -------------------------------------------------------------------
+ 	# -------------------------------------------------------------------
 	/**
 	 * Return current date/time 
 	 *

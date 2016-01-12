@@ -79,8 +79,6 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			->setHosts([$this->ops_elasticsearch_base_url])
 			->setRetries(2)
 			->build();
-
-		$this->refreshMapping();
 	}
 	# -------------------------------------------------------
 	/**
@@ -95,13 +93,16 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * Refresh ElasticSearch mapping if necessary
 	 * @param bool $pb_force force refresh if set to true [default is false]
 	 */
-	protected function refreshMapping($pb_force=false) {
+	public function refreshMapping($pb_force=false) {
 		$o_mapping = new ElasticSearch\Mapping();
 		if($o_mapping->needsRefresh() || $pb_force) {
 			try {
-				$this->getClient()->indices()->create(array('index' => $this->getIndexName()));
+				if(!$this->getClient()->indices()->exists(array('index' => $this->getIndexName()))) {
+					$this->getClient()->indices()->create(array('index' => $this->getIndexName()));
+				}
 				// if we don't refresh() after creating, ES throws a IndexPrimaryShardNotAllocatedException
 				// @see https://groups.google.com/forum/#!msg/elasticsearch/hvMhx162E-A/on-3druwehwJ
+				// -- seems to be fixed in 2.x
 				//$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
 			} catch (Elasticsearch\Common\Exceptions\BadRequest400Exception $e) {
 				// noop -- the exception happens when the index already exists, which is good
@@ -118,8 +119,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				));
 			}
 
-			// resets the mapping cache key so that needsRefresh() returns
-			// false for a while, depending on __CA_CACHE_TTL__
+			// resets the mapping cache key so that needsRefresh() returns false for 24h
 			$o_mapping->ping();
 		}
 	}
@@ -198,8 +198,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	}
 	# -------------------------------------------------------
 	public function init() {
-		if(($vn_max_indexing_buffer_size = (int)$this->opo_search_config->get('max_indexing_buffer_size')) < 1) {
-			$vn_max_indexing_buffer_size = 1000;
+		if(($vn_max_indexing_buffer_size = (int)$this->opo_search_config->get('elasticsearch_indexing_buffer_size')) < 1) {
+			$vn_max_indexing_buffer_size = 250;
 		}
 
 		$this->opa_options = array(
@@ -219,7 +219,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @param null|int $pn_table_num
 	 * @return bool
 	 */
-	public function truncateIndex($pn_table_num = null) {
+	public function truncateIndex($pn_table_num = null, $pb_dont_refresh = false) {
 		if(!$pn_table_num) {
 			// nuke the entire index
 			try {
@@ -227,7 +227,10 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			} catch(Elasticsearch\Common\Exceptions\Missing404Exception $e) {
 				// noop
 			} finally {
-				$this->refreshMapping(true);
+				if(!$pb_dont_refresh) {
+					$this->refreshMapping(true);
+				}
+
 			}
 		} else {
 			// use scoll API to find all documents in a particular mapping/table and delete them using the bulk API
@@ -318,6 +321,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			'index' => $this->getIndexName(),
 			'type' => $this->opo_datamodel->getTableName($pn_subject_tablenum),
 			'body' => array(
+				// we do paging in our code
+				'from' => 0, 'size' => 2147483647, // size is Java's 32bit int, for ElasticSearch
 				'query' => array(
 					'bool' => array(
 						'must' => array(
@@ -474,6 +479,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @throws Elasticsearch\Common\Exceptions\NoNodesAvailableException
 	 */
 	public function flushContentBuffer() {
+		$this->refreshMapping();
+
 		$va_bulk_params = array();
 
 		// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
@@ -509,25 +516,15 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				)
 			);
 
-			$qr_res = $this->opo_db->query("
-				SELECT ccl.log_id, ccl.log_datetime, ccl.changetype, u.user_name
-				FROM ca_change_log ccl
-				INNER JOIN ca_users AS u ON ccl.user_id = u.user_id
-				WHERE
-					(ccl.logged_table_num = ?) AND (ccl.logged_row_id = ?)
-					AND
-					(ccl.changetype <> 'D')
-			", $this->opo_datamodel->getTableNum($vs_table_name), $vn_primary_key);
-
-			while($qr_res->nextRow()) {
-				if ($qr_res->get('changetype') == 'I') {
-					$va_doc_content_buffer["{$vs_table_name}.created"][] = date("c", $qr_res->get('log_datetime'));
-					$va_doc_content_buffer["{$vs_table_name}.created.{$qr_res->get('user_name')}"][] = date("c", $qr_res->get('log_datetime'));
-				} else {
-					$va_doc_content_buffer["{$vs_table_name}.modified"][] = date("c", $qr_res->get('log_datetime'));
-					$va_doc_content_buffer["{$vs_table_name}.modified.{$qr_res->get('user_name')}"][] = date("c", $qr_res->get('log_datetime'));
-				}
-			}
+			// add changelog to index
+			$va_doc_content_buffer = array_merge(
+				$va_doc_content_buffer,
+				caGetChangeLogForElasticSearch(
+					$this->opo_db,
+					$this->opo_datamodel->getTableNum($vs_table_name),
+					$vn_primary_key
+				)
+			);
 
 			$va_bulk_params['body'][] = $va_doc_content_buffer;
 		}
@@ -544,6 +541,16 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 					)
 				);
 
+				// add changelog to fragment
+				$va_fragment = array_merge(
+					$va_fragment,
+					caGetChangeLogForElasticSearch(
+						$this->opo_db,
+						$this->opo_datamodel->getTableNum($vs_table_name),
+						$vn_row_id
+					)
+				);
+
 				$va_bulk_params['body'][] = array('doc' => $va_fragment);
 			}
 		}
@@ -552,7 +559,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$this->getClient()->bulk($va_bulk_params);
 
 			// we usually don't need indexing to be available *immediately* unless we're running automated tests of course :-)
-			if(caIsRunFromCLI() && $this->getIndexName()) {
+			if(caIsRunFromCLI() && $this->getIndexName() && (!defined('__CollectiveAccess_IS_REINDEXING__') || !__CollectiveAccess_IS_REINDEXING__)) {
 				$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
 			}
 		}
@@ -577,6 +584,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$this->getClient()->indices()->putSettings(array(
 					'index' => $this->getIndexName(),
 					'body' => array(
+						'max_result_window' => 2147483647,
 						'analysis' => array(
 							'analyzer' => array(
 								'keyword_lowercase' => array(

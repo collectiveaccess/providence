@@ -37,7 +37,7 @@
 require_once(__CA_LIB_DIR__."/core/BaseObject.php");
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
 require_once(__CA_LIB_DIR__."/core/Db.php");
-require_once(__CA_LIB_DIR__."/core/Error.php");
+require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
 require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 require_once(__CA_LIB_DIR__."/core/ApplicationVars.php");
 require_once(__CA_LIB_DIR__."/core/Utils/ProcessStatus.php");
