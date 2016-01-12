@@ -180,7 +180,7 @@ class SearchEngine extends SearchBase {
 		
 		$t_table = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
 		
-		$vs_cache_key = md5($ps_search."/".print_R($this->getTypeRestrictionList(), true));
+		$vs_cache_key = md5($ps_search."/".serialize($this->getTypeRestrictionList()));
 		$o_cache = new SearchCache();
 		$vb_from_cache = false;
 
@@ -199,7 +199,7 @@ class SearchEngine extends SearchBase {
 				$o_res = new WLPlugSearchEngineCachedResult($va_hits, $this->opn_tablenum);
 				$vb_from_cache = true;
 			} else {
-				Debug::msg('cache expire for '.$vs_cache_key);
+				Debug::msg('SEARCH cache expire for '.$vs_cache_key);
 				$o_cache->remove();
 			}
 		}
