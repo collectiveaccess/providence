@@ -3150,10 +3150,18 @@ div.editorBottomPadding {
 }
 
 /* read-only containers */
-div.caReadonlyContainerDisplay {
+div.caReadonlyContainer {
     padding: 10px 10px 10px 10px;
     font-weight: normal;
     border-bottom: 1px solid
+}
+
+div.caReadonlyContainerDisplay {
+    margin-right: 32px;
+}
+
+a.caReadonlyContainerEditLink {
+    float: right;
 }
 
 /* File and media attribute styles */

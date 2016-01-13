@@ -237,9 +237,9 @@ if (caGetOption('canMakePDFForValue', $va_element_info[$t_element->getPrimaryKey
 <?php
 					foreach($va_readonly_previews as $vn_attr_id => $vs_readonly_preview) {
 ?>
-						<div id="caReadonlyContainer<?php print $vs_id_prefix.'_'.$vn_attr_id; ?>" class="caReadonlyContainerDisplay">
-							<span><?php print $vs_readonly_preview; ?></span>
-							<a id="caContainerEditLink<?php print $vs_id_prefix.'_'.$vn_attr_id; ?>" href="#">Edit</a>
+						<div class="caReadonlyContainer" id="caReadonlyContainer<?php print $vs_id_prefix.'_'.$vn_attr_id; ?>">
+							<a class="caReadonlyContainerEditLink" id="caContainerEditLink<?php print $vs_id_prefix.'_'.$vn_attr_id; ?>" href="#"><?php print _t('Edit'); ?></a>
+							<div class="caReadonlyContainerDisplay"><?php print $vs_readonly_preview; ?></div>
 						</div>
 						<script type="text/javascript">
 							jQuery(document).ready(function() {
