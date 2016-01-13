@@ -62,7 +62,6 @@ var caUI = caUI || {};
 			defaultValues: {},
 			bundlePreview: '',
 			readonly: 0,
-			isReadOnlyForExistingValues: false,
 
 			// ajax loading of content
 			totalValueCount: null,
@@ -112,10 +111,7 @@ var caUI = caUI || {};
 		that.appendToInitialValues = function(initialValues) {
 			jQuery.each(initialValues, function(i, v) {
 				that.initialValues[i] = v;
-
-				if(!that.isReadOnlyForExistingValues) {
-					that.addToBundle(i, v, true);
-				}
+				that.addToBundle(i, v, true);
 				return true;
 			});
 			that.updateBundleFormState();
@@ -501,9 +497,7 @@ var caUI = caUI || {};
 
 		// create the bundles
 		jQuery.each(initialValuesSorted, function(k, v) {
-			if(!that.isReadOnlyForExistingValues) {
-				that.addToBundle(v['_key'], v, true);
-			}
+			that.addToBundle(v['_key'], v, true);
 			initalizedCount++;
 		});
 

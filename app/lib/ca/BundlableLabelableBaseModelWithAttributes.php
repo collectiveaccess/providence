@@ -3340,7 +3340,6 @@ if (!$vb_batch) {
 						}
 						
 						$this->clearErrors();
-						// @todo: process hidden form field value for read-only bundles
 						$this->editAttribute($vn_attribute_id, $vn_element_set_id, $va_attr_update, $vs_f);
 					}
 				}

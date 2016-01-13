@@ -226,17 +226,39 @@ if (caGetOption('canMakePDFForValue', $va_element_info[$t_element->getPrimaryKey
 		<div class="caItemList">
 <?php
 			if($vb_is_read_only_for_existing_vals) {
-				foreach($va_readonly_previews as $vn_attr_id => $vs_readonly_preview) {
+				// hidden list of previews for read-only containers. these get inserted
+				// instead of the bundle form if the container is configured to do so
+
+				// it also includes javascript to make the bundle form re-appear
+				// if the user clicks an "edit" button next to the preview text
 ?>
-					<div class="caReadonlyContainerDisplay">
-						<?php print $vs_readonly_preview; ?>
-					</div>
+
+				<div style="visibility: hidden; height: 0px;">
 <?php
-					// signal saveBundlesForScreen() that this particular value shouldn't be saved;
-					// otherwise we nuke existing values that are in read-only mode
-					print caHTMLHiddenInput($vs_id_prefix.'_dont_save_'.$vn_attr_id, array('value' => 1));
+					foreach($va_readonly_previews as $vn_attr_id => $vs_readonly_preview) {
+?>
+						<div id="caReadonlyContainer<?php print $vs_id_prefix.'_'.$vn_attr_id; ?>" class="caReadonlyContainerDisplay">
+							<span><?php print $vs_readonly_preview; ?></span>
+							<a id="caContainerEditLink<?php print $vs_id_prefix.'_'.$vn_attr_id; ?>" href="#">Edit</a>
+						</div>
+						<script type="text/javascript">
+							jQuery(document).ready(function() {
+								jQuery("#caContainerEditLink<?php print $vs_id_prefix . '_' . $vn_attr_id; ?>").click(function () {
+									jQuery('#<?php print $vs_id_prefix; ?>Item_<?php print $vn_attr_id; ?>').show();
+									jQuery('#caReadonlyContainer<?php print $vs_id_prefix.'_'.$vn_attr_id; ?>').hide();
+									jQuery('input[name="<?php print $vs_id_prefix.'_dont_save_'.$vn_attr_id; ?>"]').val('0');
+								});
+							});
+						</script>
+<?php
+						// this signals saveBundlesForScreen() that this particular value shouldn't be saved;
+						// otherwise we nuke existing values that are in read-only mode
+						print caHTMLHiddenInput($vs_id_prefix.'_dont_save_'.$vn_attr_id, array('value' => 1));
+					}
+?>
+				</div>
+<?php
 				}
-			}
 ?>
 		</div>
 <?php
@@ -275,6 +297,19 @@ if (caGetOption('canMakePDFForValue', $va_element_info[$t_element->getPrimaryKey
 <?php	
 	} else {
 ?>
+		var caHideBundlesForReadOnlyContainers = function(attribute_id, values, element, isNew) {
+			if(isNew) { return false; }
+<?php
+		if($vb_is_read_only_for_existing_vals) {
+			// we hide the bundle form element and insert the preview instead
+?>
+			var bundleFormElement = jQuery("#" + element.container.replace('#', '') + "Item_" + attribute_id);
+			bundleFormElement.hide();
+			bundleFormElement.after(jQuery('#caReadonlyContainer<?php print $vs_id_prefix?>_' + attribute_id));
+<?php
+		}
+?>
+		};
 		caUI.initBundle('#<?php print $vs_id_prefix; ?>', {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 			templateValues: [<?php print join(',', caQuoteList($va_template_tags)); ?>],
@@ -296,7 +331,7 @@ if (caGetOption('canMakePDFForValue', $va_element_info[$t_element->getPrimaryKey
 			bundlePreview: <?php print caEscapeForBundlePreview($vs_bundle_preview); ?>,
 			readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
 			defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>,
-			isReadOnlyForExistingValues: <?php print ($vb_is_read_only_for_existing_vals ? 'true' : 'false'); ?>
+			onInitializeItem: caHideBundlesForReadOnlyContainers /* todo: look for better callback (or make one up?) */
 		});
 <?php
 	}
