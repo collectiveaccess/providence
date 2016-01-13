@@ -727,7 +727,11 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 							$va_display_flag_buf[] = $t_item->getWithTemplate("{$vs_display_flag}");
 						}
 					}
-					if (sizeof($va_display_flag_buf) > 0) { $vs_buf .= join("; ", $va_display_flag_buf); }
+
+					if(!($vs_display_flag_delim = $po_view->request->config->get("{$vs_table_name}_inspector_display_flags_delimiter"))) {
+						$vs_display_flag_delim = '; ';
+					}
+					if (sizeof($va_display_flag_buf) > 0) { $vs_buf .= join($vs_display_flag_delim, $va_display_flag_buf); }
 				}
 				
 				$vs_label = '';
