@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/testsWithData/get/LoansXLoans.php
+ * tests/testsWithData/get/LoansXLoansTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,10 +33,10 @@
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
 /**
- * Class LoansXLoans
+ * Class LoansXLoansTest
  * Note: Requires testing profile!
  */
-class LoansXLoans extends BaseTestWithData {
+class LoansXLoansTest extends BaseTestWithData {
 	# -------------------------------------------------------
 	/**
 	 * @var BundlableLabelableBaseModelWithAttributes

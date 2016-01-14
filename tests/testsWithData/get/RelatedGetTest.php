@@ -51,10 +51,6 @@ class RelatedGetTest extends BaseTestWithData {
 		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
 		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 		 */
-		/**
-		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
-		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
-		 */
 		$vn_object_id = $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
@@ -107,7 +103,7 @@ class RelatedGetTest extends BaseTestWithData {
 		$vn_entity_id = $this->addTestRecord('ca_entities', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'ind',
-				'idno' => 'hjs',
+				'idno' => 'bs',
 			),
 			'preferred_labels' => array(
 				array(
@@ -237,8 +233,14 @@ class RelatedGetTest extends BaseTestWithData {
 		$vm_ret = $this->opt_object->get('ca_objects.related.preferred_labels');
 		$this->assertEquals('My test dataset', $vm_ret);
 
-		$vm_ret = $this->opt_object->get('ca_entities', array('template' => '^ca_entities.preferred_labels.displayname (^ca_entities.internal_notes)', 'delimiter' => '; '));
+		// <unit> with relativeTo to repeat template once per entity (this is different from the old pre-1.6 template behavior)
+		$vm_ret = $this->opt_object->get('ca_entities', array('template' => '<unit relativeTo="ca_entities">^ca_entities.preferred_labels.displayname (^ca_entities.internal_notes)</unit>', 'delimiter' => '; '));
 		$this->assertEquals('Homer J. Simpson (); Bart Simpson (); ACME Inc. (Test notes)', $vm_ret);
+
+		// Pre-1.6 test without units returns straight text get() output for each tag (this used to return the output in the previous test)
+		$vm_ret = $this->opt_object->get('ca_entities', array('template' => '^ca_entities.preferred_labels.displayname (^ca_entities.internal_notes)', 'delimiter' => '; '));
+		$this->assertEquals('Homer J. Simpson; Bart Simpson; ACME Inc. (Test notes)', $vm_ret);
+
 
 		$vm_ret = $this->opt_object->get('ca_entities', array('template' => '^ca_entities.preferred_labels', 'delimiter' => '; ', 'returnAsLink' => true));
 		$this->assertRegExp("/\<a href=[\"\'](.)+[\"\']>Homer J. Simpson\<\/a\>/", $vm_ret);
@@ -255,6 +257,10 @@ class RelatedGetTest extends BaseTestWithData {
 			$this->assertEquals('0', $qr_entity_relationships->get('ca_objects.deleted'));
 			$this->assertEquals('0', $qr_entity_relationships->get('ca_entities.deleted'));
 		}
+
+		// there are no related list items
+		$vm_ret = $this->opt_object->get('ca_list_items', array('returnAsArray' => true));
+		$this->assertEmpty($vm_ret);
 	}
 	# -------------------------------------------------------
 }

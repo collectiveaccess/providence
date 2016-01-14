@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2012 Whirl-i-Gig
+ * Copyright 2010-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,5 +38,3 @@
 	header('Content-Type: text/xml; charset=UTF-8');
 	
 	print caMakeProperUTF8ForXML($vs_return);
-	
-?>

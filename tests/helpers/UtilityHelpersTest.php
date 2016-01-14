@@ -49,4 +49,10 @@ JSON;
 		);
 	}
 	# -------------------------------------------------------
+	public function testSanitizeStringHelper() {
+		$this->assertEquals('test test', caSanitizeStringForJsonEncode('test test'));
+		$this->assertEquals('"test" test', caSanitizeStringForJsonEncode('"test" test'));
+		$this->assertEquals('(test) test', caSanitizeStringForJsonEncode('(test) test'));
+	}
+	# -------------------------------------------------------
 }

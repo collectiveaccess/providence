@@ -102,7 +102,7 @@ class ExternalCache {
 		if(!self::init()) { return false; }
 		self::checkParameters($ps_namespace, $ps_key);
 
-		return self::getCache()->fetch($ps_namespace.':'.$ps_key);
+		return self::getCache()->fetch(self::makeKey($ps_key, $ps_namespace));
 	}
 	# ------------------------------------------------
 	/**
@@ -122,7 +122,7 @@ class ExternalCache {
 			define('__CA_CACHE_TTL__', 3600);
 		}
 
-		self::getCache()->save($ps_namespace.':'.$ps_key, $pm_data, (!is_null($pn_ttl) ? $pn_ttl : __CA_CACHE_TTL__));
+		self::getCache()->save(self::makeKey($ps_key, $ps_namespace), $pm_data, (!is_null($pn_ttl) ? $pn_ttl : __CA_CACHE_TTL__));
 		return true;
 	}
 	# ------------------------------------------------
@@ -137,7 +137,7 @@ class ExternalCache {
 		if(!self::init()) { return false; }
 		self::checkParameters($ps_namespace, $ps_key);
 
-		return self::getCache()->contains($ps_namespace.':'.$ps_key);
+		return self::getCache()->contains(self::makeKey($ps_key, $ps_namespace));
 	}
 	# ------------------------------------------------
 	/**
@@ -151,7 +151,7 @@ class ExternalCache {
 		if(!self::init()) { return false; }
 		self::checkParameters($ps_namespace, $ps_key);
 
-		return self::getCache()->delete($ps_namespace.':'.$ps_key);
+		return self::getCache()->delete(self::makeKey($ps_key, $ps_namespace));
 	}
 	# ------------------------------------------------
 	/**
@@ -249,6 +249,11 @@ class ExternalCache {
 	# ------------------------------------------------
 	private static function getApcObject(){
 		return new \Doctrine\Common\Cache\ApcCache();
+	}
+	# ------------------------------------------------
+	private static function makeKey($ps_key, $ps_namespace) {
+		if(!defined('__CA_APP_TYPE__')) { define('__CA_APP_TYPE__', 'PROVIDENCE'); }
+		return __CA_APP_TYPE__.':'.$ps_key.':'.$ps_namespace;
 	}
 	# ------------------------------------------------
 }

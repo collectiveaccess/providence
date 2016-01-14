@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2014 Whirl-i-Gig
+ * Copyright 2000-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -34,7 +34,7 @@
   *
   */
  
-require_once(__CA_LIB_DIR__."/core/Error.php");
+require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
 require_once(__CA_LIB_DIR__."/core/Db.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
@@ -48,6 +48,12 @@ class Session {
 	private $name = "";		# application name
 
 	private $start_time = 0;	# microtime session object was created - used for page performance measurements
+
+	/**
+	 * In-memory session var storage
+	 * @var array
+	 */
+	private $opa_session_vars = array();
 	
 	# ----------------------------------------
 	# --- Constructor
@@ -75,15 +81,41 @@ class Session {
 		}
 		
 		if (!$pb_dont_create_new_session) {
+			// try to get session ID from cookie. if that doesn't work, generate a new one
 			if (!($vs_session_id = $this->getSessionID())) {
 				$vs_cookiepath = ((__CA_URL_ROOT__== '') ? '/' : __CA_URL_ROOT__);
 				if (!caIsRunFromCLI()) { setcookie($this->name, $_COOKIE[$this->name] = $vs_session_id = $this->generateGUIDV4(), $this->lifetime ? time() + $this->lifetime : null, $vs_cookiepath); }
 		 	}
 
-			// initialize session var storage
-			if($this->getSessionID() && !ExternalCache::contains($this->getSessionID(), 'SessionVars')) {
-				ExternalCache::save($this->getSessionID(), array(), 'SessionVars', $this->lifetime);
+			// initialize in-memory session var storage, either restored from external cache or newly initialized
+			if($this->getSessionID() && ExternalCache::contains($this->getSessionID(), 'SessionVars')) {
+				$this->opa_session_vars = ExternalCache::fetch($this->getSessionID(), 'SessionVars');
+			} else {
+				$this->opa_session_vars = array();
+				if($this->getSessionID()) {
+					ExternalCache::delete($this->getSessionID(), 'SessionVars');
+				}
+				$this->opa_session_vars['session_end_timestamp'] = time() + $this->lifetime;
 			}
+
+			// kill session if it has ended or we don't have a timestamp
+			if(
+				!isset($this->opa_session_vars['session_end_timestamp'])
+				||
+				(is_numeric($this->opa_session_vars['session_end_timestamp']) && (time() > $this->opa_session_vars['session_end_timestamp']))
+			) {
+				$this->opa_session_vars = array();
+				ExternalCache::delete($this->getSessionID(), 'SessionVars');
+			}
+		}
+	}
+	# ----------------------------------------
+	/**
+	 * Destructor: Save session variables to permanent storage
+	 */
+	public function __destruct() {
+		if($this->getSessionID() && is_array($this->opa_session_vars) && (sizeof($this->opa_session_vars) > 0)) {
+			ExternalCache::save($this->getSessionID(), $this->opa_session_vars, 'SessionVars', 0);
 		}
 	}
 	# ----------------------------------------
@@ -155,7 +187,7 @@ class Session {
 	/**
 	 * Returns client's session_id. 
 	 */
-	public function getSessionID () {
+	public function getSessionID() {
 		return isset($_COOKIE[$this->name]) ? $_COOKIE[$this->name] : null;
 	}
 	# ----------------------------------------
@@ -180,13 +212,17 @@ class Session {
 	# ----------------------------------------
 	/**
 	 * Set session variable
-	 * Sesssion var may be number, string or array
+	 * @param string $ps_key variable key
+	 * @param mixed $pm_val Session var may be number, string or array
+	 * @param null|array $pa_options
+	 * 		ENTITY_ENCODE_INPUT =
+	 * 		URL_ENCODE_INPUT =
+	 * @return bool
 	 */
 	public function setVar($ps_key, $pm_val, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		
 		if ($ps_key && $this->getSessionID()) {
-			$va_vars = ExternalCache::fetch($this->getSessionID(), 'SessionVars');
 			if (isset($pa_options["ENTITY_ENCODE_INPUT"]) && $pa_options["ENTITY_ENCODE_INPUT"]) {
 				if (is_string($pm_val)) {
 					$vm_val = html_entity_decode($pm_val);
@@ -200,8 +236,7 @@ class Session {
 					$vm_val = $pm_val;
 				}
 			}
-			$va_vars[$ps_key] = $vm_val;
-			ExternalCache::save($this->getSessionID(), $va_vars, 'SessionVars', $this->lifetime);
+			$this->opa_session_vars[$ps_key] = $vm_val;
 			return true;
 		}
 		return false;
@@ -209,11 +244,10 @@ class Session {
 	# ----------------------------------------
 	/**
 	 * Delete session variable
+	 * @param string $ps_key
 	 */
-	public function delete ($ps_key) {
-		$va_vars = ExternalCache::fetch($this->getSessionID(), 'SessionVars');
-		unset($va_vars[$ps_key]);
-		ExternalCache::save($this->getSessionID(), $va_vars, 'SessionVars', $this->lifetime);
+	public function delete($ps_key) {
+		unset($this->opa_session_vars[$ps_key]);
 	}
 	# ----------------------------------------
 	/**
@@ -222,22 +256,14 @@ class Session {
 	public function getVar($ps_key) {
 		if(!$this->getSessionID()) { return null; }
 
-		if(ExternalCache::contains($this->getSessionID(), 'SessionVars')) {
-			$va_vars = ExternalCache::fetch($this->getSessionID(), 'SessionVars');
-			return isset($va_vars[$ps_key]) ? $va_vars[$ps_key] : null;
-		}
-		return null;
+		return isset($this->opa_session_vars[$ps_key]) ? $this->opa_session_vars[$ps_key] : null;
 	}
 	# ----------------------------------------
 	/**
 	 * Return names of all session vars
 	 */
 	public function getVarKeys() {
-		if(ExternalCache::contains($this->getSessionID(), 'SessionVars')) {
-			$va_vars = ExternalCache::fetch($this->getSessionID(), 'SessionVars');
-			return array_keys($va_vars);
-		}
-		return array();
+		return is_array($this->opa_session_vars) ? array_keys($this->opa_session_vars) : array();
 	}
 	# ----------------------------------------
 	/**

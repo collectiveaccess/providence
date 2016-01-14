@@ -339,7 +339,7 @@ class OAIPMHService extends BaseService {
 			return;
 		}
 
-		$va_access_values = caGetUserAccessValues($this->opo_request, $this->opa_provider_info);
+		$va_access_values = caGetUserAccessValues($this->opo_request, array_merge($this->opa_provider_info, array('ignoreProvidence' => true)));
 		$vb_show_deleted = (bool)$this->opa_provider_info['show_deleted'];
 		$vb_dont_enforce_access_settings = (bool)$this->opa_provider_info['dont_enforce_access_settings'];
 
@@ -356,12 +356,14 @@ class OAIPMHService extends BaseService {
 				return;
 			}
 		}
+
+		$va_last_change = $t_item->getLastChangeTimestamp();
 	
 		$vs_export = ca_data_exporters::exportRecord($this->getMappingCode(),$t_item->getPrimaryKey());
 	
 		$headerData = array(
-			'identifier' => OaiIdentifier::itemToOaiId($ps_identifier),
-			'datestamp' => self::unixToUtc(time()),
+			'identifier' => OaiIdentifier::itemToOaiId($vs_item_id),
+			'datestamp' => self::unixToUtc((int) $va_last_change['timestamp']),
 		);
 
 		$exportFragment = $oaiData->createDocumentFragment();
@@ -384,9 +386,6 @@ class OAIPMHService extends BaseService {
 		$vb_show_deleted = (bool)$this->opa_provider_info['show_deleted'];
 		$vb_dont_enforce_access_settings = (bool)$this->opa_provider_info['dont_enforce_access_settings'];
 		$vb_dont_cache = (bool)$this->opa_provider_info['dont_cache'];
-
-		$listSets = $oaiData->createElement('ListSets');
-		$oaiData->documentElement->appendChild($listSets);
 	
 		if ($vs_facet_name = $this->opa_provider_info['setFacet']) {
 			$o_browse = caGetBrowseInstance($this->table);
@@ -397,13 +396,21 @@ class OAIPMHService extends BaseService {
 			$o_browse->execute(array('no_cache' => $vb_dont_cache, 'showDeleted' => $vb_show_deleted, 'checkAccess' => $vb_dont_enforce_access_settings ? null : $va_access_values));
 			$va_facet = $o_browse->getFacet($vs_facet_name,array('checkAccess' => ($vb_dont_enforce_access_settings ? null : $va_access_values)));
 	
-			foreach($va_facet as $vn_id => $va_info) {
-				$elements = array( 
-					'setSpec' => $va_info['id'],
-					'setName' => caEscapeForXml($va_info['label'])
-				);
-				$this->createElementWithChildren($this->oaiData, $listSets, 'set', $elements);
+			 if (is_array($va_facet)) {
+				$listSets = $oaiData->createElement('ListSets');
+				$oaiData->documentElement->appendChild($listSets);
+				foreach($va_facet as $vn_id => $va_info) {
+						$elements = array(
+								'setSpec' => $va_info['id'],
+								'setName' => caEscapeForXml($va_info['label'])
+						);
+						$this->createElementWithChildren($this->oaiData, $listSets, 'set', $elements);
+				}
+			} else {
+				$this->throwError(self::OAI_ERR_NO_SET_HIERARCHY, _t('No sets are available'));
 			}
+		} else {
+			$this->throwError(self::OAI_ERR_NO_SET_HIERARCHY, _t('Sets are not supported'));
 		}
 	}
 	# -------------------------------------------------------

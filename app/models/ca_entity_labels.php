@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,6 +35,8 @@
    */
 
 require_once(__CA_LIB_DIR__.'/ca/BaseLabel.php');
+require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
+require_once(__CA_MODELS_DIR__.'/ca_entities.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
@@ -273,12 +275,31 @@ class ca_entity_labels extends BaseLabel {
 	# ------------------------------------------------------
 	public function insert($pa_options=null) {
 		if (!trim($this->get('surname')) && !trim($this->get('forename'))) {
-			$this->postError(1100, _t('Surname or forename must be set'), 'ca_entity_labels->insert()');
-			return false;
+			// auto-split entity name if displayname is set
+			if($vs_display_name = trim($this->get('displayname'))) {
+				$va_label = DataMigrationUtils::splitEntityName($vs_display_name);
+				if(is_array($va_label)) {
+					unset($va_label['displayname']); // just make sure we don't mangle the user-entered displayname
+
+					foreach($va_label as $vs_fld => $vs_val) {
+						$this->set($vs_fld, $vs_val);
+					}
+				} else {
+					$this->postError(1100, _t('Something went wrong when splitting displayname'), 'ca_entity_labels->insert()');
+					return false;
+				}
+			} else {
+				$this->postError(1100, _t('Surname, forename or displayname must be set'), 'ca_entity_labels->insert()');
+				return false;
+			}
 		}
-		if (!$this->get('displayname')) {
+		
+		if (($t_entity = caGetOption('subject', $pa_options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
+			$this->set('displayname', $this->get('surname'));
+		} elseif (!$this->get('displayname')) {
 			$this->set('displayname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
 		}
+		
 		return parent::insert($pa_options);
 	}
 	# ------------------------------------------------------
@@ -287,7 +308,9 @@ class ca_entity_labels extends BaseLabel {
 			$this->postError(1100, _t('Surname or forename must be set'), 'ca_entity_labels->insert()');
 			return false;
 		}
-		if (!$this->get('displayname')) {
+		if (($t_entity = caGetOption('subject', $pa_options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
+			$this->set('displayname', $this->get('surname'));
+		} elseif (!$this->get('displayname')) {
 			$this->set('displayname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
 		}
 		return parent::update($pa_options);

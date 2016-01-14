@@ -285,7 +285,7 @@
 			
 			// TODO: allow override of this with field-specific directions 
 			// Default direction
-			if (!in_array(strtolower($ps_direction), array('asc', 'desc'))) { $ps_direction = 'asc'; }
+			if (!in_array($ps_direction = strtolower($ps_direction), array('asc', 'desc'))) { $ps_direction = 'asc'; }
 			
 			// Don't try to sort empty results
 			if (!is_array($pa_hits) || !sizeof($pa_hits)) { return $pa_hits; }
@@ -327,8 +327,6 @@
 						
 							switch($vn_datatype = (int)$t_element->get('datatype')) {
 								case __CA_ATTRIBUTE_VALUE_LIST__:
-									$vs_sortable_value_fld = $vs_sort_field = 'name_plural';
-									
 									$vs_sql = "
 										SELECT attr.row_id, lower(lil.name_plural) name_plural
 										FROM ca_attributes attr
@@ -530,10 +528,10 @@
 		 * @return array
 		 */
 		private function _doSort(&$pa_hits, $pa_sortable_values, $ps_direction='asc', $pa_options=null) {
-			if (!in_array(strtolower($ps_direction), array('asc', 'desc'))) { $ps_direction = 'asc'; }
+			if (!in_array($ps_direction = strtolower($ps_direction), array('asc', 'desc'))) { $ps_direction = 'asc'; }
 			$va_sorted_rows = array();
 			
-			if (sizeof($pa_hits) < 1000) {
+			if (sizeof($pa_hits) < 1000000) {
 				//
 				// Perform sort in-memory
 				//
@@ -542,11 +540,14 @@
 				foreach($pa_hits as $vn_hit) {
 					$vs_key = '';
 					foreach($pa_sortable_values as $vn_i => $va_sortable_values) {
-						$vs_key .= str_pad(substr($va_sortable_values[$vn_hit],0,150), 150, ' ', is_numeric($va_sortable_values[$vn_hit]) ? STR_PAD_LEFT : STR_PAD_RIGHT);
+						$vs_v = preg_replace("![^\w_]+!", " ", $va_sortable_values[$vn_hit]);
+						
+						$vs_key .= str_pad(substr($vs_v,0,150), 150, ' ', is_numeric($vs_v) ? STR_PAD_LEFT : STR_PAD_RIGHT);
 					}
 					$va_sort_buffer[$vs_key.str_pad($vn_hit, 12, ' ', STR_PAD_LEFT)] = $vn_hit;
 				}
-				ksort($va_sort_buffer);
+				
+				ksort($va_sort_buffer, SORT_FLAG_CASE | SORT_NATURAL);
 				$va_sort_buffer = array_values($va_sort_buffer);
 				if ($ps_direction == 'desc') { $va_sort_buffer = array_reverse($va_sort_buffer); }
 				return $va_sort_buffer;
@@ -558,7 +559,7 @@
 				$vs_sql = "
 					SELECT row_id
 					FROM {$vs_sort_tmp_table}
-					ORDER BY sort_key1 {$ps_direction}, sort_key2 {$ps_direction}, sort_key3 {$ps_direction}
+					ORDER BY sort_key1 {$ps_direction}, sort_key2 {$ps_direction}, sort_key3 {$ps_direction}, row_id
 				";
 				$qr_sort = $this->opo_db->query($vs_sql, array());
 				$va_sorted_rows = $qr_sort->getAllFieldValues('row_id');

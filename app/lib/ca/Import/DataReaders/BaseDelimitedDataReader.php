@@ -106,7 +106,8 @@ class BaseDelimitedDataReader extends BaseDataReader {
 			$r_f = fopen($ps_source, 'rb');
 			$this->opn_num_rows = 0;
 			while (!feof($r_f)) {
-				$this->opn_num_rows += substr_count(fread($r_f, 8192), "\n");
+				$vs_buf = fread($r_f, 8192);
+				$this->opn_num_rows += (substr_count($vs_buf, "\n") + (substr_count($vs_buf, "\r")));
 			}
 			fclose($r_f);
 			
@@ -179,10 +180,13 @@ class BaseDelimitedDataReader extends BaseDataReader {
 	 */
 	public function getRow($pa_options=null) {
 		if (is_array($va_row = $this->opo_parser->getRow())) {
+			// Make returned array 1-based to match delimiter data parser style (column numbers begin with 1)
+			array_unshift($va_row, null);
+			unset($va_row[0]);
 			return $va_row;
 		}
-		
-		return null;	
+
+		return null;
 	}
 	# -------------------------------------------------------
 	/**
