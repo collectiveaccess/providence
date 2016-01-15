@@ -300,19 +300,18 @@ class Installer {
 	}
 	# --------------------------------------------------
 	public function performPostInstallTasks() {
-<<<<<<< HEAD
 		// generate system GUID -- used to identify systems in data sync protocol
 		$o_vars = new ApplicationVars();
 		$o_vars->setVar('system_guid', caGenerateGUID());
 		$o_vars->save();
-=======
+
+		// refresh mapping if ElasticSearch is used
 		$o_config = Configuration::load();
 		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
 			require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
 			$o_es = new WLPlugSearchEngineElasticSearch();
 			$o_es->refreshMapping(true);
 		}
->>>>>>> develop
 	}
 	# --------------------------------------------------
 	/**
