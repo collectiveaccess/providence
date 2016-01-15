@@ -87,9 +87,10 @@
 			$va_colors = $pa_options['colors'];
 		}
 		
+		$vb_uses_color = false;
 		if (isset($pa_options['contentArrayUsesKeysForValues']) && $pa_options['contentArrayUsesKeysForValues']) {
 			foreach($pa_content as $vs_val => $vs_opt) {
-				$COLOR = ($vs_color = $va_colors[$vs_val]) ? ' style="background-color: #'.$vs_color.'"' : '';
+				if ($COLOR = ($vs_color = $va_colors[$vs_val]) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
 				if (!($SELECTED = (($vs_selected_val == $vs_val) && strlen($vs_selected_val)) ? ' selected="1"' : '')) {
 					$SELECTED = (is_array($va_selected_vals) && in_array($vs_val, $va_selected_vals)) ? ' selected="1"' : '';
 				}
@@ -99,7 +100,7 @@
 		} else {
 			if ($vb_content_is_list) {
 				foreach($pa_content as $vs_val) {
-					$COLOR = ($vs_color = $va_colors[$vs_val]) ? ' style="background-color: #'.$vs_color.'"' : '';
+					if ($COLOR = ($vs_color = $va_colors[$vs_val]) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
 					if (!($SELECTED = ($vs_selected_val == $vs_val) ? ' selected="1"' : '')) {
 						$SELECTED = (is_array($va_selected_vals) && in_array($vs_val, $va_selected_vals))  ? ' selected="1"' : '';
 					}
@@ -108,7 +109,7 @@
 				}
 			} else {
 				foreach($pa_content as $vs_opt => $vs_val) {
-					$COLOR = ($vs_color = $va_colors[$vs_val]) ? ' style="background-color: #'.$vs_color.'"' : '';
+					if ($COLOR = ($vs_color = $va_colors[$vs_val]) ? " data-color='#{$vs_color}'" : '') { $vb_uses_color = true; }
 					if (!($SELECTED = ($vs_selected_val == $vs_val) ? ' selected="1"' : '')) {
 						$SELECTED = (is_array($va_selected_vals) && in_array($vs_val, $va_selected_vals))  ? ' selected="1"' : '';
 					}
@@ -119,6 +120,9 @@
 		}
 		
 		$vs_element .= "</select>\n";
+		if ($vb_uses_color && isset($pa_attributes['id']) && $pa_attributes['id']) {
+			$vs_element .= "<script type='text/javascript'>jQuery(document).ready(function() { var f; jQuery('#".$pa_attributes['id']."').on('change', f=function() { var c = jQuery('#".$pa_attributes['id']."').find('option:selected').data('color'); jQuery('#".$pa_attributes['id']."').css('background-color', c ? c : '#fff'); return false;}); f(); });</script>";
+		}
 		return $vs_element;
 	}
 	# ------------------------------------------------------------------------------------------------

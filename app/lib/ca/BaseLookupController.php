@@ -68,7 +68,7 @@
 			$o_search_config = caGetSearchConfig();
 				
 			if (!$this->ops_search_class) { return null; }
-			$ps_query = $this->request->getParameter('term', pString); 
+			$ps_query = $this->request->getParameter('term', pString);
 			
 			$pb_exact = $this->request->getParameter('exact', pInteger);
 			$ps_exclude = $this->request->getParameter('exclude', pString);
@@ -153,10 +153,6 @@
 					}
 				}
 				
-				//if (!$pb_exact) {
-				//	$ps_query = trim(preg_replace("![".str_replace("!", "\\!", $o_search_config->get('search_tokenizer_regex'))."]+!", " ", $ps_query));
-				//}
-				
 				// do search
 				if($vs_additional_query_params || $vs_restrict_to_search) {
 					$vs_search = '('.trim($ps_query).(intval($pb_exact) ? '' : '*').')'.$vs_additional_query_params.$vs_restrict_to_search;
@@ -229,8 +225,10 @@
 					$vn_id = (int)$this->request->getParameter('root_item_id', pInteger);
 					$t_item->load($vn_id);
 					// no id so by default return list of available hierarchies
-					$va_items_for_locale = $t_item->getHierarchyList();
-
+					if(!is_array($va_items_for_locale = $t_item->getHierarchyList())) { 
+						$va_items_for_locale = array();
+					}
+					
 					if((sizeof($va_items_for_locale) == 1) && $this->request->getAppConfig()->get($t_item->tableName().'_hierarchy_browser_hide_root')) {
 						$va_item = array_shift($va_items_for_locale);
 						$vn_id = $va_item['item_id'];

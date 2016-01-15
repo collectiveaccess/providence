@@ -53,6 +53,11 @@ class Connection implements ConnectionInterface
     protected $host;
 
     /**
+     * @var string || null
+     */
+    protected $path;
+
+    /**
      * @var LoggerInterface
      */
     protected $log;
@@ -108,10 +113,12 @@ class Connection implements ConnectionInterface
         }
 
         $host = $hostDetails['host'].':'.$hostDetails['port'];
+        $path = null;
         if (isset($hostDetails['path']) === true) {
-            $host .= $hostDetails['path'];
+            $path = $hostDetails['path'];
         }
         $this->host             = $host;
+        $this->path             = $path;
         $this->log              = $log;
         $this->trace            = $trace;
         $this->connectionParams = $connectionParams;
@@ -199,21 +206,29 @@ class Connection implements ConnectionInterface
                         $node = $connection->getHost();
                         $this->log->warning("Marking node $node dead.");
                         $connection->markDead();
-                        $transport->connectionPool->scheduleCheck();
 
-                        $neverRetry = isset($request['client']['never_retry']) ? $request['client']['never_retry'] : false;
-                        $shouldRetry = $transport->shouldRetry($request);
-                        $shouldRetryText = ($shouldRetry) ? 'true' : 'false';
+                        // If the transport has not been set, we are inside a Ping or Sniff,
+                        // so we don't want to retrigger retries anyway.
+                        //
+                        // TODO this could be handled better, but we are limited because connectionpools do not
+                        // have access to Transport.  Architecturally, all of this needs to be refactored
+                        if (isset($transport) === true) {
+                            $transport->connectionPool->scheduleCheck();
 
-                        $this->log->warning("Retries left? $shouldRetryText");
-                        if ($shouldRetry && !$neverRetry) {
-                            return $transport->performRequest(
-                                $request['http_method'],
-                                $request['uri'],
-                                [],
-                                $request['body'],
-                                $options
-                            );
+                            $neverRetry = isset($request['client']['never_retry']) ? $request['client']['never_retry'] : false;
+                            $shouldRetry = $transport->shouldRetry($request);
+                            $shouldRetryText = ($shouldRetry) ? 'true' : 'false';
+
+                            $this->log->warning("Retries left? $shouldRetryText");
+                            if ($shouldRetry && !$neverRetry) {
+                                return $transport->performRequest(
+                                    $request['http_method'],
+                                    $request['uri'],
+                                    [],
+                                    $request['body'],
+                                    $options
+                                );
+                            }
                         }
 
                         $this->log->warning("Out of retries, throwing exception from $node");
@@ -281,6 +296,10 @@ class Connection implements ConnectionInterface
     {
         if (isset($params) === true && !empty($params)) {
             $uri .= '?' . http_build_query($params);
+        }
+
+        if ($this->path !== null) {
+            $uri = $this->path . $uri;
         }
 
         return $uri;

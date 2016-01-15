@@ -78,7 +78,7 @@ class Configuration {
 	 *
 	 * @access private
 	 */
-	var $opb_debug = false;
+	var $opb_debug = true;
 
 	static $s_get_cache;
 	static $s_config_cache = null;
@@ -247,7 +247,7 @@ class Configuration {
 			$vn_tok_count = sizeof($va_token_tmp);
 			for($vn_i = 0; $vn_i < $vn_tok_count; $vn_i++) {
 				if (strlen($va_token_tmp[$vn_i])) {
-					$va_tokens[] = &$va_token_tmp[$vn_i];
+					$va_tokens[] =& $va_token_tmp[$vn_i];
 				}
 			}
 			while (sizeof($va_tokens)) {
@@ -291,7 +291,7 @@ class Configuration {
 								if(!is_array($this->ops_config_settings["assoc"][$vs_key]) || !$vb_merge_mode) {
 									$this->ops_config_settings["assoc"][$vs_key] = array();
 								}
-								$va_assoc_pointer_stack[] = &$this->ops_config_settings["assoc"][$vs_key];
+								$va_assoc_pointer_stack[] =& $this->ops_config_settings["assoc"][$vs_key];
 								$vn_state = 40;
 								break;
 							default:
@@ -400,7 +400,6 @@ class Configuration {
 					# handle associative array values
 					# get associative key
 					case 40:
-						if ($this->opb_debug) { print "CONFIG DEBUG: STATE=40\n"; }
 						switch($vs_token) {
 							# -------------------
 							case '"':
@@ -420,7 +419,6 @@ class Configuration {
 								if ($vn_in_quote || $vb_escape_set) {
 									$vs_assoc_key .= "=";
 								} else {
-									if ($this->opb_debug) { print "CONFIG DEBUG: STATE=40; Got associative key '$vs_assoc_key'\n"; }
 									if (($vs_assoc_key = trim($this->_interpolateScalar($vs_assoc_key))) == '') {
 										$this->ops_error = "Associative key must not be empty";
 										fclose($r_file);
@@ -438,7 +436,6 @@ class Configuration {
 								if ($vn_in_quote || $vb_escape_set) {
 									$vs_assoc_key .= ",";
 								} else {
-									if ($this->opb_debug) { print "CONFIG DEBUG: STATE=40; Got associative comma\n"; }
 									if ($vs_assoc_key) {
 										$va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][] = trim($vs_assoc_key);
 									}
@@ -453,7 +450,6 @@ class Configuration {
 								if ($vn_in_quote || $vb_escape_set) {
 									$vs_scalar_value .= "}";
 								} else {
-									if ($this->opb_debug) { print "CONFIG DEBUG: STATE=40; Got close }; KEY IS '$vs_assoc_key'\n"; }
 									if (sizeof($va_assoc_pointer_stack) > 1) {
 										if ($vs_assoc_key) {
 											$va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][] = trim($vs_assoc_key);
@@ -527,12 +523,12 @@ class Configuration {
 							# open nested associative value
 							case '{':
 								if (!$vn_in_quote && !$vb_escape_set) {
-									if ($this->opb_debug) { print "CONFIG DEBUG: STATE=50; Got open {; KEY IS '$vs_assoc_key'\n"; }
-
-									if (!is_array($va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key]) || !$vb_merge_mode) {
-										$va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key] = array();
+									$i = sizeof($va_assoc_pointer_stack) - 1;
+									if (!is_array($va_assoc_pointer_stack[$i][$vs_assoc_key]) || !$vb_merge_mode) {
+										$va_assoc_pointer_stack[$i][$vs_assoc_key] = array();
 									}
-									$va_assoc_pointer_stack[] =& $va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key];
+									$va_assoc_pointer_stack[] =& $va_assoc_pointer_stack[$i][$vs_assoc_key];
+									
 									$vn_state = 40;
 									$vs_key = $vs_assoc_key = $vs_scalar_value = "";
 									$vn_in_quote = 0;
@@ -546,7 +542,6 @@ class Configuration {
 								if ($vn_in_quote || $vb_escape_set) {
 									$vs_scalar_value .= "}";
 								} else {
-									if ($this->opb_debug) { print "CONFIG DEBUG: STATE=50; Got close }; KEY IS '$vs_assoc_key'\n"; }
 									if (sizeof($va_assoc_pointer_stack) > 1) {
 										if ($vs_assoc_key) {
 											$va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key] = $this->_trimScalar($this->_interpolateScalar($vs_scalar_value));
@@ -568,15 +563,14 @@ class Configuration {
 							# -------------------
 							# open list
 							case '[':
-								if ($this->opb_debug) { print "CONFIG DEBUG: STATE=50; Got open [; KEY IS '$vs_assoc_key'\n"; }
-
 								if ($vn_in_quote || $vb_escape_set) {
 									$vs_scalar_value .= $vs_token;
 								} else {
+									$i = sizeof($va_assoc_pointer_stack) - 1;
 									if(!is_array($va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key]) || !$vb_merge_mode) {
-										$va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key] = array();
+										$va_assoc_pointer_stack[$i][$vs_assoc_key] = array();
 									}
-									$va_assoc_pointer_stack[] =& $va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][$vs_assoc_key];
+									$va_assoc_pointer_stack[] =& $va_assoc_pointer_stack[$i][$vs_assoc_key];
 									$vn_state = 60;
 									$vn_in_quote = 0;
 								}
@@ -617,7 +611,6 @@ class Configuration {
 								break;
 							# -------------------
 							case ',':
-								if ($this->opb_debug) { print "CONFIG DEBUG: STATE=60; Got list-in-associative list comma; KEY IS '$vs_assoc_key'\n"; }
 								if ($vn_in_quote || $vb_escape_set) {
 									$vs_scalar_value .= ",";
 								} else {
@@ -633,7 +626,6 @@ class Configuration {
 								if ($vn_in_quote || $vb_escape_set) {
 									$vs_scalar_value .= "]";
 								} else {
-									if ($this->opb_debug) { print "CONFIG DEBUG: STATE=60; Got ]; KEY IS '$vs_assoc_key'\n"; }
 									# accept list
 									if (strlen($vs_item = trim($this->_interpolateScalar($this->_trimScalar($vs_scalar_value)))) > 0) {
 										$va_assoc_pointer_stack[sizeof($va_assoc_pointer_stack) - 1][] = $vs_item;
@@ -651,8 +643,6 @@ class Configuration {
 								break;
 							# -------------------
 							default:
-								if ($this->opb_debug) { print "CONFIG DEBUG: STATE=60; Got scalar '$vs_token'; KEY IS '$vs_assoc_key'\n"; }
-
 								$vs_scalar_value .= $vs_token;
 								$vb_escape_set = false;
 								break;
@@ -706,7 +696,6 @@ class Configuration {
 				$this->ops_config_settings["scalars"][$vs_key] = $this->_interpolateScalar($vs_val);
 			}
 		}
-
 		fclose($r_file);
 
 		return true;

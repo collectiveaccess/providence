@@ -622,7 +622,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'displayType' => DT_SELECT,
 								'width' => "200px", 'height' => "1",
 								'takesLocale' => false,
-								'default' => '1',
+								'default' => '',
 								'label' => _t('Sort using'),
 								'showSortableBundlesFor' => $t_rel->tableName(),
 								'description' => _t('Method used to sort related items.')
@@ -718,6 +718,11 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'description' => _t('If checked only the most recently dated relationship displayed.')
 							)
 						);
+					}
+
+					if($vs_bundle == 'ca_sets') {
+						unset($va_additional_settings['restrict_to_relationship_types']);
+						unset($va_additional_settings['restrict_to_search']);
 					}
 					
 					if ($vs_bundle == 'ca_list_items') {

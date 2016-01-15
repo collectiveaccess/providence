@@ -1,36 +1,13 @@
 /*
-	Date: 8 December 2015
+	Date: 7 January 2016
 	Migration: 126
-	Description: Add tables for data replication
+	Description: Use LONGTEXT for `vars` and `field_access` columns in ca_user_roles
 */
 
 /*==========================================================================*/
 
-create table ca_guids
-(
-  guid_id         int unsigned      not null AUTO_INCREMENT,
-  table_num       tinyint unsigned  not null,
-  row_id          int unsigned      not null,
-  guid            VARCHAR(36)       not null,
-
-  primary key (guid_id),
-  index i_table_num_row_id (table_num, row_id),
-  unique index u_guid (guid)
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-create table ca_replication_log
-(
-  entry_id        int unsigned      not null AUTO_INCREMENT,
-  source_guid     VARCHAR(36)       not null,
-  log_id          int unsigned      not null,
-  status          char(1)           not null,
-  vars            longtext          null,
-
-  primary key (entry_id),
-  index i_source_log (source_guid, log_id)
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-/*==========================================================================*/
+ALTER TABLE ca_user_roles MODIFY vars LONGTEXT NOT NULL, MODIFY field_access LONGTEXT NOT NULL;
 
 /* Always add the update to ca_schema_updates at the end of the file */
+# noinspection SqlNoDataSourceInspection
 INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (126, unix_timestamp());

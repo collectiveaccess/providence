@@ -2,13 +2,13 @@
 # Translators:
 # manders <martin.anders@muenchen.de>, 2013-2015
 # Peter B. <pb@das-werkstatt.com>, 2014-2015
-# Stefan K, 2014
+# Stefan K, 2014-2015
 msgid ""
 msgstr ""
 "Project-Id-Version: CollectiveAccess Providence\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-06-23 09:11-0500\n"
-"PO-Revision-Date: 2015-11-17 08:29-0500\n"
+"PO-Revision-Date: 2016-01-12 10:39-0500\n"
 "Last-Translator: Stefan <stefan@whirl-i-gig.com>\n"
 "Language-Team: German (Germany) (http://www.transifex.com/collectiveaccess/collectiveaccess-providence/language/de_DE/)\n"
 "MIME-Version: 1.0\n"
@@ -793,7 +793,7 @@ msgstr "ERROR: Sie haben keinen Zugriff auf diesen Datensatz"
 
 #: app/controllers/lookup/IntrinsicController.php:55
 msgid "Invalid bundle name"
-msgstr ""
+msgstr "Ungültiger Bundle Name"
 
 #: app/controllers/lookup/ObjectCollectionHierarchyController.php:164 app/lib/ca/BaseLookupController.php:182
 msgid "No matches found for <em>%1</em>"
@@ -1169,7 +1169,7 @@ msgstr "Jetzt"
 
 #: app/helpers/displayHelpers.php:685
 msgid "Deaccessioned %1"
-msgstr ""
+msgstr "%1 deakzessioniert"
 
 #: app/helpers/displayHelpers.php:699 themes/default/views/library/dashboard/index_html.php:84
 msgid "Current"
@@ -1177,7 +1177,7 @@ msgstr "Derzeit"
 
 #: app/helpers/displayHelpers.php:706
 msgid "Location: %1"
-msgstr ""
+msgstr "Standort: %1"
 
 #: app/helpers/displayHelpers.php:767
 msgid "new screen"
@@ -1241,7 +1241,7 @@ msgstr "Typ ändern"
 
 #: app/helpers/displayHelpers.php:937 app/helpers/displayHelpers.php:1744
 msgid "Change Record Type"
-msgstr ""
+msgstr "Datensatztyp ändern"
 
 #: app/helpers/displayHelpers.php:958
 msgid "Create Child Record"
@@ -1249,7 +1249,7 @@ msgstr "Untergeordneten Datensatz anlegen"
 
 #: app/helpers/displayHelpers.php:965
 msgid "Create a child record under this one"
-msgstr ""
+msgstr "Untergeordneten Datensatz anlegen unter diesem anlegen"
 
 #: app/helpers/displayHelpers.php:983
 msgid "Duplicate this %1"
@@ -1257,7 +1257,7 @@ msgstr "%1 duplizieren"
 
 #: app/helpers/displayHelpers.php:990
 msgid "Download all media associated with objects in this lot"
-msgstr ""
+msgstr "Alle Medien, die mit Objekten in diesem Lot verknüpft sind, herunterladen"
 
 #: app/helpers/displayHelpers.php:998
 msgid "Download all media associated with records in this set"
@@ -1313,11 +1313,11 @@ msgstr "Zuletzt geändert am %1"
 
 #: app/helpers/displayHelpers.php:1060
 msgid "%1 problems require attention"
-msgstr ""
+msgstr "%1 Probleme erfordern Ihre Aufmerksamkeit"
 
 #: app/helpers/displayHelpers.php:1060
 msgid "%1 problem requires attention"
-msgstr ""
+msgstr "%1 Problem erfordert Ihre Aufmerksamkeit"
 
 #: app/helpers/displayHelpers.php:1075
 msgid "See more information about this record"
@@ -1325,15 +1325,15 @@ msgstr "Mehr Informationen zu diesem Datensatz anzeigen"
 
 #: app/helpers/displayHelpers.php:1096
 msgid "Will be related to %1"
-msgstr ""
+msgstr "Wird verknüpft mit %1"
 
 #: app/helpers/displayHelpers.php:1123
 msgid "Part of lot"
-msgstr ""
+msgstr "Teil von Lot"
 
 #: app/helpers/displayHelpers.php:1126
 msgid "Will be part of lot"
-msgstr ""
+msgstr "Wird Teil von Lot"
 
 #: app/helpers/displayHelpers.php:1140 app/helpers/displayHelpers.php:1142
 msgid "%1 component"
@@ -1345,7 +1345,7 @@ msgstr ""
 
 #: app/helpers/displayHelpers.php:1144
 msgid "Has"
-msgstr ""
+msgstr "Hat"
 
 #: app/helpers/displayHelpers.php:1164
 msgid "Lot contains %1 component"
@@ -1389,7 +1389,7 @@ msgstr ""
 
 #: app/helpers/displayHelpers.php:1273 themes/default/views/batch/mediaimport/batch_results_html.php:109 themes/default/views/manage/set_list_html.php:107
 msgid "Batch edit"
-msgstr ""
+msgstr "Stapelverarbeitung"
 
 #: app/helpers/displayHelpers.php:1276 app/helpers/displayHelpers.php:1347
 msgid "Number of items"
@@ -1433,7 +1433,7 @@ msgstr ""
 
 #: app/helpers/displayHelpers.php:1386
 msgid "Is a"
-msgstr ""
+msgstr "Ist ein/e"
 
 #: app/helpers/displayHelpers.php:1394 app/models/ca_metadata_elements.php:74 themes/default/views/administrate/setup/elements_list_html.php:55
 msgid "Element code"
@@ -1457,7 +1457,7 @@ msgstr "Ausgewählte Elemente"
 
 #: app/helpers/displayHelpers.php:1465 app/helpers/displayHelpers.php:1469
 msgid "Searches for"
-msgstr ""
+msgstr "Sucht nach"
 
 #: app/helpers/displayHelpers.php:1483
 msgid "Number of stops"
@@ -1492,7 +1492,7 @@ msgstr ""
 
 #: app/helpers/displayHelpers.php:1537 app/models/ca_commerce_order_items.php:102
 msgid "Tax"
-msgstr ""
+msgstr "Steuer"
 
 #: app/helpers/displayHelpers.php:1539
 msgid "Addtl fees"
@@ -1500,7 +1500,7 @@ msgstr ""
 
 #: app/helpers/displayHelpers.php:1540 themes/default/views/client/orders/list_orders_html.php:133 themes/default/views/client/orders/order_pdf_export_html.php:39
 msgid "Total"
-msgstr ""
+msgstr "Summe"
 
 #: app/helpers/displayHelpers.php:1552
 msgid "shipped %1"
@@ -2888,7 +2888,7 @@ msgstr ""
 
 #: app/helpers/htmlFormHelpers.php:422
 msgid "More..."
-msgstr ""
+msgstr "Mehr..."
 
 #: app/helpers/importHelpers.php:75
 msgid "[%2] Parents options invalid. Did you forget to pass a list? Parents list passed was: %1"
@@ -2956,19 +2956,19 @@ msgstr ""
 
 #: app/helpers/importHelpers.php:943
 msgid "Errors"
-msgstr ""
+msgstr "Fehler"
 
 #: app/helpers/importHelpers.php:944
 msgid "Warnings"
-msgstr ""
+msgstr "Warnungen"
 
 #: app/helpers/importHelpers.php:945
 msgid "Alerts"
-msgstr ""
+msgstr "Störmeldungen"
 
 #: app/helpers/importHelpers.php:946
 msgid "Infomational messages"
-msgstr ""
+msgstr "Informationen"
 
 #: app/helpers/importHelpers.php:947
 msgid "Debugging messages"
@@ -3032,15 +3032,15 @@ msgstr "Sekunden"
 
 #: app/helpers/utilityHelpers.php:2522
 msgid "%1 is not a valid unit of length [%2]"
-msgstr ""
+msgstr "%1 ist keine gültige Einheit für Länge [%2]"
 
 #: app/helpers/utilityHelpers.php:2528 app/helpers/utilityHelpers.php:2635
 msgid "Not a valid measurement"
-msgstr ""
+msgstr "Kein gültiges Maß"
 
 #: app/helpers/utilityHelpers.php:2532 app/helpers/utilityHelpers.php:2639
 msgid "Must not be less than zero"
-msgstr ""
+msgstr "Darf nicht weniger als null sein"
 
 #: app/helpers/utilityHelpers.php:2545 app/helpers/utilityHelpers.php:2651
 msgid "Not a valid measurement [%1]"
@@ -3060,7 +3060,7 @@ msgstr "Controller Fehler: %1"
 
 #: app/lib/ca/AppNavigation.php:717
 msgid "Disabled"
-msgstr ""
+msgstr "Deaktiviert"
 
 #: app/lib/ca/AppNavigation.php:725
 msgid "For type <em>%1</em>"
@@ -3081,7 +3081,7 @@ msgstr ""
 #: app/lib/ca/Attributes/Values/CollectionsAttributeValue.php:49 app/lib/ca/Attributes/Values/EntitiesAttributeValue.php:49 app/lib/ca/Attributes/Values/LengthAttributeValue.php:75 app/lib/ca/Attributes/Values/ListAttributeValue.php:74 app/lib/ca/Attributes/Values/LoansAttributeValue.php:49 app/lib/ca/Attributes/Values/MovementsAttributeValue.php:49 app/lib/ca/Attributes/Values/ObjectLotsAttributeValue.php:49 app/lib/ca/Attributes/Values/ObjectRepresentationsAttributeValue.php:49 app/lib/ca/Attributes/Values/ObjectsAttributeValue.php:49
 #: app/lib/ca/Attributes/Values/OccurrencesAttributeValue.php:49 app/lib/ca/Attributes/Values/PlacesAttributeValue.php:49 app/lib/ca/Attributes/Values/StorageLocationsAttributeValue.php:49 app/lib/ca/Attributes/Values/TimeCodeAttributeValue.php:73 app/lib/ca/Attributes/Values/UrlAttributeValue.php:97 app/lib/ca/Attributes/Values/WeightAttributeValue.php:74
 msgid "Require value"
-msgstr ""
+msgstr "Wert erforderlich"
 
 #: app/lib/ca/Attributes/Values/CollectionsAttributeValue.php:50
 msgid "Check this option if you want to require that a collection be selected."
@@ -4160,7 +4160,7 @@ msgstr ""
 
 #: app/lib/ca/BaseLookupController.php:177
 msgid "<em>%1</em> does not exist. Create?"
-msgstr ""
+msgstr "<em>%1</em> existiert noch nicht. Anlegen?"
 
 #: app/lib/ca/BaseLookupController.php:178
 msgid "Create <em>%1</em>?"
@@ -19035,7 +19035,7 @@ msgstr "Los"
 
 #: themes/default/views/administrate/setup/Results/paging_controls_html.php:56 themes/default/views/find/Results/paging_controls_html.php:57 themes/default/views/manage/Results/ca_item_comments_paging_controls_html.php:56 themes/default/views/manage/Results/ca_item_tags_paging_controls_html.php:56
 msgid "Your %1 found"
-msgstr "%1 ergab"
+msgstr "Ihre %1 ergab"
 
 #: themes/default/views/administrate/setup/Results/search_options_html.php:89 themes/default/views/find/Results/search_options_html.php:89
 msgid "#/page"
@@ -21179,7 +21179,7 @@ msgstr "Widget vom Cockpit entfernen"
 
 #: themes/default/views/dashboard/dashboard_html.php:111
 msgid "Modify settings for this widget"
-msgstr ""
+msgstr "Einstellungen dieses Widgets ändern"
 
 #: themes/default/views/editor/collections/quickadd_html.php:54 themes/default/views/editor/entities/quickadd_html.php:54 themes/default/views/editor/loans/quickadd_html.php:54 themes/default/views/editor/movements/quickadd_html.php:54 themes/default/views/editor/object_lots/quickadd_html.php:54 themes/default/views/editor/objects/quickadd_html.php:54 themes/default/views/editor/occurrences/quickadd_html.php:54 themes/default/views/editor/places/quickadd_html.php:53 themes/default/views/editor/storage_locations/quickadd_html.php:53
 msgid "Quick add %1"
@@ -22483,12 +22483,12 @@ msgstr ""
 
 #: app/conf/navigation.conf:1044 app/conf/navigation.conf:1088 app/conf/navigation.conf:1213 app/conf/navigation.conf:1346 app/conf/navigation.conf:1390 app/conf/navigation.conf:1447 app/conf/navigation.conf:1614 app/conf/navigation.conf:1781 app/conf/navigation.conf:1948 app/conf/navigation.conf:2118 app/conf/navigation.conf:2285 app/conf/navigation.conf:2463
 msgid "Basic search"
-msgstr ""
+msgstr "Einfache Suche"
 
 #: app/conf/navigation.conf:1056 app/conf/navigation.conf:1099 app/conf/navigation.conf:1163 app/conf/navigation.conf:1225 app/conf/navigation.conf:1295 app/conf/navigation.conf:1358 app/conf/navigation.conf:1401 app/conf/navigation.conf:1459 app/conf/navigation.conf:1501 app/conf/navigation.conf:1565 app/conf/navigation.conf:1626 app/conf/navigation.conf:1668 app/conf/navigation.conf:1732 app/conf/navigation.conf:1793 app/conf/navigation.conf:1835 app/conf/navigation.conf:1899 app/conf/navigation.conf:1961 app/conf/navigation.conf:2006
 #: app/conf/navigation.conf:2072 app/conf/navigation.conf:2130 app/conf/navigation.conf:2175 app/conf/navigation.conf:2239 app/conf/navigation.conf:2298 app/conf/navigation.conf:2346 app/conf/navigation.conf:2412 app/conf/navigation.conf:2476 app/conf/navigation.conf:2521 app/conf/navigation.conf:2587 app/conf/navigation.conf:2881 app/conf/navigation.conf:2939
 msgid "Advanced search"
-msgstr ""
+msgstr "Erweiterte Suche"
 
 #: app/conf/navigation.conf:2622
 msgid "QuickSearch"

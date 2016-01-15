@@ -755,13 +755,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 					// allow mapping repetition
 					if($vs_mode == 'RepeatMappings') {
-						if(strlen($vs_source)<1) {// ignore repitition rows without value
+						if(strlen($vs_source) < 1) { // ignore repitition rows without value
 							continue;
 						}
 
 						$va_new_items = array();
 
-						$va_mapping_items_to_repeat = explode(",",$vs_source);
+						$va_mapping_items_to_repeat = explode(',', $vs_source);
 
 						foreach($va_mapping_items_to_repeat as $vs_mapping_item_to_repeat) {
 							$vs_mapping_item_to_repeat = trim($vs_mapping_item_to_repeat);
@@ -788,10 +788,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 									$va_new_items[$vs_key."_:_".$vs_item_key]['parent_id'] = $vs_key . ($va_item['parent_id'] ? "_:_".$va_item['parent_id'] : "");
 								}
 							}
-
 						}
 
-						$va_mapping = array_merge($va_mapping,$va_new_items);
+						$va_mapping = $va_mapping + $va_new_items;
 					}
 
 					break;

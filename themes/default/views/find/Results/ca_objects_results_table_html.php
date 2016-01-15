@@ -26,16 +26,21 @@
  * ----------------------------------------------------------------------
  */
 
+	/** @var ca_bundle_displays $t_display */
 	$t_display				= $this->getVar('t_display');
 	$va_display_list 		= $this->getVar('display_list');
 	$vo_result 				= $this->getVar('result');
-	$vo_interstitial_result = $this->getVar('interstitialResult');
 	$vn_items_per_page 		= $this->getVar('current_items_per_page');
 	$vs_current_sort 		= $this->getVar('current_sort');
 	$vs_default_action		= $this->getVar('default_action');
 	$vo_ar					= $this->getVar('access_restrictions');
-	$vs_interstitial_prefix	= $this->request->getParameter('interstitialPrefix', pString);
-	$va_relation_id_map		= $this->getVar('relationIdMap');
+	$va_relation_id_map 	= $this->getVar('relationIdMap');
+
+	$vs_interstitial_prefix	= $this->getVar('interstitialPrefix');
+	$vs_primary_table		= $this->getVar('primaryTable');
+	$vn_primary_id			= $this->getVar('primaryID');
+	$vs_rel_table			= $this->getVar('relTable');
+
 	
 ?>
 <div id="scrollingResults">
@@ -72,9 +77,9 @@
 			$i = 0;
 			$vn_item_count = 0;
 			
-			while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit() && $vo_interstitial_result->nextHit()) {
+			while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit()) {
 				$vn_object_id = $vo_result->get('object_id');
-				$vn_relation_id = $vo_interstitial_result->get('relation_id');
+				$vn_relation_id = $va_relation_id_map[$vn_object_id]['relation_id'];
 				
 				($i == 2) ? $i = 0 : "";
 ?>
@@ -88,12 +93,28 @@
 					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_objects', $vn_object_id, array(), array())."</td>";;
 ?>
 					<td style="padding-left: 5px; padding-right: 5px;">
-						<?php print $vo_interstitial_result->getWithTemplate('^relationship_typename'); ?>
+						<?php print $va_relation_id_map[$vn_object_id]['relationship_typename']; ?>
 					</td>
 <?php
 						
 					foreach($va_display_list as $vn_placement_id => $va_info) {
-                        print "<td><span class=\"read-more\">".$t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array()))."</span></td>";
+                        print "<td><span class=\"read-more\">";
+
+						// if there's a template, evaluate template against relationship
+						if($vs_template = $va_info['settings']['format']) {
+							$va_opts = array_merge($va_info, array(
+								'resolveLinksUsing' => $vs_primary_table,
+								'primaryIDs' =>
+									array (
+										$vs_primary_table => array($vn_primary_id),
+									),
+							));
+							print caProcessTemplateForIDs($vs_template, $vs_rel_table, array($vn_relation_id), $va_opts);
+						} else {
+							print $t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array()));
+						}
+
+						print "</span></td>";
                     }
 ?>	
 				</tr>
