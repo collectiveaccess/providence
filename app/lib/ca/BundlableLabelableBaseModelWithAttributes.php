@@ -3074,11 +3074,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	* to use it.
 	*
 	* @param mixed $pm_screen
-	* @param RequestHTTP $ps_request
+	* @param RequestHTTP $po_request
 	* @param array $pa_options Options are:
 	*		dryRun = Go through the motions of saving but don't actually write information to the database
 	*		batch = Process save in "batch" mode. Specifically this means honoring batch mode settings (add, replace, remove), skipping bundles that are not supported in batch mode and ignoring updates
 	*		existingRepresentationMap = an array of representation_ids key'ed on file path. If set saveBundlesForScreen() use link the specified representation to the row it is saving rather than processing the uploaded file. saveBundlesForScreen() will build the map as it goes, adding newly uploaded files. If you want it to process a file in a batch situation where it should be processed the first time and linked subsequently then pass an empty array here. saveBundlesForScreen() will use the empty array to build the map.
+	 * @return mixed
 	*/
 	public function saveBundlesForScreen($pm_screen, $po_request, &$pa_options) {
 		$vb_we_set_transaction = false;
@@ -3300,9 +3301,14 @@ if (!$vb_batch) {
 						if (isset($va_attributes_to_delete[$vn_attribute_id]) && $va_attributes_to_delete[$vn_attribute_id]) { continue; }
 						
 						$vn_element_set_id = $o_attr->getElementID();
+
+						// skip element
+						if($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_set_id.'_dont_save_'.$vn_attribute_id, pInteger)) {
+							continue;
+						}
 						
 						$va_attr_update = array(
-							'locale_id' =>  $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_set_id.'_locale_id_'.$vn_attribute_id, pString) 
+							'locale_id' =>  $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_set_id.'_locale_id_'.$vn_attribute_id, pString)
 						);
 						
 						//

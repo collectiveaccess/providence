@@ -79,8 +79,6 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			->setHosts([$this->ops_elasticsearch_base_url])
 			->setRetries(2)
 			->build();
-
-		$this->refreshMapping();
 	}
 	# -------------------------------------------------------
 	/**
@@ -95,7 +93,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * Refresh ElasticSearch mapping if necessary
 	 * @param bool $pb_force force refresh if set to true [default is false]
 	 */
-	protected function refreshMapping($pb_force=false) {
+	public function refreshMapping($pb_force=false) {
 		$o_mapping = new ElasticSearch\Mapping();
 		if($o_mapping->needsRefresh() || $pb_force) {
 			try {
@@ -121,8 +119,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				));
 			}
 
-			// resets the mapping cache key so that needsRefresh() returns
-			// false for a while, depending on __CA_CACHE_TTL__
+			// resets the mapping cache key so that needsRefresh() returns false for 24h
 			$o_mapping->ping();
 		}
 	}
@@ -222,7 +219,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @param null|int $pn_table_num
 	 * @return bool
 	 */
-	public function truncateIndex($pn_table_num = null) {
+	public function truncateIndex($pn_table_num = null, $pb_dont_refresh = false) {
 		if(!$pn_table_num) {
 			// nuke the entire index
 			try {
@@ -230,7 +227,10 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			} catch(Elasticsearch\Common\Exceptions\Missing404Exception $e) {
 				// noop
 			} finally {
-				$this->refreshMapping(true);
+				if(!$pb_dont_refresh) {
+					$this->refreshMapping(true);
+				}
+
 			}
 		} else {
 			// use scoll API to find all documents in a particular mapping/table and delete them using the bulk API
@@ -479,6 +479,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @throws Elasticsearch\Common\Exceptions\NoNodesAvailableException
 	 */
 	public function flushContentBuffer() {
+		$this->refreshMapping();
+
 		$va_bulk_params = array();
 
 		// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
@@ -557,7 +559,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$this->getClient()->bulk($va_bulk_params);
 
 			// we usually don't need indexing to be available *immediately* unless we're running automated tests of course :-)
-			if(caIsRunFromCLI() && $this->getIndexName()) {
+			if(caIsRunFromCLI() && $this->getIndexName() && (!defined('__CollectiveAccess_IS_REINDEXING__') || !__CollectiveAccess_IS_REINDEXING__)) {
 				$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
 			}
 		}

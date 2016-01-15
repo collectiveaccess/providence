@@ -572,7 +572,10 @@ var caUI = caUI || {};
 						} else {
 							if ((that.selectedItemIDs[level] !== undefined) && !dontDoSelectAndScroll) {
 								jQuery('#hierBrowser_' + that.name + '_level_' + (level) + '_item_' + that.selectedItemIDs[level]).addClass(that.classNameSelected);
-								jQuery('#' + newLevelDivID).scrollTo(jQuery('#hierBrowser_' + that.name + '_level_' + level + '_item_' + that.selectedItemIDs[level]).position().top + 'px');
+								
+								if (jQuery('#hierBrowser_' + that.name + '_level_' + level + '_item_' + that.selectedItemIDs[level]).position()) {
+									jQuery('#' + newLevelDivID).scrollTo(jQuery('#hierBrowser_' + that.name + '_level_' + level + '_item_' + that.selectedItemIDs[level]).position().top + 'px');
+								}
 							}
 						}
 					} else {
