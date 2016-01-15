@@ -606,10 +606,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					$va_ft_stem_terms = array();
 
 					$vs_access_point = '';
-					$va_raw_terms = $va_raw_terms_escaped = array();
-					
-					$vs_fld_num = $vs_table_num = $t_table = null;
-					
+					$va_raw_terms = array();
 					switch(get_class($o_lucene_query_element)) {
 						case 'Zend_Search_Lucene_Search_Query_Range':
 							$va_lower_term = $o_lucene_query_element->getLowerTerm();
@@ -848,8 +845,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										$vs_term = _t('blank');
 									} else {
 										$vb_is_blank_search = true;
-										$vs_table_num = $va_access_point_info['table_num'];
-										$vs_fld_num = $va_access_point_info['field_num'];
 										break;
 									} 
 								}
@@ -889,12 +884,13 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$vb_output_term = true;	
 								
 								}
-								if ($vb_output_term) { $va_raw_terms[] = $vs_raw_term; $va_raw_terms_escaped[] = '"'.$this->opo_db->escape($vs_raw_term).'"'; }
+								if ($vb_output_term) { $va_raw_terms[] = $vs_term; }
 							}
 							
 							break;
 					}
 					
+					$vs_fld_num = $vs_table_num = $t_table = null;
 					$vb_ft_bit_optimization = false;
 					if ($vs_access_point) {
 						list($vs_table, $vs_field, $vs_sub_field) = explode('.', $vs_access_point);
@@ -963,6 +959,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								} else {
 									$vn_fld_num = $this->getFieldNum($vs_table, $vs_field);
 									$vs_fld_num = 'I'.$vn_fld_num;
+								
+									$vn_direct_sql_target_table_num = $vs_table_num; 
 									
 									if (!strlen($vn_fld_num)) {
 										$t_element = new ca_metadata_elements();
@@ -1011,7 +1009,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																		)
 																	
 																";
-																$vn_direct_sql_target_table_num = $vs_table_num; 
 															}
 														} else {
 															if ($this->opo_tep->parse($vs_raw_term)) {
@@ -1033,8 +1030,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																		)
 																	
 																";
-																
-																$vn_direct_sql_target_table_num = $vs_table_num; 
 															}
 														}
 														break;
@@ -1060,7 +1055,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																	(cav.value_decimal2 BETWEEN {$va_coords['min_longitude']} AND {$va_coords['max_longitude']})
 																
 															";
-															$vn_direct_sql_target_table_num = $vs_table_num; 
 														}
 														break;
 													case __CA_ATTRIBUTE_VALUE_CURRENCY__:
@@ -1082,7 +1076,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																(cav.value_longtext1 = '".$this->opo_db->escape($vs_currency)."')
 															
 														";
-														$vn_direct_sql_target_table_num = $vs_table_num; 
 														break;
 													case __CA_ATTRIBUTE_VALUE_LENGTH__:
 														// If it looks like a dimension that has been tokenized by Lucene
@@ -1116,7 +1109,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																(cav.value_decimal1 = ".floatval($vn_len).")
 															
 														";
-														$vn_direct_sql_target_table_num = $vs_table_num; 
 														break;
 													case __CA_ATTRIBUTE_VALUE_WEIGHT__:
 														// If it looks like a weight that has been tokenized by Lucene
@@ -1151,7 +1143,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																(cav.value_decimal1 = ".floatval($vn_weight).")
 															
 														";
-														$vn_direct_sql_target_table_num = $vs_table_num; 
 														break;
 													case __CA_ATTRIBUTE_VALUE_TIMECODE__:
 														$t_timecode = new TimecodeAttributeValue();
@@ -1169,7 +1160,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																(cav.value_decimal1 = ".floatval($vn_timecode).")
 															
 														";
-														$vn_direct_sql_target_table_num = $vs_table_num; 
 														break;
 													case __CA_ATTRIBUTE_VALUE_INTEGER__:
 														$vs_direct_sql_query = "
@@ -1183,7 +1173,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																(cav.value_integer1 = ".intval(array_shift($va_raw_terms)).")
 															
 														";
-														$vn_direct_sql_target_table_num = $vs_table_num; 
 														break;
 													case __CA_ATTRIBUTE_VALUE_NUMERIC__:
 														$vs_direct_sql_query = "
@@ -1197,7 +1186,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 																(cav.value_decimal1 = ".floatval(array_shift($va_raw_terms)).")
 															
 														";
-														$vn_direct_sql_target_table_num = $vs_table_num; 
 														break;
 												}
 											}	
@@ -1342,12 +1330,11 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							$va_path = array_keys($this->opo_datamodel->getPath($vn_direct_sql_target_table_num, $pn_subject_tablenum));
 							
 							$vs_left_table = array_shift($va_path);
-							$va_join[] = "INNER JOIN {$vs_left_table} ON {$vs_left_table}.".$this->opo_datamodel->primaryKey($vs_left_table)." = ca.row_id";
 							
 							$vn_cj = 0;
 							foreach($va_path as $vs_right_table) {
 								if (sizeof($va_rels = $this->opo_datamodel->getRelationships($vs_left_table, $vs_right_table)) > 0) {
-									$va_join[] = "INNER JOIN {$vs_right_table} ON {$vs_right_table}.".$va_rels[$vs_left_table][$vs_right_table][0][1]." = ".("{$vs_left_table}.".$va_rels[$vs_left_table][$vs_right_table][0][0]);
+									$va_join[] = "INNER JOIN {$vs_right_table} ON {$vs_right_table}.".$va_rels[$vs_left_table][$vs_right_table][0][1]." = ".(($vn_cj == 0) ? 'ca.row_id' : "{$vs_left_table}.".$va_rels[$vs_left_table][$vs_right_table][0][0]);
 								}
 								$vs_left_table = $vs_right_table;
 								$vn_cj++;
@@ -1355,6 +1342,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						
 							// Next we rewrite the key we're pulling to be from our subject
 							$vs_direct_sql_query = str_replace("SELECT ca.row_id", "SELECT ".$this->opo_datamodel->primaryKey($pn_subject_tablenum, true), $vs_direct_sql_query);
+						
 							// Finally we pray
 						}
 					}
@@ -1389,7 +1377,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						}
 						
 						$t = new Timer();
-						$this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array());
+						$pa_direct_sql_query_params = is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array();
+						if(strpos($vs_sql, '?') === false) { $pa_direct_sql_query_params = array(); }
+						$this->opo_db->query($vs_sql, $pa_direct_sql_query_params);
 						$vn_i++;
 						if ($this->debug) { Debug::msg('FIRST: '.$vs_sql." [$pn_subject_tablenum] ".$t->GetTime(4)); }
 					} else {
@@ -1402,10 +1392,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										array_unshift($va_join, "INNER JOIN {$ps_dest_table} AS ftmp1 ON ftmp1.row_id = ca.row_id");
 									}
 									$vs_direct_sql_query = str_replace('^JOIN', join("\n", $va_join), $vs_direct_sql_query);
-									
-									if((strpos($vs_direct_sql_query, '?') !== false)) {
-										$pa_direct_sql_query_params = array(($vn_direct_sql_target_table_num != $pn_subject_tablenum) ? $vn_direct_sql_target_table_num : (int)$pn_subject_tablenum);
-									}
+									$pa_direct_sql_query_params = array(($vn_direct_sql_target_table_num != $pn_subject_tablenum) ? $vn_direct_sql_target_table_num : (int)$pn_subject_tablenum);
 								}
 								$vs_sql = ($vs_direct_sql_query) ? "{$vs_direct_sql_query}" : "
 									SELECT swi.row_id
@@ -1425,7 +1412,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								}
 							
 								$t = new Timer();
-								$qr_res = $this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum));
+								
+								$pa_direct_sql_query_params = is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum);
+								if(strpos($vs_sql, '?') === false) { $pa_direct_sql_query_params = array(); }
+								$qr_res = $this->opo_db->query($vs_sql, $pa_direct_sql_query_params);
 								
 								if ($this->debug) { Debug::msg('AND: '.$vs_sql. ' '.$t->GetTime(4). ' '.$qr_res->numRows()); }
 						
@@ -1455,7 +1445,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 										{$vs_rel_type_id_sql}
 										".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '');
 								
-								$qr_res = $this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum));
+								$pa_direct_sql_query_params = is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum);
+								if(strpos($vs_sql, '?') === false) { $pa_direct_sql_query_params = array(); }
+								$qr_res = $this->opo_db->query($vs_sql, $pa_direct_sql_query_params);
 								$va_ids = $qr_res->getAllFieldValues(($vs_direct_sql_query && ($vn_direct_sql_target_table_num != $pn_subject_tablenum)) ? $this->opo_datamodel->primaryKey($pn_subject_tablenum) : 'row_id');
 								
 								if (sizeof($va_ids) > 0) {
@@ -1494,7 +1486,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								if ($this->debug) { Debug::msg('OR '.$vs_sql); }
 								
 								$vn_i++;
-								$qr_res = $this->opo_db->query($vs_sql, is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum));
+								
+								$pa_direct_sql_query_params = is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array((int)$pn_subject_tablenum);
+								if(strpos($vs_sql, '?') === false) { $pa_direct_sql_query_params = array(); }
+								$qr_res = $this->opo_db->query($vs_sql, $pa_direct_sql_query_params);
 								break;
 						}
 					}
