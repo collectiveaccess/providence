@@ -1717,6 +1717,7 @@ class SearchResult extends BaseObject {
 				}
 				
 				$vb_did_return_value = false;
+
 				foreach($va_values as $o_value) {
 					$vs_val_proc = null;
 					$vb_dont_return_value = false;
@@ -1725,15 +1726,15 @@ class SearchResult extends BaseObject {
 					$va_auth_spec = null; 
 					if (is_a($o_value, "AuthorityAttributeValue")) {
 						$va_auth_spec = $va_path_components['components'];
-						if ($pt_instance->hasElement($va_path_components['subfield_name'])) {
+						if ($pt_instance->hasElement($va_path_components['subfield_name'], null, true)) {
 							array_shift($va_auth_spec); array_shift($va_auth_spec); array_shift($va_auth_spec);
-						} elseif ($pt_instance->hasElement($va_path_components['field_name'])) {
+						} elseif ($pt_instance->hasElement($va_path_components['field_name'], null, true)) {
 							array_shift($va_auth_spec); array_shift($va_auth_spec); 
 							$va_path_components['subfield_name'] = null;
 						}
 					}
 					
-					if ($va_path_components['subfield_name'] && ($va_path_components['subfield_name'] !== $vs_element_code) && !($o_value instanceof InformationServiceAttributeValue)) { 
+					if ($va_path_components['subfield_name'] && ($va_path_components['subfield_name'] !== $vs_element_code) && !($o_value instanceof InformationServiceAttributeValue)) {
 						$vb_dont_return_value = true;
 						if (!$pa_options['filter']) { continue; }
 					}
@@ -1742,9 +1743,9 @@ class SearchResult extends BaseObject {
 						array_unshift($va_auth_spec, $vs_auth_table_name = $o_value->tableName());
 						if ($qr_res = caMakeSearchResult($vs_auth_table_name, array($o_value->getID()))) {
 							if ($qr_res->nextHit()) {
-								unset($va_options['returnWithStructure']);
+								unset($pa_options['returnWithStructure']);
 								$va_options['returnAsArray'] = true;
-								$va_val_proc = $qr_res->get(join(".", $va_auth_spec), $va_options);
+								$va_val_proc = $qr_res->get(join(".", $va_auth_spec), $pa_options);
 						
 								foreach($va_val_proc as $vn_i => $vs_v) {
 									$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()."_{$vn_i}"][$vs_element_code] = $vs_v;

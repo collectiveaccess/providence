@@ -2615,11 +2615,14 @@
 		}
 		# ------------------------------------------------------------------
 		/**
-		 *
+		 * @param string $ps_element_code
+		 * @param null|int $pn_type_id
+		 * @param bool $pb_include_sub_element_codes
+		 * @return bool
 		 */
-		public function hasElement($ps_element_code, $pn_type_id=null) {
+		public function hasElement($ps_element_code, $pn_type_id=null, $pb_include_sub_element_codes=false) {
 			if (is_null($pn_type_id)) { $pn_type_id = $this->getTypeID(); }
-			$va_codes = $this->getApplicableElementCodes($pn_type_id, false, false);
+			$va_codes = $this->getApplicableElementCodes($pn_type_id, $pb_include_sub_element_codes);
 			return (in_array($ps_element_code, $va_codes));
 		}
 		# ------------------------------------------------------------------
