@@ -60,10 +60,11 @@
 
 		$va_display_vals = array_shift($t_instance->getAttributeDisplayValues($va_root_element['element_id'], $t_instance->getPrimaryKey()));
 		$va_readonly_previews = array();
-		foreach($va_display_vals as $vn_attr_id => $va_display_val) {
-			$va_readonly_previews[$vn_attr_id] = caProcessTemplate($va_element_settings['readonlyTemplate'], $va_display_val);
+		if(is_array($va_display_vals)) {
+			foreach($va_display_vals as $vn_attr_id => $va_display_val) {
+				$va_readonly_previews[$vn_attr_id] = caProcessTemplate($va_element_settings['readonlyTemplate'], $va_display_val);
+			}
 		}
-
 	}
 	
 	// generate list of inital form values; the bundle Javascript call will
