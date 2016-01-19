@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -71,11 +71,15 @@
  		
  			// Load plugin view paths
  			if (!is_array($pa_view_paths)) { $pa_view_paths = array(); }
+ 			
+ 			// Paths are evaluated back-to-front; we first look in a directory with the name of the plugin in the current theme. If
+ 			// we don't find a view there then we fall back to the old locations in the plugin itself (themes/<theme name>/views and themes/default/views)
  			$pa_view_paths[] = __CA_APP_DIR__."/plugins/{$vs_plugin_name}/themes/default/views";
  			$pa_view_paths[] = __CA_APP_DIR__."/plugins/{$vs_plugin_name}/themes/".__CA_THEME__."/views";
- 			
+ 			if (defined("__CA_THEME_DIR__")) {
+ 				$pa_view_paths[] = __CA_THEME_DIR__."/views/{$vs_plugin_name}";
+ 			}
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  		}
  		# -------------------------------------------------------
 	}
-?>

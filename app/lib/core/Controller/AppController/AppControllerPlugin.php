@@ -49,6 +49,9 @@
 			$this->setResponse($po_response);
 		}
 		# -------------------------------------------------------
+		/**
+		 * @return RequestHTTP
+		 */
 		public function getRequest() {
 			return $this->opo_request;
 		}
@@ -57,6 +60,9 @@
 			$this->opo_request =& $po_request;
 		}
 		# -------------------------------------------------------
+		/**
+		 * @return ResponseHTTP
+		 */
 		public function getResponse() {
 			return $this->opo_response;
 		}

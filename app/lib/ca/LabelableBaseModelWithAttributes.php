@@ -645,7 +645,7 @@
 				foreach($pa_values as $vs_field => $vm_value) {
 					if (($vn_element_id = array_search($vs_field, $va_element_codes)) !== false) {
 						
-						$vs_q = " ca_attribute_values.element_id = {$vn_element_id} AND  ";
+						$vs_q = " (ca_attribute_values.element_id = {$vn_element_id}) AND  ";
 						switch($vn_datatype = $t_instance->_getElementDatatype($vs_field)) {
 							case 0:	// continue
 							case 15: // media

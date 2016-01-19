@@ -61,7 +61,7 @@
 		# ------------------------------------------------------------------------------------------------
 		public function __construct() {
 			$o_config = Configuration::load();
-			$this->opo_monitor_config = Configuration::load($o_config->get('application_monitor_config'));
+			$this->opo_monitor_config = Configuration::load(__CA_CONF_DIR__.'/monitor.config');
 			
 			$this->opb_enabled = (bool)$this->opo_monitor_config->get('enabled');
 			$this->opn_log_queries_taking_long_than = $this->opo_monitor_config->get('log_queries_taking_long_than');
