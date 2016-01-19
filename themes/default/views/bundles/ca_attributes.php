@@ -189,12 +189,12 @@ if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['set
 			foreach($va_elements as $vn_container_id => $va_element_list) {
 				if ($vn_container_id === '_locale_id') { continue; }
 ?>
-				<table class="attributeListItem" cellpadding="5" cellspacing="0">
+				<table class="attributeListItem">
 					<tr>
 <?php
 						foreach($va_element_list as $vs_element) {
 							// any <textarea> tags in the template needs to be renamed to 'textentry' for the template to work
-							print '<td class="attributeListItem" valign="top">'.str_replace("textarea", "textentry", $vs_element).'</td>';
+							print '<td class="attributeListItem">'.str_replace("textarea", "textentry", $vs_element).'</td>';
 						}
 ?>
 					</tr>
