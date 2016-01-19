@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1511,7 +1511,7 @@
 
 				if($va_elements_without_break_by_container[$va_element['parent_id']] == $va_elements_break_by_container[$va_element['parent_id']]+1){
 					$va_elements_without_break_by_container[$va_element['parent_id']] = 1;
-					$vs_br = "</td></tr></table><table class=\"attributeListItem\" cellpadding=\"0px\" cellspacing=\"0px\"><tr><td class=\"attributeListItem\">";
+					$vs_br = "</td></tr></table><table class=\"attributeListItem\"><tr><td class=\"attributeListItem\">";
 				} else {
 					$vs_br = "";
 				}
