@@ -1747,8 +1747,10 @@ class SearchResult extends BaseObject {
 								$va_options['returnAsArray'] = true;
 								$va_val_proc = $qr_res->get(join(".", $va_auth_spec), $pa_options);
 						
-								foreach($va_val_proc as $vn_i => $vs_v) {
-									$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()."_{$vn_i}"][$vs_element_code] = $vs_v;
+								if(is_array($va_val_proc)) {
+									foreach($va_val_proc as $vn_i => $vs_v) {
+										$va_return_values[(int)$vn_id][$vm_locale_id][(int)$o_attribute->getAttributeID()."_{$vn_i}"][$vs_element_code] = $vs_v;
+									}
 								}
 							}
 						}
