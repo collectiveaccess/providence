@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -715,6 +715,9 @@ class DisplayTemplateParser {
 		unset($pa_options['returnAsArray']);
 		unset($pa_options['returnWithStructure']);
 		
+		$vn_start = caGetOption('unitStart', $pa_options, 0, ['castTo' => 'int']);
+		$vn_length = caGetOption('unitLength', $pa_options, 0, ['castTo' => 'int']);
+		
 		$o_dm = Datamodel::load();
 		
 		
@@ -759,8 +762,6 @@ class DisplayTemplateParser {
 				$va_tag_vals = DisplayTemplateParser::$value_cache[$vs_cache_key];
 				$vn_count = DisplayTemplateParser::$value_count_cache[$vs_cache_key];
 			} else {
-				DisplayTemplateParser::$value_count_cache[$vs_cache_key] = $vn_count = sizeof($pr_res->get($vs_relative_to_container, ['returnAsArray' => true]));
-			
 				$va_tag_vals = [];
 				foreach(array_keys($pa_tags) as $vs_tag) {					
 					$vs_get_spec = $va_get_specs[$vs_tag]['spec'];
@@ -769,6 +770,10 @@ class DisplayTemplateParser {
 					$va_vals = $pr_res->get($vs_get_spec, array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnBlankValues' => true]));
 					
 					if (is_array($va_vals)) {
+						if ((($vn_start > 0) || ($vn_length > 0)) && ($vn_start < sizeof($va_vals)) && (!$vn_length || ($vn_start + $vn_length <= sizeof($va_vals)))) {
+							$va_vals = array_slice($va_vals, $vn_start, ($vn_length > 0) ? $vn_length : null);
+						}
+						
 						foreach($va_vals as $vn_index => $vs_val) {
 							$va_tag_vals[$vn_index][$vs_tag] = $vs_val;
 						}
@@ -776,6 +781,8 @@ class DisplayTemplateParser {
 				}
 			
 				DisplayTemplateParser::$value_cache[$vs_cache_key] = $va_tag_vals;
+				DisplayTemplateParser::$value_count_cache[$vs_cache_key] = $vn_count = sizeof($va_tag_vals);
+			
 			}
 			
 			if(strlen($pn_index)) {
@@ -791,9 +798,6 @@ class DisplayTemplateParser {
 				$vs_get_spec = $va_get_specs[$vs_tag]['spec'];
 				$va_parsed_tag_opts = $va_get_specs[$vs_tag]['parsed'];
 				
-				$vn_start = caGetOption('unitStart', $pa_options, 0, ['castTo' => 'int']);
-				$vn_length = caGetOption('unitLength', $pa_options, 0, ['castTo' => 'int']);
-			
 				switch(strtolower($vs_get_spec)) {
 					case 'relationship_typename':
 						$va_val_list = $pr_res->get('ca_relationship_types.preferred_labels.'.((caGetOption('orientation', $pa_options, 'LTOR') == 'LTOR') ? 'typename' : 'typename_reverse'), $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
@@ -830,7 +834,7 @@ class DisplayTemplateParser {
 						} else {
 							$va_val_list = $pr_res->get($vs_get_spec, $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
 							if (!is_array($va_val_list)) { $va_val_list = array(); }
-							if ((($vn_start > 0) || ($vn_length > 0)) && ($vn_start < sizeof($va_val_list)) && (!$vn_length || ($vn_start + $vn_length < sizeof($va_val_list)))) {
+							if ((($vn_start > 0) || ($vn_length > 0)) && ($vn_start < sizeof($va_val_list)) && (!$vn_length || ($vn_start + $vn_length <= sizeof($va_val_list)))) {
 								$va_val_list = array_slice($va_val_list, $vn_start, ($vn_length > 0) ? $vn_length : null);
 							}
 						}
