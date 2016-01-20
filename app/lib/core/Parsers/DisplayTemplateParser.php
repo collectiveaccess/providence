@@ -208,6 +208,9 @@ class DisplayTemplateParser {
 			
 			if ($pa_options['relativeToContainer']) {
 				$va_vals = DisplayTemplateParser::_getValues($qr_res, $va_template['tags'], $pa_options);
+				if(isset($pa_options['sort'])&& is_array($pa_options['sort'])) {
+					$va_vals = caSortArrayByKeyInValue($va_vals, array('__sort__'), $pa_options['sortDirection'], array('dontRemoveKeyPrefixes' => true));
+				}
 				foreach($va_vals as $vn_index => $va_val_list) {
 					$va_proc_templates[] = is_array($va_val_list) ? DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['index' => $vn_index, 'returnAsArray' => $pa_options['aggregateUnique']])) : '';
 				}
@@ -779,6 +782,22 @@ class DisplayTemplateParser {
 						}
 					}
 				}
+				
+				if (isset($pa_options['sort']) && is_array($pa_options['sort']) && sizeof($pa_options['sort'])) {
+					$va_sortables = array();
+					foreach($pa_options['sort'] as $vs_sort_spec) {
+						$va_sortables[] = $pr_res->get($vs_sort_spec, ['sortable' => true, 'returnAsArray' => true, 'returnBlankValues' => true]);
+					}
+					if ((($vn_start > 0) || ($vn_length > 0)) && ($vn_start < sizeof($va_sortables)) && (!$vn_length || ($vn_start + $vn_length <= sizeof($va_sortables)))) {
+						$va_sortables = array_slice($va_sortables, $vn_start, ($vn_length > 0) ? $vn_length : null);
+					}
+					
+					foreach($va_sortables as $i => $va_sort_values) {
+						foreach($va_sort_values as $vn_index => $vs_sort_value) {
+							$va_tag_vals[$vn_index]['__sort__'] .= $vs_sort_value;
+						}
+					}
+				}
 			
 				DisplayTemplateParser::$value_cache[$vs_cache_key] = $va_tag_vals;
 				DisplayTemplateParser::$value_count_cache[$vs_cache_key] = $vn_count = sizeof($va_tag_vals);
@@ -841,12 +860,18 @@ class DisplayTemplateParser {
 						break;
 				}
 				$ps_delimiter = caGetOption('delimiter', $va_opts, ';');
-			
+				
 				if ($vs_relative_to_container) {
 					$va_vals[$vn_c][$vs_tag] = join($ps_delimiter, $va_val_list);
+					if (isset($va_tag_vals[$vn_c]['__sort__'])) {
+						$va_vals[$vn_c]['__sort__'] = $va_tag_vals[$vn_c]['__sort__'];
+					}
 				} else {
 					if(!$pb_include_blanks) { $va_val_list = array_filter($va_val_list, 'strlen'); }
 					$va_vals[$vs_tag] = join($ps_delimiter, $va_val_list);
+					if (isset($va_tag_vals[$vn_c]['__sort__'])) {
+						$va_vals['__sort__'] = $va_tag_vals[$vn_c]['__sort__'];
+					}
 				}
 			}
 		}
