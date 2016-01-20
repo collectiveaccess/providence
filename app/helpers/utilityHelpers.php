@@ -1124,14 +1124,20 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 * @param array $pa_values The array to sort. It should be an array of arrays (aka. 2-dimensional)
 	 * @param array $pa_sort_keys An array of keys in the second-level array to sort by
+	 * @param array $pa_options Options include:
+	 * 		dontRemoveKeyPrefixes = By default keys that are period-delimited will have the prefix before the first period removed (this is to ease sorting by field names). Set to true to disable this behavior. [Default is false]
 	 * @return array The sorted array
 	*/
-	function caSortArrayByKeyInValue($pa_values, $pa_sort_keys, $ps_sort_direction="ASC") {
+	function caSortArrayByKeyInValue($pa_values, $pa_sort_keys, $ps_sort_direction="ASC", $pa_options=null) {
 		$va_sort_keys = array();
-		foreach ($pa_sort_keys as $vs_field) {
-			$va_tmp = explode('.', $vs_field);
-			if (sizeof($va_tmp) > 1) { array_shift($va_tmp); }
-			$va_sort_keys[] = join(".", $va_tmp);
+		if (caGetOption('dontRemoveKeyPrefixes', $pa_options, false)) {
+			foreach ($pa_sort_keys as $vs_field) {
+				$va_tmp = explode('.', $vs_field);
+				if (sizeof($va_tmp) > 1) { array_shift($va_tmp); }
+				$va_sort_keys[] = join(".", $va_tmp);
+			}
+		} else {
+			$va_sort_keys = $pa_sort_keys;
 		}
 		$va_sorted_by_key = array();
 		foreach($pa_values as $vn_id => $va_data) {
