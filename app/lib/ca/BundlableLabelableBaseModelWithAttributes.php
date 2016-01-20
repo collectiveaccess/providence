@@ -1345,7 +1345,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				$vs_description = isset($pa_bundle_settings['description'][$g_ui_locale]) ? $pa_bundle_settings['description'][$g_ui_locale] : null;
 				
-				if (($vs_label) && ($vs_description)) {
+				if (($vs_label) && ($vs_description) && !is_array($va_dictionary_entry)) {
 					TooltipManager::add('#'.$vs_field_id, "<h3>{$vs_label_text}</h3>{$vs_description}");
 				}
 				break;
@@ -1428,7 +1428,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				
 				$vs_description =  (isset($pa_bundle_settings['description'][$g_ui_locale]) && $pa_bundle_settings['description'][$g_ui_locale]) ? $pa_bundle_settings['description'][$g_ui_locale]  : $this->getFieldInfo($ps_bundle_name, 'DESCRIPTION');
-				if (($pa_options['label']) && ($vs_description)) {
+				if (($pa_options['label']) && ($vs_description) && !is_array($va_dictionary_entry)) {
 					TooltipManager::add('#'.$vs_field_id, "<h3>".$pa_options['label']."</h3>{$vs_description}");
 				}
 				
@@ -1476,7 +1476,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					}
 				}
 				
-				if (($vs_label_text) && ($vs_description)) {
+				if (($vs_label_text) && ($vs_description) && !is_array($va_dictionary_entry)) {
 					TooltipManager::add('#'.$vs_field_id, "<h3>{$vs_label_text}</h3>{$vs_description}");
 				}
 		
@@ -1551,7 +1551,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				$vs_description = (isset($pa_bundle_settings['description'][$g_ui_locale]) && $pa_bundle_settings['description'][$g_ui_locale]) ? $pa_bundle_settings['description'][$g_ui_locale] : null;
 				
-				if (($vs_label_text) && ($vs_description)) {
+				if (($vs_label_text) && ($vs_description) && !is_array($va_dictionary_entry)) {
 					TooltipManager::add('#'.$pa_options['formName'].'_'.$ps_placement_code, "<h3>{$vs_label}</h3>{$vs_description}");
 				}
 				break;
@@ -1778,7 +1778,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				$vs_description = (isset($pa_bundle_settings['description'][$g_ui_locale]) && $pa_bundle_settings['description'][$g_ui_locale]) ? $pa_bundle_settings['description'][$g_ui_locale] : null;
 				
-				if (($vs_label_text) && ($vs_description)) {
+				if (($vs_label_text) && ($vs_description) && !is_array($va_dictionary_entry)) {
 					TooltipManager::add('#'.$pa_options['formName'].'_'.$ps_placement_code, "<h3>{$vs_label}</h3>{$vs_description}");
 				}
 				
@@ -2149,34 +2149,37 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 									$vs_pk = $t_instance->primaryKey();
 									$va_opts = array('-' => '');
 									
-									$va_in_use_list = null;
+									$va_in_use_list = $vs_rel_pk = null;
 									if (caGetOption('inUse', $pa_options, false)) {
-										if (is_array($va_path = $this->_DATAMODEL->getPath($this->tableName(), 'ca_list_items'))) {
-										$va_path = array_keys($va_path);
+										if (is_array($va_path = $this->_DATAMODEL->getPath($this->tableName(), $va_tmp[0]))) {
+											$va_path = array_keys($va_path);
 											if (sizeof($va_path) == 3) {
-												$vs_table = $this->tableName();
-												$vs_pk = $this->primaryKey();
+												if ($t_rel = $this->_DATAMODEL->getInstanceByTableName($va_tmp[0], true)) {
+													$vs_table = $this->tableName();
+													$vs_pk = $this->primaryKey();
 											
-												$va_sql_wheres = array();
-												$va_sql_params = array();
-												if ($this->hasField('deleted')) { $va_sql_wheres[] = "(t.deleted = 0)"; }
-												if ($this->hasField('access') && is_array($va_access) && sizeof($va_access)) { $va_sql_wheres[] = "(t.access IN (?))"; $va_sql_params[] = $va_access; }
+													$va_sql_wheres = array();
+													$va_sql_params = array();
+													if ($this->hasField('deleted')) { $va_sql_wheres[] = "(t.deleted = 0)"; }
+													if ($this->hasField('access') && is_array($va_access) && sizeof($va_access)) { $va_sql_wheres[] = "(t.access IN (?))"; $va_sql_params[] = $va_access; }
 											
-												$qr_in_use = $this->getDb()->query("
-													SELECT DISTINCT l.item_id
-													FROM {$va_path[1]} l
-													INNER JOIN {$vs_table} AS t ON t.{$vs_pk} = l.{$vs_pk}
-													".((sizeof($va_sql_wheres) > 0) ? "WHERE ".join(" AND ", $va_sql_wheres) : "")."		
-												", $va_sql_params);
-												$va_in_use_list = $qr_in_use->getAllFieldValues('item_id');
+													$vs_rel_pk = $t_rel->primaryKey();
+													$qr_in_use = $this->getDb()->query("
+														SELECT DISTINCT l.{$vs_rel_pk}
+														FROM {$va_path[1]} l
+														INNER JOIN {$vs_table} AS t ON t.{$vs_pk} = l.{$vs_pk}
+														".((sizeof($va_sql_wheres) > 0) ? "WHERE ".join(" AND ", $va_sql_wheres) : "")."		
+													", $va_sql_params);
+													$va_in_use_list = $qr_in_use->getAllFieldValues($vs_rel_pk);
+												}
 											}
 										}
 									}
 									
 									while($qr_res->nextHit()) {
 										if (($va_tmp[0] == 'ca_list_items') && (!$qr_res->get('parent_id'))) { continue; }
-										if (is_array($va_access) && !in_array($qr_res->get($va_tmp[0].'.access'), $va_access)) { continue; }
-										if (is_array($va_in_use_list) && !in_array($vn_item_id = $qr_res->get('item_id'), $va_in_use_list)) { continue; }
+										if (is_array($va_access) && sizeof($va_access) && !in_array($qr_res->get($va_tmp[0].'.access'), $va_access)) { continue; }
+										if (is_array($va_in_use_list) && !in_array($vn_item_id = $qr_res->get($vs_rel_pk), $va_in_use_list)) { continue; }
 										$va_opts[$qr_res->get($va_tmp[0].".preferred_labels.{$vs_label_display_field}")] = $qr_res->get($ps_field);
 									}
 									uksort($va_opts, "strnatcasecmp");
@@ -3071,11 +3074,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	* to use it.
 	*
 	* @param mixed $pm_screen
-	* @param RequestHTTP $ps_request
+	* @param RequestHTTP $po_request
 	* @param array $pa_options Options are:
 	*		dryRun = Go through the motions of saving but don't actually write information to the database
 	*		batch = Process save in "batch" mode. Specifically this means honoring batch mode settings (add, replace, remove), skipping bundles that are not supported in batch mode and ignoring updates
 	*		existingRepresentationMap = an array of representation_ids key'ed on file path. If set saveBundlesForScreen() use link the specified representation to the row it is saving rather than processing the uploaded file. saveBundlesForScreen() will build the map as it goes, adding newly uploaded files. If you want it to process a file in a batch situation where it should be processed the first time and linked subsequently then pass an empty array here. saveBundlesForScreen() will use the empty array to build the map.
+	 * @return mixed
 	*/
 	public function saveBundlesForScreen($pm_screen, $po_request, &$pa_options) {
 		$vb_we_set_transaction = false;
@@ -3297,9 +3301,14 @@ if (!$vb_batch) {
 						if (isset($va_attributes_to_delete[$vn_attribute_id]) && $va_attributes_to_delete[$vn_attribute_id]) { continue; }
 						
 						$vn_element_set_id = $o_attr->getElementID();
+
+						// skip element
+						if($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_set_id.'_dont_save_'.$vn_attribute_id, pInteger)) {
+							continue;
+						}
 						
 						$va_attr_update = array(
-							'locale_id' =>  $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_set_id.'_locale_id_'.$vn_attribute_id, pString) 
+							'locale_id' =>  $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_set_id.'_locale_id_'.$vn_attribute_id, pString)
 						);
 						
 						//
@@ -4280,7 +4289,7 @@ if (!$vb_batch) {
 									$po_request->addActionErrors($this->errors(), 'ca_objects_location', 'general');
 								}
 							} else {
-								$o_error = new Error(2593, _t('No relationship type configured'), 'BundleableLabelableBaseModelWithAttributes->saveBundlesForScreen', 'general', false, false);
+								$o_error = new ApplicationError(2593, _t('No relationship type configured'), 'BundleableLabelableBaseModelWithAttributes->saveBundlesForScreen', 'general', false, false);
 								$po_request->addActionError($o_error, 'ca_objects_location', 'general');
 							}
 						}
@@ -4370,7 +4379,7 @@ if (!$vb_batch) {
 					foreach($va_errs_by_bundle as $vn_i => $va_rule) {
 						$vs_bundle = str_replace($this->tableName().".", "", $vs_bundle);
 				
-						$po_request->addActionErrors(array(new Error(1100, $va_rule['rule_settings']['violationMessage'], "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", 'MetadataDictionary', false,false)), $vs_bundle, 'general');
+						$po_request->addActionErrors(array(new ApplicationError(1100, $va_rule['rule_settings']['violationMessage'], "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", 'MetadataDictionary', false,false)), $vs_bundle, 'general');
 					}
 				}
 				return false; 
@@ -4488,11 +4497,11 @@ if (!$vb_batch) {
 		// Check min/max
 		$vn_total_rel_count = (sizeof($va_rel_items) + sizeof($va_rels_to_add) - sizeof($va_rels_to_delete));
 		if ($vn_min_relationships && ($vn_total_rel_count < $vn_min_relationships)) {
-			$po_request->addActionErrors(array(new Error(2590, ($vn_min_relationships == 1) ? _t('There must be at least %1 relationship for %2', $vn_min_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')) : _t('There must be at least %1 relationships for %2', $vn_min_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundle_name);
+			$po_request->addActionErrors(array(new ApplicationError(2590, ($vn_min_relationships == 1) ? _t('There must be at least %1 relationship for %2', $vn_min_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')) : _t('There must be at least %1 relationships for %2', $vn_min_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundle_name);
 			return false;
 		}
 		if ($vn_max_relationships && ($vn_total_rel_count > $vn_max_relationships)) {
-			$po_request->addActionErrors(array(new Error(2590, ($vn_max_relationships == 1) ? _t('There must be no more than %1 relationship for %2', $vn_max_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')) : _t('There must be no more than %1 relationships for %2', $vn_max_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundle_name);
+			$po_request->addActionErrors(array(new ApplicationError(2590, ($vn_max_relationships == 1) ? _t('There must be no more than %1 relationship for %2', $vn_max_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')) : _t('There must be no more than %1 relationships for %2', $vn_max_relationships, $this->getAppDatamodel()->getTableProperty($ps_bundle_name, 'NAME_PLURAL')), 'BundleableLabelableBaseModelWithAttributes::_processRelated()', null, null, false, false)), $ps_bundle_name);
 			return false;
 		}
 		
@@ -4663,7 +4672,7 @@ if (!$vb_batch) {
 		$vb_uses_effective_dates = false;
 
 		if(isset($pa_options['sort']) && !is_array($pa_options['sort'])) { $pa_options['sort'] = array($pa_options['sort']); }
-		$pa_sort_fields = (isset($pa_options['sort']) && is_array($pa_options['sort'])) ? $pa_options['sort'] : null;
+		$pa_sort_fields = (isset($pa_options['sort']) && is_array($pa_options['sort'])) ? array_filter($pa_options['sort'], "strlen") : null;
 		$ps_sort_direction = (isset($pa_options['sortDirection']) && $pa_options['sortDirection']) ? $pa_options['sortDirection'] : null;
 
 		if (!$pa_row_ids && ($pn_row_id > 0)) {
@@ -5435,21 +5444,23 @@ if (!$vb_batch) {
 		//
 		// Sort on fields if specified
 		//
-		if (is_array($pa_sort_fields) && sizeof($va_rels)) {
-			$va_ids = array();
+		if (is_array($pa_sort_fields) && sizeof($pa_sort_fields) && sizeof($va_rels)) {
+			$va_ids = $va_ids_to_rel_ids = array();
 			$vs_rel_pk = $t_rel_item->primaryKey();
 			foreach($va_rels as $vn_i => $va_rel) {
 				$va_ids[$vn_i] = $va_rel[$vs_rel_pk];
+				$va_ids_to_rel_ids[$va_rel[$vs_rel_pk]][] = $vn_i;
 			}
 			if (sizeof($va_ids) > 0) {
-				$qr_sort = caMakeSearchResult($vs_related_table_name, array_values($va_ids), array('sort' => $pa_sort_fields));
+				$qr_sort = caMakeSearchResult($vs_related_table_name, array_values($va_ids), array('sort' => $pa_sort_fields, 'sortDirection' => $ps_sort_direction));
 				
-				$va_ids_to_rel_ids = array_flip($va_ids);
 				$va_rels_sorted = array();
 				
 				$vs_rel_pk_full = $t_rel_item->primaryKey(true);
 				while($qr_sort->nextHit()) {
-					$va_rels_sorted[$vn_id = $va_ids_to_rel_ids[$qr_sort->get($vs_rel_pk_full)]] = $va_rels[$vn_id];
+					foreach($va_ids_to_rel_ids[$qr_sort->get($vs_rel_pk_full)] as $vn_rel_id) {
+						$va_rels_sorted[$vn_rel_id] = $va_rels[$vn_rel_id];
+					}
 				}
 				$va_rels = $va_rels_sorted;
 			}
@@ -5495,8 +5506,6 @@ if (!$vb_batch) {
 				return $va_rels;
 				break;
 		}
-
-		return $va_rels;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**

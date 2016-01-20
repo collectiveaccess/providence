@@ -11865,6 +11865,17 @@
             </labels>
             <settings/>
         </metadataElement>
+            <metadataElement code="provenance_lugt" datatype="Text">
+              <labels>
+                <label locale="en_US">
+                  <name>Lugt Number</name>
+                </label>
+              </labels>
+              <settings>
+                <setting name="fieldWidth">40</setting>
+                <setting name="fieldHeight">1</setting>
+              </settings>
+            </metadataElement>
           </elements>
         </metadataElement>
         <metadataElement code="provenance_line3" datatype="Container">
@@ -20315,6 +20326,7 @@
                 <setting name="restrict_to_relationship_types">co_creator</setting>
                 <setting name="restrict_to_relationship_types">copy</setting>
                 <setting name="restrict_to_relationship_types">copyright</setting>
+                <setting name="restrict_to_relationship_types">copyright_institution</setting>
                 <setting name="restrict_to_relationship_types">designer</setting>
                 <setting name="restrict_to_relationship_types">distributer</setting>
                 <setting name="restrict_to_relationship_types">engraver</setting>
@@ -20486,6 +20498,7 @@
                 <setting name="restrict_to_relationship_types">co_creator</setting>
                 <setting name="restrict_to_relationship_types">copy</setting>
                 <setting name="restrict_to_relationship_types">copyright</setting>
+                <setting name="restrict_to_relationship_types">copyright_institution</setting>
                 <setting name="restrict_to_relationship_types">designer</setting>
                 <setting name="restrict_to_relationship_types">distributer</setting>
                 <setting name="restrict_to_relationship_types">engraver</setting>
@@ -24028,10 +24041,11 @@ Lot Type: <unit>^ca_object_lots.lot_status_id <br/></unit>
             <setting name="display_template"><![CDATA[<unit relativeTo="ca_objects">
 <l>^ca_objects.preferred_labels (^ca_objects.idno)</l><br>
 Artist: <unit relativeTo="ca_objects"><unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="artist">^ca_entities.preferred_labels</unit></unit><br>
-Credit Line: <unit relativeTo="ca_objects.credit_line" delimiter=" - " sort="ca_objects.credit_line.credit_date" sortDirection="DESC"><if rule="^ca_objects.credit_line.credit_type =~ /current/">^ca_objects.credit_line.credit_text, Approved: ^ca_objects.credit_line.credit_approved (^ca_objects.credit_line.credit_type)</if> ^ca_objects.credit_line.credit_date</unit></br>
-Interstitial Exhibition Object ID: <unit relativeTo="ca_objects_x_occurrences"> ^ca_objects_x_occurrences.exh_object_id<br/>
-Interstitial Section: ^ca_objects_x_occurrences.exh_object_section<br/>
-Interstitial Sort Order: ^ca_objects_x_occurrences.exh_object_sort </unit></unit>]]></setting>
+Credit Line: <unit relativeTo="ca_objects.credit_line"><if rule="^ca_objects.credit_line.credit_type =~ /current/">^ca_objects.credit_line.credit_text</if></unit><br/>
+Interstitial Credit Line: <unit relativeTo="ca_objects_x_occurrences"> ^ca_objects_x_occurrences.exh_object_label</unit><br/>
+Interstitial Exhibition Object ID: <unit relativeTo="ca_objects_x_occurrences"> ^ca_objects_x_occurrences.exh_object_id</unit><br/>
+Interstitial Section: <unit relativeTo="ca_objects_x_occurrences">^ca_objects_x_occurrences.exh_object_section</unit><br/>
+</unit>]]></setting>
           </settings>
         </placement>
           <placement code="ca_lightweight">
@@ -24043,10 +24057,11 @@ Interstitial Sort Order: ^ca_objects_x_occurrences.exh_object_sort </unit></unit
             <setting name="display_template"><![CDATA[<unit relativeTo="ca_objects">
 <l>^ca_objects.preferred_labels (^ca_objects.idno)</l><br>
 Artist: <unit relativeTo="ca_objects"><unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="artist">^ca_entities.preferred_labels</unit></unit><br>
-Credit Line: <unit relativeTo="ca_objects.credit_line" delimiter=" - " sort="ca_objects.credit_line.credit_date" sortDirection="DESC"><if rule="^ca_objects.credit_line.credit_type =~ /current/">^ca_objects.credit_line.credit_text, Approved: ^ca_objects.credit_line.credit_approved (^ca_objects.credit_line.credit_type)</if> ^ca_objects.credit_line.credit_date</unit></br>
-Interstitial Exhibition Object ID: <unit relativeTo="ca_objects_x_occurrences"> ^ca_objects_x_occurrences.exh_object_id<br/>
-Interstitial Section: ^ca_objects_x_occurrences.exh_object_section<br/>
-Interstitial Sort Order: ^ca_objects_x_occurrences.exh_object_sort </unit></unit>]]></setting>
+Credit Line: <unit relativeTo="ca_objects.credit_line"><if rule="^ca_objects.credit_line.credit_type =~ /current/">^ca_objects.credit_line.credit_text</if></unit><br/>
+Interstitial Credit Line: <unit relativeTo="ca_objects_x_occurrences"> ^ca_objects_x_occurrences.exh_object_label</unit><br/>
+Interstitial Exhibition Object ID: <unit relativeTo="ca_objects_x_occurrences"> ^ca_objects_x_occurrences.exh_object_id</unit><br/>
+Interstitial Section: <unit relativeTo="ca_objects_x_occurrences">^ca_objects_x_occurrences.exh_object_section</unit><br/>
+</unit>]]></setting>
           </settings>
         </placement>
           </bundlePlacements>

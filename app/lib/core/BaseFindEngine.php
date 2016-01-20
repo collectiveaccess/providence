@@ -285,7 +285,7 @@
 			
 			// TODO: allow override of this with field-specific directions 
 			// Default direction
-			if (!in_array(strtolower($ps_direction), array('asc', 'desc'))) { $ps_direction = 'asc'; }
+			if (!in_array($ps_direction = strtolower($ps_direction), array('asc', 'desc'))) { $ps_direction = 'asc'; }
 			
 			// Don't try to sort empty results
 			if (!is_array($pa_hits) || !sizeof($pa_hits)) { return $pa_hits; }
@@ -327,8 +327,6 @@
 						
 							switch($vn_datatype = (int)$t_element->get('datatype')) {
 								case __CA_ATTRIBUTE_VALUE_LIST__:
-									$vs_sortable_value_fld = $vs_sort_field = 'name_plural';
-									
 									$vs_sql = "
 										SELECT attr.row_id, lower(lil.name_plural) name_plural
 										FROM ca_attributes attr
@@ -530,10 +528,10 @@
 		 * @return array
 		 */
 		private function _doSort(&$pa_hits, $pa_sortable_values, $ps_direction='asc', $pa_options=null) {
-			if (!in_array(strtolower($ps_direction), array('asc', 'desc'))) { $ps_direction = 'asc'; }
+			if (!in_array($ps_direction = strtolower($ps_direction), array('asc', 'desc'))) { $ps_direction = 'asc'; }
 			$va_sorted_rows = array();
 			
-			if (sizeof($pa_hits) < 10000) {
+			if (sizeof($pa_hits) < 1000000) {
 				//
 				// Perform sort in-memory
 				//
