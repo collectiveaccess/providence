@@ -31,3 +31,4 @@ branches:
     - develop
     - master
     - master-fix
+    - dev/elasticSearchRewrite

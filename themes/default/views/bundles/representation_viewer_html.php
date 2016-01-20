@@ -476,6 +476,10 @@
 	}
 ?>
 	<div id="<?php print ($vs_display_type == 'media_overlay') ? 'caMediaOverlayContent' : 'caMediaDisplayContent'; ?>">
+		<div class="caMediaOverlayProgress" id="caMediaOverlayProgress">
+			<div class="caMediaOverlayProgressContent">
+			</div>
+		</div>
 <?php
 	// return standard tag
 	if (!is_array($va_display_options)) { $va_display_options = array(); }
@@ -486,11 +490,11 @@
 			'viewer_base_url' => $this->request->getBaseUrlPath(),
 			'annotation_load_url' => caNavUrl($this->request, '*', '*', 'GetAnnotations', array('representation_id' => (int)$t_rep->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey())),
 			'annotation_save_url' => caNavUrl($this->request, '*', '*', 'SaveAnnotations', array('representation_id' => (int)$t_rep->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey())),
-			'download_url' => caNavUrl($this->request, '*', '*', 'DownloadRepresentation', array('representation_id' => (int)$t_rep->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey(), 'version' => 'original')),
+			'download_url' => caNavUrl($this->request, '*', '*', 'DownloadMedia', array('representation_id' => (int)$t_rep->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey(), 'version' => 'original')),
 			'help_load_url' => caNavUrl($this->request, '*', '*', 'ViewerHelp', array()),
 			'annotationEditorPanel' => 'caRepresentationAnnotationEditor',
 			'annotationEditorUrl' => caNavUrl($this->request, 'editor/representation_annotations', 'RepresentationAnnotationQuickAdd', 'Form', array('representation_id' => (int)$t_rep->getPrimaryKey())),
-			'captions' => $t_rep->getCaptionFileList()
+			'captions' => $t_rep->getCaptionFileList(), 'progress_id' => 'caMediaOverlayProgress'
 		)));
 	} else {
 		$vs_tag = $t_value->getMediaTag('value_blob', $vs_show_version, array_merge($va_display_options, array(

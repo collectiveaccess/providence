@@ -563,6 +563,7 @@
 
  			$vs_import_mode 					= $pa_options['importMode'];
  			$vs_match_mode 						= $pa_options['matchMode'];
+ 			$vs_match_type						= $pa_options['matchType'];
  			$vn_type_id 						= $pa_options[$vs_import_target.'_type_id'];
  			$vn_rep_type_id 					= $pa_options['ca_object_representations_type_id'];
 
@@ -778,6 +779,7 @@
 
 							foreach($va_names_to_match as $vs_match_name) {
 								if (preg_match('!'.$vs_regex.'!', $vs_match_name, $va_matches)) {
+									if (!$va_matches[1]) { if (!($va_matches[1] = $va_matches[0])) { continue; } }	// skip blank matches
 
 									$o_log->logDebug(_t("Matched name %1 on regex %2",$vs_match_name,$vs_regex));
 
@@ -791,27 +793,37 @@
 
 									if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'ALWAYS_MATCH'))) {
 										if(!is_array($va_fields_to_match_on = $po_request->config->getList('batch_media_import_match_on')) || !sizeof($va_fields_to_match_on)) {
-											$batch_media_import_match_on = array('idno');
+											$va_fields_to_match_on = array('idno');
 										}
 
 										$vs_bool = 'OR';
 										$va_values = array();
 										foreach($va_fields_to_match_on as $vs_fld) {
+											switch($vs_match_type) {
+												case 'STARTS':
+													$vs_match_value = $va_matches[1]."%";
+													break;
+												case 'ENDS':
+													$vs_match_value = "%".$va_matches[1];
+													break;
+												case 'CONTAINS':
+													$vs_match_value = "%".$va_matches[1]."%";
+													break;
+												case 'EXACT':
+												default:
+													$vs_match_value = $va_matches[1];
+													break;
+											}
 											if (in_array($vs_fld, array('preferred_labels', 'nonpreferred_labels'))) {
-												$va_values[$vs_fld] = array($vs_fld => array('name' => $va_matches[1]));
+												$va_values[$vs_fld] = array($vs_fld => array('name' => $vs_match_value));
 											} else {
-												$va_values[$vs_fld] = $va_matches[1];
+												$va_values[$vs_fld] = $vs_match_value;
 											}
 										}
-
-										if (is_array($va_limit_matching_to_type_ids) && sizeof($va_limit_matching_to_type_ids) > 0) {
-											$va_values['type_id'] = $va_limit_matching_to_type_ids;
-											$vs_bool = 'AND';
-										}
-
+										
 										$o_log->logDebug("Trying to find records using boolean {$vs_bool} and values ".print_r($va_values,true));
 
-										if (class_exists($vs_import_target) && ($vn_id = $vs_import_target::find($va_values, array('returnAs' => 'firstId', 'boolean' => $vs_bool)))) {
+										if (class_exists($vs_import_target) && ($vn_id = $vs_import_target::find($va_values, array('returnAs' => 'firstId', 'allowWildcards' => true, 'boolean' => $vs_bool, 'restrictToTypes' => $va_limit_matching_to_type_ids)))) {
 											if ($t_instance->load($vn_id)) {
 												$va_notices[$vs_relative_directory.'/'.$vs_match_name.'_match'] = array(
 													'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
@@ -831,7 +843,7 @@
 						}
 					}
 				}
-
+			
 				if (!$t_instance->getPrimaryKey()) {
 					// Use filename as idno if all else fails
 					if ($t_instance->load(array('idno' => $f, 'deleted' => 0))) {

@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -59,6 +59,7 @@ var caUI = caUI || {};
         // Define methods
         // --------------------------------------------------------------------------------
         that.processDependentTemplate = function(template, values) {
+        	if (!template) return '';
             var t = template;
 
             // get tags from template

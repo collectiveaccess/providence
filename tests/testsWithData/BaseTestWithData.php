@@ -45,6 +45,14 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 	 */
 	private $opo_request = null;
 
+	/**
+	 * Quick switch to turn off side effect checks and record deletion after the test.
+	 * Can be useful for search testing in some cases where you actually want to look
+	 * at the indexing after the test ran.
+	 * @var bool
+	 */
+	private $opb_care_about_side_effects = true;
+
 	static $opa_valid_tables = array('ca_objects', 'ca_entities', 'ca_occurrences', 'ca_movements', 'ca_loans', 'ca_object_lots', 'ca_storage_locations', 'ca_places', 'ca_item_comments');
 	# -------------------------------------------------------
 	/**
@@ -58,7 +66,9 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 		define('__CA_APP_TYPE__', 'PROVIDENCE');
 
 		// make sure there are no side-effects caused by lingering recods
-		$this->checkRecordCounts();
+		if($this->opb_care_about_side_effects) {
+			$this->checkRecordCounts();
+		}
 	}
 	# -------------------------------------------------------
 	/**
@@ -96,31 +106,24 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 	 * Delete all records we created for this test to avoid side effects with other tests
 	 */
 	public function tearDown() {
-		$o_dm = Datamodel::load();
-		foreach($this->opa_record_map as $vs_table => &$va_records) {
-			$t_instance = $o_dm->getInstance($vs_table);
-			foreach($va_records as $vn_id) {
-				if($t_instance->load($vn_id)) {
-					$t_instance->setMode(ACCESS_WRITE);
-					$t_instance->delete(true, array('hard' => true));
+		if($this->opb_care_about_side_effects) {
+			$o_dm = Datamodel::load();
+			foreach($this->opa_record_map as $vs_table => &$va_records) {
+				$t_instance = $o_dm->getInstance($vs_table);
+				// delete in reverse order so that we can properly
+				// catch potential hierarchical relationships
+				rsort($va_records);
+				foreach($va_records as $vn_id) {
+					if($t_instance->load($vn_id)) {
+						$t_instance->setMode(ACCESS_WRITE);
+						$t_instance->delete(true, array('hard' => true));
+					}
 				}
 			}
 
+			// check record counts again (make sure there are no lingering records)
+			$this->checkRecordCounts();
 		}
-
-		// hack to get around storage loation delete weirdness
-		// (which is caused by hiearchical relationships - they'd have to be deleted in the right order; but why bother, right?)
-		$o_db = new Db();
-		$o_db->query("DELETE FROM ca_objects_x_storage_locations");
-		$o_db->query("DELETE FROM ca_storage_location_labels");
-		$o_db->query("DELETE FROM ca_storage_locations WHERE location_id>1 ORDER BY location_id DESC");
-
-		// reindex
-		$o_si = new SearchIndexer();
-		$o_si->reindex(array_keys($this->opa_record_map), array('showProgress' => false, 'interactiveProgressDisplay' => false));
-
-		// check record counts again (make sure there are no lingering records)
-		$this->checkRecordCounts();
 	}
 	# -------------------------------------------------------
 	private function checkRecordCounts() {

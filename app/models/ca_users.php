@@ -323,7 +323,7 @@ class ca_users extends BaseModel {
 	public function __construct($pn_id=null, $pb_use_cache=false) {
 		parent::__construct($pn_id, $pb_use_cache);	# call superclass constructor	
 		
-		$this->opo_auth_config = Configuration::load($this->getAppConfig()->get("authentication_config"));
+		$this->opo_auth_config = Configuration::load(__CA_CONF_DIR__.'/authentication.conf');
 		$this->opo_log = new Eventlog();
 	}
 	# ----------------------------------------
@@ -2328,7 +2328,7 @@ class ca_users extends BaseModel {
 	
 	public function loadUserPrefDefs($pb_force_reload=false) {
 		if (!$this->_user_pref_defs || $pb_force_reload) {
-			if ($vs_user_pref_def_path = $this->getAppConfig()->get("user_pref_defs")) {
+			if ($vs_user_pref_def_path = __CA_CONF_DIR__."/user_pref_defs.conf") {
 				$this->_user_pref_defs = Configuration::load($vs_user_pref_def_path, $pb_force_reload);
 				return true;
 			}

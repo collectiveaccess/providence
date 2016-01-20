@@ -269,7 +269,7 @@ class ca_search_indexing_queue extends BaseModel {
 
 			return sem_acquire(self::$s_lock_resource);
 		} else {
-			$vs_temp_file = caGetTempDirPath() . PATH_SEPARATOR . 'search_indexing_queue.lock';
+			$vs_temp_file = caGetTempDirPath() . DIRECTORY_SEPARATOR . 'search_indexing_queue.lock';
 
 			return (bool) (self::$s_lock_resource = @fopen($vs_temp_file, 'x'));
 		}
@@ -286,7 +286,7 @@ class ca_search_indexing_queue extends BaseModel {
 		} else {
 			if(is_resource(self::$s_lock_resource)) {
 				@fclose(self::$s_lock_resource);
-				@unlink(caGetTempDirPath() . PATH_SEPARATOR . 'search_indexing_queue.lock');
+				@unlink(caGetTempDirPath() . DIRECTORY_SEPARATOR . 'search_indexing_queue.lock');
 			}
 		}
 	}

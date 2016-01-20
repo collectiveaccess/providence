@@ -87,6 +87,14 @@ class AttributeGetTest extends BaseTestWithData {
 					),
 				),
 
+				// Date
+				'date' => array(
+					array(
+						'dc_dates_types' => 'created',
+						'dates_value' => 'today'
+					)
+				),
+
 				// Integer
 				'integer_test' => array(
 					array(
@@ -141,7 +149,9 @@ class AttributeGetTest extends BaseTestWithData {
 	}
 	# -------------------------------------------------------
 	public function testGets() {
-	if (false){
+		$vm_ret = $this->opt_object->get('ca_objects.date.dc_dates_types', array('returnIdno' => true));
+		$this->assertEquals('created', $vm_ret);
+
 		$vm_ret = $this->opt_object->get('ca_objects.type_id', array('convertCodesToDisplayText' => true));
 		$this->assertEquals('Image', $vm_ret);
 
@@ -168,7 +178,7 @@ class AttributeGetTest extends BaseTestWithData {
 
 		$vm_ret = $this->opt_object->get('ca_objects.georeference');
 		$this->assertRegExp("/^1600 Amphitheatre Parkway, Mountain View, CA \[[\d\.\,\-]+\]/", $vm_ret);
-}
+
 		// This is how we fetch the bundle preview for containers:
 		$vs_template = "<unit relativeTo='ca_objects.dimensions'><if rule='^measurement_notes =~ /foo/'>^ca_objects.dimensions.dimensions_length</if></unit>";
 		$vm_ret = $this->opt_object->getAttributesForDisplay('dimensions', $vs_template);

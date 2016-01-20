@@ -288,7 +288,24 @@ class Installer {
 				}
 			}
 		}
+
+		// nuke search index if we using ElasticSearch (the SqlSearch index is nuked when we drop the database)
+		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
+			require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
+			$o_es = new WLPlugSearchEngineElasticSearch();
+			$o_es->truncateIndex(null, true);
+		}
+
 		return true;
+	}
+	# --------------------------------------------------
+	public function performPostInstallTasks() {
+		$o_config = Configuration::load();
+		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
+			require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
+			$o_es = new WLPlugSearchEngineElasticSearch();
+			$o_es->refreshMapping(true);
+		}
 	}
 	# --------------------------------------------------
 	/**

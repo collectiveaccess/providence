@@ -241,6 +241,15 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 	}
 	# ------------------------------------------------------------------
 	/**
+	 * Returns name of table
+	 *
+	 * @return string 
+	 */
+	public function tableName() {
+		return $this->ops_table_name;
+	}
+	# ------------------------------------------------------------------
+	/**
 	 * Intercept calls to get*ID, where * = the singular name of the authority attribute (Eg. "Entity")
 	 * and reroute to getID(). The provides support for legacy table-specific getID() calls.
 	 */
