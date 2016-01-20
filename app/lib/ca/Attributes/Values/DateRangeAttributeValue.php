@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -246,7 +246,10 @@
 			if ($vs_date_format == 'original') {
 				return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = $this->ops_text_value;
 			} else {
-				$va_settings = MemoryCache::fetch($this->getElementID(), 'ElementSettings');
+				if (!is_array($va_settings = MemoryCache::fetch($this->getElementID(), 'ElementSettings'))) {
+					$t_element = new ca_metadata_elements($this->getElementID());
+					$va_settings = MemoryCache::fetch($this->getElementID(), 'ElementSettings');
+				}
 				DateRangeAttributeValue::$o_tep->setHistoricTimestamps($this->opn_start_date, $this->opn_end_date);
 				return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = DateRangeAttributeValue::$o_tep->getText(array_merge(array('isLifespan' => $va_settings['isLifespan']), $pa_options)); //$this->ops_text_value;
 			}
