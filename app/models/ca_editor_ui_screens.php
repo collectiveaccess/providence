@@ -562,6 +562,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'label' => _t('Do not show delete button'),
 								'description' => _t('If checked the delete relationship control will not be provided.')
 							),
+							'display_template' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_FIELD,
+								'default' => '^' . $t_rel->tableName() . '.preferred_labels',
+								'width' => "275px", 'height' => 4,
+								'label' => _t('Relationship display template'),
+								'description' => _t('Layout for relationship when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
+							),
 						);
 						break;
 					} else {
