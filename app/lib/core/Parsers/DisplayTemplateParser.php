@@ -784,9 +784,12 @@ class DisplayTemplateParser {
 						$va_sortables = array_slice($va_sortables, $vn_start, ($vn_length > 0) ? $vn_length : null);
 					}
 					
-					foreach($va_sortables as $i => $va_sort_values) {
-						foreach($va_sort_values as $vn_index => $vs_sort_value) {
-							$va_tag_vals[$vn_index]['__sort__'] .= $vs_sort_value;
+					if(is_array($va_sortables)) {
+						foreach($va_sortables as $i => $va_sort_values) {
+							if (!is_array($va_sort_values)) { continue; }
+							foreach($va_sort_values as $vn_index => $vs_sort_value) {
+								$va_tag_vals[$vn_index]['__sort__'] .= $vs_sort_value;
+							}
 						}
 					}
 				}
