@@ -283,16 +283,8 @@ class DisplayTemplateParser {
 		foreach($po_nodes as $vn_index => $o_node) {
 			switch($vs_tag = $o_node->tag) {
 				case 'unit':
-					// noop
+					// noop - units are processed recursively so no need to look for tags now
 					break;	
-				case 'ifcount':
-				case 'ifdef':
-				case 'ifnotdef':					
-					// noop
-					break;
-				case 'expression':
-					// noop
-					break;
 				case 'if':
 					$va_codes = caGetTemplateTags((string)$o_node->rule, $pa_options, null);
 					foreach($va_codes as $vs_code) { 
@@ -300,7 +292,7 @@ class DisplayTemplateParser {
 						if ($ps_relative_to && !$o_dm->tableExists($va_code[0])) { $vs_code = "{$ps_relative_to}.{$vs_code}"; }
 						$pa_tags[$vs_code] = true; 
 					}
-					break;
+					// fall through to default case
 				default:
 					$va_codes = caGetTemplateTags((string)$o_node->html(), $pa_options);
 					foreach($va_codes as $vs_code) { 
