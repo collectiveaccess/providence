@@ -410,20 +410,20 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			// quickly delete attribute values
 			$this->getDb()->query('
 				DELETE FROM ca_attribute_values WHERE attribute_id IN
-				(SELECT attribute_id FROM ca_attributes WHERE table_num=? and row_id IN (SELECT item_id FROM ca_set_items WHERE set_id=7))
-			', $this->tableNum(), $this->getPrimaryKey());
+				(SELECT attribute_id FROM ca_attributes WHERE table_num=? and row_id IN (SELECT item_id FROM ca_set_items WHERE set_id = ?))
+			', array($this->tableNum(), $this->getPrimaryKey()));
 
 			// quickly delete attributes
 			$this->getDb()->query('
-				DELETE FROM ca_attributes WHERE table_num=? and row_id IN (SELECT item_id FROM ca_set_items WHERE set_id=7)
-			', $this->tableNum(), $this->getPrimaryKey());
+				DELETE FROM ca_attributes WHERE table_num=? and row_id IN (SELECT item_id FROM ca_set_items WHERE set_id = ?)
+			', array($this->tableNum(), $this->getPrimaryKey()));
 
 			// get list of set item ids
-			$qr_items = $this->getDb()->query('SELECT item_id FROM ca_set_items WHERE set_id=?', $this->getPrimaryKey());
+			$qr_items = $this->getDb()->query('SELECT item_id FROM ca_set_items WHERE set_id = ?', array($this->getPrimaryKey()));
 			$va_item_ids = $qr_items->getAllFieldValues('item_id');
 
 			// nuke set items
-			$this->getDb()->query('DELETE FROM ca_set_items WHERE set_id=?', $this->getPrimaryKey());
+			$this->getDb()->query('DELETE FROM ca_set_items WHERE set_id = ?', array($this->getPrimaryKey()));
 
 			// remove search indexing for deleted set items
 			foreach($va_item_ids as $vn_item_id) {
@@ -435,8 +435,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			if(!caGetOption('hard', $pa_options, false)) { // only applies if we don't hard-delete
 				$vb_we_set_transaction = false;
 				if (!$this->inTransaction()) {
-					$o_t = new Transaction($this->getDb());
-					$this->setTransaction($o_t);
+					$this->setTransaction($o_t = new Transaction($this->getDb()));
 					$vb_we_set_transaction = true;
 				}
 				$this->set('set_code', $this->get('set_code') . '_' . time());
@@ -1144,7 +1143,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		if (!$this->inTransaction()) {
 			$o_trans = new Transaction($this->getDb());
-			$vb_web_set_transaction = true;
+			$vb_we_set_transaction = true;
 		} else {
 			$o_trans = $this->getTransaction();
 		}
@@ -1174,6 +1173,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		if ($t_item->numErrors()) {
 			$this->errors = $t_item->errors;
+			if ($vb_we_set_transaction) { $o_trans->rollback();}
 			return false;
 		}
 		
@@ -1185,6 +1185,8 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 				);
 				if ($t_item->numErrors()) {
 					$this->errors = $t_item->errors;
+					
+					if ($vb_we_set_transaction) { $o_trans->rollback();}
 					return false;
 				}
 			}
@@ -1199,9 +1201,13 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 			if ($t_item->numErrors()) {
 				$t_item->delete();
 				$this->errors = $t_item->errors;
+				
+				if ($vb_we_set_transaction) { $o_trans->rollback();}
 				return false;
 			}
 		}
+		
+		if ($vb_we_set_transaction) { $o_trans->commit();}
 		return (int)$t_item->getPrimaryKey();
 	}
 	# ------------------------------------------------------
@@ -1411,10 +1417,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$va_row_ranks = $this->getRowIDRanks($pa_options);	// get current ranks
 		$vn_i = 0;
 		
-		$vb_web_set_transaction = false;
+		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
 			$o_trans = new Transaction($this->getDb());
-			$vb_web_set_transaction = true;
+			$vb_we_set_transaction = true;
 		} else {
 			$o_trans = $this->getTransaction();
 		}
@@ -1495,9 +1501,9 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		
 		
 		if(sizeof($va_errors)) {
-			if ($vb_web_set_transaction) { $o_trans->rollback(); }
+			if ($vb_we_set_transaction) { $o_trans->rollback(); }
 		} else {
-			if ($vb_web_set_transaction) { $o_trans->commit(); }
+			if ($vb_we_set_transaction) { $o_trans->commit(); }
 		}
 		
 		return $va_errors;

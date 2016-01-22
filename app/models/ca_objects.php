@@ -1168,7 +1168,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 			$vs_display_template = $pb_display_label_only ? $vs_default_display_template : caGetOption('deaccession_displayTemplate', $pa_bundle_settings, $vs_default_display_template);
 			
 			if (!($pb_get_current_only && ($vn_date > $vn_current_date))) {
-				$va_history[$vn_date][] = array(
+				$va_history[$vn_date.(int)$this->getPrimaryKey()][] = array(
 					'type' => 'ca_objects_deaccession',
 					'id' => $this->getPrimaryKey(),
 					'display' => $this->getWithTemplate($vs_display_template),

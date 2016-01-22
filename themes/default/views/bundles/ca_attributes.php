@@ -61,8 +61,12 @@
 		$va_display_vals = array_shift($t_instance->getAttributeDisplayValues($va_root_element['element_id'], $t_instance->getPrimaryKey()));
 		$va_readonly_previews = array();
 		if(is_array($va_display_vals)) {
+			$vn_i = 0;
 			foreach($va_display_vals as $vn_attr_id => $va_display_val) {
-				$va_readonly_previews[$vn_attr_id] = caProcessTemplate($va_element_settings['readonlyTemplate'], $va_display_val);
+				$vs_template = "<unit relativeTo='{$t_instance->tableName()}.{$t_element->get('element_code')}' start='{$vn_i}' length='1'>{$va_element_settings['readonlyTemplate']}</unit>";
+				$va_readonly_previews[$vn_attr_id] =
+					caProcessTemplateForIDs($vs_template, $t_instance->tableName(), array($t_instance->getPrimaryKey()));
+				$vn_i++;
 			}
 		}
 	}
@@ -75,8 +79,10 @@
 	
 	$va_template_tags = $va_element_ids;
 
-	//$va_element_settings = $t_element->getSettings();
-	$vs_bundle_preview = $t_instance->getAttributesForDisplay($va_root_element['element_id'], null, array('showHierarchy' => true));
+	$va_element_settings = $t_element->getSettings();
+	if(isset($va_element_settings['displayTemplate']) && (strlen($va_element_settings['displayTemplate']) > 0)) {
+		$vs_bundle_preview = $t_instance->getAttributesForDisplay($va_root_element['element_id'], null, array('showHierarchy' => true));
+	}
 
 	if (sizeof($va_attribute_list)) {
 		$va_item_ids = array();
@@ -189,12 +195,12 @@ if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['set
 			foreach($va_elements as $vn_container_id => $va_element_list) {
 				if ($vn_container_id === '_locale_id') { continue; }
 ?>
-				<table class="attributeListItem" cellpadding="5" cellspacing="0">
+				<table class="attributeListItem">
 					<tr>
 <?php
 						foreach($va_element_list as $vs_element) {
 							// any <textarea> tags in the template needs to be renamed to 'textentry' for the template to work
-							print '<td class="attributeListItem" valign="top">'.str_replace("textarea", "textentry", $vs_element).'</td>';
+							print '<td class="attributeListItem">'.str_replace("textarea", "textentry", $vs_element).'</td>';
 						}
 ?>
 					</tr>

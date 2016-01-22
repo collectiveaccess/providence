@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1511,7 +1511,7 @@
 
 				if($va_elements_without_break_by_container[$va_element['parent_id']] == $va_elements_break_by_container[$va_element['parent_id']]+1){
 					$va_elements_without_break_by_container[$va_element['parent_id']] = 1;
-					$vs_br = "</td></tr></table><table class=\"attributeListItem\" cellpadding=\"0px\" cellspacing=\"0px\"><tr><td class=\"attributeListItem\">";
+					$vs_br = "</td></tr></table><table class=\"attributeListItem\"><tr><td class=\"attributeListItem\">";
 				} else {
 					$vs_br = "";
 				}
@@ -2615,11 +2615,14 @@
 		}
 		# ------------------------------------------------------------------
 		/**
-		 *
+		 * @param string $ps_element_code
+		 * @param null|int $pn_type_id
+		 * @param bool $pb_include_sub_element_codes
+		 * @return bool
 		 */
-		public function hasElement($ps_element_code, $pn_type_id=null) {
+		public function hasElement($ps_element_code, $pn_type_id=null, $pb_include_sub_element_codes=false) {
 			if (is_null($pn_type_id)) { $pn_type_id = $this->getTypeID(); }
-			$va_codes = $this->getApplicableElementCodes($pn_type_id, false, false);
+			$va_codes = $this->getApplicableElementCodes($pn_type_id, $pb_include_sub_element_codes);
 			return (in_array($ps_element_code, $va_codes));
 		}
 		# ------------------------------------------------------------------
