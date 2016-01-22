@@ -317,93 +317,8 @@
 			
 				if ($vs_field_table === $ps_table) {
 					// sort in primary table
-					if (!$t_table->hasField($vs_field)) { 
-						if ($t_element = ca_metadata_elements::getInstance($vs_subfield ? $vs_subfield : $vs_field)) {
-							// is metadata element
-							$vn_element_id = $t_element->getPrimaryKey();
-							if (!($vs_sortable_value_fld = Attribute::getSortFieldForDatatype($t_element->get('datatype')))) {
-								break;
-							}
-						
-							switch($vn_datatype = (int)$t_element->get('datatype')) {
-								case __CA_ATTRIBUTE_VALUE_LIST__:
-									$vs_sql = "
-										SELECT attr.row_id, lower(lil.name_plural) name_plural
-										FROM ca_attributes attr
-										INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
-										INNER JOIN ca_list_item_labels AS lil ON lil.item_id = attr_vals.item_id
-										WHERE
-											(attr_vals.element_id = ?) AND 
-											(attr.table_num = ?) AND 
-											(lil.name_plural IS NOT NULL) AND
-											(attr.row_id IN (?))
-									";
-									break;
-								case __CA_ATTRIBUTE_VALUE_OBJECTS__:
-								case __CA_ATTRIBUTE_VALUE_ENTITIES__:
-								case __CA_ATTRIBUTE_VALUE_PLACES__:
-								case __CA_ATTRIBUTE_VALUE_OCCURRENCES__:
-								case __CA_ATTRIBUTE_VALUE_COLLECTIONS__:
-								case __CA_ATTRIBUTE_VALUE_LOANS__:
-								case __CA_ATTRIBUTE_VALUE_MOVEMENTS__:
-								case __CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__:
-								case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
-									if (!($vs_sortable_value_fld = Attribute::getSortFieldForDatatype($vn_datatype))) {
-										break;
-									}
-
-									if (!($t_auth_instance = AuthorityAttributeValue::elementTypeToInstance($vn_datatype))) { break; }
-									
-									$vs_sql = "
-										SELECT attr.row_id, lower(lil.{$vs_sortable_value_fld}) {$vs_sortable_value_fld}
-										FROM ca_attributes attr
-										INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
-										INNER JOIN ".$t_auth_instance->getLabelTableName()." AS lil ON lil.value_integer1 = attr_vals.item_id
-										WHERE
-											(attr_vals.element_id = ?) AND 
-											(attr.table_num = ?) AND 
-											(lil.{$vs_sortable_value_fld} IS NOT NULL) AND
-											(attr.row_id IN (?))
-									";
-									break;
-								case __CA_ATTRIBUTE_VALUE_DATERANGE__:
-									$vs_sortable_value_fld = 'attr_vals.'.$vs_sortable_value_fld;
-									$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
-							
-									$vs_sql = "
-										SELECT attr.row_id, {$vs_sortable_value_fld}
-										FROM ca_attributes attr
-										INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
-										WHERE
-											(attr_vals.element_id = ?) AND 
-											(attr.table_num = ?) AND 
-											(attr_vals.{$vs_sort_field} IS NOT NULL) AND
-											(attr.row_id IN (?))
-									";
-									break;
-								default:
-									$vs_sortable_value_fld = 'attr_vals.'.$vs_sortable_value_fld;
-									$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
-							
-									$vs_sql = "
-										SELECT attr.row_id, lower({$vs_sortable_value_fld}) {$vs_sort_field}
-										FROM ca_attributes attr
-										INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
-										WHERE
-											(attr_vals.element_id = ?) AND 
-											(attr.table_num = ?) AND 
-											(attr_vals.{$vs_sort_field} IS NOT NULL) AND
-											(attr.row_id IN (?))
-									";
-									break;
-							}
-							$qr_sort = $this->opo_db->query($vs_sql, array((int)$vn_element_id, (int)$vn_table_num, $pa_hits));
-			
-							$va_sort_keys = array();
-							while($qr_sort->nextRow()) {
-								$va_row = $qr_sort->getRow();
-								$va_sort_keys[$va_row['row_id']] = $va_row[$vs_sort_field];
-							}
+					if (!$t_table->hasField($vs_field)) {
+						if($va_sort_keys = $this->_getSortKeysForElement($vs_subfield ? $vs_subfield : $vs_field, $vn_table_num, $pa_hits)) {
 							$va_sort_key_values[] = $va_sort_keys;
 						}
 					} else {
@@ -446,8 +361,6 @@
 						
 					} else {
 						$t_rel = $this->opo_datamodel->getInstanceByTableName($vs_field_table, true);
-						if (!$t_rel->hasField($vs_field)) { break; }
-						
 						$va_path = $this->opo_datamodel->getPath($ps_table, $vs_field_table);
 				
 						$vs_is_preferred_sql = null;
@@ -481,15 +394,22 @@
 						} else {
 							$va_rels = $this->opo_datamodel->getRelationships($ps_table, $vs_field_table);
 							if (!$va_rels) { break; }		// field is not valid
-											
-						
-							// TODO: allow sorting on related record attributes
-						
-							$va_joins[$vs_field_table] = 'INNER JOIN '.$vs_field_table.' ON '.$ps_table.'.'.$va_rels[$ps_table][$vs_field_table][0][0].' = '.$vs_field_table.'.'.$va_rels[$ps_table][$vs_field_table][0][1]."\n";
-			
-							// if the related supports preferred values (eg. *_labels tables) then only consider those in the sort
-							if ($t_rel->hasField('is_preferred')) {
-								$vs_is_preferred_sql = " {$vs_field_table}.is_preferred = 1";
+
+							if ($t_rel->hasField($vs_field)) { // intrinsic in related table
+								$va_joins[$vs_field_table] = 'INNER JOIN '.$vs_field_table.' ON '.$ps_table.'.'.$va_rels[$ps_table][$vs_field_table][0][0].' = '.$vs_field_table.'.'.$va_rels[$ps_table][$vs_field_table][0][1]."\n";
+
+								// if the related supports preferred values (eg. *_labels tables) then only consider those in the sort
+								if ($t_rel->hasField('is_preferred')) {
+									$vs_is_preferred_sql = " {$vs_field_table}.is_preferred = 1";
+								}
+							} else { // something else in related table (attribute!?)
+								$va_related_ids = $this->_mapRowIDsForPathLength2($vn_table_num, $t_rel->tableNum(), $pa_hits, $pa_options);
+								if($va_sort_keys = $this->_getSortKeysForElement($vs_subfield ? $vs_subfield : $vs_field, $t_rel->tableNum(), $va_related_ids)) {
+									// @todo "translate" those sort keys back to keys in the original table, i.e. ca_objects_x_occurrences.relation_id => ca_objects.object_id
+									$va_sort_key_values[] = $va_sort_keys;
+								}
+
+								continue; // skip that related table code below, we already have our values
 							}
 						}
 						
@@ -579,4 +499,140 @@
 			}
 		}
 		# ------------------------------------------------------------------
+		/**
+		 * @param string $ps_element_code
+		 * @param int $pn_table_num
+		 * @param array $pa_hits
+		 * @return array|bool
+		 */
+		private function _getSortKeysForElement($ps_element_code, $pn_table_num, $pa_hits) {
+			if (!($t_element = ca_metadata_elements::getInstance($ps_element_code))) {
+				return false;
+			}
+
+			// is metadata element
+			$vn_element_id = $t_element->getPrimaryKey();
+			if (!($vs_sortable_value_fld = Attribute::getSortFieldForDatatype($t_element->get('datatype')))) {
+				return false;
+			}
+
+			$vs_sql = null;
+
+			switch($vn_datatype = (int)$t_element->get('datatype')) {
+				case __CA_ATTRIBUTE_VALUE_LIST__:
+					$vs_sql = "
+							SELECT attr.row_id, lower(lil.name_plural) name_plural
+							FROM ca_attributes attr
+							INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
+							INNER JOIN ca_list_item_labels AS lil ON lil.item_id = attr_vals.item_id
+							WHERE
+								(attr_vals.element_id = ?) AND
+								(attr.table_num = ?) AND
+								(lil.name_plural IS NOT NULL) AND
+								(attr.row_id IN (?))
+						";
+					break;
+				case __CA_ATTRIBUTE_VALUE_OBJECTS__:
+				case __CA_ATTRIBUTE_VALUE_ENTITIES__:
+				case __CA_ATTRIBUTE_VALUE_PLACES__:
+				case __CA_ATTRIBUTE_VALUE_OCCURRENCES__:
+				case __CA_ATTRIBUTE_VALUE_COLLECTIONS__:
+				case __CA_ATTRIBUTE_VALUE_LOANS__:
+				case __CA_ATTRIBUTE_VALUE_MOVEMENTS__:
+				case __CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__:
+				case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
+					if (!($vs_sortable_value_fld = Attribute::getSortFieldForDatatype($vn_datatype))) {
+						break;
+					}
+
+					if (!($t_auth_instance = AuthorityAttributeValue::elementTypeToInstance($vn_datatype))) { break; }
+
+					$vs_sql = "
+							SELECT attr.row_id, lower(lil.{$vs_sortable_value_fld}) {$vs_sortable_value_fld}
+							FROM ca_attributes attr
+							INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
+							INNER JOIN ".$t_auth_instance->getLabelTableName()." AS lil ON lil.value_integer1 = attr_vals.item_id
+							WHERE
+								(attr_vals.element_id = ?) AND
+								(attr.table_num = ?) AND
+								(lil.{$vs_sortable_value_fld} IS NOT NULL) AND
+								(attr.row_id IN (?))
+						";
+					break;
+				case __CA_ATTRIBUTE_VALUE_DATERANGE__:
+					$vs_sortable_value_fld = 'attr_vals.'.$vs_sortable_value_fld;
+					$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
+
+					$vs_sql = "
+							SELECT attr.row_id, {$vs_sortable_value_fld}
+							FROM ca_attributes attr
+							INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
+							WHERE
+								(attr_vals.element_id = ?) AND
+								(attr.table_num = ?) AND
+								(attr_vals.{$vs_sort_field} IS NOT NULL) AND
+							(attr.row_id IN (?))
+						";
+					break;
+				default:
+					$vs_sortable_value_fld = 'attr_vals.'.$vs_sortable_value_fld;
+					$vs_sort_field = array_pop(explode('.', $vs_sortable_value_fld));
+
+					$vs_sql = "
+							SELECT attr.row_id, lower({$vs_sortable_value_fld}) {$vs_sort_field}
+							FROM ca_attributes attr
+							INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
+							WHERE
+								(attr_vals.element_id = ?) AND
+								(attr.table_num = ?) AND
+								(attr_vals.{$vs_sort_field} IS NOT NULL) AND
+								(attr.row_id IN (?))
+						";
+					break;
+			}
+			if(!$vs_sql) { return false; }
+
+			$qr_sort = $this->opo_db->query($vs_sql, array((int)$vn_element_id, (int)$pn_table_num, $pa_hits));
+
+			$va_sort_keys = array();
+			while($qr_sort->nextRow()) {
+				$va_row = $qr_sort->getRow();
+				$va_sort_keys[$va_row['row_id']] = $va_row[$vs_sort_field];
+			}
+			return $va_sort_keys;
+		}
+		# ------------------------------------------------------------------
+		private function _mapRowIDsForPathLength2($pn_original_table_num, $pn_target_table, $pa_hits, $pa_options=null) {
+			if(!($t_original_table = $this->opo_datamodel->getInstance($pn_original_table_num, true))) { return false; }
+			if(!($t_target_table = $this->opo_datamodel->getInstance($pn_target_table, true))) { return false; }
+
+			$vs_original_table = $t_original_table->tableName();
+			$vs_target_table = $t_target_table->tableName();
+
+			$va_path = $this->opo_datamodel->getPath($pn_original_table_num, $pn_target_table);
+			if(sizeof($va_path) != 2) { return false; }
+
+			// get relationships to build join
+			$va_relationships = $this->opo_datamodel->getRelationships($vs_original_table, $vs_target_table);
+
+			caDebug($va_relationships);
+			$vs_sql = "
+				SELECT * FROM {$vs_target_table}
+				INNER JOIN {$vs_original_table} ON
+					{$vs_original_table}.{$va_relationships[$vs_target_table][$vs_original_table][0][0]}
+					=
+					{$vs_target_table}.{$va_relationships[$vs_target_table][$vs_original_table][0][1]}
+				WHERE {$vs_original_table}.{$t_original_table->primaryKey()} IN (?)
+			";
+
+			// @todo: type restrictions
+			// @todo: relationship type restrictions
+			// @todo: relativeTo/primaryIDs
+
+			// @todo keep the mapping in cache so we can easily reverse it later -- or let's just return the inverse version right away?
+
+			caDebug($vs_sql, 'resulting sql for new hits');
+
+			return $pa_hits;
+		}
 	}	
