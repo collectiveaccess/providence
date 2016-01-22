@@ -79,8 +79,10 @@
 	
 	$va_template_tags = $va_element_ids;
 
-	//$va_element_settings = $t_element->getSettings();
-	$vs_bundle_preview = $t_instance->getAttributesForDisplay($va_root_element['element_id'], null, array('showHierarchy' => true));
+	$va_element_settings = $t_element->getSettings();
+	if(isset($va_element_settings['displayTemplate']) && (strlen($va_element_settings['displayTemplate']) > 0)) {
+		$vs_bundle_preview = $t_instance->getAttributesForDisplay($va_root_element['element_id'], null, array('showHierarchy' => true));
+	}
 
 	if (sizeof($va_attribute_list)) {
 		$va_item_ids = array();

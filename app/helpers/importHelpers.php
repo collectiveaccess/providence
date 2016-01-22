@@ -528,7 +528,7 @@
 		$va_match_on = caGetOption('matchOn', $pa_options, null);
 		if (!is_array($va_match_on) && $va_match_on) { 
 			$va_match_on = array($va_match_on); 
-		} elseif (is_array($va_match_on = $pa_item['settings']["{$ps_refinery_name}_matchOn"])) {
+		} elseif (is_array($va_match_on = $pa_item['settings']["{$ps_refinery_name}_matchOn"]) || is_array($va_match_on = $pa_item['settings']["matchOn"])) {
 			$pa_options['matchOn'] = $va_match_on;
 		}
 		
@@ -706,7 +706,7 @@
 						if(!is_array($va_attr_vals)) { $va_attr_vals = array(); }
 						$va_attr_vals_with_parent = array_merge($va_attr_vals, array('parent_id' => $va_val['parent_id'] ? $va_val['parent_id'] : $va_val['_parent_id']));
 
-						$pa_options = array('matchOn' => array('idno', 'label')) +  $pa_options;
+						if (!isset($pa_options['matchOn'])) { $pa_options['matchOn'] = array('idno', 'label'); }
 						
 						switch($ps_table) {
 							case 'ca_objects':

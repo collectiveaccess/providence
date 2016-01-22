@@ -283,16 +283,8 @@ class DisplayTemplateParser {
 		foreach($po_nodes as $vn_index => $o_node) {
 			switch($vs_tag = $o_node->tag) {
 				case 'unit':
-					// noop
+					// noop - units are processed recursively so no need to look for tags now
 					break;	
-				case 'ifcount':
-				case 'ifdef':
-				case 'ifnotdef':					
-					// noop
-					break;
-				case 'expression':
-					// noop
-					break;
 				case 'if':
 					$va_codes = caGetTemplateTags((string)$o_node->rule, $pa_options, null);
 					foreach($va_codes as $vs_code) { 
@@ -300,7 +292,7 @@ class DisplayTemplateParser {
 						if ($ps_relative_to && !$o_dm->tableExists($va_code[0])) { $vs_code = "{$ps_relative_to}.{$vs_code}"; }
 						$pa_tags[$vs_code] = true; 
 					}
-					break;
+					// fall through to default case
 				default:
 					$va_codes = caGetTemplateTags((string)$o_node->html(), $pa_options);
 					foreach($va_codes as $vs_code) { 
@@ -792,9 +784,12 @@ class DisplayTemplateParser {
 						$va_sortables = array_slice($va_sortables, $vn_start, ($vn_length > 0) ? $vn_length : null);
 					}
 					
-					foreach($va_sortables as $i => $va_sort_values) {
-						foreach($va_sort_values as $vn_index => $vs_sort_value) {
-							$va_tag_vals[$vn_index]['__sort__'] .= $vs_sort_value;
+					if(is_array($va_sortables)) {
+						foreach($va_sortables as $i => $va_sort_values) {
+							if (!is_array($va_sort_values)) { continue; }
+							foreach($va_sort_values as $vn_index => $vs_sort_value) {
+								$va_tag_vals[$vn_index]['__sort__'] .= $vs_sort_value;
+							}
 						}
 					}
 				}
