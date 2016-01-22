@@ -1468,7 +1468,9 @@ class TimeExpressionParser {
 	# -------------------------------------------------------------------
 	private function getLanguageSettingsWordList($ps_key) {
 		if (TimeExpressionParser::$s_language_settings_list_cache[$ps_key]) { return TimeExpressionParser::$s_language_settings_list_cache[$ps_key]; }
-		$va_list_lc = array_map('strtolower', $this->opo_language_settings->getList($ps_key));
+		
+		$va_values = $this->opo_language_settings->getList($ps_key);
+		$va_list_lc = is_array($va_values) ? array_map('strtolower', $va_values) : array();
 		
 		return TimeExpressionParser::$s_language_settings_list_cache[$ps_key] = $va_list_lc;
 	}
