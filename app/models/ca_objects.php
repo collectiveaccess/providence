@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2091,7 +2091,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					$va_config = ca_objects::getConfigurationForCurrentLocationType($vs_table_name, $vn_loc_subclass);
 					$vs_template = isset($va_config['template']) ? $va_config['template'] : "^{$vs_table_name}.preferred_labels";
 					
-					return caTruncateStringWithEllipsis($qr_res->getWithTemplate($vs_template), 30, 'end');
+					return $qr_res->getWithTemplate($vs_template);
 				} 
 				break;
 		}
