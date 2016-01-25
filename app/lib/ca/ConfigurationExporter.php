@@ -729,13 +729,14 @@ final class ConfigurationExporter {
 			$t_screen = new ca_editor_ui_screens();
 
 			while($qr_screens->nextRow()) {
+				$t_screen->load($qr_screens->get("screen_id"));
+
+				// if we're only exporting changes, don't export screen if it hasn't changed
 				if($this->opn_modified_after) {
 					if($t_screen->getLastChangeTimestampAsInt($qr_screens->get('screen_id')) < $this->opn_modified_after) {
 						continue;
 					}
 				}
-
-				$t_screen->load($qr_screens->get("screen_id"));
 
 				$vo_screen = $this->opo_dom->createElement("screen");
 				if($vs_idno = $qr_screens->get("idno")) {
@@ -767,6 +768,7 @@ final class ConfigurationExporter {
 
 				$vo_screen->appendChild($vo_labels);
 
+				$vo_type_restrictions = null;
 				if(is_array($t_screen->getTypeRestrictions()) && sizeof($t_screen->getTypeRestrictions())>0) {
 					$vo_type_restrictions = $this->opo_dom->createElement("typeRestrictions");
 
@@ -859,13 +861,6 @@ final class ConfigurationExporter {
 							$vo_placement->appendChild($vo_settings);
 						}
 
-					}
-				}
-
-				// if we're only exporting changes, don't export screen if no placements are exported AND the screen itself hasn't changed
-				if($this->opn_modified_after && !$vo_placements->childNodes->length) {
-					if($t_screen->getLastChangeTimestampAsInt($qr_screens->get('screen_id')) < $this->opn_modified_after) {
-						continue;
 					}
 				}
 

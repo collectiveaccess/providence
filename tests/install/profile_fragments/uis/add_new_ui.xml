@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" infoUrl="">
+  <profileName>collectiveaccess</profileName>
+  <profileDescription/>
+  <locales/>
+  <lists/>
+  <elementSets/>
+  <userInterfaces>
+    <userInterface code="alternate_entity_ui" type="ca_entities">
+      <labels>
+        <label locale="en_US">
+          <name>Alternate entity editor</name>
+        </label>
+      </labels>
+      <typeRestrictions>
+        <restriction code="org" type="org"/>
+      </typeRestrictions>
+      <screens>
+        <screen idno="s1" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic Info</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+            <restriction code="org" type="org"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="idno">
+              <bundle>idno</bundle>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Company name</setting>
+                <setting name="add_label" locale="en_US">Add another name</setting>
+                <setting name="width">90</setting>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+  </userInterfaces>
+  <relationshipTypes/>
+  <roles/>
+  <groups/>
+  <displays/>
+  <searchForms/>
+</profile>

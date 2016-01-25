@@ -187,4 +187,34 @@ class ConfigurationUpdateTest extends PHPUnit_Framework_TestCase {
 		$va_newest_restriction = array_pop($va_restrictions);
 		$this->assertEquals($va_newest_restriction['table_num'], Datamodel::load()->getTableNum('ca_storage_locations'));
 	}
+
+	public function testAddNewUI() {
+		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/uis/add_new_ui.xml'));
+		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer->processLocales();
+		$o_installer->processUserInterfaces();
+
+		/** @var ca_editor_uis $t_ui */
+		$t_ui = ca_editor_uis::find(array('editor_code' => 'alternate_entity_ui', 'editor_type' =>  20), array('returnAs' => 'firstModelInstance'));
+		$this->assertInstanceOf('ca_editor_uis', $t_ui);
+		$this->assertEquals('alternate_entity_ui', $t_ui->get('editor_code'));
+
+		$va_screens = $t_ui->getScreens();
+
+		$this->assertEquals(1, sizeof($va_screens));
+		$va_screen = array_shift($va_screens);
+		$this->assertEquals('s1', $va_screen['idno']);
+
+		$t_screen = new ca_editor_ui_screens($va_screen['screen_id']);
+		$va_placements = $t_screen->getPlacements();
+		$this->assertEquals(2, sizeof($va_placements));
+
+		$va_label_placement = array_pop($va_placements);
+
+		$this->assertEquals('Company name', $va_label_placement['settings']['label']['en_US']);
+		$this->assertEquals('Add another name', $va_label_placement['settings']['add_label']['en_US']);
+
+		$t_ui->setMode(ACCESS_WRITE);
+		$t_ui->delete(true, array('hard' => true));
+	}
 }
