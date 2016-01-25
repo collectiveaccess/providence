@@ -8448,7 +8448,7 @@
         </label>
       </labels>
       <screens>
-        <screen idno="basic" default="1">
+        <screen idno="required" default="1">
           <labels>
             <label locale="en_US">
               <name>Required</name>
@@ -8713,7 +8713,7 @@
             </placement>
           </bundlePlacements>
         </screen>
-        <screen idno="basic" default="1">
+        <screen idno="required_external" default="1">
           <labels>
             <label locale="en_US">
               <name>Required</name>
