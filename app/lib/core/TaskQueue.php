@@ -340,7 +340,7 @@ class TaskQueue extends BaseObject {
 					$this->opo_eventlog->log(array(
 						"CODE" => "ERR", 
 						"SOURCE" => "TaskQueue->processQueue()", 
-						"MESSAGE" => "Queue processing failed using handler $proc_handler: ".$h->error->getErrorDescription()." [".$h->error->getErrorNumber()."]; queue was <b>NOT</b> halted")
+						"MESSAGE" => "Queue processing failed using handler $proc_handler: ".($h->error ? $h->error->getErrorDescription() : '')." [".$h->error->getErrorNumber()."]; queue was <b>NOT</b> halted")
 					);
 					$this->errors[] = $h->error;
 					

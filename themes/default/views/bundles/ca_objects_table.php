@@ -75,7 +75,6 @@
 		$va_errors[] = $o_error->getErrorDescription();
 	}
 ?>
-<div id="tableContent" class="labelInfo"></div>
 <script type="text/javascript">
 	function caHackSearchResultForm(data) {
 		if(data) {
@@ -113,6 +112,7 @@
 ?>
 </script>
 <div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
+	<div id="tableContent" class="labelInfo"></div>
 <?php
 	//
 	// Template to generate controls for creating new relationship

@@ -262,6 +262,9 @@ class ca_search_indexing_queue extends BaseModel {
 	}
 	# ------------------------------------------------------
 	static public function lockAcquire() {
+		// make absolutely sure the lock is released, even if a PHP error occurrs during script execution
+		register_shutdown_function('ca_search_indexing_queue::lockRelease');
+
 		if((function_exists('sem_get') && caGetOSFamily() == OS_POSIX)) {
 			if(!self::$s_lock_resource) {
 				self::$s_lock_resource = sem_get(ftok(__FILE__,'C'));
@@ -270,8 +273,19 @@ class ca_search_indexing_queue extends BaseModel {
 			return sem_acquire(self::$s_lock_resource);
 		} else {
 			$vs_temp_file = caGetTempDirPath() . DIRECTORY_SEPARATOR . 'search_indexing_queue.lock';
+			$vb_got_lock = (bool) (self::$s_lock_resource = @fopen($vs_temp_file, 'x'));
 
-			return (bool) (self::$s_lock_resource = @fopen($vs_temp_file, 'x'));
+			// if we couldn't get the lock, check if the lock file is old (i.e. older than 5 minutes)
+			// if that's the case, it's likely something went wrong and the lock hangs.
+			// so we just kill it and try to re-acquire
+			if(!$vb_got_lock && file_exists($vs_temp_file)) {
+				if((time() - caGetFileMTime($vs_temp_file)) > 5*60) {
+					self::lockRelease();
+					return self::lockAcquire();
+				}
+			}
+
+			return $vb_got_lock;
 		}
 	}
 	# ------------------------------------------------------
@@ -286,8 +300,9 @@ class ca_search_indexing_queue extends BaseModel {
 		} else {
 			if(is_resource(self::$s_lock_resource)) {
 				@fclose(self::$s_lock_resource);
-				@unlink(caGetTempDirPath() . DIRECTORY_SEPARATOR . 'search_indexing_queue.lock');
 			}
+
+			@unlink(caGetTempDirPath() . DIRECTORY_SEPARATOR . 'search_indexing_queue.lock');
 		}
 	}
 	# ------------------------------------------------------

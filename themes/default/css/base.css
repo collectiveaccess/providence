@@ -2735,10 +2735,10 @@ table.attributeListItem {
 .attributeListItem td {
     padding: 0px;
     padding-right: 15px;
-    margin: 0px;
+    margin: 5px;
     font-weight: normal;
+    vertical-align: top;
 }
-
 
 /*** EDITOR FORMS ***/
 
@@ -3145,6 +3145,21 @@ div.editorBottomPadding {
     height: 25px;
 }
 
+/* read-only containers */
+div.caReadonlyContainer {
+    padding: 10px 10px 10px 10px;
+    font-weight: normal;
+    border-bottom: 1px solid
+}
+
+div.caReadonlyContainerDisplay {
+    margin-right: 32px;
+}
+
+a.caReadonlyContainerEditLink {
+    float: right;
+}
+
 /* File and media attribute styles */
 a.attributeDownloadButton {
     padding: 10px;
@@ -3410,6 +3425,13 @@ a.hierarchyBrowserLevelSelected {
     color: #000000;
     text-decoration: none;
     font-weight: bold;
+    font-style: normal;
+}
+
+span.hierarchyBrowserLevelDisabled {
+    color: #ccc;
+    text-decoration: none;
+    font-weight: normal;
     font-style: normal;
 }
 

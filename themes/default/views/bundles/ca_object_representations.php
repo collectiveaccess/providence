@@ -204,7 +204,7 @@
 							
 								<div class='caObjectRepresentationDetailEditorDoneButton'>
 <?php 
-									print caJSButton($this->request, __CA_NAV_ICON_SAVE__, 'Done', '{fieldNamePrefix}detail_editor_save_button{n}', array('onclick' => 'caCloseRepresentationDetailEditor("{n}"); return false;')); 
+									print caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t('Done'), '{fieldNamePrefix}detail_editor_save_button{n}', array('onclick' => 'caCloseRepresentationDetailEditor("{n}"); return false;')); 
 ?>
 								</div>	
 							

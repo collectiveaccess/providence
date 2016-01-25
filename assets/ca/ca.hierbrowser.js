@@ -82,11 +82,12 @@ var caUI = caUI || {};
 			autoShrinkAnimateID: '',
 
 			/* how do we treat disabled items in the browser? can be
-			 *  - 'disable' : list items default behavior - i.e. show the item but don't make it a clickable link
+			 *  - 'disable' : list items default behavior - i.e. show the item but don't make it a clickable link and apply the disabled class ('classNameDisabled' option)
 			 *  - 'hide' : completely hide them from the browser
 			 *  - 'full' : don't treat disabled items any differently
 			 */
 			disabledItems: 'disable',
+			classNameDisabled: 'hierarchyBrowserLevelDisabled',
 
 			displayCurrentSelectionOnLoad: true,
 			typeMenuID: '',
@@ -437,7 +438,7 @@ var caUI = caUI || {};
 										case 'disabled':
 										default:
 											jQuery('#' + newLevelListID).append(
-												"<li class='" + that.className + "'>" + moreButton +  item.name + "</li>"
+												"<li class='" + that.className + "'>" + moreButton +  '<span class="' + that.classNameDisabled + '">' + item.name + "</span></li>"
 											);
 											break;
 									}
@@ -573,7 +574,10 @@ var caUI = caUI || {};
 						} else {
 							if ((that.selectedItemIDs[level] !== undefined) && !dontDoSelectAndScroll) {
 								jQuery('#hierBrowser_' + that.name + '_level_' + (level) + '_item_' + that.selectedItemIDs[level]).addClass(that.classNameSelected);
-								jQuery('#' + newLevelDivID).scrollTo(jQuery('#hierBrowser_' + that.name + '_level_' + level + '_item_' + that.selectedItemIDs[level]).position().top + 'px');
+								
+								if (jQuery('#hierBrowser_' + that.name + '_level_' + level + '_item_' + that.selectedItemIDs[level]).position()) {
+									jQuery('#' + newLevelDivID).scrollTo(jQuery('#hierBrowser_' + that.name + '_level_' + level + '_item_' + that.selectedItemIDs[level]).position().top + 'px');
+								}
 							}
 						}
 					} else {

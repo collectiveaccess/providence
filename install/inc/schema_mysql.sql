@@ -1396,8 +1396,8 @@ create table ca_user_roles
    code                           varchar(20)                    not null,
    description                    text                           not null,
    rank                           smallint unsigned              not null default 0,
-   vars                           text                           not null,
-   field_access                   text                           not null,
+   vars                           longtext                       not null,
+   field_access                   longtext                       not null,
    primary key (role_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -6661,5 +6661,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 125 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (125, unix_timestamp());
+/* CURRENT MIGRATION: 126 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (126, unix_timestamp());
