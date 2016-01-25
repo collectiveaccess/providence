@@ -2638,13 +2638,15 @@
 		 * will include sub-elements in the returned list.
 		 */
  		public function getApplicableElementCodes($pn_type_id=null, $pb_include_sub_element_codes=false, $pb_dont_cache=true) {
+ 			 if (!$pn_type_id && isset($this->ATTRIBUTE_TYPE_ID_FLD)) { $pn_type_id = $this->get($this->ATTRIBUTE_TYPE_ID_FLD); }
+ 			 
  			 if (!$pb_dont_cache && is_array($va_tmp = BaseModelWithAttributes::$s_applicable_element_code_cache[$this->tableNum().'/'.$pn_type_id.'/'.($pb_include_sub_element_codes ? 1 : 0)])) {
  			 	return $va_tmp;
  			 }
  			
  			$vs_type_sql = '';
  			if (
- 				(isset($this->ATTRIBUTE_TYPE_ID_FLD) && (($pn_type_id) || (($pn_type_id = $this->get($this->ATTRIBUTE_TYPE_ID_FLD)) > 0)))
+ 				isset($this->ATTRIBUTE_TYPE_ID_FLD) && $pn_type_id
  			) {
  				$va_ancestors = array();
  				if ($t_type_instance = $this->getTypeInstance()) {
