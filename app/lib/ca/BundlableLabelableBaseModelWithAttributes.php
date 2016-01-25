@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -73,11 +73,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *
 	 */
 	protected $opo_idno_plugin_instance;
-	
-	/**
-	 *
-	 */
-	static $s_idno_instance_cache = array();
 	
 	/**
 	 * ca_locales model
@@ -848,44 +843,40 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		// Create instance of idno numbering plugin (if table supports it)
 		if ($vs_field = $this->getProperty('ID_NUMBERING_ID_FIELD')) {
 			if (!$vn_type_id) { $vn_type_id = null; }
-			if (!isset(BundlableLabelableBaseModelWithAttributes::$s_idno_instance_cache[$this->tableNum()."/".$vn_type_id])) {
-				$va_types = array();
-				$o_db = $this->getDb();		// have to do direct query here... if we use ca_list_items model we'll just endlessly recurse
+			$va_types = array();
+			$o_db = $this->getDb();		// have to do direct query here... if we use ca_list_items model we'll just endlessly recurse
+			
+			if ($vn_type_id) {
 				
-				if ($vn_type_id) {
+				$qr_res = $o_db->query("
+					SELECT idno, list_id, hier_left, hier_right 
+					FROM ca_list_items 
+					WHERE 
+						item_id = ?"
+					, (int)$vn_type_id);
 					
-					$qr_res = $o_db->query("
-						SELECT idno, list_id, hier_left, hier_right 
-						FROM ca_list_items 
-						WHERE 
-							item_id = ?"
-						, (int)$vn_type_id);
+				if ($qr_res->nextRow()) {
+					if ($vn_list_id = $qr_res->get('list_id')) {
+						$vn_hier_left 		= $qr_res->get('hier_left');
+						$vn_hier_right 		= $qr_res->get('hier_right');
+						$vs_idno 			= $qr_res->get('idno');
+						$qr_res = $o_db->query("
+							SELECT idno, parent_id
+							FROM ca_list_items 
+							WHERE 
+								(list_id = ? AND hier_left < ? AND hier_right > ?)", 
+						(int)$vn_list_id, (int)$vn_hier_left, (int)$vn_hier_right);
 						
-					if ($qr_res->nextRow()) {
-						if ($vn_list_id = $qr_res->get('list_id')) {
-							$vn_hier_left 		= $qr_res->get('hier_left');
-							$vn_hier_right 		= $qr_res->get('hier_right');
-							$vs_idno 			= $qr_res->get('idno');
-							$qr_res = $o_db->query("
-								SELECT idno, parent_id
-								FROM ca_list_items 
-								WHERE 
-									(list_id = ? AND hier_left < ? AND hier_right > ?)", 
-							(int)$vn_list_id, (int)$vn_hier_left, (int)$vn_hier_right);
-							
-							while($qr_res->nextRow()) {
-								if (!$qr_res->get('parent_id')) { continue; }
-								$va_types[] = $qr_res->get('idno');
-							}
-							$va_types[] = $vs_idno;
-							$va_types = array_reverse($va_types);
+						while($qr_res->nextRow()) {
+							if (!$qr_res->get('parent_id')) { continue; }
+							$va_types[] = $qr_res->get('idno');
 						}
+						$va_types[] = $vs_idno;
+						$va_types = array_reverse($va_types);
 					}
 				}
-				BundlableLabelableBaseModelWithAttributes::$s_idno_instance_cache[$this->tableNum()."/".$vn_type_id] = $this->opo_idno_plugin_instance = IDNumbering::newIDNumberer($this->tableName(), $va_types, null, $o_db);
-			} else {
-				$this->opo_idno_plugin_instance = BundlableLabelableBaseModelWithAttributes::$s_idno_instance_cache[$this->tableNum()."/".$vn_type_id];
 			}
+			$this->opo_idno_plugin_instance = IDNumbering::newIDNumberer($this->tableName(), $va_types, null, $o_db);
 		} else {
 			$this->opo_idno_plugin_instance = null;
 		}
@@ -1345,7 +1336,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				$vs_description = isset($pa_bundle_settings['description'][$g_ui_locale]) ? $pa_bundle_settings['description'][$g_ui_locale] : null;
 				
-				if (($vs_label) && ($vs_description)) {
+				if (($vs_label) && ($vs_description) && !is_array($va_dictionary_entry)) {
 					TooltipManager::add('#'.$vs_field_id, "<h3>{$vs_label_text}</h3>{$vs_description}");
 				}
 				break;
@@ -1428,7 +1419,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				
 				$vs_description =  (isset($pa_bundle_settings['description'][$g_ui_locale]) && $pa_bundle_settings['description'][$g_ui_locale]) ? $pa_bundle_settings['description'][$g_ui_locale]  : $this->getFieldInfo($ps_bundle_name, 'DESCRIPTION');
-				if (($pa_options['label']) && ($vs_description)) {
+				if (($pa_options['label']) && ($vs_description) && !is_array($va_dictionary_entry)) {
 					TooltipManager::add('#'.$vs_field_id, "<h3>".$pa_options['label']."</h3>{$vs_description}");
 				}
 				
@@ -1476,7 +1467,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					}
 				}
 				
-				if (($vs_label_text) && ($vs_description)) {
+				if (($vs_label_text) && ($vs_description) && !is_array($va_dictionary_entry)) {
 					TooltipManager::add('#'.$vs_field_id, "<h3>{$vs_label_text}</h3>{$vs_description}");
 				}
 		
@@ -1551,7 +1542,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				$vs_description = (isset($pa_bundle_settings['description'][$g_ui_locale]) && $pa_bundle_settings['description'][$g_ui_locale]) ? $pa_bundle_settings['description'][$g_ui_locale] : null;
 				
-				if (($vs_label_text) && ($vs_description)) {
+				if (($vs_label_text) && ($vs_description) && !is_array($va_dictionary_entry)) {
 					TooltipManager::add('#'.$pa_options['formName'].'_'.$ps_placement_code, "<h3>{$vs_label}</h3>{$vs_description}");
 				}
 				break;
@@ -1778,7 +1769,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				$vs_description = (isset($pa_bundle_settings['description'][$g_ui_locale]) && $pa_bundle_settings['description'][$g_ui_locale]) ? $pa_bundle_settings['description'][$g_ui_locale] : null;
 				
-				if (($vs_label_text) && ($vs_description)) {
+				if (($vs_label_text) && ($vs_description) && !is_array($va_dictionary_entry)) {
 					TooltipManager::add('#'.$pa_options['formName'].'_'.$ps_placement_code, "<h3>{$vs_label}</h3>{$vs_description}");
 				}
 				

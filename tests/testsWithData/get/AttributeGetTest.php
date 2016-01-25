@@ -87,6 +87,14 @@ class AttributeGetTest extends BaseTestWithData {
 					),
 				),
 
+				// Date
+				'date' => array(
+					array(
+						'dc_dates_types' => 'created',
+						'dates_value' => 'today'
+					)
+				),
+
 				// Integer
 				'integer_test' => array(
 					array(
@@ -141,6 +149,9 @@ class AttributeGetTest extends BaseTestWithData {
 	}
 	# -------------------------------------------------------
 	public function testGets() {
+		$vm_ret = $this->opt_object->get('ca_objects.date.dc_dates_types', array('returnIdno' => true));
+		$this->assertEquals('created', $vm_ret);
+
 		$vm_ret = $this->opt_object->get('ca_objects.type_id', array('convertCodesToDisplayText' => true));
 		$this->assertEquals('Image', $vm_ret);
 
