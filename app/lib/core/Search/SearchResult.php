@@ -1387,7 +1387,7 @@ class SearchResult extends BaseObject {
 					}
 					$vm_val = $this->_getIntrinsicValue(self::$s_prefetch_cache[$va_path_components['table_name']][$vn_row_id][$vs_opt_md5], $t_instance, $va_val_opts);
 					goto filter;
-				} elseif(method_exists($t_instance, 'isValidBundle') && !$t_instance->hasElement($va_path_components['field_name']) && $t_instance->isValidBundle($va_path_components['field_name'])) {
+				} elseif(method_exists($t_instance, 'isValidBundle') && !$t_instance->hasElement($va_path_components['field_name'], null, false, array('dontCache' => false)) && $t_instance->isValidBundle($va_path_components['field_name'])) {
 //
 // [PRIMARY TABLE] Special bundle
 //				
@@ -1730,9 +1730,9 @@ class SearchResult extends BaseObject {
 					$va_auth_spec = null; 
 					if (is_a($o_value, "AuthorityAttributeValue")) {
 						$va_auth_spec = $va_path_components['components'];
-						if ($pt_instance->hasElement($va_path_components['subfield_name'], null, true)) {
+						if ($pt_instance->hasElement($va_path_components['subfield_name'], null, true, array('dontCache' => false))) {
 							array_shift($va_auth_spec); array_shift($va_auth_spec); array_shift($va_auth_spec);
-						} elseif ($pt_instance->hasElement($va_path_components['field_name'], null, true)) {
+						} elseif ($pt_instance->hasElement($va_path_components['field_name'], null, true, array('dontCache' => false))) {
 							array_shift($va_auth_spec); array_shift($va_auth_spec); 
 							$va_path_components['subfield_name'] = null;
 						}
@@ -2318,7 +2318,7 @@ class SearchResult extends BaseObject {
 		foreach($pa_fields as $vn_i => $vs_field) {
 			$va_tmp = explode('.', $vs_field);
 			if (!($t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true))) { unset($pa_fields[$vn_i]); continue; } 
-			if (!$t_instance->hasField($va_tmp[1]) && (!$t_instance->hasElement($va_tmp[1]))) { unset($pa_fields[$vn_i]); }
+			if (!$t_instance->hasField($va_tmp[1]) && (!$t_instance->hasElement($va_tmp[1], null, false, array('dontCache' => false)))) { unset($pa_fields[$vn_i]); }
 		}
 		
 		$vn_c = 0;
