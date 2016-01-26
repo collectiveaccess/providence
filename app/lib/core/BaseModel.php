@@ -2212,7 +2212,7 @@ class BaseModel extends BaseObject {
 					$vs_field_value_is_null = false;
 				}
 
-				if ($vs_field_value_is_null) {
+				if ($vs_field_value_is_null && !in_array($vs_field_type, array(FT_MEDIA, FT_FILE))) {
 					if (($vs_field_type == FT_DATERANGE) || ($vs_field_type == FT_HISTORIC_DATERANGE)  || ($vs_field_type == FT_TIMERANGE)) {
 						$start_field_name = $va_attr["START"];
 						$end_field_name = $va_attr["END"];
