@@ -1464,16 +1464,6 @@ class TimeExpressionParser {
 	private function skipToken() {
 		return array_shift($this->opa_tokens);
 	}
-	
-	# -------------------------------------------------------------------
-	private function getLanguageSettingsWordList($ps_key) {
-		if (TimeExpressionParser::$s_language_settings_list_cache[$ps_key]) { return TimeExpressionParser::$s_language_settings_list_cache[$ps_key]; }
-		
-		$va_values = $this->opo_language_settings->getList($ps_key);
-		$va_list_lc = is_array($va_values) ? array_map('strtolower', $va_values) : array();
-		
-		return TimeExpressionParser::$s_language_settings_list_cache[$ps_key] = $va_list_lc;
-	}
 	# -------------------------------------------------------------------
 	private function &getToken() {
 		if ($this->tokens() == 0) {
@@ -1531,7 +1521,7 @@ class TimeExpressionParser {
 		
 		
 		// text month
-		$va_month_table = $this->getLanguageSettingsWordList("monthTable");
+		$va_month_table = $this->opo_language_settings->getAssoc("monthTable");
 		if ($va_month_table[$vs_token_lc]) {
 			$vs_token_lc = $va_month_table[$vs_token_lc];
 		}
@@ -2994,6 +2984,15 @@ class TimeExpressionParser {
 		if(!file_exists($vs_config_path)) { return null; }
 		
 		return Configuration::load($vs_config_path);
+	}
+	# -------------------------------------------------------------------
+	private function getLanguageSettingsWordList($ps_key) {
+		if (TimeExpressionParser::$s_language_settings_list_cache[$this->ops_language][$ps_key]) { return TimeExpressionParser::$s_language_settings_list_cache[$this->ops_language][$ps_key]; }
+		
+		$va_values = $this->opo_language_settings->getList($ps_key);
+		$va_list_lc = is_array($va_values) ? array_map('strtolower', $va_values) : array();
+		
+		return TimeExpressionParser::$s_language_settings_list_cache[$this->ops_language][$ps_key] = $va_list_lc;
 	}
 	# -------------------------------------------------------------------
 	# Error handling

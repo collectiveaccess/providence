@@ -233,6 +233,10 @@ class Installer {
 			return false;
 		}
 		/** @var LabelableBaseModelWithAttributes $t_instance */
+		if (!$po_labels || !$po_labels->children()) { 
+			$t_instance->addLabel(array($t_instance->getLabelDisplayField() => "???"), array_shift($pa_locales), false, true);
+			return true; 
+		}
 		foreach($po_labels->children() as $vo_label){
 			$va_label_values = array();
 			$vs_locale = self::getAttribute($vo_label, "locale");

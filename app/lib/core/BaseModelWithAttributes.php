@@ -1753,7 +1753,7 @@
 			if (is_array($pa_element_ids) && sizeof($pa_element_ids)) {
 				$va_element_ids = $pa_element_ids;
 			} else {
-				$va_element_ids = $this->getApplicableElementCodes(null, false, false);
+				$va_element_ids = $this->getApplicableElementCodes(method_exists($this, "getTypeID") ? $this->getTypeID() : null, false, false);
 			}
 			if (!sizeof($va_element_ids)) { return array(); }
 			
@@ -2618,17 +2618,19 @@
 		 * @param string $ps_element_code
 		 * @param null|int $pn_type_id
 		 * @param bool $pb_include_sub_element_codes
+		 * @param array $pa_options Options include:
+		 *		dontCache = Don't cache values [Default is false]
 		 * @return bool
 		 */
-		public function hasElement($ps_element_code, $pn_type_id=null, $pb_include_sub_element_codes=false) {
+		public function hasElement($ps_element_code, $pn_type_id=null, $pb_include_sub_element_codes=false, $pa_options=null) {
 			if (is_null($pn_type_id)) { $pn_type_id = $this->getTypeID(); }
-			$va_codes = $this->getApplicableElementCodes($pn_type_id, $pb_include_sub_element_codes);
+			$va_codes = $this->getApplicableElementCodes($pn_type_id, $pb_include_sub_element_codes, caGetOption('dontCache', $pa_options, false));
 			return (in_array($ps_element_code, $va_codes));
 		}
 		# ------------------------------------------------------------------
 		/**
-		 * Returns list of metadata element codes applicable to the current row. If there is no loaded row and $pn_type_id
-		 * is not set then all attributes applicable to the model as a whole (regardless of type restrictions) are returned.
+		 * Returns list of metadata element codes applicable to the specified type. If no type is specified 
+		 * then all attributes applicable to the model as a whole (regardless of type restrictions) are returned.
 		 *
 		 * Normally only top-level attribute codes are returned. This is good: in general you should only be dealing with attributes
 		 * via the top-level element. However, there are a few cases where you might need an inventory of *all* element codes that can
@@ -2636,13 +2638,15 @@
 		 * will include sub-elements in the returned list.
 		 */
  		public function getApplicableElementCodes($pn_type_id=null, $pb_include_sub_element_codes=false, $pb_dont_cache=true) {
- 			 if (!$pb_dont_cache && is_array($va_tmp = BaseModelWithAttributes::$s_applicable_element_code_cache[$this->tableNum().'/'.$pn_type_id.'/'.($pb_include_sub_element_codes ? 1 : 0)])) {
- 			 	return $va_tmp;
- 			 }
+			if (!$pn_type_id) { $pn_type_id = null; }
+ 			 
+			if (!$pb_dont_cache && is_array($va_tmp = BaseModelWithAttributes::$s_applicable_element_code_cache[$this->tableNum().'/'.$pn_type_id.'/'.($pb_include_sub_element_codes ? 1 : 0)])) {
+				return $va_tmp;
+			}
  			
  			$vs_type_sql = '';
  			if (
- 				(isset($this->ATTRIBUTE_TYPE_ID_FLD) && (($pn_type_id) || (($pn_type_id = $this->get($this->ATTRIBUTE_TYPE_ID_FLD)) > 0)))
+ 				isset($this->ATTRIBUTE_TYPE_ID_FLD) && $pn_type_id
  			) {
  				$va_ancestors = array();
  				if ($t_type_instance = $this->getTypeInstance()) {
@@ -2656,7 +2660,6 @@
  					$vs_type_sql = '((camtr.type_id = '.intval($pn_type_id).') OR (camtr.type_id IS NULL)) AND ';
  				}
  			} elseif (is_subclass_of($this, "BaseRelationshipModel")) {
- 				if (!$pn_type_id) { $pn_type_id = self::get('type_id'); }
  				if ($pn_type_id > 0) { $vs_type_sql = '((camtr.type_id = '.intval($pn_type_id).') OR (camtr.type_id IS NULL)) AND '; }
 			} 
  			
