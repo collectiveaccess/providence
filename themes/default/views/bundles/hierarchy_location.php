@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -503,7 +503,7 @@
 				currentSelectionDisplayFormat: '<?php print addslashes(_t('Will be moved under <em>%1</em> after next save.')); ?>',
 				
 				allowExtractionFromHierarchy: <?php print ($t_subject->getProperty('HIERARCHY_TYPE') == __CA_HIER_TYPE_ADHOC_MONO__) ? 'true' : 'false'; ?>,
-				extractFromHierarchyButtonIcon: '<?php print caNavIcon(__CA_NAV_ICON_EXTRACT__, 1); ?>">',
+				extractFromHierarchyButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_EXTRACT__, 1); ?>",
 				extractFromHierarchyMessage: '<?php print addslashes(_t('Will be placed at the top of its own hierarchy after next save.')); ?>',
 				
 				onSelection: function(id, parent_id, name, formattedDisplay) {
