@@ -32,4 +32,5 @@ branches:
     - develop
     - master
     - master-fix
+    - dev/configSync
 

@@ -1418,5 +1418,9 @@ final class ConfigurationExporter {
 		return $this->makeIDNO($vs_value, $vn_max_length);
 	}
 	# --------------------------------------------------
+	private function getDeletedItemsFromChangeLog($pn_table_num, $ps_idno_field='code') {
+		//@todo
+	}
+	# --------------------------------------------------
 }
 
