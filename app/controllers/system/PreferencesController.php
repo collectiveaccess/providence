@@ -30,6 +30,14 @@
  
  	class PreferencesController extends ActionController {
  		# -------------------------------------------------------
+ 		/**
+ 		 * Tables that may have duplication preferences set
+ 		 */
+ 		public static $s_duplicable_tables = array(
+			'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations',
+			'ca_loans', 'ca_movements', 'ca_lists', 'ca_list_items', 'ca_tours', 'ca_tour_stops', 'ca_sets', 'ca_bundle_displays'
+		);
+ 		# -------------------------------------------------------
 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			
@@ -170,20 +178,18 @@
  					break;
  				case 'EditDuplicationPrefs':
  					$vs_group = 'duplication';
- 					foreach(array(
-						'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations',
-						'ca_loans', 'ca_movements', 'ca_lists', 'ca_list_items', 'ca_tours', 'ca_tour_stops', 'ca_sets', 'ca_bundle_displays'
-					) as $vs_table) {
+ 					$vs_current_table = 'ca_'.$this->request->getActionExtra();
+ 					if (in_array($vs_current_table, PreferencesController::$s_duplicable_tables)) {
 						foreach($this->request->user->getValidPreferences($vs_group) as $vs_pref) {
-							if(!$this->getRequest()->getUser()->isValidPreference("{$vs_table}_{$vs_pref}")) { continue; }
+							if(!$this->getRequest()->getUser()->isValidPreference("{$vs_current_table}_{$vs_pref}")) { continue; }
 
 							if ($vs_pref == 'duplicate_relationships') {
-								$vs_val = $this->request->getParameter("pref_{$vs_table}_{$vs_pref}", pArray);
+								$vs_val = $this->request->getParameter("pref_{$vs_current_table}_{$vs_pref}", pArray);
 							} else {
-								$vs_val = $this->request->getParameter("pref_{$vs_table}_{$vs_pref}", pString);
+								$vs_val = $this->request->getParameter("pref_{$vs_current_table}_{$vs_pref}", pString);
 							}
 
-							$this->request->user->setPreference("{$vs_table}_{$vs_pref}", $vs_val);
+							$this->request->user->setPreference("{$vs_current_table}_{$vs_pref}", $vs_val);
 						}
 					}
 					$vs_view_name = 'preferences_duplication_html.php';

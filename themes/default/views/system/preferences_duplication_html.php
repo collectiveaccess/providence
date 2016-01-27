@@ -26,12 +26,8 @@
  * ----------------------------------------------------------------------
  */
  
- 	$va_duplicable_tables = array(
-		'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations',
-		'ca_loans', 'ca_movements', 'ca_lists', 'ca_list_items', 'ca_tours', 'ca_tour_stops', 'ca_sets', 'ca_bundle_displays'
-	);
-	$vs_current_table = 'ca_'.$this->request->getActionExtra();	// url action extra is table name without "ca_" (eg. places => ca_places)
-	if (!in_array($vs_current_table, $va_duplicable_tables)) { $vs_current_table = null; }
+ 	$vs_current_table = 'ca_'.$this->request->getActionExtra();	// url action extra is table name without "ca_" (eg. places => ca_places)
+	if (!in_array($vs_current_table, PreferencesController::$s_duplicable_tables)) { $vs_current_table = null; }
 	
 	$t_user = $this->getVar('t_user');
 	$vs_group = $this->getVar('group');
@@ -42,7 +38,7 @@
 <?php
 	print $vs_control_box = caFormControlBox(
 		caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'PreferencesForm').' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Reset"), '', 'system', 'Preferences', $this->request->getAction(), array()), 
+		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Reset"), '', 'system', 'Preferences', $this->request->getAction()."/".$this->request->getActionExtra(), array()), 
 		'', 
 		''
 	);
@@ -50,7 +46,7 @@
 	$va_group_info = $t_user->getPreferenceGroupInfo($vs_group);
 	print "<h1>"._t("Preferences").": "._t($va_group_info['name'])."</h1>\n";
 	
-	print caFormTag($this->request, 'Save', 'PreferencesForm');
+	print caFormTag($this->request, 'Save/'.$this->request->getActionExtra(), 'PreferencesForm');
 	
 	$va_prefs = $t_user->getValidPreferences($vs_group);
 	
