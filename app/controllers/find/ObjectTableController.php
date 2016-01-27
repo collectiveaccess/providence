@@ -140,6 +140,11 @@ class ObjectTableController extends BaseSearchController {
 			'sort_direction' => $vs_sort_direction,
 			'checkAccess' => $va_access_values,
 			'no_cache' => true,
+			'resolveLinksUsing' => $vs_primary_table,
+			'primaryIDs' =>
+				array (
+					$vs_primary_table => array($vn_primary_id),
+				),
 		);
 
 		$o_res = caMakeSearchResult('ca_objects', array_values($va_ids), $va_search_opts);

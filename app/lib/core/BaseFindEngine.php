@@ -403,10 +403,27 @@
 									$vs_is_preferred_sql = " {$vs_field_table}.is_preferred = 1";
 								}
 							} else { // something else in related table (attribute!?)
-								$va_related_ids = $this->_mapRowIDsForPathLength2($vn_table_num, $t_rel->tableNum(), $pa_hits, $pa_options);
-								if($va_sort_keys = $this->_getSortKeysForElement($vs_subfield ? $vs_subfield : $vs_field, $t_rel->tableNum(), $va_related_ids)) {
-									// @todo "translate" those sort keys back to keys in the original table, i.e. ca_objects_x_occurrences.relation_id => ca_objects.object_id
-									$va_sort_key_values[] = $va_sort_keys;
+								// so we'll now be getting the values from a different table so we need a different set of primary ids to
+								// build the SQL to do that. For instance, if we're pulling ca_objects_x_occurrences.my_field relative to ca_objects,
+								// we need a list of ca_objects_x_occurrences.relation_id values that are related to the objects in $pa_hits.
+								// that list can obviously get longer, so we need a "reverse" mapping too so that we can make sense of that
+								// sorted ca_objects_x_occurrences.relation_id list and sort our objects accordingly
+								$va_maps = $this->_mapRowIDsForPathLength2($vn_table_num, $t_rel->tableNum(), $pa_hits, $pa_options);
+								if(is_array($va_maps['list']) && sizeof($va_maps['list'])) {
+									if($va_sort_keys = $this->_getSortKeysForElement($vs_subfield ? $vs_subfield : $vs_field, $t_rel->tableNum(), $va_maps['list'])) {
+										// translate those sort keys back to keys in the original table, i.e. ca_objects_x_occurrences.relation_id => ca_objects.object_id
+										$va_rewritten_sort_keys = array();
+										foreach($va_sort_keys as $vn_key_in_rel_table => $vs_sort_key) {
+
+											// there can me multiple related keys for one key in the primary table. for now we just decide the first one "wins"
+											// @todo: is there a better way to deal with this?
+											if(!isset($va_rewritten_sort_keys[$va_maps['reverse'][$vn_key_in_rel_table]])) {
+												$va_rewritten_sort_keys[$va_maps['reverse'][$vn_key_in_rel_table]] = $vs_sort_key;
+											}
+										}
+
+										$va_sort_key_values[] = $va_rewritten_sort_keys;
+									}
 								}
 
 								continue; // skip that related table code below, we already have our values
@@ -606,6 +623,14 @@
 			if(!($t_original_table = $this->opo_datamodel->getInstance($pn_original_table_num, true))) { return false; }
 			if(!($t_target_table = $this->opo_datamodel->getInstance($pn_target_table, true))) { return false; }
 
+			$va_sql_params = array($pa_hits);
+
+			$va_primary_ids = $vs_resolve_links_using = null;
+			if($vs_resolve_links_using = caGetOption('resolveLinksUsing', $pa_options)) {
+				$va_primary_ids = caGetOption('primaryIDs', $pa_options);
+				$va_primary_ids = $va_primary_ids[$vs_resolve_links_using];
+			}
+
 			$vs_original_table = $t_original_table->tableName();
 			$vs_target_table = $t_target_table->tableName();
 
@@ -615,24 +640,36 @@
 			// get relationships to build join
 			$va_relationships = $this->opo_datamodel->getRelationships($vs_original_table, $vs_target_table);
 
-			caDebug($va_relationships);
+			$vs_primary_id_sql = '';
+			if(is_array($va_primary_ids) && (sizeof($va_primary_ids) > 0)) {
+				// assuming this is being used to sort on interstitials, we just need a WHERE on the keys on the other side of that target table
+				$va_tmp = $this->opo_datamodel->getRelationships($vs_target_table, $vs_resolve_links_using);
+				if(isset($va_tmp[$vs_resolve_links_using][$vs_target_table][0][1])) {
+					$vs_primary_id_sql = "AND {$vs_target_table}.{$va_tmp[$vs_resolve_links_using][$vs_target_table][0][1]} IN (?)";
+					$va_sql_params[] = $va_primary_ids;
+				}
+
+			}
+
 			$vs_sql = "
 				SELECT * FROM {$vs_target_table}
-				INNER JOIN {$vs_original_table} ON
-					{$vs_original_table}.{$va_relationships[$vs_target_table][$vs_original_table][0][0]}
+				INNER JOIN {$vs_original_table} AS o ON
+					o.{$va_relationships[$vs_target_table][$vs_original_table][0][0]}
 					=
 					{$vs_target_table}.{$va_relationships[$vs_target_table][$vs_original_table][0][1]}
-				WHERE {$vs_original_table}.{$t_original_table->primaryKey()} IN (?)
+				WHERE o.{$t_original_table->primaryKey()} IN (?)
+				{$vs_primary_id_sql}
 			";
 
-			// @todo: type restrictions
-			// @todo: relationship type restrictions
-			// @todo: relativeTo/primaryIDs
+			$qr_rel = $this->opo_db->query($vs_sql, $va_sql_params);
+			$va_return = array();
+			while($qr_rel->nextRow()) {
+				$va_return['list'][] = $qr_rel->get("{$vs_target_table}.{$t_target_table->primaryKey()}");
 
-			// @todo keep the mapping in cache so we can easily reverse it later -- or let's just return the inverse version right away?
+				$va_return['reverse'][$qr_rel->get("{$vs_target_table}.{$t_target_table->primaryKey()}")] =
+					$qr_rel->get("{$vs_original_table}.{$t_original_table->primaryKey()}");
+			}
 
-			caDebug($vs_sql, 'resulting sql for new hits');
-
-			return $pa_hits;
+			return $va_return;
 		}
 	}	
