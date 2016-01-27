@@ -57,6 +57,7 @@
 			// output headers
 			$vn_id_count = 0;
 			foreach($va_display_list as $va_display_item) {
+				//caDebug($va_display_item);
 				if ($va_display_item['is_sortable']) {
 					if ($vs_current_sort == $va_display_item['bundle_sort']) {
 						print "<th class='list-header-sorted-asc'><span id='listHeader".$vn_id_count."'><nobr>".((unicode_strlen($va_display_item['display']) > 30) ? strip_tags(mb_substr($va_display_item['display'], 0, 27))."..." : $va_display_item['display'])."</nobr></span></th>";
