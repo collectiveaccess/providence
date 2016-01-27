@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -26,9 +26,16 @@
  * ----------------------------------------------------------------------
  */
  
- 	
+ 	$va_duplicable_tables = array(
+		'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations',
+		'ca_loans', 'ca_movements', 'ca_lists', 'ca_list_items', 'ca_tours', 'ca_tour_stops', 'ca_sets', 'ca_bundle_displays'
+	);
+	$vs_current_table = 'ca_'.$this->request->getActionExtra();	// url action extra is table name without "ca_" (eg. places => ca_places)
+	if (!in_array($vs_current_table, $va_duplicable_tables)) { $vs_current_table = null; }
+	
 	$t_user = $this->getVar('t_user');
 	$vs_group = $this->getVar('group');
+	
  
  ?>
 <div class="sectionBox">
@@ -51,28 +58,25 @@
 	$o_dm = Datamodel::load();
 	print "<div class='preferenceSectionDivider'><!-- empty --></div>\n"; 
 	
-	foreach(array(
-		'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations',
-		'ca_loans', 'ca_movements', 'ca_lists', 'ca_list_items', 'ca_tours', 'ca_tour_stops', 'ca_sets', 'ca_bundle_displays'
-	) as $vs_table) {
-		if (!caTableIsActive($vs_table)) { continue; }
-		if (!$this->request->user->canDoAction('can_duplicate_'.$vs_table)) { continue; }
-		$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
-		print "<h2>"._t('Settings for %1', $t_instance->getProperty('NAME_PLURAL'))."</h2>";
+	//foreach($va_duplicable_tables as $vs_table) {
+		if (caTableIsActive($vs_current_table) && $this->request->user->canDoAction('can_duplicate_'.$vs_current_table)) {
+			$t_instance = $o_dm->getInstanceByTableName($vs_current_table, true);
+			print "<h2>"._t('Settings for %1', $t_instance->getProperty('NAME_PLURAL'))."</h2>";
 		
-		print "<table width='100%'><tr valign='top'><td width='250'>";
-		foreach($va_prefs as $vs_pref) {
-			if ($vs_pref == 'duplicate_relationships') { continue; }
-			print $t_user->preferenceHtmlFormElement("{$vs_table}_{$vs_pref}", null, array());
-		}
-		print "</td>";
-		if (in_array("duplicate_relationships", $va_prefs)) {
-			print "<td>".$t_user->preferenceHtmlFormElement("{$vs_table}_duplicate_relationships", null, array('useTable' => true, 'numTableColumns' => 3))."</td>";
-		}
+			print "<table width='100%'><tr valign='top'><td width='250'>";
+			foreach($va_prefs as $vs_pref) {
+				if ($vs_pref == 'duplicate_relationships') { continue; }
+				print $t_user->preferenceHtmlFormElement("{$vs_current_table}_{$vs_pref}", null, array());
+			}
+			print "</td>";
+			if (in_array("duplicate_relationships", $va_prefs)) {
+				print "<td>".$t_user->preferenceHtmlFormElement("{$vs_current_table}_duplicate_relationships", null, array('useTable' => true, 'numTableColumns' => 3))."</td>";
+			}
 		
-		print "</tr></table>\n";
-		print "<div class='preferenceSectionDivider'><!-- empty --></div>\n"; 
-	}
+			print "</tr></table>\n";
+			print "<div class='preferenceSectionDivider'><!-- empty --></div>\n"; 
+		}
+
 ?>
 		<input type="hidden" name="action" value="<?php print $this->request->getAction(); ?>"/>
 	</form>
