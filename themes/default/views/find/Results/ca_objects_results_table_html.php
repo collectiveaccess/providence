@@ -32,9 +32,9 @@
 	$vo_result 				= $this->getVar('result');
 	$vn_items_per_page 		= $this->getVar('current_items_per_page');
 	$vs_current_sort 		= $this->getVar('current_sort');
+	$vs_current_sort_dir    = $this->getVar('current_sort_direction');
 	$vs_default_action		= $this->getVar('default_action');
 	$vo_ar					= $this->getVar('access_restrictions');
-	$vs_current_sort_dir    = $this->getVar('current_sort_direction');
 	$va_relation_id_map 	= $this->getVar('relationIdMap');
 
 	$vs_interstitial_prefix	= $this->getVar('interstitialPrefix');
@@ -42,7 +42,6 @@
 	$vn_primary_id			= $this->getVar('primaryID');
 	$vs_rel_table			= $this->getVar('relTable');
 
-	
 ?>
 <div id="scrollingResults">
 	<form id="caFindResultsForm">

@@ -137,7 +137,7 @@ class ObjectTableController extends BaseSearchController {
 
 		$va_search_opts = array(
 			'sort' => $vs_sort,
-			'sort_direction' => $vs_sort_direction,
+			'sortDirection' => $vs_sort_direction,
 			'checkAccess' => $va_access_values,
 			'no_cache' => true,
 			'resolveLinksUsing' => $vs_primary_table,
