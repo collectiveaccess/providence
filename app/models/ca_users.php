@@ -2056,6 +2056,10 @@ class ca_users extends BaseModel {
 					
 					break;
 				# ---------------------------------
+				case 'DT_HIDDEN':
+					// noop
+					break;
+				# ---------------------------------
 				default:
 					return "Configuration error: Invalid display type for $ps_pref";
 				# ---------------------------------

@@ -27,6 +27,7 @@
  */
  
  require_once(__CA_MODELS_DIR__."/ca_users.php");
+ require_once(__CA_MODELS_DIR__."/ca_editor_ui_screens.php");
  
  	class PreferencesController extends ActionController {
  		# -------------------------------------------------------
@@ -92,6 +93,39 @@
  		public function EditDuplicationPrefs() {
  			$this->view->setVar('t_user', $this->request->user);
  			$this->view->setVar('group', 'duplication');
+ 			
+			$vs_current_table = 'ca_'.$this->request->getActionExtra();	// url action extra is table name without "ca_" (eg. places => ca_places)
+			if (!in_array($vs_current_table, PreferencesController::$s_duplicable_tables)) { 
+				throw new ApplicationException(_t('No duplication preferences for %1', $this->request->getActionExtra()));
+			}
+			
+ 			$o_dm = Datamodel::load();
+			if (!$t_instance = $o_dm->getInstanceByTableName($vs_current_table, true)) {
+				throw new ApplicationException(_t('Invaid table: %1', $this->request->getActionExtra()));
+			}
+			
+			$this->view->setVar('current_table', $vs_current_table);
+			
+ 			$t_screen = new ca_editor_ui_screens();
+			
+ 			
+ 			// get bundles for this table
+ 			$va_bundle_list = array(); 
+			
+			if (!is_array($va_duplication_element_settings = $this->request->user->getPreference($vs_current_table.'_duplicate_element_settings'))) { $va_duplication_element_settings = array(); }
+			
+			$va_available_bundles = $t_screen->getAvailableBundles($vs_current_table);
+			foreach($va_available_bundles as $vs_bundle_name => $va_bundle_info) {
+				if ($o_dm->tableExists($vs_bundle_name)) { continue; }
+				$vn_duplication_setting = isset($va_duplication_element_settings[$vs_bundle_name]) ? $va_duplication_element_settings[$vs_bundle_name] : 1;
+				$va_bundle_list[$vs_bundle_name] = array(
+					'bundle_info' => $va_bundle_info,
+					'duplication_setting' => $vn_duplication_setting
+				);
+			}
+			
+			$this->view->setVar('bundle_list', $va_bundle_list);
+ 			
  			$this->render('preferences_duplication_html.php');
  		}
  		# -------------------------------------------------------
@@ -180,19 +214,28 @@
  					$vs_group = 'duplication';
  					$vs_current_table = 'ca_'.$this->request->getActionExtra();
  					if (in_array($vs_current_table, PreferencesController::$s_duplicable_tables)) {
+						$this->view->setVar('current_table', $vs_current_table);
 						foreach($this->request->user->getValidPreferences($vs_group) as $vs_pref) {
 							if(!$this->getRequest()->getUser()->isValidPreference("{$vs_current_table}_{$vs_pref}")) { continue; }
 
-							if ($vs_pref == 'duplicate_relationships') {
-								$vs_val = $this->request->getParameter("pref_{$vs_current_table}_{$vs_pref}", pArray);
-							} else {
-								$vs_val = $this->request->getParameter("pref_{$vs_current_table}_{$vs_pref}", pString);
+							switch($vs_pref) {
+								case 'duplicate_relationships':
+									$vm_val = $this->request->getParameter("pref_{$vs_current_table}_{$vs_pref}", pArray);
+									break;
+								default:
+									$vm_val = $this->request->getParameter("pref_{$vs_current_table}_{$vs_pref}", pString);
+									break;
 							}
 
-							$this->request->user->setPreference("{$vs_current_table}_{$vs_pref}", $vs_val);
+							$this->request->user->setPreference("{$vs_current_table}_{$vs_pref}", $vm_val);
 						}
+						
+						$vm_val = $this->request->getParameter("duplicate_element_settings", pArray);
+						$this->request->user->setPreference("{$vs_current_table}_duplicate_element_settings", $vm_val);
 					}
-					$vs_view_name = 'preferences_duplication_html.php';
+ 					$this->view->setVar('group', 'duplication');
+ 					$this->notification->addNotification(_t("Saved preference settings"), __NOTIFICATION_TYPE_INFO__);	
+					return $this->EditDuplicationPrefs();
  					break;
  				case 'EditUIPrefs':
  				default:
