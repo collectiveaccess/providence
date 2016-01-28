@@ -230,8 +230,11 @@
 							$this->request->user->setPreference("{$vs_current_table}_{$vs_pref}", $vm_val);
 						}
 						
-						$vm_val = $this->request->getParameter("duplicate_element_settings", pArray);
-						$this->request->user->setPreference("{$vs_current_table}_duplicate_element_settings", $vm_val);
+						// Save per-metadata element duplication settings
+						if ((bool)$this->request->getParameter("pref_{$vs_current_table}_duplicate_attributes", pString)) {
+							$vm_val = $this->request->getParameter("duplicate_element_settings", pArray);
+							$this->request->user->setPreference("{$vs_current_table}_duplicate_element_settings", $vm_val);
+						}
 					}
  					$this->view->setVar('group', 'duplication');
  					$this->notification->addNotification(_t("Saved preference settings"), __NOTIFICATION_TYPE_INFO__);	
