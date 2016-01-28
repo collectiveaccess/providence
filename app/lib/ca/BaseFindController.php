@@ -214,7 +214,15 @@
 						$va_display_list[$vn_i]['bundle_sort'] = $vs_label_table_name.'.'.$t_model->getLabelSortField();
 						continue;
 					}
-					
+
+					// if sort is set in the bundle settings, use that
+					if(isset($va_display_item['settings']['sort']) && (strlen($va_display_item['settings']['sort']) > 0)) {
+						$va_display_list[$vn_i]['is_sortable'] = true;
+						$va_display_list[$vn_i]['bundle_sort'] = $va_display_item['settings']['sort'];
+						continue;
+					}
+
+					// can't sort on related tables!?
 					if ($va_tmp[0] != $this->ops_tablename) { continue; }
 					
 					if ($t_model->hasField($va_tmp[1])) {

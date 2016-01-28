@@ -1077,11 +1077,11 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	}
 	# ---------------------------------------------------------------------
 	/**
-	 * Get date from Excel sheet for given column and row. Convert Excel date to format acceptable by TimeExpressionParser if necessary.
+	 * Get raw cell from Excel sheet for given column and row
 	 * @param PHPExcel_Worksheet $po_sheet The work sheet
 	 * @param int $pn_row_num row number (zero indexed)
 	 * @param string|int $pm_col either column number (zero indexed) or column letter ('A', 'BC')
-	 * @return string|null the date, if a value exists
+	 * @return PHPExcel_Cell|null the cell, if a value exists
 	 */
 	function caPhpExcelGetRawCell($po_sheet, $pn_row_num, $pm_col) {
 		if(!is_numeric($pm_col)) {
