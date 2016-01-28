@@ -517,6 +517,8 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Get sort keys for list of hits from a given table
+		 *
 		 * @param string $ps_element_code
 		 * @param int $pn_table_num
 		 * @param array $pa_hits
