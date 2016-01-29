@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,13 +36,7 @@
  		protected $opa_filters = array();
  		# -------------------------------------------------------
 		public function Get($pa_additional_query_params=null, $pa_options=null) {
-			//if (!$this->request->user->canDoAction('is_administrator')) {
-			//	$this->opa_filters = array("ca_user_groups.user_id" => array($this->request->getUserID()));
-			//} else {
-			//	$this->opa_filters = array();
-			//}
 			return parent::Get($pa_additional_query_params, $pa_options);
 		}
  		# -------------------------------------------------------
  	}
- ?>

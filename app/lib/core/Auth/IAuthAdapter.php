@@ -44,7 +44,7 @@ interface IAuthAdapter {
 	 * @param null $pa_options Associative array of options
 	 * @return boolean
 	 */
-	public static function authenticate($ps_username, $ps_password="", $pa_options=null);
+	public function authenticate($ps_username, $ps_password="", $pa_options=null);
 
 	/**
 	 * Creates new user in back-end. Should throw AuthClassFeatureException if not implemented. Note that while this is
@@ -59,7 +59,7 @@ interface IAuthAdapter {
 	 * back-ends where it doesn't make any sense to store a password locally (e.g. LDAP or OAuth). Can also be used to store
 	 * authentication tokens. The password you store here will be passed to authenticate() as-is.
 	 */
-	public static function createUserAndGetPassword($ps_username, $ps_password);
+	public function createUserAndGetPassword($ps_username, $ps_password);
 
 	/**
 	 * Get array containing field_name/value pairs for newly created records in the ca_users table, e.g. email, fname, lname.
@@ -68,7 +68,7 @@ interface IAuthAdapter {
 	 * @param $ps_password
 	 * @return array
 	 */
-	public static function getUserInfo($ps_username, $ps_password);
+	public function getUserInfo($ps_username, $ps_password);
 
 	/**
 	 * Deletes user. Should throw AuthClassFeatureException if not implemented.
@@ -76,7 +76,7 @@ interface IAuthAdapter {
 	 * @param string $ps_username user name
 	 * @return bool delete successful or not?
 	 */
-	public static function deleteUser($ps_username);
+	public function deleteUser($ps_username);
 
 	/**
 	 * Updates password for existing user and returns it. Should throw AuthClassFeatureException if not implemented.
@@ -86,7 +86,7 @@ interface IAuthAdapter {
 	 * @return string|null The password to store in the ca_users table. Can be left empty for
 	 * back-ends where it doesn't make any sense to store a password locally (e.g. LDAP or OAuth).
 	 */
-	public static function updatePassword($ps_username, $ps_password);
+	public function updatePassword($ps_username, $ps_password);
 
 
 	/**
@@ -100,7 +100,7 @@ interface IAuthAdapter {
 	 * @param int $pn_feature The feature to check for
 	 * @return bool Is it implemented or not?
 	 */
-	public static function supports($pn_feature);
+	public function supports($pn_feature);
 
 	/**
 	 * Gives implementations an option to place an account management link on the CollectiveAccess
@@ -111,7 +111,7 @@ interface IAuthAdapter {
 	 *
 	 * @return false|string
 	 */
-	public static function getAccountManagementLink();
+	public function getAccountManagementLink();
 
 }
 

@@ -1274,11 +1274,54 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			$va_options[''] = $pa_options['nullOption'];
 		}
 		
+		
+		if (is_array($pa_options['limitToItemsWithID']) && sizeof($pa_options['limitToItemsWithID'])) {
+			// expand limit list to include parents of items that are included
+			$va_to_add = array();
+			foreach($va_list_items as $vn_item_id => $va_item) {
+				if (($vn_parent_id = $va_item['parent_id']) && in_array($vn_item_id, $pa_options['limitToItemsWithID'])) {
+					$va_to_add[$vn_parent_id] = true;
+					while($vn_parent_id = $va_list_items[$vn_parent_id]['parent_id']) {
+						if($va_list_items[$vn_parent_id]['parent_id']) { $va_to_add[$va_list_items[$vn_parent_id]['parent_id']] = true; }
+					}
+				}
+			}	
+			$pa_options['limitToItemsWithID'] += array_keys($va_to_add);
+		}
+		
+		$pa_check_access = caGetOption('checkAccess', $pa_options, null); 
+		if(!is_array($pa_check_access) && $pa_check_access) { $va_check_access = array($va_check_access); }
+		
+		$va_in_use_list = null;
+		if ($pa_options['inUse'] && (int)$pa_options['element_id'] && $pa_options['table']) {
+			$o_dm = Datamodel::load();
+			if ($t_instance = $o_dm->getInstance($pa_options['table'], true)) {
+				$va_params = array((int)$pa_options['element_id']);
+				if(is_array($pa_check_access) && sizeof($pa_check_access)) {
+					$va_params[] = $pa_check_access;
+				}
+				
+				$qr_in_use = $t_list->getDb()->query("
+					SELECT DISTINCT cav.item_id
+					FROM ca_attribute_values cav
+					INNER JOIN ca_attributes AS ca ON ca.attribute_id = cav.attribute_id
+					INNER JOIN ".$t_instance->tableName()." AS t ON t.".$t_instance->primaryKey()." = ca.row_id
+					WHERE 
+						(cav.element_id = ?) AND 
+						(ca.table_num = ".$t_instance->tableNum().") 
+						".(($t_instance->hasField('deleted') ? " AND (t.deleted = 0)" : ""))."
+						".((is_array($pa_check_access) && sizeof($pa_check_access)) ? " AND t.access IN (?)" : "")."
+				", $va_params);
+				$va_in_use_list = $qr_in_use->getAllFieldValues('item_id');
+			}
+		}
+		
 		$va_colors = array();
 		$vn_default_val = null;
 		foreach($va_list_items as $vn_item_id => $va_item) {
 			if (is_array($pa_options['limitToItemsWithID']) && !in_array($vn_item_id, $pa_options['limitToItemsWithID'])) { continue; }
 			if (is_array($pa_options['omitItemsWithID']) && in_array($vn_item_id, $pa_options['omitItemsWithID'])) { continue; }
+			if (is_array($va_in_use_list) && !in_array($vn_item_id, $va_in_use_list)) { continue; }
 			
 			$va_options[$va_item[$pa_options['key']]] = str_repeat('&nbsp;', intval($va_item['LEVEL']) * 3).' '.$va_item['name_singular'];
 			if (!$va_item['is_enabled'] || (is_array($va_disabled_item_ids) && in_array($vn_item_id, $va_disabled_item_ids))) { $va_disabled_options[$va_item[$pa_options['key']]] = true; }
@@ -1381,7 +1424,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				$vn_c = 0;
 				$vs_buf = "<table>\n";
 				foreach($va_options as $vm_value => $vs_label) {
-					if ($vn_c == 0) { $vs_buf .= "<tr>"; }
+					if ($vn_c == 0) { $vs_buf .= "<tr valign='top'>"; }
 					
 					$va_attributes = array('value' => $vm_value);
 					if (isset($va_disabled_options[$vm_value]) && $va_disabled_options[$vm_value]) {
@@ -1392,7 +1435,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					}
 					if (is_array($pa_options['value']) && in_array($vm_value, $pa_options['value']) ) { $va_attributes['checked'] = '1'; }
 					
-					$vs_buf .= "<td>".caHTMLCheckboxInput($ps_name.'_'.$vm_value, $va_attributes, $pa_options)." {$vs_label}</td>";
+					$vs_buf .= "<td>".caHTMLCheckboxInput($ps_name.'_'.$vm_value, $va_attributes, $pa_options)." {$vs_label}</td><td> </td>";
 					
 					$vn_c++;
 					

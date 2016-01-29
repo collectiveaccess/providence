@@ -1,3 +1,17 @@
+# 2.15.10.29
+
+  * Test: Specify file type with `hoa://Test/Vfs`. (Ivan Enderlin, 2015-10-29T22:07:56+01:00)
+
+# 2.15.10.21
+
+  * Fix CS. (Ivan Enderlin, 2015-10-14T17:23:16+02:00)
+
+# 2.15.08.25
+
+  * Fix phpDoc. (Metalaka, 2015-08-12T20:35:36+02:00)
+  * Add skip token generation. (Metalaka, 2014-08-25T17:09:56+02:00)
+  * Add a `.gitignore` file. (Stéphane HULARD, 2015-08-03T11:22:38+02:00)
+
 # 2.15.05.29
 
   * Move to PSR-1 and PSR-2. (Ivan Enderlin, 2015-05-04T20:11:09+02:00)

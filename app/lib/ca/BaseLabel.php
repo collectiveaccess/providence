@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -138,27 +138,9 @@
 			if ($vs_sort_field = $this->getProperty('LABEL_SORT_FIELD')) {
 				$vs_display_field = $this->getProperty('LABEL_DISPLAY_FIELD');
 				
-				$o_tep = new TimeExpressionParser();
-				
 				$t_locale = new ca_locales();
-				$o_tep->setLanguage($t_locale->localeIDToCode($this->get('locale_id')));
-				$o_lang_settings = $o_tep->getLanguageSettings();
-				$vs_display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $this->get($vs_display_field)));
-				
-				$va_definite_articles = $o_lang_settings->get('definiteArticles');
-				$va_indefinite_articles = $o_lang_settings->get('indefiniteArticles');
-				
-				foreach(array($o_lang_settings->get('definiteArticles'), $o_lang_settings->get('indefiniteArticles')) as $va_articles) {
-					if (is_array($va_articles)) {
-						foreach($va_articles as $vs_article) {
-							if (preg_match('!^('.$vs_article.')[ ]+!i', $vs_display_value, $va_matches)) {
-								$vs_display_value = trim(str_replace($va_matches[1], '', $vs_display_value).', '.$va_matches[1]);
-								break(2);
-							}
-						}
-					}
-				}
-				
+				$vs_display_value = caSortableValue($this->get($vs_display_field), array('locale' => $t_locale->localeIDToCode($this->get('locale_id'))));
+			
 				$this->set($vs_sort_field, $vs_display_value);
 			}
 		}

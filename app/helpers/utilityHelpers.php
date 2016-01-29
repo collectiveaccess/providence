@@ -407,7 +407,7 @@ function caFileIsIncludable($ps_file) {
 		if ($handle = @opendir($dir)) {
 			while (false !== ($item = readdir($handle))) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
-					if (is_dir("{$dir}/{$item}")) { 
+					if (is_dir("{$dir}/{$item}")) {
 						$va_dir_list = array_merge($va_dir_list, caGetSubDirectoryList("{$dir}/{$item}", true, $pb_include_hidden_files));
 					}  else {
 						$vn_file_count++;
@@ -423,6 +423,22 @@ function caFileIsIncludable($ps_file) {
 		
 		ksort($va_dir_list);
 		return $va_dir_list;
+	}
+	# ----------------------------------------
+	/**
+	 * Checks if a given directory is empty (i.e. doesn't have any subdirectories or files in it)
+	 * @param string $vs_dir The directory to check
+	 * @return bool false if it's not a readable directory or if it's not empty, otherwise true
+	 */
+	function caDirectoryIsEmpty($vs_dir) {
+		if(!is_readable($vs_dir) || !is_dir($vs_dir)) { return false; }
+
+		try {
+			$o_iterator = new \FilesystemIterator($vs_dir);
+			return !$o_iterator->valid();
+		} catch (Exception $e) {
+			return false;
+		}
 	}
 	# ----------------------------------------
 	function caZipDirectory($ps_directory, $ps_name, $ps_output_file) {
@@ -459,7 +475,7 @@ function caFileIsIncludable($ps_file) {
 		// strip quotes from path if present since they'll cause file_exists() to fail
 		$ps_path = preg_replace("!^\"!", "", $ps_path);
 		$ps_path = preg_replace("!\"$!", "", $ps_path);
-		if (!$ps_path || (preg_match("/[^\/A-Za-z0-9\.:\ _\(\)\\\-]+/", $ps_path)) || !file_exists($ps_path)) { return false; }
+		if (!$ps_path || (preg_match("/[^\/A-Za-z0-9\.:\ _\(\)\\\-]+/", $ps_path)) || !@file_exists($ps_path)) { return false; }	// hide basedir warnings
 
 		return true;
 	}
@@ -543,11 +559,24 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	function caEscapeForBundlePreview($ps_text, $pn_limit=100) {
-		$ps_text = preg_replace("![^\X]+$!", " ", $ps_text);
-		if(strlen($ps_text) > $pn_limit) {
+		$ps_text = caSanitizeStringForJsonEncode($ps_text);
+		if(mb_strlen($ps_text) > $pn_limit) {
 			$ps_text = mb_substr($ps_text, 0, $pn_limit) . " ...";
 		}
-		return json_encode(html_entity_decode(strip_tags($ps_text), ENT_QUOTES | ENT_HTML5));
+
+		if($ps_text = json_encode(html_entity_decode($ps_text, ENT_QUOTES | ENT_HTML5))) {
+			return $ps_text;
+		} else {
+			return '""';
+		}
+	}
+	# ----------------------------------------
+	function caSanitizeStringForJsonEncode($ps_text) {
+		// Remove invalid UTF-8
+		mb_substitute_character(0xFFFD);
+		$ps_text = mb_convert_encoding($ps_text, 'UTF-8', 'UTF-8');
+		// @see http://php.net/manual/en/regexp.reference.unicode.php
+		return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}]|➔/", '', strip_tags($ps_text));
 	}
 	# ----------------------------------------
 	/**
@@ -750,13 +779,24 @@ function caFileIsIncludable($ps_file) {
 	# ---------------------------------------
 	/**
 	 * Checks URL for apparent well-formedness. Return true if it looks like a valid URL, false if not. This function does
-	 * not actually connect to the URL to confirm its validity. It only validates at text content for well-formedness.
+	 * not actually connect to the URL to confirm its validity. It only validates text content for well-formedness.
+	 * By default will return true if a url is anywhere in the $ps_url parameter. Set the 'strict' option if you want to 
+	 * only return true for strings that are valid urls without any extra text.
 	 *
 	 * @param string $ps_url The URL to check
+	 * @param array $pa_options Options include:
+	 *		strict = only consider text a valid url if text contains only the url [Default is false]
 	 * @return boolean true if it appears to be valid URL, false if not
 	 */
-	function isURL($ps_url) {
-		if (preg_match("!(http|ftp|https|rtmp|rtsp|mysql):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?!", $ps_url, $va_matches)) {
+	function isURL($ps_url, $pa_options=null) {
+	
+		if (
+			caGetOption('strict', $pa_options, false)
+			?
+				preg_match("!^(http|ftp|https|rtmp|rtsp|mysql):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?$!", $ps_url, $va_matches)
+				:
+				preg_match("!(http|ftp|https|rtmp|rtsp|mysql):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?!", $ps_url, $va_matches)
+			) {
 			return array(
 				'protocol' => $va_matches[1],
 				'url' => $ps_url
@@ -1010,7 +1050,7 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Parses string for form element dimension. If a simple integer is passed then it is considered
 	 * to be expressed as the number of characters to display. If an integer suffixed with 'px' is passed
-	 * then the dimension is considered to be expressed in pixesl. If non-integers are passed they will
+	 * then the dimension is considered to be expressed in pixels. If non-integers are passed they will
 	 * be cast to integers.
 	 *
 	 * An array is always returned, with two keys: 
@@ -1038,19 +1078,66 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ---------------------------------------
 	/**
+	 * Parses string for element dimension. If a simple integer is passed then it is considered
+	 * to be expressed as pixels. If an integer suffixed with 'px' is passed. Percentages are parsed as relative dimensions.
+	 * then the dimension is considered to be expressed in pixels. If non-integers are passed they will
+	 * be cast to integers.
+	 *
+	 * An array is always returned, with three keys: 
+	 *		dimension = the integer value of the dimension
+	 *		expression = CSS dimension (eg. 500px or 100%)
+	 *		type = either 'pixels' or 'relative'
+	 *
+	 * @param string $ps_dimension
+	 * @return array An array describing the parsed value or null if no value was passed
+	*/
+	function caParseElementDimension($ps_dimension) {
+		$ps_dimension = trim($ps_dimension);
+		if (!$ps_dimension) { return null; }
+		
+		if (preg_match('!^([\d]+)[ ]*px$!', $ps_dimension, $va_matches)) {
+			return array(
+				'dimension' => (int)$va_matches[1],
+				'expression' => $ps_dimension,
+				'type' => 'pixels'
+			);
+		}
+		
+		if (preg_match('!^([\d\.]+)[ ]*%$!', $ps_dimension, $va_matches)) {
+			return array(
+				'dimension' => (int)$va_matches[1],
+				'expression' => $ps_dimension,
+				'type' => 'relative'
+			);
+		}
+		
+		return array(
+			'dimension' => (int)$ps_dimension,
+			'expression' => "{$ps_dimension} px",
+			'type' => 'pixels'
+		);
+	}
+	# ---------------------------------------
+	/**
 	 * Sorts an array of arrays based upon one or more values in the second-level array.
 	 * Top-level keys are preserved in the sort.
 	 *
 	 * @param array $pa_values The array to sort. It should be an array of arrays (aka. 2-dimensional)
 	 * @param array $pa_sort_keys An array of keys in the second-level array to sort by
+	 * @param array $pa_options Options include:
+	 * 		dontRemoveKeyPrefixes = By default keys that are period-delimited will have the prefix before the first period removed (this is to ease sorting by field names). Set to true to disable this behavior. [Default is false]
 	 * @return array The sorted array
 	*/
-	function caSortArrayByKeyInValue($pa_values, $pa_sort_keys, $ps_sort_direction="ASC") {
+	function caSortArrayByKeyInValue($pa_values, $pa_sort_keys, $ps_sort_direction="ASC", $pa_options=null) {
 		$va_sort_keys = array();
-		foreach ($pa_sort_keys as $vs_field) {
-			$va_tmp = explode('.', $vs_field);
-			if (sizeof($va_tmp) > 1) { array_shift($va_tmp); }
-			$va_sort_keys[] = join(".", $va_tmp);
+		if (caGetOption('dontRemoveKeyPrefixes', $pa_options, false)) {
+			foreach ($pa_sort_keys as $vs_field) {
+				$va_tmp = explode('.', $vs_field);
+				if (sizeof($va_tmp) > 1) { array_shift($va_tmp); }
+				$va_sort_keys[] = join(".", $va_tmp);
+			}
+		} else {
+			$va_sort_keys = $pa_sort_keys;
 		}
 		$va_sorted_by_key = array();
 		foreach($pa_values as $vn_id => $va_data) {
@@ -1886,7 +1973,7 @@ function caFileIsIncludable($ps_file) {
 				}
 				
 				if ($vb_remove_noncharacter_data) {
-					$pa_array[$vn_k] = preg_replace("![^\X]+!", "", $pa_array[$vn_k]);
+					$pa_array[$vn_k] = caSanitizeStringForJsonEncode($pa_array[$vn_k]);
 				}
 			}
 		}
@@ -1914,7 +2001,9 @@ function caFileIsIncludable($ps_file) {
 			if (is_array($vm_v)) {
 				$pa_array[$vn_k] = caPurifyArray($vm_v, $pa_options);
 			} else {
-				$pa_array[$vn_k] = $o_purifier->purify($vm_v);
+				if (!is_null($vm_v)) {
+					$pa_array[$vn_k] = $o_purifier->purify($vm_v);
+				}
 			}
 		}
 		return $pa_array;
@@ -2427,60 +2516,37 @@ function caFileIsIncludable($ps_file) {
  	 * Query external web service and return whatever body it returns as string
  	 * @param string $ps_url URL of the web service to query
 	 * @return string
+	 * @throws \Exception
  	 */
 	function caQueryExternalWebservice($ps_url) {
 		if(!isURL($ps_url)) { return false; }
-
 		$o_conf = Configuration::load();
 
+		$vo_curl = curl_init();
+		curl_setopt($vo_curl, CURLOPT_URL, $ps_url);
+
 		if($vs_proxy = $o_conf->get('web_services_proxy_url')){ /* proxy server is configured */
-
-			$vs_proxy_auth = null;
-			if(($vs_proxy_user = $o_conf->get('web_services_proxy_auth_user')) && ($vs_proxy_pass = $o_conf->get('web_services_proxy_auth_pw'))){
-				$vs_proxy_auth = base64_encode("{$vs_proxy_user}:{$vs_proxy_pass}");
-			}
-
-			// non-authed proxy requests go through curl to properly support https queries
-			// everything else is still handled via file_get_contents and stream contexts
-			if(is_null($vs_proxy_auth) && function_exists('curl_exec')) {
-				$vo_curl = curl_init();
-				curl_setopt($vo_curl, CURLOPT_URL, $ps_url);
-				curl_setopt($vo_curl, CURLOPT_PROXY, $vs_proxy);
-				curl_setopt($vo_curl, CURLOPT_SSL_VERIFYHOST, 0);
-				curl_setopt($vo_curl, CURLOPT_SSL_VERIFYPEER, false);
-				curl_setopt($vo_curl, CURLOPT_FOLLOWLOCATION, true);
-				curl_setopt($vo_curl, CURLOPT_RETURNTRANSFER, 1);
-				curl_setopt($vo_curl, CURLOPT_AUTOREFERER, true);
-				curl_setopt($vo_curl, CURLOPT_CONNECTTIMEOUT, 120);
-				curl_setopt($vo_curl, CURLOPT_TIMEOUT, 120);
-				curl_setopt($vo_curl, CURLOPT_MAXREDIRS, 10);
-				curl_setopt($vo_curl, CURLOPT_USERAGENT, 'CollectiveAccess web service lookup');
-
-				$vs_content = curl_exec($vo_curl);
-				curl_close($vo_curl);
-				return $vs_content;
-			} else {
-				$va_context_options = array( 'http' => array(
-					'proxy' => $vs_proxy,
-					'request_fulluri' => true,
-					'header' => 'User-agent: CollectiveAccess web service lookup',
-				));
-
-				if($vs_proxy_auth){
-					$va_context_options['http']['header'] = "Proxy-Authorization: Basic {$vs_proxy_auth}";
-				}
-
-				$vo_context = stream_context_create($va_context_options);
-				return @file_get_contents($ps_url, false, $vo_context);
-			}
-		} else {
-			return @file_get_contents($ps_url, false, stream_context_create(array(
-				"ssl"=>array(
-					"verify_peer"=>false,
-					"verify_peer_name"=>false,
-				),
-			)));
+			curl_setopt($vo_curl, CURLOPT_PROXY, $vs_proxy);
 		}
+
+		curl_setopt($vo_curl, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($vo_curl, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($vo_curl, CURLOPT_FOLLOWLOCATION, true);
+		curl_setopt($vo_curl, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($vo_curl, CURLOPT_AUTOREFERER, true);
+		curl_setopt($vo_curl, CURLOPT_CONNECTTIMEOUT, 120);
+		curl_setopt($vo_curl, CURLOPT_TIMEOUT, 120);
+		curl_setopt($vo_curl, CURLOPT_MAXREDIRS, 10);
+		curl_setopt($vo_curl, CURLOPT_USERAGENT, 'CollectiveAccess web service lookup');
+
+		$vs_content = curl_exec($vo_curl);
+
+		if(curl_getinfo($vo_curl, CURLINFO_HTTP_CODE) !== 200) {
+			throw new \Exception(_t('An error occurred while querying an external webservice'));
+		}
+
+		curl_close($vo_curl);
+		return $vs_content;
 	}
 	# ----------------------------------------
 	/**
@@ -2904,6 +2970,29 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
+	 * Display-and-die
+	 *
+	 * @param mixed $pm_val Value to dump
+	 * @param array $pa_options Option include:
+	 *		live = Don't die [default is to false]
+	 *
+	 */
+	function dd($pm_val, $pa_options=null) {
+		print "<pre>".print_r($pm_val, true)."</pre>\n";
+		if (!caGetOption('live', $pa_options, false)) { die; }
+	}
+	# ----------------------------------------
+	/**
+	 * Output content in HTML <pre> tags
+	 *
+	 * @param mixed $pm_val Value to dump
+	 *
+	 */
+	function pre($pm_val) {
+		dd($pm_val, array('live' => true));
+	}
+	# ----------------------------------------
+	/**
 	 * Flatten a multi-dimensional array
 	 *
 	 * @param array $pa_array The multidimensional array
@@ -2918,5 +3007,94 @@ function caFileIsIncludable($ps_file) {
 		
 		if(caGetOption('unique', $pa_options, false)) { $va_return = array_unique($va_return); }
 		return $va_return;
+	}
+	# ----------------------------------------
+	/**
+	 * Converts a (float) measurement in inches to fractions, up to the given denominator, e.g. 1/16th
+	 * @see http://stackoverflow.com/questions/13811108/function-to-round-mm-to-the-nearest-32nd-of-an-inch
+	 *
+	 * @param float $pn_inches_as_float
+	 * @param int $pn_denom
+	 * @param bool $pb_reduce
+	 * @return string
+	 */
+	function caLengthToFractions($pn_inches_as_float, $pn_denom, $pb_reduce = true) {
+		$num = round($pn_inches_as_float * $pn_denom);
+		$int = (int)($num / $pn_denom);
+		$num %= $pn_denom;
+
+		if (!$num) {
+			return "$int in";
+		}
+
+		if ($pb_reduce) {
+			// Use Euclid's algorithm to find the GCD.
+			$a = $num < 0 ? -$num : $num;
+			$b = $pn_denom;
+			while ($b) {
+				$t = $b;
+				$b = $a % $t;
+				$a = $t;
+			}
+
+			$num /= $a;
+			$pn_denom /= $a;
+		}
+
+		if ($int) {
+			// Suppress minus sign in numerator; keep it only in the integer part.
+			if ($num < 0) {
+				$num *= -1;
+			}
+			return "$int $num/$pn_denom in";
+		}
+
+		return "$num/$pn_denom in";
+	}
+	# ----------------------------------------
+	/**
+	 * Convert text into string suitable for sorting, by moving articles to end of string, etc.
+	 *
+	 * @param string $ps_text Text to convert to sortable value
+	 * @param array $pa_options Options include:
+	 *		locale = Locale settings to use. If omitted current default locale is used. [Default is current locale]
+	 *		omitArticle = Omit leading definite and indefinited articles, rather than moving them to the end of the text [Default is true]
+	 *
+	 * @return string Converted text. If locale cannot be found $ps_text is returned unchanged.
+	 */
+	function caSortableValue($ps_text, $pa_options=null) {
+		global $g_ui_locale;
+		$ps_locale = caGetOption('locale', $pa_options, $g_ui_locale);
+		if (!$ps_locale) { return $ps_text; }
+		
+		$pb_omit_article = caGetOption('omitArticle', $pa_options, true);
+		
+		$o_locale_settings = TimeExpressionParser::getSettingsForLanguage($ps_locale);
+		
+		$vs_display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $ps_text));
+		
+		// Move articles to end of string
+		$va_definite_articles = $o_locale_settings ? $o_locale_settings->get('definiteArticles') : array();
+		$va_indefinite_articles = $o_locale_settings ? $o_locale_settings->get('indefiniteArticles') : array();
+		
+		foreach(array($va_definite_articles, $va_indefinite_articles) as $va_articles) {
+			if (is_array($va_articles)) {
+				foreach($va_articles as $vs_article) {
+					if (preg_match('!^('.$vs_article.')[ ]+!i', $vs_display_value, $va_matches)) {
+						$vs_display_value = trim(str_replace($va_matches[1], '', $vs_display_value).($pb_omit_article ? '' : ', '.$va_matches[1]));
+						break(2);
+					}
+				}
+			}
+		}
+		
+		// Left-pad numbers
+		if (preg_match("![\d]+!", $vs_display_value, $va_matches)) {
+			for($i=0; $i<sizeof($va_matches); $i++) {
+				$vs_padded = str_pad($va_matches[$i], 15, 0, STR_PAD_LEFT);
+				$vs_display_value = str_replace($va_matches[$i], $vs_padded, $vs_display_value);
+			}
+		}
+		return $vs_display_value;
 	}
 	# ----------------------------------------

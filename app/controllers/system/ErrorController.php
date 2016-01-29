@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
 
-	require_once(__CA_LIB_DIR__."/core/Error.php");
+	require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
  
  	class ErrorController extends ActionController {
  		# -------------------------------------------------------
@@ -39,7 +39,7 @@
  			
  			$va_error_messages = array();
  			if (is_array($va_nums)) {
- 				$o_err = new Error(0, '', '', '', false, false);
+ 				$o_err = new ApplicationError(0, '', '', '', false, false);
  				foreach($va_nums as $vn_error_number) {
  					$o_err->setError($vn_error_number, '', '', false, false);
  					$va_error_messages[] = $o_err->getErrorMessage();

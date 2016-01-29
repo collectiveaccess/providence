@@ -131,18 +131,30 @@ abstract class BaseDataReader {
 		//
 		// Return "special" values
 		//
+		$vs_val = null;
 		switch($ps_field) {
 			case '__row__':
-				return $this->currentRow();
+				$vs_val = $this->currentRow();
 				break;
 			case '__source__':
-				return pathinfo($this->ops_source, PATHINFO_BASENAME);
+				$vs_val = pathinfo($this->ops_source, PATHINFO_BASENAME);
+				break;
+			case '__filepath__':
+				$vs_val = $this->ops_source;
 				break;
 			case '__filename__':
-				return ($vs_original_filename = caGetOption('originalFilename', $pa_options, null)) ? $vs_original_filename : pathinfo($this->ops_source, PATHINFO_BASENAME);
+				$vs_val = ($vs_original_filename = caGetOption('originalFilename', $pa_options, null)) ? $vs_original_filename : pathinfo($this->ops_source, PATHINFO_BASENAME);
+				break;
+			default:
+				return null;
 				break;
 		}
-		return null;
+		
+		if ($this->valuesCanRepeat() && caGetOption('returnAsArray', $pa_options, false)) {
+			return array($vs_val);
+		}
+		
+		return $vs_val;
 	}
 	# -------------------------------------------------------
 	/**

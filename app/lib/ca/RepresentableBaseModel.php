@@ -824,7 +824,7 @@
 				if(is_array($va_rels) && isset($va_rels['ca_object_representation_labels'])){ // labels don't count as relationships in this case
 					unset($va_rels['ca_object_representation_labels']);
 				}
-				if(is_array($va_rels) && isset($va_rels['ca_objects_x_object_representations']) && ($va_rels['ca_objects_x_object_representations'] <= 1)){
+				if(is_array($va_rels) && isset($va_rels['ca_objects_x_object_representations']) && ($va_rels['ca_objects_x_object_representations'] < 1)){
 					unset($va_rels['ca_objects_x_object_representations']);
 				}
 

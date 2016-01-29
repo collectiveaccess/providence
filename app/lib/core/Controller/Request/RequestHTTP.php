@@ -289,6 +289,7 @@ class RequestHTTP extends Request {
 		} else {
 			$vs_theme = $this->config->get('theme');		// default theme
 		}
+		if (!$vs_theme) { $vs_theme = $this->config->get('theme'); }
 		return $this->config->get('themes_url').'/'.$vs_theme;
 	}
 	# -------------------------------------------------------
@@ -299,6 +300,7 @@ class RequestHTTP extends Request {
 		} else {
 			$vs_theme = $this->config->get('theme');		// default theme
 		}
+		if (!$vs_theme) { $vs_theme = $this->config->get('theme'); }
 		return $this->config->get('themes_directory').'/'.$vs_theme;
 	}
 	# -------------------------------------------------------
@@ -534,10 +536,16 @@ class RequestHTTP extends Request {
 			} else {
 				$vn_port = 80;
 			}
+			
+			if($vn_port == 443) {
+				$vs_proto = 'tls://';
+			} else {
+				$vs_proto = 'tcp://';
+			}
 
 			// trigger async search indexing
-			if(!$this->isAjax() && !$this->getAppConfig()->get('disable_out_of_process_search_indexing')) {
-				$r_socket = fsockopen(__CA_SITE_HOSTNAME__, $vn_port, $errno, $err, 3);
+			if(!$this->getAppConfig()->get('disable_out_of_process_search_indexing')) {
+				$r_socket = fsockopen($vs_proto . __CA_SITE_HOSTNAME__, $vn_port, $errno, $err, 3);
 				if ($r_socket) {
 					$vs_http  = "GET ".$this->getBaseUrlPath()."/index.php?processIndexingQueue=1 HTTP/1.1\r\n";
 					$vs_http .= "Host: ".__CA_SITE_HOSTNAME__."\r\n";
@@ -718,10 +726,7 @@ class RequestHTTP extends Request {
 			}
 			if (!$pa_options["dont_redirect_to_login"]) {
 				$vs_auth_login_url = $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_path");
-				//header("Location: ".$vs_auth_login_url.(($pa_options["user_name"]) ? "&lf=1" : ""));
 				$this->opo_response->addHeader("Location", $vs_auth_login_url);
-				
-				//exit;
 			}
 			return false;
 		} else {		
@@ -741,12 +746,19 @@ class RequestHTTP extends Request {
 			
 			//$this->user->close(); ** will be called externally **
 			$AUTH_CURRENT_USER_ID = $vn_user_id;
+
 			if ($pa_options['redirect']) {
-				$this->opo_response->addHeader("Location", $pa_options['redirect']);
-			} elseif (!$pa_options["dont_redirect_to_welcome"]) {
-				//header("Location: ".$this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_welcome_path"));				// redirect to "welcome" page
-				$this->opo_response->addHeader("Location", $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_welcome_path"));
-				//exit;
+				// redirect to specified URL
+				$this->opo_response->setRedirect($pa_options['redirect']);
+				$this->opo_response->sendResponse();
+				exit;
+			}
+
+			if (!$pa_options["dont_redirect_to_welcome"]) {
+				// redirect to "welcome" page
+				$this->opo_response->setRedirect($this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_welcome_path"));
+				$this->opo_response->sendResponse();
+				exit;
 			}
 			
 			return true;
@@ -802,4 +814,20 @@ class RequestHTTP extends Request {
 		return false;
 	}
 	# ----------------------------------------
- }
+	/**
+	 * Returns a unique key identifying this request for caching purposes
+	 *
+	 * @return string
+	 */
+	public function getHash() {
+		return md5(
+			serialize($this->getParameters(array('POST', 'GET', 'REQUEST'))) .
+			$this->getRawPostData() .
+			$this->getRequestMethod() .
+			$this->getFullUrlPath() .
+			$this->getScriptName() .
+			($this->isLoggedIn() ? $this->getUserID() : '')
+		);
+	}
+	# ----------------------------------------
+}

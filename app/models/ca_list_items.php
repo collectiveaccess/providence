@@ -542,6 +542,7 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		parent::initLabelDefinitions($pa_options);
 		$this->BUNDLES['ca_object_representations'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Media representations'));
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
+		$this->BUNDLES['ca_objects_table'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects table'));
 		$this->BUNDLES['ca_object_lots'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related lots'));
 		$this->BUNDLES['ca_entities'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities'));
 		$this->BUNDLES['ca_places'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related places'));
@@ -553,7 +554,8 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 		$this->BUNDLES['ca_movements'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related movements'));
 		
 		$this->BUNDLES['ca_list_items'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related vocabulary terms'));
-		$this->BUNDLES['ca_sets'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));
+		$this->BUNDLES['ca_sets'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related sets'));
+		$this->BUNDLES['ca_sets_checklist'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Sets'));
 		
 		$this->BUNDLES['hierarchy_navigation'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Hierarchy navigation'));
 		$this->BUNDLES['hierarchy_location'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Location in hierarchy'));
@@ -604,6 +606,14 @@ class ca_list_items extends RepresentableBaseModel implements IHierarchy {
 				$t_locale = new ca_locales();
 				$va_locales = $this->getAppConfig()->getList('locale_defaults');
 				$vn_locale_id = $t_locale->localeCodeToID($va_locales[0]);
+
+				if(!$vn_locale_id) {
+					$this->postError(750, _t('Locale %1 does not exist', $va_locales[0]), 'ca_list_items->insert()');
+					if ($vb_web_set_transaction) {
+						$this->getTransaction()->rollback();
+					}
+					return false;
+				}
 				
 				// create root in ca_places
 				$t_place = new ca_places();

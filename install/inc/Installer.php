@@ -233,6 +233,10 @@ class Installer {
 			return false;
 		}
 		/** @var LabelableBaseModelWithAttributes $t_instance */
+		if (!$po_labels || !$po_labels->children()) { 
+			$t_instance->addLabel(array($t_instance->getLabelDisplayField() => "???"), array_shift($pa_locales), false, true);
+			return true; 
+		}
 		foreach($po_labels->children() as $vo_label){
 			$va_label_values = array();
 			$vs_locale = self::getAttribute($vo_label, "locale");
@@ -288,7 +292,24 @@ class Installer {
 				}
 			}
 		}
+
+		// nuke search index if we using ElasticSearch (the SqlSearch index is nuked when we drop the database)
+		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
+			require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
+			$o_es = new WLPlugSearchEngineElasticSearch();
+			$o_es->truncateIndex(null, true);
+		}
+
 		return true;
+	}
+	# --------------------------------------------------
+	public function performPostInstallTasks() {
+		$o_config = Configuration::load();
+		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
+			require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
+			$o_es = new WLPlugSearchEngineElasticSearch();
+			$o_es->refreshMapping(true);
+		}
 	}
 	# --------------------------------------------------
 	/**
@@ -405,6 +426,14 @@ class Installer {
 
 			$this->opa_locales[$vs_language."_".$vs_country] = $t_locale->getPrimaryKey();
 		}
+
+		$va_locales = $t_locale->getAppConfig()->getList('locale_defaults');
+		$vn_locale_id = $t_locale->localeCodeToID($va_locales[0]);
+
+		if(!$vn_locale_id) {
+			throw new Exception("The locale default is set to a non-existing locale. Try adding '". $va_locales[0] . "' to your profile.");
+		}
+
 		return true;
 	}
 	# --------------------------------------------------

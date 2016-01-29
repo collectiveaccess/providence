@@ -213,6 +213,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	protected $opo_app_plugin_manager;
 
 	# ------------------------------------------------------
+	public static function clearCaches() {
+		self::$s_exporter_cache = array();
+		self::$s_exporter_item_cache = array();
+		self::$s_mapping_check_cache = array();
+		self::$s_instance_cache = array();
+		self::$s_variables = array();
+	}
+	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 
@@ -747,13 +755,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 					// allow mapping repetition
 					if($vs_mode == 'RepeatMappings') {
-						if(strlen($vs_source)<1) {// ignore repitition rows without value
+						if(strlen($vs_source) < 1) { // ignore repitition rows without value
 							continue;
 						}
 
 						$va_new_items = array();
 
-						$va_mapping_items_to_repeat = explode(",",$vs_source);
+						$va_mapping_items_to_repeat = explode(',', $vs_source);
 
 						foreach($va_mapping_items_to_repeat as $vs_mapping_item_to_repeat) {
 							$vs_mapping_item_to_repeat = trim($vs_mapping_item_to_repeat);
@@ -780,10 +788,9 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 									$va_new_items[$vs_key."_:_".$vs_item_key]['parent_id'] = $vs_key . ($va_item['parent_id'] ? "_:_".$va_item['parent_id'] : "");
 								}
 							}
-
 						}
 
-						$va_mapping = array_merge($va_mapping,$va_new_items);
+						$va_mapping = $va_mapping + $va_new_items;
 					}
 
 					break;
@@ -1158,6 +1165,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$vb_show_cli_progress_bar = (isset($pa_options['showCLIProgressBar']) && ($pa_options['showCLIProgressBar']));
 		$po_request = caGetOption('request', $pa_options, null);
+		$vb_have_request = ($po_request instanceof RequestHTTP);
 
 		if(!$t_mapping = ca_data_exporters::loadExporterByCode($ps_exporter_code)) {
 			return false;
@@ -1220,9 +1228,16 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			file_put_contents($ps_filename, join(",", $va_header)."\n", FILE_APPEND);
 		}
 
+		$i = 0;
 		while($po_result->nextHit()) {
 
-			if($po_request instanceof RequestHTTP) {
+			// clear caches every once in a while. doesn't make much sense to keep them around while exporting
+			if((++$i % 1000) == 0) {
+				SearchResult::clearCaches();
+				ca_data_exporters::clearCaches();
+			}
+
+			if($vb_have_request) {
 				if(!caCanRead($po_request->getUserID(), $t_instance->tableNum(), $po_result->get($t_instance->primaryKey()))) {
 					continue;
 				}
@@ -1237,7 +1252,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			$vn_num_processed++;
 
-			if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
+			if ($vb_have_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
 				$ps_callback($po_request, $vn_num_processed, $vn_num_items, _t("Exporting ... [%1/%2]", $vn_num_processed, $vn_num_items), (time() - $vn_start_time), memory_get_usage(true), $vn_num_processed);
 			}
 		}
@@ -1721,6 +1736,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_get_options['dateFormat'] = $vs_date_format;
 		}
 
+		// context was switched to attribute
 		if($vn_attribute_id) {
 
 			$o_log->logInfo(_t("Processing mapping in attribute mode for attribute_id = %1.", $vn_attribute_id));
@@ -1743,21 +1759,24 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 				foreach($va_values as $vo_val) {
 					$va_display_val_options = array();
 					if($vo_val instanceof ListAttributeValue) {
-						$t_element = ca_metadata_elements::getInstance($t_attr->get('element_id'));
+						// figure out list_id -- without it we can't pull display values
+						$t_element = new ca_metadata_elements($vo_val->getElementID());
 						$va_display_val_options = array('list_id' => $t_element->get('list_id'));
 
-						if($t_exporter_item->getSetting('returnIdno')) {
-							$va_display_val_options['returnIdno'] = true;
+						if($t_exporter_item->getSetting('returnIdno') || $t_exporter_item->getSetting('convertCodesToIdno')) {
+							$va_display_val_options['output'] = 'idno';
+						} elseif($t_exporter_item->getSetting('convertCodesToDisplayText')) {
+							$va_display_val_options['output'] = 'text';
 						}
 					}
 
 					$o_log->logDebug(_t("Trying to match code from array %1 and the code we're looking for %2.", $vo_val->getElementCode(), $vs_source));
 					if($vo_val->getElementCode() == $vs_source) {
-
-						$o_log->logDebug(_t("Found value %1.", $vo_val->getDisplayValue($va_display_val_options)));
+						$vs_display_value = $vo_val->getDisplayValue($va_display_val_options);
+						$o_log->logDebug(_t("Found value %1.", $vs_display_value));
 
 						$va_item_info[] = array(
-							'text' => $vo_val->getDisplayValue($va_display_val_options),
+							'text' => $vs_display_value,
 							'element' => $vs_element,
 						);
 					}

@@ -37,7 +37,18 @@
 			case 'domPDF'
 ?>
 <div id='header'>
+
 <?php
+	if(file_exists($this->getVar('base_path')."/local/pdf.css")){
+?>
+		<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
+<?php	
+	} else {
+?>
+		<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
+<?php
+	}	
+
 	if(file_exists($this->request->getThemeDirectoryPath()."/graphics/logos/".$this->request->config->get('report_img'))){
 		print '<img src="'.$this->request->getThemeDirectoryPath().'/graphics/logos/'.$this->request->config->get('report_img').'" class="headerImg"/>';
 	}
@@ -67,8 +78,16 @@
 <!--BEGIN HEADER--><!DOCTYPE html>
 <html>
 <head>
-	<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
 <?php
+	if(file_exists($this->getVar('base_path')."/local/pdf.css")){
+?>
+		<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
+<?php	
+	} else {
+?>
+		<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
+<?php
+	}
 	if(file_exists($this->request->getThemeDirectoryPath()."/graphics/logos/".$this->request->config->get('report_img'))){
 		print '<img src="'.$this->request->getThemeDirectoryPath().'/graphics/logos/'.$this->request->config->get('report_img').'" class="headerImg"/>';
 	}

@@ -75,7 +75,7 @@
 <?php
 			print caEditorLink($this->request, array_shift($va_tmp), '', 'ca_objects', $vn_object_id, array(), array('onmouseover' => 'jQuery(".qlButtonContainerThumbnail").css("display", "none"); jQuery("#ql_'.$vn_object_id.'").css("display", "block");', 'onmouseout' => 'jQuery(".qlButtonContainerThumbnail").css("display", "none");'));
 		
-			print "<div class='qlButtonContainerThumbnail' id='ql_".$vn_object_id."' onmouseover='jQuery(\"#ql_".$vn_object_id."\").css(\"display\", \"block\");'><a class='qlButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, 'find', 'SearchObjects', 'QuickLook', array('object_id' => $vn_object_id))."\"); return false;' >Quick Look</a></div>";
+			print "<div class='qlButtonContainerThumbnail' id='ql_".$vn_object_id."' onmouseover='jQuery(\"#ql_".$vn_object_id."\").css(\"display\", \"block\");'><a class='qlButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, 'find', 'SearchObjects', 'QuickLook', array('object_id' => $vn_object_id))."\"); return false;' >"._t("Quick Look")."</a></div>";
 			
 			print "</div><div class='thumbCaption' ".$vs_caption;
 			print "<br/>".caEditorLink($this->request, $vs_idno, '', 'ca_objects', $vn_object_id, array())."\n";

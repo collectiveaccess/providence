@@ -2738,10 +2738,10 @@ table.attributeListItem {
 .attributeListItem td {
     padding: 0px;
     padding-right: 15px;
-    margin: 0px;
+    margin: 5px;
     font-weight: normal;
+    vertical-align: top;
 }
-
 
 /*** EDITOR FORMS ***/
 
@@ -3149,6 +3149,21 @@ div.editorBottomPadding {
     height: 25px;
 }
 
+/* read-only containers */
+div.caReadonlyContainer {
+    padding: 10px 10px 10px 10px;
+    font-weight: normal;
+    border-bottom: 1px solid
+}
+
+div.caReadonlyContainerDisplay {
+    margin-right: 32px;
+}
+
+a.caReadonlyContainerEditLink {
+    float: right;
+}
+
 /* File and media attribute styles */
 a.attributeDownloadButton {
     padding: 10px;
@@ -3417,6 +3432,13 @@ a.hierarchyBrowserLevelSelected {
     font-style: normal;
 }
 
+span.hierarchyBrowserLevelDisabled {
+    color: #ccc;
+    text-decoration: none;
+    font-weight: normal;
+    font-style: normal;
+}
+
 a.hierarchyBrowserLevelEditButton {
     text-decoration: none;
     font-weight: bold;
@@ -3645,6 +3667,14 @@ div.directoryBrowserLevel {
     border: 1px solid #cccccc;
     background: #FFFFFF;
     overflow: auto;
+}
+
+div.directoryBrowserLevel li img {
+	height:14px;
+}
+
+div.directoryBrowserLevel li img.disabled {
+	height:10px;
 }
 
 div.directoryBrowserLevelVertical {
@@ -5528,468 +5558,6 @@ a.caDeleteLabelButton {
     border-radius: 10px;
 }
 
-
-/* Client services styles */
-
-#caClientCommunicationsMessages {
-    margin:10px 0px 25px 0px;
-    padding:5px;
-    background-color: #E2E2E2;
-}
-
-#caClientCommunicationsMessageList {
-    float: left;
-    width: 210px;
-    height: 475px;
-    overflow: auto;
-}
-
-#caClientCommunicationsMessageDisplay {
-    float: left;
-    width: 498px;
-    height: 455px;
-    background-color: #FFFFFF;
-    padding: 10px;
-    margin-left: 5px;
-    overflow: auto;
-}
-.caClientCommunicationsMessageDisplayHelpText{
-    font-size:14px;
-    text-align:center;
-    padding-top:40px;
-    font-weight:bold;
-}
-.caClientCommunicationsMessageSummaryContainer{
-    padding:5px;
-}
-.caClientCommunicationsMessageSummary {
-    color: #000000;
-    margin:0px 0px 5px 0px;
-    background-color: #FFFFFF;
-}
-
-.caClientCommunicationsAdditionalMessageSummary {
-    color: #000000;
-    margin: 0px 0px 0px 10px;
-    background-color: #FFFFFF;
-    border-top: 2px solid #e2e2e2;
-}
-.caClientCommunicationsViewMessageIcon{
-    background-color:#828282;
-    color:#FFFFFF;
-    padding:0px 2px 2px 2px;
-    float:right;
-    line-height:1.1em;
-    font-size:11px;
-    cursor:pointer;
-
-    -moz-border-radius-bottomleft: 3px;
-    -webkit-border-bottom-left-radius: 3px;
-    -moz-border-radius-bottomright: 3px;
-    -webkit-border-bottom-right-radius: 3px;
-    -moz-border-radius-topleft: 3px;
-    -webkit-border-top-left-radius: 3px;
-    -moz-border-radius-topright: 3px;
-    -webkit-border-top-right-radius: 3px;
-    border-radius: 3px;
-}
-.caClientCommunicationsMessageSummaryHeading {
-    font-weight:bold;
-    font-size: 11px;
-}
-.caClientCommunicationsMessageSummaryFrom, .caClientCommunicationsMessageSummarySubject, .caClientCommunicationsMessageSummaryDate {
-    font-size: 10px;
-}
-
-.caClientCommunicationsMessageSummaryText {
-    margin-top: 3px;
-    font-size: 11px;
-    color: #666666;
-}
-
-.caClientCommunicationsMessageSummaryViewButton {
-    clear: both;
-    float: right;
-    margin-top: 3px;
-}
-
-.caClientCommunicationsMessage {
-    padding-bottom: 5px;
-}
-
-.caClientCommunicationsMessageHeading {
-    font-size: 12px;
-    font-weight:bold;
-}
-.caClientCommunicationsMessageFrom, .caClientCommunicationsMessageSubject, .caClientCommunicationsMessageDate {
-    font-size: 12px;
-    margin-left:10px;
-}
-a.caClientCommunicationsMessageReplyButton {
-    text-decoration:none;
-    font-size:12px;
-    color: #FFFFFF;
-    background-color: #134959;
-    font-weight:bold;
-    margin-right: 10px;
-    padding:3px 5px 4px 5px;
-    float:right;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-    border-radius: 4px;
-}
-a.caClientCommunicationsMessageReplyButton:hover {
-    background-color: #545454;
-}
-.caClientCommunicationsMessageText {
-    margin-top: 10px;
-    padding: 15px;
-    font-size: 12px;
-    line-height:1.5em;
-    background-color:#e2e2e2;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
-    border-radius: 10px;
-}
-div.caClientCommunicationsMessageSummaryThreadButton {
-    text-align:right;
-}
-div.caClientCommunicationsMessageSummaryCounter {
-    float: right;
-    background-color: #666666;
-    color: #F0F0F0;
-    padding: 3px;
-    border-radius: 4px;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-}
-
-a.caClientCommunicationsMessageSummaryCounter {
-    color: #F0F0F0;
-    text-decoration: none;
-}
-
-.caClientCommunicationsMessageAdditional {
-    margin-top: 10px;
-    padding: 3px;
-    display: none;
-}
-
-.caClientCommunicationsMessageSummaryUnread {
-    color: #990000 !important;
-}
-
-#caClientCommunications {
-    margin-bottom: 10px;
-    padding-bottom: 10px;
-    border-bottom: 1px dotted #666666;
-}
-
-#caClientCommunicationsReplyForm .formLabel {
-    font-weight:bold;
-    margin: 10px 0px 2px 0px;
-}
-#caClientCommunicationsReplyForm .replyMessageHeader{
-    margin:5px 0px 0px 0px;
-    font-size:12px;
-}
-#caClientCommunicationsReplyForm .replyMessageHeaderHeading{
-    font-weight:bold;
-    font-size:12px;
-}
-#caClientCommunicationsReplyForm input[type="text"], #caClientCommunicationsReplyForm input[type="textarea"], #caClientCommunicationsReplyForm textarea{
-    width:450px;
-}
-#caClientCommunicationsReplyForm input[type="textarea"], #caClientCommunicationsReplyForm textarea{
-    height:250px;
-}
-/* overlay (for viewing of communications) */
-#caClientCommunicationsViewerPanel {
-    position: fixed;
-    top: 25px;
-    left: 50%;
-    border: 4px solid #ccc;
-    background-color: #FFFFFF;
-    width: 840px;
-    height: 600px;
-    display: none;
-    margin-left: -430px;
-    padding: 7px;
-}
-#caClientCommunicationsViewerPanel #close{
-    float: right;
-    width:15px;
-    height:15px;
-    margin:0px;
-    background-image:url("../graphics/x.gif");
-}
-#caClientCommunicationsViewerPanel #close a{
-    text-decoration:none;
-    font-size:15px;
-}
-#caClientCommunicationsViewerPanelContentArea {
-    overflow: auto;
-    width: 830px;
-    height: 590px;
-}
-
-.caClientCommunicationsAttachedMediaContainer {
-    padding-top: 10px;
-}
-
-.caClientCommunicationsAttachedMedia {
-    display: none;
-    padding:10px 0px 0px 15px;
-}
-
-a.caClientCommunicationsAttachedMediaControl {
-    text-decoration:none;
-    font-size:12px;
-    color: #134959;
-    font-weight:bold;
-    padding-left: 10px;
-    text-decoration:none;
-}
-
-a.caClientCommunicationsNewOrderButton {
-    text-decoration:none;
-    font-size:11px;
-    color: #FFFFFF;
-    background-color: #134959;
-    font-weight:bold;
-    margin-right: 10px;
-    padding:3px 5px 3px 5px;
-    float:right;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-    border-radius: 4px;
-}
-a.caClientCommunicationsNewOrderButton:hover {
-    background-color: #545454;
-}
-
-.caClientCommunicationsAttachedMediaList{
-    margin:0px;
-    padding:0px;
-}
-
-.caClientCommunicationsAttachedMediaItems .caClientCommunicationsAttachedMediaItem {
-    position: relative;
-    display: block;
-    float: left;
-    list-style-type: none;
-    height: 200px;
-    width: 140px;
-    border: solid 1px #828282;
-    margin: 5px 10px 5px 0px;
-    background: #F5F5F5;
-    text-align: center;
-    overflow: hidden;
-}
-
-.caClientCommunicationsAttachedMediaItems .caClientCommunicationsAttachedMediaItem:hover {
-    border: solid 1px #666;
-}
-
-.caClientCommunicationsAttachedMediaItems div{
-    font-size: 10px;
-    margin: 5px 0px 0px 0px;
-    width:140px;
-    text-align:left;
-}
-
-.caClientCommunicationsAttachedMediaItems a{
-    cursor:move;
-    color: #636363;
-}
-
-.caClientCommunicationsAttachedMediaItems .remove{
-    position: absolute;
-    left:130px;
-    top: 0px;
-    width:7px;
-    padding: 0px 1px 1px 2px;
-}
-
-.caClientCommunicationsAttachedMediaItems .remove a{
-    font-size: 9px;
-    color: #828282;
-    text-decoration:none;
-    font-weight:bold;
-}
-.caClientCommunicationsAttachedMediaItems .remove a:hover{
-    color: #CA1919;
-}
-
-.caClientCommunicationsAttachedMediaItemThumbnail {
-    padding: 10px 10px 3px 10px;
-}
-
-.caClientCommunicationsAttachedMediaItems .caClientCommunicationsAttachedMediaItemCaption {
-    padding-left: 10px;
-    width: 120px;
-}
-
-.caClientCommunicationsAttachedMediaItems .caClientCommunicationsAttachedMediaItemCaption a{
-    text-decoration:none;
-    color:#000000;
-}
-
-/* client services orders */
-#caClientOrderCustomerForm .formContainerBg{
-    background-color:#e2e2e2;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
-    border-radius: 10px;
-    padding:10px;
-    margin:0px 0px 20px 0px;
-}
-#caClientOrderCustomerForm .addressOptionCheckbox{
-    float:right;
-    margin:0px;
-    padding:0px;
-    font-size:11px;
-    font-weight:normal;
-}
-#caClientOrderPaymentForm .formLabel, #caClientOrderShippingForm .formLabel{
-    padding-left:10px;
-    padding-bottom:10px;
-}
-#caClientOrderOverview .orderStatus {
-    clear:right;
-    color: #333;
-    text-align: left;
-    background-color:#fff;
-    padding:5px 10px 5px 10px;
-    border: 3px solid #ccc;
-    border-radius: 8px;
-    -moz-border-radius: 8px;
-    -webkit-border-radius: 8px;
-    margin-bottom:15px;
-}
-#caClientOrderOverview .orderStatus .statusDesc {
-    background-color:#ffffff;
-    padding:2px 0px 0px 5px;
-    line-height:1.3em;
-    font-size:12px;
-    margin: 0px 0px 15px 0px;
-    float:left;
-}
-#caClientOrderOverview .overrideButton {
-    float:right;
-    margin:5px;
-}
-#caClientOrderOverview .orderStatus .statusWarning{
-    font-weight:bold;
-    background:	#FFFFFF url('../graphics/icons/warning.gif') no-repeat 10px 5px;
-    padding: 15px 0px 8px 50px;
-    margin: 10px 0px 0px 0px;
-}
-a.caClientOrderOverviewButton {
-    text-decoration:none;
-    font-size:12px;
-    color: #FFFFFF;
-    background-color: #134959;
-    font-weight:bold;
-    margin-right: 10px;
-    padding:3px 5px 4px 5px;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-    border-radius: 4px;
-}
-a.caClientOrderOverviewButton:hover {
-    background-color: #545454;
-}
-#commerceOrderStatusMessage {
-    width:500px;
-    float:left;
-    font-size:1.5em;
-}
-#caClientOrderOverview .overviewItem {
-    padding:0px 0px 10px 0px;
-    font-size:12px;
-}
-
-#caClientOrderProcessingIndicator {
-    display: none;
-    font-size: 14px;
-    font-style: italic;
-    width: 100%;
-    margin-top: 25px;
-}
-
-#caClientOrderCommunicationForm{
-    margin-bottom:30px;
-}
-#caClientOrderCommunicationForm .caClientOrderCommunicationFormBg{
-    background-color:#e2e2e2;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
-    border-radius: 10px;
-    padding:5px 20px 10px 15px;
-    margin:0px 0px 5px 0px;
-}
-#caClientOrdersComposeButton{
-    text-decoration:none;
-    font-size:12px;
-    color: #FFFFFF;
-    background-color: #134959;
-    font-weight:bold;
-    margin-right: 10px;
-    padding:3px 5px 4px 5px;
-    float:right;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-    border-radius: 4px;
-    margin-top:10px;
-}
-#caClientOrderCommunicationForm input[type="text"], #caClientOrderCommunicationForm input[type="textarea"], #caClientOrderCommunicationForm textarea, #caClientOrderCommunicationForm input{
-    width:100%;
-}
-
-#loanSummaryTable {
-    border-top:1px solid #ccc;
-}
-#caClientLibraryCustomerInfoForm {
-    display: none;
-}
-
-.caClientLibraryLoadingIndicator {
-    background: white url('../graphics/icons/indicator.gif') right center no-repeat !important;
-}
-
-.caClientOrderHistoryTable {
-    width: 100%;
-    border-top:1px solid #ccc;
-}
-.caClientOrderHistoryRow {
-    border-top:1px solid #ccc;
-    padding: 5px;
-}
-.caClientOrderHistoryRowOut {
-    border-top:1px solid #00cc00;
-    background: rgba(180, 180, 180, 0.4);
-    padding: 5px;
-}
-
-.caClientOrderHistoryRowOverdue {
-    border-top:1px solid #cc0000;
-    background: rgba(255, 0, 0, 0.4);
-    padding: 5px;
-}
-
-.caClientOrderHistoryHeader {
-    font-weight: bold;
-    font-size: 11px;
-    text-transform: uppercase;
-    background-color: #f1f1f1;
-}
-.caClientOrderHistoryText {
-    font-weight: normal;
-    font-size: 11px;
-    padding: 5px;
-}
-
 /* -------------------------------------------------*/
 /* Item-level access screen                         */
 /* -------------------------------------------------*/
@@ -6956,7 +6524,10 @@ div.caUseHistoryEntry {
 
 div.caUseHistoryButtonBar {
 	padding: 10px;
-	border-bottom: 1px dotted #e6e6e6;
+}
+
+.caChangeLocationButton, .caAddLoanButton {
+	margin-top: 5px;
 }
 
 div.caUseHistoryIconContainer {
@@ -7246,4 +6817,36 @@ div.authorityReferenceListContainer {
 	width: 100%;
 	overflow-y: hidden;
 	min-height: 200px;
+}
+
+
+/* Media viewer */
+
+#caMediaPanelProgress {
+	display: none;
+	font-size:36px;
+	font-weight: bold;
+	text-align: center;
+	width: 300px;
+	height: 50px;
+}
+
+#caMediaOverlayProgress {
+	position: absolute;
+	display: none;
+	top: 50%;
+	left: 50%;
+	width: 200px;
+	height: 30px;
+	z-index: 99000;
+	opacity: 0.8;
+}
+
+#caMediaOverlayProgress div {
+	position: relative; 
+	left: -50%; 
+	top: -50%; 
+	background-color: #fff;
+	border-radius: 10px;
+	border: 1px solid #cccccc;
 }

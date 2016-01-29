@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007 Whirl-i-Gig
+ * Copyright 2007-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -46,7 +46,7 @@
  		public function DoLogin() {
  			global $g_ui_locale;
 			$vs_redirect_url = $this->request->getParameter('redirect', pString) ?: caNavUrl($this->request, null, null, null);
-			if (!$this->request->doAuthentication(array('dont_redirect' => true, 'noPublicUsers' => true, 'user_name' => $this->request->getParameter('username', pString), 'password' => $this->request->getParameter('password', pString)))) {
+			if (!$this->request->doAuthentication(array('dont_redirect_to_login' => true, 'redirect' => $vs_redirect_url, 'noPublicUsers' => true, 'user_name' => $this->request->getParameter('username', pString), 'password' => $this->request->getParameter('password', pString)))) {
 				$this->notification->addNotification(_t("Login was invalid"), __NOTIFICATION_TYPE_ERROR__);
  				
  				$this->view->setVar('notifications', $this->notification->getNotifications());
@@ -54,7 +54,6 @@
 					if(!initializeLocale($_COOKIE['CA_'.__CA_APP_NAME__.'_ui_locale'])) die("Error loading locale ".$g_ui_locale);
 				}
 				$this->render('login_html.php');
-				//$this->redirect(sprintf('%s?redirect=%s', caNavUrl($this->request, 'system', 'auth', 'login'), urlencode($vs_redirect_url)));
 			} else {
 				//
 				// Reset locale globals
@@ -70,7 +69,9 @@
 				
 				// Notify the user of the good news
  				$this->notification->addNotification(_t("You are now logged in"), __NOTIFICATION_TYPE_INFO__);
- 				//$this->redirect($vs_redirect_url);
+ 				
+ 				// Jump to redirect if set
+ 				if ($vs_redirect_url) $this->redirect($vs_redirect_url);
  				$this->render('welcome_html.php');
  			}
  		}
@@ -110,7 +111,6 @@
 
 			// render the same static view no matter if something was actually done.
 			// otherwise you could figure out which user names exist and which don't
-
 			$this->render('password_reset_instructions_html.php');
 		}
 		# -------------------------------------------------------
@@ -174,4 +174,3 @@
 		}
 		# -------------------------------------------------------
  	}
-

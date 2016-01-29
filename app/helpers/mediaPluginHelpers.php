@@ -51,30 +51,6 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Detects if CoreImageTool executable is available at specified path
-	 *
-	 * @param string $ps_path_to_coreimage - full path to CoreImageTool including executable name
-	 * @return boolean - true if available, false if not
-	 */
-	function caMediaPluginCoreImageInstalled($ps_path_to_coreimage=null) {
-		if(!$ps_path_to_coreimage) { $ps_path_to_coreimage = caGetExternalApplicationPath('coreimagetool'); }
-
-		global $_MEDIAHELPER_PLUGIN_CACHE_COREIMAGE;
-		if (isset($_MEDIAHELPER_PLUGIN_CACHE_COREIMAGE[$ps_path_to_coreimage])) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_COREIMAGE[$ps_path_to_coreimage];
-		} else {
-			$_MEDIAHELPER_PLUGIN_CACHE_COREIMAGE = array();
-		}
-		if (!caIsValidFilePath($ps_path_to_coreimage)) { return false; }
-
-		exec($ps_path_to_coreimage.' 2> /dev/null', $va_output, $vn_return);
-		if (($vn_return >= 0) && ($vn_return < 127)) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_COREIMAGE[$ps_path_to_coreimage] = true;
-		}
-		return $_MEDIAHELPER_PLUGIN_CACHE_COREIMAGE[$ps_path_to_coreimage] = false;
-	}
-	# ------------------------------------------------------------------------------------------------
-	/**
 	 * Detects if ImageMagick executables is available within specified directory path
 	 *
 	 * @param $ps_imagemagick_path - path to directory containing ImageMagick executables
@@ -156,7 +132,7 @@
 	 * @param $ps_path_to_ffmpeg - full path to ffmpeg including executable name
 	 * @return boolean - true if available, false if not
 	 */
-	function caMediaPluginFFfmpegInstalled($ps_path_to_ffmpeg=null) {
+	function caMediaPluginFFmpegInstalled($ps_path_to_ffmpeg=null) {
 		if(!$ps_path_to_ffmpeg) { $ps_path_to_ffmpeg = caGetExternalApplicationPath('ffmpeg'); }
 
 		global $_MEDIAHELPER_PLUGIN_CACHE_FFMPEG;
@@ -213,23 +189,6 @@
 
 		if (!caIsValidFilePath($ps_path_to_pdf_to_text)) { return false; }
 		exec($ps_path_to_pdf_to_text." -v 2> /dev/null", $va_output, $vn_return);
-		if (($vn_return >= 0) && ($vn_return < 127)) {
-			return true;
-		}
-		return false;
-	}
-	# ------------------------------------------------------------------------------------------------
-	/**
-	 * Detects if AbiWord executable is available at specified path
-	 *
-	 * @param $ps_path_to_abiword - full path to AbiWord including executable name
-	 * @return boolean - true if available, false if not
-	 */
-	function caMediaPluginAbiwordInstalled($ps_path_to_abiword=null) {
-		if(!$ps_path_to_abiword) { $ps_path_to_abiword = caGetExternalApplicationPath('abiword'); }
-
-		if (!caIsValidFilePath($ps_path_to_abiword)) { return false; }
-		exec($ps_path_to_abiword." --version 2> /dev/null", $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
 			return true;
 		}
@@ -314,6 +273,54 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Detects if OpenCTM (http://openctm.sourceforge.net) is installed in the given path.
+	 * @param string $ps_openctm_path path to OpenCTM ctmconv binary
+	 * @return bool
+	 */
+	function caOpenCTMInstalled($ps_openctm_ctmconv_path=null) {
+		if(!$ps_openctm_ctmconv_path) { $ps_openctm_ctmconv_path = caGetExternalApplicationPath('openctm'); }
+
+		global $_MEDIAHELPER_PLUGIN_CACHE_OPENCTM;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_OPENCTM[$ps_openctm_ctmconv_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_OPENCTM[$ps_openctm_ctmconv_path];
+		} else {
+			$_MEDIAHELPER_PLUGIN_CACHE_OPENCTM = array();
+		}
+		if (!caIsValidFilePath($ps_openctm_ctmconv_path)) { return false; }
+		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
+		exec($ps_openctm_ctmconv_path." --help > /dev/null",$va_output,$vn_return);
+		if($vn_return == 0) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_OPENCTM[$ps_openctm_ctmconv_path] = true;
+		}
+		return $_MEDIAHELPER_PLUGIN_CACHE_OPENCTM[$ps_openctm_ctmconv_path] = false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Detects if Meshlab (http://meshlab.sourceforge.net), and specifically the meshlabserver command line tool, is installed in the given path.
+	 * @param string $ps_meshlabserver_path path to the meshlabserver binary
+	 * @return bool
+	 */
+	function caMeshlabServerInstalled($ps_meshlabserver_path=null) {
+		if(!$ps_meshlabserver_path) { $ps_meshlabserver_path = caGetExternalApplicationPath('meshlabserver'); }
+
+		global $_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER[$ps_meshlabserver_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER[$ps_meshlabserver_path];
+		} else {
+			$_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER = array();
+		}
+		if (!caIsValidFilePath($ps_meshlabserver_path)) { return false; }
+		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
+		putenv("DISPLAY=:0");
+		chdir('/usr/local/bin');
+		exec($ps_meshlabserver_path." --help > /dev/null",$va_output,$vn_return);
+		if($vn_return == 1) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER[$ps_meshlabserver_path] = true;
+		}
+		return $_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER[$ps_meshlabserver_path] = false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Detects if PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/index.html) is installed in the given path.
 	 * @param string $ps_pdfminer_path path to PDFMiner
 	 * @return boolean
@@ -321,21 +328,21 @@
 	function caPDFMinerInstalled($ps_pdfminer_path=null) {
 		if(!$ps_pdfminer_path) { $ps_pdfminer_path = caGetExternalApplicationPath('pdfminer'); }
 
-		global $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO;
-		if (isset($_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path])) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path];
+		global $_MEDIAHELPER_PLUGIN_CACHE_PDFMINER;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_PDFMINER[$ps_pdfminer_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_PDFMINER[$ps_pdfminer_path];
 		} else {
-			$_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO = array();
+			$_MEDIAHELPER_PLUGIN_CACHE_PDFMINER = array();
 		}
 		if (!caIsValidFilePath($ps_pdfminer_path)) { return false; }
 
-		if (!file_exists($ps_pdfminer_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = false; }
+		if (!file_exists($ps_pdfminer_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_PDFMINER[$ps_pdfminer_path] = false; }
 		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
 		exec($ps_pdfminer_path." > /dev/null",$va_output,$vn_return);
 		if($vn_return == 100) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = true;
+			return $_MEDIAHELPER_PLUGIN_CACHE_PDFMINER[$ps_pdfminer_path] = true;
 		}
-		return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = false;
+		return $_MEDIAHELPER_PLUGIN_CACHE_PDFMINER[$ps_pdfminer_path] = false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -346,21 +353,21 @@
 	function caPhantomJSInstalled($ps_phantomjs_path=null) {
 		if(!$ps_phantomjs_path) { $ps_phantomjs_path = caGetExternalApplicationPath('phantomjs'); }
 		
-		global $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO;
-		if (isset($_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_phantomjs_path])) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_phantomjs_path];
+		global $_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS[$ps_phantomjs_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS[$ps_phantomjs_path];
 		} else {
-			$_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO = array();
+			$_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS = array();
 		}
 		if (!trim($ps_phantomjs_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_phantomjs_path)) || !file_exists($ps_phantomjs_path)) { return false; }
 		
-		if (!file_exists($ps_phantomjs_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_phantomjs_path] = false; }
+		if (!file_exists($ps_phantomjs_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS[$ps_phantomjs_path] = false; }
 		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
 		exec($ps_phantomjs_path." > /dev/null",$va_output,$vn_return);
 		if($vn_return == 0) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_phantomjs_path] = true;
+			return $_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS[$ps_phantomjs_path] = true;
 		}
-		return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_phantomjs_path] = false;
+		return $_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS[$ps_phantomjs_path] = false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -371,21 +378,21 @@
 	function caWkhtmltopdfInstalled($ps_wkhtmltopdf_path=null) {
 		if(!$ps_wkhtmltopdf_path) { $ps_wkhtmltopdf_path = caGetExternalApplicationPath('wkhtmltopdf'); }
 		
-		global $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO;
-		if (isset($_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path])) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path];
+		global $_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF[$ps_wkhtmltopdf_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF[$ps_wkhtmltopdf_path];
 		} else {
-			$_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO = array();
+			$_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF = array();
 		}
 		if (!trim($ps_wkhtmltopdf_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_wkhtmltopdf_path)) || !file_exists($ps_wkhtmltopdf_path)) { return false; }
 		
-		if (!file_exists($ps_wkhtmltopdf_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path] = false; }
+		if (!file_exists($ps_wkhtmltopdf_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF[$ps_wkhtmltopdf_path] = false; }
 		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
 		exec($ps_wkhtmltopdf_path." > /dev/null",$va_output,$vn_return);
 		if(($vn_return == 0) || ($vn_return == 1)) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path] = true;
+			return $_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF[$ps_wkhtmltopdf_path] = true;
 		}
-		return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path] = false;
+		return $_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF[$ps_wkhtmltopdf_path] = false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -413,65 +420,6 @@
 			return $_MEDIAHELPER_PLUGIN_CACHE_EXIFTOOL[$ps_exiftool_path] = true;
 		}
 		return $_MEDIAHELPER_PLUGIN_CACHE_EXIFTOOL[$ps_exiftool_path] = false;
-	}
-	# ------------------------------------------------------------------------------------------------
-	/**
-	 * Extracts media metadata using MediaInfo
-	 *
-	 * @param string $ps_filepath file path
-	 * @param string $ps_mediainfo_path optional path to MediaInfo binary. If omitted the path configured in external_applications.conf is used.
-	 *
-	 * @return array Extracted metadata
-	 */
-	function caExtractMetadataWithMediaInfo($ps_filepath, $ps_mediainfo_path=null){
-		if(!$ps_mediainfo_path) { $ps_mediainfo_path = caGetExternalApplicationPath('mediainfo'); }
-		if (!caIsValidFilePath($ps_mediainfo_path)) { return false; }
-		
-		//
-		// TODO: why don't we parse this from the XML output like civilized people?
-		//
-		exec($ps_mediainfo_path." ".caEscapeShellArg($ps_filepath), $va_output, $vn_return);
-		$vs_cat = "GENERIC";
-		$va_return = array();
-		foreach($va_output as $vs_line){
-			$va_split = explode(":",$vs_line);
-			$vs_left = trim(array_shift($va_split));
-			$vs_right = trim(join(":", $va_split));
-			if(strlen($vs_right) == 0){ // category line
-				$vs_cat = strtoupper($vs_left);
-				continue;
-			}
-			if(strlen($vs_left) && strlen($vs_right)) {
-				if($vs_left!="Complete name"){ // we probably don't want to display temporary filenames
-					$va_return[$vs_cat][$vs_left] = $vs_right;
-				}
-			}
-		}
-
-		return $va_return;
-	}
-	# ------------------------------------------------------------------------------------------------
-	/**
-	 * Extract video duration using MediaInfo. This can be used as a fallback to getID3
-	 * @param string $ps_filepath
-	 * @param string|null $ps_mediainfo_path
-	 *
-	 * @return float|null
-	 */
-	function caExtractVideoFileDurationWithMediaInfo($ps_filepath, $ps_mediainfo_path=null) {
-		if(!$ps_mediainfo_path) { $ps_mediainfo_path = caGetExternalApplicationPath('mediainfo'); }
-		if(!caMediaInfoInstalled($ps_mediainfo_path)) { return null; }
-
-		$va_output = array();
-		exec($ps_mediainfo_path.' --Inform="Video;%Duration/String3%" '.caEscapeShellArg($ps_filepath), $va_output, $vn_return);
-		if(!is_array($va_output) || (sizeof($va_output) != 1)) { return null; }
-		$va_tmp = explode(':', array_shift($va_output));
-
-		if(sizeof($va_tmp)==3) { // should have hours, minutes, seconds
-			return round(intval($va_tmp[0]) * 3600 + intval($va_tmp[1]) * 60 + floatval($va_tmp[2]));
-		}
-
-		return null;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -920,4 +868,3 @@
 		return array('size' => $vs_selected_size, 'width' => $va_tmp[0], 'height' => $va_tmp[1]);
 	}
 	# ------------------------------------------------------------------------------------------------
-?>

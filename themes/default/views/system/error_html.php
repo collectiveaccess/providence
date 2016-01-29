@@ -1,4 +1,6 @@
-Errors occurred when trying to access <code><?php print $this->getVar('referrer'); ?></code>:<br/>
+<?php
+print _t("Errors occurred when trying to access")." <code>".$this->getVar('referrer')."</code>:<br/>";
+?>
 
 <ul>
 <?php
