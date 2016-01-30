@@ -392,7 +392,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 */
 	public function getAvailableSettings() {
 		$t_attr_val = Attribute::getValueInstance((int)$this->get('datatype'));
-		return $t_attr_val ? $t_attr_val->getAvailableSettings($this->getSettings()) : null;
+		$va_element_info = $this->getFieldValuesArray();
+		$va_element_info['settings'] = $this->getSettings();
+		return $t_attr_val ? $t_attr_val->getAvailableSettings($va_element_info) : null;
 	}
 	# ------------------------------------------------------
 	/**
@@ -803,6 +805,15 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			}
 		}
 		return $va_sortable_elements;
+	}
+	# ------------------------------------------------------
+	public static function getDataTypeForElementCode($ps_element_code) {
+		$t_element = new ca_metadata_elements();
+		if($t_element->load(array('element_code' => $ps_element_code))) {
+			return (int) $t_element->get('datatype');
+		} else {
+			return false;
+		}
 	}
 	# ------------------------------------------------------
 	/**

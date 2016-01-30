@@ -147,7 +147,7 @@ class WLPlugInformationServiceAAT extends BaseGettyLODServicePlugin implements I
 		if(!$ps_text) { return ''; }
 		$va_matches = array();
 
-		if(preg_match("/^\[[0-9]+\]\s+([A-Za-z\s\-\(\)]+)\s+\[.+\]$/", $ps_text, $va_matches)) {
+		if(preg_match("/^\[[0-9]+\]\s+([\p{L}\p{P}\p{Z}]+)\s+\[/", $ps_text, $va_matches)) {
 			return $va_matches[1];
 		}
 		return $ps_text;

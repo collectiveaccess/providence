@@ -169,6 +169,31 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	}
 	# ---------------------------------------
 	/**
+	 * Get list item id for value. Can be useful when handling access/status values
+	 * @param string $ps_list_code Code of the list
+	 * @param string $ps_value item_value of the list item in question
+	 * @param array $pa_options Options for ca_lists::getItemFromListByItemValue()
+	 * @return string|null
+	 * @throws MemoryCacheInvalidParameterException
+	 */
+	function caGetListItemIDForValue($ps_list_code, $ps_value, $pa_options=null) {
+		$vs_cache_key = md5($ps_list_code . $ps_value . serialize($pa_options));
+		if(MemoryCache::contains($vs_cache_key, 'ListItemIDsForValues')) {
+			return MemoryCache::fetch($vs_cache_key, 'ListItemIDsForValues');
+		}
+
+		$t_list = new ca_lists();
+		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
+		
+		if ($va_item = $t_list->getItemFromListByItemValue($ps_list_code, $ps_value)) {
+			$vs_ret = array_shift(array_keys($va_item));
+			MemoryCache::save($vs_cache_key, $vs_ret, 'ListItemIDsForValues');
+			return $vs_ret;
+		}
+		return null;
+	}
+	# ---------------------------------------
+	/**
 	 * Fetch item_id for item with specified label. Value must match exactly.
 	 *
 	 * @param string $ps_list_code List code
@@ -266,5 +291,23 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
 
 		return $t_list->getRootListItemID($ps_list_code);
+	}
+	# ---------------------------------------
+	/**
+	 * Fetch the type code for a given relationship type id (primary key value)
+	 * @param $pn_type_id
+	 * @return Array|bool|mixed|null|string
+	 */
+	function caGetRelationshipTypeCode($pn_type_id) {
+		if(CompositeCache::contains($pn_type_id, 'RelationshipIDsToCodes')) {
+			return CompositeCache::fetch($pn_type_id, 'RelationshipIDsToCodes');
+		}
+
+		$t_rel_types = new ca_relationship_types($pn_type_id);
+		if(!$t_rel_types->getPrimaryKey()) { return false; }
+
+		$vs_code = $t_rel_types->get('type_code');
+		CompositeCache::save($pn_type_id, $vs_code, 'RelationshipIDsToCodes');
+		return $vs_code;
 	}
 	# ---------------------------------------

@@ -205,9 +205,7 @@ class SearchIndexer extends SearchBase {
 
 		foreach($va_table_names as $vn_table_num => $va_table_info) {
 			$vs_table = $va_table_info['name'];
-			$t_table_timer = new Timer();
 			$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
-			$vs_table_pk = $t_instance->primaryKey();
 
 			$vn_table_num = $t_instance->tableNum();
 
@@ -254,6 +252,8 @@ class SearchIndexer extends SearchBase {
 					while($qr_field_data->nextRow()) {
 						$va_field_data[(int)$qr_field_data->get($vs_table_pk)] = $qr_field_data->getRow();
 					}
+
+					SearchResult::clearCaches();
 				}
 
 				$this->indexRow($vn_table_num, $vn_id, $va_field_data[$vn_id], true);
@@ -290,7 +290,7 @@ class SearchIndexer extends SearchBase {
 
 		if ($pb_display_progress) {
 			print "\n\n\nDone! [Indexing for ".join(", ", $va_names)." took ".caFormatInterval((float)$t_timer->getTime(4))."]\n";
-			print "Note that if you're using an external search service like Apache Solr, the data may only now be sent to the actual service because it was buffered until now. So you still might have to wait a while for the script to finish.\n";
+			print "Note that if you're using an external search service like ElasticSearch, the data may only now be sent to the actual service because it was buffered until now. So you still might have to wait a while for the script to finish.\n";
 		}
 		if ($ps_callback) {
 			$ps_callback(
@@ -633,7 +633,7 @@ class SearchIndexer extends SearchBase {
 						continue;
 					}
 
-					if (!($vn_fld_num = $t_subject->fieldNum($vs_field))) { continue; }
+					if (is_null($vn_fld_num = $t_subject->fieldNum($vs_field))) { continue; }
 
 					//
 					// Hierarchical indexing in primary table
@@ -1503,6 +1503,13 @@ class SearchIndexer extends SearchBase {
 			$this->opa_dependencies_to_update = $va_deps;
 		}
 
+		// if dependencies have not been set at this point -- either by startRowUnindexing
+		// (which may have been skipped) or by passing the dependencies option -- then get them now
+		if(!$this->opa_dependencies_to_update) {
+			$va_deps = $this->getDependencies($this->opo_datamodel->getTableName($pn_subject_tablenum));
+			$this->opa_dependencies_to_update = $this->_getDependentRowsForSubject($pn_subject_tablenum, $pn_subject_row_id, $va_deps);
+		}
+
 		// delete index from subject
 		$this->opo_engine->removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id);
 
@@ -1536,7 +1543,7 @@ class SearchIndexer extends SearchBase {
 				// delete from index where other subjects reference it 
 
 				foreach($this->opa_dependencies_to_update as $va_item) {
-					$this->opo_engine->removeRowIndexing($va_item['table_num'], $va_item['row_id'], $va_item['field_table_num'], null, $va_item['field_row_id']);
+					$this->opo_engine->removeRowIndexing($va_item['table_num'], $va_item['row_id'], $va_item['field_table_num'], $va_item['field_nums'], $va_item['field_row_id']);
 				}
 			}
 		}

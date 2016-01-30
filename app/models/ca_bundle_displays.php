@@ -1382,7 +1382,16 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					'default' => '',
 					'label' => _t('Delimiter'),
 					'description' => _t('Text to place in-between repeating values.')
-				)
+				),
+				'sort' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_FIELD,
+					'width' => 35, 'height' => 1,
+					'takesLocale' => false,
+					'default' => '',
+					'label' => _t('Sort using'),
+					'description' => _t('Override sort option for this field. Use this if you want result lists to sort on a different field when clicking on this bundle.')
+				),
 			);
 			if ($t_rel_instance->isHierarchical()) {
 				$va_additional_settings += array(
@@ -1823,6 +1832,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		$pa_options['restrictToRelationshipTypes'] = 	caGetOption('restrict_to_relationship_types', $va_settings, null);
 		$pa_options['restrictToTypes'] =				caGetOption('restrict_to_types', $va_settings, null);
 		
+		unset($pa_options['format']);	// don't pass format strings to get() here
 		if ((sizeof($va_bundle_bits) == 1) || ((sizeof($va_bundle_bits) == 2) && ($va_bundle_bits[1] == 'related'))) {
 			$pa_options['template'] = caGetOption('format', $va_settings, $this->getAppConfig()->get($va_bundle_bits[0].'_relationship_display_format'));;
 		} else {

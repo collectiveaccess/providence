@@ -143,6 +143,7 @@ class SearchEngine extends SearchBase {
 		}
 		
 		$ps_search = preg_replace('/(?!")\[BLANK\](?!")/i', '"[BLANK]"', $ps_search); // the special [BLANK] search term, which returns records that have *no* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
+		$ps_search = preg_replace('/(?!")\[SET\](?!")/i', '"[SET]"', $ps_search); // the special [SET] search term, which returns records that have *any* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
 		
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		if(($vn_limit = caGetOption('limit', $pa_options, null, array('castTo' => 'int'))) < 0) { $vn_limit = null; }
@@ -179,8 +180,8 @@ class SearchEngine extends SearchBase {
 		if($vn_cache_timeout == 0) { $vb_no_cache = true; } // don't try to cache if cache timeout is 0 (0 means disabled)
 		
 		$t_table = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
-		
-		$vs_cache_key = md5($ps_search."/".print_R($this->getTypeRestrictionList($pa_options), true));
+		$vs_cache_key = md5($ps_search."/".serialize($this->getTypeRestrictionList($pa_options)));
+
 		$o_cache = new SearchCache();
 		$vb_from_cache = false;
 
@@ -199,7 +200,7 @@ class SearchEngine extends SearchBase {
 				$o_res = new WLPlugSearchEngineCachedResult($va_hits, $this->opn_tablenum);
 				$vb_from_cache = true;
 			} else {
-				Debug::msg('cache expire for '.$vs_cache_key);
+				Debug::msg('SEARCH cache expire for '.$vs_cache_key);
 				$o_cache->remove();
 			}
 		}
@@ -239,13 +240,13 @@ class SearchEngine extends SearchBase {
 				}
 			}
 			
-			if (isset($pa_options['checkAccess']) && (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']))) {
+			if (isset($pa_options['checkAccess']) && (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess'])) && $t_table->hasField('access')) {
 				$va_access_values = $pa_options['checkAccess'];
 				$this->addResultFilter($this->ops_tablename.'.access', 'IN', join(",",$va_access_values));
 			} 
 			
 			$vb_no_types = false;	
-			if (is_array($va_type_ids = $this->getTypeRestrictionList()) && (sizeof($va_type_ids) > 0)) {
+			if (is_array($va_type_ids = $this->getTypeRestrictionList()) && (sizeof($va_type_ids) > 0) && $t_table->hasField('type_id')) {
 				if ($t_table->getFieldInfo('type_id', 'IS_NULL')) {
 					$va_type_ids[] = 'NULL';
 				}
@@ -268,7 +269,7 @@ class SearchEngine extends SearchBase {
 					$this->opo_engine->setOption('restrictSearchToFields', $va_restrict_to_fields);
 				}
 
-				$o_res =  $this->opo_engine->search($this->opn_tablenum, $vs_search, $this->opa_result_filters, $o_rewritten_query);
+				$o_res =  $this->opo_engine->search($this->opn_tablenum, $vs_search, array_unique($this->opa_result_filters), $o_rewritten_query);
 			
 				// cache the results
 				$va_hits = $o_res->getPrimaryKeyValues($vn_limit);
@@ -287,7 +288,7 @@ class SearchEngine extends SearchBase {
 			}
 			
 			if ($vs_sort && ($vs_sort !== '_natural')) {
-				$va_hits = $this->sortHits($va_hits, $t_table->tableName(), $pa_options['sort'], $vs_sort_direction);
+				$va_hits = $this->sortHits($va_hits, $t_table->tableName(), $pa_options['sort'], (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
 			} elseif (($vs_sort == '_natural') && ($vs_sort_direction == 'desc')) {
 				$va_hits = array_reverse($va_hits);
 			}

@@ -475,7 +475,7 @@ function caFileIsIncludable($ps_file) {
 		// strip quotes from path if present since they'll cause file_exists() to fail
 		$ps_path = preg_replace("!^\"!", "", $ps_path);
 		$ps_path = preg_replace("!\"$!", "", $ps_path);
-		if (!$ps_path || (preg_match("/[^\/A-Za-z0-9\.:\ _\(\)\\\-]+/", $ps_path)) || !file_exists($ps_path)) { return false; }
+		if (!$ps_path || (preg_match("/[^\/A-Za-z0-9\.:\ _\(\)\\\-]+/", $ps_path)) || !@file_exists($ps_path)) { return false; }	// hide basedir warnings
 
 		return true;
 	}
@@ -572,6 +572,9 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	function caSanitizeStringForJsonEncode($ps_text) {
+		// Remove invalid UTF-8
+		mb_substitute_character(0xFFFD);
+		$ps_text = mb_convert_encoding($ps_text, 'UTF-8', 'UTF-8');
 		// @see http://php.net/manual/en/regexp.reference.unicode.php
 		return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}]|➔/", '', strip_tags($ps_text));
 	}
@@ -1121,14 +1124,20 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 * @param array $pa_values The array to sort. It should be an array of arrays (aka. 2-dimensional)
 	 * @param array $pa_sort_keys An array of keys in the second-level array to sort by
+	 * @param array $pa_options Options include:
+	 * 		dontRemoveKeyPrefixes = By default keys that are period-delimited will have the prefix before the first period removed (this is to ease sorting by field names). Set to true to disable this behavior. [Default is false]
 	 * @return array The sorted array
 	*/
-	function caSortArrayByKeyInValue($pa_values, $pa_sort_keys, $ps_sort_direction="ASC") {
+	function caSortArrayByKeyInValue($pa_values, $pa_sort_keys, $ps_sort_direction="ASC", $pa_options=null) {
 		$va_sort_keys = array();
-		foreach ($pa_sort_keys as $vs_field) {
-			$va_tmp = explode('.', $vs_field);
-			if (sizeof($va_tmp) > 1) { array_shift($va_tmp); }
-			$va_sort_keys[] = join(".", $va_tmp);
+		if (caGetOption('dontRemoveKeyPrefixes', $pa_options, false)) {
+			foreach ($pa_sort_keys as $vs_field) {
+				$va_tmp = explode('.', $vs_field);
+				if (sizeof($va_tmp) > 1) { array_shift($va_tmp); }
+				$va_sort_keys[] = join(".", $va_tmp);
+			}
+		} else {
+			$va_sort_keys = $pa_sort_keys;
 		}
 		$va_sorted_by_key = array();
 		foreach($pa_values as $vn_id => $va_data) {
@@ -3049,6 +3058,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param string $ps_text Text to convert to sortable value
 	 * @param array $pa_options Options include:
 	 *		locale = Locale settings to use. If omitted current default locale is used. [Default is current locale]
+	 *		omitArticle = Omit leading definite and indefinited articles, rather than moving them to the end of the text [Default is true]
 	 *
 	 * @return string Converted text. If locale cannot be found $ps_text is returned unchanged.
 	 */
@@ -3057,19 +3067,21 @@ function caFileIsIncludable($ps_file) {
 		$ps_locale = caGetOption('locale', $pa_options, $g_ui_locale);
 		if (!$ps_locale) { return $ps_text; }
 		
+		$pb_omit_article = caGetOption('omitArticle', $pa_options, true);
+		
 		$o_locale_settings = TimeExpressionParser::getSettingsForLanguage($ps_locale);
 		
 		$vs_display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $ps_text));
 		
 		// Move articles to end of string
-		$va_definite_articles = $o_locale_settings->get('definiteArticles');
-		$va_indefinite_articles = $o_locale_settings->get('indefiniteArticles');
+		$va_definite_articles = $o_locale_settings ? $o_locale_settings->get('definiteArticles') : array();
+		$va_indefinite_articles = $o_locale_settings ? $o_locale_settings->get('indefiniteArticles') : array();
 		
 		foreach(array($va_definite_articles, $va_indefinite_articles) as $va_articles) {
 			if (is_array($va_articles)) {
 				foreach($va_articles as $vs_article) {
 					if (preg_match('!^('.$vs_article.')[ ]+!i', $vs_display_value, $va_matches)) {
-						$vs_display_value = trim(str_replace($va_matches[1], '', $vs_display_value).', '.$va_matches[1]);
+						$vs_display_value = trim(str_replace($va_matches[1], '', $vs_display_value).($pb_omit_article ? '' : ', '.$va_matches[1]));
 						break(2);
 					}
 				}

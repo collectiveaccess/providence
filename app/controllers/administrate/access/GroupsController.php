@@ -55,7 +55,7 @@
  			$t_group->set('user_id', null);
 
  			if ($this->request->getParameter('password', pString) != $this->request->getParameter('password_confirm', pString)) {
- 				$this->request->addActionError(new Error(1050, _t("Password does not match confirmation. Please try again."), "administrate/GroupsController->Save()", '', false, false), 'field_password');
+ 				$this->request->addActionError(new ApplicationError(1050, _t("Password does not match confirmation. Please try again."), "administrate/GroupsController->Save()", '', false, false), 'field_password');
  			} 
  			
  			AppNavigation::clearMenuBarCache($this->request);	// clear menu bar cache since changes may affect content

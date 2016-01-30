@@ -289,6 +289,7 @@ class RequestHTTP extends Request {
 		} else {
 			$vs_theme = $this->config->get('theme');		// default theme
 		}
+		if (!$vs_theme) { $vs_theme = $this->config->get('theme'); }
 		return $this->config->get('themes_url').'/'.$vs_theme;
 	}
 	# -------------------------------------------------------
@@ -299,6 +300,7 @@ class RequestHTTP extends Request {
 		} else {
 			$vs_theme = $this->config->get('theme');		// default theme
 		}
+		if (!$vs_theme) { $vs_theme = $this->config->get('theme'); }
 		return $this->config->get('themes_directory').'/'.$vs_theme;
 	}
 	# -------------------------------------------------------
@@ -538,11 +540,11 @@ class RequestHTTP extends Request {
 			if($vn_port == 443) {
 				$vs_proto = 'tls://';
 			} else {
-				$vs_proto = 'tcp://'; // 'tcp://' may be in order here but leaving it blank seems to work too
+				$vs_proto = 'tcp://';
 			}
 
 			// trigger async search indexing
-			if(!$this->isAjax() && !$this->getAppConfig()->get('disable_out_of_process_search_indexing')) {
+			if(!$this->getAppConfig()->get('disable_out_of_process_search_indexing')) {
 				$r_socket = fsockopen($vs_proto . __CA_SITE_HOSTNAME__, $vn_port, $errno, $err, 3);
 				if ($r_socket) {
 					$vs_http  = "GET ".$this->getBaseUrlPath()."/index.php?processIndexingQueue=1 HTTP/1.1\r\n";
@@ -724,10 +726,7 @@ class RequestHTTP extends Request {
 			}
 			if (!$pa_options["dont_redirect_to_login"]) {
 				$vs_auth_login_url = $this->getBaseUrlPath().'/'.$this->getScriptName().'/'.$this->config->get("auth_login_path");
-				//header("Location: ".$vs_auth_login_url.(($pa_options["user_name"]) ? "&lf=1" : ""));
 				$this->opo_response->addHeader("Location", $vs_auth_login_url);
-				
-				//exit;
 			}
 			return false;
 		} else {		

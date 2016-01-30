@@ -252,7 +252,13 @@ class ElementsController extends BaseEditorController {
 					$t_element->update(); 
 					$va_settings = $t_element->getAvailableSettings();
 				}
-				
+
+				// we need to unset the form timestamp to disable the 'Changes have been made since you loaded this data' warning
+				// when we update() below. the warning makes sense because an update() is called before we get here, but if there
+				// was an actual concurrent save problem , that very update above would have triggered the warning already
+				$vn_timestamp = $_REQUEST['form_timestamp'];
+				unset($_REQUEST['form_timestamp']);
+
 				foreach($va_settings as $vs_setting_key => $va_setting_info) {
 					if (isset($va_request['setting_'.$vs_setting_key.'[]'])) {
 						$vs_val = $va_request['setting_'.$vs_setting_key.'[]'];
@@ -266,6 +272,8 @@ class ElementsController extends BaseEditorController {
 					}
 					$t_element->update();
 				}
+
+				$_REQUEST['form_timestamp'] = $vn_timestamp;
 			}
 			
 			/* process type restrictions */
@@ -314,10 +322,10 @@ class ElementsController extends BaseEditorController {
 					continue;
 				}
 			}
+
+			CompositeCache::delete($t_element->getPrimaryKey(), 'ElementSets');
+			CompositeCache::delete($t_element->getPrimaryKey(), 'ElementSetIds');
 		}
-		
-		CompositeCache::delete($t_element->getPrimaryKey(), 'ElementSets');
-		CompositeCache::delete($t_element->getPrimaryKey(), 'ElementSetIds');
 		
 		$this->Edit();
 		return;

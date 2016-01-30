@@ -54,7 +54,7 @@ require_once(__CA_MODELS_DIR__.'/ca_users.php');
 		# Constructor - all task queue handlers must implement this
 		#
 		public function __construct() {
-			$this->error = new Error();
+			$this->error = new ApplicationError();
 			$this->error->setErrorOutput(0);
 		}
 		# --------------------------------------------------------------------------------

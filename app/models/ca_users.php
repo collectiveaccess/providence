@@ -323,7 +323,7 @@ class ca_users extends BaseModel {
 	public function __construct($pn_id=null, $pb_use_cache=false) {
 		parent::__construct($pn_id, $pb_use_cache);	# call superclass constructor	
 		
-		$this->opo_auth_config = Configuration::load($this->getAppConfig()->get("authentication_config"));
+		$this->opo_auth_config = Configuration::load(__CA_CONF_DIR__.'/authentication.conf');
 		$this->opo_log = new Eventlog();
 	}
 	# ----------------------------------------
@@ -2056,6 +2056,10 @@ class ca_users extends BaseModel {
 					
 					break;
 				# ---------------------------------
+				case 'DT_HIDDEN':
+					// noop
+					break;
+				# ---------------------------------
 				default:
 					return "Configuration error: Invalid display type for $ps_pref";
 				# ---------------------------------
@@ -2117,6 +2121,19 @@ class ca_users extends BaseModel {
 			) OR ";
 		}
 		
+		$vs_role_sql = '';
+		if (is_array($va_roles = $this->getUserRoles()) && sizeof($va_roles)) {
+			$vs_role_sql = " (
+				(ceui.ui_id IN (
+						SELECT ui_id 
+						FROM ca_editor_uis_x_roles
+						WHERE 
+							role_id IN (".join(',', array_keys($va_roles)).")
+					)
+				)
+			) OR ";
+		}
+		
 		$o_db = $this->getDb();
 		$qr_uis = $o_db->query("
 			SELECT ceui.ui_id, ceuil.name, ceuil.locale_id, ceuitr.type_id
@@ -2128,6 +2145,7 @@ class ca_users extends BaseModel {
 					ceui.user_id = ? OR 
 					ceui.is_system_ui = 1 OR
 					{$vs_group_sql}
+					{$vs_role_sql}
 					(ceui.ui_id IN (
 							SELECT ui_id 
 							FROM ca_editor_uis_x_users 
@@ -2166,6 +2184,19 @@ class ca_users extends BaseModel {
 			) OR ";
 		}
 		
+		$vs_role_sql = '';
+		if (is_array($va_roles = $this->getUserRoles()) && sizeof($va_roles)) {
+			$vs_role_sql = " (
+				(ceui.ui_id IN (
+						SELECT ui_id 
+						FROM ca_editor_uis_x_roles
+						WHERE 
+							role_id IN (".join(',', array_keys($va_roles)).")
+					)
+				)
+			) OR ";
+		}
+		
 		$o_db = $this->getDb();
 		$qr_uis = $o_db->query("
 			SELECT *
@@ -2176,6 +2207,7 @@ class ca_users extends BaseModel {
 					ceui.user_id = ? OR 
 					ceui.is_system_ui = 1 OR
 					{$vs_group_sql}
+					{$vs_role_sql}
 					(ceui.ui_id IN (
 							SELECT ui_id 
 							FROM ca_editor_uis_x_users 
@@ -2300,7 +2332,7 @@ class ca_users extends BaseModel {
 	
 	public function loadUserPrefDefs($pb_force_reload=false) {
 		if (!$this->_user_pref_defs || $pb_force_reload) {
-			if ($vs_user_pref_def_path = $this->getAppConfig()->get("user_pref_defs")) {
+			if ($vs_user_pref_def_path = __CA_CONF_DIR__."/user_pref_defs.conf") {
 				$this->_user_pref_defs = Configuration::load($vs_user_pref_def_path, $pb_force_reload);
 				return true;
 			}
