@@ -54,7 +54,7 @@
 		 */
 		public function __construct($ps_table=null) {
 			$this->opo_config = Configuration::load();
-			$this->opo_viz_config = Configuration::load($this->opo_config->get('visualization_config'));
+			$this->opo_viz_config = Configuration::load(__CA_CONF_DIR__.'/visualization.conf');
 			
 			$this->reset();
 			

@@ -3317,6 +3317,9 @@
 							$qr_res = $this->opo_db->query($vs_sql, $vs_list_name);
 							return ((int)$qr_res->numRows() > 1) ? true : false;
 						} else {
+							// Get label ordering fields
+							$va_ordering_fields_to_fetch = (isset($va_facet_info['order_by_label_fields']) && is_array($va_facet_info['order_by_label_fields'])) ? $va_facet_info['order_by_label_fields'] : array();
+
 							$va_orderbys = array();
 							
 							// Get label ordering fields
@@ -3345,9 +3348,8 @@
 										break;
 								}
 							}
-							
+
 							$vs_order_by = (sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
-							
 							$vs_sql = "
 								SELECT DISTINCT lil.item_id, lil.name_singular, lil.name_plural, lil.locale_id
 								FROM ca_list_items li
