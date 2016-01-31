@@ -1498,34 +1498,19 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$pa_direct_sql_query_params = array(($vn_direct_sql_target_table_num != $pn_subject_tablenum) ? $vn_direct_sql_target_table_num : (int)$pn_subject_tablenum);
 							}
 						} else {
-							if ($vb_is_blank_search || $vb_is_not_blank_search) {
-								$vs_sql = "
-									INSERT IGNORE INTO {$ps_dest_table}
-									SELECT DISTINCT swi.row_id, 1
-									FROM ca_sql_search_word_index swi
-									INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id
-									WHERE
-										{$vs_sql_where}
-										AND
-										swi.table_num = ?
-										{$vs_rel_type_id_sql}
-										".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '')."
-								";
-							} else {
-								$vs_sql = "
-									INSERT IGNORE INTO {$ps_dest_table}
-									SELECT swi.row_id, SUM(swi.boost)
-									FROM ca_sql_search_word_index swi
-									".((!$vb_is_blank_search && !$vb_is_not_blank_search) ? "INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id" : '')."
-									WHERE
-										{$vs_sql_where}
-										AND
-										swi.table_num = ?
-										{$vs_rel_type_id_sql}
-										".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '')."
-									GROUP BY swi.row_id
-								";
-							}
+							$vs_sql = "
+								INSERT IGNORE INTO {$ps_dest_table}
+								SELECT swi.row_id, SUM(swi.boost)
+								FROM ca_sql_search_word_index swi
+								".((!$vb_is_blank_search && !$vb_is_not_blank_search) ? "INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id" : '')."
+								WHERE
+									{$vs_sql_where}
+									AND
+									swi.table_num = ?
+									{$vs_rel_type_id_sql}
+									".($this->getOption('omitPrivateIndexing') ? " AND swi.access = 0" : '')."
+								GROUP BY swi.row_id
+							";
 							$pa_direct_sql_query_params = array((int)$pn_subject_tablenum);
 						}
 
@@ -1559,7 +1544,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$vs_sql = ($vs_direct_sql_query) ? "{$vs_direct_sql_query}" : "
 									SELECT swi.row_id
 									FROM ca_sql_search_word_index swi
-									INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id
+									".((!$vb_is_blank_search && !$vb_is_not_blank_search) ? "INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id" : '')."
 									WHERE
 										{$vs_sql_where}
 										AND
@@ -1599,9 +1584,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								}
 								
 								$vs_sql = "
-									SELECT row_id
-									FROM ca_sql_search_words sw
-									INNER JOIN ca_sql_search_word_index AS swi ON sw.word_id = swi.word_id
+									SELECT swi.row_id
+									FROM ca_sql_search_word_index swi
+									".((!$vb_is_blank_search && !$vb_is_not_blank_search) ? "INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id" : '')."
 									WHERE 
 										".($vs_sql_where ? "{$vs_sql_where} AND " : "")." swi.table_num = ? 
 										{$vs_rel_type_id_sql}
@@ -1634,7 +1619,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									INSERT IGNORE INTO {$ps_dest_table}
 									SELECT swi.row_id, SUM(swi.boost)
 									FROM ca_sql_search_word_index swi
-									INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id
+									".((!$vb_is_blank_search && !$vb_is_not_blank_search) ? "INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id" : '')."
 									WHERE
 										{$vs_sql_where}
 										AND
