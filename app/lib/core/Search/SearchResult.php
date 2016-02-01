@@ -349,7 +349,7 @@ class SearchResult extends BaseObject {
 		$vn_level = 0;
 		
 		while(true) {
-			if (!sizeof($va_row_ids_in_current_level)) { break; }
+			if (!sizeof($va_row_ids_in_current_level) || !is_array($va_params) || !is_array($va_params[0]) || !sizeof($va_params[0])) { break; }
 			$qr_rel = $this->opo_subject_instance->getDb()->query($vs_sql, $va_params);
 			if (!$qr_rel || ($qr_rel->numRows() == 0)) { break;}
 			

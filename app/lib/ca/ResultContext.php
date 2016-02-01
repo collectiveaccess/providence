@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -134,11 +134,55 @@
 		/**
 		 * Sets the current search expression for the context.
 		 *
-		 * @param $ps_expression - search expression text
-		 * @return (string) - returns the expression as set
+		 * @param string $ps_expression Search expression text
+		 * @param string $ps_expression Alternate text to use when displaying search to user. Typically used in "advanced" searches where access points and booleans may prove unattractive or hard to read
+		 * @return bool
 		 */
-		public function setSearchExpression($ps_expression) {
-			return $this->setContextValue('expression', $ps_expression);
+		public function setSearchExpression($ps_expression, $ps_display_expression=null) {
+			$this->setContextValue('expression', $ps_expression);
+			$this->setSearchExpressionForDisplay($ps_display_expression ? $ps_display_expression : $ps_expression);
+			
+			return true;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 *
+		 *
+		 * @param $ps_expression - search expression display text
+		 * @return bool
+		 */
+		public function setSearchExpressionForDisplay($ps_display_expression) {
+			$o_semi = $this->getSemiPersistentStorageInstance();
+			$va_expressions_for_display = $o_semi->getVar('expressions_for_display');
+			
+			if (!$va_expressions_for_display[$vs_current_expression = $this->getSearchExpression(true)] || ($vs_current_expression != $ps_display_expression)) {
+				$va_expressions_for_display[$vs_current_expression] = $ps_display_expression;
+			}
+			$o_semi->setVar('expressions_for_display', $va_expressions_for_display);
+			
+			return true;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 *
+		 *
+		 * @return string
+		 */
+		public function getSearchExpressionForDisplay($ps_search_expression=null) {
+			$o_semi = $this->getSemiPersistentStorageInstance();
+			$va_expressions_for_display = $o_semi->getVar('expressions_for_display');
+			//$va_expressions_for_display = array_merge($va_expressions_for_display, $this->getContextValue('expressions_for_display'));
+			
+			if($ps_search_expression && isset($va_expressions_for_display[$ps_search_expression])) { return $va_expressions_for_display[$ps_search_expression]; }	// return display expression for specified search expression if defined
+			if ($ps_search_expression) { return $ps_search_expression; }				// return specified search expression if passed and no display expression is available
+			
+			// Try to return display expression for current search expression if no expression has been passed as a parameter
+			if ($vs_display_expression = $va_expressions_for_display[$vs_original_expression = $this->getSearchExpression(true)]) { 
+				return $vs_display_expression; 
+			}
+			
+			// Return current search expression if no display expression is defined
+			return $vs_original_expression;
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -587,7 +631,7 @@
 			$vs_last_find = ResultContext::getLastFind($po_request, $pm_table_name_or_num);
 			$va_tmp = explode('/', $vs_last_find);
 			
-			$o_find_navigation = Configuration::load(__CA_APP_DIR__.'/conf/find_navigation.conf');
+			$o_find_navigation = Configuration::load((defined('__CA_THEME_DIR__') ? __CA_THEME_DIR__ : __CA_APP_DIR__).'/conf/find_navigation.conf');
 			$va_find_nav = $o_find_navigation->getAssoc($vs_table_name);
 			$va_nav = $va_find_nav[$va_tmp[0]];
 			if (!$va_nav) { return false; }
@@ -617,14 +661,19 @@
 			$vs_last_find = ResultContext::getLastFind($po_request, $pm_table_name_or_num);
 			$va_tmp = explode('/', $vs_last_find);
 			
-			$o_find_navigation = Configuration::load(__CA_APP_DIR__.'/conf/find_navigation.conf');
+			$o_find_navigation = Configuration::load((defined('__CA_THEME_DIR__') ? __CA_THEME_DIR__ : __CA_APP_DIR__).'/conf/find_navigation.conf');
 			$va_find_nav = $o_find_navigation->getAssoc($vs_table_name);
 			$va_nav = $va_find_nav[$va_tmp[0]];
 			if (!$va_nav) { return false; }
 			
 			if (__CA_APP_TYPE__ == 'PAWTUCKET') {
 				// Pawtucket-specific navigation rewriting
-				if (!require_once(__CA_APP_DIR__."/controllers/".(trim($va_nav['module_path']) ? trim($va_nav['module_path'])."/" : "").$va_nav['controller']."Controller.php")) { return false; }
+				if (
+					!file_exists($vs_path = __CA_THEME_DIR__."/controllers/".(trim($va_nav['module_path']) ? trim($va_nav['module_path'])."/" : "").$va_nav['controller']."Controller.php")
+					&&
+					!file_exists($vs_path = __CA_APP_DIR__."/controllers/".(trim($va_nav['module_path']) ? trim($va_nav['module_path'])."/" : "").$va_nav['controller']."Controller.php")
+				) { return false; }
+				include_once($vs_path);
 				$vs_controller_class = $va_nav['controller']."Controller";
 				$va_nav = call_user_func_array( "{$vs_controller_class}::".$va_nav['action'] , array($po_request, $vs_table_name) );
 			
@@ -660,17 +709,36 @@
 		 * Return the search history for the current context as an array. Each element of the returned
 		 * array is an associative array with two keys:
 		 * 	'hits' is set to the number of items the search found
-		 *	'display' is the search expression used
+		 *	'search' is the search expression used
+		 *	'display' is the user-presentable version of the search expression 
 		 *
 		 * getSearchHistory() will return an empty array if so search history exists.
 		 *
 		 * @return array - the search history as an indexed array.
 		 */ 
-		public function getSearchHistory() {
-			if ($va_context = $this->getContext()) {
-				if(is_array($va_history =  $va_context['history'])) {
-					return $va_history;
+		public function getSearchHistory($pa_options=null) {
+			$va_find_types = caGetOption('findTypes', $pa_options, null);
+			
+			if(is_array($va_find_types) && sizeof($va_find_types)) {
+				$va_available_find_types = $this->getAvailableFindTypes();
+				$va_history = array();
+				foreach($va_find_types as $vs_find_type) {
+					foreach($va_available_find_types as $vs_available_find_type) {
+						if (strpos($vs_available_find_type, $vs_find_type) === 0) {
+							$va_tmp = explode("/", $vs_available_find_type);
+							
+							$va_context = $this->getContext($va_tmp[0], $va_tmp[1]);
+					
+							if (is_array($va_context) && is_array($va_context['history'])) {
+								$va_history = array_merge($va_history, $va_context['history']);
+							}
+						}
+					}
+					
 				}
+				return $va_history;
+			} elseif(($va_context = $this->getContext()) && (is_array($va_history = $va_context['history']))) {
+				return $va_history;
 			}
 			return array();
 		}
@@ -690,7 +758,8 @@
 				if ($vs_search = $this->getSearchExpression()) {
 					$va_history[$vs_search] = array(
 						'hits' => (int)$pn_hits,
-						'display' => $vs_search
+						'search' => $vs_search,
+						'display' => $this->getSearchExpressionForDisplay($vs_search)
 					);
 					
 					$this->setContextValue('history', $va_history);
@@ -706,6 +775,7 @@
 		 * internally to manage context data.
 		 *
 		 * @param string Optional find type string; allows you to load any context regardless of what the current find type is. Don't use this unless you know what you're doing.
+		 * @param string Optional find subtype string; allows you to load any context regardless of what the current find subtype is. Don't use this unless you know what you're doing.
 		 * @return array - context data
 		 */
 		protected function getContext($ps_find_type=null, $ps_find_subtype=null) {
@@ -804,6 +874,11 @@
 			$o_storage = $this->getPersistentStorageInstance();
 			$o_storage->setVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type.($vs_find_subtype ? "_{$vs_find_subtype}" : ""), $va_context);
 			
+			// Note find type/subtype combo in list of "used find types" in type/subtype format
+			// This is used by ResultContext::getAvailableFindTypes() to return all available combinations 
+			if (!is_array($va_used_find_types = $o_storage->getVar('used_find_types'))) { $va_used_find_types = array(); }
+			$va_used_find_types[$vs_find_type.($vs_find_subtype ? "/{$vs_find_subtype}" : "")] = 1;
+			$o_storage->setVar('used_find_types', $va_used_find_types);
 			
 			$o_semi_storage = $this->getSemiPersistentStorageInstance();
 			if (!is_array($va_existing_semi_context = $o_semi_storage->getVar('result_context_'.$this->ops_table_name.'_'.$vs_find_type.($vs_find_subtype ? "_{$vs_find_subtype}" : "")))) {
@@ -822,16 +897,10 @@
 		 */
 		public function getAvailableFindTypes() {
 			$o_storage = $this->getPersistentStorageInstance();
-			$va_var_keys = $o_storage->getVarKeys();
 			
-			$va_findtypes = array();
-			foreach($va_var_keys as $vs_var_key) {
-				if (preg_match('!result_context_'.$this->ops_table_name.'_([A-Za-z0-9\-\_]+)$!', $vs_var_key, $va_matches)) {
-					$va_findtypes[] = $va_matches[1];
-				}
-			}
+			if (!is_array($va_findtypes = $o_storage->getVar('used_find_types'))) { $va_findtypes = array(); }
 			
-			return $va_findtypes;
+			return array_keys($va_findtypes);
 		}
 		# ------------------------------------------------------------------
 		# Result list convenience methods

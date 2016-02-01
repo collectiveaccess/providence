@@ -9654,7 +9654,8 @@ $pa_options["display_form_field_tips"] = true;
 	 * 
 	 * @param mixed $pm_rel_table_name_or_num The table name or number of the related table. Only relationships pointing to this table will be moved.
 	 * @param int $pn_to_id The primary key value of the row to move the relationships to.
-	 * @param array $pa_options Array of options. No options are currently supported.
+	 * @param array $pa_options Array of options. Options include:
+	 *		copyAttributes = Copy metadata attributes associated with each relationship, if the calling model supports attributes. [Default is false]
 	 *
 	 * @return int Number of relationships copied, or null on error. Note that you should carefully test the return value for null-ness rather than false-ness, since zero is a valid return value in cases where no relationships were available to be copied. 
 	 */
@@ -9663,6 +9664,8 @@ $pa_options["display_form_field_tips"] = true;
 		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num))) { return null; }
 		$t_item_rel = $va_rel_info['t_item_rel'];	// linking table
 		if ($this->inTransaction()) { $t_item_rel->setTransaction($this->getTransaction()); }
+		
+		$vb_copy_attributes = caGetOption('copyAttributes', $pa_options, false, array('castTo' => 'boolean')) && method_exists($this, 'copyAttributesFrom');
 		
 		$o_db = $this->getDb();
 		
@@ -9678,8 +9681,10 @@ $pa_options["display_form_field_tips"] = true;
 			$vs_right_field_name = $t_item_rel->getRightTableFieldName();
 			
 			$qr_res = $o_db->query("
-				SELECT * FROM ".$t_item_rel->tableName()." 
-				WHERE {$vs_left_field_name} = ? OR {$vs_right_field_name} = ?
+				SELECT * 
+				FROM ".$t_item_rel->tableName()." 
+				WHERE 
+					({$vs_left_field_name} = ?) OR ({$vs_right_field_name} = ?)
 			", (int)$vn_row_id, (int)$vn_row_id);
 			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
 			
@@ -9706,10 +9711,20 @@ $pa_options["display_form_field_tips"] = true;
 					$this->errors = $t_item_rel->errors; return null;	
 				}
 				$va_new_relations[$t_item_rel->getPrimaryKey()] = $va_row;
+	
+				if ($vb_copy_attributes) {
+					$t_item_rel->copyAttributesFrom($vn_relation_id);
+					if ($t_item_rel->numErrors()) {
+						$this->errors = $t_item_rel->errors; return null;	
+					}
+				}
 			}
 		} else {
 			$qr_res = $o_db->query("
-				SELECT * FROM ".$t_item_rel->tableName()." WHERE {$vs_item_pk} = ?
+				SELECT * 
+				FROM ".$t_item_rel->tableName()." 
+				WHERE 
+					({$vs_item_pk} = ?)
 			", (int)$vn_row_id);
 			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
 			
@@ -9735,6 +9750,13 @@ $pa_options["display_form_field_tips"] = true;
 					$this->errors = $t_item_rel->errors; return null;	
 				}
 				$va_new_relations[$t_item_rel->getPrimaryKey()] = $va_row;
+				
+				if ($vb_copy_attributes) {
+					$t_item_rel->copyAttributesFrom($vn_relation_id);
+					if ($t_item_rel->numErrors()) {
+						$this->errors = $t_item_rel->errors; return null;	
+					}
+				}
 			}
 		}
 		

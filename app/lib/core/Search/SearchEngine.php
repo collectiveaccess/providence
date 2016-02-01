@@ -268,6 +268,10 @@ class SearchEngine extends SearchBase {
 				if (is_array($va_restrict_to_fields = caGetOption('restrictSearchToFields', $pa_options, null)) && $this->opo_engine->can('restrict_to_fields')) {
 					$this->opo_engine->setOption('restrictSearchToFields', $va_restrict_to_fields);
 				}
+				if (is_array($va_exclude_fields_from_search = caGetOption('excludeFieldsFromSearch', $pa_options, null)) && $this->opo_engine->can('restrict_to_fields')) {
+					$this->opo_engine->setOption('excludeFieldsFromSearch', $va_exclude_fields_from_search);
+				}
+				
 
 				$o_res =  $this->opo_engine->search($this->opn_tablenum, $vs_search, array_unique($this->opa_result_filters), $o_rewritten_query);
 			
