@@ -514,7 +514,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			$va_attrs_to_duplicate = null;
 			if (sizeof($va_duplicate_element_settings)) {
 				$va_attrs_to_duplicate = [];
-				print_R($va_duplicate_element_settings);
 				foreach($va_duplicate_element_settings as $vs_bundle => $vn_duplication_setting) {
 					if ((substr($vs_bundle, 0, 13) == 'ca_attribute_') && ($vn_duplication_setting)) {
 						$va_attrs_to_duplicate[] = substr($vs_bundle, 13);
