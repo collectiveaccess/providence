@@ -153,6 +153,10 @@ class Intrinsic extends FieldType {
 					$po_term->field, '_missing_'
 				);
 			}
+		} elseif(strtolower($po_term->text) === '[set]') {
+			return new \Zend_Search_Lucene_Index_Term(
+				$po_term->field, '_exists_'
+			);
 		} elseif(
 			($t_instance instanceof \BaseModel) &&
 			isset($va_field_components[1]) &&
