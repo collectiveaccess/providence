@@ -246,7 +246,7 @@ class SearchEngine extends SearchBase {
 			} 
 			
 			$vb_no_types = false;	
-			if (is_array($va_type_ids = $this->getTypeRestrictionList()) && (sizeof($va_type_ids) > 0) && $t_table->hasField('type_id')) {
+			if (!$pa_options['expandToIncludeParents'] && is_array($va_type_ids = $this->getTypeRestrictionList()) && (sizeof($va_type_ids) > 0) && $t_table->hasField('type_id')) {
 				if ($t_table->getFieldInfo('type_id', 'IS_NULL')) {
 					$va_type_ids[] = 'NULL';
 				}
@@ -277,6 +277,27 @@ class SearchEngine extends SearchBase {
 			
 				// cache the results
 				$va_hits = $o_res->getPrimaryKeyValues($vn_limit);
+				
+										
+				if ($pa_options['expandToIncludeParents'] && sizeof($va_hits)) {
+					$qr_exp = caMakeSearchResult($this->opn_tablenum, $va_hits);
+					if (!is_array($va_type_ids) || !sizeof($va_type_ids)) { $va_type_ids = null; }
+					
+					$va_results = [];
+					$va_parents = [];
+					while($qr_exp->nextHit()) {
+						if ($vn_parent_id = $qr_exp->get('parent_id')) {
+							if (
+								((!$va_type_ids) || (in_array($qr_exp->get($this->opn_tablenum.'.parent.type_id'), $va_type_ids)))
+							) { 
+								$va_parents[$vn_parent_id] = 1;
+							}
+						}
+						if (($va_type_ids) && (!in_array($qr_exp->get('type_id'), $va_type_ids))) { continue; }
+						$va_results[] = $qr_exp->getPrimaryKey();
+					}
+					$va_hits = array_merge($va_hits, array_keys($va_parents));
+				}
 				$o_res->seek(0);
 			} else {
 				$va_hits = array();

@@ -78,7 +78,7 @@ class ContentCaching extends AppControllerPlugin {
 		// does this need to be cached?
 		if ($vs_key = $this->getKeyForRequest()) {
 			// is this cached?
-			if(ExternalCache::contains($vs_key, 'PawtucketPageCache')) {
+			if(!(bool)$this->getRequest()->getParameter('noCache', pInteger) && ExternalCache::contains($vs_key, 'PawtucketPageCache')) {
 				// yep... so prevent dispatch and output cache in postDispatch
 				$this->opb_output_from_cache = true;
 
