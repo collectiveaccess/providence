@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -47,7 +47,7 @@
 		$pn_errline = __LINE__;
 		$pa_errcontext = $e->getTrace();
 		$pa_errcontext_args = caExtractStackTraceArguments($pa_errcontext);
-		//$pa_request_params = caExtractRequestParams();
+		$pa_request_params = caExtractRequestParams();
 		
 		require_once((defined("__CA_THEME_DIR__") ? __CA_THEME_DIR__ : __DIR__.'/../../themes/default').'/views/system/fatal_error_html.php');
 		exit;
@@ -61,7 +61,7 @@
 		$pa_errcontext = debug_backtrace(); 
 		array_shift($pa_errcontext); // remove entry for error handler
 		$pa_errcontext_args = caExtractStackTraceArguments($pa_errcontext);
-		//$pa_request_params = caExtractRequestParams();
+		$pa_request_params = caExtractRequestParams();
 		
 		switch($pn_errno) {
 			case E_WARNING:
