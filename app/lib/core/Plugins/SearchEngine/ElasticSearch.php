@@ -95,7 +95,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 */
 	public function refreshMapping($pb_force=false) {
 		$o_mapping = new ElasticSearch\Mapping();
-		if($o_mapping->needsRefresh() || $pb_force) {
+		if($o_mapping->needsRefresh() || $pb_force || (defined('__CollectiveAccess_Installer__') && __CollectiveAccess_Installer__)) {
 			try {
 				if(!$this->getClient()->indices()->exists(array('index' => $this->getIndexName()))) {
 					$this->getClient()->indices()->create(array('index' => $this->getIndexName()));
@@ -114,8 +114,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				$this->getClient()->indices()->putMapping(array(
 					'index' => $this->getIndexName(),
 					'type' => $vs_table,
-					'body' => array($vs_table => $va_config),
-					'update_all_types' => true
+					'update_all_types' => true,
+					'ignore_conflicts' => true,
+					'body' => array($vs_table => $va_config)
 				));
 			}
 
@@ -296,7 +297,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	}
 	# -------------------------------------------------------
 	public function __destruct() {
-		$this->flushContentBuffer();
+		if(!defined('__CollectiveAccess_Installer__') || !__CollectiveAccess_Installer__) {
+			$this->flushContentBuffer();
+		}
 	}
 	# -------------------------------------------------------
 	/**
