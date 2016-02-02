@@ -1,7 +1,7 @@
 CollectiveAccess README
 -----------------------
 
-[![Build Status](https://secure.travis-ci.org/collectiveaccess/providence.png?branch=develop)](http://travis-ci.org/collectiveaccess/providence)
+[![Build Status](https://secure.travis-ci.org/collectiveaccess/providence.png?branch=master)](http://travis-ci.org/collectiveaccess/providence)
 
 Thank you for downloading Providence version 1.6!
  

@@ -306,4 +306,9 @@ class ca_search_indexing_queue extends BaseModel {
 		}
 	}
 	# ------------------------------------------------------
+	static public function flush() {
+		$o_db = new Db();
+		$o_db->query("DELETE FROM ca_search_indexing_queue");
+	}
+	# ------------------------------------------------------
 }

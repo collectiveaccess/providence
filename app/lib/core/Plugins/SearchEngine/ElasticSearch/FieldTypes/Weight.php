@@ -62,9 +62,13 @@ class Weight extends GenericElement {
 			return new \Zend_Search_Lucene_Index_Term(
 				$po_term->field, '_missing_'
 			);
+		} elseif(strtolower($po_term->text) === '[set]') {
+			return new \Zend_Search_Lucene_Index_Term(
+				$po_term->field, '_exists_'
+			);
 		}
 
-		// convert incoming text to meters so that we can query our standardized indexing (see above)
+		// convert incoming text to kilograms so that we can query our standardized indexing (see above)
 		try {
 			return new \Zend_Search_Lucene_Index_Term(
 				(float) caParseWeightDimension($po_term->text)->convertTo('KILOGRAM', 6, 'en_US'),
