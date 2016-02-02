@@ -89,8 +89,9 @@ class DateRange extends GenericElement {
 	 */
 	function getFilterForTerm($po_term) {
 
+		// try to get qualifiers
 		$vs_qualifier = null;
-		if(preg_match("/^([\<\>][\=]?)(.+)/", $po_term->text, $va_matches)) {
+		if(preg_match("/^([\<\>\#][\=]?)(.+)/", $po_term->text, $va_matches)) {
 			$vs_parse_date = $va_matches[2];
 			$vs_qualifier = $va_matches[1];
 		} else {
@@ -122,6 +123,7 @@ class DateRange extends GenericElement {
 					'gte' => $va_parsed_values['start'],
 				);
 				break;
+			case '#':
 			default:
 				$va_return[$vs_return_term] = array(
 					'gte' => $va_parsed_values['start'],

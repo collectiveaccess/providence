@@ -130,6 +130,9 @@ class DateSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.coverageDates:"1/28/1985 @ 9am - 1/28/1985 @ 11am"' => 1,
 			'ca_objects.coverageDates:"1/28/1986 @ 8am - 1/28/1986 @ 9am"' => 1,
 
+			// # qualifier
+			'ca_objects.coverageDates:"#1986"' => 1,
+
 			// >, >=, <, <= qualifiers
 			'ca_objects.coverageDates:">=1985"' => 2,
 			'ca_objects.coverageDates:">1985"' => 1,
