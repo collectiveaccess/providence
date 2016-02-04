@@ -2210,7 +2210,7 @@ class SearchResult extends BaseObject {
 			if (in_array($vs_k, array('useSingular', 'maximumLength', 'delimiter', 'purify', 'restrict_to_types', 'restrict_to_relationship_types',  'restrictToTypes', 'restrictToRelationshipTypes', 'returnAsArray',  'excludeTypes', 'excludeRelationshipTypes'))) { continue; }
 			unset($pa_options[$vs_k]);
 		}
-		return md5($this->ops_table_name.'/'.$ps_template.'/'.serialize($pa_options));
+		return md5($this->ops_table_name.'/'.$ps_template.'/'.serialize($pa_options).'/'.spl_object_hash($this));
 	}
 	# ------------------------------------------------------------------
 	/**

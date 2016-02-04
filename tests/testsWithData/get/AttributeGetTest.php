@@ -183,7 +183,7 @@ class AttributeGetTest extends BaseTestWithData {
 		$vs_template = "<unit relativeTo='ca_objects.dimensions'><if rule='^measurement_notes =~ /foo/'>^ca_objects.dimensions.dimensions_length</if></unit>";
 		$vm_ret = $this->opt_object->getAttributesForDisplay('dimensions', $vs_template);
 		$this->assertEquals('10.0 in', $vm_ret);
-		
+
 		$vs_template = "<unit relativeTo='ca_objects.dimensions'><if rule='^measurement_notes =~ /foo/'>^dimensions_length</if></unit>";
 		$vm_ret = $this->opt_object->getAttributesForDisplay('dimensions', $vs_template);
 		$this->assertEquals('10.0 in', $vm_ret);
