@@ -444,6 +444,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *		labelsOnly = 	if true only labels in the current locale are returns in an array key'ed on item_id
 	 *		start = 		offset to start returning records from [default=0; no offset]
 	 *		limit = 		maximum number of records to return [default=null; no limit]
+	 * 		dontCache =		don't cache
 	 *
 	 * @return array List of items indexed first on item_id and then on locale_id of label
 	 */
@@ -455,6 +456,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	
 		$pn_start = caGetOption('start', $pa_options, 0);
 		$pn_limit = caGetOption('limit', $pa_options, null);
+		$pb_dont_cache = caGetOption('dontCache', $pa_options, false);
 		
 		$pb_omit_root = caGetOption('omitRoot', $pa_options, false);
 		$vb_enabled_only = caGetOption('enabledOnly', $pa_options, false);
@@ -468,8 +470,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		}
 	
 		$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_options, array('list_id' => $vn_list_id)));
-		
-		if (is_array(ca_lists::$s_list_item_cache[$vs_cache_key])) {
+
+		if (!$pb_dont_cache && is_array(ca_lists::$s_list_item_cache[$vs_cache_key])) {
 			return(ca_lists::$s_list_item_cache[$vs_cache_key]);
 		}
 		$t_list = new ca_lists($vn_list_id);

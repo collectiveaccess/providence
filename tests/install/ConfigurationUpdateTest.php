@@ -119,13 +119,34 @@ class ConfigurationUpdateTest extends PHPUnit_Framework_TestCase {
 		$t_item->delete(true, array('hard'=>true));
 
 		$this->assertGreaterThan(0, ($vn_item_id = caGetListItemID('diff_test_list', 'test_item_two', array('dontCache' => true))));
+	}
 
-		$t_item = new ca_list_items($vn_item_id);
-		$t_item->setMode(ACCESS_WRITE);
-		$t_item->delete(true, array('hard'=>true));
+	public function testDeleteListItem() {
+		$t_list = new ca_lists();
+		$t_list->load(array('list_code' => 'diff_test_list'));
+		$this->assertGreaterThan(0, $t_list->getPrimaryKey());
+		$this->assertEquals(2, sizeof($t_list->getItemsForList('diff_test_list', array('dontCache' => true))));
 
-		$t_list->setMode(ACCESS_WRITE);
-		$t_list->delete(true, array('hard' => true));
+		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/lists/delete_list_items.xml'));
+		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer->processLocales();
+		$o_installer->processLists();
+
+		$this->assertEquals(0, sizeof($t_list->getItemsForList('diff_test_list', array('dontCache' => true))));
+	}
+
+	public function testDeleteList() {
+		$t_list = new ca_lists();
+		$t_list->load(array('list_code' => 'diff_test_list'));
+		$this->assertGreaterThan(0, $t_list->getPrimaryKey());
+
+		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/lists/delete_list.xml'));
+		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer->processLocales();
+		$o_installer->processLists();
+
+		$t_list = new ca_lists();
+		$this->assertFalse($t_list->load(array('list_code' => 'diff_test_list')));
 	}
 
 	public function testAddNewElement() {

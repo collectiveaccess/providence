@@ -503,6 +503,12 @@ class Installer {
 				$t_list = new ca_lists();
 			}
 			$t_list->setMode(ACCESS_WRITE);
+
+			if(self::getAttribute($vo_list, "deleted") && $t_list->getPrimaryKey()) {
+				$t_list->delete(true);
+				continue;
+			}
+
 			$vb_hierarchical = self::getAttribute($vo_list, "hierarchical");
 			$vb_system = self::getAttribute($vo_list, "system");
 			$vb_voc = self::getAttribute($vo_list, "vocabulary");
@@ -574,6 +580,12 @@ class Installer {
 			if (!isset($vs_rank)) { $vs_rank = 0; }
 
 			if($vn_item_id = caGetListItemID($t_list->get('list_code'), $vs_item_idno, array('dontCache' => true))) {
+				if(self::getAttribute($vo_item, "deleted")) {
+					$t_item = new ca_list_items($vn_item_id);
+					$t_item->setMode(ACCESS_WRITE);
+					$t_item->delete();
+					continue;
+				}
 				$t_item = $t_list->editItem($vn_item_id, $vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank);
 			} else {
 				$t_item = $t_list->addItem($vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vn_type_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank);
