@@ -85,6 +85,16 @@
 			if (($vn_str_len = mb_strlen($ps_query)) > 0) {
 				if ($vn_str_len < 3) { $pb_exact = true; }		// force short strings to be an exact match (using a very short string as a stem would perform badly and return too many matches in most cases)
 				
+				if (is_array($va_asis_regexes = $o_search_config->getList('asis_regexes'))) {
+					foreach($va_asis_regexes as $vs_asis_regex) {
+						if (preg_match("!{$vs_asis_regex}!", $ps_query)) {
+							$pb_exact = true;
+							break;
+						}
+					}
+				}
+				
+				
 				$o_search = new $this->ops_search_class();
 				
 				$pa_types = array();
@@ -165,7 +175,7 @@
 				$qr_res->setOption('prefetch', $pn_limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);
 				
-				$va_opts = array('exclude' => $va_excludes, 'limit' => $pn_limit);
+				$va_opts = array('exclude' => $va_excludes, 'limit' => $pn_limit, 'request' => $this->getRequest());
 				if(!$pb_no_inline && ($pb_quickadd || (!strlen($pb_quickadd) && $this->request->user && $this->request->user->canDoAction('can_quickadd_'.$this->opo_item_instance->tableName()) && !((bool) $o_config->get($this->opo_item_instance->tableName().'_disable_quickadd'))))) {
 					// if the lookup was restricted by search, try the lookup without the restriction
 					// so that we can notify the user that he might be about to create a duplicate
@@ -225,8 +235,10 @@
 					$vn_id = (int)$this->request->getParameter('root_item_id', pInteger);
 					$t_item->load($vn_id);
 					// no id so by default return list of available hierarchies
-					$va_items_for_locale = $t_item->getHierarchyList();
-
+					if(!is_array($va_items_for_locale = $t_item->getHierarchyList())) { 
+						$va_items_for_locale = array();
+					}
+					
 					if((sizeof($va_items_for_locale) == 1) && $this->request->getAppConfig()->get($t_item->tableName().'_hierarchy_browser_hide_root')) {
 						$va_item = array_shift($va_items_for_locale);
 						$vn_id = $va_item['item_id'];

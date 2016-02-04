@@ -38,6 +38,27 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		date_default_timezone_set('America/New_York');
 	}
 
+	public function testExifDates() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$vb_res = $o_tep->parse('2015:07:15 14:29:17.49');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_parse['start'], "2015.0715142917");
+		$this->assertEquals($va_parse['end'], "2015.0715142917");
+		$this->assertEquals($va_parse[0], "2015.0715142917");
+		$this->assertEquals($va_parse[1], "2015.0715142917");
+		
+		$va_parse = $o_tep->getUnixTimestamps();
+		
+		$this->assertEquals($va_parse['start'], "1436984957");
+		$this->assertEquals($va_parse['end'], "1436984957");
+		$this->assertEquals($va_parse[0], "1436984957");
+		$this->assertEquals($va_parse[1], "1436984957");
+	}
+
 	public function testUnknownYearAACR2() {
 		$o_tep = new TimeExpressionParser();
 		$o_tep->setLanguage('en_US');

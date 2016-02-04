@@ -55,7 +55,7 @@
 			if (sizeof($this->errors)) {
 				foreach ($this->errors as $e) {
 					if ((is_null($ps_source)) || ((!is_null($ps_source) && ($e->getErrorSource() === $ps_source)))) {
-						array_push($va_errors,$e);
+						array_push($va_errors, $e);
 					}
 				}
 			}
@@ -101,7 +101,7 @@
 		}
 		# ------------------------------------------------------------------
 		public function postError($pn_num, $ps_message, $ps_context, $ps_source='') {
-			$o_error = new Error();
+			$o_error = new ApplicationError();
 			$o_error->setErrorOutput($this->error_output);
 			$o_error->setError($pn_num,$ps_message,$ps_context, $ps_source);
 			

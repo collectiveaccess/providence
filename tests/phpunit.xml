@@ -24,10 +24,7 @@
     </testsuite>
     <testsuite name="Lib Test Suite">
       <directory>lib/</directory>
-      <!-- files below require coney island data, which is not on GitHub anymore -->
-      <exclude>lib/core/Models/ModelTest.php</exclude>
-      <exclude>lib/core/SearchResult/SearchResultTest.php</exclude>
-      <exclude>lib/ca/Service/ItemServiceTest.php</exclude>
+      <exclude>lib/core/Search/ElasticSearch</exclude>
     </testsuite>
     <testsuite name="Models Test Suite">
       <directory>models/</directory>

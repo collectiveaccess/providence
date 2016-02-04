@@ -242,7 +242,7 @@
 							if($this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
 ?>
 							<div class='caObjectRepresentationListActionButton'>
-								<span id="{fieldNamePrefix}download_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_DOWNLOAD__).' '._t('Download'), '', 'editor/objects', 'ObjectEditor', 'DownloadRepresentation', array('version' => 'original', 'representation_id' => "{n}", 'object_id' => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{fieldNamePrefix}download_button_{n}"))); ?></span>
+								<span id="{fieldNamePrefix}download_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_DOWNLOAD__).' '._t('Download'), '', 'editor/objects', 'ObjectEditor', 'DownloadMedia', array('version' => 'original', 'representation_id' => "{n}", 'object_id' => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{fieldNamePrefix}download_button_{n}"))); ?></span>
 							</div>
 <?php
 							}

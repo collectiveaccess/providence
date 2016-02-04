@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -146,12 +146,20 @@
 			
 			if (($ps_placeholder[0] == '^') && (strpos($ps_placeholder, '^', 1) === false)) {
 				// Placeholder is a single caret-value
+				$va_tag = explode('~', $vs_key);
 				if ($o_reader) {
-					$vm_val = $o_reader->get($vs_key, array('returnAsArray' => true));
+					$vm_val = $o_reader->get($va_tag[0], array('returnAsArray' => true));
 				} else {
-					if (!isset($pa_source_data[substr($ps_placeholder, 1)])) { return null; }
-					$vm_val = $pa_source_data[substr($ps_placeholder, 1)];
+					if (!isset($pa_source_data[$va_tag[0]])) { return null; }
+					$vm_val = $pa_source_data[$va_tag[0]];
 				}
+				
+				if ($va_tag[1]) { 
+					foreach($vm_val as $vn_i => $vs_val) {
+						$vm_val[$vn_i] = caProcessTemplateTagDirectives($vs_val, [$va_tag[1]]);
+					}
+				}
+				
 			} elseif(strpos($ps_placeholder, '^') !== false) {
 				// Placeholder is a full template – requires extra processing
 				if ($o_reader) {

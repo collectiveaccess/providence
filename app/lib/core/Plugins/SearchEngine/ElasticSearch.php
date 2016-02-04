@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2015 Whirl-i-Gig
+ * Copyright 2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -15,10 +15,10 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
@@ -29,45 +29,37 @@
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
 
 require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 require_once(__CA_LIB_DIR__.'/core/Datamodel.php');
 require_once(__CA_LIB_DIR__.'/core/Plugins/WLPlug.php');
 require_once(__CA_LIB_DIR__.'/core/Plugins/IWLPlugSearchEngine.php');
-require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearchResult.php');
-require_once(__CA_LIB_DIR__.'/core/Zend/Http/Client.php');
-require_once(__CA_LIB_DIR__.'/core/Zend/Http/Response.php');
-require_once(__CA_LIB_DIR__.'/core/Zend/Cache.php');
-require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/BaseSearchPlugin.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/GeocodeAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearchResult.php');
+
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/Field.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/Mapping.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/Query.php');
 
 class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlugSearchEngine {
 	# -------------------------------------------------------
-	private $opn_indexing_subject_tablenum;
-	private $ops_indexing_subject_tablename;
-	private $opn_indexing_subject_row_id;
-	
-	private $opo_tep;
+	protected $opa_index_content_buffer = array();
 
-	private $ops_elasticsearch_base_url;
-	private $ops_elasticsearch_index_name;
-	
-	static $s_doc_content_buffer = array();			// content buffer used when indexing
-	static $s_element_code_cache = array();
+	protected $opn_indexing_subject_tablenum = null;
+	protected $opn_indexing_subject_row_id = null;
+	protected $ops_indexing_subject_tablename = null;
+
+	/**
+	 * @var \Elasticsearch\Client
+	 */
+	protected $opo_client;
+
+	static $s_doc_content_buffer = array();
+	static $s_update_content_buffer = array();
+	static $s_delete_buffer = array();
 	# -------------------------------------------------------
-	public function __construct($po_db=null){
+	public function __construct($po_db=null) {
 		parent::__construct($po_db);
-		
-		$this->opo_db = new Db();
-		$this->opo_tep = new TimeExpressionParser();	
-		
-		$this->opo_geocode_parser = new GeocodeAttributeValue();
 
 		// allow overriding settings from search.conf via constant (usually defined in bootstrap file)
 		// this is useful for multi-instance setups which have the same set of config files for multiple instances
@@ -82,13 +74,135 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		} else {
 			$this->ops_elasticsearch_index_name = $this->opo_search_config->get('search_elasticsearch_index_name');
 		}
+
+		$this->opo_client = Elasticsearch\ClientBuilder::create()
+			->setHosts([$this->ops_elasticsearch_base_url])
+			->setRetries(2)
+			->build();
 	}
 	# -------------------------------------------------------
-	public function init(){
-		if(($vn_max_indexing_buffer_size = (int)$this->opo_search_config->get('max_indexing_buffer_size')) < 1) {
-			$vn_max_indexing_buffer_size = 100;
+	/**
+	 * Get ElasticSearch index name
+	 * @return string
+	 */
+	protected function getIndexName() {
+		return $this->ops_elasticsearch_index_name;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Refresh ElasticSearch mapping if necessary
+	 * @param bool $pb_force force refresh if set to true [default is false]
+	 */
+	public function refreshMapping($pb_force=false) {
+		$o_mapping = new ElasticSearch\Mapping();
+		if($o_mapping->needsRefresh() || $pb_force || (defined('__CollectiveAccess_Installer__') && __CollectiveAccess_Installer__)) {
+			try {
+				if(!$this->getClient()->indices()->exists(array('index' => $this->getIndexName()))) {
+					$this->getClient()->indices()->create(array('index' => $this->getIndexName()));
+				}
+				// if we don't refresh() after creating, ES throws a IndexPrimaryShardNotAllocatedException
+				// @see https://groups.google.com/forum/#!msg/elasticsearch/hvMhx162E-A/on-3druwehwJ
+				// -- seems to be fixed in 2.x
+				//$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
+			} catch (Elasticsearch\Common\Exceptions\BadRequest400Exception $e) {
+				// noop -- the exception happens when the index already exists, which is good
+			}
+
+			$this->setIndexSettings();
+
+			foreach($o_mapping->get() as $vs_table => $va_config) {
+				$this->getClient()->indices()->putMapping(array(
+					'index' => $this->getIndexName(),
+					'type' => $vs_table,
+					'update_all_types' => true,
+					'ignore_conflicts' => true,
+					'body' => array($vs_table => $va_config)
+				));
+			}
+
+			// resets the mapping cache key so that needsRefresh() returns false for 24h
+			$o_mapping->ping();
 		}
-		
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 *
+	 * @param int $pn_subject_tablenum
+	 * @param array $pa_subject_row_ids
+	 * @param int $pn_content_tablenum
+	 * @param string $ps_content_fieldnum
+	 * @param int $pn_content_row_id
+	 * @param string $ps_content
+	 * @param array $pa_options
+	 *		literalContent = array of text content to be applied without tokenization
+	 *		BOOST = Indexing boost to apply
+	 *		PRIVATE = Set indexing to private
+	 */
+	public function updateIndexingInPlace($pn_subject_tablenum, $pa_subject_row_ids, $pn_content_tablenum, $ps_content_fieldnum, $pn_content_row_id, $ps_content, $pa_options=null) {
+		$vs_table_name = $this->opo_datamodel->getTableName($pn_subject_tablenum);
+
+		$o_field = new ElasticSearch\Field($pn_content_tablenum, $ps_content_fieldnum);
+		$va_fragment = $o_field->getIndexingFragment($ps_content, $pa_options);
+
+		foreach($pa_subject_row_ids as $pn_subject_row_id) {
+
+			// fetch the record
+			try {
+				$va_record = $this->getClient()->get([
+						'index' => $this->getIndexName(),
+						'type' => $vs_table_name,
+						'id' => $pn_subject_row_id
+				])['_source'];
+ 			} catch(\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
+				$va_record = array(); // record doesn't exist yet --> the update API will create it
+			}
+
+			foreach($va_fragment as $vs_key => $vm_val) {
+				if(isset($va_record[$vs_key])) {
+					// find the index for this content row id in our _content_ids index list
+					$va_values = $va_record[$vs_key];
+					$va_indexes = $va_record[$vs_key.'_content_ids'];
+					$vn_index = array_search($pn_content_row_id, $va_indexes);
+					if($vn_index !== false) {
+						// replace that very index in the value array for this field -- all the other values stay intact
+						$va_values[$vn_index] = $vm_val;
+					} else { // this particular content row id hasn't been indexed yet --> just add it
+						$va_values[] = $vm_val;
+						$va_indexes[] = $pn_content_row_id;
+					}
+					self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key.'_content_ids'] = $va_indexes;
+					self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key] = $va_values;
+				} else { // this field wasn't indexed yet -- just add it
+					self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key][] = $vm_val;
+					self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key.'_content_ids'][] = $pn_content_row_id;
+				}
+			}
+		}
+
+		if ((
+				sizeof(self::$s_doc_content_buffer) +
+				sizeof(self::$s_update_content_buffer) +
+				sizeof(self::$s_delete_buffer)
+			) > $this->getOption('maxIndexingBufferSize'))
+		{
+			$this->flushContentBuffer();
+		}
+	}
+	# -------------------------------------------------------
+	/**
+	 * Get ElasticSearch client
+	 * @return \Elasticsearch\Client
+	 */
+	protected function getClient() {
+		return $this->opo_client;
+	}
+	# -------------------------------------------------------
+	public function init() {
+		if(($vn_max_indexing_buffer_size = (int)$this->opo_search_config->get('elasticsearch_indexing_buffer_size')) < 1) {
+			$vn_max_indexing_buffer_size = 250;
+		}
+
 		$this->opa_options = array(
 			'start' => 0,
 			'limit' => 100000,												// maximum number of hits to return [default=100000],
@@ -96,622 +210,419 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		);
 
 		$this->opa_capabilities = array(
-			'incremental_reindexing' => false
+			'incremental_reindexing' => true
 		);
 	}
 	# -------------------------------------------------------
 	/**
 	 * Completely clear index (usually in preparation for a full reindex)
+	 *
+	 * @param null|int $pn_table_num
+	 * @return bool
 	 */
-	public function truncateIndex($pn_table_num = null) {
-		$vs_table_name = '';
-		if($pn_table_num){
-			$o_dm = Datamodel::load();
-			$vs_table_name = $o_dm->getTableName($pn_table_num) . '/';
-		}
-		$vo_http_client = new Zend_Http_Client();
-		$vo_http_client->setUri(
-			$this->ops_elasticsearch_base_url."/".
-			$this->ops_elasticsearch_index_name."/".
-			$vs_table_name.
-			"_query?q=*"
-		);
+	public function truncateIndex($pn_table_num = null, $pb_dont_refresh = false) {
+		if(!$pn_table_num) {
+			// nuke the entire index
+			try {
+				$this->getClient()->indices()->delete(['index' => $this->getIndexName()]);
+			} catch(Elasticsearch\Common\Exceptions\Missing404Exception $e) {
+				// noop
+			} finally {
+				if(!$pb_dont_refresh) {
+					$this->refreshMapping(true);
+				}
 
-		$vo_http_client->setEncType('text/json')->request('DELETE');
-		
-		try {
-			$vo_http_client->request();
-		} catch (Exception $e){
-			caLogEvent('ERR', _t('Index delete failed: %1', $e->getMessage()), 'ElasticSearch->truncateIndex()');
+			}
+		} else {
+			// use scoll API to find all documents in a particular mapping/table and delete them using the bulk API
+			// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-scroll.html
+			// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_search_operations.html#_scan_scroll
+
+			if(!$vs_table_name = $this->opo_datamodel->getTableName($pn_table_num)) { return false; }
+
+			$va_search_params = array(
+				'search_type' => 'scan',    // use search_type=scan
+				'scroll' => '1m',          // how long between scroll requests. should be small!
+				'index' => $this->getIndexName(),
+				'type' => $vs_table_name,
+				'body' => array(
+					'query' => array(
+						'match_all' => array()
+					)
+				)
+			);
+
+			$va_tmp = $this->getClient()->search($va_search_params);   // Execute the search
+			$vs_scroll_id = $va_tmp['_scroll_id'];   // The response will contain no results, just a _scroll_id
+
+			// Now we loop until the scroll "cursors" are exhausted
+			$va_delete_params = array();
+			while (\true) {
+
+				$va_response = $this->getClient()->scroll([
+						'scroll_id' => $vs_scroll_id,  //...using our previously obtained _scroll_id
+						'scroll' => '1m'           // and the same timeout window
+					]
+				);
+
+				if (sizeof($va_response['hits']['hits']) > 0) {
+					foreach($va_response['hits']['hits'] as $va_result) {
+						$va_delete_params['body'][] = array(
+							'delete' => array(
+								'_index' => $this->getIndexName(),
+								'_type' => $vs_table_name,
+								'_id' => $va_result['_id']
+							)
+						);
+					}
+
+					// Must always refresh your _scroll_id!  It can change sometimes
+					$vs_scroll_id = $va_response['_scroll_id'];
+				} else {
+					// No results, scroll cursor is empty
+					break;
+				}
+			}
+
+			if(sizeof($va_delete_params) > 0) {
+				$this->getClient()->bulk($va_delete_params);
+			}
 		}
 		return true;
 	}
-	
+
 	# -------------------------------------------------------
 	public function setTableNum($pn_table_num) {
-		$this->opn_subject_tablenum = $pn_table_num;
+		$this->opn_indexing_subject_tablenum = $pn_table_num;
 	}
 	# -------------------------------------------------------
-	public function __destruct() {	
-		if (is_array(WLPlugSearchEngineElasticSearch::$s_doc_content_buffer) && sizeof(WLPlugSearchEngineElasticSearch::$s_doc_content_buffer)) {
+	public function __destruct() {
+		if(!defined('__CollectiveAccess_Installer__') || !__CollectiveAccess_Installer__) {
 			$this->flushContentBuffer();
 		}
 	}
 	# -------------------------------------------------------
-	public function search($pn_subject_tablenum, $ps_search_expression, $pa_filters=array(), $po_rewritten_query=null){
-		$vn_i = 0;
-		$va_old_signs = $po_rewritten_query->getSigns();
+	/**
+	 * Do search
+	 *
+	 * @param int $pn_subject_tablenum
+	 * @param string $ps_search_expression
+	 * @param array $pa_filters
+	 * @param null|Zend_Search_Lucene_Search_Query_Boolean $po_rewritten_query
+	 * @return WLPlugSearchEngineElasticSearchResult
+	 */
+	public function search($pn_subject_tablenum, $ps_search_expression, $pa_filters=array(), $po_rewritten_query=null) {
+		Debug::msg("[ElasticSearch] incoming search query is: {$ps_search_expression}");
+		Debug::msg("[ElasticSearch] incoming query filters are: " . print_r($pa_filters, true));
 
-		$va_terms = $va_signs = array();
-		foreach($po_rewritten_query->getSubqueries() as $o_lucene_query_element) {
-			switch($vs_class = get_class($o_lucene_query_element)) {
-				case 'Zend_Search_Lucene_Search_Query_Term':
-				case 'Zend_Search_Lucene_Search_Query_MultiTerm':
-				case 'Zend_Search_Lucene_Search_Query_Phrase':
-					$vs_access_point = null;
-					if ($vs_class != 'Zend_Search_Lucene_Search_Query_Term') {
-						$va_raw_terms = array();
-						foreach($o_lucene_query_element->getQueryTerms() as $o_term) {
-							if (!$vs_access_point && ($vs_field = $o_term->field)) { $vs_access_point = $vs_field; }
-							
-							$va_raw_terms[] = $vs_text = (string)$o_term->text;
-						}
-						$vs_term = join(" ", $va_raw_terms);
-					} else {
-						$vs_access_point = $o_lucene_query_element->getTerm()->field;
-						$vs_term = $o_lucene_query_element->getTerm()->text;
+		$o_query = new ElasticSearch\Query($pn_subject_tablenum, $ps_search_expression, $po_rewritten_query, $pa_filters);
+		$vs_query = $o_query->getSearchExpression();
 
-						$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('"'.$vs_term.'"', $vs_access_point));
-					}
-					
-					if ($vs_access_point) {
-						list($vs_table, $vs_field, $vs_sub_field) = explode('.', $vs_access_point);
-						
-						if (in_array($vs_table, array('created', 'modified'))) {
-							
-							if (!$this->opo_tep->parse($vs_term)) { break; }
-							$vn_user_id = null;
-							if ($vs_field = trim($vs_field)) {
-								if (!is_int($vs_field)) {
-									$t_user = new ca_users();
-									if ($t_user->load(array("user_name" => $vs_field))) {
-										$vn_user_id = (int)$t_user->getPrimaryKey();
-									}
-								} else {
-									$vn_user_id = (int)$vs_field;
-								}
-							}
-									
-							switch($vs_table) {
-								case 'created':
-									if ($vn_user_id) {
-										$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Boolean(
-											array(
-												new Zend_Search_Lucene_Index_Term('['.$this->opo_tep->getText(array('start_as_iso8601' => true))." TO ".$this->opo_tep->getText(array('end_as_iso8601' => true)).']', 'created'),
-												new Zend_Search_Lucene_Index_Term($vn_user_id, 'created_user_id')
-											),
-											array(
-												true, true
-											)
-										);
-									} else {
-										$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('['.$this->opo_tep->getText(array('start_as_iso8601' => true))." TO ".$this->opo_tep->getText(array('end_as_iso8601' => true)).']', 'created'));
-									}
-									break;
-								case 'modified':
-									if ($vn_user_id) {
-										$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Boolean(
-											array(
-												new Zend_Search_Lucene_Index_Term('['.$this->opo_tep->getText(array('start_as_iso8601' => true))." TO ".$this->opo_tep->getText(array('end_as_iso8601' => true)).']', 'modified'),
-												new Zend_Search_Lucene_Index_Term($vn_user_id, 'modified_user_id')
-											),
-											array(
-												true, true
-											)
-										);
-									} else {
-										$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('['.$this->opo_tep->getText(array('start_as_iso8601' => true))." TO ".$this->opo_tep->getText(array('end_as_iso8601' => true)).']', 'modified'));
-									}
-									break;
-							}
-						} else {
-							if ($vs_table && $vs_field) {
-								$t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
-								if(!$t_table) { break; }
+		Debug::msg("[ElasticSearch] actual search query sent to ES: {$vs_query}");
 
-								$vs_fld_num = $this->opo_datamodel->getFieldNum($vs_table, $vs_field);
-
-								if (!$vs_fld_num) { // probably attribute
-									$t_element = new ca_metadata_elements();
-									if ($t_element->load(array('element_code' => ($vs_sub_field ? $vs_sub_field : $vs_field)))) {
-										// query only subfield in containers, i.e. ca_objects.date_range instead of
-										// ca_objects.dates.date_range because that's how we index these fields ...
-										if($vs_sub_field) { $vs_access_point = $vs_table . '.' . $vs_sub_field; }
-										//
-										// For certain types of attributes we can directly query the
-										// attributes in the database rather than using the full text index
-										// This allows us to do "intelligent" querying... for example on date ranges
-										// parsed from natural language input and for length dimensions using unit conversion
-										//
-										switch($t_element->get('datatype')) {
-											case 2:		// dates
-												$vb_exact = ($vs_term{0} == "#") ? true : false;	// dates prepended by "#" are considered "exact" or "contained - the matched dates must be wholly contained by the search term
-												if ($vb_exact) {
-													if ($this->opo_tep->parse($vs_term)) {
-														// TODO: fix date handling to reflect distinctions in ranges
-														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('['.$this->opo_tep->getText(array('start_as_iso8601' => true))." TO ".$this->opo_tep->getText(array('end_as_iso8601' => true)).']', $vs_access_point));
-													}
-												} else {
-													if ($this->opo_tep->parse($vs_term)) {
-														// TODO: fix date handling to reflect distinctions in ranges
-														$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('['.$this->opo_tep->getText(array('start_as_iso8601' => true))." TO ".$this->opo_tep->getText(array('end_as_iso8601' => true)).']', $vs_access_point));
-													}
-												}
-												break;
-											case 4:		// geocode
-												$t_geocode = new GeocodeAttributeValue();
-												if ($va_coords = caParseGISSearch($vs_term)) {
-													$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('['.$va_coords['min_latitude'].','.$va_coords['min_longitude']." TO ".$va_coords['max_latitude'].','.$va_coords['max_longitude'].']', $vs_access_point));
-												}
-												break;
-											case 6:		// currency
-												$t_cur = new CurrencyAttributeValue();
-												$va_parsed_value = $t_cur->parseValue($vs_term, $t_element->getFieldValuesArray());
-												$vn_amount = (float)$va_parsed_value['value_decimal1'];
-												$vs_currency = preg_replace('![^A-Z0-9]+!', '', $va_parsed_value['value_longtext1']);
-
-												$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_amount, $vs_access_point));
-												break;
-											case 8:		// length
-												$t_len = new LengthAttributeValue();
-												$va_parsed_value = $t_len->parseValue($vs_term, $t_element->getFieldValuesArray());
-												$vn_len = (float)$va_parsed_value['value_decimal1'];	// this is always in meters so we can compare this value to the one in the database
-
-												$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_len, $vs_access_point));
-												break;
-											case 9:		// weight
-												$t_weight = new WeightAttributeValue();
-												$va_parsed_value = $t_weight->parseValue($vs_term, $t_element->getFieldValuesArray());
-												$vn_weight = (float)$va_parsed_value['value_decimal1'];	// this is always in kilograms so we can compare this value to the one in the database
-
-												$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_weight, $vs_access_point));
-												break;
-											case 10:	// timecode
-												$t_timecode = new TimecodeAttributeValue();
-												$va_parsed_value = $t_timecode->parseValue($vs_term, $t_element->getFieldValuesArray());
-												$vn_timecode = (float)$va_parsed_value['value_decimal1'];
-
-												$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term($vn_timecode, $vs_access_point));
-												break;
-											case 11: 	// integer
-												$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term((float)$vs_term, $vs_access_point));
-												break;
-											case 12:	// decimal
-												$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term((float)$vs_term, $vs_access_point));
-												break;
-											default:	// everything else
-												$o_lucene_query_element = new Zend_Search_Lucene_Search_Query_Term(new Zend_Search_Lucene_Index_Term('"'.$vs_term.'"', $vs_access_point));
-												break;
-										}
-									}
-								}
-							}
-						}
-					}					
-					break;
-			}
-			$va_terms[] = $o_lucene_query_element;
-			$va_signs[] = is_array($va_old_signs) ? (array_key_exists($vn_i, $va_old_signs) ? $va_old_signs[$vn_i] : true) : true;
-
-			
-			$vn_i++;
-		}
-		
-		$o_rewritten_query = new Zend_Search_Lucene_Search_Query_Boolean($va_terms, $va_signs);
-		$ps_search_expression = $this->_queryToString($o_rewritten_query);
-		if ($vs_filter_query = $this->_filterValueToQueryValue($pa_filters)) {
-			$ps_search_expression = "({$ps_search_expression}) AND ({$vs_filter_query})";
-		}
-		
-		$vo_http_client = new Zend_Http_Client();
-		$vo_http_client->setUri(
-			$this->ops_elasticsearch_base_url."/".
-			$this->ops_elasticsearch_index_name."/".
-			$this->opo_datamodel->getTableName($pn_subject_tablenum)."/". /* ElasticSearch type name (i.e. table name) */
-			"_search"
+		$va_search_params = array(
+			'index' => $this->getIndexName(),
+			'type' => $this->opo_datamodel->getTableName($pn_subject_tablenum),
+			'body' => array(
+				// we do paging in our code
+				'from' => 0, 'size' => 2147483647, // size is Java's 32bit int, for ElasticSearch
+				'query' => array(
+					'bool' => array(
+						'must' => array(
+							'query_string' => array( 'query' => $vs_query )
+						)
+					)
+				)
+			)
 		);
-		
-		
-		if (
-			preg_match_all("!([A-Za-z0-9_\-\.]+)[/]{1}([A-Za-z0-9_\-]+):(\"[^\"]*\")!", $ps_search_expression, $va_matches)
-			||
-			preg_match_all("!([A-Za-z0-9_\-\.]+)[/]{1}([A-Za-z0-9_\-]+):([^ ]*)!", $ps_search_expression, $va_matches)
-		) {
-			foreach($va_matches[0] as $vn_i => $vs_element) {
-				$vs_fld = $va_matches[1][$vn_i];
-				if (!($vs_rel_type = trim($va_matches[2][$vn_i]))) { continue; }
-				
-				$va_tmp = explode(".", $vs_fld);
-				
-				$vs_rel_table = caGetRelationshipTableName($pn_subject_tablenum, $va_tmp[0]);
-				$va_rel_type_ids = ($vs_rel_type && $vs_rel_table) ? caMakeRelationshipTypeIDList($vs_rel_table, array($vs_rel_type)) : null;
-				
-				$va_new_elements = array();
-				foreach($va_rel_type_ids as $vn_rel_type_id) {
-					$va_new_elements[] = "(".$va_matches[1][$vn_i]."/".$vn_rel_type_id.":".$va_matches[3][$vn_i].")";
-				}
-				
-				$ps_search_expression = str_replace($vs_element, "(".join(" OR ", $va_new_elements).")", $ps_search_expression);
-			}
-		}
-		
-		$ps_search_expression = str_replace("/", '\\/', $ps_search_expression); // escape forward slashes used to delimit relationship type qualifier
-		
-		Debug::msg("[ElasticSearch] Running query {$ps_search_expression}");
-		$vo_http_client->setParameterGet(array(
-			'size' => intval($this->opa_options["limit"]),
-			'q' => $ps_search_expression,
-			'fields' => ''
-		));
-		
-		$vo_http_response = $vo_http_client->request();
-		$va_result = json_decode($vo_http_response->getBody(), true);
-		
-		return new WLPlugSearchEngineElasticSearchResult($va_result["hits"]["hits"], $pn_subject_tablenum);
-	}
-	# ------------------------------------------------------------------
-	private function _queryToString($po_parsed_query) {
-		switch(get_class($po_parsed_query)) {
-			case 'Zend_Search_Lucene_Search_Query_Boolean':
-				$va_items = $po_parsed_query->getSubqueries();
-				$va_signs = $po_parsed_query->getSigns();
-				break;
-			case 'Zend_Search_Lucene_Search_Query_MultiTerm':
-				$va_items = $po_parsed_query->getTerms();
-				$va_signs = $po_parsed_query->getSigns();
-				break;
-			case 'Zend_Search_Lucene_Search_Query_Phrase':
-				//$va_items = $po_parsed_query->getTerms();
-				$va_items = $po_parsed_query;
-				$va_signs = null;
-				break;
-			case 'Zend_Search_Lucene_Search_Query_Range':
-				$va_items = $po_parsed_query;
-				$va_signs = null;
-				break;
-			default:
-				$va_items = array();
-				$va_signs = null;
-				break;
-		}
-		
-		$vs_query = '';
-		foreach ($va_items as $id => $subquery) {
-			if ($id != 0) {
-				$vs_query .= ' ';
-			}
-			
-			if (($va_signs === null || $va_signs[$id] === true) && ($id)) {
-				$vs_query .= ' AND ';
-			} else if (($va_signs[$id] === false) && $id) {
-				$vs_query .= ' NOT ';
-			} else {
-				if ($id) { $vs_query .= ' OR '; }
-			}
-			switch(get_class($subquery)) {
-				case 'Zend_Search_Lucene_Search_Query_Phrase':
-					$vs_query .= '(' . $subquery->__toString(). ')';
-					break;
-				case 'Zend_Search_Lucene_Index_Term':
-					$subquery = new Zend_Search_Lucene_Search_Query_Term($subquery);
-					// intentional fallthrough to next case here
-				case 'Zend_Search_Lucene_Search_Query_Term':
-					$vs_query .= '(' . $subquery->__toString() . ')';
-					break;	
-				case 'Zend_Search_Lucene_Search_Query_Range':
-					$vs_query = $subquery;
-					break;
-				default:
-					$vs_query .= '(' . $this->_queryToString($subquery) . ')';
-					break;
-			}
-			
-		
-			if ((method_exists($subquery, "getBoost")) && ($subquery->getBoost() != 1)) {
-				$vs_query .= '^' . round($subquery->getBoost(), 4);
-			}
-		}
-		
-		return $vs_query;
-    }
-	# -------------------------------------------------------
-	private function _filterValueToQueryValue($pa_filters) {
-		$va_terms = array();
-		foreach($pa_filters as $va_filter) {
-			switch($va_filter['operator']) {
-				case '=':
-					$va_terms[] = $va_filter['field'].':'.$va_filter['value'];
-					break;
-				case '<':
-					$va_terms[] = $va_filter['field'].':{-'.pow(2,32).' TO '.$va_filter['value'].'}';
-					break;
-				case '<=':
-					$va_terms[] = $va_filter['field'].':['.pow(2,32).' TO '.$va_filter['value'].']';
-					break;
-				case '>':
-					$va_terms[] = $va_filter['field'].':{'.$va_filter['value'].' TO '.pow(2,32).'}';
-					break;
-				case '>=':
-					$va_terms[] = $va_filter['field'].':['.$va_filter['value'].' TO '.pow(2,32).']';
-					break;
-				case '<>':
-					$va_terms[] = 'NOT '.$va_filter['field'].':'.$va_filter['value'];
-					break;
-				case '-':
-					$va_tmp = explode(',', $va_filter['value']);
-					$va_terms[] = $va_filter['field'].':['.$va_tmp[0].' TO '.$va_tmp[1].']';
-					break;
-				case 'in':
-					$va_tmp = explode(',', $va_filter['value']);
-					$va_list = array();
-					foreach($va_tmp as $vs_item) {
-						// this case specifically happens when filtering list item search results by type id
-						// (if type based access control is enabled, that is). The filter is something like
-						// type_id IN 2,3,4,NULL. So we have to allow for empty values, which is a little bit
-						// different in ElasticSearch.
-						if(strtolower($vs_item) == 'null') {
-							$va_list[] = '_missing_:' . $va_filter['field'];
-						} else {
-							$va_list[] = $va_filter['field'].':'.$vs_item;
-						}
 
-					}
-
-					$va_terms[] = '('.join(' OR ', $va_list).')';
-					break;
-				default:
-				case 'is':
-				case 'is not':
-					// noop
-					break;
+		// apply additional filters that may have been set by the query
+		if(($va_additional_filters = $o_query->getAdditionalFilters()) && is_array($va_additional_filters) && (sizeof($va_additional_filters) > 0)) {
+			foreach($va_additional_filters as $vs_filter_name => $va_filter) {
+				$va_search_params['body']['query']['bool']['filter'][$vs_filter_name] = $va_filter;
 			}
 		}
-		return join(' AND ', $va_terms);
+
+		Debug::msg("[ElasticSearch] actual query filters are: " . print_r($va_additional_filters, true));
+		$va_results = $this->getClient()->search($va_search_params);
+		return new WLPlugSearchEngineElasticSearchResult($va_results['hits']['hits'], $pn_subject_tablenum);
 	}
 	# -------------------------------------------------------
+	/**
+	 * Start row indexing
+	 * @param int $pn_subject_tablenum
+	 * @param int $pn_subject_row_id
+	 */
 	public function startRowIndexing($pn_subject_tablenum, $pn_subject_row_id){
-		$this->opa_doc_content_buffer = array();
+		$this->opa_index_content_buffer = array();
 		$this->opn_indexing_subject_tablenum = $pn_subject_tablenum;
 		$this->opn_indexing_subject_row_id = $pn_subject_row_id;
 		$this->ops_indexing_subject_tablename = $this->opo_datamodel->getTableName($pn_subject_tablenum);
-		$this->ops_indexing_subject_tablename_pk = $this->opo_datamodel->getTablePrimaryKeyName($pn_subject_tablenum);
 	}
 	# -------------------------------------------------------
-	private function _getMetadataElement($ps_element_code) {
-		if (isset(WLPlugSearchEngineElasticSearch::$s_element_code_cache[$ps_element_code])) { return WLPlugSearchEngineElasticSearch::$s_element_code_cache[$ps_element_code]; }
-		
-		$t_element = new ca_metadata_elements($ps_element_code);
-		if (!($vn_element_id = $t_element->getPrimaryKey())) { 
-			return WLPlugSearchEngineElasticSearch::$s_element_code_cache[$ps_element_code] = null;
-		}
-		
-		return WLPlugSearchEngineElasticSearch::$s_element_code_cache[$ps_element_code] = array(
-			'element_id' => $vn_element_id,
-			'element_code' => $t_element->get('element_code'),
-			'datatype' => $t_element->get('datatype')
-		);
-	}
-	# -------------------------------------------------------
-	public function indexField($pn_content_tablenum, $ps_content_fieldname, $pn_content_row_id, $pm_content, $pa_options){
-		if (is_array($pm_content)) {
-			$pm_content = serialize($pm_content);
-		}
-	
-		$vn_rel_type_id = (isset($pa_options['relationship_type_id']) && ($pa_options['relationship_type_id'] > 0)) ? (int)$pa_options['relationship_type_id'] : null;
-		$ps_content_tablename = $this->opo_datamodel->getTableName($pn_content_tablenum);
-		if ($ps_content_fieldname[0] === 'A') {
-			// Metadata attribute
-			
-			$vn_field_num_proc = (int)substr($ps_content_fieldname, 1);
-			
-			if (!$va_element_info = $this->_getMetadataElement($vn_field_num_proc)) { return null; }
-			switch($va_element_info['datatype']) {
-				case 1: // text
-				case 3:	// list
-				case 5:	// url
-				case 6: // currency
-				case 8: // length
-				case 9: // weight
-				case 13: // LCSH
-				case 14: // geonames
-				case 15: // file
-				case 16: // media
-				case 19: // taxonomy
-				case 20: // information service
-					// noop
-					break;
-				case 2:	// daterange
-					if (!is_array($pa_parsed_content = caGetISODates($pm_content))) { return null; }
-					$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$va_element_info['element_code'].'_text'][] = $pm_content;
-					$ps_rewritten_start = $this->_rewriteDate($pa_parsed_content["start"],true);
-					$ps_rewritten_end = $this->_rewriteDate($pa_parsed_content["end"],false);
-					$pm_content = array($ps_rewritten_start,$ps_rewritten_end);
-					break;
-				case 4:	// geocode
-					if ($va_coords = $this->opo_geocode_parser->parseValue($pm_content, $va_element_info)) {
-						if (isset($va_coords['value_longtext2']) && $va_coords['value_longtext2']) {
-							$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$va_element_info['element_code'].'_text'][] = $pm_content;
-							$va_coords = explode(':', $va_coords['value_longtext2']);
-							foreach($va_coords as $vs_point){
-								$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$va_element_info['element_code']][] = $vs_point;
-							}
-							return;
-						} else {
-							break;
-						}
-					} else {
-						break;
-					}
-					break;
-				case 10:	// timecode
-				case 12:	// numeric/float
-					$pm_content = (float)$pm_content;
-					break;
-				case 11:	// integer
-					$pm_content = (int)$pm_content;
-					break;
-				default:
-					// noop
-					break;
-			}
-			$ps_content_fieldname = $va_element_info['element_code'];
-		} else {
-			// Intrinsic field
-			$vn_field_num_proc = (int)substr($ps_content_fieldname, 1);
-			$ps_content_fieldname = $this->opo_datamodel->getFieldName($ps_content_tablename, $vn_field_num_proc);
-		}
+	/**
+	 * Index field
+	 * @param int $pn_content_tablenum
+	 * @param string $ps_content_fieldname
+	 * @param int $pn_content_row_id
+	 * @param mixed $pm_content
+	 * @param array $pa_options
+	 * @return null
+	 */
+	public function indexField($pn_content_tablenum, $ps_content_fieldname, $pn_content_row_id, $pm_content, $pa_options) {
+		$o_field = new ElasticSearch\Field($pn_content_tablenum, $ps_content_fieldname);
 
-		if($ps_content_fieldname == 'type_id') {
-			// don't add to index if there's an empty string value in type id. That way we can actually search for empty values
-			if($pm_content != '') {
-				$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname][] = $pm_content;
-			}
-		} else {
-			$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname][] = $pm_content;
-		}
-
-		if ($vn_rel_type_id) { // add relationship type-specific indexing
-			$this->opa_doc_content_buffer[$ps_content_tablename.'.'.$ps_content_fieldname.'/'.$vn_rel_type_id][] = $pm_content;
+		foreach($o_field->getIndexingFragment($pm_content, $pa_options) as $vs_key => $vm_val) {
+			$this->opa_index_content_buffer[$vs_key][] = $vm_val;
+			// this list basically indexes the values above by content row id. we need that to have a chance
+			// to update indexing for specific values [content row ids] in place
+			$this->opa_index_content_buffer[$vs_key.'_content_ids'][] = $pn_content_row_id;
 		}
 	}
 	# -------------------------------------------------------
 	/**
-	 * ElasticSearch won't accept dates where day or month is zero, so we have to 
-	 * rewrite certain dates, especially when dealing with "open-ended" date ranges,
-	 * e.g. "before 1998", "after 2012"
+	 * Commit indexing for row
+	 * That doesn't necessarily mean it's actually written to the index.
+	 * We still keep the data local until the document buffer is full.
 	 */
-	private function _rewriteDate($ps_date,$vb_is_start=true){
-		if($vb_is_start){
-			$vs_return = str_replace("-00-", "-01-", $ps_date);
-			$vs_return = str_replace("-00T", "-01T", $vs_return);
-		} else {
-			$vs_return = str_replace("-00-", "-12-", $ps_date);
-			// the following may produce something like "February 31st" but that doesn't seem to bother ElasticSearch
-			$vs_return = str_replace("-00T", "-31T", $vs_return); 
+	public function commitRowIndexing() {
+		if(sizeof($this->opa_index_content_buffer) > 0) {
+			WLPlugSearchEngineElasticSearch::$s_doc_content_buffer[
+				$this->ops_indexing_subject_tablename.'/'.
+				$this->opn_indexing_subject_row_id
+			] = $this->opa_index_content_buffer;
 		}
-		
-		// substitute start and end of universe values with ElasticSearch's builtin boundaries
-		$vs_return = str_replace(TEP_START_OF_UNIVERSE,"-292275054",$vs_return);
-		$vs_return = str_replace(TEP_END_OF_UNIVERSE,"292278993",$vs_return);
-		
-		return $vs_return;
-	}
-	# -------------------------------------------------------
-	public function commitRowIndexing(){
-		if(sizeof($this->opa_doc_content_buffer) > 0){
-			WLPlugSearchEngineElasticSearch::$s_doc_content_buffer[$this->ops_indexing_subject_tablename.'/'.$this->ops_indexing_subject_tablename_pk.'/'.$this->opn_indexing_subject_row_id] = $this->opa_doc_content_buffer;
-		}
+
 		unset($this->opn_indexing_subject_tablenum);
 		unset($this->opn_indexing_subject_row_id);
 		unset($this->ops_indexing_subject_tablename);
 
-		if (sizeof(WLPlugSearchEngineElasticSearch::$s_doc_content_buffer) > $this->getOption('maxIndexingBufferSize')) {
+		if ((
+				sizeof(self::$s_doc_content_buffer) +
+				sizeof(self::$s_update_content_buffer) +
+				sizeof(self::$s_delete_buffer)
+			) > $this->getOption('maxIndexingBufferSize'))
+		{
 			$this->flushContentBuffer();
 		}
 	}
 	# -------------------------------------------------------
-	public function removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id){
-		$vo_http_client = new Zend_Http_Client();
-		$vo_http_client->setUri(
-			$this->ops_elasticsearch_base_url."/".
-			$this->ops_elasticsearch_index_name."/".
-			$this->opo_datamodel->getTableName($pn_subject_tablenum)."/".$pn_subject_row_id
-		);
-		
-		try {
-			$vo_http_client->setEncType('text/json')->request('DELETE');
-		} catch (Exception $e){
-			caLogEvent('ERR', _t('Commit of index delete failed: %1', $e->getMessage()), 'ElasticSearch->removeRowIndexing()');
+	/**
+	 * Delete indexing for row
+	 * @param int $pn_subject_tablenum
+	 * @param int $pn_subject_row_id
+	 * @param int|null $pn_field_tablenum
+	 * @param int|null|array $pm_field_nums
+	 * @param int|null $pn_content_row_id
+	 */
+	public function removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id, $pn_field_tablenum=null, $pm_field_nums=null, $pn_content_row_id=null) {
+		$vs_table_name = $this->opo_datamodel->getTableName($pn_subject_tablenum);
+		// if the field table num is set, we only remove content for this field and don't nuke the entire record!
+		if($pn_field_tablenum) {
+			foreach($pm_field_nums as $ps_content_fieldnum) {
+				$o_field = new ElasticSearch\Field($pn_field_tablenum, $ps_content_fieldnum);
+				$va_fragment = $o_field->getIndexingFragment('');
+
+				// fetch the record
+				try {
+					$va_record = $this->getClient()->get([
+						'index' => $this->getIndexName(),
+						'type' => $vs_table_name,
+						'id' => $pn_subject_row_id
+					])['_source'];
+				} catch (\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
+					// record is gone?
+					unset(self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id]);
+					continue;
+				}
+
+				foreach($va_fragment as $vs_key => $vm_val) {
+					if(isset($va_record[$vs_key])) {
+						// find the index for this content row id in our _content_ids index list
+						$va_values = $va_record[$vs_key];
+						$va_indexes = $va_record[$vs_key.'_content_ids'];
+						if(is_array($va_indexes)) {
+							$vn_index = array_search($pn_content_row_id, $va_indexes);
+							// nuke that very index in the value array for this field -- all the other values, including the indexes stay intact
+							unset($va_values[$vn_index]);
+							unset($va_indexes[$vn_index]);
+						} else {
+							if(sizeof($va_values) == 1) {
+								$va_values = array();
+								$va_indexes = array();
+							}
+						}
+
+						// we reindex both value and index arrays here, starting at 0
+						// json_encode seems to treat something like array(1=>'foo') as object/hash, rather than a list .. which is not good
+						self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key] = array_values($va_values);
+						self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id][$vs_key.'_content_ids'] = array_values($va_indexes);
+					}
+				}
+			}
+
+			if ((
+					sizeof(self::$s_doc_content_buffer) +
+					sizeof(self::$s_update_content_buffer) +
+					sizeof(self::$s_delete_buffer)
+				) > $this->getOption('maxIndexingBufferSize'))
+			{
+				$this->flushContentBuffer();
+			}
+
+		} else {
+			// queue record for removal -- also make sure we don't try do any unecessary indexing
+			unset(self::$s_update_content_buffer[$vs_table_name][$pn_subject_row_id]);
+			self::$s_delete_buffer[$vs_table_name][] = $pn_subject_row_id;
 		}
 	}
 	# ------------------------------------------------
+	/**
+	 * Flush content buffer and write to index
+	 * @throws Elasticsearch\Common\Exceptions\NoNodesAvailableException
+	 */
 	public function flushContentBuffer() {
-		foreach(WLPlugSearchEngineElasticSearch::$s_doc_content_buffer as $vs_key => $va_doc_content_buffer) {
-			$va_post_json = array();
-			$va_key = explode('/', $vs_key);
-			foreach($va_doc_content_buffer as $vs_field_name => $va_field_content){
-				foreach($va_field_content as $vs_field_content) {
-					$va_post_json[$vs_field_name][] = $vs_field_content;
-				}
-			}
-				
-			if (!isset($va_doc_content_buffer[$va_key[0].".".$va_key[1]])) { /* add pk */
-				$va_post_json[$va_key[1]] = $va_key[2];
-			}
-				
-			
-			// Output created on and modified on timestamps
-			$qr_res = $this->opo_db->query("
-				SELECT ccl.log_id, ccl.log_datetime, ccl.changetype, ccl.user_id
-				FROM ca_change_log ccl
-				WHERE
-					(ccl.logged_table_num = ?) AND (ccl.logged_row_id = ?)
-					AND
-					(ccl.changetype <> 'D')
-			", $this->opo_datamodel->getTableNum($va_key[0]), (int)$va_key[2]);
-			while($qr_res->nextRow()) {
-				
-				// We "fake" the <table>.<primary key> value here to be the log_id of the change log entry to ensure that the log entry
-				// document has a different unique key than the entry for the actual record. If we didn't do this then we'd overwrite
-				// the indexing for the record itself with indexing for successful log entries. Since the SearchEngine is looking for
-				// just the primary key, sans table name, it's ok to do this hack.
-				$va_post_json[$va_key[0].".".$va_key[1]] = $qr_res->get('log_id');
-				$va_post_json[$va_key[1]] = $va_key[2];
-				
-				if ($qr_res->get('changetype') == 'I') {
-					$va_post_json["created"] = date("c", $qr_res->get('log_datetime'));
-					$va_post_json["created_user_id"] = $qr_res->get('user_id');
-				} else {
-					$va_post_json["modified"] = date("c", $qr_res->get('log_datetime'));
-					$va_post_json["modified_user_id"] = $qr_res->get('user_id');
-				}
-			}
-			
-			$vo_http_client = new Zend_Http_Client();
-			$vo_http_client->setUri(
-				$this->ops_elasticsearch_base_url."/".
-				$this->ops_elasticsearch_index_name."/".
-				$va_key[0]."/".$va_key[2]
-			);
-			
-			try {
-				$vo_http_client->setRawData(json_encode($va_post_json))->setEncType('text/json')->request('POST');
-				$vo_http_response = $vo_http_client->request();
+		$this->refreshMapping();
 
-				if($vo_http_response->getStatus() != 200) {
-					caLogEvent('ERR', _t('Indexing commit failed for %1; response was %2; request was %3', $vs_key, $vo_http_response->getBody(), json_encode($va_post_json)), 'ElasticSearch->flushContentBuffer()');
-				}
-			} catch (Exception $e){
-				caLogEvent('ERR', _t('Indexing commit failed for %1 with Exception: %2', $vs_key, $e->getMessage()), 'ElasticSearch->flushContentBuffer()');
+		$va_bulk_params = array();
+
+		// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
+		// @see https://www.elastic.co/guide/en/elasticsearch/client/php-api/2.0/_indexing_documents.html#_bulk_indexing
+
+		// delete docs
+		foreach(self::$s_delete_buffer as $vs_table_name => $va_rows) {
+			foreach(array_unique($va_rows) as $vn_row_id) {
+				$va_bulk_params['body'][] = array(
+					'delete' => array(
+						'_index' => $this->getIndexName(),
+						'_type' => $vs_table_name,
+						'_id' => $vn_row_id
+					)
+				);
+
+				// also make sure we don't do unessecary indexing for this record below
+				unset(self::$s_update_content_buffer[$vs_table_name][$vn_row_id]);
 			}
 		}
-		
-		$this->opa_doc_content_buffer = array();
-		WLPlugSearchEngineElasticSearch::$s_doc_content_buffer = array();
+
+		// newly indexed docs
+		foreach(self::$s_doc_content_buffer as $vs_key => $va_doc_content_buffer) {
+			$va_tmp = explode('/', $vs_key);
+			$vs_table_name = $va_tmp[0];
+			$vn_primary_key = intval($va_tmp[1]);
+
+			$va_bulk_params['body'][] = array(
+				'index' => array(
+					'_index' => $this->getIndexName(),
+					'_type' => $vs_table_name,
+					'_id' => $vn_primary_key
+				)
+			);
+
+			// add changelog to index
+			$va_doc_content_buffer = array_merge(
+				$va_doc_content_buffer,
+				caGetChangeLogForElasticSearch(
+					$this->opo_db,
+					$this->opo_datamodel->getTableNum($vs_table_name),
+					$vn_primary_key
+				)
+			);
+
+			$va_bulk_params['body'][] = $va_doc_content_buffer;
+		}
+
+		// update existing docs
+		foreach(self::$s_update_content_buffer as $vs_table_name => $va_rows) {
+			foreach($va_rows as $vn_row_id => $va_fragment) {
+
+				$va_bulk_params['body'][] = array(
+					'update' => array(
+						'_index' => $this->getIndexName(),
+						'_type' => $vs_table_name,
+						'_id' => (int) $vn_row_id
+					)
+				);
+
+				// add changelog to fragment
+				$va_fragment = array_merge(
+					$va_fragment,
+					caGetChangeLogForElasticSearch(
+						$this->opo_db,
+						$this->opo_datamodel->getTableNum($vs_table_name),
+						$vn_row_id
+					)
+				);
+
+				$va_bulk_params['body'][] = array('doc' => $va_fragment);
+			}
+		}
+
+		if(sizeof($va_bulk_params['body'])) {
+			$this->getClient()->bulk($va_bulk_params);
+
+			// we usually don't need indexing to be available *immediately* unless we're running automated tests of course :-)
+			if(caIsRunFromCLI() && $this->getIndexName() && (!defined('__CollectiveAccess_IS_REINDEXING__') || !__CollectiveAccess_IS_REINDEXING__)) {
+				$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
+			}
+		}
+
+		$this->opa_index_content_buffer = array();
+		self::$s_doc_content_buffer = array();
+		self::$s_update_content_buffer = array();
+		self::$s_delete_buffer = array();
 	}
 	# -------------------------------------------------------
-	public function optimizeIndex($pn_tablenum){
-		// noop
+	/**
+	 * Set additional index-level settings like analyzers or token filters
+	 */
+	protected function setIndexSettings() {
+		$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
+
+		try {
+			$this->getClient()->indices()->close(array(
+				'index' => $this->getIndexName()
+			));
+
+			$this->getClient()->indices()->putSettings(array(
+					'index' => $this->getIndexName(),
+					'body' => array(
+						'max_result_window' => 2147483647,
+						'analysis' => array(
+							'analyzer' => array(
+								'keyword_lowercase' => array(
+									'tokenizer' => 'keyword',
+									'filter' => 'lowercase'
+								)
+							)
+						)
+					)
+				)
+			);
+
+			$this->getClient()->indices()->open(array(
+				'index' => $this->getIndexName()
+			));
+
+		} catch(Exception $e) {
+			return;
+		}
 	}
-	# --------------------------------------------------
+	# -------------------------------------------------------
+	public function optimizeIndex($pn_tablenum) {
+		$this->getClient()->indices()->optimize(array(
+			'index' => $this->getIndexName()
+		));
+	}
+	# -------------------------------------------------------
 	public function engineName() {
 		return 'ElasticSearch';
 	}
-	# --------------------------------------------------
+	# -------------------------------------------------------
 	/**
 	 * Performs the quickest possible search on the index for the specfied table_num in $pn_table_num
 	 * using the text in $ps_search. Unlike the search() method, quickSearch doesn't support
-	 * any sort of search syntax. You give it some text and you get a collection of (hopefully) relevant results back quickly. 
+	 * any sort of search syntax. You give it some text and you get a collection of (hopefully) relevant results back quickly.
 	 * quickSearch() is intended for autocompleting search suggestion UI's and the like, where performance is critical
 	 * and the ability to control search parameters is not required.
 	 *
@@ -720,33 +631,19 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @param $pa_options - an optional associative array specifying search options. Supported options are: 'limit' (the maximum number of results to return)
 	 *
 	 * @return Array - an array of results is returned keyed by primary key id. The array values boolean true. This is done to ensure no duplicate row_ids
-	 * 
+	 *
 	 */
-	public function quickSearch($pn_table_num, $ps_search, $pa_options=null) {
+	public function quickSearch($pn_table_num, $ps_search, $pa_options=array()) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
-		
-		$t_instance = $this->opo_datamodel->getInstanceByTableNum($pn_table_num, true);
-		$vs_pk = $t_instance->primaryKey();
-		
-		$vn_limit = 0;
-		if (isset($pa_options['limit']) && ($pa_options['limit'] > 0)) { 
-			$vn_limit = intval($pa_options['limit']);
+		$vn_limit = caGetOption('limit', $pa_options, 0);
+
+		$o_result = $this->search($pn_table_num, $ps_search);
+		$va_pks = $o_result->getPrimaryKeyValues();
+		if($vn_limit) {
+			$va_pks = array_slice($va_pks, 0, $vn_limit);
 		}
-		
-		// TODO: just do a standard search for now... we'll have to think harder about
-		// how to optimize this for ElasticSearch later
-		$o_results = $this->search($pn_table_num, $ps_search);
-		
-		$va_hits = array();
-		$vn_i = 0;
-		while($o_results->nextHit()) {
-			if (($vn_limit > 0) && ($vn_limit <= $vn_i)) { break; }
-			$va_hits[$o_results->get($vs_pk)] = true;
-			$vn_i++;
-		}
-		
-		return $va_hits;
+
+		return array_flip($va_pks);
 	}
-	# --------------------------------------------------
+	# -------------------------------------------------------
 }
-?>

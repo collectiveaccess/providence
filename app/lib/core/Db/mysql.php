@@ -549,4 +549,3 @@ class Db_mysql extends DbDriverBase {
 		//$this->disconnect();
 	}
 }
-?>

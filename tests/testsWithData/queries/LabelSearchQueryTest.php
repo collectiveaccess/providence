@@ -61,16 +61,10 @@ class LabelSearchQueryTest extends AbstractSearchQueryTest {
 			),
 		)));
 
-		// blank label
+		// no label!
 		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'dataset',
-			),
-			'preferred_labels' => array(
-				array(
-					"locale" => "en_US",
-					"name" => "[BLANK]",
-				),
 			),
 		)));
 
@@ -80,6 +74,8 @@ class LabelSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_object_labels.name:image' => 1,
 			'ca_object_labels.name:"[BLANK]"' => 1,
 			'ca_object_labels.name:[BLANK]' => 1,
+			'ca_object_labels.name:"[SET]"' => 2, // the "BLANK" value counts as set I guess
+			'ca_object_labels.name:[SET]' => 2,
 		));
 	}
 	# -------------------------------------------------------

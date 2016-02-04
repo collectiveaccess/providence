@@ -53,16 +53,19 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 		/**
 		 * @param Db $po_db A database client object to use rather than creating a new connection. [Default is to create a new database connection]
 		 * @param string $ps_engine Name of the search engine to use. [Default is the engine configured using "search_engine_plugin" in app.conf]
+		 * @param bool $pb_load_engine if set to true (default is false) we don't attempt to load an engine instance. this is useful if you just want to use SearchBase for the utility methods
 		 */
-		public function __construct($po_db=null, $ps_engine=null) {			
+		public function __construct($po_db=null, $ps_engine=null, $pb_load_engine=true) {
 			$this->opo_datamodel = Datamodel::load();
 			$this->opo_app_config = Configuration::load();
 			$this->opo_search_config = Configuration::load($this->opo_app_config->get("search_config"));
 			$this->opo_search_indexing_config = Configuration::load($this->opo_search_config->get("search_indexing_config"));			
 
 			// load search engine plugin as configured by the 'search_engine_plugin' directive in the main app config file
-			if (!($this->opo_engine = SearchBase::newSearchEngine($ps_engine, $po_db))) {
-				die("Couldn't load configured search engine plugin. Check your application configuration and make sure 'search_engine_plugin' directive is set properly.");
+			if($pb_load_engine) {
+				if (!($this->opo_engine = SearchBase::newSearchEngine($ps_engine, $po_db))) {
+					die("Couldn't load configured search engine plugin. Check your application configuration and make sure 'search_engine_plugin' directive is set properly.");
+				}
 			}
 	
 			$this->opo_db = $po_db ? $po_db : new Db();
@@ -71,7 +74,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 		/** 
 		 * Get search engine instance
 		 *
-		 * @param string $ps_plugin_name A valid plugin file name (eg. 'Solr'), not the actual class name (eg. WLPlugSearchEngineSolr)
+		 * @param string $ps_plugin_name A valid plugin file name (eg. 'ElasticSearch'), not the actual class name (eg. WLPlugSearchEngineElasticSearch)
 		 * @return WLPlugSearchEngine instance or null if engine is invalid
 		 */
 		static public function newSearchEngine($ps_plugin_name=null, $po_db=null) {		
