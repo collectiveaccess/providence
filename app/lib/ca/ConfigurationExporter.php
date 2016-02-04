@@ -194,6 +194,15 @@ final class ConfigurationExporter {
 
 		$t_list = new ca_lists();
 
+		if($this->opn_modified_after && is_array($va_deleted = $this->getDeletedItemsFromChangeLogByIdno($t_list->tableNum(), 'list_code'))) {
+			foreach($va_deleted as $vs_deleted_idno) {
+				$vo_list = $this->opo_dom->createElement("list");
+				$vo_lists->appendChild($vo_list);
+				$vo_list->setAttribute("code", $vs_deleted_idno);
+				$vo_list->setAttribute("deleted", 1);
+			}
+		}
+
 		while($qr_lists->nextRow()) {
 			$vo_list = $this->opo_dom->createElement("list");
 			$vo_list->setAttribute("code", $this->makeIDNOFromInstance($qr_lists, 'list_code'));
@@ -222,11 +231,19 @@ final class ConfigurationExporter {
 
 			$vo_list->appendChild($vo_labels);
 
-			$vo_items = $this->getListItemsAsDOM($t_list->getRootItemIDForList($qr_lists->get("list_code")));
+			$vo_items = $this->getListItemsAsDOM($t_list->getRootItemIDForList($qr_lists->get("list_code")), $qr_lists->get('list_id'));
 
-			// if we're only exporting changes, don't export list if no items are exported AND the list hasn't changed
-			if($this->opn_modified_after && !$vo_items->childNodes->length) {
-				if($t_list->getLastChangeTimestampAsInt($qr_lists->get('list_id')) < $this->opn_modified_after) {
+
+			if($this->opn_modified_after) {
+				// if we're only exporting changes, don't export list if no items are exported AND the list hasn't changed
+				if(!$vo_items->childNodes->length) {
+					if($t_list->getLastChangeTimestampAsInt($qr_lists->get('list_id')) < $this->opn_modified_after) {
+						continue;
+					}
+				}
+
+				// don't export list if it has been deleted. in that case we already created a "delete" key above
+				if($qr_lists->get('deleted') == '1') {
 					continue;
 				}
 			}
@@ -241,7 +258,7 @@ final class ConfigurationExporter {
 		return $vo_lists;
 	}
 	# -------------------------------------------------------
-	private function getListItemsAsDOM($pn_parent_id) {
+	private function getListItemsAsDOM($pn_parent_id, $pn_list_id) {
 		$qr_items = $this->opo_db->query("SELECT * FROM ca_list_items WHERE parent_id=? AND deleted=0",$pn_parent_id);
 		$t_list_item = new ca_list_items();
 
@@ -251,6 +268,18 @@ final class ConfigurationExporter {
 
 		$vo_items = $this->opo_dom->createElement("items");
 		$vs_default_locale = $this->opt_locale->localeIDToCode($this->opt_locale->getDefaultCataloguingLocaleID());
+
+		if($this->opn_modified_after &&
+			is_array($va_deleted = $this->getDeletedItemsFromChangeLogByIdno($t_list_item->tableNum(), 'idno', array('list_id' => $pn_list_id)))
+		) {
+			foreach($va_deleted as $vs_deleted_idno) {
+				$vo_item = $this->opo_dom->createElement("item");
+				$vo_items->appendChild($vo_item);
+				$vo_item->setAttribute("idno", $vs_deleted_idno);
+				$vo_item->setAttribute("deleted", 1);
+			}
+		}
+
 		while($qr_items->nextRow()) {
 			$vo_item = $this->opo_dom->createElement("item");
 			$vs_idno = $this->makeIDNOFromInstance($qr_items,'idno');
@@ -286,7 +315,7 @@ final class ConfigurationExporter {
 
 			$vo_item->appendChild($vo_labels);
 
-			if($vo_sub_items = $this->getListItemsAsDOM($qr_items->get("item_id"))) {
+			if($vo_sub_items = $this->getListItemsAsDOM($qr_items->get("item_id"), $pn_list_id)) {
 				$vo_item->appendChild($vo_sub_items);
 			}
 
@@ -311,6 +340,15 @@ final class ConfigurationExporter {
 		$qr_elements = $this->opo_db->query("SELECT * FROM ca_metadata_elements WHERE parent_id IS NULL ORDER BY element_id");
 
 		$t_element = new ca_metadata_elements();
+
+		if($this->opn_modified_after && is_array($va_deleted = $this->getDeletedItemsFromChangeLogByIdno($t_element->tableNum(), 'element_code'))) {
+			foreach($va_deleted as $vs_deleted_idno) {
+				$vo_element = $this->opo_dom->createElement("metadataElement");
+				$vo_elements->appendChild($vo_element);
+				$vo_element->setAttribute("code", $vs_deleted_idno);
+				$vo_element->setAttribute("deleted", 1);
+			}
+		}
 
 		while($qr_elements->nextRow()) {
 
@@ -631,8 +669,18 @@ final class ConfigurationExporter {
 	public function getUIsAsDOM() {
 		$t_list = new ca_lists();
 		$t_rel_type = new ca_relationship_types();
+		$t_ui = new ca_editor_uis();
 
 		$vo_uis = $this->opo_dom->createElement("userInterfaces");
+
+		if($this->opn_modified_after && is_array($va_deleted = $this->getDeletedItemsFromChangeLogByIdno($t_ui->tableNum(), 'editor_code'))) {
+			foreach($va_deleted as $vs_deleted_idno) {
+				$vo_ui = $this->opo_dom->createElement("userInterface");
+				$vo_uis->appendChild($vo_ui);
+				$vo_ui->setAttribute("code", $vs_deleted_idno);
+				$vo_ui->setAttribute("deleted", 1);
+			}
+		}
 
 		$qr_uis = $this->opo_db->query("SELECT * FROM ca_editor_uis ORDER BY ui_id");
 
@@ -727,6 +775,15 @@ final class ConfigurationExporter {
 			$qr_screens = $this->opo_db->query("SELECT * FROM ca_editor_ui_screens WHERE parent_id IS NOT NULL AND ui_id=? ORDER BY rank,screen_id",$qr_uis->get("ui_id"));
 
 			$t_screen = new ca_editor_ui_screens();
+
+			if($this->opn_modified_after && is_array($va_deleted = $this->getDeletedItemsFromChangeLogByIdno($t_screen->tableNum(), 'idno', array('ui_id' => $qr_uis->get("ui_id"))))) {
+				foreach($va_deleted as $vs_deleted_idno) {
+					$vo_screen = $this->opo_dom->createElement("screen");
+					$vo_screens->appendChild($vo_screen);
+					$vo_screen->setAttribute("idno", $vs_deleted_idno);
+					$vo_screen->setAttribute("deleted", 1);
+				}
+			}
 
 			while($qr_screens->nextRow()) {
 				$t_screen->load($qr_screens->get("screen_id"));
@@ -1418,8 +1475,45 @@ final class ConfigurationExporter {
 		return $this->makeIDNO($vs_value, $vn_max_length);
 	}
 	# --------------------------------------------------
-	private function getDeletedItemsFromChangeLog($pn_table_num, $ps_idno_field='code') {
-		//@todo
+	/**
+	 * Get list of idnos/codes for items that have been deleted since $this->opn_modified_after
+	 * @param int $pn_table_num
+	 * @param string $ps_idno_field
+	 * @param array $pa_additional_filters
+	 * @return array list of idnos/codes
+	 */
+	private function getDeletedItemsFromChangeLogByIdno($pn_table_num, $ps_idno_field='code', $pa_additional_filters=array()) {
+		if(!$this->opn_modified_after) { return array(); }
+
+		$qr_del = $this->opo_db->query("
+			SELECT * FROM ca_change_log
+			INNER JOIN ca_change_log_snapshots ON ca_change_log_snapshots.log_id = ca_change_log.log_id
+			WHERE logged_table_num=? AND log_datetime > ? AND changetype = 'D'
+		", $pn_table_num, $this->opn_modified_after);
+
+		$va_return = array();
+		while($qr_del->nextRow()) {
+			$va_fields = caUnserializeForDatabase($qr_del->get('snapshot'));
+
+			if(is_array($pa_additional_filters)) {
+				foreach($pa_additional_filters as $vs_fld => $vs_filter) {
+					if(isset($va_fields[$vs_fld])) {
+						if($va_fields[$vs_fld] == $vs_filter) {
+							continue;
+						}
+					}
+
+					// if it didn't match the filter, skip this row
+					continue 2;
+				}
+			}
+
+			if(isset($va_fields[$ps_idno_field]) && $va_fields[$ps_idno_field]) {
+				$va_return[] = $va_fields[$ps_idno_field];
+			}
+		}
+
+		return $va_return;
 	}
 	# --------------------------------------------------
 }

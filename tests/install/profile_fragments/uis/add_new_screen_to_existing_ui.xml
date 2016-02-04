@@ -5,10 +5,36 @@
   <locales/>
   <lists/>
   <elementSets/>
-  <userInterfaces/>
+  <userInterfaces>
+      <userInterface code="standard_entity_ui" type="ca_entities">
+        <labels>
+          <label locale="en_US">
+            <name>Standard entity editor</name>
+          </label>
+        </labels>
+        <screens>
+          <screen idno="new_screen" default="0">
+            <labels>
+              <label locale="en_US">
+                <name>Shiny new screen</name>
+              </label>
+            </labels>
+            <bundlePlacements>
+              <placement code="idno">
+                <bundle>idno</bundle>
+                <settings>
+                  <setting name="label" locale="en_US">Idno</setting>
+                </settings>
+              </placement>
+            </bundlePlacements>
+          </screen>
+        </screens>
+      </userInterface>
+  </userInterfaces>
+
   <relationshipTypes/>
   <roles/>
   <groups/>
-  <displays></displays>
+  <displays/>
   <searchForms/>
 </profile>

@@ -34,6 +34,10 @@ require_once(__CA_BASE_DIR__.'/install/inc/Installer.php');
 
 class ConfigurationUpdateTest extends PHPUnit_Framework_TestCase {
 
+	public function tearDown() {
+		parent::tearDown(); // TODO: Actually tearDown correctly instead of delete()-ing things in the tests
+	}
+
 	public function testAddNewLocale() {
 		$t_locale = new ca_locales();
 		$this->assertFalse((bool) $t_locale->localeCodeToID('fk_FK'));
@@ -216,5 +220,59 @@ class ConfigurationUpdateTest extends PHPUnit_Framework_TestCase {
 
 		$t_ui->setMode(ACCESS_WRITE);
 		$t_ui->delete(true, array('hard' => true));
+	}
+
+	public function testAddScreenToExistingUI() {
+		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/uis/add_new_screen_to_existing_ui.xml'));
+		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer->processLocales();
+		$o_installer->processUserInterfaces();
+
+		/** @var ca_editor_uis $t_ui */
+		$t_ui = ca_editor_uis::find(array('editor_code' => 'standard_entity_ui', 'editor_type' =>  20), array('returnAs' => 'firstModelInstance'));
+		$this->assertInstanceOf('ca_editor_uis', $t_ui);
+		$this->assertEquals('standard_entity_ui', $t_ui->get('editor_code'));
+
+		$va_screens = $t_ui->getScreens();
+
+		$this->assertEquals(6, sizeof($va_screens));
+		$va_screen = array_pop($va_screens); // should be the last screen
+		$this->assertEquals('new_screen', $va_screen['idno']);
+
+		$t_screen = new ca_editor_ui_screens($va_screen['screen_id']);
+		$va_placements = $t_screen->getPlacements();
+		$this->assertEquals(1, sizeof($va_placements));
+
+		$va_idno_placement = array_pop($va_placements);
+
+		$this->assertEquals('Idno', $va_idno_placement['settings']['label']['en_US']);
+		$t_screen->setMode(ACCESS_WRITE);
+		$t_screen->delete(true, array('hard' => true));
+	}
+
+	public function testEditScreenInExistingUI() {
+		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/uis/edit_screen_in_existing_ui.xml'));
+		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer->processLocales();
+		$o_installer->processUserInterfaces();
+
+		/** @var ca_editor_uis $t_ui */
+		$t_ui = ca_editor_uis::find(array('editor_code' => 'standard_entity_ui', 'editor_type' =>  20), array('returnAs' => 'firstModelInstance'));
+		$this->assertInstanceOf('ca_editor_uis', $t_ui);
+		$this->assertEquals('standard_entity_ui', $t_ui->get('editor_code'));
+
+		$va_screens = $t_ui->getScreens();
+
+		$this->assertEquals(5, sizeof($va_screens));
+		$va_screen = array_pop($va_screens); // should be the last screen (let's hope the prev test didn't have side effects ;-))
+		$this->assertEquals('links', $va_screen['idno']);
+
+		$t_screen = new ca_editor_ui_screens($va_screen['screen_id']);
+		$va_placements = $t_screen->getPlacements();
+		$this->assertEquals(1, sizeof($va_placements));
+
+		$va_idno_placement = array_pop($va_placements);
+
+		$this->assertEquals('Idno', $va_idno_placement['settings']['label']['en_US']);
 	}
 }
