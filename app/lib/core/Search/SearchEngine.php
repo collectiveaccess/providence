@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2015 Whirl-i-Gig
+ * Copyright 2007-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -180,7 +180,7 @@ class SearchEngine extends SearchBase {
 		if($vn_cache_timeout == 0) { $vb_no_cache = true; } // don't try to cache if cache timeout is 0 (0 means disabled)
 		
 		$t_table = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
-		$vs_cache_key = md5($ps_search."/".serialize($this->getTypeRestrictionList($pa_options)));
+		$vs_cache_key = md5($ps_search."/".serialize($this->getTypeRestrictionList($pa_options))."/".serialize($this->opa_result_filters));
 
 		$o_cache = new SearchCache();
 		$vb_from_cache = false;
