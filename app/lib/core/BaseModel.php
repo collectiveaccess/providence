@@ -5036,16 +5036,17 @@ class BaseModel extends BaseObject {
 			return null;
 		}
 		
-		$va_dim = caParseMeasurement($ps_dimension);
+		$vo_parsed_measurement = caParseDimension($ps_dimension);
 		
-		$va_media_info['_SCALE'] = $pn_percent_of_image_width/$va_dim['value'];
-		$va_media_info['_SCALE_UNITS'] = $va_dim['units'];
-	
-		$this->setMode(ACCESS_WRITE);
-		$this->setMediaInfo($ps_field, $va_media_info);
-		$this->update();
-		$this->set('media', $this->getMediaPath('media', 'original'), array('original_filename' => $vs_original_filename));
-		$this->update();
+		if ($vo_parsed_measurement && (($vn_measurement = (float)$vo_parsed_measurement->toString(4)) > 0)) {
+		
+			$va_media_info['_SCALE'] = $pn_percent_of_image_width/$vn_measurement;
+			$va_media_info['_SCALE_UNITS'] = caGetLengthUnitType($vo_parsed_measurement->getType(), array('short' => true));
+
+			$this->setMode(ACCESS_WRITE);
+			$this->setMediaInfo($ps_field, $va_media_info);
+			$this->update();
+		}
 		
 		return $this->numErrors() ? false : true;
 	}
