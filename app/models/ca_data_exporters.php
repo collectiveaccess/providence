@@ -1510,6 +1510,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * 			this triggers special behavior that allows getting container values in a kind of sub-export
 	 *			it's really only useful for Containers but in theory can be any attribute
 	 *		logger = KLogger instance to use for logging. This option is mandatory!
+	 * 		offset =
 	 * @return array Item info
 	 */
 	public function processExporterItem($pn_item_id,$pn_table_num,$pn_record_id,$pa_options=array()) {
@@ -1624,9 +1625,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 							$o_log->logInfo(_t("Switching context for element code: %1.", $va_context_tmp[1]));
 							$o_log->logDebug(_t("Raw attribute value array is as follows. The mapping will now be repeated for each (outer) attribute. %1", print_r($va_attrs,true)));
 
+							$vn_i = 0;
 							foreach($va_attrs as $vo_attr) {
-								$va_attribute_export = $this->processExporterItem($pn_item_id,$pn_table_num,$pn_record_id,array_merge(array('ignoreContext' => true, 'attribute_id' => $vo_attr->getAttributeID()),$pa_options));
-								$va_info = array_merge($va_info,$va_attribute_export);
+								$va_attribute_export = $this->processExporterItem($pn_item_id,$pn_table_num,$pn_record_id,
+									array_merge(array('ignoreContext' => true, 'attribute_id' => $vo_attr->getAttributeID(), 'offset' => $vn_i), $pa_options)
+								);
+								$va_info = array_merge($va_info, $va_attribute_export);
+								$vn_i++;
 							}
 						} else {
 							$o_log->logInfo(_t("Switching context for element code %1 failed. Either there is no attribute with that code attached to the current row or the code is invalid. Mapping is ignored for current row.", $va_context_tmp[1]));
@@ -1739,10 +1744,26 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		// context was switched to attribute
 		if($vn_attribute_id) {
 
+			$t_attr = new ca_attributes($vn_attribute_id);
 			$o_log->logInfo(_t("Processing mapping in attribute mode for attribute_id = %1.", $vn_attribute_id));
+			$vs_relative_to = "{$t_instance->tableName()}.{$t_attr->getElementCode()}";
 
-			if($vs_source) { // trying to find the source only makes sense if the source is set
-				$t_attr = new ca_attributes($vn_attribute_id);
+			if($vs_template) { // if template is set, run through template engine as <unit>
+				$vn_offset = (int) caGetOption('offset', $pa_options, 0);
+
+				$vs_get_with_template = trim($t_instance->getWithTemplate("
+					<unit relativeTo='{$vs_relative_to}' start='{$vn_offset}' length='1'>
+						{$vs_template}
+					</unit>
+				"));
+
+				if($vs_get_with_template) {
+					$va_item_info[] = array(
+						'text' => $vs_get_with_template,
+						'element' => $vs_element,
+					);
+				}
+			} elseif($vs_source) { // trying to find the source only makes sense if the source is set
 				$va_values = $t_attr->getAttributeValues();
 
 				$va_src_tmp = explode('.', $vs_source);
@@ -1979,6 +2000,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		return false;
 	}
 	# ------------------------------------------------------
+	/**
+	 * @param int $pn_record_id
+	 * @param int $pn_table_num
+	 * @return BundlableLabelableBaseModelWithAttributes|bool|null
+	 */
 	static public function loadInstanceByID($pn_record_id,$pn_table_num) {
 		if(sizeof(ca_data_exporters::$s_instance_cache)>10) {
 			array_shift(ca_data_exporters::$s_instance_cache);
