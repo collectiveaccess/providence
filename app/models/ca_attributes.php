@@ -856,5 +856,23 @@ class ca_attributes extends BaseModel {
 		return $va_values;
 	}
 	# ------------------------------------------------------
+	/**
+	 * Get code for element
+	 * @return string
+	 * @throws MemoryCacheInvalidParameterException
+	 */
+	public function getElementCode() {
+		if(!$this->getPrimaryKey()) { return false; }
+
+		if(MemoryCache::contains($this->getPrimaryKey(), 'AttributeToElementCodeCache')) {
+			return MemoryCache::fetch($this->getPrimaryKey(), 'AttributeToElementCodeCache');
+		}
+
+		$t_element = new ca_metadata_elements($this->get('element_id'));
+		$vs_element_code = $t_element->get('element_code');
+
+		MemoryCache::save($this->getPrimaryKey(), $vs_element_code, 'AttributeToElementCodeCache');
+		return $vs_element_code;
+	}
+	# ------------------------------------------------------
 }
-?>
