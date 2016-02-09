@@ -812,7 +812,13 @@
 			$pb_ignore_parent			 	= caGetOption('ignoreParent', $pa_options, false);
 			
 			$vn_parent_id 					= ($pn_parent_id ? $pn_parent_id : caGetOption('parent_id', $pa_values, null));
-			if (!$vn_parent_id) { $vn_parent_id = null; }
+
+			if ($vn_parent_id) {
+				$pa_values['parent_id'] = $vn_parent_id;
+			} elseif(is_array($pa_values)) {
+				unset($pa_values['parent_id']);
+				$vn_parent_id = null;
+			}
 			
 			$vs_idno_fld					= $t_instance->getProperty('ID_NUMBERING_ID_FIELD');
 			$vs_idno 						= caGetOption($vs_idno_fld, $pa_values, null); 
@@ -905,7 +911,7 @@
 									$vs_idno_fld => $vs_idno ? $vs_idno : ($pa_label['_originalText'] ? $pa_label['_originalText'] : $vs_label),
 									'type_id' => $pn_type_id
 								);
-								if (!$pb_ignore_parent && $vn_parent_id) { $va_find_vals['parent_id'] = $pa_values['parent_id']; }
+								if (!$pb_ignore_parent && $vn_parent_id) { $va_find_vals['parent_id'] = $vn_parent_id; }
 							
 								if (
 									($vs_idno || trim($pa_label['_originalText'] || $vs_label)) 
