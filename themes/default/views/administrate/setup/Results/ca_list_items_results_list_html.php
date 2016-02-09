@@ -37,7 +37,7 @@ if (!$this->getVar('no_hierarchies_defined')) {
 <div id="scrollingResults">
 
 <form id="caFindResultsForm">
-	<table class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+	<table class="listtable">
 		<thead>
 		<tr>
 		<th style="width:10px; text-align:center;" class='list-header-nosort'>

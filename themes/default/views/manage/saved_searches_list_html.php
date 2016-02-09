@@ -38,7 +38,7 @@
 		<div class="sectionBox">
 			<form id="SavedSearchesListForm">
 			
-			<table id="caSavedSearchesList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+			<table id="caSavedSearchesList" class="listtable">
 				<div style="text-align:right;">
 					<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#SavedSearchesListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'SavedSearches', 'Delete'); ?>").submit();' class='form-button'><span class='form-button'><?php print caNavIcon(__CA_NAV_ICON_DELETE__, 1);?>Delete</span></a>
 				</div>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,12 +36,16 @@
 		/* ]]> */
 		</script>
 		<div class="sectionBox">
-			<form id="WatchedItemsListForm">
+<?php 
+	print caFormControlBox(
+			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caWatchedItemsList\').caFilterTable(this.value); return false;" size="20"/></div>',
+			'',
+			"<a href='#' onclick='jQuery(\"#WatchedItemsListForm\").attr(\"action\", \"".caNavUrl($this->request, 'manage', 'WatchedItems', 'Delete')."\").submit();' class='form-button'><span class='delete'>".caNavIcon(__CA_NAV_ICON_DELETE__, 2)." "._t('Delete selected')."</span></a>"
+		); 
+?>
+		<form id="WatchedItemsListForm">
 			
-			<table id="caWatchedItemsList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
-				<div style="text-align:right;">
-					<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#WatchedItemsListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'WatchedItems', 'Delete'); ?>").submit();' class='form-button'><span class='form-button delete'><?php print caNavIcon(__CA_NAV_ICON_DELETE__, 1); ?>Delete</span></a>
-				</div>
+			<table id="caWatchedItemsList" class="listtable">
 				<thead>
 					<tr>
 						<th class="list-header-unsorted">

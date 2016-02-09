@@ -46,7 +46,7 @@
 	
 	<h1><?php print _t('Your project teams'); ?></h1>
 	
-	<table id="caGroupList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+	<table id="caGroupList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">

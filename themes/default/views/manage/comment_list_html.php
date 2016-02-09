@@ -50,7 +50,7 @@
 				<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Approve'); ?>").submit();' class='form-button'><span class='form-button approve'><?php print caNavIcon(__CA_NAV_ICON_APPROVE__, 1); ?><span class='formtext'>Approve</span></span></a>
 				<a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Delete'); ?>").submit();' class='form-button'><span class='form-button delete'><?php print caNavIcon(__CA_NAV_ICON_DELETE__, 1); ?><span class='formtext'>Delete</span></span></a>
 			</div>
-			<table id="caCommentsList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+			<table id="caCommentsList" class="listtable">
 				<thead>
 					<tr>
 						<th class="list-header-unsorted">

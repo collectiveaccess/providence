@@ -57,7 +57,7 @@
 		); 
 	?>
 	
-	<table id="caSetList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+	<table id="caSetList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">

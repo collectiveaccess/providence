@@ -44,7 +44,7 @@
 		); 
 	?>
 	
-	<table id="caEventList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+	<table id="caEventList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">

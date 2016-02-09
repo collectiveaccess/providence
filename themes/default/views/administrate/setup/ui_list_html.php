@@ -54,7 +54,7 @@ $vs_type_menu = '<div class="sf-small-menu form-header-button rounded">'.
 		);
 	?>
 
-	<table id="caUIList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+	<table id="caUIList" class="listtable">
 		<thead>
 		<tr>
 			<th>

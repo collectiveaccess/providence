@@ -135,7 +135,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 /* ]]> */
 </script>';
 		}
- 		$vs_output .= '<table '.($ps_id ? 'id="'.$ps_id.'"' : '').' class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+ 		$vs_output .= '<table '.($ps_id ? 'id="'.$ps_id.'"' : '').' class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
@@ -205,7 +205,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 /* ]]> */
 </script>';
 		}
- 		$vs_output .= '<table '.($ps_id ? 'id="'.$ps_id.'"' : '').' class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+ 		$vs_output .= '<table '.($ps_id ? 'id="'.$ps_id.'"' : '').' class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">

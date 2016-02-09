@@ -60,7 +60,7 @@
 		); 
 	?>
 	
-	<table id="caFormList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+	<table id="caFormList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">

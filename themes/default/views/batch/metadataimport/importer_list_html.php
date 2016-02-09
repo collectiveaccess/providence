@@ -58,7 +58,7 @@ if (!$this->request->isAjax()) {
 }
 ?>
 	<div id="caImporterListContainer">
-		<table id="caImporterList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+		<table id="caImporterList" class="listtable">
 			<thead>
 			<tr>
 				<th>

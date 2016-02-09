@@ -45,7 +45,7 @@ $va_attribute_types = $this->getVar('attribute_types');
 		);
 	?>
 
-	<table id="caElementList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+	<table id="caElementList" class="listtable">
 		<thead>
 		<tr>
 			<th>
