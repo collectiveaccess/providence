@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2015 Whirl-i-Gig
+ * Copyright 2014-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -474,16 +474,18 @@
 				//
 				$va_sort_buffer = array();
 				
+				$vn_c = 0;
 				foreach($pa_hits as $vn_hit) {
 					$vs_key = '';
 					foreach($pa_sortable_values as $vn_i => $va_sortable_values) {
 						$vs_v = preg_replace("![^\w_]+!", " ", $va_sortable_values[$vn_hit]);
 						
-						$vs_key .= str_pad(substr($vs_v,0,150), 150, ' ', is_numeric($vs_v) ? STR_PAD_LEFT : STR_PAD_RIGHT);
+						$vs_key .= str_pad(substr($vs_v,0,50), 50, ' ', is_numeric($vs_v) ? STR_PAD_LEFT : STR_PAD_RIGHT);
 					}
-					$va_sort_buffer[$vs_key.str_pad($vn_hit, 12, ' ', STR_PAD_LEFT)] = $vn_hit;
+					$va_sort_buffer[$vs_key.str_pad($vn_c, 8, '0', STR_PAD_LEFT)] = $vn_hit;
+					
+					$vn_c++;
 				}
-				
 				ksort($va_sort_buffer, SORT_FLAG_CASE | SORT_NATURAL);
 				$va_sort_buffer = array_values($va_sort_buffer);
 				if ($ps_direction == 'desc') { $va_sort_buffer = array_reverse($va_sort_buffer); }
