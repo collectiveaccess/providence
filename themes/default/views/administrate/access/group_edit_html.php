@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,7 +35,7 @@
 		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'GroupsForm').' '.
 		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/access', 'groups', 'ListGroups', array('group_id' => 0)), 
 		'', 
-		caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/access', 'groups', 'Delete', array('group_id' => $vn_group_id))
+		($vn_group_id > 0) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/access', 'groups', 'Delete', array('group_id' => $vn_group_id)) : ''
 	);
 ?>
 <?php

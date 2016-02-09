@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,9 +36,9 @@
 <?php
 	print $vs_control_box = caFormControlBox(
 		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'UsersForm').' '.
-		caNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/access', 'Users', 'ListUsers', array('user_id' => 0)), 
+		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/access', 'Users', 'ListUsers', array('user_id' => 0)), 
 		'', 
-		caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/access', 'Users', 'Delete', array('user_id' => $vn_user_id))
+		($vn_user_id > 0) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/access', 'Users', 'Delete', array('user_id' => $vn_user_id)) : ''
 	);
 ?>
 <?php
