@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,7 +40,7 @@
 		print caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caEventList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			'', 
-			_t('Date range').': '.caFormTag($this->request, 'Index', 'eventsLogSearch').caHTMLTextInput('search', array('size' => 25, 'value' => $this->getVar('events_list_search')))."</form>"
+			_t('Show from').': '.caFormTag($this->request, 'Index', 'eventsLogSearch').caHTMLTextInput('search', array('size' => 25, 'value' => $this->getVar('events_list_search')))." ".caFormSubmitButton($this->request, __CA_NAV_ICON_GO__, "", 'eventsLogSearch')."</form>"
 		); 
 	?>
 	
