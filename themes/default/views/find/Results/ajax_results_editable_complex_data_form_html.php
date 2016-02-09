@@ -53,8 +53,8 @@
 		<div id="caResultsComplexDataEditorPanelControlButtons">
 <?php
 		if ($vb_can_edit) {
-			print caFormControlBox(caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), "caEditableResultsComplexDataFormSaveButton", array("onclick" => "caEditableResultsComplexDataFormHandler.save(event);"))
-				.' '.caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), "caEditableResultsComplexDataFormCancelButton", array("onclick" => "jQuery(\"#caEditableResultsComplexDataForm\").parent().parent().data(\"panel\").hidePanel();")), 
+			print caFormControlBox(caFormJSButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), "caEditableResultsComplexDataFormSaveButton", array("onclick" => "caEditableResultsComplexDataFormHandler.save(event);"))
+				.' '.caFormJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), "caEditableResultsComplexDataFormCancelButton", array("onclick" => "jQuery(\"#caEditableResultsComplexDataForm\").parent().parent().data(\"panel\").hidePanel();")), 
 				'',
 				''
 			);

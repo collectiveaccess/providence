@@ -1630,7 +1630,13 @@ table.listtable {
     width: 100%;
     text-align: left;
     clear:both;
+    border-collapse: collapse;
 }   
+
+table.listtable tr, table.listtable tr td, table.listtable tr th {
+	border: 1px solid #ccc;
+}
+
 #caWatchedItemsList.listtable {
 	font-size:12px;
 } 

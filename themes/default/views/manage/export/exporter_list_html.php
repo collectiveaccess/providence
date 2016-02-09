@@ -44,7 +44,7 @@ if (!$this->request->isAjax()) {
 		print caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="jQuery(\'#caExporterList\').caFilterTable(this.value); return false;" size="20"/></div>',
 			'',
-			caJSButton($this->request, __CA_NAV_ICON_ADD__, _t("Add exporters"), 'caAddExportersButton', array('onclick' => 'jQuery("#exporterUploadArea").slideToggle(150); return false;'))
+			caFormJSButton($this->request, __CA_NAV_ICON_ADD__, _t("Add exporters"), 'caAddExportersButton', array('onclick' => 'jQuery("#exporterUploadArea").slideToggle(150); return false;'))
 		);
 	?>
 	

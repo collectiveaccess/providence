@@ -44,9 +44,9 @@
 			print $vs_control_box = caFormControlBox(
 				caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'StorageLocationEditorForm').' '.
 				($this->getVar('show_save_and_return') ? caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save and return"), 'StorageLocationEditorForm', array('isSaveAndReturn' => true)) : '').' '.
-				caNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'editor/storage_locations', 'StorageLocationEditor', 'Edit/'.$this->request->getActionExtra(), $va_cancel_parameters),
+				caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'editor/storage_locations', 'StorageLocationEditor', 'Edit/'.$this->request->getActionExtra(), $va_cancel_parameters),
 				'', 
-				((intval($vn_location_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'editor/storage_locations', 'StorageLocationEditor', 'Delete/'.$this->request->getActionExtra(), array('location_id' => $vn_location_id)) : ''
+				((intval($vn_location_id) > 0) && $vb_can_delete) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'editor/storage_locations', 'StorageLocationEditor', 'Delete/'.$this->request->getActionExtra(), array('location_id' => $vn_location_id)) : ''
 			);
 		}
 	?>

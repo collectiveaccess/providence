@@ -37,9 +37,9 @@
 <?php
 	print $vs_control_box = caFormControlBox(
 		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'ElementsForm').' '.
-		caNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/setup', 'Elements', 'Index', array('element_id' => 0)),
+		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/setup', 'Elements', 'Index', array('element_id' => 0)),
 		'',
-		caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/setup', 'Elements', 'Delete', array('element_id' => $vn_element_id))
+		caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/setup', 'Elements', 'Delete', array('element_id' => $vn_element_id))
 	);
 
 

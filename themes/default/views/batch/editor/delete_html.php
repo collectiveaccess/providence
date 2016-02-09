@@ -36,7 +36,7 @@
 			"<div class='delete_warning_box'>"._t('Really delete ALL records in "%1"?', $t_set->getLabelForDisplay())."</div>",
 			"",
 			caFormSubmitButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'caDeleteForm', array()).
-			caNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', "batch", "Editor", "Edit", array('set_id' => $this->getVar('set_id')))
+			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', "batch", "Editor", "Edit", array('set_id' => $this->getVar('set_id')))
 		)."</div>\n";
 		
 		print caHTMLHiddenInput('confirm', array('value' => 1));

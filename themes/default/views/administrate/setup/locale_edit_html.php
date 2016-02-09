@@ -33,9 +33,9 @@
 <?php
 	print $vs_control_box = caFormControlBox(
 		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'LocalesForm').' '.
-		caNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/setup', 'Locales', 'ListLocales', array('locale_id' => 0)), 
+		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/setup', 'Locales', 'ListLocales', array('locale_id' => 0)), 
 		'', 
-		caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/setup', 'Locales', 'Delete', array('locale_id' => $vn_locale_id))
+		caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/setup', 'Locales', 'Delete', array('locale_id' => $vn_locale_id))
 	);
 ?>
 <?php

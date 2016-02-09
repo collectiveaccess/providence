@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -84,7 +84,7 @@ if (!$this->getVar('no_hierarchies_defined')) {
 					print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id)."</td>";
 				}
 				print "<td class='editDelete'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), 'list-button', 'ca_list_items', $vn_item_id, array());
-				print " <a href='#' class='list-button' onclick='caOpenBrowserWith({$vn_item_id});'>".caNavIcon(__CA_NAV_ICON_GO__, 2, array('title' => _t('View in hierarchy')))."</a>";
+				print " <a href='#' class='list-button' onclick='caOpenBrowserWith({$vn_item_id}); return false;'>".caNavIcon(__CA_NAV_ICON_GO__, 2, array('title' => _t('View in hierarchy')))."</a>";
 				print "</td>";		
 ?>	
 			</tr>
@@ -115,7 +115,6 @@ if (!$this->getVar('no_hierarchies_defined')) {
 </div><!--end scrollingResults -->
 <?php
 	TooltipManager::add('.hierarchyIcon', _t("View in Hierarchy"));
-	TooltipManager::add('.editIcon', _t("Edit List Item"));
 }
 ?>
 <div class="editorBottomPadding"><!-- empty --></div>

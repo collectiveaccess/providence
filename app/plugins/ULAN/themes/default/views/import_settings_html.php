@@ -32,7 +32,7 @@
  	
  	print $vs_control_box = caFormControlBox(
 		($vb_importers_available ? (caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Import"), 'caULANResultsForm')) : '').' '.
-		(caNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', '*', '*', 'Index')),
+		(caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', '*', '*', 'Index')),
 		'',
 		''
 	);

@@ -198,6 +198,14 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 *
+	 */
+	function caFormNavButton($po_request, $pn_type, $ps_content, $ps_classname, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_attributes=null, $pa_options=null) {
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		return caNavButton($po_request, $pn_type, $ps_content, $ps_classname, $ps_module_path, $ps_controller, $ps_action, $pa_other_params, $pa_attributes, array_merge($pa_options, array('size' => '30px')));
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * 
 	 *
 	 *
@@ -206,6 +214,9 @@
 	 *		no_background = 
 	 *		dont_show_content = 
 	 *		graphicsPath =
+	 *		rightMargin =
+	 *		iconMargin = 
+	 *		size =
 	 */
 	function caNavButton($po_request, $pn_type, $ps_content, $ps_classname, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_attributes=null, $pa_options=null) {
 		if ($ps_module_path && $ps_controller && $ps_action) {
@@ -220,6 +231,10 @@
 		$pb_no_background = (isset($pa_options['no_background']) && $pa_options['no_background']) ? true : false;
 		$pb_dont_show_content = (isset($pa_options['dont_show_content']) && $pa_options['dont_show_content']) ? true : false;
 		
+		if (!isset($pa_attributes['style'])) { $pa_attributes['style'] = ''; }
+		if ($vs_right_margin = caGetOption('rightMargin', $pa_options, '2px')) {
+			$pa_attributes['style'] = "margin-right: {$vs_right_margin}; ".$pa_attributes['style'];	// add margin on right to give space between buttons
+		}
 		
 		if ($ps_classname) {
 			$vs_classname = $ps_classname;
@@ -258,7 +273,9 @@
 			$vs_alt = $vs_title = '';
 		}
 		
-		$vs_tag .= caNavIcon($pn_type, '30px').' ';
+		($vs_icon_margin = caGetOption('iconMargin', $pa_options, '3px')) ? $va_icon_attributes['style'] = "margin-right: {$vs_icon_margin};" : array(); // add margin on right to give space between icon and text
+	
+		$vs_tag .= caNavIcon($pn_type, caGetOption('size', $pa_options, 2), $va_icon_attributes);
 		if (!$pb_dont_show_content) {
 			$vs_tag .= $ps_content;
 		}
@@ -279,6 +296,8 @@
 	 *		class = 
 	 *		dont_show_content = 
 	 *		graphicsPath =
+	 *		size = 
+	 *		iconMargin =
 	 */
 	function caNavHeaderButton($po_request, $pn_type, $ps_content, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_attributes=null, $pa_options=null) {
 		if (!($vs_url = caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params))) {
@@ -311,8 +330,10 @@
 			'align' => 'absmiddle'
 		);
 		$vs_img_tag_stuff = " padding= '{$vn_padding}px'";
-		
-		if ($vs_icon_tag = caNavIcon($pn_type, '30px')) {
+			
+		($vs_icon_margin = caGetOption('iconMargin', $pa_options, '3px')) ? $va_icon_attributes['style'] = "margin-right: {$vs_icon_margin};" : array(); // add margin on right to give space between icon and text
+	
+		if ($vs_icon_tag = caNavIcon($pn_type, caGetOption('size', $pa_options, '30px'), $va_icon_attributes)) {
 			$vs_content = (!$pb_dont_show_content) ? $ps_content : '';
 			
 			switch($ps_icon_pos) {
@@ -419,6 +440,8 @@
 	 *		dont_show_content = 
 	 *		graphicsPath =
 	 *		preventDuplicateSubmits = default is false
+	 *		iconMargin = 
+	 *		size = 
 	 */
 	function caFormSubmitButton($po_request, $pn_type, $ps_content, $ps_id, $pa_options=null) {
 		$ps_icon_pos = isset($pa_options['icon_position']) ? $pa_options['icon_position'] : __CA_NAV_ICON_ICON_POS_LEFT__;
@@ -455,7 +478,9 @@
 			'style' => "padding-right: {$vn_padding}px"
 		);
 		
-		$vs_button .= caNavIcon($pn_type, '30px').' ';
+		($vs_icon_margin = caGetOption('iconMargin', $pa_options, '3px')) ? $va_icon_attributes['style'] = "margin-right: {$vs_icon_margin};" : array(); // add margin on right to give space between icon and text
+	
+		$vs_button .= caNavIcon($pn_type, caGetOption('size', $pa_options, '30px'), $va_icon_attributes);
 		if (!$pb_dont_show_content) {
 			$vs_button .= $ps_content;
 		}
@@ -476,12 +501,22 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 *
+	 */
+	function caFormSearchButton($po_request, $pn_type, $ps_content, $ps_id, $pa_options=null) {
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		return caFormSubmitButton($po_request, $pn_type, $ps_content, $ps_id, array_merge($pa_options, array('size' => 2)));
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * @param array $pa_options Options are:
 	 *		icon_position =
 	 *		class = 
 	 *		no_background = 
 	 *		dont_show_content = 
 	 *		graphicsPath =
+	 *		iconMargin = 
+	 *		size =
 	 */
 	function caJSButton($po_request, $pn_type, $ps_content, $ps_id, $pa_attributes=null, $pa_options=null) {
 		$ps_icon_pos = isset($pa_options['icon_position']) ? $pa_options['icon_position'] : __CA_NAV_ICON_ICON_POS_LEFT__;
@@ -514,7 +549,9 @@
 			'style' => "padding-right: {$vn_padding}px"
 		);
 		
-		$vs_button .= caNavIcon($pn_type, '30px').' ';
+		($vs_icon_margin = caGetOption('iconMargin', $pa_options, '3px')) ? $va_icon_attributes['style'] = "margin-right: {$vs_icon_margin};" : array(); // add margin on right to give space between icon and text
+	
+		$vs_button .= caNavIcon($pn_type, caGetOption('size', $pa_options, 2), $va_icon_attributes);
 		if (!$pb_dont_show_content) {
 			$vs_button .= $ps_content;
 		}
@@ -525,6 +562,14 @@
 		$vs_button .= "</a>";
 		
 		return $vs_button;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 *
+	 */
+	function caFormJSButton($po_request, $pn_type, $ps_content, $ps_id, $pa_attributes=null, $pa_options=null) {
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		return caJSButton($po_request, $pn_type, $ps_content, $ps_id, $pa_attributes, array_merge($pa_options, array('size' => '30px')));
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**

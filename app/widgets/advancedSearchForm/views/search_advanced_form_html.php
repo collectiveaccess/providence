@@ -73,7 +73,7 @@
 ?>
 	<?php print caFormTag($this->request, 'Index', 'AdvancedSearchForm', "find/{$vs_controller_name}", 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); ?>
 <?php 
-			print "<div style='float: right;'>".caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, _t("Search"), 'AdvancedSearchForm').'<br/>'.
+			print "<div style='float: right;'>".caFormSearchButton($this->request, __CA_NAV_ICON_SEARCH__, _t("Search"), 'AdvancedSearchForm').'<br/>'.
 				caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Reset"), 'AdvancedSearchForm', array('onclick' => 'caAdvancedSearchFormReset()'))."</div>\n";
 			print $this->render('search_form_table_html.php');
 			

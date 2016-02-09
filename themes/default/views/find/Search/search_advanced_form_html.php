@@ -78,7 +78,7 @@
 			
 			<div style="float:right; ">
 				<?php print caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Reset"), 'AdvancedSearchForm', array('onclick' => 'caAdvancedSearchFormReset()'), array()); ?>			
-				<?php print caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, _t("Search"), 'AdvancedSearchForm'); ?>
+				<?php print caFormSearchButton($this->request, __CA_NAV_ICON_SEARCH__, _t("Search"), 'AdvancedSearchForm'); ?>
 			</div>
 			<div class="saveAs" style="float: right; margin-right:20px;">
 				<?php print _t("Save search as"); ?>:
