@@ -125,6 +125,58 @@
 
 			$t_display = $this->opo_datamodel->getInstanceByTableName('ca_bundle_displays', true);  			
  			
+ 			// figure out which items in the display are sortable
+ 			if (method_exists($t_model, 'getApplicableElementCodes')) {
+				$va_sortable_elements = ca_metadata_elements::getSortableElements($t_model->tableName());
+				$va_attribute_list = array_flip($t_model->getApplicableElementCodes($this->opo_result_context->getTypeRestriction($vb_dummy), false, false));
+				$t_label = $t_model->getLabelTableInstance();
+				$vs_label_table_name = $t_label->tableName();
+				$vs_label_display_field = $t_label->getDisplayField();
+				foreach($va_display_list as $vn_i => $va_display_item) {
+					$va_tmp = explode('.', $va_display_item['bundle_name']);
+					
+					if (
+						(($va_tmp[0] === $vs_label_table_name) && ($va_tmp[1] === $vs_label_display_field))
+						||
+						(($va_tmp[0] == $this->ops_tablename) && ($va_tmp[1] === 'preferred_labels'))
+					) {
+						$va_display_list[$vn_i]['is_sortable'] = true;
+						$va_display_list[$vn_i]['bundle_sort'] = $vs_label_table_name.'.'.$t_model->getLabelSortField();
+						continue;
+					}
+
+					// if sort is set in the bundle settings, use that
+					if(isset($va_display_item['settings']['sort']) && (strlen($va_display_item['settings']['sort']) > 0)) {
+						$va_display_list[$vn_i]['is_sortable'] = true;
+						$va_display_list[$vn_i]['bundle_sort'] = $va_display_item['settings']['sort'];
+						continue;
+					}
+
+					// can't sort on related tables!?
+					if ($va_tmp[0] != $this->ops_tablename) { continue; }
+					
+					if ($t_model->hasField($va_tmp[1])) {
+						if($t_model->getFieldInfo($va_tmp[1], 'FIELD_TYPE') == FT_MEDIA) { // sorting media fields doesn't really make sense and can lead to sql errors
+							continue;
+						}
+						$va_display_list[$vn_i]['is_sortable'] = true;
+						
+						if ($t_model->hasField($va_tmp[1].'_sort')) {
+							$va_display_list[$vn_i]['bundle_sort'] = $va_display_item['bundle_name'].'_sort';
+						} else {
+							$va_display_list[$vn_i]['bundle_sort'] = $va_display_item['bundle_name'];
+						}
+						continue;
+					}
+					
+					if (isset($va_attribute_list[$va_tmp[1]]) && $va_sortable_elements[$va_attribute_list[$va_tmp[1]]]) {
+						$va_display_list[$vn_i]['is_sortable'] = true;
+						$va_display_list[$vn_i]['bundle_sort'] = $va_display_item['bundle_name'];
+						continue;
+					}
+				}
+			}
+			
  			$this->view->setVar('display_list', $va_display_list);
  			
  			// Default display is always there

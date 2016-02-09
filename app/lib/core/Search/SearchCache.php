@@ -39,12 +39,12 @@ require_once(__CA_LIB_DIR__.'/core/Zend/Cache.php');
 class SearchCache {
 	# ------------------------------------------------------
 	/**
-	 * @var Cache key for currently loaded browse
+	 * @var string Cache key for currently loaded browse
 	 */
 	private $ops_cache_key;
 
 	/**
-	 * @var Working copy of search data
+	 * @var array Working copy of search data
 	 */
 	private $opa_search;
 
@@ -61,12 +61,16 @@ class SearchCache {
 	}
 	# ------------------------------------------------------
 	/**
-	 *
+	 * Load search from cache
+	 * @param string $ps_search
+	 * @param int $pn_table_num
+	 * @param array $pa_options
+	 * @return bool true if successful, false if no result could be found in cache
 	 */
 	public function load($ps_search, $pn_table_num, $pa_options) {
 		$ps_cache_key = $this->generateCacheKey($ps_search, $pn_table_num, $pa_options);
-		if(ExternalCache::contains($ps_cache_key, 'Search')) {
-			if(is_array($va_cached_data = ExternalCache::fetch($ps_cache_key, 'Search'))) {
+		if(CompositeCache::contains($ps_cache_key, 'SearchCache')) {
+			if(is_array($va_cached_data = CompositeCache::fetch($ps_cache_key, 'SearchCache'))) {
 				$this->opa_search = $va_cached_data;
 				$this->ops_cache_key = $ps_cache_key;
 				return true;
@@ -77,15 +81,24 @@ class SearchCache {
 	}
 	# ------------------------------------------------------
 	/**
-	 *
+	 * Clear this SearchCache instance
+	 * @return bool
 	 */
 	public function clear() {
 		$this->opa_search = array();
+		$this->ops_cache_key = null;
 		return true;
 	}
 	# ------------------------------------------------------
 	/**
-	 *
+	 * Save result to cache
+	 * @param string $ps_search the search expression
+	 * @param int $pn_table_num
+	 * @param array $pa_results
+	 * @param null|array $pa_params
+	 * @param null|array $pa_type_restrictions
+	 * @param null|array $pa_options
+	 * @return bool
 	 */
 	public function save($ps_search, $pn_table_num, $pa_results, $pa_params=null, $pa_type_restrictions=null, $pa_options=null) {
 		if (!is_array($pa_params)) { $pa_params = array(); }
@@ -99,40 +112,49 @@ class SearchCache {
 			'params' => $pa_params,
 			'type_restrictions' => $pa_type_restrictions
 		);
-		return ExternalCache::save($this->ops_cache_key, $this->opa_search, 'Search');
+		return CompositeCache::save($this->ops_cache_key, $this->opa_search, 'SearchCache');
 	}
 	# ------------------------------------------------------
 	/**
-	 *
+	 * Remove this result from cache
+	 * @return bool
 	 */
 	public function remove() {
 		$this->opa_search = array();
-		return ExternalCache::delete($this->ops_cache_key, 'Search');
+		$vm_ret = CompositeCache::delete($this->ops_cache_key, 'SearchCache');
+		$this->ops_cache_key = null;
+		return $vm_ret;
 	}
 	# ------------------------------------------------------
 	/**
-	 *
+	 * Get cache key for existing cached result
+	 * @return string
 	 */
 	public function getCacheKey() {
 		return $this->ops_cache_key;
 	}
 	# ------------------------------------------------------
 	/**
-	 *
+	 * Set parameter
+	 * @param string $ps_param
+	 * @param mixed $pm_value
 	 */
 	public function setParameter($ps_param, $pm_value) {
 		$this->opa_search['params'][$ps_param] = $pm_value;
 	}
 	# ------------------------------------------------------
 	/**
-	 *
+	 * Get list of parameters
+	 * @return array
 	 */
 	public function getParameters() {
 		return $this->opa_search['params'];
 	}
 	# ------------------------------------------------------
 	/**
-	 *
+	 * Get specific parameter
+	 * @param string $ps_param
+	 * @return mixed|null
 	 */
 	public function getParameter($ps_param) {
 		return (isset($this->opa_search['params'][$ps_param]) ? $this->opa_search['params'][$ps_param] : null);
@@ -186,7 +208,7 @@ class SearchCache {
 	 *
 	 */
 	public function generateCacheKey($ps_search, $pn_table_num, $pa_options) {
-		return md5($ps_search.'/'.$pn_table_num.'/'.print_R($pa_options, true));
+		return md5($ps_search.'/'.$pn_table_num.'/'.serialize($pa_options));
 	}
 	# ------------------------------------------------------
 	# Global parameters - available to all searches
@@ -195,8 +217,8 @@ class SearchCache {
 	 *
 	 */
 	public function getGlobalParameter($ps_param) {
-		if(ExternalCache::contains("search_global_{$ps_param}", 'Search')) {
-			return ExternalCache::fetch("search_global_{$ps_param}", 'Search');
+		if(CompositeCache::contains("search_global_{$ps_param}", 'SearchCache')) {
+			return CompositeCache::fetch("search_global_{$ps_param}", 'SearchCache');
 		}
 		return false;
 	}
@@ -205,7 +227,7 @@ class SearchCache {
 	 *
 	 */
 	public function setGlobalParameter($ps_param, $pm_value) {
-		ExternalCache::save("search_global_{$ps_param}", $pm_value, 'Search');
+		CompositeCache::save("search_global_{$ps_param}", $pm_value, 'SearchCache');
 	}
 	# ------------------------------------------------------
 }

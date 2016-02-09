@@ -414,6 +414,7 @@
 		 *		purify = process text with HTMLPurifier before search. Purifier encodes &, < and > characters, and performs other transformations that can cause searches on literal text to fail. If you are purifying all input (the default) then leave this set true. [Default is true]
 		 *		purifyWithFallback = executes the search with "purify" set and falls back to search with unpurified text if nothing is found. [Default is false]
 		 *		checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for <table_name>.hierarchy.preferred_labels and <table_name>.children.preferred_labels because these returns sets of items. For <table_name>.parent.preferred_labels, which returns a single row at most, you should do access checking yourself. (Everything here applies equally to nonpreferred_labels)
+		 *		restrictToTypes = Restrict returned items to those of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]			 
  	 	 *
 		 * @return mixed Depending upon the returnAs option setting, an array, subclass of LabelableBaseModelWithAttributes or integer may be returned.
 		 */
@@ -435,11 +436,26 @@
 			$ps_sort = caGetOption('sort', $pa_options, null);
 			$pa_check_access = caGetOption('checkAccess', $pa_options, null);
 			
+			
 			if (!$t_instance) { $t_instance = new $vs_table; }
 			$vn_table_num = $t_instance->tableNum();
 			$vs_table_pk = $t_instance->primaryKey();
 			
+			$va_sql_params = array();
+			
+			$vs_type_restriction_sql = '';
+			if ($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) {
+				if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types)) && sizeof($va_restrict_to_types)) {
+					$vs_type_restriction_sql = " {$vs_table}.".$t_instance->getTypeFieldName()." IN (?) AND ";
+					$va_sql_params[] = $va_restrict_to_types;
+				}
+			}
+			
+			
 			if (!($t_label = $t_instance->getLabelTableInstance())) {
+				if ($t_instance->ATTRIBUTE_TYPE_ID_FLD && is_array($va_restrict_to_types) && sizeof($va_restrict_to_types)) { 
+					$pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD] = $va_restrict_to_types;
+				}
 				return parent::find($pa_values, $pa_options);
 			}
 			$vs_label_table = $t_label->tableName();
@@ -470,7 +486,6 @@
 			
 			
 			$va_joins = array();
-			$va_sql_params = array();
 			
 			$vb_purify_with_fallback = caGetOption('purifyWithFallback', $pa_options, false);
 			$vb_purify = $vb_purify_with_fallback ? true : caGetOption('purify', $pa_options, true);
@@ -516,6 +531,9 @@
 			if (
 				($vb_has_simple_fields && !$vb_has_attributes && !$vb_has_label_fields)
 			) {
+				if ($t_instance->ATTRIBUTE_TYPE_ID_FLD && is_array($va_restrict_to_types) && sizeof($va_restrict_to_types)) { 
+					$pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD] = $va_restrict_to_types;
+				}
 				return parent::find($pa_values, $pa_options);
 			}
 			
@@ -604,7 +622,7 @@
 
 					if (is_null($vm_value)) {
 						$va_label_sql[] = "({$vs_table}.{$vs_field} IS NULL)";
-					} elseif (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
+					} elseif (caGetOption('allowWildcards', $pa_options, false) && !is_array($vm_value) && (strpos($vm_value, '%') !== false)) {
 						$va_label_sql[] = "({$vs_table}.{$vs_field} LIKE ?)";
 						$va_sql_params[] = $vm_value;
 					} else {
@@ -681,7 +699,7 @@
 			$vs_deleted_sql = ($t_instance->hasField('deleted')) ? "({$vs_table}.deleted = 0) AND " : '';
 			$vs_sql = "SELECT * FROM {$vs_table}";
 			$vs_sql .= join("\n", $va_joins);
-			$vs_sql .=" WHERE {$vs_deleted_sql} ".join(" {$ps_boolean} ", $va_label_sql);
+			$vs_sql .=" WHERE {$vs_deleted_sql} {$vs_type_restriction_sql} (".join(" {$ps_boolean} ", $va_label_sql).")";
 			
 			$vs_orderby = '';
 			if ($vs_sort_proc) {

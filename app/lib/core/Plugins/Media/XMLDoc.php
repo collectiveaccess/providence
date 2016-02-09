@@ -194,7 +194,7 @@ class WLPlugMediaXMLDoc Extends BaseMediaPlugin Implements IWLPlugMedia {
 	 */
 	public function getExtractedText() {
 		$this->handle['content'] = '';
-		$o_xml_config = Configuration::load($this->opo_config->get('xml_config'));
+		$o_xml_config = Configuration::load(__CA_CONF_DIR__.'/xml.conf');
 		
 		if ((bool)$o_xml_config->get('xml_index_content_for_search')) {
 			if ($r_fp = fopen($this->filepath, 'r')) {
@@ -231,7 +231,7 @@ class WLPlugMediaXMLDoc Extends BaseMediaPlugin Implements IWLPlugMedia {
 				return false;
 			}
 		}
-		$o_xml_config = Configuration::load($this->opo_config->get('xml_config'));
+		$o_xml_config = Configuration::load(__CA_CONF_DIR__.'/xml.conf');
 		$vs_xml_resource_path = $o_xml_config->get('xml_resource_directory');
 		
 		$this->filepath = $ps_filepath;
@@ -415,7 +415,7 @@ class WLPlugMediaXMLDoc Extends BaseMediaPlugin Implements IWLPlugMedia {
 		
 		if(preg_match("/\.xml\$/", $ps_url)) {
 			if (!$this->opo_config) { $this->opo_config = Configuration::load(); }
-			$o_xml_config = Configuration::load($this->opo_config->get('xml_config'));
+			$o_xml_config = Configuration::load(__CA_CONF_DIR__.'/xml.conf');
 			$vs_xml_resource_path = $o_xml_config->get('xml_resource_directory');
 			
 			if (file_exists($vs_xml_resource_path.'/xsl/styl.xslt')) {

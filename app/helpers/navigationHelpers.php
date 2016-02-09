@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2015 Whirl-i-Gig
+ * Copyright 2007-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1060,51 +1060,30 @@
 		$vs_pk = $t_table->primaryKey();
 		$vs_table = $ps_table;
 		
-		$vs_module = 'Detail';
-		$vs_action = 'Show';
-		switch($ps_table) {
-			case 'ca_objects':
-			case 57:
-				$vs_controller = 'Object';
-				break;
-			case 'ca_object_lots':
-			case 51:
-				$vs_controller = 'ObjectLot';
-				break;
-			case 'ca_entities':
-			case 20:
-				$vs_controller = 'Entity';
-				break;
-			case 'ca_places':
-			case 72:
-				$vs_controller = 'Place';
-				break;
-			case 'ca_occurrences':
-			case 67:
-				$vs_controller = 'Occurrence';
-				break;
-			case 'ca_collections':
-			case 13:
-				$vs_controller = 'Collection';
-				break;
-			case 'ca_list_items':
-			case 33:
-				$t_table->load($pn_id);
-				$vs_module = '';
-				$vs_controller = 'Search';
-				$vs_action = 'Index';
-				$vs_pk = 'search';
-				$pn_id = $t_table->get('ca_list_items.preferred_labels.name_plural');
-				break;
-			default:
-				return null;
-				break;
-		}
+		$vs_module = '';
+		$vs_controller = 'Detail';
 		
+		if(isset($pa_options['action'])){
+			$vs_action = $pa_options['action'];
+		} else {
+			$vs_action = caGetDetailForType($ps_table, caGetOption('type_id', $pa_options, null), array('request' => $po_request, 'preferredDetail' => caGetOption('preferredDetail', $pa_options, null)));
+		}
+		if (caUseIdentifiersInUrls() && $t_table->getProperty('ID_NUMBERING_ID_FIELD')) {
+			$va_ids = $t_table->getFieldValuesForIDs(array($pn_id), array($t_table->getProperty('ID_NUMBERING_ID_FIELD')));
+			if (is_array($va_ids) && ($vn_id_for_idno = array_shift($va_ids))) {
+				$vb_id_exists = true;
+			}
+			if (strlen($vn_id_for_idno)) {
+				$pn_id = $vn_id_for_idno;
+			} else {
+				$pn_id = "id:{$pn_id}";
+			}
+		}
+		$vs_action .= "/".rawurlencode($pn_id);
 		
 		if (isset($pa_options['verifyLink']) && $pa_options['verifyLink']) {
 			// Make sure record link points to exists
-			if (($pn_id > 0) && !$t_table->load($pn_id)) {
+			if (!$vb_id_exists && ($pn_id > 0) && !$t_table->load($pn_id)) {
 				return null;
 			}
 		}
@@ -1120,7 +1099,7 @@
 			);
 		} else {
 			if (!is_array($pa_additional_parameters)) { $pa_additional_parameters = array(); }
-			$pa_additional_parameters = array_merge(array($vs_pk => $pn_id), $pa_additional_parameters);
+			//$pa_additional_parameters = array_merge(array('id' => $pn_id), $pa_additional_parameters);
 			return caNavUrl($po_request, $vs_module, $vs_controller, $vs_action, $pa_additional_parameters);
 		}
 	}
