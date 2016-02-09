@@ -39,11 +39,11 @@ require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 class ObjectsXLocationsTest extends BaseTestWithData {
 	# -------------------------------------------------------
 	/**
-	 * @var BundlableLabelableBaseModelWithAttributes
+	 * @var ca_objects
 	 */
 	private $opt_object = null;
 	/**
-	 * @var BundlableLabelableBaseModelWithAttributes
+	 * @var ca_storage_locations
 	 */
 	private $opt_location = null;
 	# -------------------------------------------------------
@@ -64,9 +64,24 @@ class ObjectsXLocationsTest extends BaseTestWithData {
 
 		$this->assertGreaterThan(0, $vn_object_id);
 
-		$vn_loan_out = $this->addTestRecord('ca_storage_locations', array(
+		$vn_room_id = $this->addTestRecord('ca_storage_locations', array(
+			'intrinsic_fields' => array(
+				'type_id' => 'room',
+			),
+			'preferred_labels' => array(
+				array(
+					"locale" => "en_US",
+					"name" => "My Room",
+				),
+			),
+		));
+
+		$this->assertGreaterThan(0, $vn_room_id);
+
+		$vn_cabinet_id = $this->addTestRecord('ca_storage_locations', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'cabinet',
+				'parent_id' => $vn_room_id,
 			),
 			'preferred_labels' => array(
 				array(
@@ -85,10 +100,10 @@ class ObjectsXLocationsTest extends BaseTestWithData {
 			),
 		));
 
-		$this->assertGreaterThan(0, $vn_loan_out);
+		$this->assertGreaterThan(0, $vn_cabinet_id);
 
 		$this->opt_object = new ca_objects($vn_object_id);
-		$this->opt_location = new ca_storage_locations($vn_loan_out);
+		$this->opt_location = new ca_storage_locations($vn_cabinet_id);
 	}
 	# -------------------------------------------------------
 	public function testGets() {
@@ -101,6 +116,9 @@ class ObjectsXLocationsTest extends BaseTestWithData {
 		// try legacy version of same option
 		$vm_ret = $this->opt_object->get("ca_objects_x_storage_locations.effective_date", array('GET_DIRECT_DATE' => true));
 		$this->assertEquals($vm_ret, '1985.01280000000000000000');
+
+		$vm_ret = $this->opt_object->get('ca_storage_locations.hierarchy.preferred_labels.name', array('hierarchyDelimiter' => ' / '));
+		$this->assertEquals('My Room / My Cabinet', $vm_ret);
 	}
 	# -------------------------------------------------------
 }
