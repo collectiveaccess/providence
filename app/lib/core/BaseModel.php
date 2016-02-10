@@ -11279,6 +11279,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *		purify = process text with HTMLPurifier before search. Purifier encodes &, < and > characters, and performs other transformations that can cause searches on literal text to fail. If you are purifying all input (the default) then leave this set true. [Default is true]
 	 *		purifyWithFallback = executes the search with "purify" set and falls back to search with unpurified text if nothing is found. [Default is false]
 	 *		checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for <table_name>.hierarchy.preferred_labels and <table_name>.children.preferred_labels because these returns sets of items. For <table_name>.parent.preferred_labels, which returns a single row at most, you should do access checking yourself. (Everything here applies equally to nonpreferred_labels)
+ 	 *		restrictToTypes = Restrict returned items to those of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]			 
  	 *
 	 * @return mixed Depending upon the returnAs option setting, an array, subclass of BaseModel or integer may be returned.
 	 */
@@ -11308,6 +11309,16 @@ $pa_options["display_form_field_tips"] = true;
 		if ($vb_purify) { $pa_values = caPurifyArray($pa_values); }
 		
 		$va_sql_params = array();
+		
+		
+		$vs_type_restriction_sql = '';
+		if ($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) {
+			if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types)) && sizeof($va_restrict_to_types)) {
+				$vs_type_restriction_sql = " {$vs_table}.".$t_instance->getTypeFieldName()." IN (?) AND ";
+				$va_sql_params[] = $va_restrict_to_types;
+			}
+		}
+			
 		
 		//
 		// Convert type id
@@ -11408,7 +11419,7 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		$vs_deleted_sql = ($t_instance->hasField('deleted')) ? '(deleted = 0) AND ' : '';
-		$vs_sql = "SELECT * FROM {$vs_table} WHERE {$vs_deleted_sql} (".join(" {$ps_boolean} ", $va_sql_wheres).")";
+		$vs_sql = "SELECT * FROM {$vs_table} WHERE {$vs_type_restriction_sql} {$vs_deleted_sql} (".join(" {$ps_boolean} ", $va_sql_wheres).")";
 		
 		$vs_orderby = '';
 		if ($vs_sort = caGetOption('sort', $pa_options, null)) {
