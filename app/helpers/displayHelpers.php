@@ -2698,8 +2698,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 				if (!$o_link) { continue; }
 				$vs_html = $o_link->html();
 				
-				$vs_content = preg_replace("!^<[^>]+>!", "", $vs_html);
-				$vs_content = preg_replace("!<[^>]+>$!", "", $vs_content);
+				$vs_content = preg_replace("!^<[^\>]+>!", "", $vs_html);
+				$vs_content = preg_replace("!<[^\>]+>$!", "", $vs_content);
 		
 				$va_l_tags[] = array('directive' => html_entity_decode($vs_html), 'content' => $vs_content);	//html_entity_decode
 			}
