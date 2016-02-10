@@ -905,4 +905,11 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$this->assertEquals("Homer J. Simpson  <br/>  Bart Simpson", $vm_ret[0]);	
 	}
 	# -------------------------------------------------------
+	public function testStartLength() {
+		$this->assertEquals('5.0 in x 3.0000 lb', trim(DisplayTemplateParser::evaluate("
+		<unit relativeTo='ca_objects.dimensions' start='1' length='1'>
+			^ca_objects.dimensions.dimensions_length x ^ca_objects.dimensions.dimensions_weight
+		</unit>", 'ca_objects', array($this->opn_object_id))));
+	}
+	# -------------------------------------------------------
 }
