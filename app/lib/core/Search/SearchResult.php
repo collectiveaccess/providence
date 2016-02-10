@@ -2785,7 +2785,8 @@ class SearchResult extends BaseObject {
 			$vs_table_name = $t_instance->getSubjectTableName();
 			$vs_subfield_name = $vs_field_name;
 			$vs_field_name = "preferred_labels";
-			$vb_is_related = false;
+			$va_tmp = array($vs_table_name, $vs_field_name, $vs_subfield_name);
+			$vb_is_related = ($vs_table_name !== $this->ops_table_name);
 		}
 		
 		return SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_path] = array(
