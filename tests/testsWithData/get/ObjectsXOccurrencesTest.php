@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/testsWithData/get/ObjectsXLocationsTest.php
+ * tests/testsWithData/get/ObjectsXOccurrencesTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,19 +33,19 @@
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
 /**
- * Class ObjectsXLocationsTest
+ * Class ObjectsXOccurrencesTest
  * Note: Requires testing profile!
  */
-class ObjectsXLocationsTest extends BaseTestWithData {
+class ObjectsXOccurrencesTest extends BaseTestWithData {
 	# -------------------------------------------------------
 	/**
-	 * @var ca_objects
+	 * @var BundlableLabelableBaseModelWithAttributes
 	 */
 	private $opt_object = null;
 	/**
-	 * @var ca_storage_locations
+	 * @var BundlableLabelableBaseModelWithAttributes
 	 */
-	private $opt_location = null;
+	private $opt_occurrence = null;
 	# -------------------------------------------------------
 	public function setUp() {
 		// don't forget to call parent so that the request is set up
@@ -58,67 +58,88 @@ class ObjectsXLocationsTest extends BaseTestWithData {
 		$vn_object_id = $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
-				'idno' => 'test'
+				'idno' => 'test_img'
+			),
+			'preferred_labels' => array(
+				array(
+					"locale" => "en_US",
+					"name" => "Test Image",
+				),
 			),
 		));
 
 		$this->assertGreaterThan(0, $vn_object_id);
 
-		$vn_room_id = $this->addTestRecord('ca_storage_locations', array(
+		$vn_occurrence_id = $this->addTestRecord('ca_occurrences', array(
 			'intrinsic_fields' => array(
-				'type_id' => 'room',
+				'type_id' => 'event',
+				'idno' => 'foo',
 			),
 			'preferred_labels' => array(
 				array(
 					"locale" => "en_US",
-					"name" => "My Room",
-				),
-			),
-		));
-
-		$this->assertGreaterThan(0, $vn_room_id);
-
-		$vn_cabinet_id = $this->addTestRecord('ca_storage_locations', array(
-			'intrinsic_fields' => array(
-				'type_id' => 'cabinet',
-				'parent_id' => $vn_room_id,
-			),
-			'preferred_labels' => array(
-				array(
-					"locale" => "en_US",
-					"name" => "My Cabinet",
+					"name" => "Foo",
 				),
 			),
 			'related' => array(
 				'ca_objects' => array(
 					array(
 						'object_id' => $vn_object_id,
-						'type_id' => 'related',
-						'effective_date' => 'January 28 1985'
+						'type_id' => 'depicts',
+						'effective_date' => '2015',
+						'source_info' => 'Me'
 					)
 				),
 			),
 		));
 
-		$this->assertGreaterThan(0, $vn_cabinet_id);
+		$this->assertGreaterThan(0, $vn_occurrence_id);
+
+		$vn_occurrence_id = $this->addTestRecord('ca_occurrences', array(
+			'intrinsic_fields' => array(
+				'type_id' => 'event',
+				'idno' => 'bar',
+			),
+			'preferred_labels' => array(
+				array(
+					"locale" => "en_US",
+					"name" => "Bar",
+				),
+			),
+			'related' => array(
+				'ca_objects' => array(
+					array(
+						'object_id' => $vn_object_id,
+						'type_id' => 'used',
+						'effective_date' => '2015',
+						'source_info' => 'Me'
+					)
+				),
+			),
+		));
+
+		$this->assertGreaterThan(0, $vn_occurrence_id);
 
 		$this->opt_object = new ca_objects($vn_object_id);
-		$this->opt_location = new ca_storage_locations($vn_cabinet_id);
 	}
 	# -------------------------------------------------------
-	public function testGets() {
-		$vm_ret = $this->opt_object->get("ca_objects_x_storage_locations.effective_date");
-		$this->assertEquals('January 28 1985', $vm_ret);
+	public function testInterstitialGet() {
+		$va_rel_ids = $this->opt_object->get('ca_objects_x_occurrences.relation_id', array('returnAsArray' => true));
+		$this->assertEquals(2, sizeof($va_rel_ids));
 
-		$vm_ret = $this->opt_object->get("ca_objects_x_storage_locations.effective_date", array('getDirectDate' => true));
-		$this->assertEquals($vm_ret, '1985.01280000000000000000');
+		$vn_rel_1 = array_shift($va_rel_ids);
+		$t_rel = new ca_objects_x_occurrences($vn_rel_1);
+		$this->assertEquals('Foo', $t_rel->get('ca_occurrences.preferred_labels'));
+		$this->assertEquals('Foo (event)',
+			$t_rel->get('ca_occurrences.preferred_labels', array('template' => '^ca_occurrences.preferred_labels (^ca_occurrences.type_id)'))
+		);
 
-		// try legacy version of same option
-		$vm_ret = $this->opt_object->get("ca_objects_x_storage_locations.effective_date", array('GET_DIRECT_DATE' => true));
-		$this->assertEquals($vm_ret, '1985.01280000000000000000');
-
-		$vm_ret = $this->opt_object->get('ca_storage_locations.hierarchy.preferred_labels.name', array('hierarchyDelimiter' => ' / '));
-		$this->assertEquals('My Room / My Cabinet', $vm_ret);
+		$vn_rel_2 = array_shift($va_rel_ids);
+		$t_rel = new ca_objects_x_occurrences($vn_rel_2);
+		$this->assertEquals('Bar', $t_rel->get('ca_occurrences.preferred_labels'));
+		$this->assertEquals('Bar (event)',
+			$t_rel->get('ca_occurrences.preferred_labels', array('template' => '^ca_occurrences.preferred_labels (^ca_occurrences.type_id)'))
+		);
 	}
 	# -------------------------------------------------------
 }
