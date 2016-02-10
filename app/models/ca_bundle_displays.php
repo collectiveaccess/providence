@@ -1831,9 +1831,6 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		
 		$pa_options['restrictToRelationshipTypes'] = 	caGetOption('restrict_to_relationship_types', $va_settings, null);
 		$pa_options['restrictToTypes'] =				caGetOption('restrict_to_types', $va_settings, null);
-		$pa_options['removeFirstItems'] =				caGetOption('remove_first_items', $va_settings, null);
-		$pa_options['hierarchyDirection'] =				caGetOption('hierarchy_order', $va_settings, null);
-		$pa_options['hierarchyDelimiter'] =				caGetOption('hierarchical_delimiter', $va_settings, null);
 		
 		unset($pa_options['format']);	// don't pass format strings to get() here
 		if ((sizeof($va_bundle_bits) == 1) || ((sizeof($va_bundle_bits) == 2) && ($va_bundle_bits[1] == 'related'))) {
@@ -1901,9 +1898,6 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			}
 		} else {
 			// Straight get
-			if(caGetOption(array('showHierarchy', 'show_hierarchy'), $pa_options, false) && (sizeof($va_bundle_bits) == 1)) {
-				$va_bundle_bits[] = 'hierarchy.preferred_labels.name';
-			}
 			$vs_val = $po_result->get(join(".", $va_bundle_bits), $pa_options);
 		}
 		

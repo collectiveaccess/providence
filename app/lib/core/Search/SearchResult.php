@@ -96,7 +96,7 @@ class SearchResult extends BaseObject {
 
 	# ------------------------------------------------------------------
 	private $opb_disable_get_with_template_prefetch = false;
-	private $opa_template_prefetch_cache = array();
+	static $s_template_prefetch_cache;
 	# ------------------------------------------------------------------
 
 	public static function clearCaches() {
@@ -111,6 +111,7 @@ class SearchResult extends BaseObject {
 		self::$opa_hierarchy_children_prefetch_cache_index = array();
 		self::$opa_hierarchy_siblings_prefetch_cache = array();
 		self::$opa_hierarchy_siblings_prefetch_cache_index = array();
+		self::$s_template_prefetch_cache = array();
 	}
 
 	public function __construct($po_engine_result=null, $pa_tables=null) {
@@ -158,7 +159,7 @@ class SearchResult extends BaseObject {
 		
 		$this->opo_tep = $GLOBALS["_DbResult_time_expression_parser"];
 		
-		$this->opa_template_prefetch_cache = array();
+		if (!is_array(self::$s_template_prefetch_cache)) { self::$s_template_prefetch_cache = array(); }
 	}
 	# ------------------------------------------------------------------
 	public function cloneInit() {
@@ -879,7 +880,6 @@ class SearchResult extends BaseObject {
 	 *			removeFirstItems = Number of levels from top of hierarchy before returning. [Default is null]
 	 *			hierarchyDirection = Order in which to return hierarchical levels. Set to either "asc" or "desc". "Asc"ending returns hierarchy beginning with the root; "desc"ending begins with the child furthest from the root. [Default is asc]
  	 *			allDescendants = Return all items from the full depth of the hierarchy when fetching children. By default only immediate children are returned. [Default is false]
-	 * 			hierarchyDelimiter = Characters to place in between separate hiearchy levels. Defaults to the 'delimiter' option.
  	 *
 	 *		[Front-end access control]		
 	 *			checkAccess = Array of access values to filter returned values on. Available for any table with an "access" field (ca_objects, ca_entities, etc.). If omitted no filtering is performed. [Default is null]
@@ -915,7 +915,6 @@ class SearchResult extends BaseObject {
 		$vb_return_all_locales 				= isset($pa_options['returnAllLocales']) ? (bool)$pa_options['returnAllLocales'] : false;
 
 		$vs_delimiter 						= isset($pa_options['delimiter']) ? $pa_options['delimiter'] : ';';
-		$vs_hierarchical_delimiter 			= isset($pa_options['hierarchyDelimiter']) ? $pa_options['hierarchyDelimiter'] : $vs_delimiter;
 		$vb_unserialize 					= isset($pa_options['unserialize']) ? (bool)$pa_options['unserialize'] : false;
 		
 		$vb_return_url 						= isset($pa_options['returnURL']) ? (bool)$pa_options['returnURL'] : false;
@@ -1057,7 +1056,7 @@ class SearchResult extends BaseObject {
 						if ($vm_val) { $va_hiers[] = $vb_return_as_array ? array_shift($vm_val) : $vm_val; }
 					}
 					
-					$vm_val = $vb_return_as_array ? $va_hiers : join($vs_hierarchical_delimiter, $va_hiers);
+					$vm_val = $vb_return_as_array ? $va_hiers : join($vs_delimiter, $va_hiers);
 					goto filter;
 					break;
 				case 'hierarchy':
@@ -1130,7 +1129,7 @@ class SearchResult extends BaseObject {
 								
 								if ($vs_hierarchy_direction === 'asc') { $va_hier_ids = array_reverse($va_hier_ids); }
 							}
-							$vm_val = $vb_return_as_array ?  $va_hier_ids : join($vs_hierarchical_delimiter, $va_hier_ids);
+							$vm_val = $vb_return_as_array ?  $va_hier_ids : join($vs_delimiter, $va_hier_ids);
 							goto filter;
 						} else {
 							$vs_field_spec = join('.', array_values($va_path_components['components']));
@@ -1176,7 +1175,7 @@ class SearchResult extends BaseObject {
 							$va_acc = $this->_flattenArray($va_hier_item, $pa_options);
 						}
 					}
-					$vm_val = $pa_options['returnAsArray'] ? $va_acc : join($vs_hierarchical_delimiter, $va_acc);
+					$vm_val = $pa_options['returnAsArray'] ? $va_acc : join($vs_delimiter, $va_acc);
 					goto filter;
 					break;
 				case 'children':
@@ -1224,7 +1223,7 @@ class SearchResult extends BaseObject {
 					}
 					
 					if (!$vb_return_as_array) { 
-						return join($vs_hierarchical_delimiter, $va_hier_list);
+						return join($vs_delimiter, $va_hier_list);
 					}
 					$vm_val = $va_hier_list;
 					goto filter;
@@ -1275,7 +1274,7 @@ class SearchResult extends BaseObject {
 					}
 					
 					if (!$vb_return_as_array) { 
-						$vm_val = join($vs_hierarchical_delimiter, $va_hier_list);
+						$vm_val = join($vs_delimiter, $va_hier_list);
 						goto filter;
 					}
 					$vm_val = $va_hier_list;
@@ -2164,11 +2163,11 @@ class SearchResult extends BaseObject {
 		// the assumption is that if you run getWithTemplate for the current row, you'll probably run it for the next bunch of rows too
 		// since running caProcessTemplateForIDs for every single row is slow, we prefetch a set number of rows here
 		$vs_cache_base_key = $this->getCacheKeyForGetWithTemplate($ps_template, $pa_options);
-		if(!isset($this->opa_template_prefetch_cache[$vs_cache_base_key][$vn_cur_row = $this->opo_engine_result->currentRow()])) {
+		if(!isset(self::$s_template_prefetch_cache[$vs_cache_base_key][$vn_cur_row = $this->opo_engine_result->currentRow()])) {
 			$this->prefetchForGetWithTemplate($ps_template, $pa_options);
 		}
 
-		return $this->opa_template_prefetch_cache[$vs_cache_base_key][$vn_cur_row];
+		return self::$s_template_prefetch_cache[$vs_cache_base_key][$vn_cur_row];
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -2183,16 +2182,23 @@ class SearchResult extends BaseObject {
 
 		// if we're at the first hit, we don't need to offset the cache keys, so we can use $va_vals as-is
 		if(($vn_cur_row = $this->opo_engine_result->currentRow()) == 0) {
-			$this->opa_template_prefetch_cache[$vs_cache_base_key] = array_values($va_vals);
+			self::$s_template_prefetch_cache[$vs_cache_base_key] = array_values($va_vals);
 		} else {
 			// this is kind of slow but we hope that users usually pull when the ptr is still at the first result
 			// I tried messing around with array_walk instead of this loop but that doesn't gain us much, and this is way easier to read
 			$vn_i = 0;
 			foreach($va_vals as $vs_val) {
-				$this->opa_template_prefetch_cache[$vs_cache_base_key][$vn_cur_row + $vn_i] = $vs_val;
+				self::$s_template_prefetch_cache[$vs_cache_base_key][$vn_cur_row + $vn_i] = $vs_val;
 				$vn_i++;
 			}
 		}
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public static function clearGetWithTemplatePrefetch() {
+		self::$s_template_prefetch_cache = array();
 	}
 	# ------------------------------------------------------------------
 	/**
