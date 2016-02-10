@@ -78,7 +78,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"audio/x-wav"						=> "wav",
 			"audio/x-wave"						=> "wav",
 			"audio/mp4"							=> "aac",
-			"audio/ogg"							=> "ogg"
+			"audio/ogg"							=> "ogg",
+			"audio/x-flac"						=> "flac"
 		),
 
 		"EXPORT" => array(
@@ -89,7 +90,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"video/x-flv"						=> "flv",
 			"image/png"							=> "png",
 			"image/jpeg"						=> "jpg",
-			"audio/ogg"							=> "ogg"
+			"audio/ogg"							=> "ogg",
+			"audio/x-flac"						=> "flac"
 		),
 
 		"TRANSFORMATIONS" => array(
@@ -136,7 +138,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"audio/mp4"							=> "AAC",
 		"image/png"							=> "PNG",
 		"image/jpeg"						=> "JPEG",
-		"audio/ogg"							=> "Ogg Vorbis"
+		"audio/ogg"							=> "Ogg Vorbis",
+		"audio/x-flac"						=> "FLAC"
 	);
 
 
@@ -336,6 +339,19 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$this->properties["bitrate"] = $input_bitrate = $this->handle["bitrate"];
 					$this->properties["channels"] = $input_channels = $this->handle["audio"]["channels"];
 					$this->properties["sample_frequency"] = $input_sample_frequency = $this->handle["audio"]["sample_rate"];
+					$this->properties["duration"] = $this->handle["playtime_seconds"];
+					break;
+				case 'audio/x-flac':
+					$this->properties["type_specific"] = array();
+
+					$this->properties["audio"] = $this->handle["audio"];
+					$this->properties["bandwidth"] = array("min" => $this->handle["bitrate"], "max" => $this->handle["bitrate"]);
+					
+					$this->properties["getID3_tags"] = array();
+
+					$this->properties["bitrate"] = $input_bitrate = $this->handle["bitrate"];
+					$this->properties["channels"] = $input_channels = $this->handle["audio"]["channels"];
+					$this->properties["sample_frequency"] = $this->handle["audio"]["sample_rate"];
 					$this->properties["duration"] = $this->handle["playtime_seconds"];
 					break;
 				case 'audio/x-wav':
@@ -773,6 +789,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 				# ------------------------------------------------
 			case 'audio/mp4':
 			case 'audio/x-aiff':
+			case 'audio/x-flac':
 			case 'audio/x-wav':
 				$name = $pa_options["name"] ? $pa_options["name"] : "mp3player";
 
