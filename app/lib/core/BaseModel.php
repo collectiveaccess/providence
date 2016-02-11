@@ -932,11 +932,13 @@ class BaseModel extends BaseObject {
 				//
 				// Convert foreign keys and choice list values to display text is needed
 				//
-				if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && ($vs_list_code = $this->getFieldInfo($ps_field,"LIST_CODE"))) {
-					$t_list = new ca_lists();
-					$vs_prop = $t_list->getItemFromListForDisplayByItemID($vs_list_code, $vs_prop);
-				} else {
-					if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && ($vs_list_code = $this->getFieldInfo($ps_field,"LIST"))) {
+				$pb_convert_to_display_text = caGetOption('convertCodesToDisplayText', $pa_options, false);
+				$pb_convert_to_idno = caGetOption('convertCodesToIdno', $pa_options, false);
+				if($pb_convert_to_display_text) {
+					if ($vs_list_code = $this->getFieldInfo($ps_field,"LIST_CODE")) {
+						$t_list = new ca_lists();
+						$vs_prop = $t_list->getItemFromListForDisplayByItemID($vs_list_code, $vs_prop);
+					} elseif ($vs_list_code = $this->getFieldInfo($ps_field,"LIST")) {
 						$t_list = new ca_lists();
 						if (!($vs_tmp = $t_list->getItemFromListForDisplayByItemValue($vs_list_code, $vs_prop))) {
 							if ($vs_tmp = $this->getChoiceListValue($ps_field, $vs_prop)) {
@@ -945,22 +947,25 @@ class BaseModel extends BaseObject {
 						} else {
 							$vs_prop = $vs_tmp;
 						}
-					} else {
-						if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && ($ps_field === 'locale_id') && ((int)$vs_prop > 0)) {
-							$t_locale = new ca_locales($vs_prop);
-							$vs_prop = $t_locale->getName();
-						} else {
-							if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && (is_array($va_list = $this->getFieldInfo($ps_field,"BOUNDS_CHOICE_LIST")))) {
-								foreach($va_list as $vs_option => $vs_value) {
-									if ($vs_value == $vs_prop) {
-										$vs_prop = $vs_option;
-										break;
-									}
-								}
+					} elseif(($ps_field === 'locale_id') && ((int)$vs_prop > 0)) {
+						$t_locale = new ca_locales($vs_prop);
+						$vs_prop = $t_locale->getName();
+					} elseif(is_array($va_list = $this->getFieldInfo($ps_field,"BOUNDS_CHOICE_LIST"))) {
+						foreach($va_list as $vs_option => $vs_value) {
+							if ($vs_value == $vs_prop) {
+								$vs_prop = $vs_option;
+								break;
 							}
 						}
 					}
+				} elseif($pb_convert_to_idno) {
+					if ($vs_list_code = $this->getFieldInfo($ps_field,"LIST_CODE")) {
+						$vs_prop = caGetListItemIdno($vs_prop);
+					} elseif ($vs_list_code = $this->getFieldInfo($ps_field,"LIST")) {
+						$vs_prop = caGetListItemIdno(caGetListItemIDForValue($vs_list_code, $vs_prop));
+					}
 				}
+
 				if (
 					(isset($pa_options["CONVERT_HTML_BREAKS"]) && ($pa_options["CONVERT_HTML_BREAKS"]))
 					||
@@ -11281,6 +11286,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *		purify = process text with HTMLPurifier before search. Purifier encodes &, < and > characters, and performs other transformations that can cause searches on literal text to fail. If you are purifying all input (the default) then leave this set true. [Default is true]
 	 *		purifyWithFallback = executes the search with "purify" set and falls back to search with unpurified text if nothing is found. [Default is false]
 	 *		checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for <table_name>.hierarchy.preferred_labels and <table_name>.children.preferred_labels because these returns sets of items. For <table_name>.parent.preferred_labels, which returns a single row at most, you should do access checking yourself. (Everything here applies equally to nonpreferred_labels)
+ 	 *		restrictToTypes = Restrict returned items to those of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]			 
  	 *
 	 * @return mixed Depending upon the returnAs option setting, an array, subclass of BaseModel or integer may be returned.
 	 */
@@ -11310,6 +11316,16 @@ $pa_options["display_form_field_tips"] = true;
 		if ($vb_purify) { $pa_values = caPurifyArray($pa_values); }
 		
 		$va_sql_params = array();
+		
+		
+		$vs_type_restriction_sql = '';
+		if ($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) {
+			if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types)) && sizeof($va_restrict_to_types)) {
+				$vs_type_restriction_sql = " {$vs_table}.".$t_instance->getTypeFieldName()." IN (?) AND ";
+				$va_sql_params[] = $va_restrict_to_types;
+			}
+		}
+			
 		
 		//
 		// Convert type id
@@ -11410,7 +11426,7 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		$vs_deleted_sql = ($t_instance->hasField('deleted')) ? '(deleted = 0) AND ' : '';
-		$vs_sql = "SELECT * FROM {$vs_table} WHERE {$vs_deleted_sql} (".join(" {$ps_boolean} ", $va_sql_wheres).")";
+		$vs_sql = "SELECT * FROM {$vs_table} WHERE {$vs_type_restriction_sql} {$vs_deleted_sql} (".join(" {$ps_boolean} ", $va_sql_wheres).")";
 		
 		$vs_orderby = '';
 		if ($vs_sort = caGetOption('sort', $pa_options, null)) {

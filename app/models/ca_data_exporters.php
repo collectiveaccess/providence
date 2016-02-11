@@ -1721,6 +1721,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_get_options['convertCodesToIdno'] = true;				// if display text is not requested try to return list item idno's... since underlying integer ca_list_items.item_id values are unlikely to be useful in an export context
 		}
 
+		if($t_exporter_item->getSetting('convertCodesToIdno')) {
+			$va_get_options['convertCodesToIdno'] = true;
+		}
+
 		if($t_exporter_item->getSetting('returnIdno')) {
 			$va_get_options['returnIdno'] = true;
 		}

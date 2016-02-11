@@ -179,6 +179,8 @@ class MultipartIDNumber extends IDNumber {
 		$va_elements = $this->opa_formats[$vs_format][$vs_type]['elements'];
 		
 		if (!is_null($pn_index) && isset($va_elements[$pn_index])) { $va_elements = array($va_elements[$pn_index]); }
+
+		if(!is_array($va_elements)) { return false; }
 		
 		if (caGetOption('checkLastElementOnly', $pa_options, false)) { 
 			$va_last_element = array_pop($va_elements);
