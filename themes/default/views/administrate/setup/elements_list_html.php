@@ -63,7 +63,7 @@ $va_attribute_types = $this->getVar('attribute_types');
 			<th>
 				<?php _p('Usage in UI'); ?>
 			</th>
-			<th class="{sorter: false} list-header-nosort" style="width: 40px">&nbsp;</th>
+			<th class="{sorter: false} list-header-nosort listtableEdit"> </th>
 		</tr>
 		</thead>
 		<tbody>
@@ -112,15 +112,11 @@ $va_attribute_types = $this->getVar('attribute_types');
 	}
 ?>
 			</td>
-			<td>
-				<div class="saveDelete">
-					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), 'editIcon', 'administrate/setup', 'Elements', 'Edit', array('element_id' => $va_element['element_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-					<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'deleteIcon', 'administrate/setup', 'Elements', 'Delete', array('element_id' => $va_element['element_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-				</div>
+			<td class="listtableEdit">
+				<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), 'editIcon', 'administrate/setup', 'Elements', 'Edit', array('element_id' => $va_element['element_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 			</td>
 		</tr>
 <?php
-		TooltipManager::add('.deleteIcon', _t("Delete"));
 		TooltipManager::add('.editIcon', _t("Edit"));
 	}
 ?>

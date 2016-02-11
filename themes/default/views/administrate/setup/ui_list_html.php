@@ -69,7 +69,7 @@ $vs_type_menu = '<div class="sf-small-menu form-header-button rounded">'.
 			<th>
 				<?php _p('System?'); ?>
 			</th>
-			<th class="{sorter: false} list-header-nosort">&nbsp;</th>
+			<th class="{sorter: false} list-header-nosort listtableEdit"> </th>
 		</tr>
 		</thead>
 		<tbody>
@@ -89,7 +89,7 @@ $vs_type_menu = '<div class="sf-small-menu form-header-button rounded">'.
 			<td>
 				<?php print $va_ui['is_system_ui'] ? _t('Yes') : _t('No'); ?>
 			</td>
-			<td>
+			<td class="listtableEdit">
 				<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'administrate/setup/interface_editor', 'InterfaceEditor', 'Edit', array('ui_id' => $va_ui['ui_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 			</td>
 		</tr>
