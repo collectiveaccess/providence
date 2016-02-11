@@ -81,7 +81,7 @@
 				<th class="list-header-unsorted">
 					<?php print _t('Status'); ?>
 				</th>
-				<th class="{sorter: false} list-header-nosort" >&nbsp;</th>
+				<th class="{sorter: false} list-header-nosort listtableEditDelete"> </th>
 			</tr>
 		</thead>
 		<tbody>
@@ -120,11 +120,9 @@
 				<td>
 					<div><?php print $t_set->getChoiceListValue('status', $va_set['status']); ?></div>
 				</td>
-				<td >
-					<div class="saveDelete">
-						<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), 'editIcon', 'manage/sets', 'SetEditor', 'Edit', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-						<?php ($va_set['can_delete'] == TRUE) ? print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'deleteIcon', 'manage/sets', 'SetEditor', 'Delete', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : ''; ?>
-					</div>
+				<td class="listtableEditDelete">
+					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/sets', 'SetEditor', 'Edit', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")); ?>
+					<?php ($va_set['can_delete'] == TRUE) ? print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/sets', 'SetEditor', 'Delete', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")) : ''; ?>
 				</td>
 			</tr>
 <?php

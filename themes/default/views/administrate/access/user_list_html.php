@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,13 +48,11 @@
 <?php
 	if(sizeof($va_user_list)){	
 ?>	
-		<a href='#' id='showTools' style="float:left;margin-top:10px;" onclick='jQuery("#searchToolsBox").slideDown(250); jQuery("#showTools").hide(); return false;'><?php print caNavIcon(__CA_NAV_ICON_SETTINGS__, 1);?></a>
+		<a href='#' id='showTools' style="float:left;margin-top:10px;" onclick='jQuery("#searchToolsBox").slideDown(250); jQuery("#showTools").hide(); return false;'><?php print caNavIcon(__CA_NAV_ICON_SETTINGS__, "24px");?></a>
 <?php
 		print $this->render('user_tools_html.php');
 	}
 ?>
-	
-		
 		<table id="caUserList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
 			<thead>
 				<tr>
@@ -73,7 +71,7 @@
 					<th class="list-header-unsorted">
 						<?php print _t('Last login'); ?>
 					</th>
-					<th class="{sorter: false} list-header-nosort">&nbsp;</th>
+					<th class="{sorter: false} list-header-nosort listtableEditDelete"></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -100,9 +98,9 @@
 				<td>
 					<?php print ($va_user['last_login'] > 0) ? $o_tep->getText() : '-'; ?>
 				</td>
-				<td class="saveDelete">
-					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), 'list-icon', 'administrate/access', 'Users', 'Edit', array('user_id' => $va_user['user_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-					<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'list-icon', 'administrate/access', 'Users', 'Delete', array('user_id' => $va_user['user_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+				<td class="listtableEditDelete">
+					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'administrate/access', 'Users', 'Edit', array('user_id' => $va_user['user_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => '0px')); ?>
+					<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/access', 'Users', 'Delete', array('user_id' => $va_user['user_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => '0px')); ?>
 				</td>
 			</tr>
 <?php

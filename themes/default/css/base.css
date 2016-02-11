@@ -1637,6 +1637,18 @@ table.listtable tr, table.listtable tr td, table.listtable tr th {
 	border: 1px solid #ccc;
 }
 
+.listtableEdit {
+	width: 16px;
+	text-align: center;
+	padding: 3px !important;
+}
+
+.listtableEditDelete {
+	width: 36px;
+	text-align: center;
+	padding: 3px !important;
+}
+
 #caWatchedItemsList.listtable {
 	font-size:12px;
 } 
@@ -4083,6 +4095,7 @@ h2.browse {
 	text-decoration:none;
 	padding-right: 5px;
 	white-space: nowrap;
+	color: #000;
 }
 #browseFacetGroupingControls {
 	font-family: 'DIN-Regular', helvetica, sans-serif;
@@ -4095,7 +4108,7 @@ h2.browse {
 .blueDivide {
 	width:100%;
 	height:2px;
-	background-color: #1ab3c8;
+	background-color: #ddd;
 	clear:both;
 	margin-bottom:10px;
 }
@@ -4129,7 +4142,7 @@ div.browseSelectPanelListGroupHeading {
 	padding-top: 5px;
 	margin-bottom: 10px;
 	font-family: 'DIN-Regular', helvetica, sans-serif;
-	background-color: #1ab3c8;
+	background-color: #ddd;
 	padding-left: 10px;
 	border-radius: 4px;
 	-moz-border-radius: 4px;
