@@ -932,11 +932,13 @@ class BaseModel extends BaseObject {
 				//
 				// Convert foreign keys and choice list values to display text is needed
 				//
-				if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && ($vs_list_code = $this->getFieldInfo($ps_field,"LIST_CODE"))) {
-					$t_list = new ca_lists();
-					$vs_prop = $t_list->getItemFromListForDisplayByItemID($vs_list_code, $vs_prop);
-				} else {
-					if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && ($vs_list_code = $this->getFieldInfo($ps_field,"LIST"))) {
+				$pb_convert_to_display_text = caGetOption('convertCodesToDisplayText', $pa_options, false);
+				$pb_convert_to_idno = caGetOption('convertCodesToIdno', $pa_options, false);
+				if($pb_convert_to_display_text) {
+					if ($vs_list_code = $this->getFieldInfo($ps_field,"LIST_CODE")) {
+						$t_list = new ca_lists();
+						$vs_prop = $t_list->getItemFromListForDisplayByItemID($vs_list_code, $vs_prop);
+					} elseif ($vs_list_code = $this->getFieldInfo($ps_field,"LIST")) {
 						$t_list = new ca_lists();
 						if (!($vs_tmp = $t_list->getItemFromListForDisplayByItemValue($vs_list_code, $vs_prop))) {
 							if ($vs_tmp = $this->getChoiceListValue($ps_field, $vs_prop)) {
@@ -945,22 +947,25 @@ class BaseModel extends BaseObject {
 						} else {
 							$vs_prop = $vs_tmp;
 						}
-					} else {
-						if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && ($ps_field === 'locale_id') && ((int)$vs_prop > 0)) {
-							$t_locale = new ca_locales($vs_prop);
-							$vs_prop = $t_locale->getName();
-						} else {
-							if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && (is_array($va_list = $this->getFieldInfo($ps_field,"BOUNDS_CHOICE_LIST")))) {
-								foreach($va_list as $vs_option => $vs_value) {
-									if ($vs_value == $vs_prop) {
-										$vs_prop = $vs_option;
-										break;
-									}
-								}
+					} elseif(($ps_field === 'locale_id') && ((int)$vs_prop > 0)) {
+						$t_locale = new ca_locales($vs_prop);
+						$vs_prop = $t_locale->getName();
+					} elseif(is_array($va_list = $this->getFieldInfo($ps_field,"BOUNDS_CHOICE_LIST"))) {
+						foreach($va_list as $vs_option => $vs_value) {
+							if ($vs_value == $vs_prop) {
+								$vs_prop = $vs_option;
+								break;
 							}
 						}
 					}
+				} elseif($pb_convert_to_idno) {
+					if ($vs_list_code = $this->getFieldInfo($ps_field,"LIST_CODE")) {
+						$vs_prop = caGetListItemIdno($vs_prop);
+					} elseif ($vs_list_code = $this->getFieldInfo($ps_field,"LIST")) {
+						$vs_prop = caGetListItemIdno(caGetListItemIDForValue($vs_list_code, $vs_prop));
+					}
 				}
+
 				if (
 					(isset($pa_options["CONVERT_HTML_BREAKS"]) && ($pa_options["CONVERT_HTML_BREAKS"]))
 					||
