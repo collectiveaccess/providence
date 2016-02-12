@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -57,7 +57,7 @@ var caUI = caUI || {};
 			}
 
 			that.bundleStates[id] = bundleState;
-			that.bundleDictionaryStates[id] = (that.cookieJar.get(id + 'DictionaryEntry') == 'open') ? 'closed' : 'open';	// default to closed
+			that.bundleDictionaryStates[id] = (that.cookieJar.get(id + 'DictionaryEntry') == 'open') ? 'open' : 'closed';	// default to closed
 
 			// actually open/close elements
 			if (that.bundleStates[id] == 'closed') {

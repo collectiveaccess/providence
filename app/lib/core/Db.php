@@ -94,9 +94,9 @@ class Db extends DbBase {
 	 *
 	 * @param string $ps_config_file_path Not used
 	 * @param array $pa_options Database options like username, pw, host, etc - if ommitted, it is fetched from configuration file
-	 * @param bool $pb_die_on_error optional, default is true
+	 * @param bool $pb_die_on_error optional, default is false
 	 */
-	public function __construct($ps_config_file_path="", $pa_options=null, $pb_die_on_error=true) {
+	public function __construct($ps_config_file_path="", $pa_options=null, $pb_die_on_error=false) {
 		$this->config = Configuration::load();
 		$this->datamodel = Datamodel::load();
 

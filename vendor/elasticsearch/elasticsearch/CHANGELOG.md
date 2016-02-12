@@ -1,3 +1,99 @@
+## Release 2.1.4
+- Fix the host path handling [[15b5be3]](http://github.com/elasticsearch/elasticsearch-php/commit/15b5be3)
+- fix body setter in bulk endpoint [[fa283ea]](http://github.com/elasticsearch/elasticsearch-php/commit/fa283ea)
+- add support for generators and iterators in bulk endpoint [[b3d951e]](http://github.com/elasticsearch/elasticsearch-php/commit/b3d951e)
+
+### Testing
+- travis: drop PHP 7.0 from allowed failures, it passes well [[be5e710]](http://github.com/elasticsearch/elasticsearch-php/commit/be5e710)
+
+
+## Release 2.1.3
+- Fix bug where ping() and sniff() encounter NPE [[61ba0c5]](http://github.com/elasticsearch/elasticsearch-php/commit/61ba0c5)
+- Add Indices/ForceMerge endpoint  [[4934583]](http://github.com/elasticsearch/elasticsearch-php/commit/4934583) [[6d61880]](http://github.com/elasticsearch/elasticsearch-php/commit/6d61880) [[58e63d7]](http://github.com/elasticsearch/elasticsearch-php/commit/58e63d7) [[dcd8833]](http://github.com/elasticsearch/elasticsearch-php/commit/dcd8833)
+- Add Cat/Snapshots endpoint [[efa0e49]](http://github.com/elasticsearch/elasticsearch-php/commit/efa0e49)
+- Add Cat/Repositories endpoint [[0c32b20]](http://github.com/elasticsearch/elasticsearch-php/commit/0c32b20)
+- Add Cat/NodeAttrs endpoint [[724d64b]](http://github.com/elasticsearch/elasticsearch-php/commit/724d64b) [[4c3bde3]](http://github.com/elasticsearch/elasticsearch-php/commit/4c3bde3)
+- Implement \Countable interface for Scroll Helper. [[013a1c7]](http://github.com/elasticsearch/elasticsearch-php/commit/013a1c7) [[17a929f]](http://github.com/elasticsearch/elasticsearch-php/commit/17a929f) [[272429a]](http://github.com/elasticsearch/elasticsearch-php/commit/272429a) [[55f4c0c]](http://github.com/elasticsearch/elasticsearch-php/commit/55f4c0c)
+- Allows overwriting setters invoked from ClientBuilder::fromConfig method. [[08ac47c]](http://github.com/elasticsearch/elasticsearch-php/commit/08ac47c)
+- When using connectionPool setter through ClientBuilder::fromConfig() method, connectionPoolArgs were automatically set to null causing AbstractConnectionPool to throw exception on null parameter. [[0b25033]](http://github.com/elasticsearch/elasticsearch-php/commit/0b25033)
+- Ignore 404 for already cleared scroll_ids in SearchResponseIterator [[266aac4]](http://github.com/elasticsearch/elasticsearch-php/commit/266aac4)
+- Add 'wait_if_ongoing' to Indices/Flush whitelist [[7b9cf8c]](http://github.com/elasticsearch/elasticsearch-php/commit/7b9cf8c)
+- Set randomizeHosts = true by default [[dc91938]](http://github.com/elasticsearch/elasticsearch-php/commit/dc91938)
+- Update Cat/Shards whitelist [[fe1dbe8]](http://github.com/elasticsearch/elasticsearch-php/commit/fe1dbe8)
+
+### Documentation
+- PHPdoc fix: Exists endpoint returns bool or array [[d70acbf]](http://github.com/elasticsearch/elasticsearch-php/commit/d70acbf)
+- fixed wrong return param in phpdoc [[56a1107]](http://github.com/elasticsearch/elasticsearch-php/commit/56a1107)
+- Fix formatting [[c548337]](http://github.com/elasticsearch/elasticsearch-php/commit/c548337)
+- Update CatNamespace.php [[22cb3dc]](http://github.com/elasticsearch/elasticsearch-php/commit/22cb3dc)
+
+### Testing
+- [TEST] Update skiplist [[22e7cc5]](http://github.com/elasticsearch/elasticsearch-php/commit/22e7cc5)
+- [TRAVIS] Add node attribute for nodeattr tests [[0aa9638]](http://github.com/elasticsearch/elasticsearch-php/commit/0aa9638)
+- [TEST] cleanup cat repos [[bed0338]](http://github.com/elasticsearch/elasticsearch-php/commit/bed0338)
+- [Travis] update snapshot handling [[1e6fa0c]](http://github.com/elasticsearch/elasticsearch-php/commit/1e6fa0c)
+
+## Release 2.1.2
+
+- Remove IntrospectionProcessor from default to make logs less noisy [[0a80de4]](http://github.com/elasticsearch/elasticsearch-php/commit/0a80de4)
+- Remove redundant logging on failure [[f31a211]](http://github.com/elasticsearch/elasticsearch-php/commit/f31a211)
+
+## Release 2.1.1
+
+- More robust error logging during connection failure / retries [[0069fd6]](http://github.com/elasticsearch/elasticsearch-php/commit/0069fd6)
+
+## Release 2.1.0
+- Log failure when encountering non-retry hard curl exception [[8e7e03f]](http://github.com/elasticsearch/elasticsearch-php/commit/8e7e03f)
+- Embed a MaxRetriesException inside a TransportException when thrown due to retries [[deff12f]](http://github.com/elasticsearch/elasticsearch-php/commit/deff12f)
+- Add a SimpleConnectionPool [[4a3df40]](http://github.com/elasticsearch/elasticsearch-php/commit/4a3df40)
+- If body is null/empty, return string instead of trying to decode [[c4f9d41]](http://github.com/elasticsearch/elasticsearch-php/commit/c4f9d41)
+- Accept `field` on GetFieldMapping endpoint for bwc [[6ecf35e]](http://github.com/elasticsearch/elasticsearch-php/commit/6ecf35e)
+- Fix typo in GetFieldMapping endpoint (field -> fields) [[2b323c4]](http://github.com/elasticsearch/elasticsearch-php/commit/2b323c4)
+- Ping should return false on Transport/Connection errors [[699d9dd]](http://github.com/elasticsearch/elasticsearch-php/commit/699d9dd)
+
+### Documentation Related
+- [Docs] Clarify NoNodesAvailableException [[c0d6332]](http://github.com/elasticsearch/elasticsearch-php/commit/c0d6332)
+- [Docs] Fix missing code block [[6793ad4]](http://github.com/elasticsearch/elasticsearch-php/commit/6793ad4)
+- [Docs] Fix connection pool configuration docs [[26edc73]](http://github.com/elasticsearch/elasticsearch-php/commit/26edc73)
+- [Docs] Add docs about per-request timeouts [[d5be83f]](http://github.com/elasticsearch/elasticsearch-php/commit/d5be83f)
+- [Docs] Add missing subtitle [[22b51af]](http://github.com/elasticsearch/elasticsearch-php/commit/22b51af)
+- [Docs] add elasticsearcher to Community page [[b3dd9a2]](http://github.com/elasticsearch/elasticsearch-php/commit/b3dd9a2)
+- Update readme about versions [[8ad7709]](http://github.com/elasticsearch/elasticsearch-php/commit/8ad7709)
+- Remove accidentally added log file [[0f43a5c]](http://github.com/elasticsearch/elasticsearch-php/commit/0f43a5c)
+
+### Travis and Testing Related
+- Blacklist old 0.4 branch from travis [[ea8f775]](http://github.com/elasticsearch/elasticsearch-php/commit/ea8f775)
+- [Travis] Add 2.1 to travis matrix [[2f6d20f]](http://github.com/elasticsearch/elasticsearch-php/commit/2f6d20f)
+- Update crud.asciidoc [[4a679b7]](http://github.com/elasticsearch/elasticsearch-php/commit/4a679b7)
+- Readme: Travis badge added [[dce31b3]](http://github.com/elasticsearch/elasticsearch-php/commit/dce31b3)
+- [TESTS] Small tweak to make test runner PHP-7 compatible [[47ae254]](http://github.com/elasticsearch/elasticsearch-php/commit/47ae254)
+- [TESTS] temporary fix for cleaning up repos after tests [[d56da4b]](http://github.com/elasticsearch/elasticsearch-php/commit/d56da4b)
+- travis: add path.repo to config [[6576184]](http://github.com/elasticsearch/elasticsearch-php/commit/6576184)
+- [TESTS] Clear snapshots [[680cb90]](http://github.com/elasticsearch/elasticsearch-php/commit/680cb90)
+- [TESTS] Simplify exception matching and handling [[eba21eb]](http://github.com/elasticsearch/elasticsearch-php/commit/eba21eb)
+- Add RequestTimeout408 exception [[9d70653]](http://github.com/elasticsearch/elasticsearch-php/commit/9d70653)
+- [TESTS] debug output tweaks [[9276e5e]](http://github.com/elasticsearch/elasticsearch-php/commit/9276e5e)
+- travis: update version matrix [[6d47211]](http://github.com/elasticsearch/elasticsearch-php/commit/6d47211)
+- [TESTS] use multiHandler() in tests, since singleHandler is not available in older versions of PHP [[e7fa5c8]](http://github.com/elasticsearch/elasticsearch-php/commit/e7fa5c8)
+- travis: more find, less glob [[604e71a]](http://github.com/elasticsearch/elasticsearch-php/commit/604e71a)
+- travis: more script tweaks [[cca9216]](http://github.com/elasticsearch/elasticsearch-php/commit/cca9216)
+- travis: more script tweaks [[c92a5ad]](http://github.com/elasticsearch/elasticsearch-php/commit/c92a5ad)
+- travis: add repo to config for snapshot tests [[d17f1e1]](http://github.com/elasticsearch/elasticsearch-php/commit/d17f1e1)
+- travis: PHP 5.3 is no longer supported [[9eafee1]](http://github.com/elasticsearch/elasticsearch-php/commit/9eafee1)
+- travis: Just kidding, try glob path instead [[214b0e7]](http://github.com/elasticsearch/elasticsearch-php/commit/214b0e7)
+- travis: hardcode unzipping dir [[fe96602]](http://github.com/elasticsearch/elasticsearch-php/commit/fe96602)
+- travis: flush output of RestSpecRunner [[bcefcff]](http://github.com/elasticsearch/elasticsearch-php/commit/bcefcff)
+- travis: use snapshot builds per-branch instead of release versions [[18e4e72]](http://github.com/elasticsearch/elasticsearch-php/commit/18e4e72)
+- travis: Rest-Spec should be obtained after install [[59546cf]](http://github.com/elasticsearch/elasticsearch-php/commit/59546cf)
+- [Tests] Delete unreliable, bad tests [[31eb9e0]](http://github.com/elasticsearch/elasticsearch-php/commit/31eb9e0)
+- travis: Add util script to ensure cluster is alive before proceeding [[563412a]](http://github.com/elasticsearch/elasticsearch-php/commit/563412a)
+- travis: Use bwc startup options [[a8e63a5]](http://github.com/elasticsearch/elasticsearch-php/commit/a8e63a5)
+- travis: better startup options for Elasticsearch [[d6624a2]](http://github.com/elasticsearch/elasticsearch-php/commit/d6624a2)
+- travis: Set executable flag on shell script [[4b9fbcd]](http://github.com/elasticsearch/elasticsearch-php/commit/4b9fbcd)
+- travis: typo in download shell script name [[3e0141a]](http://github.com/elasticsearch/elasticsearch-php/commit/3e0141a)
+- Remove old, unused submodule [[c6e7570]](http://github.com/elasticsearch/elasticsearch-php/commit/c6e7570)
+- travis: run RestSpecRunner before tests [[5355ec8]](http://github.com/elasticsearch/elasticsearch-php/commit/5355ec8)
+
 ## Release 2.0.3
 - Prefer root_cause reason over the main reason if available [[aa2e313]](http://github.com/elasticsearch/elasticsearch-php/commit/aa2e313)
 - Validate that index/type/id are non-null, non-empty when deleting [[8072aee]](http://github.com/elasticsearch/elasticsearch-php/commit/8072aee)

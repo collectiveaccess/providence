@@ -1,6 +1,4 @@
 /*
-	Date: 12 August 2015
-	Migration: 122
 	Description: Longer rule_code field for ca_metadata_dictionary_rules, and also
 	  don't enforce uniqueness of rule codes globally. Just inside a single entry.
 */

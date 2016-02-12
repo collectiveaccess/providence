@@ -1462,28 +1462,31 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				if (!isset($va_rule['trigger']) || !$va_rule['trigger']) { continue; }
 				if (!isset($va_rule['actions']) || !is_array($va_rule['actions']) || !sizeof($va_rule['actions'])) { continue; }
 
-				$vm_ret = ExpressionParser::evaluate($va_rule['trigger'], $va_row);
-				if (!ExpressionParser::hadError() && (bool)$vm_ret) {
-					foreach($va_rule['actions'] as $va_action) {
-						if (!is_array($va_action) && (strtolower($va_action) == 'skip')) {
-							$va_action = array('action' => 'skip');
-						}
-						
-						switch($vs_action_code = strtolower($va_action['action'])) {
-							case 'set':
-								$va_row[$va_action['target']] = $va_action['value']; // TODO: transform value using mapping rules?
-								break;
-							case 'skip':
-							default:
-								if ($vs_action_code != 'skip') {
-									$o_log->logInfo(_t('Row was skipped using rule "%1" with default action because an invalid action ("%2") was specified', $va_rule['trigger'], $vs_action_code));
-								} else {
-									$o_log->logDebug(_t('Row was skipped using rule "%1" with action "%2"', $va_rule['trigger'], $vs_action_code));
-								}
-								continue(4);
-								break;
+				try {
+					if(ExpressionParser::evaluate($va_rule['trigger'], $va_row)) {
+						foreach($va_rule['actions'] as $va_action) {
+							if (!is_array($va_action) && (strtolower($va_action) == 'skip')) {
+								$va_action = array('action' => 'skip');
+							}
+
+							switch($vs_action_code = strtolower($va_action['action'])) {
+								case 'set':
+									$va_row[$va_action['target']] = $va_action['value']; // TODO: transform value using mapping rules?
+									break;
+								case 'skip':
+								default:
+									if ($vs_action_code != 'skip') {
+										$o_log->logInfo(_t('Row was skipped using rule "%1" with default action because an invalid action ("%2") was specified', $va_rule['trigger'], $vs_action_code));
+									} else {
+										$o_log->logDebug(_t('Row was skipped using rule "%1" with action "%2"', $va_rule['trigger'], $vs_action_code));
+									}
+									continue(4);
+									break;
+							}
 						}
 					}
+				} catch(Exception $e) {
+					$o_log->logError(_t("Expression trigger could not be parsed. Please double-check the syntax! Expression was: %1", $va_rule['trigger']));
 				}
 			}
 			
@@ -2432,7 +2435,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										}
 										break;
 									case 'ca_places':
-										if ($vn_rel_id = DataMigrationUtils::getPlaceID($va_element_data['preferred_labels']['name'], $va_element_data['_parent_id'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
+										if ($vn_rel_id = DataMigrationUtils::getPlaceID($va_element_data['preferred_labels']['name'], $va_element_data['_parent_id'], $va_element_data['_type'], $vn_locale_id, null, $va_data_for_rel_table, array('forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
 											if (!($vs_rel_type = $va_element_data['_relationship_type']) && !($vs_rel_type = $va_element_data['idno']['_relationship_type'])) { break; }
 											$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']), null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
 

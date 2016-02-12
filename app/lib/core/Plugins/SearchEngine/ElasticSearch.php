@@ -79,8 +79,6 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			->setHosts([$this->ops_elasticsearch_base_url])
 			->setRetries(2)
 			->build();
-
-		$this->refreshMapping();
 	}
 	# -------------------------------------------------------
 	/**
@@ -95,9 +93,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * Refresh ElasticSearch mapping if necessary
 	 * @param bool $pb_force force refresh if set to true [default is false]
 	 */
-	protected function refreshMapping($pb_force=false) {
+	public function refreshMapping($pb_force=false) {
 		$o_mapping = new ElasticSearch\Mapping();
-		if($o_mapping->needsRefresh() || $pb_force) {
+		if($o_mapping->needsRefresh() || $pb_force || (defined('__CollectiveAccess_Installer__') && __CollectiveAccess_Installer__)) {
 			try {
 				if(!$this->getClient()->indices()->exists(array('index' => $this->getIndexName()))) {
 					$this->getClient()->indices()->create(array('index' => $this->getIndexName()));
@@ -116,13 +114,13 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				$this->getClient()->indices()->putMapping(array(
 					'index' => $this->getIndexName(),
 					'type' => $vs_table,
-					'body' => array($vs_table => $va_config),
-					'update_all_types' => true
+					'update_all_types' => true,
+					'ignore_conflicts' => true,
+					'body' => array($vs_table => $va_config)
 				));
 			}
 
-			// resets the mapping cache key so that needsRefresh() returns
-			// false for a while, depending on __CA_CACHE_TTL__
+			// resets the mapping cache key so that needsRefresh() returns false for 24h
 			$o_mapping->ping();
 		}
 	}
@@ -222,7 +220,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @param null|int $pn_table_num
 	 * @return bool
 	 */
-	public function truncateIndex($pn_table_num = null) {
+	public function truncateIndex($pn_table_num = null, $pb_dont_refresh = false) {
 		if(!$pn_table_num) {
 			// nuke the entire index
 			try {
@@ -230,7 +228,10 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			} catch(Elasticsearch\Common\Exceptions\Missing404Exception $e) {
 				// noop
 			} finally {
-				$this->refreshMapping(true);
+				if(!$pb_dont_refresh) {
+					$this->refreshMapping(true);
+				}
+
 			}
 		} else {
 			// use scoll API to find all documents in a particular mapping/table and delete them using the bulk API
@@ -296,7 +297,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	}
 	# -------------------------------------------------------
 	public function __destruct() {
-		$this->flushContentBuffer();
+		if(!defined('__CollectiveAccess_Installer__') || !__CollectiveAccess_Installer__) {
+			$this->flushContentBuffer();
+		}
 	}
 	# -------------------------------------------------------
 	/**
@@ -479,6 +482,8 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @throws Elasticsearch\Common\Exceptions\NoNodesAvailableException
 	 */
 	public function flushContentBuffer() {
+		$this->refreshMapping();
+
 		$va_bulk_params = array();
 
 		// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
@@ -557,7 +562,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$this->getClient()->bulk($va_bulk_params);
 
 			// we usually don't need indexing to be available *immediately* unless we're running automated tests of course :-)
-			if(caIsRunFromCLI() && $this->getIndexName()) {
+			if(caIsRunFromCLI() && $this->getIndexName() && (!defined('__CollectiveAccess_IS_REINDEXING__') || !__CollectiveAccess_IS_REINDEXING__)) {
 				$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
 			}
 		}
@@ -582,6 +587,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			$this->getClient()->indices()->putSettings(array(
 					'index' => $this->getIndexName(),
 					'body' => array(
+						'max_result_window' => 2147483647,
 						'analysis' => array(
 							'analyzer' => array(
 								'keyword_lowercase' => array(

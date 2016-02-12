@@ -289,6 +289,7 @@ class RequestHTTP extends Request {
 		} else {
 			$vs_theme = $this->config->get('theme');		// default theme
 		}
+		if (!$vs_theme) { $vs_theme = $this->config->get('theme'); }
 		return $this->config->get('themes_url').'/'.$vs_theme;
 	}
 	# -------------------------------------------------------
@@ -299,6 +300,7 @@ class RequestHTTP extends Request {
 		} else {
 			$vs_theme = $this->config->get('theme');		// default theme
 		}
+		if (!$vs_theme) { $vs_theme = $this->config->get('theme'); }
 		return $this->config->get('themes_directory').'/'.$vs_theme;
 	}
 	# -------------------------------------------------------

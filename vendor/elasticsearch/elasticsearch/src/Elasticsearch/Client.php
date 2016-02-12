@@ -4,6 +4,7 @@ namespace Elasticsearch;
 
 use Elasticsearch\Common\Exceptions\InvalidArgumentException;
 use Elasticsearch\Common\Exceptions\Missing404Exception;
+use Elasticsearch\Common\Exceptions\TransportException;
 use Elasticsearch\Namespaces\CatNamespace;
 use Elasticsearch\Namespaces\ClusterNamespace;
 use Elasticsearch\Namespaces\IndicesNamespace;
@@ -96,7 +97,7 @@ class Client
     /**
      * @param $params array Associative array of parameters
      *
-     * @return array
+     * @return bool
      */
     public function ping($params = [])
     {
@@ -110,6 +111,8 @@ class Client
             $response = $endpoint->setParams($params)->performRequest();
             $endpoint->resultOrFuture($response);
         } catch (Missing404Exception $exception) {
+            return false;
+        } catch (TransportException $exception) {
             return false;
         }
 
@@ -509,7 +512,7 @@ class Client
      *
      * @param $params array Associative array of parameters
      *
-     * @return array
+     * @return array | boolean
      */
     public function exists($params)
     {
