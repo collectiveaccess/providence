@@ -33,6 +33,7 @@ class rwahsDataImporterPlugin extends BaseApplicationPlugin {
 
 	/** @var Configuration */
 	private $opo_config;
+	private $opb_change_log_disabled_checked = false;
 
 	public function __construct($ps_plugin_path) {
 		parent::__construct();
@@ -76,13 +77,16 @@ class rwahsDataImporterPlugin extends BaseApplicationPlugin {
 
 
 	private function _disableChangeLogForMappings( $pa_params ) {
-		if(!defined('__CA_DONT_LOG_CHANGES__')){
-			/** @var ca_data_importers $vo_mapping */
-			$vo_mapping = $pa_params['mapping'];
-			$va_mappings_to_disable = $this->opo_config->getList('disableChangeLogForImports');
-			if ($vo_mapping && in_array($vo_mapping->get('importer_code'), $va_mappings_to_disable)){
-				define('__CA_DONT_LOG_CHANGES__', true);
+		if(!$this->opb_change_log_disabled_checked){
+			if(!defined('__CA_DONT_LOG_CHANGES__')){
+				/** @var ca_data_importers $vo_mapping */
+				$vo_mapping = $pa_params['mapping'];
+				$va_mappings_to_disable = $this->opo_config->getList('disableChangeLogForImports');
+				if ($vo_mapping && in_array($vo_mapping->get('importer_code'), $va_mappings_to_disable)){
+					define('__CA_DONT_LOG_CHANGES__', true);
+				}
 			}
+			$this->opb_change_log_disabled_checked = true;
 		}
 	}
 }
