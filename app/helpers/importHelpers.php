@@ -103,8 +103,7 @@
 			if (isset($va_parent['rules']) && is_array($va_parent['rules'])) {
 				foreach($va_parent['rules'] as $va_rule) {
 					try {
-						$vm_ret = ExpressionParser::evaluate($va_rule['trigger'], $pa_source_data);
-						if ((bool)$vm_ret) {
+						if ((bool)ExpressionParser::evaluate($va_rule['trigger'], $pa_source_data)) {
 							foreach($va_rule['actions'] as $va_action) {
 								if (!is_array($va_action) && (strtolower($va_action) == 'skip')) {
 									$va_action = array('action' => 'skip');
