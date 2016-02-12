@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -299,6 +299,9 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 				break;
 			case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
 				return $o_dm->getInstanceByTableName('ca_object_lots', true);
+				break;
+			case __CA_ATTRIBUTE_VALUE_OBJECTREPRESENTATIONS__:
+				return $o_dm->getInstanceByTableName('ca_object_representations', true);
 				break;
 		}
 		return null;
