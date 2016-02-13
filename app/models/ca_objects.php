@@ -173,7 +173,8 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 					_t('occurrences') => 67,
 					_t('storage locations') => 119,	// we store the ca_objects_x_storage_locations relation_id for locations
 					_t('loans') => 133,
-					_t('movements') => 137
+					_t('movements') => 137,
+					_t('object lots') => 51
 				),
 				'LABEL' => _t('Current location class'), 'DESCRIPTION' => _t('Indicates classification of last location for objects (eg. storage location, occurrence, loan, movement)')
 		),
@@ -1912,6 +1913,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 						break;
 				}
 			}
+			
  			$this->setMode(ACCESS_WRITE);
  			$this->set('current_loc_class', $vn_table_num);
  			$this->set('current_loc_subclass', $vn_type_id);
