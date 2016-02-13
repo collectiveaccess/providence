@@ -950,8 +950,12 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * 
 	 */
 	static public function getElementDatatype($pm_element_code_or_id) {
+		if(MemoryCache::contains($pm_element_code_or_id, 'ElementDataTypes')) {
+			return MemoryCache::fetch($pm_element_code_or_id, 'ElementDataTypes');
+		}
 		if ($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id)) {
-			return $t_element->get('datatype');
+			MemoryCache::save($vn_datatype = $t_element->get('datatype'), $t_element, 'ElementDataTypes');
+			return $vn_datatype;
 		}
 		
 		return null;
@@ -977,6 +981,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		} else {
 			MemoryCache::save($vn_element_id, $t_element, 'ElementInstances');
 			MemoryCache::save($t_element->get('element_code'), $t_element, 'ElementInstances');
+			MemoryCache::save($t_element->get('datatype'), $t_element, 'ElementDataTypes');
 			return $t_element;
 		}
 		return null;

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2015 Whirl-i-Gig
+ * Copyright 2010-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -130,7 +130,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				'limit' => 2000,											// maximum number of hits to return [default=2000]  ** NOT CURRENTLY ENFORCED -- MAY BE DROPPED **
 				'maxIndexingBufferSize' => $vn_max_indexing_buffer_size,	// maximum number of indexed content items to accumulate before writing to the database
 				'maxWordIndexInsertSegmentSize' => ceil($vn_max_indexing_buffer_size / 2), // maximum number of word index rows to put into a single insert
-				'maxWordCacheSize' => 4096,								// maximum number of words to cache while indexing before purging
+				'maxWordCacheSize' => 131072,								// maximum number of words to cache while indexing before purging
 				'cacheCleanFactor' => 0.50,									// percentage of words retained when cleaning the cache
 				
 				'omitPrivateIndexing' => false,								//
@@ -1646,9 +1646,11 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		// add new indexing
 		if (is_array(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer) && sizeof(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer)) {
+			$this->opo_db->query("START TRANSACTION");
 			while(sizeof(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer) > 0) {
 				$this->opo_db->query($this->ops_insert_word_index_sql."\n".join(",", array_splice(WLPlugSearchEngineSqlSearch::$s_doc_content_buffer, 0, $vn_max_word_segment_size)));
 			}
+			$this->opo_db->query("COMMIT");
 			if ($this->debug) { Debug::msg("[SqlSearchDebug] Commit row indexing"); }
 		}
 	
@@ -1659,24 +1661,25 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	}
 	# ------------------------------------------------
 	public function getWordID($ps_word) {
+		$ps_word = (string)$ps_word;
 		if (!strlen($ps_word = trim(mb_strtolower($ps_word, "UTF-8")))) { return null; }
-		if (WLPlugSearchEngineSqlSearch::$s_word_cache[(string)$ps_word]) { return (int)WLPlugSearchEngineSqlSearch::$s_word_cache[(string)$ps_word]; } 
+		if (isset(WLPlugSearchEngineSqlSearch::$s_word_cache[$ps_word])) { return (int)WLPlugSearchEngineSqlSearch::$s_word_cache[$ps_word]; } 
 		
-		if ($qr_res = $this->opqr_lookup_word->execute((string)$ps_word)) {
+		if ($qr_res = $this->opqr_lookup_word->execute($ps_word)) {
 			if ($qr_res->nextRow()) {
-				return WLPlugSearchEngineSqlSearch::$s_word_cache[(string)$ps_word] = (int)$qr_res->get('word_id', array('binary' => true));
+				return WLPlugSearchEngineSqlSearch::$s_word_cache[$ps_word] = (int)$qr_res->get('word_id', array('binary' => true));
 			}
 		}
 		
 		// insert word
-		if (!($vs_stem = trim($this->opo_stemmer->stem((string)$ps_word)))) { $vs_stem = (string)$ps_word; }
+		if (!($vs_stem = trim($this->opo_stemmer->stem($ps_word)))) { $vs_stem = $ps_word; }
 		if (mb_strlen($ps_word) > 255) { $ps_word = $vs_stem = mb_substr($ps_word, 0, 255); }
-		$this->opqr_insert_word->execute((string)$ps_word, $vs_stem);
+		$this->opqr_insert_word->execute($ps_word, $vs_stem);
 		if ($this->opqr_insert_word->numErrors()) { return null; }
 		if (!($vn_word_id = (int)$this->opqr_insert_word->getLastInsertID())) { return null; }
 		
 		// create ngrams
-		// 		$va_ngrams = caNgrams((string)$ps_word, 4);
+		// 		$va_ngrams = caNgrams($ps_word, 4);
 		// 		$vn_seq = 0;
 		// 		
 		// 		$va_ngram_buf = array();
@@ -1690,7 +1693,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		// 			$this->opo_db->query($vs_sql);
 		// 		}
 		
-		return WLPlugSearchEngineSqlSearch::$s_word_cache[(string)$ps_word] = (int)$vn_word_id;
+		return WLPlugSearchEngineSqlSearch::$s_word_cache[$ps_word] = $vn_word_id;
 	}
 	# ------------------------------------------------
 	private function _checkWordCacheSize() {
