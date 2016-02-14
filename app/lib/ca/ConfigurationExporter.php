@@ -945,7 +945,7 @@ final class ConfigurationExporter {
 	public function getRelationshipTypesAsDOM() {
 		$vo_rel_types = $this->opo_dom->createElement("relationshipTypes");
 
-		$qr_tables = $this->opo_db->query("SELECT DISTINCT table_num FROM ca_relationship_types");
+		$qr_tables = $this->opo_db->query("SELECT DISTINCT table_num FROM ca_relationship_types ORDER BY table_num");
 
 		while($qr_tables->nextRow()) {
 			$vo_table = $this->opo_dom->createElement("relationshipTable");
@@ -958,7 +958,7 @@ final class ConfigurationExporter {
 			",$qr_tables->get("table_num"));
 			if($qr_root->nextRow()) {
 				$vn_parent = $qr_root->get("type_id");
-				if($vo_types = $this->getRelationshipTypesForParentAsDOM($vn_parent)) {
+				if($vo_types = $this->getRelationshipTypesForParentAsDOM($vn_parent, (int) $qr_tables->get("table_num"))) {
 					// don't ouput table if we're exporting changes and nothing has changed for this hierarchy
 					if($this->opn_modified_after && !$vo_types->childNodes->length) {
 						continue;
@@ -973,14 +973,25 @@ final class ConfigurationExporter {
 		return $vo_rel_types;
 	}
 	# -------------------------------------------------------
-	private function getRelationshipTypesForParentAsDOM($pn_parent_id) {
+	private function getRelationshipTypesForParentAsDOM($pn_parent_id, $pn_table_num) {
 		$t_list = new ca_lists();
 
 		$vo_types = $this->opo_dom->createElement("types");
+		$t_rel_types = new ca_relationship_types();
+
+		if($this->opn_modified_after &&
+			is_array($va_deleted = $this->getDeletedItemsFromChangeLogByIdno($t_rel_types->tableNum(), 'type_code', array('table_num' => $pn_table_num)))
+		) {
+			foreach($va_deleted as $vs_deleted_idno) {
+				$vo_type = $this->opo_dom->createElement("type");
+				$vo_types->appendChild($vo_type);
+				$vo_type->setAttribute("code", $vs_deleted_idno);
+				$vo_type->setAttribute("deleted", 1);
+			}
+		}
 
 		$qr_types = $this->opo_db->query("SELECT * FROM ca_relationship_types WHERE parent_id=?",$pn_parent_id);
-		if(!$qr_types->numRows()) return false;
-		$t_rel_types = new ca_relationship_types();
+		if(!$qr_types->numRows() && !$this->opn_modified_after) { return false; }
 
 		while($qr_types->nextRow()) {
 			$vo_type = $this->opo_dom->createElement("type");
@@ -1043,7 +1054,7 @@ final class ConfigurationExporter {
 
 			// subtypes
 
-			if($vo_subtypes = $this->getRelationshipTypesForParentAsDOM($qr_types->get("type_id"))) {
+			if($vo_subtypes = $this->getRelationshipTypesForParentAsDOM($qr_types->get("type_id"), $pn_table_num)) {
 				$vo_types->appendChild($vo_subtypes);
 			}
 

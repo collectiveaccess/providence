@@ -643,7 +643,6 @@ class Installer {
 		}
 
 		foreach($va_elements as $vs_element_code => $vo_element) {
-
 			if($vn_element_id = $this->processMetadataElement($vo_element, null)) {
 				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
 				// if we're updating, we expect the list of restrictions to include all restrictions!
@@ -698,13 +697,7 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
 		require_once(__CA_MODELS_DIR__."/ca_lists.php");
 
-		if (($vn_datatype = ca_metadata_elements::getAttributeTypeCode(self::getAttribute($po_element, "datatype"))) === false) {
-			return false; // should not happen due to XSD restrictions, but just in case
-		}
-
 		$vs_element_code = self::getAttribute($po_element, "code");
-
-		$t_lists = new ca_lists();
 
 		// try to load element by code for potential update. codes are unique, globally
 		if(!($t_md_element = ca_metadata_elements::getInstance($vs_element_code))) {
@@ -712,6 +705,18 @@ class Installer {
 		}
 
 		$t_md_element->setMode(ACCESS_WRITE);
+
+		if(self::getAttribute($po_element, 'deleted') && $t_md_element->getPrimaryKey()) {
+			$t_md_element->delete(true, array('hard' => true));
+			return false; // we don't want the postprocessing to kick in. our work here is done.
+		}
+
+		if (($vn_datatype = ca_metadata_elements::getAttributeTypeCode(self::getAttribute($po_element, "datatype"))) === false) {
+			return false; // should not happen due to XSD restrictions, but just in case
+		}
+
+		$t_lists = new ca_lists();
+
 		$t_md_element->set('element_code', $vs_element_code);
 		$t_md_element->set('parent_id', $pn_parent_id);
 		$t_md_element->set('documentation_url',(string)$po_element->documentationUrl);
@@ -842,11 +847,16 @@ class Installer {
 			$t_instance = $vo_dm->getInstanceByTableNum($vn_type);
 
 			// create ui row
-
 			if(!($t_ui = ca_editor_uis::find(array('editor_code' => $vs_ui_code, 'editor_type' =>  $vn_type), array('returnAs' => 'firstModelInstance')))) {
 				$t_ui = new ca_editor_uis();
 			}
 			$t_ui->setMode(ACCESS_WRITE);
+
+			if(self::getAttribute($vo_ui, 'deleted') && $t_ui->getPrimaryKey()) {
+				$t_ui->delete(true, array('hard' => true));
+				continue;
+			}
+
 			$t_ui->set('user_id', null);
 			$t_ui->set('is_system_ui', 1);
 			$t_ui->set('editor_code', $vs_ui_code);
@@ -906,6 +916,12 @@ class Installer {
 
 				$t_ui_screens = $t_ui_screens ? $t_ui_screens : new ca_editor_ui_screens();
 				$t_ui_screens->setMode(ACCESS_WRITE);
+
+				if(self::getAttribute($vo_screen, 'deleted') && $t_ui_screens->getPrimaryKey()) {
+					$t_ui_screens->delete(true, array('hard' => true));
+					continue;
+				}
+
 				$t_ui_screens->set('idno',$vs_screen_idno);
 				$t_ui_screens->set('ui_id', $vn_ui_id);
 				$t_ui_screens->set('is_default', $vn_is_default);
@@ -1058,11 +1074,18 @@ class Installer {
 			$vs_left_table = $t_rel_table->getLeftTableName();
 			$vs_right_table = $t_rel_table->getRightTableName();
 
+
 			$vs_root_type_code = 'root_for_'.$vn_table_num;
-			$t_rel_type = $this->opb_updating ? ca_relationship_types::find(array('type_code' => $vs_root_type_code, 'table_num' => $vn_table_num, 'parent_id' => null),array('returnAs' => 'firstModelInstance')) : false;
+
+			/** @var ca_relationship_types $t_rel_type */
+			$t_rel_type = ca_relationship_types::find(
+				array('type_code' => $vs_root_type_code, 'table_num' => $vn_table_num, 'parent_id' => null),
+				array('returnAs' => 'firstModelInstance')
+			);
+
 			$t_rel_type = $t_rel_type ? $t_rel_type : new ca_relationship_types();
 			$t_rel_type->setMode(ACCESS_WRITE);
-			// create relationship type root
+			// create relationship type root if necessary
 			$t_rel_type->set('parent_id', null);
 			$t_rel_type->set('type_code', $vs_root_type_code);
 			$t_rel_type->set('sub_type_left_id', null);
@@ -1070,9 +1093,7 @@ class Installer {
 			$t_rel_type->set('table_num', $vn_table_num);
 			$t_rel_type->set('rank', 10);
 			$t_rel_type->set('is_default', 0);
-			if($t_rel_type->getPrimaryKey()) {
-				$t_rel_type->update();
-			} else {
+			if(!$t_rel_type->getPrimaryKey()) { // do nothing if find() found that very root
 				$t_rel_type->insert();
 			}
 
@@ -1105,9 +1126,18 @@ class Installer {
 			$vn_default = self::getAttribute($vo_type, "default");
 			$vn_rank = (int)self::getAttribute($vo_type, "rank");
 
-			$t_rel_type = $this->opb_updating ? ca_relationship_types::find(array('type_code' => $vs_type_code, 'table_num' => $pn_table_num, 'parent_id' => $pn_parent_id),array('returnAs' => 'firstModelInstance')) : false;
+			$t_rel_type = ca_relationship_types::find(
+				array('type_code' => $vs_type_code, 'table_num' => $pn_table_num, 'parent_id' => $pn_parent_id),
+				array('returnAs' => 'firstModelInstance')
+			);
+
 			$t_rel_type = $t_rel_type ? $t_rel_type : new ca_relationship_types();
 			$t_rel_type->setMode(ACCESS_WRITE);
+
+			if(self::getAttribute($vo_type, "deleted") && $t_rel_type->getPrimaryKey()) {
+				$t_rel_type->delete(true);
+				continue;
+			}
 
 			$t_rel_type->set('table_num', $pn_table_num);
 			$t_rel_type->set('type_code', $vs_type_code);

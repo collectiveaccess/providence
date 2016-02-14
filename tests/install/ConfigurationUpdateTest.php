@@ -159,9 +159,6 @@ class ConfigurationUpdateTest extends PHPUnit_Framework_TestCase {
 		$this->assertInstanceOf('ca_metadata_elements', $t_instance);
 		$this->assertGreaterThan(0, $t_instance->getPrimaryKey());
 		$this->assertEquals(__CA_ATTRIBUTE_VALUE_TEXT__, $t_instance->get('datatype'));
-
-		$t_instance->setMode(ACCESS_WRITE);
-		$t_instance->delete(true, array('hard' => true));
 	}
 
 	public function testAddElementExistingContainer() {
@@ -185,6 +182,17 @@ class ConfigurationUpdateTest extends PHPUnit_Framework_TestCase {
 				array('date', 'dates_value', 'dc_dates_types', 'dates_description')
 			), "Failed to assert that {$va_element['element_code']} is in predefined list.");
 		}
+	}
+
+	public function testDeleteElements() {
+		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/elements/delete_elements.xml'));
+		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer->processLocales();
+		$o_installer->processMetadataElements();
+
+		$t_element = new ca_metadata_elements();
+		$this->assertFalse($t_element->load(array('element_code' => 'new_element_test')));
+		$this->assertFalse($t_element->load(array('element_code' => 'dates_description')));
 	}
 
 	public function testEditElementExistingContainer() {
