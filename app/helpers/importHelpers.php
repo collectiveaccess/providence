@@ -145,6 +145,8 @@
 			$vb_ignore_parent = caGetOption("{$ps_refinery_name}_ignoreParent", $pa_item['settings'], false);
 			$pa_options = array_merge(array('matchOn' => $va_match_on, 'ignoreParent' => $vb_ignore_parent), $pa_options);
 			
+			$vn_hierarchy_id = null;
+			
 			switch($ps_table) {
 				case 'ca_objects':
 					$vn_id = DataMigrationUtils::getObjectID($vs_name, $vn_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
@@ -160,13 +162,14 @@
 						require_once(__CA_MODELS_DIR__."/ca_places.php");
 						$t_place = new ca_places();
 						if ($o_trans) { $t_place->setTransaction($o_trans); }
+						$vn_hierarchy_id = $pa_options['hierarchyID'];
 						$vn_id = $pa_options['defaultParentID'];
 						if(!$vn_id){
 							$vn_id = $t_place->getHierarchyRootID($pa_options['hierarchyID']);
 						}
 						$va_attributes['parent_id'] = $vn_id;
 					}
-					$vn_id = DataMigrationUtils::getPlaceID($vs_name, $vn_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
+					$vn_id = DataMigrationUtils::getPlaceID($vs_name, $vn_id, $vs_type, $g_ui_locale_id, $vn_hierarchy_id, $va_attributes, $pa_options);
 					$va_attributes['preferred_labels']['name'] = $va_attributes['_preferred_labels'] = $vs_name;
 					break;
 				case 'ca_occurrences':
@@ -433,7 +436,7 @@
 					$vn_id = DataMigrationUtils::getEntityID($va_name, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					break;
 				case 'ca_places':
-					$vn_id = DataMigrationUtils::getPlaceID($vs_name, $vn_parent_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
+					$vn_id = DataMigrationUtils::getPlaceID($vs_name, $vn_parent_id, $vs_type, $g_ui_locale_id, $pa_options['hierarchyID'], $va_attributes, $pa_options);
 					break;
 				case 'ca_occurrences':
 					$vn_id = DataMigrationUtils::getOccurrenceID($vs_name, $vn_parent_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
@@ -491,6 +494,7 @@
 		$o_log = caGetOption('log', $pa_options, null);
 		$o_reader = caGetOption('reader', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
+		$vn_hierarchy_id = null;
 		
 		$pn_value_index = caGetOption('valueIndex', $pa_options, 0);
 		
@@ -528,7 +532,7 @@
 		$va_match_on = caGetOption('matchOn', $pa_options, null);
 		if (!is_array($va_match_on) && $va_match_on) { 
 			$va_match_on = array($va_match_on); 
-		} elseif (is_array($va_match_on = $pa_item['settings']["{$ps_refinery_name}_matchOn"])) {
+		} elseif (is_array($va_match_on = $pa_item['settings']["{$ps_refinery_name}_matchOn"]) || is_array($va_match_on = $pa_item['settings']["matchOn"])) {
 			$pa_options['matchOn'] = $va_match_on;
 		}
 		
@@ -670,7 +674,7 @@
 						}
 				
 						if(isset($pa_options['hierarchyID']) && $pa_options['hierarchyID'] && ($vs_hier_id_fld = $t_instance->getProperty('HIERARCHY_ID_FLD'))) {
-							$va_val[$vs_hier_id_fld] = $pa_options['hierarchyID'];
+							$vn_hierarchy_id = $va_val[$vs_hier_id_fld] = $pa_options['hierarchyID'];
 						}
 		
 						// Set attributes
@@ -706,7 +710,7 @@
 						if(!is_array($va_attr_vals)) { $va_attr_vals = array(); }
 						$va_attr_vals_with_parent = array_merge($va_attr_vals, array('parent_id' => $va_val['parent_id'] ? $va_val['parent_id'] : $va_val['_parent_id']));
 
-						$pa_options = array('matchOn' => array('idno', 'label')) +  $pa_options;
+						if (!isset($pa_options['matchOn'])) { $pa_options['matchOn'] = array('idno', 'label'); }
 						
 						switch($ps_table) {
 							case 'ca_objects':
@@ -723,7 +727,7 @@
 								$vn_item_id = DataMigrationUtils::getEntityID(DataMigrationUtils::splitEntityName($vs_item, $pa_options), $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
 								break;
 							case 'ca_places':
-								$vn_item_id = DataMigrationUtils::getPlaceID($vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
+								$vn_item_id = DataMigrationUtils::getPlaceID($vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $vn_hierarchy_id, $va_attr_vals_with_parent, $pa_options);
 								break;
 							case 'ca_occurrences':
 								$vn_item_id = DataMigrationUtils::getOccurrenceID($vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
@@ -1074,6 +1078,21 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 		}
 
 		return $vs_return;
+	}
+	# ---------------------------------------------------------------------
+	/**
+	 * Get raw cell from Excel sheet for given column and row
+	 * @param PHPExcel_Worksheet $po_sheet The work sheet
+	 * @param int $pn_row_num row number (zero indexed)
+	 * @param string|int $pm_col either column number (zero indexed) or column letter ('A', 'BC')
+	 * @return PHPExcel_Cell|null the cell, if a value exists
+	 */
+	function caPhpExcelGetRawCell($po_sheet, $pn_row_num, $pm_col) {
+		if(!is_numeric($pm_col)) {
+			$pm_col = PHPExcel_Cell::columnIndexFromString($pm_col)-1;
+		}
+
+		return $po_sheet->getCellByColumnAndRow($pm_col, $pn_row_num);
 	}
 	# ---------------------------------------------------------------------
 	/**

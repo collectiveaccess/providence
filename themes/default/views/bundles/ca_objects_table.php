@@ -47,7 +47,9 @@
 	$va_additional_search_controller_params = array(
 		'ids' => join(';', array_keys($va_initial_values)),
 		'interstitialPrefix' => $vs_interstitial_selector,
-		'rel_table' => $t_item_rel->tableName()
+		'relTable' => $t_item_rel->tableName(),
+		'primaryTable' => $t_subject->tableName(),
+		'primaryID' => $t_subject->getPrimaryKey()
 	);
 
 	$vs_url_string = '';
@@ -73,7 +75,6 @@
 		$va_errors[] = $o_error->getErrorDescription();
 	}
 ?>
-<div id="tableContent" class="labelInfo"></div>
 <script type="text/javascript">
 	function caHackSearchResultForm(data) {
 		if(data) {
@@ -83,7 +84,7 @@
 		// have to re-init the relation bundle because the interstitial buttons have only now been loaded
 		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', initiRelationBundleOptions);
 
-		jQuery('#tableContent .list-header-unsorted a').click(function(event) {
+		jQuery('#tableContent .list-header-unsorted a, #tableContent .list-header-sorted-desc a, #tableContent .list-header-sorted-asc a').click(function(event) {
 			event.preventDefault();
 			jQuery.get(event.target + '<?php print $vs_url_string; ?>', caHackSearchResultForm);
 		});
@@ -111,6 +112,7 @@
 ?>
 </script>
 <div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
+	<div id="tableContent" class="labelInfo"></div>
 <?php
 	//
 	// Template to generate controls for creating new relationship

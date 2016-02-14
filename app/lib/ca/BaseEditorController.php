@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -101,8 +101,10 @@ class BaseEditorController extends ActionController {
 				'duplicate_nonpreferred_labels' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_nonpreferred_labels'),
 				'duplicate_attributes' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_attributes'),
 				'duplicate_relationships' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_relationships'),
+				'duplicate_relationship_attributes' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_relationship_attributes'),
 				'duplicate_media' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_media'),
-				'duplicate_subitems' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_subitems')
+				'duplicate_subitems' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_subitems'),
+				'duplicate_element_settings' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_element_settings')
 			))) {
 				$this->notification->addNotification(_t('Duplicated %1 "%2" (%3)', $vs_type_name, $t_subject->getLabelForDisplay(), $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
 
@@ -1496,7 +1498,7 @@ class BaseEditorController extends ActionController {
 				$this->view->setVar('object_collection_collection_ancestors', array()); // collections to display as object parents when ca_objects_x_collections_hierarchy_enabled is enabled
 				if (($t_item->tableName() == 'ca_objects') && $t_item->getAppConfig()->get('ca_objects_x_collections_hierarchy_enabled')) {
 					// Is object part of a collection?
-					if(is_array($va_collections = $t_item->getRelatedItems('ca_collections'))) {
+					if(is_array($va_collections = $t_item->getRelatedItems('ca_collections', array('restrictToRelationshipTypes' => array($t_item->getAppConfig()->get('ca_objects_x_collections_hierarchy_relationship_type')))))) {
 						$this->view->setVar('object_collection_collection_ancestors', $va_collections);
 					}
 				}
@@ -1754,25 +1756,27 @@ class BaseEditorController extends ActionController {
 		$va_annotations_raw = $t_rep->getAnnotations();
 		$va_annotations = array();
 
-		foreach($va_annotations_raw as $vn_annotation_id => $va_annotation) {
-			$va_annotations[] = array(
-				'annotation_id' => $va_annotation['annotation_id'],
-				'x' => 				caGetOption('x', $va_annotation, 0, array('castTo' => 'float')),
-				'y' => 				caGetOption('y', $va_annotation, 0, array('castTo' => 'float')),
-				'w' => 				caGetOption('w', $va_annotation, 0, array('castTo' => 'float')),
-				'h' => 				caGetOption('h', $va_annotation, 0, array('castTo' => 'float')),
-				'tx' => 			caGetOption('tx', $va_annotation, 0, array('castTo' => 'float')),
-				'ty' => 			caGetOption('ty', $va_annotation, 0, array('castTo' => 'float')),
-				'tw' => 			caGetOption('tw', $va_annotation, 0, array('castTo' => 'float')),
-				'th' => 			caGetOption('th', $va_annotation, 0, array('castTo' => 'float')),
-				'points' => 		caGetOption('points', $va_annotation, array(), array('castTo' => 'array')),
-				'label' => 			caGetOption('label', $va_annotation, '', array('castTo' => 'string')),
-				'description' => 	caGetOption('description', $va_annotation, '', array('castTo' => 'string')),
-				'type' => 			caGetOption('type', $va_annotation, 'rect', array('castTo' => 'string')),
-				'locked' => 		caGetOption('locked', $va_annotation, '0', array('castTo' => 'string')),
-				'options' => 		caGetOption('options', $va_annotation, array(), array('castTo' => 'array')),
-				'key' =>			caGetOption('key', $va_annotation, null)
-			);
+		if(is_array($va_annotations_raw)) {
+			foreach($va_annotations_raw as $vn_annotation_id => $va_annotation) {
+				$va_annotations[] = array(
+					'annotation_id' => $va_annotation['annotation_id'],
+					'x' => 				caGetOption('x', $va_annotation, 0, array('castTo' => 'float')),
+					'y' => 				caGetOption('y', $va_annotation, 0, array('castTo' => 'float')),
+					'w' => 				caGetOption('w', $va_annotation, 0, array('castTo' => 'float')),
+					'h' => 				caGetOption('h', $va_annotation, 0, array('castTo' => 'float')),
+					'tx' => 			caGetOption('tx', $va_annotation, 0, array('castTo' => 'float')),
+					'ty' => 			caGetOption('ty', $va_annotation, 0, array('castTo' => 'float')),
+					'tw' => 			caGetOption('tw', $va_annotation, 0, array('castTo' => 'float')),
+					'th' => 			caGetOption('th', $va_annotation, 0, array('castTo' => 'float')),
+					'points' => 		caGetOption('points', $va_annotation, array(), array('castTo' => 'array')),
+					'label' => 			caGetOption('label', $va_annotation, '', array('castTo' => 'string')),
+					'description' => 	caGetOption('description', $va_annotation, '', array('castTo' => 'string')),
+					'type' => 			caGetOption('type', $va_annotation, 'rect', array('castTo' => 'string')),
+					'locked' => 		caGetOption('locked', $va_annotation, '0', array('castTo' => 'string')),
+					'options' => 		caGetOption('options', $va_annotation, array(), array('castTo' => 'array')),
+					'key' =>			caGetOption('key', $va_annotation, null)
+				);
+			}
 		}
 
 		$this->view->setVar('annotations', $va_annotations);

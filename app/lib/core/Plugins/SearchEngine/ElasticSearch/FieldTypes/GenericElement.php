@@ -106,6 +106,10 @@ class GenericElement extends FieldType {
 			return new \Zend_Search_Lucene_Index_Term(
 				$po_term->field, '_missing_'
 			);
+		} elseif(strtolower($po_term->text) === '[set]') {
+			return new \Zend_Search_Lucene_Index_Term(
+				$po_term->field, '_exists_'
+			);
 		} else {
 			return $po_term;
 		}

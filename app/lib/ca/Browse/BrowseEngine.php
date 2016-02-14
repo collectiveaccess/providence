@@ -976,11 +976,12 @@
 			if ($this->opo_ca_browse_cache->load($vs_cache_key)) {
 
 				$vn_created_on = $this->opo_ca_browse_cache->getParameter('created_on'); //$t_new_browse->get('created_on', array('getDirectDate' => true));
+				$vn_cache_timeout = (int) $this->opo_ca_browse_config->get('cache_timeout');
 
 				$va_criteria = $this->getCriteria();
-				if (!$vb_no_cache && (intval(time() - $vn_created_on) < $this->opo_ca_browse_config->get('cache_timeout'))) {
+				if (!$vb_no_cache && (intval(time() - $vn_created_on) < $vn_cache_timeout)) {
 					$vb_results_cached = true;
-					$this->opo_ca_browse_cache->setParameter('created_on', time() + $this->opo_ca_browse_config->get('cache_timeout'));
+					$this->opo_ca_browse_cache->setParameter('created_on', time() + $vn_cache_timeout);
 					$vb_need_to_save_in_cache = true;
 
 					Debug::msg("Cache hit for {$vs_cache_key}");
@@ -3320,10 +3321,32 @@
 							$va_ordering_fields_to_fetch = (isset($va_facet_info['order_by_label_fields']) && is_array($va_facet_info['order_by_label_fields'])) ? $va_facet_info['order_by_label_fields'] : array();
 
 							$va_orderbys = array();
-							$t_rel_item_label = new ca_list_item_labels();
-							foreach($va_ordering_fields_to_fetch as $vs_sort_by_field) {
-								if (!$t_rel_item_label->hasField($vs_sort_by_field)) { continue; }
-								$va_orderbys[] = $va_label_selects[] = 'lil.'.$vs_sort_by_field;
+							
+							// Get label ordering fields
+							if (isset($va_facet_info['order_by_label_fields']) && is_array($va_facet_info['order_by_label_fields']) && sizeof($va_facet_info['order_by_label_fields'])) {
+								$t_rel_item_label = new ca_list_item_labels();
+								foreach($va_facet_info['order_by_label_fields'] as $vs_sort_by_field) {
+									if (!$t_rel_item_label->hasField($vs_sort_by_field)) { continue; }
+									$va_orderbys[] = $va_label_selects[] = 'lil.'.$vs_sort_by_field;
+								}
+							} else {
+								$t_list->load(array('list_code' => $vs_list_name));
+								$vn_sort = $t_list->get('default_sort');
+								switch($vn_sort) {
+									default:
+									case __CA_LISTS_SORT_BY_LABEL__:	// by label
+										$va_orderbys[] = 'lil.name_plural';
+										break;
+									case __CA_LISTS_SORT_BY_RANK__:	// by rank
+										$va_orderbys[] = 'li.rank';
+										break;
+									case __CA_LISTS_SORT_BY_VALUE__:	// by value
+										$va_orderbys[] = 'li.item_value';
+										break;
+									case __CA_LISTS_SORT_BY_IDENTIFIER__:	// by identifier
+										$va_orderbys[] = 'li.idno_sort';
+										break;
+								}
 							}
 
 							$vs_order_by = (sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
@@ -4666,8 +4689,8 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 
 					if ($va_facet_info['relative_to']) {
 						// TODO: do this everywhere
-						$va_restrict_to_relationship_types = array();
-						$vs_browse_type_limit_sql = '';
+						//$va_restrict_to_relationship_types = array();
+						//$vs_browse_type_limit_sql = '';
 
 						if ($t_subject->hasField('deleted')) {
 							$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";

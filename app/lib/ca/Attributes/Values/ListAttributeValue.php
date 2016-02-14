@@ -36,7 +36,7 @@
 define("__CA_ATTRIBUTE_VALUE_LIST__", 3);
 
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
-require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
+ require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AuthorityAttributeValue.php');
 require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 
 global $_ca_attribute_settings;
@@ -187,10 +187,22 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 
 
 
-class ListAttributeValue extends AttributeValue implements IAttributeValue {
-	# ------------------------------------------------------------------
-	private $ops_text_value;
-	private $opn_item_id;
+class ListAttributeValue extends AuthorityAttributeValue implements IAttributeValue {
+	# ------------------------------------------------------------------	
+	/**
+	 * Name of table this attribute references
+	 */
+	protected $ops_table_name = 'ca_list_items';
+	
+	/**
+	 * Display name, in singular sense, of table this attribute references. The name should be capitalized.
+	 */
+	protected $ops_name_singular = 'List item';
+	
+	/**
+	 * Display name, in plural sense, of table this attribute references. The name should be capitalized.
+	 */
+	protected $ops_name_plural = 'List items';
 	# ------------------------------------------------------------------
 	public function __construct($pa_value_array=null) {
 		parent::__construct($pa_value_array);
@@ -271,6 +283,10 @@ class ListAttributeValue extends AttributeValue implements IAttributeValue {
 			return $t_list->getItemFromListForDisplayByItemID($vn_list_id, $this->opn_item_id, (isset($pa_options['useSingular']) && $pa_options['useSingular']) ? false : true);
 		}
 		return $this->ops_text_value;
+	}
+	# ------------------------------------------------------------------
+	public function getID() {
+		return $this->getItemID();
 	}
 	# ------------------------------------------------------------------
 	public function getItemID() {

@@ -99,7 +99,14 @@ class ObjectTableController extends BaseSearchController {
 		AssetLoadManager::register('imageScroller');
 		AssetLoadManager::register('tabUI');
 		AssetLoadManager::register('panel');
+
+		// get request data
 		$va_relation_ids = explode(';', $this->getRequest()->getParameter('ids', pString));
+		$vs_rel_table = $this->getRequest()->getParameter('relTable', pString);
+		$vs_interstitial_prefix = $this->getRequest()->getParameter('interstitialPrefix', pString);
+		$vs_primary_table = $this->getRequest()->getParameter('primaryTable', pString);
+		$vn_primary_id = $this->getRequest()->getParameter('primaryID', pInteger);
+
 		$va_access_values = caGetUserAccessValues($this->getRequest());
 
 		if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) {
@@ -108,27 +115,39 @@ class ObjectTableController extends BaseSearchController {
 		}
 
 		// we need the rel table to translate the incoming relation_ids to object ids for the list search result
-		$vs_rel_table = $this->getRequest()->getParameter('rel_table', pString);
+
 		$o_interstitial_res = caMakeSearchResult($vs_rel_table, $va_relation_ids);
 
-		$va_ids = array();
+		$va_ids = array(); $va_relation_id_map = array();
 		while($o_interstitial_res->nextHit()) {
 			$va_ids[$o_interstitial_res->get('relation_id')] = $o_interstitial_res->get('ca_objects.object_id');
+			$va_relation_id_map[$o_interstitial_res->get('ca_objects.object_id')] = array(
+				'relation_id' => $o_interstitial_res->get('relation_id'),
+				'relationship_typename' => $o_interstitial_res->getWithTemplate('^relationship_typename')
+			);
 		}
 
-		$o_interstitial_res->seek(0);
-		$this->getView()->setVar('interstitialResult', $o_interstitial_res);
+		$this->getView()->setVar('relationIdMap', $va_relation_id_map);
+		$this->getView()->setVar('interstitialPrefix', $vs_interstitial_prefix);
+		$this->getView()->setVar('relTable', $vs_rel_table);
+		$this->getView()->setVar('primaryTable', $vs_primary_table);
+		$this->getView()->setVar('primaryID', $vn_primary_id);
 
 		$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
 
 		$va_search_opts = array(
 			'sort' => $vs_sort,
-			'sort_direction' => $vs_sort_direction,
+			'sortDirection' => $vs_sort_direction,
 			'checkAccess' => $va_access_values,
 			'no_cache' => true,
+			'resolveLinksUsing' => $vs_primary_table,
+			'primaryIDs' =>
+				array (
+					$vs_primary_table => array($vn_primary_id),
+				),
 		);
 
-		$o_res = caMakeSearchResult('ca_objects', $va_ids, $va_search_opts);
+		$o_res = caMakeSearchResult('ca_objects', array_values($va_ids), $va_search_opts);
 
 		$pa_options['result'] = $o_res;
 		$pa_options['view'] = 'Search/ca_objects_table_html.php'; // override render

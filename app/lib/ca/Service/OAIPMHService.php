@@ -149,7 +149,7 @@ class OAIPMHService extends BaseService {
 		$this->opo_request = $po_request;
 	
 		// Get provider configuration info
-		$this->config = Configuration::load($this->opo_request->config->get('oai_provider_config'));
+		$this->config = Configuration::load(__CA_CONF_DIR__.'/oai_provider.conf');
 		$this->ops_provider = $ps_provider;
 		$this->opa_provider_list = $this->config->getAssoc('providers');
 		if(!is_array($this->opa_provider_info = $this->opa_provider_list[$ps_provider])) {

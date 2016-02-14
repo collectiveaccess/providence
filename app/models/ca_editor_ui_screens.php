@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,6 +35,7 @@
    */
 
 require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
+require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 require_once(__CA_MODELS_DIR__.'/ca_editor_uis.php');
 require_once(__CA_MODELS_DIR__.'/ca_editor_ui_bundle_placements.php');
 require_once(__CA_MODELS_DIR__.'/ca_editor_ui_screen_type_restrictions.php');
@@ -562,6 +563,14 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'label' => _t('Do not show delete button'),
 								'description' => _t('If checked the delete relationship control will not be provided.')
 							),
+							'display_template' => array(
+								'formatType' => FT_TEXT,
+								'displayType' => DT_FIELD,
+								'default' => '^' . $t_rel->tableName() . '.preferred_labels',
+								'width' => "275px", 'height' => 4,
+								'label' => _t('Relationship display template'),
+								'description' => _t('Layout for relationship when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
+							),
 						);
 						break;
 					} else {
@@ -622,7 +631,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'displayType' => DT_SELECT,
 								'width' => "200px", 'height' => "1",
 								'takesLocale' => false,
-								'default' => '1',
+								'default' => '',
 								'label' => _t('Sort using'),
 								'showSortableBundlesFor' => $t_rel->tableName(),
 								'description' => _t('Method used to sort related items.')
@@ -718,6 +727,11 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								'description' => _t('If checked only the most recently dated relationship displayed.')
 							)
 						);
+					}
+
+					if($vs_bundle == 'ca_sets') {
+						unset($va_additional_settings['restrict_to_relationship_types']);
+						unset($va_additional_settings['restrict_to_search']);
 					}
 					
 					if ($vs_bundle == 'ca_list_items') {

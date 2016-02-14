@@ -52,12 +52,7 @@ class FileVolumes {
 	}
 	# ------------------------------------------------
 	public function __construct() {
-		$o_config = Configuration::load();
-		# -- Load volumes configuration file
-		
-		if (file_exists($o_config->get("file_volumes"))) {
-			$this->o_info = Configuration::load($o_config->get("file_volumes"));
-		}
+		$this->o_info = Configuration::load(__CA_CONF_DIR__."/file_volumes.conf");
 	}
 	# ------------------------------------------------
 	# returns block of information as associative array for given volume
@@ -82,4 +77,3 @@ class FileVolumes {
 	}
 	# ------------------------------------------------
 }
-?>

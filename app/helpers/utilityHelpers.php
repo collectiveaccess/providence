@@ -575,8 +575,11 @@ function caFileIsIncludable($ps_file) {
 		// Remove invalid UTF-8
 		mb_substitute_character(0xFFFD);
 		$ps_text = mb_convert_encoding($ps_text, 'UTF-8', 'UTF-8');
+
+		return strip_tags($ps_text);
+
 		// @see http://php.net/manual/en/regexp.reference.unicode.php
-		return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}]|➔/", '', strip_tags($ps_text));
+		//return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}]|➔/", '', strip_tags($ps_text));
 	}
 	# ----------------------------------------
 	/**
@@ -1124,14 +1127,20 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 * @param array $pa_values The array to sort. It should be an array of arrays (aka. 2-dimensional)
 	 * @param array $pa_sort_keys An array of keys in the second-level array to sort by
+	 * @param array $pa_options Options include:
+	 * 		dontRemoveKeyPrefixes = By default keys that are period-delimited will have the prefix before the first period removed (this is to ease sorting by field names). Set to true to disable this behavior. [Default is false]
 	 * @return array The sorted array
 	*/
-	function caSortArrayByKeyInValue($pa_values, $pa_sort_keys, $ps_sort_direction="ASC") {
+	function caSortArrayByKeyInValue($pa_values, $pa_sort_keys, $ps_sort_direction="ASC", $pa_options=null) {
 		$va_sort_keys = array();
-		foreach ($pa_sort_keys as $vs_field) {
-			$va_tmp = explode('.', $vs_field);
-			if (sizeof($va_tmp) > 1) { array_shift($va_tmp); }
-			$va_sort_keys[] = join(".", $va_tmp);
+		if (caGetOption('dontRemoveKeyPrefixes', $pa_options, false)) {
+			foreach ($pa_sort_keys as $vs_field) {
+				$va_tmp = explode('.', $vs_field);
+				if (sizeof($va_tmp) > 1) { array_shift($va_tmp); }
+				$va_sort_keys[] = join(".", $va_tmp);
+			}
+		} else {
+			$va_sort_keys = $pa_sort_keys;
 		}
 		$va_sorted_by_key = array();
 		foreach($pa_values as $vn_id => $va_data) {
@@ -1847,17 +1856,21 @@ function caFileIsIncludable($ps_file) {
 	 * caGetOption() provides a simple interface to grab values, force default values for non-existent settings and enforce simple validation rules.
 	 *
 	 * @param mixed $pm_option The option to extract. If an array is provided then each option is tried, in order, until a non-false value is found.
-	 * @param array $pa_options The options array to extract values from
+	 * @param array $pa_options The options array to extract values from. An instance of Zend_Console_Getopt may also be passed, allowing processing of command line options.
 	 * @param mixed $pm_default An optional default value to return if $ps_option is not set in $pa_options 
 	 * @param array $pa_parse_options Option parser options (cross your eyes now) include:
 	 *		forceLowercase = transform option value to all lowercase [default=false]
 	 *		forceUppercase = transform option value to all uppercase [default=false]
 	 *		validValues = array of values that are possible for this option. If the option value is not in the list then the default is returned. If no default is set then the first value in the validValues list is returned. Note that by default all comparisons are case-insensitive. 
 	 *		caseSensitive = do case sensitive comparisons when checking the option value against the validValues list [default=false]
-	 *		castTo = array|int|string
+	 *		castTo = array|int|string|float|bool
+	 *		delimiter = A delimiter, or array of delimiters, to break a string option value on. When this option is set an array will always be returned. [Default is null]
 	 * @return mixed
 	 */
 	function caGetOption($pm_option, $pa_options, $pm_default=null, $pa_parse_options=null) {
+		if (is_object($pa_options) && is_a($pa_options, 'Zend_Console_Getopt')) {
+			$pa_options = array($pm_option => $pa_options->getOption($pm_option));
+		}
 		$va_valid_values = null;
 		$vb_case_insensitive = false;
 		if (isset($pa_parse_options['validValues']) && is_array($pa_parse_options['validValues'])) {
@@ -1880,7 +1893,13 @@ function caFileIsIncludable($ps_file) {
 			$vm_val = (isset($pa_options[$pm_option]) && !is_null($pa_options[$pm_option])) ? $pa_options[$pm_option] : $pm_default;
 		}
 		
-		if(is_array($va_valid_values)) {
+		if (
+			((is_string($vm_val) && !isset($pa_parse_options['castTo'])) || (isset($pa_parse_options['castTo']) && ($pa_parse_options['castTo'] == 'string')))
+			&&
+			(!isset($pa_parse_options['delimiter']) || !($va_delimiter = $pa_parse_options['delimiter']))
+			&& 
+			(is_array($va_valid_values))
+		) {
 			if (!in_array($vb_case_insensitive ? mb_strtolower($vm_val) : $vm_val, $va_valid_values)) {
 				$vm_val = $pm_default;
 				if (!in_array($vb_case_insensitive ? mb_strtolower($vm_val) : $vm_val, $va_valid_values)) {
@@ -1898,13 +1917,19 @@ function caFileIsIncludable($ps_file) {
 		$vs_cast_to = (isset($pa_parse_options['castTo']) && ($pa_parse_options['castTo'])) ? strtolower($pa_parse_options['castTo']) : '';
 		switch($vs_cast_to) {
 			case 'int':
+			case 'integer':
 				$vm_val = (int)$vm_val;
 				break;
 			case 'float':
+			case 'decimal':
 				$vm_val = (float)$vm_val;
 				break;
 			case 'string':
 				$vm_val = (string)$vm_val;
+				break;
+			case 'bool':
+			case 'boolean':
+				$vm_val = (bool)$vm_val;
 				break;
 			case 'array':
 				if(!is_array($vm_val)) {
@@ -1915,6 +1940,27 @@ function caFileIsIncludable($ps_file) {
 					}
 				}
 				break;
+		}
+		
+		if (is_string($vm_val) && (isset($pa_parse_options['delimiter']) && ($va_delimiter = $pa_parse_options['delimiter']))) {
+			if (!is_array($va_delimiter)) { $va_delimiter = array($va_delimiter); }
+			
+			$va_split_vals = preg_split('![ ]*('.join('|', $va_delimiter).')[ ]*!', $vm_val);
+			$va_split_vals = array_filter($va_split_vals, "strlen");
+			
+			if (is_array($va_valid_values)) {
+				$va_filtered_vals = [];
+				foreach($va_split_vals as $vm_val) {
+					if (in_array($vb_case_insensitive ? mb_strtolower($vm_val) : $vm_val, $va_valid_values)) {
+						$va_filtered_vals[] = $vm_val;
+					}
+				
+					if (!sizeof($va_filtered_vals) && $pm_default) { $va_filtered_vals[] = $pm_default; }
+					$va_split_vals = $va_filtered_vals;
+				}
+			}
+			
+			return $va_split_vals;
 		}
 		
 		return $vm_val;
@@ -3052,6 +3098,7 @@ function caFileIsIncludable($ps_file) {
 	 * @param string $ps_text Text to convert to sortable value
 	 * @param array $pa_options Options include:
 	 *		locale = Locale settings to use. If omitted current default locale is used. [Default is current locale]
+	 *		omitArticle = Omit leading definite and indefinited articles, rather than moving them to the end of the text [Default is true]
 	 *
 	 * @return string Converted text. If locale cannot be found $ps_text is returned unchanged.
 	 */
@@ -3060,19 +3107,21 @@ function caFileIsIncludable($ps_file) {
 		$ps_locale = caGetOption('locale', $pa_options, $g_ui_locale);
 		if (!$ps_locale) { return $ps_text; }
 		
+		$pb_omit_article = caGetOption('omitArticle', $pa_options, true);
+		
 		$o_locale_settings = TimeExpressionParser::getSettingsForLanguage($ps_locale);
 		
 		$vs_display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $ps_text));
 		
 		// Move articles to end of string
-		$va_definite_articles = $o_locale_settings->get('definiteArticles');
-		$va_indefinite_articles = $o_locale_settings->get('indefiniteArticles');
+		$va_definite_articles = $o_locale_settings ? $o_locale_settings->get('definiteArticles') : array();
+		$va_indefinite_articles = $o_locale_settings ? $o_locale_settings->get('indefiniteArticles') : array();
 		
 		foreach(array($va_definite_articles, $va_indefinite_articles) as $va_articles) {
 			if (is_array($va_articles)) {
 				foreach($va_articles as $vs_article) {
 					if (preg_match('!^('.$vs_article.')[ ]+!i', $vs_display_value, $va_matches)) {
-						$vs_display_value = trim(str_replace($va_matches[1], '', $vs_display_value).', '.$va_matches[1]);
+						$vs_display_value = trim(str_replace($va_matches[1], '', $vs_display_value).($pb_omit_article ? '' : ', '.$va_matches[1]));
 						break(2);
 					}
 				}

@@ -1341,7 +1341,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		// Analyze mapping for figure out where type, idno, preferred label and other mandatory fields are coming from
 		$vn_type_id_mapping_item_id = $vn_idno_mapping_item_id = null;
-		$va_preferred_label_mapping_ids = array();
+		$va_preferred_label_mapping_ids = $va_nonpreferred_label_mapping_ids = array();
 		$va_mandatory_field_mapping_ids = array();
 		
 		$va_mandatory_fields = $t_subject->getMandatoryFields();
@@ -1355,6 +1355,14 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						$va_preferred_label_mapping_ids[$vn_item_id] = $va_dest_tmp[2];
 					} else {
 						$va_preferred_label_mapping_ids[$vn_item_id] = $vs_label_display_fld;
+					}
+					continue;
+				}
+				if (($va_dest_tmp[0] == $vs_subject_table) && ($va_dest_tmp[1] == 'nonpreferred_labels')) {
+					if (isset($va_dest_tmp[2])) {
+						$va_nonpreferred_label_mapping_ids[$vn_item_id] = $va_dest_tmp[2];
+					} else {
+						$va_nonpreferred_label_mapping_ids[$vn_item_id] = $vs_label_display_fld;
 					}
 					continue;
 				}
@@ -1454,28 +1462,31 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				if (!isset($va_rule['trigger']) || !$va_rule['trigger']) { continue; }
 				if (!isset($va_rule['actions']) || !is_array($va_rule['actions']) || !sizeof($va_rule['actions'])) { continue; }
 
-				$vm_ret = ExpressionParser::evaluate($va_rule['trigger'], $va_row);
-				if (!ExpressionParser::hadError() && (bool)$vm_ret) {
-					foreach($va_rule['actions'] as $va_action) {
-						if (!is_array($va_action) && (strtolower($va_action) == 'skip')) {
-							$va_action = array('action' => 'skip');
-						}
-						
-						switch($vs_action_code = strtolower($va_action['action'])) {
-							case 'set':
-								$va_row[$va_action['target']] = $va_action['value']; // TODO: transform value using mapping rules?
-								break;
-							case 'skip':
-							default:
-								if ($vs_action_code != 'skip') {
-									$o_log->logInfo(_t('Row was skipped using rule "%1" with default action because an invalid action ("%2") was specified', $va_rule['trigger'], $vs_action_code));
-								} else {
-									$o_log->logDebug(_t('Row was skipped using rule "%1" with action "%2"', $va_rule['trigger'], $vs_action_code));
-								}
-								continue(4);
-								break;
+				try {
+					if(ExpressionParser::evaluate($va_rule['trigger'], $va_row)) {
+						foreach($va_rule['actions'] as $va_action) {
+							if (!is_array($va_action) && (strtolower($va_action) == 'skip')) {
+								$va_action = array('action' => 'skip');
+							}
+
+							switch($vs_action_code = strtolower($va_action['action'])) {
+								case 'set':
+									$va_row[$va_action['target']] = $va_action['value']; // TODO: transform value using mapping rules?
+									break;
+								case 'skip':
+								default:
+									if ($vs_action_code != 'skip') {
+										$o_log->logInfo(_t('Row was skipped using rule "%1" with default action because an invalid action ("%2") was specified', $va_rule['trigger'], $vs_action_code));
+									} else {
+										$o_log->logDebug(_t('Row was skipped using rule "%1" with action "%2"', $va_rule['trigger'], $vs_action_code));
+									}
+									continue(4);
+									break;
+							}
 						}
 					}
+				} catch(Exception $e) {
+					$o_log->logError(_t("Expression trigger could not be parsed. Please double-check the syntax! Expression was: %1", $va_rule['trigger']));
 				}
 			}
 			
@@ -1579,7 +1590,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if (!$vb_idno_is_template) {
 								$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
 									array('type_id' => $vs_type, $t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno, 'deleted' => 0),
-									array('returnAs' => 'ids', 'purifyWithFallback' => true)
+									array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 								));
 								if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
 									$o_log->logInfo(_t('[%1] Skipped import because of existing record matched on identifier by policy %2', $vs_idno, $vs_existing_record_policy));
@@ -1591,7 +1602,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						case 'skip_on_preferred_labels':
 							$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
 								array('type_id' => $vs_type, 'preferred_labels' => $va_pref_label_values, 'deleted' => 0),
-								array('returnAs' => 'ids', 'purifyWithFallback' => true)
+								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 							));
 							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
 								$o_log->logInfo(_t('[%1] Skipped import because of existing record matched on label by policy %2', $vs_idno, $vs_existing_record_policy));
@@ -1606,7 +1617,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if (!$vb_idno_is_template) {
 								$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
 									array('type_id' => $vs_type, $t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno, 'deleted' => 0),
-									array('returnAs' => 'ids', 'purifyWithFallback' => true)
+									array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 								));
 								if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
 									$t_subject->load($va_ids[0]);
@@ -1619,7 +1630,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						case 'merge_on_preferred_labels_with_replace':
 							$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
 								array('type_id' => $vs_type, 'preferred_labels' => $va_pref_label_values, 'deleted' => 0),
-								array('returnAs' => 'ids', 'purifyWithFallback' => true)
+								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 							));
 							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
 								$t_subject->load($va_ids[0]);
@@ -1632,7 +1643,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if (!$vb_idno_is_template && $vs_idno) {
 								$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
 									array('type_id' => $vs_type, $t_subject->getProperty('ID_NUMBERING_ID_FIELD') => $vs_idno, 'deleted' => 0),
-									array('returnAs' => 'ids', 'purifyWithFallback' => true)
+									array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 								));
 								if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
 									$t_subject->load($va_ids[0]);
@@ -1652,7 +1663,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						case 'overwrite_on_preferred_labels':
 							$va_ids = call_user_func_array($t_subject->tableName()."::find", array(
 								array('type_id' => $vs_type, 'preferred_labels' => $va_pref_label_values, 'deleted' => 0),
-								array('returnAs' => 'ids', 'purifyWithFallback' => true)
+								array('returnAs' => 'ids', 'purifyWithFallback' => true, 'transaction' => $o_trans)
 							));
 							if (is_array($va_ids) && (sizeof($va_ids) > 0)) {
 								$t_subject->load($va_ids[0]);
@@ -1751,8 +1762,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								if(is_array($va_item['settings']['applyRegularExpressions'])) {
 									foreach($va_item['settings']['applyRegularExpressions'] as $vn_regex_index => $va_regex) {
 										if (!strlen($va_regex['match'])) { continue; }
-										$va_regex['match'] = str_replace($va_regex['match'], '\\', '\x5c');
-										$vm_val = preg_replace("!".preg_quote($va_regex['match'], "!")."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i') , $va_regex['replaceWith'], $vm_val);
+										$vm_val = preg_replace("!".str_replace("!", "\\!", $va_regex['match'])."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i') , $va_regex['replaceWith'], $vm_val);
 									}
 								}
 							}
@@ -2135,7 +2145,21 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$t_subject->clearErrors();
 					if (sizeof($va_preferred_label_mapping_ids) && ($t_subject->getPreferredLabelCount() > 0) && (!$vb_was_preferred_label_match)) {
 						$t_subject->removeAllLabels(__CA_LABEL_TYPE_PREFERRED__);
-						if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not update remove preferred labels from matched record"), array('dontOutputLevel' => true, 'dontPrint' => true))) {
+						if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not remove preferred labels from matched record"), array('dontOutputLevel' => true, 'dontPrint' => true))) {
+							ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
+							if ($vs_import_error_policy == 'stop') {
+								$o_log->logAlert(_t('Import stopped due to import error policy'));
+							
+								$o_event->endItem($t_subject->getPrimaryKey(), __CA_DATA_IMPORT_ITEM_FAILURE__, _t('Failed to import %1', $vs_idno));
+						
+								if ($o_trans) { $o_trans->rollback(); }
+								return false;
+							}
+						}
+					}
+					if (sizeof($va_nonpreferred_label_mapping_ids) && ($t_subject->getNonPreferredLabelCount() > 0)) {
+						$t_subject->removeAllLabels(__CA_LABEL_TYPE_NONPREFERRED__);
+						if ($vs_error = DataMigrationUtils::postError($t_subject, _t("Could not remove nonpreferred labels from matched record"), array('dontOutputLevel' => true, 'dontPrint' => true))) {
 							ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 							if ($vs_import_error_policy == 'stop') {
 								$o_log->logAlert(_t('Import stopped due to import error policy'));
@@ -2240,6 +2264,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													if ($o_trans) { $o_trans->rollback(); }
 													return false;
 												}
+												continue(5);
 											}
 
 											break;
@@ -2410,7 +2435,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										}
 										break;
 									case 'ca_places':
-										if ($vn_rel_id = DataMigrationUtils::getPlaceID($va_element_data['preferred_labels']['name'], $va_element_data['_parent_id'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
+										if ($vn_rel_id = DataMigrationUtils::getPlaceID($va_element_data['preferred_labels']['name'], $va_element_data['_parent_id'], $va_element_data['_type'], $vn_locale_id, null, $va_data_for_rel_table, array('forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
 											if (!($vs_rel_type = $va_element_data['_relationship_type']) && !($vs_rel_type = $va_element_data['idno']['_relationship_type'])) { break; }
 											$t_subject->addRelationship($vs_table_name, $vn_rel_id, trim($va_element_data['_relationship_type']), null, null, null, null, array('interstitialValues' => $va_element_data['_interstitial']));
 

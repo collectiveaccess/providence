@@ -26,17 +26,22 @@
  * ----------------------------------------------------------------------
  */
 
+	/** @var ca_bundle_displays $t_display */
 	$t_display				= $this->getVar('t_display');
 	$va_display_list 		= $this->getVar('display_list');
 	$vo_result 				= $this->getVar('result');
-	$vo_interstitial_result = $this->getVar('interstitialResult');
 	$vn_items_per_page 		= $this->getVar('current_items_per_page');
 	$vs_current_sort 		= $this->getVar('current_sort');
+	$vs_current_sort_dir    = $this->getVar('current_sort_direction');
 	$vs_default_action		= $this->getVar('default_action');
 	$vo_ar					= $this->getVar('access_restrictions');
-	$vs_interstitial_prefix	= $this->request->getParameter('interstitialPrefix', pString);
-	$va_relation_id_map		= $this->getVar('relationIdMap');
-	
+	$va_relation_id_map 	= $this->getVar('relationIdMap');
+
+	$vs_interstitial_prefix	= $this->getVar('interstitialPrefix');
+	$vs_primary_table		= $this->getVar('primaryTable');
+	$vn_primary_id			= $this->getVar('primaryID');
+	$vs_rel_table			= $this->getVar('relTable');
+
 ?>
 <div id="scrollingResults">
 	<form id="caFindResultsForm">
@@ -52,16 +57,29 @@
 			// output headers
 			$vn_id_count = 0;
 			foreach($va_display_list as $va_display_item) {
+				$vs_item_display_str =
+					((unicode_strlen($va_display_item['display']) > 30) ? strip_tags(mb_substr($va_display_item['display'], 0, 27))."..." : $va_display_item['display']);
+
 				if ($va_display_item['is_sortable']) {
 					if ($vs_current_sort == $va_display_item['bundle_sort']) {
-						print "<th class='list-header-sorted-asc'><span id='listHeader".$vn_id_count."'><nobr>".((unicode_strlen($va_display_item['display']) > 30) ? strip_tags(mb_substr($va_display_item['display'], 0, 27))."..." : $va_display_item['display'])."</nobr></span></th>";
+						if($vs_current_sort_dir == 'desc') {
+							$vs_th_class = 'list-header-sorted-desc';
+							$vs_new_sort_direction = 'asc';
+						} else {
+							$vs_th_class = 'list-header-sorted-asc';
+							$vs_new_sort_direction = 'desc';
+						}
+
+						print "<th class='{$vs_th_class}'><span id='listHeader".$vn_id_count."'><nobr>".
+							caNavLink($this->request, $vs_item_display_str, '', $this->request->getModulePath(), $this->request->getController(), 'Index', array('sort' => $va_display_item['bundle_sort'], 'direction' => $vs_new_sort_direction))
+							."</nobr></span></th>";
 						TooltipManager::add('#listHeader'.$vn_id_count , _t("Currently sorting by ").$va_display_item['display']);
 					} else {
-						print "<th class='list-header-unsorted'><span id='listHeader1".$vn_id_count."'><nobr>".caNavLink($this->request, ((unicode_strlen($va_display_item['display']) > 30) ? strip_tags(mb_substr($va_display_item['display'], 0, 27))."..." : $va_display_item['display']), '', $this->request->getModulePath(), $this->request->getController(), 'Index', array('sort' => $va_display_item['bundle_sort'])) ."</nobr></span></th>";
+						print "<th class='list-header-unsorted'><span id='listHeader1".$vn_id_count."'><nobr>".caNavLink($this->request, $vs_item_display_str, '', $this->request->getModulePath(), $this->request->getController(), 'Index', array('sort' => $va_display_item['bundle_sort'])) ."</nobr></span></th>";
 						TooltipManager::add('#listHeader1'.$vn_id_count , _t("Click to sort by ").$va_display_item['display']);
 					}
 				} else {
-					print "<th class='list-header-nosort'><span id='listHeader2".$vn_id_count."'><nobr>".((unicode_strlen($va_display_item['display']) > 30) ? strip_tags(mb_substr($va_display_item['display'], 0, 27))."..." : $va_display_item['display'])."</nobr></span></th>";
+					print "<th class='list-header-nosort'><span id='listHeader2".$vn_id_count."'><nobr>". $vs_item_display_str ."</nobr></span></th>";
 					TooltipManager::add('#listHeader2'.$vn_id_count , $va_display_item['display']);
 				}
 				$vn_id_count++;
@@ -72,9 +90,9 @@
 			$i = 0;
 			$vn_item_count = 0;
 			
-			while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit() && $vo_interstitial_result->nextHit()) {
+			while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit()) {
 				$vn_object_id = $vo_result->get('object_id');
-				$vn_relation_id = $vo_interstitial_result->get('relation_id');
+				$vn_relation_id = $va_relation_id_map[$vn_object_id]['relation_id'];
 				
 				($i == 2) ? $i = 0 : "";
 ?>
@@ -88,12 +106,28 @@
 					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_objects', $vn_object_id, array(), array())."</td>";;
 ?>
 					<td style="padding-left: 5px; padding-right: 5px;">
-						<?php print $vo_interstitial_result->getWithTemplate('^relationship_typename'); ?>
+						<?php print $va_relation_id_map[$vn_object_id]['relationship_typename']; ?>
 					</td>
 <?php
 						
 					foreach($va_display_list as $vn_placement_id => $va_info) {
-                        print "<td><span class=\"read-more\">".$t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array()))."</span></td>";
+                        print "<td><span class=\"read-more\">";
+
+						// if there's a template, evaluate template against relationship
+						if($vs_template = $va_info['settings']['format']) {
+							$va_opts = array_merge($va_info, array(
+								'resolveLinksUsing' => $vs_primary_table,
+								'primaryIDs' =>
+									array (
+										$vs_primary_table => array($vn_primary_id),
+									),
+							));
+							print caProcessTemplateForIDs($vs_template, $vs_rel_table, array($vn_relation_id), $va_opts);
+						} else {
+							print $t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array()));
+						}
+
+						print "</span></td>";
                     }
 ?>	
 				</tr>

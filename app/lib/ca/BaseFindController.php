@@ -72,8 +72,16 @@
 				$this->opo_result_context = new ResultContext($po_request, $this->ops_tablename, $this->ops_find_type);
 
 				if ($this->opn_type_restriction_id = $this->opo_result_context->getTypeRestriction($pb_type_restriction_has_changed)) {
+					
+					if ($pb_type_restriction_has_changed) {
+						$this->request->session->setVar($this->ops_tablename.'_type_id', $this->opn_type_restriction_id);
+					} elseif($vn_type_id = $this->request->session->getVar($this->ops_tablename.'_type_id')) {
+						$this->opn_type_restriction_id = $vn_type_id;
+					}
+					
 					$_GET['type_id'] = $this->opn_type_restriction_id;								// push type_id into globals so breadcrumb trail can pick it up
 					$this->opb_type_restriction_has_changed =  $pb_type_restriction_has_changed;	// get change status
+					
 				}
 			}
  		}
@@ -203,10 +211,18 @@
 						(($va_tmp[0] == $this->ops_tablename) && ($va_tmp[1] === 'preferred_labels'))
 					) {
 						$va_display_list[$vn_i]['is_sortable'] = true;
-						$va_display_list[$vn_i]['bundle_sort'] = $vs_label_table_name.'.'.$vs_label_display_field;
+						$va_display_list[$vn_i]['bundle_sort'] = $vs_label_table_name.'.'.$t_model->getLabelSortField();
 						continue;
 					}
-					
+
+					// if sort is set in the bundle settings, use that
+					if(isset($va_display_item['settings']['sort']) && (strlen($va_display_item['settings']['sort']) > 0)) {
+						$va_display_list[$vn_i]['is_sortable'] = true;
+						$va_display_list[$vn_i]['bundle_sort'] = $va_display_item['settings']['sort'];
+						continue;
+					}
+
+					// can't sort on related tables!?
 					if ($va_tmp[0] != $this->ops_tablename) { continue; }
 					
 					if ($t_model->hasField($va_tmp[1])) {

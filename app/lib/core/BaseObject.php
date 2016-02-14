@@ -101,7 +101,7 @@
 		}
 		# ------------------------------------------------------------------
 		public function postError($pn_num, $ps_message, $ps_context, $ps_source='') {
-			$o_error = new Error();
+			$o_error = new ApplicationError();
 			$o_error->setErrorOutput($this->error_output);
 			$o_error->setError($pn_num,$ps_message,$ps_context, $ps_source);
 			
@@ -127,4 +127,3 @@
 		}
 		# ------------------------------------------------------------------
 	}
-?>

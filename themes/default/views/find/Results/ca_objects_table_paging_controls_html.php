@@ -37,11 +37,11 @@
 	if($vs_ids = $this->request->getParameter('ids', pString)) {
 		$va_previous_link_params['ids'] = $vs_ids;
 		$va_previous_link_params['interstitialPrefix'] = $this->request->getParameter('interstitialPrefix', pString);
-		$va_previous_link_params['rel_table'] = $this->request->getParameter('rel_table', pString);
+		$va_previous_link_params['relTable'] = $this->request->getParameter('relTable', pString);
 
 		$va_next_link_params['ids'] = $vs_ids;
 		$va_next_link_params['interstitialPrefix'] = $this->request->getParameter('interstitialPrefix', pString);
-		$va_next_link_params['rel_table'] = $this->request->getParameter('rel_table', pString);
+		$va_next_link_params['relTable'] = $this->request->getParameter('relTable', pString);
 	}
 	$va_jump_to_params 			= array();
 ?>

@@ -304,7 +304,7 @@
 	 * @return array List of numeric type_ids
 	 */
 	function caMakeTypeIDList($pm_table_name_or_num, $pa_types, $pa_options=null) {
-		if (!is_array($pa_types) || !sizeof($pa_types)) { return array(); }
+		if(!is_array($pa_types) || !sizeof($pa_types)) { return array(); }
 		$o_dm = Datamodel::load();
 		if(isset($pa_options['dontIncludeSubtypesInTypeRestriction']) && (!isset($pa_options['dont_include_subtypes_in_type_restriction']) || !$pa_options['dont_include_subtypes_in_type_restriction'])) { $pa_options['dont_include_subtypes_in_type_restriction'] = $pa_options['dontIncludeSubtypesInTypeRestriction']; }
 	 	
