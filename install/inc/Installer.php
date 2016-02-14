@@ -297,7 +297,7 @@ class Installer {
 		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
 			require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
 			$o_es = new WLPlugSearchEngineElasticSearch();
-			$o_es->truncateIndex(null, true);
+			$o_es->truncateIndex(null);
 		}
 
 		return true;

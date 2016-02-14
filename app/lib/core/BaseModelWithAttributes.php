@@ -1322,6 +1322,14 @@
 			if ($va_tmp[1] == $this->getTypeFieldName()) {
 				return $this->getTypeListAsHTMLFormElement($ps_field.$vs_rel_types, array('class' => caGetOption('class', $pa_options, null)), array_merge($pa_options, array('nullOption' => '-')));
 			}
+			
+			if ($ps_render = caGetOption('render', $pa_options, null)) {
+				switch($ps_render) {
+					case 'is_set':
+						return caHTMLCheckboxInput($ps_field.$vs_rel_types, array('value' => '[SET]'));
+						break;
+				}
+			}
 											
 			if (in_array($va_tmp[1], array('preferred_labels', 'nonpreferred_labels'))) {
 				return caHTMLTextInput($ps_field.$vs_rel_types.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)), $pa_options);

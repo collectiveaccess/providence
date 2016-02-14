@@ -35,7 +35,7 @@ class ExpressionHelpersTest extends PHPUnit_Framework_TestCase {
 	# -------------------------------------------------------
 	public function testAgeCalculation() {
 		// this test will fail on my birthday every year. sneaky, huh?
-		$this->assertEquals(30, caCalculateAgeInYears('1985/01/28'));
+		$this->assertEquals(31, caCalculateAgeInYears('1985/01/28'));
 
 		// Alan Turing, pre-Unix time
 		$this->assertEquals(41, caCalculateAgeInYears('23 June 1912', '7 June 1954'));

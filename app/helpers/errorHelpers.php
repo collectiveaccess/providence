@@ -39,7 +39,7 @@
 	 *
 	 */
 	function caDisplayException(Exception $e) {
-		if(class_exists('AppController')) { AppController::getInstance()->removeAllPlugins(); }
+		if(class_exists('AppController')) { $o_app = AppController::getInstance()->removeAllPlugins(); }
 		
 		$pn_errno = 0;
 		$ps_errstr = $e->getMessage();
@@ -47,7 +47,7 @@
 		$pn_errline = __LINE__;
 		$pa_errcontext = $e->getTrace();
 		$pa_errcontext_args = caExtractStackTraceArguments($pa_errcontext);
-		$pa_request_params = caExtractRequestParams();
+		//$pa_request_params = caExtractRequestParams();
 		
 		require_once((defined("__CA_THEME_DIR__") ? __CA_THEME_DIR__ : __DIR__.'/../../themes/default').'/views/system/fatal_error_html.php');
 		exit;
@@ -61,7 +61,7 @@
 		$pa_errcontext = debug_backtrace(); 
 		array_shift($pa_errcontext); // remove entry for error handler
 		$pa_errcontext_args = caExtractStackTraceArguments($pa_errcontext);
-		$pa_request_params = caExtractRequestParams();
+		//$pa_request_params = caExtractRequestParams();
 		
 		switch($pn_errno) {
 			case E_WARNING:
@@ -71,7 +71,7 @@
 				//print "ARGH: $ps_errstr<br>";
 				break;
 			default:
-				if(class_exists('AppController')) { AppController::getInstance()->removeAllPlugins(); }
+				if(class_exists('AppController')) { $o_app = AppController::getInstance()->removeAllPlugins(); }
 				require_once((defined("__CA_THEME_DIR__") ? __CA_THEME_DIR__ : __DIR__."/../../themes/default")."/views/system/fatal_error_html.php");
 				exit;
 		}

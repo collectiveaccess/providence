@@ -1963,18 +1963,16 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 	 * Returns a list of "^" prefixed-tags (eg. ^forename) present in a template
 	 *
 	 * @param string $ps_template
-	 * @param array $pa_options No options are currently supported
+	 * @param array $pa_options 
+	 *		stripOptions =
+	 *		parseOptions = 
 	 * 
 	 * @return array An array of tags
 	 */
 	function caGetTemplateTags($ps_template, $pa_options=null) {
 		$va_tags = array();
-		
-		$vs_prefix = caGetOption('prefix', $pa_options, null);
-		
 		if (preg_match_all(__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__, $ps_template, $va_matches)) {
 			foreach($va_matches[1] as $vn_i => $vs_possible_tag) {
-				//if ($vs_prefix) { $va_matches[1][$vn_i] = $vs_possible_tag = $vs_prefix.$vs_possible_tag; }
 				if (strpos($vs_possible_tag, "~") !== false) { continue; }	// don't clip trailing characters when there's a tag directive specified
 				$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.%");	// remove trailing slashes, periods and percent signs as they're potentially valid tag characters that are never meant to be at the end
 			}
@@ -2742,7 +2740,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 				} else {
 					switch(__CA_APP_TYPE__) {
 						case 'PROVIDENCE':
-							$va_links[] = ($vs_link = caEditorLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i])) ? $vs_link : $vs_text;
+							$va_links[] = ($vs_link = caEditorLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i], ($pb_add_rel ? array('rel' => true) : array()))) ? $vs_link : $vs_text;
 							break;
 						case 'PAWTUCKET':
 							$va_links[] = ($vs_link = caDetailLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i])) ? $vs_link : $vs_text;

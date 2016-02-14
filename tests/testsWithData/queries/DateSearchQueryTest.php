@@ -130,6 +130,15 @@ class DateSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.coverageDates:"1/28/1985 @ 9am - 1/28/1985 @ 11am"' => 1,
 			'ca_objects.coverageDates:"1/28/1986 @ 8am - 1/28/1986 @ 9am"' => 1,
 
+			// # qualifier
+			'ca_objects.coverageDates:"#1986"' => 1,
+
+			// >, >=, <, <= qualifiers
+			'ca_objects.coverageDates:">=1985"' => 2,
+			'ca_objects.coverageDates:">1985"' => 1,
+			'ca_objects.coverageDates:"<1986"' => 1,
+			'ca_objects.coverageDates:"<=1986"' => 2,
+
 			// these are valid dates for data entry but apparently they don't work that well in combination with the search
 			//'ca_objects.coverageDates:"01/28/1985 @ 4:43:03a.m. - 01/28/1985 @ 4:43:03p.m."' => 1,
 			//'ca_objects.coverageDates:"01/28/1985 @ 07:43:03 - 01/28/1985 @ 11:43:03"' => 1,

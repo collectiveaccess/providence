@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -88,11 +88,9 @@
 				(ExternalCache::fetch("{$vs_cache_key}_mtime", 'PrintTemplates') >= filemtime($vs_template_path)) &&
 				(ExternalCache::fetch("{$vs_cache_key}_local_mtime", 'PrintTemplates') >= filemtime("{$vs_template_path}/local"))
 			){
-				//Debug::msg('[caGetAvailablePrintTemplates] cache hit');
 				return $va_list;
 			}
 		}
-		//Debug::msg('[caGetAvailablePrintTemplates] cache miss');
 
 		$va_templates = array();
 		foreach(array("{$vs_template_path}", "{$vs_template_path}/local") as $vs_path) {
@@ -117,7 +115,8 @@
 							} else {
 								$va_templates[] = array(
 									'name' => $va_template_info['name'],
-									'code' => '_pdf_'.$vs_template_tag
+									'code' => '_pdf_'.$vs_template_tag,
+									'type' => 'pdf'
 								);
 							}
 						}
@@ -193,10 +192,12 @@
 	 * this function is primarily used to switch between units used when generating PDFs.
 	 *
 	 * @param $ps_value string The value to convert. Valid units are in, cm, mm, px and p. If units are invalid or omitted points are assumed.
-	 *
+	 * @param $pa_options array Options include:
+	 *		dpi = dots-per-inch factor to use when converting physical units (in, cm, etc.) to points [Default is 72dpi]
+	 *		ppi = synonym for dpi option
 	 * @return int Converted measurement in points.
 	 */
-	function caConvertMeasurementToPoints($ps_value) {
+	function caConvertMeasurementToPoints($ps_value, $pa_options=null) {
 		global $g_print_measurement_cache;
 
 		if (isset($g_print_measurement_cache[$ps_value])) { return $g_print_measurement_cache[$ps_value]; }
@@ -204,16 +205,18 @@
 		if (!preg_match("/^([\d\.]+)[ ]*([A-Za-z]*)$/", $ps_value, $va_matches)) {
 			return $g_print_measurement_cache[$ps_value] = $ps_value;
 		}
+		
+		$vn_dpi = caGetOption('dpi', $pa_options, caGetOption('ppi', $pa_options, 72));
 
 		switch(strtolower($va_matches[2])) {
 			case 'in':
-				$ps_value_in_points = $va_matches[1] * 72;
+				$ps_value_in_points = $va_matches[1] * $vn_dpi;
 				break;
 			case 'cm':
-				$ps_value_in_points = $va_matches[1] * 28.346;
+				$ps_value_in_points = $va_matches[1] * ($vn_dpi/2.54);
 				break;
 			case 'mm':
-				$ps_value_in_points = $va_matches[1] * 2.8346;
+				$ps_value_in_points = $va_matches[1] * ($vn_dpi/24.4);
 				break;
 			case '':
 			case 'px':
@@ -261,6 +264,36 @@
 				return $vn_in_points;
 				break;
 		}
+	}
+	# ------------------------------------------------------------------
+	/**
+	 * Converts string quantity with units ($ps_value parameter) to a numeric quantity in
+	 * the units specified by the $ps_units parameter. Units are limited to inches, centimeters, millimeters, pixels and points as
+	 * this function is primarily used to switch between units used when generating PDFs.
+	 *
+	 * @param $ps_value string The value to convert. Valid units are in, cm, mm, px and p. If units are invalid or omitted points are assumed.
+	 * @param $ps_units string A valid measurement unit: in, cm, mm, px, p (inches, centimeters, millimeters, pixels, points) respectively.
+	 *
+	 * @return int Converted measurement. If the output units are omitted or otherwise not valid, pixels are assumed.
+	 */
+	function caParseMeasurement($ps_value, $pa_options=null) {
+		if (!preg_match("/^([\d\.]+)[ ]*([A-Za-z]*)$/", $ps_value, $va_matches)) {
+			return null;
+		}
+
+		switch(strtolower($va_matches[2])) {
+			case 'in':
+			case 'cm':
+			case 'mm':
+			case 'px':
+			case 'p':
+				return array('value' => $va_matches[1], 'units' => $va_matches[2]);
+				break;
+			default:
+				return null;
+				break;
+		}
+
 	}
 	# ------------------------------------------------------------------
 	/**

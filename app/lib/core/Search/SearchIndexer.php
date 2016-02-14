@@ -184,6 +184,7 @@ class SearchIndexer extends SearchBase {
 			if (!sizeof($va_table_names)) { return false; }
 		} else {
 			// full reindex
+			ca_search_indexing_queue::flush();
 			$this->opo_engine->truncateIndex();
 			$va_table_names = $this->getIndexedTables();
 		}

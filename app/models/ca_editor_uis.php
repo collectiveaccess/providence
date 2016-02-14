@@ -520,6 +520,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			$t_ui = ca_editor_uis::find(array('editor_code' => $pm_ui_id), array('returnAs' => 'firstModelInstance'));
 		}
 		if (!$t_ui) { return null; }
+		if ($t_ui->get('is_system_ui')) { return __CA_BUNDLE_ACCESS_EDIT__; }
 		$vn_ui_id = $t_ui->getPrimaryKey();
 		
 		if ($vn_user_id = $po_request->getUserID()) {

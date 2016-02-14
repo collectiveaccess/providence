@@ -932,11 +932,13 @@ class BaseModel extends BaseObject {
 				//
 				// Convert foreign keys and choice list values to display text is needed
 				//
-				if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && ($vs_list_code = $this->getFieldInfo($ps_field,"LIST_CODE"))) {
-					$t_list = new ca_lists();
-					$vs_prop = $t_list->getItemFromListForDisplayByItemID($vs_list_code, $vs_prop);
-				} else {
-					if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && ($vs_list_code = $this->getFieldInfo($ps_field,"LIST"))) {
+				$pb_convert_to_display_text = caGetOption('convertCodesToDisplayText', $pa_options, false);
+				$pb_convert_to_idno = caGetOption('convertCodesToIdno', $pa_options, false);
+				if($pb_convert_to_display_text) {
+					if ($vs_list_code = $this->getFieldInfo($ps_field,"LIST_CODE")) {
+						$t_list = new ca_lists();
+						$vs_prop = $t_list->getItemFromListForDisplayByItemID($vs_list_code, $vs_prop);
+					} elseif ($vs_list_code = $this->getFieldInfo($ps_field,"LIST")) {
 						$t_list = new ca_lists();
 						if (!($vs_tmp = $t_list->getItemFromListForDisplayByItemValue($vs_list_code, $vs_prop))) {
 							if ($vs_tmp = $this->getChoiceListValue($ps_field, $vs_prop)) {
@@ -945,22 +947,25 @@ class BaseModel extends BaseObject {
 						} else {
 							$vs_prop = $vs_tmp;
 						}
-					} else {
-						if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && ($ps_field === 'locale_id') && ((int)$vs_prop > 0)) {
-							$t_locale = new ca_locales($vs_prop);
-							$vs_prop = $t_locale->getName();
-						} else {
-							if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && (is_array($va_list = $this->getFieldInfo($ps_field,"BOUNDS_CHOICE_LIST")))) {
-								foreach($va_list as $vs_option => $vs_value) {
-									if ($vs_value == $vs_prop) {
-										$vs_prop = $vs_option;
-										break;
-									}
-								}
+					} elseif(($ps_field === 'locale_id') && ((int)$vs_prop > 0)) {
+						$t_locale = new ca_locales($vs_prop);
+						$vs_prop = $t_locale->getName();
+					} elseif(is_array($va_list = $this->getFieldInfo($ps_field,"BOUNDS_CHOICE_LIST"))) {
+						foreach($va_list as $vs_option => $vs_value) {
+							if ($vs_value == $vs_prop) {
+								$vs_prop = $vs_option;
+								break;
 							}
 						}
 					}
+				} elseif($pb_convert_to_idno) {
+					if ($vs_list_code = $this->getFieldInfo($ps_field,"LIST_CODE")) {
+						$vs_prop = caGetListItemIdno($vs_prop);
+					} elseif ($vs_list_code = $this->getFieldInfo($ps_field,"LIST")) {
+						$vs_prop = caGetListItemIdno(caGetListItemIDForValue($vs_list_code, $vs_prop));
+					}
 				}
+
 				if (
 					(isset($pa_options["CONVERT_HTML_BREAKS"]) && ($pa_options["CONVERT_HTML_BREAKS"]))
 					||
@@ -2212,7 +2217,7 @@ class BaseModel extends BaseObject {
 					$vs_field_value_is_null = false;
 				}
 
-				if ($vs_field_value_is_null) {
+				if ($vs_field_value_is_null && !in_array($vs_field_type, array(FT_MEDIA, FT_FILE))) {
 					if (($vs_field_type == FT_DATERANGE) || ($vs_field_type == FT_HISTORIC_DATERANGE)  || ($vs_field_type == FT_TIMERANGE)) {
 						$start_field_name = $va_attr["START"];
 						$end_field_name = $va_attr["END"];
@@ -9654,7 +9659,8 @@ $pa_options["display_form_field_tips"] = true;
 	 * 
 	 * @param mixed $pm_rel_table_name_or_num The table name or number of the related table. Only relationships pointing to this table will be moved.
 	 * @param int $pn_to_id The primary key value of the row to move the relationships to.
-	 * @param array $pa_options Array of options. No options are currently supported.
+	 * @param array $pa_options Array of options. Options include:
+	 *		copyAttributes = Copy metadata attributes associated with each relationship, if the calling model supports attributes. [Default is false]
 	 *
 	 * @return int Number of relationships copied, or null on error. Note that you should carefully test the return value for null-ness rather than false-ness, since zero is a valid return value in cases where no relationships were available to be copied. 
 	 */
@@ -9663,6 +9669,8 @@ $pa_options["display_form_field_tips"] = true;
 		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num))) { return null; }
 		$t_item_rel = $va_rel_info['t_item_rel'];	// linking table
 		if ($this->inTransaction()) { $t_item_rel->setTransaction($this->getTransaction()); }
+		
+		$vb_copy_attributes = caGetOption('copyAttributes', $pa_options, false, array('castTo' => 'boolean')) && method_exists($this, 'copyAttributesFrom');
 		
 		$o_db = $this->getDb();
 		
@@ -9678,8 +9686,10 @@ $pa_options["display_form_field_tips"] = true;
 			$vs_right_field_name = $t_item_rel->getRightTableFieldName();
 			
 			$qr_res = $o_db->query("
-				SELECT * FROM ".$t_item_rel->tableName()." 
-				WHERE {$vs_left_field_name} = ? OR {$vs_right_field_name} = ?
+				SELECT * 
+				FROM ".$t_item_rel->tableName()." 
+				WHERE 
+					({$vs_left_field_name} = ?) OR ({$vs_right_field_name} = ?)
 			", (int)$vn_row_id, (int)$vn_row_id);
 			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
 			
@@ -9706,10 +9716,20 @@ $pa_options["display_form_field_tips"] = true;
 					$this->errors = $t_item_rel->errors; return null;	
 				}
 				$va_new_relations[$t_item_rel->getPrimaryKey()] = $va_row;
+	
+				if ($vb_copy_attributes) {
+					$t_item_rel->copyAttributesFrom($vn_relation_id);
+					if ($t_item_rel->numErrors()) {
+						$this->errors = $t_item_rel->errors; return null;	
+					}
+				}
 			}
 		} else {
 			$qr_res = $o_db->query("
-				SELECT * FROM ".$t_item_rel->tableName()." WHERE {$vs_item_pk} = ?
+				SELECT * 
+				FROM ".$t_item_rel->tableName()." 
+				WHERE 
+					({$vs_item_pk} = ?)
 			", (int)$vn_row_id);
 			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
 			
@@ -9735,6 +9755,13 @@ $pa_options["display_form_field_tips"] = true;
 					$this->errors = $t_item_rel->errors; return null;	
 				}
 				$va_new_relations[$t_item_rel->getPrimaryKey()] = $va_row;
+				
+				if ($vb_copy_attributes) {
+					$t_item_rel->copyAttributesFrom($vn_relation_id);
+					if ($t_item_rel->numErrors()) {
+						$this->errors = $t_item_rel->errors; return null;	
+					}
+				}
 			}
 		}
 		
@@ -9752,8 +9779,8 @@ $pa_options["display_form_field_tips"] = true;
 	/**
 	 *
 	 */
-	private function _getRelationshipInfo($pm_rel_table_name_or_num) {
-		if (isset(BaseModel::$s_relationship_info_cache[$vs_table = $this->tableName()][$pm_rel_table_name_or_num])) {
+	private function _getRelationshipInfo($pm_rel_table_name_or_num, $pb_use_cache=true) {
+		if ($pb_use_cache && isset(BaseModel::$s_relationship_info_cache[$vs_table = $this->tableName()][$pm_rel_table_name_or_num])) {
 			return BaseModel::$s_relationship_info_cache[$vs_table][$pm_rel_table_name_or_num];
 		}
 		if (is_numeric($pm_rel_table_name_or_num)) {
@@ -9766,7 +9793,7 @@ $pa_options["display_form_field_tips"] = true;
 		if ($vs_table == $vs_related_table_name) {
 			// self relations
 			if ($vs_self_relation_table = $this->getSelfRelationTableName()) {
-				$t_item_rel = $this->getAppDatamodel()->getInstanceByTableName($vs_self_relation_table, true);
+				$t_item_rel = $this->getAppDatamodel()->getInstanceByTableName($vs_self_relation_table, $pb_use_cache);
 			} else {
 				return null;
 			}
@@ -9775,10 +9802,10 @@ $pa_options["display_form_field_tips"] = true;
 			
 			switch(sizeof($va_path)) {
 				case 3:
-					$t_item_rel = $this->getAppDatamodel()->getInstanceByTableName($va_path[1], true);
+					$t_item_rel = $this->getAppDatamodel()->getInstanceByTableName($va_path[1], $pb_use_cache);
 					break;
 				case 2:
-					$t_item_rel = $this->getAppDatamodel()->getInstanceByTableName($va_path[1], true);
+					$t_item_rel = $this->getAppDatamodel()->getInstanceByTableName($va_path[1], $pb_use_cache);
 					if (!sizeof($va_rel_keys = $this->_DATAMODEL->getOneToManyRelations($vs_table, $va_path[1]))) {
 						$va_rel_keys = $this->_DATAMODEL->getOneToManyRelations($va_path[1], $vs_table);
 					}
@@ -9813,7 +9840,8 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return mixed Array of matched relation_ids on success, false on error.
 	 */
 	public function relationshipExists($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_direction=null, $pa_options=null) {
-		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num))) { 
+		$pb_use_rel_info_cache = caGetOption('useRelationshipInfoCache', $pa_options, true);
+		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num, $pb_use_rel_info_cache))) {
 			$this->postError(1240, _t('Related table specification "%1" is not valid', $pm_rel_table_name_or_num), 'BaseModel->addRelationship()');
 			return false; 
 		}
@@ -9885,7 +9913,7 @@ $pa_options["display_form_field_tips"] = true;
 			}
 		
 		
-			if ($ps_effective_date && $t_item_rel->hasField('sdatetime') && ($va_timestamps = caDateToHistoricTimestamps($ps_effective_date))) {
+			if ($ps_effective_date && $t_item_rel->hasField('effective_date') && ($va_timestamps = caDateToHistoricTimestamps($ps_effective_date))) {
 				$vs_timestamp_sql = " AND (sdatetime = ? AND edatetime = ?)";
 				$va_query_params[] = (float)$va_timestamps['start'];
 				$va_query_params[] = (float)$va_timestamps['end'];
@@ -11257,6 +11285,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *		purify = process text with HTMLPurifier before search. Purifier encodes &, < and > characters, and performs other transformations that can cause searches on literal text to fail. If you are purifying all input (the default) then leave this set true. [Default is true]
 	 *		purifyWithFallback = executes the search with "purify" set and falls back to search with unpurified text if nothing is found. [Default is false]
 	 *		checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for <table_name>.hierarchy.preferred_labels and <table_name>.children.preferred_labels because these returns sets of items. For <table_name>.parent.preferred_labels, which returns a single row at most, you should do access checking yourself. (Everything here applies equally to nonpreferred_labels)
+ 	 *		restrictToTypes = Restrict returned items to those of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]			 
  	 *
 	 * @return mixed Depending upon the returnAs option setting, an array, subclass of BaseModel or integer may be returned.
 	 */
@@ -11286,6 +11315,16 @@ $pa_options["display_form_field_tips"] = true;
 		if ($vb_purify) { $pa_values = caPurifyArray($pa_values); }
 		
 		$va_sql_params = array();
+		
+		
+		$vs_type_restriction_sql = '';
+		if ($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) {
+			if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types)) && sizeof($va_restrict_to_types)) {
+				$vs_type_restriction_sql = " {$vs_table}.".$t_instance->getTypeFieldName()." IN (?) AND ";
+				$va_sql_params[] = $va_restrict_to_types;
+			}
+		}
+			
 		
 		//
 		// Convert type id
@@ -11386,7 +11425,7 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		$vs_deleted_sql = ($t_instance->hasField('deleted')) ? '(deleted = 0) AND ' : '';
-		$vs_sql = "SELECT * FROM {$vs_table} WHERE {$vs_deleted_sql} (".join(" {$ps_boolean} ", $va_sql_wheres).")";
+		$vs_sql = "SELECT * FROM {$vs_table} WHERE {$vs_type_restriction_sql} {$vs_deleted_sql} (".join(" {$ps_boolean} ", $va_sql_wheres).")";
 		
 		$vs_orderby = '';
 		if ($vs_sort = caGetOption('sort', $pa_options, null)) {
