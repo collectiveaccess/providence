@@ -1162,7 +1162,6 @@ class SearchResult extends BaseObject {
 									}
 									$va_hier_list[] = $va_hier_item;
 								}
-							
 							}
 						}
 					}
@@ -1173,11 +1172,15 @@ class SearchResult extends BaseObject {
 					
 						if ($vb_return_with_structure) {
 							$va_acc[] = $va_hier_item;
-						} else {
+						} elseif($this->ops_table_name == $va_path_components['table_name']) {
+							// For primary table: return hier path as list (there can be only one hierarchical path)
 							$va_acc = $this->_flattenArray($va_hier_item, $pa_options);
+						} else {
+							// For related tables: return each hier path as concatenated string as there can be repeats and returnAsArray must be a flat array
+							$va_acc[] = join($vs_hierarchical_delimiter, $this->_flattenArray($va_hier_item, $pa_options));
 						}
 					}
-					$vm_val = $pa_options['returnAsArray'] ? $va_acc : join($vs_hierarchical_delimiter, $va_acc);
+					$vm_val = $pa_options['returnAsArray'] ? $va_acc : join($vs_delimiter, $va_acc);
 					goto filter;
 					break;
 				case 'children':
