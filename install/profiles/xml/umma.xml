@@ -7742,7 +7742,7 @@
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>appraisal</name_singular>
-              <name_plural>appraisals</name_plural>
+              <name_plural>appraisal</name_plural>
             </label>
           </labels>
         </item>
@@ -7750,7 +7750,7 @@
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>insurance value</name_singular>
-              <name_plural>insurance values</name_plural>
+              <name_plural>insurance value</name_plural>
             </label>
           </labels>
         </item>
@@ -7758,7 +7758,7 @@
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>curator's estimate</name_singular>
-              <name_plural>curator's estimates</name_plural>
+              <name_plural>curator's estimate</name_plural>
             </label>
           </labels>
         </item>
@@ -9274,6 +9274,14 @@
             <label locale="en_US" preferred="1">
               <name_singular>Seller</name_singular>
               <name_plural>Seller</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="shipper" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Shipper</name_singular>
+              <name_plural>Shipper</name_plural>
             </label>
           </labels>
         </item>
@@ -12192,8 +12200,8 @@
         <restriction code="objects">
           <table>ca_objects</table>
           <settings>
-            <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -12647,18 +12655,39 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="alternate_ID" datatype="Text">
+    <metadataElement code="alternate_ID" datatype="Container">
       <labels>
         <label locale="en_US">
           <name>Alternate identifiers</name>
         </label>
       </labels>
+      <settings>
+        <setting name="lineBreakAfterNumberOfElements">2</setting>
+      </settings>
+      <elements>
+        <metadataElement code="ID_value" datatype="Text">
+		<labels>
+			<label locale="en_US">
+			  <name>ID value</name>
+			</label>
+		  </labels>
           <settings>
-            <setting name="fieldWidth">40</setting>
+            <setting name="fieldWidth">50</setting>
             <setting name="fieldHeight">1</setting>
-            <setting name="minChars">0</setting>
-            <setting name="maxChars">65535</setting>
           </settings>
+        </metadataElement>
+        <metadataElement code="ID_text" datatype="Text">
+        <labels>
+			<label locale="en_US">
+			  <name>ID text</name>
+			</label>
+		  </labels>
+          <settings>
+            <setting name="fieldWidth">50</setting>
+            <setting name="fieldHeight">1</setting>
+          </settings>
+        </metadataElement>
+      </elements>
       <typeRestrictions>
         <restriction code="objects">
           <table>ca_objects</table>
@@ -12903,7 +12932,7 @@
       <documentationUrl/>
       <settings>
         <setting name="doesNotTakeLocale">1</setting>
-        <setting name="displayTemplate"><![CDATA[<unit relativeTo="ca_objects.dimensions"><if rule="^Type =~ /overall/">^ca_objects.dimensions.dimensions_height<ifdef code="ca_objects.dimensions.dimensions_width"> x </ifdef>^ca_objects.dimensions.dimensions_width<ifdef code="ca_objects.dimensions.dimensions_depth"> x </ifdef>^ca_objects.dimensions.dimensions_depth ^ca_objects.dimensions.Type</if></unit>]]></setting>
+        <setting name="displayTemplate"><![CDATA[<unit relativeTo="ca_objects.dimensions"><if rule="^Type =~ /display/">^ca_objects.dimensions.dimensions_height<ifdef code="ca_objects.dimensions.dimensions_width"> x </ifdef>^ca_objects.dimensions.dimensions_width<ifdef code="ca_objects.dimensions.dimensions_depth"> x </ifdef>^ca_objects.dimensions.dimensions_depth (^ca_objects.dimensions.Type)</if></unit>]]></setting>
       </settings>
       <elements>
         <metadataElement code="dimensions_line1" datatype="Container">
@@ -13174,7 +13203,7 @@
         <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">3</setting>
         <setting name="minChars">0</setting>
-        <setting name="maxChars">255</setting>
+        <setting name="maxChars">255000000</setting>
       </settings>
       <typeRestrictions>
         <restriction code="objects">
@@ -13271,7 +13300,7 @@
         </label>
       </labels>
       <settings>
-        <setting name="displayTemplate"><![CDATA[<unit relativeTo="ca_objects.valuation" sort="^ca_objects.valuation.valuation_date" sortDirection="DESC">^ca_objects.valuation.value_price ^ca_objects.valuation.valuation_date ^ca_objects.valuation.valuation_types</unit>]]></setting>
+        <setting name="displayTemplate"><![CDATA[<unit relativeTo="ca_objects.valuation" sort="^ca_objects.valuation.valuation_date" sortDirection="DESC">^ca_objects.valuation.value_price ^ca_objects.valuation.valuation_date (^ca_objects.valuation.valuation_types)</unit>]]></setting>
       </settings>
       <elements>
         <metadataElement code="valuation_line1" datatype="Container">
@@ -13389,7 +13418,7 @@
           <table>ca_objects</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">15</setting>
+            <setting name="maxAttributesPerRow">1000</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -13397,7 +13426,7 @@
           <table>ca_object_lots</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">15</setting>
+            <setting name="maxAttributesPerRow">1000</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -14270,6 +14299,7 @@
                 <setting name="fieldHeight">2</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">65535</setting>
+                <setting name="usewysiwygeditor">1</setting>
               </settings>
             </metadataElement>
           </elements>
@@ -15445,6 +15475,7 @@
         <setting name="fieldHeight">5</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
+        <setting name="usewysiwygeditor">1</setting>
       </settings>
       <typeRestrictions>
         <restriction code="ca_occurrences">
@@ -15739,6 +15770,7 @@
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
+                <setting name="usewysiwygeditor">1</setting>
               </settings>
             </metadataElement>
             <metadataElement code="primary_address_type" datatype="List" list="contact_type">
@@ -15770,6 +15802,7 @@
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
+                <setting name="usewysiwygeditor">1</setting>
               </settings>
             </metadataElement>
           </elements>
@@ -15815,7 +15848,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">10</setting>
+                <setting name="fieldWidth">30</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -15898,6 +15931,7 @@
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
+                <setting name="usewysiwygeditor">1</setting>
               </settings>
             </metadataElement>
             <metadataElement code="address_type" datatype="List" list="contact_type">
@@ -15929,6 +15963,7 @@
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
+                <setting name="usewysiwygeditor">1</setting>
               </settings>
             </metadataElement>
           </elements>
@@ -15974,7 +16009,7 @@
                 </label>
               </labels>
               <settings>
-                <setting name="fieldWidth">10</setting>
+                <setting name="fieldWidth">30</setting>
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
@@ -19794,6 +19829,27 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="loan_embark_id" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Loan EmbARK ID</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">90</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="ca_loans">
+          <table>ca_loans</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
     <!-- Storage Fields -->
     <metadataElement code="storage_address" datatype="Container">
       <labels>
@@ -23277,6 +23333,7 @@ Lot Type: <unit>^ca_object_lots.lot_status_id <br/></unit>
                 <setting name="label" locale="en_US">Copyright Holder</setting>
                 <setting name="add_label" locale="en_US">Add copyright holder</setting>
                 <setting name="restrict_to_relationship_types">copyright</setting>
+                <setting name="restrict_to_relationship_types">copyright_institution</setting>
                 <setting name="expand_collapse_no_value">collapse</setting>
                 <setting name="expand_collapse_value">collapse</setting>
               </settings>
@@ -23372,7 +23429,7 @@ Lot Type: <unit>^ca_object_lots.lot_status_id <br/></unit>
               <bundle>ca_entities</bundle>
               <settings>
                 <setting name="label" locale="en_US">Culture</setting>
-                <setting name="restrict_to_type">culture</setting>
+                <setting name="restrict_to_types">culture</setting>
                 <setting name="restrict_to_relationship_types">member</setting>
               </settings>
             </placement>
@@ -23417,6 +23474,9 @@ Lot Type: <unit>^ca_object_lots.lot_status_id <br/></unit>
                <settings>
                 <setting name="label" locale="en_US">Entity Name</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_authority">
+              <bundle>ca_attribute_authority</bundle>
             </placement>
             <placement code="ca_attribute_entity_date">
               <bundle>ca_attribute_entity_date</bundle>
@@ -24142,11 +24202,10 @@ Lot Type: <unit>^ca_object_lots.lot_status_id <br/></unit>
             <setting name="display_template"><![CDATA[<unit relativeTo="ca_objects">
 <l>^ca_objects.preferred_labels (^ca_objects.idno)</l><br>
 Artist: <unit relativeTo="ca_objects"><unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="artist">^ca_entities.preferred_labels</unit></unit><br>
-Credit Line: <unit relativeTo="ca_objects.credit_line"><if rule="^ca_objects.credit_line.credit_type =~ /current/">^ca_objects.credit_line.credit_text</if></unit><br/>
+Credit Line: <unit relativeTo="ca_objects.credit_line"><if rule="^ca_objects.credit_line.credit_type =~ /current/">^ca_objects.credit_line.credit_text</if></unit><br/></unit>
 Interstitial Credit Line: <unit relativeTo="ca_objects_x_occurrences"> ^ca_objects_x_occurrences.exh_object_label</unit><br/>
 Interstitial Exhibition Object ID: <unit relativeTo="ca_objects_x_occurrences"> ^ca_objects_x_occurrences.exh_object_id</unit><br/>
-Interstitial Section: <unit relativeTo="ca_objects_x_occurrences">^ca_objects_x_occurrences.exh_object_section</unit><br/>
-</unit>]]></setting>
+Interstitial Section: <unit relativeTo="ca_objects_x_occurrences">^ca_objects_x_occurrences.exh_object_section</unit><br/>]]></setting>
           </settings>
         </placement>
           <placement code="ca_lightweight">
@@ -24158,11 +24217,10 @@ Interstitial Section: <unit relativeTo="ca_objects_x_occurrences">^ca_objects_x_
             <setting name="display_template"><![CDATA[<unit relativeTo="ca_objects">
 <l>^ca_objects.preferred_labels (^ca_objects.idno)</l><br>
 Artist: <unit relativeTo="ca_objects"><unit relativeTo="ca_entities" delimiter=", " restrictToRelationshipTypes="artist">^ca_entities.preferred_labels</unit></unit><br>
-Credit Line: <unit relativeTo="ca_objects.credit_line"><if rule="^ca_objects.credit_line.credit_type =~ /current/">^ca_objects.credit_line.credit_text</if></unit><br/>
-Interstitial Credit Line: <unit relativeTo="ca_objects_x_occurrences"> ^ca_objects_x_occurrences.exh_object_label</unit><br/>
+Credit Line: <unit relativeTo="ca_objects.credit_line"><if rule="^ca_objects.credit_line.credit_type =~ /current/">^ca_objects.credit_line.credit_text</if></unit><br/></unit>
+Interstitial Exhibition Label Copy: <unit relativeTo="ca_objects_x_occurrences"> ^ca_objects_x_occurrences.exh_object_label</unit><br/>
 Interstitial Exhibition Object ID: <unit relativeTo="ca_objects_x_occurrences"> ^ca_objects_x_occurrences.exh_object_id</unit><br/>
-Interstitial Section: <unit relativeTo="ca_objects_x_occurrences">^ca_objects_x_occurrences.exh_object_section</unit><br/>
-</unit>]]></setting>
+Interstitial Section: <unit relativeTo="ca_objects_x_occurrences">^ca_objects_x_occurrences.exh_object_section</unit><br/>]]></setting>
           </settings>
         </placement>
           </bundlePlacements>
@@ -24877,6 +24935,9 @@ Interstitial Section: <unit relativeTo="ca_objects_x_occurrences">^ca_objects_x_
                 <setting name="label" locale="en_US">Loan Identifier</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_loan_embark_id">
+              <bundle>ca_attribute_loan_embark_id</bundle>
+            </placement>
             <placement code="ca_entities">
               <bundle>ca_entities</bundle>
                <settings>
@@ -24896,7 +24957,8 @@ Interstitial Section: <unit relativeTo="ca_objects_x_occurrences">^ca_objects_x_
               <bundle>ca_entities</bundle>
                <settings>
                 <setting name="label" locale="en_US">Lender/Borrower Contact</setting>
-                <setting name="restrict_to_relationship_types">contact</setting>
+                <setting name="restrict_to_relationship_types">borrower_contact</setting>
+                 <setting name="restrict_to_relationship_types">lender_contact</setting>
               </settings>
             </placement>
              <placement code="ca_attribute_loan_contact_notes">
@@ -25194,6 +25256,48 @@ Interstitial Section: <unit relativeTo="ca_objects_x_occurrences">^ca_objects_x_
                 <setting name="restrict_to_type">exhibition</setting>
                 <setting name="label" locale="en_US">Related exhibition</setting>
               </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
+    <userInterface code="list_item_cataloguers_ui" type="ca_list_items">
+      <labels>
+        <label locale="en_US">
+          <name>List item editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="hier_location">
+              <bundle>hierarchy_location</bundle>
+            </placement>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+            </placement>
+            <placement code="idno">
+              <bundle>idno</bundle>
+            </placement>
+            <placement code="is_enabled">
+              <bundle>is_enabled</bundle>
+            </placement>
+            <placement code="is_default">
+              <bundle>is_default</bundle>
+            </placement>
+            <placement code="rank">
+              <bundle>rank</bundle>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -25944,8 +26048,8 @@ Interstitial Section: <unit relativeTo="ca_objects_x_occurrences">^ca_objects_x_
         <type code="contact" default="0">
           <labels>
             <label locale="en_US">
-              <typename>is contact for</typename>
-              <typename_reverse>has as contact</typename_reverse>
+              <typename>contact</typename>
+              <typename_reverse>contact</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -25955,7 +26059,7 @@ Interstitial Section: <unit relativeTo="ca_objects_x_occurrences">^ca_objects_x_
           <labels>
             <label locale="en_US">
               <typename>attended</typename>
-              <typename_reverse>was attended by</typename_reverse>
+              <typename_reverse>attended</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -26090,6 +26194,16 @@ Interstitial Section: <unit relativeTo="ca_objects_x_occurrences">^ca_objects_x_
             <label locale="en_US">
               <typename>agent</typename>
               <typename_reverse>agent</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="other" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>ADM-Lot-Other</typename>
+              <typename_reverse>ADM-Lot-Other</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
@@ -26473,27 +26587,27 @@ Interstitial Section: <unit relativeTo="ca_objects_x_occurrences">^ca_objects_x_
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
         </type>
-        <type code="borrower" default="1">
+        <type code="borrower" default="0">
           <labels>
             <label locale="en_US">
-              <typename>is borrowed from</typename>
-              <typename_reverse>is borrower of</typename_reverse>
+              <typename>borrower</typename>
+              <typename_reverse>borrower</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
         </type>
-        <type code="authorizer" default="1">
+        <type code="authorizer" default="0">
           <labels>
             <label locale="en_US">
-              <typename>is authorized by</typename>
-              <typename_reverse>is authorizer</typename_reverse>
+              <typename>authorizer</typename>
+              <typename_reverse>authorizer</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
         </type>
-        <type code="shipper" default="1">
+        <type code="shipper" default="0">
           <labels>
             <label locale="en_US">
               <typename>shipper</typename>
@@ -26503,7 +26617,7 @@ Interstitial Section: <unit relativeTo="ca_objects_x_occurrences">^ca_objects_x_
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
         </type>
-        <type code="artist" default="1">
+        <type code="artist" default="0">
           <labels>
             <label locale="en_US">
               <typename>artist</typename>
@@ -26513,11 +26627,21 @@ Interstitial Section: <unit relativeTo="ca_objects_x_occurrences">^ca_objects_x_
           <subTypeLeft>lightweight_object</subTypeLeft>
           <subTypeRight/>
         </type>
-        <type code="contact" default="1">
+        <type code="lender_contact" default="0">
           <labels>
             <label locale="en_US">
-              <typename>contact</typename>
-              <typename_reverse>contact</typename_reverse>
+              <typename>lender contact</typename>
+              <typename_reverse>lender contact</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
+        <type code="borrower_contact" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>borrower contact</typename>
+              <typename_reverse>borrower contact</typename_reverse>
             </label>
           </labels>
           <subTypeLeft> </subTypeLeft>
