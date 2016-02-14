@@ -126,17 +126,24 @@ class ObjectsXLocationsTest extends BaseTestWithData {
 	}
 	# -------------------------------------------------------
 	public function testGets() {
-		// so the two locations are organized like this: A Room > My Cabinet and A Room > My Shelf the object is related to both
 		$vm_ret = $this->opt_object->get('ca_storage_locations.hierarchy.preferred_labels.name', array(
 			'delimiter' => '; ',
 			'hierarchyDelimiter' => ' > '
 		));
-
-		// this is what I would expect? -- we get just "A Room > My Shelf". Note that I brought back the hierarchyDelimiter
-		// yesterday so previously it would be "A Room; My Shelf" because there was only one delimiter option
 		$this->assertEquals('A Room > My Cabinet; A Room > My Shelf', $vm_ret);
 
-		// the rest of the tests were for something else and *should* work.
+		$vm_ret = $this->opt_object->get('ca_storage_locations', array(
+			'showCurrentOnly' => true
+		));
+		$this->assertEquals('My Shelf', $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_storage_locations.hierarchy.preferred_labels.name', array(
+			'delimiter' => '; ',
+			'hierarchyDelimiter' => ' > ',
+			'showCurrentOnly' => true
+		));
+		$this->assertEquals('A Room > My Shelf', $vm_ret);
+
 		$vm_ret = $this->opt_object->get("ca_objects_x_storage_locations.effective_date");
 		$this->assertEquals('January 28 1985;2015', $vm_ret);
 
