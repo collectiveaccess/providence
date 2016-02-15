@@ -97,7 +97,7 @@
 			$this->opo_view->setVar('comment_type', $vs_comment_type);
 			
 			$t_comments = new ca_item_comments();
-			$va_comments = $t_comments->getComments($vs_mode, $vn_limit);
+			$va_comments = $t_comments->getCommentsList($vs_mode, $vn_limit);
 
 			$this->opo_view->setVar('comment_list', $va_comments);
 			$this->opo_view->setVar('request', $this->getRequest());
