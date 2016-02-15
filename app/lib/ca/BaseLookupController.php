@@ -85,6 +85,16 @@
 			if (($vn_str_len = mb_strlen($ps_query)) > 0) {
 				if ($vn_str_len < 3) { $pb_exact = true; }		// force short strings to be an exact match (using a very short string as a stem would perform badly and return too many matches in most cases)
 				
+				if (is_array($va_asis_regexes = $o_search_config->getList('asis_regexes'))) {
+					foreach($va_asis_regexes as $vs_asis_regex) {
+						if (preg_match("!{$vs_asis_regex}!", $ps_query)) {
+							$pb_exact = true;
+							break;
+						}
+					}
+				}
+				
+				
 				$o_search = new $this->ops_search_class();
 				
 				$pa_types = array();

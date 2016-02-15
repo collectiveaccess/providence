@@ -976,11 +976,12 @@
 			if ($this->opo_ca_browse_cache->load($vs_cache_key)) {
 
 				$vn_created_on = $this->opo_ca_browse_cache->getParameter('created_on'); //$t_new_browse->get('created_on', array('getDirectDate' => true));
+				$vn_cache_timeout = (int) $this->opo_ca_browse_config->get('cache_timeout');
 
 				$va_criteria = $this->getCriteria();
-				if (!$vb_no_cache && (intval(time() - $vn_created_on) < $this->opo_ca_browse_config->get('cache_timeout'))) {
+				if (!$vb_no_cache && (intval(time() - $vn_created_on) < $vn_cache_timeout)) {
 					$vb_results_cached = true;
-					$this->opo_ca_browse_cache->setParameter('created_on', time() + $this->opo_ca_browse_config->get('cache_timeout'));
+					$this->opo_ca_browse_cache->setParameter('created_on', time() + $vn_cache_timeout);
 					$vb_need_to_save_in_cache = true;
 
 					Debug::msg("Cache hit for {$vs_cache_key}");
@@ -3316,6 +3317,9 @@
 							$qr_res = $this->opo_db->query($vs_sql, $vs_list_name);
 							return ((int)$qr_res->numRows() > 1) ? true : false;
 						} else {
+							// Get label ordering fields
+							$va_ordering_fields_to_fetch = (isset($va_facet_info['order_by_label_fields']) && is_array($va_facet_info['order_by_label_fields'])) ? $va_facet_info['order_by_label_fields'] : array();
+
 							$va_orderbys = array();
 							
 							// Get label ordering fields
@@ -3344,9 +3348,8 @@
 										break;
 								}
 							}
-							
+
 							$vs_order_by = (sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
-							
 							$vs_sql = "
 								SELECT DISTINCT lil.item_id, lil.name_singular, lil.name_plural, lil.locale_id
 								FROM ca_list_items li
@@ -4686,8 +4689,8 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 
 					if ($va_facet_info['relative_to']) {
 						// TODO: do this everywhere
-						$va_restrict_to_relationship_types = array();
-						$vs_browse_type_limit_sql = '';
+						//$va_restrict_to_relationship_types = array();
+						//$vs_browse_type_limit_sql = '';
 
 						if ($t_subject->hasField('deleted')) {
 							$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";

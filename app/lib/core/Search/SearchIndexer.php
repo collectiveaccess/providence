@@ -162,7 +162,6 @@ class SearchIndexer extends SearchBase {
 		define('__CollectiveAccess_IS_REINDEXING__', 1);
 		$t_timer = new Timer();
 
-
 		$pb_display_progress = isset($pa_options['showProgress']) ? (bool)$pa_options['showProgress'] : true;
 		$pb_interactive_display = isset($pa_options['interactiveProgressDisplay']) ? (bool)$pa_options['interactiveProgressDisplay'] : false;
 		$ps_callback = isset($pa_options['callback']) ? (string)$pa_options['callback'] : false;
@@ -185,6 +184,7 @@ class SearchIndexer extends SearchBase {
 			if (!sizeof($va_table_names)) { return false; }
 		} else {
 			// full reindex
+			ca_search_indexing_queue::flush();
 			$this->opo_engine->truncateIndex();
 			$va_table_names = $this->getIndexedTables();
 		}
@@ -214,6 +214,8 @@ class SearchIndexer extends SearchBase {
 				continue;
 			}
 
+			$o_db->query("ALTER TABLE {$vs_table} DISABLE KEYS");
+
 			$qr_all = $o_db->query("SELECT ".$t_instance->primaryKey()." FROM {$vs_table}");
 
 			$vn_num_rows = $qr_all->numRows();
@@ -237,8 +239,8 @@ class SearchIndexer extends SearchBase {
 			$va_intrinsic_list[$vs_table_pk] = array();
 
 			foreach($va_ids as $vn_i => $vn_id) {
-				if (!($vn_i % 200)) {	// Pre-load attribute values for next 200 items to index; improves index performance
-					$va_id_slice = array_slice($va_ids, $vn_i, 200);
+				if (!($vn_i % 500)) {	// Pre-load attribute values for next 500 items to index; improves index performance
+					$va_id_slice = array_slice($va_ids, $vn_i, 500);
 					if ($va_element_ids) {
 						ca_attributes::prefetchAttributes($o_db, $vn_table_num, $va_id_slice, $va_element_ids);
 					}
@@ -279,6 +281,9 @@ class SearchIndexer extends SearchBase {
 				$vn_c++;
 			}
 			$qr_all->free();
+			
+			$o_db->query("ALTER TABLE {$vs_table} ENABLE KEYS");
+			
 			unset($t_instance);
 			if ($pb_display_progress && $pb_interactive_display) {
 				print CLIProgressBar::finish();
@@ -403,7 +408,7 @@ class SearchIndexer extends SearchBase {
 		if (is_subclass_of($t_subject, "BaseLabel")) {
 			if (!($t_subject->getPrimaryKey() == $pn_subject_row_id)) { $t_subject->load($pn_subject_row_id); }
 			$pn_subject_row_id = $t_subject->get($t_subject->getSubjectKey());
-			$t_subject = $t_subject->getSubjectTableInstance();
+			$t_subject = $t_subject->getSubjectTableInstance(array('dontLoadInstance' => true));
 			$ps_field = "preferred_labels.{$ps_field}";
 		}
 		$va_ids = $t_subject->getHierarchyAncestors($pn_subject_row_id, array('idsOnly' => true, 'includeSelf' => true));
@@ -2114,8 +2119,7 @@ class SearchIndexer extends SearchBase {
 	 * Returns element code of ca_metadata_element with specified element_id or NULL if the element doesn't exist
 	 */
 	private function _getElementCode($pn_element_id) {
-		$this->_getElementID($pn_element_id);	// ensures MemoryCache is populated
-		return MemoryCache::fetch($pn_element_id, 'SearchIndexerElementIds');
+		return $this->_getElementID($pn_element_id);	// ensures MemoryCache is populated
 	}
 	# ------------------------------------------------
 	/**

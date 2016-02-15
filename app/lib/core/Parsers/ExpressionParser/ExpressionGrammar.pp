@@ -84,7 +84,7 @@
 %token  notin_op  NOT\ IN
 
 // Variables
-%token  variable  \^([A-Za-z0-9\._\/])+
+%token  variable  \^([A-Za-z0-9\._\/\:])+
 
 %token  id        \w+
 

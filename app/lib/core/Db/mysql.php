@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2013 Whirl-i-Gig
+ * Copyright 2006-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -116,8 +116,7 @@ class Db_mysql extends DbDriverBase {
 		}
 		
 		if (!function_exists("mysql_connect")) {
-			die(_t("Your PHP installation lacks MySQL support. Please add it and retry..."));
-			exit;
+			throw new DatabaseException(_t("Your PHP installation lacks MySQL support. Please add it and retry..."), 200, "Db->mysql->connect()");
 		}
 		
 		if (!$vb_unique_connection && ($vb_persistent_connections = caGetOption('persistentConnections', $pa_options, false))) {
@@ -127,11 +126,13 @@ class Db_mysql extends DbDriverBase {
 		}
 		if (!$this->opr_db) {
 			$po_caller->postError(200, mysql_error(), "Db->mysql->connect()");
+			throw new DatabaseException(mysql_error(), 200, "Db->mysql->connect()");
 			return false;
 		}
 
 		if (!mysql_select_db($pa_options["database"], $this->opr_db)) {
 			$po_caller->postError(201, mysql_error($this->opr_db), "Db->mysql->connect()");
+			throw new DatabaseException(mysql_error(), 201, "Db->mysql->connect()");
 			return false;
 		}
 		mysql_query('SET NAMES \'utf8\'', $this->opr_db);
@@ -260,6 +261,7 @@ class Db_mysql extends DbDriverBase {
 	public function execute($po_caller, $opo_statement, $ps_sql, $pa_values) {
 		if (!$ps_sql) {
 			$opo_statement->postError(240, _t("Query is empty"), "Db->mysql->execute()");
+			throw new DatabaseException(_t("Query is empty"), 240, "Db->mysql->execute()");
 			return false;
 		}
 
@@ -269,6 +271,7 @@ class Db_mysql extends DbDriverBase {
 		$vn_needed_values = sizeof($va_placeholder_map);
 		if ($vn_needed_values != sizeof($pa_values)) {
 			$opo_statement->postError(285, _t("Number of values passed (%1) does not equal number of values required (%2)", sizeof($pa_values), $vn_needed_values),"Db->mysql->execute()");
+			throw new DatabaseException(_t("Number of values passed (%1) does not equal number of values required (%2)", sizeof($pa_values), $vn_needed_values), 285, "Db->mysql->execute()");
 			return false;
 		}
 
@@ -312,13 +315,15 @@ class Db_mysql extends DbDriverBase {
 					}
 					
 					if (!$r_res) {
-						$opo_statement->postError($po_caller->nativeToDbError($vn_mysql_err), mysql_error($this->opr_db).((__CA_ENABLE_DEBUG_OUTPUT__) ? "\n<pre>".caPrintStacktrace()."</pre>" : ""), "Db->mysql->execute()");
+						$opo_statement->postError($this->nativeToDbError($vn_mysql_err), mysql_error($this->opr_db), "Db->mysql->execute()");
+						throw new DatabaseException(mysql_error($this->opr_db), $this->nativeToDbError($vn_mysql_err), "Db->mysql->execute()");
 						return false;
 					}
 					return new DbResult($this, $r_res);
 					break;
 				default:
-					$opo_statement->postError($po_caller->nativeToDbError($vn_mysql_err), mysql_error($this->opr_db).((__CA_ENABLE_DEBUG_OUTPUT__) ? "\n<pre>".caPrintStacktrace()."</pre>" : ""), "Db->mysql->execute()");
+					$opo_statement->postError($this->nativeToDbError($vn_mysql_err), mysql_error($this->opr_db), "Db->mysql->execute()");
+					throw new DatabaseException(mysql_error($this->opr_db), $this->nativeToDbError($vn_mysql_err), "Db->mysql->execute()");
 					break;
 			}
 			return false;
@@ -371,10 +376,12 @@ class Db_mysql extends DbDriverBase {
 	public function beginTransaction($po_caller) {
 		if (!@mysql_query('set autocommit=0', $this->opr_db)) {
 			$po_caller->postError(250, mysql_error($this->opr_db), "Db->mysql->beginTransaction()");
+			throw new DatabaseException(mysql_error($this->opr_db), 250, "Db->mysql->beginTransaction()");
 			return false;
 		}
 		if (!@mysql_query('start transaction', $this->opr_db)) {
 			$po_caller->postError(250, mysql_error($this->opr_db), "Db->mysql->beginTransaction()");
+			throw new DatabaseException(mysql_error($this->opr_db), 250, "Db->mysql->beginTransaction()");
 			return false;
 		}
 		return true;
@@ -388,10 +395,12 @@ class Db_mysql extends DbDriverBase {
 	public function commitTransaction($po_caller) {
 		if (!@mysql_query('commit', $this->opr_db)) {
 			$po_caller->postError(250, mysql_error($this->opr_db), "Db->mysql->commitTransaction()");
+			throw new DatabaseException(mysql_error($this->opr_db), 250, "Db->mysql->commitTransaction()");
 			return false;
 		}
 		if (!@mysql_query('set autocommit=1', $this->opr_db)) {
 			$po_caller->postError(250, mysql_error($this->opr_db), "Db->mysql->commitTransaction()");
+			throw new DatabaseException(mysql_error($this->opr_db), 250, "Db->mysql->commitTransaction()");
 			return false;
 		}
 		return true;
@@ -405,10 +414,12 @@ class Db_mysql extends DbDriverBase {
 	public function rollbackTransaction($po_caller) {
 		if (!@mysql_query('rollback', $this->opr_db)) {
 			$po_caller->postError(250, mysql_error($this->opr_db), "Db->mysql->rollbackTransaction()");
+			throw new DatabaseException(mysql_error($this->opr_db), 250, "Db->mysql->rollbackTransaction()");
 			return false;
 		}
 		if (!@mysql_query('set autocommit=1', $this->opr_db)) {
 			$po_caller->postError(250, mysql_error($this->opr_db), "Db->mysql->rollbackTransaction()");
+			throw new DatabaseException(mysql_error($this->opr_db), 250, "Db->mysql->rollbackTransaction()");
 			return false;
 		}
 		return true;
@@ -472,6 +483,7 @@ class Db_mysql extends DbDriverBase {
 		if ($pn_offset > (mysql_num_rows($pr_res) - 1)) { return false; }
 		if (!@mysql_data_seek($pr_res, $pn_offset)) {
     		$po_caller->postError(260,_t("seek(%1) failed: result has %2 rows", $pn_offset, $this->numRows($pr_res)),"Db->mysql->seek()");
+    		throw new DatabaseException(_t("seek(%1) failed: result has %2 rows", $pn_offset, $this->numRows($pr_res)), 260, "Db->mysql->seek()");
 			return false;
 		};
 
@@ -526,6 +538,7 @@ class Db_mysql extends DbDriverBase {
 			return $va_tables;
 		} else {
 			$po_caller->postError(280, mysql_error($this->opr_db), "Db->mysql->getTables()");
+			throw new DatabaseException(mysql_error($this->opr_db), 280, "Db->mysql->getTables()");
 			return false;
 		}
 	}

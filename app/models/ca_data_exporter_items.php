@@ -314,6 +314,20 @@ class ca_data_exporter_items extends BaseModel {
 			'description' => _t('If set, id values refering to foreign keys are returned as preferred label text in the current locale.')
 		);
 
+		$va_settings['convertCodesToIdno'] = array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Convert codes to idno'),
+			'description' => _t('If set, id values refering to foreign keys are returned as idno.')
+		);
+
 		$va_settings['returnIdno'] = array(
 			'formatType' => FT_BIT,
 			'displayType' => DT_SELECT,

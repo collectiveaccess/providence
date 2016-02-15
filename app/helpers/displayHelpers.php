@@ -2033,7 +2033,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 			
 			if ($t_instance && ($vs_gotten_val = $t_instance->get($vs_proc_tag, $pa_options))) {
 				$vs_gotten_val = caProcessTemplateTagDirectives($vs_gotten_val, $va_tmp);
-				$ps_template = str_replace('^'.$vs_tag, $vs_gotten_val, $ps_template);
+				
+				$ps_template = preg_replace("/\^".preg_quote($vs_tag, '/')."(?![A-Za-z0-9]+)/", $vs_gotten_val, $ps_template);
 			} else {
 				if (is_array($vs_val = isset($pa_values[$vs_proc_tag]) ? $pa_values[$vs_proc_tag] : '')) {
 					// If value is an array try to make a string of it
@@ -2753,7 +2754,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 				} else {
 					switch(__CA_APP_TYPE__) {
 						case 'PROVIDENCE':
-							$va_links[] = ($vs_link = caEditorLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i])) ? $vs_link : $vs_text;
+							$va_links[] = ($vs_link = caEditorLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i], ($pb_add_rel ? array('rel' => true) : array()))) ? $vs_link : $vs_text;
 							break;
 						case 'PAWTUCKET':
 							$va_links[] = ($vs_link = caDetailLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i])) ? $vs_link : $vs_text;

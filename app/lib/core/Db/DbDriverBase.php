@@ -85,5 +85,92 @@ class DbDriverBase {
 	function escape($ps_text) {
 		return addslashes($ps_text);
 	}
+	
+	/**
+	 * Conversion of error numbers
+	 *
+	 * @param int native error number
+	 * @return int db error number
+	 */
+	public function nativeToDbError($pn_error_number) {
+		switch($pn_error_number) {
+			case 1004:	// Can't create file
+			case 1005:	// Can't create table
+			case 1006:	// Can't create database
+				return 242;
+				break;
+			case 1007:	// Database already exists
+				return 244;
+				break;
+			case 1050:	// Table already exists
+			case 1061:	// Duplicate key
+				return 245;
+				break;
+			case 1008:	// Can't drop database; database doesn't exist
+			case 1049:	// Unknown database
+				return 201;
+				break;
+			case 1051:	// Unknown table
+			case 1146:	// Table doesn't exist
+				return 282;
+				break;
+			case 1054:	// Unknown field
+				return 283;
+				break;
+			case 1091:	// Can't DROP item; check that column/key exists
+				return 284;
+				break;
+			case 1044:	// access denied for user to database
+			case 1142:	// command denied to user for table
+				return 207;
+				break;
+			case 1046:	// No database selected
+				return 208;
+				break;
+			case 1048:	// Column cannot be null
+				return 291;
+				break;
+			case 1216:	// Cannot add or update a child row: a foreign key constraint fails
+			case 1217:	// annot delete or update a parent row: a foreign key constraint fails
+				return 290;
+				break;
+			case 1136:	// Column count doesn't match value count
+				return 288;
+				break;
+			case 1100:	// Table was not locked with LOCK TABLES
+				return 265;
+				break;
+			case 1062:	// duplicate value for unique field
+			case 1022:	// Can't write; duplicate key in table
+				return 251;
+				break;
+			case 1065:
+				// query empty
+				return 240;
+				break;
+			case 1064:	// SQL syntax error
+			default:
+				return 250;
+				break;
+		}
+	}
 }
-?>
+
+class DatabaseException extends Exception {
+	private $opn_error_number = null;
+	private $ops_error_context = null;
+	
+	public function __construct($ps_error_message, $pn_error_number, $ps_error_context=null) {
+		parent::__construct($ps_error_message);
+		$this->opn_error_number = $pn_error_number;
+		$this->ops_error_context = $ps_error_context;
+	}
+	
+	public function getNumber() {
+		return $this->opn_error_number;
+	}
+	
+	public function getContext() {
+		return $this->ops_error_context;
+	}
+}

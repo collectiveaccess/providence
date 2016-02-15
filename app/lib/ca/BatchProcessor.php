@@ -793,7 +793,7 @@
 
 									if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'ALWAYS_MATCH'))) {
 										if(!is_array($va_fields_to_match_on = $po_request->config->getList('batch_media_import_match_on')) || !sizeof($va_fields_to_match_on)) {
-											$batch_media_import_match_on = array('idno');
+											$va_fields_to_match_on = array('idno');
 										}
 
 										$vs_bool = 'OR';

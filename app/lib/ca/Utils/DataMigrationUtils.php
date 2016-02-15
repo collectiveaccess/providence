@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2015 Whirl-i-Gig
+ * Copyright 2010-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -103,13 +103,23 @@
 		 * @param int $pn_parent_id The parent_id of the place; must be set to a non-null value
 		 * @param int $pn_type_id The type_id of the place type to use if the place needs to be created
 		 * @param int $pn_locale_id The locale_id to use if the place needs to be created (will be used for both the place locale as well as the label locale)
+		 * @param int $pn_hierarchy_id The idno or item_id of the place hierarchy to use [Default is null; use first hierarchy found] 
 		 * @param array $pa_values An optional array of additional values to populate newly created place records with. These values are *only* used for newly created places; they will not be applied if the place named already exists. The array keys should be names of ca_places fields or valid entity attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
 		 * @param array $pa_options An optional array of options. See DataMigrationUtils::_getID() for a list.
 		 * @return bool|ca_places|mixed|null
 		 *
 		 * @see DataMigrationUtils::_getID()
 		 */
-		static function getPlaceID($ps_place_name, $pn_parent_id, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
+		static function getPlaceID($ps_place_name, $pn_parent_id, $pn_type_id, $pn_locale_id, $pn_hierarchy_id=null, $pa_values=null, $pa_options=null) {
+			if (!is_array($pa_values)) { $pa_values = array(); }
+			if ($pn_hierarchy_id) {
+				$pa_values['hierarchy_id'] = $pn_hierarchy_id;
+			} else {
+				$t_list = new ca_lists();
+				if (sizeof($va_hierarchy_ids = $t_list->getItemsForList('place_hierarchies', array('idsOnly' => true, 'omitRoot' => true)))) {
+					$pa_values['hierarchy_id'] = array_shift($va_hierarchy_ids);
+				}
+			}
 			return DataMigrationUtils::_getID('ca_places', array('name' => $ps_place_name), $pn_parent_id, $pn_type_id, $pn_locale_id, $pa_values, $pa_options);
 		}
 		# -------------------------------------------------------
@@ -776,7 +786,7 @@
 		 * @param array $pa_options An optional array of options, which include:
 		 *                outputErrors - if true, errors will be printed to console [default=false]
 		 *                dontCreate - if true then new entities will not be created [default=false]
-		 *                matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails.
+		 *                matchOn = optional list indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails. For entities only you may also specifiy "displayname", "surname" and "forename" to match on the text of the those label fields exclusively.
 		 *                matchOnDisplayName  if true then entities are looked up exclusively using displayname, otherwise forename and surname fields are used [default=false]
 		 *                transaction - if Transaction instance is passed, use it for all Db-related tasks [default=null]
 		 *                returnInstance = return ca_entities instance rather than entity_id. Default is false.
@@ -806,13 +816,19 @@
 			
 			$pb_output_errors 				= caGetOption('outputErrors', $pa_options, false);
 			$pb_match_on_displayname 		= caGetOption('matchOnDisplayName', $pa_options, false);
-			$pa_match_on 					= caGetOption('matchOn', $pa_options, array('label', 'idno'), array('castTo' => "array"));
+			$pa_match_on 					= caGetOption('matchOn', $pa_options, array('label', 'idno', 'displayname'), array('castTo' => "array"));
 			$ps_event_source 				= caGetOption('importEventSource', $pa_options, '?'); 
 			$pb_match_media_without_ext 	= caGetOption('matchMediaFilesWithoutExtension', $pa_options, false);
 			$pb_ignore_parent			 	= caGetOption('ignoreParent', $pa_options, false);
 			
 			$vn_parent_id 					= ($pn_parent_id ? $pn_parent_id : caGetOption('parent_id', $pa_values, null));
-			if (!$vn_parent_id) { $vn_parent_id = null; }
+
+			if ($vn_parent_id) {
+				$pa_values['parent_id'] = $vn_parent_id;
+			} elseif(is_array($pa_values)) {
+				unset($pa_values['parent_id']);
+				$vn_parent_id = null;
+			}
 			
 			$vs_idno_fld					= $t_instance->getProperty('ID_NUMBERING_ID_FIELD');
 			$vs_idno 						= caGetOption($vs_idno_fld, $pa_values, null); 
@@ -881,7 +897,7 @@
 												if(!$vs_idno_match) { continue; }
 												if (preg_match('!'.$vs_regex.'!', $vs_idno_match, $va_matches)) {
 													if ($vn_id = (ca_object_representations::find(array('idno' => $va_matches[1]), array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])))) {
-														break(5);
+														break(6);
 													}
 												}
 											}
@@ -891,7 +907,7 @@
 									foreach($va_idnos_to_match as $vs_idno_match) {
 										if(!$vs_idno_match) { continue; }
 										if ($vn_id = (ca_object_representations::find(array('idno' => $vs_idno_match), array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])))) {
-											break(3);
+											break(4);
 										}
 									}
 								}
@@ -905,14 +921,14 @@
 									$vs_idno_fld => $vs_idno ? $vs_idno : ($pa_label['_originalText'] ? $pa_label['_originalText'] : $vs_label),
 									'type_id' => $pn_type_id
 								);
-								if (!$pb_ignore_parent && isset($pa_values['parent_id'])) { $va_find_vals['parent_id'] = $pa_values['parent_id']; }
+								if (!$pb_ignore_parent && $vn_parent_id) { $va_find_vals['parent_id'] = $vn_parent_id; }
 							
 								if (
 									($vs_idno || trim($pa_label['_originalText'] || $vs_label)) 
 									&& 
 									($vn_id = ($vs_table_class::find($va_find_vals, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction']))))
 								) {
-									break(2);
+									break(3);
 								}
 								break;
 						}
@@ -922,7 +938,7 @@
 						if ($pb_match_on_displayname && (strlen(trim($pa_label['displayname'])) > 0)) {
 							// entities only
 							$va_params = array('preferred_labels' => array('displayname' => $pa_label['displayname']),'type_id' => $pn_type_id);
-							if (!$pb_ignore_parent && isset($pa_values['parent_id'])) { $va_params['parent_id'] = $vn_parent_id; }
+							if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
 							$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction']));
 						} elseif($vs_table_class == 'ca_entities') {
 							// entities only
@@ -931,7 +947,7 @@
 							$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction']));
 						} else {
 							$va_params = array('preferred_labels' => array($vs_label_display_fld => $pa_label[$vs_label_display_fld]), 'type_id' => $pn_type_id);
-							if (!$pb_ignore_parent && isset($pa_values['parent_id'])) { $va_params['parent_id'] = $vn_parent_id; }
+							if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
 							
 							$vn_id = ($vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])));
 						}
@@ -942,21 +958,21 @@
 					//
 					case 'surname':
 						$va_params = array('preferred_labels' => array('surname' => $pa_label['surname']), 'type_id' => $pn_type_id);
-						if (!$pb_ignore_parent && isset($pa_values['parent_id'])) { $va_params['parent_id'] = $vn_parent_id; }
+						if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
 						
 						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction']));
 						if ($vn_id) { break(2); }
 						break;
 					case 'forename':
 						$va_params = array('preferred_labels' => array('forename' => $pa_label['forename']), 'type_id' => $pn_type_id);
-						if (!$pb_ignore_parent && isset($pa_values['parent_id'])) { $va_params['parent_id'] = $vn_parent_id; }
+						if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
 						
 						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction']));
 						if ($vn_id) { break(2); }
 						break;
 					case 'displayname':
 						$va_params = array('preferred_labels' => array('displayname' => $pa_label['displayname']), 'type_id' => $pn_type_id);
-						if (!$pb_ignore_parent && isset($pa_values['parent_id'])) { $va_params['parent_id'] = $vn_parent_id; }
+						if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
 						
 						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction']));
 						if ($vn_id) { break(2); }
@@ -978,7 +994,7 @@
 				if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 					$t_instance->setTransaction($pa_options['transaction']);
 				}
-
+				
 				$t_instance->setMode(ACCESS_WRITE);
 				$t_instance->set('locale_id', $pn_locale_id);
 				$t_instance->set('type_id', $pn_type_id);
