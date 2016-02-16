@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -96,7 +96,7 @@ class SearchResult extends BaseObject {
 
 	# ------------------------------------------------------------------
 	private $opb_disable_get_with_template_prefetch = false;
-	static $s_template_prefetch_cache;
+	private $opa_template_prefetch_cache = array();
 	# ------------------------------------------------------------------
 
 	public static function clearCaches() {
@@ -111,7 +111,6 @@ class SearchResult extends BaseObject {
 		self::$opa_hierarchy_children_prefetch_cache_index = array();
 		self::$opa_hierarchy_siblings_prefetch_cache = array();
 		self::$opa_hierarchy_siblings_prefetch_cache_index = array();
-		self::$s_template_prefetch_cache = array();
 	}
 
 	public function __construct($po_engine_result=null, $pa_tables=null) {
@@ -159,7 +158,7 @@ class SearchResult extends BaseObject {
 		
 		$this->opo_tep = $GLOBALS["_DbResult_time_expression_parser"];
 		
-		if (!is_array(self::$s_template_prefetch_cache)) { self::$s_template_prefetch_cache = array(); }
+		$this->opa_template_prefetch_cache = array();
 	}
 	# ------------------------------------------------------------------
 	public function cloneInit() {
@@ -714,7 +713,10 @@ class SearchResult extends BaseObject {
 		$vs_md5 = caMakeCacheKeyFromOptions($pa_options);
 		
 		$va_criteria = is_array($this->opa_tables[$ps_tablename]) ? $this->opa_tables[$ps_tablename]['criteria'] : null;
-		$va_rel_items = $this->opo_subject_instance->getRelatedItems($ps_tablename, array_merge($pa_options, array('row_ids' => $va_row_ids, 'limit' => 100000, 'criteria' => $va_criteria)));		// if there are more than 100,000 then we have a problem
+		
+		$va_opts = array_merge($pa_options, array('row_ids' => $va_row_ids, 'criteria' => $va_criteria));
+		if (!isset($va_opts['limit'])) { $va_opts['limit'] = 100000; }
+		$va_rel_items = $this->opo_subject_instance->getRelatedItems($ps_tablename, $va_opts);		// if there are more than 100,000 then we have a problem
 		
 		if (!is_array($va_rel_items) || !sizeof($va_rel_items)) { return; }
 		
@@ -2168,11 +2170,11 @@ class SearchResult extends BaseObject {
 		// the assumption is that if you run getWithTemplate for the current row, you'll probably run it for the next bunch of rows too
 		// since running caProcessTemplateForIDs for every single row is slow, we prefetch a set number of rows here
 		$vs_cache_base_key = $this->getCacheKeyForGetWithTemplate($ps_template, $pa_options);
-		if(!isset(self::$s_template_prefetch_cache[$vs_cache_base_key][$vn_cur_row = $this->opo_engine_result->currentRow()])) {
+		if(!isset($this->opa_template_prefetch_cache[$vs_cache_base_key][$vn_cur_row = $this->opo_engine_result->currentRow()])) {
 			$this->prefetchForGetWithTemplate($ps_template, $pa_options);
 		}
 
-		return self::$s_template_prefetch_cache[$vs_cache_base_key][$vn_cur_row];
+		return $this->opa_template_prefetch_cache[$vs_cache_base_key][$vn_cur_row];
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -2187,13 +2189,13 @@ class SearchResult extends BaseObject {
 
 		// if we're at the first hit, we don't need to offset the cache keys, so we can use $va_vals as-is
 		if(($vn_cur_row = $this->opo_engine_result->currentRow()) == 0) {
-			self::$s_template_prefetch_cache[$vs_cache_base_key] = array_values($va_vals);
+			$this->opa_template_prefetch_cache[$vs_cache_base_key] = array_values($va_vals);
 		} else {
 			// this is kind of slow but we hope that users usually pull when the ptr is still at the first result
 			// I tried messing around with array_walk instead of this loop but that doesn't gain us much, and this is way easier to read
 			$vn_i = 0;
 			foreach($va_vals as $vs_val) {
-				self::$s_template_prefetch_cache[$vs_cache_base_key][$vn_cur_row + $vn_i] = $vs_val;
+				$this->opa_template_prefetch_cache[$vs_cache_base_key][$vn_cur_row + $vn_i] = $vs_val;
 				$vn_i++;
 			}
 		}
@@ -2202,8 +2204,8 @@ class SearchResult extends BaseObject {
 	/**
 	 *
 	 */
-	public static function clearGetWithTemplatePrefetch() {
-		self::$s_template_prefetch_cache = array();
+	public function clearGetWithTemplatePrefetch() {
+		$this->opa_template_prefetch_cache = array();
 	}
 	# ------------------------------------------------------------------
 	/**
