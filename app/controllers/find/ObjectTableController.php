@@ -133,6 +133,22 @@ class ObjectTableController extends BaseSearchController {
 		$this->getView()->setVar('primaryTable', $vs_primary_table);
 		$this->getView()->setVar('primaryID', $vn_primary_id);
 
+		// piece the parameters back together to build the string to append to urls for subsequent form submissions
+		$va_additional_search_controller_params = array(
+			'ids' => join(';', $va_relation_ids),
+			'interstitialPrefix' => $vs_interstitial_prefix,
+			'relTable' => $vs_rel_table,
+			'primaryTable' => $vs_primary_table,
+			'primaryID' => $vn_primary_id
+		);
+
+		$vs_url_string = '';
+		foreach($va_additional_search_controller_params as $vs_key => $vs_val) {
+			$vs_url_string .= '/' . $vs_key . '/' . urlencode($vs_val);
+		}
+
+		$this->getView()->setVar('objectTableURLParamString', $vs_url_string);
+
 		$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
 
 		$va_search_opts = array(
