@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -163,7 +163,7 @@ class ca_attributes extends BaseModel {
 		)
 	);
 	
-	static $s_attribute_cache_size = 8192;
+	static $s_attribute_cache_size = 65535;
 	static $s_get_attributes_cache = array();
 	static $s_ca_attributes_element_instance_cache = array();
 	
@@ -185,6 +185,7 @@ class ca_attributes extends BaseModel {
 	#
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
+		require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
@@ -563,10 +564,9 @@ class ca_attributes extends BaseModel {
 				caa.attribute_id, caa.locale_id, caa.element_id element_set_id, caa.row_id,
 				caav.value_id, caav.item_id, caav.value_longtext1, caav.value_longtext2,
 				caav.value_decimal1, caav.value_decimal2, caav.value_integer1, caav.value_blob,
-				cme.element_id, cme.datatype, cme.settings, cme.element_code
+				caav.element_id
 			FROM ca_attributes caa
 			INNER JOIN ca_attribute_values AS caav ON caa.attribute_id = caav.attribute_id
-			INNER JOIN ca_metadata_elements AS cme ON cme.element_id = caav.element_id
 			WHERE
 				(caa.table_num = ?) AND (caa.row_id IN (?)) AND (caa.element_id IN (?))
 			ORDER BY
@@ -583,6 +583,10 @@ class ca_attributes extends BaseModel {
 		$o_attr = $vn_last_element_id = null; 
 		while($qr_attrs->nextRow()) {
 			$va_raw_row = $qr_attrs->getRow();
+			
+			$va_raw_row['element_code'] = ca_metadata_elements::getElementCode($va_raw_row['element_id']);
+			$va_raw_row['datatype'] = ca_metadata_elements::getElementDatatype($va_raw_row['element_id']);
+			
 			if ($vn_last_attribute_id != $va_raw_row['attribute_id']) {
 				if ($vn_last_attribute_id && $vn_last_row_id) {
 					$va_attrs[$vn_last_row_id][$vn_last_element_id][] = $o_attr;
@@ -857,4 +861,3 @@ class ca_attributes extends BaseModel {
 	}
 	# ------------------------------------------------------
 }
-?>

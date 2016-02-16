@@ -281,6 +281,7 @@
  			$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '');
 			$vs_element = '';
  			
+ 			
  			if (!preg_match("!^[\d\.]+px$!i", $vs_width)) {
  				$vs_width = ((int)$vs_width * 6)."px";
  			}

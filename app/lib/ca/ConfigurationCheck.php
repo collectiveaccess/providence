@@ -192,7 +192,7 @@ final class ConfigurationCheck {
 	# Quick configuration check functions
 	# -------------------------------------------------------
 	/**
-	 * Check for innodb availabiliy
+	 * Check for innodb availability
 	 */
 	public static function DBInnoDBQuickCheck() {
 		$va_mysql_errors = array();
