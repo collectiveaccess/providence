@@ -664,6 +664,15 @@ class BaseModel extends BaseObject {
 	}
 	# --------------------------------------------------------------------------------
 	/**
+	 * Check if row load is loaded in instance
+	 *
+	 * @return bool
+	 */
+	public function isLoaded() {
+		return $this->getPrimaryKey() ? true : false;
+	}
+	# --------------------------------------------------------------------------------
+	/**
 	 * Get a field value of the table row that is represented by this object.
 	 *
 	 * @param string $ps_field field name
@@ -3120,7 +3129,7 @@ class BaseModel extends BaseObject {
 			$this->tableNum(), $this->getPrimaryKey(), // identify record
 			$this->getFieldValuesArray(true), // data to index
 			$pb_reindex_mode,
-			null, // esclusion list, always null in the beginning
+			null, // exclusion list, always null in the beginning
 			$pa_changed_field_values_array, // changed values
 			$pa_options
 		);

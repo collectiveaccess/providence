@@ -2655,7 +2655,7 @@
 			$o_db = new Db();
 			$t_object = new ca_objects();
 
-			$qr_res = $o_db->query("SELECT * FROM ca_objects");
+			$qr_res = $o_db->query("SELECT object_id FROM ca_objects ORDER BY object_id");
 
 			print CLIProgressBar::start($qr_res->numRows(), _t('Starting...'));
 
