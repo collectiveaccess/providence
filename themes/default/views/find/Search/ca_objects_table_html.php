@@ -37,7 +37,7 @@
 		if ($vo_result->numHits() == 0) { $vs_view = 'no_results'; }
 		$this->setVar('dontShowPages', false);
 		print $this->render('Results/ca_objects_table_paging_controls_html.php');
-		print $this->render('Results/search_options_html.php');
+		print $this->render('Results/search_options_object_table_html.php');
 ?>
 
 	<div class="sectionBox">

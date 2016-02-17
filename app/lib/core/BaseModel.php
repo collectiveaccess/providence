@@ -664,6 +664,15 @@ class BaseModel extends BaseObject {
 	}
 	# --------------------------------------------------------------------------------
 	/**
+	 * Check if row load is loaded in instance
+	 *
+	 * @return bool
+	 */
+	public function isLoaded() {
+		return $this->getPrimaryKey() ? true : false;
+	}
+	# --------------------------------------------------------------------------------
+	/**
 	 * Get a field value of the table row that is represented by this object.
 	 *
 	 * @param string $ps_field field name
@@ -3121,7 +3130,7 @@ class BaseModel extends BaseObject {
 			$this->tableNum(), $this->getPrimaryKey(), // identify record
 			$this->getFieldValuesArray(true), // data to index
 			$pb_reindex_mode,
-			null, // esclusion list, always null in the beginning
+			null, // exclusion list, always null in the beginning
 			$pa_changed_field_values_array, // changed values
 			$pa_options
 		);
@@ -9781,8 +9790,8 @@ $pa_options["display_form_field_tips"] = true;
 	/**
 	 *
 	 */
-	private function _getRelationshipInfo($pm_rel_table_name_or_num) {
-		if (isset(BaseModel::$s_relationship_info_cache[$vs_table = $this->tableName()][$pm_rel_table_name_or_num])) {
+	private function _getRelationshipInfo($pm_rel_table_name_or_num, $pb_use_cache=true) {
+		if ($pb_use_cache && isset(BaseModel::$s_relationship_info_cache[$vs_table = $this->tableName()][$pm_rel_table_name_or_num])) {
 			return BaseModel::$s_relationship_info_cache[$vs_table][$pm_rel_table_name_or_num];
 		}
 		if (is_numeric($pm_rel_table_name_or_num)) {
@@ -9795,7 +9804,7 @@ $pa_options["display_form_field_tips"] = true;
 		if ($vs_table == $vs_related_table_name) {
 			// self relations
 			if ($vs_self_relation_table = $this->getSelfRelationTableName()) {
-				$t_item_rel = $this->getAppDatamodel()->getInstanceByTableName($vs_self_relation_table, true);
+				$t_item_rel = $this->getAppDatamodel()->getInstanceByTableName($vs_self_relation_table, $pb_use_cache);
 			} else {
 				return null;
 			}
@@ -9804,10 +9813,10 @@ $pa_options["display_form_field_tips"] = true;
 			
 			switch(sizeof($va_path)) {
 				case 3:
-					$t_item_rel = $this->getAppDatamodel()->getInstanceByTableName($va_path[1], true);
+					$t_item_rel = $this->getAppDatamodel()->getInstanceByTableName($va_path[1], $pb_use_cache);
 					break;
 				case 2:
-					$t_item_rel = $this->getAppDatamodel()->getInstanceByTableName($va_path[1], true);
+					$t_item_rel = $this->getAppDatamodel()->getInstanceByTableName($va_path[1], $pb_use_cache);
 					if (!sizeof($va_rel_keys = $this->_DATAMODEL->getOneToManyRelations($vs_table, $va_path[1]))) {
 						$va_rel_keys = $this->_DATAMODEL->getOneToManyRelations($va_path[1], $vs_table);
 					}
@@ -9842,7 +9851,8 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return mixed Array of matched relation_ids on success, false on error.
 	 */
 	public function relationshipExists($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_direction=null, $pa_options=null) {
-		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num))) { 
+		$pb_use_rel_info_cache = caGetOption('useRelationshipInfoCache', $pa_options, true);
+		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num, $pb_use_rel_info_cache))) {
 			$this->postError(1240, _t('Related table specification "%1" is not valid', $pm_rel_table_name_or_num), 'BaseModel->addRelationship()');
 			return false; 
 		}
@@ -9914,7 +9924,7 @@ $pa_options["display_form_field_tips"] = true;
 			}
 		
 		
-			if ($ps_effective_date && $t_item_rel->hasField('effective_date') && ($va_timestamps = caDateToHistoricTimestamps($ps_effective_date))) {
+			if ($ps_effective_date && $t_item_rel->hasField('sdatetime') && ($va_timestamps = caDateToHistoricTimestamps($ps_effective_date))) {
 				$vs_timestamp_sql = " AND (sdatetime = ? AND edatetime = ?)";
 				$va_query_params[] = (float)$va_timestamps['start'];
 				$va_query_params[] = (float)$va_timestamps['end'];

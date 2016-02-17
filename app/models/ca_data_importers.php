@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2015 Whirl-i-Gig
+ * Copyright 2012-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2244,7 +2244,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 														if ($o_trans) { $o_trans->rollback(); }
 														return false;
 													}
-													continue(5);
+													continue(3);
 												}
 											}
 											break;
@@ -2264,7 +2264,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 													if ($o_trans) { $o_trans->rollback(); }
 													return false;
 												}
-												continue(5);
+												continue(3);
 											}
 
 											break;
@@ -2288,7 +2288,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 														if ($o_trans) { $o_trans->rollback(); }
 														return false;
 													}
-													continue(5);
+													continue(3);
 												}
 												break;
 											}

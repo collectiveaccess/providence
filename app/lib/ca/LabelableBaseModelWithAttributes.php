@@ -49,7 +49,23 @@
 	class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implements ILabelable {
 		# ------------------------------------------------------------------
 		static $s_label_cache = array();
+		
+		/**
+		 * @int $s_label_cache_size
+		 *
+		 * Maximum numbers of cached labels per table
+		 */
+		static $s_label_cache_size = 1024;
+		
+		
 		static $s_labels_by_id_cache = array();
+		
+		/**
+		 * @int $s_labels_by_id_cache_size
+		 *
+		 * Maximum numbers of cached labels per id
+		 */
+		static $s_labels_by_id_cache_size = 1024;
 		
 		/** 
 		 * List of failed preferred label inserts to be forced into HTML bundle
@@ -1571,6 +1587,10 @@
  				$va_labels = $va_flattened_labels;
  			}
  			
+ 			if (sizeof(LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()]) > LabelableBaseModelWithAttributes::$s_label_cache_size) {
+ 				array_splice(LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()], 0, ceil(LabelableBaseModelWithAttributes::$s_label_cache_size/2));
+ 			}
+ 			
  			LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()][$vn_id][$vs_cache_key] = $va_labels;
  			
  			return $va_labels;
@@ -2025,6 +2045,10 @@
 				$va_sorted_labels[$vn_id] = $va_labels[$vn_id];
 			}
 			
+			if (sizeof(LabelableBaseModelWithAttributes::$s_labels_by_id_cache) > LabelableBaseModelWithAttributes::$s_labels_by_id_cache_size) {
+				array_splice(LabelableBaseModelWithAttributes::$s_labels_by_id_cache, 0, ceil(LabelableBaseModelWithAttributes::$s_labels_by_id_cache_size/2));
+			}
+			
 			if ($vb_return_all_locales) {
 				return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key] = $va_sorted_labels;
 			}
@@ -2084,6 +2108,10 @@
 			$va_sorted_labels = array();
 			foreach($va_ids as $vn_id) {
 				$va_sorted_labels[$vn_id] = $va_labels[$vn_id];
+			}
+			
+			if (sizeof(LabelableBaseModelWithAttributes::$s_labels_by_id_cache) > LabelableBaseModelWithAttributes::$s_labels_by_id_cache_size) {
+				array_splice(LabelableBaseModelWithAttributes::$s_labels_by_id_cache, 0, ceil(LabelableBaseModelWithAttributes::$s_labels_by_id_cache_size/2));
 			}
 			
 			if ($vb_return_all_locales) {

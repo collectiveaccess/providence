@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -713,7 +713,10 @@ class SearchResult extends BaseObject {
 		$vs_md5 = caMakeCacheKeyFromOptions($pa_options);
 		
 		$va_criteria = is_array($this->opa_tables[$ps_tablename]) ? $this->opa_tables[$ps_tablename]['criteria'] : null;
-		$va_rel_items = $this->opo_subject_instance->getRelatedItems($ps_tablename, array_merge($pa_options, array('row_ids' => $va_row_ids, 'limit' => 100000, 'criteria' => $va_criteria)));		// if there are more than 100,000 then we have a problem
+		
+		$va_opts = array_merge($pa_options, array('row_ids' => $va_row_ids, 'criteria' => $va_criteria));
+		if (!isset($va_opts['limit'])) { $va_opts['limit'] = 100000; }
+		$va_rel_items = $this->opo_subject_instance->getRelatedItems($ps_tablename, $va_opts);		// if there are more than 100,000 then we have a problem
 		
 		if (!is_array($va_rel_items) || !sizeof($va_rel_items)) { return; }
 		
@@ -1161,7 +1164,6 @@ class SearchResult extends BaseObject {
 									}
 									$va_hier_list[] = $va_hier_item;
 								}
-							
 							}
 						}
 					}
@@ -1172,11 +1174,15 @@ class SearchResult extends BaseObject {
 					
 						if ($vb_return_with_structure) {
 							$va_acc[] = $va_hier_item;
-						} else {
+						} elseif($this->ops_table_name == $va_path_components['table_name']) {
+							// For primary table: return hier path as list (there can be only one hierarchical path)
 							$va_acc = $this->_flattenArray($va_hier_item, $pa_options);
+						} else {
+							// For related tables: return each hier path as concatenated string as there can be repeats and returnAsArray must be a flat array
+							$va_acc[] = join($vs_hierarchical_delimiter, $this->_flattenArray($va_hier_item, $pa_options));
 						}
 					}
-					$vm_val = $pa_options['returnAsArray'] ? $va_acc : join($vs_hierarchical_delimiter, $va_acc);
+					$vm_val = $pa_options['returnAsArray'] ? $va_acc : join($vs_delimiter, $va_acc);
 					goto filter;
 					break;
 				case 'children':
@@ -2193,6 +2199,13 @@ class SearchResult extends BaseObject {
 				$vn_i++;
 			}
 		}
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function clearGetWithTemplatePrefetch() {
+		$this->opa_template_prefetch_cache = array();
 	}
 	# ------------------------------------------------------------------
 	/**
