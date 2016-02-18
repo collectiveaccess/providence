@@ -1499,6 +1499,17 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ---------------------------------------
 	/**
+	  * Determine if date expression can be parsed 
+	  *
+	  * @param string $ps_date_expression A date/time expression as described in http://docs.collectiveaccess.org/wiki/Date_and_Time_Formats
+	  * @return bool True if expression can be parsed
+	  */
+	function caIsValidDate($ps_date_expression) {
+		$o_tep = new TimeExpressionParser();
+		return $o_tep->parse($ps_date_expression);
+	}
+	# ---------------------------------------
+	/**
 	  * Converts Unix timestamp to historic date timestamp
 	  *
 	  * @param int $pn_timestamp A Unix-format timestamp
