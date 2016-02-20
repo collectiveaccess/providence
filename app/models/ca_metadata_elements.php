@@ -950,8 +950,27 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * 
 	 */
 	static public function getElementDatatype($pm_element_code_or_id) {
+		if(MemoryCache::contains($pm_element_code_or_id, 'ElementDataTypes2')) {
+			return MemoryCache::fetch($pm_element_code_or_id, 'ElementDataTypes2');
+		}
 		if ($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id)) {
-			return $t_element->get('datatype');
+			MemoryCache::save($pm_element_code_or_id, $vn_datatype = (int)$t_element->get('datatype'), 'ElementDataTypes2');
+			return $vn_datatype;
+		}
+		
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	static public function getElementCode($pn_element_id) {
+		if(MemoryCache::contains($pn_element_id, 'ElementCodes')) {
+			return MemoryCache::fetch($pn_element_id, 'ElementCodes');
+		}
+		if ($t_element = ca_metadata_elements::getInstance($pn_element_id)) {
+			MemoryCache::save($pn_element_id, $vs_element_code = (string)$t_element->get('element_code'), 'ElementCodes');
+			return $vs_element_code;
 		}
 		
 		return null;
@@ -977,6 +996,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		} else {
 			MemoryCache::save($vn_element_id, $t_element, 'ElementInstances');
 			MemoryCache::save($t_element->get('element_code'), $t_element, 'ElementInstances');
+			MemoryCache::save($t_element->get('datatype'), $t_element, 'ElementDataTypes');
 			return $t_element;
 		}
 		return null;
@@ -1275,4 +1295,3 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 }
-?>

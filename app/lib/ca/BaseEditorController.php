@@ -1777,6 +1777,10 @@ class BaseEditorController extends ActionController {
 					'key' =>			caGetOption('key', $va_annotation, null)
 				);
 			}
+			
+			if (is_array($va_media_scale = $t_rep->getMediaScale('media'))) {
+				$va_annotations[] = $va_media_scale;
+			}
 		}
 
 		$this->view->setVar('annotations', $va_annotations);
@@ -1824,6 +1828,20 @@ class BaseEditorController extends ActionController {
 			}
 		}
 
+		// save scale if set
+		if (
+			($vs_measurement = $this->request->getParameter('measurement', pString))
+			&&
+			(strlen($vn_width = $this->request->getParameter('width', pFloat)))
+			&&
+			(strlen($vn_height = $this->request->getParameter('height', pFloat)))
+		) {
+			$t_rep = new ca_object_representations($pn_representation_id);
+			$vn_image_width = (int)$t_rep->getMediaInfo('media', 'original', 'WIDTH');
+			$vn_image_height = (int)$t_rep->getMediaInfo('media', 'original', 'HEIGHT');
+			$t_rep->setMediaScale('media', $vs_measurement, sqrt(pow($vn_width * $vn_image_width, 2) + pow($vn_height * $vn_image_height, 2))/$vn_image_width);
+			$va_annotations = array_merge($va_annotations, $t_rep->getMediaScale('media'));
+		}
 
 		$this->view->setVar('annotations', $va_annotations);
 		$this->render('ajax_representation_annotations_json.php');

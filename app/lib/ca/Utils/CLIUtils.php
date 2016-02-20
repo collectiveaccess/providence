@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2015 Whirl-i-Gig
+ * Copyright 2013-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1835,7 +1835,7 @@
 		/**
 		 * Grab password from STDIN without showing input on STDOUT
 		 */
-		public static function _getPassword($ps_prompt, $pb_stars = false) {
+		private static function _getPassword($ps_prompt, $pb_stars = false) {
 			if ($ps_prompt) fwrite(STDOUT, $ps_prompt);
 			// Get current style
 			$vs_old_style = shell_exec('stty -g');
@@ -2655,7 +2655,7 @@
 			$o_db = new Db();
 			$t_object = new ca_objects();
 
-			$qr_res = $o_db->query("SELECT * FROM ca_objects");
+			$qr_res = $o_db->query("SELECT object_id FROM ca_objects ORDER BY object_id");
 
 			print CLIProgressBar::start($qr_res->numRows(), _t('Starting...'));
 
@@ -3093,6 +3093,177 @@
 		 */
 		public static function reload_object_current_location_datesHelp() {
 			return _t('Regenerate date/time stamps for movement and object-based location tracking.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function precache_search_index($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/core/Db.php");
+			$o_db = new Db();
+			
+			CLIUtils::addMessage(_t("Preloading primary search index..."), array('color' => 'bold_blue'));
+			$o_db->query("SELECT * FROM ca_sql_search_word_index", array(), array('resultMode' => MYSQLI_USE_RESULT));
+			CLIUtils::addMessage(_t("Preloading index i_index_table_num..."), array('color' => 'bold_blue'));
+			$o_db->query("SELECT * FROM ca_sql_search_word_index FORCE INDEX(i_index_table_num)", array(), array('resultMode' => MYSQLI_USE_RESULT));
+			CLIUtils::addMessage(_t("Preloading index i_index_field_table_num..."), array('color' => 'bold_blue'));
+			$o_db->query("SELECT * FROM ca_sql_search_word_index  FORCE INDEX(i_index_field_table_num)", array(), array('resultMode' => MYSQLI_USE_RESULT));
+			CLIUtils::addMessage(_t("Preloading index i_index_field_num..."), array('color' => 'bold_blue'));
+			$o_db->query("SELECT * FROM ca_sql_search_word_index  FORCE INDEX(i_index_field_num)", array(), array('resultMode' => MYSQLI_USE_RESULT));
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function precache_search_indexParamList() {
+			return array(
+				
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function precache_search_indexUtilityClass() {
+			return _t('Maintenance');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function precache_search_indexShortHelp() {
+			return _t('Preload SQLSearch index into MySQL in-memory cache.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function precache_search_indexHelp() {
+			return _t('Preload SQLSearch index into MySQL in-memory cache. This is only relevant if you are using the MySQL-based SQLSearch engine. Preloading can significantly improve performance on system with large search indices. Note that your MySQL installation must have a large enough buffer pool configured to hold the index. Loading may take several minutes.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function precache_content($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/core/Db.php");
+			
+			$o_config = Configuration::load();
+			if(!(bool)$o_config->get('do_content_caching')) { 
+				CLIUtils::addError(_t("Content caching is not enabled"));
+				return;
+			}
+			$o_cache_config = Configuration::load(__CA_CONF_DIR__."/content_caching.conf");
+			
+			$va_cached_actions = $o_cache_config->getAssoc('cached_actions');
+			if(!is_array($va_cached_actions)) { 
+				CLIUtils::addError(_t("No actions are configured for caching"));
+				return;
+			}
+			
+			$o_request = new RequestHTTP(null, [
+				'no_headers' => true,
+				'simulateWith' => [
+					'REQUEST_METHOD' => 'GET',
+					'SCRIPT_NAME' => 'index.php'
+				]
+			]);
+			
+			$vs_site_protocol = $o_config->get('site_protocol');
+			if (!($vs_site_hostname = $o_config->get('site_hostname'))) {
+				$vs_site_hostname = "localhost";
+			}
+			
+			foreach($va_cached_actions as $vs_controller => $va_actions) {
+				switch($vs_controller) {
+					case 'Browse':
+					case 'Search':
+						// preloading of cache not supported
+						CLIUtils::addMessage(_t("Preloading from %1 is not supported", $vs_controller), array('color' => 'yellow'));
+						break;
+					case 'Splash':
+						$va_tmp = explode("/", $vs_controller);
+						$vs_controller = array_pop($va_tmp);
+						$vs_module_path = join("/", $va_tmp);
+						foreach($va_actions as $vs_action => $vn_ttl) {
+							if ($vs_url = caNavUrl($o_request, $vs_module_path, $vs_controller, $vs_action, array('noCache' => 1))) {
+							
+								CLIUtils::addMessage(_t("Preloading from %1::%2", $vs_controller, $vs_action), array('color' => 'bold_blue'));
+								$vs_url = $vs_site_protocol."://".$vs_site_hostname.$vs_url;
+							 	file_get_contents($vs_url);
+							}
+							
+						}
+						break;
+					case 'Detail':
+						$va_tmp = explode("/", $vs_controller);
+						$vs_controller = array_pop($va_tmp);
+						$vs_module_path = join("/", $va_tmp);
+						
+						$o_detail_config = caGetDetailConfig();
+						$va_detail_types = $o_detail_config->getAssoc('detailTypes');
+						
+						foreach($va_actions as $vs_action => $vn_ttl) {
+							if (is_array($va_detail_types[$vs_action])) {
+								$vs_table = $va_detail_types[$vs_action]['table'];
+								$va_types = $va_detail_types[$vs_action]['restrictToTypes'];
+								if (!file_exists(__CA_MODELS_DIR__."/{$vs_table}.php")) { continue; }
+								require_once(__CA_MODELS_DIR__."/{$vs_table}.php");
+								
+								if ($vs_url = caNavUrl($o_request, $vs_module_path, $vs_controller, $vs_action)) {
+									// get ids
+									$va_ids = call_user_func_array(array($vs_table, 'find'), array(['deleted' => 0], ['restrictToTypes' => $va_types, 'returnAs' => 'ids']));
+								
+									if (is_array($va_ids) && sizeof($va_ids)) {
+										foreach($va_ids as $vn_id) {
+											CLIUtils::addMessage(_t("Preloading from %1::%2 (%3)", $vs_controller, $vs_action, $vn_id), array('color' => 'bold_blue'));
+											file_get_contents($vs_site_protocol."://".$vs_site_hostname.$vs_url."/$vn_id?noCache=1");
+										}
+									}
+								}
+							} else {
+								CLIUtils::addMessage(_t("Preloading from %1::%2 failed because there is no detail configured for %2", $vs_controller, $vs_action), array('color' => 'yellow'));
+							}
+							
+						}
+						break;
+				}
+			}
+			
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function precache_contentParamList() {
+			return array(
+				
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function precache_contentUtilityClass() {
+			return _t('Maintenance');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function precache_contentShortHelp() {
+			return _t('Pre-generate content cache.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function precache_contentHelp() {
+			return _t('Pre-loads content cache by loading each cached page url. Pre-caching may take a while depending upon the quantity of content configured for caching.');
 		}
 		# -------------------------------------------------------
 	}

@@ -1499,6 +1499,17 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ---------------------------------------
 	/**
+	  * Determine if date expression can be parsed 
+	  *
+	  * @param string $ps_date_expression A date/time expression as described in http://docs.collectiveaccess.org/wiki/Date_and_Time_Formats
+	  * @return bool True if expression can be parsed
+	  */
+	function caIsValidDate($ps_date_expression) {
+		$o_tep = new TimeExpressionParser();
+		return $o_tep->parse($ps_date_expression);
+	}
+	# ---------------------------------------
+	/**
 	  * Converts Unix timestamp to historic date timestamp
 	  *
 	  * @param int $pn_timestamp A Unix-format timestamp
@@ -2625,25 +2636,26 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Get length unit type as Zend constant, e.g. 'ft.' = Zend_Measure_Length::FEET
 	 * @param string $ps_unit
+	 * @param array $pa_options Options include:
+	 *		short = return short name for unit (ex. for feet, return "ft", for millimeter return "mm")
 	 * @return null|string
 	 */
-	function caGetLengthUnitType($ps_unit) {
-		switch($ps_unit) {
+	function caGetLengthUnitType($ps_unit, $pa_options=null) {
+		$vb_return_short = caGetOption('short', $pa_options, false);
+		switch(strtolower(str_replace(".", "", $ps_unit))) {
 			case "'":
 			case "’":
 			case 'ft':
-			case 'ft.':
 			case 'feet':
 			case 'foot':
-				return Zend_Measure_Length::FEET;
+				return $vb_return_short ? 'ft' : Zend_Measure_Length::FEET;
 				break;
 			case '"':
 			case "”":
 			case 'in':
-			case 'in.':
 			case 'inch':
 			case 'inches':
-				return Zend_Measure_Length::INCH;
+				return $vb_return_short ? 'in' :  Zend_Measure_Length::INCH;
 				break;
 			case 'm':
 			case 'm.':
@@ -2652,32 +2664,31 @@ function caFileIsIncludable($ps_file) {
 			case 'metre':
 			case 'metres':
 			case 'mt':
-				return Zend_Measure_Length::METER;
+				return $vb_return_short ? 'm' :  Zend_Measure_Length::METER;
 				break;
 			case 'cm':
-			case 'cm.':
 			case 'centimeter':
 			case 'centimeters':
 			case 'centimetre':
 			case 'centimetres':
-				return Zend_Measure_Length::CENTIMETER;
+				return $vb_return_short ? 'cm' : Zend_Measure_Length::CENTIMETER;
 				break;
 			case 'mm':
-			case 'mm.':
 			case 'millimeter':
 			case 'millimeters':
 			case 'millimetre':
 			case 'millimetres':
-				return Zend_Measure_Length::MILLIMETER;
+				return $vb_return_short ? 'mm' :  Zend_Measure_Length::MILLIMETER;
 				break;
 			case 'point':
 			case 'pt':
-			case 'pt.':
-				return Zend_Measure_Length::POINT;
+			case 'p':
+				return $vb_return_short ? 'pt' :  Zend_Measure_Length::POINT;
 				break;
 			case 'mile':
 			case 'miles':
-				return Zend_Measure_Length::MILE;
+			case 'mi':
+				return $vb_return_short ? 'mi' :  Zend_Measure_Length::MILE;
 				break;
 			case 'km':
 			case 'k':
@@ -2685,7 +2696,7 @@ function caFileIsIncludable($ps_file) {
 			case 'kilometers':
 			case 'kilometre':
 			case 'kilometres':
-				return Zend_Measure_Length::KILOMETER;
+				return $vb_return_short ? 'km' :  Zend_Measure_Length::KILOMETER;
 				break;
 			default:	
 				return null;

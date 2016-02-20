@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2015 Whirl-i-Gig
+ * Copyright 2013-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -171,9 +171,10 @@ class Db_pdo_mysql extends DbDriverBase {
 	 * @param PDOStatement $opo_statement
 	 * @param string $ps_sql SQL statement
 	 * @param array $pa_values array of placeholder replacements
+	 * @param array $pa_options
 	 * @return bool|DbResult
 	 */
-	public function execute($po_caller, $opo_statement, $ps_sql, $pa_values) {
+	public function execute($po_caller, $opo_statement, $ps_sql, $pa_values, $pa_options=null) {
 		if (!$ps_sql) {
 			$po_caller->postError(240, _t("Query is empty"), "Db->pdo_mysql->execute()");
 			throw new DatabaseException(_t("Query is empty"), 240, "Db->pdo_mysql->execute()");

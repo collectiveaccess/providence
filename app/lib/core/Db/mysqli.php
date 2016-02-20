@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2015 Whirl-i-Gig
+ * Copyright 2011-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -251,8 +251,9 @@ class Db_mysqli extends DbDriverBase {
 	 * @param DbStatement $opo_statement
 	 * @param string $ps_sql SQL statement
 	 * @param array $pa_values array of placeholder replacements
+	 * @param array $pa_options
 	 */
-	public function execute($po_caller, $po_statement, $ps_sql, $pa_values) {
+	public function execute($po_caller, $po_statement, $ps_sql, $pa_values, $pa_options=null) {
 		if (!$ps_sql) {
 			$po_statement->postError(240, _t("Query is empty"), "Db->mysqli->execute()");
 			throw new DatabaseException(_t("Query is empty"), 240, "Db->mysqli->execute()");
@@ -292,7 +293,7 @@ class Db_mysqli extends DbDriverBase {
 		if (Db::$monitor) {
 			$t = new Timer();
 		}
-		if (!($r_res = mysqli_query($this->opr_db, $vs_sql))) {
+		if (!($r_res = mysqli_query($this->opr_db, $vs_sql, caGetOption('resultMode', $pa_options, MYSQLI_STORE_RESULT)))) {
 			//print "<pre>".caPrintStacktrace()."</pre>\n";
 			$po_statement->postError($this->nativeToDbError(mysqli_errno($this->opr_db)), mysqli_error($this->opr_db), "Db->mysqli->execute()");
 			throw new DatabaseException(mysqli_error($this->opr_db), $this->nativeToDbError(mysqli_errno($this->opr_db)), "Db->mysqli->execute()");
