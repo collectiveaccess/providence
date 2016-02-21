@@ -308,6 +308,26 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$this->assertEquals('My test image (TEST.1) => Homer J. Simpson (after December 17 1989), Bart Simpson ()', $vm_ret[0]);
 	}
 	# -------------------------------------------------------
+	public function testUnitsWithRelatedValuesAndRestrictToTypes() {
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name (^ca_objects.idno) => <unit relativeTo='ca_entities' delimiter=', ' restrictToTypes='ind'>^ca_entities.preferred_labels.displayname (^ca_entities.lifespan)</unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertEquals('My test image (TEST.1) => Homer J. Simpson (after December 17 1989), Bart Simpson ()', $vm_ret[0]);
+		
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name (^ca_objects.idno) => <unit relativeTo='ca_entities' delimiter=', ' restrictToTypes='org'>^ca_entities.preferred_labels.displayname (^ca_entities.lifespan)</unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertEquals('My test image (TEST.1) => ', $vm_ret[0]);
+	}
+	# -------------------------------------------------------
+	public function testUnitsWithRelatedValuesAndExcludeTypes() {
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name (^ca_objects.idno) => <unit relativeTo='ca_entities' delimiter=', ' excludeTypes='org'>^ca_entities.preferred_labels.displayname (^ca_entities.lifespan)</unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertEquals('My test image (TEST.1) => Homer J. Simpson (after December 17 1989), Bart Simpson ()', $vm_ret[0]);
+		
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name (^ca_objects.idno) => <unit relativeTo='ca_entities' delimiter=', ' excludeTypes='ind'>^ca_entities.preferred_labels.displayname (^ca_entities.lifespan)</unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertEquals('My test image (TEST.1) => ', $vm_ret[0]);
+	}
+	# -------------------------------------------------------
 	public function testUnitsWithRelatedValuesAndIfDef() {		
 		// Get related values in <unit> with <ifdef>
 		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name (^ca_objects.idno) => <unit relativeTo='ca_entities' delimiter=', '>^ca_entities.preferred_labels.displayname<ifdef code='ca_entities.lifespan'> (^ca_entities.lifespan)</ifdef></unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
@@ -327,6 +347,20 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name (^ca_objects.idno) => <unit relativeTo='ca_entities' restrictToRelationshipTypes='creator,publisher' delimiter=', '>^ca_entities.preferred_labels.displayname<ifdef code='ca_entities.lifespan'> (^ca_entities.lifespan)</ifdef></unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertEquals('My test image (TEST.1) => Homer J. Simpson (after December 17 1989), Bart Simpson', $vm_ret[0]);
+	}
+	# -------------------------------------------------------
+	public function testUnitsWithRelatedValuesAndIfDefAndExcludeRelationshipTypes() {		
+		// Get related values in <unit> with <ifdef> and excludeRelationshipTypes
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name (^ca_objects.idno) => <unit relativeTo='ca_entities' excludeRelationshipTypes='creator' delimiter=', '>^ca_entities.preferred_labels.displayname<ifdef code='ca_entities.lifespan'> (^ca_entities.lifespan)</ifdef></unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertEquals('My test image (TEST.1) => Bart Simpson', $vm_ret[0]);
+	}
+	# -------------------------------------------------------
+	public function testUnitsWithRelatedValuesAndIfDefAndMultExcludeRelationshipTypes() {		
+		// Get related values in <unit> with <ifdef> and excludeRelationshipTypes
+		$vm_ret = DisplayTemplateParser::evaluate("^ca_objects.preferred_labels.name (^ca_objects.idno) => <unit relativeTo='ca_entities' excludeRelationshipTypes='creator,publisher' delimiter=', '>^ca_entities.preferred_labels.displayname<ifdef code='ca_entities.lifespan'> (^ca_entities.lifespan)</ifdef></unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertEquals('My test image (TEST.1) => ', $vm_ret[0]);
 	}
 	# -------------------------------------------------------
 	public function testNestedUnits() {
@@ -362,6 +396,21 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$vm_ret = DisplayTemplateParser::evaluate("<ifcount restrictToRelationshipTypes='publisher' code='ca_entities' min='1' max='1'>^ca_entities.preferred_labels.displayname%restrictToRelationshipTypes=publisher</ifcount>", "ca_objects", array($this->opn_object_id, $this->opn_rel_object_id), array('returnAsArray' => true, 'delimiter' => ', '));
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(1, $vm_ret);
+		
+		$vm_ret = DisplayTemplateParser::evaluate("<ifcount restrictToRelationshipTypes='publisher,creator' code='ca_entities' min='1' max='1'>^ca_entities.preferred_labels.displayname%restrictToRelationshipTypes=creator,publisher</ifcount>", "ca_objects", array($this->opn_object_id, $this->opn_rel_object_id), array('returnAsArray' => true, 'delimiter' => ', '));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(0, $vm_ret);
+	}
+	# -------------------------------------------------------
+	public function testFormatsWithIfCountAndExcludeRelationshipTypes() {
+		// <ifcount> with excludeRelationshipTypes
+		$vm_ret = DisplayTemplateParser::evaluate("<ifcount excludeRelationshipTypes='publisher' code='ca_entities' min='1' max='1'>^ca_entities.preferred_labels.displayname%restrictToRelationshipTypes=publisher</ifcount>", "ca_objects", array($this->opn_object_id, $this->opn_rel_object_id), array('returnAsArray' => true, 'delimiter' => ', '));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		
+		$vm_ret = DisplayTemplateParser::evaluate("<ifcount excludeRelationshipTypes='publisher,creator' code='ca_entities' min='1' max='1'>^ca_entities.preferred_labels.displayname%restrictToRelationshipTypes=publisher</ifcount>", "ca_objects", array($this->opn_object_id, $this->opn_rel_object_id), array('returnAsArray' => true, 'delimiter' => ', '));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(0, $vm_ret);
 	}
 	# -------------------------------------------------------
 	public function testFormatsWithIfCountAndIncludeBlanks() {
@@ -439,12 +488,12 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$vm_ret = DisplayTemplateParser::evaluate("URL: <l>^ca_objects.preferred_labels.name</l> (^ca_objects.idno)", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(1, $vm_ret);
-		$this->assertContains("editor/objects/ObjectEditor/Summary/object_id/{$this->opn_object_id}\">My test image</a> (TEST.1)", $vm_ret[0]);
-		
+		$this->assertContains("editor/objects/ObjectEditor/Summary/object_id/{$this->opn_object_id}/rel/1\">My test image</a> (TEST.1)", $vm_ret[0]);
+
 		$vm_ret = DisplayTemplateParser::evaluate("URL: ^ca_objects.preferred_labels.name (^ca_objects.idno)", "ca_objects", array($this->opn_object_id), array('requireLinkTags' => false, 'returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(1, $vm_ret);
-		$this->assertContains("editor/objects/ObjectEditor/Summary/object_id/{$this->opn_object_id}'>URL: My test image (TEST.1)</a>", $vm_ret[0]);
+		$this->assertContains("editor/objects/ObjectEditor/Summary/object_id/{$this->opn_object_id}/rel/1'>URL: My test image (TEST.1)</a>", $vm_ret[0]);
 	}
 	# -------------------------------------------------------
 	public function testFormatsWithPlaceholderPrefixOption() {
@@ -635,9 +684,9 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$this->assertCount(2, $vm_ret);
 		$this->assertInternalType('string', $vm_ret[0]);
 		$this->assertInternalType('string', $vm_ret[1]);
-	
-		$this->assertContains("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id1."\">Homer J. Simpson</a> (hjs)</li></ul>", $vm_ret[0]);
-		$this->assertContains("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id2."\">Bart Simpson</a> (bs)</li></ul>", $vm_ret[1]);
+
+		$this->assertContains("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id1."/rel/1\">Homer J. Simpson</a> (hjs)</li></ul>", $vm_ret[0]);
+		$this->assertContains("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id2."/rel/1\">Bart Simpson</a> (bs)</li></ul>", $vm_ret[1]);
 	}
 	# -------------------------------------------------------
 	public function testStringFormattingTagOpts() {
@@ -749,9 +798,10 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 				</ifcount>', "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
 		
 		$this->assertInternalType('array', $vm_ret);
-		$this->assertCount(1, $vm_ret);	
-		$this->assertContains("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id1."\">Homer J. Simpson</a>", $vm_ret[0]);
-		$this->assertContains("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id2."\">Bart Simpson</a>", $vm_ret[0]);
+		$this->assertCount(1, $vm_ret);
+		$this->assertContains("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id1."/rel/1\">Homer J. Simpson</a>", $vm_ret[0]);
+		$this->assertContains("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id2."/rel/1\">Bart Simpson</a>", $vm_ret[0]);
+
 		$this->assertContains('<img src="left2.png" /><strong>Related people</strong><img src="right2.png" />', $vm_ret[0]);
 		
 		$vm_ret = DisplayTemplateParser::evaluate("<ifcount code=\"ca_entities\" min=\"1\">
@@ -842,6 +892,18 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 						});
 				});
 			</script>", $vm_ret[0]);	
+	}
+	# -------------------------------------------------------
+	public function testAttributesWithHTML() {
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities' delimiter='<br/>'>^ca_entities.preferred_labels.displayname</unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("Homer J. Simpson<br/>Bart Simpson", $vm_ret[0]);	
+		
+		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_entities' delimiter='  <br/>  '>^ca_entities.preferred_labels.displayname</unit>", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
+		$this->assertInternalType('array', $vm_ret);
+		$this->assertCount(1, $vm_ret);
+		$this->assertEquals("Homer J. Simpson  <br/>  Bart Simpson", $vm_ret[0]);	
 	}
 	# -------------------------------------------------------
 }

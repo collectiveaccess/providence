@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -461,14 +461,15 @@ class ca_user_roles extends BaseModel {
 	public static function loadRoleActionList() {
 		if (!ca_user_roles::$s_action_list) {
 			$o_config = Configuration::load();
-			$o_actions_config = Configuration::load($o_config->get('user_actions'));
+			$o_actions_config = Configuration::load(__CA_CONF_DIR__.'/user_actions.conf');
 			$vo_datamodel = Datamodel::load();
 			
 			$va_raw_actions = $o_actions_config->getAssoc('user_actions');
 	
 			// expand actions that need expanding
-			foreach($va_raw_actions as $vs_group => &$va_group_info) {
+			foreach($va_raw_actions as $vs_group => $va_group_info) {
 				$va_new_actions = array();
+				if(!is_array($va_group_info["actions"])) { $va_group_info["actions"] = array(); }
 				foreach($va_group_info["actions"] as $vs_action_key => $va_action){
 					if(is_array($va_action["expand_types"]) && strlen($va_action["expand_types"]["table"])>0){
 						$t_instance = $vo_datamodel->getInstanceByTableName($va_action["expand_types"]["table"], true);
@@ -505,6 +506,7 @@ class ca_user_roles extends BaseModel {
 			
 			$va_flattened_actions = array();
 			foreach($va_raw_actions as $vs_group => $va_group_actions_info) {
+				if (!is_array($va_group_actions_info['actions'])) { $va_group_actions_info['actions'] = array(); }
 				$va_flattened_actions = array_merge($va_flattened_actions, $va_group_actions_info['actions']);
 			}
 			

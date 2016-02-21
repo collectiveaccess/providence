@@ -392,7 +392,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 */
 	public function getAvailableSettings() {
 		$t_attr_val = Attribute::getValueInstance((int)$this->get('datatype'));
-		return $t_attr_val ? $t_attr_val->getAvailableSettings($this->getSettings()) : null;
+		$va_element_info = $this->getFieldValuesArray();
+		$va_element_info['settings'] = $this->getSettings();
+		return $t_attr_val ? $t_attr_val->getAvailableSettings($va_element_info) : null;
 	}
 	# ------------------------------------------------------
 	/**
@@ -805,6 +807,15 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		return $va_sortable_elements;
 	}
 	# ------------------------------------------------------
+	public static function getDataTypeForElementCode($ps_element_code) {
+		$t_element = new ca_metadata_elements();
+		if($t_element->load(array('element_code' => $ps_element_code))) {
+			return (int) $t_element->get('datatype');
+		} else {
+			return false;
+		}
+	}
+	# ------------------------------------------------------
 	/**
 	 * Returns list of user interfaces that reference the currently loaded metadata element
 	 *
@@ -939,8 +950,27 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * 
 	 */
 	static public function getElementDatatype($pm_element_code_or_id) {
+		if(MemoryCache::contains($pm_element_code_or_id, 'ElementDataTypes2')) {
+			return MemoryCache::fetch($pm_element_code_or_id, 'ElementDataTypes2');
+		}
 		if ($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id)) {
-			return $t_element->get('datatype');
+			MemoryCache::save($pm_element_code_or_id, $vn_datatype = (int)$t_element->get('datatype'), 'ElementDataTypes2');
+			return $vn_datatype;
+		}
+		
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	static public function getElementCode($pn_element_id) {
+		if(MemoryCache::contains($pn_element_id, 'ElementCodes')) {
+			return MemoryCache::fetch($pn_element_id, 'ElementCodes');
+		}
+		if ($t_element = ca_metadata_elements::getInstance($pn_element_id)) {
+			MemoryCache::save($pn_element_id, $vs_element_code = (string)$t_element->get('element_code'), 'ElementCodes');
+			return $vs_element_code;
 		}
 		
 		return null;
@@ -966,6 +996,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		} else {
 			MemoryCache::save($vn_element_id, $t_element, 'ElementInstances');
 			MemoryCache::save($t_element->get('element_code'), $t_element, 'ElementInstances');
+			MemoryCache::save($t_element->get('datatype'), $t_element, 'ElementDataTypes');
 			return $t_element;
 		}
 		return null;
@@ -1264,4 +1295,3 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 }
-?>

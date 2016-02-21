@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -69,7 +69,9 @@ class DisplayTemplateParser {
 						$va_get_options = ['returnAsArray' => true, 'checkAccess' => caGetOption('checkAccess', $pa_options, null)];
 				
 						$va_get_options['restrictToTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToTypes']); 
+						$va_get_options['excludeTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeTypes']); 
 						$va_get_options['restrictToRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToRelationshipTypes']);
+						$va_get_options['excludeRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeRelationshipTypes']);
 
 						$va_search_result_opts = array();
 						if($o_node->includeNonPrimaryRepresentations) {
@@ -81,21 +83,24 @@ class DisplayTemplateParser {
 							$va_get_options['sortDirection'] = $o_node->sortDirection;
 						}
 						
-						
-						$va_row_ids = DisplayTemplateParser::_getRelativeIDsForRowIDs($ps_tablename, $vs_relative_to, $pa_row_ids, 'related', $va_get_options);
+						try {
+							$va_row_ids = DisplayTemplateParser::_getRelativeIDsForRowIDs($ps_tablename, $vs_relative_to, $pa_row_ids, 'related', $va_get_options);
 				
-						if (!sizeof($va_row_ids)) { return; }
-						$qr_res = caMakeSearchResult($ps_tablename, $va_row_ids, $va_search_result_opts);
-						if (!$qr_res) { return; }
+							if (!sizeof($va_row_ids)) { return; }
+							$qr_res = caMakeSearchResult($ps_tablename, $va_row_ids, $va_search_result_opts);
+							if (!$qr_res) { return; }
 						
 						
 						
-						$va_cache_opts = $qr_res->get($vs_relative_to.".".$qr_res->primaryKey(), array_merge($va_get_options, ['returnCacheOptions' => true]));
+							$va_cache_opts = $qr_res->get($vs_relative_to.".".$qr_res->primaryKey(), array_merge($va_get_options, ['returnCacheOptions' => true]));
 						
-						$qr_res->prefetchRelated($vs_relative_to, 0, $qr_res->getOption('prefetch'), $va_cache_opts);
+							$qr_res->prefetchRelated($vs_relative_to, 0, $qr_res->getOption('prefetch'), $va_cache_opts);
 						
-						if ($o_node->children) {
-							DisplayTemplateParser::prefetchAllRelatedIDs($o_node->children, $vs_relative_to, $va_row_ids, $pa_options);
+							if ($o_node->children) {
+								DisplayTemplateParser::prefetchAllRelatedIDs($o_node->children, $vs_relative_to, $va_row_ids, $pa_options);
+							}
+						} catch (Exception $e) {
+							// prefetch failed
 						}
 					}
 					break;
@@ -125,6 +130,7 @@ class DisplayTemplateParser {
 	 *		includeBlankValuesInArray = include blank template values in primary template and all <unit>s in returned array when returnAsArray is set. If you need the returned array of values to line up with the row_ids in $pa_row_ids this should be set. [Default is false]
 	 *		includeBlankValuesInTopLevelForPrefetch = include blank template values in *primary template* (not <unit>s) in returned array when returnAsArray is set. Used by template prefetcher to ensure returned values align with id indices. [Default is false]
 	 *		forceValues = Optional array of values indexed by placeholder without caret (eg. ca_objects.idno) and row_id. When present these values will be used in place of the placeholders, rather than whatever value normal processing would result in. [Default is null]
+	 *		aggregateUnique = Remove duplicate values. If set then array of evaluated templates may not correspond one-to-one with the original list of row_ids set in $pa_row_ids. [Default is false]
 	 *
 	 * @return mixed Output of processed templates
 	 *
@@ -135,7 +141,7 @@ class DisplayTemplateParser {
 			foreach(array(
 				'request', 
 				'template',	// we pass through options to get() and don't want templates 
-				'restrict_to_relationship_types', 'restrictToRelationshipTypes',
+				'restrict_to_relationship_types', 'restrictToRelationshipTypes', 'excludeRelationshipTypes',
 				'useLocaleCodes') as $vs_k) {
 				unset($pa_options[$vs_k]);
 			}
@@ -202,13 +208,30 @@ class DisplayTemplateParser {
 			
 			if ($pa_options['relativeToContainer']) {
 				$va_vals = DisplayTemplateParser::_getValues($qr_res, $va_template['tags'], $pa_options);
+				if(isset($pa_options['sort'])&& is_array($pa_options['sort'])) {
+					$va_vals = caSortArrayByKeyInValue($va_vals, array('__sort__'), $pa_options['sortDirection'], array('dontRemoveKeyPrefixes' => true));
+				}
 				foreach($va_vals as $vn_index => $va_val_list) {
-					$va_proc_templates[] = is_array($va_val_list) ? DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['index' => $vn_index])) : '';
+					$va_proc_templates[] = is_array($va_val_list) ? DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, $va_val_list, array_merge($pa_options, ['index' => $vn_index, 'returnAsArray' => $pa_options['aggregateUnique']])) : '';
 				}
 			} else {
-				$va_proc_templates[] = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, DisplayTemplateParser::_getValues($qr_res, $va_template['tags'], $pa_options), $pa_options);
+				$va_proc_templates[] = DisplayTemplateParser::_processChildren($qr_res, $va_template['tree']->children, DisplayTemplateParser::_getValues($qr_res, $va_template['tags'], $pa_options), array_merge($pa_options, ['returnAsArray' => $pa_options['aggregateUnique']]));
 			}
 		}
+		
+		if ($pa_options['aggregateUnique']) {
+			$va_acc = [];
+			foreach($va_proc_templates as $va_val_list) {
+				if(is_array($va_val_list)) { 
+					$va_acc = array_merge($va_acc, $va_val_list); 
+				} else {
+					$va_acc[] = $va_val_list;
+				}
+			}
+			$va_proc_templates = array_unique($va_acc);
+		}
+		
+		if (!$pb_include_blanks && !$pb_include_blanks_for_prefetch) { $va_proc_templates = array_filter($va_proc_templates, 'strlen'); }
 		
 		// Transform links
 		$va_proc_templates = caCreateLinksFromText(
@@ -260,16 +283,8 @@ class DisplayTemplateParser {
 		foreach($po_nodes as $vn_index => $o_node) {
 			switch($vs_tag = $o_node->tag) {
 				case 'unit':
-					// noop
+					// noop - units are processed recursively so no need to look for tags now
 					break;	
-				case 'ifcount':
-				case 'ifdef':
-				case 'ifnotdef':					
-					// noop
-					break;
-				case 'expression':
-					// noop
-					break;
 				case 'if':
 					$va_codes = caGetTemplateTags((string)$o_node->rule, $pa_options, null);
 					foreach($va_codes as $vs_code) { 
@@ -277,7 +292,7 @@ class DisplayTemplateParser {
 						if ($ps_relative_to && !$o_dm->tableExists($va_code[0])) { $vs_code = "{$ps_relative_to}.{$vs_code}"; }
 						$pa_tags[$vs_code] = true; 
 					}
-					break;
+					// fall through to default case
 				default:
 					$va_codes = caGetTemplateTags((string)$o_node->html(), $pa_options);
 					foreach($va_codes as $vs_code) { 
@@ -349,11 +364,13 @@ class DisplayTemplateParser {
 					
 					$vb_bool = DisplayTemplateParser::_getCodesBooleanModeAttribute($o_node);
 					$va_restrict_to_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToTypes']); 
+					$va_exclude_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeTypes']); 
 					$va_restrict_to_relationship_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToRelationshipTypes']); 
+					$va_exclude_to_relationship_types = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeRelationshipTypes']); 
 		
 					$vm_count = ($vb_bool == 'AND') ? 0 : [];
 					foreach($va_codes as $vs_code) {
-						$va_vals = $pr_res->get($vs_code, ['checkAccess' => $pa_check_access, 'returnAsArray' => true, 'restrictToTypes' => $va_restrict_to_types, 'restrictToRelationshipTypes' => $va_restrict_to_relationship_types]);
+						$va_vals = $pr_res->get($vs_code, ['checkAccess' => $pa_check_access, 'returnAsArray' => true, 'restrictToTypes' => $va_restrict_to_types, 'excludeTypes' => $va_exclude_types, 'restrictToRelationshipTypes' => $va_restrict_to_relationship_types, 'excludeRelationshipTypes' => $va_exclude_to_relationship_types]);
 						if (is_array($va_vals)) { 
 							if ($vb_bool == 'AND') {
 								$vm_count += sizeof($va_vals); 
@@ -448,6 +465,7 @@ class DisplayTemplateParser {
 					// <unit> attributes
 					$vs_unit_delimiter = $o_node->delimiter ? (string)$o_node->delimiter : $ps_delimiter;
 					$vb_unique = $o_node->unique ? (bool)$o_node->unique : false;
+					$vb_aggregate_unique = $o_node->aggregateUnique ? (bool)$o_node->aggregateUnique : false;
 					$vs_unit_skip_if_expression = (string)$o_node->skipIfExpression;
 					
 					$vn_start = (int)$o_node->start;
@@ -460,7 +478,9 @@ class DisplayTemplateParser {
 					$va_get_options = ['returnAsArray' => true, 'checkAccess' => $pa_check_access];
 				
 					$va_get_options['restrictToTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToTypes']); 
+					$va_get_options['excludeTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeTypes']); 
 					$va_get_options['restrictToRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToRelationshipTypes']); 
+					$va_get_options['excludeRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeRelationshipTypes']); 
 					
 					
 					if ($o_node->sort) {
@@ -468,6 +488,7 @@ class DisplayTemplateParser {
 						$va_get_options['sortDirection'] = $o_node->sortDirection;
 					}
 	
+					$va_relation_ids = $va_relationship_type_ids = null;
 					if (
 						((sizeof($va_relative_to_tmp) == 1) && ($va_relative_to_tmp[0] == $ps_tablename))
 						||
@@ -528,10 +549,14 @@ class DisplayTemplateParser {
 									'skipIfExpression' => $vs_unit_skip_if_expression,
 									'placeholderPrefix' => (string)$o_node->relativeTo,
 									'restrictToTypes' => $va_get_options['restrictToTypes'],
+									'excludeTypes' => $va_get_options['excludeTypes'],
 									'isUnit' => true,
 									'unitStart' => $vn_start,
 									'unitLength' => $vn_length,
-									'relativeToContainer' => $vs_relative_to_container
+									'relativeToContainer' => $vs_relative_to_container,
+									'includeBlankValuesInTopLevelForPrefetch' => false,
+									'unique' => $vb_unique,
+									'aggregateUnique' => $vb_aggregate_unique
 								]
 							)
 						);
@@ -540,7 +565,7 @@ class DisplayTemplateParser {
 						if (($vn_start > 0) || !is_null($vn_length)) { 
 							$vn_last_unit_omit_count = sizeof($va_tmpl_val) - ($vn_length - $vn_start);
 						}
-					
+						if (caGetOption('returnAsArray', $pa_options, false)) { return $va_tmpl_val; }
 						$vs_acc .= join($vs_unit_delimiter, $va_tmpl_val);
 						if ($pb_is_case) { break(2); }
 					} else { 
@@ -564,12 +589,35 @@ class DisplayTemplateParser {
 							case 'related':
 								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().".related.".$t_rel_instance->primaryKey(), $va_get_options);
 								$va_relative_ids = array_values($va_relative_ids);
+								
+								$va_relation_ids = array_keys($t_instance->getRelatedItems($t_rel_instance->tableName(), array_merge($va_get_options, array('returnAs' => 'data'))));
+								
+								$va_relationship_type_ids = array();
+								if (is_array($va_relation_ids) && sizeof($va_relation_ids)) {
+									$qr_rels = caMakeSearchResult($t_rel_instance->getRelationshipTableName($ps_tablename), $va_relation_ids);
+									$va_relationship_type_ids = $qr_rels->getAllFieldValues($t_rel_instance->getRelationshipTableName($ps_tablename).'.type_id');
+								}
 								break;
 							default:
 								if (method_exists($t_instance, 'isSelfRelationship') && $t_instance->isSelfRelationship() && is_array($pa_primary_ids) && isset($pa_primary_ids[$t_rel_instance->tableName()])) {
 									$va_relative_ids = array_values($t_instance->getRelatedIDsForSelfRelationship($pa_primary_ids[$t_rel_instance->tableName()], array($pr_res->getPrimaryKey())));
+									
+									$va_relation_ids = array_keys($t_instance->getRelatedItems($t_rel_instance->tableName(), array_merge($va_get_options, array('returnAs' => 'data'))));
+									$va_relationship_type_ids = array();
+									if (is_array($va_relation_ids) && sizeof($va_relation_ids)) {
+										$qr_rels = caMakeSearchResult($t_rel_instance->getSelfRelationTableName(), $va_relation_ids);
+										$va_relationship_type_ids = $qr_rels->getAllFieldValues($t_rel_instance->getSelfRelationTableName().'.type_id');
+									}
 								} else {
-									$va_relative_ids = array_values($pr_res->get($t_rel_instance->primaryKey(true), $va_get_options));
+									$va_relative_ids = $pr_res->get($t_rel_instance->primaryKey(true), $va_get_options);
+									$va_relative_ids = is_array($va_relative_ids) ? array_values($va_relative_ids) : array();
+									
+									$va_relation_ids = array_keys($t_instance->getRelatedItems($t_rel_instance->tableName(), array_merge($va_get_options, array('returnAs' => 'data'))));
+									$va_relationship_type_ids = array();
+									if (is_array($va_relation_ids) && sizeof($va_relation_ids)) {
+										$qr_rels = caMakeSearchResult($t_rel_instance->getRelationshipTableName($ps_tablename), $va_relation_ids);
+										$va_relationship_type_ids = $qr_rels->getAllFieldValues($t_rel_instance->getRelationshipTableName($ps_tablename).'.type_id');
+									}
 								}
 							
 								break;
@@ -587,9 +635,15 @@ class DisplayTemplateParser {
 									'skipIfExpression' => $vs_unit_skip_if_expression,
 									'placeholderPrefix' => (string)$o_node->relativeTo,
 									'restrictToTypes' => $va_get_options['restrictToTypes'],
+									'excludeTypes' => $va_get_options['excludeTypes'],
 									'isUnit' => true,
 									'unitStart' => $vn_start,
-									'unitLength' => $vn_length
+									'unitLength' => $vn_length,
+									'includeBlankValuesInTopLevelForPrefetch' => false,
+									'unique' => $vb_unique,
+									'aggregateUnique' => $vb_aggregate_unique,
+									'relationIDs' => $va_relation_ids,
+									'relationshipTypeIDs' => $va_relationship_type_ids
 								]
 							)
 						);	
@@ -600,6 +654,7 @@ class DisplayTemplateParser {
 							$vn_last_unit_omit_count = $vn_num_vals -  ($vn_length - $vn_start);
 						}
 						
+						if (caGetOption('returnAsArray', $pa_options, false)) { return $va_tmpl_val; }
 						$vs_acc .= join($vs_unit_delimiter, $va_tmpl_val);
 						if ($pb_is_case) { break(2); }
 					}
@@ -639,7 +694,26 @@ class DisplayTemplateParser {
 							foreach($o_node->attributes as $attribute => $value) {
 								$vs_attr .=  " {$attribute}=\"".htmlspecialchars(caProcessTemplate($value, $pa_vals, ['quote' => $pb_quote]))."\""; 
 							}
-							$vs_proc_template = "<{$vs_tag}{$vs_attr} />"; 
+							
+							switch(strtolower($vs_tag)) {
+								case 'br':
+								case 'hr':
+								case 'meta':
+								case 'link':
+								case 'base':
+								case 'img':
+								case 'embed':
+								case 'param':
+								case 'area':
+								case 'col':
+								case 'input':
+									$vs_proc_template = "<{$vs_tag}{$vs_attr} />"; 
+									break;
+								default:
+									$vs_proc_template = "<{$vs_tag}{$vs_attr}></{$vs_tag}>"; 
+									break;
+							}
+							
 						} else {
 							$vs_proc_template = $o_node->html();
 						}
@@ -660,6 +734,11 @@ class DisplayTemplateParser {
 	static private function _getValues(SearchResult $pr_res, array $pa_tags, array $pa_options=null) {
 		unset($pa_options['returnAsArray']);
 		unset($pa_options['returnWithStructure']);
+		
+		$vn_start = caGetOption('unitStart', $pa_options, 0, ['castTo' => 'int']);
+		$vn_length = caGetOption('unitLength', $pa_options, 0, ['castTo' => 'int']);
+		
+		$va_relationship_type_ids = caGetOption('relationshipTypeIDs', $pa_options, array(), ['castTo' => 'array']);
 		
 		$o_dm = Datamodel::load();
 		
@@ -705,19 +784,46 @@ class DisplayTemplateParser {
 				$va_tag_vals = DisplayTemplateParser::$value_cache[$vs_cache_key];
 				$vn_count = DisplayTemplateParser::$value_count_cache[$vs_cache_key];
 			} else {
-				DisplayTemplateParser::$value_count_cache[$vs_cache_key] = $vn_count = sizeof($pr_res->get($vs_relative_to_container, ['returnAsArray' => true]));
-			
 				$va_tag_vals = [];
 				foreach(array_keys($pa_tags) as $vs_tag) {					
 					$vs_get_spec = $va_get_specs[$vs_tag]['spec'];
 					$va_parsed_tag_opts = $va_get_specs[$vs_tag]['parsed'];
 					
-					foreach($pr_res->get($vs_get_spec, array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnBlankValues' => true])) as $vn_index => $vs_val) {
-						$va_tag_vals[$vn_index][$vs_tag] = $vs_val;
+					$va_vals = $pr_res->get($vs_get_spec, array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnBlankValues' => true]));
+					
+					if (is_array($va_vals)) {
+						if ((($vn_start > 0) || ($vn_length > 0)) && ($vn_start < sizeof($va_vals)) && (!$vn_length || ($vn_start + $vn_length <= sizeof($va_vals)))) {
+							$va_vals = array_slice($va_vals, $vn_start, ($vn_length > 0) ? $vn_length : null);
+						}
+						
+						foreach($va_vals as $vn_index => $vs_val) {
+							$va_tag_vals[$vn_index][$vs_tag] = $vs_val;
+						}
+					}
+				}
+				
+				if (isset($pa_options['sort']) && is_array($pa_options['sort']) && sizeof($pa_options['sort'])) {
+					$va_sortables = array();
+					foreach($pa_options['sort'] as $vs_sort_spec) {
+						$va_sortables[] = $pr_res->get($vs_sort_spec, ['sortable' => true, 'returnAsArray' => true, 'returnBlankValues' => true]);
+					}
+					if ((($vn_start > 0) || ($vn_length > 0)) && ($vn_start < sizeof($va_sortables)) && (!$vn_length || ($vn_start + $vn_length <= sizeof($va_sortables)))) {
+						$va_sortables = array_slice($va_sortables, $vn_start, ($vn_length > 0) ? $vn_length : null);
+					}
+					
+					if(is_array($va_sortables)) {
+						foreach($va_sortables as $i => $va_sort_values) {
+							if (!is_array($va_sort_values)) { continue; }
+							foreach($va_sort_values as $vn_index => $vs_sort_value) {
+								$va_tag_vals[$vn_index]['__sort__'] .= $vs_sort_value;
+							}
+						}
 					}
 				}
 			
 				DisplayTemplateParser::$value_cache[$vs_cache_key] = $va_tag_vals;
+				DisplayTemplateParser::$value_count_cache[$vs_cache_key] = $vn_count = sizeof($va_tag_vals);
+			
 			}
 			
 			if(strlen($pn_index)) {
@@ -733,19 +839,36 @@ class DisplayTemplateParser {
 				$vs_get_spec = $va_get_specs[$vs_tag]['spec'];
 				$va_parsed_tag_opts = $va_get_specs[$vs_tag]['parsed'];
 				
-				$vn_start = caGetOption('unitStart', $pa_options, 0, ['castTo' => 'int']);
-				$vn_length = caGetOption('unitLength', $pa_options, 0, ['castTo' => 'int']);
-			
 				switch(strtolower($vs_get_spec)) {
 					case 'relationship_typename':
-						$va_val_list = $pr_res->get('ca_relationship_types.preferred_labels.'.((caGetOption('orientation', $pa_options, 'LTOR') == 'LTOR') ? 'typename' : 'typename_reverse'), $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
+						$va_val_list = array();
+						if (is_array($va_relationship_type_ids) && ($vn_type_id = $va_relationship_type_ids[$pr_res->currentIndex()])) {
+							$qr_rels = caMakeSearchResult('ca_relationship_types', array($vn_type_id));
+							if ($qr_rels->nextHit()) {
+								$va_val_list = $qr_rels->get('ca_relationship_types.preferred_labels.'.((caGetOption('orientation', $pa_options, 'LTOR') == 'LTOR') ? 'typename' : 'typename_reverse'), $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
+							}
+						} else {
+							$va_val_list = $pr_res->get('ca_relationship_types.preferred_labels.'.((caGetOption('orientation', $pa_options, 'LTOR') == 'LTOR') ? 'typename' : 'typename_reverse'), $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
+						}
 						break;
 					case 'relationship_type_id':
-						$va_val_list = $pr_res->get('ca_relationship_types.type_id', $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
+						if (is_array($va_relationship_type_ids) && ($vn_type_id = $va_relationship_type_ids[$pr_res->currentIndex()])) {
+							$va_val_list = [$va_relationship_type_ids[$pr_res->currentIndex()]];
+						} else {
+							$va_val_list = $pr_res->get('ca_relationship_types.type_id', $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
+						}
 						break;
 					case 'relationship_typecode':
 					case 'relationship_type_code':
-						$va_val_list = $pr_res->get('ca_relationship_types.type_code', $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
+						$va_val_list = array();
+						if (is_array($va_relationship_type_ids) && ($vn_type_id = $va_relationship_type_ids[$pr_res->currentIndex()])) {
+							$qr_rels = caMakeSearchResult('ca_relationship_types', array($vn_type_id));
+							if ($qr_rels->nextHit()) {
+								$va_val_list = $qr_rels->get('ca_relationship_types.type_code', $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
+							}
+						} else {
+							$va_val_list = $pr_res->get('ca_relationship_types.type_code', $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
+						}
 						break;
 					case 'date':		// allows embedding of current date
 						$va_val_list = [date(caGetOption('format', $va_parsed_tag_opts['options'], 'd M Y'))];
@@ -772,19 +895,25 @@ class DisplayTemplateParser {
 						} else {
 							$va_val_list = $pr_res->get($vs_get_spec, $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
 							if (!is_array($va_val_list)) { $va_val_list = array(); }
-							if ((($vn_start > 0) || ($vn_length > 0)) && ($vn_start < sizeof($va_val_list)) && (!$vn_length || ($vn_start + $vn_length < sizeof($va_val_list)))) {
+							if ((($vn_start > 0) || ($vn_length > 0)) && ($vn_start < sizeof($va_val_list)) && (!$vn_length || ($vn_start + $vn_length <= sizeof($va_val_list)))) {
 								$va_val_list = array_slice($va_val_list, $vn_start, ($vn_length > 0) ? $vn_length : null);
 							}
 						}
 						break;
 				}
 				$ps_delimiter = caGetOption('delimiter', $va_opts, ';');
-			
+				
 				if ($vs_relative_to_container) {
 					$va_vals[$vn_c][$vs_tag] = join($ps_delimiter, $va_val_list);
+					if (isset($va_tag_vals[$vn_c]['__sort__'])) {
+						$va_vals[$vn_c]['__sort__'] = $va_tag_vals[$vn_c]['__sort__'];
+					}
 				} else {
 					if(!$pb_include_blanks) { $va_val_list = array_filter($va_val_list, 'strlen'); }
 					$va_vals[$vs_tag] = join($ps_delimiter, $va_val_list);
+					if (isset($va_tag_vals[$vn_c]['__sort__'])) {
+						$va_vals['__sort__'] = $va_tag_vals[$vn_c]['__sort__'];
+					}
 				}
 			}
 		}
@@ -826,25 +955,29 @@ class DisplayTemplateParser {
 		
 		$vb_has_value = null;
 		foreach($va_codes as $vs_code => $vs_bool) {
-			$va_val_list = $pr_res->get($vs_code, ['returnAsArray' => true, 'returnBlankValues' => true]);
-			
+			$va_val_list = $pr_res->get($vs_code, ['returnAsArray' => true, 'returnBlankValues' => true, 'convertCodesToDisplayText' => true, 'returnAsDecimal' => true, 'getDirectDate' => true]);
 			if(!is_array($va_val_list)) {  // no value
 				$vb_value_present = false;
-			}
-			
-			if(!is_null($pn_index)) {
-				if (!isset($va_val_list[$pn_index])) {
-					$vb_value_present = false;			// no value
+			} else {
+				if(!is_null($pn_index)) {
+					if (!isset($va_val_list[$pn_index]) || ((is_numeric($va_val_list[$pn_index]) && (float)$va_val_list[$pn_index] == 0) || !strlen(trim($va_val_list[$pn_index])))) {
+						$vb_value_present = false;			// no value
+					} else {
+						$va_val_list = array($va_val_list[$pn_index]);
+						if (!$pb_include_blanks) { $va_val_list = array_filter($va_val_list); }
+						$vb_value_present = (bool)(sizeof($va_val_list));
+					}
 				} else {
-					$va_val_list = array($va_val_list[$pn_index]);
+					if (!$pb_include_blanks) { 
+						foreach($va_val_list as $vn_i => $vm_val) {
+							if ((is_numeric($vm_val) && (float)$vm_val == 0) || !strlen(trim($vm_val))) {
+								unset($va_val_list[$vn_i]);
+							}
+						}
+					}
+					$vb_value_present = (bool)(sizeof($va_val_list));
 				}
 			}
-			
-			if (!$pb_include_blanks) {
-				$va_val_list = array_filter($va_val_list);
-			}
-			
-			$vb_value_present = (bool)(sizeof($va_val_list));
 			if ($pb_mode !== 'present') { $vb_value_present = !$vb_value_present; }
 			
 			if (is_null($vb_has_value)) { $vb_has_value = $vb_value_present; }
@@ -864,7 +997,7 @@ class DisplayTemplateParser {
 		$vs_code_list = $po_node->{$vs_attribute};
 		if (!$po_node || !$po_node->{$vs_attribute}) { return null; }
 		$va_codes = preg_split("![ ,;\|]+!", $po_node->{$vs_attribute});
-		if ($pb_include_booleans) { preg_match("![ ,;\|]+!", $po_node->{$vs_attribute}, $va_matches); }
+		if ($pb_include_booleans) { preg_match_all("![ ,;\|]+!", $po_node->{$vs_attribute}, $va_matches); $va_matches = array_shift($va_matches); }
 		if (!$va_codes || !sizeof($va_codes)) { return null; }
 		
 		if ($pb_include_booleans) {
@@ -958,72 +1091,71 @@ class DisplayTemplateParser {
 				if ($ps_tablename !== $ps_relative_to) {
 					// related
 					$vs_relationship_type_sql = null;
-					$va_path = array_keys($o_dm->getPath($ps_tablename, $ps_relative_to));
+					if (!is_array($va_path = array_keys($o_dm->getPath($ps_tablename, $ps_relative_to))) || !sizeof($va_path)) {
+						throw new Exception(_t("Cannot be path between %1 and %2", $ps_tablename, $ps_relative_to));
+					}
 					
+					$va_joins = array();
 					switch(sizeof($va_path)) {
 						case 2:
-							$vs_link = $va_path[0];
-							break;
-						case 3:
-							$vs_link = $va_path[1];
+							$vs_left_table = $va_path[1];
+							$vs_right_table = $va_path[0];
 							
-							if ($va_relationship_types = caGetOption('restrictToRelationshipTypes', $pa_options, null)) {
-								$t_rel_type = new ca_relationship_types();
-								$va_relationship_type_ids = $t_rel_type->relationshipTypeListToIDs($vs_link, $va_relationship_types);
-								if (is_array($va_relationship_type_ids) && sizeof($va_relationship_type_ids)) {
-									$va_params[] = $va_relationship_type_ids;
-									$vs_relationship_type_sql = " AND ({$vs_link}.type_id IN (?))";
-								}		
+							$va_relationships = $o_dm->getRelationships($vs_left_table, $vs_right_table);
+							$va_conditions = array();								
+							foreach($va_relationships[$vs_left_table][$vs_right_table] as $va_rel) {
+								$va_conditions[] = "{$vs_left_table}.{$va_rel[0]} = {$vs_right_table}.{$va_rel[1]}";
 							}
+							$va_joins[] = "INNER JOIN {$vs_right_table} ON ".join(" OR ", $va_conditions);
 							break;
 						default:
-							throw new Exception(_t("Cannot be path between %1 and %2", $ps_tablename, $ps_relative_to));
+							$va_path = array_reverse($va_path);
+							$vs_left_table = array_shift($va_path);
+							foreach($va_path as $vs_right_table) {
+								$va_relationships = $o_dm->getRelationships($vs_left_table, $vs_right_table);
+								
+								$va_conditions = array();								
+								foreach($va_relationships[$vs_left_table][$vs_right_table] as $va_rel) {
+									$va_conditions[] = "{$vs_left_table}.{$va_rel[0]} = {$vs_right_table}.{$va_rel[1]}";
+								}
+								
+								$va_joins[] = "INNER JOIN {$vs_right_table} ON ".join(" OR ", $va_conditions);
+								$vs_left_table = $vs_right_table;
+							}
+						
+							
 							break;
 					}
-					$t_link = $o_dm->getInstanceByTableName($vs_link, true);
 					
-					// Get related
-					$va_relationships = $o_dm->getRelationships($vs_link, $ps_relative_to);
+					$qr_res = $o_db->query("
+						SELECT {$ps_relative_to}.{$vs_rel_pk} 
+						FROM {$ps_relative_to} 
+						".join("\n", $va_joins)."
+						WHERE {$ps_tablename}.{$vs_pk} IN (?) {$vs_relationship_type_sql}
+					", $va_params);
+					$va_vals = $qr_res->getAllFieldValues($vs_rel_pk);
 					
-					$va_vals = array();
-					if (method_exists($t_link, 'isSelfRelationship') && $t_link->isSelfRelationship()) {
-						$vs_left_field = $t_link->getLeftTableFieldName();
-						$vs_right_field = $t_link->getRightTableFieldName();
-						foreach($va_relationships[$vs_link][$ps_relative_to] as $va_rel) {
-							$qr_res = $o_db->query("
-								SELECT {$ps_relative_to}.{$vs_rel_pk} 
-								FROM {$ps_relative_to} 
-								INNER JOIN {$vs_link} ON {$vs_link}.".$va_rel[0]." = {$ps_relative_to}.".$va_rel[1]." 
-								WHERE {$vs_link}.".(($va_rel[0] == $vs_left_field) ? $vs_right_field : $vs_left_field)." IN (?) {$vs_relationship_type_sql}
-							", $va_params);
-					
-							$va_vals = array_merge($va_vals, $qr_res->getAllFieldValues($vs_rel_pk));
-						}
-					} else {
-						foreach($va_relationships[$vs_link][$ps_relative_to] as $va_rel) {
-							$qr_res = $o_db->query("
-								SELECT {$ps_relative_to}.{$vs_rel_pk} 
-								FROM {$ps_relative_to} 
-								INNER JOIN {$vs_link} ON {$vs_link}.".$va_rel[0]." = {$ps_relative_to}.".$va_rel[1]." 
-								WHERE {$vs_link}.{$vs_pk} IN (?) {$vs_relationship_type_sql}
-							", $va_params);
-					
-							$va_vals = array_merge($va_vals, $qr_res->getAllFieldValues($vs_rel_pk));
-						}
-					}
 					if(!is_array($va_vals)) { $va_vals = array(); }
 					return array_values(array_unique($va_vals));
 					
 				} elseif($vs_link = $t_instance->getSelfRelationTableName()) {
 					// self relation
 					
-					$vs_relationship_type_sql = null;
+					$vs_relationship_type_sql = '';
 					if ($va_relationship_types = caGetOption('restrictToRelationshipTypes', $pa_options, null)) {
 						$t_rel_type = new ca_relationship_types();
 						$va_relationship_type_ids = $t_rel_type->relationshipTypeListToIDs($vs_link, $va_relationship_types);
 						if (is_array($va_relationship_type_ids) && sizeof($va_relationship_type_ids)) {
 							$va_params[] = $va_relationship_type_ids;
 							$vs_relationship_type_sql = " AND ({$vs_link}.type_id IN (?))";
+						}		
+					}
+					if ($va_relationship_types = caGetOption('excludeRelationshipTypes', $pa_options, null)) {
+						$t_rel_type = new ca_relationship_types();
+						$va_relationship_type_ids = $t_rel_type->relationshipTypeListToIDs($vs_link, $va_relationship_types);
+						if (is_array($va_relationship_type_ids) && sizeof($va_relationship_type_ids)) {
+							$va_params[] = $va_relationship_type_ids;
+							$vs_relationship_type_sql .= " AND ({$vs_link}.type_id NOT IN (?))";
 						}		
 					}
 					

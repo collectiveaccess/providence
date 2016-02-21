@@ -231,6 +231,7 @@ create table ca_entities
    commenting_status              tinyint unsigned               not null default 0,
    tagging_status                 tinyint unsigned               not null default 0,
    rating_status                  tinyint unsigned               not null default 0,
+   view_count                     int unsigned                   not null default 0,
    source_info                    longtext                       not null,
    life_sdatetime                 decimal(30,20),
    life_edatetime                 decimal(30,20),
@@ -266,6 +267,7 @@ create index i_hier_left on ca_entities(hier_left);
 create index i_hier_right on ca_entities(hier_right);
 create index i_life_sdatetime on ca_entities(life_sdatetime);
 create index i_life_edatetime on ca_entities(life_edatetime);
+create index i_view_count on ca_entities(view_count);
 
 
 /*==========================================================================*/
@@ -398,6 +400,7 @@ create table ca_object_lots
    commenting_status              tinyint unsigned               not null default 0,
    tagging_status                 tinyint unsigned               not null default 0,
    rating_status                  tinyint unsigned               not null default 0,
+   view_count                     int unsigned                   not null default 0,
    extent                         smallint unsigned              not null,
    extent_units                   varchar(255)                   not null,
    access                         tinyint                        not null default 0,
@@ -424,6 +427,7 @@ create index i_type_id on ca_object_lots(type_id);
 create index i_source_id on ca_object_lots(source_id);
 create index i_admin_idno_stub_sort on ca_object_lots(idno_stub_sort);
 create index i_lot_status_id on ca_object_lots(lot_status_id);
+create index i_view_count on ca_object_lots(view_count);
 
 
 /*==========================================================================*/
@@ -445,6 +449,7 @@ create table ca_object_representations
    commenting_status              tinyint unsigned               not null default 0,
    tagging_status                 tinyint unsigned               not null default 0,
    rating_status                  tinyint unsigned               not null default 0,
+   view_count                     int unsigned                   not null default 0,
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    rank                           int unsigned                   not null default 0,
@@ -472,6 +477,7 @@ create index i_mimetype on ca_object_representations(mimetype);
 create index i_original_filename on ca_object_representations(original_filename(128));
 create index i_rank on ca_object_representations(rank);
 create index i_source_id on ca_object_representations(source_id);
+create index i_view_count on ca_object_representations(view_count);
 
 
 /*==========================================================================*/
@@ -557,6 +563,7 @@ create table ca_occurrences
    commenting_status              tinyint unsigned               not null default 0,
    tagging_status                 tinyint unsigned               not null default 0,
    rating_status                  tinyint unsigned               not null default 0,
+   view_count                     int unsigned                   not null default 0,
    source_id                      int unsigned,
    source_info                    longtext                       not null,
    hier_occurrence_id             int unsigned                   not null,
@@ -589,6 +596,7 @@ create index i_locale_id on ca_occurrences(locale_id);
 create index i_hier_left on ca_occurrences(hier_left);
 create index i_hier_right on ca_occurrences(hier_right);
 create index i_hier_occurrence_id on ca_occurrences(hier_occurrence_id);
+create index i_view_count on ca_occurrences(view_count);
 
 
 /*==========================================================================*/
@@ -637,6 +645,7 @@ create table ca_collections
    commenting_status              tinyint unsigned               not null default 0,
    tagging_status                 tinyint unsigned               not null default 0,
    rating_status                  tinyint unsigned               not null default 0,
+   view_count                     int unsigned                   not null default 0,
    source_id                      int unsigned,
    source_info                    longtext                       not null,
    hier_collection_id             int unsigned                   not null,
@@ -672,6 +681,7 @@ create index i_hier_collection_id on ca_collections(hier_collection_id);
 create index i_hier_left on ca_collections(hier_left);
 create index i_hier_right on ca_collections(hier_right);
 create index i_acl_inherit_from_parent on ca_collections(acl_inherit_from_parent);
+create index i_view_count on ca_collections(view_count);
 
 
 /*==========================================================================*/
@@ -723,6 +733,7 @@ create table ca_places
    commenting_status              tinyint unsigned               not null default 0,
    tagging_status                 tinyint unsigned               not null default 0,
    rating_status                  tinyint unsigned               not null default 0,
+   view_count                     int unsigned                   not null default 0,
    source_info                    longtext                       not null,
    lifespan_sdate                 decimal(30,20),
    lifespan_edate                 decimal(30,20),
@@ -760,6 +771,7 @@ create index i_life_edatetime on ca_places(lifespan_edate);
 create index i_parent_id on ca_places(parent_id);
 create index i_hier_left on ca_places(hier_left);
 create index i_hier_right on ca_places(hier_right);
+create index i_view_count on ca_places(view_count);
 
 
 /*==========================================================================*/
@@ -805,6 +817,7 @@ create table ca_storage_locations
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
    is_template                    tinyint unsigned               not null default 0,
+   view_count                     int unsigned                   not null default 0,
    source_id                      int unsigned,
    source_info                    longtext                       not null,
    color                          char(6)                        null,
@@ -834,6 +847,7 @@ create index idno_sort on ca_storage_locations(idno_sort);
 create index i_type_id on ca_storage_locations(type_id);
 create index i_hier_left on ca_storage_locations(hier_left);
 create index i_hier_right on ca_storage_locations(hier_right);
+create index i_view_count on ca_storage_locations(view_count);
 
 
 /*==========================================================================*/
@@ -879,6 +893,7 @@ create table ca_loans (
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
    is_template                    tinyint unsigned               not null default 0,
+   view_count                     int unsigned                   not null default 0,
    source_id                      int unsigned,
    source_info                    longtext                       not null,
    hier_left                      decimal(30,20)                 not null,
@@ -913,6 +928,7 @@ create index idno_sort on ca_loans(idno_sort);
 create index hier_left on ca_loans(hier_left);
 create index hier_right on ca_loans(hier_right);
 create index hier_loan_id on ca_loans(hier_loan_id);
+create index i_view_count on ca_loans(view_count);
 
 
 /*==========================================================================*/
@@ -953,6 +969,7 @@ create table ca_movements (
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
    is_template                    tinyint unsigned               not null default 0,
+   view_count                     int unsigned                   not null default 0,
    source_id                      int unsigned,
    source_info                    longtext                       not null,
    access                         tinyint unsigned               not null default 0,
@@ -976,6 +993,7 @@ create index i_source_id on ca_movements(source_id);
 create index i_locale_id on ca_movements(locale_id);
 create index idno on ca_movements(idno);
 create index idno_sort on ca_movements(idno_sort);
+create index i_view_count on ca_movements(view_count);
 
 
 /*==========================================================================*/
@@ -1265,6 +1283,7 @@ create table ca_representation_annotations
    props                          longtext                       not null,
    preview                        longblob                       not null,
    source_info                    longtext                       not null,
+   view_count                     int unsigned                   not null default 0,
    access                         tinyint unsigned               not null default 0,
    status                         tinyint unsigned               not null default 0,
    primary key (annotation_id),
@@ -1279,6 +1298,7 @@ create table ca_representation_annotations
 create index i_representation_id on ca_representation_annotations(representation_id);
 create index i_locale_id on ca_representation_annotations(locale_id);
 create index i_user_id on ca_representation_annotations(user_id);
+create index i_view_count on ca_representation_annotations(view_count);
 
 
 /*==========================================================================*/
@@ -1376,8 +1396,8 @@ create table ca_user_roles
    code                           varchar(20)                    not null,
    description                    text                           not null,
    rank                           smallint unsigned              not null default 0,
-   vars                           text                           not null,
-   field_access                   text                           not null,
+   vars                           longtext                       not null,
+   field_access                   longtext                       not null,
    primary key (role_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -1527,6 +1547,7 @@ create table ca_objects
    commenting_status              tinyint unsigned               not null default 0,
    tagging_status                 tinyint unsigned               not null default 0,
    rating_status                  tinyint unsigned               not null default 0,
+   view_count                     int unsigned                   not null default 0,
    type_id                        int unsigned                   not null,
    idno                           varchar(255)                   not null,
    idno_sort                      varchar(255)                   not null,
@@ -1614,6 +1635,7 @@ create index i_is_deaccessioned on ca_objects(is_deaccessioned);
 create index i_current_loc_class on ca_objects(current_loc_class);
 create index i_current_loc_subclass on ca_objects(current_loc_subclass);
 create index i_current_loc_id on ca_objects(current_loc_id);
+create index i_view_count on ca_objects(view_count);
 
 
 /*==========================================================================*/
@@ -4194,6 +4216,19 @@ create table ca_editor_uis_x_users (
 
 
 /*==========================================================================*/
+create table ca_editor_uis_x_roles (
+	relation_id int unsigned not null auto_increment,
+	ui_id int unsigned not null references ca_editor_uis(ui_id),
+	role_id int unsigned not null references ca_user_roles(role_id),
+	access 			tinyint unsigned not null default 0,
+	
+	primary key 				(relation_id),
+	index i_ui_id				(ui_id),
+	index i_role_id				(role_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
 create table ca_editor_ui_screens (
 	screen_id int unsigned not null auto_increment,
 	parent_id int unsigned null,
@@ -4229,6 +4264,45 @@ create table ca_editor_ui_screen_labels (
 	primary key 				(label_id),
 	index i_screen_id			(screen_id),
 	index i_locale_id			(locale_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
+create table ca_editor_ui_screens_x_user_groups (
+	relation_id int unsigned not null auto_increment,
+	screen_id int unsigned not null references ca_editor_ui_screens(screen_id),
+	group_id int unsigned not null references ca_user_groups(group_id),
+	access 			tinyint unsigned not null default 0,
+	
+	primary key 				(relation_id),
+	index i_screen_id			(screen_id),
+	index i_group_id			(group_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
+create table ca_editor_ui_screens_x_users (
+	relation_id int unsigned not null auto_increment,
+	screen_id int unsigned not null references ca_editor_ui_screens(screen_id),
+	user_id int unsigned not null references ca_users(user_id),
+	access 			tinyint unsigned not null default 0,
+	
+	primary key 				(relation_id),
+	index i_screen_id			(screen_id),
+	index i_user_id				(user_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*==========================================================================*/
+create table ca_editor_ui_screens_x_roles (
+	relation_id int unsigned not null auto_increment,
+	screen_id int unsigned not null references ca_editor_ui_screens(screen_id),
+	role_id int unsigned not null references ca_user_roles(role_id),
+	access 			tinyint unsigned not null default 0,
+	
+	primary key 				(relation_id),
+	index i_screen_id			(screen_id),
+	index i_role_id				(role_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
@@ -4492,39 +4566,6 @@ create table ca_items_x_tags (
 
 
 /*==========================================================================*/
-create table ca_item_views (
-	view_id		int unsigned not null auto_increment,
-	table_num	tinyint unsigned not null,
-	row_id		int unsigned not null,
-	
-	user_id		int unsigned null references ca_users(user_id),
-	locale_id	smallint unsigned not null references ca_locales(locale_id),
-	
-	viewed_on	int unsigned not null,
-	ip_addr		varchar(39) null,
-	
-	primary key (view_id),
-	key i_row_id (row_id),
-	key i_table_num (table_num),
-	key i_user_id (user_id),
-	key i_created_on (viewed_on)
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-
-/*==========================================================================*/
-create table ca_item_view_counts (
-	table_num	tinyint unsigned not null,
-	row_id		int unsigned not null,
-	view_count	int unsigned not null,
-	
-	KEY u_row (row_id, table_num),
-	KEY i_row_id (row_id),
-	KEY i_table_num (table_num),
-	KEY i_view_count (view_count)
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-
-/*==========================================================================*/
 create table ca_search_forms (
 	form_id			int unsigned not null primary key auto_increment,
 	user_id			int unsigned null references ca_users(user_id),
@@ -4751,17 +4792,18 @@ create table ca_bundle_display_type_restrictions (
 /*==========================================================================*/
 create table ca_tours
 (
-   tour_id                       int unsigned                   not null AUTO_INCREMENT,
-   tour_code                  varchar(100)                   not null,
-   type_id                        int unsigned                   null,
-   rank                           int unsigned              not null default 0,
-   color                          char(6)                        null,
-   icon                           longblob                       not null,
-   access                        tinyint unsigned               not null default 0,
-   status                         tinyint unsigned               not null default 0,
-   user_id                        int unsigned                   null,
+   tour_id                        int unsigned                  not null AUTO_INCREMENT,
+   tour_code                      varchar(100)                  not null,
+   type_id                        int unsigned                  null,
+   rank                           int unsigned                  not null default 0,
+   color                          char(6)                       null,
+   icon                           longblob                      not null,
+   access                         tinyint unsigned              not null default 0,
+   status                         tinyint unsigned              not null default 0,
+   view_count                     int unsigned                  not null default 0,
+   user_id                        int unsigned                  null,
    source_id                      int unsigned,
-   source_info                    longtext                       not null,
+   source_info                    longtext                      not null,
    primary key (tour_id),
    
    constraint fk_ca_tours_source_id foreign key (source_id)
@@ -4776,6 +4818,7 @@ create index i_type_id on ca_tours(type_id);
 create index i_user_id on ca_tours(user_id);
 create index i_tour_code on ca_tours(tour_code);
 create index i_source_id on ca_tours(source_id);
+create index i_view_count on ca_tours(view_count);
 
 
 /*==========================================================================*/
@@ -4805,21 +4848,22 @@ create unique index u_locale_id on ca_tour_labels(tour_id, locale_id);
 /*==========================================================================*/
 create table ca_tour_stops
 (
-   stop_id                       int unsigned              not null AUTO_INCREMENT,
+   stop_id                        int unsigned              not null AUTO_INCREMENT,
    parent_id                      int unsigned,
    tour_id                        int unsigned              not null,
-   type_id                        int unsigned                   null,
-   idno                           varchar(255)                   not null,
-   idno_sort                      varchar(255)                   not null,
+   type_id                        int unsigned              null,
+   idno                           varchar(255)              not null,
+   idno_sort                      varchar(255)              not null,
    rank                           int unsigned              not null default 0,
-   hier_left                      decimal(30,20)                 not null,
-   hier_right                     decimal(30,20)                 not null,
-   hier_stop_id				int unsigned 				not null,
-   color                          char(6)                        null,
-   icon                           longblob                       not null,
-   access                         tinyint unsigned               not null default 0,
-   status                         tinyint unsigned               not null default 0,
-   deleted                        tinyint unsigned               not null default 0,
+   view_count                     int unsigned              not null default 0,
+   hier_left                      decimal(30,20)            not null,
+   hier_right                     decimal(30,20)            not null,
+   hier_stop_id				      int unsigned 				not null,
+   color                          char(6)                   null,
+   icon                           longblob                  not null,
+   access                         tinyint unsigned          not null default 0,
+   status                         tinyint unsigned          not null default 0,
+   deleted                        tinyint unsigned          not null default 0,
    primary key (stop_id),
    
    constraint fk_ca_tour_stops_tour_id foreign key (tour_id)
@@ -4838,6 +4882,7 @@ create index i_hier_left on ca_tour_stops(hier_left);
 create index i_hier_right on ca_tour_stops(hier_right);
 create index i_idno on ca_tour_stops(idno);
 create index i_idno_sort on ca_tour_stops(idno_sort);
+create index i_view_count on ca_tour_stops(view_count);
 
 
 /*==========================================================================*/
@@ -6229,6 +6274,9 @@ create index i_field_row_id on ca_sql_search_word_index(field_row_id, field_tabl
 create index i_rel_type_id on ca_sql_search_word_index(rel_type_id);
 create index i_field_table_num on ca_sql_search_word_index(field_table_num);
 create index i_field_num on ca_sql_search_word_index(field_num);
+CREATE index i_index_table_num on ca_sql_search_word_index(word_id, table_num, row_id);
+CREATE index i_index_field_table_num on ca_sql_search_word_index(word_id, table_num, field_table_num, row_id);
+CREATE index i_index_field_num on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, row_id);
 
 
 /*==========================================================================*/
@@ -6616,5 +6664,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 122 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (122, unix_timestamp());
+/* CURRENT MIGRATION: 127 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (127, unix_timestamp());

@@ -74,6 +74,8 @@ class LabelSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_object_labels.name:image' => 1,
 			'ca_object_labels.name:"[BLANK]"' => 1,
 			'ca_object_labels.name:[BLANK]' => 1,
+			'ca_object_labels.name:"[SET]"' => 2, // the "BLANK" value counts as set I guess
+			'ca_object_labels.name:[SET]' => 2,
 		));
 	}
 	# -------------------------------------------------------

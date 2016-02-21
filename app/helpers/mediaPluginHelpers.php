@@ -35,6 +35,7 @@
    */
 
  	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+	require_once(__CA_LIB_DIR__."/core/Parsers/MediaMetadata/XMPParser.php");
 
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -45,7 +46,7 @@
 	 */
 	function caGetExternalApplicationPath($ps_application_name) {
 		$o_config = Configuration::load();
-		if (!($o_ext_app_config = Configuration::load($o_config->get('external_applications')))) { return null; }
+		if (!($o_ext_app_config = Configuration::load(__CA_CONF_DIR__.'/external_applications.conf'))) { return null; }
 
 		return $o_ext_app_config->get($ps_application_name.'_app');
 	}
@@ -273,6 +274,54 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Detects if OpenCTM (http://openctm.sourceforge.net) is installed in the given path.
+	 * @param string $ps_openctm_path path to OpenCTM ctmconv binary
+	 * @return bool
+	 */
+	function caOpenCTMInstalled($ps_openctm_ctmconv_path=null) {
+		if(!$ps_openctm_ctmconv_path) { $ps_openctm_ctmconv_path = caGetExternalApplicationPath('openctm'); }
+
+		global $_MEDIAHELPER_PLUGIN_CACHE_OPENCTM;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_OPENCTM[$ps_openctm_ctmconv_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_OPENCTM[$ps_openctm_ctmconv_path];
+		} else {
+			$_MEDIAHELPER_PLUGIN_CACHE_OPENCTM = array();
+		}
+		if (!caIsValidFilePath($ps_openctm_ctmconv_path)) { return false; }
+		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
+		exec($ps_openctm_ctmconv_path." --help > /dev/null",$va_output,$vn_return);
+		if($vn_return == 0) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_OPENCTM[$ps_openctm_ctmconv_path] = true;
+		}
+		return $_MEDIAHELPER_PLUGIN_CACHE_OPENCTM[$ps_openctm_ctmconv_path] = false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Detects if Meshlab (http://meshlab.sourceforge.net), and specifically the meshlabserver command line tool, is installed in the given path.
+	 * @param string $ps_meshlabserver_path path to the meshlabserver binary
+	 * @return bool
+	 */
+	function caMeshlabServerInstalled($ps_meshlabserver_path=null) {
+		if(!$ps_meshlabserver_path) { $ps_meshlabserver_path = caGetExternalApplicationPath('meshlabserver'); }
+
+		global $_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER[$ps_meshlabserver_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER[$ps_meshlabserver_path];
+		} else {
+			$_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER = array();
+		}
+		if (!caIsValidFilePath($ps_meshlabserver_path)) { return false; }
+		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
+		putenv("DISPLAY=:0");
+		chdir('/usr/local/bin');
+		exec($ps_meshlabserver_path." --help > /dev/null",$va_output,$vn_return);
+		if($vn_return == 1) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER[$ps_meshlabserver_path] = true;
+		}
+		return $_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER[$ps_meshlabserver_path] = false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Detects if PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/index.html) is installed in the given path.
 	 * @param string $ps_pdfminer_path path to PDFMiner
 	 * @return boolean
@@ -414,7 +463,7 @@
 	function caExtractEmbeddedMetadata($po_instance, $pa_metadata, $pn_locale_id) {
 		if (!is_array($pa_metadata)) { return false; }
 		$vb_did_mapping = false;
-		if (!($vs_media_metadata_config = $po_instance->getAppConfig()->get('media_metadata'))) { return false; }
+		if (!($vs_media_metadata_config = __CA_CONF_DIR__.'/media_metadata.conf')) { return false; }
 		$o_metadata_config = Configuration::load($vs_media_metadata_config);
 
 		$va_mappings = $o_metadata_config->getAssoc('import_mappings');
@@ -734,7 +783,7 @@
 	function caGetDefaultMediaIconTag($ps_type, $pn_width, $pn_height, $pa_options=null) {
 		if (is_array($va_selected_size = caGetMediaIconForSize($ps_type, $pn_width, $pn_height, $pa_options))) {
 			$o_config = Configuration::load();
-			$o_icon_config = Configuration::load($o_config->get('default_media_icons'));
+			$o_icon_config = Configuration::load(__CA_CONF_DIR__.'/default_media_icons.conf');
 			$va_icons = $o_icon_config->getAssoc($ps_type);
 			return caHTMLImage($o_icon_config->get('icon_folder_url').'/'.$va_icons[$va_selected_size['size']], array('width' => $va_selected_size['width'], 'height' => $va_selected_size['height']));
 		}
@@ -756,7 +805,7 @@
 	function caGetDefaultMediaIconUrl($ps_type, $pn_width, $pn_height, $pa_options=null) {
 		if (is_array($va_selected_size = caGetMediaIconForSize($ps_type, $pn_width, $pn_height, $pa_options))) {
 			$o_config = Configuration::load();
-			$o_icon_config = Configuration::load($o_config->get('default_media_icons'));
+			$o_icon_config = Configuration::load(__CA_CONF_DIR__.'/default_media_icons.conf');
 			$va_icons = $o_icon_config->getAssoc($ps_type);
 			return $o_icon_config->get('icon_folder_url').'/'.$va_icons[$va_selected_size['size']];
 		}
@@ -778,7 +827,7 @@
 	function caGetDefaultMediaIconPath($ps_type, $pn_width, $pn_height, $pa_options=null) {
 		if (is_array($va_selected_size = caGetMediaIconForSize($ps_type, $pn_width, $pn_height, $pa_options))) {
 			$o_config = Configuration::load();
-			$o_icon_config = Configuration::load($o_config->get('default_media_icons'));
+			$o_icon_config = Configuration::load(__CA_CONF_DIR__.'/default_media_icons.conf');
 			$va_icons = $o_icon_config->getAssoc($ps_type);
 			return $o_icon_config->get('icon_folder_path').'/'.$va_icons[$va_selected_size['size']];
 		}
@@ -792,7 +841,7 @@
 	 */
 	function caGetMediaIconForSize($ps_type, $pn_width, $pn_height, $pa_options=null) {
 		$o_config = Configuration::load();
-		$o_icon_config = Configuration::load($o_config->get('default_media_icons'));
+		$o_icon_config = Configuration::load(__CA_CONF_DIR__.'/default_media_icons.conf');
 
 		$vs_selected_size = null;
 		if (is_array($va_icons = $o_icon_config->getAssoc($ps_type))) {

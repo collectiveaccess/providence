@@ -233,6 +233,10 @@ class Installer {
 			return false;
 		}
 		/** @var LabelableBaseModelWithAttributes $t_instance */
+		if (!$po_labels || !$po_labels->children()) { 
+			$t_instance->addLabel(array($t_instance->getLabelDisplayField() => "???"), array_shift($pa_locales), false, true);
+			return true; 
+		}
 		foreach($po_labels->children() as $vo_label){
 			$va_label_values = array();
 			$vs_locale = self::getAttribute($vo_label, "locale");
@@ -288,7 +292,24 @@ class Installer {
 				}
 			}
 		}
+
+		// nuke search index if we using ElasticSearch (the SqlSearch index is nuked when we drop the database)
+		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
+			require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
+			$o_es = new WLPlugSearchEngineElasticSearch();
+			$o_es->truncateIndex(null);
+		}
+
 		return true;
+	}
+	# --------------------------------------------------
+	public function performPostInstallTasks() {
+		$o_config = Configuration::load();
+		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
+			require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
+			$o_es = new WLPlugSearchEngineElasticSearch();
+			$o_es->refreshMapping(true);
+		}
 	}
 	# --------------------------------------------------
 	/**

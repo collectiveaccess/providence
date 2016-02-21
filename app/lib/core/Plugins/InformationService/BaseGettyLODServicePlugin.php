@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -170,7 +170,7 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 		if(!isURL($ps_base_node)) { return false; }
 		if(!is_array($pa_options)) { $pa_options = array(); }
 
-		$vs_cache_key = md5($ps_base_node . $ps_literal_propery . $ps_node_uri . serialize($pa_options));
+		$vs_cache_key = md5(serialize(func_get_args()));
 		if(CompositeCache::contains($vs_cache_key, 'GettyRDFLiterals')) {
 			return CompositeCache::fetch($vs_cache_key, 'GettyRDFLiterals');
 		}
@@ -263,6 +263,12 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 	 * @return array
 	 */
 	static function getListOfRelatedGraphs($po_graph, $ps_base_node, $ps_node_uri, $pn_limit, $pb_recursive=false) {
+		$vs_cache_key = md5(serialize(func_get_args()));
+
+		if(CompositeCache::contains($vs_cache_key, 'GettyLinkedDataRelatedGraphs')) {
+			return CompositeCache::fetch($vs_cache_key, 'GettyLinkedDataRelatedGraphs');
+		}
+
 		$va_related_nodes = $po_graph->all($ps_base_node, $ps_node_uri);
 		$va_pull_graphs = array();
 
@@ -280,11 +286,15 @@ abstract class BaseGettyLODServicePlugin extends BaseInformationServicePlugin {
 		if($pb_recursive) {
 			$va_sub_pull_graphs = array();
 			foreach($va_pull_graphs as $vs_pull_uri => $o_pull_graph) {
+				// avoid circular references
+				if(isset($va_pull_graphs[$vs_pull_uri]) || isset($va_sub_pull_graphs[$vs_pull_uri])) { continue; }
 				$va_sub_pull_graphs = array_merge($va_sub_pull_graphs, self::getListOfRelatedGraphs($o_pull_graph, $vs_pull_uri, $ps_node_uri, $pn_limit, true));
 			}
 
 			$va_pull_graphs = array_merge($va_pull_graphs, $va_sub_pull_graphs);
 		}
+
+		CompositeCache::save($vs_cache_key, $va_pull_graphs, 'GettyLinkedDataRelatedGraphs');
 
 		return $va_pull_graphs;
 	}

@@ -76,9 +76,7 @@ class Arithmetic extends Test\Unit\Suite
                 echo 'Failed expression: ', $expression, '.', "\n";
             })
             ->when(function () use (&$sampler, &$compiler, &$visitor) {
-                foreach ($sampler as $expression) {
-                    $dump = $expression;
-
+                foreach ($sampler as $i=> $expression) {
                     try {
                         $x = (float) $visitor->visit(
                             $compiler->parse($expression)
@@ -100,5 +98,129 @@ class Arithmetic extends Test\Unit\Suite
                             ->isNearlyEqualTo($y);
                 }
             });
+    }
+
+    public function case_visitor_unknown_variable()
+    {
+        $this
+            ->given(
+                $compiler      = Compiler\Llk\Llk::load(new File\Read('hoa://Library/Math/Arithmetic.pp')),
+                $visitor       = new CUT(),
+                $variableName  = 'unknown_variable'
+            )
+            ->then
+                ->object($compiler->parse($variableName . ' * 2'))
+                    ->isInstanceOf('Hoa\Compiler\Llk\TreeNode')
+                ->exception(function () use ($variableName, $compiler, $visitor) {
+                    $visitor->visit($compiler->parse($variableName . ' * 2'));
+                })
+                    ->isInstanceOf('Hoa\Math\Exception\UnknownVariable');
+    }
+
+    public function case_visitor_variable()
+    {
+        $this
+            ->given(
+                $compiler      = Compiler\Llk\Llk::load(new File\Read('hoa://Library/Math/Arithmetic.pp')),
+                $visitor       = new CUT(),
+                $variableName  = 'a_variable',
+                $variableValue = 42
+            )
+            ->when($visitor->addVariable($variableName, function () use ($variableValue) {
+                return $variableValue;
+            }))
+            ->then
+                ->float($visitor->visit($compiler->parse($variableName . ' * 2')))
+                    ->isEqualTo($variableValue * 2);
+    }
+
+    public function case_visitor_unknown_constant()
+    {
+        $this
+            ->given(
+                $compiler      = Compiler\Llk\Llk::load(new File\Read('hoa://Library/Math/Arithmetic.pp')),
+                $visitor       = new CUT(),
+                $constantName  = 'UNKNOWN_CONSTANT'
+            )
+            ->then
+                ->object($compiler->parse($constantName . ' * 2'))
+                    ->isInstanceOf('Hoa\Compiler\Llk\TreeNode')
+                ->exception(function () use ($constantName, $compiler, $visitor) {
+                    $visitor->visit($compiler->parse($constantName . ' * 2'));
+                })
+                    ->isInstanceOf('Hoa\Math\Exception\UnknownConstant');
+    }
+
+    public function case_visitor_constant()
+    {
+        $this
+            ->given(
+                $compiler      = Compiler\Llk\Llk::load(new File\Read('hoa://Library/Math/Arithmetic.pp')),
+                $visitor       = new CUT(),
+                $constantName  = 'A_CONSTANT',
+                $constantValue = 42
+            )
+            ->when($visitor->addConstant($constantName, $constantValue))
+            ->then
+                ->float($visitor->visit($compiler->parse($constantName . ' * 2')))
+                    ->isEqualTo($constantValue * 2);
+    }
+
+    public function case_visitor_unknown_function()
+    {
+        $this
+            ->given(
+                $compiler       = Compiler\Llk\Llk::load(new File\Read('hoa://Library/Math/Arithmetic.pp')),
+                $visitor        = new CUT(),
+                $functionName   = 'unknown_function'
+            )
+            ->then
+                ->object($compiler->parse($functionName . '() * 2'))
+                    ->isInstanceOf('Hoa\Compiler\Llk\TreeNode')
+                ->exception(function () use ($functionName, $compiler, $visitor) {
+                    $visitor->visit($compiler->parse($functionName . '() * 2'));
+                })
+                    ->isInstanceOf('Hoa\Math\Exception\UnknownFunction');
+    }
+
+    public function case_visitor_function()
+    {
+        $this
+            ->given(
+                $compiler       = Compiler\Llk\Llk::load(new File\Read('hoa://Library/Math/Arithmetic.pp')),
+                $visitor        = new CUT(),
+                $functionName   = 'a_function',
+                $functionResult = 42
+            )
+            ->when($visitor->addFunction($functionName, function () use ($functionResult) {
+                return $functionResult;
+            }))
+            ->then
+                ->float($visitor->visit($compiler->parse($functionName . '() * 2')))
+                    ->isEqualTo($functionResult * 2);
+    }
+
+    public function case_change_default_context()
+    {
+        $this
+            ->given(
+                $compiler       = Compiler\Llk\Llk::load(new File\Read('hoa://Library/Math/Arithmetic.pp')),
+                $visitor        = new CUT(),
+                $context        = new \Mock\Hoa\Math\Context(),
+                $variableName  = 'a_variable',
+                $variableValue = 42
+            )
+            ->when($context->addVariable($variableName, function () use ($variableValue) { return $variableValue; }))
+            ->then
+                ->object($visitor->setContext($context))
+                    ->isNotIdenticalTo($context)
+                ->object($visitor->getContext())
+                    ->isIdenticalTo($context)
+                ->float($visitor->visit($compiler->parse('abs(' . $variableName . ' - PI)')))
+                    ->isEqualTo(abs($variableValue - M_PI))
+                ->mock($context)
+                    ->call('getFunction')->withArguments('abs')->once
+                    ->call('getVariable')->withArguments($variableName)->once
+                    ->call('getConstant')->withArguments('PI')->once;
     }
 }

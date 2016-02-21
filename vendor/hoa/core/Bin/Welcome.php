@@ -122,7 +122,7 @@ class Welcome extends Console\Dispatcher\Kit
 
         foreach ($locations as $location) {
             $iterator->append(new \GlobIterator(
-                $location . '*' . DS . 'Bin' . DS . '*.php'
+                $location . DS . '*' . DS . 'Bin' . DS . '*.php'
             ));
         }
 

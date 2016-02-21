@@ -77,12 +77,11 @@ class SearchResultGetTest extends BaseTestWithData {
 		$o_search = caGetSearchInstance('ca_objects');
 		$this->assertInstanceOf('SearchEngine', $o_search);
 
-		$o_res = $o_search->search('*');
+		$o_res = $o_search->search('*', array('sort' => 'ca_object_labels.name'));
 		/** @var SearchResult $o_res */
 		$this->assertInstanceOf('SearchResult', $o_res);
 		$this->assertEquals(10, $o_res->numHits());
-
-		SearchResult::clearGetWithTemplatePrefetch();	// old values may be cached from previous tests
+		
 		$i=0;
 		while($o_res->nextHit()) {
 			$vs_label = $o_res->getWithTemplate('^ca_objects.preferred_labels');

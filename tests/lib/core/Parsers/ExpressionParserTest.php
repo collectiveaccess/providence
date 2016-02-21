@@ -156,6 +156,10 @@ class ExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('test123', ExpressionParser::evaluate('^ca_objects.preferred_labels', array('ca_objects.preferred_labels' => 'test123')));
 	}
 
+	public function testObscureVars() {
+		$this->assertTrue(ExpressionParser::evaluate('^/gvp:Subject/gvp:parentString =~ /Corporate/', array('/gvp:Subject/gvp:parentString' => 'Corporate')));
+	}
+
 	/**
 	 * Random expressions we used for testing while writing the AST processor. Might as well leave them in here
 	 */

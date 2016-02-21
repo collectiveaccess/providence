@@ -54,6 +54,7 @@ class SimpleGetTest extends BaseTestWithData {
 		$vn_test_record = $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'moving_image',
+				'access' => 0,
 			),
 			'preferred_labels' => array(
 				array(
@@ -76,6 +77,12 @@ class SimpleGetTest extends BaseTestWithData {
 	}
 	# -------------------------------------------------------
 	public function testGets() {
+		$vm_ret = $this->opt_object->get('ca_objects.access', array('convertCodesToIdno' => true));
+		$this->assertEquals('internal_only', $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_objects.status', array('convertCodesToIdno' => true));
+		$this->assertEquals('new', $vm_ret);
+
 		$vm_ret = $this->opt_object->get('ca_objects.type_id', array('convertCodesToDisplayText' => true));
 		$this->assertEquals('Moving Image', $vm_ret);
 
@@ -84,6 +91,12 @@ class SimpleGetTest extends BaseTestWithData {
 
 		$vm_ret = $this->opt_object->get('ca_objects.duration');
 		$this->assertEquals('0:23:28', $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_objects.access');
+		$this->assertEquals('0', $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_objects.access', array('convertCodesToDisplayText' => true));
+		$this->assertEquals('not accessible to public', $vm_ret);
 		
 		$o_tep = new TimeExpressionParser(); $vn_now = time();
 		$vm_ret = $this->opt_object->get('ca_objects.lastModified');
