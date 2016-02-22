@@ -901,7 +901,6 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 				} else {
 					$vs_buf .= "<br/>".caProcessTemplateForIDs($vs_additional_info, $vs_table_name, array($t_item->getPrimaryKey()),array('requireLinkTags' => true))."<br/>\n";
 				}
-
 			}
 			
 			$vs_buf .= "<div id='toolIcons'>";	
@@ -1499,7 +1498,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 					$vs_buf .= "<br/><strong>"._t("Type of content")."</strong>: ".caGetTableDisplayName($vn_content_table_num)."<br/>\n";
 					$vs_buf .= "<strong>"._t("Type")."</strong>: ".$t_item->getChoiceListValue('direction', $t_item->get('direction'))."<br/>\n";
 					$vs_buf .= "<strong>"._t("Target format")."</strong>: ".$t_item->get('target')."<br/>\n";
-					
+
 					$va_stats = $t_item->getMappingStatistics();
 					$vs_buf .= "<div><strong>"._t("Number of groups")."</strong>: ".$va_stats['groupCount']."<br/>\n";
 					$vs_buf .= "<strong>"._t("Number of rules")."</strong>: ".$va_stats['ruleCount']."<br/>\n";
@@ -1519,22 +1518,6 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 					}
 				}
 			}
-			
-			//
-			// Output configurable additional info from config, if set
-			// 
-
-			if ($vs_additional_info = $po_view->request->config->get("{$vs_table_name}_inspector_additional_info")) {
-				if(is_array($vs_additional_info)){
-					$vs_buf .= "<br/>";
-					foreach($vs_additional_info as $vs_info){
-						$vs_buf .= caProcessTemplateForIDs($vs_info, $vs_table_name, array($t_item->getPrimaryKey()),array('requireLinkTags' => true))."<br/>\n";
-					}
-				} else {
-					$vs_buf .= "<br/>".caProcessTemplateForIDs($vs_additional_info, $vs_table_name, array($t_item->getPrimaryKey()),array('requireLinkTags' => true))."<br/>\n";
-				}
-			}
-			
 		// -------------------------------------------------------------------------------------
 		// Export
 		
@@ -2031,8 +2014,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 				$vs_proc_tag = $ps_prefix.$vs_proc_tag;
 			}
 			
-			if ($t_instance && ($vs_gotten_val = $t_instance->get($vs_proc_tag, $pa_options))) {
-				$vs_gotten_val = caProcessTemplateTagDirectives($vs_gotten_val, $va_tmp);
+			if ($t_instance) {
+				$vs_gotten_val = caProcessTemplateTagDirectives($t_instance->get($vs_proc_tag, $pa_options), $va_tmp);
 				
 				$ps_template = preg_replace("/\^".preg_quote($vs_tag, '/')."(?![A-Za-z0-9]+)/", $vs_gotten_val, $ps_template);
 			} else {
@@ -2044,7 +2027,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 				$vs_val = caProcessTemplateTagDirectives($vs_val, $va_tmp);
 				
 				if ($pb_quote) { $vs_val = '"'.addslashes($vs_val).'"'; }
-				$ps_template = preg_replace("!\^(?={$vs_tag}[^A-Za-z0-9]+|{$vs_tag}$){$vs_tag}!", str_replace("$", "\\$", $vs_val), $ps_template);	// escape "$" to prevent interpretation as backreferences
+				$vs_tag_proc = preg_quote($vs_tag, '/');
+				$ps_template = preg_replace("/\^(?={$vs_tag_proc}[^A-Za-z0-9]+|{$vs_tag_proc}$){$vs_tag_proc}/", str_replace("$", "\\$", $vs_val), $ps_template);	// escape "$" to prevent interpretation as backreferences
 			}
 		}
 		return $ps_template;

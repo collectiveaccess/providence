@@ -6557,7 +6557,8 @@ side. For many self-relations the direction determines the nature and display te
 				// currently loaded row is not the root so get the root
 				$va_ancestors = $this->getHierarchyAncestors();
 				if (!is_array($va_ancestors) || sizeof($va_ancestors) == 0) { return null; }
-				$t_instance = $o_dm->getInstanceByTableName($va_ancestors[0], true);
+				$t_instance = $o_dm->getInstanceByTableName($this->tableName(), true);
+				$t_instance->load($va_ancestors[0]["NODE"][$this->primaryKey()]);
 			} else {
 				$t_instance =& $this;
 			}
