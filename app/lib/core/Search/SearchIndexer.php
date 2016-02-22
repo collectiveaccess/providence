@@ -2116,6 +2116,7 @@ class SearchIndexer extends SearchBase {
 	 */
 	private function _getElementCode($pn_element_id) {
 		$this->_getElementID($pn_element_id);	// ensures MemoryCache is populated
+		if(!$pn_element_id) { return false; }
 		return MemoryCache::fetch($pn_element_id, 'SearchIndexerElementIds');
 	}
 	# ------------------------------------------------
@@ -2124,6 +2125,7 @@ class SearchIndexer extends SearchBase {
 	 */
 	private function _getElementDataType($ps_element_code) {
 		$vn_element_id = $this->_getElementID($ps_element_code);	// ensures MemoryCache is populated
+		if(!$vn_element_id) { return false; }
 		return MemoryCache::fetch($vn_element_id, 'SearchIndexerElementDataTypes');
 	}
 	# ------------------------------------------------
@@ -2132,6 +2134,7 @@ class SearchIndexer extends SearchBase {
 	 */
 	private function _getElementListID($ps_element_code) {
 		$vn_element_id = $this->_getElementID($ps_element_code);	// ensures MemoryCache is populated
+		if(!$vn_element_id) { return false; }
 		return MemoryCache::fetch($vn_element_id, 'SearchIndexerElementListIds');
 	}
 	# ------------------------------------------------
@@ -2140,6 +2143,7 @@ class SearchIndexer extends SearchBase {
 	 */
 	private function _getElementListCode($pn_element_id) {
 		$vn_element_id = $this->_getElementID($pn_element_id);	// ensures MemoryCache is populated
+		if(!$vn_element_id) { return false; }
 		return MemoryCache::fetch($vn_element_id, 'SearchIndexerElementIds');
 	}
 	# ------------------------------------------------
