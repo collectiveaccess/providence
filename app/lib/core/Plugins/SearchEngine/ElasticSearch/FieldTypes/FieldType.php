@@ -83,10 +83,8 @@ abstract class FieldType {
 
 			if ($ps_content_fieldname[0] === 'A') { // Metadata attribute
 				$vn_field_num_proc = (int)substr($ps_content_fieldname, 1);
-
-				$t_element = \ca_metadata_elements::getInstance($vn_field_num_proc);
-				if(!$t_element->getPrimaryKey()) { return null; }
-				$ps_content_fieldname = $t_element->get('element_code');
+				$ps_content_fieldname = \ca_metadata_elements::getElementCodeForId($vn_field_num_proc);
+				if(!$ps_content_fieldname) { return null; }
 				$vb_is_element = true;
 			} else {
 				// Plain intrinsic
