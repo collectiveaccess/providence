@@ -78,14 +78,16 @@ abstract class FieldType {
 		}
 
 		// if this is an indexing field name, rewrite it
+		$vb_is_element = false;
 		if(preg_match("/^(I|A)[0-9]+$/", $ps_content_fieldname)) {
 
 			if ($ps_content_fieldname[0] === 'A') { // Metadata attribute
 				$vn_field_num_proc = (int)substr($ps_content_fieldname, 1);
 
-				$t_element = new \ca_metadata_elements($vn_field_num_proc);
+				$t_element = \ca_metadata_elements::getInstance($vn_field_num_proc);
 				if(!$t_element->getPrimaryKey()) { return null; }
 				$ps_content_fieldname = $t_element->get('element_code');
+				$vb_is_element = true;
 			} else {
 				// Plain intrinsic
 				$vn_field_num_proc = (int)substr($ps_content_fieldname, 1);
@@ -94,7 +96,7 @@ abstract class FieldType {
 
 		}
 
-		if($vn_datatype = \ca_metadata_elements::getDataTypeForElementCode($ps_content_fieldname)) {
+		if($vb_is_element && ($vn_datatype = \ca_metadata_elements::getElementDatatype($ps_content_fieldname))) {
 			switch ($vn_datatype) {
 				case 2:
 					return new DateRange($ps_table, $ps_content_fieldname);
