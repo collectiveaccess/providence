@@ -977,6 +977,25 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	/**
+	 *
+	 */
+	static public function getElementCodeForId($pm_element_id) {
+		if(MemoryCache::contains($pm_element_id, 'ElementCodes')) {
+			return MemoryCache::fetch($pm_element_id, 'ElementCodes');
+		}
+
+		$vm_return = null;
+		$t_element = self::getInstance($pm_element_id);
+
+		if($t_element->getPrimaryKey()) {
+			$vm_return = $t_element->get('element_code');
+		}
+
+		MemoryCache::save($pm_element_id, $vm_return, 'ElementCodes');
+		return $vm_return;
+	}
+	# ------------------------------------------------------
+	/**
 	 * 
 	 */
 	static public function getInstance($pm_element_code_or_id) {
