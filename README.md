@@ -9,9 +9,6 @@ Providence is the “back-end” cataloging component of CollectiveAccess, a web
 
 CollectiveAccess is freely available under the open source GNU Public License, meaning it’s not only free to download and use but that users are encouraged to share and distribute code.
 
-Note that 1.6 is the first version of CollectiveAccess compatible with PHP 7.
-
-
 ----Useful Links:----
 
    Web site: http://collectiveaccess.org
