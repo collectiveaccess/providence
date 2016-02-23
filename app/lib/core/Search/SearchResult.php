@@ -2201,6 +2201,13 @@ class SearchResult extends BaseObject {
 	/**
 	 *
 	 */
+	public function clearGetWithTemplatePrefetch() {
+		$this->opa_template_prefetch_cache = array();
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
 	private function getCacheKeyForGetWithTemplate($ps_template, $pa_options) {
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		foreach($pa_options as $vs_k => $vs_v) {
