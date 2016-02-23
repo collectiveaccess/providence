@@ -755,7 +755,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						 	foreach($o_lucene_query_element->getQueryTerms() as $o_term) {
 								if (!$vs_access_point && ($vs_field = $o_term->field)) { $vs_access_point = $vs_field; }
 								
-								$va_terms = preg_split("![".$this->ops_search_tokenizer_regex."]+!u", (string)$o_term->text);
+								$va_terms = $this->_tokenize((string)$o_term->text, true); //preg_split("![".$this->ops_search_tokenizer_regex."]+!u", (string)$o_term->text);
 								$va_raw_terms[] = (string)$o_term->text;
 								$va_raw_terms_escaped[] = '"'.$this->opo_db->escape((string)$o_term->text).'"';
 								foreach($va_terms as $vs_term) {
@@ -845,7 +845,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$vs_access_point = $va_access_point_info['access_point'];
 							
 								$vs_raw_term = (string)$o_term->text;
-								$vs_term = preg_replace("%((?<!\d)[".$this->ops_search_tokenizer_regex."]+|[".$this->ops_search_tokenizer_regex."]+(?!\d))%u", '', $vs_raw_term);
+								//$vs_term = preg_replace("%((?<!\d)[".$this->ops_search_tokenizer_regex."]+|[".$this->ops_search_tokenizer_regex."]+(?!\d))%u", '', $vs_raw_term);
+								$vs_term = join(' ', $this->_tokenize($vs_raw_term, true));
 								
 								if ($vs_access_point && (mb_strtoupper($vs_raw_term) == _t('[BLANK]'))) {
 									$t_ap = $this->opo_datamodel->getInstanceByTableNum($va_access_point_info['table_num'], true);
@@ -1958,9 +1959,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 				}
 			}
 		
-			return preg_split('![ ]+!', trim(preg_replace('!['.$this->ops_search_tokenizer_regex.']+!u', ' ', strip_tags($ps_content))));
+			return preg_split('![ ]+!', trim(preg_replace("%((?<!\d)[".$this->ops_search_tokenizer_regex."]+|[".$this->ops_search_tokenizer_regex."]+(?!\d))%u", ' ', strip_tags($ps_content))));
 		} else {
-			return preg_split('![ ]+!', trim(preg_replace('!['.$this->ops_indexing_tokenizer_regex.']+!u', ' ', strip_tags($ps_content))));
+			return preg_split('![ ]+!', trim(preg_replace("%((?<!\d)[".$this->ops_search_tokenizer_regex."]+|[".$this->ops_search_tokenizer_regex."]+(?!\d))%u", ' ', strip_tags($ps_content))));
 		}
 	}
 	# --------------------------------------------------
