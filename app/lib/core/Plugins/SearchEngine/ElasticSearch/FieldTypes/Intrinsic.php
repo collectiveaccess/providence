@@ -94,7 +94,7 @@ class Intrinsic extends FieldType {
 		if(is_array($pm_content)) { $pm_content = serialize($pm_content); }
 		if($pm_content == '') { $pm_content = null; }
 
-		$t_instance = \Datamodel::load()->getInstance($this->getTableName());
+		$t_instance = \Datamodel::load()->getInstance($this->getTableName(), true);
 		$va_field_info = \Datamodel::load()->getFieldInfo($this->getTableName(), $this->getFieldName());
 
 		switch($va_field_info['FIELD_TYPE']) {
@@ -139,7 +139,7 @@ class Intrinsic extends FieldType {
 	 * @return \Zend_Search_Lucene_Index_Term
 	 */
 	public function getRewrittenTerm($po_term) {
-		$t_instance = \Datamodel::load()->getInstance($this->getTableName());
+		$t_instance = \Datamodel::load()->getInstance($this->getTableName(), true);
 
 		$va_field_components = explode('/', $po_term->field);
 
@@ -153,6 +153,10 @@ class Intrinsic extends FieldType {
 					$po_term->field, '_missing_'
 				);
 			}
+		} elseif(strtolower($po_term->text) === '[set]') {
+			return new \Zend_Search_Lucene_Index_Term(
+				$po_term->field, '_exists_'
+			);
 		} elseif(
 			($t_instance instanceof \BaseModel) &&
 			isset($va_field_components[1]) &&

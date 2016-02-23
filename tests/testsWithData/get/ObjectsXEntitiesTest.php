@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/testsWithData/get/SimpleGetTest.php
+ * tests/testsWithData/get/ObjectsXEntitiesTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,15 +33,19 @@
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
 /**
- * Class SimpleGetTest
+ * Class ObjectsXEntitiesTest
  * Note: Requires testing profile!
  */
-class SimpleGetTest extends BaseTestWithData {
+class ObjectsXEntitiesTest extends BaseTestWithData {
 	# -------------------------------------------------------
 	/**
 	 * @var BundlableLabelableBaseModelWithAttributes
 	 */
 	private $opt_object = null;
+	/**
+	 * @var BundlableLabelableBaseModelWithAttributes
+	 */
+	private $opt_entity = null;
 	# -------------------------------------------------------
 	public function setUp() {
 		// don't forget to call parent so that the request is set up
@@ -51,58 +55,74 @@ class SimpleGetTest extends BaseTestWithData {
 		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
 		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 		 */
-		$vn_test_record = $this->addTestRecord('ca_objects', array(
+		$vn_object_id = $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
-				'type_id' => 'moving_image',
-				'access' => 0,
+				'type_id' => 'image',
+				'idno' => 'test_img'
 			),
 			'preferred_labels' => array(
 				array(
 					"locale" => "en_US",
-					"name" => "My test moving image",
+					"name" => "Test Image",
 				),
 			),
-			'attributes' => array(
-				'duration' => array(
+		));
+
+		$this->assertGreaterThan(0, $vn_object_id);
+
+		$vn_entity_id = $this->addTestRecord('ca_entities', array(
+			'intrinsic_fields' => array(
+				'type_id' => 'ind',
+				'idno' => 'hjs',
+				'lifespan' => '12/17/1989 -'
+			),
+			'preferred_labels' => array(
+				array(
+					"locale" => "en_US",
+					"forename" => "Homer",
+					"middlename" => "J.",
+					"surname" => "Simpson",
+				),
+			),
+			'nonpreferred_labels' => array(
+				array(
+					"locale" => "en_US",
+					"forename" => "Max",
+					"middlename" => "",
+					"surname" => "Power",
+					"type_id" => "alt",
+				),
+			),
+			'related' => array(
+				'ca_objects' => array(
 					array(
-						'duration' => '00:23:28'
+						'object_id' => $vn_object_id,
+						'type_id' => 'creator',
+						'effective_date' => '2015',
+						'source_info' => 'Me'
 					)
 				),
 			),
 		));
 
-		$this->assertGreaterThan(0, $vn_test_record);
+		$this->assertGreaterThan(0, $vn_entity_id);
 
-		$this->opt_object = new ca_objects($vn_test_record);
+		$this->opt_object = new ca_objects($vn_object_id);
+		$this->opt_entity = new ca_entities($vn_entity_id);
 	}
 	# -------------------------------------------------------
-	public function testGets() {
-		$vm_ret = $this->opt_object->get('ca_objects.access', array('convertCodesToIdno' => true));
-		$this->assertEquals('internal_only', $vm_ret);
+	public function testInterstitialGet() {
 
-		$vm_ret = $this->opt_object->get('ca_objects.status', array('convertCodesToIdno' => true));
-		$this->assertEquals('new', $vm_ret);
+		// should only be one
+		$vn_relation_id = $this->opt_object->get('ca_objects_x_entities.relation_id');
+		$this->assertTrue(is_numeric($vn_relation_id));
 
-		$vm_ret = $this->opt_object->get('ca_objects.type_id', array('convertCodesToDisplayText' => true));
-		$this->assertEquals('Moving Image', $vm_ret);
-
-		$vm_ret = $this->opt_object->get('ca_objects.preferred_labels');
-		$this->assertEquals('My test moving image', $vm_ret);
-
-		$vm_ret = $this->opt_object->get('ca_objects.duration');
-		$this->assertEquals('0:23:28', $vm_ret);
-
-		$vm_ret = $this->opt_object->get('ca_objects.access');
-		$this->assertEquals('0', $vm_ret);
-
-		$vm_ret = $this->opt_object->get('ca_objects.access', array('convertCodesToDisplayText' => true));
-		$this->assertEquals('not accessible to public', $vm_ret);
-		
-		$o_tep = new TimeExpressionParser(); $vn_now = time();
-		$vm_ret = $this->opt_object->get('ca_objects.lastModified');
-		$this->assertTrue($o_tep->parse($vm_ret));
-		$va_modified_unix = $o_tep->getUnixTimestamps();
-		//$this->assertEquals($vn_now, $va_modified_unix['start'], 'lastModified timestamp cannot be more than 1 minute off', 60);
+		$t_rel = new ca_objects_x_entities($vn_relation_id);
+		$this->assertEquals('Homer J. Simpson', $t_rel->get('ca_entities.preferred_labels'));
+		$this->assertEquals('Homer J. Simpson (creator)', $t_rel->get('ca_entities.preferred_labels', array('template' => '^ca_entities.preferred_labels (^relationship_typename)')));
+		$this->assertEquals('Homer J. Simpson (creator)', $t_rel->get('ca_entities.preferred_labels',
+			array('template' => '<unit relativeTo="ca_objects_x_entities">^ca_entities.preferred_labels (^relationship_typename)</unit>'))
+		);
 	}
 	# -------------------------------------------------------
 }
