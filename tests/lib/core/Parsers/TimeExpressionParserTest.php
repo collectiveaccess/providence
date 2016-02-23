@@ -717,6 +717,7 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_parse['end'], "199.123123595900");
 		$this->assertEquals($va_parse[0], "100.010100000000");
 		$this->assertEquals($va_parse[1], "199.123123595900");
+		$this->assertEquals(strtolower($o_tep->getText()), "2nd century");
 		
 		$vb_res = $o_tep->parse('2nd century ad');
 		$this->assertEquals($vb_res, true);
@@ -726,6 +727,7 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_parse['end'], "199.123123595900");
 		$this->assertEquals($va_parse[0], "100.010100000000");
 		$this->assertEquals($va_parse[1], "199.123123595900");
+		$this->assertEquals(strtolower($o_tep->getText()), "2nd century");
 		
 		$vb_res = $o_tep->parse('15th century');
 		$this->assertEquals($vb_res, true);
@@ -735,6 +737,7 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_parse['end'], "1499.123123595900");
 		$this->assertEquals($va_parse[0], "1400.010100000000");
 		$this->assertEquals($va_parse[1], "1499.123123595900");
+		$this->assertEquals(strtolower($o_tep->getText()), "15th century");
 		
 		$vb_res = $o_tep->parse('15th century ad');
 		$this->assertEquals($vb_res, true);
@@ -744,6 +747,7 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_parse['end'], "1499.123123595900");
 		$this->assertEquals($va_parse[0], "1400.010100000000");
 		$this->assertEquals($va_parse[1], "1499.123123595900");
+		$this->assertEquals(strtolower($o_tep->getText()), "15th century");
 	}
 	
 	public function testBCECenturies() {
@@ -759,6 +763,8 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_parse[0], "-100.010100000000");
 		$this->assertEquals($va_parse[1], "-199.123123595900");
 		
+		$this->assertEquals(strtolower($o_tep->getText()), "2nd century bce");
+		
 		$vb_res = $o_tep->parse('15th century bce');
 		$this->assertEquals($vb_res, true);
 		$va_parse = $o_tep->getHistoricTimestamps();
@@ -767,6 +773,8 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_parse['end'], "-1499.123123595900");
 		$this->assertEquals($va_parse[0], "-1400.010100000000");
 		$this->assertEquals($va_parse[1], "-1499.123123595900");
+		
+		$this->assertEquals(strtolower($o_tep->getText()), "15th century bce");
 	}
 
 	public function testTimes() {
