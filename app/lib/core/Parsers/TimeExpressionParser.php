@@ -2652,8 +2652,17 @@ class TimeExpressionParser {
 						return $vs_start_year.$vs_decade_indicator;
 					} else {
 						// catch century dates
-						if ((($va_start_pieces['year'] % 100) == 0) && ($va_end_pieces['year'] == ($va_start_pieces['year'] + 99))) {
-							$vn_century = intval($va_start_pieces['year']/100) + 1;
+						if (
+							(($va_start_pieces['year'] % 100) == 0) && 
+							(
+								(($va_start_pieces['year'] > 0) && ($va_end_pieces['year'] == ($va_start_pieces['year'] + 99)))
+								||
+								(($va_start_pieces['year'] < 0) && ($va_end_pieces['year'] == ($va_start_pieces['year'] - 99)))
+							)
+						) {
+							$vn_century = intval($va_start_pieces['year']/100);
+							$vn_century = ($vn_century > 0) ? ($vn_century + 1) : ($vn_century - 1);
+							
 							$va_ordinals = $this->opo_language_settings->getList("ordinalSuffixes");
 							$va_ordinal_exceptions = $this->opo_language_settings->get("ordinalSuffixExceptions");
 							$vs_ordinal_default = $this->opo_language_settings->get("ordinalSuffixDefault");
