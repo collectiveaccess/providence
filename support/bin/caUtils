@@ -48,7 +48,13 @@
 	$o_config = Configuration::load();
 	$g_ui_locale = $o_config->get('locale_default');
 	$t_locale = new ca_locales();
-	$g_ui_locale_id = $t_locale->getDb()->getFieldsFromTable('ca_locales') ? $t_locale->localeCodeToID($g_ui_locale) : -1; // get current UI locale as locale_id (available as global)
+
+	try {
+		$g_ui_locale_id = $t_locale->getDb()->getFieldsFromTable('ca_locales') ? $t_locale->localeCodeToID($g_ui_locale) : -1; // get current UI locale as locale_id (available as global)
+	} catch(Exception $e) {
+		$g_ui_locale_id = -1;
+	}
+
 	initializeLocale($g_ui_locale);
 	
  	$o_app_plugin_manager = new ApplicationPluginManager();

@@ -103,13 +103,23 @@
 		 * @param int $pn_parent_id The parent_id of the place; must be set to a non-null value
 		 * @param int $pn_type_id The type_id of the place type to use if the place needs to be created
 		 * @param int $pn_locale_id The locale_id to use if the place needs to be created (will be used for both the place locale as well as the label locale)
+		 * @param int $pn_hierarchy_id The idno or item_id of the place hierarchy to use [Default is null; use first hierarchy found] 
 		 * @param array $pa_values An optional array of additional values to populate newly created place records with. These values are *only* used for newly created places; they will not be applied if the place named already exists. The array keys should be names of ca_places fields or valid entity attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
 		 * @param array $pa_options An optional array of options. See DataMigrationUtils::_getID() for a list.
 		 * @return bool|ca_places|mixed|null
 		 *
 		 * @see DataMigrationUtils::_getID()
 		 */
-		static function getPlaceID($ps_place_name, $pn_parent_id, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
+		static function getPlaceID($ps_place_name, $pn_parent_id, $pn_type_id, $pn_locale_id, $pn_hierarchy_id=null, $pa_values=null, $pa_options=null) {
+			if (!is_array($pa_values)) { $pa_values = array(); }
+			if ($pn_hierarchy_id) {
+				$pa_values['hierarchy_id'] = $pn_hierarchy_id;
+			} else {
+				$t_list = new ca_lists();
+				if (sizeof($va_hierarchy_ids = $t_list->getItemsForList('place_hierarchies', array('idsOnly' => true, 'omitRoot' => true)))) {
+					$pa_values['hierarchy_id'] = array_shift($va_hierarchy_ids);
+				}
+			}
 			return DataMigrationUtils::_getID('ca_places', array('name' => $ps_place_name), $pn_parent_id, $pn_type_id, $pn_locale_id, $pa_values, $pa_options);
 		}
 		# -------------------------------------------------------
@@ -881,7 +891,7 @@
 												if(!$vs_idno_match) { continue; }
 												if (preg_match('!'.$vs_regex.'!', $vs_idno_match, $va_matches)) {
 													if ($vn_id = (ca_object_representations::find(array('idno' => $va_matches[1]), array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])))) {
-														break(5);
+														break(6);
 													}
 												}
 											}
@@ -891,7 +901,7 @@
 									foreach($va_idnos_to_match as $vs_idno_match) {
 										if(!$vs_idno_match) { continue; }
 										if ($vn_id = (ca_object_representations::find(array('idno' => $vs_idno_match), array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])))) {
-											break(3);
+											break(4);
 										}
 									}
 								}
@@ -912,7 +922,7 @@
 									&& 
 									($vn_id = ($vs_table_class::find($va_find_vals, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction']))))
 								) {
-									break(2);
+									break(3);
 								}
 								break;
 						}
@@ -978,7 +988,7 @@
 				if (isset($pa_options['transaction']) && $pa_options['transaction'] instanceof Transaction){
 					$t_instance->setTransaction($pa_options['transaction']);
 				}
-
+				
 				$t_instance->setMode(ACCESS_WRITE);
 				$t_instance->set('locale_id', $pn_locale_id);
 				$t_instance->set('type_id', $pn_type_id);

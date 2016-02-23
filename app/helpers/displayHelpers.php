@@ -47,7 +47,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
  * More about bundle display templates here: http://docs.collectiveaccess.org/wiki/Bundle_Display_Templates
  */
 
-define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/\:]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/:]+[~]{1}[A-Za-z0-9]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/:]+)/");
+define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]{1}[\&\%]{1}[^ <]+|ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]{1}|[0-9]+(?=[.,;])|[\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/]+[~]{1}[A-Za-z0-9]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/]+)/");
 	
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -648,7 +648,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		if ($vs_type_name == "list item") {
 			$vs_style = "style='height:auto;'";
 		}
-		if (($vn_item_id) | ($po_view->request->getAction() === 'Delete')) {
+		if (($vn_item_id) || ($po_view->request->getAction() === 'Delete')) {
 			$vs_buf = '<h3 class="nextPrevious" '.$vs_style.'>'.caEditorFindResultNavigation($po_view->request, $t_item, $o_result_context, $pa_options)."</h3>\n";
 		}
 		
@@ -901,7 +901,6 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 				} else {
 					$vs_buf .= "<br/>".caProcessTemplateForIDs($vs_additional_info, $vs_table_name, array($t_item->getPrimaryKey()),array('requireLinkTags' => true))."<br/>\n";
 				}
-
 			}
 			
 			$vs_buf .= "<div id='toolIcons'>";	
@@ -1499,7 +1498,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 					$vs_buf .= "<br/><strong>"._t("Type of content")."</strong>: ".caGetTableDisplayName($vn_content_table_num)."<br/>\n";
 					$vs_buf .= "<strong>"._t("Type")."</strong>: ".$t_item->getChoiceListValue('direction', $t_item->get('direction'))."<br/>\n";
 					$vs_buf .= "<strong>"._t("Target format")."</strong>: ".$t_item->get('target')."<br/>\n";
-					
+
 					$va_stats = $t_item->getMappingStatistics();
 					$vs_buf .= "<div><strong>"._t("Number of groups")."</strong>: ".$va_stats['groupCount']."<br/>\n";
 					$vs_buf .= "<strong>"._t("Number of rules")."</strong>: ".$va_stats['ruleCount']."<br/>\n";
@@ -1519,22 +1518,6 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 					}
 				}
 			}
-			
-			//
-			// Output configurable additional info from config, if set
-			// 
-
-			if ($vs_additional_info = $po_view->request->config->get("{$vs_table_name}_inspector_additional_info")) {
-				if(is_array($vs_additional_info)){
-					$vs_buf .= "<br/>";
-					foreach($vs_additional_info as $vs_info){
-						$vs_buf .= caProcessTemplateForIDs($vs_info, $vs_table_name, array($t_item->getPrimaryKey()),array('requireLinkTags' => true))."<br/>\n";
-					}
-				} else {
-					$vs_buf .= "<br/>".caProcessTemplateForIDs($vs_additional_info, $vs_table_name, array($t_item->getPrimaryKey()),array('requireLinkTags' => true))."<br/>\n";
-				}
-			}
-			
 		// -------------------------------------------------------------------------------------
 		// Export
 		
@@ -1963,22 +1946,34 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 	 * Returns a list of "^" prefixed-tags (eg. ^forename) present in a template
 	 *
 	 * @param string $ps_template
-	 * @param array $pa_options No options are currently supported
+	 * @param array $pa_options 
+	 *		stripOptions =
+	 *		parseOptions = 
 	 * 
 	 * @return array An array of tags
 	 */
 	function caGetTemplateTags($ps_template, $pa_options=null) {
 		$va_tags = array();
-		
-		$vs_prefix = caGetOption('prefix', $pa_options, null);
-		
 		if (preg_match_all(__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__, $ps_template, $va_matches)) {
 			foreach($va_matches[1] as $vn_i => $vs_possible_tag) {
-				//if ($vs_prefix) { $va_matches[1][$vn_i] = $vs_possible_tag = $vs_prefix.$vs_possible_tag; }
 				if (strpos($vs_possible_tag, "~") !== false) { continue; }	// don't clip trailing characters when there's a tag directive specified
 				$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.%");	// remove trailing slashes, periods and percent signs as they're potentially valid tag characters that are never meant to be at the end
 			}
 			$va_tags = $va_matches[1];
+		}
+		
+		if (caGetOption('stripOptions', $pa_options, false)) {
+			foreach($va_tags as $vn_i => $vs_tag) {
+				$va_opts = caParseTagOptions($vs_tag);
+				
+				$va_tags[$vn_i] = $va_opts['tag'];
+			}
+		} elseif (caGetOption('parseOptions', $pa_options, false)) {
+			foreach($va_tags as $vn_i => $vs_tag) {
+				$va_opts = caParseTagOptions($vs_tag);
+				
+				$va_tags[$vn_i] = array_merge(array('originalTag' => $vs_tag), $va_opts);
+			}
 		}
 		
 		return $va_tags;
@@ -2019,8 +2014,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 				$vs_proc_tag = $ps_prefix.$vs_proc_tag;
 			}
 			
-			if ($t_instance && ($vs_gotten_val = $t_instance->get($vs_proc_tag, $pa_options))) {
-				$vs_gotten_val = caProcessTemplateTagDirectives($vs_gotten_val, $va_tmp);
+			if ($t_instance) {
+				$vs_gotten_val = caProcessTemplateTagDirectives($t_instance->get($vs_proc_tag, $pa_options), $va_tmp);
 				
 				$ps_template = preg_replace("/\^".preg_quote($vs_tag, '/')."(?![A-Za-z0-9]+)/", $vs_gotten_val, $ps_template);
 			} else {
@@ -2032,7 +2027,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 				$vs_val = caProcessTemplateTagDirectives($vs_val, $va_tmp);
 				
 				if ($pb_quote) { $vs_val = '"'.addslashes($vs_val).'"'; }
-				$ps_template = preg_replace("!\^(?={$vs_tag}[^A-Za-z0-9]+|{$vs_tag}$){$vs_tag}!", str_replace("$", "\\$", $vs_val), $ps_template);	// escape "$" to prevent interpretation as backreferences
+				$vs_tag_proc = preg_quote($vs_tag, '/');
+				$ps_template = preg_replace("/\^(?={$vs_tag_proc}[^A-Za-z0-9]+|{$vs_tag_proc}$){$vs_tag_proc}/", str_replace("$", "\\$", $vs_val), $ps_template);	// escape "$" to prevent interpretation as backreferences
 			}
 		}
 		return $ps_template;
@@ -2625,7 +2621,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 	/**
 	 *
 	 */
-	function caObjectsDisplayDownloadLink($po_request) {
+	function caObjectsDisplayDownloadLink($po_request, $pn_object_id = null) {
 		$o_config = Configuration::load();
 		$vn_can_download = false;
 		if($o_config->get('allow_ca_objects_representation_download')){
@@ -2646,6 +2642,15 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 					}
 				break;
 				# ------------------------------------------
+			}
+		}
+		if($pn_object_id && $vn_can_download && is_array($o_config->get('allow_ca_objects_representation_download_types')) && sizeof($o_config->get('allow_ca_objects_representation_download_types'))){
+			# --- see if current object's type is in the confirgured array
+			$t_object = new ca_objects($pn_object_id);
+			$t_list_item = new ca_list_items($t_object->get("type_id"));
+			$va_object_type_code = $t_list_item->get("idno");
+			if(!in_array($va_object_type_code, $o_config->get('allow_ca_objects_representation_download_types'))){
+				$vn_can_download = false;
 			}
 		}
 		return $vn_can_download;
@@ -2742,7 +2747,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 				} else {
 					switch(__CA_APP_TYPE__) {
 						case 'PROVIDENCE':
-							$va_links[] = ($vs_link = caEditorLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i])) ? $vs_link : $vs_text;
+							$va_links[] = ($vs_link = caEditorLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i], ($pb_add_rel ? array('rel' => true) : array()))) ? $vs_link : $vs_text;
 							break;
 						case 'PAWTUCKET':
 							$va_links[] = ($vs_link = caDetailLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i])) ? $vs_link : $vs_text;

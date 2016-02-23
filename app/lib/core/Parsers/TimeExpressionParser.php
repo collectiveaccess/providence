@@ -449,8 +449,8 @@ class TimeExpressionParser {
 										
 										if (($vn_century > -100) && ($vn_century < 100)) {
 											if ($vn_century < 0) { 
-												$vn_start_year = $vn_century * 100;
-												$vn_end_year = ($vn_century * 100) + 99;
+												$vn_start_year = ($vn_century + 1) * 100;
+												$vn_end_year = (($vn_century + 1) * 100) - 99;
 											} else {
 												$vn_start_year = ($vn_century - 1) * 100;
 												$vn_end_year = (($vn_century - 1) * 100) + 99;

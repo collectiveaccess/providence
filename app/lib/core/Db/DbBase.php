@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2008 Whirl-i-Gig
+ * Copyright 2006-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,7 +44,7 @@ class DbBase {
 	 *
 	 * @access private
 	 */
-	var $opb_die_on_error = true;
+	var $opb_die_on_error = false;
 
 	/**
 	 * List of errors
@@ -54,11 +54,11 @@ class DbBase {
 	var $errors = array();
 
 	/**
-	 * Defines if the application dies if an error occurrs. Default is true.
+	 * Defines if the application dies if an error occurrs. Default is false.
 	 *
 	 * @param bool $pb_die_on_error
 	 */
-	function dieOnError($pb_die_on_error=true) {
+	function dieOnError($pb_die_on_error=false) {
 		$this->opb_die_on_error = $pb_die_on_error;
 	}
 
@@ -206,75 +206,6 @@ class DbBase {
 			}
 		} else {
 			return null;
-		}
-	}
-
-	/**
-	 * Conversion of error numbers
-	 *
-	 * @param int native error number
-	 * @return int db error number
-	 */
-	public function nativeToDbError($pn_error_number) {
-		switch($pn_error_number) {
-			case 1004:	// Can't create file
-			case 1005:	// Can't create table
-			case 1006:	// Can't create database
-				return 242;
-				break;
-			case 1007:	// Database already exists
-				return 244;
-				break;
-			case 1050:	// Table already exists
-			case 1061:	// Duplicate key
-				return 245;
-				break;
-			case 1008:	// Can't drop database; database doesn't exist
-			case 1049:	// Unknown database
-				return 201;
-				break;
-			case 1051:	// Unknown table
-			case 1146:	// Table doesn't exist
-				return 282;
-				break;
-			case 1054:	// Unknown field
-				return 283;
-				break;
-			case 1091:	// Can't DROP item; check that column/key exists
-				return 284;
-				break;
-			case 1044:	// access denied for user to database
-			case 1142:	// command denied to user for table
-				return 207;
-				break;
-			case 1046:	// No database selected
-				return 208;
-				break;
-			case 1048:	// Column cannot be null
-				return 291;
-				break;
-			case 1216:	// Cannot add or update a child row: a foreign key constraint fails
-			case 1217:	// annot delete or update a parent row: a foreign key constraint fails
-				return 290;
-				break;
-			case 1136:	// Column count doesn't match value count
-				return 288;
-				break;
-			case 1100:	// Table was not locked with LOCK TABLES
-				return 265;
-				break;
-			case 1062:	// duplicate value for unique field
-			case 1022:	// Can't write; duplicate key in table
-				return 251;
-				break;
-			case 1065:
-				// query empty
-				return 240;
-				break;
-			case 1064:	// SQL syntax error
-			default:
-				return 250;
-				break;
 		}
 	}
 }
