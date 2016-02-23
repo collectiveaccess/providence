@@ -65,6 +65,11 @@ abstract class BaseTestWithData extends PHPUnit_Framework_TestCase {
 
 		define('__CA_APP_TYPE__', 'PROVIDENCE');
 
+		// try to avoid side effects between tests
+		$o_app_vars = new ApplicationVars();
+		$o_app_vars->setVar('ElasticSearchMappingRefresh', 475750800);
+		$o_app_vars->save();
+
 		// make sure there are no side-effects caused by lingering recods
 		if($this->opb_care_about_side_effects) {
 			$this->checkRecordCounts();
