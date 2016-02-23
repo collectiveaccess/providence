@@ -297,7 +297,11 @@ class Installer {
 		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
 			require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
 			$o_es = new WLPlugSearchEngineElasticSearch();
-			$o_es->truncateIndex(null);
+			try {
+				$o_es->truncateIndex(null);
+			} catch(Exception $e) {
+				die('Unable to connect to ElasticSearch. Is the cluster running?');
+			}
 		}
 
 		return true;
@@ -309,6 +313,8 @@ class Installer {
 			require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
 			$o_es = new WLPlugSearchEngineElasticSearch();
 			$o_es->refreshMapping(true);
+
+			CompositeCache::flush();
 		}
 	}
 	# --------------------------------------------------
