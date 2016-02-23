@@ -808,6 +808,15 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		return $va_sortable_elements;
 	}
 	# ------------------------------------------------------
+	public static function getDataTypeForElementCode($ps_element_code) {
+		$t_element = new ca_metadata_elements();
+		if($t_element->load(array('element_code' => $ps_element_code))) {
+			return (int) $t_element->get('datatype');
+		} else {
+			return false;
+		}
+	}
+	# ------------------------------------------------------
 	/**
 	 * Returns list of user interfaces that reference the currently loaded metadata element
 	 *
@@ -964,9 +973,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			MemoryCache::save($pn_element_id, $vs_element_code = (string)$t_element->get('element_code'), 'ElementCodes');
 			return $vs_element_code;
 		}
-
-		MemoryCache::save($pm_element_code_or_id, $vm_return, 'ElementDataTypes');
-		return $vm_return;
+		
+		return null;
 	}
 	# ------------------------------------------------------
 	/**
