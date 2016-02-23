@@ -1089,13 +1089,15 @@
 				$va_return["created"][] = $vs_change_date;
 
 				if($vs_user = $qr_res->get('user_name')) {
-					$va_return["created/{$qr_res->get('user_name')}"][] = $vs_change_date;
+					$vs_user = str_replace('.', '/', $vs_user);
+					$va_return["created/{$vs_user}"][] = $vs_change_date;
 				}
 			} else {
 				$va_return["modified"][] = $vs_change_date;
 
 				if($vs_user = $qr_res->get('user_name')) {
-					$va_return["modified/{$qr_res->get('user_name')}"][] = $vs_change_date;
+					$vs_user = str_replace('.', '/', $vs_user);
+					$va_return["modified/{$vs_user}"][] = $vs_change_date;
 				}
 			}
 		}
