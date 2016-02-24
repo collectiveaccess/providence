@@ -62,6 +62,10 @@ class Length extends GenericElement {
 			return new \Zend_Search_Lucene_Index_Term(
 				$po_term->field, '_missing_'
 			);
+		} elseif(strtolower($po_term->text) === '[set]') {
+			return new \Zend_Search_Lucene_Index_Term(
+				$po_term->field, '_exists_'
+			);
 		}
 
 		// convert incoming text to meters so that we can query our standardized indexing (see above)

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2015 Whirl-i-Gig
+ * Copyright 2006-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -154,6 +154,11 @@ class TimeExpressionParser {
 	private $opa_error_messages; // error messages
 	
 	public $opb_debug = false;
+	
+	/**
+	 * Cached word lists converted to lower case
+	 */
+	static $s_language_settings_list_cache = array();
 	
 	# -------------------------------------------------------------------
 	# Constructor
@@ -444,8 +449,8 @@ class TimeExpressionParser {
 										
 										if (($vn_century > -100) && ($vn_century < 100)) {
 											if ($vn_century < 0) { 
-												$vn_start_year = $vn_century * 100;
-												$vn_end_year = ($vn_century * 100) + 99;
+												$vn_start_year = ($vn_century + 1) * 100;
+												$vn_end_year = (($vn_century + 1) * 100) - 99;
 											} else {
 												$vn_start_year = ($vn_century - 1) * 100;
 												$vn_end_year = (($vn_century - 1) * 100) + 99;
@@ -1470,23 +1475,23 @@ class TimeExpressionParser {
 		$vs_token_lc = mb_strtolower($vs_token, 'UTF-8');
 		
 		// undated
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("undatedDate"))) {
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("undatedDate"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_UNDATED);
 		}
 		// today
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("todayDate"))) {
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("todayDate"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_TODAY);
 		}
 		// yesterday
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("yesterdayDate"))) {
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("yesterdayDate"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_YESTERDAY);
 		}
 		// tomorrow
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("tomorrowDate"))) {
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("tomorrowDate"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_TOMORROW);
 		}
 		// now
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("nowDate"))) {
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("nowDate"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_NOW);
 		}
 		
@@ -1495,21 +1500,21 @@ class TimeExpressionParser {
 		}
 		
 		// present
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("presentDate"))) {
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("presentDate"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_PRESENT);
 		}
 
 		// seasons
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("winterSeason"))) {
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("winterSeason"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_SEASON_WINTER);
 		}
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("springSeason"))) {
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("springSeason"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_SEASON_SPRING);
 		}
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("summerSeason"))) {
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("summerSeason"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_SEASON_SUMMER);
 		}
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("autumnSeason"))) {
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("autumnSeason"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_SEASON_AUTUMN);
 		}
 
@@ -1520,45 +1525,45 @@ class TimeExpressionParser {
 		if ($va_month_table[$vs_token_lc]) {
 			$vs_token_lc = $va_month_table[$vs_token_lc];
 		}
-		$va_month_list = $this->opo_language_settings->getList("monthList");
+		$va_month_list = $this->getLanguageSettingsWordList("monthList");
 		if (in_array($vs_token_lc, $va_month_list)) {
 			$vn_month = array_search($vs_token_lc, $va_month_list) + 1;
 			return array('value' => $vs_token, 'month' => $vn_month, 'type' => TEP_TOKEN_ALPHA_MONTH);
 		}
 			
 		// range pre-conjunction
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("rangePreConjunctions"))) {
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("rangePreConjunctions"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_PRE_RANGE_CONJUNCTION);
 		}
 			
 		// range conjunction
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("rangeConjunctions"))) {
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("rangeConjunctions"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_RANGE_CONJUNCTION);
 		}
 			
 		// time conjunction
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("dateTimeConjunctions"))) {
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("dateTimeConjunctions"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_TIME_CONJUNCTION);
 		}
 		
 		// before
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("beforeQualifier"))) {
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("beforeQualifier"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_BEFORE);
 		}
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("diedQualifier"))) {
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("diedQualifier"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_BEFORE);
 		}
 		
 		// after
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("afterQualifier"))) {
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("afterQualifier"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_AFTER);
 		}
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("bornQualifier"))) {
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("bornQualifier"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_AFTER);
 		}
 		
 		// margin of error indicator
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("dateUncertaintyIndicator"))) {
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("dateUncertaintyIndicator"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_MARGIN_OF_ERROR);
 		}
 		
@@ -1568,7 +1573,7 @@ class TimeExpressionParser {
 		}
 
 		// century with ordinalSuffix
-		$va_ordinals = $this->opo_language_settings->getList("ordinalSuffixes");
+		$va_ordinals = $this->getLanguageSettingsWordList("ordinalSuffixes");
 		$va_ordinals[] = $this->opo_language_settings->get("ordinalSuffixDefault");
 		foreach($va_ordinals as $vs_ordinal){
 			if(substr($vs_token_lc, 0 - strlen($vs_ordinal)) == $vs_ordinal){
@@ -1607,12 +1612,12 @@ class TimeExpressionParser {
 		}
 		
 		// mya
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("dateMYA"))) {
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("dateMYA"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_MYA);
 		}
 		
 		// circa
-		if (in_array($vs_token_lc, $this->opo_language_settings->getList("dateCircaIndicator"))) {
+		if (in_array($vs_token_lc, $this->getLanguageSettingsWordList("dateCircaIndicator"))) {
 			return array('value' => $vs_token, 'type' => TEP_TOKEN_CIRCA);
 		}
 		
@@ -1646,14 +1651,14 @@ class TimeExpressionParser {
 		if (preg_match("/^([\d]{1,2})#([A-Za-z]{3,15})#([\d]{2,4})$/", $vs_token, $va_matches)) {
 			// year-month-day (eg 10-Jan-80)
 			$vs_m = isset($va_month_table[strtolower($va_matches[2])]) ? $va_month_table[strtolower($va_matches[2])] : strtolower($va_matches[2]);
-			$vn_month = array_search($vs_m, $this->opo_language_settings->getList('monthList')) + 1;
+			$vn_month = array_search($vs_m, $this->getLanguageSettingsWordList('monthList')) + 1;
 			if ((($va_matches[3] >= 0) && ($va_matches[3] <= 2999)) && ($vs_m) && (($va_matches[1] >= 1) && ($va_matches[1] <= $this->daysInMonth($vn_month, $va_matches[3])))) {
 				return(array('value' => $vs_token, 'month' => $vn_month, 'day' => $va_matches[1], 'year' => $va_matches[3], 'type' => TEP_TOKEN_DATE));
 			}
 		}
 		
 		// date
-		$va_date_delimiters = $this->opo_language_settings->getList("dateDelimiters");
+		$va_date_delimiters = $this->getLanguageSettingsWordList("dateDelimiters");
 		
 		$vs_pattern = "![".join('', $va_date_delimiters)."]!";
 		$vs_pattern = preg_replace("/[\.]/", "\\.", $vs_pattern);
@@ -1740,7 +1745,7 @@ class TimeExpressionParser {
 		}
 		
 		// time
-		$va_time_delimiters = $this->opo_language_settings->getList("timeDelimiters");
+		$va_time_delimiters = $this->getLanguageSettingsWordList("timeDelimiters");
 		
 		$vs_pattern = "![".join('', $va_time_delimiters)."]!";
 		$vs_pattern = preg_replace("/[\.]/", "\\.", $vs_pattern);
@@ -2647,8 +2652,17 @@ class TimeExpressionParser {
 						return $vs_start_year.$vs_decade_indicator;
 					} else {
 						// catch century dates
-						if ((($va_start_pieces['year'] % 100) == 0) && ($va_end_pieces['year'] == ($va_start_pieces['year'] + 99))) {
-							$vn_century = intval($va_start_pieces['year']/100) + 1;
+						if (
+							(($va_start_pieces['year'] % 100) == 0) && 
+							(
+								(($va_start_pieces['year'] > 0) && ($va_end_pieces['year'] == ($va_start_pieces['year'] + 99)))
+								||
+								(($va_start_pieces['year'] < 0) && ($va_end_pieces['year'] == ($va_start_pieces['year'] - 99)))
+							)
+						) {
+							$vn_century = intval($va_start_pieces['year']/100);
+							$vn_century = ($vn_century > 0) ? ($vn_century + 1) : ($vn_century - 1);
+							
 							$va_ordinals = $this->opo_language_settings->getList("ordinalSuffixes");
 							$va_ordinal_exceptions = $this->opo_language_settings->get("ordinalSuffixExceptions");
 							$vs_ordinal_default = $this->opo_language_settings->get("ordinalSuffixDefault");
@@ -2979,6 +2993,15 @@ class TimeExpressionParser {
 		if(!file_exists($vs_config_path)) { return null; }
 		
 		return Configuration::load($vs_config_path);
+	}
+	# -------------------------------------------------------------------
+	private function getLanguageSettingsWordList($ps_key) {
+		if (TimeExpressionParser::$s_language_settings_list_cache[$this->ops_language][$ps_key]) { return TimeExpressionParser::$s_language_settings_list_cache[$this->ops_language][$ps_key]; }
+		
+		$va_values = $this->opo_language_settings->getList($ps_key);
+		$va_list_lc = is_array($va_values) ? array_map('strtolower', $va_values) : array();
+		
+		return TimeExpressionParser::$s_language_settings_list_cache[$this->ops_language][$ps_key] = $va_list_lc;
 	}
 	# -------------------------------------------------------------------
 	# Error handling

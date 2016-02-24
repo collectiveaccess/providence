@@ -2738,10 +2738,10 @@ table.attributeListItem {
 .attributeListItem td {
     padding: 0px;
     padding-right: 15px;
-    margin: 0px;
+    margin: 5px;
     font-weight: normal;
+    vertical-align: top;
 }
-
 
 /*** EDITOR FORMS ***/
 
@@ -5420,6 +5420,23 @@ div.preferenceSectionDivider {
     width: 100%;
     margin-bottom: 5px;
 }
+
+a.preferenceColumnSelector {
+    color: #222222;
+    text-decoration: underline;
+}
+
+table.preferenceColumnSelector {
+	text-align: center;
+	width: 500px;
+	margin: 10px 0 10px 0;
+}
+
+table.preferenceColumnSelector tbody tr td.preferenceColumnSelectorLabel {
+	text-align: left;
+	width: 300px;
+}
+
 
 .searchReindexHelpText{
     padding:20px;

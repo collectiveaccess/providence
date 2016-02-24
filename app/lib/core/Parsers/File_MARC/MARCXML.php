@@ -31,15 +31,15 @@
  * @author    Dan Scott <dscott@laurentian.ca>
  * @copyright 2007-2010 Dan Scott
  * @license   http://www.gnu.org/copyleft/lesser.html  LGPL License 2.1
- * @version   CVS: $Id: MARCXML.php 302267 2010-08-15 13:42:59Z dbs $
+ * @version   CVS: $Id$
  * @link      http://pear.php.net/package/File_MARC
  * @example   read.php Retrieve specific fields and subfields from a record
  * @example   subfields.php Create new subfields and add them in specific order
  * @example   marc_yaz.php Pretty print a MARC record retrieved through the PECL yaz extension
  */
 
-require_once 'PEAR/Exception.php';
-require_once 'Structures/LinkedList/Double.php';
+require_once __CA_LIB_DIR__.'/core/Parsers/PEAR/Exception.php';
+require_once __CA_LIB_DIR__.'/core/Parsers/Structures/LinkedList/Double.php';
 require_once __CA_LIB_DIR__.'/core/Parsers/File_MARC/MARCBASE.php';
 require_once __CA_LIB_DIR__.'/core/Parsers/File_MARC/MARC.php';
 require_once __CA_LIB_DIR__.'/core/Parsers/File_MARC/MARC/Record.php';
@@ -121,13 +121,21 @@ class File_MARCXML extends File_MARCBASE
      *
      * // Retrieve MARC records from a string (e.g. Z39 query results)
      * $monographs = new File_MARC($raw_marc, SOURCE_STRING);
+     *
+     * // Retrieve MARCXML records from a string with a namespace URL
+     * $records = new File_MARCXML($xml_data, File_MARC::SOURCE_STRING,"http://www.loc.gov/MARC21/slim");
+     *
+     * // Retrieve MARCXML records from a file with a namespace prefix
+     * $records = new File_MARCXML($xml_data, File_MARC::SOURCE_FILE,"marc",true);
      * ?>
      * </code>
      *
-     * @param string $source Name of the file, or a raw MARC string
-     * @param int    $type   Source of the input, either SOURCE_FILE or SOURCE_STRING
+     * @param string $source    Name of the file, or a raw MARC string
+     * @param int    $type      Source of the input, either SOURCE_FILE or SOURCE_STRING
+     * @param string $ns        URI or prefix of the namespace
+     * @param bool   $is_prefix TRUE if $ns is a prefix, FALSE if it's a URI; defaults to FALSE
      */
-    function __construct($source, $type = self::SOURCE_FILE)
+    function __construct($source, $type = self::SOURCE_FILE, $ns = "", $is_prefix = false)
     {
         parent::__construct($source, $type);
 
@@ -137,19 +145,19 @@ class File_MARCXML extends File_MARCBASE
 
         case self::SOURCE_FILE:
             $this->type = self::SOURCE_FILE;
-            $this->source = simplexml_load_file($source);
+            $this->source = simplexml_load_file($source, "SimpleXMLElement", 0, $ns, $is_prefix);
             break;
 
         case self::SOURCE_STRING:
             $this->type = self::SOURCE_STRING;
-            $this->source = simplexml_load_string($source);
+            $this->source = simplexml_load_string($source, "SimpleXMLElement", 0, $ns, $is_prefix);
             break;
 
         default:
-             throw new File_MARC_Exception(File_MARC_Exception::$messages[File_MARC_Exception::ERROR_INVALID_SOURCE], File_MARC_Exception::ERROR_INVALID_SOURCE);
+            throw new File_MARC_Exception(File_MARC_Exception::$messages[File_MARC_Exception::ERROR_INVALID_SOURCE], File_MARC_Exception::ERROR_INVALID_SOURCE);
         }
 
-        if (!$this->source) {
+        if ($this->source === false) {
             $errorMessage = File_MARC_Exception::formatError(File_MARC_Exception::$messages[File_MARC_Exception::ERROR_INVALID_FILE], array('filename' => $source));
             throw new File_MARC_Exception($errorMessage, File_MARC_Exception::ERROR_INVALID_FILE);
         }
@@ -189,7 +197,7 @@ class File_MARCXML extends File_MARCBASE
         } else {
             return false;
         }
-        
+
         if ($record) {
             return $this->_decode($record);
         } else {
@@ -215,19 +223,22 @@ class File_MARCXML extends File_MARCBASE
 
         // go through all the control fields
         foreach ($text->controlfield as $controlfield) {
-            $marc->appendField(new File_MARC_Control_Field((string)$controlfield['tag'], $controlfield));
+            $controlfieldattributes = $controlfield->attributes();
+            $marc->appendField(new File_MARC_Control_Field((string)$controlfieldattributes['tag'], $controlfield));
         }
 
         // go through all the data fields
         foreach ($text->datafield as $datafield) {
+            $datafieldattributes = $datafield->attributes();
             $subfield_data = array();
             foreach ($datafield->subfield as $subfield) {
-                $subfield_data[] = new File_MARC_Subfield((string)$subfield['code'], $subfield);
+                $subfieldattributes = $subfield->attributes();
+                $subfield_data[] = new File_MARC_Subfield((string)$subfieldattributes['code'], $subfield);
             }
             
             // If the data is invalid, let's just ignore the one field
             try {
-                $new_field = new File_MARC_Data_Field((string)$datafield['tag'], $subfield_data, $datafield['ind1'], $datafield['ind2']);
+                $new_field = new File_MARC_Data_Field((string)$datafieldattributes['tag'], $subfield_data, $datafieldattributes['ind1'], $datafieldattributes['ind2']);
                 $marc->appendField($new_field);
             } catch (Exception $e) {
                 $marc->addWarning($e->getMessage());

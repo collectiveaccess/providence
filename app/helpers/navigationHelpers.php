@@ -119,7 +119,8 @@
 	 */
 	function caNavLink($po_request, $ps_content, $ps_classname, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_attributes=null, $pa_options=null) {
 		if (!($vs_url = caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params, $pa_options))) {
-			return "<strong>Error: no url for navigation</strong>";
+			//return "<strong>Error: no url for navigation</strong>";
+			$vs_url = '/';
 		}
 		
 		$vs_tag = "<a href='".$vs_url."'";
@@ -144,7 +145,7 @@
 	function caNavButton($po_request, $pn_type, $ps_content, $ps_classname, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_attributes=null, $pa_options=null) {
 		if ($ps_module_path && $ps_controller && $ps_action) {
 			if (!($vs_url = caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params))) {
-				return "<strong>Error: no url for navigation</strong>";
+				return '';//<strong>Error: no url for navigation</strong>";
 			}
 		} else {
 			$vs_url = '';
@@ -224,7 +225,7 @@
 	 */
 	function caNavHeaderButton($po_request, $pn_type, $ps_content, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_attributes=null, $pa_options=null) {
 		if (!($vs_url = caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params))) {
-			return "<strong>Error: no url for navigation</strong>";
+			return ''; //<strong>Error: no url for navigation</strong>";
 		}
 		
 		$ps_icon_pos = isset($pa_options['icon_position']) ? $pa_options['icon_position'] : __CA_NAV_BUTTON_ICON_POS_LEFT__;
@@ -303,9 +304,15 @@
 		}
 		
 		if ($ps_module_and_controller_path) {
-			$vs_action = $po_request->getBaseUrlPath().'/'.$po_request->getScriptName().'/'.$ps_module_and_controller_path.'/'.$ps_action;
+			$vs_action = (defined('__CA_USE_CLEAN_URLS__') && (__CA_USE_CLEAN_URLS__)) ?
+				$po_request->getBaseUrlPath().'/'.$ps_module_and_controller_path.'/'.$ps_action
+				:					
+				$po_request->getBaseUrlPath().'/'.$po_request->getScriptName().'/'.$ps_module_and_controller_path.'/'.$ps_action;
 		} else {
-			$vs_action = $po_request->getControllerUrl().'/'.$ps_action;
+			$vs_action = (defined('__CA_USE_CLEAN_URLS__') && (__CA_USE_CLEAN_URLS__)) ?
+				str_replace("/".$po_request->getScriptName(), "", $po_request->getControllerUrl()).'/'.$ps_action
+				:
+				$po_request->getControllerUrl().'/'.$ps_action;
 		}
 		
 		$vs_buf = "<form action='".$vs_action."' method='".$ps_method."' id='".$ps_id."' $vs_target enctype='".$ps_enctype."'>\n<input type='hidden' name='_formName' value='{$ps_id}'/>\n";
@@ -967,53 +974,30 @@
 		$vs_pk = $t_table->primaryKey();
 		$vs_table = $ps_table;
 		
-		$vb_id_exists = null;
+		$vs_module = '';
+		$vs_controller = 'Detail';
 		
-		$vs_module = 'Detail';
-		$vs_action = 'Show';
-		switch($ps_table) {
-			case 'ca_objects':
-			case 57:
-				$vs_controller = 'Object';
-				break;
-			case 'ca_object_lots':
-			case 51:
-				$vs_controller = 'ObjectLot';
-				break;
-			case 'ca_entities':
-			case 20:
-				$vs_controller = 'Entity';
-				break;
-			case 'ca_places':
-			case 72:
-				$vs_controller = 'Place';
-				break;
-			case 'ca_occurrences':
-			case 67:
-				$vs_controller = 'Occurrence';
-				break;
-			case 'ca_collections':
-			case 13:
-				$vs_controller = 'Collection';
-				break;
-			case 'ca_list_items':
-			case 33:
-				$t_table->load($pn_id);
-				$vs_module = '';
-				$vs_controller = 'Search';
-				$vs_action = 'Index';
-				$vs_pk = 'search';
-				$pn_id = $t_table->get('ca_list_items.preferred_labels.name_plural');
-				break;
-			default:
-				return null;
-				break;
+		if(isset($pa_options['action'])){
+			$vs_action = $pa_options['action'];
+		} else {
+			$vs_action = caGetDetailForType($ps_table, caGetOption('type_id', $pa_options, null), array('request' => $po_request, 'preferredDetail' => caGetOption('preferredDetail', $pa_options, null)));
 		}
-		
+		if (caUseIdentifiersInUrls() && $t_table->getProperty('ID_NUMBERING_ID_FIELD')) {
+			$va_ids = $t_table->getFieldValuesForIDs(array($pn_id), array($t_table->getProperty('ID_NUMBERING_ID_FIELD')));
+			if (is_array($va_ids) && ($vn_id_for_idno = array_shift($va_ids))) {
+				$vb_id_exists = true;
+			}
+			if (strlen($vn_id_for_idno)) {
+				$pn_id = $vn_id_for_idno;
+			} else {
+				$pn_id = "id:{$pn_id}";
+			}
+		}
+		$vs_action .= "/".rawurlencode($pn_id);
 		
 		if (isset($pa_options['verifyLink']) && $pa_options['verifyLink']) {
 			// Make sure record link points to exists
-			if (($pn_id > 0) && !$t_table->load($pn_id)) {
+			if (!$vb_id_exists && ($pn_id > 0) && !$t_table->load($pn_id)) {
 				return null;
 			}
 		}
@@ -1029,7 +1013,7 @@
 			);
 		} else {
 			if (!is_array($pa_additional_parameters)) { $pa_additional_parameters = array(); }
-			$pa_additional_parameters = array_merge(array($vs_pk => $pn_id), $pa_additional_parameters);
+			//$pa_additional_parameters = array_merge(array('id' => $pn_id), $pa_additional_parameters);
 			return caNavUrl($po_request, $vs_module, $vs_controller, $vs_action, $pa_additional_parameters);
 		}
 	}

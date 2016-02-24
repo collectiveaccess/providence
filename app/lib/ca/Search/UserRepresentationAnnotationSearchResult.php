@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/Float.php :
+ * app/lib/ca/Search/UserRepresentationAnnotationSearchResult.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -15,10 +15,10 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  *
- * This source code is free and modifiable under the terms of
+ * This source code is free and modifiable under the terms of 
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
@@ -29,21 +29,25 @@
  *
  * ----------------------------------------------------------------------
  */
+ 
+ /**
+  *
+  */
 
-namespace ElasticSearch\FieldTypes;
+include_once(__CA_LIB_DIR__."/ca/Search/BaseSearchResult.php");
 
-require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch/FieldTypes/GenericElement.php');
-
-class Float extends GenericElement {
-
-	public function __construct($ps_table_name, $ps_element_code) {
-		parent::__construct($ps_table_name, $ps_element_code);
+class UserRepresentationAnnotationSearchResult extends BaseSearchResult {
+	# -------------------------------------
+	/**
+	 * Name of table for this type of search subject
+	 */
+	protected $ops_table_name = 'ca_user_representation_annotations';
+	# -------------------------------------
+	/**
+	 * Constructor
+	 */
+	public function __construct() {
+		parent::__construct();
 	}
-
-	public function getIndexingFragment($pm_content, $pa_options) {
-		if (is_array($pm_content)) { $pm_content = serialize($pm_content); }
-		if ($pm_content == '') { return parent::getIndexingFragment($pm_content, $pa_options); }
-
-		return parent::getIndexingFragment((float) $pm_content, $pa_options);
-	}
+	# -------------------------------------
 }
