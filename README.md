@@ -1,7 +1,7 @@
 CollectiveAccess README
 -----------------------
 
-* Upstream: [![Build Status](https://secure.travis-ci.org/collectiveaccess/providence.png?branch=master)](http://travis-ci.org/collectiveaccess/providence)
+* Upstream: [![Build Status](https://secure.travis-ci.org/collectiveaccess/providence.png?branch=master-fix)](http://travis-ci.org/collectiveaccess/providence)
 * RWAHS: [![Build Status](https://secure.travis-ci.org/rwahs/providence.png?branch=master-fix)](http://travis-ci.org/rwahs/providence)
 
 
