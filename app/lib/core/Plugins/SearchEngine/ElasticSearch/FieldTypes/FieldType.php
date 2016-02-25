@@ -78,23 +78,23 @@ abstract class FieldType {
 		}
 
 		// if this is an indexing field name, rewrite it
+		$vb_could_be_attribute = true;
 		if(preg_match("/^(I|A)[0-9]+$/", $ps_content_fieldname)) {
 
 			if ($ps_content_fieldname[0] === 'A') { // Metadata attribute
 				$vn_field_num_proc = (int)substr($ps_content_fieldname, 1);
-
-				$t_element = new \ca_metadata_elements($vn_field_num_proc);
-				if(!$t_element->getPrimaryKey()) { return null; }
-				$ps_content_fieldname = $t_element->get('element_code');
+				$ps_content_fieldname = \ca_metadata_elements::getElementCodeForId($vn_field_num_proc);
+				if(!$ps_content_fieldname) { return null; }
 			} else {
 				// Plain intrinsic
+				$vb_could_be_attribute = false;
 				$vn_field_num_proc = (int)substr($ps_content_fieldname, 1);
 				$ps_content_fieldname = \Datamodel::load()->getFieldName($ps_table, $vn_field_num_proc);
 			}
 
 		}
 
-		if($vn_datatype = \ca_metadata_elements::getDataTypeForElementCode($ps_content_fieldname)) {
+		if($ps_content_fieldname && $vb_could_be_attribute && ($vn_datatype = \ca_metadata_elements::getElementDatatype($ps_content_fieldname))) {
 			switch ($vn_datatype) {
 				case 2:
 					return new DateRange($ps_table, $ps_content_fieldname);

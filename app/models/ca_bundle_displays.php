@@ -1913,7 +1913,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					}
 				} else {
 					// resolve template relative to current record
-					$vs_val = $po_result->getWithTemplate($vs_template);
+					$vs_val = $po_result->getWithTemplate($vs_template, ['delimiter' => $pa_options['delimiter']]);
 				}
 			}
 		} else {

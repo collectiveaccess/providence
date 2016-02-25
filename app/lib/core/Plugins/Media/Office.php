@@ -538,8 +538,8 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$vs_out_file = array_pop($va_tmp);
 				
 				putenv("HOME={$vs_tmp_dir_path}");		// libreoffice will fail silently if you don't set this environment variable to a directory it can write to. Nice way to waste a day debugging. Yay!
-				exec($this->ops_libreoffice_path." --nologo --nofirststartwizard --headless -convert-to pdf ".caEscapeShellArg($this->filepath)."  -outdir ".caEscapeShellArg($vs_tmp_dir_path).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
-				exec($this->ops_libreoffice_path." --nologo --nofirststartwizard --headless -convert-to html ".caEscapeShellArg($this->filepath)."  -outdir ".caEscapeShellArg($vs_tmp_dir_path).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
+				exec($this->ops_libreoffice_path." --headless --convert-to pdf:writer_pdf_Export \"-env:UserInstallation=file:///tmp/LibreOffice_Conversion_${USER}\" ".caEscapeShellArg($this->filepath)."  --outdir ".caEscapeShellArg($vs_tmp_dir_path).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
+				exec($this->ops_libreoffice_path." --headless --convert-to html:HTML \"-env:UserInstallation=file:///tmp/LibreOffice_Conversion_${USER}\" ".caEscapeShellArg($this->filepath)."  --outdir ".caEscapeShellArg($vs_tmp_dir_path).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
 			
 				$va_out_file = explode(".", $vs_out_file);
 				if (sizeof($va_out_file) > 1) { array_pop($va_out_file); }

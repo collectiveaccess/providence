@@ -575,8 +575,11 @@ function caFileIsIncludable($ps_file) {
 		// Remove invalid UTF-8
 		mb_substitute_character(0xFFFD);
 		$ps_text = mb_convert_encoding($ps_text, 'UTF-8', 'UTF-8');
+
+		return strip_tags($ps_text);
+
 		// @see http://php.net/manual/en/regexp.reference.unicode.php
-		return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}]|➔/", '', strip_tags($ps_text));
+		//return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}]|➔/", '', strip_tags($ps_text));
 	}
 	# ----------------------------------------
 	/**
@@ -1512,6 +1515,17 @@ function caFileIsIncludable($ps_file) {
 			return isset($va_date['start']) ? $va_date['start'] : null;
 		}
 		return null;
+	}
+	# ---------------------------------------
+	/**
+	  * Determine if date expression can be parsed 
+	  *
+	  * @param string $ps_date_expression A date/time expression as described in http://docs.collectiveaccess.org/wiki/Date_and_Time_Formats
+	  * @return bool True if expression can be parsed
+	  */
+	function caIsValidDate($ps_date_expression) {
+		$o_tep = new TimeExpressionParser();
+		return $o_tep->parse($ps_date_expression);
 	}
 	# ---------------------------------------
 	/**

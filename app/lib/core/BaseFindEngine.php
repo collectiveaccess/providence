@@ -486,7 +486,9 @@
 					
 					$vn_c++;
 				}
+
 				ksort($va_sort_buffer, SORT_FLAG_CASE | SORT_NATURAL);
+				
 				$va_sort_buffer = array_values($va_sort_buffer);
 				if ($ps_direction == 'desc') { $va_sort_buffer = array_reverse($va_sort_buffer); }
 				return $va_sort_buffer;
