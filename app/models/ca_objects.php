@@ -1857,6 +1857,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  						$va_bundle_settings["{$vs_table}_showRelationshipTypes"][] = $t_rel_type->getRelationshipTypeID('ca_objects_x_storage_locations', $vs_type);
  						break;
  					default:
+ 						if(!is_array($va_config)) { break; }
  						$va_bundle_settings["{$vs_table}_showTypes"][] = array_shift(caMakeTypeIDList($vs_table, array($vs_type)));
  						$va_bundle_settings["{$vs_table}_{$vs_type}_dateElement"] = $va_config['date'];
  						break;
