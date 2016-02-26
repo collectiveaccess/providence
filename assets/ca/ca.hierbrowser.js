@@ -285,7 +285,7 @@ var caUI = caUI || {};
 						if (level > 0) { newLevelDiv += "<br/>⬆</div>"; }
 						jQuery('#' + that.container + '_select_container').prepend(newLevelDiv);
 					} else {
-						if (level > 0) { newLevelDiv += "<br/>⬇<br/>"; }
+						if (level > 0) { newLevelDiv += "⬇<br/>"; }
 						newLevelDiv += newLevelList + "</div>";
 						if (level == 0) {
 							jQuery('#' + that.container + '_select_container').prepend(newLevelDiv);
@@ -542,7 +542,7 @@ var caUI = caUI || {};
 								}
 							} else {
 								if (that.uiStyle == 'vertical') {
-									jQuery("#" + newLevelListID).append(jQuery("<option></option>").val(item.item_id).text(item.name));
+									jQuery("#" + newLevelListID).append(jQuery("<option></option>").val(item.item_id).text(jQuery('<div />').html(item.name).text()));
 								}
 							}
 							// Pass item_id to caller if required
