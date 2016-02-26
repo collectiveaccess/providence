@@ -40,6 +40,8 @@ var caUI = caUI || {};
 			uiStyle: 'horizontal',	// 'horizontal' [default] means side-to-side scrolling browser; 'vertical' means <select>-based vertically oriented browser.
 			//  The horizontal browser requires more space but it arguably easier and more pleasant to use with large hierarchies.
 			//  The vertical browser is more compact and works well with smaller hierarchies
+			
+			uiDirection: 'up',	// direction of browse in vertical mode; value may be 'up' or 'down'
 
 			bundle: '',
 
@@ -120,6 +122,7 @@ var caUI = caUI || {};
 		}
 
 		if (!jQuery.inArray(that.uiStyle, ['horizontal', 'vertical'])) { that.uiStyle = 'horizontal'; }		// verify the uiStyle is valid
+		if (!jQuery.inArray(that.uiDirection, ['up', 'down'])) { that.uiDirection = 'up'; }		// verify the uiDirection is valid
 
 		if (that.uiStyle == 'horizontal') {
 			// create scrolling container
@@ -275,10 +278,22 @@ var caUI = caUI || {};
 				if (that.uiStyle == 'vertical') {
 					// Create new <select> to display list of items
 					var newLevelList = "<select class='" + that.className + "' id='" + newLevelListID + "' name='" + newLevelListID + "' style='width: "+ (that.browserWidth - 32) + "px;'></select>";	// allow 24 pixels for spinner
-					var newLevelDiv = "<div class='" + that.className + "' id='" + newLevelDivID + "'>" + newLevelList;
-					if (level > 0) { newLevelDiv += "<br/>⬆</div>"; }
-
-					jQuery('#' + that.container + '_select_container').prepend(newLevelDiv);
+					var newLevelDiv = "<div class='" + that.className + "' id='" + newLevelDivID + "'>";
+					
+					if (that.uiDirection == 'up') {
+						newLevelDiv += newLevelList;
+						if (level > 0) { newLevelDiv += "<br/>⬆</div>"; }
+						jQuery('#' + that.container + '_select_container').prepend(newLevelDiv);
+					} else {
+						if (level > 0) { newLevelDiv += "<br/>⬇<br/>"; }
+						newLevelDiv += newLevelList + "</div>";
+						if (level == 0) {
+							jQuery('#' + that.container + '_select_container').prepend(newLevelDiv);
+						} else {
+							jQuery('#' + that.container + '_select_container').append(newLevelDiv);
+						}
+					}
+					
 					jQuery('#' + newLevelDivID).data('level', level);
 					jQuery('#' + newLevelDivID).data('parent_id', item_id);
 					jQuery('#' + newLevelListID).change(function() {
