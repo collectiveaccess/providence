@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2000-2015 Whirl-i-Gig
+ * Copyright 2000-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -664,6 +664,15 @@ class BaseModel extends BaseObject {
 	}
 	# --------------------------------------------------------------------------------
 	/**
+	 * Check if row load is loaded in instance
+	 *
+	 * @return bool
+	 */
+	public function isLoaded() {
+		return $this->getPrimaryKey() ? true : false;
+	}
+	# --------------------------------------------------------------------------------
+	/**
 	 * Get a field value of the table row that is represented by this object.
 	 *
 	 * @param string $ps_field field name
@@ -932,11 +941,13 @@ class BaseModel extends BaseObject {
 				//
 				// Convert foreign keys and choice list values to display text is needed
 				//
-				if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && ($vs_list_code = $this->getFieldInfo($ps_field,"LIST_CODE"))) {
-					$t_list = new ca_lists();
-					$vs_prop = $t_list->getItemFromListForDisplayByItemID($vs_list_code, $vs_prop);
-				} else {
-					if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && ($vs_list_code = $this->getFieldInfo($ps_field,"LIST"))) {
+				$pb_convert_to_display_text = caGetOption('convertCodesToDisplayText', $pa_options, false);
+				$pb_convert_to_idno = caGetOption('convertCodesToIdno', $pa_options, false);
+				if($pb_convert_to_display_text) {
+					if ($vs_list_code = $this->getFieldInfo($ps_field,"LIST_CODE")) {
+						$t_list = new ca_lists();
+						$vs_prop = $t_list->getItemFromListForDisplayByItemID($vs_list_code, $vs_prop);
+					} elseif ($vs_list_code = $this->getFieldInfo($ps_field,"LIST")) {
 						$t_list = new ca_lists();
 						if (!($vs_tmp = $t_list->getItemFromListForDisplayByItemValue($vs_list_code, $vs_prop))) {
 							if ($vs_tmp = $this->getChoiceListValue($ps_field, $vs_prop)) {
@@ -945,22 +956,25 @@ class BaseModel extends BaseObject {
 						} else {
 							$vs_prop = $vs_tmp;
 						}
-					} else {
-						if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && ($ps_field === 'locale_id') && ((int)$vs_prop > 0)) {
-							$t_locale = new ca_locales($vs_prop);
-							$vs_prop = $t_locale->getName();
-						} else {
-							if (isset($pa_options['convertCodesToDisplayText']) && $pa_options['convertCodesToDisplayText'] && (is_array($va_list = $this->getFieldInfo($ps_field,"BOUNDS_CHOICE_LIST")))) {
-								foreach($va_list as $vs_option => $vs_value) {
-									if ($vs_value == $vs_prop) {
-										$vs_prop = $vs_option;
-										break;
-									}
-								}
+					} elseif(($ps_field === 'locale_id') && ((int)$vs_prop > 0)) {
+						$t_locale = new ca_locales($vs_prop);
+						$vs_prop = $t_locale->getName();
+					} elseif(is_array($va_list = $this->getFieldInfo($ps_field,"BOUNDS_CHOICE_LIST"))) {
+						foreach($va_list as $vs_option => $vs_value) {
+							if ($vs_value == $vs_prop) {
+								$vs_prop = $vs_option;
+								break;
 							}
 						}
 					}
+				} elseif($pb_convert_to_idno) {
+					if ($vs_list_code = $this->getFieldInfo($ps_field,"LIST_CODE")) {
+						$vs_prop = caGetListItemIdno($vs_prop);
+					} elseif ($vs_list_code = $this->getFieldInfo($ps_field,"LIST")) {
+						$vs_prop = caGetListItemIdno(caGetListItemIDForValue($vs_list_code, $vs_prop));
+					}
 				}
+
 				if (
 					(isset($pa_options["CONVERT_HTML_BREAKS"]) && ($pa_options["CONVERT_HTML_BREAKS"]))
 					||
@@ -2212,7 +2226,7 @@ class BaseModel extends BaseObject {
 					$vs_field_value_is_null = false;
 				}
 
-				if ($vs_field_value_is_null) {
+				if ($vs_field_value_is_null && !in_array($vs_field_type, array(FT_MEDIA, FT_FILE))) {
 					if (($vs_field_type == FT_DATERANGE) || ($vs_field_type == FT_HISTORIC_DATERANGE)  || ($vs_field_type == FT_TIMERANGE)) {
 						$start_field_name = $va_attr["START"];
 						$end_field_name = $va_attr["END"];
@@ -3115,7 +3129,7 @@ class BaseModel extends BaseObject {
 			$this->tableNum(), $this->getPrimaryKey(), // identify record
 			$this->getFieldValuesArray(true), // data to index
 			$pb_reindex_mode,
-			null, // esclusion list, always null in the beginning
+			null, // exclusion list, always null in the beginning
 			$pa_changed_field_values_array, // changed values
 			$pa_options
 		);
@@ -4040,447 +4054,590 @@ class BaseModel extends BaseObject {
 			$this->_FIELD_VALUES[$ps_field] = null;
 			$vs_sql =  "{$ps_field} = ".$this->quote(caSerializeForDatabase($this->_FILES[$ps_field], true)).",";
 		} else {
-			// Bail if no file is actually set
-			if(!isset($this->_SET_FILES[$ps_field]['tmp_name'])) { return false; }
-			
-			$o_tq = new TaskQueue();
-			$o_media_proc_settings = new MediaProcessingSettings($this, $ps_field);
+			// Don't try to process files when no file is actually set
+			if(isset($this->_SET_FILES[$ps_field]['tmp_name'])) { 
+				$o_tq = new TaskQueue();
+				$o_media_proc_settings = new MediaProcessingSettings($this, $ps_field);
 		
-			//
-			// Process incoming files
-			//
-			$m = new Media();
-			$va_media_objects = array();
+				//
+				// Process incoming files
+				//
+				$m = new Media();
+				$va_media_objects = array();
 			
-			// is it a URL?
-			$vs_url_fetched_from = null;
-			$vn_url_fetched_on = null;
+				// is it a URL?
+				$vs_url_fetched_from = null;
+				$vn_url_fetched_on = null;
 			
-			$vb_allow_fetching_of_urls = (bool)$this->_CONFIG->get('allow_fetching_of_media_from_remote_urls');
-			$vb_is_fetched_file = false;
-			if ($vb_allow_fetching_of_urls && (bool)ini_get('allow_url_fopen') && isURL($vs_url = html_entity_decode($this->_SET_FILES[$ps_field]['tmp_name']))) {
-				$vs_tmp_file = tempnam(__CA_APP_DIR__.'/tmp', 'caUrlCopy');
-				$r_incoming_fp = fopen($vs_url, 'r');
+				$vb_allow_fetching_of_urls = (bool)$this->_CONFIG->get('allow_fetching_of_media_from_remote_urls');
+				$vb_is_fetched_file = false;
+				if ($vb_allow_fetching_of_urls && (bool)ini_get('allow_url_fopen') && isURL($vs_url = html_entity_decode($this->_SET_FILES[$ps_field]['tmp_name']))) {
+					$vs_tmp_file = tempnam(__CA_APP_DIR__.'/tmp', 'caUrlCopy');
+					$r_incoming_fp = fopen($vs_url, 'r');
 				
-				if (!$r_incoming_fp) {
-					$this->postError(1600, _t('Cannot open remote URL [%1] to fetch media', $vs_url),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
-					set_time_limit($vn_max_execution_time);
-					return false;
-				}
-				
-				$r_outgoing_fp = fopen($vs_tmp_file, 'w');
-				if (!$r_outgoing_fp) {
-					$this->postError(1600, _t('Cannot open file for media fetched from URL [%1]', $vs_url),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
-					set_time_limit($vn_max_execution_time);
-					return false;
-				}
-				while(($vs_content = fgets($r_incoming_fp, 4096)) !== false) {
-					fwrite($r_outgoing_fp, $vs_content);
-				}
-				fclose($r_incoming_fp);
-				fclose($r_outgoing_fp);
-				
-				$vs_url_fetched_from = $vs_url;
-				$vn_url_fetched_on = time();
-				$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_tmp_file;
-				$vb_is_fetched_file = true;
-			}
-			
-			// is it server-side stored user media?
-			if (preg_match("!^userMedia[\d]+/!", $this->_SET_FILES[$ps_field]['tmp_name'])) {
-				// use configured directory to dump media with fallback to standard tmp directory
-				if (!is_writeable($vs_tmp_directory = $this->getAppConfig()->get('ajax_media_upload_tmp_directory'))) {
-					$vs_tmp_directory = caGetTempDirPath();
-				}
-				$this->_SET_FILES[$ps_field]['tmp_name'] = "{$vs_tmp_directory}/".$this->_SET_FILES[$ps_field]['tmp_name'];
-				
-				// read metadata
-				if (file_exists("{$vs_tmp_directory}/".$this->_SET_FILES[$ps_field]['tmp_name']."_metadata")) {
-					if (is_array($va_tmp_metadata = json_decode(file_get_contents("{$vs_tmp_directory}/".$this->_SET_FILES[$ps_field]['tmp_name']."_metadata")))) {
-						$this->_SET_FILES[$ps_field]['original_filename'] = $va_tmp_metadata['original_filename'];
+					if (!$r_incoming_fp) {
+						$this->postError(1600, _t('Cannot open remote URL [%1] to fetch media', $vs_url),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
+						set_time_limit($vn_max_execution_time);
+						return false;
 					}
+				
+					$r_outgoing_fp = fopen($vs_tmp_file, 'w');
+					if (!$r_outgoing_fp) {
+						$this->postError(1600, _t('Cannot open file for media fetched from URL [%1]', $vs_url),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
+						set_time_limit($vn_max_execution_time);
+						return false;
+					}
+					while(($vs_content = fgets($r_incoming_fp, 4096)) !== false) {
+						fwrite($r_outgoing_fp, $vs_content);
+					}
+					fclose($r_incoming_fp);
+					fclose($r_outgoing_fp);
+				
+					$vs_url_fetched_from = $vs_url;
+					$vn_url_fetched_on = time();
+					$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_tmp_file;
+					$vb_is_fetched_file = true;
 				}
-			}
 			
-			if (isset($this->_SET_FILES[$ps_field]['tmp_name']) && (file_exists($this->_SET_FILES[$ps_field]['tmp_name']))) {
-				if (!isset($pa_options['dont_allow_duplicate_media'])) {
-					$pa_options['dont_allow_duplicate_media'] = (bool)$this->getAppConfig()->get('dont_allow_duplicate_media');
-				}
-				if (isset($pa_options['dont_allow_duplicate_media']) && $pa_options['dont_allow_duplicate_media']) {
-					if($this->hasField('md5')) {
-						$qr_dupe_chk = $this->getDb()->query("
-							SELECT ".$this->primaryKey()." FROM ".$this->tableName()." WHERE md5 = ? ".($this->hasField('deleted') ? ' AND deleted = 0': '')."
-						", (string)md5_file($this->_SET_FILES[$ps_field]['tmp_name']));
-						
-						if ($qr_dupe_chk->nextRow()) {
-							$this->postError(1600, _t("Media already exists in database"),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
-							return false;
+				// is it server-side stored user media?
+				if (preg_match("!^userMedia[\d]+/!", $this->_SET_FILES[$ps_field]['tmp_name'])) {
+					// use configured directory to dump media with fallback to standard tmp directory
+					if (!is_writeable($vs_tmp_directory = $this->getAppConfig()->get('ajax_media_upload_tmp_directory'))) {
+						$vs_tmp_directory = caGetTempDirPath();
+					}
+					$this->_SET_FILES[$ps_field]['tmp_name'] = "{$vs_tmp_directory}/".$this->_SET_FILES[$ps_field]['tmp_name'];
+				
+					// read metadata
+					if (file_exists("{$vs_tmp_directory}/".$this->_SET_FILES[$ps_field]['tmp_name']."_metadata")) {
+						if (is_array($va_tmp_metadata = json_decode(file_get_contents("{$vs_tmp_directory}/".$this->_SET_FILES[$ps_field]['tmp_name']."_metadata")))) {
+							$this->_SET_FILES[$ps_field]['original_filename'] = $va_tmp_metadata['original_filename'];
 						}
 					}
 				}
-
-				// allow adding zip and (gzipped) tape archives
-				$vb_is_archive = false;
-				$vs_original_filename = $this->_SET_FILES[$ps_field]['original_filename'];
-				$vs_original_tmpname = $this->_SET_FILES[$ps_field]['tmp_name'];
-				$va_matches = array();
-
-				if(preg_match("/(\.zip|\.tar\.gz|\.tgz)$/",$vs_original_filename,$va_matches)){
-					$vs_archive_extension = $va_matches[1];
-
-					// add file extension to temporary file if necessary; otherwise phar barfs when handling the archive
-					$va_tmp = array();
-					preg_match("/[.]*\.([a-zA-Z0-9]+)$/",$vs_original_tmpname,$va_tmp);
-					if(!isset($va_tmp[1])){
-						@rename($this->_SET_FILES[$ps_field]['tmp_name'], $this->_SET_FILES[$ps_field]['tmp_name'].$vs_archive_extension);
-						$this->_SET_FILES[$ps_field]['tmp_name'] = $this->_SET_FILES[$ps_field]['tmp_name'].$vs_archive_extension;
+			
+				if (isset($this->_SET_FILES[$ps_field]['tmp_name']) && (file_exists($this->_SET_FILES[$ps_field]['tmp_name']))) {
+					if (!isset($pa_options['dont_allow_duplicate_media'])) {
+						$pa_options['dont_allow_duplicate_media'] = (bool)$this->getAppConfig()->get('dont_allow_duplicate_media');
 					}
-
-					if(caIsArchive($this->_SET_FILES[$ps_field]['tmp_name'])){
-						$va_archive_files = caGetDirectoryContentsAsList('phar://'.$this->_SET_FILES[$ps_field]['tmp_name']);
-						if(sizeof($va_archive_files)>0){
-							// get first file we encounter in the archive and use it to generate them previews
-							$vb_is_archive = true;
-							$vs_archive = $this->_SET_FILES[$ps_field]['tmp_name'];
-							$va_tmp = array();
-
-							// copy primary file from the archive to temporary file (with extension so that *Magick can identify properly)
-							// this is basically a fallback. if the code below fails, we still have a 'fake' original
-							preg_match("/[.]*\.([a-zA-Z0-9]+)$/",$va_archive_files[0],$va_tmp);
-							$vs_primary_file_tmp = tempnam(caGetTempDirPath(), "caArchivePrimary");
-							@unlink($vs_primary_file_tmp);
-							$vs_primary_file_tmp = $vs_primary_file_tmp.".".$va_tmp[1];
-
-							if(!@copy($va_archive_files[0], $vs_primary_file_tmp)){
-								$this->postError(1600, _t("Couldn't extract first file from archive. There is probably a invalid character in a directory or file name inside the archive"),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
-								set_time_limit($vn_max_execution_time);
-								if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-								if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
+					if (isset($pa_options['dont_allow_duplicate_media']) && $pa_options['dont_allow_duplicate_media']) {
+						if($this->hasField('md5')) {
+							$qr_dupe_chk = $this->getDb()->query("
+								SELECT ".$this->primaryKey()." FROM ".$this->tableName()." WHERE md5 = ? ".($this->hasField('deleted') ? ' AND deleted = 0': '')."
+							", (string)md5_file($this->_SET_FILES[$ps_field]['tmp_name']));
+						
+							if ($qr_dupe_chk->nextRow()) {
+								$this->postError(1600, _t("Media already exists in database"),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 								return false;
 							}
-							
-							$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_primary_file_tmp;
-
-							// prepare to join archive contents to form a better downloadable "original" than the zip/tgz archive (e.g. a multi-page tiff)
-							// to do that, we have to 'extract' the archive so that command-line utilities like *Magick can operate
-							@caRemoveDirectory(caGetTempDirPath().'/caArchiveExtract'); // remove left-overs, just to be sure we don't include other files in the tiff
-							$va_archive_tmp_files = array();
-							@mkdir(caGetTempDirPath().'/caArchiveExtract');
-							foreach($va_archive_files as $vs_archive_file){
-								$vs_basename = basename($vs_archive_file);
-								$vs_tmp_file_name = caGetTempDirPath().'/caArchiveExtract/'.str_replace(" ", "_", $vs_basename);
-								$va_archive_tmp_files[] = $vs_tmp_file_name;
-								@copy($vs_archive_file,$vs_tmp_file_name);
-							}
 						}
 					}
 
-					if(!$vb_is_archive) { // something went wrong (i.e. no valid or empty archive) -> restore previous state
-						@rename($this->_SET_FILES[$ps_field]['tmp_name'].$vs_archive_extension, $vs_original_tmpname);
-						$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_original_tmpname;
-					}
-				}
-
-				// ImageMagick partly relies on file extensions to properly identify images (RAW images in particular)
-				// therefore we rename the temporary file here (using the extension of the original filename, if any)
-				$va_matches = array();
-				$vb_renamed_tmpfile = false;
-				preg_match("/[.]*\.([a-zA-Z0-9]+)$/",$this->_SET_FILES[$ps_field]['tmp_name'],$va_matches);
-				if(!isset($va_matches[1])){ // file has no extension, i.e. is probably PHP upload tmp file
+					// allow adding zip and (gzipped) tape archives
+					$vb_is_archive = false;
+					$vs_original_filename = $this->_SET_FILES[$ps_field]['original_filename'];
+					$vs_original_tmpname = $this->_SET_FILES[$ps_field]['tmp_name'];
 					$va_matches = array();
-					preg_match("/[.]*\.([a-zA-Z0-9]+)$/",$this->_SET_FILES[$ps_field]['original_filename'],$va_matches);
-					if(strlen($va_matches[1])>0){
-						$va_parts = explode("/",$this->_SET_FILES[$ps_field]['tmp_name']);
-						$vs_new_filename = sys_get_temp_dir()."/".$va_parts[sizeof($va_parts)-1].".".$va_matches[1];
-						if (!move_uploaded_file($this->_SET_FILES[$ps_field]['tmp_name'],$vs_new_filename)) {
-							rename($this->_SET_FILES[$ps_field]['tmp_name'],$vs_new_filename);
-						}
-						$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_new_filename;
-						$vb_renamed_tmpfile = true;
-					}
-				}
-				
-				$input_mimetype = $m->divineFileFormat($this->_SET_FILES[$ps_field]['tmp_name']);
-				if (!$input_type = $o_media_proc_settings->canAccept($input_mimetype)) {
-					# error - filetype not accepted by this field
-					$this->postError(1600, ($input_mimetype) ? _t("File type %1 not accepted by %2", $input_mimetype, $ps_field) : _t("Unknown file type not accepted by %1", $ps_field),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
-					set_time_limit($vn_max_execution_time);
-					if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-					if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
-					return false;
-				}
 
-				# ok process file...
-				if (!($m->read($this->_SET_FILES[$ps_field]['tmp_name']))) {
-					$this->errors = array_merge($this->errors, $m->errors());	// copy into model plugin errors
-					set_time_limit($vn_max_execution_time);
-					if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-					if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
-					return false;
-				}
+					if(preg_match("/(\.zip|\.tar\.gz|\.tgz)$/",$vs_original_filename,$va_matches)){
+						$vs_archive_extension = $va_matches[1];
 
-				// if necessary, join archive contents to form a better downloadable "original" than the zip/tgz archive (e.g. a multi-page tiff)
-				// by this point, a backend plugin was picked using the first file of the archive. this backend is also used to prepare the new original.
-				if($vb_is_archive && (sizeof($va_archive_tmp_files)>0)){
-					if($vs_archive_original = $m->joinArchiveContents($va_archive_tmp_files)){
-						// mangle filename, so that the uploaded archive.zip becomes archive.tif or archive.gif or whatever extension the Media plugin prefers
-						$va_new_original_pathinfo = pathinfo($vs_archive_original);
-						$va_archive_pathinfo = pathinfo($this->_SET_FILES[$ps_field]['original_filename']);
-						$this->_SET_FILES[$ps_field]['original_filename'] = $va_archive_pathinfo['filename'].".".$va_new_original_pathinfo['extension'];
-
-						// this is now our original, disregard the uploaded archive
-						$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_archive_original;
-
-						// re-run mimetype detection and read on the new original
-						$m->reset();
-						$input_mimetype = $m->divineFileFormat($vs_archive_original);
-						$input_type = $o_media_proc_settings->canAccept($input_mimetype);
-						$m->read($vs_archive_original);
-					}
-
-					@caRemoveDirectory(caGetTempDirPath().'/caArchiveExtract');
-				}
-				
-				$va_media_objects['_original'] = $m;
-				
-				// preserve center setting from any existing media
-				$va_center = null;
-				if (is_array($va_tmp = $this->getMediaInfo($ps_field))) { $va_center = caGetOption('_CENTER', $va_tmp, array()); }
-				$media_desc = array(
-					"ORIGINAL_FILENAME" => $this->_SET_FILES[$ps_field]['original_filename'],
-					"_CENTER" => $va_center,
-					"_SCALE" => caGetOption('_SCALE', $va_tmp, array()),
-					"_SCALE_UNITS" => caGetOption('_SCALE_UNITS', $va_tmp, array()),
-					"INPUT" => array(
-						"MIMETYPE" => $m->get("mimetype"),
-						"WIDTH" => $m->get("width"),
-						"HEIGHT" => $m->get("height"),
-						"MD5" => md5_file($this->_SET_FILES[$ps_field]['tmp_name']),
-						"FILESIZE" => filesize($this->_SET_FILES[$ps_field]['tmp_name']),
-						"FETCHED_FROM" => $vs_url_fetched_from,
-						"FETCHED_ON" => $vn_url_fetched_on
-					 )
-				);
-				
-				if (isset($this->_SET_FILES[$ps_field]['options']['TRANSFORMATION_HISTORY']) && is_array($this->_SET_FILES[$ps_field]['options']['TRANSFORMATION_HISTORY'])) {
-					$media_desc['TRANSFORMATION_HISTORY'] = $this->_SET_FILES[$ps_field]['options']['TRANSFORMATION_HISTORY'];
-				}
-				
-				#
-				# Extract metadata from file
-				#
-				$media_metadata = $m->getExtractedMetadata();
-				# get versions to create
-				$va_versions = $this->getMediaVersions($ps_field, $input_mimetype);
-				$error = 0;
-
-				# don't process files that are not going to be processed or converted
-				# we don't want to waste time opening file we're not going to do anything with
-				# also, we don't want to recompress JPEGs...
-				$media_type = $o_media_proc_settings->canAccept($input_mimetype);
-				$version_info = $o_media_proc_settings->getMediaTypeVersions($media_type);
-				$va_default_queue_settings = $o_media_proc_settings->getMediaTypeQueueSettings($media_type);
-
-				if (!($va_media_write_options = $this->_FILES[$ps_field]['options'])) {
-					$va_media_write_options = $this->_SET_FILES[$ps_field]['options'];
-				}
-				
-				# Is an "undo" version set in options?
-				if (isset($this->_SET_FILES[$ps_field]['options']['undo']) && file_exists($this->_SET_FILES[$ps_field]['options']['undo'])) {
-					if ($volume = $version_info['original']['VOLUME']) {
-						$vi = $this->_MEDIA_VOLUMES->getVolumeInformation($volume);
-						if ($vi["absolutePath"] && (strlen($dirhash = $this->_getDirectoryHash($vi["absolutePath"], $this->getPrimaryKey())))) {
-							$magic = rand(0,99999);
-							$vs_filename = $this->_genMediaName($ps_field)."_undo_";
-							$filepath = $vi["absolutePath"]."/".$dirhash."/".$magic."_".$vs_filename;
-							if (copy($this->_SET_FILES[$ps_field]['options']['undo'], $filepath)) {
-								$media_desc['_undo_'] = array(
-									"VOLUME" => $volume,
-									"FILENAME" => $vs_filename,
-									"HASH" => $dirhash,
-									"MAGIC" => $magic,
-									"MD5" => md5_file($filepath)
-								);
-							}
-						}
-					}
-				}
-				
-				$va_process_these_versions_only = array();
-				if (isset($pa_options['these_versions_only']) && is_array($pa_options['these_versions_only']) && sizeof($pa_options['these_versions_only'])) {
-					$va_tmp = $this->_FIELD_VALUES[$ps_field];
-					foreach($pa_options['these_versions_only'] as $vs_this_version_only) {
-						if (in_array($vs_this_version_only, $va_versions)) {
-							if (is_array($this->_FIELD_VALUES[$ps_field])) {
-								$va_process_these_versions_only[] = $vs_this_version_only;
-							}
-						}
-					}
-					
-					// Copy metadata for version we're not processing 
-					if (sizeof($va_process_these_versions_only)) {
-						foreach (array_keys($va_tmp) as $v) {
-							if (!in_array($v, $va_process_these_versions_only)) {
-								$media_desc[$v] = $va_tmp[$v];
-							}
-						}
-					}
-				}
-
-				$va_files_to_delete 	= array();
-				$va_queued_versions 	= array();
-				$queue_enabled			= (!sizeof($va_process_these_versions_only) && $this->getAppConfig()->get('queue_enabled')) ? true : false;
-				
-				$vs_path_to_queue_media = null;
-				foreach ($va_versions as $v) {
-					$vs_use_icon = null;
-					
-					if (sizeof($va_process_these_versions_only) && (!in_array($v, $va_process_these_versions_only))) {
-						// only processing certain versions... and this one isn't it so skip
-						continue;
-					}
-					
-					$queue 				= $va_default_queue_settings['QUEUE'];
-					$queue_threshold 	= isset($version_info[$v]['QUEUE_WHEN_FILE_LARGER_THAN']) ? intval($version_info[$v]['QUEUE_WHEN_FILE_LARGER_THAN']) : (int)$va_default_queue_settings['QUEUE_WHEN_FILE_LARGER_THAN'];
-					$rule 				= isset($version_info[$v]['RULE']) ? $version_info[$v]['RULE'] : '';
-					$volume 			= isset($version_info[$v]['VOLUME']) ? $version_info[$v]['VOLUME'] : '';
-
-					$basis				= isset($version_info[$v]['BASIS']) ? $version_info[$v]['BASIS'] : '';
-
-					if (isset($media_desc[$basis]) && isset($media_desc[$basis]['FILENAME'])) {
-						if (!isset($va_media_objects[$basis])) {
-							$o_media = new Media();
-							$basis_vi = $this->_MEDIA_VOLUMES->getVolumeInformation($media_desc[$basis]['VOLUME']);
-							if ($o_media->read($p=$basis_vi['absolutePath']."/".$media_desc[$basis]['HASH']."/".$media_desc[$basis]['MAGIC']."_".$media_desc[$basis]['FILENAME'])) {
-								$va_media_objects[$basis] = $o_media;
-							} else {
-								$m = $va_media_objects['_original'];
-							}
-						} else {
-							$m = $va_media_objects[$basis];
-						}
-					} else {
-						$m = $va_media_objects['_original'];
-					}
-					$m->reset();
-				
-					# get volume
-					$vi = $this->_MEDIA_VOLUMES->getVolumeInformation($volume);
-
-					if (!is_array($vi)) {
-						print "Invalid volume '{$volume}'<br>";
-						exit;
-					}
-					
-					// Send to queue if it's too big to process here
-					if (($queue_enabled) && ($queue) && ($queue_threshold > 0) && ($queue_threshold < (int)$media_desc["INPUT"]["FILESIZE"]) && ($va_default_queue_settings['QUEUE_USING_VERSION'] != $v)) {
-						$va_queued_versions[$v] = array(
-							'VOLUME' => $volume
-						);
-						$media_desc[$v]["QUEUED"] = $queue;						
-						if ($version_info[$v]["QUEUED_MESSAGE"]) {
-							$media_desc[$v]["QUEUED_MESSAGE"] = $version_info[$v]["QUEUED_MESSAGE"];
-						} else {
-							$media_desc[$v]["QUEUED_MESSAGE"] = ($va_default_queue_settings['QUEUED_MESSAGE']) ? $va_default_queue_settings['QUEUED_MESSAGE'] : _t("Media is being processed and will be available shortly.");
-						}
-						
-						if ($pa_options['delete_old_media']) {
-							$va_files_to_delete[] = array(
-								'field' => $ps_field,
-								'version' => $v
-							);
-						}
-						continue;
-					}
-
-					# get transformation rules
-					$rules = $o_media_proc_settings->getMediaTransformationRule($rule);
-
-
-					if (sizeof($rules) == 0) {
-						$output_mimetype = $input_mimetype;
-						$m->set("version", $v);
-
-						#
-						# don't process this media, just copy the file
-						#
-						$ext = $m->mimetype2extension($output_mimetype);
-
-						if (!$ext) {
-							$this->postError(1600, _t("File could not be copied for %1; can't convert mimetype '%2' to extension", $ps_field, $output_mimetype),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
-							$m->cleanup();
-							set_time_limit($vn_max_execution_time);
-							if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-							if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
-							return false;
+						// add file extension to temporary file if necessary; otherwise phar barfs when handling the archive
+						$va_tmp = array();
+						preg_match("/[.]*\.([a-zA-Z0-9]+)$/",$vs_original_tmpname,$va_tmp);
+						if(!isset($va_tmp[1])){
+							@rename($this->_SET_FILES[$ps_field]['tmp_name'], $this->_SET_FILES[$ps_field]['tmp_name'].$vs_archive_extension);
+							$this->_SET_FILES[$ps_field]['tmp_name'] = $this->_SET_FILES[$ps_field]['tmp_name'].$vs_archive_extension;
 						}
 
-						if (($dirhash = $this->_getDirectoryHash($vi["absolutePath"], $this->getPrimaryKey())) === false) {
-							$this->postError(1600, _t("Could not create subdirectory for uploaded file in %1. Please ask your administrator to check the permissions of your media directory.", $vi["absolutePath"]),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
-							set_time_limit($vn_max_execution_time);
-							if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-							if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
-							return false;
-						}
+						if(caIsArchive($this->_SET_FILES[$ps_field]['tmp_name'])){
+							$va_archive_files = caGetDirectoryContentsAsList('phar://'.$this->_SET_FILES[$ps_field]['tmp_name']);
+							if(sizeof($va_archive_files)>0){
+								// get first file we encounter in the archive and use it to generate them previews
+								$vb_is_archive = true;
+								$vs_archive = $this->_SET_FILES[$ps_field]['tmp_name'];
+								$va_tmp = array();
 
-						if ((bool)$version_info[$v]["USE_EXTERNAL_URL_WHEN_AVAILABLE"]) { 
-							$filepath = $this->_SET_FILES[$ps_field]['tmp_name'];
+								// copy primary file from the archive to temporary file (with extension so that *Magick can identify properly)
+								// this is basically a fallback. if the code below fails, we still have a 'fake' original
+								preg_match("/[.]*\.([a-zA-Z0-9]+)$/",$va_archive_files[0],$va_tmp);
+								$vs_primary_file_tmp = tempnam(caGetTempDirPath(), "caArchivePrimary");
+								@unlink($vs_primary_file_tmp);
+								$vs_primary_file_tmp = $vs_primary_file_tmp.".".$va_tmp[1];
+
+								if(!@copy($va_archive_files[0], $vs_primary_file_tmp)){
+									$this->postError(1600, _t("Couldn't extract first file from archive. There is probably a invalid character in a directory or file name inside the archive"),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
+									set_time_limit($vn_max_execution_time);
+									if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+									if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
+									return false;
+								}
 							
+								$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_primary_file_tmp;
+
+								// prepare to join archive contents to form a better downloadable "original" than the zip/tgz archive (e.g. a multi-page tiff)
+								// to do that, we have to 'extract' the archive so that command-line utilities like *Magick can operate
+								@caRemoveDirectory(caGetTempDirPath().'/caArchiveExtract'); // remove left-overs, just to be sure we don't include other files in the tiff
+								$va_archive_tmp_files = array();
+								@mkdir(caGetTempDirPath().'/caArchiveExtract');
+								foreach($va_archive_files as $vs_archive_file){
+									$vs_basename = basename($vs_archive_file);
+									$vs_tmp_file_name = caGetTempDirPath().'/caArchiveExtract/'.str_replace(" ", "_", $vs_basename);
+									$va_archive_tmp_files[] = $vs_tmp_file_name;
+									@copy($vs_archive_file,$vs_tmp_file_name);
+								}
+							}
+						}
+
+						if(!$vb_is_archive) { // something went wrong (i.e. no valid or empty archive) -> restore previous state
+							@rename($this->_SET_FILES[$ps_field]['tmp_name'].$vs_archive_extension, $vs_original_tmpname);
+							$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_original_tmpname;
+						}
+					}
+
+					// ImageMagick partly relies on file extensions to properly identify images (RAW images in particular)
+					// therefore we rename the temporary file here (using the extension of the original filename, if any)
+					$va_matches = array();
+					$vb_renamed_tmpfile = false;
+					preg_match("/[.]*\.([a-zA-Z0-9]+)$/",$this->_SET_FILES[$ps_field]['tmp_name'],$va_matches);
+					if(!isset($va_matches[1])){ // file has no extension, i.e. is probably PHP upload tmp file
+						$va_matches = array();
+						preg_match("/[.]*\.([a-zA-Z0-9]+)$/",$this->_SET_FILES[$ps_field]['original_filename'],$va_matches);
+						if(strlen($va_matches[1])>0){
+							$va_parts = explode("/",$this->_SET_FILES[$ps_field]['tmp_name']);
+							$vs_new_filename = sys_get_temp_dir()."/".$va_parts[sizeof($va_parts)-1].".".$va_matches[1];
+							if (!move_uploaded_file($this->_SET_FILES[$ps_field]['tmp_name'],$vs_new_filename)) {
+								rename($this->_SET_FILES[$ps_field]['tmp_name'],$vs_new_filename);
+							}
+							$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_new_filename;
+							$vb_renamed_tmpfile = true;
+						}
+					}
+				
+					$input_mimetype = $m->divineFileFormat($this->_SET_FILES[$ps_field]['tmp_name']);
+					if (!$input_type = $o_media_proc_settings->canAccept($input_mimetype)) {
+						# error - filetype not accepted by this field
+						$this->postError(1600, ($input_mimetype) ? _t("File type %1 not accepted by %2", $input_mimetype, $ps_field) : _t("Unknown file type not accepted by %1", $ps_field),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
+						set_time_limit($vn_max_execution_time);
+						if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+						if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
+						return false;
+					}
+
+					# ok process file...
+					if (!($m->read($this->_SET_FILES[$ps_field]['tmp_name']))) {
+						$this->errors = array_merge($this->errors, $m->errors());	// copy into model plugin errors
+						set_time_limit($vn_max_execution_time);
+						if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+						if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
+						return false;
+					}
+
+					// if necessary, join archive contents to form a better downloadable "original" than the zip/tgz archive (e.g. a multi-page tiff)
+					// by this point, a backend plugin was picked using the first file of the archive. this backend is also used to prepare the new original.
+					if($vb_is_archive && (sizeof($va_archive_tmp_files)>0)){
+						if($vs_archive_original = $m->joinArchiveContents($va_archive_tmp_files)){
+							// mangle filename, so that the uploaded archive.zip becomes archive.tif or archive.gif or whatever extension the Media plugin prefers
+							$va_new_original_pathinfo = pathinfo($vs_archive_original);
+							$va_archive_pathinfo = pathinfo($this->_SET_FILES[$ps_field]['original_filename']);
+							$this->_SET_FILES[$ps_field]['original_filename'] = $va_archive_pathinfo['filename'].".".$va_new_original_pathinfo['extension'];
+
+							// this is now our original, disregard the uploaded archive
+							$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_archive_original;
+
+							// re-run mimetype detection and read on the new original
+							$m->reset();
+							$input_mimetype = $m->divineFileFormat($vs_archive_original);
+							$input_type = $o_media_proc_settings->canAccept($input_mimetype);
+							$m->read($vs_archive_original);
+						}
+
+						@caRemoveDirectory(caGetTempDirPath().'/caArchiveExtract');
+					}
+				
+					$va_media_objects['_original'] = $m;
+				
+					// preserve center setting from any existing media
+					$va_center = null;
+					if (is_array($va_tmp = $this->getMediaInfo($ps_field))) { $va_center = caGetOption('_CENTER', $va_tmp, array()); }
+					$media_desc = array(
+						"ORIGINAL_FILENAME" => $this->_SET_FILES[$ps_field]['original_filename'],
+						"_CENTER" => $va_center,
+						"_SCALE" => caGetOption('_SCALE', $va_tmp, array()),
+						"_SCALE_UNITS" => caGetOption('_SCALE_UNITS', $va_tmp, array()),
+						"INPUT" => array(
+							"MIMETYPE" => $m->get("mimetype"),
+							"WIDTH" => $m->get("width"),
+							"HEIGHT" => $m->get("height"),
+							"MD5" => md5_file($this->_SET_FILES[$ps_field]['tmp_name']),
+							"FILESIZE" => filesize($this->_SET_FILES[$ps_field]['tmp_name']),
+							"FETCHED_FROM" => $vs_url_fetched_from,
+							"FETCHED_ON" => $vn_url_fetched_on
+						 )
+					);
+				
+					if (isset($this->_SET_FILES[$ps_field]['options']['TRANSFORMATION_HISTORY']) && is_array($this->_SET_FILES[$ps_field]['options']['TRANSFORMATION_HISTORY'])) {
+						$media_desc['TRANSFORMATION_HISTORY'] = $this->_SET_FILES[$ps_field]['options']['TRANSFORMATION_HISTORY'];
+					}
+				
+					#
+					# Extract metadata from file
+					#
+					$media_metadata = $m->getExtractedMetadata();
+					# get versions to create
+					$va_versions = $this->getMediaVersions($ps_field, $input_mimetype);
+					$error = 0;
+
+					# don't process files that are not going to be processed or converted
+					# we don't want to waste time opening file we're not going to do anything with
+					# also, we don't want to recompress JPEGs...
+					$media_type = $o_media_proc_settings->canAccept($input_mimetype);
+					$version_info = $o_media_proc_settings->getMediaTypeVersions($media_type);
+					$va_default_queue_settings = $o_media_proc_settings->getMediaTypeQueueSettings($media_type);
+
+					if (!($va_media_write_options = $this->_FILES[$ps_field]['options'])) {
+						$va_media_write_options = $this->_SET_FILES[$ps_field]['options'];
+					}
+				
+					# Is an "undo" version set in options?
+					if (isset($this->_SET_FILES[$ps_field]['options']['undo']) && file_exists($this->_SET_FILES[$ps_field]['options']['undo'])) {
+						if ($volume = $version_info['original']['VOLUME']) {
+							$vi = $this->_MEDIA_VOLUMES->getVolumeInformation($volume);
+							if ($vi["absolutePath"] && (strlen($dirhash = $this->_getDirectoryHash($vi["absolutePath"], $this->getPrimaryKey())))) {
+								$magic = rand(0,99999);
+								$vs_filename = $this->_genMediaName($ps_field)."_undo_";
+								$filepath = $vi["absolutePath"]."/".$dirhash."/".$magic."_".$vs_filename;
+								if (copy($this->_SET_FILES[$ps_field]['options']['undo'], $filepath)) {
+									$media_desc['_undo_'] = array(
+										"VOLUME" => $volume,
+										"FILENAME" => $vs_filename,
+										"HASH" => $dirhash,
+										"MAGIC" => $magic,
+										"MD5" => md5_file($filepath)
+									);
+								}
+							}
+						}
+					}
+				
+					$va_process_these_versions_only = array();
+					if (isset($pa_options['these_versions_only']) && is_array($pa_options['these_versions_only']) && sizeof($pa_options['these_versions_only'])) {
+						$va_tmp = $this->_FIELD_VALUES[$ps_field];
+						foreach($pa_options['these_versions_only'] as $vs_this_version_only) {
+							if (in_array($vs_this_version_only, $va_versions)) {
+								if (is_array($this->_FIELD_VALUES[$ps_field])) {
+									$va_process_these_versions_only[] = $vs_this_version_only;
+								}
+							}
+						}
+					
+						// Copy metadata for version we're not processing 
+						if (sizeof($va_process_these_versions_only)) {
+							foreach (array_keys($va_tmp) as $v) {
+								if (!in_array($v, $va_process_these_versions_only)) {
+									$media_desc[$v] = $va_tmp[$v];
+								}
+							}
+						}
+					}
+
+					$va_files_to_delete 	= array();
+					$va_queued_versions 	= array();
+					$queue_enabled			= (!sizeof($va_process_these_versions_only) && $this->getAppConfig()->get('queue_enabled')) ? true : false;
+				
+					$vs_path_to_queue_media = null;
+					foreach ($va_versions as $v) {
+						$vs_use_icon = null;
+					
+						if (sizeof($va_process_these_versions_only) && (!in_array($v, $va_process_these_versions_only))) {
+							// only processing certain versions... and this one isn't it so skip
+							continue;
+						}
+					
+						$queue 				= $va_default_queue_settings['QUEUE'];
+						$queue_threshold 	= isset($version_info[$v]['QUEUE_WHEN_FILE_LARGER_THAN']) ? intval($version_info[$v]['QUEUE_WHEN_FILE_LARGER_THAN']) : (int)$va_default_queue_settings['QUEUE_WHEN_FILE_LARGER_THAN'];
+						$rule 				= isset($version_info[$v]['RULE']) ? $version_info[$v]['RULE'] : '';
+						$volume 			= isset($version_info[$v]['VOLUME']) ? $version_info[$v]['VOLUME'] : '';
+
+						$basis				= isset($version_info[$v]['BASIS']) ? $version_info[$v]['BASIS'] : '';
+
+						if (isset($media_desc[$basis]) && isset($media_desc[$basis]['FILENAME'])) {
+							if (!isset($va_media_objects[$basis])) {
+								$o_media = new Media();
+								$basis_vi = $this->_MEDIA_VOLUMES->getVolumeInformation($media_desc[$basis]['VOLUME']);
+								if ($o_media->read($p=$basis_vi['absolutePath']."/".$media_desc[$basis]['HASH']."/".$media_desc[$basis]['MAGIC']."_".$media_desc[$basis]['FILENAME'])) {
+									$va_media_objects[$basis] = $o_media;
+								} else {
+									$m = $va_media_objects['_original'];
+								}
+							} else {
+								$m = $va_media_objects[$basis];
+							}
+						} else {
+							$m = $va_media_objects['_original'];
+						}
+						$m->reset();
+				
+						# get volume
+						$vi = $this->_MEDIA_VOLUMES->getVolumeInformation($volume);
+
+						if (!is_array($vi)) {
+							print "Invalid volume '{$volume}'<br>";
+							exit;
+						}
+					
+						// Send to queue if it's too big to process here
+						if (($queue_enabled) && ($queue) && ($queue_threshold > 0) && ($queue_threshold < (int)$media_desc["INPUT"]["FILESIZE"]) && ($va_default_queue_settings['QUEUE_USING_VERSION'] != $v)) {
+							$va_queued_versions[$v] = array(
+								'VOLUME' => $volume
+							);
+							$media_desc[$v]["QUEUED"] = $queue;						
+							if ($version_info[$v]["QUEUED_MESSAGE"]) {
+								$media_desc[$v]["QUEUED_MESSAGE"] = $version_info[$v]["QUEUED_MESSAGE"];
+							} else {
+								$media_desc[$v]["QUEUED_MESSAGE"] = ($va_default_queue_settings['QUEUED_MESSAGE']) ? $va_default_queue_settings['QUEUED_MESSAGE'] : _t("Media is being processed and will be available shortly.");
+							}
+						
 							if ($pa_options['delete_old_media']) {
 								$va_files_to_delete[] = array(
 									'field' => $ps_field,
 									'version' => $v
 								);
 							}
-														
-							$media_desc[$v] = array(
-								"VOLUME" => $volume,
-								"MIMETYPE" => $output_mimetype,
-								"WIDTH" => $m->get("width"),
-								"HEIGHT" => $m->get("height"),
-								"PROPERTIES" => $m->getProperties(),
-								"EXTERNAL_URL" => $media_desc['INPUT']['FETCHED_FROM'],
-								"FILENAME" => null,
-								"HASH" => null,
-								"MAGIC" => null,
-								"EXTENSION" => $ext,
-								"MD5" => md5_file($filepath)
-							);
-						} else {
-							$magic = rand(0,99999);
-							$filepath = $vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($ps_field)."_".$v.".".$ext;
-							
-							if (!copy($this->_SET_FILES[$ps_field]['tmp_name'], $filepath)) {
-								$this->postError(1600, _t("File could not be copied. Ask your administrator to check permissions and file space for %1",$vi["absolutePath"]),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
+							continue;
+						}
+
+						# get transformation rules
+						$rules = $o_media_proc_settings->getMediaTransformationRule($rule);
+
+
+						if (sizeof($rules) == 0) {
+							$output_mimetype = $input_mimetype;
+							$m->set("version", $v);
+
+							#
+							# don't process this media, just copy the file
+							#
+							$ext = $m->mimetype2extension($output_mimetype);
+
+							if (!$ext) {
+								$this->postError(1600, _t("File could not be copied for %1; can't convert mimetype '%2' to extension", $ps_field, $output_mimetype),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 								$m->cleanup();
 								set_time_limit($vn_max_execution_time);
 								if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
 								if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
 								return false;
 							}
-							
-							
-							if ($v === $va_default_queue_settings['QUEUE_USING_VERSION']) {
-								$vs_path_to_queue_media = $filepath;
+
+							if (($dirhash = $this->_getDirectoryHash($vi["absolutePath"], $this->getPrimaryKey())) === false) {
+								$this->postError(1600, _t("Could not create subdirectory for uploaded file in %1. Please ask your administrator to check the permissions of your media directory.", $vi["absolutePath"]),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
+								set_time_limit($vn_max_execution_time);
+								if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+								if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
+								return false;
 							}
+
+							if ((bool)$version_info[$v]["USE_EXTERNAL_URL_WHEN_AVAILABLE"]) { 
+								$filepath = $this->_SET_FILES[$ps_field]['tmp_name'];
+							
+								if ($pa_options['delete_old_media']) {
+									$va_files_to_delete[] = array(
+										'field' => $ps_field,
+										'version' => $v
+									);
+								}
+														
+								$media_desc[$v] = array(
+									"VOLUME" => $volume,
+									"MIMETYPE" => $output_mimetype,
+									"WIDTH" => $m->get("width"),
+									"HEIGHT" => $m->get("height"),
+									"PROPERTIES" => $m->getProperties(),
+									"EXTERNAL_URL" => $media_desc['INPUT']['FETCHED_FROM'],
+									"FILENAME" => null,
+									"HASH" => null,
+									"MAGIC" => null,
+									"EXTENSION" => $ext,
+									"MD5" => md5_file($filepath)
+								);
+							} else {
+								$magic = rand(0,99999);
+								$filepath = $vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($ps_field)."_".$v.".".$ext;
+							
+								if (!copy($this->_SET_FILES[$ps_field]['tmp_name'], $filepath)) {
+									$this->postError(1600, _t("File could not be copied. Ask your administrator to check permissions and file space for %1",$vi["absolutePath"]),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
+									$m->cleanup();
+									set_time_limit($vn_max_execution_time);
+									if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+									if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
+									return false;
+								}
+							
+							
+								if ($v === $va_default_queue_settings['QUEUE_USING_VERSION']) {
+									$vs_path_to_queue_media = $filepath;
+								}
 	
-							if ($pa_options['delete_old_media']) {
-								$va_files_to_delete[] = array(
-									'field' => $ps_field,
-									'version' => $v,
-									'dont_delete_path' => $vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($ps_field)."_".$v,
-									'dont_delete_extension' => $ext
+								if ($pa_options['delete_old_media']) {
+									$va_files_to_delete[] = array(
+										'field' => $ps_field,
+										'version' => $v,
+										'dont_delete_path' => $vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($ps_field)."_".$v,
+										'dont_delete_extension' => $ext
+									);
+								}
+	
+								if (is_array($vi["mirrors"]) && sizeof($vi["mirrors"]) > 0) {
+									$vs_entity_key = join("/", array($this->tableName(), $ps_field, $this->getPrimaryKey(), $v));
+									$vs_row_key = join("/", array($this->tableName(), $this->getPrimaryKey()));
+	
+									foreach ($vi["mirrors"] as $vs_mirror_code => $va_mirror_info) {
+										$vs_mirror_method = $va_mirror_info["method"];
+										$vs_queue = $vs_mirror_method."mirror";
+	
+										if (!($o_tq->cancelPendingTasksForEntity($vs_entity_key))) {
+											//$this->postError(560, _t("Could not cancel pending tasks: %1", $this->error),"BaseModel->_processMedia()");
+											//$m->cleanup();
+											//return false;
+										}
+										if ($o_tq->addTask(
+											$vs_queue,
+											array(
+												"MIRROR" => $vs_mirror_code,
+												"VOLUME" => $volume,
+												"FIELD" => $ps_field,
+												"TABLE" => $this->tableName(),
+												"VERSION" => $v,
+												"FILES" => array(
+													array(
+														"FILE_PATH" => $filepath,
+														"ABS_PATH" => $vi["absolutePath"],
+														"HASH" => $dirhash,
+														"FILENAME" => $magic."_".$this->_genMediaName($ps_field)."_".$v.".".$ext
+													)
+												),
+	
+												"MIRROR_INFO" => $va_mirror_info,
+	
+												"PK" => $this->primaryKey(),
+												"PK_VAL" => $this->getPrimaryKey()
+											),
+											array("priority" => 100, "entity_key" => $vs_entity_key, "row_key" => $vs_row_key, 'user_id' => $AUTH_CURRENT_USER_ID)))
+										{
+											continue;
+										} else {
+											$this->postError(100, _t("Couldn't queue mirror using '%1' for version '%2' (handler '%3')", $vs_mirror_method, $v, $queue),"BaseModel->_processMedia()");
+										}
+	
+									}
+								}
+							
+								$media_desc[$v] = array(
+									"VOLUME" => $volume,
+									"MIMETYPE" => $output_mimetype,
+									"WIDTH" => $m->get("width"),
+									"HEIGHT" => $m->get("height"),
+									"PROPERTIES" => $m->getProperties(),
+									"FILENAME" => $this->_genMediaName($ps_field)."_".$v.".".$ext,
+									"HASH" => $dirhash,
+									"MAGIC" => $magic,
+									"EXTENSION" => $ext,
+									"MD5" => md5_file($filepath)
 								);
 							}
-	
+						} else {
+							$m->set("version", $v);
+							while(list($operation, $parameters) = each($rules)) {
+								if ($operation === 'SET') {
+									foreach($parameters as $pp => $pv) {
+										if ($pp == 'format') {
+											$output_mimetype = $pv;
+										} else {
+											$m->set($pp, $pv);
+										}
+									}
+								} else {
+									if(is_array($this->_FIELD_VALUES[$ps_field]) && (is_array($va_media_center = $this->getMediaCenter($ps_field)))) {
+										$parameters['_centerX'] = caGetOption('x', $va_media_center, 0.5);
+										$parameters['_centerY'] = caGetOption('y', $va_media_center, 0.5);
+								
+										if (($parameters['_centerX'] < 0) || ($parameters['_centerX'] > 1)) { $parameters['_centerX'] = 0.5; }
+										if (($parameters['_centerY'] < 0) || ($parameters['_centerY'] > 1)) { $parameters['_centerY'] = 0.5; }
+									}
+									if (!($m->transform($operation, $parameters))) {
+										$error = 1;
+										$error_msg = "Couldn't do transformation '$operation'";
+										break(2);
+									}
+								}
+							}
+
+							if (!$output_mimetype) { $output_mimetype = $input_mimetype; }
+
+							if (!($ext = $m->mimetype2extension($output_mimetype))) {
+								$this->postError(1600, _t("File could not be processed for %1; can't convert mimetype '%2' to extension", $ps_field, $output_mimetype),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
+								$m->cleanup();
+								set_time_limit($vn_max_execution_time);
+								if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+								if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
+								return false;
+							}
+
+							if (($dirhash = $this->_getDirectoryHash($vi["absolutePath"], $this->getPrimaryKey())) === false) {
+								$this->postError(1600, _t("Could not create subdirectory for uploaded file in %1. Please ask your administrator to check the permissions of your media directory.", $vi["absolutePath"]),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
+								set_time_limit($vn_max_execution_time);
+								if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+								if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
+								return false;
+							}
+							$magic = rand(0,99999);
+							$filepath = $vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($ps_field)."_".$v;
+
+							if (!($vs_output_file = $m->write($filepath, $output_mimetype, $va_media_write_options))) {
+								$this->postError(1600,_t("Couldn't write file: %1", join("; ", $m->getErrors())),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
+								$m->cleanup();
+								set_time_limit($vn_max_execution_time);
+								if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
+								if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
+								return false;
+								break;
+							} else {
+								if (
+									($vs_output_file === __CA_MEDIA_VIDEO_DEFAULT_ICON__)
+									||
+									($vs_output_file === __CA_MEDIA_AUDIO_DEFAULT_ICON__)
+									||
+									($vs_output_file === __CA_MEDIA_DOCUMENT_DEFAULT_ICON__)
+									||
+									($vs_output_file === __CA_MEDIA_3D_DEFAULT_ICON__)
+								) {
+									$vs_use_icon = $vs_output_file;
+								}
+							}
+						
+							if ($v === $va_default_queue_settings['QUEUE_USING_VERSION']) {
+								$vs_path_to_queue_media = $vs_output_file;
+								$vs_use_icon = __CA_MEDIA_QUEUED_ICON__;
+							}
+
+							if (($pa_options['delete_old_media']) && (!$error)) {
+								if($vs_old_media_path = $this->getMediaPath($ps_field, $v)) {
+									$va_files_to_delete[] = array(
+										'field' => $ps_field,
+										'version' => $v,
+										'dont_delete_path' => $filepath,
+										'dont_delete_extension' => $ext
+									);
+								}
+							}
+
 							if (is_array($vi["mirrors"]) && sizeof($vi["mirrors"]) > 0) {
 								$vs_entity_key = join("/", array($this->tableName(), $ps_field, $this->getPrimaryKey(), $v));
 								$vs_row_key = join("/", array($this->tableName(), $this->getPrimaryKey()));
-	
+
 								foreach ($vi["mirrors"] as $vs_mirror_code => $va_mirror_info) {
 									$vs_mirror_method = $va_mirror_info["method"];
 									$vs_queue = $vs_mirror_method."mirror";
-	
+
 									if (!($o_tq->cancelPendingTasksForEntity($vs_entity_key))) {
 										//$this->postError(560, _t("Could not cancel pending tasks: %1", $this->error),"BaseModel->_processMedia()");
 										//$m->cleanup();
@@ -4491,20 +4648,19 @@ class BaseModel extends BaseObject {
 										array(
 											"MIRROR" => $vs_mirror_code,
 											"VOLUME" => $volume,
-											"FIELD" => $ps_field,
-											"TABLE" => $this->tableName(),
+											"FIELD" => $ps_field, "TABLE" => $this->tableName(),
 											"VERSION" => $v,
 											"FILES" => array(
 												array(
-													"FILE_PATH" => $filepath,
+													"FILE_PATH" => $filepath.".".$ext,
 													"ABS_PATH" => $vi["absolutePath"],
 													"HASH" => $dirhash,
 													"FILENAME" => $magic."_".$this->_genMediaName($ps_field)."_".$v.".".$ext
 												)
 											),
-	
+
 											"MIRROR_INFO" => $va_mirror_info,
-	
+
 											"PK" => $this->primaryKey(),
 											"PK_VAL" => $this->getPrimaryKey()
 										),
@@ -4514,318 +4670,180 @@ class BaseModel extends BaseObject {
 									} else {
 										$this->postError(100, _t("Couldn't queue mirror using '%1' for version '%2' (handler '%3')", $vs_mirror_method, $v, $queue),"BaseModel->_processMedia()");
 									}
-	
 								}
 							}
-							
-							$media_desc[$v] = array(
-								"VOLUME" => $volume,
-								"MIMETYPE" => $output_mimetype,
-								"WIDTH" => $m->get("width"),
-								"HEIGHT" => $m->get("height"),
-								"PROPERTIES" => $m->getProperties(),
-								"FILENAME" => $this->_genMediaName($ps_field)."_".$v.".".$ext,
-								"HASH" => $dirhash,
-								"MAGIC" => $magic,
-								"EXTENSION" => $ext,
-								"MD5" => md5_file($filepath)
-							);
+
+						
+							if ($vs_use_icon) {
+								$media_desc[$v] = array(
+									"MIMETYPE" => $output_mimetype,
+									"USE_ICON" => $vs_use_icon,
+									"WIDTH" => $m->get("width"),
+									"HEIGHT" => $m->get("height")
+								);
+							} else {
+								$media_desc[$v] = array(
+									"VOLUME" => $volume,
+									"MIMETYPE" => $output_mimetype,
+									"WIDTH" => $m->get("width"),
+									"HEIGHT" => $m->get("height"),
+									"PROPERTIES" => $m->getProperties(),
+									"FILENAME" => $this->_genMediaName($ps_field)."_".$v.".".$ext,
+									"HASH" => $dirhash,
+									"MAGIC" => $magic,
+									"EXTENSION" => $ext,
+									"MD5" => md5_file($vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($ps_field)."_".$v.".".$ext)
+								);
+							}
+							$m->reset();
 						}
-					} else {
-						$m->set("version", $v);
-						while(list($operation, $parameters) = each($rules)) {
-							if ($operation === 'SET') {
-								foreach($parameters as $pp => $pv) {
-									if ($pp == 'format') {
-										$output_mimetype = $pv;
-									} else {
-										$m->set($pp, $pv);
+					}
+				
+					if (sizeof($va_queued_versions)) {
+						$vs_entity_key = md5(join("/", array_merge(array($this->tableName(), $ps_field, $this->getPrimaryKey()), array_keys($va_queued_versions))));
+						$vs_row_key = join("/", array($this->tableName(), $this->getPrimaryKey()));
+					
+						if (!($o_tq->cancelPendingTasksForEntity($vs_entity_key, $queue))) {
+							// TODO: log this
+						}
+					
+						if (!($filename = $vs_path_to_queue_media)) {
+							// if we're not using a designated not-queued representation to generate the queued ones
+							// then copy the uploaded file to the tmp dir and use that
+							$filename = $o_tq->copyFileToQueueTmp($va_default_queue_settings['QUEUE'], $this->_SET_FILES[$ps_field]['tmp_name']);
+						}
+					
+						if ($filename) {
+							if ($o_tq->addTask(
+								$va_default_queue_settings['QUEUE'],
+								array(
+									"TABLE" => $this->tableName(), "FIELD" => $ps_field,
+									"PK" => $this->primaryKey(), "PK_VAL" => $this->getPrimaryKey(),
+								
+									"INPUT_MIMETYPE" => $input_mimetype,
+									"FILENAME" => $filename,
+									"VERSIONS" => $va_queued_versions,
+								
+									"OPTIONS" => $va_media_write_options,
+									"DONT_DELETE_OLD_MEDIA" => ($filename == $vs_path_to_queue_media) ? true : false
+								),
+								array("priority" => 100, "entity_key" => $vs_entity_key, "row_key" => $vs_row_key, 'user_id' => $AUTH_CURRENT_USER_ID)))
+							{
+								if ($pa_options['delete_old_media']) {
+									foreach($va_queued_versions as $vs_version => $va_version_info) {
+										$va_files_to_delete[] = array(
+											'field' => $ps_field,
+											'version' => $vs_version
+										);
 									}
 								}
 							} else {
-								if(is_array($this->_FIELD_VALUES[$ps_field]) && (is_array($va_media_center = $this->getMediaCenter($ps_field)))) {
-									$parameters['_centerX'] = caGetOption('x', $va_media_center, 0.5);
-									$parameters['_centerY'] = caGetOption('y', $va_media_center, 0.5);
-								
-									if (($parameters['_centerX'] < 0) || ($parameters['_centerX'] > 1)) { $parameters['_centerX'] = 0.5; }
-									if (($parameters['_centerY'] < 0) || ($parameters['_centerY'] > 1)) { $parameters['_centerY'] = 0.5; }
-								}
-								if (!($m->transform($operation, $parameters))) {
-									$error = 1;
-									$error_msg = "Couldn't do transformation '$operation'";
-									break(2);
-								}
-							}
-						}
-
-						if (!$output_mimetype) { $output_mimetype = $input_mimetype; }
-
-						if (!($ext = $m->mimetype2extension($output_mimetype))) {
-							$this->postError(1600, _t("File could not be processed for %1; can't convert mimetype '%2' to extension", $ps_field, $output_mimetype),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
-							$m->cleanup();
-							set_time_limit($vn_max_execution_time);
-							if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-							if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
-							return false;
-						}
-
-						if (($dirhash = $this->_getDirectoryHash($vi["absolutePath"], $this->getPrimaryKey())) === false) {
-							$this->postError(1600, _t("Could not create subdirectory for uploaded file in %1. Please ask your administrator to check the permissions of your media directory.", $vi["absolutePath"]),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
-							set_time_limit($vn_max_execution_time);
-							if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-							if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
-							return false;
-						}
-						$magic = rand(0,99999);
-						$filepath = $vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($ps_field)."_".$v;
-
-						if (!($vs_output_file = $m->write($filepath, $output_mimetype, $va_media_write_options))) {
-							$this->postError(1600,_t("Couldn't write file: %1", join("; ", $m->getErrors())),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
-							$m->cleanup();
-							set_time_limit($vn_max_execution_time);
-							if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-							if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); @unlink($vs_archive_original); }
-							return false;
-							break;
-						} else {
-							if (
-								($vs_output_file === __CA_MEDIA_VIDEO_DEFAULT_ICON__)
-								||
-								($vs_output_file === __CA_MEDIA_AUDIO_DEFAULT_ICON__)
-								||
-								($vs_output_file === __CA_MEDIA_DOCUMENT_DEFAULT_ICON__)
-								||
-								($vs_output_file === __CA_MEDIA_3D_DEFAULT_ICON__)
-							) {
-								$vs_use_icon = $vs_output_file;
-							}
-						}
-						
-						if ($v === $va_default_queue_settings['QUEUE_USING_VERSION']) {
-							$vs_path_to_queue_media = $vs_output_file;
-							$vs_use_icon = __CA_MEDIA_QUEUED_ICON__;
-						}
-
-						if (($pa_options['delete_old_media']) && (!$error)) {
-							if($vs_old_media_path = $this->getMediaPath($ps_field, $v)) {
-								$va_files_to_delete[] = array(
-									'field' => $ps_field,
-									'version' => $v,
-									'dont_delete_path' => $filepath,
-									'dont_delete_extension' => $ext
-								);
-							}
-						}
-
-						if (is_array($vi["mirrors"]) && sizeof($vi["mirrors"]) > 0) {
-							$vs_entity_key = join("/", array($this->tableName(), $ps_field, $this->getPrimaryKey(), $v));
-							$vs_row_key = join("/", array($this->tableName(), $this->getPrimaryKey()));
-
-							foreach ($vi["mirrors"] as $vs_mirror_code => $va_mirror_info) {
-								$vs_mirror_method = $va_mirror_info["method"];
-								$vs_queue = $vs_mirror_method."mirror";
-
-								if (!($o_tq->cancelPendingTasksForEntity($vs_entity_key))) {
-									//$this->postError(560, _t("Could not cancel pending tasks: %1", $this->error),"BaseModel->_processMedia()");
-									//$m->cleanup();
-									//return false;
-								}
-								if ($o_tq->addTask(
-									$vs_queue,
-									array(
-										"MIRROR" => $vs_mirror_code,
-										"VOLUME" => $volume,
-										"FIELD" => $ps_field, "TABLE" => $this->tableName(),
-										"VERSION" => $v,
-										"FILES" => array(
-											array(
-												"FILE_PATH" => $filepath.".".$ext,
-												"ABS_PATH" => $vi["absolutePath"],
-												"HASH" => $dirhash,
-												"FILENAME" => $magic."_".$this->_genMediaName($ps_field)."_".$v.".".$ext
-											)
-										),
-
-										"MIRROR_INFO" => $va_mirror_info,
-
-										"PK" => $this->primaryKey(),
-										"PK_VAL" => $this->getPrimaryKey()
-									),
-									array("priority" => 100, "entity_key" => $vs_entity_key, "row_key" => $vs_row_key, 'user_id' => $AUTH_CURRENT_USER_ID)))
-								{
-									continue;
-								} else {
-									$this->postError(100, _t("Couldn't queue mirror using '%1' for version '%2' (handler '%3')", $vs_mirror_method, $v, $queue),"BaseModel->_processMedia()");
-								}
-							}
-						}
-
-						
-						if ($vs_use_icon) {
-							$media_desc[$v] = array(
-								"MIMETYPE" => $output_mimetype,
-								"USE_ICON" => $vs_use_icon,
-								"WIDTH" => $m->get("width"),
-								"HEIGHT" => $m->get("height")
-							);
-						} else {
-							$media_desc[$v] = array(
-								"VOLUME" => $volume,
-								"MIMETYPE" => $output_mimetype,
-								"WIDTH" => $m->get("width"),
-								"HEIGHT" => $m->get("height"),
-								"PROPERTIES" => $m->getProperties(),
-								"FILENAME" => $this->_genMediaName($ps_field)."_".$v.".".$ext,
-								"HASH" => $dirhash,
-								"MAGIC" => $magic,
-								"EXTENSION" => $ext,
-								"MD5" => md5_file($vi["absolutePath"]."/".$dirhash."/".$magic."_".$this->_genMediaName($ps_field)."_".$v.".".$ext)
-							);
-						}
-						$m->reset();
-					}
-				}
-				
-				if (sizeof($va_queued_versions)) {
-					$vs_entity_key = md5(join("/", array_merge(array($this->tableName(), $ps_field, $this->getPrimaryKey()), array_keys($va_queued_versions))));
-					$vs_row_key = join("/", array($this->tableName(), $this->getPrimaryKey()));
-					
-					if (!($o_tq->cancelPendingTasksForEntity($vs_entity_key, $queue))) {
-						// TODO: log this
-					}
-					
-					if (!($filename = $vs_path_to_queue_media)) {
-						// if we're not using a designated not-queued representation to generate the queued ones
-						// then copy the uploaded file to the tmp dir and use that
-						$filename = $o_tq->copyFileToQueueTmp($va_default_queue_settings['QUEUE'], $this->_SET_FILES[$ps_field]['tmp_name']);
-					}
-					
-					if ($filename) {
-						if ($o_tq->addTask(
-							$va_default_queue_settings['QUEUE'],
-							array(
-								"TABLE" => $this->tableName(), "FIELD" => $ps_field,
-								"PK" => $this->primaryKey(), "PK_VAL" => $this->getPrimaryKey(),
-								
-								"INPUT_MIMETYPE" => $input_mimetype,
-								"FILENAME" => $filename,
-								"VERSIONS" => $va_queued_versions,
-								
-								"OPTIONS" => $va_media_write_options,
-								"DONT_DELETE_OLD_MEDIA" => ($filename == $vs_path_to_queue_media) ? true : false
-							),
-							array("priority" => 100, "entity_key" => $vs_entity_key, "row_key" => $vs_row_key, 'user_id' => $AUTH_CURRENT_USER_ID)))
-						{
-							if ($pa_options['delete_old_media']) {
-								foreach($va_queued_versions as $vs_version => $va_version_info) {
-									$va_files_to_delete[] = array(
-										'field' => $ps_field,
-										'version' => $vs_version
-									);
-								}
+								$this->postError(100, _t("Couldn't queue processing for version '%1' using handler '%2'", !$v, $queue),"BaseModel->_processMedia()");
 							}
 						} else {
-							$this->postError(100, _t("Couldn't queue processing for version '%1' using handler '%2'", !$v, $queue),"BaseModel->_processMedia()");
+							$this->errors = $o_tq->errors;
 						}
 					} else {
-						$this->errors = $o_tq->errors;
-					}
-				} else {
-					// Generate preview frames for media that support that (Eg. video)
-					// and add them as "multifiles" assuming the current model supports that (ca_object_representations does)
-					if (!sizeof($va_process_these_versions_only) && ((bool)$this->_CONFIG->get('video_preview_generate_frames') || (bool)$this->_CONFIG->get('document_preview_generate_pages')) && method_exists($this, 'addFile')) {
-						if (method_exists($this, 'removeAllFiles')) {
-							$this->removeAllFiles();                // get rid of any previously existing frames (they might be hanging ar
-						}
-						$va_preview_frame_list = $m->writePreviews(
-							array(
-								'width' => $m->get("width"), 
-								'height' => $m->get("height"),
-								'minNumberOfFrames' => $this->_CONFIG->get('video_preview_min_number_of_frames'),
-								'maxNumberOfFrames' => $this->_CONFIG->get('video_preview_max_number_of_frames'),
-								'numberOfPages' => $this->_CONFIG->get('document_preview_max_number_of_pages'),
-								'frameInterval' => $this->_CONFIG->get('video_preview_interval_between_frames'),
-								'pageInterval' => $this->_CONFIG->get('document_preview_interval_between_pages'),
-								'startAtTime' => $this->_CONFIG->get('video_preview_start_at'),
-								'endAtTime' => $this->_CONFIG->get('video_preview_end_at'),
-								'startAtPage' => $this->_CONFIG->get('document_preview_start_page'),
-								'outputDirectory' => __CA_APP_DIR__.'/tmp'
-							)
-						);
+						// Generate preview frames for media that support that (Eg. video)
+						// and add them as "multifiles" assuming the current model supports that (ca_object_representations does)
+						if (!sizeof($va_process_these_versions_only) && ((bool)$this->_CONFIG->get('video_preview_generate_frames') || (bool)$this->_CONFIG->get('document_preview_generate_pages')) && method_exists($this, 'addFile')) {
+							if (method_exists($this, 'removeAllFiles')) {
+								$this->removeAllFiles();                // get rid of any previously existing frames (they might be hanging ar
+							}
+							$va_preview_frame_list = $m->writePreviews(
+								array(
+									'width' => $m->get("width"), 
+									'height' => $m->get("height"),
+									'minNumberOfFrames' => $this->_CONFIG->get('video_preview_min_number_of_frames'),
+									'maxNumberOfFrames' => $this->_CONFIG->get('video_preview_max_number_of_frames'),
+									'numberOfPages' => $this->_CONFIG->get('document_preview_max_number_of_pages'),
+									'frameInterval' => $this->_CONFIG->get('video_preview_interval_between_frames'),
+									'pageInterval' => $this->_CONFIG->get('document_preview_interval_between_pages'),
+									'startAtTime' => $this->_CONFIG->get('video_preview_start_at'),
+									'endAtTime' => $this->_CONFIG->get('video_preview_end_at'),
+									'startAtPage' => $this->_CONFIG->get('document_preview_start_page'),
+									'outputDirectory' => __CA_APP_DIR__.'/tmp'
+								)
+							);
 							
-						if (is_array($va_preview_frame_list)) {
-							foreach($va_preview_frame_list as $vn_time => $vs_frame) {
-								$this->addFile($vs_frame, $vn_time, true);	// the resource path for each frame is it's time, in seconds (may be fractional) for video, or page number for documents
-								@unlink($vs_frame);		// clean up tmp preview frame file
+							if (is_array($va_preview_frame_list)) {
+								foreach($va_preview_frame_list as $vn_time => $vs_frame) {
+									$this->addFile($vs_frame, $vn_time, true);	// the resource path for each frame is it's time, in seconds (may be fractional) for video, or page number for documents
+									@unlink($vs_frame);		// clean up tmp preview frame file
+								}
 							}
 						}
-					}
-				}
-				
-				if (!$error) {
-					#
-					# --- Clean up old media from versions that are not supported in the new media
-					#
-					if ($pa_options['delete_old_media']) {
-						foreach ($this->getMediaVersions($ps_field) as $old_version) {
-							if (!is_array($media_desc[$old_version])) {
-								$this->_removeMedia($ps_field, $old_version);
-							}
-						}
-					}
-
-					foreach($va_files_to_delete as $va_file_to_delete) {
-						$this->_removeMedia($va_file_to_delete['field'], $va_file_to_delete['version'], $va_file_to_delete['dont_delete_path'], $va_file_to_delete['dont_delete_extension']);
-					}
-					
-					# Remove old _undo_ file if defined
-					if ($vs_undo_path = $this->getMediaPath($ps_field, '_undo_')) {
-						@unlink($vs_undo_path);
-					}
-
-					$this->_FILES[$ps_field] = $media_desc;
-					$this->_FIELD_VALUES[$ps_field] = $media_desc;
-
-					$vs_serialized_data = caSerializeForDatabase($this->_FILES[$ps_field], true);
-					$vs_sql =  "$ps_field = ".$this->quote($vs_serialized_data).",";
-					if (($vs_metadata_field_name = $o_media_proc_settings->getMetadataFieldName()) && $this->hasField($vs_metadata_field_name)) {
-						$this->set($vs_metadata_field_name, $media_metadata);
-						$vs_sql .= " ".$vs_metadata_field_name." = ".$this->quote(caSerializeForDatabase($media_metadata, true)).",";
 					}
 				
-					if (($vs_content_field_name = $o_media_proc_settings->getMetadataContentName()) && $this->hasField($vs_content_field_name)) {
-						$this->_FIELD_VALUES[$vs_content_field_name] = $this->quote($m->getExtractedText());
-						$vs_sql .= " ".$vs_content_field_name." = ".$this->_FIELD_VALUES[$vs_content_field_name].",";
-					}
-					
-					if(is_array($va_locs = $m->getExtractedTextLocations())) {
-						MediaContentLocationIndexer::clear($this->tableNum(), $this->getPrimaryKey());
-						foreach($va_locs as $vs_content => $va_loc_list) {
-							foreach($va_loc_list as $va_loc) {
-								MediaContentLocationIndexer::index($this->tableNum(), $this->getPrimaryKey(), $vs_content, $va_loc['p'], $va_loc['x1'], $va_loc['y1'], $va_loc['x2'], $va_loc['y2']);
+					if (!$error) {
+						#
+						# --- Clean up old media from versions that are not supported in the new media
+						#
+						if ($pa_options['delete_old_media']) {
+							foreach ($this->getMediaVersions($ps_field) as $old_version) {
+								if (!is_array($media_desc[$old_version])) {
+									$this->_removeMedia($ps_field, $old_version);
+								}
 							}
 						}
-						MediaContentLocationIndexer::write();
+
+						foreach($va_files_to_delete as $va_file_to_delete) {
+							$this->_removeMedia($va_file_to_delete['field'], $va_file_to_delete['version'], $va_file_to_delete['dont_delete_path'], $va_file_to_delete['dont_delete_extension']);
+						}
+					
+						# Remove old _undo_ file if defined
+						if ($vs_undo_path = $this->getMediaPath($ps_field, '_undo_')) {
+							@unlink($vs_undo_path);
+						}
+
+						$this->_FILES[$ps_field] = $media_desc;
+						$this->_FIELD_VALUES[$ps_field] = $media_desc;
+
+						$vs_serialized_data = caSerializeForDatabase($this->_FILES[$ps_field], true);
+						$vs_sql =  "$ps_field = ".$this->quote($vs_serialized_data).",";
+						if (($vs_metadata_field_name = $o_media_proc_settings->getMetadataFieldName()) && $this->hasField($vs_metadata_field_name)) {
+							$this->set($vs_metadata_field_name, $media_metadata);
+							$vs_sql .= " ".$vs_metadata_field_name." = ".$this->quote(caSerializeForDatabase($media_metadata, true)).",";
+						}
+				
+						if (($vs_content_field_name = $o_media_proc_settings->getMetadataContentName()) && $this->hasField($vs_content_field_name)) {
+							$this->_FIELD_VALUES[$vs_content_field_name] = $this->quote($m->getExtractedText());
+							$vs_sql .= " ".$vs_content_field_name." = ".$this->_FIELD_VALUES[$vs_content_field_name].",";
+						}
+					
+						if(is_array($va_locs = $m->getExtractedTextLocations())) {
+							MediaContentLocationIndexer::clear($this->tableNum(), $this->getPrimaryKey());
+							foreach($va_locs as $vs_content => $va_loc_list) {
+								foreach($va_loc_list as $va_loc) {
+									MediaContentLocationIndexer::index($this->tableNum(), $this->getPrimaryKey(), $vs_content, $va_loc['p'], $va_loc['x1'], $va_loc['y1'], $va_loc['x2'], $va_loc['y2']);
+								}
+							}
+							MediaContentLocationIndexer::write();
+						}
+					} else {
+						# error - invalid media
+						$this->postError(1600, _t("File could not be processed for %1: %2", $ps_field, $error_msg),"BaseModel->_processMedia()");
+						#	    return false;
 					}
-				} else {
-					# error - invalid media
-					$this->postError(1600, _t("File could not be processed for %1: %2", $ps_field, $error_msg),"BaseModel->_processMedia()");
-					#	    return false;
-				}
 
-				$m->cleanup();
+					$m->cleanup();
 
-				if($vb_renamed_tmpfile){
-					@unlink($this->_SET_FILES[$ps_field]['tmp_name']);
-				}
-			} else {
-				 if(is_array($this->_FIELD_VALUES[$ps_field])) {
+					if($vb_renamed_tmpfile){
+						@unlink($this->_SET_FILES[$ps_field]['tmp_name']);
+					}
+				} elseif(is_array($this->_FIELD_VALUES[$ps_field])) {
+					// Just set field values in SQL (assume in-place update of media metadata) because no tmp_name is set
+					// [This generally should not happen]
 					$this->_FILES[$ps_field] = $this->_FIELD_VALUES[$ps_field];
 					$vs_sql =  "$ps_field = ".$this->quote(caSerializeForDatabase($this->_FILES[$ps_field], true)).",";
 				}
-			}
 
-			$this->_SET_FILES[$ps_field] = null;
+				$this->_SET_FILES[$ps_field] = null;
+			} elseif(is_array($this->_FIELD_VALUES[$ps_field])) {
+				// Just set field values in SQL (usually in-place update of media metadata)
+				$this->_FILES[$ps_field] = $this->_FIELD_VALUES[$ps_field];
+				$vs_sql =  "$ps_field = ".$this->quote(caSerializeForDatabase($this->_FILES[$ps_field], true)).",";
+			}
 		}
 		set_time_limit($vn_max_execution_time);
 		if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
@@ -9756,8 +9774,8 @@ $pa_options["display_form_field_tips"] = true;
 	/**
 	 *
 	 */
-	private function _getRelationshipInfo($pm_rel_table_name_or_num) {
-		if (isset(BaseModel::$s_relationship_info_cache[$vs_table = $this->tableName()][$pm_rel_table_name_or_num])) {
+	private function _getRelationshipInfo($pm_rel_table_name_or_num, $pb_use_cache=true) {
+		if ($pb_use_cache && isset(BaseModel::$s_relationship_info_cache[$vs_table = $this->tableName()][$pm_rel_table_name_or_num])) {
 			return BaseModel::$s_relationship_info_cache[$vs_table][$pm_rel_table_name_or_num];
 		}
 		if (is_numeric($pm_rel_table_name_or_num)) {
@@ -9770,7 +9788,7 @@ $pa_options["display_form_field_tips"] = true;
 		if ($vs_table == $vs_related_table_name) {
 			// self relations
 			if ($vs_self_relation_table = $this->getSelfRelationTableName()) {
-				$t_item_rel = $this->getAppDatamodel()->getInstanceByTableName($vs_self_relation_table, true);
+				$t_item_rel = $this->getAppDatamodel()->getInstanceByTableName($vs_self_relation_table, $pb_use_cache);
 			} else {
 				return null;
 			}
@@ -9779,10 +9797,10 @@ $pa_options["display_form_field_tips"] = true;
 			
 			switch(sizeof($va_path)) {
 				case 3:
-					$t_item_rel = $this->getAppDatamodel()->getInstanceByTableName($va_path[1], true);
+					$t_item_rel = $this->getAppDatamodel()->getInstanceByTableName($va_path[1], $pb_use_cache);
 					break;
 				case 2:
-					$t_item_rel = $this->getAppDatamodel()->getInstanceByTableName($va_path[1], true);
+					$t_item_rel = $this->getAppDatamodel()->getInstanceByTableName($va_path[1], $pb_use_cache);
 					if (!sizeof($va_rel_keys = $this->_DATAMODEL->getOneToManyRelations($vs_table, $va_path[1]))) {
 						$va_rel_keys = $this->_DATAMODEL->getOneToManyRelations($va_path[1], $vs_table);
 					}
@@ -9817,7 +9835,8 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return mixed Array of matched relation_ids on success, false on error.
 	 */
 	public function relationshipExists($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_direction=null, $pa_options=null) {
-		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num))) { 
+		$pb_use_rel_info_cache = caGetOption('useRelationshipInfoCache', $pa_options, true);
+		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num, $pb_use_rel_info_cache))) {
 			$this->postError(1240, _t('Related table specification "%1" is not valid', $pm_rel_table_name_or_num), 'BaseModel->addRelationship()');
 			return false; 
 		}
@@ -9889,7 +9908,7 @@ $pa_options["display_form_field_tips"] = true;
 			}
 		
 		
-			if ($ps_effective_date && $t_item_rel->hasField('sdatetime') && ($va_timestamps = caDateToHistoricTimestamps($ps_effective_date))) {
+			if ($ps_effective_date && $t_item_rel->hasField('effective_date') && ($va_timestamps = caDateToHistoricTimestamps($ps_effective_date))) {
 				$vs_timestamp_sql = " AND (sdatetime = ? AND edatetime = ?)";
 				$va_query_params[] = (float)$va_timestamps['start'];
 				$va_query_params[] = (float)$va_timestamps['end'];
@@ -11261,6 +11280,7 @@ $pa_options["display_form_field_tips"] = true;
 	 *		purify = process text with HTMLPurifier before search. Purifier encodes &, < and > characters, and performs other transformations that can cause searches on literal text to fail. If you are purifying all input (the default) then leave this set true. [Default is true]
 	 *		purifyWithFallback = executes the search with "purify" set and falls back to search with unpurified text if nothing is found. [Default is false]
 	 *		checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for <table_name>.hierarchy.preferred_labels and <table_name>.children.preferred_labels because these returns sets of items. For <table_name>.parent.preferred_labels, which returns a single row at most, you should do access checking yourself. (Everything here applies equally to nonpreferred_labels)
+ 	 *		restrictToTypes = Restrict returned items to those of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]			 
  	 *
 	 * @return mixed Depending upon the returnAs option setting, an array, subclass of BaseModel or integer may be returned.
 	 */
@@ -11290,6 +11310,16 @@ $pa_options["display_form_field_tips"] = true;
 		if ($vb_purify) { $pa_values = caPurifyArray($pa_values); }
 		
 		$va_sql_params = array();
+		
+		
+		$vs_type_restriction_sql = '';
+		if ($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) {
+			if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types)) && sizeof($va_restrict_to_types)) {
+				$vs_type_restriction_sql = " {$vs_table}.".$t_instance->getTypeFieldName()." IN (?) AND ";
+				$va_sql_params[] = $va_restrict_to_types;
+			}
+		}
+			
 		
 		//
 		// Convert type id
@@ -11390,7 +11420,7 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		$vs_deleted_sql = ($t_instance->hasField('deleted')) ? '(deleted = 0) AND ' : '';
-		$vs_sql = "SELECT * FROM {$vs_table} WHERE {$vs_deleted_sql} (".join(" {$ps_boolean} ", $va_sql_wheres).")";
+		$vs_sql = "SELECT * FROM {$vs_table} WHERE {$vs_type_restriction_sql} {$vs_deleted_sql} (".join(" {$ps_boolean} ", $va_sql_wheres).")";
 		
 		$vs_orderby = '';
 		if ($vs_sort = caGetOption('sort', $pa_options, null)) {

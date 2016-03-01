@@ -336,8 +336,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		}
 		
 		$va_hier = $this->getHierarchyAsList($pn_element_id);
+		if(!is_array($va_hier)) { return null; }
 		$va_element_set = array();
-		
+
 		$va_element_ids = array();
 		foreach($va_hier as $va_element) {
 			$va_element_ids[] = $va_element['NODE']['element_id'];
@@ -807,15 +808,6 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		return $va_sortable_elements;
 	}
 	# ------------------------------------------------------
-	public static function getDataTypeForElementCode($ps_element_code) {
-		$t_element = new ca_metadata_elements();
-		if($t_element->load(array('element_code' => $ps_element_code))) {
-			return (int) $t_element->get('datatype');
-		} else {
-			return false;
-		}
-	}
-	# ------------------------------------------------------
 	/**
 	 * Returns list of user interfaces that reference the currently loaded metadata element
 	 *
@@ -950,11 +942,36 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * 
 	 */
 	static public function getElementDatatype($pm_element_code_or_id) {
-		if ($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id)) {
-			return $t_element->get('datatype');
+		if(MemoryCache::contains($pm_element_code_or_id, 'ElementDataTypes')) {
+			return MemoryCache::fetch($pm_element_code_or_id, 'ElementDataTypes');
 		}
-		
-		return null;
+
+		$vm_return = null;
+		if ($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id)) {
+			$vm_return = $t_element->get('datatype');
+		}
+
+		MemoryCache::save($pm_element_code_or_id, $vm_return, 'ElementDataTypes');
+		return $vm_return;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function getElementCodeForId($pm_element_id) {
+		if(MemoryCache::contains($pm_element_id, 'ElementCodes')) {
+			return MemoryCache::fetch($pm_element_id, 'ElementCodes');
+		}
+
+		$vm_return = null;
+		$t_element = self::getInstance($pm_element_id);
+
+		if($t_element->getPrimaryKey()) {
+			$vm_return = $t_element->get('element_code');
+		}
+
+		MemoryCache::save($pm_element_id, $vm_return, 'ElementCodes');
+		return $vm_return;
 	}
 	# ------------------------------------------------------
 	/**

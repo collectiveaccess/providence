@@ -2738,10 +2738,10 @@ table.attributeListItem {
 .attributeListItem td {
     padding: 0px;
     padding-right: 15px;
-    margin: 0px;
+    margin: 5px;
     font-weight: normal;
+    vertical-align: top;
 }
-
 
 /*** EDITOR FORMS ***/
 

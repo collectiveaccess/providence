@@ -180,8 +180,8 @@ class SearchEngine extends SearchBase {
 		if($vn_cache_timeout == 0) { $vb_no_cache = true; } // don't try to cache if cache timeout is 0 (0 means disabled)
 		
 		$t_table = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
-		
-		$vs_cache_key = md5($ps_search."/".print_R($this->getTypeRestrictionList($pa_options), true));
+		$vs_cache_key = md5($ps_search."/".serialize($this->getTypeRestrictionList($pa_options)));
+
 		$o_cache = new SearchCache();
 		$vb_from_cache = false;
 
@@ -200,7 +200,7 @@ class SearchEngine extends SearchBase {
 				$o_res = new WLPlugSearchEngineCachedResult($va_hits, $this->opn_tablenum);
 				$vb_from_cache = true;
 			} else {
-				Debug::msg('cache expire for '.$vs_cache_key);
+				Debug::msg('SEARCH cache expire for '.$vs_cache_key);
 				$o_cache->remove();
 			}
 		}
@@ -269,7 +269,7 @@ class SearchEngine extends SearchBase {
 					$this->opo_engine->setOption('restrictSearchToFields', $va_restrict_to_fields);
 				}
 
-				$o_res =  $this->opo_engine->search($this->opn_tablenum, $vs_search, array_unique($this->opa_result_filters), $o_rewritten_query);
+				$o_res =  $this->opo_engine->search($this->opn_tablenum, $vs_search, $this->opa_result_filters, $o_rewritten_query);
 			
 				// cache the results
 				$va_hits = $o_res->getPrimaryKeyValues($vn_limit);

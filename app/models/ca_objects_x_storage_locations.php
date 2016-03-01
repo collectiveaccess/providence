@@ -34,6 +34,7 @@
    *
    */
 require_once(__CA_LIB_DIR__.'/ca/ObjectRelationshipBaseModel.php');
+require_once(__CA_LIB_DIR__."/ca/CurrentLocationCriterionTrait.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_objects_x_storage_locations'] = array(
@@ -95,6 +96,12 @@ BaseModel::$s_ca_models_definitions['ca_objects_x_storage_locations'] = array(
 );
 
 class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
+
+	/**
+	 * Update location of dependent objects when changing values
+	 */
+	use CurrentLocationCriterionTrait;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------

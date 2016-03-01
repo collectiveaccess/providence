@@ -233,6 +233,10 @@ class Installer {
 			return false;
 		}
 		/** @var LabelableBaseModelWithAttributes $t_instance */
+		if (!$po_labels || !$po_labels->children()) { 
+			$t_instance->addLabel(array($t_instance->getLabelDisplayField() => "???"), array_shift($pa_locales), false, true);
+			return true; 
+		}
 		foreach($po_labels->children() as $vo_label){
 			$va_label_values = array();
 			$vs_locale = self::getAttribute($vo_label, "locale");
@@ -293,7 +297,11 @@ class Installer {
 		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
 			require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
 			$o_es = new WLPlugSearchEngineElasticSearch();
-			$o_es->truncateIndex(null, true);
+			try {
+				$o_es->truncateIndex(null);
+			} catch(Exception $e) {
+				die('Unable to connect to ElasticSearch. Is the cluster running?');
+			}
 		}
 
 		return true;
@@ -311,6 +319,8 @@ class Installer {
 			require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
 			$o_es = new WLPlugSearchEngineElasticSearch();
 			$o_es->refreshMapping(true);
+
+			CompositeCache::flush();
 		}
 	}
 	# --------------------------------------------------

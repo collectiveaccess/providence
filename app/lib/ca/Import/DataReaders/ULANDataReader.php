@@ -226,7 +226,7 @@ class ULANDataReader extends BaseXMLDataReader {
 	}
 	# -------------------------------------------------------
 	public function get($ps_spec, $pa_options=null) {
-		$vm_ret = BaseDataReader::get($ps_spec, $pa_options);
+		$vm_ret = parent::get($ps_spec, $pa_options);
 
 		if(is_array($vm_ret)) {
 			foreach($vm_ret as &$vs_val) {
