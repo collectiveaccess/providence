@@ -145,7 +145,6 @@ class SimpleService {
 		$o_res = $o_search->search($ps_q, array(
 			'sort' => $po_request->getParameter('sort', pString),
 			'sortDirection' => $po_request->getParameter('sortDirection', pString),
-			'start' => $po_request->getParameter('start', pInteger),
 			'limit' => $po_request->getParameter('limit', pInteger),
 			'checkAccess' => $pa_config['checkAccess'],
 		));
