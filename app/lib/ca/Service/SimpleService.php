@@ -153,7 +153,9 @@ class SimpleService {
 		));
 
 		if($vn_start = $po_request->getParameter('start', pInteger)) {
-			$o_res->seek($vn_start);
+			if(!$o_res->seek($vn_start)) {
+				return array();
+			}
 		}
 
 		$vn_limit = $po_request->getParameter('limit', pInteger);
