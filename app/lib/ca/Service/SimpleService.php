@@ -152,16 +152,15 @@ class SimpleService {
 			'checkAccess' => $pa_config['checkAccess'],
 		));
 
-		$vn_start = $po_request->getParameter('start', pInteger);
-		if(!$vn_start) { $vn_start = 0; }
+		if($vn_start = $po_request->getParameter('start', pInteger)) {
+			$o_res->seek($vn_start);
+		}
+
 		$vn_limit = $po_request->getParameter('limit', pInteger);
 		if(!$vn_limit) { $vn_limit = 0; }
-		$vn_i = 0;
 
 		$va_return = array();
 		while($o_res->nextHit()) {
-			if($vn_start && (sizeof($vn_start) >= $vn_i++)) { continue; }
-
 			$va_hit = array();
 
 			foreach($pa_config['content'] as $vs_key => $vs_template) {
