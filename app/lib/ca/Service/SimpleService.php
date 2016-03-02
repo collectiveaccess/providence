@@ -132,6 +132,9 @@ class SimpleService {
 		}
 
 		$o_search = caGetSearchInstance($pa_config['table']);
+		if(!$o_search instanceof SearchEngine) {
+			throw new Exception('Invalid table in config');
+		}
 
 		// restrictToTypes
 		if($pa_config['restrictToTypes'] && is_array($pa_config['restrictToTypes']) && (sizeof($pa_config['restrictToTypes']) > 0)) {
@@ -142,15 +145,23 @@ class SimpleService {
 			$o_search->addResultFilter($t_instance->tableName().'.type_id', 'IN', join(",",$va_type_filter));
 		}
 
+		/** @var SearchResult $o_res */
 		$o_res = $o_search->search($ps_q, array(
 			'sort' => $po_request->getParameter('sort', pString),
 			'sortDirection' => $po_request->getParameter('sortDirection', pString),
-			'limit' => $po_request->getParameter('limit', pInteger),
 			'checkAccess' => $pa_config['checkAccess'],
 		));
 
+		$vn_start = $po_request->getParameter('start', pInteger);
+		if(!$vn_start) { $vn_start = 0; }
+		$vn_limit = $po_request->getParameter('limit', pInteger);
+		if(!$vn_limit) { $vn_limit = 0; }
+		$vn_i = 0;
+
 		$va_return = array();
 		while($o_res->nextHit()) {
+			if($vn_start && (sizeof($vn_start) >= $vn_i++)) { continue; }
+
 			$va_hit = array();
 
 			foreach($pa_config['content'] as $vs_key => $vs_template) {
@@ -158,6 +169,8 @@ class SimpleService {
 			}
 
 			$va_return[$o_res->get($t_instance->primaryKey(true))] = $va_hit;
+
+			if($vn_limit && (sizeof($va_return) >= $vn_limit)) { break; }
 		}
 
 		return $va_return;
