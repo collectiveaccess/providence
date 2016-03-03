@@ -2819,8 +2819,8 @@
 			
 			if (!$pm_element_code_or_id || !($t_element = $this->_getElementInstance($pm_element_code_or_id))) { return null; }
 			
-			 BaseModelWithAttributes::$s_element_code_lookup_cache[$t_element->get('element_code')] = BaseModelWithAttributes::$s_element_code_lookup_cache[$t_element->getPrimaryKey()] = $t_element->get('element_code');
-			return BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->getPrimaryKey()] = BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->get('element_code')] = $t_element->getPrimaryKey();
+			 BaseModelWithAttributes::$s_element_code_lookup_cache[$t_element->get('element_code')] = BaseModelWithAttributes::$s_element_code_lookup_cache[$t_element->getPrimaryKey()] = (string)$t_element->get('element_code');
+			return BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->getPrimaryKey()] = BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->get('element_code')] = (int)$t_element->getPrimaryKey();
 		}
 		# ------------------------------------------------------------------
 		public function _getElementCode($pm_element_code_or_id) {
@@ -2828,8 +2828,8 @@
 		
 			if (!$pm_element_code_or_id || !($t_element = $this->_getElementInstance($pm_element_code_or_id))) { return null; }
 			
-			BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->getPrimaryKey()] = BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->get('element_code')] = $t_element->getPrimaryKey();
-			return BaseModelWithAttributes::$s_element_code_lookup_cache[$t_element->get('element_code')] = BaseModelWithAttributes::$s_element_code_lookup_cache[$t_element->getPrimaryKey()] = $t_element->get('element_code');
+			BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->getPrimaryKey()] = BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->get('element_code')] = (int)$t_element->getPrimaryKey();
+			return BaseModelWithAttributes::$s_element_code_lookup_cache[$t_element->get('element_code')] = BaseModelWithAttributes::$s_element_code_lookup_cache[$t_element->getPrimaryKey()] = (string)$t_element->get('element_code');
 		}
 		# ------------------------------------------------------------------
 		public function _getElementDatatype($pm_element_code_or_id) {
@@ -2837,8 +2837,8 @@
 		
 			if (!$pm_element_code_or_id || !($t_element = $this->_getElementInstance($pm_element_code_or_id))) { return null; }
 			
-			BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->getPrimaryKey()] = BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->get('element_code')] = $t_element->getPrimaryKey();
-			return BaseModelWithAttributes::$s_element_datatype_lookup_cache[$t_element->getPrimaryKey()] = BaseModelWithAttributes::$s_element_datatype_lookup_cache[$t_element->get('element_code')] = $t_element->get('datatype');
+			BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->getPrimaryKey()] = BaseModelWithAttributes::$s_element_id_lookup_cache[$t_element->get('element_code')] = (int)$t_element->getPrimaryKey();
+			return BaseModelWithAttributes::$s_element_datatype_lookup_cache[$t_element->getPrimaryKey()] = BaseModelWithAttributes::$s_element_datatype_lookup_cache[$t_element->get('element_code')] = (int)$t_element->get('datatype');
 		}
 		# ------------------------------------------------------------------
 	}
