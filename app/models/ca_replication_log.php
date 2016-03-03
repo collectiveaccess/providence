@@ -203,7 +203,7 @@ class ca_replication_log extends BaseModel {
 		if($qr_res->nextRow()) {
 			return (int) $qr_res->get('log_id');
 		} else {
-			return -1;
+			return 0;
 		}
 	}
 	# ------------------------------------------------------

@@ -31,6 +31,7 @@
  */
 
 require_once(__CA_MODELS_DIR__.'/ca_change_log.php');
+require_once(__CA_MODELS_DIR__.'/ca_replication_log.php');
 
 class ReplicationService {
 	# -------------------------------------------------------
@@ -43,9 +44,15 @@ class ReplicationService {
 	 */
 	public static function dispatch($ps_endpoint, $po_request) {
 
-		switch($ps_endpoint) {
+		switch(strtolower($ps_endpoint)) {
 			case 'getlog':
 				$va_return = self::getLog($po_request);
+				break;
+			case 'getsysguid':
+				$va_return = self::getSystemGUID($po_request);
+				break;
+			case 'getlastreplicatedlogid':
+				$va_return = self::getLastReplicatedLogID($po_request);
 				break;
 			default:
 				throw new Exception('Unknown endpoint');
@@ -67,4 +74,26 @@ class ReplicationService {
 
 		return ca_change_log::getLog($pn_from, $pn_limit);
 	}
+	# -------------------------------------------------------
+	/**
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 */
+	public static function getSystemGUID($po_request) {
+		$o_vars = new ApplicationVars();
+		return array('system_guid' => $o_vars->getVar('system_guid'));
+	}
+	# -------------------------------------------------------
+	/**
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	public static function getLastReplicatedLogID($po_request) {
+		$vs_guid = trim($po_request->getParameter('system_guid', pString));
+		if(!strlen($vs_guid)) { throw new Exception('must provide as system guid'); }
+
+		return array('replicated_log_id' => ca_replication_log::getLastReplicatedLogID($vs_guid));
+	}
+	# -------------------------------------------------------
 }

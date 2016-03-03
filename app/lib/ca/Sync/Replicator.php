@@ -44,12 +44,23 @@ class Replicator {
 		$va_sources = $this->opo_replication_conf->get('sources');
 		if(!is_array($va_sources)) { throw new Exception('No sources configured'); }
 
-		$va_return = array();
-		foreach($va_sources as $va_source) {
-			$o_service = new CAS\ReplicationService($va_source['url'], 'getlog');
-			$o_service->setCredentials($va_source['service_user'], $va_source['service_key']);
+		return $this->getConfigAsServiceClients($va_sources);
+	}
 
-			$va_return[] = &$o_service;
+	protected function getTargetsAsServiceClients() {
+		$va_targets = $this->opo_replication_conf->get('targets');
+		if(!is_array($va_targets)) { throw new Exception('No sources configured'); }
+
+		return $this->getConfigAsServiceClients($va_targets);
+	}
+
+	private function getConfigAsServiceClients($pa_config) {
+		$va_return = array();
+		foreach($pa_config as $vs_key => $va_conf) {
+			$o_service = new CAS\ReplicationService($va_conf['url'], 'getlog');
+			$o_service->setCredentials($va_conf['service_user'], $va_conf['service_key']);
+
+			$va_return[$vs_key] = &$o_service;
 		}
 		return $va_return;
 	}
@@ -58,13 +69,35 @@ class Replicator {
 	public function replicate() {
 		//@todo maybe break this out into several, easier to maintain functions?
 
-		foreach($this->getSourcesAsServiceClients() as $o_client) {
-			/** @var CAS\ReplicationService $o_client */
+		foreach($this->getSourcesAsServiceClients() as $vs_source_key => $o_source) {
+			/** @var CAS\ReplicationService $o_source */
 
-			// get latest log id for this
+			// get source guid
+			$o_result = $o_source->setEndpoint('getsysguid')->request();
+			$vs_source_system_guid = $o_result->getRawData()['system_guid'];
 
-			$o_result = $o_client->request();
-			var_dump($o_result->getRawData());
+			foreach($this->getTargetsAsServiceClients() as $o_target) {
+				/** @var CAS\ReplicationService $o_target */
+
+				// get latest log id for this source at current target
+				$o_result = $o_target->setEndpoint('getlastreplicatedlogid')
+					->addGetParameter('system_guid', $vs_source_system_guid)
+					->request();
+				$pn_replicated_log_id = $o_result->getRawData()['replicated_log_id'];
+
+				// it's possible to configure a starting point in the replication config. it's not pretty to do this as
+				// raw id, @todo: maybe this should be a timestamp or even a date/time expression that we then translate?
+				$pn_min_log_id = (int) $this->opo_replication_conf->get('sources')[$vs_source_key]['from_log_id'];
+				if($pn_min_log_id > $pn_replicated_log_id) { $pn_replicated_log_id = $pn_min_log_id; }
+
+				// get change log from source, starting with the log id we got above
+				// @todo
+
+				var_dump($o_source->setEndpoint('getlog')->addGetParameter('from', $pn_replicated_log_id)->request()->getRawData());
+
+				//$o_result = $o_client->request();
+				//var_dump($o_result->getRawData());
+			}
 		}
 	}
 }
