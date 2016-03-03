@@ -252,7 +252,7 @@ class ca_movements extends BaseObjectLocationModel implements IBundleProvider {
 	# ------------------------------------------------------
 	# Self-relations
 	# ------------------------------------------------------
-	protected $SELF_RELATION_TABLE_NAME = null;
+	protected $SELF_RELATION_TABLE_NAME = 'ca_movements_x_movements';
 	
 	# ------------------------------------------------------
 	# Search
