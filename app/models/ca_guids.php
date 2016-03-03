@@ -178,7 +178,6 @@ class ca_guids extends BaseModel {
 	# ------------------------------------------------------
 	/**
 	 * Get GUID for given row. Results are cached on disk.
-	 * If a row doesn't have a GUID yet, we'll add one.
 	 * @param int $pn_table_num
 	 * @param int $pn_row_id
 	 * @return bool|string
@@ -198,9 +197,12 @@ class ca_guids extends BaseModel {
 			CompositeCache::save("{$pn_table_num}/{$pn_row_id}", $vs_guid, 'TableNumRowIDsToGUIDs');
 			return $vs_guid;
 		} else {
-			if($vs_guid = self::addForRow($pn_table_num, $pn_row_id)) {
-				CompositeCache::save("{$pn_table_num}/{$pn_row_id}", $vs_guid, 'TableNumRowIDsToGUIDs');
-				return $vs_guid;
+			$t_instance = Datamodel::load()->getInstance($pn_table_num, true);
+			if($t_instance instanceof BundlableLabelableBaseModelWithAttributes) {
+				if($vs_guid = self::addForRow($pn_table_num, $pn_row_id)) {
+					CompositeCache::save("{$pn_table_num}/{$pn_row_id}", $vs_guid, 'TableNumRowIDsToGUIDs');
+					return $vs_guid;
+				}
 			}
 		}
 
@@ -208,7 +210,7 @@ class ca_guids extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Generates and adds a GUID for a given row. If row already has a value, return existing guid.
+	 * Generates and adds a GUID for a given row.
 	 * False is returned on error
 	 * @param int $pn_table_num
 	 * @param int $pn_row_id
@@ -216,11 +218,8 @@ class ca_guids extends BaseModel {
 	 * @return bool|string
 	 */
 	public static function addForRow($pn_table_num, $pn_row_id, $po_tx=null) {
-		if($vs_guid = self::getForRow($pn_table_num, $pn_row_id)) {
-			return $vs_guid;
-		}
-
 		$t_guid = new ca_guids();
+
 		if($po_tx instanceof Transaction) {
 			$t_guid->setTransaction($po_tx);
 		}
