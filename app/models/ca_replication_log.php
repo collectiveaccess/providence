@@ -45,7 +45,7 @@ BaseModel::$s_ca_models_definitions['ca_replication_log'] = array(
 			'DEFAULT' => '',
 			'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this log entry')
 		),
-		'source_guid' => array(
+		'source_system_guid' => array(
 			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT,
 			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
 			'IS_NULL' => false,
@@ -103,7 +103,7 @@ class ca_replication_log extends BaseModel {
 	# ------------------------------------------------------
 
 	# Array of fields to display in a listing of records from this table
-	protected $LIST_FIELDS = array('source_guid', 'log_id', 'status');
+	protected $LIST_FIELDS = array('source_system_guid', 'log_id', 'status');
 
 	# When the list of "list fields" above contains more than one field,
 	# the LIST_DELIMITER text is displayed between fields as a delimiter.
@@ -118,7 +118,7 @@ class ca_replication_log extends BaseModel {
 
 	# List of fields to sort listing of records by; you can use 
 	# SQL 'ASC' and 'DESC' here if you like.
-	protected $ORDER_BY = array('entry_id', 'source_guid');
+	protected $ORDER_BY = array('entry_id', 'source_system_guid');
 
 	# Maximum number of record to display per page in a listing
 	protected $MAX_RECORDS_PER_PAGE = 20;
@@ -192,13 +192,13 @@ class ca_replication_log extends BaseModel {
 		return parent::insert($pa_options);
 	}
 	# ------------------------------------------------------
-	public static function getLastReplicatedLogID($ps_source_guid) {
+	public static function getLastReplicatedLogID($ps_source_system_guid) {
 		$o_db = new Db();
 		$qr_res = $o_db->query('
 			SELECT log_id FROM ca_replication_log
-			WHERE status=? AND source_guid=?
+			WHERE status=? AND source_system_guid=?
 			ORDER BY log_id DESC LIMIT 1
-		', 'C', $ps_source_guid);
+		', 'C', $ps_source_system_guid);
 
 		if($qr_res->nextRow()) {
 			return (int) $qr_res->get('log_id');

@@ -21,7 +21,7 @@ create table ca_guids
 create table ca_replication_log
 (
   entry_id        int unsigned      not null AUTO_INCREMENT,
-  source_guid     VARCHAR(36)       not null,
+  source_system_guid     VARCHAR(36)       not null,
   log_id          int unsigned      not null,
   status          char(1)           not null,
   vars            longtext          null,

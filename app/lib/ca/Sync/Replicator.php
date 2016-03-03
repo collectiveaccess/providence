@@ -60,8 +60,11 @@ class Replicator {
 
 		foreach($this->getSourcesAsServiceClients() as $o_client) {
 			/** @var CAS\ReplicationService $o_client */
+
+			// get latest log id for this
+
 			$o_result = $o_client->request();
-			//var_dump($o_result->getRawData());
+			var_dump($o_result->getRawData());
 		}
 	}
 }
