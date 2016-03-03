@@ -1194,12 +1194,14 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$va_disabled_item_ids = caGetOption('disableItemsWithID', $pa_options, null);
 		
 		$vs_render_as = isset($pa_options['render']) ? $pa_options['render'] : ''; 
+		$vb_is_vertical_hier_browser = in_array($vs_render_as, ['vert_hierbrowser', 'vert_hierbrowser_up', 'vert_hierbrowser_down']);
+				
 		$vn_sort_type = $t_list->get('default_sort');
 		if (($vs_render_as == 'yes_no_checkboxes') && ($vn_sort_type == __CA_LISTS_SORT_BY_LABEL__)) {
 			$vn_sort_type = __CA_LISTS_SORT_BY_IDENTIFIER__;	// never allow sort-by-label when rendering as yes/no checkbox
 		}
 		
-		if (!in_array($vs_render_as, array('lookup', 'horiz_hierbrowser', 'vert_hierbrowser'))) {
+		if (!in_array($vs_render_as, array('lookup', 'horiz_hierbrowser', 'vert_hierbrowser', 'vert_hierbrowser_up', 'vert_hierbrowser_down'))) {
 			if (isset($pa_options['limitToItemsRelatedToCollections']) && is_array($pa_options['limitToItemsRelatedToCollections'])) {
 				$t_collection = new ca_collections();
 				$va_collection_ids = array();
@@ -1514,6 +1516,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			case 'horiz_hierbrowser':
 			case 'horiz_hierbrowser_with_search':
 			case 'vert_hierbrowser':
+			case 'vert_hierbrowser_up':
+			case 'vert_hierbrowser_down':
 				$va_width = caParseFormElementDimension($pa_options['width'] ? $pa_options['width'] : $pa_options['width']);
 				if (($va_width['type'] != 'pixels') && ($va_width['dimension'] < 250)) { $va_width['dimension'] = 500; }
 				$vn_width = $va_width['dimension'].'px';
@@ -1534,7 +1538,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				
 				AssetLoadManager::register("hierBrowser");
 				
-				$vs_buf = "<div style='width: {$vn_width}; ".($vn_height ? "height: {$vn_height}" : "").";'><div id='{$ps_name}_hierarchyBrowser{n}' style='width: 100%; height: 100%;' class='".(($vs_render_as == 'vert_hierbrowser') ? 'hierarchyBrowserVertical' : 'hierarchyBrowser')."'>
+				$vs_buf = "<div style='width: {$vn_width}; ".($vn_height ? "height: {$vn_height}" : "").";'><div id='{$ps_name}_hierarchyBrowser{n}' style='width: 100%; height: 100%;' class='".($vb_is_vertical_hier_browser ? 'hierarchyBrowserVertical' : 'hierarchyBrowser')."'>
 					<!-- Content for hierarchy browser is dynamically inserted here by ca.hierbrowser -->
 				</div><!-- end hierarchyBrowser -->	</div>";
 				
@@ -1542,15 +1546,16 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	<script type='text/javascript'>
 		jQuery(document).ready(function() { 
 			var oHierBrowser = caUI.initHierBrowser('{$ps_name}_hierarchyBrowser{n}', {
-				uiStyle: '".(($vs_render_as == 'vert_hierbrowser') ? 'vertical' : 'horizontal')."',
+				uiStyle: '".($vb_is_vertical_hier_browser ? 'vertical' : 'horizontal')."',
+				uiDirection: '".(($vs_render_as == 'vert_hierbrowser_down') ? 'down' : 'up')."',
 				levelDataUrl: '".caNavUrl($pa_options['request'], 'lookup', 'ListItem', 'GetHierarchyLevel', array('noSymbols' => 1))."',
 				initDataUrl: '".caNavUrl($pa_options['request'], 'lookup', 'ListItem', 'GetHierarchyAncestorList')."',
 				
 				selectOnLoad : true,
 				browserWidth: ".(int)$va_width['dimension'].",
 				
-				className: '".(($vs_render_as == 'vert_hierbrowser') ? 'hierarchyBrowserLevelVertical' : 'hierarchyBrowserLevel')."',
-				classNameContainer: '".(($vs_render_as == 'vert_hierbrowser') ? 'hierarchyBrowserContainerVertical' : 'hierarchyBrowserContainer')."',
+				className: '".($vb_is_vertical_hier_browser ? 'hierarchyBrowserLevelVertical' : 'hierarchyBrowserLevel')."',
+				classNameContainer: '".($vb_is_vertical_hier_browser ? 'hierarchyBrowserContainerVertical' : 'hierarchyBrowserContainer')."',
 				
 				editButtonIcon: \"".caNavIcon($pa_options['request'], __CA_NAV_BUTTON_RIGHT_ARROW__)."\",
 				disabledButtonIcon: \"".caNavIcon($pa_options['request'], __CA_NAV_BUTTON_DOT__)."\",
@@ -1587,7 +1592,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 					$vs_buf .= "<div class='hierarchyBrowserSearchBar'>"._t('Search').": <input type='text' id='{$ps_name}_hierarchyBrowserSearch{n}' class='hierarchyBrowserSearchBar' name='search' value='' size='20'/></div>";
 				}
 				
-				if ($vs_render_as != 'vert_hierbrowser') {
+				if (!$vb_is_vertical_hier_browser) {
 					$vs_buf .= "<div id='{$ps_name}_browseCurrentSelection{n}' class='hierarchyBrowserCurrentSelection'>"._t("Current selection").": <span id='{$ps_name}_browseCurrentSelectionText{n}' class='hierarchyBrowserCurrentSelectionText'>?</span></div>";
 				}
 				$vs_buf .= caHTMLHiddenInput(

@@ -486,7 +486,9 @@
 					
 					$vn_c++;
 				}
+
 				ksort($va_sort_buffer, SORT_FLAG_CASE | SORT_NATURAL);
+				
 				$va_sort_buffer = array_values($va_sort_buffer);
 				if ($ps_direction == 'desc') { $va_sort_buffer = array_reverse($va_sort_buffer); }
 				return $va_sort_buffer;
@@ -562,17 +564,13 @@
 				case __CA_ATTRIBUTE_VALUE_MOVEMENTS__:
 				case __CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__:
 				case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
-					if (!($vs_sortable_value_fld = Attribute::getSortFieldForDatatype($vn_datatype))) {
-						break;
-					}
-
 					if (!($t_auth_instance = AuthorityAttributeValue::elementTypeToInstance($vn_datatype))) { break; }
-
+					$vs_sortable_value_fld = $t_auth_instance->getLabelSortField();
 					$vs_sql = "
 							SELECT attr.row_id, lower(lil.{$vs_sortable_value_fld}) {$vs_sortable_value_fld}
 							FROM ca_attributes attr
 							INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
-							INNER JOIN ".$t_auth_instance->getLabelTableName()." AS lil ON lil.value_integer1 = attr_vals.item_id
+							INNER JOIN ".$t_auth_instance->getLabelTableName()." AS lil ON lil.".$t_auth_instance->primaryKey()." = attr_vals.item_id
 							WHERE
 								(attr_vals.element_id = ?) AND
 								(attr.table_num = ?) AND

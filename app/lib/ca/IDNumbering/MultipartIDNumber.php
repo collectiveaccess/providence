@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2015 Whirl-i-Gig
+ * Copyright 2007-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -70,7 +70,7 @@ class MultipartIDNumber extends IDNumber {
 		if (!$pm_type) { $pm_type = array('__default__'); }
 
 		parent::__construct();
-		$this->opo_idnumber_config = Configuration::load($this->opo_config->get('multipart_id_numbering_config'));
+		$this->opo_idnumber_config = Configuration::load(__CA_APP_DIR__."/conf/multipart_id_numbering.conf");
 		$this->opa_formats = $this->opo_idnumber_config->getAssoc('formats');
 
 		if ($ps_format) { $this->setFormat($ps_format); }
@@ -111,7 +111,7 @@ class MultipartIDNumber extends IDNumber {
 	 * @return string Separator, or "." if no separator setting is present
 	 */
 	public function getSeparator() {
-		return $this->getFormatPropery('separator', array('default' => '.'));
+		return $this->getFormatProperty('separator', array('default' => '.'));
 	}
 	# -------------------------------------------------------
 	/**
@@ -122,7 +122,7 @@ class MultipartIDNumber extends IDNumber {
 	 *		default = Value to return if property does not exist [Default is null]
 	 * @return string
 	 */
-	public function getFormatPropery($ps_property, $pa_options=null) {
+	public function getFormatProperty($ps_property, $pa_options=null) {
 		if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType()) && isset($this->opa_formats[$vs_format][$vs_type][$ps_property])) {
 			return $this->opa_formats[$vs_format][$vs_type][$ps_property] ? $this->opa_formats[$vs_format][$vs_type][$ps_property] : '';
 		}
@@ -975,10 +975,10 @@ class MultipartIDNumber extends IDNumber {
 			$va_element_controls[] = $vs_tmp;
 			$vn_i++;
 		}
-		if ((sizeof($va_elements) < sizeof($va_element_vals)) && (bool)$this->getFormatPropery('allow_extra_elements', array('default' => 1))) {
+		if ((sizeof($va_elements) < sizeof($va_element_vals)) && (bool)$this->getFormatProperty('allow_extra_elements', array('default' => 1))) {
 			$va_extra_vals = array_slice($va_element_vals, sizeof($va_elements));
 			
-			if (($vn_extra_size = (int)$this->getFormatPropery('extra_element_width', array('default' => 10))) < 1) {
+			if (($vn_extra_size = (int)$this->getFormatProperty('extra_element_width', array('default' => 10))) < 1) {
 				$vn_extra_size = 10;
 			}
 			foreach($va_extra_vals as $vn_i => $vs_extra_val) {
@@ -1141,7 +1141,7 @@ class MultipartIDNumber extends IDNumber {
 				if (!sizeof($va_tmp)) { break; }
 				$va_element_values[$ps_name.'_'.$vs_element_name] = array_shift($va_tmp);
 			}
-			if ((sizeof($va_tmp) > 0) && (bool)$this->getFormatPropery('allow_extra_elements', array('default' => 1))) {
+			if ((sizeof($va_tmp) > 0) && (bool)$this->getFormatProperty('allow_extra_elements', array('default' => 1))) {
 				$vn_i = 0;
 				foreach($va_tmp as $vs_tmp) {
 					$va_element_values[$ps_name.'_extra_'.$vn_i] = $vs_tmp;
@@ -1155,7 +1155,7 @@ class MultipartIDNumber extends IDNumber {
 				}
 			}
 			
-			if ((bool)$this->getFormatPropery('allow_extra_elements', array('default' => 1))) {
+			if ((bool)$this->getFormatProperty('allow_extra_elements', array('default' => 1))) {
 				$vn_i = 0;
 				while(true) {
 					if(isset($_REQUEST[$ps_name.'_extra_'.$vn_i])) {
@@ -1211,7 +1211,7 @@ class MultipartIDNumber extends IDNumber {
 			}
 		}
 		
-		if((bool)$this->getFormatPropery('allow_extra_elements', array('default' => 1))) {
+		if((bool)$this->getFormatProperty('allow_extra_elements', array('default' => 1))) {
 			$vn_i = 0;
 			while(true) {
 				if (isset($va_element_values[$ps_name.'_extra_'.$vn_i]) && ($vs_tmp = $va_element_values[$ps_name.'_extra_'.$vn_i])) {
@@ -1402,6 +1402,7 @@ class MultipartIDNumber extends IDNumber {
 	public function getSequenceMaxValue($ps_format, $ps_element, $ps_idno_stub) {
 		$this->opo_db->dieOnError(false);
 
+		$vn_minimum_value = caGetOption('minimum_value', $this->getElementInfo($ps_element), 0, ['castTo' => 'int']);
 		if (!($qr_res = $this->opo_db->query("
 			SELECT seq
 			FROM ca_multipart_idno_sequences
@@ -1410,8 +1411,8 @@ class MultipartIDNumber extends IDNumber {
 		", $ps_format, $ps_element, $ps_idno_stub))) {
 			return false;
 		}
-		if (!$qr_res->nextRow()) { return 0; }
-		return $qr_res->get('seq');
+		if (!$qr_res->nextRow()) { return $vn_minimum_value - 1; }
+		return (($vn_v = $qr_res->get('seq')) < $vn_minimum_value) ? ($vn_minimum_value - 1) : $vn_v;
 	}
 	# -------------------------------------------------------
 	/**

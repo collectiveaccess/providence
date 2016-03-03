@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -336,8 +336,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		}
 		
 		$va_hier = $this->getHierarchyAsList($pn_element_id);
+		if(!is_array($va_hier)) { return null; }
 		$va_element_set = array();
-		
+
 		$va_element_ids = array();
 		foreach($va_hier as $va_element) {
 			$va_element_ids[] = $va_element['NODE']['element_id'];
@@ -974,6 +975,25 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		}
 		
 		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function getElementCodeForId($pm_element_id) {
+		if(MemoryCache::contains($pm_element_id, 'ElementCodes')) {
+			return MemoryCache::fetch($pm_element_id, 'ElementCodes');
+		}
+
+		$vm_return = null;
+		$t_element = self::getInstance($pm_element_id);
+
+		if($t_element->getPrimaryKey()) {
+			$vm_return = $t_element->get('element_code');
+		}
+
+		MemoryCache::save($pm_element_id, $vm_return, 'ElementCodes');
+		return $vm_return;
 	}
 	# ------------------------------------------------------
 	/**

@@ -3804,10 +3804,16 @@ if (!$vb_batch) {
 						// check for new representations to add 
 						$va_file_list = $_FILES;
 						foreach($_REQUEST as $vs_key => $vs_value) {
-							if (!preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) { continue; }
-							$va_file_list[$vs_key] = array(
-								'url' => $vs_value
-							);
+							if (preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) {
+								$va_file_list[$vs_key] = array(
+									'url' => $vs_value
+								);
+							} elseif(preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches)) {
+								$va_file_list[$vs_key] = array(
+									'tmp_name' => $vs_value,
+									'name' => $vs_value
+								);
+							}
 						}
 						
 						foreach($va_file_list as $vs_key => $va_values) {
@@ -6439,6 +6445,16 @@ side. For many self-relations the direction determines the nature and display te
 			'options' => &$pa_options,
 		));
 
+		if(is_null($ps_effective_date) && is_array($pa_options) && is_array($pa_options['interstitialValues'])) {
+			$ps_effective_date = caGetOption('effective_date', $pa_options['interstitialValues'], null);
+			unset($pa_options['interstitialValues']['effective_date']);
+		}
+
+		if(is_null($ps_source_info) && is_array($pa_options) && is_array($pa_options['interstitialValues'])) {
+			$ps_source_info = caGetOption('source_info', $pa_options['interstitialValues'], null);
+			unset($pa_options['interstitialValues']['source_info']);
+		}
+
 		if ($t_rel = parent::addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options)) {
 			if ($t_rel->numErrors()) {
 				$this->errors = $t_rel->errors;
@@ -6557,7 +6573,8 @@ side. For many self-relations the direction determines the nature and display te
 				// currently loaded row is not the root so get the root
 				$va_ancestors = $this->getHierarchyAncestors();
 				if (!is_array($va_ancestors) || sizeof($va_ancestors) == 0) { return null; }
-				$t_instance = $o_dm->getInstanceByTableName($va_ancestors[0], true);
+				$t_instance = $o_dm->getInstanceByTableName($this->tableName(), true);
+				$t_instance->load($va_ancestors[0]["NODE"][$this->primaryKey()]);
 			} else {
 				$t_instance =& $this;
 			}

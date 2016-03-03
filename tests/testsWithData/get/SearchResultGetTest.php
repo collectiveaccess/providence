@@ -81,7 +81,7 @@ class SearchResultGetTest extends BaseTestWithData {
 		/** @var SearchResult $o_res */
 		$this->assertInstanceOf('SearchResult', $o_res);
 		$this->assertEquals(10, $o_res->numHits());
-		
+
 		$i=0;
 		while($o_res->nextHit()) {
 			$vs_label = $o_res->getWithTemplate('^ca_objects.preferred_labels');
