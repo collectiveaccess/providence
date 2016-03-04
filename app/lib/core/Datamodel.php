@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2005-2015 Whirl-i-Gig
+ * Copyright 2005-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -398,6 +398,32 @@ class Datamodel {
 	public function getTableProperty($pn_tablenum, $ps_property) {
 		if ($t_instance = $this->getInstanceByTableNum($pn_tablenum, true)) {
 			return $t_instance->getProperty($ps_property);
+		}
+		return null;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Determines if table with number equal to $pn_tablenum is a relationship table
+	 *
+	 * @param int $pn_tablenum Table number
+	 * @return string Value of property or null if $pn_tablenum is invalid
+	 */
+	public function isRelationship($pn_tablenum) {
+		if ($t_instance = $this->getInstanceByTableNum($pn_tablenum, true)) {
+			return method_exists($t_instance, 'isRelationship') ? $t_instance->isRelationship() : false;
+		}
+		return null;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Determines if table with number equal to $pn_tablenum is a self relationship table
+	 *
+	 * @param int $pn_tablenum Table number
+	 * @return string Value of property or null if $pn_tablenum is invalid
+	 */
+	public function isSelfRelationship($pn_tablenum) {
+		if ($t_instance = $this->getInstanceByTableNum($pn_tablenum, true)) {
+			return method_exists($t_instance, 'isSelfRelationship') ? $t_instance->isSelfRelationship() : false;
 		}
 		return null;
 	}
