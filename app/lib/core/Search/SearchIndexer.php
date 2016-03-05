@@ -225,7 +225,7 @@ class SearchIndexer extends SearchBase {
 
 			$vn_c = 0;
 			$va_ids = $qr_all->getAllFieldValues($t_instance->primaryKey());
-$va_ids = array(2217);
+
 			$va_element_ids = null;
 			if (method_exists($t_instance, "getApplicableElementCodes")) {
 				$va_element_ids = array_keys($t_instance->getApplicableElementCodes(null, false, false));
@@ -904,7 +904,6 @@ $va_ids = array(2217);
 								$vn_t++;
 							}
 
-//print_R($va_aliases);
 							$va_proc_field_list = array();
 							$vn_field_list_count = sizeof($va_field_list);
 							for($vn_i=0; $vn_i < $vn_field_list_count; $vn_i++) {
@@ -934,7 +933,7 @@ $va_ids = array(2217);
 							$va_queries[] = array('sql' => $vs_sql, 'params' => $va_params);
 						}
 					}
-print_R($va_queries);
+					
 					foreach($va_queries as $va_query) {
 						$vs_sql = $va_query['sql'];
 						$va_params = $va_query['params'];
