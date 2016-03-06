@@ -2264,7 +2264,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 		$va_start = $o_tep->getHistoricDateParts($pa_historic_timestamps[0]);
 		$va_end = $o_tep->getHistoricDateParts($pa_historic_timestamps[1]);
 		
-		if ($va_start['year'] < 0) { $va_start['year'] = 1900; }
+		//if ($va_start['year'] < 0) { $va_start['year'] = 1900; }
 		if ($va_end['year'] >= 2000000) { $va_end['year'] = date("Y"); }
 		
 		return array(

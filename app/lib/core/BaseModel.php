@@ -3181,7 +3181,7 @@ class BaseModel extends BaseObject {
 				}
 				$this->setMode(ACCESS_WRITE);
 				$this->set('deleted', 1);
-				if ($vn_rc = $this->update(array('force' => true))) {
+				if ($vn_rc = self::update(array('force' => true))) {
 					if(!defined('__CA_DONT_DO_SEARCH_INDEXING__') || !__CA_DONT_DO_SEARCH_INDEXING__) {
 						$o_indexer = $this->getSearchIndexer();
 						$o_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
