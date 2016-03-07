@@ -157,7 +157,7 @@ class Session {
 		if(function_exists('mcrypt_create_iv')) {
 			$vs_token = hash('sha256', mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
 		} else if(function_exists('openssl_random_pseudo_bytes')) {
-			$vs_token = hash('sha256', (openssl_random_pseudo_bytes(32)));
+			$vs_token = hash('sha256', openssl_random_pseudo_bytes(32));
 		} else {
 			throw new Exception('mcrypt or OpenSSL is required for CollectiveAccess to run');
 		}
