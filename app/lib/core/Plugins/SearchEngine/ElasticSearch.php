@@ -227,12 +227,11 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				$this->getClient()->indices()->delete(['index' => $this->getIndexName()]);
 			} catch(Elasticsearch\Common\Exceptions\Missing404Exception $e) {
 				// noop
-			} finally {
+			} //finally {
 				if(!$pb_dont_refresh) {
 					$this->refreshMapping(true);
 				}
-
-			}
+			//}
 		} else {
 			// use scoll API to find all documents in a particular mapping/table and delete them using the bulk API
 			// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-scroll.html
