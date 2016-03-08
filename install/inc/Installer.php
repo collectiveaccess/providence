@@ -300,7 +300,7 @@ class Installer {
 			try {
 				$o_es->truncateIndex(null);
 			} catch(Exception $e) {
-				die('Unable to connect to ElasticSearch. Is the cluster running?');
+				die('Unable to connect to ElasticSearch. Is the cluster running? Message from Elasticsearch was: ' . $e->getMessage());
 			}
 		}
 
