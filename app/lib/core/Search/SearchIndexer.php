@@ -427,7 +427,7 @@ class SearchIndexer extends SearchBase {
 			$va_hier_values = array_reverse($va_hier_values);
 
 
-			if ($pn_start > 0) {
+			if (($pn_start > 0) && (sizeof($va_hier_values) > $pn_start + 1)) {
 				$va_hier_values = array_slice($va_hier_values, $pn_start);
 			}
 			if ($pn_max_levels > 0) {

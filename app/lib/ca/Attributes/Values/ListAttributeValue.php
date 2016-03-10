@@ -113,7 +113,8 @@ $_ca_attribute_settings['ListAttributeValue'] = array(		// global
 			_t('Type-ahead lookup') => 'lookup',
 			_t('Horizontal hierarchy browser') => 'horiz_hierbrowser',
 			_t('Horizontal hierarchy browser with search') => 'horiz_hierbrowser_with_search',
-			_t('Vertical hierarchy browser') => 'vert_hierbrowser',
+			_t('Vertical hierarchy browser (upward)') => 'vert_hierbrowser',
+			_t('Vertical hierarchy browser (downward)') => 'vert_hierbrowser_down',
 		)
 	),
 	'auto_shrink' => array(

@@ -70,8 +70,10 @@
 			 
 			 $this->opa_sorts = array_merge(array(
 			 	'_natural' => _t('relevance'),
-			 	'ca_entity_labels.name_sort' => _t('displayname'),
-			 	'ca_entities.type_id' => _t('type'),
+			 	'ca_entity_labels.name_sort' => _t('display name'),
+			 	'ca_entity_labels.surname;ca_entity_labels.forename' => _t('surname, forename'),
+			 	'ca_entity_labels.forename' => _t('forename'),
+			 	'ca_entities.type_id;ca_entity_labels.surname;ca_entity_labels.forename' => _t('type'),
 			 	'ca_entities.idno_sort' => _t('idno')
 			 ), $this->opa_sorts);
 		

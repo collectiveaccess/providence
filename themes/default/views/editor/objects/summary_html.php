@@ -114,7 +114,7 @@
 				$vs_display_value = "<"._t('not defined').">";
 				$vs_class = " notDefined";
 			}
-			print "<div class=\"unit".$vs_class."\"><span class=\"heading".$vs_class."\">".$va_info['display']."</span><span class='summaryData'> ".$vs_display_value."</span></div>\n";
+			print "<div class=\"unit".$vs_class."\"><span class=\"heading".$vs_class."\">".caTruncateStringWithEllipsis($va_info['display'], 26)."</span><span class='summaryData'> ".$vs_display_value."</span></div>\n";
 		}
 ?>
 			</td>

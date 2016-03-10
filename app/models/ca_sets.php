@@ -1919,7 +1919,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			$va_items = caExtractValuesByUserLocale($this->getItems(array(
 				'thumbnailVersion' => $vs_thumbnail_version,
 				'user_id' => $po_request->getUserID(),
-				'template' => caGetOption('displayTemplate', $pa_bundle_settings, null)
+				'template' => caGetOption('display_template', $pa_bundle_settings, null)
 			)), null, null, array());
 			$o_view->setVar('items', $va_items);
 		} else {
