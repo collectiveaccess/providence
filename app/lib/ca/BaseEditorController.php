@@ -577,6 +577,7 @@ class BaseEditorController extends ActionController {
 	 * @param string $ps_table table name
 	 */
 	protected function redirectAfterDelete($ps_table) {
+		$this->getRequest()->close();
 		caSetRedirect($this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $ps_table));
 	}
 	# -------------------------------------------------------
