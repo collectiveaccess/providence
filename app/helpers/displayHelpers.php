@@ -39,7 +39,6 @@ require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
 require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
-require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 
 /**

@@ -357,17 +357,19 @@ class SearchResult extends BaseObject {
 				if (!$va_row[$vs_parent_id_fld]) { continue; }
 				
 				if ($vn_level == 0) {
-					$va_row_id_map[$va_row[$vs_parent_id_fld]] = $va_row[$vs_pk];
+					$va_row_id_map[$va_row[$vs_parent_id_fld]][] = $va_row[$vs_pk];
 					SearchResult::$opa_hierarchy_parent_prefetch_cache[$ps_tablename][$va_row[$vs_pk]][$vs_opt_md5] = array();
 				} else {
 					$va_row_id_map[$va_row[$vs_parent_id_fld]] = $va_row_id_map[$va_row[$vs_pk]];
 				}
 				if (!$va_row_id_map[$va_row[$vs_parent_id_fld]]) { continue; }
 				
-				SearchResult::$opa_hierarchy_parent_prefetch_cache[$ps_tablename][$va_row_id_map[$va_row[$vs_parent_id_fld]]][$vs_opt_md5][] = $va_row[$vs_parent_id_fld];
+				foreach($va_row_id_map[$va_row[$vs_parent_id_fld]] as $vn_id) {
+					SearchResult::$opa_hierarchy_parent_prefetch_cache[$ps_tablename][$vn_id][$vs_opt_md5][] = $va_row[$vs_parent_id_fld];
+				}
 			}
 			
-			$va_params[0] = $qr_rel->getAllFieldValues($vs_parent_id_fld);
+			$va_row_ids_in_current_level = $va_params[0] = $qr_rel->getAllFieldValues($vs_parent_id_fld);
 			
 			$vn_level++;
 		}
