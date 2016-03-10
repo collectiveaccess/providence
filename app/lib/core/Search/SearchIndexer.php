@@ -856,7 +856,7 @@ class SearchIndexer extends SearchBase {
 										$vs_join .= ")";
 									}
 
-									if (($t_rel_instance = $this->opo_datamodel->getInstanceByTableName($vs_right_table, true)) && method_exists($t_rel_instance, "isRelationship") && $t_rel_instance->isRelationship() && $t_rel_instance->hasField('type_id')) {
+									if (!$vs_rel_type_id_fld && ($t_rel_instance = $this->opo_datamodel->getInstanceByTableName($vs_right_table, true)) && method_exists($t_rel_instance, "isRelationship") && $t_rel_instance->isRelationship() && $t_rel_instance->hasField('type_id')) {
 										$vs_rel_type_id_fld = "{$va_alias}.type_id";
 									}
 									$va_joins[] = $vs_join;
@@ -873,14 +873,14 @@ class SearchIndexer extends SearchBase {
 															"INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.".$t_self_rel->getRightTableFieldName()
 														);
 														
-											if ($t_self_rel->hasField('type_id')) {
+											if (!$vs_rel_type_id_fld && $t_self_rel->hasField('type_id')) {
 												$vs_rel_type_id_fld = "{$vs_alias}.type_id";
 											}
 											
 										} else {
 										
 											$va_joins[] = "INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.{$va_rel['many_table_field']}";
-											if (($t_rel_instance = $this->opo_datamodel->getInstanceByTableName($va_rel['many_table'], true)) && method_exists($t_rel_instance, "isRelationship") && $t_rel_instance->isRelationship() && $t_rel_instance->hasField('type_id')) {
+											if (!$vs_rel_type_id_fld && ($t_rel_instance = $this->opo_datamodel->getInstanceByTableName($va_rel['many_table'], true)) && method_exists($t_rel_instance, "isRelationship") && $t_rel_instance->isRelationship() && $t_rel_instance->hasField('type_id')) {
 												$vs_rel_type_id_fld = "{$vs_alias}.type_id";
 											}
 										}
@@ -896,12 +896,12 @@ class SearchIndexer extends SearchBase {
 															"INNER JOIN {$va_rel['one_table']} AS {$vs_alias} ON {$vs_alias}.{$va_rel['one_table_field']} = {$vs_prev_alias}.".$t_self_rel->getLeftTableFieldName()
 														);
 														
-											if ($t_self_rel->hasField('type_id')) {
+											if (!$vs_rel_type_id_fld && $t_self_rel->hasField('type_id')) {
 												$vs_rel_type_id_fld = "{$vs_alias}.type_id";
 											}
 										} else {
 											$va_joins[] = "INNER JOIN {$va_rel['one_table']} AS {$vs_alias} ON {$vs_alias}.{$va_rel['one_table_field']} = {$vs_prev_alias}.{$va_rel['many_table_field']}";
-											if (($t_rel_instance = $this->opo_datamodel->getInstanceByTableName($va_rel['one_table'], true)) && method_exists($t_rel_instance, "isRelationship") && $t_rel_instance->isRelationship() && $t_rel_instance->hasField('type_id')) {
+											if (!$vs_rel_type_id_fld && ($t_rel_instance = $this->opo_datamodel->getInstanceByTableName($va_rel['one_table'], true)) && method_exists($t_rel_instance, "isRelationship") && $t_rel_instance->isRelationship() && $t_rel_instance->hasField('type_id')) {
 												$vs_rel_type_id_fld = "{$vs_prev_alias}.type_id";
 											}
 										}
