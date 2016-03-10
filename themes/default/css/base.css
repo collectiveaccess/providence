@@ -4891,21 +4891,13 @@ a.dashboardControl {font-weight:normal; padding-right:10px; text-decoration:none
     width:16px;
     height:16px;
     margin:5px 0px 0px 5px;
-    background-image:url("../graphics/buttons/infoIconDashboard.gif");
     border:0px;
-    background-size:16px 16px;
-    background-color: #333;
-	border-radius: 8px;
 }
 .dashboardRemoveWidget {	/* style for "X" remove button on widgets */
     float: right;
     width:16px;
     height:16px;
     margin:5px 5px 0px 5px;
-    background-image:url("../graphics/buttons/deleteDashboard.gif");
-    background-size:16px 16px;
-    background-color: #333;
-	border-radius: 8px;
 }
 a.dashboardRemoveWidget {
     border:0px;
