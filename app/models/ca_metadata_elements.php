@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -336,8 +336,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		}
 		
 		$va_hier = $this->getHierarchyAsList($pn_element_id);
+		if(!is_array($va_hier)) { return null; }
 		$va_element_set = array();
-		
+
 		$va_element_ids = array();
 		foreach($va_hier as $va_element) {
 			$va_element_ids[] = $va_element['NODE']['element_id'];
@@ -950,11 +951,49 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * 
 	 */
 	static public function getElementDatatype($pm_element_code_or_id) {
+		if(MemoryCache::contains($pm_element_code_or_id, 'ElementDataTypes2')) {
+			return MemoryCache::fetch($pm_element_code_or_id, 'ElementDataTypes2');
+		}
 		if ($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id)) {
-			return $t_element->get('datatype');
+			MemoryCache::save($pm_element_code_or_id, $vn_datatype = (int)$t_element->get('datatype'), 'ElementDataTypes2');
+			return $vn_datatype;
 		}
 		
 		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * 
+	 */
+	static public function getElementCode($pn_element_id) {
+		if(MemoryCache::contains($pn_element_id, 'ElementCodes')) {
+			return MemoryCache::fetch($pn_element_id, 'ElementCodes');
+		}
+		if ($t_element = ca_metadata_elements::getInstance($pn_element_id)) {
+			MemoryCache::save($pn_element_id, $vs_element_code = (string)$t_element->get('element_code'), 'ElementCodes');
+			return $vs_element_code;
+		}
+		
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function getElementCodeForId($pm_element_id) {
+		if(MemoryCache::contains($pm_element_id, 'ElementCodes')) {
+			return MemoryCache::fetch($pm_element_id, 'ElementCodes');
+		}
+
+		$vm_return = null;
+		$t_element = self::getInstance($pm_element_id);
+
+		if($t_element->getPrimaryKey()) {
+			$vm_return = $t_element->get('element_code');
+		}
+
+		MemoryCache::save($pm_element_id, $vm_return, 'ElementCodes');
+		return $vm_return;
 	}
 	# ------------------------------------------------------
 	/**
@@ -977,6 +1016,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		} else {
 			MemoryCache::save($vn_element_id, $t_element, 'ElementInstances');
 			MemoryCache::save($t_element->get('element_code'), $t_element, 'ElementInstances');
+			MemoryCache::save($t_element->get('datatype'), $t_element, 'ElementDataTypes');
 			return $t_element;
 		}
 		return null;
@@ -1275,4 +1315,3 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 }
-?>

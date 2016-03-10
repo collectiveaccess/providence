@@ -90,6 +90,10 @@ class Geocode extends GenericElement {
 			return new \Zend_Search_Lucene_Index_Term(
 				$po_term->field, '_missing_'
 			);
+		} elseif(strtolower($po_term->text) === '[set]') {
+			return new \Zend_Search_Lucene_Index_Term(
+				$po_term->field, '_exists_'
+			);
 		}
 
 		// so yeah, it's impossible to query geo_shape fields in a query string in ElasticSearch. You *have to* use filters

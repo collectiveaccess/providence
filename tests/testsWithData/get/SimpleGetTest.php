@@ -77,6 +77,12 @@ class SimpleGetTest extends BaseTestWithData {
 	}
 	# -------------------------------------------------------
 	public function testGets() {
+		$vm_ret = $this->opt_object->get('ca_objects.access', array('convertCodesToIdno' => true));
+		$this->assertEquals('internal_only', $vm_ret);
+
+		$vm_ret = $this->opt_object->get('ca_objects.status', array('convertCodesToIdno' => true));
+		$this->assertEquals('new', $vm_ret);
+
 		$vm_ret = $this->opt_object->get('ca_objects.type_id', array('convertCodesToDisplayText' => true));
 		$this->assertEquals('Moving Image', $vm_ret);
 

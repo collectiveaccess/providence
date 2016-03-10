@@ -359,10 +359,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 * and doing any required work after BundlableLabelablleBaseModelWithAttributes::duplicate() has finished
 	 * 
 	 * @param array $pa_options
-	 *		duplicate_nonpreferred_labels = if set nonpreferred labels will be duplicated. Default is false.
-	 *		duplicate_attributes = if set all content fields (intrinsics and attributes) will be duplicated. Default is false.
-	 *		duplicate_relationships = if set to an array of table names, all relationships to be specified tables will be duplicated. Default is null - no relationships duplicated.
-	 *		user_id = User ID of the user to make owner of the newly duplicated record (for records that support ownership by a user like ca_bundle_displays)
+	 *		duplicate_nonpreferred_labels = duplicate nonpreferred labels. [Default is false]
+	 *		duplicate_attributes = duplicate all content fields (intrinsics and attributes). [Default is false]
+	 *		duplicate_relationships = if set to an array of table names, all relationships to be specified tables will be duplicated. [Default is null - no relationships duplicated]
+	 *		duplicate_relationship_attributes = duplicate metadata attributes attached to duplicated relationships. [Default is false]
+	 *		duplicate_element_settings = per-metdata element duplication settings; keys are element names, values are 1 (duplicate) or 0 (don't duplicate); if element is not set then it will be duplicated. [Default is null]
+	 *		user_id = User ID of the user to make owner of the newly duplicated record (for records that support ownership by a user like ca_bundle_displays) [Default is null]
 	 *		
 	 * @return BundlableLabelablleBaseModelWithAttributes instance of newly created duplicate item
 	 */
@@ -374,7 +376,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		$vb_duplicate_nonpreferred_labels = isset($pa_options['duplicate_nonpreferred_labels']) && $pa_options['duplicate_nonpreferred_labels'];
 		$vb_duplicate_attributes = isset($pa_options['duplicate_attributes']) && $pa_options['duplicate_attributes'];
+		$vb_duplicate_relationship_attributes = isset($pa_options['duplicate_relationship_attributes']) && $pa_options['duplicate_relationship_attributes'];
 		$va_duplicate_relationships = (isset($pa_options['duplicate_relationships']) && is_array($pa_options['duplicate_relationships']) && sizeof($pa_options['duplicate_relationships'])) ? $pa_options['duplicate_relationships'] : array();
+		$va_duplicate_element_settings = (isset($pa_options['duplicate_element_settings']) && is_array($pa_options['duplicate_element_settings']) && sizeof($pa_options['duplicate_element_settings'])) ? $pa_options['duplicate_element_settings'] : array();
+		$vb_duplicate_relationship_attributes = isset($pa_options['duplicate_relationship_attributes']) && $pa_options['duplicate_relationship_attributes'];
 		
 		$vb_we_set_transaction = false;
 		if (!$this->inTransaction()) {
@@ -419,7 +424,9 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					$t_dupe->set($vs_field, $this->get($this->tableName().'.'.$vs_field, array('unserialize' => true)));
 					break;
 				default:
-					$t_dupe->set($vs_field, $this->get($this->tableName().'.'.$vs_field));
+					if (!isset($va_duplicate_element_settings[$vs_field]) || (isset($va_duplicate_element_settings[$vs_field]) && ($va_duplicate_element_settings[$vs_field] == 1))) {
+						$t_dupe->set($vs_field, $this->get($this->tableName().'.'.$vs_field));
+					}
 					break;
 			}
 		}
@@ -504,7 +511,17 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		// duplicate attributes
 		if ($vb_duplicate_attributes) {
-			if (!$t_dupe->copyAttributesFrom($this->getPrimaryKey())) {
+			$va_attrs_to_duplicate = null;
+			if (sizeof($va_duplicate_element_settings)) {
+				$va_attrs_to_duplicate = [];
+				foreach($va_duplicate_element_settings as $vs_bundle => $vn_duplication_setting) {
+					if ((substr($vs_bundle, 0, 13) == 'ca_attribute_') && ($vn_duplication_setting)) {
+						$va_attrs_to_duplicate[] = substr($vs_bundle, 13);
+					}
+				}
+			}
+	
+			if (!$t_dupe->copyAttributesFrom($this->getPrimaryKey(), ['restrictToAttributesByCodes' => $va_attrs_to_duplicate])) {
 				$this->errors = $t_dupe->errors;
 				if ($vb_we_set_transaction) { $o_t->rollback();}
 				return false;
@@ -513,10 +530,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		
 		// duplicate relationships
 		foreach(array(
-			'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_storage_locations', 'ca_tour_stops'
+			'ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 
+			'ca_collections', 'ca_list_items', 'ca_loans', 'ca_movements', 'ca_storage_locations', 'ca_tour_stops'
 		) as $vs_rel_table) {
 			if (!in_array($vs_rel_table, $va_duplicate_relationships)) { continue; }
-			if ($this->copyRelationships($vs_rel_table, $t_dupe->getPrimaryKey()) === false) {
+			if ($this->copyRelationships($vs_rel_table, $t_dupe->getPrimaryKey(), array('copyAttributes' => $vb_duplicate_relationship_attributes)) === false) {
 				$this->errors = $t_dupe->errors;
 				if ($vb_we_set_transaction) { $o_t->rollback();}
 				return false;
@@ -3471,15 +3489,13 @@ if (!$vb_batch) {
 					foreach($va_labels_by_locale as $vn_locale_id => $va_label_list) {
 						foreach($va_label_list as $va_label) {
 							if ($vn_label_locale_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'locale_id_'.$va_label['label_id'], pString)) {
-							
+								$vn_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'type_id_'.$va_label['label_id'], pInteger);
 								if(is_array($va_label_values = $this->getLabelUIValuesFromRequest($po_request, $vs_placement_code.$vs_form_prefix, $va_label['label_id'], true))) {
-									
 									if ($vb_check_for_dupe_labels && $this->checkForDupeLabel($vn_label_locale_id, $va_label_values)) {
 										$this->postError(1125, _t('Value <em>%1</em> is already used and duplicates are not allowed', join("/", $va_label_values)), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", $this->tableName().'.preferred_labels');
 										$po_request->addActionErrors($this->errors(), 'preferred_labels');
 										continue;
 									}
-									$vn_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'type_id_'.$va_label['label_id'], pInteger);
 									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, true, array('queueIndexing' => true));
 									if ($this->numErrors()) {
 										foreach($this->errors() as $o_e) {
@@ -3494,6 +3510,13 @@ if (!$vb_batch) {
 											}
 										}
 									}
+								} else {
+									$this->editLabel($va_label['label_id'],
+										array($this->getLabelDisplayField() => '['._t('BLANK').']'),
+										$vn_label_locale_id,
+										$vn_label_type_id,
+										true, array('queueIndexing' => true)
+									);
 								}
 							} else {
 								if ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_PrefLabel_'.$va_label['label_id'].'_delete', pString)) {
@@ -3605,8 +3628,8 @@ if (!$vb_batch) {
 					foreach($va_labels_by_locale as $vn_locale_id => $va_label_list) {
 						foreach($va_label_list as $va_label) {
 							if ($vn_label_locale_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'locale_id_'.$va_label['label_id'], pString)) {
+								$vn_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'type_id_'.$va_label['label_id'], pInteger);
 								if (is_array($va_label_values = $this->getLabelUIValuesFromRequest($po_request, $vs_placement_code.$vs_form_prefix, $va_label['label_id'], false))) {
-									$vn_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'type_id_'.$va_label['label_id'], pInteger);
 									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, false, array('queueIndexing' => true));
 									if ($this->numErrors()) {
 										foreach($this->errors() as $o_e) {
@@ -3621,6 +3644,13 @@ if (!$vb_batch) {
 											}
 										}
 									}
+								} else {
+									$this->editLabel($va_label['label_id'],
+										array($this->getLabelDisplayField() => '['._t('BLANK').']'),
+										$vn_label_locale_id,
+										$vn_label_type_id,
+										false, array('queueIndexing' => true)
+									);
 								}
 							} else {
 								if ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPrefLabel_'.$va_label['label_id'].'_delete', pString)) {
@@ -3786,10 +3816,16 @@ if (!$vb_batch) {
 						// check for new representations to add 
 						$va_file_list = $_FILES;
 						foreach($_REQUEST as $vs_key => $vs_value) {
-							if (!preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) { continue; }
-							$va_file_list[$vs_key] = array(
-								'url' => $vs_value
-							);
+							if (preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) {
+								$va_file_list[$vs_key] = array(
+									'url' => $vs_value
+								);
+							} elseif(preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches)) {
+								$va_file_list[$vs_key] = array(
+									'tmp_name' => $vs_value,
+									'name' => $vs_value
+								);
+							}
 						}
 						
 						foreach($va_file_list as $vs_key => $va_values) {
@@ -6421,6 +6457,16 @@ side. For many self-relations the direction determines the nature and display te
 			'options' => &$pa_options,
 		));
 
+		if(is_null($ps_effective_date) && is_array($pa_options) && is_array($pa_options['interstitialValues'])) {
+			$ps_effective_date = caGetOption('effective_date', $pa_options['interstitialValues'], null);
+			unset($pa_options['interstitialValues']['effective_date']);
+		}
+
+		if(is_null($ps_source_info) && is_array($pa_options) && is_array($pa_options['interstitialValues'])) {
+			$ps_source_info = caGetOption('source_info', $pa_options['interstitialValues'], null);
+			unset($pa_options['interstitialValues']['source_info']);
+		}
+
 		if ($t_rel = parent::addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options)) {
 			if ($t_rel->numErrors()) {
 				$this->errors = $t_rel->errors;
@@ -6464,6 +6510,42 @@ side. For many self-relations the direction determines the nature and display te
 			}
 		}
 		return $t_rel;
+	}
+	# --------------------------------------------------------------------------------------------
+	public function moveRelationships($pm_rel_table_name_or_num, $pn_to_id, $pa_options=null) {
+		$vb_we_set_transaction = false;
+
+		if (!$this->inTransaction()) {
+			$this->setTransaction(new Transaction($this->getDb()));
+			$vb_we_set_transaction = true;
+		}
+
+		$this->opo_app_plugin_manager->hookBeforeMoveRelationships(array(
+			'table_name' => $this->tableName(),
+			'instance' => &$this,
+			'related_table' => &$pm_rel_table_name_or_num,
+			'to_id' => &$pn_to_id,
+			'options' => &$pa_options,
+		));
+
+		$vn_rc = parent::moveRelationships($pm_rel_table_name_or_num, $pn_to_id, $pa_options=null);
+
+		$this->opo_app_plugin_manager->hookAfterMoveRelationships(array(
+			'table_name' => $this->tableName(),
+			'instance' => &$this,
+			'related_table' => &$pm_rel_table_name_or_num,
+			'to_id' => &$pn_to_id,
+			'options' => &$pa_options,
+		));
+
+		if ($this->numErrors()) {
+			if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+			return false;
+		} else {
+			if ($vb_we_set_transaction) { $this->removeTransaction(true); }
+		}
+
+		return $vn_rc;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
@@ -6539,7 +6621,8 @@ side. For many self-relations the direction determines the nature and display te
 				// currently loaded row is not the root so get the root
 				$va_ancestors = $this->getHierarchyAncestors();
 				if (!is_array($va_ancestors) || sizeof($va_ancestors) == 0) { return null; }
-				$t_instance = $o_dm->getInstanceByTableName($va_ancestors[0], true);
+				$t_instance = $o_dm->getInstanceByTableName($this->tableName(), true);
+				$t_instance->load($va_ancestors[0]["NODE"][$this->primaryKey()]);
 			} else {
 				$t_instance =& $this;
 			}

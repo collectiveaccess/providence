@@ -1282,6 +1282,7 @@ div.hint {
 	text-transform:uppercase;
 	text-align: left;
 	width:30%;
+    overflow: scroll;
 	display:inline-block;
 	font-weight:bold;
 	color: #666;
@@ -5420,6 +5421,23 @@ div.preferenceSectionDivider {
     width: 100%;
     margin-bottom: 5px;
 }
+
+a.preferenceColumnSelector {
+    color: #222222;
+    text-decoration: underline;
+}
+
+table.preferenceColumnSelector {
+	text-align: center;
+	width: 500px;
+	margin: 10px 0 10px 0;
+}
+
+table.preferenceColumnSelector tbody tr td.preferenceColumnSelectorLabel {
+	text-align: left;
+	width: 300px;
+}
+
 
 .searchReindexHelpText{
     padding:20px;

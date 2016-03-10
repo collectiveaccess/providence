@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2015 Whirl-i-Gig
+ * Copyright 2014-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -58,7 +58,7 @@ var caUI = caUI || {};
         // --------------------------------------------------------------------------------
         // Define methods
         // --------------------------------------------------------------------------------
-        that.processDependentTemplate = function(template, values) {
+        that.processDependentTemplate = function(template, values, init) {
         	if (!template) return '';
             var t = template;
 
@@ -67,22 +67,28 @@ var caUI = caUI || {};
             var tagList = template.match(tagRegex);
             var unitRegex = /[\d\.\,]+(.*)$/;
 
+            var bAtLeastOneValueIsSet = false;
             jQuery.each(tagList, function(i, tag) {
                 var tagProc = tag.replace("^", "");
                 if(tag.indexOf("~") === -1) {
                     var selected = jQuery('select' + values[tagProc] + ' option:selected');
+                    
+                    var d;
                     if (selected.length) {
-                        t=t.replace(tag, selected.text());
+                        t=t.replace(tag, d = selected.text());
                     } else {
-                        t=t.replace(tag, jQuery(values[tagProc]).val());
+                        t=t.replace(tag, d = jQuery(values[tagProc]).val());
                     }
+                    if (d) { bAtLeastOneValueIsSet = true; }
                 } else {
                     var tagBits = tag.split(/\~/);
                     var tagRoot = tagBits[0].replace("^", "");
                     var cmd = tagBits[1].split(/\:/);
+                    
                     switch(cmd[0].toLowerCase()) {
                         case 'units':
                             var val = jQuery(values[tagRoot]).val();
+                            if (val) { bAtLeastOneValueIsSet = true; }
                             val = that.convertFractionalNumberToDecimal(val);
 
                             var unitBits = val.match(unitRegex);
@@ -119,6 +125,8 @@ var caUI = caUI || {};
                 }
             });
 
+			if (init && !bAtLeastOneValueIsSet) {return; }
+			
             // Process <ifdef> tags
             var h = jQuery("<div>" + t + "</div>");
             jQuery.each(tagList, function(k, tag) {

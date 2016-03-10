@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2010 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -80,6 +80,6 @@
  	// remove element from type (or general use when type_id=null) for this table
  	public function removeMetadataElementFromType($pm_element_code_or_id, $pn_type_id);
  	
- 	// returns list of metdata element codes applicable to the current row
- 	public function getApplicableElementCodes($pn_type_id=null);
+ 	// returns list of applicable metdata element codes 
+ 	public function getApplicableElementCodes($pn_type_id=null, $pb_include_sub_element_codes=false, $pb_dont_cache=true);
  }

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -144,7 +144,7 @@ BaseModel::$s_ca_models_definitions['ca_users'] = array(
 				'BOUNDS_VALUE' => array(0,1)
 		),
 		'registered_on' => array(
-				'FIELD_TYPE' => FT_TIMESTAMP, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
@@ -2056,6 +2056,10 @@ class ca_users extends BaseModel {
 					
 					break;
 				# ---------------------------------
+				case 'DT_HIDDEN':
+					// noop
+					break;
+				# ---------------------------------
 				default:
 					return "Configuration error: Invalid display type for $ps_pref";
 				# ---------------------------------
@@ -2658,7 +2662,14 @@ class ca_users extends BaseModel {
 			} else {
 				// We rely on the system clock here. That might not be the smartest thing to do but it'll work for now.
 				$vn_token_expiration_timestamp = time() + 15 * 60; // now plus 15 minutes
-				$vs_password_reset_token = hash('sha256', mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+
+				if(function_exists('mcrypt_create_iv')) {
+					$vs_password_reset_token = hash('sha256', mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+				} elseif(function_exists('openssl_random_pseudo_bytes')) {
+					$vs_password_reset_token = hash('sha256', openssl_random_pseudo_bytes(32));
+				} else {
+					throw new Exception('mcrypt or OpenSSL is required for CollectiveAccess to run');
+				}
 
 				$this->setVar("{$vs_app_name}_password_reset_token", $vs_password_reset_token);
 				$this->setVar("{$vs_app_name}_password_reset_expiration", $vn_token_expiration_timestamp);

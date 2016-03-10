@@ -2983,6 +2983,39 @@
         </item>
       </items>
     </list>
+    <list code="public_set_type" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Public Set Type</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="slideshow" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>slideshow</name_singular>
+              <name_plural>slideshow</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="timeline" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>timeline</name_singular>
+              <name_plural>timeline</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="map" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>map</name_singular>
+              <name_plural>map</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
   </lists>
   <elementSets>
     <metadataElement code="set_description" datatype="Text">
@@ -3737,6 +3770,102 @@
         </restriction>
         <restriction>
           <table>ca_occurrences</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_collections</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_storage_locations</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_object_lots</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_object_representations</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="alt_description" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Alternate Description</name>
+          <description> A short, text description of the resource.</description>
+        </label>
+      </labels>
+      <settings>
+        <setting name="lineBreakAfterNumberOfElements">1</setting>
+      </settings>
+      <elements>
+        <metadataElement code="alt_description_text" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>Text</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="usewysiwygeditor">1</setting>
+            <setting name="fieldWidth">640px</setting>
+            <setting name="fieldHeight">6</setting>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="alt_description_source" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>Source</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">640px</setting>
+            <setting name="fieldHeight">2</setting>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_places</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">100</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_occurrences</table>
           <type>event</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
@@ -3807,10 +3936,10 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    <metadataElement code="date" datatype="DateRange">
+    <metadataElement code="date" datatype="Container">
       <labels>
         <label locale="en_US">
-          <name>Coverage Temporal</name>
+          <name>Date</name>
           <description>A point or period of time associated with an event in the life cycle of the resource.</description>
         </label>
       </labels>
@@ -3857,23 +3986,14 @@
     <metadataElement code="dateDigitized" datatype="DateRange">
       <labels>
         <label locale="en_US">
-          <name>Coverage Temporal</name>
+          <name>Date Digitized</name>
           <description>Date when resource was digitized (MM/DD/YYYY).</description>
         </label>
       </labels>
-      <elements>
-        <metadataElement code="datesdigitized_value" datatype="DateRange">
-          <labels>
-            <label locale="en_US">
-              <name>Date Digitized</name>
-            </label>
-          </labels>
-          <settings>
-            <setting name="fieldWidth">40</setting>
-            <setting name="useDatePicker">1</setting>
-          </settings>
-        </metadataElement>
-      </elements>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="useDatePicker">1</setting>
+      </settings>
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
@@ -3992,7 +4112,7 @@
           <table>ca_objects</table>
           <settings>
             <setting name="minAttributesPerRow">1</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">255</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -4033,7 +4153,6 @@
       <typeRestrictions>
         <restriction>
           <table>ca_objects</table>
-          <type>text</type>
           <settings>
             <setting name="minAttributesPerRow">1</setting>
             <setting name="maxAttributesPerRow">1</setting>
@@ -6774,6 +6893,58 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="public_set_type" datatype="List" list="public_set_type">
+      <labels>
+        <label locale="en_US">
+          <name>Public Set Type</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="render">radio_buttons</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_sets</table>
+          <type>public_presentation</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="tgn" datatype="InformationService">
+      <labels>
+        <label locale="en_US">
+          <name>Places Mentioned</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="service">TGN</setting>
+        <setting name="fieldWidth">70</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction>
+          <table>ca_objects</table>
+          <type>moving_image</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">250</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction>
+          <table>ca_objects</table>
+          <type>sound</type>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">250</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
   </elementSets>
   <userInterfaces>
     <userInterface code="loan_cataloguers_ui" type="ca_loans">
@@ -7615,6 +7786,9 @@
                 <setting name="expand_collapse_value">bubbles</setting>
                 <setting name="expand_collapse_no_value">bubbles</setting>
               </settings>
+            </placement>
+             <placement code="ca_attribute_public_set_type">
+              <bundle>ca_attribute_public_set_type</bundle>
             </placement>
             <placement code="access">
               <bundle>access</bundle>
@@ -8458,6 +8632,9 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_alt_description">
+              <bundle>ca_attribute_alt_description</bundle>
+            </placement>
             <placement code="ca_attribute_date">
               <bundle>ca_attribute_date</bundle>
               <settings>
@@ -8469,7 +8646,7 @@
               </settings>
             </placement>
             <placement code="dateDigitized">
-              <bundle>ca_attribue_dateDigitized</bundle>
+              <bundle>ca_attribute_dateDigitized</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -8749,6 +8926,16 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
+             <placement code="ca_attribute_alt_description">
+              <bundle>ca_attribute_alt_description</bundle>
+            </placement>
+            <placement code="ca_mentions">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Individuals and Organizations Mentioned</setting>
+                 <setting name="restrict_to_relationship_types">subject</setting>
+              </settings>
+            </placement>
             <placement code="ca_attribute_date">
               <bundle>ca_attribute_date</bundle>
               <settings>
@@ -8763,7 +8950,7 @@
               </settings>
             </placement>
             <placement code="dateDigitized">
-              <bundle>ca_attribue_dateDigitized</bundle>
+              <bundle>ca_attribute_dateDigitized</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -8945,6 +9132,9 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_alt_description">
+              <bundle>ca_attribute_alt_description</bundle>
+            </placement>
             <placement code="document_type">
               <bundle>ca_attribute_document_type</bundle>
               <settings>
@@ -8969,7 +9159,7 @@
               </settings>
             </placement>
             <placement code="dateDigitized">
-              <bundle>ca_attribue_dateDigitized</bundle>
+              <bundle>ca_attribute_dateDigitized</bundle>
               <settings>
                 <setting name="readonly"/>
                 <setting name="expand_collapse_value">bubbles</setting>
@@ -9117,6 +9307,9 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_alt_description">
+              <bundle>ca_attribute_alt_description</bundle>
+            </placement>
             <placement code="document_type">
               <bundle>ca_attribute_document_type</bundle>
               <settings>
@@ -9140,7 +9333,7 @@
               </settings>
             </placement>
             <placement code="dateDigitized">
-              <bundle>ca_attribue_dateDigitized</bundle>
+              <bundle>ca_attribute_dateDigitized</bundle>
               <settings>
                 <setting name="description" locale="en_US">Date when photo was digitized (MM/DD/YYYY).</setting>
                 <setting name="readonly"/>
@@ -9329,6 +9522,16 @@
                 <setting name="sortDirection">ASC</setting>
               </settings>
             </placement>
+            <placement code="ca_attribute_alt_description">
+              <bundle>ca_attribute_alt_description</bundle>
+            </placement>
+            <placement code="ca_mentions">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Individuals and Organizations Mentioned</setting>
+                 <setting name="restrict_to_relationship_types">subject</setting>
+              </settings>
+            </placement>
             <placement code="ca_attribute_date">
               <bundle>ca_attribute_date</bundle>
               <settings>
@@ -9343,7 +9546,7 @@
               </settings>
             </placement>
             <placement code="dateDigitized">
-              <bundle>ca_attribue_dateDigitized</bundle>
+              <bundle>ca_attribute_dateDigitized</bundle>
               <settings>
                 <setting name="description" locale="en_US">Date of the recording (MM/DD/YYYY).</setting>
                 <setting name="readonly"/>
@@ -9569,6 +9772,15 @@
               <name>Recommended</name>
             </label>
           </labels>
+           <typeRestrictions>
+            <restriction type="dataset"/>
+            <restriction type="interactive_resource"/>
+            <restriction type="physical_object"/>
+            <restriction type="service"/>
+            <restriction type="software"/>
+             <restriction type="image"/>
+             <restriction type="text"/>
+          </typeRestrictions>
           <bundlePlacements>
             <placement code="ca_contributor">
               <bundle>ca_entities</bundle>
@@ -9597,6 +9809,86 @@
                 <setting name="sort">1</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_language">
+              <bundle>ca_attribute_language</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
+              <settings>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+              </settings>
+            </placement>
+            <placement code="ca_objects">
+              <bundle>ca_objects</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Relation</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_objects.preferred_labels</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+              </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="recommended_time_based" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Recommended</name>
+            </label>
+          </labels>
+           <typeRestrictions>
+            <restriction type="moving_image"/>
+            <restriction type="sound"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="ca_contributor">
+              <bundle>ca_entities</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Contributor(s)</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="restrict_to_relationship_types">contributor</setting>
+                <setting name="dont_include_subtypes_in_type_restriction">0</setting>
+                <setting name="list_format">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+                <setting name="dontShowDeleteButton">0</setting>
+                <setting name="display_template">^ca_entities.preferred_labels</setting>
+                <setting name="minRelationshipsPerRow"/>
+                <setting name="maxRelationshipsPerRow"/>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_georeference">
+              <bundle>ca_attribute_georeference</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Interview Location</setting>
+                <setting name="readonly"/>
+                <setting name="expand_collapse_value">bubbles</setting>
+                <setting name="expand_collapse_no_value">bubbles</setting>
+                <setting name="sort">1</setting>
+                <setting name="sortDirection">ASC</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_tgn">
+              <bundle>ca_attribute_tgn</bundle>
             </placement>
             <placement code="ca_attribute_language">
               <bundle>ca_attribute_language</bundle>
@@ -9737,6 +10029,15 @@
                 <setting name="showCurrentOnly">0</setting>
               </settings>
             </placement>
+             <placement code="ca_objects_location">
+              <bundle>ca_objects_location</bundle>
+               <settings>
+                <setting name="locationTrackingMode">ca_storage_locations</setting>
+                <setting name="displayTemplate">^ca_storage_locations.preferred_labels.name (moved on ^ca_objects_x_storage_locations.effective_date)</setting>
+                <setting name="historyTemplate">^ca_storage_locations.preferred_labels.name (moved on ^ca_objects_x_storage_locations.effective_date)</setting>
+                <setting name="useHierarchicalBrowser">1</setting>
+                 </settings>
+             </placement>
           </bundlePlacements>
         </screen>
       </screens>
@@ -10624,6 +10925,9 @@
                 <setting name="sort">1</setting>
                 <setting name="sortDirection">ASC</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_description">
+              <bundle>ca_attribute_description</bundle>
             </placement>
             <placement code="ca_storage_locations">
               <bundle>ca_storage_locations</bundle>
@@ -12803,6 +13107,14 @@
             <label locale="en_US">
               <typename>interviewer</typename>
               <typename_reverse>interviewer</typename_reverse>
+            </label>
+          </labels>
+        </type>
+        <type code="subject" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>subject</typename>
+              <typename_reverse>subject</typename_reverse>
             </label>
           </labels>
         </type>

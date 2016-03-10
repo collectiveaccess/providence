@@ -113,7 +113,7 @@
  			$this->view->setVar('access_values', $va_access_values);
  			
  			if(!$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true)) {
- 				die("Invalid table name ".$this->ops_tablename." for detail");
+ 				throw new ApplicationException("Invalid table name ".$this->ops_tablename." for detail");
  			}
 
  			if(!($vn_item_id = $this->request->getParameter($t_item->primaryKey(), pInteger))){
@@ -352,7 +352,7 @@
  		# -------------------------------------------------------
  		public function saveCommentRanking() {
  			if(!$t_item = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true)) {
- 				die("Invalid table name ".$this->ops_tablename." for saving comment");
+ 				throw new ApplicationException("Invalid table name ".$this->ops_tablename." for saving comment");
  			}
 
  			if(!($vn_item_id = $this->request->getParameter($t_item->primaryKey(), pInteger))){

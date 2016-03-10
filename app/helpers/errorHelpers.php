@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,7 +39,7 @@
 	 *
 	 */
 	function caDisplayException(Exception $e) {
-		if(class_exists('AppController')) { AppController::getInstance()->removeAllPlugins(); }
+		if(class_exists('AppController')) { $o_app = AppController::getInstance()->removeAllPlugins(); }
 		
 		$pn_errno = 0;
 		$ps_errstr = $e->getMessage();
@@ -71,7 +71,7 @@
 				//print "ARGH: $ps_errstr<br>";
 				break;
 			default:
-				if(class_exists('AppController')) { AppController::getInstance()->removeAllPlugins(); }
+				if(class_exists('AppController')) { $o_app = AppController::getInstance()->removeAllPlugins(); }
 				require_once((defined("__CA_THEME_DIR__") ? __CA_THEME_DIR__ : __DIR__."/../../themes/default")."/views/system/fatal_error_html.php");
 				exit;
 		}
