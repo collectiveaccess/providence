@@ -258,19 +258,19 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	public function insert($pa_options=null) {
 		$this->set('settings', $this->getSettings());
 		if ($vn_rc =  parent::insert($pa_options)) {
-			$this->flushElementSetCache();
+			$this->flushCacheForElement();
 		}
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
 	public function update($pa_options=null) {
 		$this->set('settings', $this->getSettings());
-		$this->flushElementSetCache();
+		$this->flushCacheForElement();
 		return parent::update($pa_options);
 	}
 	# ------------------------------------------------------
 	public function delete($pb_delete_related = false, $pa_options = NULL, $pa_fields = NULL, $pa_table_list = NULL) {
-		$this->flushElementSetCache();
+		$this->flushCacheForElement();
 		return parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 	}
 	# ------------------------------------------------------
@@ -297,7 +297,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	/**
 	 * Flushes the element set cache for current record, its parent and the whole element set
 	 */
-	private function flushElementSetCache() {
+	private function flushCacheForElement() {
 		if(!$this->getPrimaryKey()) { return; }
 
 		if($vn_parent_id = $this->get('parent_id')) {
@@ -309,6 +309,14 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		}
 
 		CompositeCache::delete($this->getPrimaryKey(), 'ElementSets');
+
+		// flush getElementsAsList() cache too
+		if(CompositeCache::contains('cacheKeys', 'ElementList')) {
+			$va_cache_keys = CompositeCache::fetch('cacheKeys', 'ElementList');
+			foreach($va_cache_keys as $vs_cache_key) {
+				CompositeCache::delete($vs_cache_key, 'ElementList');
+			}
+		}
 	}
 	# ------------------------------------------------------
 	# Element set methods
@@ -699,7 +707,16 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		}
 
 		$vm_return = sizeof($va_return) > 0 ? $va_return : false;;
+
+		// keep track of cache keys so we can flush them when necessary
+		$va_element_list_cache_keys = CompositeCache::fetch('cacheKeys', 'ElementList');
+		if(!is_array($va_element_list_cache_keys)) { $va_element_list_cache_keys = array(); }
+		$va_element_list_cache_keys[] = $vs_cache_key;
+
+		// do cache
+		CompositeCache::save('cacheKeys', $va_element_list_cache_keys, 'ElementList');
 		CompositeCache::save($vs_cache_key, $vm_return, 'ElementList');
+
 		return $vm_return;
 	}
 	# ------------------------------------------------------
