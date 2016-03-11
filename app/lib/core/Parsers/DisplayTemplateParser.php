@@ -521,8 +521,8 @@ class DisplayTemplateParser {
 									foreach(array_keys($va_tags) as $vs_tag) {
 										$va_tag = explode('.', $vs_tag);
 										if(sizeof($va_tag) >= 2) {
-											if ($t_rel_instance->isValidMetadataElement($va_tag[1], true) && ($t_rel_instance->_getElementDatatype($va_tag[1]) === __CA_ATTRIBUTE_VALUE_CONTAINER__)) {
-			
+											if ($t_rel_instance->isValidMetadataElement($va_tag[1], true) && (ca_metadata_elements::getElementDatatype($va_tag[1]) === __CA_ATTRIBUTE_VALUE_CONTAINER__)) {
+
 												$vs_relative_to_container = join(".", array_slice($va_tag, 0, 2));
 												break;
 											}

@@ -1443,7 +1443,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if (!$vs_label_text) { $vs_label_text = $this->getAttributeLabel($vs_attr_element_code); }
 				
 				if ($vb_batch) {
-					$t_element = $this->_getElementInstance($vs_attr_element_code);
+					$t_element = ca_metadata_elements::getInstance($vs_attr_element_code);
 					$va_type_restrictions = $t_element->getTypeRestrictionsForDisplay($this->tableNum());
 					if (sizeof($va_type_restrictions)) {
 						$vs_restriction_list = join("; ", $va_type_restrictions);
@@ -1461,7 +1461,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
                 $vs_documentation_url =  trim((isset($pa_bundle_settings['documentation_url']) && $pa_bundle_settings['documentation_url']) ? $pa_bundle_settings['documentation_url']  : $vs_documentation_url = $this->getAttributeDocumentationUrl($vs_attr_element_code));
 
-				if ($t_element = $this->_getElementInstance($vs_attr_element_code)) {
+				if ($t_element = ca_metadata_elements::getInstance($vs_attr_element_code)) {
 					if ($o_config->get('show_required_field_marker') && (($t_element->getSetting('minChars') > 0) || ((bool)$t_element->getSetting('mustNotBeBlank')) || ((bool)$t_element->getSetting('requireValue')))) { 
 						$vs_label .= ' '.$vs_required_marker;
 					}
@@ -2960,7 +2960,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				foreach($_REQUEST as $vs_key => $vs_val) {
 					$vs_element_set_code = preg_replace("/^ca_attribute_/", "", $vs_f);
 					
-					$t_element = $this->_getElementInstance($vs_element_set_code);
+					$t_element = ca_metadata_elements::getInstance($vs_element_set_code);
 					$vn_element_id = $t_element->getPrimaryKey();
 					
 					if (
@@ -3194,7 +3194,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			foreach($va_fields_by_type['attribute'] as $vs_placement_code => $vs_f) {
 				$vs_element_set_code = preg_replace("/^ca_attribute_/", "", $vs_f);
 				//does the attribute's datatype have a saveElement method - if so, use that instead
-				$vs_element = $this->_getElementInstance($vs_element_set_code);
+				$vs_element = ca_metadata_elements::getInstance($vs_element_set_code);
 				$vn_element_id = $vs_element->getPrimaryKey();
 				$vs_element_datatype = $vs_element->get('datatype');
 				$vs_datatype = Attribute::getValueInstance($vs_element_datatype);
@@ -5422,7 +5422,7 @@ if (!$vb_batch) {
 						// is value a list attribute idno?
 						$va_tmp = explode('.',$vs_filter);
 						$vs_element = array_pop($va_tmp);
-						if (!is_numeric($vs_filter_val) && (($t_element = $t_rel_item->_getElementInstance($vs_element)) && ($t_element->get('datatype') == 3))) {
+						if (!is_numeric($vs_filter_val) && (($t_element = ca_metadata_elements::getInstance($vs_element)) && ($t_element->get('datatype') == 3))) {
 							$va_filter_vals[$vn_index] = caGetListItemID($t_element->get('list_id'), $vs_filter_val);
 						}
 					}

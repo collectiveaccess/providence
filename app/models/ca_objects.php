@@ -1373,7 +1373,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  		if (!($vn_object_id = ($pn_object_id > 0) ? $pn_object_id : $this->getPrimaryKey())) { return null; }
  		
  		if (!($ps_date_element = caGetOption('dateElement', $pa_options, null))) { return null; }
- 		if (!($t_element = $this->_getElementInstance($ps_date_element))) { return null; }
+ 		if (!($t_element = ca_metadata_elements::getInstance($ps_date_element))) { return null; }
  		
  		$vn_current_date = TimeExpressionParser::now();
  		
@@ -1412,7 +1412,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  		$ps_display_template = caGetOption('template', $pa_options, '^ca_movements_x_objects.relation_id');
  		
  		if (!($ps_date_element = caGetOption('dateElement', $pa_options, null))) { return null; }
- 		if (!($t_element = $this->_getElementInstance($ps_date_element))) { return null; }
+ 		if (!($t_element = ca_metadata_elements::getInstance($ps_date_element))) { return null; }
  		
  		$vn_current_date = TimeExpressionParser::now();
  		
