@@ -4687,8 +4687,8 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 
 					if ($va_facet_info['relative_to']) {
 						// TODO: do this everywhere
-						$va_restrict_to_relationship_types = array();
-						$vs_browse_type_limit_sql = '';
+						//$va_restrict_to_relationship_types = array();
+						//$vs_browse_type_limit_sql = '';
 
 						if ($t_subject->hasField('deleted')) {
 							$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
