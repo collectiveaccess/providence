@@ -224,6 +224,12 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 
 	protected $FIELDS;
 
+	/**
+	 * Temporary element settings stash for this instance
+	 * @var array
+	 */
+	protected $opa_element_settings = array();
+
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -236,42 +242,35 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	#
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
-		MemoryCache::save('no_key', array(), 'ElementSettings');
-		MemoryCache::save('no_key', array(), 'ElementSettingValues');
-
 		parent::__construct($pn_id);	# call superclass constructor
 		$this->FIELDS['datatype']['BOUNDS_CHOICE_LIST'] = array_flip(ca_metadata_elements::getAttributeTypes());
 	}
 	# ------------------------------------------------------
 	public function load($pm_id=null, $pb_use_cache = true) {
 		if ($vn_rc = parent::load($pm_id, $pb_use_cache)) {
-			if(!MemoryCache::contains($this->getPrimaryKey(), 'ElementSettings')) {
-				MemoryCache::save($this->getPrimaryKey(), $this->get('settings'), 'ElementSettings');
-			}
+			// @todo pull settings from cache?
 		}
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
 	public function insert($pa_options=null) {
-		$this->set('settings', MemoryCache::fetch('no_key', 'ElementSettings'));
+		$this->set('settings', $this->getSettings());
 		if ($vn_rc =  parent::insert($pa_options)) {
 			$this->flushElementSetCache();
-			MemoryCache::save($this->getPrimaryKey(), MemoryCache::fetch('no_key', 'ElementSettings'), 'ElementSettings');
 		}
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
 	public function update($pa_options=null) {
-		$this->set('settings', MemoryCache::fetch($this->getPrimaryKey(), 'ElementSettings'));
+		$this->set('settings', $this->getSettings());
 		$this->flushElementSetCache();
 		return parent::update($pa_options);
 	}
 	# ------------------------------------------------------
 	public function delete($pb_delete_related = false, $pa_options = NULL, $pa_fields = NULL, $pa_table_list = NULL) {
-		$vn_id = $this->getPrimaryKey();
 		$this->flushElementSetCache();
 		if ($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
-			MemoryCache::delete($vn_id, 'ElementSettings');
+
 		}
 		return $vn_rc;
 	}
@@ -405,9 +404,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	public function getSettings() {
 		if (is_null($this->get('datatype'))) { return null; }
 
-		// MemoryCache key can't be false or null so use special key for soon-to-be-inserted elements
-		$vm_cache_key = ($this->getPrimaryKey() ? $this->getPrimaryKey() : 'no_key');
-		return MemoryCache::fetch($vm_cache_key, 'ElementSettings');
+		return $this->opa_element_settings;
 	}
 	# ------------------------------------------------------
 	/**
@@ -418,16 +415,12 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		if (is_null($this->get('datatype'))) { return null; }
 		if (!$this->isValidSetting($ps_setting)) { return null; }
 
-		// MemoryCache key can't be false or null so use special key for soon-to-be-inserted elements
-		$vm_cache_key = ($this->getPrimaryKey() ? $this->getPrimaryKey() : 'no_key');
-
 		$o_value_instance = Attribute::getValueInstance($this->get('datatype'), null, true);
 		$vs_error = null;
 		if (!$o_value_instance->validateSetting($this->getFieldValuesArray(), $ps_setting, $pm_value, $vs_error)) {
 			$ps_error = $vs_error;
 			return false;
 		}
-		$va_settings = $this->getSettings();
 
 		$va_available_settings = $this->getAvailableSettings();
 		$va_properties = $va_available_settings[$ps_setting];
@@ -435,28 +428,24 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		if (($va_properties['formatType'] == FT_NUMBER) && ($va_properties['displayType'] == DT_CHECKBOXES) && (!$pm_value)) {
 			$pm_value = '0';
 		}
-		$va_settings[$ps_setting] = $pm_value;
-		MemoryCache::save($vm_cache_key, $va_settings, 'ElementSettings');
+		$this->opa_element_settings[$ps_setting] = $pm_value;
 
 		return true;
 	}
 	# ------------------------------------------------------
 	/**
 	 * Return setting value
+	 *
+	 * @param string $ps_setting
+	 * @param bool $pb_use_cache
+	 * @return null|mixed
 	 */
 	public function getSetting($ps_setting, $pb_use_cache=false) {
-		$vn_id = $this->getPrimaryKey();
-		if($pb_use_cache && MemoryCache::contains("{$vn_id}:{$ps_setting}", 'ElementSettingValues')){
-			return MemoryCache::fetch("{$vn_id}:{$ps_setting}", 'ElementSettingValues');
-		}
 		if (is_null($this->get('datatype'))) { return null; }
-		$va_settings = $this->getSettings();
 		$va_available_settings = $this->getAvailableSettings();
 
 		$vs_default = isset($va_available_settings[$ps_setting]['default']) ? $va_available_settings[$ps_setting]['default'] : null;
-		$vm_return = (isset($va_settings[$ps_setting]) ? $va_settings[$ps_setting] : $vs_default);
-		MemoryCache::save("{$vn_id}:{$ps_setting}", $vm_return, 'ElementSettingValues');
-		return $vm_return;
+		return (isset($this->opa_element_settings[$ps_setting]) ? $this->opa_element_settings[$ps_setting] : $vs_default);
 	}
 	# ------------------------------------------------------
 	/**
@@ -464,8 +453,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 */
 	public function isValidSetting($ps_setting) {
 		if (is_null($this->get('datatype'))) { return false; }
-		$va_settings = $this->getAvailableSettings();
-		return (isset($va_settings[$ps_setting])) ? true : false;
+		$va_available_settings = $this->getAvailableSettings();
+		return (isset($va_available_settings[$ps_setting])) ? true : false;
 	}
 	# ------------------------------------------------------
 	/**
