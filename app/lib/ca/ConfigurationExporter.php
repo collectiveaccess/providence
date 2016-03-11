@@ -595,9 +595,7 @@ final class ConfigurationExporter {
 
 			$vo_ui->setAttribute("type", $vs_type);
 
-			if(!$qr_uis->get("is_system_ui")){
-				$vo_ui->setAttribute("system", '0');
-			}
+			$vo_ui->setAttribute("system", $qr_uis->get("is_system_ui"));
 
 			// labels
 			$vo_labels = $this->opo_dom->createElement("labels");
