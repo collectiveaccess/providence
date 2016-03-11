@@ -244,11 +244,13 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
 		$this->FIELDS['datatype']['BOUNDS_CHOICE_LIST'] = array_flip(ca_metadata_elements::getAttributeTypes());
+
+		if($pn_id) { $this->opa_element_settings = $this->get('settings'); }
 	}
 	# ------------------------------------------------------
 	public function load($pm_id=null, $pb_use_cache = true) {
 		if ($vn_rc = parent::load($pm_id, $pb_use_cache)) {
-			// @todo pull settings from cache?
+			$this->opa_element_settings = $this->get('settings');
 		}
 		return $vn_rc;
 	}
@@ -269,10 +271,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	# ------------------------------------------------------
 	public function delete($pb_delete_related = false, $pa_options = NULL, $pa_fields = NULL, $pa_table_list = NULL) {
 		$this->flushElementSetCache();
-		if ($vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list)) {
-
-		}
-		return $vn_rc;
+		return parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 	}
 	# ------------------------------------------------------
 	/**
@@ -302,36 +301,33 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		if(!$this->getPrimaryKey()) { return; }
 
 		if($vn_parent_id = $this->get('parent_id')) {
-			CompositeCache::delete($vn_parent_id, 'ElementSetIds');
 			CompositeCache::delete($vn_parent_id, 'ElementSets');
 		}
 
 		if($vn_hier_element_id = $this->get('hier_element_id')) {
-			CompositeCache::delete($vn_hier_element_id, 'ElementSetIds');
 			CompositeCache::delete($vn_hier_element_id, 'ElementSets');
 		}
 
-		CompositeCache::delete($this->getPrimaryKey(), 'ElementSetIds');
 		CompositeCache::delete($this->getPrimaryKey(), 'ElementSets');
 	}
 	# ------------------------------------------------------
 	# Element set methods
 	# ------------------------------------------------------
 	/**
-	Returns array of elements in set of currently loaded row
+	 * Returns array of elements in set of currently loaded row
+	 *
+	 * @param null|int $pn_element_id
+	 * @param bool $pb_use_cache
+	 * @param null|array $pa_options
+	 * @return array|null
 	 */
 	public function getElementsInSet($pn_element_id=null, $pb_use_cache=true, $pa_options=null) {
-		if (!$pn_element_id) {
-			$pn_element_id = $this->getPrimaryKey();
-		}
+		if (!$pn_element_id) { $pn_element_id = $this->getPrimaryKey(); }
 		if (!$pn_element_id) { return null; }
 
 		if($pb_use_cache && CompositeCache::contains($pn_element_id, 'ElementSets')) {
-			if(caGetOption('idsOnly', $pa_options, false)) {
-				return CompositeCache::fetch($pn_element_id, 'ElementSetIds');
-			} else {
-				return CompositeCache::fetch($pn_element_id, 'ElementSets');
-			}
+			$va_set = CompositeCache::fetch($pn_element_id, 'ElementSets');
+			return (caGetOption('idsOnly', $pa_options, false) ?  array_keys($va_set) : $va_set);
 		}
 
 		$va_hier = $this->getHierarchyAsList($pn_element_id);
@@ -342,7 +338,6 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		foreach($va_hier as $va_element) {
 			$va_element_ids[] = $va_element['NODE']['element_id'];
 		}
-		CompositeCache::save($pn_element_id, $va_element_ids, 'ElementSetIds');
 
 		// Get labels
 		$va_labels = $this->getPreferredDisplayLabelsForIDs($va_element_ids);
@@ -359,7 +354,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		}
 
 		$va_tmp = $this->_getSortedElementsForParent($va_element_set, $va_root['element_id']);
-		array_unshift($va_tmp, $va_root);
+		$va_tmp[$va_root['element_id']] = $va_root;
 
 		CompositeCache::save($pn_element_id, $va_tmp, 'ElementSets');
 
@@ -376,7 +371,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		foreach($pa_element_set[$pn_parent_id] as $vn_rank => $va_elements_by_id) {
 			foreach($va_elements_by_id as $vn_element_id => $va_element) {
 				$va_tmp[$vn_element_id] = $va_element;
-				$va_tmp = array_merge($va_tmp, $this->_getSortedElementsForParent($pa_element_set, $vn_element_id));
+				$va_tmp = array_replace($va_tmp, $this->_getSortedElementsForParent($pa_element_set, $vn_element_id));
 			}
 		}
 
