@@ -889,7 +889,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								foreach($va_terms as $vs_term) {
 									if ($vb_has_wildcard) { $vs_term .= '*'; }
 									
-									if (in_array(trim(mb_strtolower($vs_term, 'UTF-8')), WLPlugSearchEngineSqlSearch::$s_stop_words)) { continue; }
+									if (!in_array($va_access_point_info['access_point'], array('modified', 'created')) && in_array(trim(mb_strtolower($vs_term, 'UTF-8')), WLPlugSearchEngineSqlSearch::$s_stop_words)) { continue; }
 									$vs_stripped_term = preg_replace('!\*+$!u', '', $vs_term);
 									
 									if ($vb_has_wildcard) {
