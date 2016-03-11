@@ -930,6 +930,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * @throws MemoryCacheInvalidParameterException
 	 */
 	static public function getElementDatatype($pm_element_code_or_id) {
+		if(!$pm_element_code_or_id) { return null; }
+		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
+
 		if(MemoryCache::contains($pm_element_code_or_id, 'ElementDataTypes')) {
 			return MemoryCache::fetch($pm_element_code_or_id, 'ElementDataTypes');
 		}
@@ -950,6 +953,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * @throws MemoryCacheInvalidParameterException
 	 */
 	static public function getElementCodeForId($pm_element_id) {
+		if(!$pm_element_id) { return null; }
+		if(is_numeric($pm_element_id)) { $pm_element_id = (int) $pm_element_id; }
+
 		if(MemoryCache::contains($pm_element_id, 'ElementCodes')) {
 			return MemoryCache::fetch($pm_element_id, 'ElementCodes');
 		}
@@ -972,6 +978,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * @throws MemoryCacheInvalidParameterException
 	 */
 	static public function getElementID($pm_element_code_or_id) {
+		if(!$pm_element_code_or_id) { return null; }
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
 		if(MemoryCache::contains($pm_element_code_or_id, 'ElementIDs')) {
@@ -996,6 +1003,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * @throws MemoryCacheInvalidParameterException
 	 */
 	static public function getElementListID($pm_element_code_or_id) {
+		if(!$pm_element_code_or_id) { return null; }
 		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
 
 		$vm_return = null;

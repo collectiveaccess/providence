@@ -92,6 +92,7 @@
 		 * create an attribute linked to the current row using values in $pa_values
 		 */
 		public function addAttribute($pa_values, $pm_element_code_or_id, $ps_error_source=null, $pa_options=null) {
+			require_once(__CA_APP_DIR__.'/models/ca_metadata_elements.php');
 			if (!($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id))) { return false; }
 			if ($t_element->get('parent_id') > 0) { return false; }
 			$vn_element_id = $t_element->getPrimaryKey();
