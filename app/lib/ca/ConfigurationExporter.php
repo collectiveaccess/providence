@@ -595,6 +595,10 @@ final class ConfigurationExporter {
 
 			$vo_ui->setAttribute("type", $vs_type);
 
+			if(!$qr_uis->get("is_system_ui")){
+				$vo_ui->setAttribute("system", '0');
+			}
+
 			// labels
 			$vo_labels = $this->opo_dom->createElement("labels");
 			$qr_ui_labels = $this->opo_db->query("SELECT * FROM ca_editor_ui_labels WHERE ui_id=?",$qr_uis->get("ui_id"));
