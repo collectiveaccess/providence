@@ -345,7 +345,14 @@
 						}
 						
 						// set last browse id for hierarchy browser
-						$this->view->setVar('browse_last_id', intval($this->request->session->getVar($this->ops_tablename.'_browse_last_id')));
+						$vn_id = intval($this->request->session->getVar($this->ops_tablename.'_browse_last_id'));
+						if (!$t_model->load($vn_id)) { 
+							$vn_id = null;
+						} elseif ($t_model->get('deleted')) {
+							$vn_id = $t_model->get('parent_id');
+						}
+						
+						$this->view->setVar('browse_last_id', $vn_id);
 					}
 					
 					$this->opo_result_context->setAsLastFind();
