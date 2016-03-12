@@ -1451,15 +1451,13 @@ class SearchIndexer extends SearchBase {
 							// trigger reindexing of children
 							$o_indexer = new SearchIndexer($this->opo_db);
 							$pt_subject->load($pn_row_id);
-							$va_content = $pt_subject->get($pt_subject->tableName().".".$vs_element_code, array('returnAsArray' => true, 'returnAllLocales' => true));
+							$va_content = $pt_subject->get($pt_subject->tableName().".".$vs_element_code, array('returnWithStructure' => true,'returnAsArray' => true, 'returnAllLocales' => true));
 
 							foreach($va_children_ids as $vn_id) {
 								if($vn_id == $pn_row_id) { continue; }
 								$o_indexer->opo_engine->startRowIndexing($pn_subject_tablenum, $vn_id);
 								foreach($va_content as $vn_i => $va_by_locale) {
-									if (!is_array($va_by_locale)) { $va_by_locale = [$va_by_locale]; }
 									foreach($va_by_locale as $vn_locale_id => $va_content_list) {
-										if (!is_array($va_content_list)) { $va_content_list = [$va_content_list]; }
 										foreach($va_content_list as $va_content_container) {
 											$o_indexer->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $vn_id, $va_content_container[$vs_element_code], array_merge($pa_data, array('DONT_TOKENIZE' => 1)));
 										}
