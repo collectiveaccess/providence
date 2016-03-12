@@ -211,7 +211,13 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 			}
 	
 			unset($va_info['_access_points']);
-			unset($va_info[$pm_subject_table]);
+			
+			$vs_label_table = null;
+			if (($t_instance = $this->opo_datamodel->getInstanceByTableName($pm_subject_table, true)) && (method_exists($t_instance, 'getLabelTableName'))) {
+				$vs_label_table = $t_instance->getLabelTableName();
+			}
+			
+			if (!isset($va_info[$pm_subject_table]['related']) && (!$vs_label_table || !isset($va_info[$vs_label_table]['related']))) { unset($va_info[$pm_subject_table]); }	// remove subject table _unless_ 'related' indexing is enabled in subject or subject's label
 			$va_tables = array_keys($va_info);
 			return $va_tables;
 		}

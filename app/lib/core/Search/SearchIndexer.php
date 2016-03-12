@@ -884,14 +884,20 @@ class SearchIndexer extends SearchBase {
 								$va_proc_field_list[] = $va_rel['many_table'].'.'.$va_rel['many_table_field'];
 							}
 
+							$vs_deleted_sql = '';
+							if ($t_subject->hasField('deleted')) {
+								$vs_deleted_sql = "({$vs_subject_tablename}.deleted = 0) AND ";
+							}
 
 							$vs_sql = "
-							SELECT ".join(",", $va_proc_field_list)."
-							FROM ".$vs_subject_tablename."
-							".join("\n", $va_joins)."
-							WHERE
-								(".$vs_subject_tablename.'.'.$vs_subject_pk.' = ?)
-						';
+								SELECT ".join(",", $va_proc_field_list)."
+								FROM ".$vs_subject_tablename."
+								".join("\n", $va_joins)."
+								WHERE
+									{$vs_deleted_sql}
+									(".$vs_subject_tablename.'.'.$vs_subject_pk.' = ?)
+							';
+							
 							$va_params = array($pn_subject_row_id);
 
 							$va_queries[] = array('sql' => $vs_sql, 'params' => $va_params);
@@ -1451,7 +1457,9 @@ class SearchIndexer extends SearchBase {
 								if($vn_id == $pn_row_id) { continue; }
 								$o_indexer->opo_engine->startRowIndexing($pn_subject_tablenum, $vn_id);
 								foreach($va_content as $vn_i => $va_by_locale) {
+									if (!is_array($va_by_locale)) { $va_by_locale = [$va_by_locale]; }
 									foreach($va_by_locale as $vn_locale_id => $va_content_list) {
+										if (!is_array($va_content_list)) { $va_content_list = [$va_content_list]; }
 										foreach($va_content_list as $va_content_container) {
 											$o_indexer->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $vn_id, $va_content_container[$vs_element_code], array_merge($pa_data, array('DONT_TOKENIZE' => 1)));
 										}
@@ -1594,27 +1602,56 @@ class SearchIndexer extends SearchBase {
 // Loop through dependent tables
 
 		foreach($va_deps as $vs_dep_table) {
-
 			$t_dep 				= $this->opo_datamodel->getInstanceByTableName($vs_dep_table, true);
 			if (!$t_dep) { continue; }
 			$vs_dep_pk 			= $t_dep->primaryKey();
 			$vn_dep_tablenum 	= $t_dep->tableNum();
 
-			if (method_exists($t_subject, 'isSelfRelationship') && $t_subject->isSelfRelationship()) {
-				// get related rows via self relation
-				$vs_sql = "
-					SELECT *
-					FROM ".$t_subject->tableName()."
-					WHERE
-						relation_id = ?
-				";
-				//print $vs_sql;
+			//
+			// Handle indexing of self relationships (Eg. indexing of tables such as ca_objects_x_objects)
+			// *and* 
+			// 'related' indexing (indexing across self-relationships for a record; Eg. indexing of related objects against objects)
+			//
+			if (
+				(method_exists($t_subject, 'isSelfRelationship') && $t_subject->isSelfRelationship())
+				||
+				($vs_subject_tablename === $vs_dep_table)
+			) {
+			
+				$va_params = null;
+				if(($vs_subject_tablename === $vs_dep_table) && ($vs_self_rel_table_name = $t_dep->getSelfRelationTableName())) {
+					//
+					// dependency for 'related' indexing; translate dependency into a set of self-relations
+					//
+					$t_self_rel = $this->opo_datamodel->getInstanceByTableName($vs_self_rel_table_name, true);
+					$va_params = [$pn_subject_row_id, $pn_subject_row_id];
+					$vs_sql = "
+						SELECT *
+						FROM {$vs_self_rel_table_name}
+						WHERE
+							".$t_self_rel->getLeftTableFieldName()." = ? OR ".$t_self_rel->getRightTableFieldName()." = ?
+					";
+				} else {
+					//
+					// dependency is a specific row in a self-relation
+					//
+					$t_self_rel = $t_subject;
+					
+					$va_params = [$pn_subject_row_id];
+					// get related rows via self relation
+					$vs_sql = "
+						SELECT *
+						FROM ".$t_self_rel->tableName()."
+						WHERE
+							".$t_self_rel->primaryKey()." = ?
+					";
+				}
 
-				$qr_res = $this->opo_db->query($vs_sql, array($pn_subject_row_id));
+				$qr_res = $this->opo_db->query($vs_sql, $va_params);
 
 				while($qr_res->nextRow()) {
-					$vn_left_id = $qr_res->get($t_subject->getLeftTableFieldName());
-					$vn_right_id = $qr_res->get($t_subject->getRightTableFieldName());
+					$vn_left_id = $qr_res->get($t_self_rel->getLeftTableFieldName());
+					$vn_right_id = $qr_res->get($t_self_rel->getRightTableFieldName());
 					$vn_rel_type_id = $qr_res->get('type_id');
 
 					$va_info = $this->getTableIndexingInfo($vs_dep_table, $vs_dep_table);
@@ -1692,6 +1729,7 @@ class SearchIndexer extends SearchBase {
 			}
 
 			$va_dep_rel_indexing_tables = $this->getRelatedIndexingTables($vs_dep_table);
+
 // Loop through tables indexed against dependency
 			foreach($va_dep_rel_indexing_tables as $vs_dep_rel_table) {
 
@@ -1988,11 +2026,18 @@ class SearchIndexer extends SearchBase {
 			$vs_subject_pk = $t_subject->primaryKey();
 
 		}
+		
+		$vs_deleted_sql = '';
+		if ($t_select->hasField('deleted')) {
+			$vs_deleted_sql = "({$vs_select_tablename}.deleted = 0) AND ";
+		}
+		
 		$vs_sql = "
 			SELECT ".join(", ", array_keys($va_flds))."
 			FROM ".$vs_select_tablename."
 			".join("\n", $va_joins)."
 			WHERE
+			{$vs_deleted_sql}
 			{$ps_subject_tablename}.{$vs_subject_pk} = ?
 		";
 
