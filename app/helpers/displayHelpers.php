@@ -2923,10 +2923,9 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 		if (!($t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true))) {
 			return null;
 		}
-		if (!method_exists($t_instance, "_getElementDatatype") || (is_null($vn_datatype = $t_instance->_getElementDatatype($va_tmp[1])))) {
-			return null;
-		}
-		
+
+		$vn_datatype = ca_metadata_elements::getElementDatatype($va_tmp[1]);
+		if (is_null($vn_datatype)) { return null; }
 		
 		if (!($vs_user_currency = $po_request->user ? $po_request->user->getPreference('currency') : 'USD')) {
 			$vs_user_currency = 'USD';
@@ -2955,7 +2954,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 				}
 			
 				$va_tags_to_process[$vs_raw_tag] = true;
-				$va_subelements_to_process["{$vs_bundle_name}.{$vs_subelement}"] = $t_instance->_getElementDatatype($vs_subelement);
+				$va_subelements_to_process["{$vs_bundle_name}.{$vs_subelement}"] = ca_metadata_elements::getElementDatatype($vs_subelement);
 			}
 		} else {
 			$va_tmp = explode(".", $vs_bundle_name);

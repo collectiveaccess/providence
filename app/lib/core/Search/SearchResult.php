@@ -1412,7 +1412,7 @@ class SearchResult extends BaseObject {
 // [PRIMARY TABLE] Metadata attribute
 //				
 
-					if (($t_instance instanceof BaseModelWithAttributes) && isset($va_path_components['field_name']) && $va_path_components['field_name'] && $t_element = $t_instance->_getElementInstance($va_path_components['field_name'])) {
+					if (($t_instance instanceof BaseModelWithAttributes) && isset($va_path_components['field_name']) && $va_path_components['field_name'] && $t_element = ca_metadata_elements::getInstance($va_path_components['field_name'])) {
 						$vn_element_id = $t_element->getPrimaryKey();
 					} else {
 						return $pa_options['returnAsArray'] ? array() : null;
@@ -1452,7 +1452,7 @@ class SearchResult extends BaseObject {
 					
 					foreach($va_filter_vals as $vn_index => $vs_filter_val) {
 						// is value a list attribute idno?
-						if (!is_numeric($vs_filter_val) && (($t_element = $t_instance->_getElementInstance($vs_filter)) && ($t_element->get('datatype') == 3))) {
+						if (!is_numeric($vs_filter_val) && (($t_element = ca_metadata_elements::getInstance($vs_filter)) && ($t_element->get('datatype') == 3))) {
 							$va_filter_vals[$vn_index] = caGetListItemID($t_element->get('list_id'), $vs_filter_val);
 						}
 					}
@@ -1718,7 +1718,7 @@ class SearchResult extends BaseObject {
 		if (is_array($pa_value_list) && sizeof($pa_value_list)) {
 			$va_val_proc = array();
 			foreach($pa_value_list as $o_attribute) {
-				$t_attr_element = $pt_instance->_getElementInstance($o_attribute->getElementID());
+				$t_attr_element = ca_metadata_elements::getInstance($o_attribute->getElementID());
 				$vn_attr_type = $t_attr_element->get('datatype');
 				
 				$va_acc = array();
@@ -1774,7 +1774,7 @@ class SearchResult extends BaseObject {
 					if (is_null($vs_val_proc)) {
 						switch($o_value->getType()) {
 							case __CA_ATTRIBUTE_VALUE_LIST__:
-								$t_element = $pt_instance->_getElementInstance($o_value->getElementID());
+								$t_element = ca_metadata_elements::getInstance($o_value->getElementID());
 								$vn_list_id = $t_element->get('list_id');
 						
 								$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
