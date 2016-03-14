@@ -1639,7 +1639,7 @@ class SearchIndexer extends SearchBase {
 						FROM {$vs_self_rel_table_name} t0
 						{$vs_sql_joins}
 						WHERE
-							(t0".$t_self_rel->getLeftTableFieldName()." = ? OR t0".$t_self_rel->getRightTableFieldName()." = ?)
+							(t0.".$t_self_rel->getLeftTableFieldName()." = ? OR t0.".$t_self_rel->getRightTableFieldName()." = ?)
 							{$vs_delete_sql}
 					";
 				} else {
@@ -2045,10 +2045,13 @@ class SearchIndexer extends SearchBase {
 			$vs_select_tablename = array_shift($pa_tables);
 			$t_subject = $this->opo_datamodel->getInstanceByTableName($ps_subject_tablename, true);
 			$vs_subject_pk = $t_subject->primaryKey();
-
+			
+			$t_select = $this->opo_datamodel->getInstanceByTableName($vs_select_tablename, true);
+			$vs_select_pk = $t_subject->primaryKey();
 		}
 		
 		$vs_deleted_sql = '';
+		if (!$t_select) { print "NOTHING FOR {$vs_select_tablename}<br>\n"; }
 		if ($t_select->hasField('deleted')) {
 			$vs_deleted_sql = "({$vs_select_tablename}.deleted = 0) AND ";
 		}
