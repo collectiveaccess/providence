@@ -73,8 +73,10 @@ class Replicator {
 			/** @var CAS\ReplicationService $o_source */
 
 			// get source guid
-			$o_result = $o_source->setEndpoint('getsysguid')->request();
-			$vs_source_system_guid = $o_result->getRawData()['system_guid'];
+			$vs_source_system_guid = $o_source->setEndpoint('getsysguid')->request()->getRawData()['system_guid'];
+			if(!strlen($vs_source_system_guid)) {
+				throw new Exception('Could not get system GUID for one of the configured replication sources: ' . $vs_source_key);
+			}
 
 			foreach($this->getTargetsAsServiceClients() as $o_target) {
 				/** @var CAS\ReplicationService $o_target */
@@ -91,12 +93,17 @@ class Replicator {
 				if($pn_min_log_id > $pn_replicated_log_id) { $pn_replicated_log_id = $pn_min_log_id; }
 
 				// get change log from source, starting with the log id we got above
-				// @todo
+				$va_source_log_entries = $o_source->setEndpoint('getlog')
+					->addGetParameter('from', $pn_replicated_log_id)
+					->request()->getRawData();
 
-				var_dump($o_source->setEndpoint('getlog')->addGetParameter('from', $pn_replicated_log_id)->request()->getRawData());
+				// apply that log at the current target
+				$o_resp = $o_target->setRequestMethod('POST')->setEndpoint('applylog')
+					->addGetParameter('system_guid', $vs_source_system_guid)
+					->setRequestBody($va_source_log_entries)
+					->request();
 
-				//$o_result = $o_client->request();
-				//var_dump($o_result->getRawData());
+				var_dump($o_resp);
 			}
 		}
 	}

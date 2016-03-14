@@ -1,5 +1,42 @@
 [
     {
+        "name": "collectiveaccess/service-wrapper",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/CollectiveAccessProject/collectiveaccess-php.git",
+            "reference": "1622f751618615a74788cdd772c6859155acf315"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/CollectiveAccessProject/collectiveaccess-php/zipball/1622f751618615a74788cdd772c6859155acf315",
+            "reference": "1622f751618615a74788cdd772c6859155acf315",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.4.0"
+        },
+        "time": "2016-03-03 15:29:43",
+        "type": "library",
+        "installation-source": "source",
+        "autoload": {
+            "psr-0": {
+                "CollectiveAccessService": "src"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "GPL3"
+        ],
+        "description": "A simple PHP wrapper for the CollectiveAccess web service API",
+        "homepage": "http://www.collectiveaccess.org",
+        "keywords": [
+            "collectiveaccess",
+            "providence"
+        ]
+    },
+    {
         "name": "doctrine/cache",
         "version": "v1.4.4",
         "version_normalized": "1.4.4.0",
@@ -2303,43 +2340,6 @@
             "phpunit",
             "testing",
             "xunit"
-        ]
-    },
-    {
-        "name": "collectiveaccess/service-wrapper",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
-        "source": {
-            "type": "git",
-            "url": "https://github.com/CollectiveAccessProject/collectiveaccess-php.git",
-            "reference": "1622f751618615a74788cdd772c6859155acf315"
-        },
-        "dist": {
-            "type": "zip",
-            "url": "https://api.github.com/repos/CollectiveAccessProject/collectiveaccess-php/zipball/1622f751618615a74788cdd772c6859155acf315",
-            "reference": "1622f751618615a74788cdd772c6859155acf315",
-            "shasum": ""
-        },
-        "require": {
-            "php": ">=5.4.0"
-        },
-        "time": "2016-03-03 15:29:43",
-        "type": "library",
-        "installation-source": "source",
-        "autoload": {
-            "psr-0": {
-                "CollectiveAccessService": "src"
-            }
-        },
-        "notification-url": "https://packagist.org/downloads/",
-        "license": [
-            "GPL3"
-        ],
-        "description": "A simple PHP wrapper for the CollectiveAccess web service API",
-        "homepage": "http://www.collectiveaccess.org",
-        "keywords": [
-            "collectiveaccess",
-            "providence"
         ]
     }
 ]

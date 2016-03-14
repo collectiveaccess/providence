@@ -54,6 +54,9 @@ class ReplicationService {
 			case 'getlastreplicatedlogid':
 				$va_return = self::getLastReplicatedLogID($po_request);
 				break;
+			case 'applylog';
+				$va_return = self::applyLog($po_request);
+				break;
 			default:
 				throw new Exception('Unknown endpoint');
 
@@ -91,9 +94,32 @@ class ReplicationService {
 	 */
 	public static function getLastReplicatedLogID($po_request) {
 		$vs_guid = trim($po_request->getParameter('system_guid', pString));
-		if(!strlen($vs_guid)) { throw new Exception('must provide as system guid'); }
+		if(!strlen($vs_guid)) { throw new Exception('must provide a system guid'); }
 
 		return array('replicated_log_id' => ca_replication_log::getLastReplicatedLogID($vs_guid));
 	}
 	# -------------------------------------------------------
+	/**
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	public static function applyLog($po_request) {
+		$vs_guid = trim($po_request->getParameter('system_guid', pString));
+		if(!strlen($vs_guid)) { throw new Exception('must provide a system guid'); }
+		if($po_request->getRequestMethod() !== 'POST') { throw new Exception('must be a post request'); }
+
+		$vn_last_applied_log_id = false;
+		$va_log = json_decode($po_request->getRawPostData(), true);
+		foreach($va_log as $vn_log_id => $va_log_entry) {
+			// @todo apply log entry in local system
+			$vn_last_applied_log_id = $vn_log_id;
+		}
+
+		if($vn_last_applied_log_id) {
+			return array('replicated_log_id' => $vn_last_applied_log_id);
+		} else {
+			return false;
+		}
+	}
 }
