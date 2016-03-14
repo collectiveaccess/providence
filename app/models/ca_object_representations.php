@@ -719,7 +719,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  			$t_anno = new ca_representation_annotations();
  			if (!$t_anno->hasElement($vs_class_element)) { 
  				$vs_class_element = null; 
- 			} elseif($t_anno->_getElementDatatype($vs_class_element) != __CA_ATTRIBUTE_VALUE_LIST__)  {
+ 			} elseif(ca_metadata_elements::getElementDatatype($vs_class_element) != __CA_ATTRIBUTE_VALUE_LIST__)  {
  				// not a list element
  				$vs_class_element = null; 
  			}

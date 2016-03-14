@@ -179,7 +179,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 			if (is_array($va_fields_to_index)) {
 				foreach($va_fields_to_index as $vs_f => $va_info) {
 					if ((substr($vs_f, 0, 14) === '_ca_attribute_') && preg_match('!^_ca_attribute_([A-Za-z]+[A-Za-z0-9_]*)$!', $vs_f, $va_matches)) {
-						$vn_element_id = $t_subject->_getElementID($va_matches[1]);
+						$vn_element_id = ca_metadata_elements::getElementID($va_matches[1]);
 						unset($va_fields_to_index[$vs_f]);
 						$va_fields_to_index['_ca_attribute_'.$vn_element_id] = $va_info;
 					}
