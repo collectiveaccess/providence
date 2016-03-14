@@ -775,21 +775,23 @@ class SearchIndexer extends SearchBase {
 						$va_proc_field_list[] = $vs_related_table.'.'.$vs_related_pk;
 						if ($vs_self_rel_table_name) { $va_proc_field_list[] = $vs_self_rel_table_name.'.type_id rel_type_id'; }
 
+						$vs_delete_sql = $t_rel->hasField('deleted') ? " AND {$vs_related_table}.deleted = 0" : '';
 						$vs_sql = "
-						SELECT ".join(",", $va_proc_field_list)."
-						FROM {$vs_related_table}
-						INNER JOIN {$vs_self_rel_table_name} ON {$vs_self_rel_table_name}.".$t_self_rel->getLeftTableFieldName()." = {$vs_related_table}.{$vs_related_pk}
-						WHERE
-							(".$vs_self_rel_table_name.'.'.$t_self_rel->getRightTableFieldName().' = ?)
+							SELECT ".join(",", $va_proc_field_list)."
+							FROM {$vs_related_table}
+							INNER JOIN {$vs_self_rel_table_name} ON {$vs_self_rel_table_name}.".$t_self_rel->getLeftTableFieldName()." = {$vs_related_table}.{$vs_related_pk}
+							WHERE
+								(".$vs_self_rel_table_name.'.'.$t_self_rel->getRightTableFieldName().' = ?)
+								'.$vs_delete_sql.'
+							UNION
 						
-						UNION
-						
-						SELECT '.join(",", $va_proc_field_list)."
-						FROM {$vs_related_table}
-						INNER JOIN {$vs_self_rel_table_name} ON {$vs_self_rel_table_name}.".$t_self_rel->getRightTableFieldName()." = {$vs_related_table}.{$vs_related_pk}
-						WHERE
-							(".$vs_self_rel_table_name.'.'.$t_self_rel->getLeftTableFieldName().' = ?)
-					';
+							SELECT '.join(",", $va_proc_field_list)."
+							FROM {$vs_related_table}
+							INNER JOIN {$vs_self_rel_table_name} ON {$vs_self_rel_table_name}.".$t_self_rel->getRightTableFieldName()." = {$vs_related_table}.{$vs_related_pk}
+							WHERE
+								(".$vs_self_rel_table_name.'.'.$t_self_rel->getLeftTableFieldName().' = ?)
+								'.$vs_delete_sql.'
+						';
 						$va_params = array($pn_subject_row_id, $pn_subject_row_id);
 
 						$va_queries[] = array('sql' => $vs_sql, 'params' => $va_params);
@@ -1623,11 +1625,22 @@ class SearchIndexer extends SearchBase {
 					//
 					$t_self_rel = $this->opo_datamodel->getInstanceByTableName($vs_self_rel_table_name, true);
 					$va_params = [$pn_subject_row_id, $pn_subject_row_id];
+					
+					$vs_sql_joins = $vs_delete_sql = '';
+					if ($t_subject->hasField('deleted')) {
+						$vs_sql_joins = "
+							INNER JOIN {$vs_subject_tablename} AS t1 ON t1.{$vs_subject_pk} = t0.".$t_self_rel->getLeftTableFieldName()."
+							INNER JOIN {$vs_subject_tablename} AS t2 ON t2.{$vs_subject_pk} = t0.".$t_self_rel->getRightTableFieldName();
+						$vs_delete_sql = "AND (t1.deleted = 0 AND t2.deleted = 0)";
+					}
+					
 					$vs_sql = "
 						SELECT *
-						FROM {$vs_self_rel_table_name}
+						FROM {$vs_self_rel_table_name} t0
+						{$vs_sql_joins}
 						WHERE
-							".$t_self_rel->getLeftTableFieldName()." = ? OR ".$t_self_rel->getRightTableFieldName()." = ?
+							(t0".$t_self_rel->getLeftTableFieldName()." = ? OR t0".$t_self_rel->getRightTableFieldName()." = ?)
+							{$vs_delete_sql}
 					";
 				} else {
 					//
@@ -1636,12 +1649,22 @@ class SearchIndexer extends SearchBase {
 					$t_self_rel = $t_subject;
 					
 					$va_params = [$pn_subject_row_id];
+					
+					$vs_sql_joins = $vs_delete_sql = '';
+					if ($t_subject->hasField('deleted')) {
+						$vs_sql_joins = "
+							INNER JOIN {$vs_subject_tablename} AS t1 ON t1.{$vs_subject_pk} = t0.".$t_self_rel->getLeftTableFieldName()."
+							INNER JOIN {$vs_subject_tablename} AS t2 ON t2.{$vs_subject_pk} = t0.".$t_self_rel->getRightTableFieldName();
+						$vs_delete_sql = "AND (t1.deleted = 0 AND t2.deleted = 0)";
+					}
+					
 					// get related rows via self relation
 					$vs_sql = "
 						SELECT *
-						FROM ".$t_self_rel->tableName()."
+						FROM ".$t_self_rel->tableName()." t0
+						{$vs_sql_joins}
 						WHERE
-							".$t_self_rel->primaryKey()." = ?
+							t0.".$t_self_rel->primaryKey()." = ? {$vs_delete_sql}
 					";
 				}
 
