@@ -339,11 +339,6 @@ class SearchResult extends BaseObject {
 				{$vs_type_sql}
 		";
 		
-		
-		// Make sure singletons get into the cache
-		foreach($va_row_ids as $vn_row_id) {
-			SearchResult::$opa_hierarchy_parent_prefetch_cache[$ps_tablename][$vn_row_id][$vs_opt_md5][] = $vn_row_id;
-		}
 		$va_row_id_map = null;
 		$vn_level = 0;
 		
