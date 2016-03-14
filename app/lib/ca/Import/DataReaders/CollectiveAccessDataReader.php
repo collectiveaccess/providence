@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2015 Whirl-i-Gig
+ * Copyright 2013-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -90,8 +90,9 @@ class CollectiveAccessDataReader extends BaseDataReader {
 		$this->opn_current_row = 0;
 		
 		try {
-			$this->opo_client = new Client("http://".$va_url['user'].":".$va_url['pass']."@".$va_url['host'].($vs_path ? "/".$vs_path : ""));
-			$request = $this->opo_client->get("/service.php/find/{$vs_table}?".$va_url['query']);
+			$this->opo_client = new Client("http://".$va_url['user'].":".$va_url['pass']."@".$va_url['host'].(($va_url['port'] != 80) ? ":{$va_url['port']}": ''));
+			$request = $this->opo_client->get(($vs_path ? "{$vs_path}" : "")."/service.php/find/{$vs_table}?".$va_url['query']);
+			
 			$response = $request->send();
 			$data = $response->json();
 			
