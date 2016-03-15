@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2202,7 +2202,7 @@ class BaseEditorController extends ActionController {
 		$vn_user_id = $this->request->getUserID();
 		$vs_user_dir = $vs_tmp_directory."/userMedia{$vn_user_id}";
 		if(!file_exists($vs_user_dir)) {
-			mkdir($vs_user_dir);
+			@mkdir($vs_user_dir);
 		}
 		if (!($vn_timeout = (int)$this->request->config->get('ajax_media_upload_tmp_directory_timeout'))) {
 			$vn_timeout = 24 * 60 * 60;

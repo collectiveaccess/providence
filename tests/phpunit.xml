@@ -21,10 +21,12 @@
   <testsuites>
     <testsuite name="Helpers Test Suite">
       <directory>helpers/</directory>
+      <exclude>./helpers/ImportHelpersTest.php</exclude>
     </testsuite>
     <testsuite name="Lib Test Suite">
       <directory>lib/</directory>
-      <exclude>lib/core/Search/ElasticSearch</exclude>
+      <exclude>./lib/core/Search/ElasticSearch</exclude>
+      <exclude>./lib/ca/AttributeValues</exclude>
     </testsuite>
     <testsuite name="Models Test Suite">
       <directory>models/</directory>
@@ -37,6 +39,8 @@
     </testsuite>
     <testsuite name="Tests With Data Suite">
       <directory>testsWithData/</directory>
+      <exclude>./testsWithData/get/AttributeGetTest.php</exclude>
+      <exclude>./testsWithData/get/GettyGetTest.php</exclude>
     </testsuite>
   </testsuites>
 

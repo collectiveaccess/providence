@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -531,9 +531,6 @@
 			if (
 				($vb_has_simple_fields && !$vb_has_attributes && !$vb_has_label_fields)
 			) {
-				if ($t_instance->ATTRIBUTE_TYPE_ID_FLD && is_array($va_restrict_to_types) && sizeof($va_restrict_to_types)) { 
-					$pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD] = $va_restrict_to_types;
-				}
 				return parent::find($pa_values, $pa_options);
 			}
 			
@@ -646,7 +643,7 @@
 					if (($vn_element_id = array_search($vs_field, $va_element_codes)) !== false) {
 						
 						$vs_q = " ca_attribute_values.element_id = {$vn_element_id} AND  ";
-						switch($vn_datatype = $t_instance->_getElementDatatype($vs_field)) {
+						switch($vn_datatype = ca_metadata_elements::getElementDatatype($vs_field)) {
 							case 0:	// continue
 							case 15: // media
 							case 16: // file
@@ -662,7 +659,7 @@
 								}
 								break;
 							case 3:	// list
-								if ($t_element = $t_instance->_getElementInstance($vs_field)) {
+								if ($t_element = ca_metadata_elements::getInstance($vs_field)) {
 									$vn_item_id = is_numeric($vm_value) ? (int)$vm_value : (int)caGetListItemID($t_element->get('list_id'), $vm_value);
 								
 									$vs_q .= "(ca_attribute_values.item_id = ?)";

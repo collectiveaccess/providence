@@ -499,7 +499,7 @@
 							foreach($va_info['map'] as $vs_sub_element => $vs_value) {
 								$va_tmp2 = explode('.', $vs_sub_element);
 								$vs_sub_element = array_pop($va_tmp2);
-								if ($t_element = $po_instance->_getElementInstance($vs_sub_element)) {
+								if ($t_element = ca_metadata_elements::getInstance($vs_sub_element)) {
 									switch($t_element->get('datatype')) {
 										case 3:	// List
 											$t_list = new ca_lists();
@@ -548,7 +548,7 @@
 							foreach($va_info['map'] as $vs_sub_element => $vs_value) {
 								$va_tmp2 = explode('.', $vs_sub_element);
 								$vs_sub_element = array_pop($va_tmp2);
-								if ($t_element = $po_instance->_getElementInstance($vs_sub_element)) {
+								if ($t_element = ca_metadata_elements::getInstance($vs_sub_element)) {
 									switch($t_element->get('datatype')) {
 										case 3:	// List
 											$va_data[$vs_sub_element] = $t_list->getItemIDFromList($t_element->get('list_id'), $vs_value);

@@ -366,7 +366,7 @@
 // 				
 // 			);
 			foreach($va_codes as $vs_code) {
-				$t_element = $t_instance->_getElementInstance($vs_code);
+				$t_element = ca_metadata_elements::getInstance($vs_code);
 				
 				switch($t_element->get('datatype')) {
 					case 0:		// container

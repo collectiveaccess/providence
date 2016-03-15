@@ -1162,8 +1162,10 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 		if($vn_pick >= 0 && ($vn_best_distance > $pn_threshold)) {
 			$va_pick = $va_hits[$vn_pick];
 
-			MemoryCache::save($vs_cache_key, $va_pick['ID']['value'], 'AATMatches');
-			return $va_pick['ID']['value'];
+			if($vs_value = trim($va_pick['ID']['value'])) {
+				MemoryCache::save($vs_cache_key, $vs_value, 'AATMatches');
+				return $vs_value;
+			}
 		}
 
 		return false;

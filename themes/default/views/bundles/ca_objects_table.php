@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -61,7 +61,11 @@
 	$vb_dont_show_del	=	((isset($va_settings['dontShowDeleteButton']) && $va_settings['dontShowDeleteButton'])) ? true : false;
 	
 	// params to pass during object lookup
-	$va_lookup_params = array('type' => isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : '', 'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction']);
+	$va_lookup_params = array(
+		'type' => isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : '',
+		'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction'],
+		'noInline' => (bool) preg_match("/QuickAdd$/", $this->request->getController()) ? 1 : 0
+	);
 
 	if ($vb_batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
@@ -76,27 +80,28 @@
 	}
 ?>
 <script type="text/javascript">
-	function caHackSearchResultForm(data) {
-		if(data) {
-			jQuery('#tableContent').html(data);
-		}
+	function caAsyncSearchResultForm(data) {
+		var tableContent = jQuery('#tableContent');
+
+		if(data) { tableContent.html(data); }
 
 		// have to re-init the relation bundle because the interstitial buttons have only now been loaded
 		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', initiRelationBundleOptions);
 
 		jQuery('#tableContent .list-header-unsorted a, #tableContent .list-header-sorted-desc a, #tableContent .list-header-sorted-asc a').click(function(event) {
 			event.preventDefault();
-			jQuery.get(event.target + '<?php print $vs_url_string; ?>', caHackSearchResultForm);
+			jQuery.get(event.target + '<?php print $vs_url_string; ?>', caAsyncSearchResultForm);
 		});
 
-		jQuery('#tableContent form').submit(function(event) {
-			event.preventDefault();
-
-			jQuery.ajax({
-				type: 'POST',
-				url: event.target.action + '<?php print $vs_url_string; ?>',
-				data: $(this).serialize(),
-				success: caHackSearchResultForm
+		tableContent.find('form').each(function() {
+			jQuery(this).submit(function(event) {
+				event.preventDefault();
+				jQuery.ajax({
+					type: 'POST',
+					url: event.target.action + '<?php print $vs_url_string; ?>',
+					data: jQuery(this).serialize(),
+					success: caAsyncSearchResultForm
+				});
 			});
 		});
 	}
@@ -105,7 +110,7 @@
 	if(sizeof($va_initial_values)) {
 ?>
 		jQuery(document).ready(function() {
-			jQuery.get('<?php print caNavUrl($this->request, 'find', 'ObjectTable', 'Index', $va_additional_search_controller_params); ?>', caHackSearchResultForm);
+			jQuery.get('<?php print caNavUrl($this->request, 'find', 'ObjectTable', 'Index', $va_additional_search_controller_params); ?>', caAsyncSearchResultForm);
 		});
 <?php
 	}
@@ -240,7 +245,7 @@
 			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'Object', 'Get', $va_lookup_params); ?>',
 			types: <?php print json_encode($va_settings['restrict_to_types']); ?>,
 			restrictToSearch: <?php print json_encode($va_settings['restrict_to_search']); ?>,
-			bundlePreview: <?php print caGetBundlePreviewForRelationshipBundle($t_item, $this->getVar('initialValues'), $va_settings['display_template']); ?>,
+			bundlePreview: <?php print caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
 			isSortable: false,
 
