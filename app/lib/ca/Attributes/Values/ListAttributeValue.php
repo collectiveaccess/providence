@@ -467,7 +467,8 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 							case 'select':
 							case null:
 								$vs_select = "jQuery('#{fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}')";
-								$vs_selector_for_val = "jQuery(this).find(':selected').val()";
+								//$vs_selector_for_val = "jQuery(this).find(':selected').val()";
+								$vs_selector_for_val = "{$vs_select}.val()";
 								$vs_condition = $vs_selector_for_val . " === '" . $va_item['item_id'] . "'";
 								break;
 							default:
@@ -491,7 +492,6 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 	});
 </script>
 	";
-						caDebug($vs_hide_js, $vs_condition);
 					}
 				}
 			}
