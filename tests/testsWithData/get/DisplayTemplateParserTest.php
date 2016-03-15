@@ -488,12 +488,12 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$vm_ret = DisplayTemplateParser::evaluate("URL: <l>^ca_objects.preferred_labels.name</l> (^ca_objects.idno)", "ca_objects", array($this->opn_object_id), array('returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(1, $vm_ret);
-		$this->assertContains("editor/objects/ObjectEditor/Summary/object_id/{$this->opn_object_id}\">My test image</a> (TEST.1)", $vm_ret[0]);
+		$this->assertContains("editor/objects/ObjectEditor/Summary/object_id/{$this->opn_object_id}/rel/1\">My test image</a> (TEST.1)", $vm_ret[0]);
 
 		$vm_ret = DisplayTemplateParser::evaluate("URL: ^ca_objects.preferred_labels.name (^ca_objects.idno)", "ca_objects", array($this->opn_object_id), array('requireLinkTags' => false, 'returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(1, $vm_ret);
-		$this->assertContains("editor/objects/ObjectEditor/Summary/object_id/{$this->opn_object_id}'>URL: My test image (TEST.1)</a>", $vm_ret[0]);
+		$this->assertContains("editor/objects/ObjectEditor/Summary/object_id/{$this->opn_object_id}/rel/1'>URL: My test image (TEST.1)</a>", $vm_ret[0]);
 	}
 	# -------------------------------------------------------
 	public function testFormatsWithPlaceholderPrefixOption() {
@@ -685,8 +685,8 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$this->assertInternalType('string', $vm_ret[0]);
 		$this->assertInternalType('string', $vm_ret[1]);
 
-		$this->assertContains("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id1."\">Homer J. Simpson</a> (hjs)</li></ul>", $vm_ret[0]);
-		$this->assertContains("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id2."\">Bart Simpson</a> (bs)</li></ul>", $vm_ret[1]);
+		$this->assertContains("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id1."/rel/1\">Homer J. Simpson</a> (hjs)</li></ul>", $vm_ret[0]);
+		$this->assertContains("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id2."/rel/1\">Bart Simpson</a> (bs)</li></ul>", $vm_ret[1]);
 	}
 	# -------------------------------------------------------
 	public function testStringFormattingTagOpts() {
@@ -799,8 +799,8 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(1, $vm_ret);
-		$this->assertContains("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id1."\">Homer J. Simpson</a>", $vm_ret[0]);
-		$this->assertContains("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id2."\">Bart Simpson</a>", $vm_ret[0]);
+		$this->assertContains("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id1."/rel/1\">Homer J. Simpson</a>", $vm_ret[0]);
+		$this->assertContains("editor/entities/EntityEditor/Summary/entity_id/".$this->opn_entity_id2."/rel/1\">Bart Simpson</a>", $vm_ret[0]);
 		$this->assertContains('<img src="left2.png" /><strong>Related people</strong><img src="right2.png" />', $vm_ret[0]);
 
 		$vm_ret = DisplayTemplateParser::evaluate("<ifcount code=\"ca_entities\" min=\"1\">

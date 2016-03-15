@@ -357,17 +357,19 @@ class SearchResult extends BaseObject {
 				if (!$va_row[$vs_parent_id_fld]) { continue; }
 				
 				if ($vn_level == 0) {
-					$va_row_id_map[$va_row[$vs_parent_id_fld]] = $va_row[$vs_pk];
+					$va_row_id_map[$va_row[$vs_parent_id_fld]][] = $va_row[$vs_pk];
 					SearchResult::$opa_hierarchy_parent_prefetch_cache[$ps_tablename][$va_row[$vs_pk]][$vs_opt_md5] = array();
 				} else {
 					$va_row_id_map[$va_row[$vs_parent_id_fld]] = $va_row_id_map[$va_row[$vs_pk]];
 				}
 				if (!$va_row_id_map[$va_row[$vs_parent_id_fld]]) { continue; }
 				
-				SearchResult::$opa_hierarchy_parent_prefetch_cache[$ps_tablename][$va_row_id_map[$va_row[$vs_parent_id_fld]]][$vs_opt_md5][] = $va_row[$vs_parent_id_fld];
+				foreach($va_row_id_map[$va_row[$vs_parent_id_fld]] as $vn_id) {
+					SearchResult::$opa_hierarchy_parent_prefetch_cache[$ps_tablename][$vn_id][$vs_opt_md5][] = $va_row[$vs_parent_id_fld];
+				}
 			}
 			
-			$va_params[0] = $qr_rel->getAllFieldValues($vs_parent_id_fld);
+			$va_row_ids_in_current_level = $va_params[0] = $qr_rel->getAllFieldValues($vs_parent_id_fld);
 			
 			$vn_level++;
 		}
@@ -1161,7 +1163,6 @@ class SearchResult extends BaseObject {
 									}
 									$va_hier_list[] = $va_hier_item;
 								}
-							
 							}
 						}
 					}
@@ -1172,11 +1173,15 @@ class SearchResult extends BaseObject {
 					
 						if ($vb_return_with_structure) {
 							$va_acc[] = $va_hier_item;
-						} else {
+						} elseif($this->ops_table_name == $va_path_components['table_name']) {
+							// For primary table: return hier path as list (there can be only one hierarchical path)
 							$va_acc = $this->_flattenArray($va_hier_item, $pa_options);
+						} else {
+							// For related tables: return each hier path as concatenated string as there can be repeats and returnAsArray must be a flat array
+							$va_acc[] = join($vs_hierarchical_delimiter, $this->_flattenArray($va_hier_item, $pa_options));
 						}
 					}
-					$vm_val = $pa_options['returnAsArray'] ? $va_acc : join($vs_hierarchical_delimiter, $va_acc);
+					$vm_val = $pa_options['returnAsArray'] ? $va_acc : join($vs_delimiter, $va_acc);
 					goto filter;
 					break;
 				case 'children':
@@ -1403,7 +1408,7 @@ class SearchResult extends BaseObject {
 // [PRIMARY TABLE] Metadata attribute
 //				
 
-					if (($t_instance instanceof BaseModelWithAttributes) && isset($va_path_components['field_name']) && $va_path_components['field_name'] && $t_element = $t_instance->_getElementInstance($va_path_components['field_name'])) {
+					if (($t_instance instanceof BaseModelWithAttributes) && isset($va_path_components['field_name']) && $va_path_components['field_name'] && $t_element = ca_metadata_elements::getInstance($va_path_components['field_name'])) {
 						$vn_element_id = $t_element->getPrimaryKey();
 					} else {
 						return $pa_options['returnAsArray'] ? array() : null;
@@ -1443,7 +1448,7 @@ class SearchResult extends BaseObject {
 					
 					foreach($va_filter_vals as $vn_index => $vs_filter_val) {
 						// is value a list attribute idno?
-						if (!is_numeric($vs_filter_val) && (($t_element = $t_instance->_getElementInstance($vs_filter)) && ($t_element->get('datatype') == 3))) {
+						if (!is_numeric($vs_filter_val) && (($t_element = ca_metadata_elements::getInstance($vs_filter)) && ($t_element->get('datatype') == 3))) {
 							$va_filter_vals[$vn_index] = caGetListItemID($t_element->get('list_id'), $vs_filter_val);
 						}
 					}
@@ -1709,7 +1714,7 @@ class SearchResult extends BaseObject {
 		if (is_array($pa_value_list) && sizeof($pa_value_list)) {
 			$va_val_proc = array();
 			foreach($pa_value_list as $o_attribute) {
-				$t_attr_element = $pt_instance->_getElementInstance($o_attribute->getElementID());
+				$t_attr_element = ca_metadata_elements::getInstance($o_attribute->getElementID());
 				$vn_attr_type = $t_attr_element->get('datatype');
 				
 				$va_acc = array();
@@ -1765,7 +1770,7 @@ class SearchResult extends BaseObject {
 					if (is_null($vs_val_proc)) {
 						switch($o_value->getType()) {
 							case __CA_ATTRIBUTE_VALUE_LIST__:
-								$t_element = $pt_instance->_getElementInstance($o_value->getElementID());
+								$t_element = ca_metadata_elements::getInstance($o_value->getElementID());
 								$vn_list_id = $t_element->get('list_id');
 						
 								$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
@@ -2193,6 +2198,13 @@ class SearchResult extends BaseObject {
 				$vn_i++;
 			}
 		}
+	}
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function clearGetWithTemplatePrefetch() {
+		$this->opa_template_prefetch_cache = array();
 	}
 	# ------------------------------------------------------------------
 	/**

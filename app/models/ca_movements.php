@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2015 Whirl-i-Gig
+ * Copyright 2010-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,6 +36,7 @@
 
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/ca/BaseObjectLocationModel.php");
+require_once(__CA_LIB_DIR__."/ca/CurrentLocationCriterionTrait.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_movements'] = array(
@@ -145,6 +146,12 @@ BaseModel::$s_ca_models_definitions['ca_movements'] = array(
 );
 
 class ca_movements extends BaseObjectLocationModel implements IBundleProvider {
+
+	/**
+	 * Update location of dependent objects when changing values
+	 */
+	use CurrentLocationCriterionTrait;
+
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -245,7 +252,7 @@ class ca_movements extends BaseObjectLocationModel implements IBundleProvider {
 	# ------------------------------------------------------
 	# Self-relations
 	# ------------------------------------------------------
-	protected $SELF_RELATION_TABLE_NAME = null;
+	protected $SELF_RELATION_TABLE_NAME = 'ca_movements_x_movements';
 	
 	# ------------------------------------------------------
 	# Search
