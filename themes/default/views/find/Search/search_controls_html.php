@@ -37,34 +37,37 @@
 	}
 
 	$vo_query_builder_config = Configuration::load($this->request->config->get('search_query_builder_config'));
-	$vs_query_builder_button = '';
-	if ($vo_query_builder_config->get('display_query_builder')) {
-		$vs_query_builder_button = ' <a href="#" class="button" onclick="caToggleSearchQueryBuilder();">'._t('Query Builder').'&nbsp;&darr;</a>';
+	$vb_display_query_builder = $vo_query_builder_config->get('display_query_builder');
+	$vs_query_builder_toggle = '';
+	if ($vb_display_query_builder) {
+		$vs_query_builder_toggle = ' <a href="#" class="button" id="QueryBuilderToggle">'._t('Query Builder').'&nbsp;&darr;</a>';
 	}
 
 	if (!$this->request->isAjax()) {
 		print caFormTag($this->request, 'Index', 'BasicSearchForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
 		if (!$this->getVar('uses_hierarchy_browser')) {
 			print caFormControlBox(
-				'<div class="simple-search-box">'._t('Search').': <input type="text" id="BasicSearchInput" name="search" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'" size="40"/>'.$vs_type_id_form_element.$vs_query_builder_button.'</div>',
+				'<div class="simple-search-box">'._t('Search').': <input type="text" id="BasicSearchInput" name="search" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'" size="40"/>'.$vs_type_id_form_element.$vs_query_builder_toggle.'</div>',
 				'<a href="#" onclick="caSaveSearch(\'BasicSearchForm\', jQuery(\'#BasicSearchInput\').val(), [\'search\']); return false;" class="button">'._t('Save search').'&nbsp;&rsaquo;</a>',
 				caFormSubmitButton($this->request, __CA_NAV_BUTTON_SEARCH__, _t("Search"), 'BasicSearchForm')
 			);
 		} else {
 			print caFormControlBox(
-				'<div class="simple-search-box">'._t('Search').': <input type="text" id="BasicSearchInput" name="search" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'" size="40"/>'.$vs_query_builder_button.'</div>'.caFormSubmitButton($this->request, __CA_NAV_BUTTON_SEARCH__, _t("Search"), 'BasicSearchForm'),
+				'<div class="simple-search-box">'._t('Search').': <input type="text" id="BasicSearchInput" name="search" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'" size="40"/>'.$vs_query_builder_toggle.'</div>'.caFormSubmitButton($this->request, __CA_NAV_BUTTON_SEARCH__, _t("Search"), 'BasicSearchForm'),
 				'<a href="#" onclick="caSaveSearch(\'BasicSearchForm\', jQuery(\'#BasicSearchInput\').val(), [\'search\']); return false;" class="button">'._t('Save search').'&nbsp;&rsaquo;</a>',
 				'<a href="#" id="browseToggle" class="form-button"></a>'
 			);
 		}
 		?>
 		</form>
-		<form id="QueryBuilder">
-			<fieldset>
-				TODO Query builder goes here
-			</fieldset>
-		</form>
 		<?php
+		if ($vb_display_query_builder) {
+ 		?>
+		<div id="QueryBuilder">
+			<div></div>
+		</div>
+		<?php
+		}
 		if ($this->getVar('uses_hierarchy_browser')) {
 		?>
 			<div id="browse">
@@ -193,15 +196,46 @@
 		});
 	}
 
-	function caToggleSearchQueryBuilder() {
-		jQuery('#QueryBuilder').slideToggle('medium');
-	}
-	
 	// Show "add to set" controls if set tools is open
 	jQuery(document).ready(function() {
 		if (jQuery("#searchSetTools").is(":visible")) {
 			jQuery(".addItemToSetControl").show();
 		}
-		jQuery('#QueryBuilder').hide();
 	});
+
+	<?php
+	if ($vb_display_query_builder) {
+	?>
+	// Event handler for the query builder toggle
+	function caToggleSearchQueryBuilder() {
+		var $queryBuilder = jQuery('#QueryBuilder');
+		$queryBuilder.slideToggle('medium', function () {
+			$('#QueryBuilderToggle').html('Query Builder ' + ($queryBuilder.is(':visible') ? '&uarr;' : '&darr;'));
+		});
+	}
+
+	// Initialise query builder
+	jQuery(document).ready(function() {
+		jQuery('#QueryBuilderToggle').click(caToggleSearchQueryBuilder);
+		jQuery('#QueryBuilder').hide().find('>div').queryBuilder({
+			// TODO Read these filters from configuration
+			filters: [
+				{
+					id: 'idno',
+					label: 'Accession Number',
+					type: 'string'
+				},
+				{
+					id: 'label',
+					label: 'Preferred Label',
+					type: 'string'
+				}
+			]
+			// TODO Parse this from the current value in the search box
+			//rules: {}
+		});
+	});
+	<?php
+	}
+	?>
 </script>
