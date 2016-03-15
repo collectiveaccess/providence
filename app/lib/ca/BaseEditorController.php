@@ -577,6 +577,7 @@ class BaseEditorController extends ActionController {
 	 * @param string $ps_table table name
 	 */
 	protected function redirectAfterDelete($ps_table) {
+		$this->getRequest()->close();
 		caSetRedirect($this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $ps_table));
 	}
 	# -------------------------------------------------------
@@ -2222,7 +2223,7 @@ class BaseEditorController extends ActionController {
 		$vn_user_id = $this->request->getUserID();
 		$vs_user_dir = $vs_tmp_directory."/userMedia{$vn_user_id}";
 		if(!file_exists($vs_user_dir)) {
-			mkdir($vs_user_dir);
+			@mkdir($vs_user_dir);
 		}
 		if (!($vn_timeout = (int)$this->request->config->get('ajax_media_upload_tmp_directory_timeout'))) {
 			$vn_timeout = 24 * 60 * 60;

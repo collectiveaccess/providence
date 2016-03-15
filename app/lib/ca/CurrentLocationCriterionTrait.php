@@ -51,7 +51,7 @@
 						break;
 					default:
 						foreach ($va_criteria as $vs_type => $va_options) {
-							if ($this->changed('_ca_attribute_'.$this->_getElementID($va_options['date']))) {
+							if ($this->changed('_ca_attribute_'.ca_metadata_elements::getElementID($va_options['date']))) {
 								$vb_reload_current_locations = true;
 								break;
 							}

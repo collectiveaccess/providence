@@ -9603,11 +9603,11 @@ $pa_options["display_form_field_tips"] = true;
 			if (!sizeof($va_to_reindex_relations)) { return 0; }
 			
 			$o_db->query("
-				UPDATE ".$t_item_rel->tableName()." SET ".$t_item_rel->getLeftTableFieldName()." = ? WHERE ".$t_item_rel->getLeftTableFieldName()." = ?
+				UPDATE IGNORE ".$t_item_rel->tableName()." SET ".$t_item_rel->getLeftTableFieldName()." = ? WHERE ".$t_item_rel->getLeftTableFieldName()." = ?
 			", (int)$pn_to_id, (int)$vn_row_id);
 			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
 			$o_db->query("
-				UPDATE ".$t_item_rel->tableName()." SET ".$t_item_rel->getRightTableFieldName()." = ? WHERE ".$t_item_rel->getRightTableFieldName()." = ?
+				UPDATE IGNORE ".$t_item_rel->tableName()." SET ".$t_item_rel->getRightTableFieldName()." = ? WHERE ".$t_item_rel->getRightTableFieldName()." = ?
 			", (int)$pn_to_id, (int)$vn_row_id);
 			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
 		} else {
@@ -9622,7 +9622,7 @@ $pa_options["display_form_field_tips"] = true;
 			if (!sizeof($va_to_reindex_relations)) { return 0; }
 			
 			$o_db->query("
-				UPDATE ".$t_item_rel->tableName()." SET {$vs_item_pk} = ? WHERE {$vs_item_pk} = ?
+				UPDATE IGNORE ".$t_item_rel->tableName()." SET {$vs_item_pk} = ? WHERE {$vs_item_pk} = ?
 			", (int)$pn_to_id, (int)$vn_row_id);
 			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
 			
@@ -9643,7 +9643,7 @@ $pa_options["display_form_field_tips"] = true;
 				
 				if ($vn_first_primary_relation_id) {
 					$o_db->query("
-						UPDATE ".$t_item_rel->tableName()." SET is_primary = 0 WHERE {$vs_rel_pk} <> ? AND {$vs_item_pk} = ?
+						UPDATE IGNORE ".$t_item_rel->tableName()." SET is_primary = 0 WHERE {$vs_rel_pk} <> ? AND {$vs_item_pk} = ?
 					", array($vn_first_primary_relation_id, (int)$pn_to_id));
 				}
 			}

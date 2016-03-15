@@ -39,7 +39,6 @@ require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
 require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
-require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 
 /**
@@ -47,7 +46,17 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
  * More about bundle display templates here: http://docs.collectiveaccess.org/wiki/Bundle_Display_Templates
  */
 
-define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]{1}[\&\%]{1}[^ <]+|ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]{1}|[0-9]+(?=[.,;])|[\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/]+[~]{1}[A-Za-z0-9]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/]+)/");
+// Components of __CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__
+//
+//	ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]{1}[\&\%]{1}[^ <]+|			-- Match ^ca_* tags
+//	[0-9]+(?=[.,;])|													-- Match numeric tags followed by punctuation
+//	[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|				-- Match tags with options
+//	[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/\[\]\@\'\"=:]+\]|				-- Match XPath ending with square bracket
+//	[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/\[\]\@\'\"=:]+|				-- Match XPath
+//	[A-Za-z0-9_\.\/]+[~]{1}[A-Za-z0-9]+[:]{1}[A-Za-z0-9_\.\/]+|			-- Match tags with modifiers
+//	[A-Za-z0-9_\.\/]+													-- Match simple tags (letters,number. dots and slashes
+	
+define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]{1}[\&\%]{1}[^ <]+|[0-9]+(?=[.,;])|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/\[\]\@\'\"=:]+\]|[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/\[\]\@\'\"=:]+|[A-Za-z0-9_\.\/]+[~]{1}[A-Za-z0-9]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/]+)/");
 	
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -2914,10 +2923,9 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 		if (!($t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true))) {
 			return null;
 		}
-		if (!method_exists($t_instance, "_getElementDatatype") || (is_null($vn_datatype = $t_instance->_getElementDatatype($va_tmp[1])))) {
-			return null;
-		}
-		
+
+		$vn_datatype = ca_metadata_elements::getElementDatatype($va_tmp[1]);
+		if (is_null($vn_datatype)) { return null; }
 		
 		if (!($vs_user_currency = $po_request->user ? $po_request->user->getPreference('currency') : 'USD')) {
 			$vs_user_currency = 'USD';
@@ -2946,7 +2954,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 				}
 			
 				$va_tags_to_process[$vs_raw_tag] = true;
-				$va_subelements_to_process["{$vs_bundle_name}.{$vs_subelement}"] = $t_instance->_getElementDatatype($vs_subelement);
+				$va_subelements_to_process["{$vs_bundle_name}.{$vs_subelement}"] = ca_metadata_elements::getElementDatatype($vs_subelement);
 			}
 		} else {
 			$va_tmp = explode(".", $vs_bundle_name);

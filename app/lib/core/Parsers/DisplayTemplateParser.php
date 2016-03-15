@@ -514,20 +514,17 @@ class DisplayTemplateParser {
 								$va_relative_ids = array_values($va_relative_ids);
 								break;
 							default:
-								// If relativeTo is not set to a valid attribute try to guess from template
+								// If relativeTo is not set to a valid attribute try to guess from template, looking for container
 								if ($t_rel_instance->isValidMetadataElement(join(".", array_slice($va_relative_to_tmp, 1, 1)), true)) {
 									$vs_relative_to_container = join(".", array_slice($va_relative_to_tmp, 0, 2));
 								} else {
-									$va_tags = caGetTemplateTags($o_node->getInnerText());
-									foreach($va_tags as $vs_tag) {
+									$va_tags = DisplayTemplateParser::_getTags($o_node->children);
+									foreach(array_keys($va_tags) as $vs_tag) {
 										$va_tag = explode('.', $vs_tag);
-										
-										while(sizeof($va_tag) > 1) {
-											$vs_end = array_pop($va_tag);
-											if ($t_rel_instance->isValidMetadataElement($vs_end, true)) {
-												$va_tag[] = $vs_end;
-												$vs_relative_to_container = join(".", $va_tag);
-												break(2);
+										if(sizeof($va_tag) >= 2) {
+											if ($t_rel_instance->isValidMetadataElement($va_tag[1], true) && (ca_metadata_elements::getElementDatatype($va_tag[1]) === __CA_ATTRIBUTE_VALUE_CONTAINER__)) {
+												$vs_relative_to_container = join(".", array_slice($va_tag, 0, 2));
+												break;
 											}
 										}
 									}

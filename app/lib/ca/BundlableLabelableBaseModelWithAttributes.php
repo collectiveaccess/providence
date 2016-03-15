@@ -1461,7 +1461,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if (!$vs_label_text) { $vs_label_text = $this->getAttributeLabel($vs_attr_element_code); }
 				
 				if ($vb_batch) {
-					$t_element = $this->_getElementInstance($vs_attr_element_code);
+					$t_element = ca_metadata_elements::getInstance($vs_attr_element_code);
 					$va_type_restrictions = $t_element->getTypeRestrictionsForDisplay($this->tableNum());
 					if (sizeof($va_type_restrictions)) {
 						$vs_restriction_list = join("; ", $va_type_restrictions);
@@ -1479,7 +1479,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
                 $vs_documentation_url =  trim((isset($pa_bundle_settings['documentation_url']) && $pa_bundle_settings['documentation_url']) ? $pa_bundle_settings['documentation_url']  : $vs_documentation_url = $this->getAttributeDocumentationUrl($vs_attr_element_code));
 
-				if ($t_element = $this->_getElementInstance($vs_attr_element_code)) {
+				if ($t_element = ca_metadata_elements::getInstance($vs_attr_element_code)) {
 					if ($o_config->get('show_required_field_marker') && (($t_element->getSetting('minChars') > 0) || ((bool)$t_element->getSetting('mustNotBeBlank')) || ((bool)$t_element->getSetting('requireValue')))) { 
 						$vs_label .= ' '.$vs_required_marker;
 					}
@@ -2978,7 +2978,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				foreach($_REQUEST as $vs_key => $vs_val) {
 					$vs_element_set_code = preg_replace("/^ca_attribute_/", "", $vs_f);
 					
-					$t_element = $this->_getElementInstance($vs_element_set_code);
+					$t_element = ca_metadata_elements::getInstance($vs_element_set_code);
 					$vn_element_id = $t_element->getPrimaryKey();
 					
 					if (
@@ -3212,7 +3212,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			foreach($va_fields_by_type['attribute'] as $vs_placement_code => $vs_f) {
 				$vs_element_set_code = preg_replace("/^ca_attribute_/", "", $vs_f);
 				//does the attribute's datatype have a saveElement method - if so, use that instead
-				$vs_element = $this->_getElementInstance($vs_element_set_code);
+				$vs_element = ca_metadata_elements::getInstance($vs_element_set_code);
 				$vn_element_id = $vs_element->getPrimaryKey();
 				$vs_element_datatype = $vs_element->get('datatype');
 				$vs_datatype = Attribute::getValueInstance($vs_element_datatype);
@@ -3489,15 +3489,13 @@ if (!$vb_batch) {
 					foreach($va_labels_by_locale as $vn_locale_id => $va_label_list) {
 						foreach($va_label_list as $va_label) {
 							if ($vn_label_locale_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'locale_id_'.$va_label['label_id'], pString)) {
-							
+								$vn_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'type_id_'.$va_label['label_id'], pInteger);
 								if(is_array($va_label_values = $this->getLabelUIValuesFromRequest($po_request, $vs_placement_code.$vs_form_prefix, $va_label['label_id'], true))) {
-									
 									if ($vb_check_for_dupe_labels && $this->checkForDupeLabel($vn_label_locale_id, $va_label_values)) {
 										$this->postError(1125, _t('Value <em>%1</em> is already used and duplicates are not allowed', join("/", $va_label_values)), "BundlableLabelableBaseModelWithAttributes->saveBundlesForScreen()", $this->tableName().'.preferred_labels');
 										$po_request->addActionErrors($this->errors(), 'preferred_labels');
 										continue;
 									}
-									$vn_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_Pref'.'type_id_'.$va_label['label_id'], pInteger);
 									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, true, array('queueIndexing' => true));
 									if ($this->numErrors()) {
 										foreach($this->errors() as $o_e) {
@@ -3512,6 +3510,13 @@ if (!$vb_batch) {
 											}
 										}
 									}
+								} else {
+									$this->editLabel($va_label['label_id'],
+										array($this->getLabelDisplayField() => '['._t('BLANK').']'),
+										$vn_label_locale_id,
+										$vn_label_type_id,
+										true, array('queueIndexing' => true)
+									);
 								}
 							} else {
 								if ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_PrefLabel_'.$va_label['label_id'].'_delete', pString)) {
@@ -3623,8 +3628,8 @@ if (!$vb_batch) {
 					foreach($va_labels_by_locale as $vn_locale_id => $va_label_list) {
 						foreach($va_label_list as $va_label) {
 							if ($vn_label_locale_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'locale_id_'.$va_label['label_id'], pString)) {
+								$vn_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'type_id_'.$va_label['label_id'], pInteger);
 								if (is_array($va_label_values = $this->getLabelUIValuesFromRequest($po_request, $vs_placement_code.$vs_form_prefix, $va_label['label_id'], false))) {
-									$vn_label_type_id = $po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPref'.'type_id_'.$va_label['label_id'], pInteger);
 									$this->editLabel($va_label['label_id'], $va_label_values, $vn_label_locale_id, $vn_label_type_id, false, array('queueIndexing' => true));
 									if ($this->numErrors()) {
 										foreach($this->errors() as $o_e) {
@@ -3639,6 +3644,13 @@ if (!$vb_batch) {
 											}
 										}
 									}
+								} else {
+									$this->editLabel($va_label['label_id'],
+										array($this->getLabelDisplayField() => '['._t('BLANK').']'),
+										$vn_label_locale_id,
+										$vn_label_type_id,
+										false, array('queueIndexing' => true)
+									);
 								}
 							} else {
 								if ($po_request->getParameter($vs_placement_code.$vs_form_prefix.'_NPrefLabel_'.$va_label['label_id'].'_delete', pString)) {
@@ -3804,10 +3816,16 @@ if (!$vb_batch) {
 						// check for new representations to add 
 						$va_file_list = $_FILES;
 						foreach($_REQUEST as $vs_key => $vs_value) {
-							if (!preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) { continue; }
-							$va_file_list[$vs_key] = array(
-								'url' => $vs_value
-							);
+							if (preg_match('/^'.$vs_prefix_stub.'media_url_new_([\d]+)$/', $vs_key, $va_matches)) {
+								$va_file_list[$vs_key] = array(
+									'url' => $vs_value
+								);
+							} elseif(preg_match('/^'.$vs_prefix_stub.'media_new_([\d]+)$/', $vs_key, $va_matches)) {
+								$va_file_list[$vs_key] = array(
+									'tmp_name' => $vs_value,
+									'name' => $vs_value
+								);
+							}
 						}
 						
 						foreach($va_file_list as $vs_key => $va_values) {
@@ -5422,7 +5440,7 @@ if (!$vb_batch) {
 						// is value a list attribute idno?
 						$va_tmp = explode('.',$vs_filter);
 						$vs_element = array_pop($va_tmp);
-						if (!is_numeric($vs_filter_val) && (($t_element = $t_rel_item->_getElementInstance($vs_element)) && ($t_element->get('datatype') == 3))) {
+						if (!is_numeric($vs_filter_val) && (($t_element = ca_metadata_elements::getInstance($vs_element)) && ($t_element->get('datatype') == 3))) {
 							$va_filter_vals[$vn_index] = caGetListItemID($t_element->get('list_id'), $vs_filter_val);
 						}
 					}
@@ -6492,6 +6510,42 @@ side. For many self-relations the direction determines the nature and display te
 			}
 		}
 		return $t_rel;
+	}
+	# --------------------------------------------------------------------------------------------
+	public function moveRelationships($pm_rel_table_name_or_num, $pn_to_id, $pa_options=null) {
+		$vb_we_set_transaction = false;
+
+		if (!$this->inTransaction()) {
+			$this->setTransaction(new Transaction($this->getDb()));
+			$vb_we_set_transaction = true;
+		}
+
+		$this->opo_app_plugin_manager->hookBeforeMoveRelationships(array(
+			'table_name' => $this->tableName(),
+			'instance' => &$this,
+			'related_table' => &$pm_rel_table_name_or_num,
+			'to_id' => &$pn_to_id,
+			'options' => &$pa_options,
+		));
+
+		$vn_rc = parent::moveRelationships($pm_rel_table_name_or_num, $pn_to_id, $pa_options=null);
+
+		$this->opo_app_plugin_manager->hookAfterMoveRelationships(array(
+			'table_name' => $this->tableName(),
+			'instance' => &$this,
+			'related_table' => &$pm_rel_table_name_or_num,
+			'to_id' => &$pn_to_id,
+			'options' => &$pa_options,
+		));
+
+		if ($this->numErrors()) {
+			if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+			return false;
+		} else {
+			if ($vb_we_set_transaction) { $this->removeTransaction(true); }
+		}
+
+		return $vn_rc;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**

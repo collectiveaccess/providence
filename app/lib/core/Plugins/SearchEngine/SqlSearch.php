@@ -501,11 +501,21 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			if ($t_element->load(array('element_code' => ($vs_subfield ? $vs_subfield : $vs_field)))) {
 				switch ($t_element->get('datatype')) {
 					default:
-						return array('access_point' => $va_tmp[0], 'relationship_type' => $va_tmp[1], 'table_num' => $vs_table_num, 'element_id' => $t_element->getPrimaryKey(), 'field_num' => 'A'.$t_element->getPrimaryKey(), 'datatype' => $t_element->get('datatype'), 'element_info' => $t_element->getFieldValuesArray(), 'relationship_type_ids' => $va_rel_type_ids);
+						return array(
+							'access_point' => $va_tmp[0],
+							'relationship_type' => $va_tmp[1],
+							'table_num' => $vs_table_num,
+							'element_id' => $t_element->getPrimaryKey(),
+							'field_num' => 'A'.$t_element->getPrimaryKey(),
+							'datatype' => $t_element->get('datatype'),
+							'element_info' => $t_element->getFieldValuesArray(),
+							'relationship_type_ids' => $va_rel_type_ids
+						);
 						break;
 				}
 			}
 		} else {
+
 			return array('access_point' => $va_tmp[0], 'relationship_type' => $va_tmp[1], 'table_num' => $vs_table_num, 'field_num' => 'I'.$vs_fld_num, 'field_num_raw' => $vs_fld_num, 'datatype' => null, 'relationship_type_ids' => $va_rel_type_ids);
 		}
 
@@ -846,6 +856,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							foreach($va_term_objs as $o_term) {
 								$va_access_point_info = $this->_getElementIDForAccessPoint($pn_subject_tablenum, $o_term->field);
 								$vs_access_point = $va_access_point_info['access_point'];
+								$vn_direct_sql_target_table_num = $va_access_point_info['table_num'];
 							
 								$vs_raw_term = (string)$o_term->text;
 								//$vs_term = preg_replace("%((?<!\d)[".$this->ops_search_tokenizer_regex."]+|[".$this->ops_search_tokenizer_regex."]+(?!\d))%u", '', $vs_raw_term);
@@ -878,7 +889,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								foreach($va_terms as $vs_term) {
 									if ($vb_has_wildcard) { $vs_term .= '*'; }
 									
-									if (in_array(trim(mb_strtolower($vs_term, 'UTF-8')), WLPlugSearchEngineSqlSearch::$s_stop_words)) { continue; }
+									if (!in_array($va_access_point_info['access_point'], array('modified', 'created')) && in_array(trim(mb_strtolower($vs_term, 'UTF-8')), WLPlugSearchEngineSqlSearch::$s_stop_words)) { continue; }
 									$vs_stripped_term = preg_replace('!\*+$!u', '', $vs_term);
 									
 									if ($vb_has_wildcard) {
@@ -921,6 +932,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					if ($vs_access_point) {
 						list($vs_table, $vs_field, $vs_sub_field) = explode('.', $vs_access_point);
 						if (in_array($vs_table, array('created', 'modified'))) {
+							$vn_direct_sql_target_table_num = $pn_subject_tablenum;
 							$o_tep = new TimeExpressionParser();
 							$vs_date = join(' ', $va_raw_terms);
 							
@@ -1773,6 +1785,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	public function getWordID($ps_word) {
 		$ps_word = (string)$ps_word;
 		if (!strlen($ps_word = trim(mb_strtolower($ps_word, "UTF-8")))) { return null; }
+		if (mb_strlen($ps_word) > 255) { $ps_word = mb_substr($ps_word, 0, 255); }
 		if (isset(WLPlugSearchEngineSqlSearch::$s_word_cache[$ps_word])) { return (int)WLPlugSearchEngineSqlSearch::$s_word_cache[$ps_word]; } 
 		
 		if ($qr_res = $this->opqr_lookup_word->execute($ps_word)) {
@@ -1783,7 +1796,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		// insert word
 		if (!($vs_stem = trim($this->opo_stemmer->stem($ps_word)))) { $vs_stem = $ps_word; }
-		if (mb_strlen($ps_word) > 255) { $ps_word = $vs_stem = mb_substr($ps_word, 0, 255); }
+		if (mb_strlen($vs_stem) > 255) { $vs_stem = mb_substr($vs_stem, 0, 255); }
+		
 		$this->opqr_insert_word->execute($ps_word, $vs_stem);
 		if ($this->opqr_insert_word->numErrors()) { return null; }
 		if (!($vn_word_id = (int)$this->opqr_insert_word->getLastInsertID())) { return null; }
