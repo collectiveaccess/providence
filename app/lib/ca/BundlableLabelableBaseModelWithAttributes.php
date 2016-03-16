@@ -93,7 +93,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
 		require_once(__CA_MODELS_DIR__."/ca_acl.php");
 		require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
-		
+		require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
+
 		parent::__construct($pn_id);	# call superclass constructor
 		
 		if ($pn_id) {
