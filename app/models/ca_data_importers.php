@@ -958,6 +958,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			if ($o_log) { $o_log->logError(_t("[loadImporterFromFile:%1] You must set a code for your mapping!", $ps_source)); }
 			return;
 		}
+
+		// don't import exporter mappings
+		if (isset($va_settings['exporter_format'])) {
+			$pa_errors[] = _t("It looks like this is a mapping for the data export framework and you're trying to add it as import mapping!");
+			if ($o_log) { $o_log->logError(_t("[loadImporterFromFile:%1] It looks like this is a mapping for the data export framework and you're trying to add it as import mapping!", $ps_source)); }
+			return;
+		}
 		
 		// If no formats then default to everything
 		if (!isset($va_settings['inputFormats']) || !is_array($va_settings['inputFormats']) || !sizeof($va_settings['inputFormats'])) {
