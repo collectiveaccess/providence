@@ -1383,7 +1383,8 @@ div.button img{
     vertical-align: top;
 	margin-top: -1px;
 }
-a.button, .btn {
+a.button,
+.btn {
     color: #1ab3c8;
     text-decoration: none;
     font-size: 11px;
@@ -1395,7 +1396,8 @@ button.btn {
     background: transparent;
     cursor: pointer;
 }
-.btn, .btn-group {
+.btn,
+.btn-group {
     padding: 4px;
 }
 #leftNav a.button {
@@ -1421,6 +1423,17 @@ a.button:hover{
 .btn-group .btn.active {
     color: #000;
     background-color: #2ac3d8;
+}
+
+#main .query-builder .rule-container .rule-filter-container select {
+    max-width: 250px;
+}
+#main .query-builder .rule-container .rule-value-container {
+    border-left: none;
+}
+#main .query-builder .rule-container .rule-value-container input,
+#main .query-builder .rule-container .rule-value-container input {
+    padding: 4px;
 }
 
 a.form-button, span.form-button, del.form-button{
