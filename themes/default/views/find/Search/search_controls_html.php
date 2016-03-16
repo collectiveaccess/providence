@@ -40,7 +40,7 @@
 	$vb_display_query_builder = $vo_query_builder_config->get('display_query_builder');
 	$vs_query_builder_toggle = '';
 	if ($vb_display_query_builder) {
-		$vs_query_builder_toggle = ' <a href="#" class="button" id="QueryBuilderToggle">'._t('Query Builder').'&nbsp;&darr;</a>';
+		$vs_query_builder_toggle = ' <a href="#" class="button" id="QueryBuilderToggle">'._t('Query Builder').'&nbsp;&#9662;</a>';
 	}
 
 	if (!$this->request->isAjax()) {
@@ -210,7 +210,7 @@
 	function caToggleSearchQueryBuilder() {
 		var $queryBuilder = jQuery('#QueryBuilder');
 		$queryBuilder.slideToggle('medium', function () {
-			$('#QueryBuilderToggle').html('Query Builder ' + ($queryBuilder.is(':visible') ? '&uarr;' : '&darr;'));
+			$('#QueryBuilderToggle').html('<?php echo _t('Query Builder'); ?>&nbsp;' + ($queryBuilder.is(':visible') ? '&#9652;' : '&#9662;'));
 		});
 	}
 
