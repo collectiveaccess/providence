@@ -226,11 +226,28 @@
 	// Initialise query builder
 	jQuery(document).ready(function() {
 		jQuery('#QueryBuilderToggle').click(caToggleSearchQueryBuilder);
-		jQuery('#QueryBuilder').hide().find('>div').queryBuilder({
+		var $queryBuilder = jQuery('#QueryBuilder').hide().find('>div').queryBuilder({
 			filters: <?php echo json_encode($va_filters, JSON_PRETTY_PRINT); ?>
 			// TODO Parse this from the current value in the search box
 			//rules: {}
-		});
+		}).on(
+			[
+				'afterAddGroup.queryBuilder',
+				'afterDeleteGroup.queryBuilder',
+				'afterAddRule.queryBuilder',
+				'afterDeleteRule.queryBuilder',
+				'afterUpdateRuleValue.queryBuilder',
+				'afterUpdateRuleFilter.queryBuilder',
+				'afterUpdateRuleOperator.queryBuilder'
+			].join(' '),
+			function () {
+				var rules = $queryBuilder.queryBuilder('getRules');
+				if (rules) {
+					// TODO Convert this into the CA search query syntax instead of just a JSON representation
+					$('#BasicSearchInput').val(JSON.stringify(rules));
+				}
+			}
+		);
 	});
 	<?php
 	}
