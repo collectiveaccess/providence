@@ -432,3 +432,30 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 
 		return $va_return;
 	}
+	# ---------------------------------------
+	function caMapBundleToQueryBuilderFilterDefinition(BaseModel $t_subject, $po_bundle) {
+		$vo_field_info = $t_subject->getFieldInfo(substr($po_bundle['bundle'], strpos($po_bundle['bundle'], '.') + 1));
+		$va_result = array(
+				'id' => $po_bundle['bundle'],
+				'label' => $po_bundle['label'],
+				'input' => 'text'
+		);
+		if ($vo_field_info) {
+			if (in_array($vo_field_info['DISPLAY_TYPE'], array( DT_SELECT, DT_LIST, DT_LIST_MULTIPLE, DT_CHECKBOXES, DT_RADIO_BUTTONS ))) {
+				$va_result['input'] = 'select';
+				$va_result['operators'] = [ 'equal', 'not_equal', 'is_null', 'is_not_null' ];
+				if (isset($vo_field_info['OPTIONS'])) {
+					$va_result['values'] = array_flip($vo_field_info['OPTIONS']);
+				} else {
+					$t_list = new ca_lists();
+					$va_result['values'] = array();
+					foreach ($t_list->getItemsForList($vo_field_info['LIST'] ?: $vo_field_info['LIST_CODE']) as $va_item) {
+						foreach ($va_item as $va_item_details) {
+							$va_result['values'][$va_item_details['item_id']] = $va_item_details['name_singular'];
+						}
+					}
+				}
+			}
+		}
+		return $va_result;
+	}
