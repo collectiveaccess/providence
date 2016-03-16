@@ -451,7 +451,7 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 					$va_result['values'] = array();
 					foreach ($t_list->getItemsForList($vo_field_info['LIST'] ?: $vo_field_info['LIST_CODE']) as $va_item) {
 						foreach ($va_item as $va_item_details) {
-							$va_result['values'][$va_item_details['item_id']] = $va_item_details['name_singular'];
+							$va_result['values'][$va_item_details['idno']] = $va_item_details['name_singular'];
 						}
 					}
 				}
