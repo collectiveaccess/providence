@@ -197,6 +197,8 @@ class ca_change_log extends BaseModel {
 	}
 	# ------------------------------------------------------
 	public static function getLog($pn_from, $pn_limit=null) {
+		require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
+
 		if(!is_null($pn_limit)) {
 			$vs_limit_sql = "LIMIT $pn_limit";
 		} else {
@@ -219,8 +221,28 @@ class ca_change_log extends BaseModel {
 			$va_row = $qr_results->getRow();
 
 			// decode snapshot
-			$va_row['snapshot'] =
-				caUnserializeForDatabase($qr_results->get('snapshot'));
+			$va_snapshot = caUnserializeForDatabase($qr_results->get('snapshot'));
+
+			// add additional sync info to snapshot. we need to be able to properly identify
+			// attributes and elements on the far side of the sync and the primary key doesn't cut it
+			foreach($va_snapshot as $vs_fld => $vm_val) {
+				switch($vs_fld) {
+					case 'element_id':
+						if($vs_code = ca_metadata_elements::getElementCodeForId($vm_val)) {
+							$va_snapshot['element_code'] = $vs_code;
+						}
+						break;
+					case 'attribute_id':
+						if($vs_attr_guid = ca_attributes::getGUIDByPrimaryKey($vm_val)) {
+							$va_snapshot['attribute_guid'] = $vs_attr_guid;
+						}
+						break;
+					default:
+						break;
+				}
+			}
+
+			$va_row['snapshot'] = $va_snapshot;
 
 			// skip log entries without GUID -- we don't care about those
 			if(!($vs_guid = ca_guids::getForRow($qr_results->get('logged_table_num'), $qr_results->get('logged_row_id')))) {

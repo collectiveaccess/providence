@@ -183,6 +183,8 @@ class ca_guids extends BaseModel {
 	 * @return bool|string
 	 */
 	public static function getForRow($pn_table_num, $pn_row_id) {
+		if(!$pn_table_num || !$pn_row_id) { return false; }
+
 		if(CompositeCache::contains("{$pn_table_num}/{$pn_row_id}", 'TableNumRowIDsToGUIDs')) {
 			return CompositeCache::fetch("{$pn_table_num}/{$pn_row_id}", 'TableNumRowIDsToGUIDs');
 		}
@@ -237,6 +239,26 @@ class ca_guids extends BaseModel {
 		} else {
 			return false;
 		}
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get row id and table num for given GUID
+	 * @param string $ps_guid
+	 * @return array|null
+	 * 			keys are 'row_id' and 'table_num'
+	 */
+	public static function getInfoForGUID($ps_guid) {
+		$o_db = new Db();
+
+		$qr_guid = $o_db->query('
+			SELECT table_num, row_id FROM ca_guids WHERE guid=?
+		', $ps_guid);
+
+		if($qr_guid->nextRow()) {
+			return $qr_guid->getRow();
+		}
+
+		return null;
 	}
 	# ------------------------------------------------------
 }
