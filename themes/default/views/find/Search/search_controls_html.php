@@ -215,39 +215,44 @@
 	<?php
 	if ($vb_display_query_builder) {
 	?>
+	var stateCookieJar = jQuery.cookieJar('caCookieJar');
+
 	// Event handler for the query builder toggle
 	function caToggleSearchQueryBuilder() {
 		var $queryBuilder = jQuery('#QueryBuilder');
 		$queryBuilder.slideToggle('medium', function () {
-			$('#QueryBuilderToggle').html('<?php echo _t('Query Builder'); ?>&nbsp;' + ($queryBuilder.is(':visible') ? '&#9652;' : '&#9662;'));
+			var visible = $queryBuilder.is(':visible');
+			$('#QueryBuilderToggle').html('<?php echo _t('Query Builder'); ?>&nbsp;' + (visible ? '&#9652;' : '&#9662;'));
+			stateCookieJar.set('<?php print $vs_table; ?>QueryBuilderIsExpanded', visible);
 		});
 	}
 
 	// Initialise query builder
 	jQuery(document).ready(function() {
 		jQuery('#QueryBuilderToggle').click(caToggleSearchQueryBuilder);
-		var $queryBuilder = jQuery('#QueryBuilder').hide().find('>div').queryBuilder({
-			filters: <?php echo json_encode($va_filters, JSON_PRETTY_PRINT); ?>
-			// TODO Parse this from the current value in the search box
-			//rules: {}
-		}).on(
-			[
-				'afterAddGroup.queryBuilder',
-				'afterDeleteGroup.queryBuilder',
-				'afterAddRule.queryBuilder',
-				'afterDeleteRule.queryBuilder',
-				'afterUpdateRuleValue.queryBuilder',
-				'afterUpdateRuleFilter.queryBuilder',
-				'afterUpdateRuleOperator.queryBuilder'
-			].join(' '),
-			function () {
-				var rules = $queryBuilder.queryBuilder('getRules');
-				if (rules) {
-					// TODO Convert this into the CA search query syntax instead of just a JSON representation
-					$('#BasicSearchInput').val(JSON.stringify(rules));
+		var visible = stateCookieJar.get('<?php print $vs_table; ?>QueryBuilderIsExpanded'),
+			$queryBuilder = jQuery('#QueryBuilder').toggle(visible).find('>div').queryBuilder({
+				filters: <?php echo json_encode($va_filters, JSON_PRETTY_PRINT); ?>
+				// TODO Parse this from the current value in the search box
+				//rules: {}
+			}).on(
+				[
+					'afterAddGroup.queryBuilder',
+					'afterDeleteGroup.queryBuilder',
+					'afterAddRule.queryBuilder',
+					'afterDeleteRule.queryBuilder',
+					'afterUpdateRuleValue.queryBuilder',
+					'afterUpdateRuleFilter.queryBuilder',
+					'afterUpdateRuleOperator.queryBuilder'
+				].join(' '),
+				function () {
+					var rules = $queryBuilder.queryBuilder('getRules');
+					if (rules) {
+						// TODO Convert this into the CA search query syntax instead of just a JSON representation
+						$('#BasicSearchInput').val(JSON.stringify(rules));
+					}
 				}
-			}
-		);
+			);
 	});
 	<?php
 	}
