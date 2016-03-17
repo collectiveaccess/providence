@@ -486,16 +486,43 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 	}
 	# ---------------------------------------
 	function caMapBundleToQueryBuilderFilterDefinition(BaseModel $t_subject, $po_bundle, $vo_query_builder_config) {
+		$vo_operators_by_type = $vo_query_builder_config->get('query_builder_operators');
 		$vo_field_info = $t_subject->getFieldInfo(substr($po_bundle['bundle'], strpos($po_bundle['bundle'], '.') + 1));
 		$va_result = array(
 			'id' => $po_bundle['bundle'],
-			'label' => $po_bundle['label'],
-			'input' => 'text'
+			'label' => $po_bundle['label']
 		);
 		if ($vo_field_info) {
+			// Convert CA field type to query builder type and operators.
+			switch ($vo_field_info['FIELD_TYPE']) {
+				case FT_NUMBER:
+					$va_result['type'] = 'integer';
+					break;
+				case FT_DATE:
+				case FT_DATERANGE:
+				case FT_HISTORIC_DATE:
+				case FT_HISTORIC_DATERANGE:
+					$va_result['type'] = 'date';
+					break;
+				case FT_TIME:
+				case FT_TIMECODE:
+				case FT_TIMESTAMP:
+				case FT_TIMERANGE:
+					$va_result['type'] = 'time';
+					break;
+				case FT_DATETIME:
+				case FT_HISTORIC_DATETIME:
+					$va_result['type'] = 'datetime';
+					break;
+				default:
+					$va_result['type'] = 'string';
+			}
+			// Use the relevant operators based on type.
+			$va_result['operators'] = $vo_operators_by_type[$va_result['type']];
+			// Process list types and use a text field for non-list types.
 			if (in_array($vo_field_info['DISPLAY_TYPE'], array( DT_SELECT, DT_LIST, DT_LIST_MULTIPLE, DT_CHECKBOXES, DT_RADIO_BUTTONS ))) {
 				$va_result['input'] = 'select';
-				$va_result['operators'] = [ 'equal', 'not_equal', 'is_null', 'is_not_null' ];
+				$va_result['operators'] = $vo_operators_by_type['select'];
 				if (isset($vo_field_info['OPTIONS'])) {
 					$va_result['values'] = array_flip($vo_field_info['OPTIONS']);
 				} else {
@@ -507,8 +534,11 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 						}
 					}
 				}
+			} else {
+				$va_result['input'] = 'text';
 			}
 		}
+		// Set up option groups.
 		$vs_table = $t_subject->tableName();
 		$va_priority = $vo_query_builder_config->get('query_builder_priority_' . $vs_table);
 		if (in_array($po_bundle['bundle'], $va_priority)) {
