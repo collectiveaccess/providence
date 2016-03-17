@@ -229,11 +229,14 @@
 		jQuery('#QueryBuilder')
 			.toggle(jQuery.cookieJar('caCookieJar').get('<?php print $vs_table; ?>QueryBuilderIsExpanded'))
 			.find('>div')
-			.queryBuilder({
-				filters: <?php echo json_encode($va_filters, JSON_PRETTY_PRINT); ?>
-				// TODO Parse this from the current value in the search box
-				//rules: {}
-			}).on(
+			.queryBuilder($.extend(
+				<?php print json_encode($vo_query_builder_config->get('query_builder_global_options')) ?>,
+				{
+					filters: <?php echo json_encode($va_filters, JSON_PRETTY_PRINT); ?>
+					// TODO Parse this from the current value in the search box
+					//rules: {}
+				}
+			)).on(
 				[
 					'afterAddGroup.queryBuilder',
 					'afterDeleteGroup.queryBuilder',
