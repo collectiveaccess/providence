@@ -230,7 +230,7 @@
 			.toggle(jQuery.cookieJar('caCookieJar').get('<?php print $vs_table; ?>QueryBuilderIsExpanded'))
 			.find('>div')
 			.queryBuilder($.extend(
-				<?php print json_encode($vo_query_builder_config->get('query_builder_global_options')) ?>,
+				<?php print json_encode($vo_query_builder_config->get('query_builder_global_options') ?: array()) ?>,
 				{
 					filters: <?php echo json_encode($va_filters, JSON_PRETTY_PRINT); ?>
 					// TODO Parse this from the current value in the search box
