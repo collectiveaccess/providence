@@ -1425,6 +1425,13 @@ a.button:hover{
     background-color: #2ac3d8;
 }
 
+#main .query-builder dd.rules-group-body {
+    margin-left: 2em;
+}
+#main .query-builder .group-conditions label {
+    border-bottom: 2px solid #ccc;
+}
+
 #main .query-builder .rule-container .rule-filter-container select {
     max-width: 250px;
 }
