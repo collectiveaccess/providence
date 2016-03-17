@@ -212,6 +212,8 @@ class ca_change_log extends BaseModel {
 			{$vs_limit_sql}
 		", $pn_from);
 
+
+
 		$va_ret = array();
 		while($qr_results->nextRow()) {
 			$va_row = $qr_results->getRow();
@@ -220,16 +222,23 @@ class ca_change_log extends BaseModel {
 			$va_row['snapshot'] =
 				caUnserializeForDatabase($qr_results->get('snapshot'));
 
+			// skip log entries without GUID -- we don't care about those
+			if(!($vs_guid = ca_guids::getForRow($qr_results->get('logged_table_num'), $qr_results->get('logged_row_id')))) {
+				continue;
+			}
+
+			$va_row['guid'] = $vs_guid;
+
 			// get subjects
 			$qr_subjects = $o_db->query("SELECT * FROM ca_change_log_subjects WHERE log_id=?", $qr_results->get('log_id'));
 
 			while($qr_subjects->nextRow()) {
 				// skip subjects without GUID -- we don't care about those
-				if(!($vs_guid = ca_guids::getForRow($qr_subjects->get('subject_table_num'), $qr_subjects->get('subject_row_id')))) {
+				if(!($vs_subject_guid = ca_guids::getForRow($qr_subjects->get('subject_table_num'), $qr_subjects->get('subject_row_id')))) {
 					continue;
 				}
 
-				$va_row['subjects'][] = array_replace($qr_subjects->getRow(), array('guid' => $vs_guid));
+				$va_row['subjects'][] = array_replace($qr_subjects->getRow(), array('guid' => $vs_subject_guid));
 			}
 
 			$va_ret[(int) $qr_results->get('log_id')] = $va_row;
