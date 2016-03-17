@@ -492,6 +492,7 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 			'id' => $po_bundle['bundle'],
 			'label' => $po_bundle['label']
 		);
+		// TODO Handle case where no field info is available
 		if ($vo_field_info) {
 			// Convert CA field type to query builder type and operators.
 			switch ($vo_field_info['FIELD_TYPE']) {
