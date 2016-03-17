@@ -39,11 +39,9 @@
 	$vo_query_builder_config = Configuration::load($this->request->config->get('search_query_builder_config'));
 	$vb_query_builder_enabled = $vo_query_builder_config->getBoolean('query_builder_enabled') && $vo_query_builder_config->getBoolean('query_builder_enabled_' . $vs_table);
 	$vs_query_builder_toggle = '';
-	$va_filters = [];
 	if ($vb_query_builder_enabled) {
 		require_once(__CA_BASE_DIR__ . '/app/models/ca_search_forms.php');
 		$vs_query_builder_toggle = ' <a href="#" class="button" id="QueryBuilderToggle">'._t('Query Builder').'&nbsp;&#9662;</a>';
-		$va_filters = caGetQueryBuilderFilters($t_subject, $vo_query_builder_config);
 	}
 
 	if (!$this->request->isAjax()) {
@@ -208,6 +206,10 @@
 
 	<?php
 	if ($vb_query_builder_enabled) {
+		$vo_query_builder_options = $vo_query_builder_config->get('query_builder_global_options') ?: array();
+		$vo_query_builder_options['filters'] = caGetQueryBuilderFilters($t_subject, $vo_query_builder_config);
+		// TODO Parse this from the current value in the search box
+		//$vo_query_builder_options['rules'] = ...
 	?>
 	function caUpdateSearchQueryBuilderToggleText() {
 		$('#QueryBuilderToggle').html('<?php echo _t('Query Builder'); ?>&nbsp;' + (jQuery('#QueryBuilder').is(':visible') ? '&#9652;' : '&#9662;'));
@@ -225,35 +227,29 @@
 
 	// Initialise query builder
 	jQuery(document).ready(function() {
-		jQuery('#QueryBuilderToggle').click(caToggleSearchQueryBuilder);
-		jQuery('#QueryBuilder')
-			.toggle(jQuery.cookieJar('caCookieJar').get('<?php print $vs_table; ?>QueryBuilderIsExpanded'))
-			.find('>div')
-			.queryBuilder($.extend(
-				<?php print json_encode($vo_query_builder_config->get('query_builder_global_options') ?: array()) ?>,
-				{
-					filters: <?php echo json_encode($va_filters, JSON_PRETTY_PRINT); ?>
-					// TODO Parse this from the current value in the search box
-					//rules: {}
-				}
-			)).on(
-				[
-					'afterAddGroup.queryBuilder',
-					'afterDeleteGroup.queryBuilder',
-					'afterAddRule.queryBuilder',
-					'afterDeleteRule.queryBuilder',
-					'afterUpdateRuleValue.queryBuilder',
-					'afterUpdateRuleFilter.queryBuilder',
-					'afterUpdateRuleOperator.queryBuilder'
-				].join(' '),
-				function () {
-					var rules = jQuery('#QueryBuilder').queryBuilder('getRules');
-					if (rules) {
-						// TODO Convert this into the CA search query syntax instead of just a JSON representation
-						$('#BasicSearchInput').val(JSON.stringify(rules));
+		var $queryBuilder = jQuery('#QueryBuilder')
+				.toggle(jQuery.cookieJar('caCookieJar').get('<?php print $vs_table; ?>QueryBuilderIsExpanded'))
+				.find('>div')
+				.queryBuilder(<?php print json_encode($vo_query_builder_options, JSON_PRETTY_PRINT) ?>)
+				.on(
+					[
+						'afterAddGroup.queryBuilder',
+						'afterDeleteGroup.queryBuilder',
+						'afterAddRule.queryBuilder',
+						'afterDeleteRule.queryBuilder',
+						'afterUpdateRuleValue.queryBuilder',
+						'afterUpdateRuleFilter.queryBuilder',
+						'afterUpdateRuleOperator.queryBuilder'
+					].join(' '),
+					function () {
+						var rules = $queryBuilder.queryBuilder('getRules');
+						if (rules) {
+							// TODO Convert this into the CA search query syntax instead of just a JSON representation
+							$('#BasicSearchInput').val(JSON.stringify(rules));
+						}
 					}
-				}
-			);
+				);
+		jQuery('#QueryBuilderToggle').click(caToggleSearchQueryBuilder);
 		caUpdateSearchQueryBuilderToggleText();
 	});
 	<?php
