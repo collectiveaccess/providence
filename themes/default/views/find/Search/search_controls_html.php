@@ -42,14 +42,8 @@
 	$va_filters = [];
 	if ($vb_query_builder_enabled) {
 		require_once(__CA_BASE_DIR__ . '/app/models/ca_search_forms.php');
-		$t_search_form = new ca_search_forms();
 		$vs_query_builder_toggle = ' <a href="#" class="button" id="QueryBuilderToggle">'._t('Query Builder').'&nbsp;&#9662;</a>';
-		$va_filters = array_values(array_map(
-			function ($po_bundle) use ($t_subject) {
-				return caMapBundleToQueryBuilderFilterDefinition($t_subject, $po_bundle);
-			},
-			$t_search_form->getAvailableBundles($vs_table)
-		));
+		$va_filters = caGetQueryBuilderFilters($t_subject, $vo_query_builder_config);
 	}
 
 	if (!$this->request->isAjax()) {

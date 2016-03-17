@@ -433,12 +433,64 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 		return $va_return;
 	}
 	# ---------------------------------------
-	function caMapBundleToQueryBuilderFilterDefinition(BaseModel $t_subject, $po_bundle) {
+	function caGetQueryBuilderFilters(BaseModel $t_subject, $vo_query_builder_config) {
+		$vs_table = $t_subject->tableName();
+		$t_search_form = new ca_search_forms();
+		$va_filters = array_values(array_map(
+			function ($po_bundle) use ($t_subject, $vo_query_builder_config) {
+				return caMapBundleToQueryBuilderFilterDefinition($t_subject, $po_bundle, $vo_query_builder_config);
+			},
+			$t_search_form->getAvailableBundles($vs_table)
+		));
+		$va_exclude = $vo_query_builder_config->get('query_builder_exclude_' . $vs_table);
+		$va_filters = array_filter($va_filters, function ($vo_filter) use ($va_exclude) {
+			return array_search($vo_filter['id'], $va_exclude) === false;
+		});
+		$va_priority = $vo_query_builder_config->get('query_builder_priority_' . $vs_table);
+		usort($va_filters, function ($po_a, $po_b) use ($va_priority, $vs_table) {
+			$vs_a_id = $po_a['id'];
+			$vs_b_id = $po_b['id'];
+			$vn_a_index = array_search($vs_a_id, $va_priority, true);
+			$vn_b_index = array_search($vs_b_id, $va_priority, true);
+			if ($vn_a_index !== false || $vn_b_index !== false) {
+				// At least one of (a, b) has priority, so the one with highest explicit priority should be first.
+				$vn_a_position = $vn_a_index === false ? 0 : sizeof($va_priority) - $vn_a_index;
+				$vn_b_position = $vn_b_index === false ? 0 : sizeof($va_priority) - $vn_b_index;
+				return $vn_b_position - $vn_a_position;
+			} else {
+				// Neither (a, b) has priority, so look at the tables they reference; there are three cases for each
+				// field specifier:
+				// 1. a field name on its own (no dot), which is implicitly part of the table being searched.
+				// 2. a field specified as `table.field` where `table` is the same as `$vs_table`, which is explicitly
+				//    part of the table being searched.
+				// 3. a field specified as `table.field` where `table` is a different table to `$vs_table`.
+				$vn_a_split = strpos($vs_a_id, '.');
+				$vs_a_table = $vn_a_split === false ? null : substr($vs_a_id, 0, $vn_a_split);
+				$vb_a_is_main_table = $vs_a_table === null || $vs_a_table === $vs_table;
+				$vn_b_split = strpos($vs_b_id, '.');
+				$vs_b_table = $vn_b_split === false ? null : substr($vs_b_id, 0, $vn_b_split);
+				$vb_b_is_main_table = $vs_b_table === null || $vs_b_table === $vs_table;
+				if ($vb_a_is_main_table && $vb_b_is_main_table) {
+					// Both (a, b) are in the main table, so sort alphabetically by label.
+					return strcasecmp($po_a['label'], $po_b['label']);
+				} elseif (!$vb_a_is_main_table && !$vb_b_is_main_table) {
+					// Both (a, b) are in other tables, so sort alphabetically by table.
+					return strcasecmp($vs_a_table, $vs_b_table);
+				} else {
+					// One of (a, b) is in the main table and the other isn't, so put the one in the main table first.
+					return $vb_a_is_main_table ? -1 : 1;
+				}
+			}
+		});
+		return $va_filters;
+	}
+	# ---------------------------------------
+	function caMapBundleToQueryBuilderFilterDefinition(BaseModel $t_subject, $po_bundle, $vo_query_builder_config) {
 		$vo_field_info = $t_subject->getFieldInfo(substr($po_bundle['bundle'], strpos($po_bundle['bundle'], '.') + 1));
 		$va_result = array(
-				'id' => $po_bundle['bundle'],
-				'label' => $po_bundle['label'],
-				'input' => 'text'
+			'id' => $po_bundle['bundle'],
+			'label' => $po_bundle['label'],
+			'input' => 'text'
 		);
 		if ($vo_field_info) {
 			if (in_array($vo_field_info['DISPLAY_TYPE'], array( DT_SELECT, DT_LIST, DT_LIST_MULTIPLE, DT_CHECKBOXES, DT_RADIO_BUTTONS ))) {
@@ -455,6 +507,19 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 						}
 					}
 				}
+			}
+		}
+		$vs_table = $t_subject->tableName();
+		$va_priority = $vo_query_builder_config->get('query_builder_priority_' . $vs_table);
+		if (in_array($po_bundle['bundle'], $va_priority)) {
+			// Bundle is given priority
+			$va_result['optgroup'] = 'Frequently used fields';
+		} else {
+			$vn_split = strpos($po_bundle['bundle'], '.');
+			if ($vn_split === false || substr($po_bundle['bundle'], 0, $vn_split) === $vs_table) {
+				$va_result['optgroup'] = 'Fields in ' . $t_subject->tableName();
+			} else {
+				$va_result['optgroup'] = 'Fields in related tables';
 			}
 		}
 		return $va_result;
