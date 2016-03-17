@@ -37,10 +37,10 @@
 	}
 
 	$vo_query_builder_config = Configuration::load($this->request->config->get('search_query_builder_config'));
-	$vb_display_query_builder = $vo_query_builder_config->getBoolean('display_query_builder') && $vo_query_builder_config->getBoolean('display_query_builder_' . $vs_table);
+	$vb_query_builder_enabled = $vo_query_builder_config->getBoolean('query_builder_enabled') && $vo_query_builder_config->getBoolean('query_builder_enabled_' . $vs_table);
 	$vs_query_builder_toggle = '';
 	$va_filters = [];
-	if ($vb_display_query_builder) {
+	if ($vb_query_builder_enabled) {
 		require_once(__CA_BASE_DIR__ . '/app/models/ca_search_forms.php');
 		$t_search_form = new ca_search_forms();
 		$vs_query_builder_toggle = ' <a href="#" class="button" id="QueryBuilderToggle">'._t('Query Builder').'&nbsp;&#9662;</a>';
@@ -70,7 +70,7 @@
 		?>
 		</form>
 		<?php
-		if ($vb_display_query_builder) {
+		if ($vb_query_builder_enabled) {
  		?>
 		<div id="QueryBuilder">
 			<div></div>
@@ -213,7 +213,7 @@
 	});
 
 	<?php
-	if ($vb_display_query_builder) {
+	if ($vb_query_builder_enabled) {
 	?>
 	function caUpdateSearchQueryBuilderToggleText() {
 		$('#QueryBuilderToggle').html('<?php echo _t('Query Builder'); ?>&nbsp;' + (jQuery('#QueryBuilder').is(':visible') ? '&#9652;' : '&#9662;'));
