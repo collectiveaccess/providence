@@ -215,23 +215,27 @@
 	<?php
 	if ($vb_display_query_builder) {
 	?>
-	var stateCookieJar = jQuery.cookieJar('caCookieJar');
+	function caUpdateSearchQueryBuilderToggleText() {
+		$('#QueryBuilderToggle').html('<?php echo _t('Query Builder'); ?>&nbsp;' + (jQuery('#QueryBuilder').is(':visible') ? '&#9652;' : '&#9662;'));
+	}
 
 	// Event handler for the query builder toggle
 	function caToggleSearchQueryBuilder() {
-		var $queryBuilder = jQuery('#QueryBuilder');
+		var $queryBuilder = jQuery('#QueryBuilder'),
+			stateCookieJar = jQuery.cookieJar('caCookieJar');
 		$queryBuilder.slideToggle('medium', function () {
-			var visible = $queryBuilder.is(':visible');
-			$('#QueryBuilderToggle').html('<?php echo _t('Query Builder'); ?>&nbsp;' + (visible ? '&#9652;' : '&#9662;'));
-			stateCookieJar.set('<?php print $vs_table; ?>QueryBuilderIsExpanded', visible);
+			stateCookieJar.set('<?php print $vs_table; ?>QueryBuilderIsExpanded', $queryBuilder.is(':visible'));
+			caUpdateSearchQueryBuilderToggleText();
 		});
 	}
 
 	// Initialise query builder
 	jQuery(document).ready(function() {
 		jQuery('#QueryBuilderToggle').click(caToggleSearchQueryBuilder);
-		var visible = stateCookieJar.get('<?php print $vs_table; ?>QueryBuilderIsExpanded'),
-			$queryBuilder = jQuery('#QueryBuilder').toggle(visible).find('>div').queryBuilder({
+		jQuery('#QueryBuilder')
+			.toggle(jQuery.cookieJar('caCookieJar').get('<?php print $vs_table; ?>QueryBuilderIsExpanded'))
+			.find('>div')
+			.queryBuilder({
 				filters: <?php echo json_encode($va_filters, JSON_PRETTY_PRINT); ?>
 				// TODO Parse this from the current value in the search box
 				//rules: {}
@@ -246,13 +250,14 @@
 					'afterUpdateRuleOperator.queryBuilder'
 				].join(' '),
 				function () {
-					var rules = $queryBuilder.queryBuilder('getRules');
+					var rules = jQuery('#QueryBuilder').queryBuilder('getRules');
 					if (rules) {
 						// TODO Convert this into the CA search query syntax instead of just a JSON representation
 						$('#BasicSearchInput').val(JSON.stringify(rules));
 					}
 				}
 			);
+		caUpdateSearchQueryBuilderToggleText();
 	});
 	<?php
 	}
