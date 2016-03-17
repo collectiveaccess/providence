@@ -214,8 +214,6 @@ class ca_change_log extends BaseModel {
 			{$vs_limit_sql}
 		", $pn_from);
 
-
-
 		$va_ret = array();
 		while($qr_results->nextRow()) {
 			$va_row = $qr_results->getRow();
@@ -235,6 +233,19 @@ class ca_change_log extends BaseModel {
 					case 'attribute_id':
 						if($vs_attr_guid = ca_attributes::getGUIDByPrimaryKey($vm_val)) {
 							$va_snapshot['attribute_guid'] = $vs_attr_guid;
+						}
+						break;
+					case 'type_id':
+						$t_instance = Datamodel::load()->getInstance((int) $qr_results->get('logged_table_num'), true);
+						if($t_instance) {
+							if($t_instance instanceof BaseRelationshipModel) {
+								$va_snapshot['type_code'] = caGetRelationshipTypeCode($vm_val);
+							} elseif($t_instance instanceof BaseLabel) {
+								$vb_preferred = isset($va_snapshot['is_preferred']) ? (bool) $va_snapshot['is_preferred'] : true;
+								$va_snapshot['type_code'] = caGetListItemIdno($vm_val, caGetLabelTypeList($t_instance->getSubjectTableName(), $vb_preferred));
+							} elseif($t_instance instanceof BaseModelWithAttributes) {
+								$va_snapshot['type_code'] = caGetListItemIdno($vm_val, caGetTypeList($t_instance->tableName()));
+							}
 						}
 						break;
 					default:

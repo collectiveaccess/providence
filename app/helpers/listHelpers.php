@@ -279,6 +279,20 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	}
 	# ---------------------------------------
 	/**
+	 * Get label type list
+	 * @param string|int $pm_table_name_or_num
+	 * @param bool $pb_preferred
+	 * @return string|null
+	 */
+	function caGetLabelTypeList($pm_table_name_or_num, $pb_preferred = true) {
+		$o_dm = Datamodel::load();
+		$vs_table_name = $o_dm->getTableName($pm_table_name_or_num);
+
+		$o_conf = Configuration::load();
+		return $o_conf->get($pb_preferred ? "{$vs_table_name}_preferred_label_type_list" : "{$vs_table_name}_nonpreferred_label_type_list");
+	}
+	# ---------------------------------------
+	/**
 	 * Fetch the id of the root item in list
 	 *
 	 * @param string $ps_list_code List code
