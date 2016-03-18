@@ -36,7 +36,7 @@ var caUI = caUI || {};
  */
 (function () {
 	var escapeValue, getTokenList, shiftToken, tokensToRuleSet,
-		assertNextToken, assertCondition, skipWhitespace, assignOperatorAndValue,
+		assertNextToken, isNextToken, assertCondition, skipWhitespace, assignOperatorAndValue,
 		TOKEN_WORD = 'WORD',
 		TOKEN_LPAREN = 'LPAREN',
 		TOKEN_RPAREN = 'RPAREN',
@@ -250,6 +250,22 @@ var caUI = caUI || {};
 	};
 
 	/**
+	 * If the next token is of the given type, remove it from the `tokens` list and return `true`, otherwise do not
+	 * modify the `tokens` list and return `false`.  Similar to `assertNextToken` except that a non-match is a no-op
+	 * instead of an error.
+	 * @param {Array} tokens
+	 * @param {String} type
+	 * @returns {Boolean}
+     */
+	isNextToken = function (tokens, type) {
+		if (tokens.length === 0 || tokens[0].type !== type) {
+			return false;
+		}
+		tokens.shift();
+		return true;
+	};
+
+	/**
 	 * Check that the next token is a valid condition, i.e. a word token with value "AND" or "OR".  Throw an error if
 	 * the token type or value is incorrect.  Destructively processes the `tokens` list.
 	 * @param {Array} tokens
@@ -278,20 +294,17 @@ var caUI = caUI || {};
 	 * Use the given `queryValue` to assign a `value` and `condition` to the given `rule`.
 	 * @param {Object} rule
 	 * @param {String} queryValue
+	 * @parma {Boolean} negation
      */
-	assignOperatorAndValue = function (rule, queryValue) {
-		var i, j, mapping, matches, negated;
-		// A leading - symbol means negation of the operator.
-		negated = queryValue[0] === '-';
-		// Strip the negation indicator.
-		queryValue = negated ? queryValue.substring(1) : queryValue;
+	assignOperatorAndValue = function (rule, queryValue, negation) {
+		var i, j, mapping, matches;
 		// Find the most specific matching regular expression, which gives the operator, and the regular expression for
 		// parsing the value into a scalar or array value, depending on the number of capturing groups.
 		for (i = 0; i < REGEX_OPERATOR_MAP.length; ++i) {
 			mapping = REGEX_OPERATOR_MAP[i];
 			matches = mapping.regex.exec(queryValue);
 			if (matches) {
-				rule.operator = negated ? mapping.negatedOperator : mapping.operator;
+				rule.operator = negation ? mapping.negatedOperator : mapping.operator;
 				if (matches.length < 2) {
 					rule.value = undefined;
 				} else if (matches.length === 2) {
@@ -312,7 +325,7 @@ var caUI = caUI || {};
 	 * @return {Object}
      */
 	tokensToRuleSet = function (tokens) {
-		var rule, condition,
+		var rule, condition, negation,
 			ruleSet = {
 				condition: undefined,
 				rules: []
@@ -320,9 +333,8 @@ var caUI = caUI || {};
 		skipWhitespace(tokens);
 		// End this recursion when the string is finished, or when we reach a right parenthesis.
 		while (tokens.length > 0 && tokens[0].type !== TOKEN_RPAREN) {
-			if (tokens[0].type === TOKEN_LPAREN) {
+			if (isNextToken(tokens, TOKEN_LPAREN)) {
 				// Explicitly nested rule set: recursion.
-				assertNextToken(tokens, TOKEN_LPAREN);
 				rule = tokensToRuleSet(tokens);
 				assertNextToken(tokens, TOKEN_RPAREN);
 			} else if (tokens[0].type !== TOKEN_RPAREN) {
@@ -330,7 +342,12 @@ var caUI = caUI || {};
 				rule = {};
 				rule.field = rule.id = assertNextToken(tokens, TOKEN_WORD).value;
 				assertNextToken(tokens, TOKEN_COLON);
-				assignOperatorAndValue(rule, assertNextToken(tokens, TOKEN_WORD).value);
+				console.log(tokens);
+				negation = isNextToken(tokens, TOKEN_NEGATION);
+				console.log(tokens);
+				console.log(negation);
+				assignOperatorAndValue(rule, assertNextToken(tokens, TOKEN_WORD).value, negation);
+				console.log(rule);
 			}
 			skipWhitespace(tokens);
 			if (rule) {
