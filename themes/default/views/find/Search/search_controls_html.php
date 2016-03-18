@@ -222,11 +222,12 @@
 			stateCookieJar.set('<?php print $vs_table; ?>QueryBuilderIsExpanded', $queryBuilder.is(':visible'));
 			caUpdateSearchQueryBuilderToggleText();
 		});
+		return false;
 	}
 
 	// Initialise query builder
 	jQuery(document).ready(function() {
-		var initialRules = caUI.convertSearchQueryToQueryBuilderRules(jQuery('#BasicSearchInput').val()),
+		var initialRules = caUI.convertSearchQueryToQueryBuilderRuleSet(jQuery('#BasicSearchInput').val()),
 			$queryBuilder = jQuery('#QueryBuilder')
 				.toggle(jQuery.cookieJar('caCookieJar').get('<?php print $vs_table; ?>QueryBuilderIsExpanded'))
 				.find('>div')
@@ -244,7 +245,7 @@
 					function () {
 						var rules = $queryBuilder.queryBuilder('getRules');
 						if (rules) {
-							jQuery('#BasicSearchInput').val(caUI.convertQueryBuilderRulesToSearchQuery(rules));
+							jQuery('#BasicSearchInput').val(caUI.convertQueryBuilderRuleSetToSearchQuery(rules));
 						}
 					}
 				);
