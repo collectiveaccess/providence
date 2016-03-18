@@ -54,11 +54,11 @@ var caUI = caUI || {};
 				case 'between':
 					return prefix + '[' + escapeValue(rule.value[0]) + ' TO ' + escapeValue(rule.value[1]) + ']';
 				case 'begins_with':
-					return prefix + '"*' + escapeValue(rule.value) + '"';
+					return prefix + '"' + escapeValue(rule.value) + '*"';
 				case 'contains':
 					return prefix + '"*' + escapeValue(rule.value) + '*"';
 				case 'ends_with':
-					return prefix + '"' + escapeValue(rule.value) + '*"';
+					return prefix + '"*' + escapeValue(rule.value) + '"';
 				case 'is_empty':
 				case 'is_null':
 					return prefix + '*';
@@ -75,10 +75,50 @@ var caUI = caUI || {};
 	 * @returns {object|undefined}
 	 */
 	caUI.convertSearchQueryToQueryBuilderRules = function (query) {
-		var i, fields, values, conditions, rules,
+		var i, j, k, fields, values, conditions, rules, operator, negated, mapping, matches,
 			REGEX_STRIP_PARENTHESES = /^\((.*)\)$/,
+			REGEX_STRIP_QUOTES = /^"(.*)"$/,
 			REGEX_GET_FILTER = /^((?:\w+\.)?\w+):(\S+|"(?:[^"]*|\\")*")(.*)$/,
-			REGEX_GET_OPERATOR = /^\s+(AND|OR)\s+/;
+			REGEX_GET_CONDITION = /^\s+(AND|OR)\s+(.*)$/,
+			REGEX_OPERATOR_MAP = [
+				{
+					regex: /^(.*)$/,
+					operator: 'equal',
+					negatedOperator: 'not_equal'
+				},
+				{
+					regex: /^\((.*)\)$/,
+					operator: 'in',
+					negatedOperator: 'not_in'
+				},
+				{
+					regex: /^\[\s*(.*)\s+TO\s+(.*)\s*]$/,
+					operator: 'between',
+					negatedOperator: 'not_between'
+				},
+				{
+					regex: /^([^\*].*[^\\])\*$/,
+					operator: 'begins_with',
+					negatedOperator: 'not_begins_with'
+				},
+				{
+					regex: /^\*(.*[^\\])\*$/,
+					operator: 'contains',
+					negatedOperator: 'not_contains'
+				},
+				{
+					regex: /^\*(.*(?:\\\*|[^\*]))$/,
+					operator: 'ends_with',
+					negatedOperator: 'not_ends_with'
+				},
+				{
+					regex: /^\*$/,
+					operator: 'is_empty',
+					negatedOperator: 'is_not_empty'
+				}
+			];
+		// Trim extraneous whitespace.
+		query = query.trim();
 		// Strip any number of matching pairs of external parentheses.
 		while (query.match(REGEX_STRIP_PARENTHESES)) {
 			query = query.replace(REGEX_STRIP_PARENTHESES, '$1');
@@ -90,15 +130,22 @@ var caUI = caUI || {};
 		fields = [];
 		values = [];
 		conditions = [];
-		while (query.match(REGEX_GET_FILTER)) {
-			fields.push(query.replace(REGEX_GET_FILTER, '$1'));
-			values.push(query.replace(REGEX_GET_FILTER, '$2'));
-			query = query.replace(REGEX_GET_FILTER, '$3');
-			if (query.match(REGEX_GET_OPERATOR)) {
-				// If we don't match, then it must be the next nested group.
-				conditions.push(query.replace(REGEX_GET_OPERATOR, '$1'));
-				query = query.replace(REGEX_GET_OPERATOR, '$2');
+		while (query.length > 0) {
+			if (query.match(REGEX_GET_FILTER)) {
+				fields.push(query.replace(REGEX_GET_FILTER, '$1'));
+				values.push(query.replace(REGEX_GET_FILTER, '$2'));
+				query = query.replace(REGEX_GET_FILTER, '$3');
+			} else if (query[0] === '(') {
+				// TODO Handle nested groups
+			} else {
+				return undefined;
 			}
+			if (query.match(REGEX_GET_CONDITION)) {
+				// If we don't match, then it must be the next nested group.
+				conditions.push(query.replace(REGEX_GET_CONDITION, '$1'));
+				query = query.replace(REGEX_GET_CONDITION, '$2');
+			}
+			query = query.trim();
 		}
 		for (i = 1; i < conditions.length; ++i) {
 			if (conditions[i] !== conditions[0]) {
@@ -108,14 +155,38 @@ var caUI = caUI || {};
 		}
 		rules = [];
 		for (i = 0; i < fields.length; ++i) {
-			// TODO Handle different operators
+			negated = values[i][0] === '-';
+			values[i] = negated ? values[i].substring(1) : values[i];
+			values[i] = values[i].replace(REGEX_STRIP_QUOTES, '$1');
+			for (j = 0; j < REGEX_OPERATOR_MAP.length; ++j) {
+				mapping = REGEX_OPERATOR_MAP[j];
+				matches = mapping.regex.exec(values[i]);
+				if (matches) {
+					operator = negated ? mapping.negatedOperator : mapping.operator;
+					if (matches.length < 2) {
+						values[i] = undefined;
+					} else if (matches.length === 2) {
+						values[i] = matches[1];
+					} else {
+						values[i] = [];
+						for (k = 1; k < matches.length; ++k) {
+							values[i].push(matches[k]);
+						}
+					}
+				}
+			}
+			if (Object.prototype.toString.call(values[i]) === '[object Array]') {
+				for (k = 0; k < values[i].length; ++k) {
+					values[i][k] = values[i][k].replace(REGEX_STRIP_QUOTES, '$1');
+				}
+			}
 			rules.push({
+				id: fields[i],
 				field: fields[i],
 				value: values[i],
-				operator: 'equal'
+				operator: operator
 			});
 		}
-		// TODO Recursion, handle nested groups
 		return {
 			operator: conditions[0],
 			rules: rules
