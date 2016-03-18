@@ -235,16 +235,70 @@ abstract class Base {
 		return $this->opt_instance;
 	}
 
+	/**
+	 * Set intrinsic fields from snapshot in given model instance
+	 */
 	public function setIntrinsicsFromSnapshotInModelInstance() {
 		$this->getModelInstance()->setMode(ACCESS_WRITE);
+		$va_snapshot = $this->getSnapshot();
 
-		foreach($this->getSnapshot() as $vs_field => $vm_val) {
-			if($this->getModelInstance()->hasField($vs_field)) {
-				// @todo have to skip more fields here ... parent_id, hierarchy indexes, various *_id fields
-				if($this->getModelInstance()->primaryKey() == $vs_field) { continue; }
+		foreach($va_snapshot as $vs_field => $vm_val) {
+			// skip non existing "fake" fields
+			if(!$this->getModelInstance()->hasField($vs_field)) { continue; }
 
-				$this->getModelInstance()->set($vs_field, $vm_val);
+			// skip primary key
+			if($this->getModelInstance()->primaryKey() == $vs_field) { continue; }
+
+			// handle list reference fields, like status, access, item_status_id, or even type_id
+			// in the source log, there should be fields like "type_code" or "access_code" that have
+			// the codes of the list items we're looking for (corresponding to "type_id" and "access")
+			// we assume they're the same in this system and try to set() them if they exist.
+			if($va_fld_info = $this->getModelInstance()->getFieldInfo($vs_field)) {
+
+				$vs_potential_code_field = str_replace('_id', '', $vs_field) . '_code';
+				if(isset($va_fld_info['LIST']) || isset($va_fld_info['LIST_CODE'])) {
+					if(isset($va_snapshot[$vs_potential_code_field])) {
+						$vs_code = $va_snapshot[$vs_potential_code_field];
+						// already established one of them is set, a few lines above
+						$vs_list = isset($va_fld_info['LIST']) ? $va_fld_info['LIST'] : $va_fld_info['LIST_CODE'];
+
+						if($vn_item_id = caGetListItemID($vs_list, $vs_code)) {
+							$this->getModelInstance()->set($vs_field, $vn_item_id);
+						} else {
+							throw new LogEntryInconsistency(
+								"Couldn't find list item id for idno '{$vs_code}' in list '{$vs_list}. Field was {$vs_field}"
+							);
+						}
+
+					} else {
+						throw new LogEntryInconsistency(
+							"No corresponding code field '{$vs_potential_code_field}' found for list reference field '{$vs_field}'"
+						);
+					}
+				}
+
+				// don't try to build hierarchy indexes by hand
+				if($vs_field == $this->getModelInstance()->getProperty('HIERARCHY_LEFT_INDEX_FLD')) { continue; }
+				if($vs_field == $this->getModelInstance()->getProperty('HIERARCHY_RIGHT_INDEX_FLD')) { continue; }
+
+				// handle parent_ids -- have to translate GUID to primary key
+				if($vs_field == $this->getModelInstance()->getProperty('HIERARCHY_PARENT_ID_FLD')) {
+					if(isset($va_snapshot[$vs_field . '_guid']) && ($vs_parent_guid = $va_snapshot[$vs_field . '_guid'])) {
+						$t_instance = $this->getModelInstance()->cloneRecord();
+						if($t_instance->loadByGUID($vs_parent_guid)) {
+							$this->getModelInstance()->set($vs_field, $t_instance->getPrimaryKey());
+						} else {
+							throw new LogEntryInconsistency("Could not load GUID {$vs_parent_guid} (referenced in HIERARCHY_PARENT_ID_FLD)");
+						}
+					} else {
+						throw new LogEntryInconsistency("No guid for parent_id field found");
+					}
+				}
+
+				// @todo handle ca_foo_x_bar.type_id
 			}
+
+			$this->getModelInstance()->set($vs_field, $vm_val);
 		}
 	}
 
@@ -281,4 +335,16 @@ abstract class Base {
 
 }
 
+/**
+ * This should be handled as a non-recoverable error
+ * Class InvalidLogEntryException
+ * @package CA\Sync\LogEntry
+ */
 class InvalidLogEntryException extends \Exception {}
+
+/**
+ * More of a warning/notice. Something that should be logged but doesn't necessarily prevent import
+ * Class LogEntryInconsistency
+ * @package CA\Sync\LogEntry
+ */
+class LogEntryInconsistency extends \Exception {}

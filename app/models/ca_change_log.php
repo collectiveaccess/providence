@@ -251,14 +251,20 @@ class ca_change_log extends BaseModel {
 						}
 						break;
 					default:
-						// handle all other list referencing fields
 						$t_instance = Datamodel::load()->getInstance((int) $qr_results->get('logged_table_num'), true);
 						if(!is_null($vm_val) && ($va_fld_info = $t_instance->getFieldInfo($vs_fld))) {
+
+							// handle all other list referencing fields
 							$vs_new_fld = str_replace('_id', '', $vs_fld) . '_code';
 							if(isset($va_fld_info['LIST'])) {
-								$va_snapshot[$vs_new_fld] = caGetListItemIDForValue($va_fld_info['LIST'], $vm_val);
+								$va_snapshot[$vs_new_fld] = caGetListItemIdno(caGetListItemIDForValue($va_fld_info['LIST'], $vm_val));
 							} elseif(isset($va_fld_info['LIST_CODE'])) {
 								$va_snapshot[$vs_new_fld] = caGetListItemIdno($vm_val);
+							}
+
+							// handle monohierarchy (usually parent_id) fields
+							if($vs_fld == $t_instance->getProperty('HIERARCHY_PARENT_ID_FLD')) {
+								$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_instance->tableNum(), $vm_val);
 							}
 						}
 						break;
