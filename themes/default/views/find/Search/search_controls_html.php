@@ -225,7 +225,15 @@
 	}
 
 	function caSetQueryBuilderRulesFromSearchInput() {
-		var rules = caUI.convertSearchQueryToQueryBuilderRuleSet(jQuery('#BasicSearchInput').val());
+		var rules;
+		try {
+			rules = caUI.convertSearchQueryToQueryBuilderRuleSet(jQuery('#BasicSearchInput').val());
+		} catch (e) {
+			// TODO Something else? Display to user?
+			if (console && console.error) {
+				console.error(e);
+			}
+		}
 		if (rules) {
 			jQuery('#QueryBuilder').queryBuilder('setRules', rules);
 		}
