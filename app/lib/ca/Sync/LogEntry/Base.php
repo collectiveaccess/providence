@@ -295,7 +295,18 @@ abstract class Base {
 					}
 				}
 
-				// @todo handle ca_foo_x_bar.type_id
+				// handle ca_foo_x_bar.type_id
+				if($vs_field = $this->getModelInstance()->getProperty('RELATIONSHIP_TYPE_FIELDNAME')) {
+					if(isset($va_snapshot[$vs_field . '_code']) && ($vs_rel_type_code = $va_snapshot[$vs_field . '_code'])) {
+						if($vn_rel_type_id = caGetRelationshipTypeID($vs_rel_type_code)) {
+							$this->getModelInstance()->set($vs_field, $vn_rel_type_id);
+						} else {
+							throw new LogEntryInconsistency("Could find relationship type with type code '{$vs_rel_type_code}'");
+						}
+					} else {
+						throw new LogEntryInconsistency("No relationship type code found");
+					}
+				}
 			}
 
 			$this->getModelInstance()->set($vs_field, $vm_val);
