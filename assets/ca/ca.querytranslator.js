@@ -303,12 +303,12 @@ var caUI = caUI || {};
 				rule.field = rule.id = assertNextToken(tokens, TOKEN_WORD).value;
 				assertNextToken(tokens, TOKEN_COLON);
 				assignOperatorAndValue(rule, assertNextToken(tokens, TOKEN_WORD).value);
-				skipWhitespace(tokens);
-				// TODO Handle heterogenous conditions without parentheses.
-				if (tokens.length > 0 && tokens[0].type === TOKEN_WORD && !ruleSet.condition) {
-					ruleSet.condition = assertCondition(tokens).value;
-				}
 				ruleSet.rules.push(rule);
+			}
+			skipWhitespace(tokens);
+			// TODO Handle heterogenous conditions without parentheses.
+			if (tokens.length > 0 && tokens[0].type === TOKEN_WORD) {
+				ruleSet.condition = assertCondition(tokens).value;
 			}
 			skipWhitespace(tokens);
 		}
