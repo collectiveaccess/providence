@@ -248,6 +248,7 @@
 						}
 					}
 				);
+		// TODO Bind to the query field so the rules are updated on change
 		if (initialRules) {
 			$queryBuilder.queryBuilder('setRules', initialRules);
 		}
