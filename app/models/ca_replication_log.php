@@ -195,13 +195,12 @@ class ca_replication_log extends BaseModel {
 	public static function getLastReplicatedLogID($ps_source_system_guid) {
 		$o_db = new Db();
 		$qr_res = $o_db->query('
-			SELECT log_id FROM ca_replication_log
+			SELECT max(log_id) as max_log_id FROM ca_replication_log
 			WHERE status=? AND source_system_guid=?
-			ORDER BY log_id DESC LIMIT 1
 		', 'C', $ps_source_system_guid);
 
 		if($qr_res->nextRow()) {
-			return (int) $qr_res->get('log_id');
+			return (int) $qr_res->get('max_log_id');
 		} else {
 			return 0;
 		}

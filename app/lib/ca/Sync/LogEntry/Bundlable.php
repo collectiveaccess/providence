@@ -42,9 +42,9 @@ class Bundlable extends Base {
 		if($this->isInsert()) {
 			$this->applyInsert();
 		} elseif($this->isUpdate()) {
-
+			$this->applyUpdate();
 		} elseif($this->isDelete()) {
-
+			$this->applyDelete();
 		}
 
 	}
@@ -56,6 +56,23 @@ class Bundlable extends Base {
 
 		$this->setIntrinsicsFromSnapshotInModelInstance();
 		$this->getModelInstance()->insert();
+	}
+
+	private function applyUpdate() {
+		if(!$this->getModelInstance()->getPrimaryKey()) {
+			throw new InvalidLogEntryException('operation is update but model instance does not have a primary key.');
+		}
+
+		$this->setIntrinsicsFromSnapshotInModelInstance();
+		$this->getModelInstance()->update();
+	}
+
+	private function applyDelete() {
+		if(!$this->getModelInstance()->getPrimaryKey()) {
+			throw new InvalidLogEntryException('operation is delete but model instance does not have a primary key.');
+		}
+
+		$this->getModelInstance()->delete();
 	}
 
 }

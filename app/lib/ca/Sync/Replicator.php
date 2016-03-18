@@ -102,7 +102,14 @@ class Replicator {
 					->setRequestBody($va_source_log_entries)
 					->request();
 
+
 				var_dump($o_resp);
+
+				// the above call will return the id of the last successfull replication operation
+				// we take that back to the source to record it there.
+				$pn_last_replicated_log_id = $o_resp->getRawData()['replicated_log_id'];
+
+
 			}
 		}
 	}
