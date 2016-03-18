@@ -64,8 +64,8 @@
 		<?php
 		if ($vb_query_builder_enabled) {
  		?>
-		<div id="QueryBuilder">
-			<div></div>
+		<div id="QueryBuilderContainer">
+			<div id="QueryBuilder"></div>
 		</div>
 		<?php
 		}
@@ -211,49 +211,50 @@
 		$vo_query_builder_options['allow_empty'] = true;
 	?>
 	function caUpdateSearchQueryBuilderToggleText() {
-		jQuery('#QueryBuilderToggle').html('<?php echo _t('Query Builder'); ?>&nbsp;' + (jQuery('#QueryBuilder').is(':visible') ? '&#9652;' : '&#9662;'));
+		jQuery('#QueryBuilderToggle').html('<?php echo _t('Query Builder'); ?>&nbsp;' + (jQuery('#QueryBuilderContainer').is(':visible') ? '&#9652;' : '&#9662;'));
 	}
 
 	// Event handler for the query builder toggle
 	function caToggleSearchQueryBuilder() {
-		var $queryBuilder = jQuery('#QueryBuilder'),
-			stateCookieJar = jQuery.cookieJar('caCookieJar');
-		$queryBuilder.slideToggle('medium', function () {
-			stateCookieJar.set('<?php print $vs_table; ?>QueryBuilderIsExpanded', $queryBuilder.is(':visible'));
+		var $container = jQuery('#QueryBuilderContainer');
+		$container.slideToggle('medium', function () {
+			jQuery.cookieJar('caCookieJar').set('<?php print $vs_table; ?>QueryBuilderIsExpanded', $container.is(':visible'));
 			caUpdateSearchQueryBuilderToggleText();
 		});
 		return false;
 	}
 
+	function caSetQueryBuilderRulesFromSearchInput() {
+		var rules = caUI.convertSearchQueryToQueryBuilderRuleSet(jQuery('#BasicSearchInput').val());
+		if (rules) {
+			jQuery('#QueryBuilder').queryBuilder('setRules', rules);
+		}
+	}
+
 	// Initialise query builder
 	jQuery(document).ready(function() {
-		var initialRules = caUI.convertSearchQueryToQueryBuilderRuleSet(jQuery('#BasicSearchInput').val()),
-			$queryBuilder = jQuery('#QueryBuilder')
-				.toggle(jQuery.cookieJar('caCookieJar').get('<?php print $vs_table; ?>QueryBuilderIsExpanded'))
-				.find('>div')
-				.queryBuilder(<?php print json_encode($vo_query_builder_options, JSON_PRETTY_PRINT) ?>)
-				.on(
-					[
-						'afterAddGroup.queryBuilder',
-						'afterDeleteGroup.queryBuilder',
-						'afterAddRule.queryBuilder',
-						'afterDeleteRule.queryBuilder',
-						'afterUpdateRuleValue.queryBuilder',
-						'afterUpdateRuleFilter.queryBuilder',
-						'afterUpdateRuleOperator.queryBuilder'
-					].join(' '),
-					function () {
-						var rules = $queryBuilder.queryBuilder('getRules');
-						if (rules) {
-							jQuery('#BasicSearchInput').val(caUI.convertQueryBuilderRuleSetToSearchQuery(rules));
-						}
+		jQuery('#QueryBuilderContainer').toggle(jQuery.cookieJar('caCookieJar').get('<?php print $vs_table; ?>QueryBuilderIsExpanded'));
+		jQuery('#QueryBuilder')
+			.queryBuilder(<?php print json_encode($vo_query_builder_options, JSON_PRETTY_PRINT) ?>)
+			.on(
+				[
+					'afterAddGroup.queryBuilder',
+					'afterDeleteGroup.queryBuilder',
+					'afterAddRule.queryBuilder',
+					'afterDeleteRule.queryBuilder',
+					'afterUpdateRuleValue.queryBuilder',
+					'afterUpdateRuleFilter.queryBuilder',
+					'afterUpdateRuleOperator.queryBuilder'
+				].join(' '),
+				function () {
+					var rules = jQuery('#QueryBuilder').queryBuilder('getRules');
+					if (rules) {
+						jQuery('#BasicSearchInput').val(caUI.convertQueryBuilderRuleSetToSearchQuery(rules));
 					}
-				);
-		// TODO Bind to the query field so the rules are updated on change
-		if (initialRules) {
-			$queryBuilder.queryBuilder('setRules', initialRules);
-		}
+				}
+			);
 		jQuery('#QueryBuilderToggle').click(caToggleSearchQueryBuilder);
+		jQuery('#BasicSearchInput').change(caSetQueryBuilderRulesFromSearchInput);
 		caUpdateSearchQueryBuilderToggleText();
 	});
 	<?php
