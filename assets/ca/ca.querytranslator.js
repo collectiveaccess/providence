@@ -27,8 +27,16 @@
 
 var caUI = caUI || {};
 
+/**
+ * This file defines two functions in the `caUI` namespace, for converting between (one function for each direction of
+ * conversion) the CA search query syntax and the jQuery query builder hierarchical rule set structure.
+ *
+ * The only range filter that is supported here is `between`.  The Lucene / CA search syntax does not readily support
+ * `greater_than` or `less_than`.
+ */
 (function () {
-	var escapeValue, shiftToken, parseRuleSet, assertNextToken, assertCondition, skipWhitespace, assignOperatorAndValue,
+	var escapeValue, getTokenList, shiftToken, tokensToRuleSet,
+		assertNextToken, assertCondition, skipWhitespace, assignOperatorAndValue,
 		TOKEN_WORD = 'WORD',
 		TOKEN_LPAREN = 'LPAREN',
 		TOKEN_RPAREN = 'RPAREN',
@@ -119,6 +127,24 @@ var caUI = caUI || {};
 	};
 
 	/**
+	 * Retrieve the list of tokens from the given query string.
+	 * @param {String} query
+	 * @return {Array}
+     */
+	getTokenList = function (query) {
+		var token,
+			tokens = [],
+			queryArray = query.trim().split('');
+		while (token = shiftToken(queryArray)) {
+			tokens.push(token);
+		}
+		while (tokens.length >= 2 && tokens[0].type === TOKEN_LPAREN && tokens[tokens.length - 1].type === TOKEN_RPAREN) {
+			tokens = tokens.slice(1, tokens.length - 1);
+		}
+		return tokens;
+	};
+
+	/**
 	 * Retrieve the next token from the `queryArray`, which is destructively processed.
 	 * @param {Array} queryArray
 	 * @returns {Object|undefined}
@@ -128,12 +154,10 @@ var caUI = caUI || {};
 			quoted = false,
 			escaped = false,
 			end = false;
-
 		// End condition.
 		if (queryArray.length === 0) {
 			return undefined;
 		}
-
 		// Inspect the first character to determine the type of token.
 		character = queryArray.shift();
 		switch (character) {
@@ -171,7 +195,6 @@ var caUI = caUI || {};
 			default:
 				token = { type: TOKEN_WORD, value: character };
 		}
-
 		// Process remaining characters until the end of the token.
 		while (queryArray.length > 0 && !end) {
 			character = queryArray[0];
@@ -203,7 +226,6 @@ var caUI = caUI || {};
 				}
 			}
 		}
-
 		return token;
 	};
 
@@ -259,9 +281,12 @@ var caUI = caUI || {};
      */
 	assignOperatorAndValue = function (rule, queryValue) {
 		var i, j, mapping, matches, negated;
+		// A leading - symbol means negation of the operator.
 		negated = queryValue[0] === '-';
+		// Strip the negation indicator.
 		queryValue = negated ? queryValue.substring(1) : queryValue;
-		queryValue = queryValue.replace(/^"(.*)"$/, '$1');
+		// Find the most specific matching regular expression, which gives the operator, and the regular expression for
+		// parsing the value into a scalar or array value, depending on the number of capturing groups.
 		for (i = 0; i < REGEX_OPERATOR_MAP.length; ++i) {
 			mapping = REGEX_OPERATOR_MAP[i];
 			matches = mapping.regex.exec(queryValue);
@@ -286,29 +311,47 @@ var caUI = caUI || {};
 	 * @param {Array} tokens
 	 * @return {Object}
      */
-	parseRuleSet = function (tokens) {
-		var rule,
+	tokensToRuleSet = function (tokens) {
+		var rule, condition,
 			ruleSet = {
 				condition: undefined,
 				rules: []
 			};
 		skipWhitespace(tokens);
+		// End this recursion when the string is finished, or when we reach a right parenthesis.
 		while (tokens.length > 0 && tokens[0].type !== TOKEN_RPAREN) {
 			if (tokens[0].type === TOKEN_LPAREN) {
+				// Explicitly nested rule set: recursion.
 				assertNextToken(tokens, TOKEN_LPAREN);
-				ruleSet.rules.push(parseRuleSet(tokens));
+				rule = tokensToRuleSet(tokens);
 				assertNextToken(tokens, TOKEN_RPAREN);
 			} else if (tokens[0].type !== TOKEN_RPAREN) {
+				// Standard rule, with a field, operator and value.
 				rule = {};
 				rule.field = rule.id = assertNextToken(tokens, TOKEN_WORD).value;
 				assertNextToken(tokens, TOKEN_COLON);
 				assignOperatorAndValue(rule, assertNextToken(tokens, TOKEN_WORD).value);
-				ruleSet.rules.push(rule);
 			}
 			skipWhitespace(tokens);
-			// TODO Handle heterogenous conditions without parentheses.
-			if (tokens.length > 0 && tokens[0].type === TOKEN_WORD) {
-				ruleSet.condition = assertCondition(tokens).value;
+			if (rule) {
+				ruleSet.rules.push(rule);
+				if (tokens.length > 0 && tokens[0].type !== TOKEN_RPAREN) {
+					// Process the next condition ("AND" / "OR").
+					condition = assertCondition(tokens).value;
+					// Assign the first condition to the rule set.
+					ruleSet.condition = ruleSet.condition || condition;
+					if (condition !== ruleSet.condition) {
+						// We have something like "A AND B OR C" in the query.  This is interpreted as "(A AND B) OR C".
+						// The "AND" and "OR" conditions are given equal precedence, so the parentheses are always
+						// around the left-most set of filters with matching condition.  This is implemented by pushing
+						// the existing rule set down a level in the hierarchy, and continuing processing from the new
+						// parent.
+						ruleSet = {
+							condition: condition,
+							rules: [ ruleSet ]
+						};
+					}
+				}
 			}
 			skipWhitespace(tokens);
 		}
@@ -322,18 +365,6 @@ var caUI = caUI || {};
 	 * @returns {Object|undefined}
 	 */
 	caUI.convertSearchQueryToQueryBuilderRuleSet = function (query) {
-		if (!query) {
-			return undefined;
-		}
-		var token,
-			tokens = [],
-			queryArray = query.trim().split('');
-		while (token = shiftToken(queryArray)) {
-			tokens.push(token);
-		}
-		while (tokens.length >= 2 && tokens[0].type === TOKEN_LPAREN && tokens[tokens.length - 1].type === TOKEN_RPAREN) {
-			tokens = tokens.slice(1, tokens.length - 1);
-		}
-		return parseRuleSet(tokens);
+		return query ? tokensToRuleSet(getTokenList(query)) : undefined;
 	};
 }());
