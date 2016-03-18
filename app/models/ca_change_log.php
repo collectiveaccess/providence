@@ -240,15 +240,27 @@ class ca_change_log extends BaseModel {
 						if($t_instance) {
 							if($t_instance instanceof BaseRelationshipModel) {
 								$va_snapshot['type_code'] = caGetRelationshipTypeCode($vm_val);
-							} elseif($t_instance instanceof BaseLabel) {
-								$vb_preferred = isset($va_snapshot['is_preferred']) ? (bool) $va_snapshot['is_preferred'] : true;
-								$va_snapshot['type_code'] = caGetListItemIdno($vm_val, caGetLabelTypeList($t_instance->getSubjectTableName(), $vb_preferred));
-							} elseif($t_instance instanceof BaseModelWithAttributes) {
-								$va_snapshot['type_code'] = caGetListItemIdno($vm_val, caGetTypeList($t_instance->tableName()));
+							} elseif($t_instance instanceof BaseModel) {
+								$va_snapshot['type_code'] = caGetListItemIdno($vm_val);
 							}
 						}
 						break;
+					case 'item_id':
+						if(Datamodel::load()->getTableName((int) $qr_results->get('logged_table_num')) == 'ca_attribute_values') {
+							$va_snapshot['item_code'] = caGetListItemIdno($vm_val);
+						}
+						break;
 					default:
+						// handle all other list referencing fields
+						$t_instance = Datamodel::load()->getInstance((int) $qr_results->get('logged_table_num'), true);
+						if(!is_null($vm_val) && ($va_fld_info = $t_instance->getFieldInfo($vs_fld))) {
+							$vs_new_fld = str_replace('_id', '', $vs_fld) . '_code';
+							if(isset($va_fld_info['LIST'])) {
+								$va_snapshot[$vs_new_fld] = caGetListItemIDForValue($va_fld_info['LIST'], $vm_val);
+							} elseif(isset($va_fld_info['LIST_CODE'])) {
+								$va_snapshot[$vs_new_fld] = caGetListItemIdno($vm_val);
+							}
+						}
 						break;
 				}
 			}
