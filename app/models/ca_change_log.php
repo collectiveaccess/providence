@@ -266,6 +266,17 @@ class ca_change_log extends BaseModel {
 							if($vs_fld == $t_instance->getProperty('HIERARCHY_PARENT_ID_FLD')) {
 								$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_instance->tableNum(), $vm_val);
 							}
+
+							// handle left and right foreign keys in foo_x_bar table
+							if($t_instance instanceof BaseRelationshipModel) {
+								if($vs_fld == $t_instance->getProperty('RELATIONSHIP_LEFT_FIELDNAME')) {
+									$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_instance->getLeftTableNum(), $vm_val);
+								}
+
+								if($vs_fld == $t_instance->getProperty('RELATIONSHIP_RIGHT_FIELDNAME')) {
+									$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_instance->getRightTableNum(), $vm_val);
+								}
+							}
 						}
 						break;
 				}
