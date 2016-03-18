@@ -256,6 +256,7 @@
 		jQuery('#QueryBuilderToggle').click(caToggleSearchQueryBuilder);
 		jQuery('#BasicSearchInput').change(caSetQueryBuilderRulesFromSearchInput);
 		caUpdateSearchQueryBuilderToggleText();
+		caSetQueryBuilderRulesFromSearchInput();
 	});
 	<?php
 	}
