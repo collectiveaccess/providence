@@ -588,7 +588,7 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 		} else {
 			$vn_split = strpos($vs_name, '.');
 			if ($vn_split === false || substr($vs_name, 0, $vn_split) === $vs_table) {
-				$va_result['optgroup'] = 'Fields in ' . $t_subject->tableName();
+				$va_result['optgroup'] = 'Fields in ' . $t_subject->getProperty('NAME_PLURAL');
 			} else {
 				$va_result['optgroup'] = 'Fields in related tables';
 			}
