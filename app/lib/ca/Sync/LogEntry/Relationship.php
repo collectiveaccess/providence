@@ -37,7 +37,61 @@ require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Base.php');
 class Relationship extends Base {
 
 	public function apply() {
+		$this->setIntrinsicsFromSnapshotInModelInstance();
+	}
 
+	public function setIntrinsicsFromSnapshotInModelInstance() {
+		parent::setIntrinsicsFromSnapshotInModelInstance();
+
+		foreach($this->getSnapshot() as $vs_field => $vm_val) {
+			// handle ca_foo_x_bar.type_id
+			if ($vs_field = $this->getModelInstance()->getProperty('RELATIONSHIP_TYPE_FIELDNAME')) {
+				if (isset($va_snapshot[$vs_field . '_code']) && ($vs_rel_type_code = $va_snapshot[$vs_field . '_code'])) {
+					if ($vn_rel_type_id = caGetRelationshipTypeID($vs_rel_type_code)) {
+						$this->getModelInstance()->set($vs_field, $vn_rel_type_id);
+					} else {
+						throw new LogEntryInconsistency("Could find relationship type with type code '{$vs_rel_type_code}'");
+					}
+				} else {
+					throw new LogEntryInconsistency("No relationship type code found");
+				}
+			}
+
+			// handle ca_foo_x_bar.foo_id and bar_id
+			// left
+			if ($vs_field == $this->getModelInstance()->getProperty('RELATIONSHIP_LEFT_FIELDNAME')) {
+				$this->setLeftOrRightFieldNameFromSnapshot($vs_field, true);
+			}
+
+			// right
+			if ($vs_field == $this->getModelInstance()->getProperty('RELATIONSHIP_RIGHT_FIELDNAME')) {
+				$this->setLeftOrRightFieldNameFromSnapshot($vs_field, false);
+			}
+		}
+	}
+
+	/**
+	 * Helper function that sets ca_foo_x_bar.foo_id or bar_id from the snapshot
+	 * @param $ps_field
+	 * @param bool $pb_left
+	 * @throws LogEntryInconsistency
+	 */
+	private function setLeftOrRightFieldNameFromSnapshot($ps_field, $pb_left=true) {
+		$vs_property = $pb_left ? 'RELATIONSHIP_LEFT_FIELDNAME' : 'RELATIONSHIP_RIGHT_FIELDNAME';
+		$va_snapshot = $this->getSnapshot();
+
+		if (isset($va_snapshot[$ps_field . '_guid']) && ($vs_reference_guid = $va_snapshot[$ps_field . '_guid'])) {
+			/** @var \BundlableLabelableBaseModelWithAttributes $t_instance */
+			$t_instance = $pb_left ? $this->getModelInstance()->getLeftTableInstance() : $this->getModelInstance()->getRightTableInstance();
+
+			if ($t_instance->loadByGUID($vs_reference_guid)) {
+				$this->getModelInstance()->set($ps_field, $t_instance->getPrimaryKey());
+			} else {
+				throw new LogEntryInconsistency("Could not load GUID {$vs_reference_guid} (referenced in {$vs_property})");
+			}
+		} else {
+			throw new LogEntryInconsistency("No guid for {$vs_property} field found");
+		}
 	}
 
 }

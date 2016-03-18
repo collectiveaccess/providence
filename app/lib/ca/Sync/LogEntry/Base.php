@@ -249,12 +249,17 @@ abstract class Base {
 			// skip primary key
 			if($this->getModelInstance()->primaryKey() == $vs_field) { continue; }
 
-			// handle list reference fields, like status, access, item_status_id, or even type_id
-			// in the source log, there should be fields like "type_code" or "access_code" that have
-			// the codes of the list items we're looking for (corresponding to "type_id" and "access")
-			// we assume they're the same in this system and try to set() them if they exist.
+			// don't try to build hierarchy indexes by hand
+			if($vs_field == $this->getModelInstance()->getProperty('HIERARCHY_LEFT_INDEX_FLD')) { continue; }
+			if($vs_field == $this->getModelInstance()->getProperty('HIERARCHY_RIGHT_INDEX_FLD')) { continue; }
+
+			// only do something if this is a valid field
 			if($va_fld_info = $this->getModelInstance()->getFieldInfo($vs_field)) {
 
+				// handle list reference fields, like status, access, item_status_id, or even type_id
+				// in the source log, there should be fields like "type_code" or "access_code" that have
+				// the codes of the list items we're looking for (corresponding to "type_id" and "access")
+				// we assume they're the same in this system and try to set() them if they exist.
 				$vs_potential_code_field = str_replace('_id', '', $vs_field) . '_code';
 				if(isset($va_fld_info['LIST']) || isset($va_fld_info['LIST_CODE'])) {
 					if(isset($va_snapshot[$vs_potential_code_field])) {
@@ -269,17 +274,14 @@ abstract class Base {
 								"Couldn't find list item id for idno '{$vs_code}' in list '{$vs_list}. Field was {$vs_field}"
 							);
 						}
-
 					} else {
 						throw new LogEntryInconsistency(
 							"No corresponding code field '{$vs_potential_code_field}' found for list reference field '{$vs_field}'"
 						);
 					}
-				}
 
-				// don't try to build hierarchy indexes by hand
-				if($vs_field == $this->getModelInstance()->getProperty('HIERARCHY_LEFT_INDEX_FLD')) { continue; }
-				if($vs_field == $this->getModelInstance()->getProperty('HIERARCHY_RIGHT_INDEX_FLD')) { continue; }
+					continue;
+				}
 
 				// handle parent_ids -- have to translate GUID to primary key
 				if($vs_field == $this->getModelInstance()->getProperty('HIERARCHY_PARENT_ID_FLD')) {
@@ -293,23 +295,14 @@ abstract class Base {
 					} else {
 						throw new LogEntryInconsistency("No guid for parent_id field found");
 					}
+
+					continue;
 				}
 
-				// handle ca_foo_x_bar.type_id
-				if($vs_field = $this->getModelInstance()->getProperty('RELATIONSHIP_TYPE_FIELDNAME')) {
-					if(isset($va_snapshot[$vs_field . '_code']) && ($vs_rel_type_code = $va_snapshot[$vs_field . '_code'])) {
-						if($vn_rel_type_id = caGetRelationshipTypeID($vs_rel_type_code)) {
-							$this->getModelInstance()->set($vs_field, $vn_rel_type_id);
-						} else {
-							throw new LogEntryInconsistency("Could find relationship type with type code '{$vs_rel_type_code}'");
-						}
-					} else {
-						throw new LogEntryInconsistency("No relationship type code found");
-					}
-				}
+				// plain old field like idno, extent, source_info etc.
+				// model errors usually don't occurr on set(), so the implementations can still do whatever they want and possibly overwrite this
+				$this->getModelInstance()->set($vs_field, $vm_val);
 			}
-
-			$this->getModelInstance()->set($vs_field, $vm_val);
 		}
 	}
 
