@@ -33,6 +33,8 @@
 require_once(__CA_MODELS_DIR__.'/ca_change_log.php');
 require_once(__CA_MODELS_DIR__.'/ca_replication_log.php');
 
+require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Base.php');
+
 class ReplicationService {
 	# -------------------------------------------------------
 	/**
@@ -105,14 +107,16 @@ class ReplicationService {
 	 * @throws Exception
 	 */
 	public static function applyLog($po_request) {
-		$vs_guid = trim($po_request->getParameter('system_guid', pString));
-		if(!strlen($vs_guid)) { throw new Exception('must provide a system guid'); }
+		$vs_source_system_guid = trim($po_request->getParameter('system_guid', pString));
+		if(!strlen($vs_source_system_guid)) { throw new Exception('must provide a system guid'); }
 		if($po_request->getRequestMethod() !== 'POST') { throw new Exception('must be a post request'); }
 
 		$vn_last_applied_log_id = false;
 		$va_log = json_decode($po_request->getRawPostData(), true);
 		foreach($va_log as $vn_log_id => $va_log_entry) {
-			// @todo apply log entry in local system
+			$o_log_entry = CA\Sync\LogEntry\Base::getInstance($vs_source_system_guid, $vn_log_id, $va_log_entry);
+			$o_log_entry->apply();
+
 			$vn_last_applied_log_id = $vn_log_id;
 		}
 

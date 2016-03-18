@@ -32,6 +32,12 @@
 
 namespace CA\Sync\LogEntry;
 
+require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Attribute.php');
+require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/AttributeValue.php');
+require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Bundlable.php');
+require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Relationship.php');
+require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Label.php');
+
 
 abstract class Base {
 
@@ -54,6 +60,16 @@ abstract class Base {
 	private $opn_log_id;
 
 	/**
+	 * @var \Datamodel
+	 */
+	private $opo_datamodel;
+
+	/**
+	 * @var \BaseModel
+	 */
+	private $opt_instance;
+
+	/**
 	 * Base constructor.
 	 * @param string $ops_source_system_id
 	 * @param int $opn_log_id
@@ -72,15 +88,39 @@ abstract class Base {
 		if(!is_numeric($opn_log_id)) {
 			throw new InvalidLogEntryException('Log id is not numeric');
 		}
-
-		if(strlen($ops_source_system_id) != 37) {
-			throw new InvalidLogEntryException('source system GUID is not a valid guid');
+		;
+		if(strlen($ops_source_system_id) != 36) {
+			throw new InvalidLogEntryException('source system GUID is not a valid guid. String length was: '. strlen($ops_source_system_id));
 		}
 
 		$this->opa_log = $opa_log;
 		$this->ops_source_system_id = $ops_source_system_id;
 		$this->opn_log_id = $opn_log_id;
+
+		$this->opo_datamodel = \Datamodel::load();
+
+		$this->opt_instance = $this->getDatamodel()->getInstance($this->getTableNum());
+
+		if(!($this->opt_instance instanceof \BaseModel)) {
+			throw new InvalidLogEntryException('table num is invalid for this log entry');
+		}
+
+		// if this is not an insert log entry, load the specified row by GUID
+		if(!$this->isInsert()) {
+			if(!$this->getModelInstance()->loadByGUID($this->getGUID())) {
+				throw new InvalidLogEntryException('mode was insert or update but the given GUID could not be found');
+			}
+		}
 	}
+
+	/**
+	 * Applies this log entry to the local system.
+	 * We don't dicate *how* implementations do this. It's advised to not cram all code into
+	 * this function though. Breaking it out by insert/update/delete probably makes sense
+	 *
+	 * @return mixed
+	 */
+	abstract public function apply();
 
 	/**
 	 * @return array
@@ -180,18 +220,32 @@ abstract class Base {
 	}
 
 	/**
+	 * Get Datamodel
+	 * @return \Datamodel
+	 */
+	public function getDatamodel() {
+		return $this->opo_datamodel;
+	}
+
+	/**
 	 * Get model instance for row referenced in change log entry
 	 * @return \BaseModel|null
 	 */
 	public function getModelInstance() {
-		$o_dm = \Datamodel::load();
+		return $this->opt_instance;
+	}
 
-		$t_instance = $o_dm->getInstance($this->getTableNum());
-		if($t_instance->load($this->getRowID())) {
-			return $t_instance;
+	public function setIntrinsicsFromSnapshotInModelInstance() {
+		$this->getModelInstance()->setMode(ACCESS_WRITE);
+
+		foreach($this->getSnapshot() as $vs_field => $vm_val) {
+			if($this->getModelInstance()->hasField($vs_field)) {
+				// @todo have to skip more fields here ... parent_id, hierarchy indexes, various *_id fields
+				if($this->getModelInstance()->primaryKey() == $vs_field) { continue; }
+
+				$this->getModelInstance()->set($vs_field, $vm_val);
+			}
 		}
-
-		return null;
 	}
 
 	/**

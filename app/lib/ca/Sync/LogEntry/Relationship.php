@@ -32,7 +32,12 @@
 
 namespace CA\Sync\LogEntry;
 
+require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Base.php');
 
 class Relationship extends Base {
+
+	public function apply() {
+
+	}
 
 }

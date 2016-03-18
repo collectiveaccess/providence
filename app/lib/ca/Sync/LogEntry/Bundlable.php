@@ -32,7 +32,30 @@
 
 namespace CA\Sync\LogEntry;
 
+require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Base.php');
 
 class Bundlable extends Base {
+
+	public function apply() {
+
+		if($this->isInsert()) {
+			$this->applyInsert();
+		} elseif($this->isUpdate()) {
+
+		} elseif($this->isDelete()) {
+
+		}
+
+	}
+
+	private function applyInsert() {
+		if($this->getModelInstance()->getPrimaryKey()) {
+			throw new InvalidLogEntryException('operation is insert but model instance has primary key.');
+		}
+
+		$this->setIntrinsicsFromSnapshotInModelInstance();
+
+		throw new \Exception(print_r($this->getLog(), true));
+	}
 
 }

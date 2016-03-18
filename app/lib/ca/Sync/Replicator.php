@@ -67,7 +67,6 @@ class Replicator {
 
 
 	public function replicate() {
-		//@todo maybe break this out into several, easier to maintain functions?
 
 		foreach($this->getSourcesAsServiceClients() as $vs_source_key => $o_source) {
 			/** @var CAS\ReplicationService $o_source */
