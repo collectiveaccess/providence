@@ -194,6 +194,42 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	}
 	# ---------------------------------------
 	/**
+	 * Get list item value for a given item_id
+	 * @param int $pn_id
+	 * @param null|array $pa_options
+	 * @return string
+	 * @throws MemoryCacheInvalidParameterException
+	 */
+	function caGetListItemValueForID($pn_id, $pa_options= null) {
+		if(!$pn_id || !is_numeric($pn_id)) { return null; }
+		$vs_cache_key = md5($pn_id . serialize($pa_options));
+		if(MemoryCache::contains($vs_cache_key, 'ListItemValuesForIDs')) {
+			return MemoryCache::fetch($vs_cache_key, 'ListItemValuesForIDs');
+		}
+
+		$t_item = new ca_list_items();
+		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_item->setTransaction($o_trans); }
+
+		if ($t_item->load($pn_id)) {
+			$vs_ret = $t_item->get('item_value');
+			MemoryCache::save($vs_cache_key, $vs_ret, 'ListItemValuesForIDs');
+			return $vs_ret;
+		}
+		return null;
+	}
+	# ---------------------------------------
+	/**
+	 * Get List item value for a given list code and idno
+	 *
+	 * @param string $ps_list_code
+	 * @param string $ps_idno
+	 * @return string
+	 */
+	function caGetListItemValueForIdno($ps_list_code, $ps_idno) {
+		return caGetListItemValueForID(caGetListItemID($ps_list_code, $ps_idno));
+	}
+	# ---------------------------------------
+	/**
 	 * Fetch item_id for item with specified label. Value must match exactly.
 	 *
 	 * @param string $ps_list_code List code
