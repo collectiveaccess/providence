@@ -1852,7 +1852,7 @@ class BaseEditorController extends ActionController {
 	 * Returns media viewer help text for display
 	 */
 	public function ViewerHelp() {
-		$this->render('viewer_help_html.php');
+		$this->render('../objects/viewer_help_html.php');
 	}
 	# -------------------------------------------------------
 	/**
