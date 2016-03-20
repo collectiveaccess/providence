@@ -506,12 +506,20 @@
 		 * @param array $pa_options Optional array of options. Supported options are:
 		 *		locale = locale code to use when applying rules; if omitted current user locale is employed
 		 *		displaynameFormat = surnameCommaForename, forenameCommaSurname, forenameSurname, original [Default = original]
+		 *		doNotParse = Use name as-is in the surname and display name fields. All other fields are blank. [Default = false]
 		 *
 		 * @return array Array containing parsed name, keyed on ca_entity_labels fields (eg. forename, surname, middlename, etc.)
 		 */
 		static function splitEntityName($ps_text, $pa_options=null) {
 			global $g_ui_locale;
 			$ps_text = $ps_original_text = trim(preg_replace("![ ]+!", " ", $ps_text));
+			
+			if (caGetOption('doNotParse', $pa_options, false)) {
+				return array(
+					'forename' => '', 'middlename' => '', 'surname' => $ps_text,
+					'displayname' => $ps_text, 'prefix' => '', 'suffix' => ''
+				);
+			}
 			
 			if (isset($pa_options['locale']) && $pa_options['locale']) {
 				$vs_locale = $pa_options['locale'];
