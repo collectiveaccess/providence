@@ -88,8 +88,10 @@
 	function caSaveSearch(form_id, label, field_names) {
 		var vals = {};
 		jQuery(field_names).each(function(i, field_name) { 	// process all fields in form
-			vals[field_name] = jQuery('#' + form_id + ' [name=' + field_name + ']').val();	
+			var field_name_with_no_period = field_name.replace('.', '_');	// we need a bundle name without periods for compatibility
+			vals[field_name] = jQuery('#' + form_id + ' [id=' + field_name_with_no_period + ']').val();	
 		});
+		console.log("v", vals);
 		vals['_label'] = label;								// special "display" title, used if all else fails
 		vals['_field_list'] = field_names					// an array for form fields to expect
 		jQuery.getJSON('<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "addSavedSearch"); ?>', vals, function(data, status) {
