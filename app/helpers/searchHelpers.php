@@ -585,13 +585,13 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 		// Set up option groups.
 		if (in_array($vs_name, $va_priority)) {
 			// Bundle is given priority
-			$va_result['optgroup'] = 'Frequently used fields';
+			$va_result['optgroup'] = _t('Frequently Used');
 		} else {
 			$vn_split = strpos($vs_name, '.');
 			if ($vn_split === false || substr($vs_name, 0, $vn_split) === $vs_table) {
-				$va_result['optgroup'] = 'Fields in ' . $t_subject->getProperty('NAME_PLURAL');
+				$va_result['optgroup'] = ucwords($t_subject->getProperty('NAME_PLURAL'));
 			} else {
-				$va_result['optgroup'] = 'Fields in related tables';
+				$va_result['optgroup'] = _t('Related');
 			}
 		}
 		return $va_result;
