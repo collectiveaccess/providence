@@ -122,11 +122,13 @@ class ReplicationService {
 
 				// @todo: encapsulate this in LogEntry class
 				if($o_log_entry->getModelInstance()->numErrors() > 0) { // is this critical or not? hmm
-						$va_return = array('ok' => false, 'at' => $vn_log_id, 'error' => join('; ', $o_log_entry->getModelInstance()->getErrors()));
+					$va_return = array('ok' => false, 'at' => $vn_log_id, 'error' => join('; ', $o_log_entry->getModelInstance()->getErrors()));
 				}
 				$vn_last_applied_log_id = $vn_log_id;
 			} catch(CA\Sync\LogEntry\LogEntryInconsistency $e) {
 				$va_warnings[$vn_log_id][] = $e->getMessage();
+			} catch(CA\Sync\LogEntry\IrrelevantLogEntry $e) {
+				// noop (just skip this row)
 			} catch(\Exception $e) {
 				$va_return = array('ok' => false, 'at' => $vn_log_id, 'error' => $e->getMessage(),);
 			}

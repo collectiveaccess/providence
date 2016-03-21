@@ -86,6 +86,16 @@ class Replicator {
 					->request();
 				$pn_replicated_log_id = $o_result->getRawData()['replicated_log_id'];
 
+				if($pn_replicated_log_id) {
+					$pn_replicated_log_id = ((int) $pn_replicated_log_id) + 1;
+				} else {
+					print CLIUtils::textWithColor(_t("Couldn't get last replicated log id for source %1 and target %2. Starting at the beginning.",
+						$vs_source_key, $vs_target_key), 'yellow') . "\n";
+				}
+
+				print CLIUtils::textWithColor(_t("Starting replication for source %1 and target %2 at log id is %3.",
+					$vs_source_key, $vs_target_key, $pn_replicated_log_id), 'cyan') . "\n";
+
 				// it's possible to configure a starting point in the replication config. it's not pretty to do this as
 				// raw id, @todo: maybe this should be a timestamp or even a date/time expression that we then translate?
 				$pn_min_log_id = (int) $this->opo_replication_conf->get('sources')[$vs_source_key]['from_log_id'];
@@ -95,6 +105,12 @@ class Replicator {
 				$va_source_log_entries = $o_source->setEndpoint('getlog')
 					->addGetParameter('from', $pn_replicated_log_id)
 					->request()->getRawData();
+
+				if(!sizeof($va_source_log_entries)) {
+					print CLIUtils::textWithColor(_t("No new log entries found for source %1 and target %2. Skipping this combination now.",
+							$vs_source_key, $vs_target_key), 'yellow') . "\n";
+					continue;
+				}
 
 				// apply that log at the current target
 				$o_resp = $o_target->setRequestMethod('POST')->setEndpoint('applylog')
@@ -109,13 +125,13 @@ class Replicator {
 						$vs_source_key, $vs_target_key, $va_response_data['error']));
 				} else {
 					print CLIUtils::textWithColor(_t("Sync for source %1 and target %2 successful. Last replicated log id is %3.",
-						$vs_source_key, $vs_target_key, $va_response_data['replicated_log_id']), 'green');
+						$vs_source_key, $vs_target_key, $va_response_data['replicated_log_id']), 'green') . "\n";
 				}
 
 				if(isset($va_response_data['warnings']) && is_array($va_response_data['warnings']) && sizeof($va_response_data['warnings'])) {
 					foreach($va_response_data['warnings'] as $vs_warn) {
 						print CLIUtils::textWithColor(_t("There was a warning while processing sync for source %1 and target $2: %3",
-							$vs_source_key, $vs_target_key, $vs_warn), 'yellow');
+							$vs_source_key, $vs_target_key, $vs_warn), 'yellow') . "\n";
 					}
 				}
 			}

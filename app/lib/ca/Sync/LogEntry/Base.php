@@ -111,6 +111,10 @@ abstract class Base {
 				throw new InvalidLogEntryException('mode was insert or update but the given GUID could not be found');
 			}
 		}
+
+		if(!$this->isRelevant()) {
+			throw new IrrelevantLogEntry();
+		}
 	}
 
 	/**
@@ -121,6 +125,42 @@ abstract class Base {
 	 * @return mixed
 	 */
 	abstract public function apply();
+
+	/**
+	 * Can be used to weed out irrelevant log entries, for instance changes in configuration tables like
+	 * ca_editor_uis and ca_editor_ui_screens. These should (arguably) be filtered on the source side too
+	 * but it doesn't hurt to check here.
+	 *
+	 * Implementations can override this if they want to add/change logic, obviously.
+	 *
+	 * @return bool
+	 */
+	public function isRelevant() {
+		$vs_t = $this->getModelInstance()->tableName();
+		if(preg_match("/^ca\_editor\_ui/", $vs_t)) {
+			return false;
+		}
+		if(preg_match("/^ca\_metadata\_/", $vs_t)) {
+			return false;
+		}
+		if(preg_match("/^ca\_relationship\_/", $vs_t)) {
+			return false;
+		}
+		if(preg_match("/^ca\_search\_/", $vs_t)) {
+			return false;
+		}
+		if(preg_match("/^ca\_bundle\_display/", $vs_t)) {
+			return false;
+		}
+		if(preg_match("/^ca\_data_import/", $vs_t)) {
+			return false;
+		}
+		if(preg_match("/^ca\_data_exporter/", $vs_t)) {
+			return false;
+		}
+
+		return true;
+	}
 
 	/**
 	 * @return array
@@ -307,6 +347,24 @@ abstract class Base {
 	}
 
 	/**
+	 * Check current model instance for errors and throw Exception if any
+	 *
+	 * @throws InvalidLogEntryException
+	 */
+	public function checkModelInstanceForErrors() {
+		if(!($this->getModelInstance() instanceof \BaseModel)) {
+			throw new InvalidLogEntryException('no model instance found');
+		}
+
+		if($this->getModelInstance()->numErrors() > 0) { // is this critical or not? hmm
+			throw new InvalidLogEntryException(
+				_t("There were errors processing record from log entry %1: %2",
+					$this->getLogId(), join(' ', $this->getModelInstance()->getErrors()))
+			);
+		}
+	}
+
+	/**
 	 * @param string $ps_source_system_id
 	 * @param int $pn_log_id
 	 * @param array $pa_log
@@ -352,3 +410,9 @@ class InvalidLogEntryException extends \Exception {}
  * @package CA\Sync\LogEntry
  */
 class LogEntryInconsistency extends \Exception {}
+
+/**
+ * Can be caught and discarded. This just means that the log entry is not relevant and is being skipped
+ * @package CA\Sync\LogEntry
+ */
+class IrrelevantLogEntry extends \Exception {}
