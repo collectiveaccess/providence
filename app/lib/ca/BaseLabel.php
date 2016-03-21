@@ -54,7 +54,7 @@
 				$t_guid->setTransaction($this->getTransaction());
 				$t_guid->set('table_num', $this->tableNum());
 				$t_guid->set('row_id', $this->getPrimaryKey());
-				$t_guid->set('guid', caGenerateGUID());
+				$t_guid->set('guid', caGetOption('setGUIDTo', $pa_options, caGenerateGUID()));
 				$t_guid->insert();
 			}
 
