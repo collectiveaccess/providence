@@ -84,7 +84,7 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 
 		$t_form = new ca_search_forms();
 		if (!(
-			(($vn_form_id = (isset($pa_options['form_id'])) ? $pa_options['form_id'] : null) || ($vn_form_id = $this->opo_result_context->getParameter('form_id')))
+			(($vn_form_id = (isset($pa_options['form_id'])) ? $pa_options['form_id'] : null) || ($vn_form_id = $this->getRequest()->getParameter('form_id', pInteger)) || ($vn_form_id = $this->opo_result_context->getParameter('form_id')))
 			 && 
 			 $t_form->load($vn_form_id) 
 			 && 

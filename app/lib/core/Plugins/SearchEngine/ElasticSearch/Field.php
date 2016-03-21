@@ -63,7 +63,6 @@ class Field {
 	 */
 	public function __construct($opn_content_tablenum, $ops_indexing_fieldname) {
 		$this->opn_content_tablenum = $opn_content_tablenum;
-
 		$this->ops_content_tablename = \Datamodel::load()->getTableName($this->getContentTableNum());
 
 		$this->opo_field_type = FieldTypes\FieldType::getInstance($this->getContentTableName(), $ops_indexing_fieldname);

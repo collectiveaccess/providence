@@ -818,7 +818,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  		global $g_ui_locale;
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		if(!is_array($pa_bundle_settings)) { $pa_bundle_settings = array(); }
-		
+
+		$pa_bundle_settings = $this->_processObjectHistoryBundleSettings($pa_bundle_settings);
 		$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_bundle_settings, $pa_options, array('object_id' => $this->getPrimaryKey())));
 		
 		$pb_no_cache 				= caGetOption('noCache', $pa_options, false);
@@ -1142,7 +1143,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				if (!in_array($vn_rel_type_id = $qr_locations->get('ca_objects_x_storage_locations.type_id'), $va_location_types)) { continue; }
 				$vn_type_id = $qr_locations->get('ca_storage_locations.type_id');
 				
-				if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date) || ($va_date['bounds'][1] < $vn_current_date))) { continue; }
+				//if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date) || ($va_date['bounds'][1] < $vn_current_date))) { continue; }
 				
 				$vs_color = $va_location_type_info[$vn_type_id]['color'];
 				if (!$vs_color || ($vs_color == '000000')) {
@@ -1235,72 +1236,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		
 		$o_view->setVar('id_prefix', $ps_form_name);
 		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
-		
-		if (caGetOption('useAppConfDefaults', $pa_bundle_settings, false) && is_array($va_current_location_critiera = $this->getAppConfig()->getAssoc('current_location_criteria')) && sizeof($va_current_location_critiera)) {
-			// Copy app.conf "current_location_criteria" settings into bundle settings (with translation)
-			$va_bundle_settings = array();
-			foreach($va_current_location_critiera as $vs_table => $va_info) {
-				switch($vs_table) {
-					case 'ca_storage_locations':
-						if(is_array($va_info)) {
-							foreach($va_info as $vs_rel_type => $va_options) {
-								$va_bundle_settings["{$vs_table}_showRelationshipTypes"][] = $vs_rel_type;
-								foreach($va_options as $vs_opt => $vs_opt_val) {
-									switch($vs_opt) {
-										case 'template':
-											$vs_opt = 'displayTemplate';
-											break;
-									}
-									$va_bundle_settings["{$vs_table}_{$vs_opt}"] = $vs_opt_val;
-								}
-							}
-							$va_bundle_settings["{$vs_table}_showRelationshipTypes"] = caMakeRelationshipTypeIDList('ca_objects_x_storage_locations', $va_bundle_settings["{$vs_table}_showRelationshipTypes"]);
-						} 
-						break;
-					case 'ca_objects':
-						if(is_array($va_info)) {
-							$va_bundle_settings['showDeaccessionInformation'] = 1;
-							foreach($va_info as $vs_opt => $vs_opt_val) {
-								switch($vs_opt) {
-									case 'template':
-										$vs_opt = 'displayTemplate';
-										break;
-								}
-								$va_bundle_settings["deaccession_{$vs_opt}"] = $vs_opt_val;
-							}
-						} 
-						break;
-					default:
-						if(is_array($va_info)) {
-							foreach($va_info as $vs_type => $va_options) {
-								$va_bundle_settings["{$vs_table}_showTypes"][] = $vs_type;
-								foreach($va_options as $vs_opt => $vs_opt_val) {
-									switch($vs_opt) {
-										case 'date':
-											$vs_opt = 'dateElement';
-											break;
-										case 'template':
-											$vs_opt = 'displayTemplate';
-											break;
-									}
-									$va_bundle_settings["{$vs_table}_{$vs_type}_{$vs_opt}"] = $vs_opt_val;
-								}
-							}
-							$va_bundle_settings["{$vs_table}_showTypes"] = caMakeTypeIDList($vs_table, $va_bundle_settings["{$vs_table}_showTypes"]);
-						}
-						break;
-				}
-			}
-			
-			foreach(array(
-				'locationTrackingMode', 'width', 'height', 'readonly', 'documentation_url', 'expand_collapse',
-				'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_update_location_controls',
-			) as $vs_key) {
-				$va_bundle_settings[$vs_key] = $pa_bundle_settings[$vs_key];
-			}
-			$pa_bundle_settings = $va_bundle_settings;
-		}
-		
+
+		$pa_bundle_settings = $this->_processObjectHistoryBundleSettings($pa_bundle_settings);
 		$o_view->setVar('settings', $pa_bundle_settings);
 		
 		$o_view->setVar('add_label', isset($pa_bundle_settings['add_label'][$g_ui_locale]) ? $pa_bundle_settings['add_label'][$g_ui_locale] : null);
@@ -1358,6 +1295,76 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		return $o_view->render('ca_objects_history.php');
  	}
  	# ------------------------------------------------------
+	private function _processObjectHistoryBundleSettings($pa_bundle_settings) {
+
+		if (caGetOption('useAppConfDefaults', $pa_bundle_settings, false) && is_array($va_current_location_critiera = $this->getAppConfig()->getAssoc('current_location_criteria')) && sizeof($va_current_location_critiera)) {
+			// Copy app.conf "current_location_criteria" settings into bundle settings (with translation)
+			$va_bundle_settings = array();
+			foreach($va_current_location_critiera as $vs_table => $va_info) {
+				switch($vs_table) {
+					case 'ca_storage_locations':
+						if(is_array($va_info)) {
+							foreach($va_info as $vs_rel_type => $va_options) {
+								$va_bundle_settings["{$vs_table}_showRelationshipTypes"][] = $vs_rel_type;
+								foreach($va_options as $vs_opt => $vs_opt_val) {
+									switch($vs_opt) {
+										case 'template':
+											$vs_opt = 'displayTemplate';
+											break;
+									}
+									$va_bundle_settings["{$vs_table}_{$vs_opt}"] = $vs_opt_val;
+								}
+							}
+							$va_bundle_settings["{$vs_table}_showRelationshipTypes"] = caMakeRelationshipTypeIDList('ca_objects_x_storage_locations', $va_bundle_settings["{$vs_table}_showRelationshipTypes"]);
+						}
+						break;
+					case 'ca_objects':
+						if(is_array($va_info)) {
+							$va_bundle_settings['showDeaccessionInformation'] = 1;
+							foreach($va_info as $vs_opt => $vs_opt_val) {
+								switch($vs_opt) {
+									case 'template':
+										$vs_opt = 'displayTemplate';
+										break;
+								}
+								$va_bundle_settings["deaccession_{$vs_opt}"] = $vs_opt_val;
+							}
+						}
+						break;
+					default:
+						if(is_array($va_info)) {
+							foreach($va_info as $vs_type => $va_options) {
+								$va_bundle_settings["{$vs_table}_showTypes"][] = $vs_type;
+								foreach($va_options as $vs_opt => $vs_opt_val) {
+									switch($vs_opt) {
+										case 'date':
+											$vs_opt = 'dateElement';
+											break;
+										case 'template':
+											$vs_opt = 'displayTemplate';
+											break;
+									}
+									$va_bundle_settings["{$vs_table}_{$vs_type}_{$vs_opt}"] = $vs_opt_val;
+								}
+							}
+							$va_bundle_settings["{$vs_table}_showTypes"] = caMakeTypeIDList($vs_table, $va_bundle_settings["{$vs_table}_showTypes"]);
+						}
+						break;
+				}
+			}
+
+			foreach(array(
+						'locationTrackingMode', 'width', 'height', 'readonly', 'documentation_url', 'expand_collapse',
+						'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_update_location_controls',
+					) as $vs_key) {
+				$va_bundle_settings[$vs_key] = $pa_bundle_settings[$vs_key];
+			}
+			$pa_bundle_settings = $va_bundle_settings;
+		}
+
+		return $pa_bundle_settings;
+	}
+	# ------------------------------------------------------
  	/**
  	 *
  	 */
@@ -1366,7 +1373,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  		if (!($vn_object_id = ($pn_object_id > 0) ? $pn_object_id : $this->getPrimaryKey())) { return null; }
  		
  		if (!($ps_date_element = caGetOption('dateElement', $pa_options, null))) { return null; }
- 		if (!($t_element = $this->_getElementInstance($ps_date_element))) { return null; }
+ 		if (!($t_element = ca_metadata_elements::getInstance($ps_date_element))) { return null; }
  		
  		$vn_current_date = TimeExpressionParser::now();
  		
@@ -1405,7 +1412,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  		$ps_display_template = caGetOption('template', $pa_options, '^ca_movements_x_objects.relation_id');
  		
  		if (!($ps_date_element = caGetOption('dateElement', $pa_options, null))) { return null; }
- 		if (!($t_element = $this->_getElementInstance($ps_date_element))) { return null; }
+ 		if (!($t_element = ca_metadata_elements::getInstance($ps_date_element))) { return null; }
  		
  		$vn_current_date = TimeExpressionParser::now();
  		
@@ -1850,6 +1857,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  						$va_bundle_settings["{$vs_table}_showRelationshipTypes"][] = $t_rel_type->getRelationshipTypeID('ca_objects_x_storage_locations', $vs_type);
  						break;
  					default:
+ 						if(!is_array($va_config)) { break; }
  						$va_bundle_settings["{$vs_table}_showTypes"][] = array_shift(caMakeTypeIDList($vs_table, array($vs_type)));
  						$va_bundle_settings["{$vs_table}_{$vs_type}_dateElement"] = $va_config['date'];
  						break;

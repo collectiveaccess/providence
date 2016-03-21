@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -427,7 +427,7 @@ class SearchIndexer extends SearchBase {
 			$va_hier_values = array_reverse($va_hier_values);
 
 
-			if ($pn_start > 0) {
+			if (($pn_start > 0) && (sizeof($va_hier_values) > $pn_start + 1)) {
 				$va_hier_values = array_slice($va_hier_values, $pn_start);
 			}
 			if ($pn_max_levels > 0) {
@@ -580,7 +580,7 @@ class SearchIndexer extends SearchBase {
 					if ($va_data['DONT_INDEX']) {	// remove attribute from indexing list
 						unset($va_fields_to_index['_ca_attribute_'.$va_matches[1]]);
 					} else {
-						if ($vn_element_id = $this->_getElementID($va_matches[1])) {
+						if ($vn_element_id = ca_metadata_elements::getElementID($va_matches[1])) {
 							$va_fields_to_index['_ca_attribute_'.$vn_element_id] = $va_data;
 						}
 					}
@@ -619,7 +619,7 @@ class SearchIndexer extends SearchBase {
 					if($va_data['DONT_INDEX'] && is_array($va_data['DONT_INDEX'])){
 						$vb_cont = false;
 						foreach($va_data["DONT_INDEX"] as $vs_exclude_type){
-							if($this->_getElementID($vs_exclude_type) == intval($va_matches[1])){
+							if(ca_metadata_elements::getElementID($vs_exclude_type) == intval($va_matches[1])){
 								$vb_cont = true;
 								break;
 							}
@@ -627,7 +627,7 @@ class SearchIndexer extends SearchBase {
 						if($vb_cont) continue; // skip excluded attribute type
 					}
 
-					$va_data['datatype'] = (int)$this->_getElementDataType($va_matches[1]);
+					$va_data['datatype'] = (int)ca_metadata_elements::getElementDatatype($va_matches[1]);
 					$this->_indexAttribute($t_subject, $pn_subject_row_id, $va_matches[1], $va_data);
 
 				} else {
@@ -775,21 +775,23 @@ class SearchIndexer extends SearchBase {
 						$va_proc_field_list[] = $vs_related_table.'.'.$vs_related_pk;
 						if ($vs_self_rel_table_name) { $va_proc_field_list[] = $vs_self_rel_table_name.'.type_id rel_type_id'; }
 
+						$vs_delete_sql = $t_rel->hasField('deleted') ? " AND {$vs_related_table}.deleted = 0" : '';
 						$vs_sql = "
-						SELECT ".join(",", $va_proc_field_list)."
-						FROM {$vs_related_table}
-						INNER JOIN {$vs_self_rel_table_name} ON {$vs_self_rel_table_name}.".$t_self_rel->getLeftTableFieldName()." = {$vs_related_table}.{$vs_related_pk}
-						WHERE
-							(".$vs_self_rel_table_name.'.'.$t_self_rel->getRightTableFieldName().' = ?)
+							SELECT ".join(",", $va_proc_field_list)."
+							FROM {$vs_related_table}
+							INNER JOIN {$vs_self_rel_table_name} ON {$vs_self_rel_table_name}.".$t_self_rel->getLeftTableFieldName()." = {$vs_related_table}.{$vs_related_pk}
+							WHERE
+								(".$vs_self_rel_table_name.'.'.$t_self_rel->getRightTableFieldName().' = ?)
+								'.$vs_delete_sql.'
+							UNION
 						
-						UNION
-						
-						SELECT '.join(",", $va_proc_field_list)."
-						FROM {$vs_related_table}
-						INNER JOIN {$vs_self_rel_table_name} ON {$vs_self_rel_table_name}.".$t_self_rel->getRightTableFieldName()." = {$vs_related_table}.{$vs_related_pk}
-						WHERE
-							(".$vs_self_rel_table_name.'.'.$t_self_rel->getLeftTableFieldName().' = ?)
-					';
+							SELECT '.join(",", $va_proc_field_list)."
+							FROM {$vs_related_table}
+							INNER JOIN {$vs_self_rel_table_name} ON {$vs_self_rel_table_name}.".$t_self_rel->getRightTableFieldName()." = {$vs_related_table}.{$vs_related_pk}
+							WHERE
+								(".$vs_self_rel_table_name.'.'.$t_self_rel->getLeftTableFieldName().' = ?)
+								'.$vs_delete_sql.'
+						';
 						$va_params = array($pn_subject_row_id, $pn_subject_row_id);
 
 						$va_queries[] = array('sql' => $vs_sql, 'params' => $va_params);
@@ -884,14 +886,20 @@ class SearchIndexer extends SearchBase {
 								$va_proc_field_list[] = $va_rel['many_table'].'.'.$va_rel['many_table_field'];
 							}
 
+							$vs_deleted_sql = '';
+							if ($t_subject->hasField('deleted')) {
+								$vs_deleted_sql = "({$vs_subject_tablename}.deleted = 0) AND ";
+							}
 
 							$vs_sql = "
-							SELECT ".join(",", $va_proc_field_list)."
-							FROM ".$vs_subject_tablename."
-							".join("\n", $va_joins)."
-							WHERE
-								(".$vs_subject_tablename.'.'.$vs_subject_pk.' = ?)
-						';
+								SELECT ".join(",", $va_proc_field_list)."
+								FROM ".$vs_subject_tablename."
+								".join("\n", $va_joins)."
+								WHERE
+									{$vs_deleted_sql}
+									(".$vs_subject_tablename.'.'.$vs_subject_pk.' = ?)
+							';
+							
 							$va_params = array($pn_subject_row_id);
 
 							$va_queries[] = array('sql' => $vs_sql, 'params' => $va_params);
@@ -937,7 +945,7 @@ class SearchIndexer extends SearchBase {
 									if($va_rel_field_info['DONT_INDEX'] && is_array($va_rel_field_info['DONT_INDEX'])){
 										$vb_cont = false;
 										foreach($va_rel_field_info["DONT_INDEX"] as $vs_exclude_type){
-											if($this->_getElementID($vs_exclude_type) == intval($va_matches[1])){
+											if(ca_metadata_elements::getElementID($vs_exclude_type) == intval($va_matches[1])){
 												$vb_cont = true;
 												break;
 											}
@@ -947,7 +955,7 @@ class SearchIndexer extends SearchBase {
 
 									$vb_is_attr = true;
 
-									$va_rel_field_info['datatype'] = (int)$this->_getElementDataType($va_matches[1]);
+									$va_rel_field_info['datatype'] = (int)ca_metadata_elements::getElementDatatype($va_matches[1]);
 
 									$this->_indexAttribute($t_rel, $vn_row_id, $va_matches[1], array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id)));
 								}
@@ -1051,7 +1059,7 @@ class SearchIndexer extends SearchBase {
 					$va_changed_field_nums[$vs_f] = 'I'.$t_subject->fieldNum($vs_f);
 				} else {
 					if (preg_match('!^_ca_attribute_([\d]+)$!', $vs_f, $va_matches)) {
-						$va_changed_field_nums[$vs_f] = 'A'.$this->_getElementListCode($va_matches[1]);
+						$va_changed_field_nums[$vs_f] = 'A'.ca_metadata_elements::getElementID($va_matches[1]);
 					}
 				}
 			}
@@ -1104,7 +1112,7 @@ class SearchIndexer extends SearchBase {
 					$t_rel->setDb($this->getDb());
 
 					if (substr($va_row_to_reindex['field_name'], 0, 14) == '_ca_attribute_') {		// is attribute
-						$va_row_to_reindex['indexing_info']['datatype'] = $this->_getElementDataType(substr($va_row_to_reindex['field_name'], 14));
+						$va_row_to_reindex['indexing_info']['datatype'] = ca_metadata_elements::getElementDatatype(substr($va_row_to_reindex['field_name'], 14));
 					}
 
 					if (((isset($va_row_to_reindex['indexing_info']['INDEX_ANCESTORS']) && $va_row_to_reindex['indexing_info']['INDEX_ANCESTORS']) || in_array('INDEX_ANCESTORS', $va_row_to_reindex['indexing_info']))) {
@@ -1135,7 +1143,7 @@ class SearchIndexer extends SearchBase {
 										if (sizeof($va_attributes)) {
 											foreach($va_attributes as $vo_attribute) {
 												foreach($vo_attribute->getValues() as $vo_value) {
-													$vn_list_id = $this->_getElementListID($vo_value->getElementID());
+													$vn_list_id = ca_metadata_elements::getElementListID($vo_value->getElementID());
 													$vs_value_to_index = $vo_value->getDisplayValue($vn_list_id);
 
 													$va_additional_indexing = $vo_value->getDataForSearchIndexing();
@@ -1290,7 +1298,7 @@ class SearchIndexer extends SearchBase {
 		$va_attributes = $pt_subject->getAttributesByElement($pm_element_code_or_id, array('row_id' => $pn_row_id));
 		$pn_subject_tablenum = $pt_subject->tableNum();
 
-		$vn_datatype = isset($pa_data['datatype']) ? $pa_data['datatype'] : $this->_getElementDataType($pm_element_code_or_id);
+		$vn_datatype = isset($pa_data['datatype']) ? $pa_data['datatype'] : ca_metadata_elements::getElementDatatype($pm_element_code_or_id);
 
 		switch($vn_datatype) {
 			case __CA_ATTRIBUTE_VALUE_CONTAINER__: 		// container
@@ -1298,12 +1306,12 @@ class SearchIndexer extends SearchBase {
 				if (sizeof($va_attributes)) {
 					foreach($va_attributes as $vo_attribute) {
 						/* index each element of the container */
-						$vn_element_id = is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : $this->_getElementID($pm_element_code_or_id);
+						$vn_element_id = is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : ca_metadata_elements::getElementID($pm_element_code_or_id);
 						$va_sub_element_ids = $this->opo_metadata_element->getElementsInSet($vn_element_id, true, array('idsOnly' => true));
 						if (is_array($va_sub_element_ids) && sizeof($va_sub_element_ids)) {
 							$va_sub_element_ids = array_flip($va_sub_element_ids);
 							foreach($vo_attribute->getValues() as $vo_value) {
-								$vn_list_id = $this->_getElementListID($vo_value->getElementID());
+								$vn_list_id = ca_metadata_elements::getElementListID($vo_value->getElementID());
 								$vs_value_to_index = $vo_value->getDisplayValue($vn_list_id);
 
 								$va_additional_indexing = $vo_value->getDataForSearchIndexing();
@@ -1348,7 +1356,7 @@ class SearchIndexer extends SearchBase {
 				// sub-elements *are* indexed however, so advanced search forms passing ids instead of text will work.
 				$va_tmp = array();
 
-				$vn_element_id = is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : $this->_getElementID($pm_element_code_or_id);
+				$vn_element_id = is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : ca_metadata_elements::getElementID($pm_element_code_or_id);
 				$va_attributes = $pt_subject->getAttributesByElement($vn_element_id, array('row_id' => $pn_row_id));
 
 				if (is_array($va_attributes) && sizeof($va_attributes)) {
@@ -1402,7 +1410,7 @@ class SearchIndexer extends SearchBase {
 
 				break;
 			default:
-				$vn_element_id = is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : $this->_getElementID($pm_element_code_or_id);
+				$vn_element_id = is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : ca_metadata_elements::getElementID($pm_element_code_or_id);
 
 				$va_attributes = $pt_subject->getAttributesByElement($pm_element_code_or_id, array('row_id' => $pn_row_id));
 				if (!is_array($va_attributes)) { $va_attributes = array(); }
@@ -1432,7 +1440,7 @@ class SearchIndexer extends SearchBase {
 				// reindex children?
 				if((caGetOption('INDEX_ANCESTORS', $pa_data, false) !== false) || (in_array('INDEX_ANCESTORS', $pa_data))) {
 					if ($pt_subject && $pt_subject->isHierarchical()) {
-						if ($va_hier_values = $this->_genHierarchicalPath($pn_row_id, $vs_element_code = $this->_getElementCode($vn_element_id), $pt_subject, $pa_data)) {
+						if ($va_hier_values = $this->_genHierarchicalPath($pn_row_id, $vs_element_code = ca_metadata_elements::getElementCodeForId($vn_element_id), $pt_subject, $pa_data)) {
 							$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, join(" ", $va_hier_values['values']), $pa_data);
 							if(caGetOption('INDEX_ANCESTORS_AS_PATH_WITH_DELIMITER', $pa_data, false) !== false) {
 								$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, $va_hier_values['path'], array_merge($pa_data, array('DONT_TOKENIZE' => 1)));
@@ -1445,7 +1453,7 @@ class SearchIndexer extends SearchBase {
 							// trigger reindexing of children
 							$o_indexer = new SearchIndexer($this->opo_db);
 							$pt_subject->load($pn_row_id);
-							$va_content = $pt_subject->get($pt_subject->tableName().".".$vs_element_code, array('returnAsArray' => true, 'returnAllLocales' => true));
+							$va_content = $pt_subject->get($pt_subject->tableName().".".$vs_element_code, array('returnWithStructure' => true,'returnAsArray' => true, 'returnAllLocales' => true));
 
 							foreach($va_children_ids as $vn_id) {
 								if($vn_id == $pn_row_id) { continue; }
@@ -1594,27 +1602,77 @@ class SearchIndexer extends SearchBase {
 // Loop through dependent tables
 
 		foreach($va_deps as $vs_dep_table) {
-
 			$t_dep 				= $this->opo_datamodel->getInstanceByTableName($vs_dep_table, true);
 			if (!$t_dep) { continue; }
 			$vs_dep_pk 			= $t_dep->primaryKey();
 			$vn_dep_tablenum 	= $t_dep->tableNum();
 
-			if (method_exists($t_subject, 'isSelfRelationship') && $t_subject->isSelfRelationship()) {
-				// get related rows via self relation
-				$vs_sql = "
-					SELECT *
-					FROM ".$t_subject->tableName()."
-					WHERE
-						relation_id = ?
-				";
-				//print $vs_sql;
+			//
+			// Handle indexing of self relationships (Eg. indexing of tables such as ca_objects_x_objects)
+			// *and* 
+			// 'related' indexing (indexing across self-relationships for a record; Eg. indexing of related objects against objects)
+			//
+			if (
+				(method_exists($t_subject, 'isSelfRelationship') && $t_subject->isSelfRelationship())
+				||
+				($vs_subject_tablename === $vs_dep_table)
+			) {
+			
+				$va_params = null;
+				if(($vs_subject_tablename === $vs_dep_table) && ($vs_self_rel_table_name = $t_dep->getSelfRelationTableName())) {
+					//
+					// dependency for 'related' indexing; translate dependency into a set of self-relations
+					//
+					$t_self_rel = $this->opo_datamodel->getInstanceByTableName($vs_self_rel_table_name, true);
+					$va_params = [$pn_subject_row_id, $pn_subject_row_id];
+					
+					$vs_sql_joins = $vs_delete_sql = '';
+					if ($t_subject->hasField('deleted')) {
+						$vs_sql_joins = "
+							INNER JOIN {$vs_subject_tablename} AS t1 ON t1.{$vs_subject_pk} = t0.".$t_self_rel->getLeftTableFieldName()."
+							INNER JOIN {$vs_subject_tablename} AS t2 ON t2.{$vs_subject_pk} = t0.".$t_self_rel->getRightTableFieldName();
+						$vs_delete_sql = "AND (t1.deleted = 0 AND t2.deleted = 0)";
+					}
+					
+					$vs_sql = "
+						SELECT *
+						FROM {$vs_self_rel_table_name} t0
+						{$vs_sql_joins}
+						WHERE
+							(t0.".$t_self_rel->getLeftTableFieldName()." = ? OR t0.".$t_self_rel->getRightTableFieldName()." = ?)
+							{$vs_delete_sql}
+					";
+				} else {
+					//
+					// dependency is a specific row in a self-relation
+					//
+					$t_self_rel = $t_subject;
+					
+					$va_params = [$pn_subject_row_id];
+					
+					$vs_sql_joins = $vs_delete_sql = '';
+					if ($t_subject->hasField('deleted')) {
+						$vs_sql_joins = "
+							INNER JOIN {$vs_subject_tablename} AS t1 ON t1.{$vs_subject_pk} = t0.".$t_self_rel->getLeftTableFieldName()."
+							INNER JOIN {$vs_subject_tablename} AS t2 ON t2.{$vs_subject_pk} = t0.".$t_self_rel->getRightTableFieldName();
+						$vs_delete_sql = "AND (t1.deleted = 0 AND t2.deleted = 0)";
+					}
+					
+					// get related rows via self relation
+					$vs_sql = "
+						SELECT *
+						FROM ".$t_self_rel->tableName()." t0
+						{$vs_sql_joins}
+						WHERE
+							t0.".$t_self_rel->primaryKey()." = ? {$vs_delete_sql}
+					";
+				}
 
-				$qr_res = $this->opo_db->query($vs_sql, array($pn_subject_row_id));
+				$qr_res = $this->opo_db->query($vs_sql, $va_params);
 
 				while($qr_res->nextRow()) {
-					$vn_left_id = $qr_res->get($t_subject->getLeftTableFieldName());
-					$vn_right_id = $qr_res->get($t_subject->getRightTableFieldName());
+					$vn_left_id = $qr_res->get($t_self_rel->getLeftTableFieldName());
+					$vn_right_id = $qr_res->get($t_self_rel->getRightTableFieldName());
 					$vn_rel_type_id = $qr_res->get('type_id');
 
 					$va_info = $this->getTableIndexingInfo($vs_dep_table, $vs_dep_table);
@@ -1692,6 +1750,7 @@ class SearchIndexer extends SearchBase {
 			}
 
 			$va_dep_rel_indexing_tables = $this->getRelatedIndexingTables($vs_dep_table);
+
 // Loop through tables indexed against dependency
 			foreach($va_dep_rel_indexing_tables as $vs_dep_rel_table) {
 
@@ -1986,13 +2045,23 @@ class SearchIndexer extends SearchBase {
 			$vs_select_tablename = array_shift($pa_tables);
 			$t_subject = $this->opo_datamodel->getInstanceByTableName($ps_subject_tablename, true);
 			$vs_subject_pk = $t_subject->primaryKey();
-
+			
+			$t_select = $this->opo_datamodel->getInstanceByTableName($vs_select_tablename, true);
+			$vs_select_pk = $t_subject->primaryKey();
 		}
+		
+		$vs_deleted_sql = '';
+		if (!$t_select) { print "NOTHING FOR {$vs_select_tablename}<br>\n"; }
+		if ($t_select->hasField('deleted')) {
+			$vs_deleted_sql = "({$vs_select_tablename}.deleted = 0) AND ";
+		}
+		
 		$vs_sql = "
 			SELECT ".join(", ", array_keys($va_flds))."
 			FROM ".$vs_select_tablename."
 			".join("\n", $va_joins)."
 			WHERE
+			{$vs_deleted_sql}
 			{$ps_subject_tablename}.{$vs_subject_pk} = ?
 		";
 
@@ -2083,67 +2152,6 @@ class SearchIndexer extends SearchBase {
 			$va_deps[] = $t_subject->getLeftTableName();
 		}
 		return $va_deps;
-	}
-	# ------------------------------------------------
-	/**
-	 * Returns element_id of ca_metadata_element with specified element_code or NULL if the element doesn't exist
-	 * Because of dependency and performance issues we do a straight query here rather than go through the ca_metadata_elements model
-	 */
-	private function _getElementID($ps_element_code) {
-		if(MemoryCache::contains($ps_element_code, 'SearchIndexerElementIds')) {
-			return MemoryCache::fetch($ps_element_code, 'SearchIndexerElementIds');
-		}
-
-		if (is_numeric($ps_element_code)) {
-			$qr_res = $this->opo_db->query("
-				SELECT element_id, datatype, list_id FROM ca_metadata_elements WHERE element_id = ?
-			", intval($ps_element_code));
-		} else {
-			$qr_res = $this->opo_db->query("
-				SELECT element_id, datatype, list_id FROM ca_metadata_elements WHERE element_code = ?
-			", $ps_element_code);
-		}
-		if (!$qr_res->nextRow()) { return null; }
-		$vn_element_id =  $qr_res->get('element_id');
-		MemoryCache::save($ps_element_code, $qr_res->get('datatype'), 'SearchIndexerElementDataTypes');
-		MemoryCache::save($vn_element_id, $qr_res->get('datatype'), 'SearchIndexerElementDataTypes');
-		MemoryCache::save($ps_element_code, $qr_res->get('list_id'), 'SearchIndexerElementListIds');
-		MemoryCache::save($vn_element_id, $qr_res->get('list_id'), 'SearchIndexerElementListIds');
-
-		MemoryCache::save($vn_element_id, $ps_element_code, 'SearchIndexerElementIds');
-		MemoryCache::save($ps_element_code, $vn_element_id, 'SearchIndexerElementIds');
-		return $vn_element_id;
-	}
-	# ------------------------------------------------
-	/**
-	 * Returns element code of ca_metadata_element with specified element_id or NULL if the element doesn't exist
-	 */
-	private function _getElementCode($pn_element_id) {
-		return $this->_getElementID($pn_element_id);	// ensures MemoryCache is populated
-	}
-	# ------------------------------------------------
-	/**
-	 * Returns datatype code of ca_metadata_element with specified element_code or NULL if the element doesn't exist
-	 */
-	private function _getElementDataType($ps_element_code) {
-		$vn_element_id = $this->_getElementID($ps_element_code);	// ensures MemoryCache is populated
-		return MemoryCache::fetch($vn_element_id, 'SearchIndexerElementDataTypes');
-	}
-	# ------------------------------------------------
-	/**
-	 * Returns list_id of ca_metadata_element with specified element_code or NULL if the element doesn't exist
-	 */
-	private function _getElementListID($ps_element_code) {
-		$vn_element_id = $this->_getElementID($ps_element_code);	// ensures MemoryCache is populated
-		return MemoryCache::fetch($vn_element_id, 'SearchIndexerElementListIds');
-	}
-	# ------------------------------------------------
-	/**
-	 * Returns element_code of ca_metadata_element with specified element_id or NULL if the element doesn't exist
-	 */
-	private function _getElementListCode($pn_element_id) {
-		$vn_element_id = $this->_getElementID($pn_element_id);	// ensures MemoryCache is populated
-		return MemoryCache::fetch($vn_element_id, 'SearchIndexerElementIds');
 	}
 	# ------------------------------------------------
 }
