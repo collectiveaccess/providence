@@ -228,15 +228,38 @@
 		var rules;
 		try {
 			rules = caUI.convertSearchQueryToQueryBuilderRuleSet(jQuery('#BasicSearchInput').val());
+			if (rules) {
+				jQuery('#QueryBuilder').queryBuilder('setRules', rules);
+			}
 		} catch (e) {
 			// TODO Something else? Display to user?
 			if (console && console.error) {
 				console.error(e);
 			}
 		}
+	}
+
+	function caSetSearchInputQueryFromQueryBuilder() {
+		var query, rules;
+		rules = jQuery('#QueryBuilder').queryBuilder('getRules');
 		if (rules) {
-			jQuery('#QueryBuilder').queryBuilder('setRules', rules);
+			query = caUI.convertQueryBuilderRuleSetToSearchQuery(rules);
+			if (query) {
+				jQuery('#BasicSearchInput').val(query);
+			}
 		}
+	}
+
+	function caGetQueryBuilderUpdateEvents() {
+		return [
+			'afterAddGroup.queryBuilder',
+			'afterDeleteGroup.queryBuilder',
+			'afterAddRule.queryBuilder',
+			'afterDeleteRule.queryBuilder',
+			'afterUpdateRuleValue.queryBuilder',
+			'afterUpdateRuleFilter.queryBuilder',
+			'afterUpdateRuleOperator.queryBuilder'
+		].join(' ');
 	}
 
 	// Initialise query builder
@@ -244,23 +267,7 @@
 		jQuery('#QueryBuilderContainer').toggle(jQuery.cookieJar('caCookieJar').get('<?php print $vs_table; ?>QueryBuilderIsExpanded'));
 		jQuery('#QueryBuilder')
 			.queryBuilder(<?php print json_encode($vo_query_builder_options, JSON_PRETTY_PRINT) ?>)
-			.on(
-				[
-					'afterAddGroup.queryBuilder',
-					'afterDeleteGroup.queryBuilder',
-					'afterAddRule.queryBuilder',
-					'afterDeleteRule.queryBuilder',
-					'afterUpdateRuleValue.queryBuilder',
-					'afterUpdateRuleFilter.queryBuilder',
-					'afterUpdateRuleOperator.queryBuilder'
-				].join(' '),
-				function () {
-					var rules = jQuery('#QueryBuilder').queryBuilder('getRules');
-					if (rules) {
-						jQuery('#BasicSearchInput').val(caUI.convertQueryBuilderRuleSetToSearchQuery(rules));
-					}
-				}
-			);
+			.on(caGetQueryBuilderUpdateEvents(), caSetSearchInputQueryFromQueryBuilder);
 		jQuery('#QueryBuilderToggle').click(caToggleSearchQueryBuilder);
 		jQuery('#BasicSearchInput').change(caSetQueryBuilderRulesFromSearchInput);
 		caUpdateSearchQueryBuilderToggleText();
