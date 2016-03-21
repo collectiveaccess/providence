@@ -135,7 +135,7 @@ var caUI = caUI || {};
 	getTokenList = function (query) {
 		var token,
 			tokens = [],
-			queryArray = query.trim().split('');
+			queryArray = query.replace(/\s+/g, ' ').trim().split('');
 		while (token = shiftToken(queryArray)) {
 			tokens.push(token);
 		}
