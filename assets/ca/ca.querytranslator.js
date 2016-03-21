@@ -98,13 +98,14 @@ var caUI = caUI || {};
 	 * @returns {String}
 	 */
 	caUI.convertQueryBuilderRuleSetToSearchQuery = function (ruleSet) {
+		var negation, prefix;
 		if (ruleSet.condition && ruleSet.rules) {
 			return '(' + $.map(ruleSet.rules, caUI.convertQueryBuilderRuleSetToSearchQuery).join(' ' + ruleSet.condition + ' ') + ')';
 		}
 		if (ruleSet.operator && ruleSet.field) {
 			// Escape value to allow special characters
-			var negation = ruleSet.operator.match(/not_/),
-				prefix = ruleSet.field + (negation ? ':-' : ':');
+			negation = ruleSet.operator.match(/not_/);
+			prefix = ruleSet.field + (negation ? ':-' : ':');
 			switch (negation ? ruleSet.operator.replace('not_', '') : ruleSet.operator) {
 				case 'equal':
 					return prefix + '"' + escapeValue(ruleSet.value) + '"';
@@ -133,9 +134,8 @@ var caUI = caUI || {};
 	 * @return {Array}
 	 */
 	getTokenList = function (query) {
-		var token,
-			tokens = [],
-			queryArray = query.replace(/\s+/g, ' ').trim().split('');
+		var queryArray, token, tokens = [];
+		queryArray = query.replace(/\s+/g, ' ').trim().split('');
 		while (token = shiftToken(queryArray)) {
 			tokens.push(token);
 		}
@@ -151,10 +151,10 @@ var caUI = caUI || {};
 	 * @returns {Object|undefined}
 	 */
 	shiftToken = function (queryArray) {
-		var character, token,
-			quoted = false,
-			escaped = false,
-			end = false;
+		var character, token, quoted, escaped, end;
+		quoted = false;
+		escaped = false;
+		end = false;
 		// End condition.
 		if (queryArray.length === 0) {
 			return undefined;
@@ -322,11 +322,11 @@ var caUI = caUI || {};
 	 * @return {Object}
 	 */
 	tokensToRuleSet = function (tokens) {
-		var rule, condition, negation,
-			ruleSet = {
-				condition: undefined,
-				rules: []
-			};
+		var rule, condition, negation, ruleSet;
+		ruleSet = {
+			condition: undefined,
+			rules: []
+		};
 		skipWhitespace(tokens);
 		// End this recursion when the string is finished, or when we reach a right parenthesis.
 		while (tokens.length > 0 && tokens[0].type !== TOKEN_RPAREN) {
