@@ -121,7 +121,8 @@ var caUI = caUI || {};
 					return prefix + '"*' + escapeValue(ruleSet.value) + '"';
 				case 'is_empty':
 				case 'is_null':
-					return prefix + '*';
+					// "is_not_empty" is a double negative, so the negation prefix is applied in reverse.
+					return ruleSet.field + (!negation ? ':-' : ':') + '*';
 			}
 			return ruleSet.field + ':' + ruleSet.value;
 		}
