@@ -179,11 +179,7 @@ var caUI = caUI || {};
 				token = { type: TOKEN_NEGATION };
 				end = true;
 				break;
-			// Collapse whitespace.
 			case ' ':
-				while (queryArray[0] === ' ') {
-					queryArray.shift();
-				}
 				token = { type: TOKEN_WHITESPACE };
 				end = true;
 				break;
