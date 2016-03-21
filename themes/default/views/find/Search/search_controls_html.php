@@ -211,21 +211,28 @@
 		$vo_query_builder_options['allow_empty'] = true;
 	?>
 	function caUpdateSearchQueryBuilderToggleText() {
-		jQuery('#QueryBuilderToggle').html('<?php echo _t('Query Builder'); ?>&nbsp;' + (jQuery('#QueryBuilderContainer').is(':visible') ? '&#9652;' : '&#9662;'));
+		jQuery('#QueryBuilderToggle').html('<?php print _t('Query Builder'); ?>&nbsp;' + (caSearchQueryBuilderIsVisible() ? '&#9652;' : '&#9662;'));
 	}
 
 	// Event handler for the query builder toggle
 	function caToggleSearchQueryBuilder() {
 		var $container = jQuery('#QueryBuilderContainer');
-		$container.slideToggle('medium', function () {
-			jQuery.cookieJar('caCookieJar').set('<?php print $vs_table; ?>QueryBuilderIsExpanded', $container.is(':visible'));
-			caUpdateSearchQueryBuilderToggleText();
-		});
+		$container.slideToggle('medium');
+		jQuery.cookieJar('caCookieJar').set('<?php print $vs_table; ?>QueryBuilderIsExpanded', !caSearchQueryBuilderIsVisible());
+		caUpdateSearchQueryBuilderToggleText();
+		caSetSearchQueryBuilderRulesFromSearchInput();
 		return false;
 	}
 
-	function caSetQueryBuilderRulesFromSearchInput() {
+	function caSearchQueryBuilderIsVisible() {
+		return jQuery.cookieJar('caCookieJar').get('<?php print $vs_table; ?>QueryBuilderIsExpanded');
+	}
+
+	function caSetSearchQueryBuilderRulesFromSearchInput() {
 		var rules;
+		if (!caSearchQueryBuilderIsVisible()) {
+			return;
+		}
 		try {
 			rules = caUI.convertSearchQueryToQueryBuilderRuleSet(jQuery('#BasicSearchInput').val());
 			if (rules) {
@@ -241,6 +248,9 @@
 
 	function caSetSearchInputQueryFromQueryBuilder() {
 		var query, rules;
+		if (!caSearchQueryBuilderIsVisible()) {
+			return;
+		}
 		rules = jQuery('#QueryBuilder').queryBuilder('getRules');
 		if (rules) {
 			query = caUI.convertQueryBuilderRuleSetToSearchQuery(rules);
@@ -250,7 +260,7 @@
 		}
 	}
 
-	function caGetQueryBuilderUpdateEvents() {
+	function caGetSearchQueryBuilderUpdateEvents() {
 		return [
 			'afterAddGroup.queryBuilder',
 			'afterDeleteGroup.queryBuilder',
@@ -264,14 +274,14 @@
 
 	// Initialise query builder
 	jQuery(document).ready(function() {
-		jQuery('#QueryBuilderContainer').toggle(jQuery.cookieJar('caCookieJar').get('<?php print $vs_table; ?>QueryBuilderIsExpanded'));
+		jQuery('#QueryBuilderContainer').toggle(caSearchQueryBuilderIsVisible());
 		jQuery('#QueryBuilder')
 			.queryBuilder(<?php print json_encode($vo_query_builder_options, JSON_PRETTY_PRINT) ?>)
-			.on(caGetQueryBuilderUpdateEvents(), caSetSearchInputQueryFromQueryBuilder);
+			.on(caGetSearchQueryBuilderUpdateEvents(), caSetSearchInputQueryFromQueryBuilder);
 		jQuery('#QueryBuilderToggle').click(caToggleSearchQueryBuilder);
-		jQuery('#BasicSearchInput').change(caSetQueryBuilderRulesFromSearchInput);
+		jQuery('#BasicSearchInput').change(caSetSearchQueryBuilderRulesFromSearchInput);
 		caUpdateSearchQueryBuilderToggleText();
-		caSetQueryBuilderRulesFromSearchInput();
+		caSetSearchQueryBuilderRulesFromSearchInput();
 	});
 	<?php
 	}
