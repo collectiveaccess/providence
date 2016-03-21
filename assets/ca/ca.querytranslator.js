@@ -343,12 +343,8 @@ var caUI = caUI || {};
 				rule = {};
 				rule.field = rule.id = assertNextToken(tokens, TOKEN_WORD).value;
 				assertNextToken(tokens, TOKEN_COLON);
-				console.log(tokens);
 				negation = isNextToken(tokens, TOKEN_NEGATION);
-				console.log(tokens);
-				console.log(negation);
 				assignOperatorAndValue(rule, assertNextToken(tokens, TOKEN_WORD).value, negation);
-				console.log(rule);
 			}
 			skipWhitespace(tokens);
 			if (rule) {
