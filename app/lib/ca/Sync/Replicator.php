@@ -71,13 +71,13 @@ class Replicator {
 		foreach($this->getSourcesAsServiceClients() as $vs_source_key => $o_source) {
 			/** @var CAS\ReplicationService $o_source */
 
-			// get source guid
+			// get source guid // @todo cache this
 			$vs_source_system_guid = $o_source->setEndpoint('getsysguid')->request()->getRawData()['system_guid'];
 			if(!strlen($vs_source_system_guid)) {
 				throw new Exception('Could not get system GUID for one of the configured replication sources: ' . $vs_source_key);
 			}
 
-			foreach($this->getTargetsAsServiceClients() as $o_target) {
+			foreach($this->getTargetsAsServiceClients() as $vs_target_key => $o_target) {
 				/** @var CAS\ReplicationService $o_target */
 
 				// get latest log id for this source at current target
@@ -102,14 +102,22 @@ class Replicator {
 					->setRequestBody($va_source_log_entries)
 					->request();
 
+				$va_response_data = $o_resp->getRawData();
 
-				var_dump($o_resp);
+				if(!$o_resp->isOk()) {
+					CLIUtils::addError(_t("There were errors while processing sync for source %1 and target %2: %3",
+						$vs_source_key, $vs_target_key, $va_response_data['error']));
+				} else {
+					print CLIUtils::textWithColor(_t("Sync for source %1 and target %2 successful. Last replicated log id is %3.",
+						$vs_source_key, $vs_target_key, $va_response_data['replicated_log_id']), 'green');
+				}
 
-				// the above call will return the id of the last successfull replication operation
-				// we take that back to the source to record it there.
-				$pn_last_replicated_log_id = $o_resp->getRawData()['replicated_log_id'];
-
-
+				if(isset($va_response_data['warnings']) && is_array($va_response_data['warnings']) && sizeof($va_response_data['warnings'])) {
+					foreach($va_response_data['warnings'] as $vs_warn) {
+						print CLIUtils::textWithColor(_t("There was a warning while processing sync for source %1 and target $2: %3",
+							$vs_source_key, $vs_target_key, $vs_warn), 'yellow');
+					}
+				}
 			}
 		}
 	}

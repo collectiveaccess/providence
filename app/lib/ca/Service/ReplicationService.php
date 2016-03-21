@@ -56,9 +56,6 @@ class ReplicationService {
 			case 'getlastreplicatedlogid':
 				$va_return = self::getLastReplicatedLogID($po_request);
 				break;
-			case 'setlastreplicatedlogid':
-				$va_return = self::setLastReplicatedLogID($po_request);
-				break;
 			case 'applylog';
 				$va_return = self::applyLog($po_request);
 				break;
@@ -109,58 +106,45 @@ class ReplicationService {
 	 * @return array
 	 * @throws Exception
 	 */
-	public static function setLastReplicatedLogID($po_request) {
-		$vs_guid = trim($po_request->getParameter('system_guid', pString));
-		if(!strlen($vs_guid)) { throw new Exception('must provide a system guid'); }
-
-		$pn_new_log_id = $po_request->getParameter('replicated_log_id', pInteger);
-		if(!$pn_new_log_id) { throw new Exception('must provide a new replicated_log_id via GET'); }
-		if($pn_new_log_id <= ca_replication_log::getLastReplicatedLogID($vs_guid)) {
-			throw new Exception('New log id is less or equal the hold last replicated id for this system');
-		}
-
-		$t_replication_log = new ca_replication_log();
-		$t_replication_log->setMode(ACCESS_WRITE);
-		$t_replication_log->set('source_system_guid', $vs_guid);
-		$t_replication_log->set('status', 'C');
-		$t_replication_log->set('log_id', $pn_new_log_id);
-		$t_replication_log->insert();
-
-		return array();
-	}
-	# -------------------------------------------------------
-	/**
-	 * @param RequestHTTP $po_request
-	 * @return array
-	 * @throws Exception
-	 */
 	public static function applyLog($po_request) {
 		$vs_source_system_guid = trim($po_request->getParameter('system_guid', pString));
 		if(!strlen($vs_source_system_guid)) { throw new Exception('must provide a system guid'); }
 		if($po_request->getRequestMethod() !== 'POST') { throw new Exception('must be a post request'); }
 
-		$vn_last_applied_log_id = false;
+		$vn_last_applied_log_id = null;
 		$va_log = json_decode($po_request->getRawPostData(), true);
-		$va_warnings = array();
+
+		$va_warnings = array(); $va_return = array('ok' => true);
 		foreach($va_log as $vn_log_id => $va_log_entry) {
 			try {
 				$o_log_entry = CA\Sync\LogEntry\Base::getInstance($vs_source_system_guid, $vn_log_id, $va_log_entry);
 				$o_log_entry->apply();
+
+				// @todo: encapsulate this in LogEntry class
+				if($o_log_entry->getModelInstance()->numErrors() > 0) { // is this critical or not? hmm
+						$va_return = array('ok' => false, 'at' => $vn_log_id, 'error' => join('; ', $o_log_entry->getModelInstance()->getErrors()));
+				}
 				$vn_last_applied_log_id = $vn_log_id;
 			} catch(CA\Sync\LogEntry\LogEntryInconsistency $e) {
 				$va_warnings[$vn_log_id][] = $e->getMessage();
 			} catch(\Exception $e) {
-				return array('ok' => false, 'at' => $vn_log_id, 'error' => $e->getMessage(), 'last_replicated_log_id' => $vn_last_applied_log_id);
+				$va_return = array('ok' => false, 'at' => $vn_log_id, 'error' => $e->getMessage(),);
 			}
 		}
 
+		$va_return['warnings'] = $va_warnings;
+
 		if($vn_last_applied_log_id) {
-			return array(
-				'replicated_log_id' => $vn_last_applied_log_id,
-				'warnings' => $va_warnings
-			);
-		} else {
-			return false; // shouldn't happen?
+			$va_return['replicated_log_id'] = $vn_last_applied_log_id;
+
+			$t_replication_log = new ca_replication_log();
+			$t_replication_log->setMode(ACCESS_WRITE);
+			$t_replication_log->set('source_system_guid', $vs_source_system_guid);
+			$t_replication_log->set('status', 'C');
+			$t_replication_log->set('log_id', $vn_last_applied_log_id);
+			$t_replication_log->insert();
 		}
+
+		return $va_return;
 	}
 }
