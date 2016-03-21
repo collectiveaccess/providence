@@ -45,39 +45,40 @@ var caUI = caUI || {};
 		TOKEN_WHITESPACE = 'WHITESPACE',
 		REGEX_OPERATOR_MAP = [
 			{
+				// "equal" matches everything, but if something more specific (below) matches, it will be overridden.
 				regex: /^(.*)$/,
 				operator: 'equal',
 				negatedOperator: 'not_equal'
 			},
 			{
-				regex: /^\((.*)\)$/,
-				operator: 'in',
-				negatedOperator: 'not_in'
-			},
-			{
+				// "between" currently only supports numeric or date types for `between` so no need to handle quotes.
 				regex: /^\[\s*(.*)\s+TO\s+(.*)\s*]$/,
 				operator: 'between',
 				negatedOperator: 'not_between'
 			},
 			{
+				// "begins with" starts with anything other than unescaped asterisk, and ends with unescaped asterisk.
 				regex: /^([^\*].*[^\\])\*$/,
 				operator: 'begins_with',
 				negatedOperator: 'not_begins_with'
 			},
 			{
+				// "contains" starts and ends with unescaped asterisk.
 				regex: /^\*(.*[^\\])\*$/,
 				operator: 'contains',
 				negatedOperator: 'not_contains'
 			},
 			{
+				// "ends with" starts with unescaped asterisk, and ends with anything other than unescaped asterisk.
 				regex: /^\*(.*(?:\\\*|[^\*]))$/,
 				operator: 'ends_with',
 				negatedOperator: 'not_ends_with'
 			},
 			{
+				// "is not empty" is just an unescaped asterisk.
 				regex: /^\*$/,
-				operator: 'is_empty',
-				negatedOperator: 'is_not_empty'
+				operator: 'is_not_empty',
+				negatedOperator: 'is_empty'
 			}
 		];
 
@@ -85,7 +86,7 @@ var caUI = caUI || {};
 	 * Escape the user-entered field value.
 	 * @param {String} value
 	 * @returns {String}
-     */
+	 */
 	escapeValue = function (value) {
 		return value.replace(/([\-\+&\|!\(\)\{}\[\]\^"~\*\?:\\])/, '\\$1');
 	};
@@ -130,7 +131,7 @@ var caUI = caUI || {};
 	 * Retrieve the list of tokens from the given query string.
 	 * @param {String} query
 	 * @return {Array}
-     */
+	 */
 	getTokenList = function (query) {
 		var token,
 			tokens = [],
@@ -236,7 +237,7 @@ var caUI = caUI || {};
 	 * @param {String} type
 	 * @returns {Object}
 	 * @throws
-     */
+	 */
 	assertNextToken = function (tokens, type) {
 		var token;
 		if (tokens.length === 0) {
@@ -256,7 +257,7 @@ var caUI = caUI || {};
 	 * @param {Array} tokens
 	 * @param {String} type
 	 * @returns {Boolean}
-     */
+	 */
 	isNextToken = function (tokens, type) {
 		if (tokens.length === 0 || tokens[0].type !== type) {
 			return false;
@@ -271,7 +272,7 @@ var caUI = caUI || {};
 	 * @param {Array} tokens
 	 * @returns {Object}
 	 * @throws
-     */
+	 */
 	assertCondition = function (tokens) {
 		var token = assertNextToken(tokens, TOKEN_WORD);
 		if (token.value !== 'AND' && token.value !== 'OR') {
@@ -283,7 +284,7 @@ var caUI = caUI || {};
 	/**
 	 * Skip any whitespace tokens by destructively processing the given `tokens` list.
 	 * @param {Array} tokens
-     */
+	 */
 	skipWhitespace = function (tokens) {
 		while (tokens.length > 0 && tokens[0].type === TOKEN_WHITESPACE) {
 			tokens.shift();
@@ -295,7 +296,7 @@ var caUI = caUI || {};
 	 * @param {Object} rule
 	 * @param {String} queryValue
 	 * @parma {Boolean} negation
-     */
+	 */
 	assignOperatorAndValue = function (rule, queryValue, negation) {
 		var i, j, mapping, matches;
 		// Find the most specific matching regular expression, which gives the operator, and the regular expression for
@@ -323,7 +324,7 @@ var caUI = caUI || {};
 	 * Parse the given array of tokens into a tree structure for the query builder.
 	 * @param {Array} tokens
 	 * @return {Object}
-     */
+	 */
 	tokensToRuleSet = function (tokens) {
 		var rule, condition, negation,
 			ruleSet = {
