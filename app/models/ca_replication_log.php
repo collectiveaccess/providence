@@ -38,7 +38,7 @@ BaseModel::$s_ca_models_definitions['ca_replication_log'] = array(
 	'NAME_SINGULAR' 	=> _t('globally unique identifier'),
 	'NAME_PLURAL' 		=> _t('globally unique identifiers'),
 	'FIELDS' 			=> array(
-		'entry id' => array(
+		'entry_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
 			'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false,
