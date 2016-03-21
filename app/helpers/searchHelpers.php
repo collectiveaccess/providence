@@ -447,9 +447,9 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 			return array_search($vo_filter['id'], $va_exclude) === false;
 		});
 		$va_priority = $vo_query_builder_config->get('query_builder_priority_' . $vs_table);
-		usort($va_filters, function ($po_a, $po_b) use ($va_priority, $vs_table) {
-			$vs_a_id = $po_a['id'];
-			$vs_b_id = $po_b['id'];
+		usort($va_filters, function ($pa_a, $pa_b) use ($va_priority, $vs_table) {
+			$vs_a_id = $pa_a['id'];
+			$vs_b_id = $pa_b['id'];
 			$vn_a_index = array_search($vs_a_id, $va_priority, true);
 			$vn_b_index = array_search($vs_b_id, $va_priority, true);
 			if ($vn_a_index !== false || $vn_b_index !== false) {
@@ -460,7 +460,8 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 			} else {
 				// Neither (a, b) has priority, so look at the tables they reference; there are three cases for each
 				// field specifier:
-				// 1. a field name on its own (no dot), which is implicitly part of the table being searched.
+				// 1. a field name on its own (no dot), which is either an implicit field on the table being searched,
+				//    or an access point defined in `search_indexing.conf`.
 				// 2. a field specified as `table.field` where `table` is the same as `$vs_table`, which is explicitly
 				//    part of the table being searched.
 				// 3. a field specified as `table.field` where `table` is a different table to `$vs_table`.
@@ -472,7 +473,7 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 				$vb_b_is_main_table = $vs_b_table === null || $vs_b_table === $vs_table;
 				if ($vb_a_is_main_table && $vb_b_is_main_table) {
 					// Both (a, b) are in the main table, so sort alphabetically by label.
-					return strcasecmp($po_a['label'], $po_b['label']);
+					return strcasecmp($pa_a['label'], $pa_b['label']);
 				} elseif (!$vb_a_is_main_table && !$vb_b_is_main_table) {
 					// Both (a, b) are in other tables, so sort alphabetically by table.
 					return strcasecmp($vs_a_table, $vs_b_table);
@@ -490,8 +491,8 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 		$vs_name_no_table = preg_replace('/^.*\./', '', $vs_name);
 		$vs_table = $t_subject->tableName();
 		$va_priority = $vo_query_builder_config->get('query_builder_priority_' . $vs_table);
-		$vo_operators_by_type = $vo_query_builder_config->get('query_builder_operators');
-		$vo_field_info = $t_subject->getFieldInfo(substr($vs_name, strpos($vs_name, '.') + 1));
+		$va_operators_by_type = $vo_query_builder_config->get('query_builder_operators');
+		$va_field_info = $t_subject->getFieldInfo(substr($vs_name, strpos($vs_name, '.') + 1));
 		$va_element_codes = (method_exists($t_subject, 'getApplicableElementCodes') ? $t_subject->getApplicableElementCodes(null, false, false) : array());
 		$vn_display_type = null;
 		$vs_list_code = null;
@@ -500,14 +501,14 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 			'id' => $vs_name,
 			'label' => $pa_bundle['label']
 		);
-		if ($vo_field_info) {
+		if ($va_field_info) {
 			// Get the list code and display type for further processing below.
-			$vs_list_code = $vo_field_info['LIST'] ?: $vo_field_info['LIST_CODE'];
-			$vn_display_type = $vo_field_info['DISPLAY_TYPE'];
+			$vs_list_code = $va_field_info['LIST'] ?: $va_field_info['LIST_CODE'];
+			$vn_display_type = $va_field_info['DISPLAY_TYPE'];
 			// The "hardcoded" options are `label` => `id` so this needs to be flipped for the query builder.
-			$va_select_options = is_array($vo_field_info['OPTIONS']) ? array_flip($vo_field_info['OPTIONS']) : null;
+			$va_select_options = is_array($va_field_info['OPTIONS']) ? array_flip($va_field_info['OPTIONS']) : null;
 			// Convert CA field type to query builder type and operators.
-			switch ($vo_field_info['FIELD_TYPE']) {
+			switch ($va_field_info['FIELD_TYPE']) {
 				case FT_NUMBER:
 					$va_result['type'] = 'integer';
 					break;
@@ -560,7 +561,7 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 			}
 		}
 		// Use the relevant input field type and operators based on type.
-		$va_result['operators'] = $vo_operators_by_type[$va_result['type']];
+		$va_result['operators'] = $va_operators_by_type[$va_result['type']];
 		// Process list types and use a text field for non-list types.
 		if (in_array($vn_display_type, array( DT_SELECT, DT_LIST, DT_LIST_MULTIPLE, DT_CHECKBOXES, DT_RADIO_BUTTONS ))) {
 			if (!$va_select_options) {
@@ -577,7 +578,7 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 			}
 			$va_result['input'] = 'select';
 			$va_result['values'] = $va_select_options;
-			$va_result['operators'] = $vo_operators_by_type['select'];
+			$va_result['operators'] = $va_operators_by_type['select'];
 		} else {
 			$va_result['input'] = 'text';
 		}
