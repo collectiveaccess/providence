@@ -200,6 +200,8 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			}
 		} else {
 			try {
+				if($this->opo_config->get('dont_use_zendpdf_to_identify_pdfs')) { return ''; }
+
 				include_once(__CA_LIB_DIR__."/core/Zend/Pdf.php");
 				$o_pdf = Zend_Pdf::load($ps_filepath);
 				if (sizeof($o_pdf->pages) == 0) { return ''; }

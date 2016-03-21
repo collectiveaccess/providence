@@ -112,7 +112,7 @@
 			if (
 				(strpos($va_info['bundle_name'], 'ca_object_representations.media') !== false)
 				&&
-				($va_info['settings']['display_mode'] == 'media') // make sure that for the 'url' mode we don't insert the image here
+				(!isset($va_info['settings']['display_mode']) || ($va_info['settings']['display_mode'] !== 'url'))
 			) {
 				$vs_version = str_replace("ca_object_representations.media.", "", $va_info['bundle_name']);
 				$va_info = $vo_result->getMediaInfo('ca_object_representations.media',$vs_version);

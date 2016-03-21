@@ -789,7 +789,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					$o_notes = $o_sheet->getCellByColumnAndRow(10, $o_row->getRowIndex());
 					
 					if (!($vs_group = trim((string)$o_group->getValue()))) {
-						$vs_group = '_group_'.(string)$o_source->getValue()."_{$vn_row}";
+						$vs_group = substr('_group_'.(string)$o_source->getValue()."_{$vn_row}", 0, 100);
 					}
 					
 					$vs_source = trim((string)$o_source->getValue());
@@ -950,6 +950,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			if ($o_log) { $o_log->logError(_t("[loadImporterFromFile:%1] You must set a code for your mapping!", $ps_source)); }
 			return;
 		}
+
+		// don't import exporter mappings
+		if (isset($va_settings['exporter_format'])) {
+			$pa_errors[] = _t("It looks like this is a mapping for the data export framework and you're trying to add it as import mapping!");
+			if ($o_log) { $o_log->logError(_t("[loadImporterFromFile:%1] It looks like this is a mapping for the data export framework and you're trying to add it as import mapping!", $ps_source)); }
+			return;
+		}
 		
 		// If no formats then default to everything
 		if (!isset($va_settings['inputFormats']) || !is_array($va_settings['inputFormats']) || !sizeof($va_settings['inputFormats'])) {
@@ -1018,6 +1025,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			$t_group = $t_importer->addGroup($vs_group, $vs_group_dest, array(), array('returnInstance' => true));
+			if(!$t_group) {
+				$pa_errors[] = _t("There was an error when adding group %1", $vs_group);
+				if ($o_log) { $o_log->logError(_t("[loadImporterFromFile:%1] There was an error when adding group %2", $ps_source, $vs_group)); }
+				return;
+			}
 			
 			// Add items
 			foreach($va_mappings_for_group as $vs_source => $va_mappings_for_source) {

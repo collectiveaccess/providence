@@ -124,6 +124,7 @@ class Session {
 	 * These tokens usually have a much shorter lifetime than the session.
 	 * @param bool $pb_dont_create_new_token dont create new auth token
 	 * @return string|bool The token, false if
+	 * @throws Exception
 	 */
 	public function getServiceAuthToken($pb_dont_create_new_token=false) {
 		if(!$this->getSessionID()) { return false; }
@@ -135,7 +136,13 @@ class Session {
 		if($pb_dont_create_new_token) { return false; }
 
 		// generate new token
-		$vs_token = hash('sha256', mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+		if(function_exists('mcrypt_create_iv')) {
+			$vs_token = hash('sha256', mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+		} else if(function_exists('openssl_random_pseudo_bytes')) {
+			$vs_token = hash('sha256', openssl_random_pseudo_bytes(32));
+		} else {
+			throw new Exception('mcrypt or OpenSSL is required for CollectiveAccess to run');
+		}
 
 		// save mappings in both directions for easy lookup. they are valid for 2 hrs (@todo maybe make this configurable?)
 		ExternalCache::save($this->getSessionID(), $vs_token, 'SessionIDToServiceAuthTokens', 60 * 60 * 2);

@@ -283,24 +283,12 @@ class Installer {
 		$va_media_volumes = $o_media_volumes->getAllVolumeInformation();
 
 		$vs_base_dir = $o_config->get('ca_base_dir');
-		$va_dir_creation_errors = array();
 		foreach($va_media_volumes as $vs_label => $va_volume_info) {
 			if (preg_match('!^'.$vs_base_dir.'!', $va_volume_info['absolutePath'])) {
 				if (!self::createDirectoryPath($va_volume_info['absolutePath'])) {
 					$this->addError("Couldn't create directory for media volume {$vs_label}");
 					return false;
 				}
-			}
-		}
-
-		// nuke search index if we using ElasticSearch (the SqlSearch index is nuked when we drop the database)
-		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
-			require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
-			$o_es = new WLPlugSearchEngineElasticSearch();
-			try {
-				$o_es->truncateIndex(null);
-			} catch(Exception $e) {
-				die('Unable to connect to ElasticSearch. Is the cluster running?');
 			}
 		}
 
@@ -316,10 +304,19 @@ class Installer {
 		// refresh mapping if ElasticSearch is used
 		$o_config = Configuration::load();
 		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
+
 			require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
 			$o_es = new WLPlugSearchEngineElasticSearch();
-			$o_es->refreshMapping(true);
 
+			try {
+				$o_es->truncateIndex(null);
+				$o_es->refreshMapping(true);
+			} catch(Exception $e) {
+				die('Unable to connect to ElasticSearch. Is the cluster running? Message from Elasticsearch was: ' . $e->getMessage());
+			}
+
+			$o_si = new SearchIndexer();
+			$o_si->reindex(null, array('showProgress' => false, 'interactiveProgressDisplay' => false));
 			CompositeCache::flush();
 		}
 	}

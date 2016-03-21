@@ -1282,6 +1282,7 @@ div.hint {
 	text-transform:uppercase;
 	text-align: left;
 	width:30%;
+    overflow: hidden;
 	display:inline-block;
 	font-weight:bold;
 	color: #666;
