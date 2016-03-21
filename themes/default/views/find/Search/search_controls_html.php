@@ -40,7 +40,7 @@
 	$vb_query_builder_enabled = $vo_query_builder_config->getBoolean('query_builder_enabled') && $vo_query_builder_config->getBoolean('query_builder_enabled_' . $vs_table);
 	$vs_query_builder_toggle = '';
 	if ($vb_query_builder_enabled) {
-		require_once(__CA_BASE_DIR__ . '/app/models/ca_search_forms.php');
+		require_once(__CA_MODELS_DIR__ . '/ca_search_forms.php');
 		$vs_query_builder_toggle = ' <a href="#" class="button" id="QueryBuilderToggle">'._t('Query Builder').'&nbsp;&#9662;</a>';
 	}
 
