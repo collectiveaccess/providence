@@ -250,6 +250,11 @@ class ca_change_log extends BaseModel {
 							$va_snapshot['item_code'] = caGetListItemIdno($vm_val);
 						}
 						break;
+					case 'row_id':
+						if(isset($va_snapshot['table_num']) && ($vn_table_num = $va_snapshot['table_num'])) {
+							$va_snapshot['row_guid'] = \ca_guids::getForRow($vn_table_num, $vm_val);
+						}
+						break;
 					default:
 						$t_instance = Datamodel::load()->getInstance((int) $qr_results->get('logged_table_num'), true);
 						if(!is_null($vm_val) && ($va_fld_info = $t_instance->getFieldInfo($vs_fld))) {
