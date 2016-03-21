@@ -38,15 +38,27 @@ class Relationship extends Base {
 
 	public function apply() {
 		$this->setIntrinsicsFromSnapshotInModelInstance();
+
+		if($this->isInsert()) {
+			$this->getModelInstance()->insert(array('setGUIDTo' => $this->getGUID()));
+		} elseif($this->isUpdate()) {
+			$this->getModelInstance()->update();
+		} elseif($this->isDelete()) {
+			$this->getModelInstance()->delete();
+		}
+
+		$this->checkModelInstanceForErrors();
 	}
 
 	public function setIntrinsicsFromSnapshotInModelInstance() {
 		parent::setIntrinsicsFromSnapshotInModelInstance();
+		$va_snapshot = $this->getSnapshot();
 
-		foreach($this->getSnapshot() as $vs_field => $vm_val) {
+		foreach($va_snapshot as $vs_field => $vm_val) {
 			// handle ca_foo_x_bar.type_id
 			if ($vs_field = $this->getModelInstance()->getProperty('RELATIONSHIP_TYPE_FIELDNAME')) {
-				if (isset($va_snapshot[$vs_field . '_code']) && ($vs_rel_type_code = $va_snapshot[$vs_field . '_code'])) {
+				$vs_potential_code_field = str_replace('_id', '', $vs_field) . '_code';
+				if (isset($va_snapshot[$vs_potential_code_field]) && ($vs_rel_type_code = $va_snapshot[$vs_potential_code_field])) {
 					if ($vn_rel_type_id = caGetRelationshipTypeID($vs_rel_type_code)) {
 						$this->getModelInstance()->set($vs_field, $vn_rel_type_id);
 					} else {

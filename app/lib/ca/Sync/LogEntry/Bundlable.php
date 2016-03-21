@@ -37,8 +37,6 @@ require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Base.php');
 class Bundlable extends Base {
 
 	public function apply() {
-		if(in_array($this->getModelInstance()->tableName(), ['ca_editor_uis', 'ca_editor_ui_screens'])) { return; }
-
 		if($this->isInsert()) {
 			$this->applyInsert();
 		} elseif($this->isUpdate()) {
@@ -46,7 +44,6 @@ class Bundlable extends Base {
 		} elseif($this->isDelete()) {
 			$this->applyDelete();
 		}
-
 	}
 
 	private function applyInsert() {
@@ -55,7 +52,8 @@ class Bundlable extends Base {
 		}
 
 		$this->setIntrinsicsFromSnapshotInModelInstance();
-		$this->getModelInstance()->insert();
+		$this->getModelInstance()->insert(array('setGUIDTo' => $this->getGUID()));
+		$this->checkModelInstanceForErrors();
 	}
 
 	private function applyUpdate() {
@@ -65,6 +63,7 @@ class Bundlable extends Base {
 
 		$this->setIntrinsicsFromSnapshotInModelInstance();
 		$this->getModelInstance()->update();
+		$this->checkModelInstanceForErrors();
 	}
 
 	private function applyDelete() {
@@ -73,6 +72,6 @@ class Bundlable extends Base {
 		}
 
 		$this->getModelInstance()->delete();
+		$this->checkModelInstanceForErrors();
 	}
-
 }

@@ -308,7 +308,11 @@ abstract class Base {
 						$vs_list = isset($va_fld_info['LIST']) ? $va_fld_info['LIST'] : $va_fld_info['LIST_CODE'];
 
 						if($vn_item_id = caGetListItemID($vs_list, $vs_code)) {
-							$this->getModelInstance()->set($vs_field, $vn_item_id);
+							if(isset($va_fld_info['LIST'])) { // access, status -> set item value (0,1 etc.)
+								$this->getModelInstance()->set($vs_field, caGetListItemValueForID($vn_item_id));
+							} else { // type_id, source_id, etc. ...
+								$this->getModelInstance()->set($vs_field, $vn_item_id);
+							}
 						} else {
 							throw new LogEntryInconsistency(
 								"Couldn't find list item id for idno '{$vs_code}' in list '{$vs_list}. Field was {$vs_field}"

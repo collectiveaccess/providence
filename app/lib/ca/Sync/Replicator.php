@@ -93,7 +93,7 @@ class Replicator {
 						$vs_source_key, $vs_target_key), 'yellow') . "\n";
 				}
 
-				print CLIUtils::textWithColor(_t("Starting replication for source %1 and target %2 at log id is %3.",
+				print CLIUtils::textWithColor(_t("Starting replication for source %1 and target %2, log id is %3.",
 					$vs_source_key, $vs_target_key, $pn_replicated_log_id), 'cyan') . "\n";
 
 				// it's possible to configure a starting point in the replication config. it's not pretty to do this as
@@ -129,9 +129,10 @@ class Replicator {
 				}
 
 				if(isset($va_response_data['warnings']) && is_array($va_response_data['warnings']) && sizeof($va_response_data['warnings'])) {
-					foreach($va_response_data['warnings'] as $vs_warn) {
-						print CLIUtils::textWithColor(_t("There was a warning while processing sync for source %1 and target $2: %3",
-							$vs_source_key, $vs_target_key, $vs_warn), 'yellow') . "\n";
+					foreach($va_response_data['warnings'] as $vn_log_id => $va_warns) {
+
+						print CLIUtils::textWithColor(_t("There was a warning while processing sync for source %1, target %2, log id %3: %4",
+							$vs_source_key, $vs_target_key, $vn_log_id, join(' ', $va_warns)), 'yellow') . "\n";
 					}
 				}
 			}
