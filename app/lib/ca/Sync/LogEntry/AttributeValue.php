@@ -37,7 +37,51 @@ require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Base.php');
 class AttributeValue extends Base {
 
 	public function apply() {
+		$this->setIntrinsicsFromSnapshotInModelInstance();
 
+		if($this->isInsert()) {
+			$this->getModelInstance()->insert(array('setGUIDTo' => $this->getGUID()));
+		} elseif($this->isUpdate()) {
+			$this->getModelInstance()->update();
+		} elseif($this->isDelete()) {
+			$this->getModelInstance()->delete();
+		}
+
+		$this->checkModelInstanceForErrors();
+	}
+
+	public function setIntrinsicsFromSnapshotInModelInstance() {
+		parent::setIntrinsicsFromSnapshotInModelInstance();
+		$va_snapshot = $this->getSnapshot();
+
+		foreach($va_snapshot as $vs_field => $vm_val) {
+
+			if($vs_field == 'element_id') {
+				if (isset($va_snapshot['element_code']) && ($vs_element_code = $va_snapshot['element_code'])) {
+					if ($vn_element_id = \ca_metadata_elements::getElementID($vs_element_code)) {
+						$this->getModelInstance()->set('element_id', $vn_element_id);
+					} else {
+						throw new LogEntryInconsistency("Could find element with code '{$vs_element_code}'");
+					}
+				} else {
+					throw new LogEntryInconsistency("No element code");
+				}
+			} elseif($vs_field == 'item_id') {
+				if (
+					isset($va_snapshot['item_code']) && ($vs_item_code = $va_snapshot['item_code']) &&
+					isset($va_snapshot['element_code']) && ($vs_element_code = $va_snapshot['element_code'])
+				) {
+					$t_element = \ca_metadata_elements::getInstance($vs_element_code);
+					if($vn_list_id = $t_element->get('list_id')) {
+						if($vn_item_id = caGetListItemID($vn_list_id, $vs_item_code)) {
+							$this->getModelInstance()->set('item_id', $vn_item_id);
+						}
+					}
+				} else {
+					throw new LogEntryInconsistency("No item code for list attribute value");
+				}
+			}
+		}
 	}
 
 }

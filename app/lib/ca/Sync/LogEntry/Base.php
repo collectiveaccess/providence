@@ -108,7 +108,7 @@ abstract class Base {
 		// if this is not an insert log entry, load the specified row by GUID
 		if(!$this->isInsert()) {
 			if(!$this->getModelInstance()->loadByGUID($this->getGUID())) {
-				throw new InvalidLogEntryException('mode was insert or update but the given GUID could not be found');
+				throw new InvalidLogEntryException('mode was delete or update but the given GUID could not be found');
 			}
 		}
 
