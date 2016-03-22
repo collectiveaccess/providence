@@ -219,6 +219,15 @@ if (!defined("__CA_SITE_HOSTNAME__")) {
 	define("__CA_SITE_HOSTNAME__", isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '');
 }
 
+#
+# __CA_SITE_HOSTNAME__ = the protocol your system should be accessed with
+#
+#		The default value is based on the URL being used to access the site.  To force a protocol, set it explicitly.
+#
+if (!defined("__CA_SITE_PROTOCOL__")) {
+	define("__CA_SITE_PROTOCOL__", isset($_SERVER['HTTPS']) ? 'https' : 'http');
+}
+
 # --------------------------------------------------------------------------------------------
 # IT IS VERY UNLIKELY THAT YOU WILL NEED TO CHANGE ANYTHING UNDER THIS LINE
 # --------------------------------------------------------------------------------------------
