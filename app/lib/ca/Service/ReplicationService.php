@@ -80,7 +80,15 @@ class ReplicationService {
 		$pn_limit = $po_request->getParameter('limit', pInteger);
 		if(!$pn_limit) { $pn_limit = null; }
 
-		return ca_change_log::getLog($pn_from, $pn_limit);
+		$pa_options = array();
+		if($ps_skip_if_expression = $po_request->getParameter('skipIfExpression', pString)) {
+			$pa_skip_if_expression = @json_decode($ps_skip_if_expression, true);
+			if(is_array($pa_skip_if_expression) && sizeof($pa_skip_if_expression)) {
+				$pa_options['skipIfExpression'] = $pa_skip_if_expression;
+			}
+		}
+
+		return ca_change_log::getLog($pn_from, $pn_limit, $pa_options);
 	}
 	# -------------------------------------------------------
 	/**

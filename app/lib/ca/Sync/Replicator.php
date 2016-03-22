@@ -179,9 +179,17 @@ class Replicator {
 				}
 				if($pn_min_log_id > $pn_replicated_log_id) { $pn_replicated_log_id = $pn_min_log_id; }
 
+				// get skip if expression
+				$pa_skip_if_expression = $this->opo_replication_conf->get('sources')[$vs_source_key]['skipIfExpression'];
+				$vs_skip_if_expression = null;
+				if(is_array($pa_skip_if_expression) && sizeof($pa_skip_if_expression)) {
+					$vs_skip_if_expression = json_encode($pa_skip_if_expression);
+				}
+
 				// get change log from source, starting with the log id we got above
 				$va_source_log_entries = $o_source->setEndpoint('getlog')
 					->addGetParameter('from', $pn_replicated_log_id)
+					->addGetParameter('skipIfExpression', $vs_skip_if_expression)
 					->request()->getRawData();
 
 				if(!sizeof($va_source_log_entries)) {

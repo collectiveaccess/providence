@@ -217,7 +217,13 @@ class ca_change_log extends BaseModel {
 		return false;
 	}
 	# ------------------------------------------------------
-	public static function getLog($pn_from, $pn_limit=null) {
+	/**
+	 * @param int $pn_from
+	 * @param null|int $pn_limit
+	 * @param null|array $pa_options
+	 * @return array
+	 */
+	public static function getLog($pn_from, $pn_limit=null, $pa_options=null) {
 		require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
 
 		if(!is_null($pn_limit)) {
@@ -225,6 +231,9 @@ class ca_change_log extends BaseModel {
 		} else {
 			$vs_limit_sql = '';
 		}
+
+		$pa_skip_if_expression = caGetOption('skipIfExpression', $pa_options);
+		if(!is_array($pa_skip_if_expression)) { $pa_skip_if_expression = array(); }
 
 		$o_db = new Db();
 
@@ -279,6 +288,21 @@ class ca_change_log extends BaseModel {
 					default:
 						$t_instance = Datamodel::load()->getInstance((int) $qr_results->get('logged_table_num'), true);
 						if(!is_null($vm_val) && ($va_fld_info = $t_instance->getFieldInfo($vs_fld))) {
+							// handle skip if expression
+							if(isset($pa_skip_if_expression[$t_instance->tableName()])) {
+								$vs_exp = $pa_skip_if_expression[$t_instance->tableName()];
+								// have to load() unfortch.
+								$t_instance->load($qr_results->get('logged_row_id'));
+
+								$va_exp_vars = array();
+								foreach(ExpressionParser::getVariableList($vs_exp) as $vs_var_name) {
+									$va_exp_vars[$vs_var_name] = $t_instance->get($vs_var_name, array('returnIdno' => true));
+								}
+
+								if (ExpressionParser::evaluate($vs_exp, $va_exp_vars)) {
+									continue 2; // skip this whole log entry! (continue; would skip the snapshot entry)
+								}
+							}
 
 							// handle all other list referencing fields
 							$vs_new_fld = str_replace('_id', '', $vs_fld) . '_code';
