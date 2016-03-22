@@ -275,17 +275,21 @@ class ca_change_log extends BaseModel {
 							}
 						}
 						break;
-					case 'item_id':
-						if(Datamodel::load()->getTableName((int) $qr_results->get('logged_table_num')) == 'ca_attribute_values') {
-							$va_snapshot['item_code'] = caGetListItemIdno($vm_val);
-						}
-						break;
 					case 'row_id':
 						if(isset($va_snapshot['table_num']) && ($vn_table_num = $va_snapshot['table_num'])) {
 							$va_snapshot['row_guid'] = \ca_guids::getForRow($vn_table_num, $vm_val);
 						}
 						break;
 					default:
+						if(
+							(Datamodel::load()->getTableName((int) $qr_results->get('logged_table_num')) == 'ca_attribute_values')
+							&&
+							($vs_fld == 'item_id')
+						) {
+							$va_snapshot['item_code'] = caGetListItemIdno($vm_val);
+							// don't break ca_list_items.item_id!!
+						}
+
 						$t_instance = Datamodel::load()->getInstance((int) $qr_results->get('logged_table_num'), true);
 						if(!is_null($vm_val) && ($va_fld_info = $t_instance->getFieldInfo($vs_fld))) {
 							// handle skip if expression
@@ -325,6 +329,15 @@ class ca_change_log extends BaseModel {
 
 								if($vs_fld == $t_instance->getProperty('RELATIONSHIP_RIGHT_FIELDNAME')) {
 									$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_instance->getRightTableNum(), $vm_val);
+								}
+							}
+
+							// handle foreign keys for labels (add guid for main record)
+							if($t_instance instanceof BaseLabel) {
+
+								if($vs_fld == $t_instance->getSubjectKey()) {
+									$vs_label_subject_guid_field = str_replace('_id', '', $vs_fld) . '_guid';
+									$va_snapshot[$vs_label_subject_guid_field] = ca_guids::getForRow($t_instance->getSubjectTableInstance()->tableNum(), $vm_val);
 								}
 							}
 						}

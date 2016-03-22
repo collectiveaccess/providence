@@ -75,4 +75,20 @@ class Label extends Base {
 		$this->checkModelInstanceForErrors();
 	}
 
+	function setIntrinsicsFromSnapshotInModelInstance() {
+		parent::setIntrinsicsFromSnapshotInModelInstance();
+
+		/** @var \BaseLabel $t_instance */
+		$t_instance = $this->getModelInstance();
+
+		$va_snapshot = $this->getSnapshot();
+
+		foreach($va_snapshot as $vs_field => $vm_val) {
+			if($vs_field == $t_instance->getSubjectKey()) {
+				//@todo load by guid!
+			}
+		}
+
+	}
+
 }
