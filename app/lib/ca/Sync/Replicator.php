@@ -187,10 +187,7 @@ class Replicator {
 				$va_response_data = $o_resp->getRawData();
 
 				if(!$o_resp->isOk()) {
-					$this->log(_t("There were errors while processing sync for source %1 and target %2",$vs_source_key, $vs_target_key), Zend_Log::ERR);
-					if(isset($va_response_data['error'])) {
-						$this->log(_t("Error was: %1", $va_response_data['error']), Zend_Log::ERR);
-					}
+					$this->log(_t("There were errors while processing sync for source %1 and target %2: %3",$vs_source_key, $vs_target_key, join(' ', $o_resp->getErrors())), Zend_Log::ERR);
 				} else {
 					$this->log(_t("Sync for source %1 and target %2 successful", $vs_source_key, $vs_target_key), Zend_Log::INFO);
 					if(isset($va_response_data['replicated_log_id'])) {

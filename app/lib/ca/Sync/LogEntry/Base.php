@@ -70,13 +70,20 @@ abstract class Base {
 	private $opt_instance;
 
 	/**
+	 * @var \Transaction
+	 */
+	private $opo_tx;
+
+	/**
 	 * Base constructor.
 	 * @param string $ops_source_system_id
 	 * @param int $opn_log_id
 	 * @param array $opa_log
+	 * @param \Transaction $po_tx
 	 * @throws InvalidLogEntryException
+	 * @throws IrrelevantLogEntry
 	 */
-	public function __construct($ops_source_system_id, $opn_log_id, array $opa_log) {
+	public function __construct($ops_source_system_id, $opn_log_id, array $opa_log, \Transaction $po_tx) {
 		if(!is_array($opa_log)) {
 			throw new InvalidLogEntryException('Log entry must be array');
 		}
@@ -96,6 +103,7 @@ abstract class Base {
 		$this->opa_log = $opa_log;
 		$this->ops_source_system_id = $ops_source_system_id;
 		$this->opn_log_id = $opn_log_id;
+		$this->opo_tx = $po_tx;
 
 		$this->opo_datamodel = \Datamodel::load();
 
@@ -106,11 +114,17 @@ abstract class Base {
 		}
 
 		// if this is not an insert log entry, load the specified row by GUID
-		if(!$this->isInsert()) {
-			if(!$this->getModelInstance()->loadByGUID($this->getGUID())) {
-				throw new InvalidLogEntryException('mode was delete or update but the given GUID could not be found');
+		if($this->isUpdate() || $this->isDelete()) {
+			// if we can't find the GUID and this is a delete() and this is an update, throw error
+			// if we can't find it and this is a delete, we don't particularly care. yes, we can't delete a non-existing
+			// record, but in terms of sync, that's a non-critical error.
+			if((!$this->getModelInstance()->loadByGUID($this->getGUID())) && $this->isUpdate()) {
+				throw new InvalidLogEntryException('mode was update but the given GUID could not be found');
 			}
 		}
+
+		$this->opt_instance->setTransaction($this->getTx());
+		$this->opt_instance->setMode(ACCESS_WRITE);
 
 		if(!$this->isRelevant()) {
 			throw new IrrelevantLogEntry();
@@ -181,6 +195,13 @@ abstract class Base {
 	 */
 	public function getLogId() {
 		return $this->opn_log_id;
+	}
+
+	/**
+	 * @return \Transaction
+	 */
+	public function getTx() {
+		return $this->opo_tx;
 	}
 
 	/**
@@ -279,7 +300,6 @@ abstract class Base {
 	 * Set intrinsic fields from snapshot in given model instance
 	 */
 	public function setIntrinsicsFromSnapshotInModelInstance() {
-		$this->getModelInstance()->setMode(ACCESS_WRITE);
 		$va_snapshot = $this->getSnapshot();
 
 		foreach($va_snapshot as $vs_field => $vm_val) {
@@ -314,12 +334,12 @@ abstract class Base {
 								$this->getModelInstance()->set($vs_field, $vn_item_id);
 							}
 						} else {
-							throw new LogEntryInconsistency(
+							throw new InvalidLogEntryException(
 								"Couldn't find list item id for idno '{$vs_code}' in list '{$vs_list}. Field was {$vs_field}"
 							);
 						}
 					} else {
-						throw new LogEntryInconsistency(
+						throw new InvalidLogEntryException(
 							"No corresponding code field '{$vs_potential_code_field}' found for list reference field '{$vs_field}'"
 						);
 					}
@@ -334,10 +354,10 @@ abstract class Base {
 						if($t_instance->loadByGUID($vs_parent_guid)) {
 							$this->getModelInstance()->set($vs_field, $t_instance->getPrimaryKey());
 						} else {
-							throw new LogEntryInconsistency("Could not load GUID {$vs_parent_guid} (referenced in HIERARCHY_PARENT_ID_FLD)");
+							throw new InvalidLogEntryException("Could not load GUID {$vs_parent_guid} (referenced in HIERARCHY_PARENT_ID_FLD)");
 						}
 					} else {
-						throw new LogEntryInconsistency("No guid for parent_id field found");
+						throw new InvalidLogEntryException("No guid for parent_id field found");
 					}
 
 					continue;
@@ -372,10 +392,11 @@ abstract class Base {
 	 * @param string $ps_source_system_id
 	 * @param int $pn_log_id
 	 * @param array $pa_log
+	 * @param \Transaction $po_tx
 	 * @return \CA\Sync\LogEntry\Base
 	 * @throws InvalidLogEntryException
 	 */
-	public static function getInstance($ps_source_system_id, $pn_log_id, $pa_log) {
+	public static function getInstance($ps_source_system_id, $pn_log_id, $pa_log, \Transaction $po_tx) {
 		if(!is_array($pa_log) || !isset($pa_log['logged_table_num'])) {
 			throw new InvalidLogEntryException('Invalid log entry');
 		}
@@ -385,15 +406,15 @@ abstract class Base {
 		$t_instance = $o_dm->getInstance($pa_log['logged_table_num']);
 
 		if($t_instance instanceof \BaseRelationshipModel) {
-			return new Relationship($ps_source_system_id, $pn_log_id, $pa_log);
+			return new Relationship($ps_source_system_id, $pn_log_id, $pa_log, $po_tx);
 		} elseif($t_instance instanceof \ca_attributes) {
-			return new Attribute($ps_source_system_id, $pn_log_id, $pa_log);
+			return new Attribute($ps_source_system_id, $pn_log_id, $pa_log, $po_tx);
 		} elseif($t_instance instanceof \ca_attribute_values) {
-			return new AttributeValue($ps_source_system_id, $pn_log_id, $pa_log);
+			return new AttributeValue($ps_source_system_id, $pn_log_id, $pa_log, $po_tx);
 		} elseif($t_instance instanceof \BaseLabel) {
-			return new Label($ps_source_system_id, $pn_log_id, $pa_log);
+			return new Label($ps_source_system_id, $pn_log_id, $pa_log, $po_tx);
 		} elseif($t_instance instanceof \BundlableLabelableBaseModelWithAttributes) {
-			return new Bundlable($ps_source_system_id, $pn_log_id, $pa_log);
+			return new Bundlable($ps_source_system_id, $pn_log_id, $pa_log, $po_tx);
 		}
 
 		throw new InvalidLogEntryException('Invalid table in log entry');

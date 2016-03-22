@@ -34,6 +34,7 @@ namespace CA\Sync\LogEntry;
 
 require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Base.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
+require_once(__CA_MODELS_DIR__.'/ca_attributes.php');
 
 class AttributeValue extends Base {
 
@@ -62,10 +63,19 @@ class AttributeValue extends Base {
 					if ($vn_element_id = \ca_metadata_elements::getElementID($vs_element_code)) {
 						$this->getModelInstance()->set('element_id', $vn_element_id);
 					} else {
-						throw new LogEntryInconsistency("Could find element with code '{$vs_element_code}'");
+						throw new LogEntryInconsistency("Could not find element with code '{$vs_element_code}'");
 					}
 				} else {
 					throw new LogEntryInconsistency("No element code");
+				}
+			} elseif($vs_field == 'attribute_id') {
+				if (isset($va_snapshot['attribute_guid']) && ($vs_attribute_guid = $va_snapshot['attribute_guid'])) {
+					$t_attr = new \ca_attributes();
+					if($t_attr->loadByGUID($vs_attribute_guid)) {
+						$this->getModelInstance()->set('attribute_id', $t_attr->getPrimaryKey());
+					} else {
+						throw new LogEntryInconsistency("Could not find attribute with guid {$vs_attribute_guid}");
+					}
 				}
 			} elseif($vs_field == 'item_id') {
 				if (

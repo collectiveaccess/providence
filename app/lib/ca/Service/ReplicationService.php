@@ -113,20 +113,27 @@ class ReplicationService {
 
 		$vn_last_applied_log_id = null;
 		$va_log = json_decode($po_request->getRawPostData(), true);
+		if(!is_array($va_log)) { throw new Exception('log must be array'); }
+		$o_db = new Db();
 
-		$va_warnings = array(); $va_return = array('ok' => true);
+		$va_warnings = $va_return = array(); $vs_error = null;
 		foreach($va_log as $vn_log_id => $va_log_entry) {
+			$o_tx = new \Transaction($o_db);
 			try {
-				$o_log_entry = CA\Sync\LogEntry\Base::getInstance($vs_source_system_guid, $vn_log_id, $va_log_entry);
+				$o_log_entry = CA\Sync\LogEntry\Base::getInstance($vs_source_system_guid, $vn_log_id, $va_log_entry, $o_tx);
 				$o_log_entry->apply();
+				$o_tx->commit();
 
 				$vn_last_applied_log_id = $vn_log_id;
 			} catch(CA\Sync\LogEntry\LogEntryInconsistency $e) {
+				$o_tx->rollback();
 				$va_warnings[$vn_log_id][] = $e->getMessage();
 			} catch(CA\Sync\LogEntry\IrrelevantLogEntry $e) {
-				// noop (just skip this row)
-			} catch(CA\Sync\LogEntry\InvalidLogEntryException $e) {
-				$va_return = array('ok' => false, 'at' => $vn_log_id, 'error' => $e->getMessage());
+				$o_tx->rollback();
+			} catch(\Exception $e) {
+				$vs_error = $e->getMessage();
+				$o_tx->rollback();
+				break;
 			}
 		}
 
@@ -141,6 +148,10 @@ class ReplicationService {
 			$t_replication_log->set('status', 'C');
 			$t_replication_log->set('log_id', $vn_last_applied_log_id);
 			$t_replication_log->insert();
+		}
+
+		if($vs_error) {
+			throw new Exception($vs_error);
 		}
 
 		return $va_return;
