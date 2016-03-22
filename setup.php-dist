@@ -220,7 +220,7 @@ if (!defined("__CA_SITE_HOSTNAME__")) {
 }
 
 #
-# __CA_SITE_HOSTNAME__ = the protocol your system should be accessed with
+# __CA_SITE_PROTOCOL__ = the protocol your system should be accessed with
 #
 #		The default value is based on the URL being used to access the site.  To force a protocol, set it explicitly.
 #
