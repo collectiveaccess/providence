@@ -513,6 +513,13 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 				return false;
 			}
 		}
+		// is it a userMedia?
+		if (!is_writeable($vs_tmp_directory = $this->getAppConfig()->get('ajax_media_upload_tmp_directory'))) {
+			$vs_tmp_directory = caGetTempDirPath();
+		}
+		if(preg_match("!^userMedia[\d]+/!", $vs_media_path) && file_exists("{$vs_tmp_directory}/{$vs_media_path}")) {
+			return false;
+		}
 		return true;
 	}
 	# ------------------------------------------------------
@@ -712,7 +719,7 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
  			$t_anno = new ca_representation_annotations();
  			if (!$t_anno->hasElement($vs_class_element)) { 
  				$vs_class_element = null; 
- 			} elseif($t_anno->_getElementDatatype($vs_class_element) != __CA_ATTRIBUTE_VALUE_LIST__)  {
+ 			} elseif(ca_metadata_elements::getElementDatatype($vs_class_element) != __CA_ATTRIBUTE_VALUE_LIST__)  {
  				// not a list element
  				$vs_class_element = null; 
  			}

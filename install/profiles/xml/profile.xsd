@@ -711,6 +711,7 @@
                   </xs:sequence>
                   <xs:attribute name="code" type="codeType" use="required"/>
                   <xs:attribute name="type" type="xs:string" use="required"/>
+                  <xs:attribute name="system" type="booleanType" use="optional"/>
                 </xs:complexType>
 
                 <!-- ui screen idnos must be unique inside a UI -->

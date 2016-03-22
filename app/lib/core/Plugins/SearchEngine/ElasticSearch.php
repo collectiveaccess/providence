@@ -95,7 +95,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 */
 	public function refreshMapping($pb_force=false) {
 		$o_mapping = new ElasticSearch\Mapping();
-		if($o_mapping->needsRefresh() || $pb_force || (defined('__CollectiveAccess_Installer__') && __CollectiveAccess_Installer__)) {
+		if($o_mapping->needsRefresh() || $pb_force) {
 			try {
 				if(!$this->getClient()->indices()->exists(array('index' => $this->getIndexName()))) {
 					$this->getClient()->indices()->create(array('index' => $this->getIndexName()));
@@ -227,12 +227,11 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				$this->getClient()->indices()->delete(['index' => $this->getIndexName()]);
 			} catch(Elasticsearch\Common\Exceptions\Missing404Exception $e) {
 				// noop
-			} finally {
+			} //finally {
 				if(!$pb_dont_refresh) {
 					$this->refreshMapping(true);
 				}
-
-			}
+			//}
 		} else {
 			// use scoll API to find all documents in a particular mapping/table and delete them using the bulk API
 			// @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-scroll.html

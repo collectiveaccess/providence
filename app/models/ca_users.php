@@ -2658,7 +2658,14 @@ class ca_users extends BaseModel {
 			} else {
 				// We rely on the system clock here. That might not be the smartest thing to do but it'll work for now.
 				$vn_token_expiration_timestamp = time() + 15 * 60; // now plus 15 minutes
-				$vs_password_reset_token = hash('sha256', mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+
+				if(function_exists('mcrypt_create_iv')) {
+					$vs_password_reset_token = hash('sha256', mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+				} elseif(function_exists('openssl_random_pseudo_bytes')) {
+					$vs_password_reset_token = hash('sha256', openssl_random_pseudo_bytes(32));
+				} else {
+					throw new Exception('mcrypt or OpenSSL is required for CollectiveAccess to run');
+				}
 
 				$this->setVar("{$vs_app_name}_password_reset_token", $vs_password_reset_token);
 				$this->setVar("{$vs_app_name}_password_reset_expiration", $vn_token_expiration_timestamp);

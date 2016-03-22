@@ -283,7 +283,6 @@ class Installer {
 		$va_media_volumes = $o_media_volumes->getAllVolumeInformation();
 
 		$vs_base_dir = $o_config->get('ca_base_dir');
-		$va_dir_creation_errors = array();
 		foreach($va_media_volumes as $vs_label => $va_volume_info) {
 			if (preg_match('!^'.$vs_base_dir.'!', $va_volume_info['absolutePath'])) {
 				if (!self::createDirectoryPath($va_volume_info['absolutePath'])) {
@@ -293,22 +292,26 @@ class Installer {
 			}
 		}
 
-		// nuke search index if we using ElasticSearch (the SqlSearch index is nuked when we drop the database)
-		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
-			require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
-			$o_es = new WLPlugSearchEngineElasticSearch();
-			$o_es->truncateIndex(null);
-		}
-
 		return true;
 	}
 	# --------------------------------------------------
 	public function performPostInstallTasks() {
 		$o_config = Configuration::load();
 		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
+
 			require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
 			$o_es = new WLPlugSearchEngineElasticSearch();
-			$o_es->refreshMapping(true);
+
+			try {
+				$o_es->truncateIndex(null);
+				$o_es->refreshMapping(true);
+			} catch(Exception $e) {
+				die('Unable to connect to ElasticSearch. Is the cluster running? Message from Elasticsearch was: ' . $e->getMessage());
+			}
+
+			$o_si = new SearchIndexer();
+			$o_si->reindex(null, array('showProgress' => false, 'interactiveProgressDisplay' => false));
+			CompositeCache::flush();
 		}
 	}
 	# --------------------------------------------------
@@ -782,6 +785,8 @@ class Installer {
 				return false;
 			}
 
+			// Existing profiles will probably not have this attribute set, so only make the UI a non-system if it is explicitly '0'
+			$vb_system = self::getAttribute($vo_ui, "system") !== '0';
 			// model instance of UI type
 			$t_instance = $vo_dm->getInstanceByTableNum($vn_type);
 
@@ -791,7 +796,7 @@ class Installer {
 			$t_ui = $t_ui ? $t_ui : new ca_editor_uis();
 			$t_ui->setMode(ACCESS_WRITE);
 			$t_ui->set('user_id', null);
-			$t_ui->set('is_system_ui', 1);
+			$t_ui->set('is_system_ui', $vb_system);
 			$t_ui->set('editor_code', $vs_ui_code);
 			$t_ui->set('editor_type', $vn_type);
 			if($t_ui->getPrimaryKey()){

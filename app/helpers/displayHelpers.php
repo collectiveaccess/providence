@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -2253,7 +2253,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		$va_start = $o_tep->getHistoricDateParts($pa_historic_timestamps[0]);
 		$va_end = $o_tep->getHistoricDateParts($pa_historic_timestamps[1]);
 		
-		if ($va_start['year'] < 0) { $va_start['year'] = 1900; }
+		//if ($va_start['year'] < 0) { $va_start['year'] = 1900; }
 		if ($va_end['year'] >= 2000000) { $va_end['year'] = date("Y"); }
 		
 		return array(
@@ -2893,10 +2893,9 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		if (!($t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true))) {
 			return null;
 		}
-		if (!method_exists($t_instance, "_getElementDatatype") || (is_null($vn_datatype = $t_instance->_getElementDatatype($va_tmp[1])))) {
-			return null;
-		}
-		
+
+		$vn_datatype = ca_metadata_elements::getElementDatatype($va_tmp[1]);
+		if (is_null($vn_datatype)) { return null; }
 		
 		if (!($vs_user_currency = $po_request->user ? $po_request->user->getPreference('currency') : 'USD')) {
 			$vs_user_currency = 'USD';
@@ -2925,7 +2924,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 				}
 			
 				$va_tags_to_process[$vs_raw_tag] = true;
-				$va_subelements_to_process["{$vs_bundle_name}.{$vs_subelement}"] = $t_instance->_getElementDatatype($vs_subelement);
+				$va_subelements_to_process["{$vs_bundle_name}.{$vs_subelement}"] = ca_metadata_elements::getElementDatatype($vs_subelement);
 			}
 		} else {
 			$va_tmp = explode(".", $vs_bundle_name);
@@ -3278,13 +3277,11 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 	# ------------------------------------------------------------------
 	/**
 	 * Get bundle preview for a relationship bundle
-	 * @param BundlableLabelableBaseModelWithAttributes $t_rel_instance
 	 * @param array $pa_initial_values
-	 * @param string $ps_template
 	 * @param string $ps_delimiter
 	 * @return string
 	 */
-	function caGetBundlePreviewForRelationshipBundle($t_rel_instance, $pa_initial_values, $ps_template, $ps_delimiter='; ') {
+	function caGetBundlePreviewForRelationshipBundle($pa_initial_values, $ps_delimiter='; ') {
 		if(!is_array($pa_initial_values) || sizeof($pa_initial_values) == 0) {
 			return '""';
 		}
@@ -3293,19 +3290,10 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		if(sizeof($pa_initial_values) > 10) {
 			$pa_initial_values = array_slice($pa_initial_values, 0, 10);
 		}
-		if(!($t_rel_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
-			return '""';
-		}
 
-		$va_ids = $va_previews = array();
+		$va_previews = array();
 		foreach($pa_initial_values as $va_item) {
-			$va_ids[] = $va_item['id'];
-		}
-
-		$o_res = $t_rel_instance->makeSearchResult($t_rel_instance->tableName(),$va_ids);
-
-		while($o_res->nextHit()) {
-			$va_previews[] = $o_res->getWithTemplate($ps_template);
+			$va_previews[] = trim($va_item['_display']);
 		}
 
 		return caEscapeForBundlePreview(join($ps_delimiter, $va_previews));
