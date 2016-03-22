@@ -56,6 +56,9 @@ class ReplicationService {
 			case 'getlastreplicatedlogid':
 				$va_return = self::getLastReplicatedLogID($po_request);
 				break;
+			case 'getlogidfortimestamp':
+				$va_return = self::getLogIDForTimestamp($po_request);
+				break;
 			case 'applylog';
 				$va_return = self::applyLog($po_request);
 				break;
@@ -99,6 +102,21 @@ class ReplicationService {
 		if(!strlen($vs_guid)) { throw new Exception('must provide a system guid'); }
 
 		return array('replicated_log_id' => ca_replication_log::getLastReplicatedLogID($vs_guid));
+	}
+	# -------------------------------------------------------
+	/**
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	public static function getLogIDForTimestamp($po_request) {
+		$vn_timestamp = trim($po_request->getParameter('timestamp', pInteger));
+		if(!strlen($vn_timestamp)) { throw new Exception('must provide a timestamp'); }
+
+		$vn_log_id = ca_change_log::getLogIDForTimestamp($vn_timestamp);
+		if(!$vn_log_id) { throw new Exception('could not figure out log_id for given timestamp'); }
+
+		return array('log_id' => $vn_log_id);
 	}
 	# -------------------------------------------------------
 	/**

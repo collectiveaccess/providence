@@ -196,6 +196,27 @@ class ca_change_log extends BaseModel {
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
+	/**
+	 * Get next ca_change_log.log_id for a given timestamp
+	 * @param int $pn_timestamp
+	 * @return int|bool
+	 */
+	public static function getLogIDForTimestamp($pn_timestamp) {
+		if(!is_numeric($pn_timestamp)) { return false; }
+
+		$o_db = new Db();
+
+		$qr_results = $o_db->query("
+			SELECT log_id FROM ca_change_log WHERE log_datetime > ? LIMIT 1
+		", $pn_timestamp);
+
+		if($qr_results->nextRow()) {
+			return (int) $qr_results->get('log_id');
+		}
+
+		return false;
+	}
+	# ------------------------------------------------------
 	public static function getLog($pn_from, $pn_limit=null) {
 		require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
 

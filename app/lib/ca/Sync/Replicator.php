@@ -162,9 +162,21 @@ class Replicator {
 				$this->log(_t("Starting replication for source %1 and target %2, log id is %3.",
 					$vs_source_key, $vs_target_key, $pn_replicated_log_id), Zend_Log::INFO);
 
-				// it's possible to configure a starting point in the replication config. it's not pretty to do this as
-				// raw id, @todo: maybe this should be a timestamp or even a date/time expression that we then translate?
-				$pn_min_log_id = (int) $this->opo_replication_conf->get('sources')[$vs_source_key]['from_log_id'];
+				// it's possible to configure a starting point in the replication config
+				if($ps_min_log_timestamp = $this->opo_replication_conf->get('sources')[$vs_source_key]['from_log_timestamp']) {
+					if(!is_numeric($ps_min_log_timestamp)) {
+						$o_tep = new TimeExpressionParser($ps_min_log_timestamp);
+						$ps_min_log_timestamp = $o_tep->getUnixTimestamps()['start'];
+					}
+
+					// get latest log id for this source at current target
+					$o_result = $o_target->setEndpoint('getlogidfortimestamp')
+						->addGetParameter('timestamp', $ps_min_log_timestamp)
+						->request();
+					$pn_min_log_id = $o_result->getRawData()['log_id'];
+				} else {
+					$pn_min_log_id = (int) $this->opo_replication_conf->get('sources')[$vs_source_key]['from_log_id'];
+				}
 				if($pn_min_log_id > $pn_replicated_log_id) { $pn_replicated_log_id = $pn_min_log_id; }
 
 				// get change log from source, starting with the log id we got above
