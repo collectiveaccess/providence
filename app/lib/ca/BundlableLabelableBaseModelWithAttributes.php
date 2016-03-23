@@ -4332,9 +4332,13 @@ if (!$vb_batch) {
 						// set storage location
 						if ($vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_idnew_0", pInteger)) {
 							if (
-								(is_array($va_relationship_types = caGetOption('ca_storage_locations_showRelationshipTypes', $va_bundle_settings, null)))
-								&& 
-								($vn_relationship_type_id = array_shift($va_relationship_types))
+								($vn_relationship_type_id = $this->getAppConfig()->get('object_storage_location_tracking_relationship_type'))
+								||
+								(
+									(is_array($va_relationship_types = caGetOption('ca_storage_locations_showRelationshipTypes', $va_bundle_settings, null)))
+									&& 
+									($vn_relationship_type_id = array_shift($va_relationship_types))
+								)
 							) {
 								$this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id, null, null, null, null, array('allowDuplicates' => true));
 								if ($this->numErrors()) {
