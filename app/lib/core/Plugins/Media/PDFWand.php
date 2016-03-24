@@ -268,7 +268,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 	# ----------------------------------------------------------
 	private function _graphicsMagickIdentify($ps_filepath) {
 		exec($this->ops_graphicsmagick_path.' identify -format "%m;%w;%h;%p\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
-		
+
 		array_pop($va_output); // last line is blank
 		if (is_array($va_output) && (sizeof($va_output) > 0)) {
 			$va_tmp = explode(';', $va_output[0]);
