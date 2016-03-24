@@ -146,9 +146,13 @@ class Media extends BaseObject {
 		// take an educated guess at which plugin to use
 		if($vs_guess_mimetype = mime_content_type($ps_filepath)) {
 			$va_mimetype_plugins = $this->getPluginsForMimetypes();
-			if(isset($va_mimetype_plugins[$vs_guess_mimetype]) && $va_mimetype_plugins[$vs_guess_mimetype]) {
-				if($va_plugin_info = $this->getPlugin($va_mimetype_plugins[$vs_guess_mimetype])) {
-					$vs_mimetype = $va_plugin_info['INSTANCE']->divineFileFormat($ps_filepath);
+			if(isset($va_mimetype_plugins[$vs_guess_mimetype]) && is_array($va_mimetype_plugins[$vs_guess_mimetype])) {
+				foreach($va_mimetype_plugins[$vs_guess_mimetype] as $vs_plugin) {
+					if($va_plugin_info = $this->getPlugin($vs_plugin)) {
+						if($vs_mimetype = $va_plugin_info['INSTANCE']->divineFileFormat($ps_filepath)) {
+							break;
+						}
+					}
 				}
 			}
 		}
@@ -382,7 +386,7 @@ class Media extends BaseObject {
 			/** @var BaseMediaPlugin $o_plugin */
 			$o_plugin = $va_plugin_info["INSTANCE"];
 			foreach($o_plugin->getImportMimeTypes() as $vs_mimetype) {
-				$va_return[$vs_mimetype] = $vs_plugin_name;
+				$va_return[$vs_mimetype][] = $vs_plugin_name;
 			}
 		}
 
