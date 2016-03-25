@@ -81,7 +81,7 @@ class ReplicationService {
 		if(!$pn_limit) { $pn_limit = null; }
 
 		$pa_options = array();
-		if($ps_skip_if_expression = $po_request->getParameter('skipIfExpression', pString)) {
+		if($ps_skip_if_expression = $po_request->getParameter('skipIfExpression', pString, null, array('retainBackslashes' => false))) {
 			$pa_skip_if_expression = @json_decode($ps_skip_if_expression, true);
 			if(is_array($pa_skip_if_expression) && sizeof($pa_skip_if_expression)) {
 				$pa_options['skipIfExpression'] = $pa_skip_if_expression;
