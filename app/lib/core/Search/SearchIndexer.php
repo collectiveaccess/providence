@@ -2206,7 +2206,7 @@ class SearchIndexer extends SearchBase {
 		
 		$vs_deleted_sql = '';
 		if ($t_select->hasField('deleted')) {
-			$vs_deleted_sql = "(to.deleted = 0) AND ";
+			$vs_deleted_sql = "(t0.deleted = 0) AND ";
 		}
 		
 		$va_rows = [];
