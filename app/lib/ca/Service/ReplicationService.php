@@ -177,7 +177,7 @@ class ReplicationService {
 		}
 
 		if($vs_error) {
-			throw new Exception($vs_error);
+			throw new \Exception($vs_error);
 		}
 
 		return $va_return;

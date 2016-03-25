@@ -85,10 +85,14 @@ class Label extends Base {
 
 		foreach($va_snapshot as $vs_field => $vm_val) {
 			if($vs_field == $t_instance->getSubjectKey()) {
-				//@todo load by guid!
+				$vs_label_subject_guid_field = str_replace('_id', '', $vs_field) . '_guid';
+				if(isset($va_snapshot[$vs_label_subject_guid_field]) && $va_snapshot[$vs_label_subject_guid_field]) {
+					$t_subject = $t_instance->getSubjectTableInstance();
+					if($t_subject->loadByGUID($va_snapshot[$vs_label_subject_guid_field])) {
+						$t_instance->set($vs_field, $t_subject->getPrimaryKey());
+					}
+				}
 			}
 		}
-
 	}
-
 }
