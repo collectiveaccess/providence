@@ -353,7 +353,7 @@ class ca_change_log extends BaseModel {
 					$t_subject_instance = Datamodel::load()->getInstance($vs_subject_table_name);
 					$vs_exp = $pa_skip_if_expression[$vs_subject_table_name];
 					// have to load() unfortch.
-					$t_subject_instance->load($qr_results->get('logged_row_id'));
+					$t_subject_instance->load($qr_subjects->get('subject_row_id'));
 					$va_exp_vars = array();
 					foreach(ExpressionParser::getVariableList($vs_exp) as $vs_var_name) {
 						$va_exp_vars[$vs_var_name] = $t_subject_instance->get($vs_var_name, array('convertCodesToIdno' => true));
