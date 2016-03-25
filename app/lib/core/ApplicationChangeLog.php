@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -62,8 +62,8 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
  	/**
  	 *
  	 */
-	public function getChangeLogForRowForDisplay($t_item, $ps_css_id=null) {
-		return $this->_getLogDisplayOutputForRow($this->getChangeLogForRow($t_item), array('id' => $ps_css_id));
+	public function getChangeLogForRowForDisplay($t_item, $ps_css_id=null, $pn_user_id=null) {
+		return $this->_getLogDisplayOutputForRow($this->getChangeLogForRow($t_item, array('user_id' => $pn_user_id)), array('id' => $ps_css_id));
 	}
 	# ----------------------------------------
 	/**
@@ -278,6 +278,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 		$o_tep = new TimeExpressionParser();
 		
 		if (!$pa_options) { $pa_options = array(); }
+		$t_user = ($pn_user_id = caGetOption('user_id', $pa_options, null)) ? new ca_users($pn_user_id) : null;
 		
 		if (sizeof($pa_data)) {
 			//
@@ -383,7 +384,8 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 								$va_field_info = $t_obj->getFieldInfo($vs_field);
 								if (isset($va_field_info['IDENTITY']) && $va_field_info['IDENTITY']) { continue; }
 								if (isset($va_field_info['DISPLAY_TYPE']) && $va_field_info['DISPLAY_TYPE'] == DT_OMIT) { continue; }
-							
+								if ($t_user && !$t_user->getBundleAccessLevel($t_item->tableName(), $vs_field)) { continue; }	// does user have access to this bundle?
+								
 								if ((isset($va_field_info['DISPLAY_FIELD'])) && (is_array($va_field_info['DISPLAY_FIELD'])) && ($va_disp_fields = $va_field_info['DISPLAY_FIELD'])) {
 									//
 									// Lookup value in related table
@@ -409,6 +411,9 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 									if (sizeof($va_keys)) {
 										// yep, it's a foreign key
 										$va_rel_values = array();
+										
+										if ($t_user && !$t_user->getBundleAccessLevel($t_item->tableName(), $va_keys['one_table'])) { continue; }	// does user have access to this bundle?
+								
 										if ($t_rel_obj = $o_datamodel->getTableInstance($va_keys['one_table'], true)) {
 											if ($t_rel_obj->load($vs_value)) {
 												if (method_exists($t_rel_obj, 'getLabelForDisplay')) {
@@ -439,6 +444,8 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 												break;
 										}
 										
+										if ($t_user && !$t_user->getBundleAccessLevel($t_item->tableName(), $vs_field)) { continue; }	// does user have access to this bundle?
+										
 										// Adjust display of value for lists
 										if ($va_field_info['LIST']) {
 											$t_list = new ca_lists();
@@ -468,6 +475,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 						// ---------------------------------------------------------------
 						// is this a label row?
 						if ($va_log_entry['logged_table_num'] == $vn_label_table_num) {
+							
 							foreach($va_log_entry['snapshot'] as $vs_field => $vs_value) {
 								$va_changes[] = array(
 									'label' => $t_item_label->getFieldInfo($vs_field, 'LABEL'),
@@ -480,6 +488,15 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 						// is this an attribute?
 						if ($va_log_entry['logged_table_num'] == 3) {	// attribute_values
 							if ($t_element = ca_attributes::getElementInstance($va_log_entry['snapshot']['element_id'])) {
+								
+								if ($t_element->get('parent_id') && ($t_container = ca_attributes::getElementInstance($t_element->get('hier_element_id')))) {
+									$vs_element_code = $t_container->get('element_code');
+								} else {
+									$vs_element_code = $t_element->get('element_code');
+								}
+								
+								if ($t_user && !$t_user->getBundleAccessLevel($t_item->tableName(), $vs_element_code)) { continue; }	// does user have access to this bundle?
+							
 								if ($o_attr_val = Attribute::getValueInstance($t_element->get('datatype'))) {
 									$o_attr_val->loadValueFromRow($va_log_entry['snapshot']);
 									$vs_attr_val = $o_attr_val->getDisplayValue();
@@ -524,6 +541,8 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 								}
 								$t_rel = $o_datamodel->getInstanceByTableNum($t_obj->tableNum(), true);
 								
+								if ($t_user && !$t_user->getBundleAccessLevel($t_item->tableName(), $t_related_table->tableName())) { continue; }	// does user have access to this bundle?
+							
 								$va_changes[] = array(
 									'label' => caUcFirstUTF8Safe($t_related_table->getProperty('NAME_SINGULAR')),
 									'idno' => ($vs_idno_field = $t_related_table->getProperty('ID_NUMBERING_ID_FIELD')) ? $t_related_table->get($vs_idno_field) : null,

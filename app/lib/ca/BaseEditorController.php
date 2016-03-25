@@ -870,6 +870,8 @@ class BaseEditorController extends ActionController {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2575?r='.urlencode($this->request->getFullUrlPath()));
 			return;
 		}
+		
+		$this->view->setVar('log', $t_subject->getChangeLogForDisplay('caLog', $this->request->getUserID()));
 
 		$this->render('log_html.php');
 	}

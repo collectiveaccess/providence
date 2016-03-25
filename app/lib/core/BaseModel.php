@@ -11160,10 +11160,10 @@ $pa_options["display_form_field_tips"] = true;
 	/**
 	 * Returns change log for currently loaded row in displayable HTML format
 	 */ 
-	public function getChangeLogForDisplay($ps_css_id=null) {
+	public function getChangeLogForDisplay($ps_css_id=null, $pn_user_id=null) {
 		$o_log = new ApplicationChangeLog();
 		
-		return $o_log->getChangeLogForRowForDisplay($this, $ps_css_id);
+		return $o_log->getChangeLogForRowForDisplay($this, $ps_css_id, $pn_user_id);
 	}
 	# --------------------------------------------------------------------------------------------
 	#
