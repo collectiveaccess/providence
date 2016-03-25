@@ -292,21 +292,6 @@ class ca_change_log extends BaseModel {
 
 						$t_instance = Datamodel::load()->getInstance((int) $qr_results->get('logged_table_num'), true);
 						if(!is_null($vm_val) && ($va_fld_info = $t_instance->getFieldInfo($vs_fld))) {
-							// handle skip if expression
-							if(isset($pa_skip_if_expression[$t_instance->tableName()])) {
-								$vs_exp = $pa_skip_if_expression[$t_instance->tableName()];
-								// have to load() unfortch.
-								$t_instance->load($qr_results->get('logged_row_id'));
-								$va_exp_vars = array();
-								foreach(ExpressionParser::getVariableList($vs_exp) as $vs_var_name) {
-									$va_exp_vars[$vs_var_name] = $t_instance->get($vs_var_name, array('convertCodesToIdno' => true));
-								}
-
-								if (ExpressionParser::evaluate($vs_exp, $va_exp_vars)) {
-									continue 3; // skip this whole log entry! (continue; would skip the snapshot entry)
-								}
-							}
-
 							// handle all other list referencing fields
 							$vs_new_fld = str_replace('_id', '', $vs_fld) . '_code';
 							if(isset($va_fld_info['LIST'])) {
@@ -360,6 +345,23 @@ class ca_change_log extends BaseModel {
 				// skip subjects without GUID -- we don't care about those
 				if(!($vs_subject_guid = ca_guids::getForRow($qr_subjects->get('subject_table_num'), $qr_subjects->get('subject_row_id')))) {
 					continue;
+				}
+
+				// handle skip if expression relative to subjects
+				$vs_subject_table_name = Datamodel::load()->getTableName($qr_subjects->get('subject_table_num'));
+				if(isset($pa_skip_if_expression[$vs_subject_table_name])) {
+					$t_subject_instance = Datamodel::load()->getInstance($vs_subject_table_name);
+					$vs_exp = $pa_skip_if_expression[$vs_subject_table_name];
+					// have to load() unfortch.
+					$t_subject_instance->load($qr_results->get('logged_row_id'));
+					$va_exp_vars = array();
+					foreach(ExpressionParser::getVariableList($vs_exp) as $vs_var_name) {
+						$va_exp_vars[$vs_var_name] = $t_subject_instance->get($vs_var_name, array('convertCodesToIdno' => true));
+					}
+
+					if (ExpressionParser::evaluate($vs_exp, $va_exp_vars)) {
+						continue 2; // skip this whole log entry! (continue; would skip the subject entry)
+					}
 				}
 
 				$va_row['subjects'][] = array_replace($qr_subjects->getRow(), array('guid' => $vs_subject_guid));
