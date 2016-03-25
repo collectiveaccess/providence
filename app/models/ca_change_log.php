@@ -297,14 +297,13 @@ class ca_change_log extends BaseModel {
 								$vs_exp = $pa_skip_if_expression[$t_instance->tableName()];
 								// have to load() unfortch.
 								$t_instance->load($qr_results->get('logged_row_id'));
-
 								$va_exp_vars = array();
 								foreach(ExpressionParser::getVariableList($vs_exp) as $vs_var_name) {
 									$va_exp_vars[$vs_var_name] = $t_instance->get($vs_var_name, array('returnIdno' => true));
 								}
 
 								if (ExpressionParser::evaluate($vs_exp, $va_exp_vars)) {
-									continue 2; // skip this whole log entry! (continue; would skip the snapshot entry)
+									continue 3; // skip this whole log entry! (continue; would skip the snapshot entry)
 								}
 							}
 
