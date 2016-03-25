@@ -343,6 +343,8 @@ class Mapping {
 					$va_field_options[$ps_table.'/'.$vs_field_name]['index'] = 'analyzed';
 				} else {
 					$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'double';
+					unset($va_field_options[$ps_table.'/'.$vs_field_name]['analyzer']);
+					unset($va_field_options[$ps_table.'/'.$vs_field_name]['index']);
 				}
 				break;
 			case (FT_TIMESTAMP):
