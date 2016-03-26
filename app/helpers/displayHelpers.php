@@ -285,8 +285,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 	function caDeleteRemapper($po_request, $t_instance) {
 		$vs_instance_table = $t_instance->tableName();
 		
-		$vn_count = 0;
-		$va_buf = array();
+		$vn_reference_to_count = $vn_reference_from_count = 0;
+		$va_reference_to_buf = $va_reference_from_buf = array();
 		switch($vs_instance_table) {
 			case 'ca_relationship_types':
 				// get # of relationships using this type
@@ -294,11 +294,11 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 				$t_rel_instance = $t_instance->getAppDatamodel()->getInstanceByTableNum($t_instance->get('table_num'));
 				if (!$t_rel_instance->load($t_instance->get('table_num'))) { return ''; }
 				if ($vn_rel_count == 1) {
-					$va_buf[] = _t("Type is used by %1 %2", $vn_rel_count, $t_rel_instance->getProperty('NAME_PLURAL'))."<br>\n";
+					$va_reference_to_buf[] = _t("Type is used by %1 %2", $vn_rel_count, $t_rel_instance->getProperty('NAME_PLURAL'))."<br>\n";
 				} else {
-					$va_buf[] = _t("Type is used by %1 %2", $vn_rel_count, $t_rel_instance->getProperty('NAME_PLURAL'))."<br>\n";
+					$va_reference_to_buf[] = _t("Type is used by %1 %2", $vn_rel_count, $t_rel_instance->getProperty('NAME_PLURAL'))."<br>\n";
 				}
-				$vn_count += $vn_rel_count;
+				$vn_reference_to_count += $vn_rel_count;
 				
 				$vs_typename = _t('relationship type');
 				break;
@@ -315,66 +315,116 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 					
 					if (!($vn_c = sizeof($va_items))) { continue; }
 					if ($vn_c == 1) {
-						$va_buf[] = _t("Has %1 relationship to %2", $vn_c, caGetTableDisplayName($vs_table, true))."<br>\n";
+						$va_reference_to_buf[] = _t("Has %1 relationship to %2", $vn_c, caGetTableDisplayName($vs_table, true))."<br>\n";
 					} else {
-						$va_buf[] = _t("Has %1 relationships to %2", $vn_c, caGetTableDisplayName($vs_table, true))."<br>\n";
+						$va_reference_to_buf[] = _t("Has %1 relationships to %2", $vn_c, caGetTableDisplayName($vs_table, true))."<br>\n";
 					}
-					$vn_count += $vn_c;
+					$vn_reference_to_count += $vn_c;
 				}
 				
-				// Check attributes
+				// Check attributes *using* this row
 				if ($vn_datatype = $t_instance->authorityElementDatatype()) {
 					if ($vn_c = $t_instance->getAuthorityElementReferences(array('countOnly' => true))) {
 						if ($vn_c == 1) {
-							$va_buf[] = _t("Is referenced %1 time", $vn_c)."<br>\n";
+							$va_reference_to_buf[] = _t("Is referenced %1 time", $vn_c)."<br>\n";
 						} else {
-							$va_buf[] = _t("Is referenced %1 times", $vn_c)."<br>\n";
+							$va_reference_to_buf[] = _t("Is referenced %1 times", $vn_c)."<br>\n";
 						}
-						$vn_count += $vn_c;
+						$vn_reference_to_count += $vn_c;
 					}
 				}
 				
 				$vs_typename = $t_instance->getTypeName();
+				
+				// Check for authority references that are *part* of this row
+				
+				if (is_array($va_references_from = $t_instance->getAuthorityElementList()) && sizeof($va_references_from)) {
+					foreach($va_references_from as $va_ref) {
+						if (!($t_element = ca_metadata_elements::getInstance($va_ref['hier_element_id']))) { continue; }
+						$va_reference_from_buf[] = _t(($va_ref['count'] == 1) ? "%1 reference in %2" : "%1 references in %2", $va_ref['count'], $t_element->getLabelForDisplay());
+						$vn_reference_from_count += $va_ref['count'];
+					}
+				}
+				break;
 		}
 		
 		$vs_output = '';
-		if (sizeof($va_buf)) {
+		if (sizeof($va_reference_to_buf)) {
 			// add autocompleter for remapping
-			if ($vn_count == 1) {
-				$vs_output .= "<h3 id='caDeleteReferenceCount'>"._t('This %1 is referenced %2 time', $vs_typename, $vn_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
+			if ($vn_reference_to_count == 1) {
+				$vs_output .= "<h3 id='caReferenceHandlingToCount'>"._t('This %1 is referenced %2 time', $vs_typename, $vn_reference_to_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
 			} else {
-				$vs_output .= "<h3 id='caDeleteReferenceCount'>"._t('This %1 is referenced %2 times', $vs_typename, $vn_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
+				$vs_output .= "<h3 id='caReferenceHandlingToCount'>"._t('This %1 is referenced %2 times', $vs_typename, $vn_reference_to_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
 			}
-			$vs_output .= caHTMLRadioButtonInput('referenceHandling', array('value' => 'delete', 'checked' => 1, 'id' => 'caReferenceHandlingDelete')).' '._t('remove all references')."<br/>\n";
-			$vs_output .= caHTMLRadioButtonInput('referenceHandling', array('value' => 'remap', 'id' => 'caReferenceHandlingRemap')).' '._t('transfer references to').' '.caHTMLTextInput('remapTo', array('value' => '', 'size' => 40, 'id' => 'remapTo', 'class' => 'lookupBg', 'disabled' => 1));
-			$vs_output .= "<a href='#' class='button' onclick='jQuery(\"#remapToID\").val(\"\"); jQuery(\"#remapTo\").val(\"\"); jQuery(\"#caReferenceHandlingClear\").css(\"display\", \"none\"); return false;' style='display: none;' id='caReferenceHandlingClear'>"._t('Clear').'</a>';
-			$vs_output .= caHTMLHiddenInput('remapToID', array('value' => '', 'id' => 'remapToID'));
+			$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingTo', array('value' => 'delete', 'checked' => 1, 'id' => 'caReferenceHandlingToDelete')).' '._t('remove all references')."<br/>\n";
+			$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingTo', array('value' => 'remap', 'id' => 'caReferenceToHandlingRemap')).' '._t('transfer references to').' '.caHTMLTextInput('caReferenceHandlingToRemapTo', array('value' => '', 'size' => 40, 'id' => 'caReferenceHandlingToRemapTo', 'class' => 'lookupBg', 'disabled' => 1));
+			$vs_output .= "<a href='#' class='button' onclick='jQuery(\"#caReferenceHandlingToRemapToID\").val(\"\"); jQuery(\"#caReferenceHandlingToRemapTo\").val(\"\"); jQuery(\"#caReferenceHandlingToClear\").css(\"display\", \"none\"); return false;' style='display: none;' id='caReferenceHandlingToClear'>"._t('Clear').'</a>';
+			$vs_output .= caHTMLHiddenInput('caReferenceHandlingToRemapToID', array('value' => '', 'id' => 'caReferenceHandlingToRemapToID'));
 			$vs_output .= "<script type='text/javascript'>";
 			
 			$va_service_info = caJSONLookupServiceUrl($po_request, $t_instance->tableName(), array('noSymbols' => 1, 'noInline' => 1, 'exclude' => (int)$t_instance->getPrimaryKey(), 'table_num' => (int)$t_instance->get('table_num')));
 			$vs_output .= "jQuery(document).ready(function() {";
-			$vs_output .= "jQuery('#remapTo').autocomplete(
+			$vs_output .= "jQuery('#caReferenceHandlingToRemapTo').autocomplete(
 					{
 						source: '".$va_service_info['search']."', html: true,
 						minLength: 3, delay: 800,
 						select: function(event, ui) {
-							jQuery('#remapToID').val(ui.item.id);
+							jQuery('#caReferenceHandlingToRemapToID').val(ui.item.id);
 							jQuery('#caReferenceHandlingClear').css('display', 'inline');
 						}
 					}
 				);";
 				
-			$vs_output .= "jQuery('#caReferenceHandlingRemap').click(function() {
-				jQuery('#remapTo').attr('disabled', false);
+			$vs_output .= "jQuery('#caReferenceToHandlingRemap').click(function() {
+				jQuery('#caReferenceHandlingToRemapTo').attr('disabled', false);
 			});
-			jQuery('#caReferenceHandlingDelete').click(function() {
-				jQuery('#remapTo').attr('disabled', true);
+			jQuery('#caReferenceHandlingToDelete').click(function() {
+				jQuery('#caReferenceHandlingToRemapTo').attr('disabled', true);
 			});
 			";
 			$vs_output .= "});";
 			$vs_output .= "</script>\n";
 			
-			TooltipManager::add('#caDeleteReferenceCount', "<h2>"._t('References to this %1', $t_instance->getProperty('NAME_SINGULAR'))."</h2>\n".join("\n", $va_buf));
+			TooltipManager::add('#caReferenceHandlingToCount', "<h2>"._t('References to this %1', $t_instance->getProperty('NAME_SINGULAR'))."</h2>\n".join("\n", $va_reference_to_buf));
+		}
+		
+		if (sizeof($va_reference_from_buf)) {
+			// add autocompleter for remapping
+			if ($vn_reference_from_count == 1) {
+				$vs_output .= "<h3 id='caReferenceHandlingFromCount'>"._t('This %1 references %2 other item in metadata', $vs_typename, $vn_reference_from_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
+			} else {
+				$vs_output .= "<h3 id='caReferenceHandlingFromCount'>"._t('This %1 references %2 other items in metadata', $vs_typename, $vn_reference_from_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
+			}
+			$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingFrom', array('value' => 'delete', 'checked' => 1, 'id' => 'caReferenceHandlingFromDelete')).' '._t('remove these references')."<br/>\n";
+			$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingFrom', array('value' => 'remap', 'id' => 'caReferenceHandlingFromRemap')).' '._t('transfer these references and accompanying metadata to').' '.caHTMLTextInput('caReferenceHandlingToRemapFrom', array('value' => '', 'size' => 40, 'id' => 'caReferenceHandlingToRemapFrom', 'class' => 'lookupBg', 'disabled' => 1));
+			$vs_output .= "<a href='#' class='button' onclick='jQuery(\"#caReferenceHandlingToRemapFromID\").val(\"\"); jQuery(\"#caReferenceHandlingToRemapFrom\").val(\"\"); jQuery(\"#caReferenceHandlingClear\").css(\"display\", \"none\"); return false;' style='display: none;' id='caReferenceHandlingClear'>"._t('Clear').'</a>';
+			$vs_output .= caHTMLHiddenInput('caReferenceHandlingToRemapFromID', array('value' => '', 'id' => 'caReferenceHandlingToRemapFromID'));
+			$vs_output .= "<script type='text/javascript'>";
+			
+			$va_service_info = caJSONLookupServiceUrl($po_request, $t_instance->tableName(), array('noSymbols' => 1, 'noInline' => 1, 'exclude' => (int)$t_instance->getPrimaryKey(), 'table_num' => (int)$t_instance->get('table_num')));
+			$vs_output .= "jQuery(document).ready(function() {";
+			$vs_output .= "jQuery('#caReferenceHandlingToRemapFrom').autocomplete(
+					{
+						source: '".$va_service_info['search']."', html: true,
+						minLength: 3, delay: 800,
+						select: function(event, ui) {
+							jQuery('#caReferenceHandlingToRemapFromID').val(ui.item.id);
+							jQuery('#caReferenceHandlingClear').css('display', 'inline');
+						}
+					}
+				);";
+				
+			$vs_output .= "jQuery('#caReferenceHandlingFromRemap').click(function() {
+				jQuery('#caReferenceHandlingToRemapFrom').attr('disabled', false);
+			});
+			jQuery('#caReferenceHandlingFromDelete').click(function() {
+				jQuery('#caReferenceHandlingToRemapFrom').attr('disabled', true);
+			});
+			";
+			$vs_output .= "});";
+			$vs_output .= "</script>\n";
+			
+			TooltipManager::add('#caReferenceHandlingFromCount', "<h2>"._t('References by this %1', $t_instance->getProperty('NAME_SINGULAR'))."</h2>\n".join("<br/>\n", $va_reference_from_buf));
 		}
 		
 		return $vs_output;

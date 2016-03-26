@@ -1039,6 +1039,31 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	/**
+	 * Get hier_element id for given element code (or id)
+	 * @param mixed $pm_element_code_or_id
+	 * @return int
+	 * @throws MemoryCacheInvalidParameterException
+	 */
+	static public function getElementHierarchyID($pm_element_code_or_id) {
+		if(!$pm_element_code_or_id) { return null; }
+		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
+
+		if(MemoryCache::contains($pm_element_code_or_id, 'ElementHierarchyIDs')) {
+			return MemoryCache::fetch($pm_element_code_or_id, 'ElementHierarchyIDs');
+		}
+
+		$vm_return = null;
+		$t_element = self::getInstance($pm_element_code_or_id);
+
+		if($t_element && ($t_element->getPrimaryKey())) {
+			$vm_return = (int) $t_element->get('hier_element_id');
+		}
+
+		MemoryCache::save($pm_element_code_or_id, $vm_return, 'ElementHierarchyIDs');
+		return $vm_return;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Get element list_id for given element code (or id)
 	 * @param mixed $pm_element_code_or_id
 	 * @return int
