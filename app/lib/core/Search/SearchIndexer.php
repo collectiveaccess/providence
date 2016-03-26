@@ -971,7 +971,7 @@ class SearchIndexer extends SearchBase {
 							
 							$vs_deleted_sql = '';
 							if ($t_subject->hasField('deleted')) {
-								$vs_deleted_sql = "({$vs_subject_tablename}.deleted = 0) AND ";
+								$vs_deleted_sql = "(t0.deleted = 0) AND ";
 							}
 							for($i=0; $i < $vn_num_queries_required; $i++) {
 								$vs_joins = '';
