@@ -718,7 +718,6 @@ class BaseEditorController extends ActionController {
 			$this->view->setVar('placements', $va_display_list);
 
 			$this->request->user->setVar($t_subject->tableName().'_summary_display_id', $vn_display_id);
-			$vs_format = $this->request->config->get("summary_print_format");
 		} else {
 			$vn_display_id = $t_display = null;
 			$this->view->setVar('display_id', null);
