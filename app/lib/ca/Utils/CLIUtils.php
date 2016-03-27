@@ -1658,51 +1658,6 @@
 			return _t("Loads the AAT from a Getty-provided XML file.");
 		}
 		# -------------------------------------------------------
-
-		/**
-		 *
-		 */
-		public static function sync_data($po_opts=null) {
-			require_once(__CA_LIB_DIR__.'/ca/Sync/DataSynchronizer.php');
-			$o_sync = new DataSynchronizer();
-			$o_sync->sync();
-			//if (!($vs_file_path = $po_opts->getOption('file'))) {
-			//	CLIUtils::addError(_t("You must specify a file"));
-			//	return false;
-			//}
-
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public static function sync_dataParamList() {
-			return array(
-				//"file|f=s" => _t('Path to AAT XML file.')
-			);
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public static function sync_dataUtilityClass() {
-			return _t('Import/Export');
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public static function sync_dataShortHelp() {
-			return _t("Synchronize data between two CollectiveAccess systems.");
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public static function sync_dataHelp() {
-			return _t("Synchronizes data in one CollectiveAccess instance based upon data in another instance, subject to configuration in synchronization.conf.");
-		}
-		# -------------------------------------------------------
 		/**
 		 * Fix file permissions
 		 */
