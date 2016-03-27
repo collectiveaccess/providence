@@ -62,11 +62,12 @@
 	<div class="bundleContainer">
 		<div class="caItemList">
 			<div class="labelInfo">
-				<div>
-					<?php print _t('Sets access and status values for <strong>all</strong> representations related to objects in this batch.'); ?>
+				<div class="caObjectRepresentationDetailEditorText">
+					<?php print _t('Sets access and status values for <strong>all</strong> representations related to %1 in this batch.', $t_subject->getProperty('NAME_PLURAL')); ?>
 				</div>
 				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_rep->htmlFormElement('access', null, array('classname' => '', 'id' => "{$vs_id_prefix}access", 'name' => "{$vs_id_prefix}_access", "value" => "", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations_access_status')); ?></div>
 				<div class="caObjectRepresentationDetailEditorElement"><?php print $t_rep->htmlFormElement('status', null, array('classname' => '', 'id' => "{$vs_id_prefix}status", 'name' => "{$vs_id_prefix}_status", "value" => "", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_object_representations_access_status')); ?></div>
+				<br class="clear"/>
 			</div>
 		</div>
 	</div>
