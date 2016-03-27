@@ -536,6 +536,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		$this->BUNDLES['ca_objects_history'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object use history'));
 		$this->BUNDLES['ca_objects_deaccession'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Deaccession status'));
 		$this->BUNDLES['ca_object_checkouts'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object checkouts'));
+		
+		$this->BUNDLES['ca_object_representations_access_status'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Media representation access and status'));
 	
 		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
 	}
