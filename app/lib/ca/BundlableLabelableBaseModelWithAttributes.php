@@ -1778,6 +1778,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					case 'ca_object_representations_access_status':
 						if (($vb_batch) && (is_a($this, 'RepresentableBaseModel'))) {
 							$vs_element .= $this->getObjectRepresentationAccessStatusHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						} else {
+							return null;
 						}
 						break;
 					# -------------------------------
