@@ -27,7 +27,7 @@ create table ca_replication_log
   vars            longtext          null,
 
   primary key (entry_id),
-  index i_source_log (source_guid, log_id)
+  index i_source_log (source_system_guid, log_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /*==========================================================================*/
