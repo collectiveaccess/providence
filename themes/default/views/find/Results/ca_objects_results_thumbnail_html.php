@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -66,20 +66,18 @@
 			$vn_padding_top_bottom =  ((180 - $va_media_info["HEIGHT"]) / 2);
 			
 			if (sizeof($va_tmp) == 0) {
-				$vs_background_image = 'background-image:url("'.$vs_background_image.'"); background-position: 55px 65px; background-repeat: no-repeat; background-size: 64px 64px; opacity: .3;';
+				$vs_background_image = 'background-image:url(\''.$vs_background_image.'\'); background-position: 55px 65px; background-repeat: no-repeat; background-size: 64px 64px; opacity: .3;';
 			}
-			
-			print "<td align='center' valign='top' style='padding:2px 2px 2px 2px;'><div class='objectThumbnailsImageContainer' style='padding: ".$vn_padding_top_bottom."px 0px ".$vn_padding_top_bottom."px 0px; {$vs_background_image}'>"; 
 ?>
-			<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_object_id; ?>' class="addItemToSetControl addItemToSetControlInThumbnails" />		
+			<td align="center" valign="top" style="padding:2px 2px 2px 2px;">
+				<div class="objectThumbnailsImageContainer" style="padding: <?php print $vn_padding_top_bottom; ?>px 0px <?php print $vn_padding_top_bottom; ?>px 0px; <?php print $vs_background_image; ?>"> 
+					<input type="checkbox" name="add_to_set_ids" value="<?php print (int)$vn_object_id; ?>" class="addItemToSetControl addItemToSetControlInThumbnails"/>		
+					<?php print caEditorLink($this->request, array_shift($va_tmp), 'qlButtonEditorLink', 'ca_objects', $vn_object_id, array(), array('data-id' => $vn_object_id)); ?>
+					<div class="qlButtonContainerThumbnail" id="ql_<?php print $vn_object_id; ?>"><a class='qlButton' data-id="<?php print $vn_object_id; ?>"><?php print _t("Quick Look"); ?></a></div>
+				</div>
+				<div class="thumbCaption"><?php print $vs_caption; ?><br/><?php print caEditorLink($this->request, $vs_idno, '', 'ca_objects', $vn_object_id); ?></div>
+			</td>
 <?php
-			print caEditorLink($this->request, array_shift($va_tmp), '', 'ca_objects', $vn_object_id, array(), array('onmouseover' => 'jQuery(".qlButtonContainerThumbnail").css("display", "none"); jQuery("#ql_'.$vn_object_id.'").css("display", "block");', 'onmouseout' => 'jQuery(".qlButtonContainerThumbnail").css("display", "none");'));
-		
-			print "<div class='qlButtonContainerThumbnail' id='ql_".$vn_object_id."' onmouseover='jQuery(\"#ql_".$vn_object_id."\").css(\"display\", \"block\");'><a class='qlButton' onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, 'find', 'SearchObjects', 'QuickLook', array('object_id' => $vn_object_id))."\"); return false;' >"._t("Quick Look")."</a></div>";
-			
-			print "</div><div class='thumbCaption' ".$vs_caption;
-			print "<br/>".caEditorLink($this->request, $vs_idno, '', 'ca_objects', $vn_object_id, array())."\n";
-			print "</div></td>";
 			$vn_col++;
 			if($vn_col == $vn_display_cols){
 				print "</tr>";
@@ -98,3 +96,19 @@
 ?>		
 	</table>
 </form>
+<script type="text/javascript">
+	jQuery(document).ready(function() { 
+		jQuery(".qlButtonEditorLink").on("mouseover", function(e) {
+			jQuery(".qlButtonContainerThumbnail").css("display", "none"); 
+			jQuery("#ql_" + jQuery(this).data("id")).css("display", "block");
+		});
+		jQuery(".qlButtonEditorLink").on("mouseout", function(e) {
+			jQuery(".qlButtonContainerThumbnail").css("display", "none");
+		});
+		jQuery(".qlButton").on("click", function(e) {
+			var id = jQuery(this).data('id');
+			jQuery("#ql_" + id).css("display", "block");
+			caMediaPanel.showPanel("<?php print caNavUrl($this->request, 'find', 'SearchObjects', 'QuickLook'); ?>/object_id/" + id);
+		});
+	});
+</script>
