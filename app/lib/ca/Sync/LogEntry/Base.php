@@ -136,9 +136,10 @@ abstract class Base {
 	 * We don't dicate *how* implementations do this. It's advised to not cram all code into
 	 * this function though. Breaking it out by insert/update/delete probably makes sense
 	 *
+	 * @param array $pa_options
 	 * @return mixed
 	 */
-	abstract public function apply();
+	abstract public function apply(array $pa_options = array());
 
 	/**
 	 * Can be used to weed out irrelevant log entries, for instance changes in configuration tables like

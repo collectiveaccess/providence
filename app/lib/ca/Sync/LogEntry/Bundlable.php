@@ -36,32 +36,42 @@ require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Base.php');
 
 class Bundlable extends Base {
 
-	public function apply() {
+	public function apply(array $pa_options = array()) {
 		if($this->isInsert()) {
-			$this->applyInsert();
+			$this->applyInsert($pa_options);
 		} elseif($this->isUpdate()) {
-			$this->applyUpdate();
+			$this->applyUpdate($pa_options);
 		} elseif($this->isDelete()) {
 			$this->applyDelete();
 		}
 	}
 
-	private function applyInsert() {
+	private function applyInsert(array $pa_options = array()) {
 		if($this->getModelInstance()->getPrimaryKey()) {
 			throw new InvalidLogEntryException('operation is insert but model instance has primary key.');
 		}
 
 		$this->setIntrinsicsFromSnapshotInModelInstance();
+		if($pa_set_intrinsics = caGetOption('setIntrinsics', $pa_options)) {
+			if(isset($pa_set_intrinsics[$this->getModelInstance()->tableName()]) && is_array($pa_set_intrinsics[$this->getModelInstance()->tableName()])) {
+				$this->applyOutsideIntrinsics($pa_set_intrinsics[$this->getModelInstance()->tableName()]);
+			}
+		}
 		$this->getModelInstance()->insert(array('setGUIDTo' => $this->getGUID()));
 		$this->checkModelInstanceForErrors();
 	}
 
-	private function applyUpdate() {
+	private function applyUpdate(array $pa_options = array()) {
 		if(!$this->getModelInstance()->getPrimaryKey()) {
 			throw new InvalidLogEntryException('operation is update but model instance does not have a primary key.');
 		}
 
 		$this->setIntrinsicsFromSnapshotInModelInstance();
+		if($pa_set_intrinsics = caGetOption('setIntrinsics', $pa_options)) {
+			if(isset($pa_set_intrinsics[$this->getModelInstance()->tableName()]) && is_array($pa_set_intrinsics[$this->getModelInstance()->tableName()])) {
+				$this->applyOutsideIntrinsics($pa_set_intrinsics[$this->getModelInstance()->tableName()]);
+			}
+		}
 		$this->getModelInstance()->update();
 		$this->checkModelInstanceForErrors();
 	}
@@ -73,5 +83,11 @@ class Bundlable extends Base {
 
 		$this->getModelInstance()->delete();
 		$this->checkModelInstanceForErrors();
+	}
+
+	private function applyOutsideIntrinsics($pa_intrinsics) {
+		foreach($pa_intrinsics as $vs_fld => $vm_val) {
+			$this->getModelInstance()->set($vs_fld, $vm_val);
+		}
 	}
 }

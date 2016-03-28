@@ -198,9 +198,21 @@ class Replicator {
 					continue;
 				}
 
+				// get setIntrinsics -- fields that are set on the target side (e.g. to tag/mark
+				// where records came from if multiple systems are being synced into one)
+				$va_set_intrinsics_config = $this->opo_replication_conf->get('targets')[$vs_target_key]['setIntrinsics'];
+				$va_set_intrinsics_default = is_array($va_set_intrinsics_config['__default__']) ? $va_set_intrinsics_config['__default__'] : array();
+				$va_set_intrinsics_source = is_array($va_set_intrinsics_config[$vs_source_system_guid]) ? $va_set_intrinsics_config[$vs_source_system_guid] : array();
+				$va_set_intrinsics = array_replace($va_set_intrinsics_default, $va_set_intrinsics_source);
+				$vs_set_intrinsics = null;
+				if(is_array($va_set_intrinsics) && sizeof($va_set_intrinsics)) {
+					$vs_set_intrinsics = json_encode($va_set_intrinsics);
+				}
+
 				// apply that log at the current target
 				$o_resp = $o_target->setRequestMethod('POST')->setEndpoint('applylog')
 					->addGetParameter('system_guid', $vs_source_system_guid)
+					->addGetParameter('setIntrinsics', $vs_set_intrinsics)
 					->setRequestBody($va_source_log_entries)
 					->request();
 

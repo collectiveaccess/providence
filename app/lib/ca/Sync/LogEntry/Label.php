@@ -36,7 +36,7 @@ require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Base.php');
 
 class Label extends Base {
 
-	public function apply() {
+	public function apply(array $pa_options = array()) {
 		if($this->isInsert()) {
 			$this->applyInsert();
 		} elseif($this->isUpdate()) {

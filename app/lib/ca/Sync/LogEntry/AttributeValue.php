@@ -38,7 +38,7 @@ require_once(__CA_MODELS_DIR__.'/ca_attributes.php');
 
 class AttributeValue extends Base {
 
-	public function apply() {
+	public function apply(array $pa_options = array()) {
 		$this->setIntrinsicsFromSnapshotInModelInstance();
 
 		if($this->isInsert()) {

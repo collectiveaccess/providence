@@ -137,6 +137,11 @@ class ReplicationService {
 		if(!strlen($vs_source_system_guid)) { throw new Exception('must provide a system guid'); }
 		if($po_request->getRequestMethod() !== 'POST') { throw new Exception('must be a post request'); }
 
+		$pa_entry_options = array();
+		if($ps_set_intrinsics = $po_request->getParameter('setIntrinsics', pString, null, array('retainBackslashes' => false))) {
+			$pa_entry_options['setIntrinsics'] = @json_decode($ps_set_intrinsics, true);
+		}
+
 		$vn_last_applied_log_id = null;
 		$va_log = json_decode($po_request->getRawPostData(), true);
 		if(!is_array($va_log)) { throw new Exception('log must be array'); }
@@ -147,7 +152,7 @@ class ReplicationService {
 			$o_tx = new \Transaction($o_db);
 			try {
 				$o_log_entry = CA\Sync\LogEntry\Base::getInstance($vs_source_system_guid, $vn_log_id, $va_log_entry, $o_tx);
-				$o_log_entry->apply();
+				$o_log_entry->apply($pa_entry_options);
 				$o_tx->commit();
 
 				$vn_last_applied_log_id = $vn_log_id;
