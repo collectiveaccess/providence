@@ -342,7 +342,7 @@ class SearchResult extends BaseObject {
 		
 		// Make sure singletons get into the cache
 		foreach($va_row_ids as $vn_row_id) {
-			SearchResult::$opa_hierarchy_parent_prefetch_cache[$ps_tablename][$vn_row_id][$vs_opt_md5][] = $va_row[$vn_row_id];
+			SearchResult::$opa_hierarchy_parent_prefetch_cache[$ps_tablename][$vn_row_id][$vs_opt_md5][] = $vn_row_id;
 		}
 		$va_row_id_map = null;
 		$vn_level = 0;
@@ -360,7 +360,8 @@ class SearchResult extends BaseObject {
 					$va_row_id_map[$va_row[$vs_parent_id_fld]][] = $va_row[$vs_pk];
 					SearchResult::$opa_hierarchy_parent_prefetch_cache[$ps_tablename][$va_row[$vs_pk]][$vs_opt_md5] = array();
 				} else {
-					$va_row_id_map[$va_row[$vs_parent_id_fld]] = $va_row_id_map[$va_row[$vs_pk]];
+					if (!$va_row_id_map[$va_row[$vs_parent_id_fld]]) { $va_row_id_map[$va_row[$vs_parent_id_fld]] = []; }
+					$va_row_id_map[$va_row[$vs_parent_id_fld]] = array_merge($va_row_id_map[$va_row[$vs_parent_id_fld]], $va_row_id_map[$va_row[$vs_pk]]);
 				}
 				if (!$va_row_id_map[$va_row[$vs_parent_id_fld]]) { continue; }
 				
