@@ -72,6 +72,7 @@ require_once(__CA_LIB_DIR__.'/core/Cache/ExternalCache.php');
 require_once(__CA_LIB_DIR__.'/core/Cache/CompositeCache.php');
 
 require_once(__CA_APP_DIR__.'/lib/ca/GarbageCollection.php');
+require_once(__CA_APP_DIR__.'/helpers/guidHelpers.php');
 
 // initialize Tooltip manager
 TooltipManager::init();

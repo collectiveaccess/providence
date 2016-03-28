@@ -64,6 +64,10 @@ $va_search_config_settings = $this->getVar('search_config_settings');
 				<td><?php print _t('Release type'); ?></td>
 				<td><?php print __CollectiveAccess_Release_Type__; ?></td>
 			</tr>
+			<tr>
+				<td><?php print _t('System GUID'); ?></td>
+				<td><?php print __CA_SYSTEM_GUID__; ?></td>
+			</tr>
 		</tbody>
 	</table>
 	
