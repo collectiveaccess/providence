@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010 Whirl-i-Gig
+ * Copyright 2010-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -81,7 +81,7 @@ foreach($va_sets_by_table as $vs_table => $va_sets){
 				print caFormTag($po_request, 'doSavedSearch', 'caSearchSetsForm'.$vs_table, $vs_path, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true)); 
 				print "<select name='search' style='width:300px;'>\n";			
 				foreach($va_set_info as $vn_id => $va_set) {
-					print "<option value='set:".$vn_id."'>".$va_set["name"]."</option>\n";
+					print "<option value='set:\"".$va_set['set_code']."\"'>".$va_set["name"]."</option>\n";
 				}
 				print "</select>\n ";
 				print caFormSubmitLink($po_request, _t('Search').' &rsaquo;', 'button', 'caSearchSetsForm'.$vs_table);

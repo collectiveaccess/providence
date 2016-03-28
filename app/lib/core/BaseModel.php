@@ -3181,7 +3181,7 @@ class BaseModel extends BaseObject {
 				}
 				$this->setMode(ACCESS_WRITE);
 				$this->set('deleted', 1);
-				if ($vn_rc = $this->update(array('force' => true))) {
+				if ($vn_rc = self::update(array('force' => true))) {
 					if(!defined('__CA_DONT_DO_SEARCH_INDEXING__') || !__CA_DONT_DO_SEARCH_INDEXING__) {
 						$o_indexer = $this->getSearchIndexer();
 						$o_indexer->startRowUnIndexing($this->tableNum(), $vn_id);
@@ -5050,16 +5050,17 @@ class BaseModel extends BaseObject {
 			return null;
 		}
 		
-		$va_dim = caParseMeasurement($ps_dimension);
+		$vo_parsed_measurement = caParseDimension($ps_dimension);
 		
-		$va_media_info['_SCALE'] = $pn_percent_of_image_width/$va_dim['value'];
-		$va_media_info['_SCALE_UNITS'] = $va_dim['units'];
-	
-		$this->setMode(ACCESS_WRITE);
-		$this->setMediaInfo($ps_field, $va_media_info);
-		$this->update();
-		$this->set('media', $this->getMediaPath('media', 'original'), array('original_filename' => $vs_original_filename));
-		$this->update();
+		if ($vo_parsed_measurement && (($vn_measurement = (float)$vo_parsed_measurement->toString(4)) > 0)) {
+		
+			$va_media_info['_SCALE'] = $pn_percent_of_image_width/$vn_measurement;
+			$va_media_info['_SCALE_UNITS'] = caGetLengthUnitType($vo_parsed_measurement->getType(), array('short' => true));
+
+			$this->setMode(ACCESS_WRITE);
+			$this->setMediaInfo($ps_field, $va_media_info);
+			$this->update();
+		}
 		
 		return $this->numErrors() ? false : true;
 	}
@@ -5078,7 +5079,12 @@ class BaseModel extends BaseObject {
 			return null;
 		}
 		
-		return array('scale' => caGetOption('_SCALE', $va_media_info, null), 'measurementUnits' => caGetOption('_SCALE_UNITS', $va_media_info, null));;
+		$vn_scale = caGetOption('_SCALE', $va_media_info, null);
+		if (!is_numeric($vn_scale)) { $vn_scale = null; }
+		$vs_scale_units = caGetOption('_SCALE_UNITS', $va_media_info, null);
+		if (!is_string($vs_scale_units)) { $vs_scale_units = null; }
+		
+		return array('scale' => $vn_scale, 'measurementUnits' => $vs_scale_units);
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -9610,11 +9616,11 @@ $pa_options["display_form_field_tips"] = true;
 			if (!sizeof($va_to_reindex_relations)) { return 0; }
 			
 			$o_db->query("
-				UPDATE ".$t_item_rel->tableName()." SET ".$t_item_rel->getLeftTableFieldName()." = ? WHERE ".$t_item_rel->getLeftTableFieldName()." = ?
+				UPDATE IGNORE ".$t_item_rel->tableName()." SET ".$t_item_rel->getLeftTableFieldName()." = ? WHERE ".$t_item_rel->getLeftTableFieldName()." = ?
 			", (int)$pn_to_id, (int)$vn_row_id);
 			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
 			$o_db->query("
-				UPDATE ".$t_item_rel->tableName()." SET ".$t_item_rel->getRightTableFieldName()." = ? WHERE ".$t_item_rel->getRightTableFieldName()." = ?
+				UPDATE IGNORE ".$t_item_rel->tableName()." SET ".$t_item_rel->getRightTableFieldName()." = ? WHERE ".$t_item_rel->getRightTableFieldName()." = ?
 			", (int)$pn_to_id, (int)$vn_row_id);
 			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
 		} else {
@@ -9629,7 +9635,7 @@ $pa_options["display_form_field_tips"] = true;
 			if (!sizeof($va_to_reindex_relations)) { return 0; }
 			
 			$o_db->query("
-				UPDATE ".$t_item_rel->tableName()." SET {$vs_item_pk} = ? WHERE {$vs_item_pk} = ?
+				UPDATE IGNORE ".$t_item_rel->tableName()." SET {$vs_item_pk} = ? WHERE {$vs_item_pk} = ?
 			", (int)$pn_to_id, (int)$vn_row_id);
 			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
 			
@@ -9650,7 +9656,7 @@ $pa_options["display_form_field_tips"] = true;
 				
 				if ($vn_first_primary_relation_id) {
 					$o_db->query("
-						UPDATE ".$t_item_rel->tableName()." SET is_primary = 0 WHERE {$vs_rel_pk} <> ? AND {$vs_item_pk} = ?
+						UPDATE IGNORE ".$t_item_rel->tableName()." SET is_primary = 0 WHERE {$vs_rel_pk} <> ? AND {$vs_item_pk} = ?
 					", array($vn_first_primary_relation_id, (int)$pn_to_id));
 				}
 			}
@@ -9676,7 +9682,8 @@ $pa_options["display_form_field_tips"] = true;
 	 * 
 	 * @param mixed $pm_rel_table_name_or_num The table name or number of the related table. Only relationships pointing to this table will be moved.
 	 * @param int $pn_to_id The primary key value of the row to move the relationships to.
-	 * @param array $pa_options Array of options. No options are currently supported.
+	 * @param array $pa_options Array of options. Options include:
+	 *		copyAttributes = Copy metadata attributes associated with each relationship, if the calling model supports attributes. [Default is false]
 	 *
 	 * @return int Number of relationships copied, or null on error. Note that you should carefully test the return value for null-ness rather than false-ness, since zero is a valid return value in cases where no relationships were available to be copied. 
 	 */
@@ -9685,6 +9692,8 @@ $pa_options["display_form_field_tips"] = true;
 		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num))) { return null; }
 		$t_item_rel = $va_rel_info['t_item_rel'];	// linking table
 		if ($this->inTransaction()) { $t_item_rel->setTransaction($this->getTransaction()); }
+		
+		$vb_copy_attributes = caGetOption('copyAttributes', $pa_options, false, array('castTo' => 'boolean')) && method_exists($this, 'copyAttributesFrom');
 		
 		$o_db = $this->getDb();
 		
@@ -9700,8 +9709,10 @@ $pa_options["display_form_field_tips"] = true;
 			$vs_right_field_name = $t_item_rel->getRightTableFieldName();
 			
 			$qr_res = $o_db->query("
-				SELECT * FROM ".$t_item_rel->tableName()." 
-				WHERE {$vs_left_field_name} = ? OR {$vs_right_field_name} = ?
+				SELECT * 
+				FROM ".$t_item_rel->tableName()." 
+				WHERE 
+					({$vs_left_field_name} = ?) OR ({$vs_right_field_name} = ?)
 			", (int)$vn_row_id, (int)$vn_row_id);
 			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
 			
@@ -9728,10 +9739,20 @@ $pa_options["display_form_field_tips"] = true;
 					$this->errors = $t_item_rel->errors; return null;	
 				}
 				$va_new_relations[$t_item_rel->getPrimaryKey()] = $va_row;
+	
+				if ($vb_copy_attributes) {
+					$t_item_rel->copyAttributesFrom($vn_relation_id);
+					if ($t_item_rel->numErrors()) {
+						$this->errors = $t_item_rel->errors; return null;	
+					}
+				}
 			}
 		} else {
 			$qr_res = $o_db->query("
-				SELECT * FROM ".$t_item_rel->tableName()." WHERE {$vs_item_pk} = ?
+				SELECT * 
+				FROM ".$t_item_rel->tableName()." 
+				WHERE 
+					({$vs_item_pk} = ?)
 			", (int)$vn_row_id);
 			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
 			
@@ -9757,6 +9778,13 @@ $pa_options["display_form_field_tips"] = true;
 					$this->errors = $t_item_rel->errors; return null;	
 				}
 				$va_new_relations[$t_item_rel->getPrimaryKey()] = $va_row;
+				
+				if ($vb_copy_attributes) {
+					$t_item_rel->copyAttributesFrom($vn_relation_id);
+					if ($t_item_rel->numErrors()) {
+						$this->errors = $t_item_rel->errors; return null;	
+					}
+				}
 			}
 		}
 		
@@ -11140,10 +11168,10 @@ $pa_options["display_form_field_tips"] = true;
 	/**
 	 * Returns change log for currently loaded row in displayable HTML format
 	 */ 
-	public function getChangeLogForDisplay($ps_css_id=null) {
+	public function getChangeLogForDisplay($ps_css_id=null, $pn_user_id=null) {
 		$o_log = new ApplicationChangeLog();
 		
-		return $o_log->getChangeLogForRowForDisplay($this, $ps_css_id);
+		return $o_log->getChangeLogForRowForDisplay($this, $ps_css_id, $pn_user_id);
 	}
 	# --------------------------------------------------------------------------------------------
 	#

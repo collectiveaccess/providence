@@ -810,6 +810,15 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		return $va_sortable_elements;
 	}
 	# ------------------------------------------------------
+	public static function getDataTypeForElementCode($ps_element_code) {
+		$t_element = new ca_metadata_elements();
+		if($t_element->load(array('element_code' => $ps_element_code))) {
+			return (int) $t_element->get('datatype');
+		} else {
+			return false;
+		}
+	}
+	# ------------------------------------------------------
 	/**
 	 * Returns list of user interfaces that reference the currently loaded metadata element
 	 *
@@ -965,6 +974,21 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	/**
+	 * 
+	 */
+	static public function getElementCode($pn_element_id) {
+		if(MemoryCache::contains($pn_element_id, 'ElementCodes')) {
+			return MemoryCache::fetch($pn_element_id, 'ElementCodes');
+		}
+		if ($t_element = ca_metadata_elements::getInstance($pn_element_id)) {
+			MemoryCache::save($pn_element_id, $vs_element_code = (string)$t_element->get('element_code'), 'ElementCodes');
+			return $vs_element_code;
+		}
+		
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Get element code for given element_id (or code)
 	 * @param mixed $pm_element_id
 	 * @return string
@@ -1011,6 +1035,31 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		}
 
 		MemoryCache::save($pm_element_code_or_id, $vm_return, 'ElementIDs');
+		return $vm_return;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get hier_element id for given element code (or id)
+	 * @param mixed $pm_element_code_or_id
+	 * @return int
+	 * @throws MemoryCacheInvalidParameterException
+	 */
+	static public function getElementHierarchyID($pm_element_code_or_id) {
+		if(!$pm_element_code_or_id) { return null; }
+		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
+
+		if(MemoryCache::contains($pm_element_code_or_id, 'ElementHierarchyIDs')) {
+			return MemoryCache::fetch($pm_element_code_or_id, 'ElementHierarchyIDs');
+		}
+
+		$vm_return = null;
+		$t_element = self::getInstance($pm_element_code_or_id);
+
+		if($t_element && ($t_element->getPrimaryKey())) {
+			$vm_return = (int) $t_element->get('hier_element_id');
+		}
+
+		MemoryCache::save($pm_element_code_or_id, $vm_return, 'ElementHierarchyIDs');
 		return $vm_return;
 	}
 	# ------------------------------------------------------

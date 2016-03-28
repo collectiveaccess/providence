@@ -37,7 +37,7 @@
 if(sizeof($va_tags) > 0){
 	print "<div class='dashboardWidgetHeading'>"._t("Displaying the last %1 %2 tags", $this->getVar("limit"), $this->getVar("tag_type"))."</div>";
 ?>
-		<form id="tagListForm"><input type="hidden" name="mode" value="list">
+		<form id="tagListForm">
 		<div class="dashboardWidgetScrollMedium" style="padding-left:10px;"><ul>
 <?php
 		foreach($va_tags as $va_tag_info) {

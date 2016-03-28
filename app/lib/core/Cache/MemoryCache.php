@@ -64,7 +64,7 @@ class MemoryCache {
 	public static function save($ps_key, $pm_data, $ps_namespace='default') {
 		if(!$ps_namespace) { throw new MemoryCacheInvalidParameterException('Namespace cannot be empty'); }
 
-		if(!$ps_key) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
+		if(!strlen($ps_key)) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
 
 		self::$opa_caches[$ps_namespace][$ps_key] = $pm_data;
 		return true;

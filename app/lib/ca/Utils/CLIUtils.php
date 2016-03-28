@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2015 Whirl-i-Gig
+ * Copyright 2013-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -701,16 +701,11 @@
 			$t_rep = new ca_object_representations();
 			$t_rep->setMode(ACCESS_WRITE);
 
-			$va_mimetypes = ($vs_mimetypes = $po_opts->getOption("mimetypes")) ? explode(",", $vs_mimetypes) : array();
-			$va_versions = ($vs_versions = $po_opts->getOption("versions")) ? explode(",", $vs_versions) : array();
-			$va_kinds = ($vs_kinds = $po_opts->getOption("kinds")) ? explode(",", $vs_kinds) : array();
-
-			if (!is_array($va_kinds) || !sizeof($va_kinds)) {
-				$va_kinds = array('all');
-			}
-			$va_kinds = array_map('strtolower', $va_kinds);
-
-			if (in_array('all', $va_kinds) || in_array('ca_object_representations', $va_kinds)) {
+			$pa_mimetypes = caGetOption('mimetypes', $po_opts, null, ['delimiter' => [',', ';']]);
+			$pa_versions = caGetOption('versions', $po_opts, null, ['delimiter' => [',', ';']]);
+			$pa_kinds = caGetOption('kinds', $po_opts, 'all', ['forceLowercase' => true, 'validValues' => ['all', 'ca_object_representations', 'ca_attributes'], 'delimiter' => [',', ';']]);
+			
+			if (in_array('all', $pa_kinds) || in_array('ca_object_representations', $pa_kinds)) {
 				if (!($vn_start = (int)$po_opts->getOption('start_id'))) { $vn_start = null; }
 				if (!($vn_end = (int)$po_opts->getOption('end_id'))) { $vn_end = null; }
 
@@ -754,7 +749,7 @@
 				if ($vs_object_ids = (string)$po_opts->getOption('object_ids')) {
 					$va_object_ids = explode(",", $vs_object_ids);
 					foreach($va_object_ids as $vn_i => $vn_object_id) {
-						$va_object_id[$vn_i] = (int)$vn_object_id;
+						$va_object_ids[$vn_i] = (int)$vn_object_id;
 					}
 					
 					$vs_sql_where = ($vs_sql_where ? "WHERE " : " AND ")."(ca_objects_x_object_representations.object_id IN (?))";
@@ -778,9 +773,9 @@
 					print CLIProgressBar::next(1, _t("Re-processing %1", ($vs_original_filename ? $vs_original_filename." (".$qr_reps->get('representation_id').")" : $qr_reps->get('representation_id'))));
 
 					$vs_mimetype = $qr_reps->getMediaInfo('media', 'original', 'MIMETYPE');
-					if(sizeof($va_mimetypes)) {
+					if(sizeof($pa_mimetypes)) {
 						$vb_mimetype_match = false;
-						foreach($va_mimetypes as $vs_mimetype_pattern) {
+						foreach($pa_mimetypes as $vs_mimetype_pattern) {
 							if(!preg_match("!^".preg_quote($vs_mimetype_pattern)."!", $vs_mimetype)) {
 								continue;
 							}
@@ -793,8 +788,8 @@
 					$t_rep->load($qr_reps->get('representation_id'));
 					$t_rep->set('media', $qr_reps->getMediaPath('media', 'original'), array('original_filename' => $vs_original_filename));
 
-					if (sizeof($va_versions)) {
-						$t_rep->update(array('updateOnlyMediaVersions' =>$va_versions));
+					if (sizeof($pa_versions)) {
+						$t_rep->update(array('updateOnlyMediaVersions' =>$pa_versions));
 					} else {
 						$t_rep->update();
 					}
@@ -806,7 +801,7 @@
 				print CLIProgressBar::finish();
 			}
 
-			if ((in_array('all', $va_kinds)  || in_array('ca_attributes', $va_kinds)) && (!$vn_start && !$vn_end)) {
+			if ((in_array('all', $pa_kinds)  || in_array('ca_attributes', $pa_kinds)) && (!$vn_start && !$vn_end)) {
 				// get all Media elements
 				$va_elements = ca_metadata_elements::getElementsAsList(false, null, null, true, false, true, array(16)); // 16=media
 
@@ -1663,7 +1658,6 @@
 			return _t("Loads the AAT from a Getty-provided XML file.");
 		}
 		# -------------------------------------------------------
-
 		/**
 		 *
 		 */
@@ -1837,7 +1831,7 @@
 		/**
 		 * Grab password from STDIN without showing input on STDOUT
 		 */
-		public static function _getPassword($ps_prompt, $pb_stars = false) {
+		private static function _getPassword($ps_prompt, $pb_stars = false) {
 			if ($ps_prompt) fwrite(STDOUT, $ps_prompt);
 			// Get current style
 			$vs_old_style = shell_exec('stty -g');
@@ -2187,89 +2181,235 @@
 			require_once(__CA_LIB_DIR__."/core/Db.php");
 			require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
 
-			$ps_file_path = strtolower((string)$po_opts->getOption('file'));
-			$ps_format = strtolower((string)$po_opts->getOption('format'));
-			if(!in_array($ps_format, array('text', 'tab', 'csv'))) { $ps_format = 'text'; }
-
+			if (!($ps_file_path = strtolower((string)$po_opts->getOption('file')))) {
+				CLIUtils::addError(_t("You must specify an output file"));
+				return false;
+			}
+			
+			$ps_file_path = str_replace("%date", date("Y-m-d_h\hi\m"), $ps_file_path);
+			
+			$ps_format = caGetOption('format', $po_opts, 'text', ['forceLowercase' => true, 'validValues' => ['text', 'tab', 'csv'], 'castTo' => 'string']);
+			
+			$pa_versions = caGetOption('versions', $po_opts, null, ['delimiter' => [',', ';']]);
+			$pa_kinds = caGetOption('kinds', $po_opts, 'all', ['forceLowercase' => true, 'validValues' => ['all', 'ca_object_representations', 'ca_attributes'], 'delimiter' => [',', ';']]);
+			
 			$o_db = new Db();
 			$o_dm = Datamodel::load();
 			$t_rep = new ca_object_representations();
 
 			$vs_report_output = join(($ps_format == 'tab') ? "\t" : ",", array(_t('Type'), _t('Error'), _t('Name'), _t('ID'), _t('Version'), _t('File path'), _t('Expected MD5'), _t('Actual MD5')))."\n";
 
-			// Verify object representations
-			$qr_reps = $o_db->query("SELECT representation_id, idno, media FROM ca_object_representations WHERE deleted = 0");
-			print CLIProgressBar::start($vn_rep_count = $qr_reps->numRows(), _t('Checking object representations'))."\n";
-			$vn_errors = 0;
-			while($qr_reps->nextRow()) {
-				$vn_representation_id = $qr_reps->get('representation_id');
-				print CLIProgressBar::next(1, _t("Checking representation media %1", $vn_representation_id));
 
-				$va_media_versions = $qr_reps->getMediaVersions('media');
-				foreach($va_media_versions as $vs_version) {
-					$vs_path = $qr_reps->getMediaPath('media', $vs_version);
+			if (in_array('all', $pa_kinds) || in_array('ca_object_representations', $pa_kinds)) {
+				if (!($vn_start = (int)$po_opts->getOption('start_id'))) { $vn_start = null; }
+				if (!($vn_end = (int)$po_opts->getOption('end_id'))) { $vn_end = null; }
 
-					$vs_database_md5 = $qr_reps->getMediaInfo('media', $vs_version, 'MD5');
-					$vs_file_md5 = md5_file($vs_path);
 
-					if ($vs_database_md5 !== $vs_file_md5) {
-						$t_rep->load($vn_representation_id);
+				if ($vn_id = (int)$po_opts->getOption('id')) {
+					$vn_start = $vn_end = $vn_id;
+				}
 
-						$vs_message = _t("[Object representation][MD5 mismatch] %1; version %2 [%3]", $t_rep->get("ca_objects.preferred_labels.name")." (". $t_rep->get("ca_objects.idno")."); representation_id={$vn_representation_id}", $vs_version, $vs_path);
-						switch($ps_format) {
-							case 'text':
-							default:
-								$vs_report_output .= "{$vs_message}\n";
-								break;
-							case 'tab':
-							case 'csv':
-								$va_log = array(_t('Object representation'), ("MD5 mismatch"), caEscapeForDelimitedOutput($t_rep->get("ca_objects.preferred_labels.name")." (". $t_rep->get("ca_objects.idno").")"), $vn_representation_id, $vs_version, $vs_path, $vs_database_md5, $vs_file_md5);
-								$vs_report_output .= join(($ps_format == 'tab') ? "\t" : ",", $va_log)."\n";
-								break;
+				$va_ids = array();
+				if ($vs_ids = (string)$po_opts->getOption('ids')) {
+					if (sizeof($va_tmp = explode(",", $vs_ids))) {
+						foreach($va_tmp as $vn_id) {
+							if ((int)$vn_id > 0) {
+								$va_ids[] = (int)$vn_id;
+							}
 						}
-
-						CLIUtils::addError($vs_message);
-						$vn_errors++;
 					}
 				}
+
+				$va_sql_wheres = array('o_r.deleted = 0');
+				$va_params = array();
+				$vs_sql_joins = '';
+
+				if (sizeof($va_ids)) {
+					$va_sql_wheres[] = "o_r.representation_id IN (?)";
+					$va_params[] = $va_ids;
+				} else {
+					if (
+						(($vn_start > 0) && ($vn_end > 0) && ($vn_start <= $vn_end)) || (($vn_start > 0) && ($vn_end == null))
+					) {
+						$va_sql_wheres[] = "o_r.representation_id >= ?";
+						$va_params[] = $vn_start;
+						if ($vn_end) {
+							$va_sql_wheres[] = "o_r.representation_id <= ?";
+							$va_params[] = $vn_end;
+						}
+					}
+				}
+				
+				if ($vs_object_ids = (string)$po_opts->getOption('object_ids')) {
+					$va_object_ids = explode(",", $vs_object_ids);
+					foreach($va_object_ids as $vn_i => $vn_object_id) {
+						$va_object_ids[$vn_i] = (int)$vn_object_id;
+					}
+					
+					if (sizeof($va_object_ids)) { 
+						print_R($va_object_ids);
+						$va_sql_wheres[] = "(oxor.object_id IN (?))";
+						$vs_sql_joins = "INNER JOIN ca_objects_x_object_representations AS oxor ON oxor.representation_id = o_r.representation_id";
+						$va_params[] = $va_object_ids;
+					}
+				}
+				
+				// Verify object representations
+				$qr_reps = $o_db->query("
+					SELECT o_r.representation_id, o_r.idno, o_r.media 
+					FROM ca_object_representations o_r 
+					{$vs_sql_joins}
+					WHERE 
+						".join(" AND ", $va_sql_wheres), $va_params
+				);
+				
+				print CLIProgressBar::start($vn_rep_count = $qr_reps->numRows(), _t('Checking object representations'))."\n";
+				$vn_errors = 0;
+				while($qr_reps->nextRow()) {
+					$vn_representation_id = $qr_reps->get('representation_id');
+					print CLIProgressBar::next(1, _t("Checking representation media %1", $vn_representation_id));
+
+					$va_media_versions = (is_array($pa_versions) && sizeof($pa_versions) > 0) ? $pa_versions : $qr_reps->getMediaVersions('media');
+					foreach($va_media_versions as $vs_version) {
+						if (!($vs_path = $qr_reps->getMediaPath('media', $vs_version))) { continue; }
+						if (!($vs_database_md5 = $qr_reps->getMediaInfo('media', $vs_version, 'MD5'))) { continue; }		// skip missing MD5s - indicates empty file
+						$vs_file_md5 = md5_file($vs_path);
+
+						if ($vs_database_md5 !== $vs_file_md5) {
+							$t_rep->load($vn_representation_id);
+
+							$vs_message = _t("[Object representation][MD5 mismatch] %1; version %2 [%3]", $t_rep->get("ca_objects.preferred_labels.name")." (". $t_rep->get("ca_objects.idno")."); representation_id={$vn_representation_id}", $vs_version, $vs_path);
+							switch($ps_format) {
+								case 'text':
+								default:
+									$vs_report_output .= "{$vs_message}\n";
+									break;
+								case 'tab':
+								case 'csv':
+									$va_log = array(_t('Object representation'), ("MD5 mismatch"), '"'.caEscapeForDelimitedOutput($t_rep->get("ca_objects.preferred_labels.name")." (". $t_rep->get("ca_objects.idno").")").'"', $vn_representation_id, $vs_version, $vs_path, $vs_database_md5, $vs_file_md5);
+									$vs_report_output .= join(($ps_format == 'tab') ? "\t" : ",", $va_log)."\n";
+									break;
+							}
+
+							CLIUtils::addError($vs_message);
+							$vn_errors++;
+						}
+					}
+				}
+
+				print CLIProgressBar::finish();
+				CLIUtils::addMessage(_t('%1 errors for %2 representations', $vn_errors, $vn_rep_count));
 			}
 
-			print CLIProgressBar::finish();
-			CLIUtils::addMessage(_t('%1 errors for %2 representations', $vn_errors, $vn_rep_count));
 
-			// get all Media elements
-			$va_elements = ca_metadata_elements::getElementsAsList(false, null, null, true, false, true, array(16)); // 16=media
+			if (in_array('all', $pa_kinds) || in_array('ca_attributes', $pa_kinds)) {
+				// get all Media elements
+				$va_elements = ca_metadata_elements::getElementsAsList(false, null, null, true, false, true, array(16)); // 16=media
 
-			if (is_array($va_elements) && sizeof($va_elements)) {
-				if (is_array($va_element_ids = caExtractValuesFromArrayList($va_elements, 'element_id', array('preserveKeys' => false))) && sizeof($va_element_ids)) {
-					$qr_c = $o_db->query("
-						SELECT count(*) c
-						FROM ca_attribute_values
-						WHERE
-							element_id in (?)
-					", array($va_element_ids));
-					if ($qr_c->nextRow()) { $vn_count = $qr_c->get('c'); } else { $vn_count = 0; }
+				if (is_array($va_elements) && sizeof($va_elements)) {
+					if (is_array($va_element_ids = caExtractValuesFromArrayList($va_elements, 'element_id', array('preserveKeys' => false))) && sizeof($va_element_ids)) {
+						$qr_c = $o_db->query("
+							SELECT count(*) c
+							FROM ca_attribute_values
+							WHERE
+								element_id in (?)
+						", array($va_element_ids));
+						if ($qr_c->nextRow()) { $vn_count = $qr_c->get('c'); } else { $vn_count = 0; }
 
-					print CLIProgressBar::start($vn_count, _t('Checking attribute media'));
+						print CLIProgressBar::start($vn_count, _t('Checking attribute media'));
 
-					$vn_errors = 0;
-					foreach($va_elements as $vs_element_code => $va_element_info) {
-						$qr_vals = $o_db->query("SELECT value_id FROM ca_attribute_values WHERE element_id = ?", (int)$va_element_info['element_id']);
-						$va_vals = $qr_vals->getAllFieldValues('value_id');
-						foreach($va_vals as $vn_value_id) {
-							$t_attr_val = new ca_attribute_values($vn_value_id);
-							if ($t_attr_val->getPrimaryKey()) {
-								$t_attr_val->setMode(ACCESS_WRITE);
-								$t_attr_val->useBlobAsMediaField(true);
+						$vn_errors = 0;
+						foreach($va_elements as $vs_element_code => $va_element_info) {
+							$qr_vals = $o_db->query("SELECT value_id FROM ca_attribute_values WHERE element_id = ?", (int)$va_element_info['element_id']);
+							$va_vals = $qr_vals->getAllFieldValues('value_id');
+							foreach($va_vals as $vn_value_id) {
+								$t_attr_val = new ca_attribute_values($vn_value_id);
+								if ($t_attr_val->getPrimaryKey()) {
+									$t_attr_val->setMode(ACCESS_WRITE);
+									$t_attr_val->useBlobAsMediaField(true);
 
 
-								print CLIProgressBar::next(1, _t("Checking attribute media %1", $vn_value_id));
+									print CLIProgressBar::next(1, _t("Checking attribute media %1", $vn_value_id));
 
-								$va_media_versions = $t_attr_val->getMediaVersions('value_blob');
-								foreach($va_media_versions as $vs_version) {
-									$vs_path = $t_attr_val->getMediaPath('value_blob', $vs_version);
+									$va_media_versions = (is_array($pa_versions) && sizeof($pa_versions) > 0) ? $pa_versions : $t_attr_val->getMediaVersions('value_blob');
+									foreach($va_media_versions as $vs_version) {
+										if (!($vs_path = $t_attr_val->getMediaPath('value_blob', $vs_version))) { continue; }
 
-									$vs_database_md5 = $t_attr_val->getMediaInfo('value_blob', $vs_version, 'MD5');
+										if (!($vs_database_md5 = $t_attr_val->getMediaInfo('value_blob', $vs_version, 'MD5'))) { continue; }	// skip missing MD5s - indicates empty file
+										$vs_file_md5 = md5_file($vs_path);
+
+										if ($vs_database_md5 !== $vs_file_md5) {
+											$t_attr = new ca_attributes($vn_attribute_id = $t_attr_val->get('attribute_id'));
+
+											$vs_label = "attribute_id={$vn_attribute_id}; value_id={$vn_value_id}";
+											if ($t_instance = $o_dm->getInstanceByTableNum($t_attr->get('table_num'), true)) {
+												if ($t_instance->load($t_attr->get('row_id'))) {
+													$vs_label = $t_instance->get($t_instance->tableName().'.preferred_labels');
+													if ($vs_idno = $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
+														$vs_label .= " ({$vs_label})";
+													}
+												}
+											}
+
+											$vs_message = _t("[Media attribute][MD5 mismatch] %1; value_id=%2; version %3 [%4]", $vs_label, $vn_value_id, $vs_version, $vs_path);
+
+											switch($ps_format) {
+												case 'text':
+												default:
+													$vs_report_output .= "{$vs_message}\n";
+													break;
+												case 'tab':
+												case 'csv':
+													$va_log = array(_t('Media attribute'), _t("MD5 mismatch"), '"'.caEscapeForDelimitedOutput($vs_label).'"', $vn_value_id, $vs_version, $vs_path, $vs_database_md5, $vs_file_md5);
+													$vs_report_output .= join(($ps_format == 'tab') ? "\t" : ",", $va_log);
+													break;
+											}
+
+											CLIUtils::addError($vs_message);
+											$vn_errors++;
+										}
+									}
+
+								}
+							}
+						}
+						print CLIProgressBar::finish();
+
+						CLIUtils::addMessage(_t('%1 errors for %2 attributes', $vn_errors, $vn_rep_count));
+					}
+				}
+
+				// get all File elements
+				$va_elements = ca_metadata_elements::getElementsAsList(false, null, null, true, false, true, array(15)); // 15=file
+
+				if (is_array($va_elements) && sizeof($va_elements)) {
+					if (is_array($va_element_ids = caExtractValuesFromArrayList($va_elements, 'element_id', array('preserveKeys' => false))) && sizeof($va_element_ids)) {
+						$qr_c = $o_db->query("
+							SELECT count(*) c
+							FROM ca_attribute_values
+							WHERE
+								element_id in (?)
+						", array($va_element_ids));
+						if ($qr_c->nextRow()) { $vn_count = $qr_c->get('c'); } else { $vn_count = 0; }
+
+						print CLIProgressBar::start($vn_count, _t('Checking attribute files'));
+
+						$vn_errors = 0;
+						foreach($va_elements as $vs_element_code => $va_element_info) {
+							$qr_vals = $o_db->query("SELECT value_id FROM ca_attribute_values WHERE element_id = ?", (int)$va_element_info['element_id']);
+							$va_vals = $qr_vals->getAllFieldValues('value_id');
+							foreach($va_vals as $vn_value_id) {
+								$t_attr_val = new ca_attribute_values($vn_value_id);
+								if ($t_attr_val->getPrimaryKey()) {
+									$t_attr_val->setMode(ACCESS_WRITE);
+									$t_attr_val->useBlobAsFileField(true);
+
+
+									print CLIProgressBar::next(1, _t("Checking attribute file %1", $vn_value_id));
+
+									if (!($vs_path = $t_attr_val->getFilePath('value_blob'))) { continue; }
+
+									if (!($vs_database_md5 = $t_attr_val->getFileInfo('value_blob', 'MD5'))) { continue; }	// skip missing MD5s - indicates empty file
 									$vs_file_md5 = md5_file($vs_path);
 
 									if ($vs_database_md5 !== $vs_file_md5) {
@@ -2285,7 +2425,7 @@
 											}
 										}
 
-										$vs_message = _t("[Media attribute][MD5 mismatch] %1; value_id=%2; version %3 [%4]", $vs_label, $vn_value_id, $vs_version, $vs_path);
+										$vs_message = _t("[File attribute][MD5 mismatch] %1; value_id=%2; version %3 [%4]", $vs_label, $vn_value_id, $vs_version, $vs_path);
 
 										switch($ps_format) {
 											case 'text':
@@ -2294,7 +2434,7 @@
 												break;
 											case 'tab':
 											case 'csv':
-												$va_log = array(_t('Media attribute'), _t("MD5 mismatch"), caEscapeForDelimitedOutput($vs_label), $vn_value_id, $vs_version, $vs_path, $vs_database_md5, $vs_file_md5);
+												$va_log = array(_t('File attribute'), _t("MD5 mismatch"), '"'.caEscapeForDelimitedOutput($vs_label).'"', $vn_value_id, $vs_version, $vs_path, $vs_database_md5, $vs_file_md5);
 												$vs_report_output .= join(($ps_format == 'tab') ? "\t" : ",", $va_log);
 												break;
 										}
@@ -2302,87 +2442,14 @@
 										CLIUtils::addError($vs_message);
 										$vn_errors++;
 									}
-								}
 
+								}
 							}
 						}
+						print CLIProgressBar::finish();
+
+						CLIUtils::addMessage(_t('%1 errors for %2 attributes', $vn_errors, $vn_rep_count));
 					}
-					print CLIProgressBar::finish();
-
-					CLIUtils::addMessage(_t('%1 errors for %2 attributes', $vn_errors, $vn_rep_count));
-				}
-			}
-
-			// get all File elements
-			$va_elements = ca_metadata_elements::getElementsAsList(false, null, null, true, false, true, array(15)); // 15=file
-
-			if (is_array($va_elements) && sizeof($va_elements)) {
-				if (is_array($va_element_ids = caExtractValuesFromArrayList($va_elements, 'element_id', array('preserveKeys' => false))) && sizeof($va_element_ids)) {
-					$qr_c = $o_db->query("
-						SELECT count(*) c
-						FROM ca_attribute_values
-						WHERE
-							element_id in (?)
-					", array($va_element_ids));
-					if ($qr_c->nextRow()) { $vn_count = $qr_c->get('c'); } else { $vn_count = 0; }
-
-					print CLIProgressBar::start($vn_count, _t('Checking attribute files'));
-
-					$vn_errors = 0;
-					foreach($va_elements as $vs_element_code => $va_element_info) {
-						$qr_vals = $o_db->query("SELECT value_id FROM ca_attribute_values WHERE element_id = ?", (int)$va_element_info['element_id']);
-						$va_vals = $qr_vals->getAllFieldValues('value_id');
-						foreach($va_vals as $vn_value_id) {
-							$t_attr_val = new ca_attribute_values($vn_value_id);
-							if ($t_attr_val->getPrimaryKey()) {
-								$t_attr_val->setMode(ACCESS_WRITE);
-								$t_attr_val->useBlobAsFileField(true);
-
-
-								print CLIProgressBar::next(1, _t("Checking attribute file %1", $vn_value_id));
-
-								$vs_path = $t_attr_val->getFilePath('value_blob');
-
-								$vs_database_md5 = $t_attr_val->getFileInfo('value_blob', 'MD5');
-								$vs_file_md5 = md5_file($vs_path);
-
-								if ($vs_database_md5 !== $vs_file_md5) {
-									$t_attr = new ca_attributes($vn_attribute_id = $t_attr_val->get('attribute_id'));
-
-									$vs_label = "attribute_id={$vn_attribute_id}; value_id={$vn_value_id}";
-									if ($t_instance = $o_dm->getInstanceByTableNum($t_attr->get('table_num'), true)) {
-										if ($t_instance->load($t_attr->get('row_id'))) {
-											$vs_label = $t_instance->get($t_instance->tableName().'.preferred_labels');
-											if ($vs_idno = $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD'))) {
-												$vs_label .= " ({$vs_label})";
-											}
-										}
-									}
-
-									$vs_message = _t("[File attribute][MD5 mismatch] %1; value_id=%2; version %3 [%4]", $vs_label, $vn_value_id, $vs_version, $vs_path);
-
-									switch($ps_format) {
-										case 'text':
-										default:
-											$vs_report_output .= "{$vs_message}\n";
-											break;
-										case 'tab':
-										case 'csv':
-											$va_log = array(_t('File attribute'), _t("MD5 mismatch"), caEscapeForDelimitedOutput($vs_label), $vn_value_id, $vs_version, $vs_path, $vs_database_md5, $vs_file_md5);
-											$vs_report_output .= join(($ps_format == 'tab') ? "\t" : ",", $va_log);
-											break;
-									}
-
-									CLIUtils::addError($vs_message);
-									$vn_errors++;
-								}
-
-							}
-						}
-					}
-					print CLIProgressBar::finish();
-
-					CLIUtils::addMessage(_t('%1 errors for %2 attributes', $vn_errors, $vn_rep_count));
 				}
 			}
 
@@ -2398,8 +2465,15 @@
 		 */
 		public static function check_media_fixityParamList() {
 			return array(
-				"file|o=s" => _t('Location to write report to.'),
-				"format|f=s" => _t('Output format. (text|tab|csv)')
+				"versions|v-s" => _t("Limit checking to specified versions. Separate multiple versions with commas."),
+				"file|o=s" => _t('Location to write report to. The placeholder %date may be included to date/time stamp the report.'),
+				"format|f-s" => _t('Output format. (text|tab|csv)'),
+				"start_id|s-n" => _t('Representation id to start checking at'),
+				"end_id|e-n" => _t('Representation id to end checking at'),
+				"id|i-n" => _t('Representation id to check'),
+				"ids|l-s" => _t('Comma separated list of representation ids to check'),
+				"object_ids|x-s" => _t('Comma separated list of object ids to check'),
+				"kinds|k-s" => _t('Comma separated list of kind of media to check. Valid kinds are ca_object_representations (object representations), and ca_attributes (metadata elements). You may also specify "all" to reprocess both kinds of media. Default is "all"')
 			);
 		}
 		# -------------------------------------------------------
@@ -2434,7 +2508,8 @@
 			$o_db = new Db();
 
 			$pb_clear = ((bool)$po_opts->getOption('clear'));
-			$pa_sizes = explode(",",((string)$po_opts->getOption('sizes')));
+			$pa_sizes = caGetOption('sizes', $po_opts, null, ['delimiter' => [',', ';']]);
+			
 			foreach($pa_sizes as $vn_i => $vn_size) {
 				$vn_size = (int)$vn_size;
 				if (!$vn_size || ($vn_size <= 0)) { unset($pa_sizes[$vn_i]); continue; }
@@ -3014,6 +3089,390 @@
 		 */
 		public static function reload_object_current_location_datesHelp() {
 			return _t('Regenerate date/time stamps for movement and object-based location tracking.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function precache_search_index($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/core/Db.php");
+			$o_db = new Db();
+			
+			CLIUtils::addMessage(_t("Preloading primary search index..."), array('color' => 'bold_blue'));
+			$o_db->query("SELECT * FROM ca_sql_search_word_index", array(), array('resultMode' => MYSQLI_USE_RESULT));
+			CLIUtils::addMessage(_t("Preloading index i_index_table_num..."), array('color' => 'bold_blue'));
+			$o_db->query("SELECT * FROM ca_sql_search_word_index FORCE INDEX(i_index_table_num)", array(), array('resultMode' => MYSQLI_USE_RESULT));
+			CLIUtils::addMessage(_t("Preloading index i_index_field_table_num..."), array('color' => 'bold_blue'));
+			$o_db->query("SELECT * FROM ca_sql_search_word_index  FORCE INDEX(i_index_field_table_num)", array(), array('resultMode' => MYSQLI_USE_RESULT));
+			CLIUtils::addMessage(_t("Preloading index i_index_field_num..."), array('color' => 'bold_blue'));
+			$o_db->query("SELECT * FROM ca_sql_search_word_index  FORCE INDEX(i_index_field_num)", array(), array('resultMode' => MYSQLI_USE_RESULT));
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function precache_search_indexParamList() {
+			return array(
+				
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function precache_search_indexUtilityClass() {
+			return _t('Maintenance');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function precache_search_indexShortHelp() {
+			return _t('Preload SQLSearch index into MySQL in-memory cache.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function precache_search_indexHelp() {
+			return _t('Preload SQLSearch index into MySQL in-memory cache. This is only relevant if you are using the MySQL-based SQLSearch engine. Preloading can significantly improve performance on system with large search indices. Note that your MySQL installation must have a large enough buffer pool configured to hold the index. Loading may take several minutes.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function precache_content($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/core/Db.php");
+			
+			$o_config = Configuration::load();
+			if(!(bool)$o_config->get('do_content_caching')) { 
+				CLIUtils::addError(_t("Content caching is not enabled"));
+				return;
+			}
+			$o_cache_config = Configuration::load(__CA_CONF_DIR__."/content_caching.conf");
+			
+			$va_cached_actions = $o_cache_config->getAssoc('cached_actions');
+			if(!is_array($va_cached_actions)) { 
+				CLIUtils::addError(_t("No actions are configured for caching"));
+				return;
+			}
+			
+			$o_request = new RequestHTTP(null, [
+				'no_headers' => true,
+				'simulateWith' => [
+					'REQUEST_METHOD' => 'GET',
+					'SCRIPT_NAME' => 'index.php'
+				]
+			]);
+			
+			$vs_site_protocol = $o_config->get('site_protocol');
+			if (!($vs_site_hostname = $o_config->get('site_hostname'))) {
+				$vs_site_hostname = "localhost";
+			}
+			
+			foreach($va_cached_actions as $vs_controller => $va_actions) {
+				switch($vs_controller) {
+					case 'Browse':
+					case 'Search':
+						// preloading of cache not supported
+						CLIUtils::addMessage(_t("Preloading from %1 is not supported", $vs_controller), array('color' => 'yellow'));
+						break;
+					case 'Splash':
+						$va_tmp = explode("/", $vs_controller);
+						$vs_controller = array_pop($va_tmp);
+						$vs_module_path = join("/", $va_tmp);
+						foreach($va_actions as $vs_action => $vn_ttl) {
+							if ($vs_url = caNavUrl($o_request, $vs_module_path, $vs_controller, $vs_action, array('noCache' => 1))) {
+							
+								CLIUtils::addMessage(_t("Preloading from %1::%2", $vs_controller, $vs_action), array('color' => 'bold_blue'));
+								$vs_url = $vs_site_protocol."://".$vs_site_hostname.$vs_url;
+							 	file_get_contents($vs_url);
+							}
+							
+						}
+						break;
+					case 'Detail':
+						$va_tmp = explode("/", $vs_controller);
+						$vs_controller = array_pop($va_tmp);
+						$vs_module_path = join("/", $va_tmp);
+						
+						$o_detail_config = caGetDetailConfig();
+						$va_detail_types = $o_detail_config->getAssoc('detailTypes');
+						
+						foreach($va_actions as $vs_action => $vn_ttl) {
+							if (is_array($va_detail_types[$vs_action])) {
+								$vs_table = $va_detail_types[$vs_action]['table'];
+								$va_types = $va_detail_types[$vs_action]['restrictToTypes'];
+								if (!file_exists(__CA_MODELS_DIR__."/{$vs_table}.php")) { continue; }
+								require_once(__CA_MODELS_DIR__."/{$vs_table}.php");
+								
+								if ($vs_url = caNavUrl($o_request, $vs_module_path, $vs_controller, $vs_action)) {
+									// get ids
+									$va_ids = call_user_func_array(array($vs_table, 'find'), array(['deleted' => 0], ['restrictToTypes' => $va_types, 'returnAs' => 'ids']));
+								
+									if (is_array($va_ids) && sizeof($va_ids)) {
+										foreach($va_ids as $vn_id) {
+											CLIUtils::addMessage(_t("Preloading from %1::%2 (%3)", $vs_controller, $vs_action, $vn_id), array('color' => 'bold_blue'));
+											file_get_contents($vs_site_protocol."://".$vs_site_hostname.$vs_url."/$vn_id?noCache=1");
+										}
+									}
+								}
+							} else {
+								CLIUtils::addMessage(_t("Preloading from %1::%2 failed because there is no detail configured for %2", $vs_controller, $vs_action), array('color' => 'yellow'));
+							}
+							
+						}
+						break;
+				}
+			}
+			
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function precache_contentParamList() {
+			return array(
+				
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function precache_contentUtilityClass() {
+			return _t('Maintenance');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function precache_contentShortHelp() {
+			return _t('Pre-generate content cache.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function precache_contentHelp() {
+			return _t('Pre-loads content cache by loading each cached page url. Pre-caching may take a while depending upon the quantity of content configured for caching.');
+		}
+		# -------------------------------------------------------
+		/**
+		 * Load metadata dictionary
+		 */
+		public static function load_chenhall_nomenclature($po_opts=null) {
+
+			require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
+			require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
+			require_once(__CA_MODELS_DIR__.'/ca_lists.php');
+			require_once(__CA_MODELS_DIR__.'/ca_locales.php');
+
+			$t_list = new ca_lists();
+			$o_db = $t_list->getDb();
+			
+			$vn_locale_id = ca_locales::getDefaultCataloguingLocaleID();
+
+			if (!($ps_source = (string)$po_opts->getOption('file'))) {
+				CLIUtils::addError(_t("You must specify a file"));
+				return false;
+			}
+			if (!file_exists($ps_source) || !is_readable($ps_source)) {
+				CLIUtils::addError(_t("You must specify a valid file"));
+				return false;
+			}
+			
+			if (!($ps_list_code = (string)$po_opts->getOption('list'))) {
+				CLIUtils::addError(_t("You must specify a list"));
+				return false;
+			}
+
+			try {
+				$o_file = PHPExcel_IOFactory::load($ps_source);
+			} catch (Exception $e) {
+				CLIUtils::addError(_t("You must specify a valid Excel .xls or .xlsx file: %1", $e->getMessage()));
+				return false;
+			}
+			
+			print CLIProgressBar::start($o_file->getActiveSheet()->getHighestRow(), _t('Loading non-preferred terms'));
+			// Get non-preferred terms
+			$o_file->setActiveSheetIndex(1);
+			$o_sheet = $o_file->getActiveSheet();
+			$o_rows = $o_sheet->getRowIterator();
+			
+			$o_rows->next();
+				
+			$va_non_preferred_terms = [];
+			while ($o_rows->valid() && ($o_row = $o_rows->current())) {
+				$o_cells = $o_row->getCellIterator();
+				$o_cells->setIterateOnlyExistingCells(false);
+
+				$vn_c = 0;
+				$va_data = array();
+
+				foreach ($o_cells as $o_cell) {
+					$va_data[$vn_c] = trim((string)$o_cell->getValue());
+					$vn_c++;
+
+					if ($vn_c > 3) { break; }
+				}
+				
+				$va_non_preferred_terms[$va_data[1]][] = $va_data[0];
+				
+				$o_rows->next();
+				CLIProgressBar::next();
+			}
+			CLIProgressBar::finish();
+			
+
+			// get list
+			
+			print CLIProgressBar::start(1, _t('Creating list'));
+			
+			if (!($t_list = ca_lists::find(['list_code' => $ps_list_code], ['returnAs' => 'firstModelInstance']))) {
+				$t_list = new ca_lists();
+				$t_list->setMode(ACCESS_WRITE);
+				$t_list->set('list_code', $ps_list_code);
+				$t_list->set('is_system_list', 1);
+				$t_list->set('is_hierarchical', 1);
+				$t_list->set('use_as_vocabulary', 1);
+				$t_list->insert();
+				
+				if ($t_list->numErrors()) {
+					CLIUtils::addError(_t("Could not create list %1: %2", $ps_list_code, join("; ", $t_list->getErrors())));
+					return false;
+				}
+				
+				$t_list->addLabel(['name' => 'Chenhall Nomenclature'], $vn_locale_id, null, true);
+				if ($t_list->numErrors()) {
+					CLIUtils::addError(_t("Could not label list %1: %2", $ps_list_code, join("; ", $t_list->getErrors())));
+					return false;
+				}
+				
+			} elseif ($t_list->numItemsInList($ps_list_code) > 0) {
+				CLIUtils::addError(_t("List %1 is not empty. The Chenhall Nomenclature may only be imported into an empty list.", $ps_list_code));
+				return false;
+			}
+			CLIProgressBar::finish();
+
+			// Get preferred terms
+			
+			$o_file->setActiveSheetIndex(0);
+			$o_sheet = $o_file->getActiveSheet();
+			$o_rows = $o_sheet->getRowIterator();
+			$vn_add_count = 0;
+
+			print CLIProgressBar::start($o_file->getActiveSheet()->getHighestRow(), _t('Loading preferred terms'));
+			
+			$o_rows->next(); // skip first line
+			
+			$va_parents = [];
+			
+			while ($o_rows->valid() && ($o_row = $o_rows->current())) {
+				$o_cells = $o_row->getCellIterator();
+				$o_cells->setIterateOnlyExistingCells(false);
+
+				$vn_c = 0;
+				$va_data = array();
+
+				foreach ($o_cells as $o_cell) {
+					$vm_val = $o_cell->getValue();
+					if ($vm_val instanceof PHPExcel_RichText) {
+						$vs_val = '';
+						foreach($vm_val->getRichTextElements() as $vn_x => $o_item) {
+							$o_font = $o_item->getFont();
+							$vs_text = $o_item->getText();
+							if ($o_font && $o_font->getBold()) {
+								$vs_val .= "<strong>{$vs_text}</strong>";
+							} elseif($o_font && $o_font->getItalic()) {
+								$vs_val .= "<em>{$vs_text}</em>";
+							} else {
+								$vs_val .= $vs_text;
+							}
+						}
+					} else {
+						$vs_val = trim((string)$vm_val);
+					}
+					$va_data[$vn_c] = nl2br(preg_replace("![\n\r]{1}!", "\n\n", $vs_val));
+					$vn_c++;
+
+					if ($vn_c > 6) { break; }
+				}
+				$o_rows->next();
+
+				
+				$va_acc = [];
+				foreach($va_data as $vn_col => $vs_term) {
+					if(!$vs_term) { continue; }
+					if($vn_col > 5) { break; }
+					$va_acc[] = $vs_term;
+				}
+				$vs_term = array_pop($va_acc);
+				$vs_key = md5(join("|", $va_acc));
+				if (!($vn_parent_id = $va_parents[$vs_key])) {
+					$vn_parent_id = $t_list->getRootListItemID();
+				}
+				
+				if (!($t_item = $t_list->addItem($vs_term, true, false, $vn_parent_id, null, $vs_term, '', 0, 1))) {
+					CLIUtils::addError(_t("Could not add term %1: %2", $vs_term, join("; ", $t_list->getErrors())));
+					continue;
+				}
+				if (!$t_item->addLabel(['name_singular' => $vs_term, 'name_plural' => $vs_term, 'description' => $va_data[6]], $vn_locale_id, null, true)) {
+					CLIUtils::addError(_t("Could not add term label %1: %2", $vs_term, join("; ", $t_list->getErrors())));
+					continue;
+				}
+				print CLIProgressBar::next(1, _t('Added preferred term %1', $vs_term));
+				$va_parents[md5(join("|", array_merge($va_acc, [$vs_term])))] = $t_item->getPrimaryKey();
+				
+				if(is_array($va_non_preferred_terms[$vs_term])) {
+					foreach($va_non_preferred_terms[$vs_term] as $vs_non_preferred_term) {
+						if (!($t_item->addLabel(['name_singular' => $vs_non_preferred_term, 'name_plural' => $vs_non_preferred_term, 'description' => ''], $vn_locale_id, null, false))) {
+							CLIUtils::addError(_t("Could not add non-preferred term %1 to %2: %3", $vs_non_preferred_term, $vs_term, join("; ", $t_list->getErrors())));
+							continue;
+						}
+					}
+				}
+			}
+
+			CLIProgressBar::finish();
+
+			CLIUtils::addMessage(_t('Added %1 terms', $vn_add_count), array('color' => 'bold_green'));
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_chenhall_nomenclatureParamList() {
+			return array(
+				"file|f=s" => _t('Excel XLSX-format AASLH Chenhall Nomenclature file to load.'),
+				"list|l=s" => _t('Code for list to load Chenhall Nomenclature into. If list with code does not exist it will be created.')
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_chenhall_nomenclatureUtilityClass() {
+			return _t('Import/Export');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_chenhall_nomenclatureShortHelp() {
+			return _t('Load AASLH Chenhall Nomenclature from an Excel file');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_chenhall_nomenclatureHelp() {
+			return _t('Loads Chenhall Nomenclature from Excel XLSX format file into the specified list. You can obtain a copy of the Nomenclature from the American Association of State and Local History (AASLH).');
 		}
 		# -------------------------------------------------------
 	}

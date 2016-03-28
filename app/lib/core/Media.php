@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2003-2013 Whirl-i-Gig
+ * Copyright 2003-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -57,20 +57,22 @@ class Media extends BaseObject {
 	static $WLMedia_unregistered_plugin_cache = array();
 	static $WLMedia_plugin_names = null;
 	
+	static $plugin_path = null;
+	
 	# ----------------------------------------------------------
 	# Methods
 	# ----------------------------------------------------------
 	public function __construct($pb_no_cache=false) { 
-		
+		if (!Media::$plugin_path) { Media::$plugin_path = __CA_LIB_DIR__.'/core/Plugins/Media'; }
 	}
 	# ----------------------------------------------------------
 	public function getPluginNames() {
 		if (is_array(Media::$WLMedia_plugin_names)) { return Media::$WLMedia_plugin_names; }
 		
-		$o_config = Configuration::load();
-		$plugin_dir = $o_config->get("media_plugins");
 		Media::$WLMedia_plugin_names = array();
-		$dir = opendir($plugin_dir);
+		$dir = opendir(Media::$plugin_path);
+		if (!$dir) { throw new ApplicationException(_t('Cannot open media plugin directory %1', Media::$plugin_path)); }
+	
 		while (($plugin = readdir($dir)) !== false) {
 			if ($plugin == "BaseMediaPlugin.php") { continue; }
 			if (preg_match("/^([A-Za-z_]+[A-Za-z0-9_]*).php$/", $plugin, $m)) {
@@ -104,16 +106,14 @@ class Media extends BaseObject {
 	 *
 	 */
 	public function getUnregisteredPlugin($ps_plugin_name) {
-		
 		if(!in_array($ps_plugin_name, $this->getPluginNames())) { return null; }
-		//if (isset(Media::$WLMedia_unregistered_plugin_cache[$ps_plugin_name])) { return Media::$WLMedia_unregistered_plugin_cache[$ps_plugin_name]; }
 		
-		# get plugin directory from configuration
-		$o_config = Configuration::load();
-		$plugin_dir = $o_config->get("media_plugins");
+		$plugin_dir = Media::$plugin_path;
 		
 		# load the plugin
-		require_once("{$plugin_dir}/{$ps_plugin_name}.php");
+		if (!class_exists("WLPlugMedia{$ps_plugin_name}")) { 
+			require_once("{$plugin_dir}/{$ps_plugin_name}.php"); 
+		}
 		$ps_plugin_class = "WLPlugMedia{$ps_plugin_name}";
 		$p = new $ps_plugin_class();
 		
@@ -126,12 +126,13 @@ class Media extends BaseObject {
 		
 		if(!in_array($ps_plugin_name, $this->getPluginNames())) { return null; }
 		if (isset(Media::$WLMedia_plugin_cache[$ps_plugin_name])) { return Media::$WLMedia_plugin_cache[$ps_plugin_name]; }
-		# get plugin directory from configuration
-		$o_config = Configuration::load();
-		$plugin_dir = $o_config->get("media_plugins");
+		
+		$plugin_dir = Media::$plugin_path;
 		
 		# load the plugin
-		require_once("{$plugin_dir}/{$ps_plugin_name}.php");
+		if (!class_exists("WLPlugMedia{$ps_plugin_name}")) { 
+			require_once("{$plugin_dir}/{$ps_plugin_name}.php"); 
+		}
 		$vs_classname = "WLPlugMedia{$ps_plugin_name}";
 		$p = new $vs_classname;
 		# register the plugin's capabilities

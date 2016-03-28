@@ -78,7 +78,7 @@ class Configuration {
 	 *
 	 * @access private
 	 */
-	var $opb_debug = true;
+	var $opb_debug = false;
 
 	static $s_get_cache;
 	static $s_config_cache = null;
@@ -880,9 +880,9 @@ class Configuration {
 			$ps_scalar_value = trim($ps_scalar_value);
 		}
 		// perform constant var substitution
-		if (preg_match("/^__[A-Za-z0-9]+/", $ps_scalar_value)) {
-			if (defined($ps_scalar_value)) {
-				return constant($ps_scalar_value);
+		if (preg_match("/^(__[A-Za-z0-9\_]+)(?=__)/", $ps_scalar_value, $va_matches)) {
+			if (defined($va_matches[1].'__')) {
+				return str_replace($va_matches[1].'__', constant($va_matches[1].'__'), $ps_scalar_value);
 			}
 		}
 		return $ps_scalar_value;

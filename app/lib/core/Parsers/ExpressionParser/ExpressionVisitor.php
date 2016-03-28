@@ -74,6 +74,7 @@ class ExpressionVisitor implements Visitor\Visit {
 			'round'			=> xcallable('round'),
 			'random'		=> xcallable('rand'),
 			'current'		=> xcallable('caIsCurrentDate'),
+			'isvaliddate'	=> xcallable('caIsValidDate'),
 			'future'		=> xcallable('caDateEndsInFuture'),
 			'wc'			=> xcallable('str_word_count'),
 			'length'		=> xcallable('strlen'),

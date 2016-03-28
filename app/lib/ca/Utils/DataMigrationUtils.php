@@ -103,13 +103,23 @@
 		 * @param int $pn_parent_id The parent_id of the place; must be set to a non-null value
 		 * @param int $pn_type_id The type_id of the place type to use if the place needs to be created
 		 * @param int $pn_locale_id The locale_id to use if the place needs to be created (will be used for both the place locale as well as the label locale)
+		 * @param int $pn_hierarchy_id The idno or item_id of the place hierarchy to use [Default is null; use first hierarchy found] 
 		 * @param array $pa_values An optional array of additional values to populate newly created place records with. These values are *only* used for newly created places; they will not be applied if the place named already exists. The array keys should be names of ca_places fields or valid entity attributes. Values should be either a scalar (for single-value attributes) or an array of values for (multi-valued attributes)
 		 * @param array $pa_options An optional array of options. See DataMigrationUtils::_getID() for a list.
 		 * @return bool|ca_places|mixed|null
 		 *
 		 * @see DataMigrationUtils::_getID()
 		 */
-		static function getPlaceID($ps_place_name, $pn_parent_id, $pn_type_id, $pn_locale_id, $pa_values=null, $pa_options=null) {
+		static function getPlaceID($ps_place_name, $pn_parent_id, $pn_type_id, $pn_locale_id, $pn_hierarchy_id=null, $pa_values=null, $pa_options=null) {
+			if (!is_array($pa_values)) { $pa_values = array(); }
+			if ($pn_hierarchy_id) {
+				$pa_values['hierarchy_id'] = $pn_hierarchy_id;
+			} else {
+				$t_list = new ca_lists();
+				if (sizeof($va_hierarchy_ids = $t_list->getItemsForList('place_hierarchies', array('idsOnly' => true, 'omitRoot' => true)))) {
+					$pa_values['hierarchy_id'] = array_shift($va_hierarchy_ids);
+				}
+			}
 			return DataMigrationUtils::_getID('ca_places', array('name' => $ps_place_name), $pn_parent_id, $pn_type_id, $pn_locale_id, $pa_values, $pa_options);
 		}
 		# -------------------------------------------------------
@@ -496,12 +506,20 @@
 		 * @param array $pa_options Optional array of options. Supported options are:
 		 *		locale = locale code to use when applying rules; if omitted current user locale is employed
 		 *		displaynameFormat = surnameCommaForename, forenameCommaSurname, forenameSurname, original [Default = original]
+		 *		doNotParse = Use name as-is in the surname and display name fields. All other fields are blank. [Default = false]
 		 *
 		 * @return array Array containing parsed name, keyed on ca_entity_labels fields (eg. forename, surname, middlename, etc.)
 		 */
 		static function splitEntityName($ps_text, $pa_options=null) {
 			global $g_ui_locale;
 			$ps_text = $ps_original_text = trim(preg_replace("![ ]+!", " ", $ps_text));
+			
+			if (caGetOption('doNotParse', $pa_options, false)) {
+				return array(
+					'forename' => '', 'middlename' => '', 'surname' => $ps_text,
+					'displayname' => $ps_text, 'prefix' => '', 'suffix' => ''
+				);
+			}
 			
 			if (isset($pa_options['locale']) && $pa_options['locale']) {
 				$vs_locale = $pa_options['locale'];

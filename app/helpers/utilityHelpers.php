@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2015 Whirl-i-Gig
+ * Copyright 2007-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,6 +40,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ZipFile.php');
 require_once(__CA_LIB_DIR__.'/core/Logging/Eventlog.php');
 require_once(__CA_LIB_DIR__.'/core/Utils/Encoding.php');
 require_once(__CA_LIB_DIR__.'/core/Zend/Measure/Length.php');
+require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 
 # ----------------------------------------------------------------------
 # String localization functions (getText)
@@ -1217,6 +1218,25 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ---------------------------------------
 	/**
+	 * Remove all HTML tags and their contents 
+	 *
+	 * @param string $ps_string The string to process
+	 * @return string $ps_string with HTML tags and associated content removed
+	 */
+	function caStripTagsAndContent($ps_string) {
+		$o_doc = str_get_dom($ps_string);	
+		foreach($o_doc("*") as $o_node) {
+			if ($o_node->tag != '~text~') {
+				$o_node->delete();
+			}
+		}
+		$vs_proc_string = $o_doc->html();
+		$vs_proc_string = str_replace("<~root~>", "", $vs_proc_string);
+		$vs_proc_string = str_replace("</~root~>", "", $vs_proc_string);
+		return trim($vs_proc_string);
+	}
+	# ---------------------------------------
+	/**
 	  *
 	  */
 	function caGetCacheObject($ps_prefix, $pn_lifetime=86400, $ps_cache_dir=null, $pn_cleaning_factor=100) {
@@ -1499,6 +1519,17 @@ function caFileIsIncludable($ps_file) {
 			return isset($va_date['start']) ? $va_date['start'] : null;
 		}
 		return null;
+	}
+	# ---------------------------------------
+	/**
+	  * Determine if date expression can be parsed 
+	  *
+	  * @param string $ps_date_expression A date/time expression as described in http://docs.collectiveaccess.org/wiki/Date_and_Time_Formats
+	  * @return bool True if expression can be parsed
+	  */
+	function caIsValidDate($ps_date_expression) {
+		$o_tep = new TimeExpressionParser();
+		return $o_tep->parse($ps_date_expression);
 	}
 	# ---------------------------------------
 	/**
@@ -1856,17 +1887,21 @@ function caFileIsIncludable($ps_file) {
 	 * caGetOption() provides a simple interface to grab values, force default values for non-existent settings and enforce simple validation rules.
 	 *
 	 * @param mixed $pm_option The option to extract. If an array is provided then each option is tried, in order, until a non-false value is found.
-	 * @param array $pa_options The options array to extract values from
+	 * @param array $pa_options The options array to extract values from. An instance of Zend_Console_Getopt may also be passed, allowing processing of command line options.
 	 * @param mixed $pm_default An optional default value to return if $ps_option is not set in $pa_options 
 	 * @param array $pa_parse_options Option parser options (cross your eyes now) include:
 	 *		forceLowercase = transform option value to all lowercase [default=false]
 	 *		forceUppercase = transform option value to all uppercase [default=false]
 	 *		validValues = array of values that are possible for this option. If the option value is not in the list then the default is returned. If no default is set then the first value in the validValues list is returned. Note that by default all comparisons are case-insensitive. 
 	 *		caseSensitive = do case sensitive comparisons when checking the option value against the validValues list [default=false]
-	 *		castTo = array|int|string
+	 *		castTo = array|int|string|float|bool
+	 *		delimiter = A delimiter, or array of delimiters, to break a string option value on. When this option is set an array will always be returned. [Default is null]
 	 * @return mixed
 	 */
 	function caGetOption($pm_option, $pa_options, $pm_default=null, $pa_parse_options=null) {
+		if (is_object($pa_options) && is_a($pa_options, 'Zend_Console_Getopt')) {
+			$pa_options = array($pm_option => $pa_options->getOption($pm_option));
+		}
 		$va_valid_values = null;
 		$vb_case_insensitive = false;
 		if (isset($pa_parse_options['validValues']) && is_array($pa_parse_options['validValues'])) {
@@ -1889,7 +1924,13 @@ function caFileIsIncludable($ps_file) {
 			$vm_val = (isset($pa_options[$pm_option]) && !is_null($pa_options[$pm_option])) ? $pa_options[$pm_option] : $pm_default;
 		}
 		
-		if(is_array($va_valid_values)) {
+		if (
+			((is_string($vm_val) && !isset($pa_parse_options['castTo'])) || (isset($pa_parse_options['castTo']) && ($pa_parse_options['castTo'] == 'string')))
+			&&
+			(!isset($pa_parse_options['delimiter']) || !($va_delimiter = $pa_parse_options['delimiter']))
+			&& 
+			(is_array($va_valid_values))
+		) {
 			if (!in_array($vb_case_insensitive ? mb_strtolower($vm_val) : $vm_val, $va_valid_values)) {
 				$vm_val = $pm_default;
 				if (!in_array($vb_case_insensitive ? mb_strtolower($vm_val) : $vm_val, $va_valid_values)) {
@@ -1907,13 +1948,19 @@ function caFileIsIncludable($ps_file) {
 		$vs_cast_to = (isset($pa_parse_options['castTo']) && ($pa_parse_options['castTo'])) ? strtolower($pa_parse_options['castTo']) : '';
 		switch($vs_cast_to) {
 			case 'int':
+			case 'integer':
 				$vm_val = (int)$vm_val;
 				break;
 			case 'float':
+			case 'decimal':
 				$vm_val = (float)$vm_val;
 				break;
 			case 'string':
 				$vm_val = (string)$vm_val;
+				break;
+			case 'bool':
+			case 'boolean':
+				$vm_val = (bool)$vm_val;
 				break;
 			case 'array':
 				if(!is_array($vm_val)) {
@@ -1924,6 +1971,27 @@ function caFileIsIncludable($ps_file) {
 					}
 				}
 				break;
+		}
+		
+		if (is_string($vm_val) && (isset($pa_parse_options['delimiter']) && ($va_delimiter = $pa_parse_options['delimiter']))) {
+			if (!is_array($va_delimiter)) { $va_delimiter = array($va_delimiter); }
+			
+			$va_split_vals = preg_split('![ ]*('.join('|', $va_delimiter).')[ ]*!', $vm_val);
+			$va_split_vals = array_filter($va_split_vals, "strlen");
+			
+			if (is_array($va_valid_values)) {
+				$va_filtered_vals = [];
+				foreach($va_split_vals as $vm_val) {
+					if (in_array($vb_case_insensitive ? mb_strtolower($vm_val) : $vm_val, $va_valid_values)) {
+						$va_filtered_vals[] = $vm_val;
+					}
+				
+					if (!sizeof($va_filtered_vals) && $pm_default) { $va_filtered_vals[] = $pm_default; }
+					$va_split_vals = $va_filtered_vals;
+				}
+			}
+			
+			return $va_split_vals;
 		}
 		
 		return $vm_val;
@@ -2591,25 +2659,26 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Get length unit type as Zend constant, e.g. 'ft.' = Zend_Measure_Length::FEET
 	 * @param string $ps_unit
+	 * @param array $pa_options Options include:
+	 *		short = return short name for unit (ex. for feet, return "ft", for millimeter return "mm")
 	 * @return null|string
 	 */
-	function caGetLengthUnitType($ps_unit) {
-		switch($ps_unit) {
+	function caGetLengthUnitType($ps_unit, $pa_options=null) {
+		$vb_return_short = caGetOption('short', $pa_options, false);
+		switch(strtolower(str_replace(".", "", $ps_unit))) {
 			case "'":
 			case "’":
 			case 'ft':
-			case 'ft.':
 			case 'feet':
 			case 'foot':
-				return Zend_Measure_Length::FEET;
+				return $vb_return_short ? 'ft' : Zend_Measure_Length::FEET;
 				break;
 			case '"':
 			case "”":
 			case 'in':
-			case 'in.':
 			case 'inch':
 			case 'inches':
-				return Zend_Measure_Length::INCH;
+				return $vb_return_short ? 'in' :  Zend_Measure_Length::INCH;
 				break;
 			case 'm':
 			case 'm.':
@@ -2618,32 +2687,31 @@ function caFileIsIncludable($ps_file) {
 			case 'metre':
 			case 'metres':
 			case 'mt':
-				return Zend_Measure_Length::METER;
+				return $vb_return_short ? 'm' :  Zend_Measure_Length::METER;
 				break;
 			case 'cm':
-			case 'cm.':
 			case 'centimeter':
 			case 'centimeters':
 			case 'centimetre':
 			case 'centimetres':
-				return Zend_Measure_Length::CENTIMETER;
+				return $vb_return_short ? 'cm' : Zend_Measure_Length::CENTIMETER;
 				break;
 			case 'mm':
-			case 'mm.':
 			case 'millimeter':
 			case 'millimeters':
 			case 'millimetre':
 			case 'millimetres':
-				return Zend_Measure_Length::MILLIMETER;
+				return $vb_return_short ? 'mm' :  Zend_Measure_Length::MILLIMETER;
 				break;
 			case 'point':
 			case 'pt':
-			case 'pt.':
-				return Zend_Measure_Length::POINT;
+			case 'p':
+				return $vb_return_short ? 'pt' :  Zend_Measure_Length::POINT;
 				break;
 			case 'mile':
 			case 'miles':
-				return Zend_Measure_Length::MILE;
+			case 'mi':
+				return $vb_return_short ? 'mi' :  Zend_Measure_Length::MILE;
 				break;
 			case 'km':
 			case 'k':
@@ -2651,7 +2719,7 @@ function caFileIsIncludable($ps_file) {
 			case 'kilometers':
 			case 'kilometre':
 			case 'kilometres':
-				return Zend_Measure_Length::KILOMETER;
+				return $vb_return_short ? 'km' :  Zend_Measure_Length::KILOMETER;
 				break;
 			default:	
 				return null;

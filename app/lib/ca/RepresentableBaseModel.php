@@ -654,6 +654,15 @@
 			if (caExtractEmbeddedMetadata($this, $va_metadata, $pn_locale_id)) {
 				$this->update();
 			}
+			
+			
+			// Trigger automatic replication
+			$va_auto_targets = $t_rep->getAvailableMediaReplicationTargets('media', 'original', array('trigger' => 'auto', 'access' => $t_rep->get('access')));
+			if(is_array($va_auto_targets)) {
+				foreach($va_auto_targets as $vs_target => $va_target_info) {
+					$t_rep->replicateMedia('media', $vs_target);
+				}
+			}
 		
 			if (isset($pa_options['returnRepresentation']) && (bool)$pa_options['returnRepresentation']) {
 				return $t_rep;
@@ -954,16 +963,18 @@
 		/**
 		 * Returns information for representations attached to the current item with the specified mimetype. 
 		 *
-		 * @param string $ps_mimetype The mimetype to return representations for. 
+		 * @param array $pa_mimetypes List of mimetypes to return representations for. 
 		 * @param array $pa_options Options for selection of representations to return; same as options for self::getRepresentations()
 		 *
 		 * @return array An array with information about matching representations, in the same format as that returned by self::getRepresentations()
 		 */
-		public function representationsWithMimeType($ps_mimetype, $pa_options=null) {
+		public function representationsWithMimeType($pa_mimetypes, $pa_options=null) {
+			if (!$pa_mimetypes) { return array(); }
+			if (!is_array($pa_mimetypes) && $pa_mimetypes) { $pa_mimetypes = array($pa_mimetypes); }
 			$va_rep_list = array();
-			if (is_array($va_reps = $this->getRepresentations($pa_options))) {
+			if (is_array($va_reps = $this->getRepresentations(null, null, $pa_options))) {
 				foreach($va_reps as $vn_rep_id => $va_rep) {
-					if ($ps_mimetype == $va_rep['mimetype']) {	
+					if (in_array($va_rep['mimetype'], $pa_mimetypes)) {	
 						$va_rep_list[$vn_rep_id] = $va_rep;
 					}
 				}
@@ -1014,7 +1025,7 @@
 			$vs_pk = $this->primaryKey();
 		
 			$qr_res = $o_db->query("
-				SELECT oxor.{$vs_pk}, orep.media
+				SELECT orep.representation_id, oxor.{$vs_pk}, orep.media
 				FROM ca_object_representations orep
 				INNER JOIN {$vs_linking_table} AS oxor ON oxor.representation_id = orep.representation_id
 				WHERE
@@ -1025,6 +1036,7 @@
 			while($qr_res->nextRow()) {
 				$va_media_tags = array();
 				foreach($pa_versions as $vs_version) {
+					$va_media_tags['representation_id'] = $qr_res->get('ca_object_representations.representation_id');
 					$va_media_tags['tags'][$vs_version] = $qr_res->getMediaTag('ca_object_representations.media', $vs_version);
 					$va_media_tags['info'][$vs_version] = $qr_res->getMediaInfo('ca_object_representations.media', $vs_version);
 					$va_media_tags['urls'][$vs_version] = $qr_res->getMediaUrl('ca_object_representations.media', $vs_version);
@@ -1074,6 +1086,36 @@
 				$va_counts[$qr_res->get($vs_pk)] = (int)$qr_res->get('c');
 			}
 			return $va_counts;
+		}		
+		# ------------------------------------------------------
+		/** 
+		 * Returns HTML form bundle for batch editor-only representation access and status bundle
+		 *
+		 * @param HTTPRequest $po_request The current request
+		 * @param string $ps_form_name
+		 * @param string $ps_placement_code
+		 * @param array $pa_bundle_settings
+		 * @param array $pa_options Array of options. Supported options are 
+		 *			noCache = If set to true then label cache is bypassed; default is true
+		 *
+		 * @return string Rendered HTML bundle
+		 */
+		public function getObjectRepresentationAccessStatusHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
+			global $g_ui_locale;
+		
+			$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+			if(!is_array($pa_options)) { $pa_options = array(); }
+		
+			$o_view->setVar('id_prefix', $ps_form_name);
+			$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		
+			$o_view->setVar('settings', $pa_bundle_settings);
+		
+			$o_view->setVar('t_subject', $this);
+		
+		
+			return $o_view->render('ca_object_representations_access_status.php');
 		}
 		# ------------------------------------------------------
 		/**

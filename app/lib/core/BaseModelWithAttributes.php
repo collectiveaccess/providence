@@ -1319,6 +1319,14 @@
 			if ($va_tmp[1] == $this->getTypeFieldName()) {
 				return $this->getTypeListAsHTMLFormElement($ps_field.$vs_rel_types, array('class' => caGetOption('class', $pa_options, null)), array_merge($pa_options, array('nullOption' => '-')));
 			}
+			
+			if ($ps_render = caGetOption('render', $pa_options, null)) {
+				switch($ps_render) {
+					case 'is_set':
+						return caHTMLCheckboxInput($ps_field.$vs_rel_types, array('value' => '[SET]'));
+						break;
+				}
+			}
 											
 			if (in_array($va_tmp[1], array('preferred_labels', 'nonpreferred_labels'))) {
 				return caHTMLTextInput($ps_field.$vs_rel_types.($vb_as_array_element ? "[]" : ""), array('value' => $pa_options['values'][$ps_field], 'class' => $pa_options['class'], 'id' => str_replace('.', '_', $ps_field)), $pa_options);
@@ -2304,7 +2312,7 @@
 				$o_view->setVar('references', $va_references);
 				
 				// make search strings
-				$va_element_list = $this->getAuthorityElementList();
+				$va_element_list = $this->getAuthorityElementReferencesElementList();
 				
 				$va_search_strings = array();
 				
@@ -2324,13 +2332,9 @@
 		}
 		# ------------------------------------------------------------------
 		/**
-		 * Returns attribute data type code for authority element used to reference this model. 
-		 * Eg. for the ca_entities model the __CA_ATTRIBUTE_VALUE_ENTITIES__ constant (numeric 22) is returned.
-		 * Returns null if the model cannot be referenced using a metadata element.
 		 *
-		 * @return int
 		 */
-		public function authorityElementDatatype() {
+		public static function getAuthorityElementDatatypeList() {
 			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/CollectionsAttributeValue.php');
 			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/EntitiesAttributeValue.php');
 			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/LoansAttributeValue.php');
@@ -2343,9 +2347,20 @@
 			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/StorageLocationsAttributeValue.php');
 			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/ListAttributeValue.php');
 			
-			$va_element_datatypes = array(
+			return array(
 				'ca_objects' => __CA_ATTRIBUTE_VALUE_OBJECTS__, 'ca_object_lots' => __CA_ATTRIBUTE_VALUE_OBJECTLOTS__, 'ca_entities' => __CA_ATTRIBUTE_VALUE_ENTITIES__, 'ca_places' => __CA_ATTRIBUTE_VALUE_PLACES__, 'ca_occurrences' => __CA_ATTRIBUTE_VALUE_OCCURRENCES__, 'ca_collections' => __CA_ATTRIBUTE_VALUE_COLLECTIONS__, 'ca_storage_locations' => __CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__, 'ca_list_items' => __CA_ATTRIBUTE_VALUE_LIST__, 'ca_loans' => __CA_ATTRIBUTE_VALUE_LOANS__, 'ca_movements' => __CA_ATTRIBUTE_VALUE_MOVEMENTS__, 'ca_object_representations' => __CA_ATTRIBUTE_VALUE_OBJECTREPRESENTATIONS__
 			);
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Returns attribute data type code for authority element used to reference this model. 
+		 * Eg. for the ca_entities model the __CA_ATTRIBUTE_VALUE_ENTITIES__ constant (numeric 22) is returned.
+		 * Returns null if the model cannot be referenced using a metadata element.
+		 *
+		 * @return int
+		 */
+		public function authorityElementDatatype() {
+			$va_element_datatypes = BaseModelWithAttributes::getAuthorityElementDatatypeList();
 			
 			if (isset($va_element_datatypes[$this->tableName()])) { 
 				return $va_element_datatypes[$this->tableName()];
@@ -2354,14 +2369,14 @@
 		}
 		# ------------------------------------------------------------------
 		/**
-		 * 
+		 * Return list of metadata elements that have references to the current row.
 		 *
 		 * @param array $pa_options Option include:
 		 *		row_id = Return references for specified row. [Default is to return references for currently loaded row]
 		 *
 		 * @return mixed 
 		 */
-		public function getAuthorityElementList($pa_options=null) {
+		public function getAuthorityElementReferencesElementList($pa_options=null) {
 			if (!($vn_datatype = $this->authorityElementDatatype())) { return array(); }
 			if (!($vn_id = caGetOption('row_id', $pa_options, null))) { 
 				if (!($vn_id = $this->getPrimaryKey())) {
@@ -2487,7 +2502,12 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Redirects all references to the currently loaded row using authority metadata elements to another row.
 		 *
+		 * @param int $pn_to_id Primary key of row to move references to 
+		 * @param array $pa_options No options supported
+		 *
+		 * @return bool True on success, false on error, null if this model is not used for references or no row is loaded.
 		 */
 		public function moveAuthorityElementReferences($pn_to_id, $pa_options=null) {
 			if (!($vn_datatype = $this->authorityElementDatatype())) { return null; }
@@ -2537,7 +2557,11 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Removes all references to the currently loaded row using authority metadata elements.
 		 *
+		 * @param array $pa_options No options supported
+		 *
+		 * @return bool True on success, false on error, null if this model is not used for references or no row is loaded.
 		 */
 		public function deleteAuthorityElementReferences($pa_options=null) {
 			if (!($vn_datatype = $this->authorityElementDatatype())) { return null; }
@@ -2583,6 +2607,122 @@
 			
 			return true;
 		}
+		# ------------------------------------------------------------------
+		/**
+		 * Get list of authority elements with references to other rows bound to the current row.
+		 *
+		 * @param array $pa_options Options include:
+		 *		row_id = Return used elements for specified row. [Default is to return references for currently loaded row]
+		 *		idsOnly = Return element_id values only. [Default is false]
+		 *		rootIdsOnly = Return element_id values only. [Default is false]
+		 *		omitLists = Don't include list elements. [Default is true]
+		 */
+		public function getAuthorityElementList($pa_options=null) {
+			if (!($vn_id = caGetOption('row_id', $pa_options, null))) { 
+				if (!($vn_id = $this->getPrimaryKey())) {
+					return array();
+				}
+			}
+			
+			$pb_root_ids_only = caGetOption('rootIdsOnly', $pa_options, false);
+			$pb_ids_only = caGetOption('idsOnly', $pa_options, false);
+			
+			$o_db = $this->getDb();
+			
+			$va_element_types = BaseModelWithAttributes::getAuthorityElementDatatypeList();
+			if (caGetOption('omitLists', $pa_options, true)) { unset($va_element_types['ca_list_items']); }
+			
+			$qr_res = $o_db->query("
+				SELECT count(*) count, a.element_id, a.table_num, md.element_code, md.element_id, md.parent_id, md.hier_element_id, md.datatype
+				FROM ca_attribute_values cav
+				INNER JOIN ca_attributes AS a ON a.attribute_id = cav.attribute_id
+				INNER JOIN ca_metadata_elements AS md ON md.element_id = cav.element_id
+				WHERE
+					a.table_num = ? AND a.row_id = ? AND (cav.item_id > 0 OR cav.value_integer1 > 0) AND
+					md.datatype IN (?)
+				GROUP BY a.element_id, a.table_num, md.element_id
+			", [$this->tableNum(), $vn_id, $va_element_types]);
+	
+			$va_elements = array();
+			
+			while($qr_res->nextRow()) {
+				$va_row = $qr_res->getRow();
+				
+				if ($pb_root_ids_only) {
+					$va_elements[$va_row['hier_element_id']] = true;
+				} elseif($pb_ids_only) {
+					$va_elements[$va_row['element_id']] = true;
+				} else {
+					$va_elements[$va_row['element_id']] = $va_row;
+				}
+			}
+			
+			if($pb_root_ids_only || $pb_ids_only) { return array_keys($va_elements); }
+			if(caGetOption('countOnly', $pa_options, false)) { return sizeof($va_elements); }
+			return $va_elements;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Move specific attributes from the loaded row to another row. After the move is performed the specified 
+		 * attributes will be referenced by the target only. Internally, the same attribute entries are reused for the target
+		 * with attribute row_id values rewritten.
+		 *
+		 * Note that if a sub-element code or element_id is specified the entire container for the sub-element will be moved. 
+		 *
+		 * @param int $pn_to_id Primary key of row to move element data to 
+		 * @param array $pa_element_codes_or_ids A list of element codes or element_ids of attributes to move. If sub-elements are specified the enclosing containers will be moved. 
+		 * @param array $pa_options Options include:
+		 *		row_id = Return used elements for specified row. [Default is to return references for currently loaded row]
+		 *
+		 * @return bool True on success, false on error, null if this model is not used for references or no row is loaded.
+		 * @throws ApplicationException Thrown if $pn_to_id does not refer to a valid (existing, non-deleted) row.
+		 */
+		public function moveAttributes($pn_to_id, $pa_element_codes_or_ids, $pa_options=null) {
+			if (!($vn_id = caGetOption('row_id', $pa_options, null))) { 
+				if (!($vn_id = $this->getPrimaryKey())) {
+					return null;
+				}
+			}
+			
+			if (is_array($pa_element_codes_or_ids) && sizeof($pa_element_codes_or_ids)) {
+				$o_db = $this->getDb();
+				
+				$t_instance = $this->getAppDatamodel()->getInstanceByTableName($this->tableName(), false);
+				if (!$t_instance->load($pn_to_id) || (bool)$t_instance->get('deleted')) { throw new ApplicationException(_t('Invalid target ID')); }
+				
+				$va_element_ids = [];
+				$va_changed_values = [];
+				foreach($pa_element_codes_or_ids as $vm_element) {
+					if (!($vn_element_id = ca_metadata_elements::getElementID($vm_element))) { continue; }
+					
+					// is element valid for target? (we use top-level container if the element is a container sub-element)
+					if (!$t_instance->hasElement(ca_metadata_elements::getElementCodeForId($vn_hier_element_id = ca_metadata_elements::getElementHierarchyID($vn_element_id)))) { continue; }
+					$va_element_ids[$vn_hier_element_id] = true;
+					$va_changed_values["_ca_attribute_{$vn_hier_element_id}"] = true;
+				}
+			
+				if (sizeof($va_element_ids) > 0) {
+					$qr_res = $o_db->query("
+							UPDATE ca_attributes
+							SET row_id = ?
+							WHERE 
+								element_id IN (?)
+								AND
+								table_num = ? AND row_id = ?",
+						array((int)$pn_to_id, array_keys($va_element_ids), $this->tableNum(), $vn_id));
+
+					if(!$o_db->numErrors()) {
+						$o_indexer = $this->getSearchIndexer();
+					
+						// reindex source
+						$o_indexer->indexRow($this->tableNum(), $vn_id, null, false, null, $va_changed_values);
+						// reindex target
+						$o_indexer->indexRow($this->tableNum(), $pn_to_id, null, false, null, $va_changed_values);
+					}
+				}
+			}
+			return true;
+		}
 		# --------------------------------------------------------------------------------
 		/**
 		 * Returns true if bundle is valid for this model
@@ -2592,7 +2732,7 @@
 		 * @param int $pn_type_id Optional record type
 		 * @return bool
 		 */ 
-		public function hasBundle ($ps_bundle, $pn_type_id=null) {
+		public function hasBundle($ps_bundle, $pn_type_id=null) {
 			$va_bundle_bits = explode(".", $ps_bundle);
 			$vn_num_bits = sizeof($va_bundle_bits);
 			

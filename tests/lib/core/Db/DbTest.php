@@ -112,8 +112,12 @@ class DbTest extends PHPUnit_Framework_TestCase {
 		$this->checkIfFooIsEmpty();
 
 		$this->db->dieOnError(false);
-		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(1, 'bar', 'foo'));
-
+		
+		try {
+			$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(1, 'bar', 'foo'));
+		} catch (DatabaseException $e) {
+			// noop
+		}
 		$this->checkIfFooIsEmpty();
 	}
 

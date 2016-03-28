@@ -3054,6 +3054,12 @@ div.caObjectRepresentationDetailEditorElement {
     margin-right: 5px;
 }
 
+div.caObjectRepresentationDetailEditorText {
+    font-size: 14px;
+    font-weight: normal;
+    margin: 5px 0 10px 0;
+}
+
 div.caObjectRepresentationDetailEditorElement div select{
     font-size: 10px;
 }
@@ -5421,6 +5427,23 @@ div.preferenceSectionDivider {
     width: 100%;
     margin-bottom: 5px;
 }
+
+a.preferenceColumnSelector {
+    color: #222222;
+    text-decoration: underline;
+}
+
+table.preferenceColumnSelector {
+	text-align: center;
+	width: 500px;
+	margin: 10px 0 10px 0;
+}
+
+table.preferenceColumnSelector tbody tr td.preferenceColumnSelectorLabel {
+	text-align: left;
+	width: 300px;
+}
+
 
 .searchReindexHelpText{
     padding:20px;

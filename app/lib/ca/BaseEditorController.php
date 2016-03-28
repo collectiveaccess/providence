@@ -101,8 +101,10 @@ class BaseEditorController extends ActionController {
 				'duplicate_nonpreferred_labels' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_nonpreferred_labels'),
 				'duplicate_attributes' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_attributes'),
 				'duplicate_relationships' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_relationships'),
+				'duplicate_relationship_attributes' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_relationship_attributes'),
 				'duplicate_media' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_media'),
-				'duplicate_subitems' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_subitems')
+				'duplicate_subitems' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_subitems'),
+				'duplicate_element_settings' => $this->request->user->getPreference($t_subject->tableName().'_duplicate_element_settings')
 			))) {
 				$this->notification->addNotification(_t('Duplicated %1 "%2" (%3)', $vs_type_name, $t_subject->getLabelForDisplay(), $t_subject->get($t_subject->getProperty('ID_NUMBERING_ID_FIELD'))), __NOTIFICATION_TYPE_INFO__);
 
@@ -473,13 +475,12 @@ class BaseEditorController extends ActionController {
 		if ($vb_confirm = ($this->request->getParameter('confirm', pInteger) == 1) ? true : false) {
 			$vb_we_set_transaction = false;
 			if (!$t_subject->inTransaction()) {
-				$o_t = new Transaction();
-				$t_subject->setTransaction($o_t);
+				$t_subject->setTransaction($o_t = new Transaction());
 				$vb_we_set_transaction = true;
 			}
 
 			// Do we need to move relationships?
-			if (($vn_remap_id =  $this->request->getParameter('remapToID', pInteger)) && ($this->request->getParameter('referenceHandling', pString) == 'remap')) {
+			if (($vn_remap_id =  $this->request->getParameter('caReferenceHandlingToRemapToID', pInteger)) && ($this->request->getParameter('caReferenceHandlingTo', pString) == 'remap')) {
 				switch($t_subject->tableName()) {
 					case 'ca_relationship_types':
 						if ($vn_c = $t_subject->moveRelationshipsToType($vn_remap_id)) {
@@ -511,7 +512,16 @@ class BaseEditorController extends ActionController {
 			} else {
 				$t_subject->deleteAuthorityElementReferences();
 			}
-
+			
+			// Do we need to move references contained in attributes bound to this item?
+			if (($vn_remap_id =  $this->request->getParameter('caReferenceHandlingToRemapFromID', pInteger)) && ($this->request->getParameter('caReferenceHandlingFrom', pString) == 'remap')) {
+				try {
+					$t_subject->moveAttributes($vn_remap_id, $t_subject->getAuthorityElementList(['idsOnly' => true]));
+				} catch(ApplicationException $o_e) {
+					$this->notification->addNotification(_t("Could not move references to other items in metadata before delete: %1", $o_e->getErrorDescription()), __NOTIFICATION_TYPE_ERROR__);
+				}
+			}
+			
 			$t_subject->setMode(ACCESS_WRITE);
 
 			$vb_rc = false;
@@ -575,6 +585,7 @@ class BaseEditorController extends ActionController {
 	 * @param string $ps_table table name
 	 */
 	protected function redirectAfterDelete($ps_table) {
+		$this->getRequest()->close();
 		caSetRedirect($this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $ps_table));
 	}
 	# -------------------------------------------------------
@@ -867,6 +878,8 @@ class BaseEditorController extends ActionController {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2575?r='.urlencode($this->request->getFullUrlPath()));
 			return;
 		}
+		
+		$this->view->setVar('log', $t_subject->getChangeLogForDisplay('caLog', $this->request->getUserID()));
 
 		$this->render('log_html.php');
 	}
@@ -1775,6 +1788,10 @@ class BaseEditorController extends ActionController {
 					'key' =>			caGetOption('key', $va_annotation, null)
 				);
 			}
+			
+			if (is_array($va_media_scale = $t_rep->getMediaScale('media'))) {
+				$va_annotations[] = $va_media_scale;
+			}
 		}
 
 		$this->view->setVar('annotations', $va_annotations);
@@ -1822,6 +1839,20 @@ class BaseEditorController extends ActionController {
 			}
 		}
 
+		// save scale if set
+		if (
+			($vs_measurement = $this->request->getParameter('measurement', pString))
+			&&
+			(strlen($vn_width = $this->request->getParameter('width', pFloat)))
+			&&
+			(strlen($vn_height = $this->request->getParameter('height', pFloat)))
+		) {
+			$t_rep = new ca_object_representations($pn_representation_id);
+			$vn_image_width = (int)$t_rep->getMediaInfo('media', 'original', 'WIDTH');
+			$vn_image_height = (int)$t_rep->getMediaInfo('media', 'original', 'HEIGHT');
+			$t_rep->setMediaScale('media', $vs_measurement, sqrt(pow($vn_width * $vn_image_width, 2) + pow($vn_height * $vn_image_height, 2))/$vn_image_width);
+			$va_annotations = array_merge($va_annotations, $t_rep->getMediaScale('media'));
+		}
 
 		$this->view->setVar('annotations', $va_annotations);
 		$this->render('ajax_representation_annotations_json.php');
@@ -1831,7 +1862,7 @@ class BaseEditorController extends ActionController {
 	 * Returns media viewer help text for display
 	 */
 	public function ViewerHelp() {
-		$this->render('viewer_help_html.php');
+		$this->render('../objects/viewer_help_html.php');
 	}
 	# -------------------------------------------------------
 	/**

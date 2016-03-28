@@ -35,6 +35,7 @@
    */
 
  	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+	require_once(__CA_LIB_DIR__."/core/Parsers/MediaMetadata/XMPParser.php");
 
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -45,7 +46,7 @@
 	 */
 	function caGetExternalApplicationPath($ps_application_name) {
 		$o_config = Configuration::load();
-		if (!($o_ext_app_config = Configuration::load($o_config->get('external_applications')))) { return null; }
+		if (!($o_ext_app_config = Configuration::load(__CA_CONF_DIR__.'/external_applications.conf'))) { return null; }
 
 		return $o_ext_app_config->get($ps_application_name.'_app');
 	}
@@ -462,7 +463,7 @@
 	function caExtractEmbeddedMetadata($po_instance, $pa_metadata, $pn_locale_id) {
 		if (!is_array($pa_metadata)) { return false; }
 		$vb_did_mapping = false;
-		if (!($vs_media_metadata_config = $po_instance->getAppConfig()->get('media_metadata'))) { return false; }
+		if (!($vs_media_metadata_config = __CA_CONF_DIR__.'/media_metadata.conf')) { return false; }
 		$o_metadata_config = Configuration::load($vs_media_metadata_config);
 
 		$va_mappings = $o_metadata_config->getAssoc('import_mappings');
@@ -782,7 +783,7 @@
 	function caGetDefaultMediaIconTag($ps_type, $pn_width, $pn_height, $pa_options=null) {
 		if (is_array($va_selected_size = caGetMediaIconForSize($ps_type, $pn_width, $pn_height, $pa_options))) {
 			$o_config = Configuration::load();
-			$o_icon_config = Configuration::load($o_config->get('default_media_icons'));
+			$o_icon_config = Configuration::load(__CA_CONF_DIR__.'/default_media_icons.conf');
 			$va_icons = $o_icon_config->getAssoc($ps_type);
 			return caHTMLImage($o_icon_config->get('icon_folder_url').'/'.$va_icons[$va_selected_size['size']], array('width' => $va_selected_size['width'], 'height' => $va_selected_size['height']));
 		}
@@ -804,7 +805,7 @@
 	function caGetDefaultMediaIconUrl($ps_type, $pn_width, $pn_height, $pa_options=null) {
 		if (is_array($va_selected_size = caGetMediaIconForSize($ps_type, $pn_width, $pn_height, $pa_options))) {
 			$o_config = Configuration::load();
-			$o_icon_config = Configuration::load($o_config->get('default_media_icons'));
+			$o_icon_config = Configuration::load(__CA_CONF_DIR__.'/default_media_icons.conf');
 			$va_icons = $o_icon_config->getAssoc($ps_type);
 			return $o_icon_config->get('icon_folder_url').'/'.$va_icons[$va_selected_size['size']];
 		}
@@ -826,7 +827,7 @@
 	function caGetDefaultMediaIconPath($ps_type, $pn_width, $pn_height, $pa_options=null) {
 		if (is_array($va_selected_size = caGetMediaIconForSize($ps_type, $pn_width, $pn_height, $pa_options))) {
 			$o_config = Configuration::load();
-			$o_icon_config = Configuration::load($o_config->get('default_media_icons'));
+			$o_icon_config = Configuration::load(__CA_CONF_DIR__.'/default_media_icons.conf');
 			$va_icons = $o_icon_config->getAssoc($ps_type);
 			return $o_icon_config->get('icon_folder_path').'/'.$va_icons[$va_selected_size['size']];
 		}
@@ -840,7 +841,7 @@
 	 */
 	function caGetMediaIconForSize($ps_type, $pn_width, $pn_height, $pa_options=null) {
 		$o_config = Configuration::load();
-		$o_icon_config = Configuration::load($o_config->get('default_media_icons'));
+		$o_icon_config = Configuration::load(__CA_CONF_DIR__.'/default_media_icons.conf');
 
 		$vs_selected_size = null;
 		if (is_array($va_icons = $o_icon_config->getAssoc($ps_type))) {
