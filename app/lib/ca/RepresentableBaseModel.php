@@ -1086,6 +1086,36 @@
 				$va_counts[$qr_res->get($vs_pk)] = (int)$qr_res->get('c');
 			}
 			return $va_counts;
+		}		
+		# ------------------------------------------------------
+		/** 
+		 * Returns HTML form bundle for batch editor-only representation access and status bundle
+		 *
+		 * @param HTTPRequest $po_request The current request
+		 * @param string $ps_form_name
+		 * @param string $ps_placement_code
+		 * @param array $pa_bundle_settings
+		 * @param array $pa_options Array of options. Supported options are 
+		 *			noCache = If set to true then label cache is bypassed; default is true
+		 *
+		 * @return string Rendered HTML bundle
+		 */
+		public function getObjectRepresentationAccessStatusHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
+			global $g_ui_locale;
+		
+			$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+		
+			if(!is_array($pa_options)) { $pa_options = array(); }
+		
+			$o_view->setVar('id_prefix', $ps_form_name);
+			$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		
+			$o_view->setVar('settings', $pa_bundle_settings);
+		
+			$o_view->setVar('t_subject', $this);
+		
+		
+			return $o_view->render('ca_object_representations_access_status.php');
 		}
 		# ------------------------------------------------------
 		/**

@@ -194,6 +194,8 @@
  			}
  			
  			$this->view->setVar('display_lists', $va_displays);	
+ 			
+ 			# --- print forms used for printing search results as labels - in tools show hide under page bar
  			$this->view->setVar('label_formats', caGetAvailablePrintTemplates('labels', array('table' => $this->ops_tablename, 'type' => 'label')));
  			
  			# --- export options used to export search results - in tools show hide under page bar
@@ -262,8 +264,6 @@
 		 * Generates and outputs label-formatted PDF version of search results 
 		 */
 		protected function _genLabels($po_result, $ps_label_code, $ps_output_filename, $ps_title=null) {
-			if((bool)$this->request->config->get('use_legacy_print_labels_generator')) { return $this->_genLabelsLegacy($po_result, $ps_label_code, $ps_output_filename, $ps_title); }
-			
 			$vs_border = ((bool)$this->request->config->get('add_print_label_borders')) ? "border: 1px dotted #000000; " : "";
 			
 			//

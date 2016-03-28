@@ -5080,7 +5080,12 @@ class BaseModel extends BaseObject {
 			return null;
 		}
 		
-		return array('scale' => caGetOption('_SCALE', $va_media_info, null), 'measurementUnits' => caGetOption('_SCALE_UNITS', $va_media_info, null));;
+		$vn_scale = caGetOption('_SCALE', $va_media_info, null);
+		if (!is_numeric($vn_scale)) { $vn_scale = null; }
+		$vs_scale_units = caGetOption('_SCALE_UNITS', $va_media_info, null);
+		if (!is_string($vs_scale_units)) { $vs_scale_units = null; }
+		
+		return array('scale' => $vn_scale, 'measurementUnits' => $vs_scale_units);
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -9604,11 +9609,11 @@ $pa_options["display_form_field_tips"] = true;
 			if (!sizeof($va_to_reindex_relations)) { return 0; }
 			
 			$o_db->query("
-				UPDATE ".$t_item_rel->tableName()." SET ".$t_item_rel->getLeftTableFieldName()." = ? WHERE ".$t_item_rel->getLeftTableFieldName()." = ?
+				UPDATE IGNORE ".$t_item_rel->tableName()." SET ".$t_item_rel->getLeftTableFieldName()." = ? WHERE ".$t_item_rel->getLeftTableFieldName()." = ?
 			", (int)$pn_to_id, (int)$vn_row_id);
 			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
 			$o_db->query("
-				UPDATE ".$t_item_rel->tableName()." SET ".$t_item_rel->getRightTableFieldName()." = ? WHERE ".$t_item_rel->getRightTableFieldName()." = ?
+				UPDATE IGNORE ".$t_item_rel->tableName()." SET ".$t_item_rel->getRightTableFieldName()." = ? WHERE ".$t_item_rel->getRightTableFieldName()." = ?
 			", (int)$pn_to_id, (int)$vn_row_id);
 			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
 		} else {
@@ -9623,7 +9628,7 @@ $pa_options["display_form_field_tips"] = true;
 			if (!sizeof($va_to_reindex_relations)) { return 0; }
 			
 			$o_db->query("
-				UPDATE ".$t_item_rel->tableName()." SET {$vs_item_pk} = ? WHERE {$vs_item_pk} = ?
+				UPDATE IGNORE ".$t_item_rel->tableName()." SET {$vs_item_pk} = ? WHERE {$vs_item_pk} = ?
 			", (int)$pn_to_id, (int)$vn_row_id);
 			if ($o_db->numErrors()) { $this->errors = $o_db->errors; return null; }
 			
@@ -9644,7 +9649,7 @@ $pa_options["display_form_field_tips"] = true;
 				
 				if ($vn_first_primary_relation_id) {
 					$o_db->query("
-						UPDATE ".$t_item_rel->tableName()." SET is_primary = 0 WHERE {$vs_rel_pk} <> ? AND {$vs_item_pk} = ?
+						UPDATE IGNORE ".$t_item_rel->tableName()." SET is_primary = 0 WHERE {$vs_rel_pk} <> ? AND {$vs_item_pk} = ?
 					", array($vn_first_primary_relation_id, (int)$pn_to_id));
 				}
 			}
@@ -11156,10 +11161,10 @@ $pa_options["display_form_field_tips"] = true;
 	/**
 	 * Returns change log for currently loaded row in displayable HTML format
 	 */ 
-	public function getChangeLogForDisplay($ps_css_id=null) {
+	public function getChangeLogForDisplay($ps_css_id=null, $pn_user_id=null) {
 		$o_log = new ApplicationChangeLog();
 		
-		return $o_log->getChangeLogForRowForDisplay($this, $ps_css_id);
+		return $o_log->getChangeLogForRowForDisplay($this, $ps_css_id, $pn_user_id);
 	}
 	# --------------------------------------------------------------------------------------------
 	#

@@ -475,13 +475,12 @@ class BaseEditorController extends ActionController {
 		if ($vb_confirm = ($this->request->getParameter('confirm', pInteger) == 1) ? true : false) {
 			$vb_we_set_transaction = false;
 			if (!$t_subject->inTransaction()) {
-				$o_t = new Transaction();
-				$t_subject->setTransaction($o_t);
+				$t_subject->setTransaction($o_t = new Transaction());
 				$vb_we_set_transaction = true;
 			}
 
 			// Do we need to move relationships?
-			if (($vn_remap_id =  $this->request->getParameter('remapToID', pInteger)) && ($this->request->getParameter('referenceHandling', pString) == 'remap')) {
+			if (($vn_remap_id =  $this->request->getParameter('caReferenceHandlingToRemapToID', pInteger)) && ($this->request->getParameter('caReferenceHandlingTo', pString) == 'remap')) {
 				switch($t_subject->tableName()) {
 					case 'ca_relationship_types':
 						if ($vn_c = $t_subject->moveRelationshipsToType($vn_remap_id)) {
@@ -513,7 +512,16 @@ class BaseEditorController extends ActionController {
 			} else {
 				$t_subject->deleteAuthorityElementReferences();
 			}
-
+			
+			// Do we need to move references contained in attributes bound to this item?
+			if (($vn_remap_id =  $this->request->getParameter('caReferenceHandlingToRemapFromID', pInteger)) && ($this->request->getParameter('caReferenceHandlingFrom', pString) == 'remap')) {
+				try {
+					$t_subject->moveAttributes($vn_remap_id, $t_subject->getAuthorityElementList(['idsOnly' => true]));
+				} catch(ApplicationException $o_e) {
+					$this->notification->addNotification(_t("Could not move references to other items in metadata before delete: %1", $o_e->getErrorDescription()), __NOTIFICATION_TYPE_ERROR__);
+				}
+			}
+			
 			$t_subject->setMode(ACCESS_WRITE);
 
 			$vb_rc = false;
@@ -710,7 +718,6 @@ class BaseEditorController extends ActionController {
 			$this->view->setVar('placements', $va_display_list);
 
 			$this->request->user->setVar($t_subject->tableName().'_summary_display_id', $vn_display_id);
-			$vs_format = $this->request->config->get("summary_print_format");
 		} else {
 			$vn_display_id = $t_display = null;
 			$this->view->setVar('display_id', null);
@@ -870,6 +877,8 @@ class BaseEditorController extends ActionController {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2575?r='.urlencode($this->request->getFullUrlPath()));
 			return;
 		}
+		
+		$this->view->setVar('log', $t_subject->getChangeLogForDisplay('caLog', $this->request->getUserID()));
 
 		$this->render('log_html.php');
 	}
@@ -1852,7 +1861,7 @@ class BaseEditorController extends ActionController {
 	 * Returns media viewer help text for display
 	 */
 	public function ViewerHelp() {
-		$this->render('viewer_help_html.php');
+		$this->render('../objects/viewer_help_html.php');
 	}
 	# -------------------------------------------------------
 	/**

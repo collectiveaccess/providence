@@ -1276,7 +1276,7 @@ div.hint {
 	text-transform:uppercase;
 	text-align: left;
 	width:30%;
-    overflow: scroll;
+    overflow: hidden;
 	display:inline-block;
 	font-weight:bold;
 	color: #666;
@@ -3066,6 +3066,12 @@ div.caObjectRepresentationDetailEditorElement {
     float: left;
     font-size: 10px;
     margin-right: 5px;
+}
+
+div.caObjectRepresentationDetailEditorText {
+    font-size: 14px;
+    font-weight: normal;
+    margin: 5px 0 10px 0;
 }
 
 div.caObjectRepresentationDetailEditorElement div select{

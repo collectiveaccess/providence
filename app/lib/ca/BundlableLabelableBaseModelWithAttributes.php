@@ -93,7 +93,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
 		require_once(__CA_MODELS_DIR__."/ca_acl.php");
 		require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
-		
+		require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
+
 		parent::__construct($pn_id);	# call superclass constructor
 		
 		if ($pn_id) {
@@ -1467,7 +1468,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if (!$vs_label_text) { $vs_label_text = $this->getAttributeLabel($vs_attr_element_code); }
 				
 				if ($vb_batch) {
-					$t_element = $this->_getElementInstance($vs_attr_element_code);
+					$t_element = ca_metadata_elements::getInstance($vs_attr_element_code);
 					$va_type_restrictions = $t_element->getTypeRestrictionsForDisplay($this->tableNum());
 					if (sizeof($va_type_restrictions)) {
 						$vs_restriction_list = join("; ", $va_type_restrictions);
@@ -1485,7 +1486,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
                 $vs_documentation_url =  trim((isset($pa_bundle_settings['documentation_url']) && $pa_bundle_settings['documentation_url']) ? $pa_bundle_settings['documentation_url']  : $vs_documentation_url = $this->getAttributeDocumentationUrl($vs_attr_element_code));
 
-				if ($t_element = $this->_getElementInstance($vs_attr_element_code)) {
+				if ($t_element = ca_metadata_elements::getInstance($vs_attr_element_code)) {
 					if ($o_config->get('show_required_field_marker') && (($t_element->getSetting('minChars') > 0) || ((bool)$t_element->getSetting('mustNotBeBlank')) || ((bool)$t_element->getSetting('requireValue')))) { 
 						$vs_label .= ' '.$vs_required_marker;
 					}
@@ -1774,9 +1775,18 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						
 						break;
 					# -------------------------------
-					// This bundle is only available items that can be used as authority references (object, entities, occurrences, list items, etc.)
+					// This bundle is only available for items that can be used as authority references (object, entities, occurrences, list items, etc.)
 					case 'authority_references_list':
 						$vs_element .= $this->getAuthorityReferenceListHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						break;
+					# -------------------------------
+					// This bundle is only available items for batch editing on representable models
+					case 'ca_object_representations_access_status':
+						if (($vb_batch) && (is_a($this, 'RepresentableBaseModel'))) {
+							$vs_element .= $this->getObjectRepresentationAccessStatusHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						} else {
+							return null;
+						}
 						break;
 					# -------------------------------
 					default:
@@ -3006,7 +3016,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				foreach($_REQUEST as $vs_key => $vs_val) {
 					$vs_element_set_code = preg_replace("/^ca_attribute_/", "", $vs_f);
 					
-					$t_element = $this->_getElementInstance($vs_element_set_code);
+					$t_element = ca_metadata_elements::getInstance($vs_element_set_code);
 					$vn_element_id = $t_element->getPrimaryKey();
 					
 					if (
@@ -3250,7 +3260,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				$vs_element_set_code = preg_replace("/^(ca_attribute_|".$this->tableName()."\.)/", "", $vs_f);
 				
 				// does the attribute's datatype have a saveElement method? If so, use that instead
-				$vs_element = $this->_getElementInstance($vs_element_set_code);
+				$vs_element = ca_metadata_elements::getInstance($vs_element_set_code);
+
 				$vn_element_id = $vs_element->getPrimaryKey();
 				$vs_element_datatype = $vs_element->get('datatype');
 				$vs_datatype = Attribute::getValueInstance($vs_element_datatype);
@@ -4368,9 +4379,13 @@ if (!$vb_batch) {
 						// set storage location
 						if ($vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_idnew_0", pInteger)) {
 							if (
-								(is_array($va_relationship_types = caGetOption('ca_storage_locations_showRelationshipTypes', $va_bundle_settings, null)))
-								&& 
-								($vn_relationship_type_id = array_shift($va_relationship_types))
+								($vn_relationship_type_id = $this->getAppConfig()->get('object_storage_location_tracking_relationship_type'))
+								||
+								(
+									(is_array($va_relationship_types = caGetOption('ca_storage_locations_showRelationshipTypes', $va_bundle_settings, null)))
+									&& 
+									($vn_relationship_type_id = array_shift($va_relationship_types))
+								)
 							) {
 								$this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id, null, null, null, null, array('allowDuplicates' => true));
 								if ($this->numErrors()) {
@@ -4414,6 +4429,31 @@ if (!$vb_batch) {
 					
 						// NOOP (for now)
 					
+						break;
+					# -------------------------------
+					// This bundle is only available items for batch editing on representable models
+					case 'ca_object_representations_access_status':		
+						if (($vb_batch) && (is_a($this, 'RepresentableBaseModel'))) {
+							$vn_access = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_access", pString);
+							$vn_status = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_status", pString);
+							
+							$t_rep = new ca_object_representations();
+							if(is_array($va_rep_ids = $this->getRepresentationIDs())) {
+								foreach(array_keys($va_rep_ids) as $vn_rep_id) {
+									if ($t_rep->load($vn_rep_id)) {
+										$t_rep->setMode(ACCESS_WRITE);
+										$t_rep->set('access', $vn_access);
+										$t_rep->set('status', $vn_status);
+										$t_rep->update();
+										
+										if ($t_rep->numErrors()) {
+											$po_request->addActionErrors($t_rep->errors(), 'ca_object_representations_access_status', 'general');
+										}
+									}
+								}
+							}
+							
+						}
 						break;
 					# -------------------------------
 				}
@@ -5477,7 +5517,7 @@ if (!$vb_batch) {
 						// is value a list attribute idno?
 						$va_tmp = explode('.',$vs_filter);
 						$vs_element = array_pop($va_tmp);
-						if (!is_numeric($vs_filter_val) && (($t_element = $t_rel_item->_getElementInstance($vs_element)) && ($t_element->get('datatype') == 3))) {
+						if (!is_numeric($vs_filter_val) && (($t_element = ca_metadata_elements::getInstance($vs_element)) && ($t_element->get('datatype') == 3))) {
 							$va_filter_vals[$vn_index] = caGetListItemID($t_element->get('list_id'), $vs_filter_val);
 						}
 					}

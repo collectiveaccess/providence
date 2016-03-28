@@ -163,7 +163,7 @@ class ca_attributes extends BaseModel {
 		)
 	);
 	
-	static $s_attribute_cache_size = 65535;
+	static $s_attribute_cache_size = 1024;
 	static $s_get_attributes_cache = array();
 	static $s_ca_attributes_element_instance_cache = array();
 	
