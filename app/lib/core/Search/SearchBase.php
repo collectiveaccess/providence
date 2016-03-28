@@ -58,8 +58,8 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 		public function __construct($po_db=null, $ps_engine=null, $pb_load_engine=true) {
 			$this->opo_datamodel = Datamodel::load();
 			$this->opo_app_config = Configuration::load();
-			$this->opo_search_config = Configuration::load($this->opo_app_config->get("search_config"));
-			$this->opo_search_indexing_config = Configuration::load($this->opo_search_config->get("search_indexing_config"));			
+			$this->opo_search_config = Configuration::load(__CA_CONF_DIR__.'/search.conf');
+			$this->opo_search_indexing_config = Configuration::load(__CA_CONF_DIR__.'/search_indexing.conf');			
 
 			// load search engine plugin as configured by the 'search_engine_plugin' directive in the main app config file
 			if($pb_load_engine) {
@@ -179,7 +179,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 			if (is_array($va_fields_to_index)) {
 				foreach($va_fields_to_index as $vs_f => $va_info) {
 					if ((substr($vs_f, 0, 14) === '_ca_attribute_') && preg_match('!^_ca_attribute_([A-Za-z]+[A-Za-z0-9_]*)$!', $vs_f, $va_matches)) {
-						$vn_element_id = $t_subject->_getElementID($va_matches[1]);
+						$vn_element_id = ca_metadata_elements::getElementID($va_matches[1]);
 						unset($va_fields_to_index[$vs_f]);
 						$va_fields_to_index['_ca_attribute_'.$vn_element_id] = $va_info;
 					}
@@ -211,7 +211,13 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 			}
 	
 			unset($va_info['_access_points']);
-			unset($va_info[$pm_subject_table]);
+			
+			$vs_label_table = null;
+			if (($t_instance = $this->opo_datamodel->getInstanceByTableName($pm_subject_table, true)) && (method_exists($t_instance, 'getLabelTableName'))) {
+				$vs_label_table = $t_instance->getLabelTableName();
+			}
+			
+			if (!isset($va_info[$pm_subject_table]['related']) && (!$vs_label_table || !isset($va_info[$vs_label_table]['related']))) { unset($va_info[$pm_subject_table]); }	// remove subject table _unless_ 'related' indexing is enabled in subject or subject's label
 			$va_tables = array_keys($va_info);
 			return $va_tables;
 		}

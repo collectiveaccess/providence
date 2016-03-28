@@ -6274,6 +6274,10 @@ create index i_field_row_id on ca_sql_search_word_index(field_row_id, field_tabl
 create index i_rel_type_id on ca_sql_search_word_index(rel_type_id);
 create index i_field_table_num on ca_sql_search_word_index(field_table_num);
 create index i_field_num on ca_sql_search_word_index(field_num);
+CREATE index i_index_table_num on ca_sql_search_word_index(word_id, table_num, row_id);
+CREATE index i_index_field_table_num on ca_sql_search_word_index(word_id, table_num, field_table_num, row_id);
+CREATE index i_index_field_num on ca_sql_search_word_index(word_id, table_num, field_table_num, field_num, row_id);
+CREATE index i_index_delete ON ca_sql_search_word_index(table_num, row_id, field_table_num, field_num);
 
 
 /*==========================================================================*/
@@ -6661,5 +6665,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 126 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (126, unix_timestamp());
+/* CURRENT MIGRATION: 128 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (128, unix_timestamp());

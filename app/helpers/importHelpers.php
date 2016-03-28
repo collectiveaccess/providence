@@ -145,6 +145,8 @@
 			$vb_ignore_parent = caGetOption("{$ps_refinery_name}_ignoreParent", $pa_item['settings'], false);
 			$pa_options = array_merge(array('matchOn' => $va_match_on, 'ignoreParent' => $vb_ignore_parent), $pa_options);
 			
+			$vn_hierarchy_id = null;
+			
 			switch($ps_table) {
 				case 'ca_objects':
 					$vn_id = DataMigrationUtils::getObjectID($vs_name, $vn_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
@@ -160,13 +162,14 @@
 						require_once(__CA_MODELS_DIR__."/ca_places.php");
 						$t_place = new ca_places();
 						if ($o_trans) { $t_place->setTransaction($o_trans); }
+						$vn_hierarchy_id = $pa_options['hierarchyID'];
 						$vn_id = $pa_options['defaultParentID'];
 						if(!$vn_id){
 							$vn_id = $t_place->getHierarchyRootID($pa_options['hierarchyID']);
 						}
 						$va_attributes['parent_id'] = $vn_id;
 					}
-					$vn_id = DataMigrationUtils::getPlaceID($vs_name, $vn_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
+					$vn_id = DataMigrationUtils::getPlaceID($vs_name, $vn_id, $vs_type, $g_ui_locale_id, $vn_hierarchy_id, $va_attributes, $pa_options);
 					$va_attributes['preferred_labels']['name'] = $va_attributes['_preferred_labels'] = $vs_name;
 					break;
 				case 'ca_occurrences':
@@ -433,7 +436,7 @@
 					$vn_id = DataMigrationUtils::getEntityID($va_name, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
 					break;
 				case 'ca_places':
-					$vn_id = DataMigrationUtils::getPlaceID($vs_name, $vn_parent_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
+					$vn_id = DataMigrationUtils::getPlaceID($vs_name, $vn_parent_id, $vs_type, $g_ui_locale_id, $pa_options['hierarchyID'], $va_attributes, $pa_options);
 					break;
 				case 'ca_occurrences':
 					$vn_id = DataMigrationUtils::getOccurrenceID($vs_name, $vn_parent_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);
@@ -491,6 +494,7 @@
 		$o_log = caGetOption('log', $pa_options, null);
 		$o_reader = caGetOption('reader', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
+		$vn_hierarchy_id = null;
 		
 		$pn_value_index = caGetOption('valueIndex', $pa_options, 0);
 		
@@ -670,7 +674,7 @@
 						}
 				
 						if(isset($pa_options['hierarchyID']) && $pa_options['hierarchyID'] && ($vs_hier_id_fld = $t_instance->getProperty('HIERARCHY_ID_FLD'))) {
-							$va_val[$vs_hier_id_fld] = $pa_options['hierarchyID'];
+							$vn_hierarchy_id = $va_val[$vs_hier_id_fld] = $pa_options['hierarchyID'];
 						}
 		
 						// Set attributes
@@ -723,7 +727,7 @@
 								$vn_item_id = DataMigrationUtils::getEntityID(DataMigrationUtils::splitEntityName($vs_item, $pa_options), $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
 								break;
 							case 'ca_places':
-								$vn_item_id = DataMigrationUtils::getPlaceID($vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
+								$vn_item_id = DataMigrationUtils::getPlaceID($vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $vn_hierarchy_id, $va_attr_vals_with_parent, $pa_options);
 								break;
 							case 'ca_occurrences':
 								$vn_item_id = DataMigrationUtils::getOccurrenceID($vs_item, $va_val['parent_id'], $va_val['_type'], $g_ui_locale_id, $va_attr_vals_with_parent, $pa_options);
@@ -1077,11 +1081,11 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	}
 	# ---------------------------------------------------------------------
 	/**
-	 * Get date from Excel sheet for given column and row. Convert Excel date to format acceptable by TimeExpressionParser if necessary.
+	 * Get raw cell from Excel sheet for given column and row
 	 * @param PHPExcel_Worksheet $po_sheet The work sheet
 	 * @param int $pn_row_num row number (zero indexed)
 	 * @param string|int $pm_col either column number (zero indexed) or column letter ('A', 'BC')
-	 * @return string|null the date, if a value exists
+	 * @return PHPExcel_Cell|null the cell, if a value exists
 	 */
 	function caPhpExcelGetRawCell($po_sheet, $pn_row_num, $pm_col) {
 		if(!is_numeric($pm_col)) {
@@ -1161,8 +1165,10 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 		if($vn_pick >= 0 && ($vn_best_distance > $pn_threshold)) {
 			$va_pick = $va_hits[$vn_pick];
 
-			MemoryCache::save($vs_cache_key, $va_pick['ID']['value'], 'AATMatches');
-			return $va_pick['ID']['value'];
+			if($vs_value = trim($va_pick['ID']['value'])) {
+				MemoryCache::save($vs_cache_key, $vs_value, 'AATMatches');
+				return $vs_value;
+			}
 		}
 
 		return false;

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -96,7 +96,7 @@ class SearchResult extends BaseObject {
 
 	# ------------------------------------------------------------------
 	private $opb_disable_get_with_template_prefetch = false;
-	static $s_template_prefetch_cache;
+	private $opa_template_prefetch_cache = array();
 	# ------------------------------------------------------------------
 
 	public static function clearCaches() {
@@ -111,7 +111,6 @@ class SearchResult extends BaseObject {
 		self::$opa_hierarchy_children_prefetch_cache_index = array();
 		self::$opa_hierarchy_siblings_prefetch_cache = array();
 		self::$opa_hierarchy_siblings_prefetch_cache_index = array();
-		self::$s_template_prefetch_cache = array();
 	}
 
 	public function __construct($po_engine_result=null, $pa_tables=null) {
@@ -159,7 +158,7 @@ class SearchResult extends BaseObject {
 		
 		$this->opo_tep = $GLOBALS["_DbResult_time_expression_parser"];
 		
-		if (!is_array(self::$s_template_prefetch_cache)) { self::$s_template_prefetch_cache = array(); }
+		$this->opa_template_prefetch_cache = array();
 	}
 	# ------------------------------------------------------------------
 	public function cloneInit() {
@@ -340,16 +339,11 @@ class SearchResult extends BaseObject {
 				{$vs_type_sql}
 		";
 		
-		
-		// Make sure singletons get into the cache
-		foreach($va_row_ids as $vn_row_id) {
-			SearchResult::$opa_hierarchy_parent_prefetch_cache[$ps_tablename][$vn_row_id][$vs_opt_md5][] = $va_row[$vn_row_id];
-		}
 		$va_row_id_map = null;
 		$vn_level = 0;
 		
 		while(true) {
-			if (!sizeof($va_row_ids_in_current_level)) { break; }
+			if (!sizeof($va_row_ids_in_current_level) || !is_array($va_params) || !is_array($va_params[0]) || !sizeof($va_params[0])) { break; }
 			$qr_rel = $this->opo_subject_instance->getDb()->query($vs_sql, $va_params);
 			if (!$qr_rel || ($qr_rel->numRows() == 0)) { break;}
 			
@@ -358,17 +352,20 @@ class SearchResult extends BaseObject {
 				if (!$va_row[$vs_parent_id_fld]) { continue; }
 				
 				if ($vn_level == 0) {
-					$va_row_id_map[$va_row[$vs_parent_id_fld]] = $va_row[$vs_pk];
+					$va_row_id_map[$va_row[$vs_parent_id_fld]][] = $va_row[$vs_pk];
 					SearchResult::$opa_hierarchy_parent_prefetch_cache[$ps_tablename][$va_row[$vs_pk]][$vs_opt_md5] = array();
 				} else {
-					$va_row_id_map[$va_row[$vs_parent_id_fld]] = $va_row_id_map[$va_row[$vs_pk]];
+					if (!$va_row_id_map[$va_row[$vs_parent_id_fld]]) { $va_row_id_map[$va_row[$vs_parent_id_fld]] = []; }
+					$va_row_id_map[$va_row[$vs_parent_id_fld]] = array_merge($va_row_id_map[$va_row[$vs_parent_id_fld]], $va_row_id_map[$va_row[$vs_pk]]);
 				}
 				if (!$va_row_id_map[$va_row[$vs_parent_id_fld]]) { continue; }
 				
-				SearchResult::$opa_hierarchy_parent_prefetch_cache[$ps_tablename][$va_row_id_map[$va_row[$vs_parent_id_fld]]][$vs_opt_md5][] = $va_row[$vs_parent_id_fld];
+				foreach($va_row_id_map[$va_row[$vs_parent_id_fld]] as $vn_id) {
+					SearchResult::$opa_hierarchy_parent_prefetch_cache[$ps_tablename][$vn_id][$vs_opt_md5][] = $va_row[$vs_parent_id_fld];
+				}
 			}
 			
-			$va_params[0] = $qr_rel->getAllFieldValues($vs_parent_id_fld);
+			$va_row_ids_in_current_level = $va_params[0] = $qr_rel->getAllFieldValues($vs_parent_id_fld);
 			
 			$vn_level++;
 		}
@@ -714,7 +711,10 @@ class SearchResult extends BaseObject {
 		$vs_md5 = caMakeCacheKeyFromOptions($pa_options);
 		
 		$va_criteria = is_array($this->opa_tables[$ps_tablename]) ? $this->opa_tables[$ps_tablename]['criteria'] : null;
-		$va_rel_items = $this->opo_subject_instance->getRelatedItems($ps_tablename, array_merge($pa_options, array('row_ids' => $va_row_ids, 'limit' => 100000, 'criteria' => $va_criteria)));		// if there are more than 100,000 then we have a problem
+		
+		$va_opts = array_merge($pa_options, array('row_ids' => $va_row_ids, 'criteria' => $va_criteria));
+		if (!isset($va_opts['limit'])) { $va_opts['limit'] = 100000; }
+		$va_rel_items = $this->opo_subject_instance->getRelatedItems($ps_tablename, $va_opts);		// if there are more than 100,000 then we have a problem
 		
 		if (!is_array($va_rel_items) || !sizeof($va_rel_items)) { return; }
 		
@@ -880,6 +880,7 @@ class SearchResult extends BaseObject {
 	 *			removeFirstItems = Number of levels from top of hierarchy before returning. [Default is null]
 	 *			hierarchyDirection = Order in which to return hierarchical levels. Set to either "asc" or "desc". "Asc"ending returns hierarchy beginning with the root; "desc"ending begins with the child furthest from the root. [Default is asc]
  	 *			allDescendants = Return all items from the full depth of the hierarchy when fetching children. By default only immediate children are returned. [Default is false]
+	 * 			hierarchyDelimiter = Characters to place in between separate hiearchy levels. Defaults to the 'delimiter' option.
  	 *
 	 *		[Front-end access control]		
 	 *			checkAccess = Array of access values to filter returned values on. Available for any table with an "access" field (ca_objects, ca_entities, etc.). If omitted no filtering is performed. [Default is null]
@@ -915,6 +916,7 @@ class SearchResult extends BaseObject {
 		$vb_return_all_locales 				= isset($pa_options['returnAllLocales']) ? (bool)$pa_options['returnAllLocales'] : false;
 
 		$vs_delimiter 						= isset($pa_options['delimiter']) ? $pa_options['delimiter'] : ';';
+		$vs_hierarchical_delimiter 			= isset($pa_options['hierarchyDelimiter']) ? $pa_options['hierarchyDelimiter'] : $vs_delimiter;
 		$vb_unserialize 					= isset($pa_options['unserialize']) ? (bool)$pa_options['unserialize'] : false;
 		
 		$vb_return_url 						= isset($pa_options['returnURL']) ? (bool)$pa_options['returnURL'] : false;
@@ -1056,7 +1058,7 @@ class SearchResult extends BaseObject {
 						if ($vm_val) { $va_hiers[] = $vb_return_as_array ? array_shift($vm_val) : $vm_val; }
 					}
 					
-					$vm_val = $vb_return_as_array ? $va_hiers : join($vs_delimiter, $va_hiers);
+					$vm_val = $vb_return_as_array ? $va_hiers : join($vs_hierarchical_delimiter, $va_hiers);
 					goto filter;
 					break;
 				case 'hierarchy':
@@ -1129,7 +1131,7 @@ class SearchResult extends BaseObject {
 								
 								if ($vs_hierarchy_direction === 'asc') { $va_hier_ids = array_reverse($va_hier_ids); }
 							}
-							$vm_val = $vb_return_as_array ?  $va_hier_ids : join($vs_delimiter, $va_hier_ids);
+							$vm_val = $vb_return_as_array ?  $va_hier_ids : join($vs_hierarchical_delimiter, $va_hier_ids);
 							goto filter;
 						} else {
 							$vs_field_spec = join('.', array_values($va_path_components['components']));
@@ -1160,7 +1162,6 @@ class SearchResult extends BaseObject {
 									}
 									$va_hier_list[] = $va_hier_item;
 								}
-							
 							}
 						}
 					}
@@ -1171,8 +1172,12 @@ class SearchResult extends BaseObject {
 					
 						if ($vb_return_with_structure) {
 							$va_acc[] = $va_hier_item;
-						} else {
+						} elseif($this->ops_table_name == $va_path_components['table_name']) {
+							// For primary table: return hier path as list (there can be only one hierarchical path)
 							$va_acc = $this->_flattenArray($va_hier_item, $pa_options);
+						} else {
+							// For related tables: return each hier path as concatenated string as there can be repeats and returnAsArray must be a flat array
+							$va_acc[] = join($vs_hierarchical_delimiter, $this->_flattenArray($va_hier_item, $pa_options));
 						}
 					}
 					$vm_val = $pa_options['returnAsArray'] ? $va_acc : join($vs_delimiter, $va_acc);
@@ -1223,7 +1228,7 @@ class SearchResult extends BaseObject {
 					}
 					
 					if (!$vb_return_as_array) { 
-						return join($vs_delimiter, $va_hier_list);
+						return join($vs_hierarchical_delimiter, $va_hier_list);
 					}
 					$vm_val = $va_hier_list;
 					goto filter;
@@ -1274,7 +1279,7 @@ class SearchResult extends BaseObject {
 					}
 					
 					if (!$vb_return_as_array) { 
-						$vm_val = join($vs_delimiter, $va_hier_list);
+						$vm_val = join($vs_hierarchical_delimiter, $va_hier_list);
 						goto filter;
 					}
 					$vm_val = $va_hier_list;
@@ -1402,7 +1407,7 @@ class SearchResult extends BaseObject {
 // [PRIMARY TABLE] Metadata attribute
 //				
 
-					if (($t_instance instanceof BaseModelWithAttributes) && isset($va_path_components['field_name']) && $va_path_components['field_name'] && $t_element = $t_instance->_getElementInstance($va_path_components['field_name'])) {
+					if (($t_instance instanceof BaseModelWithAttributes) && isset($va_path_components['field_name']) && $va_path_components['field_name'] && $t_element = ca_metadata_elements::getInstance($va_path_components['field_name'])) {
 						$vn_element_id = $t_element->getPrimaryKey();
 					} else {
 						return $pa_options['returnAsArray'] ? array() : null;
@@ -1442,7 +1447,7 @@ class SearchResult extends BaseObject {
 					
 					foreach($va_filter_vals as $vn_index => $vs_filter_val) {
 						// is value a list attribute idno?
-						if (!is_numeric($vs_filter_val) && (($t_element = $t_instance->_getElementInstance($vs_filter)) && ($t_element->get('datatype') == 3))) {
+						if (!is_numeric($vs_filter_val) && (($t_element = ca_metadata_elements::getInstance($vs_filter)) && ($t_element->get('datatype') == 3))) {
 							$va_filter_vals[$vn_index] = caGetListItemID($t_element->get('list_id'), $vs_filter_val);
 						}
 					}
@@ -1708,7 +1713,7 @@ class SearchResult extends BaseObject {
 		if (is_array($pa_value_list) && sizeof($pa_value_list)) {
 			$va_val_proc = array();
 			foreach($pa_value_list as $o_attribute) {
-				$t_attr_element = $pt_instance->_getElementInstance($o_attribute->getElementID());
+				$t_attr_element = ca_metadata_elements::getInstance($o_attribute->getElementID());
 				$vn_attr_type = $t_attr_element->get('datatype');
 				
 				$va_acc = array();
@@ -1764,7 +1769,7 @@ class SearchResult extends BaseObject {
 					if (is_null($vs_val_proc)) {
 						switch($o_value->getType()) {
 							case __CA_ATTRIBUTE_VALUE_LIST__:
-								$t_element = $pt_instance->_getElementInstance($o_value->getElementID());
+								$t_element = ca_metadata_elements::getInstance($o_value->getElementID());
 								$vn_list_id = $t_element->get('list_id');
 						
 								$vs_val_proc = $o_value->getDisplayValue(array_merge($pa_options, array('output' => $pa_options['output'], 'list_id' => $vn_list_id)));
@@ -2163,11 +2168,11 @@ class SearchResult extends BaseObject {
 		// the assumption is that if you run getWithTemplate for the current row, you'll probably run it for the next bunch of rows too
 		// since running caProcessTemplateForIDs for every single row is slow, we prefetch a set number of rows here
 		$vs_cache_base_key = $this->getCacheKeyForGetWithTemplate($ps_template, $pa_options);
-		if(!isset(self::$s_template_prefetch_cache[$vs_cache_base_key][$vn_cur_row = $this->opo_engine_result->currentRow()])) {
+		if(!isset($this->opa_template_prefetch_cache[$vs_cache_base_key][$vn_cur_row = $this->opo_engine_result->currentRow()])) {
 			$this->prefetchForGetWithTemplate($ps_template, $pa_options);
 		}
 
-		return self::$s_template_prefetch_cache[$vs_cache_base_key][$vn_cur_row];
+		return $this->opa_template_prefetch_cache[$vs_cache_base_key][$vn_cur_row];
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -2182,13 +2187,13 @@ class SearchResult extends BaseObject {
 
 		// if we're at the first hit, we don't need to offset the cache keys, so we can use $va_vals as-is
 		if(($vn_cur_row = $this->opo_engine_result->currentRow()) == 0) {
-			self::$s_template_prefetch_cache[$vs_cache_base_key] = array_values($va_vals);
+			$this->opa_template_prefetch_cache[$vs_cache_base_key] = array_values($va_vals);
 		} else {
 			// this is kind of slow but we hope that users usually pull when the ptr is still at the first result
 			// I tried messing around with array_walk instead of this loop but that doesn't gain us much, and this is way easier to read
 			$vn_i = 0;
 			foreach($va_vals as $vs_val) {
-				self::$s_template_prefetch_cache[$vs_cache_base_key][$vn_cur_row + $vn_i] = $vs_val;
+				$this->opa_template_prefetch_cache[$vs_cache_base_key][$vn_cur_row + $vn_i] = $vs_val;
 				$vn_i++;
 			}
 		}
@@ -2197,8 +2202,8 @@ class SearchResult extends BaseObject {
 	/**
 	 *
 	 */
-	public static function clearGetWithTemplatePrefetch() {
-		self::$s_template_prefetch_cache = array();
+	public function clearGetWithTemplatePrefetch() {
+		$this->opa_template_prefetch_cache = array();
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -2793,7 +2798,8 @@ class SearchResult extends BaseObject {
 			$vs_table_name = $t_instance->getSubjectTableName();
 			$vs_subfield_name = $vs_field_name;
 			$vs_field_name = "preferred_labels";
-			$vb_is_related = false;
+			$va_tmp = array($vs_table_name, $vs_field_name, $vs_subfield_name);
+			$vb_is_related = ($vs_table_name !== $this->ops_table_name);
 		}
 		
 		return SearchResult::$s_parsed_field_component_cache[$this->ops_table_name.'/'.$ps_path] = array(

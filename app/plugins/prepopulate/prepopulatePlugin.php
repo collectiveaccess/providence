@@ -215,7 +215,7 @@ class prepopulatePlugin extends BaseApplicationPlugin {
 										}
 									}
 
-									$t_instance->_editAttribute($vo_attr->getAttributeID(), $va_value);
+									$t_instance->_editAttribute($vo_attr->getAttributeID(), $va_value, $t_instance->getTransaction());
 									break;
 								case 'addifempty':
 									$vo_attr = array_pop($va_attr);

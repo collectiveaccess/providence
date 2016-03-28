@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -245,12 +245,12 @@
 	 * $ps_name - name of the element
 	 * $pa_attributes - optional associative array of <input> tag options applied to the radio button; keys are attribute names and values are attribute values
 	 * $pa_options - optional associative array of options. Valid options are:
-	 * 			checked = if true, value will be selected by default
+	 * 		checked 	= if true, value will be selected by default
+	 *		disabled	= boolean indicating if radio button is enabled or not (true=disabled; false=enabled)
 	 */
 	function caHTMLRadioButtonInput($ps_name, $pa_attributes=null, $pa_options=null) {
-		if (isset($pa_options['checked']) && (bool)$pa_options['checked']) {
-			$pa_attributes['checked'] = '1';
-		}
+		if(caGetOption('checked', $pa_options, false)) { $pa_attributes['checked'] = 1; }
+		if(caGetOption('disabled', $pa_options, false)) { $pa_attributes['disabled'] = 1; }
 		$vs_attr_string = _caHTMLMakeAttributeString($pa_attributes);
 		
 		// standard check box
@@ -271,6 +271,8 @@
 	function caHTMLCheckboxInput($ps_name, $pa_attributes=null, $pa_options=null) {
 		if (array_key_exists('checked', $pa_attributes) && !$pa_attributes['checked']) { unset($pa_attributes['checked']); }
 		if (array_key_exists('CHECKED', $pa_attributes) && !$pa_attributes['CHECKED']) { unset($pa_attributes['CHECKED']); }
+		
+		if(caGetOption('disabled', $pa_options, false)) { $pa_attributes['disabled'] = 1; }
 		
 		$vs_attr_string = _caHTMLMakeAttributeString($pa_attributes, $pa_options);
 	

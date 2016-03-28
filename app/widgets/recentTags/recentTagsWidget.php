@@ -81,17 +81,17 @@
 			$vs_tag_type = "";
 			switch($vn_show_type){
 				case 1:
-					$vs_mode = "moderated";
+					$vs_mode = TRUE;
 					$vs_tag_type = _t("moderated");
 				break;
 				# ---------------------------------------
 				case 0:
-					$vs_mode = "unmoderated";
+					$vs_mode = FALSE;
 					$vs_tag_type = _t("unmoderated");
 				break;
 				# ---------------------------------------
 				default:
-					$vs_mode = "";
+					$vs_mode = NULL;
 					$vs_tag_type = "";
 				break;
 				# ---------------------------------------
@@ -99,7 +99,7 @@
 			$this->opo_view->setVar('tag_type', $vs_tag_type);
 			
 			$t_tags = new ca_item_tags();
-			$va_tags = $t_tags->getTags($vs_mode, $vn_limit);
+			$va_tags = $t_tags->getAllTags($vs_mode, $vn_limit);
 
 			$this->opo_view->setVar('tags_list', $va_tags);
 			$this->opo_view->setVar('request', $this->getRequest());

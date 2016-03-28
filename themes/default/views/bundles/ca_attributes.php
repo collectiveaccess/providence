@@ -78,9 +78,10 @@
 	$vs_bundle_preview = '';
 	
 	$va_template_tags = $va_element_ids;
+	$vs_display_template = caGetOption('displayTemplate', $va_element_settings);
 
 	$va_element_settings = $t_element->getSettings();
-	if(isset($va_element_settings['displayTemplate']) && (strlen($va_element_settings['displayTemplate']) > 0)) {
+	if($t_instance->getAppConfig()->get('always_show_bundle_preview_for_attributes') || $vs_display_template) {
 		$vs_bundle_preview = $t_instance->getAttributesForDisplay($va_root_element['element_id'], null, array('showHierarchy' => true));
 	}
 
