@@ -3054,6 +3054,12 @@ div.caObjectRepresentationDetailEditorElement {
     margin-right: 5px;
 }
 
+div.caObjectRepresentationDetailEditorText {
+    font-size: 14px;
+    font-weight: normal;
+    margin: 5px 0 10px 0;
+}
+
 div.caObjectRepresentationDetailEditorElement div select{
     font-size: 10px;
 }

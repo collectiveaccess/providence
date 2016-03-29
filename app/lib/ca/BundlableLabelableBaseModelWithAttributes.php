@@ -1769,9 +1769,18 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						
 						break;
 					# -------------------------------
-					// This bundle is only available items that can be used as authority references (object, entities, occurrences, list items, etc.)
+					// This bundle is only available for items that can be used as authority references (object, entities, occurrences, list items, etc.)
 					case 'authority_references_list':
 						$vs_element .= $this->getAuthorityReferenceListHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						break;
+					# -------------------------------
+					// This bundle is only available items for batch editing on representable models
+					case 'ca_object_representations_access_status':
+						if (($vb_batch) && (is_a($this, 'RepresentableBaseModel'))) {
+							$vs_element .= $this->getObjectRepresentationAccessStatusHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						} else {
+							return null;
+						}
 						break;
 					# -------------------------------
 					default:
@@ -4382,6 +4391,31 @@ if (!$vb_batch) {
 					
 						// NOOP (for now)
 					
+						break;
+					# -------------------------------
+					// This bundle is only available items for batch editing on representable models
+					case 'ca_object_representations_access_status':		
+						if (($vb_batch) && (is_a($this, 'RepresentableBaseModel'))) {
+							$vn_access = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_access", pString);
+							$vn_status = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_status", pString);
+							
+							$t_rep = new ca_object_representations();
+							if(is_array($va_rep_ids = $this->getRepresentationIDs())) {
+								foreach(array_keys($va_rep_ids) as $vn_rep_id) {
+									if ($t_rep->load($vn_rep_id)) {
+										$t_rep->setMode(ACCESS_WRITE);
+										$t_rep->set('access', $vn_access);
+										$t_rep->set('status', $vn_status);
+										$t_rep->update();
+										
+										if ($t_rep->numErrors()) {
+											$po_request->addActionErrors($t_rep->errors(), 'ca_object_representations_access_status', 'general');
+										}
+									}
+								}
+							}
+							
+						}
 						break;
 					# -------------------------------
 				}

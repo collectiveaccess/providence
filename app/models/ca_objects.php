@@ -536,6 +536,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		$this->BUNDLES['ca_objects_history'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object use history'));
 		$this->BUNDLES['ca_objects_deaccession'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Deaccession status'));
 		$this->BUNDLES['ca_object_checkouts'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Object checkouts'));
+		
+		$this->BUNDLES['ca_object_representations_access_status'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Media representation access and status'));
 	
 		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
 	}
@@ -1849,11 +1851,13 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  		if(!is_array($va_map)){
 		    $va_map = array();
 	    }
+	 
  		foreach($va_map as $vs_table => $va_types) {
  			$va_bundle_settings["{$vs_table}_showTypes"] = array();
  			foreach($va_types as $vs_type => $va_config) {
  				switch($vs_table) {
  					case 'ca_storage_locations':
+ 					case 'ca_objects_x_storage_locations':
  						$va_bundle_settings["{$vs_table}_showRelationshipTypes"][] = $t_rel_type->getRelationshipTypeID('ca_objects_x_storage_locations', $vs_type);
  						break;
  					default:
@@ -1959,6 +1963,11 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  		
  		$va_map = $o_config->getAssoc('current_location_criteria');
  		
+ 		if (isset($va_map['ca_storage_locations'])) { 
+ 			$va_map['ca_objects_x_storage_locations'] = $va_map['ca_storage_locations'];
+ 			unset($va_map['ca_storage_locations']);
+ 		}
+ 		
  		if (!($t_instance = $o_dm->getInstance($pm_current_loc_class, true))) { return ca_objects::$s_current_location_type_configuration_cache[$vs_cache_key] = null; }
  		$vs_table_name = $t_instance->tableName();
  		
@@ -1967,7 +1976,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  			
  			if ($pm_current_loc_subclass) { 
  				switch($vs_table_name) {
- 					case 'ca_storage_locations':
+ 					case 'ca_objects_x_storage_locations':
  						$va_types = ca_relationship_types::relationshipTypeIDsToTypeCodes(array($pm_current_loc_subclass));
  						$vs_type = array_shift($va_types);
  						break;
