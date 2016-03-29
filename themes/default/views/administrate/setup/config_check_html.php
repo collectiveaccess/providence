@@ -68,6 +68,10 @@ $va_search_config_settings = $this->getVar('search_config_settings');
 				<td><?php print _t('System GUID'); ?></td>
 				<td><?php print __CA_SYSTEM_GUID__; ?></td>
 			</tr>
+			<tr>
+				<td><?php print _t('Last change log ID'); ?></td>
+				<td><?php print $this->getVar('last_change_log_id'); ?></td>
+			</tr>
 		</tbody>
 	</table>
 	

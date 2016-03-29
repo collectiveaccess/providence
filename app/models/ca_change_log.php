@@ -218,6 +218,22 @@ class ca_change_log extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Get next ca_change_log.log_id for a given timestamp
+	 * @return int|bool
+	 */
+	public static function getLastLogID() {
+		$o_db = new Db();
+
+		$qr_results = $o_db->query("SELECT max(log_id) as log_id FROM ca_change_log");
+
+		if($qr_results->nextRow()) {
+			return (int) $qr_results->get('log_id');
+		}
+
+		return false;
+	}
+	# ------------------------------------------------------
+	/**
 	 * @param int $pn_from
 	 * @param null|int $pn_limit
 	 * @param null|array $pa_options
