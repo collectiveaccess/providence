@@ -273,6 +273,12 @@ var caUI = caUI || {};
 		
 		var that = caUI.initBundle(container, options);
 		
+		that.deleteAll = function() {
+			for(var i=0; i < that.getCount(); i++) {
+				that.deleteFromBundle(i);
+			}
+		}
+		
 		return that;
 	};	
 })(jQuery);
