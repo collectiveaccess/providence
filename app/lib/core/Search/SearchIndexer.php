@@ -1206,11 +1206,19 @@ class SearchIndexer extends SearchBase {
 						$t_label = $this->opo_datamodel->getInstanceByTableNum($va_row_to_reindex['field_table_num'], true);
 						$t_label->setDb($this->getDb());
 
-						foreach( $va_row_to_reindex['row_ids'] as $vn_row_id) {
+						foreach($va_row_to_reindex['row_ids'] as $vn_row_id) {
 							$va_content = $this->_genHierarchicalPath($va_row_to_reindex['field_row_id'], $va_row_to_reindex['field_name'], $t_label, $va_row_to_reindex['indexing_info']);
 							$vs_content = is_array($va_content['values']) ? join(" ", $va_content['values']) : "";
 
 							$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], array($vn_row_id), $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $vs_content, array_merge($va_row_to_reindex['indexing_info'], array('relationship_type_id' => $vn_rel_type_id, 'literalContent' => $va_content['path'])));
+						}
+					} elseif (((isset($va_row_to_reindex['indexing_info']['INDEX_AS_IDNO']) && $va_row_to_reindex['indexing_info']['INDEX_AS_IDNO']) || in_array('INDEX_AS_IDNO', $va_row_to_reindex['indexing_info'])) && method_exists($t_rel, "getIDNoPlugInInstance") && ($o_idno = $t_rel->getIDNoPlugInInstance())) {
+						$va_values = $o_idno->getIndexValues($va_row_to_reindex['field_values'][$va_row_to_reindex['field_name']]);
+						
+						foreach($va_row_to_reindex['row_ids'] as $vn_row_id) {
+							$this->opo_engine->startRowIndexing($va_row_to_reindex['table_num'], $vn_row_id);
+							$this->opo_engine->indexField($va_row_to_reindex['table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], join(" ", $va_values), $va_row_to_reindex['indexing_info']);	
+							$this->opo_engine->commitRowIndexing();
 						}
 					} else {
 						$vs_element_code = substr($va_row_to_reindex['field_name'], 14);

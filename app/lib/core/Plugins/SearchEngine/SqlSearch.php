@@ -1744,7 +1744,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		$vb_incremental_reindexing = (bool)$this->can('incremental_reindexing');
 		
 		if (!defined("__CollectiveAccess_IS_REINDEXING__") && $vb_incremental_reindexing) {
-			$this->removeRowIndexing($this->opn_indexing_subject_tablenum, $this->opn_indexing_subject_row_id, $pn_content_tablenum, array($ps_content_fieldname));
+			$this->removeRowIndexing($this->opn_indexing_subject_tablenum, $this->opn_indexing_subject_row_id, $pn_content_tablenum, array($ps_content_fieldname), $pn_content_row_id);
 		}
 		if (!$va_words) {
 			WLPlugSearchEngineSqlSearch::$s_doc_content_buffer[] = '('.$this->opn_indexing_subject_tablenum.','.$this->opn_indexing_subject_row_id.','.$pn_content_tablenum.',\''.$ps_content_fieldname.'\','.$pn_content_row_id.',0,0,'.$vn_private.','.$vn_rel_type_id.')';
