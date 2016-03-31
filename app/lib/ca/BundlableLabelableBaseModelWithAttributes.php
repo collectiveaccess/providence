@@ -4370,7 +4370,7 @@ if (!$vb_batch) {
 									($vn_relationship_type_id = array_shift($va_relationship_types))
 								)
 							) {
-								$this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id, null, null, null, null, array('allowDuplicates' => true));
+								$this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id, $x=$po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_effective_daterangenew_0", pString), null, null, null, array('allowDuplicates' => true));
 								if ($this->numErrors()) {
 									$po_request->addActionErrors($this->errors(), 'ca_objects_history', 'general');
 								}
@@ -4383,6 +4383,21 @@ if (!$vb_batch) {
 								$this->addRelationship('ca_loans', $vn_loan_id, $vn_loan_type_id);
 								if ($this->numErrors()) {
 									$po_request->addActionErrors($this->errors(), 'ca_objects_history', 'general');
+								}
+							}
+						}
+						
+						// set occurrence
+						require_once(__CA_MODELS_DIR__."/ca_occurrences.php");
+						$t_occ = new ca_occurrences();
+						$va_occ_types = $t_occ->getTypeList();
+						foreach($va_occ_types as $vn_type_id => $vn_type_info) {
+							if ($vn_occurrence_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_occurrence_{$vn_type_id}_idnew_0", pInteger)) {
+								if ($vn_occ_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_occurrence_{$vn_type_id}_type_idnew_0", pInteger)) {
+									$this->addRelationship('ca_occurrences', $vn_occurrence_id, $vn_occ_type_id);
+									if ($this->numErrors()) {
+										$po_request->addActionErrors($this->errors(), 'ca_objects_history', 'general');
+									}
 								}
 							}
 						}
