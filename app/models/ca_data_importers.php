@@ -1763,6 +1763,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					
 						if (!sizeof($va_vals)) { $va_vals = array(0 => null); }	// consider missing values equivalent to blanks
 				
+				
+						// Get location in content tree for addition of new content
+						$va_item_dest = explode(".",  $va_item['destination']);
+						$vs_item_terminal = $va_item_dest[sizeof($va_item_dest)-1];
+						
 						// Do value conversions
 						foreach($va_vals as $vn_i => $vm_val) {
 							// Evaluate skip-if-empty options before setting default value, addings prefix/suffix or formatting with templates
@@ -1828,10 +1833,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							if (isset($va_item['settings']['convertNewlinesToHTML']) && (bool)$va_item['settings']['convertNewlinesToHTML'] && is_string($vm_val)) {
 								$vm_val = nl2br($vm_val);
 							}
-					
-							// Get location in content tree for addition of new content
-							$va_item_dest = explode(".",  $va_item['destination']);
-							$vs_item_terminal = $va_item_dest[sizeof($va_item_dest)-1];
 					
 							if (isset($va_item['settings']['restrictToTypes']) && is_array($va_item['settings']['restrictToTypes']) && !in_array($vs_type, $va_item['settings']['restrictToTypes'])) {
 								$o_log->logInfo(_t('[%1] Skipped row %2 because of type restriction', $vs_idno, $vn_row));
@@ -1988,7 +1989,28 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											$vs_list_val = mb_substr($vs_list_val, 0, $vn_max_length);
 										}
 										if (!is_array($va_group_buf[$vn_c])) { $va_group_buf[$vn_c] = array(); }
-										$va_group_buf[$vn_c] = array_merge($va_group_buf[$vn_c], array($vs_item_terminal => $vs_list_val, '_errorPolicy' => $vs_item_error_policy));
+										
+										
+										switch($vs_item_terminal) {
+											case 'preferred_labels':
+											case 'nonpreferred_labels':
+												if ($t_instance = $o_dm->getInstanceByTableName($vs_target_table, true)) {
+													$va_group_buf[$vn_c][$t_instance->getLabelDisplayField()] = $vs_list_val;
+												}
+												
+												if (!$vb_item_error_policy_is_default || !isset($va_group_buf[$vn_c]['_errorPolicy'])) {
+													if (is_array($va_group_buf[$vn_c])) { $va_group_buf[$vn_c]['_errorPolicy'] = $vs_item_error_policy; }
+												}
+								
+												if ($vs_item_terminal == 'preferred_labels') { $vs_preferred_label_for_log = $vm_val; }
+												break;
+											default:
+												$va_group_buf[$vn_c] = array_merge($va_group_buf[$vn_c], array($vs_item_terminal => $vs_list_val, '_errorPolicy' => $vs_item_error_policy));
+												if (!$vb_item_error_policy_is_default || !isset($va_group_buf[$vn_c]['_errorPolicy'])) {
+													if (is_array($va_group_buf[$vn_c])) { $va_group_buf[$vn_c]['_errorPolicy'] = $vs_item_error_policy; }
+												}
+												break;
+										}
 										$vn_c++;
 									}
 									$vn_c = $vn_orig_c;
@@ -2014,7 +2036,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 									if ($t_instance = $o_dm->getInstanceByTableName($vs_target_table, true)) {
 										$va_group_buf[$vn_c][$t_instance->getLabelDisplayField()] = $vm_val;
 									}
-									if ($o_trans) { $t_instance->setTransaction($o_trans); }
 									if (!$vb_item_error_policy_is_default || !isset($va_group_buf[$vn_c]['_errorPolicy'])) {
 										if (is_array($va_group_buf[$vn_c])) { $va_group_buf[$vn_c]['_errorPolicy'] = $vs_item_error_policy; }
 									}
@@ -2294,12 +2315,12 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											}
 											break;
 										case 'nonpreferred_labels':
-										
 											$t_subject->addLabel(
 												$va_element_content, $vn_locale_id, isset($va_element_content['type_id']) ? $va_element_content['type_id'] : null, false, array('truncateLongLabels' => $vb_truncate_long_labels)
 											);
 										
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add non-preferred label to %2:", $vs_idno, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+												print "ERR!!!";print_R($va_content_tree);
 												ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
