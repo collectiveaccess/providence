@@ -298,17 +298,6 @@ class Installer {
 	public function performPostInstallTasks() {
 		$o_config = Configuration::load();
 		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
-
-			require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
-			$o_es = new WLPlugSearchEngineElasticSearch();
-
-			try {
-				$o_es->truncateIndex(null);
-				$o_es->refreshMapping(true);
-			} catch(Exception $e) {
-				die('Unable to connect to ElasticSearch. Is the cluster running? Message from Elasticsearch was: ' . $e->getMessage());
-			}
-
 			$o_si = new SearchIndexer();
 			$o_si->reindex(null, array('showProgress' => false, 'interactiveProgressDisplay' => false));
 			CompositeCache::flush();

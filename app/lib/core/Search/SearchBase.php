@@ -120,6 +120,10 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 		 * @return array
 		 */
 		public function getFieldsToIndex($pm_subject_table, $pm_content_table=null, $pa_options=null) {
+			if(caGetOption('clearCache', $pa_options, false)) {
+				self::clearCache();
+			}
+
 			$vs_key = caMakeCacheKeyFromOptions($pa_options);
 			if (isset(SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table.'/'.$vs_key])) {
 				return SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table.'/'.$vs_key];
@@ -193,6 +197,10 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 			
 			return SearchBase::$s_fields_to_index_cache[$pm_subject_table.'/'.$pm_content_table.'/'.$vs_key] = SearchBase::$s_fields_to_index_cache[$vs_subject_table.'/'.$vs_content_table.'/'.$vs_key] = $va_fields_to_index;
 	
+		}
+		# ------------------------------------------------
+		public static function clearCache() {
+			self::$s_fields_to_index_cache = array();
 		}
 		# ------------------------------------------------
 		/**
