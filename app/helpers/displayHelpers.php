@@ -840,7 +840,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 					}
 				}
 				
-				$vb_show_idno = (bool)($vs_idno = $t_item->get($t_item->getProperty('ID_NUMBERING_ID_FIELD')));
+				$vb_show_idno = (!$po_view->request->config->get("{$vs_table_name}_inspector_dont_display_idno")) && (bool)($vs_idno = $t_item->get($t_item->getProperty('ID_NUMBERING_ID_FIELD')));
 				
 				if (!$vs_label) { 
 					switch($vs_table_name) {
