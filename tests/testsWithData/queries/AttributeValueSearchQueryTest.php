@@ -117,7 +117,7 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 
 		// search queries
 		$this->setSearchQueries(array(
-			'My Test Image' => 1,
+			/*'My Test Image' => 1,
 
 			// plain text
 			'Lorem ipsum' => 1,
@@ -160,7 +160,7 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.integer_test:24 AND ca_objects.integer_test:1984' => 0,
 
 			// Currency
-			'ca_objects.currency_test:$100' => 1,
+			'ca_objects.currency_test:$100' => 1,*/
 			'ca_objects.currency_test:[$99.99 to $100.01]' => 1,
 			'ca_objects.currency_test:EUR100' => 0,
 			'ca_objects.currency_test:USD100' => 1,

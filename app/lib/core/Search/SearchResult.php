@@ -338,7 +338,7 @@ class SearchResult extends BaseObject {
 				t.{$vs_pk} IN (?)".($t_rel_instance->hasField('deleted') ? " AND (t.deleted = 0)" : "")."
 				{$vs_type_sql}
 		";
-		
+
 		$va_row_id_map = null;
 		$vn_level = 0;
 		
