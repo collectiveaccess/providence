@@ -199,8 +199,7 @@ class ca_guids extends BaseModel {
 			CompositeCache::save("{$pn_table_num}/{$pn_row_id}", $vs_guid, 'TableNumRowIDsToGUIDs');
 			return $vs_guid;
 		} else {
-			$t_instance = Datamodel::load()->getInstance($pn_table_num, true);
-			if($t_instance instanceof BundlableLabelableBaseModelWithAttributes) {
+			if($t_instance = Datamodel::load()->getInstance($pn_table_num, true)) {
 				if($vs_guid = self::addForRow($pn_table_num, $pn_row_id)) {
 					CompositeCache::save("{$pn_table_num}/{$pn_row_id}", $vs_guid, 'TableNumRowIDsToGUIDs');
 					return $vs_guid;

@@ -6935,4 +6935,45 @@ side. For many self-relations the direction determines the nature and display te
 		return BundlableLabelableBaseModelWithAttributes::$s_tep;
 	}
 	# -------------------------------------------------------
+	/**
+	 * Implementations can override this to add more criteria for hashing, e.g. hierarchy path components or what have you
+	 * @return array
+	 */
+	public function getAdditionalHashComponents() {
+		return array();
+	}
+	# -------------------------------------------------------
+	/**
+	 * Get identifying hash for this row
+	 * @return bool|string
+	 */
+	public function getHash() {
+		if(!$this->getPrimaryKey()) { return false; }
+		$va_hash_components = array();
+
+		if($vs_idno_fld = $this->getProperty('ID_NUMBERING_ID_FIELD')) {
+			$va_hash_components[] = $this->get($vs_idno_fld);
+		}
+
+		if($vs_type_id_fld = $this->getProperty('ATTRIBUTE_TYPE_ID_FLD')) {
+			$va_hash_components[] = $this->getTypeCode();
+		}
+
+		if($this->getAppConfig()->get($this->tableName(). '_use_preferred_labels_for_record_hash')) {
+			if($this->getPreferredLabelCount() > 0) {
+				$va_hash_components[] = $this->get($this->tableName(). '.preferred_labels', array('returnAllLocales' => true));
+			}
+		}
+
+		if($this->getAppConfig()->get($this->tableName(). '_use_nonpreferred_labels_for_record_hash')) {
+			if($this->getPreferredLabelCount() > 0) {
+				$va_hash_components[] = $this->get($this->tableName(). '.nonpreferred_labels', array('returnAllLocales' => true));
+			}
+		}
+
+		$va_hash_components[] = $this->getAdditionalHashComponents();
+
+		return md5(serialize($va_hash_components));
+	}
+	# -------------------------------------------------------
 }
