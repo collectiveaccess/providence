@@ -1682,8 +1682,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	}
 	# -------------------------------------------------------
 	public function indexField($pn_content_tablenum, $ps_content_fieldname, $pn_content_row_id, $pm_content, $pa_options) {
-		if (is_array($pm_content)) {
-			$pm_content = serialize($pm_content);
+		if (!is_array($pm_content)) {
+			$pm_content = [$pm_content];
 		}
 		
 		$vn_boost = 1;
@@ -1729,15 +1729,17 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			}
 		} 
 		
-		if (strlen((string)$pm_content) == 0) { 
+		if (!$pm_content || !sizeof($pm_content) || (((sizeof($pm_content) == 0) && strlen((string)$pm_content[0]) == 0))) { 
 			$va_words = null;
 		} else {
 			// Tokenize string
 			if ($vb_tokenize) {
-				$va_words = $this->_tokenize((string)$pm_content);
+				$va_words = [];
+				foreach($pm_content as $ps_content) {
+					$va_words = array_merge($va_words, $this->_tokenize((string)$ps_content));
+				}
 			} else {
-				// always break things up on spaces, even if we're not actually tokenizing
-				$va_words = preg_split("![ ]+!", (string)$pm_content);
+				$va_words = $pm_content;
 			}
 		}
 		

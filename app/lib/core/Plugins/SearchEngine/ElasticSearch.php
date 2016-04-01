@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -370,12 +370,15 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 */
 	public function indexField($pn_content_tablenum, $ps_content_fieldname, $pn_content_row_id, $pm_content, $pa_options) {
 		$o_field = new ElasticSearch\Field($pn_content_tablenum, $ps_content_fieldname);
-
-		foreach($o_field->getIndexingFragment($pm_content, $pa_options) as $vs_key => $vm_val) {
-			$this->opa_index_content_buffer[$vs_key][] = $vm_val;
-			// this list basically indexes the values above by content row id. we need that to have a chance
-			// to update indexing for specific values [content row ids] in place
-			$this->opa_index_content_buffer[$vs_key.'_content_ids'][] = $pn_content_row_id;
+		if(!is_array($pm_content) { $pm_content = [$pm_content]; }
+		
+		foreach($pm_content as $ps_content) {
+			foreach($o_field->getIndexingFragment($ps_content, $pa_options) as $vs_key => $vm_val) {
+				$this->opa_index_content_buffer[$vs_key][] = $vm_val;
+				// this list basically indexes the values above by content row id. we need that to have a chance
+				// to update indexing for specific values [content row ids] in place
+				$this->opa_index_content_buffer[$vs_key.'_content_ids'][] = $pn_content_row_id;
+			}
 		}
 	}
 	# -------------------------------------------------------
