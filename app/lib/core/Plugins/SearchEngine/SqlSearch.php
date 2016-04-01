@@ -1729,7 +1729,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			}
 		} 
 		
-		if (!$pm_content || !sizeof($pm_content) || (((sizeof($pm_content) == 0) && strlen((string)$pm_content[0]) == 0))) { 
+		if (!$pm_content || !sizeof($pm_content) || (((sizeof($pm_content) == 1) && strlen((string)$pm_content[0]) == 0))) { 
 			$va_words = null;
 		} else {
 			// Tokenize string
