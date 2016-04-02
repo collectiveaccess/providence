@@ -154,7 +154,7 @@ class MediaContentLocationIndexer  {
 		$o_config = Configuration::load();
 		$o_search_config = Configuration::load($o_config->get('search_config'));
 		$vs_indexing_regex = $o_search_config->get('indexing_tokenizer_regex');
-		$va_words = preg_split("![{$vs_indexing_regex}]!", $ps_query);
+		$va_words = preg_split("![{$vs_indexing_regex}]!u", $ps_query);
 		
 		$va_results = array(
 			'matches' => 0,

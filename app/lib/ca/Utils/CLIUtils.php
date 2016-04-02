@@ -1124,6 +1124,9 @@
 				CLIUtils::addError(_t("Could not import '%1': %2", $vs_file_path, join("; ", $va_errors)));
 				return false;
 			} else {
+				if(is_array($va_errors) && (sizeof($va_errors)>0)) {
+					CLIUtils::textWithColor(_t("There were warnings when adding mapping from file '%1': %2", $vs_file_path, join("; ", $va_errors)), 'yellow');
+				}
 
 				CLIUtils::addMessage(_t("Created mapping %1 from %2", CLIUtils::textWithColor($t_importer->get('importer_code'), 'yellow'), $vs_file_path), array('color' => 'none'));
 				return true;
@@ -2540,7 +2543,7 @@
 			$o_db = new Db();
 			$t_object = new ca_objects();
 
-			$qr_res = $o_db->query("SELECT * FROM ca_objects");
+			$qr_res = $o_db->query("SELECT object_id FROM ca_objects ORDER BY object_id");
 
 			print CLIProgressBar::start($qr_res->numRows(), _t('Starting...'));
 
