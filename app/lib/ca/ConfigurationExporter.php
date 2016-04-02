@@ -1314,6 +1314,13 @@ final class ConfigurationExporter {
 		$va_displays = $t_display->getBundleDisplays();
 
 		$vs_buf = "<displays>\n";
+
+		if($this->opn_modified_after && is_array($va_deleted = $this->getDeletedItemsFromChangeLogByIdno($t_display->tableNum(), 'display_code'))) {
+			foreach($va_deleted as $vs_deleted_idno) {
+				$vs_buf .= "\t<display code='".($vs_deleted_idno)."' deleted='1' />\n";
+			}
+		}
+
 		foreach($va_displays as $vn_i => $va_display_by_locale) {
 			$va_locales = array_keys($va_display_by_locale);
 			$va_info = $va_display_by_locale[$va_locales[0]];

@@ -1286,8 +1286,8 @@ class Installer {
 
 		$vo_dm = Datamodel::load();
 
+		$va_displays = array();
 		if($this->ops_base_name) { // "merge" profile and its base
-			$va_displays = array();
 			if($this->opo_base->displays) {
 				foreach($this->opo_base->displays->children() as $vo_display) {
 					$va_displays[self::getAttribute($vo_display, "code")] = $vo_display;
@@ -1307,7 +1307,7 @@ class Installer {
 			}
 		}
 
-		if(!is_array($va_displays) || sizeof($va_displays) == 0) return true;
+		if(sizeof($va_displays) == 0) { return true; }
 
 		foreach($va_displays as $vo_display) {
 			$vs_display_code = self::getAttribute($vo_display, "code");
@@ -1316,10 +1316,16 @@ class Installer {
 
 			if ($o_config->get($vs_table.'_disable')) { continue; }
 
-			$t_display = $this->opb_updating ? ca_bundle_displays::find(array('code' => $vs_display_code, 'type' => $vs_table), array('returnAs' => 'firstModelInstance')) : false;
-			$t_display = $t_display ? $t_display : new ca_bundle_displays();
+			if(!($t_display = ca_bundle_displays::find(array('code' => $vs_display_code, 'type' => $vs_table), array('returnAs' => 'firstModelInstance')))) {
+				$t_display = new ca_bundle_displays();
+			}
 
 			$t_display->setMode(ACCESS_WRITE);
+
+			if(self::getAttribute($vo_display, "deleted") && $t_display->getPrimaryKey()) {
+				$t_display->delete(true);
+				continue;
+			}
 
 			$t_display->set("display_code", $vs_display_code);
 			$t_display->set("is_system", $vb_system);
@@ -1347,6 +1353,12 @@ class Installer {
 			}
 
 			if ($vo_display->typeRestrictions) {
+				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
+				// if we're updating, we expect the list of restrictions to include all restrictions!
+				if(sizeof($vo_display->typeRestrictions->children())) {
+					$this->opo_db->query('DELETE FROM ca_bundle_display_type_restrictions WHERE display_id=?', $t_display->getPrimaryKey());
+				}
+
 				foreach($vo_display->typeRestrictions->children() as $vo_restriction) {
 					$t_list = new ca_lists();
 					$t_list_item = new ca_list_items();
@@ -1425,8 +1437,13 @@ class Installer {
 	}
 	# --------------------------------------------------
 	private function processDisplayPlacements($t_display, $po_placements) {
-		$o_config = Configuration::load();
 		$va_available_bundles = $t_display->getAvailableBundles(null, array('no_cache' => true));
+
+		// nuke previous placements. there shouldn't be any if we're installing from scratch.
+		// if we're updating, we expect the list of restrictions to include all restrictions!
+		if(sizeof($po_placements->children())) {
+			$this->opo_db->query('DELETE FROM ca_bundle_display_placements WHERE display_id=?', $t_display->getPrimaryKey());
+		}
 
 		$vn_i = 1;
 		foreach($po_placements->children() as $vo_placement) {
@@ -1434,7 +1451,7 @@ class Installer {
 			$vs_bundle = (string)$vo_placement->bundle;
 
 			$va_settings = $this->_processSettings(null, $vo_placement->settings);
-			$vn_placement_id = $t_display->addPlacement($vs_bundle, $va_settings, $vn_i, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
+			$t_display->addPlacement($vs_bundle, $va_settings, $vn_i, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
 			if ($t_display->numErrors()) {
 				$this->addError("There was an error while inserting display placement {$vs_code}: ".join(" ",$t_display->getErrors()));
 				return false;
