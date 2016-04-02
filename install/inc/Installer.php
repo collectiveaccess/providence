@@ -1469,8 +1469,8 @@ class Installer {
 		$o_config = Configuration::load();
 		$vo_dm = Datamodel::load();
 
+		$va_forms = array();
 		if($this->ops_base_name) { // "merge" profile and its base
-			$va_forms = array();
 			if($this->opo_base->searchForms) {
 				foreach($this->opo_base->searchForms->children() as $vo_form) {
 					$va_forms[self::getAttribute($vo_form, "code")] = $vo_form;
@@ -1490,7 +1490,7 @@ class Installer {
 			}
 		}
 
-		if(!is_array($va_forms) || sizeof($va_forms) == 0) return true;
+		if(sizeof($va_forms) == 0) { return true; }
 
 		foreach($va_forms as $vo_form) {
 			$vs_form_code = self::getAttribute($vo_form, "code");
@@ -1501,14 +1501,21 @@ class Installer {
 			if ($o_config->get($vs_table.'_disable')) { continue; }
 			$vn_table_num = (int)$vo_dm->getTableNum($vs_table);
 
-			$t_form = $this->opb_updating ? ca_search_forms::find(array('form_code' => (string)$vs_form_code, 'table_num' => $vn_table_num), array('returnAs' => 'firstModelInstance')) : false;
-			$t_form = $t_form ? $t_form : new ca_search_forms();
+			if(!($t_form = ca_search_forms::find(array('form_code' => (string)$vs_form_code, 'table_num' => $vn_table_num), array('returnAs' => 'firstModelInstance')))) {
+				$t_form = new ca_search_forms();
+			}
 			$t_form->setMode(ACCESS_WRITE);
+
+			if(self::getAttribute($vo_form, "deleted") && $t_form->getPrimaryKey()) {
+				$t_form->delete(true);
+				continue;
+			}
+
 			$t_form->set("form_code", (string)$vs_form_code);
 			$t_form->set("is_system", (int)$vb_system);
 			$t_form->set("table_num", $vn_table_num);
 
-			$va_settings = $this->_processSettings($t_form, $vo_form->settings);
+			$this->_processSettings($t_form, $vo_form->settings);
 
 			if($t_form->getPrimaryKey()) {
 				$t_form->update();
@@ -1575,6 +1582,12 @@ class Installer {
 	private function processSearchFormPlacements($t_form, $po_placements) {
 		$va_available_bundles = $t_form->getAvailableBundles();
 
+		// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
+		// if we're updating, we expect the list of restrictions to include all restrictions!
+		if(sizeof($po_placements->children())) {
+			$this->opo_db->query('DELETE FROM ca_search_form_placements WHERE form_id=?', $t_form->getPrimaryKey());
+		}
+
 		$vn_i = 0;
 		foreach($po_placements->children() as $vo_placement) {
 			$vs_code = self::getAttribute($vo_placement, "code");
@@ -1582,7 +1595,7 @@ class Installer {
 
 			$va_settings = $this->_processSettings(null, $vo_placement->settings);
 
-			$vn_placement_id = $t_form->addPlacement($vs_bundle, $va_settings, $vn_i, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
+			$t_form->addPlacement($vs_bundle, $va_settings, $vn_i, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
 			if ($t_form->numErrors()) {
 				$this->addError("There was an error while inserting search form placement {$vs_code}: ".join(" ",$t_form->getErrors()));
 				return false;

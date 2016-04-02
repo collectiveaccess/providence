@@ -1178,9 +1178,19 @@ final class ConfigurationExporter {
 	}
 	# -------------------------------------------------------
 	public function getSearchFormsAsDOM() {
+		$t_form = new ca_search_forms();
 		$vo_forms = $this->opo_dom->createElement("searchForms");
 
 		$qr_forms = $this->opo_db->query("SELECT * FROM ca_search_forms");
+
+		if($this->opn_modified_after && is_array($va_deleted = $this->getDeletedItemsFromChangeLogByIdno($t_form->tableNum(), 'form_code'))) {
+			foreach($va_deleted as $vs_deleted_idno) {
+				$vo_form = $this->opo_dom->createElement("searchForm");
+				$vo_forms->appendChild($vo_form);
+				$vo_form->setAttribute("code", $vs_deleted_idno);
+				$vo_form->setAttribute("deleted", 1);
+			}
+		}
 
 		while($qr_forms->nextRow()) {
 			/** @var ca_search_forms $t_form */
