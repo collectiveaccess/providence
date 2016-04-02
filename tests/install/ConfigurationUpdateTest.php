@@ -206,7 +206,7 @@ class ConfigurationUpdateTest extends PHPUnit_Framework_TestCase {
 		$this->assertGreaterThan(0, $t_instance->getPrimaryKey());
 		$this->assertEquals(__CA_ATTRIBUTE_VALUE_CONTAINER__, $t_instance->get('datatype'));
 
-		$va_elements_in_set = $t_instance->getElementsInSet();
+		$va_elements_in_set = array_values($t_instance->getElementsInSet()); // we want to address things by position in the array below, not by element_id
 		$this->assertEquals(5, sizeof($va_elements_in_set));
 
 		// check a few of the changed properties (labels, whatever)
@@ -227,7 +227,6 @@ class ConfigurationUpdateTest extends PHPUnit_Framework_TestCase {
 		$o_installer->processLocales();
 		$o_installer->processUserInterfaces();
 
-		/** @var ca_editor_uis $t_ui */
 		$t_ui = ca_editor_uis::find(array('editor_code' => 'alternate_entity_ui', 'editor_type' =>  20), array('returnAs' => 'firstModelInstance'));
 		$this->assertInstanceOf('ca_editor_uis', $t_ui);
 		$this->assertEquals('alternate_entity_ui', $t_ui->get('editor_code'));
@@ -257,7 +256,6 @@ class ConfigurationUpdateTest extends PHPUnit_Framework_TestCase {
 		$o_installer->processLocales();
 		$o_installer->processUserInterfaces();
 
-		/** @var ca_editor_uis $t_ui */
 		$t_ui = ca_editor_uis::find(array('editor_code' => 'standard_entity_ui', 'editor_type' =>  20), array('returnAs' => 'firstModelInstance'));
 		$this->assertInstanceOf('ca_editor_uis', $t_ui);
 		$this->assertEquals('standard_entity_ui', $t_ui->get('editor_code'));
@@ -285,7 +283,6 @@ class ConfigurationUpdateTest extends PHPUnit_Framework_TestCase {
 		$o_installer->processLocales();
 		$o_installer->processUserInterfaces();
 
-		/** @var ca_editor_uis $t_ui */
 		$t_ui = ca_editor_uis::find(array('editor_code' => 'standard_entity_ui', 'editor_type' =>  20), array('returnAs' => 'firstModelInstance'));
 		$this->assertInstanceOf('ca_editor_uis', $t_ui);
 		$this->assertEquals('standard_entity_ui', $t_ui->get('editor_code'));
@@ -304,4 +301,18 @@ class ConfigurationUpdateTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertEquals('Idno', $va_idno_placement['settings']['label']['en_US']);
 	}
+
+	public function testDeleteRelType() {
+		$t_oxo = new ca_objects_x_occurrences();
+		$this->assertEquals(3, sizeof($t_oxo->getRelationshipTypes()));
+
+		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/reltypes/delete_reltype.xml'));
+		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer->processLocales();
+		$o_installer->processRelationshipTypes();
+
+		// there are 3 types in the profile (see assertion above, only two should be left:
+		$this->assertEquals(2, sizeof($t_oxo->getRelationshipTypes()));
+	}
+
 }
