@@ -6546,6 +6546,10 @@ div.caUseHistoryEntry {
 	border-top: 1px dotted #e6e6e6;
 }
 
+div.caUseHistoryEntryFirst {
+	border: none;
+}
+
 div.caUseHistoryButtonBar {
 	padding: 10px;
 }

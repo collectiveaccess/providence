@@ -1346,6 +1346,18 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Color for storage location'),
 										'description' => _t('Color to use as highlight storage location.')
 									),
+									'ca_storage_locations_elements' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'default' => '',
+										'takesLocale' => false,
+										'table' => 'ca_objects_x_storage_locations',
+										'showMetadataElementsWithDataType' => "*",
+										'includeIntrinsics' => ['effective_date'],
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Interstitial storage location elements to set'),
+										'description' => _t('')
+									),
 									'ca_storage_locations_displayTemplate' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,

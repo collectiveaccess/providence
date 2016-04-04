@@ -43,6 +43,8 @@ var caUI = caUI || {};
 		}
 	});
 	caUI.initRelationBundle = function(container, options) {
+		if (options.onAddItem) { options.onAddRelationshipItem = options.onAddItem; }
+		
 		options.onInitializeItem = function(id, values, options) { 
 			jQuery("#" + options.itemID + id + " select").css('display', 'inline');
 			var i, typeList, types = [], lists = [];
@@ -163,6 +165,8 @@ var caUI = caUI || {};
 					}
 				}, options.autocompleteOptions)
 			).on('click', null, {}, function() { this.select(); });
+			
+			if (options.onAddRelationshipItem) { options.onAddRelationshipItem(id, options, isNew); }
 		};
 		
 		options.select = function(id, data) {
@@ -272,12 +276,6 @@ var caUI = caUI || {};
 		};
 		
 		var that = caUI.initBundle(container, options);
-		
-		that.deleteAll = function() {
-			for(var i=0; i < that.getCount(); i++) {
-				that.deleteFromBundle(i);
-			}
-		}
 		
 		return that;
 	};	

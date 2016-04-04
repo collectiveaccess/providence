@@ -39,6 +39,8 @@
 	$vs_mode					= $this->getVar('mode');
 	$vs_relationship_type		= $this->getVar('location_relationship_type');
 	$vs_change_location_url		= $this->getVar('location_change_url');
+
+	$va_storage_location_elements = caGetOption('ca_storage_locations_elements', $va_settings, array());
 	
 	$va_occ_types  				= $this->getVar('occurrence_types');
 	
@@ -54,7 +56,7 @@
 <?php
 	if (!$vb_read_only) {
 ?>
-			<div class="caUseHistoryButtonBar">
+			<div class="caUseHistoryButtonBar labelInfo">
 <?php
 			if(!caGetOption('hide_add_to_loan_controls', $va_settings, false)) {
 ?>
@@ -86,9 +88,9 @@
 		<div class="caOccurrenceList"> </div>
 <?php
 	foreach($va_history as $vn_date => $va_history_entries_for_date) {
-		foreach($va_history_entries_for_date as $va_history_entry) {
+		foreach($va_history_entries_for_date as $vn_i => $va_history_entry) {
 ?>
-			<div class="caUseHistoryEntry">
+			<div class="caUseHistoryEntry <?php print ($vn_i == 0) ? 'caUseHistoryEntryFirst' : ''; ?>">
 				<?php print $va_history_entry['icon']; ?>
 				<div><?php print $va_history_entry['display']; ?></div>
 				<div class="caUseHistoryDate"><?php print $va_history_entry['date']; ?></div>
@@ -140,7 +142,20 @@
 				
 				<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 				<div style="float: left;">
-					<div class='hierarchyBrowserSearchBar'><?php print _t('Date'); ?>: <input type="text" size="40" id="<?php print $vs_id_prefix; ?>_location_effective_daterange{n}" name="<?php print $vs_id_prefix; ?>_location_effective_daterange{n}" value="<?php print addslashes(_t('now')); ?>" class="dateBg hierarchyBrowserSearchBar"/></div>
+					<div class='hierarchyBrowserSearchBar'><?php 
+			
+	if(is_array($va_storage_location_elements) && sizeof($va_storage_location_elements)) {
+		$o_dm = Datamodel::load();
+		$t_rel = $o_dm->getInstanceByTableName('ca_objects_x_storage_locations', true);		
+		foreach($va_storage_location_elements as $vs_element) {
+			if ($t_rel->hasField($vs_element)) {
+				print "<div class='attributeListItem'>".$t_rel->getDisplayLabel($t_rel->tableName().".".$vs_element).": ".$t_rel->htmlFormElement($vs_element, '', ['name' => $vs_id_prefix.'_location_effective_date{n}', 'id' => $vs_id_prefix.'_location_effective_date{n}', 'classname' => 'dateBg hierarchyBrowserSearchBar'])."</div>";
+			} else {
+				print $t_rel->getDisplayLabel($t_rel->tableName().".".$vs_element).": ".$t_rel->getAttributeHTMLFormBundle($this->request, null, $vs_element, $this->getVar('placement_code'), $va_settings, ['elementsOnly' => true]);
+			}	
+		}
+	}
+					?></div>
 				</div>
 				<div style="float: left;" class="hierarchyBrowserCurrentSelectionText">
 					<input type="hidden" name="<?php print $vs_id_prefix; ?>_location_id{n}" id="<?php print $vs_id_prefix; ?>_location_id{n}" value="{id}"/>
@@ -189,7 +204,7 @@
 							}
 						);
 						
-						jQuery('#<?php print $vs_id_prefix; ?>_location_effective_daterange{n}').datepicker({dateFormat: 'yy-mm-dd'});
+						jQuery('#<?php print $vs_id_prefix; ?>_location_effective_date{n}').datepicker({dateFormat: 'yy-mm-dd'});
 					});
 				</script>
 <?php
@@ -310,9 +325,15 @@ if(!caGetOption('hide_add_to_occurrence_controls', $va_settings, false)) {
 				quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
 				quickaddUrl: '<?php print caNavUrl($this->request, 'editor/storage_locations', 'StorageLocationQuickAdd', 'Form', array('location_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'])); ?>',
 				minRepeats: 0,
-				maxRepeats: 1,
+				maxRepeats: 2,
 				addMode: 'prepend',
-				useAnimation: 1
+				useAnimation: 1,
+				onAddItem: function(id, options, isNew) {
+					jQuery(".caUseHistoryButtonBar").slideUp(250);
+				},
+				onDeleteItem: function(id) {
+					jQuery(".caUseHistoryButtonBar").slideDown(250);
+				}
 			});
 <?php
 		} else {
@@ -357,8 +378,14 @@ if(!caGetOption('hide_add_to_occurrence_controls', $va_settings, false)) {
 			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
 			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/loans', 'LoanQuickAdd', 'Form', array('loan_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'])); ?>',
 			minRepeats: 0,
-			maxRepeats: 1,
-			useAnimation: 1
+			maxRepeats: 2,
+			useAnimation: 1,
+			onAddItem: function(id, options, isNew) {
+				jQuery(".caUseHistoryButtonBar").slideUp(250);
+			},
+			onDeleteItem: function(id) {
+				jQuery(".caUseHistoryButtonBar").slideDown(250);
+			}
 		});
 <?php
 if(!caGetOption('hide_add_to_occurrence_controls', $va_settings, false)) {
@@ -390,8 +417,14 @@ if(!caGetOption('hide_add_to_occurrence_controls', $va_settings, false)) {
 			quickaddPanel: caRelationQuickAddPanel<?php print $vs_id_prefix; ?>,
 			quickaddUrl: '<?php print caNavUrl($this->request, 'editor/occurrences', 'OccurrenceQuickAdd', 'Form', array('types' => $vn_type_id,'occurrence_id' => 0, 'dont_include_subtypes_in_type_restriction' => (int)$va_settings['dont_include_subtypes_in_type_restriction'])); ?>',
 			minRepeats: 0,
-			maxRepeats: 1,
-			useAnimation: 1
+			maxRepeats: 2,
+			useAnimation: 1,
+			onAddItem: function(id, options, isNew) {
+				jQuery(".caUseHistoryButtonBar").slideUp(250);
+			},
+			onDeleteItem: function(id) {
+				jQuery(".caUseHistoryButtonBar").slideDown(250);
+			}
 		});
 <?php
 	}

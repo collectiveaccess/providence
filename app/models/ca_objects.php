@@ -1378,7 +1378,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 			foreach(array(
 						'locationTrackingMode', 'width', 'height', 'readonly', 'documentation_url', 'expand_collapse',
 						'label', 'description', 'useHierarchicalBrowser', 'hide_add_to_loan_controls', 'hide_update_location_controls',
-						'hide_add_to_occurrence_controls', 'add_to_occurrence_types'
+						'hide_add_to_occurrence_controls', 'add_to_occurrence_types', 'ca_storage_locations_elements'
 					) as $vs_key) {
 				$va_bundle_settings[$vs_key] = $pa_bundle_settings[$vs_key];
 			}

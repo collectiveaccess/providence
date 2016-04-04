@@ -4337,7 +4337,7 @@ if (!$vb_batch) {
 					case 'ca_objects_history':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
-					
+				
 						// set storage location
 						if ($vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_idnew_0", pInteger)) {
 							if (
@@ -4349,9 +4349,29 @@ if (!$vb_batch) {
 									($vn_relationship_type_id = array_shift($va_relationship_types))
 								)
 							) {
-								$this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id, $x=$po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_effective_daterangenew_0", pString), null, null, null, array('allowDuplicates' => true));
+								// is effective date set?
+								$vs_effective_date = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_effective_datenew_0", pString);
+								
+								$t_item_rel = $this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id, $vs_effective_date, null, null, null, array('allowDuplicates' => true));
 								if ($this->numErrors()) {
 									$po_request->addActionErrors($this->errors(), 'ca_objects_history', 'general');
+								} else {
+									// set any other defined interstitials
+									if (is_array($va_storage_location_elements = caGetOption('ca_storage_locations_elements', $va_bundle_settings, array()))) {
+										foreach($va_storage_location_elements as $vs_element) {
+											if ($vs_element == 'effective_date') { continue; }
+											if ($this->hasField($vs_element)) {
+											
+											} elseif (($vn_element_id = ca_metadata_elements::getElementID($vs_element)) && ($vs_val = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_{$vn_element_id}_new_0", pString))) {
+												$t_item_rel->setMode(ACCESS_WRITE);
+												// TODO: support containers
+												$t_item_rel->addAttribute([
+													$vs_element => $vs_val
+												], $vs_element);
+												$t_item_rel->update();
+											}
+										}
+									}								
 								}
 							}
 						}
