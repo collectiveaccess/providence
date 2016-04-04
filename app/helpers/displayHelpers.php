@@ -2927,24 +2927,30 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 	 *
 	 * @param RequestHTTP $po_request
 	 * @param string $ps_id_prefix
-	 * @param array $pa_settings
+	 * @param string $ps_table
 	 * 
 	 * @return string HTML implementing the control
 	 */
-	function caEditorBundleSortControls($po_request, $ps_id_prefix, $pa_settings) {
-		$vs_buf = "	<div class=\"caItemListSortControlContainer\">
-		<div class=\"caItemListSortControlTrigger\" id=\"{$ps_id_prefix}caItemListSortControlTrigger\">
-			"._t('Sort by')." <img src=\"".$po_request->getThemeUrlPath()."/graphics/icons/bg.gif\" alt=\"Sort\"/>
-		</div>
+	function caEditorBundleSortControls($po_request, $ps_id_prefix, $ps_table) {
+		if(!$ps_table) { $ps_table = 'ca_entities'; }
+		$va_sort_fields = caGetAvailableSortFields($ps_table, null);
+
+		$vs_buf = "
+		<div class=\"caItemListSortControlContainer\">
+			<div class=\"caItemListSortControlTrigger\" id=\"{$ps_id_prefix}caItemListSortControlTrigger\">
+				"._t('Sort by')." <img src=\"".$po_request->getThemeUrlPath()."/graphics/icons/bg.gif\" alt=\"Sort\"/>
+			</div>
 		<div class=\"caItemListSortControls\" id=\"{$ps_id_prefix}caItemListSortControls\">
-			<ul>
-				<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('name'); return false;\" class=\"caItemListSortControl\">"._t('name')."</a><br/></li>
-				<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('idno'); return false;\" class=\"caItemListSortControl\">"._t('idno')."</a><br/></li>
-				<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('type'); return false;\" class=\"caItemListSortControl\">"._t('type')."</a><br/></li>
-				<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('entry'); return false;\" class=\"caItemListSortControl\">"._t('entry')."</a><br/></li>
+			<ul>\n";
+
+		foreach($va_sort_fields as $vs_key => $vs_label) {
+			$vs_buf .= "<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('{$vs_key}'); return false;\" class=\"caItemListSortControl\">".$vs_label."</a><br/></li>\n";
+		}
+
+		$vs_buf .=	"
 			</ul>
 		</div>
-	</div>";
+		</div>";
 		
 		return $vs_buf;
 	}
