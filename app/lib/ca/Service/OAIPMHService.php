@@ -553,7 +553,7 @@ class OAIPMHService extends BaseService {
 			}
 		
 			// Export data using metadata mapping
-			$va_items = ca_data_exporters::exportRecordsFromSearchResultToArray($this->getMappingCode(),$qr_res,array('start' => $cursor, 'limit' => $listLimit));
+			$va_items = ca_data_exporters::exportRecordsFromSearchResultToArray($this->getMappingCode($metadataPrefix), $qr_res, array('start' => $cursor, 'limit' => $listLimit));
 			if (is_array($va_items) && sizeof($va_items)) {
 				$va_timestamps = $t_change_log->getLastChangeTimestampsForIDs($vs_table, array_keys($va_items));
 				foreach($va_items as $vn_id => $vs_item_xml) {
@@ -733,7 +733,7 @@ class OAIPMHService extends BaseService {
 			$this->throwError(self::OAI_ERR_BAD_ARGUMENT, _t("Duplicate parameters in request"));
 		}
 	
-		if((!($vs_metadata_prefix = $this->opo_request->getParameter('metadataPrefix', pString))) && ((in_array('metadataPrefix', $pa_required_parameters)) || (in_array('metadataPrefix', $pa_optional_parameters))) && $this->opa_provider_info['default_format']) {
+		if((!($vs_metadata_prefix = $this->opo_request->getParameter('metadataPrefix', pString))) && ((in_array('metadataPrefix', $pa_required_parameters)) || (in_array('metadataPrefix', $pa_optional_parameters))) && isset($this->opa_provider_info['default_format'])) {
 			$_REQUEST['metadataPrefix'] = $vs_metadata_prefix = $this->opa_provider_info['default_format'];
 			$this->opo_request->setParameter('metadataPrefix', $vs_metadata_prefix, 'REQUEST');
 		}
@@ -773,17 +773,17 @@ class OAIPMHService extends BaseService {
 		}
 
 		if($vs_mapping = $this->getMappingCode()){
-			if($this->exporter = ca_data_exporters::loadExporterByCode($this->getMappingCode())){
+			if($this->exporter = ca_data_exporters::loadExporterByCode($vs_mapping)){
 				if($this->exporter->getSetting('exporter_format') != "XML"){
-					$this->throwError(self::OAI_ERR_BAD_ARGUMENT, _t("Selected mapping %1 is invalid",$this->getMappingCode()));
+					$this->throwError(self::OAI_ERR_BAD_ARGUMENT, _t("Selected mapping %1 is invalid", $vs_mapping));
 				}
 
 				$this->table = $this->exporter->getAppDatamodel()->getTableName($this->exporter->get('table_num'));
 			} else {
-				$this->throwError(self::OAI_ERR_CANNOT_DISSEMINATE_FORMAT, _t("Exporter with code %1 does not exist",$this->getMappingCode()));
+				$this->throwError(self::OAI_ERR_CANNOT_DISSEMINATE_FORMAT, _t("Exporter with code %1 does not exist", $vs_mapping));
 			}
 		} else {
-			$this->throwError(self::OAI_ERR_CANNOT_DISSEMINATE_FORMAT, _t("metadataPrefix or default_format is invalid",$this->getMappingCode()));
+			$this->throwError(self::OAI_ERR_CANNOT_DISSEMINATE_FORMAT, _t("metadataPrefix or default_format is invalid", $vs_mapping));
 		}
 
 		return !$this->error;
@@ -851,10 +851,15 @@ class OAIPMHService extends BaseService {
 	}
 	# -------------------------------------------------------
 	/**
-	 * Responds to GetRecord OAI verb
+	 * Get mapping code for metadata prefix
+	 *
+	 * @param string|null optional metadata prefix
+	 * @return string|bool;
 	 */
-	public function getMappingCode() {
-		$ps_metadata_prefix = $this->opo_request->getParameter('metadataPrefix', pString);
+	public function getMappingCode($ps_metadata_prefix = null) {
+		if(!$ps_metadata_prefix) {
+			$ps_metadata_prefix = $this->opo_request->getParameter('metadataPrefix', pString);
+		}
 
 		if(!$ps_metadata_prefix && isset($this->opa_provider_info['default_format'])) {
 			$ps_metadata_prefix = $this->opa_provider_info['default_format'];
