@@ -5377,6 +5377,9 @@ div.listRel:first-of-type {
     border: 1px solid #e6e6e6;
 
     z-index: 10000;
+
+    max-height: 350px;
+    overflow: scroll;
 }
 
 .caItemListSortControls ul {

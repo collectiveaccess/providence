@@ -73,12 +73,7 @@
 					$this->ops_view_default = $vs_view_default;
 				}
 				
-				$va_sortable_elements = ca_metadata_elements::getSortableElements($this->ops_tablename, $this->opn_type_restriction_id);
-		
-				$this->opa_sorts = array();
-				foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
-					$this->opa_sorts[$this->ops_tablename.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
-				}
+				$this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id);
 			}
  		}
  		# -------------------------------------------------------

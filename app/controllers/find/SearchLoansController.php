@@ -48,12 +48,6 @@
  		protected $opa_views;
  		
  		/**
- 		 * List of available search-result sorting fields
- 		 * Is associative array: values are display names for fields, keys are full fields names (table.field) to be used as sort
- 		 */
- 		protected $opa_sorts;
- 		
- 		/**
  		 * Name of "find" used to defined result context for ResultContext object
  		 * Must be unique for the table and have a corresponding entry in find_navigation.conf
  		 */
@@ -66,13 +60,6 @@
 				'list' => _t('list'),
 				'editable' => _t('editable')
 			 );
-			 
-			  $this->opa_sorts = array_merge(array(
-			 	'_natural' => _t('relevance'),
-			 	'ca_loan_labels.name' => _t('short description'),
-			 	'ca_loans.type_id' => _t('type'),
-			 	'ca_loans.idno_sort' => _t('idno')
-			 ), $this->opa_sorts);
 			 
 			 $this->opo_browse = new LoanBrowse($this->opo_result_context->getParameter('browse_id'), 'providence');
 		}
