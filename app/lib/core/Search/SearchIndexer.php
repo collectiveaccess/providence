@@ -742,7 +742,7 @@ class SearchIndexer extends SearchBase {
 				// Needs self-indexing?
 				$va_self_info = $this->getTableIndexingInfo($vs_subject_tablename, $vs_subject_tablename);
 
-				if (is_array($va_self_info['related']['fields']) && sizeof($va_self_info['related']['fields'])) {
+				if (is_array($va_self_info['related']['fields']) && sizeof($va_self_info['related']['fields']) && !in_array($vs_subject_tablename, $va_related_tables)) {
 					$va_related_tables[] = $vs_subject_tablename;
 				}
 
@@ -991,6 +991,7 @@ class SearchIndexer extends SearchBase {
 							}
 						}
 					}
+					
 					foreach($va_queries as $va_query) {
 						$vs_sql = $va_query['sql'];
 						$va_params = $va_query['params'];
@@ -1014,10 +1015,12 @@ class SearchIndexer extends SearchBase {
 						if(!$qr_res->seek(0)) {
 							$qr_res = $this->opo_db->query($vs_sql, $va_params);
 						}
+						
 						while($qr_res->nextRow()) {
 							$va_field_data = $qr_res->getRow();
 							
 							$vn_row_id = $qr_res->get($vs_related_pk);
+							
 							$vn_rel_type_id = $qr_res->get('rel_type_id');
 							foreach($va_fields_to_index as $vs_rel_field => $va_rel_field_info) {
 //
@@ -1079,7 +1082,6 @@ class SearchIndexer extends SearchBase {
 										} else {
 											if (((isset($va_rel_field_info['INDEX_AS_IDNO']) && $va_rel_field_info['INDEX_AS_IDNO']) || in_array('INDEX_AS_IDNO', $va_rel_field_info)) && method_exists($t_rel, "getIDNoPlugInInstance") && ($o_idno = $t_rel->getIDNoPlugInInstance())) {
 												// specialized identifier (idno) processing; used IDNumbering plugin to generate searchable permutations of identifier
-												//print_r($va_rel_field_info);
 												$va_values = $o_idno->getIndexValues($vs_fld_data);
 												$this->opo_engine->indexField($vn_related_tablenum, 'I'.$this->opo_datamodel->getFieldNum($vs_related_table, $vs_rel_field), $qr_res->get($vs_related_pk), $va_values, array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id)));
 											} else {
@@ -1091,7 +1093,7 @@ class SearchIndexer extends SearchBase {
 								}
 //
 // END: Index attributes in related tables
-//							}
+//							
 							}
 							// index label for self-relation?
 							if ($vs_subject_tablename == $vs_related_table) {
@@ -1214,12 +1216,8 @@ class SearchIndexer extends SearchBase {
 							$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], array($vn_row_id), $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $vs_content, array_merge($va_row_to_reindex['indexing_info'], array('relationship_type_id' => $vn_rel_type_id, 'literalContent' => $va_content['path'])));
 						}
 					} elseif (((isset($va_row_to_reindex['indexing_info']['INDEX_AS_IDNO']) && $va_row_to_reindex['indexing_info']['INDEX_AS_IDNO']) || in_array('INDEX_AS_IDNO', $va_row_to_reindex['indexing_info'])) && method_exists($t_rel, "getIDNoPlugInInstance") && ($o_idno = $t_rel->getIDNoPlugInInstance())) {
-						$va_values = $o_idno->getIndexValues($va_row_to_reindex['field_values'][$va_row_to_reindex['field_name']]);
 						foreach($va_row_to_reindex['row_ids'] as $vn_row_id) {
-							foreach($va_values as $vs_val) {
-							//	print_R($va_row_to_reindex['indexing_info']);
-								$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], $va_row_to_reindex['row_ids'], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $vs_val, array_merge($va_row_to_reindex['indexing_info'], array('relationship_type_id' => $vn_rel_type_id)));
-							}
+							$this->opo_engine->updateIndexingInPlace($va_row_to_reindex['table_num'], $va_row_to_reindex['row_ids'], $va_row_to_reindex['field_table_num'], $va_row_to_reindex['field_num'], $va_row_to_reindex['field_row_id'], $va_row_to_reindex['field_values'][$va_row_to_reindex['field_name']], array_merge($va_row_to_reindex['indexing_info'], array('relationship_type_id' => $vn_rel_type_id)));
 						}
 					} else {
 						$vs_element_code = substr($va_row_to_reindex['field_name'], 14);
