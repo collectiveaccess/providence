@@ -2330,7 +2330,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		if (isset($pa_options['bundles']) && is_array($pa_options['bundles'])) {
  			$va_bundles = $pa_options['bundles'];
  		} else {
- 			$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen);
+ 			$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen, $this->getTypeID());
  		}
  		
  		$vs_form_name = caGetOption('formName', $pa_options, '');
@@ -2889,7 +2889,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 */
 	protected function getBundleListsForScreen($pm_screen, $po_request, $t_ui, $pa_options=null) {
 		if(!$t_ui) { return; }
-		$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen);
+		$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen, $this->getTypeID());
 		
 		// sort fields by type
 		$va_fields_by_type = array();
