@@ -457,11 +457,13 @@ class TimeExpressionParser {
 											}
 											$va_dates['start'] = array(
 												'month' => 1, 'day' => 1, 'year' => $vn_start_year,
-												'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa
+												'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa,
+												'dont_window' => true
 											);
 											$va_dates['end'] = array(
 												'month' => 12, 'day' => 31, 'year' => $vn_end_year,
-												'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa
+												'uncertainty' => 0, 'uncertainty_units' => '', 'is_circa' => $vn_is_circa,
+												'dont_window' => true
 											);
 											$vn_state = TEP_STATE_ACCEPT;
 											$vb_can_accept = true;
@@ -1888,7 +1890,11 @@ class TimeExpressionParser {
 				}
 			}
 			
-			if ((!isset($pa_dates['end']['era']) && ($pa_dates['end']['year'] > 0) && ($pa_dates['end']['year'] <= 99))) {
+			if (
+				(!isset($pa_dates['end']['dont_window']) || !$pa_dates['end']['dont_window'])
+				&&
+				(!isset($pa_dates['end']['era']) && ($pa_dates['end']['year'] > 0) && ($pa_dates['end']['year'] <= 99))
+			) {
 				$va_tmp = $this->gmgetdate();
 				$vn_current_year = intval(substr($va_tmp['year'], 2, 2));		// get last two digits of current year
 				$vn_current_century = intval(substr($va_tmp['year'], 0, 2)) * 100;
@@ -1904,7 +1910,6 @@ class TimeExpressionParser {
 			if ($pa_dates['start']['year'] == TEP_END_OF_UNIVERSE) {
 				$pa_dates['start']['year'] = TEP_START_OF_UNIVERSE;
 			}
-			
 			# if no year is specified on end date then use current year
 			if (!$pa_dates['end']['year']) {
 				if (!is_null($pa_dates['end']['year'])) {
@@ -1929,7 +1934,7 @@ class TimeExpressionParser {
 			}
 			
 			# if no year is specified on the start date, then use the ending year 
-			if (!$pa_dates['start']['year']) {
+			if (is_null($pa_dates['start']['year'])) {
 				$pa_dates['start']['year'] = $pa_dates['end']['year'];
 				if ($pa_dates['start']['month'] > $pa_dates['end']['month']) {
 					$pa_dates['start']['year']--;
@@ -2655,13 +2660,14 @@ class TimeExpressionParser {
 						if (
 							(($va_start_pieces['year'] % 100) == 0) && 
 							(
-								(($va_start_pieces['year'] > 0) && ($va_end_pieces['year'] == ($va_start_pieces['year'] + 99)))
+								(($va_start_pieces['year'] >= 0) && ($va_end_pieces['year'] == ($va_start_pieces['year'] + 99)))
 								||
-								(($va_start_pieces['year'] < 0) && ($va_end_pieces['year'] == ($va_start_pieces['year'] - 99)))
+								(($va_start_pieces['year'] <= 0) && ($va_end_pieces['year'] == ($va_start_pieces['year'] - 99)))
 							)
 						) {
 							$vn_century = intval($va_start_pieces['year']/100);
-							$vn_century = ($vn_century > 0) ? ($vn_century + 1) : ($vn_century - 1);
+							
+							$vn_century = ($va_end_pieces['year'] > 0) ? ($vn_century + 1) : ($vn_century - 1);
 							
 							$va_ordinals = $this->opo_language_settings->getList("ordinalSuffixes");
 							$va_ordinal_exceptions = $this->opo_language_settings->get("ordinalSuffixExceptions");
