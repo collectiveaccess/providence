@@ -27,7 +27,7 @@
  */
  
  	$t_subject = $this->getVar('t_subject');
-	$vs_url_string = $this->getVar('objectTableURLParamString');
+	$vs_url_string = $this->getVar('relatedListURLParamString');
 
 ?>
 <div id="searchToolsBox">

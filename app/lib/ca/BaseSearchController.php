@@ -192,7 +192,7 @@
  					}
  					
 					$vo_result = $po_search->getResults($va_search_opts);
-				} else {
+				} elseif($po_search) {
 					$vo_result = $po_search->search($vs_search, $va_search_opts);
 				}
 

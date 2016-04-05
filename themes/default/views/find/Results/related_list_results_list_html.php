@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * themes/default/views/find/ca_objects_list_html.php 
+ * themes/default/views/find/Results/related_list_results_list_html.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,7 +40,10 @@
 	$vs_interstitial_prefix	= $this->getVar('interstitialPrefix');
 	$vs_primary_table		= $this->getVar('primaryTable');
 	$vn_primary_id			= $this->getVar('primaryID');
-	$vs_rel_table			= $this->getVar('relTable');
+	$vs_related_table		= $this->getVar('relatedTable');
+	$vs_related_rel_table	= $this->getVar('relatedRelTable');
+	/** @var BundlableLabelableBaseModelWithAttributes $t_related_instance */
+	$t_related_instance		= $this->getVar('relatedInstance');
 
 ?>
 <div id="scrollingResults">
@@ -91,8 +94,8 @@
 			$vn_item_count = 0;
 			
 			while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit()) {
-				$vn_object_id = $vo_result->get('object_id');
-				$vn_relation_id = $va_relation_id_map[$vn_object_id]['relation_id'];
+				$vn_id = $vo_result->get($t_related_instance->primaryKey());
+				$vn_relation_id = $va_relation_id_map[$vn_id]['relation_id'];
 				
 				($i == 2) ? $i = 0 : "";
 ?>
@@ -103,10 +106,10 @@
 						<a href="#" class="caDeleteItemButton listRelDeleteButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
 					</td>
 <?php
-					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_objects', $vn_object_id, array(), array())."</td>";;
+					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', $vs_related_table, $vn_id, array(), array())."</td>";;
 ?>
 					<td style="padding-left: 5px; padding-right: 5px;">
-						<?php print $va_relation_id_map[$vn_object_id]['relationship_typename']; ?>
+						<?php print $va_relation_id_map[$vn_id]['relationship_typename']; ?>
 					</td>
 <?php
 						
@@ -122,7 +125,7 @@
 										$vs_primary_table => array($vn_primary_id),
 									),
 							));
-							print caProcessTemplateForIDs($vs_template, $vs_rel_table, array($vn_relation_id), $va_opts);
+							print caProcessTemplateForIDs($vs_template, $vs_related_rel_table, array($vn_relation_id), $va_opts);
 						} else {
 							print $t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array()));
 						}
