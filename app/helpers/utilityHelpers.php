@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2015 Whirl-i-Gig
+ * Copyright 2007-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,6 +40,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ZipFile.php');
 require_once(__CA_LIB_DIR__.'/core/Logging/Eventlog.php');
 require_once(__CA_LIB_DIR__.'/core/Utils/Encoding.php');
 require_once(__CA_LIB_DIR__.'/core/Zend/Measure/Length.php');
+require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 
 # ----------------------------------------------------------------------
 # String localization functions (getText)
@@ -475,7 +476,7 @@ function caFileIsIncludable($ps_file) {
 		// strip quotes from path if present since they'll cause file_exists() to fail
 		$ps_path = preg_replace("!^\"!", "", $ps_path);
 		$ps_path = preg_replace("!\"$!", "", $ps_path);
-		if (!$ps_path || (preg_match("/[^\/A-Za-z0-9\.:\ _\(\)\\\-]+/", $ps_path)) || !@file_exists($ps_path)) { return false; }	// hide basedir warnings
+		if (!$ps_path || (preg_match("/[^\/A-Za-z0-9\.:\ _\(\)\\\-]+/", $ps_path)) || !@is_readable($ps_path)) { return false; }	// hide basedir warnings
 
 		return true;
 	}
@@ -575,8 +576,11 @@ function caFileIsIncludable($ps_file) {
 		// Remove invalid UTF-8
 		mb_substitute_character(0xFFFD);
 		$ps_text = mb_convert_encoding($ps_text, 'UTF-8', 'UTF-8');
+
+		return strip_tags($ps_text);
+
 		// @see http://php.net/manual/en/regexp.reference.unicode.php
-		return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}]|➔/", '', strip_tags($ps_text));
+		//return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}]|➔/", '', strip_tags($ps_text));
 	}
 	# ----------------------------------------
 	/**
@@ -1211,6 +1215,25 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caStripLeadingPunctuation($ps_string) {
 		return preg_replace('!^[^A-Za-z0-9]+!u', '', trim($ps_string));
+	}
+	# ---------------------------------------
+	/**
+	 * Remove all HTML tags and their contents 
+	 *
+	 * @param string $ps_string The string to process
+	 * @return string $ps_string with HTML tags and associated content removed
+	 */
+	function caStripTagsAndContent($ps_string) {
+		$o_doc = str_get_dom($ps_string);	
+		foreach($o_doc("*") as $o_node) {
+			if ($o_node->tag != '~text~') {
+				$o_node->delete();
+			}
+		}
+		$vs_proc_string = $o_doc->html();
+		$vs_proc_string = str_replace("<~root~>", "", $vs_proc_string);
+		$vs_proc_string = str_replace("</~root~>", "", $vs_proc_string);
+		return trim($vs_proc_string);
 	}
 	# ---------------------------------------
 	/**

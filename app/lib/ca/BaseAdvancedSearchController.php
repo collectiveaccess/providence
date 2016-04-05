@@ -48,12 +48,7 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
 		parent::__construct($po_request, $po_response, $pa_view_paths);
 
-		$va_sortable_elements = ca_metadata_elements::getSortableElements($this->ops_tablename, $this->opn_type_restriction_id);
-
-		$this->opa_sorts = array();
-		foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
-			$this->opa_sorts[$this->ops_tablename.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
-		}
+		$this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id);
 	}
 	# -------------------------------------------------------
 	public function Index($pa_options=null) {
@@ -84,7 +79,7 @@ class BaseAdvancedSearchController extends BaseRefineableSearchController {
 
 		$t_form = new ca_search_forms();
 		if (!(
-			(($vn_form_id = (isset($pa_options['form_id'])) ? $pa_options['form_id'] : null) || ($vn_form_id = $this->opo_result_context->getParameter('form_id')))
+			(($vn_form_id = (isset($pa_options['form_id'])) ? $pa_options['form_id'] : null) || ($vn_form_id = $this->getRequest()->getParameter('form_id', pInteger)) || ($vn_form_id = $this->opo_result_context->getParameter('form_id')))
 			 && 
 			 $t_form->load($vn_form_id) 
 			 && 

@@ -65,13 +65,8 @@
 				if ($vs_view_default = $po_request->config->get('view_default_for_'.$this->ops_tablename.'_search')) {
 					$this->ops_view_default = $vs_view_default;
 				}
-	
-				$va_sortable_elements = ca_metadata_elements::getSortableElements($this->ops_tablename, $this->opn_type_restriction_id);
-	
-				$this->opa_sorts = array();
-				foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
-					$this->opa_sorts[$this->ops_tablename.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
-				}
+
+				$this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id);
 			}
  		}
  		# -------------------------------------------------------
@@ -345,7 +340,14 @@
 						}
 						
 						// set last browse id for hierarchy browser
-						$this->view->setVar('browse_last_id', intval($this->request->session->getVar($this->ops_tablename.'_browse_last_id')));
+						$vn_id = intval($this->request->session->getVar($this->ops_tablename.'_browse_last_id'));
+						if (!$t_model->load($vn_id)) { 
+							$vn_id = null;
+						} elseif ($t_model->get('deleted')) {
+							$vn_id = $t_model->get('parent_id');
+						}
+						
+						$this->view->setVar('browse_last_id', $vn_id);
 					}
 					
 					$this->opo_result_context->setAsLastFind();
