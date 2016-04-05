@@ -80,8 +80,8 @@ class ForumThread295155Test extends BaseTestWithData {
 
 		$vo_result = caMakeSearchResult('ca_objects', array($this->opn_object_id));
 		while($vo_result->nextHit()) {
-			$this->assertEquals('Foo', $vo_result->getWithTemplate("<if rule='^ca_objects.date.dc_dates_types =~ /Date created/'>Foo</if>"));
-			$this->assertEquals('', $vo_result->getWithTemplate("<if rule='^ca_objects.date.dc_dates_types =~ /Date copyrighted/'>Foo</if>"));
+			$this->assertEquals('Foo', $vo_result->getWithTemplate("<if rule='^ca_objects.date.dc_dates_types=~ /Date created/'>Foo</if>"));
+			$this->assertEquals('', $vo_result->getWithTemplate("<if rule='^ca_objects.date.dc_dates_types=~ /Date copyrighted/'>Foo</if>"));
 		}
 	}
 	# -------------------------------------------------------
