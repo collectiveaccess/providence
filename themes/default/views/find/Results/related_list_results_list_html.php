@@ -37,7 +37,7 @@
 	$vs_default_action		= $this->getVar('default_action');
 	$vo_ar					= $this->getVar('access_restrictions');
 	$va_rel_id_typenames 	= $this->getVar('relationIdTypeNames');
-	$va_rel_id_index	 	= $this->getVar('resultRelationIDIndex');
+	$va_rel_id_index	 	= $this->getVar('relationIDsToRelatedIDs');
 
 	$vs_interstitial_prefix	= $this->getVar('interstitialPrefix');
 	$vs_primary_table		= $this->getVar('primaryTable');
@@ -49,8 +49,8 @@
 
 ?>
 <div id="scrollingResults">
-	<form id="caFindResultsForm">
-		<table class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+	<form id="caFindResultsForm<?php print $vs_interstitial_prefix; ?>">
+		<table id="<?php print $vs_interstitial_prefix; ?>RelatedList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
 			<thead>
 			<tr>
 			<th style="width:10px; text-align:center;" class='list-header-nosort'><!-- column for interstitial and delete buttons --></th>
@@ -97,7 +97,7 @@
 
 			while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit()) {
 				$vn_id = $vo_result->get($t_related_instance->primaryKey());
-				$vn_relation_id = $va_rel_id_index[$vn_item_count];
+				$vn_relation_id = key($va_rel_id_index); next($va_rel_id_index);
 				
 				($i == 2) ? $i = 0 : "";
 ?>
@@ -161,3 +161,19 @@
 		</table>
 	</form><!--end caFindResultsForm -->
 </div><!--end scrollingResults -->
+<?php
+	// if set to user defined, make tbody drag+droppable
+	//@todo un-fuck this: if($vs_current_sort == '_user') {
+?>
+		<script type="text/javascript">
+			jQuery('#<?php print $vs_interstitial_prefix; ?>RelatedList tbody').sortable({
+				update: function( event, ui ) {
+					jQuery('#<?php print $vs_interstitial_prefix; ?>RelatedList tbody tr').each(function() {
+						console.log(jQuery(this).attr('id').replace('<?php print $vs_interstitial_prefix; ?>', ''));
+					});
+				}
+			}).disableSelection();
+		</script>
+<?php
+	//}
+?>

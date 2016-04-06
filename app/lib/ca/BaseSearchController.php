@@ -66,7 +66,8 @@
 					$this->ops_view_default = $vs_view_default;
 				}
 
-				$this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id);
+				if(!is_array($this->opa_sorts)) { $this->opa_sorts = array(); }
+				$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id));
 			}
  		}
  		# -------------------------------------------------------

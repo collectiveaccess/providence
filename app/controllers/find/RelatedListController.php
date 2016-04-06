@@ -56,6 +56,10 @@ class RelatedListController extends BaseSearchController {
 	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
 		$this->ops_tablename = $po_request->getParameter('relatedTable', pString);
 
+		$this->opa_sorts = array(
+			'_user' => _t('user defined'),
+		);
+
 		parent::__construct($po_request, $po_response, $pa_view_paths);
 
 		$this->opa_views = array(
@@ -75,6 +79,7 @@ class RelatedListController extends BaseSearchController {
 		AssetLoadManager::register('imageScroller');
 		AssetLoadManager::register('tabUI');
 		AssetLoadManager::register('panel');
+		AssetLoadManager::register('sortableUI');
 
 		// get request data
 		$va_relation_ids = json_decode($this->getRequest()->getParameter('ids', pString), true);
@@ -160,27 +165,14 @@ class RelatedListController extends BaseSearchController {
 				array (
 					$vs_primary_table => array($vn_primary_id),
 				),
+			'returnIndex' => true
 		);
 
-		$o_res = caMakeSearchResult($t_related->tableName(), array_values($va_relation_ids), $va_search_opts);
-		/*
-		 * What we're trying to do here is for each of the related table (e.g. ca_entities) results in $o_res --
-		 * which can have duplicated by the way -- we keep track of the corresponding ca_foo_x_bar.relation_id
-		 *
-		 * There may be easier ways to do this but my brain is not functioning very well this morning.
-		 */
-		$va_result_relation_id_idx = array(); $va_result_count = array();
-		while($o_res->nextHit()) {
-			$va_vals = $o_res->get($t_related_rel->primaryKey(true), array('returnAsArray' => true));
-			$vs_pk = $o_res->getPrimaryKey();
+		$va_res = caMakeSearchResult($t_related->tableName(), $va_relation_ids, $va_search_opts);
+		$o_res = $va_res['result'];
+		$va_relation_ids_to_related_ids = $va_res['index'];
 
-			if(!$va_result_count[$vs_pk]) { $va_result_count[$vs_pk] = 0; }
-			$va_result_relation_id_idx[] = $va_vals[$va_result_count[$vs_pk]];
-			$va_result_count[$vs_pk]++;
-		}
-
-		$this->getView()->setVar('resultRelationIDIndex', $va_result_relation_id_idx);
-		$o_res->seek(0);
+		$this->getView()->setVar('relationIDsToRelatedIDs', $va_relation_ids_to_related_ids);
 
 		$pa_options['result'] = $o_res;
 		$pa_options['view'] = 'Search/related_list_html.php'; // override render

@@ -5888,9 +5888,9 @@ $pa_options["display_form_field_tips"] = true;
 			if (!($t_instance = $this->getAppDataModel()->getInstanceByTableNum($pn_table_num, true))) { return null; }
 		}
 		$va_ids = array();
-		foreach($pa_ids as $vn_id) {
+		foreach($pa_ids as $vn_k => $vn_id) {
 			if (is_numeric($vn_id)) { 
-				$va_ids[] = $vn_id;
+				$va_ids[$vn_k] = $vn_id;
 			}
 		}
 		// sort?
@@ -5900,11 +5900,17 @@ $pa_options["display_form_field_tips"] = true;
 			$vo_sort = new BaseFindEngine($this->getDb());
 			$va_ids = $vo_sort->sortHits($va_ids, $t_instance->tableName(), join(';', $pa_sort), caGetOption('sortDirection', $pa_options, 'asc'), $pa_options);
 		}
+
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
 		if (!class_exists($vs_search_result_class)) { include(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php'); }
-		$o_data = new WLPlugSearchEngineCachedResult($va_ids, $t_instance->tableNum());
+		$o_data = new WLPlugSearchEngineCachedResult(array_values($va_ids), $t_instance->tableNum());
 		$o_res = new $vs_search_result_class($t_instance->tableName());	// we pass the table name here so generic multi-table search classes such as InterstitialSearch know what table they're operating over
 		$o_res->init($o_data, array(), $pa_options);
+
+		if(caGetOption('returnIndex', $pa_options, false)) {
+			return array('result' => $o_res, 'index' => $va_ids);
+		}
+
 		return $o_res;
 	}
 	# ------------------------------------------------------------------
