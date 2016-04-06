@@ -77,7 +77,7 @@ class RelatedListController extends BaseSearchController {
 		AssetLoadManager::register('panel');
 
 		// get request data
-		$va_relation_ids = explode(';', $this->getRequest()->getParameter('ids', pString));
+		$va_relation_ids = json_decode($this->getRequest()->getParameter('ids', pString), true);
 		// related table, e.g. ca_entities
 		$vs_related_table = $this->getRequest()->getParameter('relatedTable', pString);
 		// relationship table between subject and related, i.e. ca_objects_x_entities --
@@ -107,18 +107,19 @@ class RelatedListController extends BaseSearchController {
 			$vs_sort = array_shift($va_tmp);
 		}
 
+		$t_subject = $this->getAppDatamodel()->getInstance($vs_primary_table);
+		if(!$t_subject || !$t_subject->load($vn_primary_id)) { throw new Exception(_t('Invalid table name')); }
+
 		$t_related = $this->getAppDatamodel()->getInstance($vs_related_table, true);
 		/** @var BaseRelationshipModel $t_related_rel */
 		$t_related_rel = $this->getAppDatamodel()->getInstance($vs_related_rel_table, true);
 		if(!$t_related || !$t_related_rel) { throw new Exception(_t('Invalid table name')); }
 
 		// we need the rel table to translate the incoming relation_ids to primary keys in the related table for the list search result
+		$o_interstitial_res = caMakeSearchResult($vs_related_rel_table, array_keys($va_relation_ids));
 
-		$o_interstitial_res = caMakeSearchResult($vs_related_rel_table, $va_relation_ids);
-
-		$va_ids = array(); $va_relation_id_typenames = array();
+		$va_relation_id_typenames = array();
 		while($o_interstitial_res->nextHit()) {
-			$va_ids[$o_interstitial_res->getPrimaryKey()] = $o_interstitial_res->get($t_related->primaryKey(true));
 			$va_relation_id_typenames[$o_interstitial_res->getPrimaryKey()] = $o_interstitial_res->getWithTemplate('^relationship_typename');
 		}
 
@@ -132,7 +133,7 @@ class RelatedListController extends BaseSearchController {
 
 		// piece the parameters back together to build the string to append to urls for subsequent form submissions
 		$va_additional_search_controller_params = array(
-			'ids' => join(';', $va_relation_ids),
+			'ids' => json_encode($va_relation_ids),
 			'interstitialPrefix' => $vs_interstitial_prefix,
 			'relatedTable' => $vs_related_table,
 			'relatedRelTable' => $vs_related_rel_table,
@@ -161,7 +162,7 @@ class RelatedListController extends BaseSearchController {
 				),
 		);
 
-		$o_res = caMakeSearchResult($t_related->tableName(), array_values($va_ids), $va_search_opts);
+		$o_res = caMakeSearchResult($t_related->tableName(), array_values($va_relation_ids), $va_search_opts);
 		/*
 		 * What we're trying to do here is for each of the related table (e.g. ca_entities) results in $o_res --
 		 * which can have duplicated by the way -- we keep track of the corresponding ca_foo_x_bar.relation_id

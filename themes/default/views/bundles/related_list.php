@@ -47,8 +47,13 @@
 	$vs_bundle_name		= $this->getVar('bundle_name');
 	$vs_interstitial_selector = $vs_id_prefix . 'Item_';
 
+	$va_ids = array();
+	foreach($va_initial_values as $vn_rel_id => $va_rel_info) {
+		$va_ids[$vn_rel_id] = $va_rel_info['id'];
+	}
+
 	$va_additional_search_controller_params = array(
-		'ids' => join(';', array_keys($va_initial_values)),
+		'ids' => json_encode($va_ids),
 		'interstitialPrefix' => $vs_interstitial_selector,
 		'relatedRelTable' => $t_item_rel->tableName(),
 		'primaryTable' => $t_subject->tableName(),
@@ -84,17 +89,17 @@
 	}
 ?>
 <script type="text/javascript">
-	function caAsyncSearchResultForm(data) {
-		var tableContent = jQuery('#tableContent');
+	function caAsyncSearchResultForm<?php print $vs_id_prefix; ?>(data) {
+		var tableContent = jQuery('#tableContent<?php print $vs_id_prefix; ?>');
 
 		if(data) { tableContent.html(data); }
 
 		// have to re-init the relation bundle because the interstitial buttons have only now been loaded
 		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', initiRelationBundleOptions);
 
-		jQuery('#tableContent .list-header-unsorted a, #tableContent .list-header-sorted-desc a, #tableContent .list-header-sorted-asc a').click(function(event) {
+		jQuery('#tableContent<?php print $vs_id_prefix; ?> .list-header-unsorted a, #tableContent<?php print $vs_id_prefix; ?> .list-header-sorted-desc a, #tableContent<?php print $vs_id_prefix; ?> .list-header-sorted-asc a').click(function(event) {
 			event.preventDefault();
-			jQuery.get(event.target + '<?php print $vs_url_string; ?>', caAsyncSearchResultForm);
+			jQuery.get(event.target + '<?php print $vs_url_string; ?>', caAsyncSearchResultForm<?php print $vs_id_prefix; ?>);
 		});
 
 		tableContent.find('form').each(function() {
@@ -104,7 +109,7 @@
 					type: 'POST',
 					url: event.target.action + '<?php print $vs_url_string; ?>',
 					data: jQuery(this).serialize(),
-					success: caAsyncSearchResultForm
+					success: caAsyncSearchResultForm<?php print $vs_id_prefix; ?>
 				});
 			});
 		});
@@ -115,14 +120,14 @@
 		// when ready, pull in the result list via the RelatedList search controller and the JS helper caAsyncSearchResultForm() above
 ?>
 		jQuery(document).ready(function() {
-			jQuery.get('<?php print caNavUrl($this->request, 'find', 'RelatedList', 'Index', $va_additional_search_controller_params); ?>', caAsyncSearchResultForm);
+			jQuery.get('<?php print caNavUrl($this->request, 'find', 'RelatedList', 'Index', $va_additional_search_controller_params); ?>', caAsyncSearchResultForm<?php print $vs_id_prefix; ?>);
 		});
 <?php
 	}
 ?>
 </script>
 <div id="<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>" <?php print $vb_batch ? "class='editorBatchBundleContent'" : ''; ?>>
-	<div id="tableContent" class="labelInfo"></div>
+	<div id="tableContent<?php print $vs_id_prefix; ?>" class="labelInfo"></div>
 <?php
 	//
 	// Template to generate controls for creating new relationship
