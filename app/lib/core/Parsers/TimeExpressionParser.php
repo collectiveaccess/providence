@@ -1831,9 +1831,9 @@ class TimeExpressionParser {
 			}
 		}
 		
-		if ($pa_dates['start']['is_circa'] || $pa_dates['end']['is_circa']) {
-			$pa_dates['start']['is_circa'] = $pa_dates['end']['is_circa'] = true;
-		}
+		//if ($pa_dates['start']['is_circa'] || $pa_dates['end']['is_circa']) {
+			//$pa_dates['start']['is_circa'] = $pa_dates['end']['is_circa'] = true;
+		//}
 		
 		if ($pa_dates['start']['is_undated']) {
 			$this->opn_start_unixtime = null;
@@ -2545,16 +2545,12 @@ class TimeExpressionParser {
 			}
 
 			// catch 'circa' dates
-			$vs_circa = '';
-			if ($va_start_pieces['is_circa']) {
-				$va_circa_indicators = $this->opo_language_settings->getList('dateCircaIndicator');
-				if ($pa_options['circaIndicator'] && in_array($pa_options['circaIndicator'], $va_circa_indicators)) {
-					$vs_circa = $pa_options['circaIndicator'] ;
-				} else {
-					$vs_circa = $va_circa_indicators[0];
-				}
-				$vs_circa .= ' ';
-			}
+			$va_circa_indicators = $this->opo_language_settings->getList('dateCircaIndicator');
+			$vs_circa_indicator = ($pa_options['circaIndicator'] && in_array($pa_options['circaIndicator'], $va_circa_indicators)) ? $pa_options['circaIndicator'] : $va_circa_indicators[0];
+
+			$vs_start_circa = $vs_end_circa = '';
+			if ($va_start_pieces['is_circa']) { $vs_start_circa = $vs_circa_indicator.' '; }
+			if ($va_end_pieces['is_circa'] && !$va_start_pieces['is_circa']) { $vs_end_circa = $vs_circa_indicator.' '; }
 
 			if ($va_start_pieces['year'] == $va_end_pieces['year']) {
 				if ($va_start_pieces['month'] == $va_end_pieces['month']) {
@@ -2566,10 +2562,10 @@ class TimeExpressionParser {
 							$vn_start_time = ($va_start_pieces['hours'] * 3600) + ($va_start_pieces['minutes'] * 60) + $va_start_pieces['seconds'];
 							$vn_end_time = ($va_end_pieces['hours'] * 3600) + ($va_end_pieces['minutes'] * 60) + $va_end_pieces['seconds'];
 
-							return $vs_circa.$vs_day.' '.$vs_datetime_conjunction.' '.$this->_timerangeToText($vn_start_time, $vn_end_time, $pa_options);
+							return $vs_start_circa.$vs_day.' '.$vs_datetime_conjunction.' '.$this->_timerangeToText($vn_start_time, $vn_end_time, $pa_options);
 						}
 
-						return $vs_circa.$vs_day;
+						return $vs_start_circa.$vs_day;
 					} else {													// dates in same month and year
 						if ($vb_differing_uncertainties) {
 							// dates within same month and year with differing uncertainties
@@ -2583,7 +2579,7 @@ class TimeExpressionParser {
 								$va_end_pieces['day'] == $this->daysInMonth($va_end_pieces['month'], $va_end_pieces['year'] ? $va_end_pieces['year'] : 2004)
 							) {
 								// month and year only
-								return $vs_circa.$this->_dateToText(array('month' => $va_start_pieces['month'], 'year' => $va_start_pieces['year'], 'era' => $va_start_pieces['era'], 'uncertainty' => $va_start_pieces['uncertainty'], 'uncertainty_units' => $va_start_pieces['uncertainty_units']), $pa_options);
+								return $vs_start_circa.$this->_dateToText(array('month' => $va_start_pieces['month'], 'year' => $va_start_pieces['year'], 'era' => $va_start_pieces['era'], 'uncertainty' => $va_start_pieces['uncertainty'], 'uncertainty_units' => $va_start_pieces['uncertainty_units']), $pa_options);
 							} else {
 								if ($vb_full_day_time_range) {
 									// days, but no times
@@ -2620,10 +2616,13 @@ class TimeExpressionParser {
 							$va_end_pieces['month'] == 12 && $va_end_pieces['day'] == 31
 						) {
 							// year only
-							return $vs_circa.$this->_dateToText(array('year' => $va_start_pieces['year'], 'era' => $va_start_pieces['era'], 'uncertainty' => $va_start_pieces['uncertainty'], 'uncertainty_units' => $va_start_pieces['uncertainty_units']), $pa_options);
+							return $vs_start_circa.$this->_dateToText(array('year' => $va_start_pieces['year'], 'era' => $va_start_pieces['era'], 'uncertainty' => $va_start_pieces['uncertainty'], 'uncertainty_units' => $va_start_pieces['uncertainty_units']), $pa_options);
 						} else {
 							if ($vb_full_day_time_range) {
 								// date range within single year without time
+								
+								list($va_start_pieces, $va_end_pieces) = $this->_nullDaysAndMonthsForDisplay($va_start_pieces, $va_end_pieces);
+								
 								if(caGetOption('dateFormat', $pa_options, null) == 'text') {
 									$vs_start_date = $this->_dateToText(array('month' => $va_start_pieces['month'], 'day' => $va_start_pieces['day']), $pa_options);
 									if((bool)$this->opo_datetime_settings->get('showCommaAfterDayForTextDates')) {
@@ -2631,17 +2630,17 @@ class TimeExpressionParser {
 									}
 									$vs_end_date = $this->_dateToText(array('month' => $va_end_pieces['month'], 'day' => $va_end_pieces['day']), $pa_options);
 									$vs_year = $this->_dateToText(array('year' => $va_start_pieces['year'], 'era' => $va_start_pieces['era'], 'uncertainty' => $va_start_pieces['uncertainty'], 'uncertainty_units' => $va_start_pieces['uncertainty_units']), $pa_options);
-									return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': '').$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_date.' '.$vs_year;
+									return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': $vs_start_circa).$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_circa.$vs_end_date.' '.$vs_year;
 								} else {
 									$vs_start_date = $this->_dateToText($va_start_pieces, $pa_options);
 									$vs_end_date = $this->_dateToText($va_end_pieces, $pa_options);
-									return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': '').$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_date;
+									return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': $vs_start_circa).$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_circa.$vs_end_date;
 								}
 							} else {
 								// date range within single year with time
 								$vs_start_date = $this->_datetimeToText(array('month' => $va_start_pieces['month'], 'day' => $va_start_pieces['day'], 'hours' => $va_start_pieces['hours'], 'minutes' => $va_start_pieces['minutes'], 'month' => $va_start_pieces['month'], 'seconds' => $va_start_pieces['seconds']), $pa_options);
 								$vs_end_date = $this->_datetimeToText($va_end_pieces, $pa_options);
-								return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': '').$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_date;
+								return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': $vs_start_circa).$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_circa.$vs_end_date;
 							}
 						}
 					}
@@ -2704,26 +2703,46 @@ class TimeExpressionParser {
 							return abs($vn_century).$vs_ordinal.' '.$va_century_indicators[0].$vs_era;
 						}
 
-						return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': $vs_circa).$vs_start_year.' '.$vs_range_conjunction.' '.$vs_end_year;
+						return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': $vs_start_circa).$vs_start_year.' '.$vs_range_conjunction.' '.$vs_end_circa.$vs_end_year;
 					}
 
 				} else {
 					if ($vb_full_day_time_range) {
-						// full dates with no times
+						// full dates with no times	
+						list($va_start_pieces, $va_end_pieces) = $this->_nullDaysAndMonthsForDisplay($va_start_pieces, $va_end_pieces);
+						
 						$vs_start_date = $this->_dateToText($va_start_pieces, $pa_options);
 						$vs_end_date = $this->_dateToText($va_end_pieces, $pa_options);
-						return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': $vs_circa).$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_date;
+						return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': $vs_start_circa).$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_circa.$vs_end_date;
 					} else {
 						// full dates with times
 						$vs_start_date = $this->_dateTimeToText($va_start_pieces, $pa_options);
 						$vs_end_date = $this->_dateTimeToText($va_end_pieces, $pa_options);
-						return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': $vs_circa).$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_date;
+						return ($vs_range_preconjunction ? $vs_range_preconjunction.' ': $vs_start_circa).$vs_start_date.' '.$vs_range_conjunction.' '.$vs_end_circa.$vs_end_date;
 					}
 				}
 			}
 		} else {
 			return '';
 		}
+	}
+	# -------------------------------------------------------------------
+	private function _nullDaysAndMonthsForDisplay($pa_start_pieces, $pa_end_pieces) {
+		if (((int)$pa_start_pieces['day'] === 1) && ((int)$pa_end_pieces['day'] === (int)$this->daysInMonth($pa_end_pieces['month'], $pa_end_pieces['year']))) {
+			$pa_start_pieces['day'] = null;
+		}
+		if (((int)$pa_end_pieces['day'] === (int)$this->daysInMonth(12, $pa_end_pieces['year'])) && ((int)$pa_end_pieces['month'] === 12)) {
+			$pa_end_pieces['day'] = $pa_end_pieces['month'] = null;
+		}
+		if (((int)$pa_start_pieces['day'] === 1) && ((int)$pa_start_pieces['month'] === 1)) {
+			$pa_start_pieces['day'] = $pa_start_pieces['month'] = null;
+		}
+		
+		if (($pa_start_pieces['day'] === null) && ((int)$pa_end_pieces['day'] === (int)$this->daysInMonth($pa_end_pieces['month'], $pa_end_pieces['year']))) {
+			$pa_end_pieces['day'] = null;
+		}
+		
+		return [$pa_start_pieces, $pa_end_pieces];
 	}
 	# -------------------------------------------------------------------
 	public function getUncertainty() {
@@ -2878,10 +2897,6 @@ class TimeExpressionParser {
 			$vs_date_delimiter = $pa_options['dateDelimiter'];
 		} else {
 			$vs_date_delimiter = $va_date_delimiters[0];
-		}
-		
-		if ($pa_date_pieces['is_circa']) {
-			//$vs_text = ;
 		}
 		
 		$vs_month = null;
