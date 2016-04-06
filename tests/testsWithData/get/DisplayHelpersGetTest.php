@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/testsWithData/get/DisplayHelpersTest.php
+ * tests/testsWithData/get/DisplayHelpersGetTest.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -33,7 +33,7 @@
 require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
 
-class DisplayHelpersTest extends BaseTestWithData {
+class DisplayHelpersGetTest extends BaseTestWithData {
 	# -------------------------------------------------------
 	/**
 	 * @var BundlableLabelableBaseModelWithAttributes
