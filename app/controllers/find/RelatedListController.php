@@ -72,7 +72,6 @@ class RelatedListController extends BaseSearchController {
 	 * (eg. ObjectSearch for objects, EntitySearch for entities) and pass it to BaseSearchController->Index()
 	 */
 	public function Index($pa_options=null) {
-		$pa_options['search'] = $this->opo_browse;
 		AssetLoadManager::register('imageScroller');
 		AssetLoadManager::register('tabUI');
 		AssetLoadManager::register('panel');
@@ -88,12 +87,11 @@ class RelatedListController extends BaseSearchController {
 		//
 		// set some instance properties that are normally (i.e. in other BaseSearchControllers) set in constructor
 		//
-
-
 		$this->opo_browse = caGetBrowseInstance($vs_related_table);
 		if($vn_browse_id = $this->opo_result_context->getParameter('browse_id')) {
 			$this->opo_browse->reload($vn_browse_id);
 		}
+		$pa_options['search'] = $this->opo_browse;
 
 		// set dummy search expression so that we don't skip half of
 		// the controller code in BaseSearchController::Index()
@@ -121,6 +119,7 @@ class RelatedListController extends BaseSearchController {
 				'relationship_typename' => $o_interstitial_res->getWithTemplate('^relationship_typename')
 			);
 		}
+		caDebug($va_relation_id_map);
 
 		$this->getView()->setVar('relationIdMap', $va_relation_id_map);
 		$this->getView()->setVar('interstitialPrefix', $vs_interstitial_prefix);
