@@ -914,6 +914,8 @@
 			default:
 				if(isset($pa_options['action'])){
 					$vs_action = $pa_options['action'];
+				} elseif($pb_quick_add) {
+					$vs_action = 'Form';
 				} elseif(
 					$po_request->isLoggedIn() &&
 					$po_request->user->canAccess($vs_module,$vs_controller,"Edit",array($vs_pk => $pn_id)) &&
