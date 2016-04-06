@@ -5903,7 +5903,8 @@ $pa_options["display_form_field_tips"] = true;
 
 		if (!($vs_search_result_class = $t_instance->getProperty('SEARCH_RESULT_CLASSNAME'))) { return null; }
 		if (!class_exists($vs_search_result_class)) { include(__CA_LIB_DIR__.'/ca/Search/'.$vs_search_result_class.'.php'); }
-		$o_data = new WLPlugSearchEngineCachedResult(array_values($va_ids), $t_instance->tableNum());
+		$o_data = new WLPlugSearchEngineCachedResult($va_ids, $t_instance->tableNum());
+		/** @var BaseSearchResult $o_res */
 		$o_res = new $vs_search_result_class($t_instance->tableName());	// we pass the table name here so generic multi-table search classes such as InterstitialSearch know what table they're operating over
 		$o_res->init($o_data, array(), $pa_options);
 
