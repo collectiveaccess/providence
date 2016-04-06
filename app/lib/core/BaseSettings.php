@@ -393,7 +393,53 @@
 					$vn_height = (isset($va_properties['height']) && (strlen($va_properties['height']) > 0)) ? $va_properties['height'] : "50px";
 					
 					$vs_select_element = '';
-					if (($vs_rel_table = $va_properties['useRelationshipTypeList']) || ($vb_locale_list = (bool)$va_properties['useLocaleList']) || ($vs_list_code = $va_properties['useList']) || ($vb_show_lists = ((bool)$va_properties['showLists'] || (bool)$va_properties['showVocabularies']))) {
+					
+					if($va_properties['showTypesForTable']) {
+						$vs_select_element = '';
+						$o_dm = Datamodel::load();
+						if (!($t_show_types_for_table = $o_dm->getInstanceByTableName($va_properties['showTypesForTable'], true))) {
+							break;
+						}
+						
+						$va_type_opts = [];
+						if ($t_show_types_for_table instanceof BaseRelationshipModel) { // interstitial type restriction incoming
+							$va_rel_type_list = $t_show_types_for_table->getRelationshipTypes();
+							if(!is_array($va_rel_type_list)) { break; }
+							
+							foreach($va_type_list as $vn_type_id => $va_type_info) {
+								if (!$va_type_info['parent_id']) { continue; }
+								$va_type_opts[$va_type_info['typename'].'/'.$va_type_info['typename_reverse']] = $va_type_info['type_id'];
+							}
+						} else { // "normal" (list-based) type restriction
+							$va_type_list = $t_show_types_for_table->getTypeList();
+							if (!is_array($va_type_list)) { break; }
+							
+							foreach($va_type_list as $vn_type_id => $va_type_info) {
+								$va_type_opts[$va_type_info['name_plural']] = $va_type_info['item_id'];
+							}
+						}
+						
+						if ($vn_height > 1) { 
+							$va_attr['multiple'] = 1; $vs_input_name .= '[]'; 
+						}
+						
+						$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height);
+						if ($vn_height > 1) {
+							if ($vs_value && !is_array($vs_value)) { $vs_value = array($vs_value); }
+							$va_opts['values'] = $vs_value;
+						} else {
+							if (is_array($vs_value)) {
+								$va_opts['value'] = array_pop($vs_value);
+							} else {
+								if ($vs_value) {
+									$va_opts['value'] = $vs_value;
+								} else {
+									$va_opts['value'] = null;
+								}
+							}
+						}
+						$vs_select_element = caHTMLSelect($vs_input_name, $va_type_opts, $va_attr, $va_opts);
+					} elseif (($vs_rel_table = $va_properties['useRelationshipTypeList']) || ($vb_locale_list = (bool)$va_properties['useLocaleList']) || ($vs_list_code = $va_properties['useList']) || ($vb_show_lists = ((bool)$va_properties['showLists'] || (bool)$va_properties['showVocabularies']))) {
 						if ($vs_rel_table) {
 							$t_rel = new ca_relationship_types();
 							$va_rels = $t_rel->getRelationshipInfo($vs_rel_table);
@@ -501,18 +547,40 @@
 							
 							$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
 							$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts, array(), $va_opts);
-						} elseif ((int)$va_properties['showMetadataElementsWithDataType'] > 0) {
+						} elseif ($va_properties['showMetadataElementsWithDataType']) {
 							require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 							
-							$va_rep_elements = ca_metadata_elements::getElementsAsList(true, $va_properties['table'], null, true, false, true, array($va_properties['showMetadataElementsWithDataType']));
+							$va_rep_elements = ca_metadata_elements::getElementsAsList(true, $va_properties['table'], null, true, false, true, is_numeric($va_properties['showMetadataElementsWithDataType']) ? array($va_properties['showMetadataElementsWithDataType']) : null);
 							
+							$va_select_opts = array();
 							if (is_array($va_rep_elements)) {
-								$va_select_opts = array();
 								foreach($va_rep_elements as $vs_element_code => $va_element_info) {
 									$va_select_opts[$va_element_info['display_label']] = $vs_element_code;
 								}
-								$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
-								$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts, array(), $va_opts);
+							}
+							
+							if($va_properties['includeIntrinsics']) {
+								$o_dm = Datamodel::load();
+								if (!($t_rep = $o_dm->getInstanceByTableName($va_properties['table'], true))) { continue; }
+							
+								foreach($t_rep->getFormFields() as $vs_f => $va_field_info) {
+									if (is_array($va_properties['includeIntrinsics']) && !in_array($vs_f, $va_properties['includeIntrinsics'])) { continue; }
+									if(in_array($va_field_info['DT_DISPLAY'], array('DT_OMIT', 'DT_HIDDEN'))) { continue; }
+									if (isset($va_field_info['IDENTITY']) && $va_field_info['IDENTITY']) { continue; }
+									
+									$va_select_opts[$va_field_info['LABEL']] = $vs_f;
+								}	
+							}
+							
+							if (sizeof($va_select_opts)) {	
+								
+								$va_select_attr = [];
+								if($vn_height > 1) {
+									$vs_input_name .= '[]'; 
+									$va_select_attr = ['multiple' => 1];
+								}
+								$va_opts = array('id' => $vs_input_id, 'width' => $vn_width, 'height' => $vn_height, 'value' => is_array($vs_value) ? $vs_value[0] : $vs_value, 'multiple' => 1, 'values' => is_array($vs_value) ? $vs_value : array($vs_value));
+								$vs_select_element = caHTMLSelect($vs_input_name, $va_select_opts,  $va_select_attr, $va_opts);
 							}
 						} else {
 							// Regular drop-down with configured options
@@ -558,9 +626,13 @@
 					}
 				} else {
 					if (
+						(isset($va_properties['showTypesForTable']) && $va_properties['showTypesForTable'] && ($va_properties['height'] > 1))
+						||
 						(isset($va_properties['useRelationshipTypeList']) && $va_properties['useRelationshipTypeList'] && ($va_properties['height'] > 1))
 						||
 						(isset($va_properties['useList']) && $va_properties['useList'] && ($va_properties['height'] > 1))
+						||
+						(isset($va_properties['showMetadataElementsWithDataType']) && $va_properties['showMetadataElementsWithDataType'] && ($va_properties['height'] > 1))
 						||
 						(isset($va_properties['showLists']) && $va_properties['showLists'] && ($va_properties['height'] > 1))
 						||

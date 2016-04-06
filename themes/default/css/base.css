@@ -5377,6 +5377,9 @@ div.listRel:first-of-type {
     border: 1px solid #e6e6e6;
 
     z-index: 10000;
+
+    max-height: 350px;
+    overflow: scroll;
 }
 
 .caItemListSortControls ul {
@@ -6546,11 +6549,15 @@ div.caUseHistoryEntry {
 	border-top: 1px dotted #e6e6e6;
 }
 
+div.caUseHistoryEntryFirst {
+	border: none;
+}
+
 div.caUseHistoryButtonBar {
 	padding: 10px;
 }
 
-.caChangeLocationButton, .caAddLoanButton {
+.caChangeLocationButton, .caAddLoanButton, .caAddOccurrenceButton {
 	margin-top: 5px;
 }
 

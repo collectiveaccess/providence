@@ -4359,24 +4359,6 @@ create table ca_editor_ui_type_restrictions (
 
 
 /*==========================================================================*/
-create table ca_editor_ui_bundle_placement_type_restrictions (
-   restriction_id                 int unsigned                   not null AUTO_INCREMENT,
-   table_num                      tinyint unsigned               not null,
-   type_id                        int unsigned,
-   placement_id                   int unsigned                   not null,
-   include_subtypes               tinyint unsigned               not null default 0,
-   settings                       longtext                       not null,
-   rank                           smallint unsigned              not null default 0,
-   primary key (restriction_id),
-   
-   index i_placement_id			(placement_id),
-   index i_type_id				(type_id),
-   constraint fk_ca_editor_ui_bundle_placement_type_restrictions_placement_id foreign key (placement_id)
-      references ca_editor_ui_bundle_placements (placement_id) on delete restrict on update restrict
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-
-/*==========================================================================*/
 create table ca_sets (
 	set_id		int unsigned not null auto_increment,
 	parent_id	int unsigned,
@@ -6665,5 +6647,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 128 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (128, unix_timestamp());
+/* CURRENT MIGRATION: 129 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (129, unix_timestamp());

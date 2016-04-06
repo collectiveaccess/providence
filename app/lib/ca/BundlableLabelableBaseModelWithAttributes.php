@@ -2330,7 +2330,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		if (isset($pa_options['bundles']) && is_array($pa_options['bundles'])) {
  			$va_bundles = $pa_options['bundles'];
  		} else {
- 			$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen);
+ 			$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen, $this->getTypeID());
  		}
  		
  		$vs_form_name = caGetOption('formName', $pa_options, '');
@@ -2889,7 +2889,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 */
 	protected function getBundleListsForScreen($pm_screen, $po_request, $t_ui, $pa_options=null) {
 		if(!$t_ui) { return; }
-		$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen);
+		$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen, $this->getTypeID());
 		
 		// sort fields by type
 		$va_fields_by_type = array();
@@ -4337,7 +4337,7 @@ if (!$vb_batch) {
 					case 'ca_objects_history':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
-					
+				
 						// set storage location
 						if ($vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_idnew_0", pInteger)) {
 							if (
@@ -4349,9 +4349,29 @@ if (!$vb_batch) {
 									($vn_relationship_type_id = array_shift($va_relationship_types))
 								)
 							) {
-								$this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id, null, null, null, null, array('allowDuplicates' => true));
+								// is effective date set?
+								$vs_effective_date = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_effective_datenew_0", pString);
+								
+								$t_item_rel = $this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id, $vs_effective_date, null, null, null, array('allowDuplicates' => true));
 								if ($this->numErrors()) {
 									$po_request->addActionErrors($this->errors(), 'ca_objects_history', 'general');
+								} else {
+									// set any other defined interstitials
+									if (is_array($va_storage_location_elements = caGetOption('ca_storage_locations_elements', $va_bundle_settings, array()))) {
+										foreach($va_storage_location_elements as $vs_element) {
+											if ($vs_element == 'effective_date') { continue; }
+											if ($this->hasField($vs_element)) {
+											
+											} elseif (($vn_element_id = ca_metadata_elements::getElementID($vs_element)) && ($vs_val = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_{$vn_element_id}_new_0", pString))) {
+												$t_item_rel->setMode(ACCESS_WRITE);
+												// TODO: support containers
+												$t_item_rel->addAttribute([
+													$vs_element => $vs_val
+												], $vs_element);
+												$t_item_rel->update();
+											}
+										}
+									}								
 								}
 							}
 						}
@@ -4362,6 +4382,21 @@ if (!$vb_batch) {
 								$this->addRelationship('ca_loans', $vn_loan_id, $vn_loan_type_id);
 								if ($this->numErrors()) {
 									$po_request->addActionErrors($this->errors(), 'ca_objects_history', 'general');
+								}
+							}
+						}
+						
+						// set occurrence
+						require_once(__CA_MODELS_DIR__."/ca_occurrences.php");
+						$t_occ = new ca_occurrences();
+						$va_occ_types = $t_occ->getTypeList();
+						foreach($va_occ_types as $vn_type_id => $vn_type_info) {
+							if ($vn_occurrence_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_occurrence_{$vn_type_id}_idnew_0", pInteger)) {
+								if ($vn_occ_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_occurrence_{$vn_type_id}_type_idnew_0", pInteger)) {
+									$this->addRelationship('ca_occurrences', $vn_occurrence_id, $vn_occ_type_id);
+									if ($this->numErrors()) {
+										$po_request->addActionErrors($this->errors(), 'ca_objects_history', 'general');
+									}
 								}
 							}
 						}

@@ -718,7 +718,6 @@ class BaseEditorController extends ActionController {
 			$this->view->setVar('placements', $va_display_list);
 
 			$this->request->user->setVar($t_subject->tableName().'_summary_display_id', $vn_display_id);
-			$vs_format = $this->request->config->get("summary_print_format");
 		} else {
 			$vn_display_id = $t_display = null;
 			$this->view->setVar('display_id', null);
@@ -921,6 +920,14 @@ class BaseEditorController extends ActionController {
 		}
 		$vs_form_prefix = $this->request->getParameter('_formName', pString);
 
+		$this->opo_app_plugin_manager->hookBeforeSaveItem(array(
+			'id' => $vn_subject_id,
+			'table_num' => $t_subject->tableNum(),
+			'table_name' => $t_subject->tableName(), 
+			'instance' => $t_subject,
+			'is_insert' => false)
+		);
+
 		// Save user ACL's
 		$va_users_to_set = array();
 		foreach($_REQUEST as $vs_key => $vs_val) {
@@ -975,6 +982,15 @@ class BaseEditorController extends ActionController {
 				$this->postError(1250, _t('Could not set ACL inheritance settings: %1', join("; ", $t_subject->getErrors())),"BaseEditorController->SetAccess()");
 			}
 		}
+
+		$this->opo_app_plugin_manager->hookSaveItem(array(
+			'id' => $vn_subject_id,
+			'table_num' => $t_subject->tableNum(),
+			'table_name' => $t_subject->tableName(),
+			'instance' => $t_subject,
+			'is_insert' => false)
+		);
+
 		$this->Access();
 	}
 	# -------------------------------------------------------
@@ -2261,6 +2277,36 @@ class BaseEditorController extends ActionController {
 
 
 		print json_encode($va_stored_files);
+	}
+	# -------------------------------------------------------
+	/**
+	 * Handle sort requests from form editor.
+	 * Gets passed a table name, a list of ids and a key to sort on. Will return a JSON list of the same IDs, just sorted.
+	 */
+	public function Sort() {
+		if (!$this->getRequest()->isLoggedIn() || ((int)$this->getRequest()->user->get('userclass') !== 0)) {
+			$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/2320?r='.urlencode($this->getRequest()->getFullUrlPath()));
+			return;
+		}
+
+		$vs_table_name = $this->getRequest()->getParameter('table', pString);
+		$t_instance = $this->getAppDatamodel()->getInstance($vs_table_name, true);
+
+		$va_ids = explode(',', $this->getRequest()->getParameter('ids', pString));
+		$va_sort_keys = explode(',', $this->getRequest()->getParameter('sortKeys', pString));
+
+		if(!($vs_sort_direction = strtolower($this->getRequest()->getParameter('sortDirection', pString))) || !in_array($vs_sort_direction, array('asc', 'desc'))) {
+			$vs_sort_direction = 'asc';
+		}
+
+		if(!$t_instance) { return; }
+		if(!is_array($va_ids) || !sizeof($va_ids)) { return; }
+		if(!is_array($va_sort_keys) || !sizeof($va_sort_keys)) { return; }
+
+		$o_res = caMakeSearchResult($t_instance->tableName(), $va_ids, array('sort' => $va_sort_keys, 'sortDirection' => $vs_sort_direction));
+		$va_sorted_ids = $o_res->getAllFieldValues($t_instance->primaryKey());
+
+		print json_encode($va_sorted_ids);
 	}
 	# -------------------------------------------------------
 }
