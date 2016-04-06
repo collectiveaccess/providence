@@ -34,6 +34,7 @@
    *
    */
 require_once(__CA_LIB_DIR__.'/ca/ObjectRelationshipBaseModel.php');
+require_once(__CA_LIB_DIR__."/ca/CurrentLocationCriterionTrait.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_objects_x_storage_locations'] = array(
@@ -70,7 +71,7 @@ BaseModel::$s_ca_models_definitions['ca_objects_x_storage_locations'] = array(
 				'LABEL' => 'Location id', 'DESCRIPTION' => 'Identifier for Location'
 		),
 		'source_info' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
@@ -95,6 +96,12 @@ BaseModel::$s_ca_models_definitions['ca_objects_x_storage_locations'] = array(
 );
 
 class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
+
+	/**
+	 * Update location of dependent objects when changing values
+	 */
+	use CurrentLocationCriterionTrait;
+	
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -215,6 +222,8 @@ class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
 	 */
 	public function insert($pa_options=null) {
 		if (!$this->get('effective_date', array('getDirectDate' => true))) {  $this->set('effective_date', _t('now')); }
+		if (!$this->get('source_info')) {  $this->set('source_info', $this->_getStorageLocationInfo()); }
+		
 		return parent::insert($pa_options);
 	}
 	# ------------------------------------------------------
@@ -223,7 +232,24 @@ class ca_objects_x_storage_locations extends ObjectRelationshipBaseModel {
 	 */
 	public function update($pa_options=null) {
 		if (!$this->get('effective_date', array('getDirectDate' => true))) { $this->set('effective_date', _t('now')); }
+		if (!$this->get('source_info')) {  $this->set('source_info', $this->_getStorageLocationInfo()); }
+		
 		return parent::update($pa_options);
 	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getStorageLocationInfo() {
+		$t_loc = new ca_storage_locations($this->get('location_id'));
+		if ($t_loc->getPrimaryKey()) {
+			return array(
+				'path' => $t_loc->get('ca_storage_locations.hierarchy.preferred_labels.name', array('returnAsArray' => true)),
+				'ids' => $t_loc->get('ca_storage_locations.hierarchy.location_id',  array('returnAsArray' => true))
+			);
+		} else {
+			return array('path' => array('?'), 'ids' => array(0));
+		}
+	}	
 	# ------------------------------------------------------
 }

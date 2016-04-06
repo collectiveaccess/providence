@@ -341,4 +341,94 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 		return Configuration::load(__CA_APP_DIR__.'/conf/search.conf');
 	}
 	# ---------------------------------------
-?>
+	/**
+	 * @param Zend_Search_Lucene_Index_Term $po_term
+	 * @return Zend_Search_Lucene_Index_Term
+	 */
+	function caRewriteElasticSearchTermFieldSpec($po_term) {
+		return new Zend_Search_Lucene_Index_Term(
+			$po_term->text, (strlen($po_term->field) > 0) ? str_replace('.', '\/', str_replace('/', '|', $po_term->field)) : $po_term->field
+		);
+	}
+	# ---------------------------------------
+	/**
+	 * ElasticSearch won't accept dates where day or month is zero, so we have to
+	 * rewrite certain dates, especially when dealing with "open-ended" date ranges,
+	 * e.g. "before 1998", "after 2012"
+	 *
+	 * @param string $ps_date
+	 * @param bool $pb_is_start
+	 * @return string
+	 */
+	function caRewriteDateForElasticSearch($ps_date, $pb_is_start=true) {
+		// substitute start and end of universe values with ElasticSearch's builtin boundaries
+		$ps_date = str_replace(TEP_START_OF_UNIVERSE,"-292275054",$ps_date);
+		$ps_date = str_replace(TEP_END_OF_UNIVERSE,"9999",$ps_date);
+
+		if(preg_match("/(\d+)\-(\d+)\-(\d+)T(\d+)\:(\d+)\:(\d+)Z/", $ps_date, $va_date_parts)) {
+			// fix large (positive) years
+			if(intval($va_date_parts[1]) > 9999) { $va_date_parts[1] = "9999"; }
+			// fix month-less dates
+			if(intval($va_date_parts[2]) < 1) { $va_date_parts[2]  = ($pb_is_start ?  "01" : "12"); }
+			// fix messed up months
+			if(intval($va_date_parts[2]) > 12) { $va_date_parts[2] = "12"; }
+			// fix day-less dates
+			if(intval($va_date_parts[3]) < 1) { $va_date_parts[3]  = ($pb_is_start ?  "01" : "31"); }
+			// fix messed up days
+			$vn_days_in_month = cal_days_in_month(CAL_GREGORIAN, intval($va_date_parts[2]), intval($va_date_parts[1]));
+			if(intval($va_date_parts[3]) > $vn_days_in_month) { $va_date_parts[3] = (string) $vn_days_in_month; }
+
+			// fix hours
+			if(intval($va_date_parts[4]) > 23) { $va_date_parts[4] = "23"; }
+			if(intval($va_date_parts[4]) < 0) { $va_date_parts[4]  = ($pb_is_start ?  "00" : "23"); }
+			// minutes and seconds
+			if(intval($va_date_parts[5]) > 59) { $va_date_parts[5] = "59"; }
+			if(intval($va_date_parts[5]) < 0) { $va_date_parts[5]  = ($pb_is_start ?  "00" : "59"); }
+			if(intval($va_date_parts[6]) > 59) { $va_date_parts[6] = "59"; }
+			if(intval($va_date_parts[6]) < 0) { $va_date_parts[6]  = ($pb_is_start ?  "00" : "59"); }
+
+			return "{$va_date_parts[1]}-{$va_date_parts[2]}-{$va_date_parts[3]}T{$va_date_parts[4]}:{$va_date_parts[5]}:{$va_date_parts[6]}Z";
+		} else {
+			return '';
+		}
+	}
+	# ---------------------------------------
+	/**
+	 * @param Db $po_db
+	 * @param int $pn_table_num
+	 * @param int $pn_row_id
+	 * @return array
+	 */
+	function caGetChangeLogForElasticSearch($po_db, $pn_table_num, $pn_row_id) {
+		$qr_res = $po_db->query("
+				SELECT ccl.log_id, ccl.log_datetime, ccl.changetype, u.user_name
+				FROM ca_change_log ccl
+				LEFT JOIN ca_users AS u ON ccl.user_id = u.user_id
+				WHERE
+					(ccl.logged_table_num = ?) AND (ccl.logged_row_id = ?)
+					AND
+					(ccl.changetype <> 'D')
+			", $pn_table_num, $pn_row_id);
+
+		$va_return = array();
+		while($qr_res->nextRow()) {
+			$vs_change_date = caGetISODates(date("c", $qr_res->get('log_datetime')))['start'];
+			if ($qr_res->get('changetype') == 'I') {
+				$va_return["created"][] = $vs_change_date;
+
+				if($vs_user = $qr_res->get('user_name')) {
+					$vs_user = str_replace('.', '/', $vs_user);
+					$va_return["created/{$vs_user}"][] = $vs_change_date;
+				}
+			} else {
+				$va_return["modified"][] = $vs_change_date;
+
+				if($vs_user = $qr_res->get('user_name')) {
+					$vs_user = str_replace('.', '/', $vs_user);
+					$va_return["modified/{$vs_user}"][] = $vs_change_date;
+				}
+			}
+		}
+
+		return $va_return;
+	}

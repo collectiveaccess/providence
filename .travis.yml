@@ -2,10 +2,10 @@ language: php
 sudo: false
 
 php:
-  - 5.3
   - 5.4
   - 5.5
   - 5.6
+  - 7.0
 
 env:
   # Here we list the profiles that we want to test, each one will be tested, per version of PHP, in parallel
@@ -32,3 +32,4 @@ branches:
     - develop
     - master
     - master-fix
+    - dev/elasticSearchRewrite

@@ -142,7 +142,8 @@
 			}
 			
 			$va_match_on = caGetOption("{$ps_refinery_name}_dontMatchOnLabel", $pa_item['settings'], false) ? array('idno') : array('idno', 'label');
-			$pa_options = array_merge(array('matchOn' => $va_match_on), $pa_options);
+			$vb_ignore_parent = caGetOption("{$ps_refinery_name}_ignoreParent", $pa_item['settings'], false);
+			$pa_options = array_merge(array('matchOn' => $va_match_on, 'ignoreParent' => $vb_ignore_parent), $pa_options);
 			
 			switch($ps_table) {
 				case 'ca_objects':
@@ -527,8 +528,12 @@
 		$va_match_on = caGetOption('matchOn', $pa_options, null);
 		if (!is_array($va_match_on) && $va_match_on) { 
 			$va_match_on = array($va_match_on); 
-		} elseif (is_array($va_match_on = $pa_item['settings']["{$ps_refinery_name}_matchOn"])) {
+		} elseif (is_array($va_match_on = $pa_item['settings']["{$ps_refinery_name}_matchOn"]) || is_array($va_match_on = $pa_item['settings']["matchOn"])) {
 			$pa_options['matchOn'] = $va_match_on;
+		}
+		
+		if (isset($pa_item['settings']["{$ps_refinery_name}_ignoreParent"])) {
+			$pa_options['ignoreParent'] = $pa_item['settings']["{$ps_refinery_name}_ignoreParent"];
 		}
 		
 		$pb_dont_create = caGetOption('dontCreate', $pa_options, (bool)$pa_item['settings']["{$ps_refinery_name}_dontCreate"]);
@@ -549,16 +554,21 @@
 
 				foreach($va_items as $vn_i => $vs_item) {
 					$va_parents = $pa_item['settings']["{$ps_refinery_name}_parents"];
+
+					// Set label
+					$va_val = array();
 					
+					$vs_laddered_type = null;
 					if (!($vs_item = trim($vs_item))) { 
 						if (is_array($va_parents) && (sizeof($va_parents) > 0)) {
 							// try to ladder up the parents hierarchy since the base value is blank (see PROV-972)
 							$vs_display_field = $t_instance->getLabelDisplayField();
 							while(sizeof($va_parents) > 0) {
-								$va_p = array_pop($va_parents);
+								$va_p = array_shift($va_parents);
 								if ($vs_laddered_val = BaseRefinery::parsePlaceholder($va_p[$vs_display_field], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnDelimitedValueAt' => $vn_x))) {
 									if ($o_log) { $o_log->logDebug(_t('[{$ps_refinery_name}] Used parent value %1 because the mapped value was blank', $vs_item)); }
 									$vs_item = $vs_laddered_val;
+									$va_val['_type'] = BaseRefinery::parsePlaceholder($va_p['type'], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnDelimitedValueAt' => $vn_x));
 									break;
 								}
 							}
@@ -571,9 +581,6 @@
 						if ($o_log) { $o_log->logDebug(_t('[{$ps_refinery_name}] Skipped %1 because it was in the skipIfValue list', $vs_item)); }
 						continue;
 					}
-			
-					// Set label
-					$va_val = array();
 				
 					// Set value as hierarchy
 					if ($va_hierarchy_setting = $pa_item['settings']["{$ps_refinery_name}_hierarchy"]) {
@@ -583,6 +590,8 @@
 		
 						// Set type
 						if (
+							(!isset($va_val['_type']) || !$va_val['_type'])
+							&&
 							($vs_type_opt = $pa_item['settings']["{$ps_refinery_name}_{$ps_item_prefix}Type"])
 						) {
 							$va_val['_type'] = BaseRefinery::parsePlaceholder($vs_type_opt, $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader));
@@ -697,7 +706,7 @@
 						if(!is_array($va_attr_vals)) { $va_attr_vals = array(); }
 						$va_attr_vals_with_parent = array_merge($va_attr_vals, array('parent_id' => $va_val['parent_id'] ? $va_val['parent_id'] : $va_val['_parent_id']));
 
-						$pa_options = array('matchOn' => array('idno', 'label')) +  $pa_options;
+						if (!isset($pa_options['matchOn'])) { $pa_options['matchOn'] = array('idno', 'label'); }
 						
 						switch($ps_table) {
 							case 'ca_objects':
@@ -808,12 +817,12 @@
 							case 'ca_object_representations':
 								if (!($vs_batch_media_directory = $t_instance->getAppConfig()->get('batch_media_import_root_directory'))) { break; }
 							
-								if(!isset($va_val['preferred_labels'])) { $va_val['preferred_labels'] = array('name' => $vs_item); }
+								if(!isset($va_val['preferred_labels'])) { $va_val['preferred_labels'] = array('name' => pathinfo($vs_item, PATHINFO_FILENAME)); }
 							
 								if (isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) && $pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] && isset($va_val['media']['media']) && ($va_val['media']['media'])) {
-									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'].'/'.$va_val['media']['media'];
+									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'].'/'.str_replace("\\", "/", $va_val['media']['media']);
 								}
-								if(!isset($va_val['idno'])) { $va_val['idno'] = $vs_item; }
+								if(!isset($va_val['idno'])) { $va_val['idno'] = pathinfo($vs_item, PATHINFO_FILENAME); }
 								break;
 							default:
 								if ($o_log) { $o_log->logDebug(_t('[importHelpers:caGenericImportSplitter] Invalid table %1', $ps_table)); }
@@ -857,6 +866,7 @@
 					}
 					$va_val['_matchOn'] = $va_match_on;
 					if ($pb_dont_create) { $va_val['_dontCreate'] = 1; }
+					if (isset($pa_options['ignoreParent']) && $pa_options['ignoreParent']) { $va_val['_ignoreParent'] = 1; }
 					$va_vals[] = $va_val;
 					$vn_c++;
 				}
@@ -918,14 +928,16 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 					foreach($pm_value as $vn_i => $vs_value) {
 						foreach($pa_item_settings['applyRegularExpressions'] as $vn_c => $va_regex) {
 							if (!strlen($va_regex['match'])) { continue; }
-							$vs_value = preg_replace("!".str_replace("!", "\\!", $va_regex['match'])."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i'), $va_regex['replaceWith'], $vs_value);
+							$va_regex['match'] = str_replace($va_regex['match'], '\\', '\x5c');
+							$vs_value = preg_replace("!".preg_quote($va_regex['match'], "!")."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i'), $va_regex['replaceWith'], $vs_value);
 						}
 						$pm_value[$vn_i] = $vs_value;
 					}
 				} else {
 					foreach($pa_item_settings['applyRegularExpressions'] as $vn_i => $va_regex) {
 						if (!strlen($va_regex['match'])) { continue; }
-						$pm_value = preg_replace("!".str_replace("!", "\\!", $va_regex['match'])."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i'), $va_regex['replaceWith'], $pm_value);
+						$va_regex['match'] = str_replace($va_regex['match'], '\\', '\x5c');
+						$pm_value = preg_replace("!".preg_quote($va_regex['match'], "!")."!".((isset($va_regex['caseSensitive']) && (bool)$va_regex['caseSensitive']) ? '' : 'i'), $va_regex['replaceWith'], $pm_value);
 					}
 				}
 			}
@@ -1065,6 +1077,21 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	}
 	# ---------------------------------------------------------------------
 	/**
+	 * Get raw cell from Excel sheet for given column and row
+	 * @param PHPExcel_Worksheet $po_sheet The work sheet
+	 * @param int $pn_row_num row number (zero indexed)
+	 * @param string|int $pm_col either column number (zero indexed) or column letter ('A', 'BC')
+	 * @return PHPExcel_Cell|null the cell, if a value exists
+	 */
+	function caPhpExcelGetRawCell($po_sheet, $pn_row_num, $pm_col) {
+		if(!is_numeric($pm_col)) {
+			$pm_col = PHPExcel_Cell::columnIndexFromString($pm_col)-1;
+		}
+
+		return $po_sheet->getCellByColumnAndRow($pm_col, $pn_row_num);
+	}
+	# ---------------------------------------------------------------------
+	/**
 	 * Try to match given (partial) hierarchy path to a single subject in getty linked data AAT service
 	 * @param array $pa_hierarchy_path
 	 * @param int $pn_threshold
@@ -1134,8 +1161,10 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 		if($vn_pick >= 0 && ($vn_best_distance > $pn_threshold)) {
 			$va_pick = $va_hits[$vn_pick];
 
-			MemoryCache::save($vs_cache_key, $va_pick['ID']['value'], 'AATMatches');
-			return $va_pick['ID']['value'];
+			if($vs_value = trim($va_pick['ID']['value'])) {
+				MemoryCache::save($vs_cache_key, $vs_value, 'AATMatches');
+				return $vs_value;
+			}
 		}
 
 		return false;

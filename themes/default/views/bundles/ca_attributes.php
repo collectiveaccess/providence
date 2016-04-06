@@ -29,12 +29,15 @@
 	$vs_id_prefix 				= 	$this->getVar('placement_code').$this->getVar('id_prefix');
 	$vs_error_source_code 		= 	$this->getVar('error_source_code');
 	$vs_render_mode 			=	$this->getVar('render_mode');
-	
+
+	/** @var BaseModelWithAttributes $t_instance */
 	$t_instance 				=	$this->getVar('t_instance');
+	/** @var ca_metadata_elements $t_element */
 	$t_element					=	$this->getVar('t_element');
 	$va_elements 				=	$this->getVar('elements');
 	$va_element_ids 			= 	$this->getVar('element_ids');
 	$va_element_info 			= 	$this->getVar('element_info');
+	$va_root_element 			= 	current($va_element_info);
 	
 	
 	$vs_element_set_label 		= 	$this->getVar('element_set_label');
@@ -49,6 +52,24 @@
 	$va_settings 				= 	$this->getVar('settings');
 	$vb_read_only				=	((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel($this->getVar('t_instance')->tableName(), $this->getVar('element_code')) == __CA_BUNDLE_ACCESS_READONLY__));
 	$vb_batch					=	$this->getVar('batch');
+	$va_element_settings 		=	$t_element->getSettings();
+
+	$vb_is_read_only_for_existing_vals = false;
+	if(($t_element->get('datatype') == __CA_ATTRIBUTE_VALUE_CONTAINER__) && isset($va_element_settings['readonlyTemplate']) && (strlen($va_element_settings['readonlyTemplate']) > 0)) {
+		$vb_is_read_only_for_existing_vals = true;
+
+		$va_display_vals = array_shift($t_instance->getAttributeDisplayValues($va_root_element['element_id'], $t_instance->getPrimaryKey()));
+		$va_readonly_previews = array();
+		if(is_array($va_display_vals)) {
+			$vn_i = 0;
+			foreach($va_display_vals as $vn_attr_id => $va_display_val) {
+				$vs_template = "<unit relativeTo='{$t_instance->tableName()}.{$t_element->get('element_code')}' start='{$vn_i}' length='1'>{$va_element_settings['readonlyTemplate']}</unit>";
+				$va_readonly_previews[$vn_attr_id] =
+					caProcessTemplateForIDs($vs_template, $t_instance->tableName(), array($t_instance->getPrimaryKey()));
+				$vn_i++;
+			}
+		}
+	}
 	
 	// generate list of inital form values; the bundle Javascript call will
 	// use the template to generate the initial form
@@ -57,10 +78,12 @@
 	$vs_bundle_preview = '';
 	
 	$va_template_tags = $va_element_ids;
+	$vs_display_template = caGetOption('displayTemplate', $va_element_settings);
 
-	$va_first = current($va_element_info);
-	//$va_element_settings = $t_element->getSettings();
-	$vs_bundle_preview = $t_instance->getAttributesForDisplay($va_first['element_id'], null, array('showHierarchy' => true));
+	$va_element_settings = $t_element->getSettings();
+	if($t_instance->getAppConfig()->get('always_show_bundle_preview_for_attributes') || $vs_display_template) {
+		$vs_bundle_preview = $t_instance->getAttributesForDisplay($va_root_element['element_id'], null, array('showHierarchy' => true));
+	}
 
 	if (sizeof($va_attribute_list)) {
 		$va_item_ids = array();
@@ -131,8 +154,6 @@
 	if ($vb_batch) {
 		print caBatchEditorAttributeModeControl($vs_id_prefix);
 	} else {
-		// @todo add helper to determine if a value is present in $va_initial_values or not
-		// and add the result of that helper as 4th parameter here.
 		print caEditorBundleShowHideControl($this->request, $vs_id_prefix, $va_settings, caInitialValuesArrayHasValue($vs_id_prefix, $va_initial_values));
 	}
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix, $va_settings);
@@ -175,12 +196,12 @@ if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['set
 			foreach($va_elements as $vn_container_id => $va_element_list) {
 				if ($vn_container_id === '_locale_id') { continue; }
 ?>
-				<table class="attributeListItem" cellpadding="5" cellspacing="0">
+				<table class="attributeListItem">
 					<tr>
 <?php
 						foreach($va_element_list as $vs_element) {
 							// any <textarea> tags in the template needs to be renamed to 'textentry' for the template to work
-							print '<td class="attributeListItem" valign="top">'.str_replace("textarea", "textentry", $vs_element).'</td>';
+							print '<td class="attributeListItem">'.str_replace("textarea", "textentry", $vs_element).'</td>';
 						}
 ?>
 					</tr>
@@ -211,7 +232,42 @@ if (caGetOption('canMakePDFForValue', $va_element_info[$t_element->getPrimaryKey
 	
 	<div class="bundleContainer">
 		<div class="caItemList">
-		
+<?php
+			if($vb_is_read_only_for_existing_vals) {
+				// hidden list of previews for read-only containers. these get inserted
+				// instead of the bundle form if the container is configured to do so
+
+				// it also includes javascript to make the bundle form re-appear
+				// if the user clicks an "edit" button next to the preview text
+?>
+
+				<div style="visibility: hidden; height: 0px;">
+<?php
+					foreach($va_readonly_previews as $vn_attr_id => $vs_readonly_preview) {
+?>
+						<div class="caReadonlyContainer" id="caReadonlyContainer<?php print $vs_id_prefix.'_'.$vn_attr_id; ?>">
+							<a class="caReadonlyContainerEditLink" id="caContainerEditLink<?php print $vs_id_prefix.'_'.$vn_attr_id; ?>" href="#"><?php print _t('Edit'); ?></a>
+							<div class="caReadonlyContainerDisplay"><?php print $vs_readonly_preview; ?></div>
+						</div>
+						<script type="text/javascript">
+							jQuery(document).ready(function() {
+								jQuery("#caContainerEditLink<?php print $vs_id_prefix . '_' . $vn_attr_id; ?>").click(function () {
+									jQuery('#<?php print $vs_id_prefix; ?>Item_<?php print $vn_attr_id; ?>').show();
+									jQuery('#caReadonlyContainer<?php print $vs_id_prefix.'_'.$vn_attr_id; ?>').hide();
+									jQuery('input[name="<?php print $vs_id_prefix.'_dont_save_'.$vn_attr_id; ?>"]').val('0');
+								});
+							});
+						</script>
+<?php
+						// this signals saveBundlesForScreen() that this particular value shouldn't be saved;
+						// otherwise we nuke existing values that are in read-only mode
+						print caHTMLHiddenInput($vs_id_prefix.'_dont_save_'.$vn_attr_id, array('value' => 1));
+					}
+?>
+				</div>
+<?php
+				}
+?>
 		</div>
 <?php
 	if (($vs_render_mode !== 'checklist') && !$vb_read_only) {
@@ -230,49 +286,64 @@ if (caGetOption('canMakePDFForValue', $va_element_info[$t_element->getPrimaryKey
 	}
 	if ($vs_render_mode === 'checklist') {
 ?>
-	caUI.initChecklistBundle('#<?php print $vs_id_prefix; ?>', {
-		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-		templateValues: [<?php print join(',', caQuoteList($va_template_tags)); ?>],
-		initialValues: <?php print json_encode($va_initial_values); ?>,
-		initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
-		errors: <?php print json_encode($va_errors); ?>,
-		itemID: '<?php print $vs_id_prefix; ?>Item_',
-		templateClassName: 'caItemTemplate',
-		itemListClassName: 'caItemList',
-		minRepeats: <?php print ($vn_n = $this->getVar('min_num_repeats')) ? $vn_n : 0 ; ?>,
-		maxRepeats: <?php print ($vn_n = $this->getVar('max_num_repeats')) ? $vn_n : 65535; ?>,
-		defaultValues: <?php print json_encode($va_element_value_defaults); ?>,
-		bundlePreview: <?php print caEscapeForBundlePreview($vs_bundle_preview); ?>,
-		readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
-		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
+		caUI.initChecklistBundle('#<?php print $vs_id_prefix; ?>', {
+			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
+			templateValues: [<?php print join(',', caQuoteList($va_template_tags)); ?>],
+			initialValues: <?php print json_encode($va_initial_values); ?>,
+			initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
+			errors: <?php print json_encode($va_errors); ?>,
+			itemID: '<?php print $vs_id_prefix; ?>Item_',
+			templateClassName: 'caItemTemplate',
+			itemListClassName: 'caItemList',
+			minRepeats: <?php print ($vn_n = $this->getVar('min_num_repeats')) ? $vn_n : 0 ; ?>,
+			maxRepeats: <?php print ($vn_n = $this->getVar('max_num_repeats')) ? $vn_n : 65535; ?>,
+			defaultValues: <?php print json_encode($va_element_value_defaults); ?>,
+			bundlePreview: <?php print caEscapeForBundlePreview($vs_bundle_preview); ?>,
+			readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
+			defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
+		});
 <?php	
 	} else {
 ?>
-	caUI.initBundle('#<?php print $vs_id_prefix; ?>', {
-		fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
-		templateValues: [<?php print join(',', caQuoteList($va_template_tags)); ?>],
-		initialValues: <?php print json_encode($va_initial_values); ?>,
-		initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
-		forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
-		errors: <?php print json_encode($va_errors); ?>,
-		itemID: '<?php print $vs_id_prefix; ?>Item_',
-		templateClassName: 'caItemTemplate',
-		itemListClassName: 'caItemList',
-		addButtonClassName: 'caAddItemButton',
-		deleteButtonClassName: 'caDeleteItemButton',
-		minRepeats: <?php print ($vn_n = $this->getVar('min_num_repeats')) ? $vn_n : 0 ; ?>,
-		maxRepeats: <?php print ($vn_n = $this->getVar('max_num_repeats')) ? $vn_n : 65535; ?>,
-		showEmptyFormsOnLoad: <?php print intval($this->getVar('min_num_to_display')); ?>,
-		hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_download_control_', '<?php print $vs_id_prefix; ?>_print_control_',],
-		showOnNewIDList: ['<?php print $vs_id_prefix; ?>_upload_control_'],
-		defaultValues: <?php print json_encode($va_element_value_defaults); ?>,
-		bundlePreview: <?php print caEscapeForBundlePreview($vs_bundle_preview); ?>,
-		readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
-		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
+		var caHideBundlesForReadOnlyContainers = function(attribute_id, values, element, isNew) {
+			if(isNew) { return false; }
+<?php
+		if($vb_is_read_only_for_existing_vals) {
+			// we hide the bundle form element and insert the preview instead
+?>
+			var bundleFormElement = jQuery("#" + element.container.replace('#', '') + "Item_" + attribute_id);
+			bundleFormElement.hide();
+			bundleFormElement.after(jQuery('#caReadonlyContainer<?php print $vs_id_prefix?>_' + attribute_id));
+<?php
+		}
+?>
+		};
+		caUI.initBundle('#<?php print $vs_id_prefix; ?>', {
+			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
+			templateValues: [<?php print join(',', caQuoteList($va_template_tags)); ?>],
+			initialValues: <?php print json_encode($va_initial_values); ?>,
+			initialValueOrder: <?php print json_encode(array_keys($va_initial_values)); ?>,
+			forceNewValues: <?php print json_encode($va_failed_inserts); ?>,
+			errors: <?php print json_encode($va_errors); ?>,
+			itemID: '<?php print $vs_id_prefix; ?>Item_',
+			templateClassName: 'caItemTemplate',
+			itemListClassName: 'caItemList',
+			addButtonClassName: 'caAddItemButton',
+			deleteButtonClassName: 'caDeleteItemButton',
+			minRepeats: <?php print ($vn_n = $this->getVar('min_num_repeats')) ? $vn_n : 0 ; ?>,
+			maxRepeats: <?php print ($vn_n = $this->getVar('max_num_repeats')) ? $vn_n : 65535; ?>,
+			showEmptyFormsOnLoad: <?php print intval($this->getVar('min_num_to_display')); ?>,
+			hideOnNewIDList: ['<?php print $vs_id_prefix; ?>_download_control_', '<?php print $vs_id_prefix; ?>_print_control_',],
+			showOnNewIDList: ['<?php print $vs_id_prefix; ?>_upload_control_'],
+			defaultValues: <?php print json_encode($va_element_value_defaults); ?>,
+			bundlePreview: <?php print caEscapeForBundlePreview($vs_bundle_preview); ?>,
+			readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
+			defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>,
+			onInitializeItem: caHideBundlesForReadOnlyContainers /* todo: look for better callback (or make one up?) */
+		});
 <?php
 	}
 ?>
-	});
 	
 	function <?php print $vs_id_prefix; ?>Print(attribute_id) {
 		if (!attribute_id) { attribute_id = ''; }

@@ -51,6 +51,8 @@
 			require_once(__CA_BASE_DIR__ . '/install/inc/Installer.php');
 			require_once(__CA_BASE_DIR__ . '/install/inc/Updater.php');
 
+			define('__CollectiveAccess_Installer__', 1);
+
 			if ($pb_installing && !$po_opts->getOption('profile-name')) {
 				CLIUtils::addError(_t("Missing required parameter: profile-name"));
 				return false;
@@ -145,6 +147,9 @@
 
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Setting up hierarchies")); }
 			$vo_installer->processMiscHierarchicalSetup();
+
+			if (!$vb_quiet) { CLIUtils::addMessage(_t("Performing post install tasks")); }
+			$vo_installer->performPostInstallTasks();
 
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Installation complete")); }
 
@@ -730,26 +735,39 @@
 				$va_params = array();
 
 				if (sizeof($va_ids)) {
-					$vs_sql_where = "WHERE representation_id IN (?)";
+					$vs_sql_where = "WHERE ca_object_representations.representation_id IN (?)";
 					$va_params[] = $va_ids;
 				} else {
 					if (
 						(($vn_start > 0) && ($vn_end > 0) && ($vn_start <= $vn_end)) || (($vn_start > 0) && ($vn_end == null))
 					) {
-						$vs_sql_where = "WHERE representation_id >= ?";
+						$vs_sql_where = "WHERE ca_object_representations.representation_id >= ?";
 						$va_params[] = $vn_start;
 						if ($vn_end) {
-							$vs_sql_where .= " AND representation_id <= ?";
+							$vs_sql_where .= " AND ca_object_representations.representation_id <= ?";
 							$va_params[] = $vn_end;
 						}
 					}
 				}
 
+				$vs_sql_joins = '';
+				if ($vs_object_ids = (string)$po_opts->getOption('object_ids')) {
+					$va_object_ids = explode(",", $vs_object_ids);
+					foreach($va_object_ids as $vn_i => $vn_object_id) {
+						$va_object_id[$vn_i] = (int)$vn_object_id;
+					}
+					
+					$vs_sql_where = ($vs_sql_where ? "WHERE " : " AND ")."(ca_objects_x_object_representations.object_id IN (?))";
+					$vs_sql_joins = "INNER JOIN ca_objects_x_object_representations ON ca_objects_x_object_representations.representation_id = ca_object_representations.representation_id";
+					$va_params[] = $va_object_ids;
+				}
+
 				$qr_reps = $o_db->query("
 					SELECT *
 					FROM ca_object_representations
+					{$vs_sql_joins}
 					{$vs_sql_where}
-					ORDER BY representation_id
+					ORDER BY ca_object_representations.representation_id
 				", $va_params);
 
 				print CLIProgressBar::start($qr_reps->numRows(), _t('Re-processing representation media'));
@@ -847,6 +865,7 @@
 				"end_id|e-n" => _t('Representation id to end reloading at'),
 				"id|i-n" => _t('Representation id to reload'),
 				"ids|l-s" => _t('Comma separated list of representation ids to reload'),
+				"object_ids|o-s" => _t('Comma separated list of object ids to reload'),
 				"kinds|k-s" => _t('Comma separated list of kind of media to reprocess. Valid kinds are ca_object_representations (object representations), and ca_attributes (metadata elements). You may also specify "all" to reprocess both kinds of media. Default is "all"')
 			);
 		}
@@ -984,7 +1003,7 @@
 					FROM ca_attribute_values
 					WHERE
 						element_id in (?)
-				", caExtractValuesFromArrayList($va_elements, 'element_id', array('preserveKeys' => false)));
+				", array(caExtractValuesFromArrayList($va_elements, 'element_id', array('preserveKeys' => false))));
 				if ($qr_c->nextRow()) { $vn_count = $qr_c->get('c'); } else { $vn_count = 0; }
 
 
@@ -1144,6 +1163,9 @@
 				CLIUtils::addError(_t("Could not import '%1': %2", $vs_file_path, join("; ", $va_errors)));
 				return false;
 			} else {
+				if(is_array($va_errors) && (sizeof($va_errors)>0)) {
+					CLIUtils::textWithColor(_t("There were warnings when adding mapping from file '%1': %2", $vs_file_path, join("; ", $va_errors)), 'yellow');
+				}
 
 				CLIUtils::addMessage(_t("Created mapping %1 from %2", CLIUtils::textWithColor($t_importer->get('importer_code'), 'yellow'), $vs_file_path), array('color' => 'none'));
 				return true;
@@ -1778,405 +1800,83 @@
 		}
 		# -------------------------------------------------------
 		/**
-		 * Generate mappings for ElasticSearch based upon currently configured search indexing
-		 */
-		public static function generate_elasticSearch_configuration($po_opts=null) {
-			require_once(__CA_LIB_DIR__."/core/Search/SearchBase.php");
-			require_once(__CA_LIB_DIR__."/core/Configuration.php");
-			require_once(__CA_LIB_DIR__."/core/Datamodel.php");
-			require_once(__CA_LIB_DIR__."/core/Zend/Http/Client.php");
-
-			$vo_app_conf = Configuration::load();
-			$vo_search_conf = Configuration::load($vo_app_conf->get("search_config"));
-			$vo_search_indexing_conf = Configuration::load($vo_search_conf->get("search_indexing_config"));
-			$o_db = new Db();
-			$o_datamodel = Datamodel::load();
-
-			// allow overriding settings from search.conf via constant (usually defined in bootstrap file)
-			// this is useful for multi-instance setups which have the same set of config files for multiple instances
-			if(defined('__CA_ELASTICSEARCH_BASE_URL__') && (strlen(__CA_ELASTICSEARCH_BASE_URL__)>0)) {
-				$vs_elasticsearch_base_url = __CA_ELASTICSEARCH_BASE_URL__;
-			} else {
-				$vs_elasticsearch_base_url = $vo_search_conf->get('search_elasticsearch_base_url');
-			}
-
-			if(defined('__CA_ELASTICSEARCH_INDEX_NAME__') && (strlen(__CA_ELASTICSEARCH_INDEX_NAME__)>0)) {
-				$vs_elasticsearch_index_name = __CA_ELASTICSEARCH_INDEX_NAME__;
-			} else {
-				$vs_elasticsearch_index_name = $vo_search_conf->get('search_elasticsearch_index_name');
-			}
-
-			// delete and create index
-			$vo_http_client = new Zend_Http_Client();
-			$vo_http_client->setUri(
-				$vs_elasticsearch_base_url."/".
-				$vs_elasticsearch_index_name
-			);
-			try {
-				$vo_http_client->request('DELETE');
-				$vo_http_client->request('PUT');
-			} catch (Zend_Http_Client_Adapter_Exception $e){
-				CLIUtils::addError(_t('Couldn\'t connect to ElasticSearch. Is the service running?'));
-				return;
-			}
-
-			$va_tables = $vo_search_indexing_conf->getAssocKeys();
-			$vo_search_base = new SearchBase();
-
-			foreach($va_tables as $vs_table){
-				// get fields to index for this table
-				if (!is_array($va_table_fields = $vo_search_base->getFieldsToIndex($vs_table))) {
-					$va_table_fields = array();
-				}
-
-				$t_instance = $o_datamodel->getTableInstance($vs_table);
-				$vn_table_num = $o_datamodel->getTableNum($vs_table);
-
-				$va_attributes = null;
-				$va_opts = array();
-
-				if (is_array($va_table_fields)) {
-					$va_rewritten_fields = array();
-					foreach($va_table_fields as $vs_field_name => $va_field_options){
-						if (preg_match('!^_ca_attribute_([\d]*)$!', $vs_field_name, $va_matches)) {
-							$va_rewritten_fields['A'.$va_matches[1]] = $va_field_options;
-
-							$qr_type_restrictions = $o_db->query('
-								SELECT DISTINCT came.*
-								FROM ca_metadata_type_restrictions camtr
-								INNER JOIN ca_metadata_elements as came ON came.element_id = camtr.element_id
-								WHERE camtr.table_num = ? AND came.element_code = ?
-							',(int)$vn_table_num, (string)$va_matches[1]);
-
-							while($qr_type_restrictions->nextRow()) {
-								$vn_element_id = $qr_type_restrictions->get('element_id');
-
-								$va_attributes[$vn_element_id] = array(
-									'element_id' => $vn_element_id,
-									'element_code' => $qr_type_restrictions->get('element_code'),
-									'datatype' => $qr_type_restrictions->get('datatype')
-								);
-							}
-						} else {
-							$va_rewritten_fields[$vs_field_name] = $va_field_options;
-						}
-					}
-					$va_table_fields = $va_rewritten_fields;
-				}
-
-				if (is_array($va_attributes)) {
-					foreach($va_attributes as $vn_element_id => $va_element_info) {
-						if (!preg_match("!^_ca_attribute_([\d]+)$!", $va_element_info['element_code'], $va_matches)) { continue; }
-						$vs_element_code = $vs_table.".A".$va_matches[1];
-
-						$va_element_opts = array();
-						switch($va_element_info['datatype']) {
-							case 1: // text
-							case 3:	// list
-							case 5:	// url
-							case 6: // currency
-							case 8: // length
-							case 9: // weight
-							case 13: // LCSH
-							case 14: // geonames
-							case 15: // file
-							case 16: // media
-							case 19: // taxonomy
-							case 20: // information service
-								$va_element_opts['properties']['type'] = 'string';
-								break;
-							case 2:	// daterange
-								$va_element_opts['properties']['type'] = 'date';
-								$va_element_opts['properties']["format"] = 'dateOptionalTime';
-								$va_element_opts['properties']["ignore_malformed"] = false;
-								$va_table_fields[$vs_element_code.'_text'] = array_merge($va_opts, array('properties' => array('type' => 'string')));
-								break;
-							case 4:	// geocode
-								$va_element_opts['properties']['type'] = 'geo_point';
-								$va_table_fields[$vs_element_code.'_text'] = array_merge($va_opts, array('properties' => array('type' => 'string')));
-								break;
-							case 10:	// timecode
-							case 12:	// numeric/float
-								$va_element_opts['properties']['type'] = 'double';
-								break;
-							case 11:	// integer
-								$va_element_opts['properties']['type'] = 'long';
-								break;
-							default:
-								$va_element_opts['properties']['type'] = 'string';
-								break;
-						}
-						$va_table_fields[$vs_element_code] = array_merge($va_opts, $va_element_opts);
-					}
-				}
-
-				if(is_array($va_table_fields)){
-					foreach($va_table_fields as $vs_field_name => $va_field_options){
-						$va_field_options['properties']["store"] = in_array("STORE",$va_field_options) ? 'yes' : 'no';
-
-						if($va_field_options["BOOST"]){
-							$va_field_options['properties']["boost"] = floatval($va_field_options["BOOST"]);
-						}
-
-						if(in_array("DONT_TOKENIZE",$va_field_options)){
-							// TODO: maybe do something?
-						}
-
-						// "intrinsic" fields
-						if (!isset($va_field_options['properties']['type']) && $t_instance->hasField($vs_field_name)) {
-							switch($t_instance->getFieldInfo($vs_field_name, "FIELD_TYPE")){
-								case (FT_TEXT):
-								case (FT_MEDIA):
-								case (FT_FILE):
-								case (FT_PASSWORD):
-								case (FT_VARS):
-									$va_field_options['properties']['type'] = 'string';
-									break;
-								case (FT_NUMBER):
-								case (FT_TIME):
-								case (FT_TIMERANGE):
-								case (FT_TIMECODE):
-									if ($t_instance->getFieldInfo($vs_field_name, "LIST_CODE")) {	// list-based intrinsics get indexed with both item_id and label text
-										$va_field_options['properties']['type'] = 'string';
-									} else {
-										$va_field_options['properties']['type'] = 'double';
-									}
-									break;
-								case (FT_TIMESTAMP):
-								case (FT_DATETIME):
-								case (FT_HISTORIC_DATETIME):
-								case (FT_DATE):
-								case (FT_HISTORIC_DATE):
-								case (FT_DATERANGE):
-								case (FT_HISTORIC_DATERANGE):
-									$va_field_options['properties']['type'] = 'date';
-									break;
-								case (FT_BIT):
-									$va_field_options['properties']['type'] = 'boolean';
-									break;
-								default:
-									$va_field_options['properties']['type'] = "string";
-									break;
-							}
-						}
-
-						if(!$va_field_options['properties']['type']) {
-							$va_field_options['properties']['type'] = "string";
-						}
-
-						$vo_http_client = new Zend_Http_Client();
-						$vo_http_client->setUri(
-							$vs_elasticsearch_base_url."/".
-							$vs_elasticsearch_index_name."/".
-							$vs_table."/". /* ElasticSearch type name (i.e. table name) */
-							"_mapping"
-						);
-
-						$va_mapping = array();
-						$va_mapping[$vs_table]["properties"][$vs_table.".".$vs_field_name] = $va_field_options["properties"];
-
-						$vo_http_client->setRawData(json_encode($va_mapping))->setEncType('text/json')->request('POST');
-
-						try {
-							$vo_http_response = $vo_http_client->request();
-							$va_response = json_decode($vo_http_response->getBody(),true);
-							if(!$va_response["ok"] && !$va_response['acknowledged']){
-								CLIUtils::addError(_t("Something went wrong at %1 with message: %2", "{$vs_table}.{$vs_field_name}", $va_response["error"]));
-								CLIUtils::addError(_t("Mapping sent to ElasticSearch was: %1", json_encode($va_mapping)));
-								return;
-							}
-						} catch (Exception $e){
-							CLIUtils::addError(_t("Something went wrong at %1", "{$vs_table}.{$vs_field_name}"));
-							CLIUtils::addError(_t("Response body was: %1", $vo_http_response->getBody()));
-							return;
-						}
-
-					}
-				}
-
-				/* related tables */
-				$va_related_tables = $vo_search_base->getRelatedIndexingTables($vs_table);
-				foreach($va_related_tables as $vs_related_table){
-					$va_related_table_fields = $vo_search_base->getFieldsToIndex($vs_table, $vs_related_table);
-					foreach($va_related_table_fields as $vs_related_table_field => $va_related_table_field_options){
-						$va_related_table_field_options['properties']["store"] = in_array("STORE",$va_related_table_field_options) ? 'yes' : 'no';
-						$va_related_table_field_options['properties']['type'] = "string";
-
-
-						if(in_array("DONT_TOKENIZE",$va_related_table_field_options)){
-							// TODO: do something?
-						}
-
-						$vo_http_client = new Zend_Http_Client();
-						$vo_http_client->setUri(
-							$vs_elasticsearch_base_url."/".
-							$vs_elasticsearch_index_name."/".
-							$vs_table."/". /* ElasticSearch type name (i.e. table name) */
-							"_mapping"
-						);
-
-						$va_mapping = array();
-						$va_mapping[$vs_table]["properties"][$vs_related_table.'.'.$vs_related_table_field] = $va_related_table_field_options["properties"];
-						$vo_http_client->setRawData(json_encode($va_mapping))->setEncType('text/json')->request('POST');
-
-						try {
-							$vo_http_response = $vo_http_client->request();
-							$va_response = json_decode($vo_http_response->getBody(),true);
-							if(!$va_response["ok"] && !$va_response['acknowledged']){
-								CLIUtils::addError(_t("Something went wrong at %1 with message: %2", "{$vs_table}/{$vs_related_table}.{$vs_related_table_field}", $va_response["error"]));
-								CLIUtils::addError(_t("Mapping sent to ElasticSearch was: %1", json_encode($va_mapping)));
-								return;
-							}
-						} catch (Exception $e){
-							CLIUtils::addError(_t("Something went wrong at %1", "{$vs_table}/{$vs_related_table}.{$vs_related_table_field}"));
-							CLIUtils::addError(_t("Response body was: %1", $vo_http_response->getBody()));
-							return;
-						}
-					}
-				}
-
-				/* created and modified fields */
-				$va_mapping = array();
-				$va_mapping[$vs_table]["properties"]["created"] = array(
-					'type' => 'date',
-					'format' => 'dateOptionalTime',
-					'ignore_malformed' => false,
-				);
-				$va_mapping[$vs_table]["properties"]["modified"] = array(
-					'type' => 'date',
-					'format' => 'dateOptionalTime',
-					'ignore_malformed' => false,
-				);
-				$va_mapping[$vs_table]["properties"]["created_user_id"] = array(
-					'type' => 'double',
-				);
-				$va_mapping[$vs_table]["properties"]["modified_user_id"] = array(
-					'type' => 'double',
-				);
-
-				$vo_http_client = new Zend_Http_Client();
-				$vo_http_client->setUri(
-					$vs_elasticsearch_base_url."/".
-					$vs_elasticsearch_index_name."/".
-					$vs_table."/". /* ElasticSearch type name (i.e. table name) */
-					"_mapping"
-				);
-
-				$vo_http_client->setRawData(json_encode($va_mapping))->setEncType('text/json')->request('POST');
-
-				try {
-					$vo_http_response = $vo_http_client->request();
-					$va_response = json_decode($vo_http_response->getBody(), true);
-					if(!$va_response["ok"] && !$va_response['acknowledged']){
-						CLIUtils::addError(_t("Something went wrong at %1 with message: %2", "{$vs_table}.created/modified", $va_response["error"]));
-						CLIUtils::addError(_t("Mapping sent to ElasticSearch was: %1", json_encode($va_mapping)));
-						return;
-					}
-				} catch (Exception $e){
-					CLIUtils::addError(_t("Something went wrong at %1", "{$vs_table}.created"));
-					CLIUtils::addError(_t("Response body was: %1", $vo_http_response->getBody()));
-					return;
-				}
-			}
-
-			CLIUtils::addMessage(_t('ElasticSearch schema was created successfully!'), array('color' => 'bold_green'));
-			CLIUtils::addMessage(_t("Note that all data has been wiped from the index so you must issue a full reindex now, either using caUtils rebuild-search-index or the web-based tool under Manage > Administration > Maintenance."), array('color' => 'red'));
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public static function generate_elasticSearch_configurationParamList() {
-			return array();
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public static function generate_elasticSearch_configurationUtilityClass() {
-			return _t('Search');
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public static function generate_elasticSearch_configurationShortHelp() {
-			return _t('Configures ElasticSearch installation for use with CollectiveAccess');
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public static function generate_elasticSearch_configurationHelp() {
-			return _t('Configures ElasticSearch installation for use with CollectiveAccess, setting up indices and mappings. You must run this before reindexing your database.');
-		}
-		# -------------------------------------------------------
-		/**
-		 * Generate mappings for Solr based upon currently configured search indexing
-		 */
-		public static function generate_solr_configuration($po_opts=null) {
-				require_once(__CA_LIB_DIR__."/core/Search/Solr/SolrConfiguration.php");
-				SolrConfiguration::updateSolrConfiguration(true);
-
-				// @TODO what if something goes wrong!?
-				CLIUtils::addMessage(_t('Solr schema was created successfully!'), array('color' => 'bold_green'));
-				CLIUtils::addMessage(_t("Note that all data has been wiped from the index so you must issue a full reindex now, either using caUtils rebuild-search-index or the web-based tool under Manage > Administration > Maintenance."), array('color' => 'red'));
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public static function generate_solr_configurationParamList() {
-			return array();
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public static function generate_solr_configurationUtilityClass() {
-			return _t('Search');
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public static function generate_solr_configurationShortHelp() {
-			return _t('Configures Solr installation for use with CollectiveAccess');
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public static function generate_solr_configurationHelp() {
-			return _t('Configures Solr installation for use with CollectiveAccess, setting up indices and mappings. You must run this before reindexing your database.');
-		}
-		# -------------------------------------------------------
-		/**
 		 * Reset user password
 		 */
 		public static function reset_password($po_opts=null) {
-			if ($vs_user_name = (string)$po_opts->getOption('user')) {
-				if (!($vs_password = (string)$po_opts->getOption('password'))) {
-					CLIUtils::addError(_t("You must specify a password"));
-					return false;
-				}
-				$t_user = new ca_users();
-				if ((!$t_user->load(array("user_name" => $vs_user_name)))) {
-					CLIUtils::addError(_t("User name %1 does not exist", $vs_user_name));
-					return false;
-				}
-				$t_user->setMode(ACCESS_WRITE);
-				$t_user->set('password', $vs_password);
-				$t_user->update();
-				if ($t_user->numErrors()) {
-					CLIUtils::addError(_t("Password change for user %1 failed: %2", $vs_user_name, join("; ", $t_user->getErrors())));
-					return false;
-				}
-				CLIUtils::addMessage(_t('Changed password for user %1', $vs_user_name), array('color' => 'bold_green'));
-				return true;
+			if (!($vs_user_name = (string)$po_opts->getOption('user')) && !($vs_user_name = (string)$po_opts->getOption('username'))) {
+				$vs_user_name = readline("User: ");
 			}
+			if (!$vs_user_name) {
+				CLIUtils::addError(_t("You must specify a user"));
+				return false;
+			}
+			
+			$t_user = new ca_users();
+			if ((!$t_user->load(array("user_name" => $vs_user_name)))) {
+				CLIUtils::addError(_t("User name %1 does not exist", $vs_user_name));
+				return false;
+			}
+			
+			if (!($vs_password = (string)$po_opts->getOption('password'))) {
+				$vs_password = CLIUtils::_getPassword(_t('Password: '), true);
+				print "\n\n";
+			}
+			if(!$vs_password) {
+				CLIUtils::addError(_t("You must specify a password"));
+				return false;
+			}
+			
+			$t_user->setMode(ACCESS_WRITE);
+			$t_user->set('password', $vs_password);
+			$t_user->update();
+			if ($t_user->numErrors()) {
+				CLIUtils::addError(_t("Password change for user %1 failed: %2", $vs_user_name, join("; ", $t_user->getErrors())));
+				return false;
+			}
+			CLIUtils::addMessage(_t('Changed password for user %1', $vs_user_name), array('color' => 'bold_green'));
+			return true;
+			
 			CLIUtils::addError(_t("You must specify a user"));
 			return false;
+		}
+		# -------------------------------------------------------
+		/**
+		 * Grab password from STDIN without showing input on STDOUT
+		 */
+		public static function _getPassword($ps_prompt, $pb_stars = false) {
+			if ($ps_prompt) fwrite(STDOUT, $ps_prompt);
+			// Get current style
+			$vs_old_style = shell_exec('stty -g');
+
+			if ($pb_stars === false) {
+				shell_exec('stty -echo');
+				$vs_password = rtrim(fgets(STDIN), "\n");
+			} else {
+				shell_exec('stty -icanon -echo min 1 time 0');
+
+				$vs_password = '';
+				while (true) {
+					$vs_char = fgetc(STDIN);
+
+					if ($vs_char === "\n") {
+						break;
+					} else if (ord($vs_char) === 127) {
+						if (strlen($vs_password) > 0) {
+							fwrite(STDOUT, "\x08 \x08");
+							$vs_password = substr($vs_password, 0, -1);
+						}
+					} else {
+						fwrite(STDOUT, "*");
+						$vs_password .= $vs_char;
+					}
+				}
+			}
+
+			// Reset old style
+			shell_exec('stty ' . $vs_old_style);
+
+			// Return the password
+			return $vs_password;
 		}
 		# -------------------------------------------------------
 		/**
@@ -2184,6 +1884,7 @@
 		 */
 		public static function reset_passwordParamList() {
 			return array(
+				"username" => _t("User name to reset password for."),
 				"user|u=s" => _t("User name to reset password for."),
 				"password|p=s" => _t("New password for user")
 			);
@@ -2834,6 +2535,46 @@
 		/**
 		 *
 		 */
+		public static function process_indexing_queue($po_opts=null) {
+			require_once(__CA_MODELS_DIR__.'/ca_search_indexing_queue.php');
+
+			ca_search_indexing_queue::process();
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function process_indexing_queueParamList() {
+			return array(
+
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function process_indexing_queueUtilityClass() {
+			return _t('Search');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function process_indexing_queueShortHelp() {
+			return _t('Process search indexing queue.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function process_indexing_queueHelp() {
+			return _t('Process search indexing queue.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
 		public static function reload_object_current_locations($po_opts=null) {
 			require_once(__CA_LIB_DIR__."/core/Db.php");
 			require_once(__CA_MODELS_DIR__."/ca_objects.php");
@@ -2841,7 +2582,7 @@
 			$o_db = new Db();
 			$t_object = new ca_objects();
 
-			$qr_res = $o_db->query("SELECT * FROM ca_objects");
+			$qr_res = $o_db->query("SELECT object_id FROM ca_objects ORDER BY object_id");
 
 			print CLIProgressBar::start($qr_res->numRows(), _t('Starting...'));
 
@@ -3192,6 +2933,93 @@
 		 */
 		public static function reload_ulan_recordsHelp() {
 			return _t('Reload records imported from ULAN with the specified mapping. This utility assumes that the mapping is set up with an existingRecordPolicy that ensures that existing records are matched properly. It will create duplicates if it does not match existing records so be sure to test your mapping first!');
+		}
+		# -------------------------------------------------------
+		public static function reload_object_current_location_dates($po_opts=null) {
+			require_once(__CA_MODELS_DIR__."/ca_movements.php");
+			require_once(__CA_MODELS_DIR__."/ca_movements_x_objects.php");
+			require_once(__CA_MODELS_DIR__."/ca_movements_x_storage_locations.php");
+			
+			$o_config = Configuration::load();
+			$o_db = new Db();
+			
+			// Reload movements-objects
+			if ($vs_movement_storage_element = $o_config->get('movement_storage_location_date_element')) {
+				$qr_movements = ca_movements::find(['deleted' => 0], ['returnAs' => 'searchResult']);
+			
+				print CLIProgressBar::start($qr_movements->numHits(), "Reloading movement dates");
+				
+				while($qr_movements->nextHit()) {
+					if ($va_dates = $qr_movements->get("ca_movements.{$vs_movement_storage_element}", ['returnAsArray' => true, 'rawDate' => true])) {
+						$va_date = array_shift($va_dates);
+						
+						// get movement-object relationships
+						if (is_array($va_rel_ids = $qr_movements->get('ca_movements_x_objects.relation_id', ['returnAsArray' => true])) && sizeof($va_rel_ids)) {						
+							$qr_res = $o_db->query(
+								"UPDATE ca_movements_x_objects SET sdatetime = ?, edatetime = ? WHERE relation_id IN (?)", 
+								array($va_date['start'], $va_date['end'], $va_rel_ids)
+							);
+						}
+						// get movement-location relationships
+						if (is_array($va_rel_ids = $qr_movements->get('ca_movements_x_storage_locations.relation_id', ['returnAsArray' => true])) && sizeof($va_rel_ids)) {						
+							$qr_res = $o_db->query(
+								"UPDATE ca_movements_x_storage_locations SET sdatetime = ?, edatetime = ? WHERE relation_id IN (?)", 
+								array($va_date['start'], $va_date['end'], $va_rel_ids)
+							);
+							
+							// check to see if archived storage locations are set in ca_movements_x_storage_locations.source_info
+							// Databases created prior to the October 2015 location tracking changes won't have this
+							$qr_rels = caMakeSearchResult('ca_movements_x_storage_locations', $va_rel_ids);
+							while($qr_rels->nextHit()) {
+								if (!is_array($va_source_info = $qr_rels->get('source_info')) || !isset($va_source_info['path'])) {
+									$vn_rel_id = $qr_rels->get('ca_movements_x_storage_locations.relation_id');
+									$qr_res = $o_db->query(
+										"UPDATE ca_movements_x_storage_locations SET source_info = ? WHERE relation_id = ?", 
+											array(caSerializeForDatabase(array(
+												'path' => $qr_rels->get('ca_storage_locations.hierarchy.preferred_labels.name', array('returnAsArray' => true)),
+												'ids' => $qr_rels->get('ca_storage_locations.hierarchy.location_id',  array('returnAsArray' => true))
+											)), $vn_rel_id)
+									);
+								}
+							}
+						}
+						print CLIProgressBar::next();
+					}
+				}
+				
+				print CLIProgressBar::finish();
+			}
+	
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_location_datesParamList() {
+			return array();
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_location_datesUtilityClass() {
+			return _t('Maintenance');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_location_datesShortHelp() {
+			return _t('Regenerate date/time stamps for movement and object-based location tracking.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function reload_object_current_location_datesHelp() {
+			return _t('Regenerate date/time stamps for movement and object-based location tracking.');
 		}
 		# -------------------------------------------------------
 	}

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -170,7 +170,7 @@
 		'displayDelimiter' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
-			'default' => '; ',
+			'default' => ',',
 			'width' => 10, 'height' => 1,
 			'label' => _t('Value delimiter'),
 			'validForRootOnly' => 1,
@@ -183,10 +183,19 @@
  		private $ops_text_value;
  		private $opn_start_date;
  		private $opn_end_date;
+
+		/**
+		 * @var TimeExpressionParser
+		 */
+ 		static private $o_tep;
+		/**
+		 * @var array
+		 */
+ 		static private $s_date_cache = array();
  		# ------------------------------------------------------------------
  		public function __construct($pa_value_array=null) {
- 			require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
  			parent::__construct($pa_value_array);
+ 			if(!DateRangeAttributeValue::$o_tep) { DateRangeAttributeValue::$o_tep = new TimeExpressionParser(); }
  		}
  		# ------------------------------------------------------------------
  		public function loadTypeSpecificValueFromRow($pa_value_array) {
@@ -204,7 +213,12 @@
 		public function getDisplayValue($pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if (isset($pa_options['rawDate']) && $pa_options['rawDate']) {
-				return array(0 => $this->opn_start_date, 1 => $this->opn_end_date, 'start' => $this->opn_start_date, 'end' =>$this->opn_end_date);
+				return array(
+					0 => $this->opn_start_date,
+					1 => $this->opn_end_date,
+					'start' => $this->opn_start_date,
+					'end' =>$this->opn_end_date
+				);
 			}
 			if (caGetOption('GET_DIRECT_DATE', $pa_options, false) || caGetOption('getDirectDate', $pa_options, false)) {
 				return $this->opn_start_date;
@@ -215,22 +229,30 @@
 				return $this->opn_start_date.'/'.$this->opn_end_date;
 			}
 			
-			$o_config = Configuration::load();
-			$o_date_config = Configuration::load($o_config->get('datetime_config'));
-			
-			if ($o_date_config->get('dateFormat') == 'original') {
-				return $this->ops_text_value;
-			} else {				
-				$t_element = new ca_metadata_elements($this->getElementID());
-				$va_settings = $this->getSettingValuesFromElementArray(
-					$t_element->getFieldValuesArray(), 
-					array('isLifespan')
-				);
-				
-				$o_tep = new TimeExpressionParser();
-				$o_tep->setHistoricTimestamps($this->opn_start_date, $this->opn_end_date);
-				return $o_tep->getText(array_merge(array('isLifespan' => $va_settings['isLifespan']), $pa_options)); //$this->ops_text_value;
- 			}
+			$o_date_config = Configuration::load(__CA_CONF_DIR__.'/datetime.conf');
+
+			$vs_date_format = $o_date_config->get('dateFormat');
+			$vs_cache_key = md5($vs_date_format . $this->opn_start_date . $this->opn_end_date);
+
+			// pull from cache
+			if(isset(DateRangeAttributeValue::$s_date_cache[$vs_cache_key])) {
+				return DateRangeAttributeValue::$s_date_cache[$vs_cache_key];
+			}
+
+			// if neither start nor end date are set, the setHistoricTimestamps() call below will
+			// fail and the TEP will return the text for whatever happened to be parsed previously 
+			// so we have to init() before trying
+			DateRangeAttributeValue::$o_tep->init();
+			if ($vs_date_format == 'original') {
+				return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = $this->ops_text_value;
+			} else {
+				if (!is_array($va_settings = MemoryCache::fetch($this->getElementID(), 'ElementSettings'))) {
+					$t_element = new ca_metadata_elements($this->getElementID());
+					$va_settings = MemoryCache::fetch($this->getElementID(), 'ElementSettings');
+				}
+				DateRangeAttributeValue::$o_tep->setHistoricTimestamps($this->opn_start_date, $this->opn_end_date);
+				return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = DateRangeAttributeValue::$o_tep->getText(array_merge(array('isLifespan' => $va_settings['isLifespan']), $pa_options)); //$this->ops_text_value;
+			}
 		}
  		# ------------------------------------------------------------------
 		public function getHistoricTimestamps() {
@@ -238,8 +260,7 @@
 		}
  		# ------------------------------------------------------------------
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
-            $o_conf = Configuration::load();
-            $o_date_config = Configuration::load($o_conf->get('datetime_config'));
+ 			$o_date_config = Configuration::load(__CA_CONF_DIR__.'/datetime.conf');
             $show_Undated = $o_date_config->get('showUndated');
  
  			$ps_value = trim($ps_value);
@@ -248,17 +269,16 @@
  				array('dateRangeBoundaries', 'mustNotBeBlank')
  			);
  			
- 			$o_tep = new TimeExpressionParser();
 			if ($ps_value) {
-				if (!$o_tep->parse($ps_value)) { 
+				if (!DateRangeAttributeValue::$o_tep->parse($ps_value)) { 
 					// invalid date
 					$this->postError(1970, _t('%1 is invalid', $pa_element_info['displayLabel']), 'DateRangeAttributeValue->parseValue()');
 					return false;
 				}
-				$va_dates = $o_tep->getHistoricTimestamps();
+				$va_dates = DateRangeAttributeValue::$o_tep->getHistoricTimestamps();
 				if ($va_settings['dateRangeBoundaries']) {
-					if ($o_tep->parse($va_settings['dateRangeBoundaries'])) { 
-						$va_boundary_dates = $o_tep->getHistoricTimestamps();
+					if (DateRangeAttributeValue::$o_tep->parse($va_settings['dateRangeBoundaries'])) { 
+						$va_boundary_dates = DateRangeAttributeValue::$o_tep->getHistoricTimestamps();
 						if (
 							($va_dates[0] < $va_boundary_dates[0]) ||
 							($va_dates[0] > $va_boundary_dates[1]) ||
@@ -276,14 +296,12 @@
 					$this->postError(1970, _t('%1 must not be empty', $pa_element_info['displayLabel']), 'DateRangeAttributeValue->parseValue()');
 					return false;
 				} else {
-					
-					$o_config = Configuration::load();
-					$o_date_config = Configuration::load($o_config->get('datetime_config'));
+					$o_date_config = Configuration::load(__CA_CONF_DIR__.'/datetime.conf');
 			
 					// Default to "undated" date for blanks
 					$vs_undated_date = '';
 					if ((bool)$o_date_config->get('showUndated')) {
-						$o_lang_config = $o_tep->getLanguageSettings();
+						$o_lang_config = DateRangeAttributeValue::$o_tep->getLanguageSettings();
 						$vs_undated_date = array_shift($o_lang_config->getList('undatedDate'));
 					}
 					
@@ -362,7 +380,7 @@
 
  				$vs_element .= "<script type='text/javascript'>
  					jQuery(document).ready(function() {
- 						jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').datepicker({constrainInput: false});
+ 						jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').daterangepicker({dateFormat: 'yy-mm-dd',datepickerOptions: { minDate: null, maxDate: null}});
  					});
  				</script>\n";
 

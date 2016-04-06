@@ -847,7 +847,7 @@
           <description>An account of the resource. Description may include but is not limited to: an abstract, a table of contents, a graphical representation, or a free-text account of the resource.</description>
         </label>
       </labels>
-      <documentationUrl>http://dublincore.org/documents/dcmi-terms/#terms-description</documentationUrl>      
+      <documentationUrl>http://dublincore.org/documents/dcmi-terms/#terms-description</documentationUrl>
       <settings>
         <setting name="usewysiwygeditor">1</setting>
         <setting name="fieldWidth">640px</setting>
@@ -1022,7 +1022,7 @@
           <description>A point or period of time associated with an event in the life cycle of the resource.</description>
         </label>
       </labels>
-      <documentationUrl>http://dublincore.org/documents/dcmi-terms/#terms-date</documentationUrl>      
+      <documentationUrl>http://dublincore.org/documents/dcmi-terms/#terms-date</documentationUrl>
       <elements>
         <metadataElement code="dates_value" datatype="DateRange">
           <labels>
@@ -1230,7 +1230,7 @@
           </settings>
         </restriction>
       </typeRestrictions>
-    </metadataElement>    
+    </metadataElement>
     <!--Coverage Elements-->
     <metadataElement code="georeference" datatype="Geocode">
       <labels>
@@ -1272,7 +1272,7 @@
           </settings>
         </restriction>
       </typeRestrictions>
-    </metadataElement>    
+    </metadataElement>
     <metadataElement code="coverageNotes" datatype="Text">
       <labels>
         <label locale="en_US">
@@ -1336,8 +1336,23 @@
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
-        <!-- FOR TESTING PURPOSES -->
-        <restriction code="r3">
+      </typeRestrictions>
+    </metadataElement>
+    <!-- FOR TESTING PURPOSES -->
+    <metadataElement code="acquisition_date" datatype="DateRange">
+      <labels>
+        <label locale="en_US">
+          <name>Acquisition date</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+        <setting name="minChars">0</setting>
+        <setting name="maxChars">65535</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
           <table>ca_object_lots</table>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
@@ -1409,10 +1424,8 @@
       </labels>
       <documentationUrl>http://dublincore.org/documents/dcmi-terms/#terms-format</documentationUrl>
       <settings>
-        <setting name="fieldWidth">80</setting>
-        <setting name="fieldHeight">1</setting>
-        <setting name="minChars">0</setting>
-        <setting name="maxChars">65535</setting>
+        <setting name="hideIfSelected_image_gif">standard_object_ui/format/ca_attribute_formatNotes</setting>
+        <setting name="hideIfSelected_image_gif">standard_object_ui/format/ca_attribute_dimensions</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
@@ -1514,7 +1527,7 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
-    
+
     <metadataElement code="formatNotes" datatype="Text">
       <labels>
         <label locale="en_US">
@@ -1636,7 +1649,7 @@
           <type>image</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">10</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -1645,7 +1658,7 @@
           <type>physical_object</type>
           <settings>
             <setting name="minAttributesPerRow">0</setting>
-            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="maxAttributesPerRow">10</setting>
             <setting name="minimumAttributeBundlesToDisplay">1</setting>
           </settings>
         </restriction>
@@ -1691,7 +1704,7 @@
           </settings>
         </restriction>
       </typeRestrictions>
-    </metadataElement>    
+    </metadataElement>
     <!--Subject Elements-->
     <metadataElement code="lcsh_terms" datatype="LCSH">
       <labels>
@@ -2264,6 +2277,77 @@
         </restriction>
       </typeRestrictions>
     </metadataElement>
+    <metadataElement code="entity_reference" datatype="Entities">
+      <labels>
+        <label locale="en_US">
+          <name>Entities (Reference)</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">90</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+          <restriction code="r2">
+              <table>ca_sets</table>
+              <settings>
+                  <setting name="minAttributesPerRow">0</setting>
+                  <setting name="maxAttributesPerRow">255</setting>
+                  <setting name="minimumAttributeBundlesToDisplay">1</setting>
+              </settings>
+          </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="entity_reference_2" datatype="Entities">
+      <labels>
+        <label locale="en_US">
+          <name>Entities (Reference 2)</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">90</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="collection_reference" datatype="Collections">
+      <labels>
+        <label locale="en_US">
+          <name>Collections (Reference)</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">90</setting>
+        <setting name="doesNotTakeLocale">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
   </elementSets>
   <userInterfaces>
     <userInterface code="standard_object_ui" type="ca_objects">
@@ -2296,6 +2380,15 @@
                 <setting name="label" locale="en_US">Alternate titles</setting>
                 <setting name="add_label" locale="en_US">Add name</setting>
               </settings>
+            </placement>
+            <placement code="ca_attribute_entity_reference">
+              <bundle>ca_attribute_entity_reference</bundle>
+            </placement>
+            <placement code="ca_attribute_entity_reference_2">
+              <bundle>ca_attribute_entity_reference_2</bundle>
+            </placement>
+            <placement code="ca_attribute_collection_reference">
+              <bundle>ca_attribute_collection_reference</bundle>
             </placement>
             <placement code="ca_attribute_tgn">
               <bundle>ca_attribute_tgn</bundle>
@@ -2435,6 +2528,9 @@
             </label>
           </labels>
           <bundlePlacements>
+            <placement code="ca_sets_checklist">
+              <bundle>ca_sets_checklist</bundle>
+            </placement>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
             </placement>
@@ -2790,6 +2886,9 @@
             </label>
           </labels>
           <bundlePlacements>
+            <placement code="ca_objects_table">
+              <bundle>ca_objects_table</bundle>
+            </placement>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
             </placement>

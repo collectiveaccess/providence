@@ -2411,6 +2411,9 @@
             <placement code="ca_attribute_exh_history">
               <bundle>ca_attribute_exh_history</bundle>
             </placement>
+            <placement code="ca_attribute_removed">
+              <bundle>ca_attribute_removed</bundle>
+            </placement>
             <placement code="ca_attribute_received_date">
               <bundle>ca_attribute_received_date</bundle>
             </placement>

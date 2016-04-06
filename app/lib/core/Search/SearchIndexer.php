@@ -40,6 +40,7 @@ require_once(__CA_LIB_DIR__.'/core/Utils/Timer.php');
 require_once(__CA_LIB_DIR__.'/core/Utils/CLIProgressBar.php');
 require_once(__CA_LIB_DIR__.'/core/Zend/Cache.php');
 require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
+require_once(__CA_MODELS_DIR__.'/ca_search_indexing_queue.php');
 
 class SearchIndexer extends SearchBase {
 	# ------------------------------------------------
@@ -47,6 +48,14 @@ class SearchIndexer extends SearchBase {
 	private $opa_dependencies_to_update;
 
 	private $opo_metadata_element = null;
+
+	/**
+	 * @var null|ca_search_indexing_queue
+	 */
+	private $opo_search_indexing_queue = null;
+
+	static $s_search_indexing_queue_inserts = array();
+	static $s_search_unindexing_queue_inserts = array();
 
 	# ------------------------------------------------
 	/**
@@ -61,6 +70,30 @@ class SearchIndexer extends SearchBase {
 		parent::__construct($opo_db, $ps_engine);
 
 		$this->opo_metadata_element = new ca_metadata_elements();
+		$this->opo_search_indexing_queue = new ca_search_indexing_queue();
+	}
+	# -------------------------------------------------------
+	public function __destruct() {
+		$o_db = new Db();
+		if(sizeof(self::$s_search_indexing_queue_inserts) > 0) {
+			$va_insert_segments = array();
+			foreach (self::$s_search_indexing_queue_inserts as $va_insert_data) {
+				$va_insert_segments[] = "('" . join("','", $va_insert_data) . "')";
+			}
+			self::$s_search_indexing_queue_inserts = array(); // nuke cache
+
+			$o_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, field_data, reindex, changed_fields, options) VALUES " . join(',', $va_insert_segments));
+		}
+
+		if(sizeof(self::$s_search_unindexing_queue_inserts) > 0) {
+			$va_insert_segments = array();
+			foreach (self::$s_search_unindexing_queue_inserts as $va_insert_data) {
+				$va_insert_segments[] = "('" . join("','", $va_insert_data) . "')";
+			}
+			self::$s_search_unindexing_queue_inserts = array(); // nuke cache
+
+			$o_db->query("INSERT INTO ca_search_indexing_queue (table_num, row_id, is_unindex, dependencies) VALUES " . join(',',$va_insert_segments));
+		}
 	}
 	# -------------------------------------------------------
 	/**
@@ -152,6 +185,7 @@ class SearchIndexer extends SearchBase {
 			if (!sizeof($va_table_names)) { return false; }
 		} else {
 			// full reindex
+			ca_search_indexing_queue::flush();
 			$this->opo_engine->truncateIndex();
 			$va_table_names = $this->getIndexedTables();
 		}
@@ -172,9 +206,7 @@ class SearchIndexer extends SearchBase {
 
 		foreach($va_table_names as $vn_table_num => $va_table_info) {
 			$vs_table = $va_table_info['name'];
-			$t_table_timer = new Timer();
 			$t_instance = $this->opo_datamodel->getInstanceByTableName($vs_table, true);
-			$vs_table_pk = $t_instance->primaryKey();
 
 			$vn_table_num = $t_instance->tableNum();
 
@@ -221,9 +253,11 @@ class SearchIndexer extends SearchBase {
 					while($qr_field_data->nextRow()) {
 						$va_field_data[(int)$qr_field_data->get($vs_table_pk)] = $qr_field_data->getRow();
 					}
+
+					SearchResult::clearCaches();
 				}
 
-				$this->indexRow($vn_table_num, $vn_id, $va_field_data[$vn_id], true, null, array(), array());
+				$this->indexRow($vn_table_num, $vn_id, $va_field_data[$vn_id], true);
 				if ($pb_display_progress && $pb_interactive_display) {
 					CLIProgressBar::setMessage("Memory: ".caGetMemoryUsage());
 					print CLIProgressBar::next();
@@ -257,7 +291,7 @@ class SearchIndexer extends SearchBase {
 
 		if ($pb_display_progress) {
 			print "\n\n\nDone! [Indexing for ".join(", ", $va_names)." took ".caFormatInterval((float)$t_timer->getTime(4))."]\n";
-			print "Note that if you're using an external search service like Apache Solr, the data may only now be sent to the actual service because it was buffered until now. So you still might have to wait a while for the script to finish.\n";
+			print "Note that if you're using an external search service like ElasticSearch, the data may only now be sent to the actual service because it was buffered until now. So you still might have to wait a while for the script to finish.\n";
 		}
 		if ($ps_callback) {
 			$ps_callback(
@@ -317,7 +351,7 @@ class SearchIndexer extends SearchBase {
 				}
 			}
 
-			$this->indexRow($vn_table_num, $vn_id, $va_field_data[$vn_id], false, null, array($vs_table_pk => true), array(), $pa_options);
+			$this->indexRow($vn_table_num, $vn_id, $va_field_data[$vn_id], false, null, array($vs_table_pk => true), $pa_options);
 
 		}
 		return true;
@@ -409,6 +443,58 @@ class SearchIndexer extends SearchBase {
 		return null;
 	}
 	# ------------------------------------------------
+	private function queueIndexRow($pa_row_values) {
+		foreach($pa_row_values as $vs_fld => &$vm_val) {
+			if(!$this->opo_search_indexing_queue->hasField($vs_fld)) {
+				return false;
+			}
+
+			if(is_null($vm_val)) {
+				$vm_val = array();
+			}
+
+			if(is_array($vm_val)) {
+				$vm_val = caSerializeForDatabase($vm_val);
+			}
+		}
+
+		self::$s_search_indexing_queue_inserts[] = array(
+			'table_num' => $pa_row_values['table_num'],
+			'row_id' => $pa_row_values['row_id'],
+			'field_data' => $pa_row_values['field_data'],
+			'reindex' => $pa_row_values['reindex'] ? 1 : 0,
+			'changed_fields' => $pa_row_values['changed_fields'],
+			'options' => $pa_row_values['options'],
+		);
+
+		return true;
+	}
+	# ------------------------------------------------
+	private function queueUnIndexRow($pa_row_values) {
+		foreach($pa_row_values as $vs_fld => &$vm_val) {
+			if(!$this->opo_search_indexing_queue->hasField($vs_fld)) {
+				return false;
+			}
+
+			if(is_null($vm_val)) {
+				$vm_val = array();
+			}
+
+			if(is_array($vm_val)) {
+				$vm_val = caSerializeForDatabase($vm_val);
+			}
+		}
+
+		self::$s_search_unindexing_queue_inserts[] = array(
+			'table_num' => $pa_row_values['table_num'],
+			'row_id' => $pa_row_values['row_id'],
+			'is_unindex' => 1,
+			'dependencies' => $pa_row_values['dependencies'],
+		);
+
+		return true;
+	}
+	# ------------------------------------------------
 	/**
 	 * Indexes single row in a table; this is the public call when one needs to index content.
 	 * indexRow() will analyze the dependencies of the row being indexed and automatically
@@ -425,9 +511,21 @@ class SearchIndexer extends SearchBase {
 	 * or it may be a dependent row. The "content" tablenum/fieldnum/row_id parameters define the specific row and field being indexed.
 	 * This is always the actual row being indexed. $pm_content is the content to be indexed and $pa_options is an optional associative
 	 * array of indexing options passed through from the search_indices.conf (no options are defined yet - but will be soon)
-
+	 *
+	 * @param int $pn_subject_tablenum subject table number
+	 * @param int $pn_subject_row_id subject record, identified by primary key
+	 * @param array $pa_field_data array of field name => value mappings containing the data to index
+	 * @param bool $pb_reindex_mode are we in full reindex mode?
+	 * @param null|array $pa_exclusion_list list of records to exclude from indexing
+	 * 		(to prevent endless recursive reindexing). Should always be null when called externally.
+	 * @param null|array $pa_changed_fields list of fields that have changed (and must be indexed)
+	 * @param null|array $pa_options
+	 * 		queueIndexing -
+	 * 		isNewRow -
+	 * @throws Exception
+	 * @return bool
 	 */
-	public function indexRow($pn_subject_tablenum, $pn_subject_row_id, $pa_field_data, $pb_reindex_mode=false, $pa_exclusion_list=null, $pa_changed_fields=null, $pa_old_values=null, $pa_options=null) {
+	public function indexRow($pn_subject_tablenum, $pn_subject_row_id, $pa_field_data, $pb_reindex_mode=false, $pa_exclusion_list=null, $pa_changed_fields=null, $pa_options=null) {
 		$vb_initial_reindex_mode = $pb_reindex_mode;
 		if (!$pb_reindex_mode && is_array($pa_changed_fields) && !sizeof($pa_changed_fields)) { return; }	// don't bother indexing if there are no changed fields
 
@@ -437,6 +535,18 @@ class SearchIndexer extends SearchBase {
 
 		// Prevent endless recursive reindexing
 		if (is_array($pa_exclusion_list[$pn_subject_tablenum]) && (isset($pa_exclusion_list[$pn_subject_tablenum][$pn_subject_row_id]))) { return; }
+
+		if(caGetOption('queueIndexing', $pa_options, false) && !$t_subject->getAppConfig()->get('disable_out_of_process_search_indexing')) {
+			$this->queueIndexRow(array(
+				'table_num' => $pn_subject_tablenum,
+				'row_id' => $pn_subject_row_id,
+				'field_data' => $pa_field_data,
+				'reindex' => $pb_reindex_mode ? 1 : 0,
+				'changed_fields' => $pa_changed_fields,
+				'options' => $pa_options
+			));
+			return;
+		}
 
 		$pb_is_new_row = (int)caGetOption('isNewRow', $pa_options, false);
 		$vb_reindex_children = false;
@@ -466,7 +576,7 @@ class SearchIndexer extends SearchBase {
 					if ($va_data['DONT_INDEX']) {	// remove attribute from indexing list
 						unset($va_fields_to_index['_ca_attribute_'.$va_matches[1]]);
 					} else {
-						if ($vn_element_id = $this->_getElementID($va_matches[1])) {
+						if ($vn_element_id = ca_metadata_elements::getElementID($va_matches[1])) {
 							$va_fields_to_index['_ca_attribute_'.$vn_element_id] = $va_data;
 						}
 					}
@@ -505,7 +615,7 @@ class SearchIndexer extends SearchBase {
 					if($va_data['DONT_INDEX'] && is_array($va_data['DONT_INDEX'])){
 						$vb_cont = false;
 						foreach($va_data["DONT_INDEX"] as $vs_exclude_type){
-							if($this->_getElementID($vs_exclude_type) == intval($va_matches[1])){
+							if(ca_metadata_elements::getElementID($vs_exclude_type) == intval($va_matches[1])){
 								$vb_cont = true;
 								break;
 							}
@@ -513,7 +623,7 @@ class SearchIndexer extends SearchBase {
 						if($vb_cont) continue; // skip excluded attribute type
 					}
 
-					$va_data['datatype'] = (int)$this->_getElementDataType($va_matches[1]);
+					$va_data['datatype'] = (int)ca_metadata_elements::getElementDatatype($va_matches[1]);
 					$this->_indexAttribute($t_subject, $pn_subject_row_id, $va_matches[1], $va_data);
 
 				} else {
@@ -546,7 +656,7 @@ class SearchIndexer extends SearchBase {
 								$o_indexer = new SearchIndexer($this->opo_db);
 								$qr_children_res = $t_subject->makeSearchResult($vs_subject_tablename, $va_children_ids, array('db' => $this->getDb()));
 								while($qr_children_res->nextHit()) {
-									$o_indexer->indexRow($pn_subject_tablenum, $qr_children_res->get($vs_subject_pk), array('parent_id' => $qr_children_res->get('parent_id'), $vs_field => $qr_children_res->get($vs_field)), false, $pa_exclusion_list, array($vs_field => true), null);
+									$o_indexer->indexRow($pn_subject_tablenum, $qr_children_res->get($vs_subject_pk), array('parent_id' => $qr_children_res->get('parent_id'), $vs_field => $qr_children_res->get($vs_field)), false, $pa_exclusion_list, array($vs_field => true));
 								}
 							}
 							continue;
@@ -823,7 +933,7 @@ class SearchIndexer extends SearchBase {
 									if($va_rel_field_info['DONT_INDEX'] && is_array($va_rel_field_info['DONT_INDEX'])){
 										$vb_cont = false;
 										foreach($va_rel_field_info["DONT_INDEX"] as $vs_exclude_type){
-											if($this->_getElementID($vs_exclude_type) == intval($va_matches[1])){
+											if(ca_metadata_elements::getElementID($vs_exclude_type) == intval($va_matches[1])){
 												$vb_cont = true;
 												break;
 											}
@@ -833,7 +943,7 @@ class SearchIndexer extends SearchBase {
 
 									$vb_is_attr = true;
 
-									$va_rel_field_info['datatype'] = (int)$this->_getElementDataType($va_matches[1]);
+									$va_rel_field_info['datatype'] = (int)ca_metadata_elements::getElementDatatype($va_matches[1]);
 
 									$this->_indexAttribute($t_rel, $vn_row_id, $va_matches[1], array_merge($va_rel_field_info, array('relationship_type_id' => $vn_rel_type_id)));
 								}
@@ -937,7 +1047,7 @@ class SearchIndexer extends SearchBase {
 					$va_changed_field_nums[$vs_f] = 'I'.$t_subject->fieldNum($vs_f);
 				} else {
 					if (preg_match('!^_ca_attribute_([\d]+)$!', $vs_f, $va_matches)) {
-						$va_changed_field_nums[$vs_f] = 'A'.$this->_getElementListCode($va_matches[1]);
+						$va_changed_field_nums[$vs_f] = 'A'.ca_metadata_elements::getElementID($va_matches[1]);
 					}
 				}
 			}
@@ -990,7 +1100,7 @@ class SearchIndexer extends SearchBase {
 					$t_rel->setDb($this->getDb());
 
 					if (substr($va_row_to_reindex['field_name'], 0, 14) == '_ca_attribute_') {		// is attribute
-						$va_row_to_reindex['indexing_info']['datatype'] = $this->_getElementDataType(substr($va_row_to_reindex['field_name'], 14));
+						$va_row_to_reindex['indexing_info']['datatype'] = ca_metadata_elements::getElementDatatype(substr($va_row_to_reindex['field_name'], 14));
 					}
 
 					if (((isset($va_row_to_reindex['indexing_info']['INDEX_ANCESTORS']) && $va_row_to_reindex['indexing_info']['INDEX_ANCESTORS']) || in_array('INDEX_ANCESTORS', $va_row_to_reindex['indexing_info']))) {
@@ -1021,7 +1131,7 @@ class SearchIndexer extends SearchBase {
 										if (sizeof($va_attributes)) {
 											foreach($va_attributes as $vo_attribute) {
 												foreach($vo_attribute->getValues() as $vo_value) {
-													$vn_list_id = $this->_getElementListID($vo_value->getElementID());
+													$vn_list_id = ca_metadata_elements::getElementListID($vo_value->getElementID());
 													$vs_value_to_index = $vo_value->getDisplayValue($vn_list_id);
 
 													$va_additional_indexing = $vo_value->getDataForSearchIndexing();
@@ -1157,7 +1267,7 @@ class SearchIndexer extends SearchBase {
 				$o_indexer = new SearchIndexer($this->opo_db);
 				$qr_children_res = $t_subject->makeSearchResult($vs_subject_tablename, $va_children_ids, array('db' => $this->getDb()));
 				while($qr_children_res->nextHit()) {
-					$o_indexer->indexRow($pn_subject_tablenum, $vn_id=$qr_children_res->get($vs_subject_pk), array($vs_subject_pk => $vn_id, 'parent_id' => $qr_children_res->get('parent_id')), true, $pa_exclusion_list, array(), null);
+					$o_indexer->indexRow($pn_subject_tablenum, $vn_id=$qr_children_res->get($vs_subject_pk), array($vs_subject_pk => $vn_id, 'parent_id' => $qr_children_res->get('parent_id')), true, $pa_exclusion_list, array());
 				}
 			}
 		}
@@ -1176,7 +1286,7 @@ class SearchIndexer extends SearchBase {
 		$va_attributes = $pt_subject->getAttributesByElement($pm_element_code_or_id, array('row_id' => $pn_row_id));
 		$pn_subject_tablenum = $pt_subject->tableNum();
 
-		$vn_datatype = isset($pa_data['datatype']) ? $pa_data['datatype'] : $this->_getElementDataType($pm_element_code_or_id);
+		$vn_datatype = isset($pa_data['datatype']) ? $pa_data['datatype'] : ca_metadata_elements::getElementDatatype($pm_element_code_or_id);
 
 		switch($vn_datatype) {
 			case __CA_ATTRIBUTE_VALUE_CONTAINER__: 		// container
@@ -1184,12 +1294,12 @@ class SearchIndexer extends SearchBase {
 				if (sizeof($va_attributes)) {
 					foreach($va_attributes as $vo_attribute) {
 						/* index each element of the container */
-						$vn_element_id = is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : $this->_getElementID($pm_element_code_or_id);
+						$vn_element_id = is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : ca_metadata_elements::getElementID($pm_element_code_or_id);
 						$va_sub_element_ids = $this->opo_metadata_element->getElementsInSet($vn_element_id, true, array('idsOnly' => true));
 						if (is_array($va_sub_element_ids) && sizeof($va_sub_element_ids)) {
 							$va_sub_element_ids = array_flip($va_sub_element_ids);
 							foreach($vo_attribute->getValues() as $vo_value) {
-								$vn_list_id = $this->_getElementListID($vo_value->getElementID());
+								$vn_list_id = ca_metadata_elements::getElementListID($vo_value->getElementID());
 								$vs_value_to_index = $vo_value->getDisplayValue($vn_list_id);
 
 								$va_additional_indexing = $vo_value->getDataForSearchIndexing();
@@ -1234,7 +1344,7 @@ class SearchIndexer extends SearchBase {
 				// sub-elements *are* indexed however, so advanced search forms passing ids instead of text will work.
 				$va_tmp = array();
 
-				$vn_element_id = is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : $this->_getElementID($pm_element_code_or_id);
+				$vn_element_id = is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : ca_metadata_elements::getElementID($pm_element_code_or_id);
 				$va_attributes = $pt_subject->getAttributesByElement($vn_element_id, array('row_id' => $pn_row_id));
 
 				if (is_array($va_attributes) && sizeof($va_attributes)) {
@@ -1288,7 +1398,7 @@ class SearchIndexer extends SearchBase {
 
 				break;
 			default:
-				$vn_element_id = is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : $this->_getElementID($pm_element_code_or_id);
+				$vn_element_id = is_numeric($pm_element_code_or_id) ? $pm_element_code_or_id : ca_metadata_elements::getElementID($pm_element_code_or_id);
 
 				$va_attributes = $pt_subject->getAttributesByElement($pm_element_code_or_id, array('row_id' => $pn_row_id));
 				if (!is_array($va_attributes)) { $va_attributes = array(); }
@@ -1318,7 +1428,7 @@ class SearchIndexer extends SearchBase {
 				// reindex children?
 				if((caGetOption('INDEX_ANCESTORS', $pa_data, false) !== false) || (in_array('INDEX_ANCESTORS', $pa_data))) {
 					if ($pt_subject && $pt_subject->isHierarchical()) {
-						if ($va_hier_values = $this->_genHierarchicalPath($pn_row_id, $vs_element_code = $this->_getElementCode($vn_element_id), $pt_subject, $pa_data)) {
+						if ($va_hier_values = $this->_genHierarchicalPath($pn_row_id, $vs_element_code = ca_metadata_elements::getElementCodeForId($vn_element_id), $pt_subject, $pa_data)) {
 							$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, join(" ", $va_hier_values['values']), $pa_data);
 							if(caGetOption('INDEX_ANCESTORS_AS_PATH_WITH_DELIMITER', $pa_data, false) !== false) {
 								$this->opo_engine->indexField($pn_subject_tablenum, 'A'.$vn_element_id, $pn_row_id, $va_hier_values['path'], array_merge($pa_data, array('DONT_TOKENIZE' => 1)));
@@ -1363,12 +1473,7 @@ class SearchIndexer extends SearchBase {
 	 * this for you during delete().)
 	 */
 	public function startRowUnIndexing($pn_subject_tablenum, $pn_subject_row_id) {
-		$vb_can_do_incremental_indexing = $this->opo_engine->can('incremental_reindexing') ? true : false;		// can the engine do incremental indexing? Or do we need to reindex the entire row every time?
-
-		$vs_subject_tablename 		= $this->opo_datamodel->getTableName($pn_subject_tablenum);
-		$t_subject 					= $this->opo_datamodel->getInstanceByTableName($vs_subject_tablename, true);
-		$vs_subject_pk 				= $t_subject->primaryKey();
-
+		$vs_subject_tablename = $this->opo_datamodel->getTableName($pn_subject_tablenum);
 		$va_deps = $this->getDependencies($vs_subject_tablename);
 
 		$va_indexed_tables = $this->getIndexedTables();
@@ -1383,8 +1488,28 @@ class SearchIndexer extends SearchBase {
 		return true;
 	}
 	# ------------------------------------------------
-	public function commitRowUnIndexing($pn_subject_tablenum, $pn_subject_row_id) {
+	public function commitRowUnIndexing($pn_subject_tablenum, $pn_subject_row_id, $pa_options = null) {
 		$vb_can_do_incremental_indexing = $this->opo_engine->can('incremental_reindexing') ? true : false;		// can the engine do incremental indexing? Or do we need to reindex the entire row every time?
+
+		if(caGetOption('queueIndexing', $pa_options, false) && !$this->opo_app_config->get('disable_out_of_process_search_indexing')) {
+			$this->queueUnIndexRow(array(
+				'table_num' => $pn_subject_tablenum,
+				'row_id' => $pn_subject_row_id,
+				'dependencies' => $this->opa_dependencies_to_update
+			));
+			return;
+		}
+
+		if($va_deps = caGetOption('dependencies', $pa_options, null)) {
+			$this->opa_dependencies_to_update = $va_deps;
+		}
+
+		// if dependencies have not been set at this point -- either by startRowUnindexing
+		// (which may have been skipped) or by passing the dependencies option -- then get them now
+		if(!$this->opa_dependencies_to_update) {
+			$va_deps = $this->getDependencies($this->opo_datamodel->getTableName($pn_subject_tablenum));
+			$this->opa_dependencies_to_update = $this->_getDependentRowsForSubject($pn_subject_tablenum, $pn_subject_row_id, $va_deps);
+		}
 
 		// delete index from subject
 		$this->opo_engine->removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id);
@@ -1419,7 +1544,7 @@ class SearchIndexer extends SearchBase {
 				// delete from index where other subjects reference it 
 
 				foreach($this->opa_dependencies_to_update as $va_item) {
-					$this->opo_engine->removeRowIndexing($va_item['table_num'], $va_item['row_id'], $va_item['field_table_num'], null, $va_item['field_row_id']);
+					$this->opo_engine->removeRowIndexing($va_item['table_num'], $va_item['row_id'], $va_item['field_table_num'], $va_item['field_nums'], $va_item['field_row_id']);
 				}
 			}
 		}
@@ -1467,6 +1592,7 @@ class SearchIndexer extends SearchBase {
 		foreach($va_deps as $vs_dep_table) {
 
 			$t_dep 				= $this->opo_datamodel->getInstanceByTableName($vs_dep_table, true);
+			if (!$t_dep) { continue; }
 			$vs_dep_pk 			= $t_dep->primaryKey();
 			$vn_dep_tablenum 	= $t_dep->tableNum();
 
@@ -1953,68 +2079,6 @@ class SearchIndexer extends SearchBase {
 			$va_deps[] = $t_subject->getLeftTableName();
 		}
 		return $va_deps;
-	}
-	# ------------------------------------------------
-	/**
-	 * Returns element_id of ca_metadata_element with specified element_code or NULL if the element doesn't exist
-	 * Because of dependency and performance issues we do a straight query here rather than go through the ca_metadata_elements model
-	 */
-	private function _getElementID($ps_element_code) {
-		if(MemoryCache::contains($ps_element_code, 'SearchIndexerElementIds')) {
-			return MemoryCache::fetch($ps_element_code, 'SearchIndexerElementIds');
-		}
-
-		if (is_numeric($ps_element_code)) {
-			$qr_res = $this->opo_db->query("
-				SELECT element_id, datatype, list_id FROM ca_metadata_elements WHERE element_id = ?
-			", intval($ps_element_code));
-		} else {
-			$qr_res = $this->opo_db->query("
-				SELECT element_id, datatype, list_id FROM ca_metadata_elements WHERE element_code = ?
-			", $ps_element_code);
-		}
-		if (!$qr_res->nextRow()) { return null; }
-		$vn_element_id =  $qr_res->get('element_id');
-		MemoryCache::save($ps_element_code, $qr_res->get('datatype'), 'SearchIndexerElementDataTypes');
-		MemoryCache::save($vn_element_id, $qr_res->get('datatype'), 'SearchIndexerElementDataTypes');
-		MemoryCache::save($ps_element_code, $qr_res->get('list_id'), 'SearchIndexerElementListIds');
-		MemoryCache::save($vn_element_id, $qr_res->get('list_id'), 'SearchIndexerElementListIds');
-
-		MemoryCache::save($vn_element_id, $ps_element_code, 'SearchIndexerElementIds');
-		MemoryCache::save($ps_element_code, $vn_element_id, 'SearchIndexerElementIds');
-		return $vn_element_id;
-	}
-	# ------------------------------------------------
-	/**
-	 * Returns element code of ca_metadata_element with specified element_id or NULL if the element doesn't exist
-	 */
-	private function _getElementCode($pn_element_id) {
-		$this->_getElementID($pn_element_id);	// ensures MemoryCache is populated
-		return MemoryCache::fetch($pn_element_id, 'SearchIndexerElementIds');
-	}
-	# ------------------------------------------------
-	/**
-	 * Returns datatype code of ca_metadata_element with specified element_code or NULL if the element doesn't exist
-	 */
-	private function _getElementDataType($ps_element_code) {
-		$vn_element_id = $this->_getElementID($ps_element_code);	// ensures MemoryCache is populated
-		return MemoryCache::fetch($vn_element_id, 'SearchIndexerElementDataTypes');
-	}
-	# ------------------------------------------------
-	/**
-	 * Returns list_id of ca_metadata_element with specified element_code or NULL if the element doesn't exist
-	 */
-	private function _getElementListID($ps_element_code) {
-		$vn_element_id = $this->_getElementID($ps_element_code);	// ensures MemoryCache is populated
-		return MemoryCache::fetch($vn_element_id, 'SearchIndexerElementListIds');
-	}
-	# ------------------------------------------------
-	/**
-	 * Returns element_code of ca_metadata_element with specified element_id or NULL if the element doesn't exist
-	 */
-	private function _getElementListCode($pn_element_id) {
-		$vn_element_id = $this->_getElementID($pn_element_id);	// ensures MemoryCache is populated
-		return MemoryCache::fetch($vn_element_id, 'SearchIndexerElementIds');
 	}
 	# ------------------------------------------------
 }

@@ -35,7 +35,6 @@
    */
 
  	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
-	require_once(__CA_LIB_DIR__."/core/Parsers/MediaMetadata/XMPParser.php");
 
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -49,30 +48,6 @@
 		if (!($o_ext_app_config = Configuration::load($o_config->get('external_applications')))) { return null; }
 
 		return $o_ext_app_config->get($ps_application_name.'_app');
-	}
-	# ------------------------------------------------------------------------------------------------
-	/**
-	 * Detects if CoreImageTool executable is available at specified path
-	 *
-	 * @param string $ps_path_to_coreimage - full path to CoreImageTool including executable name
-	 * @return boolean - true if available, false if not
-	 */
-	function caMediaPluginCoreImageInstalled($ps_path_to_coreimage=null) {
-		if(!$ps_path_to_coreimage) { $ps_path_to_coreimage = caGetExternalApplicationPath('coreimagetool'); }
-
-		global $_MEDIAHELPER_PLUGIN_CACHE_COREIMAGE;
-		if (isset($_MEDIAHELPER_PLUGIN_CACHE_COREIMAGE[$ps_path_to_coreimage])) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_COREIMAGE[$ps_path_to_coreimage];
-		} else {
-			$_MEDIAHELPER_PLUGIN_CACHE_COREIMAGE = array();
-		}
-		if (!caIsValidFilePath($ps_path_to_coreimage)) { return false; }
-
-		exec($ps_path_to_coreimage.' 2> /dev/null', $va_output, $vn_return);
-		if (($vn_return >= 0) && ($vn_return < 127)) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_COREIMAGE[$ps_path_to_coreimage] = true;
-		}
-		return $_MEDIAHELPER_PLUGIN_CACHE_COREIMAGE[$ps_path_to_coreimage] = false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -157,7 +132,7 @@
 	 * @param $ps_path_to_ffmpeg - full path to ffmpeg including executable name
 	 * @return boolean - true if available, false if not
 	 */
-	function caMediaPluginFFfmpegInstalled($ps_path_to_ffmpeg=null) {
+	function caMediaPluginFFmpegInstalled($ps_path_to_ffmpeg=null) {
 		if(!$ps_path_to_ffmpeg) { $ps_path_to_ffmpeg = caGetExternalApplicationPath('ffmpeg'); }
 
 		global $_MEDIAHELPER_PLUGIN_CACHE_FFMPEG;
@@ -214,23 +189,6 @@
 
 		if (!caIsValidFilePath($ps_path_to_pdf_to_text)) { return false; }
 		exec($ps_path_to_pdf_to_text." -v 2> /dev/null", $va_output, $vn_return);
-		if (($vn_return >= 0) && ($vn_return < 127)) {
-			return true;
-		}
-		return false;
-	}
-	# ------------------------------------------------------------------------------------------------
-	/**
-	 * Detects if AbiWord executable is available at specified path
-	 *
-	 * @param $ps_path_to_abiword - full path to AbiWord including executable name
-	 * @return boolean - true if available, false if not
-	 */
-	function caMediaPluginAbiwordInstalled($ps_path_to_abiword=null) {
-		if(!$ps_path_to_abiword) { $ps_path_to_abiword = caGetExternalApplicationPath('abiword'); }
-
-		if (!caIsValidFilePath($ps_path_to_abiword)) { return false; }
-		exec($ps_path_to_abiword." --version 2> /dev/null", $va_output, $vn_return);
 		if (($vn_return >= 0) && ($vn_return < 127)) {
 			return true;
 		}
@@ -315,6 +273,54 @@
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * Detects if OpenCTM (http://openctm.sourceforge.net) is installed in the given path.
+	 * @param string $ps_openctm_path path to OpenCTM ctmconv binary
+	 * @return bool
+	 */
+	function caOpenCTMInstalled($ps_openctm_ctmconv_path=null) {
+		if(!$ps_openctm_ctmconv_path) { $ps_openctm_ctmconv_path = caGetExternalApplicationPath('openctm'); }
+
+		global $_MEDIAHELPER_PLUGIN_CACHE_OPENCTM;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_OPENCTM[$ps_openctm_ctmconv_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_OPENCTM[$ps_openctm_ctmconv_path];
+		} else {
+			$_MEDIAHELPER_PLUGIN_CACHE_OPENCTM = array();
+		}
+		if (!caIsValidFilePath($ps_openctm_ctmconv_path)) { return false; }
+		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
+		exec($ps_openctm_ctmconv_path." --help > /dev/null",$va_output,$vn_return);
+		if($vn_return == 0) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_OPENCTM[$ps_openctm_ctmconv_path] = true;
+		}
+		return $_MEDIAHELPER_PLUGIN_CACHE_OPENCTM[$ps_openctm_ctmconv_path] = false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Detects if Meshlab (http://meshlab.sourceforge.net), and specifically the meshlabserver command line tool, is installed in the given path.
+	 * @param string $ps_meshlabserver_path path to the meshlabserver binary
+	 * @return bool
+	 */
+	function caMeshlabServerInstalled($ps_meshlabserver_path=null) {
+		if(!$ps_meshlabserver_path) { $ps_meshlabserver_path = caGetExternalApplicationPath('meshlabserver'); }
+
+		global $_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER[$ps_meshlabserver_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER[$ps_meshlabserver_path];
+		} else {
+			$_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER = array();
+		}
+		if (!caIsValidFilePath($ps_meshlabserver_path)) { return false; }
+		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
+		putenv("DISPLAY=:0");
+		chdir('/usr/local/bin');
+		exec($ps_meshlabserver_path." --help > /dev/null",$va_output,$vn_return);
+		if($vn_return == 1) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER[$ps_meshlabserver_path] = true;
+		}
+		return $_MEDIAHELPER_PLUGIN_CACHE_MESHLABSERVER[$ps_meshlabserver_path] = false;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Detects if PDFMiner (http://www.unixuser.org/~euske/python/pdfminer/index.html) is installed in the given path.
 	 * @param string $ps_pdfminer_path path to PDFMiner
 	 * @return boolean
@@ -322,21 +328,21 @@
 	function caPDFMinerInstalled($ps_pdfminer_path=null) {
 		if(!$ps_pdfminer_path) { $ps_pdfminer_path = caGetExternalApplicationPath('pdfminer'); }
 
-		global $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO;
-		if (isset($_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path])) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path];
+		global $_MEDIAHELPER_PLUGIN_CACHE_PDFMINER;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_PDFMINER[$ps_pdfminer_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_PDFMINER[$ps_pdfminer_path];
 		} else {
-			$_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO = array();
+			$_MEDIAHELPER_PLUGIN_CACHE_PDFMINER = array();
 		}
 		if (!caIsValidFilePath($ps_pdfminer_path)) { return false; }
 
-		if (!file_exists($ps_pdfminer_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = false; }
+		if (!@is_readable($ps_pdfminer_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_PDFMINER[$ps_pdfminer_path] = false; }
 		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
 		exec($ps_pdfminer_path." > /dev/null",$va_output,$vn_return);
 		if($vn_return == 100) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = true;
+			return $_MEDIAHELPER_PLUGIN_CACHE_PDFMINER[$ps_pdfminer_path] = true;
 		}
-		return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_pdfminer_path] = false;
+		return $_MEDIAHELPER_PLUGIN_CACHE_PDFMINER[$ps_pdfminer_path] = false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -347,21 +353,21 @@
 	function caPhantomJSInstalled($ps_phantomjs_path=null) {
 		if(!$ps_phantomjs_path) { $ps_phantomjs_path = caGetExternalApplicationPath('phantomjs'); }
 		
-		global $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO;
-		if (isset($_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_phantomjs_path])) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_phantomjs_path];
+		global $_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS[$ps_phantomjs_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS[$ps_phantomjs_path];
 		} else {
-			$_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO = array();
+			$_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS = array();
 		}
-		if (!trim($ps_phantomjs_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_phantomjs_path)) || !file_exists($ps_phantomjs_path)) { return false; }
+		if (!trim($ps_phantomjs_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_phantomjs_path)) || !@is_readable($ps_phantomjs_path)) { return false; }
 		
-		if (!file_exists($ps_phantomjs_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_phantomjs_path] = false; }
+		if (!@is_readable($ps_phantomjs_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS[$ps_phantomjs_path] = false; }
 		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
 		exec($ps_phantomjs_path." > /dev/null",$va_output,$vn_return);
 		if($vn_return == 0) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_phantomjs_path] = true;
+			return $_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS[$ps_phantomjs_path] = true;
 		}
-		return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_phantomjs_path] = false;
+		return $_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS[$ps_phantomjs_path] = false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -372,21 +378,21 @@
 	function caWkhtmltopdfInstalled($ps_wkhtmltopdf_path=null) {
 		if(!$ps_wkhtmltopdf_path) { $ps_wkhtmltopdf_path = caGetExternalApplicationPath('wkhtmltopdf'); }
 		
-		global $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO;
-		if (isset($_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path])) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path];
+		global $_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF;
+		if (isset($_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF[$ps_wkhtmltopdf_path])) {
+			return $_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF[$ps_wkhtmltopdf_path];
 		} else {
-			$_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO = array();
+			$_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF = array();
 		}
-		if (!trim($ps_wkhtmltopdf_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_wkhtmltopdf_path)) || !file_exists($ps_wkhtmltopdf_path)) { return false; }
+		if (!trim($ps_wkhtmltopdf_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_wkhtmltopdf_path)) || !@is_readable($ps_wkhtmltopdf_path)) { return false; }
 		
-		if (!file_exists($ps_wkhtmltopdf_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path] = false; }
+		if (!@is_readable($ps_wkhtmltopdf_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF[$ps_wkhtmltopdf_path] = false; }
 		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
 		exec($ps_wkhtmltopdf_path." > /dev/null",$va_output,$vn_return);
 		if(($vn_return == 0) || ($vn_return == 1)) {
-			return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path] = true;
+			return $_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF[$ps_wkhtmltopdf_path] = true;
 		}
-		return $_MEDIAHELPER_PLUGIN_CACHE_MEDIAINFO[$ps_wkhtmltopdf_path] = false;
+		return $_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF[$ps_wkhtmltopdf_path] = false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -404,9 +410,9 @@
 		} else {
 			$_MEDIAHELPER_PLUGIN_CACHE_EXIFTOOL = array();
 		}
-		if (!trim($ps_exiftool_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_exiftool_path)) || !file_exists($ps_exiftool_path)) { return false; }
+		if (!trim($ps_exiftool_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_exiftool_path)) || !@is_readable($ps_exiftool_path)) { return false; }
 		
-		if (!file_exists($ps_exiftool_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_EXIFTOOL[$ps_exiftool_path] = false; }
+		if (!@is_readable($ps_exiftool_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_EXIFTOOL[$ps_exiftool_path] = false; }
 		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
 		exec($ps_exiftool_path." > /dev/null",$va_output,$vn_return);
 	
@@ -414,65 +420,6 @@
 			return $_MEDIAHELPER_PLUGIN_CACHE_EXIFTOOL[$ps_exiftool_path] = true;
 		}
 		return $_MEDIAHELPER_PLUGIN_CACHE_EXIFTOOL[$ps_exiftool_path] = false;
-	}
-	# ------------------------------------------------------------------------------------------------
-	/**
-	 * Extracts media metadata using MediaInfo
-	 *
-	 * @param string $ps_filepath file path
-	 * @param string $ps_mediainfo_path optional path to MediaInfo binary. If omitted the path configured in external_applications.conf is used.
-	 *
-	 * @return array Extracted metadata
-	 */
-	function caExtractMetadataWithMediaInfo($ps_filepath, $ps_mediainfo_path=null){
-		if(!$ps_mediainfo_path) { $ps_mediainfo_path = caGetExternalApplicationPath('mediainfo'); }
-		if (!caIsValidFilePath($ps_mediainfo_path)) { return false; }
-		
-		//
-		// TODO: why don't we parse this from the XML output like civilized people?
-		//
-		exec($ps_mediainfo_path." ".caEscapeShellArg($ps_filepath), $va_output, $vn_return);
-		$vs_cat = "GENERIC";
-		$va_return = array();
-		foreach($va_output as $vs_line){
-			$va_split = explode(":",$vs_line);
-			$vs_left = trim(array_shift($va_split));
-			$vs_right = trim(join(":", $va_split));
-			if(strlen($vs_right) == 0){ // category line
-				$vs_cat = strtoupper($vs_left);
-				continue;
-			}
-			if(strlen($vs_left) && strlen($vs_right)) {
-				if($vs_left!="Complete name"){ // we probably don't want to display temporary filenames
-					$va_return[$vs_cat][$vs_left] = $vs_right;
-				}
-			}
-		}
-
-		return $va_return;
-	}
-	# ------------------------------------------------------------------------------------------------
-	/**
-	 * Extract video duration using MediaInfo. This can be used as a fallback to getID3
-	 * @param string $ps_filepath
-	 * @param string|null $ps_mediainfo_path
-	 *
-	 * @return float|null
-	 */
-	function caExtractVideoFileDurationWithMediaInfo($ps_filepath, $ps_mediainfo_path=null) {
-		if(!$ps_mediainfo_path) { $ps_mediainfo_path = caGetExternalApplicationPath('mediainfo'); }
-		if(!caMediaInfoInstalled($ps_mediainfo_path)) { return null; }
-
-		$va_output = array();
-		exec($ps_mediainfo_path.' --Inform="Video;%Duration/String3%" '.caEscapeShellArg($ps_filepath), $va_output, $vn_return);
-		if(!is_array($va_output) || (sizeof($va_output) != 1)) { return null; }
-		$va_tmp = explode(':', array_shift($va_output));
-
-		if(sizeof($va_tmp)==3) { // should have hours, minutes, seconds
-			return round(intval($va_tmp[0]) * 3600 + intval($va_tmp[1]) * 60 + floatval($va_tmp[2]));
-		}
-
-		return null;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -552,7 +499,7 @@
 							foreach($va_info['map'] as $vs_sub_element => $vs_value) {
 								$va_tmp2 = explode('.', $vs_sub_element);
 								$vs_sub_element = array_pop($va_tmp2);
-								if ($t_element = $po_instance->_getElementInstance($vs_sub_element)) {
+								if ($t_element = ca_metadata_elements::getInstance($vs_sub_element)) {
 									switch($t_element->get('datatype')) {
 										case 3:	// List
 											$t_list = new ca_lists();
@@ -601,7 +548,7 @@
 							foreach($va_info['map'] as $vs_sub_element => $vs_value) {
 								$va_tmp2 = explode('.', $vs_sub_element);
 								$vs_sub_element = array_pop($va_tmp2);
-								if ($t_element = $po_instance->_getElementInstance($vs_sub_element)) {
+								if ($t_element = ca_metadata_elements::getInstance($vs_sub_element)) {
 									switch($t_element->get('datatype')) {
 										case 3:	// List
 											$va_data[$vs_sub_element] = $t_list->getItemIDFromList($t_element->get('list_id'), $vs_value);
@@ -699,90 +646,79 @@
 
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Embed XMP metadata into representation media. Embedding is performed on a copy of the representation media and placed
-	 * into the system tmp directory. The original media is never modified.
+	 * Embed media metadata into given file. Embedding is performed on a copy of the file and placed into the
+	 * system tmp directory. The given file is never modified.
 	 *
-	 * @param BaseModel $po_object ca_objects instance to pull metadata from for embedding
-	 * @param BaseModel $po_representation ca_object_representations instance to pull metadata from for embedding
-	 * @param string $ps_version Version of media to embed into. If omitted "original" version is used.
-	 * @return string Path to copy of media with embedded metadata. False is returned in the embedding failed.
+	 * @param string $ps_file The file to embed metadata into
+	 * @param string $ps_table Table name of the subject record. This is used to figure out the appropriate mapping to use from media_metadata.conf
+	 * @param int $pn_pk Primary key of the subject record. This is used to run the export for the right record.
+	 * @param string $ps_type_code Optional type code for the subject record
+	 * @param int $pn_rep_pk Primary key of the subject representation.
+	 * 		If there are export mapping for object representations, we run them after the mapping for the subject table.
+	 * 		Fields that get exported here should overwrite fields from the subject table export.
+	 * @param string $ps_rep_type_code type code for object representation
+	 * @return string File name of a temporary file with the embedded metadata, false on failure
 	 */
-	function caEmbedMetadataIntoRepresentation($po_object, $po_representation, $ps_version="original") {
-		if (!($vs_media_metadata_config = $po_representation->getAppConfig()->get('media_metadata'))) { return false; }
+	function caEmbedMediaMetadataIntoFile($ps_file, $ps_table, $pn_pk, $ps_type_code, $pn_rep_pk, $ps_rep_type_code) {
+		require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
+		if(!caExifToolInstalled()) { return false; } // we need exiftool for embedding
+		$vs_path_to_exif_tool = caGetExternalApplicationPath('exiftool');
+
+		if (!@is_readable($ps_file)) { return false; }
+		if (!preg_match("/^image\//", mime_content_type($ps_file))) { return false; } // Don't try to embed in files other than images
+
+		// make a temporary copy (we won't touch the original)
+		copy($ps_file, $vs_tmp_filepath = caGetTempDirPath()."/".time().md5($ps_file));
+
+		//
+		// SUBJECT TABLE
+		//
+
+		if($vs_subject_table_export = caExportMediaMetadataForRecord($ps_table, $ps_type_code, $pn_pk)) {
+			$vs_export_filename = caGetTempFileName('mediaMetadataSubjExport','xml');
+			if(@file_put_contents($vs_export_filename, $vs_subject_table_export) === false) { return false; }
+			exec("{$vs_path_to_exif_tool} -tagsfromfile {$vs_export_filename} -all:all ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
+			@unlink($vs_export_filename);
+			@unlink("{$vs_tmp_filepath}_original");
+		}
+
+		//
+		// REPRESENTATION
+		//
+
+		if($vs_representation_Export = caExportMediaMetadataForRecord('ca_object_representations', $ps_rep_type_code, $pn_rep_pk)) {
+			$vs_export_filename = caGetTempFileName('mediaMetadataRepExport','xml');
+			if(@file_put_contents($vs_export_filename, $vs_representation_Export) === false) { return false; }
+			exec("{$vs_path_to_exif_tool} -tagsfromfile {$vs_export_filename} -all:all ".caEscapeShellArg($vs_tmp_filepath), $va_output, $vn_return);
+			@unlink($vs_export_filename);
+			@unlink("{$vs_tmp_filepath}_original");
+		}
+
+		return $vs_tmp_filepath;
+	}
+	# ------------------------------------------------------------------------------------------------
+	function caExportMediaMetadataForRecord($ps_table, $ps_type_code, $pn_id) {
+		$o_app_config = Configuration::load();
+
+		if (!($vs_media_metadata_config = $o_app_config->get('media_metadata'))) { return false; }
 		$o_metadata_config = Configuration::load($vs_media_metadata_config);
 
-		$vs_mimetype = $po_representation->getMediaInfo('media', $ps_version, 'MIMETYPE');
-		if (!in_array($vs_mimetype, array('image/jpeg'))) { return false; }		// Don't try to embed in files other than JPEGs
-		$vs_filepath = $po_representation->getMediaPath('media', $ps_version);
-		if (!file_exists($vs_filepath)) { return false; }
-
 		$va_mappings = $o_metadata_config->getAssoc('export_mappings');
-		$o_xmp = new XMPParser();
+		if(!isset($va_mappings[$ps_table])) { return false; }
 
-		copy($vs_filepath, $vs_tmp_filepath = caGetTempDirPath()."/".time().md5($vs_filepath));
-
-		$o_xmp->parse($vs_tmp_filepath);
-		$o_xmp->initMetadata();
-
-		if (is_object($po_object) && isset($va_mappings['ca_objects']) && is_array($va_mappings['ca_objects'])) {
-			$va_mapping = $va_mappings['ca_objects'];
-			$vs_type = $po_object->getTypeCode();
-			if (isset($va_mapping[$vs_type]) && is_array($va_mapping[$vs_type])) {
-				$va_mapping = $va_mapping[$vs_type];
-			} else {
-				if (isset($va_mapping['__default__']) && is_array($va_mapping['__default__'])) {
-					$va_mapping = $va_mapping['__default__'];
-				} else {
-					return null;
-				}
-			}
-
-			if (is_array($va_mapping)) {
-				foreach($va_mapping as $vs_xmp => $va_ca) {
-					$va_tmp = explode(':', $vs_xmp);
-					if (sizeof($va_tmp) > 1) { $vs_xmp = $va_tmp[1];}
-					foreach($va_ca as $vs_ca => $va_opts) {
-						if (preg_match('!^static:!', $vs_ca)) {
-							$vs_val = preg_replace('!^static:!', '', $vs_ca);
-						} else {
-							$vs_val = $po_object->get($vs_ca, $va_opts);
-						}
-						if ($vs_val) { $o_xmp->set($vs_xmp, $vs_val); }
-					}
-				}
-			}
+		if(isset($va_mappings[$ps_table][$ps_type_code])) {
+			$vs_export_mapping = $va_mappings[$ps_table][$ps_type_code];
+		} elseif(isset($va_mappings[$ps_table]['__default__'])) {
+			$vs_export_mapping = $va_mappings[$ps_table]['__default__'];
+		} else {
+			$vs_export_mapping = false;
 		}
 
-		if (is_object($po_representation) && isset($va_mappings['ca_object_representations']) && is_array($va_mappings['ca_object_representations'])) {
-			$va_mapping = $va_mappings['ca_object_representations'];
-			$vs_type = $po_representation->getTypeCode();
-			if (isset($va_mapping[$vs_type]) && is_array($va_mapping[$vs_type])) {
-				$va_mapping = $va_mapping[$vs_type];
-			} else {
-				if (isset($va_mapping['__default__']) && is_array($va_mapping['__default__'])) {
-					$va_mapping = $va_mapping['__default__'];
-				} else {
-					return null;
-				}
-			}
-
-			if (is_array($va_mapping)) {
-				foreach($va_mapping as $vs_xmp => $va_ca) {
-					$va_tmp = explode(':', $vs_xmp);
-					if (sizeof($va_tmp) > 1) { $vs_xmp = $va_tmp[1];}
-					foreach($va_ca as $vs_ca => $va_opts) {
-						if (preg_match('!^static:!', $vs_ca)) {
-							$vs_val = preg_replace('!^static:!', '', $vs_ca);
-						} else {
-							$vs_val = $po_representation->get($vs_ca, $va_opts);
-						}
-						if ($vs_val) { $o_xmp->set($vs_xmp, $vs_val); }
-					}
-				}
-			}
+		if($vs_export_mapping) {
+			return ca_data_exporters::exportRecord($vs_export_mapping, $pn_id);
 		}
-		$o_xmp->write();
-		return $vs_tmp_filepath;
+
+		return false;
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -932,4 +868,3 @@
 		return array('size' => $vs_selected_size, 'width' => $va_tmp[0], 'height' => $va_tmp[1]);
 	}
 	# ------------------------------------------------------------------------------------------------
-?>

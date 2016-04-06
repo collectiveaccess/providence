@@ -1197,45 +1197,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			}
 		}
 		
-		// get library checkout and commerce order history bundle (objects only, of course)
 		if ($vs_table == 'ca_objects') {
-			$va_additional_settings = array(
-				'order_type' => array(
-					'formatType' => FT_TEXT,
-					'displayType' => DT_SELECT,
-					'width' => 35, 'height' => 1,
-					'takesLocale' => false,
-					'default' => '',
-					'options' => array(
-						_t('Sales order') => 'O',
-						_t('Loan') => 'L'
-					),
-					'label' => _t('Type of order'),
-					'description' => _t('Determines which type of order is displayed.')
-				)		
-			);
-			$t_placement = new ca_bundle_display_placements(null, $va_additional_settings);
-			if ($this->inTransaction()) { $t_placement->setTransaction($this->getTransaction()); }
-			
-			$vs_bundle = 'ca_commerce_order_history';
-			$vs_label = _t('Order history');
-			$vs_display = _t('Order history');
-			$vs_description = _t('List of orders (loans or sales) that include this object');
-			
-			$va_available_bundles[strip_tags($vs_display)][$vs_bundle] = array(
-				'bundle' => $vs_bundle,
-				'display' => ($vs_format == 'simple') ? $vs_label : $vs_display,
-				'description' => $vs_description,
-				'settingsForm' => $t_placement->getHTMLSettingForm(array('id' => $vs_bundle.'_0')),
-				'settings' => $va_additional_settings
-			);
-			
-			if ($vb_show_tooltips) {
-				TooltipManager::add(
-					"#bundleDisplayEditorBundle_ca_commerce_order_history",
-					$this->_formatBundleTooltip($vs_label, $vs_bundle, $vs_description)
-				);
-			}
 			
 			$va_additional_settings = array(
 				'format' => array(
@@ -1420,7 +1382,16 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					'default' => '',
 					'label' => _t('Delimiter'),
 					'description' => _t('Text to place in-between repeating values.')
-				)
+				),
+				'sort' => array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_FIELD,
+					'width' => 35, 'height' => 1,
+					'takesLocale' => false,
+					'default' => '',
+					'label' => _t('Sort using'),
+					'description' => _t('Override sort option for this field. Use this if you want result lists to sort on a different field when clicking on this bundle.')
+				),
 			);
 			if ($t_rel_instance->isHierarchical()) {
 				$va_additional_settings += array(
@@ -1860,7 +1831,11 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		
 		$pa_options['restrictToRelationshipTypes'] = 	caGetOption('restrict_to_relationship_types', $va_settings, null);
 		$pa_options['restrictToTypes'] =				caGetOption('restrict_to_types', $va_settings, null);
+		$pa_options['removeFirstItems'] =				caGetOption('remove_first_items', $va_settings, null);
+		$pa_options['hierarchyDirection'] =				caGetOption('hierarchy_order', $va_settings, null);
+		$pa_options['hierarchyDelimiter'] =				caGetOption('hierarchical_delimiter', $va_settings, null);
 		
+		unset($pa_options['format']);	// don't pass format strings to get() here
 		if ((sizeof($va_bundle_bits) == 1) || ((sizeof($va_bundle_bits) == 2) && ($va_bundle_bits[1] == 'related'))) {
 			$pa_options['template'] = caGetOption('format', $va_settings, $this->getAppConfig()->get($va_bundle_bits[0].'_relationship_display_format'));;
 		} else {
@@ -1868,7 +1843,9 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		$vs_val = '';
-		if($pa_options['template']) {
+		if($vs_template = trim($pa_options['template'])) {
+			unset($pa_options['template']);
+			
 			if ($t_instance = $this->getAppDatamodel()->getInstanceByTableName($va_bundle_bits[0], true)) {
 				$va_bundle_bits_proc = $va_bundle_bits;
 				$vb_is_related = false;
@@ -1898,17 +1875,17 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 							case 3:
 								// For regular relationships just evaluate the template relative to the relationship record
 								// this way the template can reference interstitial data
-								$vs_val = $po_result->getWithTemplate($vs_unit_tag.$pa_options['template']."</unit>", $pa_options);
+								$vs_val = $po_result->getWithTemplate($vs_unit_tag.$vs_template."</unit>", $pa_options);
 								break;
 							case 2:
 								$t_rel = $o_dm->getInstanceByTableName($va_path[1], true);
 								if (method_exists($t_rel, 'isSelfRelationship') && $t_rel->isSelfRelationship()) {
 									// is a self-relationship
-									$vs_val = $po_result->getWithTemplate($vs_unit_tag.$pa_options['template']."</unit>", array_merge($pa_options, array('primaryIDs' => array($po_result->tableName() => array($po_result->getPrimaryKey())))));
+									$vs_val = $po_result->getWithTemplate($vs_unit_tag.$vs_template."</unit>", array_merge($pa_options, array('primaryIDs' => array($po_result->tableName() => array($po_result->getPrimaryKey())))));
 								} else {
 									// is a many-one relationship; evaluate the template for these relative
 									// to the related record
-									$vs_val = $po_result->getWithTemplate($vs_unit_tag.$pa_options['template']."</unit>", $pa_options);
+									$vs_val = $po_result->getWithTemplate($vs_unit_tag.$vs_template."</unit>", $pa_options);
 								}
 								break;
 							default:
@@ -1918,18 +1895,20 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					}
 				} else {
 					// resolve template relative to current record
-					$vs_val = $po_result->getWithTemplate($pa_options['template']);
+					$vs_val = $po_result->getWithTemplate($vs_template, ['delimiter' => $pa_options['delimiter']]);
 				}
 				
 			}
 		} else {
 			// Straight get
+			if(caGetOption(array('showHierarchy', 'show_hierarchy'), $pa_options, false) && (sizeof($va_bundle_bits) == 1)) {
+				$va_bundle_bits[] = 'hierarchy.preferred_labels.name';
+			}
 			$vs_val = $po_result->get(join(".", $va_bundle_bits), $pa_options);
 		}
 		
 		if (isset($pa_options['purify']) && $pa_options['purify']) {
-			$o_purifier = new HTMLPurifier();
-    		$vs_val = $o_purifier->purify($vs_val);
+    		$vs_val = ca_bundle_displays::getPurifier()->purify($vs_val);
 		}
 		
 		return $vs_val;

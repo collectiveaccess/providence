@@ -82,7 +82,7 @@
 				print "<a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetMediaOverlay', array('object_id' => $vn_item_id, 'representation_id' => $va_rep['representation_id']))."\");'>".$va_rep['tags']['thumbnail']."</a>\n";
 				
 				if ($this->request->user->canDoAction('can_download_ca_object_representations')) {
-					print "<div class='download".$va_rep['representation_id']." downloadMediaContainer'>".caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_DOWNLOAD__), 'downloadMedia', 'editor/objects', 'ObjectEditor', 'DownloadRepresentation', array('object_id' => $vn_item_id, 'representation_id' => $va_rep['representation_id'], 'version' => 'original'))."</div>\n";
+					print "<div class='download".$va_rep['representation_id']." downloadMediaContainer'>".caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_DOWNLOAD__), 'downloadMedia', 'editor/objects', 'ObjectEditor', 'DownloadMedia', array('object_id' => $vn_item_id, 'representation_id' => $va_rep['representation_id'], 'version' => 'original'))."</div>\n";
 				}
 				print "</div></td></tr></table>\n";
 			}else{
@@ -90,7 +90,7 @@
 				print "<div id='container".$va_rep['representation_id']."' class='oneThumbContainer' onmouseover='$(\".download".$va_rep['representation_id']."\").show();' onmouseout='$(\".download".$va_rep['representation_id']."\").hide();'>";
 				print "<a href='#' onclick='caMediaPanel.showPanel(\"".caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetMediaOverlay', array('object_id' => $vn_item_id, 'representation_id' => $va_rep['representation_id']))."\");'>".$va_rep['tags']['medium']."</a>\n";
 				if ($this->request->user->canDoAction('can_download_ca_object_representations')) {
-					print "<div class='download".$va_rep['representation_id']." downloadMediaContainer'>".caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_DOWNLOAD__), 'downloadMedia', 'editor/objects', 'ObjectEditor', 'DownloadRepresentation', array('object_id' => $vn_item_id, 'representation_id' => $va_rep['representation_id'], 'version' => 'original'))."</div>\n";
+					print "<div class='download".$va_rep['representation_id']." downloadMediaContainer'>".caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_DOWNLOAD__), 'downloadMedia', 'editor/objects', 'ObjectEditor', 'DownloadMedia', array('object_id' => $vn_item_id, 'representation_id' => $va_rep['representation_id'], 'version' => 'original'))."</div>\n";
 				}
 				print "</div>";
 			}
@@ -114,7 +114,7 @@
 				$vs_display_value = "<"._t('not defined').">";
 				$vs_class = " notDefined";
 			}
-			print "<div class=\"unit".$vs_class."\"><span class=\"heading".$vs_class."\">".$va_info['display']."</span><span class='summaryData'> ".$vs_display_value."</span></div>\n";
+			print "<div class=\"unit".$vs_class."\"><span class=\"heading".$vs_class."\">".caTruncateStringWithEllipsis($va_info['display'], 26)."</span><span class='summaryData'> ".$vs_display_value."</span></div>\n";
 		}
 ?>
 			</td>
