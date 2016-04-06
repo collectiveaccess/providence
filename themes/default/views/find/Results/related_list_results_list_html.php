@@ -29,13 +29,15 @@
 	/** @var ca_bundle_displays $t_display */
 	$t_display				= $this->getVar('t_display');
 	$va_display_list 		= $this->getVar('display_list');
+	/** @var EntitySearchResult $vo_result */
 	$vo_result 				= $this->getVar('result');
 	$vn_items_per_page 		= $this->getVar('current_items_per_page');
 	$vs_current_sort 		= $this->getVar('current_sort');
 	$vs_current_sort_dir    = $this->getVar('current_sort_direction');
 	$vs_default_action		= $this->getVar('default_action');
 	$vo_ar					= $this->getVar('access_restrictions');
-	$va_relation_id_map 	= $this->getVar('relationIdMap');
+	$va_rel_id_typenames 	= $this->getVar('relationIdTypeNames');
+	$va_rel_id_index	 	= $this->getVar('resultRelationIDIndex');
 
 	$vs_interstitial_prefix	= $this->getVar('interstitialPrefix');
 	$vs_primary_table		= $this->getVar('primaryTable');
@@ -92,10 +94,10 @@
 <?php
 			$i = 0;
 			$vn_item_count = 0;
-			
+
 			while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit()) {
 				$vn_id = $vo_result->get($t_related_instance->primaryKey());
-				$vn_relation_id = $va_relation_id_map[$vn_id]['relation_id'];
+				$vn_relation_id = $va_rel_id_index[$vn_item_count];
 				
 				($i == 2) ? $i = 0 : "";
 ?>
@@ -109,7 +111,7 @@
 					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', $vs_related_table, $vn_id, array(), array())."</td>";;
 ?>
 					<td style="padding-left: 5px; padding-right: 5px;">
-						<?php print $va_relation_id_map[$vn_id]['relationship_typename']; ?>
+						<?php print $va_rel_id_typenames[$vn_relation_id]; ?>
 					</td>
 <?php
 						
