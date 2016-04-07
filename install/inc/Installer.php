@@ -855,7 +855,7 @@ class Installer {
 				// create ui bundle placements
 				foreach($vo_screen->bundlePlacements->children() as $vo_placement) {
 					$vs_placement_code = self::getAttribute($vo_placement, "code");
-					$vs_bundle_type_restrictions = self::getAttribute($vo_placement, "bundleTypeRestrictions");
+					$vs_bundle_type_restrictions = self::getAttribute($vo_placement, "typeRestrictions");
 					$vs_bundle = trim((string)$vo_placement->bundle);
 
 					if ($vs_bundle_type_restrictions) {
