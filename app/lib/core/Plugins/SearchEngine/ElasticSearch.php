@@ -57,6 +57,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	static $s_doc_content_buffer = array();
 	static $s_update_content_buffer = array();
 	static $s_delete_buffer = array();
+
+	protected $ops_elasticsearch_index_name = '';
+	protected $ops_elasticsearch_base_url = '';
 	# -------------------------------------------------------
 	public function __construct($po_db=null) {
 		parent::__construct($po_db);
@@ -218,6 +221,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * Completely clear index (usually in preparation for a full reindex)
 	 *
 	 * @param null|int $pn_table_num
+	 * @param bool $pb_dont_refresh
 	 * @return bool
 	 */
 	public function truncateIndex($pn_table_num = null, $pb_dont_refresh = false) {
@@ -632,7 +636,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @param $ps_search - The text to search on
 	 * @param $pa_options - an optional associative array specifying search options. Supported options are: 'limit' (the maximum number of results to return)
 	 *
-	 * @return Array - an array of results is returned keyed by primary key id. The array values boolean true. This is done to ensure no duplicate row_ids
+	 * @return array - an array of results is returned keyed by primary key id. The array values boolean true. This is done to ensure no duplicate row_ids
 	 *
 	 */
 	public function quickSearch($pn_table_num, $ps_search, $pa_options=array()) {
