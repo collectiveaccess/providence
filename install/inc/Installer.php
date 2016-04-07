@@ -859,6 +859,8 @@ class Installer {
 					$vs_bundle = trim((string)$vo_placement->bundle);
 
 					if ($vs_bundle_type_restrictions) {
+						// Copy type restrictions listed on the <placement> tag into numeric type_ids stored
+						// as settings on the placement record.
 						if ($t_instance instanceof BaseRelationshipModel) {
 							$va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), explode(",", $vs_bundle_type_restrictions));
 						} else {
