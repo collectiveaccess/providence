@@ -3280,7 +3280,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				foreach($_REQUEST as $vs_key => $vs_val) {
 					// is it a newly created attribute?
-					if (preg_match('/'.$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_([\w\-_]+)_new_([\d]+)/', $vs_key, $va_matches)) { 
+					if (preg_match('/'.$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_([\w\d\-_]+)_new_([\d]+)/', $vs_key, $va_matches)) { 
 						if ($vb_batch) {
 							switch($vs_batch_mode) {
 								case '_disabled_':		// skip
@@ -3319,7 +3319,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						continue; 
 					}
 					// is it a newly created attribute?
-					if (preg_match('/'.$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_([\w\-_]+)_new_([\d]+)/', $vs_key, $va_matches)) { 
+					if (preg_match('/'.$vs_placement_code.$vs_form_prefix.'_attribute_'.$vn_element_id.'_([\w\d\-_]+)_new_([\d]+)/', $vs_key, $va_matches)) { 
 						if (!$va_val['size']) { continue; }	// skip empty files
 						
 						// yep - grab the value
