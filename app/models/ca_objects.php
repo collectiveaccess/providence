@@ -1032,6 +1032,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 					if (!$va_date['sortable']) { continue; }
 					if (!in_array($vn_type_id, $va_movement_types)) { continue; }
 					//if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date) || ($va_date['bounds'][1] < $vn_current_date))) { continue; }
+					if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date))) { continue; }
 					
 					$vs_color = $va_movement_type_info[$vn_type_id]['color'];
 					if (!$vs_color || ($vs_color == '000000')) {
@@ -1157,6 +1158,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				$vn_type_id = $qr_locations->get('ca_storage_locations.type_id');
 				
 				//if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date) || ($va_date['bounds'][1] < $vn_current_date))) { continue; }
+				if ($pb_get_current_only && (($va_date['bounds'][0] > $vn_current_date))) { continue; }
 				
 				$vs_color = $va_location_type_info[$vn_type_id]['color'];
 				if (!$vs_color || ($vs_color == '000000')) {
@@ -1252,7 +1254,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		$vs_history_template		= caGetOption('history_template', $pa_bundle_settings, $vs_display_template);
 		
 		$o_view->setVar('id_prefix', $ps_form_name);
-		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		$o_view->setVar('placement_code', $ps_placement_code);
 
 		$pa_bundle_settings = $this->_processObjectHistoryBundleSettings($pa_bundle_settings);
 		$o_view->setVar('settings', $pa_bundle_settings);

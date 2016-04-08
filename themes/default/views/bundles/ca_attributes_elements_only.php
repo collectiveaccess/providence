@@ -49,7 +49,7 @@
 			<tr>
 <?php
 				foreach($va_element_list as $vs_element) {
-					print '<td class="attributeListItem">'.preg_replace("!{{[\d]+}}!", "", $vs_element).'</td>';
+					print '<td class="attributeListItem">'.preg_replace("!{{[\d]+}}!", "", str_replace("textarea", "textentry", $vs_element)).'</td>';
 				}
 ?>
 			</tr>

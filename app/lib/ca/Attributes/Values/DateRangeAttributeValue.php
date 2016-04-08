@@ -246,9 +246,8 @@
 			if ($vs_date_format == 'original') {
 				return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = $this->ops_text_value;
 			} else {
-				if (!is_array($va_settings = MemoryCache::fetch($this->getElementID(), 'ElementSettings'))) {
-					$t_element = new ca_metadata_elements($this->getElementID());
-					$va_settings = MemoryCache::fetch($this->getElementID(), 'ElementSettings');
+				if (!is_array($va_settings = ca_metadata_elements::getElementSettingsForId($this->getElementID()))) {
+					$va_settings = [];
 				}
 				DateRangeAttributeValue::$o_tep->setHistoricTimestamps($this->opn_start_date, $this->opn_end_date);
 				return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = DateRangeAttributeValue::$o_tep->getText(array_merge(array('isLifespan' => $va_settings['isLifespan']), $pa_options)); //$this->ops_text_value;

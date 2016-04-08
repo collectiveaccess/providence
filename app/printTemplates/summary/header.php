@@ -69,7 +69,8 @@
 ?>
 <!--BEGIN HEADER--><!DOCTYPE html>
 <html>
-<head>
+<head >
+	<div id="head">
 <?php
 	if(file_exists($this->getVar('base_path')."/local/pdf.css")){
 ?>
@@ -103,6 +104,7 @@
 		}
   		
 	</script>
+	</div>
 </head>
 <body onload='dynvar();'>
 </body>
