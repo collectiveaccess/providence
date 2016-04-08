@@ -4369,7 +4369,7 @@ if (!$vb_batch) {
 												
 												$va_vals = [];
 												foreach($va_sub_element_ids as $vn_sub_element_id) {
-													$va_vals[ca_metadata_elements::getElementCode($vn_sub_element_id)] = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_{$vn_sub_element_id}_new_0", pString);
+													$va_vals[ca_metadata_elements::getElementCodeForID($vn_sub_element_id)] = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_{$vn_sub_element_id}_new_0", pString);
 												}
 												$t_item_rel->addAttribute($va_vals, $vs_element);
 												$t_item_rel->update();
