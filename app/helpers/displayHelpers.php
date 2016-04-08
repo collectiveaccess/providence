@@ -1219,10 +1219,10 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 			if (($vs_table_name === 'ca_object_lots') && $t_item->getPrimaryKey()) {
 				$va_component_types = $po_view->request->config->getList('ca_objects_component_types');
 				if (is_array($va_component_types) && sizeof($va_component_types)) {
-					$vs_buf .= "<strong>".((($vn_num_objects = $t_item->numObjects(null, array('return' => 'objects'))) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
-					$vs_buf .= "<strong>".((($vn_num_components = $t_item->numObjects(null, array('return' => 'components'))) == 1) ? _t('Lot contains %1 component', $vn_num_components) : _t('Lot contains %1 components', $vn_num_components))."</strong>\n";
+					$vs_buf .= "<br/><strong>".((($vn_num_objects = $t_item->numObjects(null, array('return' => 'objects'))) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
+					$vs_buf .= "<br/><strong>".((($vn_num_components = $t_item->numObjects(null, array('return' => 'components'))) == 1) ? _t('Lot contains %1 component', $vn_num_components) : _t('Lot contains %1 components', $vn_num_components))."</strong>\n";
 				} else {
-					$vs_buf .= "<strong>".((($vn_num_objects = $t_item->numObjects()) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
+					$vs_buf .= "<br/><strong>".((($vn_num_objects = $t_item->numObjects()) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
 				}
 
 				if (((bool)$po_view->request->config->get('allow_automated_renumbering_of_objects_in_a_lot')) && ($va_nonconforming_objects = $t_item->getObjectsWithNonConformingIdnos())) {
@@ -1252,7 +1252,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 					$vs_buf .= _t('Add new %1 to lot', $t_object->getTypeListAsHTMLFormElement('type_id', array('id' => 'caAddObjectToLotForm_type_id'), array('access' => __CA_BUNDLE_ACCESS_EDIT__)));
 				}
 				
-				$vs_buf .= " <a href='#' onclick='caAddObjectToLotForm()'>".caNavIcon(__CA_NAV_ICON_ADD__, '24px').'</a>';
+				$vs_buf .= " <a href='#' onclick='caAddObjectToLotForm()'>".caNavIcon(__CA_NAV_ICON_ADD__, '13px').'</a>';
 				$vs_buf .= "</form></div>\n";
 				
 				$vs_buf .= "<script type='text/javascript'>
