@@ -322,6 +322,14 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	# Element set methods
 	# ------------------------------------------------------
 	/**
+	 * @param array $pa_options Options include:
+	 * 		noCache = don't use cached values. Default is false (ie. use cached values)
+	 */
+	static public function getElementsForSet($pn_element_id, $pa_options=null) {
+		$t_element = new ca_metadata_elements();
+		return $t_element->getElementsInSet($pn_element_id, !caGetOption('noCache', $pa_options, false), $pa_options);
+	}
+	/**
 	 * Returns array of elements in set of currently loaded row
 	 *
 	 * @param null|int $pn_element_id
@@ -971,21 +979,6 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 
 		MemoryCache::save($pm_element_code_or_id, $vm_return, 'ElementDataTypes');
 		return $vm_return;
-	}
-	# ------------------------------------------------------
-	/**
-	 * 
-	 */
-	static public function getElementCode($pn_element_id) {
-		if(MemoryCache::contains($pn_element_id, 'ElementCodes')) {
-			return MemoryCache::fetch($pn_element_id, 'ElementCodes');
-		}
-		if ($t_element = ca_metadata_elements::getInstance($pn_element_id)) {
-			MemoryCache::save($pn_element_id, $vs_element_code = (string)$t_element->get('element_code'), 'ElementCodes');
-			return $vs_element_code;
-		}
-		
-		return null;
 	}
 	# ------------------------------------------------------
 	/**
