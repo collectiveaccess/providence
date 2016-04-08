@@ -95,7 +95,7 @@
 		if(data) { tableContent.html(data); }
 
 		// have to re-init the relation bundle because the interstitial buttons have only now been loaded
-		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', initiRelationBundleOptions);
+		caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', initiRelationBundleOptions<?php print $vs_id_prefix; ?>);
 
 		jQuery('#tableContent<?php print $vs_id_prefix; ?> .list-header-unsorted a, #tableContent<?php print $vs_id_prefix; ?> .list-header-sorted-desc a, #tableContent<?php print $vs_id_prefix; ?> .list-header-sorted-asc a').click(function(event) {
 			event.preventDefault();
@@ -203,7 +203,7 @@
 	
 <script type="text/javascript">
 	var caRelationBundle<?php print $vs_id_prefix; ?>;
-	var initiRelationBundleOptions;
+	var initiRelationBundleOptions<?php print $vs_id_prefix; ?>;
 	jQuery(document).ready(function() {
 		if (caUI.initPanel) {
 			caRelationQuickAddPanel<?php print $vs_id_prefix; ?> = caUI.initPanel({ 
@@ -238,7 +238,7 @@
 			});
 		}
 
-		initiRelationBundleOptions = {
+		initiRelationBundleOptions<?php print $vs_id_prefix; ?> = {
 			fieldNamePrefix: '<?php print $vs_id_prefix; ?>_',
 			initialValues: <?php print json_encode($this->getVar('initialValues')); ?>,
 			initialValueOrder: <?php print json_encode(array_keys($this->getVar('initialValues'))); ?>,
@@ -279,7 +279,7 @@
 <?php
 		if(!sizeof($va_initial_values)) {
 ?>
-			caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', initiRelationBundleOptions);
+			caRelationBundle<?php print $vs_id_prefix; ?> = caUI.initRelationBundle('#<?php print $vs_id_prefix.$t_item->tableNum().'_rel'; ?>', initiRelationBundleOptions<?php print $vs_id_prefix; ?>);
 <?php
 		}
 ?>
