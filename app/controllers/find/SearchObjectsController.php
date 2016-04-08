@@ -53,12 +53,6 @@
  		protected $opa_views;
  		
  		/**
- 		 * List of available search-result sorting fields
- 		 * Is associative array: values are display names for fields, keys are full fields names (table.field) to be used as sort
- 		 */
- 		protected $opa_sorts;
- 		
- 		/**
  		 * Name of "find" used to defined result context for ResultContext object
  		 * Must be unique for the table and have a corresponding entry in find_navigation.conf
  		 */
@@ -72,13 +66,7 @@
 				'full' => _t('full'),
 				'list' => _t('list')
 			 );
-			 
-			 $this->opa_sorts = array_merge(array(
-			 	'_natural' => _t('relevance'),
-			 	'ca_object_labels.name_sort' => _t('title'),
-			 	'ca_objects.type_id' => _t('type'),
-			 	'ca_objects.idno_sort' => _t('idno')
-			 ), $this->opa_sorts);
+
 			 $this->opo_browse = new ObjectBrowse($this->opo_result_context->getParameter('browse_id'), 'providence');
 		}
  		# -------------------------------------------------------

@@ -704,7 +704,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public function getScreenBundlePlacements($pm_screen) {
+	public function getScreenBundlePlacements($pm_screen, $pn_type_id=null) {
 		if (!$this->getPrimaryKey()) { return false; }
 		
 		$o_db = $this->getDb();
@@ -727,6 +727,9 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		while ($qr_res->nextRow()) {
 			$va_tmp = $qr_res->getRow();
 			$va_tmp['settings'] = $qr_res->getVars('settings');
+			
+			if ($pn_type_id && is_array($va_tmp['settings']['bundleTypeRestrictions']) && (sizeof($va_tmp['settings']['bundleTypeRestrictions']) > 0) && !in_array($pn_type_id, $va_tmp['settings']['bundleTypeRestrictions'])) { continue; } // check bundle-placement type restrictions if set
+				
 			$va_placements[] = $va_tmp;
 		}
 		

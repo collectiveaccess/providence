@@ -60,6 +60,11 @@
  		protected $opn_type_restriction_id = null;
  		
  		protected $opo_app_plugin_manager;
+		/**
+		 * List of available search-result sorting fields
+		 * Is associative array: values are display names for fields, keys are full fields names (table.field) to be used as sort
+		 */
+		protected $opa_sorts;
 		# ------------------------------------------------------------------
 		/**
 		 *
@@ -75,6 +80,7 @@
  			
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			$this->opo_datamodel = Datamodel::load();
+			$this->opa_sorts = array();
  			
  			if ($this->ops_tablename) {
 				$this->opo_result_context = new ResultContext($po_request, $this->ops_tablename, $this->ops_find_type);
@@ -787,12 +793,7 @@
  			$this->view->setVar('current_view', $vs_view);
  			
  			$vn_type_id 			= $this->opo_result_context->getTypeRestriction($vb_dummy);
- 			$va_sortable_elements = ca_metadata_elements::getSortableElements($this->ops_tablename, $vn_type_id);
- 			
- 			if (!is_array($this->opa_sorts)) { $this->opa_sorts = array(); }
- 			foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
- 				$this->opa_sorts[$this->ops_tablename.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
- 			}
+			$this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $vn_type_id);
  			
  			$this->view->setVar('sorts', $this->opa_sorts);	// pass sort list to view for rendering
  			$this->view->setVar('current_sort', $vs_sort);
@@ -901,6 +902,7 @@
  				
  				if (($pn_c > 0) && ($vn_c >= $pn_c)) { break; }
  			}
+			$this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id);
  			
  			$this->view->setVar('data', $va_data);
  			$this->render("Results/ajax_results_editable_data_json.php");

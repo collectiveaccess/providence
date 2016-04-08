@@ -47,13 +47,6 @@
  		 * Is associative array: keys are view labels, values are view specifier to be incorporated into view name
  		 */ 
  		protected $opa_views;
- 		 
- 		 
- 		/**
- 		 * List of available result sorting fields
- 		 * Is associative array: values are display names for fields, keys are full fields names (table.field) to be used as sort
- 		 */
- 		protected $opa_sorts;
  		
  		/**
  		 * Name of "find" used to defined result context for ResultContext object
@@ -72,12 +65,6 @@
 				'full' => _t('full'),
 				'list' => _t('list')
 			);
-			 
-			$this->opa_sorts = array_merge(array(
-			 	'ca_object_labels.name' => _t('title'),
-			 	'ca_objects.type_id' => _t('type'),
-			 	'ca_objects.idno_sort' => _t('idno')
-			), $this->opa_sorts);
  		}
  		# -------------------------------------------------------
  		public function Index($pa_options=null) {

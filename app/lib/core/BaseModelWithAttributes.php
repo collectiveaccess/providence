@@ -1459,12 +1459,17 @@
 		/**
 		 * Get HTML form element bundle for metadata element
 		 *
+		 * @param $pa_options array Options include:
+		 *		elementsOnly = Render only form elements and structural formattings, but not headers, enclosing divs or controls. [Default is false]
+		 *		batch = render for batch editor. [Default is false]
+		 *
 		 */
 		public function getAttributeHTMLFormBundle($po_request, $ps_form_name, $pm_element_code_or_id, $ps_placement_code, $pa_bundle_settings, $pa_options) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if (!is_array($pa_bundle_settings)) { $pa_bundle_settings = array(); }
 			
-			$vb_batch = (isset($pa_options['batch']) && $pa_options['batch']) ? true : false;
+			$vb_elements_only = caGetOption('elementsOnly', $pa_options, false);
+			$vb_batch = caGetOption('batch', $pa_options, false);
 			
 			if (!($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id))) {
 				return false;
@@ -1596,9 +1601,10 @@
 			$o_view->setVar('settings', $pa_bundle_settings);
 			
 			// Is this being used in the batch editor?
-			$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
+			$o_view->setVar('batch', $vb_batch);
+			$o_view->setVar('elementsOnly', $vb_elements_only);
 			
-			return $o_view->render('ca_attributes.php');
+			return $o_view->render($vb_elements_only ? 'ca_attributes_elements_only.php' : 'ca_attributes.php');
 		}
 		# ------------------------------------------------------------------
 		/**
