@@ -2334,6 +2334,12 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			return false;
  		}
  		
+ 		if (($vn_screen_access = ca_editor_uis::getAccessForScreen($pa_options['request'], $pm_screen)) === __CA_BUNDLE_ACCESS_NONE__) {
+ 			// no access to screen
+ 			$this->postError(2320, _t('Access denied to screen %1', $pm_screen), "BundlableLabelableBaseModelWithAttributes->getBundleFormHTMLForScreen()");				
+			return false;
+ 		}
+ 		
  		if (isset($pa_options['bundles']) && is_array($pa_options['bundles'])) {
  			$va_bundles = $pa_options['bundles'];
  			$vn_screen_access = __CA_BUNDLE_ACCESS_EDIT__;
@@ -2390,7 +2396,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				
 				
 				if ($vs_element_set_code = preg_replace("/^(ca_attribute_|".$this->tableName()."\.)/", "", $va_bundle['bundle_name'])) {
-					if ($o_element = $this->_getElementInstance($vs_element_set_code)) {
+					if ($o_element = ca_metadata_elements::getInstance($vs_element_set_code)) {
 						$va_bundle['bundle_name'] = "ca_attribute_{$vs_element_set_code}";
 					}
 				}

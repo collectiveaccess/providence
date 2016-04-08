@@ -957,7 +957,7 @@
  		 							break;
  		 						case 'attribute':
  		 							$va_tmp = explode(".", $va_bundle['bundle_name']);
- 		 							$t_element = $t_model->_getElementInstance($va_tmp[1]);
+ 		 							$t_element = ca_metadata_elements::getInstance($va_tmp[1]);
  		 							$vn_element_id = $t_element->getPrimaryKey();
  		 							
  		 							$vs_attribute_id = null;

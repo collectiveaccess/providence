@@ -1994,7 +1994,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 			} elseif ($t_instance->hasElement($va_bundle_bits[1])) {
 				// attributes
 				$vn_min = $vn_max = null;
-				if ($t_element = $t_instance->_getElementInstance($va_bundle_bits[1])) {
+				if ($t_element = ca_metadata_elements::getInstance($va_bundle_bits[1])) {
 					if ($t_restriction = $t_element->getTypeRestrictionInstanceForElement($t_instance->tableNum(), $po_result->get($t_instance->tableName().'.'.$t_instance->getTypeFieldName()))) { 
 						$vn_min = $t_restriction->getSetting('minAttributesPerRow');
 						$vn_max = $t_restriction->getSetting('maxAttributesPerRow');
