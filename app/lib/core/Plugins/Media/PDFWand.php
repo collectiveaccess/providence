@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2015 Whirl-i-Gig
+ * Copyright 2006-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -141,8 +141,8 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 	public function register() {
 		$this->opo_config = Configuration::load();
 		
-		$this->opo_search_config = Configuration::load($this->opo_config->get('search_config'));
-		$this->opo_external_app_config = Configuration::load($this->opo_config->get('external_applications'));
+		$this->opo_search_config = Configuration::load(__CA_CONF_DIR__.'/search.conf');
+		$this->opo_external_app_config = Configuration::load(__CA_CONF_DIR__.'/external_applications.conf');
 		
 		$this->ops_ghostscript_path = $this->opo_external_app_config->get('ghostscript_app');
 		$this->ops_pdftotext_path = $this->opo_external_app_config->get('pdftotext_app');
@@ -200,6 +200,8 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			}
 		} else {
 			try {
+				if($this->opo_config->get('dont_use_zendpdf_to_identify_pdfs')) { return ''; }
+
 				include_once(__CA_LIB_DIR__."/core/Zend/Pdf.php");
 				$o_pdf = Zend_Pdf::load($ps_filepath);
 				if (sizeof($o_pdf->pages) == 0) { return ''; }
@@ -266,7 +268,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 	# ----------------------------------------------------------
 	private function _graphicsMagickIdentify($ps_filepath) {
 		exec($this->ops_graphicsmagick_path.' identify -format "%m;%w;%h;%p\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
-		
+
 		array_pop($va_output); // last line is blank
 		if (is_array($va_output) && (sizeof($va_output) > 0)) {
 			$va_tmp = explode(';', $va_output[0]);
@@ -385,13 +387,13 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			
 			// Try to extract text
 			$vs_tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT');
-			exec($this->ops_pdfminer_path.'/pdf2txt.py -t text '.caEscapeShellArg($ps_filepath).' > '.caEscapeShellArg($vs_tmp_filename).(caIsPOSIX() ? " 2> /dev/null" : ""));
+			exec($this->ops_pdfminer_path.' -t text '.caEscapeShellArg($ps_filepath).' > '.caEscapeShellArg($vs_tmp_filename).(caIsPOSIX() ? " 2> /dev/null" : ""));
 			$vs_extracted_text = file_get_contents($vs_tmp_filename);
 			$this->handle['content'] = $this->ohandle['content'] = $vs_extracted_text;
 			@unlink($vs_tmp_filename);
 	
 			$vs_tmp_filename = tempnam('/tmp', 'CA_PDF_TEXT_LOCATIONS');
-			exec($this->ops_pdfminer_path.'/pdf2txt.py -t xml '.caEscapeShellArg($ps_filepath).' > '.caEscapeShellArg($vs_tmp_filename).(caIsPOSIX() ? " 2> /dev/null" : ""));
+			exec($this->ops_pdfminer_path.' -t xml '.caEscapeShellArg($ps_filepath).' > '.caEscapeShellArg($vs_tmp_filename).(caIsPOSIX() ? " 2> /dev/null" : ""));
 			
 			$xml = new XMLReader();
 			if ($xml->open($vs_tmp_filename)) {
@@ -424,7 +426,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 								$vn_start = $vn_end = null;
 								$vs_acc = '';
 								for($vn_i=0; $vn_i < mb_strlen($vs_text_line_content); $vn_i++) {
-									if (preg_match("![{$vs_indexing_regex}]!", $vs_text_line_content[$vn_i])) {
+									if (preg_match("![{$vs_indexing_regex}]!u", mb_substr($vs_text_line_content, $vn_i, 1))) {
 										// word boundary
 										if ($vs_acc) {
 											$vs_acc = mb_strtolower($vs_acc);

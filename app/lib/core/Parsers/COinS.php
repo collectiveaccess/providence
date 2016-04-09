@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011 Whirl-i-Gig
+ * Copyright 2011-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -137,8 +137,7 @@
 		  *
 		  */
 		public function _getConfig($ps_table_name, $ps_output_type=null) {
-			$o_config = Configuration::load();
-			$o_mapping = Configuration::load($o_config->get('z39_88_config'));
+			$o_mapping = Configuration::load(__CA_CONF_DIR__.'/z39.88.conf');
 			
 			if (!$ps_output_type) { $ps_output_type = '__default__'; }
 			

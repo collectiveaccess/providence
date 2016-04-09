@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -81,6 +81,8 @@ class SimpleService {
 			throw new Exception('invalid table');
 		}
 
+		$va_get_options = array();
+
 		$pm_id = $po_request->getParameter('id', pString);
 		if(!$t_instance->load($pm_id)) {
 			$t_instance->load(array($t_instance->getProperty('ID_NUMBERING_ID_FIELD') => $pm_id));
@@ -92,6 +94,7 @@ class SimpleService {
 
 		// checkAccess
 		if(isset($pa_config['checkAccess']) && is_array($pa_config['checkAccess'])) {
+			$va_get_options['checkAccess'] = $pa_config['checkAccess'];
 			if(!in_array($t_instance->get('access'), $pa_config['checkAccess'])) {
 				throw new Exception('Invalid parameters');
 			}
@@ -106,7 +109,7 @@ class SimpleService {
 
 		$va_return = array();
 		foreach($pa_config['content'] as $vs_key => $vs_template) {
-			$va_return[self::sanitizeKey($vs_key)] = $t_instance->getWithTemplate($vs_template);
+			$va_return[self::sanitizeKey($vs_key)] = $t_instance->getWithTemplate($vs_template, $va_get_options);
 		}
 
 		return $va_return;
@@ -132,6 +135,9 @@ class SimpleService {
 		}
 
 		$o_search = caGetSearchInstance($pa_config['table']);
+		if(!$o_search instanceof SearchEngine) {
+			throw new Exception('Invalid table in config');
+		}
 
 		// restrictToTypes
 		if($pa_config['restrictToTypes'] && is_array($pa_config['restrictToTypes']) && (sizeof($pa_config['restrictToTypes']) > 0)) {
@@ -142,23 +148,38 @@ class SimpleService {
 			$o_search->addResultFilter($t_instance->tableName().'.type_id', 'IN', join(",",$va_type_filter));
 		}
 
+		/** @var SearchResult $o_res */
 		$o_res = $o_search->search($ps_q, array(
 			'sort' => $po_request->getParameter('sort', pString),
 			'sortDirection' => $po_request->getParameter('sortDirection', pString),
-			'start' => $po_request->getParameter('start', pInteger),
-			'limit' => $po_request->getParameter('limit', pInteger),
 			'checkAccess' => $pa_config['checkAccess'],
 		));
 
+		if($vn_start = $po_request->getParameter('start', pInteger)) {
+			if(!$o_res->seek($vn_start)) {
+				return array();
+			}
+		}
+
+		$vn_limit = $po_request->getParameter('limit', pInteger);
+		if(!$vn_limit) { $vn_limit = 0; }
+
 		$va_return = array();
+		$va_get_options = array();
+		if(isset($pa_config['checkAccess']) && is_array($pa_config['checkAccess'])) {
+			$va_get_options['checkAccess'] = $pa_config['checkAccess'];
+		}
+
 		while($o_res->nextHit()) {
 			$va_hit = array();
 
 			foreach($pa_config['content'] as $vs_key => $vs_template) {
-				$va_hit[self::sanitizeKey($vs_key)] = $o_res->getWithTemplate($vs_template);
+				$va_hit[self::sanitizeKey($vs_key)] = $o_res->getWithTemplate($vs_template, $va_get_options);
 			}
 
 			$va_return[$o_res->get($t_instance->primaryKey(true))] = $va_hit;
+
+			if($vn_limit && (sizeof($va_return) >= $vn_limit)) { break; }
 		}
 
 		return $va_return;

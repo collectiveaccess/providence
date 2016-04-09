@@ -35,6 +35,7 @@
    */
 
  	require_once(__CA_LIB_DIR__.'/core/Configuration.php');
+	require_once(__CA_LIB_DIR__."/core/Parsers/MediaMetadata/XMPParser.php");
 
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -45,7 +46,7 @@
 	 */
 	function caGetExternalApplicationPath($ps_application_name) {
 		$o_config = Configuration::load();
-		if (!($o_ext_app_config = Configuration::load($o_config->get('external_applications')))) { return null; }
+		if (!($o_ext_app_config = Configuration::load(__CA_CONF_DIR__.'/external_applications.conf'))) { return null; }
 
 		return $o_ext_app_config->get($ps_application_name.'_app');
 	}
@@ -336,7 +337,7 @@
 		}
 		if (!caIsValidFilePath($ps_pdfminer_path)) { return false; }
 
-		if (!file_exists($ps_pdfminer_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_PDFMINER[$ps_pdfminer_path] = false; }
+		if (!@is_readable($ps_pdfminer_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_PDFMINER[$ps_pdfminer_path] = false; }
 		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
 		exec($ps_pdfminer_path." > /dev/null",$va_output,$vn_return);
 		if($vn_return == 100) {
@@ -359,9 +360,9 @@
 		} else {
 			$_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS = array();
 		}
-		if (!trim($ps_phantomjs_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_phantomjs_path)) || !file_exists($ps_phantomjs_path)) { return false; }
+		if (!trim($ps_phantomjs_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_phantomjs_path)) || !@is_readable($ps_phantomjs_path)) { return false; }
 		
-		if (!file_exists($ps_phantomjs_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS[$ps_phantomjs_path] = false; }
+		if (!@is_readable($ps_phantomjs_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS[$ps_phantomjs_path] = false; }
 		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
 		exec($ps_phantomjs_path." > /dev/null",$va_output,$vn_return);
 		if($vn_return == 0) {
@@ -384,9 +385,9 @@
 		} else {
 			$_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF = array();
 		}
-		if (!trim($ps_wkhtmltopdf_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_wkhtmltopdf_path)) || !file_exists($ps_wkhtmltopdf_path)) { return false; }
+		if (!trim($ps_wkhtmltopdf_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_wkhtmltopdf_path)) || !@is_readable($ps_wkhtmltopdf_path)) { return false; }
 		
-		if (!file_exists($ps_wkhtmltopdf_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF[$ps_wkhtmltopdf_path] = false; }
+		if (!@is_readable($ps_wkhtmltopdf_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF[$ps_wkhtmltopdf_path] = false; }
 		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
 		exec($ps_wkhtmltopdf_path." > /dev/null",$va_output,$vn_return);
 		if(($vn_return == 0) || ($vn_return == 1)) {
@@ -410,9 +411,9 @@
 		} else {
 			$_MEDIAHELPER_PLUGIN_CACHE_EXIFTOOL = array();
 		}
-		if (!trim($ps_exiftool_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_exiftool_path)) || !file_exists($ps_exiftool_path)) { return false; }
+		if (!trim($ps_exiftool_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_exiftool_path)) || !@is_readable($ps_exiftool_path)) { return false; }
 		
-		if (!file_exists($ps_exiftool_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_EXIFTOOL[$ps_exiftool_path] = false; }
+		if (!@is_readable($ps_exiftool_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_EXIFTOOL[$ps_exiftool_path] = false; }
 		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
 		exec($ps_exiftool_path." > /dev/null",$va_output,$vn_return);
 	
@@ -462,7 +463,7 @@
 	function caExtractEmbeddedMetadata($po_instance, $pa_metadata, $pn_locale_id) {
 		if (!is_array($pa_metadata)) { return false; }
 		$vb_did_mapping = false;
-		if (!($vs_media_metadata_config = $po_instance->getAppConfig()->get('media_metadata'))) { return false; }
+		if (!($vs_media_metadata_config = __CA_CONF_DIR__.'/media_metadata.conf')) { return false; }
 		$o_metadata_config = Configuration::load($vs_media_metadata_config);
 
 		$va_mappings = $o_metadata_config->getAssoc('import_mappings');
@@ -499,7 +500,7 @@
 							foreach($va_info['map'] as $vs_sub_element => $vs_value) {
 								$va_tmp2 = explode('.', $vs_sub_element);
 								$vs_sub_element = array_pop($va_tmp2);
-								if ($t_element = $po_instance->_getElementInstance($vs_sub_element)) {
+								if ($t_element = ca_metadata_elements::getInstance($vs_sub_element)) {
 									switch($t_element->get('datatype')) {
 										case 3:	// List
 											$t_list = new ca_lists();
@@ -548,7 +549,7 @@
 							foreach($va_info['map'] as $vs_sub_element => $vs_value) {
 								$va_tmp2 = explode('.', $vs_sub_element);
 								$vs_sub_element = array_pop($va_tmp2);
-								if ($t_element = $po_instance->_getElementInstance($vs_sub_element)) {
+								if ($t_element = ca_metadata_elements::getInstance($vs_sub_element)) {
 									switch($t_element->get('datatype')) {
 										case 3:	// List
 											$va_data[$vs_sub_element] = $t_list->getItemIDFromList($t_element->get('list_id'), $vs_value);
@@ -664,7 +665,7 @@
 		if(!caExifToolInstalled()) { return false; } // we need exiftool for embedding
 		$vs_path_to_exif_tool = caGetExternalApplicationPath('exiftool');
 
-		if (!file_exists($ps_file)) { return false; }
+		if (!@is_readable($ps_file)) { return false; }
 		if (!preg_match("/^image\//", mime_content_type($ps_file))) { return false; } // Don't try to embed in files other than images
 
 		// make a temporary copy (we won't touch the original)
@@ -782,7 +783,7 @@
 	function caGetDefaultMediaIconTag($ps_type, $pn_width, $pn_height, $pa_options=null) {
 		if (is_array($va_selected_size = caGetMediaIconForSize($ps_type, $pn_width, $pn_height, $pa_options))) {
 			$o_config = Configuration::load();
-			$o_icon_config = Configuration::load($o_config->get('default_media_icons'));
+			$o_icon_config = Configuration::load(__CA_CONF_DIR__.'/default_media_icons.conf');
 			$va_icons = $o_icon_config->getAssoc($ps_type);
 			return caHTMLImage($o_icon_config->get('icon_folder_url').'/'.$va_icons[$va_selected_size['size']], array('width' => $va_selected_size['width'], 'height' => $va_selected_size['height']));
 		}
@@ -804,7 +805,7 @@
 	function caGetDefaultMediaIconUrl($ps_type, $pn_width, $pn_height, $pa_options=null) {
 		if (is_array($va_selected_size = caGetMediaIconForSize($ps_type, $pn_width, $pn_height, $pa_options))) {
 			$o_config = Configuration::load();
-			$o_icon_config = Configuration::load($o_config->get('default_media_icons'));
+			$o_icon_config = Configuration::load(__CA_CONF_DIR__.'/default_media_icons.conf');
 			$va_icons = $o_icon_config->getAssoc($ps_type);
 			return $o_icon_config->get('icon_folder_url').'/'.$va_icons[$va_selected_size['size']];
 		}
@@ -826,7 +827,7 @@
 	function caGetDefaultMediaIconPath($ps_type, $pn_width, $pn_height, $pa_options=null) {
 		if (is_array($va_selected_size = caGetMediaIconForSize($ps_type, $pn_width, $pn_height, $pa_options))) {
 			$o_config = Configuration::load();
-			$o_icon_config = Configuration::load($o_config->get('default_media_icons'));
+			$o_icon_config = Configuration::load(__CA_CONF_DIR__.'/default_media_icons.conf');
 			$va_icons = $o_icon_config->getAssoc($ps_type);
 			return $o_icon_config->get('icon_folder_path').'/'.$va_icons[$va_selected_size['size']];
 		}
@@ -840,7 +841,7 @@
 	 */
 	function caGetMediaIconForSize($ps_type, $pn_width, $pn_height, $pa_options=null) {
 		$o_config = Configuration::load();
-		$o_icon_config = Configuration::load($o_config->get('default_media_icons'));
+		$o_icon_config = Configuration::load(__CA_CONF_DIR__.'/default_media_icons.conf');
 
 		$vs_selected_size = null;
 		if (is_array($va_icons = $o_icon_config->getAssoc($ps_type))) {

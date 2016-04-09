@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -57,6 +57,13 @@
 		
  		protected $opb_type_restriction_has_changed = false;
  		protected $opn_type_restriction_id = null;
+
+		/**
+		 * List of available search-result sorting fields
+		 * Is associative array: values are display names for fields, keys are full fields names (table.field) to be used as sort
+		 */
+		protected $opa_sorts;
+
 		# ------------------------------------------------------------------
 		/**
 		 *
@@ -67,6 +74,7 @@
  			
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			$this->opo_datamodel = Datamodel::load();
+			$this->opa_sorts = array();
  			
  			if ($this->ops_tablename) {
 				$this->opo_result_context = new ResultContext($po_request, $this->ops_tablename, $this->ops_find_type);
@@ -265,11 +273,7 @@
  			$this->view->setVar('display_lists', $va_displays);	
  			
  			# --- print forms used for printing search results as labels - in tools show hide under page bar
- 			if ((bool)$this->request->config->get('use_legacy_print_labels_generator')) {
- 				$this->view->setVar('label_formats', $this->getLegacyPrintForms());
- 			} else {
- 				$this->view->setVar('label_formats', caGetAvailablePrintTemplates('labels', array('table' => $this->ops_tablename, 'type' => 'label')));
- 			}
+ 			$this->view->setVar('label_formats', caGetAvailablePrintTemplates('labels', array('table' => $this->ops_tablename, 'type' => 'label')));
  			
  			# --- export options used to export search results - in tools show hide under page bar
  			$vn_table_num = $this->opo_datamodel->getTableNum($this->ops_tablename);
@@ -337,8 +341,6 @@
 		 * Generates and outputs label-formatted PDF version of search results 
 		 */
 		protected function _genLabels($po_result, $ps_label_code, $ps_output_filename, $ps_title=null) {
-			if((bool)$this->request->config->get('use_legacy_print_labels_generator')) { return $this->_genLabelsLegacy($po_result, $ps_label_code, $ps_output_filename, $ps_title); }
-			
 			$vs_border = ((bool)$this->request->config->get('add_print_label_borders')) ? "border: 1px dotted #000000; " : "";
 			
 			//
@@ -450,267 +452,6 @@
 				$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
 			}
 			
-		}
-		# -------------------------------------------------------
- 		/**
- 		 * Returns list of available legacy label print formats
-		 * The legacy method of label generation is retained for backward compatibility and will be removed in an upcoming version
- 		 *
- 		 * @deprecated Deprecated since version 1.5
- 		 */
- 		public function getLegacyPrintForms() {
- 			require_once(__CA_LIB_DIR__.'/core/Print/PrintForms.php');
-			return PrintForms::getAvailableForms($this->request->config->get($this->ops_tablename.'_print_forms'));
-		}
-		# -------------------------------------------------------
-		/**
-		 * Generates and outputs label-formatted PDF version of search results using old "built-in" label generator
-		 * This method of label generation is retained for backward compatibility and will be removed in an upcoming version
-		 *
-		 * @deprecated Deprecated since version 1.5
-		 * @see BaseFindController::_genLabels
-		 */
-		protected function _genLabelsLegacy($po_result, $ps_label_code, $ps_output_filename, $ps_title=null) {
- 			require_once(__CA_LIB_DIR__.'/core/Print/PrintForms.php');
-			$o_print_form = new PrintForms($this->request->config->get($this->ops_tablename.'_print_forms'));
-			
-			if (!$o_print_form->setForm($ps_label_code)) {
-				// bail if there are no forms configured or the label code is invalid
-				$this->Index();
-				return;
-			}
-			
-			$o_print_form->setPageElement("datetime" , date("n/d/y @ g:i a"));
-			$o_print_form->setPageElement("title", $ps_title);
-
-			header("Content-type: application/pdf");
-			header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-			header("Cache-Control: no-store, no-cache, must-revalidate");
-			header("Cache-Control: post-check=0, pre-check=0", false);
-			header("Pragma: no-cache");
-			header("Cache-control: private");
-	
-			$t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
-			$va_elements = $o_print_form->getSubFormLayout();
-			
-			
-			// be sure to seek to the beginning when running labels
-			$po_result->seek(0); 
-			while($po_result->nextHit()) {
-				$t_subject->load($po_result->get($t_subject->primaryKey()));
-				
-				foreach($va_elements as $vs_element_name => $va_element_info) {
-					$vs_delimiter = $va_element_info['field_delimiter'].' ';
-					if (!is_array($va_fields = $va_element_info['fields'])) { continue; }
-					
-					$va_values[$vs_element_name] = array();
-					
-					if ($va_element_info['related_table']) {
-						// pulling data from related table
-						if ($t_rel_table = $this->opo_datamodel->getInstanceByTableName($va_element_info['related_table'], true)) {
-							$va_rel_items = $t_subject->getRelatedItems($va_element_info['related_table']);
-							$va_rel_value_groups = array();
-							
-							$vn_rel_count = 0;
-							$vn_limit = ($va_element_info['limit'] > 0) ? $va_element_info['limit'] : 0;
-							foreach($va_rel_items as $vs_key => $va_rel_item) {
-								$va_values[$vs_element_name] = array();
-								if ($t_rel_table->load($va_rel_item[$t_rel_table->primaryKey()])) {
-									foreach($va_fields as $vs_field) {
-										$va_tmp = explode(':', $vs_field);
-										if (sizeof($va_tmp) > 1) {
-											$vs_field_type = array_shift($va_tmp);
-											$vs_field = join(':', $va_tmp);
-										} else {
-											$vs_field_type = 'field';
-										}
-										
-										switch($vs_field_type) {
-											case 'attribute':
-												// output attributes
-												if ($vs_v = trim($t_rel_table->getAttributesForDisplay($vs_field))) {
-													$va_values[$vs_element_name][] = $vs_v;
-												}
-												break;
-											case 'labelForID':
-												$vn_key = $po_result->get($vs_field);
-												
-												list($vs_key_table, $vs_key_field) = explode('.', $vs_field);
-												$va_label_rels = $this->opo_datamodel->getManyToOneRelations($vs_key_table, $vs_key_field);
-											
-												if (is_array($va_label_rels) && (sizeof($va_label_rels) > 0)) {
-													if ($t_label_rel = $this->opo_datamodel->getInstanceByTableName($va_label_rels['one_table'], true)) {
-														if ($t_label_rel->load(array($va_label_rels['one_table_field'] => $vn_key))) {
-															if ($vs_label = trim($t_label_rel->getLabelForDisplay(false))) {
-																$va_values[$vs_element_name][] = $vs_label;	
-															}
-														}
-													}
-												}
-												break;
-											case 'label':
-												if ($vs_label = trim($t_rel_table->getLabelForDisplay(false))) {
-													$va_values[$vs_element_name][] = $vs_label;
-												}
-												break;
-											case 'hierlabel':
-												if ($vs_label = trim($t_rel_table->getLabelForDisplay(false))) {
-													$va_values[$vs_element_name][] = $vs_label;
-												}
-												break;
-											case 'field':
-											default:
-												// output standard database fields
-												list($vs_table, $vs_f) = explode('.', $vs_field);
-												if ($vs_v = trim($t_rel_table->get($vs_f))) {
-													$va_values[$vs_element_name][] = $vs_v;
-												}
-												break;
-										}
-									}
-									$vn_rel_count++;
-									if (($vn_limit > 0) && ($vn_limit < $vn_rel_count)) {
-										break;
-									}
-								}
-								if ($vs_formatted_string = $va_element_info['format']) {
-									for($vn_i=0; $vn_i < sizeof($va_values[$vs_element_name]); $vn_i++) {
-										$vs_formatted_string = str_replace('%'.($vn_i+1), $va_values[$vs_element_name][$vn_i], $vs_formatted_string);
-									}
-									$va_values[$vs_element_name] = $vs_formatted_string;
-								} else {
-									$va_values[$vs_element_name] = join($vs_delimiter, $va_values[$vs_element_name]);
-								}
-								$va_rel_value_groups[] = $va_values[$vs_element_name];
-							}
-							$va_values[$vs_element_name] = join("\n", $va_rel_value_groups);
-						}
-					} else {
-						// working on primary table
-						foreach($va_fields as $vs_field) {
-							$va_tmp = explode(':', $vs_field);
-							if (sizeof($va_tmp) > 1) {
-								$vs_field_type = array_shift($va_tmp);
-								$vs_field = join(':', $va_tmp);
-							} else {
-								$vs_field_type = 'field';
-							}
-							
-							switch($vs_field_type) {
-								case 'attribute':
-									// output attributes
-									if ($vs_v = trim($t_subject->getAttributesForDisplay($vs_field))) {
-										$va_values[$vs_element_name][] = $vs_v;
-									}
-									break;
-								case 'labelForID':
-									$vn_key = $po_result->get($vs_field);
-									
-									list($vs_key_table, $vs_key_field) = explode('.', $vs_field);
-									$va_label_rels = $this->opo_datamodel->getManyToOneRelations($vs_key_table, $vs_key_field);
-								
-									if (is_array($va_label_rels) && (sizeof($va_label_rels) > 0)) {
-										if ($t_label_rel = $this->opo_datamodel->getInstanceByTableName($va_label_rels['one_table'], true)) {
-											if ($t_label_rel->load(array($va_label_rels['one_table_field'] => $vn_key))) {
-												if ($vs_label = $t_label_rel->getLabelForDisplay(false)) {
-													$va_values[$vs_element_name][] = $vs_label;	
-												}
-											}
-										}
-									}
-									break;
-								case 'label':
-									if ($vs_label = trim($t_subject->getLabelForDisplay(false))) {
-										$va_values[$vs_element_name][] = $vs_label;
-									}
-									break;
-								case 'hierlabel':
-									if ($vs_label = trim($t_subject->getLabelForDisplay(false))) {
-										if (!$t_subject->isHierarchical()) {
-											$va_values[$vs_element_name][] = $vs_label;
-											break;
-										}
-										
-										$vn_hierarchy_type = $t_subject->getHierarchyType();
-										
-										$vs_label_table_name = $t_subject->getLabelTableName();
-										$vs_display_fld = $t_subject->getLabelDisplayField();
-										if (!($va_ancestor_list = $t_subject->getHierarchyAncestors(null, array(
-											'additionalTableToJoin' => $vs_label_table_name, 
-											'additionalTableJoinType' => 'LEFT',
-											'additionalTableSelectFields' => array($vs_display_fld, 'locale_id'),
-											'additionalTableWheres' => array('('.$vs_label_table_name.'.is_preferred = 1 OR '.$vs_label_table_name.'.is_preferred IS NULL)'),
-											'includeSelf' => true
-										)))) {
-											$va_ancestor_list = array();
-										}
-										
-										
-										$va_ancestors_by_locale = array();
-										$vs_pk = $t_subject->primaryKey();
-										
-										$vs_idno_field = $t_subject->getProperty('ID_NUMBERING_ID_FIELD');
-										foreach($va_ancestor_list as $vn_ancestor_id => $va_info) {
-											if (!$va_info['NODE']['parent_id'] && ($vn_hierarchy_type != __CA_HIER_TYPE_ADHOC_MONO__)) { continue; }
-											if (!($va_info['NODE']['name'] =  $va_info['NODE'][$vs_display_fld])) {		// copy display field content into 'name' which is used by bundle for display
-												if (!($va_info['NODE']['name'] = $va_info['NODE'][$vs_idno_field])) { $va_info['NODE']['name'] = '???'; }
-											}
-											$vn_locale_id = isset($va_info['NODE']['locale_id']) ? $va_info['NODE']['locale_id'] : null;
-											$va_ancestors_by_locale[$va_info['NODE'][$vs_pk]][$vn_locale_id] = $va_info['NODE'];
-										}
-										
-										$va_ancestor_list = array_reverse(caExtractValuesByUserLocale($va_ancestors_by_locale));
-										
-										$va_tmp = array();
-										foreach($va_ancestor_list as $vn_i => $va_ancestor) {
-											$va_tmp[] = $va_ancestor['name'];
-										}
-										
-										$vs_delimiter = (trim($vs_field)) ? $vs_field : ' > ';
-										$va_values[$vs_element_name][] = join($vs_delimiter, $va_tmp);
-									}
-									break;
-								case 'path':
-									if (method_exists($po_result, 'getMediaPath')) {
-										list($vs_version, $vs_field) = explode(':', $vs_field);
-										$va_values[$vs_element_name][] = $po_result->getMediaPath($vs_field, $vs_version);
-									}
-									break;
-								case 'field':
-								default:
-									// output standard database fields
-									if ($vs_v = trim($po_result->get($vs_field))) {
-										$va_values[$vs_element_name][] = $vs_v;
-									}
-									break;
-							}
-						}
-						
-						if ($vs_formatted_string = $va_element_info['format']) {
-							for($vn_i=0; $vn_i < sizeof($va_values[$vs_element_name]); $vn_i++) {
-								$vs_formatted_string = str_replace('%'.($vn_i+1), $va_values[$vs_element_name][$vn_i], $vs_formatted_string);
-							}
-							$va_values[$vs_element_name] = $vs_formatted_string;
-						} else {
-							$va_values[$vs_element_name] = join($vs_delimiter ? $vs_delimiter : ' ', $va_values[$vs_element_name]);
-						}
-					}
-					
-					
-					// convert HTML to line breaks
-					$va_values[$vs_element_name] = preg_replace('!<p[/]*>!', "\n\n", $va_values[$vs_element_name]); 
-					$va_values[$vs_element_name] = preg_replace('!</p>!', "", $va_values[$vs_element_name]); 
-					$va_values[$vs_element_name] = preg_replace('!<br[/]*>!', "\n", $va_values[$vs_element_name]); 
-					
-					// remove any other HTML tags
-					$va_values[$vs_element_name] = strip_tags($va_values[$vs_element_name]); 
-				}
-				$o_print_form->addNewSubForm($va_values, 0, 7);	
-			}
-			
-			$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename), 0, 30);
-			header("Content-Disposition: attachment; filename=labels_".$vs_output_file_name.".pdf");
-			$this->opo_response->addContent( $o_print_form->getPDF(), 'view');
 		}
 		# -------------------------------------------------------
 		# Export
@@ -1125,12 +866,7 @@
  			$this->view->setVar('current_view', $vs_view);
  			
  			$vn_type_id 			= $this->opo_result_context->getTypeRestriction($vb_dummy);
- 			$va_sortable_elements = ca_metadata_elements::getSortableElements($this->ops_tablename, $vn_type_id);
- 			
- 			if (!is_array($this->opa_sorts)) { $this->opa_sorts = array(); }
- 			foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
- 				$this->opa_sorts[$this->ops_tablename.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
- 			}
+			$this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $vn_type_id);
  			
  			$this->view->setVar('sorts', $this->opa_sorts);	// pass sort list to view for rendering
  			$this->view->setVar('current_sort', $vs_sort);
@@ -1254,12 +990,7 @@
  			$this->view->setVar('type_id', $this->opn_type_restriction_id);
  			
  			// Get attribute sorts
- 			$va_sortable_elements = ca_metadata_elements::getSortableElements($this->ops_tablename, $this->opn_type_restriction_id);
- 			
- 			if (!is_array($this->opa_sorts)) { $this->opa_sorts = array(); }
- 			foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
- 				$this->opa_sorts[$this->ops_tablename.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
- 			}
+			$this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id);
  			
  			if ($pa_options['appendToSearch']) {
  				$vs_append_to_search .= " AND (".$pa_options['appendToSearch'].")";

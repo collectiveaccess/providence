@@ -227,8 +227,8 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# for import and export
 	public function register() {
 		$this->opo_config = Configuration::load();
-		$vs_external_app_config_path = $this->opo_config->get('external_applications');
-		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
+		$this->opo_external_app_config = Configuration::load(__CA_CONF_DIR__."/external_applications.conf");
+		$this->ops_CoreImage_path = $this->opo_external_app_config->get('coreimagetool_app');
 		
 		$this->ops_dcraw_path = $this->opo_external_app_config->get('dcraw_app');
 		

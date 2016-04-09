@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,7 +39,6 @@ require_once(__CA_LIB_DIR__.'/core/Configuration.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/ExpressionParser.php');
 require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
-require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 
 /**
@@ -47,7 +46,17 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
  * More about bundle display templates here: http://docs.collectiveaccess.org/wiki/Bundle_Display_Templates
  */
 
-define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-z0-9]+\[[\@\[\]\=\'A-Za-z0-9\.\-\/\:]+|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/:]+[~]{1}[A-Za-z0-9]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/:]+)/");
+// Components of __CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__
+//
+//	ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]{1}[\&\%]{1}[^ <]+|			-- Match ^ca_* tags with options
+//	ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]{1}+|						-- Match simple ^ca_* tags
+//	[0-9]+(?=[.,;])|													-- Match numeric tags followed by punctuation
+//	[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|				-- Match tags with options
+//	[A-Za-z0-9_\.\/]+[:]{0,1}[A-Za-z0-9_\.\/\[\]\@\'\"=:]+|				-- Match XPath
+//	[A-Za-z0-9_\.\/]+[~]{1}[A-Za-z0-9]+[:]{0,1}[A-Za-z0-9_\.\/]*|			-- Match tags with modifiers
+//	[A-Za-z0-9_\.\/]+													-- Match simple tags (letters,number. dots and slashes)
+	
+define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]{1}[\&\%]{1}[^ <]+|ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]+|[0-9]+(?=[.,;])|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.\/]+[:]{0,1}[A-Za-z0-9_\.\/\[\]\@\'\"=:]+|[A-Za-z0-9_\.\/]+[~]{1}[A-Za-z0-9]+[:]{0,1}[A-Za-z0-9_\.\/]*|[A-Za-z0-9_\.\/]+)/");
 	
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -276,8 +285,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 	function caDeleteRemapper($po_request, $t_instance) {
 		$vs_instance_table = $t_instance->tableName();
 		
-		$vn_count = 0;
-		$va_buf = array();
+		$vn_reference_to_count = $vn_reference_from_count = 0;
+		$va_reference_to_buf = $va_reference_from_buf = array();
 		switch($vs_instance_table) {
 			case 'ca_relationship_types':
 				// get # of relationships using this type
@@ -285,11 +294,11 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 				$t_rel_instance = $t_instance->getAppDatamodel()->getInstanceByTableNum($t_instance->get('table_num'));
 				if (!$t_rel_instance->load($t_instance->get('table_num'))) { return ''; }
 				if ($vn_rel_count == 1) {
-					$va_buf[] = _t("Type is used by %1 %2", $vn_rel_count, $t_rel_instance->getProperty('NAME_PLURAL'))."<br>\n";
+					$va_reference_to_buf[] = _t("Type is used by %1 %2", $vn_rel_count, $t_rel_instance->getProperty('NAME_PLURAL'))."<br>\n";
 				} else {
-					$va_buf[] = _t("Type is used by %1 %2", $vn_rel_count, $t_rel_instance->getProperty('NAME_PLURAL'))."<br>\n";
+					$va_reference_to_buf[] = _t("Type is used by %1 %2", $vn_rel_count, $t_rel_instance->getProperty('NAME_PLURAL'))."<br>\n";
 				}
-				$vn_count += $vn_rel_count;
+				$vn_reference_to_count += $vn_rel_count;
 				
 				$vs_typename = _t('relationship type');
 				break;
@@ -306,66 +315,116 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 					
 					if (!($vn_c = sizeof($va_items))) { continue; }
 					if ($vn_c == 1) {
-						$va_buf[] = _t("Has %1 relationship to %2", $vn_c, caGetTableDisplayName($vs_table, true))."<br>\n";
+						$va_reference_to_buf[] = _t("Has %1 relationship to %2", $vn_c, caGetTableDisplayName($vs_table, true))."<br>\n";
 					} else {
-						$va_buf[] = _t("Has %1 relationships to %2", $vn_c, caGetTableDisplayName($vs_table, true))."<br>\n";
+						$va_reference_to_buf[] = _t("Has %1 relationships to %2", $vn_c, caGetTableDisplayName($vs_table, true))."<br>\n";
 					}
-					$vn_count += $vn_c;
+					$vn_reference_to_count += $vn_c;
 				}
 				
-				// Check attributes
+				// Check attributes *using* this row
 				if ($vn_datatype = $t_instance->authorityElementDatatype()) {
 					if ($vn_c = $t_instance->getAuthorityElementReferences(array('countOnly' => true))) {
 						if ($vn_c == 1) {
-							$va_buf[] = _t("Is referenced %1 time", $vn_c)."<br>\n";
+							$va_reference_to_buf[] = _t("Is referenced %1 time", $vn_c)."<br>\n";
 						} else {
-							$va_buf[] = _t("Is referenced %1 times", $vn_c)."<br>\n";
+							$va_reference_to_buf[] = _t("Is referenced %1 times", $vn_c)."<br>\n";
 						}
-						$vn_count += $vn_c;
+						$vn_reference_to_count += $vn_c;
 					}
 				}
 				
 				$vs_typename = $t_instance->getTypeName();
+				
+				// Check for authority references that are *part* of this row
+				
+				if (is_array($va_references_from = $t_instance->getAuthorityElementList()) && sizeof($va_references_from)) {
+					foreach($va_references_from as $va_ref) {
+						if (!($t_element = ca_metadata_elements::getInstance($va_ref['hier_element_id']))) { continue; }
+						$va_reference_from_buf[] = _t(($va_ref['count'] == 1) ? "%1 reference in %2" : "%1 references in %2", $va_ref['count'], $t_element->getLabelForDisplay());
+						$vn_reference_from_count += $va_ref['count'];
+					}
+				}
+				break;
 		}
 		
 		$vs_output = '';
-		if (sizeof($va_buf)) {
+		if (sizeof($va_reference_to_buf)) {
 			// add autocompleter for remapping
-			if ($vn_count == 1) {
-				$vs_output .= "<h3 id='caDeleteReferenceCount'>"._t('This %1 is referenced %2 time', $vs_typename, $vn_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
+			if ($vn_reference_to_count == 1) {
+				$vs_output .= "<h3 id='caReferenceHandlingToCount'>"._t('This %1 is referenced %2 time', $vs_typename, $vn_reference_to_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
 			} else {
-				$vs_output .= "<h3 id='caDeleteReferenceCount'>"._t('This %1 is referenced %2 times', $vs_typename, $vn_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
+				$vs_output .= "<h3 id='caReferenceHandlingToCount'>"._t('This %1 is referenced %2 times', $vs_typename, $vn_reference_to_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
 			}
-			$vs_output .= caHTMLRadioButtonInput('referenceHandling', array('value' => 'delete', 'checked' => 1, 'id' => 'caReferenceHandlingDelete')).' '._t('remove all references')."<br/>\n";
-			$vs_output .= caHTMLRadioButtonInput('referenceHandling', array('value' => 'remap', 'id' => 'caReferenceHandlingRemap')).' '._t('transfer references to').' '.caHTMLTextInput('remapTo', array('value' => '', 'size' => 40, 'id' => 'remapTo', 'class' => 'lookupBg', 'disabled' => 1));
-			$vs_output .= "<a href='#' class='button' onclick='jQuery(\"#remapToID\").val(\"\"); jQuery(\"#remapTo\").val(\"\"); jQuery(\"#caReferenceHandlingClear\").css(\"display\", \"none\"); return false;' style='display: none;' id='caReferenceHandlingClear'>"._t('Clear').'</a>';
-			$vs_output .= caHTMLHiddenInput('remapToID', array('value' => '', 'id' => 'remapToID'));
+			$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingTo', array('value' => 'delete', 'checked' => 1, 'id' => 'caReferenceHandlingToDelete')).' '._t('remove all references')."<br/>\n";
+			$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingTo', array('value' => 'remap', 'id' => 'caReferenceToHandlingRemap')).' '._t('transfer references to').' '.caHTMLTextInput('caReferenceHandlingToRemapTo', array('value' => '', 'size' => 40, 'id' => 'caReferenceHandlingToRemapTo', 'class' => 'lookupBg', 'disabled' => 1));
+			$vs_output .= "<a href='#' class='button' onclick='jQuery(\"#caReferenceHandlingToRemapToID\").val(\"\"); jQuery(\"#caReferenceHandlingToRemapTo\").val(\"\"); jQuery(\"#caReferenceHandlingToClear\").css(\"display\", \"none\"); return false;' style='display: none;' id='caReferenceHandlingToClear'>"._t('Clear').'</a>';
+			$vs_output .= caHTMLHiddenInput('caReferenceHandlingToRemapToID', array('value' => '', 'id' => 'caReferenceHandlingToRemapToID'));
 			$vs_output .= "<script type='text/javascript'>";
 			
 			$va_service_info = caJSONLookupServiceUrl($po_request, $t_instance->tableName(), array('noSymbols' => 1, 'noInline' => 1, 'exclude' => (int)$t_instance->getPrimaryKey(), 'table_num' => (int)$t_instance->get('table_num')));
 			$vs_output .= "jQuery(document).ready(function() {";
-			$vs_output .= "jQuery('#remapTo').autocomplete(
+			$vs_output .= "jQuery('#caReferenceHandlingToRemapTo').autocomplete(
 					{
 						source: '".$va_service_info['search']."', html: true,
 						minLength: 3, delay: 800,
 						select: function(event, ui) {
-							jQuery('#remapToID').val(ui.item.id);
+							jQuery('#caReferenceHandlingToRemapToID').val(ui.item.id);
 							jQuery('#caReferenceHandlingClear').css('display', 'inline');
 						}
 					}
 				);";
 				
-			$vs_output .= "jQuery('#caReferenceHandlingRemap').click(function() {
-				jQuery('#remapTo').attr('disabled', false);
+			$vs_output .= "jQuery('#caReferenceToHandlingRemap').click(function() {
+				jQuery('#caReferenceHandlingToRemapTo').attr('disabled', false);
 			});
-			jQuery('#caReferenceHandlingDelete').click(function() {
-				jQuery('#remapTo').attr('disabled', true);
+			jQuery('#caReferenceHandlingToDelete').click(function() {
+				jQuery('#caReferenceHandlingToRemapTo').attr('disabled', true);
 			});
 			";
 			$vs_output .= "});";
 			$vs_output .= "</script>\n";
 			
-			TooltipManager::add('#caDeleteReferenceCount', "<h2>"._t('References to this %1', $t_instance->getProperty('NAME_SINGULAR'))."</h2>\n".join("\n", $va_buf));
+			TooltipManager::add('#caReferenceHandlingToCount', "<h2>"._t('References to this %1', $t_instance->getProperty('NAME_SINGULAR'))."</h2>\n".join("\n", $va_reference_to_buf));
+		}
+		
+		if (sizeof($va_reference_from_buf)) {
+			// add autocompleter for remapping
+			if ($vn_reference_from_count == 1) {
+				$vs_output .= "<h3 id='caReferenceHandlingFromCount'>"._t('This %1 references %2 other item in metadata', $vs_typename, $vn_reference_from_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
+			} else {
+				$vs_output .= "<h3 id='caReferenceHandlingFromCount'>"._t('This %1 references %2 other items in metadata', $vs_typename, $vn_reference_from_count).". "._t('When deleting this %1:', $vs_typename)."</h3>\n";
+			}
+			$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingFrom', array('value' => 'delete', 'checked' => 1, 'id' => 'caReferenceHandlingFromDelete')).' '._t('remove these references')."<br/>\n";
+			$vs_output .= caHTMLRadioButtonInput('caReferenceHandlingFrom', array('value' => 'remap', 'id' => 'caReferenceHandlingFromRemap')).' '._t('transfer these references and accompanying metadata to').' '.caHTMLTextInput('caReferenceHandlingToRemapFrom', array('value' => '', 'size' => 40, 'id' => 'caReferenceHandlingToRemapFrom', 'class' => 'lookupBg', 'disabled' => 1));
+			$vs_output .= "<a href='#' class='button' onclick='jQuery(\"#caReferenceHandlingToRemapFromID\").val(\"\"); jQuery(\"#caReferenceHandlingToRemapFrom\").val(\"\"); jQuery(\"#caReferenceHandlingClear\").css(\"display\", \"none\"); return false;' style='display: none;' id='caReferenceHandlingClear'>"._t('Clear').'</a>';
+			$vs_output .= caHTMLHiddenInput('caReferenceHandlingToRemapFromID', array('value' => '', 'id' => 'caReferenceHandlingToRemapFromID'));
+			$vs_output .= "<script type='text/javascript'>";
+			
+			$va_service_info = caJSONLookupServiceUrl($po_request, $t_instance->tableName(), array('noSymbols' => 1, 'noInline' => 1, 'exclude' => (int)$t_instance->getPrimaryKey(), 'table_num' => (int)$t_instance->get('table_num')));
+			$vs_output .= "jQuery(document).ready(function() {";
+			$vs_output .= "jQuery('#caReferenceHandlingToRemapFrom').autocomplete(
+					{
+						source: '".$va_service_info['search']."', html: true,
+						minLength: 3, delay: 800,
+						select: function(event, ui) {
+							jQuery('#caReferenceHandlingToRemapFromID').val(ui.item.id);
+							jQuery('#caReferenceHandlingClear').css('display', 'inline');
+						}
+					}
+				);";
+				
+			$vs_output .= "jQuery('#caReferenceHandlingFromRemap').click(function() {
+				jQuery('#caReferenceHandlingToRemapFrom').attr('disabled', false);
+			});
+			jQuery('#caReferenceHandlingFromDelete').click(function() {
+				jQuery('#caReferenceHandlingToRemapFrom').attr('disabled', true);
+			});
+			";
+			$vs_output .= "});";
+			$vs_output .= "</script>\n";
+			
+			TooltipManager::add('#caReferenceHandlingFromCount', "<h2>"._t('References by this %1', $t_instance->getProperty('NAME_SINGULAR'))."</h2>\n".join("<br/>\n", $va_reference_from_buf));
 		}
 		
 		return $vs_output;
@@ -648,7 +707,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		if ($vs_type_name == "list item") {
 			$vs_style = "style='height:auto;'";
 		}
-		if (($vn_item_id) | ($po_view->request->getAction() === 'Delete')) {
+		if (($vn_item_id) || ($po_view->request->getAction() === 'Delete')) {
 			$vs_buf = '<h3 class="nextPrevious" '.$vs_style.'>'.caEditorFindResultNavigation($po_view->request, $t_item, $o_result_context, $pa_options)."</h3>\n";
 		}
 		
@@ -781,7 +840,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 					}
 				}
 				
-				$vb_show_idno = (bool)($vs_idno = $t_item->get($t_item->getProperty('ID_NUMBERING_ID_FIELD')));
+				$vb_show_idno = (!$po_view->request->config->get("{$vs_table_name}_inspector_dont_display_idno")) && (bool)($vs_idno = $t_item->get($t_item->getProperty('ID_NUMBERING_ID_FIELD')));
 				
 				if (!$vs_label) { 
 					switch($vs_table_name) {
@@ -901,7 +960,6 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 				} else {
 					$vs_buf .= "<br/>".caProcessTemplateForIDs($vs_additional_info, $vs_table_name, array($t_item->getPrimaryKey()),array('requireLinkTags' => true))."<br/>\n";
 				}
-
 			}
 			
 			$vs_buf .= "<div id='toolIcons'>";	
@@ -1131,7 +1189,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 						if(!($vs_will_be_part_of_lot_msg = $po_view->request->config->get("ca_objects_inspector_will_be_part_of_lot_msg"))){
 							$vs_will_be_part_of_lot_msg = _t('Will be part of lot');
 						}
-						$vs_buf .= "<strong>".($vb_is_currently_part_of_lot ? $vs_part_of_lot_msg : $vs_will_be_part_of_lot_msg)."</strong>: " . caNavLink($po_view->request, $vs_lot_displayname, '', 'editor/object_lots', 'ObjectLotEditor', 'Edit', array('lot_id' => $vn_lot_id));
+						$vs_buf .= "<br/><strong>".($vb_is_currently_part_of_lot ? $vs_part_of_lot_msg : $vs_will_be_part_of_lot_msg)."</strong>: " . caNavLink($po_view->request, $vs_lot_displayname, '', 'editor/object_lots', 'ObjectLotEditor', 'Edit', array('lot_id' => $vn_lot_id));
 					}
 				}
 			}
@@ -1268,7 +1326,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 					
 					$vs_buf .= "</div>\n";
 
-					if($po_view->request->user->canDoAction('can_duplicate_' . $vs_set_table_name)) {
+					if($po_view->request->user->canDoAction('can_duplicate_items_in_sets') && $po_view->request->user->canDoAction('can_duplicate_' . $vs_set_table_name)) {
 						$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" ></div>';
 						$vs_buf .= caFormTag($po_view->request, 'DuplicateItems', 'caDupeSetItemsForm', 'manage/sets/SetEditor', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
 						$vs_buf .= _t("Duplicate items in this set and add to") . " ";
@@ -1499,7 +1557,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 					$vs_buf .= "<br/><strong>"._t("Type of content")."</strong>: ".caGetTableDisplayName($vn_content_table_num)."<br/>\n";
 					$vs_buf .= "<strong>"._t("Type")."</strong>: ".$t_item->getChoiceListValue('direction', $t_item->get('direction'))."<br/>\n";
 					$vs_buf .= "<strong>"._t("Target format")."</strong>: ".$t_item->get('target')."<br/>\n";
-					
+
 					$va_stats = $t_item->getMappingStatistics();
 					$vs_buf .= "<div><strong>"._t("Number of groups")."</strong>: ".$va_stats['groupCount']."<br/>\n";
 					$vs_buf .= "<strong>"._t("Number of rules")."</strong>: ".$va_stats['ruleCount']."<br/>\n";
@@ -1519,22 +1577,6 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 					}
 				}
 			}
-			
-			//
-			// Output configurable additional info from config, if set
-			// 
-
-			if ($vs_additional_info = $po_view->request->config->get("{$vs_table_name}_inspector_additional_info")) {
-				if(is_array($vs_additional_info)){
-					$vs_buf .= "<br/>";
-					foreach($vs_additional_info as $vs_info){
-						$vs_buf .= caProcessTemplateForIDs($vs_info, $vs_table_name, array($t_item->getPrimaryKey()),array('requireLinkTags' => true))."<br/>\n";
-					}
-				} else {
-					$vs_buf .= "<br/>".caProcessTemplateForIDs($vs_additional_info, $vs_table_name, array($t_item->getPrimaryKey()),array('requireLinkTags' => true))."<br/>\n";
-				}
-			}
-			
 		// -------------------------------------------------------------------------------------
 		// Export
 		
@@ -1963,22 +2005,34 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 	 * Returns a list of "^" prefixed-tags (eg. ^forename) present in a template
 	 *
 	 * @param string $ps_template
-	 * @param array $pa_options No options are currently supported
+	 * @param array $pa_options 
+	 *		stripOptions =
+	 *		parseOptions = 
 	 * 
 	 * @return array An array of tags
 	 */
 	function caGetTemplateTags($ps_template, $pa_options=null) {
 		$va_tags = array();
-		
-		$vs_prefix = caGetOption('prefix', $pa_options, null);
-		
 		if (preg_match_all(__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__, $ps_template, $va_matches)) {
 			foreach($va_matches[1] as $vn_i => $vs_possible_tag) {
-				//if ($vs_prefix) { $va_matches[1][$vn_i] = $vs_possible_tag = $vs_prefix.$vs_possible_tag; }
 				if (strpos($vs_possible_tag, "~") !== false) { continue; }	// don't clip trailing characters when there's a tag directive specified
 				$va_matches[1][$vn_i] = rtrim($vs_possible_tag, "/.%");	// remove trailing slashes, periods and percent signs as they're potentially valid tag characters that are never meant to be at the end
 			}
 			$va_tags = $va_matches[1];
+		}
+		
+		if (caGetOption('stripOptions', $pa_options, false)) {
+			foreach($va_tags as $vn_i => $vs_tag) {
+				$va_opts = caParseTagOptions($vs_tag);
+				
+				$va_tags[$vn_i] = $va_opts['tag'];
+			}
+		} elseif (caGetOption('parseOptions', $pa_options, false)) {
+			foreach($va_tags as $vn_i => $vs_tag) {
+				$va_opts = caParseTagOptions($vs_tag);
+				
+				$va_tags[$vn_i] = array_merge(array('originalTag' => $vs_tag), $va_opts);
+			}
 		}
 		
 		return $va_tags;
@@ -2019,8 +2073,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 				$vs_proc_tag = $ps_prefix.$vs_proc_tag;
 			}
 			
-			if ($t_instance && ($vs_gotten_val = $t_instance->get($vs_proc_tag, $pa_options))) {
-				$vs_gotten_val = caProcessTemplateTagDirectives($vs_gotten_val, $va_tmp);
+			if ($t_instance) {
+				$vs_gotten_val = caProcessTemplateTagDirectives($t_instance->get($vs_proc_tag, $pa_options), $va_tmp);
 				
 				$ps_template = preg_replace("/\^".preg_quote($vs_tag, '/')."(?![A-Za-z0-9]+)/", $vs_gotten_val, $ps_template);
 			} else {
@@ -2032,7 +2086,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 				$vs_val = caProcessTemplateTagDirectives($vs_val, $va_tmp);
 				
 				if ($pb_quote) { $vs_val = '"'.addslashes($vs_val).'"'; }
-				$ps_template = preg_replace("!\^(?={$vs_tag}[^A-Za-z0-9]+|{$vs_tag}$){$vs_tag}!", str_replace("$", "\\$", $vs_val), $ps_template);	// escape "$" to prevent interpretation as backreferences
+				$vs_tag_proc = preg_quote($vs_tag, '/');
+				$ps_template = preg_replace("/\^(?={$vs_tag_proc}[^A-Za-z0-9]+|{$vs_tag_proc}$){$vs_tag_proc}/", str_replace("$", "\\$", $vs_val), $ps_template);	// escape "$" to prevent interpretation as backreferences
 			}
 		}
 		return $ps_template;
@@ -2269,7 +2324,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		$va_start = $o_tep->getHistoricDateParts($pa_historic_timestamps[0]);
 		$va_end = $o_tep->getHistoricDateParts($pa_historic_timestamps[1]);
 		
-		if ($va_start['year'] < 0) { $va_start['year'] = 1900; }
+		//if ($va_start['year'] < 0) { $va_start['year'] = 1900; }
 		if ($va_end['year'] >= 2000000) { $va_end['year'] = date("Y"); }
 		
 		return array(
@@ -2625,7 +2680,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 	/**
 	 *
 	 */
-	function caObjectsDisplayDownloadLink($po_request) {
+	function caObjectsDisplayDownloadLink($po_request, $pn_object_id = null) {
 		$o_config = Configuration::load();
 		$vn_can_download = false;
 		if($o_config->get('allow_ca_objects_representation_download')){
@@ -2646,6 +2701,15 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 					}
 				break;
 				# ------------------------------------------
+			}
+		}
+		if($pn_object_id && $vn_can_download && is_array($o_config->get('allow_ca_objects_representation_download_types')) && sizeof($o_config->get('allow_ca_objects_representation_download_types'))){
+			# --- see if current object's type is in the confirgured array
+			$t_object = new ca_objects($pn_object_id);
+			$t_list_item = new ca_list_items($t_object->get("type_id"));
+			$va_object_type_code = $t_list_item->get("idno");
+			if(!in_array($va_object_type_code, $o_config->get('allow_ca_objects_representation_download_types'))){
+				$vn_can_download = false;
 			}
 		}
 		return $vn_can_download;
@@ -2742,7 +2806,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 				} else {
 					switch(__CA_APP_TYPE__) {
 						case 'PROVIDENCE':
-							$va_links[] = ($vs_link = caEditorLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i])) ? $vs_link : $vs_text;
+							$va_links[] = ($vs_link = caEditorLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i], ($pb_add_rel ? array('rel' => true) : array()))) ? $vs_link : $vs_text;
 							break;
 						case 'PAWTUCKET':
 							$va_links[] = ($vs_link = caDetailLink($g_request, $vs_text, $ps_class, $ps_table_name, $pa_row_ids[$vn_i])) ? $vs_link : $vs_text;
@@ -2863,24 +2927,32 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 	 *
 	 * @param RequestHTTP $po_request
 	 * @param string $ps_id_prefix
-	 * @param array $pa_settings
+	 * @param string $ps_table
 	 * 
 	 * @return string HTML implementing the control
 	 */
-	function caEditorBundleSortControls($po_request, $ps_id_prefix, $pa_settings) {
-		$vs_buf = "	<div class=\"caItemListSortControlContainer\">
-		<div class=\"caItemListSortControlTrigger\" id=\"{$ps_id_prefix}caItemListSortControlTrigger\">
-			"._t('Sort by')." <img src=\"".$po_request->getThemeUrlPath()."/graphics/icons/bg.gif\" alt=\"Sort\"/>
-		</div>
+	function caEditorBundleSortControls($po_request, $ps_id_prefix, $ps_table) {
+		require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
+
+		if(!$ps_table) { $ps_table = 'ca_entities'; }
+		$va_sort_fields = caGetAvailableSortFields($ps_table, null);
+
+		$vs_buf = "
+		<div class=\"caItemListSortControlContainer\">
+			<div class=\"caItemListSortControlTrigger\" id=\"{$ps_id_prefix}caItemListSortControlTrigger\">
+				"._t('Sort by')." <img src=\"".$po_request->getThemeUrlPath()."/graphics/icons/bg.gif\" alt=\"Sort\"/>
+			</div>
 		<div class=\"caItemListSortControls\" id=\"{$ps_id_prefix}caItemListSortControls\">
-			<ul>
-				<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('name'); return false;\" class=\"caItemListSortControl\">"._t('name')."</a><br/></li>
-				<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('idno'); return false;\" class=\"caItemListSortControl\">"._t('idno')."</a><br/></li>
-				<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('type'); return false;\" class=\"caItemListSortControl\">"._t('type')."</a><br/></li>
-				<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('entry'); return false;\" class=\"caItemListSortControl\">"._t('entry')."</a><br/></li>
+			<ul>\n";
+
+		foreach($va_sort_fields as $vs_key => $vs_label) {
+			$vs_buf .= "<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('{$vs_key}'); return false;\" class=\"caItemListSortControl\">".$vs_label."</a><br/></li>\n";
+		}
+
+		$vs_buf .=	"
 			</ul>
 		</div>
-	</div>";
+		</div>";
 		
 		return $vs_buf;
 	}
@@ -2909,10 +2981,9 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		if (!($t_instance = $o_dm->getInstanceByTableName($va_tmp[0], true))) {
 			return null;
 		}
-		if (!method_exists($t_instance, "_getElementDatatype") || (is_null($vn_datatype = $t_instance->_getElementDatatype($va_tmp[1])))) {
-			return null;
-		}
-		
+
+		$vn_datatype = ca_metadata_elements::getElementDatatype($va_tmp[1]);
+		if (is_null($vn_datatype)) { return null; }
 		
 		if (!($vs_user_currency = $po_request->user ? $po_request->user->getPreference('currency') : 'USD')) {
 			$vs_user_currency = 'USD';
@@ -2941,7 +3012,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 				}
 			
 				$va_tags_to_process[$vs_raw_tag] = true;
-				$va_subelements_to_process["{$vs_bundle_name}.{$vs_subelement}"] = $t_instance->_getElementDatatype($vs_subelement);
+				$va_subelements_to_process["{$vs_bundle_name}.{$vs_subelement}"] = ca_metadata_elements::getElementDatatype($vs_subelement);
 			}
 		} else {
 			$va_tmp = explode(".", $vs_bundle_name);
@@ -3294,13 +3365,11 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 	# ------------------------------------------------------------------
 	/**
 	 * Get bundle preview for a relationship bundle
-	 * @param BundlableLabelableBaseModelWithAttributes $t_rel_instance
 	 * @param array $pa_initial_values
-	 * @param string $ps_template
 	 * @param string $ps_delimiter
 	 * @return string
 	 */
-	function caGetBundlePreviewForRelationshipBundle($t_rel_instance, $pa_initial_values, $ps_template, $ps_delimiter='; ') {
+	function caGetBundlePreviewForRelationshipBundle($pa_initial_values, $ps_delimiter='; ') {
 		if(!is_array($pa_initial_values) || sizeof($pa_initial_values) == 0) {
 			return '""';
 		}
@@ -3309,19 +3378,10 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^([0-9]+(?=[.,;])|[\/A-Za-
 		if(sizeof($pa_initial_values) > 10) {
 			$pa_initial_values = array_slice($pa_initial_values, 0, 10);
 		}
-		if(!($t_rel_instance instanceof BundlableLabelableBaseModelWithAttributes)) {
-			return '""';
-		}
 
-		$va_ids = $va_previews = array();
+		$va_previews = array();
 		foreach($pa_initial_values as $va_item) {
-			$va_ids[] = $va_item['id'];
-		}
-
-		$o_res = $t_rel_instance->makeSearchResult($t_rel_instance->tableName(),$va_ids);
-
-		while($o_res->nextHit()) {
-			$va_previews[] = $o_res->getWithTemplate($ps_template);
+			$va_previews[] = trim($va_item['_display']);
 		}
 
 		return caEscapeForBundlePreview(join($ps_delimiter, $va_previews));

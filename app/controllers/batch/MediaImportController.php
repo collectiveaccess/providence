@@ -174,10 +174,11 @@
  			foreach($va_importer_list as $vn_importer_id => $va_importer_info) {
  				if ($va_importer_info['table_num'] == $t_instance->tableNum()) { // target table
  					$va_object_importer_options[$va_importer_info['label']] = $vn_importer_id;
- 				} else {
+ 				} elseif($va_importer_info['table_num'] == $t_instance->getAppDatamodel()->getTableNum('ca_object_representations')) {
  					$va_object_representation_importer_options[$va_importer_info['label']] = $vn_importer_id;
  				}
  			}
+
  			$this->view->setVar($vs_import_target.'_mapping_list', caHTMLSelect($vs_import_target.'_mapping_id', $va_object_importer_options, array(), array('value' => $va_last_settings[$vs_import_target.'_mapping_id'])));
  			$this->view->setVar($vs_import_target.'_mapping_list_count', sizeof($va_object_importer_options));
  			$this->view->setVar('ca_object_representations_mapping_list', caHTMLSelect('ca_object_representations_mapping_id', $va_object_representation_importer_options, array(), array('value' => $va_last_settings['ca_object_representations_mapping_id'])));

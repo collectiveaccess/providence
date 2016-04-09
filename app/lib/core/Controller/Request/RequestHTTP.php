@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2014 Whirl-i-Gig
+ * Copyright 2007-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -544,7 +544,7 @@ class RequestHTTP extends Request {
 			}
 
 			// trigger async search indexing
-			if(!$this->getAppConfig()->get('disable_out_of_process_search_indexing')) {
+			if((__CA_APP_TYPE__ === 'PROVIDENCE') && !$this->getAppConfig()->get('disable_out_of_process_search_indexing')) {
 				$r_socket = fsockopen($vs_proto . __CA_SITE_HOSTNAME__, $vn_port, $errno, $err, 3);
 				if ($r_socket) {
 					$vs_http  = "GET ".$this->getBaseUrlPath()."/index.php?processIndexingQueue=1 HTTP/1.1\r\n";
@@ -744,7 +744,9 @@ class RequestHTTP extends Request {
 			$this->user->setVar('last_login', time(), array('volatile' => true));
 			$this->user->setLastLogout($this->user->getLastPing(), array('volatile' => true));
 			
-			//$this->user->close(); ** will be called externally **
+			$this->user->setMode(ACCESS_WRITE);
+			$this->user->update();
+			
 			$AUTH_CURRENT_USER_ID = $vn_user_id;
 
 			if ($pa_options['redirect']) {

@@ -520,6 +520,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			$t_ui = ca_editor_uis::find(array('editor_code' => $pm_ui_id), array('returnAs' => 'firstModelInstance'));
 		}
 		if (!$t_ui) { return null; }
+		if ($t_ui->get('is_system_ui')) { return __CA_BUNDLE_ACCESS_EDIT__; }
 		$vn_ui_id = $t_ui->getPrimaryKey();
 		
 		if ($vn_user_id = $po_request->getUserID()) {
@@ -703,7 +704,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public function getScreenBundlePlacements($pm_screen) {
+	public function getScreenBundlePlacements($pm_screen, $pn_type_id=null) {
 		if (!$this->getPrimaryKey()) { return false; }
 		
 		$o_db = $this->getDb();
@@ -726,6 +727,9 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		while ($qr_res->nextRow()) {
 			$va_tmp = $qr_res->getRow();
 			$va_tmp['settings'] = $qr_res->getVars('settings');
+			
+			if ($pn_type_id && is_array($va_tmp['settings']['bundleTypeRestrictions']) && (sizeof($va_tmp['settings']['bundleTypeRestrictions']) > 0) && !in_array($pn_type_id, $va_tmp['settings']['bundleTypeRestrictions'])) { continue; } // check bundle-placement type restrictions if set
+				
 			$va_placements[] = $va_tmp;
 		}
 		

@@ -53,12 +53,6 @@ class ObjectTableController extends BaseSearchController {
 	protected $opa_views;
 
 	/**
-	 * List of available search-result sorting fields
-	 * Is associative array: values are display names for fields, keys are full fields names (table.field) to be used as sort
-	 */
-	protected $opa_sorts;
-
-	/**
 	 * Name of "find" used to defined result context for ResultContext object
 	 * Must be unique for the table and have a corresponding entry in find_navigation.conf
 	 */
@@ -71,13 +65,6 @@ class ObjectTableController extends BaseSearchController {
 		$this->opa_views = array(
 			'list' => _t('list'),
 		);
-
-		$this->opa_sorts = array_merge(array(
-			'_natural' => _t('relevance'),
-			'ca_object_labels.name_sort' => _t('title'),
-			'ca_objects.type_id' => _t('type'),
-			'ca_objects.idno_sort' => _t('idno')
-		), $this->opa_sorts);
 
 		$this->opo_browse = new ObjectBrowse($this->opo_result_context->getParameter('browse_id'), 'providence');
 
@@ -132,6 +119,22 @@ class ObjectTableController extends BaseSearchController {
 		$this->getView()->setVar('relTable', $vs_rel_table);
 		$this->getView()->setVar('primaryTable', $vs_primary_table);
 		$this->getView()->setVar('primaryID', $vn_primary_id);
+
+		// piece the parameters back together to build the string to append to urls for subsequent form submissions
+		$va_additional_search_controller_params = array(
+			'ids' => join(';', $va_relation_ids),
+			'interstitialPrefix' => $vs_interstitial_prefix,
+			'relTable' => $vs_rel_table,
+			'primaryTable' => $vs_primary_table,
+			'primaryID' => $vn_primary_id
+		);
+
+		$vs_url_string = '';
+		foreach($va_additional_search_controller_params as $vs_key => $vs_val) {
+			$vs_url_string .= '/' . $vs_key . '/' . urlencode($vs_val);
+		}
+
+		$this->getView()->setVar('objectTableURLParamString', $vs_url_string);
 
 		$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
 

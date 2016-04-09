@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -53,7 +53,9 @@
 						}
 ?>
 					</ol>
-	
+<?php
+		if(is_array($pa_request_params) && (sizeof($pa_request_params) > 0)) {
+?>
 			<div id="requestParameters" class="errorPanel">
 				<img src='<?php print $vs_path; ?>/themes/default/graphics/buttons/glyphicons_195_circle_info.png' class="permissionErrorIcon"/>
 				<div class="errorDescription">
@@ -67,6 +69,9 @@
 					</ol>
 				</div>
 			</div>
+<?php
+		}
+?>
 		</div><!-- end content -->
 	</div><!-- end box -->
 </body>

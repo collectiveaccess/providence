@@ -1919,7 +1919,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			$va_items = caExtractValuesByUserLocale($this->getItems(array(
 				'thumbnailVersion' => $vs_thumbnail_version,
 				'user_id' => $po_request->getUserID(),
-				'template' => caGetOption('displayTemplate', $pa_bundle_settings, null)
+				'template' => caGetOption('display_template', $pa_bundle_settings, null)
 			)), null, null, array());
 			$o_view->setVar('items', $va_items);
 		} else {
@@ -2001,6 +2001,18 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		$o_dm = $this->getAppDatamodel();
 		
 		return $o_dm->getInstanceByTableNum($this->get('table_num'), true);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns the name of the table that is the content type for the currently loaded set.
+	 *
+	 * @return string
+	 */
+	public function getItemType() {
+		if (!$this->getPrimaryKey()) { return null; }
+		$o_dm = $this->getAppDatamodel();
+		
+		return $o_dm->getTableName($this->get('table_num'));
 	}
 	# ------------------------------------------------------
 	/**
@@ -2148,16 +2160,6 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		}
 		return $vn_table_num;
 	}
-	# ------------------------------------------------------
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	# ------------------------------------------------------
 	# new functions for pawtucket lightbox
 	# ------------------------------------------------------

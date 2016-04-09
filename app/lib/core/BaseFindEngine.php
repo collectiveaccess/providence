@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2015 Whirl-i-Gig
+ * Copyright 2014-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -474,17 +474,21 @@
 				//
 				$va_sort_buffer = array();
 				
+				$vn_c = 0;
 				foreach($pa_hits as $vn_hit) {
 					$vs_key = '';
 					foreach($pa_sortable_values as $vn_i => $va_sortable_values) {
 						$vs_v = preg_replace("![^\w_]+!", " ", $va_sortable_values[$vn_hit]);
 						
-						$vs_key .= str_pad(substr($vs_v,0,150), 150, ' ', is_numeric($vs_v) ? STR_PAD_LEFT : STR_PAD_RIGHT);
+						$vs_key .= str_pad(substr($vs_v,0,50), 50, ' ', is_numeric($vs_v) ? STR_PAD_LEFT : STR_PAD_RIGHT);
 					}
-					$va_sort_buffer[$vs_key.str_pad($vn_hit, 12, ' ', STR_PAD_LEFT)] = $vn_hit;
+					$va_sort_buffer[$vs_key.str_pad($vn_c, 8, '0', STR_PAD_LEFT)] = $vn_hit;
+					
+					$vn_c++;
 				}
-				
+
 				ksort($va_sort_buffer, SORT_FLAG_CASE | SORT_NATURAL);
+				
 				$va_sort_buffer = array_values($va_sort_buffer);
 				if ($ps_direction == 'desc') { $va_sort_buffer = array_reverse($va_sort_buffer); }
 				return $va_sort_buffer;
@@ -560,17 +564,13 @@
 				case __CA_ATTRIBUTE_VALUE_MOVEMENTS__:
 				case __CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__:
 				case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
-					if (!($vs_sortable_value_fld = Attribute::getSortFieldForDatatype($vn_datatype))) {
-						break;
-					}
-
 					if (!($t_auth_instance = AuthorityAttributeValue::elementTypeToInstance($vn_datatype))) { break; }
-
+					$vs_sortable_value_fld = $t_auth_instance->getLabelSortField();
 					$vs_sql = "
 							SELECT attr.row_id, lower(lil.{$vs_sortable_value_fld}) {$vs_sortable_value_fld}
 							FROM ca_attributes attr
 							INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
-							INNER JOIN ".$t_auth_instance->getLabelTableName()." AS lil ON lil.value_integer1 = attr_vals.item_id
+							INNER JOIN ".$t_auth_instance->getLabelTableName()." AS lil ON lil.".$t_auth_instance->primaryKey()." = attr_vals.item_id
 							WHERE
 								(attr_vals.element_id = ?) AND
 								(attr.table_num = ?) AND
