@@ -72,7 +72,7 @@
 			if(!caGetOption('hide_add_to_occurrence_controls', $va_settings, false)) {
 				foreach($va_occ_types as $vn_type_id => $va_type_info) {
 ?>
-				<div style='float: left;'  class='button caAddOccurrenceButton'><a href="#" id="<?php print $vs_id_prefix; ?>AddOcc<?php print $vn_type_id; ?>"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print _t('Add to %1', $va_type_info['name_singular']); ?></a></div>
+				<div style='float: left;'  class='button caAddOccurrenceButton caAddOccurrenceButton<?php print $vn_type_id; ?>'><a href="#" id="<?php print $vs_id_prefix; ?>AddOcc<?php print $vn_type_id; ?>"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print _t('Add to %1', $va_type_info['name_singular']); ?></a></div>
 <?php		
 				}
 			}
@@ -85,8 +85,15 @@
 ?>			
 		<div class="caLocationList"> </div>
 		<div class="caLoanList"> </div>
-		<div class="caOccurrenceList"> </div>
 <?php
+if(!caGetOption('hide_add_to_occurrence_controls', $va_settings, false)) {
+	foreach($va_occ_types as $vn_type_id => $va_type_info) {
+?>
+		<div class="caOccurrenceList<?php print $vn_type_id; ?>"> </div>
+<?php
+	}
+}
+	
 	foreach($va_history as $vn_date => $va_history_entries_for_date) {
 		foreach($va_history_entries_for_date as $vn_i => $va_history_entry) {
 ?>
@@ -259,7 +266,7 @@ if(!caGetOption('hide_add_to_loan_controls', $va_settings, false)) {
 if(!caGetOption('hide_add_to_occurrence_controls', $va_settings, false)) {
 	foreach($va_occ_types as $vn_type_id => $va_type_info) {
 ?>
-	<textarea class='caUseHistorySetOccurrenceTemplate' style='display: none;'>
+	<textarea class='caUseHistorySetOccurrenceTemplate<?php print $vn_type_id; ?>' style='display: none;'>
 		<div class="clear"><!-- empty --></div>
 		<div id="<?php print $vs_id_prefix; ?>Occurrence_<?php print $vn_type_id; ?>_{n}" class="labelInfo caRelatedOccurrence">
 			<table class="caListItem">
@@ -273,7 +280,7 @@ if(!caGetOption('hide_add_to_occurrence_controls', $va_settings, false)) {
 						<input type="hidden" name="<?php print $vs_id_prefix; ?>_occurrence_<?php print $vn_type_id; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_occurrence_<?php print $vn_type_id; ?>_id{n}" value="{id}"/>
 					</td>
 					<td>
-						<a href="#" class="caDeleteOccurrenceButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
+						<a href="#" class="caDeleteOccurrenceButton<?php print $vn_type_id; ?>"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
 					</td>
 				</tr>
 			</table>
@@ -415,12 +422,12 @@ if(!caGetOption('hide_add_to_occurrence_controls', $va_settings, false)) {
 			initialValueOrder: [],
 			itemID: '<?php print $vs_id_prefix; ?>Occurrence_<?php print $vn_type_id; ?>_',
 			placementID: '<?php print $vn_placement_id; ?>',
-			templateClassName: 'caUseHistorySetOccurrenceTemplate',
+			templateClassName: 'caUseHistorySetOccurrenceTemplate<?php print $vn_type_id; ?>',
 			initialValueTemplateClassName: null,
-			itemListClassName: 'caOccurrenceList',
+			itemListClassName: 'caOccurrenceList<?php print $vn_type_id; ?>',
 			listItemClassName: 'caRelatedOccurrence',
-			addButtonClassName: 'caAddOccurrenceButton',
-			deleteButtonClassName: 'caDeleteOccurrenceButton',
+			addButtonClassName: 'caAddOccurrenceButton<?php print $vn_type_id; ?>',
+			deleteButtonClassName: 'caDeleteOccurrenceButton<?php print $vn_type_id; ?>',
 			hideOnNewIDList: [],
 			showEmptyFormsOnLoad: 0,
 			relationshipTypes: <?php print json_encode($this->getVar('occurrence_relationship_types_by_sub_type')); ?>,
