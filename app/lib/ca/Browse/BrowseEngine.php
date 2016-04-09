@@ -1280,6 +1280,10 @@
 											$vs_target_browse_table_pk = $va_relative_execute_sql_data['target_table_pk'];
 										}
 									}
+									
+									if (!is_array($va_restrict_to_types = $va_facet_info['restrict_to_types'])) { $va_restrict_to_types = array(); }
+									$va_restrict_to_types = $this->_convertTypeCodesToIDs($va_restrict_to_types, array('instance' => $t_item));
+
 
 									// TODO: check that it is a *single-value* (ie. no hierarchical ca_metadata_elements) Text or Number attribute
 									// (do we support other types as well?)
@@ -1293,6 +1297,10 @@
 										$va_attr_sql = array();
 										$va_attr_values = array(intval($vs_target_browse_table_num), $vn_element_id);
 
+										if (is_array($va_restrict_to_types) && (sizeof($va_restrict_to_types) > 0) && method_exists($t_item, "getTypeList")) {
+											$va_attr_sql[] = "(".$this->ops_browse_table_name.".type_id IN (".join(", ", $va_restrict_to_types)."))";
+										}
+										
 										if (is_array($va_value)) {
 											foreach($va_value as $vs_f => $vs_v) {
 												if ($vn_datatype == __CA_ATTRIBUTE_VALUE_LIST__) {
