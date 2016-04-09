@@ -58,6 +58,7 @@
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
 			$pa_options['displaynameFormat'] = caGetOption('entitySplitter_displaynameFormat', $pa_item['settings'], null);
+			$pa_options['doNotParse'] = caGetOption('entitySplitter_doNotParse', $pa_item['settings'], null);
 			return caGenericImportSplitter('entitySplitter', 'entity', 'ca_entities', $this, $pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options);
 		}
 		# -------------------------------------------------------	
@@ -198,6 +199,15 @@
 				'default' => '',
 				'label' => _t('Non-preferred labels'),
 				'description' => _t('List of non-preferred labels to apply to entities.')
+			),
+			'entitySplitter_doNotParse' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Do not parse name'),
+				'description' => _t('Take the entity name as is from the data source and insert it without intervention in the surname and display name fields. This is often useful for organization names, especially when using the entity class "org" setting.')
 			)
 		);
 ?>

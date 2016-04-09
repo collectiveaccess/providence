@@ -1769,9 +1769,18 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						
 						break;
 					# -------------------------------
-					// This bundle is only available items that can be used as authority references (object, entities, occurrences, list items, etc.)
+					// This bundle is only available for items that can be used as authority references (object, entities, occurrences, list items, etc.)
 					case 'authority_references_list':
 						$vs_element .= $this->getAuthorityReferenceListHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						break;
+					# -------------------------------
+					// This bundle is only available items for batch editing on representable models
+					case 'ca_object_representations_access_status':
+						if (($vb_batch) && (is_a($this, 'RepresentableBaseModel'))) {
+							$vs_element .= $this->getObjectRepresentationAccessStatusHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_bundle_settings, $pa_options);
+						} else {
+							return null;
+						}
 						break;
 					# -------------------------------
 					default:
@@ -2321,7 +2330,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  		if (isset($pa_options['bundles']) && is_array($pa_options['bundles'])) {
  			$va_bundles = $pa_options['bundles'];
  		} else {
- 			$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen);
+ 			$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen, $this->getTypeID());
  		}
  		
  		$vs_form_name = caGetOption('formName', $pa_options, '');
@@ -2880,7 +2889,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 */
 	protected function getBundleListsForScreen($pm_screen, $po_request, $t_ui, $pa_options=null) {
 		if(!$t_ui) { return; }
-		$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen);
+		$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen, $this->getTypeID());
 		
 		// sort fields by type
 		$va_fields_by_type = array();
@@ -4328,7 +4337,7 @@ if (!$vb_batch) {
 					case 'ca_objects_history':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
-					
+								
 						// set storage location
 						if ($vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_idnew_0", pInteger)) {
 							if (
@@ -4340,9 +4349,33 @@ if (!$vb_batch) {
 									($vn_relationship_type_id = array_shift($va_relationship_types))
 								)
 							) {
-								$this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id, null, null, null, null, array('allowDuplicates' => true));
+								// is effective date set?
+								$vs_effective_date = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_effective_datenew_0", pString);
+						
+								$t_item_rel = $this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id, $vs_effective_date, null, null, null, array('allowDuplicates' => true));
 								if ($this->numErrors()) {
 									$po_request->addActionErrors($this->errors(), 'ca_objects_history', 'general');
+								} else {
+									// set any other defined interstitials
+									if (is_array($va_storage_location_elements = caGetOption('ca_storage_locations_elements', $va_bundle_settings, array()))) {
+										foreach($va_storage_location_elements as $vs_element) {
+											if ($vs_element == 'effective_date') { continue; }
+											if ($this->hasField($vs_element)) {
+												$t_item_rel->set($vs_element, $vs_val = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_{$vs_element}new_0", pString));
+											} elseif ($vn_element_id = ca_metadata_elements::getElementID($vs_element)) {
+												$va_sub_element_ids = ca_metadata_elements::getElementsForSet($vn_element_id, ['idsOnly' => true]);
+												
+												$t_item_rel->setMode(ACCESS_WRITE);
+												
+												$va_vals = [];
+												foreach($va_sub_element_ids as $vn_sub_element_id) {
+													$va_vals[ca_metadata_elements::getElementCodeForID($vn_sub_element_id)] = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_{$vn_sub_element_id}_new_0", pString);
+												}
+												$t_item_rel->addAttribute($va_vals, $vs_element);
+												$t_item_rel->update();
+											}
+										}
+									}								
 								}
 							}
 						}
@@ -4353,6 +4386,21 @@ if (!$vb_batch) {
 								$this->addRelationship('ca_loans', $vn_loan_id, $vn_loan_type_id);
 								if ($this->numErrors()) {
 									$po_request->addActionErrors($this->errors(), 'ca_objects_history', 'general');
+								}
+							}
+						}
+						
+						// set occurrence
+						require_once(__CA_MODELS_DIR__."/ca_occurrences.php");
+						$t_occ = new ca_occurrences();
+						$va_occ_types = $t_occ->getTypeList();
+						foreach($va_occ_types as $vn_type_id => $vn_type_info) {
+							if ($vn_occurrence_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_occurrence_{$vn_type_id}_idnew_0", pInteger)) {
+								if ($vn_occ_type_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_occurrence_{$vn_type_id}_type_idnew_0", pInteger)) {
+									$this->addRelationship('ca_occurrences', $vn_occurrence_id, $vn_occ_type_id);
+									if ($this->numErrors()) {
+										$po_request->addActionErrors($this->errors(), 'ca_objects_history', 'general');
+									}
 								}
 							}
 						}
@@ -4382,6 +4430,31 @@ if (!$vb_batch) {
 					
 						// NOOP (for now)
 					
+						break;
+					# -------------------------------
+					// This bundle is only available items for batch editing on representable models
+					case 'ca_object_representations_access_status':		
+						if (($vb_batch) && (is_a($this, 'RepresentableBaseModel'))) {
+							$vn_access = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_access", pString);
+							$vn_status = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_status", pString);
+							
+							$t_rep = new ca_object_representations();
+							if(is_array($va_rep_ids = $this->getRepresentationIDs())) {
+								foreach(array_keys($va_rep_ids) as $vn_rep_id) {
+									if ($t_rep->load($vn_rep_id)) {
+										$t_rep->setMode(ACCESS_WRITE);
+										$t_rep->set('access', $vn_access);
+										$t_rep->set('status', $vn_status);
+										$t_rep->update();
+										
+										if ($t_rep->numErrors()) {
+											$po_request->addActionErrors($t_rep->errors(), 'ca_object_representations_access_status', 'general');
+										}
+									}
+								}
+							}
+							
+						}
 						break;
 					# -------------------------------
 				}

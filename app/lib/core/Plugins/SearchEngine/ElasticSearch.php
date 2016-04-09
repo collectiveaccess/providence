@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -57,6 +57,9 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	static $s_doc_content_buffer = array();
 	static $s_update_content_buffer = array();
 	static $s_delete_buffer = array();
+
+	protected $ops_elasticsearch_index_name = '';
+	protected $ops_elasticsearch_base_url = '';
 	# -------------------------------------------------------
 	public function __construct($po_db=null) {
 		parent::__construct($po_db);
@@ -218,6 +221,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * Completely clear index (usually in preparation for a full reindex)
 	 *
 	 * @param null|int $pn_table_num
+	 * @param bool $pb_dont_refresh
 	 * @return bool
 	 */
 	public function truncateIndex($pn_table_num = null, $pb_dont_refresh = false) {
@@ -370,12 +374,15 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 */
 	public function indexField($pn_content_tablenum, $ps_content_fieldname, $pn_content_row_id, $pm_content, $pa_options) {
 		$o_field = new ElasticSearch\Field($pn_content_tablenum, $ps_content_fieldname);
-
-		foreach($o_field->getIndexingFragment($pm_content, $pa_options) as $vs_key => $vm_val) {
-			$this->opa_index_content_buffer[$vs_key][] = $vm_val;
-			// this list basically indexes the values above by content row id. we need that to have a chance
-			// to update indexing for specific values [content row ids] in place
-			$this->opa_index_content_buffer[$vs_key.'_content_ids'][] = $pn_content_row_id;
+		if(!is_array($pm_content)) { $pm_content = [$pm_content]; }
+		
+		foreach($pm_content as $ps_content) {
+			foreach($o_field->getIndexingFragment($ps_content, $pa_options) as $vs_key => $vm_val) {
+				$this->opa_index_content_buffer[$vs_key][] = $vm_val;
+				// this list basically indexes the values above by content row id. we need that to have a chance
+				// to update indexing for specific values [content row ids] in place
+				$this->opa_index_content_buffer[$vs_key.'_content_ids'][] = $pn_content_row_id;
+			}
 		}
 	}
 	# -------------------------------------------------------
@@ -629,7 +636,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	 * @param $ps_search - The text to search on
 	 * @param $pa_options - an optional associative array specifying search options. Supported options are: 'limit' (the maximum number of results to return)
 	 *
-	 * @return Array - an array of results is returned keyed by primary key id. The array values boolean true. This is done to ensure no duplicate row_ids
+	 * @return array - an array of results is returned keyed by primary key id. The array values boolean true. This is done to ensure no duplicate row_ids
 	 *
 	 */
 	public function quickSearch($pn_table_num, $ps_search, $pa_options=array()) {

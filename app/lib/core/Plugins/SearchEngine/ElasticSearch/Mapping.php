@@ -143,7 +143,7 @@ class Mapping {
 	 */
 	public function getFieldsToIndex($ps_table) {
 		if(!$this->getDatamodel()->tableExists($ps_table)) { return array(); }
-		$va_table_fields = $this->getSearchBase()->getFieldsToIndex($ps_table);
+		$va_table_fields = $this->getSearchBase()->getFieldsToIndex($ps_table, null, array('clearCache' => true));
 		if(!is_array($va_table_fields)) { return array(); }
 
 		$va_rewritten_fields = array();
@@ -343,6 +343,8 @@ class Mapping {
 					$va_field_options[$ps_table.'/'.$vs_field_name]['index'] = 'analyzed';
 				} else {
 					$va_field_options[$ps_table.'/'.$vs_field_name]['type'] = 'double';
+					unset($va_field_options[$ps_table.'/'.$vs_field_name]['analyzer']);
+					unset($va_field_options[$ps_table.'/'.$vs_field_name]['index']);
 				}
 				break;
 			case (FT_TIMESTAMP):

@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/print/PrintForms/PrintFormElements.php : 
+ * SimpleXMLReader.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2009 Whirl-i-Gig
+ * Copyright 2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -24,38 +24,32 @@
  * http://www.CollectiveAccess.org
  *
  * @package CollectiveAccess
- * @subpackage Print
+ * @subpackage Import
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
  *
  * ----------------------------------------------------------------------
  */
- 
- /**
-  *
-  */
- 
-require_once(__CA_LIB_DIR__.'/core/Configuration.php');
-require_once(__CA_LIB_DIR__.'/core/ApplicationError.php');
 
-class PrintFormElements {
-	# ------------------------------------------------------------------
-	var $opo_form;
-	var $ops_name;
-	
-	# ------------------------------------------------------------------
-	function PrintFormElements($po_form, $ps_name) {
-		$this->opo_form =& $po_form;
+/**
+ *
+ */
+
+require_once(__CA_LIB_DIR__.'/ca/Import/DataReaders/BaseXMLDataReader.php');
+require_once(__CA_APP_DIR__.'/helpers/displayHelpers.php');
+
+class SimpleXMLReader extends BaseXMLDataReader {
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function __construct($ps_source=null, $pa_options=null){
+		parent::__construct($ps_source, $pa_options);
 		
-		$this->setName($ps_name);
+		$this->ops_title = _t('Simple XML Reader');
+		$this->ops_display_name = _t('Simple XML');
+		$this->ops_description = _t('Reads Simple XML files');
+		
+		$this->opa_formats = array('simplexml');	// must be all lowercase to allow for case-insensitive matching
 	}
-	# ------------------------------------------------------------------
-	function setName($ps_name) {
-		$this->ops_name = $ps_name;
-	}
-	# ------------------------------------------------------------------
-	function getName() {
-		return $this->ops_name;
-	}
-	# ------------------------------------------------------------------
+	# -------------------------------------------------------
 }
-?>

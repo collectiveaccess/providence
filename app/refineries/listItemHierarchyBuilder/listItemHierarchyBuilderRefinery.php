@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -81,7 +81,7 @@
 			
 			// Set list item parents
 			if ($va_parents = $pa_item['settings']['listItemHierarchyBuilder_parents']) {
-				$vn_parent_id = caProcessRefineryParents('listItemHierarchyBuilderRefinery', 'ca_list_items', $va_parents, $pa_source_data, $pa_item, null, array_merge($pa_options, array('list_id' => $pa_item['settings']['listItemHierarchyBuilder_list'])));
+				$vn_parent_id = caProcessRefineryParents('listItemHierarchyBuilder', 'ca_list_items', $va_parents, $pa_source_data, $pa_item, null, array_merge($pa_options, array('list_id' => $pa_item['settings']['listItemHierarchyBuilder_list'])));
 			}
 			
 			return $vn_parent_id;
@@ -98,7 +98,16 @@
 		# -------------------------------------------------------
 	}
 	
-	BaseRefinery::$s_refinery_settings['listItemHierarchyBuilder'] = array(			
+	BaseRefinery::$s_refinery_settings['listItemHierarchyBuilder'] = array(		
+		'listItemHierarchyBuilder_matchOn' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Match on'),
+			'description' => _t('List indicating sequence of checks for an existing record; values of array can be "preferred_labels" (or "label"), "nonpreferred_labels", "idno" or a metadata element code. Ex. array("idno", "label") will first try to match on idno and then label if the first match fails')
+		),	
 		'listItemHierarchyBuilder_list' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_SELECT,
@@ -118,4 +127,3 @@
 			'description' => _t('List item parents to create')
 		)
 	);
-?>

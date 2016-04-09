@@ -5079,7 +5079,12 @@ class BaseModel extends BaseObject {
 			return null;
 		}
 		
-		return array('scale' => caGetOption('_SCALE', $va_media_info, null), 'measurementUnits' => caGetOption('_SCALE_UNITS', $va_media_info, null));;
+		$vn_scale = caGetOption('_SCALE', $va_media_info, null);
+		if (!is_numeric($vn_scale)) { $vn_scale = null; }
+		$vs_scale_units = caGetOption('_SCALE_UNITS', $va_media_info, null);
+		if (!is_string($vs_scale_units)) { $vs_scale_units = null; }
+		
+		return array('scale' => $vn_scale, 'measurementUnits' => $vs_scale_units);
 	}
 	# --------------------------------------------------------------------------------
 	/**
@@ -11155,10 +11160,10 @@ $pa_options["display_form_field_tips"] = true;
 	/**
 	 * Returns change log for currently loaded row in displayable HTML format
 	 */ 
-	public function getChangeLogForDisplay($ps_css_id=null) {
+	public function getChangeLogForDisplay($ps_css_id=null, $pn_user_id=null) {
 		$o_log = new ApplicationChangeLog();
 		
-		return $o_log->getChangeLogForRowForDisplay($this, $ps_css_id);
+		return $o_log->getChangeLogForRowForDisplay($this, $ps_css_id, $pn_user_id);
 	}
 	# --------------------------------------------------------------------------------------------
 	#

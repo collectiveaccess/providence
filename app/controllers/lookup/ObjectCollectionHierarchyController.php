@@ -133,7 +133,7 @@
 				
 				if (!$pb_exact) {
 					$o_search_config = caGetSearchConfig();
-					$ps_query = trim(preg_replace("![".str_replace("!", "\\!", $o_search_config->get('search_tokenizer_regex'))."]+!", " ", $ps_query));
+					$ps_query = trim(preg_replace("![".str_replace("!", "\\!", $o_search_config->get('search_tokenizer_regex'))."]+!u", " ", $ps_query));
 				}
 				
 				$qr_res = $o_object_search->search('('.$ps_query.(intval($pb_exact) ? '' : '*').')'.$vs_type_query.$vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => 'ca_objects.idno_sort'));
