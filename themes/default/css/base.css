@@ -5324,7 +5324,7 @@ a.quickaddMenuItem {
 div.roundedRel {
     font-size: 10px;
     font-weight: normal;
-    padding: 2px 4px 4px 8px;
+    padding: 8px 4px 4px 8px;
     margin: 5px;
     float: left;
     border: 1px solid #ddd;
@@ -5433,7 +5433,6 @@ a.caItemLoadNextBundles {
 
 .roundedRel .caDeleteItemButton, .roundedRel .caInterstitialEditButton {
     position: relative;
-    top: 3px;
 }
 
 .listRel .caDeleteItemButton, .listRel .caInterstitialEditButton {

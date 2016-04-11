@@ -71,7 +71,7 @@
 			if($vs_table == 'ca_list_items') {
 ?>
 						<div style="float: right;">
-							<?php print caNavLink($this->request, caNavIcon(__CA_NAV_ICON_ADD__, 1).' '._t('Add new list'), 'list-link', 'administrate/setup/list_editor', 'ListEditor', 'Edit', array('list_id' => 0)); ?>
+							<?php print caNavLink($this->request, caNavIcon(__CA_NAV_ICON_ADD__, "30px").' '._t('Add new list'), 'list-link', 'administrate/setup/list_editor', 'ListEditor', 'Edit', array('list_id' => 0)); ?>
 						</div>
 <?php	
 			}
