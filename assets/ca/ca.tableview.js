@@ -144,6 +144,7 @@ var caUI = caUI || {};
 		// --------------------------------------------------------------------------------
 
 		that.save = function(change) {
+			console.log("change", change);
 			that.saveQueue.push(change);
 			that._runSaveQueue();
 		};
@@ -289,7 +290,8 @@ var caUI = caUI || {};
 					exposeBackgroundOpacity: 0.7,					
 					panelTransitionSpeed: 100,						
 					closeButtonSelector: "#" +  that.dataEditorID + " .caResultsComplexDataEditorPanelClose",
-					center: true
+					center: true,
+					closeOnEsc: false
 				});
 			}
 			

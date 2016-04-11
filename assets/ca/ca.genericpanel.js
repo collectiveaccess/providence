@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2015 Whirl-i-Gig
+ * Copyright 2010-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -56,7 +56,8 @@ var caUI = caUI || {};
 			centerVertical : false,
 			
 			isChanging: false,
-			clearOnClose: false
+			clearOnClose: false,
+			closeOnEsc: true
 		}, options);
 		
 		
@@ -81,7 +82,8 @@ var caUI = caUI || {};
 			jQuery('#' + that.panelID).fadeIn(that.panelTransitionSpeed, function() { that.isChanging = false; });
 			
 			if (that.useExpose) { 
-				jQuery('#' + that.panelID).expose({api: true, color: that.exposeBackgroundColor , opacity: that.exposeBackgroundOpacity, closeOnClick : false, closeOnEsc: true}).load(); 
+				console.log(that);
+				jQuery('#' + that.panelID).expose({api: true, color: that.exposeBackgroundColor , opacity: that.exposeBackgroundOpacity, closeOnClick : false, closeOnEsc: that.closeOnEsc}).load(); 
 			}
 			
 			that.callbackData = callbackData;
@@ -152,17 +154,9 @@ var caUI = caUI || {};
 		// Set up handler to trigger appearance of panel
 		// --------------------------------------------------------------------------------
 		jQuery(document).ready(function() {
-			// hide panel if click is outside of panel
-			//jQuery(document).click(function(event) {
-			//	var p = jQuery(event.target).parents().map(function() { return this.id; }).get();
-			//	if (!that.isChanging && that.panelIsVisible() && (jQuery.inArray(that.panelID, p) == -1)) {
-				//	that.hidePanel();
-			//	}
-			//});
-			
 			// hide panel if escape key is clicked
 			jQuery(document).keyup(function(event) {
-				if ((event.keyCode == 27) && !that.isChanging && that.panelIsVisible()) {
+				if (that.closeOnEsc && (event.keyCode == 27) && !that.isChanging && that.panelIsVisible()) {
 					that.hidePanel();
 				}
 			});
