@@ -684,17 +684,16 @@
  					$pa_ids = $this->opo_result_context->getResultList();
  				}
  				
-				$vn_file_count = 0;
-				
 				$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
 						
+				$va_download_list = [];
  				if (is_array($pa_ids) && sizeof($pa_ids)) {
  					$ps_version = $this->request->getParameter('version', pString);
 					if ($qr_res = $t_subject->makeSearchResult($t_subject->tableName(), $pa_ids, array('filterNonPrimaryRepresentations' => false))) {
 						
 						if (!($vn_limit = ini_get('max_execution_time'))) { $vn_limit = 30; }
 						set_time_limit($vn_limit * 10);
-						$o_zip = new ZipStream();
+						
 						while($qr_res->nextHit()) {
 							if (!is_array($va_version_list = $qr_res->getMediaVersions('ca_object_representations.media')) || !in_array($ps_version, $va_version_list)) {
 								$vs_version = 'original';
@@ -752,19 +751,31 @@
 									}
 								}
 								if (!file_exists($vs_path)) { continue; }
-								$o_zip->addFile($vs_path, $vs_filename);
-								$vn_file_count++;
+								$va_download_list[$vs_path] = $vs_filename;
 							}
 						}
 					}
 				}
-				 				
- 				if ($o_zip && ($vn_file_count > 0)) {
+				
+				$vn_file_count = sizeof($va_download_list);			
+ 				if ($vn_file_count > 1) {
+					$o_zip = new ZipStream();
+					foreach($va_download_list as $vs_path => $vs_filename) {
+						$o_zip->addFile($vs_path, $vs_filename);
+					}
+					
  					$o_view->setVar('zip_stream', $o_zip);
 					$o_view->setVar('archive_name', 'media_for_'.mb_substr(preg_replace('![^A-Za-z0-9]+!u', '_', $this->getCriteriaForDisplay()), 0, 20).'.zip');
 
 					$this->response->addContent($o_view->render('download_file_binary.php'));
 					set_time_limit($vn_limit);
+				} elseif($vn_file_count == 1) {
+					foreach($va_download_list as $vs_path => $vs_filename) {
+						$o_view->setVar('archive_path', $vs_path);
+						$o_view->setVar('archive_name', $vs_filename);
+						$this->response->addContent($o_view->render('download_file_binary.php'));
+						break;
+					}
  				} else {
  					$this->response->setHTTPResponseCode(204, _t('No files to download'));
  				}
