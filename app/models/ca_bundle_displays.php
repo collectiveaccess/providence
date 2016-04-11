@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2015 Whirl-i-Gig
+ * Copyright 2010-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -545,14 +545,23 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				
 					// Check if it is one of the types of fields that is inline editable
 					if ($va_bundle_name[1] === 'preferred_labels') {
+						//
 						// Preferred labels are always inline editable
+						//
 						$va_placements[$vn_placement_id]['allowInlineEditing'] = true;
 						$va_placements[$vn_placement_id]['inlineEditingType'] = DT_FIELD;
+					} elseif(in_array($va_bundle_name[1], ['created', 'modified'])) {
+						//
+						// created and modified dates are not editable
+						//
+						$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
+						$va_placements[$vn_placement_id]['allowEditing'] = false;
+						$va_placements[$vn_placement_id]['inlineEditingType'] = null;
 					} elseif ($t_subject->hasField($va_bundle_name[1])) {
 						//
-						// Intrinsics are always editable, except for type_id and idno
+						// Intrinsics are always editable, except for primary key, type_id and idno
 						//
-						if ($va_bundle_name[1] == $t_subject->getTypeFieldName()) {
+						if (in_array($va_bundle_name[1], [$t_subject->getTypeFieldName(), $t_subject->primaryKey()])) {
 							$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
 							$va_placements[$vn_placement_id]['allowEditing'] = false;
 							$va_placements[$vn_placement_id]['inlineEditingType'] = null;
