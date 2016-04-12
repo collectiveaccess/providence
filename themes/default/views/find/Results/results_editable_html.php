@@ -43,7 +43,6 @@
 		<div class="caResultsEditorContent"></div>
 	</div><!--end scrollingResults -->
 	
-
 	<div id="caResultsComplexDataEditorPanel" class="caResultsComplexDataEditorPanel"> 
 		<div id="caResultsComplexDataEditorPanelContent">
 		

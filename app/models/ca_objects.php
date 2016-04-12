@@ -132,6 +132,7 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				),
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'DONT_ALLOW_IN_UI' => true,
+				'RESULTS_EDITOR_BUNDLE' => 'ca_objects_deaccession',	// bundle to use when editing this in the search/browse "results" editing interface
 				'LABEL' => _t('Is deaccessioned'), 'DESCRIPTION' => _t('Check if object is deaccessioned')
 		),
 		'deaccession_date' => array(
