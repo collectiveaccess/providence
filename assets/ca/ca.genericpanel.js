@@ -82,7 +82,6 @@ var caUI = caUI || {};
 			jQuery('#' + that.panelID).fadeIn(that.panelTransitionSpeed, function() { that.isChanging = false; });
 			
 			if (that.useExpose) { 
-				console.log(that);
 				jQuery('#' + that.panelID).expose({api: true, color: that.exposeBackgroundColor , opacity: that.exposeBackgroundOpacity, closeOnClick : false, closeOnEsc: that.closeOnEsc}).load(); 
 			}
 			
