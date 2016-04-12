@@ -1243,7 +1243,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		$vs_history_template		= caGetOption('history_template', $pa_bundle_settings, $vs_display_template);
 		
 		$o_view->setVar('id_prefix', $ps_form_name);
-		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		$o_view->setVar('placement_code', $ps_placement_code);
 
 		$pa_bundle_settings = $this->_processObjectHistoryBundleSettings($pa_bundle_settings);
 		$o_view->setVar('settings', $pa_bundle_settings);

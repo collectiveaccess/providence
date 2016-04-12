@@ -4337,7 +4337,7 @@ if (!$vb_batch) {
 					case 'ca_objects_history':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
-				
+								
 						// set storage location
 						if ($vn_location_id = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_idnew_0", pInteger)) {
 							if (
@@ -4351,7 +4351,7 @@ if (!$vb_batch) {
 							) {
 								// is effective date set?
 								$vs_effective_date = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_effective_datenew_0", pString);
-								
+						
 								$t_item_rel = $this->addRelationship('ca_storage_locations', $vn_location_id, $vn_relationship_type_id, $vs_effective_date, null, null, null, array('allowDuplicates' => true));
 								if ($this->numErrors()) {
 									$po_request->addActionErrors($this->errors(), 'ca_objects_history', 'general');
@@ -4361,13 +4361,17 @@ if (!$vb_batch) {
 										foreach($va_storage_location_elements as $vs_element) {
 											if ($vs_element == 'effective_date') { continue; }
 											if ($this->hasField($vs_element)) {
-											
-											} elseif (($vn_element_id = ca_metadata_elements::getElementID($vs_element)) && ($vs_val = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_{$vn_element_id}_new_0", pString))) {
+												$t_item_rel->set($vs_element, $vs_val = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_{$vs_element}new_0", pString));
+											} elseif ($vn_element_id = ca_metadata_elements::getElementID($vs_element)) {
+												$va_sub_element_ids = ca_metadata_elements::getElementsForSet($vn_element_id, ['idsOnly' => true]);
+												
 												$t_item_rel->setMode(ACCESS_WRITE);
-												// TODO: support containers
-												$t_item_rel->addAttribute([
-													$vs_element => $vs_val
-												], $vs_element);
+												
+												$va_vals = [];
+												foreach($va_sub_element_ids as $vn_sub_element_id) {
+													$va_vals[ca_metadata_elements::getElementCodeForID($vn_sub_element_id)] = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_location_{$vn_sub_element_id}_new_0", pString);
+												}
+												$t_item_rel->addAttribute($va_vals, $vs_element);
 												$t_item_rel->update();
 											}
 										}

@@ -406,7 +406,7 @@
 							$va_rel_type_list = $t_show_types_for_table->getRelationshipTypes();
 							if(!is_array($va_rel_type_list)) { break; }
 							
-							foreach($va_type_list as $vn_type_id => $va_type_info) {
+							foreach($va_rel_type_list as $vn_type_id => $va_type_info) {
 								if (!$va_type_info['parent_id']) { continue; }
 								$va_type_opts[$va_type_info['typename'].'/'.$va_type_info['typename_reverse']] = $va_type_info['type_id'];
 							}
