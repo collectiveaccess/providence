@@ -51,6 +51,7 @@ var caUI = caUI || {};
 			colWidths: null,
 			
 			gridClassName: 'caResultsEditorContent',
+			loadingClassName: 'caResultsEditorLoading',
 			currentRowClassName: 'caResultsEditorCurrentRow',
 			currentColClassName: 'caResultsEditorCurrentCol',
 			readOnlyCellClassName: 'caResultsEditorReadOnlyCell',			// "readonly" is for any cell that cannot be edited inline (ie. readonly in Handsontable)
@@ -301,6 +302,8 @@ var caUI = caUI || {};
 			
 			// Load additional data in chunks
 			var rowsLoaded = that.numRowsForFirstLoad;
+			
+			if (that.loadingClassName) { jQuery("." + that.loadingClassName).hide(100); }
 			var _loadData = function(s, c) {
 				var percentLoaded = parseInt((s/that.rowCount) * 100);
 				if (percentLoaded > 100) percentLoaded = 100;
