@@ -207,7 +207,7 @@
  			# --- export options used to export search results - in tools show hide under page bar
  			$vn_table_num = $this->opo_datamodel->getTableNum($this->ops_tablename);
 
-			//default export formats, not configureable
+			//default export formats, not configurable
 			$va_export_options = array(
 				array(
 					'name' => _t('Tab delimited'),
