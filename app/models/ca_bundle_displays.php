@@ -2377,7 +2377,6 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 	 * @return array Array with two keys: "displayList" contains the list of bundles; "headers" contains column headers for the editor
 	 */
 	public function getDisplayListForResultsEditor($ps_tablename, $pa_options=null) {
-		if (!($vn_display_id = $this->getPrimaryKey())) { return null; }
 		$va_display_list = array();
 		
 		$t_model 		= $this->getAppDatamodel()->getInstanceByTableName($ps_tablename, true);
