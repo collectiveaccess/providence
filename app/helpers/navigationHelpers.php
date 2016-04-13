@@ -273,7 +273,7 @@
 			$vs_alt = $vs_title = '';
 		}
 		
-		($vs_icon_margin = caGetOption('iconMargin', $pa_options, '3px')) ? $va_icon_attributes['style'] = "margin-right: {$vs_icon_margin};" : array(); // add margin on right to give space between icon and text
+		($vs_icon_margin = caGetOption('iconMargin', $pa_options, '5px')) ? $va_icon_attributes['style'] = "margin-right: {$vs_icon_margin};" : array(); // add margin on right to give space between icon and text
 	
 		$vs_tag .= caNavIcon($pn_type, caGetOption('size', $pa_options, 2), $va_icon_attributes);
 		if (!$pb_dont_show_content) {
@@ -331,7 +331,7 @@
 		);
 		$vs_img_tag_stuff = " padding= '{$vn_padding}px'";
 			
-		($vs_icon_margin = caGetOption('iconMargin', $pa_options, '3px')) ? $va_icon_attributes['style'] = "margin-right: {$vs_icon_margin};" : array(); // add margin on right to give space between icon and text
+		($vs_icon_margin = caGetOption('iconMargin', $pa_options, '5px')) ? $va_icon_attributes['style'] = "margin-right: {$vs_icon_margin};" : array(); // add margin on right to give space between icon and text
 	
 		if ($vs_icon_tag = caNavIcon($pn_type, caGetOption('size', $pa_options, '30px'), $va_icon_attributes)) {
 			$vs_content = (!$pb_dont_show_content) ? $ps_content : '';
@@ -478,7 +478,7 @@
 			'style' => "padding-right: {$vn_padding}px"
 		);
 		
-		($vs_icon_margin = caGetOption('iconMargin', $pa_options, '3px')) ? $va_icon_attributes['style'] = "margin-right: {$vs_icon_margin};" : array(); // add margin on right to give space between icon and text
+		($vs_icon_margin = caGetOption('iconMargin', $pa_options, '5px')) ? $va_icon_attributes['style'] = "margin-right: {$vs_icon_margin};" : array(); // add margin on right to give space between icon and text
 	
 		$vs_button .= caNavIcon($pn_type, caGetOption('size', $pa_options, '30px'), $va_icon_attributes);
 		if (!$pb_dont_show_content) {
@@ -549,7 +549,7 @@
 			'style' => "padding-right: {$vn_padding}px"
 		);
 		
-		($vs_icon_margin = caGetOption('iconMargin', $pa_options, '3px')) ? $va_icon_attributes['style'] = "margin-right: {$vs_icon_margin};" : array(); // add margin on right to give space between icon and text
+		($vs_icon_margin = caGetOption('iconMargin', $pa_options, '5px')) ? $va_icon_attributes['style'] = "margin-right: {$vs_icon_margin};" : array(); // add margin on right to give space between icon and text
 	
 		$vs_button .= caNavIcon($pn_type, caGetOption('size', $pa_options, 2), $va_icon_attributes);
 		if (!$pb_dont_show_content) {
@@ -649,11 +649,11 @@
 				$vs_fa_class = 'fa-plus-circle';	
 				break;
 			case __CA_NAV_ICON_DELETE__:
-				$vs_fa_class = 'fa-minus-circle';
+				$vs_fa_class = 'fa fa-times';
 				$vs_ca_class = 'deleteIcon'; 
 				break;
 			case __CA_NAV_ICON_CANCEL__:
-				$vs_fa_class = 'fa fa-times';
+				$vs_fa_class = 'fa-minus-circle';
 				$vs_ca_class = 'cancelIcon';
 				break;			
 			case __CA_NAV_ICON_EDIT__:
@@ -709,7 +709,7 @@
 				$vs_fa_class = 'fa-eye';
 				break;
 			case __CA_NAV_ICON_UNWATCH__:
-				$vs_fa_class = 'fa-eye-slash';
+				$vs_fa_class = 'fa-eye caIconRed';
 				break;
 			case __CA_NAV_ICON_ZOOM_IN__:
 				$vs_fa_class = 'fa-search-plus';
