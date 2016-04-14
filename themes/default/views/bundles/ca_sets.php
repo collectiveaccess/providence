@@ -47,7 +47,11 @@
 	$vs_last_color 		= 	((isset($va_settings['colorLastItem']) && $va_settings['colorLastItem'])) ? $va_settings['colorLastItem'] : '';
 	
 	// params to pass during object lookup
-	$va_lookup_params = array('type' => isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : '', 'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction']);
+	$va_lookup_params = array(
+		'type' => isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : '',
+		'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction'],
+		'noInline' => (bool) preg_match("/QuickAdd$/", $this->request->getController()) ? 1 : 0
+	);
 
 	if ($vb_batch) {
 		print caBatchEditorRelationshipModeControl($t_item, $vs_id_prefix);
@@ -215,7 +219,7 @@
 			autocompleteUrl: '<?php print caNavUrl($this->request, 'lookup', 'Set', 'Get', $va_lookup_params); ?>',
 			types: <?php print json_encode($va_settings['restrict_to_types']); ?>,
 			restrictToSearch: <?php print json_encode($va_settings['restrict_to_search']); ?>,
-			bundlePreview: <?php print caGetBundlePreviewForRelationshipBundle($t_item, $this->getVar('initialValues'), $va_settings['display_template']); ?>,
+			bundlePreview: <?php print caGetBundlePreviewForRelationshipBundle($this->getVar('initialValues')); ?>,
 			readonly: <?php print $vb_read_only ? "true" : "false"; ?>,
 			isSortable: <?php print ($vb_read_only || $vs_sort) ? "false" : "true"; ?>,
 			listSortOrderID: '<?php print $vs_id_prefix; ?>BundleList',

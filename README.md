@@ -1,9 +1,11 @@
 CollectiveAccess README
 -----------------------
 
-[![Build Status](https://secure.travis-ci.org/collectiveaccess/providence.png?branch=master)](http://travis-ci.org/collectiveaccess/providence)
+* Upstream: [![Build Status](https://secure.travis-ci.org/collectiveaccess/providence.png?branch=master-fix)](http://travis-ci.org/collectiveaccess/providence)
+* RWAHS: [![Build Status](https://secure.travis-ci.org/rwahs/providence.png?branch=master-fix)](http://travis-ci.org/rwahs/providence)
 
-Thank you for downloading Providence version 1.6.1!
+
+Thank you for downloading Providence version 1.6.2!
 
 Version 1.6.1 is a maintenance release. A list of fixes can be found at http://clangers.collectiveaccess.org/jira/browse/PROV-1519?jql=fixVersion%20%3D%20%221.6.1%22
  

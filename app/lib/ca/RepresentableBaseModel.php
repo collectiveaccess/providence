@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -531,9 +531,9 @@
 				$t_rep->set('access', $pn_access);
 				$t_rep->set('media', $ps_media_path, $pa_options);
 		
-				$o_idno = $t_rep->getIDNoPlugInInstance();
-				$t_rep->setIdnoWithTemplate($o_idno->makeTemplateFromValue(''));
-		
+				if ($o_idno = $t_rep->getIDNoPlugInInstance()) {
+					$t_rep->setIdnoWithTemplate($o_idno->makeTemplateFromValue(''));
+				}
 				if (is_array($pa_values)) {
 					if (isset($pa_values['idno'])) {
 						$t_rep->set('idno', $pa_values['idno']);

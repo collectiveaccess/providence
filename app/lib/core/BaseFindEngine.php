@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2015 Whirl-i-Gig
+ * Copyright 2014-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -560,17 +560,13 @@
 				case __CA_ATTRIBUTE_VALUE_MOVEMENTS__:
 				case __CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__:
 				case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
-					if (!($vs_sortable_value_fld = Attribute::getSortFieldForDatatype($vn_datatype))) {
-						break;
-					}
-
 					if (!($t_auth_instance = AuthorityAttributeValue::elementTypeToInstance($vn_datatype))) { break; }
-
+					$vs_sortable_value_fld = $t_auth_instance->getLabelSortField();
 					$vs_sql = "
 							SELECT attr.row_id, lower(lil.{$vs_sortable_value_fld}) {$vs_sortable_value_fld}
 							FROM ca_attributes attr
 							INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
-							INNER JOIN ".$t_auth_instance->getLabelTableName()." AS lil ON lil.value_integer1 = attr_vals.item_id
+							INNER JOIN ".$t_auth_instance->getLabelTableName()." AS lil ON lil.".$t_auth_instance->primaryKey()." = attr_vals.item_id
 							WHERE
 								(attr_vals.element_id = ?) AND
 								(attr.table_num = ?) AND

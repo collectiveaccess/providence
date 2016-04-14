@@ -432,3 +432,167 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 
 		return $va_return;
 	}
+	# ---------------------------------------
+	function caGetQueryBuilderFilters(BaseModel $t_subject, Configuration $vo_query_builder_config) {
+		$vs_table = $t_subject->tableName();
+		$t_search_form = new ca_search_forms();
+		$va_filters = array_values(array_map(
+			function ($pa_bundle) use ($t_subject, $vo_query_builder_config) {
+				return caMapBundleToQueryBuilderFilterDefinition($t_subject, $pa_bundle, $vo_query_builder_config);
+			},
+			$t_search_form->getAvailableBundles($vs_table)
+		));
+		$va_exclude = $vo_query_builder_config->get('query_builder_exclude_' . $vs_table);
+		$va_filters = array_filter($va_filters, function ($vo_filter) use ($va_exclude) {
+			return array_search($vo_filter['id'], $va_exclude) === false;
+		});
+		$va_priority = $vo_query_builder_config->get('query_builder_priority_' . $vs_table);
+		usort($va_filters, function ($pa_a, $pa_b) use ($va_priority, $vs_table) {
+			$vs_a_id = $pa_a['id'];
+			$vs_b_id = $pa_b['id'];
+			$vn_a_index = array_search($vs_a_id, $va_priority, true);
+			$vn_b_index = array_search($vs_b_id, $va_priority, true);
+			if ($vn_a_index !== false || $vn_b_index !== false) {
+				// At least one of (a, b) has priority, so the one with highest explicit priority should be first.
+				$vn_a_position = $vn_a_index === false ? 0 : sizeof($va_priority) - $vn_a_index;
+				$vn_b_position = $vn_b_index === false ? 0 : sizeof($va_priority) - $vn_b_index;
+				return $vn_b_position - $vn_a_position;
+			} else {
+				// Neither (a, b) has priority, so look at the tables they reference; there are three cases for each
+				// field specifier:
+				// 1. a field name on its own (no dot), which is either an implicit field on the table being searched,
+				//    or an access point defined in `search_indexing.conf`.
+				// 2. a field specified as `table.field` where `table` is the same as `$vs_table`, which is explicitly
+				//    part of the table being searched.
+				// 3. a field specified as `table.field` where `table` is a different table to `$vs_table`.
+				$vn_a_split = strpos($vs_a_id, '.');
+				$vs_a_table = $vn_a_split === false ? null : substr($vs_a_id, 0, $vn_a_split);
+				$vb_a_is_main_table = $vs_a_table === null || $vs_a_table === $vs_table;
+				$vn_b_split = strpos($vs_b_id, '.');
+				$vs_b_table = $vn_b_split === false ? null : substr($vs_b_id, 0, $vn_b_split);
+				$vb_b_is_main_table = $vs_b_table === null || $vs_b_table === $vs_table;
+				if ($vb_a_is_main_table && $vb_b_is_main_table) {
+					// Both (a, b) are in the main table, so sort alphabetically by label.
+					return strcasecmp($pa_a['label'], $pa_b['label']);
+				} elseif (!$vb_a_is_main_table && !$vb_b_is_main_table) {
+					// Both (a, b) are in other tables, so sort alphabetically by table.
+					return strcasecmp($vs_a_table, $vs_b_table);
+				} else {
+					// One of (a, b) is in the main table and the other isn't, so put the one in the main table first.
+					return $vb_a_is_main_table ? -1 : 1;
+				}
+			}
+		});
+		return $va_filters;
+	}
+	# ---------------------------------------
+	function caMapBundleToQueryBuilderFilterDefinition(BaseModel $t_subject, $pa_bundle, Configuration $vo_query_builder_config) {
+		$vs_name = $pa_bundle['bundle'];
+		$vs_name_no_table = preg_replace('/^.*\./', '', $vs_name);
+		$vs_table = $t_subject->tableName();
+		$va_priority = $vo_query_builder_config->get('query_builder_priority_' . $vs_table);
+		$va_operators_by_type = $vo_query_builder_config->get('query_builder_operators');
+		$va_field_info = $t_subject->getFieldInfo(substr($vs_name, strpos($vs_name, '.') + 1));
+		$va_element_codes = (method_exists($t_subject, 'getApplicableElementCodes') ? $t_subject->getApplicableElementCodes(null, false, false) : array());
+		$vn_display_type = null;
+		$vs_list_code = null;
+		$va_select_options = null;
+		$va_result = array(
+			'id' => $vs_name,
+			'label' => $pa_bundle['label']
+		);
+		if ($va_field_info) {
+			// Get the list code and display type for further processing below.
+			$vs_list_code = $va_field_info['LIST'] ?: $va_field_info['LIST_CODE'];
+			$vn_display_type = $va_field_info['DISPLAY_TYPE'];
+			// The "hardcoded" options are `label` => `id` so this needs to be flipped for the query builder.
+			$va_select_options = is_array($va_field_info['OPTIONS']) ? array_flip($va_field_info['OPTIONS']) : null;
+			// Convert CA field type to query builder type and operators.
+			switch ($va_field_info['FIELD_TYPE']) {
+				case FT_NUMBER:
+					$va_result['type'] = 'integer';
+					break;
+				case FT_DATE:
+				case FT_DATERANGE:
+				case FT_HISTORIC_DATE:
+				case FT_HISTORIC_DATERANGE:
+					$va_result['type'] = 'date';
+					break;
+				case FT_TIME:
+				case FT_TIMECODE:
+				case FT_TIMESTAMP:
+				case FT_TIMERANGE:
+					$va_result['type'] = 'time';
+					break;
+				case FT_DATETIME:
+				case FT_HISTORIC_DATETIME:
+					$va_result['type'] = 'datetime';
+					break;
+				default:
+					$va_result['type'] = 'string';
+			}
+		} elseif (in_array($vs_name_no_table, $va_element_codes)) {
+			$t_element = ca_metadata_elements::getInstance($vs_name_no_table);
+			if ($t_element) {
+				// Get the list code and display type for further processing below.
+				$vs_list_code = $t_element->get('list_id');
+				$vn_display_type = $vs_list_code ? DT_SELECT : DT_FIELD;
+				// Convert CA attribute datatype to query builder type and operators.
+				switch ($t_element->get('datatype')) {
+					case __CA_ATTRIBUTE_VALUE_CURRENCY__:
+					case __CA_ATTRIBUTE_VALUE_LENGTH__:
+					case __CA_ATTRIBUTE_VALUE_NUMERIC__:
+					case __CA_ATTRIBUTE_VALUE_WEIGHT__:
+						$va_result['type'] = 'double';
+						break;
+					case __CA_ATTRIBUTE_VALUE_INTEGER__:
+						$va_result['type'] = 'integer';
+						break;
+					case __CA_ATTRIBUTE_VALUE_DATERANGE__:
+						$va_result['type'] = 'date';
+						break;
+					case __CA_ATTRIBUTE_VALUE_TIMECODE__:
+						$va_result['type'] = 'time';
+						break;
+					default:
+						$va_result['type'] = 'string';
+						break;
+				}
+			}
+		}
+		// Use the relevant input field type and operators based on type.
+		$va_result['operators'] = $va_operators_by_type[$va_result['type']];
+		// Process list types and use a text field for non-list types.
+		if (in_array($vn_display_type, array( DT_SELECT, DT_LIST, DT_LIST_MULTIPLE, DT_CHECKBOXES, DT_RADIO_BUTTONS ))) {
+			if (!$va_select_options) {
+				$va_select_options = array();
+				$t_list = new ca_lists();
+				$va_items = $t_list->getItemsForList($vs_list_code);
+				if (is_array($va_items)) {
+					foreach ($va_items as $va_item) {
+						foreach ($va_item as $va_item_details) {
+							$va_select_options[$va_item_details['idno']] = $va_item_details['name_singular'];
+						}
+					}
+				}
+			}
+			$va_result['input'] = 'select';
+			$va_result['values'] = $va_select_options;
+			$va_result['operators'] = $va_operators_by_type['select'];
+		} else {
+			$va_result['input'] = 'text';
+		}
+		// Set up option groups.
+		if (in_array($vs_name, $va_priority)) {
+			// Bundle is given priority
+			$va_result['optgroup'] = _t('Frequently Used');
+		} else {
+			$vn_split = strpos($vs_name, '.');
+			if ($vn_split === false || substr($vs_name, 0, $vn_split) === $vs_table) {
+				$va_result['optgroup'] = ucwords($t_subject->getProperty('NAME_PLURAL'));
+			} else {
+				$va_result['optgroup'] = _t('Related');
+			}
+		}
+		return $va_result;
+	}

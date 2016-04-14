@@ -93,7 +93,8 @@
  				$this->opo_result_context->isNewSearch(true);
  			}
  			parent::Index($pa_options);
- 			
+
+			AssetLoadManager::register('queryBuilder');
  			AssetLoadManager::register('hierBrowser');
  			AssetLoadManager::register('browsable');	// need this to support browse panel when filtering/refining search results
  			$t_model = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
