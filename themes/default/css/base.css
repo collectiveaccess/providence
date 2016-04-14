@@ -1281,18 +1281,18 @@ div.hint {
 	text-transform: uppercase;
 	text-align: left;
 	width: 30%;
-    overflow: hidden;
+	overflow: hidden;
 	display: inline-block;
 	font-weight: bold;
 	color: #666;
-    vertical-align: top;
+	vertical-align: top;
 }
 #summary .summaryData{
 	width: 70%;
 	display: inline-block;
 	font-family: 'DIN-Regular', Helvetica, sans-serif;
 	color: #333;
-    vertical-align: top;
+	vertical-align: top;
 }
 #summary .thumbnailsImageContainer{
     border:1px solid #DDDDDD;
