@@ -1125,6 +1125,7 @@ class SearchResult extends BaseObject {
 									}
 								}
 								
+								if ($t_instance->getProperty('HIERARCHY_TYPE') == __CA_HIER_TYPE_MULTI_MONO__) { array_pop($va_hier_ids); }
 								if (!is_null($vn_max_levels_from_top)) {
 									$va_hier_ids = array_slice($va_hier_ids, 0, $vn_max_levels_from_top, true);
 								} elseif (!is_null($vn_max_levels_from_bottom)) {
