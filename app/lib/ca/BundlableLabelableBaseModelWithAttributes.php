@@ -2305,7 +2305,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	 * $pm_screen can be a screen tag (eg. "Screen5") or a screen_id (eg. 5) 
  	 *
  	 * @param mixed $pm_screen screen_id or code in default UI to return bundles for
- 	 * @param array $pa_options Array of options. Supports and option getBundleFormHTML() supports plus:
+ 	 * @param array $pa_options Array of options. Supports any option getBundleFormHTML() supports plus:
  	 *		request = the current request object; used to apply user privs to bundle generation
  	 *		force = list of bundles to force onto form if they are not included in the UI; forced bundles will be included at the bottom of the form
  	 *		forceHidden = list of *intrinsic* fields to force onto form as hidden <input> elements if they are not included in the UI; NOTE: only intrinsic fields may be specified
