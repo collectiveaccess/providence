@@ -122,7 +122,8 @@
 				},
 				onCloseCallback: function() {
 					jQuery('#topNavContainer').show(250);
-				}
+				},
+				closeOnEsc: false
 			});
 			
 			caEditorFieldList = caUI.initPanel({ 

@@ -26,5 +26,4 @@
  * ----------------------------------------------------------------------
  */
  
- 	if (!is_array($va_errors = $this->getVar('errors'))) { $va_errors = array(); }
-	print json_encode(array('status' => (sizeof($va_errors) ? 'error' : 'ok'), 'errors' => $va_errors, 'request' => $_REQUEST));
+	print json_encode($this->getVar('response'));

@@ -51,6 +51,7 @@ var caUI = caUI || {};
 			colWidths: null,
 			
 			gridClassName: 'caResultsEditorContent',
+			loadingClassName: 'caResultsEditorLoading',
 			currentRowClassName: 'caResultsEditorCurrentRow',
 			currentColClassName: 'caResultsEditorCurrentCol',
 			readOnlyCellClassName: 'caResultsEditorReadOnlyCell',			// "readonly" is for any cell that cannot be edited inline (ie. readonly in Handsontable)
@@ -105,7 +106,9 @@ var caUI = caUI || {};
 							ht.selectCell(r,c);
 							var physicalIndex = ht.sortIndex[r] ? ht.sortIndex[r][0] : r;		// need to do translation in case user has sorted on a column
 							var rowData = that.initialData[physicalIndex];
-							that.dataEditorPanel.showPanel(that.dataEditUrl + "/bundle/" + p + "/id/" + rowData['id'] + '/row/' + r + '/col/' + c);
+							var placementID = colSpec.placement_id;
+							
+							that.dataEditorPanel.showPanel(that.dataEditUrl + "/bundle/" + p + "/id/" + rowData['id'] + '/row/' + r + '/col/' + c + '/pl/' + placementID);
 						}
 					});
 				}
@@ -144,6 +147,7 @@ var caUI = caUI || {};
 		// --------------------------------------------------------------------------------
 
 		that.save = function(change) {
+			console.log("change", change);
 			that.saveQueue.push(change);
 			that._runSaveQueue();
 		};
@@ -289,7 +293,8 @@ var caUI = caUI || {};
 					exposeBackgroundOpacity: 0.7,					
 					panelTransitionSpeed: 100,						
 					closeButtonSelector: "#" +  that.dataEditorID + " .caResultsComplexDataEditorPanelClose",
-					center: true
+					center: true,
+					closeOnEsc: false
 				});
 			}
 			
@@ -299,6 +304,8 @@ var caUI = caUI || {};
 			
 			// Load additional data in chunks
 			var rowsLoaded = that.numRowsForFirstLoad;
+			
+			if (that.loadingClassName) { jQuery("." + that.loadingClassName).hide(100); }
 			var _loadData = function(s, c) {
 				var percentLoaded = parseInt((s/that.rowCount) * 100);
 				if (percentLoaded > 100) percentLoaded = 100;

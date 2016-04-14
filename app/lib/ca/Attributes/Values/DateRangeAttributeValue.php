@@ -82,6 +82,24 @@
 			'label' => _t('Include date picker'),
 			'description' => _t('Check this option if you want a calendar-based date picker to be available for date entry. (The default is to not include a picker.)')
 		),
+		'datePickerDateFormat' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'default' => 'yy-mm-dd',
+			'width' => 50, 'height' => 1,
+			'label' => _t('Date picker date format'),
+			'options' => array(
+				_t('ISO-8601 (ex. 2012-07-03)') => 'yy-mm-dd',
+				_t('US Delimited (ex. 07/03/2012)') => 'dd/mm/yy',
+				_t('European Delimited (ex. 03/07/2012)') => 'mm/dd/yy',
+				_t('Month Day, Year (ex. July 3, 2012)') => 'MM d, yy',
+				_t('Month Day Year (ex. July 3 2012)') => 'MM d yy',
+				_t('Day Month Year (ex. 3 July 2012)') => 'd MM yy',
+				_t('Short month Day Year (ex. Jul 3 2012)') => 'M d yy',
+				_t('Day Short month Year (ex. 3 July 2012)') => 'd M yy'
+			),
+			'description' => _t('Format to use for dates selected from the date picker. (The default is YY-MM-DD format.)')
+		),
 		'mustNotBeBlank' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_CHECKBOXES,
@@ -329,12 +347,13 @@
  		 *			t_subject = an instance of the model to which the attribute belongs; required if suggestExistingValues lookups are enabled [Default is null]
  		 *			request = the RequestHTTP object for the current request; required if suggestExistingValues lookups are enabled [Default is null]
  		 *			suggestExistingValues = suggest values based on existing input for this element as user types [Default is false]		
- 		 *			useDatePicker = use calendar-style date picker [Default=false]
+ 		 *			useDatePicker = use calendar-style date picker [Default is false],
+ 		 8			datePickerDateFormat = Format to use for dates selected from the date picker [Default is 'yy-mm-dd']
  		 *
  		 * @return string
  		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
-			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'suggestExistingValues', 'useDatePicker'));
+			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'suggestExistingValues', 'useDatePicker', 'datePickerDateFormat'));
 			$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : 'dateBg');
 			
 			if (isset($pa_options['useDatePicker'])) {
@@ -379,7 +398,7 @@
 
  				$vs_element .= "<script type='text/javascript'>
  					jQuery(document).ready(function() {
- 						jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').datepicker({dateFormat: 'yy-mm-dd'});
+ 						jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').datepicker({dateFormat: '".(isset($va_settings['datePickerDateFormat']) ? $va_settings['datePickerDateFormat'] : 'yy-mm-dd')."'});
  					});
  				</script>\n";
 

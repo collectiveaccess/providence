@@ -42,7 +42,13 @@ if($vo_result->numHits() > 0) {
 ?>
 <div style="clear: both;"><!-- empty --></div>
 
+<?php
+	if($vo_result->numHits() > 0) {
+?>
 <a href='#' id='showResultsEditor' onclick='caResultsEditorPanel.showPanel("<?php print caNavUrl($this->request, '*', '*', 'resultsEditor'); ?>"); return false;'><?php print caNavIcon(__CA_NAV_ICON_SPREADSHEET__, "24px"); ?></a> 
+<?php
+	}	
+?>
 <a href='#' id='showOptions' onclick='return caHandleResultsUIBoxes("display", "show");'><?php print caNavIcon(__CA_NAV_ICON_SETTINGS__, "24px"); ?></a>
 
 <?php

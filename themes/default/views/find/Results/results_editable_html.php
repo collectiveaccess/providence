@@ -40,13 +40,12 @@
 		<br style='clear'/>
 	</div>
 	<div class="caResultsEditorContainer">
-		<div class="caResultsEditorContent"></div>
+		<div class="caResultsEditorContent"><div class="caResultsEditorLoading"><?php print _t("Loading... ").caBusyIndicatorIcon($this->request, ['style' => 'width: 30px; height 30px; color: #fff;']); ?></div></div>
 	</div><!--end scrollingResults -->
 	
-
 	<div id="caResultsComplexDataEditorPanel" class="caResultsComplexDataEditorPanel"> 
 		<div id="caResultsComplexDataEditorPanelContent">
-		
+				
 		</div>
 	</div>
 </div>

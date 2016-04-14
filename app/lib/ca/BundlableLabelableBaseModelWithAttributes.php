@@ -2305,7 +2305,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
  	 * $pm_screen can be a screen tag (eg. "Screen5") or a screen_id (eg. 5) 
  	 *
  	 * @param mixed $pm_screen screen_id or code in default UI to return bundles for
- 	 * @param array $pa_options Array of options. Supports and option getBundleFormHTML() supports plus:
+ 	 * @param array $pa_options Array of options. Supports any option getBundleFormHTML() supports plus:
  	 *		request = the current request object; used to apply user privs to bundle generation
  	 *		force = list of bundles to force onto form if they are not included in the UI; forced bundles will be included at the bottom of the form
  	 *		forceHidden = list of *intrinsic* fields to force onto form as hidden <input> elements if they are not included in the UI; NOTE: only intrinsic fields may be specified
@@ -2334,17 +2334,18 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			return false;
  		}
  		
- 		if (($vn_screen_access = ca_editor_uis::getAccessForScreen($pa_options['request'], $pm_screen)) === __CA_BUNDLE_ACCESS_NONE__) {
- 			// no access to screen
- 			$this->postError(2320, _t('Access denied to screen %1', $pm_screen), "BundlableLabelableBaseModelWithAttributes->getBundleFormHTMLForScreen()");				
-			return false;
- 		}
  		
  		if (isset($pa_options['bundles']) && is_array($pa_options['bundles'])) {
  			$va_bundles = $pa_options['bundles'];
  			$vn_screen_access = __CA_BUNDLE_ACCESS_EDIT__;
  		} else {
  			$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen, $this->getTypeID());
+ 		
+			if (($vn_screen_access = ca_editor_uis::getAccessForScreen($pa_options['request'], $pm_screen)) === __CA_BUNDLE_ACCESS_NONE__) {
+				// no access to screen
+				$this->postError(2320, _t('Access denied to screen %1', $pm_screen), "BundlableLabelableBaseModelWithAttributes->getBundleFormHTMLForScreen()");				
+				return false;
+			}
  		}
  		
  		$vs_form_name = caGetOption('formName', $pa_options, '');
@@ -2913,8 +2914,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 *
 	 */
 	protected function getBundleListsForScreen($pm_screen, $po_request, $t_ui, $pa_options=null) {
-		if(!$t_ui) { return; }
-		$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen, $this->getTypeID());
+		if (!(($va_bundles = caGetOption('bundles', $pa_options, null)) && is_array($va_bundles))) {
+			if(!$t_ui) { return; }
+			$va_bundles = $t_ui->getScreenBundlePlacements($pm_screen);
+		}
 		
 		// sort fields by type
 		$va_fields_by_type = array();

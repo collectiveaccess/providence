@@ -102,7 +102,7 @@
 			jQuery(".qlButtonContainerThumbnail").css("display", "none"); 
 			jQuery("#ql_" + jQuery(this).data("id")).css("display", "block");
 		});
-		jQuery(".qlButtonEditorLink").on("mouseout", function(e) {
+		jQuery(".objectThumbnailsImageContainer").on("mouseleave", function(e) {
 			jQuery(".qlButtonContainerThumbnail").css("display", "none");
 		});
 		jQuery(".qlButton").on("click", function(e) {

@@ -30,7 +30,7 @@
 
 
 	$vs_type_menu = '<div class="sf-small-menu form-header-button rounded">'.
-							'<div style="float:right; margin: 3px;">'.
+							'<div class="caNavHeaderIcon">'.
 								'<a href="#" onclick="_navigateToNewForm(jQuery(\'#tableList\').val());">'.caNavIcon(__CA_NAV_ICON_ADD__, 2).'</a>'.
 							'</div>'.
 						'<form action="#">'._t('New display for ').' '.caHTMLSelect('table_num', $this->getVar('table_list'), array('id' => 'tableList')).'</form>'.

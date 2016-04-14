@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -188,6 +188,10 @@ if(is_array($va_sub_elements)):
 	</div>
 <?php
 endif;
+?>
+	<div class="editorBottomPadding"><!-- empty --></div>
+<?php	
+			print $vs_control_box;
 ?>
 </div>
 
