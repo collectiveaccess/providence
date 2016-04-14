@@ -485,6 +485,8 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		$ps_table = (isset($pa_options['table'])) ? $pa_options['table'] : null;
 		$pn_user_id = isset($pa_options['user_id']) ? $pa_options['user_id'] : null;
 		
+		$ps_hierarchical_delimiter = caGetOption('hierarchicalDelimiter', $pa_options, null);
+		
 		if ($pn_user_id && !$this->haveAccessToDisplay($pn_user_id, __CA_BUNDLE_DISPLAY_READ_ACCESS__)) {
 			return array();
 		}
@@ -638,8 +640,17 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 												$va_placements[$vn_placement_id]['inlineEditingType'] = DT_SELECT;
 												
 												$va_list_values = $t_list->getItemsForList($t_element->get("list_id"), array('labelsOnly' => true));
-												$va_placements[$vn_placement_id]['inlineEditingListValues'] = array_values($va_list_values);
-												$va_placements[$vn_placement_id]['inlineEditingListValueMap'] = array_flip($va_list_values);
+												
+												$qr_list_items = caMakeSearchResult('ca_list_items', array_keys($va_list_values));
+												$va_list_item_labels = array();
+										
+									
+												while($qr_list_items->nextHit()) {
+													$va_list_item_labels[$vb_use_item_values ? $qr_list_items->get('ca_list_items.item_value') : $qr_list_items->get('ca_list_items.item_id')] = $qr_list_items->get('ca_list_items.hierarchy.preferred_labels.name_plural', ['delimiter' => $ps_hierarchical_delimiter]);
+												}
+												asort($va_list_item_labels);
+												$va_placements[$vn_placement_id]['inlineEditingListValues'] = array_values($va_list_item_labels);
+												$va_placements[$vn_placement_id]['inlineEditingListValueMap'] = array_flip($va_list_item_labels);
 												break;
 											default: // if it's a render setting we don't know about it's not editable
 												$va_placements[$vn_placement_id]['allowInlineEditing'] = false;
@@ -2385,7 +2396,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		$pn_type_id = caGetOption('type_id', $pa_options, null);
 		
 		if($this->haveAccessToDisplay($pn_user_id, __CA_BUNDLE_DISPLAY_READ_ACCESS__)) {
-			$va_placements = $this->getPlacements(array('settingsOnly' => true));
+			$va_placements = $this->getPlacements(array('settingsOnly' => true, 'hierarchicalDelimiter' => ' ➜ '));
 		
 			foreach($va_placements as $vn_placement_id => $va_display_item) {
 				$va_settings = caUnserializeForDatabase($va_display_item['settings']);
@@ -2503,15 +2514,16 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 	 * Convert list of bundle names into placement list for use with results editor
 	 *
 	 * @param array $pa_bundles Array of bundle names
+	 * @param array $pa_settings Array of placement settings to control how bundle is rendered
 	 * @return array Array of placements. Each value is an array with information about a column in the inline editor.
 	 */
-	static public function makeBundlesForResultsEditor($pa_bundles) {		
+	static public function makeBundlesForResultsEditor($pa_bundles, $pa_settings=null) {		
 		$o_dm = Datamodel::load();
 		
 		$va_placements = [];
 
 		$vn_i = 1;
-		foreach($pa_bundles as $vs_field) {
+		foreach($pa_bundles as $vn_i => $vs_field) {
 			$vs_bundle = str_replace(",", ".", $vs_field);
 			$vs_placement = str_replace(",", "_", $vs_field);
 			
@@ -2526,7 +2538,8 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				'placement_id' => 'X'.$vn_i,
 				'screen_id' => -1,
 				'placement_code' => "{$vs_placement}_{$vn_i}",
-				'bundle_name' => $vs_bundle
+				'bundle_name' => $vs_bundle,
+				'settings' => isset($pa_settings[$vn_i]) ? $pa_settings[$vn_i] : null
 			);
 			$vn_i++;
 		}
@@ -2554,7 +2567,8 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				$va_column_spec[] = array(
 					'data' => str_replace(".", ",", $vs_bundle_name), 
 					'readOnly' => !(bool)$pa_display_list[$vn_placement_id]['allowInlineEditing'],
-					'allowEditing' => $pa_display_list[$vn_placement_id]['allowEditing']
+					'allowEditing' => $pa_display_list[$vn_placement_id]['allowEditing'],
+					'placement_id' => $vn_placement_id
 				);
 				continue;
 			}
@@ -2567,7 +2581,8 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 						'source' => $pa_display_list[$vn_placement_id]['inlineEditingListValues'],
 						'sourceMap' => $pa_display_list[$vn_placement_id]['inlineEditingListValueMap'],
 						'strict' => true,
-						'allowEditing' => $pa_display_list[$vn_placement_id]['allowEditing']
+						'allowEditing' => $pa_display_list[$vn_placement_id]['allowEditing'],
+						'placement_id' => $vn_placement_id
 					);
 					break;
 				case DT_LOOKUP:
@@ -2581,7 +2596,8 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 							'sourceMap' => $pa_display_list[$vn_placement_id]['inlineEditingListValueMap'],
 							'lookupURL' => $va_urls['search'],
 							'strict' => false,
-							'allowEditing' => $pa_display_list[$vn_placement_id]['allowEditing']
+							'allowEditing' => $pa_display_list[$vn_placement_id]['allowEditing'],
+							'placement_id' => $vn_placement_id
 						);
 					}
 					break;
@@ -2590,7 +2606,8 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 						'data' => str_replace(".", ",", $vs_bundle_name), 
 						'readOnly' => false,
 						'type' => 'DT_FIELD',
-						'allowEditing' => $pa_display_list[$vn_placement_id]['allowEditing']
+						'allowEditing' => $pa_display_list[$vn_placement_id]['allowEditing'],
+						'placement_id' => $vn_placement_id
 					);
 					break;
 			}

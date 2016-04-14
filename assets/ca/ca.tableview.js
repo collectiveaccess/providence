@@ -106,7 +106,9 @@ var caUI = caUI || {};
 							ht.selectCell(r,c);
 							var physicalIndex = ht.sortIndex[r] ? ht.sortIndex[r][0] : r;		// need to do translation in case user has sorted on a column
 							var rowData = that.initialData[physicalIndex];
-							that.dataEditorPanel.showPanel(that.dataEditUrl + "/bundle/" + p + "/id/" + rowData['id'] + '/row/' + r + '/col/' + c);
+							var placementID = colSpec.placement_id;
+							
+							that.dataEditorPanel.showPanel(that.dataEditUrl + "/bundle/" + p + "/id/" + rowData['id'] + '/row/' + r + '/col/' + c + '/pl/' + placementID);
 						}
 					});
 				}

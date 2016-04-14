@@ -937,9 +937,10 @@
  		 * results editor for data that is too complex to be edited in-cell.
  		 */ 
  		public function resultsComplexDataEditor() {
- 			$t_instance 				= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+ 			$t_instance 			= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
  			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
  			
+ 			$pn_placement_id = $this->request->getParameter('pl', pInteger);
  			$ps_bundle = $this->request->getParameter('bundle', pString);
  			$pn_id = $this->request->getParameter('id', pInteger);
  			$pn_col = $this->request->getParameter('col', pInteger);
@@ -949,10 +950,12 @@
  				throw new ApplicationException(_t('Cannot edit %1', $ps_bundle));
  			}
  			
+ 			$t_display = new ca_bundle_display_placements($pn_placement_id);
+ 			
  			$this->view->setVar('row', $pn_row);
  			$this->view->setVar('col', $pn_col);
  			$this->view->setVar('bundle', $ps_bundle);
- 			$this->view->setVar('bundles', $va_bundles = ca_bundle_displays::makeBundlesForResultsEditor(array($ps_bundle)));
+ 			$this->view->setVar('bundles', $va_bundles = ca_bundle_displays::makeBundlesForResultsEditor([$ps_bundle],[$t_display->get('settings')]));
  			$this->view->setVar('t_subject', $t_instance);
  					
  			$this->render("Results/ajax_results_editable_complex_data_form_html.php");
