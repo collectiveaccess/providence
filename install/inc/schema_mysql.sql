@@ -4664,14 +4664,16 @@ create table ca_batch_log
 /*==========================================================================*/
 create table ca_batch_log_items 
 (
+  item_id                        int unsigned                   not null AUTO_INCREMENT,
 	batch_id                       int unsigned                   not null,
 	row_id                         int unsigned                   not null,
 	errors                         longtext                       null,
 	
-	primary key (batch_id, row_id), 
-    KEY i_row_id (row_id),
-    constraint fk_ca_batch_log_items_batch_id foreign key (batch_id)
-      references ca_batch_log (batch_id) on delete restrict on update restrict
+	primary key (item_id),
+  KEY i_row_id (row_id),
+  INDEX i_batch_row_id (batch_id, row_id),
+  constraint fk_ca_batch_log_items_batch_id foreign key (batch_id)
+    references ca_batch_log (batch_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
@@ -6648,4 +6650,4 @@ create table ca_schema_updates (
 
 /* Indicate up to what migration this schema definition covers */
 /* CURRENT MIGRATION: 129 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (129, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (130, unix_timestamp());
