@@ -476,7 +476,11 @@ function caFileIsIncludable($ps_file) {
 		// strip quotes from path if present since they'll cause file_exists() to fail
 		$ps_path = preg_replace("!^\"!", "", $ps_path);
 		$ps_path = preg_replace("!\"$!", "", $ps_path);
-		if (!$ps_path || (preg_match("/[^\/A-Za-z0-9\.:\ _\(\)\\\-]+/", $ps_path)) || !@is_readable($ps_path)) { return false; }	// hide basedir warnings
+		if (!$ps_path || (preg_match("/[^\/A-Za-z0-9\.:\ _\(\)\\\-]+/", $ps_path))) { return false; }
+
+		if(!ini_get('open_basedir') && !@is_readable($ps_path)) { // open_basedir and is_readable() have some weird interactions
+			return false;
+		}
 
 		return true;
 	}
