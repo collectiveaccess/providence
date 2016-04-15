@@ -257,7 +257,7 @@
 			$t_set = new ca_sets($this->getRequest()->getParameter('set_id', pInteger));
 			if(!$t_set->getPrimaryKey()) { return; }
 
-			if($this->request->user->canDoAction('can_duplicate_items_in_sets') && $this->request->user->canDoAction('can_duplicate_' . $t_set->getItemType())) {
+			if(!(bool)$this->request->config->get('ca_sets_disable_duplication_of_items') && $this->request->user->canDoAction('can_duplicate_items_in_sets') && $this->request->user->canDoAction('can_duplicate_' . $t_set->getItemType())) {
 				if($this->getRequest()->getParameter('setForDupes', pString) == 'current') {
 					$pa_dupe_options = array('addToCurrentSet' => true);
 				} else {

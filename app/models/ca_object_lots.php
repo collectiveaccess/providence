@@ -539,6 +539,8 @@ class ca_object_lots extends RepresentableBaseModel {
 			$t_object->setTransaction($o_trans);
 			$t_idno = $t_object->getIDNoPlugInInstance();
 			$vs_separator = $t_idno->getSeparator();
+			$va_lot_num = explode($vs_separator, $vs_lot_num);
+			
 			$vn_i = 1;
 			foreach($va_objects as $vn_object_id => $va_object_info) {
 				if ($t_object->load($vn_object_id)) {
@@ -546,7 +548,15 @@ class ca_object_lots extends RepresentableBaseModel {
 						$po_application_plugin_manager->hookBeforeSaveItem(array('id' => $vn_object_id, 'table_num' => $t_object->tableNum(), 'table_name' => $t_object->tableName(), 'instance' => $t_object));
 					}
 					$t_object->setMode(ACCESS_WRITE);
-					$t_object->set('idno', $vs_lot_num.$vs_separator.$vn_i);
+					
+					$va_tmp = explode($vs_separator, $t_object->get('idno'));
+					$vs_last_num = array_pop($va_tmp);
+					foreach($va_lot_num as $vn_i => $vs_n) {
+						$va_tmp[$vn_i] = $vs_n;
+					}
+					$va_tmp[] = $vs_last_num;
+					$t_object->setIdnoWithTemplate(join($vs_separator, $va_tmp));
+				
 					$t_object->update();
 					if ($t_object->numErrors()) {
 						$t->rollback();
@@ -568,4 +578,3 @@ class ca_object_lots extends RepresentableBaseModel {
 	}
  	# ------------------------------------------------------
 }
-?>

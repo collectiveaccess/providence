@@ -251,7 +251,10 @@ class Media extends BaseObject {
 	# ----------------------------------------------------------
 	public function transform($operation, $parameters) {
 		if (!$this->instance) { return false; }
-		return $this->instance->transform($operation, $parameters);
+		if (!($vb_ret = $this->instance->transform($operation, $parameters))) {
+			$this->errors = $this->instance->errors;
+		}
+		return $vb_ret;
 	}
 	# ----------------------------------------------------------
 	public function write($filepath, $mimetype, $pa_options) {
