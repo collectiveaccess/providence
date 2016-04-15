@@ -940,7 +940,7 @@
  			$t_instance 			= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
  			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
  			
- 			$pn_placement_id = $this->request->getParameter('pl', pInteger);
+ 			$pn_placement_id = (int)$this->request->getParameter('pl', pString);
  			$ps_bundle = $this->request->getParameter('bundle', pString);
  			$pn_id = $this->request->getParameter('id', pInteger);
  			$pn_col = $this->request->getParameter('col', pInteger);
