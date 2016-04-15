@@ -55,7 +55,7 @@
  	define('__CA_NAV_ICON_GO__', 13);
  	define('__CA_NAV_ICON_DEL_BUNDLE__', 14);
  	define('__CA_NAV_ICON_CLOSE__', 15);
- 	define('__CA_NAV_ICON_ADD__', 16);
+ 	define('__CA_NAV_ICON_ROTATE__', 16);
  	define('__CA_NAV_ICON_ZOOM_IN__', 17);
  	define('__CA_NAV_ICON_ZOOM_OUT__', 18);
  	define('__CA_NAV_ICON_MAGNIFY__', 19);
@@ -85,7 +85,7 @@
  	define('__CA_NAV_ICON_COMMIT__', 43);
  	define('__CA_NAV_ICON_SETS__', 44);
  	define('__CA_NAV_ICON_RIGHT_ARROW__', 45);
- 	define('__CA_NAV_ICON_APPROVE__', 46);
+ 	define('__CA_NAV_ICON_ROTATE__', 46);
  	define('__CA_NAV_ICON_VISUALIZE__', 47);
  	define('__CA_NAV_ICON_ADD_WIDGET__', 48);	
  	define('__CA_NAV_ICON_VISIBILITY_TOGGLE__', 49);
@@ -100,7 +100,6 @@
  	define('__CA_NAV_ICON_SPREADSHEET__', 58);
  	define('__CA_NAV_ICON_VERTICAL_ARROWS__', 59);
  	define('__CA_NAV_ICON_EXTRACT__', 60);
- 	define('__CA_NAV_ICON_ROTATE__', 61);
  	
  	/**
  	 * Icon position constants
@@ -700,7 +699,7 @@
 				$vs_ca_class = 'hierarchyIcon';
 				break;
 			case __CA_NAV_ICON_DEL_BUNDLE__:
-				$vs_fa_class = 'fa-minus-circle';
+				$vs_fa_class = 'fa-times-circle';
 				break;
 			case __CA_NAV_ICON_CLOSE__:
 				$vs_fa_class = 'fa-times';
