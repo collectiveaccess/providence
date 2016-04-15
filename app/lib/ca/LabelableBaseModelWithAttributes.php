@@ -1430,7 +1430,7 @@
 					if (isset($_REQUEST[$ps_form_prefix.$vs_pref_key.$vs_field.'_'.$ps_label_id])) {
 						$va_values[$vs_field] = '';
 					} else {
-						$va_values[$vs_field] = $t_label->get($vs_field);
+						$va_values[$vs_field] = $t_label ? $t_label->get($vs_field) : null;
 					}
 				}
 			}
