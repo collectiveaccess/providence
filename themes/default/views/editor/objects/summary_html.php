@@ -106,7 +106,7 @@
 		foreach($va_placements as $vn_placement_id => $va_info) {
 			$vs_class="";
 			$va_tmp = explode('.', $va_info['bundle_name']);
-			#if (in_array($va_info['bundle_name'], array('ca_objects.preferred_labels', 'ca_object_labels.name'))) { continue; }		// skip preferred labels because we always output it above
+			if (in_array($va_info['bundle_name'], array('ca_objects.preferred_labels', 'ca_object_labels.name'))) { continue; }		// skip preferred labels because we always output it above
 			if (in_array($va_tmp[0], array('ca_object_representations'))) { continue; } // skip object representations
 			
 			if (!strlen($vs_display_value = $t_display->getDisplayValue($t_item, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array())))) {
