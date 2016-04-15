@@ -388,7 +388,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		foreach($pa_element_set[$pn_parent_id] as $vn_rank => $va_elements_by_id) {
 			foreach($va_elements_by_id as $vn_element_id => $va_element) {
 				$va_tmp[$vn_element_id] = $va_element;
-				$va_tmp = array_replace($va_tmp, $this->_getSortedElementsForParent($pa_element_set, $vn_element_id));
+				$va_tmp = array_merge($va_tmp, $this->_getSortedElementsForParent($pa_element_set, $vn_element_id));	// merge keeps keys in the correct order
 			}
 		}
 
