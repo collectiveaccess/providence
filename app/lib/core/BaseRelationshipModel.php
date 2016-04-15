@@ -748,4 +748,19 @@
 			return array_keys($va_ids);
 		}
 		# ------------------------------------------------------
+		/**
+		 * Updates the ranks for a list of given relation_ids. list/array keys will be the actual rank values.
+		 *
+		 * @param array $pa_ids
+		 * @return bool
+		 */
+		public function updateRanksForList($pa_ids) {
+			if(!is_array($pa_ids)) { return false; }
+
+
+			foreach($pa_ids as $i => $vn_id) {
+				$this->getDb()->query("UPDATE ".$this->tableName() . " SET rank=? WHERE relation_id =?", $i, $vn_id);
+			}
+		}
+		# ------------------------------------------------------
 	}

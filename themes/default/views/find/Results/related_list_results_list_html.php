@@ -163,17 +163,23 @@
 </div><!--end scrollingResults -->
 <?php
 	// if set to user defined, make tbody drag+droppable
-	//@todo un-fuck this: if($vs_current_sort == '_user') {
+	if($vs_current_sort == '_user') {
 ?>
 		<script type="text/javascript">
 			jQuery('#<?php print $vs_interstitial_prefix; ?>RelatedList tbody').sortable({
-				update: function( event, ui ) {
+				update: function() {
+					var ids = [];
 					jQuery('#<?php print $vs_interstitial_prefix; ?>RelatedList tbody tr').each(function() {
-						console.log(jQuery(this).attr('id').replace('<?php print $vs_interstitial_prefix; ?>', ''));
+						ids.push(jQuery(this).attr('id').replace('<?php print $vs_interstitial_prefix; ?>', ''));
 					});
+
+					jQuery.get(
+						'<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'SaveUserSort'); ?>',
+						{ ids: ids, related_rel_table: "<?php print $vs_related_rel_table; ?>" }
+					);
 				}
 			}).disableSelection();
 		</script>
 <?php
-	//}
+	}
 ?>

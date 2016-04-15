@@ -182,4 +182,18 @@ class RelatedListController extends BaseSearchController {
 		return parent::Index($pa_options);
 	}
 	# -------------------------------------------------------
+	public function SaveUserSort() {
+		$vs_related_rel_table = $this->getRequest()->getParameter('related_rel_table', pString);
+		$va_ids  = $this->getRequest()->getParameter('ids', pArray);
+
+		$t_related_rel_instance = $this->getAppDatamodel()->getInstance($vs_related_rel_table);
+
+		if(!($t_related_rel_instance instanceof BaseRelationshipModel)) { return false; }
+		if(!is_array($va_ids) || !sizeof($va_ids)) { return false; }
+
+		$t_related_rel_instance->updateRanksForList($va_ids);
+
+		return true;
+	}
+	# -------------------------------------------------------
 }
