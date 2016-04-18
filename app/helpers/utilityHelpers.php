@@ -476,7 +476,11 @@ function caFileIsIncludable($ps_file) {
 		// strip quotes from path if present since they'll cause file_exists() to fail
 		$ps_path = preg_replace("!^\"!", "", $ps_path);
 		$ps_path = preg_replace("!\"$!", "", $ps_path);
-		if (!$ps_path || (preg_match("/[^\/A-Za-z0-9\.:\ _\(\)\\\-]+/", $ps_path)) || !@is_readable($ps_path)) { return false; }	// hide basedir warnings
+		if (!$ps_path || (preg_match("/[^\/A-Za-z0-9\.:\ _\(\)\\\-]+/", $ps_path))) { return false; }
+
+		if(!ini_get('open_basedir') && !@is_readable($ps_path)) { // open_basedir and is_readable() have some weird interactions
+			return false;
+		}
 
 		return true;
 	}
@@ -2906,6 +2910,75 @@ function caFileIsIncludable($ps_file) {
 		}
 		
 		return $vo_parsed_measurement;
+	}
+	# ----------------------------------------
+	/**
+	 * Parses and normalizes length exprssions in the form <dimension1> <delimiter> <dimension2> <delimiter> <dimension3> ... (Ex. 4" x 5")
+	 * into an array of normalized dimension string. When no units are specified default units are specified (Ex. 4x6 is returned as ["4 in", "6 in"]).
+	 * When units are specified for some, but not all, quantities then the first specified unit in the expression in applied to all unit-less quantities 
+	 * (Ex. 4x6cm is returned as ["4 cm", "6 cm"] no matter what default units are set to). When units are specified that are always used for the quantity they
+	 * apply to (Ex. 4 x 6cm x 8" is returned as ["4 cm", "6 cm", "8 in"])
+	 *
+	 * @param string $ps_expression Expression to parse
+	 * @param null|array $pa_options Options include:
+	 *		delimiter = Delimiter string between dimensions. Delimiter will be processed case-insensitively. [Default is 'x']
+	 *		units = Units to use as default for quantities that lack a specification. [Default is inches]
+	 *		returnExtractedMeasurements = return an array of arrays, each of which includes the numeric quantity, units and display string as separate values. [Default is false]
+	 * @return array An array of parsed and normalized length dimensions, parseable by caParseLengthDimension() or Zend_Measure
+	 */
+	function caParseLengthExpression($ps_expression, $pa_options=null) {
+		$va_extracted_measurements = [];
+		$vs_specified_units = $vs_extracted_units = null;
+		
+		$ps_units = caGetOption('units', $pa_options, 'in');
+		$pb_return_extracted_measurements = caGetOption('returnExtractedMeasurements', $pa_options, false);
+		
+		if ($ps_delimiter = caGetOption('delimiter', $pa_options, 'x')) {
+			$va_measurements = explode(strtolower($ps_delimiter), strtolower($ps_expression));
+		} else {
+			$ps_delimiter = '';
+			$va_measurements = array($pm_value);
+		}
+		
+		foreach($va_measurements as $vn_i => $vs_measurement) {
+			$vs_measurement = trim(preg_replace("![ ]+!", " ", $vs_measurement));
+			
+			$vs_extracted_units = $vs_measurement_units = null;
+			try {
+				if (!($vo_parsed_measurement = caParseLengthDimension($vs_measurement))) {
+					throw new Exception("Missing or invalid dimensions");
+				} else {
+					$vs_measurement = trim($vo_parsed_measurement->toString());
+					$vs_extracted_units = caGetLengthUnitType($vo_parsed_measurement->getType(), ['short' => true]);
+					if (!$vs_specified_units) { $vs_specified_units = $vs_extracted_units; }
+				}
+			} catch(Exception $e) {
+				if (preg_match("!^([\d]+)!", $vs_measurement, $va_matches)) {
+					$vs_measurement = $va_matches[0]." {$ps_units}";
+				} else {
+					continue;
+				}
+			}
+			$va_extracted_measurements[] = ['quantity' => preg_replace("![^\d]+!", "", $vs_measurement), 'string' => $vs_measurement, 'units' => $vs_extracted_units];
+		}
+		if ($pb_return_extracted_measurements) { return $va_extracted_measurements; }
+		
+		$vn_set_count = 0;
+		
+		$va_return = [];
+		foreach($va_extracted_measurements as $vn_i => $va_measurement) {
+			
+			if ($va_measurement['units']) {
+				$vs_measurement = $va_measurement['quantity']." ".$va_measurement['units'];
+			} elseif ($vs_specified_units) {
+				$vs_measurement = $va_measurement['quantity']." {$vs_specified_units}";
+			} else {
+				$vs_measurement = $va_measurement['quantity']." {$ps_units}";
+			}
+			$va_return[] = $vs_measurement;
+		}
+		
+		return $va_return;
 	}
 	# ----------------------------------------
 	/**
