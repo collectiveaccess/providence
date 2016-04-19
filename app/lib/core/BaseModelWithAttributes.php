@@ -1098,7 +1098,6 @@
 		public function getTypeFieldName() {
 			return $this->ATTRIBUTE_TYPE_ID_FLD;
 		}
-		
 		# ------------------------------------------------------------------
 		/**
 		 * Determine if type for this model is mandatory 
