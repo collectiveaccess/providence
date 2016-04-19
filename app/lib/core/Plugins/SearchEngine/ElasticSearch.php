@@ -585,11 +585,12 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	protected function setIndexSettings() {
 		$this->getClient()->indices()->refresh(array('index' => $this->getIndexName()));
 
-		try {
-			$this->getClient()->indices()->close(array(
-				'index' => $this->getIndexName()
-			));
 
+		$this->getClient()->indices()->close(array(
+			'index' => $this->getIndexName()
+		));
+
+		try {
 			$this->getClient()->indices()->putSettings(array(
 					'index' => $this->getIndexName(),
 					'body' => array(
@@ -605,14 +606,13 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 					)
 				)
 			);
-
-			$this->getClient()->indices()->open(array(
-				'index' => $this->getIndexName()
-			));
-
-		} catch(Exception $e) {
-			return;
+		} catch(\Exception $e) {
+			// noop
 		}
+
+		$this->getClient()->indices()->open(array(
+			'index' => $this->getIndexName()
+		));
 	}
 	# -------------------------------------------------------
 	public function optimizeIndex($pn_tablenum) {
