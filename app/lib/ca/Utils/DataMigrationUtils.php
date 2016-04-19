@@ -996,8 +996,10 @@
 				if ($vs_idno_fld) {$va_intrinsics[$vs_idno_fld] = $vs_idno ? $vs_idno : null; }
 				
 				foreach($va_intrinsics as $vs_fld => $vm_fld_default) {
-					if ($t_instance->hasField($vs_fld)) { 
-						$t_instance->set($vs_fld, caGetOption($vs_fld, $pa_values, $vm_fld_default));
+					if ($t_instance->hasField($vs_fld)) {
+						// Handle both straight key => value and key => key => value (attribute style); import helpers pass in attribute style
+						$vs_v = (isset($pa_values[$vs_fld]) && is_array($pa_values[$vs_fld])) ? caGetOption($vs_fld, $pa_values[$vs_fld], $vm_fld_default) : caGetOption($vs_fld, $pa_values, $vm_fld_default);
+						$t_instance->set($vs_fld, $vs_v);
 					}
 					unset($pa_values[$vs_fld]);
 				}
