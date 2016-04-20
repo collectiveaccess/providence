@@ -1473,7 +1473,7 @@ class SearchResult extends BaseObject {
 					if (!$vb_include) { continue; }
 					$va_filtered_vals[$vn_id] = $vm_val[$vn_id];
 				}
-				return $va_filtered_vals;
+				return array_values($va_filtered_vals);
 			}
 		}
 		

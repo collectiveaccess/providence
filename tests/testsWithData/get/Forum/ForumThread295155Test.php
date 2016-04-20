@@ -1,13 +1,13 @@
 <?php
 /** ---------------------------------------------------------------------
- * tests/testsWithData/queries/IdnoSearchQueryTest.php
+ * tests/testsWithData/get/ForumThread295155Test.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,71 +30,59 @@
  * ----------------------------------------------------------------------
  */
 
-require_once(__CA_BASE_DIR__ . '/tests/testsWithData/AbstractSearchQueryTest.php');
+require_once(__CA_BASE_DIR__.'/tests/testsWithData/BaseTestWithData.php');
 
 /**
- * Class IdnoSearchQueryTest
+ * Class ForumThread295155Test
  * Note: Requires testing profile!
+ * @see http://www.collectiveaccess.org/support/forum/index.php?p=/discussion/294947/i-need-some-help-getting-data-in-a-report#latest
  */
-class IdnoSearchQueryTest extends AbstractSearchQueryTest {
+class ForumThread295155Test extends BaseTestWithData {
+	# -------------------------------------------------------
+	protected $opn_object_id = null;
 	# -------------------------------------------------------
 	public function setUp() {
-		// don't forget to call parent so that request is set up correctly
+		// don't forget to call parent so that the request is set up
 		parent::setUp();
-
-		// search subject table
-		$this->setPrimaryTable('ca_objects');
 
 		/**
 		 * @see http://docs.collectiveaccess.org/wiki/Web_Service_API#Creating_new_records
 		 * @see https://gist.githubusercontent.com/skeidel/3871797/raw/item_request.json
 		 */
-		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
+		$vn_test_object = $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
-				'idno' => 'D.99/2-38',
 			),
-		)));
-
-		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
-			'intrinsic_fields' => array(
-				'type_id' => 'image',
-				'idno' => 'D.99/2-39',
+			'preferred_labels' => array(
+				array(
+					"locale" => "en_US",
+					"name" => "A test image",
+				),
 			),
-		)));
-
-		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
-			'intrinsic_fields' => array(
-				'type_id' => 'image',
-				'idno' => 'D.99/0000001',
-			),
-		)));
-
-		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
-			'intrinsic_fields' => array(
-				'type_id' => 'image',
-				'idno' => '2016.1.15',
-			),
-		)));
-
-		// search queries
-		$this->setSearchQueries(array(
-			'ca_objects.idno:"D.99/2-38"' => 1,
-			'ca_objects.idno:"D.99/2-39"' => 1,
-			'ca_objects.idno:"D.99/2-40"' => 0,
-			'ca_objects.idno:"D.99/2-"' => 0,
-			//'ca_objects.idno:D.99*' => 3, oops, this doesn't work in SqlSearch	
-			'ca_objects.idno:2016*' => 1,
-
-			'ca_objects.idno:"D.99"' => 3,
-    		'ca_objects.idno:"D"' => 3,
-    		'ca_objects.idno:"D.99/2"' => 2,
-
-			'ca_objects.idno:"D.99/0000001"' => 1,
-			'ca_objects.idno:"D.99/1"' => 1,
-
-			'ca_objects.idno:"2016.1.15"' => 1,
+			'attributes' => array(
+				// Date
+				'date' => array(
+					array(
+						'dc_dates_types' => 'created',
+						'dates_value' => 'today'
+					)
+				),
+			)
 		));
+		$this->assertGreaterThan(0, $vn_test_object);
+
+
+		$this->opn_object_id = $vn_test_object;
+	}
+	# -------------------------------------------------------
+	public function testGets() {
+		// @see http://www.collectiveaccess.org/support/forum/index.php?p=/discussion/295155/if-rule-now-crashes-print-templates#latest
+
+		$vo_result = caMakeSearchResult('ca_objects', array($this->opn_object_id));
+		while($vo_result->nextHit()) {
+			$this->assertEquals('Foo', $vo_result->getWithTemplate("<if rule='^ca_objects.date.dc_dates_types=~ /Date created/'>Foo</if>"));
+			$this->assertEquals('', $vo_result->getWithTemplate("<if rule='^ca_objects.date.dc_dates_types=~ /Date copyrighted/'>Foo</if>"));
+		}
 	}
 	# -------------------------------------------------------
 }

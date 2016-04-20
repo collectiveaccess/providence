@@ -43,6 +43,8 @@ var caUI = caUI || {};
 		}
 	});
 	caUI.initRelationBundle = function(container, options) {
+		if (options.onAddItem) { options.onAddRelationshipItem = options.onAddItem; }
+		
 		options.onInitializeItem = function(id, values, options) { 
 			jQuery("#" + options.itemID + id + " select").css('display', 'inline');
 			var i, typeList, types = [], lists = [];
@@ -163,6 +165,8 @@ var caUI = caUI || {};
 					}
 				}, options.autocompleteOptions)
 			).on('click', null, {}, function() { this.select(); });
+			
+			if (options.onAddRelationshipItem) { options.onAddRelationshipItem(id, options, isNew); }
 		};
 		
 		options.select = function(id, data) {
@@ -225,32 +229,34 @@ var caUI = caUI || {};
 		
 		options.sort = function(key) {
 			var indexedValues = {};
+
 			jQuery.each(jQuery(that.container + ' .bundleContainer .' + that.itemListClassName + ' .roundedRel'), function(k, v) {
 				var id_string = jQuery(v).attr('id');
 				if (id_string) {
-					var indexKey;
-					if(key == 'name') {
-						indexKey = jQuery('#' + id_string + ' .itemName').text() + "/" + id_string;
-					} else {
-						if (key == 'type') {
-							indexKey = jQuery('#' + id_string + ' .itemType').text() + "/" + id_string;
-						} else {
-							if (key == 'idno') {
-								indexKey = jQuery('#' + id_string + ' .itemIdno').text() + "/" + id_string;
-							} else {
-								indexKey = id_string;
-							}
-						}
-					}
-					indexedValues[indexKey] = v;
+					var matches = /_([\d]+)$/.exec(id_string);
+					indexedValues[parseInt(matches[1])] = v;
 				}
 				jQuery(v).detach();
 			});
-			indexedValues = caUI.utils.sortObj(indexedValues, true);
+
+			var sortUrl = that.sortUrl + '/ids/' + Object.keys(indexedValues).join(',') + '/sortKeys/' + key;
+			var sortedValues = {};
+
+			// we actually have to wait for the result here ... hence, ajax() with async=false instead of getJSON()
+			jQuery.ajax({
+				url: sortUrl,
+				dataType: 'json',
+				async: false,
+				success: function(data) {
+					for (var i = 0; i < data.length; i++) {
+						sortedValues[that.fieldNamePrefix + 'Item_' + data[i]] = indexedValues[parseInt(data[i])];
+					}
+				}
+			});
 			
 			var whatsLeft = jQuery(that.container + ' .bundleContainer .' + that.itemListClassName).html();
 			jQuery(that.container + ' .bundleContainer .' + that.itemListClassName).html('');
-			jQuery.each(indexedValues, function(k, v) {
+			jQuery.each(sortedValues, function(k, v) {
 				jQuery(that.container + ' .bundleContainer .' + that.itemListClassName).append(v);
 				var id_string = jQuery(v).attr('id');
 				that.setDeleteButton(id_string);
@@ -272,12 +278,6 @@ var caUI = caUI || {};
 		};
 		
 		var that = caUI.initBundle(container, options);
-		
-		that.deleteAll = function() {
-			for(var i=0; i < that.getCount(); i++) {
-				that.deleteFromBundle(i);
-			}
-		}
 		
 		return that;
 	};	

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2012 Whirl-i-Gig
+ * Copyright 2011-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -861,10 +861,27 @@ class Installer {
 				// create ui bundle placements
 				foreach($vo_screen->bundlePlacements->children() as $vo_placement) {
 					$vs_placement_code = self::getAttribute($vo_placement, "code");
+					$vs_bundle_type_restrictions = self::getAttribute($vo_placement, "typeRestrictions");
 					$vs_bundle = trim((string)$vo_placement->bundle);
 
+					if ($vs_bundle_type_restrictions) {
+						// Copy type restrictions listed on the <placement> tag into numeric type_ids stored
+						// as settings on the placement record.
+						if ($t_instance instanceof BaseRelationshipModel) {
+							$va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), explode(",", $vs_bundle_type_restrictions));
+						} else {
+							$va_ids = caMakeTypeIDList($t_instance->tableNum(), explode(",", $vs_bundle_type_restrictions));
+						}
+						
+						if (!$vo_placement->settings) { $vo_placement->addChild("settings"); }
+						
+						foreach($va_ids as $vn_id) {
+							$o_setting = $vo_placement->settings->addChild('setting', $vn_id);
+							$o_setting->addAttribute('name', 'bundleTypeRestrictions');
+						}
+					}
+					
 					$va_settings = $this->_processSettings(null, $vo_placement->settings);
-
 					$t_ui_screens->addPlacement($vs_bundle, $vs_placement_code, $va_settings, null, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
 				}
 

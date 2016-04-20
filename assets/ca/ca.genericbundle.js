@@ -462,6 +462,8 @@ var caUI = caUI || {};
 			this.updateBundleFormState();
 
 			that.showUnsavedChangesWarning(true);
+			
+			if (this.onDeleteItem) { this.onDeleteItem(id); }
 
 			return this;
 		};

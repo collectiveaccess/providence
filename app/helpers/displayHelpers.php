@@ -48,15 +48,15 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/DisplayTemplateParser.php');
 
 // Components of __CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__
 //
-//	ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]{1}[\&\%]{1}[^ <]+|			-- Match ^ca_* tags
+//	ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]{1}[\&\%]{1}[^ <]+|			-- Match ^ca_* tags with options
+//	ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]{1}+|						-- Match simple ^ca_* tags
 //	[0-9]+(?=[.,;])|													-- Match numeric tags followed by punctuation
 //	[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|				-- Match tags with options
-//	[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/\[\]\@\'\"=:]+\]|				-- Match XPath ending with square bracket
-//	[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/\[\]\@\'\"=:]+|				-- Match XPath
-//	[A-Za-z0-9_\.\/]+[~]{1}[A-Za-z0-9]+[:]{1}[A-Za-z0-9_\.\/]+|			-- Match tags with modifiers
-//	[A-Za-z0-9_\.\/]+													-- Match simple tags (letters,number. dots and slashes
+//	[A-Za-z0-9_\.\/]+[:]{0,1}[A-Za-z0-9_\.\/\[\]\@\'\"=:]+|				-- Match XPath
+//	[A-Za-z0-9_\.\/]+[~]{1}[A-Za-z0-9]+[:]{0,1}[A-Za-z0-9_\.\/]*|			-- Match tags with modifiers
+//	[A-Za-z0-9_\.\/]+													-- Match simple tags (letters,number. dots and slashes)
 	
-define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]{1}[\&\%]{1}[^ <]+|[0-9]+(?=[.,;])|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/\[\]\@\'\"=:]+\]|[A-Za-z0-9_\.\/]+[:]{1}[A-Za-z0-9_\.\/\[\]\@\'\"=:]+|[A-Za-z0-9_\.\/]+[~]{1}[A-Za-z0-9]+[:]{1}[A-Za-z0-9_\.\/]+|[A-Za-z0-9_\.\/]+)/");
+define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]{1}[\&\%]{1}[^ <]+|ca_[A-Za-z]+[A-Za-z0-9_\-\.]+[A-Za-z0-9]+|[0-9]+(?=[.,;])|[A-Za-z0-9_\.:\/]+[%]{1}[^ \^\t\r\n\"\'<>\(\)\{\}\/]*|[A-Za-z0-9_\.\/]+[:]{0,1}[A-Za-z0-9_\.\/\[\]\@\'\"=:]+|[A-Za-z0-9_\.\/]+[~]{1}[A-Za-z0-9]+[:]{0,1}[A-Za-z0-9_\.\/]*|[A-Za-z0-9_\.\/]+)/");
 	
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -1326,7 +1326,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 					
 					$vs_buf .= "</div>\n";
 
-					if($po_view->request->user->canDoAction('can_duplicate_items_in_sets') && $po_view->request->user->canDoAction('can_duplicate_' . $vs_set_table_name)) {
+					if(!(bool)$po_view->request->config->get('ca_sets_disable_duplication_of_items') && $po_view->request->user->canDoAction('can_duplicate_items_in_sets') && $po_view->request->user->canDoAction('can_duplicate_' . $vs_set_table_name)) {
 						$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" ></div>';
 						$vs_buf .= caFormTag($po_view->request, 'DuplicateItems', 'caDupeSetItemsForm', 'manage/sets/SetEditor', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
 						$vs_buf .= _t("Duplicate items in this set and add to") . " ";
@@ -2927,24 +2927,32 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 	 *
 	 * @param RequestHTTP $po_request
 	 * @param string $ps_id_prefix
-	 * @param array $pa_settings
+	 * @param string $ps_table
 	 * 
 	 * @return string HTML implementing the control
 	 */
-	function caEditorBundleSortControls($po_request, $ps_id_prefix, $pa_settings) {
-		$vs_buf = "	<div class=\"caItemListSortControlContainer\">
-		<div class=\"caItemListSortControlTrigger\" id=\"{$ps_id_prefix}caItemListSortControlTrigger\">
-			"._t('Sort by')." <img src=\"".$po_request->getThemeUrlPath()."/graphics/icons/bg.gif\" alt=\"Sort\"/>
-		</div>
+	function caEditorBundleSortControls($po_request, $ps_id_prefix, $ps_table) {
+		require_once(__CA_APP_DIR__.'/helpers/searchHelpers.php');
+
+		if(!$ps_table) { $ps_table = 'ca_entities'; }
+		$va_sort_fields = caGetAvailableSortFields($ps_table, null);
+
+		$vs_buf = "
+		<div class=\"caItemListSortControlContainer\">
+			<div class=\"caItemListSortControlTrigger\" id=\"{$ps_id_prefix}caItemListSortControlTrigger\">
+				"._t('Sort by')." <img src=\"".$po_request->getThemeUrlPath()."/graphics/icons/bg.gif\" alt=\"Sort\"/>
+			</div>
 		<div class=\"caItemListSortControls\" id=\"{$ps_id_prefix}caItemListSortControls\">
-			<ul>
-				<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('name'); return false;\" class=\"caItemListSortControl\">"._t('name')."</a><br/></li>
-				<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('idno'); return false;\" class=\"caItemListSortControl\">"._t('idno')."</a><br/></li>
-				<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('type'); return false;\" class=\"caItemListSortControl\">"._t('type')."</a><br/></li>
-				<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('entry'); return false;\" class=\"caItemListSortControl\">"._t('entry')."</a><br/></li>
+			<ul>\n";
+
+		foreach($va_sort_fields as $vs_key => $vs_label) {
+			$vs_buf .= "<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('{$vs_key}'); return false;\" class=\"caItemListSortControl\">".$vs_label."</a><br/></li>\n";
+		}
+
+		$vs_buf .=	"
 			</ul>
 		</div>
-	</div>";
+		</div>";
 		
 		return $vs_buf;
 	}
