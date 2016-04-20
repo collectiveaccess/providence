@@ -16,7 +16,10 @@ Allow from all
 
 <IfModule mod_rewrite.c>
 	RewriteEngine on
-	SetEnv HTTP_MOD_REWRITE On
+	
+	<IfModule mod_env.c>
+		SetEnv HTTP_MOD_REWRITE On
+	</IfModule>
 	
 	# Pass all requests not referring directly 
 	# to files in the filesystem to index.php.
