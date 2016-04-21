@@ -298,12 +298,13 @@ class ca_change_log extends BaseModel {
 						break;
 					default:
 						if(
+							// don't break ca_list_items.item_id!!
 							(Datamodel::load()->getTableName((int) $qr_results->get('logged_table_num')) == 'ca_attribute_values')
 							&&
 							($vs_fld == 'item_id')
 						) {
 							$va_snapshot['item_code'] = caGetListItemIdno($vm_val);
-							// don't break ca_list_items.item_id!!
+							$va_snapshot['item_label'] = caGetListItemForDisplayByItemID($vm_val);
 						}
 
 						$t_instance = Datamodel::load()->getInstance((int) $qr_results->get('logged_table_num'), true);

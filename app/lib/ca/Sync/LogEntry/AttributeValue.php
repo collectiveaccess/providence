@@ -79,17 +79,25 @@ class AttributeValue extends Base {
 				}
 			} elseif($vs_field == 'item_id') {
 				if (
-					isset($va_snapshot['item_code']) && ($vs_item_code = $va_snapshot['item_code']) &&
 					isset($va_snapshot['element_code']) && ($vs_element_code = $va_snapshot['element_code'])
 				) {
 					$t_element = \ca_metadata_elements::getInstance($vs_element_code);
+
 					if($vn_list_id = $t_element->get('list_id')) {
-						if($vn_item_id = caGetListItemID($vn_list_id, $vs_item_code)) {
-							$this->getModelInstance()->set('item_id', $vn_item_id);
+						if(isset($va_snapshot['item_code']) && ($vs_item_code = $va_snapshot['item_code'])) {
+							if($vn_item_id = caGetListItemID($vn_list_id, $vs_item_code)) {
+								$this->getModelInstance()->set('item_id', $vn_item_id);
+							}
+						} elseif(isset($va_snapshot['item_label']) && ($vs_item_label = $va_snapshot['item_label'])) {
+							if($vn_item_id = caGetListItemIDForLabel($vn_list_id, $vs_item_label)) {
+								$this->getModelInstance()->set('item_id', $vn_item_id);
+							}
+						} else {
+							throw new LogEntryInconsistency("No item code or label for list attribute value");
 						}
+					} else {
+						throw new LogEntryInconsistency("No list id for list attribute value");
 					}
-				} else {
-					throw new LogEntryInconsistency("No item code for list attribute value");
 				}
 			}
 		}
