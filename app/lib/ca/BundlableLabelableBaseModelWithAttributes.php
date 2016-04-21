@@ -1234,6 +1234,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	 */
 	public function getBundleFormHTML($ps_bundle_name, $ps_placement_code, $pa_bundle_settings, $pa_options, &$ps_bundle_label=null) {
 		global $g_ui_locale;
+		if (!is_array($pa_bundle_settings)) { $pa_bundle_settings = []; }
 		
 		$vb_batch = (isset($pa_options['batch']) && $pa_options['batch']) ? true : false;
 		
@@ -2395,6 +2396,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if ((!$vn_pk_id) && ($va_bundle['bundle_name'] === $vs_hier_parent_id_fld)) { continue; }
 				if (in_array($va_bundle['bundle_name'], $va_omit_bundles)) { continue; }
 				
+				if (!is_array($va_bundle['settings'])) { $va_bundle['settings'] = []; }
+				
 				
 				if ($vs_element_set_code = preg_replace("/^(ca_attribute_|".$this->tableName()."\.)/", "", $va_bundle['bundle_name'])) {
 					if ($o_element = ca_metadata_elements::getInstance($vs_element_set_code)) {
@@ -2433,8 +2436,8 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 				if ($vb_dont_allow_bundle_show_hide) {
 					$va_bundle['settings']['dont_allow_bundle_show_hide'] = true;
 				}
-				
 				$va_bundle['settings']['placement_id'] = $va_bundle['placement_id'];
+				
 				if ($vs_bundle_form_html = $this->getBundleFormHTML($va_bundle['bundle_name'], 'P'.$va_bundle['placement_id'], $va_bundle['settings'], $pa_options, $vs_bundle_display_name)) {
 					$va_bundle_html[$va_bundle['placement_code']] = "<a name=\"{$pm_screen}_{$va_bundle['placement_id']}\"></a>{$vs_bundle_form_html}";
 					$va_bundles_present[$va_bundle['bundle_name']] = true;
