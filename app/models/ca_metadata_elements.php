@@ -369,8 +369,8 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			}
 		}
 
-		$va_tmp = $this->_getSortedElementsForParent($va_element_set, $va_root['element_id']);
 		$va_tmp[$va_root['element_id']] = $va_root;
+		$va_tmp = array_merge($va_tmp, $this->_getSortedElementsForParent($va_element_set, $va_root['element_id']));
 		ksort($va_tmp);
 
 		CompositeCache::save($pn_element_id, $va_tmp, 'ElementSets');
