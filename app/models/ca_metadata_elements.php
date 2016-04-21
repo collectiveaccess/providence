@@ -343,7 +343,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 
 		if($pb_use_cache && CompositeCache::contains($pn_element_id, 'ElementSets')) {
 			$va_set = CompositeCache::fetch($pn_element_id, 'ElementSets');
-			return (caGetOption('idsOnly', $pa_options, false) ?  array_keys($va_set) : $va_set);
+			//return (caGetOption('idsOnly', $pa_options, false) ?  array_keys($va_set) : $va_set);
 		}
 
 		$va_hier = $this->getHierarchyAsList($pn_element_id);
@@ -388,7 +388,11 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		foreach($pa_element_set[$pn_parent_id] as $vn_rank => $va_elements_by_id) {
 			foreach($va_elements_by_id as $vn_element_id => $va_element) {
 				$va_tmp[$vn_element_id] = $va_element;
-				$va_tmp = array_merge($va_tmp, $this->_getSortedElementsForParent($pa_element_set, $vn_element_id));	// merge keeps keys in the correct order
+				//$va_tmp = array_merge($va_tmp, $this->_getSortedElementsForParent($pa_element_set, $vn_element_id));	// merge keeps keys in the correct order
+				foreach($this->_getSortedElementsForParent($pa_element_set, $vn_element_id) as $k => $v) {
+					if (isset($va_tmp[$k])) { unset($va_tmp[$k]); }
+					$va_tmp[$k] = $v;
+				}
 			}
 		}
 
