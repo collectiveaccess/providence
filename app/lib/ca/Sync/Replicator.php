@@ -141,6 +141,7 @@ class Replicator {
 					"Could not get system GUID for one of the configured replication sources: {$vs_source_key}. Skipping source.",
 					\Zend_Log::ERR
 				);
+				continue;
 			}
 
 			foreach($this->getTargetsAsServiceClients() as $vs_target_key => $o_target) {

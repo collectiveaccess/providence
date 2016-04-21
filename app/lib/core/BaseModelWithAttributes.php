@@ -1500,15 +1500,20 @@
 			$va_elements_break_by_container = array();
 			
 			$va_element_info = array();
+
+			// fine element breaks by container
+			foreach($va_element_set as $va_element) {
+				if ($va_element['datatype'] == 0) {		// containers are not active form elements
+					if(isset($va_element['settings']) && isset($va_element["settings"]["lineBreakAfterNumberOfElements"])) {
+						$va_elements_break_by_container[$va_element['element_id']] = (int)$va_element["settings"]["lineBreakAfterNumberOfElements"];
+					}
+				}
+			}
 			
 			foreach($va_element_set as $va_element) {
+				if ($va_element['datatype'] == 0) { continue; }
+
 				$va_element_info[$va_element['element_id']] = $va_element;
-				
-				if ($va_element['datatype'] == 0) {		// containers are not active form elements
-					$va_elements_break_by_container[$va_element['element_id']] = (int)$va_element["settings"]["lineBreakAfterNumberOfElements"] ? (int)$va_element["settings"]["lineBreakAfterNumberOfElements"] : -1;
-					
-					continue;
-				}
 				
 				$va_label = $this->getAttributeLabelAndDescription($va_element['element_id']);
 
@@ -1518,11 +1523,12 @@
 					$va_elements_without_break_by_container[$va_element['parent_id']] += 1;
 				}
 
-				if($va_elements_without_break_by_container[$va_element['parent_id']] == $va_elements_break_by_container[$va_element['parent_id']]+1){
-					$va_elements_without_break_by_container[$va_element['parent_id']] = 1;
-					$vs_br = "</td></tr></table><table class=\"attributeListItem\"><tr><td class=\"attributeListItem\">";
-				} else {
-					$vs_br = "";
+				$vs_br = "";
+				if(isset($va_elements_break_by_container[$va_element['parent_id']])) {
+					if ($va_elements_without_break_by_container[$va_element['parent_id']] == $va_elements_break_by_container[$va_element['parent_id']] + 1) {
+						$va_elements_without_break_by_container[$va_element['parent_id']] = 1;
+						$vs_br = "</td></tr></table><table class=\"attributeListItem\"><tr><td class=\"attributeListItem\">";
+					}
 				}
 
 				if (isset($pa_bundle_settings['usewysiwygeditor']) && strlen($pa_bundle_settings['usewysiwygeditor']) == 0) {
@@ -1699,7 +1705,7 @@
 				
 					// escape any special characters in jQuery selectors
 					$vs_form_element = str_replace(
-						"jQuery('#{fieldNamePrefix}".$va_element['element_id']."_{n}')", 
+						"jQuery('#{fieldNamePrefix}".$va_element['element_id']."_{n}')",
 						"jQuery('#".str_replace(array("[", "]", "."), array("\\\\[", "\\\\]", "\\\\."), $vs_fld_name)."')", 
 						$vs_form_element
 					);

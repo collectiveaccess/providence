@@ -150,6 +150,25 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	}
 	# ---------------------------------------
 	/**
+	 * Fetch display label in current locale for item with specified iteM-id in list
+	 *
+	 * @param int $pn_item_id primary key of item to get label for
+	 * @param bool $pb_return_plural If true, return plural version of label. Default is to return singular version of label.
+	 * @param array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default=null]
+	 * @return string The label of the list item, or null if no matching item was found
+	 */
+	$g_list_item_label_by_id_cache = array();
+	function caGetListItemForDisplayByItemID($pn_item_id, $pb_return_plural=false, $pa_options=null) {
+		global $g_list_item_label_by_id_cache;
+		if(isset($g_list_item_label_by_id_cache[$pn_item_id.'/'.(int)$pb_return_plural])) { return $g_list_item_label_by_id_cache[$pn_item_id.'/'.(int)$pb_return_plural]; }
+		$t_list = new ca_lists();
+		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
+
+		return $g_list_item_label_by_id_cache[$pn_item_id.'/'.(int)$pb_return_plural] = $t_list->getItemForDisplayByItemID($pn_item_id, $pb_return_plural);
+	}
+	# ---------------------------------------
+	/**
 	 * Fetch display label in current locale for item with specified item_id
 	 *
 	 * @param int $pn_item_id item_id of item to get label for
