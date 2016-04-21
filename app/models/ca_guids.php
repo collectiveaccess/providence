@@ -215,30 +215,12 @@ class ca_guids extends BaseModel {
 	 * False is returned on error
 	 * @param int $pn_table_num
 	 * @param int $pn_row_id
-	 * @param null|Transaction $po_tx
 	 * @return bool|string
 	 */
-	public static function addForRow($pn_table_num, $pn_row_id, $po_tx=null) {
-		$t_guid = new ca_guids();
-
-		if($po_tx instanceof Transaction) {
-			$t_guid->setTransaction($po_tx);
-		}
-
-		$t_guid->set('table_num', $pn_table_num);
-		$t_guid->set('row_id', $pn_row_id);
-
-		$vs_guid = caGenerateGUID();
-		$t_guid->set('guid', $vs_guid);
-		$t_guid->setMode(ACCESS_WRITE);
-
-		$t_guid->insert();
-
-		if($t_guid->getPrimaryKey()) {
-			return $vs_guid;
-		} else {
-			return false;
-		}
+	private static function addForRow($pn_table_num, $pn_row_id) {
+		$o_db = new Db();
+		$o_db->query("INSERT INTO ca_guids(table_num, row_id, guid) VALUES (?,?,?)", $pn_table_num, $pn_row_id, caGenerateGUID());
+		return true;
 	}
 	# ------------------------------------------------------
 	/**
