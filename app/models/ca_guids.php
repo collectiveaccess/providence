@@ -230,6 +230,7 @@ class ca_guids extends BaseModel {
 
 		$vs_guid = caGenerateGUID();
 		$t_guid->set('guid', $vs_guid);
+		$t_guid->setMode(ACCESS_WRITE);
 
 		$t_guid->insert();
 
