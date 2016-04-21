@@ -158,6 +158,7 @@ class Replicator {
 				} else {
 					$this->log(_t("Couldn't get last replicated log id for source %1 and target %2. Starting at the beginning.",
 						$vs_source_key, $vs_target_key), Zend_Log::WARN);
+					$pn_replicated_log_id = 1;
 				}
 
 				$this->log(_t("Starting replication for source %1 and target %2, log id is %3.",
