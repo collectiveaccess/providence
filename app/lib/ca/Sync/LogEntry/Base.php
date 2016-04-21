@@ -115,11 +115,11 @@ abstract class Base {
 
 		// if this is not an insert log entry, load the specified row by GUID
 		if($this->isUpdate() || $this->isDelete()) {
-			// if we can't find the GUID and this is a delete() and this is an update, throw error
+			// if we can't find the GUID and this is an update, throw error
 			// if we can't find it and this is a delete, we don't particularly care. yes, we can't delete a non-existing
 			// record, but in terms of sync, that's a non-critical error.
 			if((!$this->getModelInstance()->loadByGUID($this->getGUID())) && $this->isUpdate()) {
-				throw new InvalidLogEntryException('mode was update but the given GUID could not be found');
+				throw new InvalidLogEntryException('mode was update but the given GUID "'.$this->getGUID().'" could not be found');
 			}
 		}
 
