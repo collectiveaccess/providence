@@ -278,7 +278,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			// do we need to get the hierarchy?
 			if ($pa_options['showHierarchy']) {
 				$t_item->load((int)$this->opn_item_id);
-				return $t_item->get('ca_list_items.hierarchy.'.$vs_get_spec, array_merge(array('removeFirstItems' => 1, 'delimiter' => ' ➔ ', $pa_options)));
+				return $t_item->get('ca_list_items.hierarchy.'.$vs_get_spec, array_merge(array('delimiter' => ' ➔ ', $pa_options)));
 			}
 
 			return $t_list->getItemFromListForDisplayByItemID($vn_list_id, $this->opn_item_id, (isset($pa_options['useSingular']) && $pa_options['useSingular']) ? false : true);
