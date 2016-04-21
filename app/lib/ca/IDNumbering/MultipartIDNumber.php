@@ -1430,14 +1430,15 @@ class MultipartIDNumber extends IDNumber {
 		$this->opo_db->query("
 			DELETE FROM ca_multipart_idno_sequences
 			WHERE format = ? AND element = ? AND idno_stub = ?
-		", $ps_format, $ps_element, $ps_idno_stub);
+		", [$ps_format, $ps_element, $ps_idno_stub]);
 
+		$pn_value = (int)preg_replace("![^\d]+!", "", $pn_value);
 		return $this->opo_db->query("
 			INSERT INTO ca_multipart_idno_sequences
 			(format, element, idno_stub, seq)
 			VALUES
 			(?, ?, ?, ?)
-		", $ps_format, $ps_element, $ps_idno_stub, $pn_value);
+		", [$ps_format, $ps_element, $ps_idno_stub, $pn_value]);
 	}
 	# -------------------------------------------------------
 	/**
