@@ -2164,10 +2164,10 @@ class SearchResult extends BaseObject {
 	 */
 	public function getWithTemplate($ps_template, $pa_options=null) {
 		unset($pa_options['request']);
-		if($this->opb_disable_get_with_template_prefetch) {
+		//if($this->opb_disable_get_with_template_prefetch) {
 			if(!is_array($pa_options)) { $pa_options = array(); }
 			return caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->get($this->ops_table_name.".".$this->ops_subject_pk)), array_merge($pa_options, ['dontPrefetchRelated' => true]));
-		}
+		//}
 
 		// the assumption is that if you run getWithTemplate for the current row, you'll probably run it for the next bunch of rows too
 		// since running caProcessTemplateForIDs for every single row is slow, we prefetch a set number of rows here
