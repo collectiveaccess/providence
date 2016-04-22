@@ -341,6 +341,10 @@ define('__CA_MEMCACHED_PORT__', 11211);
 # Host and port for redis
 define('__CA_REDIS_HOST__', 'localhost');
 define('__CA_REDIS_PORT__', 6379);
+# Redis database index. This is useful if you want to use your Redis instance for several applications.
+# By default Redis is set up with 16 databases, indexed 0 through 15. CollectiveAccess will use the first
+# (index 0) unless told otherwise.
+define('__CA_REDIS_DB__', 0);
 # --------------------------------------------------------------------------------------------
 
 # include version number
