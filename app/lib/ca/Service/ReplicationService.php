@@ -147,6 +147,8 @@ class ReplicationService {
 		if(!is_array($va_log)) { throw new Exception('log must be array'); }
 		$o_db = new Db();
 
+		// run a sanity check
+		$va_sanity_check_errors = array();
 		foreach($va_log as $vn_log_id => $va_log_entry) {
 			try {
 				$o_tx = new \Transaction($o_db);
@@ -157,10 +159,16 @@ class ReplicationService {
 				// noop
 			} catch(\Exception $e) {
 				// append log entry to message for easier debugging
-				throw new \Exception($e->getMessage() . ' ' . _t("Log entry was: %1", print_r($va_log_entry)));
+				$va_sanity_check_errors[] = $e->getMessage() . ' ' . _t("Log entry was: %1", print_r($va_log_entry));
 			}
 		}
 
+		// if there were sanity check errors, return them here
+		if(sizeof($va_sanity_check_errors)>0) {
+			throw new \Exception($va_sanity_check_errors);
+		}
+
+		// run the core import
 		$va_return = array(); $vs_error = null;
 		foreach($va_log as $vn_log_id => $va_log_entry) {
 			$o_tx = new \Transaction($o_db);
