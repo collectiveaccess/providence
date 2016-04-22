@@ -75,7 +75,27 @@ class Label extends Base {
 		$this->checkModelInstanceForErrors();
 	}
 
-	function setIntrinsicsFromSnapshotInModelInstance() {
+	public function sanityCheck() {
+		parent::sanityCheck();
+
+		/** @var \BaseLabel $t_instance */
+		$t_instance = $this->getModelInstance();
+		$va_snapshot = $this->getSnapshot();
+
+		if(isset($va_snapshot[$t_instance->getSubjectKey()])) {
+			$vs_label_subject_guid_field = str_replace('_id', '', $t_instance->getSubjectKey()) . '_guid';
+			if(isset($va_snapshot[$vs_label_subject_guid_field]) && $va_snapshot[$vs_label_subject_guid_field]) {
+				$t_subject = $t_instance->getSubjectTableInstance();
+				if(!$t_subject->loadByGUID($va_snapshot[$vs_label_subject_guid_field])) {
+					throw new InvalidLogEntryException(_t('Could not load label subject record with GUID %1', $va_snapshot[$vs_label_subject_guid_field]));
+				}
+			} else {
+				throw new InvalidLogEntryException(_t('No guid field for label subject reference found'));
+			}
+		}
+	}
+
+	public function setIntrinsicsFromSnapshotInModelInstance() {
 		parent::setIntrinsicsFromSnapshotInModelInstance();
 
 		/** @var \BaseLabel $t_instance */

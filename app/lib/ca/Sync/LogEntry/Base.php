@@ -116,14 +116,14 @@ abstract class Base {
 		// if this is not an insert log entry, load the specified row by GUID
 		if($this->isUpdate() || $this->isDelete()) {
 			// if we can't find the GUID and this is an update, throw error
+			if((!$this->getModelInstance()->loadByGUID($this->getGUID())) && $this->isUpdate()) {
+				throw new InvalidLogEntryException('Mode was update but the given GUID "'.$this->getGUID().'" could not be found for table num ' . $this->getTableNum());
+			}
+
 			// if we can't find it and this is a delete, we don't particularly care. yes, we can't delete a non-existing
 			// record, but in terms of sync, that's a non-critical error.
-			if((!$this->getModelInstance()->loadByGUID($this->getGUID())) && $this->isUpdate()) {
-				throw new InvalidLogEntryException('mode was update but the given GUID "'.$this->getGUID().'" could not be found');
-			}
-			
 			if((!$this->getModelInstance()->loadByGUID($this->getGUID())) && $this->isDelete()) {
-				throw new IrrelevantLogEntry('mode was delete but the given GUID "'.$this->getGUID().'" could not be found');
+				throw new IrrelevantLogEntry('Mode was delete but the given GUID "'.$this->getGUID().'" could not be found for table num ' . $this->getTableNum());
 			}
 		}
 
@@ -302,6 +302,69 @@ abstract class Base {
 	}
 
 	/**
+	 * Checks if all the bits and pieces are in place for this log entry. This is meant to be called
+	 * before apply() and, ideally, before setIntrinsicsFromSnapshotInModelInstance()
+	 * @return mixed
+	 * @throws InvalidLogEntryException
+	 */
+	public function sanityCheck() {
+		$va_snapshot = $this->getSnapshot();
+
+		foreach($va_snapshot as $vs_field => $vm_val) {
+			// skip non existing "fake" fields
+			if(!$this->getModelInstance()->hasField($vs_field)) { continue; }
+
+			// skip primary key
+			if($this->getModelInstance()->primaryKey() == $vs_field) { continue; }
+
+			// don't try to build hierarchy indexes by hand
+			if($vs_field == $this->getModelInstance()->getProperty('HIERARCHY_LEFT_INDEX_FLD')) { continue; }
+			if($vs_field == $this->getModelInstance()->getProperty('HIERARCHY_RIGHT_INDEX_FLD')) { continue; }
+
+			// only do something if this is a valid field
+			if($va_fld_info = $this->getModelInstance()->getFieldInfo($vs_field)) {
+
+				// handle list reference fields, like status, access, item_status_id, or even type_id
+				// in the source log, there should be fields like "type_code" or "access_code" that have
+				// the codes of the list items we're looking for (corresponding to "type_id" and "access")
+				// we assume they're the same in this system and try to set() them if they exist.
+				$vs_potential_code_field = str_replace('_id', '', $vs_field) . '_code';
+				if(isset($va_fld_info['LIST']) || isset($va_fld_info['LIST_CODE'])) {
+					if(isset($va_snapshot[$vs_potential_code_field])) {
+						$vs_code = $va_snapshot[$vs_potential_code_field];
+						// already established one of them is set, a few lines above
+						$vs_list = isset($va_fld_info['LIST']) ? $va_fld_info['LIST'] : $va_fld_info['LIST_CODE'];
+
+						if(!($vn_item_id = caGetListItemID($vs_list, $vs_code))) {
+							throw new InvalidLogEntryException(
+								"Couldn't find list item id for idno '{$vs_code}' in list '{$vs_list}. Field was {$vs_field}"
+							);
+						}
+					} else {
+						throw new InvalidLogEntryException(
+							"No corresponding code field '{$vs_potential_code_field}' found for list reference field '{$vs_field}'"
+						);
+					}
+
+					continue;
+				}
+
+				// check parent_id field
+				if($vs_field == $this->getModelInstance()->getProperty('HIERARCHY_PARENT_ID_FLD')) {
+					if(isset($va_snapshot[$vs_field . '_guid']) && ($vs_parent_guid = $va_snapshot[$vs_field . '_guid'])) {
+						$t_instance = $this->getModelInstance()->cloneRecord();
+						if(!$t_instance->loadByGUID($vs_parent_guid)) {
+							throw new InvalidLogEntryException(_t("Could not load GUID %1 (referenced in HIERARCHY_PARENT_ID_FLD)", $vs_parent_guid));
+						}
+					} else {
+						throw new InvalidLogEntryException("No parent_guid field found");
+					}
+				}
+			}
+		}
+	}
+
+	/**
 	 * Set intrinsic fields from snapshot in given model instance
 	 */
 	public function setIntrinsicsFromSnapshotInModelInstance() {
@@ -433,13 +496,6 @@ abstract class Base {
  * @package CA\Sync\LogEntry
  */
 class InvalidLogEntryException extends \Exception {}
-
-/**
- * More of a warning/notice. Something that should be logged but doesn't necessarily prevent import
- * Class LogEntryInconsistency
- * @package CA\Sync\LogEntry
- */
-class LogEntryInconsistency extends \Exception {}
 
 /**
  * Can be caught and discarded. This just means that the log entry is not relevant and is being skipped

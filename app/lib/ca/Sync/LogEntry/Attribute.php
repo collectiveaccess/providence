@@ -37,6 +37,27 @@ require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 
 class Attribute extends Base {
 
+	public function sanityCheck() {
+		parent::sanityCheck();
+		$va_snapshot = $this->getSnapshot();
+
+		if (isset($va_snapshot['element_code']) && ($vs_element_code = $va_snapshot['element_code'])) {
+			if (!($vn_element_id = \ca_metadata_elements::getElementID($vs_element_code))) {
+				throw new InvalidLogEntryException(_t("Could not find element with code '%1' on target system.", $vs_element_code));
+			}
+		} else {
+			throw new InvalidLogEntryException(_t("We have an attribute log entry without element code."));
+		}
+
+		if (isset($va_snapshot['row_guid']) && ($vs_row_guid = $va_snapshot['row_guid'])) {
+			if(!($va_guid_info = \ca_guids::getInfoForGUID($vs_row_guid))) {
+				throw new InvalidLogEntryException(_t("Couldnt find record for guid %1.", $vs_row_guid));
+			}
+		} else {
+			throw new InvalidLogEntryException(_t("Couldn't find row_guid for attribute log entry."));
+		}
+	}
+
 	public function apply(array $pa_options = array()) {
 		$this->setIntrinsicsFromSnapshotInModelInstance();
 
@@ -55,29 +76,16 @@ class Attribute extends Base {
 		parent::setIntrinsicsFromSnapshotInModelInstance();
 		$va_snapshot = $this->getSnapshot();
 
-		foreach($va_snapshot as $vs_field => $vm_val) {
+		if (isset($va_snapshot['element_code']) && ($vs_element_code = $va_snapshot['element_code'])) {
+			if ($vn_element_id = \ca_metadata_elements::getElementID($vs_element_code)) {
+				$this->getModelInstance()->set('element_id', $vn_element_id);
+			}
+		}
 
-			if($vs_field == 'element_id') {
-				if (isset($va_snapshot['element_code']) && ($vs_element_code = $va_snapshot['element_code'])) {
-					if ($vn_element_id = \ca_metadata_elements::getElementID($vs_element_code)) {
-						$this->getModelInstance()->set('element_id', $vn_element_id);
-					} else {
-						throw new LogEntryInconsistency("Could find element with code '{$vs_element_code}'");
-					}
-				} else {
-					throw new LogEntryInconsistency("No element code");
-				}
-			} elseif($vs_field == 'row_id') {
-				if (isset($va_snapshot['row_guid']) && ($vs_row_guid = $va_snapshot['row_guid'])) {
-					if($va_guid_info = \ca_guids::getInfoForGUID($vs_row_guid)) {
-						$this->getModelInstance()->set('row_id', $va_guid_info['row_id']);
-						$this->getModelInstance()->set('table_num', $va_guid_info['table_num']);
-					} else {
-						throw new LogEntryInconsistency("Couldnt find record for guid $vs_row_guid");
-					}
-				} else {
-					throw new LogEntryInconsistency("No table_num/row_guid in snapshot but row id is set");
-				}
+		if (isset($va_snapshot['row_guid']) && ($vs_row_guid = $va_snapshot['row_guid'])) {
+			if ($va_guid_info = \ca_guids::getInfoForGUID($vs_row_guid)) {
+				$this->getModelInstance()->set('row_id', $va_guid_info['row_id']);
+				$this->getModelInstance()->set('table_num', $va_guid_info['table_num']);
 			}
 		}
 	}

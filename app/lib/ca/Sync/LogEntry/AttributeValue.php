@@ -38,6 +38,57 @@ require_once(__CA_MODELS_DIR__.'/ca_attributes.php');
 
 class AttributeValue extends Base {
 
+	public function sanityCheck() {
+		parent::sanityCheck();
+		$va_snapshot = $this->getSnapshot();
+
+		// check if element code is valid
+		if (isset($va_snapshot['element_code']) && ($vs_element_code = $va_snapshot['element_code'])) {
+			if (!($vn_element_id = \ca_metadata_elements::getElementID($vs_element_code))) {
+				throw new InvalidLogEntryException(_t("Could not find element with code %1", $vs_element_code));
+			}
+		} else {
+			throw new InvalidLogEntryException(_t("No element code found in attribute value log entry"));
+		}
+
+		// check if attribute guid is present and valid
+		if (isset($va_snapshot['attribute_guid']) && ($vs_attribute_guid = $va_snapshot['attribute_guid'])) {
+			$t_attr = new \ca_attributes();
+			if(!$t_attr->loadByGUID($vs_attribute_guid)) {
+				throw new InvalidLogEntryException(_t("Could not find attribute with guid %1", $vs_attribute_guid));
+			}
+		} else {
+			throw new InvalidLogEntryException(_t("No attribute_guid found for attribute value log entry"));
+		}
+
+		// if item_id is present, check if it's valid
+		if (isset($va_snapshot['item_id']) && ($vs_item_id = $va_snapshot['item_id'])) {
+			if (
+				isset($va_snapshot['element_code']) && ($vs_element_code = $va_snapshot['element_code'])
+			) {
+				$t_element = \ca_metadata_elements::getInstance($vs_element_code);
+
+				if($vn_list_id = $t_element->get('list_id')) {
+					if(isset($va_snapshot['item_code']) && ($vs_item_code = $va_snapshot['item_code'])) {
+						if(!($vn_item_id = caGetListItemID($vn_list_id, $vs_item_code))) {
+							throw new InvalidLogEntryException(_t("Invalid list item code %1 for attribute value log entry.", $vs_item_code));
+						}
+					} elseif(isset($va_snapshot['item_label']) && ($vs_item_label = $va_snapshot['item_label'])) {
+						if(!($vn_item_id = caGetListItemIDForLabel($vn_list_id, $vs_item_label))) {
+							throw new InvalidLogEntryException(_t("Invalid list item label %1 for attribute value log entry.", $vs_item_label));
+						}
+					} else {
+						throw new InvalidLogEntryException(("No item code or label for list attribute value"));
+					}
+				} else {
+					throw new InvalidLogEntryException(_t("Referenced element is not of type List, but item_id is set in the snapshot"));
+				}
+			}
+		}
+
+
+	}
+
 	public function apply(array $pa_options = array()) {
 		$this->setIntrinsicsFromSnapshotInModelInstance();
 
@@ -62,19 +113,13 @@ class AttributeValue extends Base {
 				if (isset($va_snapshot['element_code']) && ($vs_element_code = $va_snapshot['element_code'])) {
 					if ($vn_element_id = \ca_metadata_elements::getElementID($vs_element_code)) {
 						$this->getModelInstance()->set('element_id', $vn_element_id);
-					} else {
-						throw new LogEntryInconsistency("Could not find element with code '{$vs_element_code}'");
 					}
-				} else {
-					throw new LogEntryInconsistency("No element code");
 				}
 			} elseif($vs_field == 'attribute_id') {
 				if (isset($va_snapshot['attribute_guid']) && ($vs_attribute_guid = $va_snapshot['attribute_guid'])) {
 					$t_attr = new \ca_attributes();
 					if($t_attr->loadByGUID($vs_attribute_guid)) {
 						$this->getModelInstance()->set('attribute_id', $t_attr->getPrimaryKey());
-					} else {
-						throw new LogEntryInconsistency("Could not find attribute with guid {$vs_attribute_guid}");
 					}
 				}
 			} elseif($vs_field == 'item_id') {
@@ -92,11 +137,7 @@ class AttributeValue extends Base {
 							if($vn_item_id = caGetListItemIDForLabel($vn_list_id, $vs_item_label)) {
 								$this->getModelInstance()->set('item_id', $vn_item_id);
 							}
-						} else {
-							throw new LogEntryInconsistency("No item code or label for list attribute value");
 						}
-					} else {
-						throw new LogEntryInconsistency("No list id for list attribute value");
 					}
 				}
 			}

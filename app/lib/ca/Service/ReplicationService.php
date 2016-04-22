@@ -147,7 +147,21 @@ class ReplicationService {
 		if(!is_array($va_log)) { throw new Exception('log must be array'); }
 		$o_db = new Db();
 
-		$va_warnings = $va_return = array(); $vs_error = null;
+		foreach($va_log as $vn_log_id => $va_log_entry) {
+			try {
+				$o_tx = new \Transaction($o_db);
+				$o_log_entry = CA\Sync\LogEntry\Base::getInstance($vs_source_system_guid, $vn_log_id, $va_log_entry, $o_tx);
+				$o_log_entry->sanityCheck();
+				$o_tx->rollback();
+			} catch(CA\Sync\LogEntry\IrrelevantLogEntry $e) {
+				// noop
+			} catch(\Exception $e) {
+				// append log entry to message for easier debugging
+				throw new \Exception($e->getMessage() . ' ' . _t("Log entry was: %1", print_r($va_log_entry)));
+			}
+		}
+
+		$va_return = array(); $vs_error = null;
 		foreach($va_log as $vn_log_id => $va_log_entry) {
 			$o_tx = new \Transaction($o_db);
 			try {
@@ -156,9 +170,6 @@ class ReplicationService {
 				$o_tx->commit();
 
 				$vn_last_applied_log_id = $vn_log_id;
-			} catch(CA\Sync\LogEntry\LogEntryInconsistency $e) {
-				$o_tx->rollback();
-				$va_warnings[$vn_log_id][] = $e->getMessage();
 			} catch(CA\Sync\LogEntry\IrrelevantLogEntry $e) {
 				$o_tx->rollback();
 			} catch(\Exception $e) {
@@ -167,8 +178,6 @@ class ReplicationService {
 				break;
 			}
 		}
-
-		$va_return['warnings'] = $va_warnings;
 
 		if($vn_last_applied_log_id) {
 			$va_return['replicated_log_id'] = $vn_last_applied_log_id;
