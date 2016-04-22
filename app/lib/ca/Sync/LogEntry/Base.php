@@ -121,6 +121,10 @@ abstract class Base {
 			if((!$this->getModelInstance()->loadByGUID($this->getGUID())) && $this->isUpdate()) {
 				throw new InvalidLogEntryException('mode was update but the given GUID "'.$this->getGUID().'" could not be found');
 			}
+			
+			if((!$this->getModelInstance()->loadByGUID($this->getGUID())) && $this->isDelete()) {
+				throw new IrrelevantLogEntry('mode was delete but the given GUID "'.$this->getGUID().'" could not be found');
+			}
 		}
 
 		$this->opt_instance->setTransaction($this->getTx());
