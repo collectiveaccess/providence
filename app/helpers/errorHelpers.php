@@ -46,6 +46,17 @@ function caDisplayException(Exception $e) {
 	$pa_errcontext_args = caExtractStackTraceArguments($pa_errcontext);
 	$pa_request_params = caExtractRequestParams();
 
+	$o_conf = Configuration::load();
+	$vs_log_dir = $o_conf->get('batch_metadata_import_log_directory');
+	if(defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) {
+		$o_log = new KLogger($vs_log_dir, KLogger::DEBUG);
+	} else {
+		$o_log = new KLogger($vs_log_dir, KLogger::ERR);
+	}
+
+	$o_log->logError(get_class($e) . ': ' . $e->getMessage());
+	$o_log->logDebug(print_r($e->getTrace(), true));
+
 	require_once((defined("__CA_THEME_DIR__") ? __CA_THEME_DIR__ : __DIR__.'/../../themes/default').'/views/system/fatal_error_html.php');
 	exit;
 }
