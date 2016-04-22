@@ -129,12 +129,17 @@ class Relationship extends Base {
 	private function verifyLeftOrRightFieldNameFromSnapshot($ps_field, $pb_left=true) {
 		$vs_property = $pb_left ? 'RELATIONSHIP_LEFT_FIELDNAME' : 'RELATIONSHIP_RIGHT_FIELDNAME';
 		$va_snapshot = $this->getSnapshot();
+		$o_dm = \Datamodel::load();
 
 		if (isset($va_snapshot[$ps_field . '_guid']) && ($vs_reference_guid = $va_snapshot[$ps_field . '_guid'])) {
-			/** @var \BundlableLabelableBaseModelWithAttributes $t_instance */
-			$t_instance = $pb_left ? $this->getModelInstance()->getLeftTableInstance() : $this->getModelInstance()->getRightTableInstance();
+			/** @var \BaseRelationshipModel $t_instance */
+			if($pb_left) {
+				$t_instance = $o_dm->getInstanceByTableName($this->getModelInstance()->getLeftTableName(), true);
+			} else {
+				$t_instance = $o_dm->getInstanceByTableName($this->getModelInstance()->getRightTableName(), true);
+			}
 
-			if (!$t_instance->loadByGUID($vs_reference_guid)) {
+			if ($this->isUpdate() && !$t_instance->loadByGUID($vs_reference_guid)) {
 				throw new InvalidLogEntryException("Could not load GUID {$vs_reference_guid} (referenced in {$vs_property})");
 			}
 		} else {

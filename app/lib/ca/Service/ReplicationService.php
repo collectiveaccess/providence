@@ -159,13 +159,13 @@ class ReplicationService {
 				// noop
 			} catch(\Exception $e) {
 				// append log entry to message for easier debugging
-				$va_sanity_check_errors[] = $e->getMessage() . ' ' . _t("Log entry was: %1", print_r($va_log_entry));
+				$va_sanity_check_errors[] = $e->getMessage() . ' ' . _t("Log entry was: %1", print_r($va_log_entry, true));
 			}
 		}
 
 		// if there were sanity check errors, return them here
 		if(sizeof($va_sanity_check_errors)>0) {
-			throw new \Exception($va_sanity_check_errors);
+			throw new \Exception(join("\n", $va_sanity_check_errors));
 		}
 
 		// run the core import

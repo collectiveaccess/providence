@@ -54,7 +54,7 @@ class AttributeValue extends Base {
 		// check if attribute guid is present and valid
 		if (isset($va_snapshot['attribute_guid']) && ($vs_attribute_guid = $va_snapshot['attribute_guid'])) {
 			$t_attr = new \ca_attributes();
-			if(!$t_attr->loadByGUID($vs_attribute_guid)) {
+			if($this->isUpdate() && !$t_attr->loadByGUID($vs_attribute_guid)) {
 				throw new InvalidLogEntryException(_t("Could not find attribute with guid %1", $vs_attribute_guid));
 			}
 		} else {

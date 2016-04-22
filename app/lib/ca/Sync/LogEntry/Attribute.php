@@ -50,7 +50,7 @@ class Attribute extends Base {
 		}
 
 		if (isset($va_snapshot['row_guid']) && ($vs_row_guid = $va_snapshot['row_guid'])) {
-			if(!($va_guid_info = \ca_guids::getInfoForGUID($vs_row_guid))) {
+			if($this->isUpdate() && !($va_guid_info = \ca_guids::getInfoForGUID($vs_row_guid))) {
 				throw new InvalidLogEntryException(_t("Couldnt find record for guid %1.", $vs_row_guid));
 			}
 		} else {
