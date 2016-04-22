@@ -119,6 +119,7 @@
 	 * @param array $pa_other_params Array of additional parameters to include in URL
 	 * @param array $pa_options Options include:
 	 *		dontURLEncodeParameters = Don't apply url encoding to parameters in URL [Default is false]
+	 *		absolute = return absolute URL. [Default is to return relative URL]
 	 *
 	 * @return string
 	 */
@@ -160,6 +161,12 @@
 				$vs_url .= "/".join("/", $pa_other_params);
 			}
 		}
+		
+		if (caGetOption('absolute', $pa_options, false)) {
+			$o_config = Configuration::load();
+			$vs_url = $o_config->get('site_host').$o_config->get('ca_url_root').$vs_url;
+		}
+		
 		return $vs_url;
 	}
 	# ------------------------------------------------------------------------------------------------

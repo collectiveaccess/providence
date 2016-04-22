@@ -5529,11 +5529,13 @@ class BaseModel extends BaseObject {
 	 * @param string $field field name
 	 * @return array file information
 	 */
-	public function &getFileInfo($ps_field) {
+	public function &getFileInfo($ps_field, $ps_property=null) {
 		$va_file_info = $this->get($ps_field, array('returnWithStructure' => true));
 		if (!is_array($va_file_info) || !is_array($va_file_info = array_shift($va_file_info))) {
 			return null;
 		}
+		
+		if ($ps_property) { return isset($va_file_info[$ps_property]) ? $va_file_info[$ps_property] : null; }
 		return $va_file_info;
 	}
 	# --------------------------------------------------------------------------------

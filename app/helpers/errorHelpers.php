@@ -118,6 +118,7 @@
 		$pa_params = array();
 		foreach($_REQUEST as $vs_k => $vm_val) {
 			if(is_array($vs_k)) { $vs_k = join(',', caFlattenArray($vs_k));}
+			if($vs_k == 'password') { continue; } // don't dump plain text passwords on screen
 			$pa_params[$o_purifier->purify($vs_k)] = $o_purifier->purify($vm_val);
 		}
 
