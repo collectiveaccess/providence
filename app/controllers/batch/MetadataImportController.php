@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2015 Whirl-i-Gig
+ * Copyright 2012-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -232,6 +232,25 @@
 				$this->render('metadataimport/importer_delete_html.php');
 			}
 		}
+		# -------------------------------------------------------
+ 		/**
+ 		 * 
+ 		 *
+ 		 * 
+ 		 */
+ 		public function Download() {
+ 			$t_importer = new ca_data_importers();
+ 			if(($vn_importer_id = $this->request->getParameter("importer_id", pInteger)) && $t_importer->load($vn_importer_id) && $t_importer->getFileInfo('worksheet')) {
+ 				$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
+ 				$o_view->setVar('archive_path', $t_importer->getFilePath('worksheet'));
+ 				$o_view->setVar('archive_name', ($vs_importer_code = $t_importer->get('importer_code')) ? "{$vs_importer_code}.xlsx" : "Importer_{$vn_importer_id}.xlsx");
+ 				$this->response->addContent($o_view->render('download_file_binary.php'));
+ 				return;
+ 			} else {
+ 				$this->notification->addNotification(_t('Invalid importer'), __NOTIFICATION_TYPE_ERROR__);
+ 				$this->Index();
+ 			}
+ 		}
 		# -------------------------------------------------------
 		# Utilities
 		# -------------------------------------------------------
