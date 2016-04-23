@@ -109,6 +109,7 @@ if($vo_result->numHits() > 0) {
 
 		print "<div class='col'>";
 		$va_display_lists = $this->getVar("display_lists");
+		
 		print _t("Display").": <select name='display_id' style='width: 100px;'>\n";
 		if(is_array($va_display_lists) && sizeof($va_display_lists) > 0){
 			foreach($va_display_lists as $vn_display_id => $vs_display_name){
@@ -117,14 +118,12 @@ if($vo_result->numHits() > 0) {
 		}
 		print "</select>\n";
 		print "</div>";
-
-
-		print "<a href='#' id='saveOptions' onclick='jQuery(\"#caSearchOptionsForm\").submit();'>".caNavIcon(__CA_NAV_ICON_COMMIT__, "18px").'</a>';
-		?>
-		<a href='#' id='hideOptions' onclick='return caHandleResultsUIBoxes("display", "hide");'><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, "18px"); ?></a>
-		<?php
-		print "</form>\n";
-		?>
+?>
+			<div class="clear"> </div>
+		
+			<a href='#' id='hideOptions' onclick='return caHandleResultsUIBoxes("display", "hide");'><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, "18px"); ?></a>
+			<a href='#' id='saveOptions' onclick='jQuery("#caSearchOptionsForm").submit();'><?php print caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
+		</form>
 
 		<div style='clear:both;height:1px;'>&nbsp;</div>
 	</div><!-- end bg -->

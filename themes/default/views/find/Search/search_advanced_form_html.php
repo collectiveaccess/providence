@@ -83,7 +83,7 @@
 			<div class="saveAs" style="float: right; margin-right:20px;">
 				<?php print _t("Save search as"); ?>:
 				<?php print caHTMLTextInput('_label', array('size' => 10, 'id' => 'caAdvancedSearchSaveLabelInput')); ?>
-				<a href="#" onclick="caSaveSearch('AdvancedSearchForm', jQuery('#caAdvancedSearchSaveLabelInput').val(), [<?php print join(',', $va_flds); ?>]); return false;" class="button"><?php print _t('Go').' &rsaquo;' ?></a>
+				<a href="#" onclick="caSaveSearch('AdvancedSearchForm', jQuery('#caAdvancedSearchSaveLabelInput').val(), [<?php print join(',', $va_flds); ?>]); return false;" class="button"><?php print caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
 			</div>
 		</div>
 	</form>

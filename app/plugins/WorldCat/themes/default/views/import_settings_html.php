@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2015 Whirl-i-Gig
+ * Copyright 2014-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,7 +40,7 @@
  <form action="#" id="caWorldCatSearchForm">
  	<div class="formLabel">
  		<?php print _t('Find in WorldCat').': '.caHTMLTextInput("term", array('value' => '', 'id' => 'caWorldCatTerm'), array('width' => '250px')); ?>
- 		<a href="#" id="caWorldCatTermLookup" class="button"><?php print _t('Go'); ?> &rsaquo;</a>
+ 		<a href="#" id="caWorldCatTermLookup" class="button"><?php print caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
  	</div>
  </form>
  
