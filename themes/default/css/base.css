@@ -2268,12 +2268,12 @@ select.searchToolsSelect {
 }
 
 #searchSetTools {
-	background-color:#f7f7f7;
-	border-radius:4px;
-	-moz-border-radius:4px;
-	-webkit-border-radius:4px;
-	margin:10px;
-	padding:10px 10px 0px 10px;
+	background-color: #f7f7f7;
+	border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	margin: 10px;
+	padding: 10px;
 }
 #searchSetTools .col{
 	margin-bottom:15px;

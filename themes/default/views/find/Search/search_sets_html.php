@@ -97,7 +97,8 @@
 
 
 		<a href='#' id='hideSets' onclick='caHideSearchSetTools(); $(".setTools").slideDown(250);'><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, 1); ?></a>
-		<div style='clear:both;height:1px;'>&nbsp;</div>
+		<br/>
+		<div class="clear">&nbsp;</div>
 </div><!-- end searchSetTools -->
 
 <script type="text/javascript">
