@@ -81,14 +81,30 @@ class IIIFService {
 		
 		} else {
 			$va_operations = [];
+			
+			// region
+			$va_region = IIIFService::calculateRegion($vn_width, $vn_height, $ps_region);
+			//print_R($va_region); die;
+			if (($va_region['w'] != $vn_width) && ($va_region['h'] != $vn_height)) {
+				$va_operations[] = ['CROP' => $va_region];
+			}
+			
 			// size	
 			$va_dimensions = IIIFService::calculateSize($vn_width, $vn_height, $ps_size);
-			//print_R($va_dimensions);die("XXX");
 			$va_operations[] = ['SCALE' => $va_dimensions];
+			
+			// rotate
+			$va_rotation = IIIFService::calculateRotation($vn_width, $vn_height, $ps_rotation);
+			if ($va_rotation['angle'] != 0) {
+				$va_operations[] = ['ROTATE' => $va_rotation];
+			}
+			
+			// format
 			
 			$vs_output_path = IIIFService::processImage($vs_image_path, $va_operations, $po_request);
 			
-			print "gOT $vs_output_path";
+			header("Content-type: image/jpeg");
+			print file_get_contents($vs_output_path.".jpg");
 		}
 		
 		
@@ -111,6 +127,8 @@ class IIIFService {
 			foreach($va_operation as $vs_operation => $va_params) {
 				switch($vs_operation) {
 					case 'SCALE':
+					case 'CROP':
+					case 'ROTATE':
 						$o_media->transform($vs_operation, $va_params);
 						break;
 				}
@@ -131,8 +149,6 @@ class IIIFService {
 	 * @return array Array with 'width' and 'height' keys containing calculated width and height
 	 */
 	private static function calculateSize($pn_image_width, $pn_image_height, $ps_size) {
-		$vn_aspect_ratio = $pn_image_width/$pn_image_height;
-		
 		if (preg_match("!^([\d]+),$!", $ps_size, $va_matches)) {				// w,
 			$vn_width = (int)$va_matches[1];
 			$vn_height = (int)($pn_image_height * ($vn_width/$pn_image_width));
@@ -157,6 +173,58 @@ class IIIFService {
 			$vn_height = $pn_image_height;
 		}
 		return ['width' => $vn_width, 'height' => $vn_height];
+	}
+	# -------------------------------------------------------
+	/**
+	 * Calculate target image region based upon IIIF {region} value
+	 *
+	 * @param int $pn_image_width Width of source image
+	 * @param int $pn_image_height Height of source image
+	 * @param $ps_region IIIF region value 
+	 *
+	 * @return array Array with 'x', 'y', 'width' and 'height' keys containing calculated offsets, width and height
+	 */
+	private static function calculateRegion($pn_image_width, $pn_image_height, $ps_region) {
+		if (preg_match("!^([\d]+),([\d]+),([\d]+),([\d]+)$!", $ps_region, $va_matches)) {					// x,y,w,h
+			$vn_x = $va_matches[1];
+			$vn_y = $va_matches[2];
+			$vn_w = $va_matches[3];
+			$vn_h = $va_matches[4];
+		} elseif (preg_match("!^pct:([\d]+),([\d]+),([\d]+),([\d]+)$!", $ps_region, $va_matches)) {		// pct:x,y,w,h
+			$vn_x = (int)(($va_matches[1]/100) * $pn_image_width);
+			$vn_y = (int)(($va_matches[2]/100) * $pn_image_height);
+			$vn_w = (int)(($va_matches[3]/100) * $pn_image_width);
+			$vn_h = (int)(($va_matches[4]/100) * $pn_image_height);
+		} else { 																						// full
+			$vn_x = $vn_w = $pn_image_width;														// full
+			$vn_y = $vn_h = $pn_image_height;
+		}
+		
+		return ['x' => $vn_x, 'y' => $vn_y, 'width' => $vn_w, 'height' => $vn_h];
+	}
+	# -------------------------------------------------------
+	/**
+	 * Calculate target image rotation and/or reflection based upon IIIF {rotation} value
+	 *
+	 * @param int $pn_image_width Width of source image
+	 * @param int $pn_image_height Height of source image
+	 * @param $ps_size IIIF rotation value 
+	 *
+	 * @return array Array with 'angle' and 'reflection' values
+	 */
+	private static function calculateRotation($pn_image_width, $pn_image_height, $ps_rotation) {
+		if (preg_match("!^([\d]+)$!", $ps_rotation, $va_matches)) {				// n
+			$vn_rotation = (float)$va_matches[1];
+			$vb_reflection = false;
+		} elseif (preg_match("!^!([\d]+)$!", $ps_rotation, $va_matches)) {		// !n
+			$vn_rotation = (float)$va_matches[1];
+			$vb_reflection = true;
+		} else { 																// invalid/empty
+			$vn_rotation = 0;
+			$vb_reflection = false;
+		}
+		
+		return ['angle' => (int)$vn_rotation, 'reflection' => (bool)$vb_reflection];
 	}
 	# -------------------------------------------------------
 }
