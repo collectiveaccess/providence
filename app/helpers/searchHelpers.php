@@ -1110,9 +1110,12 @@
 	 *
 	 * @param string $ps_table
 	 * @param null|int $pn_type_id
+	 * @param array $pa_options
 	 * @return array
 	 */
-	function caGetAvailableSortFields($ps_table, $pn_type_id = null) {
+	function caGetAvailableSortFields($ps_table, $pn_type_id = null, $pa_options=null) {
+		require_once(__CA_MODELS_DIR__ . '/ca_user_sorts.php');
+
 		switch($ps_table) {
 			case 'ca_list_items':
 				$va_base_fields = array(
@@ -1237,8 +1240,13 @@
 				break;
 		}
 
-		$va_sortable_elements = ca_metadata_elements::getSortableElements($ps_table, $pn_type_id);
+		// add user sorts
+		if(caGetOption('includeUserSorts', $pa_options, true)) {
+			$va_base_fields = array_merge($va_base_fields, ca_user_sorts::getAvailableSortsForTable($ps_table));
+		}
 
+		// add sortable elements
+		$va_sortable_elements = ca_metadata_elements::getSortableElements($ps_table, $pn_type_id);
 		foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
 			$va_base_fields[$ps_table.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
 		}

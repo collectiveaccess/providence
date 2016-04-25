@@ -20,6 +20,7 @@ create table ca_user_sorts
   primary key (sort_id),
   index i_table_num (table_num),
   index i_user_id (user_id),
+  unique index u_guid (table_num, name),
 
   constraint fk_ca_user_sorts_user_id foreign key (user_id)
     references ca_users (user_id) on delete restrict on update restrict

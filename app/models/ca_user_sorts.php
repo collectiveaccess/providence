@@ -264,7 +264,7 @@ class ca_user_sorts extends BaseModel {
 	# ------------------------------------------------------
 	/**
 	 * Get list of sort bundle names for this sort
-	 * @return bool
+	 * @return array|bool
 	 */
 	public function getSortBundleNames() {
 		if(!$this->getPrimaryKey()) { return false; }
@@ -286,6 +286,30 @@ class ca_user_sorts extends BaseModel {
 
 		$this->getDb()->query('DELETE FROM ca_user_sort_items WHERE sort_id=? AND item_id=?', $this->getPrimaryKey(), $pn_item_id);
 		return true;
+	}
+	# ------------------------------------------------------
+	public static function getAvailableSortsForTable($pn_table_num) {
+		if(!is_numeric($pn_table_num)) {
+			$pn_table_num = Datamodel::load()->getTableNum($pn_table_num);
+		}
+
+		if(!$pn_table_num) { return array(); }
+
+		$o_db = new Db();
+
+		$qr_sorts = $o_db->query('SELECT * FROM ca_user_sorts WHERE table_num=? ORDER BY rank', $pn_table_num);
+
+		$va_sorts = array();
+		while($qr_sorts->nextRow()) {
+			$t_sort = new ca_user_sorts($qr_sorts->get('sort_id'));
+			if(!$t_sort->getPrimaryKey()) { continue; }
+
+			if($va_bundles = $t_sort->getSortBundleNames()) {
+				$va_sorts[join(';', $va_bundles)] = $qr_sorts->get('name');
+			}
+		}
+
+		return $va_sorts;
 	}
 	# ------------------------------------------------------
 }
