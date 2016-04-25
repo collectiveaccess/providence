@@ -297,7 +297,7 @@ class ca_user_sorts extends BaseModel {
 
 		$o_db = new Db();
 
-		$qr_sorts = $o_db->query('SELECT * FROM ca_user_sorts WHERE table_num=? ORDER BY rank', $pn_table_num);
+		$qr_sorts = $o_db->query('SELECT * FROM ca_user_sorts WHERE table_num=? AND deleted=0 ORDER BY rank', $pn_table_num);
 
 		$va_sorts = array();
 		while($qr_sorts->nextRow()) {
@@ -310,6 +310,13 @@ class ca_user_sorts extends BaseModel {
 		}
 
 		return $va_sorts;
+	}
+	# ------------------------------------------------------
+	public static function getAvailableSortsAsList() {
+		$o_db = new Db();
+		$qr_sorts = $o_db->query('SELECT * FROM ca_user_sorts WHERE deleted=0 ORDER BY table_num, rank');
+
+		return $qr_sorts->getAllRows();
 	}
 	# ------------------------------------------------------
 }

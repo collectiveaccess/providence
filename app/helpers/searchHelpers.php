@@ -1242,7 +1242,10 @@
 
 		// add user sorts
 		if(caGetOption('includeUserSorts', $pa_options, true)) {
-			$va_base_fields = array_merge($va_base_fields, ca_user_sorts::getAvailableSortsForTable($ps_table));
+			/** @var RequestHTTP $po_request */
+			if(!($po_request = caGetOption('request', $pa_options)) || ($po_request->getUser()->canDoAction('can_use_user_sorts'))) {
+				$va_base_fields = array_merge($va_base_fields, ca_user_sorts::getAvailableSortsForTable($ps_table));
+			}
 		}
 
 		// add sortable elements
