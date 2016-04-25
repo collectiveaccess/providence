@@ -12,4 +12,5 @@ return array(
     'Guzzle' => array($vendorDir . '/guzzle/guzzle/src'),
     'EasyRdf_' => array($vendorDir . '/easyrdf/easyrdf/lib'),
     'Doctrine\\Common\\Cache\\' => array($vendorDir . '/doctrine/cache/lib'),
+    'CollectiveAccessService' => array($vendorDir . '/collectiveaccess/service-wrapper/src'),
 );

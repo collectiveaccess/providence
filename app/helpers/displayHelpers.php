@@ -779,7 +779,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 					foreach($va_display_flags as $vs_exp => $vs_display_flag) {
 						$va_exp_vars = array();
 						foreach(ExpressionParser::getVariableList($vs_exp) as $vs_var_name) {
-							$va_exp_vars[$vs_var_name] = $t_item->get($vs_var_name, array('returnIdno' => true));
+							$va_exp_vars[$vs_var_name] = $t_item->get($vs_var_name, array('convertCodesToIdno' => true));
 						}
 						
 						if (ExpressionParser::evaluate($vs_exp, $va_exp_vars)) {
