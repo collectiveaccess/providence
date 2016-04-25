@@ -117,6 +117,7 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		),
 		"TRANSFORMATIONS" => array(
 			"SCALE" 			=> array("width", "height", "mode", "antialiasing"),
+			"CROP" 				=> array("width", "height", "x", "y"),
 			"ANNOTATE"			=> array("text", "font", "size", "color", "position", "inset"),
 			"WATERMARK"			=> array("image", "width", "height", "position", "opacity"),
 			"ROTATE" 			=> array("angle"),
@@ -761,6 +762,18 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				if ($sigma < .1) { $sigma = 1; }
 				if ( !$this->handle->sharpenImage( $radius, $sigma) ) {
 					$this->postError(1610, _t("Error during image sharpen"), "WLPlugGmagick->transform:SHARPEN()");
+					return false;
+				}
+				break;
+			# -----------------------
+			case "CROP":
+				$x = $parameters["x"];
+				$y = $parameters["y"];
+				$w = $parameters["width"];
+				$h = $parameters["height"];
+				
+				if (!$this->handle->cropimage($w, $h, $x, $y)) {
+					$this->postError(1610, _t("Error during image crop"), "WLPlugGmagick->transform:CROP()");
 					return false;
 				}
 				break;
