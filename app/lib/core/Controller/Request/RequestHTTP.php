@@ -498,6 +498,7 @@ class RequestHTTP extends Request {
 	 *
 	 */
 	public function getParameters($pa_http_methods=null) {
+		if (!$pa_http_methods) { $pa_http_methods = array('GET', 'POST', 'COOKIE', 'PATH', 'REQUEST'); }
 		if($pa_http_methods && !is_array($pa_http_methods)) { $pa_http_methods = array($pa_http_methods); }
 		$va_params = array();
 		foreach($pa_http_methods as $vs_http_method) {
