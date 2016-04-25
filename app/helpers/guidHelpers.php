@@ -32,11 +32,14 @@
 
 require_once(__CA_LIB_DIR__.'/core/ApplicationVars.php');
 
-$o_app_vars = new ApplicationVars();
-if(!($vs_system_guid = $o_app_vars->getVar('system_guid'))) {
-	$vs_system_guid = caGenerateGUID();
-	$o_app_vars->setVar('system_guid', $vs_system_guid);
-	$o_app_vars->save();
+try{
+	$o_app_vars = new ApplicationVars();
+	if(!($vs_system_guid = $o_app_vars->getVar('system_guid'))) {
+		$vs_system_guid = caGenerateGUID();
+		$o_app_vars->setVar('system_guid', $vs_system_guid);
+		$o_app_vars->save();
+	}
+	define('__CA_SYSTEM_GUID__', $vs_system_guid);
+} catch(DatabaseException $e) {
+	// noop
 }
-
-define('__CA_SYSTEM_GUID__', $vs_system_guid);
