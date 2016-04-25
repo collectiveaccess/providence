@@ -10,6 +10,6 @@
     "easyrdf/easyrdf": "0.9.*",
     "hoa/compiler": "~2.15",
     "hoa/visitor": "~1.15",
-    "collectiveaccess/service-wrapper": "dev-master"
+    "collectiveaccess/service-wrapper": "v1.1"
   }
 }
