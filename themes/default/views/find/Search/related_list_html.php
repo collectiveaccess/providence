@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * themes/default/views/find/Search/ca_objects_table_html.php.php
+ * themes/default/views/find/Search/related_list_html.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,8 +36,8 @@
 		$vs_view = $this->getVar('current_view');
 		if ($vo_result->numHits() == 0) { $vs_view = 'no_results'; }
 		$this->setVar('dontShowPages', false);
-		print $this->render('Results/ca_objects_table_paging_controls_html.php');
-		print $this->render('Results/search_options_object_table_html.php');
+		print $this->render('Results/related_list_paging_controls_html.php');
+		print $this->render('Results/search_options_related_list_html.php');
 ?>
 
 	<div class="sectionBox">
@@ -49,13 +49,13 @@
 				break;
 			case 'list':
 			default:
-				print $this->render('Results/ca_objects_results_table_html.php');
+				print $this->render('Results/related_list_results_list_html.php');
 				break;
 		}
 ?>		
 	</div><!-- end sectionbox -->
 <?php
-		print $this->render('Results/ca_objects_table_paging_controls_html.php');
+		print $this->render('Results/related_list_paging_controls_html.php');
 	}
 ?>
 </div><!-- end resultbox -->

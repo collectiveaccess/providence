@@ -35,7 +35,7 @@
  
  <?php
 if($vo_result->numHits() > 0) {
-	print $this->render('Search/search_tools_object_table_html.php');
+	print $this->render('Search/search_tools_related_list_html.php');
 
 	if(($this->getVar('mode') === 'search') && ($this->request->user->canDoAction('can_browse_'.$vs_table)) && !($this->getVar('noRefine'))) {
 		print $this->render('Search/search_refine_html.php');

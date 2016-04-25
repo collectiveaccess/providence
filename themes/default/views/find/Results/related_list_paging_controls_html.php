@@ -33,16 +33,23 @@
 	$va_previous_link_params 	= array('page' => $this->getVar('page') - 1);
 	$va_next_link_params 		= array('page' => $this->getVar('page') + 1);
 
-	// for object "table" bundle
+	// for related list bundle
 	if($vs_ids = $this->request->getParameter('ids', pString)) {
 		$va_previous_link_params['ids'] = $vs_ids;
 		$va_previous_link_params['interstitialPrefix'] = $this->request->getParameter('interstitialPrefix', pString);
-		$va_previous_link_params['relTable'] = $this->request->getParameter('relTable', pString);
+		$va_previous_link_params['relatedRelTable'] = $this->request->getParameter('relatedRelTable', pString);
+		$va_previous_link_params['relatedTable'] = $this->request->getParameter('relatedTable', pString);
+		$va_previous_link_params['primaryTable'] = $this->request->getParameter('primaryTable', pString);
+		$va_previous_link_params['primaryID'] = $this->request->getParameter('primaryID', pInteger);
 
 		$va_next_link_params['ids'] = $vs_ids;
 		$va_next_link_params['interstitialPrefix'] = $this->request->getParameter('interstitialPrefix', pString);
-		$va_next_link_params['relTable'] = $this->request->getParameter('relTable', pString);
+		$va_next_link_params['relatedRelTable'] = $this->request->getParameter('relatedRelTable', pString);
+		$va_next_link_params['relatedTable'] = $this->request->getParameter('relatedTable', pString);
+		$va_next_link_params['primaryTable'] = $this->request->getParameter('primaryTable', pString);
+		$va_next_link_params['primaryID'] = $this->request->getParameter('primaryID', pInteger);
 	}
+
 	$va_jump_to_params 			= array();
 ?>
 	<br/><div class='divide'><!-- empty --></div>
