@@ -257,7 +257,7 @@ class Media extends BaseObject {
 		return $vb_ret;
 	}
 	# ----------------------------------------------------------
-	public function write($filepath, $mimetype, $pa_options) {
+	public function write($filepath, $mimetype, $pa_options=null) {
 		if (!$this->instance) { return false; }
 		
 		# TODO: support for cross-plugin writes; that is, allow a file to be read in
