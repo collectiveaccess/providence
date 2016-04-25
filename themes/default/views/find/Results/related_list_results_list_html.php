@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * themes/default/views/find/ca_objects_list_html.php 
+ * themes/default/views/find/Results/related_list_results_list_html.php
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -29,23 +29,28 @@
 	/** @var ca_bundle_displays $t_display */
 	$t_display				= $this->getVar('t_display');
 	$va_display_list 		= $this->getVar('display_list');
+	/** @var EntitySearchResult $vo_result */
 	$vo_result 				= $this->getVar('result');
 	$vn_items_per_page 		= $this->getVar('current_items_per_page');
 	$vs_current_sort 		= $this->getVar('current_sort');
 	$vs_current_sort_dir    = $this->getVar('current_sort_direction');
 	$vs_default_action		= $this->getVar('default_action');
 	$vo_ar					= $this->getVar('access_restrictions');
-	$va_relation_id_map 	= $this->getVar('relationIdMap');
+	$va_rel_id_typenames 	= $this->getVar('relationIdTypeNames');
+	$va_rel_id_index	 	= $this->getVar('relationIDsToRelatedIDs');
 
 	$vs_interstitial_prefix	= $this->getVar('interstitialPrefix');
 	$vs_primary_table		= $this->getVar('primaryTable');
 	$vn_primary_id			= $this->getVar('primaryID');
-	$vs_rel_table			= $this->getVar('relTable');
+	$vs_related_table		= $this->getVar('relatedTable');
+	$vs_related_rel_table	= $this->getVar('relatedRelTable');
+	/** @var BundlableLabelableBaseModelWithAttributes $t_related_instance */
+	$t_related_instance		= $this->getVar('relatedInstance');
 
 ?>
 <div id="scrollingResults">
-	<form id="caFindResultsForm">
-		<table class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+	<form id="caFindResultsForm<?php print $vs_interstitial_prefix; ?>">
+		<table id="<?php print $vs_interstitial_prefix; ?>RelatedList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
 			<thead>
 			<tr>
 			<th style="width:10px; text-align:center;" class='list-header-nosort'><!-- column for interstitial and delete buttons --></th>
@@ -89,10 +94,10 @@
 <?php
 			$i = 0;
 			$vn_item_count = 0;
-			
+
 			while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit()) {
-				$vn_object_id = $vo_result->get('object_id');
-				$vn_relation_id = $va_relation_id_map[$vn_object_id]['relation_id'];
+				$vn_id = $vo_result->get($t_related_instance->primaryKey());
+				$vn_relation_id = key($va_rel_id_index); next($va_rel_id_index);
 				
 				($i == 2) ? $i = 0 : "";
 ?>
@@ -103,10 +108,10 @@
 						<a href="#" class="caDeleteItemButton listRelDeleteButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
 					</td>
 <?php
-					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_objects', $vn_object_id, array(), array())."</td>";;
+					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', $vs_related_table, $vn_id, array(), array())."</td>";;
 ?>
 					<td style="padding-left: 5px; padding-right: 5px;">
-						<?php print $va_relation_id_map[$vn_object_id]['relationship_typename']; ?>
+						<?php print $va_rel_id_typenames[$vn_relation_id]; ?>
 					</td>
 <?php
 						
@@ -122,7 +127,7 @@
 										$vs_primary_table => array($vn_primary_id),
 									),
 							));
-							print caProcessTemplateForIDs($vs_template, $vs_rel_table, array($vn_relation_id), $va_opts);
+							print caProcessTemplateForIDs($vs_template, $vs_related_rel_table, array($vn_relation_id), $va_opts);
 						} else {
 							print $t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array()));
 						}
@@ -156,3 +161,25 @@
 		</table>
 	</form><!--end caFindResultsForm -->
 </div><!--end scrollingResults -->
+<?php
+	// if set to user defined, make tbody drag+droppable
+	if($vs_current_sort == '_user') {
+?>
+		<script type="text/javascript">
+			jQuery('#<?php print $vs_interstitial_prefix; ?>RelatedList tbody').sortable({
+				update: function() {
+					var ids = [];
+					jQuery('#<?php print $vs_interstitial_prefix; ?>RelatedList tbody tr').each(function() {
+						ids.push(jQuery(this).attr('id').replace('<?php print $vs_interstitial_prefix; ?>', ''));
+					});
+
+					jQuery.get(
+						'<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'SaveUserSort'); ?>',
+						{ ids: ids, related_rel_table: "<?php print $vs_related_rel_table; ?>" }
+					);
+				}
+			}).disableSelection();
+		</script>
+<?php
+	}
+?>

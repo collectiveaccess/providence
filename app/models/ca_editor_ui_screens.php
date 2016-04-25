@@ -522,9 +522,12 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					}
 					break;
 				case 'related_table':
-					if($vs_bundle == 'ca_objects_table') {
-						$t_rel = $this->_DATAMODEL->getInstanceByTableName('ca_objects', true);
-						$va_path = array_keys($this->_DATAMODEL->getPath($t_instance->tableName(), 'ca_objects'));
+					if(preg_match("/^([a-z_]+)_(related_list|table)$/", $vs_bundle, $va_matches)) {
+						$vs_table = $va_matches[1];
+						$t_rel = $this->_DATAMODEL->getInstanceByTableName($vs_table, true);
+						$va_path = array_keys($this->_DATAMODEL->getPath($t_instance->tableName(), $vs_table));
+						if(!is_array($va_path)) { continue 2; }
+
 						$va_additional_settings = array(
 							'restrict_to_relationship_types' => array(
 								'formatType' => FT_TEXT,

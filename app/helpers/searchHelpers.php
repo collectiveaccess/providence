@@ -1231,6 +1231,7 @@
 					'ca_items_x_tags.created_on' => _t('date'),
 					'ca_items_x_tags.user_id' => _t('user')
 				);
+				break;
 			default:
 				$va_base_fields = array();
 				break;
