@@ -209,7 +209,7 @@
 			$this->view->setVar('fieldNamePrefix', $_REQUEST['_formName']);
 			$this->view->setVar('n', $vs_n);
 			
-			$this->view->setVar('q', $this->request->getParameter('q', pString));
+			$this->view->setVar('q', preg_replace("!^[^:]*:!", "", $this->request->getParameter('q', pString)));
 			
 			$this->view->setVar('default_parent_id', $this->opo_result_context->getParameter($t_subject->tableName().'_last_parent_id'));
 			

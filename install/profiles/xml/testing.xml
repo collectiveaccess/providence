@@ -2537,6 +2537,9 @@
             <placement code="ca_objects_related_list">
               <bundle>ca_objects_related_list</bundle>
             </placement>
+            <placement code="ca_sets">
+              <bundle>ca_sets</bundle>
+            </placement>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
             </placement>
@@ -3090,6 +3093,9 @@
             </placement>
             <placement code="ca_attribute_description">
               <bundle>ca_attribute_description</bundle>
+            </placement>
+            <placement code="ca_sets">
+              <bundle>ca_sets</bundle>
             </placement>
           </bundlePlacements>
         </screen>

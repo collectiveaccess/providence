@@ -71,7 +71,10 @@
  	define('__CA_NAV_BUTTON_ICON_POS_BOTTOM__', 3);
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * @param array $pa_options Options include:
+	 *		absolute = return absolute URL. [Default is to return relative URL]
 	 *
+	 * @return string
 	 */
 	function caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_options=null) {
 
@@ -111,6 +114,12 @@
 				$vs_url .= "/".join("/", $pa_other_params);
 			}
 		}
+		
+		if (caGetOption('absolute', $pa_options, false)) {
+			$o_config = Configuration::load();
+			$vs_url = $o_config->get('site_host').$o_config->get('ca_url_root').$vs_url;
+		}
+		
 		return $vs_url;
 	}
 	# ------------------------------------------------------------------------------------------------

@@ -149,7 +149,6 @@ a.form-button span, span.form-button button, span.form-button input, del.form-bu
 }
 
 a.form-button span, span.form-button button, span.form-button input, del.form-button span{
-
     white-space:nowrap;
     cursor:pointer;
     color:#222;
