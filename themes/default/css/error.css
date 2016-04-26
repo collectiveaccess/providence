@@ -34,7 +34,6 @@ a:hover{
 
 #errorDetails {
     width:80%;
-    height: 90%;
     overflow-y: auto;
     background-color: #FFFFFF;
     text-align:left;
