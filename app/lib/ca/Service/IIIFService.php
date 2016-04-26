@@ -42,12 +42,19 @@ class IIIFService {
 	 * @return array
 	 * @throws Exception
 	 */
-	public static function dispatch($ps_identifier, $po_request) {
+	public static function dispatch($ps_identifier, $po_request, $po_response) {
 		$vs_cache_key = $po_request->getHash();
 		$va_path = array_slice(explode("/", $po_request->getPathInfo()), 3);
 		
+		// BASEURL:		{scheme}://{server}{/prefix}/{identifier}
 		// INFO: 		{scheme}://{server}{/prefix}/{identifier}/info.json
 		// IMAGE:		{scheme}://{server}{/prefix}/{identifier}/{region}/{size}/{rotation}/{quality}.{format}
+		
+		if (sizeof($va_path) == 0) { 
+			$po_response->setRedirect($po_request->getFullUrlPath()."/info.json");
+			return;
+		}
+		
 		$pb_is_info_request = false;
 		if (($ps_region = array_shift($va_path)) == 'info.json') {
 			$pb_is_info_request = true;
@@ -65,20 +72,24 @@ class IIIFService {
 		$vs_image_path = null;
 		switch($ps_type) {
 			case 'attribute':
-				// TODO: load ca_attribute_value with value_id
+				// TODO: is this actually a media attribute? can we read it?
+				$t_media = new ca_attribute_values($pn_id);
+				$t_media->useBlobAsMediaField(true);
+				$vs_fldname = 'value_blob';
 				break;
 			case 'representation':
 			default:
-				$t_rep = new ca_object_representations($pn_id);
+				$t_media = new ca_object_representations($pn_id);
+				$vs_fldname = 'media';
 				// TODO: is this readable by user?
-				$vs_image_path = $t_rep->getMediaPath('media', 'original');
-				$vn_width = $t_rep->getMediaInfo('media', 'original', 'WIDTH');
-				$vn_height = $t_rep->getMediaInfo('media', 'original', 'HEIGHT');
+				$vs_image_path = $t_media->getMediaPath('media', 'original');
+				$vn_width = $t_media->getMediaInfo('media', 'original', 'WIDTH');
+				$vn_height = $t_media->getMediaInfo('media', 'original', 'HEIGHT');
 				break;
 		}
 		
 		if ($pb_is_info_request) {
-			
+			print json_encode(IIIFService::imageInfo($t_media, $vs_fldname));
 		} else {
 			$va_operations = [];
 			
@@ -288,12 +299,60 @@ class IIIFService {
 			case 'gif':
 				$vs_mimetype = 'image/gif';
 				break;
-			case 'jp2':
-				$vs_mimetype = 'image/jp2';
-				break;
 		}
 		
 		return $vs_mimetype;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Calculate target image format using IIIF {format} value
+	 *
+	 * @param int $pn_image_width Width of source image
+	 * @param int $pn_image_height Height of source image
+	 * @param $ps_format IIIF format value 
+	 *
+	 * @return array IIIF image information response
+	 */
+	private static function imageInfo($pt_media, $ps_fldname) {
+	
+		$va_sizes = [];
+		foreach($pt_media->getMediaVersions($ps_fldname) as $vs_version) {
+			if ($vs_version == 'tilepic') { continue; }
+			$va_sizes[] = ['width' => $pt_media->getMediaInfo($ps_fldname, $vs_version, 'WIDTH'), 'height' => $pt_media->getMediaInfo($ps_fldname, $vs_version, 'HEIGHT')];
+		}
+		
+		$va_tilepic_info = $pt_media->getMediaInfo($ps_fldname, 'tilepic');
+		
+		$va_scales = [];
+		for($i=0; $i < $va_tilepic_info['PROPERTIES']['layers']; $i++) {
+			$va_scales[] = pow(2,$i);
+		}
+		$va_tiles = ['width' => $va_tilepic_info['PROPERTIES']['tile_width'], 'height' => $va_tilepic_info['PROPERTIES']['tile_height'], 'scaleFactors' => $va_scales];
+
+		$va_resp = [
+			'@context' => 'http://iiif.io/api/image/2/context.json',
+			'@id' => '',
+			'protocol' => 'http://iiif.io/api/image',
+			'width' => $pt_media->getMediaInfo($ps_fldname, 'original', 'WIDTH'),
+			'height' => $pt_media->getMediaInfo($ps_fldname, 'original', 'HEIGHT'),
+			'sizes' => $va_sizes,
+			'tiles' => $va_tiles,
+			'profile' => [
+				"http://iiif.io/api/image/2/level2.json",
+				[
+					'formats' => ['jpg', 'tif', 'png', 'gif'],
+					'qualities' =>  ['color', 'grey', 'bitonal'],
+					'supports' => [
+						'mirroring', 'rotationArbitrary', 'regionByPct', 'regionByPx', 'rotationBy90s',
+      					'sizeAboveFull', 'sizeByForcedWh', 'sizeByH', 'sizeByPct', 'sizeByW', 'sizeByWh',
+      					'baseUriRedirect'
+					]
+				]
+				
+			]
+		];
+		
+		return $va_resp;
 	}
 	# -------------------------------------------------------
 }

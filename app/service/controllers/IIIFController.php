@@ -36,7 +36,7 @@ class IIIFController extends BaseServiceController {
 	# -------------------------------------------------------
 	public function __call($ps_identifier, $pa_args) {
 		try {
-			$va_content = IIIFService::dispatch($ps_identifier, $this->getRequest());
+			$va_content = IIIFService::dispatch($ps_identifier, $this->getRequest(), $this->getResponse());
 		} catch(Exception $e) {
 			$this->getView()->setVar('errors', array($e->getMessage()));
 			$this->render('json_error.php');
