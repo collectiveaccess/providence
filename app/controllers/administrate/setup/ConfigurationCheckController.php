@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,11 +31,16 @@ include_once(__CA_LIB_DIR__."/core/Media.php");
 include_once(__CA_LIB_DIR__."/core/Print/PDFRenderer.php");
 include_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 include_once(__CA_LIB_DIR__."/ca/ConfigurationCheck.php");
+include_once(__CA_MODELS_DIR__."/ca_change_log.php");
 
 class ConfigurationCheckController extends ActionController {
 	# ------------------------------------------------
 	public function DoCheck(){
 		AssetLoadManager::register('tableList');
+
+		// latest log id
+		$this->getView()->setVar('last_change_log_id', ca_change_log::getLastLogID());
+
 		// Search engine
 		$vo_search_config_settings = SearchEngine::checkPluginConfiguration();
 		$this->view->setVar('search_config_settings',$vo_search_config_settings);

@@ -1659,6 +1659,44 @@
 		}
 		# -------------------------------------------------------
 		/**
+		 *
+		 */
+		public static function replicate_data($po_opts=null) {
+			require_once(__CA_LIB_DIR__.'/ca/Sync/Replicator.php');
+
+			$o_replicator = new Replicator();
+			$o_replicator->replicate();
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function replicate_dataParamList() {
+			return array();
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function replicate_dataUtilityClass() {
+			return _t('Import/Export');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function replicate_dataShortHelp() {
+			return _t("Replicate data from one CollectiveAccess system to another.");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function replicate_dataHelp() {
+			return _t("Replicates data in one CollectiveAccess instance based upon data in another instance, subject to configuration in replication.conf.");
+		}
+		# -------------------------------------------------------
+		/**
 		 * Fix file permissions
 		 */
 		public static function fix_permissions($po_opts=null) {
@@ -3435,6 +3473,67 @@
 		 */
 		public static function load_chenhall_nomenclatureHelp() {
 			return _t('Loads Chenhall Nomenclature from Excel XLSX format file into the specified list. You can obtain a copy of the Nomenclature from the American Association of State and Local History (AASLH).');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function generate_missing_guids($po_opts=null) {
+			$o_dm = Datamodel::load();
+			$o_db = new Db();
+
+			foreach($o_dm->getTableNames() as $vs_table) {
+				$t_instance = $o_dm->getInstance($vs_table);
+				if(
+					($t_instance instanceof BundlableLabelableBaseModelWithAttributes) ||
+					($t_instance instanceof BaseLabel) ||
+					($t_instance instanceof ca_attribute_values) ||
+					($t_instance instanceof ca_attributes)
+				) {
+					$qr_results = $o_db->query("SELECT ". $t_instance->primaryKey() . " FROM ". $t_instance->tableName());
+					if($qr_results && ($qr_results->numRows() > 0)) {
+						print CLIProgressBar::start($qr_results->numRows(), _t('Generating/verifying GUIDs for table %1', $t_instance->tableName()));
+						while($qr_results->nextRow()) {
+							print CLIProgressBar::next();
+							$t_instance->getGUIDByPrimaryKey($qr_results->get($t_instance->primaryKey()));
+						}
+						print CLIProgressBar::finish();
+					}
+				}
+			}
+
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function generate_missing_guidsParamList() {
+			return array(
+
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function generate_missing_guidsUtilityClass() {
+			return _t('Maintenance');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function generate_missing_guidsShortHelp() {
+			return _t('Generate missing guids');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function generate_missing_guidsHelp() {
+			return _t('Generates guids for all records that don\'t have one yet. This can be useful if you plan on using the data synchronization/replication feature in the future. For more info see here: http://docs.collectiveaccess.org/wiki/Replication');
 		}
 		# -------------------------------------------------------
 	}

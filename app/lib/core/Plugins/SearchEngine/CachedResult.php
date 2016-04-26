@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,6 +41,7 @@
 class WLPlugSearchEngineCachedResult extends WLPlug implements IWLPlugSearchEngineResult {
 	# -------------------------------------------------------
 	private $opo_config;
+	private $opo_datamodel;
 	
 	private $opa_hits;
 	private $opn_current_row;
@@ -53,7 +54,7 @@ class WLPlugSearchEngineCachedResult extends WLPlug implements IWLPlugSearchEngi
 		$this->opn_subject_tablenum = $pn_table_num;
 		
 		$this->ops_subject_pk = $this->opo_datamodel->getTablePrimaryKeyName($pn_table_num);
-		$this->setHits($pa_hits);
+		$this->setHits(array_values($pa_hits));
 	}
 	# -------------------------------------------------------
 	public function setHits($pa_hits) {
@@ -111,4 +112,3 @@ class WLPlugSearchEngineCachedResult extends WLPlug implements IWLPlugSearchEngi
 	}
 	# -------------------------------------------------------
 }
-?>
