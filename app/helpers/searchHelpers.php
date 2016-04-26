@@ -563,7 +563,7 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 		// Use the relevant input field type and operators based on type.
 		$va_result['operators'] = $va_operators_by_type[$va_result['type']];
 		// Process list types and use a text field for non-list types.
-		if (in_array($vn_display_type, array( DT_SELECT, DT_LIST, DT_LIST_MULTIPLE, DT_CHECKBOXES, DT_RADIO_BUTTONS ))) {
+		if (in_array($vn_display_type, array( DT_SELECT, DT_LIST, DT_LIST_MULTIPLE, DT_CHECKBOXES, DT_RADIO_BUTTONS ), true)) {
 			if (!$va_select_options) {
 				$va_select_options = array();
 				$t_list = new ca_lists();
