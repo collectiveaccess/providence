@@ -94,8 +94,8 @@ class UserSortTest extends BaseTestWithData {
 
 		$this->assertGreaterThan(0, $this->opt_user_sorts->getPrimaryKey());
 
-		$this->opt_user_sorts->addSortBundle('ca_object_labels.name');
-		$this->opt_user_sorts->addSortBundle('ca_objects.idno');
+		$this->opt_user_sorts->addSortBundle('ca_object_labels.name_sort');
+		$this->opt_user_sorts->addSortBundle('ca_objects.idno_sort');
 
 		$this->assertEquals(2, sizeof($this->opt_user_sorts->getSortBundleNames()));
 	}
@@ -104,7 +104,7 @@ class UserSortTest extends BaseTestWithData {
 		if($this->opt_user_sorts instanceof ca_user_sorts) {
 			if($this->opt_user_sorts->getPrimaryKey() > 0) {
 				$this->opt_user_sorts->setMode(ACCESS_WRITE);
-				$this->opt_user_sorts->delete(true, array('hard' => true));
+				//$this->opt_user_sorts->delete(true, array('hard' => true));
 			}
 		}
 		parent::tearDown();

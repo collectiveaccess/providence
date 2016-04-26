@@ -48,12 +48,28 @@ BaseModel::$s_ca_models_definitions['ca_user_sorts'] = array(
 			'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this sort')
 		),
 		'table_num' => array(
-			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
-			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+			'DONT_USE_AS_BUNDLE' => true,
 			'IS_NULL' => false,
 			'DEFAULT' => '',
-			'LABEL' => 'Table', 'DESCRIPTION' => 'Table',
-			'BOUNDS_VALUE' => array(0,255)
+			'BOUNDS_VALUE' => array(1,255),
+			'LABEL' => _t('Sort subject'), 'DESCRIPTION' => _t('Determines what kind of items (objects, entities, places, etc.) are being sorted.'),
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('Objects') => 57,
+				_t('Object lots') => 51,
+				_t('Entities') => 20,
+				_t('Places') => 72,
+				_t('Occurrences') => 67,
+				_t('Collections') => 13,
+				_t('Storage locations') => 89,
+				_t('Object representations') => 56,
+				_t('Loans') => 133,
+				_t('Movements') => 137,
+				_t('List items') => 33,
+				_t('Tours') => 153,
+				_t('Tour stops') => 155
+			)
 		),
 		'user_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
@@ -65,7 +81,7 @@ BaseModel::$s_ca_models_definitions['ca_user_sorts'] = array(
 		),
 		'name' => array(
 			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
-			'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 3,
+			'DISPLAY_WIDTH' => 60, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false,
 			'DEFAULT' => '',
 			'LABEL' => _t('Name'), 'DESCRIPTION' => _t('Name of sort'),
@@ -269,9 +285,25 @@ class ca_user_sorts extends BaseModel {
 	public function getSortBundleNames() {
 		if(!$this->getPrimaryKey()) { return false; }
 
-		$qr_sort_bundles = $this->getDb()->query('SELECT bundle_name FROM ca_user_sort_items WHERE sort_id=? ORDER BY rank, item_id', $this->getPrimaryKey());
+		$qr_sort_bundles = $this->getDb()->query('SELECT bundle_name,rank FROM ca_user_sort_items WHERE sort_id=? ORDER BY rank, item_id', $this->getPrimaryKey());
 
-		return $qr_sort_bundles->getAllFieldValues('bundle_name');
+		$va_sort_bundle_names = array();
+		while($qr_sort_bundles->nextRow()) {
+			$va_sort_bundle_names[(int) $qr_sort_bundles->get('rank')] = $qr_sort_bundles->get('bundle_name');
+		}
+
+		return $va_sort_bundle_names;
+	}
+	# ------------------------------------------------------
+	public function updateBundleNameAtRank($pn_rank, $ps_bundle_name) {
+		$qr_sort_bundles = $this->getDb()->query('SELECT bundle_name FROM ca_user_sort_items WHERE sort_id=? AND rank=?', $this->getPrimaryKey(), $pn_rank);
+		if($qr_sort_bundles->numRows() > 1) {
+			return false;
+		} elseif($qr_sort_bundles->numRows() == 1) {
+			$this->getDb()->query('UPDATE ca_user_sort_items SET bundle_name=? WHERE sort_id=? AND rank=?', $ps_bundle_name, $this->getPrimaryKey(), $pn_rank);
+		} else {
+			$this->addSortBundle($ps_bundle_name, $pn_rank);
+		}
 	}
 	# ------------------------------------------------------
 	public function removeAllBundles() {

@@ -26,6 +26,14 @@
  * ----------------------------------------------------------------------
  */ 
  	$va_user_sorts = $this->getVar('user_sorts');
+?>
+<div style="float:left;">
+	<a href='#' onclick="caTypeChangePanel.showPanel('<?php print caNavUrl($this->request, 'manage', 'UserSort', 'Edit'); ?>'); return false;" class='form-button'><span class='form-button delete'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?>Create New Sort</span></a>
+</div>
+<div style="text-align:right;">
+	<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#UserSortsListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'UserSort', 'Delete'); ?>").submit();' class='form-button'><span class='form-button delete'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DELETE__); ?>Delete</span></a>
+</div>
+<?php
 	if(sizeof($va_user_sorts) > 0) {
 ?>
 		<script language="JavaScript" type="text/javascript">
@@ -39,9 +47,6 @@
 			<form id="UserSortsListForm">
 
 			<table id="caUserSortsList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
-				<div style="text-align:right;">
-					<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#UserSortsListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'UserSort', 'Delete'); ?>").submit();' class='form-button'><span class='form-button delete'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DELETE__); ?>Delete</span></a>
-				</div>
 				<thead>
 					<tr>
 						<th class="list-header-unsorted">
@@ -51,7 +56,7 @@
 							<?php print _t('Record type'); ?>
 						</th>
 						<th class="{sorter: false} list-header-nosort"><?php print _t('Edit'); ?></th>
-						<th class="{sorter: false} list-header-nosort"><input type='checkbox' name='record' value='' id='watchItemSelectAllControl' class='userSortControl' onchange="jQuery('.userSortControl').attr('checked', jQuery('#watchItemSelectAllControl').attr('checked'));"/></th>
+						<th class="{sorter: false} list-header-nosort"><input type='checkbox' name='record' value='' id=userSortSelectAllControl' class='userSortControl' onchange="jQuery('.userSortControl').attr('checked', jQuery('#userSortSelectAllControl').attr('checked'));"/></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -70,7 +75,7 @@
 ?>
 					</td>
 					<td style="width:15px;">
-						<?php print caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__); ?>
+						<a href="#" onclick="caTypeChangePanel.showPanel('<?php print caNavUrl($this->request, 'manage', 'UserSort', 'Edit', array('sort_id' => $va_sort['sort_id'])); ?>'); return false;"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__); ?></a>
 					</td>
 					<td style="width:15px;">
 						<input type="checkbox" class="userSortControl" name="sort_id[]" value="<?php print $va_sort["sort_id"]; ?>">
@@ -85,3 +90,23 @@
 <?php
 	}
 ?>
+
+<script type="text/javascript">
+	jQuery(document).ready(function() {
+		if (caUI.initPanel) {
+			caTypeChangePanel = caUI.initPanel({
+				panelID: "caTypeChangePanel", /* DOM ID of the <div> enclosing the panel */
+				panelContentID: "caTypeChangePanelContentArea", /* DOM ID of the content area <div> in the panel */
+				exposeBackgroundColor: "#000000",
+				exposeBackgroundOpacity: 0.6,
+				panelTransitionSpeed: 400,
+				closeButtonSelector: ".close",
+				center: true
+			});
+		}
+	});
+</script>
+
+<div id="caTypeChangePanel" class="caTypeChangePanel">
+	<div id="caTypeChangePanelContentArea"></div>
+</div>

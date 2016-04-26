@@ -39,6 +39,7 @@ class UserSortController extends ActionController {
 		}
 
 		AssetLoadManager::register('tableList');
+		AssetLoadManager::register("panel");
 	}
 	# -------------------------------------------------------
 	public function ListSorts() {
@@ -76,11 +77,75 @@ class UserSortController extends ActionController {
 		$this->ListSorts();
 	}
 	# -------------------------------------------------------
+	public function Edit() {
+		$vn_sort_id = $this->getRequest()->getParameter('sort_id', pInteger);
+
+		$t_sort = new ca_user_sorts();
+
+		if($vn_sort_id) {
+			$t_sort->load($vn_sort_id);
+			if(!$t_sort->getPrimaryKey()) { return false; }
+			$this->getView()->setVar('sort_id', $vn_sort_id);
+		}
+
+		$this->getView()->setVar('t_sort', $t_sort);
+		$this->getView()->setVar('sort_element_list', caGetAvailableSortFields(
+			$t_sort->get('table_num'), null,
+			array('includeUserSorts' => false)
+		));
+
+		$this->getView()->setVar('sort_bundle_names', $t_sort->getSortBundleNames());
+
+		$this->render('user_sort_edit_html.php');
+	}
+	# -------------------------------------------------------
+	public function Save() {
+		$t_sort = new ca_user_sorts();
+		$t_sort->setMode(ACCESS_WRITE);
+
+		if($vn_sort_id = $this->getRequest()->getParameter('sort_id', pInteger)) {
+			if(!$t_sort->load($vn_sort_id)) {
+				$this->notification->addNotification(_t("Sort doesn't exist"), __NOTIFICATION_TYPE_ERROR__);
+				$this->ListSorts();
+				return;
+			}
+
+			if($vs_name = $this->getRequest()->getParameter('name', pString)) {
+				$t_sort->set('name', $vs_name);
+			}
+
+			$t_sort->update();
+		} else {
+			if($vs_name = $this->getRequest()->getParameter('name', pString)) {
+				$t_sort->set('name', $vs_name);
+			}
+
+			if($vn_table_num = $this->getRequest()->getParameter('table_num', pInteger)) {
+				$t_sort->set('table_num', $vn_table_num);
+			}
+
+			$t_sort->set('user_id', $this->getRequest()->getUserID());
+			$t_sort->insert();
+		}
+
+		if($t_sort->numErrors() > 0) {
+			$this->notification->addNotification(join("; ", $t_sort->getErrors()), __NOTIFICATION_TYPE_ERROR__);
+		} else {
+			$i = 1;
+			while(strlen($vs_sort_item_i = $this->getRequest()->getParameter('sort_item_'.$i, pString)) > 0) {
+				$t_sort->updateBundleNameAtRank($i, $vs_sort_item_i);
+				$i++;
+			}
+		}
+
+		$this->ListSorts();
+	}
+	# -------------------------------------------------------
 	/**
 	 *
 	 */
 	public function Info() {
-		return $this->render('widget_watched_items_info_html.php', true);
+		return '';
 	}
 	# -------------------------------------------------------
 }

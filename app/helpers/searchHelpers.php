@@ -1116,6 +1116,10 @@
 	function caGetAvailableSortFields($ps_table, $pn_type_id = null, $pa_options=null) {
 		require_once(__CA_MODELS_DIR__ . '/ca_user_sorts.php');
 
+		if(is_numeric($ps_table)) {
+			$ps_table = Datamodel::load()->getTableName($ps_table);
+		}
+
 		switch($ps_table) {
 			case 'ca_list_items':
 				$va_base_fields = array(
@@ -1249,6 +1253,7 @@
 		}
 
 		// add sortable elements
+		require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
 		$va_sortable_elements = ca_metadata_elements::getSortableElements($ps_table, $pn_type_id);
 		foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
 			$va_base_fields[$ps_table.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
