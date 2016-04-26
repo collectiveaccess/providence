@@ -499,7 +499,8 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 		$va_select_options = null;
 		$va_result = array(
 			'id' => $vs_name,
-			'label' => $pa_bundle['label']
+			'label' => $pa_bundle['label'],
+			'type' => 'string'
 		);
 		if ($va_field_info) {
 			// Get the list code and display type for further processing below.
@@ -528,8 +529,6 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 				case FT_HISTORIC_DATETIME:
 					$va_result['type'] = 'datetime';
 					break;
-				default:
-					$va_result['type'] = 'string';
 			}
 		} elseif (in_array($vs_name_no_table, $va_element_codes)) {
 			$t_element = ca_metadata_elements::getInstance($vs_name_no_table);
@@ -553,9 +552,6 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 						break;
 					case __CA_ATTRIBUTE_VALUE_TIMECODE__:
 						$va_result['type'] = 'time';
-						break;
-					default:
-						$va_result['type'] = 'string';
 						break;
 				}
 			}

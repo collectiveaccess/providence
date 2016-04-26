@@ -41,46 +41,9 @@ var caUI = caUI || {};
 		TOKEN_LPAREN = 'LPAREN',
 		TOKEN_RPAREN = 'RPAREN',
 		TOKEN_COLON = 'COLON',
-		TOKEN_NEGATION = "NEGATION",
+		TOKEN_NEGATION = 'NEGATION',
 		TOKEN_WHITESPACE = 'WHITESPACE',
-		REGEX_OPERATOR_MAP = [
-			{
-				// "equal" matches everything, but if something more specific (below) matches, it will be overridden.
-				regex: /^(.*)$/,
-				operator: 'equal',
-				negatedOperator: 'not_equal'
-			},
-			{
-				// "between" currently only supports numeric or date types for `between` so no need to handle quotes.
-				regex: /^\[\s*(.*)\s+TO\s+(.*)\s*]$/,
-				operator: 'between',
-				negatedOperator: 'not_between'
-			},
-			{
-				// "begins with" starts with anything other than unescaped asterisk, and ends with unescaped asterisk.
-				regex: /^([^\*].*[^\\])\*$/,
-				operator: 'begins_with',
-				negatedOperator: 'not_begins_with'
-			},
-			{
-				// "contains" starts and ends with unescaped asterisk.
-				regex: /^\*(.*[^\\])\*$/,
-				operator: 'contains',
-				negatedOperator: 'not_contains'
-			},
-			{
-				// "ends with" starts with unescaped asterisk, and ends with anything other than unescaped asterisk.
-				regex: /^\*(.*(?:\\\*|[^\*]))$/,
-				operator: 'ends_with',
-				negatedOperator: 'not_ends_with'
-			},
-			{
-				// "is not empty" is just an unescaped asterisk.
-				regex: /^\*$/,
-				operator: 'is_not_empty',
-				negatedOperator: 'is_empty'
-			}
-		];
+		TOKEN_WILDCARD = 'WILDCARD';
 
 	/**
 	 * Escape the user-entered field value.
@@ -114,11 +77,11 @@ var caUI = caUI || {};
 				case 'between':
 					return prefix + '[' + escapeValue(ruleSet.value[0]) + ' TO ' + escapeValue(ruleSet.value[1]) + ']';
 				case 'begins_with':
-					return prefix + '"' + escapeValue(ruleSet.value) + '*"';
+					return prefix + '"' + escapeValue(ruleSet.value) + '"*';
 				case 'contains':
-					return prefix + '"*' + escapeValue(ruleSet.value) + '*"';
+					return prefix + '*"' + escapeValue(ruleSet.value) + '"*';
 				case 'ends_with':
-					return prefix + '"*' + escapeValue(ruleSet.value) + '"';
+					return prefix + '*"' + escapeValue(ruleSet.value) + '"';
 				case 'is_empty':
 				case 'is_null':
 					// "is_not_empty" is a double negative, so the negation prefix is applied in reverse.
@@ -183,6 +146,9 @@ var caUI = caUI || {};
 			case ' ':
 				token = { type: TOKEN_WHITESPACE };
 				end = true;
+				break;
+			case '*':
+				token = { type: TOKEN_WILDCARD };
 				break;
 			// Beginning of a quoted phrase, which ends after the next unescaped quote.
 			case '"':
@@ -292,27 +258,29 @@ var caUI = caUI || {};
 	 * Use the given `queryValue` to assign a `value` and `condition` to the given `rule`.
 	 * @param {Object} rule
 	 * @param {String} queryValue
-	 * @parma {Boolean} negation
+	 * @param {Boolean} negation
+	 * @param {String} wildcardPrefix
+	 * @param {String} wildcardSuffix
 	 */
-	assignOperatorAndValue = function (rule, queryValue, negation) {
-		var i, j, mapping, matches;
-		// Find the most specific matching regular expression, which gives the operator, and the regular expression for
-		// parsing the value into a scalar or array value, depending on the number of capturing groups.
-		for (i = 0; i < REGEX_OPERATOR_MAP.length; ++i) {
-			mapping = REGEX_OPERATOR_MAP[i];
-			matches = mapping.regex.exec(queryValue);
-			if (matches) {
-				rule.operator = negation ? mapping.negatedOperator : mapping.operator;
-				if (matches.length < 2) {
-					rule.value = undefined;
-				} else if (matches.length === 2) {
-					rule.value = matches[1];
-				} else {
-					rule.value = [];
-					for (j = 1; j < matches.length; ++j) {
-						rule.value.push(matches[j]);
-					}
-				}
+	assignOperatorAndValue = function (rule, queryValue, negation, wildcardPrefix, wildcardSuffix) {
+		var matches;
+		// Determine the operator that matches the given query, negation and wildcard positions.
+		if (queryValue === '*') {
+			rule.operator = negation ? 'is_empty' : 'is_not_empty';
+		} else if (/^\[\s*(.*)\s+TO\s+(.*)\s*]$/.test(queryValue)) {
+			matches = /^\[\s*(.*)\s+TO\s+(.*)\s*]$/.exec(queryValue);
+			rule.operator = negation ? 'not_between' : 'between';
+			rule.value = [ matches[0], matches[1] ];
+		} else {
+			rule.value = queryValue;
+			if (wildcardPrefix && wildcardSuffix) {
+				rule.operator = negation ? 'not_contains' : 'contains';
+			} else if (wildcardPrefix) {
+				rule.operator = negation ? 'not_ends_with' : 'ends_with';
+			} else if (wildcardSuffix) {
+				rule.operator = negation ? 'not_begins_with' : 'begins_with';
+			} else {
+				rule.operator = negation ? 'not_equal' : 'equal';
 			}
 		}
 	};
@@ -323,7 +291,7 @@ var caUI = caUI || {};
 	 * @return {Object}
 	 */
 	tokensToRuleSet = function (tokens) {
-		var rule, condition, negation, ruleSet;
+		var rule, condition, negation, wildcardPrefix, wildcardSuffix, word, ruleSet;
 		ruleSet = {
 			condition: undefined,
 			rules: []
@@ -341,7 +309,10 @@ var caUI = caUI || {};
 				rule.field = rule.id = assertNextToken(tokens, TOKEN_WORD).value;
 				assertNextToken(tokens, TOKEN_COLON);
 				negation = isNextToken(tokens, TOKEN_NEGATION);
-				assignOperatorAndValue(rule, assertNextToken(tokens, TOKEN_WORD).value, negation);
+				wildcardPrefix = isNextToken(tokens, TOKEN_WILDCARD);
+				word = assertNextToken(tokens, TOKEN_WORD);
+				wildcardSuffix = isNextToken(tokens, TOKEN_WILDCARD);
+				assignOperatorAndValue(rule, word.value, negation, wildcardPrefix, wildcardSuffix);
 			}
 			skipWhitespace(tokens);
 			if (rule) {
