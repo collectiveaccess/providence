@@ -268,7 +268,9 @@
 			'afterDeleteRule.queryBuilder',
 			'afterUpdateRuleValue.queryBuilder',
 			'afterUpdateRuleFilter.queryBuilder',
-			'afterUpdateRuleOperator.queryBuilder'
+			'afterUpdateRuleOperator.queryBuilder',
+			'afterUpdateGroupCondition.queryBuilder',
+			'afterSetFilters.queryBuilder'
 		].join(' ');
 	}
 
