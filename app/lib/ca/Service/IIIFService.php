@@ -78,13 +78,12 @@ class IIIFService {
 		}
 		
 		if ($pb_is_info_request) {
-		
+			
 		} else {
 			$va_operations = [];
 			
 			// region
 			$va_region = IIIFService::calculateRegion($vn_width, $vn_height, $ps_region);
-			//print_R($va_region); die;
 			if (($va_region['w'] != $vn_width) && ($va_region['h'] != $vn_height)) {
 				$va_operations[] = ['CROP' => $va_region];
 			}
@@ -98,26 +97,42 @@ class IIIFService {
 			if ($va_rotation['angle'] != 0) {
 				$va_operations[] = ['ROTATE' => $va_rotation];
 			}
+			if ($va_rotation['reflection']) {
+				$va_operations[] = ['FLIP' => ['direction' => 'horizontal']];
+			}
+			
+			// quality
+			$vs_quality = IIIFService::calculateQuality($vn_width, $vn_height, $ps_quality);
+			if ($vs_quality && ($vs_quality != 'default')) {
+				$va_operations[] = ['SET' => ['colorspace' => $vs_quality]];
+			}
 			
 			// format
+			if (!($vs_mimetype = IIIFService::calculateFormat($vn_width, $vn_height, $ps_format))) {
+				// TODO: throw 400 error
+				die("unsupported format {$vs_mimetype}");
+			}
 			
-			$vs_output_path = IIIFService::processImage($vs_image_path, $va_operations, $po_request);
+			$vs_output_path = IIIFService::processImage($vs_image_path, $vs_mimetype, $va_operations, $po_request);
+			header("Content-type: {$vs_mimetype}");
 			
-			header("Content-type: image/jpeg");
-			print file_get_contents($vs_output_path.".jpg");
+			$o_fp = @fopen($vs_output_path,"rb");
+			while(is_resource($o_fp) && !feof($o_fp)) {
+				print(@fread($o_fp, 1024*8));
+				ob_flush();
+				flush();
+			}
+			@unlink($vs_output_path);
 		}
 		
 		
-		//$vn_ttl = defined('__CA_SERVICE_API_CACHE_TTL__') ? __CA_SERVICE_API_CACHE_TTL__ : 60*60; // save for an hour by default
-		//ExternalCache::save($vs_cache_key, $vm_return, "SimpleAPI_{$ps_endpoint}", $vn_ttl);
-		return $vm_return;
+		return true;
 	}
-	
 	# -------------------------------------------------------
 	/**
 	 *
 	 */
-	private static function processImage($ps_image_path, $pa_operations, $po_request) {
+	private static function processImage($ps_image_path, $ps_mimetype, $pa_operations, $po_request) {
 		$o_media  = new Media();
 		if (!$o_media->read($ps_image_path)) { 
 			throw new Exception("Cannot open file");
@@ -129,14 +144,18 @@ class IIIFService {
 					case 'SCALE':
 					case 'CROP':
 					case 'ROTATE':
+					case 'SET':
+					case 'FLIP':
 						$o_media->transform($vs_operation, $va_params);
 						break;
 				}
 			}
 		}
-		$o_media->write($vs_output_path = "/tmp/TESTFILE", "image/jpeg");
 		
-		return $vs_output_path;
+		$o_media->transform('SET', ['mimetype' => $ps_mimetype]);
+		
+		// TODO: proper tmp file name
+		return $o_media->write($vs_output_path = "/tmp/TESTFILE", $ps_mimetype);
 	}
 	# -------------------------------------------------------
 	/**
@@ -185,7 +204,7 @@ class IIIFService {
 	 * @return array Array with 'x', 'y', 'width' and 'height' keys containing calculated offsets, width and height
 	 */
 	private static function calculateRegion($pn_image_width, $pn_image_height, $ps_region) {
-		if (preg_match("!^([\d]+),([\d]+),([\d]+),([\d]+)$!", $ps_region, $va_matches)) {					// x,y,w,h
+		if (preg_match("!^([\d]+),([\d]+),([\d]+),([\d]+)$!", $ps_region, $va_matches)) {				// x,y,w,h
 			$vn_x = $va_matches[1];
 			$vn_y = $va_matches[2];
 			$vn_w = $va_matches[3];
@@ -196,7 +215,7 @@ class IIIFService {
 			$vn_w = (int)(($va_matches[3]/100) * $pn_image_width);
 			$vn_h = (int)(($va_matches[4]/100) * $pn_image_height);
 		} else { 																						// full
-			$vn_x = $vn_w = $pn_image_width;														// full
+			$vn_x = $vn_w = $pn_image_width;															// full
 			$vn_y = $vn_h = $pn_image_height;
 		}
 		
@@ -208,7 +227,7 @@ class IIIFService {
 	 *
 	 * @param int $pn_image_width Width of source image
 	 * @param int $pn_image_height Height of source image
-	 * @param $ps_size IIIF rotation value 
+	 * @param $ps_rotation IIIF rotation value 
 	 *
 	 * @return array Array with 'angle' and 'reflection' values
 	 */
@@ -216,7 +235,7 @@ class IIIFService {
 		if (preg_match("!^([\d]+)$!", $ps_rotation, $va_matches)) {				// n
 			$vn_rotation = (float)$va_matches[1];
 			$vb_reflection = false;
-		} elseif (preg_match("!^!([\d]+)$!", $ps_rotation, $va_matches)) {		// !n
+		} elseif (preg_match("/^!([\d]+)$/", $ps_rotation, $va_matches)) {		// !n
 			$vn_rotation = (float)$va_matches[1];
 			$vb_reflection = true;
 		} else { 																// invalid/empty
@@ -225,6 +244,56 @@ class IIIFService {
 		}
 		
 		return ['angle' => (int)$vn_rotation, 'reflection' => (bool)$vb_reflection];
+	}
+	# -------------------------------------------------------
+	/**
+	 * Calculate target image quality using IIIF {quality} value
+	 *
+	 * @param int $pn_image_width Width of source image
+	 * @param int $pn_image_height Height of source image
+	 * @param $ps_quality IIIF quality value 
+	 *
+	 * @return string Quality specifier; one of color, grey, bitonal, default
+	 */
+	private static function calculateQuality($pn_image_width, $pn_image_height, $ps_quality) {
+		$ps_quality = strtolower($ps_quality);
+		if (!in_array($ps_quality, ['color', 'grey', 'bitonal', 'default'])) { $ps_quality = 'default'; }
+		
+		return $ps_quality;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Calculate target image format using IIIF {format} value
+	 *
+	 * @param int $pn_image_width Width of source image
+	 * @param int $pn_image_height Height of source image
+	 * @param $ps_format IIIF format value 
+	 *
+	 * @return string mimetype for format, or null if format is unsupported
+	 */
+	private static function calculateFormat($pn_image_width, $pn_image_height, $ps_format) {
+		$ps_format = strtolower($ps_format);
+		
+		$vs_mimetype = null;
+		switch($ps_format) {
+			case 'jpg':
+				$vs_mimetype = 'image/jpeg';
+				break;
+			case 'tif':
+				$vs_mimetype = 'image/tiff';
+				break;
+			case 'png':
+				$vs_mimetype = 'image/png';
+				break;
+			case 'gif':
+				$vs_mimetype = 'image/gif';
+				break;
+			case 'jp2':
+				$vs_mimetype = 'image/jp2';
+				break;
+		}
+		
+		return $vs_mimetype;
 	}
 	# -------------------------------------------------------
 }
