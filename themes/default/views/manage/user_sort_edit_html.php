@@ -59,7 +59,7 @@ if(is_array($va_sort_bundle_names) && (sizeof($va_sort_bundle_names)>0)) {
 	<?php print $t_sort->htmlFormElement('name') ?>
 	<?php if(!$vn_sort_id) { print $t_sort->htmlFormElement('table_num'); } ?>
 
-<?php if($vn_sort_id) { ?>
+
 	<table>
 		<tr>
 			<td><?php print _t("Sort field %1", 1); ?></td>
@@ -75,6 +75,29 @@ if(is_array($va_sort_bundle_names) && (sizeof($va_sort_bundle_names)>0)) {
 			<td><?php print caHTMLSelect('sort_item_3', array_flip($va_sort_element_list), null, array('value' => $vs_select_3_val)); ?></td>
 		</tr>
 	</table>
-<?php } ?>
 	<?php print caHTMLHiddenInput('sort_id', array('value' => $vn_sort_id)); ?>
 </form>
+
+<script type="text/javascript">
+	jQuery(document).ready(function() {
+		jQuery('select#table_num').change(function() {
+			var table_num = jQuery(this).val();
+			jQuery.getJSON(
+				'<?php print caNavUrl($this->request, 'manage', 'UserSort', 'GetBundlesForTable');?>/table_num/' + table_num,
+				function(data) {
+					var item1 = jQuery('select[name=sort_item_1]');
+					var item2 = jQuery('select[name=sort_item_2]');
+					var item3 = jQuery('select[name=sort_item_3]');
+					item1.empty();
+					item2.empty();
+					item3.empty();
+					jQuery.each(data, function(key, value) {
+						item1.append(jQuery('<option></option>').attr('value', String(key)).text(value));
+						item2.append(jQuery('<option></option>').attr('value', String(key)).text(value));
+						item3.append(jQuery('<option></option>').attr('value', String(key)).text(value));
+					});
+				}
+			);
+		});
+	});
+</script>

@@ -90,7 +90,7 @@ class UserSortController extends ActionController {
 
 		$this->getView()->setVar('t_sort', $t_sort);
 		$this->getView()->setVar('sort_element_list', caGetAvailableSortFields(
-			$t_sort->get('table_num'), null,
+			($t_sort->get('table_num') ? $t_sort->get('table_num') : 57), null,
 			array('includeUserSorts' => false)
 		));
 
@@ -133,12 +133,24 @@ class UserSortController extends ActionController {
 		} else {
 			$i = 1;
 			while(strlen($vs_sort_item_i = $this->getRequest()->getParameter('sort_item_'.$i, pString)) > 0) {
+				caDebug($vs_sort_item_i, $i);
 				$t_sort->updateBundleNameAtRank($i, $vs_sort_item_i);
 				$i++;
 			}
 		}
 
 		$this->ListSorts();
+	}
+	# -------------------------------------------------------
+	public function GetBundlesForTable() {
+		$vn_table_num = $this->getRequest()->getParameter('table_num', pInteger);
+
+		$this->getView()->setVar('available_sort_fields', caGetAvailableSortFields(
+			$vn_table_num, null,
+			array('includeUserSorts' => false)
+		));
+
+		$this->render('user_sort_table_bundles_json.php');
 	}
 	# -------------------------------------------------------
 	/**

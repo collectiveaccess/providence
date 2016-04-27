@@ -1244,19 +1244,21 @@
 				break;
 		}
 
-		// add user sorts
-		if(caGetOption('includeUserSorts', $pa_options, true)) {
-			/** @var RequestHTTP $po_request */
-			if(!($po_request = caGetOption('request', $pa_options)) || ($po_request->getUser()->canDoAction('can_use_user_sorts'))) {
-				$va_base_fields = array_merge($va_base_fields, ca_user_sorts::getAvailableSortsForTable($ps_table));
+		if($ps_table) {
+			// add user sorts
+			if(caGetOption('includeUserSorts', $pa_options, true)) {
+				/** @var RequestHTTP $po_request */
+				if(!($po_request = caGetOption('request', $pa_options)) || ($po_request->getUser()->canDoAction('can_use_user_sorts'))) {
+					$va_base_fields = array_merge($va_base_fields, ca_user_sorts::getAvailableSortsForTable($ps_table));
+				}
 			}
-		}
 
-		// add sortable elements
-		require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
-		$va_sortable_elements = ca_metadata_elements::getSortableElements($ps_table, $pn_type_id);
-		foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
-			$va_base_fields[$ps_table.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
+			// add sortable elements
+			require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
+			$va_sortable_elements = ca_metadata_elements::getSortableElements($ps_table, $pn_type_id);
+			foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
+				$va_base_fields[$ps_table.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
+			}
 		}
 
 		return $va_base_fields;
