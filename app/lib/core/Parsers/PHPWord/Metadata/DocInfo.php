@@ -444,7 +444,7 @@ class DocInfo
      * @param string $propertyType
      *   'i': Integer
      *   'f': Floating Point
-     *   's': String
+     *   's': WordString
      *   'd': Date/Time
      *   'b': Boolean
      * @return self
