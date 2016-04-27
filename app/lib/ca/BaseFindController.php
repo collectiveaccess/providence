@@ -865,7 +865,7 @@
  			$this->view->setVar('current_view', $vs_view);
  			
  			$vn_type_id 			= $this->opo_result_context->getTypeRestriction($vb_dummy);
-			$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id));
+			$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $this->getRequest())));
  			
  			$this->view->setVar('sorts', $this->opa_sorts);	// pass sort list to view for rendering
  			$this->view->setVar('current_sort', $vs_sort);
@@ -989,7 +989,7 @@
  			$this->view->setVar('type_id', $this->opn_type_restriction_id);
  			
  			// Get attribute sorts
-			$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id));
+			$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $this->getRequest())));
  			
  			if ($pa_options['appendToSearch']) {
  				$vs_append_to_search .= " AND (".$pa_options['appendToSearch'].")";

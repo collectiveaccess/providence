@@ -133,7 +133,6 @@ class UserSortController extends ActionController {
 		} else {
 			$i = 1;
 			while(strlen($vs_sort_item_i = $this->getRequest()->getParameter('sort_item_'.$i, pString)) > 0) {
-				caDebug($vs_sort_item_i, $i);
 				$t_sort->updateBundleNameAtRank($i, $vs_sort_item_i);
 				$i++;
 			}
