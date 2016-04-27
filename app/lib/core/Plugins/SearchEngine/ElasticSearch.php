@@ -95,6 +95,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 	/**
 	 * Refresh ElasticSearch mapping if necessary
 	 * @param bool $pb_force force refresh if set to true [default is false]
+	 * @throws \Exception
 	 */
 	public function refreshMapping($pb_force=false) {
 		$o_mapping = new ElasticSearch\Mapping();
@@ -111,16 +112,20 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 				// noop -- the exception happens when the index already exists, which is good
 			}
 
-			$this->setIndexSettings();
+			try {
+				$this->setIndexSettings();
 
-			foreach($o_mapping->get() as $vs_table => $va_config) {
-				$this->getClient()->indices()->putMapping(array(
-					'index' => $this->getIndexName(),
-					'type' => $vs_table,
-					'update_all_types' => true,
-					'ignore_conflicts' => true,
-					'body' => array($vs_table => $va_config)
-				));
+				foreach ($o_mapping->get() as $vs_table => $va_config) {
+					$this->getClient()->indices()->putMapping(array(
+						'index' => $this->getIndexName(),
+						'type' => $vs_table,
+						'update_all_types' => true,
+						'ignore_conflicts' => true,
+						'body' => array($vs_table => $va_config)
+					));
+				}
+			} catch (Elasticsearch\Common\Exceptions\BadRequest400Exception $e) {
+				throw new \Exception(_t("Updating the ElasticSearch mapping failed. This is probably because of a type conflict. Try recreating the entire search index. The original error was %1", $e->getMessage()));
 			}
 
 			// resets the mapping cache key so that needsRefresh() returns false for 24h
