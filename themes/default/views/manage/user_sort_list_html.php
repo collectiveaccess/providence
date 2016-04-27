@@ -56,7 +56,7 @@
 							<?php print _t('Record type'); ?>
 						</th>
 						<th class="{sorter: false} list-header-nosort"><?php print _t('Edit'); ?></th>
-						<th class="{sorter: false} list-header-nosort"><input type='checkbox' name='record' value='' id=userSortSelectAllControl' class='userSortControl' onchange="jQuery('.userSortControl').attr('checked', jQuery('#userSortSelectAllControl').attr('checked'));"/></th>
+						<th class="{sorter: false} list-header-nosort"><input type='checkbox' name='record' value='' id='userSortSelectAllControl' class='userSortControl' onchange="jQuery('.userSortControl').attr('checked', jQuery('#userSortSelectAllControl').attr('checked'));"/></th>
 					</tr>
 				</thead>
 				<tbody>
