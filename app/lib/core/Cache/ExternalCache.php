@@ -241,6 +241,9 @@ class ExternalCache {
 
 		$o_redis = new Redis();
 		$o_redis->connect(__CA_REDIS_HOST__, __CA_REDIS_PORT__);
+		if(defined('__CA_REDIS_DB__') && is_int(__CA_REDIS_DB__)) {
+			$o_redis->select(__CA_REDIS_DB__);
+		}
 
 		$o_cache = new \Doctrine\Common\Cache\RedisCache();
 		$o_cache->setRedis($o_redis);

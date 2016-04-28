@@ -1,9 +1,14 @@
-#header { position: fixed; left: 0px; top: -25px; right: 0px; height: 55px;  text-align: left; vertical-align: top; margin: 0px 5px 10px 0px; padding: 0px 5px 2px 0px; }
+@page { margin: 300px 150px; }
+#header { position: fixed; left: 0px; top: -35px; right: 0px; height: 55px;  text-align: left; vertical-align: top; margin: 0px 5px 10px 0px; padding: 0px 5px 2px 0px; }
 #footer { position: fixed; left: 0px; bottom: -50px; right: 0px; height: 20px; text-align: center; vertical-align: bottom; margin: 0px 5px 10px 5px; padding: 3px 5px 2px 10px; }
 #header .pagingText:after { content: counter(page, decimal); }
 #body { z-index: 30000; position: relative; }
-
-img.headerImg {width:351px;height:50px;}
+#head{
+	height:50px;
+	margin-top:-13px;
+	background-color: transparent;
+}
+img.headerImg {width:135px;height:32px;}
 .headerText { font-family: "helvetica, sans-serif"; font-size: 10px; margin: 0px 0px 10px 25px; }
 .pagingText { position: absolute; top: 0px; right: 10px; font-family: "helvetica, sans-serif"; font-size: 11px; text-align: right;  margin: 0px 0px 10px 25px; }
 

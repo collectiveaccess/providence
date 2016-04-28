@@ -35,7 +35,7 @@ var caUI = caUI || {};
 			unsavedChangesWarningMessage: 'You have made changes in this form that you have not yet saved. If you navigate away from this form you will lose your unsaved changes.',
 			disableUnsavedChangesWarning: false
 		}, options);
-		
+
 		that.showUnsavedChangesWarningFlag = false;
 		caUI.utils = {};
 		//
@@ -68,11 +68,12 @@ var caUI = caUI || {};
 			};
 			
 			// init event handler
-			window.onbeforeunload = function() { 
-				if(!caUI.utils.getDisableUnsavedChangesWarning() && caUI.utils.shouldShowUnsavedChangesWarning()) {
-					return caUI.utils.getUnsavedChangesWarningMessage();
+			window.addEventListener("beforeunload", function (e) {
+				if (!caUI.utils.getDisableUnsavedChangesWarning() && caUI.utils.shouldShowUnsavedChangesWarning()) {
+					e.returnValue = caUI.utils.getUnsavedChangesWarningMessage();     // Gecko, Trident, Chrome 34+
+					return caUI.utils.getUnsavedChangesWarningMessage(); // Gecko, WebKit, Chrome <34
 				}
-			}
+			});
 			
 			// ------------------------------------------------------------------------------------
 			

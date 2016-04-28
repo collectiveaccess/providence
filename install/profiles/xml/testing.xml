@@ -2528,8 +2528,17 @@
             </label>
           </labels>
           <bundlePlacements>
+            <placement code="ca_entities_related_list">
+              <bundle>ca_entities_related_list</bundle>
+            </placement>
             <placement code="ca_sets_checklist">
               <bundle>ca_sets_checklist</bundle>
+            </placement>
+            <placement code="ca_objects_related_list">
+              <bundle>ca_objects_related_list</bundle>
+            </placement>
+            <placement code="ca_sets">
+              <bundle>ca_sets</bundle>
             </placement>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
@@ -2886,8 +2895,8 @@
             </label>
           </labels>
           <bundlePlacements>
-            <placement code="ca_objects_table">
-              <bundle>ca_objects_table</bundle>
+            <placement code="ca_objects_related_list">
+              <bundle>ca_objects_related_list</bundle>
             </placement>
             <placement code="ca_objects">
               <bundle>ca_objects</bundle>
@@ -3084,6 +3093,9 @@
             </placement>
             <placement code="ca_attribute_description">
               <bundle>ca_attribute_description</bundle>
+            </placement>
+            <placement code="ca_sets">
+              <bundle>ca_sets</bundle>
             </placement>
           </bundlePlacements>
         </screen>

@@ -54,6 +54,7 @@ final class GarbageCollection {
 		$vs_cache_dir = $vs_cache_base_dir.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'Cache';
 
 		$va_list = caGetDirectoryContentsAsList($vs_cache_dir);
+		$va_list = array_slice($va_list, 0, 2000);
 		foreach($va_list as $vs_file) {
 			$r = @fopen($vs_file, "r");
 

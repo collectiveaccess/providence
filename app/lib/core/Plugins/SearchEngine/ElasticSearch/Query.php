@@ -141,7 +141,9 @@ class Query {
 				case 'Zend_Search_Lucene_Search_Query_Phrase':
 				case 'Zend_Search_Lucene_Search_Query_MultiTerm':
 					$o_new_subquery = $this->rewriteSubquery($o_subquery);
-					$vs_search_expression = str_replace((string) $o_subquery, (string) $o_new_subquery, $vs_search_expression);
+					$vs_old_subquery = preg_replace('/^\+/u', '', (string) $o_subquery);
+					$vs_newsubquery = preg_replace('/^\+/u', '', (string) $o_new_subquery);
+					$vs_search_expression = str_replace($vs_old_subquery, $vs_newsubquery, $vs_search_expression);
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Boolean':
 					/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Boolean. */

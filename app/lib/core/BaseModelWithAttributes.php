@@ -1098,7 +1098,6 @@
 		public function getTypeFieldName() {
 			return $this->ATTRIBUTE_TYPE_ID_FLD;
 		}
-		
 		# ------------------------------------------------------------------
 		/**
 		 * Determine if type for this model is mandatory 
@@ -1460,12 +1459,17 @@
 		/**
 		 * Get HTML form element bundle for metadata element
 		 *
+		 * @param $pa_options array Options include:
+		 *		elementsOnly = Render only form elements and structural formattings, but not headers, enclosing divs or controls. [Default is false]
+		 *		batch = render for batch editor. [Default is false]
+		 *
 		 */
 		public function getAttributeHTMLFormBundle($po_request, $ps_form_name, $pm_element_code_or_id, $ps_placement_code, $pa_bundle_settings, $pa_options) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if (!is_array($pa_bundle_settings)) { $pa_bundle_settings = array(); }
 			
-			$vb_batch = (isset($pa_options['batch']) && $pa_options['batch']) ? true : false;
+			$vb_elements_only = caGetOption('elementsOnly', $pa_options, false);
+			$vb_batch = caGetOption('batch', $pa_options, false);
 			
 			if (!($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id))) {
 				return false;
@@ -1496,15 +1500,20 @@
 			$va_elements_break_by_container = array();
 			
 			$va_element_info = array();
+
+			// fine element breaks by container
+			foreach($va_element_set as $va_element) {
+				if ($va_element['datatype'] == 0) {		// containers are not active form elements
+					if(isset($va_element['settings']) && isset($va_element["settings"]["lineBreakAfterNumberOfElements"])) {
+						$va_elements_break_by_container[$va_element['element_id']] = (int)$va_element["settings"]["lineBreakAfterNumberOfElements"];
+					}
+				}
+			}
 			
 			foreach($va_element_set as $va_element) {
+				if ($va_element['datatype'] == 0) { continue; }
+
 				$va_element_info[$va_element['element_id']] = $va_element;
-				
-				if ($va_element['datatype'] == 0) {		// containers are not active form elements
-					$va_elements_break_by_container[$va_element['element_id']] = (int)$va_element["settings"]["lineBreakAfterNumberOfElements"] ? (int)$va_element["settings"]["lineBreakAfterNumberOfElements"] : -1;
-					
-					continue;
-				}
 				
 				$va_label = $this->getAttributeLabelAndDescription($va_element['element_id']);
 
@@ -1514,11 +1523,12 @@
 					$va_elements_without_break_by_container[$va_element['parent_id']] += 1;
 				}
 
-				if($va_elements_without_break_by_container[$va_element['parent_id']] == $va_elements_break_by_container[$va_element['parent_id']]+1){
-					$va_elements_without_break_by_container[$va_element['parent_id']] = 1;
-					$vs_br = "</td></tr></table><table class=\"attributeListItem\"><tr><td class=\"attributeListItem\">";
-				} else {
-					$vs_br = "";
+				$vs_br = "";
+				if(isset($va_elements_break_by_container[$va_element['parent_id']])) {
+					if ($va_elements_without_break_by_container[$va_element['parent_id']] == $va_elements_break_by_container[$va_element['parent_id']] + 1) {
+						$va_elements_without_break_by_container[$va_element['parent_id']] = 1;
+						$vs_br = "</td></tr></table><table class=\"attributeListItem\"><tr><td class=\"attributeListItem\">";
+					}
 				}
 
 				if (isset($pa_bundle_settings['usewysiwygeditor']) && strlen($pa_bundle_settings['usewysiwygeditor']) == 0) {
@@ -1597,9 +1607,10 @@
 			$o_view->setVar('settings', $pa_bundle_settings);
 			
 			// Is this being used in the batch editor?
-			$o_view->setVar('batch', (bool)(isset($pa_options['batch']) && $pa_options['batch']));
+			$o_view->setVar('batch', $vb_batch);
+			$o_view->setVar('elementsOnly', $vb_elements_only);
 			
-			return $o_view->render('ca_attributes.php');
+			return $o_view->render($vb_elements_only ? 'ca_attributes_elements_only.php' : 'ca_attributes.php');
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -1694,7 +1705,7 @@
 				
 					// escape any special characters in jQuery selectors
 					$vs_form_element = str_replace(
-						"jQuery('#{fieldNamePrefix}".$va_element['element_id']."_{n}')", 
+						"jQuery('#{fieldNamePrefix}".$va_element['element_id']."_{n}')",
 						"jQuery('#".str_replace(array("[", "]", "."), array("\\\\[", "\\\\]", "\\\\."), $vs_fld_name)."')", 
 						$vs_form_element
 					);

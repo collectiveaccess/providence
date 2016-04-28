@@ -99,9 +99,11 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 	}
 	# ---------------------------------------
 	/**
-	 * 
+	 * Get browse instance
 	 *
-	 * @return string 
+	 * @param string|int $pm_table_name_or_num
+	 * @param null $pa_options
+	 * @return BaseBrowse
 	 */
 	function caGetBrowseInstance($pm_table_name_or_num, $pa_options=null) {
 		$o_dm = Datamodel::load();

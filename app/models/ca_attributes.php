@@ -196,6 +196,36 @@ class ca_attributes extends BaseModel {
 		return;
 	}
 	# ------------------------------------------------------
+	public function insert($pa_options=null) {
+		if($vm_ret = parent::insert($pa_options)) {
+			// generate and set GUID
+			$t_guid = $this->getAppDatamodel()->getInstance('ca_guids');
+			$t_guid->setMode(ACCESS_WRITE);
+			$t_guid->setTransaction($this->getTransaction());
+			$t_guid->set('table_num', $this->tableNum());
+			$t_guid->set('row_id', $this->getPrimaryKey());
+			$t_guid->set('guid', caGetOption('setGUIDTo', $pa_options, caGenerateGUID()));
+			$t_guid->insert();
+		}
+
+		return $vm_ret;
+	}
+	# -------------------------------------------------------
+	public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		$vn_primary_key = $this->getPrimaryKey();
+		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
+
+		if($vn_primary_key && $vn_rc) {
+			$t_guid = $this->getAppDatamodel()->getInstance('ca_guids');
+			if ($t_guid->load(array('table_num' => $this->tableNum(), 'row_id' => $vn_primary_key))) {
+				$t_guid->setMode(ACCESS_WRITE);
+				$t_guid->delete();
+			}
+		}
+
+		return $vn_rc;
+	}
+	# -------------------------------------------------------
 	/**
 	 *
 	 */
@@ -584,7 +614,7 @@ class ca_attributes extends BaseModel {
 		while($qr_attrs->nextRow()) {
 			$va_raw_row = $qr_attrs->getRow();
 			
-			$va_raw_row['element_code'] = ca_metadata_elements::getElementCode($va_raw_row['element_id']);
+			$va_raw_row['element_code'] = ca_metadata_elements::getElementCodeForID($va_raw_row['element_id']);
 			$va_raw_row['datatype'] = ca_metadata_elements::getElementDatatype($va_raw_row['element_id']);
 			
 			if ($vn_last_attribute_id != $va_raw_row['attribute_id']) {

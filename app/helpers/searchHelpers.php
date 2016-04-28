@@ -1104,3 +1104,163 @@
 
 		return $va_return;
 	}
+	# ---------------------------------------
+	/**
+	 * get available sort fields for given table
+	 *
+	 * @param string $ps_table
+	 * @param null|int $pn_type_id
+	 * @param array $pa_options
+	 * @return array
+	 */
+	function caGetAvailableSortFields($ps_table, $pn_type_id = null, $pa_options=null) {
+		require_once(__CA_MODELS_DIR__ . '/ca_user_sorts.php');
+
+		if(is_numeric($ps_table)) {
+			$ps_table = Datamodel::load()->getTableName($ps_table);
+		}
+
+		switch($ps_table) {
+			case 'ca_list_items':
+				$va_base_fields = array(
+					'_natural' => _t('relevance'),
+					'ca_list_item_labels.name_singular' => _t('name'),
+					'ca_list_items.idno_sort' => _t('idno')
+				);
+				break;
+			case 'ca_relationship_types':
+				$va_base_fields = array(
+					'ca_relationship_type_labels.typename' => _t('type name')
+				);
+				break;
+			case 'ca_collections':
+				$va_base_fields = array(
+					'_natural' => _t('relevance'),
+					'ca_collection_labels.name_sort' => _t('name'),
+					'ca_collections.type_id' => _t('type'),
+					'ca_collections.idno_sort' => _t('idno')
+				);
+				break;
+			case 'ca_loans':
+				$va_base_fields = array(
+					'_natural' => _t('relevance'),
+					'ca_loan_labels.name_sort' => _t('short description'),
+					'ca_loans.type_id' => _t('type'),
+					'ca_loans.idno_sort' => _t('idno')
+				);
+				break;
+			case 'ca_movements':
+				$va_base_fields = array(
+					'_natural' => _t('relevance'),
+					'ca_movement_labels.name' => _t('short description'),
+					'ca_movements.type_id;ca_movement_labels.name' => _t('type'),
+					'ca_movements.idno_sort' => _t('idno')
+				);
+				break;
+			case 'ca_entities':
+				$va_base_fields = array(
+					'_natural' => _t('relevance'),
+					'ca_entity_labels.name_sort' => _t('display name'),
+					'ca_entity_labels.surname;ca_entity_labels.forename' => _t('surname, forename'),
+					'ca_entity_labels.forename' => _t('forename'),
+					'ca_entities.type_id;ca_entity_labels.surname;ca_entity_labels.forename' => _t('type'),
+					'ca_entities.idno_sort' => _t('idno')
+				);
+				break;
+			case 'ca_object_lots':
+				$va_base_fields = array(
+					'_natural' => _t('relevance'),
+					'ca_object_lot_labels.name_sort' => _t('name'),
+					'ca_object_lots.type_id' => _t('type'),
+					'ca_object_lots.idno_stub_sort' => _t('idno')
+				);
+				break;
+			case 'ca_object_representations':
+				$va_base_fields = array(
+					'_natural' => _t('relevance'),
+					'ca_object_representation_labels.name_sort' => _t('name'),
+					'ca_object_representations.type_id' => _t('type'),
+					'ca_object_representations.idno_sort' => _t('idno')
+				);
+				break;
+			case 'ca_objects':
+				$va_base_fields = array(
+					'_natural' => _t('relevance'),
+					'ca_object_labels.name_sort' => _t('title'),
+					'ca_objects.type_id' => _t('type'),
+					'ca_objects.idno_sort' => _t('idno')
+				);
+				break;
+			case 'ca_occurrences':
+				$va_base_fields = array(
+					'_natural' => _t('relevance'),
+					'ca_occurrence_labels.name_sort' => _t('name'),
+					'ca_occurrences.type_id' => _t('type'),
+					'ca_occurrences.idno_sort' => _t('idno')
+				);
+				break;
+			case 'ca_places':
+				$va_base_fields = array(
+					'_natural' => _t('relevance'),
+					'ca_place_labels.name_sort' => _t('name'),
+					'ca_places.type_id' => _t('type'),
+					'ca_places.idno_sort' => _t('idno')
+				);
+				break;
+			case 'ca_storage_locations':
+				$va_base_fields = array(
+					'_natural' => _t('relevance'),
+					'ca_storage_locations_labels.name_sort' => _t('name'),
+					'ca_storage_locations.type_id' => _t('type'),
+					'ca_storage_locations.idno_sort' => _t('idno')
+				);
+				break;
+			case 'ca_tours':
+				$va_base_fields = array(
+					'_natural' => _t('relevance'),
+					'ca_tour_labels.name' => _t('name')
+				);
+				break;
+			case 'ca_tour_stops':
+				$va_base_fields = array(
+					'_natural' => _t('relevance'),
+					'ca_tour_stop_labels.name' => _t('name')
+				);
+				break;
+			case 'ca_item_comments':
+				$va_base_fields = array(
+					'ca_item_comments.created_on' => _t('date'),
+					'ca_item_comments.user_id' => _t('user')
+				);
+				break;
+			case 'ca_item_tags':
+				$va_base_fields = array(
+					'ca_items_x_tags.created_on' => _t('date'),
+					'ca_items_x_tags.user_id' => _t('user')
+				);
+				break;
+			default:
+				$va_base_fields = array();
+				break;
+		}
+
+		if($ps_table) {
+			// add user sorts
+			if(caGetOption('includeUserSorts', $pa_options, true)) {
+				/** @var RequestHTTP $po_request */
+				if(!($po_request = caGetOption('request', $pa_options)) || ($po_request->getUser()->canDoAction('can_use_user_sorts'))) {
+					$va_base_fields = array_merge($va_base_fields, ca_user_sorts::getAvailableSortsForTable($ps_table));
+				}
+			}
+
+			// add sortable elements
+			require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
+			$va_sortable_elements = ca_metadata_elements::getSortableElements($ps_table, $pn_type_id);
+			foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
+				$va_base_fields[$ps_table.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
+			}
+		}
+
+		return $va_base_fields;
+	}
+	# ---------------------------------------
