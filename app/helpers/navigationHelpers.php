@@ -64,6 +64,9 @@
  	define('__CA_NAV_BUTTON_MAKE_PRIMARY__', 25);
  	define('__CA_NAV_BUTTON_UPDATE__', 26);
  	define('__CA_NAV_BUTTON_PDF_SMALL__', 27);
+	define('__CA_NAV_BUTTON_COLLAPSE__', 28);
+	define('__CA_NAV_BUTTON_EXPAND__', 29);
+	define('__CA_NAV_BUTTON_PDF__', 30);
  		
  	define('__CA_NAV_BUTTON_ICON_POS_LEFT__', 0);
  	define('__CA_NAV_BUTTON_ICON_POS_RIGHT__', 1);
@@ -630,9 +633,11 @@
 				break;
 			case __CA_NAV_BUTTON_COLLAPSE__:
 				$vs_img_name = 'glyphicons_191_circle_minus';
+				$vs_classname = 'collapse';
 				break;
 			case __CA_NAV_BUTTON_EXPAND__:
 				$vs_img_name = 'glyphicons_190_circle_plus';
+				$vs_classname = 'expand';
 				break;					
 			case __CA_NAV_BUTTON_COMMIT__:
 				$vs_img_name = 'glyphicons_193_circle_ok';

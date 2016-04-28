@@ -38,6 +38,12 @@
 <?php
 	if ($vs_display_select_html = $t_display->getBundleDisplaysAsHTMLSelect('display_id', array('onchange' => 'jQuery("#caSummaryDisplaySelectorForm").submit();',  'class' => 'searchFormSelector'), array('table' => $t_item->tableNum(), 'value' => $t_display->getPrimaryKey(), 'access' => __CA_BUNDLE_DISPLAY_READ_ACCESS__, 'user_id' => $this->request->getUserID(), 'restrictToTypes' => array($t_item->getTypeID())))) {
 ?>
+		<div id="toggleCollapsedButton">
+			<a href="#">
+				<?php print caNavButton($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?>
+				<?php print caNavButton($this->request, __CA_NAV_BUTTON_EXPAND__); ?>
+			</a>
+		</div>
 		<div id="printButton">
 			<a href="<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "PrintSummary", array("object_id" => $t_item->getPrimaryKey()))?>">
 				<?php print caNavIcon($this->request, __CA_NAV_BUTTON_PDF__); ?>
@@ -122,5 +128,27 @@
 	</table>
 </div><!-- end summary -->
 <?php
-		TooltipManager::add('#printButton', _t("Download Summary as PDF"));
-		TooltipManager::add('a.downloadMediaContainer', _t("Download Media"));
+TooltipManager::add('#printButton', _t("Download Summary as PDF"));
+TooltipManager::add('#toggleCollapsedButton .collapse', _t("Hide empty-valued fields"));
+TooltipManager::add('#toggleCollapsedButton .expand', _t("Show empty-valued fields"));
+TooltipManager::add('a.downloadMediaContainer', _t("Download Media"));
+?>
+<script>
+(function () {
+	var setCollapsed, collapsed, jar;
+	jar = jQuery.cookieJar('caCookieJar');
+	setCollapsed = function (value) {
+		collapsed = value;
+		jQuery('.unit.notDefined')[collapsed ? 'slideUp' : 'slideDown']();
+		jQuery('#toggleCollapsedButton .collapse').toggle(!collapsed);
+		jQuery('#toggleCollapsedButton .expand').toggle(collapsed);
+		jar.set('DisplayModeForNotDefined', collapsed ? 'collapsed' : 'expanded');
+	};
+	jQuery(function () {
+		jQuery('#toggleCollapsedButton > a').on('click', function () {
+			setCollapsed(!collapsed);
+		});
+		setCollapsed(jar.get('DisplayModeForNotDefined') !== 'expanded'); // Default to collapsed
+	});
+}());
+</script>
