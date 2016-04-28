@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -71,6 +71,9 @@ if (!$this->request->isAjax()) {
 					<?php _p('Type'); ?>
 				</th>
 				<th>
+					<?php _p('Mapping'); ?>
+				</th>
+				<th>
 					<?php _p('Last modified'); ?>
 				</th>
 				<th class="{sorter: false} list-header-nosort" style="width: 75px">&nbsp;</th>
@@ -98,6 +101,9 @@ if (!$this->request->isAjax()) {
 				</td>
 				<td>
 					<?php print $va_importer['importer_type']; ?>
+				</td>
+				<td>
+					<?php print $va_importer['worksheet'] ? caNavButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, _t("Download"), '', 'batch', 'MetadataImport', 'Download', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : '' ; ?>
 				</td>
 				<td>
 					<?php print caGetLocalizedDate($va_importer['last_modified_on'], array('dateFormat' => 'delimited')); ?>

@@ -4664,14 +4664,16 @@ create table ca_batch_log
 /*==========================================================================*/
 create table ca_batch_log_items 
 (
+  item_id                        int unsigned                   not null AUTO_INCREMENT,
 	batch_id                       int unsigned                   not null,
 	row_id                         int unsigned                   not null,
 	errors                         longtext                       null,
 	
-	primary key (batch_id, row_id), 
-    KEY i_row_id (row_id),
-    constraint fk_ca_batch_log_items_batch_id foreign key (batch_id)
-      references ca_batch_log (batch_id) on delete restrict on update restrict
+	primary key (item_id),
+  KEY i_row_id (row_id),
+  INDEX i_batch_row_id (batch_id, row_id),
+  constraint fk_ca_batch_log_items_batch_id foreign key (batch_id)
+    references ca_batch_log (batch_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
@@ -6637,6 +6639,71 @@ create table ca_search_indexing_queue
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /*==========================================================================*/
+
+create table ca_guids
+(
+  guid_id         int unsigned      not null AUTO_INCREMENT,
+  table_num       tinyint unsigned  not null,
+  row_id          int unsigned      not null,
+  guid            VARCHAR(36)       not null,
+
+  primary key (guid_id),
+  index i_table_num_row_id (table_num, row_id),
+  unique index u_guid (guid)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+/*==========================================================================*/
+
+create table ca_replication_log
+(
+  entry_id        int unsigned      not null AUTO_INCREMENT,
+  source_system_guid     VARCHAR(36)       not null,
+  log_id          int unsigned      not null,
+  status          char(1)           not null,
+  vars            longtext          null,
+
+  primary key (entry_id),
+  index i_source_log (source_system_guid, log_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+/*==========================================================================*/
+
+create table ca_user_sorts
+(
+  sort_id         int unsigned      not null AUTO_INCREMENT,
+  table_num       tinyint unsigned  not null,
+  user_id         int unsigned      not null,
+  name            varchar(255)      not null,
+  settings        longtext          not null,
+  sort_type       char(1)           null,
+  rank            smallint unsigned not null default 0,
+  deleted         tinyint unsigned  not null default 0,
+
+  primary key (sort_id),
+  index i_table_num (table_num),
+  index i_user_id (user_id),
+  unique index u_guid (table_num, name),
+
+  constraint fk_ca_user_sorts_user_id foreign key (user_id)
+  references ca_users (user_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+/*==========================================================================*/
+
+create table ca_user_sort_items
+(
+  item_id         int unsigned      not null AUTO_INCREMENT,
+  sort_id         int unsigned      not null,
+  bundle_name     varchar(255)      not null,
+  rank            smallint unsigned not null default 0,
+
+  primary key (item_id),
+
+  constraint fk_ca_user_sort_items_sort_id foreign key (sort_id)
+  references ca_user_sorts (sort_id) on delete restrict on update restrict
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+/*==========================================================================*/
 /* Schema update tracking                                                   */
 /*==========================================================================*/
 create table ca_schema_updates (
@@ -6647,5 +6714,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 129 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (129, unix_timestamp());
+/* CURRENT MIGRATION: 132 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (132, unix_timestamp());

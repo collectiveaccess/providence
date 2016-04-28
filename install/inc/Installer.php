@@ -35,6 +35,7 @@ require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
 require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_MODELS_DIR__.'/ca_users.php');
 require_once(__CA_MODELS_DIR__.'/ca_user_groups.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
 
 class Installer {
 	# --------------------------------------------------
@@ -292,10 +293,21 @@ class Installer {
 			}
 		}
 
+		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
+			$o_es = new WLPlugSearchEngineElasticSearch();
+			$o_es->truncateIndex();
+		}
+
 		return true;
 	}
 	# --------------------------------------------------
 	public function performPostInstallTasks() {
+		// generate system GUID -- used to identify systems in data sync protocol
+		$o_vars = new ApplicationVars();
+		$o_vars->setVar('system_guid', caGenerateGUID());
+		$o_vars->save();
+
+		// refresh mapping if ElasticSearch is used
 		$o_config = Configuration::load();
 		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
 			$o_si = new SearchIndexer();

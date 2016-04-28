@@ -5528,11 +5528,13 @@ class BaseModel extends BaseObject {
 	 * @param string $field field name
 	 * @return array file information
 	 */
-	public function &getFileInfo($ps_field) {
+	public function &getFileInfo($ps_field, $ps_property=null) {
 		$va_file_info = $this->get($ps_field, array('returnWithStructure' => true));
 		if (!is_array($va_file_info) || !is_array($va_file_info = array_shift($va_file_info))) {
 			return null;
 		}
+		
+		if ($ps_property) { return isset($va_file_info[$ps_property]) ? $va_file_info[$ps_property] : null; }
 		return $va_file_info;
 	}
 	# --------------------------------------------------------------------------------
@@ -6521,6 +6523,13 @@ class BaseModel extends BaseObject {
 					}
 				}
 			}
+
+			// log to self
+			if($vb_log_changes_to_self) {
+				if (($vn_id = $this->getPrimaryKey()) > 0) {
+					$va_subjects[$this->tableNum()][] = $vn_id;
+				}
+			}
 		}
 
 		if (!sizeof($va_subjects) && !$vb_log_changes_to_self) { return true; }
@@ -6594,6 +6603,7 @@ class BaseModel extends BaseObject {
 			}
 
 			foreach($va_subjects as $vn_subject_table_num => $va_subject_ids) {
+				$va_subject_ids = array_unique($va_subject_ids);
 				foreach($va_subject_ids as $vn_subject_row_id) {
 					$this->opqs_change_log_subjects->execute($vn_log_id, $vn_subject_table_num, $vn_subject_row_id);
 				}
@@ -11847,11 +11857,82 @@ $pa_options["display_form_field_tips"] = true;
 		return $va_rels;
 	}
 	# -----------------------------------------------------
+	// guid utilities
+	# -----------------------------------------------------
+	/**
+	 * Get GUID for current row
+	 * @return bool|null|string
+	 */
+	public function getGUID() {
+		if($this->getPrimaryKey()) {
+			return ca_guids::getForRow($this->getPrimaryKey(), $this->tableNum());
+		}
+
+		return null;
+	}
+	# -----------------------------------------------------
+	/**
+	 * Load by GUID
+	 * @param string $ps_guid
+	 * @return bool|null
+	 */
+	public function loadByGUID($ps_guid) {
+		$va_info = ca_guids::getInfoForGUID($ps_guid);
+
+		if($va_info['table_num'] == $this->tableNum()) {
+			return $this->load($va_info['row_id']);
+		}
+
+		return null;
+	}
+	# -----------------------------------------------------
+	/**
+	 * Get loaded BaseModel instance by GUID
+	 * @param string $ps_guid
+	 * @return null|BaseModel
+	 */
+	public static function getInstanceByGUID($ps_guid) {
+		$vs_table = get_called_class();
+		$t_instance = new $vs_table;
+
+		if($t_instance->loadByGUID($ps_guid)) {
+			return $t_instance;
+		}
+
+		return null;
+	}
+	# -----------------------------------------------------
+	/**
+	 * Get primary key for given GUID
+	 * @param string $ps_guid
+	 * @return int|null
+	 */
+	public static function getPrimaryKeyByGUID($ps_guid) {
+		$vs_table = get_called_class();
+		$t_instance = new $vs_table;
+
+		if($t_instance->loadByGUID($ps_guid)) {
+			return $t_instance->getPrimaryKey();
+		}
+
+		return null;
+	}
+	# -----------------------------------------------------
+	/**
+	 * Get guid by primary key
+	 * @param int $pn_primary_key
+	 * @return bool|string
+	 */
+	public static function getGUIDByPrimaryKey($pn_primary_key) {
+		return ca_guids::getForRow(Datamodel::load()->getTableNum(get_called_class()), $pn_primary_key);
+	}
+	# -----------------------------------------------------
 }
 
 // includes for which BaseModel must already be defined
 require_once(__CA_LIB_DIR__."/core/TaskQueue.php");
 require_once(__CA_APP_DIR__.'/models/ca_lists.php');
+require_once(__CA_APP_DIR__.'/models/ca_guids.php');
 require_once(__CA_APP_DIR__.'/models/ca_locales.php');
 require_once(__CA_APP_DIR__.'/models/ca_item_tags.php');
 require_once(__CA_APP_DIR__.'/models/ca_items_x_tags.php');
