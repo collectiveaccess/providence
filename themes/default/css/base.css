@@ -1263,10 +1263,18 @@ div.hint {
 	font-size: 11px;
 	display:inline;
 }
-#summary #printButton{
+#summary #printButton {
     float:right;
-    width:30px;
-    margin:0px 5px 5px 10px;
+    margin:0 5px 5px 10px;
+}
+#summary #toggleCollapsedButton {
+    float:right;
+    margin:0 5px 5px 0;
+}
+#summary #toggleCollapsedButton .form-button {
+    display: inline;
+    margin: 0;
+    padding: 0;
 }
 #summary .unit{
     margin-bottom:10px;
