@@ -1041,10 +1041,12 @@
 				);
 				if ($vs_hier_id_fld = $t_instance->getProperty('HIERARCHY_ID_FLD')) { $va_intrinsics[$vs_hier_id_fld] = null;}
 				if ($vs_idno_fld) {$va_intrinsics[$vs_idno_fld] = $vs_idno ? $vs_idno : null; }
-				
+			
 				foreach($va_intrinsics as $vs_fld => $vm_fld_default) {
 					if ($t_instance->hasField($vs_fld)) { 
-						$t_instance->set($vs_fld, caGetOption($vs_fld, $pa_values, $vm_fld_default));
+						$vm_val = caGetOption($vs_fld, $pa_values, $vm_fld_default);
+						if(is_array($vm_val)) { $vm_val = caGetOption($vs_fld, $vm_val, $vm_fld_default); }
+						$t_instance->set($vs_fld, $vm_val);
 					}
 					unset($pa_values[$vs_fld]);
 				}
