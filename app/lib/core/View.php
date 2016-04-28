@@ -261,7 +261,7 @@ class View extends BaseObject {
 		
 		$vb_output = false;
 		$vs_buf = null;
-		if (($ps_filename[0] == '/') || (preg_match("!^[A-Za-z]{1}:!", $ps_filename)) { 	// absolute path
+		if (($ps_filename[0] == '/') || (preg_match("!^[A-Za-z]{1}:!", $ps_filename))) { 	// absolute path
 			$vs_buf = $this->_render($ps_filename);
 			$vb_output = true;
 		} else {
