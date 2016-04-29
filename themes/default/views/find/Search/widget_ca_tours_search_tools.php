@@ -98,7 +98,7 @@ if(sizeof($this->getVar("available_sets")) > 0){
 			print "<option value='set:{$vs_set_identifier}' {$SELECTED}>".$va_set["name"]."</option>\n";
 		}
 		print "</select>\n ";
-		print caFormSubmitLink($this->request, _t('Search').' &rsaquo;', 'button', 'caSearchSetsForm'); caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, '18px'), 'button', 'caSearchSetsForm')
+		print caFormSubmitLink($this->request, _t('Search').' &rsaquo;', 'button', 'caSearchSetsForm'); caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, '18px'), 'button', 'caSearchSetsForm');
 		print "</form>\n";
 ?>
 	</div>
