@@ -28,7 +28,7 @@
  
 	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$t_instance 		= $this->getVar('t_instance');
-	$t_item 			= $this->getVar('t_item');			// object
+	$t_item 			= $this->getVar('t_item');			// set
 	/** @var ca_sets $t_item_rel */
 	$t_item_rel 		= $this->getVar('t_item_rel');
 	$t_subject 			= $this->getVar('t_subject');
@@ -50,7 +50,8 @@
 	$va_lookup_params = array(
 		'type' => isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : '',
 		'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction'],
-		'noInline' => (bool) preg_match("/QuickAdd$/", $this->request->getController()) ? 1 : 0
+		'noInline' => (bool) preg_match("/QuickAdd$/", $this->request->getController()) ? 1 : 0,
+		'table_num' => $t_subject->tableNum()
 	);
 
 	if ($vb_batch) {

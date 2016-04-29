@@ -2055,7 +2055,7 @@ select.searchSetSelect {
 
 #saveOptions{
     float:right;
-    margin: 2px 0px 0px 10px;
+    margin: 2px 5px 0px 0px;
     text-decoration:none;
     text-transform:uppercase;
     color:#333;
@@ -2268,12 +2268,12 @@ select.searchToolsSelect {
 }
 
 #searchSetTools {
-	background-color:#f7f7f7;
-	border-radius:4px;
-	-moz-border-radius:4px;
-	-webkit-border-radius:4px;
-	margin:10px;
-	padding:10px 10px 0px 10px;
+	background-color: #f7f7f7;
+	border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	margin: 10px;
+	padding: 10px;
 }
 #searchSetTools .col{
 	margin-bottom:15px;

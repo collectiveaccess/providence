@@ -113,6 +113,7 @@ BaseModel::$s_ca_models_definitions['ca_data_importers'] = array(
 				'FIELD_TYPE' => FT_FILE, 'DISPLAY_TYPE' => DT_FIELD, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => false, 
+				"FILE_VOLUME" => 'workspace',
 				'DEFAULT' => '',
 				'LABEL' => _t('Importer worksheet'), 'DESCRIPTION' => _t('Archived copy of worksheet used to create the importer.')
 		),
@@ -986,6 +987,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		$t_importer = new ca_data_importers();
 		$t_importer->setMode(ACCESS_WRITE);
+		
+		$t_importer->set('worksheet', $ps_source);
 		
 		// Remove any existing mapping
 		if ($t_importer->load(array('importer_code' => $va_settings['code']))) {

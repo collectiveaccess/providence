@@ -27,7 +27,7 @@
  */
 
 	header('Content-type: application/json');
-	$va_return = array("ok" => true) + caSanitizeArray($this->getVar('content'),array('allowStdClass' => true));
+	$va_return = array_replace(array("ok" => true), caSanitizeArray($this->getVar('content'),array('allowStdClass' => true)));
 
 	if($this->getVar('pretty_print')){
 		print caFormatJson(json_encode($va_return));

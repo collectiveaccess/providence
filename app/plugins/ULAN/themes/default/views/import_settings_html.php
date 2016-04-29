@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,7 +40,7 @@
  <form action="#" id="caULANSearchForm">
  	<div class="formLabel">
  		<?php print _t('Find in ULAN').': '.caHTMLTextInput("term", array('value' => '', 'id' => 'caULANTerm'), array('width' => '250px')); ?>
- 		<a href="#" id="caULANTermLookup" class="button"><?php print _t('Go'); ?> &rsaquo;</a>
+ 		<a href="#" id="caULANTermLookup" class="button"><?php print caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
  	</div>
  </form>
  
