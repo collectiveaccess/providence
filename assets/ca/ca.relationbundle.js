@@ -43,6 +43,8 @@ var caUI = caUI || {};
 		}
 	});
 	caUI.initRelationBundle = function(container, options) {
+		if (options.onAddItem) { options.onAddRelationshipItem = options.onAddItem; }
+		
 		options.onInitializeItem = function(id, values, options) { 
 			jQuery("#" + options.itemID + id + " select").css('display', 'inline');
 			var i, typeList, types = [], lists = [];
@@ -66,6 +68,13 @@ var caUI = caUI || {};
 				if(typeof options.lists != 'object') { options.lists = [options.lists]; }
 				options.extraParams.lists = options.lists.join(";");
 			}
+
+			// restrict to search expression
+			if (options && options.restrictToSearch && options.restrictToSearch.length) {
+				if (!options.extraParams) { options.extraParams = {}; }
+				if (typeof options.restrictToSearch != 'string') { options.restrictToSearch = ''; }
+				options.extraParams.restrictToSearch = options.restrictToSearch;
+			}
 			
 			// restrict to types (for all lookups) - limits lookup to specific types of items (NOT relationship types)
 			if (options && options.types && options.types.length) {
@@ -79,6 +88,11 @@ var caUI = caUI || {};
 				for(i=0; i < typeList.length; i++) {
 					types.push({type_id: typeList[i].type_id, typename: typeList[i].typename, direction: typeList[i].direction});
 				}
+			}
+			
+			if (caUI && caUI.utils && caUI.utils.showUnsavedChangesWarning) {
+				// Attached change handler to form elements in relationship
+				jQuery('#' + options.itemID + id + ' select, #' + options.itemID + id + ' input, #' + options.itemID + id + ' textarea').not('.dontTriggerUnsavedChangeWarning').change(function() { caUI.utils.showUnsavedChangesWarning(true); });
 			}
 		};
 		
@@ -151,6 +165,8 @@ var caUI = caUI || {};
 					}
 				}, options.autocompleteOptions)
 			).on('click', null, {}, function() { this.select(); });
+			
+			if (options.onAddRelationshipItem) { options.onAddRelationshipItem(id, options, isNew); }
 		};
 		
 		options.select = function(id, data) {
@@ -213,33 +229,34 @@ var caUI = caUI || {};
 		
 		options.sort = function(key) {
 			var indexedValues = {};
+
 			jQuery.each(jQuery(that.container + ' .bundleContainer .' + that.itemListClassName + ' .roundedRel'), function(k, v) {
 				var id_string = jQuery(v).attr('id');
 				if (id_string) {
-					var indexKey;
-					if(key == 'name') {
-						indexKey = jQuery('#' + id_string + ' .itemName').text() + "/" + id_string;
-					} else {
-						if (key == 'type') {
-							indexKey = jQuery('#' + id_string + ' .itemType').text() + "/" + id_string;
-						} else {
-							if (key == 'idno') {
-								indexKey = jQuery('#' + id_string + ' .itemIdno').text() + "/" + id_string;
-							} else {
-                                alert(id_string);
-								indexKey = id_string;
-							}
-						}
-					}
-					indexedValues[indexKey] = v;
+					var matches = /_([\d]+)$/.exec(id_string);
+					indexedValues[parseInt(matches[1])] = v;
 				}
 				jQuery(v).detach();
 			});
-			indexedValues = caUI.utils.sortObj(indexedValues, true);
+
+			var sortUrl = that.sortUrl + '/ids/' + Object.keys(indexedValues).join(',') + '/sortKeys/' + key;
+			var sortedValues = {};
+
+			// we actually have to wait for the result here ... hence, ajax() with async=false instead of getJSON()
+			jQuery.ajax({
+				url: sortUrl,
+				dataType: 'json',
+				async: false,
+				success: function(data) {
+					for (var i = 0; i < data.length; i++) {
+						sortedValues[that.fieldNamePrefix + 'Item_' + data[i]] = indexedValues[parseInt(data[i])];
+					}
+				}
+			});
 			
 			var whatsLeft = jQuery(that.container + ' .bundleContainer .' + that.itemListClassName).html();
 			jQuery(that.container + ' .bundleContainer .' + that.itemListClassName).html('');
-			jQuery.each(indexedValues, function(k, v) {
+			jQuery.each(sortedValues, function(k, v) {
 				jQuery(that.container + ' .bundleContainer .' + that.itemListClassName).append(v);
 				var id_string = jQuery(v).attr('id');
 				that.setDeleteButton(id_string);

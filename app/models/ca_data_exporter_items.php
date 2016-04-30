@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -314,6 +314,20 @@ class ca_data_exporter_items extends BaseModel {
 			'description' => _t('If set, id values refering to foreign keys are returned as preferred label text in the current locale.')
 		);
 
+		$va_settings['convertCodesToIdno'] = array(
+			'formatType' => FT_BIT,
+			'displayType' => DT_SELECT,
+			'width' => 40, 'height' => 1,
+			'takesLocale' => false,
+			'default' => 0,
+			'options' => array(
+				_t('yes') => 1,
+				_t('no') => 0
+			),
+			'label' => _t('Convert codes to idno'),
+			'description' => _t('If set, id values refering to foreign keys are returned as idno.')
+		);
+
 		$va_settings['returnIdno'] = array(
 			'formatType' => FT_BIT,
 			'displayType' => DT_SELECT,
@@ -338,15 +352,16 @@ class ca_data_exporter_items extends BaseModel {
 			'description' => _t('The current mapping is skipped if the given expression evaluates to true.')
 		);
 
-		$va_settings['filterByRegExp'] = array(
-			'formatType' => FT_TEXT,
-			'displayType' => DT_FIELD,
-			'width' => 40, 'height' => 1,
-			'takesLocale' => false,
-			'default' => '',
-			'label' => _t('Regular expression filter'),
-			'description' => _t('Any value that does NOT match this PCRE regular expression is filtered and not exported. Insert expression without delimiters.')
-		);
+		// Deprecated -- remove?
+		//$va_settings['filterByRegExp'] = array(
+		//	'formatType' => FT_TEXT,
+		//	'displayType' => DT_FIELD,
+		//	'width' => 40, 'height' => 1,
+		//	'takesLocale' => false,
+		//	'default' => '',
+		//	'label' => _t('Regular expression filter'),
+		//	'description' => _t('Any value that does NOT match this PCRE regular expression is filtered and not exported. Insert expression without delimiters.')
+		//);
 
 		$va_settings['original_values'] = array(
 			'formatType' => FT_TEXT,
@@ -426,6 +441,16 @@ class ca_data_exporter_items extends BaseModel {
 			'default' => '',
 			'label' => _t('Restrict to relationship types'),
 			'description' => _t('Restricts the context of the mapping to only records related with the designated relationship type. Only valid when context is set.')
+		);
+
+		$va_settings['restrictToBundleValues'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Restrict to bundle values'),
+			'description' => _t('Restricts the context of the mapping to only records related with the designated bundle values. Only valid when context is set.')
 		);
 
 		$va_settings['checkAccess'] = array(

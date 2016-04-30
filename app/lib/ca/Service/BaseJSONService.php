@@ -38,6 +38,9 @@ require_once(__CA_MODELS_DIR__."/ca_lists.php");
 
 class BaseJSONService {
 	# -------------------------------------------------------
+	/**
+	 * @var RequestHTTP
+	 */
 	protected $opo_request;
 	protected $ops_table;
 	protected $opo_dm;
@@ -63,6 +66,16 @@ class BaseJSONService {
 		}
 		
 		$this->opn_id = $this->opo_request->getParameter("id",pString);	// we allow for a string to support fetching by idno; typically it's a numeric id
+		if($vs_locale = $this->opo_request->getParameter('lang', pString)) {
+			global $g_ui_locale, $g_ui_locale_id, $_;
+			$g_ui_locale = $vs_locale;
+			$t_locale = new ca_locales();
+			if($g_ui_locale_id = $t_locale->localeCodeToID($vs_locale)) {
+				$g_ui_locale = $vs_locale;
+				if(!initializeLocale($g_ui_locale)) die("Error loading locale ".$g_ui_locale);
+				$this->opo_request->reloadAppConfig();
+			}
+		}
 
 		$vs_post_data = $this->opo_request->getRawPostData();
 		if(strlen(trim($vs_post_data))>0){
@@ -87,7 +100,7 @@ class BaseJSONService {
 			"ca_loans", "ca_tours", "ca_tour_stops", "ca_sets"
 		);
 
-		if(strlen($ps_table)>0){
+		if(strlen($ps_table)>0) {
 			if(!in_array($ps_table, $this->opa_valid_tables)){
 				$this->addError(_t("Table does not exist"));
 			}
@@ -127,7 +140,7 @@ class BaseJSONService {
 	 * Get BaseModel instance for given table and optionally load the record with the specified ID
 	 * @param string $ps_table table name, e.g. "ca_objects"
 	 * @param mixed $pn_id integer primary key value of the record to load, or string idno value for the record to load 
-	 * @return BaseModel
+	 * @return BundlableLabelableBaseModelWithAttributes
 	 */
 	protected function _getTableInstance($ps_table,$pn_id=null){		// $pn_id might be a string if the user is fetching by idno
 		if(!in_array($ps_table, $this->opa_valid_tables)){

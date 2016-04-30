@@ -135,6 +135,8 @@ class BaseXMLDataReader extends BaseDataReader {
 	 * @return bool
 	 */
 	public function read($ps_source, $pa_options=null) {
+		parent::read($ps_source, $pa_options);
+		
 		if ($ps_base_path = caGetOption('basePath', $pa_options, null)) {
 			$va_tmp = explode("/", $ps_base_path);
 			$this->ops_base_root_tag = array_pop($va_tmp);
@@ -252,13 +254,15 @@ class BaseXMLDataReader extends BaseDataReader {
 	 * @return mixed
 	 */
 	public function get($ps_spec, $pa_options=null) {
+		if ($vm_ret = parent::get($ps_spec, $pa_options)) { return $vm_ret; }
+		
 		$vb_return_as_array = caGetOption('returnAsArray', $pa_options, false);
 		$vs_delimiter = caGetOption('delimiter', $pa_options, ';');
 		
 		// Recondition the spec for Xpath
 		$ps_spec = $this->_convertXPathExpression($ps_spec, array('useRootTag' => $this->ops_base_root_tag));
 
-		if (!($o_node_list = $this->opo_handle_xpath->query($ps_spec))) {
+		if (!($o_node_list = @$this->opo_handle_xpath->query($ps_spec))) {
 			return null;
 		}
 		
@@ -341,7 +345,6 @@ class BaseXMLDataReader extends BaseDataReader {
 	public function valuesCanRepeat() {
 		return true;
 	}
-	
 	# -------------------------------------------------------
 	/**
 	 * Make default namespace explicit and do other adjustments such that reasonable
@@ -372,6 +375,8 @@ class BaseXMLDataReader extends BaseDataReader {
 				(!preg_match("!^[A-Za-z0-9\-_]+\(!", $vs_spec_element))		// functions should not get the default namespace applied
 				&&
 				(!preg_match("!^[\.]+$!", $vs_spec_element))				// . and .. should not get the default namespace applied
+				&&
+				(!preg_match("!^\([A-Za-z0-9\-_]+!", $vs_spec_element))		// groups in parens should not get the default namespace applied
 			) {
 				if ($this->ops_xml_namespace_prefix) {
 					$va_tmp[$vn_i]= $this->ops_xml_namespace_prefix.":{$vs_spec_element}";

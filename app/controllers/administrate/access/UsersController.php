@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -89,7 +89,7 @@
 
 			if(AuthenticationManager::supports(__CA_AUTH_ADAPTER_FEATURE_UPDATE_PASSWORDS__)) {
 				if ($this->request->getParameter('password', pString) != $this->request->getParameter('password_confirm', pString)) {
-					$this->request->addActionError(new Error(1050, _t("Password does not match confirmation. Please try again."), "administrate/UserController->Save()", '', false, false), 'field_password');
+					$this->request->addActionError(new ApplicationError(1050, _t("Password does not match confirmation. Please try again."), "administrate/UserController->Save()", '', false, false), 'field_password');
 				}
 			}
  			
@@ -219,9 +219,8 @@
  			} else {
  				$this->request->user->setVar('ca_users_default_userclass', $vn_userclass);
  			}
- 			if ((!$vn_userclass) || ($vn_userclass < 0) || ($vn_userclass >= 2)) { $vn_userclass = 0; }
+ 			if ((!$vn_userclass) || ($vn_userclass < 0) || ($vn_userclass > 255)) { $vn_userclass = 0; }
  			$t_user = $this->getUserObject();
- 			
  			$this->view->setVar('userclass', $vn_userclass);
  			$this->view->setVar('userclass_displayname', $t_user->getChoiceListValue('userclass', $vn_userclass));
  			
@@ -360,6 +359,72 @@
  				$this->notification->addNotification(_t("There are no users"), __NOTIFICATION_TYPE_INFO__);
  				$this->ListUsers();
  				return;
+ 			}
+ 		}
+ 		# -------------------------------------------------------
+ 		public function Approve() {
+ 			
+ 			$va_errors = array();
+ 			$pa_user_ids = $this->request->getParameter('user_id', pArray);
+ 			$ps_mode = $this->request->getParameter('mode', pString);
+ 			if(is_array($pa_user_ids) && (sizeof($pa_user_ids) > 0)){
+				$t_user = new ca_users();
+				$vb_send_activation_email = false;
+				if($this->request->config->get("email_user_when_account_activated")){
+					$vb_send_activation_email = true;
+				}
+			
+				foreach($pa_user_ids as $vn_user_id){
+					$t_user->load($vn_user_id);
+					
+					if (!$t_user->getPrimaryKey()) {
+						$va_errors[] = _t("The user does not exist");
+					}
+				
+					$t_user->setMode(ACCESS_WRITE);
+					$t_user->set("active", 1);
+					if($t_user->numErrors()){
+						$va_errors[] = join("; ", $t_user->getErrors());
+					}else{
+						$t_user->update();
+						if($t_user->numErrors()){
+							$va_errors[] = join("; ", $t_user->getErrors());
+						}else{
+							# --- does a notification email need to be sent to the user to let them know account is active?
+							if($vb_send_activation_email){
+								# --- send email confirmation
+								$o_view = new View($this->request, array($this->request->getViewsDirectoryPath()));
+		
+								# -- generate email subject line from template
+								$vs_subject_line = $o_view->render("mailTemplates/account_activation_subject.tpl");
+		
+								# -- generate mail text from template - get both the text and the html versions
+								$vs_mail_message_text = $o_view->render("mailTemplates/account_activation.tpl");
+								$vs_mail_message_html = $o_view->render("mailTemplates/account_activation_html.tpl");
+								caSendmail($t_user->get('email'), $this->request->config->get("ca_admin_email"), $vs_subject_line, $vs_mail_message_text, $vs_mail_message_html);						
+							}
+							
+						}
+					}
+				
+				}
+				if(sizeof($va_errors) > 0){
+					$this->notification->addNotification(implode("; ", $va_errors), __NOTIFICATION_TYPE_ERROR__);
+				}else{
+					$this->notification->addNotification(_t("The registrations have been approved"), __NOTIFICATION_TYPE_INFO__);
+				}
+			}else{
+				$this->notification->addNotification(_t("Please use the checkboxes to select registrations for approval"), __NOTIFICATION_TYPE_WARNING__);
+			}
+ 			switch($ps_mode){
+ 				case "dashboard":
+ 					$this->response->setRedirect(caNavUrl($this->request, "", "Dashboard", "Index"));
+ 				break;
+ 				# -----------------------
+ 				default:
+ 					$this->ListUsers();
+ 				break;
+ 				# -----------------------
  			}
  		}
  		# -------------------------------------------------------

@@ -120,6 +120,10 @@ class WLPlugMediaReplicationVimeo Extends BaseMediaReplicationPlugin {
 				$o_client->call('vimeo.videos.setDownloadPrivacy', array('download' => $vn_dl_privacy, 'video_id' => $vs_video_id));
 				$o_client->call('vimeo.videos.setLicense', array('license' => $vs_license, 'video_id' => $vs_video_id));
 
+				if($vs_preset = caGetOption('embed_preset', $pa_target_options, false)) {
+					$o_client->call('vimeo.videos.embed.setPreset', array('preset_id' => $vs_preset, 'video_id' => $vs_video_id));
+				}
+
 				if(isset($pa_target_options['channel'])) {
 					$o_client->call('vimeo.channels.addVideo', array('channel_id' => $pa_target_options['channel'], 'video_id' => $vs_video_id));
 				}

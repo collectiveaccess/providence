@@ -23,6 +23,10 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
+ * @package CollectiveAccess
+ * @subpackage Visualization
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ *
  * ----------------------------------------------------------------------
  */
 
@@ -50,7 +54,7 @@
 		 */
 		public function __construct($ps_table=null) {
 			$this->opo_config = Configuration::load();
-			$this->opo_viz_config = Configuration::load($this->opo_config->get('visualization_config'));
+			$this->opo_viz_config = Configuration::load(__CA_CONF_DIR__.'/visualization.conf');
 			
 			$this->reset();
 			
@@ -333,7 +337,7 @@
 			$o_viz_config = $o_viz->getVisualizationConfig();
 			
 			Visualizer::$s_plugin_names = array();
-			$r_dir = opendir(__CA_APP_DIR__.'/core/Plugins/Visualizer');
+			$r_dir = opendir(__CA_LIB_DIR__.'/core/Plugins/Visualizer');
 			while (($vs_plugin = readdir($r_dir)) !== false) {
 				if ($vs_plugin == "BaseVisualizerPlugin.php") { continue; }
 				if (preg_match("/^([A-Za-z_]+[A-Za-z0-9_]*).php$/", $vs_plugin, $va_matches)) {

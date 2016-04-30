@@ -153,12 +153,11 @@
 
   <xs:complexType name="elementLabels">
     <xs:sequence>
-      <xs:element name="label" minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="label" minOccurs="1" maxOccurs="unbounded">
         <xs:complexType>
           <xs:sequence>
-            <xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1"/>
-            <xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1"
-              />
+            <xs:element name="name" type="stringRequired" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1"/>
           </xs:sequence>
           <xs:attribute name="locale" type="localeType" use="required"/>
         </xs:complexType>
@@ -394,6 +393,13 @@
           <xs:attribute name="idno" type="codeType" use="required"/>
           <xs:attribute name="default" type="booleanType" use="required"/>
         </xs:complexType>
+
+        <!-- placement codes must be unique inside a screen -->
+        <xs:unique name="placementCodeUnique">
+          <xs:selector xpath=".//placement"/>
+          <xs:field xpath="@code"/>
+        </xs:unique>
+
       </xs:element>
     </xs:sequence>
   </xs:complexType>
@@ -426,6 +432,7 @@
             </xs:element>
           </xs:sequence>
           <xs:attribute name="code" type="codeType" use="required"/>
+          <xs:attribute name="typeRestrictions" type="xs:string"/>
         </xs:complexType>
       </xs:element>
     </xs:sequence>
@@ -706,9 +713,23 @@
                   <xs:attribute name="code" type="codeType" use="required"/>
                   <xs:attribute name="type" type="xs:string" use="required"/>
                 </xs:complexType>
+
+                <!-- ui screen idnos must be unique inside a UI -->
+                <xs:unique name="uiScreenCodeUnique">
+                  <xs:selector xpath=".//screen"/>
+                  <xs:field xpath="@idno"/>
+                </xs:unique>
+
               </xs:element>
             </xs:sequence>
           </xs:complexType>
+
+          <!-- ui code must be unique, globally -->
+          <xs:unique name="uiCodeUnique">
+            <xs:selector xpath=".//userInterface"/>
+            <xs:field xpath="@code"/>
+          </xs:unique>
+
         </xs:element>
 
         <!-- RELATIONSHIP TYPES -->
@@ -1030,6 +1051,13 @@
       <xs:attribute name="base" type="xs:string" use="optional"/>
       <xs:attribute name="infoUrl" type="xs:anyURI" use="optional"/>
     </xs:complexType>
+
+    <!-- UNIQUENESS CONSTRAINTS ON CERTAIN ATTRIBUTES -->
+    <xs:unique name="elementCodeUnique">
+      <xs:selector xpath=".//metadataElement"/>
+      <xs:field xpath="@code"/>
+    </xs:unique>
+
   </xs:element>
 
 </xs:schema>

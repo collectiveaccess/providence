@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -91,7 +91,10 @@ abstract class BaseDataReader {
 	 * @param array $pa_options
 	 * @return bool
 	 */
-	abstract function read($ps_source, $pa_options=null);
+	public function read($ps_source, $pa_options=null) {
+		$this->ops_source = $ps_source;
+		return null;
+	}
 	# -------------------------------------------------------
 	/**
 	 * 
@@ -112,13 +115,47 @@ abstract class BaseDataReader {
 	abstract function seek($pn_row_num);
 	# -------------------------------------------------------
 	/**
+	 *
+	 * @return int
+	 */
+	abstract public function currentRow();
+	# -------------------------------------------------------
+	/**
 	 * 
 	 * 
 	 * @param mixed $pm_spec
 	 * @param array $pa_options
 	 * @return mixed
 	 */
-	abstract function get($pm_spec, $pa_options=null);
+	public function get($ps_field, $pa_options=null) {
+		//
+		// Return "special" values
+		//
+		$vs_val = null;
+		switch($ps_field) {
+			case '__row__':
+				$vs_val = $this->currentRow();
+				break;
+			case '__source__':
+				$vs_val = pathinfo($this->ops_source, PATHINFO_BASENAME);
+				break;
+			case '__filepath__':
+				$vs_val = $this->ops_source;
+				break;
+			case '__filename__':
+				$vs_val = ($vs_original_filename = caGetOption('originalFilename', $pa_options, null)) ? $vs_original_filename : pathinfo($this->ops_source, PATHINFO_BASENAME);
+				break;
+			default:
+				return null;
+				break;
+		}
+		
+		if ($this->valuesCanRepeat() && caGetOption('returnAsArray', $pa_options, false)) {
+			return array($vs_val);
+		}
+		
+		return $vs_val;
+	}
 	# -------------------------------------------------------
 	/**
 	 * 
@@ -185,6 +222,37 @@ abstract class BaseDataReader {
 	 */
 	public function valuesCanRepeat() {
 		return false;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Override to return true if your format can contain more than one independent data set
+	 * (Eg. an Excel files with many free-standing worksheets)
+	 * 
+	 * @return bool
+	 */
+	public function hasMultipleDatasets() {
+		return false;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Returns number of distinct datasets in the file
+	 * Override this if it's more than 1
+	 * 
+	 * @return int
+	 */
+	public function getDatasetCount() {
+		return 1;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Set current dataset for reading and reset current row to beginning
+	 * Override if the reader supports multiple datasets
+	 * 
+	 * @param mixed $pm_dataset The number of the dataset to read (starting at zero) [Default=0]
+	 * @return bool
+	 */
+	public function setCurrentDataset($pn_dataset=0) {
+		return ($pn_dataset == 0) ? true : false;
 	}
 	# -------------------------------------------------------
 	/**

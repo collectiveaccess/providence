@@ -7,6 +7,6 @@ Deny from all
 <FilesMatch "install$">
 	Allow from all
 </FilesMatch>
-<FilesMatch "^.*\.(css|gif|jpg|png|js)$">
+<FilesMatch "^.*\.(css|gif|jpg|png|js|woff|ttf)$">
         Allow from all
 </FilesMatch>

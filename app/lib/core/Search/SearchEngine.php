@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2014 Whirl-i-Gig
+ * Copyright 2007-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -112,10 +112,10 @@ class SearchEngine extends SearchBase {
 	 *
 	 * @param string $ps_search The search to perform; engine takes Lucene syntax query
 	 * @param SearchResult $po_result  A newly instantiated sub-class of SearchResult to place search results into and return. If this is not set, then a generic SearchResults object will be returned.
-	 * @param array $pa_options Optional array of options for the search. Options include
-	 *:
+	 * @param array $pa_options Optional array of options for the search. Options include:
+	 *
 	 *		sort = field or attribute to sort on in <table name>.<field or attribute name> format (eg. ca_objects.idno); default is to sort on relevance (aka. sort='_natural')
-	 *		sort_direction = direction to sort results by, either 'asc' for ascending order or 'desc' for descending order; default is 'asc'
+	 *		sortDirection = direction to sort results by, either 'asc' for ascending order or 'desc' for descending order; default is 'asc'
 	 *		no_cache = if true, search is performed regardless of whether results for the search are already cached; default is false
 	 *		limit = if set then search results will be limited to the quantity specified. If not set then all results are returned.
 	 *		form_id = optional form identifier string to record in log for search
@@ -142,10 +142,13 @@ class SearchEngine extends SearchBase {
 			$ps_search .= $vs_append_to_search;
 		}
 		
-		$ps_search = str_replace("[BLANK]", '"[BLANK]"', $ps_search);	// the special [BLANK] search term, which returns records that have *no* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
+		$ps_search = preg_replace('/(?!")\[BLANK\](?!")/i', '"[BLANK]"', $ps_search); // the special [BLANK] search term, which returns records that have *no* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
+		$ps_search = preg_replace('/(?!")\[SET\](?!")/i', '"[SET]"', $ps_search); // the special [SET] search term, which returns records that have *any* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
 		
-		if (!is_array($pa_options)) { $pa_options = array(); }
-		$vn_limit = (isset($pa_options['limit']) && ($pa_options['limit'] > 0)) ? (int)$pa_options['limit'] : null;
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		if(($vn_limit = caGetOption('limit', $pa_options, null, array('castTo' => 'int'))) < 0) { $vn_limit = null; }
+		$vs_sort = caGetOption('sort', $pa_options, null);
+		$vs_sort_direction = strtolower(caGetOption('sortDirection', $pa_options, caGetOption('sort_direction', $pa_options, null)));
 		
 		//print "QUERY=$ps_search<br>";
 		//
@@ -177,8 +180,8 @@ class SearchEngine extends SearchBase {
 		if($vn_cache_timeout == 0) { $vb_no_cache = true; } // don't try to cache if cache timeout is 0 (0 means disabled)
 		
 		$t_table = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
-		
-		$vs_cache_key = md5($ps_search."/".print_R($this->getTypeRestrictionList(), true));
+		$vs_cache_key = md5($ps_search."/".serialize($this->getTypeRestrictionList($pa_options))."/".serialize($this->opa_result_filters));
+
 		$o_cache = new SearchCache();
 		$vb_from_cache = false;
 
@@ -187,17 +190,17 @@ class SearchEngine extends SearchBase {
 			if((time() - $vn_created_on) < $vn_cache_timeout) {
 				Debug::msg('SEARCH cache hit for '.$vs_cache_key);
 				$va_hits = $o_cache->getResults();
-				if (isset($pa_options['sort']) && $pa_options['sort'] && ($pa_options['sort'] != '_natural')) {
-					$va_hits = $this->sortHits($va_hits, $this->ops_tablename, $pa_options['sort'], $ps_search, (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
-				} else {
-					if (($pa_options['sort'] == '_natural') && ($pa_options['sort_direction'] == 'desc')) {
-						$va_hits = array_reverse($va_hits);
-					}
+				
+				
+				if ($vs_sort != '_natural') {
+					$va_hits = $this->sortHits($va_hits, $this->ops_tablename, $vs_sort, $vs_sort_direction);
+				} elseif (($vs_sort == '_natural') && ($vs_sort_direction == 'desc')) {
+					$va_hits = array_reverse($va_hits);
 				}
 				$o_res = new WLPlugSearchEngineCachedResult($va_hits, $this->opn_tablenum);
 				$vb_from_cache = true;
 			} else {
-				Debug::msg('cache expire for '.$vs_cache_key);
+				Debug::msg('SEARCH cache expire for '.$vs_cache_key);
 				$o_cache->remove();
 			}
 		}
@@ -237,36 +240,68 @@ class SearchEngine extends SearchBase {
 				}
 			}
 			
-			if (isset($pa_options['checkAccess']) && (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']))) {
+			if (isset($pa_options['checkAccess']) && (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess'])) && $t_table->hasField('access')) {
 				$va_access_values = $pa_options['checkAccess'];
 				$this->addResultFilter($this->ops_tablename.'.access', 'IN', join(",",$va_access_values));
 			} 
-					
-			if (is_array($va_type_ids = $this->getTypeRestrictionList()) && sizeof($va_type_ids)) {
+			
+			$vb_no_types = false;	
+			if (!$pa_options['expandToIncludeParents'] && is_array($va_type_ids = $this->getTypeRestrictionList()) && (sizeof($va_type_ids) > 0) && $t_table->hasField('type_id')) {
 				if ($t_table->getFieldInfo('type_id', 'IS_NULL')) {
 					$va_type_ids[] = 'NULL';
 				}
 				$this->addResultFilter($this->ops_tablename.'.type_id', 'IN', join(",",$va_type_ids));
+			} elseif (is_array($va_type_ids) && (sizeof($va_type_ids) == 0)) { 
+				$vb_no_types = true; 
 			}
 			
-			// Filter on source
-			if (is_array($va_source_ids = $this->getSourceRestrictionList())) {
-				$this->addResultFilter($this->ops_tablename.'.source_id', 'IN', join(",",$va_source_ids));
+			if (!$vb_no_types) {
+				// Filter on source
+				if (is_array($va_source_ids = $this->getSourceRestrictionList())) {
+					$this->addResultFilter($this->ops_tablename.'.source_id', 'IN', join(",",$va_source_ids));
+				}
+			
+				if (in_array($t_table->getHierarchyType(), array(__CA_HIER_TYPE_SIMPLE_MONO__, __CA_HIER_TYPE_MULTI_MONO__))) {
+					$this->addResultFilter($this->ops_tablename.'.parent_id', 'IS NOT', NULL);
+				}
+			
+				if (is_array($va_restrict_to_fields = caGetOption('restrictSearchToFields', $pa_options, null)) && $this->opo_engine->can('restrict_to_fields')) {
+					$this->opo_engine->setOption('restrictSearchToFields', $va_restrict_to_fields);
+				}
+				if (is_array($va_exclude_fields_from_search = caGetOption('excludeFieldsFromSearch', $pa_options, null)) && $this->opo_engine->can('restrict_to_fields')) {
+					$this->opo_engine->setOption('excludeFieldsFromSearch', $va_exclude_fields_from_search);
+				}
+				
+
+				$o_res =  $this->opo_engine->search($this->opn_tablenum, $vs_search, $this->opa_result_filters, $o_rewritten_query);
+			
+				// cache the results
+				$va_hits = $o_res->getPrimaryKeyValues($vn_limit);
+				
+										
+				if ($pa_options['expandToIncludeParents'] && sizeof($va_hits)) {
+					$qr_exp = caMakeSearchResult($this->opn_tablenum, $va_hits);
+					if (!is_array($va_type_ids) || !sizeof($va_type_ids)) { $va_type_ids = null; }
+					
+					$va_results = [];
+					$va_parents = [];
+					while($qr_exp->nextHit()) {
+						if ($vn_parent_id = $qr_exp->get('parent_id')) {
+							if (
+								((!$va_type_ids) || (in_array($qr_exp->get($this->opn_tablenum.'.parent.type_id'), $va_type_ids)))
+							) { 
+								$va_parents[$vn_parent_id] = 1;
+							}
+						}
+						if (($va_type_ids) && (!in_array($qr_exp->get('type_id'), $va_type_ids))) { continue; }
+						$va_results[] = $qr_exp->getPrimaryKey();
+					}
+					$va_hits = array_merge($va_hits, array_keys($va_parents));
+				}
+				$o_res->seek(0);
+			} else {
+				$va_hits = array();
 			}
-			
-			if (in_array($t_table->getHierarchyType(), array(__CA_HIER_TYPE_SIMPLE_MONO__, __CA_HIER_TYPE_MULTI_MONO__))) {
-				$this->addResultFilter($this->ops_tablename.'.parent_id', 'IS NOT', NULL);
-			}
-			
-			if (is_array($va_restrict_to_fields = caGetOption('restrictSearchToFields', $pa_options, null)) && $this->opo_engine->can('restrict_to_fields')) {
-				$this->opo_engine->setOption('restrictSearchToFields', $va_restrict_to_fields);
-			}
-			
-			$o_res =  $this->opo_engine->search($this->opn_tablenum, $vs_search, $this->opa_result_filters, $o_rewritten_query);
-			
-			// cache the results
-			$va_hits = $o_res->getPrimaryKeyValues($vn_limit);
-			$o_res->seek(0);
 
 			if (isset($pa_options['sets']) && $pa_options['sets']) {
 				$va_hits = $this->filterHitsBySets($va_hits, $pa_options['sets'], array('search' => $vs_search));
@@ -277,12 +312,10 @@ class SearchEngine extends SearchBase {
 				$va_hits = $this->filterHitsByACL($va_hits, $this->opn_tablenum, $vn_user_id, __CA_ACL_READONLY_ACCESS__);
 			}
 			
-			if (isset($pa_options['sort']) && $pa_options['sort'] && ($pa_options['sort'] != '_natural')) {
-				$va_hits = $this->sortHits($va_hits, $t_table->tableName(), $pa_options['sort'], $vs_cache_key, (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
-			} else {
-				if (($pa_options['sort'] == '_natural') && ($pa_options['sort_direction'] == 'desc')) {
-					$va_hits = array_reverse($va_hits);
-				}
+			if ($vs_sort && ($vs_sort !== '_natural')) {
+				$va_hits = $this->sortHits($va_hits, $t_table->tableName(), $pa_options['sort'], (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
+			} elseif (($vs_sort == '_natural') && ($vs_sort_direction == 'desc')) {
+				$va_hits = array_reverse($va_hits);
 			}
 			
 			$o_res = new WLPlugSearchEngineCachedResult($va_hits, $this->opn_tablenum);
@@ -449,7 +482,13 @@ class SearchEngine extends SearchBase {
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Boolean':
 					$va_tmp = $this->_rewriteQuery($o_term);
-					$va_terms[] = new Zend_Search_Lucene_Search_Query_Boolean($va_tmp['terms'], $va_tmp['signs']);
+					// don't wrap 1-term query in unnecessary extra boolean subquery. apparently the engines can't handle the extra parentheses
+					if(sizeof($va_tmp['terms']) == 1) {
+						$va_terms[] = array_shift($va_tmp['terms']);
+					} else {
+						$va_terms[] = new Zend_Search_Lucene_Search_Query_Boolean($va_tmp['terms'], $va_tmp['signs']);
+					}
+
 					$va_signs[] = $va_old_signs[$vn_i];
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Range':
@@ -463,7 +502,6 @@ class SearchEngine extends SearchBase {
 			
 			$vn_i++;
 		}
-		
 		return array(
 			'terms' => $va_terms,
 			'signs' => $va_signs
@@ -477,7 +515,6 @@ class SearchEngine extends SearchBase {
 	 */
 	private function _rewriteTerm($po_term, $pb_sign) {
 		$vs_fld = $po_term->getTerm()->field;
-			
 		if (sizeof($va_access_points = $this->getAccessPoints($this->opn_tablenum))) {
 			// if field is access point then do rewrite
 			if (
@@ -801,6 +838,8 @@ class SearchEngine extends SearchBase {
 					$va_ids = $t_item->getHierarchyChildren(null, array('idsOnly' => true));
 					$va_ids[] = $vn_type_id;
 					$this->opa_search_type_ids = array_merge($this->opa_search_type_ids, $va_ids);
+				} else {
+					$this->opa_search_type_ids[] = $vn_type_id;
 				}
 			}
 		}
@@ -813,9 +852,9 @@ class SearchEngine extends SearchBase {
 	 *
 	 * @return array List of type_id values to restrict search to.
 	 */
-	public function getTypeRestrictionList() {
+	public function getTypeRestrictionList($pa_options=null) {
 		if (function_exists("caGetTypeRestrictionsForUser")) {
-			$va_pervasive_types = caGetTypeRestrictionsForUser($this->ops_tablename);	// restrictions set in app.conf or by associated user role
+			$va_pervasive_types = caGetTypeRestrictionsForUser($this->ops_tablename, $pa_options);	// restrictions set in app.conf or by associated user role
 			if (!is_array($va_pervasive_types) || !sizeof($va_pervasive_types)) { return $this->opa_search_type_ids; }
 				
 			if (is_array($this->opa_search_type_ids) && sizeof($this->opa_search_type_ids)) {

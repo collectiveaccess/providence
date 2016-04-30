@@ -20,38 +20,38 @@ if (typeof(PhpDebugBar) == 'undefined') {
 
         render: function() {
             var self = this;
-            
+
             this.$el.appendTo('body').hide();
-            this.$closebtn = $('<a href="javascript:"><i class="fa fa-times"></i></a>');
+            this.$closebtn = $('<a><i class="phpdebugbar-fa phpdebugbar-fa-times"></i></a>');
             this.$table = $('<tbody />');
             $('<div>PHP DebugBar | Open</div>').addClass(csscls('header')).append(this.$closebtn).appendTo(this.$el);
-            $('<table><thead><tr><th>Load</th><th>Method</th><th>URL</th><th>Date</th><th>IP</th></tr></thead></table>').append(this.$table).appendTo(this.$el);
+            $('<table><thead><tr><th width="150">Date</th><th width="55">Method</th><th>URL</th><th width="125">IP</th><th width="100">Filter data</th></tr></thead></table>').append(this.$table).appendTo(this.$el);
             this.$actions = $('<div />').addClass(csscls('actions')).appendTo(this.$el);
 
             this.$closebtn.on('click', function() {
                 self.hide();
             });
 
-            this.$loadmorebtn = $('<a href="javascript:">Load more</a>')
+            this.$loadmorebtn = $('<a>Load more</a>')
                 .appendTo(this.$actions)
                 .on('click', function() {
                     self.find(self.last_find_request, self.last_find_request.offset + self.get('items_per_page'), self.handleFind.bind(self));
                 });
 
-            this.$showonlycurrentbtn = $('<a href="javascript:">Show only current URL</a>')
+            this.$showonlycurrentbtn = $('<a>Show only current URL</a>')
                 .appendTo(this.$actions)
                 .on('click', function() {
                     self.$table.empty();
                     self.find({uri: window.location.pathname}, 0, self.handleFind.bind(self));
                 });
 
-            this.$showallbtn = $('<a href="javascript:">Show all</a>')
+            this.$showallbtn = $('<a>Show all</a>')
                 .appendTo(this.$actions)
                 .on('click', function() {
                     self.refresh();
                 });
 
-            this.$clearbtn = $('<a href="javascript:">Delete all</a>')
+            this.$clearbtn = $('<a>Delete all</a>')
                 .appendTo(this.$actions)
                 .on('click', function() {
                     self.clear(function() {
@@ -77,6 +77,7 @@ if (typeof(PhpDebugBar) == 'undefined') {
             var self = this;
             var searchBtn = $('<button />')
                 .text('Search')
+                .attr('type', 'submit')
                 .on('click', function(e) {
                     self.$table.empty();
                     var search = {};
@@ -103,17 +104,17 @@ if (typeof(PhpDebugBar) == 'undefined') {
         handleFind: function(data) {
             var self = this;
             $.each(data, function(i, meta) {
-               var a = $('<a href="javascript:" />')
+               var a = $('<a />')
                     .text('Load dataset')
                     .on('click', function(e) {
-                        self.hide();
-                        self.load(meta['id'], function(data) {
-                            self.callback(meta['id'], data);
-                        });
-                        e.preventDefault();
+                       self.hide();
+                       self.load(meta['id'], function(data) {
+                           self.callback(meta['id'], data);
+                       });
+                       e.preventDefault();
                     });
                     
-                var method = $('<a href="javascript:" />')
+                var method = $('<a />')
                     .text(meta['method'])
                     .on('click', function(e) {
                         self.$table.empty();
@@ -121,28 +122,38 @@ if (typeof(PhpDebugBar) == 'undefined') {
                         e.preventDefault();
                     });
 
-                var uri = $('<a href="javascript:" />')
+                var uri = $('<a />')
                     .text(meta['uri'])
                     .on('click', function(e) {
-                        self.$table.empty();
-                        self.find({uri: meta['uri']}, 0, self.handleFind.bind(self));
+                        self.hide();
+                        self.load(meta['id'], function(data) {
+                            self.callback(meta['id'], data);
+                        });
                         e.preventDefault();
                     });
 
-                var ip = $('<a href="javascript:" />')
+                var ip = $('<a />')
                     .text(meta['ip'])
                     .on('click', function(e) {
                         self.$table.empty();
                         self.find({ip: meta['ip']}, 0, self.handleFind.bind(self));
                         e.preventDefault();
                     });
+
+                var search = $('<a />')
+                    .text('Show URL')
+                    .on('click', function(e) {
+                        self.$table.empty();
+                        self.find({uri: meta['uri']}, 0, self.handleFind.bind(self));
+                        e.preventDefault();
+                    });
                     
                 $('<tr />')
-                    .append($('<td />').append(a))
-                    .append($('<td />').append(method))
-                    .append($('<td />').append(uri))
                     .append('<td>' + meta['datetime'] + '</td>')
+                    .append('<td>' + meta['method'] + '</td>')
+                    .append($('<td />').append(uri))
                     .append($('<td />').append(ip))
+                    .append($('<td />').append(search))
                     .appendTo(self.$table);
             });
             if (data.length < this.get('items_per_page')) {

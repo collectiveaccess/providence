@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2014 Whirl-i-Gig
+ * Copyright 2012-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,7 +35,7 @@
  	$va_last_settings = $this->getVar('batch_mediaimport_last_settings');
 
 	print $vs_control_box = caFormControlBox(
-		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute media import"), 'caBatchMediaImportForm', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
+		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute media import"), 'caBatchMediaImportFormButton', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
 		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'batch', 'MediaImport', 'Index/'.$this->request->getActionExtra(), array()),
 		'',
 		''
@@ -79,7 +79,8 @@
 			levelDataUrl: '<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryLevel'); ?>',
 			initDataUrl: '<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryAncestorList'); ?>',
 
-			openDirectoryIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/arrow_grey_right.gif" border="0" title="Edit"/>',
+			openDirectoryIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
+			disabledDirectoryIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__, array('class' => 'disabled')); ?>",
 
 			folderIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/folder_small.png" border="0" title="Folder" style="margin-right: 7px;"/>',
 			fileIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/file_small.png" border="0" title="File" style="margin-right: 7px;"/>',
@@ -136,27 +137,7 @@
 					</div>
 				</div>
 		</div>
-		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print _t('Matching'); ?></span>
-				<div class="bundleContainer">
-					<div class="caLabelList" >
-						<table style="width: 100%;">
-							<tr>
-								<td class='formLabel'>
-<?php
-			print $this->getVar('match_mode');
-?>
-								</td>
-								<td class='formLabel'>
-<?php
-			print _t("Limit to types")."<br/>\n".$this->getVar($t_instance->tableName().'_limit_to_types_list');
-?>
-								</td>
-							</tr>
-						</table>
-					</div>
-				</div>
-		</div>
+
 		<div class='bundleLabel'>
 			<span class="formLabelText"><?php print _t('Type'); ?></span>
 				<div class="bundleContainer">
@@ -248,7 +229,7 @@
 			</div>
 		</div>
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print _t('Identifier'); ?></span>
+			<span class="formLabelText"><?php print _t('%1 identifier', ucfirst(caGetTableDisplayName($t_instance->tableName(), false))); ?></span>
 			<div class="bundleContainer">
 				<div class="caLabelList" id="caMediaImportIdnoControls">
 					<div style='padding:10px 0px 10px 10px;'>
@@ -271,6 +252,14 @@
 							</tr>
 							<tr>
 								<td><?php
+									$va_attrs = array('value' => 'filename_no_ext', 'id' => 'caIdnoFilenameNoExtMode');
+									if (isset($va_last_settings['idnoMode']) && ($va_last_settings['idnoMode'] == 'filename_no_ext')) { $va_attrs['checked'] = 1; }
+									print caHTMLRadioButtonInput('idno_mode', $va_attrs);
+									?></td>
+								<td class='formLabel'><?php print _t('Set %1 identifier to file name without extension', caGetTableDisplayName($t_instance->tableName(), false)); ?></td>
+							</tr>
+							<tr>
+								<td><?php
 									$va_attrs = array('value' => 'directory_and_filename', 'id' => 'caIdnoDirectoryAndFilenameMode');
 									if (isset($va_last_settings['idnoMode']) && ($va_last_settings['idnoMode'] == 'directory_and_filename')) { $va_attrs['checked'] = 1; }
 									print caHTMLRadioButtonInput('idno_mode', $va_attrs);
@@ -286,6 +275,9 @@
 								jQuery("#caIdnoFilenameMode").click(function() {
 									jQuery("#caIdnoFormModeForm input").prop('disabled', true);
 								});
+								jQuery("#caIdnoFilenameNoExtMode").click(function() {
+									jQuery("#caIdnoFormModeForm input").prop('disabled', true);
+								});
 								jQuery("#caIdnoDirectoryAndFilenameMode").click(function() {
 									jQuery("#caIdnoFormModeForm input").prop('disabled', true);
 								});
@@ -298,6 +290,7 @@
 				</div>
 			</div>
 		</div>
+
 		<div class='bundleLabel'>
 			<span class="formLabelText"><?php print (($this->getVar('ca_object_representations_mapping_list_count') > 1) || ($this->getVar($t_instance->tableName().'_mapping_list_count') > 1)) ? _t('Status, access &amp; metadata extraction') : _t('Status &amp; access'); ?></span>
 				<div class="bundleContainer">
@@ -337,79 +330,189 @@
 		</div>
 
 		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print _t('Relationships'); ?></span>
+			<span id="caBatchMediaAdvancedHeader" class="formLabelText"><a href="#" id="caBatchMediaAdvancedHeaderText"><?php print _t("Show advanced options"); ?> &gt;</a></span>
+		</div>
+		<script type="text/javascript">
+			jQuery(document).ready(function() {
+				jQuery("#caBatchMediaAdvancedHeader").click(function(e) {
+					e.preventDefault();
+					$content = jQuery("#caBatchMediaAdvancedContent");
+					$content.slideToggle(500, function () {
+						jQuery("#caBatchMediaAdvancedHeaderText").text(function () {
+							return $content.is(":visible") ? "< <?php print _t("Hide advanced options"); ?>" : "<?php print _t("Show advanced options"); ?> >";
+						});
+					});
+					// scroll down so that you can actually see the advanced section after expanding
+					jQuery('html, body').animate({
+						scrollTop: 1000
+					}, 1000);
+				});
+			});
+		</script>
+		<div id="caBatchMediaAdvancedContent" style="display: none">
+
+			<div class='bundleLabel'>
+				<span class="formLabelText"><?php print _t('Matching'); ?></span>
 				<div class="bundleContainer">
 					<div class="caLabelList" >
-						<p class="bundleDisplayPlacementEditorHelpText">
-<?php
-	print _t('Relationships will be created by matching the identifier extracted from the media file name with identifiers in related records.');
-?>
-						</p>
+						<table style="width: 100%;">
+							<tr>
+								<td class='formLabel'>
+									<?php
+									print $this->getVar('match_mode');
+									print "\n<br/>\n";
+									print _t('where identifier %1 value', $this->getVar('match_type'));
+									?>
+								</td>
+								<td class='formLabel'>
+									<?php
+									print _t("Limit to types")."<br/>\n".$this->getVar($t_instance->tableName().'_limit_to_types_list');
+									?>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
+
+			<div class='bundleLabel'>
+				<span class="formLabelText"><?php print _t('%1 identifier', ucfirst(caGetTableDisplayName('ca_object_representations', false))); ?></span>
+				<div class="bundleContainer">
+					<div class="caLabelList" id="caMediaImportRepresentationIdnoControls">
 						<div style='padding:10px 0px 10px 10px;'>
 							<table>
-<?php
-	foreach(array('ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections') as $vs_rel_table) {
-		if ($o_config->get("{$vs_rel_table}_disable")) { continue; }
-		if (!($t_rel_table = $t_instance->getAppDatamodel()->getInstanceByTableName($vs_rel_table))) { continue; }
-		$t_rel = ca_relationship_types::getRelationshipTypeInstance($t_instance->tableName(), $vs_rel_table);
-		if (!$t_rel) { continue; }
-?>
 								<tr>
-									<td class='formLabel'>
-<?php
-			print caHTMLCheckboxInput('create_relationship_for[]', array('value' => $vs_rel_table,  'id' => "caCreateRelationshipForMedia{$vs_rel_table}", 'onclick' => "jQuery('#caRelationshipTypeIdFor{$vs_rel_table}').prop('disabled', !jQuery('#caCreateRelationshipForMedia{$vs_rel_table}').prop('checked'))"), array('dontConvertAttributeQuotesToEntities' => true));
-			print ' '._t("to %1 with relationship type", $t_rel_table->getProperty('NAME_SINGULAR'));
-?>
-									</td>
-									<td class='formLabel'>
-<?php
-			print $t_rel->getRelationshipTypesAsHTMLSelect('ltor', null, null, array('name' => "relationship_type_id_for_{$vs_rel_table}", 'id' => "caRelationshipTypeIdFor{$vs_rel_table}", 'disabled' => 1));
-?>
-									</td>
+									<td><?php
+										$va_attrs = array('value' => 'form', 'checked' => 1, 'id' => 'caRepresentationIdnoFormMode');
+										if (isset($va_last_settings['representationIdnoMode']) && ($va_last_settings['representationIdnoMode'] == 'form')) { $va_attrs['checked'] = 1; }
+										print caHTMLRadioButtonInput('representation_idno_mode', $va_attrs);
+										?></td>
+									<td class='formLabel' id='caRepresentationIdnoFormModeForm'><?php print _t('Set %1 identifier to %2', caGetTableDisplayName('ca_object_representations', false) , $t_rep->htmlFormElement('idno', '^ELEMENT', array('request' => $this->request))); ?></td>
 								</tr>
-<?php
-	}
-?>
+								<tr>
+									<td><?php
+										$va_attrs = array('value' => 'filename', 'id' => 'caRepresentationIdnoFilenameMode');
+										if (isset($va_last_settings['representationIdnoMode']) && ($va_last_settings['representationIdnoMode'] == 'filename')) { $va_attrs['checked'] = 1; }
+										print caHTMLRadioButtonInput('representation_idno_mode', $va_attrs);
+										?></td>
+									<td class='formLabel'><?php print _t('Set %1 identifier to file name', caGetTableDisplayName('ca_object_representations', false)); ?></td>
+								</tr>
+								<tr>
+									<td><?php
+										$va_attrs = array('value' => 'filename_no_ext', 'id' => 'caRepresentationIdnoFilenameNoExtMode');
+										if (isset($va_last_settings['representationIdnoMode']) && ($va_last_settings['representationIdnoMode'] == 'filename_no_ext')) { $va_attrs['checked'] = 1; }
+										print caHTMLRadioButtonInput('representation_idno_mode', $va_attrs);
+										?></td>
+									<td class='formLabel'><?php print _t('Set %1 identifier to file name without extension', caGetTableDisplayName('ca_object_representations', false)); ?></td>
+								</tr>
+								<tr>
+									<td><?php
+										$va_attrs = array('value' => 'directory_and_filename', 'id' => 'caRepresentationIdnoDirectoryAndFilenameMode');
+										if (isset($va_last_settings['representationIdnoMode']) && ($va_last_settings['representationIdnoMode'] == 'directory_and_filename')) { $va_attrs['checked'] = 1; }
+										print caHTMLRadioButtonInput('representation_idno_mode', $va_attrs);
+										?></td>
+									<td class='formLabel'><?php print _t('Set %1 identifier to directory and file name', caGetTableDisplayName('ca_object_representations', false)); ?></td>
+								</tr>
 							</table>
+							<script type="text/javascript">
+								jQuery(document).ready(function() {
+									jQuery("#caRepresentationIdnoFormMode").click(function() {
+										jQuery("#caRepresentationIdnoFormModeForm input").prop('disabled', false);
+									});
+									jQuery("#caRepresentationIdnoFilenameMode").click(function() {
+										jQuery("#caRepresentationIdnoFormModeForm input").prop('disabled', true);
+									});
+									jQuery("#caRepresentationIdnoFilenameNoExtMode").click(function() {
+										jQuery("#caRepresentationIdnoFormModeForm input").prop('disabled', true);
+									});
+									jQuery("#caRepresentationIdnoDirectoryAndFilenameMode").click(function() {
+										jQuery("#caRepresentationIdnoFormModeForm input").prop('disabled', true);
+									});
+
+									jQuery("#caMediaImportRepresentationIdnoControls").find("input:checked").click();
+								});
+
+							</script>
 						</div>
 					</div>
 				</div>
-		</div>
-		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print _t('Skip files'); ?></span>
-				<div class="bundleContainer">
-					<div class="caLabelList" >
-						<p class="bundleDisplayPlacementEditorHelpText">
-<?php
-	print _t('List names of files you wish to skip during import below, one per line. You may use asterisks ("*") as wildcards to make partial matches. Values enclosed in "/" characters will be treated as <a href="http://www.pcre.org/pcre.txt" target="_new">Perl-compatible regular expressions</a>.');
-?>
-						</p>
-						<p>
-<?php
-			print caHTMLTextInput('skip_file_list', array('value' => $va_last_settings['skipFileList'],  'id' => "caSkipFilesList"), array('width' => '700px', 'height' => '100px'));
-?>
-						</p>
+			</div>
+
+			<div class='bundleLabel'>
+				<span class="formLabelText"><?php print _t('Relationships'); ?></span>
+					<div class="bundleContainer">
+						<div class="caLabelList" >
+							<p class="bundleDisplayPlacementEditorHelpText">
+	<?php
+		print _t('Relationships will be created by matching the identifier extracted from the media file name with identifiers in related records.');
+	?>
+							</p>
+							<div style='padding:10px 0px 10px 10px;'>
+								<table>
+	<?php
+		foreach(array('ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections') as $vs_rel_table) {
+			if ($o_config->get("{$vs_rel_table}_disable")) { continue; }
+			if (!($t_rel_table = $t_instance->getAppDatamodel()->getInstanceByTableName($vs_rel_table))) { continue; }
+			$t_rel = ca_relationship_types::getRelationshipTypeInstance($t_instance->tableName(), $vs_rel_table);
+			if (!$t_rel) { continue; }
+	?>
+									<tr>
+										<td class='formLabel'>
+	<?php
+				print caHTMLCheckboxInput('create_relationship_for[]', array('value' => $vs_rel_table,  'id' => "caCreateRelationshipForMedia{$vs_rel_table}", 'onclick' => "jQuery('#caRelationshipTypeIdFor{$vs_rel_table}').prop('disabled', !jQuery('#caCreateRelationshipForMedia{$vs_rel_table}').prop('checked'))"), array('dontConvertAttributeQuotesToEntities' => true));
+				print ' '._t("to %1 with relationship type", $t_rel_table->getProperty('NAME_SINGULAR'));
+	?>
+										</td>
+										<td class='formLabel'>
+	<?php
+				print $t_rel->getRelationshipTypesAsHTMLSelect('ltor', null, null, array('name' => "relationship_type_id_for_{$vs_rel_table}", 'id' => "caRelationshipTypeIdFor{$vs_rel_table}", 'disabled' => 1));
+	?>
+										</td>
+									</tr>
+	<?php
+		}
+	?>
+								</table>
+							</div>
+						</div>
 					</div>
-				</div>
-		</div>
-		<div class='bundleLabel'>
-			<span class="formLabelText"><?php print _t('Miscellaneous'); ?></span>
-				<div class="bundleContainer">
-					<div class="caLabelList" >
-						<p class='formLabel'>
-<?php
-			print caHTMLCheckboxInput('allow_duplicate_media', array('value' => 1,  'id' => 'caAllowDuplicateMedia', 'checked' => $va_last_settings['allowDuplicateMedia']), array());
-			print " "._t('Allow duplicate media?');
-?>
-						</p>
-						<p class='formLabel'>
-<?php
-							print _t('Log level').'<br/>';
-							print caHTMLSelect('log_level', caGetLogLevels(), array('id' => 'caLogLevel'), array('value' => $va_last_settings['logLevel']));
-?>
-						</p>
+			</div>
+			<div class='bundleLabel'>
+				<span class="formLabelText"><?php print _t('Skip files'); ?></span>
+					<div class="bundleContainer">
+						<div class="caLabelList" >
+							<p class="bundleDisplayPlacementEditorHelpText">
+	<?php
+		print _t('List names of files you wish to skip during import below, one per line. You may use asterisks ("*") as wildcards to make partial matches. Values enclosed in "/" characters will be treated as <a href="http://www.pcre.org/pcre.txt" target="_new">Perl-compatible regular expressions</a>.');
+	?>
+							</p>
+							<p>
+	<?php
+				print caHTMLTextInput('skip_file_list', array('value' => $va_last_settings['skipFileList'],  'id' => "caSkipFilesList"), array('width' => '700px', 'height' => '100px'));
+	?>
+							</p>
+						</div>
 					</div>
-				</div>
+			</div>
+			<div class='bundleLabel'>
+				<span class="formLabelText"><?php print _t('Miscellaneous'); ?></span>
+					<div class="bundleContainer">
+						<div class="caLabelList" >
+							<p class='formLabel'>
+	<?php
+				print caHTMLCheckboxInput('allow_duplicate_media', array('value' => 1,  'id' => 'caAllowDuplicateMedia', 'checked' => $va_last_settings['allowDuplicateMedia']), array());
+				print " "._t('Allow duplicate media?');
+	?>
+							</p>
+							<p class='formLabel'>
+	<?php
+								print _t('Log level').'<br/>';
+								print caHTMLSelect('log_level', caGetLogLevels(), array('id' => 'caLogLevel'), array('value' => $va_last_settings['logLevel']));
+	?>
+							</p>
+						</div>
+					</div>
+			</div>
 		</div>
 
 <?php

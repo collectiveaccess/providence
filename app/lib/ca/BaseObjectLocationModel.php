@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,6 +35,7 @@
   */
   
  	require_once(__CA_LIB_DIR__.'/ca/RepresentableBaseModel.php');
+	require_once(__CA_MODELS_DIR__.'/ca_objects.php');
  
 	class BaseObjectLocationModel extends RepresentableBaseModel {
 		# -------------------------------------------------------

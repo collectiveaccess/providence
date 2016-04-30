@@ -40,6 +40,9 @@
 	
 	class AppNavigation extends BaseObject {
 		# -------------------------------------------------------
+		/**
+		 * @var RequestHTTP
+		 */
 		private $opo_request;
 		private $opo_response;
 		private $opo_config;
@@ -115,7 +118,7 @@
 					$va_path[] = $va_node['key'];
 				} else {
 					// no
-					$this->opa_reverse_nav_table[$vs_controller_path] = join('/', array_merge($va_path, array($va_node['key'])));
+					$this->opa_reverse_nav_table[$vs_controller_path] = join('/', array_merge(is_array($va_path) ? $va_path : array(), array($va_node['key'])));
 				}
 				if (isset($va_node['navnode']['aliased_actions'])) {
 					$vs_tmp = '/'.join('/', array($va_action_info['module'], $va_action_info['controller']));
@@ -219,10 +222,12 @@
 					}
 					$va_node = $va_node['navigation'];
 				} else {
-					foreach($va_node as $vs_key => $va_menu) {
-						if (isset($va_menu['handler']) && isset($va_menu['type']) && $va_menu['handler'] && ($va_menu['type'] == 'dynamic')) {
-							if (is_array($va_dyn_menu = $this->getDynamicNavigation($va_menu)) ) {
-								$va_trail[] = $va_dyn_menu[$vs_part]['displayName'];
+					if (is_array($va_node)) {
+						foreach($va_node as $vs_key => $va_menu) {
+							if (isset($va_menu['handler']) && isset($va_menu['type']) && $va_menu['handler'] && ($va_menu['type'] == 'dynamic')) {
+								if (is_array($va_dyn_menu = $this->getDynamicNavigation($va_menu)) ) {
+									$va_trail[] = $va_dyn_menu[$vs_part]['displayName'];
+								}
 							}
 						}
 					}
@@ -712,6 +717,9 @@
 					$vs_buf .= caHTMLLink($vs_display_name, array('href' => '#', 'class' => (($ps_cur_selection == $ps_base_path.'/'.$ps_key) ? 'sf-menu-disabled-selected' : 'sf-menu-disabled'), 'title' => _t('Disabled')));
 				}
 			} else {
+				if($this->opo_request->getParameter('rel', pInteger)) { // if rel parameter is set, keep it
+					$va_additional_params['rel'] = true;
+				}
 				$vs_buf .= caNavLink($this->opo_request, $vs_display_name, (($ps_cur_selection == $ps_base_path.'/'.$ps_key) ? 'sf-menu-selected' : ''), $va_defaults['module'], $va_defaults['controller'], $va_defaults['action'], $va_additional_params, $pa_attributes)."\n";
 				if (is_array($pa_iteminfo['typeRestrictions']) && $pa_iteminfo['typeRestrictions']) {
 					TooltipManager::add("#".$pa_attributes['id'], (sizeof($pa_iteminfo['typeRestrictions']) == 1) ? _t("For type <em>%1</em>", join(", ", $pa_iteminfo['typeRestrictions'])) : _t("For types <em>%1</em>", join(", ", $pa_iteminfo['typeRestrictions'])));

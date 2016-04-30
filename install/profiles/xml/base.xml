@@ -5,7 +5,9 @@
   <locales>
     <locale lang="en" country="US">English (US)</locale>
     <locale lang="en" country="CA" dontUseForCataloguing="1">English (Canadian)</locale>
-    <locale lang="de" country="DE" dontUseForCataloguing="1">Deutsch</locale>
+    <locale lang="en" country="AU" dontUseForCataloguing="1">English (Australian)</locale>
+    <locale lang="de" country="DE" dontUseForCataloguing="1">Deutsch (Deutschland)</locale>
+    <locale lang="de" country="AT" dontUseForCataloguing="1">Deutsch (Österreich)</locale>
     <locale lang="fr" country="FR" dontUseForCataloguing="1">Français</locale>
     <locale lang="fr" country="CA" dontUseForCataloguing="1">Français (Canadien)</locale>
     <locale lang="cs" country="CZ" dontUseForCataloguing="1">Czech</locale>

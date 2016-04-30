@@ -73,12 +73,7 @@
 					$this->ops_view_default = $vs_view_default;
 				}
 				
-				$va_sortable_elements = ca_metadata_elements::getSortableElements($this->ops_tablename, $this->opn_type_restriction_id);
-		
-				$this->opa_sorts = array();
-				foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
-					$this->opa_sorts[$this->ops_tablename.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
-				}
+				$this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $po_request));
 			}
  		}
  		# -------------------------------------------------------
@@ -94,6 +89,15 @@
 			AssetLoadManager::register('hierBrowser');
  			
  			$va_access_values = caGetUserAccessValues($this->request);
+ 			
+ 			
+ 			
+ 			//
+ 			// Enforce type restriction, if defined
+ 			// 
+ 			if ($this->opn_type_restriction_id > 0) {
+ 				$this->opo_browse->setTypeRestrictions(array($this->opn_type_restriction_id));
+ 			}
  			
  			//
  			// Restrict facets to specific group for main browse landing page (if set in app.conf config)
@@ -173,11 +177,6 @@
  				}
  			}
  			
- 			//
- 			// Enforce type restriction, if defined
- 			// 
- 			$this->opo_browse->setTypeRestrictions(array($this->opn_type_restriction_id));
- 			
  			MetaTagManager::setWindowTitle(_t('%1 browse', $this->browseName('plural')));
  			
  			//
@@ -253,7 +252,9 @@
 			if ($vo_result) {
 				if ($vb_criteria_have_changed || $vb_sort_has_changed) {
 					// Put the results id list into the results context - we used this for previous/next navigation
-					$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
+					$vo_full_result = $this->opo_browse->getResults(array('sort' => $vs_sort, 'sort_direction' => $vs_sort_direction));
+					$this->opo_result_context->setResultList($vo_full_result->getPrimaryKeyValues());
+					unset($vo_full_result);
 					$this->opo_result_context->setParameter('availableVisualizationChecked', 0);
 				}
 				
@@ -343,6 +344,10 @@
  					$this->_genExport($vo_result, $this->request->getParameter("export_format", pString), _t('Browse'), _t('Browse'));
  					break;
 				# ------------------------------------
+				case 'EXPORTWITHMAPPING':
+					$this->_genExportWithMapping($vo_result, $this->request->getParameter("exporter_id", pInteger));
+					break;
+				# ------------------------------------
  				case 'HTML': 
 				default:
 					// generate type menu and type value list
@@ -371,10 +376,10 @@
  			$vs_cache_key = md5(join("/", array($ps_facet_name,$vs_show_group,$vs_grouping,$vm_id)));
  			$va_facet_info = $this->opo_browse->getInfoForFacet($ps_facet_name);
  			
- 			if (($va_facet_info['group_mode'] != 'hierarchical') && ($vs_content = $this->opo_browse->getCachedFacetHTML($vs_cache_key))) { 
- 				$this->response->addContent($vs_content);
- 				return;
- 			}
+ 			//if (($va_facet_info['group_mode'] != 'hierarchical') && ($vs_content = $this->opo_browse->getCachedFacetHTML($vs_cache_key))) { 
+ 			//	$this->response->addContent($vs_content);
+ 			//	return;
+ 			//}
  			
  			// Enforce type restriction
  			$this->opo_browse->setTypeRestrictions(array($this->opn_type_restriction_id));
@@ -522,21 +527,25 @@
 									$va_children = $t_item->getHierarchyChildren(null, array('idsOnly' => true));
 									$va_child_counts = $t_item->getHierarchyChildCountsForIDs($va_children);
 									$qr_res = caMakeSearchResult('ca_list_items', $va_children);
-								
+									
 									$vs_pk = $t_model->primaryKey();
 			
 									if ($qr_res) {										
 										// expand facet
-										$va_ancestors = $t_item->getHierarchyAncestorsForIDs(array_keys($va_facet), array('returnAs' => 'ids'));
+										$va_ancestors = $t_item->getHierarchyAncestorsForIDs(array_keys($va_facet), array('returnAs' => 'ids', 'includeSelf' => true));
 										while($qr_res->nextHit()) {
 											$vn_parent_id = $qr_res->get('ca_list_items.parent_id');
 											$vn_item_id = $qr_res->get('ca_list_items.item_id');
-											if (!in_array($vn_item_id, $va_ancestors)) { continue; }
-										
+											$vn_access = $qr_res->get('ca_list_items.access');
+											if (is_array($va_access_values) && !in_array($vn_access, $va_access_values)) { continue; }
+											if (!is_array($va_ancestors) || !in_array($vn_item_id, $va_ancestors)) { continue; }
+								
 											$va_item = array();
 											$va_item['item_id'] = $vn_item_id;
 											$va_item['name'] = $qr_res->get('ca_list_items.preferred_labels');
 											$va_item['children'] = (isset($va_child_counts[$vn_item_id]) && $va_child_counts[$vn_item_id]) ? $va_child_counts[$vn_item_id] : 0;
+											$va_item['access'] = $vn_access;
+											$va_item['is_enabled'] = $qr_res->get('ca_list_items.is_enabled');
 											$va_json_data[$vn_item_id] = $va_item;
 										}
 									}
@@ -567,6 +576,7 @@
 									if ($vn_start <= $vn_c) {
 										$va_item['item_id'] = $va_item[$t_item->primaryKey()];
 										if (!isset($va_facet[$va_item['item_id']]) && ($vn_root == $va_item['item_id'])) { continue; }
+										if(is_array($va_access_values) && isset($va_item['access']) && (!in_array($va_item['access'], $va_access_values))) { continue; }
 										unset($va_item['parent_id']);
 										unset($va_item['label']);
 										$va_json_data[$va_item['item_id']] = $va_item;

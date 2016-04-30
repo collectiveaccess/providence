@@ -82,6 +82,21 @@ class GelfMessageFormatterTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers Monolog\Formatter\GelfMessageFormatter::format
+     * @expectedException InvalidArgumentException
+     */
+    public function testFormatInvalidFails()
+    {
+        $formatter = new GelfMessageFormatter();
+        $record = array(
+            'level' => Logger::ERROR,
+            'level_name' => 'ERROR',
+        );
+
+        $formatter->format($record);
+    }
+
+    /**
+     * @covers Monolog\Formatter\GelfMessageFormatter::format
      */
     public function testFormatWithContext()
     {
@@ -93,7 +108,7 @@ class GelfMessageFormatterTest extends \PHPUnit_Framework_TestCase
             'context' => array('from' => 'logger'),
             'datetime' => new \DateTime("@0"),
             'extra' => array('key' => 'pair'),
-            'message' => 'log'
+            'message' => 'log',
         );
 
         $message = $formatter->format($record);
@@ -115,7 +130,6 @@ class GelfMessageFormatterTest extends \PHPUnit_Framework_TestCase
 
         $this->assertArrayHasKey('_CTXfrom', $message_array);
         $this->assertEquals('logger', $message_array['_CTXfrom']);
-
     }
 
     /**
@@ -131,11 +145,11 @@ class GelfMessageFormatterTest extends \PHPUnit_Framework_TestCase
             'context' => array('from' => 'logger', 'exception' => array(
                 'class' => '\Exception',
                 'file'  => '/some/file/in/dir.php:56',
-                'trace' => array('/some/file/1.php:23', '/some/file/2.php:3')
+                'trace' => array('/some/file/1.php:23', '/some/file/2.php:3'),
             )),
             'datetime' => new \DateTime("@0"),
             'extra' => array(),
-            'message' => 'log'
+            'message' => 'log',
         );
 
         $message = $formatter->format($record);
@@ -144,7 +158,6 @@ class GelfMessageFormatterTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals("/some/file/in/dir.php", $message->getFile());
         $this->assertEquals("56", $message->getLine());
-
     }
 
     /**
@@ -160,7 +173,7 @@ class GelfMessageFormatterTest extends \PHPUnit_Framework_TestCase
             'context' => array('from' => 'logger'),
             'datetime' => new \DateTime("@0"),
             'extra' => array('key' => 'pair'),
-            'message' => 'log'
+            'message' => 'log',
         );
 
         $message = $formatter->format($record);
@@ -182,6 +195,36 @@ class GelfMessageFormatterTest extends \PHPUnit_Framework_TestCase
 
         $this->assertArrayHasKey('_EXTkey', $message_array);
         $this->assertEquals('pair', $message_array['_EXTkey']);
+    }
+
+    public function testFormatWithLargeData()
+    {
+        $formatter = new GelfMessageFormatter();
+        $record = array(
+            'level' => Logger::ERROR,
+            'level_name' => 'ERROR',
+            'channel' => 'meh',
+            'context' => array('exception' => str_repeat(' ', 32767)),
+            'datetime' => new \DateTime("@0"),
+            'extra' => array('key' => str_repeat(' ', 32767)),
+            'message' => 'log'
+        );
+        $message = $formatter->format($record);
+        $messageArray = $message->toArray();
+
+        // 200 for padding + metadata
+        $length = 200;
+
+        foreach ($messageArray as $key => $value) {
+            if (!in_array($key, array('level', 'timestamp'))) {
+                $length += strlen($value);
+            }
+        }
+
+        // in graylog2/gelf-php before 1.4.1 empty strings are filtered and won't be included in the message
+        // though it should be sufficient to ensure that the entire message length does not exceed the maximum
+        // length being allowed
+        $this->assertLessThanOrEqual(32766, $length, 'The message length is no longer than the maximum allowed length');
     }
 
     private function isLegacy()

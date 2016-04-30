@@ -33,7 +33,6 @@
   /**
     *
     */ 
-    
 include_once(__CA_LIB_DIR__."/core/Plugins/IWLPlugVisualizer.php");
 include_once(__CA_LIB_DIR__."/core/Plugins/Visualizer/BaseVisualizerPlugin.php");
 include_once(__CA_APP_DIR__."/helpers/gisHelpers.php");
@@ -73,7 +72,7 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 		// from the entire data set
 		$qr_res = $this->getData();
 		while($qr_res->nextHit()) {
-			foreach($pa_viz_settings['sources'] as $va_source) {
+			foreach($pa_viz_settings['sources'] as $vs_source_name => $va_source) {
 				if($qr_res->get($va_source['data'])) {
 					$this->opn_num_items_rendered++;
 				}

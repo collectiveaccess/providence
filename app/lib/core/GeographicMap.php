@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -45,7 +45,7 @@
  		$o_config = Configuration::load();
  		$vs_plugin_name = $o_config->get('mapping_plugin');
  		
- 		if (!file_exists(__CA_LIB_DIR__.'/core/Plugins/GeographicMap/'.$vs_plugin_name.'.php')) { die("Mapping plugin {$vs_plugin_name} does not exist"); }
+ 		if (!file_exists(__CA_LIB_DIR__.'/core/Plugins/GeographicMap/'.$vs_plugin_name.'.php')) { throw new ApplicationException("Mapping plugin {$vs_plugin_name} does not exist"); }
  		
  		require_once(__CA_LIB_DIR__.'/core/Plugins/GeographicMap/'.$vs_plugin_name.'.php');
  		$vs_plugin_classname = 'WLPlugGeographicMap'.$vs_plugin_name;
@@ -128,7 +128,7 @@
  		$va_tmp = explode('.', $ps_georeference_field_name);
  		$vs_field_name = array_pop($va_tmp);
  			
- 		$va_point_buf = array();	
+ 		//$va_point_buf = array();	
  		
  		//
  		// Data object is a model instance?
@@ -141,67 +141,67 @@
  			}
  			
  			$vn_id = $po_data_object->getPrimaryKey();
- 			if (is_array($va_coordinates = $po_data_object->get($ps_georeference_field_name, array('coordinates' => true, 'returnAsArray' => true)))) {
-				foreach($va_coordinates as $vn_i => $va_geoname) {
-					$va_coordinate = isset($va_geoname[$vs_field_name]) ? $va_geoname[$vs_field_name] : $va_geoname;
-					
-					$vs_label = $vs_content = $vs_ajax_content = null;
+ 			if (is_array($va_coordinates = $po_data_object->get($ps_georeference_field_name, array('coordinates' => true, 'returnWithStructure' => true, 'returnAllLocales' => false)))) {
+				foreach($va_coordinates as $vn_i => $va_coord_list) {
+					foreach($va_coord_list as $vn_attribute_id => $va_geoname) {
+						$va_coordinate = isset($va_geoname[$vs_field_name]) ? $va_geoname[$vs_field_name] : $va_geoname;
+						
+						if(!$va_coordinate['latitude'] || !$va_coordinate['longitude']) { continue; }
+						$vs_label = $vs_content = $vs_ajax_content = null;
 							
-					if (!is_null($pa_options['labelTemplate'])) {
-						$vs_label = caProcessTemplateForIDs($pa_options['labelTemplate'], $po_data_object->tableName(), array($vn_id), array('returnAsLink' => $vb_render_label_as_link || (strpos($pa_options['contentTemplate'], "<l>") !== false)));
-					} else {
-						if (!is_null($pa_options['label'])) {
-							$vs_label = $po_data_object->get($pa_options['label'], array('returnAsLink' => $vb_render_label_as_link || (strpos($pa_options['contentTemplate'], "<l>") !== false)));
+						if (!is_null($pa_options['labelTemplate'])) {
+							$vs_label = caProcessTemplateForIDs($pa_options['labelTemplate'], $po_data_object->tableName(), array($vn_id), array('returnAsLink' => $vb_render_label_as_link || (strpos($pa_options['contentTemplate'], "<l>") !== false)));
 						} else {
-							$vs_label = $va_coordinate['label'];
-						}
-					} 
-					
-					if (!is_null($vs_color)) {
-						$vs_color = caProcessTemplateForIDs($vs_color, $po_data_object->tableName(), array($vn_id), array('returnAsLink' => false));
-					} else {
-						$vs_color = null;
-					}
-					
-					if (isset($pa_options['ajaxContentUrl']) && $pa_options['ajaxContentUrl']) {
-						$vs_ajax_content = $pa_options['ajaxContentUrl'];
-					} else {
-						if (!is_null($pa_options['contentView']) && $pa_options['request']) {	
-							$o_view = new View($pa_options['request'],(isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $pa_options['request']->getViewsDirectoryPath());
-							$o_view->setVar('data', $po_data_object);
-							$o_view->setVar('access_values', $pa_options['checkAccess']);
-							$vs_content = $o_view->render($pa_options['contentView']);
-						} else {
-							if (!is_null($pa_options['contentTemplate'])) {
-								$vs_content = caProcessTemplateForIDs($pa_options['contentTemplate'], $po_data_object->tableName(), $po_data_object->get($po_data_object->tableName().".".$po_data_object->primaryKey(), array('returnAsArray' => true)), array('returnAsLink' => (strpos($pa_options['contentTemplate'], "<l>") !== false)));
+							if (!is_null($pa_options['label'])) {
+								$vs_label = $po_data_object->get($pa_options['label'], array('returnAsLink' => $vb_render_label_as_link || (strpos($pa_options['contentTemplate'], "<l>") !== false)));
 							} else {
-								if (!is_null($pa_options['content'])) {
-									if ($pa_options['content']){ 
-										$vs_content = $po_data_object->get($pa_options['content']);
-									}
+								$vs_label = $va_coordinate['label'];
+							}
+						} 
+					
+						if (!is_null($vs_color) && $vs_color && (strpos($vs_color, '^') !== false)) {
+							$vs_color = caProcessTemplateForIDs($vs_color, $po_data_object->tableName(), array($vn_id), array('returnAsLink' => false));
+						} 
+					
+						if (isset($pa_options['ajaxContentUrl']) && $pa_options['ajaxContentUrl']) {
+							$vs_ajax_content = $pa_options['ajaxContentUrl'];
+						} else {
+							if (!is_null($pa_options['contentView']) && $pa_options['request']) {	
+								$o_view = new View($pa_options['request'],(isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $pa_options['request']->getViewsDirectoryPath());
+								$o_view->setVar('data', $po_data_object);
+								$o_view->setVar('access_values', $pa_options['checkAccess']);
+								$vs_content = $o_view->render($pa_options['contentView']);
+							} else {
+								if (!is_null($pa_options['contentTemplate'])) {
+									$vs_content = caProcessTemplateForIDs($pa_options['contentTemplate'], $po_data_object->tableName(), $po_data_object->get($po_data_object->tableName().".".$po_data_object->primaryKey(), array('returnAsArray' => true)), array());
 								} else {
-									$vs_content = $va_coordinate['label'];
+									if (!is_null($pa_options['content'])) {
+										if ($pa_options['content']){ 
+											$vs_content = $po_data_object->get($pa_options['content']);
+										}
+									} else {
+										$vs_content = $va_coordinate['label'];
+									}
 								}
 							}
 						}
-					}
-					$va_path = explode(";", $va_coordinate['path']);
+						$va_path = explode(";", $va_coordinate['path']);
 					
-					if (sizeof($va_path) > 1) {
-						$va_coordinate_pairs = array();
-						foreach($va_path as $vs_pair) {
-							$va_pair = explode(',', $vs_pair);
-							$va_coordinate_pairs[] = array('latitude' => $va_pair[0], 'longitude' => $va_pair[1]);
+						if (sizeof($va_path) > 1) {
+							$va_coordinate_pairs = array();
+							foreach($va_path as $vs_pair) {
+								$va_pair = explode(',', $vs_pair);
+								$va_coordinate_pairs[] = array('latitude' => $va_pair[0], 'longitude' => $va_pair[1]);
+							}
+							$this->addMapItem(new GeographicMapItem(array('coordinates' => $va_coordinate_pairs, 'label' => $vs_label, 'content' => $vs_content, 'ajaxContentUrl' => $vs_ajax_content, 'ajaxContentID' => $vn_id, 'color' => $vs_color)));
+						} else {
+							$this->addMapItem(new GeographicMapItem(array('latitude' => $va_coordinate['latitude'], 'longitude' => $va_coordinate['longitude'], 'label' => $vs_label, 'content' => $vs_content, 'ajaxContentUrl' => $vs_ajax_content, 'ajaxContentID' => $vn_id, 'color' => $vs_color)));
 						}
-						$this->addMapItem(new GeographicMapItem(array('coordinates' => $va_coordinate_pairs, 'label' => $vs_label, 'content' => $vs_content, 'ajaxContentUrl' => $vs_ajax_content, 'ajaxContentID' => $vn_id, 'color' => $vs_color)));
-					} else {
-						$this->addMapItem(new GeographicMapItem(array('latitude' => $va_coordinate['latitude'], 'longitude' => $va_coordinate['longitude'], 'label' => $vs_label, 'content' => $vs_content, 'ajaxContentUrl' => $vs_ajax_content, 'ajaxContentID' => $vn_id, 'color' => $vs_color)));
+						//if (!$va_point_buf[$va_coordinate['latitude'].'/'.$va_coordinate['longitude']]) { $vn_point_count++;}
+						//$va_point_buf[$va_coordinate['latitude'].'/'.$va_coordinate['longitude']]++;
+						$vn_item_count++;
 					}
-					if (!$va_point_buf[$va_coordinate['latitude'].'/'.$va_coordinate['longitude']]) { $vn_point_count++;}
-					$va_point_buf[$va_coordinate['latitude'].'/'.$va_coordinate['longitude']]++;
 				}
-				
-				$vn_item_count++;
 			}
 			
 			return array('items' => $vn_item_count, 'points' => $vn_point_count);
@@ -220,18 +220,16 @@
  			$t_instance = $po_data_object->getResultTableInstance();
  			$vs_table = $t_instance->tableName();
  			$vs_pk = $t_instance->primaryKey();
+ 			
  			while($po_data_object->nextHit()) {
- 				if ($va_access_values) {
- 					if (!in_array($po_data_object->get('access'), $va_access_values)) {
- 						continue;
- 					}
- 				}
- 				
- 				if ($va_coordinates = $po_data_object->get($ps_georeference_field_name, array('coordinates' => true, 'returnAsArray' => true, 'returnAllLocales' => true))) {
+				if (is_array($va_access_values) && !in_array($po_data_object->get('access'), $va_access_values)) {
+					continue;
+				}
+ 				if ($va_coordinates = $po_data_object->get($ps_georeference_field_name, array('coordinates' => true, 'returnWithStructure' => true, 'returnAllLocales' => false))) {
  					$vn_id = $po_data_object->get("{$vs_table}.{$vs_pk}");
+ 					
  					$vs_table = $po_data_object->tableName();
- 					foreach($va_coordinates as $vn_element_id => $va_geonames_by_locale) {
- 						foreach($va_geonames_by_locale as $vn_locale_id => $va_coord_list) {
+ 					foreach($va_coordinates as $vn_element_id => $va_coord_list) {
  							foreach($va_coord_list as $vn_attribute_id => $va_geoname) {
 								$va_coordinate = isset($va_geoname[$vs_field_name]) ? $va_geoname[$vs_field_name] : $va_geoname;
 							
@@ -239,7 +237,7 @@
 					
 								
 								if (!is_null($pa_options['labelTemplate'])) {
-									$vs_label = caProcessTemplateForIDs($pa_options['labelTemplate'], $vs_table, array($vn_id), array('returnAsLink' => $vb_render_label_as_link || (strpos($pa_options['contentTemplate'], "<l>") !== false)));
+									$vs_label = caProcessTemplateForIDs($pa_options['labelTemplate'], $vs_table, array($vn_id), array());
 								} else {
 									if (!is_null($pa_options['label'])) {
 										$vs_label = $po_data_object->get($pa_options['label'], array('returnAsLink' => $vb_render_label_as_link || (strpos($pa_options['contentTemplate'], "<l>") !== false)));
@@ -248,11 +246,9 @@
 									}
 								} 
 								
-								if (!is_null($pa_options['color'])) {
+								if (!is_null($vs_color) && $vs_color && (strpos($vs_color, '^') !== false)) {
 									$vs_color = caProcessTemplateForIDs($pa_options['color'], $vs_table, array($vn_id), array('returnAsLink' => false));
-								} else {
-									$vs_color = null;
-								}
+								} 
 								
 								if (isset($pa_options['ajaxContentUrl']) && $pa_options['ajaxContentUrl']) {
 									$vs_ajax_content = $pa_options['ajaxContentUrl'];
@@ -264,7 +260,7 @@
 										$vs_content = $o_view->render($pa_options['contentView']);
 									} else {
 										if (!is_null($pa_options['contentTemplate'])) {
-											$vs_content = caProcessTemplateForIDs($pa_options['contentTemplate'], $po_data_object->tableName(), $po_data_object->get($po_data_object->tableName().".".$po_data_object->primaryKey(), array('returnAsArray' => true)), array('returnAsLink' => (strpos($pa_options['contentTemplate'], "<l>") !== false)));
+											$vs_content = caProcessTemplateForIDs($pa_options['contentTemplate'], $po_data_object->tableName(), $po_data_object->get($po_data_object->tableName().".".$po_data_object->primaryKey(), array('returnAsArray' => true)), array());
 										} else {
 											if (!is_null($pa_options['content'])) {
 												if ($pa_options['content']){ 
@@ -290,12 +286,13 @@
 									$this->addMapItem(new GeographicMapItem(array('latitude' => $va_coordinate['latitude'], 'longitude' => $va_coordinate['longitude'], 'label' => $vs_label, 'content' => $vs_content, 'ajaxContentUrl' => $vs_ajax_content, 'ajaxContentID' => $vn_id, 'color' => $vs_color)));
 								}
 								
-								if (!$va_point_buf[$va_coordinate['latitude'].'/'.$va_coordinate['longitude']]) { $vn_point_count++;}
-								$va_point_buf[$va_coordinate['latitude'].'/'.$va_coordinate['longitude']]++;
+								//if (!$va_point_buf[$va_coordinate['latitude'].'/'.$va_coordinate['longitude']]) { $vn_point_count++;}
+								//$va_point_buf[$va_coordinate['latitude'].'/'.$va_coordinate['longitude']]++;
 							}
 							$vn_item_count++;
+							//if ($vn_item_count> 50){ break(3); }
 						}
-					}
+					//}
 				}
  			}	
 		}

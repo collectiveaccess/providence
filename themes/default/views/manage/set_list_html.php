@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -91,17 +91,17 @@
 ?>
 			<tr>
 				<td>
-					<?php print $va_set['name'].($va_set['set_code'] ? "<br/>(".$va_set['set_code'].")" : ""); ?>
+					<div class="caSetListName"><?php print $va_set['name'].($va_set['set_code'] ? "<br/>(".$va_set['set_code'].")" : ""); ?></div>
 				</td>
 				<td>
-					<?php print $va_set['set_content_type']; ?>
+					<div><?php print $va_set['set_content_type']; ?></div>
 				</td>
 				<td>
-					<?php print $va_set['set_type']; ?>
+					<div><?php print $va_set['set_type']; ?></div>
 				</td>
 				<td align="center">
-<?php 
-					
+					<div>
+<?php 	
 					if (($va_set['item_count'] > 0) && ($this->request->user->canDoAction('can_batch_edit_'.$t_set->getAppDatamodel()->getTableName($va_set['table_num'])))) {
 						print $va_set['item_count']; 
 						print caNavButton($this->request, __CA_NAV_BUTTON_BATCH_EDIT__, _t('Batch edit'), 'batchIcon', 'batch', 'Editor', 'Edit', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true));
@@ -109,15 +109,16 @@
 						print $va_set['item_count']; 
 					}
 ?>
+					</div>
 				</td>
 				<td>
-					<?php print $va_set['fname'].' '.$va_set['lname'].($va_set['email'] ? "<br/>(<a href='mailto:".$va_set['email']."'>".$va_set['email']."</a>)" : ""); ?>
+					<div class="caSetListOwner"><?php print $va_set['fname'].' '.$va_set['lname'].($va_set['email'] ? "<br/>(<a href='mailto:".$va_set['email']."'>".$va_set['email']."</a>)" : ""); ?></div>
 				</td>
 				<td>
-					<?php print $t_set->getChoiceListValue('access', $va_set['access']); ?>
+					<div><?php print $t_set->getChoiceListValue('access', $va_set['access']); ?></div>
 				</td>
 				<td>
-					<?php print $t_set->getChoiceListValue('status', $va_set['status']); ?>
+					<div><?php print $t_set->getChoiceListValue('status', $va_set['status']); ?></div>
 				</td>
 				<td >
 					<div class="saveDelete">

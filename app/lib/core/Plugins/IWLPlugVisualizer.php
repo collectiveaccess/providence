@@ -23,6 +23,10 @@
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
+ * @package CollectiveAccess
+ * @subpackage Visualization
+ * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
+ *
  * ----------------------------------------------------------------------
  */
 	
@@ -55,4 +59,3 @@
 		public function clearData();
 		public function canHandle($po_data, $pa_viz_settings);
 	}
-?>

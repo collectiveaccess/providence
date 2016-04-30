@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2014 Whirl-i-Gig
+ * Copyright 2006-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,6 +44,7 @@ include_once(__CA_LIB_DIR__."/core/Parsers/getid3/getid3.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/getid3/write.php");
 include_once(__CA_LIB_DIR__."/core/Configuration.php");
 include_once(__CA_APP_DIR__."/helpers/mediaPluginHelpers.php");
+include_once(__CA_APP_DIR__."/helpers/avHelpers.php");
 include_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
 include_once(__CA_LIB_DIR__."/core/Parsers/OggParser.php");
 
@@ -77,7 +78,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"audio/x-wav"						=> "wav",
 			"audio/x-wave"						=> "wav",
 			"audio/mp4"							=> "aac",
-			"audio/ogg"							=> "ogg"
+			"audio/ogg"							=> "ogg",
+			"audio/x-flac"						=> "flac"
 		),
 
 		"EXPORT" => array(
@@ -88,7 +90,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"video/x-flv"						=> "flv",
 			"image/png"							=> "png",
 			"image/jpeg"						=> "jpg",
-			"audio/ogg"							=> "ogg"
+			"audio/ogg"							=> "ogg",
+			"audio/x-flac"						=> "flac"
 		),
 
 		"TRANSFORMATIONS" => array(
@@ -135,7 +138,8 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"audio/mp4"							=> "AAC",
 		"image/png"							=> "PNG",
 		"image/jpeg"						=> "JPEG",
-		"audio/ogg"							=> "Ogg Vorbis"
+		"audio/ogg"							=> "Ogg Vorbis",
+		"audio/x-flac"						=> "FLAC"
 	);
 
 
@@ -148,14 +152,13 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# for import and export
 	public function register() {
 		$this->opo_config = Configuration::load();
-		$vs_external_app_config_path = $this->opo_config->get('external_applications');
-		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
+		$this->opo_external_app_config = Configuration::load(__CA_CONF_DIR__."/external_applications.conf");
 		$this->ops_path_to_ffmpeg = $this->opo_external_app_config->get('ffmpeg_app');
 
 		$this->ops_mediainfo_path = caGetExternalApplicationPath('mediainfo');
 		$this->opb_mediainfo_available = caMediaInfoInstalled();
 
-		$this->opb_ffmpeg_available = caMediaPluginFFfmpegInstalled($this->ops_path_to_ffmpeg);
+		$this->opb_ffmpeg_available = caMediaPluginFFmpegInstalled($this->ops_path_to_ffmpeg);
 
 		$this->info["INSTANCE"] = $this;
 		return $this->info;
@@ -336,6 +339,19 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$this->properties["bitrate"] = $input_bitrate = $this->handle["bitrate"];
 					$this->properties["channels"] = $input_channels = $this->handle["audio"]["channels"];
 					$this->properties["sample_frequency"] = $input_sample_frequency = $this->handle["audio"]["sample_rate"];
+					$this->properties["duration"] = $this->handle["playtime_seconds"];
+					break;
+				case 'audio/x-flac':
+					$this->properties["type_specific"] = array();
+
+					$this->properties["audio"] = $this->handle["audio"];
+					$this->properties["bandwidth"] = array("min" => $this->handle["bitrate"], "max" => $this->handle["bitrate"]);
+					
+					$this->properties["getID3_tags"] = array();
+
+					$this->properties["bitrate"] = $input_bitrate = $this->handle["bitrate"];
+					$this->properties["channels"] = $input_channels = $this->handle["audio"]["channels"];
+					$this->properties["sample_frequency"] = $this->handle["audio"]["sample_rate"];
 					$this->properties["duration"] = $this->handle["playtime_seconds"];
 					break;
 				case 'audio/x-wav':
@@ -524,9 +540,9 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 				# Do conversion
 				#
 				if ($mimetype == 'audio/ogg') {
-					exec($this->ops_path_to_ffmpeg." -f ".$this->info["IMPORT"][$this->properties["mimetype"]]." -i ".caEscapeShellArg($this->filepath)." -acodec libvorbis -ab ".$vn_output_bitrate." -ar ".$vn_sample_frequency." -ac ".$vn_channels."  -y ".caEscapeShellArg($filepath.".".$ext)." 2>&1", $va_output, $vn_return);
+					exec($this->ops_path_to_ffmpeg." -f ".$this->info["IMPORT"][$this->properties["mimetype"]]." -i ".caEscapeShellArg($this->filepath)." -acodec libvorbis -ab ".$vn_output_bitrate." -ar ".$vn_sample_frequency." -ac ".$vn_channels."  -y ".caEscapeShellArg($filepath.".".$ext).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
 				} else {
-					exec($this->ops_path_to_ffmpeg." -f ".$this->info["IMPORT"][$this->properties["mimetype"]]." -i ".caEscapeShellArg($this->filepath)." -f ".$this->info["EXPORT"][$mimetype]." -ab ".$vn_output_bitrate." -ar ".$vn_sample_frequency." -ac ".$vn_channels."  -y ".caEscapeShellArg($filepath.".".$ext)." 2>&1", $va_output, $vn_return);
+					exec($this->ops_path_to_ffmpeg." -f ".$this->info["IMPORT"][$this->properties["mimetype"]]." -i ".caEscapeShellArg($this->filepath)." -f ".$this->info["EXPORT"][$mimetype]." -ab ".$vn_output_bitrate." -ar ".$vn_sample_frequency." -ac ".$vn_channels."  -y ".caEscapeShellArg($filepath.".".$ext).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
 				}
 				if ($vn_return != 0) {
 					@unlink($filepath.".".$ext);
@@ -539,7 +555,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 						// add intro
 						$vs_tmp_filename = tempnam(caGetTempDirPath(), "audio");
 						if ($vs_intro_filepath) {
-							exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($vs_intro_filepath)." -f mp3 -ab ".$vn_output_bitrate." -ar ".$vn_sample_frequency." -ac ".$vn_channels." -y ".caEscapeShellArg($vs_tmp_filename), $va_output, $vn_return);
+							exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($vs_intro_filepath)." -f mp3 -ab ".$vn_output_bitrate." -ar ".$vn_sample_frequency." -ac ".$vn_channels." -y ".caEscapeShellArg($vs_tmp_filename).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
 							if ($vn_return != 0) {
 								@unlink($filepath.".".$ext);
 								$this->postError(1610, _t("Error converting intro to %1 [%2]: %3", $this->typenames[$mimetype], $mimetype, join("; ", $va_output)), "WLPlugAudio->write()");
@@ -555,7 +571,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 						fclose($r_mp3fp);
 						if ($vs_outro_filepath) {
 							$vs_tmp_outro_filename = tempnam(caGetTempDirPath(), "audio");
-							exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($vs_outro_filepath)." -f mp3 -ab ".$vn_output_bitrate." -ar ".$vn_sample_frequency." -ac ".$vn_channels." -y ".caEscapeShellArg($vs_tmp_outro_filename), $va_output, $vn_return);
+							exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($vs_outro_filepath)." -f mp3 -ab ".$vn_output_bitrate." -ar ".$vn_sample_frequency." -ac ".$vn_channels." -y ".caEscapeShellArg($vs_tmp_outro_filename).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
 							if ($vn_return != 0) {
 								@unlink($filepath.".".$ext);
 								$this->postError(1610, _t("Error converting outro to %1 [%2]: %3", $this->typenames[$mimetype], $mimetype, join("; ", $va_output)), "WLPlugAudio->write()");
@@ -651,7 +667,7 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if ($vn_start >= $vn_end) { return null; }
 		$vn_duration = $vn_end - $vn_start;
 		
-		exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." -f mp3 -t {$vn_duration}  -y -ss {$vn_start} ".caEscapeShellArg($ps_filepath), $va_output, $vn_return);
+		exec($this->ops_path_to_ffmpeg." -i ".caEscapeShellArg($this->filepath)." -f mp3 -t {$vn_duration}  -y -ss {$vn_start} ".caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
 		if ($vn_return != 0) {
 			@unlink($ps_filepath);
 			$this->postError(1610, _t("Error extracting clip from %1 to %2: %3", $ps_start, $ps_end, join("; ", $va_output)), "WLPlugAudio->writeClip()");
@@ -734,154 +750,68 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$viewer_base_url 	= $pa_options["viewer_base_url"];
 				$vs_id 				= $pa_options["id"] ? $pa_options["id"] : "mp3player";
 
-				switch($pa_options["player"]) {
-					case 'small':
-						AssetLoadManager::register("swfobject");
-						ob_start();
-						$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 165;
-						$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 38;
-?>
-						<div style='width: {$vn_width}px; height: {$vn_height}px;'>
-							<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0" width="<?php print $vn_width; ?>" height="<?php print $vn_height; ?>" id="<?php print $vs_id; ?>">
-								<param name="movie" value="<?php print $viewer_base_url; ?>/viewers/apps/niftyplayer.swf?file=<?php print $ps_url; ?>&as=0">
-								<param name="quality" value="high">
-								<param name="bgcolor" value="#FFFFFF">
-								<embed src="<?php print $viewer_base_url; ?>/viewers/apps/niftyplayer.swf?file=<?php print $ps_url; ?>&as=0" quality="high" bgcolor="#FFFFFF" width="<?php print $vn_width; ?>" height="<?php print $vn_height; ?>" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer">
-								</embed>
-							</object>
-						</div>
-<?php
-						return ob_get_clean();
-						break;
-					case 'text':
-						return "<a href='$ps_url'>".(($pa_options["text_only"]) ? $pa_options["text_only"] : "Listen to MP3")."</a>";
-						break;
-					default:
-						AssetLoadManager::register("mediaelement");
-						
-						$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 400;
-						$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
-						ob_start();
-?>
-					<div class="<?php print (isset($pa_options["class"])) ? $pa_options["class"] : "caAudioPlayer"; ?>">
-						<audio id="<?php print $vs_id; ?>" src="<?php print $ps_url; ?>" type="audio/mp3" controls="controls"></audio>
-					</div>	
-					<script type="text/javascript">
-						jQuery(document).ready(function() {
-							jQuery('#<?php print $vs_id; ?>').mediaelementplayer({showTimecodeFrameCount: true, framesPerSecond: 100, audioWidth: '<?php print $vn_width; ?>', audioHeight: '<?php print $vn_height; ?>'  });
-						});
-					</script>
-<?php
-						return ob_get_clean();
-						break;
-				}
-				break;
-				# ------------------------------------------------
-			case 'audio/mp4':
-				$name = $pa_options["name"] ? $pa_options["name"] : "mp3player";
-
-				if ($pa_options["text_only"]) {
-					return "<a href='$ps_url'>".(($pa_options["text_only"]) ? $pa_options["text_only"] : "Listen to AAC")."</a>";
-				} else {
-					ob_start();
-					
-					$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 400;
-					$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
-?>
-					<div style="width: {$vn_width}px; height: {$vn_height}px;">
-						<table>
-							<tr>
-								<td>
-									<embed width="<?php print $vn_width; ?>" height="<?php print $vn_height + 16; ?>"
-										src="<?php print $ps_url; ?>" type="audio/mp4">
-								</td>
-							</tr>
-						</table>
-					</div>
-<?php
-					return ob_get_clean();
-				}
-				break;
-				# ------------------------------------------------
-			case 'audio/x-wav':
-				$name = $pa_options["name"] ? $pa_options["name"] : "mp3player";
-
-				if ($pa_options["text_only"]) {
-					return "<a href='$ps_url'>".(($pa_options["text_only"]) ? $pa_options["text_only"] : "Listen to WAV")."</a>";
-				} else {
-					ob_start();
-					
-					$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 400;
-					$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
-?>
-					<div style="width: {$vn_width}px; height: {$vn_height}px;">
-						<table>
-							<tr>
-								<td>
-									<embed width="<?php print $pa_properties["width"]; ?>" height="<?php print $pa_properties["height"] + 16; ?>"
-										src="<?php print $ps_url; ?>" type="audio/x-wav">
-								</td>
-							</tr>
-						</table>
-					</div>
-<?php
-					return ob_get_clean();
-				}
-				break;
-				# ------------------------------------------------
-			case 'audio/x-aiff':
-				$name = $pa_options["name"] ? $pa_options["name"] : "mp3player";
-
-				if ($pa_options["text_only"]) {
-					return "<a href='$ps_url'>".(($pa_options["text_only"]) ? $pa_options["text_only"] : "Listen to AIFF")."</a>";
-				} else {
-					ob_start();
-					
-					$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 400;
-					$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
-?>
-					<div style="width: {$vn_width}px; height: {$vn_height}px;">
-						<table>
-							<tr>
-								<td>
-									<embed width="<?php print $pa_properties["width"]; ?>" height="<?php print $pa_properties["height"] + 16; ?>"
-										src="<?php print $ps_url; ?>" type="audio/x-aiff">
-								</td>
-							</tr>
-						</table>
-					</div>
-<?php
-					return ob_get_clean();
-				}
-				break;
-			# ------------------------------------------------
-			case "video/x-flv":
-				$vs_name = 				$pa_options["name"] ? $pa_options["name"] : "flv_player";
-				$vs_id = 				$pa_options["id"] ? $pa_options["id"] : "flv_player";
-
-				$vs_flash_vars = 		$pa_options["viewer_parameters"];
-				$viewer_base_url =		$pa_options["viewer_base_url"];
-
+				
+				AssetLoadManager::register("mediaelement");
+				
 				$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 400;
 				$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
-				
-				$vs_data_url =			$pa_options["data_url"];
-				$vs_poster_frame_url =	$pa_options["poster_frame_url"];
-				
 				ob_start();
 ?>
-
-			<div id="<?php print $vs_id; ?>" style="width: {$vn_width}px; height: {$vn_height}px;">
-				<h1><?php print _t('You must have the Flash Plug-in version 9.0.124 or better installed to play video and audio in CollectiveAccess'); ?></h1>
-				<p><a href="http://www.adobe.com/go/getflashplayer"><img src="http://www.adobe.com/images/shared/download_buttons/get_flash_player.gif" alt="Get Adobe Flash player" /></a></p>
-			</div>
+			<div class="<?php print (isset($pa_options["class"])) ? $pa_options["class"] : "caAudioPlayer"; ?>">
+				<audio id="<?php print $vs_id; ?>" src="<?php print $ps_url; ?>" <?php print ($vs_poster_url = caGetOption('posterURL', $pa_options, null)) ? "poster='{$vs_poster_url}'" : ''; ?> type="audio/mp3" controls="controls"></audio>
+			</div>	
 			<script type="text/javascript">
-				jQuery(document).ready(function() { swfobject.embedSWF("<?php print $viewer_base_url; ?>/viewers/apps/niftyplayer.swf ", "<?php print $vs_id; ?>", "<?php print $vn_width; ?>", "<?php print $vn_height; ?>", "9.0.124", "swf/expressInstall.swf", {'source' : '<?php print $ps_url; ?>', 'dataUrl':'<?php print $vs_data_url; ?>', 'posterFrameUrl': '<?php print $vs_poster_frame_url; ?>'}, {'allowscriptaccess': 'always', 'allowfullscreen' : 'true', 'allowNetworking' : 'all'}); });
+				jQuery(document).ready(function() {
+					var m = jQuery('#<?php print $vs_id; ?>').mediaelementplayer({
+						showTimecodeFrameCount: true, framesPerSecond: 100, 
+						audioWidth: '<?php print $vn_width; ?>', audioHeight: '<?php print $vn_height; ?>',
+						success:  function (mediaElement, domObject) {
+							var m = mediaElement; 
+							m.addEventListener("play", function(e){ 
+								// Force poster image to remain visible during playback
+								var $thisMediaElement = (mediaElement.id) ? jQuery("#"+mediaElement.id) : jQuery(mediaElement);
+								$thisMediaElement.parents(".mejs-inner").find(".mejs-poster").show();
+							});
+							m.addEventListener("canplay", function(e){ 
+								var $thisMediaElement = (mediaElement.id) ? jQuery("#"+mediaElement.id) : jQuery(mediaElement);
+								$thisMediaElement.parents(".mejs-inner").find(".mejs-poster").on('click', function() {
+									caUI.mediaPlayerManager.isPlaying("<?php print $vs_id; ?>") ? caUI.mediaPlayerManager.stop("<?php print $vs_id; ?>") : caUI.mediaPlayerManager.play("<?php print $vs_id; ?>");
+								});
+							});
+						}
+					});
+					if (caUI.mediaPlayerManager) { caUI.mediaPlayerManager.register("<?php print $vs_id; ?>", m, 'MediaElement'); }
+				});
 			</script>
 <?php
 				return ob_get_clean();
 				break;
 				# ------------------------------------------------
+			case 'audio/mp4':
+			case 'audio/x-aiff':
+			case 'audio/x-flac':
+			case 'audio/x-wav':
+				$name = $pa_options["name"] ? $pa_options["name"] : "mp3player";
+
+				ob_start();
+				
+				$vn_width = ($pa_options["viewer_width"] > 0) ? $pa_options["viewer_width"] : 400;
+				$vn_height = ($pa_options["viewer_height"] > 0) ? $pa_options["viewer_height"] : 95;
+?>
+				<div style="width: {$vn_width}px; height: {$vn_height}px;">
+					<table>
+						<tr>
+							<td>
+								<embed width="<?php print $pa_properties["width"]; ?>" height="<?php print $pa_properties["height"] + 16; ?>"
+									src="<?php print $ps_url; ?>" type="audio/x-wav">
+							</td>
+						</tr>
+					</table>
+				</div>
+<?php
+				return ob_get_clean();
+				break;
+			# ------------------------------------------------
 			case 'image/jpeg':
 			case 'image/png':
 				if (!is_array($pa_options)) { $pa_options = array(); }
@@ -898,4 +828,3 @@ class WLPlugMediaAudio Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 }
-?>

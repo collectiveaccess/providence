@@ -64,6 +64,14 @@ $va_search_config_settings = $this->getVar('search_config_settings');
 				<td><?php print _t('Release type'); ?></td>
 				<td><?php print __CollectiveAccess_Release_Type__; ?></td>
 			</tr>
+			<tr>
+				<td><?php print _t('System GUID'); ?></td>
+				<td><?php print __CA_SYSTEM_GUID__; ?></td>
+			</tr>
+			<tr>
+				<td><?php print _t('Last change log ID'); ?></td>
+				<td><?php print $this->getVar('last_change_log_id'); ?></td>
+			</tr>
 		</tbody>
 	</table>
 	
@@ -202,8 +210,63 @@ foreach($va_plugins as $vs_plugin_name => $va_plugin_info){
 ?>
 		</tbody>
 	</table>
+
+	<div class="control-box rounded">
+		<div class="control-box-middle-content"><?php print _t('PDF Rendering Plugins'); ?></div>
+	</div><div class="clear"></div>
 	
-		<div class="control-box rounded">
+	<table id="caMediaConfigPluginList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+		<thead>
+			<tr>
+				<th class="list-header-unsorted">
+					<?php print _t('Plugin'); ?>
+				</th>
+				<th class="list-header-unsorted">
+					<?php print _t('Info'); ?>
+				</th>
+				<th class="{sorter: false} list-header-nosort"><?php print _t('Status'); ?></th>
+			</tr>
+		</thead>
+		<tbody>
+<?php
+$va_plugins = $this->getVar('pdf_renderer_config_plugin_list');
+foreach($va_plugins as $vs_plugin_name => $va_plugin_info){
+?>
+			<tr>
+				<td><?php print $vs_plugin_name; ?></td>
+				<td><?php 
+					print $va_plugin_info['description']; 
+					if (is_array($va_plugin_info['errors']) && sizeof($va_plugin_info['errors'])) {
+						print '<div style="color:red;">'.join('<br/>', $va_plugin_info['errors']).'</div>';
+					}
+					if (is_array($va_plugin_info['warnings']) && sizeof($va_plugin_info['warnings'])) {
+						print '<div style="color:GoldenRod;">'.join('<br/>', $va_plugin_info['warnings']).'</div>';
+					}
+					if (is_array($va_plugin_info['notices']) && sizeof($va_plugin_info['notices'])) {
+						print '<div style="color:green;">'.join('<br/>', $va_plugin_info['notices']).'</div>';
+					}
+				?></td>
+				<td>
+<?php
+	if((boolean)$va_plugin_info['available']){
+		print "<span style=\"color:green\">"._t("Available")."</span>";
+	} else {
+		if((boolean)$va_plugin_info['unused']){
+			print "<span style=\"color:GoldenRod;\">"._t("Not used")."</span>";
+		} else {
+			print "<span style=\"color:red;text-decoration:underline;\">"._t("Not available")."</span>";
+		}
+	}
+?>
+				</td>
+			</tr>
+<?php
+}
+?>
+		</tbody>
+	</table>
+
+	<div class="control-box rounded">
 		<div class="control-box-middle-content"><?php print _t('Barcode generation'); ?></div>
 	</div><div class="clear"></div>
 	

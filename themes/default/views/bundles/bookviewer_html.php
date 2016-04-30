@@ -35,8 +35,6 @@
  	$t_value				 	= $this->getVar('t_attribute_value');
  	$vn_value_id		 		= $t_value ? (int)$t_value->getPrimaryKey() : null;
  	
- 	$vn_order_item_id			 = (int)$this->getVar('order_item_id');
- 	
  	$vs_content_mode 			= $this->getVar('content_mode');
  	$va_sections	 			= $this->getVar('sections');
  	$vs_display_type 			= $this->getVar('display_type');
@@ -63,8 +61,13 @@
 		sidebar: <?php print ((sizeof($va_sections) > 0) && !isset($va_display_options['no_overlay'])) ? "true" : "false"; ?>,
 		closeButton: '<?php print (!isset($va_display_options['no_overlay'])) ? '<img src="'.$this->request->getThemeUrlPath().'/graphics/buttons/x.png" alt="'._t('Close').'"/>' : ''; ?>',
 		editButton: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/edit.png" alt="<?php print _t('Edit'); ?>"/>',
+<?php
+		if($this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
+?>
 		downloadButton: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/download.png" alt="<?php print _t('Download'); ?>"/>',
-		selectionRecordURL: '<?php print caNavUrl($this->request, 'client/orders', 'OrderEditor', 'RecordRepresentationSelection', array('item_id' => $vn_order_item_id)); ?>',
+<?php
+		}
+?>
 		sectionsAreSelectable: <?php print ((sizeof($va_sections) > 0) && isset($va_display_options['sectionsAreSelectable']) && ($va_display_options['sectionsAreSelectable'])) ? "true" : "false"; ?>
 
 	});

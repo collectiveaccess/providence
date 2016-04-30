@@ -49,12 +49,6 @@
  		protected $opa_views;
  		
  		/**
- 		 * List of available search-result sorting fields
- 		 * Is associative array: values are display names for fields, keys are full fields names (table.field) to be used as sort
- 		 */
- 		protected $opa_sorts;
- 		
- 		/**
  		 * Name of "find" used to defined result context for ResultContext object
  		 * Must be unique for the table and have a corresponding entry in find_navigation.conf
  		 */
@@ -67,10 +61,6 @@
 				'list' => _t('list'),
 				'editable' => _t('editable')
 			 );
-			 
-			 $this->opa_sorts = array_merge(array(
-			 	'ca_tour_labels.name_sort' => _t('name')
-			 ), $this->opa_sorts);
 		
 			$this->opo_browse = new TourBrowse($this->opo_result_context->getParameter('browse_id'), 'providence');
 		}

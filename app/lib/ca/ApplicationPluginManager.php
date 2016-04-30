@@ -94,37 +94,42 @@
 			if (ApplicationPluginManager::$s_application_plugin_manager_did_do_plugin_init) { return true; }
 			
 			$o_config = Configuration::load();
-			$vs_app_plugin_dir = $o_config->get('application_plugins');
 			
-			$va_app_plugin_dirs = ApplicationPluginManager::getPluginNames();
-			foreach($va_app_plugin_dirs as $vs_plugin_dir) {
-				if (!file_exists($vs_app_plugin_dir.'/'.$vs_plugin_dir.'/'.$vs_plugin_dir.'Plugin.php')) { continue; }
-				require_once($vs_app_plugin_dir.'/'.$vs_plugin_dir.'/'.$vs_plugin_dir.'Plugin.php');
-				$vs_plugin_classname = $vs_plugin_dir.'Plugin';
+			$va_plugin_locations = array($o_config->get('application_plugins'));
+			if (is_dir(__CA_THEME_DIR__."/plugins")) { array_unshift($va_plugin_locations, __CA_THEME_DIR__."/plugins"); }
+			
+			$va_app_plugin_dirs = ApplicationPluginManager::getPluginNames($va_plugin_locations);
 				
-				$o_instance = new $vs_plugin_classname($vs_app_plugin_dir.'/'.$vs_plugin_dir);
+			foreach($va_plugin_locations as $vs_app_plugin_dir) {
+				foreach($va_app_plugin_dirs as $vs_plugin_dir) {
+					if(ApplicationPluginManager::$s_application_plugin_instances[$vs_plugin_dir]) { continue; }
+					if (!file_exists($vs_app_plugin_dir.'/'.$vs_plugin_dir.'/'.$vs_plugin_dir.'Plugin.php')) { continue; }
+					require_once($vs_app_plugin_dir.'/'.$vs_plugin_dir.'/'.$vs_plugin_dir.'Plugin.php');
+					$vs_plugin_classname = $vs_plugin_dir.'Plugin';
 				
-				$va_status = $o_instance->checkStatus();
+					$o_instance = new $vs_plugin_classname($vs_app_plugin_dir.'/'.$vs_plugin_dir);
 				
-				if (!isset($va_status['available']) || !$va_status['available']) { continue;}
+					$va_status = $o_instance->checkStatus();
 				
-				$o_class_info = new ReflectionClass($vs_plugin_classname);
+					if (!isset($va_status['available']) || !$va_status['available']) { continue;}
 				
-				ApplicationPluginManager::$s_application_plugin_hooks[$vs_plugin_dir] = array();
-				if (is_array($va_method_list = $o_class_info->getMethods())) {
-					foreach($va_method_list as $o_method) {
-						if (!$o_method->isPublic()) { continue; }
-						$vs_method_name = $o_method->getName();
-						if (!preg_match('!^hook!', $vs_method_name)) { continue; }
+					$o_class_info = new ReflectionClass($vs_plugin_classname);
+				
+					ApplicationPluginManager::$s_application_plugin_hooks[$vs_plugin_dir] = array();
+					if (is_array($va_method_list = $o_class_info->getMethods())) {
+						foreach($va_method_list as $o_method) {
+							if (!$o_method->isPublic()) { continue; }
+							$vs_method_name = $o_method->getName();
+							if (!preg_match('!^hook!', $vs_method_name)) { continue; }
 						
-						ApplicationPluginManager::$s_application_plugin_hooks[$vs_plugin_dir][$vs_method_name] = true;
+							ApplicationPluginManager::$s_application_plugin_hooks[$vs_plugin_dir][$vs_method_name] = true;
+						}
 					}
+					ApplicationPluginManager::$s_application_plugin_instances[$vs_plugin_dir] = $o_instance;	
 				}
-				ApplicationPluginManager::$s_application_plugin_instances[$vs_plugin_dir] = $o_instance;	
 			}
 			
 			ApplicationPluginManager::$s_application_plugin_manager_did_do_plugin_init = true;
-			
 			return true;
 		}
 		# -------------------------------------------------------
@@ -168,6 +173,7 @@
 		 * @return array List of user actions keyed by action code
 		 */
 		static public function getPluginRoleActions() {
+			if ($va_actions = CompositeCache::fetch('role_action_list', 'ApplicationPluginManager')) { return $va_actions; }
 			$va_actions = array();
 			
 			$o_config = Configuration::load();
@@ -182,8 +188,8 @@
 			
 				$va_actions = array_merge($va_actions, call_user_func(array($vs_plugin_classname, 'getRoleActionList')));
 			}
+			CompositeCache::save('role_action_list', $va_actions, 'ApplicationPluginManager');
 			return $va_actions;
 		}
 		# -------------------------------------------------------
 	}
-?>

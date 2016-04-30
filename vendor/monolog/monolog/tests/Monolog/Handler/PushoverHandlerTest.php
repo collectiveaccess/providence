@@ -22,7 +22,6 @@ use Monolog\Logger;
  */
 class PushoverHandlerTest extends TestCase
 {
-
     private $res;
     private $handler;
 
@@ -49,7 +48,7 @@ class PushoverHandlerTest extends TestCase
 
     public function testWriteWithComplexTitle()
     {
-        $this->createHandler('myToken', 'myUser', 'Backup finished - SQL1', Logger::EMERGENCY);
+        $this->createHandler('myToken', 'myUser', 'Backup finished - SQL1');
         $this->handler->handle($this->getRecord(Logger::CRITICAL, 'test1'));
         fseek($this->res, 0);
         $content = fread($this->res, 1024);

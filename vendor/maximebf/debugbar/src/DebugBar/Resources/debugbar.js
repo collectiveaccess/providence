@@ -255,12 +255,12 @@ if (typeof(PhpDebugBar) == 'undefined') {
         className: csscls('panel'),
 
         render: function() {
-            this.$tab = $('<a href="javascript:" />').addClass(csscls('tab'));
+            this.$tab = $('<a />').addClass(csscls('tab'));
 
             this.$icon = $('<i />').appendTo(this.$tab);
             this.bindAttr('icon', function(icon) {
                 if (icon) {
-                    this.$icon.attr('class', 'fa fa-' + icon);
+                    this.$icon.attr('class', 'phpdebugbar-fa phpdebugbar-fa-' + icon);
                 } else {
                     this.$icon.attr('class', '');
                 }
@@ -315,7 +315,7 @@ if (typeof(PhpDebugBar) == 'undefined') {
             this.$icon = $('<i />').appendTo(this.$el);
             this.bindAttr('icon', function(icon) {
                 if (icon) {
-                    this.$icon.attr('class', 'fa fa-' + icon);
+                    this.$icon.attr('class', 'phpdebugbar-fa phpdebugbar-fa-' + icon);
                 } else {
                     this.$icon.attr('class', '');
                 }
@@ -395,7 +395,8 @@ if (typeof(PhpDebugBar) == 'undefined') {
         className: "phpdebugbar " + csscls('minimized'),
 
         options: {
-            bodyPaddingBottom: true
+            bodyPaddingBottom: true,
+            bodyPaddingBottomHeight: parseInt($('body').css('padding-bottom'))
         },
 
         initialize: function() {
@@ -414,6 +415,8 @@ if (typeof(PhpDebugBar) == 'undefined') {
          * @this {DebugBar}
          */
         registerResizeHandler: function() {
+            if (typeof this.resize.bind == 'undefined') return;
+
             var f = this.resize.bind(this);
             this.respCSSSize = 0;
             $(window).resize(f);
@@ -442,6 +445,9 @@ if (typeof(PhpDebugBar) == 'undefined') {
                 this.respCSSSize = 0;
                 this.$header.removeClass(cssClass);
             }
+
+            // Reset height to ensure bar is still visible
+            this.setHeight(this.$body.height());
         },
 
         /**
@@ -452,6 +458,7 @@ if (typeof(PhpDebugBar) == 'undefined') {
         render: function() {
             var self = this;
             this.$el.appendTo('body');
+            this.$dragCapture = $('<div />').addClass(csscls('drag-capture')).appendTo(this.$el);
             this.$resizehdle = $('<div />').addClass(csscls('resize-handle')).appendTo(this.$el);
             this.$header = $('<div />').addClass(csscls('header')).appendTo(this.$el);
             this.$headerLeft = $('<div />').addClass(csscls('header-left')).appendTo(this.$header);
@@ -460,44 +467,48 @@ if (typeof(PhpDebugBar) == 'undefined') {
             this.recomputeBottomOffset();
 
             // dragging of resize handle
-            var dragging = false;
-            var min_h = 40;
-            var max_h = $(window).height() - this.$header.height() - 10;
+            var pos_y, orig_h;
             this.$resizehdle.on('mousedown', function(e) {
-                var orig_h = $body.height(), pos_y = e.pageY;
-                dragging = true;
-
-                $body.parents().on('mousemove', function(e) {
-                    if (dragging) {
-                        var h = orig_h + (pos_y - e.pageY);
-                        // Respect the min/max values
-                        h = Math.min(h, max_h);
-                        h = Math.max(h, min_h);
-                        $body.css('height', h);
-                        localStorage.setItem('phpdebugbar-height', h);
-                        self.recomputeBottomOffset();
-                    }
-                }).on('mouseup', function() {
-                    dragging = false;
-                });
-
+                orig_h = $body.height(), pos_y = e.pageY;
+                $body.parents().on('mousemove', mousemove).on('mouseup', mouseup);
+                self.$dragCapture.show();
                 e.preventDefault();
             });
-            
-            // minimize button
-            this.$closebtn = $('<a href="javascript:" />').addClass(csscls('close-btn')).appendTo(this.$headerRight);
+            var mousemove = function(e) {
+                var h = orig_h + (pos_y - e.pageY);
+                self.setHeight(h);
+            };
+            var mouseup = function() {
+                $body.parents().off('mousemove', mousemove).off('mouseup', mouseup);
+                self.$dragCapture.hide();
+            };
+
+            // close button
+            this.$closebtn = $('<a />').addClass(csscls('close-btn')).appendTo(this.$headerRight);
             this.$closebtn.click(function() {
                 self.close();
             });
 
             // minimize button
-            this.$restorebtn = $('<a href="javascript:" />').addClass(csscls('restore-btn')).hide().appendTo(this.$el);
+            this.$minimizebtn = $('<a />').addClass(csscls('minimize-btn') ).appendTo(this.$headerRight);
+            this.$minimizebtn.click(function() {
+                self.minimize();
+            });
+
+            // maximize button
+            this.$maximizebtn = $('<a />').addClass(csscls('maximize-btn') ).appendTo(this.$headerRight);
+            this.$maximizebtn.click(function() {
+                self.restore();
+            });
+
+            // restore button
+            this.$restorebtn = $('<a />').addClass(csscls('restore-btn')).hide().appendTo(this.$el);
             this.$restorebtn.click(function() {
                 self.restore();
             });
 
             // open button
-            this.$openbtn = $('<a href="javascript:" />').addClass(csscls('open-btn')).appendTo(this.$headerRight).hide();
+            this.$openbtn = $('<a />').addClass(csscls('open-btn')).appendTo(this.$headerRight).hide();
             this.$openbtn.click(function() {
                 self.openHandler.show(function(id, dataset) {
                     self.addDataSet(dataset, id, "(opened)");
@@ -514,6 +525,24 @@ if (typeof(PhpDebugBar) == 'undefined') {
         },
 
         /**
+         * Sets the height of the debugbar body section
+         * Forces the height to lie within a reasonable range
+         * Stores the height in local storage so it can be restored
+         * Resets the document body bottom offset
+         *
+         * @this {DebugBar}
+         */
+        setHeight: function(height) {
+          var min_h = 40;
+          var max_h = $(window).innerHeight() - this.$header.height() - 10;
+          height = Math.min(height, max_h);
+          height = Math.max(height, min_h);
+          this.$body.css('height', height);
+          localStorage.setItem('phpdebugbar-height', height);
+          this.recomputeBottomOffset();
+        },
+
+        /**
          * Restores the state of the DebugBar using localStorage
          * This is not called by default in the constructor and
          * needs to be called by subclasses in their init() method
@@ -523,11 +552,7 @@ if (typeof(PhpDebugBar) == 'undefined') {
         restoreState: function() {
             // bar height
             var height = localStorage.getItem('phpdebugbar-height');
-            if (height) {
-                this.$body.css('height', height);
-            } else {
-                localStorage.setItem('phpdebugbar-height', this.$body.height());
-            }
+            this.setHeight(height || this.$body.height());
 
             // bar visibility
             var open = localStorage.getItem('phpdebugbar-open');
@@ -793,7 +818,8 @@ if (typeof(PhpDebugBar) == 'undefined') {
          */
         recomputeBottomOffset: function() {
             if (this.options.bodyPaddingBottom) {
-                $('body').css('padding-bottom', this.$el.height());
+                var height = parseInt(this.$el.height()) + this.options.bodyPaddingBottomHeight;
+                $('body').css('padding-bottom', height);
             }
         },
 
@@ -1078,6 +1104,26 @@ if (typeof(PhpDebugBar) == 'undefined') {
                     self.handle(xhr);
                 }
             });
+        },
+        
+        /**
+         * Attaches an event listener to XMLHttpRequest
+         * 
+         * @this {AjaxHandler}
+         */
+        bindToXHR: function() {
+            var self = this;
+            var proxied = XMLHttpRequest.prototype.open;
+            XMLHttpRequest.prototype.open = function(method, url, async, user, pass) {
+                var xhr = this;
+                this.addEventListener("readystatechange", function() {
+                    var skipUrl = self.debugbar.openHandler ? self.debugbar.openHandler.get('url') : null;
+                    if (xhr.readyState == 4 && url.indexOf(skipUrl) !== 0) {
+                        self.handle(xhr);
+                    }
+                }, false);
+                proxied.apply(this, Array.prototype.slice.call(arguments));
+            };
         }
 
     });

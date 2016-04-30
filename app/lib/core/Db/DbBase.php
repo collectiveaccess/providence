@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2008 Whirl-i-Gig
+ * Copyright 2006-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,7 +44,7 @@ class DbBase {
 	 *
 	 * @access private
 	 */
-	var $opb_die_on_error = true;
+	var $opb_die_on_error = false;
 
 	/**
 	 * List of errors
@@ -54,11 +54,11 @@ class DbBase {
 	var $errors = array();
 
 	/**
-	 * Defines if the application dies if an error occurrs. Default is true.
+	 * Defines if the application dies if an error occurrs. Default is false.
 	 *
 	 * @param bool $pb_die_on_error
 	 */
-	function dieOnError($pb_die_on_error=true) {
+	function dieOnError($pb_die_on_error=false) {
 		$this->opb_die_on_error = $pb_die_on_error;
 	}
 
@@ -122,7 +122,7 @@ class DbBase {
 	 * @param string $ps_context
 	 */
 	function postError($pn_num, $ps_message, $ps_context, $ps_source='') {
-		$o_error = new Error();
+		$o_error = new ApplicationError();
 		$o_error->setErrorOutput($this->opb_die_on_error);
 		$o_error->setHaltOnError($this->opb_die_on_error);
 		$o_error->setError($pn_num, $ps_message, $ps_context, $ps_source);
@@ -130,4 +130,82 @@ class DbBase {
 		return true;
 	}
 	# ---------------------------------------------------------------------------
+	/**
+	 * Converts native datatypes to db datatypes
+	 *
+	 * @param string string representation of the datatype
+	 * @return array array with more information about the type, specific to mysql
+	 */
+	public function nativeToDbDataType($ps_native_datatype_spec) {
+		if (preg_match("/^([A-Za-z]+)[\(]{0,1}([\d,]*)[\)]{0,1}[ ]*([A-Za-z]*)/", $ps_native_datatype_spec, $va_matches)) {
+			$vs_native_type = $va_matches[1];
+			$vs_length = $va_matches[2];
+			$vb_unsigned = ($va_matches[3] == "unsigned") ? true : false;
+			switch($vs_native_type) {
+				case 'varchar':
+					return array("type" => "varchar", "length" => $vs_length);
+					break;
+				case 'char':
+					return array("type" => "char", "length" => $vs_length);
+					break;
+				case 'bigint':
+					return array("type" => "int", "minimum" => $vb_unsigned ? 0 : -1 * ((pow(2, 64)/2)), "maximum" => $vb_unsigned ? pow(2,64) - 1 : (pow(2,64)/2) - 1);
+					break;
+				case 'int':
+					return array("type" => "int", "minimum" => $vb_unsigned ? 0 : -1 * ((pow(2, 32)/2)), "maximum" => $vb_unsigned ? pow(2,32) - 1: (pow(2,32)/2) - 1);
+					break;
+				case 'mediumint':
+					return array("type" => "int", "minimum" => $vb_unsigned ? 0 : -1 * ((pow(2, 24)/2)), "maximum" => $vb_unsigned ? pow(2,24) - 1: (pow(2,24)/2) - 1);
+					break;
+				case 'smallint':
+					return array("type" => "int", "minimum" => $vb_unsigned ? 0 : -1 * ((pow(2, 16)/2)), "maximum" => $vb_unsigned ? pow(2,16) - 1: (pow(2,16)/2) - 1);
+					break;
+				case 'tinyint':
+					return array("type" => "int", "minimum" => $vb_unsigned ? 0 : -128, "maximum" => $vb_unsigned ? 255 : 127);
+					break;
+				case 'decimal':
+				case 'float':
+				case 'numeric':
+					$va_tmp = explode(",",$vs_length);
+					if ($vb_unsigned) {
+						$vn_max = (pow(10, $va_tmp[0]) - (1/pow(10, $va_tmp[1]))) - 1;
+						$vn_min = 0;
+					} else {
+						$vn_max = ((pow(10, $va_tmp[0]) - (1/pow(10, $va_tmp[1]))) / 2) -1;
+						$vn_min = -1 * ((pow(10, $va_tmp[0]) - (1/pow(10, $va_tmp[1]))) / 2);
+					}
+					return array("type" => "float", "minimum" => $vn_min, "maximum" => $vn_max);
+					break;
+				case 'tinytext':
+					return array("type" => "varchar", "length" => 255);
+					break;
+				case 'text':
+					return array("type" => "text", "length" => pow(2,16) - 1);
+					break;
+				case 'mediumtext':
+					return array("type" => "text", "length" => pow(2,24) - 1);
+					break;
+				case 'longtext':
+					return array("type" => "text", "length" => pow(2,32) - 1);
+					break;
+				case 'tinyblob':
+					return array("type" => "blob", "length" => 255);
+					break;
+				case 'blob':
+					return array("type" => "blob", "length" => pow(2,16) - 1);
+					break;
+				case 'mediumblob':
+					return array("type" => "blob", "length" => pow(2,24) - 1);
+					break;
+				case 'longblob':
+					return array("type" => "blob", "length" => pow(2,32) - 1);
+					break;
+				default:
+					return null;
+					break;
+			}
+		} else {
+			return null;
+		}
+	}
 }

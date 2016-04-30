@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -60,7 +60,6 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 	
 	var $opo_config;
 	var $opo_external_app_config;
-	var $ops_abiword_path;
 	var $ops_libreoffice_path;
 	
 	var $opa_metadata;
@@ -151,7 +150,6 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 	
 	var $opa_transformations = array();
 	
-	var $opb_abiword_installed = false;
 	var $opb_libre_office_installed = false;
 	
 	# ------------------------------------------------
@@ -166,10 +164,7 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# for import and export
 	public function register() {
 		$this->opo_config = Configuration::load();
-		$vs_external_app_config_path = $this->opo_config->get('external_applications');
-		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
-		$this->ops_abiword_path = $this->opo_external_app_config->get('abiword_app');
-		$this->opb_abiword_installed = caMediaPluginAbiwordInstalled($this->ops_abiword_path);
+		$this->opo_external_app_config = Configuration::load(__CA_CONF_DIR__."/external_applications.conf");
 		$this->ops_libreoffice_path = $this->opo_external_app_config->get('libreoffice_app');
 		$this->opb_libre_office_installed = caMediaPluginLibreOfficeInstalled($this->ops_libreoffice_path);
 		
@@ -186,10 +181,6 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 		
 		if (!($this->opb_libre_office_installed)) { 
 			$va_status['warnings'][] = _t("LibreOffice cannot be found: conversion to PDF and generation of page previews will not be performed; you can obtain LibreOffice at http://www.libreoffice.org/");
-		}
-		
-		if (!$this->opb_libre_office_installed && !$this->opb_abiword_installed) { 
-			$va_status['warnings'][] = _t("ABIWord cannot be found: indexing of text in non-XML Microsoft Word files will not be performed; you can obtain ABIWord at http://www.abisource.com/");
 		}
 		
 		return $va_status;
@@ -432,15 +423,6 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 		$this->set('height', 792);
 		$this->set('resolution', 72);
 		
-		//try to extract text
-		if ($this->opb_abiword_installed && !$this->opb_libre_office_installed) {
-			$vs_tmp_filename = tempnam('/tmp', 'CA_MSWORD_TEXT');
-			exec($this->ops_abiword_path.' -t txt '.caEscapeShellArg($ps_filepath).' -o '.$vs_tmp_filename);
-			$vs_extracted_text = preg_replace('![^\w\d]+!u' , ' ', file_get_contents($vs_tmp_filename));	// ABIWord seems to dump Unicode...
-			$this->handle['content'] = $this->ohandle['content'] = $vs_extracted_text;
-			@unlink($vs_tmp_filename);
-		}
-		
 		$this->ohandle = $this->handle = $this->properties;
 			
 		return true;	
@@ -556,8 +538,8 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 				$vs_out_file = array_pop($va_tmp);
 				
 				putenv("HOME={$vs_tmp_dir_path}");		// libreoffice will fail silently if you don't set this environment variable to a directory it can write to. Nice way to waste a day debugging. Yay!
-				exec($this->ops_libreoffice_path." --nologo --nofirststartwizard --headless -convert-to pdf ".caEscapeShellArg($this->filepath)."  -outdir ".caEscapeShellArg($vs_tmp_dir_path)." 2>&1", $va_output, $vn_return);
-				exec($this->ops_libreoffice_path." --nologo --nofirststartwizard --headless -convert-to html ".caEscapeShellArg($this->filepath)."  -outdir ".caEscapeShellArg($vs_tmp_dir_path)." 2>&1", $va_output, $vn_return);
+				exec($this->ops_libreoffice_path." --headless --convert-to pdf:writer_pdf_Export \"-env:UserInstallation=file:///tmp/LibreOffice_Conversion_${USER}\" ".caEscapeShellArg($this->filepath)."  --outdir ".caEscapeShellArg($vs_tmp_dir_path).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
+				exec($this->ops_libreoffice_path." --headless --convert-to html:HTML \"-env:UserInstallation=file:///tmp/LibreOffice_Conversion_${USER}\" ".caEscapeShellArg($this->filepath)."  --outdir ".caEscapeShellArg($vs_tmp_dir_path).(caIsPOSIX() ? " 2>&1" : ""), $va_output, $vn_return);
 			
 				$va_out_file = explode(".", $vs_out_file);
 				if (sizeof($va_out_file) > 1) { array_pop($va_out_file); }

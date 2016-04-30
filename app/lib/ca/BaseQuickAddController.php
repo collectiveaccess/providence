@@ -209,7 +209,7 @@
 			$this->view->setVar('fieldNamePrefix', $_REQUEST['_formName']);
 			$this->view->setVar('n', $vs_n);
 			
-			$this->view->setVar('q', $this->request->getParameter('q', pString));
+			$this->view->setVar('q', preg_replace("!^[^:]*:!", "", $this->request->getParameter('q', pString)));
 			
 			$this->view->setVar('default_parent_id', $this->opo_result_context->getParameter($t_subject->tableName().'_last_parent_id'));
 			
@@ -401,7 +401,7 @@
  				'table' => $t_subject->tableName(),
 				'type_id' => method_exists($t_subject, "getTypeID") ? $t_subject->getTypeID() : null,
 				'relation_id' => $vn_relation_id,
- 				'display' => $va_name['label'],
+ 				'display' => caStripTagsAndContent($va_name['label']),
  				'errors' => $va_error_list
  			);
  			

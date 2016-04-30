@@ -124,13 +124,10 @@ class VictimService extends NS11mmService {
 			'last_modification' => $t_entity->get('ca_entities.lastModified', array("dateFormat" => 'iso8601'))
 		);
 		
-		$va_nonpreferred_labels = $t_entity->get('ca_entities.nonpreferred_labels', array('returnAsArray' => true));
-	
-		foreach($va_nonpreferred_labels as $vn_entity_id => $va_labels) {
-			foreach($va_labels as $vn_i => $va_label) {
-				unset($va_labels[$vn_i]['form_element']);
-			}
-			$va_data['alternate_names'] = $va_labels;
+		$va_nonpreferred_labels = $t_entity->get('ca_entities.nonpreferred_labels', array('returnAsArray' => true, 'assumeDisplayField' => false));
+
+		foreach($va_nonpreferred_labels as $va_label) {
+			$va_data['alternate_names'][] = $va_label;
 		}
 		// add place info
 		$va_places = $t_entity->getRelatedItems('ca_places');
@@ -274,7 +271,8 @@ class VictimService extends NS11mmService {
 					if (!sizeof($va_pub_targets)) { continue; }
 					
 					if (!$t_rep->load($va_rep['representation_id'])) { continue; }
-					if ($t_rep->get("ca_object_representations.memex_status") != $vn_publish_rep) { continue; }
+					
+					if ($t_rep->get("ca_object_representations.memex_status", array('convertCodesToDisplayText' => false)) != $vn_publish_rep) { continue; }
 					
 					// reset filesize property to reflect size of version, not size of original
 					foreach($va_reps[$vn_i]['paths'] as $vs_version => $vs_path) {
@@ -291,14 +289,14 @@ class VictimService extends NS11mmService {
 					unset($va_reps[$vn_i]['locale_id']);
 					unset($va_reps[$vn_i]['type_id']);
 					
-					$va_reps[$vn_i]['lastupdate_timestamp'] =  date('o-m-N',$va_timestamp['timestamp'])."T".date('H:i:s',$va_timestamp['timestamp'])."Z"; //date('c', $va_timestamp['timestamp']);
+					$va_reps[$vn_i]['lastupdate_timestamp'] =  date('o-m-j',$va_timestamp['timestamp'])."T".date('H:i:s',$va_timestamp['timestamp'])."Z"; //date('c', $va_timestamp['timestamp']);
 					$va_reps[$vn_i]['type_id'] = $vn_type_id = $t_object->get('ca_objects.type_id');
 					$va_reps[$vn_i]['typename'] = $t_object->getTypeName();
 					$va_reps[$vn_i]['typecode'] = $t_object->getTypeCode();
 					
 					$va_targets = array();
 					foreach($va_pub_targets as $vn_attr_id => $va_value) {
-						$va_targets[] = ($va_pub_target_values[$va_value['object_publication_targets']]['idno']) ? $va_pub_target_values[$va_value['object_publication_targets']]['idno'] : $va_audio_target_values[$va_value['audio_publication_targets']]['idno'];
+						$va_targets[] = ($va_pub_target_values[$va_value]['idno']) ? $va_pub_target_values[$va_value]['idno'] : $va_audio_target_values[$va_value]['idno'];
 					} 
 					
 					
@@ -372,7 +370,7 @@ class VictimService extends NS11mmService {
 		$va_units = array();
 		foreach($va_entities as $vn_relation_id => $va_rel_info) {
 			if ($t_entity->load($va_rel_info['entity_id'])) {
-				$va_data['lastupdate_timestamp'] =  date('o-m-N',$va_timestamp['timestamp'])."T".date('H:i:s',$va_timestamp['timestamp'])."Z";
+				$va_data['lastupdate_timestamp'] =  date('o-m-j',$va_timestamp['timestamp'])."T".date('H:i:s',$va_timestamp['timestamp'])."Z";
 
 				$va_display_names = $t_entity->get('ca_entities.hierarchy.preferred_labels.displayname', array('returnAsArray' => true));
 				if ($va_rel_info['relationship_type_code'] == 'affiliation') {

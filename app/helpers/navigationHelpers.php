@@ -71,7 +71,10 @@
  	define('__CA_NAV_BUTTON_ICON_POS_BOTTOM__', 3);
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * @param array $pa_options Options include:
+	 *		absolute = return absolute URL. [Default is to return relative URL]
 	 *
+	 * @return string
 	 */
 	function caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_options=null) {
 
@@ -111,6 +114,12 @@
 				$vs_url .= "/".join("/", $pa_other_params);
 			}
 		}
+		
+		if (caGetOption('absolute', $pa_options, false)) {
+			$o_config = Configuration::load();
+			$vs_url = $o_config->get('site_host').$o_config->get('ca_url_root').$vs_url;
+		}
+		
 		return $vs_url;
 	}
 	# ------------------------------------------------------------------------------------------------
@@ -119,7 +128,8 @@
 	 */
 	function caNavLink($po_request, $ps_content, $ps_classname, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_attributes=null, $pa_options=null) {
 		if (!($vs_url = caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params, $pa_options))) {
-			return "<strong>Error: no url for navigation</strong>";
+			//return "<strong>Error: no url for navigation</strong>";
+			$vs_url = '/';
 		}
 		
 		$vs_tag = "<a href='".$vs_url."'";
@@ -144,7 +154,7 @@
 	function caNavButton($po_request, $pn_type, $ps_content, $ps_classname, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_attributes=null, $pa_options=null) {
 		if ($ps_module_path && $ps_controller && $ps_action) {
 			if (!($vs_url = caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params))) {
-				return "<strong>Error: no url for navigation</strong>";
+				return '';//<strong>Error: no url for navigation</strong>";
 			}
 		} else {
 			$vs_url = '';
@@ -224,7 +234,7 @@
 	 */
 	function caNavHeaderButton($po_request, $pn_type, $ps_content, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_attributes=null, $pa_options=null) {
 		if (!($vs_url = caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params))) {
-			return "<strong>Error: no url for navigation</strong>";
+			return ''; //<strong>Error: no url for navigation</strong>";
 		}
 		
 		$ps_icon_pos = isset($pa_options['icon_position']) ? $pa_options['icon_position'] : __CA_NAV_BUTTON_ICON_POS_LEFT__;
@@ -303,9 +313,15 @@
 		}
 		
 		if ($ps_module_and_controller_path) {
-			$vs_action = $po_request->getBaseUrlPath().'/'.$po_request->getScriptName().'/'.$ps_module_and_controller_path.'/'.$ps_action;
+			$vs_action = (defined('__CA_USE_CLEAN_URLS__') && (__CA_USE_CLEAN_URLS__)) ?
+				$po_request->getBaseUrlPath().'/'.$ps_module_and_controller_path.'/'.$ps_action
+				:					
+				$po_request->getBaseUrlPath().'/'.$po_request->getScriptName().'/'.$ps_module_and_controller_path.'/'.$ps_action;
 		} else {
-			$vs_action = $po_request->getControllerUrl().'/'.$ps_action;
+			$vs_action = (defined('__CA_USE_CLEAN_URLS__') && (__CA_USE_CLEAN_URLS__)) ?
+				str_replace("/".$po_request->getScriptName(), "", $po_request->getControllerUrl()).'/'.$ps_action
+				:
+				$po_request->getControllerUrl().'/'.$ps_action;
 		}
 		
 		$vs_buf = "<form action='".$vs_action."' method='".$ps_method."' id='".$ps_id."' $vs_target enctype='".$ps_enctype."'>\n<input type='hidden' name='_formName' value='{$ps_id}'/>\n";
@@ -371,13 +387,19 @@
 		$pb_prevent_duplicate_submits = (isset($pa_options['preventDuplicateSubmits']) && $pa_options['preventDuplicateSubmits']) ? true : false;
 		
 		$vs_graphics_path = (isset($pa_options['graphicsPath']) && $pa_options['graphicsPath']) ? $pa_options['graphicsPath'] : $po_request->getThemeUrlPath()."/graphics";
-		
+
 		$vs_classname = (!$pb_no_background) ? 'form-button' : '';
+		$vs_id = (string) time();
+
+		$vs_extra = '';
+		if(caGetOption('isSaveAndReturn', $pa_options)) {
+			$vs_extra = "jQuery(\"#isSaveAndReturn\").val(\"1\");";
+		}
 		
 		if ($pb_prevent_duplicate_submits) {
-			$vs_button = "<a href='#' onclick='jQuery(\".caSubmit{$ps_id}\").fadeTo(\"fast\", 0.5).attr(\"onclick\", null); jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} caSubmit{$ps_id}'>";
+			$vs_button = "<a href='#' onclick='$vs_extra jQuery(\".caSubmit{$ps_id}\").fadeTo(\"fast\", 0.5).attr(\"onclick\", null); jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} caSubmit{$ps_id} {$vs_id}'>";
 		} else {
-			$vs_button = "<a href='#' onclick='jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname}'>";		
+			$vs_button = "<a href='#' onclick='$vs_extra jQuery(\"#{$ps_id}\").submit();' class='{$vs_classname} {$vs_id}'>";
 		}
 		
 		if (!$pb_no_background) { 
@@ -414,7 +436,7 @@
 		// We don't actually display this button or use it to submit the form; the form-button output above does that.
 		// Rather, this <input> tag is only included to force browsers to support submit-on-return-key
 		$vs_button .= "<div style='position: absolute; top: 0px; left:-5000px;'><input type='submit'/></div>";
-		
+
 		return $vs_button;
 	}
 	# ------------------------------------------------------------------------------------------------
@@ -437,6 +459,7 @@
 		$vs_classname = (!$pb_no_background) ? 'form-button' : '';
 		
 		$va_attr = array();
+		if ($ps_id) { $va_attr[] = "id='{$ps_id}'"; }
 		if (is_array($pa_attributes)) {
 			foreach($pa_attributes as $vs_name => $vs_value) {
 				$va_attr[] = $vs_name."='".($vs_value)."'";
@@ -695,7 +718,7 @@
 	 * Returns an HTML to edit an item in the appropriate bundle-based editor. If no specified item is specified (eg. no id value is set)
 	 * the a link to create a new item of the specfied type is returned.
 	 *
-	 * @param HTTPRequest $po_request The current request object
+	 * @param RequestHTTP $po_request The current request object
 	 * @param string $ps_content The displayed content of the link
 	 * @param string $ps_classname CSS classname(s) to apply to the link
 	 * @param string $ps_table The name or table_num of the edited items table
@@ -704,6 +727,7 @@
 	 * @param array $pa_attributes Optional array of attributes to set on the link's <a> tag. You can use this to set the id of the link, as well as any other <a> parameter.
 	 * @param array $pa_options Optional array of options. Supported options are:
 	 * 		verifyLink - if true and $pn_id is set, then existence of record with specified id is verified before link is returned. If the id does not exist then null is returned. Default is false - no verification performed.
+	 * @return string The <a> tag as string
 	 */
 	function caEditorLink($po_request, $ps_content, $ps_classname, $ps_table, $pn_id, $pa_additional_parameters=null, $pa_attributes=null, $pa_options=null) {
 		if (!($vs_url = caEditorUrl($po_request, $ps_table, $pn_id, false, $pa_additional_parameters, $pa_options))) {
@@ -770,6 +794,8 @@
 	 * @param array $pa_options Optional array of options. Supported options are:
 	 * 		verifyLink - if true and $pn_id is set, then existence of record with specified id is verified before link is returned. If the id does not exist then null is returned. Default is false - no verification performed.
 	 *		action - if set, action of returned link will be set to the supplied value
+	 *      quick_add - if set to true, returned link will point to the QuickAdd controller instead
+	 * @return string
 	 */
 	function caEditorUrl($po_request, $ps_table, $pn_id=null, $pb_return_url_as_pieces=false, $pa_additional_parameters=null, $pa_options=null) {
 		$o_dm = Datamodel::load();
@@ -778,6 +804,8 @@
 		} else {
 			if (!($t_table = $o_dm->getInstanceByTableName($ps_table, true))) { return null; }
 		}
+		$pb_quick_add = caGetOption('quick_add', $pa_options, false);
+
 		$vs_pk = $t_table->primaryKey();
 		$vs_table = $t_table->tableName();
 		if ($vs_table == 'ca_list_items') { $vs_table = 'ca_lists'; }
@@ -786,47 +814,42 @@
 			case 'ca_objects':
 			case 57:
 				$vs_module = 'editor/objects';
-				$vs_controller = 'ObjectEditor';
+				$vs_controller = $pb_quick_add ? 'ObjectQuickAdd' : 'ObjectEditor';
 				break;
 			case 'ca_object_lots':
 			case 51:
 				$vs_module = 'editor/object_lots';
-				$vs_controller = 'ObjectLotEditor';
-				break;
-			case 'ca_object_events':
-			case 45:
-				$vs_module = 'editor/object_events';
-				$vs_controller = 'ObjectEventEditor';
+				$vs_controller = $pb_quick_add ? 'ObjectLotQuickAdd' : 'ObjectLotEditor';
 				break;
 			case 'ca_entities':
 			case 20:
 				$vs_module = 'editor/entities';
-				$vs_controller = 'EntityEditor';
+				$vs_controller = $pb_quick_add ? 'EntityQuickAdd' : 'EntityEditor';
 				break;
 			case 'ca_places':
 			case 72:
 				$vs_module = 'editor/places';
-				$vs_controller = 'PlaceEditor';
+				$vs_controller = $pb_quick_add ? 'PlaceQuickAdd' : 'PlaceEditor';
 				break;
 			case 'ca_occurrences':
 			case 67:
 				$vs_module = 'editor/occurrences';
-				$vs_controller = 'OccurrenceEditor';
+				$vs_controller = $pb_quick_add ? 'OccurrenceQuickAdd' : 'OccurrenceEditor';
 				break;
 			case 'ca_collections':
 			case 13:
 				$vs_module = 'editor/collections';
-				$vs_controller = 'CollectionEditor';
+				$vs_controller = $pb_quick_add ? 'CollectionQuickAdd' : 'CollectionEditor';
 				break;
 			case 'ca_storage_locations':
 			case 89:
 				$vs_module = 'editor/storage_locations';
-				$vs_controller = 'StorageLocationEditor';
+				$vs_controller = $pb_quick_add ? 'StorageLocationQuickAdd' : 'StorageLocationEditor';
 				break;
 			case 'ca_sets':
 			case 103:
 				$vs_module = 'manage/sets';
-				$vs_controller = 'SetEditor';
+				$vs_controller = $pb_quick_add ? 'SetQuickAdd' : 'SetEditor';
 				break;
 			case 'ca_set_items':
 			case 105:
@@ -861,12 +884,12 @@
 			case 'ca_loans':
 			case 133:
 				$vs_module = 'editor/loans';
-				$vs_controller = 'LoanEditor';
+				$vs_controller = $pb_quick_add ? 'LoanQuickAdd' : 'LoanEditor';
 				break;
 			case 'ca_movements':
 			case 137:
 				$vs_module = 'editor/movements';
-				$vs_controller = 'MovementEditor';
+				$vs_controller = $pb_quick_add ? 'MovementQuickAdd' : 'MovementEditor';
 				break;
 			case 'ca_tours':
 			case 153:
@@ -892,7 +915,7 @@
 				return null;
 				break;
 		}
-		
+
 		switch($vs_table) {
 			case 'ca_relationship_types':
 				$vs_action = isset($pa_options['action']) ? $pa_options['action'] : (($po_request->isLoggedIn() && $po_request->user->canDoAction('can_configure_relationship_types')) ? 'Edit' : 'Summary'); 
@@ -900,7 +923,13 @@
 			default:
 				if(isset($pa_options['action'])){
 					$vs_action = $pa_options['action'];
-				} elseif($po_request->isLoggedIn() && $po_request->user->canAccess($vs_module,$vs_controller,"Edit",array($vs_pk => $pn_id)) && !(bool)$po_request->config->get($vs_table.'_editor_defaults_to_summary_view')) {
+				} elseif($pb_quick_add) {
+					$vs_action = 'Form';
+				} elseif(
+					$po_request->isLoggedIn() &&
+					$po_request->user->canAccess($vs_module,$vs_controller,"Edit",array($vs_pk => $pn_id)) &&
+					!((bool)$po_request->config->get($vs_table.'_editor_defaults_to_summary_view') && $pn_id) // when the id is null/0, we go to the Edit action, even when *_editor_defaults_to_summary_view is set
+				) {
 					$vs_action = 'Edit';
 				} else {
 					$vs_action = 'Summary';
@@ -955,53 +984,30 @@
 		$vs_pk = $t_table->primaryKey();
 		$vs_table = $ps_table;
 		
-		$vb_id_exists = null;
+		$vs_module = '';
+		$vs_controller = 'Detail';
 		
-		$vs_module = 'Detail';
-		$vs_action = 'Show';
-		switch($ps_table) {
-			case 'ca_objects':
-			case 57:
-				$vs_controller = 'Object';
-				break;
-			case 'ca_object_lots':
-			case 51:
-				$vs_controller = 'ObjectLot';
-				break;
-			case 'ca_entities':
-			case 20:
-				$vs_controller = 'Entity';
-				break;
-			case 'ca_places':
-			case 72:
-				$vs_controller = 'Place';
-				break;
-			case 'ca_occurrences':
-			case 67:
-				$vs_controller = 'Occurrence';
-				break;
-			case 'ca_collections':
-			case 13:
-				$vs_controller = 'Collection';
-				break;
-			case 'ca_list_items':
-			case 33:
-				$t_table->load($pn_id);
-				$vs_module = '';
-				$vs_controller = 'Search';
-				$vs_action = 'Index';
-				$vs_pk = 'search';
-				$pn_id = $t_table->get('ca_list_items.preferred_labels.name_plural');
-				break;
-			default:
-				return null;
-				break;
+		if(isset($pa_options['action'])){
+			$vs_action = $pa_options['action'];
+		} else {
+			$vs_action = caGetDetailForType($ps_table, caGetOption('type_id', $pa_options, null), array('request' => $po_request, 'preferredDetail' => caGetOption('preferredDetail', $pa_options, null)));
 		}
-		
+		if (caUseIdentifiersInUrls() && $t_table->getProperty('ID_NUMBERING_ID_FIELD')) {
+			$va_ids = $t_table->getFieldValuesForIDs(array($pn_id), array($t_table->getProperty('ID_NUMBERING_ID_FIELD')));
+			if (is_array($va_ids) && ($vn_id_for_idno = array_shift($va_ids))) {
+				$vb_id_exists = true;
+			}
+			if (strlen($vn_id_for_idno)) {
+				$pn_id = $vn_id_for_idno;
+			} else {
+				$pn_id = "id:{$pn_id}";
+			}
+		}
+		$vs_action .= "/".rawurlencode($pn_id);
 		
 		if (isset($pa_options['verifyLink']) && $pa_options['verifyLink']) {
 			// Make sure record link points to exists
-			if (($pn_id > 0) && !$t_table->load($pn_id)) {
+			if (!$vb_id_exists && ($pn_id > 0) && !$t_table->load($pn_id)) {
 				return null;
 			}
 		}
@@ -1017,7 +1023,7 @@
 			);
 		} else {
 			if (!is_array($pa_additional_parameters)) { $pa_additional_parameters = array(); }
-			$pa_additional_parameters = array_merge(array($vs_pk => $pn_id), $pa_additional_parameters);
+			//$pa_additional_parameters = array_merge(array('id' => $pn_id), $pa_additional_parameters);
 			return caNavUrl($po_request, $vs_module, $vs_controller, $vs_action, $pa_additional_parameters);
 		}
 	}
@@ -1156,4 +1162,16 @@
 		);
 	}
 	# ------------------------------------------------------------------------------------------------
-?>
+	/**
+	 * Redirect to given url
+	 * @param string $ps_url
+	 * @return bool success state
+	 */
+	function caSetRedirect($ps_url) {
+		global $g_response;
+		if(!($g_response instanceof ResponseHTTP)) { return false; }
+
+		$g_response->setRedirect($ps_url);
+		return true;
+	}
+	# ------------------------------------------------------------------------------------------------

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2010 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -80,16 +80,20 @@
 ?>
 					<tr>
 						<td>
+							<div class="caUserCommentsListName">
 <?php 
 							if($va_comment['user_id']){
 								print $va_comment['fname']." ".$va_comment['lname']."<br/>".$va_comment['user_email'];
 							}else{
-								print $va_comment['name']."<br/>".$va_comment['user_email'];
+								print $va_comment['name']."<br/>".$va_comment['email'];
 							}
 ?>
+							</div>
 						</td>
 						<td>
-							<?php print $va_comment['comment']; ?>
+							<div class="caUserCommentsListComment">
+								<?php print $va_comment['comment']; ?>
+							</div>
 						</td>	
 						<td>
 <?php

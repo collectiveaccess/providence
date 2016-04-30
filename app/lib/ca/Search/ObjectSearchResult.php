@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,22 +44,15 @@ class ObjectSearchResult extends BaseSearchResult {
 	protected $ops_table_name = 'ca_objects';
 	# -------------------------------------
 	/**
-	 * Constructor
-	 */
-	public function __construct($po_engine_result=null, $pa_tables=null) {
-		parent::__construct($po_engine_result=null, $pa_tables=null);
-	}
-	# -------------------------------------
-	/**
 	 * Override init to set ca_representations join params
 	 *
 	 * @param IWLPlugSearchEngineResult $po_engine_result
 	 * @param array $pa_tables
-	 * @param array $pa_options Options are:
+	 * @param array $pa_options Options are those taken by SearchResult::init():
 	 *		filterNonPrimaryRepresentations = If set only primary representations are returned. This can improve performance somewhat in most cases. Default is true.
 	 */
 	public function init($po_engine_result, $pa_tables, $pa_options=null) {
-		parent::init($po_engine_result, $pa_tables);
+		parent::init($po_engine_result, $pa_tables, $pa_options);
 		
 		if (!isset($pa_options['filterNonPrimaryRepresentations'])) { $pa_options['filterNonPrimaryRepresentations'] = true; }
 		if ($pa_options['filterNonPrimaryRepresentations']) {
@@ -251,16 +244,18 @@ class ObjectSearchResult extends BaseSearchResult {
 	}
 	# -------------------------------------
 	/**
+	 * Indicates if current user has rights to view media
 	 *
+	 * @param array $pa_access_values List of access values which media must have if user is to be able to view
+	 * @return boolean True if user has access, false if not
 	 */
 	 private function _haveAccessToRepresentation($pa_access_values) {
 	 	if (!is_array($pa_access_values)) { $pa_access_values = array(); }
 	 	if (!sizeof($pa_access_values)) { return true; }
-	 	if (!in_array($this->get('ca_object_representations.access'), $pa_access_values)) {
+	 	if (!sizeof(array_intersect($this->get('ca_object_representations.access', array('returnAsArray' => true)), $pa_access_values))) {
 			return false;	
 		}
 		return true;
 	 }
 	 # -------------------------------------
 }
-?>

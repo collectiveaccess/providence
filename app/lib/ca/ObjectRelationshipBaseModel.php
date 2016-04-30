@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -68,11 +68,10 @@
 			
 			$o_view->setVar('id_prefix', $ps_form_name);	
 			$o_view->setVar('placement_code', $ps_placement_code);	
-			$o_view->setVar('element_code', caGetOption('element_code', $pa_bundle_settings, null));
+			$o_view->setVar('element_code', caGetOption(array('elementCode', 'element_code'), $pa_bundle_settings, null));
 			$o_view->setVar('settings', $pa_bundle_settings);
 		
 			return $o_view->render('ca_object_representation_chooser_html.php');
 		}
 		# ------------------------------------------------------
 	}
-?>

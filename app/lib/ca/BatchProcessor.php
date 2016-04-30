@@ -563,6 +563,7 @@
 
  			$vs_import_mode 					= $pa_options['importMode'];
  			$vs_match_mode 						= $pa_options['matchMode'];
+ 			$vs_match_type						= $pa_options['matchType'];
  			$vn_type_id 						= $pa_options[$vs_import_target.'_type_id'];
  			$vn_rep_type_id 					= $pa_options['ca_object_representations_type_id'];
 
@@ -579,6 +580,9 @@
 
  			$vs_idno_mode 						= $pa_options['idnoMode'];
  			$vs_idno 							= $pa_options['idno'];
+
+			$vs_representation_idno_mode		= $pa_options['representationIdnoMode'];
+			$vs_representation_idno 			= $pa_options['representation_idno'];
 
  			$vs_set_mode 						= $pa_options['setMode'];
  			$vs_set_create_name 				= $pa_options['setCreateName'];
@@ -775,6 +779,7 @@
 
 							foreach($va_names_to_match as $vs_match_name) {
 								if (preg_match('!'.$vs_regex.'!', $vs_match_name, $va_matches)) {
+									if (!$va_matches[1]) { if (!($va_matches[1] = $va_matches[0])) { continue; } }	// skip blank matches
 
 									$o_log->logDebug(_t("Matched name %1 on regex %2",$vs_match_name,$vs_regex));
 
@@ -788,27 +793,37 @@
 
 									if (in_array($vs_import_mode, array('TRY_TO_MATCH', 'ALWAYS_MATCH'))) {
 										if(!is_array($va_fields_to_match_on = $po_request->config->getList('batch_media_import_match_on')) || !sizeof($va_fields_to_match_on)) {
-											$batch_media_import_match_on = array('idno');
+											$va_fields_to_match_on = array('idno');
 										}
 
 										$vs_bool = 'OR';
 										$va_values = array();
 										foreach($va_fields_to_match_on as $vs_fld) {
+											switch($vs_match_type) {
+												case 'STARTS':
+													$vs_match_value = $va_matches[1]."%";
+													break;
+												case 'ENDS':
+													$vs_match_value = "%".$va_matches[1];
+													break;
+												case 'CONTAINS':
+													$vs_match_value = "%".$va_matches[1]."%";
+													break;
+												case 'EXACT':
+												default:
+													$vs_match_value = $va_matches[1];
+													break;
+											}
 											if (in_array($vs_fld, array('preferred_labels', 'nonpreferred_labels'))) {
-												$va_values[$vs_fld] = array($vs_fld => array('name' => $va_matches[1]));
+												$va_values[$vs_fld] = array($vs_fld => array('name' => $vs_match_value));
 											} else {
-												$va_values[$vs_fld] = $va_matches[1];
+												$va_values[$vs_fld] = $vs_match_value;
 											}
 										}
-
-										if (is_array($va_limit_matching_to_type_ids) && sizeof($va_limit_matching_to_type_ids) > 0) {
-											$va_values['type_id'] = $va_limit_matching_to_type_ids;
-											$vs_bool = 'AND';
-										}
-
+										
 										$o_log->logDebug("Trying to find records using boolean {$vs_bool} and values ".print_r($va_values,true));
 
-										if (class_exists($vs_import_target) && ($vn_id = $vs_import_target::find($va_values, array('returnAs' => 'firstId', 'boolean' => $vs_bool)))) {
+										if (class_exists($vs_import_target) && ($vn_id = $vs_import_target::find($va_values, array('returnAs' => 'firstId', 'allowWildcards' => true, 'boolean' => $vs_bool, 'restrictToTypes' => $va_limit_matching_to_type_ids)))) {
 											if ($t_instance->load($vn_id)) {
 												$va_notices[$vs_relative_directory.'/'.$vs_match_name.'_match'] = array(
 													'idno' => $t_instance->get($t_instance->getProperty('ID_NUMBERING_ID_FIELD')),
@@ -828,7 +843,7 @@
 						}
 					}
 				}
-
+			
 				if (!$t_instance->getPrimaryKey()) {
 					// Use filename as idno if all else fails
 					if ($t_instance->load(array('idno' => $f, 'deleted' => 0))) {
@@ -842,12 +857,36 @@
 					}
 				}
 
+				switch($vs_representation_idno_mode) {
+					case 'filename':
+						// use the filename as identifier
+						$vs_rep_idno = $f;
+						break;
+					case 'filename_no_ext';
+						// use filename without extension as identifier
+						$vs_rep_idno = preg_replace('/\\.[^.\\s]{3,4}$/', '', $f);
+						break;
+					case 'directory_and_filename':
+						// use the directory + filename as identifier
+						$vs_rep_idno = $d.'/'.$f;
+						break;
+					default:
+						// use idno from form
+						$vs_rep_idno = $vs_representation_idno;
+						break;
+				}
+
 				$t_new_rep = null;
-				if ($t_instance->getPrimaryKey()) {
+				if ($t_instance->getPrimaryKey() && ($t_instance instanceof RepresentableBaseModel)) {
 					// found existing object
 					$t_instance->setMode(ACCESS_WRITE);
 
-					$t_new_rep = $t_instance->addRepresentation($vs_directory.'/'.$f, $vn_rep_type_id, $vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, false, array(), array('original_filename' => $f, 'returnRepresentation' => true, 'type_id' => $vn_rel_type_id));
+					$t_new_rep = $t_instance->addRepresentation(
+						$vs_directory.'/'.$f, $vn_rep_type_id, // path
+						$vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, false, // locale, status, access, primary
+						array('idno' => $vs_rep_idno), // values
+						array('original_filename' => $f, 'returnRepresentation' => true, 'type_id' => $vn_rel_type_id) // options
+					);
 
 					if ($t_instance->numErrors()) {
 						$o_eventlog->log(array(
@@ -893,6 +932,11 @@
 							case 'filename':
 								// use the filename as identifier
 								$t_instance->set('idno', $f);
+								break;
+							case 'filename_no_ext';
+								// use filename without extension as identifier
+								$f_no_ext = preg_replace('/\\.[^.\\s]{3,4}$/', '', $f);
+								$t_instance->set('idno', $f_no_ext);
 								break;
 							case 'directory_and_filename':
 								// use the directory + filename as identifier
@@ -956,7 +1000,12 @@
 							continue;
 						}
 
-						$t_new_rep = $t_instance->addRepresentation($vs_directory.'/'.$f, $vn_rep_type_id, $vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, true, array(), array('original_filename' => $f, 'returnRepresentation' => true, 'type_id' => $vn_rel_type_id));
+						$t_new_rep = $t_instance->addRepresentation(
+							$vs_directory.'/'.$f, $vn_rep_type_id, // path, type_id
+							$vn_locale_id, $vn_object_representation_status, $vn_object_representation_access, true, // locale, status, access, primary
+							array('idno' => $vs_rep_idno), // values
+							array('original_filename' => $f, 'returnRepresentation' => true, 'type_id' => $vn_rel_type_id) // options
+						);
 
 						if ($t_instance->numErrors()) {
 							$o_eventlog->log(array(
@@ -1115,10 +1164,12 @@
 		 * @param string $ps_input_format The format of the source data
 		 * @param array $pa_options
 		 *		progressCallback =
-		 *		reportCallback =
-		 *		sendMail =
-		 *		dryRun =
+		 *		reportCallback = 
+		 *		sendMail = 
+		 *		dryRun = 
+		 *		importAllDatasets = 
 		 *		log = log directory path
+		 *		originalFilename = filename reported by client for uploaded data files
 		 *		logLevel = KLogger constant for minimum log level to record. Default is KLogger::INFO. Constants are, in descending order of shrillness:
 		 *			KLogger::EMERG = Emergency messages (system is unusable)
 		 *			KLogger::ALERT = Alert messages (action must be taken immediately)
@@ -1133,7 +1184,7 @@
 		public static function importMetadata($po_request, $ps_source, $ps_importer, $ps_input_format, $pa_options=null) {
 			$va_errors = $va_noticed = array();
 			$vn_start_time = time();
-
+			
 			$o_config = Configuration::load();
 			if (!(ca_data_importers::mappingExists($ps_importer))) {
 				$va_errors['general'] = array(
@@ -1144,24 +1195,25 @@
 				);
 				return false;
 			}
-
-			$vs_log_dir = caGetOption('log', $pa_options, null);
-			$vs_log_level = caGetOption('logLevel', $pa_options, "INFO");
-
-			$vb_dry_run = caGetOption('dryRun', $pa_options, false);
-
+			
+			$vs_log_dir = caGetOption('log', $pa_options, null); 
+			$vs_log_level = caGetOption('logLevel', $pa_options, "INFO"); 
+			$vb_import_all_datasets =  caGetOption('importAllDatasets', $pa_options, false); 
+			
+			$vb_dry_run = caGetOption('dryRun', $pa_options, false); 
+			
 			$vn_log_level = BatchProcessor::_logLevelStringToNumber($vs_log_level);
 
-			if (is_dir($ps_source)) {
+			if (!isURL($ps_source) && is_dir($ps_source)) {
 				$va_sources = caGetDirectoryContentsAsList($ps_source, true, false, false, false);
 			} else {
 				$va_sources = array($ps_source);
 			}
-
+			
 			$vn_file_num = 0;
 			foreach($va_sources as $vs_source) {
 				$vn_file_num++;
-				if (!ca_data_importers::importDataFromSource($vs_source, $ps_importer, array('fileNumber' => $vn_file_num, 'numberOfFiles' => sizeof($va_sources), 'logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'useNcurses' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'dryRun' => $vb_dry_run))) {
+				if (!ca_data_importers::importDataFromSource($vs_source, $ps_importer, array('originalFilename' => caGetOption('originalFilename', $pa_options, null), 'fileNumber' => $vn_file_num, 'numberOfFiles' => sizeof($va_sources), 'logDirectory' => $o_config->get('batch_metadata_import_log_directory'), 'request' => $po_request,'format' => $ps_input_format, 'showCLIProgressBar' => false, 'useNcurses' => false, 'progressCallback' => isset($pa_options['progressCallback']) ? $pa_options['progressCallback'] : null, 'reportCallback' => isset($pa_options['reportCallback']) ? $pa_options['reportCallback'] : null,  'logDirectory' => $vs_log_dir, 'logLevel' => $vn_log_level, 'dryRun' => $vb_dry_run, 'importAllDatasets' => $vb_import_all_datasets))) {
 					$va_errors['general'][] = array(
 						'idno' => "*",
 						'label' => "*",
@@ -1179,13 +1231,13 @@
 					//return true;
 				}
 			}
-
+			
 			$vn_elapsed_time = time() - $vn_start_time;
-
-
+			
+			
 			if (isset($pa_options['sendMail']) && $pa_options['sendMail']) {
 				if ($vs_email = trim($po_request->user->get('email'))) {
-					caSendMessageUsingView($po_request, array($vs_email => $po_request->user->get('fname').' '.$po_request->user->get('lname')), __CA_ADMIN_EMAIL__, _t('[%1] Batch metadata import completed', $po_request->config->get('app_display_name')), 'batch_metadata_import_completed.tpl',
+					caSendMessageUsingView($po_request, array($vs_email => $po_request->user->get('fname').' '.$po_request->user->get('lname')), __CA_ADMIN_EMAIL__, _t('[%1] Batch metadata import completed', $po_request->config->get('app_display_name')), 'batch_metadata_import_completed.tpl', 
 						array(
 							'notices' => $va_notices, 'errors' => $va_errors,
 							'numErrors' => sizeof($va_errors), 'numProcessed' => sizeof($va_notices),
@@ -1198,7 +1250,7 @@
 					);
 				}
 			}
-
+			
 			if (isset($pa_options['sendSMS']) && $pa_options['sendSMS']) {
 				SMS::send($po_request->getUserID(), _t("[%1] Metadata import processing for begun at %2 is complete", $po_request->config->get('app_display_name'),  caGetLocalizedDate($vn_start_time)));
 			}
@@ -1241,4 +1293,3 @@
 		}
 		# ----------------------------------------
 	}
-?>

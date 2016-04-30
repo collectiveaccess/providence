@@ -11,8 +11,6 @@
 
 namespace Monolog\Processor;
 
-use Monolog\Processor\PsrLogMessageProcessor;
-
 class PsrLogMessageProcessorTest extends \PHPUnit_Framework_TestCase
 {
     /**
@@ -24,7 +22,7 @@ class PsrLogMessageProcessorTest extends \PHPUnit_Framework_TestCase
 
         $message = $proc(array(
             'message' => '{foo}',
-            'context' => array('foo' => $val)
+            'context' => array('foo' => $val),
         ));
         $this->assertEquals($expected, $message['message']);
     }

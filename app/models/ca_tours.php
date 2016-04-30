@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2014 Whirl-i-Gig
+ * Copyright 2011-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -137,6 +137,13 @@ BaseModel::$s_ca_models_definitions['ca_tours'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'Source information', 'DESCRIPTION' => 'Serialized array used to store source information for tour information retrieved via web services [NOT IMPLEMENTED YET].'
+		),
+		'view_count' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
 		)
  	)
 );
@@ -288,7 +295,7 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		if ($t_dupe = parent::duplicate($pa_options)) {
-			$vb_duplicate_subitems = isset($pa_options['duplicate_subitems']) && $pa_options['duplicate_subitems'];
+			$vb_duplicate_subitems = caGetOption('duplicate_subitems', $pa_options, false);
 		
 			if ($vb_duplicate_subitems) { 
 				// Try to dupe related ca_tour_stops rows
@@ -304,8 +311,11 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 				$va_stops = array();
 				while($qr_res->nextRow()) {
 					//$va_stops[$qr_res->get('stop_id')] = $qr_res->getRow();
-					$t_stop = new ca_tour_stops($qr_res->get('stop_id'));
+					$t_stop = new ca_tour_stops();
+					$t_stop->setTransaction($o_t);
+					$t_stop->load($qr_res->get('stop_id'));
 					if ($t_dupe_stop = $t_stop->duplicate($pa_options)) {
+						$t_dupe_stop->setTransaction($o_t);
 						$t_dupe_stop->setMode(ACCESS_WRITE);
 						$t_dupe_stop->set('tour_id', $t_dupe->getPrimaryKey());
 						$t_dupe_stop->update(); 
@@ -529,6 +539,7 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 		if (!$this->getPrimaryKey()) { return false; }
 		
 		$t_stop = new ca_tour_stops();
+		if($this->inTransaction()) { $t_stop->setTransaction($this->getTransaction()); }
 		$t_stop->setMode(ACCESS_WRITE);
 		$t_stop->set('idno', $ps_idno);
 		$t_stop->set('type_id', $pn_type_id);
@@ -559,7 +570,9 @@ class ca_tours extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	public function removeStop($pn_stop_id) {
 		if (!($vn_tour_id = $this->getPrimaryKey())) { return false; }
+		
 		$t_stop = new ca_tour_stops();
+		if($this->inTransaction()) { $t_stop->setTransaction($this->getTransaction()); }
 		
 		if (!$t_stop->load(array('tour_id' => $vn_tour_id, 'stop_id' => $pn_stop_id))) { return false; }
 		$t_stop->setMode(ACCESS_WRITE);

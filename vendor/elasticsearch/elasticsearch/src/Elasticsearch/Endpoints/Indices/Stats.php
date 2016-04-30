@@ -1,30 +1,22 @@
 <?php
-/**
- * User: zach
- * Date: 01/20/2014
- * Time: 14:34:49 pm
- */
 
 namespace Elasticsearch\Endpoints\Indices;
 
 use Elasticsearch\Endpoints\AbstractEndpoint;
-use Elasticsearch\Common\Exceptions;
 
 /**
  * Class Stats
  *
  * @category Elasticsearch
- * @package Elasticsearch\Endpoints\Indices
+ * @package  Elasticsearch\Endpoints\Indices
  * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
  * @link     http://elasticsearch.org
  */
-
 class Stats extends AbstractEndpoint
 {
     // Limit the information returned the specific metrics.
     private $metric;
-
 
     /**
      * @param $metric
@@ -37,10 +29,14 @@ class Stats extends AbstractEndpoint
             return $this;
         }
 
+        if (is_array($metric)) {
+            $metric = implode(",", $metric);
+        }
+
         $this->metric = $metric;
+
         return $this;
     }
-
 
     /**
      * @return string
@@ -62,7 +58,6 @@ class Stats extends AbstractEndpoint
         return $uri;
     }
 
-
     /**
      * @return string[]
      */
@@ -79,7 +74,6 @@ class Stats extends AbstractEndpoint
             'metric'
         );
     }
-
 
     /**
      * @return string

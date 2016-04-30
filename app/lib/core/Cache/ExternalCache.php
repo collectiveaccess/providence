@@ -102,7 +102,7 @@ class ExternalCache {
 		if(!self::init()) { return false; }
 		self::checkParameters($ps_namespace, $ps_key);
 
-		return self::getCache()->fetch($ps_namespace.':'.$ps_key);
+		return self::getCache()->fetch(self::makeKey($ps_key, $ps_namespace));
 	}
 	# ------------------------------------------------
 	/**
@@ -122,7 +122,7 @@ class ExternalCache {
 			define('__CA_CACHE_TTL__', 3600);
 		}
 
-		self::getCache()->save($ps_namespace.':'.$ps_key, $pm_data, (!is_null($pn_ttl) ? $pn_ttl : __CA_CACHE_TTL__));
+		self::getCache()->save(self::makeKey($ps_key, $ps_namespace), $pm_data, (!is_null($pn_ttl) ? $pn_ttl : __CA_CACHE_TTL__));
 		return true;
 	}
 	# ------------------------------------------------
@@ -137,7 +137,7 @@ class ExternalCache {
 		if(!self::init()) { return false; }
 		self::checkParameters($ps_namespace, $ps_key);
 
-		return self::getCache()->contains($ps_namespace.':'.$ps_key);
+		return self::getCache()->contains(self::makeKey($ps_key, $ps_namespace));
 	}
 	# ------------------------------------------------
 	/**
@@ -151,7 +151,7 @@ class ExternalCache {
 		if(!self::init()) { return false; }
 		self::checkParameters($ps_namespace, $ps_key);
 
-		return self::getCache()->delete($ps_namespace.':'.$ps_key);
+		return self::getCache()->delete(self::makeKey($ps_key, $ps_namespace));
 	}
 	# ------------------------------------------------
 	/**
@@ -190,6 +190,8 @@ class ExternalCache {
 		switch(__CA_CACHE_BACKEND__) {
 			case 'memcached':
 				return self::getMemcachedObject();
+			case 'redis':
+				return self::getRedisObject();
 			case 'apc':
 				return self::getApcObject();
 			case 'file':
@@ -203,7 +205,7 @@ class ExternalCache {
 		$vs_cache_dir = $vs_cache_base_dir.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'Cache';
 
 		try {
-			$o_cache = new \Doctrine\Common\Cache\CAFileSystemCache($vs_cache_dir);
+			$o_cache = new \Doctrine\Common\Cache\CAFileSystemCache($vs_cache_dir, '.ca.cache');
 			return $o_cache;
 		} catch (InvalidArgumentException $e) {
 			// carry on ... but no caching :(
@@ -228,8 +230,33 @@ class ExternalCache {
 		return $o_cache;
 	}
 	# ------------------------------------------------
+	private static function getRedisObject(){
+		if(!defined('__CA_REDIS_HOST__')) {
+			define('__CA_REDIS_HOST__', 'localhost');
+		}
+
+		if(!defined('__CA_REDIS_PORT__')) {
+			define('__CA_REDIS_PORT__', 6379);
+		}
+
+		$o_redis = new Redis();
+		$o_redis->connect(__CA_REDIS_HOST__, __CA_REDIS_PORT__);
+		if(defined('__CA_REDIS_DB__') && is_int(__CA_REDIS_DB__)) {
+			$o_redis->select(__CA_REDIS_DB__);
+		}
+
+		$o_cache = new \Doctrine\Common\Cache\RedisCache();
+		$o_cache->setRedis($o_redis);
+		return $o_cache;
+	}
+	# ------------------------------------------------
 	private static function getApcObject(){
 		return new \Doctrine\Common\Cache\ApcCache();
+	}
+	# ------------------------------------------------
+	private static function makeKey($ps_key, $ps_namespace) {
+		if(!defined('__CA_APP_TYPE__')) { define('__CA_APP_TYPE__', 'PROVIDENCE'); }
+		return __CA_APP_TYPE__.':'.$ps_key.':'.$ps_namespace;
 	}
 	# ------------------------------------------------
 }

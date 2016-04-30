@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -163,7 +163,7 @@ class ca_attributes extends BaseModel {
 		)
 	);
 	
-	static $s_attribute_cache_size = 8192;
+	static $s_attribute_cache_size = 1024;
 	static $s_get_attributes_cache = array();
 	static $s_ca_attributes_element_instance_cache = array();
 	
@@ -185,6 +185,7 @@ class ca_attributes extends BaseModel {
 	#
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
+		require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
@@ -195,6 +196,36 @@ class ca_attributes extends BaseModel {
 		return;
 	}
 	# ------------------------------------------------------
+	public function insert($pa_options=null) {
+		if($vm_ret = parent::insert($pa_options)) {
+			// generate and set GUID
+			$t_guid = $this->getAppDatamodel()->getInstance('ca_guids');
+			$t_guid->setMode(ACCESS_WRITE);
+			$t_guid->setTransaction($this->getTransaction());
+			$t_guid->set('table_num', $this->tableNum());
+			$t_guid->set('row_id', $this->getPrimaryKey());
+			$t_guid->set('guid', caGetOption('setGUIDTo', $pa_options, caGenerateGUID()));
+			$t_guid->insert();
+		}
+
+		return $vm_ret;
+	}
+	# -------------------------------------------------------
+	public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		$vn_primary_key = $this->getPrimaryKey();
+		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
+
+		if($vn_primary_key && $vn_rc) {
+			$t_guid = $this->getAppDatamodel()->getInstance('ca_guids');
+			if ($t_guid->load(array('table_num' => $this->tableNum(), 'row_id' => $vn_primary_key))) {
+				$t_guid->setMode(ACCESS_WRITE);
+				$t_guid->delete();
+			}
+		}
+
+		return $vn_rc;
+	}
+	# -------------------------------------------------------
 	/**
 	 *
 	 */
@@ -563,10 +594,9 @@ class ca_attributes extends BaseModel {
 				caa.attribute_id, caa.locale_id, caa.element_id element_set_id, caa.row_id,
 				caav.value_id, caav.item_id, caav.value_longtext1, caav.value_longtext2,
 				caav.value_decimal1, caav.value_decimal2, caav.value_integer1, caav.value_blob,
-				cme.element_id, cme.datatype, cme.settings, cme.element_code
+				caav.element_id
 			FROM ca_attributes caa
 			INNER JOIN ca_attribute_values AS caav ON caa.attribute_id = caav.attribute_id
-			INNER JOIN ca_metadata_elements AS cme ON cme.element_id = caav.element_id
 			WHERE
 				(caa.table_num = ?) AND (caa.row_id IN (?)) AND (caa.element_id IN (?))
 			ORDER BY
@@ -583,6 +613,10 @@ class ca_attributes extends BaseModel {
 		$o_attr = $vn_last_element_id = null; 
 		while($qr_attrs->nextRow()) {
 			$va_raw_row = $qr_attrs->getRow();
+			
+			$va_raw_row['element_code'] = ca_metadata_elements::getElementCodeForID($va_raw_row['element_id']);
+			$va_raw_row['datatype'] = ca_metadata_elements::getElementDatatype($va_raw_row['element_id']);
+			
 			if ($vn_last_attribute_id != $va_raw_row['attribute_id']) {
 				if ($vn_last_attribute_id && $vn_last_row_id) {
 					$va_attrs[$vn_last_row_id][$vn_last_element_id][] = $o_attr;
@@ -726,10 +760,12 @@ class ca_attributes extends BaseModel {
 	 */
 	static public function getAttributeCount($po_db, $pn_table_num, $pn_row_id, $pn_element_id) {
 		$qr_attrs = $po_db->query("
-			SELECT count(*) c
-			FROM ca_attributes caa
+			SELECT count(distinct caa.attribute_id) c
+			FROM ca_attributes caa, ca_attribute_values cav
 			WHERE
-				(caa.table_num = ?) AND (caa.row_id = ?) AND (caa.element_id = ?)
+				(cav.attribute_id = caa.attribute_id) AND
+				(caa.table_num = ?) AND (caa.row_id = ?) AND (caa.element_id = ?) AND
+				(cav.item_id IS NOT NULL OR cav.value_longtext1 IS NOT NULL OR cav.value_decimal1 IS NOT NULL OR cav.value_integer1 IS NOT NULL OR cav.value_blob IS NOT NULL)
 		", (int)$pn_table_num, (int)$pn_row_id, (int)$pn_element_id);
 		if ($po_db->numErrors()) {
 			//$this->errors = $po_db->errors;
@@ -854,5 +890,23 @@ class ca_attributes extends BaseModel {
 		return $va_values;
 	}
 	# ------------------------------------------------------
+	/**
+	 * Get code for element
+	 * @return string
+	 * @throws MemoryCacheInvalidParameterException
+	 */
+	public function getElementCode() {
+		if(!$this->getPrimaryKey()) { return false; }
+
+		if(MemoryCache::contains($this->getPrimaryKey(), 'AttributeToElementCodeCache')) {
+			return MemoryCache::fetch($this->getPrimaryKey(), 'AttributeToElementCodeCache');
+		}
+
+		$t_element = new ca_metadata_elements($this->get('element_id'));
+		$vs_element_code = $t_element->get('element_code');
+
+		MemoryCache::save($this->getPrimaryKey(), $vs_element_code, 'AttributeToElementCodeCache');
+		return $vs_element_code;
+	}
+	# ------------------------------------------------------
 }
-?>

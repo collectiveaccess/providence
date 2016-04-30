@@ -37,7 +37,7 @@
 require_once(__CA_LIB_DIR__."/core/BaseObject.php");
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
 require_once(__CA_LIB_DIR__."/core/Db.php");
-require_once(__CA_LIB_DIR__."/core/Error.php");
+require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
 require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 require_once(__CA_LIB_DIR__."/core/ApplicationVars.php");
 require_once(__CA_LIB_DIR__."/core/Utils/ProcessStatus.php");
@@ -200,6 +200,49 @@ class TaskQueue extends BaseObject {
 	}
 	# ---------------------------------------------------------------------------
 	/**
+	 * Reset unfinished tasks, i.e. tasks with started_on!=null, completed_on==null and error_code=0
+	 * This is useful when the task queue script (or the whole machine) crashed.
+	 * It shouldn't interfere with any running handlers.
+	 */
+	function resetUnfinishedTasks() {
+		// verify registered processes
+		$o_appvars = new ApplicationVars();
+		$va_opo_processes = $o_appvars->getVar("taskqueue_opo_processes");
+		if (!is_array($va_opo_processes)) { $va_opo_processes = array(); }
+		$va_opo_verified_processes = $this->verifyProcesses($va_opo_processes);
+		$o_appvars->setVar("taskqueue_opo_processes", $va_opo_verified_processes);
+		$o_appvars->save();
+
+		$o_db = new Db();
+		$qr_unfinished = $o_db->query("
+			SELECT *
+			FROM ca_task_queue
+			WHERE
+				completed_on IS NULL AND
+				started_on IS NOT NULL AND
+				error_code = 0
+		");
+
+		// reset start datetime for zombie rows
+		while($qr_unfinished->nextRow()) {
+			// don't touch rows that are being processed right now
+			if(
+				$this->rowKeyIsBeingProcessed($qr_unfinished->get('row_key')) ||
+				$this->entityKeyIsBeingProcessed($qr_unfinished->get('entity_key'))
+			) {
+				continue;
+			}
+			// reset started_on datetime
+			$this->opo_eventlog->log(array(
+				"CODE" => "QUE",
+				"SOURCE" => "TaskQueue->resetUnfinishedTasks()",
+				"MESSAGE" => "Reset start_date for unfinished task with task_id ".$qr_unfinished->get('task_id')
+			));
+			$o_db->query("UPDATE ca_task_queue SET started_on = NULL WHERE task_id = ?", $qr_unfinished->get('task_id'));
+		}
+	}
+	# ---------------------------------------------------------------------------
+	/**
 	 *
 	 */
 	function processQueue($ps_handler="") {
@@ -297,7 +340,7 @@ class TaskQueue extends BaseObject {
 					$this->opo_eventlog->log(array(
 						"CODE" => "ERR", 
 						"SOURCE" => "TaskQueue->processQueue()", 
-						"MESSAGE" => "Queue processing failed using handler $proc_handler: ".$h->error->getErrorDescription()." [".$h->error->getErrorNumber()."]; queue was <b>NOT</b> halted")
+						"MESSAGE" => "Queue processing failed using handler $proc_handler: ".($h->error ? $h->error->getErrorDescription() : '')." [".$h->error->getErrorNumber()."]; queue was <b>NOT</b> halted")
 					);
 					$this->errors[] = $h->error;
 					

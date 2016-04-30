@@ -15,10 +15,10 @@ class Members extends AbstractApi
         $parameters = array();
         $path = 'orgs/'.rawurlencode($organization).'/';
         if (null === $type) {
-           $path .= 'members';
-           if (null !== $filter) {
-               $parameters['filter'] = $filter;
-           }
+            $path .= 'members';
+            if (null !== $filter) {
+                $parameters['filter'] = $filter;
+            }
         } else {
             $path .= 'public_members';
         }
@@ -44,6 +44,14 @@ class Members extends AbstractApi
     public function conceal($organization, $username)
     {
         return $this->delete('orgs/'.rawurlencode($organization).'/public_members/'.rawurlencode($username));
+    }
+
+    /*
+     * Add user to organization
+     */
+    public function add($organization, $username)
+    {
+        return $this->put('orgs/'.rawurlencode($organization).'/memberships/'.rawurlencode($username));
     }
 
     public function remove($organization, $username)

@@ -108,7 +108,7 @@ class ModelService extends BaseJSONService {
 
 		foreach($va_codes as $vs_code => $va_junk){
 			// subelements
-			$t_element = $t_instance->_getElementInstance($vs_code);
+			$t_element = ca_metadata_elements::getInstance($vs_code);
 			foreach($t_element->getElementsInSet() as $va_element_in_set){
 				if($va_element_in_set["datatype"]==0) continue; // don't include sub-containers
 				$va_element_in_set["datatype"] = ca_metadata_elements::getAttributeNameForTypeCode($va_element_in_set["datatype"]);

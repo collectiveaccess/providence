@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2013-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -128,20 +128,23 @@ $phpWord->addTableStyle('myOwnTableStyle', $styleTable, $styleFirstRow);
 		// Second column : bundles
 		$contentCell = $table->addCell(12 * $cmToTwips);
 
-		$contentCell->addText($vo_result->getWithTemplate('^ca_objects.preferred_labels.name (^ca_objects.idno)'), $styleHeaderFont);
+		$contentCell->addText(
+			html_entity_decode(strip_tags(br2nl($vo_result->get('preferred_labels'))), ENT_QUOTES | ENT_HTML5),
+			$styleHeaderFont
+		);
 
-		foreach($list as $vn_placement_id => $va_display_item) {
+		foreach($list as $vn_placement_id => $va_info) {
 
 			if (
-				(strpos($va_display_item['bundle_name'], 'ca_object_representations.media') !== false)
+				(strpos($va_info['bundle_name'], 'ca_object_representations.media') !== false)
 				&&
-				($va_display_item['settings']['display_mode'] == 'media') // make sure that for the 'url' mode we don't insert the image here
+				($va_info['settings']['display_mode'] == 'media') // make sure that for the 'url' mode we don't insert the image here
 			) {
 				// Inserting bundle name on one line
-				$contentCell->addText($va_display_item['display'].' :', $styleBundleNameFont);
+				$contentCell->addText($va_info['display'].': ', $styleBundleNameFont);
 
 				// Fetching version asked & corresponding file
-				$vs_version = str_replace("ca_object_representations.media.", "", $va_display_item['bundle_name']);
+				$vs_version = str_replace("ca_object_representations.media.", "", $va_info['bundle_name']);
 				$va_info = $vo_result->getMediaInfo('ca_object_representations.media',$vs_version);
 				
 				// If it's a JPEG, print it (basic filter to avoid non handled media version)
@@ -154,12 +157,14 @@ $phpWord->addTableStyle('myOwnTableStyle', $styleTable, $styleFirstRow);
 					}
 				}
 
-			} elseif ($vs_display_text = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request))) {
-
+			} elseif ($vs_display_text = $t_display->getDisplayValue($vo_result, $vn_placement_id, array_merge(array('request' => $this->request, 'purify' => true), is_array($va_info['settings']) ? $va_info['settings'] : array()))) {
 
                 $textrun = $contentCell->createTextRun();
-				$textrun->addText($va_display_item['display'].' :', $styleBundleNameFont);
-		        $textrun->addText(" ".strip_tags(br2nl($vs_display_text)), $styleContentFont);
+				$textrun->addText($va_info['display'].': ', $styleBundleNameFont);
+		        $textrun->addText(
+					html_entity_decode(strip_tags(br2nl($vs_display_text)), ENT_QUOTES | ENT_HTML5),
+					$styleContentFont
+				);
 
 			}}
 		$vn_line++;

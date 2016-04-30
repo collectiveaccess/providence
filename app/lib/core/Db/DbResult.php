@@ -237,12 +237,12 @@ class DbResult extends DbBase {
 	/**
 	 * Move the pointer to a certain position in the result set.
 	 *
-	 * @param int Position where the pointer should move to; default is 0.
+	 * @param int $pn_pos Position where the pointer should move to; default is 0.
 	 * @return bool Success or not
 	 */
 	function seek($pn_pos=0) {
 		$this->clearErrors();
-		$this->opo_db->seek($this, $this->opr_res, $pn_pos);
+		$vm_ret = $this->opo_db->seek($this, $this->opr_res, $pn_pos);
 
 		if ($this->numErrors()) {
 			$this->opo_db->seek($this, $this->opr_res, 0);
@@ -250,7 +250,7 @@ class DbResult extends DbBase {
     		return false;
 		}
 		$this->opn_current_row = $pn_pos;
-    	return true;
+    	return $vm_ret;
 	}
 	# ---------------------------------------------------------------------------
 	/**
@@ -786,4 +786,3 @@ class DbResult extends DbBase {
 		unset($this->opo_db);
 	}
 }
-?>
