@@ -168,7 +168,7 @@ class AttributeGetTest extends BaseTestWithData {
 		$vm_ret = $this->opt_object->get('ca_objects.dimensions.dimensions_length');
 		$this->assertEquals("10.0 in", $vm_ret);
 		$vm_ret = $this->opt_object->get('ca_objects.dimensions.dimensions_weight');
-		$this->assertEquals("2.0000 lb", $vm_ret);
+		$this->assertEquals("2 lb", $vm_ret);
 
 		$vm_ret = $this->opt_object->get('ca_objects.integer_test', array('delimiter' => ' / '));
 		$this->assertEquals("23 / 1984", $vm_ret);
