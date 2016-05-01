@@ -2462,6 +2462,7 @@ class BaseModel extends BaseObject {
 
 						if($this->getHierarchyType() == __CA_HIER_TYPE_ADHOC_MONO__) {	// Ad-hoc hierarchy
 							if (!$this->get($this->getProperty('HIERARCHY_ID_FLD'))) {
+								$this->set($this->getProperty('HIERARCHY_ID_FLD'), $this->getPrimaryKey());
 								$vs_sql .= $this->getProperty('HIERARCHY_ID_FLD').' = '.$this->getPrimaryKey().' ';
 							}
 						}
