@@ -61,19 +61,21 @@
 			$va_media_info = $vo_result->getMediaInfo('ca_object_representations.media', 'preview170');
 			$va_tmp = $vo_result->getMediaTags('ca_object_representations.media', 'preview170');
 
-			$vs_background_image = caNavIcon(__CA_NAV_ICON_OVERVIEW__, "64px");
-			$vn_padding_top = 0;
-			$vn_padding_top_bottom =  ((180 - $va_media_info["HEIGHT"]) / 2);
-			
+			$vb_has_image = true;
 			if (sizeof($va_tmp) == 0) {
-				$vs_background_image = 'background-image:url(\''.$vs_background_image.'\'); background-position: 55px 65px; background-repeat: no-repeat; background-size: 64px 64px; opacity: .3;';
+				$va_tmp[] = "<span style='opacity: 0.3;'>".caNavIcon(__CA_NAV_ICON_OVERVIEW__, "64px");
+				$vn_padding_top = $vn_padding_top_bottom = 60;
+				$vb_has_image = false;
+			} else {
+				$vn_padding_top = 0;
+				$vn_padding_top_bottom =  ((180 - $va_media_info["HEIGHT"]) / 2);
 			}
 ?>
 			<td align="center" valign="top" style="padding:2px 2px 2px 2px;">
-				<div class="objectThumbnailsImageContainer" style="padding: <?php print $vn_padding_top_bottom; ?>px 0px <?php print $vn_padding_top_bottom; ?>px 0px; <?php print $vs_background_image; ?>"> 
+				<div class="objectThumbnailsImageContainer" style="padding: <?php print $vn_padding_top_bottom; ?>px 0px <?php print $vn_padding_top_bottom; ?>px 0px;"> 
 					<input type="checkbox" name="add_to_set_ids" value="<?php print (int)$vn_object_id; ?>" class="addItemToSetControl addItemToSetControlInThumbnails"/>		
 					<?php print caEditorLink($this->request, array_shift($va_tmp), 'qlButtonEditorLink', 'ca_objects', $vn_object_id, array(), array('data-id' => $vn_object_id)); ?>
-					<div class="qlButtonContainerThumbnail" id="ql_<?php print $vn_object_id; ?>"><a class='qlButton' data-id="<?php print $vn_object_id; ?>"><?php print _t("Quick Look"); ?></a></div>
+					<?php if ($vb_has_image) { ?><div class="qlButtonContainerThumbnail" id="ql_<?php print $vn_object_id; ?>"><a class='qlButton' data-id="<?php print $vn_object_id; ?>"><?php print _t("Quick Look"); ?></a></div><?php } ?>
 				</div>
 				<div class="thumbCaption"><?php print $vs_caption; ?><br/><?php print caEditorLink($this->request, $vs_idno, '', 'ca_objects', $vn_object_id); ?></div>
 			</td>
