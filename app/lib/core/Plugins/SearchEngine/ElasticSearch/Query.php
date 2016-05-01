@@ -298,8 +298,7 @@ class Query {
 	protected function getFieldTypeForTerm($po_term) {
 		$va_parts = preg_split("!(\\\)?/!", $po_term->field);
 		$vs_table = $va_parts[0];
-		unset($va_parts[0]);
-		$vs_fld = join('/', $va_parts);
+		$vs_fld = array_pop($va_parts);
 		return FieldTypes\FieldType::getInstance($vs_table, $vs_fld);
 	}
 

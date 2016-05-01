@@ -644,7 +644,7 @@
 		 * 
 		 */
 		public function getLeftTableInstance() {
-			$t_left = $this->getAppDatamodel()->getInstanceByTableName($this->RELATIONSHIP_LEFT_TABLENAME, true);
+			$t_left = $this->getAppDatamodel()->getInstanceByTableName($this->RELATIONSHIP_LEFT_TABLENAME, false);
 			
 			if ($t_left && $t_left->load($this->get($this->getLeftTableFieldName()))) {
 				return $t_left;
@@ -656,7 +656,7 @@
 		 * 
 		 */
 		public function getRightTableInstance() {
-			$t_right = $this->getAppDatamodel()->getInstanceByTableName($this->RELATIONSHIP_RIGHT_TABLENAME, true);
+			$t_right = $this->getAppDatamodel()->getInstanceByTableName($this->RELATIONSHIP_RIGHT_TABLENAME, false);
 			
 			if ($t_right && $t_right->load($this->get($this->getRightTableFieldName()))) {
 				return $t_right;
