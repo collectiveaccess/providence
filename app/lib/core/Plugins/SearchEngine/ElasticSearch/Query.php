@@ -144,9 +144,12 @@ class Query {
 					$vs_old_subquery = preg_replace('/^\+/u', '', (string) $o_subquery);
 					$vs_newsubquery = preg_replace('/^\+/u', '', (string) $o_new_subquery);
 					$vs_search_expression = str_replace($vs_old_subquery, $vs_newsubquery, $vs_search_expression);
-					// get rid of empty "AND ()" blocks that prevent ElasticSearch query parsing
+
+					// get rid of empty "AND|OR ()" or "() AND|OR" blocks that prevent ElasticSearch query parsing
 					// (can happen in advanced search forms)
-					$vs_search_expression = preg_replace("/\s*AND\s+\(\s*\)/u", '', $vs_search_expression);
+					$vs_search_expression = preg_replace("/\s*(AND|OR)\s+\(\s*\)/u", '', $vs_search_expression);
+					$vs_search_expression = preg_replace("/\(\s*\)\s+(AND|OR)\s*/u", '', $vs_search_expression);
+
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Boolean':
 					/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Boolean. */
