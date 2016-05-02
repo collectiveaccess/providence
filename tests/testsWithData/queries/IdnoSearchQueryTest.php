@@ -77,13 +77,6 @@ class IdnoSearchQueryTest extends AbstractSearchQueryTest {
 			),
 		)));
 
-		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
-			'intrinsic_fields' => array(
-				'type_id' => 'image',
-				'idno' => '2012-ahlborn-chs 19',
-			),
-		)));
-
 		// search queries
 		$this->setSearchQueries(array(
 			'ca_objects.idno:"D.99/2-38"' => 1,
@@ -100,10 +93,7 @@ class IdnoSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.idno:"D.99/0000001"' => 1,
 			'ca_objects.idno:"D.99/1"' => 1,
 
-			'ca_objects.idno:"2016.1.15"' => 1,
-
-			'ca_objects.idno:"2012-ahlborn-chs"' => 1,
-			'ca_objects.idno:"2012-ahlborn-chs 19"' => 1,
+			'ca_objects.idno:"2016.1.15"' => 1
 		));
 	}
 	# -------------------------------------------------------
