@@ -100,6 +100,9 @@ class RelatedAttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_object_lots.description:"Bacon ipsum"' => 1,
 			'ca_object_lots.acquisition_date:"1985"' => 1,
 			'ca_object_lots.acquisition_date:"1984"' => 0,
+			'(ca_object_lots.description:"Bacon") AND (ca_object_lots.acquisition_date:1985)' => 1,
+			'(ca_object_lots.description:bacon) AND (ca_object_lots.acquisition_date:1985)' => 1,
+			'(ca_object_lots.type_id:1) AND (ca_object_lots.acquisition_date:1985)' => 0,
 		));
 	}
 	# -------------------------------------------------------
