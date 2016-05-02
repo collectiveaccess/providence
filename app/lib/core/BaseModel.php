@@ -11922,10 +11922,11 @@ $pa_options["display_form_field_tips"] = true;
 	/**
 	 * Get guid by primary key
 	 * @param int $pn_primary_key
+	 * @param array $pa_options
 	 * @return bool|string
 	 */
-	public static function getGUIDByPrimaryKey($pn_primary_key) {
-		return ca_guids::getForRow(Datamodel::load()->getTableNum(get_called_class()), $pn_primary_key);
+	public static function getGUIDByPrimaryKey($pn_primary_key, $pa_options = array()) {
+		return ca_guids::getForRow(Datamodel::load()->getTableNum(get_called_class()), $pn_primary_key, $pa_options);
 	}
 	# -----------------------------------------------------
 }

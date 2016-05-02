@@ -180,13 +180,28 @@ class ca_guids extends BaseModel {
 	 * Get GUID for given row. Results are cached on disk.
 	 * @param int $pn_table_num
 	 * @param int $pn_row_id
+	 * @param array $pa_options
 	 * @return bool|string
 	 */
-	public static function getForRow($pn_table_num, $pn_row_id) {
+	public static function getForRow($pn_table_num, $pn_row_id, $pa_options=array()) {
 		if(!$pn_table_num || !$pn_row_id) { return false; }
 
-		if(CompositeCache::contains("{$pn_table_num}/{$pn_row_id}", 'TableNumRowIDsToGUIDs')) {
-			return CompositeCache::fetch("{$pn_table_num}/{$pn_row_id}", 'TableNumRowIDsToGUIDs');
+		if(!is_array($pa_options)) { $pa_options = array(); }
+		$vs_cache_key = md5("{$pn_table_num}/{$pn_row_id}/" . serialize($pa_options));
+
+		if(CompositeCache::contains($vs_cache_key, 'TableNumRowIDsToGUIDs')) {
+			return CompositeCache::fetch($vs_cache_key, 'TableNumRowIDsToGUIDs');
+		}
+
+		if(($pa_checksum_tables = caGetOption('checksumTables', $pa_options)) && is_array($pa_checksum_tables)) {
+			if(in_array(Datamodel::load()->getTableName($pn_table_num), $pa_checksum_tables)) {
+				$t_instance = Datamodel::load()->getTableInstance($pn_table_num);
+				if(($t_instance instanceof BundlableLabelableBaseModelWithAttributes) && $t_instance->load($pn_row_id)) {
+					$vs_checksum = $t_instance->getChecksum();
+					CompositeCache::save($vs_cache_key, $vs_checksum, 'TableNumRowIDsToGUIDs');
+					return $vs_checksum;
+				}
+			}
 		}
 
 		$o_db = new Db();
@@ -196,12 +211,12 @@ class ca_guids extends BaseModel {
 
 		if($qr_guid->nextRow()) {
 			$vs_guid = $qr_guid->get('guid');
-			CompositeCache::save("{$pn_table_num}/{$pn_row_id}", $vs_guid, 'TableNumRowIDsToGUIDs');
+			CompositeCache::save($vs_cache_key, $vs_guid, 'TableNumRowIDsToGUIDs');
 			return $vs_guid;
 		} else {
 			if($t_instance = Datamodel::load()->getInstance($pn_table_num, true)) {
 				if($vs_guid = self::addForRow($pn_table_num, $pn_row_id)) {
-					CompositeCache::save("{$pn_table_num}/{$pn_row_id}", $vs_guid, 'TableNumRowIDsToGUIDs');
+					CompositeCache::save($vs_cache_key, $vs_guid, 'TableNumRowIDsToGUIDs');
 					return $vs_guid;
 				}
 			}

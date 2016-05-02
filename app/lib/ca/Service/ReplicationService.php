@@ -88,6 +88,13 @@ class ReplicationService {
 			}
 		}
 
+		if($ps_checksum_tables = $po_request->getParameter('checksumTables', pString, null, array('retainBackslashes' => false))) {
+			$pa_checksum_tables = @json_decode($ps_checksum_tables, true);
+			if(is_array($pa_checksum_tables) && sizeof($pa_checksum_tables)) {
+				$pa_options['checksumTables'] = $pa_checksum_tables;
+			}
+		}
+
 		return ca_change_log::getLog($pn_from, $pn_limit, $pa_options);
 	}
 	# -------------------------------------------------------

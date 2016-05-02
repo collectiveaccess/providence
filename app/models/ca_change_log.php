@@ -277,7 +277,7 @@ class ca_change_log extends BaseModel {
 						}
 						break;
 					case 'attribute_id':
-						if($vs_attr_guid = ca_attributes::getGUIDByPrimaryKey($vm_val)) {
+						if($vs_attr_guid = ca_attributes::getGUIDByPrimaryKey($vm_val, $pa_options)) {
 							$va_snapshot['attribute_guid'] = $vs_attr_guid;
 						}
 						break;
@@ -293,7 +293,7 @@ class ca_change_log extends BaseModel {
 						break;
 					case 'row_id':
 						if(isset($va_snapshot['table_num']) && ($vn_table_num = $va_snapshot['table_num'])) {
-							$va_snapshot['row_guid'] = \ca_guids::getForRow($vn_table_num, $vm_val);
+							$va_snapshot['row_guid'] = \ca_guids::getForRow($vn_table_num, $vm_val, $pa_options);
 						}
 						break;
 					default:
@@ -319,17 +319,17 @@ class ca_change_log extends BaseModel {
 
 							// handle monohierarchy (usually parent_id) fields
 							if($vs_fld == $t_instance->getProperty('HIERARCHY_PARENT_ID_FLD')) {
-								$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_instance->tableNum(), $vm_val);
+								$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_instance->tableNum(), $vm_val, $pa_options);
 							}
 
 							// handle left and right foreign keys in foo_x_bar table
 							if($t_instance instanceof BaseRelationshipModel) {
 								if($vs_fld == $t_instance->getProperty('RELATIONSHIP_LEFT_FIELDNAME')) {
-									$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_instance->getLeftTableNum(), $vm_val);
+									$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_instance->getLeftTableNum(), $vm_val, $pa_options);
 								}
 
 								if($vs_fld == $t_instance->getProperty('RELATIONSHIP_RIGHT_FIELDNAME')) {
-									$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_instance->getRightTableNum(), $vm_val);
+									$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_instance->getRightTableNum(), $vm_val, $pa_options);
 								}
 							}
 
@@ -338,7 +338,7 @@ class ca_change_log extends BaseModel {
 
 								if($vs_fld == $t_instance->getSubjectKey()) {
 									$vs_label_subject_guid_field = str_replace('_id', '', $vs_fld) . '_guid';
-									$va_snapshot[$vs_label_subject_guid_field] = ca_guids::getForRow($t_instance->getSubjectTableInstance()->tableNum(), $vm_val);
+									$va_snapshot[$vs_label_subject_guid_field] = ca_guids::getForRow($t_instance->getSubjectTableInstance()->tableNum(), $vm_val, $pa_options);
 								}
 							}
 						}
@@ -349,7 +349,7 @@ class ca_change_log extends BaseModel {
 			$va_row['snapshot'] = $va_snapshot;
 
 			// skip log entries without GUID -- we don't care about those
-			if(!($vs_guid = ca_guids::getForRow($qr_results->get('logged_table_num'), $qr_results->get('logged_row_id')))) {
+			if(!($vs_guid = ca_guids::getForRow($qr_results->get('logged_table_num'), $qr_results->get('logged_row_id'), $pa_options))) {
 				continue;
 			}
 
@@ -360,7 +360,7 @@ class ca_change_log extends BaseModel {
 
 			while($qr_subjects->nextRow()) {
 				// skip subjects without GUID -- we don't care about those
-				if(!($vs_subject_guid = ca_guids::getForRow($qr_subjects->get('subject_table_num'), $qr_subjects->get('subject_row_id')))) {
+				if(!($vs_subject_guid = ca_guids::getForRow($qr_subjects->get('subject_table_num'), $qr_subjects->get('subject_row_id'), $pa_options))) {
 					continue;
 				}
 

@@ -7000,15 +7000,15 @@ side. For many self-relations the direction determines the nature and display te
 	 * Implementations can override this to add more criteria for hashing, e.g. hierarchy path components or what have you
 	 * @return array
 	 */
-	public function getAdditionalHashComponents() {
+	public function getAdditionalChecksumComponents() {
 		return array();
 	}
 	# -------------------------------------------------------
 	/**
-	 * Get identifying hash for this row
+	 * Get identifying checksum for this row
 	 * @return bool|string
 	 */
-	public function getHash() {
+	public function getChecksum() {
 		if(!$this->getPrimaryKey()) { return false; }
 		$va_hash_components = array();
 
@@ -7020,21 +7020,38 @@ side. For many self-relations the direction determines the nature and display te
 			$va_hash_components[] = $this->getTypeCode();
 		}
 
-		if($this->getAppConfig()->get($this->tableName(). '_use_preferred_labels_for_record_hash')) {
-			if($this->getPreferredLabelCount() > 0) {
-				$va_hash_components[] = $this->get($this->tableName(). '.preferred_labels', array('returnAllLocales' => true));
+		if($this->getPreferredLabelCount() > 0) {
+			$va_hash_components[] = $this->get($this->tableName(). '.preferred_labels', array('returnAllLocales' => true));
+		}
+
+		if($this->getPreferredLabelCount() > 0) {
+			$va_hash_components[] = $this->get($this->tableName(). '.nonpreferred_labels', array('returnAllLocales' => true));
+		}
+
+		if($vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD')) {
+			if($vn_parent_id = $this->get($vs_parent_id_fld)) {
+				$va_hash_components[] = self::getChecksumForRecord($vn_parent_id);
 			}
 		}
 
-		if($this->getAppConfig()->get($this->tableName(). '_use_nonpreferred_labels_for_record_hash')) {
-			if($this->getPreferredLabelCount() > 0) {
-				$va_hash_components[] = $this->get($this->tableName(). '.nonpreferred_labels', array('returnAllLocales' => true));
+		if($vs_source_id_fld = $this->getProperty('SOURCE_ID_FLD')) {
+			if($vs_source_idno = $this->get($vs_source_id_fld, array('convertCodesToIdno' => true))) {
+				$va_hash_components[] = $vs_source_idno;
 			}
 		}
 
-		$va_hash_components[] = $this->getAdditionalHashComponents();
+		$va_hash_components[] = $this->getAdditionalChecksumComponents();
 
 		return md5(serialize($va_hash_components));
+	}
+	# -------------------------------------------------------
+	public static function getChecksumForRecord($pn_record_id) {
+		$vs_table = get_called_class();
+		/** @var BundlableLabelableBaseModelWithAttributes $t_instance */
+		$t_instance = new $vs_table;
+
+		$t_instance->load($pn_record_id);
+		return $t_instance->getChecksum();
 	}
 	# -------------------------------------------------------
 }
