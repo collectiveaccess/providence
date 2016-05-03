@@ -81,7 +81,7 @@ class HashTest extends BaseTestWithData {
 	}
 	# -------------------------------------------------------
 	public function testHash() {
-		$this->assertEquals('93389dbb838ed7e5d68d785c00780831', $this->opt_object->getHash());
+		$this->assertEquals('842534b1369cf685c6a3809390c2e840', $this->opt_object->getChecksum());
 	}
 	# -------------------------------------------------------
 }

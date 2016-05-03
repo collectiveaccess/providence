@@ -41,7 +41,9 @@ trait SyncableBaseModel {
 	public function setGUID($pa_options=null) {
 		if(!$this->getPrimaryKey()) { return; }
 
-		$vs_old_guid = ca_guids::getForRow($this->tableNum(), $this->getPrimaryKey());
+		$vs_old_guid = ca_guids::getForRow($this->tableNum(), $this->getPrimaryKey(),
+			['dontAdd' => true, 'transaction' => $this->getTransaction()]
+		);
 		if(strlen($vs_old_guid) == 36) { return; } // don't overwrite actual GUID
 
 		$o_conf = Configuration::load();
@@ -55,13 +57,13 @@ trait SyncableBaseModel {
 
 		/** @var ca_guids $t_guid */
 		$t_guid = $this->getAppDatamodel()->getInstance('ca_guids');
+		$t_guid->setTransaction($this->getTransaction());
 
 		if(strlen($vs_old_guid) == 32) {
 			$t_guid->load(array('guid' => $vs_old_guid));
 		}
 
 		$t_guid->setMode(ACCESS_WRITE);
-		$t_guid->setTransaction($this->getTransaction());
 		$t_guid->set('table_num', $this->tableNum());
 		$t_guid->set('row_id', $this->getPrimaryKey());
 		$t_guid->set('guid', caGetOption('setGUIDTo', $pa_options, $vs_guid));

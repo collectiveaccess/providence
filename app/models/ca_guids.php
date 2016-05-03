@@ -177,32 +177,32 @@ class ca_guids extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Get GUID for given row. Results are cached on disk.
+	 * Get GUID for given row
 	 * @param int $pn_table_num
 	 * @param int $pn_row_id
+	 * @param array $pa_options
 	 * @return bool|string
 	 */
-	public static function getForRow($pn_table_num, $pn_row_id) {
+	public static function getForRow($pn_table_num, $pn_row_id, $pa_options=null) {
 		if(!$pn_table_num || !$pn_row_id) { return false; }
-		$vs_cache_key = "{$pn_table_num}/{$pn_row_id}";
 
-		if(CompositeCache::contains($vs_cache_key, 'TableNumRowIDsToGUIDs')) {
-			return CompositeCache::fetch($vs_cache_key, 'TableNumRowIDsToGUIDs');
+		/** @var Transaction $o_tx */
+		if($o_tx = caGetOption('transaction', $pa_options, null)) {
+			$o_db = $o_tx->getDb();
+		} else {
+			$o_db = new Db();
 		}
 
-		$o_db = new Db();
 		$qr_guid = $o_db->query('
 			SELECT guid FROM ca_guids WHERE table_num=? AND row_id=?
 		', $pn_table_num, $pn_row_id);
 
 		if($qr_guid->nextRow()) {
 			$vs_guid = $qr_guid->get('guid');
-			CompositeCache::save($vs_cache_key, $vs_guid, 'TableNumRowIDsToGUIDs');
 			return $vs_guid;
 		} else {
-			if($t_instance = Datamodel::load()->getInstance($pn_table_num, true)) {
+			if(!caGetOption('dontAdd', $pa_options) && ($t_instance = Datamodel::load()->getInstance($pn_table_num, true))) {
 				if($vs_guid = self::addForRow($pn_table_num, $pn_row_id)) {
-					CompositeCache::save($vs_cache_key, $vs_guid, 'TableNumRowIDsToGUIDs');
 					return $vs_guid;
 				}
 			}

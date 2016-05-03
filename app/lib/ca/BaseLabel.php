@@ -51,6 +51,10 @@
 			// invalidate get() prefetch cache
 			SearchResult::clearResultCacheForTable($this->tableName());
 			if($vm_ret = parent::insert($pa_options)) {
+				$t_subject_instance = $this->getSubjectTableInstance();
+				if(method_exists($t_subject_instance, 'setGUID')) {
+					$t_subject_instance->setGUID();
+				}
 				$this->setGUID();
 			}
 
@@ -69,6 +73,9 @@
 			unset(LabelableBaseModelWithAttributes::$s_label_cache[$this->getSubjectTableName()][$this->get($this->getSubjectKey())]);
 
 			$vn_rc = parent::update($pa_options);
+			if(method_exists($t_subject_instance, 'setGUID')) {
+				$t_subject_instance->setGUID();
+			}
 			$this->setGUID();
 
 			return $vn_rc;
@@ -176,6 +183,10 @@
 				return true;
 			}
 			return false;
+		}
+		# -------------------------------------------------------
+		public function getAdditionalChecksumComponents() {
+			return [$this->getSubjectTableInstance()->getGUID()];
 		}
 		# -------------------------------------------------------
 	}
