@@ -1839,9 +1839,12 @@ class ca_users extends BaseModel {
 								}
 							}
 							
+							$va_restrict_to_ui_locales = $this->getAppConfig()->getList('restrict_to_ui_locales');
+							
 							$va_opts = array();
 							$t_locale = new ca_locales();
 							foreach($va_locales as $vs_code => $va_parts) {
+								if (is_array($va_restrict_to_ui_locales) && sizeof($va_restrict_to_ui_locales) && !in_array($vs_code, $va_restrict_to_ui_locales)) { continue; }
 								try {
 									$vs_lang_name = Zend_Locale::getTranslation(strtolower($va_parts[0]), 'language', strtolower($va_parts[0]));
 									$vs_country_name = Zend_Locale::getTranslation($va_parts[1], 'Country', $vs_code);
