@@ -235,7 +235,7 @@ class ca_guids extends BaseModel {
 
 		$o_db = new Db();
 		$o_db->query("INSERT INTO ca_guids(table_num, row_id, guid) VALUES (?,?,?)", $pn_table_num, $pn_row_id, $vs_guid);
-		return true;
+		return $vs_guid;
 	}
 	# ------------------------------------------------------
 	/**

@@ -767,4 +767,18 @@
 			}
 		}
 		# ------------------------------------------------------
+		public function getAdditionalChecksumComponents() {
+			if(!$this->getPrimaryKey()) { return []; }
+			$t_left_instance = $this->getLeftTableInstance();
+			$t_right_instance = $this->getRightTableInstance();
+
+			return [
+				$t_left_instance->getGUID(),
+				$t_right_instance->getGUID(),
+				$this->getRelationshipTypeCode(),
+				$this->get('effective_date'),
+				$this->get('source_info')
+			];
+		}
+		# ------------------------------------------------------
 	}

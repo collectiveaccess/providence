@@ -903,4 +903,35 @@ class ca_attributes extends BaseModel {
 		return $vs_element_code;
 	}
 	# ------------------------------------------------------
+	/**
+	 * Get identifying checksum for this row
+	 * @return bool|string
+	 */
+	public function getChecksum() {
+		if(!$this->getPrimaryKey()) { return false; }
+		$va_hash_components = array();
+
+		if($vs_subject_guid = ca_guids::getForRow(
+			$this->get('table_num'), $this->get('row_id'),
+			['transaction' => $this->getTransaction()]
+		)) {
+			$va_hash_components[] = $vs_subject_guid;
+		}
+
+		$va_hash_components[] = $this->get('locale_id');
+		$va_hash_components[] = $this->getElementCode();
+
+		$t_attr_val = new ca_attribute_values();
+		$t_attr_val->setTransaction($o_trans);
+
+		$va_attr_vals = $this->getAttributeValues();
+		foreach($va_attr_vals as $o_attr_val) {
+			if ($t_attr_val->load($o_attr_val->getValueID())) {
+				$va_hash_components[] = $t_attr_val->getChecksum();
+			}
+		}
+
+		return md5(serialize($va_hash_components));
+	}
+	# ------------------------------------------------------
 }

@@ -617,4 +617,34 @@ class ca_attribute_values extends BaseModel {
  		return 0;
  	}
 	# ------------------------------------------------------
+	/**
+	 * Get identifying checksum for this row
+	 * @return bool|string
+	 */
+	public function getChecksum() {
+		if(!$this->getPrimaryKey()) { return false; }
+		if(!$this->get('attribute_id')) { throw new Exception('bail'); }
+		$va_hash_components = array();
+
+		if($vs_attribute_guid = ca_guids::getForRow(
+			$this->getAppDatamodel()->getTableNum('ca_attributes'), $this->get('attribute_id'),
+			['transaction' => $this->getTransaction()]
+		)) {
+			$va_hash_components[] = $vs_attribute_guid;
+		} else {
+			throw new Exception('no attribute guid');
+		}
+
+		$va_hash_components[] = $this->get('item_id');
+		$va_hash_components[] = $this->get('value_longtext1');
+		$va_hash_components[] = $this->get('value_longtext2');
+		$va_hash_components[] = $this->get('value_blob');
+		$va_hash_components[] = $this->get('value_decimal1');
+		$va_hash_components[] = $this->get('value_decimal2');
+		$va_hash_components[] = $this->get('value_integer1');
+		$va_hash_components[] = $this->get('source_info');
+
+		return md5(serialize($va_hash_components));
+	}
+	# ------------------------------------------------------
 }
