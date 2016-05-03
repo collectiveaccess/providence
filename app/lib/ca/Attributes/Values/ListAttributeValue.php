@@ -546,18 +546,24 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			}
 
 			$t_list = new ca_lists();
-			foreach($t_list->getItemsForList($pa_element_info['list_id']) as $va_items_by_locale) {
-				foreach($va_items_by_locale as $vn_locale_id => $va_item) {
-					$va_element_settings['hideIfSelected_'.$va_item['idno']] = array(
-						'formatType' => FT_TEXT,
-						'displayType' => DT_SELECT,
-						'options' => $va_options_for_settings,
-						'takesLocale' => false,
-						'default' => '',
-						'width' => "400px", 'height' => 10,
-						'label' => _t('Hide bundles if "%1" is selected', $va_item['name_singular']),
-						'description' => _t('Select bundles from the list below')
-					);
+			$va_list = $t_list->getItemsForList($pa_element_info['list_id']);
+			
+			// Only allow dependent visibility on lists with 250 or less items; if we don't impose a limit
+			// then large vocabularies will cause things to hang by generating thousands of setting elements
+			if (sizeof($va_list) <= 250) {
+				foreach($t_list->getItemsForList($pa_element_info['list_id']) as $va_items_by_locale) {
+					foreach($va_items_by_locale as $vn_locale_id => $va_item) {
+						$va_element_settings['hideIfSelected_'.$va_item['idno']] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'options' => $va_options_for_settings,
+							'takesLocale' => false,
+							'default' => '',
+							'width' => "400px", 'height' => 10,
+							'label' => _t('Hide bundles if "%1" is selected', $va_item['name_singular']),
+							'description' => _t('Select bundles from the list below')
+						);
+					}
 				}
 			}
 		} elseif(defined('__CollectiveAccess_Installer__') && Configuration::load()->get('enable_dependent_field_visibility')) {
