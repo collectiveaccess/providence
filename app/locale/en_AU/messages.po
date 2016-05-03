@@ -13215,7 +13215,7 @@ msgstr ""
 
 #: app/models/ca_entity_labels.php:96 app/refineries/entityJoiner/entityJoinerRefinery.php:207
 msgid "Other forenames"
-msgstr ""
+msgstr "Initials"
 
 #: app/models/ca_entity_labels.php:96
 msgid "Enter forenames other than the primary forename here."
@@ -17428,7 +17428,7 @@ msgstr ""
 
 #: app/refineries/entityJoiner/entityJoinerRefinery.php:208
 msgid "Accepts a constant value for the entity's other forenames or a reference to the location in the data source where the other forenames can be found."
-msgstr ""
+msgstr "Accepts a constant value for the entity's initials or a reference to the location in the data source where the initials can be found."
 
 #: app/refineries/entityJoiner/entityJoinerRefinery.php:216
 msgid "Middle name"
