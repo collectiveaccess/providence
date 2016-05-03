@@ -36,6 +36,7 @@
  
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Attribute.php');
 require_once(__CA_MODELS_DIR__.'/ca_attribute_value_multifiles.php');
+require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_attribute_values'] = array(
@@ -125,6 +126,8 @@ BaseModel::$s_ca_models_definitions['ca_attribute_values'] = array(
 );
 
 class ca_attribute_values extends BaseModel {
+	# ---------------------------------
+	use SyncableBaseModel;
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -231,20 +234,19 @@ class ca_attribute_values extends BaseModel {
 	public function doSearchIndexing($pa_changed_field_values_array=null, $pb_reindex_mode=false, $ps_engine=null) {
 		return;
 	}
-	# ------------------------------------------------------
+	# -------------------------------------------------------
 	public function insert($pa_options=null) {
 		if($vm_ret = parent::insert($pa_options)) {
-			// generate and set GUID
-			$t_guid = $this->getAppDatamodel()->getInstance('ca_guids');
-			$t_guid->setMode(ACCESS_WRITE);
-			$t_guid->setTransaction($this->getTransaction());
-			$t_guid->set('table_num', $this->tableNum());
-			$t_guid->set('row_id', $this->getPrimaryKey());
-			$t_guid->set('guid', caGetOption('setGUIDTo', $pa_options, caGenerateGUID()));
-			$t_guid->insert();
+			$this->setGUID($pa_options); // generate and set GUID
 		}
 
 		return $vm_ret;
+	}
+	# -------------------------------------------------------
+	public function update($pa_options=null) {
+		$vn_rc = parent::update($pa_options);
+		$this->setGUID();
+		return $vn_rc;
 	}
 	# -------------------------------------------------------
 	/**
@@ -393,15 +395,9 @@ class ca_attribute_values extends BaseModel {
 
 		$vn_primary_key = $this->getPrimaryKey();
 		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
-
 		if($vn_primary_key && $vn_rc) {
-			$t_guid = $this->getAppDatamodel()->getInstance('ca_guids');
-			if ($t_guid->load(array('table_num' => $this->tableNum(), 'row_id' => $vn_primary_key))) {
-				$t_guid->setMode(ACCESS_WRITE);
-				$t_guid->delete();
-			}
+			$this->removeGUID($vn_primary_key);
 		}
-
 		return $vn_rc;
 	}
 	# ------------------------------------------------------

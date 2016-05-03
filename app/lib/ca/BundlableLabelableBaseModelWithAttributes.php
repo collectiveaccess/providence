@@ -35,6 +35,7 @@
   */
 
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
+require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
 require_once(__CA_LIB_DIR__."/ca/LabelableBaseModelWithAttributes.php");
 require_once(__CA_LIB_DIR__."/core/Plugins/SearchEngine/CachedResult.php");
 require_once(__CA_LIB_DIR__."/core/Search/SearchResult.php");
@@ -63,6 +64,8 @@ define('__CA_PARENT_CHANGED__', 1);
 define('__CA_PARENT_COLLECTION_CHANGED__', 2);
 
 class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAttributes implements IBundleProvider {
+	# ------------------------------------------------------
+	use SyncableBaseModel;
 	# ------------------------------------------------------
 	/**
 	 *
@@ -258,14 +261,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			return false;
 		}
 
-		// generate and set GUID
-		$t_guid = $this->getAppDatamodel()->getInstance('ca_guids');
-		$t_guid->setMode(ACCESS_WRITE);
-		$t_guid->setTransaction($this->getTransaction());
-		$t_guid->set('table_num', $this->tableNum());
-		$t_guid->set('row_id', $this->getPrimaryKey());
-		$t_guid->set('guid', caGetOption('setGUIDTo', $pa_options, caGenerateGUID()));
-		$t_guid->insert();
+		$this->setGUID();
 		
 		if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 	
@@ -335,6 +331,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 	
 		$vn_rc = parent::update($pa_options);
+		$this->setGUID();
 		$this->errors = array_merge($this->errors, $va_errors);
 		
 		$this->opo_app_plugin_manager->hookAfterBundleUpdate(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this));
@@ -362,14 +359,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
 		$vn_primary_key = $this->getPrimaryKey();
 		SearchResult::clearResultCacheForRow($this->tableName(), $this->getPrimaryKey());
-		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 
+		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 		if($vn_primary_key && $vn_rc && caGetOption('hard', $pa_options, false)) {
-			$t_guid = $this->getAppDatamodel()->getInstance('ca_guids');
-			if($t_guid->load(array('table_num' => $this->tableNum(), 'row_id' => $vn_primary_key))) {
-				$t_guid->setMode(ACCESS_WRITE);
-				$t_guid->delete();
-			}
+			$this->removeGUID($vn_primary_key);
 		}
 
 		return $vn_rc;
@@ -6994,64 +6987,6 @@ side. For many self-relations the direction determines the nature and display te
 			BundlableLabelableBaseModelWithAttributes::$s_tep = new TimeExpressionParser();
 		}
 		return BundlableLabelableBaseModelWithAttributes::$s_tep;
-	}
-	# -------------------------------------------------------
-	/**
-	 * Implementations can override this to add more criteria for hashing, e.g. hierarchy path components or what have you
-	 * @return array
-	 */
-	public function getAdditionalChecksumComponents() {
-		return array();
-	}
-	# -------------------------------------------------------
-	/**
-	 * Get identifying checksum for this row
-	 * @return bool|string
-	 */
-	public function getChecksum() {
-		if(!$this->getPrimaryKey()) { return false; }
-		$va_hash_components = array();
-
-		if($vs_idno_fld = $this->getProperty('ID_NUMBERING_ID_FIELD')) {
-			$va_hash_components[] = $this->get($vs_idno_fld);
-		}
-
-		if($vs_type_id_fld = $this->getProperty('ATTRIBUTE_TYPE_ID_FLD')) {
-			$va_hash_components[] = $this->getTypeCode();
-		}
-
-		if($this->getPreferredLabelCount() > 0) {
-			$va_hash_components[] = $this->get($this->tableName(). '.preferred_labels', array('returnAllLocales' => true));
-		}
-
-		if($this->getPreferredLabelCount() > 0) {
-			$va_hash_components[] = $this->get($this->tableName(). '.nonpreferred_labels', array('returnAllLocales' => true));
-		}
-
-		if($vs_parent_id_fld = $this->getProperty('HIERARCHY_PARENT_ID_FLD')) {
-			if($vn_parent_id = $this->get($vs_parent_id_fld)) {
-				$va_hash_components[] = self::getChecksumForRecord($vn_parent_id);
-			}
-		}
-
-		if($vs_source_id_fld = $this->getProperty('SOURCE_ID_FLD')) {
-			if($vs_source_idno = $this->get($vs_source_id_fld, array('convertCodesToIdno' => true))) {
-				$va_hash_components[] = $vs_source_idno;
-			}
-		}
-
-		$va_hash_components[] = $this->getAdditionalChecksumComponents();
-
-		return md5(serialize($va_hash_components));
-	}
-	# -------------------------------------------------------
-	public static function getChecksumForRecord($pn_record_id) {
-		$vs_table = get_called_class();
-		/** @var BundlableLabelableBaseModelWithAttributes $t_instance */
-		$t_instance = new $vs_table;
-
-		$t_instance->load($pn_record_id);
-		return $t_instance->getChecksum();
 	}
 	# -------------------------------------------------------
 }

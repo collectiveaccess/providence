@@ -188,18 +188,10 @@ class Replicator {
 					$vs_skip_if_expression = json_encode($pa_skip_if_expression);
 				}
 
-				// get checksum tables [this setting is the same for all sources]
-				$pa_checksum_tables = $this->opo_replication_conf->get('sources')['checksum_tables'];
-				$vs_checksum_tables = null;
-				if(is_array($pa_checksum_tables) && sizeof($pa_checksum_tables)) {
-					$vs_checksum_tables = json_encode($pa_checksum_tables);
-				}
-
 				// get change log from source, starting with the log id we got above
 				$va_source_log_entries = $o_source->setEndpoint('getlog')
 					->addGetParameter('from', $pn_replicated_log_id)
 					->addGetParameter('skipIfExpression', $vs_skip_if_expression)
-					->addGetParameter('checksumTables', $vs_checksum_tables)
 					->request()->getRawData();
 
 				if(!sizeof($va_source_log_entries)) {

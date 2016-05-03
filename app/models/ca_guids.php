@@ -180,28 +180,14 @@ class ca_guids extends BaseModel {
 	 * Get GUID for given row. Results are cached on disk.
 	 * @param int $pn_table_num
 	 * @param int $pn_row_id
-	 * @param array $pa_options
 	 * @return bool|string
 	 */
-	public static function getForRow($pn_table_num, $pn_row_id, $pa_options=array()) {
+	public static function getForRow($pn_table_num, $pn_row_id) {
 		if(!$pn_table_num || !$pn_row_id) { return false; }
-
-		if(!is_array($pa_options)) { $pa_options = array(); }
-		$vs_cache_key = md5("{$pn_table_num}/{$pn_row_id}/" . serialize($pa_options));
+		$vs_cache_key = "{$pn_table_num}/{$pn_row_id}";
 
 		if(CompositeCache::contains($vs_cache_key, 'TableNumRowIDsToGUIDs')) {
 			return CompositeCache::fetch($vs_cache_key, 'TableNumRowIDsToGUIDs');
-		}
-
-		if(($pa_checksum_tables = caGetOption('checksumTables', $pa_options)) && is_array($pa_checksum_tables)) {
-			if(in_array(Datamodel::load()->getTableName($pn_table_num), $pa_checksum_tables)) {
-				$t_instance = Datamodel::load()->getTableInstance($pn_table_num);
-				if(($t_instance instanceof BundlableLabelableBaseModelWithAttributes) && $t_instance->load($pn_row_id)) {
-					$vs_checksum = $t_instance->getChecksum();
-					CompositeCache::save($vs_cache_key, $vs_checksum, 'TableNumRowIDsToGUIDs');
-					return $vs_checksum;
-				}
-			}
 		}
 
 		$o_db = new Db();
@@ -233,8 +219,22 @@ class ca_guids extends BaseModel {
 	 * @return bool|string
 	 */
 	private static function addForRow($pn_table_num, $pn_row_id) {
+		$o_conf = Configuration::load();
+		$o_dm = Datamodel::load();
+		$t_instance = $o_dm->getInstance($pn_table_num, true);
+
+		$vs_guid = null;
+		if($o_conf->get($t_instance->tableName() . '_use_checksum_as_guid')) {
+			$t_instance = $o_dm->getInstance($pn_table_num);
+			if (method_exists($t_instance, 'getChecksum') && $t_instance->load($pn_row_id)) {
+				$vs_guid = $t_instance->getChecksum();
+			}
+		}
+
+		if(!$vs_guid) { $vs_guid = caGenerateGUID(); }
+
 		$o_db = new Db();
-		$o_db->query("INSERT INTO ca_guids(table_num, row_id, guid) VALUES (?,?,?)", $pn_table_num, $pn_row_id, caGenerateGUID());
+		$o_db->query("INSERT INTO ca_guids(table_num, row_id, guid) VALUES (?,?,?)", $pn_table_num, $pn_row_id, $vs_guid);
 		return true;
 	}
 	# ------------------------------------------------------
