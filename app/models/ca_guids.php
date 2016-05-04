@@ -219,21 +219,8 @@ class ca_guids extends BaseModel {
 	 * @return bool|string
 	 */
 	private static function addForRow($pn_table_num, $pn_row_id) {
-		$o_conf = Configuration::load();
-		$o_dm = Datamodel::load();
-		$t_instance = $o_dm->getInstance($pn_table_num, true);
-
-		$vs_guid = null;
-		if($o_conf->get($t_instance->tableName() . '_use_checksum_as_guid')) {
-			$t_instance = $o_dm->getInstance($pn_table_num);
-			if (method_exists($t_instance, 'getChecksum') && $t_instance->load($pn_row_id)) {
-				$vs_guid = $t_instance->getChecksum();
-			}
-		}
-
-		if(!$vs_guid) { $vs_guid = caGenerateGUID(); }
-
 		$o_db = new Db();
+		$vs_guid = caGenerateGUID();
 		$o_db->query("INSERT INTO ca_guids(table_num, row_id, guid) VALUES (?,?,?)", $pn_table_num, $pn_row_id, $vs_guid);
 		return $vs_guid;
 	}

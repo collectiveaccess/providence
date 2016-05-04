@@ -50,15 +50,7 @@
 			$this->_generateSortableValue();	// populate sort field
 			// invalidate get() prefetch cache
 			SearchResult::clearResultCacheForTable($this->tableName());
-			if($vm_ret = parent::insert($pa_options)) {
-				$t_subject_instance = $this->getSubjectTableInstance();
-				if(method_exists($t_subject_instance, 'setGUID')) {
-					$t_subject_instance->setGUID();
-				}
-				$this->setGUID();
-			}
-
-			return $vm_ret;
+			return parent::insert($pa_options);
 		}
 		# -------------------------------------------------------
 		public function update($pa_options=null) {
@@ -72,13 +64,7 @@
 			// Unset label cache entry for modified label only
 			unset(LabelableBaseModelWithAttributes::$s_label_cache[$this->getSubjectTableName()][$this->get($this->getSubjectKey())]);
 
-			$vn_rc = parent::update($pa_options);
-			if(method_exists($t_subject_instance, 'setGUID')) {
-				$t_subject_instance->setGUID();
-			}
-			$this->setGUID();
-
-			return $vn_rc;
+			return parent::update($pa_options);
 		}
 		# -------------------------------------------------------
 		public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {

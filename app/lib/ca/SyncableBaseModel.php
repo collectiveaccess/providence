@@ -41,32 +41,14 @@ trait SyncableBaseModel {
 	public function setGUID($pa_options=null) {
 		if(!$this->getPrimaryKey()) { return; }
 
-		$vs_old_guid = ca_guids::getForRow($this->tableNum(), $this->getPrimaryKey(),
-			['dontAdd' => true, 'transaction' => $this->getTransaction()]
-		);
-		if(strlen($vs_old_guid) == 36) { return; } // don't overwrite actual GUID
-
-		$o_conf = Configuration::load();
-
-		$vs_guid = null;
-		if($o_conf->get($this->tableName() . '_use_checksum_as_guid')) {
-			$vs_guid = $this->getChecksum();
-		}
-
-		if(!$vs_guid)  { $vs_guid = caGenerateGUID(); }
-
 		/** @var ca_guids $t_guid */
 		$t_guid = $this->getAppDatamodel()->getInstance('ca_guids');
 		$t_guid->setTransaction($this->getTransaction());
 
-		if(strlen($vs_old_guid) == 32) {
-			$t_guid->load(array('guid' => $vs_old_guid));
-		}
-
 		$t_guid->setMode(ACCESS_WRITE);
 		$t_guid->set('table_num', $this->tableNum());
 		$t_guid->set('row_id', $this->getPrimaryKey());
-		$t_guid->set('guid', caGetOption('setGUIDTo', $pa_options, $vs_guid));
+		$t_guid->set('guid', caGetOption('setGUIDTo', $pa_options, caGenerateGUID()));
 
 		if($t_guid->getPrimaryKey()) {
 			$t_guid->update();
@@ -181,11 +163,11 @@ trait SyncableBaseModel {
 			$va_hash_components[] = $this->getTypeCode();
 		}
 
-		if($this->getPreferredLabelCount() > 0) {
+		if(method_exists($this, 'getPreferredLabelCount') && ($this->getPreferredLabelCount() > 0)) {
 			$va_hash_components[] = $this->get($this->tableName(). '.preferred_labels', array('returnAllLocales' => true));
 		}
 
-		if($this->getPreferredLabelCount() > 0) {
+		if(method_exists($this, 'getNonPreferredLabelCount') && ($this->getNonPreferredLabelCount() > 0)) {
 			$va_hash_components[] = $this->get($this->tableName(). '.nonpreferred_labels', array('returnAllLocales' => true));
 		}
 

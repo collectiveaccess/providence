@@ -331,7 +331,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 	
 		$vn_rc = parent::update($pa_options);
-		$this->setGUID();
 		$this->errors = array_merge($this->errors, $va_errors);
 		
 		$this->opo_app_plugin_manager->hookAfterBundleUpdate(array('id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum(), 'table_name' => $this->tableName(), 'instance' => $this));
