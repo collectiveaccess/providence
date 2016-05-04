@@ -2426,8 +2426,19 @@ class BaseModel extends BaseObject {
 
 				if ($this->debug) echo $vs_sql;
 				
-				$o_db->query($vs_sql);
-				
+				try {
+					$o_db->query($vs_sql);
+				} catch (DatabaseException $e) {
+					switch($e->getNumber()) {
+						case 251: 	// duplicate key
+							// noop - recoverable
+							$o_db->postError($e->getNumber(), $e->getMessage(), $e->getContext);
+							break;
+						default:
+							throw $e;
+							break;
+					}
+				}
 				if ($o_db->numErrors() == 0) {
 					if ($this->getFieldInfo($vs_pk = $this->primaryKey(), "IDENTITY")) {
 						$this->_FIELD_VALUES[$vs_pk] = $vn_new_id = $o_db->getLastInsertID();
@@ -2462,6 +2473,7 @@ class BaseModel extends BaseObject {
 
 						if($this->getHierarchyType() == __CA_HIER_TYPE_ADHOC_MONO__) {	// Ad-hoc hierarchy
 							if (!$this->get($this->getProperty('HIERARCHY_ID_FLD'))) {
+								$this->set($this->getProperty('HIERARCHY_ID_FLD'), $this->getPrimaryKey());
 								$vs_sql .= $this->getProperty('HIERARCHY_ID_FLD').' = '.$this->getPrimaryKey().' ';
 							}
 						}

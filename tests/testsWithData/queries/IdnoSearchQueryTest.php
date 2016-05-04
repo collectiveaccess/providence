@@ -93,7 +93,7 @@ class IdnoSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.idno:"D.99/0000001"' => 1,
 			'ca_objects.idno:"D.99/1"' => 1,
 
-			'ca_objects.idno:"2016.1.15"' => 1,
+			'ca_objects.idno:"2016.1.15"' => 1
 		));
 	}
 	# -------------------------------------------------------

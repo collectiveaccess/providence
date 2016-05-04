@@ -90,8 +90,8 @@
 			'label' => _t('Date picker date format'),
 			'options' => array(
 				_t('ISO-8601 (ex. 2012-07-03)') => 'yy-mm-dd',
-				_t('US Delimited (ex. 07/03/2012)') => 'dd/mm/yy',
-				_t('European Delimited (ex. 03/07/2012)') => 'mm/dd/yy',
+				_t('US Delimited (ex. 07/03/2012)') => 'mm/dd/yy',
+				_t('European Delimited (ex. 03/07/2012)') => 'dd/mm/yy',
 				_t('Month Day, Year (ex. July 3, 2012)') => 'MM d, yy',
 				_t('Month Day Year (ex. July 3 2012)') => 'MM d yy',
 				_t('Day Month Year (ex. 3 July 2012)') => 'd MM yy',

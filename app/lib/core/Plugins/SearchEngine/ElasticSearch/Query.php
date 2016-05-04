@@ -142,8 +142,13 @@ class Query {
 				case 'Zend_Search_Lucene_Search_Query_MultiTerm':
 					$o_new_subquery = $this->rewriteSubquery($o_subquery);
 					$vs_old_subquery = preg_replace('/^\+/u', '', (string) $o_subquery);
-					$vs_newsubquery = preg_replace('/^\+/u', '', (string) $o_new_subquery);
-					$vs_search_expression = str_replace($vs_old_subquery, $vs_newsubquery, $vs_search_expression);
+					$vs_new_subquery = preg_replace('/^\+/u', '', (string) $o_new_subquery);
+					$vs_search_expression = str_replace($vs_old_subquery, $vs_new_subquery, $vs_search_expression);
+
+					// get rid of empty "AND|OR ()" or "() AND|OR" blocks that prevent ElasticSearch query parsing
+					// (can happen in advanced search forms)
+					$vs_search_expression = preg_replace("/\s*(AND|OR)\s+\(\s*\)/u", '', $vs_search_expression);
+					$vs_search_expression = preg_replace("/\(\s*\)\s+(AND|OR)\s*/u", '', $vs_search_expression);
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Boolean':
 					/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Boolean. */
@@ -225,6 +230,14 @@ class Query {
 			case 'Zend_Search_Lucene_Search_Query_Phrase':
 				/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Phrase */
 				$o_new_subquery = new \Zend_Search_Lucene_Search_Query_Phrase();
+
+				$va_fields_in_subquery = array();
+				foreach($o_subquery->getTerms() as $o_term) {
+					$va_fields_in_subquery[] = $o_term->field;
+				}
+
+				$vb_multiterm_all_terms_same_field = (sizeof(array_unique($va_fields_in_subquery)) < 2) && (sizeof($o_subquery->getTerms()) > 1);
+
 				foreach($o_subquery->getTerms() as $o_term) {
 					$o_term = caRewriteElasticSearchTermFieldSpec($o_term);
 					$o_fld = $this->getFieldTypeForTerm($o_term);
@@ -243,6 +256,9 @@ class Query {
 						break;
 					} else {
 						if($o_rewritten_term = $o_fld->getRewrittenTerm($o_term)) {
+							if($vb_multiterm_all_terms_same_field) {
+								$o_rewritten_term->text = preg_replace("/\"(.+)\"/u", "$1", $o_rewritten_term->text);
+							}
 							$o_new_subquery->addTerm($o_rewritten_term);
 						}
 					}
