@@ -3536,4 +3536,86 @@
 			return _t('Generates guids for all records that don\'t have one yet. This can be useful if you plan on using the data synchronization/replication feature in the future. For more info see here: http://docs.collectiveaccess.org/wiki/Replication');
 		}
 		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt $po_opts
+		 * @return bool
+		 */
+		public static function remove_duplicate_records($po_opts=null) {
+			$va_tables = null;
+			if ($vs_tables = (string)$po_opts->getOption('tables')) {
+				$va_tables = preg_split("![;,]+!", $vs_tables);
+			} else {
+				CLIUtils::addError(_t("The -t|--tables parameter is mandatory."));
+				return false;
+			}
+
+			$vb_delete_opt = (bool)$po_opts->getOption('delete');
+
+			foreach($va_tables as $vs_t) {
+				if(class_exists($vs_t) && method_exists($vs_t, 'listPotentialDupes')) {
+					$va_dupes = $vs_t::listPotentialDupes();
+					if(sizeof($va_dupes)) {
+						CLIUtils::addMessage(_t('Table %1 has %2 records that have potential duplicates.', $vs_t, sizeof($va_dupes)), array('color' => 'red'));
+
+
+						$t_instance = Datamodel::load()->getInstance($vs_t);
+
+						foreach ($va_dupes as $vs_sha2 => $va_keys) {
+							CLIUtils::addMessage("\t" . _t('%1 records have the checksum %2', sizeof($va_keys), $vs_sha2));
+							foreach ($va_keys as $vn_key) {
+								$t_instance->load($vn_key);
+								CLIUtils::addMessage("\t\t" . $t_instance->primaryKey() . ': ' . $t_instance->getPrimaryKey() . ' (' . $t_instance->getLabelForDisplay() . ')');
+							}
+
+							if ($vb_delete_opt) {
+								$vn_entity_id = $vs_t::mergeRecords($va_keys);
+								if ($vn_entity_id) {
+									CLIUtils::addMessage("\t" . _t("Successfully consolidated them under id %1", $vn_entity_id), array('color' => 'green'));
+								} else {
+									CLIUtils::addMessage("\t" . _t("It seems like there was an error while deduplicating those records"), array('color' => 'bold_red'));
+								}
+							}
+
+						}
+					} else {
+						CLIUtils::addMessage(_t('Table %1 does not seem to have any duplicates!', $vs_t), array('color' => 'bold_green'));
+					}
+				}
+			}
+
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function remove_duplicate_recordsParamList() {
+			return array(
+				"tables|t-s" => _t('Specific tables to deduplicate, separated by commas or semicolons. Mandatory.'),
+				"delete|d" => _t('Delete duplicate records. Default is false.')
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function remove_duplicate_recordsUtilityClass() {
+			return _t('Maintenance');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function remove_duplicate_recordsShortHelp() {
+			return _t('Show and, optionally, remove duplicate records');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function remove_duplicate_recordsHelp() {
+			return _t('Lists and optionally removed duplicate records. For more info on how the algorithm works see here: http://docs.collectiveaccess.org/wiki/Deduplication');
+		}
+		# -------------------------------------------------------
 	}
