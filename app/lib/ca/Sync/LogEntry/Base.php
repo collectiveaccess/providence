@@ -463,6 +463,7 @@ abstract class Base {
 	 * @param \Transaction $po_tx
 	 * @return \CA\Sync\LogEntry\Base
 	 * @throws InvalidLogEntryException
+	 * @throws IrrelevantLogEntry
 	 */
 	public static function getInstance($ps_source_system_id, $pn_log_id, $pa_log, \Transaction $po_tx) {
 		if(!is_array($pa_log) || !isset($pa_log['logged_table_num'])) {
@@ -485,7 +486,7 @@ abstract class Base {
 			return new Bundlable($ps_source_system_id, $pn_log_id, $pa_log, $po_tx);
 		}
 
-		throw new InvalidLogEntryException('Invalid table in log entry');
+		throw new IrrelevantLogEntry();
 	}
 
 }

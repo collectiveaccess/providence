@@ -36,6 +36,7 @@
 
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
 require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
+require_once(__CA_LIB_DIR__."/ca/DeduplicateBaseModel.php");
 require_once(__CA_LIB_DIR__."/ca/LabelableBaseModelWithAttributes.php");
 require_once(__CA_LIB_DIR__."/core/Plugins/SearchEngine/CachedResult.php");
 require_once(__CA_LIB_DIR__."/core/Search/SearchResult.php");
@@ -66,6 +67,7 @@ define('__CA_PARENT_COLLECTION_CHANGED__', 2);
 class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAttributes implements IBundleProvider {
 	# ------------------------------------------------------
 	use SyncableBaseModel;
+	use DeduplicateBaseModel;
 	# ------------------------------------------------------
 	/**
 	 *
@@ -261,7 +263,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			return false;
 		}
 
-		$this->setGUID();
+		$this->setGUID($pa_options);
 		
 		if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 	
