@@ -1843,7 +1843,13 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		}
 		
 		$vs_val = '';
-		if($vs_template = trim($pa_options['template'])) {
+		
+		// Use configured default template when available
+		if(!($vs_template = trim($pa_options['template'])) && (sizeof($va_bundle_bits) == 1) && ($t_instance = $this->getAppDatamodel()->getInstanceByTableName($va_bundle_bits[0], true))) {
+			$vs_template = $this->getAppConfig()->get($va_bundle_bits[0]."_default_bundle_display_template");
+		}
+		
+		if($vs_template) {
 			unset($pa_options['template']);
 			
 			if ($t_instance = $this->getAppDatamodel()->getInstanceByTableName($va_bundle_bits[0], true)) {
@@ -1895,7 +1901,7 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					}
 				} else {
 					// resolve template relative to current record
-					$vs_val = $po_result->getWithTemplate($vs_template, ['delimiter' => $pa_options['delimiter']]);
+					$vs_val = $po_result->getWithTemplate($vs_template, ['filters'=> $pa_options['filters'], 'delimiter' => $pa_options['delimiter']]);
 				}
 				
 			}

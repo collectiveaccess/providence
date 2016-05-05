@@ -46,12 +46,6 @@
  		 */
  		protected $opa_views;
  		
- 		/**
- 		 * List of available search-result sorting fields
- 		 * Is associative array: values are display names for fields, keys are full fields names (table.field) to be used as sort
- 		 */
- 		protected $opa_sorts;
- 		
  		protected $ops_find_type = 'basic_search';
  		
  		# -------------------------------------------------------
@@ -60,10 +54,6 @@
 			$this->opa_views = array(
 				'list' => _t('list')
 			 );
-			 
-			 $this->opa_sorts = array(
-				'ca_relationship_type_labels.typename' => _t('type name')
-			);
 		}
  		# -------------------------------------------------------
  		/**

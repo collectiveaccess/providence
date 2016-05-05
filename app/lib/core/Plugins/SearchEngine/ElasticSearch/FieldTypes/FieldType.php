@@ -94,26 +94,32 @@ abstract class FieldType {
 
 		}
 
-		if($ps_content_fieldname && $vb_could_be_attribute && ($vn_datatype = \ca_metadata_elements::getElementDatatype($ps_content_fieldname))) {
-			switch ($vn_datatype) {
-				case 2:
-					return new DateRange($ps_table, $ps_content_fieldname);
-				case 4:
-					return new Geocode($ps_table, $ps_content_fieldname);
-				case 6:
-					return new Currency($ps_table, $ps_content_fieldname);
-				case 8:
-					return new Length($ps_table, $ps_content_fieldname);
-				case 9:
-					return new Weight($ps_table, $ps_content_fieldname);
-				case 10:
-					return new Timecode($ps_table, $ps_content_fieldname);
-				case 11:
-					return new Integer($ps_table, $ps_content_fieldname);
-				case 12:
-					return new Numeric($ps_table, $ps_content_fieldname);
-				default:
-					return new GenericElement($ps_table, $ps_content_fieldname);
+		if($ps_content_fieldname && $vb_could_be_attribute) {
+			$va_tmp = explode('/', $ps_content_fieldname);
+			$ps_content_fieldname = array_pop($va_tmp);
+			if($vn_datatype = \ca_metadata_elements::getElementDatatype($ps_content_fieldname)) {
+				switch ($vn_datatype) {
+					case 2:
+						return new DateRange($ps_table, $ps_content_fieldname);
+					case 4:
+						return new Geocode($ps_table, $ps_content_fieldname);
+					case 6:
+						return new Currency($ps_table, $ps_content_fieldname);
+					case 8:
+						return new Length($ps_table, $ps_content_fieldname);
+					case 9:
+						return new Weight($ps_table, $ps_content_fieldname);
+					case 10:
+						return new Timecode($ps_table, $ps_content_fieldname);
+					case 11:
+						return new Integer($ps_table, $ps_content_fieldname);
+					case 12:
+						return new Numeric($ps_table, $ps_content_fieldname);
+					default:
+						return new GenericElement($ps_table, $ps_content_fieldname);
+				}
+			} else {
+				return new Intrinsic($ps_table, $ps_content_fieldname);
 			}
 		} else {
 			return new Intrinsic($ps_table, $ps_content_fieldname);

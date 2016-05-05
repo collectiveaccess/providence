@@ -160,8 +160,15 @@ h5 {
     padding: 10px 20px 0px 20px;
     margin-top:28px;
 }
+
 .clear {
     clear: both;
+}
+
+div.clear {
+	clear: both; 
+	width: 1px; 
+	height: 1px;
 }
 
 /* --- SIDE NAVIGATION --- */
@@ -1282,7 +1289,7 @@ div.hint {
 	text-transform:uppercase;
 	text-align: left;
 	width:30%;
-    overflow: scroll;
+    overflow: hidden;
 	display:inline-block;
 	font-weight:bold;
 	color: #666;
@@ -3054,6 +3061,12 @@ div.caObjectRepresentationDetailEditorElement {
     margin-right: 5px;
 }
 
+div.caObjectRepresentationDetailEditorText {
+    font-size: 14px;
+    font-weight: normal;
+    margin: 5px 0 10px 0;
+}
+
 div.caObjectRepresentationDetailEditorElement div select{
     font-size: 10px;
 }
@@ -3457,6 +3470,11 @@ div.hierarchyBrowserCurrentSelection {
     margin-bottom: 5px;
 }
 
+div.hierarchyBrowserCurrentSelectionText {
+	width: 100%;
+	text-align: right;
+}
+
 span.hierarchyBrowserCurrentSelectionText {
     font-weight: normal;
     font-style: italic;
@@ -3468,8 +3486,9 @@ div.hierarchyBrowserSearchBar {
 	margin: 5px 0 5px 10px;
 }
 
-input.hierarchyBrowserSearchBar {
+input.hierarchyBrowserSearchBar, textarea.hierarchyBrowserSearchBar {
     font-size: 10px;
+    height: 12px;
 }
 
 ul.explore {
@@ -5371,6 +5390,9 @@ div.listRel:first-of-type {
     border: 1px solid #e6e6e6;
 
     z-index: 10000;
+
+    max-height: 350px;
+    overflow: scroll;
 }
 
 .caItemListSortControls ul {
@@ -6540,11 +6562,15 @@ div.caUseHistoryEntry {
 	border-top: 1px dotted #e6e6e6;
 }
 
+div.caUseHistoryEntryFirst {
+	border: none;
+}
+
 div.caUseHistoryButtonBar {
 	padding: 10px;
 }
 
-.caChangeLocationButton, .caAddLoanButton {
+.caChangeLocationButton, .caAddLoanButton, .caAddOccurrenceButton {
 	margin-top: 5px;
 }
 
@@ -6579,6 +6605,18 @@ div.caUseHistoryDate {
 	
 	font-style: italic;
 	font-size: 9px;
+}
+
+h2.caUseHistorySetLocationHeading {
+	float: left;
+}
+
+div.caUseHistoryHierarchyBrowser {
+	border-top: 2px;
+}
+
+table.caUseHistoryUpdateLocationMetadata tr td {
+	vertical-align: middle;
 }
 
 /** Metadata dictionary **/

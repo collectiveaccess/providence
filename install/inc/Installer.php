@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2012 Whirl-i-Gig
+ * Copyright 2011-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,6 +35,7 @@ require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
 require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_MODELS_DIR__.'/ca_users.php');
 require_once(__CA_MODELS_DIR__.'/ca_user_groups.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
 
 class Installer {
 	# --------------------------------------------------
@@ -283,7 +284,6 @@ class Installer {
 		$va_media_volumes = $o_media_volumes->getAllVolumeInformation();
 
 		$vs_base_dir = $o_config->get('ca_base_dir');
-		$va_dir_creation_errors = array();
 		foreach($va_media_volumes as $vs_label => $va_volume_info) {
 			if (preg_match('!^'.$vs_base_dir.'!', $va_volume_info['absolutePath'])) {
 				if (!self::createDirectoryPath($va_volume_info['absolutePath'])) {
@@ -293,27 +293,25 @@ class Installer {
 			}
 		}
 
-		// nuke search index if we using ElasticSearch (the SqlSearch index is nuked when we drop the database)
 		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
-			require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
 			$o_es = new WLPlugSearchEngineElasticSearch();
-			try {
-				$o_es->truncateIndex(null);
-			} catch(Exception $e) {
-				die('Unable to connect to ElasticSearch. Is the cluster running?');
-			}
+			$o_es->truncateIndex();
 		}
 
 		return true;
 	}
 	# --------------------------------------------------
 	public function performPostInstallTasks() {
+		// generate system GUID -- used to identify systems in data sync protocol
+		$o_vars = new ApplicationVars();
+		$o_vars->setVar('system_guid', caGenerateGUID());
+		$o_vars->save();
+
+		// refresh mapping if ElasticSearch is used
 		$o_config = Configuration::load();
 		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
-			require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
-			$o_es = new WLPlugSearchEngineElasticSearch();
-			$o_es->refreshMapping(true);
-
+			$o_si = new SearchIndexer();
+			$o_si->reindex(null, array('showProgress' => false, 'interactiveProgressDisplay' => false));
 			CompositeCache::flush();
 		}
 	}
@@ -869,10 +867,27 @@ class Installer {
 				// create ui bundle placements
 				foreach($vo_screen->bundlePlacements->children() as $vo_placement) {
 					$vs_placement_code = self::getAttribute($vo_placement, "code");
+					$vs_bundle_type_restrictions = self::getAttribute($vo_placement, "typeRestrictions");
 					$vs_bundle = trim((string)$vo_placement->bundle);
 
+					if ($vs_bundle_type_restrictions) {
+						// Copy type restrictions listed on the <placement> tag into numeric type_ids stored
+						// as settings on the placement record.
+						if ($t_instance instanceof BaseRelationshipModel) {
+							$va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), explode(",", $vs_bundle_type_restrictions));
+						} else {
+							$va_ids = caMakeTypeIDList($t_instance->tableNum(), explode(",", $vs_bundle_type_restrictions));
+						}
+						
+						if (!$vo_placement->settings) { $vo_placement->addChild("settings"); }
+						
+						foreach($va_ids as $vn_id) {
+							$o_setting = $vo_placement->settings->addChild('setting', $vn_id);
+							$o_setting->addAttribute('name', 'bundleTypeRestrictions');
+						}
+					}
+					
 					$va_settings = $this->_processSettings(null, $vo_placement->settings);
-
 					$t_ui_screens->addPlacement($vs_bundle, $vs_placement_code, $va_settings, null, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
 				}
 

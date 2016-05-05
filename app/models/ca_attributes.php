@@ -36,6 +36,7 @@
 
 require_once(__CA_APP_DIR__.'/models/ca_attribute_values.php');
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Attribute.php');
+require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
 		
 
 BaseModel::$s_ca_models_definitions['ca_attributes'] = array(
@@ -83,6 +84,8 @@ BaseModel::$s_ca_models_definitions['ca_attributes'] = array(
 );
 
 class ca_attributes extends BaseModel {
+	# ---------------------------------
+	use SyncableBaseModel;
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -163,7 +166,7 @@ class ca_attributes extends BaseModel {
 		)
 	);
 	
-	static $s_attribute_cache_size = 65535;
+	static $s_attribute_cache_size = 1024;
 	static $s_get_attributes_cache = array();
 	static $s_ca_attributes_element_instance_cache = array();
 	
@@ -195,7 +198,28 @@ class ca_attributes extends BaseModel {
 	public function doSearchIndexing($pa_changed_field_values_array=null, $pb_reindex_mode=false, $ps_engine=null) {
 		return;
 	}
-	# ------------------------------------------------------
+	# -------------------------------------------------------
+	public function insert($pa_options=null) {
+		if($vm_ret = parent::insert($pa_options)) {
+			$this->setGUID($pa_options); // generate and set GUID
+		}
+
+		return $vm_ret;
+	}
+	# -------------------------------------------------------
+
+
+	public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		$vn_primary_key = $this->getPrimaryKey();
+		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
+
+		if($vn_primary_key && $vn_rc) {
+			$this->removeGUID($vn_primary_key);
+		}
+
+		return $vn_rc;
+	}
+	# -------------------------------------------------------
 	/**
 	 *
 	 */
@@ -584,7 +608,7 @@ class ca_attributes extends BaseModel {
 		while($qr_attrs->nextRow()) {
 			$va_raw_row = $qr_attrs->getRow();
 			
-			$va_raw_row['element_code'] = ca_metadata_elements::getElementCode($va_raw_row['element_id']);
+			$va_raw_row['element_code'] = ca_metadata_elements::getElementCodeForID($va_raw_row['element_id']);
 			$va_raw_row['datatype'] = ca_metadata_elements::getElementDatatype($va_raw_row['element_id']);
 			
 			if ($vn_last_attribute_id != $va_raw_row['attribute_id']) {

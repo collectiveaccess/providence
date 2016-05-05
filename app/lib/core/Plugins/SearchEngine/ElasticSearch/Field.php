@@ -32,6 +32,8 @@
 
 namespace ElasticSearch;
 
+use ElasticSearch\FieldTypes\FieldType;
+
 require_once(__CA_APP_DIR__.'/helpers/listHelpers.php');
 
 class Field {
@@ -60,12 +62,21 @@ class Field {
 	 * Field constructor.
 	 * @param int $opn_content_tablenum
 	 * @param string $ops_indexing_fieldname
+	 * @throws \Exception
 	 */
 	public function __construct($opn_content_tablenum, $ops_indexing_fieldname) {
 		$this->opn_content_tablenum = $opn_content_tablenum;
 		$this->ops_content_tablename = \Datamodel::load()->getTableName($this->getContentTableNum());
 
+		if(!$this->ops_content_tablename) {
+			throw new \Exception(_t('Invalid table num %1', $opn_content_tablenum));
+		}
+
 		$this->opo_field_type = FieldTypes\FieldType::getInstance($this->getContentTableName(), $ops_indexing_fieldname);
+
+		if(!($this->opo_field_type instanceof FieldTypes\FieldType)) {
+			throw new \Exception(_t('Could not disambiguate field type for content table name %1 indexing field name %2', $opn_content_tablenum, $ops_indexing_fieldname));
+		}
 	}
 
 	/**

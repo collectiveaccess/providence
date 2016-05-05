@@ -1158,6 +1158,9 @@
 				CLIUtils::addError(_t("Could not import '%1': %2", $vs_file_path, join("; ", $va_errors)));
 				return false;
 			} else {
+				if(is_array($va_errors) && (sizeof($va_errors)>0)) {
+					CLIUtils::textWithColor(_t("There were warnings when adding mapping from file '%1': %2", $vs_file_path, join("; ", $va_errors)), 'yellow');
+				}
 
 				CLIUtils::addMessage(_t("Created mapping %1 from %2", CLIUtils::textWithColor($t_importer->get('importer_code'), 'yellow'), $vs_file_path), array('color' => 'none'));
 				return true;
@@ -1655,49 +1658,42 @@
 			return _t("Loads the AAT from a Getty-provided XML file.");
 		}
 		# -------------------------------------------------------
-
 		/**
 		 *
 		 */
-		public static function sync_data($po_opts=null) {
-			require_once(__CA_LIB_DIR__.'/ca/Sync/DataSynchronizer.php');
-			$o_sync = new DataSynchronizer();
-			$o_sync->sync();
-			//if (!($vs_file_path = $po_opts->getOption('file'))) {
-			//	CLIUtils::addError(_t("You must specify a file"));
-			//	return false;
-			//}
+		public static function replicate_data($po_opts=null) {
+			require_once(__CA_LIB_DIR__.'/ca/Sync/Replicator.php');
 
+			$o_replicator = new Replicator();
+			$o_replicator->replicate();
 		}
 		# -------------------------------------------------------
 		/**
 		 *
 		 */
-		public static function sync_dataParamList() {
-			return array(
-				//"file|f=s" => _t('Path to AAT XML file.')
-			);
+		public static function replicate_dataParamList() {
+			return array();
 		}
 		# -------------------------------------------------------
 		/**
 		 *
 		 */
-		public static function sync_dataUtilityClass() {
+		public static function replicate_dataUtilityClass() {
 			return _t('Import/Export');
 		}
 		# -------------------------------------------------------
 		/**
 		 *
 		 */
-		public static function sync_dataShortHelp() {
-			return _t("Synchronize data between two CollectiveAccess systems.");
+		public static function replicate_dataShortHelp() {
+			return _t("Replicate data from one CollectiveAccess system to another.");
 		}
 		# -------------------------------------------------------
 		/**
 		 *
 		 */
-		public static function sync_dataHelp() {
-			return _t("Synchronizes data in one CollectiveAccess instance based upon data in another instance, subject to configuration in synchronization.conf.");
+		public static function replicate_dataHelp() {
+			return _t("Replicates data in one CollectiveAccess instance based upon data in another instance, subject to configuration in replication.conf.");
 		}
 		# -------------------------------------------------------
 		/**
@@ -3264,6 +3260,362 @@
 		 */
 		public static function precache_contentHelp() {
 			return _t('Pre-loads content cache by loading each cached page url. Pre-caching may take a while depending upon the quantity of content configured for caching.');
+		}
+		# -------------------------------------------------------
+		/**
+		 * Load metadata dictionary
+		 */
+		public static function load_chenhall_nomenclature($po_opts=null) {
+
+			require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
+			require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
+			require_once(__CA_MODELS_DIR__.'/ca_lists.php');
+			require_once(__CA_MODELS_DIR__.'/ca_locales.php');
+
+			$t_list = new ca_lists();
+			$o_db = $t_list->getDb();
+			
+			$vn_locale_id = ca_locales::getDefaultCataloguingLocaleID();
+
+			if (!($ps_source = (string)$po_opts->getOption('file'))) {
+				CLIUtils::addError(_t("You must specify a file"));
+				return false;
+			}
+			if (!file_exists($ps_source) || !is_readable($ps_source)) {
+				CLIUtils::addError(_t("You must specify a valid file"));
+				return false;
+			}
+			
+			if (!($ps_list_code = (string)$po_opts->getOption('list'))) {
+				CLIUtils::addError(_t("You must specify a list"));
+				return false;
+			}
+
+			try {
+				$o_file = PHPExcel_IOFactory::load($ps_source);
+			} catch (Exception $e) {
+				CLIUtils::addError(_t("You must specify a valid Excel .xls or .xlsx file: %1", $e->getMessage()));
+				return false;
+			}
+			
+			print CLIProgressBar::start($o_file->getActiveSheet()->getHighestRow(), _t('Loading non-preferred terms'));
+			// Get non-preferred terms
+			$o_file->setActiveSheetIndex(1);
+			$o_sheet = $o_file->getActiveSheet();
+			$o_rows = $o_sheet->getRowIterator();
+			
+			$o_rows->next();
+				
+			$va_non_preferred_terms = [];
+			while ($o_rows->valid() && ($o_row = $o_rows->current())) {
+				$o_cells = $o_row->getCellIterator();
+				$o_cells->setIterateOnlyExistingCells(false);
+
+				$vn_c = 0;
+				$va_data = array();
+
+				foreach ($o_cells as $o_cell) {
+					$va_data[$vn_c] = trim((string)$o_cell->getValue());
+					$vn_c++;
+
+					if ($vn_c > 3) { break; }
+				}
+				
+				$va_non_preferred_terms[$va_data[1]][] = $va_data[0];
+				
+				$o_rows->next();
+				CLIProgressBar::next();
+			}
+			CLIProgressBar::finish();
+			
+
+			// get list
+			
+			print CLIProgressBar::start(1, _t('Creating list'));
+			
+			if (!($t_list = ca_lists::find(['list_code' => $ps_list_code], ['returnAs' => 'firstModelInstance']))) {
+				$t_list = new ca_lists();
+				$t_list->setMode(ACCESS_WRITE);
+				$t_list->set('list_code', $ps_list_code);
+				$t_list->set('is_system_list', 1);
+				$t_list->set('is_hierarchical', 1);
+				$t_list->set('use_as_vocabulary', 1);
+				$t_list->insert();
+				
+				if ($t_list->numErrors()) {
+					CLIUtils::addError(_t("Could not create list %1: %2", $ps_list_code, join("; ", $t_list->getErrors())));
+					return false;
+				}
+				
+				$t_list->addLabel(['name' => 'Chenhall Nomenclature'], $vn_locale_id, null, true);
+				if ($t_list->numErrors()) {
+					CLIUtils::addError(_t("Could not label list %1: %2", $ps_list_code, join("; ", $t_list->getErrors())));
+					return false;
+				}
+				
+			} elseif ($t_list->numItemsInList($ps_list_code) > 0) {
+				CLIUtils::addError(_t("List %1 is not empty. The Chenhall Nomenclature may only be imported into an empty list.", $ps_list_code));
+				return false;
+			}
+			CLIProgressBar::finish();
+
+			// Get preferred terms
+			
+			$o_file->setActiveSheetIndex(0);
+			$o_sheet = $o_file->getActiveSheet();
+			$o_rows = $o_sheet->getRowIterator();
+			$vn_add_count = 0;
+
+			print CLIProgressBar::start($o_file->getActiveSheet()->getHighestRow(), _t('Loading preferred terms'));
+			
+			$o_rows->next(); // skip first line
+			
+			$va_parents = [];
+			
+			while ($o_rows->valid() && ($o_row = $o_rows->current())) {
+				$o_cells = $o_row->getCellIterator();
+				$o_cells->setIterateOnlyExistingCells(false);
+
+				$vn_c = 0;
+				$va_data = array();
+
+				foreach ($o_cells as $o_cell) {
+					$vm_val = $o_cell->getValue();
+					if ($vm_val instanceof PHPExcel_RichText) {
+						$vs_val = '';
+						foreach($vm_val->getRichTextElements() as $vn_x => $o_item) {
+							$o_font = $o_item->getFont();
+							$vs_text = $o_item->getText();
+							if ($o_font && $o_font->getBold()) {
+								$vs_val .= "<strong>{$vs_text}</strong>";
+							} elseif($o_font && $o_font->getItalic()) {
+								$vs_val .= "<em>{$vs_text}</em>";
+							} else {
+								$vs_val .= $vs_text;
+							}
+						}
+					} else {
+						$vs_val = trim((string)$vm_val);
+					}
+					$va_data[$vn_c] = nl2br(preg_replace("![\n\r]{1}!", "\n\n", $vs_val));
+					$vn_c++;
+
+					if ($vn_c > 6) { break; }
+				}
+				$o_rows->next();
+
+				
+				$va_acc = [];
+				foreach($va_data as $vn_col => $vs_term) {
+					if(!$vs_term) { continue; }
+					if($vn_col > 5) { break; }
+					$va_acc[] = $vs_term;
+				}
+				$vs_term = array_pop($va_acc);
+				$vs_key = md5(join("|", $va_acc));
+				if (!($vn_parent_id = $va_parents[$vs_key])) {
+					$vn_parent_id = $t_list->getRootListItemID();
+				}
+				
+				if (!($t_item = $t_list->addItem($vs_term, true, false, $vn_parent_id, null, $vs_term, '', 0, 1))) {
+					CLIUtils::addError(_t("Could not add term %1: %2", $vs_term, join("; ", $t_list->getErrors())));
+					continue;
+				}
+				if (!$t_item->addLabel(['name_singular' => $vs_term, 'name_plural' => $vs_term, 'description' => $va_data[6]], $vn_locale_id, null, true)) {
+					CLIUtils::addError(_t("Could not add term label %1: %2", $vs_term, join("; ", $t_list->getErrors())));
+					continue;
+				}
+				print CLIProgressBar::next(1, _t('Added preferred term %1', $vs_term));
+				$va_parents[md5(join("|", array_merge($va_acc, [$vs_term])))] = $t_item->getPrimaryKey();
+				
+				if(is_array($va_non_preferred_terms[$vs_term])) {
+					foreach($va_non_preferred_terms[$vs_term] as $vs_non_preferred_term) {
+						if (!($t_item->addLabel(['name_singular' => $vs_non_preferred_term, 'name_plural' => $vs_non_preferred_term, 'description' => ''], $vn_locale_id, null, false))) {
+							CLIUtils::addError(_t("Could not add non-preferred term %1 to %2: %3", $vs_non_preferred_term, $vs_term, join("; ", $t_list->getErrors())));
+							continue;
+						}
+					}
+				}
+			}
+
+			CLIProgressBar::finish();
+
+			CLIUtils::addMessage(_t('Added %1 terms', $vn_add_count), array('color' => 'bold_green'));
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_chenhall_nomenclatureParamList() {
+			return array(
+				"file|f=s" => _t('Excel XLSX-format AASLH Chenhall Nomenclature file to load.'),
+				"list|l=s" => _t('Code for list to load Chenhall Nomenclature into. If list with code does not exist it will be created.')
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_chenhall_nomenclatureUtilityClass() {
+			return _t('Import/Export');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_chenhall_nomenclatureShortHelp() {
+			return _t('Load AASLH Chenhall Nomenclature from an Excel file');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function load_chenhall_nomenclatureHelp() {
+			return _t('Loads Chenhall Nomenclature from Excel XLSX format file into the specified list. You can obtain a copy of the Nomenclature from the American Association of State and Local History (AASLH).');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function generate_missing_guids($po_opts=null) {
+			$o_dm = Datamodel::load();
+			$o_db = new Db();
+
+			foreach($o_dm->getTableNames() as $vs_table) {
+				$t_instance = $o_dm->getInstance($vs_table);
+				if(
+					($t_instance instanceof BundlableLabelableBaseModelWithAttributes) ||
+					($t_instance instanceof BaseLabel) ||
+					($t_instance instanceof ca_attribute_values) ||
+					($t_instance instanceof ca_attributes)
+				) {
+					$qr_results = $o_db->query("SELECT ". $t_instance->primaryKey() . " FROM ". $t_instance->tableName());
+					if($qr_results && ($qr_results->numRows() > 0)) {
+						print CLIProgressBar::start($qr_results->numRows(), _t('Generating/verifying GUIDs for table %1', $t_instance->tableName()));
+						while($qr_results->nextRow()) {
+							print CLIProgressBar::next();
+							$t_instance->getGUIDByPrimaryKey($qr_results->get($t_instance->primaryKey()));
+						}
+						print CLIProgressBar::finish();
+					}
+				}
+			}
+
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function generate_missing_guidsParamList() {
+			return array(
+
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function generate_missing_guidsUtilityClass() {
+			return _t('Maintenance');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function generate_missing_guidsShortHelp() {
+			return _t('Generate missing guids');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function generate_missing_guidsHelp() {
+			return _t('Generates guids for all records that don\'t have one yet. This can be useful if you plan on using the data synchronization/replication feature in the future. For more info see here: http://docs.collectiveaccess.org/wiki/Replication');
+		}
+		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt $po_opts
+		 * @return bool
+		 */
+		public static function remove_duplicate_records($po_opts=null) {
+			$va_tables = null;
+			if ($vs_tables = (string)$po_opts->getOption('tables')) {
+				$va_tables = preg_split("![;,]+!", $vs_tables);
+			} else {
+				CLIUtils::addError(_t("The -t|--tables parameter is mandatory."));
+				return false;
+			}
+
+			$vb_delete_opt = (bool)$po_opts->getOption('delete');
+
+			foreach($va_tables as $vs_t) {
+				if(class_exists($vs_t) && method_exists($vs_t, 'listPotentialDupes')) {
+					$va_dupes = $vs_t::listPotentialDupes();
+					if(sizeof($va_dupes)) {
+						CLIUtils::addMessage(_t('Table %1 has %2 records that have potential duplicates.', $vs_t, sizeof($va_dupes)), array('color' => 'red'));
+
+
+						$t_instance = Datamodel::load()->getInstance($vs_t);
+
+						foreach ($va_dupes as $vs_sha2 => $va_keys) {
+							CLIUtils::addMessage("\t" . _t('%1 records have the checksum %2', sizeof($va_keys), $vs_sha2));
+							foreach ($va_keys as $vn_key) {
+								$t_instance->load($vn_key);
+								CLIUtils::addMessage("\t\t" . $t_instance->primaryKey() . ': ' . $t_instance->getPrimaryKey() . ' (' . $t_instance->getLabelForDisplay() . ')');
+							}
+
+							if ($vb_delete_opt) {
+								$vn_entity_id = $vs_t::mergeRecords($va_keys);
+								if ($vn_entity_id) {
+									CLIUtils::addMessage("\t" . _t("Successfully consolidated them under id %1", $vn_entity_id), array('color' => 'green'));
+								} else {
+									CLIUtils::addMessage("\t" . _t("It seems like there was an error while deduplicating those records"), array('color' => 'bold_red'));
+								}
+							}
+
+						}
+					} else {
+						CLIUtils::addMessage(_t('Table %1 does not seem to have any duplicates!', $vs_t), array('color' => 'bold_green'));
+					}
+				}
+			}
+
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function remove_duplicate_recordsParamList() {
+			return array(
+				"tables|t-s" => _t('Specific tables to deduplicate, separated by commas or semicolons. Mandatory.'),
+				"delete|d" => _t('Delete duplicate records. Default is false.')
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function remove_duplicate_recordsUtilityClass() {
+			return _t('Maintenance');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function remove_duplicate_recordsShortHelp() {
+			return _t('Show and, optionally, remove duplicate records');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function remove_duplicate_recordsHelp() {
+			return _t('Lists and optionally removed duplicate records. For more info on how the algorithm works see here: http://docs.collectiveaccess.org/wiki/Deduplication');
 		}
 		# -------------------------------------------------------
 	}

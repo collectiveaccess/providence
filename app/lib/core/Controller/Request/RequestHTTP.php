@@ -442,7 +442,7 @@ class RequestHTTP extends Request {
 		return join('/', $va_url);
 	}
 	# -------------------------------------------------------
-	public function getParameter($ps_name, $pn_type, $ps_http_method=null) {
+	public function getParameter($ps_name, $pn_type, $ps_http_method=null, $pa_options=array()) {
 		if (in_array($ps_http_method, array('GET', 'POST', 'COOKIE', 'PATH', 'REQUEST'))) {
 			$vm_val = $this->opa_params[$ps_http_method][$ps_name];
 		} else {
@@ -477,7 +477,9 @@ class RequestHTTP extends Request {
 			# -----------------------------------------
 			case pString:
 				if (is_string($vm_val)) {
-					$vm_val = str_replace("\\", "\\\\", $vm_val);	// retain backslashes for some strange people desire them as valid input
+					if(caGetOption('retainBackslashes', $pa_options, true)) {
+						$vm_val = str_replace("\\", "\\\\", $vm_val);	// retain backslashes for some strange people desire them as valid input
+					}
 					$vm_val = rawurldecode($vm_val);
 					return $vm_val;
 				}
@@ -744,7 +746,9 @@ class RequestHTTP extends Request {
 			$this->user->setVar('last_login', time(), array('volatile' => true));
 			$this->user->setLastLogout($this->user->getLastPing(), array('volatile' => true));
 			
-			//$this->user->close(); ** will be called externally **
+			$this->user->setMode(ACCESS_WRITE);
+			$this->user->update();
+			
 			$AUTH_CURRENT_USER_ID = $vn_user_id;
 
 			if ($pa_options['redirect']) {

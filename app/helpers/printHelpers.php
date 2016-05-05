@@ -113,7 +113,7 @@
 							if ($vb_for_html_select) {
 								$va_templates[$va_template_info['name']] = '_pdf_'.$vs_template_tag;
 							} else {
-								$va_templates[] = array(
+								$va_templates[$vs_template_tag] = array(
 									'name' => $va_template_info['name'],
 									'code' => '_pdf_'.$vs_template_tag,
 									'type' => 'pdf'
@@ -125,7 +125,7 @@
 			}
 
 			asort($va_templates);
-
+			
 			ExternalCache::save($vs_cache_key, $va_templates, 'PrintTemplates');
 			ExternalCache::save("{$vs_cache_key}_mtime", filemtime($vs_template_path), 'PrintTemplates');
 			ExternalCache::save("{$vs_cache_key}_local_mtime", filemtime("{$vs_template_path}/local"), 'PrintTemplates');

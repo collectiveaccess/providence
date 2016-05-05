@@ -71,7 +71,10 @@
  	define('__CA_NAV_BUTTON_ICON_POS_BOTTOM__', 3);
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * @param array $pa_options Options include:
+	 *		absolute = return absolute URL. [Default is to return relative URL]
 	 *
+	 * @return string
 	 */
 	function caNavUrl($po_request, $ps_module_path, $ps_controller, $ps_action, $pa_other_params=null, $pa_options=null) {
 
@@ -111,6 +114,12 @@
 				$vs_url .= "/".join("/", $pa_other_params);
 			}
 		}
+		
+		if (caGetOption('absolute', $pa_options, false)) {
+			$o_config = Configuration::load();
+			$vs_url = $o_config->get('site_host').$o_config->get('ca_url_root').$vs_url;
+		}
+		
 		return $vs_url;
 	}
 	# ------------------------------------------------------------------------------------------------
@@ -785,6 +794,8 @@
 	 * @param array $pa_options Optional array of options. Supported options are:
 	 * 		verifyLink - if true and $pn_id is set, then existence of record with specified id is verified before link is returned. If the id does not exist then null is returned. Default is false - no verification performed.
 	 *		action - if set, action of returned link will be set to the supplied value
+	 *      quick_add - if set to true, returned link will point to the QuickAdd controller instead
+	 * @return string
 	 */
 	function caEditorUrl($po_request, $ps_table, $pn_id=null, $pb_return_url_as_pieces=false, $pa_additional_parameters=null, $pa_options=null) {
 		$o_dm = Datamodel::load();
@@ -793,6 +804,8 @@
 		} else {
 			if (!($t_table = $o_dm->getInstanceByTableName($ps_table, true))) { return null; }
 		}
+		$pb_quick_add = caGetOption('quick_add', $pa_options, false);
+
 		$vs_pk = $t_table->primaryKey();
 		$vs_table = $t_table->tableName();
 		if ($vs_table == 'ca_list_items') { $vs_table = 'ca_lists'; }
@@ -801,47 +814,42 @@
 			case 'ca_objects':
 			case 57:
 				$vs_module = 'editor/objects';
-				$vs_controller = 'ObjectEditor';
+				$vs_controller = $pb_quick_add ? 'ObjectQuickAdd' : 'ObjectEditor';
 				break;
 			case 'ca_object_lots':
 			case 51:
 				$vs_module = 'editor/object_lots';
-				$vs_controller = 'ObjectLotEditor';
-				break;
-			case 'ca_object_events':
-			case 45:
-				$vs_module = 'editor/object_events';
-				$vs_controller = 'ObjectEventEditor';
+				$vs_controller = $pb_quick_add ? 'ObjectLotQuickAdd' : 'ObjectLotEditor';
 				break;
 			case 'ca_entities':
 			case 20:
 				$vs_module = 'editor/entities';
-				$vs_controller = 'EntityEditor';
+				$vs_controller = $pb_quick_add ? 'EntityQuickAdd' : 'EntityEditor';
 				break;
 			case 'ca_places':
 			case 72:
 				$vs_module = 'editor/places';
-				$vs_controller = 'PlaceEditor';
+				$vs_controller = $pb_quick_add ? 'PlaceQuickAdd' : 'PlaceEditor';
 				break;
 			case 'ca_occurrences':
 			case 67:
 				$vs_module = 'editor/occurrences';
-				$vs_controller = 'OccurrenceEditor';
+				$vs_controller = $pb_quick_add ? 'OccurrenceQuickAdd' : 'OccurrenceEditor';
 				break;
 			case 'ca_collections':
 			case 13:
 				$vs_module = 'editor/collections';
-				$vs_controller = 'CollectionEditor';
+				$vs_controller = $pb_quick_add ? 'CollectionQuickAdd' : 'CollectionEditor';
 				break;
 			case 'ca_storage_locations':
 			case 89:
 				$vs_module = 'editor/storage_locations';
-				$vs_controller = 'StorageLocationEditor';
+				$vs_controller = $pb_quick_add ? 'StorageLocationQuickAdd' : 'StorageLocationEditor';
 				break;
 			case 'ca_sets':
 			case 103:
 				$vs_module = 'manage/sets';
-				$vs_controller = 'SetEditor';
+				$vs_controller = $pb_quick_add ? 'SetQuickAdd' : 'SetEditor';
 				break;
 			case 'ca_set_items':
 			case 105:
@@ -876,12 +884,12 @@
 			case 'ca_loans':
 			case 133:
 				$vs_module = 'editor/loans';
-				$vs_controller = 'LoanEditor';
+				$vs_controller = $pb_quick_add ? 'LoanQuickAdd' : 'LoanEditor';
 				break;
 			case 'ca_movements':
 			case 137:
 				$vs_module = 'editor/movements';
-				$vs_controller = 'MovementEditor';
+				$vs_controller = $pb_quick_add ? 'MovementQuickAdd' : 'MovementEditor';
 				break;
 			case 'ca_tours':
 			case 153:
@@ -915,6 +923,8 @@
 			default:
 				if(isset($pa_options['action'])){
 					$vs_action = $pa_options['action'];
+				} elseif($pb_quick_add) {
+					$vs_action = 'Form';
 				} elseif(
 					$po_request->isLoggedIn() &&
 					$po_request->user->canAccess($vs_module,$vs_controller,"Edit",array($vs_pk => $pn_id)) &&

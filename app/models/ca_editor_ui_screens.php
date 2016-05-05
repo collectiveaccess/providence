@@ -522,9 +522,12 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					}
 					break;
 				case 'related_table':
-					if($vs_bundle == 'ca_objects_table') {
-						$t_rel = $this->_DATAMODEL->getInstanceByTableName('ca_objects', true);
-						$va_path = array_keys($this->_DATAMODEL->getPath($t_instance->tableName(), 'ca_objects'));
+					if(preg_match("/^([a-z_]+)_(related_list|table)$/", $vs_bundle, $va_matches)) {
+						$vs_table = $va_matches[1];
+						$t_rel = $this->_DATAMODEL->getInstanceByTableName($vs_table, true);
+						$va_path = array_keys($this->_DATAMODEL->getPath($t_instance->tableName(), $vs_table));
+						if(!is_array($va_path)) { continue 2; }
+
 						$va_additional_settings = array(
 							'restrict_to_relationship_types' => array(
 								'formatType' => FT_TEXT,
@@ -746,6 +749,18 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'description' => _t('Restricts display to items from the specified list(s). Leave all unselected for no restriction.')
 						);
 					}
+
+					if ($vs_bundle == 'ca_object_lots') {
+						$va_additional_settings['display_template'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'default' => '^ca_object_lots.preferred_labels (^ca_object_lots.idno_stub)',
+							'width' => "275px", 'height' => 4,
+							'label' => _t('Relationship display template'),
+							'description' => _t('Layout for relationship when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
+						);
+					}
+
 					if (in_array($vs_bundle, array('ca_places', 'ca_list_items', 'ca_storage_locations'))) {
 						$va_additional_settings['useHierarchicalBrowser'] = array(
 							'formatType' => FT_TEXT,
@@ -1111,6 +1126,26 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Hide "Update Location" controls'),
 										'description' => _t('Check this option if you want to to hide the "Update Location" controls in this bundle placement.')
 									),
+									'hide_add_to_occurrence_controls' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_CHECKBOXES,
+										'width' => "10", 'height' => "1",
+										'takesLocale' => false,
+										'default' => '0',
+										'label' => _t('Hide "Add to" occurrence controls'),
+										'description' => _t('Check this option if you want to to hide the "Add to" occurrence controls in this bundle placement.'),
+										'hideOnSelect' => ['add_to_occurrence_types']
+									),
+									'add_to_occurrence_types' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'useList' => 'occurrence_types',
+										'takesLocale' => false,
+										'default' => '',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Show "Add to" occurrence controls for'),
+										'description' => ''
+									),
 									'useHierarchicalBrowser' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_CHECKBOXES,
@@ -1326,6 +1361,18 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Color for storage location'),
 										'description' => _t('Color to use as highlight storage location.')
 									),
+									'ca_storage_locations_elements' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'default' => '',
+										'takesLocale' => false,
+										'table' => 'ca_objects_x_storage_locations',
+										'showMetadataElementsWithDataType' => "*",
+										'includeIntrinsics' => ['effective_date'],
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Interstitial storage location elements to set'),
+										'description' => _t('')
+									),
 									'ca_storage_locations_displayTemplate' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
@@ -1440,6 +1487,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			$t_placement->setSettingDefinitionsForPlacement($va_additional_settings);
 			
 			$vs_display = "<div id='uiEditorBundle_{$vs_table}_{$vs_bundle_proc}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_table.'.'.$vs_bundle_proc))."</div>";
+
+			$va_additional_settings['bundleTypeRestrictions'] = [
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'default' => '',
+				'showTypesForTable' => $vs_table,
+				'width' => "275px", 'height' => 4,
+				'label' => _t('Display bundle for types'),
+				'description' => _t('Restrict which types this bundle is displayed for. If no types are selected the bundle will be displayed for <strong>all</strong> types.')	
+			];
 
 			$va_available_bundles[$vs_display][$vs_bundle] = array(
 				'bundle' => $vs_bundle,

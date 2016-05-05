@@ -435,9 +435,13 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 				foreach($t_list->getItemsForList($pa_element_info['list_id']) as $va_items_by_locale) {
 					foreach ($va_items_by_locale as $vn_locale_id => $va_item) {
 						$vs_hide_js = '';
-						if(is_array($pa_element_info['settings']['hideIfSelected_'.$va_item['idno']])) {
+
+						if(isset($pa_element_info['settings']['hideIfSelected_'.$va_item['idno']])) {
+							$va_hideif_for_idno = $pa_element_info['settings']['hideIfSelected_'.$va_item['idno']];
+							if(!is_array($va_hideif_for_idno)) { $va_hideif_for_idno = array($va_hideif_for_idno); }
+
 							// @todo maybe only generate JS for bundles on current screen? could figure that out from request
-							foreach($pa_element_info['settings']['hideIfSelected_'.$va_item['idno']] as $vs_key) {
+							foreach($va_hideif_for_idno as $vs_key) {
 								$va_tmp = self::resolveHideIfSelectedKey($vs_key);
 								if(!is_array($va_tmp)) { continue; }
 
@@ -463,7 +467,8 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 							case 'select':
 							case null:
 								$vs_select = "jQuery('#{fieldNamePrefix}" . $pa_element_info['element_id'] . "_{n}')";
-								$vs_selector_for_val = "jQuery(this).find(':selected').val()";
+								//$vs_selector_for_val = "jQuery(this).find(':selected').val()";
+								$vs_selector_for_val = "{$vs_select}.val()";
 								$vs_condition = $vs_selector_for_val . " === '" . $va_item['item_id'] . "'";
 								break;
 							default:
@@ -541,18 +546,24 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 			}
 
 			$t_list = new ca_lists();
-			foreach($t_list->getItemsForList($pa_element_info['list_id']) as $va_items_by_locale) {
-				foreach($va_items_by_locale as $vn_locale_id => $va_item) {
-					$va_element_settings['hideIfSelected_'.$va_item['idno']] = array(
-						'formatType' => FT_TEXT,
-						'displayType' => DT_SELECT,
-						'options' => $va_options_for_settings,
-						'takesLocale' => false,
-						'default' => '',
-						'width' => "400px", 'height' => 10,
-						'label' => _t('Hide bundles if "%1" is selected', $va_item['name_singular']),
-						'description' => _t('Select bundles from the list below')
-					);
+			$va_list = $t_list->getItemsForList($pa_element_info['list_id']);
+			
+			// Only allow dependent visibility on lists with 250 or less items; if we don't impose a limit
+			// then large vocabularies will cause things to hang by generating thousands of setting elements
+			if (sizeof($va_list) <= 250) {
+				foreach($t_list->getItemsForList($pa_element_info['list_id']) as $va_items_by_locale) {
+					foreach($va_items_by_locale as $vn_locale_id => $va_item) {
+						$va_element_settings['hideIfSelected_'.$va_item['idno']] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_SELECT,
+							'options' => $va_options_for_settings,
+							'takesLocale' => false,
+							'default' => '',
+							'width' => "400px", 'height' => 10,
+							'label' => _t('Hide bundles if "%1" is selected', $va_item['name_singular']),
+							'description' => _t('Select bundles from the list below')
+						);
+					}
 				}
 			}
 		} elseif(defined('__CollectiveAccess_Installer__') && Configuration::load()->get('enable_dependent_field_visibility')) {

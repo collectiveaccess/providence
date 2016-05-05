@@ -475,13 +475,12 @@ class BaseEditorController extends ActionController {
 		if ($vb_confirm = ($this->request->getParameter('confirm', pInteger) == 1) ? true : false) {
 			$vb_we_set_transaction = false;
 			if (!$t_subject->inTransaction()) {
-				$o_t = new Transaction();
-				$t_subject->setTransaction($o_t);
+				$t_subject->setTransaction($o_t = new Transaction());
 				$vb_we_set_transaction = true;
 			}
 
 			// Do we need to move relationships?
-			if (($vn_remap_id =  $this->request->getParameter('remapToID', pInteger)) && ($this->request->getParameter('referenceHandling', pString) == 'remap')) {
+			if (($vn_remap_id =  $this->request->getParameter('caReferenceHandlingToRemapToID', pInteger)) && ($this->request->getParameter('caReferenceHandlingTo', pString) == 'remap')) {
 				switch($t_subject->tableName()) {
 					case 'ca_relationship_types':
 						if ($vn_c = $t_subject->moveRelationshipsToType($vn_remap_id)) {
@@ -513,7 +512,16 @@ class BaseEditorController extends ActionController {
 			} else {
 				$t_subject->deleteAuthorityElementReferences();
 			}
-
+			
+			// Do we need to move references contained in attributes bound to this item?
+			if (($vn_remap_id =  $this->request->getParameter('caReferenceHandlingToRemapFromID', pInteger)) && ($this->request->getParameter('caReferenceHandlingFrom', pString) == 'remap')) {
+				try {
+					$t_subject->moveAttributes($vn_remap_id, $t_subject->getAuthorityElementList(['idsOnly' => true]));
+				} catch(ApplicationException $o_e) {
+					$this->notification->addNotification(_t("Could not move references to other items in metadata before delete: %1", $o_e->getErrorDescription()), __NOTIFICATION_TYPE_ERROR__);
+				}
+			}
+			
 			$t_subject->setMode(ACCESS_WRITE);
 
 			$vb_rc = false;
@@ -577,6 +585,7 @@ class BaseEditorController extends ActionController {
 	 * @param string $ps_table table name
 	 */
 	protected function redirectAfterDelete($ps_table) {
+		$this->getRequest()->close();
 		caSetRedirect($this->opo_result_context->getResultsUrlForLastFind($this->getRequest(), $ps_table));
 	}
 	# -------------------------------------------------------
@@ -709,7 +718,6 @@ class BaseEditorController extends ActionController {
 			$this->view->setVar('placements', $va_display_list);
 
 			$this->request->user->setVar($t_subject->tableName().'_summary_display_id', $vn_display_id);
-			$vs_format = $this->request->config->get("summary_print_format");
 		} else {
 			$vn_display_id = $t_display = null;
 			$this->view->setVar('display_id', null);
@@ -869,6 +877,8 @@ class BaseEditorController extends ActionController {
 			$this->response->setRedirect($this->request->config->get('error_display_url').'/n/2575?r='.urlencode($this->request->getFullUrlPath()));
 			return;
 		}
+		
+		$this->view->setVar('log', $t_subject->getChangeLogForDisplay('caLog', $this->request->getUserID()));
 
 		$this->render('log_html.php');
 	}
@@ -909,6 +919,14 @@ class BaseEditorController extends ActionController {
 			return;
 		}
 		$vs_form_prefix = $this->request->getParameter('_formName', pString);
+
+		$this->opo_app_plugin_manager->hookBeforeSaveItem(array(
+			'id' => $vn_subject_id,
+			'table_num' => $t_subject->tableNum(),
+			'table_name' => $t_subject->tableName(), 
+			'instance' => $t_subject,
+			'is_insert' => false)
+		);
 
 		// Save user ACL's
 		$va_users_to_set = array();
@@ -964,6 +982,15 @@ class BaseEditorController extends ActionController {
 				$this->postError(1250, _t('Could not set ACL inheritance settings: %1', join("; ", $t_subject->getErrors())),"BaseEditorController->SetAccess()");
 			}
 		}
+
+		$this->opo_app_plugin_manager->hookSaveItem(array(
+			'id' => $vn_subject_id,
+			'table_num' => $t_subject->tableNum(),
+			'table_name' => $t_subject->tableName(),
+			'instance' => $t_subject,
+			'is_insert' => false)
+		);
+
 		$this->Access();
 	}
 	# -------------------------------------------------------
@@ -1851,7 +1878,7 @@ class BaseEditorController extends ActionController {
 	 * Returns media viewer help text for display
 	 */
 	public function ViewerHelp() {
-		$this->render('viewer_help_html.php');
+		$this->render('../objects/viewer_help_html.php');
 	}
 	# -------------------------------------------------------
 	/**
@@ -2250,6 +2277,36 @@ class BaseEditorController extends ActionController {
 
 
 		print json_encode($va_stored_files);
+	}
+	# -------------------------------------------------------
+	/**
+	 * Handle sort requests from form editor.
+	 * Gets passed a table name, a list of ids and a key to sort on. Will return a JSON list of the same IDs, just sorted.
+	 */
+	public function Sort() {
+		if (!$this->getRequest()->isLoggedIn() || ((int)$this->getRequest()->user->get('userclass') !== 0)) {
+			$this->getResponse()->setRedirect($this->getRequest()->config->get('error_display_url').'/n/2320?r='.urlencode($this->getRequest()->getFullUrlPath()));
+			return;
+		}
+
+		$vs_table_name = $this->getRequest()->getParameter('table', pString);
+		$t_instance = $this->getAppDatamodel()->getInstance($vs_table_name, true);
+
+		$va_ids = explode(',', $this->getRequest()->getParameter('ids', pString));
+		$va_sort_keys = explode(',', $this->getRequest()->getParameter('sortKeys', pString));
+
+		if(!($vs_sort_direction = strtolower($this->getRequest()->getParameter('sortDirection', pString))) || !in_array($vs_sort_direction, array('asc', 'desc'))) {
+			$vs_sort_direction = 'asc';
+		}
+
+		if(!$t_instance) { return; }
+		if(!is_array($va_ids) || !sizeof($va_ids)) { return; }
+		if(!is_array($va_sort_keys) || !sizeof($va_sort_keys)) { return; }
+
+		$o_res = caMakeSearchResult($t_instance->tableName(), $va_ids, array('sort' => $va_sort_keys, 'sortDirection' => $vs_sort_direction));
+		$va_sorted_ids = $o_res->getAllFieldValues($t_instance->primaryKey());
+
+		print json_encode($va_sorted_ids);
 	}
 	# -------------------------------------------------------
 }
