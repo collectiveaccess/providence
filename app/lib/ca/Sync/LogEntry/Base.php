@@ -353,7 +353,7 @@ abstract class Base {
 				if($vs_field == $this->getModelInstance()->getProperty('HIERARCHY_PARENT_ID_FLD')) {
 					if(isset($va_snapshot[$vs_field . '_guid']) && ($vs_parent_guid = $va_snapshot[$vs_field . '_guid'])) {
 						$t_instance = $this->getModelInstance()->cloneRecord();
-						if(!$t_instance->loadByGUID($vs_parent_guid)) {
+						if(!$t_instance->loadByGUID($vs_parent_guid) && !(intval($va_snapshot[$vs_field]) == 1)) {
 							throw new InvalidLogEntryException(_t("Could not load GUID %1 (referenced in HIERARCHY_PARENT_ID_FLD)", $vs_parent_guid));
 						}
 					} else {
@@ -422,7 +422,11 @@ abstract class Base {
 						if($t_instance->loadByGUID($vs_parent_guid)) {
 							$this->getModelInstance()->set($vs_field, $t_instance->getPrimaryKey());
 						} else {
-							throw new InvalidLogEntryException("Could not load GUID {$vs_parent_guid} (referenced in HIERARCHY_PARENT_ID_FLD)");
+							if(intval($va_snapshot[$vs_field]) == 1) {
+								$this->getModelInstance()->set($vs_field, 1);
+							} else {
+								throw new InvalidLogEntryException("Could not load GUID {$vs_parent_guid} (referenced in HIERARCHY_PARENT_ID_FLD)");
+							}
 						}
 					} else {
 						throw new InvalidLogEntryException("No guid for parent_id field found");
