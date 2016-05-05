@@ -200,6 +200,7 @@ class Replicator {
 					$vs_ignore_tables = json_encode(array_unique(array_values($pa_ignore_tables)));
 				}
 
+				$pb_ok = true;
 				while(true) { // use chunks of 100 entries until something happens (success/err)
 					// get change log from source, starting with the log id we got above
 					$va_source_log_entries = $o_source->setEndpoint('getlog')
@@ -237,6 +238,7 @@ class Replicator {
 
 					if (!$o_resp->isOk() || !isset($va_response_data['replicated_log_id'])) {
 						$this->log(_t("There were errors while processing sync for source %1 and target %2: %3", $vs_source_key, $vs_target_key, join(' ', $o_resp->getErrors())), Zend_Log::ERR);
+						$pb_ok = false;
 						break;
 					} else {
 						$pn_replicated_log_id = ((int) $va_response_data['replicated_log_id']) + 1;
@@ -252,7 +254,11 @@ class Replicator {
 					}*/
 				}
 
-				$this->log(_t("Sync for source %1 and target %2 successful", $vs_source_key, $vs_target_key), Zend_Log::DEBUG);
+				if($pb_ok) {
+					$this->log(_t("Sync for source %1 and target %2 successful", $vs_source_key, $vs_target_key), Zend_Log::INFO);
+				} else {
+					$this->log(_t("Sync for source %1 and target %2 finished, but there were errors", $vs_source_key, $vs_target_key), Zend_Log::ERR);
+				}
 			}
 		}
 	}

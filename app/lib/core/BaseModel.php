@@ -4085,7 +4085,7 @@ class BaseModel extends BaseObject {
 				$vb_is_fetched_file = false;
 				if ($vb_allow_fetching_of_urls && (bool)ini_get('allow_url_fopen') && isURL($vs_url = html_entity_decode($this->_SET_FILES[$ps_field]['tmp_name']))) {
 					$vs_tmp_file = tempnam(__CA_APP_DIR__.'/tmp', 'caUrlCopy');
-					$r_incoming_fp = fopen($vs_url, 'r');
+					$r_incoming_fp = @fopen($vs_url, 'r');
 				
 					if (!$r_incoming_fp) {
 						$this->postError(1600, _t('Cannot open remote URL [%1] to fetch media', $vs_url),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);

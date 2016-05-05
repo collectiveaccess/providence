@@ -338,6 +338,21 @@ class ca_change_log extends BaseModel {
 								$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_instance->tableNum(), $vm_val);
 							}
 
+							// handle media ...
+							if($t_instance instanceof ca_object_representations) {
+								// nowadays the change log entry is an <img> tag ... the default behavior for get('media'), presumably
+								if(isset($va_snapshot['media']) && is_string($va_snapshot['media'])) {
+									$o_dom = new DOMDocument();
+									$o_dom->loadHTML($va_snapshot['media']);
+									if (isset($o_dom->getElementsByTagName('img')[0])) {
+										$va_snapshot['media'] = $o_dom->getElementsByTagName('img')[0]->getAttribute('src');
+									}
+								} elseif(is_array($va_snapshot['media'])) { // back in the day it would store the full media array here
+									$o_coder = MediaInfoCoder::load();
+									$va_snapshot['media'] = $o_coder->getMediaUrl($va_snapshot['media'], 'original');
+								}
+							}
+
 							// handle left and right foreign keys in foo_x_bar table
 							if($t_instance instanceof BaseRelationshipModel) {
 								if($vs_fld == $t_instance->getProperty('RELATIONSHIP_LEFT_FIELDNAME')) {

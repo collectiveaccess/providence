@@ -186,7 +186,7 @@ class ReplicationService {
 				$o_tx->rollback();
 				$vn_last_applied_log_id = $vn_log_id; // if we chose to ignore it, still counts as replicated! :-)
 			} catch(\Exception $e) {
-				$vs_error = $e->getMessage();
+				$vs_error = $e->getMessage() . ' ' . _t("Log entry was: %1", print_r($va_log_entry, true));
 				$o_tx->rollback();
 				break;
 			}
