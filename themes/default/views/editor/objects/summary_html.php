@@ -40,8 +40,8 @@
 ?>
 		<div id="toggleCollapsedButton">
 			<a href="#">
-				<?php print caNavButton($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?>
-				<?php print caNavButton($this->request, __CA_NAV_BUTTON_EXPAND__); ?>
+				<span class="collapse"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></span>
+				<span class="expand"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_EXPAND__); ?></span>
 			</a>
 		</div>
 		<div id="printButton">

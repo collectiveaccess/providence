@@ -633,12 +633,10 @@
 				break;
 			case __CA_NAV_BUTTON_COLLAPSE__:
 				$vs_img_name = 'glyphicons_191_circle_minus';
-				$vs_classname = 'collapse';
 				break;
 			case __CA_NAV_BUTTON_EXPAND__:
 				$vs_img_name = 'glyphicons_190_circle_plus';
-				$vs_classname = 'expand';
-				break;					
+				break;
 			case __CA_NAV_BUTTON_COMMIT__:
 				$vs_img_name = 'glyphicons_193_circle_ok';
 				break;	
