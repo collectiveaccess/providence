@@ -254,11 +254,24 @@ class ca_change_log extends BaseModel {
 		$pa_ignore_tables = caGetOption('ignoreTables', $pa_options);
 		if(!is_array($pa_ignore_tables)) { $pa_ignore_tables = array(); }
 
+		$va_ignore_tables = [];
+		foreach($pa_ignore_tables as $vs_ignore_table) {
+			if($vn_ignore_table_num = Datamodel::load()->getTableNum($vs_ignore_table)) {
+				$va_ignore_tables[] = $vn_ignore_table_num;
+			}
+		}
+
+		$vs_ignore_sql = '';
+		if(sizeof($va_ignore_tables)) {
+			$vs_ignore_table = 'AND logged_table_num NOT IN (' . join(',', $va_ignore_tables) . ')';
+		}
+
 		$o_db = new Db();
 
 		$qr_results = $o_db->query("
 			SELECT * FROM ca_change_log cl, ca_change_log_snapshots cls
 			WHERE cl.log_id = cls.log_id AND cl.log_id>=?
+			{$vs_ignore_table}
 			ORDER BY cl.log_id
 			{$vs_limit_sql}
 		", $pn_from);
@@ -266,12 +279,6 @@ class ca_change_log extends BaseModel {
 		$va_ret = array();
 		while($qr_results->nextRow()) {
 			$va_row = $qr_results->getRow();
-
-			// handle ignored tables
-			$vs_log_table_name = Datamodel::load()->getTableName($qr_results->get('logged_table_num'));
-			if(in_array($vs_log_table_name, $pa_ignore_tables)) {
-				continue;
-			}
 
 			// decode snapshot
 			$va_snapshot = caUnserializeForDatabase($qr_results->get('snapshot'));

@@ -90,10 +90,12 @@ class Replicator {
 	private function getConfigAsServiceClients($pa_config) {
 		$va_return = array();
 		foreach($pa_config as $vs_key => $va_conf) {
-			$o_service = new CAS\ReplicationService($va_conf['url'], 'getlog');
-			$o_service->setCredentials($va_conf['service_user'], $va_conf['service_key']);
+			if(isset($va_conf['url']) && $va_conf['url']) {
+				$o_service = new CAS\ReplicationService($va_conf['url'], 'getlog');
+				$o_service->setCredentials($va_conf['service_user'], $va_conf['service_key']);
 
-			$va_return[$vs_key] = &$o_service;
+				$va_return[$vs_key] = $o_service;
+			}
 		}
 		return $va_return;
 	}
@@ -130,7 +132,6 @@ class Replicator {
 	}
 
 	public function replicate() {
-
 		foreach($this->getSourcesAsServiceClients() as $vs_source_key => $o_source) {
 			/** @var CAS\ReplicationService $o_source */
 
@@ -190,6 +191,7 @@ class Replicator {
 
 				// get ignore tables
 				$pa_ignore_tables = $this->opo_replication_conf->get('sources')[$vs_source_key]['ignoreTables'];
+				if(!is_array($pa_ignore_tables)) { $pa_ignore_tables = []; }
 				if(is_array($pa_ignore_tables_global = $this->opo_replication_conf->get('sources')['ignoreTables'])) {
 					$pa_ignore_tables = array_merge($pa_ignore_tables_global, $pa_ignore_tables);
 				}
@@ -201,6 +203,7 @@ class Replicator {
 				// get change log from source, starting with the log id we got above
 				$va_source_log_entries = $o_source->setEndpoint('getlog')
 					->addGetParameter('from', $pn_replicated_log_id)
+					->addGetParameter('limit', 1000)
 					->addGetParameter('skipIfExpression', $vs_skip_if_expression)
 					->addGetParameter('ignoreTables', $vs_ignore_tables)
 					->request()->getRawData();
