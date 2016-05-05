@@ -251,6 +251,9 @@ class ca_change_log extends BaseModel {
 		$pa_skip_if_expression = caGetOption('skipIfExpression', $pa_options);
 		if(!is_array($pa_skip_if_expression)) { $pa_skip_if_expression = array(); }
 
+		$pa_ignore_tables = caGetOption('ignoreTables', $pa_options);
+		if(!is_array($pa_ignore_tables)) { $pa_ignore_tables = array(); }
+
 		$o_db = new Db();
 
 		$qr_results = $o_db->query("
@@ -263,6 +266,12 @@ class ca_change_log extends BaseModel {
 		$va_ret = array();
 		while($qr_results->nextRow()) {
 			$va_row = $qr_results->getRow();
+
+			// handle ignored tables
+			$vs_log_table_name = Datamodel::load()->getTableName($qr_results->get('logged_table_num'));
+			if(in_array($vs_log_table_name, $pa_ignore_tables)) {
+				continue;
+			}
 
 			// decode snapshot
 			$va_snapshot = caUnserializeForDatabase($qr_results->get('snapshot'));

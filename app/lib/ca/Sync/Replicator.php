@@ -188,10 +188,21 @@ class Replicator {
 					$vs_skip_if_expression = json_encode($pa_skip_if_expression);
 				}
 
+				// get ignore tables
+				$pa_ignore_tables = $this->opo_replication_conf->get('sources')[$vs_source_key]['ignoreTables'];
+				if(is_array($pa_ignore_tables_global = $this->opo_replication_conf->get('sources')['ignoreTables'])) {
+					$pa_ignore_tables = array_merge($pa_ignore_tables_global, $pa_ignore_tables);
+				}
+				$vs_ignore_tables = null;
+				if(is_array($pa_ignore_tables) && sizeof($pa_ignore_tables)) {
+					$vs_ignore_tables = json_encode(array_unique(array_values($pa_ignore_tables)));
+				}
+
 				// get change log from source, starting with the log id we got above
 				$va_source_log_entries = $o_source->setEndpoint('getlog')
 					->addGetParameter('from', $pn_replicated_log_id)
 					->addGetParameter('skipIfExpression', $vs_skip_if_expression)
+					->addGetParameter('ignoreTables', $vs_ignore_tables)
 					->request()->getRawData();
 
 				if(!sizeof($va_source_log_entries)) {

@@ -88,6 +88,13 @@ class ReplicationService {
 			}
 		}
 
+		if($ps_ignore_tables = $po_request->getParameter('ignoreTables', pString, null, array('retainBackslashes' => false))) {
+			$pa_ignore_tables = @json_decode($ps_ignore_tables, true);
+			if(is_array($pa_ignore_tables) && sizeof($pa_ignore_tables)) {
+				$pa_options['ignoreTables'] = $pa_ignore_tables;
+			}
+		}
+
 		return ca_change_log::getLog($pn_from, $pn_limit, $pa_options);
 	}
 	# -------------------------------------------------------
