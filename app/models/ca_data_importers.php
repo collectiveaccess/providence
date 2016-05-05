@@ -503,13 +503,14 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			
 			$va_importers[$vn_id]['settings'] = $va_settings;
 			$va_importers[$vn_id]['last_modified_on'] = $t_importer->getLastChangeTimestamp($vn_id, array('timestampOnly' => true));
+			
+			unset($va_importers[$vn_id]['worksheet']);
 		}
 		
 		$va_labels = $t_importer->getPreferredDisplayLabelsForIDs($va_ids);
 		foreach($va_labels as $vn_id => $vs_label) {
 			$va_importers[$vn_id]['label'] = $vs_label;
 		}
-		
 		return $va_importers;
 	}
 	# ------------------------------------------------------
