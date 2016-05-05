@@ -204,7 +204,7 @@ class DedupTest extends BaseTestWithData {
 	# -------------------------------------------------------
 	public function testDupe() {
 		$va_dupe_list = ca_entities::listPotentialDupes();
-		$this->assertEquals(2, sizeof($va_dupe_list), 'We expect two of the entered entities to be duplicates');
+		$this->assertEquals(1, sizeof($va_dupe_list), 'We expect two of the entered entities to be duplicates');
 
 		$this->assertEquals(1, sizeof($this->opt_entity_1->getRelatedItems('ca_objects')));
 		$this->assertEquals(2, sizeof($this->opt_entity_2->getRelatedItems('ca_objects')));
