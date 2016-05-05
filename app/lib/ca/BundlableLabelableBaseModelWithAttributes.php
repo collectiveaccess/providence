@@ -35,6 +35,8 @@
   */
 
 require_once(__CA_LIB_DIR__."/ca/IBundleProvider.php");
+require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
+require_once(__CA_LIB_DIR__."/ca/DeduplicateBaseModel.php");
 require_once(__CA_LIB_DIR__."/ca/LabelableBaseModelWithAttributes.php");
 require_once(__CA_LIB_DIR__."/core/Plugins/SearchEngine/CachedResult.php");
 require_once(__CA_LIB_DIR__."/core/Search/SearchResult.php");
@@ -63,6 +65,9 @@ define('__CA_PARENT_CHANGED__', 1);
 define('__CA_PARENT_COLLECTION_CHANGED__', 2);
 
 class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAttributes implements IBundleProvider {
+	# ------------------------------------------------------
+	use SyncableBaseModel;
+	use DeduplicateBaseModel;
 	# ------------------------------------------------------
 	/**
 	 *
@@ -258,14 +263,7 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 			return false;
 		}
 
-		// generate and set GUID
-		$t_guid = $this->getAppDatamodel()->getInstance('ca_guids');
-		$t_guid->setMode(ACCESS_WRITE);
-		$t_guid->setTransaction($this->getTransaction());
-		$t_guid->set('table_num', $this->tableNum());
-		$t_guid->set('row_id', $this->getPrimaryKey());
-		$t_guid->set('guid', caGetOption('setGUIDTo', $pa_options, caGenerateGUID()));
-		$t_guid->insert();
+		$this->setGUID($pa_options);
 		
 		if ($vb_web_set_change_log_unit_id) { BaseModel::unsetChangeLogUnitID(); }
 	
@@ -362,14 +360,10 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 
 		$vn_primary_key = $this->getPrimaryKey();
 		SearchResult::clearResultCacheForRow($this->tableName(), $this->getPrimaryKey());
-		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 
+		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 		if($vn_primary_key && $vn_rc && caGetOption('hard', $pa_options, false)) {
-			$t_guid = $this->getAppDatamodel()->getInstance('ca_guids');
-			if($t_guid->load(array('table_num' => $this->tableNum(), 'row_id' => $vn_primary_key))) {
-				$t_guid->setMode(ACCESS_WRITE);
-				$t_guid->delete();
-			}
+			$this->removeGUID($vn_primary_key);
 		}
 
 		return $vn_rc;
@@ -6994,47 +6988,6 @@ side. For many self-relations the direction determines the nature and display te
 			BundlableLabelableBaseModelWithAttributes::$s_tep = new TimeExpressionParser();
 		}
 		return BundlableLabelableBaseModelWithAttributes::$s_tep;
-	}
-	# -------------------------------------------------------
-	/**
-	 * Implementations can override this to add more criteria for hashing, e.g. hierarchy path components or what have you
-	 * @return array
-	 */
-	public function getAdditionalHashComponents() {
-		return array();
-	}
-	# -------------------------------------------------------
-	/**
-	 * Get identifying hash for this row
-	 * @return bool|string
-	 */
-	public function getHash() {
-		if(!$this->getPrimaryKey()) { return false; }
-		$va_hash_components = array();
-
-		if($vs_idno_fld = $this->getProperty('ID_NUMBERING_ID_FIELD')) {
-			$va_hash_components[] = $this->get($vs_idno_fld);
-		}
-
-		if($vs_type_id_fld = $this->getProperty('ATTRIBUTE_TYPE_ID_FLD')) {
-			$va_hash_components[] = $this->getTypeCode();
-		}
-
-		if($this->getAppConfig()->get($this->tableName(). '_use_preferred_labels_for_record_hash')) {
-			if($this->getPreferredLabelCount() > 0) {
-				$va_hash_components[] = $this->get($this->tableName(). '.preferred_labels', array('returnAllLocales' => true));
-			}
-		}
-
-		if($this->getAppConfig()->get($this->tableName(). '_use_nonpreferred_labels_for_record_hash')) {
-			if($this->getPreferredLabelCount() > 0) {
-				$va_hash_components[] = $this->get($this->tableName(). '.nonpreferred_labels', array('returnAllLocales' => true));
-			}
-		}
-
-		$va_hash_components[] = $this->getAdditionalHashComponents();
-
-		return md5(serialize($va_hash_components));
 	}
 	# -------------------------------------------------------
 }

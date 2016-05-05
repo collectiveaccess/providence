@@ -90,10 +90,12 @@ class Replicator {
 	private function getConfigAsServiceClients($pa_config) {
 		$va_return = array();
 		foreach($pa_config as $vs_key => $va_conf) {
-			$o_service = new CAS\ReplicationService($va_conf['url'], 'getlog');
-			$o_service->setCredentials($va_conf['service_user'], $va_conf['service_key']);
+			if(isset($va_conf['url']) && $va_conf['url']) {
+				$o_service = new CAS\ReplicationService($va_conf['url'], 'getlog');
+				$o_service->setCredentials($va_conf['service_user'], $va_conf['service_key']);
 
-			$va_return[$vs_key] = &$o_service;
+				$va_return[$vs_key] = $o_service;
+			}
 		}
 		return $va_return;
 	}
@@ -130,7 +132,6 @@ class Replicator {
 	}
 
 	public function replicate() {
-
 		foreach($this->getSourcesAsServiceClients() as $vs_source_key => $o_source) {
 			/** @var CAS\ReplicationService $o_source */
 
@@ -188,54 +189,70 @@ class Replicator {
 					$vs_skip_if_expression = json_encode($pa_skip_if_expression);
 				}
 
-				// get change log from source, starting with the log id we got above
-				$va_source_log_entries = $o_source->setEndpoint('getlog')
-					->addGetParameter('from', $pn_replicated_log_id)
-					->addGetParameter('skipIfExpression', $vs_skip_if_expression)
-					->request()->getRawData();
+				// get ignore tables
+				$pa_ignore_tables = $this->opo_replication_conf->get('sources')[$vs_source_key]['ignoreTables'];
+				if(!is_array($pa_ignore_tables)) { $pa_ignore_tables = []; }
+				if(is_array($pa_ignore_tables_global = $this->opo_replication_conf->get('sources')['ignoreTables'])) {
+					$pa_ignore_tables = array_merge($pa_ignore_tables_global, $pa_ignore_tables);
+				}
+				$vs_ignore_tables = null;
+				if(is_array($pa_ignore_tables) && sizeof($pa_ignore_tables)) {
+					$vs_ignore_tables = json_encode(array_unique(array_values($pa_ignore_tables)));
+				}
 
-				if(!sizeof($va_source_log_entries)) {
-					$this->log(_t("No new log entries found for source %1 and target %2. Skipping this combination now.",
+				while(true) { // use chunks of 100 entries until something happens (success/err)
+					// get change log from source, starting with the log id we got above
+					$va_source_log_entries = $o_source->setEndpoint('getlog')
+						->addGetParameter('from', $pn_replicated_log_id)
+						->addGetParameter('skipIfExpression', $vs_skip_if_expression)
+						->addGetParameter('limit', 100)
+						->addGetParameter('ignoreTables', $vs_ignore_tables)
+						->request()->getRawData();
+
+					if (!is_array($va_source_log_entries) || !sizeof($va_source_log_entries)) {
+						$this->log(_t("No new log entries found for source %1 and target %2. Skipping this combination now.",
 							$vs_source_key, $vs_target_key), Zend_Log::INFO);
-					continue;
-				}
-
-				// get setIntrinsics -- fields that are set on the target side (e.g. to tag/mark
-				// where records came from if multiple systems are being synced into one)
-				$va_set_intrinsics_config = $this->opo_replication_conf->get('targets')[$vs_target_key]['setIntrinsics'];
-				$va_set_intrinsics_default = is_array($va_set_intrinsics_config['__default__']) ? $va_set_intrinsics_config['__default__'] : array();
-				$va_set_intrinsics_source = is_array($va_set_intrinsics_config[$vs_source_system_guid]) ? $va_set_intrinsics_config[$vs_source_system_guid] : array();
-				$va_set_intrinsics = array_replace($va_set_intrinsics_default, $va_set_intrinsics_source);
-				$vs_set_intrinsics = null;
-				if(is_array($va_set_intrinsics) && sizeof($va_set_intrinsics)) {
-					$vs_set_intrinsics = json_encode($va_set_intrinsics);
-				}
-
-				// apply that log at the current target
-				$o_resp = $o_target->setRequestMethod('POST')->setEndpoint('applylog')
-					->addGetParameter('system_guid', $vs_source_system_guid)
-					->addGetParameter('setIntrinsics', $vs_set_intrinsics)
-					->setRequestBody($va_source_log_entries)
-					->request();
-
-				$va_response_data = $o_resp->getRawData();
-
-				if(!$o_resp->isOk()) {
-					$this->log(_t("There were errors while processing sync for source %1 and target %2: %3",$vs_source_key, $vs_target_key, join(' ', $o_resp->getErrors())), Zend_Log::ERR);
-				} else {
-					$this->log(_t("Sync for source %1 and target %2 successful", $vs_source_key, $vs_target_key), Zend_Log::INFO);
-					if(isset($va_response_data['replicated_log_id'])) {
-						$this->log(_t("Last replicated log ID is: %1", $va_response_data['replicated_log_id']), Zend_Log::INFO);
+						break;
 					}
-				}
 
-				if(isset($va_response_data['warnings']) && is_array($va_response_data['warnings']) && sizeof($va_response_data['warnings'])) {
-					foreach($va_response_data['warnings'] as $vn_log_id => $va_warns) {
-
-						$this->log(_t("There were warnings while processing sync for source %1, target %2, log id %3: %4",
-							$vs_source_key, $vs_target_key, $vn_log_id, join(' ', $va_warns)), Zend_Log::WARN);
+					// get setIntrinsics -- fields that are set on the target side (e.g. to tag/mark
+					// where records came from if multiple systems are being synced into one)
+					$va_set_intrinsics_config = $this->opo_replication_conf->get('targets')[$vs_target_key]['setIntrinsics'];
+					$va_set_intrinsics_default = is_array($va_set_intrinsics_config['__default__']) ? $va_set_intrinsics_config['__default__'] : array();
+					$va_set_intrinsics_source = is_array($va_set_intrinsics_config[$vs_source_system_guid]) ? $va_set_intrinsics_config[$vs_source_system_guid] : array();
+					$va_set_intrinsics = array_replace($va_set_intrinsics_default, $va_set_intrinsics_source);
+					$vs_set_intrinsics = null;
+					if (is_array($va_set_intrinsics) && sizeof($va_set_intrinsics)) {
+						$vs_set_intrinsics = json_encode($va_set_intrinsics);
 					}
+
+					// apply that log at the current target
+					$o_resp = $o_target->setRequestMethod('POST')->setEndpoint('applylog')
+						->addGetParameter('system_guid', $vs_source_system_guid)
+						->addGetParameter('setIntrinsics', $vs_set_intrinsics)
+						->setRequestBody($va_source_log_entries)
+						->request();
+
+					$va_response_data = $o_resp->getRawData();
+
+					if (!$o_resp->isOk() || !isset($va_response_data['replicated_log_id'])) {
+						$this->log(_t("There were errors while processing sync for source %1 and target %2: %3", $vs_source_key, $vs_target_key, join(' ', $o_resp->getErrors())), Zend_Log::ERR);
+						break;
+					} else {
+						$pn_replicated_log_id = ((int) $va_response_data['replicated_log_id']) + 1;
+						$this->log(_t("Chunk sync for source %1 and target %2 successful.", $vs_source_key, $vs_target_key), Zend_Log::DEBUG);
+						$this->log(_t("Last replicated log ID is: %1", $va_response_data['replicated_log_id']), Zend_Log::DEBUG);
+					}
+
+					/*if (isset($va_response_data['warnings']) && is_array($va_response_data['warnings']) && sizeof($va_response_data['warnings'])) {
+						foreach ($va_response_data['warnings'] as $vn_log_id => $va_warns) {
+							$this->log(_t("There were warnings while processing sync for source %1, target %2, log id %3: %4",
+								$vs_source_key, $vs_target_key, $vn_log_id, join(' ', $va_warns)), Zend_Log::WARN);
+						}
+					}*/
 				}
+
+				$this->log(_t("Sync for source %1 and target %2 successful", $vs_source_key, $vs_target_key), Zend_Log::DEBUG);
 			}
 		}
 	}
