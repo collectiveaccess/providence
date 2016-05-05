@@ -163,7 +163,6 @@ class ReplicationService {
 			try {
 				$o_log_entry = CA\Sync\LogEntry\Base::getInstance($vs_source_system_guid, $vn_log_id, $va_log_entry, $o_tx);
 				$o_log_entry->sanityCheck();
-
 			} catch (CA\Sync\LogEntry\IrrelevantLogEntry $e) {
 				// noop
 			} catch (\Exception $e) {
@@ -185,6 +184,7 @@ class ReplicationService {
 				$vn_last_applied_log_id = $vn_log_id;
 			} catch(CA\Sync\LogEntry\IrrelevantLogEntry $e) {
 				$o_tx->rollback();
+				$vn_last_applied_log_id = $vn_log_id; // if we chose to ignore it, still counts as replicated! :-)
 			} catch(\Exception $e) {
 				$vs_error = $e->getMessage();
 				$o_tx->rollback();

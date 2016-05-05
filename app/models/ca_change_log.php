@@ -263,7 +263,7 @@ class ca_change_log extends BaseModel {
 
 		$vs_ignore_sql = '';
 		if(sizeof($va_ignore_tables)) {
-			$vs_ignore_table = 'AND logged_table_num NOT IN (' . join(',', $va_ignore_tables) . ')';
+			$vs_ignore_sql = 'AND logged_table_num NOT IN (' . join(',', $va_ignore_tables) . ')';
 		}
 
 		$o_db = new Db();
@@ -271,7 +271,7 @@ class ca_change_log extends BaseModel {
 		$qr_results = $o_db->query("
 			SELECT * FROM ca_change_log cl, ca_change_log_snapshots cls
 			WHERE cl.log_id = cls.log_id AND cl.log_id>=?
-			{$vs_ignore_table}
+			{$vs_ignore_sql}
 			ORDER BY cl.log_id
 			{$vs_limit_sql}
 		", $pn_from);
