@@ -1936,43 +1936,6 @@ class BaseEditorController extends ActionController {
 	}
 	# -------------------------------------------------------
 	/**
-	 * Return list of page images for representation or media attribute value to display in document viewer interface
-	 */
-	public function GetPageListAsJSON() {
-		list($vn_subject_id, $t_subject) = $this->_initView();
-		$pn_representation_id = $this->request->getParameter('representation_id', pInteger);
-		$pn_value_id = $this->request->getParameter('value_id', pInteger);
-		$ps_content_mode = $this->request->getParameter('content_mode', pString);
-
-		$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
-
-		$vs_page_cache_key = ($ps_content_mode == 'hierarchy_of_representations') ? md5($vn_subject_id) : md5($vn_subject_id.'/'.$pn_representation_id.'/'.$pn_value_id);
-
-		$o_view->setVar('page_cache_key', $vs_page_cache_key);
-		$o_view->setVar('t_subject', $t_subject);
-		$o_view->setVar('t_representation', new ca_object_representations($pn_representation_id));
-		$o_view->setVar('t_attribute_value', new ca_attribute_values($pn_value_id));
-		$o_view->setVar('content_mode', $ps_content_mode);
-
-		$va_page_list_cache = $this->request->session->getVar('caDocumentViewerPageListCache');
-
-		$va_pages = $va_page_list_cache[$vs_page_cache_key];
-		if (!isset($va_pages)) {
-			// Page cache not set?
-			$this->postError(1100, _t('Invalid object/representation'), 'ObjectEditorController->GetPage');
-			return;
-		}
-
-		$va_section_cache = $this->request->session->getVar('caDocumentViewerSectionCache');
-		$o_view->setVar('pages', $va_pages);
-		$o_view->setVar('sections', $va_section_cache[$vs_page_cache_key]);
-
-		$o_view->setVar('is_searchable', MediaContentLocationIndexer::hasIndexing('ca_object_representations', $pn_representation_id));
-
-		$this->response->addContent($o_view->render('media_page_list_json.php'));
-	}
-	# -------------------------------------------------------
-	/**
 	 * Perform search within PDF media (when indexed) and return results (object representation only; not media attributes)
 	 */
 	public function SearchWithinMedia() {
