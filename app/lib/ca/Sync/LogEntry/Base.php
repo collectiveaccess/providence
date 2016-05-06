@@ -113,6 +113,10 @@ abstract class Base {
 			throw new InvalidLogEntryException('table num is invalid for this log entry');
 		}
 
+		if(!$this->isRelevant()) {
+			throw new IrrelevantLogEntry();
+		}
+
 		// if this is not an insert log entry, load the specified row by GUID
 		if($this->isUpdate() || $this->isDelete()) {
 			// if we can't find the GUID and this is an update, throw error
@@ -129,10 +133,6 @@ abstract class Base {
 
 		$this->opt_instance->setTransaction($this->getTx());
 		$this->opt_instance->setMode(ACCESS_WRITE);
-
-		if(!$this->isRelevant()) {
-			throw new IrrelevantLogEntry();
-		}
 	}
 
 	/**
@@ -352,9 +352,11 @@ abstract class Base {
 				// check parent_id field
 				if($vs_field == $this->getModelInstance()->getProperty('HIERARCHY_PARENT_ID_FLD')) {
 					if(isset($va_snapshot[$vs_field . '_guid']) && ($vs_parent_guid = $va_snapshot[$vs_field . '_guid'])) {
-						$t_instance = $this->getModelInstance()->cloneRecord();
-						if(!$t_instance->loadByGUID($vs_parent_guid)) {
-							throw new InvalidLogEntryException(_t("Could not load GUID %1 (referenced in HIERARCHY_PARENT_ID_FLD)", $vs_parent_guid));
+						if(($vs_idno = $va_snapshot[$this->getModelInstance()->getProperty('ID_NUMBERING_ID_FIELD')]) && !preg_match("/Root node for /", $vs_idno)) {
+							$t_instance = $this->getModelInstance()->cloneRecord();
+							if(!$t_instance->loadByGUID($vs_parent_guid) && !(intval($va_snapshot[$vs_field]) == 1)) {
+								throw new InvalidLogEntryException(_t("Could not load GUID %1 (referenced in HIERARCHY_PARENT_ID_FLD)", $vs_parent_guid));
+							}
 						}
 					} else {
 						throw new InvalidLogEntryException("No parent_guid field found");
@@ -422,7 +424,16 @@ abstract class Base {
 						if($t_instance->loadByGUID($vs_parent_guid)) {
 							$this->getModelInstance()->set($vs_field, $t_instance->getPrimaryKey());
 						} else {
-							throw new InvalidLogEntryException("Could not load GUID {$vs_parent_guid} (referenced in HIERARCHY_PARENT_ID_FLD)");
+
+							if(($vs_idno = $va_snapshot[$this->getModelInstance()->getProperty('ID_NUMBERING_ID_FIELD')]) && preg_match("/Root node for /", $vs_idno)) {
+								throw new IrrelevantLogEntry();
+							}
+
+							if(intval($va_snapshot[$vs_field]) == 1) {
+								$this->getModelInstance()->set($vs_field, 1);
+							} else {
+								throw new InvalidLogEntryException("Could not load GUID {$vs_parent_guid} (referenced in HIERARCHY_PARENT_ID_FLD)");
+							}
 						}
 					} else {
 						throw new InvalidLogEntryException("No guid for parent_id field found");
@@ -463,6 +474,7 @@ abstract class Base {
 	 * @param \Transaction $po_tx
 	 * @return \CA\Sync\LogEntry\Base
 	 * @throws InvalidLogEntryException
+	 * @throws IrrelevantLogEntry
 	 */
 	public static function getInstance($ps_source_system_id, $pn_log_id, $pa_log, \Transaction $po_tx) {
 		if(!is_array($pa_log) || !isset($pa_log['logged_table_num'])) {
@@ -485,7 +497,7 @@ abstract class Base {
 			return new Bundlable($ps_source_system_id, $pn_log_id, $pa_log, $po_tx);
 		}
 
-		throw new InvalidLogEntryException('Invalid table in log entry');
+		throw new IrrelevantLogEntry();
 	}
 
 }

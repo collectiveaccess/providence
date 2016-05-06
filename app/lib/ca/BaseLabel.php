@@ -36,8 +36,11 @@
   
  	require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
  	require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
+	require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
  
 	class BaseLabel extends BaseModel {
+		# -------------------------------------------------------
+		use SyncableBaseModel;
 		# -------------------------------------------------------
 		public function __construct($pn_id=null, $pb_use_cache=true) {
 			parent::__construct($pn_id, $pb_use_cache);
@@ -47,18 +50,7 @@
 			$this->_generateSortableValue();	// populate sort field
 			// invalidate get() prefetch cache
 			SearchResult::clearResultCacheForTable($this->tableName());
-			if($vm_ret = parent::insert($pa_options)) {
-				// generate and set GUID
-				$t_guid = $this->getAppDatamodel()->getInstance('ca_guids');
-				$t_guid->setMode(ACCESS_WRITE);
-				$t_guid->setTransaction($this->getTransaction());
-				$t_guid->set('table_num', $this->tableNum());
-				$t_guid->set('row_id', $this->getPrimaryKey());
-				$t_guid->set('guid', caGetOption('setGUIDTo', $pa_options, caGenerateGUID()));
-				$t_guid->insert();
-			}
-
-			return $vm_ret;
+			return parent::insert($pa_options);
 		}
 		# -------------------------------------------------------
 		public function update($pa_options=null) {
@@ -71,6 +63,7 @@
 			
 			// Unset label cache entry for modified label only
 			unset(LabelableBaseModelWithAttributes::$s_label_cache[$this->getSubjectTableName()][$this->get($this->getSubjectKey())]);
+
 			return parent::update($pa_options);
 		}
 		# -------------------------------------------------------
@@ -79,11 +72,7 @@
 			$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 
 			if($vn_primary_key && $vn_rc && caGetOption('hard', $pa_options, false)) {
-				$t_guid = $this->getAppDatamodel()->getInstance('ca_guids');
-				if($t_guid->load(array('table_num' => $this->tableNum(), 'row_id' => $vn_primary_key))) {
-					$t_guid->setMode(ACCESS_WRITE);
-					$t_guid->delete();
-				}
+				$this->removeGUID($vn_primary_key);
 			}
 
 			return $vn_rc;
@@ -180,6 +169,10 @@
 				return true;
 			}
 			return false;
+		}
+		# -------------------------------------------------------
+		public function getAdditionalChecksumComponents() {
+			return [$this->getSubjectTableInstance()->getGUID()];
 		}
 		# -------------------------------------------------------
 	}

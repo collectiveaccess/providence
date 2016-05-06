@@ -177,31 +177,32 @@ class ca_guids extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Get GUID for given row. Results are cached on disk.
+	 * Get GUID for given row
 	 * @param int $pn_table_num
 	 * @param int $pn_row_id
+	 * @param array $pa_options
 	 * @return bool|string
 	 */
-	public static function getForRow($pn_table_num, $pn_row_id) {
+	public static function getForRow($pn_table_num, $pn_row_id, $pa_options=null) {
 		if(!$pn_table_num || !$pn_row_id) { return false; }
 
-		if(CompositeCache::contains("{$pn_table_num}/{$pn_row_id}", 'TableNumRowIDsToGUIDs')) {
-			return CompositeCache::fetch("{$pn_table_num}/{$pn_row_id}", 'TableNumRowIDsToGUIDs');
+		/** @var Transaction $o_tx */
+		if($o_tx = caGetOption('transaction', $pa_options, null)) {
+			$o_db = $o_tx->getDb();
+		} else {
+			$o_db = new Db();
 		}
 
-		$o_db = new Db();
 		$qr_guid = $o_db->query('
 			SELECT guid FROM ca_guids WHERE table_num=? AND row_id=?
 		', $pn_table_num, $pn_row_id);
 
 		if($qr_guid->nextRow()) {
 			$vs_guid = $qr_guid->get('guid');
-			CompositeCache::save("{$pn_table_num}/{$pn_row_id}", $vs_guid, 'TableNumRowIDsToGUIDs');
 			return $vs_guid;
 		} else {
-			if($t_instance = Datamodel::load()->getInstance($pn_table_num, true)) {
+			if(!caGetOption('dontAdd', $pa_options) && ($t_instance = Datamodel::load()->getInstance($pn_table_num, true))) {
 				if($vs_guid = self::addForRow($pn_table_num, $pn_row_id)) {
-					CompositeCache::save("{$pn_table_num}/{$pn_row_id}", $vs_guid, 'TableNumRowIDsToGUIDs');
 					return $vs_guid;
 				}
 			}
@@ -219,8 +220,9 @@ class ca_guids extends BaseModel {
 	 */
 	private static function addForRow($pn_table_num, $pn_row_id) {
 		$o_db = new Db();
-		$o_db->query("INSERT INTO ca_guids(table_num, row_id, guid) VALUES (?,?,?)", $pn_table_num, $pn_row_id, caGenerateGUID());
-		return true;
+		$vs_guid = caGenerateGUID();
+		$o_db->query("INSERT INTO ca_guids(table_num, row_id, guid) VALUES (?,?,?)", $pn_table_num, $pn_row_id, $vs_guid);
+		return $vs_guid;
 	}
 	# ------------------------------------------------------
 	/**

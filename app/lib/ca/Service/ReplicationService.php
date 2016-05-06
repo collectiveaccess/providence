@@ -88,6 +88,13 @@ class ReplicationService {
 			}
 		}
 
+		if($ps_ignore_tables = $po_request->getParameter('ignoreTables', pString, null, array('retainBackslashes' => false))) {
+			$pa_ignore_tables = @json_decode($ps_ignore_tables, true);
+			if(is_array($pa_ignore_tables) && sizeof($pa_ignore_tables)) {
+				$pa_options['ignoreTables'] = $pa_ignore_tables;
+			}
+		}
+
 		return ca_change_log::getLog($pn_from, $pn_limit, $pa_options);
 	}
 	# -------------------------------------------------------
@@ -144,48 +151,47 @@ class ReplicationService {
 
 		$vn_last_applied_log_id = null;
 		$va_log = json_decode($po_request->getRawPostData(), true);
-		if(!is_array($va_log)) { throw new Exception('log must be array'); }
+		if(!is_array($va_log)) { throw new \Exception('log must be array'); }
 		$o_db = new Db();
 
-		// run a sanity check
+		// run
 		$va_sanity_check_errors = array();
+		$va_return = array(); $vs_error = null;
+
+		$o_tx = new \Transaction($o_db);
 		foreach($va_log as $vn_log_id => $va_log_entry) {
 			try {
-				$o_tx = new \Transaction($o_db);
 				$o_log_entry = CA\Sync\LogEntry\Base::getInstance($vs_source_system_guid, $vn_log_id, $va_log_entry, $o_tx);
 				$o_log_entry->sanityCheck();
-				$o_tx->rollback();
-			} catch(CA\Sync\LogEntry\IrrelevantLogEntry $e) {
+			} catch (CA\Sync\LogEntry\IrrelevantLogEntry $e) {
 				// noop
-			} catch(\Exception $e) {
+			} catch (\Exception $e) {
 				// append log entry to message for easier debugging
 				$va_sanity_check_errors[] = $e->getMessage() . ' ' . _t("Log entry was: %1", print_r($va_log_entry, true));
 			}
-		}
 
-		// if there were sanity check errors, return them here
-		if(sizeof($va_sanity_check_errors)>0) {
-			throw new \Exception(join("\n", $va_sanity_check_errors));
-		}
+			// if there were sanity check errors, return them here
+			if(sizeof($va_sanity_check_errors)>0) {
+				$o_tx->rollback();
+				throw new \Exception(join("\n", $va_sanity_check_errors));
+			}
 
-		// run the core import
-		$va_return = array(); $vs_error = null;
-		foreach($va_log as $vn_log_id => $va_log_entry) {
 			$o_tx = new \Transaction($o_db);
 			try {
 				$o_log_entry = CA\Sync\LogEntry\Base::getInstance($vs_source_system_guid, $vn_log_id, $va_log_entry, $o_tx);
 				$o_log_entry->apply($pa_entry_options);
-				$o_tx->commit();
 
 				$vn_last_applied_log_id = $vn_log_id;
 			} catch(CA\Sync\LogEntry\IrrelevantLogEntry $e) {
 				$o_tx->rollback();
+				$vn_last_applied_log_id = $vn_log_id; // if we chose to ignore it, still counts as replicated! :-)
 			} catch(\Exception $e) {
-				$vs_error = $e->getMessage();
+				$vs_error = $e->getMessage() . ' ' . _t("Log entry was: %1", print_r($va_log_entry, true));
 				$o_tx->rollback();
 				break;
 			}
 		}
+		$o_tx->commit();
 
 		if($vn_last_applied_log_id) {
 			$va_return['replicated_log_id'] = $vn_last_applied_log_id;
