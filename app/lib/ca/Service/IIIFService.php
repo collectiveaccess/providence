@@ -44,6 +44,7 @@ class IIIFService {
 	 * @throws Exception
 	 */
 	public static function dispatch($ps_identifier, $po_request, $po_response) {
+		 
 		$vs_cache_key = $po_request->getHash();
 		$va_path = array_slice(explode("/", $po_request->getPathInfo()), 3);
 		
@@ -70,8 +71,10 @@ class IIIFService {
 		if (sizeof($pa_identifier) > 1) {
 			$ps_type = $pa_identifier[0];
 			$pn_id = (int)$pa_identifier[1];
+			$pn_page = isset($pa_identifier[2]) ? (int)$pa_identifier[2] : null;
 		} else{
 			$pn_id = (int)$pa_identifier[0];
+			$pn_page = isset($pa_identifier[1]) ? (int)$pa_identifier[1] : null;
 		}
 		
 		$vs_image_path = null;
@@ -105,7 +108,12 @@ class IIIFService {
 			case 'representation':
 			default:
 				// TODO: avoid loading representation for each request
-				$t_media = new ca_object_representations($pn_id);
+				if ($pn_page) {
+					$t_media = new ca_object_representation_multifiles();
+					$t_media->load(['representation_id' => $pn_id, 'resource_path' => $pn_page]);
+				} else {
+					$t_media = new ca_object_representations($pn_id);
+				}
 				$vs_fldname = 'media';
 				
 				if (!$t_media->getPrimaryKey()) {
@@ -147,8 +155,8 @@ class IIIFService {
 			$va_tilepic_info = $t_media->getMediaInfo($vs_fldname, 'tilepic');
 			$vn_tile_width = $va_tilepic_info['PROPERTIES']['tile_width'];
 			$vn_tile_height = $va_tilepic_info['PROPERTIES']['tile_height'];
-			
-			if (($va_dimensions['width'] <= $vn_tile_width) && ($va_dimensions['height'] <= $vn_tile_height)) {
+			//print_R($va_dimensions); print_R($va_tilepic_info);die;
+			if (($va_dimensions['width'] <= $vn_tile_width) || ($va_dimensions['height'] <= $vn_tile_height)) {
 				$vn_scale_factor = ceil($va_region['width']/$va_dimensions['width']);						// magnification = width of region requested/width of returned tile
 				$vn_level = floor($va_tilepic_info['PROPERTIES']['layers'] - log($vn_scale_factor,2));		// tilepic layer # = total # layers  - num of layer with relevant magnification (layers are stored from smallest to largest)
 				
@@ -429,7 +437,7 @@ class IIIFService {
 		}
 		$va_tiles = ['width' => $va_tilepic_info['PROPERTIES']['tile_width'], 'height' => $va_tilepic_info['PROPERTIES']['tile_height'], 'scaleFactors' => $va_scales];
 
-		$vs_base_url = $po_request->config->get('site_host').$po_request->config->get('ca_url_root').$po_request->getFullUrlPath();
+		$vs_base_url = $po_request->config->get('site_host').$po_request->getFullUrlPath();
 		$va_tmp = explode("/", $vs_base_url);
 		array_pop($va_tmp);
 		$vs_base_url = join('/', $va_tmp);

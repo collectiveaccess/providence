@@ -46,6 +46,7 @@ require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
 require_once(__CA_LIB_DIR__."/core/Logging/Eventlog.php");
 require_once(__CA_LIB_DIR__.'/core/Print/PDFRenderer.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/ZipStream.php');
+require_once(__CA_LIB_DIR__.'/core/Media/MediaViewerManager.php');
 
 define('__CA_SAVE_AND_RETURN_STACK_SIZE__', 30);
 
@@ -1700,10 +1701,7 @@ class BaseEditorController extends ActionController {
 	 */
 	public function GetMediaOverlay() {
 		list($vn_subject_id, $t_subject) = $this->_initView();
-		$pn_representation_id 	= $this->request->getParameter('representation_id', pInteger);
-		$pn_value_id 	= $this->request->getParameter('value_id', pInteger);
-
-		if ($pn_value_id) {
+		if ($pn_value_id = $this->request->getParameter('value_id', pInteger)) {
 			$t_rep = new ca_object_representations();
 
 			$t_attr_val = new ca_attribute_values($pn_value_id);
@@ -1712,13 +1710,17 @@ class BaseEditorController extends ActionController {
 			$t_subject->load($t_attr->get('row_id'));
 
 			// check subject_id here
-			$va_opts = array('t_attribute_value' => $t_attr_val, 'display' => 'media_overlay', 't_subject' => $t_subject, 'containerID' => 'caMediaPanelContentArea');
-			if (strlen($vs_use_book_viewer = $this->request->getParameter('use_book_viewer', pInteger))) { $va_opts['use_book_viewer'] = (bool)$vs_use_book_viewer; }
+			$va_opts = array('display' => 'media_overlay', 't_instance' => $t_attr_val, 't_subject' => $t_subject);
 
-			$this->response->addContent(caGetMediaViewerHTMLBundle($this->request, $va_opts));
-		} elseif ($pn_representation_id) {
+			$this->response->addContent($vs_viewer_name::getViewerHTML($this->request, "attribute:{$pn_value_id}", $va_opts));
+		} elseif ($pn_representation_id = $this->request->getParameter('representation_id', pInteger)) {
 			$t_rep = new ca_object_representations($pn_representation_id);
-
+			
+			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $t_rep->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+				// error: no viewer available
+				die("Invalid viewer");
+			}
+			
 			if(!$vn_subject_id) {
 				if (is_array($va_subject_ids = $t_rep->get($t_subject->tableName().'.'.$t_subject->primaryKey(), array('returnAsArray' => true))) && sizeof($va_subject_ids)) {
 					$vn_subject_id = array_shift($va_subject_ids);
@@ -1727,46 +1729,46 @@ class BaseEditorController extends ActionController {
 					return;
 				}
 			}
-			$va_opts = array('display' => 'media_overlay', 't_subject' => $t_subject, 't_representation' => $t_rep, 'containerID' => 'caMediaPanelContentArea');
-			if (strlen($vs_use_book_viewer = $this->request->getParameter('use_book_viewer', pInteger))) { $va_opts['use_book_viewer'] = (bool)$vs_use_book_viewer; }
+			$va_opts = array('display' => 'media_overlay', 't_instance' => $t_rep, 't_subject' => $t_subject);
 
-			$this->response->addContent(caGetMediaViewerHTMLBundle($this->request, $va_opts));
+			$this->response->addContent($vs_viewer_name::getViewerHTML($this->request, "representation:{$pn_representation_id}", $va_opts));
 		} else {
 			// error
+			die("Invalid id");
 		}
 	}
 	# -------------------------------------------------------
 	/**
-	 * Returns content for overlay containing detail + editor for object representations only (not media attributes)
-	 *
-	 * Expects the following request parameters:
-	 *		representation_id = the id of the ca_object_representations record to display; the representation must belong to the specified object
-	 *		reload = return content for reload of existing editor. [Default=false]
-	 *
-	 *	Optional request parameters:
-	 *		version = The version of the representation to display. If omitted the display version configured in media_display.conf is used
 	 *
 	 */
-	public function GetRepresentationEditor() {
-		list($vn_subject_id, $t_subject) = $this->_initView();
-		$pn_representation_id 	= $this->request->getParameter('representation_id', pInteger);
-		$pb_reload 	= (bool)$this->request->getParameter('reload', pInteger);
-
-		$t_rep = new ca_object_representations($pn_representation_id);
-
-		if(!$vn_subject_id) {
-			if (is_array($va_subject_ids = $t_rep->get($t_subject->tableName().'.'.$t_subject->primaryKey(), array('returnAsArray' => true))) && sizeof($va_subject_ids)) {
-				$vn_subject_id = array_shift($va_subject_ids);
-			} else {
-				$this->postError(1100, _t('Invalid object/representation'), 'ObjectEditorController->GetRepresentationEditor');
-				return;
-			}
+	public function GetMediaData() {
+		$ps_identifier = $this->request->getParameter('identifier', pString);
+		if (!($va_identifier = caParseMediaIdentifier($ps_identifier))) {
+			// error: invalid identifier
+			die("Invalid identifier");
 		}
-
-		$va_opts = array('display' => 'media_editor', 't_subject' => $t_subject, 't_representation' => $t_rep, 'containerID' => 'caMediaPanelContentArea', 'mediaEditor' => true, 'noControls' => $pb_reload);
-		if (strlen($vs_use_book_viewer = $this->request->getParameter('use_book_viewer', pInteger))) { $va_opts['use_book_viewer'] = (bool)$vs_use_book_viewer; }
-
-		$this->response->addContent(caGetMediaViewerHTMLBundle($this->request, $va_opts));
+		
+		switch($va_identifier['type']) {
+			case 'representation':
+				$t_rep = new ca_object_representations($va_identifier['id']);
+				
+				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $t_rep->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+					// error: no viewer available
+					die("Invalid viewer");
+				}
+				$va_files = $t_rep->getFileList();
+		
+				$va_data = [
+					'title' => $t_rep->get($this->ops_table_name.".preferred_labels"),
+					'resources' => $va_files
+				];
+				break;
+			case 'attribute':
+			
+				break;
+		}
+		
+		$this->response->addContent($vs_viewer_name::getViewerManifest($this->request, $ps_identifier, $va_data));
 	}
 	# -------------------------------------------------------
 	/**

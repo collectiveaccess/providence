@@ -2533,10 +2533,10 @@ table.representationAnnotationListItem {
     height: 100%;
 }
 
-#caMediaDisplayContent, #caMediaOverlayContent {
+#caMediaDisplayContent, #caMediaOverlayContent, #caMediaOverlayTileViewer {
     margin: 0px;
-    width: 100%;
-    height: 100%;
+    width: 100% !important;
+    height: 100% !important;
     /* overflow: auto; */
     text-align: center;
     position: relative;
