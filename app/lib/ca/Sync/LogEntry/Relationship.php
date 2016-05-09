@@ -118,6 +118,8 @@ class Relationship extends Base {
 			/** @var \BundlableLabelableBaseModelWithAttributes $t_instance */
 			$t_instance = $pb_left ? $this->getModelInstance()->getLeftTableInstance() : $this->getModelInstance()->getRightTableInstance();
 			if(!$t_instance) { throw new InvalidLogEntryException('Could not get left or right table instance for relationship log entry'); }
+			$t_instance->setTransaction($this->getTx());
+
 			if ($t_instance->loadByGUID($vs_reference_guid)) {
 				$this->getModelInstance()->set($ps_field, $t_instance->getPrimaryKey());
 			} else {
@@ -144,6 +146,8 @@ class Relationship extends Base {
 			} else {
 				$t_instance = $o_dm->getInstanceByTableName($this->getModelInstance()->getRightTableName(), true);
 			}
+
+			$t_instance->setTransaction($this->getTx());
 
 			if (!$t_instance->loadByGUID($vs_reference_guid)) {
 				throw new InvalidLogEntryException("Could not load {$t_instance->tableName()} record by GUID {$vs_reference_guid} (referenced in {$vs_property} in a relationship record)");
