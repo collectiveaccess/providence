@@ -117,6 +117,8 @@ abstract class Base {
 			throw new IrrelevantLogEntry();
 		}
 
+		$this->opt_instance->setTransaction($this->getTx());
+
 		// if this is not an insert log entry, load the specified row by GUID
 		if($this->isUpdate() || $this->isDelete()) {
 			// if we can't find the GUID and this is an update, throw error
@@ -131,7 +133,6 @@ abstract class Base {
 			}
 		}
 
-		$this->opt_instance->setTransaction($this->getTx());
 		$this->opt_instance->setMode(ACCESS_WRITE);
 	}
 
@@ -156,25 +157,28 @@ abstract class Base {
 	 */
 	public function isRelevant() {
 		$vs_t = $this->getModelInstance()->tableName();
-		if(preg_match("/^ca\_editor\_ui/", $vs_t)) {
+		if(preg_match("/^ca_locales/", $vs_t)) {
 			return false;
 		}
-		if(preg_match("/^ca\_metadata\_/", $vs_t)) {
+		if(preg_match("/^ca_editor_ui/", $vs_t)) {
 			return false;
 		}
-		if(preg_match("/^ca\_relationship\_/", $vs_t)) {
+		if(preg_match("/^ca_metadata_/", $vs_t)) {
 			return false;
 		}
-		if(preg_match("/^ca\_search\_/", $vs_t)) {
+		if(preg_match("/^ca_relationship_/", $vs_t)) {
 			return false;
 		}
-		if(preg_match("/^ca\_bundle\_display/", $vs_t)) {
+		if(preg_match("/^ca_search_/", $vs_t)) {
 			return false;
 		}
-		if(preg_match("/^ca\_data_import/", $vs_t)) {
+		if(preg_match("/^ca_bundle_display/", $vs_t)) {
 			return false;
 		}
-		if(preg_match("/^ca\_data_exporter/", $vs_t)) {
+		if(preg_match("/^ca_data_import/", $vs_t)) {
+			return false;
+		}
+		if(preg_match("/^ca_data_exporter/", $vs_t)) {
 			return false;
 		}
 
@@ -354,6 +358,7 @@ abstract class Base {
 					if(isset($va_snapshot[$vs_field . '_guid']) && ($vs_parent_guid = $va_snapshot[$vs_field . '_guid'])) {
 						if(($vs_idno = $va_snapshot[$this->getModelInstance()->getProperty('ID_NUMBERING_ID_FIELD')]) && !preg_match("/Root node for /", $vs_idno)) {
 							$t_instance = $this->getModelInstance()->cloneRecord();
+							$t_instance->setTransaction($this->getTx());
 							if(!$t_instance->loadByGUID($vs_parent_guid) && !(intval($va_snapshot[$vs_field]) == 1)) {
 								throw new InvalidLogEntryException(_t("Could not load GUID %1 (referenced in HIERARCHY_PARENT_ID_FLD)", $vs_parent_guid));
 							}
@@ -421,6 +426,7 @@ abstract class Base {
 				if($vs_field == $this->getModelInstance()->getProperty('HIERARCHY_PARENT_ID_FLD')) {
 					if(isset($va_snapshot[$vs_field . '_guid']) && ($vs_parent_guid = $va_snapshot[$vs_field . '_guid'])) {
 						$t_instance = $this->getModelInstance()->cloneRecord();
+						$t_instance->setTransaction($this->getTx());
 						if($t_instance->loadByGUID($vs_parent_guid)) {
 							$this->getModelInstance()->set($vs_field, $t_instance->getPrimaryKey());
 						} else {

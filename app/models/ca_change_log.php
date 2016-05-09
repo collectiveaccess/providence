@@ -280,6 +280,17 @@ class ca_change_log extends BaseModel {
 		while($qr_results->nextRow()) {
 			$va_row = $qr_results->getRow();
 
+			// skip log entries without GUID -- we don't care about those
+			if(!($vs_guid = ca_guids::getForRow($qr_results->get('logged_table_num'), $qr_results->get('logged_row_id')))) {
+				continue;
+			}
+			$va_row['guid'] = $vs_guid;
+
+			// don't sync inserts/updates for deleted records
+			if(ca_guids::isDeleted($vs_guid) && ($va_row['changetype'] != 'D')) {
+				continue;
+			}
+
 			// decode snapshot
 			$va_snapshot = caUnserializeForDatabase($qr_results->get('snapshot'));
 
@@ -378,13 +389,6 @@ class ca_change_log extends BaseModel {
 			}
 
 			$va_row['snapshot'] = $va_snapshot;
-
-			// skip log entries without GUID -- we don't care about those
-			if(!($vs_guid = ca_guids::getForRow($qr_results->get('logged_table_num'), $qr_results->get('logged_row_id')))) {
-				continue;
-			}
-
-			$va_row['guid'] = $vs_guid;
 
 			// get subjects
 			$qr_subjects = $o_db->query("SELECT * FROM ca_change_log_subjects WHERE log_id=?", $qr_results->get('log_id'));

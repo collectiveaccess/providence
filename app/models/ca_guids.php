@@ -202,7 +202,7 @@ class ca_guids extends BaseModel {
 			return $vs_guid;
 		} else {
 			if(!caGetOption('dontAdd', $pa_options) && ($t_instance = Datamodel::load()->getInstance($pn_table_num, true))) {
-				if($vs_guid = self::addForRow($pn_table_num, $pn_row_id)) {
+				if($vs_guid = self::addForRow($pn_table_num, $pn_row_id, $pa_options)) {
 					return $vs_guid;
 				}
 			}
@@ -216,10 +216,17 @@ class ca_guids extends BaseModel {
 	 * False is returned on error
 	 * @param int $pn_table_num
 	 * @param int $pn_row_id
+	 * @param array $pa_options
 	 * @return bool|string
 	 */
-	private static function addForRow($pn_table_num, $pn_row_id) {
-		$o_db = new Db();
+	private static function addForRow($pn_table_num, $pn_row_id, $pa_options=null) {
+		/** @var Transaction $o_tx */
+		if($o_tx = caGetOption('transaction', $pa_options, null)) {
+			$o_db = $o_tx->getDb();
+		} else {
+			$o_db = new Db();
+		}
+
 		$vs_guid = caGenerateGUID();
 		$o_db->query("INSERT INTO ca_guids(table_num, row_id, guid) VALUES (?,?,?)", $pn_table_num, $pn_row_id, $vs_guid);
 		return $vs_guid;
@@ -228,11 +235,17 @@ class ca_guids extends BaseModel {
 	/**
 	 * Get row id and table num for given GUID
 	 * @param string $ps_guid
+	 * @param array $pa_options
 	 * @return array|null
 	 * 			keys are 'row_id' and 'table_num'
 	 */
-	public static function getInfoForGUID($ps_guid) {
-		$o_db = new Db();
+	public static function getInfoForGUID($ps_guid, $pa_options=null) {
+		/** @var Transaction $o_tx */
+		if($o_tx = caGetOption('transaction', $pa_options, null)) {
+			$o_db = $o_tx->getDb();
+		} else {
+			$o_db = new Db();
+		}
 
 		$qr_guid = $o_db->query('
 			SELECT table_num, row_id FROM ca_guids WHERE guid=?
@@ -243,6 +256,37 @@ class ca_guids extends BaseModel {
 		}
 
 		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Check if a given GUID is deleted
+	 * @param string $ps_guid
+	 * @param array $pa_options
+	 * @return bool
+	 */
+	public static function isDeleted($ps_guid, $pa_options = null) {
+		$va_info = self::getInfoForGUID($ps_guid, $pa_options);
+		if(!$va_info) { return false; }
+
+		$t_instance = Datamodel::load()->getInstance($va_info['table_num'], true);
+		if(!$t_instance) { return false; }
+
+		/** @var Transaction $o_tx */
+		if($o_tx = caGetOption('transaction', $pa_options, null)) {
+			$o_db = $o_tx->getDb();
+		} else {
+			$o_db = new Db();
+		}
+
+		if(!$t_instance->hasField('deleted')) { return false; }
+
+		$qr_record = $o_db->query(
+			"SELECT {$t_instance->primaryKey()} FROM {$t_instance->tableName()} WHERE {$t_instance->primaryKey()} = ?",
+			$va_info['row_id']
+		);
+		if(!$qr_record->nextRow()) { return false; }
+
+		return (bool) $qr_record->get('deleted');
 	}
 	# ------------------------------------------------------
 }
