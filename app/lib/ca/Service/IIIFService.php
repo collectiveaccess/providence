@@ -33,6 +33,7 @@
  require_once(__CA_LIB_DIR__."/core/Media.php");
  require_once(__CA_LIB_DIR__."/core/Parsers/TilepicParser.php");
  require_once(__CA_MODELS_DIR__."/ca_object_representations.php");
+ require_once(__CA_MODELS_DIR__."/ca_attribute_values.php");
 
 class IIIFService {
 	# -------------------------------------------------------
@@ -91,13 +92,25 @@ class IIIFService {
 		} else {
 			switch($ps_type) {
 				case 'attribute':
-					$t_media = new ca_attribute_values($pn_id);
-					$t_media->useBlobAsMediaField(true);
-				
-					$t_attr = new ca_attributes($t_media->get('attribute_id'));
+					if ($pn_page) {
+						$t_attr_val = new ca_attribute_values($pn_id);
+						$t_attr_val->useBlobAsMediaField(true);
+						$t_media = new ca_attribute_value_multifiles();
+						$t_media->load(['value_id' => $pn_id, 'resource_path' => $pn_page]);
+						$t_attr = new ca_attributes($t_attr_val->get('attribute_id'));
+						$vs_fldname = 'media';
+					} else {
+						$t_media = new ca_attribute_values($pn_id);
+						$t_media->useBlobAsMediaField(true);
+						$vs_fldname = 'value_blob';
+						
+						$t_attr = new ca_attributes($t_media->get('attribute_id'));
+					}
+					
+					$o_dm = Datamodel::load();
 					if ($t_instance = $o_dm->getInstanceByTableNum($t_attr->get('table_num'), true)) {
 						if ($t_instance->load($t_attr->get('row_id'))) {
-							if (!$t_instance->isReadable()) {
+							if (!$t_instance->isReadable($po_request)) {
 								// not readable
 								$po_response->setHTTPResponseCode(403, _t('Access denied'));
 								return false;
@@ -113,7 +126,6 @@ class IIIFService {
 						return false;
 					}
 				
-					$vs_fldname = 'value_blob';
 					break;
 				case 'representation':
 				default:
@@ -249,7 +261,6 @@ class IIIFService {
 			
 			// format
 			if (!($vs_mimetype = IIIFService::calculateFormat($vn_width, $vn_height, $ps_format))) {
-				die("XX $vn_width/$vn_height, $ps_format / $ps_identifier // ".$po_request->getPathInfo());
 				$po_response->setHTTPResponseCode(400, _t('Unsupported format %1', $ps_format));
 				return false;
 			}

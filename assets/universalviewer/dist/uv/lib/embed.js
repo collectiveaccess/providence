@@ -198,7 +198,7 @@ docReady(function() {
 
         // find all players on a page and initialise them
         window.initPlayers = function($players){
-            var isOnlyInstance = $players.length === 1;
+            var isOnlyInstance = false; //$players.length === 1;
 
             for (var i = 0; i < $players.length; i++) {
                 app($players[i], isHomeDomain, isOnlyInstance);
