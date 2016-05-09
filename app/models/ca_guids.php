@@ -281,7 +281,7 @@ class ca_guids extends BaseModel {
 		if(!$t_instance->hasField('deleted')) { return false; }
 
 		$qr_record = $o_db->query(
-			"SELECT {$t_instance->primaryKey()} FROM {$t_instance->tableName()} WHERE {$t_instance->primaryKey()} = ?",
+			"SELECT {$t_instance->primaryKey()}, deleted FROM {$t_instance->tableName()} WHERE {$t_instance->primaryKey()} = ?",
 			$va_info['row_id']
 		);
 		if(!$qr_record->nextRow()) { return false; }
