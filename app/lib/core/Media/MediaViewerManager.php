@@ -105,12 +105,14 @@
 		 *
 		 */
 		public static function getViewerForMimetype($ps_context, $ps_mimetype) {
-			if ($va_info = caGetMediaDisplayInfo($ps_context, $ps_mimetype)) {
-				if (!isset($va_info['viewer']) || !($vs_viewer = $va_info['viewer'])) { return null; }
-				
-				return MediaViewerManager::viewerIsAvailable($vs_viewer) ? $vs_viewer : null;
+			$va_info = caGetMediaDisplayInfo($ps_context, $ps_mimetype);
+			if (!isset($va_info['viewer']) || !($vs_viewer = $va_info['viewer'])) { 
+				$vs_viewer = caGetDefaultMediaViewer($ps_mimetype);
+				print "fOR $ps_mimetype == $vs_viewer";
 			}
-			return null;
+			if (!$vs_viewer) { return null; }
+			
+			return MediaViewerManager::viewerIsAvailable($vs_viewer) ? $vs_viewer : null;
 		} 
 		# ----------------------------------------------------------
 	}

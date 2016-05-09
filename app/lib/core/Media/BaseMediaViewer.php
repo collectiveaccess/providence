@@ -90,6 +90,26 @@
 					}
 					$vs_controls .= "</div>";			
 				}
+				
+				if ($po_request->user->canDoAction('can_download_media') || $po_request->user->canDoAction('can_download_ca_object_representations')) {
+?>
+				<div class='download'>
+<?php 
+					if (is_array($va_versions = $po_request->config->getList('ca_object_representation_download_versions'))) {
+						// -- provide user with a choice of versions to download
+						$vs_controls .= caFormTag($po_request, 'DownloadMedia', 'caMediaDownloadForm', $po_request->getModulePath().'/'.$po_request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
+						$vs_controls .= caHTMLSelect('version', $va_versions, array('style' => 'font-size: 9px;'));
+						$vs_controls .= caFormSubmitLink($po_request, caNavIcon($po_request, __CA_NAV_BUTTON_DOWNLOAD__, 1, null, array('color' => 'white')), '', 'caMediaDownloadForm', 'caMediaDownloadFormButton');
+						$vs_controls .= caHTMLHiddenInput($t_subject->primaryKey(), array('value' => $t_subject->getPrimaryKey()));
+						if ($vn_representation_id) { $vs_controls .= caHTMLHiddenInput("representation_id", array('value' => $t_rep->getPrimaryKey())); }
+						if ($vn_value_id) { $vs_controls .= caHTMLHiddenInput("value_id", array('value' => $vn_value_id)); }
+						$vs_controls .= caHTMLHiddenInput("download", array('value' => 1));
+						$vs_controls .= "</form>\n";
+					}
+?>				
+				</div>
+<?php
+	}
 			}
 			
 			$o_view->setVar('controls', $vs_controls);

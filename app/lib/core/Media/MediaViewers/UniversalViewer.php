@@ -61,7 +61,7 @@
 		/**
 		 *
 		 */
-		public static function getViewerManifest($po_request, $ps_identifier, $pa_data=null) {
+		public static function getViewerData($po_request, $ps_identifier, $pa_data=null) {
 			if ($o_view = BaseMediaViewer::getView($po_request)) {
 				$o_view->setVar('identifier', $ps_identifier);
 				$o_view->setVar('data', $pa_data);

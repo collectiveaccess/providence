@@ -1701,19 +1701,33 @@ class BaseEditorController extends ActionController {
 	 */
 	public function GetMediaOverlay() {
 		list($vn_subject_id, $t_subject) = $this->_initView();
+	
+		// TODO: check subject_id here
+			
 		if ($pn_value_id = $this->request->getParameter('value_id', pInteger)) {
-			$t_rep = new ca_object_representations();
-
+			//
+			// View FT_MEDIA attribute media 
+			//
 			$t_attr_val = new ca_attribute_values($pn_value_id);
+			$t_attr_val->useBlobAsMediaField(true);
 			$t_attr = new ca_attributes($t_attr_val->get('attribute_id'));
 			$t_subject = $this->opo_datamodel->getInstanceByTableNum($t_attr->get('table_num'), true);
 			$t_subject->load($t_attr->get('row_id'));
 
-			// check subject_id here
-			$va_opts = array('display' => 'media_overlay', 't_instance' => $t_attr_val, 't_subject' => $t_subject);
+			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $t_attr_val->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
+				// error: no viewer available
+				die("Invalid viewer");
+			}
 
-			$this->response->addContent($vs_viewer_name::getViewerHTML($this->request, "attribute:{$pn_value_id}", $va_opts));
+			$this->response->addContent($vs_viewer_name::getViewerHTML(
+				$this->request, 
+				"attribute:{$pn_value_id}", 
+				['display' => 'media_overlay', 't_instance' => $t_attr_val, 't_subject' => $t_subject])
+			);
 		} elseif ($pn_representation_id = $this->request->getParameter('representation_id', pInteger)) {
+			//
+			// View object representation
+			//
 			$t_rep = new ca_object_representations($pn_representation_id);
 			
 			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $t_rep->getMediaInfo('media', 'original', 'MIMETYPE')))) {
@@ -1729,9 +1743,12 @@ class BaseEditorController extends ActionController {
 					return;
 				}
 			}
-			$va_opts = array('display' => 'media_overlay', 't_instance' => $t_rep, 't_subject' => $t_subject);
 
-			$this->response->addContent($vs_viewer_name::getViewerHTML($this->request, "representation:{$pn_representation_id}", $va_opts));
+			$this->response->addContent($vs_viewer_name::getViewerHTML(
+				$this->request, 
+				"representation:{$pn_representation_id}", 
+				['display' => 'media_overlay', 't_instance' => $t_rep, 't_subject' => $t_subject])
+			);
 		} else {
 			// error
 			die("Invalid id");
@@ -1759,16 +1776,28 @@ class BaseEditorController extends ActionController {
 				$va_files = $t_rep->getFileList();
 		
 				$va_data = [
-					'title' => $t_rep->get($this->ops_table_name.".preferred_labels"),
 					'resources' => $va_files
 				];
 				break;
 			case 'attribute':
-			
+				$t_attr_val = new ca_attribute_values($va_identifier['id']);
+				$t_attr = new ca_attributes($t_attr_val->get('attribute_id'));
+				$t_subject = $this->opo_datamodel->getInstanceByTableNum($t_attr->get('table_num'), true);
+				$t_subject->load($t_attr->get('row_id'));
+				
+				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $t_attr_val->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+					// error: no viewer available
+					die("Invalid viewer");
+				}
+				$va_files = $t_attr_val->getFileList();
+		
+				$va_data = [
+					'resources' => $va_files
+				];
 				break;
 		}
 		
-		$this->response->addContent($vs_viewer_name::getViewerManifest($this->request, $ps_identifier, $va_data));
+		$this->response->addContent($vs_viewer_name::getViewerData($this->request, $ps_identifier, $va_data));
 	}
 	# -------------------------------------------------------
 	/**

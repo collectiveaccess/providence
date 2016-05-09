@@ -2002,6 +2002,29 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
+	 * 
+	 *
+	 * @param
+	 *
+	 * @return 
+	 */
+	function caGetDefaultMediaViewer($ps_mimetype) {
+		$o_config = Configuration::load();
+		$o_media_display_config = Configuration::load(__CA_APP_DIR__.'/conf/media_display.conf');
+		
+		if (!is_array($va_defaults = $o_media_display_config->getAssoc('default_viewers'))) { return null; }
+	
+		foreach($va_defaults as $vs_media_class => $va_info) {
+			if (!is_array($va_mimetypes = $va_info['mimetypes'])) { continue; }
+			
+			if (in_array($ps_mimetype, $va_mimetypes)) {
+				return $va_info['viewer'];
+			}
+		}
+		return null;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
 	 * Returns a list of "^" prefixed-tags (eg. ^forename) present in a template
 	 *
 	 * @param string $ps_template

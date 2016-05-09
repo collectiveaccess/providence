@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/lib/core/Media/MediaViewers/TileViewer.php :
+ * app/lib/core/Media/MediaViewers/ThreeJS.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -38,7 +38,7 @@
 	require_once(__CA_LIB_DIR__.'/core/Media/IMediaViewer.php');
 	require_once(__CA_LIB_DIR__.'/core/Media/BaseMediaViewer.php');
  
-	class TileViewer extends BaseMediaViewer implements IMediaViewer {
+	class ThreeJS extends BaseMediaViewer implements IMediaViewer {
 		# -------------------------------------------------------
 		/**
 		 *
@@ -51,36 +51,23 @@
 		public static function getViewerHTML($po_request, $ps_identifier, $pa_data=null) {
 			if ($o_view = BaseMediaViewer::getView($po_request)) {
 				$o_view->setVar('identifier', $ps_identifier);
-				$o_view->setVar('viewer', 'TileViewer');
+				$o_view->setVar('viewer', 'ThreeJS');
 				
 				$t_instance = $pa_data['t_instance'];
 				$t_subject = $pa_data['t_subject'];
 				
 				if (is_a($t_instance, "ca_object_representations")) {
 					$va_viewer_opts = [
-						'id' => 'caMediaOverlayTileViewer',
-						'viewer_base_url' => $po_request->getBaseUrlPath(),
-						'annotation_load_url' => caNavUrl($po_request, '*', '*', 'GetAnnotations', array('representation_id' => (int)$t_instance->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey())),
-						'annotation_save_url' => caNavUrl($po_request, '*', '*', 'SaveAnnotations', array('representation_id' => (int)$t_instance->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey())),
-						'download_url' => caNavUrl($po_request, '*', '*', 'DownloadMedia', array('representation_id' => (int)$t_instance->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey(), 'version' => 'original')),
-						'help_load_url' => caNavUrl($po_request, '*', '*', 'ViewerHelp', array()),
-						'annotationEditorPanel' => 'caRepresentationAnnotationEditor',
-						'annotationEditorUrl' => caNavUrl($po_request, 'editor/representation_annotations', 'RepresentationAnnotationQuickAdd', 'Form', array('representation_id' => (int)$t_instance->getPrimaryKey())),
-						'captions' => $t_instance->getCaptionFileList(), 'progress_id' => 'caMediaOverlayProgress'
+						'id' => 'caMediaOverlayThreeJS', 'viewer_width' => '100%', 'viewer_height' => '100%'
 					];
-					// HTML for tileviewer
-					$o_view->setVar('viewerHTML', $t_instance->getMediaTag('media', 'tilepic', $va_viewer_opts));
+					// HTML for ThreeJS
+					$o_view->setVar('viewerHTML', $t_instance->getMediaTag('media', 'original', $va_viewer_opts));
 				} else {
 					$va_viewer_opts = [
-						'id' => 'caMediaOverlayTileViewer',
-						'read_only' => true,
-						'viewer_base_url' => $po_request->getBaseUrlPath(),
-						'download_url' => caNavUrl($po_request, '*', '*', 'DownloadMedia', array('value_id' => (int)$t_instance->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey(), 'version' => 'original')),
-						'help_load_url' => caNavUrl($po_request, '*', '*', 'ViewerHelp', array()),
-						'captions' => null, 'progress_id' => 'caMediaOverlayProgress'
+						'id' => 'caMediaOverlayThreeJS'
 					];
-					// HTML for tileviewer
-					$o_view->setVar('viewerHTML', $t_instance->getMediaTag('value_blob', 'tilepic', $va_viewer_opts));
+					// HTML for ThreeJS
+					$o_view->setVar('viewerHTML', $t_instance->getMediaTag('value_blob', 'h264_hi', $va_viewer_opts));
 				}
 				
 					
