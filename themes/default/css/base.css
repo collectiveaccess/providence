@@ -2578,6 +2578,7 @@ div.caMediaOverlayControls a{
     text-decoration:none;
     font-weight:bold;
     font-size:16px;
+    line-height: 12px;
     color:#FFF;
 }
 div.caMediaOverlayControls a:hover{
@@ -2595,12 +2596,17 @@ div.caMediaOverlayControls .close a {
     text-decoration: none;
 }
 
-div.caMediaOverlayControls .download{
+div.caMediaOverlayControls .download {
     float:right;
     margin-left:20px;
 }
+
+div.caMediaOverlayControls .download form a {
+	font-size: 12px;	
+}
+
 div.caMediaOverlayControls .objectInfo{
-    font-size:11px;
+    font-size:12px;
     color:#FFF;
     padding-left:10px;
     text-align:left;

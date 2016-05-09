@@ -63,13 +63,39 @@
 		 */
 		public static function getViewerData($po_request, $ps_identifier, $pa_data=null) {
 			if ($o_view = BaseMediaViewer::getView($po_request)) {
-				$o_view->setVar('identifier', $ps_identifier);
-				$o_view->setVar('data', $pa_data);
-				return $o_view->render("UniversalViewerManifest.php");
+				if ($t_instance = caGetOption('t_instance', $pa_data, null)) {
+				
+					$va_display = caGetOption('display', $pa_data, []);
+					
+					if(is_a($t_instance, "ca_object_representations")) {
+						$vs_media_fld = 'media';
+					} elseif(is_a($t_instance, "ca_attribute_values")) {
+						$vs_media_fld = 'value_blob';
+					} else {
+						throw new ApplicationException(_t('Could not derive media dimensions'));
+					}
+					
+					$pa_data['width'] = $t_instance->getMediaInfo($vs_media_fld, 'original', 'WIDTH');
+					$pa_data['height'] = $t_instance->getMediaInfo($vs_media_fld, 'original', 'HEIGHT');
+					
+					if (($vs_display_version = caGetOption('display_version', $pa_data['display'], 'tilepic')) == 'tilepic') {
+						$pa_data['resources'] = $t_instance->getFileList();
+					} else {
+						$pa_data['resources'][] = [
+							'url' => $pa_data['t_instance']->getMediaUrl($vs_media_fld, $vs_display_version)
+						];
+					}
+					
+					
+					$o_view->setVar('request', caGetOption('request', $pa_data, null));
+					$o_view->setVar('identifier', $ps_identifier);
+					$o_view->setVar('data', $pa_data);
+					
+					return $o_view->render("UniversalViewerManifest.php");
+				}
 			}
 			
-			// TODO: better error
-			return _t("Manifest not available");
+			throw new ApplicationException(_t('Media manifest is not available'));
 		}
 		# -------------------------------------------------------
 	}

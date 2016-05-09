@@ -44,8 +44,6 @@ class IIIFService {
 	 * @throws Exception
 	 */
 	public static function dispatch($ps_identifier, $po_request, $po_response) {
-		 
-		$vs_cache_key = $po_request->getHash();
 		$va_path = array_slice(explode("/", $po_request->getPathInfo()), 3);
 		
 		// BASEURL:		{scheme}://{server}{/prefix}/{identifier}
@@ -57,9 +55,11 @@ class IIIFService {
 			return;
 		}
 		
+		$vb_cache = true;
 		$pb_is_info_request = false;
 		if (($ps_region = array_shift($va_path)) == 'info.json') {
 			$pb_is_info_request = true;
+			//$vb_cache = false;
 		} else {
 			$ps_size = array_shift($va_path);
 			$ps_rotation = array_shift($va_path);
@@ -78,18 +78,33 @@ class IIIFService {
 		}
 		
 		$vs_image_path = null;
-		switch($ps_type) {
-			case 'attribute':
-				// TODO: don't load all these rows...
-				$t_media = new ca_attribute_values($pn_id);
-				$t_media->useBlobAsMediaField(true);
+		
+		if ($vb_cache && CompositeCache::contains($ps_identifier, 'IIIFMediaInfo')) {
+			$va_cache = CompositeCache::fetch($ps_identifier,'IIIFMediaInfo');
+			$va_sizes = $va_cache['sizes'];
+			$va_image_info = $va_cache['imageInfo'];
+			$va_tilepic_info = $va_cache['tilepicInfo'];
+			$va_versions = $va_cache['versions'];
+			$va_media_paths = $va_cache['mediaPaths'];
+			$vn_width = $va_cache['width'];
+			$vn_height = $va_cache['height'];
+		} else {
+			switch($ps_type) {
+				case 'attribute':
+					$t_media = new ca_attribute_values($pn_id);
+					$t_media->useBlobAsMediaField(true);
 				
-				$t_attr = new ca_attributes($t_media->get('attribute_id'));
-				if ($t_instance = $o_dm->getInstanceByTableNum($t_attr->get('table_num'), true)) {
-					if ($t_instance->load($t_attr->get('row_id'))) {
-						if (!$t_instance->isReadable()) {
-							// not readable
-							$po_response->setHTTPResponseCode(403, _t('Access denied'));
+					$t_attr = new ca_attributes($t_media->get('attribute_id'));
+					if ($t_instance = $o_dm->getInstanceByTableNum($t_attr->get('table_num'), true)) {
+						if ($t_instance->load($t_attr->get('row_id'))) {
+							if (!$t_instance->isReadable()) {
+								// not readable
+								$po_response->setHTTPResponseCode(403, _t('Access denied'));
+								return false;
+							}
+						} else {
+							// doesn't exist
+							$po_response->setHTTPResponseCode(400, _t('Invalid identifier'));
 							return false;
 						}
 					} else {
@@ -97,46 +112,61 @@ class IIIFService {
 						$po_response->setHTTPResponseCode(400, _t('Invalid identifier'));
 						return false;
 					}
-				} else {
-					// doesn't exist
-					$po_response->setHTTPResponseCode(400, _t('Invalid identifier'));
-					return false;
-				}
 				
-				$vs_fldname = 'value_blob';
-				break;
-			case 'representation':
-			default:
-				// TODO: avoid loading representation for each request
-				if ($pn_page) {
-					$t_media = new ca_object_representation_multifiles();
-					$t_media->load(['representation_id' => $pn_id, 'resource_path' => $pn_page]);
-				} else {
-					$t_media = new ca_object_representations($pn_id);
-				}
-				$vs_fldname = 'media';
+					$vs_fldname = 'value_blob';
+					break;
+				case 'representation':
+				default:
+					if ($pn_page) {
+						$t_media = new ca_object_representation_multifiles();
+						$t_media->load(['representation_id' => $pn_id, 'resource_path' => $pn_page]);
+					} else {
+						$t_media = new ca_object_representations($pn_id);
+					}
+					$vs_fldname = 'media';
 				
-				if (!$t_media->getPrimaryKey()) {
-					// doesn't exist
-					$po_response->setHTTPResponseCode(400, _t('Invalid identifier'));
-					return false;
-				}
-				if (!$t_media->isReadable($po_request)) {
-					// not readable
-					$po_response->setHTTPResponseCode(403, _t('Access denied'));
-					return false;
-				} 
-				$vs_image_path = $t_media->getMediaPath('media', 'original');
-				$vn_width = $t_media->getMediaInfo('media', 'original', 'WIDTH');
-				$vn_height = $t_media->getMediaInfo('media', 'original', 'HEIGHT');
-				break;
+					if (!$t_media->getPrimaryKey()) {
+						// doesn't exist
+						$po_response->setHTTPResponseCode(400, _t('Invalid identifier'));
+						return false;
+					}
+					if (!$t_media->isReadable($po_request)) {
+						// not readable
+						$po_response->setHTTPResponseCode(403, _t('Access denied'));
+						return false;
+					} 
+					break;
+			}
+			 
+			$vn_width = $t_media->getMediaInfo($vs_fldname, 'original', 'WIDTH');
+			$vn_height = $t_media->getMediaInfo($vs_fldname, 'original', 'HEIGHT');
+			
+			$va_sizes = IIIFService::getAvailableSizes($t_media, $vs_fldname, ['indexByVersion' => true]);
+			$va_image_info = IIIFService::imageInfo($t_media, $vs_fldname, $po_request);
+			$va_tilepic_info = $t_media->getMediaInfo($vs_fldname, 'tilepic');
+			$va_versions = $t_media->getMediaVersions($vs_fldname);
+			
+			$va_media_paths = [];
+			foreach($va_versions as $vs_version) {
+				$va_media_paths[$vs_version] = $t_media->getMediaPath($vs_fldname, $vs_version);
+			}
+			
+			CompositeCache::save($ps_identifier, [
+				'sizes' => $va_sizes,
+				'imageInfo' => $va_image_info,
+				'tilepicInfo' => $va_tilepic_info,
+				'versions' => $va_versions,
+				'mediaPaths' => $va_media_paths,
+				'width' => $vn_width,
+				'height' => $vn_height
+			],'IIIFMediaInfo');
 		}
 		
 		if ($pb_is_info_request) {
-			// Return JSON-format IIIS metadata
+			// Return JSON-format IIIF metadata
 			header("Content-type: text/json");
 			header("Access-Control-Allow-Origin: *");
-			$po_response->addContent(caFormatJson(json_encode(IIIFService::imageInfo($t_media, $vs_fldname, $po_request))));
+			$po_response->addContent(caFormatJson(json_encode($va_image_info)));
 			return true;
 		} else {
 			$va_operations = [];
@@ -152,14 +182,21 @@ class IIIFService {
 			$va_operations[] = ['SCALE' => $va_dimensions];
 			
 			// Can we use a pre-generated tilepic tile for this request?
-			$va_tilepic_info = $t_media->getMediaInfo($vs_fldname, 'tilepic');
 			$vn_tile_width = $va_tilepic_info['PROPERTIES']['tile_width'];
 			$vn_tile_height = $va_tilepic_info['PROPERTIES']['tile_height'];
-			//print_R($va_dimensions); print_R($va_tilepic_info);die;
-			if (($va_dimensions['width'] <= $vn_tile_width) || ($va_dimensions['height'] <= $vn_tile_height)) {
+			
+			if (
+				in_array('tilepic', $va_versions)
+				&&
+				(
+					(($va_dimensions['width'] == $vn_tile_width) && ($va_dimensions['height'] == $vn_tile_height))
+					||
+					((($va_dimensions['width'] <= $vn_tile_width) || ($va_dimensions['height'] <= $vn_tile_height)) && ($va_dimensions['mode'] == 'incomplete'))
+				)
+			) {
 				$vn_scale_factor = ceil($va_region['width']/$va_dimensions['width']);						// magnification = width of region requested/width of returned tile
 				$vn_level = floor($va_tilepic_info['PROPERTIES']['layers'] - log($vn_scale_factor,2));		// tilepic layer # = total # layers  - num of layer with relevant magnification (layers are stored from smallest to largest)
-				
+		
 				$x = floor(($va_region['x'])/($vn_scale_factor * $vn_tile_width)); 							// scaled x-origin of tile
 				$y = floor(($va_region['y'])/($vn_scale_factor * $vn_tile_height));							// scaled y-origin of tile
 				
@@ -191,7 +228,7 @@ class IIIFService {
 				$vn_tile_num = $vn_tile_offset + $vn_tile;
 				
 				header("Content-type: ".$va_tilepic_info['PROPERTIES']['tile_mimetype']);
-				$po_response->addContent(TilepicParser::getTileQuickly($t_media->getMediaPath($vs_fldname, 'tilepic'), $vn_tile_num, true));
+				$po_response->addContent(TilepicParser::getTileQuickly($va_media_paths['tilepic'], $vn_tile_num, true));
 				return true;
 			}
 			
@@ -212,11 +249,11 @@ class IIIFService {
 			
 			// format
 			if (!($vs_mimetype = IIIFService::calculateFormat($vn_width, $vn_height, $ps_format))) {
+				die("XX $vn_width/$vn_height, $ps_format / $ps_identifier // ".$po_request->getPathInfo());
 				$po_response->setHTTPResponseCode(400, _t('Unsupported format %1', $ps_format));
 				return false;
 			}
 			
-			$va_sizes = IIIFService::getAvailableSizes($t_media, $vs_fldname, ['indexByVersion' => true]);
 			
 			// find smallest size that is larger than the target width/height
 			// smaller file = less processing time
@@ -232,7 +269,9 @@ class IIIFService {
 			}
 			
 			if ($vs_target_version) {
-				$vs_image_path = $t_media->getMediaPath($vs_fldname, $vs_target_version);
+				$vs_image_path = $va_media_paths[$vs_target_version];
+			} else {
+				$vs_image_path = $va_media_paths['original'];
 			}
 			
 			$vs_output_path = IIIFService::processImage($vs_image_path, $vs_mimetype, $va_operations, $po_request);
@@ -296,27 +335,33 @@ class IIIFService {
 		if (preg_match("!^([\d]+),$!", $ps_size, $va_matches)) {				// w,
 			$vn_width = (int)$va_matches[1];
 			$vn_height = (int)($pn_image_height * ($vn_width/$pn_image_width));
+			$vs_mode = 'incomplete';
 		} elseif (preg_match("!^,([\d]+)$!", $ps_size, $va_matches)) {			// ,h
 			$vn_height = (int)$va_matches[1];
 			$vn_width = (int)($pn_image_width * ($vn_height/$pn_image_height));
+			$vs_mode = 'incomplete';
 		} elseif (preg_match("!^([\d]+),([\d]+)$!", $ps_size, $va_matches)) {	// w,h
 			$vn_width = (int)$va_matches[1];
 			$vn_height = (int)$va_matches[2];
+			$vs_mode = 'full';
 		} elseif (preg_match("!^pct:([\d]+)$!", $ps_size, $va_matches)) {		// pct:n
 			$vn_pct = (int)$va_matches[1];
 			
 			$vn_width = (int)($pn_image_width * ($vn_pct/100));
 			$vn_height = (int)($pn_image_height * ($vn_pct/100));
+			$vs_mode = 'percent';
 		} elseif (preg_match("/^!([\d]+),([\d]+)$/", $ps_size, $va_matches)) {	// !w,h
 			$vn_scale_factor_w = (int)$va_matches[1]/$pn_image_width;
 			$vn_scale_factor_h = (int)$va_matches[2]/$pn_image_height;
 			$vn_width = (int)($pn_image_width * (($vn_scale_factor_w < $vn_scale_factor_h) ? $vn_scale_factor_w : $vn_scale_factor_h)); 
 			$vn_height = (int)($pn_image_height * (($vn_scale_factor_w < $vn_scale_factor_h) ? $vn_scale_factor_w : $vn_scale_factor_h));	
+			$vs_mode = 'fit';
 		} else { 																// full
 			$vn_width = $pn_image_width;
 			$vn_height = $pn_image_height;
+			$vs_mode = 'full';
 		}
-		return ['width' => $vn_width, 'height' => $vn_height];
+		return ['width' => $vn_width, 'height' => $vn_height, 'mode' => $vs_mode];
 	}
 	# -------------------------------------------------------
 	/**
@@ -438,8 +483,12 @@ class IIIFService {
 		$va_tiles = ['width' => $va_tilepic_info['PROPERTIES']['tile_width'], 'height' => $va_tilepic_info['PROPERTIES']['tile_height'], 'scaleFactors' => $va_scales];
 
 		$vs_base_url = $po_request->config->get('site_host').$po_request->getFullUrlPath();
+		
 		$va_tmp = explode("/", $vs_base_url);
-		array_pop($va_tmp);
+		if ($vn_i = array_search("service.php", $va_tmp)) {
+			$va_tmp = array_slice($va_tmp, 0, $vn_i + 3);
+		}
+		
 		$vs_base_url = join('/', $va_tmp);
 		
 		$va_possible_formats = ['jpg', 'tif', 'tiff', 'png', 'gif'];

@@ -34,6 +34,6 @@
 	<?php print $this->render($this->getVar('viewer').".php"); ?>
 </div>	
 <div class="caMediaOverlayControls">
-	<?php print $this->getVar('controls'); ?>
 	<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close">&nbsp;&nbsp;&nbsp;</a></div>
+	<?php print $this->getVar('controls'); ?>
 </div>
