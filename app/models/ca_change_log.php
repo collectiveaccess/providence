@@ -15,80 +15,80 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
- * 
+ *
  * @package CollectiveAccess
  * @subpackage models
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
- * 
+ *
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+ *
+ */
 
 
 BaseModel::$s_ca_models_definitions['ca_change_log'] = array(
 	'NAME_SINGULAR' 	=> _t('change log entry'),
- 	'NAME_PLURAL' 		=> _t('change log entries'),
- 	'FIELDS' 			=> array(
+	'NAME_PLURAL' 		=> _t('change log entries'),
+	'FIELDS' 			=> array(
 		'log_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
-				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Log id', 'DESCRIPTION' => 'Identifier for Log'
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
+			'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => 'Log id', 'DESCRIPTION' => 'Identifier for Log'
 		),
 		'log_datetime' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Logged date and time'), 'DESCRIPTION' => _t('Date and time logged event occurred')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => _t('Logged date and time'), 'DESCRIPTION' => _t('Date and time logged event occurred')
 		),
 		'user_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => '',
-				'LABEL' => _t('User'), 'DESCRIPTION' => _t('User who performed event')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => '',
+			'LABEL' => _t('User'), 'DESCRIPTION' => _t('User who performed event')
 		),
 		'changetype' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 1, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Action'), 'DESCRIPTION' => _t('Type of action performed by user'),
-				'BOUNDS_LENGTH' => array(0,1)
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 1, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => _t('Action'), 'DESCRIPTION' => _t('Type of action performed by user'),
+			'BOUNDS_LENGTH' => array(0,1)
 		),
 		'logged_table_num' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Table', 'DESCRIPTION' => 'Table to which action was applied',
-				'BOUNDS_VALUE' => array(0,255)
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => 'Table', 'DESCRIPTION' => 'Table to which action was applied',
+			'BOUNDS_VALUE' => array(0,255)
 		),
 		'logged_row_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Row id', 'DESCRIPTION' => 'Identifier of row to which action was applied'
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => 'Row id', 'DESCRIPTION' => 'Identifier of row to which action was applied'
 		),
 		'unit_id' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => '',
-				'LABEL' => 'Unit id', 'DESCRIPTION' => ''
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => '',
+			'LABEL' => 'Unit id', 'DESCRIPTION' => ''
 		)
 	)
 );
@@ -108,7 +108,7 @@ class ca_change_log extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_change_log';
-	      
+
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'log_id';
 
@@ -139,7 +139,7 @@ class ca_change_log extends BaseModel {
 	protected $ORDER_BY = array('user_data');
 
 	# Maximum number of record to display per page in a listing
-	protected $MAX_RECORDS_PER_PAGE = 20; 
+	protected $MAX_RECORDS_PER_PAGE = 20;
 
 	# How do you want to page through records in a listing: by number pages ordered
 	# according to your setting above? Or alphabetically by the letters of the first
@@ -149,8 +149,8 @@ class ca_change_log extends BaseModel {
 	# If you want to order records arbitrarily, add a numeric field to the table and place
 	# its name here. The generic list scripts can then use it to order table records.
 	protected $RANK = '';
-	
-	
+
+
 	# ------------------------------------------------------
 	# Hierarchical table properties
 	# ------------------------------------------------------
@@ -161,7 +161,7 @@ class ca_change_log extends BaseModel {
 	protected $HIERARCHY_DEFINITION_TABLE	=	null;
 	protected $HIERARCHY_ID_FLD				=	null;
 	protected $HIERARCHY_POLY_TABLE			=	null;
-	
+
 	# ------------------------------------------------------
 	# Change logging
 	# ------------------------------------------------------
@@ -169,10 +169,10 @@ class ca_change_log extends BaseModel {
 	protected $LOG_CHANGES_TO_SELF = false;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-		
+
 		),
 		"RELATED_TABLES" => array(
-		
+
 		)
 	);
 	# ------------------------------------------------------
@@ -180,7 +180,7 @@ class ca_change_log extends BaseModel {
 	# are listed here is the order in which they will be returned using getFields()
 
 	protected $FIELDS;
-	
+
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -367,11 +367,23 @@ class ca_change_log extends BaseModel {
 							// handle left and right foreign keys in foo_x_bar table
 							if($t_instance instanceof BaseRelationshipModel) {
 								if($vs_fld == $t_instance->getProperty('RELATIONSHIP_LEFT_FIELDNAME')) {
-									$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_instance->getLeftTableNum(), $vm_val);
+									$vs_left_guid = ca_guids::getForRow($t_instance->getLeftTableNum(), $vm_val);
+									$va_snapshot[$vs_fld . '_guid'] = $vs_left_guid;
+
+									// don't sync relationships involving deleted records
+									if(ca_guids::isDeleted($vs_left_guid) && ($va_row['changetype'] != 'D')) {
+										continue 3;
+									}
 								}
 
 								if($vs_fld == $t_instance->getProperty('RELATIONSHIP_RIGHT_FIELDNAME')) {
-									$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_instance->getRightTableNum(), $vm_val);
+									$vs_right_guid = ca_guids::getForRow($t_instance->getRightTableNum(), $vm_val);
+									$va_snapshot[$vs_fld . '_guid'] = $vs_right_guid;
+
+									// don't sync relationships involving deleted records
+									if(ca_guids::isDeleted($vs_right_guid) && ($va_row['changetype'] != 'D')) {
+										continue 3;
+									}
 								}
 							}
 
