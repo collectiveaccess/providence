@@ -43,30 +43,32 @@
 		$va_resources = [0 => []];
 	}
 	$va_canvases = [];
-	foreach($va_resources as $vn_page => $va_resource) {
+	$vn_page = 1;
+	$vn_num_resources = sizeof($va_resources);
+	foreach($va_resources as $va_resource) {
 		$va_canvases[] =
 			[
 				"@id" => "http://wellcomelibrary.org/iiif/b18035723/canvas/c0",
 				"@type" => "sc:Canvas",
-				"label" => " - ",
+				"label" => (string)($vn_page),
 				"thumbnail" => "http://wellcomelibrary.org/thumbs/b18035723/0/ff2085d5-a9c7-412e-9dbe-dda87712228d.jpg",
 				"seeAlso" => [],
 				"height" => 3543,
 				"width" => 2569,
 				"images" => [
 					[
-						"@id" => "http://seagate.whirl-i-gig.com:8082/admin/service.php/IIIF/{$vs_identifer}".($vn_page ? ":{$vn_page}" : ""),
+						"@id" => "http://seagate.whirl-i-gig.com:8082/admin/service.php/IIIF/{$vs_identifer}".(($vn_num_resources > 1) ? ":{$vn_page}" : ""),
 						"@type" => "oa:Annotation",
 						"motivation" => "sc:painting",
 						"resource" => [
-							"@id" => "http://seagate.whirl-i-gig.com:8082/admin/service.php/IIIF/{$vs_identifer}".($vn_page ? ":{$vn_page}" : "")."/full/!1024,1024/0/default.jpg",
+							"@id" => "http://seagate.whirl-i-gig.com:8082/admin/service.php/IIIF/{$vs_identifer}".(($vn_num_resources > 1) ? ":{$vn_page}" : "")."/full/!1024,1024/0/default.jpg",
 							"@type" => "dctypes:Image",
 							"format" => "image/jpeg",
 							"height" =>  1024,
 							"width" => 742,
 							"service" => [
 								"@context" => "http://iiif.io/api/image/2/context.json",
-								"@id" => "http://seagate.whirl-i-gig.com:8082/admin/service.php/IIIF/{$vs_identifer}".($vn_page ? ":{$vn_page}" : ""),
+								"@id" => "http://seagate.whirl-i-gig.com:8082/admin/service.php/IIIF/{$vs_identifer}".(($vn_num_resources > 1) ? ":{$vn_page}" : ""),
 								"profile" => "http://iiif.io/api/image/2/level1.json"
 							]
 						],
@@ -74,6 +76,7 @@
 					]
 				]
 			];
+			$vn_page++;
 	}
 	
 	$va_manifest = [

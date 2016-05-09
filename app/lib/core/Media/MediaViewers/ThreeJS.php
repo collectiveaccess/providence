@@ -58,16 +58,31 @@
 				
 				if (is_a($t_instance, "ca_object_representations")) {
 					$va_viewer_opts = [
-						'id' => 'caMediaOverlayThreeJS', 'viewer_width' => '100%', 'viewer_height' => '100%'
+						'id' => 'caMediaOverlayThreeJS', 'viewer_width' => caGetOption('viewer_width', $pa_data['display'], '100%'), 'viewer_height' => caGetOption('viewer_height', $pa_data['display'], '100%')
 					];
+					
+					if (!$t_instance->hasMediaVersion('media', $vs_version = caGetOption('display_version', $pa_data['display'], 'original'))) {
+						if (!$t_instance->hasMediaVersion('media', $vs_version = caGetOption('alt_display_version', $pa_data['display'], 'original'))) {
+							$vs_version = 'original';
+						}
+					}
+					
 					// HTML for ThreeJS
-					$o_view->setVar('viewerHTML', $t_instance->getMediaTag('media', 'original', $va_viewer_opts));
+					$o_view->setVar('viewerHTML', $t_instance->getMediaTag('media', $vs_version, $va_viewer_opts));
 				} else {
 					$va_viewer_opts = [
-						'id' => 'caMediaOverlayThreeJS'
+						'id' => 'caMediaOverlayThreeJS', 'viewer_width' => caGetOption('viewer_width', $pa_data['display'], '100%'), 'viewer_height' => caGetOption('viewer_height', $pa_data['display'], '100%')
 					];
+					
+					$t_instance->useBlobAsMediaField(true);
+					if (!$t_instance->hasMediaVersion('value_blob', $vs_version = caGetOption('display_version', $pa_data['display'], 'original'))) {
+						if (!$t_instance->hasMediaVersion('value_blob', $vs_version = caGetOption('alt_display_version', $pa_data['display'], 'original'))) {
+							$vs_version = 'original';
+						}
+					}
+					
 					// HTML for ThreeJS
-					$o_view->setVar('viewerHTML', $t_instance->getMediaTag('value_blob', 'h264_hi', $va_viewer_opts));
+					$o_view->setVar('viewerHTML', $t_instance->getMediaTag('value_blob', $vs_version, $va_viewer_opts));
 				}
 				
 					

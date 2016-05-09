@@ -108,7 +108,6 @@
 			$va_info = caGetMediaDisplayInfo($ps_context, $ps_mimetype);
 			if (!isset($va_info['viewer']) || !($vs_viewer = $va_info['viewer'])) { 
 				$vs_viewer = caGetDefaultMediaViewer($ps_mimetype);
-				print "fOR $ps_mimetype == $vs_viewer";
 			}
 			if (!$vs_viewer) { return null; }
 			

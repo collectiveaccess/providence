@@ -1714,7 +1714,7 @@ class BaseEditorController extends ActionController {
 			$t_subject = $this->opo_datamodel->getInstanceByTableNum($t_attr->get('table_num'), true);
 			$t_subject->load($t_attr->get('row_id'));
 
-			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $t_attr_val->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
+			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_attr_val->getMediaInfo('value_blob', 'original', 'MIMETYPE')))) {
 				// error: no viewer available
 				die("Invalid viewer");
 			}
@@ -1722,7 +1722,7 @@ class BaseEditorController extends ActionController {
 			$this->response->addContent($vs_viewer_name::getViewerHTML(
 				$this->request, 
 				"attribute:{$pn_value_id}", 
-				['display' => 'media_overlay', 't_instance' => $t_attr_val, 't_subject' => $t_subject])
+				['context' => 'media_overlay', 't_instance' => $t_attr_val, 't_subject' => $t_subject, 'display' => caGetMediaDisplayInfo('media_overlay', $vs_mimetype)])
 			);
 		} elseif ($pn_representation_id = $this->request->getParameter('representation_id', pInteger)) {
 			//
@@ -1730,7 +1730,7 @@ class BaseEditorController extends ActionController {
 			//
 			$t_rep = new ca_object_representations($pn_representation_id);
 			
-			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $t_rep->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_rep->getMediaInfo('media', 'original', 'MIMETYPE')))) {
 				// error: no viewer available
 				die("Invalid viewer");
 			}
@@ -1747,7 +1747,7 @@ class BaseEditorController extends ActionController {
 			$this->response->addContent($vs_viewer_name::getViewerHTML(
 				$this->request, 
 				"representation:{$pn_representation_id}", 
-				['display' => 'media_overlay', 't_instance' => $t_rep, 't_subject' => $t_subject])
+				['context' => 'media_overlay', 't_instance' => $t_rep, 't_subject' => $t_subject, 'display' => caGetMediaDisplayInfo('media_overlay', $vs_mimetype)])
 			);
 		} else {
 			// error

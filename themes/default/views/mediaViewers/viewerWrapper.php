@@ -30,14 +30,10 @@
  * ----------------------------------------------------------------------
  */
 ?>
-<div id="caMediaOverlayContent" style="width: 100%; height: 100%;">
+<div id="caMediaOverlayContent">
 	<?php print $this->render($this->getVar('viewer').".php"); ?>
 </div>	
 <div class="caMediaOverlayControls">
 	<?php print $this->getVar('controls'); ?>
 	<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close">&nbsp;&nbsp;&nbsp;</a></div>
 </div>
-
-<script type="text/javascript">
-	jQuery("#caMediaOverlayContent").height(jQuery(window).height() - 36);
-</script>

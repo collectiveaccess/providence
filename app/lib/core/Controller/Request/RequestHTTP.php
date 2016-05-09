@@ -322,10 +322,16 @@ class RequestHTTP extends Request {
 		return $this->config->get('themes_directory').'/default';
 	}
 	# -------------------------------------------------------
+	/**
+	 * 
+	 */
 	public function getServiceViewPath(){
 		return $this->config->get('service_view_path');
 	}
 	# -------------------------------------------------------
+	/**
+	 * 
+	 */
 	public function getViewsDirectoryPath($pb_use_default=false) {
 		if ($this->config->get('always_use_default_theme')) { $pb_use_default = true; }
 		switch($this->getScriptName()){
@@ -339,10 +345,30 @@ class RequestHTTP extends Request {
 		}
 	}
 	# -------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function getAssetsUrlPath() {
+		return $this->config->get('ca_url_root')."/assets";
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function getAssetsDirectoryPath() {
+		return $this->config->get('ca_base_dir').$this->config->get('ca_url_root')."/assets";
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 */
 	public function isDispatched() {
 		return $this->opb_is_dispatched;
 	}
 	# -------------------------------------------------------
+	/**
+	 * 
+	 */
 	public function setIsDispatched($ps_is_dispatched=true) {
 		$this->opb_is_dispatched = $ps_is_dispatched;
 	}

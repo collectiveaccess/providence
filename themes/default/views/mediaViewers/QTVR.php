@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * themes/default/views/mediaViewers/UniversalViewer.php :
+ * themes/default/views/mediaViewers/QTVR.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,7 +30,5 @@
  * ----------------------------------------------------------------------
  */
  
-	$vs_data_url = $this->getVar('data_url');
-?>
-<div class="uv" data-locale="en-GB:English (GB)" data-uri="<?php print $vs_data_url; ?>" data-collectionindex="0" data-manifestindex="0" data-sequenceindex="0" data-canvasindex="0" style="width:100%; height:100%; background-color: #000" data-config="<?php print $this->request->getAssetsUrlPath(); ?>/universalviewer/config.json"</div>
-<script type="text/javascript" id="embedUV" src="<?php print $this->request->getAssetsUrlPath(); ?>/universalviewer/dist/uv/lib/embed.js"></script>
+	
+	print $this->getVar('viewerHTML');
