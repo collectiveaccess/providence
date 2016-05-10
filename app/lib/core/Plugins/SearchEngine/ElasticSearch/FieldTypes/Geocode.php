@@ -86,6 +86,14 @@ class Geocode extends GenericElement {
 	 * @return \Zend_Search_Lucene_Index_Term
 	 */
 	public function getRewrittenTerm($po_term) {
+		$va_tmp = explode('\\/', $po_term->field);
+		if(sizeof($va_tmp) == 3) {
+			unset($va_tmp[1]);
+			$po_term = new \Zend_Search_Lucene_Index_Term(
+				$po_term->text, join('\\/', $va_tmp)
+			);
+		}
+
 		if(strtolower($po_term->text) === '[blank]') {
 			return new \Zend_Search_Lucene_Index_Term(
 				$po_term->field, '_missing_'

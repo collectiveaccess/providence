@@ -32,6 +32,8 @@
 
 namespace CA\Sync\LogEntry;
 
+use Hoa\Core\Exception\Exception;
+
 require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Base.php');
 
 class Relationship extends Base {
@@ -108,14 +110,20 @@ class Relationship extends Base {
 	 * Helper function that sets ca_foo_x_bar.foo_id or bar_id from the snapshot
 	 * @param $ps_field
 	 * @param bool $pb_left
+	 * @throws InvalidLogEntryException
 	 */
 	private function setLeftOrRightFieldNameFromSnapshot($ps_field, $pb_left=true) {
 		$va_snapshot = $this->getSnapshot();
 		if (isset($va_snapshot[$ps_field . '_guid']) && ($vs_reference_guid = $va_snapshot[$ps_field . '_guid'])) {
 			/** @var \BundlableLabelableBaseModelWithAttributes $t_instance */
 			$t_instance = $pb_left ? $this->getModelInstance()->getLeftTableInstance() : $this->getModelInstance()->getRightTableInstance();
+			if(!$t_instance) { throw new InvalidLogEntryException('Could not get left or right table instance for relationship log entry'); }
+			$t_instance->setTransaction($this->getTx());
+
 			if ($t_instance->loadByGUID($vs_reference_guid)) {
 				$this->getModelInstance()->set($ps_field, $t_instance->getPrimaryKey());
+			} else {
+				throw new InvalidLogEntryException('Could not find related record');
 			}
 		}
 	}
@@ -139,8 +147,10 @@ class Relationship extends Base {
 				$t_instance = $o_dm->getInstanceByTableName($this->getModelInstance()->getRightTableName(), true);
 			}
 
-			if ($this->isUpdate() && !$t_instance->loadByGUID($vs_reference_guid)) {
-				throw new InvalidLogEntryException("Could not load GUID {$vs_reference_guid} (referenced in {$vs_property})");
+			$t_instance->setTransaction($this->getTx());
+
+			if (!$t_instance->loadByGUID($vs_reference_guid)) {
+				throw new InvalidLogEntryException("Could not load {$t_instance->tableName()} record by GUID {$vs_reference_guid} (referenced in {$vs_property} in a relationship record)");
 			}
 		} else {
 			throw new InvalidLogEntryException("No guid for {$vs_property} field found");

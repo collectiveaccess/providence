@@ -367,5 +367,13 @@ class ca_entities extends RepresentableBaseModel implements IBundleProvider {
 		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
 	}
 	# ------------------------------------------------------
+	/**
+	 * Implementations can override this to add more criteria for hashing, e.g. hierarchy path components or what have you
+	 * @return array
+	 */
+	public function getAdditionalChecksumComponents() {
+		if(!$this->getPrimaryKey()) { return false; }
+		return array($this->get('lifespan'));
+	}
+	# -------------------------------------------------------
 }
-?>

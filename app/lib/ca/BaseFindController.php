@@ -803,7 +803,7 @@
  			$this->view->setVar('current_view', $vs_view);
  			
  			$vn_type_id 			= $this->opo_result_context->getTypeRestriction($vb_dummy);
-			$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id));
+			$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $this->getRequest())));
  			
  			$this->view->setVar('sorts', $this->opa_sorts);	// pass sort list to view for rendering
  			$this->view->setVar('current_sort', $vs_sort);
@@ -865,9 +865,20 @@
  		public function resultsEditor() {
  			AssetLoadManager::register("tableview");
  			
- 			$va_ids 				= $this->opo_result_context->getResultList();
- 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
- 			$va_display_list 		= $this->_getDisplayList($vn_display_id);
+ 			$vs_search 				= $this->opo_result_context->getSearchExpression();
+ 					
+ 			if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) { 
+ 				$va_tmp = array_keys($this->opa_sorts);
+ 				$vs_sort = array_shift($va_tmp); 
+ 			}
+ 			$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
+			$vn_display_id 	= $this->opo_result_context->getCurrentBundleDisplay();
+ 			
+ 			if (!$this->opn_type_restriction_id) { $this->opn_type_restriction_id = ''; }
+ 			$this->view->setVar('type_id', $this->opn_type_restriction_id);
+ 			
+ 			// Get attribute sorts
+			$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $this->getRequest())));
  			
  			$this->view->setVar('display_id', $vn_display_id);
  			$this->view->setVar('columns',ca_bundle_displays::getColumnsForResultsEditor($va_display_list, array('request' => $this->request)));

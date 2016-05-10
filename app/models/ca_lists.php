@@ -1887,4 +1887,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 	return ca_lists::$s_item_id_to_value_cache[$vs_key] = $va_item_ids_to_values + $va_non_numerics;
 	}
 	# ------------------------------------------------------
+	public function getAdditionalChecksumComponents() {
+		return [$this->get('list_code')];
+	}
+	# ------------------------------------------------------
 }

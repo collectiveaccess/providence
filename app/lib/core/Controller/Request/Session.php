@@ -115,7 +115,12 @@ class Session {
 	 */
 	public function __destruct() {
 		if($this->getSessionID() && is_array($this->opa_session_vars) && (sizeof($this->opa_session_vars) > 0)) {
-			ExternalCache::save($this->getSessionID(), $this->opa_session_vars, 'SessionVars', 0);
+			if(isset($this->opa_session_vars['session_end_timestamp'])) {
+				$vn_session_lifetime = abs(((int) $this->opa_session_vars['session_end_timestamp']) - time());
+			} else {
+				$vn_session_lifetime = 24 * 60 * 60;
+			}
+			ExternalCache::save($this->getSessionID(), $this->opa_session_vars, 'SessionVars', $vn_session_lifetime);
 		}
 	}
 	# ----------------------------------------

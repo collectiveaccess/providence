@@ -20,7 +20,7 @@ namespace PhpOffice\PhpWord\Shared;
 /**
  * Common string functions
  */
-class String
+class WordString
 {
     /**
      * Control characters array
@@ -178,7 +178,9 @@ class String
     }
 
     /**
-     * Build control characters array
+     * Build control characters array.
+     *
+     * @return void
      */
     private static function buildControlCharacters()
     {

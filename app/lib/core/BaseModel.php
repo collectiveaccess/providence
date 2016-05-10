@@ -2427,8 +2427,19 @@ class BaseModel extends BaseObject {
 
 				if ($this->debug) echo $vs_sql;
 				
-				$o_db->query($vs_sql);
-				
+				try {
+					$o_db->query($vs_sql);
+				} catch (DatabaseException $e) {
+					switch($e->getNumber()) {
+						case 251: 	// duplicate key
+							// noop - recoverable
+							$o_db->postError($e->getNumber(), $e->getMessage(), $e->getContext);
+							break;
+						default:
+							throw $e;
+							break;
+					}
+				}
 				if ($o_db->numErrors() == 0) {
 					if ($this->getFieldInfo($vs_pk = $this->primaryKey(), "IDENTITY")) {
 						$this->_FIELD_VALUES[$vs_pk] = $vn_new_id = $o_db->getLastInsertID();
@@ -2463,6 +2474,7 @@ class BaseModel extends BaseObject {
 
 						if($this->getHierarchyType() == __CA_HIER_TYPE_ADHOC_MONO__) {	// Ad-hoc hierarchy
 							if (!$this->get($this->getProperty('HIERARCHY_ID_FLD'))) {
+								$this->set($this->getProperty('HIERARCHY_ID_FLD'), $this->getPrimaryKey());
 								$vs_sql .= $this->getProperty('HIERARCHY_ID_FLD').' = '.$this->getPrimaryKey().' ';
 							}
 						}
@@ -4074,7 +4086,7 @@ class BaseModel extends BaseObject {
 				$vb_is_fetched_file = false;
 				if ($vb_allow_fetching_of_urls && (bool)ini_get('allow_url_fopen') && isURL($vs_url = html_entity_decode($this->_SET_FILES[$ps_field]['tmp_name']))) {
 					$vs_tmp_file = tempnam(__CA_APP_DIR__.'/tmp', 'caUrlCopy');
-					$r_incoming_fp = fopen($vs_url, 'r');
+					$r_incoming_fp = @fopen($vs_url, 'r');
 				
 					if (!$r_incoming_fp) {
 						$this->postError(1600, _t('Cannot open remote URL [%1] to fetch media', $vs_url),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
@@ -11857,77 +11869,6 @@ $pa_options["display_form_field_tips"] = true;
 
 		return $va_rels;
 	}
-	# -----------------------------------------------------
-	// guid utilities
-	# -----------------------------------------------------
-	/**
-	 * Get GUID for current row
-	 * @return bool|null|string
-	 */
-	public function getGUID() {
-		if($this->getPrimaryKey()) {
-			return ca_guids::getForRow($this->getPrimaryKey(), $this->tableNum());
-		}
-
-		return null;
-	}
-	# -----------------------------------------------------
-	/**
-	 * Load by GUID
-	 * @param string $ps_guid
-	 * @return bool|null
-	 */
-	public function loadByGUID($ps_guid) {
-		$va_info = ca_guids::getInfoForGUID($ps_guid);
-
-		if($va_info['table_num'] == $this->tableNum()) {
-			return $this->load($va_info['row_id']);
-		}
-
-		return null;
-	}
-	# -----------------------------------------------------
-	/**
-	 * Get loaded BaseModel instance by GUID
-	 * @param string $ps_guid
-	 * @return null|BaseModel
-	 */
-	public static function getInstanceByGUID($ps_guid) {
-		$vs_table = get_called_class();
-		$t_instance = new $vs_table;
-
-		if($t_instance->loadByGUID($ps_guid)) {
-			return $t_instance;
-		}
-
-		return null;
-	}
-	# -----------------------------------------------------
-	/**
-	 * Get primary key for given GUID
-	 * @param string $ps_guid
-	 * @return int|null
-	 */
-	public static function getPrimaryKeyByGUID($ps_guid) {
-		$vs_table = get_called_class();
-		$t_instance = new $vs_table;
-
-		if($t_instance->loadByGUID($ps_guid)) {
-			return $t_instance->getPrimaryKey();
-		}
-
-		return null;
-	}
-	# -----------------------------------------------------
-	/**
-	 * Get guid by primary key
-	 * @param int $pn_primary_key
-	 * @return bool|string
-	 */
-	public static function getGUIDByPrimaryKey($pn_primary_key) {
-		return ca_guids::getForRow(Datamodel::load()->getTableNum(get_called_class()), $pn_primary_key);
-	}
-	# -----------------------------------------------------
 }
 
 // includes for which BaseModel must already be defined

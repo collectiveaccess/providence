@@ -1242,27 +1242,29 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 			
 				require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 				$t_object = new ca_objects();
-				
-				$vs_buf .= "<div class='inspectorLotObjectTypeControls'><form action='#' id='caAddObjectToLotForm'>";
-				if ((bool)$po_view->request->config->get('ca_objects_enforce_strict_type_hierarchy')) {
-					// strict menu
-					$vs_buf .= _t('Add new %1 to lot', $t_object->getTypeListAsHTMLFormElement('type_id', array('id' => 'caAddObjectToLotForm_type_id'), array('childrenOfCurrentTypeOnly' => true, 'directChildrenOnly' => ($po_view->request->config->get('ca_objects_enforce_strict_type_hierarchy') == '~') ? false : true, 'returnHierarchyLevels' => true, 'access' => __CA_BUNDLE_ACCESS_EDIT__)));
-				} else {
-					// all types
-					$vs_buf .= _t('Add new %1 to lot', $t_object->getTypeListAsHTMLFormElement('type_id', array('id' => 'caAddObjectToLotForm_type_id'), array('access' => __CA_BUNDLE_ACCESS_EDIT__)));
-				}
-				
-				$vs_buf .= " <a href='#' onclick='caAddObjectToLotForm()'>".caNavIcon(__CA_NAV_ICON_ADD__, '18px').'</a>';
-				$vs_buf .= "</form></div>\n";
-				
-				$vs_buf .= "<script type='text/javascript'>
+
+				if(!(bool)$po_view->request->config->get('disable_add_object_to_lot_inspector_controls')) {
+					$vs_buf .= "<div class='inspectorLotObjectTypeControls'><form action='#' id='caAddObjectToLotForm'>";
+					if ((bool)$po_view->request->config->get('ca_objects_enforce_strict_type_hierarchy')) {
+						// strict menu
+						$vs_buf .= _t('Add new %1 to lot', $t_object->getTypeListAsHTMLFormElement('type_id', array('id' => 'caAddObjectToLotForm_type_id'), array('childrenOfCurrentTypeOnly' => true, 'directChildrenOnly' => ($po_view->request->config->get('ca_objects_enforce_strict_type_hierarchy') == '~') ? false : true, 'returnHierarchyLevels' => true, 'access' => __CA_BUNDLE_ACCESS_EDIT__)));
+					} else {
+						// all types
+						$vs_buf .= _t('Add new %1 to lot', $t_object->getTypeListAsHTMLFormElement('type_id', array('id' => 'caAddObjectToLotForm_type_id'), array('access' => __CA_BUNDLE_ACCESS_EDIT__)));
+					}
+
+					$vs_buf .= " <a href='#' onclick='caAddObjectToLotForm()'>" . caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__) . '</a>';
+					$vs_buf .= "</form></div>\n";
+
+					$vs_buf .= "<script type='text/javascript'>
 	function caAddObjectToLotForm() { 
-		window.location='".caEditorUrl($po_view->request, 'ca_objects', 0, false, array('lot_id' => $t_item->getPrimaryKey(), 'rel' => 1, 'type_id' => ''))."' + jQuery('#caAddObjectToLotForm_type_id').val();
+		window.location='" . caEditorUrl($po_view->request, 'ca_objects', 0, false, array('lot_id' => $t_item->getPrimaryKey(), 'rel' => 1, 'type_id' => '')) . "' + jQuery('#caAddObjectToLotForm_type_id').val();
 	}
 	jQuery(document).ready(function() {
 		jQuery('#objectLotsNonConformingNumberList').hide();
 	});
-</script>\n";	
+</script>\n";
+				}
 			}	
 			
 			//
