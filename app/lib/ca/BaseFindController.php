@@ -865,6 +865,10 @@
  		public function resultsEditor() {
  			AssetLoadManager::register("tableview");
  			
+ 			$va_ids 				= $this->opo_result_context->getResultList();
+ 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
+ 			$va_display_list 		= $this->_getDisplayList($vn_display_id);
+ 			
  			$vs_search 				= $this->opo_result_context->getSearchExpression();
  					
  			if (!($vs_sort 	= $this->opo_result_context->getCurrentSort())) { 
@@ -872,7 +876,6 @@
  				$vs_sort = array_shift($va_tmp); 
  			}
  			$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
-			$vn_display_id 	= $this->opo_result_context->getCurrentBundleDisplay();
  			
  			if (!$this->opn_type_restriction_id) { $this->opn_type_restriction_id = ''; }
  			$this->view->setVar('type_id', $this->opn_type_restriction_id);
