@@ -5745,7 +5745,7 @@ class BaseModel extends BaseObject {
 					"MD5" => md5_file($this->_SET_FILES[$field]['tmp_name'])
 				);
 
-				if (!copy($this->_SET_FILES[$field]['tmp_name'], $filepath)) {
+				if (!@copy($this->_SET_FILES[$field]['tmp_name'], $filepath)) {
 					$this->postError(1600, _t("File could not be copied. Ask your administrator to check permissions and file space for %1",$vi["absolutePath"]),"BaseModel->_processFiles()", $this->tableName().'.'.$field);
 					return false;
 				}

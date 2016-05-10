@@ -84,7 +84,7 @@ if (!$this->request->isAjax()) {
 	if(sizeof($va_importer_list) == 0) {
 ?>
 			<tr>
-				<td colspan='5'>
+				<td colspan='6'>
 					<div align="center"><?php print _t('No importers defined'); ?></div>
 				</td>
 			</tr>
@@ -197,4 +197,3 @@ if (!$this->request->isAjax()) {
 </script>
 <?php
 }
-?>
