@@ -7,7 +7,11 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
+<<<<<<< HEAD
  * Copyright 2008-2015 Whirl-i-Gig
+=======
+ * Copyright 2008-2016 Whirl-i-Gig
+>>>>>>> dev/iiif
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -47,16 +51,7 @@
 		<link rel="stylesheet" href="<?php print $this->request->getThemeUrlPath(); ?>/css/sets.css" type="text/css" media="screen" />
 
 		<script type="text/javascript">window.caBasePath = '<?php print $this->request->getBaseUrlPath(); ?>';</script>
-		<!--[if (!IE)|(gte IE 8)]><!-->
-		<link href="<?php print $this->request->getBaseUrlPath(); ?>/assets/DV/viewer-datauri.css" media="screen" rel="stylesheet" type="text/css" />
-		<link href="<?php print $this->request->getBaseUrlPath(); ?>/assets/DV/plain-datauri.css" media="screen" rel="stylesheet" type="text/css" />
-		<link href="<?php print $this->request->getBaseUrlPath(); ?>/assets/DV/plain.css" media="screen" rel="stylesheet" type="text/css" />
-		<!--<![endif]-->
-		<!--[if lte IE 7]>
-		<link href="<?php print $this->request->getBaseUrlPath(); ?>/viewer.css" media="screen" rel="stylesheet" type="text/css" />
-		<link href="<?php print $this->request->getBaseUrlPath(); ?>/plain.css" media="screen" rel="stylesheet" type="text/css" />
-		<![endif]-->
-
+		<link rel="stylesheet" href="<?php print $this->request->getBaseUrlPath(); ?>/assets/jquery/jquery-tileviewer/jquery.tileviewer.css" type="text/css" media="screen" />
 <?php
 	print AssetLoadManager::getLoadHTML($this->request);
 	print MetaTagManager::getHTML();
