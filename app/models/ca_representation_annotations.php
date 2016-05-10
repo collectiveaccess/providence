@@ -655,6 +655,29 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	public function useInEditor() {
 		return $this->opo_annotations_properties->useInEditor();
 	}
+	# ------------------------------------------------------
+	public function getTypeList($pa_options=null) {
+		$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
+		$va_type_list = array();
+		foreach($o_annotation_type_conf->get('types') as $vs_type_code => $va_type_info) {
+			if(!isset($va_type_info['typeID'])) { continue; }
+			$va_type_list[$va_type_info['typeID']] =
+				array_merge(array('idno' => $vs_type_code), $va_type_info);
+		}
+		return $va_type_list;
+	}
+	# ------------------------------------------------------
+	public function getTypeID($pn_id=null) {
+		if(!$this->getPrimaryKey()) { return null; }
+
+		$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
+		$va_available_types = $o_annotation_type_conf->get('types');
+		if(isset($va_available_types[$this->get('type_code')]['typeID'])) {
+			return $va_available_types[$this->get('type_code')]['typeID'];
+		}
+
+		return null;
+	}
  	# ------------------------------------------------------
  	# STATIC
  	# ------------------------------------------------------

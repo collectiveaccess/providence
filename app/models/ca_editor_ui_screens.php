@@ -408,7 +408,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		if (!$pm_table_name_or_num) { $pm_table_name_or_num = $this->getTableNum(); }
 		
 		if (!is_numeric($pm_table_name_or_num)) { $pm_table_name_or_num = $this->_DATAMODEL->getTableNum($pm_table_name_or_num); }
-		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($pm_table_name_or_num, false))) { return null; }
+		if (!($t_instance = $this->getAppDatamodel()->getInstanceByTableNum($pm_table_name_or_num, false))) { return null; }
 		$vs_table = $t_instance->tableName();
 
 		// if cache is disabled, make sure bundle definitions are up-to-date for this instance. they are usually cached.
@@ -1932,6 +1932,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 
 		if($t_instance instanceof BaseRelationshipModel) { // interstitial
 			$o_view->setVar('type_restrictions', $t_instance->getRelationshipTypesAsHTMLSelect($t_instance->getLeftTableName(),null,null,array('name' => 'type_restrictions[]', 'multiple' => 1, 'size' => 5), array('values' => $va_restriction_type_ids)));
+		} elseif($t_instance instanceof ca_representation_annotations) { // config based
+			$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
+			$va_annotation_type_select_list = array();
+			foreach($o_annotation_type_conf->get('types') as $vs_type_code => $va_type_info) {
+				if(!isset($va_type_info['typeID'])) { continue; }
+				$va_annotation_type_select_list[$vs_type_code] = $va_type_info['typeID'];
+			}
+
+			$o_view->setVar('type_restrictions', caHTMLSelect('type_restrictions[]', $va_annotation_type_select_list, array('multiple' => 1, 'size' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)));
 		} else { // list-based
 			$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)));
 		}
