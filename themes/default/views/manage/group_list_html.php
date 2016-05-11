@@ -40,13 +40,13 @@
 		print caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caGroupList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			'', 
-			caNavHeaderButton($this->request, __CA_NAV_BUTTON_ADD_LARGE__, _t("New team"), 'manage', 'groups', 'Edit', array('group_id' => 0))
+			caNavHeaderButton($this->request, __CA_NAV_ICON_ADD__, _t("New team"), 'manage', 'groups', 'Edit', array('group_id' => 0))
 		); 
 	?>
 	
 	<h1><?php print _t('Your project teams'); ?></h1>
 	
-	<table id="caGroupList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+	<table id="caGroupList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
@@ -77,9 +77,9 @@
 					<?php print $va_group['member_list']; ?>
 				</td>
 				<td>
-					<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), '', 'manage', 'groups', 'Edit', array('group_id' => $va_group['group_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage', 'groups', 'Edit', array('group_id' => $va_group['group_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 					
-					<?php print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'manage', 'groups', 'Delete', array('group_id' => $va_group['group_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage', 'groups', 'Delete', array('group_id' => $va_group['group_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 				</td>
 			</tr>
 <?php

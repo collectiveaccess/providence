@@ -764,9 +764,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				continue;
 			}
 			
-			//$o_cells = $o_row->getCellIterator();
-			//$o_cells->setIterateOnlyExistingCells(false); 
-			
 			$vn_row_num = $o_row->getRowIndex();
 			$o_cell = $o_sheet->getCellByColumnAndRow(0, $vn_row_num);
 			$vs_mode = (string)$o_cell->getValue();
@@ -982,14 +979,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		
 		if (!$va_settings['name']) { $va_settings['name'] = $va_settings['code']; }
 		
-		//print_R($va_settings);
-		//print_R($va_mapping);
-		
 		
 		$t_importer = new ca_data_importers();
 		$t_importer->setMode(ACCESS_WRITE);
-		
-		$t_importer->set('worksheet', $ps_source);
 		
 		// Remove any existing mapping
 		if ($t_importer->load(array('importer_code' => $va_settings['code']))) {
@@ -1019,12 +1011,21 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			return null;
 		}
 		
+		
 		$t_importer->addLabel(array('name' => $va_settings['name']), $vn_locale_id, null, true);
 		
 		if ($t_importer->numErrors()) {
 			$pa_errors[] = _t("Error creating mapping name: %1", join("; ", $t_importer->getErrors()))."\n";
 			if ($o_log) {  $o_log->logError(_t("[loadImporterFromFile:%1] Error creating mapping: %2", $ps_source, join("; ", $t_importer->getErrors()))); }
 			return null;
+		}
+		
+		$t_importer->set('worksheet', $ps_source);
+		$t_importer->update();
+		
+		if ($t_importer->numErrors()) {
+			$pa_errors[] = _t("Could not save worksheet for future download: %1", join("; ", $t_importer->getErrors()))."\n";
+			if ($o_log) {  $o_log->logError(_t("[loadImporterFromFile:%1] Error saving worksheet for future download: %2", $ps_source, join("; ", $t_importer->getErrors()))); }
 		}
 		
 		foreach($va_mapping as $vs_group => $va_mappings_for_group) {

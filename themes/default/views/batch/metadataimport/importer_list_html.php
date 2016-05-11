@@ -40,8 +40,8 @@ if (!$this->request->isAjax()) {
 		print caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="jQuery(\'#caImporterList\').caFilterTable(this.value); return false;" size="20"/></div>',
 			'',
-			caJSButton($this->request, __CA_NAV_BUTTON_ADD_LARGE__, _t("Add importers"), 'caAddImportersButton', array('onclick' => 'caOpenImporterUploadArea(true, true); return false;', 'id' => 'caAddImportersButton')).
-			caJSButton($this->request, __CA_NAV_BUTTON_ADD_LARGE__, _t("Close"), 'caCloseImportersButton', array('onclick' => 'caOpenImporterUploadArea(false, true); return false;', 'id' => 'caCloseImportersButton'))
+			caFormJSButton($this->request, __CA_NAV_ICON_ADD__, _t("Add importers"), 'caAddImportersButton', array('onclick' => 'caOpenImporterUploadArea(true, true); return false;', 'id' => 'caAddImportersButton')).
+			caFormJSButton($this->request, __CA_NAV_ICON_ADD__, _t("Close"), 'caCloseImportersButton', array('onclick' => 'caOpenImporterUploadArea(false, true); return false;', 'id' => 'caCloseImportersButton'))
 		);
 	?>
 	
@@ -58,7 +58,7 @@ if (!$this->request->isAjax()) {
 }
 ?>
 	<div id="caImporterListContainer">
-		<table id="caImporterList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+		<table id="caImporterList" class="listtable">
 			<thead>
 			<tr>
 				<th>
@@ -84,7 +84,7 @@ if (!$this->request->isAjax()) {
 	if(sizeof($va_importer_list) == 0) {
 ?>
 			<tr>
-				<td colspan='5'>
+				<td colspan='6'>
 					<div align="center"><?php print _t('No importers defined'); ?></div>
 				</td>
 			</tr>
@@ -109,9 +109,8 @@ if (!$this->request->isAjax()) {
 					<?php print caGetLocalizedDate($va_importer['last_modified_on'], array('dateFormat' => 'delimited')); ?>
 				</td>
 				<td>
-					<!--<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), '', 'batch', 'MetadataImport', 'Edit', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>-->
-					<?php print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'batch', 'MetadataImport', 'Delete', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-					<?php print caNavButton($this->request, __CA_NAV_BUTTON_GO__, _t("Import data"), '', 'batch', 'MetadataImport', 'Run', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?php print caNavButton($this->request, __CA_NAV_ICON_GO__, _t("Import data"), '', 'batch', 'MetadataImport', 'Run', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'batch', 'MetadataImport', 'Delete', array('importer_id' => $va_importer['importer_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 				</td>
 			</tr>
 <?php
@@ -198,4 +197,3 @@ if (!$this->request->isAjax()) {
 </script>
 <?php
 }
-?>

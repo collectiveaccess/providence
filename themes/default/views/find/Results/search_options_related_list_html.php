@@ -117,14 +117,12 @@ if($vo_result->numHits() > 0) {
 		}
 		print "</select>\n";
 		print "</div>";		
-		
-
-		print "<a href='#' id='saveOptions' onclick='jQuery(\"#caSearchOptionsForm\").submit();'>".caNavIcon($this->request, __CA_NAV_BUTTON_COMMIT__).'</a>';
 ?>		
-		<a href='#' id='hideOptions' onclick='return caHandleResultsUIBoxes("display", "hide");'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a>
-<?php		
-		print "</form>\n";
-?>
+			<div class="clear"> </div>
+		
+			<a href='#' id='hideOptions' onclick='return caHandleResultsUIBoxes("display", "hide");'><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, "18px"); ?></a>
+			<a href='#' id='saveOptions' onclick='jQuery("#caSearchOptionsForm").submit();'><?php print caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
+		</form>
 
 		<div style='clear:both;height:1px;'>&nbsp;</div>
 	</div><!-- end bg -->

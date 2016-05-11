@@ -31,7 +31,7 @@
 	$t_list 			= new ca_lists();
 ?>
 <div class='setTools'>
-	<a href="#" id='searchSetToolsShow' onclick="$('.setTools').hide(); return caShowSearchSetTools();"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_SETS__); print _t("Set Tools"); ?></a>
+	<a href="#" id='searchSetToolsShow' onclick="$('.setTools').hide(); return caShowSearchSetTools();"><?php print caNavIcon(__CA_NAV_ICON_SETS__, 1).' '._t("Set Tools"); ?></a>
 </div><!-- end setTools -->
 
 <div id="searchSetTools">
@@ -96,8 +96,9 @@
 	</div>
 
 
-		<a href='#' id='hideSets' onclick='caHideSearchSetTools(); $(".setTools").slideDown(250); '><?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a>
-		<div style='clear:both;height:1px;'>&nbsp;</div>
+		<a href='#' id='hideSets' onclick='caHideSearchSetTools(); $(".setTools").slideDown(250);'><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, 1); ?></a>
+		<br/>
+		<div class="clear">&nbsp;</div>
 </div><!-- end searchSetTools -->
 
 <script type="text/javascript">

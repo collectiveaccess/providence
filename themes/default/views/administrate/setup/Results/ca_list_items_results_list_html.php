@@ -8,7 +8,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -37,7 +37,7 @@ if (!$this->getVar('no_hierarchies_defined')) {
 <div id="scrollingResults">
 
 <form id="caFindResultsForm">
-	<table class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+	<table class="listtable">
 		<thead>
 		<tr>
 		<th style="width:10px; text-align:center;" class='list-header-nosort'>
@@ -62,9 +62,7 @@ if (!$this->getVar('no_hierarchies_defined')) {
 			$vn_id_count++;
 		}
 ?>
-		<th class='list-header-nosort'>
-			<?php print _t("Edit"); ?>
-		</th>
+		<th class='list-header-nosort listtableEditDelete'> </th>
 		</tr></thead><tbody>
 <?php
 		$i = 0;
@@ -83,8 +81,8 @@ if (!$this->getVar('no_hierarchies_defined')) {
 				foreach($va_display_list as $vn_placement_id => $va_display_item) {
 					print "<td>".$t_display->getDisplayValue($vo_result, $vn_placement_id)."</td>";
 				}
-				print "<td class='editDelete'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), 'list-button', 'ca_list_items', $vn_item_id, array());
-				print " <a href='#' class='list-button' onclick='caOpenBrowserWith({$vn_item_id});'>".caNavIcon($this->request, __CA_NAV_BUTTON_GO__, array('title' => _t('View in hierarchy')))."</a>";
+				print "<td class='listtableEditDelete'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), 'list-button', 'ca_list_items', $vn_item_id, array());
+				print " <a href='#' onclick='caOpenBrowserWith({$vn_item_id}); return false;'>".caNavIcon(__CA_NAV_ICON_GO__, 2, array('title' => _t('View in hierarchy')))."</a>";
 				print "</td>";		
 ?>	
 			</tr>
@@ -115,7 +113,6 @@ if (!$this->getVar('no_hierarchies_defined')) {
 </div><!--end scrollingResults -->
 <?php
 	TooltipManager::add('.hierarchyIcon', _t("View in Hierarchy"));
-	TooltipManager::add('.editIcon', _t("Edit List Item"));
 }
 ?>
 <div class="editorBottomPadding"><!-- empty --></div>

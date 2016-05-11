@@ -454,6 +454,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			$vn_rc = parent::update($pa_options);
 		}
 		
+		CompositeCache::delete('representation:'.$this->getPrimaryKey(), 'IIIFMediaInfo');
+		CompositeCache::delete('representation:'.$this->getPrimaryKey(), 'IIIFTileCounts');
 		return $vn_rc;
 	}
 	# ------------------------------------------------------
@@ -503,6 +505,8 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 			}
 		}
 
+		CompositeCache::delete('representation:'.$vn_representation_id, 'IIIFMediaInfo');
+		CompositeCache::delete('representation:'.$this->getPrimaryKey(), 'IIIFTileCounts');
 		return parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
 	}
 	# ------------------------------------------------------

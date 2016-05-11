@@ -1414,12 +1414,24 @@
 			} else {
 				$vs_pref_key = ($pb_is_preferred ? '_Pref' : '_NPref');
 			}
+			
+			// If label exists use existing values as defaults when no value is set
+			$t_label = null;
+			if (is_numeric($ps_label_id)) {
+				$t_label = $this->getLabelTableInstance();
+				if (!$t_label->load($ps_label_id)) { $t_label = null; }
+			}
+			
 			foreach($va_fields as $vs_field) {
 				if ($vs_val = $po_request->getParameter($ps_form_prefix.$vs_pref_key.$vs_field.'_'.$ps_label_id, pString)) {
 					$va_values[$vs_field] = $vs_val;
 					$vb_value_set = true;
 				} else {
-					$va_values[$vs_field] = '';
+					if (isset($_REQUEST[$ps_form_prefix.$vs_pref_key.$vs_field.'_'.$ps_label_id])) {
+						$va_values[$vs_field] = '';
+					} else {
+						$va_values[$vs_field] = $t_label ? $t_label->get($vs_field) : null;
+					}
 				}
 			}
 			

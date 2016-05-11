@@ -1241,6 +1241,7 @@ class BaseModel extends BaseObject {
 		}
 
 		foreach($pa_fields as $vs_field => $vm_value) {
+			if (strpos($vs_field, '.') !== false) { $va_tmp = explode('.', $vs_field); $vs_field = $va_tmp[1]; }
 			if (array_key_exists($vs_field, $this->FIELDS)) {
 				$pa_fields_type = $this->getFieldInfo($vs_field,"FIELD_TYPE");
 				$pb_need_reload = false;
@@ -5744,7 +5745,7 @@ class BaseModel extends BaseObject {
 					"MD5" => md5_file($this->_SET_FILES[$field]['tmp_name'])
 				);
 
-				if (!copy($this->_SET_FILES[$field]['tmp_name'], $filepath)) {
+				if (!@copy($this->_SET_FILES[$field]['tmp_name'], $filepath)) {
 					$this->postError(1600, _t("File could not be copied. Ask your administrator to check permissions and file space for %1",$vi["absolutePath"]),"BaseModel->_processFiles()", $this->tableName().'.'.$field);
 					return false;
 				}
@@ -6384,8 +6385,8 @@ class BaseModel extends BaseObject {
 				$va_lookup_url_info = caJSONLookupServiceUrl($po_request, $this->tableName());
 				return $this->htmlFormElement($va_tmp[1], $this->getAppConfig()->get('idno_element_display_format_without_label'), array_merge($pa_options, array(
 						'name' => $ps_field,
-						'error_icon' 				=> $po_request->getThemeUrlPath()."/graphics/icons/warning_small.gif",
-						'progress_indicator'		=> $po_request->getThemeUrlPath()."/graphics/icons/indicator.gif",
+						'error_icon' 				=> caNavIcon(__CA_NAV_ICON_ALERT__, 1),
+						'progress_indicator'		=> caNavIcon(__CA_NAV_ICON_SPINNER__, 1),
 						'id' => str_replace(".", "_", $ps_field),
 						'classname' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
 						'value' => (isset($pa_options['values'][$ps_field]) ? $pa_options['values'][$ps_field] : ''),

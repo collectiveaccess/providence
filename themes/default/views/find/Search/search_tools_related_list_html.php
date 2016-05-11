@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2012 Whirl-i-Gig
+ * Copyright 2010-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -42,7 +42,7 @@
 			print ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_subject->tableNum(), array('id' => 'caExporterList'),array('width' => '150px'));
 			print caHTMLHiddenInput('caIsExportFromSearchOrBrowseResult', array('value' => 1));
 			print caHTMLHiddenInput('find_type', array('value' => $this->getVar('find_type')));
-			print caFormSubmitLink($this->request, _t('Export'), 'button', 'caExportWithMappingForm') . " &rsaquo;";
+			print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caExportWithMappingForm');
 			?>
 			</form>
 		</div>
@@ -63,7 +63,7 @@
 			uksort($va_options, 'strnatcasecmp');
 			
 			print caHTMLSelect('label_form', $va_options, array('class' => 'searchToolsSelect'), array('value' => $this->getVar('current_label_form'), 'width' => '150px'))."\n";
-			print caFormSubmitLink($this->request, _t('Print'), 'button', 'caPrintLabelsForm')." &rsaquo;";
+			print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caPrintLabelsForm');
 ?>
 			<input type='hidden' name='download' value='1'/></form>
 		</div><!-- end col -->
@@ -80,7 +80,7 @@
 			$va_options[$va_format_info['name']] = $va_format_info['code'];
 		}
 		print caHTMLSelect('export_format', $va_options, array('class' => 'searchToolsSelect'), array('value' => $this->getVar('current_export_format'), 'width' => '150px'))."\n";
-		print caFormSubmitLink($this->request, _t('Download'), 'button', 'caExportForm')." &rsaquo;";
+		print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), 'button', 'caExportForm');
 ?>
 		<input type='hidden' name='download' value='1'/></form>
 	</div>

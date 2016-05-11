@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,7 +40,7 @@ $va_search_config_settings = $this->getVar('search_config_settings');
 	<div class="control-box rounded">
 		<div class="control-box-middle-content"><?php print _t('Version information'); ?></div>
 	</div><div class="clear"></div>
-	<table id="caSearchConfigSettingList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+	<table id="caSearchConfigSettingList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
@@ -78,7 +78,7 @@ $va_search_config_settings = $this->getVar('search_config_settings');
 	<div class="control-box rounded">
 		<div class="control-box-middle-content"><?php print _t('Search Engine'); ?>: <?php print $this->getVar('search_config_engine_name'); ?></div>
 	</div><div class="clear"></div>
-	<table id="caSearchConfigSettingList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+	<table id="caSearchConfigSettingList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
@@ -128,7 +128,7 @@ while($va_search_config_settings->nextSetting()){
 	<div class="control-box rounded">
 		<div class="control-box-middle-content"><?php print _t("General configuration issues"); ?></div>
 	</div><div class="clear"></div>
-	<table id="caGeneralConfigIssueList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+	<table id="caGeneralConfigIssueList" class="listtable">
 		<thead>
 			<tr>
 				<th class="{sorter: false} list-header-nosort">
@@ -143,7 +143,7 @@ while($va_search_config_settings->nextSetting()){
 		foreach($va_general_config_errors as $vs_error){
 ?>
 			<tr>
-				<td><?php print "<img src='".$this->request->getThemeUrlPath()."/graphics/icons/vorsicht.gif' alt='Error'/>"; ?></td>
+				<td><?php print caNavIcon(__CA_NAV_ICON_ALERT__, 2); ?></td>
 				<td><?php print $vs_error; ?></td>
 			</tr>
 <?php
@@ -160,7 +160,7 @@ while($va_search_config_settings->nextSetting()){
 		<div class="control-box-middle-content"><?php print _t('Media Processing Plugins'); ?></div>
 	</div><div class="clear"></div>
 	
-	<table id="caMediaConfigPluginList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+	<table id="caMediaConfigPluginList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
@@ -215,7 +215,7 @@ foreach($va_plugins as $vs_plugin_name => $va_plugin_info){
 		<div class="control-box-middle-content"><?php print _t('PDF Rendering Plugins'); ?></div>
 	</div><div class="clear"></div>
 	
-	<table id="caMediaConfigPluginList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+	<table id="caMediaConfigPluginList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
@@ -270,7 +270,7 @@ foreach($va_plugins as $vs_plugin_name => $va_plugin_info){
 		<div class="control-box-middle-content"><?php print _t('Barcode generation'); ?></div>
 	</div><div class="clear"></div>
 	
-	<table id="caMediaConfigPluginList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+	<table id="caMediaConfigPluginList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
@@ -324,7 +324,7 @@ foreach($va_barcode_components as $vs_component_name => $va_component_info){
 		<div class="control-box-middle-content"><?php print _t('Application Plugins'); ?></div>
 	</div><div class="clear"></div>
 	
-	<table id="caMediaConfigPluginList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+	<table id="caMediaConfigPluginList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">

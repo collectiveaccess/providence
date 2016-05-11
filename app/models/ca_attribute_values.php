@@ -359,6 +359,8 @@ class ca_attribute_values extends BaseModel {
 			return $va_values;
 		}
 		
+		CompositeCache::delete('attribute:'.$this->getPrimaryKey(), 'IIIFMediaInfo');
+		CompositeCache::delete('attribute:'.$this->getPrimaryKey(), 'IIIFTileCounts');
 		$this->update();
 		
 		if ($this->numErrors()) {

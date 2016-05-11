@@ -167,7 +167,7 @@ if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['set
 	<div class='editorBundlePrintControl'>
 <?php
 		print (sizeof($va_template_list) > 1) ? caHTMLSelect('template', $va_template_list, array('class' => 'dontTriggerUnsavedChangeWarning', 'id' => "{$vs_id_prefix}PrintTemplate")) : caHTMLHiddenInput('template', array('value' => array_pop($va_template_list), 'id' => "{$vs_id_prefix}PrintTemplate"));
-		print "<a href='#' onclick='{$vs_id_prefix}Print(); return false;'>".caNavIcon($this->request, __CA_NAV_BUTTON_PDF_SMALL__)."</a>";
+		print "<a href='#' onclick='{$vs_id_prefix}Print(); return false;'>".caNavIcon(__CA_NAV_ICON_PDF__, 1)."</a>";
 ?>
 	</div>
 <?php
@@ -184,7 +184,7 @@ if (caGetOption('canMakePDF', $va_element_info[$t_element->getPrimaryKey()]['set
 	if (($vs_render_mode !== 'checklist') && !$vb_read_only) {		// static (non-repeating) checkbox list for list attributes
 ?>
 			<div style="float: right;">
-				<a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
+				<a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 			</div>				
 <?php
 	}
@@ -216,7 +216,7 @@ if (caGetOption('canMakePDFForValue', $va_element_info[$t_element->getPrimaryKey
 	<div class='editorBundleValuePrintControl' id='<?php print $vs_id_prefix; ?>_print_control_{n}'>
 <?php
 		print (sizeof($va_template_list) > 1) ? caHTMLSelect('template', $va_template_list, array('class' => 'dontTriggerUnsavedChangeWarning', 'id' => "{$vs_id_prefix}PrintTemplate{n}")) : caHTMLHiddenInput('template', array('value' => array_pop($va_template_list), 'id' => "{$vs_id_prefix}PrintTemplate{n}"));
-		print "<a href='#' onclick='{$vs_id_prefix}Print({n}); return false;'>".caNavIcon($this->request, __CA_NAV_BUTTON_PDF_SMALL__)."</a>";
+		print "<a href='#' onclick='{$vs_id_prefix}Print({n}); return false;'>".caNavIcon(__CA_NAV_ICON_PDF__, 1)."</a>";
 ?>
 	</div>
 <?php
@@ -272,7 +272,7 @@ if (caGetOption('canMakePDFForValue', $va_element_info[$t_element->getPrimaryKey
 <?php
 	if (($vs_render_mode !== 'checklist') && !$vb_read_only) {
 ?>
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print $vs_add_label; ?></a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, 1); ?> <?php print $vs_add_label; ?></a></div>
 <?php
 	}
 ?>
