@@ -301,8 +301,9 @@ class CollectiveAccessDataReader extends BaseDataReader {
 							$vs_display_field = $t_instance->getLabelDisplayField();
 							$va_rels = array();
 							foreach($va_rel_data as $vn_i => $va_rel) {
+								$va_labels = array_shift(caExtractValuesByUserLocale([0 => $va_rel['preferred_labels']]));
 								if (is_array($pa_restrict_to_relationship_types) && !in_array($va_rel['relationship_typename'], $pa_restrict_to_relationship_types)) { continue; }
-								$va_rels[] = $va_rel['preferred_labels'][$vs_display_field];
+								$va_rels[] = $va_labels[$vs_display_field];
 							}
 							
 							if ($pb_return_as_array) {
@@ -346,8 +347,9 @@ class CollectiveAccessDataReader extends BaseDataReader {
 						if ($t_instance = $this->opo_datamodel->getInstanceByTableName($va_col[0], true)) {
 							$va_rels = array();
 							foreach($va_rel_data as $vn_i => $va_rel) {
+								$va_labels = array_shift(caExtractValuesByUserLocale([0 => $va_rel['preferred_labels']]));
 								if (is_array($pa_restrict_to_relationship_types) && !in_array($va_rel['relationship_typename'], $pa_restrict_to_relationship_types)) { continue; }
-								$va_rels[] = $va_rel['preferred_labels'][$va_col[2]];
+								$va_rels[] = $va_labels[$va_col[2]];
 							}
 							
 							if ($pb_return_as_array) {
@@ -468,4 +470,3 @@ class CollectiveAccessDataReader extends BaseDataReader {
 	}
 	# -------------------------------------------------------
 }
-?>
