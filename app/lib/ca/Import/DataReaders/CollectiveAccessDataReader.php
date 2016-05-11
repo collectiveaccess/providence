@@ -52,6 +52,7 @@ class CollectiveAccessDataReader extends BaseDataReader {
 	private $opo_datamodel = null;
 	
 	private $ops_table = null;
+	private $ops_path = null;
 	# -------------------------------------------------------
 	/**
 	 *
@@ -84,7 +85,7 @@ class CollectiveAccessDataReader extends BaseDataReader {
 		
 		$va_path = explode("/", $va_url['path']);
 		$this->ops_table = $vs_table = array_pop($va_path);
-		$vs_path = join("/", $va_path);
+		$this->ops_path = $vs_path = join("/", $va_path);
 		
 		$this->opa_row_ids = array();
 		$this->opn_current_row = 0;
@@ -122,7 +123,7 @@ class CollectiveAccessDataReader extends BaseDataReader {
 			
 			$this->opn_current_row++;
 			try {
-				$request = $this->opo_client->get("/service.php/item/{$this->ops_table}/id/{$vn_id}?pretty=1&format=import");
+				$request = $this->opo_client->get(($this->ops_path ? $this->ops_path : "")."/service.php/item/{$this->ops_table}/id/{$vn_id}?pretty=1&format=import");
 				$response = $request->send();
 				$data = $response->json();
 				
