@@ -337,7 +337,7 @@
 		}
 		if (!caIsValidFilePath($ps_pdfminer_path)) { return false; }
 
-		if (!file_exists($ps_pdfminer_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_PDFMINER[$ps_pdfminer_path] = false; }
+		if (!@is_readable($ps_pdfminer_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_PDFMINER[$ps_pdfminer_path] = false; }
 		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
 		exec($ps_pdfminer_path." > /dev/null",$va_output,$vn_return);
 		if($vn_return == 100) {
@@ -360,9 +360,9 @@
 		} else {
 			$_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS = array();
 		}
-		if (!trim($ps_phantomjs_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_phantomjs_path)) || !file_exists($ps_phantomjs_path)) { return false; }
+		if (!trim($ps_phantomjs_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_phantomjs_path)) || !@is_readable($ps_phantomjs_path)) { return false; }
 		
-		if (!file_exists($ps_phantomjs_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS[$ps_phantomjs_path] = false; }
+		if (!@is_readable($ps_phantomjs_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_PHANTOMJS[$ps_phantomjs_path] = false; }
 		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
 		exec($ps_phantomjs_path." > /dev/null",$va_output,$vn_return);
 		if($vn_return == 0) {
@@ -385,9 +385,9 @@
 		} else {
 			$_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF = array();
 		}
-		if (!trim($ps_wkhtmltopdf_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_wkhtmltopdf_path)) || !file_exists($ps_wkhtmltopdf_path)) { return false; }
+		if (!trim($ps_wkhtmltopdf_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_wkhtmltopdf_path)) || !@is_readable($ps_wkhtmltopdf_path)) { return false; }
 		
-		if (!file_exists($ps_wkhtmltopdf_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF[$ps_wkhtmltopdf_path] = false; }
+		if (!@is_readable($ps_wkhtmltopdf_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_WKHTMLTOPDF[$ps_wkhtmltopdf_path] = false; }
 		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
 		exec($ps_wkhtmltopdf_path." > /dev/null",$va_output,$vn_return);
 		if(($vn_return == 0) || ($vn_return == 1)) {
@@ -411,9 +411,9 @@
 		} else {
 			$_MEDIAHELPER_PLUGIN_CACHE_EXIFTOOL = array();
 		}
-		if (!trim($ps_exiftool_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_exiftool_path)) || !file_exists($ps_exiftool_path)) { return false; }
+		if (!trim($ps_exiftool_path) || (preg_match("/[^\/A-Za-z0-9\.:]+/", $ps_exiftool_path)) || !@is_readable($ps_exiftool_path)) { return false; }
 		
-		if (!file_exists($ps_exiftool_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_EXIFTOOL[$ps_exiftool_path] = false; }
+		if (!@is_readable($ps_exiftool_path)) { return $_MEDIAHELPER_PLUGIN_CACHE_EXIFTOOL[$ps_exiftool_path] = false; }
 		if (caGetOSFamily() == OS_WIN32) { return true; }		// don't try exec test on Windows
 		exec($ps_exiftool_path." > /dev/null",$va_output,$vn_return);
 	
@@ -665,7 +665,7 @@
 		if(!caExifToolInstalled()) { return false; } // we need exiftool for embedding
 		$vs_path_to_exif_tool = caGetExternalApplicationPath('exiftool');
 
-		if (!file_exists($ps_file)) { return false; }
+		if (!@is_readable($ps_file)) { return false; }
 		if (!preg_match("/^image\//", mime_content_type($ps_file))) { return false; } // Don't try to embed in files other than images
 
 		// make a temporary copy (we won't touch the original)
@@ -867,5 +867,26 @@
 		}
 		$va_tmp = explode('x', $vs_selected_size);
 		return array('size' => $vs_selected_size, 'width' => $va_tmp[0], 'height' => $va_tmp[1]);
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 *
+	 *
+	 */
+	function caParseMediaIdentifier($ps_identifier, $pa_options=null) {
+		$va_tmp = explode(':', $ps_identifier);
+		
+		switch($vs_type = strtolower($va_tmp[0])) {
+			case 'representation':
+			case 'attribute':
+				return ['type' => $vs_type, 'id' => (int)$va_tmp[1], 'page' => isset($va_tmp[2]) ? (int)$va_tmp[2] : null];
+				break;
+			default:
+				if (is_numeric($va_tmp[0])) {
+					return ['type' => 'representation', 'id' => (int)$va_tmp[0], 'page' => isset($va_tmp[1]) ? (int)$va_tmp[1] : null];
+				}
+				break;
+		}
+		return null;
 	}
 	# ------------------------------------------------------------------------------------------------

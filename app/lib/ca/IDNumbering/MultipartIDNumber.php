@@ -966,9 +966,9 @@ class MultipartIDNumber extends IDNumber {
 			if (($pa_options['show_errors']) && (isset($pa_errors[$vs_element_name]))) {
 				$vs_error_message = preg_replace("/[\"\']+/", "", $pa_errors[$vs_element_name]);
 				if ($pa_options['error_icon']) {
-					$vs_tmp .= "<a href='#'\" id='caIdno_{$vs_id_prefix}_{$ps_name}'><img src='".$pa_options['error_icon']."' border='0'/></a>";
+					$vs_tmp .= "<a href='#' id='caIdno_{$vs_id_prefix}_{$ps_name}'>".$pa_options['error_icon']."</a>";
 				} else {
-					$vs_tmp .= "<a href='#'\" id='caIdno_{$vs_id_prefix}_{$ps_name}'>["._t('Error')."]</a>";
+					$vs_tmp .= "<a href='#' id='caIdno_{$vs_id_prefix}_{$ps_name}'>["._t('Error')."]</a>";
 				}
 				TooltipManager::add("#caIdno_{$vs_id_prefix}_{$ps_name}", "<h2>"._t('Error')."</h2>{$vs_error_message}");
 			}
@@ -998,8 +998,8 @@ class MultipartIDNumber extends IDNumber {
 			$va_lookup_url_info = caJSONLookupServiceUrl($pa_options['request'], $pa_options['table']);
 			$vs_js .= "
 				caUI.initIDNoChecker({
-					errorIcon: '".$pa_options['error_icon']."',
-					processIndicator: '".$pa_options['progress_indicator']."',
+					errorIcon: \"".$pa_options['error_icon']."\",
+					processIndicator: \"".$pa_options['progress_indicator']."\",
 					idnoStatusID: 'idnoStatus',
 					lookupUrl: '".$va_lookup_url_info['idno']."',
 					searchUrl: '".$pa_options['search_url']."',
@@ -1430,14 +1430,15 @@ class MultipartIDNumber extends IDNumber {
 		$this->opo_db->query("
 			DELETE FROM ca_multipart_idno_sequences
 			WHERE format = ? AND element = ? AND idno_stub = ?
-		", $ps_format, $ps_element, $ps_idno_stub);
+		", [$ps_format, $ps_element, $ps_idno_stub]);
 
+		$pn_value = (int)preg_replace("![^\d]+!", "", $pn_value);
 		return $this->opo_db->query("
 			INSERT INTO ca_multipart_idno_sequences
 			(format, element, idno_stub, seq)
 			VALUES
 			(?, ?, ?, ?)
-		", $ps_format, $ps_element, $ps_idno_stub, $pn_value);
+		", [$ps_format, $ps_element, $ps_idno_stub, $pn_value]);
 	}
 	# -------------------------------------------------------
 	/**
@@ -1455,18 +1456,18 @@ class MultipartIDNumber extends IDNumber {
 	 * Also, if the identifier consists of multiple elements, false will be returned.
 	 *
 	 * @param string $ps_format_name Name of format
+	 * @param array $pa_options Options include:
+	 *		singleElementsOnly = Only consider formats with a single editable element to be editable. [Default is false]
 	 * @return bool
 	 */
-	public function isFormatEditable($ps_format_name) {
-		$va_elements = $this->getElements();
-		if(sizeof($va_elements) == 1 ){
-			$vs_edit_info = $this->opa_formats[$ps_format_name][$this->getType()]['elements'][key($va_elements)];
-			switch($vs_edit_info['editable']){
-				case 1:
-					return true;
-				default:
-					return false;
-			}
+	public function isFormatEditable($ps_format_name, $pa_options=null) {
+		if (!is_array($va_elements = $this->getElements())) { return false; }
+		
+		$vb_single_elements_only = caGetOption('singleElementsOnly', $pa_options, false);
+		
+		foreach($va_elements as $vs_element => $va_element_info) {
+			if (isset($va_element_info['editable']) && (bool)$va_element_info['editable']) { return true; }
+			if ($vb_single_elements_only) { return false; }
 		}
 		return false;
 	}

@@ -322,6 +322,14 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	# Element set methods
 	# ------------------------------------------------------
 	/**
+	 * @param array $pa_options Options include:
+	 * 		noCache = don't use cached values. Default is false (ie. use cached values)
+	 */
+	static public function getElementsForSet($pn_element_id, $pa_options=null) {
+		$t_element = new ca_metadata_elements();
+		return $t_element->getElementsInSet($pn_element_id, !caGetOption('noCache', $pa_options, false), $pa_options);
+	}
+	/**
 	 * Returns array of elements in set of currently loaded row
 	 *
 	 * @param null|int $pn_element_id
@@ -335,7 +343,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 
 		if($pb_use_cache && CompositeCache::contains($pn_element_id, 'ElementSets')) {
 			$va_set = CompositeCache::fetch($pn_element_id, 'ElementSets');
-			return (caGetOption('idsOnly', $pa_options, false) ?  array_keys($va_set) : $va_set);
+			//return (caGetOption('idsOnly', $pa_options, false) ?  array_keys($va_set) : $va_set);
 		}
 
 		$va_hier = $this->getHierarchyAsList($pn_element_id);
@@ -361,8 +369,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			}
 		}
 
-		$va_tmp = $this->_getSortedElementsForParent($va_element_set, $va_root['element_id']);
 		$va_tmp[$va_root['element_id']] = $va_root;
+		$va_tmp = array_merge($va_tmp, $this->_getSortedElementsForParent($va_element_set, $va_root['element_id']));
+		ksort($va_tmp);
 
 		CompositeCache::save($pn_element_id, $va_tmp, 'ElementSets');
 
@@ -379,7 +388,11 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		foreach($pa_element_set[$pn_parent_id] as $vn_rank => $va_elements_by_id) {
 			foreach($va_elements_by_id as $vn_element_id => $va_element) {
 				$va_tmp[$vn_element_id] = $va_element;
-				$va_tmp = array_replace($va_tmp, $this->_getSortedElementsForParent($pa_element_set, $vn_element_id));
+				//$va_tmp = array_merge($va_tmp, $this->_getSortedElementsForParent($pa_element_set, $vn_element_id));	// merge keeps keys in the correct order
+				foreach($this->_getSortedElementsForParent($pa_element_set, $vn_element_id) as $k => $v) {
+					if (isset($va_tmp[$k])) { unset($va_tmp[$k]); }
+					$va_tmp[$k] = $v;
+				}
 			}
 		}
 
@@ -973,21 +986,6 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	/**
-	 * 
-	 */
-	static public function getElementCode($pn_element_id) {
-		if(MemoryCache::contains($pn_element_id, 'ElementCodes')) {
-			return MemoryCache::fetch($pn_element_id, 'ElementCodes');
-		}
-		if ($t_element = ca_metadata_elements::getInstance($pn_element_id)) {
-			MemoryCache::save($pn_element_id, $vs_element_code = (string)$t_element->get('element_code'), 'ElementCodes');
-			return $vs_element_code;
-		}
-		
-		return null;
-	}
-	# ------------------------------------------------------
-	/**
 	 * Get element code for given element_id (or code)
 	 * @param mixed $pm_element_id
 	 * @return string
@@ -1038,6 +1036,31 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	/**
+	 * Get hier_element id for given element code (or id)
+	 * @param mixed $pm_element_code_or_id
+	 * @return int
+	 * @throws MemoryCacheInvalidParameterException
+	 */
+	static public function getElementHierarchyID($pm_element_code_or_id) {
+		if(!$pm_element_code_or_id) { return null; }
+		if(is_numeric($pm_element_code_or_id)) { $pm_element_code_or_id = (int) $pm_element_code_or_id; }
+
+		if(MemoryCache::contains($pm_element_code_or_id, 'ElementHierarchyIDs')) {
+			return MemoryCache::fetch($pm_element_code_or_id, 'ElementHierarchyIDs');
+		}
+
+		$vm_return = null;
+		$t_element = self::getInstance($pm_element_code_or_id);
+
+		if($t_element && ($t_element->getPrimaryKey())) {
+			$vm_return = (int) $t_element->get('hier_element_id');
+		}
+
+		MemoryCache::save($pm_element_code_or_id, $vm_return, 'ElementHierarchyIDs');
+		return $vm_return;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Get element list_id for given element code (or id)
 	 * @param mixed $pm_element_code_or_id
 	 * @return int
@@ -1054,6 +1077,31 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			$vm_return = (int) $t_element->get('list_id');
 		}
 
+		return $vm_return;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get element settings for given element_id (or code)
+	 * @param mixed $pm_element_id
+	 * @return string
+	 * @throws MemoryCacheInvalidParameterException
+	 */
+	static public function getElementSettingsForId($pm_element_id) {
+		if(!$pm_element_id) { return null; }
+		if(is_numeric($pm_element_id)) { $pm_element_id = (int) $pm_element_id; }
+
+		if(MemoryCache::contains($pm_element_id, 'ElementSettings')) {
+			return MemoryCache::fetch($pm_element_id, 'ElementSettings');
+		}
+
+		$vm_return = null;
+		$t_element = self::getInstance($pm_element_id);
+
+		if($t_element->getPrimaryKey()) {
+			$vm_return = $t_element->getSettings();
+		}
+
+		MemoryCache::save($pm_element_id, $vm_return, 'ElementSettings');
 		return $vm_return;
 	}
 	# ------------------------------------------------------
@@ -1183,8 +1231,14 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 			// element must be root of hierarchy...
 			// if not, then use root of hierarchy since all type restrictions are bound to the root
 			$vn_element_id = $this->getHierarchyRootID(null);
+		}	
+		
+		$vs_key = "{$pn_table_num}/{$pn_type_id}/{$vn_element_id}";
+		
+		if (CompositeCache::contains($vs_key, 'ElementTypeRestrictions')) { 
+			return CompositeCache::fetch($vs_key, 'ElementTypeRestrictions');
 		}
-
+		
 		$o_db = $this->getDb();
 
 		$vs_table_type_sql = '';
@@ -1210,6 +1264,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 		while($qr_res->nextRow()) {
 			$va_restrictions[] = $qr_res->getRow();
 		}
+		CompositeCache::save($vs_key, $va_restrictions, 'ElementTypeRestrictions');
 		return $va_restrictions;
 	}
 	# ------------------------------------------------------

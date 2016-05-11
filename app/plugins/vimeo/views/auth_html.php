@@ -41,7 +41,7 @@
 <?php
 				print caFormTag($this->request, 'verify', 'vimeo_verify_form', 'vimeo/Auth');
  				print caHTMLTextInput('verify_code');
- 				print caFormSubmitButton($this->request, __CA_NAV_BUTTON_GO__, _t("Submit"), 'vimeo_verify_form');
+ 				print caFormSubmitButton($this->request, __CA_NAV_ICON_GO__, _t("Submit"), 'vimeo_verify_form');
  				
 ?>
 				</form>
@@ -55,7 +55,7 @@
 ?>
 		<div><?php print _t('You need to go to the Vimeo page and authorize our app to use your account.'); ?></div>
 		<div><?php print _t('Please click here: %1','<a href="'.$this->getVar('authorize_link').'" target="_blank">Vimeo</a>'); ?></div>
-		<div><?php print caNavButton($this->request, __CA_NAV_BUTTON_GO__, _t("I'm done"), '', 'vimeo', 'Auth', 'Index'); ?></div>
+		<div><?php print caNavButton($this->request, __CA_NAV_ICON_GO__, _t("I'm done"), '', 'vimeo', 'Auth', 'Index'); ?></div>
 <?php
  	}
 	

@@ -432,6 +432,7 @@
             </xs:element>
           </xs:sequence>
           <xs:attribute name="code" type="codeType" use="required"/>
+          <xs:attribute name="typeRestrictions" type="xs:string"/>
         </xs:complexType>
       </xs:element>
     </xs:sequence>

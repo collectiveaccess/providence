@@ -55,6 +55,7 @@ class DisplayTemplateParser {
      *  Statically evaluate an expression, returning the value
      */
 	static public function evaluate($ps_template, $pm_tablename_or_num, $pa_row_ids, $pa_options=null) {
+		$pa_row_ids = array_filter($pa_row_ids, intval);
 		return DisplayTemplateParser::process($ps_template, $pm_tablename_or_num, $pa_row_ids, $pa_options);
 	}
 	# -------------------------------------------------------------------
@@ -73,11 +74,6 @@ class DisplayTemplateParser {
 						$va_get_options['restrictToRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'restrictToRelationshipTypes']);
 						$va_get_options['excludeRelationshipTypes'] = DisplayTemplateParser::_getCodesFromAttribute($o_node, ['attribute' => 'excludeRelationshipTypes']);
 
-						$va_search_result_opts = array();
-						if($o_node->includeNonPrimaryRepresentations) {
-							$va_search_result_opts['filterNonPrimaryRepresentations'] = false;
-						}
-					
 						if ($o_node->sort) {
 							$va_get_options['sort'] = preg_split('![ ,;]+!', $o_node->sort);
 							$va_get_options['sortDirection'] = $o_node->sortDirection;
@@ -89,8 +85,11 @@ class DisplayTemplateParser {
 							if (!sizeof($va_row_ids)) { return; }
 							$qr_res = caMakeSearchResult($ps_tablename, $va_row_ids, $va_search_result_opts);
 							if (!$qr_res) { return; }
-						
-						
+
+							/** @var HTML_Node $o_node */
+							if(($o_node->filterNonPrimaryRepresentations == '0') && ($qr_res instanceof ObjectSearchResult)) {
+								$qr_res->filterNonPrimaryRepresentations(false);
+							}
 						
 							$va_cache_opts = $qr_res->get($vs_relative_to.".".$qr_res->primaryKey(), array_merge($va_get_options, ['returnCacheOptions' => true]));
 						
@@ -178,10 +177,13 @@ class DisplayTemplateParser {
 		if (!$pa_options['isUnit'] && !caGetOption('dontPrefetchRelated', $pa_options, false)) {
 			DisplayTemplateParser::prefetchAllRelatedIDs($va_template['tree']->children, $ps_tablename, $pa_row_ids, $pa_options);
 		}
-		
-		
+
 		$qr_res = caMakeSearchResult($ps_tablename, $pa_row_ids);
 		if(!$qr_res) { return $pb_return_as_array ? array() : ""; }
+
+		if(!caGetOption('filterNonPrimaryRepresentations', $pa_options, true) && ($qr_res instanceof ObjectSearchResult)) {
+			$qr_res->filterNonPrimaryRepresentations(false);
+		}
 		
 		$pa_check_access = ($t_instance->hasField('access')) ? caGetOption('checkAccess', $pa_options, null) : null;
 		if (!is_array($pa_check_access) || !sizeof($pa_check_access)) { $pa_check_access = null; }
@@ -345,7 +347,7 @@ class DisplayTemplateParser {
 					break;
 				case 'ifdef':
 				case 'ifnotdef':
-					$vb_defined = DisplayTemplateParser::_evaluateCodeAttribute($pr_res, $o_node, ['index' => caGetOption('index', $pa_options, null), 'mode' => ($vs_tag == 'ifdef') ? 'present' : 'not_present']);
+					$vb_defined = DisplayTemplateParser::_evaluateCodeAttribute($pr_res, $o_node, ['filters' => caGetOption('filters', $pa_options, null), 'index' => caGetOption('index', $pa_options, null), 'mode' => ($vs_tag == 'ifdef') ? 'present' : 'not_present']);
 					
 					if ((($vs_tag == 'ifdef') && $vb_defined) || (($vs_tag == 'ifnotdef') && $vb_defined)) {
 						// Make sure returned values are not empty
@@ -466,6 +468,12 @@ class DisplayTemplateParser {
 					$vs_unit_delimiter = $o_node->delimiter ? (string)$o_node->delimiter : $ps_delimiter;
 					$vb_unique = $o_node->unique ? (bool)$o_node->unique : false;
 					$vb_aggregate_unique = $o_node->aggregateUnique ? (bool)$o_node->aggregateUnique : false;
+
+					$vb_filter_non_primary_reps = caGetOption('filterNonPrimaryRepresentations', $pa_options, true);
+					if($vb_filter_non_primary_reps && ($o_node->filterNonPrimaryRepresentations == '0')) {
+						$vb_filter_non_primary_reps = false;
+					}
+
 					$vs_unit_skip_if_expression = (string)$o_node->skipIfExpression;
 					
 					$vn_start = (int)$o_node->start;
@@ -553,7 +561,8 @@ class DisplayTemplateParser {
 									'relativeToContainer' => $vs_relative_to_container,
 									'includeBlankValuesInTopLevelForPrefetch' => false,
 									'unique' => $vb_unique,
-									'aggregateUnique' => $vb_aggregate_unique
+									'aggregateUnique' => $vb_aggregate_unique,
+									'filterNonPrimaryRepresentations' => $vb_filter_non_primary_reps
 								]
 							)
 						);
@@ -640,10 +649,11 @@ class DisplayTemplateParser {
 									'unique' => $vb_unique,
 									'aggregateUnique' => $vb_aggregate_unique,
 									'relationIDs' => $va_relation_ids,
-									'relationshipTypeIDs' => $va_relationship_type_ids
+									'relationshipTypeIDs' => $va_relationship_type_ids,
+									'filterNonPrimaryRepresentations' => $vb_filter_non_primary_reps
 								]
 							)
-						);	
+						);
 						if ($vb_unique) { $va_tmpl_val = array_unique($va_tmpl_val); }
 						if (($vn_start > 0) || !is_null($vn_length)) { 
 							$vn_num_vals = sizeof($va_tmpl_val);
@@ -952,7 +962,7 @@ class DisplayTemplateParser {
 		
 		$vb_has_value = null;
 		foreach($va_codes as $vs_code => $vs_bool) {
-			$va_val_list = $pr_res->get($vs_code, ['returnAsArray' => true, 'returnBlankValues' => true, 'convertCodesToDisplayText' => true, 'returnAsDecimal' => true, 'getDirectDate' => true]);
+			$va_val_list = $pr_res->get($vs_code, ['filters' => caGetOption('filters', $pa_options, null), 'returnAsArray' => true, 'returnBlankValues' => true, 'convertCodesToDisplayText' => true, 'returnAsDecimal' => true, 'getDirectDate' => true]);
 			if(!is_array($va_val_list)) {  // no value
 				$vb_value_present = false;
 			} else {

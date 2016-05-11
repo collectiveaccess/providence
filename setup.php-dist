@@ -141,6 +141,17 @@ if (!defined("__CA_DEFAULT_LOCALE__")) {
 	define("__CA_DEFAULT_LOCALE__", "en_US");
 }
 
+#
+# __CA_USE_CLEAN_URLS__ = Determines if clean urls should be generated.
+#
+# If you have mod_rewrite on your server you may be this to a non-zero value
+# to have Providence use "clean" urls – urls without the index.php handler included
+#
+# Only set this if your web server includes mod_rewrite and it is enabled using
+# the provided .htaccess file
+# 
+define("__CA_USE_CLEAN_URLS__", 1);
+
 
 #
 # __CA_APP_NAME__ = a short name alphanumeric-only (no spaces or punctuation) name for this CollectiveAccess installation
@@ -341,6 +352,10 @@ define('__CA_MEMCACHED_PORT__', 11211);
 # Host and port for redis
 define('__CA_REDIS_HOST__', 'localhost');
 define('__CA_REDIS_PORT__', 6379);
+# Redis database index. This is useful if you want to use your Redis instance for several applications.
+# By default Redis is set up with 16 databases, indexed 0 through 15. CollectiveAccess will use the first
+# (index 0) unless told otherwise.
+define('__CA_REDIS_DB__', 0);
 # --------------------------------------------------------------------------------------------
 
 # include version number

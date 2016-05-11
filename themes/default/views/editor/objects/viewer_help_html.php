@@ -1,4 +1,4 @@
-<div class='close'><a href='#'><img src='<?php print $this->request->getThemeURLPath(); ?>/graphics/buttons/x.png' border='0'/></a></div>
+<div class='close'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_CLOSE__, 2); ?></a></div>
 <div class='content'>
 	<h2><?php print _t('How to use the image viewer'); ?></h2>
 

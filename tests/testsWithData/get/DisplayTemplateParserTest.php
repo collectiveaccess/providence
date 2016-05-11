@@ -118,7 +118,7 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 				// Length
 				'dimensions' => array(
 					array(
-						'dimensions_length' => '10 in',
+						'dimensions_length' => '10.1 in',
 						'dimensions_weight' => '2 lbs',
 						'measurement_notes' => 'foo',
 					),
@@ -507,28 +507,28 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_objects.dimensions'>^ca_objects.dimensions.dimensions_length <between>X</between> ^ca_objects.dimensions.dimensions_weight</unit>", "ca_objects", array($this->opn_object_id, $this->opn_rel_object_id), array('returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(2, $vm_ret);
-		$this->assertEquals('10.0 in X 2.0000 lb; 5.0 in X 3.0000 lb', $vm_ret[0]);
-		$this->assertEquals('1.0 in', trim($vm_ret[1]));
+		$this->assertEquals('10.1 in X 2 lb; 5 in X 3 lb', $vm_ret[0]);
+		$this->assertEquals('1 in', trim($vm_ret[1]));
 
 		$vm_ret = DisplayTemplateParser::evaluate("<unit>^ca_objects.dimensions.dimensions_weight <between>X</between> ^ca_objects.dimensions.dimensions_length</unit>", "ca_objects", array($this->opn_object_id, $this->opn_rel_object_id), array('returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(2, $vm_ret);
-		$this->assertEquals('2.0000 lb X 10.0 in; 3.0000 lb X 5.0 in', $vm_ret[0]);
-		$this->assertEquals('1.0 in', trim($vm_ret[1]));
+		$this->assertEquals('2 lb X 10.1 in; 3 lb X 5 in', $vm_ret[0]);
+		$this->assertEquals('1 in', trim($vm_ret[1]));
 	}
 	# -------------------------------------------------------
 	public function testFormatsWithMore() {
 		$vm_ret = DisplayTemplateParser::evaluate("<unit>^ca_objects.dimensions.dimensions_length <more>X</more> ^ca_objects.dimensions.dimensions_weight</unit>", "ca_objects", array($this->opn_object_id, $this->opn_rel_object_id), array('returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(2, $vm_ret);
-		$this->assertEquals('10.0 in X 2.0000 lb; 5.0 in X 3.0000 lb', $vm_ret[0]);
-		$this->assertEquals('1.0 in', trim($vm_ret[1]));
+		$this->assertEquals('10.1 in X 2 lb; 5 in X 3 lb', $vm_ret[0]);
+		$this->assertEquals('1 in', trim($vm_ret[1]));
 
 		$vm_ret = DisplayTemplateParser::evaluate("<unit relativeTo='ca_objects'>^ca_objects.dimensions.dimensions_weight <more>X</more> ^ca_objects.dimensions.dimensions_length</unit>", "ca_objects", array($this->opn_object_id, $this->opn_rel_object_id), array('returnAsArray' => true));
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(2, $vm_ret);
-		$this->assertEquals('2.0000 lb X 10.0 in; 3.0000 lb X 5.0 in', $vm_ret[0]);
-		$this->assertEquals('X 1.0 in', trim($vm_ret[1]));
+		$this->assertEquals('2 lb X 10.1 in; 3 lb X 5 in', $vm_ret[0]);
+		$this->assertEquals('X 1 in', trim($vm_ret[1]));
 	}
 	# -------------------------------------------------------
 	public function testFormatsWithIf() {
@@ -563,7 +563,7 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 		$this->assertInternalType('array', $vm_ret);
 		$this->assertCount(1, $vm_ret);
 
-		$this->assertEquals('Dimensions are: 10.0 in / 2.0000 lb / foo; 5.0 in / 3.0000 lb / meow', $vm_ret[0]);
+		$this->assertEquals('Dimensions are: 10.1 in / 2 lb / foo; 5 in / 3 lb / meow', $vm_ret[0]);
 	}
 	# -------------------------------------------------------
 	public function testFormatsWithTagOpts() {
@@ -906,7 +906,7 @@ class DisplayTemplateParserTest extends BaseTestWithData {
 	}
 	# -------------------------------------------------------
 	public function testStartLength() {
-		$this->assertEquals('5.0 in x 3.0000 lb', trim(DisplayTemplateParser::evaluate("
+		$this->assertEquals('5 in x 3 lb', trim(DisplayTemplateParser::evaluate("
 		<unit relativeTo='ca_objects.dimensions' start='1' length='1'>
 			^ca_objects.dimensions.dimensions_length x ^ca_objects.dimensions.dimensions_weight
 		</unit>", 'ca_objects', array($this->opn_object_id))));

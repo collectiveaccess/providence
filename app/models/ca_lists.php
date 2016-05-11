@@ -1557,12 +1557,12 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 				className: '".($vb_is_vertical_hier_browser ? 'hierarchyBrowserLevelVertical' : 'hierarchyBrowserLevel')."',
 				classNameContainer: '".($vb_is_vertical_hier_browser ? 'hierarchyBrowserContainerVertical' : 'hierarchyBrowserContainer')."',
 				
-				editButtonIcon: \"".caNavIcon($pa_options['request'], __CA_NAV_BUTTON_RIGHT_ARROW__)."\",
-				disabledButtonIcon: \"".caNavIcon($pa_options['request'], __CA_NAV_BUTTON_DOT__)."\",
+				editButtonIcon: \"".caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1)."\",
+				disabledButtonIcon: \"".caNavIcon(__CA_NAV_ICON_DOT__, 1)."\",
 				initItemID: '{".$pa_options['element_id']."}',
 				defaultItemID: '".$t_list->getDefaultItemID()."',
 				useAsRootID: '".$t_root_item->getPrimaryKey()."',
-				indicatorUrl: '".$pa_options['request']->getThemeUrlPath()."/graphics/icons/indicator.gif',
+				indicator: \"".caNavIcon(__CA_NAV_ICON_SPINNER__, 1)."\",
 				autoShrink: '".(caGetOption('auto_shrink', $pa_options, false) ? 'true' : 'false')."',
 				autoShrinkAnimateID: '{$ps_name}_hierarchyBrowser{n}',
 				autoShrinkMaxHeightPx: {$vn_autoshrink_height},
@@ -1885,6 +1885,10 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 		$va_item_ids_to_values[$qr_res->get('item_id')] = $qr_res->get('item_value');
 	 	}
 	 	return ca_lists::$s_item_id_to_value_cache[$vs_key] = $va_item_ids_to_values + $va_non_numerics;
+	}
+	# ------------------------------------------------------
+	public function getAdditionalChecksumComponents() {
+		return [$this->get('list_code')];
 	}
 	# ------------------------------------------------------
 }

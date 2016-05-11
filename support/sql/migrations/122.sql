@@ -7,7 +7,7 @@
 
 ALTER TABLE ca_metadata_dictionary_rules MODIFY rule_code varchar(100) null;
 
-DROP INDEX u_rule_code ON ca_metadata_dictionary_rules;
+#DROP INDEX u_rule_code ON ca_metadata_dictionary_rules;
 CREATE INDEX u_rule_code ON ca_metadata_dictionary_rules(entry_id, rule_code);
 
 /* Always add the update to ca_schema_updates at the end of the file */

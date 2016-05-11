@@ -28,7 +28,7 @@
  
 	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$t_instance 		= $this->getVar('t_instance');
-	$t_item 			= $this->getVar('t_item');			// object
+	$t_item 			= $this->getVar('t_item');			// set
 	/** @var ca_sets $t_item_rel */
 	$t_item_rel 		= $this->getVar('t_item_rel');
 	$t_subject 			= $this->getVar('t_subject');
@@ -50,7 +50,8 @@
 	$va_lookup_params = array(
 		'type' => isset($va_settings['restrict_to_type']) ? $va_settings['restrict_to_type'] : '',
 		'noSubtypes' => (int)$va_settings['dont_include_subtypes_in_type_restriction'],
-		'noInline' => (bool) preg_match("/QuickAdd$/", $this->request->getController()) ? 1 : 0
+		'noInline' => (bool) preg_match("/QuickAdd$/", $this->request->getController()) ? 1 : 0,
+		'table_num' => $t_subject->tableNum()
 	);
 
 	if ($vb_batch) {
@@ -61,7 +62,7 @@
 	print caEditorBundleMetadataDictionary($this->request, $vs_id_prefix.$t_item->tableNum().'_rel', $va_settings);
 	
 	if(sizeof($this->getVar('initialValues')) && !$vb_read_only && !$vs_sort && ($va_settings['list_format'] != 'list')) {
-		print caEditorBundleSortControls($this->request, $vs_id_prefix, $pa_settings);
+		print caEditorBundleSortControls($this->request, $vs_id_prefix, $t_item->tableName());
 	}
 	
 	$va_errors = array();
@@ -84,7 +85,7 @@
 <?php
 	if (!$vb_read_only && !$vb_dont_show_del) {
 ?>				
-			<a href="#" class="caDeleteItemButton listRelDeleteButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
+			<a href="#" class="caDeleteItemButton listRelDeleteButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 <?php
 	}
 ?>
@@ -111,7 +112,7 @@
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
 <?php
 	if (!$vb_read_only && !$vb_dont_show_del) {
-?><a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a><?php
+?><a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a><?php
 	}
 ?>			
 			<div style="display: none;" class="itemName">{label}</div>
@@ -139,9 +140,9 @@
 						<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
 					</td>
 					<td>
-						<a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
+						<a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 
-						<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_sets', '{set_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_GO__); ?></a>
+						<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_sets', '{set_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}"><?php print caNavIcon(__CA_NAV_ICON_GO__, 1); ?></a>
 					</td>
 				</tr>
 			</table>
@@ -164,7 +165,7 @@
 <?php
 	if (!$vb_read_only) {
 ?>	
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add relationship"); ?></a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, 1); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add relationship"); ?></a></div>
 <?php
 	}
 ?>
