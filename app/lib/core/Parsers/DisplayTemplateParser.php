@@ -55,6 +55,7 @@ class DisplayTemplateParser {
      *  Statically evaluate an expression, returning the value
      */
 	static public function evaluate($ps_template, $pm_tablename_or_num, $pa_row_ids, $pa_options=null) {
+		$pa_row_ids = array_filter($pa_row_ids, intval);
 		return DisplayTemplateParser::process($ps_template, $pm_tablename_or_num, $pa_row_ids, $pa_options);
 	}
 	# -------------------------------------------------------------------

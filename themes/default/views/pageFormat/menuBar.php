@@ -29,7 +29,7 @@
 						<input type="text" name="search" length="15" id="caQuickSearchFormText" value="<?php print htmlspecialchars($this->request->session->getVar('quick_search_last_search'), ENT_QUOTES, 'UTF-8'); ?>" onfocus="<?php print htmlspecialchars($this->request->session->getVar('quick_search_last_search'), ENT_QUOTES, 'UTF-8'); ?>"/>	
 <?php
 						}
-						print caFormSubmitLink($this->request, "<img src='".$this->request->getThemeUrlPath()."/graphics/buttons/glass.png' border='0' style='float:right;' alt='"._t("Search")."'/>", 'caQuickSearchFormSubmit', 'caQuickSearchForm'); 
+						print caFormSubmitLink($this->request, caNavIcon(__CA_NAV_ICON_SEARCH__, 1, array('style' => 'float: right; margin: 5px 3px 0 0; color: #777')), 'caQuickSearchFormSubmit', 'caQuickSearchForm'); 
 ?>
 						<!--<input type="hidden" name="no_cache" value="1"/>-->
 					</form>

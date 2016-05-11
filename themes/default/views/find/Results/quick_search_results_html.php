@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -88,9 +88,9 @@
 						}
 ?>
 						<div class="quickSearchResultHeader rounded">
-							<div class="quickSearchFullResultsLink"><?php print caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_FILTER__)." "._t("Full Results &rsaquo;"), null, $va_info['searchModule'], $va_info['searchController'], $va_info['searchAction'], array("search" => urlencode($ps_search), "type_id" => $vn_type_id)); ?></div>
-							<a href='#' style="text-decoration:none; color:#333;" id='show<?php print $vs_table.$vn_type_id; ?>' onclick='return caQuickSearchShowHideResults("show", "<?php print $vs_table.$vn_type_id; ?>");'><?php print unicode_ucfirst($va_type_info['name_plural'])." (".sizeof($va_occurrences_by_type[$vn_type_id]).")"; ?> <?php print caNavIcon($this->request, __CA_NAV_BUTTON_EXPAND__); ?></a>
-							<a href='#' id='hide<?php print $vs_table.$vn_type_id; ?>' style='display:none; text-decoration:none; color:#333;' onclick='return caQuickSearchShowHideResults("hide", "<?php print $vs_table.$vn_type_id; ?>").hide();'><?php print unicode_ucfirst($va_type_info['name_plural'])." (".sizeof($va_occurrences_by_type[$vn_type_id]).")"; ?> <?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a>
+							<div class="quickSearchFullResultsLink"><?php print caNavLink($this->request, caNavIcon(__CA_NAV_ICON_FILTER__, 1)." "._t("Full Results &rsaquo;"), null, $va_info['searchModule'], $va_info['searchController'], $va_info['searchAction'], array("search" => caEscapeSearchForURL($ps_search), "type_id" => $vn_type_id)); ?></div>
+							<a href='#' style="text-decoration:none; color:#333;" id='show<?php print $vs_table.$vn_type_id; ?>' onclick='return caQuickSearchShowHideResults("show", "<?php print $vs_table.$vn_type_id; ?>");'><?php print unicode_ucfirst($va_type_info['name_plural'])." (".sizeof($va_occurrences_by_type[$vn_type_id]).")"; ?> <?php print caNavIcon(__CA_NAV_ICON_EXPAND__, 1); ?></a>
+							<a href='#' id='hide<?php print $vs_table.$vn_type_id; ?>' style='display:none; text-decoration:none; color:#333;' onclick='return caQuickSearchShowHideResults("hide", "<?php print $vs_table.$vn_type_id; ?>").hide();'><?php print unicode_ucfirst($va_type_info['name_plural'])." (".sizeof($va_occurrences_by_type[$vn_type_id]).")"; ?> <?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, 1); ?></a>
 						</div>
 						<div class="quickSearchHalfWidthResults" id="<?php print $vs_table.$vn_type_id; ?>_results" style="display:none;">
 							<ul class='quickSearchList'>
@@ -112,7 +112,7 @@
 								}
 ?>
 							</ul>
-							<div class="quickSearchResultHide"><a href='#' id='hide<?php print $vs_table.$vn_type_id; ?>' onclick='jQuery("#<?php print $vs_table.$vn_type_id; ?>_results").slideUp(250); jQuery("#show<?php print $vs_table.$vn_type_id; ?>").slideDown(1); jQuery("#hide<?php print $vs_table.$vn_type_id; ?>").hide(); return false;'> <?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a></div>
+							<div class="quickSearchResultHide"><a href='#' id='hide<?php print $vs_table.$vn_type_id; ?>' onclick='jQuery("#<?php print $vs_table.$vn_type_id; ?>_results").slideUp(250); jQuery("#show<?php print $vs_table.$vn_type_id; ?>").slideDown(1); jQuery("#hide<?php print $vs_table.$vn_type_id; ?>").hide(); return false;'> <?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, 1); ?></a></div>
 						</div>
 				
 <?php
@@ -126,9 +126,9 @@
 			if ($o_res->numHits() >= 1) { 
 ?>
 				<div class="quickSearchResultHeader rounded" >
-					<div class="quickSearchFullResultsLink"><?php print caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_FILTER__)." "._t("Full Results &rsaquo;"), null, $va_info['searchModule'], $va_info['searchController'], $va_info['searchAction'], array("search" => urlencode($ps_search))); ?></div>
-					<a href='#' style="text-decoration:none; color:#333;" id='show<?php print $vs_table; ?>' onclick='return caQuickSearchShowHideResults("show", "<?php print $vs_table; ?>");'><?php print $va_info['displayname']." (".$o_res->numHits().")"; ?> <?php print caNavIcon($this->request, __CA_NAV_BUTTON_EXPAND__); ?></a>
-					<a href='#' id='hide<?php print $vs_table; ?>' style='display:none; text-decoration:none; color:#333;' onclick='return caQuickSearchShowHideResults("hide", "<?php print $vs_table; ?>");'><?php print $va_info['displayname']." (".$o_res->numHits().")"; ?> <?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a>
+					<div class="quickSearchFullResultsLink"><?php print caNavLink($this->request, caNavIcon(__CA_NAV_ICON_FILTER__, 1)." "._t("Full Results &rsaquo;"), null, $va_info['searchModule'], $va_info['searchController'], $va_info['searchAction'], array("search" => caEscapeSearchForURL($ps_search), 'type_id' => '*')); ?></div>
+					<a href='#' style="text-decoration:none; color:#333;" id='show<?php print $vs_table; ?>' onclick='return caQuickSearchShowHideResults("show", "<?php print $vs_table; ?>");'><?php print $va_info['displayname']." (".$o_res->numHits().")"; ?> <?php print caNavIcon(__CA_NAV_ICON_EXPAND__, 1); ?></a>
+					<a href='#' id='hide<?php print $vs_table; ?>' style='display:none; text-decoration:none; color:#333;' onclick='return caQuickSearchShowHideResults("hide", "<?php print $vs_table; ?>");'><?php print $va_info['displayname']." (".$o_res->numHits().")"; ?> <?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, 1); ?></a>
 				</div>
 				<div class="quickSearchHalfWidthResults" id='<?php print $vs_table; ?>_results' style="display:none;">
 					<ul class='quickSearchList'>
@@ -168,7 +168,7 @@
 						}
 	?>
 					</ul>
-					<div class="quickSearchResultHide"><a href='#' id='hide<?php print $vs_table; ?>' onclick='jQuery("#<?php print $vs_table; ?>_results").slideUp(250); jQuery("#show<?php print $vs_table; ?>").slideDown(1); jQuery("#hide<?php print $vs_table; ?>").hide(); return false;'> <?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a></div>
+					<div class="quickSearchResultHide"><a href='#' id='hide<?php print $vs_table; ?>' onclick='jQuery("#<?php print $vs_table; ?>_results").slideUp(250); jQuery("#show<?php print $vs_table; ?>").slideDown(1); jQuery("#hide<?php print $vs_table; ?>").hide(); return false;'> <?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, 1); ?></a></div>
 				</div>
 <?php	
 			} else {

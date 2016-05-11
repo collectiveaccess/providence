@@ -869,3 +869,24 @@
 		return array('size' => $vs_selected_size, 'width' => $va_tmp[0], 'height' => $va_tmp[1]);
 	}
 	# ------------------------------------------------------------------------------------------------
+	/**
+	 *
+	 *
+	 */
+	function caParseMediaIdentifier($ps_identifier, $pa_options=null) {
+		$va_tmp = explode(':', $ps_identifier);
+		
+		switch($vs_type = strtolower($va_tmp[0])) {
+			case 'representation':
+			case 'attribute':
+				return ['type' => $vs_type, 'id' => (int)$va_tmp[1], 'page' => isset($va_tmp[2]) ? (int)$va_tmp[2] : null];
+				break;
+			default:
+				if (is_numeric($va_tmp[0])) {
+					return ['type' => 'representation', 'id' => (int)$va_tmp[0], 'page' => isset($va_tmp[1]) ? (int)$va_tmp[1] : null];
+				}
+				break;
+		}
+		return null;
+	}
+	# ------------------------------------------------------------------------------------------------

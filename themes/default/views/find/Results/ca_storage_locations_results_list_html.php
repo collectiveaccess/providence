@@ -40,7 +40,7 @@ if (!$this->getVar('no_hierarchies_defined')) {
 ?>
 <div id="scrollingResults">
 	<form id="caFindResultsForm">
-		<table class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+		<table class="listtable">
 			<thead>
 			<tr>
 			<th style="width:10px; text-align:center;" class='list-header-nosort'>
@@ -96,9 +96,9 @@ if (!$this->getVar('no_hierarchies_defined')) {
 						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_location_id; ?>' class="addItemToSetControl" />
 					</td>
 <?php
-					print "<td style='width:17%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_storage_locations', $vn_location_id, array())."</td>";
+					print "<td style='width:17%;'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), '', 'ca_storage_locations', $vn_location_id, array())."</td>";
 					if ($vs_mode == 'search') { 
-						print " <a href='#' onclick='caOpenBrowserWith(".$vn_location_id.");'>".caNavIcon($this->request, __CA_NAV_BUTTON_HIER__)."</a>";
+						print " <a href='#' onclick='caOpenBrowserWith(".$vn_location_id.");'>".caNavIcon(__CA_NAV_ICON_HIER__, 1)."</a>";
 					}
 					print "</td>";		
 					foreach($va_display_list as $vn_placement_id => $va_info) {
