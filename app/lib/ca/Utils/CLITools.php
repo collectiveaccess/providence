@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2015 Whirl-i-Gig
+ * Copyright 2014-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,10 +35,11 @@
   */
 
  	require_once(__CA_LIB_DIR__.'/ca/Utils/CLIBaseUtils.php');
+	require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
  
 	class CLITools extends CLIBaseUtils {
 		# -------------------------------------------------------
-		# CLI utility implementations
+		# Create a profile <list> element from an Excel spreadsheet. 
 		# -------------------------------------------------------
 		/**
 		 *
@@ -179,7 +180,103 @@
 		 *
 		 */
 		public static function make_list_from_excelShortHelp() {
-			return _t("Help to come.");
+			return _t("Create a profile <list> element from an Excel spreadsheet. ");
+		}
+		# -------------------------------------------------------
+		# Get EXIF tags
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function get_exif_tags($po_opts=null) {
+			require_once(__CA_LIB_DIR__."/ca/Import/DataReaders/ExifDataReader.php");
+			
+			$vs_directory_path = (string)$po_opts->getOption('directory');
+			if (!$vs_directory_path) { 
+				CLITools::addError(_t("You must specify a directory", $vs_directory_path));
+				return false;
+			}
+			if (!file_exists($vs_directory_path)) { 
+				CLITools::addError(_t("Directory '%1' does not exist", $vs_directory_path));
+				return false;
+			}
+			if (!is_dir($vs_directory_path)) { 
+				CLITools::addError(_t("'%1' is not a directory", $vs_directory_path));
+				return false;
+			}
+			if (!($vs_output_path = (string)$po_opts->getOption('out'))) {
+				CLITools::addError(_t("You must specify an output file"));
+				return false;
+			}
+			if (!is_writeable(pathinfo($vs_output_path, PATHINFO_DIRNAME))) { 
+				CLITools::addError(_t("Cannot write to %1", $vs_output_path));
+				return false;
+			}
+			
+			$va_file_list = caGetDirectoryContentsAsList($vs_directory_path);
+		
+			$o_reader = new ExifDataReader();
+			
+			$va_tag_list = [];
+			$va_sample_data = [];
+			foreach($va_file_list as $vs_file_path) {
+				if ($o_reader->read($vs_file_path) && $o_reader->nextRow()) {
+					$va_tag_groups = $o_reader->getRow();
+					
+					foreach($va_tag_groups as $vs_group => $va_tags) {
+						if(is_array($va_tags)) {
+							foreach($va_tags as $vs_tag => $vs_value) {
+								$va_tag_list["{$vs_group}/{$vs_tag}"]++;
+								$va_sample_data["{$vs_group}/{$vs_tag}"][(string)$vs_value]++;
+							}
+						} else {
+							$va_tag_list[$vs_group]++;
+							$va_sample_data[$vs_group][$vs_value]++;
+						}
+					}
+				}
+			}
+			
+			// output tags
+			$va_output = ["Tag\tUsed in # files\tTop 3 values"];
+			foreach($va_tag_list as $vs_tag => $vn_count) {
+				$va_values = $va_sample_data[$vs_tag];
+				asort($va_values, SORT_NUMERIC);
+				$va_output[] = "\"{$vs_tag}\"\t\"{$vn_count}\"\t\"".join("; ", array_slice(array_keys($va_values), 0, 3))."\"";
+			}
+			file_put_contents($vs_output_path, join("\n", $va_output));
+			CLITools::addMessage(_t("Wrote output to '%1'", $vs_output_path));
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function get_exif_tagsParamList() {
+			return array(
+				"directory|d-s" => _t('Directory containing images to examine.'),
+				"out|o-s" => _t('File to write tab-delimited output to.')
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function get_exif_tagsUtilityClass() {
+			return _t('Profile development tools');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function get_exif_tagsHelp() {
+			return _t("Analyzes a directory of images and returns a tab-delimited list of import-mapping compatible EXIF and IPTC tags containing data.");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function get_exif_tagsShortHelp() {
+			return _t("Analyzes a directory of images and returns a tab-delimited  list of import-mapping compatible EXIF and IPTC tags containing data.");
 		}
 		# -------------------------------------------------------
 	}
