@@ -1396,10 +1396,10 @@
 		 * If none of the UI fields are set to *anything* then we return NULL; this is a signal
 		 * to ignore the label input (ie. it was a blank form bundle)
 		 *
-		 * @param HTTPRequest $po_request Request object
+		 * @param RequestHTTP $po_request Request object
 		 * @param string $ps_form_prefix
 		 * @param string $ps_label_id
-		 * @param boolean $ps_is_preferred
+		 * @param bool $pb_is_preferred
 		 *
 		 * @return array Array of values or null is no values were set in the request
 		 */

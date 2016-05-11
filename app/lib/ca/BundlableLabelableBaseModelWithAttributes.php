@@ -811,38 +811,50 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 	# ------------------------------------------------------
 	/**
 	 * Check if a record already exists with the specified label
+	 *
+	 * @param int $pn_locale_id
+	 * @param array $pa_label_values
+	 * @param bool $pb_preferred_only
+	 * @return bool
 	 */
-	 public function checkForDupeLabel($pn_locale_id, $pa_label_values) {
-	 	$o_db = $this->getDb();
-	 	$t_label = $this->getLabelTableInstance();
-	 	
-	 	unset($pa_label_values['displayname']);
-	 	$va_sql = array();
-	 	foreach($pa_label_values as $vs_field => $vs_value) {
-	 		$va_sql[] = "(l.{$vs_field} = ?)";
-	 	}
-	 	
-	 	if ($t_label->hasField('is_preferred')) { $va_sql[] = "(l.is_preferred = 1)"; }
-	 	if ($t_label->hasField('locale_id')) { $va_sql[] = "(l.locale_id = ?)"; }
-	 	if ($this->hasField('deleted')) { $va_sql[] = "(t.deleted = 0)"; }
-	 	$va_sql[] = "(l.".$this->primaryKey()." <> ?)";
-	 	
-	 	$vs_sql = "SELECT ".$t_label->primaryKey()."
+	public function checkForDupeLabel($pn_locale_id, $pa_label_values, $pb_preferred_only=true) {
+		$o_db = $this->getDb();
+		$t_label = $this->getLabelTableInstance();
+		unset($pa_label_values['displayname']);
+		$va_wheres = array();
+		foreach($pa_label_values as $vs_field => $vs_value) {
+			$va_wheres[] = "(l.{$vs_field} = ?)";
+		}
+		if($pb_preferred_only) {
+			if ($t_label->hasField('is_preferred')) {
+				$va_wheres[] = "(l.is_preferred = 1)";
+			}
+		}
+		if($pn_locale_id && $t_label->hasField('locale_id')) {
+			$va_wheres[] = "(l.locale_id = ?)";
+		}
+		if ($this->hasField('deleted')) { $va_wheres[] = "(t.deleted = 0)"; }
+		if ($this->getPrimaryKey()) {
+			$va_wheres[] = "(l.".$this->primaryKey()." <> ?)";
+		}
+		$vs_sql = "SELECT ".$t_label->primaryKey()."
 	 	FROM ".$t_label->tableName()." l
 	 	INNER JOIN ".$this->tableName()." AS t ON t.".$this->primaryKey()." = l.".$this->primaryKey()."
-	 	WHERE ".join(' AND ', $va_sql);
-	
-	 	$va_values = array_values($pa_label_values);
-	 	$va_values[] = (int)$pn_locale_id;
-	 	$va_values[] = (int)$this->getPrimaryKey();
-	 	$qr_res = $o_db->query($vs_sql, $va_values);
-	 	
-	 	if ($qr_res->numRows() > 0) {
-	 		return true;
-	 	}
-	 
-	 	return false;
-	 }
+	 	WHERE ".join(' AND ', $va_wheres);
+		$va_values = array_values($pa_label_values);
+		if($pn_locale_id && $t_label->hasField('locale_id')) {
+			$va_values[] = (int)$pn_locale_id;
+		}
+		if ($this->getPrimaryKey()) {
+			$va_values[] = (int)$this->getPrimaryKey();
+		}
+		$qr_res = $o_db->query($vs_sql, $va_values);
+		if ($qr_res->numRows() > 0) {
+			caDebug('true');
+			return true;
+		}
+		return false;
+	}
 	# ------------------------------------------------------
 	/**
 	 *

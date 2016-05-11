@@ -56,6 +56,7 @@
 ?>
 	<textarea class='caLabelTemplate' style='display: none;'>
 		<div id="{fieldNamePrefix}Label_{n}" class="labelInfo">
+			<div id="caDupeLabelMessageBox_{n}" class='caDupeLabelMessageBox'></div>
 			<div style="float: right;">
 				<a href="#" class="caDeleteLabelButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 			</div>
@@ -149,7 +150,9 @@
 								<td>
 									<?php print $t_label->htmlFormElement('other_forenames', null, array('name' => "{fieldNamePrefix}other_forenames_{n}", 'id' => "{fieldNamePrefix}other_forenames_{n}", "value" => "{{other_forenames}}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_preferred')); ?>
 								</td>
-								<td colspan="3"><?php print $t_label->htmlFormElement('displayname', null, array('name' => "{fieldNamePrefix}displayname_{n}", 'id' => "{fieldNamePrefix}displayname_{n}", "value" => "{{displayname}}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_preferred', 'textAreaTagName' => 'textentry', 'readonly' => $vb_read_only)); ?><td>
+								<td colspan="3">
+									<?php print $t_label->htmlFormElement('displayname', null, array('name' => "{fieldNamePrefix}displayname_{n}", 'id' => "{fieldNamePrefix}displayname_{n}", "value" => "{{displayname}}", 'no_tooltips' => false, 'tooltip_namespace' => 'bundle_ca_entity_labels_preferred', 'textAreaTagName' => 'textentry', 'readonly' => $vb_read_only)); ?>
+								</td>
 							</tr>
 						</table>
 <?php
@@ -187,6 +190,9 @@
 		deleteButtonClassName: 'caDeleteLabelButton',
 		bundlePreview: <?php $va_cur = current($va_initial_values); print caEscapeForBundlePreview($va_cur['displayname']); ?>,
 		readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
-		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
+		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>,
+		checkForDupes: <?php print ($t_label->getAppConfig()->get('ca_entities_warn_when_preferred_label_exists') ? 'true' : 'false') ?>,
+		checkForDupesUrl: '<?php print caNavUrl($this->request, 'editor/entities', 'EntityEditor', 'checkForDupeLabels')?>',
+		dupeLabelWarning: '<?php print _t('Label is already in use'); ?>'
 	});
 </script>
