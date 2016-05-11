@@ -172,7 +172,8 @@
  			}	
  			
  			// Trim off trailing zeros in quantity
- 			$this->ops_text_value = preg_replace("![\.]{0,1}[0]+([A-Za-z ]+)$!", "$1", $this->ops_text_value);
+ 			$this->ops_text_value = preg_replace("!\.([1-9]*)[0]+([A-Za-z ]+)$!", "\.$1 $2", $this->ops_text_value);
+ 			$this->ops_text_value = preg_replace("![\.]([A-Za-z ]+)$!", "$1", $this->ops_text_value);
  			
  			$this->opn_decimal_value = $pa_value_array['value_decimal1'];
  		}
