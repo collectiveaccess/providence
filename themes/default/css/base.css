@@ -1210,6 +1210,13 @@ div.hint {
     padding: 10px;
 }
 
+.caDupeLabelMessageBox {
+    margin: 0 auto;
+    width: 200px;
+    font-family: Helvetica Neue, sans-serif;
+    color: #b32b21;
+}
+
 /* often times referred to as bundlePreview */
 .bundleContentPreview {
 	text-align:left;
