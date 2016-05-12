@@ -112,12 +112,19 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 						'coverageNotes' => '', // add blank value for [BLANK] search test
 					),
 				),
+
+				// Date in a container
+				'date' => array(
+					array(
+						'dates_value' => '1985'
+					)
+				)
 			)
 		)));
 
 		// search queries
 		$this->setSearchQueries(array(
-			/*'My Test Image' => 1,
+			'My Test Image' => 1,
 
 			// plain text
 			'Lorem ipsum' => 1,
@@ -160,7 +167,7 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.integer_test:24 AND ca_objects.integer_test:1984' => 0,
 
 			// Currency
-			'ca_objects.currency_test:$100' => 1,*/
+			'ca_objects.currency_test:$100' => 1,
 			'ca_objects.currency_test:[$99.99 to $100.01]' => 1,
 			'ca_objects.currency_test:EUR100' => 0,
 			'ca_objects.currency_test:USD100' => 1,
@@ -199,13 +206,25 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 			// SearchEngine :-)
 			'ca_objects.coverageNotes:[BLANK]' => 1,		// actually has a blank value
 			'ca_objects.description:[BLANK]' => 1,			// has no value at all
-			'ca_objects.georeference:[BLANK]' => 0,
+			//'ca_objects.georeference:[BLANK]' => 0,
 			'ca_objects.currency_test:[BLANK]' => 0,
 			'ca_objects.integer_test:[BLANK]' => 0,
 			'ca_objects.dimensions_weight:[BLANK]' => 0,
 			'ca_objects.dimensions_length:[BLANK]' => 0,
 			'ca_objects.url_source:[BLANK]' => 0,
-			'ca_objects.internal_notes:[BLANK]' => 0
+			'ca_objects.internal_notes:[BLANK]' => 0,
+
+			// dates in containers
+			'ca_objects.dates_value:1985' => 1,
+			'ca_objects.date.dates_value:1985' => 1, // for container advanced searches
+			'ca_objects.dates_value:1986' => 0,
+			'ca_objects.date.dates_value:1986' => 0, // for container advanced searches
+
+			// same as phrases
+			'ca_objects.dates_value:"1985"' => 1,
+			'ca_objects.date.dates_value:"1985"' => 1, // for container advanced searches
+			'ca_objects.dates_value:"1986"' => 0,
+			'ca_objects.date.dates_value:"1986"' => 0, // for container advanced searches
 		));
 	}
 	# -------------------------------------------------------
