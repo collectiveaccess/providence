@@ -42,8 +42,8 @@
 			getInfoURL : '<?php print caNavUrl($this->request, '*', '*', 'GetObjectInfo', array()); ?>',
 			saveTransactionURL: '<?php print caNavUrl($this->request, '*', '*', 'SaveTransaction', array()); ?>',
 			loadWidgetURL: '<?php print caNavUrl($this->request, '*', '*', 'Info', array()); ?>',
-			
-			removeButtonIcon: '<?php print caNavIcon(__CA_NAV_ICON_DELETE__, 1); ?>'
+
+			removeButtonIcon: '<?php print addslashes(caNavIcon(__CA_NAV_ICON_DELETE__, 1)); ?>'
 		});
 	});
 </script>
