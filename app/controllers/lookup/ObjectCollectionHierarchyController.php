@@ -60,6 +60,8 @@
 			
 			$t_object = new ca_objects();
 			$t_collection = new ca_collections();
+
+			$o_config = Configuration::load();
 			
 			if (!($pn_limit = $this->request->getParameter('limit', pInteger))) { $pn_limit = 100; }
 			$va_items = array();
@@ -135,8 +137,15 @@
 					$o_search_config = caGetSearchConfig();
 					$ps_query = trim(preg_replace("![".str_replace("!", "\\!", $o_search_config->get('search_tokenizer_regex'))."]+!u", " ", $ps_query));
 				}
+
+				if (!(is_array($va_object_sort = $o_config->getList('ca_objects_lookup_sort'))) || !sizeof($va_object_sort)) {
+					$va_object_sort = array('ca_objects.idno_sort');
+				}
 				
-				$qr_res = $o_object_search->search('('.$ps_query.(intval($pb_exact) ? '' : '*').')'.$vs_type_query.$vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => 'ca_objects.idno_sort'));
+				$qr_res = $o_object_search->search(
+					'('.$ps_query.(intval($pb_exact) ? '' : '*').')'.$vs_type_query.$vs_additional_query_params,
+					array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $va_object_sort)
+				);
 				
 				$qr_res->setOption('prefetch', $pn_limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);
@@ -152,7 +161,15 @@
 					
 					// How to restrict objects?
 				//}
-				$qr_res = $o_collection_search->search('('.$ps_query.(intval($pb_exact) ? '' : '*').')'.$vs_type_query.$vs_additional_query_params, array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => 'ca_collections.idno_sort'));
+
+				if (!(is_array($va_col_sort = $o_config->getList('ca_collections_lookup_sort'))) || !sizeof($va_col_sort)) {
+					$va_col_sort = array('ca_collections.idno_sort');
+				}
+
+				$qr_res = $o_collection_search->search(
+					'('.$ps_query.(intval($pb_exact) ? '' : '*').')'.$vs_type_query.$vs_additional_query_params,
+					array('search_source' => 'Lookup', 'no_cache' => false, 'sort' => $va_col_sort)
+				);
 	
 				$qr_res->setOption('prefetch', $pn_limit);
 				$qr_res->setOption('dontPrefetchAttributes', true);
@@ -278,8 +295,11 @@
 						if ($t_label_instance && $t_label_instance->hasField('is_preferred')) {
 							$va_additional_wheres[] = "(({$vs_label_table_name}.is_preferred = 1) OR ({$vs_label_table_name}.is_preferred IS NULL))";
 						}
-						
-						if (!(is_array($va_sorts = $o_config->getList($vs_table.'_hierarchy_browser_sort_values'))) || !sizeof($va_sorts)) { $va_sorts = null; }
+
+						$va_sorts = $o_config->getList($vs_table.'_hierarchy_browser_sort_values');
+						if (!is_array($va_sorts) || !sizeof($va_sorts)) {
+							$va_sorts = [];
+						}
 						foreach($va_sorts as $vn_i => $vs_sort_fld) {
 							$va_tmp = explode(".", $vs_sort_fld);
 							
@@ -293,10 +313,12 @@
 								$va_sorts[$vn_i] = join(".", $va_tmp);
 							}
 						}
-						
-						if (!in_array($vs_sort_dir = strtolower($o_config->get($vs_table.'_hierarchy_browser_sort_direction')), array('asc', 'desc'))) {
+
+						$vs_sort_dir = strtolower($o_config->get($vs_table.'_hierarchy_browser_sort_direction'));
+						if (!in_array($vs_sort_dir, array('asc', 'desc'))) {
 							$vs_sort_dir = 'asc';
 						}
+
 						$qr_children = $t_item->getHierarchyChildrenAsQuery(
 											$t_item->getPrimaryKey(), 
 											array(
@@ -356,11 +378,25 @@
 						}
 						
 						if ($t_item->tableName() == 'ca_collections') {
-							$va_sorts =  $o_config->getList('ca_objects_hierarchy_browser_sort_values');
-							
+							$va_object_sorts =  $o_config->getList('ca_objects_hierarchy_browser_sort_values');
+							if (!is_array($va_object_sorts) || !sizeof($va_object_sorts)) {
+								$va_object_sorts = [];
+							}
+
+							$vs_object_sort_dir = strtolower($o_config->get('ca_objects_hierarchy_browser_sort_direction'));
+							if (!in_array($vs_object_sort_dir, array('asc', 'desc'))) {
+								$vs_object_sort_dir = 'asc';
+							}
 							
 							$vs_object_collection_rel_type = $o_config->get('ca_objects_x_collections_hierarchy_relationship_type');
-							$va_cross_table_items = $t_item->getRelatedItems('ca_objects', array('sort' => $va_sorts, 'restrictToRelationshipTypes' => array($vs_object_collection_rel_type)));
+							$va_cross_table_items = $t_item->getRelatedItems(
+								'ca_objects',
+								array(
+									'sort' => $va_object_sorts,
+									'sortDirection' => $vs_object_sort_dir,
+									'restrictToRelationshipTypes' => array($vs_object_collection_rel_type)
+								)
+							);
 							
 							$vn_item_count += sizeof($va_cross_table_items);
 							$va_ids = array();
