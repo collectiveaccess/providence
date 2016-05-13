@@ -1771,7 +1771,7 @@ class BaseEditorController extends ActionController {
 				
 				if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_instance->getMediaInfo('media', 'original', 'MIMETYPE')))) {
 					// error: no viewer available
-					die("Invalid viewer $vs_mimetype xx");
+					die("Invalid viewer $vs_mimetype");
 				}
 				
 				$this->response->addContent($vs_viewer_name::getViewerData($this->request, $ps_identifier, ['request' => $this->request, 't_subject' => null, 't_instance' => $t_instance, 'display' => caGetMediaDisplayInfo('media_overlay', $vs_mimetype)]));
