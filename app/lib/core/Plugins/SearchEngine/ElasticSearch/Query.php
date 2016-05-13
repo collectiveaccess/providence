@@ -194,8 +194,7 @@ class Query {
 				$o_new_subquery = null;
 
 				if($o_lower_fld instanceof FieldTypes\Geocode) {
-					$this->opa_additional_filters[]['geo_shape'] =
-						$o_lower_fld->getFilterForRangeQuery($o_lower_term, $o_upper_term);
+					$this->opa_additional_filters[] = ['geo_shape' => $o_lower_fld->getFilterForRangeQuery($o_lower_term, $o_upper_term)];
 				} else {
 					$o_lower_rewritten_term = $o_lower_fld->getRewrittenTerm($o_lower_term);
 					$o_upper_rewritten_term = $o_upper_fld->getRewrittenTerm($o_upper_term);
@@ -218,7 +217,9 @@ class Query {
 				$o_new_subquery = null;
 				if(($o_fld instanceof FieldTypes\DateRange) || ($o_fld instanceof FieldTypes\Timestamp)) {
 					$o_new_subquery = null;
-					$this->opa_additional_filters['range'] = $o_fld->getFilterForTerm($o_term);
+					foreach($o_fld->getFiltersForTerm($o_term) as $va_filter) {
+						$this->opa_additional_filters[] = $va_filter;
+					}
 					break;
 				}  else {
 					if($o_rewritten_term = $o_fld->getRewrittenTerm($o_term)) {
@@ -244,8 +245,7 @@ class Query {
 
 					if($o_fld instanceof FieldTypes\Geocode) {
 						$o_new_subquery = null;
-						$this->opa_additional_filters['geo_shape'] =
-							$o_fld->getFilterForPhraseQuery($o_subquery);
+						$this->opa_additional_filters[] = ['geo_shape' => $o_fld->getFilterForPhraseQuery($o_subquery)];
 						break;
 					} elseif(($o_fld instanceof FieldTypes\DateRange) || ($o_fld instanceof FieldTypes\Timestamp)) {
 						$o_new_subquery = null;
