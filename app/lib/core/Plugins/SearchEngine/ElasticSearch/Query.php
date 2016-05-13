@@ -239,6 +239,24 @@ class Query {
 
 				$vb_multiterm_all_terms_same_field = (sizeof(array_unique($va_fields_in_subquery)) < 2) && (sizeof($o_subquery->getTerms()) > 1);
 
+				// edge case:
+				// convert ca_objects.dimensions_width:"30 cm", which is parsed as
+				// two terms ... "30", and "cm" to one relatively simple term query
+				if($vb_multiterm_all_terms_same_field && ($o_first_term = array_shift($o_subquery->getTerms()))) {
+					$o_first_term = caRewriteElasticSearchTermFieldSpec($o_first_term);
+					$o_fld = $this->getFieldTypeForTerm($o_first_term);
+					if(($o_fld instanceof FieldTypes\Length) || ($o_fld instanceof FieldTypes\Weight)) {
+						$vs_acc = '';
+						foreach($o_subquery->getTerms() as $o_t) {
+							$vs_acc .= $o_t->text;
+						}
+						$o_new_subquery->addTerm($o_fld->getRewrittenTerm(new \Zend_Search_Lucene_Index_Term($vs_acc, $o_first_term->field)));
+					}
+
+					return $o_new_subquery;
+				}
+
+				// "normal" phrase rewriting below
 				foreach($o_subquery->getTerms() as $o_term) {
 					$o_term = caRewriteElasticSearchTermFieldSpec($o_term);
 					$o_fld = $this->getFieldTypeForTerm($o_term);
