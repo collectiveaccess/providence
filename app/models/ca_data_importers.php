@@ -42,6 +42,7 @@ require_once(__CA_MODELS_DIR__."/ca_data_importer_labels.php");
 require_once(__CA_MODELS_DIR__."/ca_data_importer_groups.php");
 require_once(__CA_MODELS_DIR__."/ca_data_importer_items.php");
 require_once(__CA_MODELS_DIR__."/ca_data_import_events.php");
+require_once(__CA_MODELS_DIR__."/ca_locales.php");
 require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel.php');
 require_once(__CA_LIB_DIR__.'/core/Parsers/PHPExcel/PHPExcel/IOFactory.php');
 require_once(__CA_LIB_DIR__.'/core/Logging/KLogger/KLogger.php');
@@ -383,6 +384,16 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			'default' => '',
 			'label' => _t('Base path'),
 			'description' => _t('For XML data formats, an XPath expression selecting nodes to be treated as individual records. If left blank, each XML document will be treated as a single record.')
+		);
+		
+		$va_settings['locale'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Locale'),
+			'description' => _t('Set the locale used for all imported data. Leave on "DEFAULT" to use the system default locale. Otherwise set it to a valid locale code (Ex. en_US, es_MX, fr_CA).')
 		);
 		
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
@@ -1270,7 +1281,11 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		$va_log_import_error_opts = array('startTime' => $vn_start_time, 'window' => $r_errors, 'log' => $o_log, 'request' => $po_request, 'progressCallback' => (isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) ? $ps_callback : null, 'reportCallback' => (isset($pa_options['reportCallback']) && ($ps_callback = $pa_options['reportCallback'])) ? $ps_callback : null);
 	
 		global $g_ui_locale_id;	// constant locale set by index.php for web requests
-		$vn_locale_id = (isset($pa_options['locale_id']) && (int)$pa_options['locale_id']) ? (int)$pa_options['locale_id'] : $g_ui_locale_id;
+		if (!($vn_locale_id = caGetOption('locale_id', $pa_options, null))) {	// set as option?	
+			if (!($vn_locale_id = ca_locales::codeToID($t_mapping->getSetting('locale')))) {	// set in mapping?
+				$vn_locale_id = $g_ui_locale_id;												// use global
+			}
+		}
 		
 		$o_dm = $t_mapping->getAppDatamodel();
 		
