@@ -1431,6 +1431,21 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 					'description' => _t('Override sort option for this field. Use this if you want result lists to sort on a different field when clicking on this bundle.')
 				),
 			);
+			
+			
+			
+			if ($vs_related_table == 'ca_list_items') {
+				$va_additional_settings['restrictToLists'] = array(
+					'formatType' => FT_TEXT,
+					'displayType' => DT_SELECT,
+					'showLists' => true,
+					'width' => 60, 'height' => 5,
+					'takesLocale' => false,
+					'label' => _t('Restrict to list'),
+					'description' => _t('Display related items from selected lists only. If no lists are selected then all related items are displayed.')
+				);
+			}
+			
 			if ($t_rel_instance->isHierarchical()) {
 				$va_additional_settings += array(
 					'show_hierarchy' => array(

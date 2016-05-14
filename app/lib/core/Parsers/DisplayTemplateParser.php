@@ -841,6 +841,7 @@ class DisplayTemplateParser {
 		
 		$va_vals = [];
 		
+		$vb_val_is_referenced = $vb_val_is_set = $vb_rel_type_is_set = false;
 		for($vn_c = 0; $vn_c < $vn_count; $vn_c++) {
 			foreach(array_keys($pa_tags) as $vs_tag) {
 				$vs_get_spec = $va_get_specs[$vs_tag]['spec'];
@@ -857,6 +858,7 @@ class DisplayTemplateParser {
 						} else {
 							$va_val_list = $pr_res->get('ca_relationship_types.preferred_labels.'.((caGetOption('orientation', $pa_options, 'LTOR') == 'LTOR') ? 'typename' : 'typename_reverse'), $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
 						}
+						$vb_rel_type_is_set = true;
 						break;
 					case 'relationship_type_id':
 						if (is_array($va_relationship_type_ids) && ($vn_type_id = $va_relationship_type_ids[$pr_res->currentIndex()])) {
@@ -864,6 +866,7 @@ class DisplayTemplateParser {
 						} else {
 							$va_val_list = $pr_res->get('ca_relationship_types.type_id', $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
 						}
+						$vb_rel_type_is_set = true;
 						break;
 					case 'relationship_typecode':
 					case 'relationship_type_code':
@@ -876,6 +879,7 @@ class DisplayTemplateParser {
 						} else {
 							$va_val_list = $pr_res->get('ca_relationship_types.type_code', $va_opts = array_merge($pa_options, $va_parsed_tag_opts['options'], ['returnAsArray' => true, 'returnWithStructure' => false]));
 						}
+						$vb_rel_type_is_set = true;
 						break;
 					case 'date':		// allows embedding of current date
 						$va_val_list = [date(caGetOption('format', $va_parsed_tag_opts['options'], 'd M Y'))];
@@ -906,6 +910,9 @@ class DisplayTemplateParser {
 								$va_val_list = array_slice($va_val_list, $vn_start, ($vn_length > 0) ? $vn_length : null);
 							}
 						}
+						$vb_val_is_referenced = true;														// Flag that a data value is in the template 
+						if(!$pb_include_blanks) { $va_val_list = array_filter($va_val_list, 'strlen'); }
+						if(sizeof($va_val_list)) { $vb_val_is_set = true; }									// Flag that the data value was set to something
 						break;
 				}
 				$ps_delimiter = caGetOption('delimiter', $va_opts, ';');
@@ -916,7 +923,6 @@ class DisplayTemplateParser {
 						$va_vals[$vn_c]['__sort__'] = $va_tag_vals[$vn_c]['__sort__'];
 					}
 				} else {
-					if(!$pb_include_blanks) { $va_val_list = array_filter($va_val_list, 'strlen'); }
 					$va_vals[$vs_tag] = join($ps_delimiter, $va_val_list);
 					if (isset($va_tag_vals[$vn_c]['__sort__'])) {
 						$va_vals['__sort__'] = $va_tag_vals[$vn_c]['__sort__'];
@@ -924,6 +930,9 @@ class DisplayTemplateParser {
 				}
 			}
 		}
+		
+		if ($vb_rel_type_is_set && $vb_val_is_referenced && !$vb_val_is_set) { return []; }					// Return nothing when relationship type is set and a value is referenced but not set
+																											// This suppresses relationship type display when the data value itself is filtered
 		
 		return $va_vals;
 	}
