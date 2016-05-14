@@ -624,13 +624,13 @@ class DisplayTemplateParser {
 										$qr_rels = caMakeSearchResult($t_rel_instance->getRelationshipTableName($ps_tablename), $va_relation_ids);
 										$va_relationship_type_ids = $qr_rels->getAllFieldValues($x=$t_rel_instance->getRelationshipTableName($ps_tablename).'.type_id');
 									} elseif($vs_rel_tablename = $t_rel_instance->getRelationshipTableName($ps_tablename)) {
-										$va_relationship_type_ids = $pr_res->getAllFieldValues("{$vs_rel_tablename}.type_id");
+										$va_relationship_type_ids = [$pr_res->get("{$vs_rel_tablename}.type_id")];
 									}
 								}
 							
 								break;
 						}
-						print_R($va_relationship_type_ids);
+						
 						$va_tmpl_val = DisplayTemplateParser::evaluate(
 							$o_node->getInnerText(), $va_relative_to_tmp[0], $va_relative_ids,
 							array_merge(
