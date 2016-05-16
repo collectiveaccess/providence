@@ -245,13 +245,14 @@ class Query {
 				if($vb_multiterm_all_terms_same_field && ($o_first_term = array_shift($o_subquery->getTerms()))) {
 					$o_first_term = caRewriteElasticSearchTermFieldSpec($o_first_term);
 					$o_fld = $this->getFieldTypeForTerm($o_first_term);
-					if(($o_fld instanceof FieldTypes\Length) || ($o_fld instanceof FieldTypes\Weight)) {
+					if(($o_fld instanceof FieldTypes\Length) || ($o_fld instanceof FieldTypes\Weight) || ($o_fld instanceof FieldTypes\Currency)) {
 						$vs_acc = '';
 						foreach($o_subquery->getTerms() as $o_t) {
 							$vs_acc .= $o_t->text;
 						}
-						$o_new_subquery->addTerm($o_fld->getRewrittenTerm(new \Zend_Search_Lucene_Index_Term($vs_acc, $o_first_term->field)));
-						return $o_new_subquery;
+						$o_term = new \Zend_Search_Lucene_Index_Term($vs_acc, $o_first_term->field);
+						$o_new_subquery->addTerm($o_fld->getRewrittenTerm($o_term));
+						return $this->getSubqueryWithAdditionalTerms($o_new_subquery, $o_fld, $o_term);
 					}
 				}
 

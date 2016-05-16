@@ -230,7 +230,7 @@ class Zend_Locale
      *
      * @var string Locales
      */
-    protected static $_default = array('en' => true);
+    protected static $_default = array('en_US' => true);
 
     /**
      * Generates a locale object
