@@ -251,9 +251,8 @@ class Query {
 							$vs_acc .= $o_t->text;
 						}
 						$o_new_subquery->addTerm($o_fld->getRewrittenTerm(new \Zend_Search_Lucene_Index_Term($vs_acc, $o_first_term->field)));
+						return $o_new_subquery;
 					}
-
-					return $o_new_subquery;
 				}
 
 				// "normal" phrase rewriting below
