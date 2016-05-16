@@ -61,9 +61,17 @@ class DateSearchQueryTest extends AbstractSearchQueryTest {
 				),
 			),
 			'attributes' => array(
+				// straight date
 				'coverageDates' => array(
 					array(
 						'coverageDates' => '01/28/1985 @ 10am'
+					)
+				),
+
+				// Date in a container
+				'date' => array(
+					array(
+						'dates_value' => '1840-1850'
 					)
 				)
 			)
@@ -138,6 +146,10 @@ class DateSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.coverageDates:">1985"' => 1,
 			'ca_objects.coverageDates:"<1986"' => 1,
 			'ca_objects.coverageDates:"<=1986"' => 2,
+
+			// in container
+			'ca_objects.date.dates_value:"1845"' => 1,
+			'ca_objects.date.dates_value:1845' => 1,
 
 			// these are valid dates for data entry but apparently they don't work that well in combination with the search
 			//'ca_objects.coverageDates:"01/28/1985 @ 4:43:03a.m. - 01/28/1985 @ 4:43:03p.m."' => 1,
