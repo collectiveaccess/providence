@@ -311,14 +311,13 @@ class Query {
 		if(($va_additional_terms = $po_fld->getAdditionalTerms($po_term)) && is_array($va_additional_terms)) {
 
 			// we cant use the index terms as is; have to construct term queries
-			$va_additional_term_queries = $va_signs = array();
+			$va_additional_term_queries = array();
 			if($po_original_subquery) { $va_additional_term_queries[] = $po_original_subquery; }
 			foreach($va_additional_terms as $o_additional_term) {
 				$va_additional_term_queries[] = new \Zend_Search_Lucene_Search_Query_Term($o_additional_term);
-				$va_signs[] = true;
 			}
 
-			return new \Zend_Search_Lucene_Search_Query_Boolean($va_additional_term_queries, $va_signs);
+			return join(' AND ', $va_additional_term_queries);
 		} else {
 			return $po_original_subquery;
 		}
