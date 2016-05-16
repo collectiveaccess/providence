@@ -296,6 +296,13 @@ class Query {
 
 				$o_new_subquery = new \Zend_Search_Lucene_Search_Query_MultiTerm($va_new_terms, $o_subquery->getSigns());
 				return $this->getSubqueryWithAdditionalTerms($o_new_subquery, $o_fld, $o_term);
+			case 'Zend_Search_Lucene_Search_Query_Boolean':
+				/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Boolean */
+				$va_new_subqueries = array();
+				foreach($o_subquery->getSubqueries() as $o_subsubquery) {
+					$va_new_subqueries[] = $this->rewriteSubquery($o_subsubquery);
+				}
+				return new \Zend_Search_Lucene_Search_Query_Boolean($va_new_subqueries, $o_subquery->getSigns());
 			default:
 				throw new \Exception('Encountered unknown Zend subquery type in ElasticSearch\Query: ' . get_class($o_subquery));
 				break;
