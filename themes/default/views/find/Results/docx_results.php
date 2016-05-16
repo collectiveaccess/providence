@@ -129,7 +129,7 @@ $phpWord->addTableStyle('myOwnTableStyle', $styleTable, $styleFirstRow);
 		$contentCell = $table->addCell(12 * $cmToTwips);
 
 		$contentCell->addText(
-			html_entity_decode(strip_tags(br2nl($vo_result->get('preferred_labels'))), ENT_QUOTES | ENT_HTML5),
+			caEscapeForXML(html_entity_decode(strip_tags(br2nl($vo_result->get('preferred_labels'))), ENT_QUOTES | ENT_HTML5)),
 			$styleHeaderFont
 		);
 
@@ -162,7 +162,7 @@ $phpWord->addTableStyle('myOwnTableStyle', $styleTable, $styleFirstRow);
                 $textrun = $contentCell->createTextRun();
 				$textrun->addText(caEscapeForXML($va_info['display']).': ', $styleBundleNameFont);
 		        $textrun->addText(
-					html_entity_decode(strip_tags(br2nl($vs_display_text)), ENT_QUOTES | ENT_HTML5),
+					caEscapeForXML(html_entity_decode(strip_tags(br2nl($vs_display_text)), ENT_QUOTES | ENT_HTML5)),
 					$styleContentFont
 				);
 

@@ -87,11 +87,19 @@ class DateRange extends GenericElement {
 	 * @param \Zend_Search_Lucene_Index_Term $po_term
 	 * @return array
 	 */
-	function getFilterForTerm($po_term) {
+	function getFiltersForTerm($po_term) {
+
+		$va_tmp = explode('\\/', $po_term->field);
+		if(sizeof($va_tmp) == 3) {
+			unset($va_tmp[1]);
+			$po_term = new \Zend_Search_Lucene_Index_Term(
+				$po_term->text, join('\\/', $va_tmp)
+			);
+		}
 
 		// try to get qualifiers
 		$vs_qualifier = null;
-		if(preg_match("/^([\<\>\#][\=]?)(.+)/", $po_term->text, $va_matches)) {
+		if (preg_match("/^([\<\>\#][\=]?)(.+)/", $po_term->text, $va_matches)) {
 			$vs_parse_date = $va_matches[2];
 			$vs_qualifier = $va_matches[1];
 		} else {
@@ -100,39 +108,53 @@ class DateRange extends GenericElement {
 
 		$va_return = array();
 		$va_parsed_values = caGetISODates($vs_parse_date);
-		$vs_return_term = str_replace('\\', '', $po_term->field);
+		$vs_fld = str_replace('\\', '', $po_term->field);
 
-		switch($vs_qualifier) {
+		switch ($vs_qualifier) {
 			case '<':
-				$va_return[$vs_return_term] = array(
-					'lt' => $va_parsed_values['start'],
-				);
+				$va_return[] = array(
+					'range' => array(
+						$vs_fld => array(
+							'lt' => $va_parsed_values['start'],
+						)));
 				break;
 			case '<=':
-				$va_return[$vs_return_term] = array(
-					'lte' => $va_parsed_values['end'],
-				);
+				$va_return[] = array(
+					'range' => array(
+						$vs_fld => array(
+							'lte' => $va_parsed_values['end'],
+						)));
 				break;
 			case '>':
-				$va_return[$vs_return_term] = array(
-					'gt' => $va_parsed_values['end'],
-				);
+				$va_return[] = array(
+					'range' => array(
+						$vs_fld => array(
+							'gt' => $va_parsed_values['end'],
+						)));
 				break;
 			case '>=':
-				$va_return[$vs_return_term] = array(
-					'gte' => $va_parsed_values['start'],
-				);
+				$va_return[] = array(
+					'range' => array(
+						$vs_fld => array(
+							'gte' => $va_parsed_values['start'],
+						)));
 				break;
 			case '#':
 			default:
-				$va_return[$vs_return_term] = array(
-					'gte' => $va_parsed_values['start'],
-					'lte' => $va_parsed_values['end'],
-				);
+				$va_return[] = array(
+					'range' => array(
+						$vs_fld => array(
+							'lte' => $va_parsed_values['end'],
+						)));
+
+				$va_return[] = array(
+					'range' => array(
+						$vs_fld => array(
+							'gte' => $va_parsed_values['start'],
+						)));
 				break;
 		}
 
 		return $va_return;
 	}
-
 }
