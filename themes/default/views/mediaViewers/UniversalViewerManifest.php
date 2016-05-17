@@ -55,11 +55,11 @@
 		$vs_canvas_id = "{$vs_identifer}:{$vn_page}";
 		
 		if ($vs_display_version == 'tilepic') {
-			$vs_service_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifer}".(($vn_num_resources > 1) ? ":{$vn_page}" : "");
-			$vs_thumb_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifer}".(($vn_num_resources > 1) ? ":{$vn_page}" : "")."/full/!1024,1024/0/default.jpg";
+			$vs_service_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifer}:{$vn_page}";
+			$vs_thumb_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifer}:{$vn_page}/full/!1024,1024/0/default.jpg";
 		} else {
 			$vs_service_url = $va_resource['url'];
-			$vs_thumb_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifer}".(($vn_num_resources > 1) ? ":{$vn_page}" : "")."/full/!1024,1024/0/default.jpg";
+			$vs_thumb_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifer}:{$vn_page}/full/!1024,1024/0/default.jpg";
 		}
 		
 		$va_canvases[] =
