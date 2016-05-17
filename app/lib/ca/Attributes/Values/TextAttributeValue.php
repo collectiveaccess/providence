@@ -252,7 +252,7 @@
 				return false;
  			}
 
-			if(isset($va_settings['mustBeUnique']) && (bool)$va_settings['mustBeUnique']) {
+			if(isset($va_settings['mustBeUnique']) && (bool)$va_settings['mustBeUnique'] && ($vn_strlen > 0)) {
 				if(isset($pa_options['transaction']) && ($o_trans = $pa_options['transaction'])) {
 					$o_db = $o_trans->getDb();
 				} else {

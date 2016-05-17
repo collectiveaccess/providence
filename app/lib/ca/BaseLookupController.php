@@ -505,9 +505,14 @@
 			}
 
 			$o_db = new Db();
-			$qr_values = $o_db->query('SELECT value_id FROM ca_attribute_values WHERE element_id=? AND value_longtext1=?', $pn_element_id, $ps_val);
+			if(unicode_strlen($ps_val) > 0) {
+				$qr_values = $o_db->query('SELECT value_id FROM ca_attribute_values WHERE element_id=? AND value_longtext1=?', $pn_element_id, $ps_val);
+				$va_value_list = $qr_values->getAllFieldValues('value_id');
+			} else {
+				$va_value_list = [];
+			}
 
-			$this->getView()->setVar('value_list', $qr_values->getAllFieldValues('value_id'));
+			$this->getView()->setVar('value_list', $va_value_list);
 
 			return $this->render('attribute_json.php');
 		}
