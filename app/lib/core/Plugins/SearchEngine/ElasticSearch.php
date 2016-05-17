@@ -368,7 +368,12 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		}
 
 		Debug::msg("[ElasticSearch] actual query filters are: " . print_r($va_additional_filters, true));
-		$va_results = $this->getClient()->search($va_search_params);
+		try {
+			$va_results = $this->getClient()->search($va_search_params);
+		} catch(\Elasticsearch\Common\Exceptions\BadRequest400Exception $e) {
+			$va_results = ['hits' => ['hits' => []]];
+		}
+
 		return new WLPlugSearchEngineElasticSearchResult($va_results['hits']['hits'], $pn_subject_tablenum);
 	}
 	# -------------------------------------------------------
