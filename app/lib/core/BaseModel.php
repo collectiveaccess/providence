@@ -8768,8 +8768,8 @@ $pa_options["display_form_field_tips"] = true;
 								$vs_element .= "<span id='".$pa_options["id"].'_uniqueness_status'."'></span>";
 								$vs_element .= "<script type='text/javascript'>
 	caUI.initUniquenessChecker({
-		errorIcon: '".$pa_options['error_icon']."',
-		processIndicator: '".$pa_options['progress_indicator']."',
+		errorIcon: '".addslashes($pa_options['error_icon'])."',
+		processIndicator: '".addslashes($pa_options['progress_indicator'])."',
 		statusID: '".$pa_options["id"]."_uniqueness_status',
 		lookupUrl: '".$pa_options['lookup_url']."',
 		formElementID: '".$pa_options["id"]."',
