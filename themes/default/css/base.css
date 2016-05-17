@@ -1211,6 +1211,11 @@ div.hint {
     color: #b32b21;
 }
 
+.caDupeAttributeMessageBox {
+    font-family: Helvetica Neue, sans-serif;
+    color: #b32b21;
+}
+
 /* often times referred to as bundlePreview */
 .bundleContentPreview {
 	text-align:left;

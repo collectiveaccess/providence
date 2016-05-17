@@ -289,7 +289,7 @@
  		 * @return string
  		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
- 			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'minChars', 'maxChars', 'suggestExistingValues', 'usewysiwygeditor', 'isDependentValue', 'dependentValueTemplate'));
+ 			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'minChars', 'maxChars', 'suggestExistingValues', 'usewysiwygeditor', 'isDependentValue', 'dependentValueTemplate', 'mustBeUnique'));
 
  			if (isset($pa_options['usewysiwygeditor'])) {
  				$va_settings['usewysiwygeditor'] = $pa_options['usewysiwygeditor'];
@@ -349,6 +349,14 @@
  				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
  				$va_opts
  			);
+
+			if (isset($va_settings['mustBeUnique']) && $va_settings['mustBeUnique']) {
+				$vs_element .= "
+					<div id='{fieldNamePrefix}{$pa_element_info['element_id']}_{n}_uniquenessWarning' class='caDupeAttributeMessageBox' style='display:none'>
+						"._t("This field value already exists!")."
+					</div>
+				";
+			}
  			
  			if ($va_settings['isDependentValue'] || $pa_options['isDependentValue']) {
  				$t_element = new ca_metadata_elements($pa_element_info['element_id']);
@@ -392,6 +400,29 @@
 					);
  				</script>\n";
  			}
+
+			if (isset($va_settings['mustBeUnique']) && $va_settings['mustBeUnique']) {
+				$vs_unique_lookup_url = caJSONLookupServiceUrl(
+					$pa_options['request'],
+					$pa_options['t_subject']->tableName(),
+					['element_id' => $pa_element_info['element_id']]
+				)['attribute'];
+				caDebug($vs_unique_lookup_url);
+
+
+				$vs_element .= "<script type='text/javascript'>
+					var warnSpan = jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_{n}_uniquenessWarning');
+ 					jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').keyup(function() {
+						jQuery.getJSON('{$vs_unique_lookup_url}', {n: jQuery(this).val()}).done(function(data) {
+							if(data.length > 0) {
+								warnSpan.show();
+							} else {
+								warnSpan.hide();
+							}
+						});
+					});
+ 				</script>\n";
+			}
  			
  			return $vs_element;
  		}
