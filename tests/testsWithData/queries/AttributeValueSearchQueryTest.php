@@ -172,6 +172,8 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.currency_test:EUR100' => 0,
 			'ca_objects.currency_test:USD100' => 1,
 			'ca_objects.currency_test:CAD100' => 0,
+			// multiterm phrase query
+			'ca_objects.currency_test:"100 EUR"' => 0,
 
 			// Georeference
 			'ca_objects.georeference:[36.4,-123.5 to 38.5,-121.9]' => 1, // actual lucene range search
@@ -206,7 +208,7 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 			// SearchEngine :-)
 			'ca_objects.coverageNotes:[BLANK]' => 1,		// actually has a blank value
 			'ca_objects.description:[BLANK]' => 1,			// has no value at all
-			//'ca_objects.georeference:[BLANK]' => 0,
+			'ca_objects.georeference:[BLANK]' => 0,
 			'ca_objects.currency_test:[BLANK]' => 0,
 			'ca_objects.integer_test:[BLANK]' => 0,
 			'ca_objects.dimensions_weight:[BLANK]' => 0,
