@@ -1290,7 +1290,8 @@
 			'levelList' => caNavUrl($po_request, $vs_module, $vs_controller, 'GetHierarchyLevel', $pa_attributes),
 			'search' => caNavUrl($po_request, $vs_module, $vs_controller, 'Get', $pa_attributes),
 			'idno' => caNavUrl($po_request, $vs_module, $vs_controller, 'IDNo', $pa_attributes),
-			'intrinsic' => caNavUrl($po_request, $vs_module, $vs_controller, 'intrinsic', $pa_attributes)
+			'intrinsic' => caNavUrl($po_request, $vs_module, $vs_controller, 'Intrinsic', $pa_attributes),
+			'attribute' => caNavUrl($po_request, $vs_module, $vs_controller, 'Attribute', $pa_attributes),
 		);
 	}
 	# ------------------------------------------------------------------------------------------------
