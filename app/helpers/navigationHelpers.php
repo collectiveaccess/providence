@@ -100,6 +100,7 @@
  	define('__CA_NAV_ICON_SPREADSHEET__', 58);
  	define('__CA_NAV_ICON_VERTICAL_ARROWS__', 59);
  	define('__CA_NAV_ICON_EXTRACT__', 60);
+ 	define('__CA_NAV_ICON_EXPORT_SMALL__', 61);
  	
  	/**
  	 * Icon position constants
@@ -656,18 +657,18 @@
 				break;
 			case __CA_NAV_ICON_DELETE__:
 				$vs_fa_class = 'fa fa-times';
-				$vs_ca_class = 'deleteIcon'; 
+				$vs_ca_class = 'caIconRed'; 
 				break;
 			case __CA_NAV_ICON_CANCEL__:
 				$vs_fa_class = 'fa-minus-circle';
 				$vs_ca_class = 'cancelIcon';
 				break;			
 			case __CA_NAV_ICON_EDIT__:
-				$vs_fa_class = 'fa-pencil-square-o';
+				$vs_fa_class = 'fa-file';
 				$vs_ca_class = 'editIcon'; 
 				break;
 			case __CA_NAV_ICON_BATCH_EDIT__:
-				$vs_fa_class = 'fa-cubes';
+				$vs_fa_class = 'fa-tasks';
 				$vs_ca_class = 'batchIcon'; 
 				break;
 			case __CA_NAV_ICON_ALERT__:
@@ -702,7 +703,7 @@
 				$vs_fa_class = 'fa-life-ring';
 				break;
 			case __CA_NAV_ICON_GO__:
-				$vs_fa_class = 'fa-play-circle-o';
+				$vs_fa_class = 'fa-check-circle-o';
 				$vs_ca_class = 'hierarchyIcon';
 				break;
 			case __CA_NAV_ICON_DEL_BUNDLE__:
@@ -756,18 +757,21 @@
 			case __CA_NAV_ICON_EXPORT__:
 				$vs_fa_class = 'fa-inbox';
 				break;
+			case __CA_NAV_ICON_EXPORT_SMALL__:
+				$vs_fa_class = 'fa-external-link-square';
+				break;				
 			case __CA_NAV_ICON_SETS__:
-				$vs_fa_class = 'fa-shopping-bag';
+				$vs_fa_class = 'fa-clone';
 				break;	
 			case __CA_NAV_ICON_RIGHT_ARROW__:
-				$vs_fa_class = 'fa-chevron-circle-right';
+				$vs_fa_class = 'fa-chevron-right';
 				break;	
 			case __CA_NAV_ICON_VISUALIZE__:
 				$vs_fa_class = 'fa-line-chart';
 				break;	
 			case __CA_NAV_ICON_ADD_WIDGET__:
 				$vs_fa_class = 'fa-plus-circle';
-				break;	
+				break;					
 			case __CA_NAV_ICON_DUPLICATE__:
 				$vs_fa_class = 'fa-files-o';
 				break;	

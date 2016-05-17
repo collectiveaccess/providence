@@ -329,7 +329,7 @@ div.clear {
     font-size: 9px;
 }
 #leftNav #toolIcons {
-	margin-bottom:5px;
+	margin-bottom:10px;
 	padding-top:0px;
 	clear: both;
 	min-height: 26px;
@@ -351,6 +351,7 @@ div.clear {
 	float:left;
 	width:22px;
 	margin-left:2px;
+	padding-bottom:10px;
 }
 #leftNav #inspectorChangeType img {
 	width: 26px;
@@ -367,7 +368,7 @@ div.clear {
 	padding-top:3px;
 }
 #leftNav div.watchThis { 
-	width:28px; 
+	width:14px; 
 	text-align:center; 
 	margin-right:10px; 
 }
@@ -806,7 +807,7 @@ a.sf-menu-disabled {
 }
 
 /*** arrows **/
-.sf-menu a.sf-with-ul {
+.sf-menu a.sf-with-ul, .sf-menu a.sf-with-ul:focus, .sf-menu a.sf-with-ul:active {
     padding-right: 	1em;
     min-width:		1px; /* trigger IE7 hasLayout so spans position accurately */
     text-transform:uppercase;
@@ -1861,6 +1862,9 @@ div.control-box-right-content {
 a.deleteButton span{
 	color: red;
 	font-weight:bold;
+}
+a.deleteButton span.form-button:hover {
+	color:red;
 }
 div.control-box-right-content select {
     width: 150px;
@@ -3605,6 +3609,9 @@ a.exploreSelected {
 .hierNav .buttonPosition{
     float:right;
     margin:-8px -5px 5px 10px;
+}
+.hierNav .form-button {
+	padding-top:10px;
 }
 .editorHierarchyBrowserContainer{
     background-color:#fafafa;
@@ -6956,7 +6963,7 @@ div.caResultsComplexDataEditorErrorContainer {
 }
 
 .caIcon:hover {
-	color: #cc0000;
+	color: #1ab3c8;
 }
 
 .caIconRed {
