@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2012 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -395,6 +395,17 @@ class ca_locales extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
+	 * Non-static version of ca_locales::codeToID() offered for compatibility reasons
+	 *
+	 * @param string $ps_code A language code in the form <language>_<country> (eg. en_US)
+	 * @return int The locale_id of the locale, or null if the code is invalid
+	 * @seealso ca_locales::codeToID()
+	 */
+	public function localeCodeToID($ps_code) {
+		return ca_locales::codeToID($ps_code);
+	}
+	# ------------------------------------------------------
+	/**
 	 * Returns the locale_id of the specified locale, or null if the code is invalid. Note that this does not 
 	 * change the state of the model - it just returns the locale_id. If you want to actually load a model instance
 	 * with a locale record, use loadLocaleByCode()
@@ -402,11 +413,22 @@ class ca_locales extends BaseModel {
 	 * @param string $ps_code A language code in the form <language>_<country> (eg. en_US)
 	 * @return int The locale_id of the locale, or null if the code is invalid
 	 */
-	public function localeCodeToID($ps_code) {
+	static public function codeToID($ps_code) {
 		if (!MemoryCache::contains($ps_code, 'LocaleCodeToId')){
 			ca_locales::getLocaleList(array('index_by_code' => true));
 		}
 		return MemoryCache::fetch($ps_code, 'LocaleCodeToId');
+	}
+	# ------------------------------------------------------
+	/**
+	 * Non-static version of ca_locales::IDToCode() offered for compatibility reasons
+	 *
+	 * @param int $pn_id The locale_id of the locale, or null if the code is invalid
+	 * @return string A language code in the form <language>_<country> (eg. en_US)
+	 * @seealso ca_locales::IDToCode()
+	 */
+	public function localeIDToCode($pn_id) {
+		return ca_locales::IDToCode($pn_id);
 	}
 	# ------------------------------------------------------
 	/**
@@ -416,11 +438,22 @@ class ca_locales extends BaseModel {
 	 * @param int $pn_id The locale_id of the locale, or null if the code is invalid
 	 * @return string A language code in the form <language>_<country> (eg. en_US)
 	 */
-	public function localeIDToCode($pn_id) {
+	static public function IDToCode($pn_id) {
 		if (!MemoryCache::contains($pn_id, 'LocaleIdToCode')){
 			ca_locales::getLocaleList();
 		}
 		return MemoryCache::fetch($pn_id, 'LocaleIdToCode');
+	}
+	# ------------------------------------------------------
+	/**
+	 * Non-static version of ca_locales::IDToName() offered for compatibility reasons
+	 *
+	 * @param int $pn_id The locale_id of the locale, or null if the code is invalid
+	 * @return string The name of the locale
+	 * @seealso ca_locales::IDToName()
+	 */
+	public function localeIDToName($pn_id) {
+		return ca_locales::IDToName($pn_id);
 	}
 	# ------------------------------------------------------
 	/**
@@ -430,7 +463,7 @@ class ca_locales extends BaseModel {
 	 * @param int $pn_id The locale_id of the locale, or null if the code is invalid
 	 * @return string The name of the locale
 	 */
-	public function localeIDToName($pn_id) {
+	static public function IDToName($pn_id) {
 		if (!MemoryCache::contains($pn_id, 'LocaleIdToName')){
 			ca_locales::getLocaleList();
 		}

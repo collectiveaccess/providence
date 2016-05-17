@@ -2114,7 +2114,7 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = true; }
 			
-			$va_tmp = $this->getAttributeDisplayValues($pm_element_code_or_id, $vn_row_id, array_merge($pa_options, array('returnAllLocales' => false)));
+			$va_tmp = $this->getAttributeDisplayValues($vn_hier_id = ca_metadata_elements::getElementHierarchyID($pm_element_code_or_id), $vn_row_id, array_merge($pa_options, array('returnAllLocales' => false)));
 		
 			if (!$ps_template && ($vs_template_tmp = $t_element->getSetting('displayTemplate', true))&& !caGetOption('dontUseElementTemplate', $pa_options, false)) {	// grab template from metadata element if none is passed in $ps_template
 				$ps_template = $vs_template_tmp;

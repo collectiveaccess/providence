@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -33,6 +33,7 @@
 	require_once(__CA_MODELS_DIR__."/ca_sets.php");
 	require_once(__CA_MODELS_DIR__."/ca_set_items.php");
 	require_once(__CA_MODELS_DIR__."/ca_set_item_labels.php");
+	require_once(__CA_LIB_DIR__.'/core/Media/MediaViewerManager.php');
  	
  	class SearchObjectsController extends BaseSearchController {
  		# -------------------------------------------------------
@@ -88,12 +89,48 @@
  		 * QuickLook
  		 */
  		public function QuickLook() {
- 			$vn_object_id = (int)$this->request->getParameter('object_id', pInteger);
- 			$t_object = new ca_objects($vn_object_id);
- 			$t_rep = new ca_object_representations($t_object->getPrimaryRepresentationID());
- 			
- 			$this->response->addContent(caGetMediaViewerHTMLBundle($this->request, array('display' => 'media_overlay', 't_subject' => $t_object, 't_representation' => $t_rep, 'containerID' => 'caMediaPanelContentArea')));
- 		}
+ 			$t_object = new ca_objects($vn_object_id = (int)$this->request->getParameter('object_id', pInteger));
+ 			if (!($vn_representation_id = (int)$this->request->getParameter('representation_id', pInteger))) {
+ 				$vn_representation_id = $t_object->getPrimaryRepresentationID();
+ 			}
+ 			$t_rep = new ca_object_representations($vn_representation_id);
+
+			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_rep->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+				// error: no viewer available
+				die("Invalid viewer");
+			}
+			
+			if(!$vn_object_id) {
+				$this->postError(1100, _t('Invalid object/representation'), 'SearchObjectsController->QuickLook');
+				return;
+			}
+
+			$this->response->addContent($vs_viewer_name::getViewerHTML(
+				$this->request, 
+				"representation:{$vn_representation_id}", 
+				['context' => 'media_overlay', 't_instance' => $t_rep, 't_subject' => $t_object, 'display' => caGetMediaDisplayInfo('media_overlay', $vs_mimetype)])
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public function GetMediaData() {
+			$ps_identifier = $this->request->getParameter('identifier', pString);
+			if (!($va_identifier = caParseMediaIdentifier($ps_identifier))) {
+				// error: invalid identifier
+				die("Invalid identifier");
+			}
+		
+			$t_rep = new ca_object_representations($vn_representation_id = $va_identifier['id']);
+		
+			if (!($vs_viewer_name = MediaViewerManager::getViewerForMimetype("media_overlay", $vs_mimetype = $t_rep->getMediaInfo('media', 'original', 'MIMETYPE')))) {
+				// error: no viewer available
+				die("Invalid viewer $vs_mimetype");
+			}
+		
+			$this->response->addContent($vs_viewer_name::getViewerData($this->request, "representation:{$vn_representation_id}", ['request' => $this->request, 't_subject' => null, 't_instance' => $t_rep, 'display' => caGetMediaDisplayInfo('media_overlay', $vs_mimetype)]));
+		}
  		# -------------------------------------------------------
  		/**
  		 * Ajax action that returns info on a mapped location based upon the 'id' request parameter.

@@ -85,6 +85,7 @@
 					displayTemplate: <?php print (isset($va_settings['displayTemplate']) ? json_encode($va_settings['displayTemplate']) : 'null'); ?>,
 					
 					editSetItemButton: '<?php print addslashes(caNavIcon(__CA_NAV_ICON_EDIT__, 1)); ?>',
+					deleteSetItemButton: '<?php print addslashes(caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1)); ?>',
 					
 					lookupURL: '<?php print $va_lookup_urls['search']; ?>',
 					itemInfoURL: '<?php print caNavUrl($this->request, 'manage/sets', 'SetEditor', 'GetItemInfo'); ?>',
