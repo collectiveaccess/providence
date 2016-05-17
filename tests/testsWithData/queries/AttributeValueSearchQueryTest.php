@@ -149,6 +149,10 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.dimensions_length:[0.5ft to 1ft]' => 1,
 			'ca_objects.dimensions_length:[1ft to 2ft]' => 0,
 
+			// it's not inconceivable that someone enters something like this!?
+			'ca_objects.dimensions_length:"25cm - 30 cm"' => 1,
+			'ca_objects.dimensions_length:"25cm-30 cm"' => 1,
+
 			// weight
 			'ca_objects.dimensions_weight:2lbs' => 1,
 			'ca_objects.dimensions_weight:[1lbs to 2lbs]' => 1,

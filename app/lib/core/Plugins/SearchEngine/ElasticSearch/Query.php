@@ -239,9 +239,9 @@ class Query {
 
 				$vb_multiterm_all_terms_same_field = (sizeof(array_unique($va_fields_in_subquery)) < 2) && (sizeof($o_subquery->getTerms()) > 1);
 
-				// edge case:
-				// convert ca_objects.dimensions_width:"30 cm", which is parsed as
-				// two terms ... "30", and "cm" to one relatively simple term query
+				// below we convert stuff multi term phrase query stuff like
+				// 		ca_objects.dimensions_width:"30 cm",
+				// which is parsed as two terms ... "30", and "cm" to one relatively simple term query
 				if($vb_multiterm_all_terms_same_field && ($o_first_term = array_shift($o_subquery->getTerms()))) {
 					$o_first_term = caRewriteElasticSearchTermFieldSpec($o_first_term);
 					$o_fld = $this->getFieldTypeForTerm($o_first_term);
@@ -251,7 +251,19 @@ class Query {
 							$vs_acc .= $o_t->text;
 						}
 						$o_term = new \Zend_Search_Lucene_Index_Term($vs_acc, $o_first_term->field);
-						$o_new_subquery->addTerm($o_fld->getRewrittenTerm($o_term));
+						$o_rewritten_term = $o_fld->getRewrittenTerm($o_term);
+
+						// sometimes, through the magic of advanced search forms, range queries like
+						//		ca_objects.dimensions_length:"25cm - 30 cm"
+						// end up here. so we make them "real" range queries below
+						if($this->isDisguisedRangeQuery($o_rewritten_term)) {
+							return $this->getSubqueryWithAdditionalTerms(
+								$this->rewriteIndexTermAsRangeQuery($o_rewritten_term, $o_fld),
+								$o_fld, $o_term
+							);
+						}
+
+						$o_new_subquery->addTerm($o_rewritten_term);
 						return $this->getSubqueryWithAdditionalTerms($o_new_subquery, $o_fld, $o_term);
 					}
 				}
@@ -395,5 +407,50 @@ class Query {
 			}
 		}
 		return join(' AND ', $va_terms);
+	}
+
+	/**
+	 * Is this index term a disguised range search? If so,
+	 * we can rewrite it as actual ranged search
+	 *
+	 * Note: this is only for Length, Weight, Currency ...
+	 *
+	 * @param \Zend_Search_Lucene_Index_Term $o_term
+	 * @return bool
+	 */
+	protected function isDisguisedRangeQuery($o_term) {
+		return (bool) preg_match("/[0-9]+.*-[\s]*[0-9]+/u", $o_term->text);
+	}
+
+	/**
+	 * Rewrite index term as range query
+	 *
+	 * @param \Zend_Search_Lucene_Index_Term $o_term
+	 * @param \ElasticSearch\FieldTypes\FieldType $o_fld
+	 * @return \Zend_Search_Lucene_Search_Query_Range
+	 * @throws \Exception
+	 */
+	protected function rewriteIndexTermAsRangeQuery($o_term, $o_fld) {
+		$vs_lower_term = $vs_upper_term = null;
+
+		if(preg_match("/^(.+)-/u", $o_term->text, $va_matches)) {
+			$vs_lower_term = trim($va_matches[1]);
+		}
+
+		if(preg_match("/-(.+)$/u", $o_term->text, $va_matches)) {
+			$vs_upper_term = trim($va_matches[1]);
+		}
+
+		if(!$vs_lower_term || !$vs_upper_term) {
+			throw new \Exception('Could not parse index term as range query');
+		}
+
+		$o_int_lower_term = new \Zend_Search_Lucene_Index_Term($vs_lower_term, $o_term->field);
+		$o_int_upper_term = new \Zend_Search_Lucene_Index_Term($vs_upper_term, $o_term->field);
+
+		$o_lower_term = $o_fld->getRewrittenTerm($o_int_lower_term);
+		$o_upper_term = $o_fld->getRewrittenTerm($o_int_upper_term);
+
+		return new \Zend_Search_Lucene_Search_Query_Range($o_lower_term, $o_upper_term, true);
 	}
 }
