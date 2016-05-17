@@ -134,6 +134,7 @@ class Query {
 
 		// find terms in subqueries and run them through FieldType rewriting and then re-construct the same
 		// subqueries to replace them in the query string, taking advantage of their __toString() method
+		$va_new_search_expression_parts = [];
 		foreach($this->getRewrittenQuery()->getSubqueries() as $o_subquery) {
 			switch(get_class($o_subquery)) {
 				case 'Zend_Search_Lucene_Search_Query_Range':
@@ -141,14 +142,7 @@ class Query {
 				case 'Zend_Search_Lucene_Search_Query_Phrase':
 				case 'Zend_Search_Lucene_Search_Query_MultiTerm':
 					$o_new_subquery = $this->rewriteSubquery($o_subquery);
-					$vs_old_subquery = preg_replace('/^\+/u', '', (string) $o_subquery);
-					$vs_new_subquery = preg_replace('/^\+/u', '', (string) $o_new_subquery);
-					$vs_search_expression = str_replace($vs_old_subquery, $vs_new_subquery, $vs_search_expression);
-
-					// get rid of empty "AND|OR ()" or "() AND|OR" blocks that prevent ElasticSearch query parsing
-					// (can happen in advanced search forms)
-					$vs_search_expression = preg_replace("/\s*(AND|OR)\s+\(\s*\)/u", '', $vs_search_expression);
-					$vs_search_expression = preg_replace("/\(\s*\)\s+(AND|OR)\s*/u", '', $vs_search_expression);
+					$va_new_search_expression_parts[] = preg_replace('/^\+/u', '', (string) $o_new_subquery);
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Boolean':
 					/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Boolean. */
@@ -157,7 +151,7 @@ class Query {
 						$va_new_subqueries[] = $this->rewriteSubquery($o_subsubquery);
 					}
 					$o_new_subquery = new \Zend_Search_Lucene_Search_Query_Boolean($va_new_subqueries, $o_subquery->getSigns());
-					$vs_search_expression = str_replace((string) $o_subquery, (string) $o_new_subquery, $vs_search_expression);
+					$va_new_search_expression_parts[] = preg_replace('/^\+/u', '', (string) $o_new_subquery);
 					break;
 				default:
 					throw new \Exception('Encountered unknown Zend query type in ElasticSearch\Query: ' . get_class($o_subquery). '. Query was: ' . $vs_search_expression);
@@ -165,8 +159,33 @@ class Query {
 			}
 		}
 
+		if(sizeof($va_new_search_expression_parts) == sizeof($this->getRewrittenQuery()->getSigns())) {
+			$vs_search_expression = '';
+			$va_signs = $this->getRewrittenQuery()->getSigns();
+			foreach($va_new_search_expression_parts as $i=> $vs_part) {
+				$vb_sign = array_shift($va_signs);
+				if($vs_part) {
+					if($vb_sign) {
+						$vs_search_expression .= "+($vs_part) ";
+					} else {
+						$vs_search_expression .= "($vs_part) ";
+					}
+				}
+			}
+
+			$vs_search_expression = trim($vs_search_expression);
+		} else {
+			$vs_search_expression = join(' AND ', array_filter($va_new_search_expression_parts));
+		}
+
+		// get rid of empty "AND|OR ()" or "() AND|OR" blocks that prevent ElasticSearch query parsing
+		// (can happen in advanced search forms)
+		$vs_search_expression = preg_replace("/\s*(AND|OR)\s+\(\s*\)/u", '', $vs_search_expression);
+		$vs_search_expression = preg_replace("/\(\s*\)\s+(AND|OR)\s*/u", '', $vs_search_expression);
+
+		// add filters
 		if ($vs_filter_query = $this->getFilterQuery()) {
-			if($vs_search_expression == '()') {
+			if(($vs_search_expression == '()') || ($vs_search_expression == '')) {
 				$vs_search_expression = $vs_filter_query;
 			} else {
 				$vs_search_expression = "({$vs_search_expression}) AND ({$vs_filter_query})";
@@ -314,7 +333,8 @@ class Query {
 				foreach($o_subquery->getSubqueries() as $o_subsubquery) {
 					$va_new_subqueries[] = $this->rewriteSubquery($o_subsubquery);
 				}
-				return new \Zend_Search_Lucene_Search_Query_Boolean($va_new_subqueries, $o_subquery->getSigns());
+				$o_new_subquery = new \Zend_Search_Lucene_Search_Query_Boolean($va_new_subqueries, $o_subquery->getSigns());
+				return $o_new_subquery;
 			default:
 				throw new \Exception('Encountered unknown Zend subquery type in ElasticSearch\Query: ' . get_class($o_subquery));
 				break;
