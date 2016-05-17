@@ -419,7 +419,7 @@ class Query {
 	 * @return bool
 	 */
 	protected function isDisguisedRangeQuery($o_term) {
-		return (bool) preg_match("/[0-9]+.*-[\s]*[0-9]+/u", $o_term->text);
+		return (bool) preg_match("/[0-9]+.*to[\s]*[0-9]+/u", $o_term->text);
 	}
 
 	/**
@@ -433,11 +433,11 @@ class Query {
 	protected function rewriteIndexTermAsRangeQuery($o_term, $o_fld) {
 		$vs_lower_term = $vs_upper_term = null;
 
-		if(preg_match("/^(.+)-/u", $o_term->text, $va_matches)) {
+		if(preg_match("/^(.+)to/u", $o_term->text, $va_matches)) {
 			$vs_lower_term = trim($va_matches[1]);
 		}
 
-		if(preg_match("/-(.+)$/u", $o_term->text, $va_matches)) {
+		if(preg_match("/to(.+)$/u", $o_term->text, $va_matches)) {
 			$vs_upper_term = trim($va_matches[1]);
 		}
 
