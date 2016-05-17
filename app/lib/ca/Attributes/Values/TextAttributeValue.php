@@ -407,8 +407,6 @@
 					$pa_options['t_subject']->tableName(),
 					['element_id' => $pa_element_info['element_id']]
 				)['attribute'];
-				caDebug($vs_unique_lookup_url);
-
 
 				$vs_element .= "<script type='text/javascript'>
 					var warnSpan = jQuery('#{fieldNamePrefix}{$pa_element_info['element_id']}_{n}_uniquenessWarning');
