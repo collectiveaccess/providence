@@ -20,7 +20,7 @@
 			</ol>
 		</div>
 		<div class="caLibrarySubmitListContainer" id="transactionSubmitContainer">
-			<?php print caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t('Check out items'), 'transactionSubmit', array(), array()); ?>
+			<?php print caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Check out items'), 'transactionSubmit', array(), array()); ?>
 		</div>
 	
 		<div class="caLibraryTransactionResultsContainer" id="transactionResultsContainer">
@@ -45,8 +45,8 @@
 			getInfoURL : '<?php print caNavUrl($this->request, '*', '*', 'GetObjectInfo', array()); ?>',
 			saveTransactionURL: '<?php print caNavUrl($this->request, '*', '*', 'SaveTransaction', array()); ?>',
 			loadWidgetURL: '<?php print caNavUrl($this->request, '*', '*', 'Info', array()); ?>',
-			
-			removeButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/x.png" border="0" title="Remove"/>'
+
+			removeButtonIcon: '<?php print addslashes(caNavIcon(__CA_NAV_ICON_DELETE__, 1)); ?>'
 		});
 	});
 </script>

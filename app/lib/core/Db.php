@@ -94,9 +94,9 @@ class Db extends DbBase {
 	 *
 	 * @param string $ps_config_file_path Not used
 	 * @param array $pa_options Database options like username, pw, host, etc - if ommitted, it is fetched from configuration file
-	 * @param bool $pb_die_on_error optional, default is true
+	 * @param bool $pb_die_on_error optional, default is false
 	 */
-	public function __construct($ps_config_file_path="", $pa_options=null, $pb_die_on_error=true) {
+	public function __construct($ps_config_file_path="", $pa_options=null, $pb_die_on_error=false) {
 		$this->config = Configuration::load();
 		$this->datamodel = Datamodel::load();
 
@@ -247,9 +247,10 @@ class Db extends DbBase {
 	 *
 	 * @param string $ps_sql SQL statement, can contain placeholders with attached values for SQL injection avoidance
 	 * @param - first place holder value, or an array of placeholder values; if it is an array then the array is used for ALL placeholder values in order. If it is a scalar value then it will be used for the first placeholder, and subsequent parameters used for other placeholders in order.
+	 * @param array $pa_options
 	 * @return DbResult the resultset; false on failure
 	 */
-	public function query($ps_sql) {
+	public function query($ps_sql, $pa_params=null, $pa_options=null) {
 		if(!$this->connected(true, "Db->query()")) { return false; }
 		$this->clearErrors();
 
@@ -263,7 +264,13 @@ class Db extends DbBase {
 		$o_stmt->dieOnError($this->getDieOnError());
 
 		// If second parameter is array use that as query params for placeholders, otherwise use successive params to fill placeholders
-		if (!($o_res = $o_stmt->executeWithParamsAsArray(is_array($va_args[0]) ? $va_args[0] : $va_args))) {
+		if (is_array($va_args[0])) {
+			$o_res = $o_stmt->executeWithParamsAsArray($va_args[0], $pa_options);
+		} else {
+			$o_res = $o_stmt->executeWithParamsAsArray($va_args);
+		}
+		
+		if (!$o_res) {
 			// copy errors from statement object to Db object
 			$this->errors = $o_stmt->errors();
 		} else {

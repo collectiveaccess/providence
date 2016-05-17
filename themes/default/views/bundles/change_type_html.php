@@ -66,8 +66,8 @@
 			<div id="caTypeChangePanelControlButtons">
 				<table>
 					<tr>
-						<td align="right"><?php print caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t('Save'), 'caChangeTypeForm'); ?></td>
-						<td align="left"><?php print caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t('Cancel'), 'caChangeTypeFormCancelButton', array('onclick' => 'caTypeChangePanel.hidePanel(); return false;'), array()); ?></td>
+						<td align="right"><?php print caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t('Save'), 'caChangeTypeForm'); ?></td>
+						<td align="left"><?php print caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caChangeTypeFormCancelButton', array('onclick' => 'caTypeChangePanel.hidePanel(); return false;'), array('size' => '30px')); ?></td>
 					</tr>
 				</table>
 			</div>

@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2010 Whirl-i-Gig
+ * Copyright 2007-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,6 +27,11 @@
 
 /* Table sorter filtering code */
 (function($){
+	/* Create case-insensitive "contains" selector creatively named "icontains" */
+	jQuery.expr[':'].icontains = function(a, i, m) {
+	  return jQuery(a).text().toUpperCase()
+		  .indexOf(m[3].toUpperCase()) >= 0;
+	};
 	$.fn.caFormatListTable = function () {
 		/* it's up to the user to pass a table, dunno what happens if you pass sth else */
 		return this.tablesorter({
@@ -42,7 +47,7 @@
 			return;
 		}
 		this.find('tbody tr').hide();
-		this.find('tbody tr:contains('+searchText+')').show();
+		this.find('tbody tr:icontains('+searchText+')').show();	// case-insensitive
 		return this;
 	};
 })(jQuery);

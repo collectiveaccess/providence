@@ -141,7 +141,14 @@ class Query {
 				case 'Zend_Search_Lucene_Search_Query_Phrase':
 				case 'Zend_Search_Lucene_Search_Query_MultiTerm':
 					$o_new_subquery = $this->rewriteSubquery($o_subquery);
-					$vs_search_expression = str_replace((string) $o_subquery, (string) $o_new_subquery, $vs_search_expression);
+					$vs_old_subquery = preg_replace('/^\+/u', '', (string) $o_subquery);
+					$vs_new_subquery = preg_replace('/^\+/u', '', (string) $o_new_subquery);
+					$vs_search_expression = str_replace($vs_old_subquery, $vs_new_subquery, $vs_search_expression);
+
+					// get rid of empty "AND|OR ()" or "() AND|OR" blocks that prevent ElasticSearch query parsing
+					// (can happen in advanced search forms)
+					$vs_search_expression = preg_replace("/\s*(AND|OR)\s+\(\s*\)/u", '', $vs_search_expression);
+					$vs_search_expression = preg_replace("/\(\s*\)\s+(AND|OR)\s*/u", '', $vs_search_expression);
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Boolean':
 					/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Boolean. */
@@ -187,8 +194,7 @@ class Query {
 				$o_new_subquery = null;
 
 				if($o_lower_fld instanceof FieldTypes\Geocode) {
-					$this->opa_additional_filters[]['geo_shape'] =
-						$o_lower_fld->getFilterForRangeQuery($o_lower_term, $o_upper_term);
+					$this->opa_additional_filters[] = ['geo_shape' => $o_lower_fld->getFilterForRangeQuery($o_lower_term, $o_upper_term)];
 				} else {
 					$o_lower_rewritten_term = $o_lower_fld->getRewrittenTerm($o_lower_term);
 					$o_upper_rewritten_term = $o_upper_fld->getRewrittenTerm($o_upper_term);
@@ -211,7 +217,9 @@ class Query {
 				$o_new_subquery = null;
 				if(($o_fld instanceof FieldTypes\DateRange) || ($o_fld instanceof FieldTypes\Timestamp)) {
 					$o_new_subquery = null;
-					$this->opa_additional_filters['range'] = $o_fld->getFilterForTerm($o_term);
+					foreach($o_fld->getFiltersForTerm($o_term) as $va_filter) {
+						$this->opa_additional_filters[] = $va_filter;
+					}
 					break;
 				}  else {
 					if($o_rewritten_term = $o_fld->getRewrittenTerm($o_term)) {
@@ -223,14 +231,39 @@ class Query {
 			case 'Zend_Search_Lucene_Search_Query_Phrase':
 				/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Phrase */
 				$o_new_subquery = new \Zend_Search_Lucene_Search_Query_Phrase();
+
+				$va_fields_in_subquery = array();
+				foreach($o_subquery->getTerms() as $o_term) {
+					$va_fields_in_subquery[] = $o_term->field;
+				}
+
+				$vb_multiterm_all_terms_same_field = (sizeof(array_unique($va_fields_in_subquery)) < 2) && (sizeof($o_subquery->getTerms()) > 1);
+
+				// edge case:
+				// convert ca_objects.dimensions_width:"30 cm", which is parsed as
+				// two terms ... "30", and "cm" to one relatively simple term query
+				if($vb_multiterm_all_terms_same_field && ($o_first_term = array_shift($o_subquery->getTerms()))) {
+					$o_first_term = caRewriteElasticSearchTermFieldSpec($o_first_term);
+					$o_fld = $this->getFieldTypeForTerm($o_first_term);
+					if(($o_fld instanceof FieldTypes\Length) || ($o_fld instanceof FieldTypes\Weight) || ($o_fld instanceof FieldTypes\Currency)) {
+						$vs_acc = '';
+						foreach($o_subquery->getTerms() as $o_t) {
+							$vs_acc .= $o_t->text;
+						}
+						$o_term = new \Zend_Search_Lucene_Index_Term($vs_acc, $o_first_term->field);
+						$o_new_subquery->addTerm($o_fld->getRewrittenTerm($o_term));
+						return $this->getSubqueryWithAdditionalTerms($o_new_subquery, $o_fld, $o_term);
+					}
+				}
+
+				// "normal" phrase rewriting below
 				foreach($o_subquery->getTerms() as $o_term) {
 					$o_term = caRewriteElasticSearchTermFieldSpec($o_term);
 					$o_fld = $this->getFieldTypeForTerm($o_term);
 
 					if($o_fld instanceof FieldTypes\Geocode) {
 						$o_new_subquery = null;
-						$this->opa_additional_filters['geo_shape'] =
-							$o_fld->getFilterForPhraseQuery($o_subquery);
+						$this->opa_additional_filters[] = ['geo_shape' => $o_fld->getFilterForPhraseQuery($o_subquery)];
 						break;
 					} elseif(($o_fld instanceof FieldTypes\DateRange) || ($o_fld instanceof FieldTypes\Timestamp)) {
 						$o_new_subquery = null;
@@ -241,6 +274,9 @@ class Query {
 						break;
 					} else {
 						if($o_rewritten_term = $o_fld->getRewrittenTerm($o_term)) {
+							if($vb_multiterm_all_terms_same_field) {
+								$o_rewritten_term->text = preg_replace("/\"(.+)\"/u", "$1", $o_rewritten_term->text);
+							}
 							$o_new_subquery->addTerm($o_rewritten_term);
 						}
 					}
@@ -260,6 +296,13 @@ class Query {
 
 				$o_new_subquery = new \Zend_Search_Lucene_Search_Query_MultiTerm($va_new_terms, $o_subquery->getSigns());
 				return $this->getSubqueryWithAdditionalTerms($o_new_subquery, $o_fld, $o_term);
+			case 'Zend_Search_Lucene_Search_Query_Boolean':
+				/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Boolean */
+				$va_new_subqueries = array();
+				foreach($o_subquery->getSubqueries() as $o_subsubquery) {
+					$va_new_subqueries[] = $this->rewriteSubquery($o_subsubquery);
+				}
+				return new \Zend_Search_Lucene_Search_Query_Boolean($va_new_subqueries, $o_subquery->getSigns());
 			default:
 				throw new \Exception('Encountered unknown Zend subquery type in ElasticSearch\Query: ' . get_class($o_subquery));
 				break;
@@ -276,14 +319,13 @@ class Query {
 		if(($va_additional_terms = $po_fld->getAdditionalTerms($po_term)) && is_array($va_additional_terms)) {
 
 			// we cant use the index terms as is; have to construct term queries
-			$va_additional_term_queries = $va_signs = array();
+			$va_additional_term_queries = array();
 			if($po_original_subquery) { $va_additional_term_queries[] = $po_original_subquery; }
 			foreach($va_additional_terms as $o_additional_term) {
 				$va_additional_term_queries[] = new \Zend_Search_Lucene_Search_Query_Term($o_additional_term);
-				$va_signs[] = true;
 			}
 
-			return new \Zend_Search_Lucene_Search_Query_Boolean($va_additional_term_queries, $va_signs);
+			return join(' AND ', $va_additional_term_queries);
 		} else {
 			return $po_original_subquery;
 		}
@@ -296,8 +338,7 @@ class Query {
 	protected function getFieldTypeForTerm($po_term) {
 		$va_parts = preg_split("!(\\\)?/!", $po_term->field);
 		$vs_table = $va_parts[0];
-		unset($va_parts[0]);
-		$vs_fld = join('/', $va_parts);
+		$vs_fld = array_pop($va_parts);
 		return FieldTypes\FieldType::getInstance($vs_table, $vs_fld);
 	}
 

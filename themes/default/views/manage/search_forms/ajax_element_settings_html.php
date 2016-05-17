@@ -48,7 +48,7 @@
 	print caHTMLHiddenInput('group', array('value' => $vn_group_code));
 	print caHTMLHiddenInput('element', array('value' => $vs_element_code));
 	
-	print caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save settings"), 'searchFormElementSettingsForm', array(), array('onclick' => 'jQuery.getJSON("'.caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "setSettingsForElement").'", jQuery("#searchFormElementSettingsForm").serialize(), function(data, status) { jQuery("#caSearchFormSettingsMessage").show().html("<ul class=\"notification-info-box\"><li class=\"notification-info-box\">" + data.message + "</li></ul>"); });'));
+	print caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save settings"), 'searchFormElementSettingsForm', array(), array('onclick' => 'jQuery.getJSON("'.caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "setSettingsForElement").'", jQuery("#searchFormElementSettingsForm").serialize(), function(data, status) { jQuery("#caSearchFormSettingsMessage").show().html("<ul class=\"notification-info-box\"><li class=\"notification-info-box\">" + data.message + "</li></ul>"); });'));
 ?>
 
 </form>

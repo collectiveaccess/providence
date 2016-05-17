@@ -112,6 +112,13 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 						'coverageNotes' => '', // add blank value for [BLANK] search test
 					),
 				),
+
+				// Date in a container
+				'date' => array(
+					array(
+						'dates_value' => '1985'
+					)
+				)
 			)
 		)));
 
@@ -165,6 +172,8 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.currency_test:EUR100' => 0,
 			'ca_objects.currency_test:USD100' => 1,
 			'ca_objects.currency_test:CAD100' => 0,
+			// multiterm phrase query
+			'ca_objects.currency_test:"100 EUR"' => 0,
 
 			// Georeference
 			'ca_objects.georeference:[36.4,-123.5 to 38.5,-121.9]' => 1, // actual lucene range search
@@ -205,7 +214,19 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.dimensions_weight:[BLANK]' => 0,
 			'ca_objects.dimensions_length:[BLANK]' => 0,
 			'ca_objects.url_source:[BLANK]' => 0,
-			'ca_objects.internal_notes:[BLANK]' => 0
+			'ca_objects.internal_notes:[BLANK]' => 0,
+
+			// dates in containers
+			'ca_objects.dates_value:1985' => 1,
+			'ca_objects.date.dates_value:1985' => 1, // for container advanced searches
+			'ca_objects.dates_value:1986' => 0,
+			'ca_objects.date.dates_value:1986' => 0, // for container advanced searches
+
+			// same as phrases
+			'ca_objects.dates_value:"1985"' => 1,
+			'ca_objects.date.dates_value:"1985"' => 1, // for container advanced searches
+			'ca_objects.dates_value:"1986"' => 0,
+			'ca_objects.date.dates_value:"1986"' => 0, // for container advanced searches
 		));
 	}
 	# -------------------------------------------------------

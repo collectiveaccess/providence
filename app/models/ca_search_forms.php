@@ -852,7 +852,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 					if (!($va_field_info = $t_instance->getFieldInfo($vs_field))) {
 						// is it an attribute?
 						if (in_array($vs_field, $va_element_codes)) {
-							$t_element = $this->_getElementInstance($vs_field);
+							$t_element = ca_metadata_elements::getInstance($vs_field);
 							if(!$t_element) { continue; }
 							if (in_array($t_element->get('datatype'), array(15, 16))) { continue; } 		// skip file and media attributes - never searchable
 							if (!$t_element->getSetting('canBeUsedInSearchForm')) { continue; }

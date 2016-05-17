@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2012 Whirl-i-Gig
+ * Copyright 2011-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,6 +35,7 @@ require_once(__CA_APP_DIR__.'/helpers/utilityHelpers.php');
 require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
 require_once(__CA_MODELS_DIR__.'/ca_users.php');
 require_once(__CA_MODELS_DIR__.'/ca_user_groups.php');
+require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
 
 class Installer {
 	# --------------------------------------------------
@@ -283,7 +284,6 @@ class Installer {
 		$va_media_volumes = $o_media_volumes->getAllVolumeInformation();
 
 		$vs_base_dir = $o_config->get('ca_base_dir');
-		$va_dir_creation_errors = array();
 		foreach($va_media_volumes as $vs_label => $va_volume_info) {
 			if (preg_match('!^'.$vs_base_dir.'!', $va_volume_info['absolutePath'])) {
 				if (!self::createDirectoryPath($va_volume_info['absolutePath'])) {
@@ -293,22 +293,26 @@ class Installer {
 			}
 		}
 
-		// nuke search index if we using ElasticSearch (the SqlSearch index is nuked when we drop the database)
 		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
-			require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
 			$o_es = new WLPlugSearchEngineElasticSearch();
-			$o_es->truncateIndex(null);
+			$o_es->truncateIndex();
 		}
 
 		return true;
 	}
 	# --------------------------------------------------
 	public function performPostInstallTasks() {
+		// generate system GUID -- used to identify systems in data sync protocol
+		$o_vars = new ApplicationVars();
+		$o_vars->setVar('system_guid', caGenerateGUID());
+		$o_vars->save();
+
+		// refresh mapping if ElasticSearch is used
 		$o_config = Configuration::load();
 		if ($o_config->get('search_engine_plugin') == 'ElasticSearch') {
-			require_once(__CA_LIB_DIR__.'/core/Plugins/SearchEngine/ElasticSearch.php');
-			$o_es = new WLPlugSearchEngineElasticSearch();
-			$o_es->refreshMapping(true);
+			$o_si = new SearchIndexer();
+			$o_si->reindex(null, array('showProgress' => false, 'interactiveProgressDisplay' => false));
+			CompositeCache::flush();
 		}
 	}
 	# --------------------------------------------------
@@ -758,6 +762,7 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
 
 		$vo_dm = Datamodel::load();
+		$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
 
 		$t_list = new ca_lists();
 		$t_rel_types = new ca_relationship_types();
@@ -809,6 +814,7 @@ class Installer {
 
 			self::addLabelsFromXMLElement($t_ui, $vo_ui->labels, $this->opa_locales);
 
+			$va_annotation_types = $o_annotation_type_conf->get('types');
 			// create ui type restrictions
 			if($vo_ui->typeRestrictions){
 				foreach($vo_ui->typeRestrictions->children() as $vo_restriction){
@@ -816,8 +822,11 @@ class Installer {
 
 					if (strlen($vs_restriction_type)>0) {
 						// interstitial with type restriction -> code is relationship type code
-						if($t_instance instanceof BaseRelationshipModel){
+						if($t_instance instanceof BaseRelationshipModel) {
 							$vn_type_id = $t_rel_types->getRelationshipTypeID($t_instance->tableName(),$vs_restriction_type);
+						} elseif($t_instance instanceof ca_representation_annotations) {
+							// representation annotation -> code is annotation type from annotation_types.conf
+							$vn_type_id = $va_annotation_types[$vs_restriction_type]['typeID'];
 						} else { // "normal" type restriction -> code is from actual type list
 							$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
 							$vn_type_id = $t_list->getItemIDFromList($vs_type_list_name,$vs_restriction_type);
@@ -863,10 +872,34 @@ class Installer {
 				// create ui bundle placements
 				foreach($vo_screen->bundlePlacements->children() as $vo_placement) {
 					$vs_placement_code = self::getAttribute($vo_placement, "code");
+					$vs_bundle_type_restrictions = self::getAttribute($vo_placement, "typeRestrictions");
 					$vs_bundle = trim((string)$vo_placement->bundle);
 
+					if ($vs_bundle_type_restrictions) {
+						// Copy type restrictions listed on the <placement> tag into numeric type_ids stored
+						// as settings on the placement record.
+						if ($t_instance instanceof BaseRelationshipModel) {
+							$va_ids = caMakeRelationshipTypeIDList($t_instance->tableNum(), explode(",", $vs_bundle_type_restrictions));
+						} else if($t_instance instanceof ca_representation_annotations) {
+							$va_ids = [];
+							foreach(explode(',', $vs_bundle_type_restrictions) as $vs_annotation_type) {
+								if(isset($va_annotation_types[$vs_annotation_type]['typeID'])) {
+									$va_ids[] = $va_annotation_types[$vs_annotation_type]['typeID'];
+								}
+							}
+						} else {
+							$va_ids = caMakeTypeIDList($t_instance->tableNum(), explode(",", $vs_bundle_type_restrictions));
+						}
+						
+						if (!$vo_placement->settings) { $vo_placement->addChild("settings"); }
+						
+						foreach($va_ids as $vn_id) {
+							$o_setting = $vo_placement->settings->addChild('setting', $vn_id);
+							$o_setting->addAttribute('name', 'bundleTypeRestrictions');
+						}
+					}
+					
 					$va_settings = $this->_processSettings(null, $vo_placement->settings);
-
 					$t_ui_screens->addPlacement($vs_bundle, $vs_placement_code, $va_settings, null, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
 				}
 
@@ -879,6 +912,9 @@ class Installer {
 							// interstitial with type restriction -> code is relationship type code
 							if($t_instance instanceof BaseRelationshipModel){
 								$vn_type_id = $t_rel_types->getRelationshipTypeID($t_instance->tableName(),$vs_restriction_type);
+							} elseif($t_instance instanceof ca_representation_annotations) {
+								// representation annotation -> code is annotation type from annotation_types.conf
+								$vn_type_id = $va_annotation_types[$vs_restriction_type]['typeID'];
 							} else { // "normal" type restriction -> code is from actual type list
 								$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
 								$vn_type_id = $t_list->getItemIDFromList($vs_type_list_name,$vs_restriction_type);

@@ -150,9 +150,8 @@ require_once(__CA_LIB_DIR__.'/core/Configuration.php');
  		 */
  		static public function getAttributeTypes() {
  			if (Attribute::$s_attribute_types) { return Attribute::$s_attribute_types; }
- 			$o_config = Configuration::load();
 			
- 			$o_attribute_types = Configuration::load($o_config->get('attribute_type_config'));
+ 			$o_attribute_types = Configuration::load(__CA_CONF_DIR__.'/attribute_types.conf');
  			return Attribute::$s_attribute_types = $o_attribute_types->getList('types');
  		}
  		# ------------------------------------------------------------------

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,7 +48,7 @@
 					print caNavLink($this->request, _t('Login'), '', 'system', 'auth', 'login');
 				}
 ?>
-				&nbsp;&nbsp;|&nbsp;&nbsp; &copy; 2015 Whirl-i-Gig, <a href="http://www.collectiveaccess.org" target="_blank">CollectiveAccess</a> <?php _p("is a trademark of"); ?> <a href="http://www.whirl-i-gig.com" target="_blank">Whirl-i-Gig</a>
+				&nbsp;&nbsp;|&nbsp;&nbsp; &copy; 2016 Whirl-i-Gig, <a href="http://www.collectiveaccess.org" target="_blank">CollectiveAccess</a> <?php _p("is a trademark of"); ?> <a href="http://www.whirl-i-gig.com" target="_blank">Whirl-i-Gig</a>
 				[<?php print $this->request->session->elapsedTime(4).'s'; ?>/<?php print caGetMemoryUsage(); ?>]
 				<?php if (Db::$monitor) { print " [<a href='#' onclick='jQuery(\"#caApplicationMonitor\").slideToggle(100); return false;'>$</a>]"; } ?>
 			</div></div><!-- end footer -->
@@ -101,7 +101,7 @@
 				exposeBackgroundColor: '#000000',				/* color (in hex notation) of background masking out page content; include the leading '#' in the color spec */
 				exposeBackgroundOpacity: 0.7,					/* opacity of background color masking out page content; 1.0 is opaque */
 				panelTransitionSpeed: 400,						/* time it takes the panel to fade in/out in milliseconds */
-				closeButtonSelector: '.close',					/* anything with the CSS classname "close" will trigger the panel to close */
+				closeButtonSelector: '#caMediaPanelContentArea .close',					/* anything with the CSS classname "close" will trigger the panel to close */
 				onOpenCallback: function() {
 					jQuery('#topNavContainer').hide(250);
 				},
@@ -116,14 +116,14 @@
 				exposeBackgroundColor: '#000000',				/* color (in hex notation) of background masking out page content; include the leading '#' in the color spec */
 				exposeBackgroundOpacity: 0.7,					/* opacity of background color masking out page content; 1.0 is opaque */
 				panelTransitionSpeed: 100,						/* time it takes the panel to fade in/out in milliseconds */
-				closeButtonSelector: '.close',					/* anything with the CSS classname "close" will trigger the panel to close */
+				closeButtonSelector: '#caResultsEditorPanelContentArea .close',					/* anything with the CSS classname "close" will trigger the panel to close */
 				onOpenCallback: function() {
 					jQuery('#topNavContainer').hide(250);
 				},
 				onCloseCallback: function() {
 					jQuery('#topNavContainer').show(250);
-					caResultsEditor.caResultsEditorCloseFullScreen(true);
-				}
+				},
+				closeOnEsc: false
 			});
 			
 			caEditorFieldList = caUI.initPanel({ 
@@ -132,7 +132,7 @@
 				exposeBackgroundColor: '#000000',				/* color (in hex notation) of background masking out page content; include the leading '#' in the color spec */
 				exposeBackgroundOpacity: 0.7,					/* opacity of background color masking out page content; 1.0 is opaque */
 				panelTransitionSpeed: 200,						/* time it takes the panel to fade in/out in milliseconds */
-				closeButtonSelector: '.close',					/* anything with the CSS classname "close" will trigger the panel to close */
+				closeButtonSelector: '#editorFieldListContentArea .close',					/* anything with the CSS classname "close" will trigger the panel to close */
 				center: true
 			});
 			
@@ -142,7 +142,7 @@
 				exposeBackgroundColor: '#000000',				/* color (in hex notation) of background masking out page content; include the leading '#' in the color spec */
 				exposeBackgroundOpacity: 0.7,					/* opacity of background color masking out page content; 1.0 is opaque */
 				panelTransitionSpeed: 200,						/* time it takes the panel to fade in/out in milliseconds */
-				closeButtonSelector: '.close',					/* anything with the CSS classname "close" will trigger the panel to close */
+				closeButtonSelector: '#caHierarchyOverviewContentArea .close',					/* anything with the CSS classname "close" will trigger the panel to close */
 				center: true
 			});
 		}

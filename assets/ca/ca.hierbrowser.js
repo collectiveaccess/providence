@@ -40,6 +40,8 @@ var caUI = caUI || {};
 			uiStyle: 'horizontal',	// 'horizontal' [default] means side-to-side scrolling browser; 'vertical' means <select>-based vertically oriented browser.
 			//  The horizontal browser requires more space but it arguably easier and more pleasant to use with large hierarchies.
 			//  The vertical browser is more compact and works well with smaller hierarchies
+			
+			uiDirection: 'up',	// direction of browse in vertical mode; value may be 'up' or 'down'
 
 			bundle: '',
 
@@ -92,7 +94,9 @@ var caUI = caUI || {};
 			displayCurrentSelectionOnLoad: true,
 			typeMenuID: '',
 
+			indicator: '',	
 			indicatorUrl: '',
+			
 			editButtonIcon: '',
 			disabledButtonIcon: '',
 
@@ -120,6 +124,7 @@ var caUI = caUI || {};
 		}
 
 		if (!jQuery.inArray(that.uiStyle, ['horizontal', 'vertical'])) { that.uiStyle = 'horizontal'; }		// verify the uiStyle is valid
+		if (!jQuery.inArray(that.uiDirection, ['up', 'down'])) { that.uiDirection = 'up'; }		// verify the uiDirection is valid
 
 		if (that.uiStyle == 'horizontal') {
 			// create scrolling container
@@ -275,10 +280,22 @@ var caUI = caUI || {};
 				if (that.uiStyle == 'vertical') {
 					// Create new <select> to display list of items
 					var newLevelList = "<select class='" + that.className + "' id='" + newLevelListID + "' name='" + newLevelListID + "' style='width: "+ (that.browserWidth - 32) + "px;'></select>";	// allow 24 pixels for spinner
-					var newLevelDiv = "<div class='" + that.className + "' id='" + newLevelDivID + "'>" + newLevelList;
-					if (level > 0) { newLevelDiv += "<br/>⬆</div>"; }
-
-					jQuery('#' + that.container + '_select_container').prepend(newLevelDiv);
+					var newLevelDiv = "<div class='" + that.className + "' id='" + newLevelDivID + "'>";
+					
+					if (that.uiDirection == 'up') {
+						newLevelDiv += newLevelList;
+						if (level > 0) { newLevelDiv += "<br/>⬆</div>"; }
+						jQuery('#' + that.container + '_select_container').prepend(newLevelDiv);
+					} else {
+						if (level > 0) { newLevelDiv += "⬇<br/>"; }
+						newLevelDiv += newLevelList + "</div>";
+						if (level == 0) {
+							jQuery('#' + that.container + '_select_container').prepend(newLevelDiv);
+						} else {
+							jQuery('#' + that.container + '_select_container').append(newLevelDiv);
+						}
+					}
+					
 					jQuery('#' + newLevelDivID).data('level', level);
 					jQuery('#' + newLevelDivID).data('parent_id', item_id);
 					jQuery('#' + newLevelListID).change(function() {
@@ -527,7 +544,7 @@ var caUI = caUI || {};
 								}
 							} else {
 								if (that.uiStyle == 'vertical') {
-									jQuery("#" + newLevelListID).append(jQuery("<option></option>").val(item.item_id).text(item.name));
+									jQuery("#" + newLevelListID).append(jQuery("<option></option>").val(item.item_id).text(jQuery('<div />').html(item.name).text()));
 								}
 							}
 							// Pass item_id to caller if required
@@ -725,27 +742,37 @@ var caUI = caUI || {};
 		// @param string newLevelDivID The ID of the <div> containing the level
 		//
 		that.showIndicator = function(newLevelDivID) {
-			if (!that.indicatorUrl) { return; }
-			if (jQuery('#' + newLevelDivID + ' img._indicator').length > 0) {
-				jQuery('#' + newLevelDivID + ' img._indicator').show();
+			if (!that.indicatorUrl && !that.indicator) { return; }
+			
+			if (jQuery('#' + newLevelDivID + ' div._indicator').length > 0) {
+				jQuery('#' + newLevelDivID + ' div._indicator').show();
 				return;
 			}
+			
 			var level = jQuery('#' + newLevelDivID).data('level');
+				
+			if (that.indicatorUrl) {
+				var img = document.createElement('img');
+				img.src = that.indicatorUrl;
+				img.className = '_indicatorImg';
+				
+				that.indicator = that.indicatorUrl;
+			} 
+				
+				
+			var indicator = document.createElement('div');
 			if (that.uiStyle == 'vertical') {
-				var indicator = document.createElement('img');
-				indicator.src = that.indicatorUrl;
-				indicator.className = '_indicator';
 				if (level == 0) { jQuery('#' + newLevelDivID).append("<br/>"); }
-				jQuery('#' + newLevelDivID).append(indicator);
 			} else {
-				var indicator = document.createElement('img');
-				indicator.src = that.indicatorUrl;
+				jQuery(indicator).append(that.indicator);
 				indicator.className = '_indicator';
 				indicator.style.position = 'absolute';
 				indicator.style.left = '50%';
 				indicator.style.top = '50%';
-				jQuery('#' + newLevelDivID).append(indicator);
 			}
+			jQuery('#' + newLevelDivID).append(indicator);
+			
+			return;
 		}
 		// --------------------------------------------------------------------------------
 		// Remove spinning progress indicator from specified level <div>
@@ -753,7 +780,9 @@ var caUI = caUI || {};
 		// @param string newLevelDivID The ID of the <div> containing the level
 		//
 		that.hideIndicator = function(newLevelDivID) {
-			jQuery('#' + newLevelDivID + ' img._indicator').hide();		// hide loading indicator
+			if (!that.indicatorUrl && !that.indicator) { return; }
+			
+			jQuery('#' + newLevelDivID + ' div._indicator').hide();		// hide loading indicator
 		}
 		// --------------------------------------------------------------------------------
 		// Returns database id (the primary key in the database, *NOT* the DOM ID) of currently selected item

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2015 Whirl-i-Gig
+ * Copyright 2007-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -70,7 +70,7 @@ class MultipartIDNumber extends IDNumber {
 		if (!$pm_type) { $pm_type = array('__default__'); }
 
 		parent::__construct();
-		$this->opo_idnumber_config = Configuration::load($this->opo_config->get('multipart_id_numbering_config'));
+		$this->opo_idnumber_config = Configuration::load(__CA_APP_DIR__."/conf/multipart_id_numbering.conf");
 		$this->opa_formats = $this->opo_idnumber_config->getAssoc('formats');
 
 		if ($ps_format) { $this->setFormat($ps_format); }
@@ -111,7 +111,7 @@ class MultipartIDNumber extends IDNumber {
 	 * @return string Separator, or "." if no separator setting is present
 	 */
 	public function getSeparator() {
-		return $this->getFormatPropery('separator', array('default' => '.'));
+		return $this->getFormatProperty('separator', array('default' => '.'));
 	}
 	# -------------------------------------------------------
 	/**
@@ -122,7 +122,7 @@ class MultipartIDNumber extends IDNumber {
 	 *		default = Value to return if property does not exist [Default is null]
 	 * @return string
 	 */
-	public function getFormatPropery($ps_property, $pa_options=null) {
+	public function getFormatProperty($ps_property, $pa_options=null) {
 		if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType()) && isset($this->opa_formats[$vs_format][$vs_type][$ps_property])) {
 			return $this->opa_formats[$vs_format][$vs_type][$ps_property] ? $this->opa_formats[$vs_format][$vs_type][$ps_property] : '';
 		}
@@ -966,19 +966,19 @@ class MultipartIDNumber extends IDNumber {
 			if (($pa_options['show_errors']) && (isset($pa_errors[$vs_element_name]))) {
 				$vs_error_message = preg_replace("/[\"\']+/", "", $pa_errors[$vs_element_name]);
 				if ($pa_options['error_icon']) {
-					$vs_tmp .= "<a href='#'\" id='caIdno_{$vs_id_prefix}_{$ps_name}'><img src='".$pa_options['error_icon']."' border='0'/></a>";
+					$vs_tmp .= "<a href='#' id='caIdno_{$vs_id_prefix}_{$ps_name}'>".$pa_options['error_icon']."</a>";
 				} else {
-					$vs_tmp .= "<a href='#'\" id='caIdno_{$vs_id_prefix}_{$ps_name}'>["._t('Error')."]</a>";
+					$vs_tmp .= "<a href='#' id='caIdno_{$vs_id_prefix}_{$ps_name}'>["._t('Error')."]</a>";
 				}
 				TooltipManager::add("#caIdno_{$vs_id_prefix}_{$ps_name}", "<h2>"._t('Error')."</h2>{$vs_error_message}");
 			}
 			$va_element_controls[] = $vs_tmp;
 			$vn_i++;
 		}
-		if ((sizeof($va_elements) < sizeof($va_element_vals)) && (bool)$this->getFormatPropery('allow_extra_elements', array('default' => 1))) {
+		if ((sizeof($va_elements) < sizeof($va_element_vals)) && (bool)$this->getFormatProperty('allow_extra_elements', array('default' => 1))) {
 			$va_extra_vals = array_slice($va_element_vals, sizeof($va_elements));
 			
-			if (($vn_extra_size = (int)$this->getFormatPropery('extra_element_width', array('default' => 10))) < 1) {
+			if (($vn_extra_size = (int)$this->getFormatProperty('extra_element_width', array('default' => 10))) < 1) {
 				$vn_extra_size = 10;
 			}
 			foreach($va_extra_vals as $vn_i => $vs_extra_val) {
@@ -998,8 +998,8 @@ class MultipartIDNumber extends IDNumber {
 			$va_lookup_url_info = caJSONLookupServiceUrl($pa_options['request'], $pa_options['table']);
 			$vs_js .= "
 				caUI.initIDNoChecker({
-					errorIcon: '".$pa_options['error_icon']."',
-					processIndicator: '".$pa_options['progress_indicator']."',
+					errorIcon: \"".$pa_options['error_icon']."\",
+					processIndicator: \"".$pa_options['progress_indicator']."\",
 					idnoStatusID: 'idnoStatus',
 					lookupUrl: '".$va_lookup_url_info['idno']."',
 					searchUrl: '".$pa_options['search_url']."',
@@ -1141,7 +1141,7 @@ class MultipartIDNumber extends IDNumber {
 				if (!sizeof($va_tmp)) { break; }
 				$va_element_values[$ps_name.'_'.$vs_element_name] = array_shift($va_tmp);
 			}
-			if ((sizeof($va_tmp) > 0) && (bool)$this->getFormatPropery('allow_extra_elements', array('default' => 1))) {
+			if ((sizeof($va_tmp) > 0) && (bool)$this->getFormatProperty('allow_extra_elements', array('default' => 1))) {
 				$vn_i = 0;
 				foreach($va_tmp as $vs_tmp) {
 					$va_element_values[$ps_name.'_extra_'.$vn_i] = $vs_tmp;
@@ -1155,7 +1155,7 @@ class MultipartIDNumber extends IDNumber {
 				}
 			}
 			
-			if ((bool)$this->getFormatPropery('allow_extra_elements', array('default' => 1))) {
+			if ((bool)$this->getFormatProperty('allow_extra_elements', array('default' => 1))) {
 				$vn_i = 0;
 				while(true) {
 					if(isset($_REQUEST[$ps_name.'_extra_'.$vn_i])) {
@@ -1211,7 +1211,7 @@ class MultipartIDNumber extends IDNumber {
 			}
 		}
 		
-		if((bool)$this->getFormatPropery('allow_extra_elements', array('default' => 1))) {
+		if((bool)$this->getFormatProperty('allow_extra_elements', array('default' => 1))) {
 			$vn_i = 0;
 			while(true) {
 				if (isset($va_element_values[$ps_name.'_extra_'.$vn_i]) && ($vs_tmp = $va_element_values[$ps_name.'_extra_'.$vn_i])) {
@@ -1402,6 +1402,7 @@ class MultipartIDNumber extends IDNumber {
 	public function getSequenceMaxValue($ps_format, $ps_element, $ps_idno_stub) {
 		$this->opo_db->dieOnError(false);
 
+		$vn_minimum_value = caGetOption('minimum_value', $this->getElementInfo($ps_element), 0, ['castTo' => 'int']);
 		if (!($qr_res = $this->opo_db->query("
 			SELECT seq
 			FROM ca_multipart_idno_sequences
@@ -1410,8 +1411,8 @@ class MultipartIDNumber extends IDNumber {
 		", $ps_format, $ps_element, $ps_idno_stub))) {
 			return false;
 		}
-		if (!$qr_res->nextRow()) { return 0; }
-		return $qr_res->get('seq');
+		if (!$qr_res->nextRow()) { return $vn_minimum_value - 1; }
+		return (($vn_v = $qr_res->get('seq')) < $vn_minimum_value) ? ($vn_minimum_value - 1) : $vn_v;
 	}
 	# -------------------------------------------------------
 	/**
@@ -1429,14 +1430,15 @@ class MultipartIDNumber extends IDNumber {
 		$this->opo_db->query("
 			DELETE FROM ca_multipart_idno_sequences
 			WHERE format = ? AND element = ? AND idno_stub = ?
-		", $ps_format, $ps_element, $ps_idno_stub);
+		", [$ps_format, $ps_element, $ps_idno_stub]);
 
+		$pn_value = (int)preg_replace("![^\d]+!", "", $pn_value);
 		return $this->opo_db->query("
 			INSERT INTO ca_multipart_idno_sequences
 			(format, element, idno_stub, seq)
 			VALUES
 			(?, ?, ?, ?)
-		", $ps_format, $ps_element, $ps_idno_stub, $pn_value);
+		", [$ps_format, $ps_element, $ps_idno_stub, $pn_value]);
 	}
 	# -------------------------------------------------------
 	/**
@@ -1454,18 +1456,18 @@ class MultipartIDNumber extends IDNumber {
 	 * Also, if the identifier consists of multiple elements, false will be returned.
 	 *
 	 * @param string $ps_format_name Name of format
+	 * @param array $pa_options Options include:
+	 *		singleElementsOnly = Only consider formats with a single editable element to be editable. [Default is false]
 	 * @return bool
 	 */
-	public function isFormatEditable($ps_format_name) {
-		$va_elements = $this->getElements();
-		if(sizeof($va_elements) == 1 ){
-			$vs_edit_info = $this->opa_formats[$ps_format_name][$this->getType()]['elements'][key($va_elements)];
-			switch($vs_edit_info['editable']){
-				case 1:
-					return true;
-				default:
-					return false;
-			}
+	public function isFormatEditable($ps_format_name, $pa_options=null) {
+		if (!is_array($va_elements = $this->getElements())) { return false; }
+		
+		$vb_single_elements_only = caGetOption('singleElementsOnly', $pa_options, false);
+		
+		foreach($va_elements as $vs_element => $va_element_info) {
+			if (isset($va_element_info['editable']) && (bool)$va_element_info['editable']) { return true; }
+			if ($vb_single_elements_only) { return false; }
 		}
 		return false;
 	}

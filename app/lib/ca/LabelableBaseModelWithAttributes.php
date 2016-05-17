@@ -49,7 +49,23 @@
 	class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implements ILabelable {
 		# ------------------------------------------------------------------
 		static $s_label_cache = array();
+		
+		/**
+		 * @int $s_label_cache_size
+		 *
+		 * Maximum numbers of cached labels per table
+		 */
+		static $s_label_cache_size = 1024;
+		
+		
 		static $s_labels_by_id_cache = array();
+		
+		/**
+		 * @int $s_labels_by_id_cache_size
+		 *
+		 * Maximum numbers of cached labels per id
+		 */
+		static $s_labels_by_id_cache_size = 1024;
 		
 		/** 
 		 * List of failed preferred label inserts to be forced into HTML bundle
@@ -641,9 +657,8 @@
 		
 				foreach($pa_values as $vs_field => $vm_value) {
 					if (($vn_element_id = array_search($vs_field, $va_element_codes)) !== false) {
-						
 						$vs_q = " ca_attribute_values.element_id = {$vn_element_id} AND  ";
-						switch($vn_datatype = $t_instance->_getElementDatatype($vs_field)) {
+						switch($vn_datatype = ca_metadata_elements::getElementDatatype($vs_field)) {
 							case 0:	// continue
 							case 15: // media
 							case 16: // file
@@ -659,7 +674,7 @@
 								}
 								break;
 							case 3:	// list
-								if ($t_element = $t_instance->_getElementInstance($vs_field)) {
+								if ($t_element = ca_metadata_elements::getInstance($vs_field)) {
 									$vn_item_id = is_numeric($vm_value) ? (int)$vm_value : (int)caGetListItemID($t_element->get('list_id'), $vm_value);
 								
 									$vs_q .= "(ca_attribute_values.item_id = ?)";
@@ -1381,10 +1396,10 @@
 		 * If none of the UI fields are set to *anything* then we return NULL; this is a signal
 		 * to ignore the label input (ie. it was a blank form bundle)
 		 *
-		 * @param HTTPRequest $po_request Request object
+		 * @param RequestHTTP $po_request Request object
 		 * @param string $ps_form_prefix
 		 * @param string $ps_label_id
-		 * @param boolean $ps_is_preferred
+		 * @param bool $pb_is_preferred
 		 *
 		 * @return array Array of values or null is no values were set in the request
 		 */
@@ -1399,12 +1414,24 @@
 			} else {
 				$vs_pref_key = ($pb_is_preferred ? '_Pref' : '_NPref');
 			}
+			
+			// If label exists use existing values as defaults when no value is set
+			$t_label = null;
+			if (is_numeric($ps_label_id)) {
+				$t_label = $this->getLabelTableInstance();
+				if (!$t_label->load($ps_label_id)) { $t_label = null; }
+			}
+			
 			foreach($va_fields as $vs_field) {
 				if ($vs_val = $po_request->getParameter($ps_form_prefix.$vs_pref_key.$vs_field.'_'.$ps_label_id, pString)) {
 					$va_values[$vs_field] = $vs_val;
 					$vb_value_set = true;
 				} else {
-					$va_values[$vs_field] = '';
+					if (isset($_REQUEST[$ps_form_prefix.$vs_pref_key.$vs_field.'_'.$ps_label_id])) {
+						$va_values[$vs_field] = '';
+					} else {
+						$va_values[$vs_field] = $t_label ? $t_label->get($vs_field) : null;
+					}
 				}
 			}
 			
@@ -1557,6 +1584,10 @@
  					}
  				}
  				$va_labels = $va_flattened_labels;
+ 			}
+ 			
+ 			if (sizeof(LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()]) > LabelableBaseModelWithAttributes::$s_label_cache_size) {
+ 				array_splice(LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()], 0, ceil(LabelableBaseModelWithAttributes::$s_label_cache_size/2));
  			}
  			
  			LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()][$vn_id][$vs_cache_key] = $va_labels;
@@ -2013,6 +2044,10 @@
 				$va_sorted_labels[$vn_id] = $va_labels[$vn_id];
 			}
 			
+			if (sizeof(LabelableBaseModelWithAttributes::$s_labels_by_id_cache) > LabelableBaseModelWithAttributes::$s_labels_by_id_cache_size) {
+				array_splice(LabelableBaseModelWithAttributes::$s_labels_by_id_cache, 0, ceil(LabelableBaseModelWithAttributes::$s_labels_by_id_cache_size/2));
+			}
+			
 			if ($vb_return_all_locales) {
 				return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key] = $va_sorted_labels;
 			}
@@ -2072,6 +2107,10 @@
 			$va_sorted_labels = array();
 			foreach($va_ids as $vn_id) {
 				$va_sorted_labels[$vn_id] = $va_labels[$vn_id];
+			}
+			
+			if (sizeof(LabelableBaseModelWithAttributes::$s_labels_by_id_cache) > LabelableBaseModelWithAttributes::$s_labels_by_id_cache_size) {
+				array_splice(LabelableBaseModelWithAttributes::$s_labels_by_id_cache, 0, ceil(LabelableBaseModelWithAttributes::$s_labels_by_id_cache_size/2));
 			}
 			
 			if ($vb_return_all_locales) {

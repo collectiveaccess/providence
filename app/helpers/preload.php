@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -20,7 +20,7 @@
  *
  * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
- * the 'license.txt' file for details, or visit the CollectiveAccess web site at
+ * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
  *
  * @package CollectiveAccess
@@ -72,6 +72,7 @@ require_once(__CA_LIB_DIR__.'/core/Cache/ExternalCache.php');
 require_once(__CA_LIB_DIR__.'/core/Cache/CompositeCache.php');
 
 require_once(__CA_APP_DIR__.'/lib/ca/GarbageCollection.php');
+require_once(__CA_APP_DIR__.'/helpers/guidHelpers.php');
 
 // initialize Tooltip manager
 TooltipManager::init();

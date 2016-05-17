@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -98,10 +98,10 @@
 				initDataUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'getFacetHierarchyAncestorList', array('facet' => $vs_facet_name)); ?>',
 
 				editUrl: '<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), 'addCriteria', array('facet' => $vs_facet_name, 'id' => '')); ?>',
-				editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/glyphicons_223_chevron-right.png" border="0" title="<?php print _t("Browse with this term"); ?>">',
+				editButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__ ,1); ?>",
 
 				initItemID: '<?php print $this->getVar('browse_last_id'); ?>',
-				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+				indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 
 				currentSelectionDisplayID: 'browseCurrentSelection'
 			});
@@ -136,7 +136,7 @@
 			foreach($va_facet as $vn_i => $va_item) {
 				$vs_label = caGetLabelForDisplay($va_facet, $va_item, $va_facet_info);
 				
-				$va_row[] = "<td class='browseSelectPanelListCell' width='{$va_td_width}%;'>".caNavLink($this->request, $vs_label, 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id)) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => urlencode($va_item['id']), 'mod_id' => $vm_modify_id))."</td>";
+				$va_row[] = "<td class='browseSelectPanelListCell' width='{$va_td_width}%;'>".caNavLink($this->request, html_entity_decode($vs_label), 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id)) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => urlencode($va_item['id']), 'mod_id' => $vm_modify_id))."</td>";
 				
 				if (sizeof($va_row) == $va_row_size) {
 					print "<tr valign='top'>".join('', $va_row)."</tr>\n";
@@ -215,7 +215,7 @@
 				foreach($va_items as $va_item) {
 					$vs_label = caGetLabelForDisplay($va_facet, $va_item, $va_facet_info);
 				
-					$va_row[] = "<td class='browseSelectPanelListCell' width='{$va_td_width}%;'>".caNavLink($this->request, $vs_label, 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id) > 0) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => urlencode($va_item['id']), 'mod_id' => $vm_modify_id))."</td>";
+					$va_row[] = "<td class='browseSelectPanelListCell' width='{$va_td_width}%;'>".caNavLink($this->request, html_entity_decode($vs_label), 'browseSelectPanelLink', 'find', $this->request->getController(), ((strlen($vm_modify_id) > 0) ? 'modifyCriteria' : 'addCriteria'), array('facet' => $vs_facet_name, 'id' => urlencode($va_item['id']), 'mod_id' => $vm_modify_id))."</td>";
 					
 					if (sizeof($va_row) == $va_row_size) {
 						print "<tr valign='top'>".join('', $va_row)."</tr>\n";

@@ -162,9 +162,15 @@ class Intrinsic extends FieldType {
 			isset($va_field_components[1]) &&
 			($t_instance->getProperty('ID_NUMBERING_ID_FIELD') == $va_field_components[1])
 		) {
-			return new \Zend_Search_Lucene_Index_Term(
-				'"'.$po_term->text.'"', $po_term->field
-			);
+			if(stripos($po_term->text, '*') !== false) {
+				return new \Zend_Search_Lucene_Index_Term(
+					$po_term->text, $po_term->field
+				);
+			} else {
+				return new \Zend_Search_Lucene_Index_Term(
+					'"'.$po_term->text.'"', $po_term->field
+				);
+			}
 		} else {
 			return new \Zend_Search_Lucene_Index_Term(
 				str_replace('/', '\\/', $po_term->text),
