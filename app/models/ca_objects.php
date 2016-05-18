@@ -335,7 +335,16 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
-		)
+		),
+		'circulation_status_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LIST_CODE' => 'object_circulation_statuses',
+			'LABEL' => _t('Circulation status'), 'DESCRIPTION' => _t('Indicates circulation status of the object.')
+		),
 	)
 );
 

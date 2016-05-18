@@ -930,6 +930,39 @@
         </item>
       </items>
     </list>
+    <list code="object_circulation_statuses" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Object circulation statuses</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="available" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Available</name_singular>
+              <name_plural>Available</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="in_library" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>In-library use only</name_singular>
+              <name_plural>In-library use only</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="unavailable" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Unavailable</name_singular>
+              <name_plural>Unavailable</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
     <list code="object_lot_types" hierarchical="1" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
