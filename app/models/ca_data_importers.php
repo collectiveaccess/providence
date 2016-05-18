@@ -2180,7 +2180,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 						continue;
 					}
-					$o_log->logDebug(_t('Created idno %1 at %2 seconds', $vs_idno, $t->getTime(4)));
+					$o_log->logDebug(_t('Created idno %1 at %2 seconds [id=%3]', $vs_idno, $t->getTime(4), $t_subject->getPrimaryKey()));
 				} else {
 					$o_event->beginItem($vn_row, $t_subject->tableNum(), 'U') ;
 					// update
@@ -2270,6 +2270,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 					if ($vs_table_name == $vs_subject_table) {		
 						foreach($va_content as $vn_i => $va_element_data) {
 							foreach($va_element_data as $vs_element => $va_element_content) {	
+								try {
 									if (is_array($va_element_content)) { 														
 										$vb_truncate_long_labels = caGetOption('_truncateLongLabels', $va_element_content, false);
 										unset($va_element_content['_truncateLongLabels']);
@@ -2378,7 +2379,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												$va_opts['matchOn'] = $va_match_on;
 											}
 											$t_subject->addAttribute($va_element_content, $vs_element, null, $va_opts);
-										
+										$t_subject->update();
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Failed to add value for %2; values were %3: ", $vs_idno, $vs_element, ca_data_importers::formatValuesForLog($va_element_content)), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 												ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 												if ($vs_item_error_policy == 'stop') {
@@ -2393,6 +2394,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 
 											break;
 									}
+								} catch(Exception $e) {
+									// noop
+								}
 							}
 						} 
 					
@@ -2431,6 +2435,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 								$va_data_for_rel_table = array_merge($va_data_for_rel_table, ca_data_importers::_extractIntrinsicValues($va_data_for_rel_table, $vs_table_name));
 			
 								$t_subject->clearErrors();
+						try {
 								switch($vs_table_name) {
 									case 'ca_objects':
 										if ($vn_rel_id = DataMigrationUtils::getObjectID($va_element_data['preferred_labels']['name'], $va_element_data['_parent_id'], $va_element_data['_type'], $vn_locale_id, $va_data_for_rel_table, array('forceUpdate' => true, 'dontCreate' => $vb_dont_create, 'ignoreParent' => $vb_ignore_parent, 'matchOn' => $va_match_on, 'log' => $o_log, 'transaction' => $o_trans, 'importEvent' => $o_event, 'importEventSource' => $vn_row, 'nonPreferredLabels' => $va_nonpreferred_labels))) {
@@ -2656,7 +2661,10 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										}
 										break;
 								 }
-							 
+							} catch (Exception $e) {
+								// noop
+							}
+							try {
 								 if(is_array($va_element_data['_related_related']) && sizeof($va_element_data['_related_related'])) {
 									foreach($va_element_data['_related_related'] as $vs_rel_rel_table => $va_rel_rels) {
 										foreach($va_rel_rels as $vn_i => $va_rel_rel) {
@@ -2677,7 +2685,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 										}
 									}
 								 }
-							 
+							} catch (Exception $e) {
+								// noop
+							}
 							 
 						}
 					}
@@ -2702,9 +2712,13 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$o_log->logDebug(_t('Finished inserting content tree for %1 at %2 seconds into database', $vs_idno, $t->getTime(4)));
 			
 				if(!$vb_output_subject_preferred_label && ($t_subject->getPreferredLabelCount() == 0)) {
-					$t_subject->addLabel(
-						array($vs_label_display_fld => '???'), $vn_locale_id, null, true
-					);
+					try {
+						$t_subject->addLabel(
+							array($vs_label_display_fld => '???'), $vn_locale_id, null, true
+						);
+					} catch (Exception $e) {
+						// noop
+					}
 				
 					if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add default label", $vs_idno), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 						ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
