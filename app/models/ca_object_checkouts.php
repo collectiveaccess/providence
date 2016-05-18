@@ -581,8 +581,6 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	static public function getObjectCheckoutTypes() {
 		$o_config = caGetLibraryServicesConfiguration();
-		$t_object = new ca_objects();
-		
 		$va_type_config = $o_config->getAssoc('checkout_types');
 		
 		return array_keys($va_type_config);
