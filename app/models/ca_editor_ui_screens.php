@@ -994,6 +994,11 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									)
 								);
 								break;
+							case 'circulation_status':
+								$va_additional_settings = array(
+									// @todo: maybe add settings!?
+								);
+								break;
 							case 'ca_objects_location':
 								$va_additional_settings = array(
 									'locationTrackingMode' => array(

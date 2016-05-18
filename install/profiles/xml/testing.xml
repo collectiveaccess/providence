@@ -2424,8 +2424,11 @@
                 <setting name="add_label" locale="en_US">Add name</setting>
               </settings>
             </placement>
-            <placement code="circulation_status_id">
-              <bundle>circulation_status_id</bundle>
+            <placement code="ca_object_circulation_status">
+              <bundle>ca_object_circulation_status</bundle>
+            </placement>
+            <placement code="ca_object_checkouts">
+              <bundle>ca_object_checkouts</bundle>
             </placement>
             <placement code="barcode">
               <bundle>ca_attribute_barcode</bundle>

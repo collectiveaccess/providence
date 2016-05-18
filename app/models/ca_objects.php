@@ -561,6 +561,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		$this->BUNDLES['ca_object_representations_access_status'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Media representation access and status'));
 	
 		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
+
+		$this->BUNDLES['ca_object_circulation_status'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Circulation Status'));
 	}
 	# ------------------------------------------------------
 	/**
@@ -1721,7 +1723,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		if ($vs_return_as == 'info') {
 			$va_data = array();
 			while($vm_res->nextHit()) {
-				$va_data[$vn_object_id = $vm_res->get('ca_objects.object_id')] = array(
+				$vn_object_id = $vm_res->get('ca_objects.object_id');
+				$va_data[$vn_object_id] = array(
 					'object_id' => $vn_object_id,
 					'id' => $vn_object_id,
 					'label' => $vm_res->get('ca_objects.preferred_labels.name'),
@@ -2181,6 +2184,27 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		}
 		
 		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * @param RequestHTTP $po_request
+	 * @param string $ps_form_name
+	 * @param string $ps_placement_code
+	 * @param null|array $pa_bundle_settings
+	 * @param null|array $pa_options
+	 * @return string
+	 */
+	public function getObjectCirculationStatusHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+
+		if(!is_array($pa_options)) { $pa_options = array(); }
+
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		$o_view->setVar('settings', $pa_bundle_settings);
+		$o_view->setVar('t_subject', $this);
+
+		return $o_view->render('ca_object_circulation_status_html.php');
 	}
 	# ------------------------------------------------------
 }
