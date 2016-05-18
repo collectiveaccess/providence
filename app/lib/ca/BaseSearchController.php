@@ -66,7 +66,8 @@
 					$this->ops_view_default = $vs_view_default;
 				}
 
-				$this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id);
+				if(!is_array($this->opa_sorts)) { $this->opa_sorts = array(); }
+				$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $po_request)));
 			}
  		}
  		# -------------------------------------------------------
@@ -96,7 +97,7 @@
  			
  			// Get elements of result context
  			$vn_page_num 			= $this->opo_result_context->getCurrentResultsPageNumber();
- 			$vs_search 				= $this->opo_result_context->getSearchExpression();
+ 			$vs_search 				= html_entity_decode($this->opo_result_context->getSearchExpression());	// decode entities encoded to avoid Apache request parsing issues (Eg. forward slashes [/] in searches) 
  			$vb_is_new_search		= $this->opo_result_context->isNewSearch();
  			
  			if ((bool)$this->request->getParameter('reset', pString) && ($this->request->getParameter('reset', pString) != 'save')) {
@@ -139,7 +140,8 @@
  			foreach($va_sortable_elements as $va_sortable_element) {
  				$this->opa_sorts[$this->ops_tablename.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
  			}
- 			
+
+			$vs_append_to_search = '';
  			if ($pa_options['appendToSearch']) {
  				$vs_append_to_search .= " AND (".$pa_options['appendToSearch'].")";
  			}
@@ -192,7 +194,7 @@
  					}
  					
 					$vo_result = $po_search->getResults($va_search_opts);
-				} else {
+				} elseif($po_search) {
 					$vo_result = $po_search->search($vs_search, $va_search_opts);
 				}
 
@@ -287,7 +289,7 @@
 	
 						$vn_item_count++;
 	
-						$va_row_headers[] = ($vn_item_count)." ".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), 'caResultsEditorEditLink', $this->ops_tablename, $vn_id);
+						$va_row_headers[] = ($vn_item_count)." ".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), 'caResultsEditorEditLink', $this->ops_tablename, $vn_id);
 	
 					}
 				}

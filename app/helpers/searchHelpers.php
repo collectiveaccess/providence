@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2015 Whirl-i-Gig
+ * Copyright 2011-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -885,7 +885,7 @@
 					if (!($va_field_info = $t_instance->getFieldInfo($vs_field))) {
 						// is it an attribute?
 						if (in_array($vs_field, $va_element_codes)) {
-							$t_element = $t_instance->_getElementInstance($vs_field);
+							$t_element = ca_metadata_elements::getInstance($vs_field);
 							if(!$t_element) { continue; }
 							if (in_array($t_element->get('datatype'), array(15, 16))) { continue; } 		// skip file and media attributes - never searchable
 							if (!$t_element->getSetting('canBeUsedInSearchForm')) { continue; }
@@ -1018,9 +1018,23 @@
 	 * @return Zend_Search_Lucene_Index_Term
 	 */
 	function caRewriteElasticSearchTermFieldSpec($po_term) {
-		return new Zend_Search_Lucene_Index_Term(
-			$po_term->text, (strlen($po_term->field) > 0) ? str_replace('.', '\/', str_replace('/', '|', $po_term->field)) : $po_term->field
-		);
+		if(strlen($po_term->field) > 0) {
+			// rewrite ca_objects.dates.dates_value as ca_objects/dates/dates/value, which is
+			// how we index in ElasticSsearch (they don't allow periods in field names)
+			$vs_new_field = str_replace('.', '\/', str_replace('/', '|', $po_term->field));
+
+			// rewrite ca_objects/dates/dates_value as ca_objects/dates_value, because that's
+			// how the SearchIndexer indexes -- we don't care about the container the field is in
+			$va_tmp = explode('\\/', $vs_new_field);
+			if(sizeof($va_tmp) == 3) {
+				unset($va_tmp[1]);
+				$vs_new_field = join('\\/', $va_tmp);
+			}
+		} else {
+			$vs_new_field = $po_term->field;
+		}
+
+		return new Zend_Search_Lucene_Index_Term($po_term->text, $vs_new_field);
 	}
 	# ---------------------------------------
 	/**
@@ -1110,9 +1124,16 @@
 	 *
 	 * @param string $ps_table
 	 * @param null|int $pn_type_id
+	 * @param array $pa_options
 	 * @return array
 	 */
-	function caGetAvailableSortFields($ps_table, $pn_type_id = null) {
+	function caGetAvailableSortFields($ps_table, $pn_type_id = null, $pa_options=null) {
+		require_once(__CA_MODELS_DIR__ . '/ca_user_sorts.php');
+
+		if(is_numeric($ps_table)) {
+			$ps_table = Datamodel::load()->getTableName($ps_table);
+		}
+
 		switch($ps_table) {
 			case 'ca_list_items':
 				$va_base_fields = array(
@@ -1231,17 +1252,30 @@
 					'ca_items_x_tags.created_on' => _t('date'),
 					'ca_items_x_tags.user_id' => _t('user')
 				);
+				break;
 			default:
 				$va_base_fields = array();
 				break;
 		}
 
-		$va_sortable_elements = ca_metadata_elements::getSortableElements($ps_table, $pn_type_id);
+		if($ps_table) {
+			// add user sorts
+			if(caGetOption('includeUserSorts', $pa_options, true)) {
+				/** @var RequestHTTP $po_request */
+				if(!($po_request = caGetOption('request', $pa_options)) || ($po_request->getUser()->canDoAction('can_use_user_sorts'))) {
+					$va_base_fields = array_merge($va_base_fields, ca_user_sorts::getAvailableSortsForTable($ps_table));
+				}
+			}
 
-		foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
-			$va_base_fields[$ps_table.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
+			// add sortable elements
+			require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
+			$va_sortable_elements = ca_metadata_elements::getSortableElements($ps_table, $pn_type_id);
+			foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
+				$va_base_fields[$ps_table.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
+			}
 		}
-
+		natcasesort($va_base_fields);
+		
 		return $va_base_fields;
 	}
 	# ---------------------------------------

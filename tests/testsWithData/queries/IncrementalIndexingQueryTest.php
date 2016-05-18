@@ -54,6 +54,7 @@ class IncrementalIndexingQueryTest extends BaseTestWithData {
 		$this->assertGreaterThan(0, $vn_object_id = $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
+				'idno' => 'asdf'
 			),
 			'preferred_labels' => array(
 				array(
@@ -84,6 +85,24 @@ class IncrementalIndexingQueryTest extends BaseTestWithData {
 		$this->assertEquals(0, $o_result->numHits(), 'foo should not be indexed anymore');
 		$o_result = $o_search->search('bar');
 		$this->assertEquals(1, $o_result->numHits(), 'bar should now be indexed instead');
+	}
+	# -------------------------------------------------------
+	public function testReplaceIdno() {
+		$o_search = caGetSearchInstance('ca_objects');
+		$o_result = $o_search->search('asdf');
+		$this->assertEquals(1, $o_result->numHits(), 'asdf should be indexed');
+		$o_result = $o_search->search('fdsa');
+		$this->assertEquals(0, $o_result->numHits(), 'fdsa should not be indexed yet');
+
+		$this->opt_object->set('idno', 'fdsa');
+		$this->opt_object->setMode(ACCESS_WRITE);
+		$this->opt_object->update();
+
+		$o_search = caGetSearchInstance('ca_objects');
+		$o_result = $o_search->search('asdf');
+		$this->assertEquals(0, $o_result->numHits(), 'asdf should not be indexed anymore');
+		$o_result = $o_search->search('fdsa');
+		$this->assertEquals(1, $o_result->numHits(), 'fdsa should now be indexed instead');
 	}
 	# -------------------------------------------------------
 	public function testDelete() {

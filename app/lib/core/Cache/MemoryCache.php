@@ -44,7 +44,7 @@ class MemoryCache {
 	public static function fetch($ps_key, $ps_namespace='default') {
 		if(!$ps_namespace) { throw new MemoryCacheInvalidParameterException('Namespace cannot be empty'); }
 
-		if(!$ps_key) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
+		if(!strlen($ps_key)) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
 
 		if(isset(self::$opa_caches[$ps_namespace][$ps_key])) {
 			return self::$opa_caches[$ps_namespace][$ps_key];
@@ -80,7 +80,7 @@ class MemoryCache {
 	public static function contains($ps_key, $ps_namespace='default') {
 		if(!$ps_namespace) { throw new MemoryCacheInvalidParameterException('Namespace cannot be empty'); }
 
-		if(!$ps_key) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
+		if(!strlen($ps_key)) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
 
 		return (isset(self::$opa_caches[$ps_namespace]) && array_key_exists($ps_key, self::$opa_caches[$ps_namespace]));
 	}
@@ -94,7 +94,7 @@ class MemoryCache {
 	 */
 	public static function delete($ps_key, $ps_namespace='default') {
 		if(!$ps_namespace) { throw new MemoryCacheInvalidParameterException('Namespace cannot be empty'); }
-		if(!$ps_key) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
+		if(!strlen($ps_key)) { throw new MemoryCacheInvalidParameterException('Key cannot be empty'); }
 
 		if(!isset(self::$opa_caches[$ps_namespace])) { return false; }
 

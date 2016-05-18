@@ -1659,6 +1659,44 @@
 		}
 		# -------------------------------------------------------
 		/**
+		 *
+		 */
+		public static function replicate_data($po_opts=null) {
+			require_once(__CA_LIB_DIR__.'/ca/Sync/Replicator.php');
+
+			$o_replicator = new Replicator();
+			$o_replicator->replicate();
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function replicate_dataParamList() {
+			return array();
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function replicate_dataUtilityClass() {
+			return _t('Import/Export');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function replicate_dataShortHelp() {
+			return _t("Replicate data from one CollectiveAccess system to another.");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function replicate_dataHelp() {
+			return _t("Replicates data in one CollectiveAccess instance based upon data in another instance, subject to configuration in replication.conf.");
+		}
+		# -------------------------------------------------------
+		/**
 		 * Fix file permissions
 		 */
 		public static function fix_permissions($po_opts=null) {
@@ -3435,6 +3473,149 @@
 		 */
 		public static function load_chenhall_nomenclatureHelp() {
 			return _t('Loads Chenhall Nomenclature from Excel XLSX format file into the specified list. You can obtain a copy of the Nomenclature from the American Association of State and Local History (AASLH).');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function generate_missing_guids($po_opts=null) {
+			$o_dm = Datamodel::load();
+			$o_db = new Db();
+
+			foreach($o_dm->getTableNames() as $vs_table) {
+				$t_instance = $o_dm->getInstance($vs_table);
+				if(
+					($t_instance instanceof BundlableLabelableBaseModelWithAttributes) ||
+					($t_instance instanceof BaseLabel) ||
+					($t_instance instanceof ca_attribute_values) ||
+					($t_instance instanceof ca_attributes)
+				) {
+					$qr_results = $o_db->query("SELECT ". $t_instance->primaryKey() . " FROM ". $t_instance->tableName());
+					if($qr_results && ($qr_results->numRows() > 0)) {
+						print CLIProgressBar::start($qr_results->numRows(), _t('Generating/verifying GUIDs for table %1', $t_instance->tableName()));
+						while($qr_results->nextRow()) {
+							print CLIProgressBar::next();
+							$t_instance->getGUIDByPrimaryKey($qr_results->get($t_instance->primaryKey()));
+						}
+						print CLIProgressBar::finish();
+					}
+				}
+			}
+
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function generate_missing_guidsParamList() {
+			return array(
+
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function generate_missing_guidsUtilityClass() {
+			return _t('Maintenance');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function generate_missing_guidsShortHelp() {
+			return _t('Generate missing guids');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function generate_missing_guidsHelp() {
+			return _t('Generates guids for all records that don\'t have one yet. This can be useful if you plan on using the data synchronization/replication feature in the future. For more info see here: http://docs.collectiveaccess.org/wiki/Replication');
+		}
+		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt $po_opts
+		 * @return bool
+		 */
+		public static function remove_duplicate_records($po_opts=null) {
+			$va_tables = null;
+			if ($vs_tables = (string)$po_opts->getOption('tables')) {
+				$va_tables = preg_split("![;,]+!", $vs_tables);
+			} else {
+				CLIUtils::addError(_t("The -t|--tables parameter is mandatory."));
+				return false;
+			}
+
+			$vb_delete_opt = (bool)$po_opts->getOption('delete');
+
+			foreach($va_tables as $vs_t) {
+				if(class_exists($vs_t) && method_exists($vs_t, 'listPotentialDupes')) {
+					$va_dupes = $vs_t::listPotentialDupes();
+					if(sizeof($va_dupes)) {
+						CLIUtils::addMessage(_t('Table %1 has %2 records that have potential duplicates.', $vs_t, sizeof($va_dupes)), array('color' => 'red'));
+
+
+						$t_instance = Datamodel::load()->getInstance($vs_t);
+
+						foreach ($va_dupes as $vs_sha2 => $va_keys) {
+							CLIUtils::addMessage("\t" . _t('%1 records have the checksum %2', sizeof($va_keys), $vs_sha2));
+							foreach ($va_keys as $vn_key) {
+								$t_instance->load($vn_key);
+								CLIUtils::addMessage("\t\t" . $t_instance->primaryKey() . ': ' . $t_instance->getPrimaryKey() . ' (' . $t_instance->getLabelForDisplay() . ')');
+							}
+
+							if ($vb_delete_opt) {
+								$vn_entity_id = $vs_t::mergeRecords($va_keys);
+								if ($vn_entity_id) {
+									CLIUtils::addMessage("\t" . _t("Successfully consolidated them under id %1", $vn_entity_id), array('color' => 'green'));
+								} else {
+									CLIUtils::addMessage("\t" . _t("It seems like there was an error while deduplicating those records"), array('color' => 'bold_red'));
+								}
+							}
+
+						}
+					} else {
+						CLIUtils::addMessage(_t('Table %1 does not seem to have any duplicates!', $vs_t), array('color' => 'bold_green'));
+					}
+				}
+			}
+
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function remove_duplicate_recordsParamList() {
+			return array(
+				"tables|t-s" => _t('Specific tables to deduplicate, separated by commas or semicolons. Mandatory.'),
+				"delete|d" => _t('Delete duplicate records. Default is false.')
+			);
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function remove_duplicate_recordsUtilityClass() {
+			return _t('Maintenance');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function remove_duplicate_recordsShortHelp() {
+			return _t('Show and, optionally, remove duplicate records');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function remove_duplicate_recordsHelp() {
+			return _t('Lists and optionally removed duplicate records. For more info on how the algorithm works see here: http://docs.collectiveaccess.org/wiki/Deduplication');
 		}
 		# -------------------------------------------------------
 	}

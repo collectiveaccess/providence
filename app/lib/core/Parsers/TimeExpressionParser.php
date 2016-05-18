@@ -2116,35 +2116,43 @@ class TimeExpressionParser {
 		);
 	}
 	# -------------------------------------------------------------------
-	# Options:
-	#
-	#	timeFormat		(12|24) [default is 24]		=	time format; 12 hour or 24 hour format
-	#	timeDelimiter	(string) [default is first delimiter in language config file]	=	Must be a valid time delimiter for the current language or default will be used
-	#	timeRangeConjunction (string)	[default is first in lang. config]
-	#	timeOmitSeconds (true|false) [default is false]
-	#	timeOmit		(true|false) [default is false] if true, no times are displayed
-	#
-	#	rangePreConjunction (string) [default is none]
-	#	rangeConjunction (string) [default is first in lang. config]
-	#	dateTimeConjunction (string) [default is first in lang. config]
-	#	showADEra (true|false) [default is false]
-	#	uncertaintyIndicator (string) [default is first in lang. config]
-	#	dateFormat		(text|delimited|iso8601)	[default is text]
-	#	dateDelimiter	(string) [default is first delimiter in language config file]
-	#	circaIndicator	(string) [default is first indicator in language config file]
-	#	beforeQualifier	(string) [default is first indicator in language config file]
-	#	afterQualifier	(string) [default is first indicator in language config file]
-	#	presentDate		(string) [default is first indicator in language config file]
-	#	showUndated		(true|false) [default is false; if true empty dates are output with the first undated specified for the current language]
-	#	isLifespan		(true|false) [default is false; if true, date is output with 'born' and 'died' syntax if appropriate]
-	#   useQuarterCenturySyntaxForDisplay (true|false) [default is false; if true dates ranging over uniform quarter centuries (eg. 1900 - 1925, 1925 - 1950, 1950 - 1975, 1975-2000) will be output in the format "20 Q1" (eg. 1st quarter of 20th century... 1900 - 1925)
-	#   useRomanNumeralsForCenturies (true|false) [default is false; if true century only dates (eg 18th century) will be output in roman numerals like "XVIIIth century"
-	#	start_as_iso8601 (true|false) [if true only the start date of the range is returned, in ISO8601 format]
-	#	end_as_iso8601 (true|false) [if true only the end date of the range is returned, in ISO8601 format]
-	#	dontReturnValueIfOnSameDayAsStart (true|false) [Only valid in conjunction with end_as_iso8601]
-	#	startHistoricTimestamp
-	#	endHistoricTimestamp
-	#	format 			(string) Format date/time output using PHP date()-style format string. The following subset of PHP date() formtting characters are supported: Y y d j F m n t g G h H i s [Default is null; don't use format string for output]
+	/**
+	 * Return parsed date/time range as text expression for display. The returned expression is always in a parseable format 
+	 * subject to settings in datetime.conf and the options described below.
+	 *
+	 * @param array $pa_options Options include:
+	 *		timeFormat = force use of specific time format (12 or 24 hour). Set to 12 or 24. [Default is 24]
+	 *		timeFormat		(12|24) [default is 24]		=	time format; 12 hour or 24 hour format
+	 *		timeDelimiter	(string) [default is first delimiter in language config file]	=	Must be a valid time delimiter for the current language or default will be used
+	 *		timeRangeConjunction (string)	[default is first in lang. config]
+	 *		timeOmitSeconds (true|false) [default is false]
+	 *		timeOmit		(true|false) [default is false] if true, no times are displayed
+	 *
+	 *		rangePreConjunction (string) [default is none]
+	 *		rangeConjunction (string) [default is first in lang. config]
+	 *		dateTimeConjunction (string) [default is first in lang. config]
+	 *		showADEra (true|false) [default is false]
+	 *		uncertaintyIndicator (string) [default is first in lang. config]
+ 	 *		dateFormat		(text|delimited|iso8601)	[default is text]
+	 *		dateDelimiter	(string) [default is first delimiter in language config file]
+	 *		circaIndicator	(string) [default is first indicator in language config file]
+	 *		beforeQualifier	(string) [default is first indicator in language config file]
+	 *		afterQualifier	(string) [default is first indicator in language config file]
+	 *		presentDate		(string) [default is first indicator in language config file]
+	 *		showUndated		(true|false) [default is false; if true empty dates are output with the first undated specified for the current language]
+	 *		isLifespan		(true|false) [default is false; if true, date is output with 'born' and 'died' syntax if appropriate]
+	 *  	useQuarterCenturySyntaxForDisplay (true|false) [default is false; if true dates ranging over uniform quarter centuries (eg. 1900 - 1925, 1925 - 1950, 1950 - 1975, 1975-2000) will be output in the format "20 Q1" (eg. 1st quarter of 20th century... 1900 - 1925)
+	 *  	useRomanNumeralsForCenturies (true|false) [default is false; if true century only dates (eg 18th century) will be output in roman numerals like "XVIIIth century"
+	 *		start_as_iso8601 (true|false) [if true only the start date of the range is returned, in ISO8601 format]
+	 *		end_as_iso8601 (true|false) [if true only the end date of the range is returned, in ISO8601 format]
+	 *		dontReturnValueIfOnSameDayAsStart (true|false) [Only valid in conjunction with end_as_iso8601]
+	 *		startHistoricTimestamp
+	 *		endHistoricTimestamp
+	 *		format 			(string) Format date/time output using PHP date()-style format string. The following subset of PHP date() formtting characters are supported: Y y d j F m n t g G h H i s [Default is null; don't use format string for output]
+	 *		normalize = normalize parsed date range to "days"/"years"/"decades"/"centuries" and return as display text. Setting normalize to "years", for example will return a range that only includes the start and end year, regardless of the specificity of the parsed date range. [Default is null, no normalization]
+	 *
+	 *	@return string
+	 */
 	public function getText($pa_options=null) {
 		if (!$pa_options) { $pa_options = array(); }
 		foreach(array(
@@ -2157,6 +2165,19 @@ class TimeExpressionParser {
 		) as $vs_opt) {
 			if (!isset($pa_options[$vs_opt]) && ($vs_opt_val = $this->opo_datetime_settings->get($vs_opt))) {
 				$pa_options[$vs_opt] = $vs_opt_val;
+			}
+		}
+		
+		if ($ps_normalization = caGetOption('normalize', $pa_options, null)) {
+			$va_dates = $this->getHistoricTimestamps();
+			$va_normalized = $this->normalizeDateRange($va_dates['start'], $va_dates['end'], $ps_normalization);
+			$vs_start = array_shift($va_normalized);
+			$vs_end = array_pop($va_normalized);
+			
+			$o_tep = new TimeExpressionParser();
+			$vs_default_conjunction = array_shift($this->opo_language_settings->getList("rangeConjunctions"));
+			if ($o_tep->parse("{$vs_start} {$vs_default_conjunction} {$vs_end}")) {
+				return $o_tep->getText(array_merge($pa_options, ['normalize' => null]));
 			}
 		}
 		

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2013 Whirl-i-Gig
+ * Copyright 2011-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -58,8 +58,7 @@
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
 			$this->opa_views = array(
-				'list' => _t('list'),
-				'editable' => _t('editable')
+				'list' => _t('list')
 			 );
 			 
 			 $this->opo_browse = new ObjectRepresentationBrowse($this->opo_result_context->getParameter('browse_id'), 'providence');
@@ -97,4 +96,3 @@
  		}
  		# -------------------------------------------------------
  	}
- ?>

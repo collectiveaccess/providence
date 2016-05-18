@@ -39,10 +39,10 @@
 	<div id='errorDetails'>
 		<div id="logo"><img src="<?php print $vs_path ?>/themes/default/graphics/ca_nav_logo300.png"/></div><!-- end logo -->
 		<div id="content">
-			<div class='error'>Something went wrong</div>	
-			
+			<div class='error'><?php print _t("Something went wrong"); ?></div>
+<?php if(defined('__CA_ENABLE_DEBUG_OUTPUT__') && __CA_ENABLE_DEBUG_OUTPUT__) { ?>
 			<div id="errorLocation" class="errorPanel">
-				<img src='<?php print $vs_path; ?>/themes/default/graphics/buttons/glyphicons_078_warning_sign.png' class="permissionErrorIcon"/>
+				<?php print caNavIcon(__CA_NAV_ICON_ALERT__ , 2, array('class' => 'permissionErrorIcon')); ?>
 				<div class="errorDescription"><span class="errorMessage"><?php print $ps_errstr; ?></span> in <?php print $ps_errfile; ?> line <?php print $pn_errline; ?>:</div>
 			</div>
 			<div id="stacktace">
@@ -57,7 +57,7 @@
 		if(is_array($pa_request_params) && (sizeof($pa_request_params) > 0)) {
 ?>
 			<div id="requestParameters" class="errorPanel">
-				<img src='<?php print $vs_path; ?>/themes/default/graphics/buttons/glyphicons_195_circle_info.png' class="permissionErrorIcon"/>
+				<?php print caNavIcon(__CA_NAV_ICON_INFO__ , 2, array('class' => 'permissionErrorIcon')); ?>
 				<div class="errorDescription">
 					<span class="errorMessage"></span>Request parameters:</span>
 					<ol class="paramList">
@@ -71,6 +71,18 @@
 			</div>
 <?php
 		}
+} else {
+?>
+			<div id="errorLocation" class="errorPanel">
+				<img src='<?php print $vs_path; ?>/themes/default/graphics/buttons/glyphicons_078_warning_sign.png' class="permissionErrorIcon"/>
+				<div class="errorDescription">
+<?php
+				print _t("There was an uncaught fatal error. Please contact your system administrator and check the CollectiveAccess log files.");
+?>
+				</div>
+			</div>
+<?php
+}
 ?>
 		</div><!-- end content -->
 	</div><!-- end box -->

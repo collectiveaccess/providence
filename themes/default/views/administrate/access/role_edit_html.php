@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,10 +39,10 @@
 <div class="sectionBox">
 <?php
 	print $vs_control_box = caFormControlBox(
-		caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'RolesForm').' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'administrate/access', 'Roles', 'ListRoles', array('role_id' => 0)), 
+		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'RolesForm').' '.
+		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'administrate/access', 'Roles', 'ListRoles', array('role_id' => 0)), 
 		'', 
-		caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'administrate/access', 'Roles', 'Delete', array('role_id' => $vn_role_id))
+		($vn_role_id > 0) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'administrate/access', 'Roles', 'Delete', array('role_id' => $vn_role_id)) : ''
 	);
 ?>
 <?php

@@ -576,6 +576,13 @@ function caFileIsIncludable($ps_file) {
 		}
 	}
 	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caEscapeSearchForURL($ps_search) {
+		return rawurlencode(str_replace('/', '&#47;', $ps_search)); // encode slashes as html entities to avoid Apache considering it a directory separator
+	}
+	# ----------------------------------------
 	function caSanitizeStringForJsonEncode($ps_text) {
 		// Remove invalid UTF-8
 		mb_substitute_character(0xFFFD);
@@ -715,6 +722,22 @@ function caFileIsIncludable($ps_file) {
 			// proc_close in order to avoid a deadlock
 			$pn_return_val = proc_close($r_proc);
 			return true;
+		}
+	}
+	# ----------------------------------------
+	/**
+	 * Check if mod_rewrite web server module is available 
+	 *
+	 * @return bool
+	 */
+	$g_mod_write_is_available = null;
+	function caModRewriteIsAvailable() {
+		global $g_mod_write_is_available;
+		if (is_bool($g_mod_write_is_available)) { return $g_mod_write_is_available; }
+		if (function_exists('apache_get_modules')) {
+			return $g_mod_write_is_available = (bool)in_array('mod_rewrite', apache_get_modules());
+		} else {
+			return $g_mod_write_is_available = (bool)((getenv('HTTP_MOD_REWRITE') == 'On') ? true : false);
 		}
 	}
 	# ----------------------------------------

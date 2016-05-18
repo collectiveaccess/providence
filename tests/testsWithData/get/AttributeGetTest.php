@@ -166,9 +166,9 @@ class AttributeGetTest extends BaseTestWithData {
 		$this->assertEquals("My URL source;Another URL source", $vm_ret);
 
 		$vm_ret = $this->opt_object->get('ca_objects.dimensions.dimensions_length');
-		$this->assertEquals("10.0 in", $vm_ret);
+		$this->assertEquals("10 in", $vm_ret);
 		$vm_ret = $this->opt_object->get('ca_objects.dimensions.dimensions_weight');
-		$this->assertEquals("2.0000 lb", $vm_ret);
+		$this->assertEquals("2 lb", $vm_ret);
 
 		$vm_ret = $this->opt_object->get('ca_objects.integer_test', array('delimiter' => ' / '));
 		$this->assertEquals("23 / 1984", $vm_ret);
@@ -182,11 +182,11 @@ class AttributeGetTest extends BaseTestWithData {
 		// This is how we fetch the bundle preview for containers:
 		$vs_template = "<unit relativeTo='ca_objects.dimensions'><if rule='^measurement_notes =~ /foo/'>^ca_objects.dimensions.dimensions_length</if></unit>";
 		$vm_ret = $this->opt_object->getAttributesForDisplay('dimensions', $vs_template);
-		$this->assertEquals('10.0 in', $vm_ret);
+		$this->assertEquals('10 in', $vm_ret);
 
 		$vs_template = "<unit relativeTo='ca_objects.dimensions'><if rule='^measurement_notes =~ /foo/'>^dimensions_length</if></unit>";
 		$vm_ret = $this->opt_object->getAttributesForDisplay('dimensions', $vs_template);
-		$this->assertEquals('10.0 in', $vm_ret);
+		$this->assertEquals('10 in', $vm_ret);
 
 		// shouldn't return anything because the expression is false
 		$vs_template = "<unit relativeTo='ca_objects.dimensions'><if rule='^measurement_notes =~ /bar/'>^ca_objects.dimensions.dimensions_length</if></unit>";

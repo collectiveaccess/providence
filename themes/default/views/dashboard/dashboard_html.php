@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2011 Whirl-i-Gig
+ * Copyright 2010-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -106,9 +106,9 @@
 		$va_widget_list = $o_dashboard_manager->getWidgetsForColumn($pn_column);
 		foreach($va_widget_list as $vn_i => $va_widget_info) {
 			print "<div class='portlet' id='dashboardWidget_{$pn_column}_{$vn_i}'>";
-			print caNavLink($po_request, '<img src="'.$po_request->getThemeUrlPath().'/graphics/spacer.gif" width="16" height="16" border="0" title="'._t("remove widget from dashboard").'">', 'dashboardRemoveWidget', '', 'Dashboard', 'removeWidget', array('widget' => $va_widget_info['widget'], 'widget_id' => $va_widget_info['widget_id']));
+			print caNavLink($po_request, caNavIcon(__CA_NAV_ICON_DELETE__, '16px'), 'dashboardRemoveWidget', '', 'Dashboard', 'removeWidget', array('widget' => $va_widget_info['widget'], 'widget_id' => $va_widget_info['widget_id']));
 			if($o_dashboard_manager->widgetHasSettings($va_widget_info['widget'])) {
-				print "<a href='#' class='dashboardWidgetSettingsButton' onclick='jQuery(\"#content_".$va_widget_info['widget_id']."\").load(\"".caNavUrl($po_request, '', 'Dashboard', 'getSettingsForm')."\", { widget_id: \"".$va_widget_info['widget_id']."\" }); return false;'><img src='".$po_request->getThemeUrlPath()."/graphics/spacer.gif' width='16' height='16' border='0' title='"._t("Modify settings for this widget")."'></a>";
+				print "<a href='#' class='dashboardWidgetSettingsButton' onclick='jQuery(\"#content_".$va_widget_info['widget_id']."\").load(\"".caNavUrl($po_request, '', 'Dashboard', 'getSettingsForm')."\", { widget_id: \"".$va_widget_info['widget_id']."\" }); return false;'>".caNavIcon(__CA_NAV_ICON_INFO__, '16px')."</a>";
 			}
 			print '<div class="portlet-header">'.WidgetManager::getWidgetTitle($va_widget_info['widget']).'</div>';
 			print '<div class="portlet-content" id="content_'.$va_widget_info['widget_id'].'">'.$o_dashboard_manager->renderWidget($va_widget_info['widget'], $va_widget_info['widget_id'], $va_widget_info['settings']).'</div>';

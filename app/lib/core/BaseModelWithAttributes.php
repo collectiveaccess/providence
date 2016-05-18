@@ -1098,7 +1098,6 @@
 		public function getTypeFieldName() {
 			return $this->ATTRIBUTE_TYPE_ID_FLD;
 		}
-		
 		# ------------------------------------------------------------------
 		/**
 		 * Determine if type for this model is mandatory 
@@ -1501,15 +1500,20 @@
 			$va_elements_break_by_container = array();
 			
 			$va_element_info = array();
+
+			// fine element breaks by container
+			foreach($va_element_set as $va_element) {
+				if ($va_element['datatype'] == 0) {		// containers are not active form elements
+					if(isset($va_element['settings']) && isset($va_element["settings"]["lineBreakAfterNumberOfElements"])) {
+						$va_elements_break_by_container[$va_element['element_id']] = (int)$va_element["settings"]["lineBreakAfterNumberOfElements"];
+					}
+				}
+			}
 			
 			foreach($va_element_set as $va_element) {
+				if ($va_element['datatype'] == 0) { continue; }
+
 				$va_element_info[$va_element['element_id']] = $va_element;
-				
-				if ($va_element['datatype'] == 0) {		// containers are not active form elements
-					$va_elements_break_by_container[$va_element['element_id']] = (int)$va_element["settings"]["lineBreakAfterNumberOfElements"] ? (int)$va_element["settings"]["lineBreakAfterNumberOfElements"] : -1;
-					
-					continue;
-				}
 				
 				$va_label = $this->getAttributeLabelAndDescription($va_element['element_id']);
 
@@ -1519,11 +1523,12 @@
 					$va_elements_without_break_by_container[$va_element['parent_id']] += 1;
 				}
 
-				if($va_elements_without_break_by_container[$va_element['parent_id']] == $va_elements_break_by_container[$va_element['parent_id']]+1){
-					$va_elements_without_break_by_container[$va_element['parent_id']] = 1;
-					$vs_br = "</td></tr></table><table class=\"attributeListItem\"><tr><td class=\"attributeListItem\">";
-				} else {
-					$vs_br = "";
+				$vs_br = "";
+				if(isset($va_elements_break_by_container[$va_element['parent_id']])) {
+					if ($va_elements_without_break_by_container[$va_element['parent_id']] == $va_elements_break_by_container[$va_element['parent_id']] + 1) {
+						$va_elements_without_break_by_container[$va_element['parent_id']] = 1;
+						$vs_br = "</td></tr></table><table class=\"attributeListItem\"><tr><td class=\"attributeListItem\">";
+					}
 				}
 
 				if (isset($pa_bundle_settings['usewysiwygeditor']) && strlen($pa_bundle_settings['usewysiwygeditor']) == 0) {
@@ -1700,7 +1705,7 @@
 				
 					// escape any special characters in jQuery selectors
 					$vs_form_element = str_replace(
-						"jQuery('#{fieldNamePrefix}".$va_element['element_id']."_{n}')", 
+						"jQuery('#{fieldNamePrefix}".$va_element['element_id']."_{n}')",
 						"jQuery('#".str_replace(array("[", "]", "."), array("\\\\[", "\\\\]", "\\\\."), $vs_fld_name)."')", 
 						$vs_form_element
 					);
@@ -1799,7 +1804,7 @@
 			$vn_element_id = ca_metadata_elements::getElementID($pm_element_code_or_id);
 			$va_attributes = ca_attributes::getAttributes($this->getDb(), $this->tableNum(), $vn_row_id, array($vn_element_id), $pa_options);
 		
-			$va_attribute_list =  is_array($va_attributes[$vn_element_id]) ? $va_attributes[$vn_element_id] : array();
+			$va_attribute_list =  is_array($va_attributes[$vn_hier_id = ca_metadata_elements::getElementHierarchyID($vn_element_id)]) ? $va_attributes[$vn_hier_id] : array();
 		
 			$vs_sort_dir = (isset($pa_options['sort']) && (in_array(strtolower($pa_options['sortDirection']), array('asc', 'desc')))) ? strtolower($pa_options['sortDirection']) : 'asc';	
 			if ((isset($pa_options['sort']) && ($vs_sort = $pa_options['sort'])) || ($vs_sort_dir == 'desc')) {
@@ -2109,7 +2114,7 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = true; }
 			
-			$va_tmp = $this->getAttributeDisplayValues($pm_element_code_or_id, $vn_row_id, array_merge($pa_options, array('returnAllLocales' => false)));
+			$va_tmp = $this->getAttributeDisplayValues($vn_hier_id = ca_metadata_elements::getElementHierarchyID($pm_element_code_or_id), $vn_row_id, array_merge($pa_options, array('returnAllLocales' => false)));
 		
 			if (!$ps_template && ($vs_template_tmp = $t_element->getSetting('displayTemplate', true))&& !caGetOption('dontUseElementTemplate', $pa_options, false)) {	// grab template from metadata element if none is passed in $ps_template
 				$ps_template = $vs_template_tmp;

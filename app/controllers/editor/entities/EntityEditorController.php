@@ -44,5 +44,38 @@
  			return $this->render('widget_entity_info_html.php', true);
  		}
  		# -------------------------------------------------------
+		public function checkForDupeLabels() {
+			require_once(__CA_MODELS_DIR__.'/ca_entity_labels.php');
+			$t_entity_labels = new ca_entity_labels();
+			$t_entity = new ca_entities();
+
+			$vs_form_prefix = $this->getRequest()->getParameter('fieldNamePrefix', pString);
+			$vn_label_id = null;
+			if($vn_label_id = $this->getRequest()->getParameter('label_id', pInteger)) {
+				if(!($t_entity_labels->load($vn_label_id))) { $vn_label_id = null; }
+			}
+
+			$va_values = [];
+			$vb_value_set = false;
+			foreach($t_entity->getLabelUIFields() as $vs_label_field) {
+				if ($vs_val = $this->getRequest()->getParameter($vs_form_prefix.$vs_label_field.'_'.$vn_label_id, pString)) {
+					$va_values[$vs_label_field] = $vs_val;
+					$vb_value_set = true;
+				} else {
+					$va_values[$vs_label_field] = '';
+				}
+			}
+
+			$vb_dupe = false;
+			if($vb_value_set) {
+				if($t_entity->checkForDupeLabel(null, $va_values, false)) {
+					$vb_dupe = true;
+				}
+			}
+
+			$this->getView()->setVar('dupe', $vb_dupe);
+
+			return $this->render('lookup_dupe_labels_json.php');
+		}
+		# -------------------------------------------------------
  	}
- ?>

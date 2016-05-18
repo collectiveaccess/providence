@@ -134,6 +134,7 @@ class Query {
 
 		// find terms in subqueries and run them through FieldType rewriting and then re-construct the same
 		// subqueries to replace them in the query string, taking advantage of their __toString() method
+		$va_new_search_expression_parts = [];
 		foreach($this->getRewrittenQuery()->getSubqueries() as $o_subquery) {
 			switch(get_class($o_subquery)) {
 				case 'Zend_Search_Lucene_Search_Query_Range':
@@ -141,9 +142,7 @@ class Query {
 				case 'Zend_Search_Lucene_Search_Query_Phrase':
 				case 'Zend_Search_Lucene_Search_Query_MultiTerm':
 					$o_new_subquery = $this->rewriteSubquery($o_subquery);
-					$vs_old_subquery = preg_replace('/^\+/u', '', (string) $o_subquery);
-					$vs_newsubquery = preg_replace('/^\+/u', '', (string) $o_new_subquery);
-					$vs_search_expression = str_replace($vs_old_subquery, $vs_newsubquery, $vs_search_expression);
+					$va_new_search_expression_parts[] = preg_replace('/^\+/u', '', (string) $o_new_subquery);
 					break;
 				case 'Zend_Search_Lucene_Search_Query_Boolean':
 					/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Boolean. */
@@ -152,7 +151,7 @@ class Query {
 						$va_new_subqueries[] = $this->rewriteSubquery($o_subsubquery);
 					}
 					$o_new_subquery = new \Zend_Search_Lucene_Search_Query_Boolean($va_new_subqueries, $o_subquery->getSigns());
-					$vs_search_expression = str_replace((string) $o_subquery, (string) $o_new_subquery, $vs_search_expression);
+					$va_new_search_expression_parts[] = preg_replace('/^\+/u', '', (string) $o_new_subquery);
 					break;
 				default:
 					throw new \Exception('Encountered unknown Zend query type in ElasticSearch\Query: ' . get_class($o_subquery). '. Query was: ' . $vs_search_expression);
@@ -160,8 +159,33 @@ class Query {
 			}
 		}
 
+		if(sizeof($va_new_search_expression_parts) == sizeof($this->getRewrittenQuery()->getSigns())) {
+			$vs_search_expression = '';
+			$va_signs = $this->getRewrittenQuery()->getSigns();
+			foreach($va_new_search_expression_parts as $i=> $vs_part) {
+				$vb_sign = array_shift($va_signs);
+				if($vs_part) {
+					if($vb_sign) {
+						$vs_search_expression .= "+($vs_part) ";
+					} else {
+						$vs_search_expression .= "($vs_part) ";
+					}
+				}
+			}
+
+			$vs_search_expression = trim($vs_search_expression);
+		} else {
+			$vs_search_expression = join(' AND ', array_filter($va_new_search_expression_parts));
+		}
+
+		// get rid of empty "AND|OR ()" or "() AND|OR" blocks that prevent ElasticSearch query parsing
+		// (can happen in advanced search forms)
+		$vs_search_expression = preg_replace("/\s*(AND|OR)\s+\(\s*\)/u", '', $vs_search_expression);
+		$vs_search_expression = preg_replace("/\(\s*\)\s+(AND|OR)\s*/u", '', $vs_search_expression);
+
+		// add filters
 		if ($vs_filter_query = $this->getFilterQuery()) {
-			if($vs_search_expression == '()') {
+			if(($vs_search_expression == '()') || ($vs_search_expression == '')) {
 				$vs_search_expression = $vs_filter_query;
 			} else {
 				$vs_search_expression = "({$vs_search_expression}) AND ({$vs_filter_query})";
@@ -189,8 +213,7 @@ class Query {
 				$o_new_subquery = null;
 
 				if($o_lower_fld instanceof FieldTypes\Geocode) {
-					$this->opa_additional_filters[]['geo_shape'] =
-						$o_lower_fld->getFilterForRangeQuery($o_lower_term, $o_upper_term);
+					$this->opa_additional_filters[] = ['geo_shape' => $o_lower_fld->getFilterForRangeQuery($o_lower_term, $o_upper_term)];
 				} else {
 					$o_lower_rewritten_term = $o_lower_fld->getRewrittenTerm($o_lower_term);
 					$o_upper_rewritten_term = $o_upper_fld->getRewrittenTerm($o_upper_term);
@@ -213,7 +236,9 @@ class Query {
 				$o_new_subquery = null;
 				if(($o_fld instanceof FieldTypes\DateRange) || ($o_fld instanceof FieldTypes\Timestamp)) {
 					$o_new_subquery = null;
-					$this->opa_additional_filters['range'] = $o_fld->getFilterForTerm($o_term);
+					foreach($o_fld->getFiltersForTerm($o_term) as $va_filter) {
+						$this->opa_additional_filters[] = $va_filter;
+					}
 					break;
 				}  else {
 					if($o_rewritten_term = $o_fld->getRewrittenTerm($o_term)) {
@@ -225,14 +250,51 @@ class Query {
 			case 'Zend_Search_Lucene_Search_Query_Phrase':
 				/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Phrase */
 				$o_new_subquery = new \Zend_Search_Lucene_Search_Query_Phrase();
+
+				$va_fields_in_subquery = array();
+				foreach($o_subquery->getTerms() as $o_term) {
+					$va_fields_in_subquery[] = $o_term->field;
+				}
+
+				$vb_multiterm_all_terms_same_field = (sizeof(array_unique($va_fields_in_subquery)) < 2) && (sizeof($o_subquery->getTerms()) > 1);
+
+				// below we convert stuff multi term phrase query stuff like
+				// 		ca_objects.dimensions_width:"30 cm",
+				// which is parsed as two terms ... "30", and "cm" to one relatively simple term query
+				if($vb_multiterm_all_terms_same_field && ($o_first_term = array_shift($o_subquery->getTerms()))) {
+					$o_first_term = caRewriteElasticSearchTermFieldSpec($o_first_term);
+					$o_fld = $this->getFieldTypeForTerm($o_first_term);
+					if(($o_fld instanceof FieldTypes\Length) || ($o_fld instanceof FieldTypes\Weight) || ($o_fld instanceof FieldTypes\Currency)) {
+						$vs_acc = '';
+						foreach($o_subquery->getTerms() as $o_t) {
+							$vs_acc .= $o_t->text;
+						}
+						$o_term = new \Zend_Search_Lucene_Index_Term($vs_acc, $o_first_term->field);
+						$o_rewritten_term = $o_fld->getRewrittenTerm($o_term);
+
+						// sometimes, through the magic of advanced search forms, range queries like
+						//		ca_objects.dimensions_length:"25cm - 30 cm"
+						// end up here. so we make them "real" range queries below
+						if($this->isDisguisedRangeQuery($o_rewritten_term)) {
+							return $this->getSubqueryWithAdditionalTerms(
+								$this->rewriteIndexTermAsRangeQuery($o_rewritten_term, $o_fld),
+								$o_fld, $o_term
+							);
+						}
+
+						$o_new_subquery->addTerm($o_rewritten_term);
+						return $this->getSubqueryWithAdditionalTerms($o_new_subquery, $o_fld, $o_term);
+					}
+				}
+
+				// "normal" phrase rewriting below
 				foreach($o_subquery->getTerms() as $o_term) {
 					$o_term = caRewriteElasticSearchTermFieldSpec($o_term);
 					$o_fld = $this->getFieldTypeForTerm($o_term);
 
 					if($o_fld instanceof FieldTypes\Geocode) {
 						$o_new_subquery = null;
-						$this->opa_additional_filters['geo_shape'] =
-							$o_fld->getFilterForPhraseQuery($o_subquery);
+						$this->opa_additional_filters[] = ['geo_shape' => $o_fld->getFilterForPhraseQuery($o_subquery)];
 						break;
 					} elseif(($o_fld instanceof FieldTypes\DateRange) || ($o_fld instanceof FieldTypes\Timestamp)) {
 						$o_new_subquery = null;
@@ -243,6 +305,9 @@ class Query {
 						break;
 					} else {
 						if($o_rewritten_term = $o_fld->getRewrittenTerm($o_term)) {
+							if($vb_multiterm_all_terms_same_field) {
+								$o_rewritten_term->text = preg_replace("/\"(.+)\"/u", "$1", $o_rewritten_term->text);
+							}
 							$o_new_subquery->addTerm($o_rewritten_term);
 						}
 					}
@@ -262,6 +327,14 @@ class Query {
 
 				$o_new_subquery = new \Zend_Search_Lucene_Search_Query_MultiTerm($va_new_terms, $o_subquery->getSigns());
 				return $this->getSubqueryWithAdditionalTerms($o_new_subquery, $o_fld, $o_term);
+			case 'Zend_Search_Lucene_Search_Query_Boolean':
+				/** @var $o_subquery \Zend_Search_Lucene_Search_Query_Boolean */
+				$va_new_subqueries = array();
+				foreach($o_subquery->getSubqueries() as $o_subsubquery) {
+					$va_new_subqueries[] = $this->rewriteSubquery($o_subsubquery);
+				}
+				$o_new_subquery = new \Zend_Search_Lucene_Search_Query_Boolean($va_new_subqueries, $o_subquery->getSigns());
+				return $o_new_subquery;
 			default:
 				throw new \Exception('Encountered unknown Zend subquery type in ElasticSearch\Query: ' . get_class($o_subquery));
 				break;
@@ -278,14 +351,13 @@ class Query {
 		if(($va_additional_terms = $po_fld->getAdditionalTerms($po_term)) && is_array($va_additional_terms)) {
 
 			// we cant use the index terms as is; have to construct term queries
-			$va_additional_term_queries = $va_signs = array();
+			$va_additional_term_queries = array();
 			if($po_original_subquery) { $va_additional_term_queries[] = $po_original_subquery; }
 			foreach($va_additional_terms as $o_additional_term) {
 				$va_additional_term_queries[] = new \Zend_Search_Lucene_Search_Query_Term($o_additional_term);
-				$va_signs[] = true;
 			}
 
-			return new \Zend_Search_Lucene_Search_Query_Boolean($va_additional_term_queries, $va_signs);
+			return join(' AND ', $va_additional_term_queries);
 		} else {
 			return $po_original_subquery;
 		}
@@ -298,8 +370,7 @@ class Query {
 	protected function getFieldTypeForTerm($po_term) {
 		$va_parts = preg_split("!(\\\)?/!", $po_term->field);
 		$vs_table = $va_parts[0];
-		unset($va_parts[0]);
-		$vs_fld = join('/', $va_parts);
+		$vs_fld = array_pop($va_parts);
 		return FieldTypes\FieldType::getInstance($vs_table, $vs_fld);
 	}
 
@@ -356,5 +427,50 @@ class Query {
 			}
 		}
 		return join(' AND ', $va_terms);
+	}
+
+	/**
+	 * Is this index term a disguised range search? If so,
+	 * we can rewrite it as actual ranged search
+	 *
+	 * Note: this is only for Length, Weight, Currency ...
+	 *
+	 * @param \Zend_Search_Lucene_Index_Term $o_term
+	 * @return bool
+	 */
+	protected function isDisguisedRangeQuery($o_term) {
+		return (bool) preg_match("/[0-9]+.*to[\s]*[0-9]+/u", $o_term->text);
+	}
+
+	/**
+	 * Rewrite index term as range query
+	 *
+	 * @param \Zend_Search_Lucene_Index_Term $o_term
+	 * @param \ElasticSearch\FieldTypes\FieldType $o_fld
+	 * @return \Zend_Search_Lucene_Search_Query_Range
+	 * @throws \Exception
+	 */
+	protected function rewriteIndexTermAsRangeQuery($o_term, $o_fld) {
+		$vs_lower_term = $vs_upper_term = null;
+
+		if(preg_match("/^(.+)to/u", $o_term->text, $va_matches)) {
+			$vs_lower_term = trim($va_matches[1]);
+		}
+
+		if(preg_match("/to(.+)$/u", $o_term->text, $va_matches)) {
+			$vs_upper_term = trim($va_matches[1]);
+		}
+
+		if(!$vs_lower_term || !$vs_upper_term) {
+			throw new \Exception('Could not parse index term as range query');
+		}
+
+		$o_int_lower_term = new \Zend_Search_Lucene_Index_Term($vs_lower_term, $o_term->field);
+		$o_int_upper_term = new \Zend_Search_Lucene_Index_Term($vs_upper_term, $o_term->field);
+
+		$o_lower_term = $o_fld->getRewrittenTerm($o_int_lower_term);
+		$o_upper_term = $o_fld->getRewrittenTerm($o_int_upper_term);
+
+		return new \Zend_Search_Lucene_Search_Query_Range($o_lower_term, $o_upper_term, true);
 	}
 }
