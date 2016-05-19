@@ -7111,6 +7111,9 @@
         <setting name="maxChars">65535</setting>
         <setting name="render">radio_buttons</setting>
         <setting name="maxColumns">2</setting>
+        <setting name="requireValue">0</setting>
+        <setting name="nullOptionText">Not set</setting>
+        <setting name="useDefaultWhenNull">0</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
@@ -9519,6 +9522,9 @@
       <settings>
         <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">3</setting>
+        <setting name="requireValue">0</setting>
+        <setting name="nullOptionText">-</setting>
+        <setting name="useDefaultWhenNull">0</setting>
       </settings>
       <typeRestrictions>
         <restriction>
@@ -9692,6 +9698,9 @@
         <setting name="maxChars">65535</setting>
         <setting name="render">radio_buttons</setting>
         <setting name="maxColumns">2</setting>
+        <setting name="requireValue">0</setting>
+        <setting name="nullOptionText">Not set</setting>
+        <setting name="useDefaultWhenNull">0</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
@@ -10284,7 +10293,10 @@
                 <setting name="fieldHeight">1</setting>
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
-                <setting name="doesNotTakeLocale">1</setting>
+                <setting name="doesNotTakeLocale">1</setting>                
+				<setting name="requireValue">0</setting>
+				<setting name="nullOptionText">-</setting>
+				<setting name="useDefaultWhenNull">0</setting>
               </settings>
             </metadataElement>
         <metadataElement code="useprovince" datatype="List" list="provinces">
@@ -10299,6 +10311,9 @@
                 <setting name="minChars">0</setting>
                 <setting name="maxChars">255</setting>
                 <setting name="doesNotTakeLocale">1</setting>
+				<setting name="requireValue">0</setting>
+				<setting name="nullOptionText">-</setting>
+				<setting name="useDefaultWhenNull">0</setting>
               </settings>
             </metadataElement>
         <metadataElement code="useState" datatype="Text">
