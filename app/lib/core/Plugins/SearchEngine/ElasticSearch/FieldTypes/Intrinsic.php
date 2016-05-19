@@ -118,9 +118,15 @@ class Intrinsic extends FieldType {
 			$this->getTableName() . '/' . $this->getFieldName() => $pm_content
 		);
 
-		if($t_instance->getProperty('ID_NUMBERING_ID_FIELD') == $this->getFieldName()) {
+		if($t_instance->getProperty('ID_NUMBERING_ID_FIELD') == $this->getFieldName() || (is_array($pa_options) && in_array('INDEX_AS_IDNO', $pa_options))) {
+			if (method_exists($t_instance, "getIDNoPlugInInstance") && ($o_idno = $t_instance->getIDNoPlugInInstance())) {
+				$va_values = array_values($o_idno->getIndexValues($pm_content));
+			} else {
+				$va_values = explode(' ', $pm_content);
+			}
+
 			$va_return = array(
-				$this->getTableName() . '/' . $this->getFieldName() => explode(' ', $pm_content)
+				$this->getTableName() . '/' . $this->getFieldName() => $va_values
 			);
 		}
 
