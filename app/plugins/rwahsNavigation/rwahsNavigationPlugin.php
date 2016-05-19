@@ -43,6 +43,10 @@ class rwahsNavigationPlugin extends BaseApplicationPlugin {
                 array( 'display_code' => $vo_shortcut['display_code'] ),
                 array( 'returnAs' => 'firstId' )
             );
+            $vn_type_id = ca_list_items::find(
+                array( 'idno' => $vo_shortcut['type_code'] ),
+                array( 'returnAs' => 'firstId' )
+            );
             if (!$vn_form_id || !$vn_bundle_display_id) {
                 continue;
             }
@@ -62,6 +66,9 @@ class rwahsNavigationPlugin extends BaseApplicationPlugin {
                     'display_id' => 'string:' . $vn_bundle_display_id
                 )
             );
+            if ($vn_type_id) {
+                $vo_custom_items[$vs_key]['parameters']['type_id'] = 'string:' . $vn_type_id;
+            }
         }
         $pa_nav_info['find']['navigation'] = $vo_custom_items + $vo_spacer + $pa_nav_info['find']['navigation'];
         return $pa_nav_info;
