@@ -15,9 +15,18 @@ class rwahsNavigationPlugin extends BaseApplicationPlugin {
     }
 
     public function checkStatus() {
+        $va_errors = array();
+        foreach ($this->opo_config->get('advanced_search_shortcuts') as $vs_key => $vo_shortcut) {
+            if (!isset($vo_shortcut['form_code']) || empty($vo_shortcut['form_code'])) {
+                array_push($va_errors, _t('Custom search shortcut with key "%1" does not specify a "%2" value, which is required', $vs_key, 'form_code'));
+            }
+            if (!isset($vo_shortcut['display_code']) || empty($vo_shortcut['display_code'])) {
+                array_push($va_errors, _t('Custom search shortcut with key "%1" does not specify a "%2" value, which is required', $vs_key, 'display_code'));
+            }
+        }
         return array(
             'description' => $this->getDescription(),
-            'errors' => array(),
+            'errors' => $va_errors,
             'warnings' => array(),
             'available' => ((bool)$this->opo_config->get('enabled'))
         );
@@ -35,6 +44,10 @@ class rwahsNavigationPlugin extends BaseApplicationPlugin {
             )
         );
         foreach ($this->opo_config->get('advanced_search_shortcuts') as $vs_key => $vo_shortcut) {
+            if (!isset($vo_shortcut['form_code']) || !isset($vo_shortcut['display_code'])) {
+                // Don't even try to look up the form or display if both aren't set.
+                continue;
+            }
             $vn_form_id = ca_search_forms::find(
                 array( 'form_code' => $vo_shortcut['form_code'] ),
                 array( 'returnAs' => 'firstId' )
@@ -43,13 +56,15 @@ class rwahsNavigationPlugin extends BaseApplicationPlugin {
                 array( 'display_code' => $vo_shortcut['display_code'] ),
                 array( 'returnAs' => 'firstId' )
             );
-            $vn_type_id = ca_list_items::find(
+            $vn_type_id = !isset($vo_shortcut['type_code']) ? null : ca_list_items::find(
                 array( 'idno' => $vo_shortcut['type_code'] ),
                 array( 'returnAs' => 'firstId' )
             );
             if (!$vn_form_id || !$vn_bundle_display_id) {
+                // Don't add a menu item if the form and display codes did not both resolve correctly.
                 continue;
             }
+            // Create navigation menu item shortcut to specified search form and display.
             $vo_custom_items[$vs_key] = array(
                 'displayName' => $vo_shortcut['label'],
                 'default' => array(
@@ -66,10 +81,12 @@ class rwahsNavigationPlugin extends BaseApplicationPlugin {
                     'display_id' => 'string:' . $vn_bundle_display_id
                 )
             );
+            // Add optional type id parameter.
             if ($vn_type_id) {
                 $vo_custom_items[$vs_key]['parameters']['type_id'] = 'string:' . $vn_type_id;
             }
         }
+        // Prepend the custom search options, with a spacer between custom and default options.
         $pa_nav_info['find']['navigation'] = $vo_custom_items + $vo_spacer + $pa_nav_info['find']['navigation'];
         return $pa_nav_info;
     }
