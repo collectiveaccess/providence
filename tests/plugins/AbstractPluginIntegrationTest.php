@@ -340,4 +340,26 @@ abstract class AbstractPluginIntegrationTest extends PHPUnit_Framework_TestCase 
 		self::_recordCreatedInstance($vo_entity, $ps_idno_base);
 		return $vo_entity;
 	}
+
+	protected static function _createSearchForm($ps_code_base) {
+		$vo_search_form = new ca_search_forms();
+		$vo_search_form->setMode(ACCESS_WRITE);
+		$vo_search_form->set(array(
+			'form_code' => self::_getIdno($ps_code_base)
+		));
+		$vo_search_form->insert();
+		self::_recordCreatedInstance($vo_search_form, $ps_code_base);
+		return $vo_search_form;
+	}
+
+	protected static function _createBundleDisplay($ps_code_base) {
+		$vo_bundle_display = new ca_bundle_displays();
+		$vo_bundle_display->setMode(ACCESS_WRITE);
+		$vo_bundle_display->set(array(
+			'display_code' => self::_getIdno($ps_code_base)
+		));
+		$vo_bundle_display->insert();
+		self::_recordCreatedInstance($vo_bundle_display, $ps_code_base);
+		return $vo_bundle_display;
+	}
 }

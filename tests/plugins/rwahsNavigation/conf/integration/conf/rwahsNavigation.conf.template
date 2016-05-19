@@ -1,0 +1,23 @@
+# Integration test configuration for RWAHS navigation plugin.
+
+enabled = 1
+
+advanced_search_shortcuts = {
+    type1 = {
+        label = Search Type 1,
+        form_code = %%type1_search%%,
+        display_code = %%result_display%%,
+        type_code = %%type1%%
+    },
+    type1 = {
+        label = Search Type 2,
+        form_code = %%type2_search%%,
+        display_code = %%result_display%%,
+        type_code = %%type2%%
+    },
+    notype = {
+        label = Search No Type,
+        form_code = %%notype_search%%,
+        display_code = %%result_display%%
+    }
+}
