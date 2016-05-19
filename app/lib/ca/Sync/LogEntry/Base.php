@@ -37,7 +37,7 @@ require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/AttributeValue.php');
 require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Bundlable.php');
 require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Relationship.php');
 require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Label.php');
-
+require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Representation.php');
 
 abstract class Base {
 
@@ -499,6 +499,8 @@ abstract class Base {
 			return new AttributeValue($ps_source_system_id, $pn_log_id, $pa_log, $po_tx);
 		} elseif($t_instance instanceof \BaseLabel) {
 			return new Label($ps_source_system_id, $pn_log_id, $pa_log, $po_tx);
+		} elseif($t_instance instanceof \ca_object_representations) {
+			return new Representation($ps_source_system_id, $pn_log_id, $pa_log, $po_tx);
 		} elseif($t_instance instanceof \BundlableLabelableBaseModelWithAttributes) {
 			return new Bundlable($ps_source_system_id, $pn_log_id, $pa_log, $po_tx);
 		}

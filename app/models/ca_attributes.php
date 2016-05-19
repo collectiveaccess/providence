@@ -743,23 +743,27 @@ class ca_attributes extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Return number of attributes with specified element_id attached to specified row in specified table.
+	 * Return number of attributes with specified element_id attached to specified row in specified table. By
+	 * default only non-blank attributes are counted. Set the includeBlanks option to get a count of all values.
 	 *
 	 * @param Db $po_db Db() instance to use for database access
 	 * @param int $pn_table_num Table number of table attributes to count are attached to
 	 * @param int $pn_row_id row_id of row attributes to count are attached to
 	 * @param int $pn_element_id Metadata element of attribute to count
+	 * @param array $pa_options Options include:
+	 *		includeBlanks = include blank values in count. [Default is false]
 	 *
 	 * @return int number of attributes with specified element_id attached to specified row
 	 */
-	static public function getAttributeCount($po_db, $pn_table_num, $pn_row_id, $pn_element_id) {
+	static public function getAttributeCount($po_db, $pn_table_num, $pn_row_id, $pn_element_id, $pa_options=null) {
+		$pb_include_blanks = caGetOption('includeBlanks', $pa_options, false);
 		$qr_attrs = $po_db->query("
 			SELECT count(distinct caa.attribute_id) c
 			FROM ca_attributes caa, ca_attribute_values cav
 			WHERE
 				(cav.attribute_id = caa.attribute_id) AND
-				(caa.table_num = ?) AND (caa.row_id = ?) AND (caa.element_id = ?) AND
-				(cav.item_id IS NOT NULL OR cav.value_longtext1 IS NOT NULL OR cav.value_decimal1 IS NOT NULL OR cav.value_integer1 IS NOT NULL OR cav.value_blob IS NOT NULL)
+				(caa.table_num = ?) AND (caa.row_id = ?) AND (caa.element_id = ?)
+				".(!$pb_include_blanks ? ("AND (cav.item_id IS NOT NULL OR cav.value_longtext1 IS NOT NULL OR cav.value_decimal1 IS NOT NULL OR cav.value_integer1 IS NOT NULL OR cav.value_blob IS NOT NULL)") : "")."
 		", (int)$pn_table_num, (int)$pn_row_id, (int)$pn_element_id);
 		if ($po_db->numErrors()) {
 			//$this->errors = $po_db->errors;

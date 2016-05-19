@@ -68,17 +68,21 @@ class DateRange extends GenericElement {
 
 		$va_parsed_values = caGetISODates(join(' ', $va_terms));
 
-		$va_return[] = array(
-			'range' => array(
-				$vs_fld => array(
-					'lte' => $va_parsed_values['end'],
-				)));
+		if($va_parsed_values['end'] != '2000000000-12-31T23:59:59Z') {
+			$va_return[] = array(
+				'range' => array(
+					$vs_fld => array(
+						'lte' => $va_parsed_values['end'],
+					)));
+		}
 
-		$va_return[] = array(
-			'range' => array(
-				$vs_fld => array(
-					'gte' => $va_parsed_values['start'],
-				)));
+		if($va_parsed_values['start'] != '-2000000000-12-31T23:59:59Z') {
+			$va_return[] = array(
+				'range' => array(
+					$vs_fld => array(
+						'gte' => $va_parsed_values['start'],
+					)));
+		}
 
 		return $va_return;
 	}
@@ -141,17 +145,21 @@ class DateRange extends GenericElement {
 				break;
 			case '#':
 			default:
-				$va_return[] = array(
-					'range' => array(
-						$vs_fld => array(
-							'lte' => $va_parsed_values['end'],
-						)));
+				if($va_parsed_values['end'] != '2000000000-12-31T23:59:59Z') {
+					$va_return[] = array(
+						'range' => array(
+							$vs_fld => array(
+								'lte' => $va_parsed_values['end'],
+							)));
+				}
 
-				$va_return[] = array(
-					'range' => array(
-						$vs_fld => array(
-							'gte' => $va_parsed_values['start'],
-						)));
+				if($va_parsed_values['start'] != '-2000000000-12-31T23:59:59Z') {
+					$va_return[] = array(
+						'range' => array(
+							$vs_fld => array(
+								'gte' => $va_parsed_values['start'],
+							)));
+				}
 				break;
 		}
 

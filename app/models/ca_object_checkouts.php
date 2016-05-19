@@ -44,7 +44,7 @@ define("__CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__", 0);
 define("__CA_OBJECTS_CHECKOUT_STATUS_OUT__", 1);
 define("__CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__", 2);
 define("__CA_OBJECTS_CHECKOUT_STATUS_RESERVED__", 3);
-
+define("__CA_OBJECTS_CHECKOUT_STATUS_UNAVAILABLE__", 4);
 
 BaseModel::$s_ca_models_definitions['ca_object_checkouts'] = array(
  	'NAME_SINGULAR' 	=> _t('object checkout'),
@@ -581,8 +581,6 @@ class ca_object_checkouts extends BundlableLabelableBaseModelWithAttributes {
 	 */
 	static public function getObjectCheckoutTypes() {
 		$o_config = caGetLibraryServicesConfiguration();
-		$t_object = new ca_objects();
-		
 		$va_type_config = $o_config->getAssoc('checkout_types');
 		
 		return array_keys($va_type_config);
