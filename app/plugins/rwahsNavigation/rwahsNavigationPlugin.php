@@ -1,5 +1,8 @@
 <?php
 
+require_once(__CA_MODELS_DIR__ . '/ca_search_forms.php');
+require_once(__CA_MODELS_DIR__ . '/ca_bundle_displays.php');
+
 class rwahsNavigationPlugin extends BaseApplicationPlugin {
 
     /** @var Configuration */
@@ -32,6 +35,17 @@ class rwahsNavigationPlugin extends BaseApplicationPlugin {
             )
         );
         foreach ($this->opo_config->get('advanced_search_shortcuts') as $vs_key => $vo_shortcut) {
+            $vn_form_id = ca_search_forms::find(
+                array( 'form_code' => $vo_shortcut['form_code'] ),
+                array( 'returnAs' => 'firstId' )
+            );
+            $vn_bundle_display_id = ca_bundle_displays::find(
+                array( 'display_code' => $vo_shortcut['display_code'] ),
+                array( 'returnAs' => 'firstId' )
+            );
+            if (!$vn_form_id || !$vn_bundle_display_id) {
+                continue;
+            }
             $vo_custom_items[$vs_key] = array(
                 'displayName' => $vo_shortcut['label'],
                 'default' => array(
@@ -44,8 +58,8 @@ class rwahsNavigationPlugin extends BaseApplicationPlugin {
                     'action:can_use_adv_search_forms' => 'AND'
                 ),
                 'parameters' => array(
-                    'form_id' => 'string:' . $vo_shortcut['form_id'],
-                    'display_id' => 'string:' . $vo_shortcut['display_id']
+                    'form_id' => 'string:' . $vn_form_id,
+                    'display_id' => 'string:' . $vn_bundle_display_id
                 )
             );
         }
