@@ -347,6 +347,7 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 					$vn_item_count = $qr_children->numRows();
 
 					$qr_children->seek($vn_start);
+					$va_item_ids = [];
 					while($qr_children->nextRow()) {
 						$va_tmp = array(
 							$vs_pk => $vn_id = $qr_children->get($vs_table.'.'.$vs_pk),
@@ -372,10 +373,27 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 						}
 
 						$va_items[$va_tmp['item_id']][$va_tmp['locale_id']] = $va_tmp;
+						$va_item_ids[] = $vn_id;
 
 						$vn_c++;
 						if (!is_null($vn_max_items_per_page) && ($vn_c >= $vn_max_items_per_page)) { break; }
 					}
+
+					// if sorts are set, re-sort $va_items using a search result here. that way we can sort on non-intrinsics
+					if(sizeof($va_sorts) && sizeof($va_item_ids)) {
+						$va_sorted_items = [];
+						$o_res = caMakeSearchResult($vs_table, $va_item_ids, array(
+							'sort' => $va_sorts,
+							'sortDirection' => $vs_sort_dir
+						));
+
+						while($o_res->nextHit()) {
+							$va_sorted_items[$vs_table.'-'.$o_res->get($vs_table.'.'.$vs_pk)] = $va_items[$vs_table.'-'.$o_res->get($vs_table.'.'.$vs_pk)];
+						}
+
+						$va_items = $va_sorted_items;
+					}
+
 
 					if ($t_item->tableName() == 'ca_collections') {
 						$va_object_sorts =  $o_config->getList('ca_objects_hierarchy_browser_sort_values');
