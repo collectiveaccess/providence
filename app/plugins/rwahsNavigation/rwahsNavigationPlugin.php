@@ -17,6 +17,9 @@ class rwahsNavigationPlugin extends BaseApplicationPlugin {
     public function checkStatus() {
         $va_errors = array();
         foreach ($this->opo_config->get('advanced_search_shortcuts') as $vs_key => $vo_shortcut) {
+            if (!isset($vo_shortcut['label']) || empty($vo_shortcut['label'])) {
+                array_push($va_errors, _t('Custom search shortcut with key "%1" does not specify a "%2" value, which is required', $vs_key, 'label'));
+            }
             if (!isset($vo_shortcut['form_code']) || empty($vo_shortcut['form_code'])) {
                 array_push($va_errors, _t('Custom search shortcut with key "%1" does not specify a "%2" value, which is required', $vs_key, 'form_code'));
             }
@@ -67,14 +70,14 @@ class rwahsNavigationPlugin extends BaseApplicationPlugin {
             // Create navigation menu item shortcut to specified search form and display.
             $vo_custom_items[$vs_key] = array(
                 'displayName' => $vo_shortcut['label'],
+                'requires' => array(
+                    'action:can_search_ca_objects' => 'OR',
+                    'action:can_use_adv_search_forms' => 'AND'
+                ),
                 'default' => array(
                     'module' => 'find',
                     'controller' => 'SearchObjectsAdvanced',
                     'action' => 'Index'
-                ),
-                'requires' => array(
-                    'action:can_search_ca_objects' => 'OR',
-                    'action:can_use_adv_search_forms' => 'AND'
                 ),
                 'parameters' => array(
                     'form_id' => 'string:' . $vn_form_id,
