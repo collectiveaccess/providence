@@ -38,7 +38,7 @@ require_once __CA_APP_DIR__ . '/plugins/rwahsNavigation/rwahsNavigationPlugin.ph
 ApplicationPluginManager::initPlugins();
 
 /**
- * Performs an integration test of sorts for the RelationshipGeneratorPlugin.
+ * Integration test for RwahsNavigationPlugin.
  *
  * See AbstractPluginIntegrationTest for details of the generic cycle of switching in a plugin with test configuration,
  * creating reference data for the tests, running the tests, then deleting all data generated for the tests.
@@ -54,7 +54,6 @@ class RwahsNavigationPluginIntegrationTest extends AbstractPluginIntegrationTest
 		self::_createListItem('type2', BaseModel::$s_ca_models_definitions['ca_objects']['FIELDS']['type_id']['LIST_CODE']);
 
 		self::_createSearchForm('type1_search');
-		return;
 		self::_createSearchForm('type2_search');
 		self::_createSearchForm('notype_search');
 
