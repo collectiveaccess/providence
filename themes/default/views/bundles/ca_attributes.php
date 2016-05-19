@@ -272,7 +272,7 @@ if (caGetOption('canMakePDFForValue', $va_element_info[$t_element->getPrimaryKey
 <?php
 	if (($vs_render_mode !== 'checklist') && !$vb_read_only) {
 ?>
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, 1); ?> <?php print $vs_add_label; ?></a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, "15px"); ?> <?php print $vs_add_label; ?></a></div>
 <?php
 	}
 ?>

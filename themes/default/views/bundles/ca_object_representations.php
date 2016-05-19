@@ -231,7 +231,7 @@
 ?>
 						</div>
 					
-						<div style="float: right; width: 20%;">						
+						<div class="mediaRight">						
 							<div class='caObjectRepresentationListActionButton'>
 								<span id="{fieldNamePrefix}primary_{n}"><a href='#' onclick='caSetRepresentationAsPrimary("{n}"); return false;'><?php print caNavIcon(__CA_NAV_ICON_MAKE_PRIMARY__, 1).' '._t('Make primary'); ?></a></span>
 							</div>
@@ -261,7 +261,7 @@
 				
 				<div id="{fieldNamePrefix}media_replication_container_{n}" style="display: none;">
 					<div class="caRepresentationMediaReplicationButton">
-						<a href="#" id="{fieldNamePrefix}caRepresentationMediaReplicationButton_{n}" onclick="caToggleDisplayMediaReplication('{fieldNamePrefix}media_replication{n}', '{fieldNamePrefix}caRepresentationMediaReplicationButton_{n}', '{n}'); return false;" class="caRepresentationMediaReplicationButton"><?php print caNavIcon(__CA_NAV_ICON_VERTICAL_ARROWS__, 1)." "._t('Replication'); ?></a>
+						<a href="#" id="{fieldNamePrefix}caRepresentationMediaReplicationButton_{n}" onclick="caToggleDisplayMediaReplication('{fieldNamePrefix}media_replication{n}', '{fieldNamePrefix}caRepresentationMediaReplicationButton_{n}', '{n}'); return false;" class="caRepresentationMediaReplicationButton"><?php print caNavIcon(__CA_NAV_ICON_MEDIA_METADATA__, '15px')." "._t('Replication'); ?></a>
 					</div>
 					<div>
 						<div id="{fieldNamePrefix}media_replication{n}" class="caRepresentationMediaReplication">
@@ -272,7 +272,7 @@
 			
 				<div id="{fieldNamePrefix}media_metadata_container_{n}">	
 					<div class="caObjectRepresentationMetadataButton">
-						<a href="#" id="{fieldNamePrefix}caObjectRepresentationMetadataButton_{n}" onclick="caToggleDisplayObjectRepresentationMetadata('{fieldNamePrefix}media_metadata_{n}', '{fieldNamePrefix}caObjectRepresentationMetadataButton_{n}'); return false;" class="caObjectRepresentationMetadataButton"><?php print caNavIcon(__CA_NAV_ICON_VERTICAL_ARROWS__, 1).' '._t('Media metadata'); ?></a>
+						<a href="#" id="{fieldNamePrefix}caObjectRepresentationMetadataButton_{n}" onclick="caToggleDisplayObjectRepresentationMetadata('{fieldNamePrefix}media_metadata_{n}', '{fieldNamePrefix}caObjectRepresentationMetadataButton_{n}'); return false;" class="caObjectRepresentationMetadataButton"><?php print caNavIcon(__CA_NAV_ICON_MEDIA_METADATA__, '15px').' '._t('Media metadata'); ?></a>
 					</div>
 					<div>
 						<div id="{fieldNamePrefix}media_metadata_{n}" class="caObjectRepresentationMetadata">
@@ -397,7 +397,7 @@
 	</textarea>
 	
 	<div class="bundleContainer">
-		<div style="float: right; margin: 10px 5px 0 0;">
+		<div class="downloadAll">
 <?php
 			print caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1)." "._t('Download all'), 'button', '*', '*', 'DownloadMedia', ['object_id' => $t_subject->getPrimaryKey()]);
 ?>
@@ -409,7 +409,7 @@
 <?php 
 	if (!$vb_read_only) {
 ?>
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, 1); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add representation")." &rsaquo;"; ?></a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add representation")." &rsaquo;"; ?></a></div>
 <?php
 	}
 ?>

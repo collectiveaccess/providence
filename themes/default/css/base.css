@@ -28,6 +28,7 @@ form select {
 	border-radius: 4px;
 	-webkit-border-radius: 4px;
 	-moz-border-radius: 4px;
+	font-size:12px;
 }
 textarea {
     resize: none;
@@ -211,12 +212,14 @@ div.clear {
     color: #1ab3c8;
 }
 #leftNav ul { list-style: none; margin: 0px; padding: 3px 0px 3px 0px; display:none; }
-#leftNav ul.selected { list-style: none; margin: 0px; padding: 3px 0px 3px 0px; display:block; }
-#leftNav ul.arrow { border-top: solid 1px #dce2e9; border-bottom: solid 1px #fff; font-size: 11px; }
+#leftNav ul.arrow { padding:0px; }
+#leftNav ul.selected { list-style: none; margin: 0px; padding: 0px 0px 0px 0px; display:block; }
+#leftNav ul.arrow { border-top: solid 1px #dce2e9; border-bottom: solid 1px #fff; font-size: 12px; }
 #leftNav ul.arrow li { list-style: none; font-weight: normal; border: 0; padding: 0; margin: 0; }
-#leftNav ul.arrow li a, #leftNav ul.arrow li span { _height: 15px; text-decoration: none; display: block; padding: 3px 0; background: transparent url('../graphics/icons/rightArrowSmall.png') no-repeat 20px 8px; padding-left: 30px; padding-right: 5px; margin: 0; }
+#leftNav ul.arrow li a, #leftNav ul.arrow li span { _height: 15px; text-decoration: none; display: block;  padding: 8px 0 5px 0;; padding-left: 30px; padding-right: 5px; margin: 0; color:#666; text-transform:uppercase; font-family:"din-regular", arial, sans-serif;}
 #leftNav ul li a:hover { background-color: #fff; }
-#leftNav ul.arrow li a:hover { background-color: #fff; }
+#leftNav ul .sf-menu-selected a:hover { background-color: #eee; }
+#leftNav ul.arrow li a:hover { color: #1ab3c8}
 
 /* h3 used for non link left side nav - currently editing */
 #leftNav h4 {
@@ -244,7 +247,7 @@ div.clear {
     text-align:center;
     font-family: "DIN-Regular";
 	font-weight: bold;
-	height: 38px;
+	height: 35px;
 }
 #leftNav h3.nextPrevious a{
 	color:#333;
@@ -252,33 +255,40 @@ div.clear {
 #leftNav h3.nextPrevious a.next{
 	background-color: #ddd;
 	float: right;
-	padding: 5px 5px 5px 5px;
-	width: 30px;
+	padding: 9px 5px 5px 5px;
+	width: 20px;
 	text-align: right;
 }
 #leftNav h3.nextPrevious a.prev{
 	background-color: #ddd;
 	float: left;
-	padding: 5px 6px 5px 5px;
-	width: 30px;
+	padding: 9px 6px 5px 5px;
+	width: 20px;
 	text-align: left;
 }
 #leftNav h3.nextPrevious span.prev{
 	background-color: #ddd;
 	float: left;
-	padding: 5px 6px 5px 5px;
-	width: 30px;
+	padding: 9px 6px 5px 5px;
+	width: 20px;
 	text-align: left;
 }
 #leftNav h3.nextPrevious span.next{
 	background-color: #ddd;
 	float: right;
-	padding: 5px 5px 5px 5px;
-	width: 30px;
+	padding: 9px 5px 5px 5px;
+	width: 20px;
 	text-align: right;
 }
-#leftNav .resultCount, #leftNav .resultLink {
-	padding-top: 7px;
+#leftNav h3.nextPrevious .disabled .caIcon:hover {
+	color:#333;
+}
+#leftNav .resultCount {
+	padding-top: 10px;
+	display: inline-block;
+	width: 110px;
+}
+#leftNav .resultLink  {
 	display: inline-block;
 	width: 110px;
 }
@@ -462,7 +472,7 @@ div.inspectorCheckedOut {
 #leftNav #inspectorMedia {
     border: 1px solid #FFFFFF;
     margin-top: 0px;
-    padding: 0px 8px 0px 8px;
+    padding: 0px 8px 0px 5px;
     width:170px;
 }
 
@@ -771,8 +781,8 @@ li.sfHover > a:link, li.sfHover > a:visited {
     margin: 5px 12px 0px 0px;
 }
 a.sf-menu-selected {
-    color:#FFFFFF;
-    background-color: #4b4a4a;
+    color:#333;
+    background-color: #eee;
 }
 
 a.sf-menu-selected:hover {
@@ -945,6 +955,9 @@ li.sfHover > a > .sf-sub-indicator {
     position:relative;
     z-index:1;
     margin-bottom:5px;
+}
+#browseTypeMenu .fa {
+	font-size:18px;
 }
 .sf-hier-menu {
 
@@ -1447,7 +1460,9 @@ a.form-button, span.form-button, del.form-button,
 a.form-button span, span.form-button button, span.form-button input, del.form-button span{
    /* background-image:url('../graphics/backgrounds/form_buttons.png'); */
 }
-
+#caChangeTypeFormCancelButton .fa {
+	font-size:30px;
+}
 a.form-button span, span.form-button button, span.form-button input, del.form-button span{
 
 	white-space: nowrap;
@@ -1486,6 +1501,9 @@ a.form-button img {
 }
 .control-box a.form-button {
 	padding-bottom:5px;
+}
+#submitSearch .fa{
+	font-size:15px !important;
 }
 a.form-button img.deleteIcon {
 	margin-top:-7px;
@@ -1551,6 +1569,9 @@ del.form-button{
     /* cursor:not-allowed;	*/
     background-position:0 -180px;
 
+}
+.form-button.delete:hover .fa, .form-button.delete:hover, .form-button.delete .fa:hover {
+	color:red;
 }
 
 del.form-button span{
@@ -1728,7 +1749,18 @@ table.listtable tbody td {
     color: #3D3D3D;
     padding: 4px;
     background-color: #FFF;
-    vertical-align: top;
+    vertical-align: middle;
+    width:20px;
+}
+table.listtable tbody td.listtableEditDelete {
+	width:55px;
+}
+table.listtable tbody td.listtableEditDelete a {
+	display:inline-block;
+	margin-top:5px;
+}
+table.listtable tbody td .fa {
+	padding-left:5px;
 }
 table#caCommentsList tbody td {
 	max-width:140px;
@@ -1797,7 +1829,7 @@ td.listtableTotals {
 div.control-box {
     background-color: #f7f7f7;
     padding: 4px;
-    margin-bottom: 0px;
+    margin-bottom: 5px;
     text-align: right;
     width: 99%;
     float: left;
@@ -1863,6 +1895,9 @@ a.deleteButton span{
 	color: red;
 	font-weight:bold;
 }
+a.deleteButton span .caIcon:hover{
+	color:red;
+}
 a.deleteButton span.form-button:hover {
 	color:red;
 }
@@ -1914,6 +1949,16 @@ div.search-hier-browser-box {
     background-color: #fbfbfb;
     border: 0px solid #e6e6e6;
     padding-left:0px;
+}
+.bundleContainer .caDeleteLabelButton .fa, .bundleContainer .caDeleteItemButton .fa{
+	font-size:18px;
+	padding-right: 1px;
+    color: #888;
+    margin-top: -3px;
+    margin-bottom: 5px;
+}
+.bundleContainer .caDeleteLabelButton .fa:hover, .bundleContainer .caDeleteItemButton .fa:hover{
+	color:red;
 }
 
 .labelInfo {
@@ -2473,6 +2518,18 @@ select.searchToolsSelect {
     background-color:#f7f7f7;
     clear:both;
 }
+#leftNav #inspectorInfo.setDelete, #leftNav #inspectorInfo.setDelete a {
+	color: red;
+}
+#leftNav #inspectorInfo.setDelete .fa {
+	color:black;
+}
+#leftNav #inspectorInfo.setDelete a:hover .fa{
+	color: red;
+}
+#leftNav #inspectorInfo.setDelete {
+	background-color:#FFCCCB;
+}
 #leftNav #inspectorShowMedia {
 	text-align: center;
 	opacity: .4;
@@ -2801,8 +2858,9 @@ table.attributeListItem {
 
 .editorBatchModeControl {
     float: right;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: normal;
+    margin-top:-3px;
 }
 
 .editorBatchBundleContent {
@@ -2814,7 +2872,7 @@ table.attributeListItem {
 }
 
 .editorBatchModeControl select {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: normal;
 }
 
@@ -2993,13 +3051,13 @@ div.caObjectRepresentationSourceDisplay h3 {
 }
 
 div.caObjectRepresentationListInfoSubDisplay {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: normal;
     padding-top: 3px;
 }
 
 div.caObjectRepresentationListInfoSubDisplay h3 {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: bold;
     display: inline;
 }
@@ -3010,15 +3068,35 @@ a.caObjectRepresentationListInfoSubDisplayFilename {
 }
 
 div.caObjectRepresentationMetadataDisplay {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: normal;
 }
 
 a.caObjectRepresentationMetadataButton {
     text-decoration: none;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: bold;
     margin-right: 20px;
+}
+.mediaRight {
+	float: right; 
+	width: 20%;
+}
+.mediaRight .fa {
+	font-size:18px;
+	padding-right:5px;
+}
+.downloadAll {
+    text-align: right;
+    float: right;
+    margin: 10px 5px 0 0;
+    font-size: 12px;
+    border-bottom: 1px solid #eee;
+    width: 100%;
+    padding-bottom: 5px;
+}
+.downloadAll .fa {
+	font-size:18px;
 }
 
 div.caObjectRepresentationMetadata {
@@ -3027,7 +3105,7 @@ div.caObjectRepresentationMetadata {
 	height: 200px;
 	overflow: auto;
 	padding: 8px;
-	line-height: 14px;
+	line-height: 18px;
 	font-weight: normal;
 	color: #000000;
 	background-color: #f2f2f2;
@@ -4696,11 +4774,15 @@ div.bundleDisplayEditorPlacement {
     background-image:url('../graphics/buttons/glyphicons_186_move.png');
     background-position: 98% 50%;
     background-repeat:no-repeat;
-    border-radius: 4px;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
     background-size:14px 14px;
     font-size:12px;
+}
+div.bundleDisplayEditorPlacement .fa {
+	font-size:18px;
+	margin-top:-4px;
 }
 div.bundleDisplayEditorPlacement img{
 	width:16px;
@@ -4726,10 +4808,10 @@ span.bundleDisplayEditorPlacementListItemTitle {
 }
 .elementSettingsUI {
 	position: absolute;
-	top: 40px;
-	left: 150px;
+	top: 20px;
+	left: 100px;
 	overflow: auto;
-	width: 400px;
+	width: 500px;
 	max-height:500px;
 	background-color: rgb(255, 255, 255);
 	padding: 20px;
@@ -4739,6 +4821,10 @@ span.bundleDisplayEditorPlacementListItemTitle {
 	-moz-box-shadow: 0 0 5px #888;
 	-webkit-box-shadow: 0 0 5px#888;
 	box-shadow: 0 0 5px #888;
+	z-index:10000;
+}
+.elementSettingsUI .fa {
+	font-size:18px;
 }
 .elementSettingsUI a{
 	float:right;
@@ -4784,7 +4870,6 @@ div.bundleDisplayTemplateKey {
 
 div.bundleDisplayElementSettingsControl {
     float: right;
-    margin-right: 15px;
 }
 
 .bundleDisplayElementBundleName {
@@ -4801,6 +4886,10 @@ table.uiScreenItem {
     width: 100%;
     border-bottom: #ddd dashed 1px;
 }
+table.uiScreenItem .fa{
+	font-size:18px;
+	padding-left:10px;
+} 
 
 .uiScreenInfo {
     font-size: 12px;
@@ -6968,4 +7057,8 @@ div.caResultsComplexDataEditorErrorContainer {
 
 .caIconRed {
 	color: #cc0000;
+}
+.infoIcon {
+	padding-left:5px;
+	line-height:8px !important;
 }

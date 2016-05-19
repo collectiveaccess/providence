@@ -27,11 +27,13 @@
  */ 
  	$va_user_sorts = $this->getVar('user_sorts');
 ?>
-<div style="float:left;">
-	<a href='#' onclick="caTypeChangePanel.showPanel('<?php print caNavUrl($this->request, 'manage', 'UserSort', 'Edit'); ?>'); return false;" class='form-button'><span class='form-button delete'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?>Create New Sort</span></a>
-</div>
-<div style="text-align:right;">
-	<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#UserSortsListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'UserSort', 'Delete'); ?>").submit();' class='form-button'><span class='form-button delete'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DELETE__); ?>Delete</span></a>
+<div class="control-box rounded">
+	<div style='float:left;margin-top:2px;'>
+		<a href='#' onclick="caTypeChangePanel.showPanel('<?php print caNavUrl($this->request, 'manage', 'UserSort', 'Edit'); ?>'); return false;" class='form-button'><span class='form-button'><?php print caNavIcon(__CA_NAV_ICON_ADD__, 2, array('style' => 'padding-right:5px;')); ?>Create New Sort</span></a>
+	</div>
+	<div style='float:right;'>
+		<a href='#' onclick='jQuery("#UserSortsListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'UserSort', 'Delete'); ?>").submit();' class='form-button'><span class='form-button delete' style='padding-top:5px;'><?php print caNavIcon(__CA_NAV_ICON_DELETE__, 2, array('style' => 'padding-right:5px;')); ?>Delete Selected</span></a>
+	</div>
 </div>
 <?php
 	if(sizeof($va_user_sorts) > 0) {
@@ -75,7 +77,7 @@
 ?>
 					</td>
 					<td style="width:15px;">
-						<a href="#" onclick="caTypeChangePanel.showPanel('<?php print caNavUrl($this->request, 'manage', 'UserSort', 'Edit', array('sort_id' => $va_sort['sort_id'])); ?>'); return false;"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__); ?></a>
+						<a href="#" onclick="caTypeChangePanel.showPanel('<?php print caNavUrl($this->request, 'manage', 'UserSort', 'Edit', array('sort_id' => $va_sort['sort_id'])); ?>'); return false;"><?php print caNavIcon(__CA_NAV_ICON_EDIT__, 2, array('style' => 'padding-right:5px;')); ?></a>
 					</td>
 					<td style="width:15px;">
 						<input type="checkbox" class="userSortControl" name="sort_id[]" value="<?php print $va_sort["sort_id"]; ?>">
@@ -101,12 +103,14 @@
 				exposeBackgroundOpacity: 0.6,
 				panelTransitionSpeed: 400,
 				closeButtonSelector: ".close",
-				center: true
+				center: false,
+				centerVertical : false,
+				centerHorizontal : true
 			});
 		}
 	});
 </script>
 
-<div id="caTypeChangePanel" class="caTypeChangePanel">
+<div id="caTypeChangePanel" class="caTypeChangePanel" style='top:170px;'>
 	<div id="caTypeChangePanelContentArea"></div>
 </div>

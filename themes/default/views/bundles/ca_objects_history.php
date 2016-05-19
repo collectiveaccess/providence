@@ -60,12 +60,12 @@
 <?php
 			if(!caGetOption('hide_add_to_loan_controls', $va_settings, false)) {
 ?>
-				<div style='float: left;' class='button caAddLoanButton'><a href="#" id="<?php print $vs_id_prefix; ?>AddLoan"><?php print caNavIcon(__CA_NAV_ICON_ADD__, 1); ?> <?php print _t('Add to loan'); ?></a></div>
+				<div style='float: left;' class='button caAddLoanButton'><a href="#" id="<?php print $vs_id_prefix; ?>AddLoan"><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t('Add to loan'); ?></a></div>
 <?php
 			}
 			if(!caGetOption('hide_update_location_controls', $va_settings, false)) {
 ?>
-				<div style='float: left;'  class='button caChangeLocationButton'><a href="#" id="<?php print $vs_id_prefix; ?>ChangeLocation"><?php print caNavIcon(__CA_NAV_ICON_ADD__, 1); ?> <?php print _t('Update location'); ?></a></div>
+				<div style='float: left;'  class='button caChangeLocationButton'><a href="#" id="<?php print $vs_id_prefix; ?>ChangeLocation"><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t('Update location'); ?></a></div>
 <?php
 			}
 			
