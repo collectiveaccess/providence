@@ -916,7 +916,7 @@ class MultipartIDNumber extends IDNumber {
 			$va_output_values[] = preg_replace("!([\d]+)[A-Za-z]+$!", "$1", $vs_value_proc);
 		}
 
-		return array_unique($va_output_values);
+		return array_values(array_unique($va_output_values));
 	}
 	# -------------------------------------------------------
 	# User interace (HTML)
