@@ -2099,7 +2099,17 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		$vb_is_reserved = is_array($va_reservations) && sizeof($va_reservations);
 		
 		$va_info = array('user_name' => null, 'checkout_date' => null, 'user_id' => null, 'due_date' => null, 'checkout_notes' => null);
-		
+
+		$vb_is_unavailable = false;
+		$o_lib_conf = caGetLibraryServicesConfiguration();
+		if($va_restrict_to_circ_statuses = $o_lib_conf->get('restrict_to_circulation_statuses')) {
+			if(sizeof($va_restrict_to_circ_statuses)) {
+				if(!in_array($this->get('circulation_status_id', ['convertCodesToIdno' => true]), $va_restrict_to_circ_statuses)) {
+					$vb_is_unavailable = true;
+				}
+			}
+		}
+
 		if ($va_is_out) {
 			$t_checkout->load($va_is_out['checkout_id']);
 			$va_info['status'] = $vb_is_reserved ? __CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__ : __CA_OBJECTS_CHECKOUT_STATUS_OUT__;
@@ -2112,6 +2122,9 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		} elseif ($vb_is_reserved) {
 			$va_info['status'] = __CA_OBJECTS_CHECKOUT_STATUS_RESERVED__;
 			$va_info['status_display'] = ($vn_num_reservations == 1) ? _t('Reserved') : _t('%1 reservations', $vn_num_reservations);
+		} elseif($vb_is_unavailable) {
+			$va_info['status'] = __CA_OBJECTS_CHECKOUT_STATUS_UNAVAILABLE__;
+			$va_info['status_display'] = _t('Unavailable');
 		} else {
 			$va_info['status'] = __CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__;
 			$va_info['status_display'] = _t('Available');

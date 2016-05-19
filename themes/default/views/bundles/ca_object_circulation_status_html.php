@@ -44,10 +44,11 @@ print "</div>";
 
 // print checkout status
 if ($t_subject->canBeCheckedOut() && ($va_checkout_status = $t_subject->getCheckoutStatus(array('returnAsArray' => true)))) {
-	print "<div style='float:right; font-weight:normal;'>";
+	print "<div style='float:right; font-weight:normal; margin: 10px 0 5px 0; padding-right: 5px;'>";
 
 	switch($vn_status = $va_checkout_status['status']) {
 		case __CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__:
+		case __CA_OBJECTS_CHECKOUT_STATUS_UNAVAILABLE__:
 			break;
 		case __CA_OBJECTS_CHECKOUT_STATUS_OUT__:
 		case __CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__:
