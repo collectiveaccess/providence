@@ -622,10 +622,14 @@ class DisplayTemplateParser {
 									$va_relationship_type_ids = array();
 									if (is_array($va_relation_ids) && sizeof($va_relation_ids)) {
 										$qr_rels = caMakeSearchResult($t_rel_instance->getRelationshipTableName($ps_tablename), $va_relation_ids);
-										$va_relationship_type_ids = $qr_rels->getAllFieldValues($x=$t_rel_instance->getRelationshipTableName($ps_tablename).'.type_id');
+										$va_relationship_type_ids = $qr_rels->getAllFieldValues($t_rel_instance->getRelationshipTableName($ps_tablename).'.type_id');
+									} elseif($t_rel_instance->isRelationship()) {
+										// return type on relationship
+										$va_relationship_type_ids = [$pr_res->get($t_rel_instance->tableName().".type_id")];
 									} elseif($vs_rel_tablename = $t_rel_instance->getRelationshipTableName($ps_tablename)) {
+										// grab type from adjacent relationship table
 										$va_relationship_type_ids = [$pr_res->get("{$vs_rel_tablename}.type_id")];
-									}
+ 									}
 								}
 							
 								break;
