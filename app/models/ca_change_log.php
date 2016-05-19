@@ -286,8 +286,11 @@ class ca_change_log extends BaseModel {
 			}
 			$va_row['guid'] = $vs_guid;
 
-			// don't sync inserts/updates for deleted records
-			if(ca_guids::isDeleted($vs_guid) && ($va_row['changetype'] != 'D')) {
+			// don't sync inserts/updates for deleted records, UNLESS they're in a hierarchical table,
+			// in which case other records may have depended on them when they were inserted
+			// (meaning their insert() could fail if a related/parent record is absent)
+			$t_instance = Datamodel::load()->getInstance((int) $qr_results->get('logged_table_num'), true);
+			if(!$t_instance->isHierarchical() && ca_guids::isDeleted($vs_guid) && ($va_row['changetype'] != 'D')) {
 				continue;
 			}
 
@@ -309,7 +312,6 @@ class ca_change_log extends BaseModel {
 						}
 						break;
 					case 'type_id':
-						$t_instance = Datamodel::load()->getInstance((int) $qr_results->get('logged_table_num'), true);
 						if($t_instance) {
 							if($t_instance instanceof BaseRelationshipModel) {
 								$va_snapshot['type_code'] = caGetRelationshipTypeCode($vm_val);
