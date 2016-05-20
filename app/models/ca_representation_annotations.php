@@ -680,8 +680,6 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	}
 	# ------------------------------------------------------
 	public function getTypeID($pn_id=null) {
-		if(!$this->getPrimaryKey()) { return null; }
-
 		$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
 		$va_available_types = $o_annotation_type_conf->get('types');
 		if(isset($va_available_types[$this->get('type_code')]['typeID'])) {
