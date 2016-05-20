@@ -51,9 +51,11 @@ abstract class BaseVisualizerPlugin Extends WLPlug {
 	// Width and height (in pixels) of map viewport
 	protected $opn_width = 0;
 	protected $opn_height = 0;
-	
-	// SearchResult to pull data from
-	protected $opo_data = array();
+
+	/**
+	 * @var SearchResult
+	 */
+	protected $opo_data = null;
 
 	// plugin info
 	protected $info = array(
@@ -211,7 +213,8 @@ abstract class BaseVisualizerPlugin Extends WLPlug {
 	}
 	# ------------------------------------------------
 	/**
-	 *
+	 * @param SearchResult $po_search_result
+	 * @return bool
 	 */
 	public function setData($po_search_result) {
 		if(is_subclass_of($po_search_result, "SearchResult")) {
@@ -223,7 +226,7 @@ abstract class BaseVisualizerPlugin Extends WLPlug {
 	}
 	# ------------------------------------------------
 	/**
-	 *
+	 * @return SearchResult
 	 */
 	public function getData() {
 		return $this->opo_data;
