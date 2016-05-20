@@ -79,7 +79,7 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 				}
 			}
 
-			if($this->opn_num_items_rendered >= 100) { break; }
+			if($this->opn_num_items_rendered >= 250) { break; }
 		}
 
 		$vs_buf = $this->getLocaleJSSrc($po_request)."
@@ -132,7 +132,7 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 		$vs_table_name = $qr_res->tableName();
 		$vs_pk = $qr_res->primaryKey();
 
-		//$vn_c = 0;
+		$vn_c = 0;
 
 		while($qr_res->nextHit()) {
 			foreach($pa_viz_settings['sources'] as $vs_source_name => $va_source) {
@@ -153,6 +153,7 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 					],
 					'media' => [
 						'url' => $qr_res->getWithTemplate($va_source['display']['image'], array('returnURL' => true)),
+						'thumbnail' => $qr_res->getWithTemplate($va_source['display']['icon'], array('returnURL' => true)),
 						'credit' => $qr_res->getWithTemplate($va_source['display']['credit_template']),
 						'caption' => $qr_res->getWithTemplate($va_source['display']['caption_template'])
 					],
@@ -161,12 +162,10 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 				];
 			}
 
-			//$vn_c++;
-			//if ($vn_c >= 100) { break; }
+			$vn_c++;
+			if ($vn_c >= 250) { break; }
 		}
 
-
-		file_put_contents('/tmp/timelinejsdata', caFormatJson(json_encode($va_data)));
 		return json_encode($va_data);
 	}
 	# ------------------------------------------------
