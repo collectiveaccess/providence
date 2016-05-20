@@ -9,7 +9,7 @@ advanced_search_shortcuts = {
         display_code = %%result_display%%,
         type_code = %%type1%%
     },
-    type1 = {
+    type2 = {
         label = Search Type 2,
         form_code = %%type2_search%%,
         display_code = %%result_display%%,
