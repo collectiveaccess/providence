@@ -105,8 +105,9 @@ class RwahsNavigationPluginIntegrationTest extends AbstractPluginIntegrationTest
 		);
 		$this->assertEquals(
 			array(
-				'form_id' => 'string:' . $this->_retrieveCreatedInstance('ca_search_forms', 'type1_search')->get('id'),
-				'display_id' => 'string:' . $this->_retrieveCreatedInstance('ca_bundle_displays', 'result_display')->get('id')
+				'form_id' => 'string:' . $this->_retrieveCreatedInstance('ca_search_forms', 'type1_search')->getPrimaryKey(),
+				'display_id' => 'string:' . $this->_retrieveCreatedInstance('ca_bundle_displays', 'result_display')->getPrimaryKey(),
+				'type_id' => 'string:' . $this->_retrieveCreatedInstance('ca_list_items', 'type1')->getPrimaryKey()
 			),
 			$va_nav_info['find']['navigation']['type1']['parameters'],
 			'The URL parameters of the first search shortcut are correct'
@@ -137,8 +138,9 @@ class RwahsNavigationPluginIntegrationTest extends AbstractPluginIntegrationTest
 		);
 		$this->assertEquals(
 			array(
-				'form_id' => 'string:' . $this->_retrieveCreatedInstance('ca_search_forms', 'type2_search')->get('id'),
-				'display_id' => 'string:' . $this->_retrieveCreatedInstance('ca_bundle_displays', 'result_display')->get('id')
+				'form_id' => 'string:' . $this->_retrieveCreatedInstance('ca_search_forms', 'type2_search')->getPrimaryKey(),
+				'display_id' => 'string:' . $this->_retrieveCreatedInstance('ca_bundle_displays', 'result_display')->getPrimaryKey(),
+				'type_id' => 'string:' . $this->_retrieveCreatedInstance('ca_list_items', 'type2')->getPrimaryKey()
 			),
 			$va_nav_info['find']['navigation']['type2']['parameters'],
 			'The URL parameters of the second search shortcut are correct'
@@ -169,8 +171,8 @@ class RwahsNavigationPluginIntegrationTest extends AbstractPluginIntegrationTest
 		);
 		$this->assertEquals(
 			array(
-				'form_id' => 'string:' . $this->_retrieveCreatedInstance('ca_search_forms', 'notype_search')->get('id'),
-				'display_id' => 'string:' . $this->_retrieveCreatedInstance('ca_bundle_displays', 'result_display')->get('id')
+				'form_id' => 'string:' . $this->_retrieveCreatedInstance('ca_search_forms', 'notype_search')->getPrimaryKey(),
+				'display_id' => 'string:' . $this->_retrieveCreatedInstance('ca_bundle_displays', 'result_display')->getPrimaryKey()
 			),
 			$va_nav_info['find']['navigation']['notype']['parameters'],
 			'The URL parameters of the third search shortcut are correct'
