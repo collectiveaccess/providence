@@ -1476,8 +1476,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 		while ($o_reader->nextRow()) {
 			$va_mandatory_field_values = array();
 			$vs_preferred_label_for_log = null;
-			
-			$vb_use_parent_as_subject = false;
 		
 			if ($vn_row < $vn_num_initial_rows_to_skip) {	// skip over initial header rows
 				$o_log->logDebug(_t('Skipped initial row %1 of %2', $vn_row, $vn_num_initial_rows_to_skip));
@@ -1613,7 +1611,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 
-			foreach($va_idnos_for_row as $vs_idno) {			
+			foreach($va_idnos_for_row as $vs_idno) {
 				$t_subject = $o_dm->getInstanceByTableNum($vn_table_num);
 				if ($o_trans) { $t_subject->setTransaction($o_trans); }
 				$t_subject->setMode(ACCESS_WRITE);
@@ -1747,7 +1745,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 							break;
 					}
 				}
-			
+				
 				$o_progress->next(_t("Importing %1", $vs_idno), array('window' => $r_progress));
 			
 				if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
@@ -1758,6 +1756,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 				$va_content_tree = array();
 			
 				foreach($va_items_by_group as $vn_group_id => $va_items) {
+					$vb_use_parent_as_subject = false;	
+					
 					$va_group = $va_mapping_groups[$vn_group_id];
 					$vs_group_destination = $va_group['destination'];
 				
@@ -2148,7 +2148,7 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 						}
 					}
 				}
-	
+			
 				if (!$t_subject->getPrimaryKey()) {
 					$o_event->beginItem($vn_row, $t_subject->tableNum(), 'I') ;
 					$t_subject->setMode(ACCESS_WRITE);
@@ -2341,7 +2341,6 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 											);
 										
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add non-preferred label to %2:", $vs_idno, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
-												print "ERR!!!";print_R($va_content_tree);
 												ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 												if ($vs_item_error_policy == 'stop') {
 													$o_log->logAlert(_t('Import stopped due to mapping error policy'));
@@ -2399,7 +2398,8 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												$va_opts['matchOn'] = $va_match_on;
 											}
 											$t_subject->addAttribute($va_element_content, $vs_element, null, $va_opts);
-										$t_subject->update();
+											$t_subject->update();
+											
 											if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Failed to add value for %2; values were %3: ", $vs_idno, $vs_element, ca_data_importers::formatValuesForLog($va_element_content)), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 												ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
 												if ($vs_item_error_policy == 'stop') {
