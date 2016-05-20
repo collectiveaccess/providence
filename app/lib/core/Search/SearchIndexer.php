@@ -1345,7 +1345,7 @@ class SearchIndexer extends SearchBase {
 					$vb_support_attributes = is_subclass_of($t_dep, 'BaseModelWithAttributes') ? true : false;
 					if (is_array($pa_exclusion_list[$va_row_to_reindex['table_num']]) && (isset($pa_exclusion_list[$va_row_to_reindex['table_num']][$va_row_to_reindex['row_id']]))) { continue; }
 					// trigger reindexing
-					$this->opo_engine->removeRowIndexing($va_row_to_reindex['table_num'], $va_row_to_reindex['row_id']);
+					$this->opo_engine->removeRowIndexing($va_row_to_reindex['table_num'], $va_row_to_reindex['row_id'], null, null, null, $va_row_to_reindex['relationship_type_id']);
 					if ($vb_support_attributes) {
 						if ($t_dep->load($va_row_to_reindex['row_id'])) {
 							// 
@@ -1638,7 +1638,7 @@ class SearchIndexer extends SearchBase {
 				foreach($this->opa_dependencies_to_update as $va_item) {
 					// trigger reindexing of related rows in dependent tables
 					if (isset($va_seen_items[$va_item['table_num']][$va_item['row_id']])) { continue; }
-					$this->opo_engine->removeRowIndexing($va_item['table_num'], $va_item['row_id']);
+					$this->opo_engine->removeRowIndexing($va_item['table_num'], $va_item['row_id'], null, null, null, $va_item['relationship_type_id']);
 
 					$this->indexRow($va_item['table_num'], $va_item['row_id'], $va_field_values[$va_item['table_num']][$va_item['row_id']]);
 					$va_seen_items[$va_item['table_num']][$va_item['row_id']] = true;
@@ -1648,7 +1648,7 @@ class SearchIndexer extends SearchBase {
 				// delete from index where other subjects reference it 
 
 				foreach($this->opa_dependencies_to_update as $va_item) {
-					$this->opo_engine->removeRowIndexing($va_item['table_num'], $va_item['row_id'], $va_item['field_table_num'], $va_item['field_nums'], $va_item['field_row_id']);
+					$this->opo_engine->removeRowIndexing($va_item['table_num'], $va_item['row_id'], $va_item['field_table_num'], $va_item['field_nums'], $va_item['field_row_id'], $va_item['relationship_type_id']);
 				}
 			}
 		}
