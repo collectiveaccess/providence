@@ -56,6 +56,8 @@
 				$t_instance = $pa_data['t_instance'];
 				$t_subject = $pa_data['t_subject'];
 				
+				$o_view->setVar('t_instance', $t_instance);
+				
 				if (is_a($t_instance, "ca_object_representations")) {
 					$va_viewer_opts = [
 						'id' => 'caMediaOverlaySpin360', 'viewer_width' => caGetOption('viewer_width', $pa_data['display'], '100%'), 'viewer_height' => caGetOption('viewer_height', $pa_data['display'], '100%')
@@ -66,6 +68,8 @@
 							$vs_version = 'original';
 						}
 					}
+					
+					$o_view->setVar('images', $t_instance->getFileList(null, null, null, ['original']));
 					
 					// HTML for Spin360
 					$o_view->setVar('viewerHTML', $t_instance->getMediaTag('media', $vs_version, $va_viewer_opts));
@@ -80,6 +84,8 @@
 							$vs_version = 'original';
 						}
 					}
+					
+					$o_view->setVar('images', $t_instance->getFileList(null, null, null, ['original']));
 					
 					// HTML for Spin360
 					$o_view->setVar('viewerHTML', $t_instance->getMediaTag('value_blob', $vs_version, $va_viewer_opts));
@@ -96,7 +102,25 @@
 		 *
 		 */
 		public static function getViewerData($po_request, $ps_identifier, $pa_data=null) {
-			return _t("No data");
+			if ($o_view = BaseMediaViewer::getView($po_request)) {
+				if ($t_instance = caGetOption('t_instance', $pa_data, null)) {
+					if (!($va_identifier = caParseMediaIdentifier($ps_identifier))) {
+						// error: invalid identifier
+						die("Invalid identifier $ps_identifier");
+					}
+					
+					if (($vn_page = ($va_identifier['page']) - 1) >= 0) {
+						$va_file_list = array_values($t_instance->getFileList(null, null, null, ['original']));
+						if (isset($va_file_list[$vn_page])) {
+							header("Content-type: image/jpeg");
+							print file_get_contents($va_file_list[$vn_page]['original_path']);
+							return;
+						}
+					}
+				}
+			}
+			
+			throw new ApplicationException(_t('Media is not available'));
 		}
 		# -------------------------------------------------------
 	}

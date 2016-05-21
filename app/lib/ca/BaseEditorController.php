@@ -1762,7 +1762,7 @@ class BaseEditorController extends ActionController {
 		$ps_identifier = $this->request->getParameter('identifier', pString);
 		if (!($va_identifier = caParseMediaIdentifier($ps_identifier))) {
 			// error: invalid identifier
-			die("Invalid identifier");
+			die("Invalid identifier $ps_identifier");
 		}
 		
 		switch($va_identifier['type']) {
