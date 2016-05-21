@@ -399,7 +399,9 @@
 	<div class="bundleContainer">
 		<div style="float: right; margin: 10px 5px 0 0;">
 <?php
+		if ($vn_rep_count > 1) {
 			print caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1)." "._t('Download all'), 'button', '*', '*', 'DownloadMedia', ['object_id' => $t_subject->getPrimaryKey()]);
+		}
 ?>
 		</div>
 		<br class="clear"/>
