@@ -290,9 +290,9 @@ class ca_change_log extends BaseModel {
 			// in which case other records may have depended on them when they were inserted
 			// (meaning their insert() could fail if a related/parent record is absent)
 			$t_instance = Datamodel::load()->getInstance((int) $qr_results->get('logged_table_num'), true);
-			if(!$t_instance->isHierarchical() && ca_guids::isDeleted($vs_guid) && ($va_row['changetype'] != 'D')) {
-				continue;
-			}
+			//if(!$t_instance->isHierarchical() && ca_guids::isDeleted($vs_guid) && ($va_row['changetype'] != 'D')) {
+			//	continue;
+			//}
 
 			// decode snapshot
 			$va_snapshot = caUnserializeForDatabase($qr_results->get('snapshot'));
