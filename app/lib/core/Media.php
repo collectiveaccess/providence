@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2003-2015 Whirl-i-Gig
+ * Copyright 2003-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,6 +41,7 @@ define("__CA_MEDIA_VIDEO_DEFAULT_ICON__", 'video');
 define("__CA_MEDIA_AUDIO_DEFAULT_ICON__", 'audio');
 define("__CA_MEDIA_DOCUMENT_DEFAULT_ICON__", 'document');
 define("__CA_MEDIA_3D_DEFAULT_ICON__", '3d');
+define("__CA_MEDIA_SPIN_DEFAULT_ICON__", '3d');
 
 class Media extends BaseObject {
 	# ----------------------------------------------------------

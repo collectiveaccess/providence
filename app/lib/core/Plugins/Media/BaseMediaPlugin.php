@@ -62,6 +62,52 @@ class BaseMediaPlugin extends WLPlug  {
 		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
 	}
 	# ------------------------------------------------
+	/** 
+	 * Announce what kinds of media this plug-in supports for import and export
+	 */
+	public function register() {
+		$this->opo_config = Configuration::load();
+		
+		$this->info["INSTANCE"] = $this;
+		return $this->info;
+	}
+	# ----------------------------------------------------------
+	public function get($property) {
+		if ($this->handle) {
+			if ($this->info["PROPERTIES"][$property]) {
+				return $this->properties[$property];
+			} else {
+				return '';
+			}
+		} else {
+			return '';
+		}
+	}
+	# ----------------------------------------------------------
+	public function set($property, $value) {
+		if ($this->handle) {
+			if ($this->info["PROPERTIES"][$property]) {
+				switch($property) {
+					default:
+						if ($this->info["PROPERTIES"][$property] == 'W') {
+							$this->properties[$property] = $value;
+						} else {
+							# read only
+							return '';
+						}
+						break;
+				}
+			} else {
+				# invalid property
+				$this->postError(1650, _t("Can't set property %1", $property), "WLPlugMediaSpin360->set()");
+				return '';
+			}
+		} else {
+			return '';
+		}
+		return true;
+	}
+	# ------------------------------------------------
 	/**
 	 * Get app config
 	 *
@@ -132,6 +178,61 @@ class BaseMediaPlugin extends WLPlug  {
 	 */
 	public function getExtractedTextLocations() {
 		return null;
+	}
+	# ------------------------------------------------
+	/**
+	 * Returns array of extracted metadata, key'ed by metadata type or empty array if plugin doesn't support metadata extraction
+	 *
+	 * @return Array Extracted metadata
+	 */
+	public function getExtractedMetadata() {
+		return array();
+	}
+	# ------------------------------------------------
+	/** 
+	 *
+	 */
+	# This method must be implemented for plug-ins that can output preview frames for videos or pages for documents
+	public function &writePreviews($ps_filepath, $pa_options) {
+		return null;
+	}
+	# ------------------------------------------------
+	public function getOutputFormats() {
+		return $this->info["EXPORT"];
+	}
+	# ------------------------------------------------
+	public function getTransformations() {
+		return $this->info["TRANSFORMATIONS"];
+	}
+	# ------------------------------------------------
+	public function getProperties() {
+		return $this->info["PROPERTIES"];
+	}
+	# ------------------------------------------------
+	public function mimetype2extension($mimetype) {
+		return $this->info["EXPORT"][$mimetype];
+	}
+	# ------------------------------------------------
+	public function mimetype2typename($mimetype) {
+		return $this->typenames[$mimetype];
+	}
+	# ------------------------------------------------
+	public function extension2mimetype($extension) {
+		reset($this->info["EXPORT"]);
+		while(list($k, $v) = each($this->info["EXPORT"])) {
+			if ($v === $extension) {
+				return $k;
+			}
+		}
+		return '';
+	}
+	# ------------------------------------------------
+	public function reset() {
+		return $this->init();
+	}
+	# ------------------------------------------------
+	public function cleanup() {
+		return;
 	}
 	# ------------------------------------------------
 }
