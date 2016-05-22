@@ -52,6 +52,7 @@
 			if ($o_view = BaseMediaViewer::getView($po_request)) {
 				$o_view->setVar('identifier', $ps_identifier);
 				$o_view->setVar('viewer', 'Spin360');
+				$o_view->setVar('data', $pa_data);
 				
 				$t_instance = $pa_data['t_instance'];
 				$t_subject = $pa_data['t_subject'];
@@ -68,11 +69,6 @@
 							$vs_version = 'original';
 						}
 					}
-					
-					$o_view->setVar('images', $t_instance->getFileList(null, null, null, ['original']));
-					
-					// HTML for Spin360
-					$o_view->setVar('viewerHTML', $t_instance->getMediaTag('media', $vs_version, $va_viewer_opts));
 				} else {
 					$va_viewer_opts = [
 						'id' => 'caMediaOverlaySpin360', 'viewer_width' => caGetOption('viewer_width', $pa_data['display'], '100%'), 'viewer_height' => caGetOption('viewer_height', $pa_data['display'], '100%')
@@ -84,13 +80,9 @@
 							$vs_version = 'original';
 						}
 					}
-					
-					$o_view->setVar('images', $t_instance->getFileList(null, null, null, ['original']));
-					
-					// HTML for Spin360
-					$o_view->setVar('viewerHTML', $t_instance->getMediaTag('value_blob', $vs_version, $va_viewer_opts));
 				}
 				
+				$o_view->setVar('images', $t_instance->getFileList(null, null, null, ['original']));
 					
 				return BaseMediaViewer::prepareViewerHTML($po_request, $o_view, $pa_data);
 			}
@@ -112,9 +104,10 @@
 					if (($vn_page = ($va_identifier['page']) - 1) >= 0) {
 						$va_file_list = array_values($t_instance->getFileList(null, null, null, ['original']));
 						if (isset($va_file_list[$vn_page])) {
-							header("Content-type: image/jpeg");
-							print file_get_contents($va_file_list[$vn_page]['original_path']);
-							return;
+							if ($vs_mimetype = Media::getMimetypeForExtension(pathinfo($va_file_list[$vn_page]['original_path'], PATHINFO_EXTENSION))) {
+								header("Content-type: {$vs_mimetype}");
+							}
+							return file_get_contents($va_file_list[$vn_page]['original_path']);
 						}
 					}
 				}

@@ -103,7 +103,7 @@ class WLPlugMediaSpin360 extends BaseMediaPlugin implements IWLPlugMedia {
 	);
 	
 	var $typenames = array(
-		"application/spincar" 				=> "SpinCar 360 image"
+		"application/spincar" 				=> "SpinCar"
 	);
 	
 	var $magick_names = array(
@@ -197,7 +197,6 @@ class WLPlugMediaSpin360 extends BaseMediaPlugin implements IWLPlugMedia {
 	private function _cleanupFileList() {
 		if (!is_array($this->filelist)) { return false; }
 		foreach($this->filelist as $vs_file) {
-			print "RM $vs_file<Br>\n";
 			@unlink($vs_file);
 		}
 		return true;
@@ -213,7 +212,7 @@ class WLPlugMediaSpin360 extends BaseMediaPlugin implements IWLPlugMedia {
 				$this->handle = $this->filepath = "";
 				return false;
 			}
-			if (!($this->divineFileFormat($ps_filepath))) {
+			if (!($vs_mimetype = $this->divineFileFormat($ps_filepath))) {
 				$this->postError(3005, _t("File %1 is not a valid ZIP archive or does not contain valid images", $ps_filepath), "WLPlugMediaSpin360->read()");
 				$this->handle = $this->filepath = "";
 				return false;
@@ -226,6 +225,16 @@ class WLPlugMediaSpin360 extends BaseMediaPlugin implements IWLPlugMedia {
 			// Load first one
 			$o_media = new Media(true);
 			if($va_file_list[0] && file_exists($va_file_list[0]) && ($o_media->read($va_file_list[0]))) {
+				$this->properties["mimetype"] = $vs_mimetype;
+				if (!($this->properties["typename"] = $this->typenames[$vs_mimetype])) {
+					$this->properties["typename"] = "360";
+				}
+				
+				$this->properties["width"] = $o_media->get('width');
+				$this->properties["height"] = $o_media->get('height');
+				$this->properties["quality"] = "";
+				$this->properties["filesize"] = filesize($ps_filepath);
+			
 				$this->handle = $o_media;
 				return true;
 			}
@@ -266,12 +275,7 @@ class WLPlugMediaSpin360 extends BaseMediaPlugin implements IWLPlugMedia {
 	# ------------------------------------------------
 	public function init() {
 		$this->errors = array();
-		//$this->handle = $this->ohandle;
-		$this->properties = array(
-			"mimetype" => $this->ohandle["mimetype"],
-			"filesize" => $this->ohandle["filesize"],
-			"typename" => $this->ohandle["typename"]
-		);
+		$this->read($this->filepath);
 		
 		$this->metadata = array();
 	}

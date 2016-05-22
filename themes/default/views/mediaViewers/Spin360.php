@@ -32,29 +32,31 @@
  
 	$va_images = $this->getVar('images');
 	$t_instance = $this->getVar('t_instance');
+	$va_data = $this->getVar('data');
 	$vs_identifier = $this->getVar('identifier');
+	$vs_class = preg_replace("![^A-Za-z0-9]+!", "_", $vs_identifier);
 	
 	$vn_num_images = sizeof($va_images);
 ?>
-
-<div class="threesixty product1">
+<div class="threesixty <?php print $vs_class; ?>">
     <div class="spinner">
         <span>0%</span>
     </div>
     <ol class="threesixty_images"></ol>
 </div>
 <script type="text/javascript">
-	product1 = $('.product1').ThreeSixty({
+	jQuery('.<?php print $vs_class; ?>').ThreeSixty({
         totalFrames: <?php print $vn_num_images; ?>,
         endFrame: <?php print $vn_num_images; ?>, 
+        framerate: <?php print floor($vn_num_images/3); ?>, 
         currentFrame: 1, 
         imgList: '.threesixty_images', // selector for image list
         progress: '.spinner', // selector to show the loading progress
         imagePath:'<?php print caNavUrl($this->request, '*', '*', 'GetMediaData', ['identifier' => $vs_identifier]); ?>:', 
         filePrefix: '',
         ext: '',
-        height: "800",
-        width: "800",
+        width: "<?php print caGetOption('viewer_width', $va_data['display'], '800'); ?>",
+        height: "<?php print caGetOption('viewer_height', $va_data['display'], '800'); ?>",
         navigation: true,
         disableSpin: false
     });

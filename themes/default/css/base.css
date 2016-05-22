@@ -6970,9 +6970,15 @@ div.caResultsComplexDataEditorErrorContainer {
 	color: #cc0000;
 }
 
-
+/**
+ * 
+ * ThreeSixty spinning image viewer
+ *
+ */
 .threesixty {
   position: relative;
+  margin: auto;
+  text-align: left;
 }
 .threesixty .threesixty_images {
   display: none;

@@ -1765,6 +1765,11 @@ class BaseEditorController extends ActionController {
 			die("Invalid identifier $ps_identifier");
 		}
 		
+		// TODO: check subject_id here
+		
+		$app = AppController::getInstance();
+		$app->removeAllPlugins();
+		
 		switch($va_identifier['type']) {
 			case 'representation':
 				$t_instance = new ca_object_representations($va_identifier['id']);

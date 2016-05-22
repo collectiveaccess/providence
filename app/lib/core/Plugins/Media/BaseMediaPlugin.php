@@ -145,6 +145,15 @@ class BaseMediaPlugin extends WLPlug  {
 	}
 	# ------------------------------------------------
 	/**
+	 * Returns list of import formats. Keys are mimetypes, values are file extensions.
+	 *
+	 * @return array List of formats
+	 */
+	public function getImportFormats() {
+		return $this->info['IMPORT'];
+	}
+	# ------------------------------------------------
+	/**
 	 * Returns file extensions for formats supported for export
 	 *
 	 * @return array List of file extensions
@@ -160,6 +169,15 @@ class BaseMediaPlugin extends WLPlug  {
 	 */
 	public function getExportMimeTypes() {
 		return array_keys($this->info['EXPORT']);
+	}
+	# ------------------------------------------------
+	/**
+	 * Returns list of export formats. Keys are mimetypes, values are file extensions.
+	 *
+	 * @return array List of formats
+	 */
+	public function getExportFormats() {
+		return $this->info['EXPORT'];
 	}
 	# ------------------------------------------------
 	/**
