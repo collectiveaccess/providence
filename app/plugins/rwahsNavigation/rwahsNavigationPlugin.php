@@ -15,24 +15,48 @@ class rwahsNavigationPlugin extends BaseApplicationPlugin {
     }
 
     public function checkStatus() {
-        $va_errors = array();
-        foreach ($this->opo_config->get('advanced_search_shortcuts') as $vs_key => $vo_shortcut) {
-            if (!isset($vo_shortcut['label']) || empty($vo_shortcut['label'])) {
-                array_push($va_errors, _t('Custom search shortcut with key "%1" does not specify a "%2" value, which is required', $vs_key, 'label'));
-            }
-            if (!isset($vo_shortcut['form_code']) || empty($vo_shortcut['form_code'])) {
-                array_push($va_errors, _t('Custom search shortcut with key "%1" does not specify a "%2" value, which is required', $vs_key, 'form_code'));
-            }
-            if (!isset($vo_shortcut['display_code']) || empty($vo_shortcut['display_code'])) {
-                array_push($va_errors, _t('Custom search shortcut with key "%1" does not specify a "%2" value, which is required', $vs_key, 'display_code'));
-            }
-        }
         return array(
             'description' => $this->getDescription(),
-            'errors' => $va_errors,
+            'errors' => $this->_checkNewMenuShortcuts() + $this->_checkSearchMenuShortcuts(),
             'warnings' => array(),
             'available' => ((bool)$this->opo_config->get('enabled'))
         );
+    }
+
+    private function _checkNewMenuShortcuts() {
+        $va_errors = array();
+        $va_shortcuts = $this->opo_config->get('new_menu_shortcuts');
+        if (is_array($va_shortcuts)) {
+            foreach ($va_shortcuts as $vs_key => $vs_type_code) {
+                if (!is_string($vs_type_code)) {
+                    array_push($va_errors, _t('Custom new menu shortcut with key "%1" is not a type code (string value)', $vs_key));
+                }
+            }
+        }
+        return $va_errors;
+    }
+
+    private function _checkSearchMenuShortcuts() {
+        $va_errors = array();
+        $va_shortcuts = $this->opo_config->get('search_menu_shortcuts');
+        if (is_array($va_shortcuts)) {
+            foreach ($va_shortcuts as $vs_key => $va_shortcut) {
+                if (!is_array($va_shortcut)) {
+                    array_push($va_errors, _t('Custom search shortcut with key "%1" is not an array', $vs_key));
+                } else {
+                    if (!isset($va_shortcut['type_code']) || empty($va_shortcut['type_code'])) {
+                        array_push($va_errors, _t('Custom search shortcut with key "%1" does not specify a "%2" value, which is required', $vs_key, 'type_code'));
+                    }
+                    if (!isset($va_shortcut['form_code']) || empty($va_shortcut['form_code'])) {
+                        array_push($va_errors, _t('Custom search shortcut with key "%1" does not specify a "%2" value, which is required', $vs_key, 'form_code'));
+                    }
+                    if (!isset($va_shortcut['display_code']) || empty($va_shortcut['display_code'])) {
+                        array_push($va_errors, _t('Custom search shortcut with key "%1" does not specify a "%2" value, which is required', $vs_key, 'display_code'));
+                    }
+                }
+            }
+        }
+        return $va_errors;
     }
 
     static function getRoleActionList() {
@@ -40,57 +64,131 @@ class rwahsNavigationPlugin extends BaseApplicationPlugin {
     }
 
     public function hookRenderMenuBar($pa_nav_info) {
-        $vo_custom_items = array();
-        $vo_spacer = array(
-            'spacer' => array(
-                'displayName' => '<div class="sf-spacer"></div>'
-            )
+        if (is_array($pa_nav_info['New']['navigation'])) {
+            $pa_nav_info['New']['navigation'] = $this->_getCustomNewMenuItems() + $pa_nav_info['New']['navigation'];
+            unset($pa_nav_info['New']['navigation']['objects']);
+        }
+        if (is_array($pa_nav_info['find']['navigation'])) {
+            $pa_nav_info['find']['navigation'] = $this->_getCustomSearchMenuItems() + $pa_nav_info['find']['navigation'];
+            unset($pa_nav_info['find']['navigation']['objects']);
+        }
+        return $pa_nav_info;
+    }
+
+    private function _getSpacer() {
+        return array(
+            'displayName' => '<div class="sf-spacer"></div>'
         );
-        foreach ($this->opo_config->get('advanced_search_shortcuts') as $vs_key => $vo_shortcut) {
-            if (!isset($vo_shortcut['form_code']) || !isset($vo_shortcut['display_code'])) {
-                // Don't even try to look up the form or display if both aren't set.
-                continue;
-            }
-            $vn_form_id = ca_search_forms::find(
-                array( 'form_code' => $vo_shortcut['form_code'] ),
-                array( 'returnAs' => 'firstId' )
-            );
-            $vn_bundle_display_id = ca_bundle_displays::find(
-                array( 'display_code' => $vo_shortcut['display_code'] ),
-                array( 'returnAs' => 'firstId' )
-            );
-            $vn_type_id = !isset($vo_shortcut['type_code']) ? null : ca_list_items::find(
-                array( 'idno' => $vo_shortcut['type_code'] ),
-                array( 'returnAs' => 'firstId' )
-            );
-            if (!$vn_form_id || !$vn_bundle_display_id) {
-                // Don't add a menu item if the form and display codes did not both resolve correctly.
-                continue;
-            }
-            // Create navigation menu item shortcut to specified search form and display.
-            $vo_custom_items[$vs_key] = array(
-                'displayName' => $vo_shortcut['label'],
-                'requires' => array(
-                    'action:can_search_ca_objects' => 'OR',
-                    'action:can_use_adv_search_forms' => 'AND'
-                ),
-                'default' => array(
-                    'module' => 'find',
-                    'controller' => 'SearchObjectsAdvanced',
-                    'action' => 'Index'
-                ),
-                'parameters' => array(
-                    'form_id' => 'string:' . $vn_form_id,
-                    'display_id' => 'string:' . $vn_bundle_display_id
-                )
-            );
-            // Add optional type id parameter.
-            if ($vn_type_id) {
-                $vo_custom_items[$vs_key]['parameters']['type_id'] = 'string:' . $vn_type_id;
+    }
+
+    private function _getCustomNewMenuItems() {
+        $va_custom_items = array();
+        $va_shortcuts = $this->opo_config->get('new_menu_shortcuts');
+        if (is_array($va_shortcuts)) {
+            foreach ($va_shortcuts as $vs_key => $vs_type_code) {
+                $vo_type = ca_list_items::find(
+                    array( 'idno' => $vs_type_code ),
+                    array( 'returnAs' => 'firstModelInstance' )
+                );
+                if (!$vo_type) {
+                    // Don't add a menu item if the type code does not resolve correctly.
+                    continue;
+                }
+                $va_custom_items[$vs_key] = array(
+                    'displayName' => $vo_type->get('preferred_labels'),
+                    'requires' => array(
+                        'action:can_create_ca_objects' => 'AND',
+                        'configuration:!ca_objects_disable' => 'AND'
+                    ),
+                    'default' => array(
+                        'module' => 'editor/objects',
+                        'controller' => 'ObjectEditor',
+                        'action' => 'Edit'
+                    ),
+                    'parameters' => array(
+                        'type_id' => 'string:' . $vo_type->getPrimaryKey()
+                    )
+                );
             }
         }
-        // Prepend the custom search options, with a spacer between custom and default options.
-        $pa_nav_info['find']['navigation'] = $vo_custom_items + $vo_spacer + $pa_nav_info['find']['navigation'];
-        return $pa_nav_info;
+        $va_custom_items['spacer'] = $this->_getSpacer();
+        return $va_custom_items;
+    }
+
+    private function _getCustomSearchMenuItems() {
+        $va_custom_items = array();
+        $va_shortcuts = $this->opo_config->get('search_menu_shortcuts');
+        if (is_array($va_shortcuts)) {
+            foreach ($va_shortcuts as $vs_key => $va_shortcut) {
+                if (!isset($va_shortcut['type_code']) || !isset($va_shortcut['form_code']) || !isset($va_shortcut['display_code'])) {
+                    // Don't even try to look up the type, form or display if any is unset.
+                    continue;
+                }
+                $vo_type = ca_list_items::find(
+                    array( 'idno' => $va_shortcut['type_code'] ),
+                    array( 'returnAs' => 'firstModelInstance' )
+                );
+                $vn_form_id = ca_search_forms::find(
+                    array( 'form_code' => $va_shortcut['form_code'] ),
+                    array( 'returnAs' => 'firstId' )
+                );
+                $vn_bundle_display_id = ca_bundle_displays::find(
+                    array( 'display_code' => $va_shortcut['display_code'] ),
+                    array( 'returnAs' => 'firstId' )
+                );
+                if (!$vo_type || !$vn_form_id || !$vn_bundle_display_id) {
+                    // Don't add a menu item if the type, form and display codes did not all resolve correctly.
+                    continue;
+                }
+                // Create navigation menu item shortcut to specified search form and display.
+                $va_custom_items[$vs_key] = array(
+                    'displayName' => $vo_type->get('ca_list_items.preferred_labels.name_plural'),
+                    'requires' => array(
+                        'action:can_search_ca_objects' => 'OR',
+                        'action:can_use_adv_search_forms' => 'AND'
+                    ),
+                    'default' => array(
+                        'module' => 'find',
+                        'controller' => 'SearchObjectsAdvanced',
+                        'action' => 'Index'
+                    ),
+                    'parameters' => array(
+                        'type_id' => 'string:' . $vo_type->getPrimaryKey(),
+                        'form_id' => 'string:' . $vn_form_id,
+                        'display_id' => 'string:' . $vn_bundle_display_id
+                    )
+                );
+            }
+        }
+        $va_custom_items['object_search'] = array(
+            'displayName' => _t('Search Query Builder'),
+            'requires' => array(
+                'action:can_search_ca_objects' => 'OR'
+            ),
+            'default' => array(
+                'module' => 'find',
+                'controller' => 'SearchObjects',
+                'action' => 'Index'
+            ),
+            'parameters' => array(
+                'reset' => 'preference:persistent_search'
+            )
+        );
+        $va_custom_items['object_browse'] = array(
+            'displayName' => _t('Browse Objects'),
+            'requires' => array(
+                'action:can_browse_ca_objects' => 'OR'
+            ),
+            'default' => array(
+                'module' => 'find',
+                'controller' => 'BrowseObjects',
+                'action' => 'Index'
+            ),
+            'parameters' => array(
+                'reset' => 'preference:persistent_search'
+            )
+        );
+        $va_custom_items['spacer'] = $this->_getSpacer();
+        return $va_custom_items;
     }
 }

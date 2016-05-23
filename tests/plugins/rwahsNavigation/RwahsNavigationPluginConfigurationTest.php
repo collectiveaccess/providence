@@ -49,33 +49,53 @@ class RwahsNavigationConfigurationPluginTest extends PHPUnit_Framework_TestCase 
 		$vo_plugin = new rwahsNavigationPlugin(__DIR__ . '/conf/enabled-only');
 		$va_plugin_status = $vo_plugin->checkStatus();
 		$this->assertTrue($va_plugin_status['available'], 'The plugin can be enabled by configuration');
-		$this->assertEmpty($va_plugin_status['errors'], 'Enabling the plugin without specifying advanced search shortcuts does not produce any errors');
+		$this->assertEmpty($va_plugin_status['errors'], 'Enabling the plugin without specifying search menu shortcuts does not produce any errors');
 	}
 
-	public function testCorrectMissingConfigurationPropertiesGenerateErrors() {
-		$vo_plugin = new rwahsNavigationPlugin(__DIR__ . '/conf/missing-properties');
+	public function testCorrectMissingSearchMenuShortcutPropertiesGenerateErrors() {
+		$vo_plugin = new rwahsNavigationPlugin(__DIR__ . '/conf/missing-search-menu-properties');
 		$va_plugin_status = $vo_plugin->checkStatus();
 		$this->assertEquals(3, sizeof($va_plugin_status['errors']), 'There are three required properties');
 		$this->assertNotFalse(
 			array_search(
-				_t('Custom search shortcut with key "%1" does not specify a "%2" value, which is required', 'library', 'label'),
+				_t('Custom search shortcut with key "%1" does not specify a "%2" value, which is required', 'type1', 'type_code'),
 				$va_plugin_status['errors']
 			),
-			'The "label" setting is required for advanced search shortcuts'
+			'The "type_code" setting is required for search menu shortcuts'
 		);
 		$this->assertNotFalse(
 			array_search(
-				_t('Custom search shortcut with key "%1" does not specify a "%2" value, which is required', 'museum', 'form_code'),
+				_t('Custom search shortcut with key "%1" does not specify a "%2" value, which is required', 'type2', 'form_code'),
 				$va_plugin_status['errors']
 			),
-			'The "form_code" setting is required for advanced search shortcuts'
+			'The "form_code" setting is required for search menu shortcuts'
 		);
 		$this->assertNotFalse(
 			array_search(
-				_t('Custom search shortcut with key "%1" does not specify a "%2" value, which is required', 'photographs', 'display_code'),
+				_t('Custom search shortcut with key "%1" does not specify a "%2" value, which is required', 'type3', 'display_code'),
 				$va_plugin_status['errors']
 			),
-			'The "display_code" setting is required for advanced search shortcuts'
+			'The "display_code" setting is required for search menu shortcuts'
+		);
+	}
+
+	public function testCorrectMissingNewMenuShortcutPropertiesGenerateErrors() {
+		$vo_plugin = new rwahsNavigationPlugin(__DIR__ . '/conf/invalid-new-menu-properties');
+		$va_plugin_status = $vo_plugin->checkStatus();
+		$this->assertEquals(2, sizeof($va_plugin_status['errors']), 'There is one error in the configuration file');
+		$this->assertNotFalse(
+			array_search(
+					_t('Custom new menu shortcut with key "%1" is not a type code (string value)', 'type2'),
+					$va_plugin_status['errors']
+			),
+			'New menu shortcuts must be a string value'
+		);
+		$this->assertNotFalse(
+			array_search(
+					_t('Custom new menu shortcut with key "%1" is not a type code (string value)', 'type3'),
+					$va_plugin_status['errors']
+			),
+			'New menu shortcuts must be a string value'
 		);
 	}
 }
