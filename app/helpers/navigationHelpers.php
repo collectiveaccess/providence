@@ -603,7 +603,7 @@
 	 * Return system icon as HTML
 	 *
 	 * @param int $pn_type Icon type constant (ex. __CA_NAV_ICON_ADD__)
-	 * @param mixed $pn_size Size of icon expressed as FontAwesome magnification level (Ex. 2) or pixel height (Ex. 24px). [Default is 2]
+	 * @param mixed $pn_size Size of icon expressed as FontAwesome magnification level (Ex. 2) or pixel height (Ex. 24px). Text values will be applied as CSS classes to the icon. [Default is 2]
 	 * @param array $pa_attributes Array of additional parameters to include in URL [Default is null]
 	 * @param array $pa_options Options include:
 	 *		color = hex color for icon [Default is #fff]
@@ -629,6 +629,8 @@
 			} elseif(substr(strtolower($pm_size), -2) == 'px') {
 				if (!isset($pa_attributes['style'])) { $pa_attributes['style'] = ''; }
 				$pa_attributes['style'] = "font-size: {$pm_size};".$pa_attributes['style'];
+			} elseif($pm_size) {
+				$vs_opt_class .= " {$pm_size}";
 			}
 			
 			$vs_rotate_class = '';
@@ -852,7 +854,7 @@
 				return null;
 				break;
 		}
-		return array('class' => $vs_fa_class);
+		return array('class' => trim("{$vs_fa_class} {$vs_ca_class}"), 'fa-class' => $vs_fa_class, 'ca-class' => $vs_ca_class);
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
