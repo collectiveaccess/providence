@@ -2,10 +2,10 @@ language: php
 sudo: false
 
 php:
-  - 5.3
   - 5.4
   - 5.5
   - 5.6
+  - 7.0
 
 env:
   # Here we list the profiles that we want to test, each one will be tested, per version of PHP, in parallel
@@ -20,9 +20,15 @@ install:
   - export PATH="$PATH:$COLLECTIVEACCESS_HOME/support/bin"
   # Create setup.php
   - ln -s .travis.setup.php setup.php
-  # Install the profile
-  - support/bin/caUtils install --hostname=localhost --setup="$(pwd)/tests/setup-tests.php" --skip-roles --profile-name=$PROFILE --admin-email=dev@gaiaresources.com.au
+  # Install the testing profile
+  - support/bin/caUtils install --hostname=localhost --setup="$(pwd)/tests/setup-tests.php" --skip-roles --profile-name=$PROFILE --admin-email=support@collectiveaccess.org > install.log
 
 before_script:
   # Go into the tests directory to run the tests
   - cd tests/
+
+branches:
+  only:
+    - develop
+    - master
+    - master-fix

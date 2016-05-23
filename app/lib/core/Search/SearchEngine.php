@@ -143,6 +143,7 @@ class SearchEngine extends SearchBase {
 		}
 		
 		$ps_search = preg_replace('/(?!")\[BLANK\](?!")/i', '"[BLANK]"', $ps_search); // the special [BLANK] search term, which returns records that have *no* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
+		$ps_search = preg_replace('/(?!")\[SET\](?!")/i', '"[SET]"', $ps_search); // the special [SET] search term, which returns records that have *any* content in a specific fields, has to be quoted in order to protect the square brackets from the parser.
 		
 		if(!is_array($pa_options)) { $pa_options = array(); }
 		if(($vn_limit = caGetOption('limit', $pa_options, null, array('castTo' => 'int'))) < 0) { $vn_limit = null; }
@@ -179,8 +180,8 @@ class SearchEngine extends SearchBase {
 		if($vn_cache_timeout == 0) { $vb_no_cache = true; } // don't try to cache if cache timeout is 0 (0 means disabled)
 		
 		$t_table = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
-		
-		$vs_cache_key = md5($ps_search."/".print_R($this->getTypeRestrictionList(), true));
+		$vs_cache_key = md5($ps_search."/".serialize($this->getTypeRestrictionList($pa_options)));
+
 		$o_cache = new SearchCache();
 		$vb_from_cache = false;
 
@@ -199,7 +200,7 @@ class SearchEngine extends SearchBase {
 				$o_res = new WLPlugSearchEngineCachedResult($va_hits, $this->opn_tablenum);
 				$vb_from_cache = true;
 			} else {
-				Debug::msg('cache expire for '.$vs_cache_key);
+				Debug::msg('SEARCH cache expire for '.$vs_cache_key);
 				$o_cache->remove();
 			}
 		}
@@ -239,13 +240,13 @@ class SearchEngine extends SearchBase {
 				}
 			}
 			
-			if (isset($pa_options['checkAccess']) && (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess']))) {
+			if (isset($pa_options['checkAccess']) && (is_array($pa_options['checkAccess']) && sizeof($pa_options['checkAccess'])) && $t_table->hasField('access')) {
 				$va_access_values = $pa_options['checkAccess'];
 				$this->addResultFilter($this->ops_tablename.'.access', 'IN', join(",",$va_access_values));
 			} 
 			
 			$vb_no_types = false;	
-			if (is_array($va_type_ids = $this->getTypeRestrictionList()) && (sizeof($va_type_ids) > 0)) {
+			if (is_array($va_type_ids = $this->getTypeRestrictionList()) && (sizeof($va_type_ids) > 0) && $t_table->hasField('type_id')) {
 				if ($t_table->getFieldInfo('type_id', 'IS_NULL')) {
 					$va_type_ids[] = 'NULL';
 				}
@@ -287,7 +288,7 @@ class SearchEngine extends SearchBase {
 			}
 			
 			if ($vs_sort && ($vs_sort !== '_natural')) {
-				$va_hits = $this->sortHits($va_hits, $t_table->tableName(), $pa_options['sort'], $vs_sort_direction);
+				$va_hits = $this->sortHits($va_hits, $t_table->tableName(), $pa_options['sort'], (isset($pa_options['sort_direction']) ? $pa_options['sort_direction'] : null));
 			} elseif (($vs_sort == '_natural') && ($vs_sort_direction == 'desc')) {
 				$va_hits = array_reverse($va_hits);
 			}
@@ -812,6 +813,8 @@ class SearchEngine extends SearchBase {
 					$va_ids = $t_item->getHierarchyChildren(null, array('idsOnly' => true));
 					$va_ids[] = $vn_type_id;
 					$this->opa_search_type_ids = array_merge($this->opa_search_type_ids, $va_ids);
+				} else {
+					$this->opa_search_type_ids[] = $vn_type_id;
 				}
 			}
 		}
@@ -824,9 +827,9 @@ class SearchEngine extends SearchBase {
 	 *
 	 * @return array List of type_id values to restrict search to.
 	 */
-	public function getTypeRestrictionList() {
+	public function getTypeRestrictionList($pa_options=null) {
 		if (function_exists("caGetTypeRestrictionsForUser")) {
-			$va_pervasive_types = caGetTypeRestrictionsForUser($this->ops_tablename);	// restrictions set in app.conf or by associated user role
+			$va_pervasive_types = caGetTypeRestrictionsForUser($this->ops_tablename, $pa_options);	// restrictions set in app.conf or by associated user role
 			if (!is_array($va_pervasive_types) || !sizeof($va_pervasive_types)) { return $this->opa_search_type_ids; }
 				
 			if (is_array($this->opa_search_type_ids) && sizeof($this->opa_search_type_ids)) {

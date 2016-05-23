@@ -112,7 +112,6 @@ class WLPlugFileZFileExtension Extends WLPlug Implements IWLPlugFileFormat {
 		"doc"	=>	array("mimetype" => "application/msword", "format_name" => "Microsoft Word", "long_format_name" => "Microsoft Word"),
 		"ppt"	=>	array("mimetype" => "application/vnd.ms-powerpoint", "format_name" => "Microsoft PowerPoint", "long_format_name" => "Microsoft PowerPoint"),
 		"xls"	=>	array("mimetype" => "application/vnd.ms-excel", "format_name" => "Microsoft Excel", "long_format_name" => "Microsoft Excel"),
-		"rm"	=>	array("mimetype" => "application/x-real-audio", "format_name" => "RealMedia", "long_format_name" => "RealMedia"),
 		"wmv"	=>	array("mimetype" => "application/windows-media", "format_name" => "WindowsMedia", "long_format_name" => "WindowsMedia"),
 		"tar"	=>	array("mimetype" => "application/tar", "format_name" => "TAR", "long_format_name" => "Unix Tape Archive (TAR)"),
 		"tgz"	=>	array("mimetype" => "application/windows-media", "format_name" => "Tar Gzip", "long_format_name" => "Gzipped Unix Tape Archive (TAR/Gzip)"),

@@ -190,7 +190,7 @@
 					break;
 				case 'ca_storage_locations':
 					$o_storage_location_search = new StorageLocationSearch();
-					return $o_storage_location_search->search('('.$ps_search.') AND (ca_storage_locations.is_enabled:1)', array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
+					return $o_storage_location_search->search(($ps_search == '*') ? '(ca_storage_locations.is_enabled:1)' : '('.$ps_search.') AND (ca_storage_locations.is_enabled:1)', array('sort' => $ps_sort, 'search_source' =>'Quick', 'limit' => $this->opn_num_results_per_item_type, 'no_cache' => $vb_no_cache, 'checkAccess' => $va_access_values));
 					break;
 				case 'ca_loans':
 					$o_loan_search = new LoanSearch();

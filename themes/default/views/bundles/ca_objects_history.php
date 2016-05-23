@@ -34,13 +34,14 @@
 
 	$vb_read_only				= (isset($va_settings['readonly']) && $va_settings['readonly']);
 	
-	if (!($vs_add_label 		= $this->getVar('add_label'))) { $vs_add_label = _t('Update location'); }
-	
 	$va_history					= $this->getVar('history');
 	
 	$vs_mode					= $this->getVar('mode');
 	$vs_relationship_type		= $this->getVar('location_relationship_type');
 	$vs_change_location_url		= $this->getVar('location_change_url');
+	
+	
+	if (!($vs_add_label = $this->getVar('add_label'))) { $vs_add_label = _t('Update location'); }
 	
 	$va_lookup_params = array();
 	
@@ -56,12 +57,12 @@
 <?php
 			if(!caGetOption('hide_add_to_loan_controls', $va_settings, false)) {
 ?>
-				<div style='float: left;' class='button labelInfo caAddLoanButton'><a href="#" id="<?php print $vs_id_prefix; ?>AddLoan"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print _t('Add to loan'); ?></a></div>
+				<div style='float: left;' class='button caAddLoanButton'><a href="#" id="<?php print $vs_id_prefix; ?>AddLoan"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print _t('Add to loan'); ?></a></div>
 <?php
 			}
 			if(!caGetOption('hide_update_location_controls', $va_settings, false)) {
 ?>
-				<div style='float: left;'  class='button labelInfo caChangeLocationButton'><a href="#" id="<?php print $vs_id_prefix; ?>ChangeLocation"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print _t('Update location'); ?></a></div>
+				<div style='float: left;'  class='button caChangeLocationButton'><a href="#" id="<?php print $vs_id_prefix; ?>ChangeLocation"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print _t('Update location'); ?></a></div>
 <?php
 			}
 ?>
@@ -147,7 +148,8 @@
 						className: 'hierarchyBrowserLevel',
 						classNameContainer: 'hierarchyBrowserContainer',
 						
-						editButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/arrow_grey_right.gif" border="0" title="Edit"/>',
+						editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
+						disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
 						
 						indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
 						
@@ -177,12 +179,16 @@
 ?>
 		</div>
 	</textarea>
+<?php
+}
+if(!caGetOption('hide_add_to_loan_controls', $va_settings, false)) {
+?>
 	<textarea class='caSetLoanTemplate' style='display: none;'>
 		<div style="clear: both; width: 1px; height: 1px;"><!-- empty --></div>
 		<div id="<?php print $vs_id_prefix; ?>Loan_{n}" class="labelInfo caRelatedLoan">
-			<h2><?php print _t('Add to loan'); ?></h2>
 			<table class="caListItem">
 				<tr>
+					<td><h2><?php print _t('Add to loan'); ?></h2></td>
 					<td>
 						<input type="text" size="60" name="<?php print $vs_id_prefix; ?>_loan_autocomplete{n}" value="{{label}}" id="<?php print $vs_id_prefix; ?>_loan_autocomplete{n}" class="lookupBg"/>
 					</td>
@@ -198,7 +204,7 @@
 		</div>
 	</textarea>
 <?php
-}
+	}
 ?>
 </div>
 
@@ -225,7 +231,7 @@
 				closeButtonSelector: ".close",
 				center: true,
 				onOpenCallback: function() {
-				jQuery("#topNavContainer").hide(250);
+					jQuery("#topNavContainer").hide(250);
 				},
 				onCloseCallback: function() {
 					jQuery("#topNavContainer").show(250);
@@ -311,4 +317,3 @@
 </script>
 <?php
 	}
-?>

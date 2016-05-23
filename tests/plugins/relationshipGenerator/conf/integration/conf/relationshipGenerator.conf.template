@@ -37,7 +37,7 @@ rules = {
 		triggers = {
 			%%element1%% = {
 				match_type = regex,
-				regexes = { "^\d+$" }
+				regexes = { "^\\d+$" }
 			}
 		},
 		related_table = ca_collections,

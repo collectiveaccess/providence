@@ -38,6 +38,94 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		date_default_timezone_set('America/New_York');
 	}
 
+	public function testExifDates() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+		
+		$vb_res = $o_tep->parse('2015:07:15 14:29:17.49');
+		$this->assertEquals($vb_res, true);
+		$va_parse = $o_tep->getHistoricTimestamps();
+		
+		$this->assertEquals($va_parse['start'], "2015.0715142917");
+		$this->assertEquals($va_parse['end'], "2015.0715142917");
+		$this->assertEquals($va_parse[0], "2015.0715142917");
+		$this->assertEquals($va_parse[1], "2015.0715142917");
+		
+		$va_parse = $o_tep->getUnixTimestamps();
+		
+		$this->assertEquals($va_parse['start'], "1436984957");
+		$this->assertEquals($va_parse['end'], "1436984957");
+		$this->assertEquals($va_parse[0], "1436984957");
+		$this->assertEquals($va_parse[1], "1436984957");
+	}
+
+	public function testUnknownYearAACR2() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+
+		$vb_res = $o_tep->parse('199-');
+		$this->assertEquals($vb_res, true);
+
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals("1990.010100000000", $va_parse['start']);
+		$this->assertEquals("1999.123123595900", $va_parse['end']);
+	}
+
+	public function testUncertainDates() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+
+		$vb_res = $o_tep->parse('199?');
+		$this->assertEquals($vb_res, true);
+
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals("199.010100000010", $va_parse['start']);
+		$this->assertEquals("199.123123595910", $va_parse['end']);
+	}
+
+	public function testEarlyCEDatesWithoutEra() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+
+		$vb_res = $o_tep->parse('12/22/199');
+		$this->assertEquals($vb_res, true);
+
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals("199.122200000000", $va_parse['start']);
+		$this->assertEquals("199.122223595900", $va_parse['end']);
+	}
+
+	public function testEarlyCEDatesWithoutEraAussieStyle() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_AU');
+
+		$vb_res = $o_tep->parse('22/12/199');
+		$this->assertEquals($vb_res, true);
+
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals("199.122200000000", $va_parse['start']);
+		$this->assertEquals("199.122223595900", $va_parse['end']);
+
+		$vb_res = $o_tep->parse('22.12.199');
+		$this->assertEquals($vb_res, true);
+
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals("199.122200000000", $va_parse['start']);
+		$this->assertEquals("199.122223595900", $va_parse['end']);
+	}
+
+	public function testImplicitCenturyDates() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+
+		$vb_res = $o_tep->parse('2/19/16');
+		$this->assertEquals($vb_res, true);
+
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals("2016.021900000000", $va_parse['start']);
+		$this->assertEquals("2016.021923595900", $va_parse['end']);
+	}
+
 	public function testQuarterCenturyDates() {
 		$o_tep = new TimeExpressionParser();
 		$o_tep->setLanguage('en_US');
@@ -110,6 +198,18 @@ class TimeExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($va_parse['end'], 80.1231235959);
 		$this->assertEquals($va_parse[0], 50.0101000000);
 		$this->assertEquals($va_parse[1], 80.1231235959);
+	}
+
+	public function testEarlyCEDatesWithEra() {
+		$o_tep = new TimeExpressionParser();
+		$o_tep->setLanguage('en_US');
+
+		$vb_res = $o_tep->parse('12/22/99 CE');
+		$this->assertEquals($vb_res, true);
+
+		$va_parse = $o_tep->getHistoricTimestamps();
+		$this->assertEquals("99.122200000000", $va_parse['start']);
+		$this->assertEquals("99.122223595900", $va_parse['end']);
 	}
 
 	public function testSeasonDates() {

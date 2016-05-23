@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -83,3 +83,25 @@
 <?php
 	}
 ?>
+
+<script type="text/javascript">
+	function caSaveSearch(form_id, label, field_names) {
+		var vals = {};
+		jQuery(field_names).each(function(i, field_name) { 	// process all fields in form
+			vals[field_name] = jQuery('#' + form_id + ' [name=' + field_name + ']').val();	
+		});
+		vals['_label'] = label;								// special "display" title, used if all else fails
+		vals['_field_list'] = field_names					// an array for form fields to expect
+		jQuery.getJSON('<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "addSavedSearch"); ?>', vals, function(data, status) {
+			if ((data) && (data.md5)) {
+				jQuery('.savedSearchSelect').prepend(jQuery("<option></option>").attr("value", data.md5).text(data.label)).attr('selectedIndex', 0);
+					
+			}
+		});
+	}
+	
+	// Show "add to set" controls if set tools is open
+	jQuery(document).ready(function() {
+		if (jQuery("#searchSetTools").is(":visible")) { jQuery(".addItemToSetControl").show(); }
+	});
+</script>

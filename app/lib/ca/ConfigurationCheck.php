@@ -265,8 +265,8 @@ final class ConfigurationCheck {
 	 */
 	public static function PHPVersionQuickCheck() {
 		$va_php_version = caGetPHPVersion();
-		if($va_php_version["versionInt"]<50106){
-			self::addError(_t("CollectiveAccess requires PHP version 5.1.6 or higher to function properly. You're running %1. Please upgrade.",$va_php_version["version"]));
+		if($va_php_version["versionInt"]<50400){
+			self::addError(_t("CollectiveAccess requires PHP version 5.4 or higher to function properly. You're running %1. Please upgrade.",$va_php_version["version"]));
 		}
 		return true;
 	}
@@ -366,8 +366,8 @@ final class ConfigurationCheck {
 		if (!function_exists("iconv")) {
 			self::addError(_t("PHP iconv module is required for CollectiveAccess to run. Please install it."));
 		}
-		if (!function_exists("mysql_query")) {
-			self::addError(_t("PHP mysql module is required for CollectiveAccess to run. Please install it."));
+		if (!function_exists("mysql_query") && !function_exists("mysqli_query")) {
+			self::addError(_t("PHP mysql or mysqli module is required for CollectiveAccess to run. Please install it."));
 		}
 		if (!function_exists("gzcompress")){
 			self::addError(_t("PHP zlib module is required for CollectiveAccess to run. Please install it."));
@@ -389,6 +389,9 @@ final class ConfigurationCheck {
 		}
 		if (!class_exists('PharData')) {
 			self::addError(_t("The PHP phar module is required for CollectiveAccess to run. Please install it."));
+		}
+		if (!function_exists("curl_exec")){
+			self::addError(_t("The PHP cURL module is required for CollectiveAccess to run. Please install it."));
 		}
 		
 		if (@preg_match('/\p{L}/u', 'a') != 1) {

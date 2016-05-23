@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2015 Whirl-i-Gig
+ * Copyright 2013-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -89,7 +89,16 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Match on'),
-				'description' => _t('List indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails')
+				'description' => _t('List indicating sequence of checks for an existing record; values of array can be "label", "idno" or "displayname". Ex. array("idno", "label", "displayname") will first try to match on idno and label [forename, surname] if the first match fails, then finally the displayname field')
+			),
+			'entitySplitter_ignoreParent' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_FIELD,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Ignore parent when trying to match row'),
+				'description' => _t('gnore parent when trying to match row.')
 			),
 			'entitySplitter_displaynameFormat' => array(
 				'formatType' => FT_TEXT,

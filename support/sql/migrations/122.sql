@@ -1,13 +1,14 @@
 /*
-	Date: 7 January 2016
-	Migration: 122
-	Description: Use LONGTEXT for `vars` and `field_access` columns in ca_user_roles
+	Description: Longer rule_code field for ca_metadata_dictionary_rules, and also
+	  don't enforce uniqueness of rule codes globally. Just inside a single entry.
 */
 
 /*==========================================================================*/
 
-ALTER TABLE ca_user_roles MODIFY vars LONGTEXT NOT NULL, MODIFY field_access LONGTEXT NOT NULL;
+ALTER TABLE ca_metadata_dictionary_rules MODIFY rule_code varchar(100) null;
+
+DROP INDEX u_rule_code ON ca_metadata_dictionary_rules;
+CREATE INDEX u_rule_code ON ca_metadata_dictionary_rules(entry_id, rule_code);
 
 /* Always add the update to ca_schema_updates at the end of the file */
-# noinspection SqlNoDataSourceInspection
 INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (122, unix_timestamp());

@@ -277,6 +277,26 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	/**
+	 *
+	 */
+	public static function elementCodesToIDs($pa_element_codes, $pa_options=null) {
+		$o_db = caGetOption('db', $pa_options, new Db());
+		
+		$qr_res = $o_db->query("
+			SELECT element_id, element_code
+			FROM ca_metadata_elements
+			WHERE
+				element_code IN (?)
+		", array($pa_element_codes));
+		
+		$va_element_ids = array();
+		while($qr_res->nextRow()) {
+			$va_element_ids[$qr_res->get('element_code')] = $qr_res->get('element_id');
+		}
+		return $va_element_ids;
+	}
+	# ------------------------------------------------------
+	/**
 	 * Flushes the element set cache for current record, its parent and the whole element set
 	 */
 	private function flushElementSetCache() {
@@ -372,7 +392,9 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 */
 	public function getAvailableSettings() {
 		$t_attr_val = Attribute::getValueInstance((int)$this->get('datatype'));
-		return $t_attr_val ? $t_attr_val->getAvailableSettings($this->getSettings()) : null;
+		$va_element_info = $this->getFieldValuesArray();
+		$va_element_info['settings'] = $this->getSettings();
+		return $t_attr_val ? $t_attr_val->getAvailableSettings($va_element_info) : null;
 	}
 	# ------------------------------------------------------
 	/**
@@ -534,8 +556,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	# Static
 	# ------------------------------------------------------
 	public static function getAttributeTypes() {
-		$o_config = Configuration::load();
-		$o_types = Configuration::load($o_config->get('attribute_type_config'));
+		$o_types = Configuration::load(__CA_CONF_DIR__."/attribute_types.conf");
 		
 		$va_types = $o_types->getList('types');
 		foreach($va_types as $vn_i => $vs_typename) {
@@ -920,11 +941,36 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * 
 	 */
 	static public function getElementDatatype($pm_element_code_or_id) {
-		if ($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id)) {
-			return $t_element->get('datatype');
+		if(MemoryCache::contains($pm_element_code_or_id, 'ElementDataTypes')) {
+			return MemoryCache::fetch($pm_element_code_or_id, 'ElementDataTypes');
 		}
-		
-		return null;
+
+		$vm_return = null;
+		if ($t_element = ca_metadata_elements::getInstance($pm_element_code_or_id)) {
+			$vm_return = $t_element->get('datatype');
+		}
+
+		MemoryCache::save($pm_element_code_or_id, $vm_return, 'ElementDataTypes');
+		return $vm_return;
+	}
+	# ------------------------------------------------------
+	/**
+	 *
+	 */
+	static public function getElementCodeForId($pm_element_id) {
+		if(MemoryCache::contains($pm_element_id, 'ElementCodes')) {
+			return MemoryCache::fetch($pm_element_id, 'ElementCodes');
+		}
+
+		$vm_return = null;
+		$t_element = self::getInstance($pm_element_id);
+
+		if($t_element->getPrimaryKey()) {
+			$vm_return = $t_element->get('element_code');
+		}
+
+		MemoryCache::save($pm_element_id, $vm_return, 'ElementCodes');
+		return $vm_return;
 	}
 	# ------------------------------------------------------
 	/**
@@ -1173,7 +1219,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	public function getPresetsAsHTMLFormElement($pa_options=null) {
 		if (!($vn_element_id = $this->getPrimaryKey())) { return null; }		// element must be loaded
 	
-		$o_presets = Configuration::load(__CA_APP_DIR__."/conf/attribute_presets.conf");
+		$o_presets = Configuration::load(__CA_CONF_DIR__."/attribute_presets.conf");
 		
 		if ($va_presets = $o_presets->getAssoc($this->get('element_code'))) {
 			$vs_form_element_name = caGetOption('name', $pa_options, "{fieldNamePrefix}_presets_{n}");
@@ -1202,7 +1248,7 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	public function getPresetsJavascript($ps_field_prefix, $pa_options=null) {
 		if (!($vn_element_id = $this->getPrimaryKey())) { return null; }		// element must be loaded
 	
-		$o_presets = Configuration::load(__CA_APP_DIR__."/conf/attribute_presets.conf");
+		$o_presets = Configuration::load(__CA_CONF_DIR__."/attribute_presets.conf");
 		
 		if ($va_presets = $o_presets->getAssoc($this->get('element_code'))) {
 			$va_elements = $this->getElementsInSet();

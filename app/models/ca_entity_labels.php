@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,6 +36,7 @@
 
 require_once(__CA_LIB_DIR__.'/ca/BaseLabel.php');
 require_once(__CA_LIB_DIR__.'/ca/Utils/DataMigrationUtils.php');
+require_once(__CA_MODELS_DIR__.'/ca_entities.php');
 
 
 BaseModel::$s_ca_models_definitions['ca_entity_labels'] = array(
@@ -292,10 +293,13 @@ class ca_entity_labels extends BaseLabel {
 				return false;
 			}
 		}
-
-		if (!$this->get('displayname')) {
+		
+		if (($t_entity = caGetOption('subject', $pa_options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
+			$this->set('displayname', $this->get('surname'));
+		} elseif (!$this->get('displayname')) {
 			$this->set('displayname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
 		}
+		
 		return parent::insert($pa_options);
 	}
 	# ------------------------------------------------------
@@ -304,7 +308,9 @@ class ca_entity_labels extends BaseLabel {
 			$this->postError(1100, _t('Surname or forename must be set'), 'ca_entity_labels->insert()');
 			return false;
 		}
-		if (!$this->get('displayname')) {
+		if (($t_entity = caGetOption('subject', $pa_options, null)) && ($t_entity->getTypeSetting('entity_class') == 'ORG')) {
+			$this->set('displayname', $this->get('surname'));
+		} elseif (!$this->get('displayname')) {
 			$this->set('displayname', trim(preg_replace('![ ]+!', ' ', $this->get('forename').' '.$this->get('middlename').' '.$this->get('surname'))));
 		}
 		return parent::update($pa_options);

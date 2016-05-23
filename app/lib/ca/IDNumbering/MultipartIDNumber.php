@@ -39,12 +39,33 @@ require_once(__CA_APP_DIR__."/helpers/navigationHelpers.php");
 
 class MultipartIDNumber extends IDNumber {
 	# -------------------------------------------------------
+	/**
+	 * A configuration object loaded with multipart_id_numbering.conf
+	 * @type Configuration
+	 */
 	private $opo_idnumber_config;
+	
+	/**
+	 * The list of valid formats, related types and elements
+	 * @type array
+	 */
 	private $opa_formats;
 
+	/**
+	 * The current database connection object
+	 * @type Db
+	 */
 	private $opo_db;
 
 	# -------------------------------------------------------
+	/**
+	 * Initialize the plugin
+	 *
+	 * @param string $ps_format A format to set as current [Default is null]
+	 * @param mixed $pm_type A type to set a current [Default is __default__] 
+	 * @param string $ps_value A value to set as current [Default is null]
+	 * @param Db $po_db A database connection to use for all queries. If omitted a new connection (may be pooled) is allocated. [Default is null]
+	 */
 	public function __construct($ps_format=null, $pm_type=null, $ps_value=null, $po_db=null) {
 		if (!$pm_type) { $pm_type = array('__default__'); }
 
@@ -65,21 +86,55 @@ class MultipartIDNumber extends IDNumber {
 	# -------------------------------------------------------
 	# Formats
 	# -------------------------------------------------------
+	/**
+	 * Return list of formats configured in multipart_id_numbering.conf
+	 *
+	 * @return array
+	 */
 	public function getFormats() {
 		return array_keys($this->opa_formats);
 	}
 	# -------------------------------------------------------
+	/**
+	 * Check if format is present in configuration 
+	 *
+	 * @param string $ps_format The format to check
+	 * @return bool
+	 */
 	public function isValidFormat($ps_format) {
 		return in_array($ps_format, $this->getFormats());
 	}
 	# -------------------------------------------------------
+	/**
+	 * Return separator string for current format
+	 *
+	 * @return string Separator, or "." if no separator setting is present
+	 */
 	public function getSeparator() {
-		if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType()) && isset($this->opa_formats[$vs_format][$vs_type]['separator'])) {
-			return $this->opa_formats[$vs_format][$vs_type]['separator'] ? $this->opa_formats[$vs_format][$vs_type]['separator'] : '';
-		}
-		return '.';
+		return $this->getFormatPropery('separator', array('default' => '.'));
 	}
 	# -------------------------------------------------------
+	/**
+	 * Return property for current format
+	 *
+	 * @param string $ps_property A format property name (eg. "separator")
+	 * @param array $pa_options Options include:
+	 *		default = Value to return if property does not exist [Default is null]
+	 * @return string
+	 */
+	public function getFormatPropery($ps_property, $pa_options=null) {
+		if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType()) && isset($this->opa_formats[$vs_format][$vs_type][$ps_property])) {
+			return $this->opa_formats[$vs_format][$vs_type][$ps_property] ? $this->opa_formats[$vs_format][$vs_type][$ps_property] : '';
+		}
+		return caGetOption('default', $pa_options, null);
+	}
+	# -------------------------------------------------------
+	/**
+	 * Return list of elements for current format and type using order specified in optional "sort_order" setting. Returns null
+	 * if option is not set
+	 *
+	 * @return array List of elements as specified in "sort_order" setting, or null if there is no setting value
+	 */
 	public function getElementOrderForSort() {
 		if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType()) && isset($this->opa_formats[$vs_format][$vs_type]['sort_order'])) {
 			return (is_array($this->opa_formats[$vs_format][$vs_type]['sort_order']) && sizeof($this->opa_formats[$vs_format][$vs_type]['sort_order'])) ? $this->opa_formats[$vs_format][$vs_type]['sort_order'] : null;
@@ -88,9 +143,18 @@ class MultipartIDNumber extends IDNumber {
 	}
 	# -------------------------------------------------------
 	/**
+	 * Determine if the specified format and type contains an element of a given type. A specific element position may be specified. If 
+	 * omitted all elements will be examined.
 	 *
+	 * @param string $ps_element_type The type of element to look for (Eg. SERIAL, YEAR, LIST)
+	 * @param int $pn_index The zero-based position in the element list to examine. If omitted all elements are examined. [Default is null]
+	 * @param string $ps_format A format to test. If omitted the current format is used. [Default is null]
+	 * @param string $ps_type A type to test. If omitted the current type is used. [Default is null]
+	 * @param array $pa_options Options include:
+	 *		checkLastElementOnly = check only the last element in the element list. This is the same as setting $pn_index to the last element, but saves you having to calculate what that index is. [Default is null]
+	 * @return bool
 	 */
-	public function formatHas($ps_element_type, $pn_index=null, $ps_format=null, $ps_type=null) {
+	public function formatHas($ps_element_type, $pn_index=null, $ps_format=null, $ps_type=null, $pa_options=null) {
 		if ($ps_format) {
 			if (!$this->isValidFormat($ps_format)) {
 				return false;
@@ -115,6 +179,14 @@ class MultipartIDNumber extends IDNumber {
 		$va_elements = $this->opa_formats[$vs_format][$vs_type]['elements'];
 		
 		if (!is_null($pn_index) && isset($va_elements[$pn_index])) { $va_elements = array($va_elements[$pn_index]); }
+
+		if(!is_array($va_elements)) { return false; }
+		
+		if (caGetOption('checkLastElementOnly', $pa_options, false)) { 
+			$va_last_element = array_pop($va_elements);
+			return ($va_last_element['type'] == $ps_element_type) ? true : false;
+		} 
+		
 		
 		foreach($va_elements as $va_element) {
 			if ($va_element['type'] == $ps_element_type) {
@@ -124,41 +196,29 @@ class MultipartIDNumber extends IDNumber {
 		return false;
 	}
 	# -------------------------------------------------------
+	/**
+	 * Determine if the specified format and type contain a SERIAL element its last element; that is, that the format and type 
+	 * is designed as an auto incrementing sequence with 0 or more prefix elements.
+	 *
+	 * @param string $ps_format A format to test. If omitted the current format is used. [Default is null]
+	 * @param string $ps_type A type to test. If omitted the current type is used. [Default is null]
+	 * @return bool
+	 */
 	public function isSerialFormat($ps_format=null, $ps_type=null) {
-		if ($ps_format) {
-			if (!$this->isValidFormat($ps_format)) {
-				return false;
-			}
-			$vs_format = $ps_format;
-		} else {
-			if(!($vs_format = $this->getFormat())) {
-				return false;
-			}
-		}
-		if ($ps_type) {
-			if (!$this->isValidType($ps_type)) {
-				return false;
-			}
-			$vs_type = $ps_type;
-		} else {
-			if(!($vs_type = $this->getType())) {
-				return false;
-			}
-		}
-
-		$va_elements = $this->opa_formats[$vs_format][$vs_type]['elements'];
-		$va_last_element = array_pop($va_elements);
-		if ($va_last_element['type'] == 'SERIAL') {
-			return true;
-		}
-		return false;
+		return $this->formatHas('SERIAL', null, $ps_format, $ps_type, array('checkLastElementOnly' => true));
 	}
 	# -------------------------------------------------------
-	# Returns true if the current format is an extension of $ps_format
-	# That is, the current format is the same as the $ps_form with an auto-generated
-	# extra element such that the system can auto-generate unique numbers using a $ps_format
-	# compatible number as the basis. This is mainly used to determine if the system configuration
-	# is such that object numbers can be auto-generated based upon lot numbers.
+	/**
+	 * Returns true if the current format is an extension of $ps_format
+	 * That is, the current format is the same as the $ps_form with an auto-generated
+	 * extra element such that the system can auto-generate unique numbers using a $ps_format
+	 * compatible number as the basis. This is mainly used to determine if the system configuration
+	 * is such that object numbers can be auto-generated based upon lot numbers.
+	 *
+	 * @param string $ps_string
+	 * @param string $ps_type [Default is __default__]
+	 * @return bool
+	 */
 	public function formatIsExtensionOf($ps_format, $ps_type='__default__') {
 		if (!$this->isSerialFormat()) {
 			return false;	// If this format doesn't end in a SERIAL element it can't be autogenerated.
@@ -220,6 +280,11 @@ class MultipartIDNumber extends IDNumber {
 	# -------------------------------------------------------
 	# Types
 	# -------------------------------------------------------
+	/**
+	 * Return a list of valid types for the current format
+	 *
+	 * @return array An array or types, or an emtpy array if the format is not set
+	 */
 	public function getTypes() {
 		if (!($vs_format = $this->getFormat())) { return array(); }
 		$va_types = array();
@@ -232,12 +297,23 @@ class MultipartIDNumber extends IDNumber {
 		return array_keys($va_types);
 	}
 	# -------------------------------------------------------
+	/**
+	 * Determines if specified type is valid for the current format
+	 *
+	 * @param string $ps_type A type code
+	 * @return bool
+	 */
 	public function isValidType($ps_type) {
 		return ($ps_type) && in_array($ps_type, $this->getTypes());
 	}
 	# -------------------------------------------------------
 	# Elements
 	# -------------------------------------------------------
+	/**
+	 * Return list of elements configured in multipart_id_numbering.conf for the current format and type
+	 *
+	 * @return array An array of element information arrays, of the same format as returned by getElementInfo(), or null if the format and type are not set
+	 */
 	private function getElements() {
 		if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType())) {
 			if (is_array($this->opa_formats[$vs_format][$vs_type]['elements'])) {
@@ -253,6 +329,12 @@ class MultipartIDNumber extends IDNumber {
 		return null;
 	}
 	# -------------------------------------------------------
+	/**
+	 * Return array of configuration from multipart_id_numbering.conf for the specified element in the current format and type
+	 *
+	 * @param string $ps_element_name The element to return information for
+	 * @return array An array of information with the same keys as in multipart_id_numbering.conf, or null if the element does not exist
+	 */
 	private function getElementInfo($ps_element_name) {
 		if (($vs_format = $this->getFormat()) && ($vs_type = $this->getType())) {
 			return $this->opa_formats[$vs_format][$vs_type]['elements'][$ps_element_name];
@@ -260,9 +342,34 @@ class MultipartIDNumber extends IDNumber {
 		return null;
 	}
 	# -------------------------------------------------------
+	/**
+	 * Breaks apart value using configuration of current format and type. When a format type specifies a separator this is generally
+	 * equivalent to explode()'ing the value on the separator, except when PARENT elements (which may container the separator) are configured.
+	 * explodeValue() can also split values when no separator is configured, using configured element widths to determine boundaries.
+	 *
+	 * @param string $ps_value
+	 * @return array List of values
+	 */
 	protected function explodeValue($ps_value) {
 		$vs_separator = $this->getSeparator();
-		if ($vs_separator) {
+		
+		if ($vs_separator && $this->formatHas('PARENT', 0)) {
+			// starts with PARENT element so explode in reverse since parent value may include separators
+				
+			$va_element_vals_in_reverse = array_reverse(explode($vs_separator, $ps_value));
+			$vn_num_elements = sizeof($va_elements = $this->getElements());
+			
+			$va_element_vals = array();
+			while(sizeof($va_elements) > 1) {
+				array_shift($va_elements);
+				$va_element_vals[] = array_shift($va_element_vals_in_reverse);
+				
+				$vn_num_elements--;
+			}
+			
+			$va_element_vals[] = join($vs_separator, array_reverse($va_element_vals_in_reverse));
+			$va_element_vals = array_reverse($va_element_vals);
+		} elseif ($vs_separator) {
 			// Standard operation, use specified non-empty separator to split value
 			$va_element_vals = explode($vs_separator, $ps_value);
 		} else {
@@ -299,6 +406,7 @@ class MultipartIDNumber extends IDNumber {
 						$vn_width = mb_strlen(preg_replace('/^([A-Za-z0-9]+).*$/', '$1', substr($ps_value, $vn_strpos)));
 						break;
 					case 'FREE':
+					case 'PARENT':
 					default:
 						// Match free text
 						$vn_width = null;
@@ -316,6 +424,12 @@ class MultipartIDNumber extends IDNumber {
 		return $va_element_vals;
 	}
 	# -------------------------------------------------------
+	/**
+	 * Validate value against current format and return list of error messages. 
+	 *
+	 * @param string $ps_value A value to validate.
+	 * @return array List of validation errors for value when applied to current format. Empty array if no error.
+	 */
 	public function validateValue($ps_value) {
 		//if (!$ps_value) { return array(); }
 		$va_elements = $this->getElements();
@@ -347,10 +461,6 @@ class MultipartIDNumber extends IDNumber {
 					}
 					break;
 				case 'FREE':
-					# noop
-					//if (!$vs_value) {
-					//	$va_element_errors[$vs_element_name] = _t("%1 must not be blank", $va_element_info['description']);
-					//}
 					if (isset($va_element_info['minimum_length']) && ($vn_value_len < $va_element_info['minimum_length'])) {
 						if($va_element_info['minimum_length'] == 1) {
 							$va_element_errors[$vs_element_name] = _t("%1 must not be shorter than %2 character", $va_element_info['description'], $va_element_info['minimum_length']);
@@ -446,12 +556,26 @@ class MultipartIDNumber extends IDNumber {
 		return $va_element_errors;
 	}
 	# -------------------------------------------------------
+	/**
+	 * Check that value is valid for the current format
+	 *
+	 * @param string $ps_value [Default is null - use current value]
+	 * @return bool
+	 */
 	public function isValidValue($ps_value=null) {
 		return $this->validateValue(!is_null($ps_value) ? $ps_value : $this->getValue());
 	}
 	# -------------------------------------------------------
-	public function getNextValue($ps_element_name, $ps_value=null, $pb_dont_mark_value_as_used=false) {
-		if (!$ps_value) { $ps_value = $this->getValue(); }
+	/**
+	 * Get next integer value in sequence for the specified SERIAL element
+	 *
+	 * @param string $ps_element_name
+	 * @param mixed $pm_value [Default is null]
+	 * @param bool  $pb_dont_mark_value_as_used [Default is false]
+	 * @return int Next value for SERIAL element or the string "ERR" on error
+	 */
+	public function getNextValue($ps_element_name, $pm_value=null, $pb_dont_mark_value_as_used=false) {
+		if (!$pm_value) { $pm_value = $this->getValue(); }
 		$va_element_info = $this->getElementInfo($ps_element_name);
 
 		$vs_table = $va_element_info['table'];
@@ -465,7 +589,7 @@ class MultipartIDNumber extends IDNumber {
 		$vs_separator = $this->getSeparator();
 		$va_elements = $this->getElements();
 
-		if ($ps_value == null) {
+		if ($pm_value == null) {
 			$va_element_vals = array();
 			foreach($va_elements as $vs_element_name => $va_element_info) {
 				switch($va_element_info['type']) {
@@ -494,13 +618,18 @@ class MultipartIDNumber extends IDNumber {
 							}
 						}
 						break;
+					case 'PARENT':
+						$va_element_vals[] = $this->getParentValue();
+						break;
 					default:
 						$va_element_vals[] = '';
 						break;
 				}
 			}
+		} elseif(is_array($pm_value)) {
+			$va_element_vals = array_values($pm_value);
 		} else {
-			$va_element_vals = $this->explodeValue($ps_value);
+			$va_element_vals = $this->explodeValue($pm_value);
 		}
 
 		$va_tmp = array();
@@ -518,19 +647,20 @@ class MultipartIDNumber extends IDNumber {
 		// Get the next number based upon field data
 		$vn_type_id = null;
 		
+		$o_dm = Datamodel::load();
+		if (!($t_instance = $o_dm->getInstanceByTableName($vs_table, true))) { return 'ERR'; }
 		if ((bool)$va_element_info['sequence_by_type']) {
-			$o_dm = Datamodel::load();
-			$t_instance = $o_dm->getInstanceByTableName($vs_table, true);
 			$vn_type_id = (int)$t_instance->getTypeIDForCode($this->getType());
 		}
 		
-		if ($qr_res = $this->opo_db->query("
+		if ($qr_res = $this->opo_db->query($x="
 			SELECT $vs_field FROM ".$vs_table."
 			WHERE
 				$vs_field LIKE ? ".(($vn_type_id > 0) ? " AND type_id = {$vn_type_id}" : "")."
+				".($t_instance->hasField('deleted') ? " AND (deleted = 0)" : '')."
 			ORDER BY
 				$vs_sort_field DESC
-		", $vs_stub.(($vs_stub != '') ? $vs_separator.'%' : '%'))) {
+		", ($y=$vs_stub.(($vs_stub != '') ? $vs_separator.'%' : '%')))) {
 			if ($this->opo_db->numErrors()) {
 				return "ERR";
 			}
@@ -539,7 +669,6 @@ class MultipartIDNumber extends IDNumber {
 			if ($qr_res->numRows()) {
 				while($qr_res->nextRow()) {
 					$va_tmp = $this->explodeValue($qr_res->get($vs_field));
-
 					if(is_numeric($va_tmp[$vn_i])) {
 						$vn_num = intval($va_tmp[$vn_i]) + 1;
 						break;
@@ -583,8 +712,8 @@ class MultipartIDNumber extends IDNumber {
 	/**
 	 * Returns sortable value padding according to the format of the specified format and type
 	 *
-	 * @param string $ps_value
-	 * @return string
+	 * @param string $ps_value Value from which to derive the sortable value. If omitted the current value is used. [Default is null]
+	 * @return string The sortable value
 	 */
 	public function getSortableValue($ps_value=null) {
 		$vs_separator = $this->getSeparator();
@@ -666,6 +795,9 @@ class MultipartIDNumber extends IDNumber {
 					if ($vn_p < 0) { $vn_p = 0; }
 					$va_output[] = str_repeat(' ', 2 - $vn_p).$va_element_vals[$vn_i];
 					break;
+				case 'PARENT':
+					$va_output[] = $va_element_vals[$vn_i].str_repeat(' ', $vn_padding - mb_strlen($va_element_vals[$vn_i]));
+					break;
 				default:
 					$va_output[] = str_repeat(' ', $vn_padding - mb_strlen($va_element_vals[$vn_i])).$va_element_vals[$vn_i];
 					break;
@@ -679,8 +811,8 @@ class MultipartIDNumber extends IDNumber {
 	 * Return a list of modified identifier values suitable for search indexing according to the format of the specified format and type
 	 * Modifications include removal of leading zeros, stemming and more.
 	 *
-	 * @param string $ps_value
-	 * @return array
+	 * @param string $ps_value Value from which to derive the index values. If omitted the current value is used. [Default is null]
+	 * @return array Array of string for indexing
 	 */
 	public function getIndexValues($ps_value=null) {
 		$vs_separator = $this->getSeparator();
@@ -711,7 +843,6 @@ class MultipartIDNumber extends IDNumber {
 					if ((int)$va_element_vals[$vn_i] > 0) {
 						$va_output[$vn_i][] = (int)$va_element_vals[$vn_i];
 					}
-
 					break;
 				case 'SERIAL':
 				case 'NUMERIC':
@@ -790,21 +921,38 @@ class MultipartIDNumber extends IDNumber {
 	# -------------------------------------------------------
 	# User interace (HTML)
 	# -------------------------------------------------------
+	/**
+	 * Return HTML form elements for all elements using the current format, type and value
+	 *
+	 * @param string $ps_name Name of form element. Is used as a prefix for each form element. The number element name will be used as a suffix for each.
+	 * @param array $pa_errors Passed-by-reference array. Will contain any validation errors for the value, indexed by element.
+	 * @param array $pa_options Options include:
+	 *		id_prefix = Prefix to add to element ID attributes. [Default is null]
+	 *		for_search_form = Generate a blank form for search. [Default is false]
+	 *		show_errors = Include error messages next to form elements. [Default is false]
+	 *		error_icon = Icon to display next to error messages; should be ready-to-display HTML. [Default is null]
+	 *		readonly = Make all form elements read-only. [Default is false]
+	 *		request = the current request (an instance of RequestHTTP) [Default is null]
+	 *		check_for_dupes = perform live checking for duplicate numbers. [Default is false]
+	 *		progress_indicator = URL for spinner graphic to use while running duplicate number check. [Default is null] 
+	 *		table = Table to perform duplicate number check in. [Default is null]
+	 *		search_url = Search service URL to use when performing duplicate number check. [Default is null]
+	 *		row_id = ID of row to exclude from duplicate number check (typically the current record id). [Default is null]
+	 *		context_id = context ID of row to exclude from duplicate number check (typically the current record context). [Default is null]
+	 * @return string HTML output
+	 */
 	public function htmlFormElement($ps_name, &$pa_errors=null, $pa_options=null) {
 		if (!is_array($pa_options)) { $pa_options = array(); }
 		$vs_id_prefix = isset($pa_options['id_prefix']) ? $pa_options['id_prefix'] : null;
 		$vb_generate_for_search_form = isset($pa_options['for_search_form']) ? true : false;
 
 		$pa_errors = $this->validateValue($this->getValue());
-
 		$vs_separator = $this->getSeparator();
-
 		$va_element_vals = $this->explodeValue($this->getValue());
 
 		if (!is_array($va_elements = $this->getElements())) { $va_elements = array(); }
 
-		$va_element_controls = array();
-		$va_element_control_names = array();
+		$va_element_controls = $va_element_control_names = array();
 		$vn_i=0;
 
 		$vb_next_in_seq_is_present = false;
@@ -827,10 +975,16 @@ class MultipartIDNumber extends IDNumber {
 			$va_element_controls[] = $vs_tmp;
 			$vn_i++;
 		}
-		if (sizeof($va_elements) < sizeof($va_element_vals)) {
-			$vs_extra_vals = join($vs_separator, array_slice($va_element_vals, sizeof($va_elements)));
-			$va_element_controls[] = "<input type='text' name='".$ps_name."_extra' value='".htmlspecialchars($vs_extra_vals, ENT_QUOTES, 'UTF-8')."' size='10'".($pa_options['readonly'] ? ' disabled="1" ' : '').">";
-			$va_element_control_names[] = $ps_name.'_extra';
+		if ((sizeof($va_elements) < sizeof($va_element_vals)) && (bool)$this->getFormatPropery('allow_extra_elements', array('default' => 1))) {
+			$va_extra_vals = array_slice($va_element_vals, sizeof($va_elements));
+			
+			if (($vn_extra_size = (int)$this->getFormatPropery('extra_element_width', array('default' => 10))) < 1) {
+				$vn_extra_size = 10;
+			}
+			foreach($va_extra_vals as $vn_i => $vs_extra_val) {
+				$va_element_controls[] = "<input type='text' name='{$ps_name}_extra_{$vn_i}' id='{$ps_name}_extra_{$vn_i}' value='".htmlspecialchars($vs_extra_val, ENT_QUOTES, 'UTF-8')."' size='{$vn_extra_size}'".($pa_options['readonly'] ? ' disabled="1" ' : '').">";
+				$va_element_control_names[] = $ps_name.'_extra_'.$vn_i;
+			}
 		}
 
 		$vs_js = '';
@@ -865,6 +1019,19 @@ class MultipartIDNumber extends IDNumber {
 		return join($vs_separator, $va_element_controls).$vs_js;
 	}
 	# -------------------------------------------------------
+	/**
+	 * When displayed in a form for editing a multipart identifier will be composed of as many form elements as there are elements defined for the identifier format.
+	 * Each form element will have a name beginning with the identifier field name and suffixed with the name of the identifier element. htmlFormValue() 
+	 * will pull these values from either an incoming request or, if specified, from the value specified in the $ps_value parameter and return it as a string.
+	 * This method is identical to htmlFormValuesAsArray() save that it returns a string rather than an array.
+	 *
+	 * @param string $ps_name Name of the identifier field (eg. idno)
+	 * @param string $ps_value An optional value to extract form values from. If null, values are pulled from the current request. [Default is null]
+	 * @param bool $pb_dont_mark_serial_value_as_used Don't record incoming value of the new maximum for SERIAL element sequences. [Default is false]
+	 * @param bool $pb_generate_for_search_form Return array of empty values suitable for use in a search (not editing) form. [Default is false]
+	 * @param bool $pb_always_generate_serial_values Always generate new values for SERIAL elements, even if they are not set with placeholders. [Default is false]
+	 * @return String Identifier from extracted from form and returned as string
+	 */
 	public function htmlFormValue($ps_name, $ps_value=null, $pb_dont_mark_serial_value_as_used=false, $pb_generate_for_search_form=false, $pb_always_generate_serial_values=false) {
 		$va_tmp = $this->htmlFormValuesAsArray($ps_name, $ps_value, $pb_dont_mark_serial_value_as_used, $pb_generate_for_search_form, $pb_always_generate_serial_values);
 		if (!($vs_separator = $this->getSeparator())) { $vs_separator = ''; }
@@ -946,6 +1113,19 @@ class MultipartIDNumber extends IDNumber {
 		return join($vs_separator, $va_values);
 	}
 	# -------------------------------------------------------
+	/**
+	 * When displayed in a form for editing a multipart identifier will be composed of as many form elements as there are elements defined for the identifier format.
+	 * Each form element will have a name beginning with the identifier field name and suffixed with the name of the identifier element. htmlFormValuesAsArray() 
+	 * will pull these values from either an incoming request or, if specified, from the value specified in the $ps_value parameter and return them as an array
+	 * indexed with keys that identifier name + "_" + element name.
+	 *
+	 * @param string $ps_name Name of the identifier field (eg. idno)
+	 * @param string $ps_value An optional value to extract form values from. If null, values are pulled from the current request. [Default is null]
+	 * @param bool $pb_dont_mark_serial_value_as_used Don't record incoming value of the new maximum for SERIAL element sequences. [Default is false]
+	 * @param bool $pb_generate_for_search_form Return array of empty values suitable for use in a search (not editing) form. [Default is false]
+	 * @param bool $pb_always_generate_serial_values Always generate new values for SERIAL elements, even if they are not set with placeholders. [Default is false]
+	 * @return array Array of values for identifer extracted from request
+	 */
 	public function htmlFormValuesAsArray($ps_name, $ps_value=null, $pb_dont_mark_serial_value_as_used=false, $pb_generate_for_search_form=false, $pb_always_generate_serial_values=false) {
 		if (is_null($ps_value)) {
 			if(isset($_REQUEST[$ps_name]) && $_REQUEST[$ps_name]) { return $_REQUEST[$ps_name]; }
@@ -961,10 +1141,29 @@ class MultipartIDNumber extends IDNumber {
 				if (!sizeof($va_tmp)) { break; }
 				$va_element_values[$ps_name.'_'.$vs_element_name] = array_shift($va_tmp);
 			}
+			if ((sizeof($va_tmp) > 0) && (bool)$this->getFormatPropery('allow_extra_elements', array('default' => 1))) {
+				$vn_i = 0;
+				foreach($va_tmp as $vs_tmp) {
+					$va_element_values[$ps_name.'_extra_'.$vn_i] = $vs_tmp;
+					$vn_i++;
+				}
+			}
 		} else {
 			foreach ($va_element_names as $vs_element_name) {
 				if(isset($_REQUEST[$ps_name.'_'.$vs_element_name])) {
 					$va_element_values[$ps_name.'_'.$vs_element_name] = $_REQUEST[$ps_name.'_'.$vs_element_name];
+				}
+			}
+			
+			if ((bool)$this->getFormatPropery('allow_extra_elements', array('default' => 1))) {
+				$vn_i = 0;
+				while(true) {
+					if(isset($_REQUEST[$ps_name.'_extra_'.$vn_i])) {
+						$va_element_values[$ps_name.'_extra_'.$vn_i] = $_REQUEST[$ps_name.'_extra_'.$vn_i];
+						$vn_i++;
+					} else {
+						break;
+					}
 				}
 			}
 		}
@@ -973,7 +1172,7 @@ class MultipartIDNumber extends IDNumber {
 		$vb_is_not_empty = false;
 		$va_tmp = array();
 		$va_elements = $this->getElements();
-		foreach ($va_elements as $vs_element_name => $va_element_info) {
+		foreach($va_elements as $vs_element_name => $va_element_info) {
 			if ($va_element_info['type'] == 'SERIAL') {
 				if ($pb_generate_for_search_form) {
 					$va_tmp[$vs_element_name] = $va_element_values[$ps_name.'_'.$vs_element_name];
@@ -982,7 +1181,7 @@ class MultipartIDNumber extends IDNumber {
 
 				if (($va_element_values[$ps_name.'_'.$vs_element_name] == '') || ($va_element_values[$ps_name.'_'.$vs_element_name] == '%') || $pb_always_generate_serial_values) {
 					if ($va_element_values[$ps_name.'_'.$vs_element_name] == '%') { $va_element_values[$ps_name.'_'.$vs_element_name] = ''; }
-					$va_tmp[$vs_element_name] = $this->getNextValue($vs_element_name, join($vs_separator, $va_tmp), $pb_dont_mark_serial_value_as_used);
+					$va_tmp[$vs_element_name] = $this->getNextValue($vs_element_name, $va_tmp, $pb_dont_mark_serial_value_as_used);
 					$vb_isset = $vb_is_not_empty = true;
 					continue;
 				} else {
@@ -1011,23 +1210,50 @@ class MultipartIDNumber extends IDNumber {
 				$vb_is_not_empty = true;
 			}
 		}
-		if (isset($va_element_values[$ps_name.'_extra']) && ($vs_tmp = $va_element_values[$ps_name.'_extra'])) {
-			$va_tmp[$ps_name.'_extra'] = $vs_tmp;
+		
+		if((bool)$this->getFormatPropery('allow_extra_elements', array('default' => 1))) {
+			$vn_i = 0;
+			while(true) {
+				if (isset($va_element_values[$ps_name.'_extra_'.$vn_i]) && ($vs_tmp = $va_element_values[$ps_name.'_extra_'.$vn_i])) {
+					$va_tmp[$ps_name.'_extra_'.$vn_i] = $vs_tmp;
+					$vn_i++;
+				} else {
+					break;
+				}	
+			}
 		}
-
+		
 		return ($vb_isset && $vb_is_not_empty) ? $va_tmp : null;
 	}
 	# -------------------------------------------------------
 	# Generated id number element
 	# -------------------------------------------------------
-
-	private function getElementWidth($pa_element_info, $vn_default=3) {
+	/**
+	 * Return width of specified element
+	 *
+	 * @param array $pa_element_info Array of information about the specified element, as returned by getElements()
+	 * @param int $pn_default Default width, in characters, to use when width is not set in element info [Default is 3]
+	 * @return int Width, in characters
+	 */
+	private function getElementWidth($pa_element_info, $pn_default=3) {
 		$vn_width = isset($pa_element_info['width']) ? $pa_element_info['width'] : 0;
-		if ($vn_width <= 0) { $vn_width = $vn_default; }
+		if ($vn_width <= 0) { $vn_width = $pn_default; }
 
 		return $vn_width;
 	}
 	# -------------------------------------------------------
+	/**
+	 * Generate an individual HTML form element for a specific number element. Used by htmlFormElement() to create a set of form element for the current format type.
+	 *
+	 * @param string $ps_element_name Number element to generate form element for.
+	 * @param string $ps_name Name of the identifier field (eg. idno)
+	 * @param string $ps_value An optional value to extract form values from. If null, values are pulled from the current request. [Default is null]
+	 * @param string $ps_id_prefix Prefix to add to element ID attributes. [Default is null]
+	 * @param bool $pb_generate_for_search_form Return array of empty values suitable for use in a search (not editing) form. [Default is false]
+	 * @param array $pa_options Options include:
+	 *		readonly = Make form element read-only. [Default is false]
+	 * @return string HTML output
+	 */
 	private function genNumberElement($ps_element_name, $ps_name, $ps_value, $ps_id_prefix=null, $pb_generate_for_search_form=false, $pa_options=null) {
 		if (!($vs_format = $this->getFormat())) {
 			return null;
@@ -1138,6 +1364,25 @@ class MultipartIDNumber extends IDNumber {
 
 				break;
 			# ----------------------------------------------------
+				case 'PARENT':
+				$vn_width = $this->getElementWidth($va_element_info, 3);
+
+				if ($pb_generate_for_search_form) {
+					$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="" maxlength="'.$vn_width.'" size="'.$vn_width.'"'.($pa_options['readonly'] ? ' disabled="1" ' : '').'/>';
+				} else {
+					if ($vs_element_value == '') {
+						$vs_next_num = $this->getParentValue();
+						$vs_element .= '&lt;'._t('%1', $vs_next_num).'&gt;'.'<input type="hidden" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_next_num, ENT_QUOTES, 'UTF-8').'"/>';
+					} else {
+						if ($va_element_info['editable']) {
+							$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'" maxlength="'.$vn_width.'"'.($pa_options['readonly'] ? ' disabled="1" ' : '').'/>';
+						} else {
+							$vs_element .= '<input type="hidden" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'"/>'.$vs_element_value;
+						}
+					}
+				}
+					break;
+			# ----------------------------------------------------
 			default:
 				return '[Invalid element type]';
 				break;
@@ -1146,6 +1391,14 @@ class MultipartIDNumber extends IDNumber {
 		return $vs_element;
 	}
 	# -------------------------------------------------------
+	/**
+	 * Get maximum sequence value for SERIAL element
+	 *
+	 * @param string $ps_format Format to get maximum sequence value for
+	 * @param string $ps_element Element name to get maximum sequence value for
+	 * @param string $ps_idno_stub Identifier stub (identifier without serial value) to get maximum sequence value for
+	 * @return int Integer value or false on error
+	 */
 	public function getSequenceMaxValue($ps_format, $ps_element, $ps_idno_stub) {
 		$this->opo_db->dieOnError(false);
 
@@ -1155,12 +1408,21 @@ class MultipartIDNumber extends IDNumber {
 			WHERE
 				(format = ?) AND (element = ?) AND (idno_stub = ?)
 		", $ps_format, $ps_element, $ps_idno_stub))) {
-			return null;
+			return false;
 		}
 		if (!$qr_res->nextRow()) { return 0; }
 		return $qr_res->get('seq');
 	}
 	# -------------------------------------------------------
+	/**
+	 * Record new maximum sequence value for SERIAL element
+	 *
+	 * @param string $ps_format Format to set sequence for
+	 * @param string $ps_element Element name to set sequence for
+	 * @param string $ps_idno_stub Identifier stub (identifier without serial value) to set sequence for
+	 * @param string $pn_value Maximum SERIAL value for this format/element/stub
+	 * @return bool True on success, false on failure
+	 */
 	public function setSequenceMaxValue($ps_format, $ps_element, $ps_idno_stub, $pn_value) {
 		$this->opo_db->dieOnError(false);
 
@@ -1169,26 +1431,29 @@ class MultipartIDNumber extends IDNumber {
 			WHERE format = ? AND element = ? AND idno_stub = ?
 		", $ps_format, $ps_element, $ps_idno_stub);
 
-		if (!($qr_res = $this->opo_db->query("
+		return $this->opo_db->query("
 			INSERT INTO ca_multipart_idno_sequences
 			(format, element, idno_stub, seq)
 			VALUES
 			(?, ?, ?, ?)
-		", $ps_format, $ps_element, $ps_idno_stub, $pn_value))) {
-			return null;
-		}
-
-		return $qr_res;
+		", $ps_format, $ps_element, $ps_idno_stub, $pn_value);
 	}
 	# -------------------------------------------------------
+	/**
+	 * Set database connection to use for queries
+	 *
+	 * @param Db $po_db A database connection instance
+	 * @return void
+	 */
 	public function setDb($po_db) {
 		$this->opo_db = $po_db;
 	}
 	# -------------------------------------------------------
 	/**
 	 * Returns true if editable is set to 1 for the identifier, otherwise returns false
-	 * Also, if the identifier consists of multiple elements, false will be returned
-	 * @param string $ps_format_name
+	 * Also, if the identifier consists of multiple elements, false will be returned.
+	 *
+	 * @param string $ps_format_name Name of format
 	 * @return bool
 	 */
 	public function isFormatEditable($ps_format_name) {

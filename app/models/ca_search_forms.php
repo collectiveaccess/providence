@@ -276,8 +276,8 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 
 		parent::__construct($pn_id);	# call superclass constructor
 
-		$this->opo_search_config = Configuration::load($this->_CONFIG->get("search_config"));
-		$this->opo_search_indexing_config = Configuration::load($this->opo_search_config->get("search_indexing_config"));
+		$this->opo_search_config = Configuration::load(__CA_CONF_DIR__.'/search.conf');
+		$this->opo_search_indexing_config = Configuration::load(__CA_CONF_DIR__.'/search_indexing.conf');
 
 		$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_search_forms_settings);
 	}
