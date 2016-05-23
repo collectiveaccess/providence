@@ -1704,6 +1704,7 @@ table.listtable thead tr th {
     background-repeat: no-repeat;
     background-position: center right;
     cursor: pointer;
+    background-color:#eee;
 }
 #caSetList.listtable thead tr th, 
 #caGroupList.listtable thead tr th, 
@@ -1750,7 +1751,7 @@ table.listtable tbody td {
     padding: 4px;
     background-color: #FFF;
     vertical-align: middle;
-    width:20px;
+    width:42px;
 }
 table.listtable tbody td.listtableEditDelete {
 	width:55px;
@@ -1761,6 +1762,7 @@ table.listtable tbody td.listtableEditDelete a {
 }
 table.listtable tbody td .fa {
 	padding-left:5px;
+	display:inline-block;
 }
 table#caCommentsList tbody td {
 	max-width:140px;
@@ -3933,7 +3935,8 @@ div.quickSearchHeader {
 }
 div.quickSearchFullResultsLink {
     float:right;
-    padding-top:2px;
+    padding-top: 0px;
+    margin-top: -3px;
 }
 div.quickSearchFullResultsLink a {
     font-size:12px;

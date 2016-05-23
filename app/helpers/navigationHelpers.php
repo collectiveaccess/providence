@@ -102,6 +102,7 @@
  	define('__CA_NAV_ICON_EXTRACT__', 60);
  	define('__CA_NAV_ICON_MEDIA_METADATA__', 61);
  	define('__CA_NAV_ICON_NUKE__', 62);
+ 	define('__CA_NAV_FULL_RESULTS__', 63);
  	
  	/**
  	 * Icon position constants
@@ -745,7 +746,7 @@
 				$vs_fa_class = 'fa-minus-circle';
 				break;
 			case __CA_NAV_ICON_EXPAND__:
-				$vs_fa_class = 'fa-expand';
+				$vs_fa_class = 'fa-plus-circle';
 				break;					
 			case __CA_NAV_ICON_COMMIT__:
 				$vs_fa_class = 'fa-check-circle-o';
@@ -754,13 +755,13 @@
 				$vs_fa_class = 'fa-cog';
 				break;
 			case __CA_NAV_ICON_FILTER__:
-				$vs_fa_class = 'fa-filter';
+				$vs_fa_class = 'fa-sliders';
 				break;	
 			case __CA_NAV_ICON_EXPORT__:
-				$vs_fa_class = 'fa-inbox';
+				$vs_fa_class = 'fa-download';
 				break;
 			case __CA_NAV_ICON_SETS__:
-				$vs_fa_class = 'fa-shopping-bag';
+				$vs_fa_class = 'fa-clone';
 				break;	
 			case __CA_NAV_ICON_RIGHT_ARROW__:
 				$vs_fa_class = 'fa-chevron-right';
@@ -842,7 +843,10 @@
 				break;
 			case __CA_NAV_ICON_NUKE__:
 				$vs_fa_class = 'fa-bomb';
-				break;										
+				break;
+			case __CA_NAV_FULL_RESULTS__:
+				$vs_fa_class = 'fa-bars';
+				break;																			
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
 				return null;
