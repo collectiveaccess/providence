@@ -2333,14 +2333,12 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Returns 
+	 * Returns date range for TimelineJS
 	 *
-	 * @param int $pn_start_timestamp Start of date range, as Unix timestamp
-	 * @param array $pa_options All options supported by TimeExpressionParser::getText() are supported
-	 *
-	 * @return string Localized date range expression
+	 * @param array $pa_historic_timestamps
+	 * @return array
 	 */
-	function caGetDateRangeForTimelineJS($pa_historic_timestamps, $pa_options=null) {
+	function caGetDateRangeForTimelineJS($pa_historic_timestamps) {
 		$o_tep = new TimeExpressionParser();
 		
 		$va_start = $o_tep->getHistoricDateParts($pa_historic_timestamps[0]);
@@ -2349,10 +2347,18 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 		//if ($va_start['year'] < 0) { $va_start['year'] = 1900; }
 		if ($va_end['year'] >= 2000000) { $va_end['year'] = date("Y"); }
 		
-		return array(
-			'start' => $va_start['year'].','.$va_start['month'].','.$va_start['day'],
-			'end' => $va_end['year'].','.$va_end['month'].','.$va_end['day'],
-		);
+		return [
+			'start_date' => [
+				'year' => $va_start['year'],
+				'month' => $va_start['month'],
+				'day' => $va_start['day']
+			],
+			'end_date' => [
+				'year' => $va_end['year'],
+				'month' => $va_end['month'],
+				'day' => $va_end['day']
+			],
+		];
 	}
     # ------------------------------------------------------------------------------------------------
     /**

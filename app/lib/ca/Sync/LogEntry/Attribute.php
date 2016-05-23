@@ -49,12 +49,21 @@ class Attribute extends Base {
 			throw new InvalidLogEntryException(_t("We have an attribute log entry without element code."));
 		}
 
-		if (isset($va_snapshot['row_guid']) && ($vs_row_guid = $va_snapshot['row_guid'])) {
-			if($this->isUpdate() && !($va_guid_info = \ca_guids::getInfoForGUID($vs_row_guid))) {
-				throw new InvalidLogEntryException(_t("Couldnt find record for guid %1.", $vs_row_guid));
+		if($this->isInsert()) {
+			if (!isset($va_snapshot['row_guid']) || !($va_snapshot['row_guid'])) {
+				throw new InvalidLogEntryException(_t("Couldn't find row_guid for insert attribute log entry."));
 			}
-		} else {
-			throw new InvalidLogEntryException(_t("Couldn't find row_guid for attribute log entry."));
+		}
+
+		if($this->isUpdate() || $this->isDelete()) {
+			if (!isset($va_snapshot['attribute_guid']) || !($va_snapshot['attribute_guid'])) {
+				throw new InvalidLogEntryException(_t("Couldn't find attribute_guid for update attribute log entry."));
+			}
+
+			$vs_attribute_guid = $va_snapshot['attribute_guid'];
+			if(!($va_guid_info = \ca_guids::getInfoForGUID($vs_attribute_guid))) {
+				throw new InvalidLogEntryException(_t("Couldnt find ca_attributes record for guid %1.", $vs_row_guid));
+			}
 		}
 	}
 

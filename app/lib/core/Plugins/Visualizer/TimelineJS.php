@@ -58,6 +58,7 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 	 *		width =
 	 *		height =
 	 *		request = current request; required for generation of editor links
+	 * @return string
 	 */
 	public function render($pa_viz_settings, $ps_format='HTML', $pa_options=null) {
 		if (!($vo_data = $this->getData())) { return null; }
@@ -78,7 +79,7 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 				}
 			}
 
-			if($this->opn_num_items_rendered >= 100) { break; }
+			if($this->opn_num_items_rendered >= 250) { break; }
 		}
 
 		$vs_buf = $this->getLocaleJSSrc($po_request)."
@@ -104,19 +105,26 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 	 *
 	 * @param array $pa_viz_settings Array of visualization settings taken from visualization.conf
 	 * @param array $pa_options Array of options to use when rendering output. Supported options are:
-	 *		NONE
+	 *		request - RequestHTTP object
+	 * @return string
 	 */
 	public function getDataForVisualization($pa_viz_settings, $pa_options=null) {
-		$va_data = array(		
-			"headline" => isset($pa_viz_settings['display']['headline']) ? $pa_viz_settings['display']['headline'] : '',
-			"type" => "default",
-			"text" => isset($pa_viz_settings['display']['introduction']) ? $pa_viz_settings['display']['introduction'] : '',
-			"asset" => array(
-				"media" => "",
-				"credit" => "",
-				"caption" => ""
-			)
-        );
+
+		// title slide
+		$va_data = [
+			'title' => [
+				'text' => [
+					'headline' => isset($pa_viz_settings['display']['headline']) ? $pa_viz_settings['display']['headline'] : '',
+					'text' => isset($pa_viz_settings['display']['introduction']) ? $pa_viz_settings['display']['introduction'] : '',
+				],
+				'media' => [
+					'url' => '',
+					'credit' => '',
+					'caption' => ''
+				]
+			],
+			'scale' => 'human'
+		];
         
         $po_request = caGetOption('request', $pa_options, null);
 		
@@ -125,7 +133,7 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 		$vs_pk = $qr_res->primaryKey();
 
 		$vn_c = 0;
-		
+
 		while($qr_res->nextHit()) {
 			foreach($pa_viz_settings['sources'] as $vs_source_name => $va_source) {
 				$vs_dates = $qr_res->get($va_source['data'], array('sortable' => true, 'returnAsArray'=> false, 'delimiter' => ';'));
@@ -137,29 +145,28 @@ class WLPlugVisualizerTimelineJS Extends BaseVisualizerPlugIn Implements IWLPlug
 		
 				$vn_row_id = $qr_res->get("{$vs_table_name}.{$vs_pk}");
 				$vs_title = $qr_res->getWithTemplate($va_source['display']['title_template']);
-	
-				$va_data['date'][] = array(
-					"startDate" => $va_timeline_dates['start'],
-					"endDate" => $va_timeline_dates['end'],
-					"headline" => $po_request ? caEditorLink($po_request, $vs_title, '', $vs_table_name, $vn_row_id) : $vs_title,
-					"text" => $qr_res->getWithTemplate($va_source['display']['description_template']),
-					"tag" => '',
-					"classname" => "",
-					"asset" => array(
-						"media" => $qr_res->getWithTemplate($va_source['display']['image'], array('returnURL' => true)),
-						"thumbnail" => $qr_res->getWithTemplate($va_source['display']['icon'], array('returnURL' => true)),
-						"credit" => $qr_res->getWithTemplate($va_source['display']['credit_template']),
-						"caption" => $qr_res->getWithTemplate($va_source['display']['caption_template'])
-					)
-				);
+
+				$va_data['events'][] = [
+					'text' => [
+						'headline' => $po_request ? caEditorLink($po_request, $vs_title, '', $vs_table_name, $vn_row_id) : $vs_title,
+						'text' => $qr_res->getWithTemplate($va_source['display']['description_template']),
+					],
+					'media' => [
+						'url' => $qr_res->getWithTemplate($va_source['display']['image'], array('returnURL' => true)),
+						'thumbnail' => $qr_res->getWithTemplate($va_source['display']['icon'], array('returnURL' => true)),
+						'credit' => $qr_res->getWithTemplate($va_source['display']['credit_template']),
+						'caption' => $qr_res->getWithTemplate($va_source['display']['caption_template'])
+					],
+					'start_date' => $va_timeline_dates['start_date'],
+					'end_date' => $va_timeline_dates['end_date'],
+				];
 			}
 
 			$vn_c++;
-			if ($vn_c >= 100) { break; }
+			if ($vn_c >= 250) { break; }
 		}
 
-
-		return json_encode(array('timeline' => $va_data));
+		return json_encode($va_data);
 	}
 	# ------------------------------------------------
 	/**
