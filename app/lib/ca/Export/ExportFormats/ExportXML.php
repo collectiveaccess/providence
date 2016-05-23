@@ -105,7 +105,7 @@ class ExportXML extends BaseExportFormat {
 			$po_parent->setAttribute($vs_rest, $vs_text);
 			$vo_new_element = $po_parent; // attributes shouldn't have children, but still ...
 		} else { // element
-			$vs_escaped_text = trim(caEscapeForXML($vs_text));
+			$vs_escaped_text = caEscapeForXML($vs_text);
 
 			if(strlen($vs_text)>0){
 
