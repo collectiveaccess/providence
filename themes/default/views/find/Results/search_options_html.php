@@ -137,6 +137,7 @@ if($vo_result->numHits() > 0) {
 	TooltipManager::add('#showOptions', _t("Display Options"));
 	TooltipManager::add('#showRefine', _t("Refine Results"));
 	TooltipManager::add('#showTools', _t("Export Tools"));
+	TooltipManager::add('#showResultsEditor', _t("Edit in Spreadsheet"));
 ?>
 <script type="text/javascript">
 	function caHandleResultsUIBoxes(mode, action) {

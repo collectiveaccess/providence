@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2003-2015 Whirl-i-Gig
+ * Copyright 2003-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,6 +41,7 @@ define("__CA_MEDIA_VIDEO_DEFAULT_ICON__", 'video');
 define("__CA_MEDIA_AUDIO_DEFAULT_ICON__", 'audio');
 define("__CA_MEDIA_DOCUMENT_DEFAULT_ICON__", 'document');
 define("__CA_MEDIA_3D_DEFAULT_ICON__", '3d');
+define("__CA_MEDIA_SPIN_DEFAULT_ICON__", '3d');
 
 class Media extends BaseObject {
 	# ----------------------------------------------------------
@@ -433,6 +434,43 @@ class Media extends BaseObject {
 		}
 		
 		return array_unique($va_extensions);
+	}
+	# ------------------------------------------------
+	/**
+	 * Return mimetype for given file extension. Only formats supported by an installed plugin for import or export are recognized.
+	 *
+	 * @return string Mimetype or null if extension is not recognized.
+	 */
+	public static function getMimetypeForExtension($ps_extension) {
+		$o_media = new Media();
+		$va_plugin_names = $o_media->getPluginNames();
+		
+		$va_formats = array();
+		foreach ($va_plugin_names as $vs_plugin_name) {
+			if (!$va_plugin_info = $o_media->getPlugin($vs_plugin_name)) { continue; }
+			$o_plugin = $va_plugin_info["INSTANCE"];
+			$va_formats = array_merge($va_formats, $o_plugin->getImportFormats(), $o_plugin->getExportFormats());
+		}
+		$va_formats = array_flip($va_formats);
+		return $va_formats[strtolower($ps_extension)];
+	}
+	# ------------------------------------------------
+	/**
+	 * Return file extension for given mimetype. Only formats supported by an installed plugin for import or export are recognized.
+	 *
+	 * @return string File extension or null if mimetype is not recognized.
+	 */
+	public static function getExtensionForMimetype($ps_mimetype) {
+		$o_media = new Media();
+		$va_plugin_names = $o_media->getPluginNames();
+		
+		$va_formats = array();
+		foreach ($va_plugin_names as $vs_plugin_name) {
+			if (!$va_plugin_info = $o_media->getPlugin($vs_plugin_name)) { continue; }
+			$o_plugin = $va_plugin_info["INSTANCE"];
+			$va_formats = array_merge($va_formats, $o_plugin->getImportFormats(), $o_plugin->getExportFormats());
+		}
+		return $va_formats[strtolower($ps_mimetype)];
 	}
 	# ------------------------------------------------
 	# --- 

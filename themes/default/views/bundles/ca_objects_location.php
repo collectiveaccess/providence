@@ -98,7 +98,7 @@
 			</div>
 		</div>
 		
-		<div class='button labelInfo caAddItemButton'><a href="#" id="<?php print $vs_id_prefix; ?>ChangeLocation"><?php print caNavIcon(__CA_NAV_ICON_ADD__, 1); ?> <?php print $vs_add_label; ?></a></div>
+		<div class='button labelInfo caAddItemButton'><a href="#" id="<?php print $vs_id_prefix; ?>ChangeLocation"><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print $vs_add_label; ?></a></div>
 		
 	</div>
 <?php

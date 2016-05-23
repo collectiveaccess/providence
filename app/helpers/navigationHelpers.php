@@ -100,7 +100,9 @@
  	define('__CA_NAV_ICON_SPREADSHEET__', 58);
  	define('__CA_NAV_ICON_VERTICAL_ARROWS__', 59);
  	define('__CA_NAV_ICON_EXTRACT__', 60);
- 	define('__CA_NAV_ICON_EXPORT_SMALL__', 61);
+ 	define('__CA_NAV_ICON_MEDIA_METADATA__', 61);
+ 	define('__CA_NAV_ICON_NUKE__', 62);
+ 	define('__CA_NAV_FULL_RESULTS__', 63);
  	
  	/**
  	 * Icon position constants
@@ -657,7 +659,7 @@
 				break;
 			case __CA_NAV_ICON_DELETE__:
 				$vs_fa_class = 'fa fa-times';
-				$vs_ca_class = 'caIconRed'; 
+				$vs_ca_class = 'deleteIcon'; 
 				break;
 			case __CA_NAV_ICON_CANCEL__:
 				$vs_fa_class = 'fa-minus-circle';
@@ -668,7 +670,7 @@
 				$vs_ca_class = 'editIcon'; 
 				break;
 			case __CA_NAV_ICON_BATCH_EDIT__:
-				$vs_fa_class = 'fa-tasks';
+				$vs_fa_class = 'fa-magic';
 				$vs_ca_class = 'batchIcon'; 
 				break;
 			case __CA_NAV_ICON_ALERT__:
@@ -679,12 +681,13 @@
 				break;
 			case __CA_NAV_ICON_INFO__:
 				$vs_fa_class = 'fa-info-circle';
+				$vs_ca_class = 'infoIcon';
 				break;
 			case __CA_NAV_ICON_DOWNLOAD__:
 				$vs_fa_class = 'fa-download';
 				break;
 			case __CA_NAV_ICON_MAKE_PRIMARY__:
-				$vs_fa_class = 'fa-upload';
+				$vs_fa_class = 'fa-check';
 				break;
 			case __CA_NAV_ICON_APPROVE__:
 				$vs_fa_class = 'fa-thumbs-o-up';
@@ -703,7 +706,7 @@
 				$vs_fa_class = 'fa-life-ring';
 				break;
 			case __CA_NAV_ICON_GO__:
-				$vs_fa_class = 'fa-check-circle-o';
+				$vs_fa_class = 'fa-chevron-circle-right';
 				$vs_ca_class = 'hierarchyIcon';
 				break;
 			case __CA_NAV_ICON_DEL_BUNDLE__:
@@ -743,7 +746,7 @@
 				$vs_fa_class = 'fa-minus-circle';
 				break;
 			case __CA_NAV_ICON_EXPAND__:
-				$vs_fa_class = 'fa-expand';
+				$vs_fa_class = 'fa-plus-circle';
 				break;					
 			case __CA_NAV_ICON_COMMIT__:
 				$vs_fa_class = 'fa-check-circle-o';
@@ -752,14 +755,11 @@
 				$vs_fa_class = 'fa-cog';
 				break;
 			case __CA_NAV_ICON_FILTER__:
-				$vs_fa_class = 'fa-filter';
+				$vs_fa_class = 'fa-sliders';
 				break;	
 			case __CA_NAV_ICON_EXPORT__:
-				$vs_fa_class = 'fa-inbox';
+				$vs_fa_class = 'fa-download';
 				break;
-			case __CA_NAV_ICON_EXPORT_SMALL__:
-				$vs_fa_class = 'fa-external-link-square';
-				break;				
 			case __CA_NAV_ICON_SETS__:
 				$vs_fa_class = 'fa-clone';
 				break;	
@@ -771,7 +771,7 @@
 				break;	
 			case __CA_NAV_ICON_ADD_WIDGET__:
 				$vs_fa_class = 'fa-plus-circle';
-				break;					
+				break;	
 			case __CA_NAV_ICON_DUPLICATE__:
 				$vs_fa_class = 'fa-files-o';
 				break;	
@@ -779,10 +779,10 @@
 				$vs_fa_class = 'fa-child';
 				break;	
 			case __CA_NAV_ICON_SCROLL_RT__:
-				$vs_fa_class = 'fa-chevron-circle-right';
+				$vs_fa_class = 'fa-chevron-right';
 				break;	
 			case __CA_NAV_ICON_SCROLL_LT__:
-				$vs_fa_class = 'fa-chevron-circle-left';
+				$vs_fa_class = 'fa-chevron-left';
 				break;	
 			case __CA_NAV_ICON_MOVE__:
 				$vs_fa_class = 'fa-truck';
@@ -831,13 +831,22 @@
 				break;	
 			case __CA_NAV_ICON_VERTICAL_ARROWS__:
 				$vs_fa_class = 'fa-arrows-v';
-				break;				
+				break;
+			case __CA_NAV_ICON_MEDIA_METADATA__:
+				$vs_fa_class = 'fa-file-audio-o';
+				break;					
 			case __CA_NAV_ICON_EXTRACT__:
 				$vs_fa_class = 'fa-scissors';
 				break;					
 			case __CA_NAV_ICON_ROTATE__:
 				$vs_fa_class = 'fa-undo';
-				break;						
+				break;
+			case __CA_NAV_ICON_NUKE__:
+				$vs_fa_class = 'fa-bomb';
+				break;
+			case __CA_NAV_FULL_RESULTS__:
+				$vs_fa_class = 'fa-bars';
+				break;																			
 			default:
 				print "INVALID CONSTANT $pn_type<br>\n";
 				return null;
@@ -1290,8 +1299,7 @@
 			'levelList' => caNavUrl($po_request, $vs_module, $vs_controller, 'GetHierarchyLevel', $pa_attributes),
 			'search' => caNavUrl($po_request, $vs_module, $vs_controller, 'Get', $pa_attributes),
 			'idno' => caNavUrl($po_request, $vs_module, $vs_controller, 'IDNo', $pa_attributes),
-			'intrinsic' => caNavUrl($po_request, $vs_module, $vs_controller, 'Intrinsic', $pa_attributes),
-			'attribute' => caNavUrl($po_request, $vs_module, $vs_controller, 'Attribute', $pa_attributes),
+			'intrinsic' => caNavUrl($po_request, $vs_module, $vs_controller, 'intrinsic', $pa_attributes)
 		);
 	}
 	# ------------------------------------------------------------------------------------------------

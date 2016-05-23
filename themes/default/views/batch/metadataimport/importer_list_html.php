@@ -51,8 +51,8 @@ if (!$this->request->isAjax()) {
 		<div id="progressbar"></div>
 	</div>
 	
-	<div id="importerUploadArea" style="border: 2px dashed #999999; text-align: center; padding: 20px; display: none;">
-		<span style="font-size: 20px; color: #aaaaaa; font-weight: bold;"><?php print _t("Drag importer worksheets here to add or update"); ?></span>
+	<div id="importerUploadArea" style="border: 1px dashed #ccc; text-align: center; padding: 10px; display: none;">
+		<span style="font-size: 16px; color: #333; "><?php print _t("Drag importer worksheets here to add or update"); ?></span>
 	</div>
 <?php
 }

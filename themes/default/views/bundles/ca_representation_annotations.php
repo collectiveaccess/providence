@@ -159,7 +159,7 @@ if (	// don't show bundle if this representation doesn't use bundles to edit ann
 	</textarea>
 	
 	<div class="bundleContainer">	
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, 1); ?> <?php print _t("Add annotation"); ?> &rsaquo;</a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t("Add annotation"); ?> &rsaquo;</a></div>
 		<div class="caItemList" style="width: 100%; overflow-y: auto; min-height: 300px;";>
 		
 		</div>

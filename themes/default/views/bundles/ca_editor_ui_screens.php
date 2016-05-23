@@ -81,7 +81,7 @@
 		<div class="caItemList">
 		
 		</div>
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, 1); ?> <?php print _t("Add screen"); ?> &rsaquo;</a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t("Add screen"); ?> &rsaquo;</a></div>
 	</div>
 </div>
 

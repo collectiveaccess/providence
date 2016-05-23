@@ -49,8 +49,8 @@ if(is_array($va_sort_bundle_names) && (sizeof($va_sort_bundle_names)>0)) {
 <div id="caTypeChangePanelControlButtons">
 	<table>
 		<tr>
-			<td align="right"><?php print caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t('Save'), 'caUserSortForm'); ?></td>
-			<td align="left"><?php print caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t('Cancel'), 'caChangeTypeFormCancelButton', array('onclick' => 'caTypeChangePanel.hidePanel(); return false;'), array()); ?></td>
+			<td align="right"><?php print caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t('Save'), 'caUserSortForm'); ?></td>
+			<td align="left"><?php print caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t('Cancel'), 'caChangeTypeFormCancelButton', array('onclick' => 'caTypeChangePanel.hidePanel(); return false;'), array()); ?></td>
 		</tr>
 	</table>
 </div>

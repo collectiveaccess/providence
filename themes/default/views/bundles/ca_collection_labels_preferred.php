@@ -69,7 +69,7 @@
 		<div class="caLabelList">
 		
 		</div>
-		<div class='button labelInfo caAddLabelButton '><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, 1); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add label"); ?></a></div>
+		<div class='button labelInfo caAddLabelButton '><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add label"); ?></a></div>
 	</div>
 			
 	
