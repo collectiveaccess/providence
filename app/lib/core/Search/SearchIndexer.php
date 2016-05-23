@@ -671,6 +671,7 @@ class SearchIndexer extends SearchBase {
 						continue;
 					}
 
+					$pn_content = null;
 					$va_field_list = $t_subject->getFieldsArray();
 					if(in_array($va_field_list[$vs_field]['FIELD_TYPE'],array(FT_DATERANGE,FT_HISTORIC_DATERANGE))) {
 						// if the field is a daterange type get content from start and end fields

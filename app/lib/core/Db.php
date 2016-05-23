@@ -217,7 +217,7 @@ class Db extends DbBase {
 		if(!$this->connected(true, "Db->prepare()")) { return false; }
 		$this->clearErrors();
 		
-		if (false){ 
+		if (false){
 			print "<hr>$ps_sql<br/><pre>";
 			$va_trace = debug_backtrace();
 			$vs_debug = '';

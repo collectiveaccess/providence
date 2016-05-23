@@ -1,0 +1,164 @@
+form select {
+	background-position: right 10px center;
+}
+
+.labelInfo {
+	background-color: transparent;
+	margin-left: 0;
+	padding: 0 28px 0 0;
+	border-bottom: none;
+	font-size: medium;
+
+	&:last-of-type {
+		border-bottom: 0;
+	}
+
+	&.button {
+		font-size: small;
+
+		img{
+			max-height: 1.2em;
+			vertical-align: middle;
+		}
+	}
+}
+
+a.form-button, 
+span.form-button, 
+del.form-button {
+	font-size: inherit;
+
+	img,
+	img.deleteIcon,
+	img.cancelIcon {
+		margin-top: 0;
+	}
+}
+
+a.form-button span, 
+span.form-button button, 
+span.form-button input, 
+del.form-button span {
+	font-weight: 600;
+	padding: 0.5em 1em;
+}
+
+a.form-button:hover span {
+	background: $grey;
+	color: $white;
+}
+
+.caDeleteItemButton,
+.caDeleteLabelButton {
+	position: absolute;
+	right: 4px;
+
+	.uiScreenItem & {
+		position: relative;
+		margin-left: 20px;
+	}
+}
+
+a.caNodecLabelButton {
+	text-decoration: none;
+
+	img {
+		width:14px;
+		margin-right:3px;
+	}
+}
+
+.formLabel {
+	font-weight: 600;
+	color: inherit;
+}
+
+.formLabelText {
+	@include wam-font-heading();
+	font-size: small;
+	color: $grey-dark;
+	padding: 0;
+}
+
+div.button {
+	padding-left: 0;
+
+	img {
+		vertical-align: initial;
+	}
+
+	a {
+		font-weight: 600;
+		color: inherit;
+		border: 1px solid $grey-light;
+		padding: 2px 6px;
+		margin-bottom: 3px;
+		border-radius: 1em;
+		display: inline-block;
+
+		&:hover {
+			color: inherit;
+			text-decoration: underline;
+		}
+	}
+}
+
+table.attributeListItem {
+	width: 100%;
+
+	td {
+		padding: 0;
+	}
+}
+
+.attributeListItem td {
+	padding: 3px;
+}
+
+.attributeListItem > .formLabel > div {
+	width: 100% !important;
+}
+
+
+.caListItem {
+	width: 100%;
+
+	td {
+		padding: 0;
+	}
+}
+
+#P284OccurrenceEditorFormItem_new_0 {
+	overflow: auto;
+}
+
+.formSettings {
+	border: 1px solid $white-dark;
+}
+
+#idno_year,
+#idno_job_number,
+#idno_assignment_number,
+#idno_analysis_number{
+	font-size: 1em;
+	width: 40px !important;
+}
+
+#idno_prefix {
+	font-size: xx-large;
+	width: 60px !important;
+}
+
+#idno_object_number {
+	font-size: xx-large;
+	width: 180px !important;
+	margin-left: 6px;
+	margin-right: 3px;
+}
+
+#idno_serial_number,
+#idno_suffix {
+	font-size: xx-large;
+	width: 80px !important;
+	margin-left: 3px;
+}

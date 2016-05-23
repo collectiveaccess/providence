@@ -1,0 +1,43 @@
+#mainContent {
+	background-color: transparent;
+	padding: 1em 0;
+	border-right: 0;
+	min-height: unset;
+	position: relative;
+	float: left;
+
+	@include breakpoint(goldilocks) {
+		margin: 0 3%;
+		width: 100%;
+	}
+	@include breakpoint(baby-bear) {
+		margin: 0 3%;
+		width: 100%;
+	}
+	@include breakpoint(mama-bear) {
+		margin: 0 3%;
+		width: 64%;
+	}
+	@include breakpoint(papa-bear) {
+		margin: 0 5%;
+		width: 65%
+	}
+	@include breakpoint(supa-bear) {
+		margin: 0 10%;
+		width: 55%
+	}
+}
+
+.quickSearchContentArea,
+#browse,
+#summary,
+.sectionBox {
+	background-color: white;
+	border-radius: 3px;
+	box-shadow: 0 0 2px 2px rgba($grey, 0.1);
+	padding: 1em;
+}
+
+div.editorBottomPadding {
+	padding-bottom: 5em;
+}

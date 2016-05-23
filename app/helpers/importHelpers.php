@@ -368,7 +368,7 @@
 			$vs_idno = BaseRefinery::parsePlaceholder($pa_related_options['idno'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 			$vs_type = BaseRefinery::parsePlaceholder($pa_related_options['type'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
 			$vn_parent_id = BaseRefinery::parsePlaceholder($pa_related_options['parent_id'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));
-		
+
 			if (!$vs_name) { $vs_name = $vs_idno; }
 
 		
@@ -415,13 +415,18 @@
 			
 			if ($ps_related_table != 'ca_object_lots') {
 				$va_attributes['idno'] = $vs_idno;
-				$va_attributes['parent_id'] = $vn_parent_id;
+				if($vn_parent_id){
+					$va_attributes['parent_id'] = $vn_parent_id;
+				}
 			} else {
 				$vs_idno_stub = BaseRefinery::parsePlaceholder($pa_related_options['idno_stub'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));	
-			}	
-			
-			$pa_options = array_merge(array('matchOn' => array('idno', 'label'), $pa_options));
-			
+			}
+			$pa_options = array_merge(
+				array(
+					'matchOn' => caGetOption('matchOn', $pa_related_options, array('idno', 'label'), array('castTo' => 'array')),
+					'matchOnDisplayName' => caGetOption('matchOnDisplayName', $pa_related_options, false, array('castTo' => 'int')),
+				), $pa_options);
+
 			switch($ps_related_table) {
 				case 'ca_objects':
 					$vn_id = DataMigrationUtils::getObjectID($vs_name, $vn_parent_id, $vs_type, $g_ui_locale_id, $va_attributes, $pa_options);

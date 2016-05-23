@@ -534,7 +534,7 @@ class ca_data_exporter_items extends BaseModel {
 			'label' => _t('ID'),
 			'description' => _t('ID of item as set in mapping.')
 		);
-		
+
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 	}
 	# ------------------------------------------------------

@@ -35,8 +35,27 @@
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		
 		<link href="<?php print $this->request->getThemeUrlPath(); ?>/css/login.css" rel="stylesheet" type="text/css" />
+
 <?php
 	print AssetLoadManager::getLoadHTML($this->request);
+?>
+<?php
+	//print JavascriptLoadManager::getLoadHTML($this->request->getBaseUrlPath());
+	print MetaTagManager::getHTML();
+	
+	if (file_exists($this->request->getThemeDirectoryPath().'/css/wam-login.css')) {
+		print '<link rel="stylesheet" href="'.$this->request->getThemeUrlPath().'/css/wam-login.css" type="text/css" media="screen" />
+';
+	}
+	
+	//
+	// Pull in JS and CSS for debug bar
+	// 
+	if(Debug::isEnabled()) {
+		$o_debugbar_renderer = Debug::$bar->getJavascriptRenderer();
+		$o_debugbar_renderer->setBaseUrl(__CA_URL_ROOT__.$o_debugbar_renderer->getBaseUrl());
+		print $o_debugbar_renderer->renderHead();
+	}
 ?>
 
 		<script type="text/javascript">
@@ -70,6 +89,7 @@
 							<input type="password" name="password" size="25"/>
 						</div>
 						<input name="redirect" type="hidden" value="<?php echo $this->getVar('redirect'); ?>" />
+
 						<div class="loginSubmitButton"><?php print caFormSubmitButton($this->request, __CA_NAV_BUTTON_LOGIN__, _t("Login"),"login", array('icon_position' => __CA_NAV_BUTTON_ICON_POS_RIGHT__)); ?></div>
 						<script type="text/javascript">
 							jQuery(document).ready(function() {

@@ -38,13 +38,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 	<head>
 		<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
-	    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 		<meta http-equiv="Content-Style-Type" content="text/css" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
 
 		<title><?php print $this->appconfig->get("window_title").($vs_window_title ? " : {$vs_window_title}" : ''); ?></title>
 		<link rel="stylesheet" href="<?php print $this->request->getThemeUrlPath(); ?>/css/base.css" type="text/css" media="screen" />
 		<link rel="stylesheet" href="<?php print $this->request->getThemeUrlPath(); ?>/css/sets.css" type="text/css" media="screen" />
+		<!--[if IE]>
+		<link href="<?php print $this->request->getThemeUrlPath(); ?>/css/ie.css" media="screen" rel="stylesheet" type="text/css" />
+		<![endif]-->
 
 		<script type="text/javascript">window.caBasePath = '<?php print $this->request->getBaseUrlPath(); ?>';</script>
 		<!--[if (!IE)|(gte IE 8)]><!-->
@@ -107,5 +110,6 @@
 			<![endif]-->
 		<!-- super fish end menus -->
 	</head>	
-	<body>
-		<div align="center">
+	<body <?php if(!in_array($this->request->getController(), array('Dashboard', 'Auth'))) :?>class="withSidebar"<?php endif?>>
+		<div id="leftNavBackground"></div>
+		<div class="centered">

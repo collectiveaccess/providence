@@ -1,0 +1,15 @@
+# EditorConfig is awesome: http://EditorConfig.org
+
+# top-most EditorConfig file
+root = true
+
+# Unix-style newlines with a newline ending every file
+[*]
+indent_style = tab
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+
+[install/profiles/xml/*.xml]
+indent_style = space
+indent_size = 4

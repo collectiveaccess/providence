@@ -1,0 +1,23 @@
+.hierarchyBrowserContainer,
+div.hierarchyBrowseTab,
+.caRelatedItem>div:nth-child(2) {
+	width: 100% !important;
+}
+
+.hierarchyBrowserLevel li {
+	line-height: 1.2;
+	margin-bottom: 5px;
+	padding-bottom: 5px;
+}
+
+a.hierarchyBrowserLevel {
+	font-size: small;
+}
+
+a.hierarchyBrowserLevelSelected {
+	font-weight: 600;
+}
+
+.hierarchyBrowserSearchBar {
+	margin: 0;
+}

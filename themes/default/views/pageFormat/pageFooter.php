@@ -54,13 +54,6 @@
 			</div></div><!-- end footer -->
 		</div><!-- end footerContainer -->
 		</div><!-- end center -->
-		
-		<script type="text/javascript">
-			// force content to fill window height
-			jQuery(document).ready(function() {
-				jQuery('#mainContent').css('min-height', (window.innerHeight - 40) + 'px');
-			});
-		</script>
 <?php
 	print TooltipManager::getLoadHTML();
 	print FooterManager::getLoadHTML();

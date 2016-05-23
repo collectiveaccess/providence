@@ -1,7 +1,9 @@
 CollectiveAccess README
 -----------------------
 
-[![Build Status](https://secure.travis-ci.org/collectiveaccess/providence.png?branch=master)](http://travis-ci.org/collectiveaccess/providence)
+CollectiveAccess: [![Build Status](https://secure.travis-ci.org/collectiveaccess/providence.png?branch=develop)](http://travis-ci.org/collectiveaccess/providence)
+
+WA Museum fork: [![Build Status](https://secure.travis-ci.org/wamuseum/providence.png?branch=develop)](http://travis-ci.org/wamuseum/providence)
 
 Thank you for downloading Providence version 1.6.1!
 

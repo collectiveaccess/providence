@@ -46,7 +46,16 @@ $_ca_editor_search_form_placement_settings = array(		// global
 		'default' => '',
 		'label' => _t('Label'),
 		'description' => _t('Text label to be used for displayed information.')
-	)
+	),
+	'css_classes' => array(
+	'formatType' => FT_TEXT,
+	'displayType' => DT_FIELD,
+	'width' => 30, 'height' => 1,
+	'takesLocale' => false,
+	'default' => '',
+	'label' => _t('CSS Classes'),
+	'description' => _t('CSS classes to apply to form elements.')
+),
 );
 
 

@@ -1,0 +1,79 @@
+.bundleLabel .formLabelText {
+	width: 80%;
+	white-space: nowrap;
+	overflow: visible;
+}
+
+.bundleLabel>span {
+	display: inline-block;
+	clear: none;
+}
+
+.required {
+	color: #bb0000;
+	font-size: x-small;
+	font-weight: normal;
+	float: left;
+}
+
+#intrinsic_idno input[type="text"],
+#intrinsic_idno select,
+#intrinsic_idno .formLabel
+ {
+	font-size: large;
+	max-width: 75%;
+}
+
+.cke_reset.cke_maximized {
+	z-index: 30001 !important;
+}
+
+div.notification-info-box,
+div.notification-error-box,
+div.notification-warning-box {
+	width: 100%;
+}
+
+#tooltip h3, #tooltip div {
+	margin: 0;
+}
+
+#tooltip.tooltipFormat {
+	border: none;
+	width: 210px;
+	padding:15px;
+	-moz-border-radius: 10px;
+	-webkit-border-top: 10px;
+	border-radius: 10px;
+	-moz-box-shadow: 2px 2px 5px #adadad;
+	-webkit-box-shadow: 2px 2px 5px #adadad;
+	box-shadow: 2px 2px 5px #adadad;
+	background-color:#FFFFFF;
+	color:#000000;
+	font-size:small;
+	border:1px solid #adadad;
+}
+
+#tooltip.tooltipFormat h3 {
+	margin-bottom: 0.25em;
+	font-size: small;
+	width: 220px;
+	text-align: center;
+}
+
+#tooltip.tooltipFormat div {
+	margin: 0px;
+}
+
+#tooltip.resizeableTooltip {
+	border: none;
+	padding:3px;
+	opacity: 1.0;
+}
+
+#tooltip.resizeableTooltip h3 {
+	margin-bottom: 0.25em;
+	font-size: small;
+	text-align: center;
+	opacity: 1.0;
+}

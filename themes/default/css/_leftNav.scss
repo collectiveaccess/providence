@@ -1,0 +1,183 @@
+#leftNav {
+	background: $grey-dark;
+	padding: 0;
+	position: relative;
+	z-index: 2;
+	float: left;
+	height: auto;
+
+	@include breakpoint(goldilocks) {
+		width: 100%;
+	}
+	@include breakpoint(baby-bear) {
+		width: 100%;
+	}
+	@include breakpoint(mama-bear) {
+		width: 30%;
+	}
+	@include breakpoint(papa-bear) {
+		width: 25%;
+	}
+	@include breakpoint(supa-bear) {
+		width: 25%;
+	}
+
+	#leftNavSidebar {
+		width: 100%;
+		height: auto;
+		color: white;
+		border-top-color: transparent;
+		a {
+			color: white;
+		}
+	}
+
+	#widgets .searchType, 
+	#widgets .setStats, 
+	#widgets .groupList, 
+	#widgets .watchedItems, 
+	#widgets .yourDisplays, 
+	#widgets .searchForms, 
+	#widgets .comments, 
+	#widgets .tags, 
+	h3.export, 
+	h3.metalist, 
+	h3.relTypes, 
+	h3.importers, 
+	h3.savedSearches, 
+	h3.searchTours, 
+	h3.storage, 
+	h3.places, 
+	h3.occurrences, 
+	h3.objrep, 
+	h3.lots, 
+	h3.movements, 
+	h3.loans, 
+	h3.entities, 
+	h3.collections,
+	.creatingNew {
+		clear: both;
+		margin: 0 0 0.3em;
+		padding-top: 1em;
+
+		@include wam-font-heading();
+		font-size: 1.2em;
+		@include breakpoint(baby-bear) {
+			font-size: 1.3em;
+		}
+		@include breakpoint(mama-bear) {
+			font-size: 1.7em;
+		}
+		@include breakpoint(supa-bear) {
+			font-size: 2em;
+		}
+	}
+
+	.setStats div, 
+	.groupList div, 
+	.yourDisplays div, 
+	.searchForms div, 
+	.comments div, 
+	.tags div, 
+	.export div, 
+	h3.metalist div, 
+	h3.relTypes div, 
+	.importers div, 
+	.savedSearches div, 
+	.searchTours div {
+		font-size: 70%;
+	}
+
+	h2 {
+		background-color: transparent;
+		color: inherit;
+		font-size: inherit;
+		border-bottom: dotted 1px $grey;
+		width: 100%;
+		font-weight: normal;
+		text-transform: uppercase;
+
+		a {
+			border-right: none;
+		}
+
+		a.sf-menu-selected {
+			height: auto;
+			background: $black;
+		}
+	}
+
+	ul.arrow {
+		border-top: 0;
+		border-bottom: dotted 1px $grey;
+		font-size: inherit;
+
+		li {
+
+
+			a {
+				background: transparent url('../graphics/icons/arrow_gray.gif') no-repeat 20px 50%;
+				
+
+				&:hover {
+					background-color: $grey-dark;
+				}
+			}
+		}
+	}
+
+	.sf-menu-selected, 
+	.sf-menu li li a.sf-menu-selected, 
+	.sf-menu li li li a.sf-menu-selected {
+		background: $black;
+	}
+
+	h3 {
+		font-size: inherit;
+	}
+
+	h4 {
+		font-size: inherit;
+		color: inherit;
+	}
+}
+
+#leftNav #inspectorInfo {
+	width: 100%;
+	background-color: $white;
+	border-top: 1px solid $white-dark;
+}
+
+.inspectorChangeDateList {
+	font-size: 0.9em;
+}
+
+// See pageHeader.php
+.withSidebar #leftNavBackground {
+	background-color: #282828;
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 1;
+	border-left: 2px solid #DDD;
+	border-right: 2px solid #DDD;
+
+	@include breakpoint(goldilocks) {
+		display: none;
+	}
+	@include breakpoint(baby-bear) {
+		display: none;
+	}
+	@include breakpoint(mama-bear) {
+		width: 30%;
+		height: 100%;
+	}
+	@include breakpoint(papa-bear) {
+		width: 25%;
+		height: 100%;
+	}
+	@include breakpoint(supa-bear) {
+		width: 25%;
+		height: 100%;
+	}
+}

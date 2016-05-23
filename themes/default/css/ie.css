@@ -1,0 +1,6 @@
+/** Overrides for internet exploder **/
+
+form select {
+	background-image: none;
+	padding-right: 3px !important;
+}

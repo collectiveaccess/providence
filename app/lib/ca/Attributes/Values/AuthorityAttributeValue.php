@@ -30,10 +30,6 @@
  * ----------------------------------------------------------------------
  */
 
-/**
- *
- */
-
 require_once(__CA_LIB_DIR__.'/core/BaseObject.php');
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/AttributeValue.php');
 require_once(__CA_APP_DIR__.'/helpers/htmlFormHelpers.php');
@@ -153,6 +149,7 @@ abstract class AuthorityAttributeValue extends AttributeValue {
 					}
 					break;
 			}
+			return null;
 		}
 
 		if (!$vb_require_value && !$vn_id) {

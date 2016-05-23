@@ -1068,21 +1068,21 @@ class MultipartIDNumber extends IDNumber {
 		$vn_i = 0;
 		$vn_num_serial_elements_seen = 0;
 		foreach ($va_elements as $va_element_info) {
-			//if ($vn_i >= sizeof($va_values)) { break; }
+			if ($vn_i >= sizeof($va_values)) { break; }
 
 			switch($va_element_info['type']) {
 				case 'SERIAL':
-					$vn_num_serial_elements_seen++;
+				$vn_num_serial_elements_seen++;
 
-					if ($pn_max_num_replacements <= 0) {	// replace all
+				if ($pn_max_num_replacements <= 0) {	// replace all
+					if ($pb_no_placeholders) { unset($va_values[$vn_i]); $vn_i++; continue; }
+					$va_values[$vn_i] = '%';
+				} else {
+					if (($vn_num_serial_elements - $vn_num_serial_elements_seen) < $pn_max_num_replacements) {
 						if ($pb_no_placeholders) { unset($va_values[$vn_i]); $vn_i++; continue; }
 						$va_values[$vn_i] = '%';
-					} else {
-						if (($vn_num_serial_elements - $vn_num_serial_elements_seen) < $pn_max_num_replacements) {
-							if ($pb_no_placeholders) { unset($va_values[$vn_i]); $vn_i++; continue; }
-							$va_values[$vn_i] = '%';
-						}
 					}
+				}
 					break;
 				case 'CONSTANT':
 					$va_values[$vn_i] = $va_element_info['value'];
@@ -1302,7 +1302,7 @@ class MultipartIDNumber extends IDNumber {
 				} else {
 					if ($vs_element_value == '') {
 						$vs_next_num = $this->getNextValue($ps_element_name, null, true);
-						$vs_element .= '&lt;'._t('Will be assigned %1 when saved', $vs_next_num).'&gt;';
+						$vs_element .= '&laquo;'.$vs_next_num.'&raquo;';
 					} else {
 						if ($va_element_info['editable']) {
 							$vs_element .= '<input type="text" name="'.$vs_element_form_name.'" id="'.$ps_id_prefix.$vs_element_form_name.'" value="'.htmlspecialchars($vs_element_value, ENT_QUOTES, 'UTF-8').'" size="'.$vn_width.'" maxlength="'.$vn_width.'"'.($pa_options['readonly'] ? ' disabled="1" ' : '').'/>';

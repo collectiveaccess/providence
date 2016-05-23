@@ -68,7 +68,7 @@
 		'fieldWidth' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_FIELD,
-			'default' => 40,
+			'default' => '',
 			'width' => 5, 'height' => 1,
 			'label' => _t('Width of data entry field in user interface'),
 			'description' => _t('Width, in characters, of the field when displayed in a user interface.')
@@ -76,7 +76,7 @@
 		'fieldHeight' => array(
 			'formatType' => FT_NUMBER,
 			'displayType' => DT_FIELD,
-			'default' => 1,
+			'default' => '',
 			'width' => 5, 'height' => 1,
 			'label' => _t('Height of data entry field in user interface'),
 			'description' => _t('Height, in characters, of the field when displayed in a user interface.')
@@ -280,11 +280,11 @@
  			$vs_height = trim((isset($pa_options['height']) && $pa_options['height'] > 0) ? $pa_options['height'] : $va_settings['fieldHeight']);
  			$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '');
 			$vs_element = '';
- 			
- 			if (!preg_match("!^[\d\.]+px$!i", $vs_width)) {
+
+ 			if (!preg_match("!^[\d\.]+px$!i", $vs_width) && $vs_width) {
  				$vs_width = ((int)$vs_width * 6)."px";
  			}
- 			if (!preg_match("!^[\d\.]+px$!i", $vs_height)) {
+ 			if (!preg_match("!^[\d\.]+px$!i", $vs_height) && $vs_height) {
  				$vs_height = ((int)$vs_height * 16)."px";
  			}
  			
