@@ -81,14 +81,31 @@ class rwahsNavigationPlugin extends BaseApplicationPlugin {
         );
     }
 
+    private function _getObjectTypeListID() {
+        $t_object = new ca_objects();
+        return ca_lists::find(
+            array(
+                'list_code' => $t_object->getTypeListCode()
+            ),
+            array(
+                'returnAs' => 'firstId'
+            )
+        );
+    }
+
     private function _getCustomNewMenuItems() {
         $va_custom_items = array();
         $va_shortcuts = $this->opo_config->get('new_menu_shortcuts');
         if (is_array($va_shortcuts)) {
             foreach ($va_shortcuts as $vs_key => $vs_type_code) {
                 $vo_type = ca_list_items::find(
-                    array( 'idno' => $vs_type_code ),
-                    array( 'returnAs' => 'firstModelInstance' )
+                    array(
+                        'idno' => $vs_type_code,
+                        'list_id' => $this->_getObjectTypeListID()
+                    ),
+                    array(
+                        'returnAs' => 'firstModelInstance'
+                    )
                 );
                 if (!$vo_type) {
                     // Don't add a menu item if the type code does not resolve correctly.
@@ -125,16 +142,29 @@ class rwahsNavigationPlugin extends BaseApplicationPlugin {
                     continue;
                 }
                 $vo_type = ca_list_items::find(
-                    array( 'idno' => $va_shortcut['type_code'] ),
-                    array( 'returnAs' => 'firstModelInstance' )
+                    array(
+                        'idno' => $va_shortcut['type_code'],
+                        'list_id' => $this->_getObjectTypeListID()
+                    ),
+                    array(
+                        'returnAs' => 'firstModelInstance'
+                    )
                 );
                 $vn_form_id = ca_search_forms::find(
-                    array( 'form_code' => $va_shortcut['form_code'] ),
-                    array( 'returnAs' => 'firstId' )
+                    array(
+                        'form_code' => $va_shortcut['form_code']
+                    ),
+                    array(
+                        'returnAs' => 'firstId'
+                    )
                 );
                 $vn_bundle_display_id = ca_bundle_displays::find(
-                    array( 'display_code' => $va_shortcut['display_code'] ),
-                    array( 'returnAs' => 'firstId' )
+                    array(
+                        'display_code' => $va_shortcut['display_code']
+                    ),
+                    array(
+                        'returnAs' => 'firstId'
+                    )
                 );
                 if (!$vo_type || !$vn_form_id || !$vn_bundle_display_id) {
                     // Don't add a menu item if the type, form and display codes did not all resolve correctly.
