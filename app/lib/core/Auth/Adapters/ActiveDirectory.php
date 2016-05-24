@@ -33,6 +33,7 @@
 require_once(__CA_LIB_DIR__.'/core/Auth/AbstractLDAPAuthAdapter.php');
 
 class ActiveDirectoryAuthAdapter extends AbstractLDAPAuthAdapter {
+	# --------------------------------------------------------------------------------
 	protected function getLDAPOptions() {
 		return array(
 			LDAP_OPT_PROTOCOL_VERSION => 3,
@@ -92,4 +93,5 @@ class ActiveDirectoryAuthAdapter extends AbstractLDAPAuthAdapter {
 		}
 		return $va_return;
 	}
+	# --------------------------------------------------------------------------------
 }
