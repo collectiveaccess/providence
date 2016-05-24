@@ -50,7 +50,11 @@
 			$this->_generateSortableValue();	// populate sort field
 			// invalidate get() prefetch cache
 			SearchResult::clearResultCacheForTable($this->tableName());
-			return parent::insert($pa_options);
+			if($vn_rc = parent::insert($pa_options)) {
+				$this->setGUID($pa_options);
+			}
+
+			return $vn_rc;
 		}
 		# -------------------------------------------------------
 		public function update($pa_options=null) {
