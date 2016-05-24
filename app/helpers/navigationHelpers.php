@@ -103,6 +103,7 @@
  	define('__CA_NAV_ICON_MEDIA_METADATA__', 61);
  	define('__CA_NAV_ICON_NUKE__', 62);
  	define('__CA_NAV_FULL_RESULTS__', 63);
+ 	define('__CA_NAV_ICON_EXPORT_SMALL__', 64);
  	
  	/**
  	 * Icon position constants
@@ -762,6 +763,9 @@
 			case __CA_NAV_ICON_EXPORT__:
 				$vs_fa_class = 'fa-download';
 				break;
+			case __CA_NAV_ICON_EXPORT_SMALL__:
+				$vs_fa_class = 'fa-external-link-square';
+				break;	
 			case __CA_NAV_ICON_SETS__:
 				$vs_fa_class = 'fa-clone';
 				break;	
