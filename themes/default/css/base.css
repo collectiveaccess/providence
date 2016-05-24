@@ -6903,3 +6903,6 @@ div.authorityReferenceListContainer {
 	border-radius: 10px;
 	border: 1px solid #cccccc;
 }
+input.idno_accession_series {
+	width: 3em;
+}
