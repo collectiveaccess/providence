@@ -101,7 +101,7 @@
 						};
 					$('#idno_accession_series_and_parts').each(function () {
 						var $dot = $('<span class="idno_dot">.</span>').hide(),
-							$series = $('<input type="number" class="idno_accession_series" size="3" title="Enter series number" step="1" min="1"/>'),
+							$series = $('<input type="number" class="idno_accession_series" title="Enter series number" step="1" min="1"/>'),
 							$suffix = $('<input type="text" class="idno_accession_suffix" size="10"/>'),
 							$hidden = $(this).hide().before($dot).before($series).before($suffix),
 							seriesAndParts = parse($hidden.val()),
@@ -125,7 +125,10 @@
 							$suffix.val(seriesAndParts[1]);
 						}
 						$series.on(events,serialize);
-						$suffix.on(events,serialize);
+						$suffix.on(events, function(){
+							$suffix.val($suffix.val().toLowerCase());
+							serialize();
+						});
 					});
 				});
 			}
