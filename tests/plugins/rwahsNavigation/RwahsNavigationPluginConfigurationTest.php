@@ -82,7 +82,7 @@ class RwahsNavigationConfigurationPluginTest extends PHPUnit_Framework_TestCase 
 	public function testCorrectMissingNewMenuShortcutPropertiesGenerateErrors() {
 		$vo_plugin = new rwahsNavigationPlugin(__DIR__ . '/conf/invalid-new-menu-properties');
 		$va_plugin_status = $vo_plugin->checkStatus();
-		$this->assertEquals(2, sizeof($va_plugin_status['errors']), 'There is one error in the configuration file');
+		$this->assertEquals(2, sizeof($va_plugin_status['errors']), 'There are two errors in the configuration file');
 		$this->assertNotFalse(
 			array_search(
 					_t('Custom new menu shortcut with key "%1" is not a type code (string value)', 'type2'),
