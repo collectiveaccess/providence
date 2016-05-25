@@ -86,10 +86,13 @@
 	<script type="text/javascript">
 		jQuery(function () {
 			var parse = function (val) {
-					if (val && typeof val === 'string') {
-						var parts = val.match(/^\s*\.?\s?(\d*)\s*(.*)\s*$/);
-						parts.shift();
-						return parts;
+					if (typeof val === 'string') {
+						val = val.trim();
+						if (val){
+							var parts = val.match(/^\.?\s?(\d*)\s*(.*)$/);
+							parts.shift();
+							return parts;
+						}
 					}
 				return undefined;
 				};
@@ -101,10 +104,11 @@
 					seriesAndParts = parse($this.val()),
 					events = 'keypress change',
 					serialize = function () {
-						var ret = '';
-						if ($series.val()) {
+						var ret = '',
+							series = $series.val().trim();
+						if (series) {
 							$dot.show();
-							ret += '.' + $series.val().trim();
+							ret += '.' + series;
 						} else {
 							$dot.hide();
 						}
