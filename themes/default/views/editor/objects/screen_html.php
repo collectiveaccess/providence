@@ -119,10 +119,7 @@
 					$suffix.val(seriesAndParts[1]);
 				}
 				$series.on(events, serialize);
-				$suffix.on(events, function () {
-					$suffix.val($suffix.val().toLowerCase());
-					serialize();
-				});
+				$suffix.on(events, serialize);
 			});
 		});
 
