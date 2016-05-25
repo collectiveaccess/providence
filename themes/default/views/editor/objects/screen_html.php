@@ -85,20 +85,20 @@
 	<?php print caSetupEditorScreenOverlays($this->request, $t_object, $va_bundle_list); ?>
 	<script type="text/javascript">
 		jQuery(function () {
-			var reg = /^\s*\.?\s?(\d*)\s*(.*)\s*$/,
-				parse = function (val) {
+			var parse = function (val) {
 					if (val && typeof val === 'string') {
-						var parts = val.match(reg);
+						var parts = val.match(/^\s*\.?\s?(\d*)\s*(.*)\s*$/);
 						parts.shift();
 						return parts;
 					}
+				return undefined;
 				};
 			jQuery('#idno_accession_series_and_parts').each(function () {
 				var $dot = jQuery('<span class="idno_dot">.</span>').hide(),
 					$series = jQuery('<input type="number" class="idno_accession_series" title="Enter series number" step="1" min="1"/>'),
 					$suffix = jQuery('<input type="text" class="idno_accession_suffix" size="10"/>'),
-					$hidden = jQuery(this).hide().before($dot).before($series).before($suffix),
-					seriesAndParts = parse($hidden.val()),
+					$this = jQuery(this).hide().before($dot).before($series).before($suffix),
+					seriesAndParts = parse($this.val()),
 					events = 'keypress change',
 					serialize = function () {
 						var ret = '';
@@ -109,7 +109,7 @@
 							$dot.hide();
 						}
 						ret += $suffix.val().trim();
-						$hidden.val(ret);
+						$this.val(ret);
 					};
 				if (seriesAndParts) {
 					if (seriesAndParts[0] >= 1) {
