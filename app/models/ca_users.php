@@ -1342,7 +1342,7 @@ class ca_users extends BaseModel {
 		}
 		if (!$vb_got_group) {
 			if (!$t_group->load(array("name" => $ps_group))) {
-				if (!$t_group->load(array("name_short" => $ps_group))) {
+				if (!$t_group->load(array("code" => $ps_group))) {
 					return false;
 				}
 			}
