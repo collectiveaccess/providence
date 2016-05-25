@@ -373,9 +373,9 @@ class ca_change_log extends BaseModel {
 									$va_snapshot[$vs_fld . '_guid'] = $vs_left_guid;
 
 									// don't sync relationships involving deleted records
-									if(ca_guids::isDeleted($vs_left_guid) && ($va_row['changetype'] != 'D')) {
-										continue 3;
-									}
+									//if(ca_guids::isDeleted($vs_left_guid) && ($va_row['changetype'] != 'D')) {
+									//	continue 3;
+									//}
 								}
 
 								if($vs_fld == $t_instance->getProperty('RELATIONSHIP_RIGHT_FIELDNAME')) {
@@ -383,9 +383,9 @@ class ca_change_log extends BaseModel {
 									$va_snapshot[$vs_fld . '_guid'] = $vs_right_guid;
 
 									// don't sync relationships involving deleted records
-									if(ca_guids::isDeleted($vs_right_guid) && ($va_row['changetype'] != 'D')) {
-										continue 3;
-									}
+									//if(ca_guids::isDeleted($vs_right_guid) && ($va_row['changetype'] != 'D')) {
+									//	continue 3;
+									//}
 								}
 							}
 
