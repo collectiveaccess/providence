@@ -55,8 +55,9 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
 
 			foreach($va_directories as $vs_dir_key => $va_dir) {
 				$o_ldap = ldap_connect($va_dir["ldap_host"], $va_dir["ldap_port"]);
-				if($o_ldap) {
-					throw new LDAPException(_t("Could not connect to LDAP server '%1'.", $vs_dir_key));
+				if(!$o_ldap) {
+					continue; // try next server
+					//throw new LDAPException(_t("Could not connect to LDAP server '%1'.", $vs_dir_key));
 				}
 
 				foreach ($this->getLDAPOptions() as $key => $value) {
@@ -112,7 +113,6 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
     }
     # --------------------------------------------------------------------------------
     public function getUserInfo($ps_username, $ps_password) {
-
 		foreach($this->getLinkIdentifiers() as $vs_key => $r_ldap) {
 			// ldap config
 			$vs_base_dn = $this->opa_auth_config_framents[$vs_key]['ldap_base_dn'];
@@ -142,7 +142,7 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
 			}
 
 			/* query directory service for additional info on user */
-			$vo_results = @ldap_search($r_ldap, $vs_search_dn, $vs_search_filter);
+			$vo_results = ldap_search($r_ldap, $vs_search_dn, $vs_search_filter);
 			if (!$vo_results) {
 				// search error
 				//$vs_message = _t("LDAP search error: %1", ldap_error($this->getLinkIdentifier()));
@@ -179,10 +179,18 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
     public function createUserAndGetPassword($ps_username, $ps_password) {
         // We don't create users in directories, we assume they're already there
 
-        // We will create a password hash that is compatible with the CaUsers authentication adapter though
-        // That way users could, in theory, turn off LDAP authentication later. The hash will not be used
-        // for authentication in this adapter though.
-        return false;
+		// set random 32 byte password. as long as LDAP is enabled, this will never be used
+		// and if it's ever disabled, we don't want people to be able to log in with their
+		// ldap passwords
+		if(function_exists('mcrypt_create_iv')) {
+			$vs_password = base64_encode(mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+		} elseif(function_exists('openssl_random_pseudo_bytes')) {
+			$vs_password = base64_encode(openssl_random_pseudo_bytes(32));
+		} else {
+			throw new Exception('mcrypt or OpenSSL is required for CollectiveAccess to run');
+		}
+
+        return $vs_password;
     }
     # --------------------------------------------------------------------------------
     protected function getLinkIdentifiers() {
