@@ -1,0 +1,27 @@
+# Integration test configuration for RWAHS navigation plugin.
+
+enabled = 1
+
+new_menu_shortcuts = {
+	type1 = %%type1%%,
+	type2 = %%type2%%,
+	type3 = %%type3%%
+}
+
+search_menu_shortcuts = {
+    type1 = {
+        type_code = %%type1%%,
+        form_code = %%type1_search%%,
+        display_code = %%result_display%%
+    },
+    type2 = {
+        type_code = %%type2%%,
+        form_code = %%type2_search%%,
+        display_code = %%result_display%%
+    },
+    type3 = {
+        type_code = %%type3%%,
+        form_code = %%type3_search%%,
+        display_code = %%result_display%%
+    }
+}
