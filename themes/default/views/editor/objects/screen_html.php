@@ -84,54 +84,46 @@
 	
 	<?php print caSetupEditorScreenOverlays($this->request, $t_object, $va_bundle_list); ?>
 	<script type="text/javascript">
-		(function(initSplitSuffix) {
-
-			initSplitSuffix(window.jQuery);
-
-		}(function($) {
-
-				$(function () {
-					var reg = /^\s*\.?\s?(\d*)\s*(.*)\s*$/,
-						parse = function (val) {
-							if (val && typeof val === 'string') {
-								var parts = val.match(reg);
-								parts.shift();
-								return parts;
-							}
-						};
-					$('#idno_accession_series_and_parts').each(function () {
-						var $dot = $('<span class="idno_dot">.</span>').hide(),
-							$series = $('<input type="number" class="idno_accession_series" title="Enter series number" step="1" min="1"/>'),
-							$suffix = $('<input type="text" class="idno_accession_suffix" size="10"/>'),
-							$hidden = $(this).hide().before($dot).before($series).before($suffix),
-							seriesAndParts = parse($hidden.val()),
-							events = 'keypress change',
-							serialize = function(){
-								var ret = '';
-								if ($series.val()){
-									$dot.show();
-									ret += '.' + $series.val().trim();
-								} else {
-									$dot.hide();
-								}
-								ret += $suffix.val().trim();
-								$hidden.val(ret);
-							};
-						if (seriesAndParts) {
-							if (seriesAndParts[0] >= 1) {
-								$dot.show();
-								$series.val(seriesAndParts[0]);
-							}
-							$suffix.val(seriesAndParts[1]);
+		jQuery(function () {
+			var reg = /^\s*\.?\s?(\d*)\s*(.*)\s*$/,
+				parse = function (val) {
+					if (val && typeof val === 'string') {
+						var parts = val.match(reg);
+						parts.shift();
+						return parts;
+					}
+				};
+			jQuery('#idno_accession_series_and_parts').each(function () {
+				var $dot = jQuery('<span class="idno_dot">.</span>').hide(),
+					$series = jQuery('<input type="number" class="idno_accession_series" title="Enter series number" step="1" min="1"/>'),
+					$suffix = jQuery('<input type="text" class="idno_accession_suffix" size="10"/>'),
+					$hidden = jQuery(this).hide().before($dot).before($series).before($suffix),
+					seriesAndParts = parse($hidden.val()),
+					events = 'keypress change',
+					serialize = function () {
+						var ret = '';
+						if ($series.val()) {
+							$dot.show();
+							ret += '.' + $series.val().trim();
+						} else {
+							$dot.hide();
 						}
-						$series.on(events,serialize);
-						$suffix.on(events, function(){
-							$suffix.val($suffix.val().toLowerCase());
-							serialize();
-						});
-					});
+						ret += $suffix.val().trim();
+						$hidden.val(ret);
+					};
+				if (seriesAndParts) {
+					if (seriesAndParts[0] >= 1) {
+						$dot.show();
+						$series.val(seriesAndParts[0]);
+					}
+					$suffix.val(seriesAndParts[1]);
+				}
+				$series.on(events, serialize);
+				$suffix.on(events, function () {
+					$suffix.val($suffix.val().toLowerCase());
+					serialize();
 				});
-			}
-		));
+			});
+		});
 
 	</script>
