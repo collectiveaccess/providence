@@ -10763,6 +10763,7 @@
         <setting name="fieldHeight">5</setting>
         <setting name="minChars">0</setting>
         <setting name="maxChars">65535</setting>
+        <setting name="usewysiwygeditor">1</setting>
       </settings>
       <typeRestrictions>
         <restriction code="collections">
@@ -15326,6 +15327,7 @@
       <settings>
         <setting name="fieldWidth">100</setting>
         <setting name="fieldHeight">1</setting>
+        <setting name="mustBeUnique">1</setting>
       </settings>
       <typeRestrictions>
         <restriction code="ca_objects">
@@ -16874,6 +16876,12 @@
                 <setting name="label" locale="en_US">Component Hierarchy</setting>
               </settings>
             </placement>
+            <placement code="ca_object_circulation_status">
+              <bundle>ca_object_circulation_status</bundle>
+            </placement>
+            <placement code="ca_object_checkouts">
+              <bundle>ca_object_checkouts</bundle>
+            </placement>
             <placement code="idno">
               <bundle>idno</bundle>
               <settings>
@@ -17856,6 +17864,7 @@ differs from the holder of rights for the work. Example: The work rights are “
               <settings>
                 <setting name="label" locale="en_US">Related Collections</setting>
                 <setting name="restrict_to_relationship_types">related</setting>
+                <setting name="restrict_to_relationship_types">consists</setting>
                 <setting name="restrict_to_types">collection</setting>
               </settings>
             </placement>
@@ -18554,6 +18563,7 @@ entity. Example: Pot with lid. (CDWA)"</setting>
               <settings>
                 <setting name="label" locale="en_US">Related Collections</setting>
                  <setting name="restrict_to_relationship_types">related</setting>
+                 <setting name="restrict_to_relationship_types">consists</setting>
                 <setting name="restrict_to_types">collection</setting>
               </settings>
             </placement>
@@ -18718,6 +18728,7 @@ entity. Example: Pot with lid. (CDWA)"</setting>
               <settings>
                 <setting name="label" locale="en_US">Related Collections</setting>
                  <setting name="restrict_to_relationship_types">related</setting>
+                 <setting name="restrict_to_relationship_types">consists</setting>
                 <setting name="restrict_to_types">collection</setting>
               </settings>
             </placement>
@@ -19141,6 +19152,7 @@ entity. Example: Pot with lid. (CDWA)"</setting>
               <settings>
                 <setting name="label" locale="en_US">Related Collections</setting>
                 <setting name="restrict_to_relationship_types">related</setting>
+                 <setting name="restrict_to_relationship_types">consists</setting>
                 <setting name="restrict_to_types">collection</setting>
               </settings>
             </placement>
@@ -19813,6 +19825,7 @@ differs from the holder of rights for the work. Example: The work rights are “
               <settings>
                 <setting name="label" locale="en_US">Related Collections</setting>
                 <setting name="restrict_to_relationship_types">related</setting>
+                <setting name="restrict_to_relationship_types">consists</setting>
                 <setting name="restrict_to_types">collection</setting>
               </settings>
             </placement>
@@ -21672,6 +21685,8 @@ differs from the holder of rights for the work. Example: The work rights are “
               <settings>
                 <setting name="label" locale="en_US">Related Objects</setting>
                 <setting name="restrict_to_relationship_types">related</setting>
+                <setting name="restrict_to_relationship_types">consists</setting>
+
               </settings>
             </placement>
             <placement code="ca_entities">
@@ -21731,21 +21746,6 @@ differs from the holder of rights for the work. Example: The work rights are “
               <settings>
                 <setting name="label" locale="en_US">Related Places</setting>
               </settings>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="media_collection" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Media</name>
-            </label>
-          </labels>
-          <typeRestrictions>
-            <restriction code="collection" type="collection"/>
-          </typeRestrictions>
-          <bundlePlacements>
-            <placement code="ca_object_representations">
-              <bundle>ca_object_representations</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -21999,6 +21999,18 @@ differs from the holder of rights for the work. Example: The work rights are “
             </placement>
             <placement code="ca_attribute_keywords">
               <bundle>ca_attribute_keywords</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="media_collection" default="0">
+          <labels>
+            <label locale="en_US">
+              <name>Media</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="ca_object_representations">
+              <bundle>ca_object_representations</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -22957,12 +22969,15 @@ differs from the holder of rights for the work. Example: The work rights are “
         </label>
       </labels>
       <screens>
-        <screen idno="basic" default="1">
+        <screen idno="basic_time" default="1">
           <labels>
             <label locale="en_US">
               <name>Basic info</name>
             </label>
           </labels>
+          <typeRestrictions>
+          <restriction type="TimeBasedVideo"/>
+          </typeRestrictions>
           <bundlePlacements>
             <placement code="preferred_labels">
               <bundle>preferred_labels</bundle>
@@ -22980,6 +22995,9 @@ differs from the holder of rights for the work. Example: The work rights are “
               <settings>
                 <setting name="label" locale="en_US">Cataloguing Status</setting>
               </settings>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
             </placement>
             <placement code="ca_representation_annotation_properties">
               <bundle>ca_representation_annotation_properties</bundle>
@@ -23005,33 +23023,14 @@ differs from the holder of rights for the work. Example: The work rights are “
                 <setting name="label" locale="en_US">Administrative Note (Non-Display)</setting>
               </settings>
             </placement>
-            <placement code="access">
-              <bundle>access</bundle>
-            </placement>
-          </bundlePlacements>
-        </screen>
-        <screen idno="subjects" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Access Points</name>
-            </label>
-          </labels>
-          <bundlePlacements>
+            
             <placement code="ca_attribute_local_subject">
               <bundle>ca_attribute_local_subject</bundle>
             </placement>  
             <placement code="ca_attribute_keywords">
               <bundle>ca_attribute_keywords</bundle>
             </placement>  
-          </bundlePlacements>
-        </screen>
-        <screen idno="relationships" default="0">
-          <labels>
-            <label locale="en_US">
-              <name>Relationships</name>
-            </label>
-          </labels>
-          <bundlePlacements>
+            
             <placement code="ca_subject">
               <bundle>ca_entities</bundle>
               <settings>
@@ -23053,7 +23052,6 @@ differs from the holder of rights for the work. Example: The work rights are “
               <settings>
                 <setting name="label" locale="en_US">Related Historical Events</setting>
                 <setting name="restrict_to_types">historical</setting>
-                
                 <setting name="description" locale="en_US">Relationship to Historical Events</setting>
               </settings>
             </placement>
@@ -23062,7 +23060,6 @@ differs from the holder of rights for the work. Example: The work rights are “
               <settings>
                 <setting name="label" locale="en_US">Related Institutional Events</setting>
                 <setting name="restrict_to_types">institutional</setting>
-                
                 <setting name="description" locale="en_US">Relationship to Institutional Events</setting>
               </settings>
             </placement>
@@ -23072,6 +23069,42 @@ differs from the holder of rights for the work. Example: The work rights are “
                 <setting name="label" locale="en_US">Related Places</setting>
                 <setting name="description" locale="en_US">Relationship to Places</setting>
               </settings>
+            </placement>
+          </bundlePlacements>
+        </screen>
+        <screen idno="basic_image" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <typeRestrictions>
+          <restriction type="Image"/>
+          </typeRestrictions>
+          <bundlePlacements>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Title</setting>
+              </settings>
+            </placement>
+            <placement code="status">
+              <bundle>status</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Cataloguing Status</setting>
+              </settings>
+            </placement>
+            <placement code="ca_attribute_narrative_note">
+              <bundle>ca_attribute_narrative_note</bundle>
+            </placement>
+            <placement code="ca_attribute_transcription_note">
+              <bundle>ca_attribute_transcription_note</bundle>
+            </placement>
+            <placement code="ca_attribute_administrative_note">
+              <bundle>ca_attribute_administrative_note</bundle>
+            </placement>
+            <placement code="access">
+              <bundle>access</bundle>
             </placement>
           </bundlePlacements>
         </screen>
@@ -23735,6 +23768,16 @@ differs from the holder of rights for the work. Example: The work rights are “
           <subTypeLeft> </subTypeLeft>
           <subTypeRight/>
         </type>
+        <type code="consists" default="0">
+          <labels>
+            <label locale="en_US">
+              <typename>consists</typename>
+              <typename_reverse>consists</typename_reverse>
+            </label>
+          </labels>
+          <subTypeLeft> </subTypeLeft>
+          <subTypeRight/>
+        </type>
       </types>
     </relationshipTable>
     <relationshipTable name="ca_objects_x_places">
@@ -24382,7 +24425,7 @@ differs from the holder of rights for the work. Example: The work rights are “
               <typename_reverse>donor/contributor</typename_reverse>
             </label>
           </labels>
-          <subTypeLeft>monetary</subTypeLeft>
+          <subTypeLeft/>
           <subTypeRight/>
         </type>
         <type code="sent" default="0">
