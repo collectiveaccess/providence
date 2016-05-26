@@ -260,7 +260,7 @@ class ExternalDBAuthAdapter extends BaseAuthAdapter implements IAuthAdapter {
 	public function getAccountManagementLink() {
 		$o_auth_cfg = Configuration::load(Configuration::load()->get('authentication_config'));
 
-		if($vs_link = $o_auth_cfg->get('extdb_manage_account_url')) {
+		if($vs_link = $o_auth_cfg->get('manage_account_url')) {
 			return $vs_link;
 		}
 
