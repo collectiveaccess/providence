@@ -122,8 +122,7 @@
 					}
 					$suffix.val(seriesAndParts[1]);
 				}
-				var $numeric = jQuery('#idno_accession_year,#idno_accession_number,.idno_accession_series');
-				$numeric.on('keypress', function (evt) {
+				jQuery('#idno_accession_year,#idno_accession_number,.idno_accession_series').on('keypress', function (evt) {
 					if (
 						// Space
 					evt.which === 32 ||
