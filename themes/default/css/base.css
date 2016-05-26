@@ -3283,7 +3283,7 @@ input.externalMappingBase {
 }
 
 /*** FORM ELEMENTS ***/
-input[type="text"], input[type="textarea"], textarea,  input[type="password"] {
+input[type="text"], input[type="number"], input[type="textarea"], textarea,  input[type="password"] {
     font-size:12px;
     font-family: Verdana, Arial, Helvetica, sans-serif;
     border:1px solid #ddd;
@@ -6902,4 +6902,7 @@ div.authorityReferenceListContainer {
 	background-color: #fff;
 	border-radius: 10px;
 	border: 1px solid #cccccc;
+}
+input.idno_accession_series {
+	width: 3em;
 }
