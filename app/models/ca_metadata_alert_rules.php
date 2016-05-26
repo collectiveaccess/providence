@@ -192,4 +192,13 @@ class ca_metadata_alert_rules extends BaseModel {
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
+	/**
+	 * @param int $pn_user_id
+	 * @return array
+	 */
+	public static function getList($pn_user_id) {
+
+		return [];
+	}
+	# ------------------------------------------------------
 }

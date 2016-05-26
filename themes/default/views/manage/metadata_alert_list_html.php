@@ -1,0 +1,102 @@
+<?php
+/* ----------------------------------------------------------------------
+ * manage/metadata_alert_List_html.php :
+ * ----------------------------------------------------------------------
+ * CollectiveAccess
+ * Open-source collections management software
+ * ----------------------------------------------------------------------
+ *
+ * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
+ * Copyright 2016 Whirl-i-Gig
+ *
+ * For more information visit http://www.CollectiveAccess.org
+ *
+ * This program is free software; you may redistribute it and/or modify it under
+ * the terms of the provided license as published by Whirl-i-Gig
+ *
+ * CollectiveAccess is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * This source code is free and modifiable under the terms of
+ * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
+ * the "license.txt" file for details, or visit the CollectiveAccess web site at
+ * http://www.CollectiveAccess.org
+ *
+ * ----------------------------------------------------------------------
+ */
+	$va_alert_list 		= $this->getVar('metadata_alert_list');
+?>
+<script language="JavaScript" type="text/javascript">
+/* <![CDATA[ */
+	jQuery(document).ready(function(){
+		jQuery('#caSetList').caFormatListTable();
+	});
+/* ]]> */
+</script>
+<div class="sectionBox">
+	<?php 
+		print caFormControlBox(
+			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caSetList\').caFilterTable(this.value); return false;" size="20"/></div>', 
+			'', 
+			''
+		); 
+	?>
+	
+	<table id="caSetList" class="listtable">
+		<thead>
+			<tr>
+				<th class="list-header-unsorted">
+					<?php print _t('Alert name'); ?>
+				</th>
+				<th class="list-header-unsorted">
+					<?php print _t('Content type'); ?>
+				</th>
+				<th class="list-header-unsorted">
+					<?php print _t('Owner'); ?>
+				</th>
+				<th class="{sorter: false} list-header-nosort listtableEditDelete"> </th>
+			</tr>
+		</thead>
+		<tbody>
+<?php
+	if (sizeof($va_alert_list)) {
+		foreach($va_alert_list as $va_alert) {
+?>
+			<tr>
+				<td>
+					<div class="caSetListName"><?php print $va_alert['name'].($va_alert['code'] ? "<br/>(".$va_alert['code'].")" : ""); ?></div>
+				</td>
+				<td>
+					<div><?php print $va_alert['content_type']; ?></div>
+				</td>
+				<td>
+					<div class="caSetListOwner"><?php print $va_alert['fname'].' '.$va_alert['lname'].($va_alert['email'] ? "<br/>(<a href='mailto:".$va_alert['email']."'>".$va_alert['email']."</a>)" : ""); ?></div>
+				</td>
+				<td class="listtableEditDelete">
+					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage', 'MetadataAlerts', 'Edit', array('alert_id' => $va_alert['alert_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")); ?>
+					<?php ($va_alert['can_delete'] == TRUE) ? print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage', 'MetadataAlerts', 'Delete', array('alert_id' => $va_alert['alert_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")) : ''; ?>
+				</td>
+			</tr>
+<?php
+		}
+	} else {
+?>
+		<tr>
+			<td colspan='8'>
+				<div align="center">
+					<?php print _t('No sets have been created'); ?>
+				</div>
+			</td>
+		</tr>
+<?php
+	}
+	TooltipManager::add('.deleteIcon', _t("Delete"));
+	TooltipManager::add('.editIcon', _t("Edit"));
+	TooltipManager::add('.batchIcon', _t("Batch"));
+?>
+		</tbody>
+	</table>
+</div>
+
+<div class="editorBottomPadding"><!-- empty --></div>
