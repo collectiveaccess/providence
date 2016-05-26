@@ -126,9 +126,9 @@
 				$numeric.on('keypress', function (evt) {
 					if (
 						// Space
-						evt.which === 32 ||
+					evt.which === 32 ||
 						// Non-numeric keys
-						evt.which > 57) {
+					evt.which > 57) {
 						evt.preventDefault();
 					}
 				});
