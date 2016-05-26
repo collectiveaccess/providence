@@ -86,23 +86,23 @@
 	<script type="text/javascript">
 		jQuery(function () {
 			var parse = function (val) {
-					if (typeof val === 'string') {
-						val = val.trim();
-						if (val){
-							var parts = val.match(/^\.?\s?(\d*)\s*(.*)$/);
-							parts.shift();
-							return parts;
-						}
+				if (typeof val === 'string') {
+					val = val.trim();
+					if (val) {
+						var parts = val.match(/^\.?\s?(\d*)\s*(.*)$/);
+						parts.shift();
+						return parts;
 					}
+				}
 				return undefined;
-				};
+			};
 			jQuery('#idno_accession_series_and_parts').each(function () {
 				var $dot = jQuery('<span class="idno_dot">.</span>').hide(),
 					$series = jQuery('<input type="number" class="idno_accession_series" title="Enter series number" step="1" min="1"/>'),
 					$suffix = jQuery('<input type="text" class="idno_accession_suffix" size="10"/>'),
 					$this = jQuery(this).hide().before($dot).before($series).before($suffix),
 					seriesAndParts = parse($this.val()),
-					events = 'keypress change',
+					events = 'keyup change',
 					serialize = function () {
 						var ret = '',
 							series = $series.val().trim();
@@ -122,9 +122,18 @@
 					}
 					$suffix.val(seriesAndParts[1]);
 				}
+				var $numeric = jQuery('#idno_accession_year,#idno_accession_number,.idno_accession_series');
+				$numeric.on('keypress', function (evt) {
+					if (
+						// Space
+						evt.which === 32 ||
+						// Non-numeric keys
+						evt.which > 57) {
+						evt.preventDefault();
+					}
+				});
 				$series.on(events, serialize);
 				$suffix.on(events, serialize);
 			});
 		});
-
 	</script>
