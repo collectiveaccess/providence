@@ -49,7 +49,7 @@ trait DeduplicateBaseModel {
 		if(!$this->getPrimaryKey()) { return false; }
 		$va_hash_components = array();
 
-		if($vs_idno_fld = $this->getProperty('ID_NUMBERING_ID_FIELD')) {
+		if($vs_idno_fld = $this->getProperty('ID_NUMBERING_ID_FIELD') && !$this->getAppConfig()->get($this->tableName() . '_dont_use_idno_in_checksums')) {
 			$va_hash_components[] = $this->get($vs_idno_fld);
 		}
 
