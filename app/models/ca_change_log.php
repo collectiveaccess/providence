@@ -364,6 +364,9 @@ class ca_change_log extends BaseModel {
 									$o_coder = MediaInfoCoder::load();
 									$va_snapshot['media'] = $o_coder->getMediaUrl($va_snapshot['media'], 'original');
 								}
+
+								// also unset media metadata, because otherwise json_encode is likely to bail
+								unset($va_snapshot['media_metadata']);
 							}
 
 							// handle left and right foreign keys in foo_x_bar table
