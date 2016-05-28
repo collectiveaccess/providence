@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,14 +36,16 @@
 	$vn_rel_type_id		= $this->getVar('rel_type_id');
 	$vn_rel_id			= $this->getVar('rel_id');
 	
+	$vn_collection_id	= $this->request->getParameter('collection_id', pInteger);
+	
 	if ($vb_can_edit) {
-		$va_cancel_parameters = ($vn_object_id ? array('object_id' => $vn_object_id) : array('type_id' => $t_object->getTypeID()));
+		$va_cancel_parameters = ($vn_object_id ? array('object_id' => $vn_object_id, 'collection_id' => $vn_collection_id) : array('type_id' => $t_object->getTypeID(), 'collection_id' => $vn_collection_id));
 		print $vs_control_box = caFormControlBox(
-			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'ObjectEditorForm').' '.
-			($this->getVar('show_save_and_return') ? caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save and return"), 'ObjectEditorForm', array('isSaveAndReturn' => true)) : '').' '.
-			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'editor/objects', 'ObjectEditor', 'Edit/'.$this->request->getActionExtra(), $va_cancel_parameters),
+			caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'ObjectEditorForm').' '.
+			($this->getVar('show_save_and_return') ? caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save and return"), 'ObjectEditorForm', array('isSaveAndReturn' => true)) : '').' '.
+			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'editor/objects', 'ObjectEditor', 'Edit/'.$this->request->getActionExtra(), $va_cancel_parameters),
 			'', 
-			((intval($vn_object_id) > 0) && $vb_can_delete) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'form-button deleteButton', 'editor/objects', 'ObjectEditor', 'Delete/'.$this->request->getActionExtra(), array('object_id' => $vn_object_id)) : ''
+			((intval($vn_object_id) > 0) && $vb_can_delete) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'form-button deleteButton', 'editor/objects', 'ObjectEditor', 'Delete/'.$this->request->getActionExtra(), array('object_id' => $vn_object_id)) : ''
 		);
 	}
 ?>
@@ -64,7 +66,7 @@
 			if ($vb_can_edit) { print $vs_control_box; }
 ?>
 			<input type='hidden' name='object_id' value='<?php print $vn_object_id; ?>'/>
-			<input type='hidden' name='collection_id' value='<?php print $this->request->getParameter('collection_id', pInteger); ?>'/>
+			<input type='hidden' name='collection_id' value='<?php print $vn_collection_id; ?>'/>
 			<input type='hidden' name='above_id' value='<?php print $vn_above_id; ?>'/>
 			<input id='isSaveAndReturn' type='hidden' name='is_save_and_return' value='0'/>
 			<input type='hidden' name='rel_table' value='<?php print $vs_rel_table; ?>'/>

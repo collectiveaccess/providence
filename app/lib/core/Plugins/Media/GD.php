@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2006-2015 Whirl-i-Gig
+ * Copyright 2006-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -74,6 +74,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 		),
 		"TRANSFORMATIONS" => array(
 			"SCALE" 			=> array("width", "height", "mode", "antialiasing", "trim_edges", "crop_from"),					// trim_edges and crop_from are dummy and not supported by GD; they are supported by the ImageMagick-based plugins
+			'CROP' 				=> array('width', 'height', 'x', 'y'),
 			"ANNOTATE"	=> array("text", "font", "size", "color", "position", "inset"),	// dummy
 			"WATERMARK"	=> array("image", "width", "height", "position", "opacity"),	// dummy
 			"ROTATE" 			=> array("angle"),
@@ -84,6 +85,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"DESPECKLE"			=> array(""),
 			"SHARPEN"			=> array("radius", "sigma"),
 			"UNSHARPEN_MASK"	=> array("radius", "sigma", "amount", "threshold"),
+			'FLIP'				=> array('direction')
 		),
 		"PROPERTIES" => array(
 			"width" 			=> 'W',
@@ -93,6 +95,7 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 			'tiles'				=> 'R',
 			'layers'			=> 'W',
 			"quality" 			=> 'W',
+			'colorspace'		=> 'W',
 			'tile_width'		=> 'W',
 			'tile_height'		=> 'W',
 			'antialiasing'		=> 'W',
@@ -585,6 +588,30 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 		# -----------------------
 		case "SHARPEN":
 			# noop
+			break;		
+		# -----------------------
+		case "CROP":
+			$x = $parameters["x"];
+			$y = $parameters["y"];
+			$w = $parameters["width"];
+			$h = $parameters["height"];
+			
+			if (!($r_new_img = imagecrop($this->handle, $parameters))) {
+				$this->postError(1610, _t("Error during image crop"), "WLPlugGD->transform:CROP()");
+				return false;
+			}
+			imagedestroy($this->handle);
+			$this->handle = $r_new_img;
+			break;
+		# -----------------------
+		case "FLIP":
+			$dir = strtolower($parameters["direction"]);
+			
+			if (!imageflip($this->handle, ($dir == 'vertical') ? IMG_FLIP_VERTICAL : IMG_FLIP_HORIZONTAL)) {
+				$this->postError(1610, _t("Error during %1 image flip", $dir), "WLPlugGmagick->transform:FLIP()");
+				return false;
+			}			
+			
 			break;
 		# -----------------------
 		case "UNSHARP_MASK":
@@ -649,6 +676,31 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 					return false;
 				}
 				$this->handle = $h;
+			}
+			
+			if (($this->properties["colorspace"]) && ($this->properties["colorspace"] != "default")){ 
+				$vn_colorspace = null;
+				switch($this->properties["colorspace"]) {
+					case 'greyscale':
+					case 'grey':
+						imagefilter($this->handle, IMG_FILTER_GRAYSCALE);
+						break;
+					case 'RGB':
+					case 'color':
+						// noop
+						break;
+					case 'sRGB':
+						// noop
+						break;
+					case 'CMYK':
+						// noop - GD doesn't seem to provide for conversion to CMYK
+						break;
+					case 'bitonal':
+						imagefilter($this->handle, IMG_FILTER_GRAYSCALE);
+						imagefilter($this->handle, IMG_FILTER_CONTRAST, -1000);
+						break;
+				}
+				if ($vn_colorspace) { $this->handle->setimagecolorspace($vn_colorspace); }
 			}
 			
 			$vn_res = 0;
@@ -749,4 +801,3 @@ class WLPlugMediaGD Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}	
 	# ------------------------------------------------
 }
-?>

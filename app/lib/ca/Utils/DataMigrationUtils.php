@@ -223,14 +223,17 @@
 				switch(strtolower($vs_match_on)) {
 					case 'label':
 					case 'labels':
+					case 'preferred_labels':
+					case 'nonpreferred_labels':
+						$vs_label_spec = ($vs_match_on == 'nonpreferred_labels') ? 'nonpreferred_labels' : 'preferred_labels';
 						if (trim($vs_singular_label) || trim($vs_plural_label)) {
-							$va_criteria = array('preferred_labels' => array('name_singular' => $vs_singular_label), 'list_id' => $vn_list_id);
+							$va_criteria = array($vs_label_spec => array('name_singular' => $vs_singular_label), 'list_id' => $vn_list_id);
 							if ($vn_parent_id !== false) { $va_criteria['parent_id'] = $vn_parent_id; }
 							if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])))) {
 								if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using singular label %3", $ps_item_idno, $pm_list_code_or_id, $vs_singular_label)); }
 								break(2);
 							} else {
-								$va_criteria['preferred_labels'] = array('name_plural' => $vs_plural_label);
+								$va_criteria[$vs_label_spec] = array('name_plural' => $vs_plural_label);
 								if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])))) {
 									if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using plural label %3", $ps_item_idno, $pm_list_code_or_id, $vs_plural_label)); }
 									break(2);
@@ -245,6 +248,17 @@
 						if ($vn_item_id = (ca_list_items::find($va_criteria, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])))) {
 							if ($o_log) { $o_log->logDebug(_t("Found existing list item %1 (member of list %2) in DataMigrationUtils::getListItemID() using idno with %3", $ps_item_idno, $pm_list_code_or_id, $ps_item_idno)); }
 							break(2);
+						}
+						break;
+					default:
+						// is it an attribute?
+						$va_tmp = explode('.', $vs_match_on);
+						$vs_element = array_pop($va_tmp);
+						$t_instance = new ca_list_items();
+						if ($t_instance->hasField($vs_element) || $t_instance->hasElement($vs_element)) {
+							$va_params = array($vs_element => $ps_item_idno, 'list_id' => $vn_list_id);
+							$vn_id = ca_list_items::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction']));
+							if ($vn_id) { break(2); }
 						}
 						break;
 				}
@@ -506,12 +520,20 @@
 		 * @param array $pa_options Optional array of options. Supported options are:
 		 *		locale = locale code to use when applying rules; if omitted current user locale is employed
 		 *		displaynameFormat = surnameCommaForename, forenameCommaSurname, forenameSurname, original [Default = original]
+		 *		doNotParse = Use name as-is in the surname and display name fields. All other fields are blank. [Default = false]
 		 *
 		 * @return array Array containing parsed name, keyed on ca_entity_labels fields (eg. forename, surname, middlename, etc.)
 		 */
 		static function splitEntityName($ps_text, $pa_options=null) {
 			global $g_ui_locale;
 			$ps_text = $ps_original_text = trim(preg_replace("![ ]+!", " ", $ps_text));
+			
+			if (caGetOption('doNotParse', $pa_options, false)) {
+				return array(
+					'forename' => '', 'middlename' => '', 'surname' => $ps_text,
+					'displayname' => $ps_text, 'prefix' => '', 'suffix' => ''
+				);
+			}
 			
 			if (isset($pa_options['locale']) && $pa_options['locale']) {
 				$vs_locale = $pa_options['locale'];
@@ -832,6 +854,8 @@
 			
 			$vs_idno_fld					= $t_instance->getProperty('ID_NUMBERING_ID_FIELD');
 			$vs_idno 						= caGetOption($vs_idno_fld, $pa_values, null); 
+			if (is_array($vs_idno)) { $vs_idno = $vs_idno[$vs_idno_fld]; }	// when passed via caProcessRefineryAttributes() might be in attribute-y array
+			
 			
 			/** @var ca_data_import_events $o_event */
 			$o_event = (isset($pa_options['importEvent']) && $pa_options['importEvent'] instanceof ca_data_import_events) ? $pa_options['importEvent'] : null;
@@ -840,7 +864,7 @@
 				$t_instance->setTransaction($pa_options['transaction']);
 				if ($o_event) { $o_event->setTransaction($pa_options['transaction']); }
 			}
-
+			
 			if (preg_match('!\%!', $vs_idno)) {
 				$pa_options['generateIdnoWithTemplate'] = $vs_idno;
 				$vs_idno = null;
@@ -859,6 +883,8 @@
 				// Get list of replacements that user can use to transform file names to match object idnos
 				$va_replacements_list = caBatchGetMediaFilenameReplacementRegexList(array('log' => $o_log));
 			}
+
+			$va_restrict_to_types = $pn_type_id ? [$pn_type_id] : null;
 
 			$vn_id = null;
 			foreach($pa_match_on as $vs_match_on) {
@@ -918,15 +944,14 @@
 								//
 								
 								$va_find_vals = array(
-									$vs_idno_fld => $vs_idno ? $vs_idno : ($pa_label['_originalText'] ? $pa_label['_originalText'] : $vs_label),
-									'type_id' => $pn_type_id
+									$vs_idno_fld => $vs_idno ? $vs_idno : ($pa_label['_originalText'] ? $pa_label['_originalText'] : $vs_label)
 								);
 								if (!$pb_ignore_parent && $vn_parent_id) { $va_find_vals['parent_id'] = $vn_parent_id; }
 							
 								if (
 									($vs_idno || trim($pa_label['_originalText'] || $vs_label)) 
 									&& 
-									($vn_id = ($vs_table_class::find($va_find_vals, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction']))))
+									($vn_id = ($vs_table_class::find($va_find_vals, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types))))
 								) {
 									break(3);
 								}
@@ -935,21 +960,25 @@
 						break;
 					case 'label':
 					case 'labels':
+					case 'preferred_labels':
+					case 'nonpreferred_labels':
+						$vs_label_spec = ($vs_match_on == 'nonpreferred_labels') ? 'nonpreferred_labels' : 'preferred_labels';
+					
 						if ($pb_match_on_displayname && (strlen(trim($pa_label['displayname'])) > 0)) {
 							// entities only
-							$va_params = array('preferred_labels' => array('displayname' => $pa_label['displayname']),'type_id' => $pn_type_id);
+							$va_params = array($vs_label_spec => array('displayname' => $pa_label['displayname']));
 							if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
-							$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction']));
+							$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types));
 						} elseif($vs_table_class == 'ca_entities') {
 							// entities only
-							$va_params = array('preferred_labels' => array('forename' => $pa_label['forename'], 'middlename' => $pa_label['middlename'], 'surname' => $pa_label['surname']), 'type_id' => $pn_type_id);
+							$va_params = array($vs_label_spec => array('forename' => $pa_label['forename'], 'middlename' => $pa_label['middlename'], 'surname' => $pa_label['surname']));
 							if (!$pb_ignore_parent) { $va_params['parent_id'] = $vn_parent_id; }
-							$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction']));
+							$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types));
 						} else {
-							$va_params = array('preferred_labels' => array($vs_label_display_fld => $pa_label[$vs_label_display_fld]), 'type_id' => $pn_type_id);
+							$va_params = array($vs_label_spec => array($vs_label_display_fld => $pa_label[$vs_label_display_fld]));
 							if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
 							
-							$vn_id = ($vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'])));
+							$vn_id = ($vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types)));
 						}
 						if ($vn_id) { break(2); }
 						break;
@@ -957,25 +986,35 @@
 					// For entities only
 					//
 					case 'surname':
-						$va_params = array('preferred_labels' => array('surname' => $pa_label['surname']), 'type_id' => $pn_type_id);
+						$va_params = array('preferred_labels' => array('surname' => $pa_label['surname']));
 						if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
 						
-						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction']));
+						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types));
 						if ($vn_id) { break(2); }
 						break;
 					case 'forename':
-						$va_params = array('preferred_labels' => array('forename' => $pa_label['forename']), 'type_id' => $pn_type_id);
+						$va_params = array('preferred_labels' => array('forename' => $pa_label['forename']));
 						if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
 						
-						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction']));
+						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types));
 						if ($vn_id) { break(2); }
 						break;
 					case 'displayname':
-						$va_params = array('preferred_labels' => array('displayname' => $pa_label['displayname']), 'type_id' => $pn_type_id);
+						$va_params = array('preferred_labels' => array('displayname' => $pa_label['displayname']));
 						if (!$pb_ignore_parent && $vn_parent_id) { $va_params['parent_id'] = $vn_parent_id; }
 						
-						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction']));
+						$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types));
 						if ($vn_id) { break(2); }
+						break;
+					default:
+						// is it an attribute?
+						$va_tmp = explode('.', $vs_match_on);
+						$vs_element = array_pop($va_tmp);
+						if ($t_instance->hasField($vs_element) || $t_instance->hasElement($vs_element)) {
+							$va_params = array($vs_element => $pa_label[$vs_label_display_fld]);
+							$vn_id = $vs_table_class::find($va_params, array('returnAs' => 'firstId', 'purifyWithFallback' => true, 'transaction' => $pa_options['transaction'], 'restrictToTypes' => $va_restrict_to_types));
+							if ($vn_id) { break(2); }
+						}
 						break;
 				}
 			}
@@ -1004,10 +1043,12 @@
 				);
 				if ($vs_hier_id_fld = $t_instance->getProperty('HIERARCHY_ID_FLD')) { $va_intrinsics[$vs_hier_id_fld] = null;}
 				if ($vs_idno_fld) {$va_intrinsics[$vs_idno_fld] = $vs_idno ? $vs_idno : null; }
-				
+			
 				foreach($va_intrinsics as $vs_fld => $vm_fld_default) {
-					if ($t_instance->hasField($vs_fld)) { 
-						$t_instance->set($vs_fld, caGetOption($vs_fld, $pa_values, $vm_fld_default));
+					if ($t_instance->hasField($vs_fld)) {
+						// Handle both straight key => value and key => key => value (attribute style); import helpers pass in attribute style
+						$vs_v = (isset($pa_values[$vs_fld]) && is_array($pa_values[$vs_fld])) ? caGetOption($vs_fld, $pa_values[$vs_fld], $vm_fld_default) : caGetOption($vs_fld, $pa_values, $vm_fld_default);
+						$t_instance->set($vs_fld, $vs_v);
 					}
 					unset($pa_values[$vs_fld]);
 				}

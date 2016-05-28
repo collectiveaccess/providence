@@ -57,6 +57,31 @@
         </item>
       </items>
     </list>
+    <list code="object_deaccession_types" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Object deaccession types</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="disposed" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>disposed</name_singular>
+              <name_plural>disposed</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="sold" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>sold</name_singular>
+              <name_plural>sold</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
     <list code="entity_types" hierarchical="0" system="1" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -819,6 +844,14 @@
             </label>
           </labels>
         </item>
+        <item idno="staff" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Intern, Volunteer and Staff</name_singular>
+              <name_plural>Intern, Volunteer and Staff</name_plural>
+            </label>
+          </labels>
+        </item>
       </items>
     </list>
     <list code="contact_status" hierarchical="0" system="1" vocabulary="0">
@@ -1056,14 +1089,6 @@
             </label>
           </labels>
         </item>
-        <item idno="figurative" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>figurative</name_singular>
-              <name_plural>figurative</name_plural>
-            </label>
-          </labels>
-        </item>
         <item idno="geometric" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
@@ -1082,6 +1107,39 @@
         </item>
       </items>
     </list>
+    <list code="access_statuses" hierarchical="0" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Object access statuses</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="internal_only" enabled="1" default="0" value="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>not accessible to public</name_singular>
+              <name_plural>not accessible to public</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="restricted_public_access" enabled="1" default="0" value="2">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>restricted public access</name_singular>
+              <name_plural>restricted public access</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="public_access" enabled="1" default="1" value="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>accessible to public</name_singular>
+              <name_plural>accessible to public</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
   </lists>  
   <elementSets>   
     <metadataElement code="signed_yn" datatype="List" list="yn">
@@ -1095,6 +1153,27 @@
         <setting name="listHeight">1</setting>
         <setting name="render">radio_buttons</setting>
         <setting name="maxColumns">2</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="signed_yn_legacy" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Signed? (Legacy)</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">90</setting>
+        <setting name="fieldHeight">1</setting>
       </settings>
       <typeRestrictions>
         <restriction code="r1">
@@ -1275,6 +1354,27 @@
       <labels>
         <label locale="en_US">
           <name>Price</name>
+        </label>
+      </labels>
+      <settings>
+        <setting name="fieldWidth">40</setting>
+        <setting name="fieldHeight">1</setting>
+      </settings>
+      <typeRestrictions>
+        <restriction code="r1">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+    <metadataElement code="price_legacy" datatype="Text">
+      <labels>
+        <label locale="en_US">
+          <name>Price (Legacy)</name>
         </label>
       </labels>
       <settings>
@@ -2285,8 +2385,14 @@
             <placement code="ca_attribute_price">
               <bundle>ca_attribute_price</bundle>
             </placement>
+            <placement code="ca_attribute_price_legacy">
+              <bundle>ca_attribute_price_legacy</bundle>
+            </placement>
             <placement code="ca_attribute_signed_yn">
               <bundle>ca_attribute_signed_yn</bundle>
+            </placement>
+            <placement code="ca_attribute_signed_yn_legacy">
+              <bundle>ca_attribute_signed_yn_legacy</bundle>
             </placement>
             <placement code="ca_attribute_framed_yn">
               <bundle>ca_attribute_framed_yn</bundle>
@@ -2391,6 +2497,12 @@
               <settings>
                 <setting name="label" locale="en_US">Related Exhibitions</setting>
                 <setting name="add_label" locale="en_US">add exhibitions</setting>
+              </settings>
+            </placement>
+            <placement code="ca_collections">
+              <bundle>ca_collections</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Related Collections</setting>
               </settings>
             </placement>
           </bundlePlacements>

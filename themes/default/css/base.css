@@ -23,11 +23,12 @@ form select {
 	-moz-appearance: none;
 	padding: 3px;
 	padding-right: 30px;
-	background: #fff url('../graphics/arrows/glyphicons_173_play_small.png') no-repeat 95% 50%;
-	background-size: 5px 4px;
+	background: #fff url('../graphics/icons/downArrowSmall.png') no-repeat 97% 50%;
+	background-size: 7px 4px;
 	border-radius: 4px;
 	-webkit-border-radius: 4px;
 	-moz-border-radius: 4px;
+	font-size:12px;
 }
 textarea {
     resize: none;
@@ -160,8 +161,15 @@ h5 {
     padding: 10px 20px 0px 20px;
     margin-top:28px;
 }
+
 .clear {
     clear: both;
+}
+
+div.clear {
+	clear: both; 
+	width: 1px; 
+	height: 1px;
 }
 
 /* --- SIDE NAVIGATION --- */
@@ -204,12 +212,14 @@ h5 {
     color: #1ab3c8;
 }
 #leftNav ul { list-style: none; margin: 0px; padding: 3px 0px 3px 0px; display:none; }
-#leftNav ul.selected { list-style: none; margin: 0px; padding: 3px 0px 3px 0px; display:block; }
-#leftNav ul.arrow { border-top: solid 1px #dce2e9; border-bottom: solid 1px #fff; font-size: 11px; }
+#leftNav ul.arrow { padding:0px; }
+#leftNav ul.selected { list-style: none; margin: 0px; padding: 0px 0px 0px 0px; display:block; }
+#leftNav ul.arrow { border-top: solid 1px #dce2e9; border-bottom: solid 1px #fff; font-size: 12px; }
 #leftNav ul.arrow li { list-style: none; font-weight: normal; border: 0; padding: 0; margin: 0; }
-#leftNav ul.arrow li a, #leftNav ul.arrow li span { _height: 15px; text-decoration: none; display: block; padding: 3px 0; background: transparent url('../graphics/icons/arrow_gray.gif') no-repeat 20px 8px; padding-left: 30px; padding-right: 5px; margin: 0; }
+#leftNav ul.arrow li a, #leftNav ul.arrow li span { _height: 15px; text-decoration: none; display: block;  padding: 8px 0 5px 0;; padding-left: 30px; padding-right: 5px; margin: 0; color:#666; text-transform:uppercase; font-family:"din-regular", arial, sans-serif;}
 #leftNav ul li a:hover { background-color: #fff; }
-#leftNav ul.arrow li a:hover { background-color: #fff; }
+#leftNav ul .sf-menu-selected a:hover { background-color: #eee; }
+#leftNav ul.arrow li a:hover { color: #1ab3c8}
 
 /* h3 used for non link left side nav - currently editing */
 #leftNav h4 {
@@ -237,7 +247,7 @@ h5 {
     text-align:center;
     font-family: "DIN-Regular";
 	font-weight: bold;
-	height: 38px;
+	height: 35px;
 }
 #leftNav h3.nextPrevious a{
 	color:#333;
@@ -245,33 +255,40 @@ h5 {
 #leftNav h3.nextPrevious a.next{
 	background-color: #ddd;
 	float: right;
-	padding: 5px 5px 5px 5px;
-	width: 30px;
+	padding: 9px 5px 5px 5px;
+	width: 20px;
 	text-align: right;
 }
 #leftNav h3.nextPrevious a.prev{
 	background-color: #ddd;
 	float: left;
-	padding: 5px 6px 5px 5px;
-	width: 30px;
+	padding: 9px 6px 5px 5px;
+	width: 20px;
 	text-align: left;
 }
 #leftNav h3.nextPrevious span.prev{
 	background-color: #ddd;
 	float: left;
-	padding: 5px 6px 5px 5px;
-	width: 30px;
+	padding: 9px 6px 5px 5px;
+	width: 20px;
 	text-align: left;
 }
 #leftNav h3.nextPrevious span.next{
 	background-color: #ddd;
 	float: right;
-	padding: 5px 5px 5px 5px;
-	width: 30px;
+	padding: 9px 5px 5px 5px;
+	width: 20px;
 	text-align: right;
 }
-#leftNav .resultCount, #leftNav .resultLink {
-	padding-top: 7px;
+#leftNav h3.nextPrevious .disabled .caIcon:hover {
+	color:#333;
+}
+#leftNav .resultCount {
+	padding-top: 10px;
+	display: inline-block;
+	width: 110px;
+}
+#leftNav .resultLink  {
 	display: inline-block;
 	width: 110px;
 }
@@ -322,7 +339,7 @@ h5 {
     font-size: 9px;
 }
 #leftNav #toolIcons {
-	margin-bottom:5px;
+	margin-bottom:10px;
 	padding-top:0px;
 	clear: both;
 	min-height: 26px;
@@ -344,6 +361,7 @@ h5 {
 	float:left;
 	width:22px;
 	margin-left:2px;
+	padding-bottom:10px;
 }
 #leftNav #inspectorChangeType img {
 	width: 26px;
@@ -360,10 +378,9 @@ h5 {
 	padding-top:3px;
 }
 #leftNav div.watchThis { 
-	width:28px; 
+	width:14px; 
 	text-align:center; 
 	margin-right:10px; 
-	padding-top:12px;
 }
 #inspectorLotMediaDownload {
     width: 190px;
@@ -455,7 +472,7 @@ div.inspectorCheckedOut {
 #leftNav #inspectorMedia {
     border: 1px solid #FFFFFF;
     margin-top: 0px;
-    padding: 0px 8px 0px 8px;
+    padding: 0px 8px 0px 5px;
     width:170px;
 }
 
@@ -488,7 +505,7 @@ div.inspectorCheckedOut {
     margin: 0px;
     border:none;
 }
-#leftNav #inspectorMedia ul li a {_height: 15px; text-decoration: none; display: block; padding: 3px 0; background: transparent url('../graphics/icons/arrow_gray.gif') no-repeat 20px 8px; padding-left: 30px; padding-right: 5px; margin: 0;}
+#leftNav #inspectorMedia ul li a {_height: 15px; text-decoration: none; display: block; padding: 3px 0; background: transparent url('../graphics/icons/rightArrowSmall.png') no-repeat 20px 8px; padding-left: 30px; padding-right: 5px; margin: 0;}
 
 #leftNav #inspectorMedia ul li a:hover { background-color: #fff; }
 
@@ -518,7 +535,7 @@ div.inspectorCheckedOut {
     margin: 0px;
     border:none;
 }
-#leftNav #authorityInfo ul li a {_height: 15px; text-decoration: none; display: block; padding: 3px 0; background: transparent url('../graphics/icons/arrow_gray.gif') no-repeat 20px 8px; padding-left: 30px; padding-right: 5px; margin: 0;}
+#leftNav #authorityInfo ul li a {_height: 15px; text-decoration: none; display: block; padding: 3px 0; background: transparent url('../graphics/icons/rightArrowSmall.png') no-repeat 20px 8px; padding-left: 30px; padding-right: 5px; margin: 0;}
 
 #leftNav #authorityInfo ul li a:hover { background-color: #fff; }
 #leftNav #widgets{
@@ -764,8 +781,8 @@ li.sfHover > a:link, li.sfHover > a:visited {
     margin: 5px 12px 0px 0px;
 }
 a.sf-menu-selected {
-    color:#FFFFFF;
-    background-color: #4b4a4a;
+    color:#333;
+    background-color: #eee;
 }
 
 a.sf-menu-selected:hover {
@@ -800,7 +817,7 @@ a.sf-menu-disabled {
 }
 
 /*** arrows **/
-.sf-menu a.sf-with-ul {
+.sf-menu a.sf-with-ul, .sf-menu a.sf-with-ul:focus, .sf-menu a.sf-with-ul:active {
     padding-right: 	1em;
     min-width:		1px; /* trigger IE7 hasLayout so spans position accurately */
     text-transform:uppercase;
@@ -939,6 +956,9 @@ li.sfHover > a > .sf-sub-indicator {
     z-index:1;
     margin-bottom:5px;
 }
+#browseTypeMenu .fa {
+	font-size:18px;
+}
 .sf-hier-menu {
 
 }
@@ -1045,7 +1065,7 @@ li.sfHover > a > .sf-sub-indicator {
 /*** NOTIFICATIONS ***/
 
 div.notification-info-box {
-    background:	url('../graphics/icons/info.gif') no-repeat 10px 7px;
+    background:	url('../graphics/icons/info.png') no-repeat 10px 7px;
     background-size:32px 32px;
     text-indent: 32px;
     background-color: #f3f3f3;
@@ -1060,7 +1080,7 @@ div.notification-info-box {
 }
 
 div.notification-error-box {
-    background:	url('../graphics/buttons/glyphicons_078_warning_sign.png') no-repeat 10px 5px;
+    background:	url('../graphics/icons/glyphicons_078_warning_sign.png') no-repeat 10px 5px;
     text-indent: 32px;
     background-color: #eeeeee;
     padding: 5px;
@@ -1188,11 +1208,6 @@ div.hint {
     width:22px;
     height:12px;
     display:inline-block;
-    overflow:hidden;
-    background-image: url('../graphics/icons/doc.png');
-    background-size:20px 12px;
-    background-repeat: no-repeat;
-    text-indent: 30px;
 }
 .bundleLabel .expand img{
 	width:16px;
@@ -1201,6 +1216,18 @@ div.hint {
 }
 .settingsBundle {
     padding: 10px;
+}
+
+.caDupeLabelMessageBox {
+    margin: 0 auto;
+    width: 200px;
+    font-family: Helvetica Neue, sans-serif;
+    color: #b32b21;
+}
+
+.caDupeAttributeMessageBox {
+    font-family: Helvetica Neue, sans-serif;
+    color: #b32b21;
 }
 
 /* often times referred to as bundlePreview */
@@ -1282,7 +1309,7 @@ div.hint {
 	text-transform:uppercase;
 	text-align: left;
 	width:30%;
-    overflow: scroll;
+    overflow: hidden;
 	display:inline-block;
 	font-weight:bold;
 	color: #666;
@@ -1423,7 +1450,7 @@ a.form-button, span.form-button, del.form-button{
     padding:0 10px 0 0;
     vertical-align:middle;
 
-    padding-top: 0px; /* was -2 */
+    padding-top: -2px; /* was -2 */
     _position:relative;
     _width:10px;
     _overflow-y:hidden;
@@ -1433,7 +1460,9 @@ a.form-button, span.form-button, del.form-button,
 a.form-button span, span.form-button button, span.form-button input, del.form-button span{
    /* background-image:url('../graphics/backgrounds/form_buttons.png'); */
 }
-
+#caChangeTypeFormCancelButton .fa {
+	font-size:30px;
+}
 a.form-button span, span.form-button button, span.form-button input, del.form-button span{
 
 	white-space: nowrap;
@@ -1456,14 +1485,7 @@ a.form-button span, span.form-button button, span.form-button input, del.form-bu
 	border: none;
 	vertical-align: text-top;
 	zoom: 1;
-	_position: relative;
-	_padding-left: 0px;
-	_padding-right: 12px;
-	_margin-right: -10px;
-	_display: block;
-	_top: 0;
-	_right: -5px;
-	padding: 12px 12px 0px 6px;
+	padding: 3px 12px 0px 6px;
 	border-radius: 4px;
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
@@ -1479,6 +1501,9 @@ a.form-button img {
 }
 .control-box a.form-button {
 	padding-bottom:5px;
+}
+#submitSearch .fa{
+	font-size:15px !important;
 }
 a.form-button img.deleteIcon {
 	margin-top:-7px;
@@ -1538,17 +1563,15 @@ html.safari span.form-button button:focus{
 	font-family: 'DIN-Regular';
 	font-weight: bold;
 	vertical-align: top;
-	padding-top: 10px;
-}
-#caTypeChangePanelControlButtons .saveButton img{
-	margin-top: -10px;
-	margin-right: 4px;
 }
 
 del.form-button{
     /* cursor:not-allowed;	*/
     background-position:0 -180px;
 
+}
+.form-button.delete:hover .fa, .form-button.delete:hover, .form-button.delete .fa:hover {
+	color:red;
 }
 
 del.form-button span{
@@ -1649,7 +1672,25 @@ table.listtable {
     width: 100%;
     text-align: left;
     clear:both;
+    border-collapse: collapse;
 }   
+
+table.listtable tr, table.listtable tr td, table.listtable tr th {
+	border: 1px solid #ccc;
+}
+
+.listtableEdit {
+	width: 16px;
+	text-align: center;
+	padding: 3px !important;
+}
+
+.listtableEditDelete {
+	width: 36px;
+	text-align: center;
+	padding: 3px !important;
+}
+
 #caWatchedItemsList.listtable {
 	font-size:12px;
 } 
@@ -1663,6 +1704,7 @@ table.listtable thead tr th {
     background-repeat: no-repeat;
     background-position: center right;
     cursor: pointer;
+    background-color:#eee;
 }
 #caSetList.listtable thead tr th, 
 #caGroupList.listtable thead tr th, 
@@ -1708,7 +1750,19 @@ table.listtable tbody td {
     color: #3D3D3D;
     padding: 4px;
     background-color: #FFF;
-    vertical-align: top;
+    vertical-align: middle;
+    width:42px;
+}
+table.listtable tbody td.listtableEditDelete {
+	width:55px;
+}
+table.listtable tbody td.listtableEditDelete a {
+	display:inline-block;
+	margin-top:5px;
+}
+table.listtable tbody td .fa {
+	padding-left:5px;
+	display:inline-block;
 }
 table#caCommentsList tbody td {
 	max-width:140px;
@@ -1777,7 +1831,7 @@ td.listtableTotals {
 div.control-box {
     background-color: #f7f7f7;
     padding: 4px;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
     text-align: right;
     width: 99%;
     float: left;
@@ -1843,6 +1897,12 @@ a.deleteButton span{
 	color: red;
 	font-weight:bold;
 }
+a.deleteButton span .caIcon:hover{
+	color:red;
+}
+a.deleteButton span.form-button:hover {
+	color:red;
+}
 div.control-box-right-content select {
     width: 150px;
 }
@@ -1891,6 +1951,16 @@ div.search-hier-browser-box {
     background-color: #fbfbfb;
     border: 0px solid #e6e6e6;
     padding-left:0px;
+}
+.bundleContainer .caDeleteLabelButton .fa, .bundleContainer .caDeleteItemButton .fa{
+	font-size:18px;
+	padding-right: 1px;
+    color: #888;
+    margin-top: -3px;
+    margin-bottom: 5px;
+}
+.bundleContainer .caDeleteLabelButton .fa:hover, .bundleContainer .caDeleteItemButton .fa:hover{
+	color:red;
 }
 
 .labelInfo {
@@ -2021,6 +2091,13 @@ select.searchSetSelect {
     margin-bottom:10px;
 }
 /* search/browse options box - horizontal show hide */
+#showResultsEditor{
+    margin: 15px 0 0 0;
+    text-decoration:none;
+    text-transform:uppercase;
+    color:#828282;
+}
+
 #showOptions{
     float:right;
     margin: 1px 2px 0px 15px;
@@ -2028,8 +2105,8 @@ select.searchSetSelect {
     text-transform:uppercase;
     color:#828282;
     font-size:9px;
-
 }
+
 #hideOptions{
     float:right;
     margin: 2px 0px 0px 0px;
@@ -2041,7 +2118,7 @@ select.searchSetSelect {
 
 #saveOptions{
     float:right;
-    margin: 2px 0px 0px 10px;
+    margin: 2px 5px 0px 0px;
     text-decoration:none;
     text-transform:uppercase;
     color:#333;
@@ -2083,6 +2160,8 @@ select.searchSetSelect {
 	padding: 20px 15px 5px 15px;
 	z-index: 20000;
 	border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
 	box-shadow: 0 0 5px #bbb;
 }
 
@@ -2229,6 +2308,8 @@ a#hideRefine img {
 	padding: 20px 15px 5px 15px;
 	z-index: 20000;
 	border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
 	box-shadow: 0 0 5px #bbb;
 }
 
@@ -2250,12 +2331,12 @@ select.searchToolsSelect {
 }
 
 #searchSetTools {
-	background-color:#f7f7f7;
-	border-radius:4px;
-	-moz-border-radius:4px;
-	-webkit-border-radius:4px;
-	margin:10px;
-	padding:10px 10px 0px 10px;
+	background-color: #f7f7f7;
+	border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	margin: 10px;
+	padding: 10px;
 }
 #searchSetTools .col{
 	margin-bottom:15px;
@@ -2286,6 +2367,7 @@ select.searchToolsSelect {
 	text-align: right;
 	float: right;
 	margin-top: 5px;
+	font-size: 12px;
 }
 #hideSets img, #hideViz img{
 	width:16px;
@@ -2301,6 +2383,8 @@ select.searchToolsSelect {
 	left: 42px;
 	display: none;
 	border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
 	-moz-box-shadow: 0 0 5px #888;
 	-webkit-box-shadow: 0 0 5px#888;
 	box-shadow: 0 0 5px #888;
@@ -2315,6 +2399,8 @@ select.searchToolsSelect {
 	left: 82px;
 	display: none;
 	border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
 	-moz-box-shadow: 0 0 5px #888;
 	-webkit-box-shadow: 0 0 5px#888;
 	box-shadow: 0 0 5px #888;
@@ -2434,6 +2520,18 @@ select.searchToolsSelect {
     background-color:#f7f7f7;
     clear:both;
 }
+#leftNav #inspectorInfo.setDelete, #leftNav #inspectorInfo.setDelete a {
+	color: red;
+}
+#leftNav #inspectorInfo.setDelete .fa {
+	color:black;
+}
+#leftNav #inspectorInfo.setDelete a:hover .fa{
+	color: red;
+}
+#leftNav #inspectorInfo.setDelete {
+	background-color:#FFCCCB;
+}
 #leftNav #inspectorShowMedia {
 	text-align: center;
 	opacity: .4;
@@ -2526,13 +2624,21 @@ table.representationAnnotationListItem {
     height: 100%;
 }
 
+#caMediaOverlayTileViewer {
+	width: 100% !important;
+	height: 100% !important;
+}
+
 #caMediaDisplayContent, #caMediaOverlayContent {
     margin: 0px;
-    width: 100%;
-    height: 100%;
     /* overflow: auto; */
     text-align: center;
-    position: relative;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    padding-bottom: 36px;
 }
 
 #caMediaPanelProgress {
@@ -2563,6 +2669,7 @@ div.caMediaOverlayControls a{
     text-decoration:none;
     font-weight:bold;
     font-size:16px;
+    line-height: 12px;
     color:#FFF;
 }
 div.caMediaOverlayControls a:hover{
@@ -2580,12 +2687,17 @@ div.caMediaOverlayControls .close a {
     text-decoration: none;
 }
 
-div.caMediaOverlayControls .download{
+div.caMediaOverlayControls .download {
     float:right;
     margin-left:20px;
 }
+
+div.caMediaOverlayControls .download form a {
+	font-size: 12px;	
+}
+
 div.caMediaOverlayControls .objectInfo{
-    font-size:11px;
+    font-size:12px;
     color:#FFF;
     padding-left:10px;
     text-align:left;
@@ -2748,8 +2860,9 @@ table.attributeListItem {
 
 .editorBatchModeControl {
     float: right;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: normal;
+    margin-top:-3px;
 }
 
 .editorBatchBundleContent {
@@ -2761,7 +2874,7 @@ table.attributeListItem {
 }
 
 .editorBatchModeControl select {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: normal;
 }
 
@@ -2779,7 +2892,7 @@ table.attributeListItem {
     width: 210px;
     height: 250px;
     padding: 8px;
-    border: 2px solid #000000;
+    border: 2px solid #999;
     top: 0px;
     left: 0px;
 
@@ -2787,9 +2900,9 @@ table.attributeListItem {
 
     display: none;
 
-    -moz-border-radius-: 10px;
-    -webkit-border-radius: 10px;
-    border-radius: 10px;
+    border-radius: 4px;
+    -moz-border-radius-: 4px;
+    -webkit-border-radius: 4px;
 }
 
 a.editorFieldListLink {
@@ -2865,7 +2978,7 @@ div.editorBundleValuePrintControl select {
     width: 920px;
     height: 380px;
     padding: 8px;
-    border: 2px solid #000000;
+    border: 2px solid #999;
     top: 0px;
     left: 0px;
 
@@ -2873,9 +2986,9 @@ div.editorBundleValuePrintControl select {
 
     display: none;
 
-    -moz-border-radius-: 10px;
-    -webkit-border-radius: 10px;
-    border-radius: 10px;
+    -moz-border-radius-: 4px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
 }
 
 a.caHierarchyOverviewLink {
@@ -2940,13 +3053,13 @@ div.caObjectRepresentationSourceDisplay h3 {
 }
 
 div.caObjectRepresentationListInfoSubDisplay {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: normal;
     padding-top: 3px;
 }
 
 div.caObjectRepresentationListInfoSubDisplay h3 {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: bold;
     display: inline;
 }
@@ -2957,25 +3070,44 @@ a.caObjectRepresentationListInfoSubDisplayFilename {
 }
 
 div.caObjectRepresentationMetadataDisplay {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: normal;
 }
 
 a.caObjectRepresentationMetadataButton {
     text-decoration: none;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: bold;
     margin-right: 20px;
 }
+.mediaRight {
+	float: right; 
+	width: 20%;
+}
+.mediaRight .fa {
+	font-size:18px;
+	padding-right:5px;
+}
+.downloadAll {
+    text-align: right;
+    float: right;
+    margin: 10px 5px 0 0;
+    font-size: 12px;
+    border-bottom: 1px solid #eee;
+    width: 100%;
+    padding-bottom: 5px;
+}
+.downloadAll .fa {
+	font-size:18px;
+}
 
 div.caObjectRepresentationMetadata {
-	background: #fbfbfb;
 	font-size: 10px;
 	width: 714px;
 	height: 200px;
 	overflow: auto;
 	padding: 8px;
-	line-height: 14px;
+	line-height: 18px;
 	font-weight: normal;
 	color: #000000;
 	background-color: #f2f2f2;
@@ -3052,6 +3184,12 @@ div.caObjectRepresentationDetailEditorElement {
     float: left;
     font-size: 10px;
     margin-right: 5px;
+}
+
+div.caObjectRepresentationDetailEditorText {
+    font-size: 14px;
+    font-weight: normal;
+    margin: 5px 0 10px 0;
 }
 
 div.caObjectRepresentationDetailEditorElement div select{
@@ -3457,6 +3595,11 @@ div.hierarchyBrowserCurrentSelection {
     margin-bottom: 5px;
 }
 
+div.hierarchyBrowserCurrentSelectionText {
+	width: 100%;
+	text-align: right;
+}
+
 span.hierarchyBrowserCurrentSelectionText {
     font-weight: normal;
     font-style: italic;
@@ -3468,8 +3611,9 @@ div.hierarchyBrowserSearchBar {
 	margin: 5px 0 5px 10px;
 }
 
-input.hierarchyBrowserSearchBar {
+input.hierarchyBrowserSearchBar, textarea.hierarchyBrowserSearchBar {
     font-size: 10px;
+    height: 12px;
 }
 
 ul.explore {
@@ -3545,6 +3689,9 @@ a.exploreSelected {
 .hierNav .buttonPosition{
     float:right;
     margin:-8px -5px 5px 10px;
+}
+.hierNav .form-button {
+	padding-top:10px;
 }
 .editorHierarchyBrowserContainer{
     background-color:#fafafa;
@@ -3788,7 +3935,8 @@ div.quickSearchHeader {
 }
 div.quickSearchFullResultsLink {
     float:right;
-    padding-top:2px;
+    padding-top: 0px;
+    margin-top: -3px;
 }
 div.quickSearchFullResultsLink a {
     font-size:12px;
@@ -4082,6 +4230,7 @@ h2.browse {
 	text-decoration:none;
 	padding-right: 5px;
 	white-space: nowrap;
+	color: #000;
 }
 #browseFacetGroupingControls {
 	font-family: 'DIN-Regular', helvetica, sans-serif;
@@ -4094,7 +4243,7 @@ h2.browse {
 .blueDivide {
 	width:100%;
 	height:2px;
-	background-color: #1ab3c8;
+	background-color: #ddd;
 	clear:both;
 	margin-bottom:10px;
 }
@@ -4128,7 +4277,7 @@ div.browseSelectPanelListGroupHeading {
 	padding-top: 5px;
 	margin-bottom: 10px;
 	font-family: 'DIN-Regular', helvetica, sans-serif;
-	background-color: #1ab3c8;
+	background-color: #ddd;
 	padding-left: 10px;
 	border-radius: 4px;
 	-moz-border-radius: 4px;
@@ -4628,11 +4777,15 @@ div.bundleDisplayEditorPlacement {
     background-image:url('../graphics/buttons/glyphicons_186_move.png');
     background-position: 98% 50%;
     background-repeat:no-repeat;
-    border-radius: 4px;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
     background-size:14px 14px;
     font-size:12px;
+}
+div.bundleDisplayEditorPlacement .fa {
+	font-size:18px;
+	margin-top:-4px;
 }
 div.bundleDisplayEditorPlacement img{
 	width:16px;
@@ -4658,10 +4811,10 @@ span.bundleDisplayEditorPlacementListItemTitle {
 }
 .elementSettingsUI {
 	position: absolute;
-	top: 40px;
-	left: 150px;
+	top: 20px;
+	left: 100px;
 	overflow: auto;
-	width: 400px;
+	width: 500px;
 	max-height:500px;
 	background-color: rgb(255, 255, 255);
 	padding: 20px;
@@ -4671,6 +4824,10 @@ span.bundleDisplayEditorPlacementListItemTitle {
 	-moz-box-shadow: 0 0 5px #888;
 	-webkit-box-shadow: 0 0 5px#888;
 	box-shadow: 0 0 5px #888;
+	z-index:10000;
+}
+.elementSettingsUI .fa {
+	font-size:18px;
 }
 .elementSettingsUI a{
 	float:right;
@@ -4716,7 +4873,6 @@ div.bundleDisplayTemplateKey {
 
 div.bundleDisplayElementSettingsControl {
     float: right;
-    margin-right: 15px;
 }
 
 .bundleDisplayElementBundleName {
@@ -4733,6 +4889,10 @@ table.uiScreenItem {
     width: 100%;
     border-bottom: #ddd dashed 1px;
 }
+table.uiScreenItem .fa{
+	font-size:18px;
+	padding-left:10px;
+} 
 
 .uiScreenInfo {
     font-size: 12px;
@@ -4877,21 +5037,13 @@ a.dashboardControl {font-weight:normal; padding-right:10px; text-decoration:none
     width:16px;
     height:16px;
     margin:5px 0px 0px 5px;
-    background-image:url("../graphics/buttons/infoIconDashboard.gif");
     border:0px;
-    background-size:16px 16px;
-    background-color: #333;
-	border-radius: 8px;
 }
 .dashboardRemoveWidget {	/* style for "X" remove button on widgets */
     float: right;
     width:16px;
     height:16px;
     margin:5px 5px 0px 5px;
-    background-image:url("../graphics/buttons/deleteDashboard.gif");
-    background-size:16px 16px;
-    background-color: #333;
-	border-radius: 8px;
 }
 a.dashboardRemoveWidget {
     border:0px;
@@ -5298,17 +5450,17 @@ a.quickaddMenuItem {
 div.roundedRel {
     font-size: 10px;
     font-weight: normal;
-    padding: 2px 4px 4px 8px;
+    padding: 8px 4px 4px 8px;
     margin: 5px;
     float: left;
     border: 1px solid #ddd;
     background-color:#e9e9e9;
     min-height: 18px;
+    border-radius: 4px;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
-    border-radius: 4px;
+    
     -webkit-border-bottom-right-radius: 4px;
-    border-radius: 4px;
 }
 div.roundedRel a{
 	color: #333;
@@ -5371,6 +5523,9 @@ div.listRel:first-of-type {
     border: 1px solid #e6e6e6;
 
     z-index: 10000;
+
+    max-height: 350px;
+    overflow: scroll;
 }
 
 .caItemListSortControls ul {
@@ -5404,7 +5559,6 @@ a.caItemLoadNextBundles {
 
 .roundedRel .caDeleteItemButton, .roundedRel .caInterstitialEditButton {
     position: relative;
-    top: 3px;
 }
 
 .listRel .caDeleteItemButton, .listRel .caInterstitialEditButton {
@@ -5562,7 +5716,7 @@ a.caDeleteLabelButton {
 
 /* Application monitor styles */
 #caApplicationMonitor {
-    border: 2px solid #333333;
+    border: 2px solid #999;
     display: none;
     overflow: auto;
     width: 900px;
@@ -5571,9 +5725,9 @@ a.caDeleteLabelButton {
     top: 100px; left: 50%; margin: 0 0 0 -450px;
     background: #ffffff;
     padding: 15px;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
-    border-radius: 10px;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
 }
 
 /* -------------------------------------------------*/
@@ -5582,9 +5736,9 @@ a.caDeleteLabelButton {
 
 .globalAccess {
     background-color:#eee;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
-    border-radius: 10px;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
     padding:10px;
     margin-bottom: 15px;
 }
@@ -6012,7 +6166,6 @@ input[type='text'].ui-autocomplete-loading {
     background: white url('../graphics/icons/indicator.gif') right center no-repeat;
 }
 
-
 div.componentAddTypeList {
     float: left;
     margin-top: 6px;
@@ -6041,167 +6194,6 @@ div.debugLabel {
 .vizTitle {
     font-weight: bold;
     margin-top: 5px;
-}
-
-/** 
- *
- * Spreadsheet "inline" results editor
- *
- **/
-
-.caResultsEditorContainer {
-    position: relative;
-    background: #ffffff;
-    overflow: hidden;
-}
-
-.caResultsEditorContainerFullScreen {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    z-index: 999999;
-}
-
-.caResultsEditorContent {
-    width: 740px;
-    height: 500px;
-    overflow: scroll;
-}
-
-.caResultsEditorContentFullScreen {
-    width: 1024px;
-    height: 600px;
-    overflow: hidden;
-}
-
-a.caResultsEditorToggleFullScreenButton {
-    float: right;
-    color: #134959;
-    text-decoration: none;
-    font-size: 11px;
-    padding: 10px;
-}
-
-a.caResultsEditorToggleExitFullScreenButton {
-    float: right;
-    color: #134959;
-    text-decoration: none;
-    font-size: 11px;
-    font-weight:bold;
-    display: none;
-    padding: 10px;
-}
-
-a.caResultsEditorToggleFullScreenButton:hover{
-    color: #1ab3c8;
-}
-
-a.caResultsEditorToggleExitFullScreenButton:hover{
-    color: #1ab3c8;
-}
-
-#caResultsEditorStatus {
-    display: none;
-}
-
-#caResultsEditorStatusDisplay {
-    margin-top: 10px;
-    font-size: 12px;
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-weight: bold;
-}
-
-#caResultsEditorFullScreenStatusDisplay {
-    font-size: 14px;
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-weight: bold;
-    color: #fff;
-}
-
-#caResultsEditorPanel {
-    position: fixed;
-    top: 0px;
-    left: 0px;
-    width: 100%;
-    height: 100%;
-    display: none;
-    margin: 0px;
-    padding: 0px;
-    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
-}
-
-#caResultsEditorPanelContentArea {
-    width: 100%;
-    height: 100%;
-}
-
-div.caResultsEditorControls {
-    background-color: #000;
-    color:#FFF;
-    font-size: 11px;
-    text-align:center;
-    position:absolute;
-    padding: 10px 0px 10px 0px;
-    width:100%;
-    bottom:0px;
-    left:0px;
-    z-index: 32000;			/* needs to be on top of caResultsEditorPanel, which has z-index=31000 */
-    opacity: 1.0;
-    display: none;
-    height: 12px;
-}
-
-div.caResultsEditorControls a{
-    text-decoration:none;
-    font-weight:bold;
-    font-size:16px;
-    color:#FFF;
-}
-div.caResultsEditorControls a:hover{
-    color:#FFF;
-}
-div.caResultsEditorControls .close {
-    float:right;
-    width:15px;
-    height:16px;
-    background-image:url("../graphics/buttons/x_white.png");
-    margin: 0px 10px 0px 20px;
-}
-
-div.caResultsEditorControls .close a {
-    text-decoration: none;
-}
-
-div.caResultsEditorControls .download{
-    float:right;
-    margin-left:20px;
-}
-
-div.caResultsEditorControls .info{
-    font-size:11px;
-    color:#FFF;
-    padding-left:10px;
-    text-align:left;
-    width:40%;
-    float:left;
-}
-
-.caResultsEditorEditLink {
-    position: relative;
-    top: 5px;
-}
-
-.caResultsEditorCurrentRow {
-    background-color: #f9f9f9 !important;
-}
-
-.caResultsEditorCurrentCol {
-    background-color: #f9f9f9 !important;
-}
-
-.caResultsEditorReadOnlyCell {
-    background-color: #dcdcdc !important;
-    color: #333333  !important;
 }
 
 /*  Media representation chooser (bundle ca_object_representation_choose)  */
@@ -6282,9 +6274,9 @@ div.caRepresentationMediaReplicationControls {
     color: #000000;
 
     background-color: #eee;
-    -moz-border-radius-: 10px;
-    -webkit-border-radius: 10px;
-    border-radius: 10px;
+    border-radius: 4px;
+    -moz-border-radius-: 4px;
+    -webkit-border-radius: 4px;
 }
 
  /* Metadata Export */
@@ -6540,11 +6532,15 @@ div.caUseHistoryEntry {
 	border-top: 1px dotted #e6e6e6;
 }
 
+div.caUseHistoryEntryFirst {
+	border: none;
+}
+
 div.caUseHistoryButtonBar {
 	padding: 10px;
 }
 
-.caChangeLocationButton, .caAddLoanButton {
+.caChangeLocationButton, .caAddLoanButton, .caAddOccurrenceButton {
 	margin-top: 5px;
 }
 
@@ -6579,6 +6575,18 @@ div.caUseHistoryDate {
 	
 	font-style: italic;
 	font-size: 9px;
+}
+
+h2.caUseHistorySetLocationHeading {
+	float: left;
+}
+
+div.caUseHistoryHierarchyBrowser {
+	border-top: 2px;
+}
+
+table.caUseHistoryUpdateLocationMetadata tr td {
+	vertical-align: middle;
 }
 
 /** Metadata dictionary **/
@@ -6699,6 +6707,9 @@ div.caLibraryTransactionListItemContainer {
 	background-color: #eee;
 	padding: 10px;
 	border-radius: 4px;
+    -moz-border-radius-: 4px;
+    -webkit-border-radius: 4px;
+    
 	margin: 5px 0 0 0;
 }
 
@@ -6740,6 +6751,8 @@ div.caLibraryTransactionResultsContainer {
 	background-color: #eee;
 	padding: 10px;
 	border-radius: 4px;
+    -moz-border-radius-: 4px;
+    -webkit-border-radius: 4px;
 	margin: 25px 0 0 0;
 }
 
@@ -6785,6 +6798,9 @@ div.caLibraryDashboardPanel {
 	border: 1px solid #333;
 	padding: 10px;
 	border-radius: 4px;
+    -moz-border-radius-: 4px;
+    -webkit-border-radius: 4px;
+    
 	width: 400px;
 	min-height: 100px;
 	margin: 10px 10px 10px 0;
@@ -6815,6 +6831,9 @@ div.caLibraryDashboardPanel {
 	border: 1px solid #333;
 	padding: 10px;
 	border-radius: 4px;
+    -moz-border-radius-: 4px;
+    -webkit-border-radius: 4px;
+    
 	width: 832px;
 	min-height: 100px;
 	margin: 10px 10px 10px 0;	
@@ -6837,9 +6856,7 @@ div.authorityReferenceListContainer {
 	min-height: 200px;
 }
 
-
 /* Media viewer */
-
 #caMediaPanelProgress {
 	display: none;
 	font-size:36px;
@@ -6865,6 +6882,289 @@ div.authorityReferenceListContainer {
 	left: -50%; 
 	top: -50%; 
 	background-color: #fff;
-	border-radius: 10px;
-	border: 1px solid #cccccc;
+	border-radius: 4px;
+    -moz-border-radius-: 4px;
+    -webkit-border-radius: 4px;
+	border: 1px solid #999;
+}
+
+/** 
+ *
+ * Spreadsheet "inline" results editor
+ *
+ **/
+ 
+#caResultsEditorWrapper {
+	
+	position: relative;
+	width: 100%; 
+	height: 100%;
+}
+ 
+#caResultsEditorWrapper .caResultsEditorStatusBar {
+	padding: 0px;
+	height: 28px;
+}
+ 
+#caResultsEditorWrapper .caResultsEditorStatus {
+    display: none;
+    margin: 4px 0 0 5px;
+}
+
+#caResultsEditorWrapper .caResultsEditorStatus {
+	float: left;
+	font-size: 14px;
+	font-weight: bold;
+	color: #fff;
+	
+}
+
+.caResultsEditorContainer {
+	padding: 0;
+	margin: 0;
+}
+
+.caResultsEditorLoading {
+	width: 300px;
+	height: 40px;
+	padding: 20px;
+	
+	text-align: center;
+
+	position: absolute;
+	top: 50%;
+	left: 50%;
+
+	margin: -70px 0 0 -170px;
+	
+	color: #fff; 
+	font-size: 30px;
+}
+
+#caResultsEditorWrapper .caResultsEditorStatusBar .close a i {
+	color: #fff;
+}
+
+#caResultsEditorPanel {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    display: none;
+    margin: 0px;
+    padding: 0px;
+    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+    overflow: hidden;
+}
+
+#caResultsEditorPanelContentArea {
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    overflow: hidden;
+}
+
+#caResultsEditorGrid {
+	width: 100%;
+	height: 100%;
+}
+
+#caResultsEditorWrapper .close {
+	float: right;
+	text-decoration: none;
+	margin: 1px 5px 0 0;
+}
+
+.caResultsEditorReadOnlyCell {
+	position: relative;
+}
+
+.caResultsEditorErrorCell {
+	border: 2px dashed #cc0000 !important;
+}
+
+.caResultsEditorNonEditableCell {
+	 background:url(
+		data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAAXNSR0IArs4c6QAAABZJREFUCB1jYEACZ86c+Q/nEskBqgcAy7kNjS5U9PIAAAAASUVORK5CYII=
+   ) repeat;
+}
+
+.caResultsEditorOverlayIcon {
+	position: absolute;
+	width: 14px;
+	height: 14px;
+	top: 0px;
+	right: 0px;
+}
+
+/* Quick add */
+.caResultsComplexDataEditorPanel {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 900px;
+    height: 600px;
+    overflow: hidden;
+    display: none;
+    margin: 0px;
+    padding:0px !important;
+    border: 2px solid #999;
+    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+    background-color: #fff;
+    
+	border-radius: 4px;
+    -moz-border-radius-: 4px;
+    -webkit-border-radius: 4px;
+}
+
+#caResultsComplexDataEditorPanelControlButtons {
+    width: 100%;
+    text-align: center;
+    margin: 0px;
+    padding: 0px;
+}
+
+div.caResultsComplexDataEditorErrorContainer {
+    width: 100%;
+    display: none;
+    z-index:33000;
+}
+
+.caResultsComplexDataEditorSectionBox{
+    margin: 0px;
+    padding: 0 5px 0 5px;
+    height: 325px;
+    overflow: auto;
+}
+
+/**
+ * 
+ * FontAwesome icon styles
+ *
+ */
+.caIcon {
+	color :#000;
+	text-decoration: none;
+	vertical-align: -15%;
+}
+
+.caNavHeaderIcon {
+	float: right; 
+	margin: 0px 0 0 5px;
+}
+
+.caIcon:hover {
+	color: #1ab3c8;
+}
+
+.caIconRed {
+	color: #cc0000;
+}
+
+.infoIcon {
+	padding-left:5px;
+	line-height:8px !important;
+}
+
+/**
+ * 
+ * ThreeSixty spinning image viewer
+ *
+ */
+.threesixty {
+  position: relative;
+  margin: auto;
+  text-align: left;
+}
+.threesixty .threesixty_images {
+  display: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.threesixty .threesixty_images img {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: auto;
+}
+.threesixty .threesixty_images img.previous-image {
+  visibility: hidden;
+  /*
+           Do not put here any other styles.
+           It causes massive recalc / repaints and image flickering,
+           especially on Firefox.
+        */
+
+}
+.threesixty .threesixty_images img.current-image {
+  visibility: visible;
+  /*
+           Do not put here any other styles.
+           It causes massive recalc / repaints and image flickering,
+           especially on Firefox.
+        */
+
+}
+.threesixty .spinner {
+  width: 60px;
+  display: block;
+  margin: 0 auto;
+  height: 30px;
+  background: #333;
+  background: rgba(0, 0, 0, 0.7);
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+}
+.threesixty .spinner span {
+  font-family: Arial, "MS Trebuchet", sans-serif;
+  font-size: 12px;
+  font-weight: bolder;
+  color: #FFF;
+  text-align: center;
+  line-height: 30px;
+  display: block;
+}
+.threesixty .nav_bar {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 11;
+}
+.threesixty .nav_bar a {
+  display: block;
+  width: 32px;
+  height: 32px;
+  float: left;
+  background: url(../graphics/threesixty/sprites.png) no-repeat;
+  text-indent: -99999px;
+}
+.threesixty .nav_bar a.nav_bar_play {
+  background-position: 0 0 !important;
+}
+.threesixty .nav_bar a.nav_bar_previous {
+  background-position: 0 -73px !important;
+}
+.threesixty .nav_bar a.nav_bar_stop {
+  background-position: 0 -37px !important;
+}
+.threesixty .nav_bar a.nav_bar_next {
+  background-position: 0 -104px !important;
+}
+/* html */
+.threesixty:-webkit-full-screen {
+  background: #ffffff;
+  width: 100%;
+  height: 100%;
+  margin-top: 0;
+  padding-top: 200px;
+}
+.threesixty:-moz-full-screen {
+  background: #ffffff;
+  width: 100%;
+  height: 100%;
+  margin-top: 0;
+  padding-top: 200px;
 }

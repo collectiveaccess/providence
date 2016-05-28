@@ -132,6 +132,9 @@
  						$va_tmp = caMakeTypeIDList($t_subject->tableName(), array($vs_type));
  						$vn_type_id = array_shift($va_tmp);
  					}
+					if(!$vn_type_id) {
+						//$vn_type_id = 2;
+					}
  					if (!$vn_type_id) {
  						$vn_type_id = $t_subject->getDefaultTypeID();
  					}
@@ -147,7 +150,9 @@
  				}
  			}
  			$this->request->setParameter('type_id', $vn_type_id);
- 			$t_subject->set('type_id', $vn_type_id);
+			if($t_subject->hasField('type_id')) {
+				$t_subject->set('type_id', $vn_type_id);
+			}
  			
  			$t_ui = ca_editor_uis::loadDefaultUI($this->ops_table_name, $this->request, $vn_type_id, array('editorPref' => 'quickadd'));
  			if (!$t_ui) {
@@ -209,7 +214,7 @@
 			$this->view->setVar('fieldNamePrefix', $_REQUEST['_formName']);
 			$this->view->setVar('n', $vs_n);
 			
-			$this->view->setVar('q', $this->request->getParameter('q', pString));
+			$this->view->setVar('q', preg_replace("!^[^:]*:!", "", $this->request->getParameter('q', pString)));
 			
 			$this->view->setVar('default_parent_id', $this->opo_result_context->getParameter($t_subject->tableName().'_last_parent_id'));
 			
@@ -440,7 +445,9 @@
 			}
 			
 			// then set the empty row's type_id
-			$t_subject->set($t_subject->getTypeFieldName(), $vn_type_id);
+			if($vs_type_field_name = $t_subject->getTypeFieldName()) {
+				$t_subject->set($vs_type_field_name, $vn_type_id);
+			}
 			
 			// then reload the definitions (which includes bundle specs)
 			$t_subject->reloadLabelDefinitions();

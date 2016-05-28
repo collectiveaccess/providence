@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -81,7 +81,7 @@
 			
 			// Set occurrence parents
 			if ($va_parents = $pa_item['settings']['occurrenceHierarchyBuilder_parents']) {
-				$vn_parent_id = caProcessRefineryParents('occurrenceHierarchyBuilderRefinery', 'ca_occurrences', $va_parents, $pa_source_data, $pa_item, null, $pa_options);
+				$vn_parent_id = caProcessRefineryParents('occurrenceHierarchyBuilder', 'ca_occurrences', $va_parents, $pa_source_data, $pa_item, null, $pa_options);
 			}
 			
 			return $vn_parent_id;
@@ -99,6 +99,15 @@
 	}
 	
 	BaseRefinery::$s_refinery_settings['occurrenceHierarchyBuilder'] = array(	
+		'occurrenceHierarchyBuilder_matchOn' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'width' => 10, 'height' => 1,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Match on'),
+			'description' => _t('List indicating sequence of checks for an existing record; values of array can be "preferred_labels" (or "label"), "nonpreferred_labels", "idno" or a metadata element code. Ex. array("idno", "label") will first try to match on idno and then label if the first match fails')
+		),
 		'occurrenceHierarchyBuilder_parents' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_SELECT,
@@ -109,4 +118,3 @@
 			'description' => _t('Occurrence parents to create')
 		)
 	);
-?>

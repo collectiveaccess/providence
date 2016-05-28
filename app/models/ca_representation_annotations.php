@@ -287,7 +287,18 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	protected function initLabelDefinitions($pa_options=null) {
 		parent::initLabelDefinitions($pa_options);
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
-		$this->BUNDLES['ca_objects_table'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects table'));
+		$this->BUNDLES['ca_objects_table'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects list'));
+		$this->BUNDLES['ca_objects_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects list'));
+		$this->BUNDLES['ca_object_representations_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related object representations list'));
+		$this->BUNDLES['ca_entities_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities list'));
+		$this->BUNDLES['ca_places_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related places list'));
+		$this->BUNDLES['ca_occurrences_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related occurrences list'));
+		$this->BUNDLES['ca_collections_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related collections list'));
+		$this->BUNDLES['ca_list_items_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related list items list'));
+		$this->BUNDLES['ca_storage_locations_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related storage locations list'));
+		$this->BUNDLES['ca_loans_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related loans list'));
+		$this->BUNDLES['ca_movements_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related movements list'));
+		$this->BUNDLES['ca_object_lots_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related object lots list'));
 		$this->BUNDLES['ca_entities'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities'));
 		$this->BUNDLES['ca_places'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related places'));
 		$this->BUNDLES['ca_occurrences'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related occurrences'));
@@ -302,7 +313,8 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	 * @param mixed $pm_fields
 	 * @param mixed $pm_value
 	 * @param array $pa_options Most options are handled by subclasses. Options defined here include:
-	 *		assumeIdnoStubForLotID = set to force lookup of lot_id values as ca_object_lots.idno_stub values first not matter what, before consideration as a numeric lot_id. The default is false, in which case integer values are considered lot_ids and non-numeric values possible idno_stubs.
+	 *		assumeIdnoForRepresentationID = set to force lookup of representation_id values as ca_representations.idno values first not matter what, before consideration as a numeric representation_id. The default is false, in which case integer values are considered representation_ids and non-numeric values possible idnos.
+	 *		tryObjectIdnoForRepresentationID = try to set representation_id using the primary representation of the object with idno as specified for representaton_id
 	 *		
 	 * @return int 
 	 */
@@ -311,11 +323,22 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 			$pm_fields = array($pm_fields => $pm_value);
 		}
 		$pb_assume_idno_for_representation_id = caGetOption('assumeIdnoForRepresentationID', $pa_options, false);
+		$pb_try_object_idno = caGetOption('tryObjectIdnoForRepresentationID', $pa_options, false);
 		foreach($pm_fields as $vs_fld => $vs_val) {
 			if (($vs_fld == 'representation_id') && ($pb_assume_idno_for_representation_id || preg_match("![^\d]+!", $vs_val))) {
 				$t_rep = new ca_object_representations();
 				if ($t_rep->load(array('idno' => $vs_val, 'deleted' => 0))) {
 					$vn_representation_id = (int)$t_rep->getPrimaryKey();
+					$pm_fields[$vs_fld] = $vn_representation_id;
+					if ($vn_rc = parent::set($pm_fields, null, $pa_options)) {
+						$this->set('type_code', $vs_type = $this->getAnnotationType());
+					}
+					return $vn_rc;
+				}
+			}
+			
+			if (($vs_fld == 'representation_id') && ($pb_try_object_idno) && ($t_object = ca_objects::find(['idno' => "{$vs_val}"], ['allowWildcards' => true, 'returnAs' => 'firstModelInstance']))) {
+				if ($vn_representation_id = (int)$t_object->getPrimaryRepresentationID()) {
 					$pm_fields[$vs_fld] = $vn_representation_id;
 					if ($vn_rc = parent::set($pm_fields, null, $pa_options)) {
 						$this->set('type_code', $vs_type = $this->getAnnotationType());
@@ -643,6 +666,27 @@ class ca_representation_annotations extends BundlableLabelableBaseModelWithAttri
 	 */
 	public function useInEditor() {
 		return $this->opo_annotations_properties->useInEditor();
+	}
+	# ------------------------------------------------------
+	public function getTypeList($pa_options=null) {
+		$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
+		$va_type_list = array();
+		foreach($o_annotation_type_conf->get('types') as $vs_type_code => $va_type_info) {
+			if(!isset($va_type_info['typeID'])) { continue; }
+			$va_type_list[$va_type_info['typeID']] =
+				array_merge(array('idno' => $vs_type_code), $va_type_info);
+		}
+		return $va_type_list;
+	}
+	# ------------------------------------------------------
+	public function getTypeID($pn_id=null) {
+		$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
+		$va_available_types = $o_annotation_type_conf->get('types');
+		if(isset($va_available_types[$this->get('type_code')]['typeID'])) {
+			return $va_available_types[$this->get('type_code')]['typeID'];
+		}
+
+		return null;
 	}
  	# ------------------------------------------------------
  	# STATIC

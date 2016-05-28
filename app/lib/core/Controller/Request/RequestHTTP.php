@@ -163,7 +163,7 @@ class RequestHTTP extends Request {
 		$this->opa_params['GET'] =& $_GET;
 		$this->opa_params['POST'] =& $_POST;
 		$this->opa_params['COOKIE'] =& $_COOKIE;
-		$this->opa_params['URL'] = array();
+		$this->opa_params['PATH'] = array();
 		
 		$this->ops_request_method = (isset($_SERVER["REQUEST_METHOD"]) ? $_SERVER["REQUEST_METHOD"] : null);
 		
@@ -185,7 +185,7 @@ class RequestHTTP extends Request {
 		
 		$this->ops_base_path = join('/', $va_tmp);
 		$this->ops_full_path = $_SERVER['REQUEST_URI'];
-		if (!preg_match("!/index.php!", $this->ops_full_path) && !preg_match("!/service.php!", $this->ops_full_path)) { $this->ops_full_path = rtrim($this->ops_full_path, "/")."/index.php"; }
+		if (!caUseCleanUrls() && !preg_match("!/index.php!", $this->ops_full_path) && !preg_match("!/service.php!", $this->ops_full_path)) { $this->ops_full_path = rtrim($this->ops_full_path, "/")."/index.php"; }
 		$vs_path_info = str_replace($_SERVER['SCRIPT_NAME'], "", str_replace("?".$_SERVER['QUERY_STRING'], "", $this->ops_full_path));
 		
 		$this->ops_path_info = $vs_path_info ? $vs_path_info : (isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : '');
@@ -322,10 +322,16 @@ class RequestHTTP extends Request {
 		return $this->config->get('themes_directory').'/default';
 	}
 	# -------------------------------------------------------
+	/**
+	 * 
+	 */
 	public function getServiceViewPath(){
 		return $this->config->get('service_view_path');
 	}
 	# -------------------------------------------------------
+	/**
+	 * 
+	 */
 	public function getViewsDirectoryPath($pb_use_default=false) {
 		if ($this->config->get('always_use_default_theme')) { $pb_use_default = true; }
 		switch($this->getScriptName()){
@@ -339,10 +345,30 @@ class RequestHTTP extends Request {
 		}
 	}
 	# -------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function getAssetsUrlPath() {
+		return $this->config->get('ca_url_root')."/assets";
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 */
+	public function getAssetsDirectoryPath() {
+		return $this->config->get('ca_base_dir').$this->config->get('ca_url_root')."/assets";
+	}
+	# -------------------------------------------------------
+	/**
+	 * 
+	 */
 	public function isDispatched() {
 		return $this->opb_is_dispatched;
 	}
 	# -------------------------------------------------------
+	/**
+	 * 
+	 */
 	public function setIsDispatched($ps_is_dispatched=true) {
 		$this->opb_is_dispatched = $ps_is_dispatched;
 	}
@@ -442,7 +468,7 @@ class RequestHTTP extends Request {
 		return join('/', $va_url);
 	}
 	# -------------------------------------------------------
-	public function getParameter($ps_name, $pn_type, $ps_http_method=null) {
+	public function getParameter($ps_name, $pn_type, $ps_http_method=null, $pa_options=array()) {
 		if (in_array($ps_http_method, array('GET', 'POST', 'COOKIE', 'PATH', 'REQUEST'))) {
 			$vm_val = $this->opa_params[$ps_http_method][$ps_name];
 		} else {
@@ -477,7 +503,9 @@ class RequestHTTP extends Request {
 			# -----------------------------------------
 			case pString:
 				if (is_string($vm_val)) {
-					$vm_val = str_replace("\\", "\\\\", $vm_val);	// retain backslashes for some strange people desire them as valid input
+					if(caGetOption('retainBackslashes', $pa_options, true)) {
+						$vm_val = str_replace("\\", "\\\\", $vm_val);	// retain backslashes for some strange people desire them as valid input
+					}
 					$vm_val = rawurldecode($vm_val);
 					return $vm_val;
 				}
@@ -498,6 +526,7 @@ class RequestHTTP extends Request {
 	 *
 	 */
 	public function getParameters($pa_http_methods=null) {
+		if (!$pa_http_methods) { $pa_http_methods = array('GET', 'POST', 'COOKIE', 'PATH', 'REQUEST'); }
 		if($pa_http_methods && !is_array($pa_http_methods)) { $pa_http_methods = array($pa_http_methods); }
 		$va_params = array();
 		foreach($pa_http_methods as $vs_http_method) {

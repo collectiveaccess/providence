@@ -335,4 +335,3 @@ class ca_editor_ui_bundle_placements extends BaseModel {
 	}
 	# ----------------------------------------
 }
-?>

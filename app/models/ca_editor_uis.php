@@ -350,10 +350,9 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		if (!$vn_type_id && method_exists($t_instance, "getTypeFieldName") && (bool)$t_instance->getFieldInfo($t_instance->getTypeFieldName(), 'IS_NULL')) {
 			$vn_type_id = '_NONE_';
 		}
-		
 		if (!$vn_type_id || !($vn_rc = $t_ui->load($va_uis_by_type[$vn_type_id]))) {
 			$va_ui_ids = ca_editor_uis::getAvailableUIs($vn_table_num, $po_request, $vn_type_id, true);
-			
+
 			if (sizeof($va_ui_ids) == 0) { return ca_editor_uis::$s_default_ui_cache[$pm_table_name_or_num.'/'.$pn_type_id] = false; }
 			$va_tmp = array_keys($va_ui_ids);
 			if ($t_ui->load($va_tmp[0])) {
@@ -704,7 +703,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 *
 	 */
-	public function getScreenBundlePlacements($pm_screen) {
+	public function getScreenBundlePlacements($pm_screen, $pn_type_id=null) {
 		if (!$this->getPrimaryKey()) { return false; }
 		
 		$o_db = $this->getDb();
@@ -727,6 +726,15 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		while ($qr_res->nextRow()) {
 			$va_tmp = $qr_res->getRow();
 			$va_tmp['settings'] = $qr_res->getVars('settings');
+
+			// check bundle-placement type restrictions if set
+			if (
+				$pn_type_id &&
+				is_array($va_tmp['settings']['bundleTypeRestrictions']) &&
+				(sizeof($va_tmp['settings']['bundleTypeRestrictions']) > 0) &&
+				!in_array($pn_type_id, $va_tmp['settings']['bundleTypeRestrictions'])
+			) { continue; }
+				
 			$va_placements[] = $va_tmp;
 		}
 		
@@ -1087,6 +1095,17 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		if ($t_instance instanceof BaseRelationshipModel) { // interstitial type restriction incoming
 			$va_rel_type_list = $t_instance->getRelationshipTypes();
 			if(!isset($va_rel_type_list[$pn_type_id])) { return false; }
+		} elseif($t_instance instanceof ca_representation_annotations) { // annotation type restriction
+			$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
+			$vb_ok = false;
+			foreach($o_annotation_type_conf->get('types') as $vs_type_code => $va_type_info) {
+				if(isset($va_type_info['typeID']) && ($va_type_info['typeID'] == $pn_type_id)) {
+					$vb_ok = true;
+					break;
+				}
+			}
+
+			if(!$vb_ok) { return false; } // couldn't find type id
 		} else { // "normal" (list-based) type restriction
 			$va_type_list = $t_instance->getTypeList();
 			if (!isset($va_type_list[$pn_type_id])) { return false; }
@@ -1295,6 +1314,15 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 
 		if($t_instance instanceof BaseRelationshipModel) { // interstitial
 			$o_view->setVar('type_restrictions', $t_instance->getRelationshipTypesAsHTMLSelect($t_instance->getLeftTableName(),null,null,array('name' => 'type_restrictions[]', 'multiple' => 1, 'size' => 5), array('values' => $va_restriction_type_ids)));
+		} elseif($t_instance instanceof ca_representation_annotations) { // config based
+			$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
+			$va_annotation_type_select_list = array();
+			foreach($o_annotation_type_conf->get('types') as $vs_type_code => $va_type_info) {
+				if(!isset($va_type_info['typeID'])) { continue; }
+				$va_annotation_type_select_list[$vs_type_code] = $va_type_info['typeID'];
+			}
+
+			$o_view->setVar('type_restrictions', caHTMLSelect('type_restrictions[]', $va_annotation_type_select_list, array('multiple' => 1, 'size' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)));
 		} else { // list-based
 			$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)));
 		}

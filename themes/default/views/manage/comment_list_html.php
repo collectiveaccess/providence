@@ -47,10 +47,10 @@
 			<form id="commentListForm"><input type="hidden" name="mode" value="list">
 			
 			<div style="text-align:right;">
-				<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Approve'); ?>").submit();' class='form-button'><span class='form-button approve'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_APPROVE__); ?><span class='formtext'>Approve</span></span></a>
-				<a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Delete'); ?>").submit();' class='form-button'><span class='form-button delete'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DELETE__); ?><span class='formtext'>Delete</span></span></a>
+				<?php print _t('Batch actions'); ?>: <a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Approve'); ?>").submit();' class='form-button'><span class='form-button approve'><?php print caNavIcon(__CA_NAV_ICON_APPROVE__, 1); ?><span class='formtext'>Approve</span></span></a>
+				<a href='#' onclick='jQuery("#commentListForm").attr("action", "<?php print caNavUrl($this->request, 'manage', 'Comments', 'Delete'); ?>").submit();' class='form-button'><span class='form-button delete'><?php print caNavIcon(__CA_NAV_ICON_DELETE__, 1); ?><span class='formtext'>Delete</span></span></a>
 			</div>
-			<table id="caCommentsList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+			<table id="caCommentsList" class="listtable">
 				<thead>
 					<tr>
 						<th class="list-header-unsorted">
@@ -85,7 +85,7 @@
 							if($va_comment['user_id']){
 								print $va_comment['fname']." ".$va_comment['lname']."<br/>".$va_comment['user_email'];
 							}else{
-								print $va_comment['name']."<br/>".$va_comment['user_email'];
+								print $va_comment['name']."<br/>".$va_comment['email'];
 							}
 ?>
 							</div>
@@ -99,7 +99,7 @@
 <?php
 							if(is_array($va_comment['media1']) && (sizeof($va_comment['media1']) > 0)){
 								print "<span style='white-space: nowrap;'>".$va_comment['media1']['thumbnail']['TAG'];
-								print caNavButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, _t('Download'), '', 'manage', 'Comments', 'DownloadMedia', array('version' => 'original', 'comment_id' => $va_comment['comment_id'], 'mode' => 'list', 'download' => 1), array(), array('no_background' => true, 'dont_show_content' => true));
+								print caNavButton($this->request, __CA_NAV_ICON_DOWNLOAD__, _t('Download'), '', 'manage', 'Comments', 'DownloadMedia', array('version' => 'original', 'comment_id' => $va_comment['comment_id'], 'mode' => 'list', 'download' => 1), array(), array('no_background' => true, 'dont_show_content' => true));
 								print "</span>";
 							}
 ?>

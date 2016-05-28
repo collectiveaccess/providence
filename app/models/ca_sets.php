@@ -2004,6 +2004,18 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 	}
 	# ------------------------------------------------------
 	/**
+	 * Returns the name of the table that is the content type for the currently loaded set.
+	 *
+	 * @return string
+	 */
+	public function getItemType() {
+		if (!$this->getPrimaryKey()) { return null; }
+		$o_dm = $this->getAppDatamodel();
+		
+		return $o_dm->getTableName($this->get('table_num'));
+	}
+	# ------------------------------------------------------
+	/**
 	 * Returns the first item from each set listed in $pa_set_ids.
 	 *
 	 * @param array $pa_set_ids The set_ids (*not* set codes) for which the first item should be fetched
@@ -2148,16 +2160,6 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		}
 		return $vn_table_num;
 	}
-	# ------------------------------------------------------
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	# ------------------------------------------------------
 	# new functions for pawtucket lightbox
 	# ------------------------------------------------------

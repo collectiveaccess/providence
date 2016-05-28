@@ -195,19 +195,19 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		$this->opqr_insert_word = $this->opo_db->prepare($this->ops_insert_word_sql);
 		
-		$this->ops_delete_sql = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?)";
+		$this->ops_delete_sql = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?) AND (rel_type_id = ?)";
 		$this->opqr_delete = $this->opo_db->prepare($this->ops_delete_sql);
 		
-		$this->ops_delete_with_field_num_sql = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?) AND (field_table_num = ?) AND (field_num = ?)";
+		$this->ops_delete_with_field_num_sql = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?) AND (field_table_num = ?) AND (field_num = ?) AND (rel_type_id = ?)";
 		$this->opqr_delete_with_field_num = $this->opo_db->prepare($this->ops_delete_with_field_num_sql);
 		
-		$this->ops_delete_with_field_row_id_sql = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?) AND (field_table_num = ?) AND (field_row_id = ?)";
+		$this->ops_delete_with_field_row_id_sql = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?) AND (field_table_num = ?) AND (field_row_id = ?) AND (rel_type_id = ?)";
 		$this->opqr_delete_with_field_row_id = $this->opo_db->prepare($this->ops_delete_with_field_row_id_sql);
 		
-		$this->ops_delete_with_field_row_id_and_num = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?) AND (field_table_num = ?) AND (field_num = ?) AND (field_row_id = ?)";
+		$this->ops_delete_with_field_row_id_and_num = "DELETE FROM ca_sql_search_word_index WHERE (table_num = ?) AND (row_id = ?) AND (field_table_num = ?) AND (field_num = ?) AND (field_row_id = ?) AND (rel_type_id = ?)";
 		$this->opqr_delete_with_field_row_id_and_num = $this->opo_db->prepare($this->ops_delete_with_field_row_id_and_num);
 		
-		$this->ops_delete_dependent_sql = "DELETE FROM ca_sql_search_word_index WHERE (field_table_num = ?) AND (field_row_id = ?)";
+		$this->ops_delete_dependent_sql = "DELETE FROM ca_sql_search_word_index WHERE (field_table_num = ?) AND (field_row_id = ?) AND (rel_type_id = ?)";
 		$this->opqr_delete_dependent_sql = $this->opo_db->prepare($this->ops_delete_dependent_sql);
 		
 	}
@@ -1682,8 +1682,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	}
 	# -------------------------------------------------------
 	public function indexField($pn_content_tablenum, $ps_content_fieldname, $pn_content_row_id, $pm_content, $pa_options) {
-		if (is_array($pm_content)) {
-			$pm_content = serialize($pm_content);
+		if (!is_array($pm_content)) {
+			$pm_content = [$pm_content];
 		}
 		
 		$vn_boost = 1;
@@ -1729,22 +1729,24 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			}
 		} 
 		
-		if (strlen((string)$pm_content) == 0) { 
+		if (!$pm_content || !sizeof($pm_content) || (((sizeof($pm_content) == 1) && strlen((string)$pm_content[0]) == 0))) { 
 			$va_words = null;
 		} else {
 			// Tokenize string
 			if ($vb_tokenize) {
-				$va_words = $this->_tokenize((string)$pm_content);
+				$va_words = [];
+				foreach($pm_content as $ps_content) {
+					$va_words = array_merge($va_words, $this->_tokenize((string)$ps_content));
+				}
 			} else {
-				// always break things up on spaces, even if we're not actually tokenizing
-				$va_words = preg_split("![ ]+!", (string)$pm_content);
+				$va_words = $pm_content;
 			}
 		}
 		
 		$vb_incremental_reindexing = (bool)$this->can('incremental_reindexing');
 		
 		if (!defined("__CollectiveAccess_IS_REINDEXING__") && $vb_incremental_reindexing) {
-			$this->removeRowIndexing($this->opn_indexing_subject_tablenum, $this->opn_indexing_subject_row_id, $pn_content_tablenum, array($ps_content_fieldname));
+			$this->removeRowIndexing($this->opn_indexing_subject_tablenum, $this->opn_indexing_subject_row_id, $pn_content_tablenum, array($ps_content_fieldname), $pn_content_row_id, $vn_rel_type_id);
 		}
 		if (!$va_words) {
 			WLPlugSearchEngineSqlSearch::$s_doc_content_buffer[] = '('.$this->opn_indexing_subject_tablenum.','.$this->opn_indexing_subject_row_id.','.$pn_content_tablenum.',\''.$ps_content_fieldname.'\','.$pn_content_row_id.',0,0,'.$vn_private.','.$vn_rel_type_id.')';
@@ -1826,37 +1828,38 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		}
 	}
 	# ------------------------------------------------
-	public function removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id, $pn_field_tablenum=null, $pa_field_nums=null, $pn_field_row_id=null) {
+	public function removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id, $pn_field_tablenum=null, $pa_field_nums=null, $pn_field_row_id=null, $pn_rel_type_id=null) {
 
 		//print "[SqlSearchDebug] removeRowIndexing: $pn_subject_tablenum/$pn_subject_row_id<br>\n";
-
+		if (!$pn_rel_type_id) { $pn_rel_type_id = 0; }
+		
 		// remove dependent row indexing
 		if ($pn_subject_tablenum && $pn_subject_row_id && $pn_field_tablenum && $pn_field_row_id && is_array($pa_field_nums) && sizeof($pa_field_nums)) {
 			foreach($pa_field_nums as $pn_field_num) {
 				if(!$pn_field_num) { continue; }
 				//print "DELETE ROW WITH FIELD NUM $pn_subject_tablenum/$pn_subject_row_id/$pn_field_tablenum/$pn_field_num/$pn_field_row_id<br>";
-				$this->opqr_delete_with_field_row_id_and_num->execute((int)$pn_subject_tablenum, (int)$pn_subject_row_id, (int)$pn_field_tablenum, (string)$pn_field_num, (int)$pn_field_row_id);
+				$this->opqr_delete_with_field_row_id_and_num->execute((int)$pn_subject_tablenum, (int)$pn_subject_row_id, (int)$pn_field_tablenum, (string)$pn_field_num, (int)$pn_field_row_id, $pn_rel_type_id);
 			}
 			return true;
 		} else {
 			if ($pn_subject_tablenum && $pn_subject_row_id && $pn_field_tablenum && $pn_field_row_id) {
 				//print "DELETE ROW $pn_subject_tablenum/$pn_subject_row_id/$pn_field_tablenum/$pn_field_row_id<br>";
-				return $this->opqr_delete_with_field_row_id->execute((int)$pn_subject_tablenum, (int)$pn_subject_row_id, (int)$pn_field_tablenum, (int)$pn_field_row_id);
+				return $this->opqr_delete_with_field_row_id->execute((int)$pn_subject_tablenum, (int)$pn_subject_row_id, (int)$pn_field_tablenum, (int)$pn_field_row_id, $pn_rel_type_id);
 			} else {
 				if ($pn_field_tablenum && is_array($pa_field_nums) && sizeof($pa_field_nums)) {
 					foreach($pa_field_nums as $pn_field_num) {
 						if(!$pn_field_num) { continue; }
 						//print "DELETE FIELD $pn_subject_tablenum/$pn_subject_row_id/$pn_field_tablenum/$pn_field_num<br>";
-						$this->opqr_delete_with_field_num->execute((int)$pn_subject_tablenum, (int)$pn_subject_row_id, (int)$pn_field_tablenum, (string)$pn_field_num);
+						$this->opqr_delete_with_field_num->execute((int)$pn_subject_tablenum, (int)$pn_subject_row_id, (int)$pn_field_tablenum, (string)$pn_field_num, $pn_rel_type_id);
 					}
 					return true;
 				} else {
 					if (!$pn_subject_tablenum && !$pn_subject_row_id && $pn_field_tablenum && $pn_field_row_id) {
 						//print "DELETE DEP $pn_field_tablenum/$pn_field_row_id<br>";
-						$this->opqr_delete_dependent_sql->execute((int)$pn_field_tablenum, (int)$pn_field_row_id);
+						$this->opqr_delete_dependent_sql->execute((int)$pn_field_tablenum, (int)$pn_field_row_id, $pn_rel_type_id);
 					} else {
 						//print "DELETE ALL $pn_subject_tablenum/$pn_subject_row_id<br>";
-						return $this->opqr_delete->execute((int)$pn_subject_tablenum, (int)$pn_subject_row_id);
+						return $this->opqr_delete->execute((int)$pn_subject_tablenum, (int)$pn_subject_row_id, $pn_rel_type_id);
 					}
 				}
 			}
@@ -1881,7 +1884,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		// Find existing indexing for this subject and content 	
 		foreach($pa_subject_row_ids as $vn_subject_row_id) {
-			$this->removeRowIndexing($pn_subject_tablenum, $vn_subject_row_id, $pn_content_tablenum, array($ps_content_fieldnum), $pn_content_row_id);
+			$this->removeRowIndexing($pn_subject_tablenum, $vn_subject_row_id, $pn_content_tablenum, array($ps_content_fieldnum), $pn_content_row_id, caGetOption('relationship_type_id', $pa_options, null));
 		}
 		
 		if (caGetOption("DONT_TOKENIZE", $pa_options, false) || in_array('DONT_TOKENIZE', $pa_options)) {

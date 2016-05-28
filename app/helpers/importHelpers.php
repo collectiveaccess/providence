@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2015 Whirl-i-Gig
+ * Copyright 2013-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -141,7 +141,9 @@
 				}
 			}
 			
-			$va_match_on = caGetOption("{$ps_refinery_name}_dontMatchOnLabel", $pa_item['settings'], false) ? array('idno') : array('idno', 'label');
+			if (!($va_match_on = caGetOption("{$ps_refinery_name}_matchOn", $pa_item['settings'], false))) {
+				$va_match_on = caGetOption("{$ps_refinery_name}_dontMatchOnLabel", $pa_item['settings'], false) ? array('idno') : array('idno', 'label');
+			}
 			$vb_ignore_parent = caGetOption("{$ps_refinery_name}_ignoreParent", $pa_item['settings'], false);
 			$pa_options = array_merge(array('matchOn' => $va_match_on, 'ignoreParent' => $vb_ignore_parent), $pa_options);
 			
@@ -263,16 +265,21 @@
 							
 							$vn_c = 0;
 							foreach($va_vals as $vn_x => $va_v) {
+								if (!$va_v || (!is_array($va_v) && !trim($va_v))) { continue; }
 								$va_attr_vals[$vs_element_code][$vn_x][$vs_k] = $va_v;
 								$vn_c++;
 								if ($vn_c >= $vn_num_repeats) { break; }
 							}
 						} else {
-							$va_attr_vals[$vs_element_code][$vs_k] = (is_array($vm_v = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('delimiter' => caGetOption('delimiter', $pa_options, null), 'reader' => $o_reader)))) ? join(" ", $vm_v) : $vm_v;
+							if ($vm_val_to_import = trim((is_array($vm_v = BaseRefinery::parsePlaceholder($vs_v, $pa_source_data, $pa_item, $pn_c, array('delimiter' => caGetOption('delimiter', $pa_options, null), 'reader' => $o_reader)))) ? join(" ", $vm_v) : $vm_v)) {
+								$va_attr_vals[$vs_element_code][$vs_k] = $vm_val_to_import;
+							}
 						}
 					}
 				} else {
-					$va_attr_vals[$vs_element_code][$vs_element_code] = (is_array($vm_v = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $pn_c, array('returnDelimitedValueAt' => $pn_c,'delimiter' => caGetOption('delimiter', $pa_options, null), 'reader' => $o_reader)))) ? join(" ", $vm_v) : $vm_v;
+					if ($vm_val_to_import = trim((is_array($vm_v = BaseRefinery::parsePlaceholder($va_attrs, $pa_source_data, $pa_item, $pn_c, array('returnDelimitedValueAt' => $pn_c,'delimiter' => caGetOption('delimiter', $pa_options, null), 'reader' => $o_reader)))) ? join(" ", $vm_v) : $vm_v)) {
+						$va_attr_vals[$vs_element_code][$vs_element_code] = $vm_val_to_import;
+					}
 				}
 			}
 			return $va_attr_vals;
@@ -570,8 +577,8 @@
 							while(sizeof($va_parents) > 0) {
 								$va_p = array_shift($va_parents);
 								if ($vs_laddered_val = BaseRefinery::parsePlaceholder($va_p[$vs_display_field], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnDelimitedValueAt' => $vn_x))) {
-									if ($o_log) { $o_log->logDebug(_t('[{$ps_refinery_name}] Used parent value %1 because the mapped value was blank', $vs_item)); }
 									$vs_item = $vs_laddered_val;
+									if ($o_log) { $o_log->logDebug(_t("[{$ps_refinery_name}] Used parent value %1 because the mapped value was blank", $vs_item)); }
 									$va_val['_type'] = BaseRefinery::parsePlaceholder($va_p['type'], $pa_source_data, $pa_item, $pn_value_index, array('reader' => $o_reader, 'delimiter' => $va_delimiter, 'returnDelimitedValueAt' => $vn_x));
 									break;
 								}
@@ -683,8 +690,8 @@
 						}
 			
 						// Set interstitials
-						if (isset($pa_options['mapping']) && is_array($va_attr_vals = caProcessInterstitialAttributes($ps_refinery_name, $pa_options['mapping']->get('table_num'), $ps_table, $pa_source_data, $pa_item, $vn_i, array('log' => $o_log, 'reader' => $o_reader)))) {
-							$va_val = array_merge($va_val, $va_attr_vals);
+						if (isset($pa_options['mapping']) && is_array($va_interstitial_attr_vals = caProcessInterstitialAttributes($ps_refinery_name, $pa_options['mapping']->get('table_num'), $ps_table, $pa_source_data, $pa_item, $vn_i, array('log' => $o_log, 'reader' => $o_reader)))) {
+							$va_val = array_merge($va_val, $va_interstitial_attr_vals);
 						}
 
 						// Set relationships on the related table
@@ -762,7 +769,7 @@
 						}
 					
 						if ($vn_item_id) {
-							$va_vals[][$vs_terminal] = $vn_item_id;
+							$va_vals[] = [$vs_terminal => $vn_item_id, '_related_related' => $va_val['_related_related']];
 							continue;
 						} else {
 							if ($o_log && !$pb_dont_create) { $o_log->logError(_t("[{$ps_refinery_name}Refinery] Could not add %2 %1", $vs_item, $ps_item_prefix)); }
@@ -908,8 +915,19 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	if (is_array($va_relationships = $pa_item['settings'][$vs_relationship_settings_key])) {
 		foreach ($va_relationships as $va_relationship_settings) {
 			if ($vs_table_name = caGetOption('relatedTable', $va_relationship_settings)) {
-				if (is_array($va_attr_vals = caProcessRefineryRelated($vs_table_name, array($va_relationship_settings), $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
-					$va_val = array_merge($va_val, $va_attr_vals);
+				if (is_array($va_rels = caProcessRefineryRelated($vs_table_name, array($va_relationship_settings), $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
+					$va_rel_rels = $va_rels['_related_related'];
+					unset($va_rels['_related_related']);
+					
+					$va_val = array_merge($va_val, $va_rels);
+					
+					if(is_array($va_rel_rels)) {
+						if (!is_array($va_val['_related_related'])) { $va_val['_related_related'] = []; }
+						foreach($va_rel_rels as $vs_rel_table => $va_rel_info) {
+							if(!is_array($va_val['_related_related'][$vs_rel_table])) { $va_val['_related_related'][$vs_rel_table] = []; }
+							$va_val['_related_related'][$vs_rel_table] = array_merge($va_val['_related_related'][$vs_rel_table], $va_rel_info);
+						}
+					}
 				}
 			}
 		}

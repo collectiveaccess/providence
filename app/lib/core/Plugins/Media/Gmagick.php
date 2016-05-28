@@ -65,77 +65,80 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	var $filepath;
 	
 	var $info = array(
-		"IMPORT" => array(
-			"image/jpeg" 		=> "jpg",
-			"image/gif" 		=> "gif",
-			"image/tiff" 		=> "tiff",
-			"image/png" 		=> "png",
-			"image/x-bmp" 		=> "bmp",
-			"image/x-psd" 		=> "psd",
-			"image/tilepic" 	=> "tpc",
-			"image/x-dpx"		=> "dpx",
-			"image/x-exr"		=> "exr",
-			"image/jp2"		=> "jp2",
-			"image/x-adobe-dng"	=> "dng",
-			"image/x-canon-cr2"	=> "cr2",
-			"image/x-canon-crw"	=> "crw",
-			"image/x-sony-arw"	=> "arw",
-			"image/x-olympus-orf"	=> "orf",
-			"image/x-pentax-pef"	=> "pef",
-			"image/x-epson-erf"	=> "erf",
-			"image/x-nikon-nef"	=> "nef",
-			"image/x-sony-sr2"	=> "sr2",
-			"image/x-sony-srf"	=> "srf",
-			"image/x-sigma-x3f"	=> "x3f",
-			"image/x-dcraw"	=> "raw",
-			"application/dicom" => "dcm",
+		'IMPORT' => array(
+			'image/jpeg' 		=> 'jpg',
+			'image/gif' 		=> 'gif',
+			'image/tiff' 		=> 'tiff',
+			'image/png' 		=> 'png',
+			'image/x-bmp' 		=> 'bmp',
+			'image/x-psd' 		=> 'psd',
+			'image/tilepic' 	=> 'tpc',
+			'image/x-dpx'		=> 'dpx',
+			'image/x-exr'		=> 'exr',
+			'image/jp2'		=> 'jp2',
+			'image/x-adobe-dng'	=> 'dng',
+			'image/x-canon-cr2'	=> 'cr2',
+			'image/x-canon-crw'	=> 'crw',
+			'image/x-sony-arw'	=> 'arw',
+			'image/x-olympus-orf'	=> 'orf',
+			'image/x-pentax-pef'	=> 'pef',
+			'image/x-epson-erf'	=> 'erf',
+			'image/x-nikon-nef'	=> 'nef',
+			'image/x-sony-sr2'	=> 'sr2',
+			'image/x-sony-srf'	=> 'srf',
+			'image/x-sigma-x3f'	=> 'x3f',
+			'image/x-dcraw'	=> 'raw',
+			'application/dicom' => 'dcm',
 		),
-		"EXPORT" => array(
-			"image/jpeg" 		=> "jpg",
-			"image/gif" 		=> "gif",
-			"image/tiff" 		=> "tiff",
-			"image/png" 		=> "png",
-			"image/x-bmp" 		=> "bmp",
-			"image/x-psd" 		=> "psd",
-			"image/tilepic" 	=> "tpc",
-			"image/x-dpx"		=> "dpx",
-			"image/x-exr"		=> "exr",
-			"image/jp2"		=> "jp2",
-			"image/x-adobe-dng"	=> "dng",
-			"image/x-canon-cr2"	=> "cr2",
-			"image/x-canon-crw"	=> "crw",
-			"image/x-sony-arw"	=> "arw",
-			"image/x-olympus-orf"	=> "orf",
-			"image/x-pentax-pef"	=> "pef",
-			"image/x-epson-erf"	=> "erf",
-			"image/x-nikon-nef"	=> "nef",
-			"image/x-sony-sr2"	=> "sr2",
-			"image/x-sony-srf"	=> "srf",
-			"image/x-sigma-x3f"	=> "x3f",
-			"image/x-dcraw"	=> "raw",
-			"application/dicom" => "dcm",
+		'EXPORT' => array(
+			'image/jpeg' 		=> 'jpg',
+			'image/gif' 		=> 'gif',
+			'image/tiff' 		=> 'tiff',
+			'image/png' 		=> 'png',
+			'image/x-bmp' 		=> 'bmp',
+			'image/x-psd' 		=> 'psd',
+			'image/tilepic' 	=> 'tpc',
+			'image/x-dpx'		=> 'dpx',
+			'image/x-exr'		=> 'exr',
+			'image/jp2'		=> 'jp2',
+			'image/x-adobe-dng'	=> 'dng',
+			'image/x-canon-cr2'	=> 'cr2',
+			'image/x-canon-crw'	=> 'crw',
+			'image/x-sony-arw'	=> 'arw',
+			'image/x-olympus-orf'	=> 'orf',
+			'image/x-pentax-pef'	=> 'pef',
+			'image/x-epson-erf'	=> 'erf',
+			'image/x-nikon-nef'	=> 'nef',
+			'image/x-sony-sr2'	=> 'sr2',
+			'image/x-sony-srf'	=> 'srf',
+			'image/x-sigma-x3f'	=> 'x3f',
+			'image/x-dcraw'	=> 'raw',
+			'application/dicom' => 'dcm',
 		),
-		"TRANSFORMATIONS" => array(
-			"SCALE" 			=> array("width", "height", "mode", "antialiasing"),
-			"ANNOTATE"			=> array("text", "font", "size", "color", "position", "inset"),
-			"WATERMARK"			=> array("image", "width", "height", "position", "opacity"),
-			"ROTATE" 			=> array("angle"),
-			"SET" 				=> array("property", "value"),
+		'TRANSFORMATIONS' => array(
+			'SCALE' 			=> array('width', 'height', 'mode', 'antialiasing'),
+			'CROP' 				=> array('width', 'height', 'x', 'y'),
+			'ANNOTATE'			=> array('text', 'font', 'size', 'color', 'position', 'inset'),
+			'WATERMARK'			=> array('image', 'width', 'height', 'position', 'opacity'),
+			'ROTATE' 			=> array('angle'),
+			'SET' 				=> array('property', 'value'),
+			'FLIP'				=> array('direction'),
 			
 			# --- filters
-			"MEDIAN"			=> array("radius"),
-			"DESPECKLE"			=> array(""),
-			"SHARPEN"			=> array("radius", "sigma"),
-			"UNSHARPEN_MASK"	=> array("radius", "sigma", "amount", "threshold"),
+			'MEDIAN'			=> array('radius'),
+			'DESPECKLE'			=> array(''),
+			'SHARPEN'			=> array('radius', 'sigma'),
+			'UNSHARPEN_MASK'	=> array('radius', 'sigma', 'amount', 'threshold'),
 		),
-		"PROPERTIES" => array(
-			"width" 			=> 'R',
-			"height" 			=> 'R',
-			"mimetype" 			=> 'R',
-			"typename" 			=> 'R',
+		'PROPERTIES' => array(
+			'width' 			=> 'R',
+			'height' 			=> 'R',
+			'mimetype' 			=> 'R',
+			'typename' 			=> 'R',
 			'tiles'				=> 'R',
 			'layers'			=> 'W',
-			"quality" 			=> 'W',
+			'quality' 			=> 'W',
+			'colorspace'		=> 'W',
 			'tile_width'		=> 'W',
 			'tile_height'		=> 'W',
 			'antialiasing'		=> 'W',
@@ -150,75 +153,75 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			'version'			=> 'W'	// required of all plug-ins
 		),
 		
-		"NAME" => "Gmagick"
+		'NAME' => 'Gmagick'
 	);
 	
 	var $typenames = array(
-		"image/jpeg" 		=> "JPEG",
-		"image/gif" 		=> "GIF",
-		"image/tiff" 		=> "TIFF",
-		"image/png" 		=> "PNG",
-		"image/x-bmp" 		=> "Windows Bitmap (BMP)",
-		"image/x-psd" 		=> "Photoshop",
-		"image/tilepic" 	=> "Tilepic",
-		"image/x-dpx"		=> "DPX",
-		"image/x-exr"		=> "OpenEXR",
-		"image/jp2"		=> "JPEG-2000",
-		"image/x-adobe-dng"	=> "Adobe DNG",
-		"image/x-canon-cr2"	=> "Canon CR2 RAW Image",
-		"image/x-canon-crw"	=> "Canon CRW RAW Image",
-		"image/x-sony-arw"	=> "Sony ARW RAW Image",
-		"image/x-olympus-orf"	=> "Olympus ORF Raw Image",
-		"image/x-pentax-pef"	=> "Pentax Electronic File Image",
-		"image/x-epson-erf"	=> "Epson ERF RAW Image",
-		"image/x-nikon-nef"	=> "Nikon NEF RAW Image",
-		"image/x-sony-sr2"	=> "Sony SR2 RAW Image",
-		"image/x-sony-srf"	=> "Sony SRF RAW Image",
-		"image/x-sigma-x3f"	=> "Sigma X3F RAW Image",
-		"image/x-dcraw"	=> "RAW Image",
-		"application/dicom" => "DICOM medical imaging data",
+		'image/jpeg' 		=> 'JPEG',
+		'image/gif' 		=> 'GIF',
+		'image/tiff' 		=> 'TIFF',
+		'image/png' 		=> 'PNG',
+		'image/x-bmp' 		=> 'Windows Bitmap (BMP)',
+		'image/x-psd' 		=> 'Photoshop',
+		'image/tilepic' 	=> 'Tilepic',
+		'image/x-dpx'		=> 'DPX',
+		'image/x-exr'		=> 'OpenEXR',
+		'image/jp2'		=> 'JPEG-2000',
+		'image/x-adobe-dng'	=> 'Adobe DNG',
+		'image/x-canon-cr2'	=> 'Canon CR2 RAW Image',
+		'image/x-canon-crw'	=> 'Canon CRW RAW Image',
+		'image/x-sony-arw'	=> 'Sony ARW RAW Image',
+		'image/x-olympus-orf'	=> 'Olympus ORF Raw Image',
+		'image/x-pentax-pef'	=> 'Pentax Electronic File Image',
+		'image/x-epson-erf'	=> 'Epson ERF RAW Image',
+		'image/x-nikon-nef'	=> 'Nikon NEF RAW Image',
+		'image/x-sony-sr2'	=> 'Sony SR2 RAW Image',
+		'image/x-sony-srf'	=> 'Sony SRF RAW Image',
+		'image/x-sigma-x3f'	=> 'Sigma X3F RAW Image',
+		'image/x-dcraw'	=> 'RAW Image',
+		'application/dicom' => 'DICOM medical imaging data',
 	);
 	
 	var $magick_names = array(
-		"image/jpeg" 		=> "JPEG",
-		"image/gif" 		=> "GIF",
-		"image/tiff" 		=> "TIFF",
-		"image/png" 		=> "PNG",
-		"image/x-bmp" 		=> "BMP",
-		"image/x-psd" 		=> "PSD",
-		"image/tilepic" 	=> "TPC",
-		"image/x-dpx"		=> "DPX",
-		"image/x-exr"		=> "EXR",
-		"image/jp2"		=> "JP2",
-		"image/x-adobe-dng"	=> "DNG",
-		"image/x-canon-cr2"	=> "CR2",
-		"image/x-canon-crw"	=> "CRW",
-		"image/x-sony-arw"	=> "ARW",
-		"image/x-olympus-orf"	=> "ORF",
-		"image/x-pentax-pef"	=> "PEF",
-		"image/x-epson-erf"	=> "ERF",
-		"image/x-nikon-nef"	=> "NEF",
-		"image/x-sony-sr2"	=> "SR2",
-		"image/x-sony-srf"	=> "SRF",
-		"image/x-sigma-x3f"	=> "X3F",
-		"image/x-dcraw"		=> "RAW",
-		"application/dicom" => "DCM",
+		'image/jpeg' 		=> 'JPEG',
+		'image/gif' 		=> 'GIF',
+		'image/tiff' 		=> 'TIFF',
+		'image/png' 		=> 'PNG',
+		'image/x-bmp' 		=> 'BMP',
+		'image/x-psd' 		=> 'PSD',
+		'image/tilepic' 	=> 'TPC',
+		'image/x-dpx'		=> 'DPX',
+		'image/x-exr'		=> 'EXR',
+		'image/jp2'		=> 'JP2',
+		'image/x-adobe-dng'	=> 'DNG',
+		'image/x-canon-cr2'	=> 'CR2',
+		'image/x-canon-crw'	=> 'CRW',
+		'image/x-sony-arw'	=> 'ARW',
+		'image/x-olympus-orf'	=> 'ORF',
+		'image/x-pentax-pef'	=> 'PEF',
+		'image/x-epson-erf'	=> 'ERF',
+		'image/x-nikon-nef'	=> 'NEF',
+		'image/x-sony-sr2'	=> 'SR2',
+		'image/x-sony-srf'	=> 'SRF',
+		'image/x-sigma-x3f'	=> 'X3F',
+		'image/x-dcraw'		=> 'RAW',
+		'application/dicom' => 'DCM',
 	);
 	
 	#
-	# Some versions of ImageMagick return variants on the "normal"
+	# Some versions of ImageMagick return variants on the 'normal'
 	# mimetypes for certain image formats, so we convert them here
 	#
 	var $magick_mime_map = array(
-		"image/x-jpeg" 		=> "image/jpeg",
-		"image/x-gif" 		=> "image/gif",
-		"image/x-tiff" 		=> "image/tiff",
-		"image/x-png" 		=> "image/png",
-		"image/dpx" 		=> "image/x-dpx",
-		"image/exr" 		=> "image/x-exr",
-		"image/jpx"		=> "image/jp2",
-		"image/jpm"		=> "image/jp2",
-		"image/dng"		=> "image/x-adobe-dng"
+		'image/x-jpeg' 		=> 'image/jpeg',
+		'image/x-gif' 		=> 'image/gif',
+		'image/x-tiff' 		=> 'image/tiff',
+		'image/x-png' 		=> 'image/png',
+		'image/dpx' 		=> 'image/x-dpx',
+		'image/exr' 		=> 'image/x-exr',
+		'image/jpx'		=> 'image/jp2',
+		'image/jpm'		=> 'image/jp2',
+		'image/dng'		=> 'image/x-adobe-dng'
 	);
 
 	private $ops_dcraw_path;
@@ -765,6 +768,35 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				}
 				break;
 			# -----------------------
+			case "CROP":
+				$x = $parameters["x"];
+				$y = $parameters["y"];
+				$w = $parameters["width"];
+				$h = $parameters["height"];
+				
+				if (!$this->handle->cropimage($w, $h, $x, $y)) {
+					$this->postError(1610, _t("Error during image crop"), "WLPlugGmagick->transform:CROP()");
+					return false;
+				}
+				break;
+			# -----------------------
+			case "FLIP":
+				$dir = strtolower($parameters["direction"]);
+				
+				if ($dir == 'vertical') {
+					if (!$this->handle->flipimage()) {
+						$this->postError(1610, _t("Error during vertical image flip"), "WLPlugGmagick->transform:FLIP()");
+						return false;
+					}
+				} else {
+					if (!$this->handle->flopimage()) {
+						$this->postError(1610, _t("Error during horizontal image flip"), "WLPlugGmagick->transform:FLIP()");
+						return false;
+					}
+				}
+				
+				break;
+			# -----------------------
 			case "UNSHARPEN_MASK":
 				# noop
 				break;
@@ -835,6 +867,31 @@ class WLPlugMediaGmagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				if (!$this->properties['reference-black']) { $this->properties['reference-black'] = 0; }
 				if (!$this->properties['reference-white']) { $this->properties['reference-white'] = 65535; }
 				$this->handle->levelimage($this->properties['reference-black'], $this->properties['gamma'], $this->properties['reference-white']);
+			}
+			
+			if (($this->properties["colorspace"]) && ($this->properties["colorspace"] != "default")){ 
+				$vn_colorspace = null;
+				switch($this->properties["colorspace"]) {
+					case 'greyscale':
+					case 'grey':
+						$vn_colorspace = Gmagick::COLORSPACE_GRAY;
+						break;
+					case 'RGB':
+					case 'color':
+						$vn_colorspace = Gmagick::COLORSPACE_RGB;
+						break;
+					case 'sRGB':
+						$vn_colorspace = Gmagick::COLORSPACE_SRGB;
+						break;
+					case 'CMYK':
+						$vn_colorspace = Gmagick::COLORSPACE_CMYK;
+						break;
+					case 'bitonal':
+						$vn_colorspace = Gmagick::COLORSPACE_GRAY;
+						$this->handle->setimagedepth(1);
+						break;
+				}
+				if ($vn_colorspace) { $this->handle->setimagecolorspace($vn_colorspace); }
 			}
 			
 			$this->handle->stripimage();	// remove all lingering metadata

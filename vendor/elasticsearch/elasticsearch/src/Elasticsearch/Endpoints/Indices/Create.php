@@ -62,7 +62,6 @@ class Create extends AbstractEndpoint
         return array(
             'timeout',
             'master_timeout',
-			'update_all_types'
         );
     }
 

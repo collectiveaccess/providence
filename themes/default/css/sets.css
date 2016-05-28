@@ -55,10 +55,11 @@
 	float:right;
 	margin:5px;
 	width:16px;
-	background-image: url('../graphics/buttons/glyphicons_192_circle_remove.png');
 	background-size: 16px 16px;
 }
-
+.setItems .remove .fa:hover {
+	color:red;
+}
 .setItems .remove a{
 	font-size: 9px;
 	color: #333;

@@ -118,9 +118,15 @@ class Intrinsic extends FieldType {
 			$this->getTableName() . '/' . $this->getFieldName() => $pm_content
 		);
 
-		if($t_instance->getProperty('ID_NUMBERING_ID_FIELD') == $this->getFieldName()) {
+		if($t_instance->getProperty('ID_NUMBERING_ID_FIELD') == $this->getFieldName() || (is_array($pa_options) && in_array('INDEX_AS_IDNO', $pa_options))) {
+			if (method_exists($t_instance, "getIDNoPlugInInstance") && ($o_idno = $t_instance->getIDNoPlugInInstance())) {
+				$va_values = array_values($o_idno->getIndexValues($pm_content));
+			} else {
+				$va_values = explode(' ', $pm_content);
+			}
+
 			$va_return = array(
-				$this->getTableName() . '/' . $this->getFieldName() => explode(' ', $pm_content)
+				$this->getTableName() . '/' . $this->getFieldName() => $va_values
 			);
 		}
 
@@ -162,9 +168,15 @@ class Intrinsic extends FieldType {
 			isset($va_field_components[1]) &&
 			($t_instance->getProperty('ID_NUMBERING_ID_FIELD') == $va_field_components[1])
 		) {
-			return new \Zend_Search_Lucene_Index_Term(
-				'"'.$po_term->text.'"', $po_term->field
-			);
+			if(stripos($po_term->text, '*') !== false) {
+				return new \Zend_Search_Lucene_Index_Term(
+					$po_term->text, $po_term->field
+				);
+			} else {
+				return new \Zend_Search_Lucene_Index_Term(
+					'"'.$po_term->text.'"', $po_term->field
+				);
+			}
 		} else {
 			return new \Zend_Search_Lucene_Index_Term(
 				str_replace('/', '\\/', $po_term->text),

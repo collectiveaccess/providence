@@ -36,6 +36,7 @@
 
 require_once(__CA_APP_DIR__.'/models/ca_attribute_values.php');
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Attribute.php');
+require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
 		
 
 BaseModel::$s_ca_models_definitions['ca_attributes'] = array(
@@ -83,6 +84,8 @@ BaseModel::$s_ca_models_definitions['ca_attributes'] = array(
 );
 
 class ca_attributes extends BaseModel {
+	# ---------------------------------
+	use SyncableBaseModel;
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -195,7 +198,28 @@ class ca_attributes extends BaseModel {
 	public function doSearchIndexing($pa_changed_field_values_array=null, $pb_reindex_mode=false, $ps_engine=null) {
 		return;
 	}
-	# ------------------------------------------------------
+	# -------------------------------------------------------
+	public function insert($pa_options=null) {
+		if($vm_ret = parent::insert($pa_options)) {
+			$this->setGUID($pa_options); // generate and set GUID
+		}
+
+		return $vm_ret;
+	}
+	# -------------------------------------------------------
+
+
+	public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+		$vn_primary_key = $this->getPrimaryKey();
+		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
+
+		if($vn_primary_key && $vn_rc) {
+			$this->removeGUID($vn_primary_key);
+		}
+
+		return $vn_rc;
+	}
+	# -------------------------------------------------------
 	/**
 	 *
 	 */
@@ -584,7 +608,7 @@ class ca_attributes extends BaseModel {
 		while($qr_attrs->nextRow()) {
 			$va_raw_row = $qr_attrs->getRow();
 			
-			$va_raw_row['element_code'] = ca_metadata_elements::getElementCode($va_raw_row['element_id']);
+			$va_raw_row['element_code'] = ca_metadata_elements::getElementCodeForID($va_raw_row['element_id']);
 			$va_raw_row['datatype'] = ca_metadata_elements::getElementDatatype($va_raw_row['element_id']);
 			
 			if ($vn_last_attribute_id != $va_raw_row['attribute_id']) {
@@ -719,23 +743,27 @@ class ca_attributes extends BaseModel {
 	}
 	# ------------------------------------------------------
 	/**
-	 * Return number of attributes with specified element_id attached to specified row in specified table.
+	 * Return number of attributes with specified element_id attached to specified row in specified table. By
+	 * default only non-blank attributes are counted. Set the includeBlanks option to get a count of all values.
 	 *
 	 * @param Db $po_db Db() instance to use for database access
 	 * @param int $pn_table_num Table number of table attributes to count are attached to
 	 * @param int $pn_row_id row_id of row attributes to count are attached to
 	 * @param int $pn_element_id Metadata element of attribute to count
+	 * @param array $pa_options Options include:
+	 *		includeBlanks = include blank values in count. [Default is false]
 	 *
 	 * @return int number of attributes with specified element_id attached to specified row
 	 */
-	static public function getAttributeCount($po_db, $pn_table_num, $pn_row_id, $pn_element_id) {
+	static public function getAttributeCount($po_db, $pn_table_num, $pn_row_id, $pn_element_id, $pa_options=null) {
+		$pb_include_blanks = caGetOption('includeBlanks', $pa_options, false);
 		$qr_attrs = $po_db->query("
 			SELECT count(distinct caa.attribute_id) c
 			FROM ca_attributes caa, ca_attribute_values cav
 			WHERE
 				(cav.attribute_id = caa.attribute_id) AND
-				(caa.table_num = ?) AND (caa.row_id = ?) AND (caa.element_id = ?) AND
-				(cav.item_id IS NOT NULL OR cav.value_longtext1 IS NOT NULL OR cav.value_decimal1 IS NOT NULL OR cav.value_integer1 IS NOT NULL OR cav.value_blob IS NOT NULL)
+				(caa.table_num = ?) AND (caa.row_id = ?) AND (caa.element_id = ?)
+				".(!$pb_include_blanks ? ("AND (cav.item_id IS NOT NULL OR cav.value_longtext1 IS NOT NULL OR cav.value_decimal1 IS NOT NULL OR cav.value_integer1 IS NOT NULL OR cav.value_blob IS NOT NULL)") : "")."
 		", (int)$pn_table_num, (int)$pn_row_id, (int)$pn_element_id);
 		if ($po_db->numErrors()) {
 			//$this->errors = $po_db->errors;

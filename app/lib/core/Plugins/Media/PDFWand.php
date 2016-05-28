@@ -200,6 +200,8 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 			}
 		} else {
 			try {
+				if($this->opo_config->get('dont_use_zendpdf_to_identify_pdfs')) { return ''; }
+
 				include_once(__CA_LIB_DIR__."/core/Zend/Pdf.php");
 				$o_pdf = Zend_Pdf::load($ps_filepath);
 				if (sizeof($o_pdf->pages) == 0) { return ''; }
@@ -266,7 +268,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 	# ----------------------------------------------------------
 	private function _graphicsMagickIdentify($ps_filepath) {
 		exec($this->ops_graphicsmagick_path.' identify -format "%m;%w;%h;%p\n" '.caEscapeShellArg($ps_filepath).(caIsPOSIX() ? " 2> /dev/null" : ""), $va_output, $vn_return);
-		
+
 		array_pop($va_output); // last line is blank
 		if (is_array($va_output) && (sizeof($va_output) > 0)) {
 			$va_tmp = explode(';', $va_output[0]);
@@ -424,7 +426,7 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 								$vn_start = $vn_end = null;
 								$vs_acc = '';
 								for($vn_i=0; $vn_i < mb_strlen($vs_text_line_content); $vn_i++) {
-									if (preg_match("![{$vs_indexing_regex}]!", $vs_text_line_content[$vn_i])) {
+									if (preg_match("![{$vs_indexing_regex}]!u", mb_substr($vs_text_line_content, $vn_i, 1))) {
 										// word boundary
 										if ($vs_acc) {
 											$vs_acc = mb_strtolower($vs_acc);
@@ -861,16 +863,6 @@ class WLPlugMediaPDFWand Extends BaseMediaPlugin implements IWLPlugMedia {
 				$vs_poster_frame = _t("View PDF document");
 			}
 			
-			$vs_buf = "<script type='text/javascript'>jQuery(document).ready(function() {
-new PDFObject({
-	url: '{$ps_url}',
-	id: '{$vs_id}',
-	width: '{$vn_viewer_width}px',
-	height: '{$vn_viewer_height}px',
-}).embed('{$vs_id}_div');
-});</script>
-<div id='{$vs_id}_div'><a href='$ps_url' target='_pdf'>".$vs_poster_frame."</a></div>
-";
 			return $vs_buf;
 		} else {
 			if (!is_array($pa_options)) { $pa_options = array(); }

@@ -37,7 +37,7 @@
 			print caFormControlBox(
 				'<div class="simple-search-box">'._t('Search').': <input type="text" id="BasicSearchInput" name="search" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'" size="40"/>'.$vs_type_id_form_element.'</div>',
 				'',
-				caFormSubmitButton($this->request, __CA_NAV_BUTTON_SEARCH__, _t("Search"), 'BasicSearchForm')
+				caFormSearchButton($this->request, __CA_NAV_ICON_SEARCH__, _t("Search"), 'BasicSearchForm')
 			); 
 ?>
 		</form>

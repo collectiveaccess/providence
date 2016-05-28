@@ -43,7 +43,7 @@
 			print caFormControlBox(
 				'<div class="simple-search-box">'._t('Search').': <input type="text" id="BasicSearchInput" name="search" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'" size="40"/>'.$vs_type_id_form_element.'</div>',
 				'<a href="#" onclick="caSaveSearch(\'BasicSearchForm\', jQuery(\'#BasicSearchInput\').val(), [\'search\']); return false;" class="button">'._t('Save search').' &rsaquo;</a>',
-				caFormSubmitButton($this->request, __CA_NAV_BUTTON_SEARCH__, _t("Search"), 'BasicSearchForm')
+				caFormSearchButton($this->request, __CA_NAV_ICON_SEARCH__, _t("Search"), 'BasicSearchForm')
 			); 
 ?>
 		</form>
@@ -52,7 +52,11 @@
 			print caFormTag($this->request, 'Index', 'BasicSearchForm', null, 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
 				print caFormControlBox(
 					'<div class="simple-search-box">'._t('Search').': <input type="text" id="BasicSearchInput" name="search" value="'.htmlspecialchars($this->getVar('search'), ENT_QUOTES, 'UTF-8').'" size="40"/></div>'.
-						caFormSubmitButton($this->request, __CA_NAV_BUTTON_SEARCH__, _t("Search"), 'BasicSearchForm'),
+						caFormJSButton($this->request, __CA_NAV_ICON_SEARCH__, _t("Search"), 'submitSearch', array(), 
+						array('href' => '#', 'onclick' => 'caCloseBrowser(); jQuery("#resultBox").load("'.caNavUrl($this->request, 'find', $this->request->getController(), 'Index', array('search' => '')).'" + escape(jQuery("#BasicSearchInput").attr("value"))); return false;')),
+
+						//caFormSubmitButton($this->request, __CA_NAV_BUTTON_SEARCH__, _t("Search"), 'BasicSearchForm'),
+
 					'<a href="#" onclick="caSaveSearch(\'BasicSearchForm\', jQuery(\'#BasicSearchInput\').val(), [\'search\']); return false;" class="button">'._t('Save search').' &rsaquo;</a>',
 					'<a href="#" id="browseToggle" class="form-button"></a>'
 				); 
@@ -68,7 +72,7 @@
 					<form action='#'>
 	<?php	
 						print "<div>";
-						print _t('Add under %2 new %1', $this->getVar('type_menu').' <a href="#" onclick="_navigateToNewForm(jQuery(\'#hierTypeList\').val())">'.caNavIcon($this->request, __CA_NAV_BUTTON_ADD__)."</a>", "<span id='browseCurrentSelection'></span>");
+						print _t('Add under %2 new %1', $this->getVar('type_menu').' <a href="#" onclick="_navigateToNewForm(jQuery(\'#hierTypeList\').val())">'.caNavIcon(__CA_NAV_ICON_ADD__, 1)."</a>", "<span id='browseCurrentSelection'></span>");
 						print "</div>";
 	?>
 					</form>
@@ -101,13 +105,13 @@
 						initDataUrl: '<?php print $va_lookup_urls['ancestorList']; ?>',
 						
 						editUrl: '<?php print caEditorUrl($this->request, $vs_table, null, false, array(), array('action' => $this->getVar('default_action'))); ?>',
-						editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
-						disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
+						editButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
+						disabledButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_DOT__, 1); ?>",
 
 						disabledItems: 'full',
 						
 						initItemID: '<?php print $this->getVar('browse_last_id'); ?>',
-						indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+						indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 						typeMenuID: 'browseTypeMenu',
 						disabledItems: 'full',
 						

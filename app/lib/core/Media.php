@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2003-2015 Whirl-i-Gig
+ * Copyright 2003-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -41,6 +41,7 @@ define("__CA_MEDIA_VIDEO_DEFAULT_ICON__", 'video');
 define("__CA_MEDIA_AUDIO_DEFAULT_ICON__", 'audio');
 define("__CA_MEDIA_DOCUMENT_DEFAULT_ICON__", 'document');
 define("__CA_MEDIA_3D_DEFAULT_ICON__", '3d');
+define("__CA_MEDIA_SPIN_DEFAULT_ICON__", '3d');
 
 class Media extends BaseObject {
 	# ----------------------------------------------------------
@@ -141,14 +142,32 @@ class Media extends BaseObject {
 	}
 	# ----------------------------------------------------------
 	function divineFileFormat($ps_filepath) {
-		$vs_plugin_name = '';
+		$vs_plugin_name = ''; $vs_mimetype = null;
 		$va_plugin_names = $this->getPluginNames();
-		foreach ($va_plugin_names as $vs_plugin_name) {
-			if (!$va_plugin_info = $this->getPlugin($vs_plugin_name)) { continue; }
-			$o_plugin = $va_plugin_info["INSTANCE"];
-			if ($this->DEBUG) { print "[DEBUG] TRYING ".$vs_plugin_name."<br>\n"; }
-			if ($vs_mimetype = $o_plugin->divineFileFormat($ps_filepath)) {
-				break;
+
+		// take an educated guess at which plugin to use
+		if($vs_guess_mimetype = mime_content_type($ps_filepath)) {
+			$va_mimetype_plugins = $this->getPluginsForMimetypes();
+			if(isset($va_mimetype_plugins[$vs_guess_mimetype]) && is_array($va_mimetype_plugins[$vs_guess_mimetype])) {
+				foreach($va_mimetype_plugins[$vs_guess_mimetype] as $vs_plugin) {
+					if($va_plugin_info = $this->getPlugin($vs_plugin)) {
+						if($vs_mimetype = $va_plugin_info['INSTANCE']->divineFileFormat($ps_filepath)) {
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		// if our educated guess failed, try looping through all
+		if(!$vs_mimetype) {
+			foreach ($va_plugin_names as $vs_plugin_name) {
+				if (!$va_plugin_info = $this->getPlugin($vs_plugin_name)) { continue; }
+				$o_plugin = $va_plugin_info["INSTANCE"];
+				if ($this->DEBUG) { print "[DEBUG] TRYING ".$vs_plugin_name."<br>\n"; }
+				if ($vs_mimetype = $o_plugin->divineFileFormat($ps_filepath)) {
+					break;
+				}
 			}
 		}
 		
@@ -233,10 +252,13 @@ class Media extends BaseObject {
 	# ----------------------------------------------------------
 	public function transform($operation, $parameters) {
 		if (!$this->instance) { return false; }
-		return $this->instance->transform($operation, $parameters);
+		if (!($vb_ret = $this->instance->transform($operation, $parameters))) {
+			$this->errors = $this->instance->errors;
+		}
+		return $vb_ret;
 	}
 	# ----------------------------------------------------------
-	public function write($filepath, $mimetype, $pa_options) {
+	public function write($filepath, $mimetype, $pa_options=null) {
 		if (!$this->instance) { return false; }
 		
 		# TODO: support for cross-plugin writes; that is, allow a file to be read in
@@ -354,10 +376,26 @@ class Media extends BaseObject {
 		foreach ($va_plugin_names as $vs_plugin_name) {
 			if (!$va_plugin_info = $o_media->getPlugin($vs_plugin_name)) { continue; }
 			$o_plugin = $va_plugin_info["INSTANCE"];
-			$va_extensions = array_merge($va_extensions, $o_plugin->getImportMimetypes());
+			$va_extensions = array_replace($va_extensions, $o_plugin->getImportMimetypes());
 		}
 		
 		return array_unique($va_extensions);
+	}
+	# ------------------------------------------------
+	private function getPluginsForMimetypes() {
+		$va_plugin_names = $this->getPluginNames();
+
+		$va_return = array();
+		foreach ($va_plugin_names as $vs_plugin_name) {
+			if (!$va_plugin_info = $this->getPlugin($vs_plugin_name)) { continue; }
+			/** @var BaseMediaPlugin $o_plugin */
+			$o_plugin = $va_plugin_info["INSTANCE"];
+			foreach($o_plugin->getImportMimeTypes() as $vs_mimetype) {
+				$va_return[$vs_mimetype][] = $vs_plugin_name;
+			}
+		}
+
+		return $va_return;
 	}
 	# ------------------------------------------------
 	/**
@@ -396,6 +434,43 @@ class Media extends BaseObject {
 		}
 		
 		return array_unique($va_extensions);
+	}
+	# ------------------------------------------------
+	/**
+	 * Return mimetype for given file extension. Only formats supported by an installed plugin for import or export are recognized.
+	 *
+	 * @return string Mimetype or null if extension is not recognized.
+	 */
+	public static function getMimetypeForExtension($ps_extension) {
+		$o_media = new Media();
+		$va_plugin_names = $o_media->getPluginNames();
+		
+		$va_formats = array();
+		foreach ($va_plugin_names as $vs_plugin_name) {
+			if (!$va_plugin_info = $o_media->getPlugin($vs_plugin_name)) { continue; }
+			$o_plugin = $va_plugin_info["INSTANCE"];
+			$va_formats = array_merge($va_formats, $o_plugin->getImportFormats(), $o_plugin->getExportFormats());
+		}
+		$va_formats = array_flip($va_formats);
+		return $va_formats[strtolower($ps_extension)];
+	}
+	# ------------------------------------------------
+	/**
+	 * Return file extension for given mimetype. Only formats supported by an installed plugin for import or export are recognized.
+	 *
+	 * @return string File extension or null if mimetype is not recognized.
+	 */
+	public static function getExtensionForMimetype($ps_mimetype) {
+		$o_media = new Media();
+		$va_plugin_names = $o_media->getPluginNames();
+		
+		$va_formats = array();
+		foreach ($va_plugin_names as $vs_plugin_name) {
+			if (!$va_plugin_info = $o_media->getPlugin($vs_plugin_name)) { continue; }
+			$o_plugin = $va_plugin_info["INSTANCE"];
+			$va_formats = array_merge($va_formats, $o_plugin->getImportFormats(), $o_plugin->getExportFormats());
+		}
+		return $va_formats[strtolower($ps_mimetype)];
 	}
 	# ------------------------------------------------
 	# --- 

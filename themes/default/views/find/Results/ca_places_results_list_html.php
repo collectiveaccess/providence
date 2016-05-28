@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,20 +27,20 @@
  */
 
 if (!$this->getVar('no_hierarchies_defined')) { 
-	$t_display						= $this->getVar('t_display');
+	$t_display					= $this->getVar('t_display');
 	$va_display_list 			= $this->getVar('display_list');
 	$vo_result 					= $this->getVar('result');
-	$vn_items_per_page 	= $this->getVar('current_items_per_page');
+	$vn_items_per_page 			= $this->getVar('current_items_per_page');
 	$vs_mode 					= $this->getVar('mode');
 	$va_type_list 				= $this->getVar('type_list');
 	$vs_current_sort 			= $this->getVar('current_sort');
-	$vs_default_action		= $this->getVar('default_action');
-	$vo_ar				= $this->getVar('access_restrictions');
-	$vs_current_sort_dir    = $this->getVar('current_sort_direction');
+	$vs_default_action			= $this->getVar('default_action');
+	$vo_ar						= $this->getVar('access_restrictions');
+	$vs_current_sort_dir    	= $this->getVar('current_sort_direction');
 ?>	
 <div id="scrollingResults">
 	<form id="caFindResultsForm">
-		<table class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+		<table class="listtable">
 			<thead>
 			<tr>
 			<th style="width:10px; text-align:center;" class='list-header-nosort'>
@@ -89,7 +89,7 @@ if (!$this->getVar('no_hierarchies_defined')) {
 			
 			$vn_w = floor(100/sizeof($va_display_list));
 			while(($vn_item_count < $vn_items_per_page) && $vo_result->nextHit()) {
-				$vn_place_id = $vo_result->get('place_id');
+				$vn_place_id = (int)$vo_result->get('place_id');
 				
 				($i == 2) ? $i = 0 : "";
 ?>
@@ -98,9 +98,9 @@ if (!$this->getVar('no_hierarchies_defined')) {
 						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_place_id; ?>' class="addItemToSetControl" />
 					</td>
 <?php
-					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_places', $vn_place_id, array())."</td>";
+					print "<td>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), '', 'ca_places', $vn_place_id, array());
 					if ($vs_mode == 'search') { 
-						print " <a href='#' onclick='caOpenBrowserWith(".$vn_place_id.");'>".caNavIcon($this->request, __CA_NAV_BUTTON_HIER__)."</a>";
+						print " <a href='#' onclick='caOpenBrowserWith({$vn_place_id});'>".caNavIcon(__CA_NAV_ICON_HIER__, 2)."</a>";
 					}
 					print "</td>";	
 					foreach($va_display_list as $vn_placement_id => $va_info) {
@@ -135,4 +135,3 @@ if (!$this->getVar('no_hierarchies_defined')) {
 </div><!--end scrollingResults -->
 <?php
 }
-?>

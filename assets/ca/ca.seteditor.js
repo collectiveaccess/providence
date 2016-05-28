@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2014 Whirl-i-Gig
+ * Copyright 2010-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,6 +49,7 @@ var caUI = caUI || {};
 			editSetItemsURL: null,			// url of set item editor (without item_id parameter key or value)
 			
 			editSetItemButton: null,		// html to use for edit set item button
+			deleteSetItemButton: null,		// html to use for delete set item button
 			
 			initialValues: null,
 			initialValueOrder: null,			/* id's to list display list in; required because Google Chrome doesn't iterate over keys in an object in insertion order [doh] */	
@@ -112,7 +113,7 @@ var caUI = caUI || {};
 			}
 			
 			var itemHTML = "<li class='setItem' id='" + that.fieldNamePrefix + "setItem" + rID +"'><div id='" + that.fieldNamePrefix + "setItemContainer" + rID + "' class='imagecontainer'>";
-			if (itemID > 0)  { itemHTML += "<div class='remove'><a href='#' class='setDeleteButton' id='" + that.fieldNamePrefix + "setItemDelete" + itemID + "'>&nbsp;</a></div>"; }
+			if (itemID > 0)  { itemHTML += "<div class='remove'><a href='#' class='setDeleteButton' id='" + that.fieldNamePrefix + "setItemDelete" + itemID + "'>" + that.deleteSetItemButton + "</a></div>"; }
 			var displayLabel;
 			if(valueArray.displayTemplate) {
 				displayLabel = valueArray.displayTemplate;

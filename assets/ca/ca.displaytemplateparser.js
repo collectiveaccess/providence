@@ -88,6 +88,7 @@ var caUI = caUI || {};
                     switch(cmd[0].toLowerCase()) {
                         case 'units':
                             var val = jQuery(values[tagRoot]).val();
+                            val = val.replace(/[,]+/g, '');
                             if (val) { bAtLeastOneValueIsSet = true; }
                             val = that.convertFractionalNumberToDecimal(val);
 
