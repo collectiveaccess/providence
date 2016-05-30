@@ -1462,16 +1462,20 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								);
 								break;
 							case 'ca_set_items':
-								$va_additional_settings = array(
-									'display_template' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_FIELD,
-										'default' => '',
-										'width' => "275px", 'height' => 4,
-										'label' => _t('Display template'),
-										'description' => _t('Layout for set item information when used in a display list. For example: <i>^ca_objects.deaccession_notes</i>.')
-									)
-								);
+								require_once(__CA_MODELS_DIR__."/ca_sets.php");
+								$t_set = new ca_sets();
+								
+								$va_additional_settings = array();
+								foreach($t_set->getFieldInfo('table_num', 'BOUNDS_CHOICE_LIST') as $vs_table_display_name => $vn_table_num) {
+									$va_additional_settings[$this->_DATAMODEL->getTableName($vn_table_num).'_display_template'] = array(
+											'formatType' => FT_TEXT,
+											'displayType' => DT_FIELD,
+											'default' => '',
+											'width' => "275px", 'height' => 4,
+											'label' => _t('Display template (%1)', $vs_table_display_name),
+											'description' => _t('Layout for %1 set item information when used in a display list. For example: <i>^ca_objects.deaccession_notes</i>.', $vs_table_display_name)
+									);
+								}
 								break;
 						}
 						$va_additional_settings['documentation_url'] = array(
