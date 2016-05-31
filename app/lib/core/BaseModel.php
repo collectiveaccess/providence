@@ -513,13 +513,13 @@ class BaseModel extends BaseObject {
 	/**
 	 * Remove transaction property.
 	 *
-	 * @param bool $ps_commit If true, the transaction is committed, if false, the transaction is rolledback.
+	 * @param bool $pb_commit If true, the transaction is committed, if false, the transaction is rolledback.
 	 * Defaults to true.
 	 * @return bool success state
 	 */
-	public function removeTransaction($ps_commit=true) {
+	public function removeTransaction($pb_commit=true) {
 		if ($this->inTransaction()) {
-			if ($ps_commit) {
+			if ($pb_commit) {
 				$this->_TRANSACTION->commit();
 			} else {
 				$this->_TRANSACTION->rollback();
