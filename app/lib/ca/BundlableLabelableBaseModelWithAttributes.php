@@ -536,8 +536,17 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					}
 				}
 			}
+
+			$va_options = ['restrictToAttributesByCodes' => $va_attrs_to_duplicate];
+
+			if($va_dont_duplicate_codes = $this->getAppConfig()->get($this->tableName().'_dont_duplicate_element_codes')) {
+				if(is_array($va_dont_duplicate_codes)) {
+					$va_options['excludeAttributesByCodes'] = $va_dont_duplicate_codes;
+				}
+			}
+			caDebug($va_options);
 	
-			if (!$t_dupe->copyAttributesFrom($this->getPrimaryKey(), ['restrictToAttributesByCodes' => $va_attrs_to_duplicate])) {
+			if (!$t_dupe->copyAttributesFrom($this->getPrimaryKey(), $va_options)) {
 				$this->errors = $t_dupe->errors;
 				if ($vb_we_set_transaction) { $o_t->rollback();}
 				return false;
