@@ -154,9 +154,6 @@ class SimpleService {
 			'sortDirection' => $po_request->getParameter('sortDirection', pString),
 			'checkAccess' => $pa_config['checkAccess'],
 		));
-		
-		// TODO: why is template prefetching making things *SLOWER*?
-		$o_res->disableGetWithTemplatePrefetch(true);
 
 		if($vn_start = $po_request->getParameter('start', pInteger)) {
 			if(!$o_res->seek($vn_start)) {
