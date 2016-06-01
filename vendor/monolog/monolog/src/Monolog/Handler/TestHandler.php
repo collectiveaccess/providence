@@ -11,8 +11,6 @@
 
 namespace Monolog\Handler;
 
-use Monolog\Logger;
-
 /**
  * Used for testing purposes.
  *
@@ -20,50 +18,50 @@ use Monolog\Logger;
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  *
- * @method boolean hasEmergency($record)
- * @method boolean hasAlert($record)
- * @method boolean hasCritical($record)
- * @method boolean hasError($record)
- * @method boolean hasWarning($record)
- * @method boolean hasNotice($record)
- * @method boolean hasInfo($record)
- * @method boolean hasDebug($record)
- * 
- * @method boolean hasEmergencyRecords()
- * @method boolean hasAlertRecords()
- * @method boolean hasCriticalRecords()
- * @method boolean hasErrorRecords()
- * @method boolean hasWarningRecords()
- * @method boolean hasNoticeRecords()
- * @method boolean hasInfoRecords()
- * @method boolean hasDebugRecords()
- * 
- * @method boolean hasEmergencyThatContains($message)
- * @method boolean hasAlertThatContains($message)
- * @method boolean hasCriticalThatContains($message)
- * @method boolean hasErrorThatContains($message)
- * @method boolean hasWarningThatContains($message)
- * @method boolean hasNoticeThatContains($message)
- * @method boolean hasInfoThatContains($message)
- * @method boolean hasDebugThatContains($message)
- * 
- * @method boolean hasEmergencyThatMatches($message)
- * @method boolean hasAlertThatMatches($message)
- * @method boolean hasCriticalThatMatches($message)
- * @method boolean hasErrorThatMatches($message)
- * @method boolean hasWarningThatMatches($message)
- * @method boolean hasNoticeThatMatches($message)
- * @method boolean hasInfoThatMatches($message)
- * @method boolean hasDebugThatMatches($message)
- * 
- * @method boolean hasEmergencyThatPasses($message)
- * @method boolean hasAlertThatPasses($message)
- * @method boolean hasCriticalThatPasses($message)
- * @method boolean hasErrorThatPasses($message)
- * @method boolean hasWarningThatPasses($message)
- * @method boolean hasNoticeThatPasses($message)
- * @method boolean hasInfoThatPasses($message)
- * @method boolean hasDebugThatPasses($message)
+ * @method bool hasEmergency($record)
+ * @method bool hasAlert($record)
+ * @method bool hasCritical($record)
+ * @method bool hasError($record)
+ * @method bool hasWarning($record)
+ * @method bool hasNotice($record)
+ * @method bool hasInfo($record)
+ * @method bool hasDebug($record)
+ *
+ * @method bool hasEmergencyRecords()
+ * @method bool hasAlertRecords()
+ * @method bool hasCriticalRecords()
+ * @method bool hasErrorRecords()
+ * @method bool hasWarningRecords()
+ * @method bool hasNoticeRecords()
+ * @method bool hasInfoRecords()
+ * @method bool hasDebugRecords()
+ *
+ * @method bool hasEmergencyThatContains($message)
+ * @method bool hasAlertThatContains($message)
+ * @method bool hasCriticalThatContains($message)
+ * @method bool hasErrorThatContains($message)
+ * @method bool hasWarningThatContains($message)
+ * @method bool hasNoticeThatContains($message)
+ * @method bool hasInfoThatContains($message)
+ * @method bool hasDebugThatContains($message)
+ *
+ * @method bool hasEmergencyThatMatches($message)
+ * @method bool hasAlertThatMatches($message)
+ * @method bool hasCriticalThatMatches($message)
+ * @method bool hasErrorThatMatches($message)
+ * @method bool hasWarningThatMatches($message)
+ * @method bool hasNoticeThatMatches($message)
+ * @method bool hasInfoThatMatches($message)
+ * @method bool hasDebugThatMatches($message)
+ *
+ * @method bool hasEmergencyThatPasses($message)
+ * @method bool hasAlertThatPasses($message)
+ * @method bool hasCriticalThatPasses($message)
+ * @method bool hasErrorThatPasses($message)
+ * @method bool hasWarningThatPasses($message)
+ * @method bool hasNoticeThatPasses($message)
+ * @method bool hasInfoThatPasses($message)
+ * @method bool hasDebugThatPasses($message)
  */
 class TestHandler extends AbstractProcessingHandler
 {
@@ -73,6 +71,12 @@ class TestHandler extends AbstractProcessingHandler
     public function getRecords()
     {
         return $this->records;
+    }
+
+    public function clear()
+    {
+        $this->records = array();
+        $this->recordsByLevel = array();
     }
 
     protected function hasRecordRecords($level)
@@ -86,21 +90,21 @@ class TestHandler extends AbstractProcessingHandler
             $record = $record['message'];
         }
 
-        return $this->hasRecordThatPasses(function($rec) use ($record) {
+        return $this->hasRecordThatPasses(function ($rec) use ($record) {
             return $rec['message'] === $record;
         }, $level);
     }
 
     public function hasRecordThatContains($message, $level)
     {
-        return $this->hasRecordThatPasses(function($rec) use ($message) {
+        return $this->hasRecordThatPasses(function ($rec) use ($message) {
             return strpos($rec['message'], $message) !== false;
         }, $level);
     }
 
     public function hasRecordThatMatches($regex, $level)
     {
-        return $this->hasRecordThatPasses(function($rec) use ($regex) {
+        return $this->hasRecordThatPasses(function ($rec) use ($regex) {
             return preg_match($regex, $rec['message']) > 0;
         }, $level);
     }
@@ -133,7 +137,6 @@ class TestHandler extends AbstractProcessingHandler
         $this->records[] = $record;
     }
 
-
     public function __call($method, $args)
     {
         if (preg_match('/(.*)(Debug|Info|Notice|Warning|Error|Critical|Alert|Emergency)(.*)/', $method, $matches) > 0) {
@@ -141,6 +144,7 @@ class TestHandler extends AbstractProcessingHandler
             $level = constant('Monolog\Logger::' . strtoupper($matches[2]));
             if (method_exists($this, $genericMethod)) {
                 $args[] = $level;
+
                 return call_user_func_array(array($this, $genericMethod), $args);
             }
         }

@@ -1,335 +1,48 @@
 /*
-    TimelineJS - ver. 2.35.5 - 2015-02-26
-    Copyright (c) 2012-2013 Northwestern University
+    TimelineJS - ver. 3.3.14 - 2016-03-22
+    Copyright (c) 2012-2015 Northwestern University
     a project of the Northwestern University Knight Lab, originally created by Zach Wise
-    https://github.com/NUKnightLab/TimelineJS
+    https://github.com/NUKnightLab/TimelineJS3
     This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
     If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
 
 /* **********************************************
-     Begin VMM.js
+     Begin TL.js
 ********************************************** */
 
-/**
-	* VéritéCo JS Core
-	* Designed and built by Zach Wise at VéritéCo zach@verite.co
+/*!
+	TL
+*/
 
-	* This Source Code Form is subject to the terms of the Mozilla Public
-	* License, v. 2.0. If a copy of the MPL was not distributed with this
-	* file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
-*/  
-
-
-/*	Simple JavaScript Inheritance
-	By John Resig http://ejohn.org/
-	MIT Licensed.
-================================================== */
-(function() {
-	var initializing = false,
-	fnTest = /xyz/.test(function() {
-		xyz;
-		}) ? /\b_super\b/: /.*/;
-		// The base Class implementation (does nothing)
-	this.Class = function() {};
-
-    // Create a new Class that inherits from this class
-	Class.extend = function(prop) {
-		var _super = this.prototype;
-
-        // Instantiate a base class (but only create the instance,
-        // don't run the init constructor)
-		initializing = true;
-		var prototype = new this();
-		initializing = false;
-
-        // Copy the properties over onto the new prototype
-		for (var name in prop) {
-            // Check if we're overwriting an existing function
-			prototype[name] = typeof prop[name] == "function" &&
-			typeof _super[name] == "function" && fnTest.test(prop[name]) ?
-			(function(name, fn) {
-				return function() {
-					var tmp = this._super;
-
-					// Add a new ._super() method that is the same method
-					// but on the super-class
-					this._super = _super[name];
-
-					// The method only need to be bound temporarily, so we
-					// remove it when we're done executing
-					var ret = fn.apply(this, arguments);
-					this._super = tmp;
-
-					return ret;
-				};
-			})(name, prop[name]) :
-			prop[name];
-		}
-
-		// The dummy class constructor
-		function Class() {
-			// All construction is actually done in the init method
-			if (!initializing && this.init)
-			this.init.apply(this, arguments);
-		}
-
-		// Populate our constructed prototype object
-		Class.prototype = prototype;
-
-		// Enforce the constructor to be what we expect
-		Class.prototype.constructor = Class;
-
-		// And make this class extendable
-		Class.extend = arguments.callee;
-
-		return Class;
-    };
-})();
-
-/*	Access to the Global Object
-	access the global object without hard-coding the identifier window
-================================================== */
-var global = (function () {
-   return this || (1,eval)('this');
-}());
-
-/* VMM
-================================================== */
-if (typeof VMM == 'undefined') {
-	
-	/* Main Scope Container
-	================================================== */
-	//var VMM = {};
-	var VMM = Class.extend({});
-	
-	/* Debug
-	================================================== */
-	VMM.debug = true;
-	
-	/* Master Config
-	================================================== */
-	
-	VMM.master_config = ({
-		
-		init: function() {
-			return this;
-		},
-		
-		sizes: {
-			api: {
-				width:			0,
-				height:			0
-			}
-		},
-		
-		vp:				"Pellentesque nibh felis, eleifend id, commodo in, interdum vitae, leo",
-		
-		api_keys_master: {
-			flickr:		"RAIvxHY4hE/Elm5cieh4X5ptMyDpj7MYIxziGxi0WGCcy1s+yr7rKQ==",
-			//google:		"jwNGnYw4hE9lmAez4ll0QD+jo6SKBJFknkopLS4FrSAuGfIwyj57AusuR0s8dAo=",
-			google:		"uQKadH1VMlCsp560gN2aOiMz4evWkl1s34yryl3F/9FJOsn+/948CbBUvKLN46U=",
-			twitter:	""
-		},
-		
-		timers: {
-			api:			7000
-		},
-		
-		api:	{
-			pushques:		[]
-			
-		},
-		
-		twitter: {
-			active:			false,
-			array:			[],
-			api_loaded:		false,
-			que:			[]
-		},
-		
-		flickr: {
-			active:			false,
-			array:			[],
-			api_loaded:		false,
-			que:			[]
-		},
-		
-		youtube: {
-			active:			false,
-			array:			[],
-			api_loaded:		false,
-			que:			[]
-		},
-		
-		vimeo: {
-			active:			false,
-			array:			[],
-			api_loaded:		false,
-			que:			[]
-		},
-		
-		vine: {
-			active:			false,
-			array:			[],
-			api_loaded:		false,
-			que:			[]
-		},
-		
-		webthumb: {
-			active:			false,
-			array:			[],
-			api_loaded:		false,
-			que:			[]
-		},
-		
-		googlemaps: {
-			active:			false,
-			map_active:		false,
-			places_active:	false,
-			array:			[],
-			api_loaded:		false,
-			que:			[]
-		},
-		
-		googledocs: {
-			active:			false,
-			array:			[],
-			api_loaded:		false,
-			que:			[]
-		},
-		
-		googleplus: {
-			active:			false,
-			array:			[],
-			api_loaded:		false,
-			que:			[]
-		},
-		
-		wikipedia: {
-			active:			false,
-			array:			[],
-			api_loaded:		false,
-			que:			[],
-			tries:			0
-		},
-		
-		soundcloud: {
-			active:			false,
-			array:			[],
-			api_loaded:		false,
-			que:			[]
-		}
-		
-	}).init();
-	
-	//VMM.createElement(tag, value, cName, attrs, styles);
-	VMM.createElement = function(tag, value, cName, attrs, styles) {
-		
-		var ce = "";
-		
-		if (tag != null && tag != "") {
-			
-			// TAG
-			ce += "<" + tag;
-			if (cName != null && cName != "") {
-				ce += " class='" + cName + "'";
-			};
-			
-			if (attrs != null && attrs != "") {
-				ce += " " + attrs;
-			};
-			
-			if (styles != null && styles != "") {
-				ce += " style='" + styles + "'";
-			};
-			
-			ce += ">";
-			
-			if (value != null && value != "") {
-				ce += value;
-			}
-			
-			// CLOSE TAG
-			ce = ce + "</" + tag + ">";
-		}
-		
-		return ce;
-		
-    };
-
-	VMM.createMediaElement = function(media, caption, credit) {
-		
-		var ce = "";
-		
-		var _valid = false;
-		
-		ce += "<div class='media'>";
-		
-		if (media != null && media != "") {
-			
-			valid = true;
-			
-			ce += "<img src='" + media + "'>";
-			
-			// CREDIT
-			if (credit != null && credit != "") {
-				ce += VMM.createElement("div", credit, "credit");
-			}
-			
-			// CAPTION
-			if (caption != null && caption != "") {
-				ce += VMM.createElement("div", caption, "caption");
-			}
-
-		}
-		
-		ce += "</div>";
-		
-		return ce;
-		
-    };
-
-	// Hide URL Bar for iOS and Android by Scott Jehl
-	// https://gist.github.com/1183357
-
-	VMM.hideUrlBar = function () {
-		var win = window,
-			doc = win.document;
-
-		// If there's a hash, or addEventListener is undefined, stop here
-		if( !location.hash || !win.addEventListener ){
-
-			//scroll to 1
-			window.scrollTo( 0, 1 );
-			var scrollTop = 1,
-
-			//reset to 0 on bodyready, if needed
-			bodycheck = setInterval(function(){
-				if( doc.body ){
-					clearInterval( bodycheck );
-					scrollTop = "scrollTop" in doc.body ? doc.body.scrollTop : 1;
-					win.scrollTo( 0, scrollTop === 1 ? 0 : 1 );
-				}	
-			}, 15 );
-
-			win.addEventListener( "load", function(){
-				setTimeout(function(){
-					//reset to hide addr bar at onload
-					win.scrollTo( 0, scrollTop === 1 ? 0 : 1 );
-				}, 0);
-			}, false );
-		}
+(function (root) {
+	root.TL = {
+		VERSION: '0.1',
+		_originalL: root.TL
 	};
-	
+}(this));
 
-}
+/*	TL.Debug
+	Debug mode
+================================================== */
+TL.debug = false;
+
+
+
+/*	TL.Bind
+================================================== */
+TL.Bind = function (/*Function*/ fn, /*Object*/ obj) /*-> Object*/ {
+	return function () {
+		return fn.apply(obj, arguments);
+	};
+};
+
+
 
 /* Trace (console.log)
 ================================================== */
-function trace( msg ) {
-	if (VMM.debug) {
+trace = function( msg ) {
+	if (TL.debug) {
 		if (window.console) {
 			console.log(msg);
 		} else if ( typeof( jsTrace ) != 'undefined' ) {
@@ -340,1928 +53,2612 @@ function trace( msg ) {
 	}
 }
 
-/* Extending Date to include Week
-================================================== */
-Date.prototype.getWeek = function() {
-	var onejan = new Date(this.getFullYear(),0,1);
-	return Math.ceil((((this - onejan) / 86400000) + onejan.getDay()+1)/7);
+
+/* **********************************************
+     Begin TL.Error.js
+********************************************** */
+
+/* Timeline Error class */
+
+function TL_Error(message_key, detail) {
+    this.name = 'TL.Error';
+    this.message = message_key || 'error';
+    this.message_key = this.message;
+    this.detail = detail || '';
+  
+    // Grab stack?
+    var e = new Error();
+    if(e.hasOwnProperty('stack')) {
+        this.stack = e.stack;
+    }
 }
 
-/* Extending Date to include Day of Year
-================================================== */
-Date.prototype.getDayOfYear = function() {
-	var onejan = new Date(this.getFullYear(),0,1);
-	return Math.ceil((this - onejan) / 86400000);
-}
+TL_Error.prototype = Object.create(Error.prototype);
+TL_Error.prototype.constructor = TL_Error;
 
-/* A MORE SPECIFIC TYPEOF();
-//	http://rolandog.com/archives/2007/01/18/typeof-a-more-specific-typeof/
-================================================== */
-// type.of()
-var is={
-	Null:function(a){return a===null;},
-	Undefined:function(a){return a===undefined;},
-	nt:function(a){return(a===null||a===undefined);},
-	Function:function(a){return(typeof(a)==="function")?a.constructor.toString().match(/Function/)!==null:false;},
-	String:function(a){return(typeof(a)==="string")?true:(typeof(a)==="object")?a.constructor.toString().match(/string/i)!==null:false;},
-	Array:function(a){return(typeof(a)==="object")?a.constructor.toString().match(/array/i)!==null||a.length!==undefined:false;},
-	Boolean:function(a){return(typeof(a)==="boolean")?true:(typeof(a)==="object")?a.constructor.toString().match(/boolean/i)!==null:false;},
-	Date:function(a){return(typeof(a)==="date")?true:(typeof(a)==="object")?a.constructor.toString().match(/date/i)!==null:false;},
-	HTML:function(a){return(typeof(a)==="object")?a.constructor.toString().match(/html/i)!==null:false;},
-	Number:function(a){return(typeof(a)==="number")?true:(typeof(a)==="object")?a.constructor.toString().match(/Number/)!==null:false;},
-	Object:function(a){return(typeof(a)==="object")?a.constructor.toString().match(/object/i)!==null:false;},
-	RegExp:function(a){return(typeof(a)==="function")?a.constructor.toString().match(/regexp/i)!==null:false;}
-};
-var type={
-	of:function(a){
-		for(var i in is){
-			if(is[i](a)){
-				return i.toLowerCase();
-			}
-		}
-	}
-};
-
-
-
+TL.Error = TL_Error;
 
 
 /* **********************************************
-     Begin VMM.Library.js
+     Begin TL.Util.js
 ********************************************** */
 
-/*	* LIBRARY ABSTRACTION
+/*	TL.Util
+	Class of utilities
 ================================================== */
-if(typeof VMM != 'undefined') {
-	
-	VMM.smoothScrollTo = function(elem, duration, ease) {
-		if( typeof( jQuery ) != 'undefined' ){
-			var _ease		= "easein",
-				_duration	= 1000;
-		
-			if (duration != null) {
-				if (duration < 1) {
-					_duration = 1;
-				} else {
-					_duration = Math.round(duration);
-				}
-				
-			}
-			
-			if (ease != null && ease != "") {
-				_ease = ease;
-			}
-			
-			if (jQuery(window).scrollTop() != VMM.Lib.offset(elem).top) {
-				VMM.Lib.animate('html,body', _duration, _ease, {scrollTop: VMM.Lib.offset(elem).top})
-			}
-			
-		}
-		
-	};
-	
-	VMM.attachElement = function(element, content) {
-		if( typeof( jQuery ) != 'undefined' ){
-			jQuery(element).html(content);
-		}
-		
-	};
-	
-	VMM.appendElement = function(element, content) {
-		
-		if( typeof( jQuery ) != 'undefined' ){
-			jQuery(element).append(content);
-		}
-		
-	};
-	
-	VMM.getHTML = function(element) {
-		var e;
-		if( typeof( jQuery ) != 'undefined' ){
-			e = jQuery(element).html();
-			return e;
-		}
-		
-	};
-	
-	VMM.getElement = function(element, p) {
-		var e;
-		if( typeof( jQuery ) != 'undefined' ){
-			if (p) {
-				e = jQuery(element).parent().get(0);
-				
-			} else {
-				e = jQuery(element).get(0);
-			}
-			return e;
-		}
-		
-	};
-	
-	VMM.bindEvent = function(element, the_handler, the_event_type, event_data) {
-		var e;
-		var _event_type = "click";
-		var _event_data = {};
-		
-		if (the_event_type != null && the_event_type != "") {
-			_event_type = the_event_type;
-		}
-		
-		if (_event_data != null && _event_data != "") {
-			_event_data = event_data;
-		}
-		
-		if( typeof( jQuery ) != 'undefined' ){
-			jQuery(element).bind(_event_type, _event_data, the_handler);
-			
-			//return e;
-		}
-		
-	};
-	
-	VMM.unbindEvent = function(element, the_handler, the_event_type) {
-		var e;
-		var _event_type = "click";
-		var _event_data = {};
-		
-		if (the_event_type != null && the_event_type != "") {
-			_event_type = the_event_type;
-		}
-		
-		if( typeof( jQuery ) != 'undefined' ){
-			jQuery(element).unbind(_event_type, the_handler);
-			
-			//return e;
-		}
-		
-	};
-	
-	VMM.fireEvent = function(element, the_event_type, the_data) {
-		var e;
-		var _event_type = "click";
-		var _data = [];
-		
-		if (the_event_type != null && the_event_type != "") {
-			_event_type = the_event_type;
-		}
-		if (the_data != null && the_data != "") {
-			_data = the_data;
-		}
-		
-		if( typeof( jQuery ) != 'undefined' ){
-			jQuery(element).trigger(_event_type, _data);
-			
-			//return e;
-		}
-		
-	};
-	
-	VMM.getJSON = function(url, data, callback) {
-		if( typeof( jQuery ) != 'undefined' ){
-			jQuery.ajaxSetup({
-			     timeout: 3000
-			});
-			/* CHECK FOR IE
-			================================================== */
-			if ( VMM.Browser.browser == "Explorer" && 
-				 parseInt(VMM.Browser.version, 10) >= 7 && 
-				 window.XDomainRequest && 
-				 url.match('^https?://')) {
-				trace("old IE JSON doesn't like retrieving from different protocol");
-					var colon = url.indexOf(':');
-					url = url.substr(colon+1); 
-			}
-			return jQuery.getJSON(url, data, callback);
 
+TL.Util = {
+	mergeData: function(data_main, data_to_merge) {
+		var x;
+		for (x in data_to_merge) {
+			if (Object.prototype.hasOwnProperty.call(data_to_merge, x)) {
+				data_main[x] = data_to_merge[x];
+			}
 		}
-	}
-	
-	VMM.parseJSON = function(the_json) {
-		if( typeof( jQuery ) != 'undefined' ){
-			return jQuery.parseJSON(the_json);
+		return data_main;
+	},
+
+	// like TL.Util.mergeData but takes an arbitrarily long list of sources to merge.
+	extend: function (/*Object*/ dest) /*-> Object*/ {	// merge src properties into dest
+		var sources = Array.prototype.slice.call(arguments, 1);
+		for (var j = 0, len = sources.length, src; j < len; j++) {
+			src = sources[j] || {};
+			TL.Util.mergeData(dest, src);
 		}
-	}
-	
-	// ADD ELEMENT AND RETURN IT
-	VMM.appendAndGetElement = function(append_to_element, tag, cName, content) {
-		var e,
-			_tag		= "<div>",
-			_class		= "",
-			_content	= "",
-			_id			= "";
-		
-		if (tag != null && tag != "") {
-			_tag = tag;
-		}
-		
-		if (cName != null && cName != "") {
-			_class = cName;
-		}
-		
-		if (content != null && content != "") {
-			_content = content;
-		}
-		
-		if( typeof( jQuery ) != 'undefined' ){
-			
-			e = jQuery(tag);
-			
-			e.addClass(_class);
-			e.html(_content);
-			
-			jQuery(append_to_element).append(e);
-			
-		}
-		
-		return e;
-		
-	};
-	
-	VMM.Lib = {
-		
-		init: function() {
-			return this;
-		},
-		
-		hide: function(element, duration) {
-			if (duration != null && duration != "") {
-				if( typeof( jQuery ) != 'undefined' ){
-					jQuery(element).hide(duration);
-				}
-			} else {
-				if( typeof( jQuery ) != 'undefined' ){
-					jQuery(element).hide();
-				}
-			}
-			
-		},
-		
-		remove: function(element) {
-			if( typeof( jQuery ) != 'undefined' ){
-				jQuery(element).remove();
-			}
-		},
-		
-		detach: function(element) {
-			if( typeof( jQuery ) != 'undefined' ){
-				jQuery(element).detach();
-			}
-		},
-		
-		append: function(element, value) {
-			if( typeof( jQuery ) != 'undefined' ){
-				jQuery(element).append(value);
-			}
-		},
-		
-		prepend: function(element, value) {
-			if( typeof( jQuery ) != 'undefined' ){
-				jQuery(element).prepend(value);
-			}
-		},
-		
-		show: function(element, duration) {
-			if (duration != null && duration != "") {
-				if( typeof( jQuery ) != 'undefined' ){
-					jQuery(element).show(duration);
-				}
-			} else {
-				if( typeof( jQuery ) != 'undefined' ){
-					jQuery(element).show();
-				}
-			}
-			
-		},
-		
-		load: function(element, callback_function, event_data) {
-			var _event_data = {elem:element}; // return element by default
-			if (_event_data != null && _event_data != "") {
-				_event_data = event_data;
-			}
-			if( typeof( jQuery ) != 'undefined' ){
-				jQuery(element).load(_event_data, callback_function);
-			}
-		},
-		
-		addClass: function(element, cName) {
-			if( typeof( jQuery ) != 'undefined' ){
-				jQuery(element).addClass(cName);
-			}
-		},
-		
-		removeClass: function(element, cName) {
-			if( typeof( jQuery ) != 'undefined' ){
-				jQuery(element).removeClass(cName);
-			}
-		},
-		
-		attr: function(element, aName, value) {
-			if (value != null && value != "") {
-				if( typeof( jQuery ) != 'undefined' ){
-					jQuery(element).attr(aName, value);
-				}
-			} else {
-				if( typeof( jQuery ) != 'undefined' ){
-					return jQuery(element).attr(aName);
-				}
-			}
-		},
+		return dest;
+	},
 
-		prop: function(element, aName, value) {
-			if (typeof jQuery == 'undefined' || !('prop' in jQuery.fn)) {
-			    return VMM.Lib.attribute(element, aName, value);
-			} else if (typeof value != 'undefined') {
-				return jQuery(element).prop(aName, value);
-			} else {
-				return jQuery(element).prop(aName);
-			}
-		},
+	isEven: function(n) {
+	  return n == parseFloat(n)? !(n%2) : void 0;
+	},
 
-		attribute: function(element, aName, value) {
-			if (typeof(jQuery) != 'undefined') {
-				if (typeof(value) != 'undefined' && value != null && value != "") {
-					return jQuery(element).attr(aName, value);
-				} else {
-					return jQuery(element).attr(aName);
-				}
-			}
-		},
+	isTrue: function(s) {
+		if (s == null) return false;
+		return s == true || String(s).toLowerCase() == 'true' || Number(s) == 1;
+	},
 
-		visible: function(element, show) {
-			if (show != null) {
-				if( typeof( jQuery ) != 'undefined' ){
-					if (show) {
-						jQuery(element).show(0);
-					} else {
-						jQuery(element).hide(0);
-					}
-				}
-			} else {
-				if( typeof( jQuery ) != 'undefined' ){
-					if ( jQuery(element).is(':visible')){
-						return true;
-					} else {
-						return false;
-					}
-				}
-			}
-		},
-		
-		css: function(element, prop, value) {
+	findArrayNumberByUniqueID: function(id, array, prop, defaultVal) {
+		var _n = defaultVal || 0;
 
-			if (value != null && value != "") {
-				if( typeof( jQuery ) != 'undefined' ){
-					jQuery(element).css(prop, value);
-				}
-			} else {
-				if( typeof( jQuery ) != 'undefined' ){
-					return jQuery(element).css(prop);
-				}
+		for (var i = 0; i < array.length; i++) {
+			if (array[i].data[prop] == id) {
+				_n = i;
 			}
-		},
-		
-		cssmultiple: function(element, propval) {
+		};
 
-			if( typeof( jQuery ) != 'undefined' ){
-				return jQuery(element).css(propval);
-			}
-		},
-		
-		offset: function(element) {
-			var p;
-			if( typeof( jQuery ) != 'undefined' ){
-				p = jQuery(element).offset();
-			}
-			return p;
-		},
-		
-		position: function(element) {
-			var p;
-			if( typeof( jQuery ) != 'undefined' ){
-				p = jQuery(element).position();
-			}
-			return p;
-		},
-		
-		width: function(element, s) {
-			if (s != null && s != "") {
-				if( typeof( jQuery ) != 'undefined' ){
-					jQuery(element).width(s);
-				}
-			} else {
-				if( typeof( jQuery ) != 'undefined' ){
-					return jQuery(element).width();
-				}
-			}
-		},
-		
-		height: function(element, s) {
-			if (s != null && s != "") {
-				if( typeof( jQuery ) != 'undefined' ){
-					jQuery(element).height(s);
-				}
-			} else {
-				if( typeof( jQuery ) != 'undefined' ){
-					return jQuery(element).height();
-				}
-			}
-		},
-		
-		toggleClass: function(element, cName) {
-			if( typeof( jQuery ) != 'undefined' ){
-				jQuery(element).toggleClass(cName);
-			}
-		},
-		
-		each:function(element, return_function) {
-			if( typeof( jQuery ) != 'undefined' ){
-				jQuery(element).each(return_function);
-			}
-			
-		},
-		
-		html: function(element, str) {
-			var e;
-			if( typeof( jQuery ) != 'undefined' ){
-				e = jQuery(element).html();
-				return e;
-			}
-			
-			if (str != null && str != "") {
-				if( typeof( jQuery ) != 'undefined' ){
-					jQuery(element).html(str);
-				}
-			} else {
-				var e;
-				if( typeof( jQuery ) != 'undefined' ){
-					e = jQuery(element).html();
-					return e;
-				}
-			}
+		return _n;
+	},
 
-		},
-		
-		find: function(element, selec) {
-			if( typeof( jQuery ) != 'undefined' ){
-				return jQuery(element).find(selec);
-			}
-		},
-		
-		stop: function(element) {
-			if( typeof( jQuery ) != 'undefined' ){
-				jQuery(element).stop();
-			}
-		},
-
-		// TODO: Consider removing this as it's referenced by one commented line
-		delay_animate: function(delay, element, duration, ease, att, callback_function) {
-			if (VMM.Browser.features.css.transitions && !('scrollTop' in _att)) {
-				var _tdd		= Math.round((duration/1500)*10)/10,
-					__duration	= _tdd + 's';
-					
-				VMM.Lib.css(element, '-webkit-transition', 'all '+ __duration + ' ease');
-				VMM.Lib.css(element, '-moz-transition', 'all '+ __duration + ' ease');
-				VMM.Lib.css(element, '-o-transition', 'all '+ __duration + ' ease');
-				VMM.Lib.css(element, '-ms-transition', 'all '+ __duration + ' ease');
-				VMM.Lib.css(element, 'transition', 'all '+ __duration + ' ease');
-				VMM.Lib.cssmultiple(element, _att);
-			} else {
-				if( typeof( jQuery ) != 'undefined' ){
-					jQuery(element).delay(delay).animate(att, {duration:duration, easing:ease} );
-				}
-			}
-			
-		},
-		
-		animate: function(element, duration, ease, att, que, callback_function) {
-			
-			var _ease		= "easein",
-				_que		= false,
-				_duration	= 1000,
-				_att;
-
-			if (duration != null) {
-				if (duration < 1) {
-					_duration = 1;
-				} else {
-					_duration = Math.round(duration);
-				}
-				
-			}
-			
-			if (ease != null && ease != "") {
-				_ease = ease;
-			}
-			
-			if (que != null && que != "") {
-				_que = que;
-			}
-			
-			
-			if (att != null) {
-				_att = att;
-			} else {
-				_att = {opacity: 0};
-			}
-
-			if (VMM.Browser.features.css.transitions && !('scrollTop' in _att)) {
-				var _tdd		= Math.round((_duration/1500)*10)/10,
-					__duration	= _tdd + 's';
-					
-				_ease = " cubic-bezier(0.33, 0.66, 0.66, 1)";
-				//_ease = " ease-in-out";
-				for (var x in _att) {
-					if (Object.prototype.hasOwnProperty.call(_att, x)) {
-						trace(x + " to " + _att[x]);
-						VMM.Lib.css(element, '-webkit-transition',  x + ' ' + __duration + _ease);
-						VMM.Lib.css(element, '-moz-transition', x + ' ' + __duration + _ease);
-						VMM.Lib.css(element, '-o-transition', x + ' ' + __duration + _ease);
-						VMM.Lib.css(element, '-ms-transition', x + ' ' + __duration + _ease);
-						VMM.Lib.css(element, 'transition', x + ' ' + __duration + _ease);
-					}
-				}
-				
-				VMM.Lib.cssmultiple(element, _att);
-				
-			} else {
-				if( typeof( jQuery ) != 'undefined' ){
-					if (callback_function != null && callback_function != "") {
-						jQuery(element).animate(_att, {queue:_que, duration:_duration, easing:_ease, complete:callback_function} );
-					} else {
-						jQuery(element).animate(_att, {queue:_que, duration:_duration, easing:_ease} );
-					}
-				}
-			}
-			
-		}
-		
-	}
-}
-
-if( typeof( jQuery ) != 'undefined' ){
-	
-	/*	XDR AJAX EXTENTION FOR jQuery
-		https://github.com/jaubourg/ajaxHooks/blob/master/src/ajax/xdr.js
-	================================================== */
-	(function( jQuery ) {
-		if ( window.XDomainRequest ) {
-			jQuery.ajaxTransport(function( s ) {
-				if ( s.crossDomain && s.async ) {
-					if ( s.timeout ) {
-						s.xdrTimeout = s.timeout;
-						delete s.timeout;
-					}
-					var xdr;
-					return {
-						send: function( _, complete ) {
-							function callback( status, statusText, responses, responseHeaders ) {
-								xdr.onload = xdr.onerror = xdr.ontimeout = jQuery.noop;
-								xdr = undefined;
-								complete( status, statusText, responses, responseHeaders );
-							}
-							xdr = new XDomainRequest();
-							xdr.open( s.type, s.url );
-							xdr.onload = function() {
-								callback( 200, "OK", { text: xdr.responseText }, "Content-Type: " + xdr.contentType );
-							};
-							xdr.onerror = function() {
-								callback( 404, "Not Found" );
-							};
-							if ( s.xdrTimeout ) {
-								xdr.ontimeout = function() {
-									callback( 0, "timeout" );
-								};
-								xdr.timeout = s.xdrTimeout;
-							}
-							xdr.send( ( s.hasContent && s.data ) || null );
-						},
-						abort: function() {
-							if ( xdr ) {
-								xdr.onerror = jQuery.noop();
-								xdr.abort();
-							}
-						}
-					};
-				}
-			});
-		}
-	})( jQuery );
-	
-	/*	jQuery Easing v1.3
-		http://gsgd.co.uk/sandbox/jquery/easing/
-	================================================== */
-	jQuery.easing['jswing'] = jQuery.easing['swing'];
-
-	jQuery.extend( jQuery.easing, {
-		def: 'easeOutQuad',
-		swing: function (x, t, b, c, d) {
-			//alert(jQuery.easing.default);
-			return jQuery.easing[jQuery.easing.def](x, t, b, c, d);
-		},
-		easeInExpo: function (x, t, b, c, d) {
-			return (t==0) ? b : c * Math.pow(2, 10 * (t/d - 1)) + b;
-		},
-		easeOutExpo: function (x, t, b, c, d) {
-			return (t==d) ? b+c : c * (-Math.pow(2, -10 * t/d) + 1) + b;
-		},
-		easeInOutExpo: function (x, t, b, c, d) {
-			if (t==0) return b;
-			if (t==d) return b+c;
-			if ((t/=d/2) < 1) return c/2 * Math.pow(2, 10 * (t - 1)) + b;
-			return c/2 * (-Math.pow(2, -10 * --t) + 2) + b;
-		},
-		easeInQuad: function (x, t, b, c, d) {
-			return c*(t/=d)*t + b;
-		},
-		easeOutQuad: function (x, t, b, c, d) {
-			return -c *(t/=d)*(t-2) + b;
-		},
-		easeInOutQuad: function (x, t, b, c, d) {
-			if ((t/=d/2) < 1) return c/2*t*t + b;
-			return -c/2 * ((--t)*(t-2) - 1) + b;
-		}
-	});
-}
-
-
-/* **********************************************
-     Begin VMM.Browser.js
-********************************************** */
-
-/*	* DEVICE AND BROWSER DETECTION
-================================================== */
-if(typeof VMM != 'undefined' && typeof VMM.Browser == 'undefined') {
-	
-	VMM.Browser = {
-		init: function () {
-			this.browser = this.searchString(this.dataBrowser) || "An unknown browser";
-			this.version = this.searchVersion(navigator.userAgent)
-				|| this.searchVersion(navigator.appVersion)
-				|| "an unknown version";
-			this.tridentVersion = this.searchTridentVersion(navigator.userAgent);
-			this.OS = this.searchString(this.dataOS) || "an unknown OS";
-			this.device = this.searchDevice(navigator.userAgent);
-			this.orientation = this.searchOrientation(window.orientation);
-			this.features = {
-				css: {
-					transitions: this.cssTransitionSupport()
-				}
+	convertUnixTime: function(str) {
+		var _date, _months, _year, _month, _day, _time, _date_array = [],
+			_date_str = {
+				ymd:"",
+				time:"",
+				time_array:[],
+				date_array:[],
+				full_array:[]
 			};
-		},
-		searchOrientation: function(orientation) {
-			var orient = "";
-			if ( orientation == 0  || orientation == 180) {
-				orient = "portrait";
-			} else if ( orientation == 90 || orientation == -90) {
-				orient = "landscape";
-			} else {
-				orient = "normal";
+
+		_date_str.ymd = str.split(" ")[0];
+		_date_str.time = str.split(" ")[1];
+		_date_str.date_array = _date_str.ymd.split("-");
+		_date_str.time_array = _date_str.time.split(":");
+		_date_str.full_array = _date_str.date_array.concat(_date_str.time_array)
+
+		for(var i = 0; i < _date_str.full_array.length; i++) {
+			_date_array.push( parseInt(_date_str.full_array[i]) )
+		}
+
+		_date = new Date(_date_array[0], _date_array[1], _date_array[2], _date_array[3], _date_array[4], _date_array[5]);
+		_months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+		_year = _date.getFullYear();
+		_month = _months[_date.getMonth()];
+		_day = _date.getDate();
+		_time = _month + ', ' + _day + ' ' + _year;
+
+		return _time;
+	},
+
+	setData: function (obj, data) {
+		obj.data = TL.Util.extend({}, obj.data, data);
+		if (obj.data.unique_id === "") {
+			obj.data.unique_id = TL.Util.unique_ID(6);
+		}
+	},
+
+	stamp: (function () {
+		var lastId = 0, key = '_tl_id';
+
+
+		return function (/*Object*/ obj) {
+			obj[key] = obj[key] || ++lastId;
+			return obj[key];
+		};
+	}()),
+
+	isArray: (function () {
+	    // Use compiler's own isArray when available
+	    if (Array.isArray) {
+	        return Array.isArray;
+	    }
+
+	    // Retain references to variables for performance
+	    // optimization
+	    var objectToStringFn = Object.prototype.toString,
+	        arrayToStringResult = objectToStringFn.call([]);
+
+	    return function (subject) {
+	        return objectToStringFn.call(subject) === arrayToStringResult;
+	    };
+	}()),
+
+    getRandomNumber: function(range) {
+   		return Math.floor(Math.random() * range);
+   	},
+
+	unique_ID: function(size, prefix) {
+
+		var getRandomNumber = function(range) {
+			return Math.floor(Math.random() * range);
+		};
+
+		var getRandomChar = function() {
+			var chars = "abcdefghijklmnopqurstuvwxyz";
+			return chars.substr( getRandomNumber(32), 1 );
+		};
+
+		var randomID = function(size) {
+			var str = "";
+			for(var i = 0; i < size; i++) {
+				str += getRandomChar();
 			}
-			return orient;
-		},
-		searchDevice: function(d) {
-			var device = "";
-			if (d.match(/Android/i) || d.match(/iPhone|iPod/i)) {
-				device = "mobile";
-			} else if (d.match(/iPad/i)) {
-				device = "tablet";
-			} else if (d.match(/BlackBerry/i) || d.match(/IEMobile/i)) {
-				device = "other mobile";
-			} else {
-				device = "desktop";
+			return str;
+		};
+
+		if (prefix) {
+			return prefix + "-" + randomID(size);
+		} else {
+			return "tl-" + randomID(size);
+		}
+	},
+
+	ensureUniqueKey: function(obj, candidate) {
+		if (!candidate) { candidate = TL.Util.unique_ID(6); }
+
+		if (!(candidate in obj)) { return candidate; }
+
+		var root = candidate.match(/^(.+)(-\d+)?$/)[1];
+		var similar_ids = [];
+		// get an alternative
+		for (key in obj) {
+			if (key.match(/^(.+?)(-\d+)?$/)[1] == root) {
+				similar_ids.push(key);
 			}
-			return device;
+		}
+		candidate = root + "-" + (similar_ids.length + 1);
+
+		for (var counter = similar_ids.length; similar_ids.indexOf(candidate) != -1; counter++) {
+			candidate = root + '-' + counter;
+		}
+
+		return candidate;
+	},
+
+
+	htmlify: function(str) {
+		//if (str.match(/<\s*p[^>]*>([^<]*)<\s*\/\s*p\s*>/)) {
+		if (str.match(/<p>[\s\S]*?<\/p>/)) {
+
+			return str;
+		} else {
+			return "<p>" + str + "</p>";
+		}
+	},
+
+	/*	* Turns plain text links into real links
+	================================================== */
+	linkify: function(text,targets,is_touch) {
+
+        var make_link = function(url, link_text, prefix) {
+            if (!prefix) {
+                prefix = "";
+            }
+            var MAX_LINK_TEXT_LENGTH = 30;
+            if (link_text && link_text.length > MAX_LINK_TEXT_LENGTH) {
+                link_text = link_text.substring(0,MAX_LINK_TEXT_LENGTH) + "\u2026"; // unicode ellipsis
+            }
+            return prefix + "<a class='tl-makelink' href='" + url + "' onclick='void(0)'>" + link_text + "</a>";
+        }
+		// http://, https://, ftp://
+		var urlPattern = /\b(?:https?|ftp):\/\/([a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|])/gim;
+
+		// www. sans http:// or https://
+		var pseudoUrlPattern = /(^|[^\/>])(www\.[\S]+(\b|$))/gim;
+
+		// Email addresses
+		var emailAddressPattern = /([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)/gim;
+
+
+		return text
+			.replace(urlPattern, function(match, url_sans_protocol, offset, string) {
+                // Javascript doesn't support negative lookbehind assertions, so
+                // we need to handle risk of matching URLs in legit hrefs
+                if (offset > 0) {
+                    var prechar = string[offset-1];
+                    if (prechar == '"' || prechar == "'" || prechar == "=") {
+                        return match;
+                    }
+                }
+                return make_link(match, url_sans_protocol);
+            })
+			.replace(pseudoUrlPattern, function(match, beforePseudo, pseudoUrl, offset, string) {
+                return make_link('http://' + pseudoUrl, pseudoUrl, beforePseudo);
+            })
+			.replace(emailAddressPattern, function(match, email, offset, string) {
+                return make_link('mailto:' + email, email);
+            });
+	},
+
+	unlinkify: function(text) {
+		if(!text) return text;
+		text = text.replace(/<a\b[^>]*>/i,"");
+		text = text.replace(/<\/a>/i, "");
+		return text;
+	},
+
+	getParamString: function (obj) {
+		var params = [];
+		for (var i in obj) {
+			if (obj.hasOwnProperty(i)) {
+				params.push(i + '=' + obj[i]);
+			}
+		}
+		return '?' + params.join('&');
+	},
+
+	formatNum: function (num, digits) {
+		var pow = Math.pow(10, digits || 5);
+		return Math.round(num * pow) / pow;
+	},
+
+	falseFn: function () {
+		return false;
+	},
+
+	requestAnimFrame: (function () {
+		function timeoutDefer(callback) {
+			window.setTimeout(callback, 1000 / 60);
+		}
+
+		var requestFn = window.requestAnimationFrame ||
+			window.webkitRequestAnimationFrame ||
+			window.mozRequestAnimationFrame ||
+			window.oRequestAnimationFrame ||
+			window.msRequestAnimationFrame ||
+			timeoutDefer;
+
+		return function (callback, context, immediate, contextEl) {
+			callback = context ? TL.Util.bind(callback, context) : callback;
+			if (immediate && requestFn === timeoutDefer) {
+				callback();
+			} else {
+				requestFn(callback, contextEl);
+			}
+		};
+	}()),
+
+	bind: function (/*Function*/ fn, /*Object*/ obj) /*-> Object*/ {
+		return function () {
+			return fn.apply(obj, arguments);
+		};
+	},
+
+	template: function (str, data) {
+		return str.replace(/\{ *([\w_]+) *\}/g, function (str, key) {
+			var value = data[key];
+			if (!data.hasOwnProperty(key)) {
+			    throw new TL.Error("template_value_err", str);
+			}
+			return value;
+		});
+	},
+
+	hexToRgb: function(hex) {
+	    // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+        if (TL.Util.css_named_colors[hex.toLowerCase()]) {
+            hex = TL.Util.css_named_colors[hex.toLowerCase()];
+        }
+	    var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+	    hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+	        return r + r + g + g + b + b;
+	    });
+
+	    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+	    return result ? {
+	        r: parseInt(result[1], 16),
+	        g: parseInt(result[2], 16),
+	        b: parseInt(result[3], 16)
+	    } : null;
+	},
+	// given an object with r, g, and b keys, or a string of the form 'rgb(mm,nn,ll)', return a CSS hex string including the leading '#' character
+	rgbToHex: function(rgb) {
+		var r,g,b;
+		if (typeof(rgb) == 'object') {
+			r = rgb.r;
+			g = rgb.g;
+			b = rgb.b;
+		} else if (typeof(rgb.match) == 'function'){
+			var parts = rgb.match(/^rgb\((\d+),(\d+),(\d+)\)$/);
+			if (parts) {
+				r = parts[1];
+				g = parts[2];
+				b = parts[3];
+			}
+		}
+		if (isNaN(r) || isNaN(b) || isNaN(g)) {
+			throw new TL.Error("invalid_rgb_err");
+		}
+		return "#" + TL.Util.intToHexString(r) + TL.Util.intToHexString(g) + TL.Util.intToHexString(b);
+	},
+	colorObjToHex: function(o) {
+		var parts = [o.r, o.g, o.b];
+		return TL.Util.rgbToHex("rgb(" + parts.join(',') + ")")
+	},
+    css_named_colors: {
+        "aliceblue": "#f0f8ff",
+        "antiquewhite": "#faebd7",
+        "aqua": "#00ffff",
+        "aquamarine": "#7fffd4",
+        "azure": "#f0ffff",
+        "beige": "#f5f5dc",
+        "bisque": "#ffe4c4",
+        "black": "#000000",
+        "blanchedalmond": "#ffebcd",
+        "blue": "#0000ff",
+        "blueviolet": "#8a2be2",
+        "brown": "#a52a2a",
+        "burlywood": "#deb887",
+        "cadetblue": "#5f9ea0",
+        "chartreuse": "#7fff00",
+        "chocolate": "#d2691e",
+        "coral": "#ff7f50",
+        "cornflowerblue": "#6495ed",
+        "cornsilk": "#fff8dc",
+        "crimson": "#dc143c",
+        "cyan": "#00ffff",
+        "darkblue": "#00008b",
+        "darkcyan": "#008b8b",
+        "darkgoldenrod": "#b8860b",
+        "darkgray": "#a9a9a9",
+        "darkgreen": "#006400",
+        "darkkhaki": "#bdb76b",
+        "darkmagenta": "#8b008b",
+        "darkolivegreen": "#556b2f",
+        "darkorange": "#ff8c00",
+        "darkorchid": "#9932cc",
+        "darkred": "#8b0000",
+        "darksalmon": "#e9967a",
+        "darkseagreen": "#8fbc8f",
+        "darkslateblue": "#483d8b",
+        "darkslategray": "#2f4f4f",
+        "darkturquoise": "#00ced1",
+        "darkviolet": "#9400d3",
+        "deeppink": "#ff1493",
+        "deepskyblue": "#00bfff",
+        "dimgray": "#696969",
+        "dodgerblue": "#1e90ff",
+        "firebrick": "#b22222",
+        "floralwhite": "#fffaf0",
+        "forestgreen": "#228b22",
+        "fuchsia": "#ff00ff",
+        "gainsboro": "#dcdcdc",
+        "ghostwhite": "#f8f8ff",
+        "gold": "#ffd700",
+        "goldenrod": "#daa520",
+        "gray": "#808080",
+        "green": "#008000",
+        "greenyellow": "#adff2f",
+        "honeydew": "#f0fff0",
+        "hotpink": "#ff69b4",
+        "indianred": "#cd5c5c",
+        "indigo": "#4b0082",
+        "ivory": "#fffff0",
+        "khaki": "#f0e68c",
+        "lavender": "#e6e6fa",
+        "lavenderblush": "#fff0f5",
+        "lawngreen": "#7cfc00",
+        "lemonchiffon": "#fffacd",
+        "lightblue": "#add8e6",
+        "lightcoral": "#f08080",
+        "lightcyan": "#e0ffff",
+        "lightgoldenrodyellow": "#fafad2",
+        "lightgray": "#d3d3d3",
+        "lightgreen": "#90ee90",
+        "lightpink": "#ffb6c1",
+        "lightsalmon": "#ffa07a",
+        "lightseagreen": "#20b2aa",
+        "lightskyblue": "#87cefa",
+        "lightslategray": "#778899",
+        "lightsteelblue": "#b0c4de",
+        "lightyellow": "#ffffe0",
+        "lime": "#00ff00",
+        "limegreen": "#32cd32",
+        "linen": "#faf0e6",
+        "magenta": "#ff00ff",
+        "maroon": "#800000",
+        "mediumaquamarine": "#66cdaa",
+        "mediumblue": "#0000cd",
+        "mediumorchid": "#ba55d3",
+        "mediumpurple": "#9370db",
+        "mediumseagreen": "#3cb371",
+        "mediumslateblue": "#7b68ee",
+        "mediumspringgreen": "#00fa9a",
+        "mediumturquoise": "#48d1cc",
+        "mediumvioletred": "#c71585",
+        "midnightblue": "#191970",
+        "mintcream": "#f5fffa",
+        "mistyrose": "#ffe4e1",
+        "moccasin": "#ffe4b5",
+        "navajowhite": "#ffdead",
+        "navy": "#000080",
+        "oldlace": "#fdf5e6",
+        "olive": "#808000",
+        "olivedrab": "#6b8e23",
+        "orange": "#ffa500",
+        "orangered": "#ff4500",
+        "orchid": "#da70d6",
+        "palegoldenrod": "#eee8aa",
+        "palegreen": "#98fb98",
+        "paleturquoise": "#afeeee",
+        "palevioletred": "#db7093",
+        "papayawhip": "#ffefd5",
+        "peachpuff": "#ffdab9",
+        "peru": "#cd853f",
+        "pink": "#ffc0cb",
+        "plum": "#dda0dd",
+        "powderblue": "#b0e0e6",
+        "purple": "#800080",
+        "rebeccapurple": "#663399",
+        "red": "#ff0000",
+        "rosybrown": "#bc8f8f",
+        "royalblue": "#4169e1",
+        "saddlebrown": "#8b4513",
+        "salmon": "#fa8072",
+        "sandybrown": "#f4a460",
+        "seagreen": "#2e8b57",
+        "seashell": "#fff5ee",
+        "sienna": "#a0522d",
+        "silver": "#c0c0c0",
+        "skyblue": "#87ceeb",
+        "slateblue": "#6a5acd",
+        "slategray": "#708090",
+        "snow": "#fffafa",
+        "springgreen": "#00ff7f",
+        "steelblue": "#4682b4",
+        "tan": "#d2b48c",
+        "teal": "#008080",
+        "thistle": "#d8bfd8",
+        "tomato": "#ff6347",
+        "turquoise": "#40e0d0",
+        "violet": "#ee82ee",
+        "wheat": "#f5deb3",
+        "white": "#ffffff",
+        "whitesmoke": "#f5f5f5",
+        "yellow": "#ffff00",
+        "yellowgreen": "#9acd32"
+    },
+	ratio: {
+		square: function(size) {
+			var s = {
+				w: 0,
+				h: 0
+			}
+			if (size.w > size.h && size.h > 0) {
+				s.h = size.h;
+				s.w = size.h;
+			} else {
+				s.w = size.w;
+				s.h = size.w;
+			}
+			return s;
 		},
-		searchString: function (data) {
-			for (var i=0;i<data.length;i++)	{
-				var dataString	= data[i].string,
-					dataProp	= data[i].prop;
-					
-				this.versionSearchString = data[i].versionSearch || data[i].identity;
-				
-				if (dataString) {
-					if (dataString.indexOf(data[i].subString) != -1) {
-						return data[i].identity;
+
+		r16_9: function(size) {
+			if (size.w !== null && size.w !== "") {
+				return Math.round((size.w / 16) * 9);
+			} else if (size.h !== null && size.h !== "") {
+				return Math.round((size.h / 9) * 16);
+			} else {
+				return 0;
+			}
+		},
+		r4_3: function(size) {
+			if (size.w !== null && size.w !== "") {
+				return Math.round((size.w / 4) * 3);
+			} else if (size.h !== null && size.h !== "") {
+				return Math.round((size.h / 3) * 4);
+			}
+		}
+	},
+	getObjectAttributeByIndex: function(obj, index) {
+		if(typeof obj != 'undefined') {
+			var i = 0;
+			for (var attr in obj){
+				if (index === i){
+					return obj[attr];
+				}
+				i++;
+			}
+			return "";
+		} else {
+			return "";
+		}
+
+	},
+	getUrlVars: function(string) {
+		var str,
+			vars = [],
+			hash,
+			hashes;
+
+		str = string.toString();
+
+		if (str.match('&#038;')) {
+			str = str.replace("&#038;", "&");
+		} else if (str.match('&#38;')) {
+			str = str.replace("&#38;", "&");
+		} else if (str.match('&amp;')) {
+			str = str.replace("&amp;", "&");
+		}
+
+		hashes = str.slice(str.indexOf('?') + 1).split('&');
+
+		for(var i = 0; i < hashes.length; i++) {
+			hash = hashes[i].split('=');
+			vars.push(hash[0]);
+			vars[hash[0]] = hash[1];
+		}
+
+
+		return vars;
+	},
+    /**
+     * Remove any leading or trailing whitespace from the given string.
+     * If `str` is undefined or does not have a `replace` function, return
+     * an empty string.
+     */
+	trim: function(str) {
+        if (str && typeof(str.replace) == 'function') {
+            return str.replace(/^\s+|\s+$/g, '');
+        }
+        return "";
+	},
+
+	slugify: function(str) {
+		// borrowed from http://stackoverflow.com/a/5782563/102476
+		str = TL.Util.trim(str);
+		str = str.toLowerCase();
+
+		// remove accents, swap ñ for n, etc
+		var from = "ãàáäâẽèéëêìíïîõòóöôùúüûñç·/_,:;";
+		var to   = "aaaaaeeeeeiiiiooooouuuunc------";
+		for (var i=0, l=from.length ; i<l ; i++) {
+		str = str.replace(new RegExp(from.charAt(i), 'g'), to.charAt(i));
+		}
+
+		str = str.replace(/[^a-z0-9 -]/g, '') // remove invalid chars
+		.replace(/\s+/g, '-') // collapse whitespace and replace by -
+		.replace(/-+/g, '-'); // collapse dashes
+
+		str = str.replace(/^([0-9])/,'_$1');
+		return str;
+	},
+	maxDepth: function(ary) {
+		// given a sorted array of 2-tuples of numbers, count how many "deep" the items are.
+		// that is, what is the maximum number of tuples that occupy any one moment
+		// each tuple should also be sorted
+		var stack = [];
+		var max_depth = 0;
+		for (var i = 0; i < ary.length; i++) {
+
+			stack.push(ary[i]);
+			if (stack.length > 1) {
+				var top = stack[stack.length - 1]
+				var bottom_idx = -1;
+				for (var j = 0; j < stack.length - 1; j++) {
+					if (stack[j][1] < top[0]) {
+						bottom_idx = j;
 					}
-				} else if (dataProp) {
-					return data[i].identity;
+				};
+				if (bottom_idx >= 0) {
+					stack = stack.slice(bottom_idx + 1);
 				}
-			}
-		},
-		searchVersion: function (dataString) {
-			var index = dataString.indexOf(this.versionSearchString);
-			if (index == -1) return;
-			return parseFloat(dataString.substring(index+this.versionSearchString.length+1));
-		},
-		searchTridentVersion: function (dataString) {
-		    var index = dataString.indexOf("Trident/");
-		    if (index == -1) return 0;
-		    return parseFloat(dataString.substring(index + 8));
-		},
-		dataBrowser: [
-			{
-				string: navigator.userAgent,
-				subString: "Chrome",
-				identity: "Chrome"
-			},
-			{ 	string: navigator.userAgent,
-				subString: "OmniWeb",
-				versionSearch: "OmniWeb/",
-				identity: "OmniWeb"
-			},
-			{
-				string: navigator.vendor,
-				subString: "Apple",
-				identity: "Safari",
-				versionSearch: "Version"
-			},
-			{
-				prop: window.opera,
-				identity: "Opera",
-				versionSearch: "Version"
-			},
-			{
-				string: navigator.vendor,
-				subString: "iCab",
-				identity: "iCab"
-			},
-			{
-				string: navigator.vendor,
-				subString: "KDE",
-				identity: "Konqueror"
-			},
-			{
-				string: navigator.userAgent,
-				subString: "Firefox",
-				identity: "Firefox"
-			},
-			{
-				string: navigator.vendor,
-				subString: "Camino",
-				identity: "Camino"
-			},
-			{		// for newer Netscapes (6+)
-				string: navigator.userAgent,
-				subString: "Netscape",
-				identity: "Netscape"
-			},
-			{
-				string: navigator.userAgent,
-				subString: "MSIE",
-				identity: "Explorer",
-				versionSearch: "MSIE"
-			},
-			{
-				string: navigator.userAgent,
-				subString: "Gecko",
-				identity: "Mozilla",
-				versionSearch: "rv"
-			},
-			{ 		// for older Netscapes (4-)
-				string: navigator.userAgent,
-				subString: "Mozilla",
-				identity: "Netscape",
-				versionSearch: "Mozilla"
-			}
-		],
-		dataOS : [
-			{
-				string: navigator.platform,
-				subString: "Win",
-				identity: "Windows"
-			},
-			{
-				string: navigator.platform,
-				subString: "Mac",
-				identity: "Mac"
-			},
-			{
-				string: navigator.userAgent,
-				subString: "iPhone",
-				identity: "iPhone/iPod"
-		    },
-			{
-				string: navigator.userAgent,
-				subString: "iPad",
-				identity: "iPad"
-		    },
-			{
-				string: navigator.platform,
-				subString: "Linux",
-				identity: "Linux"
-			}
-		],
-		cssTransitionSupport: function () {
-			// See https://gist.github.com/jackfuchs/556448
-			var b = document.body || document.documentElement,
-			s = b.style,
-			p = 'transition';
 
-			if (typeof s[p] == 'string') {
-				return true;
 			}
 
-			// Tests for vendor specific prop
-			var v = ['Moz', 'webkit', 'Webkit', 'Khtml', 'O', 'ms'];
-			p = p.charAt(0).toUpperCase() + p.substr(1);
-
-			for (var i=0; i<v.length; i++) {
-				if (typeof s[v[i] + p] == 'string') {
-					return true;
-				}
+			if (stack.length > max_depth) {
+				max_depth = stack.length;
 			}
+		};
+		return max_depth;
+	},
 
+	pad: function (val, len) {
+		val = String(val);
+		len = len || 2;
+		while (val.length < len) val = "0" + val;
+		return val;
+	},
+	intToHexString: function(i) {
+		return TL.Util.pad(parseInt(i,10).toString(16));
+	},
+    findNextGreater: function(list, current, default_value) {
+        // given a sorted list and a current value which *might* be in the list,
+        // return the next greatest value if the current value is >= the last item in the list, return default,
+        // or if default is undefined, return input value
+        for (var i = 0; i < list.length; i++) {
+            if (current < list[i]) {
+                return list[i];
+            }
+        }
+
+        return (default_value) ? default_value : current;
+    },
+
+    findNextLesser: function(list, current, default_value) {
+        // given a sorted list and a current value which *might* be in the list,
+        // return the next lesser value if the current value is <= the last item in the list, return default,
+        // or if default is undefined, return input value
+        for (var i = list.length - 1; i >= 0; i--) {
+            if (current > list[i]) {
+                return list[i];
+            }
+        }
+
+        return (default_value) ? default_value : current;
+    },
+
+	isEmptyObject: function(o) {
+		var properties = []
+		if (Object.keys) {
+			properties = Object.keys(o);
+		} else { // all this to support IE 8
+		    for (var p in o) if (Object.prototype.hasOwnProperty.call(o,p)) properties.push(p);
+    }
+		for (var i = 0; i < properties.length; i++) {
+			var k = properties[i];
+			if (o[k] != null && typeof o[k] != "string") return false;
+			if (TL.Util.trim(o[k]).length != 0) return false;
+		}
+		return true;
+	},
+	parseYouTubeTime: function(s) {
+	    // given a YouTube start time string in a reasonable format, reduce it to a number of seconds as an integer.
+		if (typeof(s) == 'string') {
+			parts = s.match(/^\s*(\d+h)?(\d+m)?(\d+s)?\s*/i);
+			if (parts) {
+				var hours = parseInt(parts[1]) || 0;
+				var minutes = parseInt(parts[2]) || 0;
+				var seconds = parseInt(parts[3]) || 0;
+				return seconds + (minutes * 60) + (hours * 60 * 60);
+			}
+		} else if (typeof(s) == 'number') {
+			return s;
+		}
+		return 0;
+	},
+	/**
+	 * Try to make seamless the process of interpreting a URL to a web page which embeds an image for sharing purposes
+	 * as a direct image link. Some services have predictable transformations we can use rather than explain to people
+	 * this subtlety.
+	 */
+	transformImageURL: function(url) {
+		return url.replace(/(.*)www.dropbox.com\/(.*)/, '$1dl.dropboxusercontent.com/$2')
+	},
+
+	base58: (function(alpha) {
+	    var alphabet = alpha || '123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ',
+	        base = alphabet.length;
+	    return {
+	        encode: function(enc) {
+	            if(typeof enc!=='number' || enc !== parseInt(enc))
+	                throw '"encode" only accepts integers.';
+	            var encoded = '';
+	            while(enc) {
+	                var remainder = enc % base;
+	                enc = Math.floor(enc / base);
+	                encoded = alphabet[remainder].toString() + encoded;
+	            }
+	            return encoded;
+	        },
+	        decode: function(dec) {
+	            if(typeof dec!=='string')
+	                throw '"decode" only accepts strings.';
+	            var decoded = 0;
+	            while(dec) {
+	                var alphabetPosition = alphabet.indexOf(dec[0]);
+	                if (alphabetPosition < 0)
+	                    throw '"decode" can\'t find "' + dec[0] + '" in the alphabet: "' + alphabet + '"';
+	                var powerOf = dec.length - 1;
+	                decoded += alphabetPosition * (Math.pow(base, powerOf));
+	                dec = dec.substring(1);
+	            }
+	            return decoded;
+	        }
+	    };
+	})()
+
+};
+
+
+/* **********************************************
+     Begin TL.Data.js
+********************************************** */
+
+// Expects TL to be visible in scope
+
+;(function(TL){
+    /* Zepto v1.1.2-15-g59d3fe5 - zepto event ajax form ie - zeptojs.com/license */
+
+    var Zepto = (function() {
+      var undefined, key, $, classList, emptyArray = [], slice = emptyArray.slice, filter = emptyArray.filter,
+        document = window.document,
+        elementDisplay = {}, classCache = {},
+        cssNumber = { 'column-count': 1, 'columns': 1, 'font-weight': 1, 'line-height': 1,'opacity': 1, 'z-index': 1, 'zoom': 1 },
+        fragmentRE = /^\s*<(\w+|!)[^>]*>/,
+        singleTagRE = /^<(\w+)\s*\/?>(?:<\/\1>|)$/,
+        tagExpanderRE = /<(?!area|br|col|embed|hr|img|input|link|meta|param)(([\w:]+)[^>]*)\/>/ig,
+        rootNodeRE = /^(?:body|html)$/i,
+        capitalRE = /([A-Z])/g,
+
+        // special attributes that should be get/set via method calls
+        methodAttributes = ['val', 'css', 'html', 'text', 'data', 'width', 'height', 'offset'],
+
+        adjacencyOperators = [ 'after', 'prepend', 'before', 'append' ],
+        table = document.createElement('table'),
+        tableRow = document.createElement('tr'),
+        containers = {
+          'tr': document.createElement('tbody'),
+          'tbody': table, 'thead': table, 'tfoot': table,
+          'td': tableRow, 'th': tableRow,
+          '*': document.createElement('div')
+        },
+        readyRE = /complete|loaded|interactive/,
+        classSelectorRE = /^\.([\w-]+)$/,
+        idSelectorRE = /^#([\w-]*)$/,
+        simpleSelectorRE = /^[\w-]*$/,
+        class2type = {},
+        toString = class2type.toString,
+        zepto = {},
+        camelize, uniq,
+        tempParent = document.createElement('div'),
+        propMap = {
+          'tabindex': 'tabIndex',
+          'readonly': 'readOnly',
+          'for': 'htmlFor',
+          'class': 'className',
+          'maxlength': 'maxLength',
+          'cellspacing': 'cellSpacing',
+          'cellpadding': 'cellPadding',
+          'rowspan': 'rowSpan',
+          'colspan': 'colSpan',
+          'usemap': 'useMap',
+          'frameborder': 'frameBorder',
+          'contenteditable': 'contentEditable'
+        },
+        isArray = Array.isArray ||
+          function(object){ return object instanceof Array }
+
+      zepto.matches = function(element, selector) {
+        if (!selector || !element || element.nodeType !== 1) return false
+        var matchesSelector = element.webkitMatchesSelector || element.mozMatchesSelector ||
+                              element.oMatchesSelector || element.matchesSelector
+        if (matchesSelector) return matchesSelector.call(element, selector)
+        // fall back to performing a selector:
+        var match, parent = element.parentNode, temp = !parent
+        if (temp) (parent = tempParent).appendChild(element)
+        match = ~zepto.qsa(parent, selector).indexOf(element)
+        temp && tempParent.removeChild(element)
+        return match
+      }
+
+      function type(obj) {
+        return obj == null ? String(obj) :
+          class2type[toString.call(obj)] || "object"
+      }
+
+      function isFunction(value) { return type(value) == "function" }
+      function isWindow(obj)     { return obj != null && obj == obj.window }
+      function isDocument(obj)   { return obj != null && obj.nodeType == obj.DOCUMENT_NODE }
+      function isObject(obj)     { return type(obj) == "object" }
+      function isPlainObject(obj) {
+        return isObject(obj) && !isWindow(obj) && Object.getPrototypeOf(obj) == Object.prototype
+      }
+      function likeArray(obj) { return typeof obj.length == 'number' }
+
+      function compact(array) { return filter.call(array, function(item){ return item != null }) }
+      function flatten(array) { return array.length > 0 ? $.fn.concat.apply([], array) : array }
+      camelize = function(str){ return str.replace(/-+(.)?/g, function(match, chr){ return chr ? chr.toUpperCase() : '' }) }
+      function dasherize(str) {
+        return str.replace(/::/g, '/')
+               .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
+               .replace(/([a-z\d])([A-Z])/g, '$1_$2')
+               .replace(/_/g, '-')
+               .toLowerCase()
+      }
+      uniq = function(array){ return filter.call(array, function(item, idx){ return array.indexOf(item) == idx }) }
+
+      function classRE(name) {
+        return name in classCache ?
+          classCache[name] : (classCache[name] = new RegExp('(^|\\s)' + name + '(\\s|$)'))
+      }
+
+      function maybeAddPx(name, value) {
+        return (typeof value == "number" && !cssNumber[dasherize(name)]) ? value + "px" : value
+      }
+
+      function defaultDisplay(nodeName) {
+        var element, display
+        if (!elementDisplay[nodeName]) {
+          element = document.createElement(nodeName)
+          document.body.appendChild(element)
+          display = getComputedStyle(element, '').getPropertyValue("display")
+          element.parentNode.removeChild(element)
+          display == "none" && (display = "block")
+          elementDisplay[nodeName] = display
+        }
+        return elementDisplay[nodeName]
+      }
+
+      function children(element) {
+        return 'children' in element ?
+          slice.call(element.children) :
+          $.map(element.childNodes, function(node){ if (node.nodeType == 1) return node })
+      }
+
+      // `$.zepto.fragment` takes a html string and an optional tag name
+      // to generate DOM nodes nodes from the given html string.
+      // The generated DOM nodes are returned as an array.
+      // This function can be overriden in plugins for example to make
+      // it compatible with browsers that don't support the DOM fully.
+      zepto.fragment = function(html, name, properties) {
+        var dom, nodes, container
+
+        // A special case optimization for a single tag
+        if (singleTagRE.test(html)) dom = $(document.createElement(RegExp.$1))
+
+        if (!dom) {
+          if (html.replace) html = html.replace(tagExpanderRE, "<$1></$2>")
+          if (name === undefined) name = fragmentRE.test(html) && RegExp.$1
+          if (!(name in containers)) name = '*'
+
+          container = containers[name]
+          container.innerHTML = '' + html
+          dom = $.each(slice.call(container.childNodes), function(){
+            container.removeChild(this)
+          })
+        }
+
+        if (isPlainObject(properties)) {
+          nodes = $(dom)
+          $.each(properties, function(key, value) {
+            if (methodAttributes.indexOf(key) > -1) nodes[key](value)
+            else nodes.attr(key, value)
+          })
+        }
+
+        return dom
+      }
+
+      // `$.zepto.Z` swaps out the prototype of the given `dom` array
+      // of nodes with `$.fn` and thus supplying all the Zepto functions
+      // to the array. Note that `__proto__` is not supported on Internet
+      // Explorer. This method can be overriden in plugins.
+      zepto.Z = function(dom, selector) {
+        dom = dom || []
+        dom.__proto__ = $.fn
+        dom.selector = selector || ''
+        return dom
+      }
+
+      // `$.zepto.isZ` should return `true` if the given object is a Zepto
+      // collection. This method can be overriden in plugins.
+      zepto.isZ = function(object) {
+        return object instanceof zepto.Z
+      }
+
+      // `$.zepto.init` is Zepto's counterpart to jQuery's `$.fn.init` and
+      // takes a CSS selector and an optional context (and handles various
+      // special cases).
+      // This method can be overriden in plugins.
+      zepto.init = function(selector, context) {
+        var dom
+        // If nothing given, return an empty Zepto collection
+        if (!selector) return zepto.Z()
+        // Optimize for string selectors
+        else if (typeof selector == 'string') {
+          selector = selector.trim()
+          // If it's a html fragment, create nodes from it
+          // Note: In both Chrome 21 and Firefox 15, DOM error 12
+          // is thrown if the fragment doesn't begin with <
+          if (selector[0] == '<' && fragmentRE.test(selector))
+            dom = zepto.fragment(selector, RegExp.$1, context), selector = null
+          // If there's a context, create a collection on that context first, and select
+          // nodes from there
+          else if (context !== undefined) return $(context).find(selector)
+          // If it's a CSS selector, use it to select nodes.
+          else dom = zepto.qsa(document, selector)
+        }
+        // If a function is given, call it when the DOM is ready
+        else if (isFunction(selector)) return $(document).ready(selector)
+        // If a Zepto collection is given, just return it
+        else if (zepto.isZ(selector)) return selector
+        else {
+          // normalize array if an array of nodes is given
+          if (isArray(selector)) dom = compact(selector)
+          // Wrap DOM nodes.
+          else if (isObject(selector))
+            dom = [selector], selector = null
+          // If it's a html fragment, create nodes from it
+          else if (fragmentRE.test(selector))
+            dom = zepto.fragment(selector.trim(), RegExp.$1, context), selector = null
+          // If there's a context, create a collection on that context first, and select
+          // nodes from there
+          else if (context !== undefined) return $(context).find(selector)
+          // And last but no least, if it's a CSS selector, use it to select nodes.
+          else dom = zepto.qsa(document, selector)
+        }
+        // create a new Zepto collection from the nodes found
+        return zepto.Z(dom, selector)
+      }
+
+      // `$` will be the base `Zepto` object. When calling this
+      // function just call `$.zepto.init, which makes the implementation
+      // details of selecting nodes and creating Zepto collections
+      // patchable in plugins.
+      $ = function(selector, context){
+        return zepto.init(selector, context)
+      }
+
+      function extend(target, source, deep) {
+        for (key in source)
+          if (deep && (isPlainObject(source[key]) || isArray(source[key]))) {
+            if (isPlainObject(source[key]) && !isPlainObject(target[key]))
+              target[key] = {}
+            if (isArray(source[key]) && !isArray(target[key]))
+              target[key] = []
+            extend(target[key], source[key], deep)
+          }
+          else if (source[key] !== undefined) target[key] = source[key]
+      }
+
+      // Copy all but undefined properties from one or more
+      // objects to the `target` object.
+      $.extend = function(target){
+        var deep, args = slice.call(arguments, 1)
+        if (typeof target == 'boolean') {
+          deep = target
+          target = args.shift()
+        }
+        args.forEach(function(arg){ extend(target, arg, deep) })
+        return target
+      }
+
+      // `$.zepto.qsa` is Zepto's CSS selector implementation which
+      // uses `document.querySelectorAll` and optimizes for some special cases, like `#id`.
+      // This method can be overriden in plugins.
+      zepto.qsa = function(element, selector){
+        var found,
+            maybeID = selector[0] == '#',
+            maybeClass = !maybeID && selector[0] == '.',
+            nameOnly = maybeID || maybeClass ? selector.slice(1) : selector, // Ensure that a 1 char tag name still gets checked
+            isSimple = simpleSelectorRE.test(nameOnly)
+        return (isDocument(element) && isSimple && maybeID) ?
+          ( (found = element.getElementById(nameOnly)) ? [found] : [] ) :
+          (element.nodeType !== 1 && element.nodeType !== 9) ? [] :
+          slice.call(
+            isSimple && !maybeID ?
+              maybeClass ? element.getElementsByClassName(nameOnly) : // If it's simple, it could be a class
+              element.getElementsByTagName(selector) : // Or a tag
+              element.querySelectorAll(selector) // Or it's not simple, and we need to query all
+          )
+      }
+
+      function filtered(nodes, selector) {
+        return selector == null ? $(nodes) : $(nodes).filter(selector)
+      }
+
+      $.contains = function(parent, node) {
+        return parent !== node && parent.contains(node)
+      }
+
+      function funcArg(context, arg, idx, payload) {
+        return isFunction(arg) ? arg.call(context, idx, payload) : arg
+      }
+
+      function setAttribute(node, name, value) {
+        value == null ? node.removeAttribute(name) : node.setAttribute(name, value)
+      }
+
+      // access className property while respecting SVGAnimatedString
+      function className(node, value){
+        var klass = node.className,
+            svg   = klass && klass.baseVal !== undefined
+
+        if (value === undefined) return svg ? klass.baseVal : klass
+        svg ? (klass.baseVal = value) : (node.className = value)
+      }
+
+      // "true"  => true
+      // "false" => false
+      // "null"  => null
+      // "42"    => 42
+      // "42.5"  => 42.5
+      // "08"    => "08"
+      // JSON    => parse if valid
+      // String  => self
+      function deserializeValue(value) {
+        var num
+        try {
+          return value ?
+            value == "true" ||
+            ( value == "false" ? false :
+              value == "null" ? null :
+              !/^0/.test(value) && !isNaN(num = Number(value)) ? num :
+              /^[\[\{]/.test(value) ? $.parseJSON(value) :
+              value )
+            : value
+        } catch(e) {
+          return value
+        }
+      }
+
+      $.type = type
+      $.isFunction = isFunction
+      $.isWindow = isWindow
+      $.isArray = isArray
+      $.isPlainObject = isPlainObject
+
+      $.isEmptyObject = function(obj) {
+        var name
+        for (name in obj) return false
+        return true
+      }
+
+      $.inArray = function(elem, array, i){
+        return emptyArray.indexOf.call(array, elem, i)
+      }
+
+      $.camelCase = camelize
+      $.trim = function(str) {
+        return str == null ? "" : String.prototype.trim.call(str)
+      }
+
+      // plugin compatibility
+      $.uuid = 0
+      $.support = { }
+      $.expr = { }
+
+      $.map = function(elements, callback){
+        var value, values = [], i, key
+        if (likeArray(elements))
+          for (i = 0; i < elements.length; i++) {
+            value = callback(elements[i], i)
+            if (value != null) values.push(value)
+          }
+        else
+          for (key in elements) {
+            value = callback(elements[key], key)
+            if (value != null) values.push(value)
+          }
+        return flatten(values)
+      }
+
+      $.each = function(elements, callback){
+        var i, key
+        if (likeArray(elements)) {
+          for (i = 0; i < elements.length; i++)
+            if (callback.call(elements[i], i, elements[i]) === false) return elements
+        } else {
+          for (key in elements)
+            if (callback.call(elements[key], key, elements[key]) === false) return elements
+        }
+
+        return elements
+      }
+
+      $.grep = function(elements, callback){
+        return filter.call(elements, callback)
+      }
+
+      if (window.JSON) $.parseJSON = JSON.parse
+
+      // Populate the class2type map
+      $.each("Boolean Number String Function Array Date RegExp Object Error".split(" "), function(i, name) {
+        class2type[ "[object " + name + "]" ] = name.toLowerCase()
+      })
+
+      // Define methods that will be available on all
+      // Zepto collections
+      $.fn = {
+        // Because a collection acts like an array
+        // copy over these useful array functions.
+        forEach: emptyArray.forEach,
+        reduce: emptyArray.reduce,
+        push: emptyArray.push,
+        sort: emptyArray.sort,
+        indexOf: emptyArray.indexOf,
+        concat: emptyArray.concat,
+
+        // `map` and `slice` in the jQuery API work differently
+        // from their array counterparts
+        map: function(fn){
+          return $($.map(this, function(el, i){ return fn.call(el, i, el) }))
+        },
+        slice: function(){
+          return $(slice.apply(this, arguments))
+        },
+
+        ready: function(callback){
+          // need to check if document.body exists for IE as that browser reports
+          // document ready when it hasn't yet created the body element
+          if (readyRE.test(document.readyState) && document.body) callback($)
+          else document.addEventListener('DOMContentLoaded', function(){ callback($) }, false)
+          return this
+        },
+        get: function(idx){
+          return idx === undefined ? slice.call(this) : this[idx >= 0 ? idx : idx + this.length]
+        },
+        toArray: function(){ return this.get() },
+        size: function(){
+          return this.length
+        },
+        remove: function(){
+          return this.each(function(){
+            if (this.parentNode != null)
+              this.parentNode.removeChild(this)
+          })
+        },
+        each: function(callback){
+          emptyArray.every.call(this, function(el, idx){
+            return callback.call(el, idx, el) !== false
+          })
+          return this
+        },
+        filter: function(selector){
+          if (isFunction(selector)) return this.not(this.not(selector))
+          return $(filter.call(this, function(element){
+            return zepto.matches(element, selector)
+          }))
+        },
+        add: function(selector,context){
+          return $(uniq(this.concat($(selector,context))))
+        },
+        is: function(selector){
+          return this.length > 0 && zepto.matches(this[0], selector)
+        },
+        not: function(selector){
+          var nodes=[]
+          if (isFunction(selector) && selector.call !== undefined)
+            this.each(function(idx){
+              if (!selector.call(this,idx)) nodes.push(this)
+            })
+          else {
+            var excludes = typeof selector == 'string' ? this.filter(selector) :
+              (likeArray(selector) && isFunction(selector.item)) ? slice.call(selector) : $(selector)
+            this.forEach(function(el){
+              if (excludes.indexOf(el) < 0) nodes.push(el)
+            })
+          }
+          return $(nodes)
+        },
+        has: function(selector){
+          return this.filter(function(){
+            return isObject(selector) ?
+              $.contains(this, selector) :
+              $(this).find(selector).size()
+          })
+        },
+        eq: function(idx){
+          return idx === -1 ? this.slice(idx) : this.slice(idx, + idx + 1)
+        },
+        first: function(){
+          var el = this[0]
+          return el && !isObject(el) ? el : $(el)
+        },
+        last: function(){
+          var el = this[this.length - 1]
+          return el && !isObject(el) ? el : $(el)
+        },
+        find: function(selector){
+          var result, $this = this
+          if (typeof selector == 'object')
+            result = $(selector).filter(function(){
+              var node = this
+              return emptyArray.some.call($this, function(parent){
+                return $.contains(parent, node)
+              })
+            })
+          else if (this.length == 1) result = $(zepto.qsa(this[0], selector))
+          else result = this.map(function(){ return zepto.qsa(this, selector) })
+          return result
+        },
+        closest: function(selector, context){
+          var node = this[0], collection = false
+          if (typeof selector == 'object') collection = $(selector)
+          while (node && !(collection ? collection.indexOf(node) >= 0 : zepto.matches(node, selector)))
+            node = node !== context && !isDocument(node) && node.parentNode
+          return $(node)
+        },
+        parents: function(selector){
+          var ancestors = [], nodes = this
+          while (nodes.length > 0)
+            nodes = $.map(nodes, function(node){
+              if ((node = node.parentNode) && !isDocument(node) && ancestors.indexOf(node) < 0) {
+                ancestors.push(node)
+                return node
+              }
+            })
+          return filtered(ancestors, selector)
+        },
+        parent: function(selector){
+          return filtered(uniq(this.pluck('parentNode')), selector)
+        },
+        children: function(selector){
+          return filtered(this.map(function(){ return children(this) }), selector)
+        },
+        contents: function() {
+          return this.map(function() { return slice.call(this.childNodes) })
+        },
+        siblings: function(selector){
+          return filtered(this.map(function(i, el){
+            return filter.call(children(el.parentNode), function(child){ return child!==el })
+          }), selector)
+        },
+        empty: function(){
+          return this.each(function(){ this.innerHTML = '' })
+        },
+        // `pluck` is borrowed from Prototype.js
+        pluck: function(property){
+          return $.map(this, function(el){ return el[property] })
+        },
+        show: function(){
+          return this.each(function(){
+            this.style.display == "none" && (this.style.display = '')
+            if (getComputedStyle(this, '').getPropertyValue("display") == "none")
+              this.style.display = defaultDisplay(this.nodeName)
+          })
+        },
+        replaceWith: function(newContent){
+          return this.before(newContent).remove()
+        },
+        wrap: function(structure){
+          var func = isFunction(structure)
+          if (this[0] && !func)
+            var dom   = $(structure).get(0),
+                clone = dom.parentNode || this.length > 1
+
+          return this.each(function(index){
+            $(this).wrapAll(
+              func ? structure.call(this, index) :
+                clone ? dom.cloneNode(true) : dom
+            )
+          })
+        },
+        wrapAll: function(structure){
+          if (this[0]) {
+            $(this[0]).before(structure = $(structure))
+            var children
+            // drill down to the inmost element
+            while ((children = structure.children()).length) structure = children.first()
+            $(structure).append(this)
+          }
+          return this
+        },
+        wrapInner: function(structure){
+          var func = isFunction(structure)
+          return this.each(function(index){
+            var self = $(this), contents = self.contents(),
+                dom  = func ? structure.call(this, index) : structure
+            contents.length ? contents.wrapAll(dom) : self.append(dom)
+          })
+        },
+        unwrap: function(){
+          this.parent().each(function(){
+            $(this).replaceWith($(this).children())
+          })
+          return this
+        },
+        clone: function(){
+          return this.map(function(){ return this.cloneNode(true) })
+        },
+        hide: function(){
+          return this.css("display", "none")
+        },
+        toggle: function(setting){
+          return this.each(function(){
+            var el = $(this)
+            ;(setting === undefined ? el.css("display") == "none" : setting) ? el.show() : el.hide()
+          })
+        },
+        prev: function(selector){ return $(this.pluck('previousElementSibling')).filter(selector || '*') },
+        next: function(selector){ return $(this.pluck('nextElementSibling')).filter(selector || '*') },
+        html: function(html){
+          return arguments.length === 0 ?
+            (this.length > 0 ? this[0].innerHTML : null) :
+            this.each(function(idx){
+              var originHtml = this.innerHTML
+              $(this).empty().append( funcArg(this, html, idx, originHtml) )
+            })
+        },
+        text: function(text){
+          return arguments.length === 0 ?
+            (this.length > 0 ? this[0].textContent : null) :
+            this.each(function(){ this.textContent = (text === undefined) ? '' : ''+text })
+        },
+        attr: function(name, value){
+          var result
+          return (typeof name == 'string' && value === undefined) ?
+            (this.length == 0 || this[0].nodeType !== 1 ? undefined :
+              (name == 'value' && this[0].nodeName == 'INPUT') ? this.val() :
+              (!(result = this[0].getAttribute(name)) && name in this[0]) ? this[0][name] : result
+            ) :
+            this.each(function(idx){
+              if (this.nodeType !== 1) return
+              if (isObject(name)) for (key in name) setAttribute(this, key, name[key])
+              else setAttribute(this, name, funcArg(this, value, idx, this.getAttribute(name)))
+            })
+        },
+        removeAttr: function(name){
+          return this.each(function(){ this.nodeType === 1 && setAttribute(this, name) })
+        },
+        prop: function(name, value){
+          name = propMap[name] || name
+          return (value === undefined) ?
+            (this[0] && this[0][name]) :
+            this.each(function(idx){
+              this[name] = funcArg(this, value, idx, this[name])
+            })
+        },
+        data: function(name, value){
+          var data = this.attr('data-' + name.replace(capitalRE, '-$1').toLowerCase(), value)
+          return data !== null ? deserializeValue(data) : undefined
+        },
+        val: function(value){
+          return arguments.length === 0 ?
+            (this[0] && (this[0].multiple ?
+               $(this[0]).find('option').filter(function(){ return this.selected }).pluck('value') :
+               this[0].value)
+            ) :
+            this.each(function(idx){
+              this.value = funcArg(this, value, idx, this.value)
+            })
+        },
+        offset: function(coordinates){
+          if (coordinates) return this.each(function(index){
+            var $this = $(this),
+                coords = funcArg(this, coordinates, index, $this.offset()),
+                parentOffset = $this.offsetParent().offset(),
+                props = {
+                  top:  coords.top  - parentOffset.top,
+                  left: coords.left - parentOffset.left
+                }
+
+            if ($this.css('position') == 'static') props['position'] = 'relative'
+            $this.css(props)
+          })
+          if (this.length==0) return null
+          var obj = this[0].getBoundingClientRect()
+          return {
+            left: obj.left + window.pageXOffset,
+            top: obj.top + window.pageYOffset,
+            width: Math.round(obj.width),
+            height: Math.round(obj.height)
+          }
+        },
+        css: function(property, value){
+          if (arguments.length < 2) {
+            var element = this[0], computedStyle = getComputedStyle(element, '')
+            if(!element) return
+            if (typeof property == 'string')
+              return element.style[camelize(property)] || computedStyle.getPropertyValue(property)
+            else if (isArray(property)) {
+              var props = {}
+              $.each(isArray(property) ? property: [property], function(_, prop){
+                props[prop] = (element.style[camelize(prop)] || computedStyle.getPropertyValue(prop))
+              })
+              return props
+            }
+          }
+
+          var css = ''
+          if (type(property) == 'string') {
+            if (!value && value !== 0)
+              this.each(function(){ this.style.removeProperty(dasherize(property)) })
+            else
+              css = dasherize(property) + ":" + maybeAddPx(property, value)
+          } else {
+            for (key in property)
+              if (!property[key] && property[key] !== 0)
+                this.each(function(){ this.style.removeProperty(dasherize(key)) })
+              else
+                css += dasherize(key) + ':' + maybeAddPx(key, property[key]) + ';'
+          }
+
+          return this.each(function(){ this.style.cssText += ';' + css })
+        },
+        index: function(element){
+          return element ? this.indexOf($(element)[0]) : this.parent().children().indexOf(this[0])
+        },
+        hasClass: function(name){
+          if (!name) return false
+          return emptyArray.some.call(this, function(el){
+            return this.test(className(el))
+          }, classRE(name))
+        },
+        addClass: function(name){
+          if (!name) return this
+          return this.each(function(idx){
+            classList = []
+            var cls = className(this), newName = funcArg(this, name, idx, cls)
+            newName.split(/\s+/g).forEach(function(klass){
+              if (!$(this).hasClass(klass)) classList.push(klass)
+            }, this)
+            classList.length && className(this, cls + (cls ? " " : "") + classList.join(" "))
+          })
+        },
+        removeClass: function(name){
+          return this.each(function(idx){
+            if (name === undefined) return className(this, '')
+            classList = className(this)
+            funcArg(this, name, idx, classList).split(/\s+/g).forEach(function(klass){
+              classList = classList.replace(classRE(klass), " ")
+            })
+            className(this, classList.trim())
+          })
+        },
+        toggleClass: function(name, when){
+          if (!name) return this
+          return this.each(function(idx){
+            var $this = $(this), names = funcArg(this, name, idx, className(this))
+            names.split(/\s+/g).forEach(function(klass){
+              (when === undefined ? !$this.hasClass(klass) : when) ?
+                $this.addClass(klass) : $this.removeClass(klass)
+            })
+          })
+        },
+        scrollTop: function(value){
+          if (!this.length) return
+          var hasScrollTop = 'scrollTop' in this[0]
+          if (value === undefined) return hasScrollTop ? this[0].scrollTop : this[0].pageYOffset
+          return this.each(hasScrollTop ?
+            function(){ this.scrollTop = value } :
+            function(){ this.scrollTo(this.scrollX, value) })
+        },
+        scrollLeft: function(value){
+          if (!this.length) return
+          var hasScrollLeft = 'scrollLeft' in this[0]
+          if (value === undefined) return hasScrollLeft ? this[0].scrollLeft : this[0].pageXOffset
+          return this.each(hasScrollLeft ?
+            function(){ this.scrollLeft = value } :
+            function(){ this.scrollTo(value, this.scrollY) })
+        },
+        position: function() {
+          if (!this.length) return
+
+          var elem = this[0],
+            // Get *real* offsetParent
+            offsetParent = this.offsetParent(),
+            // Get correct offsets
+            offset       = this.offset(),
+            parentOffset = rootNodeRE.test(offsetParent[0].nodeName) ? { top: 0, left: 0 } : offsetParent.offset()
+
+          // Subtract element margins
+          // note: when an element has margin: auto the offsetLeft and marginLeft
+          // are the same in Safari causing offset.left to incorrectly be 0
+          offset.top  -= parseFloat( $(elem).css('margin-top') ) || 0
+          offset.left -= parseFloat( $(elem).css('margin-left') ) || 0
+
+          // Add offsetParent borders
+          parentOffset.top  += parseFloat( $(offsetParent[0]).css('border-top-width') ) || 0
+          parentOffset.left += parseFloat( $(offsetParent[0]).css('border-left-width') ) || 0
+
+          // Subtract the two offsets
+          return {
+            top:  offset.top  - parentOffset.top,
+            left: offset.left - parentOffset.left
+          }
+        },
+        offsetParent: function() {
+          return this.map(function(){
+            var parent = this.offsetParent || document.body
+            while (parent && !rootNodeRE.test(parent.nodeName) && $(parent).css("position") == "static")
+              parent = parent.offsetParent
+            return parent
+          })
+        }
+      }
+
+      // for now
+      $.fn.detach = $.fn.remove
+
+      // Generate the `width` and `height` functions
+      ;['width', 'height'].forEach(function(dimension){
+        var dimensionProperty =
+          dimension.replace(/./, function(m){ return m[0].toUpperCase() })
+
+        $.fn[dimension] = function(value){
+          var offset, el = this[0]
+          if (value === undefined) return isWindow(el) ? el['inner' + dimensionProperty] :
+            isDocument(el) ? el.documentElement['scroll' + dimensionProperty] :
+            (offset = this.offset()) && offset[dimension]
+          else return this.each(function(idx){
+            el = $(this)
+            el.css(dimension, funcArg(this, value, idx, el[dimension]()))
+          })
+        }
+      })
+
+      function traverseNode(node, fun) {
+        fun(node)
+        for (var key in node.childNodes) traverseNode(node.childNodes[key], fun)
+      }
+
+      // Generate the `after`, `prepend`, `before`, `append`,
+      // `insertAfter`, `insertBefore`, `appendTo`, and `prependTo` methods.
+      adjacencyOperators.forEach(function(operator, operatorIndex) {
+        var inside = operatorIndex % 2 //=> prepend, append
+
+        $.fn[operator] = function(){
+          // arguments can be nodes, arrays of nodes, Zepto objects and HTML strings
+          var argType, nodes = $.map(arguments, function(arg) {
+                argType = type(arg)
+                return argType == "object" || argType == "array" || arg == null ?
+                  arg : zepto.fragment(arg)
+              }),
+              parent, copyByClone = this.length > 1
+          if (nodes.length < 1) return this
+
+          return this.each(function(_, target){
+            parent = inside ? target : target.parentNode
+
+            // convert all methods to a "before" operation
+            target = operatorIndex == 0 ? target.nextSibling :
+                     operatorIndex == 1 ? target.firstChild :
+                     operatorIndex == 2 ? target :
+                     null
+
+            nodes.forEach(function(node){
+              if (copyByClone) node = node.cloneNode(true)
+              else if (!parent) return $(node).remove()
+
+              traverseNode(parent.insertBefore(node, target), function(el){
+                if (el.nodeName != null && el.nodeName.toUpperCase() === 'SCRIPT' &&
+                   (!el.type || el.type === 'text/javascript') && !el.src)
+                  window['eval'].call(window, el.innerHTML)
+              })
+            })
+          })
+        }
+
+        // after    => insertAfter
+        // prepend  => prependTo
+        // before   => insertBefore
+        // append   => appendTo
+        $.fn[inside ? operator+'To' : 'insert'+(operatorIndex ? 'Before' : 'After')] = function(html){
+          $(html)[operator](this)
+          return this
+        }
+      })
+
+      zepto.Z.prototype = $.fn
+
+      // Export internal API functions in the `$.zepto` namespace
+      zepto.uniq = uniq
+      zepto.deserializeValue = deserializeValue
+      $.zepto = zepto
+
+      return $
+    })()
+
+    window.Zepto = Zepto
+    window.$ === undefined && (window.$ = Zepto)
+
+    ;(function($){
+      var $$ = $.zepto.qsa, _zid = 1, undefined,
+          slice = Array.prototype.slice,
+          isFunction = $.isFunction,
+          isString = function(obj){ return typeof obj == 'string' },
+          handlers = {},
+          specialEvents={},
+          focusinSupported = 'onfocusin' in window,
+          focus = { focus: 'focusin', blur: 'focusout' },
+          hover = { mouseenter: 'mouseover', mouseleave: 'mouseout' }
+
+      specialEvents.click = specialEvents.mousedown = specialEvents.mouseup = specialEvents.mousemove = 'MouseEvents'
+
+      function zid(element) {
+        return element._zid || (element._zid = _zid++)
+      }
+      function findHandlers(element, event, fn, selector) {
+        event = parse(event)
+        if (event.ns) var matcher = matcherFor(event.ns)
+        return (handlers[zid(element)] || []).filter(function(handler) {
+          return handler
+            && (!event.e  || handler.e == event.e)
+            && (!event.ns || matcher.test(handler.ns))
+            && (!fn       || zid(handler.fn) === zid(fn))
+            && (!selector || handler.sel == selector)
+        })
+      }
+      function parse(event) {
+        var parts = ('' + event).split('.')
+        return {e: parts[0], ns: parts.slice(1).sort().join(' ')}
+      }
+      function matcherFor(ns) {
+        return new RegExp('(?:^| )' + ns.replace(' ', ' .* ?') + '(?: |$)')
+      }
+
+      function eventCapture(handler, captureSetting) {
+        return handler.del &&
+          (!focusinSupported && (handler.e in focus)) ||
+          !!captureSetting
+      }
+
+      function realEvent(type) {
+        return hover[type] || (focusinSupported && focus[type]) || type
+      }
+
+      function add(element, events, fn, data, selector, delegator, capture){
+        var id = zid(element), set = (handlers[id] || (handlers[id] = []))
+        events.split(/\s/).forEach(function(event){
+          if (event == 'ready') return $(document).ready(fn)
+          var handler   = parse(event)
+          handler.fn    = fn
+          handler.sel   = selector
+          // emulate mouseenter, mouseleave
+          if (handler.e in hover) fn = function(e){
+            var related = e.relatedTarget
+            if (!related || (related !== this && !$.contains(this, related)))
+              return handler.fn.apply(this, arguments)
+          }
+          handler.del   = delegator
+          var callback  = delegator || fn
+          handler.proxy = function(e){
+            e = compatible(e)
+            if (e.isImmediatePropagationStopped()) return
+            e.data = data
+            var result = callback.apply(element, e._args == undefined ? [e] : [e].concat(e._args))
+            if (result === false) e.preventDefault(), e.stopPropagation()
+            return result
+          }
+          handler.i = set.length
+          set.push(handler)
+          if ('addEventListener' in element)
+            element.addEventListener(realEvent(handler.e), handler.proxy, eventCapture(handler, capture))
+        })
+      }
+      function remove(element, events, fn, selector, capture){
+        var id = zid(element)
+        ;(events || '').split(/\s/).forEach(function(event){
+          findHandlers(element, event, fn, selector).forEach(function(handler){
+            delete handlers[id][handler.i]
+          if ('removeEventListener' in element)
+            element.removeEventListener(realEvent(handler.e), handler.proxy, eventCapture(handler, capture))
+          })
+        })
+      }
+
+      $.event = { add: add, remove: remove }
+
+      $.proxy = function(fn, context) {
+        if (isFunction(fn)) {
+          var proxyFn = function(){ return fn.apply(context, arguments) }
+          proxyFn._zid = zid(fn)
+          return proxyFn
+        } else if (isString(context)) {
+          return $.proxy(fn[context], fn)
+        } else {
+          throw new TypeError("expected function")
+        }
+      }
+
+      $.fn.bind = function(event, data, callback){
+        return this.on(event, data, callback)
+      }
+      $.fn.unbind = function(event, callback){
+        return this.off(event, callback)
+      }
+      $.fn.one = function(event, selector, data, callback){
+        return this.on(event, selector, data, callback, 1)
+      }
+
+      var returnTrue = function(){return true},
+          returnFalse = function(){return false},
+          ignoreProperties = /^([A-Z]|returnValue$|layer[XY]$)/,
+          eventMethods = {
+            preventDefault: 'isDefaultPrevented',
+            stopImmediatePropagation: 'isImmediatePropagationStopped',
+            stopPropagation: 'isPropagationStopped'
+          }
+
+      function compatible(event, source) {
+        if (source || !event.isDefaultPrevented) {
+          source || (source = event)
+
+          $.each(eventMethods, function(name, predicate) {
+            var sourceMethod = source[name]
+            event[name] = function(){
+              this[predicate] = returnTrue
+              return sourceMethod && sourceMethod.apply(source, arguments)
+            }
+            event[predicate] = returnFalse
+          })
+
+          if (source.defaultPrevented !== undefined ? source.defaultPrevented :
+              'returnValue' in source ? source.returnValue === false :
+              source.getPreventDefault && source.getPreventDefault())
+            event.isDefaultPrevented = returnTrue
+        }
+        return event
+      }
+
+      function createProxy(event) {
+        var key, proxy = { originalEvent: event }
+        for (key in event)
+          if (!ignoreProperties.test(key) && event[key] !== undefined) proxy[key] = event[key]
+
+        return compatible(proxy, event)
+      }
+
+      $.fn.delegate = function(selector, event, callback){
+        return this.on(event, selector, callback)
+      }
+      $.fn.undelegate = function(selector, event, callback){
+        return this.off(event, selector, callback)
+      }
+
+      $.fn.live = function(event, callback){
+        $(document.body).delegate(this.selector, event, callback)
+        return this
+      }
+      $.fn.die = function(event, callback){
+        $(document.body).undelegate(this.selector, event, callback)
+        return this
+      }
+
+      $.fn.on = function(event, selector, data, callback, one){
+        var autoRemove, delegator, $this = this
+        if (event && !isString(event)) {
+          $.each(event, function(type, fn){
+            $this.on(type, selector, data, fn, one)
+          })
+          return $this
+        }
+
+        if (!isString(selector) && !isFunction(callback) && callback !== false)
+          callback = data, data = selector, selector = undefined
+        if (isFunction(data) || data === false)
+          callback = data, data = undefined
+
+        if (callback === false) callback = returnFalse
+
+        return $this.each(function(_, element){
+          if (one) autoRemove = function(e){
+            remove(element, e.type, callback)
+            return callback.apply(this, arguments)
+          }
+
+          if (selector) delegator = function(e){
+            var evt, match = $(e.target).closest(selector, element).get(0)
+            if (match && match !== element) {
+              evt = $.extend(createProxy(e), {currentTarget: match, liveFired: element})
+              return (autoRemove || callback).apply(match, [evt].concat(slice.call(arguments, 1)))
+            }
+          }
+
+          add(element, event, callback, data, selector, delegator || autoRemove)
+        })
+      }
+      $.fn.off = function(event, selector, callback){
+        var $this = this
+        if (event && !isString(event)) {
+          $.each(event, function(type, fn){
+            $this.off(type, selector, fn)
+          })
+          return $this
+        }
+
+        if (!isString(selector) && !isFunction(callback) && callback !== false)
+          callback = selector, selector = undefined
+
+        if (callback === false) callback = returnFalse
+
+        return $this.each(function(){
+          remove(this, event, callback, selector)
+        })
+      }
+
+      $.fn.trigger = function(event, args){
+        event = (isString(event) || $.isPlainObject(event)) ? $.Event(event) : compatible(event)
+        event._args = args
+        return this.each(function(){
+          // items in the collection might not be DOM elements
+          if('dispatchEvent' in this) this.dispatchEvent(event)
+          else $(this).triggerHandler(event, args)
+        })
+      }
+
+      // triggers event handlers on current element just as if an event occurred,
+      // doesn't trigger an actual event, doesn't bubble
+      $.fn.triggerHandler = function(event, args){
+        var e, result
+        this.each(function(i, element){
+          e = createProxy(isString(event) ? $.Event(event) : event)
+          e._args = args
+          e.target = element
+          $.each(findHandlers(element, event.type || event), function(i, handler){
+            result = handler.proxy(e)
+            if (e.isImmediatePropagationStopped()) return false
+          })
+        })
+        return result
+      }
+
+      // shortcut methods for `.bind(event, fn)` for each event type
+      ;('focusin focusout load resize scroll unload click dblclick '+
+      'mousedown mouseup mousemove mouseover mouseout mouseenter mouseleave '+
+      'change select keydown keypress keyup error').split(' ').forEach(function(event) {
+        $.fn[event] = function(callback) {
+          return callback ?
+            this.bind(event, callback) :
+            this.trigger(event)
+        }
+      })
+
+      ;['focus', 'blur'].forEach(function(name) {
+        $.fn[name] = function(callback) {
+          if (callback) this.bind(name, callback)
+          else this.each(function(){
+            try { this[name]() }
+            catch(e) {}
+          })
+          return this
+        }
+      })
+
+      $.Event = function(type, props) {
+        if (!isString(type)) props = type, type = props.type
+        var event = document.createEvent(specialEvents[type] || 'Events'), bubbles = true
+        if (props) for (var name in props) (name == 'bubbles') ? (bubbles = !!props[name]) : (event[name] = props[name])
+        event.initEvent(type, bubbles, true)
+        return compatible(event)
+      }
+
+    })(Zepto)
+
+    ;(function($){
+      var jsonpID = 0,
+          document = window.document,
+          key,
+          name,
+          rscript = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+          scriptTypeRE = /^(?:text|application)\/javascript/i,
+          xmlTypeRE = /^(?:text|application)\/xml/i,
+          jsonType = 'application/json',
+          htmlType = 'text/html',
+          blankRE = /^\s*$/
+
+      // trigger a custom event and return false if it was cancelled
+      function triggerAndReturn(context, eventName, data) {
+        var event = $.Event(eventName)
+        $(context).trigger(event, data)
+        return !event.isDefaultPrevented()
+      }
+
+      // trigger an Ajax "global" event
+      function triggerGlobal(settings, context, eventName, data) {
+        if (settings.global) return triggerAndReturn(context || document, eventName, data)
+      }
+
+      // Number of active Ajax requests
+      $.active = 0
+
+      function ajaxStart(settings) {
+        if (settings.global && $.active++ === 0) triggerGlobal(settings, null, 'ajaxStart')
+      }
+      function ajaxStop(settings) {
+        if (settings.global && !(--$.active)) triggerGlobal(settings, null, 'ajaxStop')
+      }
+
+      // triggers an extra global event "ajaxBeforeSend" that's like "ajaxSend" but cancelable
+      function ajaxBeforeSend(xhr, settings) {
+        var context = settings.context
+        if (settings.beforeSend.call(context, xhr, settings) === false ||
+            triggerGlobal(settings, context, 'ajaxBeforeSend', [xhr, settings]) === false)
+          return false
+
+        triggerGlobal(settings, context, 'ajaxSend', [xhr, settings])
+      }
+      function ajaxSuccess(data, xhr, settings, deferred) {
+        var context = settings.context, status = 'success'
+        settings.success.call(context, data, status, xhr)
+        if (deferred) deferred.resolveWith(context, [data, status, xhr])
+        triggerGlobal(settings, context, 'ajaxSuccess', [xhr, settings, data])
+        ajaxComplete(status, xhr, settings)
+      }
+      // type: "timeout", "error", "abort", "parsererror"
+      function ajaxError(error, type, xhr, settings, deferred) {
+        var context = settings.context
+        settings.error.call(context, xhr, type, error)
+        if (deferred) deferred.rejectWith(context, [xhr, type, error])
+        triggerGlobal(settings, context, 'ajaxError', [xhr, settings, error || type])
+        ajaxComplete(type, xhr, settings)
+      }
+      // status: "success", "notmodified", "error", "timeout", "abort", "parsererror"
+      function ajaxComplete(status, xhr, settings) {
+        var context = settings.context
+        settings.complete.call(context, xhr, status)
+        triggerGlobal(settings, context, 'ajaxComplete', [xhr, settings])
+        ajaxStop(settings)
+      }
+
+      // Empty function, used as default callback
+      function empty() {}
+
+      $.ajaxJSONP = function(options, deferred){
+        if (!('type' in options)) return $.ajax(options)
+
+        var _callbackName = options.jsonpCallback,
+          callbackName = ($.isFunction(_callbackName) ?
+            _callbackName() : _callbackName) || ('jsonp' + (++jsonpID)),
+          script = document.createElement('script'),
+          originalCallback = window[callbackName],
+          responseData,
+          abort = function(errorType) {
+            $(script).triggerHandler('error', errorType || 'abort')
+          },
+          xhr = { abort: abort }, abortTimeout
+
+        if (deferred) deferred.promise(xhr)
+
+        $(script).on('load error', function(e, errorType){
+          clearTimeout(abortTimeout)
+          $(script).off().remove()
+
+          if (e.type == 'error' || !responseData) {
+            ajaxError(null, errorType || 'error', xhr, options, deferred)
+          } else {
+            ajaxSuccess(responseData[0], xhr, options, deferred)
+          }
+
+          window[callbackName] = originalCallback
+          if (responseData && $.isFunction(originalCallback))
+            originalCallback(responseData[0])
+
+          originalCallback = responseData = undefined
+        })
+
+        if (ajaxBeforeSend(xhr, options) === false) {
+          abort('abort')
+          return xhr
+        }
+
+        window[callbackName] = function(){
+          responseData = arguments
+        }
+
+        script.src = options.url.replace(/\?(.+)=\?/, '?$1=' + callbackName)
+        document.head.appendChild(script)
+
+        if (options.timeout > 0) abortTimeout = setTimeout(function(){
+          abort('timeout')
+        }, options.timeout)
+
+        return xhr
+      }
+
+      $.ajaxSettings = {
+        // Default type of request
+        type: 'GET',
+        // Callback that is executed before request
+        beforeSend: empty,
+        // Callback that is executed if the request succeeds
+        success: empty,
+        // Callback that is executed the the server drops error
+        error: empty,
+        // Callback that is executed on request complete (both: error and success)
+        complete: empty,
+        // The context for the callbacks
+        context: null,
+        // Whether to trigger "global" Ajax events
+        global: true,
+        // Transport
+        xhr: function () {
+          return new window.XMLHttpRequest()
+        },
+        // MIME types mapping
+        // IIS returns Javascript as "application/x-javascript"
+        accepts: {
+          script: 'text/javascript, application/javascript, application/x-javascript',
+          json:   jsonType,
+          xml:    'application/xml, text/xml',
+          html:   htmlType,
+          text:   'text/plain'
+        },
+        // Whether the request is to another domain
+        crossDomain: false,
+        // Default timeout
+        timeout: 0,
+        // Whether data should be serialized to string
+        processData: true,
+        // Whether the browser should be allowed to cache GET responses
+        cache: true
+      }
+
+      function mimeToDataType(mime) {
+        if (mime) mime = mime.split(';', 2)[0]
+        return mime && ( mime == htmlType ? 'html' :
+          mime == jsonType ? 'json' :
+          scriptTypeRE.test(mime) ? 'script' :
+          xmlTypeRE.test(mime) && 'xml' ) || 'text'
+      }
+
+      function appendQuery(url, query) {
+        if (query == '') return url
+        return (url + '&' + query).replace(/[&?]{1,2}/, '?')
+      }
+
+      // serialize payload and append it to the URL for GET requests
+      function serializeData(options) {
+        if (options.processData && options.data && $.type(options.data) != "string")
+          options.data = $.param(options.data, options.traditional)
+        if (options.data && (!options.type || options.type.toUpperCase() == 'GET'))
+          options.url = appendQuery(options.url, options.data), options.data = undefined
+      }
+
+      $.ajax = function(options){
+        var settings = $.extend({}, options || {}),
+            deferred = $.Deferred && $.Deferred()
+        for (key in $.ajaxSettings) if (settings[key] === undefined) settings[key] = $.ajaxSettings[key]
+
+        ajaxStart(settings)
+
+        if (!settings.crossDomain) settings.crossDomain = /^([\w-]+:)?\/\/([^\/]+)/.test(settings.url) &&
+          RegExp.$2 != window.location.host
+
+        if (!settings.url) settings.url = window.location.toString()
+        serializeData(settings)
+        if (settings.cache === false) settings.url = appendQuery(settings.url, '_=' + Date.now())
+
+        var dataType = settings.dataType, hasPlaceholder = /\?.+=\?/.test(settings.url)
+        if (dataType == 'jsonp' || hasPlaceholder) {
+          if (!hasPlaceholder)
+            settings.url = appendQuery(settings.url,
+              settings.jsonp ? (settings.jsonp + '=?') : settings.jsonp === false ? '' : 'callback=?')
+          return $.ajaxJSONP(settings, deferred)
+        }
+
+        var mime = settings.accepts[dataType],
+            headers = { },
+            setHeader = function(name, value) { headers[name.toLowerCase()] = [name, value] },
+            protocol = /^([\w-]+:)\/\//.test(settings.url) ? RegExp.$1 : window.location.protocol,
+            xhr = settings.xhr(),
+            nativeSetHeader = xhr.setRequestHeader,
+            abortTimeout
+
+        if (deferred) deferred.promise(xhr)
+
+        if (!settings.crossDomain) setHeader('X-Requested-With', 'XMLHttpRequest')
+        setHeader('Accept', mime || '*/*')
+        if (mime = settings.mimeType || mime) {
+          if (mime.indexOf(',') > -1) mime = mime.split(',', 2)[0]
+          xhr.overrideMimeType && xhr.overrideMimeType(mime)
+        }
+        if (settings.contentType || (settings.contentType !== false && settings.data && settings.type.toUpperCase() != 'GET'))
+          setHeader('Content-Type', settings.contentType || 'application/x-www-form-urlencoded')
+
+        if (settings.headers) for (name in settings.headers) setHeader(name, settings.headers[name])
+        xhr.setRequestHeader = setHeader
+
+        xhr.onreadystatechange = function(){
+          if (xhr.readyState == 4) {
+            xhr.onreadystatechange = empty
+            clearTimeout(abortTimeout)
+            var result, error = false
+            if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304 || (xhr.status == 0 && protocol == 'file:')) {
+              dataType = dataType || mimeToDataType(settings.mimeType || xhr.getResponseHeader('content-type'))
+              result = xhr.responseText
+
+              try {
+                // http://perfectionkills.com/global-eval-what-are-the-options/
+                if (dataType == 'script')    (1,eval)(result)
+                else if (dataType == 'xml')  result = xhr.responseXML
+                else if (dataType == 'json') result = blankRE.test(result) ? null : $.parseJSON(result)
+              } catch (e) { error = e }
+
+              if (error) ajaxError(error, 'parsererror', xhr, settings, deferred)
+              else ajaxSuccess(result, xhr, settings, deferred)
+            } else {
+              ajaxError(xhr.statusText || null, xhr.status ? 'error' : 'abort', xhr, settings, deferred)
+            }
+          }
+        }
+
+        if (ajaxBeforeSend(xhr, settings) === false) {
+          xhr.abort()
+          ajaxError(null, 'abort', xhr, settings, deferred)
+          return xhr
+        }
+
+        if (settings.xhrFields) for (name in settings.xhrFields) xhr[name] = settings.xhrFields[name]
+
+        var async = 'async' in settings ? settings.async : true
+        xhr.open(settings.type, settings.url, async, settings.username, settings.password)
+
+        for (name in headers) nativeSetHeader.apply(xhr, headers[name])
+
+        if (settings.timeout > 0) abortTimeout = setTimeout(function(){
+            xhr.onreadystatechange = empty
+            xhr.abort()
+            ajaxError(null, 'timeout', xhr, settings, deferred)
+          }, settings.timeout)
+
+        // avoid sending empty string (#319)
+        xhr.send(settings.data ? settings.data : null)
+        return xhr
+      }
+
+      // handle optional data/success arguments
+      function parseArguments(url, data, success, dataType) {
+        var hasData = !$.isFunction(data)
+        return {
+          url:      url,
+          data:     hasData  ? data : undefined,
+          success:  !hasData ? data : $.isFunction(success) ? success : undefined,
+          dataType: hasData  ? dataType || success : success
+        }
+      }
+
+      $.get = function(url, data, success, dataType){
+        return $.ajax(parseArguments.apply(null, arguments))
+      }
+
+      $.post = function(url, data, success, dataType){
+        var options = parseArguments.apply(null, arguments)
+        options.type = 'POST'
+        return $.ajax(options)
+      }
+
+      $.getJSON = function(url, data, success){
+        var options = parseArguments.apply(null, arguments)
+        options.dataType = 'json'
+        return $.ajax(options)
+      }
+
+      $.fn.load = function(url, data, success){
+        if (!this.length) return this
+        var self = this, parts = url.split(/\s/), selector,
+            options = parseArguments(url, data, success),
+            callback = options.success
+        if (parts.length > 1) options.url = parts[0], selector = parts[1]
+        options.success = function(response){
+          self.html(selector ?
+            $('<div>').html(response.replace(rscript, "")).find(selector)
+            : response)
+          callback && callback.apply(self, arguments)
+        }
+        $.ajax(options)
+        return this
+      }
+
+      var escape = encodeURIComponent
+
+      function serialize(params, obj, traditional, scope){
+        var type, array = $.isArray(obj), hash = $.isPlainObject(obj)
+        $.each(obj, function(key, value) {
+          type = $.type(value)
+          if (scope) key = traditional ? scope :
+            scope + '[' + (hash || type == 'object' || type == 'array' ? key : '') + ']'
+          // handle data in serializeArray() format
+          if (!scope && array) params.add(value.name, value.value)
+          // recurse into nested objects
+          else if (type == "array" || (!traditional && type == "object"))
+            serialize(params, value, traditional, key)
+          else params.add(key, value)
+        })
+      }
+
+      $.param = function(obj, traditional){
+        var params = []
+        params.add = function(k, v){ this.push(escape(k) + '=' + escape(v)) }
+        serialize(params, obj, traditional)
+        return params.join('&').replace(/%20/g, '+')
+      }
+    })(Zepto)
+
+    ;(function($){
+      $.fn.serializeArray = function() {
+        var result = [], el
+        $([].slice.call(this.get(0).elements)).each(function(){
+          el = $(this)
+          var type = el.attr('type')
+          if (this.nodeName.toLowerCase() != 'fieldset' &&
+            !this.disabled && type != 'submit' && type != 'reset' && type != 'button' &&
+            ((type != 'radio' && type != 'checkbox') || this.checked))
+            result.push({
+              name: el.attr('name'),
+              value: el.val()
+            })
+        })
+        return result
+      }
+
+      $.fn.serialize = function(){
+        var result = []
+        this.serializeArray().forEach(function(elm){
+          result.push(encodeURIComponent(elm.name) + '=' + encodeURIComponent(elm.value))
+        })
+        return result.join('&')
+      }
+
+      $.fn.submit = function(callback) {
+        if (callback) this.bind('submit', callback)
+        else if (this.length) {
+          var event = $.Event('submit')
+          this.eq(0).trigger(event)
+          if (!event.isDefaultPrevented()) this.get(0).submit()
+        }
+        return this
+      }
+
+    })(Zepto)
+
+    ;(function($){
+      // __proto__ doesn't exist on IE<11, so redefine
+      // the Z function to use object extension instead
+      if (!('__proto__' in {})) {
+        $.extend($.zepto, {
+          Z: function(dom, selector){
+            dom = dom || []
+            $.extend(dom, $.fn)
+            dom.selector = selector || ''
+            dom.__Z = true
+            return dom
+          },
+          // this is a kludge but works
+          isZ: function(object){
+            return $.type(object) === 'array' && '__Z' in object
+          }
+        })
+      }
+
+      // getComputedStyle shouldn't freak out when called
+      // without a valid element as argument
+      try {
+        getComputedStyle(undefined)
+      } catch(e) {
+        var nativeGetComputedStyle = getComputedStyle;
+        window.getComputedStyle = function(element){
+          try {
+            return nativeGetComputedStyle(element)
+          } catch(e) {
+            return null
+          }
+        }
+      }
+    })(Zepto)
+
+
+  TL.getJSON = Zepto.getJSON;
+	TL.ajax = Zepto.ajax;
+})(TL)
+
+//     Based on https://github.com/madrobby/zepto/blob/5585fe00f1828711c04208372265a5d71e3238d1/src/ajax.js
+//     Zepto.js
+//     (c) 2010-2012 Thomas Fuchs
+//     Zepto.js may be freely distributed under the MIT license.
+/*
+Copyright (c) 2010-2012 Thomas Fuchs
+http://zeptojs.com
+
+Permission is hereby granted, free of charge, to any person obtaining a copy 
+of this software and associated documentation files (the "Software"), to deal 
+in the Software without restriction, including without limitation the rights 
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+copies of the Software, and to permit persons to whom the Software is 
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all 
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+SOFTWARE.
+*/
+
+
+/* **********************************************
+     Begin TL.Class.js
+********************************************** */
+
+/*	TL.Class
+	Class powers the OOP facilities of the library.
+================================================== */
+TL.Class = function () {};
+
+TL.Class.extend = function (/*Object*/ props) /*-> Class*/ {
+ 
+	// extended class with the new prototype
+	var NewClass = function () {
+		if (this.initialize) {
+			this.initialize.apply(this, arguments);
+		}
+	};
+
+	// instantiate class without calling constructor
+	var F = function () {};
+	F.prototype = this.prototype;
+	var proto = new F();
+
+	proto.constructor = NewClass;
+	NewClass.prototype = proto;
+
+	// add superclass access
+	NewClass.superclass = this.prototype;
+
+	// add class name
+	//proto.className = props;
+
+	//inherit parent's statics
+	for (var i in this) {
+		if (this.hasOwnProperty(i) && i !== 'prototype' && i !== 'superclass') {
+			NewClass[i] = this[i];
+		}
+	}
+
+	// mix static properties into the class
+	if (props.statics) {
+		TL.Util.extend(NewClass, props.statics);
+		delete props.statics;
+	}
+
+	// mix includes into the prototype
+	if (props.includes) {
+		TL.Util.extend.apply(null, [proto].concat(props.includes));
+		delete props.includes;
+	}
+
+	// merge options
+	if (props.options && proto.options) {
+		props.options = TL.Util.extend({}, proto.options, props.options);
+	}
+
+	// mix given properties into the prototype
+	TL.Util.extend(proto, props);
+
+	// allow inheriting further
+	NewClass.extend = TL.Class.extend;
+
+	// method for adding properties to prototype
+	NewClass.include = function (props) {
+		TL.Util.extend(this.prototype, props);
+	};
+
+	return NewClass;
+};
+
+
+/* **********************************************
+     Begin TL.Events.js
+********************************************** */
+
+/*	TL.Events
+	adds custom events functionality to TL classes
+================================================== */
+TL.Events = {
+	addEventListener: function (/*String*/ type, /*Function*/ fn, /*(optional) Object*/ context) {
+		var events = this._tl_events = this._tl_events || {};
+		events[type] = events[type] || [];
+		events[type].push({
+			action: fn,
+			context: context || this
+		});
+		return this;
+	},
+
+	hasEventListeners: function (/*String*/ type) /*-> Boolean*/ {
+		var k = '_tl_events';
+		return (k in this) && (type in this[k]) && (this[k][type].length > 0);
+	},
+
+	removeEventListener: function (/*String*/ type, /*Function*/ fn, /*(optional) Object*/ context) {
+		if (!this.hasEventListeners(type)) {
+			return this;
+		}
+
+		for (var i = 0, events = this._tl_events, len = events[type].length; i < len; i++) {
+			if (
+				(events[type][i].action === fn) &&
+				(!context || (events[type][i].context === context))
+			) {
+				events[type].splice(i, 1);
+				return this;
+			}
+		}
+		return this;
+	},
+
+	fireEvent: function (/*String*/ type, /*(optional) Object*/ data) {
+		if (!this.hasEventListeners(type)) {
+			return this;
+		}
+
+		var event = TL.Util.mergeData({
+			type: type,
+			target: this
+		}, data);
+
+		var listeners = this._tl_events[type].slice();
+
+		for (var i = 0, len = listeners.length; i < len; i++) {
+			listeners[i].action.call(listeners[i].context || this, event);
+		}
+
+		return this;
+	}
+};
+
+TL.Events.on	= TL.Events.addEventListener;
+TL.Events.off	= TL.Events.removeEventListener;
+TL.Events.fire = TL.Events.fireEvent;
+
+
+/* **********************************************
+     Begin TL.Browser.js
+********************************************** */
+
+/*
+	Based on Leaflet Browser
+	TL.Browser handles different browser and feature detections for internal  use.
+*/
+
+
+(function() {
+
+	var ua = navigator.userAgent.toLowerCase(),
+		doc = document.documentElement,
+
+		ie = 'ActiveXObject' in window,
+
+		webkit = ua.indexOf('webkit') !== -1,
+		phantomjs = ua.indexOf('phantom') !== -1,
+		android23 = ua.search('android [23]') !== -1,
+
+		mobile = typeof orientation !== 'undefined',
+		msPointer = navigator.msPointerEnabled && navigator.msMaxTouchPoints && !window.PointerEvent,
+		pointer = (window.PointerEvent && navigator.pointerEnabled && navigator.maxTouchPoints) || msPointer,
+
+		ie3d = ie && ('transition' in doc.style),
+		webkit3d = ('WebKitCSSMatrix' in window) && ('m11' in new window.WebKitCSSMatrix()) && !android23,
+		gecko3d = 'MozPerspective' in doc.style,
+		opera3d = 'OTransition' in doc.style,
+		opera = window.opera;
+
+
+	var retina = 'devicePixelRatio' in window && window.devicePixelRatio > 1;
+
+	if (!retina && 'matchMedia' in window) {
+		var matches = window.matchMedia('(min-resolution:144dpi)');
+		retina = matches && matches.matches;
+	}
+
+	var touch = !window.L_NO_TOUCH && !phantomjs && (pointer || 'ontouchstart' in window || (window.DocumentTouch && document instanceof window.DocumentTouch));
+
+	TL.Browser = {
+		ie: ie,
+		ua: ua,
+		ie9: Boolean(ie && ua.match(/MSIE 9/i)),
+		ielt9: ie && !document.addEventListener,
+		webkit: webkit,
+		//gecko: (ua.indexOf('gecko') !== -1) && !webkit && !window.opera && !ie,
+		firefox: (ua.indexOf('gecko') !== -1) && !webkit && !window.opera && !ie,
+		android: ua.indexOf('android') !== -1,
+		android23: android23,
+		chrome: ua.indexOf('chrome') !== -1,
+		edge: ua.indexOf('edge/') !== -1,
+
+		ie3d: ie3d,
+		webkit3d: webkit3d,
+		gecko3d: gecko3d,
+		opera3d: opera3d,
+		any3d: !window.L_DISABLE_3D && (ie3d || webkit3d || gecko3d || opera3d) && !phantomjs,
+
+		mobile: mobile,
+		mobileWebkit: mobile && webkit,
+		mobileWebkit3d: mobile && webkit3d,
+		mobileOpera: mobile && window.opera,
+
+		touch: !! touch,
+		msPointer: !! msPointer,
+		pointer: !! pointer,
+
+		retina: !! retina,
+		orientation: function() {
+			var w = window.innerWidth,
+				h = window.innerHeight,
+				_orientation = "portrait";
+
+			if (w > h) {
+				_orientation = "landscape";
+			}
+			if (Math.abs(window.orientation) == 90) {
+				//_orientation = "landscape";
+			}
+			trace(_orientation);
+			return _orientation;
+		}
+	};
+
+}());
+
+
+/* **********************************************
+     Begin TL.Load.js
+********************************************** */
+
+/*	TL.Load
+	Loads External Javascript and CSS
+================================================== */
+
+TL.Load = (function (doc) {
+	var loaded	= [];
+	
+	function isLoaded(url) {
+		
+		var i			= 0,
+			has_loaded	= false;
+		
+		for (i = 0; i < loaded.length; i++) {
+			if (loaded[i] == url) {
+				has_loaded = true;
+			}
+		}
+		
+		if (has_loaded) {
+			return true;
+		} else {
+			loaded.push(url);
 			return false;
 		}
-	};
-	VMM.Browser.init();
-}
-
-/* **********************************************
-     Begin VMM.FileExtention.js
-********************************************** */
-
-/*	* File Extention
-================================================== */
-if(typeof VMM != 'undefined' && typeof VMM.FileExtention == 'undefined') {
-	VMM.FileExtention = {
-		googleDocType: function(url) {
-			var fileName			= url.replace(/\s\s*$/, ''),
-				fileExtension		= "",
-				validFileExtensions = ["DOC","DOCX","XLS","XLSX","PPT","PPTX","PDF","PAGES","AI","PSD","TIFF","DXF","SVG","EPS","PS","TTF","XPS","ZIP","RAR"],
-				flag				= false;
-				
-			fileExtension = fileName.substr(fileName.length - 5, 5);
-			
-			for (var i = 0; i < validFileExtensions.length; i++) {
-				if (fileExtension.toLowerCase().match(validFileExtensions[i].toString().toLowerCase()) || fileName.match("docs.google.com") ) {
-					flag = true;
-				}
-			}
-			return flag;
-		}
+		
 	}
-}
-
-/* **********************************************
-     Begin VMM.Date.js
-********************************************** */
-
-/*	* Utilities and Useful Functions
-================================================== */
-if(typeof VMM != 'undefined' && typeof VMM.Date == 'undefined') {
 	
-	VMM.Date = ({
+	return {
 		
-		init: function() {
-			return this;
-		},
-		
-		dateformats: {
-			year: "yyyy",
-			month_short: "mmm",
-			month: "mmmm yyyy",
-			full_short: "mmm d",
-			full: "mmmm d',' yyyy",
-			time_short: "h:MM:ss TT",
-			time_no_seconds_short: "h:MM TT",
-			time_no_seconds_small_date: "h:MM TT'<br/><small>'mmmm d',' yyyy'</small>'",
-			full_long: "mmm d',' yyyy 'at' hh:MM TT",
-			full_long_small_date: "hh:MM TT'<br/><small>mmm d',' yyyy'</small>'"
-		},
-			
-		month: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-		month_abbr: ["Jan.", "Feb.", "March", "April", "May", "June", "July", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."],
-		day: ["Sunday","Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-		day_abbr: ["Sun.", "Mon.", "Tues.", "Wed.", "Thurs.", "Fri.", "Sat."],
-		hour: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-		hour_suffix: ["am"],
-			
-		//B.C.
-		bc_format: {
-			year: "yyyy",
-			month_short: "mmm",
-			month: "mmmm yyyy",
-			full_short: "mmm d",
-			full: "mmmm d',' yyyy",
-			time_no_seconds_short: "h:MM TT",
-			time_no_seconds_small_date: "dddd', 'h:MM TT'<br/><small>'mmmm d',' yyyy'</small>'",
-			full_long: "dddd',' mmm d',' yyyy 'at' hh:MM TT",
-			full_long_small_date: "hh:MM TT'<br/><small>'dddd',' mmm d',' yyyy'</small>'"
-		},
-			
-		setLanguage: function(lang) {
-			trace("SET DATE LANGUAGE");
-			VMM.Date.dateformats		=	lang.dateformats;	
-			VMM.Date.month				=	lang.date.month;
-			VMM.Date.month_abbr			=	lang.date.month_abbr;
-			VMM.Date.day				=	lang.date.day;
-			VMM.Date.day_abbr			=	lang.date.day_abbr;
-			dateFormat.i18n.dayNames	=	lang.date.day_abbr.concat(lang.date.day);
-			dateFormat.i18n.monthNames	=	lang.date.month_abbr.concat(lang.date.month);
-		},
-			
-		parse: function(d, precision) {
-			"use strict";
-			var date,
-				date_array,
-				time_array,
-				time_parse,
-				p = {
-					year: 			false,
-					month: 			false,
-					day: 			false,
-					hour: 			false,
-					minute: 		false,
-					second: 		false,
-					millisecond: 	false
-				};
-				
-			if (type.of(d) == "date") {
-				trace("DEBUG THIS, ITs A DATE");
-				date = d;
+		css: function (urls, callback, obj, context) {
+			if (!isLoaded(urls)) {
+				TL.LoadIt.css(urls, callback, obj, context);
 			} else {
-				date = new Date(0); 
-				date.setMonth(0); date.setDate(1); date.setHours(0); date.setMinutes(0); date.setSeconds(0); date.setMilliseconds(0);
-				if ( d.match(/,/gi) ) {
-					date_array = d.split(",");
-					for(var i = 0; i < date_array.length; i++) {
-						date_array[i] = parseInt(date_array[i], 10);
-					}
-					if (date_array[0]) {	
-						date.setFullYear(date_array[0]);
-						p.year = true;
-					}
-					if (date_array[1]) {
-						date.setMonth(date_array[1] - 1);
-						p.month = true;
-					}
-					if (date_array[2]) {
-						date.setDate(date_array[2]);
-						p.day = true;
-					}
-					if (date_array[3]) {
-						date.setHours(date_array[3]);
-						p.hour = true;
-					}
-					if (date_array[4]) {
-						date.setMinutes(date_array[4]);
-						p.minute = true;
-					}
-					if (date_array[5]) {
-						date.setSeconds(date_array[5]);
-						if (date_array[5] >= 1) {
-							p.second = true;
-						}
-					}
-					if (date_array[6]) {
-						date.setMilliseconds(date_array[6]);
-						if (date_array[6] >= 1) {
-							p.millisecond = true;
-						}
-					}
-				} else if (d.match("/")) {
-					if (d.match(" ")) {
-						
-						time_parse = d.split(" ");
-						if (d.match(":")) {
-							time_array = time_parse[1].split(":");
-							if (time_array[0] >= 0 ) {
-								date.setHours(time_array[0]);
-								p.hour = true;
-							}
-							if (time_array[1] >= 0) {
-								date.setMinutes(time_array[1]);
-								p.minute = true;
-							}
-							if (time_array[2] >= 0) {
-								date.setSeconds(time_array[2]);
-								p.second = true;
-							}
-							if (time_array[3] >= 0) {
-								date.setMilliseconds(time_array[3]);
-								p.millisecond = true;
-							}
-						}
-						date_array = time_parse[0].split("/");
-					} else {
-						date_array = d.split("/");
-					}
-					if (date_array[2]) {
-						date.setFullYear(date_array[2]);
-						p.year = true;
-					}
-					if (date_array[0] >= 0) {
-						var month = date_array[0] - 1;
-						date.setMonth(month);
-						// if (date.getMonth() != month) { 
-						// 	date.setMonth(month); // WTF javascript?
-						// }
-						p.month = true;
-					}
-					if (date_array[1] >= 0) {
-						if (date_array[1].length > 2) {
-							date.setFullYear(date_array[1]);
-							p.year = true;
-						} else {
-							date.setDate(date_array[1]);
-							p.day = true;
-						}
-					}
-				} else if (d.match("now")) {
-					var now = new Date();	
-									
-					date.setFullYear(now.getFullYear());
-					p.year = true;
-					
-					date.setMonth(now.getMonth());
-					p.month = true;
-					
-					date.setDate(now.getDate());
-					p.day = true;
-					
-					if (d.match("hours")) {
-						date.setHours(now.getHours());
-						p.hour = true;
-					}
-					if (d.match("minutes")) {
-						date.setHours(now.getHours());
-						date.setMinutes(now.getMinutes());
-						p.hour = true;
-						p.minute = true;
-					}
-					if (d.match("seconds")) {
-						date.setHours(now.getHours());
-						date.setMinutes(now.getMinutes());
-						date.setSeconds(now.getSeconds());
-						p.hour = true;
-						p.minute = true;
-						p.second = true;
-					}
-					if (d.match("milliseconds")) {
-						date.setHours(now.getHours());
-						date.setMinutes(now.getMinutes());
-						date.setSeconds(now.getSeconds());
-						date.setMilliseconds(now.getMilliseconds());
-						p.hour = true;
-						p.minute = true;
-						p.second = true;
-						p.millisecond = true;
-					}
-				} else if (d.length <= 8) {
-					p.year = true;
-					date.setFullYear(parseInt(d, 10));
-					date.setMonth(0);
-					date.setDate(1);
-					date.setHours(0);
-					date.setMinutes(0);
-					date.setSeconds(0);
-					date.setMilliseconds(0);
-				} else if (d.match("T")) {
-					if (navigator.userAgent.match(/MSIE\s(?!9.0)/)) {
-					    // IE 8 < Won't accept dates with a "-" in them.
-						time_parse = d.split("T");
-						if (d.match(":")) {
-							time_array = time_parse[1].split(":");
-							if (time_array[0] >= 1) {
-								date.setHours(time_array[0]);
-								p.hour = true;
-							}
-							if (time_array[1] >= 1) {
-								date.setMinutes(time_array[1]);
-								p.minute = true;
-							}
-							if (time_array[2] >= 1) {
-								date.setSeconds(time_array[2]);
-								if (time_array[2] >= 1) {
-									p.second = true;
-								}
-							}
-							if (time_array[3] >= 1) {
-								date.setMilliseconds(time_array[3]);
-								if (time_array[3] >= 1) {
-									p.millisecond = true;
-								}
-							}
-						}
-						date_array = time_parse[0].split("-");
-						if (date_array[0]) {
-							date.setFullYear(date_array[0]);
-							p.year = true;
-						}
-						if (date_array[1] >= 0) {
-							date.setMonth(date_array[1] - 1);
-							p.month = true;
-						}
-						if (date_array[2] >= 0) {
-							date.setDate(date_array[2]);
-							p.day = true;
-						}
-						
-					} else {
-						date = new Date(Date.parse(d));
-						p.year = true;
-						p.month = true;
-						p.day = true;
-						p.hour = true;
-						p.minute = true;
-						if (date.getSeconds() >= 1) {
-							p.second = true;
-						}
-						if (date.getMilliseconds() >= 1) {
-							p.millisecond = true;
-						}
-					}
-				} else {
-					date = new Date(
-						parseInt(d.slice(0,4), 10), 
-						parseInt(d.slice(4,6), 10) - 1, 
-						parseInt(d.slice(6,8), 10), 
-						parseInt(d.slice(8,10), 10), 
-						parseInt(d.slice(10,12), 10)
-					);
-					p.year = true;
-					p.month = true;
-					p.day = true;
-					p.hour = true;
-					p.minute = true;
-					if (date.getSeconds() >= 1) {
-						p.second = true;
-					}
-					if (date.getMilliseconds() >= 1) {
-						p.millisecond = true;
-					}
-					
-				}
-				
-			}
-			
-			if (precision != null && precision != "") {
-				return {
-					date: 		date,
-					precision: 	p
-				};
-			} else {
-				return date;
+				callback();
 			}
 		},
-		
-		
-			
-		prettyDate: function(d, is_abbr, p, d2) {
-			var _date,
-				_date2,
-				format,
-				bc_check,
-				is_pair = false,
-				bc_original,
-				bc_number,
-				bc_string;
-				
-			if (d2 != null && d2 != "" && typeof d2 != 'undefined') {
-				is_pair = true;
-				trace("D2 " + d2);
-			}
-			
-			
-			if (type.of(d) == "date") {
-				
-				if (type.of(p) == "object") {
-					if (p.millisecond || p.second && d.getSeconds() >= 1) {
-						// YEAR MONTH DAY HOUR MINUTE
-						if (is_abbr){
-							format = VMM.Date.dateformats.time_short; 
-						} else {
-							format = VMM.Date.dateformats.time_short;
-						}
-					} else if (p.minute) {
-						// YEAR MONTH DAY HOUR MINUTE
-						if (is_abbr){
-							format = VMM.Date.dateformats.time_no_seconds_short; 
-						} else {
-							format = VMM.Date.dateformats.time_no_seconds_small_date;
-						}
-					} else if (p.hour) {
-						// YEAR MONTH DAY HOUR
-						if (is_abbr) {
-							format = VMM.Date.dateformats.time_no_seconds_short;
-						} else {
-							format = VMM.Date.dateformats.time_no_seconds_small_date;
-						}
-					} else if (p.day) {
-						// YEAR MONTH DAY
-						if (is_abbr) {
-							format = VMM.Date.dateformats.full_short;
-						} else {
-							format = VMM.Date.dateformats.full;
-						}
-					} else if (p.month) {
-						// YEAR MONTH
-						if (is_abbr) {
-							format = VMM.Date.dateformats.month_short;
-						} else {
-							format = VMM.Date.dateformats.month;
-						}
-					} else if (p.year) {
-						format = VMM.Date.dateformats.year;
-					} else {
-						format = VMM.Date.dateformats.year;
-					}
-					
-				} else {
-					
-					if (d.getMonth() === 0 && d.getDate() == 1 && d.getHours() === 0 && d.getMinutes() === 0 ) {
-						// YEAR ONLY
-						format = VMM.Date.dateformats.year;
-					} else if (d.getDate() <= 1 && d.getHours() === 0 && d.getMinutes() === 0) {
-						// YEAR MONTH
-						if (is_abbr) {
-							format = VMM.Date.dateformats.month_short;
-						} else {
-							format = VMM.Date.dateformats.month;
-						}
-					} else if (d.getHours() === 0 && d.getMinutes() === 0) {
-						// YEAR MONTH DAY
-						if (is_abbr) {
-							format = VMM.Date.dateformats.full_short;
-						} else {
-							format = VMM.Date.dateformats.full;
-						}
-					} else  if (d.getMinutes() === 0) {
-						// YEAR MONTH DAY HOUR
-						if (is_abbr) {
-							format = VMM.Date.dateformats.time_no_seconds_short;
-						} else {
-							format = VMM.Date.dateformats.time_no_seconds_small_date;
-						}
-					} else {
-						// YEAR MONTH DAY HOUR MINUTE
-						if (is_abbr){
-							format = VMM.Date.dateformats.time_no_seconds_short; 
-						} else {
-							format = VMM.Date.dateformats.full_long; 
-						}
-					}
-				}
-				
-				_date = dateFormat(d, format, false);
-				//_date = "Jan"
-				bc_check = _date.split(" ");
-					
-				// BC TIME SUPPORT
-				for(var i = 0; i < bc_check.length; i++) {
-					if ( parseInt(bc_check[i], 10) < 0 ) {
-						trace("YEAR IS BC");
-						bc_original	= bc_check[i];
-						bc_number	= Math.abs( parseInt(bc_check[i], 10) );
-						bc_string	= bc_number.toString() + " B.C.";
-						_date		= _date.replace(bc_original, bc_string);
-					}
-				}
-					
-					
-				if (is_pair) {
-					_date2 = dateFormat(d2, format, false);
-					bc_check = _date2.split(" ");
-					// BC TIME SUPPORT
-					for(var j = 0; j < bc_check.length; j++) {
-						if ( parseInt(bc_check[j], 10) < 0 ) {
-							trace("YEAR IS BC");
-							bc_original	= bc_check[j];
-							bc_number	= Math.abs( parseInt(bc_check[j], 10) );
-							bc_string	= bc_number.toString() + " B.C.";
-							_date2			= _date2.replace(bc_original, bc_string);
-						}
-					}
-						
-				}
+
+		js: function (urls, callback, obj, context) {
+			if (!isLoaded(urls)) {
+				TL.LoadIt.js(urls, callback, obj, context);
 			} else {
-				trace("NOT A VALID DATE?");
-				trace(d);
-			}
-				
-			if (is_pair) {
-				return _date + " &mdash; " + _date2;
-			} else {
-				return _date;
+				callback();
 			}
 		}
-		
-	}).init();
+    };
 	
-	/*
-	 * Date Format 1.2.3
-	 * (c) 2007-2009 Steven Levithan <stevenlevithan.com>
-	 * MIT license
-	 *
-	 * Includes enhancements by Scott Trenda <scott.trenda.net>
-	 * and Kris Kowal <cixar.com/~kris.kowal/>
-	 *
-	 * Accepts a date, a mask, or a date and a mask.
-	 * Returns a formatted version of the given date.
-	 * The date defaults to the current date/time.
-	 * The mask defaults to dateFormat.masks.default.
-	 */
+})(this.document);
 
-	var dateFormat = function () {
-		var	token = /d{1,4}|m{1,4}|yy(?:yy)?|([HhMsTt])\1?|[WLloSZ]|"[^"]*"|'[^']*'/g,
-			timezone = /\b(?:[PMCEA][SDP]T|(?:Pacific|Mountain|Central|Eastern|Atlantic) (?:Standard|Daylight|Prevailing) Time|(?:GMT|UTC)(?:[-+]\d{4})?)\b/g,
-			timezoneClip = /[^-+\dA-Z]/g,
-			pad = function (val, len) {
-				val = String(val);
-				len = len || 2;
-				while (val.length < len) val = "0" + val;
-				return val;
-			};
-
-		// Regexes and supporting functions are cached through closure
-		return function (date, mask, utc) {
-			var dF = dateFormat;
-
-			// You can't provide utc if you skip other args (use the "UTC:" mask prefix)
-			if (arguments.length == 1 && Object.prototype.toString.call(date) == "[object String]" && !/\d/.test(date)) {
-				mask = date;
-				date = undefined;
-			}
-
-			// Passing date through Date applies Date.parse, if necessary
-			// Caused problems in IE
-			// date = date ? new Date(date) : new Date;
-			if (isNaN(date)) {
-				trace("invalid date " + date);
-				//return "";
-			} 
-
-			mask = String(dF.masks[mask] || mask || dF.masks["default"]);
-
-			// Allow setting the utc argument via the mask
-			if (mask.slice(0, 4) == "UTC:") {
-				mask = mask.slice(4);
-				utc = true;
-			}
-
-			var	_ = utc ? "getUTC" : "get",
-				d = date[_ + "Date"](),
-				D = date[_ + "Day"](),
-				m = date[_ + "Month"](),
-				y = date[_ + "FullYear"](),
-				H = date[_ + "Hours"](),
-				M = date[_ + "Minutes"](),
-				s = date[_ + "Seconds"](),
-				L = date[_ + "Milliseconds"](),
-				W = date.getWeek(),
-				o = utc ? 0 : date.getTimezoneOffset(),
-				flags = {
-					d:    d,
-					dd:   pad(d),
-					ddd:  dF.i18n.dayNames[D],
-					dddd: dF.i18n.dayNames[D + 7],
-					m:    m + 1,
-					mm:   pad(m + 1),
-					mmm:  dF.i18n.monthNames[m],
-					mmmm: dF.i18n.monthNames[m + 12],
-					yy:   String(y).slice(2),
-					yyyy: y,
-					h:    H % 12 || 12,
-					hh:   pad(H % 12 || 12),
-					H:    H,
-					HH:   pad(H),
-					M:    M,
-					MM:   pad(M),
-					s:    s,
-					ss:   pad(s),
-					l:    pad(L, 3),
-					L:    pad(L > 99 ? Math.round(L / 10) : L),
-					t:    H < 12 ? "a"  : "p",
-					tt:   H < 12 ? "am" : "pm",
-					T:    H < 12 ? "A"  : "P",
-					TT:   H < 12 ? "AM" : "PM",
-					Z:    utc ? "UTC" : (String(date).match(timezone) || [""]).pop().replace(timezoneClip, ""),
-					o:    (o > 0 ? "-" : "+") + pad(Math.floor(Math.abs(o) / 60) * 100 + Math.abs(o) % 60, 4),
-					S:    ["th", "st", "nd", "rd"][d % 10 > 3 ? 0 : (d % 100 - d % 10 != 10) * d % 10],
-					W: 	W
-				};
-
-			return mask.replace(token, function ($0) {
-				return $0 in flags ? flags[$0] : $0.slice(1, $0.length - 1);
-			});
-		};
-	}();
-
-	// Some common format strings
-	dateFormat.masks = {
-		"default":      "ddd mmm dd yyyy HH:MM:ss",
-		shortDate:      "m/d/yy",
-		mediumDate:     "mmm d, yyyy",
-		longDate:       "mmmm d, yyyy",
-		fullDate:       "dddd, mmmm d, yyyy",
-		shortTime:      "h:MM TT",
-		mediumTime:     "h:MM:ss TT",
-		longTime:       "h:MM:ss TT Z",
-		isoDate:        "yyyy-mm-dd",
-		isoTime:        "HH:MM:ss",
-		isoDateTime:    "yyyy-mm-dd'T'HH:MM:ss",
-		isoUtcDateTime: "UTC:yyyy-mm-dd'T'HH:MM:ss'Z'"
-	};
-
-	// Internationalization strings
-	dateFormat.i18n = {
-		dayNames: [
-			"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat",
-			"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
-		],
-		monthNames: [
-			"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-			"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"
-		]
-	};
-
-	// For convenience...
-	Date.prototype.format = function (mask, utc) {
-		return dateFormat(this, mask, utc);
-	};
-	
-}
-
-/* **********************************************
-     Begin VMM.Util.js
-********************************************** */
-
-/*	* Utilities and Useful Functions
-================================================== */
-if(typeof VMM != 'undefined' && typeof VMM.Util == 'undefined') {
-	
-	VMM.Util = ({
-		
-		init: function() {
-			return this;
-		},
-		
-		removeRange: function(array, from, to) { // rather than change Array.prototype; Thanks Jeff McWhirter for nudge
-  			var rest = array.slice((to || from) + 1 || array.length);
-  			array.length = from < 0 ? array.length + from : from;
-  			return array.push.apply(array, rest);
-		},
-
-		/*	* CORRECT PROTOCOL (DOES NOT WORK)
-		================================================== */
-		correctProtocol: function(url) {
-			var loc = (window.parent.location.protocol).toString(),
-				prefix = "",
-				the_url = url.split("://", 2);
-			
-			if (loc.match("http")) {
-				prefix = loc;
-			} else {
-				prefix = "https";
-			}
-			
-			return prefix + "://" + the_url[1];
-			
-		},
-		
-		/*	* MERGE CONFIG
-		================================================== */
-		mergeConfig: function(config_main, config_to_merge) {
-			var x;
-			for (x in config_to_merge) {
-				if (Object.prototype.hasOwnProperty.call(config_to_merge, x)) {
-					config_main[x] = config_to_merge[x];
-				}
-			}
-			return config_main;
-		},
-		
-		/*	* GET OBJECT ATTRIBUTE BY INDEX
-		================================================== */
-		getObjectAttributeByIndex: function(obj, index) {
-			if(typeof obj != 'undefined') {
-				var i = 0;
-				for (var attr in obj){
-					if (index === i){
-						return obj[attr];
-					}
-					i++;
-				}
-				return "";
-			} else {
-				return "";
-			}
-			
-		},
-		
-		/*	* ORDINAL
-		================================================== */
-		ordinal: function(n) {
-		    return ["th","st","nd","rd"][(!( ((n%10) >3) || (Math.floor(n%100/10)==1)) ) * (n%10)]; 
-		},
-		
-		/*	* RANDOM BETWEEN
-		================================================== */
-		//VMM.Util.randomBetween(1, 3)
-		randomBetween: function(min, max) {
-			return Math.floor(Math.random() * (max - min + 1) + min);
-		},
-		
-		/*	* AVERAGE
-			* http://jsfromhell.com/array/average
-			* var x = VMM.Util.average([2, 3, 4]);
-			* VMM.Util.average([2, 3, 4]).mean
-		================================================== */
-		average: function(a) {
-		    var r = {mean: 0, variance: 0, deviation: 0}, t = a.length;
-		    for(var m, s = 0, l = t; l--; s += a[l]);
-		    for(m = r.mean = s / t, l = t, s = 0; l--; s += Math.pow(a[l] - m, 2));
-		    return r.deviation = Math.sqrt(r.variance = s / t), r;
-		},
-		
-		/*	* CUSTOM SORT
-		================================================== */
-		customSort: function(a, b) {
-			var a1= a, b1= b;
-			if(a1== b1) return 0;
-			return a1> b1? 1: -1;
-		},
-		
-		/*	* Remove Duplicates from Array
-		================================================== */
-		deDupeArray: function(arr) {
-			var i,
-				len=arr.length,
-				out=[],
-				obj={};
-
-			for (i=0;i<len;i++) {
-				obj[arr[i]]=0;
-			}
-			for (i in obj) {
-				out.push(i);
-			}
-			return out;
-		},
-		
-		/*	* Returns a word count number
-		================================================== */
-		wordCount: function(s) {
-			var fullStr = s + " ";
-			var initial_whitespace_rExp = /^[^A-Za-z0-9\'\-]+/gi;
-			var left_trimmedStr = fullStr.replace(initial_whitespace_rExp, "");
-			var non_alphanumerics_rExp = /[^A-Za-z0-9\'\-]+/gi;
-			var cleanedStr = left_trimmedStr.replace(non_alphanumerics_rExp, " ");
-			var splitString = cleanedStr.split(" ");
-			var word_count = splitString.length -1;
-			if (fullStr.length <2) {
-				word_count = 0;
-			}
-			return word_count;
-		},
-		
-		ratio: {
-			fit: function(w, h, ratio_w, ratio_h) {
-				//VMM.Util.ratio.fit(w, h, ratio_w, ratio_h).width;
-				var _fit = {width:0,height:0};
-				// TRY WIDTH FIRST
-				_fit.width = w;
-				//_fit.height = Math.round((h / ratio_h) * ratio_w);
-				_fit.height = Math.round((w / ratio_w) * ratio_h);
-				if (_fit.height > h) {
-					_fit.height = h;
-					//_fit.width = Math.round((w / ratio_w) * ratio_h);
-					_fit.width = Math.round((h / ratio_h) * ratio_w);
-					
-					if (_fit.width > w) {
-						trace("FIT: DIDN'T FIT!!! ")
-					}
-				}
-				
-				return _fit;
-				
-			},
-			r16_9: function(w,h) {
-				//VMM.Util.ratio.r16_9(w, h) // Returns corresponding number
-				if (w !== null && w !== "") {
-					return Math.round((h / 16) * 9);
-				} else if (h !== null && h !== "") {
-					return Math.round((w / 9) * 16);
-				}
-			},
-			r4_3: function(w,h) {
-				if (w !== null && w !== "") {
-					return Math.round((h / 4) * 3);
-				} else if (h !== null && h !== "") {
-					return Math.round((w / 3) * 4);
-				}
-			}
-		},
-		
-		doubledigit: function(n) {
-			return (n < 10 ? '0' : '') + n;
-		},
-		
-		/*	* Returns a truncated segement of a long string of between min and max words. If possible, ends on a period (otherwise goes to max).
-		================================================== */
-		truncateWords: function(s, min, max) {
-			
-			if (!min) min = 30;
-			if (!max) max = min;
-			
-			var initial_whitespace_rExp = /^[^A-Za-z0-9\'\-]+/gi;
-			var left_trimmedStr = s.replace(initial_whitespace_rExp, "");
-			var words = left_trimmedStr.split(" ");
-			
-			var result = [];
-			
-			min = Math.min(words.length, min);
-			max = Math.min(words.length, max);
-			
-			for (var i = 0; i<min; i++) {
-				result.push(words[i]);
-			}		
-			
-			for (var j = min; i<max; i++) {
-				var word = words[i];
-				
-				result.push(word);
-				
-				if (word.charAt(word.length-1) == '.') {
-					break;
-				}
-			}		
-			
-			return (result.join(' '));
-		},
-		
-		/*	* Turns plain text links into real links
-		================================================== */
-		linkify: function(text,targets,is_touch) {
-			
-			// http://, https://, ftp://
-			var urlPattern = /\b(?:https?|ftp):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
-
-			// www. sans http:// or https://
-			var pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
-
-			// Email addresses
-			var emailAddressPattern = /(([a-zA-Z0-9_\-\.]+)@[a-zA-Z_]+?(?:\.[a-zA-Z]{2,6}))+/gim;
-			
-
-			return text
-				.replace(urlPattern, "<a target='_blank' href='$&' onclick='void(0)'>$&</a>")
-				.replace(pseudoUrlPattern, "$1<a target='_blank' onclick='void(0)' href='http://$2'>$2</a>")
-				.replace(emailAddressPattern, "<a target='_blank' onclick='void(0)' href='mailto:$1'>$1</a>");
-		},
-		
-		linkify_with_twitter: function(text,targets,is_touch) {
-			
-			// http://, https://, ftp://
-			var urlPattern = /\b(?:https?|ftp):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
-			var url_pattern = /(\()((?:ht|f)tps?:\/\/[a-z0-9\-._~!$&'()*+,;=:\/?#[\]@%]+)(\))|(\[)((?:ht|f)tps?:\/\/[a-z0-9\-._~!$&'()*+,;=:\/?#[\]@%]+)(\])|(\{)((?:ht|f)tps?:\/\/[a-z0-9\-._~!$&'()*+,;=:\/?#[\]@%]+)(\})|(<|&(?:lt|#60|#x3c);)((?:ht|f)tps?:\/\/[a-z0-9\-._~!$&'()*+,;=:\/?#[\]@%]+)(>|&(?:gt|#62|#x3e);)|((?:^|[^=\s'"\]])\s*['"]?|[^=\s]\s+)(\b(?:ht|f)tps?:\/\/[a-z0-9\-._~!$'()*+,;=:\/?#[\]@%]+(?:(?!&(?:gt|#0*62|#x0*3e);|&(?:amp|apos|quot|#0*3[49]|#x0*2[27]);[.!&',:?;]?(?:[^a-z0-9\-._~!$&'()*+,;=:\/?#[\]@%]|$))&[a-z0-9\-._~!$'()*+,;=:\/?#[\]@%]*)*[a-z0-9\-_~$()*+=\/#[\]@%])/img;
-			var url_replace = '$1$4$7$10$13<a href="$2$5$8$11$14" target="_blank" class="hyphenate">$2$5$8$11$14</a>$3$6$9$12';
-			
-			// www. sans http:// or https://
-			var pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
-			function replaceURLWithHTMLLinks(text) {
-			    var exp = /(\b(https?|ftp|file):\/\/([-A-Z0-9+&@#%?=~_|!:,.;]*)([-A-Z0-9+&@#%?\/=~_|!:,.;]*)[-A-Z0-9+&@#\/%=~_|])/ig;
-			    return text.replace(exp, "<a href='$1' target='_blank'>$3</a>");
-			}
-			// Email addresses
-			var emailAddressPattern = /([a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)/gim;
-			
-			//var twitterHandlePattern = /(@([\w]+))/g;
-			var twitterHandlePattern = /\B@([\w-]+)/gm;
-			var twitterSearchPattern = /(#([\w]+))/g;
-
-			return text
-				//.replace(urlPattern, "<a target='_blank' href='$&' onclick='void(0)'>$&</a>")
-				.replace(url_pattern, url_replace)
-				.replace(pseudoUrlPattern, "$1<a target='_blank' class='hyphenate' onclick='void(0)' href='http://$2'>$2</a>")
-				.replace(emailAddressPattern, "<a target='_blank' onclick='void(0)' href='mailto:$1'>$1</a>")
-				.replace(twitterHandlePattern, "<a href='http://twitter.com/$1' target='_blank' onclick='void(0)'>@$1</a>");
-				
-				// TURN THIS BACK ON TO AUTOMAGICALLY LINK HASHTAGS TO TWITTER SEARCH
-				//.replace(twitterSearchPattern, "<a href='http://twitter.com/search?q=%23$2' target='_blank' 'void(0)'>$1</a>");
-		},
-		
-		linkify_wikipedia: function(text) {
-			
-			var urlPattern = /<i[^>]*>(.*?)<\/i>/gim;
-			return text
-				.replace(urlPattern, "<a target='_blank' href='http://en.wikipedia.org/wiki/$&' onclick='void(0)'>$&</a>")
-				.replace(/<i\b[^>]*>/gim, "")
-				.replace(/<\/i>/gim, "")
-				.replace(/<b\b[^>]*>/gim, "")
-				.replace(/<\/b>/gim, "");
-		},
-		
-		/*	* Turns plain text links into real links
-		================================================== */
-		// VMM.Util.unlinkify();
-		unlinkify: function(text) {
-			if(!text) return text;
-			text = text.replace(/<a\b[^>]*>/i,"");
-			text = text.replace(/<\/a>/i, "");
-			return text;
-		},
-		
-		untagify: function(text) {
-			if (!text) {
-				return text;
-			}
-			text = text.replace(/<\/?\s*\w.*?>/g,"");
-			return text;
-		},
-		
-		/*	* TK
-		================================================== */
-		nl2br: function(text) {
-			return text.replace(/(\r\n|[\r\n]|\\n|\\r)/g,"<br/>");
-		},
-		
-		/*	* Generate a Unique ID
-		================================================== */
-		// VMM.Util.unique_ID(size);
-		unique_ID: function(size) {
-			
-			var getRandomNumber = function(range) {
-				return Math.floor(Math.random() * range);
-			};
-
-			var getRandomChar = function() {
-				var chars = "abcdefghijklmnopqurstuvwxyzABCDEFGHIJKLMNOPQURSTUVWXYZ";
-				return chars.substr( getRandomNumber(62), 1 );
-			};
-
-			var randomID = function(size) {
-				var str = "";
-				for(var i = 0; i < size; i++) {
-					str += getRandomChar();
-				}
-				return str;
-			};
-			
-			return randomID(size);
-		},
-		/*	* Tells you if a number is even or not
-		================================================== */
-		// VMM.Util.isEven(n)
-		isEven: function(n){
-			return (n%2 === 0) ? true : false;
-		},
-		/*	* Get URL Variables
-		================================================== */
-		//	var somestring = VMM.Util.getUrlVars(str_url)["varname"];
-		getUrlVars: function(string) {
-			
-			var str = string.toString();
-			
-			if (str.match('&#038;')) { 
-				str = str.replace("&#038;", "&");
-			} else if (str.match('&#38;')) {
-				str = str.replace("&#38;", "&");
-			} else if (str.match('&amp;')) {
-				str = str.replace("&amp;", "&");
-			}
-			
-			var vars = [], hash;
-			var hashes = str.slice(str.indexOf('?') + 1).split('&');
-			for(var i = 0; i < hashes.length; i++) {
-				hash = hashes[i].split('=');
-				vars.push(hash[0]);
-				vars[hash[0]] = hash[1];
-			}
-			
-			
-			return vars;
-		},
-
-		/*	* Cleans up strings to become real HTML
-		================================================== */
-		toHTML: function(text) {
-			
-			text = this.nl2br(text);
-			text = this.linkify(text);
-			
-			return text.replace(/\s\s/g,"&nbsp;&nbsp;");
-		},
-		
-		/*	* Returns text strings as CamelCase
-		================================================== */
-		toCamelCase: function(s,forceLowerCase) {
-			
-			if(forceLowerCase !== false) forceLowerCase = true;
-			
-			var sps = ((forceLowerCase) ? s.toLowerCase() : s).split(" ");
-			
-			for(var i=0; i<sps.length; i++) {
-				
-				sps[i] = sps[i].substr(0,1).toUpperCase() + sps[i].substr(1);
-			}
-			
-			return sps.join(" ");
-		},
-		
-		/*	* Replaces dumb quote marks with smart ones
-		================================================== */
-		properQuotes: function(str) {
-			return str.replace(/\"([^\"]*)\"/gi,"&#8220;$1&#8221;");
-		},
-		/*	* Add Commas to numbers
-		================================================== */
-		niceNumber: function(nStr){
-			nStr += '';
-			x = nStr.split('.');
-			x1 = x[0];
-			x2 = x.length > 1 ? '.' + x[1] : '';
-			var rgx = /(\d+)(\d{3})/;
-			while (rgx.test(x1)) {
-				x1 = x1.replace(rgx, '$1' + ',' + '$2');
-			}
-			return x1 + x2;
-		},
-		/*	* Transform text to Title Case
-		================================================== */
-		toTitleCase: function(t){
-			if ( VMM.Browser.browser == "Explorer" && parseInt(VMM.Browser.version, 10) >= 7) {
-				return t.replace("_", "%20");
-			} else {
-				var __TitleCase = {
-					__smallWords: ['a', 'an', 'and', 'as', 'at', 'but','by', 'en', 'for', 'if', 'in', 'of', 'on', 'or','the', 'to', 'v[.]?', 'via', 'vs[.]?'],
-
-					init: function() {
-						this.__smallRE = this.__smallWords.join('|');
-						this.__lowerCaseWordsRE = new RegExp('\\b(' + this.__smallRE + ')\\b', 'gi');
-						this.__firstWordRE = new RegExp('^([^a-zA-Z0-9 \\r\\n\\t]*)(' + this.__smallRE + ')\\b', 'gi');
-						this.__lastWordRE = new RegExp('\\b(' + this.__smallRE + ')([^a-zA-Z0-9 \\r\\n\\t]*)$', 'gi');
-					},
-
-					toTitleCase: function(string) {
-						var line = '';
-
-						var split = string.split(/([:.;?!][ ]|(?:[ ]|^)["“])/);
-
-						for (var i = 0; i < split.length; ++i) {
-							var s = split[i];
-
-							s = s.replace(/\b([a-zA-Z][a-z.'’]*)\b/g,this.__titleCaseDottedWordReplacer);
-
-			 				// lowercase the list of small words
-							s = s.replace(this.__lowerCaseWordsRE, this.__lowerReplacer);
-
-							// if the first word in the title is a small word then capitalize it
-							s = s.replace(this.__firstWordRE, this.__firstToUpperCase);
-
-							// if the last word in the title is a small word, then capitalize it
-							s = s.replace(this.__lastWordRE, this.__firstToUpperCase);
-
-							line += s;
-						}
-
-						// special cases
-						line = line.replace(/ V(s?)\. /g, ' v$1. ');
-						line = line.replace(/(['’])S\b/g, '$1s');
-						line = line.replace(/\b(AT&T|Q&A)\b/ig, this.__upperReplacer);
-
-						return line;
-					},
-
-					__titleCaseDottedWordReplacer: function (w) {
-						return (w.match(/[a-zA-Z][.][a-zA-Z]/)) ? w : __TitleCase.__firstToUpperCase(w);
-					},
-
-					__lowerReplacer: function (w) { return w.toLowerCase() },
-
-					__upperReplacer: function (w) { return w.toUpperCase() },
-
-					__firstToUpperCase: function (w) {
-						var split = w.split(/(^[^a-zA-Z0-9]*[a-zA-Z0-9])(.*)$/);
-						if (split[1]) {
-							split[1] = split[1].toUpperCase();
-						}
-					
-						return split.join('');
-					
-					
-					}
-				};
-
-				__TitleCase.init();
-			
-				t = t.replace(/_/g," ");
-				t = __TitleCase.toTitleCase(t);
-			
-				return t;
-				
-			}
-			
-		}
-		
-	}).init();
-}
-
-
-/* **********************************************
-     Begin LazyLoad.js
-********************************************** */
 
 /*jslint browser: true, eqeqeq: true, bitwise: true, newcap: true, immed: true, regexp: false */
 
@@ -2302,7 +2699,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @version 2.0.3 (git)
 */
 
-LazyLoad = (function (doc) {
+TL.LoadIt = (function (doc) {
   // -- Private Variables ------------------------------------------------------
 
   // User agent and feature test information.
@@ -2657,2209 +3054,2862 @@ LazyLoad = (function (doc) {
 
 
 /* **********************************************
-     Begin VMM.LoadLib.js
+     Begin TL.TimelineConfig.js
 ********************************************** */
 
-/*
-	LoadLib
-	Designed and built by Zach Wise digitalartwork.net
-*/
-
-/*	* CodeKit Import
-	* http://incident57.com/codekit/
+/*  TL.TimelineConfig
+separate the configuration from the display (TL.Timeline)
+to make testing easier
 ================================================== */
-// @codekit-prepend "../Library/LazyLoad.js";
+TL.TimelineConfig = TL.Class.extend({
 
-LoadLib = (function (doc) {
-	var loaded	= [];
-	
-	function isLoaded(url) {
-		
-		var i			= 0,
-			has_loaded	= false;
-		
-		for (i = 0; i < loaded.length; i++) {
-			if (loaded[i] == url) {
-				has_loaded = true;
+	includes: [],
+	initialize: function (data) {
+		this.title = '';
+		this.scale = '';
+		this.events = [];
+		this.eras = [];
+		this.event_dict = {}; // despite name, all slides (events + title) indexed by slide.unique_id
+		this.messages = {
+			errors: [],
+			warnings: []
+		};
+
+		// Initialize the data
+		if (typeof data === 'object' && data.events) {
+			this.scale = data.scale;
+			this.events = [];
+			this._ensureValidScale(data.events);
+
+			if (data.title) {
+				var title_id = this._assignID(data.title);
+				this._tidyFields(data.title);
+				this.title = data.title;
+				this.event_dict[title_id] = this.title;
 			}
+
+			for (var i = 0; i < data.events.length; i++) {
+				try {
+					this.addEvent(data.events[i], true);
+				} catch (e) {
+				    this.logError(e);
+				}
+			}
+
+			if (data.eras) {
+				for (var i = 0; i < data.eras.length; i++) {
+					try {
+						this.addEra(data.eras[i], true);
+					} catch (e) {
+						this.logError("Era " + i + ": " + e);
+					}
+				}
+			}
+
+			TL.DateUtil.sortByDate(this.events);
+			TL.DateUtil.sortByDate(this.eras);
+
 		}
-		
-		if (has_loaded) {
-			return true;
+	},
+	logError: function(msg) {
+		trace(msg);
+		this.messages.errors.push(msg);
+	},
+	/*
+	 * Return any accumulated error messages. If `sep` is passed, it should be a string which will be used to join all messages, resulting in a string return value. Otherwise,
+	 * errors will be returned as an array.
+	 */
+	getErrors: function(sep) {
+		if (sep) {
+			return this.messages.errors.join(sep);
 		} else {
-			loaded.push(url);
-			return false;
+			return this.messages.errors;
 		}
-		
-	}
-	
-	return {
-		
-		css: function (urls, callback, obj, context) {
-			if (!isLoaded(urls)) {
-				LazyLoad.css(urls, callback, obj, context);
-			}
-		},
+	},
+	/*
+	 * Perform any sanity checks we can before trying to use this to make a timeline. Returns nothing, but errors will be logged
+	 * such that after this is called, one can test `this.isValid()` to see if everything is OK.
+	 */
+	validate: function() {
+		if (typeof(this.events) == "undefined" || typeof(this.events.length) == "undefined" || this.events.length == 0) {
+			this.logError("Timeline configuration has no events.")
+		}
 
-		js: function (urls, callback, obj, context) {
-			if (!isLoaded(urls)) {
-				LazyLoad.js(urls, callback, obj, context);
+		// make sure all eras have start and end dates
+		for (var i = 0; i < this.eras.length; i++) {
+			if (typeof(this.eras[i].start_date) == 'undefined' || typeof(this.eras[i].end_date) == 'undefined') {
+				var era_identifier;
+				if (this.eras[i].text && this.eras[i].text.headline) {
+					era_identifier = this.eras[i].text.headline
+				} else {
+					era_identifier = "era " + (i+1);
+				}
+				this.logError("All eras must have start and end dates. [" + era_identifier + "]") // add internationalization (I18N) and context
+			}
+		};
+	},
+
+	isValid: function() {
+		return this.messages.errors.length == 0;
+	},
+	/* Add an event (including cleaning/validation) and return the unique id.
+	* All event data validation should happen in here.
+	* Throws: TL.Error for any validation problems.
+	*/
+	addEvent: function(data, defer_sort) {
+		var event_id = this._assignID(data);
+
+		if (typeof(data.start_date) == 'undefined') {
+		    throw new TL.Error("missing_start_date_err", event_id);
+		} else {
+			this._processDates(data);
+			this._tidyFields(data);
+		}
+
+		this.events.push(data);
+		this.event_dict[event_id] = data;
+
+		if (!defer_sort) {
+			TL.DateUtil.sortByDate(this.events);
+		}
+		return event_id;
+	},
+
+	addEra: function(data, defer_sort) {
+		var event_id = this._assignID(data);
+
+		if (typeof(data.start_date) == 'undefined') {
+		    throw new TL.Error("missing_start_date_err", event_id);
+		} else {
+			this._processDates(data);
+			this._tidyFields(data);
+		}
+
+		this.eras.push(data);
+		this.event_dict[event_id] = data;
+
+		if (!defer_sort) {
+			TL.DateUtil.sortByDate(this.eras);
+		}
+		return event_id;
+	},
+
+	/**
+	 * Given a slide, verify that its ID is unique, or assign it one which is.
+	 * The assignment happens in this function, and the assigned ID is also
+	 * the return value. Not thread-safe, because ids are not reserved
+	 * when assigned here.
+	 */
+	_assignID: function(slide) {
+		var slide_id = slide.unique_id;
+		if (!TL.Util.trim(slide_id)) {
+			// give it an ID if it doesn't have one
+			slide_id = (slide.text) ? TL.Util.slugify(slide.text.headline) : null;
+		}
+		// make sure it's unique and add it.
+		slide.unique_id = TL.Util.ensureUniqueKey(this.event_dict,slide_id);
+		return slide.unique_id
+	},
+
+	/**
+	 * Given an array of slide configs (the events), ensure that each one has a distinct unique_id. The id of the title
+	 * is also passed in because in most ways it functions as an event slide, and the event IDs must also all be unique
+	 * from the title ID.
+	 */
+	_makeUniqueIdentifiers: function(title_id, array) {
+		var used = [title_id];
+
+		// establish which IDs are assigned and if any appear twice, clear out successors.
+		for (var i = 0; i < array.length; i++) {
+			if (TL.Util.trim(array[i].unique_id)) {
+				array[i].unique_id = TL.Util.slugify(array[i].unique_id); // enforce valid
+				if (used.indexOf(array[i].unique_id) == -1) {
+					used.push(array[i].unique_id);
+				} else { // it was already used, wipe it out
+					array[i].unique_id = '';
+				}
+			}
+		};
+
+		if (used.length != (array.length + 1)) {
+			// at least some are yet to be assigned
+			for (var i = 0; i < array.length; i++) {
+				if (!array[i].unique_id) {
+					// use the headline for the unique ID if it's available
+					var slug = (array[i].text) ? TL.Util.slugify(array[i].text.headline) : null;
+					if (!slug) {
+						slug = TL.Util.unique_ID(6); // or generate a random ID
+					}
+					if (used.indexOf(slug) != -1) {
+						slug = slug + '-' + i; // use the index to get a unique ID.
+					}
+					used.push(slug);
+					array[i].unique_id = slug;
+				}
 			}
 		}
-    };
-	
-})(this.document);
+	},
+	_ensureValidScale: function(events) {
+		if(!this.scale) {
+			trace("Determining scale dynamically");
+			this.scale = "human"; // default to human unless there's a slide which is explicitly 'cosmological' or one which has a cosmological year
+
+			for (var i = 0; i < events.length; i++) {
+				if (events[i].scale == 'cosmological') {
+					this.scale = 'cosmological';
+					break;
+				}
+				if (events[i].start_date && typeof(events[i].start_date.year) != "undefined") {
+					var d = new TL.BigDate(events[i].start_date);
+					var year = d.data.date_obj.year;
+					if(year < -271820 || year >  275759) {
+						this.scale = "cosmological";
+						break;
+					}
+				}
+			}
+		}
+		var dateCls = TL.DateUtil.SCALE_DATE_CLASSES[this.scale];
+		if (!dateCls) { this.logError("Don't know how to process dates on scale "+this.scale); }
+	},
+	/*
+	   Given a thing which has a start_date and optionally an end_date, make sure that it is an instance
+		 of the correct date class (for human or cosmological scale). For slides, remove redundant end dates
+		 (people frequently configure an end date which is the same as the start date).
+	 */
+	_processDates: function(slide_or_era) {
+		var dateCls = TL.DateUtil.SCALE_DATE_CLASSES[this.scale];
+		if(!(slide_or_era.start_date instanceof dateCls)) {
+			var start_date = slide_or_era.start_date;
+			slide_or_era.start_date = new dateCls(start_date);
+
+			// eliminate redundant end dates.
+			if (typeof(slide_or_era.end_date) != 'undefined' && !(slide_or_era.end_date instanceof dateCls)) {
+				var end_date = slide_or_era.end_date;
+				var equal = true;
+				for (property in start_date) {
+					equal = equal && (start_date[property] == end_date[property]);
+				}
+				if (equal) {
+					trace("End date same as start date is redundant; dropping end date");
+					delete slide_or_era.end_date;
+				} else {
+					slide_or_era.end_date = new dateCls(end_date);
+				}
+
+			}
+		}
+
+	},
+	/**
+	 * Return the earliest date that this config knows about, whether it's a slide or an era
+	 */
+	getEarliestDate: function() {
+		// counting that dates were sorted in initialization
+		var date = this.events[0].start_date;
+		if (this.eras && this.eras.length > 0) {
+			if (this.eras[0].start_date.isBefore(date)) {
+				return this.eras[0].start_date;
+			}
+		}
+		return date;
+
+	},
+	/**
+	 * Return the latest date that this config knows about, whether it's a slide or an era, taking end_dates into account.
+	 */
+	getLatestDate: function() {
+		var dates = [];
+		for (var i = 0; i < this.events.length; i++) {
+			if (this.events[i].end_date) {
+				dates.push({ date: this.events[i].end_date });
+			} else {
+				dates.push({ date: this.events[i].start_date });
+			}
+		}
+		for (var i = 0; i < this.eras.length; i++) {
+			if (this.eras[i].end_date) {
+				dates.push({ date: this.eras[i].end_date });
+			} else {
+				dates.push({ date: this.eras[i].start_date });
+			}
+		}
+		TL.DateUtil.sortByDate(dates, 'date');
+		return dates.slice(-1)[0].date;
+	},
+	_tidyFields: function(slide) {
+
+		function fillIn(obj,key,default_value) {
+			if (!default_value) default_value = '';
+			if (!obj.hasOwnProperty(key)) { obj[key] = default_value }
+		}
+
+		if (slide.group) {
+			slide.group = TL.Util.trim(slide.group);
+		}
+
+		if (!slide.text) {
+			slide.text = {};
+		}
+		fillIn(slide.text,'text');
+		fillIn(slide.text,'headline');
+	}
+});
 
 
 /* **********************************************
-     Begin VMM.Language.js
+     Begin TL.ConfigFactory.js
 ********************************************** */
 
-/* DEFAULT LANGUAGE 
-================================================== */
-if(typeof VMM != 'undefined' && typeof VMM.Language == 'undefined') {
-	VMM.Language = {
-		lang: "en",
-		api: {
-			wikipedia: "en"
+/* TL.ConfigFactory.js
+ * Build TimelineConfig objects from other data sources
+ */
+;(function(TL){
+    /*
+     * Convert a URL to a Google Spreadsheet (typically a /pubhtml version but somewhat flexible) into an object with the spreadsheet key (ID) and worksheet ID.
+
+     If `url` is actually a string which is only letters, numbers, '-' and '_', then it's assumed to be an ID already. If we had a more precise way of testing to see if the input argument was a valid key, we might apply it, but I don't know where that's documented.
+
+     If we're pretty sure this isn't a bare key or a url that could be used to find a Google spreadsheet then return null.
+     */
+    function parseGoogleSpreadsheetURL(url) {
+        parts = {
+            key: null,
+            worksheet: 0 // not really sure how to use this to get the feed for that sheet, so this is not ready except for first sheet right now
+        }
+        // key as url parameter (old-fashioned)
+        var key_pat = /\bkey=([-_A-Za-z0-9]+)&?/i;
+        var url_pat = /docs.google.com\/spreadsheets(.*?)\/d\//; // fixing issue of URLs with u/0/d 
+
+        if (url.match(key_pat)) {
+            parts.key = url.match(key_pat)[1];
+            // can we get a worksheet from this form?
+        } else if (url.match(url_pat)) {
+            var pos = url.search(url_pat) + url.match(url_pat)[0].length;
+            var tail = url.substr(pos);
+            parts.key = tail.split('/')[0]
+            if (url.match(/\?gid=(\d+)/)) {
+                parts.worksheet = url.match(/\?gid=(\d+)/)[1];
+            }
+        } else if (url.match(/^\b[-_A-Za-z0-9]+$/)) {
+            parts.key = url;
+        }
+
+        if (parts.key) {
+            return parts;
+        } else {
+            return null;
+        }
+    }
+
+    function extractGoogleEntryData_V1(item) {
+        var item_data = {}
+        for (k in item) {
+            if (k.indexOf('gsx$') == 0) {
+                item_data[k.substr(4)] = item[k].$t;
+            }
+        }
+        if (TL.Util.isEmptyObject(item_data)) return null;
+        var d = {
+            media: {
+                caption: item_data.mediacaption || '',
+                credit: item_data.mediacredit || '',
+                url: item_data.media || '',
+                thumbnail: item_data.mediathumbnail || ''
+            },
+            text: {
+                headline: item_data.headline || '',
+                text: item_data.text || ''
+            },
+            group: item_data.tag || '',
+            type: item_data.type || ''
+        }
+        if (item_data.startdate) {
+            d['start_date'] = TL.Date.parseDate(item_data.startdate);
+        }
+        if (item_data.enddate) {
+            d['end_date'] = TL.Date.parseDate(item_data.enddate);
+        }
+
+
+        return d;
+    }
+
+    function extractGoogleEntryData_V3(item) {
+
+        function clean_integer(s) {
+            if (s) {
+                return s.replace(/[\s,]+/g,''); // doesn't handle '.' as comma separator, but how to distinguish that from decimal separator?
+            }
+        }
+
+        var item_data = {}
+        for (k in item) {
+            if (k.indexOf('gsx$') == 0) {
+                item_data[k.substr(4)] = TL.Util.trim(item[k].$t);
+            }
+        }
+        if (TL.Util.isEmptyObject(item_data)) return null;
+        var d = {
+            media: {
+                caption: item_data.mediacaption || '',
+                credit: item_data.mediacredit || '',
+                url: item_data.media || '',
+                thumbnail: item_data.mediathumbnail || ''
+            },
+            text: {
+                headline: item_data.headline || '',
+                text: item_data.text || ''
+            },
+            start_date: {
+                year: clean_integer(item_data.year),
+                month: clean_integer(item_data.month) || '',
+                day: clean_integer(item_data.day) || ''
+            },
+            end_date: {
+                year: clean_integer(item_data.endyear) || '',
+                month: clean_integer(item_data.endmonth) || '',
+                day: clean_integer(item_data.endday) || ''
+            },
+            display_date: item_data.displaydate || '',
+
+            type: item_data.type || ''
+        }
+
+        if (item_data.time) {
+            TL.Util.mergeData(d.start_date,TL.DateUtil.parseTime(item_data.time));
+        }
+
+        if (item_data.endtime) {
+            TL.Util.mergeData(d.end_date,TL.DateUtil.parseTime(item_data.endtime));
+        }
+
+
+        if (item_data.group) {
+            d.group = item_data.group;
+        }
+
+        if (d.end_date.year == '') {
+            var bad_date = d.end_date;
+            delete d.end_date;
+            if (bad_date.month != '' || bad_date.day != '' || bad_date.time != '') {
+                var label = d.text.headline ||
+                trace("Invalid end date for spreadsheet row. Must have a year if any other date fields are specified.");
+                trace(item);
+            }
+        }
+
+        if (item_data.background) {
+            if (item_data.background.match(/^(https?:)?\/\/?/)) { // support http, https, protocol relative, site relative
+                d['background'] = { 'url': item_data.background }
+            } else { // for now we'll trust it's a color
+                d['background'] = { 'color': item_data.background }
+            }
+        }
+
+        return d;
+    }
+
+    var getGoogleItemExtractor = function(data) {
+        if (typeof data.feed.entry === 'undefined'
+                || data.feed.entry.length == 0) {
+            throw new TL.Error("empty_feed_err");
+        }
+        var entry = data.feed.entry[0];
+
+        if (typeof entry.gsx$startdate !== 'undefined') {
+            // check headers V1
+            // var headers_V1 = ['startdate', 'enddate', 'headline','text','media','mediacredit','mediacaption','mediathumbnail','media','type','tag'];
+            // for (var i = 0; i < headers_V1.length; i++) {
+            //     if (typeof entry['gsx$' + headers_V1[i]] == 'undefined') {
+            //         throw new TL.Error("invalid_data_format_err");
+            //     }
+            // }
+            return extractGoogleEntryData_V1;
+        } else if (typeof entry.gsx$year !== 'undefined') {
+            // check rest of V3 headers
+            var headers_V3 = ['month', 'day', 'time', 'endmonth', 'endyear', 'endday', 'endtime', 'displaydate', 'headline','text','media','mediacredit','mediacaption','mediathumbnail','type','group','background'];
+            // for (var i = 0; i < headers_V3.length; i++) {
+            //     if (typeof entry['gsx$' + headers_V3[i]] == 'undefined') {
+            //         throw new TL.Error("invalid_data_format_err");
+            //     }
+            // }
+            return extractGoogleEntryData_V3;
+        }
+        throw new TL.Error("invalid_data_format_err");
+    }
+
+    var buildGoogleFeedURL = function(parts) {
+        return "https://spreadsheets.google.com/feeds/list/" + parts.key + "/1/public/values?alt=json";
+
+    }
+
+    var jsonFromGoogleURL = function(url) {
+        var url = buildGoogleFeedURL(parseGoogleSpreadsheetURL(url));
+            var timeline_config = { 'events': [] };
+            var data = TL.ajax({
+                url: url,
+                async: false
+            });
+            data = JSON.parse(data.responseText);
+            return googleFeedJSONtoTimelineJSON(data);
+        }
+
+    var googleFeedJSONtoTimelineJSON = function(data) {
+        var timeline_config = { 'events': [], 'errors': [], 'warnings': [], 'eras': [] }
+        var extract = getGoogleItemExtractor(data);
+        for (var i = 0; i < data.feed.entry.length; i++) {
+            try {
+                var event = extract(data.feed.entry[i]);
+                if (event) { // blank rows return null
+                  var row_type = 'event';
+                  if (typeof(event.type) != 'undefined') {
+                      row_type = event.type;
+                      delete event.type;
+                  }
+                  if (row_type == 'title') {
+                    if (!timeline_config.title) {
+                      timeline_config.title = event;
+                    } else {
+                      timeline_config.warnings.push("Multiple title slides detected.");
+                      timeline_config.events.push(event);
+                    }
+                  } else if (row_type == 'era') {
+                    timeline_config.eras.push(event);
+                  } else {
+                      timeline_config.events.push(event);
+                  }
+                }
+            } catch(e) {
+                if (e.message) {
+                    e = e.message;
+                }
+                timeline_config.errors.push(e + " ["+ i +"]");
+            }
+        };
+        return timeline_config;
+
+    }
+
+    var makeConfig = function(url, callback) {
+        var tc,
+            key = parseGoogleSpreadsheetURL(url);
+
+        if (key) {
+            try {
+                var json = jsonFromGoogleURL(url);
+            } catch(e) {
+                tc = new TL.TimelineConfig();
+                if (e.name == 'NetworkError') {
+                    tc.logError(new TL.Error("network_err"));
+                } else if(e.name == 'TL.Error') {
+                    tc.logError(e);
+                } else {
+                    tc.logError(new TL.Error("unknown_read_err", e.name));
+                }
+                callback(tc);
+                return;
+            }
+            tc = new TL.TimelineConfig(json);
+            if (json.errors) {
+                for (var i = 0; i < json.errors.length; i++) {
+                    tc.logError(json.errors[i]);
+                };
+            }
+            callback(tc);
+        } else {
+            TL.getJSON(url, function(data){
+                try {
+                    tc = new TL.TimelineConfig(data);
+                } catch(e) {
+                    tc = new TL.TimelineConfig();
+                    tc.logError(e);
+                }
+                callback(tc);
+            });
+        }
+    }
+
+    TL.ConfigFactory = {
+        // export for unit testing and use by authoring tool
+        parseGoogleSpreadsheetURL: parseGoogleSpreadsheetURL,
+        // export for unit testing
+        googleFeedJSONtoTimelineJSON: googleFeedJSONtoTimelineJSON,
+
+
+        fromGoogle: function(url) {
+            console.warn("TL.ConfigFactory.fromGoogle is deprecated and will be removed soon. Use TL.ConfigFactory.makeConfig(url,callback)")
+            return jsonFromGoogleURL(url);
+
+        },
+
+        /*
+         * Given a URL to a Timeline data source, read the data, create a TimelineConfig
+         * object, and call the given `callback` function passing the created config as
+         * the only argument. This should be the main public interface to getting configs
+         * from any kind of URL, Google or direct JSON.
+         */
+        makeConfig: makeConfig,
+    }
+})(TL)
+
+
+/* **********************************************
+     Begin TL.Language.js
+********************************************** */
+
+TL.Language = function(options) {
+	// borrowed from http://stackoverflow.com/a/14446414/102476
+	for (k in TL.Language.languages.en) {
+		this[k] = TL.Language.languages.en[k];
+	}
+	if (options && options.language && typeof(options.language) == 'string' && options.language != 'en') {
+		var code = options.language;
+		if (!(code in TL.Language.languages)) {
+			if (/\.json$/.test(code)) {
+				var url = code;
+			} else {
+				var fragment = "/locale/" + code + ".json";
+				var script_path = options.script_path || TL.Timeline.source_path;
+				if (/\/$/.test(script_path)) { fragment = fragment.substr(1)}
+				var url = script_path + fragment;
+			}
+			var self = this;
+			var xhr = TL.ajax({
+				url: url, async: false
+			});
+			if (xhr.status == 200) {
+				TL.Language.languages[code] = JSON.parse(xhr.responseText);
+			} else {
+				throw "Could not load language [" + code + "]: " + xhr.statusText;
+			}
+		}
+		TL.Util.mergeData(this,TL.Language.languages[code]);
+
+	}
+}
+
+TL.Language.formatNumber = function(val,mask) {
+		if (mask.match(/%(\.(\d+))?f/)) {
+			var match = mask.match(/%(\.(\d+))?f/);
+			var token = match[0];
+			if (match[2]) {
+				val = val.toFixed(match[2]);
+			}
+			return mask.replace(token,val);
+		}
+		// use mask as literal display value.
+		return mask;
+	}
+
+
+
+/* TL.Util.mergeData is shallow, we have nested dicts.
+   This is a simplistic handling but should work.
+ */
+TL.Language.prototype.mergeData = function(lang_json) {
+	for (k in TL.Language.languages.en) {
+		if (lang_json[k]) {
+			if (typeof(this[k]) == 'object') {
+				TL.Util.mergeData(lang_json[k], this[k]);
+			} else {
+				this[k] = lang_json[k]; // strings, mostly
+			}
+		}
+	}
+}
+
+TL.Language.fallback = { messages: {} }; // placeholder to satisfy IE8 early compilation
+TL.Language.prototype.getMessage = function(k) {
+	return this.messages[k] || TL.Language.fallback.messages[k] || k;
+}
+
+TL.Language.prototype._ = TL.Language.prototype.getMessage; // keep it concise
+
+TL.Language.prototype.formatDate = function(date, format_name) {
+
+	if (date.constructor == Date) {
+		return this.formatJSDate(date, format_name);
+	}
+
+	if (date.constructor == TL.BigYear) {
+		return this.formatBigYear(date, format_name);
+	}
+
+	if (date.data && date.data.date_obj) {
+		return this.formatDate(date.data.date_obj, format_name);
+	}
+
+	trace("Unfamiliar date presented for formatting");
+	return date.toString();
+}
+
+TL.Language.prototype.formatBigYear = function(bigyear, format_name) {
+	var the_year = bigyear.year;
+	var format_list = this.bigdateformats[format_name] || this.bigdateformats['fallback'];
+
+	if (format_list) {
+		for (var i = 0; i < format_list.length; i++) {
+			var tuple = format_list[i];
+			if (Math.abs(the_year / tuple[0]) > 1) {
+				// will we ever deal with distant future dates?
+				return TL.Language.formatNumber(Math.abs(the_year / tuple[0]),tuple[1])
+			}
+		};
+
+		return the_year.toString();
+
+	} else {
+	    trace("Language file dateformats missing cosmological. Falling back.");
+	    return TL.Language.formatNumber(the_year,format_name);
+	}
+}
+
+TL.Language.prototype.formatJSDate = function(js_date, format_name) {
+	// ultimately we probably want this to work with TL.Date instead of (in addition to?) JS Date
+	// utc, timezone and timezoneClip are carry over from Steven Levithan implementation. We probably aren't going to use them.
+	var self = this;
+	var formatPeriod = function(fmt, value) {
+		var formats = self.period_labels[fmt];
+		if (formats) {
+			var fmt = (value < 12) ? formats[0] : formats[1];
+		}
+		return "<span class='tl-timeaxis-timesuffix'>" + fmt + "</span>";
+	}
+
+	var utc = false,
+		timezone = /\b(?:[PMCEA][SDP]T|(?:Pacific|Mountain|Central|Eastern|Atlantic) (?:Standard|Daylight|Prevailing) Time|(?:GMT|UTC)(?:[-+]\d{4})?)\b/g,
+		timezoneClip = /[^-+\dA-Z]/g;
+
+
+	if (!format_name) {
+		format_name = 'full';
+	}
+
+	var mask = this.dateformats[format_name] || TL.Language.fallback.dateformats[format_name];
+	if (!mask) {
+		mask = format_name; // allow custom format strings
+	}
+
+
+	var	_ = utc ? "getUTC" : "get",
+		d = js_date[_ + "Date"](),
+		D = js_date[_ + "Day"](),
+		m = js_date[_ + "Month"](),
+		y = js_date[_ + "FullYear"](),
+		H = js_date[_ + "Hours"](),
+		M = js_date[_ + "Minutes"](),
+		s = js_date[_ + "Seconds"](),
+		L = js_date[_ + "Milliseconds"](),
+		o = utc ? 0 : js_date.getTimezoneOffset(),
+		year = "",
+		flags = {
+			d:    d,
+			dd:   TL.Util.pad(d),
+			ddd:  this.date.day_abbr[D],
+			dddd: this.date.day[D],
+			m:    m + 1,
+			mm:   TL.Util.pad(m + 1),
+			mmm:  this.date.month_abbr[m],
+			mmmm: this.date.month[m],
+			yy:   String(y).slice(2),
+			yyyy: (y < 0 && this.has_negative_year_modifier()) ? Math.abs(y) : y,
+			h:    H % 12 || 12,
+			hh:   TL.Util.pad(H % 12 || 12),
+			H:    H,
+			HH:   TL.Util.pad(H),
+			M:    M,
+			MM:   TL.Util.pad(M),
+			s:    s,
+			ss:   TL.Util.pad(s),
+			l:    TL.Util.pad(L, 3),
+			L:    TL.Util.pad(L > 99 ? Math.round(L / 10) : L),
+			t:    formatPeriod('t',H),
+			tt:   formatPeriod('tt',H),
+			T:    formatPeriod('T',H),
+			TT:   formatPeriod('TT',H),
+			Z:    utc ? "UTC" : (String(js_date).match(timezone) || [""]).pop().replace(timezoneClip, ""),
+			o:    (o > 0 ? "-" : "+") + TL.Util.pad(Math.floor(Math.abs(o) / 60) * 100 + Math.abs(o) % 60, 4),
+			S:    ["th", "st", "nd", "rd"][d % 10 > 3 ? 0 : (d % 100 - d % 10 != 10) * d % 10]
+		};
+
+		var formatted = mask.replace(TL.Language.DATE_FORMAT_TOKENS, function ($0) {
+			return $0 in flags ? flags[$0] : $0.slice(1, $0.length - 1);
+		});
+
+		return this._applyEra(formatted, y);
+}
+
+TL.Language.prototype.has_negative_year_modifier = function() {
+	return Boolean(this.era_labels.negative_year.prefix || this.era_labels.negative_year.suffix);
+}
+
+
+TL.Language.prototype._applyEra = function(formatted_date, original_year) {
+	// trusts that the formatted_date was property created with a non-negative year if there are
+	// negative affixes to be applied
+	var labels = (original_year < 0) ? this.era_labels.negative_year : this.era_labels.positive_year;
+	var result = '';
+	if (labels.prefix) { result += '<span>' + labels.prefix + '</span> ' }
+	result += formatted_date;
+	if (labels.suffix) { result += ' <span>' + labels.suffix + '</span>' }
+	return result;
+}
+
+
+TL.Language.DATE_FORMAT_TOKENS = /d{1,4}|m{1,4}|yy(?:yy)?|([HhMsTt])\1?|[LloSZ]|"[^"]*"|'[^']*'/g;
+
+TL.Language.languages = {
+/*
+	This represents the canonical list of message keys which translation files should handle. The existence of the 'en.json' file should not mislead you.
+	It is provided more as a starting point for someone who wants to provide a
+	new translation since the form for non-default languages (JSON not JS) is slightly different from what appears below. Also, those files have some message keys grandfathered in from TimelineJS2 which we'd rather not have to
+	get "re-translated" if we use them.
+*/
+	en: {
+		name: 					"English",
+		lang: 					"en",
+        api: {
+            wikipedia:          "en" // the two letter code at the beginning of the Wikipedia subdomain for this language
+        },
+		messages: {
+			loading: 			            		  "Loading",
+			wikipedia: 			            		"From Wikipedia, the free encyclopedia",
+			error: 				            			"Error",
+      contract_timeline:              "Contract Timeline",
+      return_to_title:                "Return to Title",
+      loading_content:                "Loading Content",
+      expand_timeline:                "Expand Timeline",
+      loading_timeline:               "Loading Timeline... ",
+      swipe_to_navigate:              "Swipe to Navigate<br><span class='tl-button'>OK</span>",
+      unknown_read_err:               "An unexpected error occurred trying to read your spreadsheet data",
+      network_err:                    "Unable to read your Google Spreadsheet. Make sure you have published it to the web.",
+      empty_feed_err:                 "No data entries found",
+      missing_start_date_err:         "Missing start_date",
+      invalid_data_format_err:        "Header row has been modified.",
+      date_compare_err:               "Can't compare TL.Dates on different scales",
+      invalid_scale_err:              "Invalid scale",
+      invalid_date_err:               "Invalid date: month, day and year must be numbers.",
+      invalid_separator_error:        "Invalid time: misuse of : or . as separator.",
+      invalid_hour_err:               "Invalid time (hour)",
+      invalid_minute_err:             "Invalid time (minute)",
+      invalid_second_err:             "Invalid time (second)",
+      invalid_fractional_err:         "Invalid time (fractional seconds)",
+      invalid_second_fractional_err:  "Invalid time (seconds and fractional seconds)",
+      invalid_year_err:               "Invalid year",
+      flickr_notfound_err:            "Photo not found or private",
+      flickr_invalidurl_err:          "Invalid Flickr URL",
+      imgur_invalidurl_err:           "Invalid Imgur URL",
+      twitter_invalidurl_err:         "Invalid Twitter URL",
+      twitter_load_err:               "Unable to load Tweet",
+      twitterembed_invalidurl_err:    "Invalid Twitter Embed url",
+      wikipedia_load_err:             "Unable to load Wikipedia entry",
+      youtube_invalidurl_err:         "Invalid YouTube URL",
+      spotify_invalid_url:            "Invalid Spotify URL",
+      template_value_err:             "No value provided for variable",
+      invalid_rgb_err:                "Invalid RGB argument",
+      time_scale_scale_err:           "Don't know how to get date from time for scale",
+      axis_helper_no_options_err:     "Axis helper must be configured with options",
+      axis_helper_scale_err:          "No AxisHelper available for scale",
+      invalid_integer_option:       	"Invalid option value—must be a whole number."
 		},
 		date: {
-			month: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-			month_abbr: ["Jan.", "Feb.", "March", "April", "May", "June", "July", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."],
-			day: ["Sunday","Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-			day_abbr: ["Sun.","Mon.", "Tues.", "Wed.", "Thurs.", "Fri.", "Sat."]
-		}, 
+      month: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+      month_abbr: ["Jan.", "Feb.", "March", "April", "May", "June", "July", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."],
+      day: ["Sunday","Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      day_abbr: ["Sun.","Mon.", "Tues.", "Wed.", "Thurs.", "Fri.", "Sat."]
+		},
+		era_labels: { // specify prefix or suffix to apply to formatted date. Blanks mean no change.
+	        positive_year: {
+	        	prefix: '',
+	        	suffix: ''
+	        },
+	        negative_year: { // if either of these is specified, the year will be converted to positive before they are applied
+	        	prefix: '',
+	        	suffix: 'BCE'
+	        }
+        },
+        period_labels: {  // use of t/tt/T/TT legacy of original Timeline date format
+			t: ['a', 'p'],
+			tt: ['am', 'pm'],
+			T: ['A', 'P'],
+			TT: ['AM', 'PM']
+		},
 		dateformats: {
 			year: "yyyy",
 			month_short: "mmm",
 			month: "mmmm yyyy",
 			full_short: "mmm d",
 			full: "mmmm d',' yyyy",
+			time: "h:MM:ss TT' <small>'mmmm d',' yyyy'</small>'",
 			time_short: "h:MM:ss TT",
 			time_no_seconds_short: "h:MM TT",
-			time_no_seconds_small_date: "h:MM TT'<br/><small>'mmmm d',' yyyy'</small>'",
+			time_no_minutes_short: "h TT",
+			time_no_seconds_small_date: "h:MM TT' <small>'mmmm d',' yyyy'</small>'",
+			time_milliseconds: "l",
 			full_long: "mmm d',' yyyy 'at' h:MM TT",
-			full_long_small_date: "h:MM TT'<br/><small>mmm d',' yyyy'</small>'"
+			full_long_small_date: "h:MM TT' <small>mmm d',' yyyy'</small>'"
 		},
-		messages: {
-			loading_timeline: "Loading Timeline... ",
-			return_to_title: "Return to Title",
-			expand_timeline: "Expand Timeline",
-			contract_timeline: "Contract Timeline",
-			wikipedia: "From Wikipedia, the free encyclopedia",
-			loading_content: "Loading Content",
-			loading: "Loading",
-			swipe_nav: "Swipe to Navigate"
+		bigdateformats: {
+			fallback: [ // a list of tuples, with t[0] an order of magnitude and t[1] a format string. format string syntax may change...
+				[1000000000,"%.2f billion years ago"],
+				[1000000,"%.1f million years ago"],
+				[1000,"%.1f thousand years ago"],
+				[1, "%f years ago"]
+			],
+		    compact: [
+				[1000000000,"%.2f bya"],
+				[1000000,"%.1f mya"],
+				[1000,"%.1f kya"],
+				[1, "%f years ago"]
+			],
+		    verbose: [
+				[1000000000,"%.2f billion years ago"],
+				[1000000,"%.1f million years ago"],
+				[1000,"%.1f thousand years ago"],
+				[1, "%f years ago"]
+			]
 		}
+	}
+}
+
+TL.Language.fallback = new TL.Language();
+
+
+/* **********************************************
+     Begin TL.I18NMixins.js
+********************************************** */
+
+/*  TL.I18NMixins
+    assumes that its class has an options object with a TL.Language instance    
+================================================== */
+TL.I18NMixins = {
+    getLanguage: function() {
+        if (this.options && this.options.language) {
+            return this.options.language;
+        }
+        trace("Expected a language option");
+        return TL.Language.fallback;
+    },
+
+    _: function(msg) {
+        return this.getLanguage()._(msg);
+    }
+}
+
+
+/* **********************************************
+     Begin TL.Ease.js
+********************************************** */
+
+/* The equations defined here are open source under BSD License.
+ * http://www.robertpenner.com/easing_terms_of_use.html (c) 2003 Robert Penner
+ * Adapted to single time-based by
+ * Brian Crescimanno <brian.crescimanno@gmail.com>
+ * Ken Snyder <kendsnyder@gmail.com>
+ */
+
+/** MIT License
+ *
+ * KeySpline - use bezier curve for transition easing function
+ * Copyright (c) 2012 Gaetan Renaudeau <renaudeau.gaetan@gmail.com>
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+/**
+ * KeySpline - use bezier curve for transition easing function
+ * is inspired from Firefox's nsSMILKeySpline.cpp
+ * Usage:
+ * var spline = new KeySpline(0.25, 0.1, 0.25, 1.0)
+ * spline.get(x) => returns the easing value | x must be in [0, 1] range
+ */
+
+TL.Easings = {
+    ease:        [0.25, 0.1, 0.25, 1.0], 
+    linear:      [0.00, 0.0, 1.00, 1.0],
+    easein:     [0.42, 0.0, 1.00, 1.0],
+    easeout:    [0.00, 0.0, 0.58, 1.0],
+    easeinout: [0.42, 0.0, 0.58, 1.0]
+};
+
+TL.Ease = {
+	KeySpline: function(a) {
+	//KeySpline: function(mX1, mY1, mX2, mY2) {
+		this.get = function(aX) {
+			if (a[0] == a[1] && a[2] == a[3]) return aX; // linear
+			return CalcBezier(GetTForX(aX), a[1], a[3]);
+		}
+
+		function A(aA1, aA2) {
+			return 1.0 - 3.0 * aA2 + 3.0 * aA1;
+		}
+
+		function B(aA1, aA2) {
+			return 3.0 * aA2 - 6.0 * aA1;
+		}
+
+		function C(aA1) {
+			return 3.0 * aA1;
+		}
+
+		// Returns x(t) given t, x1, and x2, or y(t) given t, y1, and y2.
+
+		function CalcBezier(aT, aA1, aA2) {
+			return ((A(aA1, aA2) * aT + B(aA1, aA2)) * aT + C(aA1)) * aT;
+		}
+
+		// Returns dx/dt given t, x1, and x2, or dy/dt given t, y1, and y2.
+
+		function GetSlope(aT, aA1, aA2) {
+			return 3.0 * A(aA1, aA2) * aT * aT + 2.0 * B(aA1, aA2) * aT + C(aA1);
+		}
+
+		function GetTForX(aX) {
+			// Newton raphson iteration
+			var aGuessT = aX;
+			for (var i = 0; i < 4; ++i) {
+				var currentSlope = GetSlope(aGuessT, a[0], a[2]);
+				if (currentSlope == 0.0) return aGuessT;
+				var currentX = CalcBezier(aGuessT, a[0], a[2]) - aX;
+				aGuessT -= currentX / currentSlope;
+			}
+			return aGuessT;
+		}
+	},
+	
+	easeInSpline: function(t) {
+		var spline = new TL.Ease.KeySpline(TL.Easings.easein);
+		return spline.get(t);
+	},
+	
+	easeInOutExpo: function(t) {
+		var spline = new TL.Ease.KeySpline(TL.Easings.easein);
+		return spline.get(t);
+	},
+	
+	easeOut: function(t) {
+		return Math.sin(t * Math.PI / 2);
+	},
+	easeOutStrong: function(t) {
+		return (t == 1) ? 1 : 1 - Math.pow(2, - 10 * t);
+	},
+	easeIn: function(t) {
+		return t * t;
+	},
+	easeInStrong: function(t) {
+		return (t == 0) ? 0 : Math.pow(2, 10 * (t - 1));
+	},
+	easeOutBounce: function(pos) {
+		if ((pos) < (1 / 2.75)) {
+			return (7.5625 * pos * pos);
+		} else if (pos < (2 / 2.75)) {
+			return (7.5625 * (pos -= (1.5 / 2.75)) * pos + .75);
+		} else if (pos < (2.5 / 2.75)) {
+			return (7.5625 * (pos -= (2.25 / 2.75)) * pos + .9375);
+		} else {
+			return (7.5625 * (pos -= (2.625 / 2.75)) * pos + .984375);
+		}
+	},
+	easeInBack: function(pos) {
+		var s = 1.70158;
+		return (pos) * pos * ((s + 1) * pos - s);
+	},
+	easeOutBack: function(pos) {
+		var s = 1.70158;
+		return (pos = pos - 1) * pos * ((s + 1) * pos + s) + 1;
+	},
+	bounce: function(t) {
+		if (t < (1 / 2.75)) {
+			return 7.5625 * t * t;
+		}
+		if (t < (2 / 2.75)) {
+			return 7.5625 * (t -= (1.5 / 2.75)) * t + 0.75;
+		}
+		if (t < (2.5 / 2.75)) {
+			return 7.5625 * (t -= (2.25 / 2.75)) * t + 0.9375;
+		}
+		return 7.5625 * (t -= (2.625 / 2.75)) * t + 0.984375;
+	},
+	bouncePast: function(pos) {
+		if (pos < (1 / 2.75)) {
+			return (7.5625 * pos * pos);
+		} else if (pos < (2 / 2.75)) {
+			return 2 - (7.5625 * (pos -= (1.5 / 2.75)) * pos + .75);
+		} else if (pos < (2.5 / 2.75)) {
+			return 2 - (7.5625 * (pos -= (2.25 / 2.75)) * pos + .9375);
+		} else {
+			return 2 - (7.5625 * (pos -= (2.625 / 2.75)) * pos + .984375);
+		}
+	},
+	swingTo: function(pos) {
+		var s = 1.70158;
+		return (pos -= 1) * pos * ((s + 1) * pos + s) + 1;
+	},
+	swingFrom: function(pos) {
+		var s = 1.70158;
+		return pos * pos * ((s + 1) * pos - s);
+	},
+	elastic: function(pos) {
+		return -1 * Math.pow(4, - 8 * pos) * Math.sin((pos * 6 - 1) * (2 * Math.PI) / 2) + 1;
+	},
+	spring: function(pos) {
+		return 1 - (Math.cos(pos * 4.5 * Math.PI) * Math.exp(-pos * 6));
+	},
+	blink: function(pos, blinks) {
+		return Math.round(pos * (blinks || 5)) % 2;
+	},
+	pulse: function(pos, pulses) {
+		return (-Math.cos((pos * ((pulses || 5) - .5) * 2) * Math.PI) / 2) + .5;
+	},
+	wobble: function(pos) {
+		return (-Math.cos(pos * Math.PI * (9 * pos)) / 2) + 0.5;
+	},
+	sinusoidal: function(pos) {
+		return (-Math.cos(pos * Math.PI) / 2) + 0.5;
+	},
+	flicker: function(pos) {
+		var pos = pos + (Math.random() - 0.5) / 5;
+		return easings.sinusoidal(pos < 0 ? 0 : pos > 1 ? 1 : pos);
+	},
+	mirror: function(pos) {
+		if (pos < 0.5) return easings.sinusoidal(pos * 2);
+		else return easings.sinusoidal(1 - (pos - 0.5) * 2);
+	},
+	// accelerating from zero velocity
+	easeInQuad: function (t) { return t*t },
+	// decelerating to zero velocity
+	easeOutQuad: function (t) { return t*(2-t) },
+	// acceleration until halfway, then deceleration
+	easeInOutQuad: function (t) { return t<.5 ? 2*t*t : -1+(4-2*t)*t },
+	// accelerating from zero velocity 
+	easeInCubic: function (t) { return t*t*t },
+	// decelerating to zero velocity 
+	easeOutCubic: function (t) { return (--t)*t*t+1 },
+	// acceleration until halfway, then deceleration 
+	easeInOutCubic: function (t) { return t<.5 ? 4*t*t*t : (t-1)*(2*t-2)*(2*t-2)+1 },
+	// accelerating from zero velocity 
+	easeInQuart: function (t) { return t*t*t*t },
+	// decelerating to zero velocity 
+	easeOutQuart: function (t) { return 1-(--t)*t*t*t },
+	// acceleration until halfway, then deceleration
+	easeInOutQuart: function (t) { return t<.5 ? 8*t*t*t*t : 1-8*(--t)*t*t*t },
+	// accelerating from zero velocity
+	easeInQuint: function (t) { return t*t*t*t*t },
+	// decelerating to zero velocity
+	easeOutQuint: function (t) { return 1+(--t)*t*t*t*t },
+	// acceleration until halfway, then deceleration 
+	easeInOutQuint: function (t) { return t<.5 ? 16*t*t*t*t*t : 1+16*(--t)*t*t*t*t }
+};
+
+/*
+Math.easeInExpo = function (t, b, c, d) {
+	return c * Math.pow( 2, 10 * (t/d - 1) ) + b;
+};
+
+		
+
+// exponential easing out - decelerating to zero velocity
+
+
+Math.easeOutExpo = function (t, b, c, d) {
+	return c * ( -Math.pow( 2, -10 * t/d ) + 1 ) + b;
+};
+
+		
+
+// exponential easing in/out - accelerating until halfway, then decelerating
+
+
+Math.easeInOutExpo = function (t, b, c, d) {
+	t /= d/2;
+	if (t < 1) return c/2 * Math.pow( 2, 10 * (t - 1) ) + b;
+	t--;
+	return c/2 * ( -Math.pow( 2, -10 * t) + 2 ) + b;
+};
+*/
+
+/* **********************************************
+     Begin TL.Animate.js
+********************************************** */
+
+/*	TL.Animate
+	Basic animation
+================================================== */
+
+TL.Animate = function(el, options) {
+	var animation = new tlanimate(el, options),
+		webkit_timeout;
+		/*
+		// POSSIBLE ISSUE WITH WEBKIT FUTURE BUILDS
+	var onWebKitTimeout = function() {
+
+		animation.stop(true);
+	}
+	if (TL.Browser.webkit) {
+		webkit_timeout = setTimeout(function(){onWebKitTimeout()}, options.duration);
+	}
+	*/
+	return animation;
+};
+
+
+/*	Based on: Morpheus
+	https://github.com/ded/morpheus - (c) Dustin Diaz 2011
+	License MIT
+================================================== */
+window.tlanimate = (function() {
+
+	var doc = document,
+		win = window,
+		perf = win.performance,
+		perfNow = perf && (perf.now || perf.webkitNow || perf.msNow || perf.mozNow),
+		now = perfNow ? function () { return perfNow.call(perf) } : function () { return +new Date() },
+		html = doc.documentElement,
+		fixTs = false, // feature detected below
+		thousand = 1000,
+		rgbOhex = /^rgb\(|#/,
+		relVal = /^([+\-])=([\d\.]+)/,
+		numUnit = /^(?:[\+\-]=?)?\d+(?:\.\d+)?(%|in|cm|mm|em|ex|pt|pc|px)$/,
+		rotate = /rotate\(((?:[+\-]=)?([\-\d\.]+))deg\)/,
+		scale = /scale\(((?:[+\-]=)?([\d\.]+))\)/,
+		skew = /skew\(((?:[+\-]=)?([\-\d\.]+))deg, ?((?:[+\-]=)?([\-\d\.]+))deg\)/,
+		translate = /translate\(((?:[+\-]=)?([\-\d\.]+))px, ?((?:[+\-]=)?([\-\d\.]+))px\)/,
+		// these elements do not require 'px'
+		unitless = { lineHeight: 1, zoom: 1, zIndex: 1, opacity: 1, transform: 1};
+
+  // which property name does this browser use for transform
+	var transform = function () {
+		var styles = doc.createElement('a').style,
+			props = ['webkitTransform', 'MozTransform', 'OTransform', 'msTransform', 'Transform'],
+			i;
+
+		for (i = 0; i < props.length; i++) {
+			if (props[i] in styles) return props[i]
+		};
+	}();
+
+	// does this browser support the opacity property?
+	var opacity = function () {
+		return typeof doc.createElement('a').style.opacity !== 'undefined'
+	}();
+
+	// initial style is determined by the elements themselves
+	var getStyle = doc.defaultView && doc.defaultView.getComputedStyle ?
+	function (el, property) {
+		property = property == 'transform' ? transform : property
+		property = camelize(property)
+		var value = null,
+			computed = doc.defaultView.getComputedStyle(el, '');
+
+		computed && (value = computed[property]);
+		return el.style[property] || value;
+	} : html.currentStyle ?
+
+    function (el, property) {
+		property = camelize(property)
+
+		if (property == 'opacity') {
+			var val = 100
+			try {
+				val = el.filters['DXImageTransform.Microsoft.Alpha'].opacity
+			} catch (e1) {
+				try {
+					val = el.filters('alpha').opacity
+				} catch (e2) {
+
+				}
+			}
+			return val / 100
+		}
+		var value = el.currentStyle ? el.currentStyle[property] : null
+		return el.style[property] || value
+	} :
+
+    function (el, property) {
+		return el.style[camelize(property)]
+    }
+
+  var frame = function () {
+    // native animation frames
+    // http://webstuff.nfshost.com/anim-timing/Overview.html
+    // http://dev.chromium.org/developers/design-documents/requestanimationframe-implementation
+    return win.requestAnimationFrame  ||
+      win.webkitRequestAnimationFrame ||
+      win.mozRequestAnimationFrame    ||
+      win.msRequestAnimationFrame     ||
+      win.oRequestAnimationFrame      ||
+      function (callback) {
+        win.setTimeout(function () {
+          callback(+new Date())
+        }, 17) // when I was 17..
+      }
+  }()
+
+  var children = []
+
+	frame(function(timestamp) {
+	  	// feature-detect if rAF and now() are of the same scale (epoch or high-res),
+		// if not, we have to do a timestamp fix on each frame
+		fixTs = timestamp > 1e12 != now() > 1e12
+	})
+
+  function has(array, elem, i) {
+    if (Array.prototype.indexOf) return array.indexOf(elem)
+    for (i = 0; i < array.length; ++i) {
+      if (array[i] === elem) return i
+    }
+  }
+
+  function render(timestamp) {
+    var i, count = children.length
+    // if we're using a high res timer, make sure timestamp is not the old epoch-based value.
+    // http://updates.html5rocks.com/2012/05/requestAnimationFrame-API-now-with-sub-millisecond-precision
+    if (perfNow && timestamp > 1e12) timestamp = now()
+	if (fixTs) timestamp = now()
+    for (i = count; i--;) {
+      children[i](timestamp)
+    }
+    children.length && frame(render)
+  }
+
+  function live(f) {
+    if (children.push(f) === 1) frame(render)
+  }
+
+  function die(f) {
+    var rest, index = has(children, f)
+    if (index >= 0) {
+      rest = children.slice(index + 1)
+      children.length = index
+      children = children.concat(rest)
+    }
+  }
+
+  function parseTransform(style, base) {
+    var values = {}, m
+    if (m = style.match(rotate)) values.rotate = by(m[1], base ? base.rotate : null)
+    if (m = style.match(scale)) values.scale = by(m[1], base ? base.scale : null)
+    if (m = style.match(skew)) {values.skewx = by(m[1], base ? base.skewx : null); values.skewy = by(m[3], base ? base.skewy : null)}
+    if (m = style.match(translate)) {values.translatex = by(m[1], base ? base.translatex : null); values.translatey = by(m[3], base ? base.translatey : null)}
+    return values
+  }
+
+  function formatTransform(v) {
+    var s = ''
+    if ('rotate' in v) s += 'rotate(' + v.rotate + 'deg) '
+    if ('scale' in v) s += 'scale(' + v.scale + ') '
+    if ('translatex' in v) s += 'translate(' + v.translatex + 'px,' + v.translatey + 'px) '
+    if ('skewx' in v) s += 'skew(' + v.skewx + 'deg,' + v.skewy + 'deg)'
+    return s
+  }
+
+  function rgb(r, g, b) {
+    return '#' + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)
+  }
+
+  // convert rgb and short hex to long hex
+  function toHex(c) {
+    var m = c.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
+    return (m ? rgb(m[1], m[2], m[3]) : c)
+      .replace(/#(\w)(\w)(\w)$/, '#$1$1$2$2$3$3') // short skirt to long jacket
+  }
+
+  // change font-size => fontSize etc.
+  function camelize(s) {
+    return s.replace(/-(.)/g, function (m, m1) {
+      return m1.toUpperCase()
+    })
+  }
+
+  // aren't we having it?
+  function fun(f) {
+    return typeof f == 'function'
+  }
+
+  function nativeTween(t) {
+    // default to a pleasant-to-the-eye easeOut (like native animations)
+    return Math.sin(t * Math.PI / 2)
+  }
+
+  /**
+    * Core tween method that requests each frame
+    * @param duration: time in milliseconds. defaults to 1000
+    * @param fn: tween frame callback function receiving 'position'
+    * @param done {optional}: complete callback function
+    * @param ease {optional}: easing method. defaults to easeOut
+    * @param from {optional}: integer to start from
+    * @param to {optional}: integer to end at
+    * @returns method to stop the animation
+    */
+  function tween(duration, fn, done, ease, from, to) {
+    ease = fun(ease) ? ease : morpheus.easings[ease] || nativeTween
+    var time = duration || thousand
+      , self = this
+      , diff = to - from
+      , start = now()
+      , stop = 0
+      , end = 0
+
+    function run(t) {
+      var delta = t - start
+      if (delta > time || stop) {
+        to = isFinite(to) ? to : 1
+        stop ? end && fn(to) : fn(to)
+        die(run)
+        return done && done.apply(self)
+      }
+      // if you don't specify a 'to' you can use tween as a generic delta tweener
+      // cool, eh?
+      isFinite(to) ?
+        fn((diff * ease(delta / time)) + from) :
+        fn(ease(delta / time))
+    }
+
+    live(run)
+
+    return {
+      stop: function (jump) {
+        stop = 1
+        end = jump // jump to end of animation?
+        if (!jump) done = null // remove callback if not jumping to end
+      }
+    }
+  }
+
+  /**
+    * generic bezier method for animating x|y coordinates
+    * minimum of 2 points required (start and end).
+    * first point start, last point end
+    * additional control points are optional (but why else would you use this anyway ;)
+    * @param points: array containing control points
+       [[0, 0], [100, 200], [200, 100]]
+    * @param pos: current be(tween) position represented as float  0 - 1
+    * @return [x, y]
+    */
+  function bezier(points, pos) {
+    var n = points.length, r = [], i, j
+    for (i = 0; i < n; ++i) {
+      r[i] = [points[i][0], points[i][1]]
+    }
+    for (j = 1; j < n; ++j) {
+      for (i = 0; i < n - j; ++i) {
+        r[i][0] = (1 - pos) * r[i][0] + pos * r[parseInt(i + 1, 10)][0]
+        r[i][1] = (1 - pos) * r[i][1] + pos * r[parseInt(i + 1, 10)][1]
+      }
+    }
+    return [r[0][0], r[0][1]]
+  }
+
+  // this gets you the next hex in line according to a 'position'
+  function nextColor(pos, start, finish) {
+    var r = [], i, e, from, to
+    for (i = 0; i < 6; i++) {
+      from = Math.min(15, parseInt(start.charAt(i),  16))
+      to   = Math.min(15, parseInt(finish.charAt(i), 16))
+      e = Math.floor((to - from) * pos + from)
+      e = e > 15 ? 15 : e < 0 ? 0 : e
+      r[i] = e.toString(16)
+    }
+    return '#' + r.join('')
+  }
+
+  // this retreives the frame value within a sequence
+  function getTweenVal(pos, units, begin, end, k, i, v) {
+    if (k == 'transform') {
+      v = {}
+      for (var t in begin[i][k]) {
+        v[t] = (t in end[i][k]) ? Math.round(((end[i][k][t] - begin[i][k][t]) * pos + begin[i][k][t]) * thousand) / thousand : begin[i][k][t]
+      }
+      return v
+    } else if (typeof begin[i][k] == 'string') {
+      return nextColor(pos, begin[i][k], end[i][k])
+    } else {
+      // round so we don't get crazy long floats
+      v = Math.round(((end[i][k] - begin[i][k]) * pos + begin[i][k]) * thousand) / thousand
+      // some css properties don't require a unit (like zIndex, lineHeight, opacity)
+      if (!(k in unitless)) v += units[i][k] || 'px'
+      return v
+    }
+  }
+
+  // support for relative movement via '+=n' or '-=n'
+  function by(val, start, m, r, i) {
+    return (m = relVal.exec(val)) ?
+      (i = parseFloat(m[2])) && (start + (m[1] == '+' ? 1 : -1) * i) :
+      parseFloat(val)
+  }
+
+  /**
+    * morpheus:
+    * @param element(s): HTMLElement(s)
+    * @param options: mixed bag between CSS Style properties & animation options
+    *  - {n} CSS properties|values
+    *     - value can be strings, integers,
+    *     - or callback function that receives element to be animated. method must return value to be tweened
+    *     - relative animations start with += or -= followed by integer
+    *  - duration: time in ms - defaults to 1000(ms)
+    *  - easing: a transition method - defaults to an 'easeOut' algorithm
+    *  - complete: a callback method for when all elements have finished
+    *  - bezier: array of arrays containing x|y coordinates that define the bezier points. defaults to none
+    *     - this may also be a function that receives element to be animated. it must return a value
+    */
+  function morpheus(elements, options) {
+    var els = elements ? (els = isFinite(elements.length) ? elements : [elements]) : [], i
+      , complete = options.complete
+      , duration = options.duration
+      , ease = options.easing
+      , points = options.bezier
+      , begin = []
+      , end = []
+      , units = []
+      , bez = []
+      , originalLeft
+      , originalTop
+
+    if (points) {
+      // remember the original values for top|left
+      originalLeft = options.left;
+      originalTop = options.top;
+      delete options.right;
+      delete options.bottom;
+      delete options.left;
+      delete options.top;
+    }
+
+    for (i = els.length; i--;) {
+
+      // record beginning and end states to calculate positions
+      begin[i] = {}
+      end[i] = {}
+      units[i] = {}
+
+      // are we 'moving'?
+      if (points) {
+
+        var left = getStyle(els[i], 'left')
+          , top = getStyle(els[i], 'top')
+          , xy = [by(fun(originalLeft) ? originalLeft(els[i]) : originalLeft || 0, parseFloat(left)),
+                  by(fun(originalTop) ? originalTop(els[i]) : originalTop || 0, parseFloat(top))]
+
+        bez[i] = fun(points) ? points(els[i], xy) : points
+        bez[i].push(xy)
+        bez[i].unshift([
+          parseInt(left, 10),
+          parseInt(top, 10)
+        ])
+      }
+
+      for (var k in options) {
+        switch (k) {
+        case 'complete':
+        case 'duration':
+        case 'easing':
+        case 'bezier':
+          continue
+        }
+        var v = getStyle(els[i], k), unit
+          , tmp = fun(options[k]) ? options[k](els[i]) : options[k]
+        if (typeof tmp == 'string' &&
+            rgbOhex.test(tmp) &&
+            !rgbOhex.test(v)) {
+          delete options[k]; // remove key :(
+          continue; // cannot animate colors like 'orange' or 'transparent'
+                    // only #xxx, #xxxxxx, rgb(n,n,n)
+        }
+
+        begin[i][k] = k == 'transform' ? parseTransform(v) :
+          typeof tmp == 'string' && rgbOhex.test(tmp) ?
+            toHex(v).slice(1) :
+            parseFloat(v)
+        end[i][k] = k == 'transform' ? parseTransform(tmp, begin[i][k]) :
+          typeof tmp == 'string' && tmp.charAt(0) == '#' ?
+            toHex(tmp).slice(1) :
+            by(tmp, parseFloat(v));
+        // record original unit
+        (typeof tmp == 'string') && (unit = tmp.match(numUnit)) && (units[i][k] = unit[1])
+      }
+    }
+    // ONE TWEEN TO RULE THEM ALL
+    return tween.apply(els, [duration, function (pos, v, xy) {
+      // normally not a fan of optimizing for() loops, but we want something
+      // fast for animating
+      for (i = els.length; i--;) {
+        if (points) {
+          xy = bezier(bez[i], pos)
+          els[i].style.left = xy[0] + 'px'
+          els[i].style.top = xy[1] + 'px'
+        }
+        for (var k in options) {
+          v = getTweenVal(pos, units, begin, end, k, i)
+          k == 'transform' ?
+            els[i].style[transform] = formatTransform(v) :
+            k == 'opacity' && !opacity ?
+              (els[i].style.filter = 'alpha(opacity=' + (v * 100) + ')') :
+              (els[i].style[camelize(k)] = v)
+        }
+      }
+    }, complete, ease])
+  }
+
+  // expose useful methods
+  morpheus.tween = tween
+  morpheus.getStyle = getStyle
+  morpheus.bezier = bezier
+  morpheus.transform = transform
+  morpheus.parseTransform = parseTransform
+  morpheus.formatTransform = formatTransform
+  morpheus.easings = {}
+
+  return morpheus
+})();
+
+
+/* **********************************************
+     Begin TL.Point.js
+********************************************** */
+
+/*	TL.Point
+	Inspired by Leaflet
+	TL.Point represents a point with x and y coordinates.
+================================================== */
+
+TL.Point = function (/*Number*/ x, /*Number*/ y, /*Boolean*/ round) {
+	this.x = (round ? Math.round(x) : x);
+	this.y = (round ? Math.round(y) : y);
+};
+
+TL.Point.prototype = {
+	add: function (point) {
+		return this.clone()._add(point);
+	},
+
+	_add: function (point) {
+		this.x += point.x;
+		this.y += point.y;
+		return this;
+	},
+
+	subtract: function (point) {
+		return this.clone()._subtract(point);
+	},
+
+	// destructive subtract (faster)
+	_subtract: function (point) {
+		this.x -= point.x;
+		this.y -= point.y;
+		return this;
+	},
+
+	divideBy: function (num, round) {
+		return new TL.Point(this.x / num, this.y / num, round);
+	},
+
+	multiplyBy: function (num) {
+		return new TL.Point(this.x * num, this.y * num);
+	},
+
+	distanceTo: function (point) {
+		var x = point.x - this.x,
+			y = point.y - this.y;
+		return Math.sqrt(x * x + y * y);
+	},
+
+	round: function () {
+		return this.clone()._round();
+	},
+
+	// destructive round
+	_round: function () {
+		this.x = Math.round(this.x);
+		this.y = Math.round(this.y);
+		return this;
+	},
+
+	clone: function () {
+		return new TL.Point(this.x, this.y);
+	},
+
+	toString: function () {
+		return 'Point(' +
+				TL.Util.formatNum(this.x) + ', ' +
+				TL.Util.formatNum(this.y) + ')';
 	}
 };
 
 /* **********************************************
-     Begin VMM.Core.js
+     Begin TL.DomMixins.js
 ********************************************** */
 
-/* VeriteCo Core
+/*	TL.DomMixins
+	DOM methods used regularly
+	Assumes there is a _el.container and animator
 ================================================== */
-
-/*	* CodeKit Import
-	* http://incident57.com/codekit/
-================================================== */
-// @codekit-prepend "VMM.js";
-// @codekit-prepend "VMM.Library.js";
-// @codekit-prepend "VMM.Browser.js";
-// @codekit-prepend "VMM.FileExtention.js";
-// @codekit-prepend "VMM.Date.js";
-// @codekit-prepend "VMM.Util.js";
-// @codekit-prepend "VMM.LoadLib.js";
-// @codekit-prepend "VMM.Language.js";
-
-
-
-/* **********************************************
-     Begin VMM.ExternalAPI.js
-********************************************** */
-
-/* External API
-================================================== */
-if(typeof VMM != 'undefined' && typeof VMM.ExternalAPI == 'undefined') {
+TL.DomMixins = {
 	
-	VMM.ExternalAPI = ({
-		
-		keys: {
-			google:				"",
-			flickr:				"",
-			twitter:			""
-		},
-		
-		keys_master: {
-			vp:			"Pellentesque nibh felis, eleifend id, commodo in, interdum vitae, leo",
-			flickr:		"RAIvxHY4hE/Elm5cieh4X5ptMyDpj7MYIxziGxi0WGCcy1s+yr7rKQ==",
-			google:		"jwNGnYw4hE9lmAez4ll0QD+jo6SKBJFknkopLS4FrSAuGfIwyj57AusuR0s8dAo=",
-			twitter:	""
-		},
-		
-		init: function() {
-			return this;
-		},
-		
-		setKeys: function(d) {
-			VMM.ExternalAPI.keys	= d;
-		},
-		
-		pushQues: function() {
-			
-			if (VMM.master_config.googlemaps.active) {
-				VMM.ExternalAPI.googlemaps.pushQue();
-			}
-			if (VMM.master_config.youtube.active) {
-				VMM.ExternalAPI.youtube.pushQue();
-			}
-			if (VMM.master_config.soundcloud.active) {
-				VMM.ExternalAPI.soundcloud.pushQue();
-			}
-			if (VMM.master_config.googledocs.active) {
-				VMM.ExternalAPI.googledocs.pushQue();
-			}
-			if (VMM.master_config.googleplus.active) {
-				VMM.ExternalAPI.googleplus.pushQue();
-			}
-			if (VMM.master_config.wikipedia.active) {
-				VMM.ExternalAPI.wikipedia.pushQue();
-			}
-			if (VMM.master_config.vimeo.active) {
-				VMM.ExternalAPI.vimeo.pushQue();
-			}
-			if (VMM.master_config.vine.active) {
-				VMM.ExternalAPI.vine.pushQue();
-			}
-			if (VMM.master_config.twitter.active) {
-				VMM.ExternalAPI.twitter.pushQue();
-			}
-			if (VMM.master_config.flickr.active) {
-				VMM.ExternalAPI.flickr.pushQue();
-			}
-			if (VMM.master_config.webthumb.active) {
-				VMM.ExternalAPI.webthumb.pushQue();
-			}
-		},
-		
-		twitter: {
-			tweetArray: [],
-			
-			get: function(m) {
-				var tweet = {mid: m.id, id: m.uid};
-				VMM.master_config.twitter.que.push(tweet);
-				VMM.master_config.twitter.active = true;
-				//VMM.master_config.api.pushques.push(VMM.ExternalAPI.twitter.pushQue);
-				
-			},
-			
-			create: function(tweet, callback) {
-				
-				var id				= tweet.mid.toString(),
-					error_obj		= { twitterid: tweet.mid },
-					the_url			= "//api.twitter.com/1/statuses/show.json?id=" + tweet.mid + "&include_entities=true&callback=?";
-					//twitter_timeout	= setTimeout(VMM.ExternalAPI.twitter.errorTimeOut, VMM.master_config.timers.api, tweet),
-					//callback_timeout= setTimeout(callback, VMM.master_config.timers.api, tweet);
-				
-				VMM.ExternalAPI.twitter.getOEmbed(tweet, callback);
-				
-				/*
-				// Disabled thanks to twitter's new api
-				
-				VMM.getJSON(the_url, function(d) {
-					var id		= d.id_str,
-						twit	= "<blockquote><p>",
-						td		= VMM.Util.linkify_with_twitter(d.text, "_blank");
-					
-					//	TWEET CONTENT	
-					twit += td;
-					twit += "</p></blockquote>";
-					
-					//	TWEET MEDIA
-					if (typeof d.entities.media != 'undefined') {
-						if (d.entities.media[0].type == "photo") {
-							//twit += "<img src=' " + d.entities.media[0].media_url + "'  alt=''>"
-						}
-					}
-					
-					//	TWEET AUTHOR
-					twit += "<div class='vcard author'>";
-					twit += "<a class='screen-name url' href='https://twitter.com/" + d.user.screen_name + "' data-screen-name='" + d.user.screen_name + "' target='_blank'>";
-					twit += "<span class='avatar'><img src=' " + d.user.profile_image_url + "'  alt=''></span>";
-					twit += "<span class='fn'>" + d.user.name + "</span>";
-					twit += "<span class='nickname'>@" + d.user.screen_name + "<span class='thumbnail-inline'></span></span>";
-					twit += "</a>";
-					twit += "</div>";
-				
-					
-				
-					VMM.attachElement("#"+tweet.id.toString(), twit );
-					VMM.attachElement("#text_thumb_"+tweet.id.toString(), d.text );
-					VMM.attachElement("#marker_content_" + tweet.id.toString(), d.text );
-					
-				})
-				.error(function(jqXHR, textStatus, errorThrown) {
-					trace("TWITTER error");
-					trace("TWITTER ERROR: " + textStatus + " " + jqXHR.responseText);
-					VMM.attachElement("#"+tweet.id, VMM.MediaElement.loadingmessage("ERROR LOADING TWEET " + tweet.mid) );
-				})
-				.success(function(d) {
-					clearTimeout(twitter_timeout);
-					clearTimeout(callback_timeout);
-					callback();
-				});
-				
-				*/
-			},
-			
-			errorTimeOut: function(tweet) {
-				trace("TWITTER JSON ERROR TIMEOUT " + tweet.mid);
-				VMM.attachElement("#"+tweet.id.toString(), VMM.MediaElement.loadingmessage("Still waiting on Twitter: " + tweet.mid) );
-				// CHECK RATE STATUS
-				VMM.getJSON("//api.twitter.com/1/account/rate_limit_status.json", function(d) {
-					trace("REMAINING TWITTER API CALLS " + d.remaining_hits);
-					trace("TWITTER RATE LIMIT WILL RESET AT " + d.reset_time);
-					var mes = "";
-					if (d.remaining_hits == 0) {
-						mes		= 	"<p>You've reached the maximum number of tweets you can load in an hour.</p>";
-						mes 	+=	"<p>You can view tweets again starting at: <br/>" + d.reset_time + "</p>";
-					} else {
-						mes		=	"<p>Still waiting on Twitter. " + tweet.mid + "</p>";
-						//mes 	= 	"<p>Tweet " + id + " was not found.</p>";
-					}
-					VMM.attachElement("#"+tweet.id.toString(), VMM.MediaElement.loadingmessage(mes) );
-				});
-				
-			},
-			
-			errorTimeOutOembed: function(tweet) {
-				trace("TWITTER JSON ERROR TIMEOUT " + tweet.mid);
-				VMM.attachElement("#"+tweet.id.toString(), VMM.MediaElement.loadingmessage("Still waiting on Twitter: " + tweet.mid) );
-			},
-			
-			pushQue: function() {
-				if (VMM.master_config.twitter.que.length > 0) {
-					VMM.ExternalAPI.twitter.create(VMM.master_config.twitter.que[0], VMM.ExternalAPI.twitter.pushQue);
-					VMM.Util.removeRange(VMM.master_config.twitter.que,0);
-				}
-			},
-						
-			getOEmbed: function(tweet, callback) {
-				
-				var the_url = "//api.twitter.com/1/statuses/oembed.json?id=" + tweet.mid + "&omit_script=true&include_entities=true&callback=?",
-					twitter_timeout	= setTimeout(VMM.ExternalAPI.twitter.errorTimeOutOembed, VMM.master_config.timers.api, tweet);
-					//callback_timeout= setTimeout(callback, VMM.master_config.timers.api, tweet);
-				
-				VMM.getJSON(the_url, function(d) {
-					var twit	= "",
-						tuser	= "";
-					
-					
-					//	TWEET CONTENT
-					twit += d.html.split("<\/p>\&mdash;")[0] + "</p></blockquote>";
-					tuser = d.author_url.split("twitter.com\/")[1];
-					
-					
-					//	TWEET AUTHOR
-					twit += "<div class='vcard author'>";
-					twit += "<a class='screen-name url' href='" + d.author_url + "' target='_blank'>";
-					twit += "<span class='avatar'></span>";
-					twit += "<span class='fn'>" + d.author_name + "</span>";
-					twit += "<span class='nickname'>@" + tuser + "<span class='thumbnail-inline'></span></span>";
-					twit += "</a>";
-					twit += "</div>";
-					
-					VMM.attachElement("#"+tweet.id.toString(), twit );
-					VMM.attachElement("#text_thumb_"+tweet.id.toString(), d.html );
-					VMM.attachElement("#marker_content_" + tweet.id.toString(), d.html );
-				})
-				.error(function(jqXHR, textStatus, errorThrown) {
-					trace("TWITTER error");
-					trace("TWITTER ERROR: " + textStatus + " " + jqXHR.responseText);
-					clearTimeout(twitter_timeout);
-					//clearTimeout(callback_timeout);
-					VMM.attachElement("#"+tweet.id, VMM.MediaElement.loadingmessage("ERROR LOADING TWEET " + tweet.mid) );
-				})
-				.success(function(d) {
-					clearTimeout(twitter_timeout);
-					// clearTimeout(callback_timeout);
-					callback();
-				});
-				
-			},
-			
-			getHTML: function(id) {
-				//var the_url = document.location.protocol + "//api.twitter.com/1/statuses/oembed.json?id=" + id+ "&callback=?";
-				var the_url = "//api.twitter.com/1/statuses/oembed.json?id=" + id+ "&omit_script=true&include_entities=true&callback=?";
-				VMM.getJSON(the_url, VMM.ExternalAPI.twitter.onJSONLoaded);
-			},
-			
-			onJSONLoaded: function(d) {
-				trace("TWITTER JSON LOADED");
-				var id = d.id;
-				VMM.attachElement("#"+id, VMM.Util.linkify_with_twitter(d.html) );
-			},
-			
-			parseTwitterDate: function(d) {
-				var date = new Date(Date.parse(d));
-				/*
-				var t = d.replace(/(\d{1,2}[:]\d{2}[:]\d{2}) (.*)/, '$2 $1');
-				t = t.replace(/(\+\S+) (.*)/, '$2 $1');
-				var date = new Date(Date.parse(t)).toLocaleDateString();
-				var time = new Date(Date.parse(t)).toLocaleTimeString();
-				*/
-				return date;
-			},
-			
-			prettyParseTwitterDate: function(d) {
-				var date = new Date(Date.parse(d));
-				return VMM.Date.prettyDate(date, true);
-			},
-			
-			getTweets: function(tweets) {
-				var tweetArray = [];
-				var number_of_tweets = tweets.length;
-				
-				for(var i = 0; i < tweets.length; i++) {
-					
-					var twitter_id = "";
-					
-					
-					/* FIND THE TWITTER ID
-					================================================== */
-					if (tweets[i].tweet.match("status\/")) {
-						twitter_id = tweets[i].tweet.split("status\/")[1];
-					} else if (tweets[i].tweet.match("statuses\/")) {
-						twitter_id = tweets[i].tweet.split("statuses\/")[1];
-					} else {
-						twitter_id = "";
-					}
-					
-					/* FETCH THE DATA
-					================================================== */
-					var the_url = "//api.twitter.com/1/statuses/show.json?id=" + twitter_id + "&include_entities=true&callback=?";
-					VMM.getJSON(the_url, function(d) {
-						
-						var tweet = {}
-						/* FORMAT RESPONSE
-						================================================== */
-						var twit = "<div class='twitter'><blockquote><p>";
-						var td = VMM.Util.linkify_with_twitter(d.text, "_blank");
-						twit += td;
-						twit += "</p>";
-						
-						twit += "— " + d.user.name + " (<a href='https://twitter.com/" + d.user.screen_name + "'>@" + d.user.screen_name + "</a>) <a href='https://twitter.com/" + d.user.screen_name + "/status/" + d.id + "'>" + VMM.ExternalAPI.twitter.prettyParseTwitterDate(d.created_at) + " </a></blockquote></div>";
-						
-						tweet.content = twit;
-						tweet.raw = d;
-						
-						tweetArray.push(tweet);
-						
-						
-						/* CHECK IF THATS ALL OF THEM
-						================================================== */
-						if (tweetArray.length == number_of_tweets) {
-							var the_tweets = {tweetdata: tweetArray}
-							VMM.fireEvent(global, "TWEETSLOADED", the_tweets);
-						}
-					})
-					.success(function() { trace("second success"); })
-					.error(function() { trace("error"); })
-					.complete(function() { trace("complete"); });
-					
-				}
-					
-				
-			},
-			
-			getTweetSearch: function(tweets, number_of_tweets) {
-				var _number_of_tweets = 40;
-				if (number_of_tweets != null && number_of_tweets != "") {
-					_number_of_tweets = number_of_tweets;
-				}
-				
-				var the_url = "//search.twitter.com/search.json?q=" + tweets + "&rpp=" + _number_of_tweets + "&include_entities=true&result_type=mixed";
-				var tweetArray = [];
-				VMM.getJSON(the_url, function(d) {
-					
-					/* FORMAT RESPONSE
-					================================================== */
-					for(var i = 0; i < d.results.length; i++) {
-						var tweet = {}
-						var twit = "<div class='twitter'><blockquote><p>";
-						var td = VMM.Util.linkify_with_twitter(d.results[i].text, "_blank");
-						twit += td;
-						twit += "</p>";
-						twit += "— " + d.results[i].from_user_name + " (<a href='https://twitter.com/" + d.results[i].from_user + "'>@" + d.results[i].from_user + "</a>) <a href='https://twitter.com/" + d.results[i].from_user + "/status/" + d.id + "'>" + VMM.ExternalAPI.twitter.prettyParseTwitterDate(d.results[i].created_at) + " </a></blockquote></div>";
-						tweet.content = twit;
-						tweet.raw = d.results[i];
-						tweetArray.push(tweet);
-					}
-					var the_tweets = {tweetdata: tweetArray}
-					VMM.fireEvent(global, "TWEETSLOADED", the_tweets);
-				});
-				
-			},
-			
-			prettyHTML: function(id, secondary) {
-				var id = id.toString();
-				var error_obj = {
-					twitterid: id
-				};
-				var the_url = "//api.twitter.com/1/statuses/show.json?id=" + id + "&include_entities=true&callback=?";
-				var twitter_timeout = setTimeout(VMM.ExternalAPI.twitter.errorTimeOut, VMM.master_config.timers.api, id);
-				
-				VMM.getJSON(the_url, VMM.ExternalAPI.twitter.formatJSON)
-					.error(function(jqXHR, textStatus, errorThrown) {
-						trace("TWITTER error");
-						trace("TWITTER ERROR: " + textStatus + " " + jqXHR.responseText);
-						VMM.attachElement("#twitter_"+id, "<p>ERROR LOADING TWEET " + id + "</p>" );
-					})
-					.success(function(d) {
-						clearTimeout(twitter_timeout);
-						if (secondary) {
-							VMM.ExternalAPI.twitter.secondaryMedia(d);
-						}
-					});
-			},
-			
-			
-			
-			formatJSON: function(d) {
-				var id = d.id_str;
-				
-				var twit = "<blockquote><p>";
-				var td = VMM.Util.linkify_with_twitter(d.text, "_blank");
-				//td = td.replace(/(@([\w]+))/g,"<a href='http://twitter.com/$2' target='_blank'>$1</a>");
-				//td = td.replace(/(#([\w]+))/g,"<a href='http://twitter.com/#search?q=%23$2' target='_blank'>$1</a>");
-				twit += td;
-				twit += "</p></blockquote>";
-				//twit += " <a href='https://twitter.com/" + d.user.screen_name + "/status/" + d.id_str + "' target='_blank' alt='link to original tweet' title='link to original tweet'>" + "<span class='created-at'></span>" + " </a>";
-				
-				twit += "<div class='vcard author'>";
-				twit += "<a class='screen-name url' href='https://twitter.com/" + d.user.screen_name + "' data-screen-name='" + d.user.screen_name + "' target='_blank'>";
-				twit += "<span class='avatar'><img src=' " + d.user.profile_image_url + "'  alt=''></span>";
-				twit += "<span class='fn'>" + d.user.name + "</span>";
-				twit += "<span class='nickname'>@" + d.user.screen_name + "<span class='thumbnail-inline'></span></span>";
-				twit += "</a>";
-				twit += "</div>";
-				
-				if (typeof d.entities.media != 'undefined') {
-					if (d.entities.media[0].type == "photo") {
-						twit += "<img src=' " + d.entities.media[0].media_url + "'  alt=''>"
-					}
-				}
-				
-				VMM.attachElement("#twitter_"+id.toString(), twit );
-				VMM.attachElement("#text_thumb_"+id.toString(), d.text );
-				
-			}
-			
-			
-		},
-		
-		googlemaps: {
-			
-			maptype: "TERRAIN", // see also below for default if this is a google type
-			
-			setMapType: function(d) {
-				if (d != "") {
-					VMM.ExternalAPI.googlemaps.maptype = d;
-				}
-			},
-			
-			get: function(m) {
-				var timer, 
-					api_key,
-					map_url;
-				
-				m.vars = VMM.Util.getUrlVars(m.id);
-				
-				if (VMM.ExternalAPI.keys.google != "") {
-					api_key = VMM.ExternalAPI.keys.google;
-				} else {
-					api_key = Aes.Ctr.decrypt(VMM.ExternalAPI.keys_master.google, VMM.ExternalAPI.keys_master.vp, 256);
-				}
-				
-				
-				/*
-					Investigating a google map api change on the latest release that causes custom map types to stop working
-					http://stackoverflow.com/questions/13486271/google-map-markermanager-cannot-call-method-substr-of-undefined
-					soulution is to use api ver 3.9
-				*/
-				map_url = "//maps.googleapis.com/maps/api/js?key=" + api_key + "&v=3.9&libraries=places&sensor=false&callback=VMM.ExternalAPI.googlemaps.onMapAPIReady";
-				
-				if (VMM.master_config.googlemaps.active) {
-					VMM.master_config.googlemaps.que.push(m);
-				} else {
-					VMM.master_config.googlemaps.que.push(m);
-					
-					if (VMM.master_config.googlemaps.api_loaded) {
-						
-					} else {
-						LoadLib.js(map_url, function() {
-							trace("Google Maps API Library Loaded");
-						});
-					}
-				}
-			},
-			
-			create: function(m) {
-				VMM.ExternalAPI.googlemaps.createAPIMap(m);
-			},
-			
-			createiFrameMap: function(m) {
-				var embed_url		= m.id + "&output=embed",
-					mc				= "",
-					unique_map_id	= m.uid.toString() + "_gmap";
-					
-				mc				+= "<div class='google-map' id='" + unique_map_id + "' style='width=100%;height=100%;'>";
-				mc				+= "<iframe width='100%' height='100%' frameborder='0' scrolling='no' marginheight='0' marginwidth='0' src='" + embed_url + "'></iframe>";
-				mc				+= "</div>";
-				
-				VMM.attachElement("#" + m.uid, mc);
-				
-			},
-			
-			createAPIMap: function(m) {
-				var map_attribution	= "",
-					layer,
-					map,
-					map_options,
-					unique_map_id			= m.uid.toString() + "_gmap",
-					map_attribution_html	= "",
-					location				= new google.maps.LatLng(41.875696,-87.624207),
-					latlong,
-					zoom					= 11,
-					has_location			= false,
-					has_zoom				= false,
-					api_limit				= false,
-					map_bounds;
-					
-				
-				function mapProvider(name) {
-					if (name in VMM.ExternalAPI.googlemaps.map_providers) {
-						map_attribution = VMM.ExternalAPI.googlemaps.map_attribution[VMM.ExternalAPI.googlemaps.map_providers[name].attribution];
-						return VMM.ExternalAPI.googlemaps.map_providers[name];
-					} else {
-						if (VMM.ExternalAPI.googlemaps.defaultType(name)) {
-							trace("GOOGLE MAP DEFAULT TYPE");
-							return google.maps.MapTypeId[name.toUpperCase()];
-						} else {
-							trace("Not a maptype: " + name );
-						}
-					}
-				}
-				
-				google.maps.VeriteMapType = function(name) {
-					if (VMM.ExternalAPI.googlemaps.defaultType(name)) {
-						return google.maps.MapTypeId[name.toUpperCase()];
-					} else {
-						var provider = 			mapProvider(name);
-						return google.maps.ImageMapType.call(this, {
-							"getTileUrl": function(coord, zoom) {
-								var index = 	(zoom + coord.x + coord.y) % VMM.ExternalAPI.googlemaps.map_subdomains.length;
-								var retURL =  provider.url
-										.replace("{S}", VMM.ExternalAPI.googlemaps.map_subdomains[index])
-										.replace("{Z}", zoom)
-										.replace("{X}", coord.x)
-										.replace("{Y}", coord.y)
-										.replace("{z}", zoom)
-										.replace("{x}", coord.x)
-										.replace("{y}", coord.y);
-
-								// trace(retURL);
-								return retURL;
-							},
-							"tileSize": 		new google.maps.Size(256, 256),
-							"name":				name,
-							"minZoom":			provider.minZoom,
-							"maxZoom":			provider.maxZoom
-						});
-					}
-				};
-				
-				google.maps.VeriteMapType.prototype = new google.maps.ImageMapType("_");
-				
-				/* Make the Map
-				================================================== */
-				
-				if (VMM.ExternalAPI.googlemaps.maptype != "") {
-					if (VMM.ExternalAPI.googlemaps.defaultType(VMM.ExternalAPI.googlemaps.maptype)) {
-						layer				=	google.maps.MapTypeId[VMM.ExternalAPI.googlemaps.maptype.toUpperCase()];
-					} else {
-						layer				=	VMM.ExternalAPI.googlemaps.maptype;
-					}
-				} else {
-					layer				=	google.maps.MapTypeId['TERRAIN'];
-				}
-				
-				var new_google_url_regex = new RegExp(/@([0-9\.\-]+),([0-9\.\-]+),(\d+)z/);
-
-				if (m.id.match(new_google_url_regex)) {
-					var match = m.id.match(new_google_url_regex)
-					lat = parseFloat(match[1]);
-					lng = parseFloat(match[2]);
-					location = new google.maps.LatLng(lat,lng);
-					zoom = parseFloat(match[3]);
-					has_location = has_zoom = true;
-				} else {
-					if (type.of(VMM.Util.getUrlVars(m.id)["ll"]) == "string") {
-							has_location			= true;
-							latlong					= VMM.Util.getUrlVars(m.id)["ll"].split(",");
-							location				= new google.maps.LatLng(parseFloat(latlong[0]),parseFloat(latlong[1]));
-							
-						} else if (type.of(VMM.Util.getUrlVars(m.id)["sll"]) == "string") {
-							latlong					= VMM.Util.getUrlVars(m.id)["sll"].split(",");
-							location				= new google.maps.LatLng(parseFloat(latlong[0]),parseFloat(latlong[1]));
-						} 
-						
-						if (type.of(VMM.Util.getUrlVars(m.id)["z"]) == "string") {
-							has_zoom				=	true;
-							zoom					=	parseFloat(VMM.Util.getUrlVars(m.id)["z"]);
-						}
-				}				
-					
-				map_options = {
-					zoom:						zoom,
-					draggable: 					false, 
-					disableDefaultUI:			true,
-					mapTypeControl:				false,
-					zoomControl:				true,
-					zoomControlOptions: {
-						style:					google.maps.ZoomControlStyle.SMALL,
-						position:				google.maps.ControlPosition.TOP_RIGHT
-					},
-					center: 					location,
-					mapTypeId:					layer,
-					mapTypeControlOptions: {
-				        mapTypeIds:				[layer]
-				    }
-				}
-				
-				VMM.attachElement("#" + m.uid, "<div class='google-map' id='" + unique_map_id + "' style='width=100%;height=100%;'></div>");
-				
-				map		= new google.maps.Map(document.getElementById(unique_map_id), map_options);
-				
-				if (VMM.ExternalAPI.googlemaps.defaultType(VMM.ExternalAPI.googlemaps.maptype)) {
-					
-				} else {
-					map.mapTypes.set(layer, new google.maps.VeriteMapType(layer));
-					// ATTRIBUTION
-					map_attribution_html =	"<div class='map-attribution'><div class='attribution-text'>" + map_attribution + "</div></div>";
-					VMM.appendElement("#"+unique_map_id, map_attribution_html);
-				}
-				
-				// DETERMINE IF KML IS POSSIBLE 
-				if (type.of(VMM.Util.getUrlVars(m.id)["msid"]) == "string") {
-					loadKML();
-				} else {
-					//loadPlaces();
-					if (type.of(VMM.Util.getUrlVars(m.id)["q"]) == "string") {
-						geocodePlace();
-					} 
-				}
-				
-				// GEOCODE
-				function geocodePlace() {
-
-
-					
-					var geocoder	= new google.maps.Geocoder(),
-						address		= VMM.Util.getUrlVars(m.id)["q"],
-						marker;
-						
-					if (address.match("loc:")) {
-						var address_latlon = address.split(":")[1].split("+");
-						location = new google.maps.LatLng(parseFloat(address_latlon[0]),parseFloat(address_latlon[1]));
-						has_location = true;
-					}
-						
-					geocoder.geocode( { 'address': address}, function(results, status) {
-						if (status == google.maps.GeocoderStatus.OK) {
-							
-							marker = new google.maps.Marker({
-								map: map,
-								position: results[0].geometry.location
-							});
-							
-							// POSITION MAP
-							//map.setCenter(results[0].geometry.location);
-							//map.panTo(location);
-							if (typeof results[0].geometry.viewport != 'undefined') {
-								map.fitBounds(results[0].geometry.viewport);
-							} else if (typeof results[0].geometry.bounds != 'undefined') {
-								map.fitBounds(results[0].geometry.bounds);
-							} else {
-								map.setCenter(results[0].geometry.location);
-							}
-							
-							if (has_location) {
-								map.panTo(location);
-							}
-							if (has_zoom) {
-								map.setZoom(zoom);
-							}
-							
-						} else {
-							trace("Geocode for " + address + " was not successful for the following reason: " + status);
-							trace("TRYING PLACES SEARCH");
-							
-							if (has_location) {
-								map.panTo(location);
-							}
-							if (has_zoom) {
-								map.setZoom(zoom);
-							}
-							
-							loadPlaces();
-						}
-					});
-				}
-				
-				// PLACES
-				function loadPlaces() {
-					var place,
-						search_request,
-						infowindow,
-						search_bounds,
-						bounds_sw,
-						bounds_ne;
-					
-					place_search	= new google.maps.places.PlacesService(map);
-					infowindow		= new google.maps.InfoWindow();
-					
-					search_request = {
-						query:		"",
-						types:		['country', 'neighborhood', 'political', 'locality', 'geocode']
-					};
-					
-					if (type.of(VMM.Util.getUrlVars(m.id)["q"]) == "string") {
-						search_request.query	= VMM.Util.getUrlVars(m.id)["q"];
-					}
-					
-					if (has_location) {
-						search_request.location	= location;
-						search_request.radius	= "15000";
-					} else {
-						bounds_sw = new google.maps.LatLng(-89.999999,-179.999999);
-						bounds_ne = new google.maps.LatLng(89.999999,179.999999);
-						search_bounds = new google.maps.LatLngBounds(bounds_sw,bounds_ne);
-						
-						//search_request.location	= search_bounds;
-					}
-					
-					place_search.textSearch(search_request, placeResults);
-					
-					function placeResults(results, status) {
-						
-						if (status == google.maps.places.PlacesServiceStatus.OK) {
-							
-							for (var i = 0; i < results.length; i++) {
-								//createMarker(results[i]);
-							}
-							
-							if (has_location) {
-								map.panTo(location);
-							} else {
-								if (results.length >= 1) {
-									map.panTo(results[0].geometry.location);
-									if (has_zoom) {
-										map.setZoom(zoom);
-									}
-								} 
-							}
-							
-							
-						} else {
-							trace("Place search for " + search_request.query + " was not successful for the following reason: " + status);
-							// IF There's a problem loading the map, load a simple iFrame version instead
-							trace("YOU MAY NEED A GOOGLE MAPS API KEY IN ORDER TO USE THIS FEATURE OF TIMELINEJS");
-							trace("FIND OUT HOW TO GET YOUR KEY HERE: https://developers.google.com/places/documentation/#Authentication");
-							
-							
-							if (has_location) {
-								map.panTo(location);
-								if (has_zoom) {
-									map.setZoom(zoom);
-								}
-							} else {
-								trace("USING SIMPLE IFRAME MAP EMBED");
-								if (m.id[0].match("https")) { 
-									m.id = m.url[0].replace("https", "http");
-								}
-								VMM.ExternalAPI.googlemaps.createiFrameMap(m);
-							}
-							
-						}
-						
-					}
-					
-					function createMarker(place) {
-						var marker, placeLoc;
-						
-						placeLoc = place.geometry.location;
-						marker = new google.maps.Marker({
-							map: map,
-							position: place.geometry.location
-						});
-
-						google.maps.event.addListener(marker, 'click', function() {
-							infowindow.setContent(place.name);
-							infowindow.open(map, this);
-						});
-					}
-					
-				}
-				
-				function loadPlacesAlt() {
-					var api_key,
-						places_url,
-						has_key		= false;
-						
-					trace("LOADING PLACES API FOR GOOGLE MAPS");
-						
-					if (VMM.ExternalAPI.keys.google != "") {
-						api_key	= VMM.ExternalAPI.keys.google;
-						has_key	= true;
-					} else {
-						trace("YOU NEED A GOOGLE MAPS API KEY IN ORDER TO USE THIS FEATURE OF TIMELINEJS");
-						trace("FIND OUT HOW TO GET YOUR KEY HERE: https://developers.google.com/places/documentation/#Authentication");
-					}
-					
-					places_url		= "https://maps.googleapis.com/maps/api/place/textsearch/json?key=" + api_key + "&sensor=false&language=" + m.lang + "&";
-					
-					if (type.of(VMM.Util.getUrlVars(m.id)["q"]) == "string") {
-						places_url	+= "query=" + VMM.Util.getUrlVars(m.id)["q"];
-					}
-					
-					if (has_location) {
-						places_url	+= "&location=" + location;
-					} 
-					
-					if (has_key) {
-						VMM.getJSON(places_url, function(d) {
-							trace("PLACES JSON");
-						
-							var places_location 	= "",
-								places_bounds		= "",
-								places_bounds_ne	= "",
-								places_bounds_sw	= "";
-						
-							trace(d);
-						
-							if (d.status == "OVER_QUERY_LIMIT") {
-								trace("OVER_QUERY_LIMIT");
-								if (has_location) {
-									map.panTo(location);
-									if (has_zoom) {
-										map.setZoom(zoom);
-									}
-								} else {
-									trace("DOING TRADITIONAL MAP IFRAME EMBED UNTIL QUERY LIMIT RESTORED");
-									api_limit = true;
-									VMM.ExternalAPI.googlemaps.createiFrameMap(m);
-								}
-							
-							} else {
-								if (d.results.length >= 1) {
-									//location = new google.maps.LatLng(parseFloat(d.results[0].geometry.location.lat),parseFloat(d.results[0].geometry.location.lng));
-									//map.panTo(location);
-							
-									places_bounds_ne	= new google.maps.LatLng(parseFloat(d.results[0].geometry.viewport.northeast.lat),parseFloat(d.results[0].geometry.viewport.northeast.lng));
-									places_bounds_sw	= new google.maps.LatLng(parseFloat(d.results[0].geometry.viewport.southwest.lat),parseFloat(d.results[0].geometry.viewport.southwest.lng));
-							
-									places_bounds = new google.maps.LatLngBounds(places_bounds_sw, places_bounds_ne)
-									map.fitBounds(places_bounds);
-							
-								} else {
-									trace("NO RESULTS");
-								}
-						
-								if (has_location) {
-									map.panTo(location);
-								} 
-								if (has_zoom) {
-									map.setZoom(zoom);
-								}
-							}
-						
-						})
-						.error(function(jqXHR, textStatus, errorThrown) {
-							trace("PLACES JSON ERROR");
-							trace("PLACES JSON ERROR: " + textStatus + " " + jqXHR.responseText);
-						})
-						.success(function(d) {
-							trace("PLACES JSON SUCCESS");
-						});
-					} else {
-						if (has_location) {
-							map.panTo(location);
-							if (has_zoom) {
-								map.setZoom(zoom);
-							}
-						} else {
-							trace("DOING TRADITIONAL MAP IFRAME EMBED BECAUSE NO GOOGLE MAP API KEY WAS PROVIDED");
-							VMM.ExternalAPI.googlemaps.createiFrameMap(m);
-						}
-					}
-					
-					
-				}
-				
-				// KML
-				function loadKML() {
-					var kml_url, kml_layer, infowindow, text;
-					
-					kml_url				= m.id + "&output=kml";
-					kml_url				= kml_url.replace("&output=embed", "");
-					kml_layer			= new google.maps.KmlLayer(kml_url, {preserveViewport:true});
-					infowindow			= new google.maps.InfoWindow();
-					kml_layer.setMap(map);
-					
-					google.maps.event.addListenerOnce(kml_layer, "defaultviewport_changed", function() {
-					   
-						if (has_location) {
-							map.panTo(location);
-						} else {
-							map.fitBounds(kml_layer.getDefaultViewport() );
-						}
-						if (has_zoom) {
-							map.setZoom(zoom);
-						}
-					});
-					
-					google.maps.event.addListener(kml_layer, 'click', function(kmlEvent) {
-						text			= kmlEvent.featureData.description;
-						showInfoWindow(text);
-						
-						function showInfoWindow(c) {
-							infowindow.setContent(c);
-							infowindow.open(map);
-						}
-					});
-				}
-				
-				
-			},
-			
-			pushQue: function() {
-				for(var i = 0; i < VMM.master_config.googlemaps.que.length; i++) {
-					VMM.ExternalAPI.googlemaps.create(VMM.master_config.googlemaps.que[i]);
-				}
-				VMM.master_config.googlemaps.que = [];
-			},
-			
-			onMapAPIReady: function() {
-				VMM.master_config.googlemaps.map_active = true;
-				VMM.master_config.googlemaps.places_active = true;
-				VMM.ExternalAPI.googlemaps.onAPIReady();
-			},
-			
-			onPlacesAPIReady: function() {
-				VMM.master_config.googlemaps.places_active = true;
-				VMM.ExternalAPI.googlemaps.onAPIReady();
-			},
-			
-			onAPIReady: function() {
-				if (!VMM.master_config.googlemaps.active) {
-					if (VMM.master_config.googlemaps.map_active && VMM.master_config.googlemaps.places_active) {
-						VMM.master_config.googlemaps.active = true;
-						VMM.ExternalAPI.googlemaps.pushQue();
-					}
-				}
-			},
-			
-			defaultType: function(name) {
-				if (name.toLowerCase() == "satellite" || name.toLowerCase() == "hybrid" || name.toLowerCase() == "terrain" || name.toLowerCase() == "roadmap") {
-					return true;
-				} else {
-					return false;
-				}
-			},
-			
-			map_subdomains: ["a", "b", "c", "d"],
-			
-			map_attribution: {
-				"stamen": 			"Map tiles by <a href='http://stamen.com'>Stamen Design</a>, under <a href='http://creativecommons.org/licenses/by/3.0'>CC BY 3.0</a>. Data by <a href='http://openstreetmap.org'>OpenStreetMap</a>, under <a href='http://creativecommons.org/licenses/by-sa/3.0'>CC BY SA</a>.",
-				"apple": 			"Map data &copy; 2012  Apple, Imagery &copy; 2012 Apple",
-				"osm":				"&copy; <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-			},
-									
-			map_providers: {
-				"toner": {
-					"url": "https://stamen-tiles-{S}.a.ssl.fastly.net/toner/{Z}/{X}/{Y}.png",
-					"minZoom": 		0,
-					"maxZoom": 		20,
-					"attribution": 	"stamen"
-					
-				},
-				"toner-lines": {
-					"url": "https://stamen-tiles-{S}.a.ssl.fastly.net/toner-lines/{Z}/{X}/{Y}.png",
-					"minZoom": 		0,
-					"maxZoom": 		20,
-					"attribution": 	"stamen"
-				},
-				"toner-labels": {
-					"url": "https://stamen-tiles-{S}.a.ssl.fastly.net/toner-labels/{Z}/{X}/{Y}.png",
-					"minZoom": 		0,
-					"maxZoom": 		20,
-					"attribution": 	"stamen"
-				},
-				"sterrain": {
-					"url": "https://stamen-tiles-{S}.a.ssl.fastly.net/terrain/{Z}/{X}/{Y}.jpg",
-					"minZoom": 		4,
-					"maxZoom": 		20,
-					"attribution": 	"stamen"
-				},
-				"apple": {
-					"url": 			"//gsp2.apple.com/tile?api=1&style=slideshow&layers=default&lang=en_US&z={z}&x={x}&y={y}&v=9",
-					"minZoom": 		4,
-					"maxZoom": 		14,
-					"attribution": 	"apple"
-				},
-				"watercolor": {
-					"url": "https://stamen-tiles-{S}.a.ssl.fastly.net/watercolor/{Z}/{X}/{Y}.jpg",
-					"minZoom": 		3,
-					"maxZoom": 		16,
-					"attribution": 	"stamen"
-				},
-				"osm": {
-					"url": 			"//tile.openstreetmap.org/{z}/{x}/{y}.png",
-					"minZoom": 		3,
-					"maxZoom": 		18,
-					"attribution":		"osm"
-				}
-			}
-		},
-		
-		googleplus: {
-			
-			get: function(m) {
-				var api_key;
-				var gplus = {user: m.user, activity: m.id, id: m.uid};
-				
-				VMM.master_config.googleplus.que.push(gplus);
-				VMM.master_config.googleplus.active = true;
-			},
-			
-			create: function(gplus, callback) {
-				var mediaElem			= "",
-					api_key				= "",
-					g_activity			= "",
-					g_content			= "",
-					g_attachments		= "",
-					gperson_api_url,
-					gactivity_api_url;
-					googleplus_timeout	= setTimeout(VMM.ExternalAPI.googleplus.errorTimeOut, VMM.master_config.timers.api, gplus),
-					callback_timeout	= setTimeout(callback, VMM.master_config.timers.api, gplus);
-					
-				
-				if (VMM.master_config.Timeline.api_keys.google != "") {
-					api_key = VMM.master_config.Timeline.api_keys.google;
-				} else {
-					api_key = Aes.Ctr.decrypt(VMM.master_config.api_keys_master.google, VMM.master_config.vp, 256);
-				}
-				
-				gperson_api_url = "https://www.googleapis.com/plus/v1/people/" + gplus.user + "/activities/public?alt=json&maxResults=100&fields=items(id,url)&key=" + api_key;
-				
-				//mediaElem	=	"<iframe class='doc' frameborder='0' width='100%' height='100%' src='" + gplus.url + "&amp;embedded=true'></iframe>";
-				mediaElem = "GOOGLE PLUS API CALL";
-				
-				VMM.getJSON(gperson_api_url, function(p_data) {
-					for(var i = 0; i < p_data.items.length; i++) {
-						trace("loop");
-						if (p_data.items[i].url.split("posts/")[1] == gplus.activity) {
-							trace("FOUND IT!!");
-							
-							g_activity = p_data.items[i].id;
-							gactivity_api_url = "https://www.googleapis.com/plus/v1/activities/" + g_activity + "?alt=json&key=" + api_key;
-							
-							VMM.getJSON(gactivity_api_url, function(a_data) {
-								trace(a_data);
-								//a_data.url
-								//a_data.image.url
-								//a_data.actor.displayName
-								//a_data.provider.title
-								//a_data.object.content
-								
-								//g_content		+=	"<h4>" + a_data.title + "</h4>";
-								
-								if (typeof a_data.annotation != 'undefined') {
-									g_content	+=	"<div class='googleplus-annotation'>'" + a_data.annotation + "</div>";
-									g_content	+=	a_data.object.content;
-								} else {
-									g_content	+=	a_data.object.content;
-								}
-								
-								if (typeof a_data.object.attachments != 'undefined') {
-									
-									//g_attachments	+=	"<div class='googleplus-attachemnts'>";
-									
-									for(var k = 0; k < a_data.object.attachments.length; k++) {
-										if (a_data.object.attachments[k].objectType == "photo") {
-											g_attachments	=	"<a href='" + a_data.object.url + "' target='_blank'>" + "<img src='" + a_data.object.attachments[k].image.url + "' class='article-thumb'></a>" + g_attachments;
-										} else if (a_data.object.attachments[k].objectType == "video") {
-											g_attachments	=	"<img src='" + a_data.object.attachments[k].image.url + "' class='article-thumb'>" + g_attachments;
-											g_attachments	+=	"<div>";
-											g_attachments	+=	"<a href='" + a_data.object.attachments[k].url + "' target='_blank'>"
-											g_attachments	+=	"<h5>" + a_data.object.attachments[k].displayName + "</h5>";
-											//g_attachments	+=	"<p>" + a_data.object.attachments[k].content + "</p>";
-											g_attachments	+=	"</a>";
-											g_attachments	+=	"</div>";
-										} else if (a_data.object.attachments[k].objectType == "article") {
-											g_attachments	+=	"<div>";
-											g_attachments	+=	"<a href='" + a_data.object.attachments[k].url + "' target='_blank'>"
-											g_attachments	+=	"<h5>" + a_data.object.attachments[k].displayName + "</h5>";
-											g_attachments	+=	"<p>" + a_data.object.attachments[k].content + "</p>";
-											g_attachments	+=	"</a>";
-											g_attachments	+=	"</div>";
-										}
-										
-										trace(a_data.object.attachments[k]);
-									}
-									
-									g_attachments	=	"<div class='googleplus-attachments'>" + g_attachments + "</div>";
-								}
-								
-								//mediaElem		=	"<div class='googleplus'>";
-								mediaElem		=	"<div class='googleplus-content'>" + g_content + g_attachments + "</div>";
-
-								mediaElem		+=	"<div class='vcard author'><a class='screen-name url' href='" + a_data.url + "' target='_blank'>";
-								mediaElem		+=	"<span class='avatar'><img src='" + a_data.actor.image.url + "' style='max-width: 32px; max-height: 32px;'></span>"
-								mediaElem		+=	"<span class='fn'>" + a_data.actor.displayName + "</span>";
-								mediaElem		+=	"<span class='nickname'><span class='thumbnail-inline'></span></span>";
-								mediaElem		+=	"</a></div>";
-								
-								VMM.attachElement("#googleplus_" + gplus.activity, mediaElem);
-								
-								
-							});
-							
-							break;
-						}
-					}
-					
-					
-					
-				})
-				.error(function(jqXHR, textStatus, errorThrown) {
-					var error_obj = VMM.parseJSON(jqXHR.responseText);
-					trace(error_obj.error.message);
-					VMM.attachElement("#googleplus_" + gplus.activity, VMM.MediaElement.loadingmessage("<p>ERROR LOADING GOOGLE+ </p><p>" + error_obj.error.message + "</p>"));
-				})
-				.success(function(d) {
-					clearTimeout(googleplus_timeout);
-					clearTimeout(callback_timeout);
-					callback();
-				});
-				
-				
-				
-			},
-			
-			pushQue: function() {
-				if (VMM.master_config.googleplus.que.length > 0) {
-					VMM.ExternalAPI.googleplus.create(VMM.master_config.googleplus.que[0], VMM.ExternalAPI.googleplus.pushQue);
-					VMM.Util.removeRange(VMM.master_config.googleplus.que,0);
-				}
-				/*
-				for(var i = 0; i < VMM.master_config.googleplus.que.length; i++) {
-					VMM.ExternalAPI.googleplus.create(VMM.master_config.googleplus.que[i]);
-				}
-				VMM.master_config.googleplus.que = [];
-				*/
-			},
-			
-			errorTimeOut: function(gplus) {
-				trace("GOOGLE+ JSON ERROR TIMEOUT " + gplus.activity);
-				VMM.attachElement("#googleplus_" + gplus.activity, VMM.MediaElement.loadingmessage("<p>Still waiting on GOOGLE+ </p><p>" + gplus.activity + "</p>"));
-				
-			}
-			
-		},
-		
-		googledocs: {
-			
-			get: function(m) {
-				VMM.master_config.googledocs.que.push(m);
-				VMM.master_config.googledocs.active = true;
-			},
-			
-			create: function(m) {
-				var mediaElem = ""; 
-				if (m.id.match(/docs.google.com/i)) {
-					mediaElem	=	"<iframe class='doc' frameborder='0' width='100%' height='100%' src='" + m.id + "&amp;embedded=true'></iframe>";
-				} else {
-					mediaElem	=	"<iframe class='doc' frameborder='0' width='100%' height='100%' src='" + "//docs.google.com/viewer?url=" + m.id + "&amp;embedded=true'></iframe>";
-				}
-				VMM.attachElement("#"+m.uid, mediaElem);
-			},
-			
-			pushQue: function() {
-				
-				for(var i = 0; i < VMM.master_config.googledocs.que.length; i++) {
-					VMM.ExternalAPI.googledocs.create(VMM.master_config.googledocs.que[i]);
-				}
-				VMM.master_config.googledocs.que = [];
-			}
-		
-		},
-		
-		flickr: {
-			
-			get: function(m) {
-				VMM.master_config.flickr.que.push(m);
-				VMM.master_config.flickr.active = true;
-			},
-			
-			create: function(m, callback) {
-				var api_key,
-					callback_timeout= setTimeout(callback, VMM.master_config.timers.api, m);
-					
-				if (typeof VMM.master_config.Timeline != 'undefined' && VMM.master_config.Timeline.api_keys.flickr != "") {
-					api_key = VMM.master_config.Timeline.api_keys.flickr;
-				} else {
-					api_key = Aes.Ctr.decrypt(VMM.master_config.api_keys_master.flickr, VMM.master_config.vp, 256)
-				}
-				var the_url = "https://api.flickr.com/services/rest/?method=flickr.photos.getSizes&api_key=" + api_key + "&photo_id=" + m.id + "&format=json&jsoncallback=?";
-				
-				VMM.getJSON(the_url, function(d) {
-					var flickr_id = VMM.ExternalAPI.flickr.getFlickrIdFromUrl(d.sizes.size[0].url);
-				
-					var flickr_large_id = "#" + m.uid,
-						flickr_thumb_id = "#" + m.uid + "_thumb";
-						//flickr_thumb_id = "flickr_" + uid + "_thumb";
-				
-					var flickr_img_size,
-						flickr_img_thumb,
-						flickr_size_found = false,
-						flickr_best_size = "Large";
-				
-					flickr_best_size = VMM.ExternalAPI.flickr.sizes(VMM.master_config.sizes.api.height);
-					for(var i = 0; i < d.sizes.size.length; i++) {
-						if (d.sizes.size[i].label == flickr_best_size) {
-							
-							flickr_size_found = true;
-							flickr_img_size = d.sizes.size[i].source;
-						}
-					}
-					if (!flickr_size_found) {
-						flickr_img_size = d.sizes.size[d.sizes.size.length - 2].source;
-					}
-				
-					flickr_img_thumb = d.sizes.size[0].source;
-					VMM.Lib.attr(flickr_large_id, "src", flickr_img_size);
-					//VMM.attachElement(flickr_large_id, "<a href='" + flick.link + "' target='_blank'><img src='" + flickr_img_size + "'></a>");
-					VMM.attachElement(flickr_thumb_id, "<img src='" + flickr_img_thumb + "'>");
-					
-				})
-				.error(function(jqXHR, textStatus, errorThrown) {
-					trace("FLICKR error");
-					trace("FLICKR ERROR: " + textStatus + " " + jqXHR.responseText);
-				})
-				.success(function(d) {
-					clearTimeout(callback_timeout);
-					callback();
-				});
-				
-			},
-			
-			pushQue: function() {
-				if (VMM.master_config.flickr.que.length > 0) {
-					VMM.ExternalAPI.flickr.create(VMM.master_config.flickr.que[0], VMM.ExternalAPI.flickr.pushQue);
-					VMM.Util.removeRange(VMM.master_config.flickr.que,0);
-				}
-			},
-			
-			sizes: function(s) {
-				var _size = "";
-				if (s <= 75) {
-					_size = "Thumbnail";
-				} else if (s <= 180) {
-					_size = "Small";
-				} else if (s <= 240) {
-					_size = "Small 320";
-				} else if (s <= 375) {
-					_size = "Medium";
-				} else if (s <= 480) {
-					_size = "Medium 640";
-				} else if (s <= 600) {
-					_size = "Large";
-				} else {
-					_size = "Large";
-				}
-				
-				return _size;
-			},
-
-			getFlickrIdFromUrl: function(url) {
-				var idx = url.indexOf("flickr.com/photos/");
-				if (idx == -1) return null; 
-				var pos = idx + "flickr.com/photos/".length;
-				var photo_info = url.substr(pos)
-				if (photo_info.indexOf('/') == -1) return null;
-				if (photo_info.indexOf('/') == 0) photo_info = photo_info.substr(1);
-				return photo_info.split("/")[1];
-			}
-		},
-		
-		instagram: {
-			get: function(m, thumb) {
-				if (thumb) {
-					return "//instagr.am/p/" + m.id + "/media/?size=t";
-				} else {
-					return "//instagr.am/p/" + m.id + "/media/?size=" + VMM.ExternalAPI.instagram.sizes(VMM.master_config.sizes.api.height);
-				}
-			},
-			
-			sizes: function(s) {
-				var _size = "";
-				if (s <= 150) {
-					_size = "t";
-				} else if (s <= 306) {
-					_size = "m";
-				} else {
-					_size = "l";
-				}
-				
-				return _size;
-			},
-
-			isInstagramUrl: function(url) {
-				return url.match("instagr.am/p/") || url.match("instagram.com/p/");
-			},
-
-			getInstagramIdFromUrl: function(url) {
-				try {
-					return url.split("\/p\/")[1].split("/")[0];	
-				} catch(e) {
-					trace("Invalid Instagram url: " + url);
-					return null;
-				}
-				
-			}
-		},
-		
-		soundcloud: {
-			
-			get: function(m) {
-				VMM.master_config.soundcloud.que.push(m);
-				VMM.master_config.soundcloud.active = true;
-			},
-			
-			create: function(m, callback) {
-				var the_url = "//soundcloud.com/oembed?url=" + m.id + "&maxheight=168&format=js&callback=?";
-				VMM.getJSON(the_url, function(d) {
-					VMM.attachElement("#"+m.uid, d.html);
-					callback();
-				});
-			},
-			
-			pushQue: function() {
-				if (VMM.master_config.soundcloud.que.length > 0) {
-					VMM.ExternalAPI.soundcloud.create(VMM.master_config.soundcloud.que[0], VMM.ExternalAPI.soundcloud.pushQue);
-					VMM.Util.removeRange(VMM.master_config.soundcloud.que,0);
-				}
-			}
-			
-		},
-		
-		wikipedia: {
-			
-			get: function(m) {
-				VMM.master_config.wikipedia.que.push(m);
-				VMM.master_config.wikipedia.active = true;
-			},
-			
-			create: function(m, callback) {
-				var the_url = "//" + m.lang + ".wikipedia.org/w/api.php?action=query&prop=extracts&redirects=&titles=" + m.id + "&exintro=1&format=json&callback=?";
-				callback_timeout= setTimeout(callback, VMM.master_config.timers.api, m);
-				
-				if ( VMM.Browser.browser == "Explorer" && parseInt(VMM.Browser.version, 10) >= 7 && window.XDomainRequest) {
-					var temp_text	=	"<h4><a href='http://" + VMM.master_config.language.api.wikipedia + ".wikipedia.org/wiki/" + m.id + "' target='_blank'>" + m.url + "</a></h4>";
-					temp_text		+=	"<span class='wiki-source'>" + VMM.master_config.language.messages.wikipedia + "</span>";
-					temp_text		+=	"<p>Wikipedia entry unable to load using Internet Explorer 8 or below.</p>";
-					VMM.attachElement("#"+m.uid, temp_text );
-				}
-				
-				VMM.getJSON(the_url, function(d) {
-					if (d.query) {
-						var wiki_extract,
-							wiki_title, 
-							_wiki = "", 
-							wiki_text = "", 
-							wiki_number_of_paragraphs = 1, 
-							wiki_text_array = [];
-						
-						wiki_extract = VMM.Util.getObjectAttributeByIndex(d.query.pages, 0).extract;
-						wiki_title = VMM.Util.getObjectAttributeByIndex(d.query.pages, 0).title;
-						
-						if (wiki_extract.match("<p>")) {
-							wiki_text_array = wiki_extract.split("<p>");
-						} else {
-							wiki_text_array.push(wiki_extract);
-						}
-					
-						for(var i = 0; i < wiki_text_array.length; i++) {
-							if (i+1 <= wiki_number_of_paragraphs && i+1 < wiki_text_array.length) {
-								wiki_text	+= "<p>" + wiki_text_array[i+1];
-							}
-						}
-					
-						_wiki		=	"<h4><a href='http://" + VMM.master_config.language.api.wikipedia + ".wikipedia.org/wiki/" + wiki_title + "' target='_blank'>" + wiki_title + "</a></h4>";
-						_wiki		+=	"<span class='wiki-source'>" + VMM.master_config.language.messages.wikipedia + "</span>";
-						_wiki		+=	VMM.Util.linkify_wikipedia(wiki_text);
-					
-						if (wiki_extract.match("REDIRECT")) {
-						
-						} else {
-							VMM.attachElement("#"+m.uid, _wiki );
-						}
-					}
-					//callback();
-				})
-				.error(function(jqXHR, textStatus, errorThrown) {
-					trace("WIKIPEDIA error");
-					trace("WIKIPEDIA ERROR: " + textStatus + " " + jqXHR.responseText);
-					trace(errorThrown);
-					
-					VMM.attachElement("#"+m.uid, VMM.MediaElement.loadingmessage("<p>Wikipedia is not responding</p>"));
-					// TRY AGAIN?
-					clearTimeout(callback_timeout);
-					if (VMM.master_config.wikipedia.tries < 4) {
-						trace("WIKIPEDIA ATTEMPT " + VMM.master_config.wikipedia.tries);
-						trace(m);
-						VMM.master_config.wikipedia.tries++;
-						VMM.ExternalAPI.wikipedia.create(m, callback);
-					} else {
-						callback();
-					}
-					
-				})
-				.success(function(d) {
-					VMM.master_config.wikipedia.tries = 0;
-					clearTimeout(callback_timeout);
-					callback();
-				});
-				
-				
-			},
-			
-			pushQue: function() {
-				
-				if (VMM.master_config.wikipedia.que.length > 0) {
-					trace("WIKIPEDIA PUSH QUE " + VMM.master_config.wikipedia.que.length);
-					VMM.ExternalAPI.wikipedia.create(VMM.master_config.wikipedia.que[0], VMM.ExternalAPI.wikipedia.pushQue);
-					VMM.Util.removeRange(VMM.master_config.wikipedia.que,0);
-				}
-
-			}
-			
-		},
-		
-		youtube: {
-			
-			get: function(m) {
-				var the_url = "//gdata.youtube.com/feeds/api/videos/" + m.id + "?v=2&alt=jsonc&callback=?";
-					
-				VMM.master_config.youtube.que.push(m);
-				
-				if (!VMM.master_config.youtube.active) {
-					if (!VMM.master_config.youtube.api_loaded) {
-						LoadLib.js('//www.youtube.com/player_api', function() {
-							trace("YouTube API Library Loaded");
-						});
-					}
-				}
-				
-				// THUMBNAIL
-				VMM.getJSON(the_url, function(d) {
-					VMM.ExternalAPI.youtube.createThumb(d, m)
-				});
-				
-			},
-			
-			create: function(m) {
-				if (typeof(m.start) != 'undefined') {
-					
-					var vidstart			= m.start.toString(),
-						vid_start_minutes	= 0,
-						vid_start_seconds	= 0;
-						
-					if (vidstart.match('m')) {
-						vid_start_minutes = parseInt(vidstart.split("m")[0], 10);
-						vid_start_seconds = parseInt(vidstart.split("m")[1].split("s")[0], 10);
-						m.start = (vid_start_minutes * 60) + vid_start_seconds;
-					} else {
-						m.start = 0;
-					}
-				} else {
-					m.start = 0;
-				}
-				
-				var p = {
-					active: 				false,
-					player: 				{},
-					name:					m.uid,
-					playing:				false,
-					hd:						false
-				};
-				
-				if (typeof(m.hd) != 'undefined') {
-					p.hd = true;
-				}
-				
-				p.player[m.id] = new YT.Player(m.uid, {
-					height: 				'390',
-					width: 					'640',
-					playerVars: {
-						enablejsapi: 1,
-						color: ("dark" == VMM.master_config.Timeline.youtubeTheme) ? "red" : "white", // https://developers.google.com/youtube/player_parameters#color
-						showinfo: 0,
-						theme: ("undefined" !== VMM.master_config.Timeline.youtubeTheme) ? VMM.master_config.Timeline.youtubeTheme : "light", // https://developers.google.com/youtube/player_parameters#theme
-						start: m.start,
-						rel: 0
-					},
-					videoId: m.id,
-					events: {
-						'onReady': 			VMM.ExternalAPI.youtube.onPlayerReady,
-						'onStateChange': 	VMM.ExternalAPI.youtube.onStateChange
-					}
-				});
-				
-				VMM.master_config.youtube.array.push(p);
-			},
-			
-			createThumb: function(d, m) {
-				trace("CREATE THUMB");
-				trace(d);
-				trace(m);
-				if (typeof d.data != 'undefined') {
-					var thumb_id = "#" + m.uid + "_thumb";
-					VMM.attachElement(thumb_id, "<img src='" + d.data.thumbnail.sqDefault + "'>");
-					
-				}
-			},
-			
-			pushQue: function() {
-				for(var i = 0; i < VMM.master_config.youtube.que.length; i++) {
-					VMM.ExternalAPI.youtube.create(VMM.master_config.youtube.que[i]);
-				}
-				VMM.master_config.youtube.que = [];
-			},
-			
-			onAPIReady: function() {
-				VMM.master_config.youtube.active = true;
-				VMM.ExternalAPI.youtube.pushQue();
-			},
-			
-			stopPlayers: function() {
-				for(var i = 0; i < VMM.master_config.youtube.array.length; i++) {
-					if (VMM.master_config.youtube.array[i].playing) {
-						if (typeof VMM.master_config.youtube.array[i].player.the_name !== 'undefined') {
-							VMM.master_config.youtube.array[i].player.the_name.stopVideo();
-						}
-					}
-				}
-			},
-			 
-			onStateChange: function(e) {
-				for(var i = 0; i < VMM.master_config.youtube.array.length; i++) {
-					for (var z in VMM.master_config.youtube.array[i].player) {
-						if (VMM.master_config.youtube.array[i].player[z] == e.target) {
-							VMM.master_config.youtube.array[i].player.the_name = VMM.master_config.youtube.array[i].player[z];
-						}
-					}
-					if (VMM.master_config.youtube.array[i].player.the_name == e.target) {
-						if (e.data == YT.PlayerState.PLAYING) {
-							VMM.master_config.youtube.array[i].playing = true;
-							if (VMM.master_config.youtube.array[i].hd === false) {
-								VMM.master_config.youtube.array[i].hd = true;
-								VMM.master_config.youtube.array[i].player.the_name.setPlaybackQuality("hd720");
-							}
-						}
-					}
-				}
-			},
-			
-			onPlayerReady: function(e) {
-				
-			}
-			
-			
-		},
-		
-		vimeo: {
-			
-			get: function(m) {
-				VMM.master_config.vimeo.que.push(m);
-				VMM.master_config.vimeo.active = true;
-			},
-			
-			create: function(m, callback) {
-				trace("VIMEO CREATE");
-				
-				// THUMBNAIL
-				var thumb_url	= "//vimeo.com/api/v2/video/" + m.id + ".json",
-					video_url	= "//player.vimeo.com/video/" + m.id + "?title=0&amp;byline=0&amp;portrait=0&amp;color=ffffff";
-					
-				VMM.getJSON(thumb_url, function(d) {
-					VMM.ExternalAPI.vimeo.createThumb(d, m);
-					callback();
-				});
-				
-				
-				// VIDEO
-				VMM.attachElement("#" + m.uid, "<iframe autostart='false' frameborder='0' width='100%' height='100%' src='" + video_url + "'></iframe>");
-				
-			},
-			
-			createThumb: function(d, m) {
-				trace("VIMEO CREATE THUMB");
-				var thumb_id = "#" + m.uid + "_thumb";
-				VMM.attachElement(thumb_id, "<img src='" + d[0].thumbnail_small + "'>");
-			},
-			
-			pushQue: function() {
-				if (VMM.master_config.vimeo.que.length > 0) {
-					VMM.ExternalAPI.vimeo.create(VMM.master_config.vimeo.que[0], VMM.ExternalAPI.vimeo.pushQue);
-					VMM.Util.removeRange(VMM.master_config.vimeo.que,0);
-				}
-			}
-			
-		},
-		
-		vine: {
-			
-			get: function(m) {
-				VMM.master_config.vine.que.push(m);
-				VMM.master_config.vine.active = true;
-			},
-			
-			create: function(m, callback) {
-				trace("VINE CREATE");				
-				
-				var video_url	= "https://vine.co/v/" + m.id + "/embed/simple";
-					
-				
-				
-				// VIDEO
-				// TODO: NEED TO ADD ASYNC SCRIPT TO TIMELINE FLOW
-				VMM.attachElement("#" + m.uid, "<iframe frameborder='0' width='100%' height='100%' src='" + video_url + "'></iframe><script async src='http://platform.vine.co/static/scripts/embed.js' charset='utf-8'></script>");
-				
-			},
-			
-			pushQue: function() {
-				if (VMM.master_config.vine.que.length > 0) {
-					VMM.ExternalAPI.vine.create(VMM.master_config.vine.que[0], VMM.ExternalAPI.vine.pushQue);
-					VMM.Util.removeRange(VMM.master_config.vine.que,0);
-				}
-			}
-			
-		},
-		
-		webthumb: {
-			
-			get: function(m, thumb) {
-				VMM.master_config.webthumb.que.push(m);
-				VMM.master_config.webthumb.active = true;
-			},
-			
-			sizes: function(s) {
-				var _size = "";
-				if (s <= 150) {
-					_size = "t";
-				} else if (s <= 306) {
-					_size = "m";
-				} else {
-					_size = "l";
-				}
-				
-				return _size;
-			},
-			
-			create: function(m) {
-				trace("WEB THUMB CREATE");
-				
-				var thumb_url	= "//api.pagepeeker.com/v2/thumbs.php?";
-					url			= m.id.replace("http://", "");//.split("/")[0];
-					
-				// Main Image
-				VMM.attachElement("#" + m.uid, "<a href='" + m.id + "' target='_blank'><img src='" + thumb_url + "size=x&url=" + url + "'></a>");
-				
-				// Thumb
-				VMM.attachElement("#" + m.uid + "_thumb", "<img src='" + thumb_url + "size=t&url=" + url + "'>");
-			},
-			
-			pushQue: function() {
-				for(var i = 0; i < VMM.master_config.webthumb.que.length; i++) {
-					VMM.ExternalAPI.webthumb.create(VMM.master_config.webthumb.que[i]);
-				}
-				VMM.master_config.webthumb.que = [];
-			}
-		}
-	
-	}).init();
-	
-}
-
-/*  YOUTUBE API READY
-	Can't find a way to customize this callback and keep it in the VMM namespace
-	Youtube wants it to be this function. 
-================================================== */
-function onYouTubePlayerAPIReady() {
-	trace("GLOBAL YOUTUBE API CALLED")
-	VMM.ExternalAPI.youtube.onAPIReady();
-}
-
-
-/* **********************************************
-     Begin VMM.MediaElement.js
-********************************************** */
-
-/* MediaElement
-================================================== */
-if(typeof VMM != 'undefined' && typeof VMM.MediaElement == 'undefined') {
-	
-	VMM.MediaElement = ({
-		
-		init: function() {
-			return this;
-		},
-		
-		loadingmessage: function(m) {
-			return "<div class='vco-loading'><div class='vco-loading-container'><div class='vco-loading-icon'></div>" + "<div class='vco-message'><p>" + m + "</p></div></div></div>";
-		},
-		
-		thumbnail: function(data, w, h, uid) {
-			var _w		= 16,
-				_h		= 24,
-				_uid	= "";
-				
-			if (w != null && w != "") {_w = w};
-			if (h != null && h != "") {_h = h};
-			if (uid != null && uid != "") {_uid = uid};
-			
-
-			if (data.thumbnail != null && data.thumbnail != "") {
-					trace("CUSTOM THUMB");
-					mediaElem =	"<div class='thumbnail thumb-custom' id='" + uid + "_custom_thumb'><img src='" + data.thumbnail + "'></div>";
-					return mediaElem;
-			} else if (data.media != null && data.media != "") {
-				var _valid		= true,
-					mediaElem	= "",
-					m			= VMM.MediaType(data.media); //returns an object with .type and .id
-					
-				// DETERMINE THUMBNAIL OR ICON
-				if (m.type == "image") {
-					mediaElem		=	"<div class='thumbnail thumb-photo'></div>";
-					return mediaElem;
-				} else if (m.type	==	"flickr") {
-					mediaElem		=	"<div class='thumbnail thumb-photo' id='" + uid + "_thumb'></div>";
-					return mediaElem;
-				} else if (m.type	==	"instagram") {
-					mediaElem		=	"<div class='thumbnail thumb-instagram' id='" + uid + "_thumb'><img src='" + VMM.ExternalAPI.instagram.get(m, true) + "'></div>";
-					return mediaElem;
-				} else if (m.type	==	"youtube") {
-					mediaElem		=	"<div class='thumbnail thumb-youtube' id='" + uid + "_thumb'></div>";
-					return mediaElem;
-				} else if (m.type	==	"googledoc") {
-					mediaElem		=	"<div class='thumbnail thumb-document'></div>";
-					return mediaElem;
-				} else if (m.type	==	"vimeo") {
-					mediaElem		=	"<div class='thumbnail thumb-vimeo' id='" + uid + "_thumb'></div>";
-					return mediaElem;
-				} else if (m.type  ==  "vine") {
-					mediaElem		=  "<div class='thumbnail thumb-vine'></div>";
-					return mediaElem;
-				} else if (m.type  ==  "dailymotion") {
-					mediaElem		=  "<div class='thumbnail thumb-video'></div>";
-					return mediaElem;
-				} else if (m.type	==	"twitter"){
-					mediaElem		=	"<div class='thumbnail thumb-twitter'></div>";
-					return mediaElem;
-				} else if (m.type	==	"twitter-ready") {
-					mediaElem		=	"<div class='thumbnail thumb-twitter'></div>";
-					return mediaElem;
-				} else if (m.type	==	"soundcloud") {
-					mediaElem		=	"<div class='thumbnail thumb-audio'></div>";
-					return mediaElem;
-				} else if (m.type	==	"google-map") {
-					mediaElem		=	"<div class='thumbnail thumb-map'></div>";
-					return mediaElem;
-				} else if (m.type		==	"googleplus") {
-					mediaElem		=	"<div class='thumbnail thumb-googleplus'></div>";
-					return mediaElem;
-				} else if (m.type	==	"wikipedia") {
-					mediaElem		=	"<div class='thumbnail thumb-wikipedia'></div>";
-					return mediaElem;
-				} else if (m.type	==	"storify") {
-					mediaElem		=	"<div class='thumbnail thumb-storify'></div>";
-					return mediaElem;
-				} else if (m.type	==	"quote") {
-					mediaElem		=	"<div class='thumbnail thumb-quote'></div>";
-					return mediaElem;
-				} else if (m.type	==	"iframe") {
-					mediaElem		=	"<div class='thumbnail thumb-video'></div>";
-					return mediaElem;
-				} else if (m.type	==	"unknown") {
-					if (m.id.match("blockquote")) {
-						mediaElem	=	"<div class='thumbnail thumb-quote'></div>";
-					} else {
-						mediaElem	=	"<div class='thumbnail thumb-plaintext'></div>";
-					}
-					return mediaElem;
-				} else if (m.type	==	"website") {
-					mediaElem		=	"<div class='thumbnail thumb-website' id='" + uid + "_thumb'></div>";
-					return mediaElem;
-				} else {
-					mediaElem = "<div class='thumbnail thumb-plaintext'></div>";
-					return mediaElem;
-				}
-			} 
-		},
-		
-		create: function(data, uid) {
-			var _valid = false,
-				//loading_messege			=	"<span class='messege'><p>" + VMM.master_config.language.messages.loading + "</p></span>";
-				loading_messege			=	VMM.MediaElement.loadingmessage(VMM.master_config.language.messages.loading + "...");
-			
-			if (data.media != null && data.media != "") {
-				var mediaElem = "", captionElem = "", creditElem = "", _id = "", isTextMedia = false, m;
-				
-				m = VMM.MediaType(data.media); //returns an object with .type and .id
-				m.uid = uid;
-				_valid = true;
-				
-			// CREDIT
-				if (data.credit != null && data.credit != "") {
-					creditElem			=	"<div class='credit'>" + VMM.Util.linkify_with_twitter(data.credit, "_blank") + "</div>";
-				}
-			// CAPTION
-				if (data.caption != null && data.caption != "") {
-					captionElem			=	"<div class='caption'>" + VMM.Util.linkify_with_twitter(data.caption, "_blank") + "</div>";
-				}
-			// IMAGE
-				if (m.type				==	"image") {
-					mediaElem			=	"<div class='media-image media-shadow'><img src='" + m.id + "' class='media-image'></div>";
-			// FLICKR
-				} else if (m.type		==	"flickr") {
-					//mediaElem			=	"<div class='media-image media-shadow' id='" + uid + "'>" + loading_messege + "</div>";
-					mediaElem			=	"<div class='media-image media-shadow'><a href='" + m.link + "' target='_blank'><img id='" + uid + "'></a></div>";
-					VMM.ExternalAPI.flickr.get(m);
-			// INSTAGRAM
-				} else if (m.type		==	"instagram") {
-					mediaElem			=	"<div class='media-image media-shadow'><a href='" + m.link + "' target='_blank'><img src='" + VMM.ExternalAPI.instagram.get(m) + "'></a></div>";
-			// GOOGLE DOCS
-				} else if (m.type		==	"googledoc") {
-					mediaElem			=	"<div class='media-frame media-shadow doc' id='" + m.uid + "'>" + loading_messege + "</div>";
-					VMM.ExternalAPI.googledocs.get(m);
-			// YOUTUBE
-				} else if (m.type		==	"youtube") {
-					mediaElem			=	"<div class='media-shadow'><div class='media-frame video youtube' id='" + m.uid + "'>" + loading_messege + "</div></div>";
-					VMM.ExternalAPI.youtube.get(m);
-			// VIMEO
-				} else if (m.type		==	"vimeo") {
-					mediaElem			=	"<div class='media-shadow media-frame video vimeo' id='" + m.uid + "'>" + loading_messege + "</div>";
-					VMM.ExternalAPI.vimeo.get(m);
-			// DAILYMOTION
-				} else if (m.type		==	"dailymotion") {
-					mediaElem			=	"<div class='media-shadow'><iframe class='media-frame video dailymotion' autostart='false' frameborder='0' width='100%' height='100%' src='http://www.dailymotion.com/embed/video/" + m.id + "'></iframe></div>";
-			// VINE
-				} else if (m.type		==	"vine") {
-					mediaElem			=	"<div class='media-shadow media-frame video vine' id='" + m.uid + "'>" + loading_messege + "</div>";
-					VMM.ExternalAPI.vine.get(m);
-			// TWITTER
-				} else if (m.type		==	"twitter"){
-					mediaElem			=	"<div class='twitter' id='" + m.uid + "'>" + loading_messege + "</div>";
-					isTextMedia			=	true;
-					VMM.ExternalAPI.twitter.get(m);
-			// TWITTER
-				} else if (m.type		==	"twitter-ready") {
-					isTextMedia			=	true;
-					mediaElem			=	m.id;
-			// SOUNDCLOUD
-				} else if (m.type		==	"soundcloud") {
-					mediaElem			=	"<div class='media-frame media-shadow soundcloud' id='" + m.uid + "'>" + loading_messege + "</div>";
-					VMM.ExternalAPI.soundcloud.get(m);
-			// GOOGLE MAPS
-				} else if (m.type		==	"google-map") {
-					mediaElem			=	"<div class='media-frame media-shadow map' id='" + m.uid + "'>" + loading_messege + "</div>";
-					VMM.ExternalAPI.googlemaps.get(m);
-			// GOOGLE PLUS
-				} else if (m.type		==	"googleplus") {
-					_id					=	"googleplus_" + m.id;
-					mediaElem			=	"<div class='googleplus' id='" + _id + "'>" + loading_messege + "</div>";
-					isTextMedia			=	true;
-					VMM.ExternalAPI.googleplus.get(m);
-			// WIKIPEDIA
-				} else if (m.type		==	"wikipedia") {
-					mediaElem			=	"<div class='wikipedia' id='" + m.uid + "'>" + loading_messege + "</div>";
-					isTextMedia			=	true;
-					VMM.ExternalAPI.wikipedia.get(m);
-			// STORIFY
-				} else if (m.type		==	"storify") { 
-					isTextMedia			=	true;
-					mediaElem			=	"<div class='plain-text-quote'>" + m.id + "</div>";
-			// IFRAME
-				} else if (m.type		==	"iframe") { 
-					isTextMedia			=	true;
-					mediaElem			=	"<div class='media-shadow'><iframe class='media-frame video' autostart='false' frameborder='0' width='100%' height='100%' src='" + m.id + "'></iframe></div>";
-			// QUOTE
-				} else if (m.type		==	"quote") { 
-					isTextMedia			=	true;
-					mediaElem			=	"<div class='plain-text-quote'>" + m.id + "</div>";
-			// UNKNOWN
-				} else if (m.type		==	"unknown") { 
-					trace("NO KNOWN MEDIA TYPE FOUND TRYING TO JUST PLACE THE HTML"); 
-					isTextMedia			=	true;
-					mediaElem			=	"<div class='plain-text'><div class='container'>" + VMM.Util.properQuotes(m.id) + "</div></div>";
-			// WEBSITE
-				} else if (m.type		==	"website") { 
-					
-					mediaElem			=	"<div class='media-shadow website' id='" + m.uid + "'>" + loading_messege + "</div>";
-					VMM.ExternalAPI.webthumb.get(m);
-					//mediaElem			=	"<div class='media-shadow website'><a href='" + m.id + "' target='_blank'>" + "<img src='http://api1.thumbalizr.com/?url=" + m.id.replace(/[\./]$/g, "") + "&width=300' class='media-image'></a></div>";
-					
-			// NO MATCH
-				} else {
-					trace("NO KNOWN MEDIA TYPE FOUND");
-					trace(m.type);
-				}
-				
-			// WRAP THE MEDIA ELEMENT
-				mediaElem				=	"<div class='media-container' >" + mediaElem + creditElem + captionElem + "</div>";
-			// RETURN
-				if (isTextMedia) {
-					return "<div class='text-media'><div class='media-wrapper'>" + mediaElem + "</div></div>";
-				} else {
-					return "<div class='media-wrapper'>" + mediaElem + "</div>";
-				}
-				
-			};
-			
-		}
-		
-	}).init();
-}
-
-/* **********************************************
-     Begin VMM.MediaType.js
-********************************************** */
-
-/*	MediaType
-	Determines the type of media the url string is.
-	returns an object with .type and .id
-	the id is a key piece of information needed to make
-	the request of the api.
-================================================== */
-if(typeof VMM != 'undefined' && typeof VMM.MediaType == 'undefined') {
-	
-	VMM.MediaType = function(_d) {
-		var d		= _d.replace(/^\s\s*/, '').replace(/\s\s*$/, ''),
-			success	= false,
-			media	= {
-				type:		"unknown",
-				id:			"",
-				start:		0,
-				hd:			false,
-				link:		"",
-				lang:		VMM.Language.lang,
-				uniqueid:	VMM.Util.unique_ID(6)
-			};
-		
-		if (d.match("div class='twitter'")) {
-			media.type = "twitter-ready";
-		    media.id = d;
-		    success = true;
-		} else if (d.match('<blockquote')) {
-			media.type = "quote";
-			media.id = d;
-			success = true;
-		} else if (d.match('<iframe')) {
-			media.type = "iframe";
-			trace("IFRAME")
-			regex = /src=['"](\S+?)['"]/;
-			group = d.match(regex);
-			if (group) {
-				media.id = group[1];
-			}
-			trace( "iframe url: " + media.id );
-			success = Boolean(media.id);
-		} else if (d.match('(www.)?youtube|youtu\.be')) {
-			if (d.match('v=')) {
-				media.id	= VMM.Util.getUrlVars(d)["v"];
-			} else if (d.match('\/embed\/')) {
-				// TODO Issue #618 better splitting
-				media.id	= d.split("embed\/")[1].split(/[?&]/)[0];
-			} else if (d.match(/v\/|v=|youtu\.be\//)){
-				media.id	= d.split(/v\/|v=|youtu\.be\//)[1].split(/[?&]/)[0];
-			} else {
-				trace("YOUTUBE IN URL BUT NOT A VALID VIDEO");
-			}
-			media.start	= VMM.Util.getUrlVars(d)["t"];
-			media.hd	= VMM.Util.getUrlVars(d)["hd"];
-		    media.type = "youtube";
-		    success = true;
-		} else if (d.match('(player.)?vimeo\.com')) {
-		    media.type = "vimeo";
-		    media.id = d.split(/video\/|\/\/vimeo\.com\//)[1].split(/[?&]/)[0];;
-		    success = true;
-	    } else if (d.match('(www.)?dailymotion\.com')) {
-			media.id = d.split(/video\/|\/\/dailymotion\.com\//)[1];
-			media.type = "dailymotion";
-			success = true;
-	    } else if (d.match('(www.)?vine\.co')) {
-			trace("VINE");
-			//https://vine.co/v/b55LOA1dgJU
-			if (d.match("vine.co/v/")) {
-				media.id = d.split("vine.co/v/")[1];
-				trace(media.id);
-			}
-			trace(d);
-			media.type = "vine";
-			success = true;
-		} else if (d.match('(player.)?soundcloud\.com')) {
-			media.type = "soundcloud";
-			media.id = d;
-			success = true;
-		} else if (d.match('(www.)?twitter\.com') && d.match('status') ) {
-			if (d.match("status\/")) {
-				media.id = d.split("status\/")[1];
-			} else if (d.match("statuses\/")) {
-				media.id = d.split("statuses\/")[1];
-			} else {
-				media.id = "";
-			}
-			media.type = "twitter";
-			success = true;
-		} else if (d.match("maps.google") && !d.match("staticmap") && !d.match('streetview')) {
-			media.type = "google-map";
-		    media.id = d;
-			success = true;
-		} else if (d.match(/www.google.\w+\/maps/)) {
-			media.type = "google-map";
-		    media.id = d;
-			success = true;
-		} else if (d.match("plus.google")) {
-			media.type = "googleplus";
-		    media.id = d.split("/posts/")[1];
-			//https://plus.google.com/u/0/112374836634096795698/posts/bRJSvCb5mUU
-			//https://plus.google.com/107096716333816995401/posts/J5iMpEDHWNL
-			if (d.split("/posts/")[0].match("u/0/")) {
-				media.user = d.split("u/0/")[1].split("/posts")[0];
-			} else {
-				media.user = d.split("google.com/")[1].split("/posts/")[0];
-			}
-			success = true;
-		} else if (d.match("flickr.com/photos/")) {
-			media.type = "flickr";
-			media.id = VMM.ExternalAPI.flickr.getFlickrIdFromUrl(d)
-			media.link = d;
-			success = Boolean(media.id);
-		} else if (VMM.ExternalAPI.instagram.isInstagramUrl(d)) {
-			media.type = "instagram";
-			media.link = d;
-			media.id = VMM.ExternalAPI.instagram.getInstagramIdFromUrl(d)
-			success = Boolean(media.id);
-		} else if (d.match(/jpg|jpeg|png|gif|svg|bmp/i) || 
-				   d.match("staticmap") || 
-				   d.match("yfrog.com") || 
-				   d.match("twitpic.com") ||
-				   d.match('maps.googleapis.com/maps/api/streetview')) {
-			media.type = "image";
-			media.id = d;
-			success = true;
-		} else if (VMM.FileExtention.googleDocType(d)) {
-			media.type = "googledoc";
-			media.id = d;
-			success = true;
-		} else if (d.match('(www.)?wikipedia\.org')) {
-			media.type = "wikipedia";
-			//media.id = d.split("wiki\/")[1];
-			// TODO Issue #618 better splitting
-			var wiki_id = d.split("wiki\/")[1].split("#")[0].replace("_", " ");
-			media.id = wiki_id.replace(" ", "%20");
-			media.lang = d.split("//")[1].split(".wikipedia")[0];
-			success = true;
-		} else if (d.indexOf('http://') == 0) {
-			media.type = "website";
-			media.id = d;
-			success = true;
-		} else if (d.match('storify')) {
-			media.type = "storify";
-			media.id = d;
-			success = true;
+	/*	Adding, Hiding, Showing etc
+	================================================== */
+	show: function(animate) {
+		if (animate) {
+			/*
+			this.animator = TL.Animate(this._el.container, {
+				left: 		-(this._el.container.offsetWidth * n) + "px",
+				duration: 	this.options.duration,
+				easing: 	this.options.ease
+			});
+			*/
 		} else {
-			trace("unknown media");  
-			media.type = "unknown";
-			media.id = d;
-			success = true;
+			this._el.container.style.display = "block";
+		}
+	},
+	
+	hide: function(animate) {
+		this._el.container.style.display = "none";
+	},
+	
+	addTo: function(container) {
+		container.appendChild(this._el.container);
+		this.onAdd();
+	},
+	
+	removeFrom: function(container) {
+		container.removeChild(this._el.container);
+		this.onRemove();
+	},
+	
+	/*	Animate to Position
+	================================================== */
+	animatePosition: function(pos, el) {
+		var ani = {
+			duration: 	this.options.duration,
+			easing: 	this.options.ease
+		};
+		for (var name in pos) {
+			if (pos.hasOwnProperty(name)) {
+				ani[name] = pos[name] + "px";
+			}
 		}
 		
-		if (success) { 
-			return media;
+		if (this.animator) {
+			this.animator.stop();
+		}
+		this.animator = TL.Animate(el, ani);
+	},
+	
+	/*	Events
+	================================================== */
+	
+	onLoaded: function() {
+		this.fire("loaded", this.data);
+	},
+	
+	onAdd: function() {
+		this.fire("added", this.data);
+	},
+
+	onRemove: function() {
+		this.fire("removed", this.data);
+	},
+	
+	/*	Set the Position
+	================================================== */
+	setPosition: function(pos, el) {
+		for (var name in pos) {
+			if (pos.hasOwnProperty(name)) {
+				if (el) {
+					el.style[name] = pos[name] + "px";
+				} else {
+					this._el.container.style[name] = pos[name] + "px";
+				};
+			}
+		}
+	},
+	
+	getPosition: function() {
+		return TL.Dom.getPosition(this._el.container);
+	}
+	
+};
+
+
+/* **********************************************
+     Begin TL.Dom.js
+********************************************** */
+
+/*	TL.Dom
+	Utilities for working with the DOM
+================================================== */
+
+TL.Dom = {
+
+	get: function(id) {
+		return (typeof id === 'string' ? document.getElementById(id) : id);
+	},
+
+	getByClass: function(id) {
+		if (id) {
+			return document.getElementsByClassName(id);
+		}
+	},
+
+	create: function(tagName, className, container) {
+		var el = document.createElement(tagName);
+		el.className = className;
+		if (container) {
+			container.appendChild(el);
+		}
+		return el;
+	},
+
+	createText: function(content, container) {
+		var el = document.createTextNode(content);
+		if (container) {
+			container.appendChild(el);
+		}
+		return el;
+	},
+
+	getTranslateString: function (point) {
+		return TL.Dom.TRANSLATE_OPEN +
+				point.x + 'px,' + point.y + 'px' +
+				TL.Dom.TRANSLATE_CLOSE;
+	},
+
+	setPosition: function (el, point) {
+		el._tl_pos = point;
+		if (TL.Browser.webkit3d) {
+			el.style[TL.Dom.TRANSFORM] =  TL.Dom.getTranslateString(point);
+
+			if (TL.Browser.android) {
+				el.style['-webkit-perspective'] = '1000';
+				el.style['-webkit-backface-visibility'] = 'hidden';
+			}
 		} else {
-			trace("No valid media id detected");
-			trace(d);
+			el.style.left = point.x + 'px';
+			el.style.top = point.y + 'px';
+		}
+	},
+
+	getPosition: function(el){
+	    var pos = {
+	    	x: 0,
+			y: 0
+	    }
+	    while( el && !isNaN( el.offsetLeft ) && !isNaN( el.offsetTop ) ) {
+	        pos.x += el.offsetLeft// - el.scrollLeft;
+	        pos.y += el.offsetTop// - el.scrollTop;
+	        el = el.offsetParent;
+	    }
+	    return pos;
+	},
+
+	testProp: function(props) {
+		var style = document.documentElement.style;
+
+		for (var i = 0; i < props.length; i++) {
+			if (props[i] in style) {
+				return props[i];
+			}
 		}
 		return false;
 	}
-}
+
+};
+
+TL.Util.mergeData(TL.Dom, {
+	TRANSITION: TL.Dom.testProp(['transition', 'webkitTransition', 'OTransition', 'MozTransition', 'msTransition']),
+	TRANSFORM: TL.Dom.testProp(['transformProperty', 'WebkitTransform', 'OTransform', 'MozTransform', 'msTransform']),
+
+	TRANSLATE_OPEN: 'translate' + (TL.Browser.webkit3d ? '3d(' : '('),
+	TRANSLATE_CLOSE: TL.Browser.webkit3d ? ',0)' : ')'
+});
+
 
 /* **********************************************
-     Begin VMM.TextElement.js
+     Begin TL.DomUtil.js
 ********************************************** */
 
-/* TextElement
+/*	TL.DomUtil
+	Inspired by Leaflet
+	TL.DomUtil contains various utility functions for working with DOM
 ================================================== */
-if(typeof VMM != 'undefined' && typeof VMM.TextElement == 'undefined') {
+
+
+TL.DomUtil = {
+	get: function (id) {
+		return (typeof id === 'string' ? document.getElementById(id) : id);
+	},
+
+	getStyle: function (el, style) {
+		var value = el.style[style];
+		if (!value && el.currentStyle) {
+			value = el.currentStyle[style];
+		}
+		if (!value || value === 'auto') {
+			var css = document.defaultView.getComputedStyle(el, null);
+			value = css ? css[style] : null;
+		}
+		return (value === 'auto' ? null : value);
+	},
+
+	getViewportOffset: function (element) {
+		var top = 0,
+			left = 0,
+			el = element,
+			docBody = document.body;
+
+		do {
+			top += el.offsetTop || 0;
+			left += el.offsetLeft || 0;
+
+			if (el.offsetParent === docBody &&
+					TL.DomUtil.getStyle(el, 'position') === 'absolute') {
+				break;
+			}
+			el = el.offsetParent;
+		} while (el);
+
+		el = element;
+
+		do {
+			if (el === docBody) {
+				break;
+			}
+
+			top -= el.scrollTop || 0;
+			left -= el.scrollLeft || 0;
+
+			el = el.parentNode;
+		} while (el);
+
+		return new TL.Point(left, top);
+	},
+
+	create: function (tagName, className, container) {
+		var el = document.createElement(tagName);
+		el.className = className;
+		if (container) {
+			container.appendChild(el);
+		}
+		return el;
+	},
+
+	disableTextSelection: function () {
+		if (document.selection && document.selection.empty) {
+			document.selection.empty();
+		}
+		if (!this._onselectstart) {
+			this._onselectstart = document.onselectstart;
+			document.onselectstart = TL.Util.falseFn;
+		}
+	},
+
+	enableTextSelection: function () {
+		document.onselectstart = this._onselectstart;
+		this._onselectstart = null;
+	},
+
+	hasClass: function (el, name) {
+		return (el.className.length > 0) &&
+				new RegExp("(^|\\s)" + name + "(\\s|$)").test(el.className);
+	},
+
+	addClass: function (el, name) {
+		if (!TL.DomUtil.hasClass(el, name)) {
+			el.className += (el.className ? ' ' : '') + name;
+		}
+	},
+
+	removeClass: function (el, name) {
+		el.className = el.className.replace(/(\S+)\s*/g, function (w, match) {
+			if (match === name) {
+				return '';
+			}
+			return w;
+		}).replace(/^\s+/, '');
+	},
+
+	setOpacity: function (el, value) {
+		if (TL.Browser.ie) {
+			el.style.filter = 'alpha(opacity=' + Math.round(value * 100) + ')';
+		} else {
+			el.style.opacity = value;
+		}
+	},
+
+
+	testProp: function (props) {
+		var style = document.documentElement.style;
+
+		for (var i = 0; i < props.length; i++) {
+			if (props[i] in style) {
+				return props[i];
+			}
+		}
+		return false;
+	},
+
+	getTranslateString: function (point) {
+
+		return TL.DomUtil.TRANSLATE_OPEN +
+				point.x + 'px,' + point.y + 'px' +
+				TL.DomUtil.TRANSLATE_CLOSE;
+	},
+
+	getScaleString: function (scale, origin) {
+		var preTranslateStr = TL.DomUtil.getTranslateString(origin),
+			scaleStr = ' scale(' + scale + ') ',
+			postTranslateStr = TL.DomUtil.getTranslateString(origin.multiplyBy(-1));
+
+		return preTranslateStr + scaleStr + postTranslateStr;
+	},
+
+	setPosition: function (el, point) {
+		el._tl_pos = point;
+		if (TL.Browser.webkit3d) {
+			el.style[TL.DomUtil.TRANSFORM] =  TL.DomUtil.getTranslateString(point);
+
+			if (TL.Browser.android) {
+				el.style['-webkit-perspective'] = '1000';
+				el.style['-webkit-backface-visibility'] = 'hidden';
+			}
+		} else {
+			el.style.left = point.x + 'px';
+			el.style.top = point.y + 'px';
+		}
+	},
+
+	getPosition: function (el) {
+		return el._tl_pos;
+	}
+};
+
+/* **********************************************
+     Begin TL.DomEvent.js
+********************************************** */
+
+/*	TL.DomEvent
+	Inspired by Leaflet 
+	DomEvent contains functions for working with DOM events.
+================================================== */
+// TODO stamp
+
+TL.DomEvent = {
+	/* inpired by John Resig, Dean Edwards and YUI addEvent implementations */
+	addListener: function (/*HTMLElement*/ obj, /*String*/ type, /*Function*/ fn, /*Object*/ context) {
+		var id = TL.Util.stamp(fn),
+			key = '_tl_' + type + id;
+
+		if (obj[key]) {
+			return;
+		}
+
+		var handler = function (e) {
+			return fn.call(context || obj, e || TL.DomEvent._getEvent());
+		};
+
+		if (TL.Browser.touch && (type === 'dblclick') && this.addDoubleTapListener) {
+			this.addDoubleTapListener(obj, handler, id);
+		} else if ('addEventListener' in obj) {
+			if (type === 'mousewheel') {
+				obj.addEventListener('DOMMouseScroll', handler, false);
+				obj.addEventListener(type, handler, false);
+			} else if ((type === 'mouseenter') || (type === 'mouseleave')) {
+				var originalHandler = handler,
+					newType = (type === 'mouseenter' ? 'mouseover' : 'mouseout');
+				handler = function (e) {
+					if (!TL.DomEvent._checkMouse(obj, e)) {
+						return;
+					}
+					return originalHandler(e);
+				};
+				obj.addEventListener(newType, handler, false);
+			} else {
+				obj.addEventListener(type, handler, false);
+			}
+		} else if ('attachEvent' in obj) {
+			obj.attachEvent("on" + type, handler);
+		}
+
+		obj[key] = handler;
+	},
+
+	removeListener: function (/*HTMLElement*/ obj, /*String*/ type, /*Function*/ fn) {
+		var id = TL.Util.stamp(fn),
+			key = '_tl_' + type + id,
+			handler = obj[key];
+
+		if (!handler) {
+			return;
+		}
+
+		if (TL.Browser.touch && (type === 'dblclick') && this.removeDoubleTapListener) {
+			this.removeDoubleTapListener(obj, id);
+		} else if ('removeEventListener' in obj) {
+			if (type === 'mousewheel') {
+				obj.removeEventListener('DOMMouseScroll', handler, false);
+				obj.removeEventListener(type, handler, false);
+			} else if ((type === 'mouseenter') || (type === 'mouseleave')) {
+				obj.removeEventListener((type === 'mouseenter' ? 'mouseover' : 'mouseout'), handler, false);
+			} else {
+				obj.removeEventListener(type, handler, false);
+			}
+		} else if ('detachEvent' in obj) {
+			obj.detachEvent("on" + type, handler);
+		}
+		obj[key] = null;
+	},
+
+	_checkMouse: function (el, e) {
+		var related = e.relatedTarget;
+
+		if (!related) {
+			return true;
+		}
+
+		try {
+			while (related && (related !== el)) {
+				related = related.parentNode;
+			}
+		} catch (err) {
+			return false;
+		}
+
+		return (related !== el);
+	},
+
+	/*jshint noarg:false */ // evil magic for IE
+	_getEvent: function () {
+		var e = window.event;
+		if (!e) {
+			var caller = arguments.callee.caller;
+			while (caller) {
+				e = caller['arguments'][0];
+				if (e && window.Event === e.constructor) {
+					break;
+				}
+				caller = caller.caller;
+			}
+		}
+		return e;
+	},
+	/*jshint noarg:false */
+
+	stopPropagation: function (/*Event*/ e) {
+		if (e.stopPropagation) {
+			e.stopPropagation();
+		} else {
+			e.cancelBubble = true;
+		}
+	},
 	
-	VMM.TextElement = ({
+	// TODO TL.Draggable.START
+	disableClickPropagation: function (/*HTMLElement*/ el) {
+		TL.DomEvent.addListener(el, TL.Draggable.START, TL.DomEvent.stopPropagation);
+		TL.DomEvent.addListener(el, 'click', TL.DomEvent.stopPropagation);
+		TL.DomEvent.addListener(el, 'dblclick', TL.DomEvent.stopPropagation);
+	},
+
+	preventDefault: function (/*Event*/ e) {
+		if (e.preventDefault) {
+			e.preventDefault();
+		} else {
+			e.returnValue = false;
+		}
+	},
+
+	stop: function (e) {
+		TL.DomEvent.preventDefault(e);
+		TL.DomEvent.stopPropagation(e);
+	},
+
+
+	getWheelDelta: function (e) {
+		var delta = 0;
+		if (e.wheelDelta) {
+			delta = e.wheelDelta / 120;
+		}
+		if (e.detail) {
+			delta = -e.detail / 3;
+		}
+		return delta;
+	}
+};
+
+
+
+
+/* **********************************************
+     Begin TL.StyleSheet.js
+********************************************** */
+
+/*	TL.StyleSheet
+	Style Sheet Object
+================================================== */
+
+TL.StyleSheet = TL.Class.extend({
+	
+	includes: [TL.Events],
+	
+	_el: {},
+	
+	/*	Constructor
+	================================================== */
+	initialize: function() {
+		// Borrowed from: http://davidwalsh.name/add-rules-stylesheets
+		this.style = document.createElement("style");
 		
-		init: function() {
-			return this;
-		},
+		// WebKit hack :(
+		this.style.appendChild(document.createTextNode(""));
 		
-		create: function(data) {
-			return data;
+		// Add the <style> element to the page
+		document.head.appendChild(this.style);
+		
+		this.sheet = this.style.sheet;
+		
+	},
+	
+	addRule: function(selector, rules, index) {
+		var _index = 0;
+		
+		if (index) {
+			_index = index;
 		}
 		
-	}).init();
+		if("insertRule" in this.sheet) {
+			this.sheet.insertRule(selector + "{" + rules + "}", _index);
+		}
+		else if("addRule" in this.sheet) {
+			this.sheet.addRule(selector, rules, _index);
+		}
+	},
+	
+
+	/*	Events
+	================================================== */
+	onLoaded: function(error) {
+		this._state.loaded = true;
+		this.fire("loaded", this.data);
+	}
+	
+});
+
+/* **********************************************
+     Begin TL.Date.js
+********************************************** */
+
+/*	TL.Date
+	Date object
+	MONTHS are 1-BASED, not 0-BASED (different from Javascript date objects)
+================================================== */
+
+//
+// Class for human dates
+//
+
+TL.Date = TL.Class.extend({
+
+    // @data = ms, JS Date object, or JS dictionary with date properties
+	initialize: function (data, format, format_short) {
+	    if (typeof(data) == 'number') {
+			this.data = {
+				format:     "yyyy mmmm",
+				date_obj:   new Date(data)
+			};
+	    } else if(Date == data.constructor) {
+			this.data = {
+				format:     "yyyy mmmm",
+				date_obj:   data
+			};
+	    } else {
+	        this.data = JSON.parse(JSON.stringify(data)); // clone don't use by reference.
+            this._createDateObj();
+	    }
+
+		this._setFormat(format, format_short);
+    },
+
+	setDateFormat: function(format) {
+		this.data.format = format;
+	},
+
+	getDisplayDate: function(language, format) {
+	    if (this.data.display_date) {
+	        return this.data.display_date;
+	    }
+        if (!language) {
+            language = TL.Language.fallback;
+        }
+        if (language.constructor != TL.Language) {
+            trace("First argument to getDisplayDate must be TL.Language");
+            language = TL.Language.fallback;
+        }
+
+        var format_key = format || this.data.format;
+        return language.formatDate(this.data.date_obj, format_key);
+	},
+
+	getMillisecond: function() {
+		return this.getTime();
+	},
+
+	getTime: function() {
+		return this.data.date_obj.getTime();
+	},
+
+	isBefore: function(other_date) {
+        if (!this.data.date_obj.constructor == other_date.data.date_obj.constructor) {
+            throw new TL.Error("date_compare_err") // but should be able to compare 'cosmological scale' dates once we get to that...
+        }
+        if ('isBefore' in this.data.date_obj) {
+            return this.data.date_obj['isBefore'](other_date.data.date_obj);
+        }
+        return this.data.date_obj < other_date.data.date_obj
+	},
+
+	isAfter: function(other_date) {
+        if (!this.data.date_obj.constructor == other_date.data.date_obj.constructor) {
+            throw new TL.Error("date_compare_err") // but should be able to compare 'cosmological scale' dates once we get to that...
+        }
+        if ('isAfter' in this.data.date_obj) {
+            return this.data.date_obj['isAfter'](other_date.data.date_obj);
+        }
+        return this.data.date_obj > other_date.data.date_obj
+	},
+
+    // Return a new TL.Date which has been 'floored' at the given scale.
+    // @scale = string value from TL.Date.SCALES
+    floor: function(scale) {
+        var d = new Date(this.data.date_obj.getTime());
+        for (var i = 0; i < TL.Date.SCALES.length; i++) {
+             // for JS dates, we iteratively apply flooring functions
+            TL.Date.SCALES[i][2](d);
+            if (TL.Date.SCALES[i][0] == scale) return new TL.Date(d);
+        };
+
+        throw new TL.Error("invalid_scale_err", scale);
+    },
+
+	/*	Private Methods
+	================================================== */
+
+    _getDateData: function() {
+        var _date = {
+            year: 			0,
+            month: 			1, // stupid JS dates
+            day: 			1,
+            hour: 			0,
+            minute: 		0,
+            second: 		0,
+            millisecond: 	0
+		};
+
+		// Merge data
+		TL.Util.mergeData(_date, this.data);
+
+ 		// Make strings into numbers
+		var DATE_PARTS = TL.Date.DATE_PARTS;
+
+ 		for (var ix in DATE_PARTS) {
+ 		    var x = TL.Util.trim(_date[DATE_PARTS[ix]]);
+ 		    if (!x.match(/^-?\d*$/)) {
+ 		        throw new TL.Error("invalid_date_err", DATE_PARTS[ix] + " = '" + _date[DATE_PARTS[ix]] + "'");
+ 		    }
+ 		    
+			var parsed = parseInt(_date[DATE_PARTS[ix]]);
+			if (isNaN(parsed)) {
+                parsed = (ix == 4 || ix == 5) ? 1 : 0; // month and day have diff baselines
+            }
+			_date[DATE_PARTS[ix]] = parsed;
+		}
+
+		if (_date.month > 0 && _date.month <= 12) { // adjust for JS's weirdness
+			_date.month = _date.month - 1;
+		}
+
+		return _date;
+    },
+
+	_createDateObj: function() {
+	    var _date = this._getDateData();
+        this.data.date_obj = new Date(_date.year, _date.month, _date.day, _date.hour, _date.minute, _date.second, _date.millisecond);
+        if (this.data.date_obj.getFullYear() != _date.year) {
+            // Javascript has stupid defaults for two-digit years
+            this.data.date_obj.setFullYear(_date.year);
+        }
+	},
+
+    /*  Find Best Format
+     * this may not work with 'cosmologic' dates, or with TL.Date if we
+     * support constructing them based on JS Date and time
+    ================================================== */
+    findBestFormat: function(variant) {
+        var eval_array = TL.Date.DATE_PARTS,
+            format = "";
+
+        for (var i = 0; i < eval_array.length; i++) {
+            if ( this.data[eval_array[i]]) {
+                if (variant) {
+                    if (!(variant in TL.Date.BEST_DATEFORMATS)) {
+                        variant = 'short'; // legacy
+                    }
+                } else {
+                    variant = 'base'
+                }
+                return TL.Date.BEST_DATEFORMATS[variant][eval_array[i]];
+            }
+        };
+        return "";
+    },
+    _setFormat: function(format, format_short) {
+		if (format) {
+			this.data.format = format;
+		} else if (!this.data.format) {
+			this.data.format = this.findBestFormat();
+		}
+
+		if (format_short) {
+			this.data.format_short = format_short;
+		} else if (!this.data.format_short) {
+			this.data.format_short = this.findBestFormat(true);
+		}
+    }
+});
+
+// offer something that can figure out the right date class to return
+TL.Date.makeDate = function(data) {
+    var date = new TL.Date(data);
+    if (!isNaN(date.getTime())) {
+        return date;
+    }
+    return new TL.BigDate(data);
 }
 
+TL.BigYear = TL.Class.extend({
+    initialize: function (year) {
+        this.year = parseInt(year);
+        if (isNaN(this.year)) {
+            throw new TL.Error('invalid_year_err', year);
+        }
+    },
+
+    isBefore: function(that) {
+        return this.year < that.year;
+    },
+
+    isAfter: function(that) {
+        return this.year > that.year;
+    },
+
+    getTime: function() {
+        return this.year;
+    }
+});
+
+(function(cls){
+    // human scales
+    cls.SCALES = [ // ( name, units_per_tick, flooring function )
+        ['millisecond',1, function(d) { }],
+        ['second',1000, function(d) { d.setMilliseconds(0);}],
+        ['minute',1000 * 60, function(d) { d.setSeconds(0);}],
+        ['hour',1000 * 60 * 60, function(d) { d.setMinutes(0);}],
+        ['day',1000 * 60 * 60 * 24, function(d) { d.setHours(0);}],
+        ['month',1000 * 60 * 60 * 24 * 30, function(d) { d.setDate(1);}],
+        ['year',1000 * 60 * 60 * 24 * 365, function(d) { d.setMonth(0);}],
+        ['decade',1000 * 60 * 60 * 24 * 365 * 10, function(d) {
+            var real_year = d.getFullYear();
+            d.setFullYear( real_year - (real_year % 10))
+        }],
+        ['century',1000 * 60 * 60 * 24 * 365 * 100, function(d) {
+            var real_year = d.getFullYear();
+            d.setFullYear( real_year - (real_year % 100))
+        }],
+        ['millennium',1000 * 60 * 60 * 24 * 365 * 1000, function(d) {
+            var real_year = d.getFullYear();
+            d.setFullYear( real_year - (real_year % 1000))
+        }]
+    ];
+
+    // Date parts from highest to lowest precision
+    cls.DATE_PARTS = ["millisecond", "second", "minute", "hour", "day", "month", "year"];
+
+    var ISO8601_SHORT_PATTERN = /^([\+-]?\d+?)(-\d{2}?)?(-\d{2}?)?$/;
+    // regex below from
+    // http://www.pelagodesign.com/blog/2009/05/20/iso-8601-date-validation-that-doesnt-suck/
+    var ISO8601_PATTERN = /^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]\d|0[1-9]|3[01]))?|W([0-4]\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))([T\s]((([01]\d|2[0-3])((:?)[0-5]\d)?|24\:?00)([\.,]\d+(?!:))?)?(\17[0-5]\d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?)?)?$/;
+
+    /* For now, rather than extract parts from regexp, lets trust the browser.
+     * Famous last words...
+     * What about UTC vs local time?
+     * see also http://stackoverflow.com/questions/10005374/ecmascript-5-date-parse-results-for-iso-8601-test-cases
+     */
+    cls.parseISODate = function(str) {
+        var d = new Date(str);
+        if (isNaN(d)) {
+            throw new TL.Error("invalid_date_err", str);
+        }
+        return {
+            year: d.getFullYear(),
+            month: d.getMonth() + 1,
+            day: d.getDate(),
+            hour: d.getHours(),
+            minute: d.getMinutes(),
+            second: d.getSeconds(),
+            millisecond: d.getMilliseconds()
+        }
+
+    }
+
+    cls.parseDate = function(str) {
+
+        if (str.match(ISO8601_SHORT_PATTERN)) {
+            // parse short specifically to avoid timezone offset confusion
+            // most browsers assume short is UTC, not local time.
+            var parts = str.match(ISO8601_SHORT_PATTERN).slice(1);
+            var d = { year: parts[0].replace('+','')} // year can be negative
+            if (parts[1]) { d['month'] = parts[1].replace('-',''); }
+            if (parts[2]) { d['day'] = parts[2].replace('-',''); }
+            return d;
+        }
+
+        if (str.match(ISO8601_PATTERN)) {
+            return cls.parseISODate(str);
+        }
+
+        if (str.match(/^\-?\d+$/)) {
+            return { year: str }
+        }
+
+        var parsed = {}
+        if (str.match(/\d+\/\d+\/\d+/)) { // mm/yy/dddd
+            var date = str.match(/\d+\/\d+\/\d+/)[0];
+            str = TL.Util.trim(str.replace(date,''));
+            var date_parts = date.split('/');
+            parsed.month = date_parts[0];
+            parsed.day = date_parts[1];
+            parsed.year = date_parts[2];
+        }
+
+        if (str.match(/\d+\/\d+/)) { // mm/yy
+            var date = str.match(/\d+\/\d+/)[0];
+            str = TL.Util.trim(str.replace(date,''));
+            var date_parts = date.split('/');
+            parsed.month = date_parts[0];
+            parsed.year = date_parts[1];
+        }
+        // todo: handle hours, minutes, seconds, millis other date formats, etc...
+        if (str.match(':')) {
+            var time_parts = str.split(':');
+            parsed.hour = time_parts[0];
+            parsed.minute = time_parts[1];
+            if (time_parts[2]) {
+                second_parts = time_parts[2].split('.');
+                parsed.second = second_parts[0];
+                parsed.millisecond = second_parts[1];
+            }
+        }
+        return parsed;
+    }
+
+    cls.BEST_DATEFORMATS = {
+        base: {
+            millisecond: 'time_short',
+            second: 'time',
+            minute: 'time_no_seconds_small_date',
+            hour: 'time_no_seconds_small_date',
+            day: 'full',
+            month: 'month',
+            year: 'year',
+            decade: 'year',
+            century: 'year',
+            millennium: 'year',
+            age: 'fallback',
+            epoch: 'fallback',
+            era: 'fallback',
+            eon: 'fallback',
+            eon2: 'fallback'
+        },
+
+        short: {
+            millisecond: 'time_short',
+            second: 'time_short',
+            minute: 'time_no_seconds_short',
+            hour: 'time_no_minutes_short',
+            day: 'full_short',
+            month: 'month_short',
+            year: 'year',
+            decade: 'year',
+            century: 'year',
+            millennium: 'year',
+            age: 'fallback',
+            epoch: 'fallback',
+            era: 'fallback',
+            eon: 'fallback',
+            eon2: 'fallback'
+        }
+    }
+
+
+})(TL.Date)
+
+
+//
+// Class for cosmological dates
+//
+TL.BigDate = TL.Date.extend({
+
+    // @data = TL.BigYear object or JS dictionary with date properties
+    initialize: function(data, format, format_short) {
+        if (TL.BigYear == data.constructor) {
+            this.data = {
+                date_obj:   data
+            }
+        } else {
+            this.data = JSON.parse(JSON.stringify(data));
+            this._createDateObj();
+        }
+
+        this._setFormat(format, format_short);
+    },
+
+    // Create date_obj
+    _createDateObj: function() {
+	    var _date = this._getDateData();
+        this.data.date_obj = new TL.BigYear(_date.year);
+    },
+
+    // Return a new TL.BigDate which has been 'floored' at the given scale.
+    // @scale = string value from TL.BigDate.SCALES
+    floor: function(scale) {
+        for (var i = 0; i < TL.BigDate.SCALES.length; i++) {
+            if (TL.BigDate.SCALES[i][0] == scale) {
+                var floored = TL.BigDate.SCALES[i][2](this.data.date_obj);
+                return new TL.BigDate(floored);
+            }
+        };
+
+        throw new TL.Error("invalid_scale_err", scale);
+    }
+});
+
+(function(cls){
+    // cosmo units are years, not millis
+    var AGE = 1000000;
+    var EPOCH = AGE * 10;
+    var ERA = EPOCH * 10;
+    var EON = ERA * 10;
+
+    var Floorer = function(unit) {
+        return function(a_big_year) {
+            var year = a_big_year.getTime();
+            return new TL.BigYear(Math.floor(year/unit) * unit);
+        }
+    }
+
+    // cosmological scales
+    cls.SCALES = [ // ( name, units_per_tick, flooring function )
+				['year',1, new Floorer(1)],
+				['decade',10, new Floorer(10)],
+				['century',100, new Floorer(100)],
+				['millennium',1000, new Floorer(1000)],
+        ['age',AGE, new Floorer(AGE)],          // 1M years
+        ['epoch',EPOCH, new Floorer(EPOCH)],    // 10M years
+        ['era',ERA, new Floorer(ERA)],          // 100M years
+        ['eon',EON, new Floorer(EON)]           // 1B years
+    ];
+
+})(TL.BigDate)
+
+
 /* **********************************************
-     Begin VMM.Media.js
+     Begin TL.DateUtil.js
 ********************************************** */
 
-/* Media
+/*	TL.DateUtil
+	Utilities for parsing time
 ================================================== */
 
-/*	* CodeKit Import
-	* http://incident57.com/codekit/
-================================================== */
-// @codekit-prepend "VMM.ExternalAPI.js";
-// @codekit-prepend "VMM.MediaElement.js";
-// @codekit-prepend "VMM.MediaType.js";
-// @codekit-prepend "VMM.TextElement.js";
+
+TL.DateUtil = {
+	get: function (id) {
+		return (typeof id === 'string' ? document.getElementById(id) : id);
+	},
+
+	sortByDate: function(array,prop_name) { // only for use with slide data objects
+		var prop_name = prop_name || 'start_date';
+		array.sort(function(a,b){
+			if (a[prop_name].isBefore(b[prop_name])) return -1;
+			if (a[prop_name].isAfter(b[prop_name])) return 1;
+			return 0;
+		});
+	},
+
+	parseTime: function(time_str) {
+		var parsed = {
+			hour: null, minute: null, second: null, millisecond: null // conform to keys in TL.Date
+		}
+		var period = null;
+		var match = time_str.match(/(\s*[AaPp]\.?[Mm]\.?\s*)$/);
+		if (match) {
+			period = TL.Util.trim(match[0]);
+			time_str = TL.Util.trim(time_str.substring(0,time_str.lastIndexOf(period)));
+		}
+
+		var parts = [];
+		var no_separators = time_str.match(/^\s*(\d{1,2})(\d{2})\s*$/);
+		if (no_separators) {
+			parts = no_separators.slice(1);
+		} else {
+			parts = time_str.split(':');
+			if (parts.length == 1) {
+				parts = time_str.split('.');
+			}
+		}
+
+		if (parts.length > 4) { 
+		    throw new TL.Error("invalid_separator_error");
+		}
+
+		parsed.hour = parseInt(parts[0]);
+
+		if (period && period.toLowerCase()[0] == 'p' && parsed.hour != 12) {
+			parsed.hour += 12;
+		} else if (period && period.toLowerCase()[0] == 'a' && parsed.hour == 12) {
+			parsed.hour = 0;
+		}
+
+
+		if (isNaN(parsed.hour) || parsed.hour < 0 || parsed.hour > 23) {
+			throw new TL.Error("invalid_hour_err", parsed.hour);
+		}
+
+		if (parts.length > 1) {
+			parsed.minute = parseInt(parts[1]);
+			if (isNaN(parsed.minute)) { 
+			    throw new TL.Error("invalid_minute_err", parsed.minute); 
+			}
+		}
+
+		if (parts.length > 2) {
+			var sec_parts = parts[2].split(/[\.,]/);
+			parts = sec_parts.concat(parts.slice(3)) // deal with various methods of specifying fractional seconds
+			if (parts.length > 2) { 
+			    throw new TL.Error("invalid_second_fractional_err");
+			}
+			parsed.second = parseInt(parts[0]);
+			if (isNaN(parsed.second)) { 
+			    throw new TL.Error("invalid_second_err");
+			}
+			if (parts.length == 2) {
+				var frac_secs = parseInt(parts[1]);
+				if (isNaN(frac_secs)) { 
+				    throw new TL.Error("invalid_fractional_err");
+				}
+				parsed.millisecond = 100 * frac_secs;
+			}
+		}
+
+		return parsed;
+	},
+
+	SCALE_DATE_CLASSES: {
+		human: TL.Date,
+		cosmological: TL.BigDate
+	}
+
+
+};
 
 
 /* **********************************************
-     Begin VMM.DragSlider.js
+     Begin TL.Draggable.js
 ********************************************** */
 
-/* DRAG SLIDER
+/*	TL.Draggable
+	TL.Draggable allows you to add dragging capabilities to any element. Supports mobile devices too.
+	TODO Enable constraints
 ================================================== */
-if(typeof VMM != 'undefined' && typeof VMM.DragSlider == 'undefined') {
 
-	VMM.DragSlider = function() {
-		var drag = {
-			element:		"",
-			element_move:	"",
-			constraint:		"",
+TL.Draggable = TL.Class.extend({
+	
+	includes: TL.Events,
+	
+	_el: {},
+	
+	mousedrag: {
+		down:		"mousedown",
+		up:			"mouseup",
+		leave:		"mouseleave",
+		move:		"mousemove"
+	},
+	
+	touchdrag: {
+		down:		"touchstart",
+		up:			"touchend",
+		leave:		"mouseleave",
+		move:		"touchmove"
+	},
+
+	initialize: function (drag_elem, options, move_elem) {
+		
+		// DOM ELements 
+		this._el = {
+			drag: drag_elem,
+			move: drag_elem
+		};
+		
+		if (move_elem) {
+			this._el.move = move_elem;
+		}
+		
+		
+		//Options
+		this.options = {
+			enable:	{
+				x: true,
+				y: true
+			},
+			constraint: {
+				top: false,
+				bottom: false,
+				left: false,
+				right: false
+			},
+			momentum_multiplier: 	2000,
+			duration: 				1000,
+			ease: 					TL.Ease.easeInOutQuint
+		};
+		
+		
+		// Animation Object
+		this.animator = null;
+		
+		// Drag Event Type
+		this.dragevent = this.mousedrag;
+		
+		if (TL.Browser.touch) {
+			this.dragevent = this.touchdrag;
+		}
+		
+		// Draggable Data
+		this.data = {
 			sliding:		false,
+			direction: 		"none",
 			pagex: {
 				start:		0,
 				end:		0
@@ -4868,5251 +5918,7471 @@ if(typeof VMM != 'undefined' && typeof VMM.DragSlider == 'undefined') {
 				start:		0,
 				end:		0
 			},
-			left: {
-				start:		0,
-				end:		0
+			pos: {
+				start: {
+					x: 0,
+					y:0
+				},
+				end: {
+					x: 0,
+					y:0
+				}
+			},
+			new_pos: {
+				x: 0,
+				y: 0
+			},
+			new_pos_parent: {
+				x: 0,
+				y: 0
 			},
 			time: {
 				start:		0,
 				end:		0
 			},
-			touch:			false,
-			ease:			"easeOutExpo"
-		},
-		dragevent = {
-			down:		"mousedown",
-			up:			"mouseup",
-			leave:		"mouseleave",
-			move:		"mousemove"
-		},
-		mousedrag = {
-			down:		"mousedown",
-			up:			"mouseup",
-			leave:		"mouseleave",
-			move:		"mousemove"
-		},
-		touchdrag = {
-			down:		"touchstart",
-			up:			"touchend",
-			leave:		"mouseleave",
-			move:		"touchmove"
-		},
-		dragslider		= this,
-		is_sticky		= false;
+			touch:			false
+		};
 		
-		/* PUBLIC FUNCTIONS
-		================================================== */
-		this.createPanel = function(drag_object, move_object, constraint, touch, sticky) {
-			drag.element		= drag_object;
-			drag.element_move	= move_object;
-			//dragslider			= drag_object;
-			if ( sticky != null && sticky != "") {
-				is_sticky = sticky;
-			}
-			if ( constraint != null && constraint != "") {
-				drag.constraint = constraint;
-			} else {
-				drag.constraint = false;
-			}
-			if ( touch) {
-				drag.touch = touch;
-			} else {
-				drag.touch = false;
-			}
-			trace("TOUCH" + drag.touch);
-			if (drag.touch) {
-				dragevent = touchdrag;
-			} else {
-				dragevent = mousedrag;
-			}
-			
-			makeDraggable(drag.element, drag.element_move);
-		}
+		// Merge Data and Options
+		TL.Util.mergeData(this.options, options);
 		
-		this.updateConstraint = function(constraint) {
-			trace("updateConstraint");
-			drag.constraint = constraint;
-		}
 		
-		this.cancelSlide = function(e) {
-			VMM.unbindEvent(drag.element, onDragMove, dragevent.move);
-			return true;
-		}
-		
-		/* PRIVATE FUNCTIONS
-		================================================== */
-		function makeDraggable(drag_object, move_object) {
-			
-			VMM.bindEvent(drag_object, onDragStart, dragevent.down, {element: move_object, delement: drag_object});
-			VMM.bindEvent(drag_object, onDragEnd, dragevent.up, {element: move_object, delement: drag_object});
-			VMM.bindEvent(drag_object, onDragLeave, dragevent.leave, {element: move_object, delement: drag_object});
-			
-	    }
-		
-		function onDragLeave(e) {
-			VMM.unbindEvent(e.data.delement, onDragMove, dragevent.move);
-			if (!drag.touch) {
-				e.preventDefault();
-			}
-			e.stopPropagation();
-			if (drag.sliding) {
-				drag.sliding = false;
-				dragEnd(e.data.element, e.data.delement, e);
-				return false;
-			} else {
-				return true;
-			}
-		}
-		
-		function onDragStart(e) {
-			dragStart(e.data.element, e.data.delement, e);
-			if (!drag.touch) {
-				e.preventDefault();
-			}
-			//e.stopPropagation();
-			return true;
-		}
-		
-		function onDragEnd(e) {
-			if (!drag.touch) {
-				e.preventDefault();
-			}
-			//e.stopPropagation();
-			if (drag.sliding) {
-				drag.sliding = false;
-				dragEnd(e.data.element, e.data.delement, e);
-				return false;
-			} else {
-				return true;
-			}
-		}
-		
-		function onDragMove(e) {
-			dragMove(e.data.element, e);
-			
-		}
-		
-		function dragStart(elem, delem, e) {
-			if (drag.touch) {
-				trace("IS TOUCH")
-				VMM.Lib.css(elem, '-webkit-transition-duration', '0');
-				drag.pagex.start = e.originalEvent.touches[0].screenX;
-				drag.pagey.start = e.originalEvent.touches[0].screenY;
-			} else {
-				drag.pagex.start = e.pageX;
-				drag.pagey.start = e.pageY;
-			}
-			drag.left.start = getLeft(elem);
-			drag.time.start = new Date().getTime();
-			
-			VMM.Lib.stop(elem);
-			VMM.bindEvent(delem, onDragMove, dragevent.move, {element: elem});
-
-	    }
-		
-		function dragEnd(elem, delem, e) {
-			VMM.unbindEvent(delem, onDragMove, dragevent.move);
-			dragMomentum(elem, e);
-		}
-		
-		function dragMove(elem, e) {
-			var drag_to, drag_to_y;
-			drag.sliding = true;
-			if (drag.touch) {
-				drag.pagex.end = e.originalEvent.touches[0].screenX;
-				drag.pagey.end = e.originalEvent.touches[0].screenY;
-			} else {
-				drag.pagex.end = e.pageX;
-				drag.pagey.end = e.pageY;
-			}
-			
-			drag.left.end	= getLeft(elem);
-			drag_to			= -(drag.pagex.start - drag.pagex.end - drag.left.start);
-			
-			
-			if (Math.abs(drag.pagey.start) - Math.abs(drag.pagey.end) > 10) {
-				trace("SCROLLING Y")
-				trace(Math.abs(drag.pagey.start) - Math.abs(drag.pagey.end));
-			}
-			if (Math.abs(drag_to - drag.left.start) > 10) {
-				VMM.Lib.css(elem, 'left', drag_to);
-				e.preventDefault();
-				e.stopPropagation();
-			}
-		}
-		
-		function dragMomentum(elem, e) {
-			var drag_info = {
-					left:			drag.left.end,
-					left_adjust:	0,
-					change: {
-						x:			0
-					},
-					time:			(new Date().getTime() - drag.time.start) * 10,
-					time_adjust:	(new Date().getTime() - drag.time.start) * 10
-				},
-				multiplier = 3000;
-				
-			if (drag.touch) {
-				multiplier = 6000;
-			}
-			
-			drag_info.change.x = multiplier * (Math.abs(drag.pagex.end) - Math.abs(drag.pagex.start));
-			
-			
-			drag_info.left_adjust = Math.round(drag_info.change.x / drag_info.time);
-			
-			drag_info.left = Math.min(drag_info.left + drag_info.left_adjust);
-			
-			if (drag.constraint) {
-				if (drag_info.left > drag.constraint.left) {
-					drag_info.left = drag.constraint.left;
-					if (drag_info.time > 5000) {
-						drag_info.time = 5000;
-					}
-				} else if (drag_info.left < drag.constraint.right) {
-					drag_info.left = drag.constraint.right;
-					if (drag_info.time > 5000) {
-						drag_info.time = 5000;
-					}
-				}
-			}
-			
-			VMM.fireEvent(dragslider, "DRAGUPDATE", [drag_info]);
-			
-			if (!is_sticky) {
-				if (drag_info.time > 0) {
-					if (drag.touch) {
-						VMM.Lib.animate(elem, drag_info.time, "easeOutCirc", {"left": drag_info.left});
-					} else {
-						VMM.Lib.animate(elem, drag_info.time, drag.ease, {"left": drag_info.left});
-					}
-				}
-			}
-		}
-		
-		function getLeft(elem) {
-			return parseInt(VMM.Lib.css(elem, 'left').substring(0, VMM.Lib.css(elem, 'left').length - 2), 10);
-		}
-		
-	}
-}
-
-/* **********************************************
-     Begin VMM.Slider.js
-********************************************** */
-
-/* Slider
-================================================== */
-/*	* CodeKit Import
-	* http://incident57.com/codekit/
-================================================== */
-// @codekit-append "VMM.Slider.Slide.js";
-
-if(typeof VMM != 'undefined' && typeof VMM.Slider == 'undefined') {
+	},
 	
-	VMM.Slider = function(parent, parent_config) {
+	enable: function(e) {
 		
-		var config,
-			timer,
-			$slider,
-			$slider_mask,
-			$slider_container,
-			$slides_items,
-			$dragslide,
-			$explainer,
-			events				= {},
-			data				= [],
-			slides				= [],
-			slide_positions		= [],
-			slides_content		= "",
-			current_slide		= 0,
-			current_width		= 960,
-			touch = {
-				move:			false,
-				x:				10,
-				y:				0,
-				off:			0,
-				dampen:			48
-			},
-			content				= "",
-			_active				= false,
-			layout				= parent,
-			navigation = {
-				nextBtn:		"",
-				prevBtn:		"",
-				nextDate:		"",
-				prevDate:		"",
-				nextTitle:		"",
-				prevTitle:		""
-			};
-		
-		// CONFIG
-		if(typeof parent_config != 'undefined') {
-			config	= parent_config;
-		} else {
-			config	= {
-				preload:			4,
-				current_slide:		0,
-				interval:			10, 
-				something:			0, 
-				width:				720, 
-				height:				400, 
-				ease:				"easeInOutExpo", 
-				duration:			1000, 
-				timeline:			false, 
-				spacing:			15,
-				slider: {
-					width:			720, 
-					height:			400, 
-					content: {
-						width:		720, 
-						height:		400, 
-						padding:	120,
-						padding_default: 120
-					}, 
-					nav: {
-						width:		100, 
-						height:		200
-					} 
-				} 
-			};
-		}
-		
-		/* PUBLIC VARS
-		================================================== */
-		this.ver = "0.6";
-		
-		config.slider.width		= config.width;
-		config.slider.height	= config.height;
-		
-		/* PUBLIC FUNCTIONS
-		================================================== */
-		this.init = function(d) {
-			slides			= [];
-			slide_positions	= [];
-			
-			if(typeof d != 'undefined') {
-				this.setData(d);
-			} else {
-				trace("WAITING ON DATA");
-			}
-		};
-		
-		this.width = function(w) {
-			if (w != null && w != "") {
-				config.slider.width = w;
-				reSize();
-			} else {
-				return config.slider.width;
-			}
-		}
-		
-		this.height = function(h) {
-			if (h != null && h != "") {
-				config.slider.height = h;
-				reSize();
-			} else {
-				return config.slider.height;
-			}
-		}
-		
-		/* GETTERS AND SETTERS
-		================================================== */
-		this.setData = function(d) {
-			if(typeof d != 'undefined') {
-				data = d;
-				build();
-			} else{
-				trace("NO DATA");
-			}
-		};
-		
-		this.getData = function() {
-			return data;
-		};
-		
-		this.setConfig = function(d) {
-			if(typeof d != 'undefined') {
-				config = d;
-			} else{
-				trace("NO CONFIG DATA");
-			}
-		}
-		
-		this.getConfig = function() {
-			return config;
-		};
-		
-		this.setSize = function(w, h) {
-			if (w != null) {config.slider.width = w};
-			if (h != null) {config.slider.height = h};
-			if (_active) {
-				reSize();
-			}
-			
-		}
-		
-		this.active = function() {
-			return _active;
-		};
-		
-		this.getCurrentNumber = function() {
-			return current_slide;
-		};
-		
-		this.setSlide = function(n) {
-			goToSlide(n);
-		};
-		
-		/* ON EVENT
-		================================================== */
-		function onConfigSet() {
-			trace("onConfigSet");
-		};
-		
-		function reSize(go_to_slide, from_start) {
-			var _go_to_slide	= true,
-				_from_start		= false;
-			
-			if (go_to_slide != null) {_go_to_slide = go_to_slide};
-			if (from_start != null) {_from_start = from_start};
-			
-			current_width = config.slider.width;
-			
-			config.slider.nav.height = VMM.Lib.height(navigation.prevBtnContainer);
-			
-			// Handle smaller sizes
-			if (VMM.Browser.device == "mobile" || current_width <= 640) {
-				config.slider.content.padding	= 10;
-			} else {
-				config.slider.content.padding	= config.slider.content.padding_default;
-			}
-			
-			config.slider.content.width = current_width - (config.slider.content.padding *2);
-			
-			VMM.Lib.width($slides_items, (slides.length * config.slider.content.width));
-			
-			if (_from_start) {
-				VMM.Lib.css($slider_container, "left", slides[current_slide].leftpos());
-			}
-			
-			// RESIZE SLIDES
-			sizeSlides();
-			
-			// POSITION SLIDES
-			positionSlides();
-			
-			// POSITION NAV
-			VMM.Lib.css(navigation.nextBtn, "left", (current_width - config.slider.nav.width));
-			VMM.Lib.height(navigation.prevBtn, config.slider.height);
-			VMM.Lib.height(navigation.nextBtn, config.slider.height);
-			VMM.Lib.css(navigation.nextBtnContainer, "top", ( (config.slider.height/2) - (config.slider.nav.height/2) ) + 10 );
-			VMM.Lib.css(navigation.prevBtnContainer, "top", ( (config.slider.height/2) - (config.slider.nav.height/2) ) + 10 );
-			
-			// Animate Changes
-			VMM.Lib.height($slider_mask, config.slider.height);
-			VMM.Lib.width($slider_mask, current_width);
-			
-			if (_go_to_slide) {
-				goToSlide(current_slide, "linear", 1);
-			};
-			
-			if (current_slide == 0) {
-				VMM.Lib.visible(navigation.prevBtn, false);
-			}
-			
-		}
-		
-		function onDragFinish(e, d) {
-			trace("DRAG FINISH");
-			trace(d.left_adjust);
-			trace((config.slider.width / 2));
-			
-			if (d.left_adjust < 0 ) {
-				if (Math.abs(d.left_adjust) > (config.slider.width / 2) ) {
-					//onNextClick(e);
-					if (current_slide == slides.length - 1) {
-						backToCurrentSlide();
-					} else {
-						goToSlide(current_slide+1, "easeOutExpo");
-						upDate();
-					}
-				} else {
-					backToCurrentSlide();
-					
-				}
-			} else if (Math.abs(d.left_adjust) > (config.slider.width / 2) ) {
-				if (current_slide == 0) {
-					backToCurrentSlide();
-				} else {
-					goToSlide(current_slide-1, "easeOutExpo");
-					upDate();
-				}
-			} else {
-				backToCurrentSlide();
-			}
-				
-			
-			
-		}
-		/* NAVIGATION
-		================================================== */
-		function onNextClick(e) {
-			if (current_slide == slides.length - 1) {
-				backToCurrentSlide();
-			} else {
-				goToSlide(current_slide+1);
-				upDate();
-			}
-		}
-		
-		function onPrevClick(e) {
-			if (current_slide == 0) {
-				backToCurrentSlide();
-			} else {
-				goToSlide(current_slide-1);
-				upDate();
-			}
-		}
-
-		function onKeypressNav(e) {
-			switch(e.keyCode) {
-				case 39:
-					// RIGHT ARROW
-					onNextClick(e);
-					break;
-				case 37:
-					// LEFT ARROW
-					onPrevClick(e);
-					break;
-			}
-		}
-		
-		function onTouchUpdate(e, b) {
-			if (slide_positions.length == 0) {
-				for(var i = 0; i < slides.length; i++) {
-					slide_positions.push( slides[i].leftpos() );
-				}
-			}
-			if (typeof b.left == "number") {
-				var _pos = b.left;
-				var _slide_pos = -(slides[current_slide].leftpos());
-				if (_pos < _slide_pos - (config.slider_width/3)) {
-					onNextClick();
-				} else if (_pos > _slide_pos + (config.slider_width/3)) {
-					onPrevClick();
-				} else {
-					VMM.Lib.animate($slider_container, config.duration, config.ease, {"left": _slide_pos });
-				}
-			} else {
-				VMM.Lib.animate($slider_container, config.duration, config.ease, {"left": _slide_pos });
-			}
-			
-			if (typeof b.top == "number") {
-				VMM.Lib.animate($slider_container, config.duration, config.ease, {"top": -b.top});
-			} else {
-				
-			}
-		};
-		
-		function onExplainerClick(e) {
-			detachMessege();
-		}
-		
-		/* UPDATE
-		================================================== */
-		function upDate() {
-			config.current_slide = current_slide;
-			VMM.fireEvent(layout, "UPDATE");
-		};
-		
-		/* GET DATA
-		================================================== */
-		function getData(d) {
-			data = d;
-		};
-		
-		/* BUILD SLIDES
-		================================================== */
-		function buildSlides(d) {
-			var i	= 0;
-			
-			VMM.attachElement($slides_items, "");
-			slides = [];
-			
-			for(i = 0; i < d.length; i++) {
-				var _slide = new VMM.Slider.Slide(d[i], $slides_items);
-				//_slide.show();
-				slides.push(_slide);
-			}
-		}
-		
-		function preloadSlides(skip) {
-			var i	= 0;
-			
-			if (skip) {
-				preloadTimeOutSlides();
-			} else {
-				for(i = 0; i < slides.length; i++) {
-					slides[i].clearTimers();
-				}
-				timer = setTimeout(preloadTimeOutSlides, config.duration);
-				
-			}
-		}
-		
-		function preloadTimeOutSlides() {
-			var i = 0;
-			
-			for(i = 0; i < slides.length; i++) {
-				slides[i].enqueue = true;
-			}
-			
-			for(i = 0; i < config.preload; i++) {
-				if ( !((current_slide + i) > slides.length - 1)) {
-					slides[current_slide + i].show();
-					slides[current_slide + i].enqueue = false;
-				}
-				if ( !( (current_slide - i) < 0 ) ) {
-					slides[current_slide - i].show();
-					slides[current_slide - i].enqueue = false;
-				}
-			}
-			
-			if (slides.length > 50) {
-				for(i = 0; i < slides.length; i++) {
-					if (slides[i].enqueue) {
-						slides[i].hide();
-					}
-				}
-			}
-			
-			sizeSlides();
-		}
-		
-		function sizeSlide(slide_id) {
-			
-		}
-		
-		/* SIZE SLIDES
-		================================================== */
-		function sizeSlides() {
-			var i						= 0,
-				layout_text_media		= ".slider-item .layout-text-media .media .media-container ",
-				layout_media			= ".slider-item .layout-media .media .media-container ",
-				layout_both				= ".slider-item .media .media-container",
-				layout_caption			= ".slider-item .media .media-container .media-shadow .caption",
-				is_skinny				= false,
-				mediasize = {
-					text_media: {
-						width: 			(config.slider.content.width/100) * 60,
-						height: 		config.slider.height - 60,
-						video: {
-							width:		0,
-							height:		0
-						},
-						text: {
-							width:		((config.slider.content.width/100) * 40) - 30,
-							height:		config.slider.height
-						}
-					},
-					media: {
-						width: 			config.slider.content.width,
-						height: 		config.slider.height - 110,
-						video: {
-							width: 		0,
-							height: 	0
-						}
-					}
-				};
-				
-			// Handle smaller sizes
-			if (VMM.Browser.device == "mobile" || current_width < 641) {
-				is_skinny = true;
-
-			} 
-			
-			VMM.master_config.sizes.api.width	= mediasize.media.width;
-			VMM.master_config.sizes.api.height	= mediasize.media.height;
-			
-			mediasize.text_media.video			= VMM.Util.ratio.fit(mediasize.text_media.width, mediasize.text_media.height, 16, 9);
-			mediasize.media.video				= VMM.Util.ratio.fit(mediasize.media.width, mediasize.media.height, 16, 9);
-			
-			VMM.Lib.css(".slider-item", "width", config.slider.content.width );
-			VMM.Lib.height(".slider-item", config.slider.height);
-			
-			
-			
-			if (is_skinny) {
-				
-				mediasize.text_media.width = 	config.slider.content.width - (config.slider.content.padding*2);
-				mediasize.media.width = 		config.slider.content.width - (config.slider.content.padding*2);
-				mediasize.text_media.height = 	((config.slider.height/100) * 50 ) - 50;
-				mediasize.media.height = 		((config.slider.height/100) * 70 ) - 40;
-				
-				mediasize.text_media.video = 	VMM.Util.ratio.fit(mediasize.text_media.width, mediasize.text_media.height, 16, 9);
-				mediasize.media.video = 		VMM.Util.ratio.fit(mediasize.media.width, mediasize.media.height, 16, 9);
-				
-				VMM.Lib.css(".slider-item .layout-text-media .text", "width", "100%" );
-				VMM.Lib.css(".slider-item .layout-text-media .text", "display", "block" );
-				VMM.Lib.css(".slider-item .layout-text-media .text .container", "display", "block" );
-				VMM.Lib.css(".slider-item .layout-text-media .text .container", "width", mediasize.media.width );
-				VMM.Lib.css(".slider-item .layout-text-media .text .container .start", "width", "auto" );
-				
-				VMM.Lib.css(".slider-item .layout-text-media .media", "float", "none" );
-				VMM.Lib.addClass(".slider-item .content-container", "pad-top");
-				
-				VMM.Lib.css(".slider-item .media blockquote p", "line-height", "18px" );
-				VMM.Lib.css(".slider-item .media blockquote p", "font-size", "16px" );
-				
-				VMM.Lib.css(".slider-item", "overflow-y", "auto" );
-				
-				
-			} else {
-				
-				VMM.Lib.css(".slider-item .layout-text-media .text", "width", "40%" );
-				VMM.Lib.css(".slider-item .layout-text-media .text", "display", "table-cell" );
-				VMM.Lib.css(".slider-item .layout-text-media .text .container", "display", "table-cell" );
-				VMM.Lib.css(".slider-item .layout-text-media .text .container", "width", "auto" );
-				VMM.Lib.css(".slider-item .layout-text-media .text .container .start", "width", mediasize.text_media.text.width );
-				//VMM.Lib.addClass(".slider-item .content-container", "pad-left");
-				VMM.Lib.removeClass(".slider-item .content-container", "pad-top");
-				
-				VMM.Lib.css(".slider-item .layout-text-media .media", "float", "left" );
-				VMM.Lib.css(".slider-item .layout-text-media", "display", "table" );
-				
-				VMM.Lib.css(".slider-item .media blockquote p", "line-height", "36px" );
-				VMM.Lib.css(".slider-item .media blockquote p", "font-size", "28px" );
-				
-				VMM.Lib.css(".slider-item", "display", "table" );
-				VMM.Lib.css(".slider-item", "overflow-y", "auto" );
-			}
-			
-			// MEDIA FRAME
-			VMM.Lib.css(	layout_text_media + ".media-frame", 		"max-width", 	mediasize.text_media.width);
-			VMM.Lib.height(	layout_text_media + ".media-frame", 						mediasize.text_media.height);
-			VMM.Lib.width(	layout_text_media + ".media-frame", 						mediasize.text_media.width);
-			
-			// WEBSITES
-			//VMM.Lib.css(	layout_both + 		".website", 			"max-width", 	300 );
-			
-			// IMAGES
-			VMM.Lib.css(	layout_text_media + "img", 					"max-height", 	mediasize.text_media.height );
-			VMM.Lib.css(	layout_media + 		"img", 					"max-height", 	mediasize.media.height );
-			
-			// FIX FOR NON-WEBKIT BROWSERS
-			VMM.Lib.css(	layout_text_media + "img", 					"max-width", 	mediasize.text_media.width );
-			VMM.Lib.css(	layout_text_media + ".avatar img", "max-width", 			32 );
-			VMM.Lib.css(	layout_text_media + ".avatar img", "max-height", 			32 );
-			VMM.Lib.css(	layout_media + 		".avatar img", "max-width", 			32 );
-			VMM.Lib.css(	layout_media + 		".avatar img", "max-height", 			32 );
-			
-			VMM.Lib.css(	layout_text_media + ".article-thumb", "max-width", 			"50%" );
-			//VMM.Lib.css(	layout_text_media + ".article-thumb", "max-height", 		100 );
-			VMM.Lib.css(	layout_media + 		".article-thumb", "max-width", 			200 );
-			//VMM.Lib.css(	layout_media + 		".article-thumb", "max-height", 		100 );
-			
-			
-			// IFRAME FULL SIZE VIDEO
-			VMM.Lib.width(	layout_text_media + ".media-frame", 						mediasize.text_media.video.width);
-			VMM.Lib.height(	layout_text_media + ".media-frame", 						mediasize.text_media.video.height);
-			VMM.Lib.width(	layout_media + 		".media-frame", 						mediasize.media.video.width);
-			VMM.Lib.height(	layout_media + 		".media-frame", 						mediasize.media.video.height);
-			VMM.Lib.css(	layout_media + 		".media-frame", 		"max-height", 	mediasize.media.video.height);
-			VMM.Lib.css(	layout_media + 		".media-frame", 		"max-width", 	mediasize.media.video.width);
-			
-			// SOUNDCLOUD
-			VMM.Lib.height(	layout_media + 		".soundcloud", 							168);
-			VMM.Lib.height(	layout_text_media + ".soundcloud", 							168);
-			VMM.Lib.width(	layout_media + 		".soundcloud", 							mediasize.media.width);
-			VMM.Lib.width(	layout_text_media + ".soundcloud", 							mediasize.text_media.width);
-			VMM.Lib.css(	layout_both + 		".soundcloud", 			"max-height", 	168 );
-			
-			// MAPS
-			VMM.Lib.height(	layout_text_media	+ ".map", 								mediasize.text_media.height);
-			VMM.Lib.width(	layout_text_media	+ ".map", 								mediasize.text_media.width);
-			VMM.Lib.css(	layout_media		+ ".map", 				"max-height", 	mediasize.media.height);
-			VMM.Lib.width(	layout_media		+ ".map", 								mediasize.media.width);
-			
-			
-			// DOCS
-			VMM.Lib.height(	layout_text_media + ".doc", 								mediasize.text_media.height);
-			VMM.Lib.width(	layout_text_media	+ ".doc", 								mediasize.text_media.width);
-			VMM.Lib.height(	layout_media + 		".doc", 								mediasize.media.height);
-			VMM.Lib.width(	layout_media		+ ".doc", 								mediasize.media.width);
-			
-			// IE8 NEEDS THIS
-			VMM.Lib.width(	layout_media + 		".wikipedia", 							mediasize.media.width);
-			VMM.Lib.width(	layout_media + 		".twitter", 							mediasize.media.width);
-			VMM.Lib.width(	layout_media + 		".plain-text-quote", 					mediasize.media.width);
-			VMM.Lib.width(	layout_media + 		".plain-text", 							mediasize.media.width);
-			
-			VMM.Lib.css(	layout_both, 		"max-width", 							mediasize.media.width);
-			
-			
-			// CAPTION WIDTH
-			VMM.Lib.css( layout_text_media + 	".caption",	"max-width",	mediasize.text_media.video.width);
-			VMM.Lib.css( layout_media + 		".caption",	"max-width",	mediasize.media.video.width);
-			//VMM.Lib.css( layout_text_media + 	".caption",	"max-width",	mediasize.text_media.width);
-			//VMM.Lib.css( layout_media + 		".caption",	"max-width",	mediasize.media.width);
-			
-			// MAINTAINS VERTICAL CENTER IF IT CAN
-			for(i = 0; i < slides.length; i++) {
-				
-				slides[i].layout(is_skinny);
-				
-				if (slides[i].content_height() > config.slider.height + 20) {
-					slides[i].css("display", "block");
-				} else {
-					slides[i].css("display", "table");
-				}
-			}
-			
-		}
-		
-		/* POSITION SLIDES
-		================================================== */
-		function positionSlides() {
-			var pos = 0,
-				i	= 0;
-				
-			for(i = 0; i < slides.length; i++) {
-				pos = i * (config.slider.width+config.spacing);
-				slides[i].leftpos(pos);
-			}
-		}
-		
-		/* OPACITY SLIDES
-		================================================== */
-		function opacitySlides(n) {
-			var _ease	= "linear",
-				i		= 0;
-				
-			for(i = 0; i < slides.length; i++) {
-				if (i == current_slide) {
-					slides[i].animate(config.duration, _ease, {"opacity": 1});
-				} else if (i == current_slide - 1 || i == current_slide + 1) {
-					slides[i].animate(config.duration, _ease, {"opacity": 0.1});
-				} else {
-					slides[i].opacity(n);
-				}
-			}
-		}
-		
-		/* GO TO SLIDE
-			goToSlide(n, ease, duration);
-		================================================== */
-		function goToSlide(n, ease, duration, fast, firstrun) {
-			var _ease		= config.ease,
-				_duration	= config.duration,
-				is_last		= false,
-				is_first	= false,
-				_title		= "",
-				_pos;
-			
-			/* STOP ANY VIDEO PLAYERS ACTIVE
-			================================================== */
-			VMM.ExternalAPI.youtube.stopPlayers();
-			
-			// Set current slide
-			current_slide	= n;
-			_pos			= slides[current_slide].leftpos();
-			
-			
-			if (current_slide == 0) {is_first = true};
-			if (current_slide +1 >= slides.length) {is_last = true};
-			if (ease != null && ease != "") {_ease = ease};
-			if (duration != null && duration != "") {_duration = duration};
-			
-			/*	NAVIGATION
-				set proper nav titles and dates etc.
-			================================================== */
-			// Handle smaller sizes
-			if (VMM.Browser.device == "mobile") {
-			//if (VMM.Browser.device == "mobile" || current_width <= 640) {
-				VMM.Lib.visible(navigation.prevBtn, false);
-				VMM.Lib.visible(navigation.nextBtn, false);
-			} else {
-				if (is_first) {
-					VMM.Lib.visible(navigation.prevBtn, false);
-				} else {
-					VMM.Lib.visible(navigation.prevBtn, true);
-					_title = VMM.Util.unlinkify(data[current_slide - 1].title)
-					if (config.type == "timeline") {
-						if(typeof data[current_slide - 1].date === "undefined") {
-							VMM.attachElement(navigation.prevDate, _title);
-							VMM.attachElement(navigation.prevTitle, "");
-						} else {
-							VMM.attachElement(navigation.prevDate, VMM.Date.prettyDate(data[current_slide - 1].startdate, false, data[current_slide - 1].precisiondate));
-							VMM.attachElement(navigation.prevTitle, _title);
-						}
-					} else {
-						VMM.attachElement(navigation.prevTitle, _title);
-					}
-				
-				}
-				if (is_last) {
-					VMM.Lib.visible(navigation.nextBtn, false);
-				} else {
-					VMM.Lib.visible(navigation.nextBtn, true);
-					_title = VMM.Util.unlinkify(data[current_slide + 1].title);
-					if (config.type == "timeline") {
-						if(typeof data[current_slide + 1].date === "undefined") {
-							VMM.attachElement(navigation.nextDate, _title);
-							VMM.attachElement(navigation.nextTitle, "");
-						} else {
-							VMM.attachElement(navigation.nextDate, VMM.Date.prettyDate(data[current_slide + 1].startdate, false, data[current_slide + 1].precisiondate) );
-							VMM.attachElement(navigation.nextTitle, _title);
-						}
-					} else {
-						VMM.attachElement(navigation.nextTitle,  _title);
-					}
-				
-				}
-			}
-			
-			
-			/* ANIMATE SLIDE
-			================================================== */
-			if (fast) {
-				VMM.Lib.css($slider_container, "left", -(_pos - config.slider.content.padding));	
-			} else{
-				VMM.Lib.stop($slider_container);
-				VMM.Lib.animate($slider_container, _duration, _ease, {"left": -(_pos - config.slider.content.padding)});
-			}
-			
-			if (firstrun) {
-				VMM.fireEvent(layout, "LOADED");
-			}
-			
-			/* SET Vertical Scoll
-			================================================== */
-			if (slides[current_slide].height() > config.slider_height) {
-				VMM.Lib.css(".slider", "overflow-y", "scroll" );
-			} else {
-				VMM.Lib.css(layout, "overflow-y", "hidden" );
-				var scroll_height = 0;
-
-                // FIXME: Chrome cannot optimize this try/catch block, which appears to be unnecessary – see https://github.com/NUKnightLab/TimelineJS/pull/681#issuecomment-52365420
-				try {
-					scroll_height = VMM.Lib.prop(layout, "scrollHeight");
-					VMM.Lib.animate(layout, _duration, _ease, {scrollTop: scroll_height - VMM.Lib.height(layout) });
-				}
-				catch(err) {
-					scroll_height = VMM.Lib.height(layout);
-				}
-			}
-			
-			preloadSlides();
-			VMM.fireEvent($slider, "MESSAGE", "TEST");
-		}
-
-		function backToCurrentSlide() {
-			VMM.Lib.stop($slider_container);
-			VMM.Lib.animate($slider_container, config.duration, "easeOutExpo", {"left": -(slides[current_slide].leftpos()) +  config.slider.content.padding} );
-		}
-		
-		/* MESSEGES 
-		================================================== */
-		function showMessege(e, msg, other) {
-			trace("showMessege " + msg);
-			//VMM.attachElement($timeline, $feedback);
-			VMM.attachElement($explainer, "<div class='vco-explainer'><div class='vco-explainer-container'><div class='vco-bezel'><div class='vco-gesture-icon'></div>" + "<div class='vco-message'><p>" + msg + "</p></div></div></div></div>");
-		};
-		
-		function hideMessege() {
-			VMM.Lib.animate($explainer, config.duration, config.ease, {"opacity": 0}, detachMessege);
-		};
-		
-		function detachMessege() {
-			VMM.Lib.detach($explainer);
-		}
-		
-		/* BUILD NAVIGATION
-		================================================== */
-		function buildNavigation() {
-			
-			var temp_icon = "<div class='icon'>&nbsp;</div>";
-			
-			navigation.nextBtn = VMM.appendAndGetElement($slider, "<div>", "nav-next");
-			navigation.prevBtn = VMM.appendAndGetElement($slider, "<div>", "nav-previous");
-			navigation.nextBtnContainer = VMM.appendAndGetElement(navigation.nextBtn, "<div>", "nav-container", temp_icon);
-			navigation.prevBtnContainer = VMM.appendAndGetElement(navigation.prevBtn, "<div>", "nav-container", temp_icon);
-			if (config.type == "timeline") {
-				navigation.nextDate = VMM.appendAndGetElement(navigation.nextBtnContainer, "<div>", "date", "");
-				navigation.prevDate = VMM.appendAndGetElement(navigation.prevBtnContainer, "<div>", "date", "");
-			}
-			navigation.nextTitle = VMM.appendAndGetElement(navigation.nextBtnContainer, "<div>", "title", "");
-			navigation.prevTitle = VMM.appendAndGetElement(navigation.prevBtnContainer, "<div>", "title", "");
-			
-			VMM.bindEvent(".nav-next", onNextClick);
-			VMM.bindEvent(".nav-previous", onPrevClick);
-			VMM.bindEvent(window, onKeypressNav, 'keydown');
-			
-		}
-		
-		/* BUILD
-		================================================== */
-		function build() {
-			var __duration = 3000;
-			// Clear out existing content
-			VMM.attachElement(layout, "");
-			
-			// Get DOM Objects to local objects
-			$slider				= VMM.getElement(layout);
-			$slider_mask		= VMM.appendAndGetElement($slider, "<div>", "slider-container-mask");
-			$slider_container	= VMM.appendAndGetElement($slider_mask, "<div>", "slider-container");
-			$slides_items		= VMM.appendAndGetElement($slider_container, "<div>", "slider-item-container");
-			
-			
-			// BUILD NAVIGATION
-			buildNavigation();
-
-			// ATTACH SLIDES
-			buildSlides(data);
-			
-			/* MAKE SLIDER DRAGGABLE/TOUCHABLE
-			================================================== */
-			
-			if (VMM.Browser.device == "tablet" || VMM.Browser.device == "mobile") {
-				// Different Animation duration for touch
-				config.duration = 500;
-				__duration = 1000;
-				
-				// Make touchable
-				$dragslide = new VMM.DragSlider();
-				$dragslide.createPanel($slider, $slider_container, "", config.touch, true);
-				VMM.bindEvent($dragslide, onDragFinish, 'DRAGUPDATE');
-				
-				// EXPLAINER
-				$explainer = VMM.appendAndGetElement($slider_mask, "<div>", "vco-feedback", "");
-				showMessege(null, VMM.master_config.language.messages.swipe_nav);
-				VMM.Lib.height($explainer, config.slider.height);
-				VMM.bindEvent($explainer, onExplainerClick);
-				VMM.bindEvent($explainer, onExplainerClick, 'touchend');
-			}
-			
-			reSize(false, true);
-			
-			
-			VMM.Lib.visible(navigation.prevBtn, false);
-			goToSlide(config.current_slide, "easeOutExpo", __duration, true, true);
-			
-			_active = true;
-		};
-		
-	};
+		this.data.pos.start = 0; 
+		this._el.move.style.left = this.data.pos.start.x + "px";
+		this._el.move.style.top = this.data.pos.start.y + "px";
+		this._el.move.style.position = "absolute";
+	},
 	
-}
-
-
-
-
-
-
-/* **********************************************
-     Begin VMM.Slider.Slide.js
-********************************************** */
-
-/* Slider Slide 
-================================================== */
-
-if (typeof VMM.Slider != 'undefined') {
-	VMM.Slider.Slide = function(d, _parent) {
-		
-		var $media, $text, $slide, $wrap, element, c,
-			data		= d,
-			slide		= {},
-			element		= "",
-			media		= "",
-			loaded		= false,
-			preloaded	= false,
-			is_skinny	= false,
-			_enqueue	= true,
-			_removeque	= false,
-			_id			= "slide_",
-			_class		= 0,
-			timer		= {pushque:"", render:"", relayout:"", remove:"", skinny:false},
-			times		= {pushque:500, render:100, relayout:100, remove:30000};
-		
-		_id				= _id + data.uniqueid;
-		this.enqueue	= _enqueue;
-		this.id			= _id;
-		
-		
-		element		=	VMM.appendAndGetElement(_parent, "<div>", "slider-item");
-		
-		if (typeof data.classname != 'undefined') {
-			trace("HAS CLASSNAME");
-			VMM.Lib.addClass(element, data.classname);
-		} else {
-			trace("NO CLASSNAME");
-			trace(data);
-		}
-		
-		c = {slide:"", text: "", media: "", media_element: "", layout: "content-container layout", has: { headline: false, text: false, media: false }};
-		
-		/* PUBLIC
-		================================================== */
-		this.show = function(skinny) {
-			_enqueue = false;
-			timer.skinny = skinny;
-			_removeque = false;
-			clearTimeout(timer.remove);
-			
-			if (!loaded) {
-				if (preloaded) {
-					clearTimeout(timer.relayout);
-					timer.relayout = setTimeout(reloadLayout, times.relayout);
-				} else {
-					render(skinny);
-				}
-			}
-		};
-		
-		this.hide = function() {
-			if (loaded && !_removeque) {
-				_removeque = true;
-				clearTimeout(timer.remove);
-				timer.remove = setTimeout(removeSlide, times.remove);
-			}
-		};
-		
-		this.clearTimers = function() {
-			//clearTimeout(timer.remove);
-			clearTimeout(timer.relayout);
-			clearTimeout(timer.pushque);
-			clearTimeout(timer.render);
-		};
-		
-		this.layout = function(skinny) {
-			if (loaded && preloaded) {
-				reLayout(skinny);
-			}
-		};
-		
-		this.elem = function() {	
-			return element;
-		};
-		
-		this.position = function() {
-			return VMM.Lib.position(element);
-		};
-		
-		this.leftpos = function(p) {
-			if(typeof p != 'undefined') {
-				VMM.Lib.css(element, "left", p);
-			} else {
-				return VMM.Lib.position(element).left
-			}
-		};
-		
-		this.animate = function(d, e, p) {
-			VMM.Lib.animate(element, d, e, p);
-		};
-		
-		this.css = function(p, v) {
-			VMM.Lib.css(element, p, v );
-		}
-		
-		this.opacity = function(p) {
-			VMM.Lib.css(element, "opacity", p);	
-		}
-		
-		this.width = function() {
-			return VMM.Lib.width(element);
-		};
-		
-		this.height = function() {
-			return VMM.Lib.height(element);
-		};
-		
-		this.content_height = function () {
-			var ch = VMM.Lib.find( element, ".content")[0];
-			
-			if (ch != 'undefined' && ch != null) {
-				return VMM.Lib.height(ch);
-			} else {
-				return 0;
-			}
-		}
-		
-		/* PRIVATE
-		================================================== */
-		var render = function(skinny) {
-			trace("RENDER " + _id);
-			
-			loaded = true;
-			preloaded = true;
-			timer.skinny = skinny;
-			
-			buildSlide();
-			
-			clearTimeout(timer.pushque);
-			clearTimeout(timer.render);
-			timer.pushque = setTimeout(VMM.ExternalAPI.pushQues, times.pushque);
-			
-		};
-		
-		var removeSlide = function() {
-			//VMM.attachElement(element, "");
-			trace("REMOVE SLIDE TIMER FINISHED");
-			loaded = false;
-			VMM.Lib.detach($text);
-			VMM.Lib.detach($media);
-			
-		};
-		
-		var reloadLayout = function() {
-			loaded = true;
-			reLayout(timer.skinny, true);
-		};
-		
-		var reLayout = function(skinny, reload) {
-			if (c.has.text)	{
-				if (skinny) {
-					if (!is_skinny || reload) {
-						VMM.Lib.removeClass($slide, "pad-left");
-						VMM.Lib.detach($text);
-						VMM.Lib.detach($media);
-						VMM.Lib.append($slide, $text);
-						VMM.Lib.append($slide, $media);
-						is_skinny = true;
-					} 
-				} else {
-					if (is_skinny || reload) {
-						VMM.Lib.addClass($slide, "pad-left");
-						VMM.Lib.detach($text);
-						VMM.Lib.detach($media);
-						VMM.Lib.append($slide, $media);
-						VMM.Lib.append($slide, $text);
-						is_skinny = false;
-						
-					} 
-				}
-			} else if (reload) {
-				if (c.has.headline) {
-					VMM.Lib.detach($text);
-					VMM.Lib.append($slide, $text);
-				}
-				VMM.Lib.detach($media);
-				VMM.Lib.append($slide, $media);
-			}
-		}
-		
-		var buildSlide = function() {
-			trace("BUILDSLIDE");
-			$wrap	= VMM.appendAndGetElement(element, "<div>", "content");
-			$slide	= VMM.appendAndGetElement($wrap, "<div>");
-			
-			/* DATE
-			================================================== */
-			if (data.startdate != null && data.startdate != "") {
-				if (type.of(data.startdate) == "date") {
-					if (data.type != "start") {
-						var st	= VMM.Date.prettyDate(data.startdate, false, data.precisiondate);
-						var en	= VMM.Date.prettyDate(data.enddate, false, data.precisiondate);
-						var tag	= "";
-						/* TAG / CATEGORY
-						================================================== */
-						if (data.tag != null && data.tag != "") {
-							tag		= VMM.createElement("span", data.tag, "slide-tag");
-						}
-						
-						if (st != en) {
-							c.text += VMM.createElement("h2", st + " &mdash; " + en + tag, "date");
-						} else {
-							c.text += VMM.createElement("h2", st + tag, "date");
-						}
-					}
-				}
-			}
-			
-			/* HEADLINE
-			================================================== */
-			if (data.headline != null && data.headline != "") {
-				c.has.headline	=	true;
-				if (data.type == "start") {
-					c.text		+=	VMM.createElement("h2", VMM.Util.linkify_with_twitter(data.headline, "_blank"), "start");
-				} else { 
-					c.text		+=	VMM.createElement("h3", VMM.Util.linkify_with_twitter(data.headline, "_blank"));
-				}
-			}
-			
-			/* TEXT
-			================================================== */
-			if (data.text != null && data.text != "") {
-				c.has.text		=  true;
-				c.text			+= VMM.createElement("p", VMM.Util.linkify_with_twitter(data.text, "_blank"));
-			}
-			
-			if (c.has.text || c.has.headline) {
-				c.text		= VMM.createElement("div", c.text, "container");
-				//$text		=	VMM.appendAndGetElement($slide, "<div>", "text", c.text);
-				
-				$text		= VMM.appendAndGetElement($slide, "<div>", "text", VMM.TextElement.create(c.text));
-				
-			}
-			
-			/* SLUG
-			================================================== */
-			if (data.needs_slug) {
-				
-			}
-			
-			/* MEDIA
-			================================================== */
-			if (data.asset != null && data.asset != "") {
-				if (data.asset.media != null && data.asset.media != "") {
-					c.has.media	= true;
-					$media		= VMM.appendAndGetElement($slide, "<div>", "media", VMM.MediaElement.create(data.asset, data.uniqueid));
-				}
-			}
-			
-			/* COMBINE
-			================================================== */
-			if (c.has.text)	{ c.layout		+=	"-text"		};
-			if (c.has.media){ c.layout		+=	"-media"	};
-
-			if (c.has.text)	{
-				if (timer.skinny) {
-					VMM.Lib.addClass($slide, c.layout);
-					is_skinny = true;
-				} else {
-					VMM.Lib.addClass($slide, c.layout);
-					VMM.Lib.addClass($slide, "pad-left");
-					VMM.Lib.detach($text);
-					VMM.Lib.append($slide, $text);
-				}
-				
-			} else {
-				VMM.Lib.addClass($slide, c.layout);
-			}
-			
-			
-		};
-		
-	}
+	disable: function() {
+		TL.DomEvent.removeListener(this._el.drag, this.dragevent.down, this._onDragStart, this);
+		TL.DomEvent.removeListener(this._el.drag, this.dragevent.up, this._onDragEnd, this);
+	},
 	
-};
+	stopMomentum: function() {
+		if (this.animator) {
+			this.animator.stop();
+		}
 
-
-/* **********************************************
-     Begin AES.js
-********************************************** */
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
-/*  AES implementation in JavaScript (c) Chris Veness 2005-2011                                   */
-/*   - see http://csrc.nist.gov/publications/PubsFIPS.html#197                                    */
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
-
-var Aes = {};  // Aes namespace
-
-/**
- * AES Cipher function: encrypt 'input' state with Rijndael algorithm
- *   applies Nr rounds (10/12/14) using key schedule w for 'add round key' stage
- *
- * @param {Number[]} input 16-byte (128-bit) input state array
- * @param {Number[][]} w   Key schedule as 2D byte-array (Nr+1 x Nb bytes)
- * @returns {Number[]}     Encrypted output state array
- */
-Aes.cipher = function(input, w) {    // main Cipher function [§5.1]
-  var Nb = 4;               // block size (in words): no of columns in state (fixed at 4 for AES)
-  var Nr = w.length/Nb - 1; // no of rounds: 10/12/14 for 128/192/256-bit keys
-
-  var state = [[],[],[],[]];  // initialise 4xNb byte-array 'state' with input [§3.4]
-  for (var i=0; i<4*Nb; i++) state[i%4][Math.floor(i/4)] = input[i];
-
-  state = Aes.addRoundKey(state, w, 0, Nb);
-
-  for (var round=1; round<Nr; round++) {
-    state = Aes.subBytes(state, Nb);
-    state = Aes.shiftRows(state, Nb);
-    state = Aes.mixColumns(state, Nb);
-    state = Aes.addRoundKey(state, w, round, Nb);
-  }
-
-  state = Aes.subBytes(state, Nb);
-  state = Aes.shiftRows(state, Nb);
-  state = Aes.addRoundKey(state, w, Nr, Nb);
-
-  var output = new Array(4*Nb);  // convert state to 1-d array before returning [§3.4]
-  for (var i=0; i<4*Nb; i++) output[i] = state[i%4][Math.floor(i/4)];
-  return output;
-}
-
-/**
- * Perform Key Expansion to generate a Key Schedule
- *
- * @param {Number[]} key Key as 16/24/32-byte array
- * @returns {Number[][]} Expanded key schedule as 2D byte-array (Nr+1 x Nb bytes)
- */
-Aes.keyExpansion = function(key) {  // generate Key Schedule (byte-array Nr+1 x Nb) from Key [§5.2]
-  var Nb = 4;            // block size (in words): no of columns in state (fixed at 4 for AES)
-  var Nk = key.length/4  // key length (in words): 4/6/8 for 128/192/256-bit keys
-  var Nr = Nk + 6;       // no of rounds: 10/12/14 for 128/192/256-bit keys
-
-  var w = new Array(Nb*(Nr+1));
-  var temp = new Array(4);
-
-  for (var i=0; i<Nk; i++) {
-    var r = [key[4*i], key[4*i+1], key[4*i+2], key[4*i+3]];
-    w[i] = r;
-  }
-
-  for (var i=Nk; i<(Nb*(Nr+1)); i++) {
-    w[i] = new Array(4);
-    for (var t=0; t<4; t++) temp[t] = w[i-1][t];
-    if (i % Nk == 0) {
-      temp = Aes.subWord(Aes.rotWord(temp));
-      for (var t=0; t<4; t++) temp[t] ^= Aes.rCon[i/Nk][t];
-    } else if (Nk > 6 && i%Nk == 4) {
-      temp = Aes.subWord(temp);
-    }
-    for (var t=0; t<4; t++) w[i][t] = w[i-Nk][t] ^ temp[t];
-  }
-
-  return w;
-}
-
-/*
- * ---- remaining routines are private, not called externally ----
- */
- 
-Aes.subBytes = function(s, Nb) {    // apply SBox to state S [§5.1.1]
-  for (var r=0; r<4; r++) {
-    for (var c=0; c<Nb; c++) s[r][c] = Aes.sBox[s[r][c]];
-  }
-  return s;
-}
-
-Aes.shiftRows = function(s, Nb) {    // shift row r of state S left by r bytes [§5.1.2]
-  var t = new Array(4);
-  for (var r=1; r<4; r++) {
-    for (var c=0; c<4; c++) t[c] = s[r][(c+r)%Nb];  // shift into temp copy
-    for (var c=0; c<4; c++) s[r][c] = t[c];         // and copy back
-  }          // note that this will work for Nb=4,5,6, but not 7,8 (always 4 for AES):
-  return s;  // see asmaes.sourceforge.net/rijndael/rijndaelImplementation.pdf
-}
-
-Aes.mixColumns = function(s, Nb) {   // combine bytes of each col of state S [§5.1.3]
-  for (var c=0; c<4; c++) {
-    var a = new Array(4);  // 'a' is a copy of the current column from 's'
-    var b = new Array(4);  // 'b' is a•{02} in GF(2^8)
-    for (var i=0; i<4; i++) {
-      a[i] = s[i][c];
-      b[i] = s[i][c]&0x80 ? s[i][c]<<1 ^ 0x011b : s[i][c]<<1;
-
-    }
-    // a[n] ^ b[n] is a•{03} in GF(2^8)
-    s[0][c] = b[0] ^ a[1] ^ b[1] ^ a[2] ^ a[3]; // 2*a0 + 3*a1 + a2 + a3
-    s[1][c] = a[0] ^ b[1] ^ a[2] ^ b[2] ^ a[3]; // a0 * 2*a1 + 3*a2 + a3
-    s[2][c] = a[0] ^ a[1] ^ b[2] ^ a[3] ^ b[3]; // a0 + a1 + 2*a2 + 3*a3
-    s[3][c] = a[0] ^ b[0] ^ a[1] ^ a[2] ^ b[3]; // 3*a0 + a1 + a2 + 2*a3
-  }
-  return s;
-}
-
-Aes.addRoundKey = function(state, w, rnd, Nb) {  // xor Round Key into state S [§5.1.4]
-  for (var r=0; r<4; r++) {
-    for (var c=0; c<Nb; c++) state[r][c] ^= w[rnd*4+c][r];
-  }
-  return state;
-}
-
-Aes.subWord = function(w) {    // apply SBox to 4-byte word w
-  for (var i=0; i<4; i++) w[i] = Aes.sBox[w[i]];
-  return w;
-}
-
-Aes.rotWord = function(w) {    // rotate 4-byte word w left by one byte
-  var tmp = w[0];
-  for (var i=0; i<3; i++) w[i] = w[i+1];
-  w[3] = tmp;
-  return w;
-}
-
-// sBox is pre-computed multiplicative inverse in GF(2^8) used in subBytes and keyExpansion [§5.1.1]
-Aes.sBox =  [0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,0x30,0x01,0x67,0x2b,0xfe,0xd7,0xab,0x76,
-             0xca,0x82,0xc9,0x7d,0xfa,0x59,0x47,0xf0,0xad,0xd4,0xa2,0xaf,0x9c,0xa4,0x72,0xc0,
-             0xb7,0xfd,0x93,0x26,0x36,0x3f,0xf7,0xcc,0x34,0xa5,0xe5,0xf1,0x71,0xd8,0x31,0x15,
-             0x04,0xc7,0x23,0xc3,0x18,0x96,0x05,0x9a,0x07,0x12,0x80,0xe2,0xeb,0x27,0xb2,0x75,
-             0x09,0x83,0x2c,0x1a,0x1b,0x6e,0x5a,0xa0,0x52,0x3b,0xd6,0xb3,0x29,0xe3,0x2f,0x84,
-             0x53,0xd1,0x00,0xed,0x20,0xfc,0xb1,0x5b,0x6a,0xcb,0xbe,0x39,0x4a,0x4c,0x58,0xcf,
-             0xd0,0xef,0xaa,0xfb,0x43,0x4d,0x33,0x85,0x45,0xf9,0x02,0x7f,0x50,0x3c,0x9f,0xa8,
-             0x51,0xa3,0x40,0x8f,0x92,0x9d,0x38,0xf5,0xbc,0xb6,0xda,0x21,0x10,0xff,0xf3,0xd2,
-             0xcd,0x0c,0x13,0xec,0x5f,0x97,0x44,0x17,0xc4,0xa7,0x7e,0x3d,0x64,0x5d,0x19,0x73,
-             0x60,0x81,0x4f,0xdc,0x22,0x2a,0x90,0x88,0x46,0xee,0xb8,0x14,0xde,0x5e,0x0b,0xdb,
-             0xe0,0x32,0x3a,0x0a,0x49,0x06,0x24,0x5c,0xc2,0xd3,0xac,0x62,0x91,0x95,0xe4,0x79,
-             0xe7,0xc8,0x37,0x6d,0x8d,0xd5,0x4e,0xa9,0x6c,0x56,0xf4,0xea,0x65,0x7a,0xae,0x08,
-             0xba,0x78,0x25,0x2e,0x1c,0xa6,0xb4,0xc6,0xe8,0xdd,0x74,0x1f,0x4b,0xbd,0x8b,0x8a,
-             0x70,0x3e,0xb5,0x66,0x48,0x03,0xf6,0x0e,0x61,0x35,0x57,0xb9,0x86,0xc1,0x1d,0x9e,
-             0xe1,0xf8,0x98,0x11,0x69,0xd9,0x8e,0x94,0x9b,0x1e,0x87,0xe9,0xce,0x55,0x28,0xdf,
-             0x8c,0xa1,0x89,0x0d,0xbf,0xe6,0x42,0x68,0x41,0x99,0x2d,0x0f,0xb0,0x54,0xbb,0x16];
-
-// rCon is Round Constant used for the Key Expansion [1st col is 2^(r-1) in GF(2^8)] [§5.2]
-Aes.rCon = [ [0x00, 0x00, 0x00, 0x00],
-             [0x01, 0x00, 0x00, 0x00],
-             [0x02, 0x00, 0x00, 0x00],
-             [0x04, 0x00, 0x00, 0x00],
-             [0x08, 0x00, 0x00, 0x00],
-             [0x10, 0x00, 0x00, 0x00],
-             [0x20, 0x00, 0x00, 0x00],
-             [0x40, 0x00, 0x00, 0x00],
-             [0x80, 0x00, 0x00, 0x00],
-             [0x1b, 0x00, 0x00, 0x00],
-             [0x36, 0x00, 0x00, 0x00] ]; 
-
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
-/*  AES Counter-mode implementation in JavaScript (c) Chris Veness 2005-2011                      */
-/*   - see http://csrc.nist.gov/publications/nistpubs/800-38a/sp800-38a.pdf                       */
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
-
-Aes.Ctr = {};  // Aes.Ctr namespace: a subclass or extension of Aes
-
-/** 
- * Encrypt a text using AES encryption in Counter mode of operation
- *
- * Unicode multi-byte character safe
- *
- * @param {String} plaintext Source text to be encrypted
- * @param {String} password  The password to use to generate a key
- * @param {Number} nBits     Number of bits to be used in the key (128, 192, or 256)
- * @returns {string}         Encrypted text
- */
-Aes.Ctr.encrypt = function(plaintext, password, nBits) {
-  var blockSize = 16;  // block size fixed at 16 bytes / 128 bits (Nb=4) for AES
-  if (!(nBits==128 || nBits==192 || nBits==256)) return '';  // standard allows 128/192/256 bit keys
-  plaintext = Utf8.encode(plaintext);
-  password = Utf8.encode(password);
-  //var t = new Date();  // timer
+	},
 	
-  // use AES itself to encrypt password to get cipher key (using plain password as source for key 
-  // expansion) - gives us well encrypted key (though hashed key might be preferred for prod'n use)
-  var nBytes = nBits/8;  // no bytes in key (16/24/32)
-  var pwBytes = new Array(nBytes);
-  for (var i=0; i<nBytes; i++) {  // use 1st 16/24/32 chars of password for key
-    pwBytes[i] = isNaN(password.charCodeAt(i)) ? 0 : password.charCodeAt(i);
-  }
-  var key = Aes.cipher(pwBytes, Aes.keyExpansion(pwBytes));  // gives us 16-byte key
-  key = key.concat(key.slice(0, nBytes-16));  // expand key to 16/24/32 bytes long
-
-  // initialise 1st 8 bytes of counter block with nonce (NIST SP800-38A §B.2): [0-1] = millisec, 
-  // [2-3] = random, [4-7] = seconds, together giving full sub-millisec uniqueness up to Feb 2106
-  var counterBlock = new Array(blockSize);
-  
-  var nonce = (new Date()).getTime();  // timestamp: milliseconds since 1-Jan-1970
-  var nonceMs = nonce%1000;
-  var nonceSec = Math.floor(nonce/1000);
-  var nonceRnd = Math.floor(Math.random()*0xffff);
-  
-  for (var i=0; i<2; i++) counterBlock[i]   = (nonceMs  >>> i*8) & 0xff;
-  for (var i=0; i<2; i++) counterBlock[i+2] = (nonceRnd >>> i*8) & 0xff;
-  for (var i=0; i<4; i++) counterBlock[i+4] = (nonceSec >>> i*8) & 0xff;
-  
-  // and convert it to a string to go on the front of the ciphertext
-  var ctrTxt = '';
-  for (var i=0; i<8; i++) ctrTxt += String.fromCharCode(counterBlock[i]);
-
-  // generate key schedule - an expansion of the key into distinct Key Rounds for each round
-  var keySchedule = Aes.keyExpansion(key);
-  
-  var blockCount = Math.ceil(plaintext.length/blockSize);
-  var ciphertxt = new Array(blockCount);  // ciphertext as array of strings
-  
-  for (var b=0; b<blockCount; b++) {
-    // set counter (block #) in last 8 bytes of counter block (leaving nonce in 1st 8 bytes)
-    // done in two stages for 32-bit ops: using two words allows us to go past 2^32 blocks (68GB)
-    for (var c=0; c<4; c++) counterBlock[15-c] = (b >>> c*8) & 0xff;
-    for (var c=0; c<4; c++) counterBlock[15-c-4] = (b/0x100000000 >>> c*8)
-
-    var cipherCntr = Aes.cipher(counterBlock, keySchedule);  // -- encrypt counter block --
-    
-    // block size is reduced on final block
-    var blockLength = b<blockCount-1 ? blockSize : (plaintext.length-1)%blockSize+1;
-    var cipherChar = new Array(blockLength);
-    
-    for (var i=0; i<blockLength; i++) {  // -- xor plaintext with ciphered counter char-by-char --
-      cipherChar[i] = cipherCntr[i] ^ plaintext.charCodeAt(b*blockSize+i);
-      cipherChar[i] = String.fromCharCode(cipherChar[i]);
-    }
-    ciphertxt[b] = cipherChar.join(''); 
-  }
-
-  // Array.join is more efficient than repeated string concatenation in IE
-  var ciphertext = ctrTxt + ciphertxt.join('');
-  ciphertext = Base64.encode(ciphertext);  // encode in base64
-  
-  //alert((new Date()) - t);
-  return ciphertext;
-}
-
-/** 
- * Decrypt a text encrypted by AES in counter mode of operation
- *
- * @param {String} ciphertext Source text to be encrypted
- * @param {String} password   The password to use to generate a key
- * @param {Number} nBits      Number of bits to be used in the key (128, 192, or 256)
- * @returns {String}          Decrypted text
- */
-Aes.Ctr.decrypt = function(ciphertext, password, nBits) {
-  var blockSize = 16;  // block size fixed at 16 bytes / 128 bits (Nb=4) for AES
-  if (!(nBits==128 || nBits==192 || nBits==256)) return '';  // standard allows 128/192/256 bit keys
-  ciphertext = Base64.decode(ciphertext);
-  password = Utf8.encode(password);
-  //var t = new Date();  // timer
-  
-  // use AES to encrypt password (mirroring encrypt routine)
-  var nBytes = nBits/8;  // no bytes in key
-  var pwBytes = new Array(nBytes);
-  for (var i=0; i<nBytes; i++) {
-    pwBytes[i] = isNaN(password.charCodeAt(i)) ? 0 : password.charCodeAt(i);
-  }
-  var key = Aes.cipher(pwBytes, Aes.keyExpansion(pwBytes));
-  key = key.concat(key.slice(0, nBytes-16));  // expand key to 16/24/32 bytes long
-
-  // recover nonce from 1st 8 bytes of ciphertext
-  var counterBlock = new Array(8);
-  ctrTxt = ciphertext.slice(0, 8);
-  for (var i=0; i<8; i++) counterBlock[i] = ctrTxt.charCodeAt(i);
-  
-  // generate key schedule
-  var keySchedule = Aes.keyExpansion(key);
-
-  // separate ciphertext into blocks (skipping past initial 8 bytes)
-  var nBlocks = Math.ceil((ciphertext.length-8) / blockSize);
-  var ct = new Array(nBlocks);
-  for (var b=0; b<nBlocks; b++) ct[b] = ciphertext.slice(8+b*blockSize, 8+b*blockSize+blockSize);
-  ciphertext = ct;  // ciphertext is now array of block-length strings
-
-  // plaintext will get generated block-by-block into array of block-length strings
-  var plaintxt = new Array(ciphertext.length);
-
-  for (var b=0; b<nBlocks; b++) {
-    // set counter (block #) in last 8 bytes of counter block (leaving nonce in 1st 8 bytes)
-    for (var c=0; c<4; c++) counterBlock[15-c] = ((b) >>> c*8) & 0xff;
-    for (var c=0; c<4; c++) counterBlock[15-c-4] = (((b+1)/0x100000000-1) >>> c*8) & 0xff;
-
-    var cipherCntr = Aes.cipher(counterBlock, keySchedule);  // encrypt counter block
-
-    var plaintxtByte = new Array(ciphertext[b].length);
-    for (var i=0; i<ciphertext[b].length; i++) {
-      // -- xor plaintxt with ciphered counter byte-by-byte --
-      plaintxtByte[i] = cipherCntr[i] ^ ciphertext[b].charCodeAt(i);
-      plaintxtByte[i] = String.fromCharCode(plaintxtByte[i]);
-    }
-    plaintxt[b] = plaintxtByte.join('');
-  }
-
-  // join array of blocks into single plaintext string
-  var plaintext = plaintxt.join('');
-  plaintext = Utf8.decode(plaintext);  // decode from UTF8 back to Unicode multi-byte chars
-  
-  //alert((new Date()) - t);
-  return plaintext;
-}
-
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
-/*  Base64 class: Base 64 encoding / decoding (c) Chris Veness 2002-2011                          */
-/*    note: depends on Utf8 class                                                                 */
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
-
-var Base64 = {};  // Base64 namespace
-
-Base64.code = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-
-/**
- * Encode string into Base64, as defined by RFC 4648 [http://tools.ietf.org/html/rfc4648]
- * (instance method extending String object). As per RFC 4648, no newlines are added.
- *
- * @param {String} str The string to be encoded as base-64
- * @param {Boolean} [utf8encode=false] Flag to indicate whether str is Unicode string to be encoded 
- *   to UTF8 before conversion to base64; otherwise string is assumed to be 8-bit characters
- * @returns {String} Base64-encoded string
- */ 
-Base64.encode = function(str, utf8encode) {  // http://tools.ietf.org/html/rfc4648
-  utf8encode =  (typeof utf8encode == 'undefined') ? false : utf8encode;
-  var o1, o2, o3, bits, h1, h2, h3, h4, e=[], pad = '', c, plain, coded;
-  var b64 = Base64.code;
-   
-  plain = utf8encode ? str.encodeUTF8() : str;
-  
-  c = plain.length % 3;  // pad string to length of multiple of 3
-  if (c > 0) { while (c++ < 3) { pad += '='; plain += '\0'; } }
-  // note: doing padding here saves us doing special-case packing for trailing 1 or 2 chars
-   
-  for (c=0; c<plain.length; c+=3) {  // pack three octets into four hexets
-    o1 = plain.charCodeAt(c);
-    o2 = plain.charCodeAt(c+1);
-    o3 = plain.charCodeAt(c+2);
-      
-    bits = o1<<16 | o2<<8 | o3;
-      
-    h1 = bits>>18 & 0x3f;
-    h2 = bits>>12 & 0x3f;
-    h3 = bits>>6 & 0x3f;
-    h4 = bits & 0x3f;
-
-    // use hextets to index into code string
-    e[c/3] = b64.charAt(h1) + b64.charAt(h2) + b64.charAt(h3) + b64.charAt(h4);
-  }
-  coded = e.join('');  // join() is far faster than repeated string concatenation in IE
-  
-  // replace 'A's from padded nulls with '='s
-  coded = coded.slice(0, coded.length-pad.length) + pad;
-   
-  return coded;
-}
-
-/**
- * Decode string from Base64, as defined by RFC 4648 [http://tools.ietf.org/html/rfc4648]
- * (instance method extending String object). As per RFC 4648, newlines are not catered for.
- *
- * @param {String} str The string to be decoded from base-64
- * @param {Boolean} [utf8decode=false] Flag to indicate whether str is Unicode string to be decoded 
- *   from UTF8 after conversion from base64
- * @returns {String} decoded string
- */ 
-Base64.decode = function(str, utf8decode) {
-  utf8decode =  (typeof utf8decode == 'undefined') ? false : utf8decode;
-  var o1, o2, o3, h1, h2, h3, h4, bits, d=[], plain, coded;
-  var b64 = Base64.code;
-
-  coded = utf8decode ? str.decodeUTF8() : str;
-  
-  
-  for (var c=0; c<coded.length; c+=4) {  // unpack four hexets into three octets
-    h1 = b64.indexOf(coded.charAt(c));
-    h2 = b64.indexOf(coded.charAt(c+1));
-    h3 = b64.indexOf(coded.charAt(c+2));
-    h4 = b64.indexOf(coded.charAt(c+3));
-      
-    bits = h1<<18 | h2<<12 | h3<<6 | h4;
-      
-    o1 = bits>>>16 & 0xff;
-    o2 = bits>>>8 & 0xff;
-    o3 = bits & 0xff;
-    
-    d[c/4] = String.fromCharCode(o1, o2, o3);
-    // check for padding
-    if (h4 == 0x40) d[c/4] = String.fromCharCode(o1, o2);
-    if (h3 == 0x40) d[c/4] = String.fromCharCode(o1);
-  }
-  plain = d.join('');  // join() is far faster than repeated string concatenation in IE
-   
-  return utf8decode ? plain.decodeUTF8() : plain; 
-}
-
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
-/*  Utf8 class: encode / decode between multi-byte Unicode characters and UTF-8 multiple          */
-/*              single-byte character encoding (c) Chris Veness 2002-2011                         */
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
-
-var Utf8 = {};  // Utf8 namespace
-
-/**
- * Encode multi-byte Unicode string into utf-8 multiple single-byte characters 
- * (BMP / basic multilingual plane only)
- *
- * Chars in range U+0080 - U+07FF are encoded in 2 chars, U+0800 - U+FFFF in 3 chars
- *
- * @param {String} strUni Unicode string to be encoded as UTF-8
- * @returns {String} encoded string
- */
-Utf8.encode = function(strUni) {
-  // use regular expressions & String.replace callback function for better efficiency 
-  // than procedural approaches
-  var strUtf = strUni.replace(
-      /[\u0080-\u07ff]/g,  // U+0080 - U+07FF => 2 bytes 110yyyyy, 10zzzzzz
-      function(c) { 
-        var cc = c.charCodeAt(0);
-        return String.fromCharCode(0xc0 | cc>>6, 0x80 | cc&0x3f); }
-    );
-  strUtf = strUtf.replace(
-      /[\u0800-\uffff]/g,  // U+0800 - U+FFFF => 3 bytes 1110xxxx, 10yyyyyy, 10zzzzzz
-      function(c) { 
-        var cc = c.charCodeAt(0); 
-        return String.fromCharCode(0xe0 | cc>>12, 0x80 | cc>>6&0x3F, 0x80 | cc&0x3f); }
-    );
-  return strUtf;
-}
-
-/**
- * Decode utf-8 encoded string back into multi-byte Unicode characters
- *
- * @param {String} strUtf UTF-8 string to be decoded back to Unicode
- * @returns {String} decoded string
- */
-Utf8.decode = function(strUtf) {
-  // note: decode 3-byte chars first as decoded 2-byte strings could appear to be 3-byte char!
-  var strUni = strUtf.replace(
-      /[\u00e0-\u00ef][\u0080-\u00bf][\u0080-\u00bf]/g,  // 3-byte chars
-      function(c) {  // (note parentheses for precence)
-        var cc = ((c.charCodeAt(0)&0x0f)<<12) | ((c.charCodeAt(1)&0x3f)<<6) | ( c.charCodeAt(2)&0x3f); 
-        return String.fromCharCode(cc); }
-    );
-  strUni = strUni.replace(
-      /[\u00c0-\u00df][\u0080-\u00bf]/g,                 // 2-byte chars
-      function(c) {  // (note parentheses for precence)
-        var cc = (c.charCodeAt(0)&0x1f)<<6 | c.charCodeAt(1)&0x3f;
-        return String.fromCharCode(cc); }
-    );
-  return strUni;
-}
-
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
-
-/* **********************************************
-     Begin bootstrap-tooltip.js
-********************************************** */
-
-/* ===========================================================
- * bootstrap-tooltip.js v2.0.1
- * http://twitter.github.com/bootstrap/javascript.html#tooltips
- * Inspired by the original jQuery.tipsy by Jason Frame
- * ===========================================================
- * Copyright 2012 Twitter, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ========================================================== */
-
-!function( $ ) {
-
-  "use strict"
-
- /* TOOLTIP PUBLIC CLASS DEFINITION
-  * =============================== */
-
-  var Tooltip = function ( element, options ) {
-    this.init('tooltip', element, options)
-  }
-
-  Tooltip.prototype = {
-
-    constructor: Tooltip
-
-  , init: function ( type, element, options ) {
-      var eventIn
-        , eventOut
-
-      this.type = type
-      this.$element = $(element)
-      this.options = this.getOptions(options)
-      this.enabled = true
-
-      if (this.options.trigger != 'manual') {
-        eventIn  = this.options.trigger == 'hover' ? 'mouseenter' : 'focus'
-        eventOut = this.options.trigger == 'hover' ? 'mouseleave' : 'blur'
-        this.$element.on(eventIn, this.options.selector, $.proxy(this.enter, this))
-        this.$element.on(eventOut, this.options.selector, $.proxy(this.leave, this))
-      }
-
-      this.options.selector ?
-        (this._options = $.extend({}, this.options, { trigger: 'manual', selector: '' })) :
-        this.fixTitle()
-    }
-
-  , getOptions: function ( options ) {
-      options = $.extend({}, $.fn[this.type].defaults, options, this.$element.data())
-
-      if (options.delay && typeof options.delay == 'number') {
-        options.delay = {
-          show: options.delay
-        , hide: options.delay
-        }
-      }
-
-      return options
-    }
-
-  , enter: function ( e ) {
-      var self = $(e.currentTarget)[this.type](this._options).data(this.type)
-
-      if (!self.options.delay || !self.options.delay.show) {
-        self.show()
-      } else {
-        self.hoverState = 'in'
-        setTimeout(function() {
-          if (self.hoverState == 'in') {
-            self.show()
-          }
-        }, self.options.delay.show)
-      }
-    }
-
-  , leave: function ( e ) {
-      var self = $(e.currentTarget)[this.type](this._options).data(this.type)
-
-      if (!self.options.delay || !self.options.delay.hide) {
-        self.hide()
-      } else {
-        self.hoverState = 'out'
-        setTimeout(function() {
-          if (self.hoverState == 'out') {
-            self.hide()
-          }
-        }, self.options.delay.hide)
-      }
-    }
-
-  , show: function () {
-      var $tip
-        , inside
-        , pos
-        , actualWidth
-        , actualHeight
-        , placement
-        , tp
-
-      if (this.hasContent() && this.enabled) {
-        $tip = this.tip()
-        this.setContent()
-
-        if (this.options.animation) {
-          $tip.addClass('fade')
-        }
-
-        placement = typeof this.options.placement == 'function' ?
-          this.options.placement.call(this, $tip[0], this.$element[0]) :
-          this.options.placement
-
-        inside = /in/.test(placement)
-
-        $tip
-          .remove()
-          .css({ top: 0, left: 0, display: 'block' })
-          .appendTo(inside ? this.$element : document.body)
-
-        pos = this.getPosition(inside)
-
-        actualWidth = $tip[0].offsetWidth
-        actualHeight = $tip[0].offsetHeight
-
-        switch (inside ? placement.split(' ')[1] : placement) {
-          case 'bottom':
-            tp = {top: pos.top + pos.height, left: pos.left + pos.width / 2 - actualWidth / 2}
-            break
-          case 'top':
-            tp = {top: pos.top - actualHeight, left: pos.left + pos.width / 2 - actualWidth / 2}
-            break
-          case 'left':
-            tp = {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left - actualWidth}
-            break
-          case 'right':
-            tp = {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left + pos.width}
-            break
-        }
-
-        $tip
-          .css(tp)
-          .addClass(placement)
-          .addClass('in')
-      }
-    }
-
-  , setContent: function () {
-      var $tip = this.tip()
-      $tip.find('.timeline-tooltip-inner').html(this.getTitle())
-      $tip.removeClass('fade in top bottom left right')
-    }
-
-  , hide: function () {
-      var that = this
-        , $tip = this.tip()
-
-      $tip.removeClass('in')
-
-      function removeWithAnimation() {
-        var timeout = setTimeout(function () {
-          $tip.off($.support.transition.end).remove()
-        }, 500)
-
-        $tip.one($.support.transition.end, function () {
-          clearTimeout(timeout)
-          $tip.remove()
-        })
-      }
-
-      $.support.transition && this.$tip.hasClass('fade') ?
-        removeWithAnimation() :
-        $tip.remove()
-    }
-
-  , fixTitle: function () {
-      var $e = this.$element
-      if ($e.attr('title') || typeof($e.attr('data-original-title')) != 'string') {
-        $e.attr('data-original-title', $e.attr('title') || '').removeAttr('title')
-      }
-    }
-
-  , hasContent: function () {
-      return this.getTitle()
-    }
-
-  , getPosition: function (inside) {
-      return $.extend({}, (inside ? {top: 0, left: 0} : this.$element.offset()), {
-        width: this.$element[0].offsetWidth
-      , height: this.$element[0].offsetHeight
-      })
-    }
-
-  , getTitle: function () {
-      var title
-        , $e = this.$element
-        , o = this.options
-
-      title = $e.attr('data-original-title')
-        || (typeof o.title == 'function' ? o.title.call($e[0]) :  o.title)
-
-      title = title.toString().replace(/(^\s*|\s*$)/, "")
-
-      return title
-    }
-
-  , tip: function () {
-      return this.$tip = this.$tip || $(this.options.template)
-    }
-
-  , validate: function () {
-      if (!this.$element[0].parentNode) {
-        this.hide()
-        this.$element = null
-        this.options = null
-      }
-    }
-
-  , enable: function () {
-      this.enabled = true
-    }
-
-  , disable: function () {
-      this.enabled = false
-    }
-
-  , toggleEnabled: function () {
-      this.enabled = !this.enabled
-    }
-
-  , toggle: function () {
-      this[this.tip().hasClass('in') ? 'hide' : 'show']()
-    }
-
-  }
-
-
- /* TOOLTIP PLUGIN DEFINITION
-  * ========================= */
-
-  $.fn.tooltip = function ( option ) {
-    return this.each(function () {
-      var $this = $(this)
-        , data = $this.data('tooltip')
-        , options = typeof option == 'object' && option
-      if (!data) $this.data('tooltip', (data = new Tooltip(this, options)))
-      if (typeof option == 'string') data[option]()
-    })
-  }
-
-  $.fn.tooltip.Constructor = Tooltip
-
-  $.fn.tooltip.defaults = {
-    animation: true
-  , delay: 0
-  , selector: false
-  , placement: 'top'
-  , trigger: 'hover'
-  , title: ''
-  , template: '<div class="timeline-tooltip"><div class="timeline-tooltip-arrow"></div><div class="timeline-tooltip-inner"></div></div>'
-  }
-
-}( window.jQuery );
-
-/* **********************************************
-     Begin VMM.StoryJS.js
-********************************************** */
-
-/* VeriteCo StoryJS
-================================================== */
-
-/*	* CodeKit Import
-	* http://incident57.com/codekit/
-================================================== */
-// @codekit-prepend "Core/VMM.Core.js";
-// @codekit-prepend "Language/VMM.Language.js";
-// @codekit-prepend "Media/VMM.Media.js";
-// @codekit-prepend "Slider/VMM.DragSlider.js";
-// @codekit-prepend "Slider/VMM.Slider.js";
-// @codekit-prepend "Library/AES.js";
-// @codekit-prepend "Library/bootstrap-tooltip.js";
-
-
-if(typeof VMM != 'undefined' && typeof VMM.StoryJS == 'undefined') {
+	updateConstraint: function(c) {
+		this.options.constraint = c;
+		
+	},
 	
-	VMM.StoryJS = function() {  
-		
-		/* PRIVATE VARS
-		================================================== */
-		
-		/* PUBLIC FUNCTIONS
-		================================================== */
-		this.init = function(d) {
-			
-		};
-		
-	}
-}
-
-
-/* **********************************************
-     Begin VMM.Timeline.js
-********************************************** */
-
-// VMM.Timeline.js
-/*	* CodeKit Import
-	* http://incident57.com/codekit/
-================================================== */
-// @codekit-prepend "Core/VMM.StoryJS.js";
-
-// @codekit-append "VMM.Timeline.TimeNav.js";
-// @codekit-append "VMM.Timeline.DataObj.js";
-
-
-/* Timeline
-================================================== */
-
-if(typeof VMM != 'undefined' && typeof VMM.Timeline == 'undefined') {
-	
-	VMM.Timeline = function(_timeline_id, w, h) {
-		
-		var $timeline,
-			$container,
-			$feature,
-			$feedback,
-			$slider,
-			$navigation,
-			slider,
-			timenav,
-			version		= "2.x",
-			timeline_id	= "#timelinejs",
-			events		= {},
-			data		= {},
-			_dates		= [],
-			config		= {},
-			has_width	= false,
-			has_height	= false,
-			ie7			= false,
-			is_moving	= false;
-		
-
-		if (type.of(_timeline_id) == "string") {
-			if (_timeline_id.match("#")) {
-				timeline_id	= _timeline_id;
-			} else {
-				timeline_id	= "#" + _timeline_id;
-			}
-		} else {
-			timeline_id		= "#timelinejs";
-		}
-		
-		
-		/* CONFIG
-		================================================== */
-		config = {
-			embed:					false,
-			events: {
-				data_ready:			"DATAREADY",
-				messege:			"MESSEGE",
-				headline:			"HEADLINE",
-				slide_change:		"SLIDE_CHANGE",
-				resize:				"resize"
-			},
-			id: 					timeline_id,
-			source:					"nothing",
-			type: 					"timeline",
-			touch:					false,
-			orientation: 			"normal", 
-			maptype: 				"",
-			version: 				"2.x", 
-			preload:				4,
-			current_slide:			0,
-			hash_bookmark:			false,
-			start_at_end: 			false,
-			start_at_slide:			0,
-			start_zoom_adjust:		0,
-			start_page: 			false,
-			api_keys: {
-				google:				"",
-				flickr:				"",
-				twitter:			""
-			},
-			interval: 				10,
-			something: 				0,
-			width: 					960,
-			height: 				540,
-			spacing: 				15,
-			loaded: {
-				slider: 			false, 
-				timenav: 			false, 
-				percentloaded: 		0
-			},
-			nav: {
-				start_page: 		false,
-				interval_width: 	200,
-				density: 			4,
-				minor_width: 		0,
-				minor_left:			0,
-				constraint: {
-					left:			0,
-					right:			0,
-					right_min:		0,
-					right_max:		0
-				},
-				zoom: {
-					adjust:			0
-				},
-				multiplier: {
-					current: 		6,
-					min: 			.1,
-					max: 			50
-				},
-				rows: 				[1, 1, 1],
-				width: 				960,
-				height: 			200,
-				marker: {
-					width: 			150,
-					height: 		50
-				}
-			},
-			feature: {
-				width: 				960,
-				height: 			540
-			},
-			slider: {
-				width: 				720,
-				height: 			400,
-				content: {
-					width: 			720,
-					height: 		400,
-					padding: 		130,
-					padding_default:130
-				},
-				nav: {
-					width: 			100,
-					height: 		200
-				}
-			},
-			ease: 					"easeInOutExpo",
-			duration: 				1000,
-			gmap_key: 				"",
-			language: 				VMM.Language,
-			tagSortFunction: 		function (arr) {
-				arr.sort(function (a, b) {
-					return a.localeCompare(b);
-				})
-			}
-		};
-		
-		if ( w != null && w != "") {
-			config.width = w;
-			has_width = true;
-		} 
-
-		if ( h != null && h != "") {
-			config.height = h;
-			has_height = true;
-		}
-		
-		if(window.location.hash) {
-			 var hash					=	window.location.hash.substring(1);
-			 if (!isNaN(hash)) {
-			 	 config.current_slide	=	parseInt(hash);
-			 }
-		}
-		
-		window.onhashchange = function () {
-			var hash					=	window.location.hash.substring(1);
-			if (config.hash_bookmark) {
-				if (is_moving) {
-					goToEvent(parseInt(hash));
-				} else {
-					is_moving = false;
-				}
-			} else {
-				goToEvent(parseInt(hash));
-			}
-		}
-		
-		/* CREATE CONFIG
-		================================================== */
-		function createConfig(conf) {
-			
-			// APPLY SUPPLIED CONFIG TO TIMELINE CONFIG
-			if (typeof embed_config == 'object') {
-				timeline_config = embed_config;
-			}
-			if (typeof timeline_config == 'object') {
-				trace("HAS TIMELINE CONFIG");
-				config = VMM.Util.mergeConfig(config, timeline_config);
-			} else if (typeof conf == 'object') {
-				config = VMM.Util.mergeConfig(config, conf);
-			}
-			
-			if (VMM.Browser.device == "mobile" || VMM.Browser.device == "tablet") {
-				config.touch = true;
-			}
-			
-			config.nav.width			= config.width;
-			config.nav.height			= 200;
-			config.feature.width		= config.width;
-			config.feature.height		= config.height - config.nav.height;
-			config.nav.zoom.adjust		= parseInt(config.start_zoom_adjust, 10);
-			VMM.Timeline.Config			= config;
-			VMM.master_config.Timeline	= VMM.Timeline.Config;
-			this.events					= config.events;
-			
-			if (config.gmap_key != "") {
-				config.api_keys.google = config.gmap_key;
-			}
-			
-			trace("VERSION " + config.version);
-			version = config.version;
-		}
-		
-		/* CREATE TIMELINE STRUCTURE
-		================================================== */
-		function createStructure() {
-			// CREATE DOM STRUCTURE
-			$timeline	= VMM.getElement(timeline_id);
-			VMM.Lib.addClass($timeline, "vco-timeline");
-			VMM.Lib.addClass($timeline, "vco-storyjs");
-			
-			$container	= VMM.appendAndGetElement($timeline, "<div>", "vco-container vco-main");
-			$feature	= VMM.appendAndGetElement($container, "<div>", "vco-feature");
-			$slider		= VMM.appendAndGetElement($feature, "<div>", "vco-slider");
-			$navigation	= VMM.appendAndGetElement($container, "<div>", "vco-navigation");
-			$feedback	= VMM.appendAndGetElement($timeline, "<div>", "vco-feedback", "");
-			
-			
-			if (typeof config.language.right_to_left != 'undefined') {
-				VMM.Lib.addClass($timeline, "vco-right-to-left");
-			}
-			
-			slider		= new VMM.Slider($slider, config);
-			timenav		= new VMM.Timeline.TimeNav($navigation);
-			
-			if (!has_width) {
-				config.width = VMM.Lib.width($timeline);
-			} else {
-				VMM.Lib.width($timeline, config.width);
-			}
-
-			if (!has_height) {
-				config.height = VMM.Lib.height($timeline);
-			} else {
-				VMM.Lib.height($timeline, config.height);
-			}
-			
-			if (config.touch) {
-				VMM.Lib.addClass($timeline, "vco-touch");
-			} else {
-				VMM.Lib.addClass($timeline, "vco-notouch");
-			}
-			
-			
-		}
-		
-		/* ON EVENT
-		================================================== */
-
-		function onDataReady(e, d) {
-			trace("onDataReady");
-			data = d.timeline;
-			
-			if (type.of(data.era) != "array") {
-				data.era = [];
-			}
-			
-			buildDates();
-			
-		};
-		
-		function onDatesProcessed() {
-			build();
-		}
-		
-		function reSize() {
-			
-			updateSize();
-			
-			slider.setSize(config.feature.width, config.feature.height);
-			timenav.setSize(config.width, config.height);
-			if (orientationChange()) {
-				setViewport();
-			}
-			
-		};
-		
-		function onSliderLoaded(e) {
-			config.loaded.slider = true;
-			onComponentLoaded();
-		};
-		
-		function onComponentLoaded(e) {
-			config.loaded.percentloaded = config.loaded.percentloaded + 25;
-			
-			if (config.loaded.slider && config.loaded.timenav) {
-				hideMessege();
-			}
-		}
-		
-		function onTimeNavLoaded(e) {
-			config.loaded.timenav = true;
-			onComponentLoaded();
-		}
-		
-		function onSlideUpdate(e) {
-			is_moving = true;
-			config.current_slide = slider.getCurrentNumber();
-			setHash(config.current_slide);
-			timenav.setMarker(config.current_slide, config.ease,config.duration);
-		};
-		
-		function onMarkerUpdate(e) {
-			is_moving = true;
-			config.current_slide = timenav.getCurrentNumber();
-			setHash(config.current_slide);
-			slider.setSlide(config.current_slide);
-		};
-		
-		function goToEvent(n) {
-			if (n <= _dates.length - 1 && n >= 0) {
-				config.current_slide = n;
-				slider.setSlide(config.current_slide);
-				timenav.setMarker(config.current_slide, config.ease,config.duration);
-			} 
-		}
-		
-		function setHash(n) {
-			if (config.hash_bookmark) {
-				window.location.hash = "#" + n.toString();
-			}
-		}
-		
-		function getViewport() {
-			
-		}
-		
-		function setViewport() {
-			var viewport_content		= "",
-				viewport_orientation	= searchOrientation(window.orientation);
-			
-			if (VMM.Browser.device == "mobile") {
-				if (viewport_orientation == "portrait") {
-					//viewport_content	= "width=device-width; initial-scale=0.75, maximum-scale=0.75";
-					viewport_content	= "width=device-width; initial-scale=0.5, maximum-scale=0.5";
-				} else if (viewport_orientation == "landscape") {
-					viewport_content	= "width=device-width; initial-scale=0.5, maximum-scale=0.5";
-				} else {
-					viewport_content	= "width=device-width, initial-scale=1, maximum-scale=1.0";
-				}
-			} else if (VMM.Browser.device == "tablet") {
-				//viewport_content		= "width=device-width, initial-scale=1, maximum-scale=1.0";
-			}
-			
-			if (document.getElementById("viewport")) {
-				//VMM.Lib.attr("#viewport", "content", viewport_content);
-			} else {
-				//VMM.appendElement("head", "<meta id='viewport' name='viewport' content=" + viewport_content + "/>");
-			}
-
-		}
-		
-		/* ORIENTATION
-		================================================== */
-		function searchOrientation(orientation) {
-			var orient = "";
-			
-			if ( orientation == 0  || orientation == 180) {  
-				orient = "portrait";
-			} else if ( orientation == 90 || orientation == -90) {  
-				orient = "landscape";
-			} else {
-				orient = "normal";
-			}
-			
-			return orient;
-		}
-		
-		function orientationChange() {
-			var orientation	= searchOrientation(window.orientation);
-			
-			if (orientation == config.orientation) {
-				return false;
-			} else {
-				config.orientation = orientation;
-				return true;
-			}
-			
-		}
-		
-		
-		/* PUBLIC FUNCTIONS
-		================================================== */
-		this.init = function(c, _data) {
-			trace('INIT');
-			setViewport();
-			createConfig(c);
-			createStructure();
-			
-			if (type.of(_data) == "string") {
-				config.source	= _data;
-			}
-			
-			// LANGUAGE
-			VMM.Date.setLanguage(config.language);
-			VMM.master_config.language = config.language;
-			
-			// EXTERNAL API
-			VMM.ExternalAPI.setKeys(config.api_keys);
-			VMM.ExternalAPI.googlemaps.setMapType(config.maptype);
-			
-			// EVENTS
-			VMM.bindEvent(global, onDataReady, config.events.data_ready);
-			VMM.bindEvent(global, showMessege, config.events.messege);
-			
-			VMM.fireEvent(global, config.events.messege, config.language.messages.loading_timeline);
-			
-			/* GET DATA
-			================================================== */
-			if (VMM.Browser.browser == "Explorer" || VMM.Browser.browser == "MSIE") {
-			    if (parseInt(VMM.Browser.version, 10) <= 7 && (VMM.Browser.tridentVersion == null || VMM.Browser.tridentVersion < 4)) {
-					ie7 = true;
-				}
-			}
-			
-			if (type.of(config.source) == "string" || type.of(config.source) == "object") {
-				VMM.Timeline.DataObj.getData(config.source);
-			} else {
-				VMM.fireEvent(global, config.events.messege, "No data source provided");
-				//VMM.Timeline.DataObj.getData(VMM.getElement(timeline_id));
-			}
-			
-			
-		};
-		
-		this.iframeLoaded = function() {
-			trace("iframeLoaded");
-		};
-		
-		this.reload = function(_d) {
-			trace("Load new timeline data" + _d);
-			VMM.fireEvent(global, config.events.messege, config.language.messages.loading_timeline);
-			data = {};
-			VMM.Timeline.DataObj.getData(_d);
-			config.current_slide = 0;
-			slider.setSlide(0);
-			timenav.setMarker(0, config.ease,config.duration);
-		};
-		
-		/* DATA 
-		================================================== */
-		function getData(url) {
-			VMM.getJSON(url, function(d) {
-				data = VMM.Timeline.DataObj.getData(d);
-				VMM.fireEvent(global, config.events.data_ready);
-			});
-		};
-		
-		/* MESSEGES 
-		================================================== */
-		function showMessege(e, msg, other) {
-			trace("showMessege " + msg);
-			//VMM.attachElement($timeline, $feedback);
-			if (other) {
-				VMM.attachElement($feedback, msg);
-			} else{
-				VMM.attachElement($feedback, VMM.MediaElement.loadingmessage(msg));
-			}
-		};
-		
-		function hideMessege() {
-			VMM.Lib.animate($feedback, config.duration, config.ease*4, {"opacity": 0}, detachMessege);
-		};
-		
-		function detachMessege() {
-			VMM.Lib.detach($feedback);
-		}
-		
-		/* BUILD DISPLAY
-		================================================== */
-		function build() {
-			
-			// START AT SLIDE
-			if (parseInt(config.start_at_slide) > 0 && config.current_slide == 0) {
-				config.current_slide = parseInt(config.start_at_slide); 
-			}
-			// START AT END
-			if (config.start_at_end && config.current_slide == 0) {
-				config.current_slide = _dates.length - 1;
-			}
-			
-			
-			// IE7
-			if (ie7) {
-				ie7 = true;
-				VMM.fireEvent(global, config.events.messege, "Internet Explorer " + VMM.Browser.version + " is not supported by TimelineJS. Please update your browser to version 8 or higher. If you are using a recent version of Internet Explorer you may need to disable compatibility mode in your browser.");
-			} else {
-				
-				detachMessege();
-				reSize();
-				
-				// EVENT LISTENERS
-				VMM.bindEvent($slider, onSliderLoaded, "LOADED");
-				VMM.bindEvent($navigation, onTimeNavLoaded, "LOADED");
-				VMM.bindEvent($slider, onSlideUpdate, "UPDATE");
-				VMM.bindEvent($navigation, onMarkerUpdate, "UPDATE");
-				
-				// INITIALIZE COMPONENTS
-				slider.init(_dates);
-				timenav.init(_dates, data.era);
-			
-				// RESIZE EVENT LISTENERS
-				VMM.bindEvent(global, reSize, config.events.resize);
-				
-				
-				
-			}
-			
-			
-		};
-		
-		function updateSize() {
-			trace("UPDATE SIZE");
-			config.width = VMM.Lib.width($timeline);
-			config.height = VMM.Lib.height($timeline);
-			
-			config.nav.width = config.width;
-			config.feature.width = config.width;
-			
-			config.feature.height = config.height - config.nav.height - 3;
-			
-			if (VMM.Browser.device == "mobile") {
-				/*
-				if (VMM.Browser.orientation == "portrait") {
-					config.feature.height	= 480;
-					config.height			= 480 + config.nav.height;
-				} else if(VMM.Browser.orientation == "landscape") {
-					config.feature.height	= 320;
-					config.height			= 320 + config.nav.height;
-				} else {
-					config.feature.height = config.height - config.nav.height - 3;
-				}
-				*/
-			}
-			
-			if (config.width < 641) {
-				VMM.Lib.addClass($timeline, "vco-skinny");
-			} else {
-				VMM.Lib.removeClass($timeline, "vco-skinny");
-			}
-			
-		};
-		
-		// BUILD DATE OBJECTS
-		function buildDates() {
-			
-			_dates = [];
-			VMM.fireEvent(global, config.events.messege, "Building Dates");
-			updateSize();
-			
-			for(var i = 0; i < data.date.length; i++) {
-				
-				if (data.date[i].startDate != null && data.date[i].startDate != "") {
-					
-					var _date		= {},
-						do_start	= VMM.Date.parse(data.date[i].startDate, true),
-						do_end;
-						
-					_date.startdate		= do_start.date;
-					_date.precisiondate	= do_start.precision;
-					
-					if (!isNaN(_date.startdate)) {
-						
-					
-						// END DATE
-						if (data.date[i].endDate != null && data.date[i].endDate != "") {
-							_date.enddate = VMM.Date.parse(data.date[i].endDate);
-						} else {
-							_date.enddate = _date.startdate;
-						}
-						
-						_date.needs_slug = false;
-						
-						if (data.date[i].headline == "") {
-							if (data.date[i].slug != null && data.date[i].slug != "") {
-								_date.needs_slug = true;
-							}
-						}
-						
-						_date.title				= data.date[i].headline;
-						_date.headline			= data.date[i].headline;
-						_date.type				= data.date[i].type;
-						_date.date				= VMM.Date.prettyDate(_date.startdate, false, _date.precisiondate);
-						_date.asset				= data.date[i].asset;
-						_date.fulldate			= _date.startdate.getTime();
-						_date.text				= data.date[i].text;
-						_date.content			= "";
-						_date.tag				= data.date[i].tag;
-						_date.slug				= data.date[i].slug;
-						_date.uniqueid			= VMM.Util.unique_ID(7);
-						_date.classname			= data.date[i].classname;
-						
-						
-						_dates.push(_date);
-					} 
-					
-				}
-				
-			};
-			
-			/* CUSTOM SORT
-			================================================== */
-			if (data.type != "storify") {
-				_dates.sort(function(a, b){
-					return a.fulldate - b.fulldate
-				});
-			}
-			
-			/* CREATE START PAGE IF AVAILABLE
-			================================================== */
-			if (data.headline != null && data.headline != "" && data.text != null && data.text != "") {
-
-				var startpage_date,
-					do_start,
-					_date			= {},
-					td_num			= 0,
-					td;
-					
-				if (typeof data.startDate != 'undefined') {
-					do_start		= VMM.Date.parse(data.startDate, true);
-					startpage_date	= do_start.date;
-				} else {
-					startpage_date = false;
-				}
-				trace("HAS STARTPAGE");
-				trace(startpage_date);
-				
-				if (startpage_date && startpage_date < _dates[0].startdate) {
-					_date.startdate = new Date(startpage_date);
-				} else {
-					td = _dates[0].startdate;
-					_date.startdate = new Date(_dates[0].startdate);
-				
-					if (td.getMonth() === 0 && td.getDate() == 1 && td.getHours() === 0 && td.getMinutes() === 0 ) {
-						// trace("YEAR ONLY");
-						_date.startdate.setFullYear(td.getFullYear() - 1);
-					} else if (td.getDate() <= 1 && td.getHours() === 0 && td.getMinutes() === 0) {
-						// trace("YEAR MONTH");
-						_date.startdate.setMonth(td.getMonth() - 1);
-					} else if (td.getHours() === 0 && td.getMinutes() === 0) {
-						// trace("YEAR MONTH DAY");
-						_date.startdate.setDate(td.getDate() - 1);
-					} else  if (td.getMinutes() === 0) {
-						// trace("YEAR MONTH DAY HOUR");
-						_date.startdate.setHours(td.getHours() - 1);
-					} else {
-						// trace("YEAR MONTH DAY HOUR MINUTE");
-						_date.startdate.setMinutes(td.getMinutes() - 1);
-					}
-				}
-				
-				_date.uniqueid		= VMM.Util.unique_ID(7);
-				_date.enddate		= _date.startdate;
-				_date.precisiondate	= do_start.precision;
-				_date.title			= data.headline;
-				_date.headline		= data.headline;
-				_date.text			= data.text;
-				_date.type			= "start";
-				_date.date			= VMM.Date.prettyDate(data.startDate, false, _date.precisiondate);
-				_date.asset			= data.asset;
-				_date.slug			= false;
-				_date.needs_slug	= false;
-				_date.fulldate		= _date.startdate.getTime();
-				
-				if (config.embed) {
-					VMM.fireEvent(global, config.events.headline, _date.headline);
-				}
-				
-				_dates.unshift(_date);
-			}
-			
-			/* CUSTOM SORT
-			================================================== */
-			if (data.type != "storify") {
-				_dates.sort(function(a, b){
-					return a.fulldate - b.fulldate
-				});
-			}
-			
-			onDatesProcessed();
-		}
-		
-	};
-
-	VMM.Timeline.Config = {};
-	
-};
-
-
-/* **********************************************
-     Begin VMM.Timeline.TimeNav.js
-********************************************** */
-
-/* 	VMM.Timeline.TimeNav.js
-    TimeNav
-	This class handles the bottom timeline navigation.
-	It requires the VMM.Util class and VMM.Date class
-================================================== */
-
-if(typeof VMM.Timeline != 'undefined' && typeof VMM.Timeline.TimeNav == 'undefined') {
-	
-	VMM.Timeline.TimeNav = function(parent, content_width, content_height) {
-		trace("VMM.Timeline.TimeNav");
-		
-		var $timenav, $content, $time, $timeintervalminor, $timeinterval, $timeintervalmajor, $timebackground, 
-			$timeintervalbackground, $timenavline, $timenavindicator, $timeintervalminor_minor, $toolbar, $zoomin, $zoomout, $dragslide,
-			config					= VMM.Timeline.Config,
-			row_height,
-			events					= {},
-			timespan				= {},
-			layout					= parent,
-			data					= [],
-			era_markers				= [],
-			markers					= [],
-			interval_array			= [],
-			interval_major_array	= [],
-			tags					= [],
-			current_marker			= 0,
-			_active					= false,
-			eras,
-			content,
-			timeouts = {
-				interval_position:	""
-			},
-			timenav_pos = {
-				left:				"",
-				visible: {
-					left:			"",
-					right:			""
-				}
-			},
-			timelookup = {
-				day:			24,
-				month:			12,
-				year:			10,
-				hour:			60,
-				minute:			60,
-				second:			1000,
-				decade:			10,
-				century:		100,
-				millenium:		1000,
-				age:			1000000,
-				epoch:			10000000,
-				era:			100000000,
-				eon:			500000000,
-				week:			4.34812141,
-				days_in_month:	30.4368499,
-				days_in_week:	7,
-				weeks_in_month:	4.34812141,
-				weeks_in_year:	52.177457,
-				days_in_year:	365.242199,
-				hours_in_day:	24
-			},
-			dateFractionBrowser = {
-				day:			86400000,
-				week:			7,
-				month:			30.4166666667,
-				year:			12,
-				hour:			24,
-				minute:			1440,
-				second:			86400,
-				decade:			10,
-				century:		100,
-				millenium:		1000,
-				age:			1000000,
-				epoch:			10000000,
-				era:			100000000,
-				eon:			500000000
-			},
-			interval = {
-				type:			"year",
-				number:			10,
-				first:			1970,
-				last:			2011,
-				multiplier:		100,
-				classname:		"_idd",
-				interval_type:	"interval"
-			},
-			interval_major = {
-				type:			"year",
-				number:			10,
-				first:			1970,
-				last:			2011,
-				multiplier:		100,
-				classname:		"major",
-				interval_type:	"interval major"
-			},
-			interval_macro = {
-				type:			"year",
-				number:			10,
-				first:			1970,
-				last:			2011,
-				multiplier:		100,
-				classname:		"_dd_minor",
-				interval_type:	"interval minor"
-			},
-			interval_calc = {
-				day: {},
-				month: {},
-				year: {},
-				hour: {},
-				minute: {},
-				second: {},
-				decade: {},
-				century: {},
-				millenium: {},
-				week: {},
-				age: {},
-				epoch: {},
-				era: {},
-				eon: {}
-			};
-		
-		
-		/* ADD to Config
-		================================================== */
-		row_height			=	config.nav.marker.height/2;
-		config.nav.rows = {
-			full:				[1, row_height*2, row_height*4],
-			half:				[1, row_height, row_height*2, row_height*3, row_height*4, row_height*5],
-			current:			[]
-		}
-		
-		if (content_width != null && content_width != "") {
-			config.nav.width	= 	content_width;
-		} 
-		if (content_height != null && content_height != "") {
-			config.nav.height	= 	content_height;
-		}
-		
-		/* INIT
-		================================================== */
-		this.init = function(d,e) {
-			trace('VMM.Timeline.TimeNav init');
-			// need to evaluate d
-			// some function to determine type of data and prepare it
-			if(typeof d != 'undefined') {
-				this.setData(d, e);
-			} else {
-				trace("WAITING ON DATA");
-			}
-		};
-		
-		/* GETTERS AND SETTERS
-		================================================== */
-		this.setData = function(d,e) {
-			if(typeof d != 'undefined') {
-				data = {};
-				data = d;
-				eras = e;
-				build();
-			} else{
-				trace("NO DATA");
-			}
-		};
-		
-		this.setSize = function(w, h) {
-			if (w != null) {config.width = w};
-			if (h != null) {config.height = h};
-			if (_active) {
-				reSize();
-			}
-
-			
-		}
-		
-		this.setMarker = function(n, ease, duration, fast) {
-			goToMarker(n, ease, duration);
-		}
-		
-		this.getCurrentNumber = function() {
-			return current_marker;
-		}
-		
-		/* ON EVENT
-		================================================== */
-		
-		function onConfigSet() {
-			trace("onConfigSet");
-		};
-		
-		function reSize(firstrun) {
-			config.nav.constraint.left = (config.width/2);
-			config.nav.constraint.right = config.nav.constraint.right_min - (config.width/2);
-			$dragslide.updateConstraint(config.nav.constraint);
-			
-			VMM.Lib.css($timenavline, "left", Math.round(config.width/2)+2);
-			VMM.Lib.css($timenavindicator, "left", Math.round(config.width/2)-8);
-			goToMarker(config.current_slide, config.ease, config.duration, true, firstrun);
-		};
-		
-		function upDate() {
-			VMM.fireEvent(layout, "UPDATE");
-		}
-		
-		function onZoomIn() {
-			
-			$dragslide.cancelSlide();
-			if (config.nav.multiplier.current > config.nav.multiplier.min) {
-				if (config.nav.multiplier.current <= 1) {
-					config.nav.multiplier.current = config.nav.multiplier.current - .25;
-				} else {
-					if (config.nav.multiplier.current > 5) {
-						if (config.nav.multiplier.current > 16) {
-							config.nav.multiplier.current = Math.round(config.nav.multiplier.current - 10);
-						} else {
-							config.nav.multiplier.current = Math.round(config.nav.multiplier.current - 4);
-						}
-					} else {
-						config.nav.multiplier.current = Math.round(config.nav.multiplier.current - 1);
-					}
-					
-				}
-				if (config.nav.multiplier.current <= 0) {
-					config.nav.multiplier.current = config.nav.multiplier.min;
-				}
-				refreshTimeline();
-			}
-		}
-		
-		function onZoomOut() {
-			$dragslide.cancelSlide();
-			if (config.nav.multiplier.current < config.nav.multiplier.max) {
-				if (config.nav.multiplier.current > 4) {
-					if (config.nav.multiplier.current > 16) {
-						config.nav.multiplier.current = Math.round(config.nav.multiplier.current + 10);
-					} else {
-						config.nav.multiplier.current = Math.round(config.nav.multiplier.current + 4);
-					}
-				} else {
-					config.nav.multiplier.current = Math.round(config.nav.multiplier.current + 1);
-				}
-				
-				if (config.nav.multiplier.current >= config.nav.multiplier.max) {
-					config.nav.multiplier.current = config.nav.multiplier.max;
-				}
-				refreshTimeline();
-			}
-		}
-		
-		function onBackHome(e) {
-			$dragslide.cancelSlide();
-			goToMarker(0);
-			upDate();
-		}
-		
-		function onMouseScroll(e) {
-			var delta		= 0,
-				scroll_to	= 0;
-			if (!e) {
-				e = window.event;
-			}
+	/*	Private Methods
+	================================================== */
+	_onDragStart: function(e) {
+		if (TL.Browser.touch) {
 			if (e.originalEvent) {
-				e = e.originalEvent;
-			}
-			
-			// Browsers unable to differntiate between up/down and left/right scrolling
-			/*
-			if (e.wheelDelta) {
-				delta = e.wheelDelta/6;
-			} else if (e.detail) {
-				delta = -e.detail*12;
-			}
-			*/
-			
-			// Webkit and browsers able to differntiate between up/down and left/right scrolling
-			if (typeof e.wheelDeltaX != 'undefined' ) {
-				delta = e.wheelDeltaY/6;
-				if (Math.abs(e.wheelDeltaX) > Math.abs(e.wheelDeltaY)) {
-					delta = e.wheelDeltaX/6;
-				} else {
-					//delta = e.wheelDeltaY/6;
-					delta = 0;
-				}
-			}
-			if (delta) {
-				if (e.preventDefault) {
-					 e.preventDefault();
-				}
-				e.returnValue = false;
-			}
-			// Stop from scrolling too far
-			scroll_to = VMM.Lib.position($timenav).left + delta;
-			
-			if (scroll_to > config.nav.constraint.left) {
-				scroll_to = config.width/2;
-			} else if (scroll_to < config.nav.constraint.right) {
-				scroll_to = config.nav.constraint.right;
-			}
-			
-			//VMM.Lib.stop($timenav);
-			//VMM.Lib.animate($timenav, config.duration/2, "linear", {"left": scroll_to});
-			VMM.Lib.css($timenav, "left", scroll_to);	
-		}
-		
-		function refreshTimeline() {
-			trace("config.nav.multiplier " + config.nav.multiplier.current);
-			positionMarkers(true);
-			positionEras(true);
-			positionInterval($timeinterval, interval_array, true, true);
-			positionInterval($timeintervalmajor, interval_major_array, true);
-			config.nav.constraint.left = (config.width/2);
-			config.nav.constraint.right = config.nav.constraint.right_min - (config.width/2);
-			$dragslide.updateConstraint(config.nav.constraint);
-		};
-		
-		/* MARKER EVENTS
-		================================================== */
-		function onMarkerClick(e) {
-			$dragslide.cancelSlide();
-			goToMarker(e.data.number);
-			upDate();
-		};
-		
-		function onMarkerHover(e) {
-			VMM.Lib.toggleClass(e.data.elem, "zFront");
-		};
-		
-		function goToMarker(n, ease, duration, fast, firstrun) {
-			trace("GO TO MARKER");
-			var _ease		= config.ease,
-				_duration	= config.duration,
-				is_last		= false,
-				is_first	= false;
-			
-			current_marker = 	n;
-			
-			timenav_pos.left			= (config.width/2) - markers[current_marker].pos_left
-			timenav_pos.visible.left	= Math.abs(timenav_pos.left) - 100;
-			timenav_pos.visible.right	= Math.abs(timenav_pos.left) + config.width + 100;
-			
-			if (current_marker == 0) {
-				is_first = true;
-			}
-			if (current_marker +1 == markers.length) {
-				is_last = true
-			}
-			if (ease != null && ease != "") {_ease = ease};
-			if (duration != null && duration != "") {_duration = duration};
-			
-			// set marker style
-			for(var i = 0; i < markers.length; i++) {
-				VMM.Lib.removeClass(markers[i].marker, "active");
-			}
-			
-			if (config.start_page && markers[0].type == "start") {
-				VMM.Lib.visible(markers[0].marker, false);
-				VMM.Lib.addClass(markers[0].marker, "start");
-			}
-			
-			VMM.Lib.addClass(markers[current_marker].marker, "active");
-			
-			// ANIMATE MARKER
-			VMM.Lib.stop($timenav);
-			VMM.Lib.animate($timenav, _duration, _ease, {"left": timenav_pos.left});
-			
-		}
-		
-		/* TOUCH EVENTS
-		================================================== */
-		function onTouchUpdate(e, b) {
-			VMM.Lib.animate($timenav, b.time/2, config.ease, {"left": b.left});
-		};
-		
-		/* CALCULATIONS
-		================================================== */
-		function averageMarkerPositionDistance() {
-			var last_pos	= 0,
-				pos			= 0,
-				pos_dif		= 0,
-				mp_diff		= [],
-				i			= 0;
-			
-			for(i = 0; i < markers.length; i++) {
-				if (data[i].type == "start") {
-					
-				} else {
-					var _pos = positionOnTimeline(interval, markers[i].relative_pos),
-					last_pos = pos;
-					pos = _pos.begin;
-					pos_dif = pos - last_pos;
-					mp_diff.push(pos_dif);
-				}
-			}
-			return VMM.Util.average(mp_diff).mean;
-		}
-		
-		function averageDateDistance() {
-			var last_dd			= 0,
-				dd				= 0,
-				_dd				= "",
-				date_dif		= 0,
-				date_diffs		= [],
-				is_first_date	= true,
-				i				= 0;
-			
-			for(i = 0; i < data.length; i++) {
-				if (data[i].type == "start") {
-					trace("DATA DATE IS START")
-				} else {
-					_dd			= data[i].startdate;
-					last_dd		= dd;
-					dd			= _dd;
-					date_dif	= dd - last_dd;
-					date_diffs.push(date_dif);
-				}
-			}
-			
-			return VMM.Util.average(date_diffs);
-		}
-		
-		function calculateMultiplier() {
-			var temp_multiplier	= config.nav.multiplier.current,
-				i				= 0;
-				
-			for(i = 0; i < temp_multiplier; i++) {
-				if (averageMarkerPositionDistance() < 75) {
-					if (config.nav.multiplier.current > 1) {
-						config.nav.multiplier.current = (config.nav.multiplier.current - 1);
-					}
-				}
-			}
-			
-		}
-		
-		function calculateInterval() {
-			// NEED TO REWRITE ALL OF THIS
-			var _first								= getDateFractions(data[0].startdate),
-				_last								= getDateFractions(data[data.length - 1].enddate);
-			
-			// EON
-			interval_calc.eon.type					=	"eon";
-			interval_calc.eon.first					=	_first.eons;
-			interval_calc.eon.base					=	Math.floor(_first.eons);
-			interval_calc.eon.last					=	_last.eons;
-			interval_calc.eon.number				=	timespan.eons;
-			interval_calc.eon.multiplier		 	=	timelookup.eons;
-			interval_calc.eon.minor					=	timelookup.eons;
-			
-			// ERA
-			interval_calc.era.type					=	"era";
-			interval_calc.era.first					=	_first.eras;
-			interval_calc.era.base					=	Math.floor(_first.eras);
-			interval_calc.era.last					=	_last.eras;
-			interval_calc.era.number				=	timespan.eras;
-			interval_calc.era.multiplier		 	=	timelookup.eras;
-			interval_calc.era.minor					=	timelookup.eras;
-			
-			// EPOCH
-			interval_calc.epoch.type				=	"epoch";
-			interval_calc.epoch.first				=	_first.epochs;
-			interval_calc.epoch.base				=	Math.floor(_first.epochs);
-			interval_calc.epoch.last				=	_last.epochs;
-			interval_calc.epoch.number				=	timespan.epochs;
-			interval_calc.epoch.multiplier		 	=	timelookup.epochs;
-			interval_calc.epoch.minor				=	timelookup.epochs;
-			
-			// AGE
-			interval_calc.age.type					=	"age";
-			interval_calc.age.first					=	_first.ages;
-			interval_calc.age.base					=	Math.floor(_first.ages);
-			interval_calc.age.last					=	_last.ages;
-			interval_calc.age.number				=	timespan.ages;
-			interval_calc.age.multiplier		 	=	timelookup.ages;
-			interval_calc.age.minor					=	timelookup.ages;
-			
-			// MILLENIUM
-			interval_calc.millenium.type 			=	"millenium";
-			interval_calc.millenium.first			=	_first.milleniums;
-			interval_calc.millenium.base			=	Math.floor(_first.milleniums);
-			interval_calc.millenium.last			=	_last.milleniums;
-			interval_calc.millenium.number			=	timespan.milleniums;
-			interval_calc.millenium.multiplier	 	=	timelookup.millenium;
-			interval_calc.millenium.minor			=	timelookup.millenium;
-			
-			// CENTURY
-			interval_calc.century.type 				= "century";
-			interval_calc.century.first 			= _first.centuries;
-			interval_calc.century.base 				= Math.floor(_first.centuries);
-			interval_calc.century.last 				= _last.centuries;
-			interval_calc.century.number 			= timespan.centuries;
-			interval_calc.century.multiplier	 	= timelookup.century;
-			interval_calc.century.minor 			= timelookup.century;
-			
-			// DECADE
-			interval_calc.decade.type 				= "decade";
-			interval_calc.decade.first 				= _first.decades;
-			interval_calc.decade.base 				= Math.floor(_first.decades);
-			interval_calc.decade.last 				= _last.decades;
-			interval_calc.decade.number 			= timespan.decades;
-			interval_calc.decade.multiplier 		= timelookup.decade;
-			interval_calc.decade.minor 				= timelookup.decade;
-			
-			// YEAR
-			interval_calc.year.type					= "year";
-			interval_calc.year.first 				= _first.years;
-			interval_calc.year.base 				= Math.floor(_first.years);
-			interval_calc.year.last					= _last.years;
-			interval_calc.year.number 				= timespan.years;
-			interval_calc.year.multiplier 			= 1;
-			interval_calc.year.minor 				= timelookup.month;
-			
-			// MONTH
-			interval_calc.month.type 				= "month";
-			interval_calc.month.first 				= _first.months;
-			interval_calc.month.base 				= Math.floor(_first.months);
-			interval_calc.month.last 				= _last.months;
-			interval_calc.month.number 				= timespan.months;
-			interval_calc.month.multiplier 			= 1;
-			interval_calc.month.minor 				= Math.round(timelookup.week);
-			
-			// WEEK
-			// NOT DONE
-			interval_calc.week.type 				= "week";
-			interval_calc.week.first 				= _first.weeks;
-			interval_calc.week.base 				= Math.floor(_first.weeks);
-			interval_calc.week.last 				= _last.weeks;
-			interval_calc.week.number 				= timespan.weeks;
-			interval_calc.week.multiplier 			= 1;
-			interval_calc.week.minor 				= 7;
-			
-			// DAY
-			interval_calc.day.type 					= "day";
-			interval_calc.day.first 				= _first.days;
-			interval_calc.day.base	 				= Math.floor(_first.days);
-			interval_calc.day.last 					= _last.days;
-			interval_calc.day.number 				= timespan.days;
-			interval_calc.day.multiplier 			= 1;
-			interval_calc.day.minor 				= 24;
-			
-			// HOUR
-			interval_calc.hour.type 				= "hour";
-			interval_calc.hour.first 				= _first.hours;
-			interval_calc.hour.base 				= Math.floor(_first.hours);
-			interval_calc.hour.last 				= _last.hours;
-			interval_calc.hour.number 				= timespan.hours;
-			interval_calc.hour.multiplier 			= 1;
-			interval_calc.hour.minor 				= 60;
-			
-			// MINUTE
-			interval_calc.minute.type 				= "minute";
-			interval_calc.minute.first 				= _first.minutes;
-			interval_calc.minute.base 				= Math.floor(_first.minutes);
-			interval_calc.minute.last 				= _last.minutes;
-			interval_calc.minute.number 			= timespan.minutes;
-			interval_calc.minute.multiplier 		= 1;
-			interval_calc.minute.minor 				= 60;
-			
-			// SECOND
-			interval_calc.second.type 				= "decade";
-			interval_calc.second.first 				= _first.seconds;
-			interval_calc.second.base 				= Math.floor(_first.seconds);
-			interval_calc.second.last 				= _last.seconds;
-			interval_calc.second.number 			= timespan.seconds;
-			interval_calc.second.multiplier 		= 1;
-			interval_calc.second.minor 				= 10;
-		}
-		
-		function getDateFractions(the_date, is_utc) {
-			
-			var _time = {};
-			_time.days			=		the_date		/	dateFractionBrowser.day;
-			_time.weeks 		=		_time.days		/	dateFractionBrowser.week;
-			_time.months 		=		_time.days		/	dateFractionBrowser.month;
-			_time.years 		=		_time.months 	/	dateFractionBrowser.year;
-			_time.hours 		=		_time.days		*	dateFractionBrowser.hour;
-			_time.minutes 		=		_time.days		*	dateFractionBrowser.minute;
-			_time.seconds 		=		_time.days		*	dateFractionBrowser.second;
-			_time.decades 		=		_time.years		/	dateFractionBrowser.decade;
-			_time.centuries 	=		_time.years		/	dateFractionBrowser.century;
-			_time.milleniums 	=		_time.years		/	dateFractionBrowser.millenium;
-			_time.ages			=		_time.years		/	dateFractionBrowser.age;
-			_time.epochs		=		_time.years		/	dateFractionBrowser.epoch;
-			_time.eras			=		_time.years		/	dateFractionBrowser.era;
-			_time.eons			=		_time.years		/	dateFractionBrowser.eon;
-			
-			/*
-			trace("AGES "		 + 		_time.ages);
-			trace("EPOCHS "		 + 		_time.epochs);
-			trace("MILLENIUMS "  + 		_time.milleniums);
-			trace("CENTURIES "	 + 		_time.centuries);
-			trace("DECADES "	 + 		_time.decades);
-			trace("YEARS "		 + 		_time.years);
-			trace("MONTHS "		 + 		_time.months);
-			trace("WEEKS "		 + 		_time.weeks);
-			trace("DAYS "		 + 		_time.days);
-			trace("HOURS "		 + 		_time.hours);
-			trace("MINUTES "	 + 		_time.minutes);
-			trace("SECONDS "	 + 		_time.seconds);
-			*/
-			return _time;
-		}
-		
-		/*	POSITION
-			Positions elements on the timeline based on date
-			relative to the calculated interval
-		================================================== */
-		function positionRelative(_interval, first, last) {
-			var _first,
-				_last,
-				_type			= _interval.type,
-				timerelative = {
-					start:		"",
-					end:		"",
-					type:		_type
-				};
-			
-			/* FIRST
-			================================================== */
-			_first					= getDateFractions(first);
-			timerelative.start		= first.months;
-			
-			if (_type == "eon") {
-				timerelative.start	= _first.eons;
-			} else if (_type == "era") {
-				timerelative.start	= _first.eras;
-			} else if (_type == "epoch") {
-				timerelative.start	= _first.epochs;
-			} else if (_type == "age") {
-				timerelative.start	= _first.ages;
-			} else if (_type == "millenium") {
-				timerelative.start	= first.milleniums;
-			} else if (_type == "century") {
-				timerelative.start	= _first.centuries;
-			} else if (_type == "decade") {
-				timerelative.start	= _first.decades;
-			} else if (_type == "year") {
-				timerelative.start	= _first.years;
-			} else if (_type == "month") {
-				timerelative.start	= _first.months;
-			} else if (_type == "week") {
-				timerelative.start	= _first.weeks;
-			} else if (_type == "day") {
-				timerelative.start	= _first.days;
-			} else if (_type == "hour") {
-				timerelative.start	= _first.hours;
-			} else if (_type == "minute") {
-				timerelative.start	= _first.minutes;
-			}
-			
-			/* LAST
-			================================================== */
-			if (type.of(last) == "date") {
-				
-				_last					= getDateFractions(last);
-				timerelative.end		= last.months;
-				
-				if (_type == "eon") {
-					timerelative.end	= _last.eons;
-				} else if (_type == "era") {
-					timerelative.end	= _last.eras;
-				} else if (_type == "epoch") {
-					timerelative.end	= _last.epochs;
-				} else if (_type == "age") {
-					timerelative.end	= _last.ages;
-				} else if (_type == "millenium") {
-					timerelative.end	= last.milleniums;
-				} else if (_type == "century") {
-					timerelative.end	= _last.centuries;
-				} else if (_type == "decade") {
-					timerelative.end	= _last.decades;
-				} else if (_type == "year") {
-					timerelative.end	= _last.years;
-				} else if (_type == "month") {
-					timerelative.end	= _last.months;
-				} else if (_type == "week") {
-					timerelative.end	= _last.weeks;
-				} else if (_type == "day") {
-					timerelative.end	= _last.days;
-				} else if (_type == "hour") {
-					timerelative.end	= _last.hours;
-				} else if (_type == "minute") {
-					timerelative.end	= _last.minutes;
-				}
-				
+				this.data.pagex.start = e.originalEvent.touches[0].screenX;
+				this.data.pagey.start = e.originalEvent.touches[0].screenY;
 			} else {
-				
-				timerelative.end		= timerelative.start;
-				
+				this.data.pagex.start = e.targetTouches[0].screenX;
+				this.data.pagey.start = e.targetTouches[0].screenY;
 			}
-			
-			return timerelative
+		} else {
+			this.data.pagex.start = e.pageX;
+			this.data.pagey.start = e.pageY;
 		}
 		
-		function positionOnTimeline(the_interval, timerelative) {
-			return {
-				begin:	(timerelative.start	-	interval.base) * (config.nav.interval_width / config.nav.multiplier.current), 
-				end:	(timerelative.end	-	interval.base) * (config.nav.interval_width / config.nav.multiplier.current)
-			};
+		// Center element to finger or mouse
+		if (this.options.enable.x) {
+			this._el.move.style.left = this.data.pagex.start - (this._el.move.offsetWidth / 2) + "px";
 		}
 		
-		function positionMarkers(is_animated) {
-			
-			var row						= 2,
-				previous_pos			= 0,
-				pos_offset				= -2,
-				row_depth				= 0,
-				row_depth_sub			= 0,
-				line_last_height_pos	= 150,
-				line_height				= 6,
-				cur_mark				= 0,
-				in_view_margin			= config.width,
-				pos_cache_array			= [],
-				pos_cache_max			= 6,
-				in_view = {
-					left:				timenav_pos.visible.left - in_view_margin,
-					right:				timenav_pos.visible.right + in_view_margin
-				},
-				i						= 0,
-				k						= 0;
-				
-			config.nav.minor_width = config.width;
-			
-			VMM.Lib.removeClass(".flag", "row1");
-			VMM.Lib.removeClass(".flag", "row2");
-			VMM.Lib.removeClass(".flag", "row3");
-			
-			for(i = 0; i < markers.length; i++) {
-				
-				var line,
-					marker				= markers[i],
-					pos					= positionOnTimeline(interval, markers[i].relative_pos),
-					row_pos				= 0,
-					is_in_view			= false,
-					pos_cache_obj		= {id: i, pos: 0, row: 0},
-					pos_cache_close		= 0;
-				
-				
-				// COMPENSATE FOR DATES BEING POITIONED IN THE MIDDLE
-				pos.begin				= Math.round(pos.begin +  pos_offset);
-				pos.end					= Math.round(pos.end + pos_offset);
-				line					= Math.round(pos.end - pos.begin);
-				marker.pos_left			= pos.begin;
-				
-				if (current_marker == i) {
-					timenav_pos.left			= (config.width/2) - pos;
-					timenav_pos.visible.left	= Math.abs(timenav_pos.left);
-					timenav_pos.visible.right	= Math.abs(timenav_pos.left) + config.width;
-					in_view.left				= timenav_pos.visible.left - in_view_margin;
-					in_view.right				= timenav_pos.visible.right + in_view_margin;
-				}
-				
-				if (Math.abs(pos.begin) >= in_view.left && Math.abs(pos.begin) <= in_view.right ) {
-					is_in_view = true;
-				}
-				
-				// APPLY POSITION TO MARKER
-				if (is_animated) {
-					VMM.Lib.stop(marker.marker);
-					VMM.Lib.animate(marker.marker, config.duration/2, config.ease, {"left": pos.begin});
-				} else {
-					VMM.Lib.stop(marker.marker);
-					VMM.Lib.css(marker.marker, "left", pos.begin);
-				}
-				
-				if (i == current_marker) {
-					cur_mark = pos.begin;
-				}
-				
-				// EVENT LENGTH LINE
-				if (line > 5) {
-					VMM.Lib.css(marker.lineevent, "height", line_height);
-					VMM.Lib.css(marker.lineevent, "top", line_last_height_pos);
-					if (is_animated) {
-						VMM.Lib.animate(marker.lineevent, config.duration/2, config.ease, {"width": line});
-					} else {
-						VMM.Lib.css(marker.lineevent, "width", line);
-					}
-				}
-				
-				// CONTROL ROW POSITION
-				if (tags.length > 0) {
-					
-					for (k = 0; k < tags.length; k++) {
-						if (k < config.nav.rows.current.length) {
-							if (marker.tag == tags[k]) {
-								row = k;
-								if (k == config.nav.rows.current.length - 1) {
-									trace("ON LAST ROW");
-									VMM.Lib.addClass(marker.flag, "flag-small-last");
-								}
-							}
-						}
-					}
-					row_pos = config.nav.rows.current[row];
-				} else {
-					
-					if (pos.begin - previous_pos.begin < (config.nav.marker.width + config.spacing)) {
-						if (row < config.nav.rows.current.length - 1) {
-							row ++;
-						
-						} else {
-							row = 0;
-							row_depth ++;
-						}
-					} else {
-						row_depth = 1;
-						row = 1;
-					}
-					row_pos = config.nav.rows.current[row];
-					
-				}
-				
-				// SET LAST MARKER POSITION
-				previous_pos = pos;
-				
-				// POSITION CACHE
-				pos_cache_obj.pos = pos;
-				pos_cache_obj.row = row;
-				pos_cache_array.push(pos_cache_obj);
-				if (pos_cache_array.length > pos_cache_max) {
-					VMM.Util.removeRange(pos_cache_array,0);
-				}
-				
-				//if (is_animated && is_in_view) {
-				if (is_animated) {
-					VMM.Lib.stop(marker.flag);
-					VMM.Lib.animate(marker.flag, config.duration, config.ease, {"top": row_pos});
-				} else {
-					VMM.Lib.stop(marker.flag);
-					VMM.Lib.css(marker.flag, "top", row_pos);
-				}
-				
-				// IS THE MARKER A REPRESENTATION OF A START SCREEN?
-				if (config.start_page && markers[i].type == "start") {
-					VMM.Lib.visible(marker.marker, false);
-					
-				}
-				
-				if (pos > config.nav.minor_width) {
-					config.nav.minor_width = pos;
-				}
-				
-				if (pos < config.nav.minor_left) {
-					config.nav.minor_left = pos;
-				}
-				
-			}
-			
-			// ANIMATE THE TIMELINE TO ADJUST TO CHANGES
-			if (is_animated) {
-				VMM.Lib.stop($timenav);
-				VMM.Lib.animate($timenav, config.duration/2, config.ease, {"left": (config.width/2) - (cur_mark)});
-			} else {
-				
-			}
-			
-			//VMM.Lib.delay_animate(config.duration, $timenav, config.duration/2, config.ease, {"left": (config.width/2) - (cur_mark)});
-			
-		
+		if (this.options.enable.y) {
+			this._el.move.style.top = this.data.pagey.start - (this._el.move.offsetHeight / 2) + "px";
 		}
 		
-		function positionEras(is_animated) {
-			var i	= 0,
-				p	= 0;
-				
-			for(i = 0; i < era_markers.length; i++) {
-				var era			= era_markers[i],
-					pos			= positionOnTimeline(interval, era.relative_pos),
-					row_pos		= 0,
-					row			= 0,
-					era_height	= config.nav.marker.height * config.nav.rows.full.length,
-					era_length	= pos.end - pos.begin;
-					
-				// CONTROL ROW POSITION
-				if (era.tag != "") {
-					era_height = (config.nav.marker.height * config.nav.rows.full.length) / config.nav.rows.current.length;
-					for (p = 0; p < tags.length; p++) {
-						if (p < config.nav.rows.current.length) {
-							if (era.tag == tags[p]) {
-								row = p;
-							}
-						}
-					}
-					row_pos = config.nav.rows.current[row];
-					
-				} else {
-					row_pos = -1;
-				}
-				
-				// APPLY POSITION TO MARKER
-				if (is_animated) {
-					VMM.Lib.stop(era.content);
-					VMM.Lib.stop(era.text_content);
-					VMM.Lib.animate(era.content, config.duration/2, config.ease, {"top": row_pos, "left": pos.begin, "width": era_length, "height":era_height});
-					VMM.Lib.animate(era.text_content, config.duration/2, config.ease, {"left": pos.begin});
-				} else {
-					VMM.Lib.stop(era.content);
-					VMM.Lib.stop(era.text_content);
-					VMM.Lib.css(era.content, "left", pos.begin);
-					VMM.Lib.css(era.content, "width", era_length);
-					VMM.Lib.css(era.content, "height", era_height);
-					VMM.Lib.css(era.content, "top", row_pos);
-					VMM.Lib.css(era.text_content, "left", pos.begin);
-					
-				}
-
-			}
-		}
+		this.data.pos.start = TL.Dom.getPosition(this._el.drag);
+		this.data.time.start = new Date().getTime();
 		
-		function positionInterval(the_main_element, the_intervals, is_animated, is_minor) {
-			
-			var last_position		= 0,
-				last_position_major	= 0,
-				//in_view_margin		= (config.nav.minor_width/config.nav.multiplier.current)/2,
-				in_view_margin		= config.width,
-				in_view = {
-					left:			timenav_pos.visible.left - in_view_margin,
-					right:			timenav_pos.visible.right + in_view_margin
-				}
-				not_too_many		= true,
-				i					= 0;
-			
-			config.nav.minor_left = 0;
-				
-			if (the_intervals.length > 100) {
-				not_too_many = false;
-				trace("TOO MANY " + the_intervals.length);
-			}
-			
-			
-			for(i = 0; i < the_intervals.length; i++) {
-				var _interval			= the_intervals[i].element,
-					_interval_date		= the_intervals[i].date,
-					_interval_visible	= the_intervals[i].visible,
-					_pos				= positionOnTimeline(interval, the_intervals[i].relative_pos),
-					pos					= _pos.begin,
-					_animation			= the_intervals[i].animation,
-					is_visible			= true,
-					is_in_view			= false,
-					pos_offset			= 50;
-				
-				
-				_animation.pos			= pos;
-				_animation.animate		= false;
-				
-				if (Math.abs(pos) >= in_view.left && Math.abs(pos) <= in_view.right ) {
-					is_in_view = true;
-				}
-				
-				if (true) {
-					
-					// CONDENSE WHAT IS DISPLAYED
-					if (config.nav.multiplier.current > 16 && is_minor) {
-						is_visible = false;
-					} else {
-						if ((pos - last_position) < 65 ) {
-							if ((pos - last_position) < 35 ) {
-								if (i%4 == 0) {
-									if (pos == 0) {
-										is_visible = false;
-									}
-								} else {
-									is_visible = false;
-								}
-							} else {
-								if (!VMM.Util.isEven(i)) {
-									is_visible = false;
-								}
-							}
-						}
-					}
-					
-					if (is_visible) {
-						if (the_intervals[i].is_detached) {
-							VMM.Lib.append(the_main_element, _interval);
-							the_intervals[i].is_detached = false;
-						}
-					} else {
-						the_intervals[i].is_detached = true;
-						VMM.Lib.detach(_interval);
-					}
-					
-					
-					if (_interval_visible) {
-						if (!is_visible) {
-							_animation.opacity	= "0";
-							if (is_animated && not_too_many) {
-								_animation.animate	= true;
-							}
-							the_intervals[i].interval_visible = false;
-						} else {
-							_animation.opacity	= "100";
-							if (is_animated && is_in_view) {
-								_animation.animate	= true;
-							}
-						}
-					} else {
-						_animation.opacity	= "100";
-						if (is_visible) {
-							if (is_animated && not_too_many) {
-								_animation.animate	= true;
-							} else {
-								if (is_animated && is_in_view) {
-									_animation.animate	= true;
-								}
-							}
-							the_intervals[i].interval_visible = true;
-						} else {
-							if (is_animated && not_too_many) {
-								_animation.animate	= true;
-							}
-						}
-					}
-				
-					last_position = pos;
-				
-					if (pos > config.nav.minor_width) {
-						config.nav.minor_width = pos;
-					}
-					
-					if (pos < config.nav.minor_left) {
-						config.nav.minor_left = pos;
-					}
-					
-				}
-				
-				if (_animation.animate) {
-					VMM.Lib.animate(_interval, config.duration/2, config.ease, {opacity: _animation.opacity, left: _animation.pos});
-				} else {
-					VMM.Lib.css(_interval, "opacity", _animation.opacity);
-					VMM.Lib.css(_interval, "left", pos);
-				}
-			}
-			
-			config.nav.constraint.right_min = -(config.nav.minor_width)+(config.width);
-			config.nav.constraint.right = config.nav.constraint.right_min + (config.width/2);
-			
-			VMM.Lib.css($timeintervalminor_minor, "left", config.nav.minor_left - (config.width)/2);
-			VMM.Lib.width($timeintervalminor_minor, (config.nav.minor_width)+(config.width) + Math.abs(config.nav.minor_left) );
-			
-		}
-		
-		/* Interval Elements
-		================================================== */
-		function createIntervalElements(_interval, _array, _element_parent) {
-			
-			var inc_time			= 0,
-				_first_run			= true,
-				_last_pos			= 0,
-				_largest_pos		= 0,
-				_timezone_offset,
-				_first_date,
-				_last_date,
-				int_number			= Math.ceil(_interval.number) + 2,
-				firefox = {
-					flag:			false,
-					offset:			0
-				},
-				i					= 0;
-			
-			VMM.attachElement(_element_parent, "");
-			
-			_interval.date = new Date(data[0].startdate.getFullYear(), 0, 1, 0,0,0);
-			_timezone_offset = _interval.date.getTimezoneOffset();
-			
-			for(i = 0; i < int_number; i++) {
-				trace(_interval.type);
-				var _is_year			= false,
-					int_obj = {
-						element: 		VMM.appendAndGetElement(_element_parent, "<div>", _interval.classname),
-						date: 			new Date(data[0].startdate.getFullYear(), 0, 1, 0,0,0),
-						visible: 		false,
-						date_string:	"",
-						type: 			_interval.interval_type,
-						relative_pos:	0,
-						is_detached:	false,
-						animation: {
-							animate:	false,
-							pos:		"",
-							opacity:	"100"
-						
-						}
-					};
-				
-				if (_interval.type == "eon") {
-					if (_first_run) {
-						_first_date = Math.floor(data[0].startdate.getFullYear() / 500000000) * 500000000;
-					}
-					int_obj.date.setFullYear(_first_date + (inc_time * 500000000));
-					_is_year = true;
-				} else if (_interval.type == "era") {
-					if (_first_run) {
-						_first_date = Math.floor(data[0].startdate.getFullYear() / 100000000) * 100000000;
-					}
-					int_obj.date.setFullYear(_first_date + (inc_time * 100000000));
-					_is_year = true;
-				} else if (_interval.type == "epoch") {
-					if (_first_run) {
-						_first_date = Math.floor(data[0].startdate.getFullYear() / 10000000) * 10000000
-					}
-					int_obj.date.setFullYear(_first_date + (inc_time * 10000000));
-					_is_year = true;
-				} else if (_interval.type == "age") {
-					if (_first_run) {
-						_first_date = Math.floor(data[0].startdate.getFullYear() / 1000000) * 1000000
-					}
-					int_obj.date.setFullYear(_first_date + (inc_time * 1000000));
-					_is_year = true;
-				} else if (_interval.type == "millenium") {
-					if (_first_run) {
-						_first_date = Math.floor(data[0].startdate.getFullYear() / 1000) * 1000;
-					}
-					int_obj.date.setFullYear(_first_date + (inc_time * 1000));
-					_is_year = true;
-				} else if (_interval.type == "century") {
-					if (_first_run) {
-						_first_date = Math.floor(data[0].startdate.getFullYear() / 100) * 100
-					}
-					int_obj.date.setFullYear(_first_date + (inc_time * 100));
-					_is_year = true;
-				} else if (_interval.type == "decade") {
-					if (_first_run) {
-						_first_date = Math.floor(data[0].startdate.getFullYear() / 10) * 10;
-					}
-					int_obj.date.setFullYear(_first_date + (inc_time * 10));
-					_is_year = true;
-				} else if (_interval.type == "year") {
-					if (_first_run) {
-						_first_date = data[0].startdate.getFullYear();
-					}
-					int_obj.date.setFullYear(_first_date + inc_time);
-					_is_year = true;
-				} else if (_interval.type == "month") {
-					if (_first_run) {
-						_first_date = data[0].startdate.getMonth();
-					}
-					int_obj.date.setMonth(_first_date + inc_time);
-				} else if (_interval.type == "week") {
-					if (_first_run) {
-						_first_date = data[0].startdate.getMonth();
-					}
-					int_obj.date.setMonth(data[0].startdate.getMonth());
-					int_obj.date.setDate(_first_date + (inc_time * 7) );
-				} else if (_interval.type == "day") {
-					if (_first_run) {
-						_first_date = data[0].startdate.getDate();
-					}
-					int_obj.date.setMonth(data[0].startdate.getMonth());
-					int_obj.date.setDate(_first_date + inc_time);
-				} else if (_interval.type == "hour") {
-					if (_first_run) {
-						_first_date = data[0].startdate.getHours();
-					}
-					int_obj.date.setMonth(data[0].startdate.getMonth());
-					int_obj.date.setDate(data[0].startdate.getDate());
-					int_obj.date.setHours(_first_date + inc_time);
-				} else if (_interval.type == "minute") {
-					if (_first_run) {
-						_first_date = data[0].startdate.getMinutes();
-					}
-					int_obj.date.setMonth(data[0].startdate.getMonth());
-					int_obj.date.setDate(data[0].startdate.getDate());
-					int_obj.date.setHours(data[0].startdate.getHours());
-					int_obj.date.setMinutes(_first_date + inc_time);
-				} else if (_interval.type == "second") {
-					if (_first_run) {
-						_first_date = data[0].startdate.getSeconds();
-					}
-					int_obj.date.setMonth(data[0].startdate.getMonth());
-					int_obj.date.setDate(data[0].startdate.getDate());
-					int_obj.date.setHours(data[0].startdate.getHours());
-					int_obj.date.setMinutes(data[0].startdate.getMinutes());
-					int_obj.date.setSeconds(_first_date + inc_time);
-				}	else if (_interval.type == "millisecond") {
-					if (_first_run) {
-						_first_date = data[0].startdate.getMilliseconds();
-					}
-					int_obj.date.setMonth(data[0].startdate.getMonth());
-					int_obj.date.setDate(data[0].startdate.getDate());
-					int_obj.date.setHours(data[0].startdate.getHours());
-					int_obj.date.setMinutes(data[0].startdate.getMinutes());
-					int_obj.date.setSeconds(data[0].startdate.getSeconds());
-					int_obj.date.setMilliseconds(_first_date + inc_time);
-				}
-				
-				// FIX WEIRD FIREFOX BUG FOR GMT TIME FORMATTING
-				if (VMM.Browser.browser == "Firefox") {
-					if (int_obj.date.getFullYear() == "1970" && int_obj.date.getTimezoneOffset() != _timezone_offset) {
-						
-						trace("FIREFOX 1970 TIMEZONE OFFSET " + int_obj.date.getTimezoneOffset() + " SHOULD BE " + _timezone_offset);
-						trace(_interval.type + " " + _interval.date);
-						
-						// try and fix firefox bug, if not the flag will catch it
-						firefox.offset = (int_obj.date.getTimezoneOffset()/60);
-						firefox.flag = true;
-						int_obj.date.setHours(int_obj.date.getHours() + firefox.offset );
-						
-					} else if (firefox.flag) {
-						// catch the bug the second time around
-						firefox.flag = false;
-						int_obj.date.setHours(int_obj.date.getHours() + firefox.offset );
-						if (_is_year) {
-							firefox.flag = true;
-						}
-					}
-					
-				}
-				
-				if (_is_year) {
-					if ( int_obj.date.getFullYear() < 0 ) {
-						int_obj.date_string = 	Math.abs( int_obj.date.getFullYear() ).toString() + " B.C.";
-					} else {
-						int_obj.date_string = int_obj.date.getFullYear();
-					}
-				} else {
-					int_obj.date_string = VMM.Date.prettyDate(int_obj.date, true);
-				}
-				
-				// Increment Time
-				inc_time = inc_time + 1;
-				
-				// No longer first run
-				_first_run = false;
-				
-				int_obj.relative_pos = positionRelative(interval, int_obj.date);
-				_last_pos = int_obj.relative_pos.begin;
-				if (int_obj.relative_pos.begin > _largest_pos) {
-					_largest_pos = int_obj.relative_pos.begin;
-				}
-				
-				// Add the time string to the element and position it.
-				VMM.appendElement(int_obj.element, int_obj.date_string);
-				VMM.Lib.css(int_obj.element, "text-indent", -(VMM.Lib.width(int_obj.element)/2));
-				VMM.Lib.css(int_obj.element, "opacity", "0");
-				
-				// add the interval element to the array
-				_array.push(int_obj);
-				
-			}
-			
-			VMM.Lib.width($timeintervalminor_minor, _largest_pos);
-			
-			positionInterval(_element_parent, _array);
-			
-			
-			
-		}
-		
-		/* BUILD
-		================================================== */
-		function build() {
-			var i	= 0,
-				j	= 0;
-				
-			VMM.attachElement(layout, "");
-			
-			$timenav					= VMM.appendAndGetElement(layout, "<div>", "timenav");
-			$content					= VMM.appendAndGetElement($timenav, "<div>", "content");
-			$time						= VMM.appendAndGetElement($timenav, "<div>", "time");
-			$timeintervalminor			= VMM.appendAndGetElement($time, "<div>", "time-interval-minor");
-			$timeintervalminor_minor	= VMM.appendAndGetElement($timeintervalminor, "<div>", "minor");
-			$timeintervalmajor			= VMM.appendAndGetElement($time, "<div>", "time-interval-major");
-			$timeinterval				= VMM.appendAndGetElement($time, "<div>", "time-interval");
-			$timebackground				= VMM.appendAndGetElement(layout, "<div>", "timenav-background");
-			$timenavline				= VMM.appendAndGetElement($timebackground, "<div>", "timenav-line");
-			$timenavindicator			= VMM.appendAndGetElement($timebackground, "<div>", "timenav-indicator");
-			$timeintervalbackground		= VMM.appendAndGetElement($timebackground, "<div>", "timenav-interval-background", "<div class='top-highlight'></div>");
-			$toolbar					= VMM.appendAndGetElement(layout, "<div>", "vco-toolbar");
-			
-			
-			buildInterval();
-			buildMarkers();
-			buildEras();
-			calculateMultiplier();
-			positionMarkers(false);
-			positionEras();
-			
-			positionInterval($timeinterval, interval_array, false, true);
-			positionInterval($timeintervalmajor, interval_major_array);
-			
-			
-			if (config.start_page) {
-				$backhome = VMM.appendAndGetElement($toolbar, "<div>", "back-home", "<div class='icon'></div>");
-				VMM.bindEvent(".back-home", onBackHome, "click");
-				VMM.Lib.attribute($backhome, "title", VMM.master_config.language.messages.return_to_title);
-				VMM.Lib.attribute($backhome, "rel", "timeline-tooltip");
-				
-			}
-			
-			
-			// MAKE TIMELINE DRAGGABLE/TOUCHABLE
-			$dragslide = new VMM.DragSlider;
-			$dragslide.createPanel(layout, $timenav, config.nav.constraint, config.touch);
-			
-			
-			
-			if (config.touch && config.start_page) {
-				VMM.Lib.addClass($toolbar, "touch");
-				VMM.Lib.css($toolbar, "top", 55);
-				VMM.Lib.css($toolbar, "left", 10);
-			} else {
-				if (config.start_page) {
-					VMM.Lib.css($toolbar, "top", 27);
-				}
-				$zoomin		= VMM.appendAndGetElement($toolbar, "<div>", "zoom-in", "<div class='icon'></div>");
-				$zoomout	= VMM.appendAndGetElement($toolbar, "<div>", "zoom-out", "<div class='icon'></div>");
-				// ZOOM EVENTS
-				VMM.bindEvent($zoomin, onZoomIn, "click");
-				VMM.bindEvent($zoomout, onZoomOut, "click");
-				// TOOLTIP
-				VMM.Lib.attribute($zoomin, "title", VMM.master_config.language.messages.expand_timeline);
-				VMM.Lib.attribute($zoomin, "rel", "timeline-tooltip");
-				VMM.Lib.attribute($zoomout, "title", VMM.master_config.language.messages.contract_timeline);
-				VMM.Lib.attribute($zoomout, "rel", "timeline-tooltip");
-				$toolbar.tooltip({selector: "div[rel=timeline-tooltip]", placement: "right"});
-				
-				
-				// MOUSE EVENTS
-				VMM.bindEvent(layout, onMouseScroll, 'DOMMouseScroll');
-				VMM.bindEvent(layout, onMouseScroll, 'mousewheel');
-			}
-			
-			
-			
-			// USER CONFIGURABLE ADJUSTMENT TO DEFAULT ZOOM
-			if (config.nav.zoom.adjust != 0) {
-				if (config.nav.zoom.adjust < 0) {
-					for(i = 0; i < Math.abs(config.nav.zoom.adjust); i++) {
-						onZoomOut();
-					}
-				} else {
-					for(j = 0; j < config.nav.zoom.adjust; j++) {
-						onZoomIn();
-					}
-				}
-			}
-			
-			//VMM.fireEvent(layout, "LOADED");
-			_active = true;
-			
-			reSize(true);
-			VMM.fireEvent(layout, "LOADED");
-			
-		};
-		
-		function buildInterval() {
-			var i	= 0,
-				j	= 0;
-			// CALCULATE INTERVAL
-			timespan = getDateFractions((data[data.length - 1].enddate) - (data[0].startdate), true);
-			trace(timespan);
-			calculateInterval();
-
-			/* DETERMINE DEFAULT INTERVAL TYPE
-				millenium, ages, epoch, era and eon are not optimized yet. They may never be.
-			================================================== */
-			/*
-			if (timespan.eons				>		data.length / config.nav.density) {
-				interval					=		interval_calc.eon;
-				interval_major				=		interval_calc.eon;
-				interval_macro				=		interval_calc.era;
-			} else if (timespan.eras		>		data.length / config.nav.density) {
-				interval					=		interval_calc.era;
-				interval_major				=		interval_calc.eon;
-				interval_macro				=		interval_calc.epoch;
-			} else if (timespan.epochs		>		data.length / config.nav.density) {
-				interval					=		interval_calc.epoch;
-				interval_major				=		interval_calc.era;
-				interval_macro				=		interval_calc.age;
-			} else if (timespan.ages		>		data.length / config.nav.density) {
-				interval					=		interval_calc.ages;
-				interval_major				=		interval_calc.epoch;
-				interval_macro				=		interval_calc.millenium;
-			} else if (timespan.milleniums			>		data.length / config.nav.density) {
-				interval					=		interval_calc.millenium;
-				interval_major				=		interval_calc.age;
-				interval_macro				=		interval_calc.century;
-			} else 
-			*/
-			if (timespan.centuries			>		data.length / config.nav.density) {
-				interval					=		interval_calc.century;
-				interval_major				=		interval_calc.millenium;
-				interval_macro				=		interval_calc.decade;
-			} else if (timespan.decades		>		data.length / config.nav.density) {
-				interval					=		interval_calc.decade;
-				interval_major				=		interval_calc.century;
-				interval_macro				=		interval_calc.year;
-			} else if (timespan.years		>		data.length / config.nav.density) {	
-				interval					=		interval_calc.year;
-				interval_major				=		interval_calc.decade;
-				interval_macro				=		interval_calc.month;
-			} else if (timespan.months		>		data.length / config.nav.density) {
-				interval					=		interval_calc.month;
-				interval_major				=		interval_calc.year;
-				interval_macro				=		interval_calc.day;
-			} else if (timespan.days		>		data.length / config.nav.density) {
-				interval					=		interval_calc.day;
-				interval_major				=		interval_calc.month;
-				interval_macro				=		interval_calc.hour;
-			} else if (timespan.hours		>		data.length / config.nav.density) {
-				interval					=		interval_calc.hour;
-				interval_major				=		interval_calc.day;
-				interval_macro				=		interval_calc.minute;
-			} else if (timespan.minutes		>		data.length / config.nav.density) {
-				interval					=		interval_calc.minute;
-				interval_major				=		interval_calc.hour;
-				interval_macro				=		interval_calc.second;
-			} else if (timespan.seconds		>		data.length / config.nav.density) {
-				interval					=		interval_calc.second;
-				interval_major				=		interval_calc.minute;
-				interval_macro				=		interval_calc.second;
-			} else {
-				trace("NO IDEA WHAT THE TYPE SHOULD BE");
-				interval					=		interval_calc.day;
-				interval_major				=		interval_calc.month;
-				interval_macro				=		interval_calc.hour;
-			}
-			
-			trace("INTERVAL TYPE: " + interval.type);
-			trace("INTERVAL MAJOR TYPE: " + interval_major.type);
-			
-			createIntervalElements(interval, interval_array, $timeinterval);
-			createIntervalElements(interval_major, interval_major_array, $timeintervalmajor);
-			
-			// Cleanup duplicate interval elements between normal and major
-			for(i = 0; i < interval_array.length; i++) {
-				for(j = 0; j < interval_major_array.length; j++) {
-					if (interval_array[i].date_string == interval_major_array[j].date_string) {
-						VMM.attachElement(interval_array[i].element, "");
-					}
-				}
-			}
-		}
-		
-		function buildMarkers() {
-			
-			var row			= 2,
-				lpos		= 0,
-				row_depth	= 0,
-				i			= 0,
-				k			= 0,
-				l			= 0;
-				
-				
-			markers			= [];
-			era_markers		= [];
-			
-			for(i = 0; i < data.length; i++) {
-				
-				var _marker,
-					_marker_flag,
-					_marker_content,
-					_marker_dot,
-					_marker_line,
-					_marker_line_event,
-					_marker_obj,
-					_marker_title		= "",
-					has_title			= false;
-				
-				
-				_marker					= VMM.appendAndGetElement($content, "<div>", "marker");
-				_marker_flag			= VMM.appendAndGetElement(_marker, "<div>", "flag");
-				_marker_content			= VMM.appendAndGetElement(_marker_flag, "<div>", "flag-content");
-				_marker_dot				= VMM.appendAndGetElement(_marker, "<div>", "dot");
-				_marker_line			= VMM.appendAndGetElement(_marker, "<div>", "line");
-				_marker_line_event		= VMM.appendAndGetElement(_marker_line, "<div>", "event-line");
-				_marker_relative_pos	= positionRelative(interval, data[i].startdate, data[i].enddate);
-				_marker_thumb			= "";
-				
-				// THUMBNAIL
-				if (data[i].asset != null && data[i].asset != "") {
-					VMM.appendElement(_marker_content, VMM.MediaElement.thumbnail(data[i].asset, 24, 24, data[i].uniqueid));
-				} else {
-					VMM.appendElement(_marker_content, "<div style='margin-right:7px;height:50px;width:2px;float:left;'></div>");
-				}
-				
-				// ADD DATE AND TITLE
-				if (data[i].title == "" || data[i].title == " " ) {
-					trace("TITLE NOTHING")
-					if (typeof data[i].slug != 'undefined' && data[i].slug != "") {
-						trace("SLUG")
-						_marker_title = VMM.Util.untagify(data[i].slug);
-						has_title = true;
-					} else {
-						var m = VMM.MediaType(data[i].asset.media);
-						if (m.type == "quote" || m.type == "unknown") {
-							_marker_title = VMM.Util.untagify(m.id);
-							has_title = true;
-						} else {
-							has_title = false;
-						}
-					}
-				} else if (data[i].title != "" || data[i].title != " ") {
-					trace(data[i].title)
-					_marker_title = VMM.Util.untagify(data[i].title);
-					has_title = true;
-				} else {
-					trace("TITLE SLUG NOT FOUND " + data[i].slug)
-				}
-				
-				if (has_title) {
-					VMM.appendElement(_marker_content, "<h3>" + _marker_title + "</h3>");
-				} else {
-					VMM.appendElement(_marker_content, "<h3>" + _marker_title + "</h3>");
-					VMM.appendElement(_marker_content, "<h3 id='marker_content_" + data[i].uniqueid + "'>" + _marker_title + "</h3>");
-				}
-				
-				// ADD ID
-				VMM.Lib.attr(_marker, "id", ( "marker_" + data[i].uniqueid).toString() );
-				
-				// MARKER CLICK
-				VMM.bindEvent(_marker_flag, onMarkerClick, "", {number: i});
-				VMM.bindEvent(_marker_flag, onMarkerHover, "mouseenter mouseleave", {number: i, elem:_marker_flag});
-				
-				_marker_obj = {
-					marker: 			_marker,
-					flag: 				_marker_flag,
-					lineevent: 			_marker_line_event,
-					type: 				"marker",
-					full:				true,
-					relative_pos:		_marker_relative_pos,
-					tag:				data[i].tag,
-					pos_left:			0
-				};
-				
-				
-				if (data[i].type == "start") {
-					trace("BUILD MARKER HAS START PAGE");
-					config.start_page = true;
-					_marker_obj.type = "start";
-				}
-				
-				if (data[i].type == "storify") {
-					_marker_obj.type = "storify";
-				}
-				
-				
-				if (data[i].tag) {
-					tags.push(data[i].tag);
-				}
-				
-				markers.push(_marker_obj);
-				
-				
-				
-			}
-			
-			// CREATE TAGS
-			tags = VMM.Util.deDupeArray(tags);
-
-			config.tagSortFunction(tags);
-
-			if (tags.length > 3) {
-				config.nav.rows.current = config.nav.rows.half;
-			} else {
-				config.nav.rows.current = config.nav.rows.full;
-			}
-			for(k = 0; k < tags.length; k++) {
-				if (k < config.nav.rows.current.length) {
-					var tag_element = VMM.appendAndGetElement($timebackground, "<div>", "timenav-tag");
-					VMM.Lib.addClass(tag_element, "timenav-tag-row-" + (k+1));
-					if (tags.length > 3) {
-						VMM.Lib.addClass(tag_element, "timenav-tag-size-half");
-					} else {
-						VMM.Lib.addClass(tag_element, "timenav-tag-size-full");
-					}
-					VMM.appendElement(tag_element, "<div><h3>" + tags[k] + "</h3></div>");
-				}
-				
-			}
-			
-			// RESIZE FLAGS IF NEEDED
-			if (tags.length > 3) {
-				for(l = 0; l < markers.length; l++) {
-					VMM.Lib.addClass(markers[l].flag, "flag-small");
-					markers[l].full = false;
-				}
-			}
-
-			
-		}
-		
-		function buildEras() {
-			var number_of_colors	= 6,
-				current_color		= 0,
-				j					= 0;
-			// CREATE ERAS
-			for(j = 0; j < eras.length; j++) {
-				var era = {
-						content: 			VMM.appendAndGetElement($content, "<div>", "era"),
-						text_content: 		VMM.appendAndGetElement($timeinterval, "<div>", "era"),
-						startdate: 			VMM.Date.parse(eras[j].startDate),
-						enddate: 			VMM.Date.parse(eras[j].endDate),
-						title: 				eras[j].headline,
-						uniqueid: 			VMM.Util.unique_ID(6),
-						tag:				"",
-						relative_pos:	 	""
-					},
-					st						= VMM.Date.prettyDate(era.startdate),
-					en						= VMM.Date.prettyDate(era.enddate),
-					era_text				= "<div>&nbsp;</div>";
-					
-				if (typeof eras[j].tag != "undefined") {
-					era.tag = eras[j].tag;
-				}
-				
-				era.relative_pos = positionRelative(interval, era.startdate, era.enddate);
-				
-				VMM.Lib.attr(era.content, "id", era.uniqueid);
-				VMM.Lib.attr(era.text_content, "id", era.uniqueid + "_text");
-				
-				// Background Color
-				VMM.Lib.addClass(era.content, "era"+(current_color+1));
-				VMM.Lib.addClass(era.text_content, "era"+(current_color+1));
-				
-				if (current_color < number_of_colors) {
-					current_color++;
-				} else {
-					current_color = 0;
-				}
-				
-				VMM.appendElement(era.content, era_text);
-				VMM.appendElement(era.text_content, VMM.Util.unlinkify(era.title));
-				
-				era_markers.push(era);
-				
-			}
-			
-		}
-		
-	};
+		this.fire("dragstart", this.data);
+		TL.DomEvent.addListener(this._el.drag, this.dragevent.move, this._onDragMove, this);
+		TL.DomEvent.addListener(this._el.drag, this.dragevent.leave, this._onDragEnd, this);
+	},
 	
+	_onDragEnd: function(e) {
+		this.data.sliding = false;
+		TL.DomEvent.removeListener(this._el.drag, this.dragevent.move, this._onDragMove, this);
+		TL.DomEvent.removeListener(this._el.drag, this.dragevent.leave, this._onDragEnd, this);
+		this.fire("dragend", this.data);
+		
+		//  momentum
+		this._momentum();
+	},
+	
+	_onDragMove: function(e) {
+		e.preventDefault();
+		this.data.sliding = true;
+		
+		if (TL.Browser.touch) {
+			if (e.originalEvent) {
+				this.data.pagex.end = e.originalEvent.touches[0].screenX;
+				this.data.pagey.end = e.originalEvent.touches[0].screenY;
+			} else {
+				this.data.pagex.end = e.targetTouches[0].screenX;
+				this.data.pagey.end = e.targetTouches[0].screenY;
+			}
+
+		} else {
+			this.data.pagex.end = e.pageX;
+			this.data.pagey.end = e.pageY;
+		}
+		
+		this.data.pos.end = TL.Dom.getPosition(this._el.drag);
+		this.data.new_pos.x = -(this.data.pagex.start - this.data.pagex.end - this.data.pos.start.x);
+		this.data.new_pos.y = -(this.data.pagey.start - this.data.pagey.end - this.data.pos.start.y );
+		
+		if (this.options.enable.x) {
+			this._el.move.style.left = this.data.new_pos.x + "px";
+		}
+		
+		if (this.options.enable.y) {
+			this._el.move.style.top = this.data.new_pos.y + "px";
+		}
+		
+		this.fire("dragmove", this.data);
+	},
+	
+	_momentum: function() {
+		var pos_adjust = {
+				x: 0,
+				y: 0,
+				time: 0
+			},
+			pos_change = {
+				x: 0,
+				y: 0,
+				time: 0
+			},
+			swipe = false,
+			swipe_direction = "";
+		
+		
+		if (TL.Browser.touch) {
+			// Treat mobile multiplier differently
+			//this.options.momentum_multiplier = this.options.momentum_multiplier * 2;
+		}
+		
+		pos_adjust.time = (new Date().getTime() - this.data.time.start) * 10;
+		pos_change.time = (new Date().getTime() - this.data.time.start) * 10;
+		
+		pos_change.x = this.options.momentum_multiplier * (Math.abs(this.data.pagex.end) - Math.abs(this.data.pagex.start));
+		pos_change.y = this.options.momentum_multiplier * (Math.abs(this.data.pagey.end) - Math.abs(this.data.pagey.start));
+		
+		pos_adjust.x = Math.round(pos_change.x / pos_change.time);
+		pos_adjust.y = Math.round(pos_change.y / pos_change.time);
+		
+		this.data.new_pos.x = Math.min(this.data.pos.end.x + pos_adjust.x);
+		this.data.new_pos.y = Math.min(this.data.pos.end.y + pos_adjust.y);
+
+		
+		if (!this.options.enable.x) {
+			this.data.new_pos.x = this.data.pos.start.x;
+		} else if (this.data.new_pos.x < 0) {
+			this.data.new_pos.x = 0;
+		}
+		
+		if (!this.options.enable.y) {
+			this.data.new_pos.y = this.data.pos.start.y;
+		} else if (this.data.new_pos.y < 0) {
+			this.data.new_pos.y = 0;
+		}
+		
+		// Detect Swipe
+		if (pos_change.time < 3000) {
+			swipe = true;
+		}
+		
+		// Detect Direction
+		if (Math.abs(pos_change.x) > 10000) {
+			this.data.direction = "left";
+			if (pos_change.x > 0) {
+				this.data.direction = "right";
+			}
+		}
+		// Detect Swipe
+		if (Math.abs(pos_change.y) > 10000) {
+			this.data.direction = "up";
+			if (pos_change.y > 0) {
+				this.data.direction = "down";
+			}
+		}
+		this._animateMomentum();
+		if (swipe) {
+			this.fire("swipe_" + this.data.direction, this.data);
+		}
+		
+	},
+	
+	
+	_animateMomentum: function() {
+		var pos = {
+				x: this.data.new_pos.x,
+				y: this.data.new_pos.y
+			},
+			animate = {
+				duration: 	this.options.duration,
+				easing: 	TL.Ease.easeOutStrong
+			};
+		
+		if (this.options.enable.y) {
+			if (this.options.constraint.top || this.options.constraint.bottom) {
+				if (pos.y > this.options.constraint.bottom) {
+					pos.y = this.options.constraint.bottom;
+				} else if (pos.y < this.options.constraint.top) {
+					pos.y = this.options.constraint.top;
+				}
+			}
+			animate.top = Math.floor(pos.y) + "px";
+		}
+		
+		if (this.options.enable.x) {
+			if (this.options.constraint.left || this.options.constraint.right) {
+				if (pos.x > this.options.constraint.left) {
+					pos.x = this.options.constraint.left;
+				} else if (pos.x < this.options.constraint.right) {
+					pos.x = this.options.constraint.right;
+				}
+			}
+			animate.left = Math.floor(pos.x) + "px";
+		}
+		
+		this.animator = TL.Animate(this._el.move, animate);
+		
+		this.fire("momentum", this.data);
+	}
+});
+
+
+/* **********************************************
+     Begin TL.Swipable.js
+********************************************** */
+
+/*	TL.Swipable
+	TL.Draggable allows you to add dragging capabilities to any element. Supports mobile devices too.
+	TODO Enable constraints
+================================================== */
+
+TL.Swipable = TL.Class.extend({
+	
+	includes: TL.Events,
+	
+	_el: {},
+	
+	mousedrag: {
+		down:		"mousedown",
+		up:			"mouseup",
+		leave:		"mouseleave",
+		move:		"mousemove"
+	},
+	
+	touchdrag: {
+		down:		"touchstart",
+		up:			"touchend",
+		leave:		"mouseleave",
+		move:		"touchmove"
+	},
+
+	initialize: function (drag_elem, move_elem, options) {
+		
+		// DOM ELements 
+		this._el = {
+			drag: drag_elem,
+			move: drag_elem
+		};
+		
+		if (move_elem) {
+			this._el.move = move_elem;
+		}
+		
+		
+		//Options
+		this.options = {
+			snap: false,
+			enable:	{
+				x: true,
+				y: true
+			},
+			constraint: {
+				top: false,
+				bottom: false,
+				left: 0,
+				right: false
+			},
+			momentum_multiplier: 	2000,
+			duration: 				1000,
+			ease: 					TL.Ease.easeInOutQuint
+		};
+		
+		
+		// Animation Object
+		this.animator = null;
+		
+		// Drag Event Type
+		this.dragevent = this.mousedrag;
+		
+		if (TL.Browser.touch) {
+			this.dragevent = this.touchdrag;
+		}
+		
+		// Draggable Data
+		this.data = {
+			sliding:		false,
+			direction: 		"none",
+			pagex: {
+				start:		0,
+				end:		0
+			},
+			pagey: {
+				start:		0,
+				end:		0
+			},
+			pos: {
+				start: {
+					x: 0,
+					y:0
+				},
+				end: {
+					x: 0,
+					y:0
+				}
+			},
+			new_pos: {
+				x: 0,
+				y: 0
+			},
+			new_pos_parent: {
+				x: 0,
+				y: 0
+			},
+			time: {
+				start:		0,
+				end:		0
+			},
+			touch:			false
+		};
+		
+		// Merge Data and Options
+		TL.Util.mergeData(this.options, options);
+		
+		
+	},
+	
+	enable: function(e) {
+		TL.DomEvent.addListener(this._el.drag, this.dragevent.down, this._onDragStart, this);
+		TL.DomEvent.addListener(this._el.drag, this.dragevent.up, this._onDragEnd, this);
+		
+		this.data.pos.start = 0; //TL.Dom.getPosition(this._el.move);
+		this._el.move.style.left = this.data.pos.start.x + "px";
+		this._el.move.style.top = this.data.pos.start.y + "px";
+		this._el.move.style.position = "absolute";
+		//this._el.move.style.zIndex = "11";
+		//this._el.move.style.cursor = "move";
+	},
+	
+	disable: function() {
+		TL.DomEvent.removeListener(this._el.drag, this.dragevent.down, this._onDragStart, this);
+		TL.DomEvent.removeListener(this._el.drag, this.dragevent.up, this._onDragEnd, this);
+	},
+	
+	stopMomentum: function() {
+		if (this.animator) {
+			this.animator.stop();
+		}
+
+	},
+	
+	updateConstraint: function(c) {
+		this.options.constraint = c;
+		
+		// Temporary until issues are fixed
+		
+	},
+	
+	/*	Private Methods
+	================================================== */
+	_onDragStart: function(e) {
+		
+		if (this.animator) {
+			this.animator.stop();
+		}
+		
+		if (TL.Browser.touch) {
+			if (e.originalEvent) {
+				this.data.pagex.start = e.originalEvent.touches[0].screenX;
+				this.data.pagey.start = e.originalEvent.touches[0].screenY;
+			} else {
+				this.data.pagex.start = e.targetTouches[0].screenX;
+				this.data.pagey.start = e.targetTouches[0].screenY;
+			}
+		} else {
+			this.data.pagex.start = e.pageX;
+			this.data.pagey.start = e.pageY;
+		}
+		
+		// Center element to finger or mouse
+		if (this.options.enable.x) {
+			//this._el.move.style.left = this.data.pagex.start - (this._el.move.offsetWidth / 2) + "px";
+		}
+		
+		if (this.options.enable.y) {
+			//this._el.move.style.top = this.data.pagey.start - (this._el.move.offsetHeight / 2) + "px";
+		}
+		
+		this.data.pos.start = {x:this._el.move.offsetLeft, y:this._el.move.offsetTop};
+		
+		
+		this.data.time.start 			= new Date().getTime();
+		
+		this.fire("dragstart", this.data);
+		TL.DomEvent.addListener(this._el.drag, this.dragevent.move, this._onDragMove, this);
+		TL.DomEvent.addListener(this._el.drag, this.dragevent.leave, this._onDragEnd, this);
+	},
+	
+	_onDragEnd: function(e) {
+		this.data.sliding = false;
+		TL.DomEvent.removeListener(this._el.drag, this.dragevent.move, this._onDragMove, this);
+		TL.DomEvent.removeListener(this._el.drag, this.dragevent.leave, this._onDragEnd, this);
+		this.fire("dragend", this.data);
+		
+		//  momentum
+		this._momentum();
+	},
+	
+	_onDragMove: function(e) {
+		var change = {
+			x:0,
+			y:0
+		}
+		//e.preventDefault();
+		this.data.sliding = true;
+		
+		if (TL.Browser.touch) {
+			if (e.originalEvent) {
+				this.data.pagex.end = e.originalEvent.touches[0].screenX;
+				this.data.pagey.end = e.originalEvent.touches[0].screenY;
+			} else {
+				this.data.pagex.end = e.targetTouches[0].screenX;
+				this.data.pagey.end = e.targetTouches[0].screenY;
+			}
+
+		} else {
+			this.data.pagex.end = e.pageX;
+			this.data.pagey.end = e.pageY;
+		}
+		
+		change.x = this.data.pagex.start - this.data.pagex.end;
+		change.y = this.data.pagey.start - this.data.pagey.end;
+		
+		this.data.pos.end = {x:this._el.drag.offsetLeft, y:this._el.drag.offsetTop};
+		
+		this.data.new_pos.x = -(change.x - this.data.pos.start.x);
+		this.data.new_pos.y = -(change.y - this.data.pos.start.y );
+		
+		if (this.options.enable.x && ( Math.abs(change.x) > Math.abs(change.y) ) ) {
+			e.preventDefault();
+			this._el.move.style.left = this.data.new_pos.x + "px";
+		}
+		
+		if (this.options.enable.y && ( Math.abs(change.y) > Math.abs(change.y) ) ) {
+			e.preventDefault();
+			this._el.move.style.top = this.data.new_pos.y + "px";
+		}
+		
+		this.fire("dragmove", this.data);
+	},
+	
+	_momentum: function() {
+		var pos_adjust = {
+				x: 0,
+				y: 0,
+				time: 0
+			},
+			pos_change = {
+				x: 0,
+				y: 0,
+				time: 0
+			},
+			swipe_detect = {
+				x: false,
+				y: false
+			},
+			swipe = false,
+			swipe_direction = "";
+		
+		
+		this.data.direction = null;
+		
+		pos_adjust.time = (new Date().getTime() - this.data.time.start) * 10;
+		pos_change.time = (new Date().getTime() - this.data.time.start) * 10;
+		
+		pos_change.x = this.options.momentum_multiplier * (Math.abs(this.data.pagex.end) - Math.abs(this.data.pagex.start));
+		pos_change.y = this.options.momentum_multiplier * (Math.abs(this.data.pagey.end) - Math.abs(this.data.pagey.start));
+		
+		pos_adjust.x = Math.round(pos_change.x / pos_change.time);
+		pos_adjust.y = Math.round(pos_change.y / pos_change.time);
+		
+		this.data.new_pos.x = Math.min(this.data.new_pos.x + pos_adjust.x);
+		this.data.new_pos.y = Math.min(this.data.new_pos.y + pos_adjust.y);
+		
+		if (!this.options.enable.x) {
+			this.data.new_pos.x = this.data.pos.start.x;
+		} else if (this.options.constraint.left && this.data.new_pos.x > this.options.constraint.left) {
+			this.data.new_pos.x = this.options.constraint.left;
+		}
+		
+		if (!this.options.enable.y) {
+			this.data.new_pos.y = this.data.pos.start.y;
+		} else if (this.data.new_pos.y < 0) {
+			this.data.new_pos.y = 0;
+		}
+		
+		// Detect Swipe
+		if (pos_change.time < 2000) {
+			swipe = true;
+		}
+		
+		
+		if (this.options.enable.x && this.options.enable.y) {
+			if (Math.abs(pos_change.x) > Math.abs(pos_change.y)) {
+				swipe_detect.x = true;
+			} else {
+				swipe_detect.y = true;
+			}
+		} else if (this.options.enable.x) {
+			if (Math.abs(pos_change.x) > Math.abs(pos_change.y)) {
+				swipe_detect.x = true;
+			}
+		} else {
+			if (Math.abs(pos_change.y) > Math.abs(pos_change.x)) {
+				swipe_detect.y = true;
+			}
+		}
+		
+		// Detect Direction and long swipe
+		if (swipe_detect.x) {
+			
+			// Long Swipe
+			if (Math.abs(pos_change.x) > (this._el.drag.offsetWidth/2)) {
+				swipe = true;
+			}
+			
+			if (Math.abs(pos_change.x) > 10000) {
+				this.data.direction = "left";
+				if (pos_change.x > 0) {
+					this.data.direction = "right";
+				}
+			}
+		}
+		
+		if (swipe_detect.y) {
+			
+			// Long Swipe
+			if (Math.abs(pos_change.y) > (this._el.drag.offsetHeight/2)) {
+				swipe = true;
+			}
+			
+			if (Math.abs(pos_change.y) > 10000) {
+				this.data.direction = "up";
+				if (pos_change.y > 0) {
+					this.data.direction = "down";
+				}
+			}
+		}
+		
+		if (pos_change.time < 1000 ) {
+			
+		} else {
+			this._animateMomentum();
+		}
+		
+		if (swipe && this.data.direction) {
+			this.fire("swipe_" + this.data.direction, this.data);
+		} else if (this.data.direction) {
+			this.fire("swipe_nodirection", this.data);
+		} else if (this.options.snap) {
+			this.animator.stop();
+			
+			this.animator = TL.Animate(this._el.move, {
+				top: 		this.data.pos.start.y,
+				left: 		this.data.pos.start.x,
+				duration: 	this.options.duration,
+				easing: 	TL.Ease.easeOutStrong
+			});
+		}
+		
+	},
+	
+	
+	_animateMomentum: function() {
+		var pos = {
+				x: this.data.new_pos.x,
+				y: this.data.new_pos.y
+			},
+			animate = {
+				duration: 	this.options.duration,
+				easing: 	TL.Ease.easeOutStrong
+			};
+		
+		if (this.options.enable.y) {
+			if (this.options.constraint.top || this.options.constraint.bottom) {
+				if (pos.y > this.options.constraint.bottom) {
+					pos.y = this.options.constraint.bottom;
+				} else if (pos.y < this.options.constraint.top) {
+					pos.y = this.options.constraint.top;
+				}
+			}
+			animate.top = Math.floor(pos.y) + "px";
+		}
+		
+		if (this.options.enable.x) {
+			if (this.options.constraint.left && pos.x >= this.options.constraint.left) {
+				pos.x = this.options.constraint.left;
+			}
+			if (this.options.constraint.right && pos.x < this.options.constraint.right) {
+				pos.x = this.options.constraint.right;
+			}
+
+			animate.left = Math.floor(pos.x) + "px";
+		}
+		
+		this.animator = TL.Animate(this._el.move, animate);
+		
+		this.fire("momentum", this.data);
+	}
+});
+
+
+/* **********************************************
+     Begin TL.MenuBar.js
+********************************************** */
+
+/*	TL.MenuBar
+	Draggable component to control size
+================================================== */
+
+TL.MenuBar = TL.Class.extend({
+
+	includes: [TL.Events, TL.DomMixins],
+
+	_el: {},
+
+	/*	Constructor
+	================================================== */
+	initialize: function(elem, parent_elem, options) {
+		// DOM ELEMENTS
+		this._el = {
+			parent: {},
+			container: {},
+			button_backtostart: {},
+			button_zoomin: {},
+			button_zoomout: {},
+			arrow: {},
+			line: {},
+			coverbar: {},
+			grip: {}
+		};
+
+		this.collapsed = false;
+
+		if (typeof elem === 'object') {
+			this._el.container = elem;
+		} else {
+			this._el.container = TL.Dom.get(elem);
+		}
+
+		if (parent_elem) {
+			this._el.parent = parent_elem;
+		}
+
+		//Options
+		this.options = {
+			width: 					600,
+			height: 				600,
+			duration: 				1000,
+			ease: 					TL.Ease.easeInOutQuint,
+			menubar_default_y: 		0
+		};
+
+		// Animation
+		this.animator = {};
+
+		// Merge Data and Options
+		TL.Util.mergeData(this.options, options);
+
+		this._initLayout();
+		this._initEvents();
+	},
+
+	/*	Public
+	================================================== */
+	show: function(d) {
+
+		var duration = this.options.duration;
+		if (d) {
+			duration = d;
+		}
+		/*
+		this.animator = TL.Animate(this._el.container, {
+			top: 		this.options.menubar_default_y + "px",
+			duration: 	duration,
+			easing: 	TL.Ease.easeOutStrong
+		});
+		*/
+	},
+
+	hide: function(top) {
+		/*
+		this.animator = TL.Animate(this._el.container, {
+			top: 		top,
+			duration: 	this.options.duration,
+			easing: 	TL.Ease.easeOutStrong
+		});
+		*/
+	},
+
+	toogleZoomIn: function(show) {
+		if (show) {
+      TL.DomUtil.removeClass(this._el.button_zoomin,'tl-menubar-button-inactive');
+		} else {
+      TL.DomUtil.addClass(this._el.button_zoomin,'tl-menubar-button-inactive');
+		}
+	},
+
+	toogleZoomOut: function(show) {
+		if (show) {
+      TL.DomUtil.removeClass(this._el.button_zoomout,'tl-menubar-button-inactive');
+		} else {
+      TL.DomUtil.addClass(this._el.button_zoomout,'tl-menubar-button-inactive');
+		}
+	},
+
+	setSticky: function(y) {
+		this.options.menubar_default_y = y;
+	},
+
+	/*	Color
+	================================================== */
+	setColor: function(inverted) {
+		if (inverted) {
+			this._el.container.className = 'tl-menubar tl-menubar-inverted';
+		} else {
+			this._el.container.className = 'tl-menubar';
+		}
+	},
+
+	/*	Update Display
+	================================================== */
+	updateDisplay: function(w, h, a, l) {
+		this._updateDisplay(w, h, a, l);
+	},
+
+
+	/*	Events
+	================================================== */
+	_onButtonZoomIn: function(e) {
+		this.fire("zoom_in", e);
+	},
+
+	_onButtonZoomOut: function(e) {
+		this.fire("zoom_out", e);
+	},
+
+	_onButtonBackToStart: function(e) {
+		this.fire("back_to_start", e);
+	},
+
+
+	/*	Private Methods
+	================================================== */
+	_initLayout: function () {
+
+		// Create Layout
+		this._el.button_zoomin 							= TL.Dom.create('span', 'tl-menubar-button', this._el.container);
+		this._el.button_zoomout 						= TL.Dom.create('span', 'tl-menubar-button', this._el.container);
+		this._el.button_backtostart 					= TL.Dom.create('span', 'tl-menubar-button', this._el.container);
+
+		if (TL.Browser.mobile) {
+			this._el.container.setAttribute("ontouchstart"," ");
+		}
+
+		this._el.button_backtostart.innerHTML		= "<span class='tl-icon-goback'></span>";
+		this._el.button_zoomin.innerHTML			= "<span class='tl-icon-zoom-in'></span>";
+		this._el.button_zoomout.innerHTML			= "<span class='tl-icon-zoom-out'></span>";
+
+
+	},
+
+	_initEvents: function () {
+		TL.DomEvent.addListener(this._el.button_backtostart, 'click', this._onButtonBackToStart, this);
+		TL.DomEvent.addListener(this._el.button_zoomin, 'click', this._onButtonZoomIn, this);
+		TL.DomEvent.addListener(this._el.button_zoomout, 'click', this._onButtonZoomOut, this);
+	},
+
+	// Update Display
+	_updateDisplay: function(width, height, animate) {
+
+		if (width) {
+			this.options.width = width;
+		}
+		if (height) {
+			this.options.height = height;
+		}
+	}
+
+});
+
+
+/* **********************************************
+     Begin TL.Message.js
+********************************************** */
+
+/*	TL.Message
+	
+================================================== */
+ 
+TL.Message = TL.Class.extend({
+	
+	includes: [TL.Events, TL.DomMixins, TL.I18NMixins],
+	
+	_el: {},
+	
+	/*	Constructor
+	================================================== */
+	initialize: function(data, options, add_to_container) {
+		// DOM ELEMENTS
+		this._el = {
+			parent: {},
+			container: {},
+			message_container: {},
+			loading_icon: {},
+			message: {}
+		};
+	
+		//Options
+		this.options = {
+			width: 					600,
+			height: 				600,
+			message_class: 			"tl-message",
+			message_icon_class: 	"tl-loading-icon"
+		};
+		
+		this._add_to_container = add_to_container || {}; // save ref
+		
+		// Merge Data and Options
+		TL.Util.mergeData(this.data, data);
+		TL.Util.mergeData(this.options, options);
+		
+		this._el.container = TL.Dom.create("div", this.options.message_class);
+		
+		if (add_to_container) {
+			add_to_container.appendChild(this._el.container);
+			this._el.parent = add_to_container;
+		}
+		
+		// Animation
+		this.animator = {};
+				
+		this._initLayout();
+		this._initEvents();
+	},
+	
+	/*	Public
+	================================================== */
+	updateMessage: function(t) {
+		this._updateMessage(t);
+	},
+	
+	
+	/*	Update Display
+	================================================== */
+	updateDisplay: function(w, h) {
+		this._updateDisplay(w, h);
+	},
+	
+	_updateMessage: function(t) {
+		if (!t) {
+			this._el.message.innerHTML = this._('loading');
+		} else {
+			this._el.message.innerHTML = t;
+		}
+		
+		// Re-add to DOM?
+		if(!this._el.parent.atrributes && this._add_to_container.attributes) {
+		    this._add_to_container.appendChild(this._el.container);
+		    this._el.parent = this._add_to_container;
+		}
+	},
+	
+
+	/*	Events
+	================================================== */
+
+	
+	_onMouseClick: function() {
+		this.fire("clicked", this.options);
+	},
+	
+	_onRemove: function() {
+	    this._el.parent = {};
+	},
+
+
+	/*	Private Methods
+	================================================== */
+	_initLayout: function () {
+		
+		// Create Layout
+		this._el.message_container = TL.Dom.create("div", "tl-message-container", this._el.container);
+		this._el.loading_icon = TL.Dom.create("div", this.options.message_icon_class, this._el.message_container);
+		this._el.message = TL.Dom.create("div", "tl-message-content", this._el.message_container);
+		
+		this._updateMessage();
+		
+	},
+	
+	_initEvents: function () {
+		TL.DomEvent.addListener(this._el.container, 'click', this._onMouseClick, this);
+		TL.DomEvent.addListener(this, 'removed', this._onRemove, this);
+	},
+	
+	// Update Display
+	_updateDisplay: function(width, height, animate) {
+		
+	}
+	
+});
+
+/* **********************************************
+     Begin TL.MediaType.js
+********************************************** */
+
+/*	TL.MediaType
+	Determines the type of media the url string is.
+	returns an object with .type and .id
+	You can add new media types by adding a regex
+	to match and the media class name to use to
+	render the media
+	
+	The image_only parameter indicates that the
+	call only wants an image-based media type
+	that can be resolved to an image URL.
+
+	TODO
+	Allow array so a slideshow can be a mediatype
+================================================== */
+TL.MediaType = function(m, image_only) {
+	var media = {},
+		media_types = 	[
+			{
+				type: 		"youtube",
+				name: 		"YouTube",
+				match_str: 	"^(https?:)?\/*(www.)?youtube|youtu\.be",
+				cls: 		TL.Media.YouTube
+			},
+			{
+				type: 		"vimeo",
+				name: 		"Vimeo",
+				match_str: 	"^(https?:)?\/*(player.)?vimeo\.com",
+				cls: 		TL.Media.Vimeo
+			},
+			{
+				type: 		"dailymotion",
+				name: 		"DailyMotion",
+				match_str: 	"^(https?:)?\/*(www.)?dailymotion\.com",
+				cls: 		TL.Media.DailyMotion
+			},
+			{
+				type: 		"vine",
+				name: 		"Vine",
+				match_str: 	"^(https?:)?\/*(www.)?vine\.co",
+				cls: 		TL.Media.Vine
+			},
+			{
+				type: 		"soundcloud",
+				name: 		"SoundCloud",
+				match_str: 	"^(https?:)?\/*(player.)?soundcloud\.com",
+				cls: 		TL.Media.SoundCloud
+			},
+			{
+				type: 		"twitter",
+				name: 		"Twitter",
+				match_str: 	"^(https?:)?\/*(www.)?twitter\.com",
+				cls: 		TL.Media.Twitter
+			},
+			{
+				type: 		"twitterembed",
+				name: 		"TwitterEmbed",
+				match_str: 	"<blockquote class=\"twitter-tweet\"",
+				cls: 		TL.Media.TwitterEmbed
+			},
+			{
+				type: 		"googlemaps",
+				name: 		"Google Map",
+				match_str: 	/google.+?\/maps\/@([-\d.]+),([-\d.]+),((?:[-\d.]+[zmayht],?)*)|google.+?\/maps\/search\/([\w\W]+)\/@([-\d.]+),([-\d.]+),((?:[-\d.]+[zmayht],?)*)|google.+?\/maps\/place\/([\w\W]+)\/@([-\d.]+),([-\d.]+),((?:[-\d.]+[zmayht],?)*)|google.+?\/maps\/dir\/([\w\W]+)\/([\w\W]+)\/@([-\d.]+),([-\d.]+),((?:[-\d.]+[zmayht],?)*)/,
+				cls: 		TL.Media.GoogleMap
+			},
+			{
+				type: 		"googleplus",
+				name: 		"Google+",
+				match_str: 	"^(https?:)?\/*plus.google",
+				cls: 		TL.Media.GooglePlus
+			},
+			{
+				type: 		"flickr",
+				name: 		"Flickr",
+				match_str: 	"^(https?:)?\/*(www.)?flickr.com\/photos",
+				cls: 		TL.Media.Flickr
+			},
+			{
+				type: 		"flickr",
+				name: 		"Flickr",
+				match_str: 	"^(https?:\/\/)?flic.kr\/.*",
+				cls: 		TL.Media.Flickr
+			},
+			{
+				type: 		"instagram",
+				name: 		"Instagram",
+				match_str: 	/^(https?:)?\/*(www.)?(instagr.am|^(https?:)?\/*(www.)?instagram.com)\/p\//,
+				cls: 		TL.Media.Instagram
+			},
+			{
+				type: 		"profile",
+				name: 		"Profile",
+				match_str: 	/^(https?:)?\/*(www.)?instagr.am\/[a-zA-Z0-9]{2,}|^(https?:)?\/*(www.)?instagram.com\/[a-zA-Z0-9]{2,}/,
+				cls: 		TL.Media.Profile
+			},
+			{
+			    type:       "documentcloud",
+			    name:       "Document Cloud",
+			    match_str:  /documentcloud.org\//,
+			    cls:        TL.Media.DocumentCloud
+			},
+			{
+				type: 		"image",
+				name: 		"Image",
+				match_str: 	/(jpg|jpeg|png|gif|svg)(\?.*)?$/i,
+				cls: 		TL.Media.Image
+			},
+			{
+				type: 		"imgur",
+				name: 		"Imgur",
+				match_str: 	/^.*imgur.com\/.+$/i,
+				cls: 		TL.Media.Imgur
+			},
+			{
+				type: 		"googledocs",
+				name: 		"Google Doc",
+				match_str: 	"^(https?:)?\/*[^.]*.google.com\/[^\/]*\/d\/[^\/]*\/[^\/]*\?usp=sharing|^(https?:)?\/*drive.google.com\/open\?id=[^\&]*\&authuser=0|^(https?:)?\/*drive.google.com\/open\?id=[^\&]*|^(https?:)?\/*[^.]*.googledrive.com\/host\/[^\/]*\/",
+				cls: 		TL.Media.GoogleDoc
+			},
+			{
+				type: 		"pdf",
+				name: 		"PDF",
+				match_str: 	/^.*\.pdf(\?.*)?(\#.*)?/,
+				cls: 		TL.Media.PDF
+			},
+			{
+				type: 		"wikipedia",
+				name: 		"Wikipedia",
+				match_str: 	"^(https?:)?\/*(www.)?wikipedia\.org|^(https?:)?\/*([a-z][a-z].)?wikipedia\.org",
+				cls: 		TL.Media.Wikipedia
+			},
+			{
+				type: 		"spotify",
+				name: 		"spotify",
+				match_str: 	"spotify",
+				cls: 		TL.Media.Spotify
+			},
+			{
+				type: 		"iframe",
+				name: 		"iFrame",
+				match_str: 	"iframe",
+				cls: 		TL.Media.IFrame
+			},
+			{
+				type: 		"storify",
+				name: 		"Storify",
+				match_str: 	"storify",
+				cls: 		TL.Media.Storify
+			},
+			{
+				type: 		"blockquote",
+				name: 		"Quote",
+				match_str: 	"blockquote",
+				cls: 		TL.Media.Blockquote
+			},
+			// {
+			// 	type: 		"website",
+			// 	name: 		"Website",
+			// 	match_str: 	"https?://",
+			// 	cls: 		TL.Media.Website
+			// },
+			{
+				type: 		"imageblank",
+				name: 		"Imageblank",
+				match_str: 	"",
+				cls: 		TL.Media.Image
+			}
+		];
+	
+	if(image_only) {
+        if (m instanceof Array) {
+            return false;
+        }
+        for (var i = 0; i < media_types.length; i++) {
+            switch(media_types[i].type) {
+                case "flickr":
+                case "image":
+                case "imgur":
+                case "instagram":
+                    if (m.url.match(media_types[i].match_str)) {
+                        media = media_types[i];
+                        return media;
+                    }
+                    break;
+                
+                default:
+                    break;            
+            }
+        }        
+	
+	} else {
+        for (var i = 0; i < media_types.length; i++) {
+            if (m instanceof Array) {
+                return media = {
+                    type: 		"slider",
+                    cls: 		TL.Media.Slider
+                };
+            } else if (m.url.match(media_types[i].match_str)) {
+                media 		= media_types[i];
+                return media;
+            }
+        };
+    }
+
+	return false;
+
 }
 
 
 /* **********************************************
-     Begin VMM.Timeline.DataObj.js
+     Begin TL.Media.js
 ********************************************** */
 
-/*	VMM.Timeline.DataObj.js
-    TIMELINE SOURCE DATA PROCESSOR
+/*	TL.Media
+	Main media template for media assets.
+	Takes a data object and populates a dom object
+================================================== */
+// TODO add link
+
+TL.Media = TL.Class.extend({
+
+	includes: [TL.Events, TL.I18NMixins],
+
+	_el: {},
+
+	/*	Constructor
+	================================================== */
+	initialize: function(data, options, add_to_container) {
+		// DOM ELEMENTS
+		this._el = {
+			container: {},
+			content_container: {},
+			content: {},
+			content_item: {},
+			content_link: {},
+			caption: null,
+			credit: null,
+			parent: {},
+			link: null
+		};
+
+		// Player (If Needed)
+		this.player = null;
+
+		// Timer (If Needed)
+		this.timer = null;
+		this.load_timer = null;
+
+		// Message
+		this.message = null;
+
+		// Media ID
+		this.media_id = null;
+
+		// State
+		this._state = {
+			loaded: false,
+			show_meta: false,
+			media_loaded: false
+		};
+
+		// Data
+		this.data = {
+			unique_id: 			null,
+			url: 				null,
+			credit:				null,
+			caption:			null,
+			credit_alternate: 	null,
+			caption_alternate: 	null,
+			link: 				null,
+			link_target: 		null
+		};
+
+		//Options
+		this.options = {
+			api_key_flickr: 		"f2cc870b4d233dd0a5bfe73fd0d64ef0",
+			api_key_googlemaps: 	"AIzaSyB9dW8e_iRrATFa8g24qB6BDBGdkrLDZYI",
+			api_key_embedly: 		"", // ae2da610d1454b66abdf2e6a4c44026d
+			credit_height: 			0,
+			caption_height: 		0,
+			background:             0   // is background media (for slide)
+		};
+
+		this.animator = {};
+
+		// Merge Data and Options
+		TL.Util.mergeData(this.options, options);
+		TL.Util.mergeData(this.data, data);
+
+        // Don't create DOM elements if this is background media
+        if(!this.options.background) {
+            this._el.container = TL.Dom.create("div", "tl-media");
+
+            if (this.data.unique_id) {
+                this._el.container.id = this.data.unique_id;
+            }
+
+            this._initLayout();
+
+            if (add_to_container) {
+                add_to_container.appendChild(this._el.container);
+                this._el.parent = add_to_container;
+            }
+        }
+	},
+
+	loadMedia: function() {
+		var self = this;
+
+		if (!this._state.loaded) {
+			try {
+				this.load_timer = setTimeout(function() {
+		            self.loadingMessage();
+					self._loadMedia();
+					// self._state.loaded = true; handled in onLoaded()
+					self._updateDisplay();
+				}, 1200);
+			} catch (e) {
+				trace("Error loading media for ", this._media);
+				trace(e);
+			}
+		}
+	},
+
+    _updateMessage: function(msg) {
+        if(this.message) {
+            this.message.updateMessage(msg);
+        }    
+    },
+    
+	loadingMessage: function() {
+	    this._updateMessage(this._('loading') + " " + this.options.media_name);
+	},
+
+	errorMessage: function(msg) {
+		if (msg) {
+			msg = this._('error') + ": " + msg;
+		} else {
+			msg = this._('error');
+		}
+		this._updateMessage(msg);
+	},
+
+	updateMediaDisplay: function(layout) {
+		if (this._state.loaded && !this.options.background) {
+
+			if (TL.Browser.mobile) {
+				this._el.content_item.style.maxHeight = (this.options.height/2) + "px";
+			} else {
+				this._el.content_item.style.maxHeight = this.options.height - this.options.credit_height - this.options.caption_height - 30 + "px";
+			}
+
+			//this._el.content_item.style.maxWidth = this.options.width + "px";
+			this._el.container.style.maxWidth = this.options.width + "px";
+			// Fix for max-width issues in Firefox
+			if (TL.Browser.firefox) {
+				if (this._el.content_item.offsetWidth > this._el.content_item.offsetHeight) {
+					//this._el.content_item.style.width = "100%";
+				}
+			}
+
+			this._updateMediaDisplay(layout);
+
+			if (this._state.media_loaded) {
+				if (this._el.credit) {
+					this._el.credit.style.width		= this._el.content_item.offsetWidth + "px";
+				}
+				if (this._el.caption) {
+					this._el.caption.style.width		= this._el.content_item.offsetWidth + "px";
+				}
+			}
+
+		}
+	},
+
+	/*	Media Specific
+	================================================== */
+    _loadMedia: function() {        
+        // All overrides must call this.onLoaded() to set state
+        this.onLoaded();
+    },
+
+    _updateMediaDisplay: function(l) {
+        //this._el.content_item.style.maxHeight = (this.options.height - this.options.credit_height - this.options.caption_height - 16) + "px";
+        if(TL.Browser.firefox) {
+            this._el.content_item.style.maxWidth = this.options.width + "px";
+            this._el.content_item.style.width = "auto";
+        }
+    },
+
+    _getMeta: function() {
+
+    },
+
+    _getImageURL: function(w, h) {
+        // Image-based media types should return <img>-compatible src url
+        return "";
+    },
+    
+	/*	Public
+	================================================== */
+	show: function() {
+
+	},
+
+	hide: function() {
+
+	},
+
+	addTo: function(container) {
+		container.appendChild(this._el.container);
+		this.onAdd();
+	},
+
+	removeFrom: function(container) {
+		container.removeChild(this._el.container);
+		this.onRemove();
+	},
+
+    getImageURL: function(w, h) {
+        return this._getImageURL(w, h);
+    },
+    
+	// Update Display
+	updateDisplay: function(w, h, l) {
+		this._updateDisplay(w, h, l);
+	},
+
+	stopMedia: function() {
+		this._stopMedia();
+	},
+
+	loadErrorDisplay: function(message) {
+		try {
+			this._el.content.removeChild(this._el.content_item);
+		} catch(e) {
+			// if this._el.content_item isn't a child of this._el then just keep truckin
+		}
+		this._el.content_item	= TL.Dom.create("div", "tl-media-item tl-media-loaderror", this._el.content);
+		this._el.content_item.innerHTML = "<div class='tl-icon-" + this.options.media_type + "'></div><p>" + message + "</p>";
+
+		// After Loaded
+		this.onLoaded(true);
+	},
+
+	/*	Events
+	================================================== */
+	onLoaded: function(error) {
+		this._state.loaded = true;
+		this.fire("loaded", this.data);
+		if (this.message) {
+			this.message.hide();
+		}
+		if (!(error || this.options.background)) {
+			this.showMeta();
+		}
+		this.updateDisplay();
+	},
+
+	onMediaLoaded: function(e) {
+		this._state.media_loaded = true;
+		this.fire("media_loaded", this.data);
+		if (this._el.credit) {
+			this._el.credit.style.width		= this._el.content_item.offsetWidth + "px";
+		}
+		if (this._el.caption) {
+			this._el.caption.style.width		= this._el.content_item.offsetWidth + "px";
+		}
+	},
+
+	showMeta: function(credit, caption) {
+		this._state.show_meta = true;
+		// Credit
+		if (this.data.credit && this.data.credit != "") {
+			this._el.credit					= TL.Dom.create("div", "tl-credit", this._el.content_container);
+			this._el.credit.innerHTML		= this.options.autolink == true ? TL.Util.linkify(this.data.credit) : this.data.credit;
+			this.options.credit_height 		= this._el.credit.offsetHeight;
+		}
+
+		// Caption
+		if (this.data.caption && this.data.caption != "") {
+			this._el.caption				= TL.Dom.create("div", "tl-caption", this._el.content_container);
+			this._el.caption.innerHTML		= this.options.autolink == true ? TL.Util.linkify(this.data.caption) : this.data.caption;
+			this.options.caption_height 	= this._el.caption.offsetHeight;
+		}
+
+		if (!this.data.caption || !this.data.credit) {
+			this.getMeta();
+		}
+
+	},
+
+	getMeta: function() {
+		this._getMeta();
+	},
+
+	updateMeta: function() {
+		if (!this.data.credit && this.data.credit_alternate) {
+			this._el.credit					= TL.Dom.create("div", "tl-credit", this._el.content_container);
+			this._el.credit.innerHTML		= this.data.credit_alternate;
+			this.options.credit_height 		= this._el.credit.offsetHeight;
+		}
+
+		if (!this.data.caption && this.data.caption_alternate) {
+			this._el.caption				= TL.Dom.create("div", "tl-caption", this._el.content_container);
+			this._el.caption.innerHTML		= this.data.caption_alternate;
+			this.options.caption_height 	= this._el.caption.offsetHeight;
+		}
+
+		this.updateDisplay();
+	},
+
+	onAdd: function() {
+		this.fire("added", this.data);
+	},
+
+	onRemove: function() {
+		this.fire("removed", this.data);
+	},
+
+	/*	Private Methods
+	================================================== */
+	_initLayout: function () {
+
+		// Message
+		this.message = new TL.Message({}, this.options);
+		this.message.addTo(this._el.container);
+
+		// Create Layout
+		this._el.content_container = TL.Dom.create("div", "tl-media-content-container", this._el.container);
+
+		// Link
+		if (this.data.link && this.data.link != "") {
+
+			this._el.link = TL.Dom.create("a", "tl-media-link", this._el.content_container);
+			this._el.link.href = this.data.link;
+			if (this.data.link_target && this.data.link_target != "") {
+				this._el.link.target = this.data.link_target;
+			} else {
+				this._el.link.target = "_blank";
+			}
+
+			this._el.content = TL.Dom.create("div", "tl-media-content", this._el.link);
+
+		} else {
+			this._el.content = TL.Dom.create("div", "tl-media-content", this._el.content_container);
+		}
+
+
+	},
+
+	// Update Display
+	_updateDisplay: function(w, h, l) {
+		if (w) {
+			this.options.width = w;
+
+		}
+		//this._el.container.style.width = this.options.width + "px";
+		if (h) {
+			this.options.height = h;
+		}
+
+		if (l) {
+			this.options.layout = l;
+		}
+
+		if (this._el.credit) {
+			this.options.credit_height 		= this._el.credit.offsetHeight;
+		}
+		if (this._el.caption) {
+			this.options.caption_height 	= this._el.caption.offsetHeight + 5;
+		}
+
+		this.updateMediaDisplay(this.options.layout);
+
+	},
+
+	_stopMedia: function() {
+
+	}
+
+});
+
+
+/* **********************************************
+     Begin TL.Media.Blockquote.js
+********************************************** */
+
+/*	TL.Media.Blockquote
 ================================================== */
 
-if (typeof VMM.Timeline !== 'undefined' && typeof VMM.Timeline.DataObj == 'undefined') {
-	VMM.Timeline.DataObj = {
-		data_obj: {},
-		model_array: [],
-		getData: function (raw_data) {
-			VMM.Timeline.DataObj.data_obj = {};
-			VMM.fireEvent(global, VMM.Timeline.Config.events.messege, VMM.Timeline.Config.language.messages.loading_timeline);
-			if (type.of(raw_data) == "object") {
-				trace("DATA SOURCE: JSON OBJECT");
-				VMM.Timeline.DataObj.parseJSON(raw_data);
-			} else if (type.of(raw_data) == "string") {
-				if (raw_data.match("%23")) {
-					trace("DATA SOURCE: TWITTER SEARCH");
-					VMM.Timeline.DataObj.model.tweets.getData("%23medill");
-				} else if (	raw_data.match("spreadsheet") ) {
-					trace("DATA SOURCE: GOOGLE SPREADSHEET");
-					VMM.Timeline.DataObj.model.googlespreadsheet.getData(raw_data);
-				} else if (raw_data.match("storify.com")) {
-					trace("DATA SOURCE: STORIFY");
-					VMM.Timeline.DataObj.model.storify.getData(raw_data);
-					//http://api.storify.com/v1/stories/number10gov/g8-and-nato-chicago-summit
-				} else if (raw_data.match("\.jsonp")) {
-					trace("DATA SOURCE: JSONP");
-					LoadLib.js(raw_data, VMM.Timeline.DataObj.onJSONPLoaded);
-				} else {
-					trace("DATA SOURCE: JSON");
-					var req = "";
-					if (raw_data.indexOf("?") > -1) {
-						req = raw_data + "&callback=onJSONP_Data";
-					} else {
-						req = raw_data + "?callback=onJSONP_Data";
-					}
-					VMM.getJSON(req, VMM.Timeline.DataObj.parseJSON);
-				}
-			} else if (type.of(raw_data) == "html") {
-				trace("DATA SOURCE: HTML");
-				VMM.Timeline.DataObj.parseHTML(raw_data);
-			} else {
-				trace("DATA SOURCE: UNKNOWN");
+TL.Media.Blockquote = TL.Media.extend({
+	
+	includes: [TL.Events],
+	
+	/*	Load the media
+	================================================== */
+	_loadMedia: function() {		
+		// Create Dom element
+		this._el.content_item	= TL.Dom.create("div", "tl-media-item tl-media-blockquote", this._el.content);
+		this._el.content_container.className = "tl-media-content-container tl-media-content-container-text";
+		
+		// Get Media ID
+		this.media_id = this.data.url;
+		
+		// API Call
+		this._el.content_item.innerHTML = this.media_id;
+		
+		// After Loaded
+		this.onLoaded();
+	},
+	
+	updateMediaDisplay: function() {
+		
+	},
+	
+	_updateMediaDisplay: function() {
+		
+	}
+
+	
+});
+
+
+/* **********************************************
+     Begin TL.Media.DailyMotion.js
+********************************************** */
+
+/*	TL.Media.DailyMotion
+================================================== */
+
+TL.Media.DailyMotion = TL.Media.extend({
+
+	includes: [TL.Events],
+
+	/*	Load the media
+	================================================== */
+	_loadMedia: function() {
+		var api_url,
+			self = this;
+
+		// Create Dom element
+		this._el.content_item	= TL.Dom.create("div", "tl-media-item tl-media-iframe tl-media-dailymotion", this._el.content);
+
+		// Get Media ID
+		if (this.data.url.match("video")) {
+			this.media_id = this.data.url.split("video\/")[1].split(/[?&]/)[0];
+		} else {
+			this.media_id = this.data.url.split("embed\/")[1].split(/[?&]/)[0];
+		}
+
+		// API URL
+		api_url = "https://www.dailymotion.com/embed/video/" + this.media_id;
+
+		// API Call
+		this._el.content_item.innerHTML = "<iframe autostart='false' frameborder='0' width='100%' height='100%' src='" + api_url + "'></iframe>"
+
+		// After Loaded
+		this.onLoaded();
+	},
+
+	// Update Media Display
+	_updateMediaDisplay: function() {
+		this._el.content_item.style.height = TL.Util.ratio.r16_9({w:this._el.content_item.offsetWidth}) + "px";
+	}
+
+});
+
+
+/* **********************************************
+     Begin TL.Media.DocumentCloud.js
+********************************************** */
+
+/*	TL.Media.DocumentCloud
+================================================== */
+
+TL.Media.DocumentCloud = TL.Media.extend({
+
+	includes: [TL.Events],
+
+	/*	Load the media
+	================================================== */
+	_loadMedia: function() {
+		var self = this;
+
+		// Create Dom elements
+		this._el.content_item	= TL.Dom.create("div", "tl-media-item tl-media-documentcloud tl-media-shadow", this._el.content);
+		this._el.content_item.id = TL.Util.unique_ID(7)
+
+		// Check url
+		if(this.data.url.match(/\.html$/)) {
+		    this.data.url = this._transformURL(this.data.url);
+		} else if(!(this.data.url.match(/.(json|js)$/))) {
+		    trace("DOCUMENT CLOUD IN URL BUT INVALID SUFFIX");
+		}
+
+		// Load viewer API
+        TL.Load.js([
+					'https://assets.documentcloud.org/viewer/loader.js',
+					'https://assets.documentcloud.org/viewer/viewer.js'],
+            function() {	
+	            self.createMedia();
 			}
-			
-		},
-		
-		onJSONPLoaded: function() {
-			trace("JSONP IS LOADED");
-			VMM.fireEvent(global, VMM.Timeline.Config.events.data_ready, storyjs_jsonp_data);
-		},
-		
-		parseHTML: function (d) {
-			trace("parseHTML");
-			trace("WARNING: THIS IS STILL ALPHA AND WILL NOT WORK WITH ID's other than #timeline");
-			var _data_obj = VMM.Timeline.DataObj.data_template_obj;
-			
-			/*	Timeline start slide
-			================================================== */
-			if (VMM.Lib.find("#timeline section", "time")[0]) {
-				_data_obj.timeline.startDate = VMM.Lib.html(VMM.Lib.find("#timeline section", "time")[0]);
-				_data_obj.timeline.headline = VMM.Lib.html(VMM.Lib.find("#timeline section", "h2"));
-				_data_obj.timeline.text = VMM.Lib.html(VMM.Lib.find("#timeline section", "article"));
-				
-				var found_main_media = false;
-				
-				if (VMM.Lib.find("#timeline section", "figure img").length != 0) {
-					found_main_media = true;
-					_data_obj.timeline.asset.media = VMM.Lib.attr(VMM.Lib.find("#timeline section", "figure img"), "src");
-				} else if (VMM.Lib.find("#timeline section", "figure a").length != 0) {
-					found_main_media = true;
-					_data_obj.timeline.asset.media = VMM.Lib.attr(VMM.Lib.find("#timeline section", "figure a"), "href");
-				} else {
-					//trace("NOT FOUND");
-				}
+		);
+	},
 
-				if (found_main_media) {
-					if (VMM.Lib.find("#timeline section", "cite").length != 0) {
-						_data_obj.timeline.asset.credit = VMM.Lib.html(VMM.Lib.find("#timeline section", "cite"));
-					}
-					if (VMM.Lib.find(this, "figcaption").length != 0) {
-						_data_obj.timeline.asset.caption = VMM.Lib.html(VMM.Lib.find("#timeline section", "figcaption"));
-					}
-				}
+	// Viewer API needs js, not html
+	_transformURL: function(url) {
+        return url.replace(/(.*)\.html$/, '$1.js')
+	},
+
+	// Update Media Display
+	_updateMediaDisplay: function() {
+        this._el.content_item.style.height = this.options.height + "px";
+		//this._el.content_item.style.width = this.options.width + "px";
+	},
+
+	createMedia: function() {
+		// DocumentCloud API call
+		DV.load(this.data.url, {
+		    container: '#'+this._el.content_item.id,
+		    showSidebar: false
+		});
+		this.onLoaded();
+	},
+
+
+
+	/*	Events
+	================================================== */
+
+
+
+});
+
+
+/* **********************************************
+     Begin TL.Media.Flickr.js
+********************************************** */
+
+/*	TL.Media.Flickr
+
+================================================== */
+
+TL.Media.Flickr = TL.Media.extend({
+
+	includes: [TL.Events],
+
+	/*	Load the media
+	================================================== */
+	_loadMedia: function() {
+		var api_url,
+			self = this;
+
+		try {
+		    // Get Media ID
+		    this.establishMediaID();
+
+            // API URL
+            api_url = "https://api.flickr.com/services/rest/?method=flickr.photos.getSizes&api_key=" + this.options.api_key_flickr + "&photo_id=" + this.media_id + "&format=json&jsoncallback=?";
+
+            // API Call
+            TL.getJSON(api_url, function(d) {
+                if (d.stat == "ok") {
+                    self.sizes = d.sizes.size; // store sizes info
+
+                    if(!self.options.background) {
+                        self.createMedia();
+                    }
+
+                    self.onLoaded();
+                } else {
+                    self.loadErrorDisplay(self._("flickr_notfound_err"));
+                }
+            });
+		} catch(e) {
+		    self.loadErrorDisplay(self._(e.message_key));
+		}
+	},
+
+	establishMediaID: function() {
+		if (this.data.url.match(/flic.kr\/.+/i)) {
+			var encoded = this.data.url.split('/').slice(-1)[0];
+			this.media_id = TL.Util.base58.decode(encoded);
+		} else {
+			var marker = 'flickr.com/photos/';
+			var idx = this.data.url.indexOf(marker);
+			if (idx == -1) { throw new TL.Error("flickr_invalidurl_err"); }
+			var pos = idx + marker.length;
+			this.media_id = this.data.url.substr(pos).split("/")[1];
+		}
+	},
+
+	createMedia: function() {
+	    var self = this;
+
+		// Link
+		this._el.content_link = TL.Dom.create("a", "", this._el.content);
+		this._el.content_link.href = this.data.url;
+		this._el.content_link.target = "_blank";
+
+		// Photo
+		this._el.content_item = TL.Dom.create("img", "tl-media-item tl-media-image tl-media-flickr tl-media-shadow", this._el.content_link);
+
+		// Media Loaded Event
+		this._el.content_item.addEventListener('load', function(e) {
+			self.onMediaLoaded();
+		});
+
+		// Set Image Source
+		this._el.content_item.src = this.getImageURL(this.options.width, this.options.height);
+	},
+
+    getImageURL: function(w, h) {
+        var best_size 	= this.size_label(h),
+            source = this.sizes[this.sizes.length - 2].source;
+
+		for(var i = 0; i < this.sizes.length; i++) {
+			if (this.sizes[i].label == best_size) {
+				source = this.sizes[i].source;
 			}
-			
-			/*	Timeline Date Slides
-			================================================== */
-			VMM.Lib.each("#timeline li", function(i, elem){
-				
-				var valid_date = false;
-				
-				var _date = {
-					"type":"default",
-					"startDate":"",
-		            "headline":"",
-		            "text":"",
-		            "asset":
-		            {
-		                "media":"",
-		                "credit":"",
-		                "caption":""
-		            },
-		            "tags":"Optional"
-				};
-				
-				if (VMM.Lib.find(this, "time") != 0) {
-					
-					valid_date = true;
-					
-					_date.startDate = VMM.Lib.html(VMM.Lib.find(this, "time")[0]);
+		}
 
-					if (VMM.Lib.find(this, "time")[1]) {
-						_date.endDate = VMM.Lib.html(VMM.Lib.find(this, "time")[1]);
-					}
+		return source;
+    },
 
-					_date.headline = VMM.Lib.html(VMM.Lib.find(this, "h3"));
+	_getMeta: function() {
+		var self = this,
+		api_url;
 
-					_date.text = VMM.Lib.html(VMM.Lib.find(this, "article"));
+		// API URL
+		api_url = "https://api.flickr.com/services/rest/?method=flickr.photos.getInfo&api_key=" + this.options.api_key_flickr + "&photo_id=" + this.media_id + "&format=json&jsoncallback=?";
 
-					var found_media = false;
-					if (VMM.Lib.find(this, "figure img").length != 0) {
-						found_media = true;
-						_date.asset.media = VMM.Lib.attr(VMM.Lib.find(this, "figure img"), "src");
-					} else if (VMM.Lib.find(this, "figure a").length != 0) {
-						found_media = true;
-						_date.asset.media = VMM.Lib.attr(VMM.Lib.find(this, "figure a"), "href");
-					} else {
-						//trace("NOT FOUND");
-					}
+		// API Call
+		TL.getJSON(api_url, function(d) {
+			self.data.credit_alternate = "<a href='" + self.data.url + "' target='_blank'>" + d.photo.owner.realname + "</a>";
+			self.data.caption_alternate = d.photo.title._content + " " + d.photo.description._content;
+			self.updateMeta();
+		});
+	},
 
-					if (found_media) {
-						if (VMM.Lib.find(this, "cite").length != 0) {
-							_date.asset.credit = VMM.Lib.html(VMM.Lib.find(this, "cite"));
-						}
-						if (VMM.Lib.find(this, "figcaption").length != 0) {
-							_date.asset.caption = VMM.Lib.html(VMM.Lib.find(this, "figcaption"));
-						}
-					}
-					
-					trace(_date);
-					_data_obj.timeline.date.push(_date);
-					
-				}
-				
-			});
-			
-			VMM.fireEvent(global, VMM.Timeline.Config.events.data_ready, _data_obj);
-			
-		},
-		
-		parseJSON: function(d) {
-			trace("parseJSON");
-			if (d.timeline.type == "default") {
-				trace("DATA SOURCE: JSON STANDARD TIMELINE");
-				VMM.fireEvent(global, VMM.Timeline.Config.events.data_ready, d);
-			} else if (d.timeline.type == "twitter") {
-				trace("DATA SOURCE: JSON TWEETS");
-				VMM.Timeline.DataObj.model_Tweets.buildData(d);
-				
+	size_label: function(s) {
+		var _size = "";
+
+		if (s <= 75) {
+			if (s <= 0) {
+				_size = "Large";
 			} else {
-				trace("DATA SOURCE: UNKNOWN JSON");
-				trace(type.of(d.timeline));
+				_size = "Thumbnail";
+			}
+		} else if (s <= 180) {
+			_size = "Small";
+		} else if (s <= 240) {
+			_size = "Small 320";
+		} else if (s <= 375) {
+			_size = "Medium";
+		} else if (s <= 480) {
+			_size = "Medium 640";
+		} else if (s <= 600) {
+			_size = "Large";
+		} else {
+			_size = "Large";
+		}
+
+		return _size;
+	}
+
+
+
+});
+
+
+/* **********************************************
+     Begin TL.Media.GoogleDoc.js
+********************************************** */
+
+/*	TL.Media.GoogleDoc
+
+================================================== */
+
+TL.Media.GoogleDoc = TL.Media.extend({
+	
+	includes: [TL.Events],
+	
+	/*	Load the media
+	================================================== */
+	_loadMedia: function() {
+		var url,
+			self = this;
+		
+		// Create Dom element
+		this._el.content_item	= TL.Dom.create("div", "tl-media-item tl-media-iframe", this._el.content);
+		
+		// Get Media ID
+		if (this.data.url.match("open\?id\=")) {
+			this.media_id = this.data.url.split("open\?id\=")[1];
+			if (this.data.url.match("\&authuser\=0")) {
+				url = this.media_id.match("\&authuser\=0")[0];
 			};
-		},
+		} else if (this.data.url.match(/file\/d\/([^/]*)\/?/)) {
+			var doc_id = this.data.url.match(/file\/d\/([^/]*)\/?/)[1];
+			url = 'https://drive.google.com/file/d/' + doc_id + '/preview'
+		} else {
+			url = this.data.url;
+		}
 		
-		/*	MODEL OBJECTS 
-			New Types of Data can be formatted for the timeline here
-		================================================== */
+		// this URL makes something suitable for an img src but what if it's not an image?
+		// api_url = "http://www.googledrive.com/host/" + this.media_id + "/";
 		
-		model: {
-			
-			googlespreadsheet: {
-				extractSpreadsheetKey: function(url) {
-					var key	= VMM.Util.getUrlVars(url)["key"];
-					if (!key) {
-						if (url.match("docs.google.com/spreadsheets/d/")) {
-							var pos = url.indexOf("docs.google.com/spreadsheets/d/") + "docs.google.com/spreadsheets/d/".length;
-							var tail = url.substr(pos);
-							key = tail.split('/')[0]
-						}
-					}
-					if (!key) { key = url}
-					return key;
-				},
-				getData: function(raw) {
-					var getjsondata, key, worksheet, url, timeout, tries = 0;
-					
-					// new Google Docs URLs can specify 'key' differently. 
-					// that format doesn't seem to have a way to specify a worksheet.
-					key	= VMM.Timeline.DataObj.model.googlespreadsheet.extractSpreadsheetKey(raw);
-					worksheet = VMM.Util.getUrlVars(raw)["worksheet"];
-					if (typeof worksheet == "undefined") worksheet = "1";
-					
-					url	= "https://spreadsheets.google.com/feeds/list/" + key + "/" + worksheet + "/public/values?alt=json";
-					
-					timeout = setTimeout(function() {
-						trace("Google Docs timeout " + url);
-						trace(url);
-						if (tries < 3) {
-							VMM.fireEvent(global, VMM.Timeline.Config.events.messege, "Still waiting on Google Docs, trying again " + tries);
-							tries ++;
-							getjsondata.abort()
-							requestJsonData();
-						} else {
-							VMM.fireEvent(global, VMM.Timeline.Config.events.messege, "Google Docs is not responding");
-						}
-					}, 16000);
-					
-					function requestJsonData() {
-						getjsondata = VMM.getJSON(url, function(d) {
-							clearTimeout(timeout);
-							VMM.Timeline.DataObj.model.googlespreadsheet.buildData(d);
-						})
-							.error(function(jqXHR, textStatus, errorThrown) {
-								if (jqXHR.status == 400) {
-									VMM.fireEvent(global, VMM.Timeline.Config.events.messege, "Error reading Google spreadsheet. Check the URL and make sure it's published to the web.");
-									clearTimeout(timeout);
-									return;
-								}
-								trace("Google Docs ERROR");
-								trace("Google Docs ERROR: " + textStatus + " " + jqXHR.responseText);
-							})
-							.success(function(d) {
-								clearTimeout(timeout);
-							});
-					}
-					
-					requestJsonData();
-				},
-				
-				buildData: function(d) {
-					var data_obj	= VMM.Timeline.DataObj.data_template_obj,
-						is_valid	= false;
-					
-					VMM.fireEvent(global, VMM.Timeline.Config.events.messege, "Parsing Google Doc Data");
+		this._el.content_item.innerHTML	=	"<iframe class='doc' frameborder='0' width='100%' height='100%' src='" + url + "'></iframe>";
+		
+		// After Loaded
+		this.onLoaded();
+	},
+	
+	// Update Media Display
+	_updateMediaDisplay: function() {
+		this._el.content_item.style.height = this.options.height + "px";
+	}
 
-					function getGVar(v) {
-						if (typeof v != 'undefined') {
-							return v.$t;
-						} else {
-							return "";
-						}
-					}
-					if (typeof d.feed.entry == 'undefined') {
-						VMM.fireEvent(global, VMM.Timeline.Config.events.messege, "Error parsing spreadsheet. Make sure you have no blank rows and that the headers have not been changed.");
+	
+});
+
+
+/* **********************************************
+     Begin TL.Media.GooglePlus.js
+********************************************** */
+
+/*	TL.Media.GooglePlus
+================================================== */
+
+TL.Media.GooglePlus = TL.Media.extend({
+	
+	includes: [TL.Events],
+	
+	/*	Load the media
+	================================================== */
+	_loadMedia: function() {
+		var api_url,
+			self = this;
+		
+		// Create Dom element
+		this._el.content_item	= TL.Dom.create("div", "tl-media-item tl-media-googleplus", this._el.content);
+		
+		// Get Media ID
+		this.media_id = this.data.url;
+		
+		// API URL
+		api_url = this.media_id;
+		
+		// API Call
+		this._el.content_item.innerHTML = "<iframe frameborder='0' width='100%' height='100%' src='" + api_url + "'></iframe>"		
+		
+		// After Loaded
+		this.onLoaded();
+	},
+	
+	// Update Media Display
+	_updateMediaDisplay: function() {
+		this._el.content_item.style.height = this.options.height + "px";
+	}
+
+	
+});
+
+
+/* **********************************************
+     Begin TL.Media.IFrame.js
+********************************************** */
+
+/*	TL.Media.IFrame
+================================================== */
+
+TL.Media.IFrame = TL.Media.extend({
+	
+	includes: [TL.Events],
+	
+	/*	Load the media
+	================================================== */
+	_loadMedia: function() {
+		var api_url,
+			self = this;
+				
+		// Create Dom element
+		this._el.content_item	= TL.Dom.create("div", "tl-media-item tl-media-iframe", this._el.content);
+		
+		// Get Media ID
+		this.media_id = this.data.url;
+		
+		// API URL
+		api_url = this.media_id;
+		
+		// API Call
+		this._el.content_item.innerHTML = api_url;
+		
+		// After Loaded
+		this.onLoaded();
+	},
+	
+	// Update Media Display
+	_updateMediaDisplay: function() {
+		this._el.content_item.style.height = this.options.height + "px";
+	}
+	
+});
+
+
+/* **********************************************
+     Begin TL.Media.Image.js
+********************************************** */
+
+/*	TL.Media.Image
+	Produces image assets.
+	Takes a data object and populates a dom object
+================================================== */
+
+TL.Media.Image = TL.Media.extend({
+
+	includes: [TL.Events],
+
+	/*	Load the media
+	================================================== */
+	_loadMedia: function() {
+		// Loading Message
+		this.loadingMessage();
+
+        // Create media?
+        if(!this.options.background) {
+            this.createMedia();
+        }
+        
+        // After loaded
+		this.onLoaded();
+	},
+
+    createMedia: function() {
+        var self = this,
+            image_class = "tl-media-item tl-media-image tl-media-shadow";
+        
+		if (this.data.url.match(/.png(\?.*)?$/) || this.data.url.match(/.svg(\?.*)?$/)) {
+			image_class = "tl-media-item tl-media-image"
+		}
+		
+ 		// Link
+		if (this.data.link) {
+			this._el.content_link 				= TL.Dom.create("a", "", this._el.content);
+			this._el.content_link.href 			= this.data.link;
+			this._el.content_link.target 		= "_blank";
+			this._el.content_item				= TL.Dom.create("img", image_class, this._el.content_link);
+		} else {
+			this._el.content_item				= TL.Dom.create("img", image_class, this._el.content);
+		}
+		
+		// Media Loaded Event
+		this._el.content_item.addEventListener('load', function(e) {
+			self.onMediaLoaded();
+		});
+
+		this._el.content_item.src			= this.getImageURL();
+    },
+        
+    getImageURL: function(w, h) {
+        return TL.Util.transformImageURL(this.data.url);
+    },
+    
+	_updateMediaDisplay: function(layout) {
+		if(TL.Browser.firefox) {
+			//this._el.content_item.style.maxWidth = (this.options.width/2) - 40 + "px";
+			this._el.content_item.style.width = "auto";
+		}
+	}
+
+});
+
+
+/* **********************************************
+     Begin TL.Media.Imgur.js
+********************************************** */
+
+/*	TL.Media.Flickr
+
+================================================== */
+
+TL.Media.Imgur = TL.Media.extend({
+
+	includes: [TL.Events],
+
+	/*	Load the media
+	================================================== */
+	_loadMedia: function() {
+		try {
+		    this.media_id = this.data.url.split('/').slice(-1)[0];
+
+            if(!this.options.background) {
+                this.createMedia();
+            }
+
+			// After Loaded
+			this.onLoaded();
+
+		} catch(e) {
+		    this.loadErrorDisplay(this._("imgur_invalidurl_err"));
+		}
+	},
+
+	createMedia: function() {
+	    var self = this;
+
+		// Link
+		this._el.content_link 				= TL.Dom.create("a", "", this._el.content);
+		this._el.content_link.href 			= this.data.url;
+		this._el.content_link.target 		= "_blank";
+
+		// Photo
+		this._el.content_item	= TL.Dom.create("img", "tl-media-item tl-media-image tl-media-imgur tl-media-shadow",
+																					this._el.content_link);
+
+		// Media Loaded Event
+		this._el.content_item.addEventListener('load', function(e) {
+			self.onMediaLoaded();
+		});
+
+    this._el.content_item.src			= this.getImageURL();
+	},
+
+	getImageURL: function(w, h) {
+	    return 'https://i.imgur.com/' + this.media_id + '.jpg';
+	}
+
+});
+
+
+/* **********************************************
+     Begin TL.Media.Instagram.js
+********************************************** */
+
+/*	TL.Media.Instagram
+
+================================================== */
+
+TL.Media.Instagram = TL.Media.extend({
+
+	includes: [TL.Events],
+
+	/*	Load the media
+	================================================== */
+	_loadMedia: function() {
+		// Get Media ID
+		this.media_id = this.data.url.split("\/p\/")[1].split("/")[0];
+
+		if(!this.options.background) {
+		    this.createMedia();
+		}
+
+		// After Loaded
+		this.onLoaded();
+	},
+
+    createMedia: function() {
+        var self = this;
+
+		// Link
+		this._el.content_link 				= TL.Dom.create("a", "", this._el.content);
+		this._el.content_link.href 			= this.data.url;
+		this._el.content_link.target 		= "_blank";
+
+		// Photo
+		this._el.content_item				= TL.Dom.create("img", "tl-media-item tl-media-image tl-media-instagram tl-media-shadow", this._el.content_link);
+
+		// Media Loaded Event
+		this._el.content_item.addEventListener('load', function(e) {
+			self.onMediaLoaded();
+		});
+
+	    this._el.content_item.src = this.getImageURL(this._el.content.offsetWidth);
+    },
+
+    getImageURL: function(w, h) {
+        return "https://instagram.com/p/" + this.media_id + "/media/?size=" + this.sizes(w);
+    },
+
+	_getMeta: function() {
+		var self = this,
+		    api_url;
+
+		// API URL
+		api_url = "https://api.instagram.com/oembed?url=https://instagr.am/p/" + this.media_id + "&callback=?";
+
+		// API Call
+		TL.getJSON(api_url, function(d) {
+			self.data.credit_alternate = "<a href='" + d.author_url + "' target='_blank'>" + d.author_name + "</a>";
+			self.data.caption_alternate = d.title;
+			self.updateMeta();
+		});
+	},
+
+	sizes: function(s) {
+		var _size = "";
+		if (s <= 150) {
+			_size = "t";
+		} else if (s <= 306) {
+			_size = "m";
+		} else {
+			_size = "l";
+		}
+
+		return _size;
+	}
+
+
+
+});
+
+
+/* **********************************************
+     Begin TL.Media.GoogleMap.js
+********************************************** */
+
+/*  TL.Media.Map
+================================================== */
+
+TL.Media.GoogleMap = TL.Media.extend({
+	includes: [TL.Events],
+
+	/*  Load the media
+	================================================== */
+	_loadMedia: function() {
+
+		// Create Dom element
+		this._el.content_item   = TL.Dom.create("div", "tl-media-item tl-media-map tl-media-shadow", this._el.content);
+
+		// Get Media ID
+		this.media_id = this.data.url;
+
+		// API Call
+		this.mapframe = TL.Dom.create("iframe", "", this._el.content_item);
+		window.stash = this;
+		this.mapframe.width       = "100%";
+		this.mapframe.height      = "100%";
+		this.mapframe.frameBorder = "0";
+		this.mapframe.src         = this.makeGoogleMapsEmbedURL(this.media_id, this.options.api_key_googlemaps);
+		
+		
+		// After Loaded
+		this.onLoaded();
+	},
+
+	_updateMediaDisplay: function() {
+		if (this._state.loaded) {
+			var dimensions = TL.Util.ratio.square({w:this._el.content_item.offsetWidth});
+			this._el.content_item.style.height = dimensions.h + "px";
+		}
+	},
+	
+	makeGoogleMapsEmbedURL: function(url,api_key) {
+		// Test with https://docs.google.com/spreadsheets/d/1zCpvtRdftlR5fBPppmy_-SkGIo7RMwoPUiGFZDAXbTc/edit
+		var Streetview = false;
+
+		function determineMapMode(url){
+			function parseDisplayMode(display_mode, param_string) {
+				// Set the zoom param
+				if (display_mode.slice(-1) == "z") {
+					param_string["zoom"] = display_mode;
+					// Set the maptype to something other than "roadmap"
+				} else if (display_mode.slice(-1) == "m") {
+					// TODO: make this somehow interpret the correct zoom level
+					// until then fake it by using Google's default zoom level
+					param_string["zoom"] = 14;
+					param_string["maptype"] = "satellite";
+					// Set all the fun streetview params
+				} else if (display_mode.slice(-1) == "t") {
+					Streetview = true;
+					// streetview uses "location" instead of "center"
+					// "place" mode doesn't have the center param, so we may need to grab that now
+					if (mapmode == "place") {
+						var center = url.match(regexes["place"])[3] + "," + url.match(regexes["place"])[4];
 					} else {
-						is_valid = true;
-						
-						for(var i = 0; i < d.feed.entry.length; i++) {
-							var dd		= d.feed.entry[i],
-								dd_type	= "";
-
-							if (typeof(dd.gsx$startdate) == 'undefined') {
-								VMM.fireEvent(global, VMM.Timeline.Config.events.messege, "Missing start date. Make sure the headers of your Google Spreadsheet have not been changed.");
-								return;
-							}
-
-							if (typeof dd.gsx$type != 'undefined') {
-								dd_type = dd.gsx$type.$t;
-							} else if (typeof dd.gsx$titleslide != 'undefined') {
-								dd_type = dd.gsx$titleslide.$t;
-							}
-						
-							if (dd_type.match("start") || dd_type.match("title") ) {
-								data_obj.timeline.startDate		= getGVar(dd.gsx$startdate);
-								data_obj.timeline.headline		= getGVar(dd.gsx$headline);
-								data_obj.timeline.asset.media	= getGVar(dd.gsx$media);
-								data_obj.timeline.asset.caption	= getGVar(dd.gsx$mediacaption);
-								data_obj.timeline.asset.credit	= getGVar(dd.gsx$mediacredit);
-								data_obj.timeline.text			= getGVar(dd.gsx$text);
-								data_obj.timeline.type			= "google spreadsheet";
-							} else if (dd_type.match("era")) {
-								var era = {
-									startDate:		getGVar(dd.gsx$startdate),
-									endDate:		getGVar(dd.gsx$enddate),
-									headline:		getGVar(dd.gsx$headline),
-									text:			getGVar(dd.gsx$text),
-									tag:			getGVar(dd.gsx$tag)
-								}
-								data_obj.timeline.era.push(era);
-							} else {
-								var date = {
-										type:			"google spreadsheet",
-										startDate:		getGVar(dd.gsx$startdate),
-										endDate:		getGVar(dd.gsx$enddate),
-										headline:		getGVar(dd.gsx$headline),
-										text:			getGVar(dd.gsx$text),
-										tag:			getGVar(dd.gsx$tag),
-										asset: {
-											media:		getGVar(dd.gsx$media),
-											credit:		getGVar(dd.gsx$mediacredit),
-											caption:	getGVar(dd.gsx$mediacaption),
-											thumbnail:	getGVar(dd.gsx$mediathumbnail)
-										}
-								};
-							
-								data_obj.timeline.date.push(date);
-							}
-						};
-						
+						var center = param_string["center"];
+						delete param_string["center"];
 					}
-					
-					
-					if (is_valid) {
-						VMM.fireEvent(global, VMM.Timeline.Config.events.messege, "Finished Parsing Data");
-						VMM.fireEvent(global, VMM.Timeline.Config.events.data_ready, data_obj);
-					} else {
-						VMM.fireEvent(global, VMM.Timeline.Config.events.messege, VMM.Language.messages.loading + " Google Doc Data (cells)");
-						trace("There may be too many entries. Still trying to load data. Now trying to load cells to avoid Googles limitation on cells");
-						VMM.Timeline.DataObj.model.googlespreadsheet.getDataCells(d.feed.link[0].href);
-					}
-				},
-				
-				getDataCells: function(raw) {
-					var getjsondata, key, url, timeout, tries = 0;
-					
-					key	= VMM.Timeline.DataObj.model.googlespreadsheet.extractSpreadsheetKey(raw);
-					url	= "https://spreadsheets.google.com/feeds/cells/" + key + "/od6/public/values?alt=json";
-					
-					timeout = setTimeout(function() {
-						trace("Google Docs timeout " + url);
-						trace(url);
-						if (tries < 3) {
-							VMM.fireEvent(global, VMM.Timeline.Config.events.messege, "Still waiting on Google Docs, trying again " + tries);
-							tries ++;
-							getjsondata.abort()
-							requestJsonData();
+					// Clear out all the other params -- this is so hacky
+					param_string = {};
+					param_string["location"] = center;
+					streetview_params = display_mode.split(",");
+					for (param in param_defs["streetview"]) {
+						var i = parseInt(param) + 1;
+						if (param_defs["streetview"][param] == "pitch" && streetview_params[i] == "90t"){
+							// Although 90deg is the horizontal default in the URL, 0 is horizontal default for embed URL. WHY??
+							// https://developers.google.com/maps/documentation/javascript/streetview
+							param_string[param_defs["streetview"][param]] = 0;
 						} else {
-							VMM.fireEvent(global, VMM.Timeline.Config.events.messege, "Google Docs is not responding");
-						}
-					}, 16000);
-					
-					function requestJsonData() {
-						getjsondata = VMM.getJSON(url, function(d) {
-							clearTimeout(timeout);
-							VMM.Timeline.DataObj.model.googlespreadsheet.buildDataCells(d);
-						})
-							.error(function(jqXHR, textStatus, errorThrown) {
-								trace("Google Docs ERROR");
-								trace("Google Docs ERROR: " + textStatus + " " + jqXHR.responseText);
-							})
-							.success(function(d) {
-								clearTimeout(timeout);
-							});
-					}
-					
-					requestJsonData();
-				},
-				
-				buildDataCells: function(d) {
-					var data_obj	= VMM.Timeline.DataObj.data_template_obj,
-						is_valid	= false,
-						cellnames	= ["timeline"],
-						list 		= [],
-						max_row		= 0,
-						i			= 0,
-						k			= 0;
-					
-					VMM.fireEvent(global, VMM.Timeline.Config.events.messege, VMM.Language.messages.loading_timeline + " Parsing Google Doc Data (cells)");
-
-					function getGVar(v) {
-						if (typeof v != 'undefined') {
-							return v.$t;
-						} else {
-							return "";
+							param_string[param_defs["streetview"][param]] = streetview_params[i].slice(0,-1);
 						}
 					}
-					
-					if (typeof d.feed.entry != 'undefined') {
-						is_valid = true;
-						
-						// DETERMINE NUMBER OF ROWS
-						for(i = 0; i < d.feed.entry.length; i++) {
-							var dd				= d.feed.entry[i];
-							
-							if (parseInt(dd.gs$cell.row) > max_row) {
-								max_row = parseInt(dd.gs$cell.row);
-							}
-						}
-						
-						// CREATE OBJECT FOR EACH ROW
-						for(var i = 0; i < max_row + 1; i++) {
-							var date = {
-								type:			"",
-								startDate:		"",
-								endDate:		"",
-								headline:		"",
-								text:			"",
-								tag:			"",
-								asset: {
-									media:		"",
-									credit:		"",
-									caption:	"",
-									thumbnail:	""
-								}
-							};
-							list.push(date);
-						}
-						
-						// PREP GOOGLE DOC CELL DATA TO EVALUATE
-						for(i = 0; i < d.feed.entry.length; i++) {
-							var dd				= d.feed.entry[i],
-								dd_type			= "",
-								column_name		= "",
-								cell = {
-									content: 	getGVar(dd.gs$cell),
-									col: 		dd.gs$cell.col,
-									row: 		dd.gs$cell.row,
-									name: 		""
-								};
-								
-							//trace(cell);
-							
-							if (cell.row == 1) {
-								if (cell.content == "Start Date") {
-									column_name = "startDate";
-								} else if (cell.content == "End Date") {
-									column_name = "endDate";
-								} else if (cell.content == "Headline") {
-									column_name = "headline";
-								} else if (cell.content == "Text") {
-									column_name = "text";
-								} else if (cell.content == "Media") {
-									column_name = "media";
-								} else if (cell.content == "Media Credit") {
-									column_name = "credit";
-								} else if (cell.content == "Media Caption") {
-									column_name = "caption";
-								} else if (cell.content == "Media Thumbnail") {
-									column_name = "thumbnail";
-								} else if (cell.content == "Type") {
-									column_name = "type";
-								} else if (cell.content == "Tag") {
-									column_name = "tag";
-								}
-								
-								cellnames.push(column_name);
-								
-							} else {
-								cell.name = cellnames[cell.col];
-								list[cell.row][cell.name] = cell.content;
-							}
-							
-						};
-						
 
-						for(i = 0; i < list.length; i++) {
-							var date	= list[i];
-							if (date.type.match("start") || date.type.match("title") ) {
-								data_obj.timeline.startDate		= date.startDate;
-								data_obj.timeline.headline		= date.headline;
-								data_obj.timeline.asset.media	= date.media;
-								data_obj.timeline.asset.caption	= date.caption;
-								data_obj.timeline.asset.credit	= date.credit;
-								data_obj.timeline.text			= date.text;
-								data_obj.timeline.type			= "google spreadsheet";
-							} else if (date.type.match("era")) {
-								var era = {
-									startDate:		date.startDate,
-									endDate:		date.endDate,
-									headline:		date.headline,
-									text:			date.text,
-									tag:			date.tag
-								}
-								data_obj.timeline.era.push(era);
-							} else {
-								if (date.startDate) {
-
-									var date = {
-											type:			"google spreadsheet",
-											startDate:		date.startDate,
-											endDate:		date.endDate,
-											headline:		date.headline,
-											text:			date.text,
-											tag:			date.tag,
-											asset: {
-												media:		date.media,
-												credit:		date.credit,
-												caption:	date.caption,
-												thumbnail:	date.thumbnail
-											}
-									};
-								
-									data_obj.timeline.date.push(date);
-
-								} else {
-									trace("Skipping item " + i + " in list: no start date.")
-								}
-							}
-							
-						}
-						
-					}
-					is_valid = data_obj.timeline.date.length > 0;
-					if (is_valid) {
-						VMM.fireEvent(global, VMM.Timeline.Config.events.messege, "Finished Parsing Data");
-						VMM.fireEvent(global, VMM.Timeline.Config.events.data_ready, data_obj);
-					} else {
-						VMM.fireEvent(global, VMM.Timeline.Config.events.messege, "Unable to load Google Doc data source. Make sure you have no blank rows and that the headers have not been changed.");
-					}
 				}
-				
-			},
-			
-			storify: {
-				
-				getData: function(raw) {
-					var key, url, storify_timeout;
-					//http://storify.com/number10gov/g8-and-nato-chicago-summit
-					//http://api.storify.com/v1/stories/number10gov/g8-and-nato-chicago-summit
-					
-					VMM.fireEvent(global, VMM.Timeline.Config.events.messege, "Loading Storify...");
-					
-					key	= raw.split("storify.com\/")[1];
-					url	= "//api.storify.com/v1/stories/" + key + "?per_page=300&callback=?";
-					
-					storify_timeout = setTimeout(function() {
-						trace("STORIFY timeout");
-						VMM.fireEvent(global, VMM.Timeline.Config.events.messege, "Storify is not responding");
-					}, 6000);
-					
-					VMM.getJSON(url, VMM.Timeline.DataObj.model.storify.buildData)
-						.error(function(jqXHR, textStatus, errorThrown) {
-							trace("STORIFY error");
-							trace("STORIFY ERROR: " + textStatus + " " + jqXHR.responseText);
-						})
-						.success(function(d) {
-							clearTimeout(storify_timeout);
-						});
-					
-				},
-				
-				buildData: function(d) {
-					VMM.fireEvent(global, VMM.Timeline.Config.events.messege, "Parsing Data");
-					var _data_obj = VMM.Timeline.DataObj.data_template_obj;
-					
-					_data_obj.timeline.startDate	= 	new Date(d.content.date.created);;
-					_data_obj.timeline.headline		= 	d.content.title;
-					
-					trace(d);
-					//d.permalink
-					var tt			=	"";
-					var t_name		=	d.content.author.username;
-					var t_nickname	=	"";
-					if (typeof d.content.author.name != 'undefined') {
-						t_name		=	d.content.author.name;
-						t_nickname	=	d.content.author.username + "&nbsp;";
-					}
-					if (typeof d.content.description != 'undefined' && d.content.description != null) {
-						tt			+=	d.content.description;
-					}
-					
-					tt				+=	"<div class='storify'>"
-					//tt				 += " <a href='" + d.content.permalink + "' target='_blank' alt='link to original story' title='link to original story'>" + "<span class='created-at'></span>" + " </a>";
-					
-					tt				+=	"<div class='vcard author'><a class='screen-name url' href='" + d.content.author.permalink + "' target='_blank'>";
-					
-					tt				+=	"<span class='avatar'><img src='" + d.content.author.avatar + "' style='max-width: 32px; max-height: 32px;'></span>"
-					tt				+=	"<span class='fn'>" + t_name + "</span>";
-					tt				+=	"<span class='nickname'>" + t_nickname + "<span class='thumbnail-inline'></span></span>";
-					tt				+=	"</a>";
-					//tt				+=	"<span class='nickname'>" + d.content.author.stats.stories + " Stories</span>";
-					//tt				+=	"<span class='nickname'>" + d.content.author.stats.subscribers + " Subscribers</span>";
-					tt				+=	"</div>"
-					tt				+=	"</div>";
-					
-					_data_obj.timeline.text = tt;
-					_data_obj.timeline.asset.media = d.content.thumbnail;
-					
-					//_data_obj.timeline.asset.media = 		dd.gsx$media.$t;
-					//_data_obj.timeline.asset.caption = 		dd.gsx$mediacaption.$t;
-					//_data_obj.timeline.asset.credit = 		dd.gsx$mediacredit.$t;
-					_data_obj.timeline.type = 				"storify";
-					
-					for(var i = 0; i < d.content.elements.length; i++) {
-						var dd = d.content.elements[i];
-						var is_text = false;
-						var d_date = new Date(dd.posted_at);
-						//trace(tempdat);
-						trace(dd.type);
-						//trace(dd);
-						var _date = {
-							"type": 		"storify",
-							"startDate": 	dd.posted_at,
-							"endDate": 		dd.posted_at,
-				            "headline": 	" ",
-							"slug": 		"", 
-				            "text": 		"",
-				            "asset": {
-								"media": 	"", 
-								"credit": 	"", 
-								"caption": 	"" 
-							}
-						};
-						
-						/*	MEDIA
-						================================================== */
-						if (dd.type == "image") {
-							
-							if (typeof dd.source.name != 'undefined') {
-								if (dd.source.name == "flickr") {
-									_date.asset.media		=	"//flickr.com/photos/" + dd.meta.pathalias + "/" + dd.meta.id + "/";
-									_date.asset.credit		=	"<a href='" + _date.asset.media + "'>" + dd.attribution.name + "</a>";
-									_date.asset.credit		+=	" on <a href='" + dd.source.href + "'>" + dd.source.name + "</a>";
-								} else if (dd.source.name	==	"instagram") {
-									_date.asset.media		=	dd.permalink;
-									_date.asset.credit		=	"<a href='" + dd.permalink + "'>" + dd.attribution.name + "</a>";
-									_date.asset.credit		+=	" on <a href='" + dd.source.href + "'>" + dd.source.name + "</a>";
-								} else {
-									_date.asset.credit		=	"<a href='" + dd.permalink + "'>" + dd.attribution.name + "</a>";
-									
-									if (typeof dd.source.href != 'undefined') {
-										_date.asset.credit	+=	" on <a href='" + dd.source.href + "'>" + dd.source.name + "</a>";
-									}
-									
-									_date.asset.media		=	dd.data.image.src;
-								}
-							} else {
-								_date.asset.credit			=	"<a href='" + dd.permalink + "'>" + dd.attribution.name + "</a>";
-								_date.asset.media			=	dd.data.image.src;
-							}
-							
-							_date.slug	 					=	dd.attribution.name;
-							if (typeof dd.data.image.caption != 'undefined') {
-								if (dd.data.image.caption != 'undefined') {
-									_date.asset.caption				=	dd.data.image.caption;
-									_date.slug	 					=	dd.data.image.caption;
-								}
-							}
-							
-						} else if (dd.type == "quote") {
-							if (dd.permalink.match("twitter")) {
-								_date.asset.media	=	dd.permalink; 
-								_date.slug = VMM.Util.untagify(dd.data.quote.text);
-							} else if (dd.permalink.match("storify")) {
-								is_text = true;
-								_date.asset.media	=	"<blockquote>" + dd.data.quote.text.replace(/<\s*\/?\s*b\s*.*?>/g,"") + "</blockquote>";
-							}
-						} else if (dd.type == "link") {
-							_date.headline		=	dd.data.link.title;
-							_date.text			=	dd.data.link.description;
-							if (dd.data.link.thumbnail != 'undefined' && dd.data.link.thumbnail != '') {
-								_date.asset.media	=	dd.data.link.thumbnail;
-							} else {
-								_date.asset.media	=	dd.permalink;
-							}
-							//_date.asset.media	=	dd.permalink;
-							_date.asset.caption	=	"<a href='" + dd.permalink + "' target='_blank'>" + dd.data.link.title + "</a>"
-							_date.slug			=	dd.data.link.title;
-							
-						} else if (dd.type == "text") {
-							if (dd.permalink.match("storify")) {
-								is_text = true;
-								var d_name		=	d.content.author.username;
-								var d_nickname	=	"";
-								if (typeof dd.attribution.name != 'undefined') {
-									t_name		=	dd.attribution.name;
-									t_nickname	=	dd.attribution.username + "&nbsp;";
-								}
-								
-								var asset_text	=	"<div class='storify'>"
-								asset_text		+=	"<blockquote><p>" + dd.data.text.replace(/<\s*\/?\s*b\s*.*?>/g,"") + "</p></blockquote>";
-								//asset_text		+=	" <a href='" + dd.attribution.href + "' target='_blank' alt='link to author' title='link to author'>" + "<span class='created-at'></span>" + " </a>";
-
-								asset_text		+=	"<div class='vcard author'><a class='screen-name url' href='" + dd.attribution.href + "' target='_blank'>";
-								asset_text		+=	"<span class='avatar'><img src='" + dd.attribution.thumbnail + "' style='max-width: 32px; max-height: 32px;'></span>"
-								asset_text		+=	"<span class='fn'>" + t_name + "</span>";
-								asset_text		+=	"<span class='nickname'>" + t_nickname + "<span class='thumbnail-inline'></span></span>";
-								asset_text		+=	"</a></div></div>";
-								_date.text		=	asset_text;
-								
-								// Try and put it before the element where it is expected on storify
-								if ( (i+1) >= d.content.elements.length ) {
-									_date.startDate = d.content.elements[i-1].posted_at;
-									
-								} else {
-									if (d.content.elements[i+1].type == "text" && d.content.elements[i+1].permalink.match("storify")) {
-										if ( (i+2) >= d.content.elements.length ) {
-											_date.startDate = d.content.elements[i-1].posted_at;
-										} else {
-											if (d.content.elements[i+2].type == "text" && d.content.elements[i+2].permalink.match("storify")) {
-												if ( (i+3) >= d.content.elements.length ) {
-													_date.startDate = d.content.elements[i-1].posted_at;
-												} else {
-													if (d.content.elements[i+3].type == "text" && d.content.elements[i+3].permalink.match("storify")) {
-														_date.startDate = d.content.elements[i-1].posted_at;
-													} else {
-														trace("LEVEL 3");
-														_date.startDate = d.content.elements[i+3].posted_at;
-													}
-												}
-											} else {
-												trace("LEVEL 2");
-												_date.startDate = d.content.elements[i+2].posted_at;
-											}
-										}
-									} else {
-										trace("LEVEL 1");
-										_date.startDate = d.content.elements[i+1].posted_at;
-									}
-									
-								}
-								_date.endDate = _date.startDate
-							}
-							
-							
-						} else if (dd.type == "video") {
-							_date.headline		=	dd.data.video.title;
-							_date.asset.caption	=	dd.data.video.description;
-							_date.asset.caption	=	dd.source.username;
-							_date.asset.media	=	dd.data.video.src;
-						} else {
-							trace("NO MATCH ");
-							trace(dd);
-						}
-						
-						if (is_text) {
-							_date.slug = VMM.Util.untagify(dd.data.text);
-						}
-						
-						_data_obj.timeline.date.push(_date);
-						
-						
-					};
-				
-					VMM.fireEvent(global, VMM.Timeline.Config.events.data_ready, _data_obj);
-				}
-				
-			},
-			
-			tweets: {
-				
-				type: "twitter",
-			
-				buildData: function(raw_data) {
-					VMM.bindEvent(global, VMM.Timeline.DataObj.model.tweets.onTwitterDataReady, "TWEETSLOADED");
-					VMM.ExternalAPI.twitter.getTweets(raw_data.timeline.tweets);
-				},
-			
-				getData: function(raw_data) {
-					VMM.bindEvent(global, VMM.Timeline.DataObj.model.tweets.onTwitterDataReady, "TWEETSLOADED");
-					VMM.ExternalAPI.twitter.getTweetSearch(raw_data);
-				},
-			
-				onTwitterDataReady: function(e, d) {
-					var _data_obj = VMM.Timeline.DataObj.data_template_obj;
-
-					for(var i = 0; i < d.tweetdata.length; i++) {
-
-						var _date = {
-							"type":"tweets",
-							"startDate":"",
-				            "headline":"",
-				            "text":"",
-				            "asset":
-				            {
-				                "media":"",
-				                "credit":"",
-				                "caption":""
-				            },
-				            "tags":"Optional"
-						};
-						// pass in the 'created_at' string returned from twitter //
-						// stamp arrives formatted as Tue Apr 07 22:52:51 +0000 2009 //
-					
-						//var twit_date = VMM.ExternalAPI.twitter.parseTwitterDate(d.tweetdata[i].raw.created_at);
-						//trace(twit_date);
-					
-						_date.startDate = d.tweetdata[i].raw.created_at;
-					
-						if (type.of(d.tweetdata[i].raw.from_user_name)) {
-							_date.headline = d.tweetdata[i].raw.from_user_name + " (<a href='https://twitter.com/" + d.tweetdata[i].raw.from_user + "'>" + "@" + d.tweetdata[i].raw.from_user + "</a>)" ;						
-						} else {
-							_date.headline = d.tweetdata[i].raw.user.name + " (<a href='https://twitter.com/" + d.tweetdata[i].raw.user.screen_name + "'>" + "@" + d.tweetdata[i].raw.user.screen_name + "</a>)" ;
-						}
-					
-						_date.asset.media = d.tweetdata[i].content;
-						_data_obj.timeline.date.push(_date);
-					
-					};
-				
-					VMM.fireEvent(global, VMM.Timeline.Config.events.data_ready, _data_obj);
-				}
-				
+				return param_string;
 			}
-		},
+			function determineMapModeURL(mapmode, match) {
+				var param_string = {};
+				var url_root = match[1], display_mode = match[match.length - 1];
+				for (param in param_defs[mapmode]) {
+					// skip first 2 matches, because they reflect the URL and not params
+					var i = parseInt(param)+2;
+					if (param_defs[mapmode][param] == "center") {
+						param_string[param_defs[mapmode][param]] = match[i] + "," + match[++i];
+					} else {
+						param_string[param_defs[mapmode][param]] = match[i];
+					}
+				}
+
+				param_string = parseDisplayMode(display_mode, param_string);
+				param_string["key"] = api_key;
+				if (Streetview == true) {
+					mapmode = "streetview";
+				} else {
+				}
+				return (url_root + "/embed/v1/" + mapmode + TL.Util.getParamString(param_string));
+			}
+
+
+			mapmode = "view";
+			if (url.match(regexes["place"])) {
+				mapmode = "place";
+			} else if (url.match(regexes["directions"])) {
+				mapmode = "directions";
+			} else if (url.match(regexes["search"])) {
+				mapmode = "search";
+			}
+			return determineMapModeURL(mapmode, url.match(regexes[mapmode]));
+
+		}
+
+		// These must be in the order they appear in the original URL
+		// "key" param not included since it's not in the URL structure
+		// Streetview "location" param not included since it's captured as "center"
+		// Place "center" param ...um...
+		var param_defs = {
+			"view": ["center"],
+			"place": ["q", "center"],
+			"directions": ["origin", "destination", "center"],
+			"search": ["q", "center"],
+			"streetview": ["fov", "heading", "pitch"]
+		};
+		// Set up regex parts to make updating these easier if Google changes them
+		var root_url_regex = /(https:\/\/.+google.+?\/maps)/;
+		var coords_regex = /@([-\d.]+),([-\d.]+)/;
+		var address_regex = /([\w\W]+)/;
+
+		// Data doesn't seem to get used for anything
+		var data_regex = /data=[\S]*/;
+
+		// Capture the parameters that determine what map tiles to use
+		// In roadmap view, mode URLs include zoom paramater (e.g. "14z")
+		// In satellite (or "earth") view, URLs include a distance parameter (e.g. "84511m")
+		// In streetview, URLs include paramaters like "3a,75y,49.76h,90t" -- see http://stackoverflow.com/a/22988073
+		var display_mode_regex = /,((?:[-\d.]+[zmayht],?)*)/;
+
+		var regexes = {
+			view: new RegExp(root_url_regex.source + "/" + coords_regex.source + display_mode_regex.source),
+			place: new RegExp(root_url_regex.source + "/place/" + address_regex.source + "/" + coords_regex.source + display_mode_regex.source),
+			directions: new RegExp(root_url_regex.source + "/dir/" + address_regex.source + "/" + address_regex.source + "/" + coords_regex.source + display_mode_regex.source),
+			search: new RegExp(root_url_regex.source + "/search/" + address_regex.source + "/" + coords_regex.source + display_mode_regex.source)
+		};
+		return determineMapMode(url);
+	}
+   
+});
+
+
+/* **********************************************
+     Begin TL.Media.PDF.js
+********************************************** */
+
+/*	TL.Media.PDF
+ * Chrome and Firefox on both OSes and Safari all support PDFs as iframe src.
+ * This prompts for a download on IE10/11. We should investigate using
+ * https://mozilla.github.io/pdf.js/ to support showing PDFs on IE.
+================================================== */
+
+TL.Media.PDF = TL.Media.extend({
+
+	includes: [TL.Events],
+
+	/*	Load the media
+	================================================== */
+	_loadMedia: function() {
+		var url = TL.Util.transformImageURL(this.data.url),
+			self = this;
+
+		// Create Dom element
+		this._el.content_item	= TL.Dom.create("div", "tl-media-item tl-media-iframe", this._el.content);
+		var markup = "";
+		// not assigning media_id attribute. Seems like a holdover which is no longer used.
+		if (TL.Browser.ie || TL.Browser.edge || url.match(/dl.dropboxusercontent.com/)) {
+			markup = "<iframe class='doc' frameborder='0' width='100%' height='100%' src='//docs.google.com/viewer?url=" + url + "&amp;embedded=true'></iframe>";
+		} else {
+			markup = "<iframe class='doc' frameborder='0' width='100%' height='100%' src='" + url + "'></iframe>"
+		}
+		this._el.content_item.innerHTML	= markup
+		this.onLoaded();
+	},
+
+	// Update Media Display
+	_updateMediaDisplay: function() {
+		this._el.content_item.style.height = this.options.height + "px";
+	}
+
+
+});
+
+
+/* **********************************************
+     Begin TL.Media.Profile.js
+********************************************** */
+
+/*	TL.Media.Profile
+
+================================================== */
+
+TL.Media.Profile = TL.Media.extend({
+	
+	includes: [TL.Events],
+	
+	/*	Load the media
+	================================================== */
+	_loadMedia: function() {
+		
+		this._el.content_item				= TL.Dom.create("img", "tl-media-item tl-media-image tl-media-profile tl-media-shadow", this._el.content);
+		this._el.content_item.src			= this.data.url;
+		
+		this.onLoaded();
+	},
+	
+	_updateMediaDisplay: function(layout) {
 		
 		
-		/*	TEMPLATE OBJECTS
-		================================================== */
-		data_template_obj: {  "timeline": { "headline":"", "description":"", "asset": { "media":"", "credit":"", "caption":"" }, "date": [], "era":[] } },
-		date_obj: {"startDate":"2012,2,2,11,30", "headline":"", "text":"", "asset": {"media":"http://youtu.be/vjVfu8-Wp6s", "credit":"", "caption":"" }, "tags":"Optional"}
+		if(TL.Browser.firefox) {
+			this._el.content_item.style.maxWidth = (this.options.width/2) - 40 + "px";
+		}
+	}
 	
-	};
+});
+
+/* **********************************************
+     Begin TL.Media.Slider.js
+********************************************** */
+
+/*	TL.Media.SLider
+	Produces a Slider
+	Takes a data object and populates a dom object
+	TODO
+	Placeholder
+================================================== */
+
+TL.Media.Slider = TL.Media.extend({
 	
-}
+	includes: [TL.Events],
+	
+	/*	Load the media
+	================================================== */
+	_loadMedia: function() {
+		
+		this._el.content_item				= TL.Dom.create("img", "tl-media-item tl-media-image", this._el.content);
+		this._el.content_item.src			= this.data.url;
+		
+		this.onLoaded();
+	}
+	
+});
+
+/* **********************************************
+     Begin TL.Media.SoundCloud.js
+********************************************** */
+
+/*	TL.Media.SoundCloud
+================================================== */
+
+TL.Media.SoundCloud = TL.Media.extend({
+
+	includes: [TL.Events],
+
+	/*	Load the media
+	================================================== */
+	_loadMedia: function() {
+		var api_url,
+			self = this;
+
+		// Create Dom element
+		this._el.content_item	= TL.Dom.create("div", "tl-media-item tl-media-iframe tl-media-soundcloud tl-media-shadow", this._el.content);
+
+		// Get Media ID
+		this.media_id = this.data.url;
+
+		// API URL
+		api_url = "https://soundcloud.com/oembed?url=" + this.media_id + "&format=js&callback=?"
+
+		// API Call
+		TL.getJSON(api_url, function(d) {
+			self.createMedia(d);
+		});
+
+	},
+
+	createMedia: function(d) {
+		this._el.content_item.innerHTML = d.html;
+
+		// After Loaded
+		this.onLoaded();
+	}
+
+});
+
+
+/* **********************************************
+     Begin TL.Media.Spotify.js
+********************************************** */
+
+/*	TL.Media.Spotify
+================================================== */
+
+TL.Media.Spotify = TL.Media.extend({
+
+	includes: [TL.Events],
+
+	/*	Load the media
+	================================================== */
+	_loadMedia: function() {
+		var api_url,
+			self = this;
+
+		// Create Dom element
+		this._el.content_item	= TL.Dom.create("div", "tl-media-item tl-media-iframe tl-media-spotify", this._el.content);
+
+		// Get Media ID
+		if (this.data.url.match(/^spotify:track/) || this.data.url.match(/^spotify:user:.+:playlist:/)) {
+			this.media_id = this.data.url;
+		}
+		if (this.data.url.match(/spotify.com\/track\/(.+)/)) {
+			this.media_id = "spotify:track:" + this.data.url.match(/spotify.com\/track\/(.+)/)[1];
+		} else if (this.data.url.match(/spotify.com\/user\/(.+?)\/playlist\/(.+)/)) {
+			var user = this.data.url.match(/spotify.com\/user\/(.+?)\/playlist\/(.+)/)[1];
+			var playlist = this.data.url.match(/spotify.com\/user\/(.+?)\/playlist\/(.+)/)[2];
+			this.media_id = "spotify:user:" + user + ":playlist:" + playlist;
+		}
+
+		if (this.media_id) {
+			// API URL
+			api_url = "https://embed.spotify.com/?uri=" + this.media_id + "&theme=white&view=coverart";
+
+			this.player = TL.Dom.create("iframe", "tl-media-shadow", this._el.content_item);
+			this.player.width 		= "100%";
+			this.player.height 		= "100%";
+			this.player.frameBorder = "0";
+			this.player.src 		= api_url;
+
+			// After Loaded
+			this.onLoaded();
+
+		} else {
+				this.loadErrorDisplay(this._('spotify_invalid_url'));
+		}
+	},
+
+	// Update Media Display
+
+	_updateMediaDisplay: function(l) {
+		var _height = this.options.height,
+			_player_height = 0,
+			_player_width = 0;
+
+		if (TL.Browser.mobile) {
+			_height = (this.options.height/2);
+		} else {
+			_height = this.options.height - this.options.credit_height - this.options.caption_height - 30;
+		}
+
+		this._el.content_item.style.maxHeight = "none";
+		trace(_height);
+		trace(this.options.width)
+		if (_height > this.options.width) {
+			trace("height is greater")
+			_player_height = this.options.width + 80 + "px";
+			_player_width = this.options.width + "px";
+		} else {
+			trace("width is greater")
+			trace(this.options.width)
+			_player_height = _height + "px";
+			_player_width = _height - 80 + "px";
+		}
+
+
+		this.player.style.width = _player_width;
+		this.player.style.height = _player_height;
+
+		if (this._el.credit) {
+			this._el.credit.style.width		= _player_width;
+		}
+		if (this._el.caption) {
+			this._el.caption.style.width		= _player_width;
+		}
+	},
+
+
+	_stopMedia: function() {
+		// Need spotify stop code
+
+	}
+
+});
+
+
+/* **********************************************
+     Begin TL.Media.Storify.js
+********************************************** */
+
+/*	TL.Media.Storify
+================================================== */
+
+TL.Media.Storify = TL.Media.extend({
+	
+	includes: [TL.Events],
+	
+	/*	Load the media
+	================================================== */
+	_loadMedia: function() {
+		var content;
+				
+		// Create Dom element
+		this._el.content_item	= TL.Dom.create("div", "tl-media-item tl-media-iframe tl-media-storify", this._el.content);
+		
+		// Get Media ID
+		this.media_id = this.data.url;
+		
+		// Content
+		content =	"<iframe frameborder='0' width='100%' height='100%' src='" + this.media_id + "/embed'></iframe>";
+		content +=	"<script src='" + this.media_id + ".js'></script>";
+		
+		// API Call
+		this._el.content_item.innerHTML = content;
+		
+		// After Loaded
+		this.onLoaded();
+	},
+	
+	// Update Media Display
+	_updateMediaDisplay: function() {
+		this._el.content_item.style.height = this.options.height + "px";
+	}
+	
+	
+});
+
+
+/* **********************************************
+     Begin TL.Media.Text.js
+********************************************** */
+
+TL.Media.Text = TL.Class.extend({
+	
+	includes: [TL.Events],
+	
+	// DOM ELEMENTS
+	_el: {
+		container: {},
+		content_container: {},
+		content: {},
+		headline: {},
+		date: {}
+	},
+	
+	// Data
+	data: {
+		unique_id: 			"",
+		headline: 			"headline",
+		text: 				"text"
+	},
+	
+	// Options
+	options: {
+		title: 			false
+	},
+	
+	/*	Constructor
+	================================================== */
+	initialize: function(data, options, add_to_container) {
+		
+		TL.Util.setData(this, data);
+		
+		// Merge Options
+		TL.Util.mergeData(this.options, options);
+		
+		this._el.container = TL.Dom.create("div", "tl-text");
+		this._el.container.id = this.data.unique_id;
+		
+		this._initLayout();
+		
+		if (add_to_container) {
+			add_to_container.appendChild(this._el.container);
+		};
+		
+	},
+	
+	/*	Adding, Hiding, Showing etc
+	================================================== */
+	show: function() {
+		
+	},
+	
+	hide: function() {
+		
+	},
+	
+	addTo: function(container) {
+		container.appendChild(this._el.container);
+		//this.onAdd();
+	},
+	
+	removeFrom: function(container) {
+		container.removeChild(this._el.container);
+	},
+	
+	headlineHeight: function() {
+		return this._el.headline.offsetHeight + 40;
+	},
+	
+	addDateText: function(str) {
+		this._el.date.innerHTML = str;
+	},
+	
+	/*	Events
+	================================================== */
+	onLoaded: function() {
+		this.fire("loaded", this.data);
+	},
+	
+	onAdd: function() {
+		this.fire("added", this.data);
+	},
+
+	onRemove: function() {
+		this.fire("removed", this.data);
+	},
+	
+	/*	Private Methods
+	================================================== */
+	_initLayout: function () {
+		
+		// Create Layout
+		this._el.content_container			= TL.Dom.create("div", "tl-text-content-container", this._el.container);
+		
+		// Date
+		this._el.date 				= TL.Dom.create("h3", "tl-headline-date", this._el.content_container);
+		
+		// Headline
+		if (this.data.headline != "") {
+			var headline_class = "tl-headline";
+			if (this.options.title) {
+				headline_class = "tl-headline tl-headline-title";
+			}
+			this._el.headline				= TL.Dom.create("h2", headline_class, this._el.content_container);
+			this._el.headline.innerHTML		= this.data.headline;
+		}
+
+		// Text
+		if (this.data.text != "") {
+			var text_content = "";
+
+			text_content += TL.Util.htmlify(this.options.autolink == true ? TL.Util.linkify(this.data.text) : this.data.text);
+			trace(this.data.text);
+			this._el.content				= TL.Dom.create("div", "tl-text-content", this._el.content_container);
+			this._el.content.innerHTML		= text_content;
+			trace(text_content);
+			trace(this._el.content)
+		}
+
+		// Fire event that the slide is loaded
+		this.onLoaded();
+
+	}
+
+});
+
+
+/* **********************************************
+     Begin TL.Media.Twitter.js
+********************************************** */
+
+/*	TL.Media.Twitter
+	Produces Twitter Display
+================================================== */
+
+TL.Media.Twitter = TL.Media.extend({
+	
+	includes: [TL.Events],
+	
+	/*	Load the media
+	================================================== */
+	_loadMedia: function() {
+		var api_url,
+			self = this;
+					
+		// Create Dom element
+		this._el.content_item = TL.Dom.create("div", "tl-media-twitter", this._el.content);
+		this._el.content_container.className = "tl-media-content-container tl-media-content-container-text";
+		
+		// Get Media ID
+		if (this.data.url.match("status\/")) {
+			this.media_id = this.data.url.split("status\/")[1];
+		} else if (this.data.url.match("statuses\/")) {
+			this.media_id = this.data.url.split("statuses\/")[1];
+		} else {
+			this.media_id = "";
+		}
+		
+		// API URL
+		api_url = "https://api.twitter.com/1/statuses/oembed.json?id=" + this.media_id + "&omit_script=true&include_entities=true&callback=?";
+		
+		// API Call
+		TL.ajax({
+			type: 'GET',
+			url: api_url,
+			dataType: 'json', //json data type
+			success: function(d){
+				self.createMedia(d);
+			},
+			error:function(xhr, type){
+				var error_text = "";
+				error_text += self._("twitter_load_err") + "<br/>" + self.media_id + "<br/>" + type;
+				self.loadErrorDisplay(error_text);
+			}
+		});
+		 
+	},
+	
+	createMedia: function(d) {
+		var tweet				= "",
+			tweet_text			= "",
+			tweetuser			= "",
+			tweet_status_temp 	= "",
+			tweet_status_url 	= "",
+			tweet_status_date 	= "";
+			
+		//	TWEET CONTENT
+		tweet_text 			= d.html.split("<\/p>\&mdash;")[0] + "</p></blockquote>";
+		tweetuser			= d.author_url.split("twitter.com\/")[1];
+		tweet_status_temp 	= d.html.split("<\/p>\&mdash;")[1].split("<a href=\"")[1];
+		tweet_status_url 	= tweet_status_temp.split("\"\>")[0];
+		tweet_status_date 	= tweet_status_temp.split("\"\>")[1].split("<\/a>")[0];
+		
+		// Open links in new window
+		tweet_text = tweet_text.replace(/<a href/ig, '<a class="tl-makelink" target="_blank" href');
+
+		// 	TWEET CONTENT
+		tweet += tweet_text;
+		
+		//	TWEET AUTHOR
+		tweet += "<div class='vcard'>";
+		tweet += "<a href='" + tweet_status_url + "' class='twitter-date' target='_blank'>" + tweet_status_date + "</a>";
+		tweet += "<div class='author'>";
+		tweet += "<a class='screen-name url' href='" + d.author_url + "' target='_blank'>";
+		tweet += "<span class='avatar'></span>";
+		tweet += "<span class='fn'>" + d.author_name + " <span class='tl-icon-twitter'></span></span>";
+		tweet += "<span class='nickname'>@" + tweetuser + "<span class='thumbnail-inline'></span></span>";
+		tweet += "</a>";
+		tweet += "</div>";
+		tweet += "</div>";
+		
+		
+		// Add to DOM
+		this._el.content_item.innerHTML	= tweet;
+		
+		// After Loaded
+		this.onLoaded();
+			
+	},
+	
+	updateMediaDisplay: function() {
+		
+	},
+	
+	_updateMediaDisplay: function() {
+		
+	}
+	
+	
+	
+});
+
+
+/* **********************************************
+     Begin TL.Media.TwitterEmbed.js
+********************************************** */
+
+/*	TL.Media.TwitterEmbed
+	Produces Twitter Display
+================================================== */
+
+TL.Media.TwitterEmbed = TL.Media.extend({
+	
+	includes: [TL.Events],
+	
+	/*	Load the media
+	================================================== */
+	_loadMedia: function() {
+		var api_url,
+			self = this;
+					
+		// Create Dom element
+		this._el.content_item = TL.Dom.create("div", "tl-media-twitter", this._el.content);
+		this._el.content_container.className = "tl-media-content-container tl-media-content-container-text";
+		
+		// Get Media ID
+		var found = this.data.url.match(/(status|statuses)\/(\d+)/);
+		if (found && found.length > 2) {
+		    this.media_id = found[2];
+		} else {
+		    self.loadErrorDisplay(self._("twitterembed_invalidurl_err"));
+		    return;
+		}
+
+		// API URL
+		api_url = "https://api.twitter.com/1/statuses/oembed.json?id=" + this.media_id + "&omit_script=true&include_entities=true&callback=?";
+		
+		// API Call
+		TL.ajax({
+			type: 'GET',
+			url: api_url,
+			dataType: 'json', //json data type
+			success: function(d){
+				self.createMedia(d);
+			},
+			error:function(xhr, type){
+				var error_text = "";
+				error_text += self._("twitter_load_err") + "<br/>" + self.media_id + "<br/>" + type;
+				self.loadErrorDisplay(error_text);
+			}
+		});
+		 
+	},
+	
+	createMedia: function(d) {	
+		trace("create_media")	
+		var tweet				= "",
+			tweet_text			= "",
+			tweetuser			= "",
+			tweet_status_temp 	= "",
+			tweet_status_url 	= "",
+			tweet_status_date 	= "";
+			
+		//	TWEET CONTENT
+		tweet_text 			= d.html.split("<\/p>\&mdash;")[0] + "</p></blockquote>";
+		tweetuser			= d.author_url.split("twitter.com\/")[1];
+		tweet_status_temp 	= d.html.split("<\/p>\&mdash;")[1].split("<a href=\"")[1];
+		tweet_status_url 	= tweet_status_temp.split("\"\>")[0];
+		tweet_status_date 	= tweet_status_temp.split("\"\>")[1].split("<\/a>")[0];
+		
+		// Open links in new window
+		tweet_text = tweet_text.replace(/<a href/ig, '<a target="_blank" href');
+
+		// 	TWEET CONTENT
+		tweet += tweet_text;
+		
+		//	TWEET AUTHOR
+		tweet += "<div class='vcard'>";
+		tweet += "<a href='" + tweet_status_url + "' class='twitter-date' target='_blank'>" + tweet_status_date + "</a>";
+		tweet += "<div class='author'>";
+		tweet += "<a class='screen-name url' href='" + d.author_url + "' target='_blank'>";
+		tweet += "<span class='avatar'></span>";
+		tweet += "<span class='fn'>" + d.author_name + " <span class='tl-icon-twitter'></span></span>";
+		tweet += "<span class='nickname'>@" + tweetuser + "<span class='thumbnail-inline'></span></span>";
+		tweet += "</a>";
+		tweet += "</div>";
+		tweet += "</div>";
+		
+		
+		// Add to DOM
+		this._el.content_item.innerHTML	= tweet;
+		
+		// After Loaded
+		this.onLoaded();
+			
+	},
+	
+	updateMediaDisplay: function() {
+		
+	},
+	
+	_updateMediaDisplay: function() {
+		
+	}
+	
+	
+	
+});
+
+
+/* **********************************************
+     Begin TL.Media.Vimeo.js
+********************************************** */
+
+/*	TL.Media.Vimeo
+================================================== */
+
+TL.Media.Vimeo = TL.Media.extend({
+
+	includes: [TL.Events],
+
+	/*	Load the media
+	================================================== */
+	_loadMedia: function() {
+		var api_url,
+			self = this;
+
+		// Create Dom element
+		this._el.content_item	= TL.Dom.create("div", "tl-media-item tl-media-iframe tl-media-vimeo tl-media-shadow", this._el.content);
+
+		// Get Media ID
+		this.media_id = this.data.url.split(/video\/|\/\/vimeo\.com\//)[1].split(/[?&]/)[0];
+
+		// API URL
+		api_url = "https://player.vimeo.com/video/" + this.media_id + "?api=1&title=0&amp;byline=0&amp;portrait=0&amp;color=ffffff";
+
+		this.player = TL.Dom.create("iframe", "", this._el.content_item);
+
+		// Media Loaded Event
+		this.player.addEventListener('load', function(e) {
+			self.onMediaLoaded();
+		});
+
+		this.player.width 		= "100%";
+		this.player.height 		= "100%";
+		this.player.frameBorder = "0";
+		this.player.src 		= api_url;
+
+		// After Loaded
+		this.onLoaded();
+	},
+
+	// Update Media Display
+	_updateMediaDisplay: function() {
+		this._el.content_item.style.height = TL.Util.ratio.r16_9({w:this._el.content_item.offsetWidth}) + "px";
+
+	},
+
+	_stopMedia: function() {
+
+		try {
+			this.player.contentWindow.postMessage(JSON.stringify({method: "pause"}), "https://player.vimeo.com");
+		}
+		catch(err) {
+			trace(err);
+		}
+
+	}
+});
+
+
+/* **********************************************
+     Begin TL.Media.Vine.js
+********************************************** */
+
+/*	TL.Media.Vine
+
+================================================== */
+
+TL.Media.Vine = TL.Media.extend({
+
+	includes: [TL.Events],
+
+	/*	Load the media
+	================================================== */
+	_loadMedia: function() {
+		var api_url,
+			self = this;
+
+		// Create Dom element
+		this._el.content_item	= TL.Dom.create("div", "tl-media-item tl-media-iframe tl-media-vine tl-media-shadow", this._el.content);
+
+		// Get Media ID
+		this.media_id = this.data.url.split("vine.co/v/")[1];
+
+		// API URL
+		api_url = "https://vine.co/v/" + this.media_id + "/embed/simple";
+
+		// API Call
+		this._el.content_item.innerHTML = "<iframe frameborder='0' width='100%' height='100%' src='" + api_url + "'></iframe><script async src='https://platform.vine.co/static/scripts/embed.js' charset='utf-8'></script>"		
+
+		// After Loaded
+		this.onLoaded();
+	},
+
+	// Update Media Display
+	_updateMediaDisplay: function() {
+		var size = TL.Util.ratio.square({w:this._el.content_item.offsetWidth , h:this.options.height});
+		this._el.content_item.style.height = size.h + "px";
+	}
+
+});
+
+
+/* **********************************************
+     Begin TL.Media.Website.js
+********************************************** */
+
+/*	TL.Media.Website
+	Uses Embedly
+	http://embed.ly/docs/api/extract/endpoints/1/extract
+================================================== */
+
+TL.Media.Website = TL.Media.extend({
+
+	includes: [TL.Events],
+
+	/*	Load the media
+	================================================== */
+	_loadMedia: function() {
+		var self = this;
+
+		// Get Media ID
+		this.media_id = this.data.url.replace(/.*?:\/\//g, "");
+
+		if (this.options.api_key_embedly) {
+			// API URL
+			api_url = "https://api.embed.ly/1/extract?key=" + this.options.api_key_embedly + "&url=" + this.media_id + "&callback=?";
+
+			// API Call
+			TL.getJSON(api_url, function(d) {
+				self.createMedia(d);
+			});
+		} else {
+			this.createCardContent();
+		}
+	},
+
+	createCardContent: function() {
+		(function(w, d){
+			var id='embedly-platform', n = 'script';
+			if (!d.getElementById(id)){
+			 w.embedly = w.embedly || function() {(w.embedly.q = w.embedly.q || []).push(arguments);};
+			 var e = d.createElement(n); e.id = id; e.async=1;
+			 e.src = ('https:' === document.location.protocol ? 'https' : 'http') + '://cdn.embedly.com/widgets/platform.js';
+			 var s = d.getElementsByTagName(n)[0];
+			 s.parentNode.insertBefore(e, s);
+			}
+		})(window, document);
+
+		var content = "<a href=\"" + this.data.url + "\" class=\"embedly-card\">" + this.data.url + "</a>";
+		this._setContent(content);
+
+	},
+	createMedia: function(d) { // this costs API credits...
+		var content = "";
+
+
+		content		+=	"<h4><a href='" + this.data.url + "' target='_blank'>" + d.title + "</a></h4>";
+		if (d.images) {
+			if (d.images[0]) {
+				trace(d.images[0].url);
+				content		+=	"<img src='" + d.images[0].url + "' />";
+			}
+		}
+		if (d.favicon_url) {
+			content		+=	"<img class='tl-media-website-icon' src='" + d.favicon_url + "' />";
+		}
+		content		+=	"<span class='tl-media-website-description'>" + d.provider_name + "</span><br/>";
+		content		+=	"<p>" + d.description + "</p>";
+
+		this._setContent(content);
+	},
+
+	_setContent: function(content) {
+		// Create Dom element
+		this._el.content_item	= TL.Dom.create("div", "tl-media-item tl-media-website", this._el.content);
+		this._el.content_container.className = "tl-media-content-container tl-media-content-container-text";
+		this._el.content_item.innerHTML = content;
+
+		// After Loaded
+		this.onLoaded();
+
+	},
+
+	updateMediaDisplay: function() {
+
+	},
+
+	_updateMediaDisplay: function() {
+
+	}
+
+
+});
+
+
+/* **********************************************
+     Begin TL.Media.Wikipedia.js
+********************************************** */
+
+/*	TL.Media.Wikipedia
+================================================== */
+
+TL.Media.Wikipedia = TL.Media.extend({
+
+	includes: [TL.Events],
+
+	/*	Load the media
+	================================================== */
+	_loadMedia: function() {
+		var api_url,
+			api_language,
+			self = this;
+
+		// Create Dom element
+		this._el.content_item	= TL.Dom.create("div", "tl-media-item tl-media-wikipedia", this._el.content);
+		this._el.content_container.className = "tl-media-content-container tl-media-content-container-text";
+
+		// Get Media ID
+		this.media_id	 = this.data.url.split("wiki\/")[1].split("#")[0].replace("_", " ");
+		this.media_id	 = this.media_id.replace(" ", "%20");
+		api_language	 = this.data.url.split("//")[1].split(".wikipedia")[0];
+
+		// API URL
+		api_url = "https://" + api_language + ".wikipedia.org/w/api.php?action=query&prop=extracts|pageimages&redirects=&titles=" + this.media_id + "&exintro=1&format=json&callback=?";
+
+		// API Call
+		TL.ajax({
+			type: 'GET',
+			url: api_url,
+			dataType: 'json', //json data type
+
+			success: function(d){
+				self.createMedia(d);
+			},
+			error:function(xhr, type){
+				var error_text = "";
+				error_text += self._("wikipedia_load_err") + "<br/>" + self.media_id + "<br/>" + type;
+				self.loadErrorDisplay(error_text);
+			}
+		});
+
+	},
+
+	createMedia: function(d) {
+		var wiki = "";
+
+		if (d.query) {
+			var content = "",
+				wiki = {
+					entry: {},
+					title: "",
+					text: "",
+					extract: "",
+					paragraphs: 1,
+					page_image: "",
+					text_array: []
+				};
+
+			wiki.entry		 = TL.Util.getObjectAttributeByIndex(d.query.pages, 0);
+			wiki.extract	 = wiki.entry.extract;
+			wiki.title		 = wiki.entry.title;
+			wiki.page_image	 = wiki.entry.thumbnail;
+
+			if (wiki.extract.match("<p>")) {
+				wiki.text_array = wiki.extract.split("<p>");
+			} else {
+				wiki.text_array.push(wiki.extract);
+			}
+
+			for(var i = 0; i < wiki.text_array.length; i++) {
+				if (i+1 <= wiki.paragraphs && i+1 < wiki.text_array.length) {
+					wiki.text	+= "<p>" + wiki.text_array[i+1];
+				}
+			}
+
+
+			content		+=	"<span class='tl-icon-wikipedia'></span>";
+			content		+=	"<div class='tl-wikipedia-title'><h4><a href='" + this.data.url + "' target='_blank'>" + wiki.title + "</a></h4>";
+			content		+=	"<span class='tl-wikipedia-source'>" + this._('wikipedia') + "</span></div>";
+
+			if (wiki.page_image) {
+				//content 	+= 	"<img class='tl-wikipedia-pageimage' src='" + wiki.page_image.source +"'>";
+			}
+
+			content		+=	wiki.text;
+
+			if (wiki.extract.match("REDIRECT")) {
+
+			} else {
+				// Add to DOM
+				this._el.content_item.innerHTML	= content;
+				// After Loaded
+				this.onLoaded();
+			}
+
+
+		}
+
+	},
+
+	updateMediaDisplay: function() {
+
+	},
+
+	_updateMediaDisplay: function() {
+
+	}
+
+});
+
+
+/* **********************************************
+     Begin TL.Media.YouTube.js
+********************************************** */
+
+/*	TL.Media.YouTube
+================================================== */
+
+TL.Media.YouTube = TL.Media.extend({
+
+	includes: [TL.Events],
+
+	/*	Load the media
+	================================================== */
+	_loadMedia: function() {
+		var self = this,
+			url_vars;
+
+		this.youtube_loaded = false;
+
+		// Create Dom element
+		this._el.content_item	= TL.Dom.create("div", "tl-media-item tl-media-youtube tl-media-shadow", this._el.content);
+		this._el.content_item.id = TL.Util.unique_ID(7)
+
+		// URL Vars
+		url_vars = TL.Util.getUrlVars(this.data.url);
+
+		// Get Media ID
+		this.media_id = {};
+
+		if (this.data.url.match('v=')) {
+			this.media_id.id	= url_vars["v"];
+		} else if (this.data.url.match('\/embed\/')) {
+			this.media_id.id	= this.data.url.split("embed\/")[1].split(/[?&]/)[0];
+		} else if (this.data.url.match(/v\/|v=|youtu\.be\//)){
+			this.media_id.id	= this.data.url.split(/v\/|v=|youtu\.be\//)[1].split(/[?&]/)[0];
+		} else {
+			trace("YOUTUBE IN URL BUT NOT A VALID VIDEO");
+		}
+
+		this.media_id.start		= TL.Util.parseYouTubeTime(url_vars["t"]);
+		this.media_id.hd		= Boolean(typeof(url_vars["hd"]) != 'undefined');
+
+
+		// API Call
+		TL.Load.js('https://www.youtube.com/iframe_api', function() {
+			self.createMedia();
+		});
+
+	},
+
+	// Update Media Display
+	_updateMediaDisplay: function() {
+		//this.el.content_item = document.getElementById(this._el.content_item.id);
+		this._el.content_item.style.height = TL.Util.ratio.r16_9({w:this.options.width}) + "px";
+		this._el.content_item.style.width = this.options.width + "px";
+	},
+
+	_stopMedia: function() {
+		if (this.youtube_loaded) {
+			try {
+			    if(this.player.getPlayerState() == YT.PlayerState.PLAYING) {
+			        this.player.pauseVideo();
+			    }
+			}
+			catch(err) {
+				trace(err);
+			}
+
+		}
+	},
+	createMedia: function() {
+		var self = this;
+
+		clearTimeout(this.timer);
+
+		if(typeof YT != 'undefined' && typeof YT.Player != 'undefined') {
+			// Create Player
+			this.player = new YT.Player(this._el.content_item.id, {
+				playerVars: {
+					enablejsapi:		1,
+					color: 				'white',
+					autohide: 			1,
+					showinfo:			0,
+					theme:				'light',
+					start:				this.media_id.start,
+					fs: 				0,
+					rel:				0
+				},
+				videoId: this.media_id.id,
+				events: {
+					onReady: 			function() {
+						self.onPlayerReady();
+						// After Loaded
+						self.onLoaded();
+					},
+					'onStateChange': 	self.onStateChange
+				}
+			});
+		} else {
+			this.timer = setTimeout(function() {
+				self.createMedia();
+			}, 1000);
+		}
+	},
+
+	/*	Events
+	================================================== */
+	onPlayerReady: function(e) {
+		this.youtube_loaded = true;
+		this._el.content_item = document.getElementById(this._el.content_item.id);
+		this.onMediaLoaded();
+
+	},
+
+	onStateChange: function(e) {
+        if(e.data == YT.PlayerState.ENDED) {
+            e.target.seekTo(0);
+            e.target.pauseVideo();
+        }				
+	}
+
+
+});
+
+
+/* **********************************************
+     Begin TL.Slide.js
+********************************************** */
+
+/*	TL.Slide
+	Creates a slide. Takes a data object and
+	populates the slide with content.
+================================================== */
+
+TL.Slide = TL.Class.extend({
+
+	includes: [TL.Events, TL.DomMixins, TL.I18NMixins],
+
+	_el: {},
+
+	/*	Constructor
+	================================================== */
+	initialize: function(data, options, title_slide) {
+		// DOM Elements
+		this._el = {
+			container: {},
+			scroll_container: {},
+			background: {},
+			content_container: {},
+			content: {}
+		};
+
+		// Components
+		this._media 		= null;
+		this._mediaclass	= {};
+		this._text			= {};
+		this._background_media = null;
+
+		// State
+		this._state = {
+			loaded: 		false
+		};
+
+		this.has = {
+			headline: 	false,
+			text: 		false,
+			media: 		false,
+			title: 		false,
+			background: {
+				image: false,
+				color: false,
+				color_value :""
+			}
+		}
+
+		this.has.title = title_slide;
+
+		// Data
+		this.data = {
+			unique_id: 				null,
+			background: 			null,
+			start_date: 			null,
+			end_date: 				null,
+			location: 				null,
+			text: 					null,
+			media: 					null,
+            autolink: true
+		};
+
+		// Options
+		this.options = {
+			// animation
+			duration: 			1000,
+			slide_padding_lr: 	40,
+			ease: 				TL.Ease.easeInSpline,
+			width: 				600,
+			height: 			600,
+			skinny_size: 		650,
+			media_name: 		""
+		};
+
+		// Actively Displaying
+		this.active = false;
+
+		// Animation Object
+		this.animator = {};
+
+		// Merge Data and Options
+		TL.Util.mergeData(this.options, options);
+		TL.Util.mergeData(this.data, data);
+
+		this._initLayout();
+		this._initEvents();
+
+
+	},
+
+	/*	Adding, Hiding, Showing etc
+	================================================== */
+	show: function() {
+		this.animator = TL.Animate(this._el.slider_container, {
+			left: 		-(this._el.container.offsetWidth * n) + "px",
+			duration: 	this.options.duration,
+			easing: 	this.options.ease
+		});
+	},
+
+	hide: function() {
+
+	},
+
+	setActive: function(is_active) {
+		this.active = is_active;
+
+		if (this.active) {
+			if (this.data.background) {
+				this.fire("background_change", this.has.background);
+			}
+			this.loadMedia();
+		} else {
+			this.stopMedia();
+		}
+	},
+
+	addTo: function(container) {
+		container.appendChild(this._el.container);
+		//this.onAdd();
+	},
+
+	removeFrom: function(container) {
+		container.removeChild(this._el.container);
+	},
+
+	updateDisplay: function(w, h, l) {
+		this._updateDisplay(w, h, l);
+	},
+
+	loadMedia: function() {
+        var self = this;
+        
+		if (this._media && !this._state.loaded) {
+			this._media.loadMedia();
+			this._state.loaded = true;
+		}
+		
+		if(this._background_media && !this._background_media._state.loaded) {
+		    this._background_media.on("loaded", function() {
+		        self._updateBackgroundDisplay();
+		    });
+		    this._background_media.loadMedia();
+		}
+	},
+
+	stopMedia: function() {
+		if (this._media && this._state.loaded) {
+			this._media.stopMedia();
+		}
+	},
+
+	getBackground: function() {
+		return this.has.background;
+	},
+
+	scrollToTop: function() {
+		this._el.container.scrollTop = 0;
+	},
+
+	getFormattedDate: function() {
+
+		if (TL.Util.trim(this.data.display_date).length > 0) {
+			return this.data.display_date;
+		}
+		var date_text = "";
+
+		if(!this.has.title) {
+            if (this.data.end_date) {
+                date_text = " &mdash; " + this.data.end_date.getDisplayDate(this.getLanguage());
+            }
+            if (this.data.start_date) {
+                date_text = this.data.start_date.getDisplayDate(this.getLanguage()) + date_text;
+            }
+        }
+		return date_text;
+	},
+
+	/*	Events
+	================================================== */
+
+
+	/*	Private Methods
+	================================================== */
+	_initLayout: function () {
+		// Create Layout
+		this._el.container 				= TL.Dom.create("div", "tl-slide");
+
+		if (this.has.title) {
+			this._el.container.className = "tl-slide tl-slide-titleslide";
+		}
+
+		if (this.data.unique_id) {
+			this._el.container.id 		= this.data.unique_id;
+		}
+		this._el.scroll_container 		= TL.Dom.create("div", "tl-slide-scrollable-container", this._el.container);
+		this._el.content_container		= TL.Dom.create("div", "tl-slide-content-container", this._el.scroll_container);
+		this._el.content				= TL.Dom.create("div", "tl-slide-content", this._el.content_container);
+		this._el.background				= TL.Dom.create("div", "tl-slide-background", this._el.container);
+		// Style Slide Background
+		if (this.data.background) {
+			if (this.data.background.url) {
+			    var media_type = TL.MediaType(this.data.background, true);
+			    if(media_type) {
+                    this._background_media = new media_type.cls(this.data.background, {background: 1});
+                
+                    this.has.background.image 					= true;
+                    this._el.container.className 				+= ' tl-full-image-background';
+                    this.has.background.color_value 			= "#000";
+                    this._el.background.style.display 			= "block";
+                }
+			}
+			if (this.data.background.color) {
+				this.has.background.color 					= true;
+				this._el.container.className 				+= ' tl-full-color-background';
+				this.has.background.color_value 			= this.data.background.color;
+				//this._el.container.style.backgroundColor = this.data.background.color;
+				//this._el.background.style.backgroundColor 	= this.data.background.color;
+				//this._el.background.style.display 			= "block";
+			}
+			if (this.data.background.text_background) {
+				this._el.container.className 				+= ' tl-text-background';
+			}
+
+		}
+
+
+
+		// Determine Assets for layout and loading
+		if (this.data.media && this.data.media.url && this.data.media.url != "") {
+			this.has.media = true;
+		}
+		if (this.data.text && this.data.text.text) {
+			this.has.text = true;
+		}
+		if (this.data.text && this.data.text.headline) {
+			this.has.headline = true;
+		}
+
+		// Create Media
+		if (this.has.media) {
+
+			// Determine the media type
+			this.data.media.mediatype 	= TL.MediaType(this.data.media);
+			this.options.media_name 	= this.data.media.mediatype.name;
+			this.options.media_type 	= this.data.media.mediatype.type;
+            this.options.autolink = this.data.autolink;
+
+			// Create a media object using the matched class name
+			this._media = new this.data.media.mediatype.cls(this.data.media, this.options);
+
+		}
+
+		// Create Text
+		if (this.has.text || this.has.headline) {
+			this._text = new TL.Media.Text(this.data.text, {title:this.has.title,language: this.options.language, autolink: this.data.autolink });
+			this._text.addDateText(this.getFormattedDate());
+		}
+
+
+
+		// Add to DOM
+		if (!this.has.text && !this.has.headline && this.has.media) {
+			TL.DomUtil.addClass(this._el.container, 'tl-slide-media-only');
+			this._media.addTo(this._el.content);
+		} else if (this.has.headline && this.has.media && !this.has.text) {
+			TL.DomUtil.addClass(this._el.container, 'tl-slide-media-only');
+			this._text.addTo(this._el.content);
+			this._media.addTo(this._el.content);
+		} else if (this.has.text && this.has.media) {
+			this._media.addTo(this._el.content);
+			this._text.addTo(this._el.content);
+		} else if (this.has.text || this.has.headline) {
+			TL.DomUtil.addClass(this._el.container, 'tl-slide-text-only');
+			this._text.addTo(this._el.content);
+		}
+
+		// Fire event that the slide is loaded
+		this.onLoaded();
+
+	},
+
+	_initEvents: function() {
+
+	},
+
+	// Update Display
+	_updateDisplay: function(width, height, layout) {
+		var content_width,
+			content_padding_left = this.options.slide_padding_lr,
+			content_padding_right = this.options.slide_padding_lr;
+
+		if (width) {
+			this.options.width 					= width;
+		} else {
+			this.options.width 					= this._el.container.offsetWidth;
+		}
+
+		content_width = this.options.width - (this.options.slide_padding_lr * 2);
+
+		if(TL.Browser.mobile && (this.options.width <= this.options.skinny_size)) {
+			content_padding_left = 0;
+			content_padding_right = 0;
+			content_width = this.options.width;
+		} else if (layout == "landscape") {
+
+		} else if (this.options.width <= this.options.skinny_size) {
+			content_padding_left = 50;
+			content_padding_right = 50;
+			content_width = this.options.width - content_padding_left - content_padding_right;
+		} else {
+
+		}
+
+		this._el.content.style.paddingLeft 	= content_padding_left + "px";
+		this._el.content.style.paddingRight = content_padding_right + "px";
+		this._el.content.style.width		= content_width + "px";
+
+		if (height) {
+			this.options.height = height;
+			//this._el.scroll_container.style.height		= this.options.height + "px";
+
+		} else {
+			this.options.height = this._el.container.offsetHeight;
+		}
+
+		if (this._media) {
+
+			if (!this.has.text && this.has.headline) {
+				this._media.updateDisplay(content_width, (this.options.height - this._text.headlineHeight()), layout);
+			} else if (!this.has.text && !this.has.headline) {
+				this._media.updateDisplay(content_width, this.options.height, layout);
+			} else if (this.options.width <= this.options.skinny_size) {
+				this._media.updateDisplay(content_width, this.options.height, layout);
+			} else {
+				this._media.updateDisplay(content_width/2, this.options.height, layout);
+			}
+		}
+		
+		this._updateBackgroundDisplay();
+	},
+	
+	_updateBackgroundDisplay: function() {
+	    if(this._background_media && this._background_media._state.loaded) {
+	        this._el.background.style.backgroundImage 	= "url('" + this._background_media.getImageURL(this.options.width, this.options.height) + "')";
+	    }
+	}
+
+});
+
+
+/* **********************************************
+     Begin TL.SlideNav.js
+********************************************** */
+
+/*	TL.SlideNav
+	encapsulate DOM display/events for the 
+	'next' and 'previous' buttons on a slide.
+================================================== */
+// TODO null out data
+
+TL.SlideNav = TL.Class.extend({
+	
+	includes: [TL.Events, TL.DomMixins],
+	
+	_el: {},
+	
+	/*	Constructor
+	================================================== */
+	initialize: function(data, options, add_to_container) {
+		// DOM ELEMENTS
+		this._el = {
+			container: {},
+			content_container: {},
+			icon: {},
+			title: {},
+			description: {}
+		};
+	
+		// Media Type
+		this.mediatype = {};
+		
+		// Data
+		this.data = {
+			title: "Navigation",
+			description: "Description",
+			date: "Date"
+		};
+	
+		//Options
+		this.options = {
+			direction: 			"previous"
+		};
+	
+		this.animator = null;
+		
+		// Merge Data and Options
+		TL.Util.mergeData(this.options, options);
+		TL.Util.mergeData(this.data, data);
+		
+		
+		this._el.container = TL.Dom.create("div", "tl-slidenav-" + this.options.direction);
+		
+		if (TL.Browser.mobile) {
+			this._el.container.setAttribute("ontouchstart"," ");
+		}
+		
+		this._initLayout();
+		this._initEvents();
+		
+		if (add_to_container) {
+			add_to_container.appendChild(this._el.container);
+		};
+		
+	},
+	
+	/*	Update Content
+	================================================== */
+	update: function(slide) {
+		var d = {
+			title: "",
+			description: "",
+			date: slide.getFormattedDate()
+		};
+		
+		if (slide.data.text) {
+			if (slide.data.text.headline) {
+				d.title = slide.data.text.headline;
+			}
+		}
+
+		this._update(d);
+	},
+	
+	/*	Color
+	================================================== */
+	setColor: function(inverted) {
+		if (inverted) {
+			this._el.content_container.className = 'tl-slidenav-content-container tl-slidenav-inverted';
+		} else {
+			this._el.content_container.className = 'tl-slidenav-content-container';
+		}
+	},
+	
+	/*	Events
+	================================================== */
+	_onMouseClick: function() {
+		this.fire("clicked", this.options);
+	},
+	
+	/*	Private Methods
+	================================================== */
+	_update: function(d) {
+		// update data
+		this.data = TL.Util.mergeData(this.data, d);
+		
+		// Title
+		this._el.title.innerHTML = TL.Util.unlinkify(this.data.title);
+		
+		// Date
+		this._el.description.innerHTML	= TL.Util.unlinkify(this.data.date);
+	},
+	
+	_initLayout: function () {
+		
+		// Create Layout
+		this._el.content_container			= TL.Dom.create("div", "tl-slidenav-content-container", this._el.container);
+		this._el.icon						= TL.Dom.create("div", "tl-slidenav-icon", this._el.content_container);
+		this._el.title						= TL.Dom.create("div", "tl-slidenav-title", this._el.content_container);
+		this._el.description				= TL.Dom.create("div", "tl-slidenav-description", this._el.content_container);
+		
+		this._el.icon.innerHTML				= "&nbsp;"
+		
+		this._update();
+	},
+	
+	_initEvents: function () {
+		TL.DomEvent.addListener(this._el.container, 'click', this._onMouseClick, this);
+	}
+	
+	
+});
+
+/* **********************************************
+     Begin TL.StorySlider.js
+********************************************** */
+
+/*	StorySlider
+	is the central class of the API - it is used to create a StorySlider
+
+	Events:
+	nav_next
+	nav_previous
+	slideDisplayUpdate
+	loaded
+	slideAdded
+	slideLoaded
+	slideRemoved
+
+
+================================================== */
+
+TL.StorySlider = TL.Class.extend({
+
+	includes: [TL.Events, TL.I18NMixins],
+
+	/*	Private Methods
+	================================================== */
+	initialize: function (elem, data, options, init) {
+
+		// DOM ELEMENTS
+		this._el = {
+			container: {},
+			background: {},
+			slider_container_mask: {},
+			slider_container: {},
+			slider_item_container: {}
+		};
+
+		this._nav = {};
+		this._nav.previous = {};
+		this._nav.next = {};
+
+		// Slide Spacing
+		this.slide_spacing = 0;
+
+		// Slides Array
+		this._slides = [];
+
+		// Swipe Object
+		this._swipable;
+
+		// Preload Timer
+		this.preloadTimer;
+
+		// Message
+		this._message;
+
+		// Current Slide
+		this.current_id = '';
+
+		// Data Object
+		this.data = {};
+
+		this.options = {
+			id: 					"",
+			layout: 				"portrait",
+			width: 					600,
+			height: 				600,
+			default_bg_color: 		{r:255, g:255, b:255},
+			slide_padding_lr: 		40, 			// padding on slide of slide
+			start_at_slide: 		1,
+			slide_default_fade: 	"0%", 			// landscape fade
+			// animation
+			duration: 				1000,
+			ease: 					TL.Ease.easeInOutQuint,
+			// interaction
+			dragging: 				true,
+			trackResize: 			true
+		};
+
+		// Main element ID
+		if (typeof elem === 'object') {
+			this._el.container = elem;
+			this.options.id = TL.Util.unique_ID(6, "tl");
+		} else {
+			this.options.id = elem;
+			this._el.container = TL.Dom.get(elem);
+		}
+
+		if (!this._el.container.id) {
+			this._el.container.id = this.options.id;
+		}
+
+		// Animation Object
+		this.animator = null;
+
+		// Merge Data and Options
+		TL.Util.mergeData(this.options, options);
+		TL.Util.mergeData(this.data, data);
+
+		if (init) {
+			this.init();
+		}
+	},
+
+	init: function() {
+		this._initLayout();
+		this._initEvents();
+		this._initData();
+		this._updateDisplay();
+
+		// Go to initial slide
+		this.goTo(this.options.start_at_slide);
+
+		this._onLoaded();
+	},
+
+	/* Slides
+	================================================== */
+	_addSlide:function(slide) {
+		slide.addTo(this._el.slider_item_container);
+		slide.on('added', this._onSlideAdded, this);
+		slide.on('background_change', this._onBackgroundChange, this);
+	},
+
+	_createSlide: function(d, title_slide, n) {
+		var slide = new TL.Slide(d, this.options, title_slide);
+		this._addSlide(slide);
+		if(n < 0) {
+		    this._slides.push(slide);
+		} else {
+		    this._slides.splice(n, 0, slide);
+		}
+	},
+
+	_createSlides: function(array) {
+		for (var i = 0; i < array.length; i++) {
+			if (array[i].unique_id == "") {
+				array[i].unique_id = TL.Util.unique_ID(6, "tl-slide");
+			}
+            this._createSlide(array[i], false, -1);
+		}
+	},
+
+	_removeSlide: function(slide) {
+		slide.removeFrom(this._el.slider_item_container);
+		slide.off('added', this._onSlideRemoved, this);
+		slide.off('background_change', this._onBackgroundChange);
+	},
+
+	_destroySlide: function(n) {
+		this._removeSlide(this._slides[n]);
+		this._slides.splice(n, 1);
+	},
+
+    _findSlideIndex: function(n) {
+        var _n = n;
+		if (typeof n == 'string' || n instanceof String) {
+			_n = TL.Util.findArrayNumberByUniqueID(n, this._slides, "unique_id");
+		}
+		return _n;
+    },
+
+	/*	Public
+	================================================== */
+	updateDisplay: function(w, h, a, l) {
+		this._updateDisplay(w, h, a, l);
+	},
+
+	// Create a slide
+	createSlide: function(d, n) {
+		this._createSlide(d, false, n);
+	},
+
+	// Create Many Slides from an array
+	createSlides: function(array) {
+		this._createSlides(array);
+	},
+
+	// Destroy slide by index
+	destroySlide: function(n) {
+	    this._destroySlide(n);
+	},
+
+	// Destroy slide by id
+	destroySlideId: function(id) {
+	    this.destroySlide(this._findSlideIndex(id));
+	},
+
+	/*	Navigation
+	================================================== */
+	goTo: function(n, fast, displayupdate) {
+		n = parseInt(n);
+		if (isNaN(n)) n = 0;
+
+		var self = this;
+
+		this.changeBackground({color_value:"", image:false});
+
+		// Clear Preloader Timer
+		if (this.preloadTimer) {
+			clearTimeout(this.preloadTimer);
+		}
+
+		// Set Slide Active State
+		for (var i = 0; i < this._slides.length; i++) {
+			this._slides[i].setActive(false);
+		}
+
+		if (n < this._slides.length && n >= 0) {
+			this.current_id = this._slides[n].data.unique_id;
+
+			// Stop animation
+			if (this.animator) {
+				this.animator.stop();
+			}
+			if (this._swipable) {
+				this._swipable.stopMomentum();
+			}
+
+			if (fast) {
+				this._el.slider_container.style.left = -(this.slide_spacing * n) + "px";
+				this._onSlideChange(displayupdate);
+			} else {
+				this.animator = TL.Animate(this._el.slider_container, {
+					left: 		-(this.slide_spacing * n) + "px",
+					duration: 	this.options.duration,
+					easing: 	this.options.ease,
+					complete: 	this._onSlideChange(displayupdate)
+				});
+			}
+
+			// Set Slide Active State
+			this._slides[n].setActive(true);
+
+			// Update Navigation and Info
+			if (this._slides[n + 1]) {
+				this.showNav(this._nav.next, true);
+				this._nav.next.update(this._slides[n + 1]);
+			} else {
+				this.showNav(this._nav.next, false);
+			}
+			if (this._slides[n - 1]) {
+				this.showNav(this._nav.previous, true);
+				this._nav.previous.update(this._slides[n - 1]);
+			} else {
+				this.showNav(this._nav.previous, false);
+			}
+
+			// Preload Slides
+			this.preloadTimer = setTimeout(function() {
+				self.preloadSlides(n);
+			}, this.options.duration);
+		}
+	},
+
+	goToId: function(id, fast, displayupdate) {
+		this.goTo(this._findSlideIndex(id), fast, displayupdate);
+	},
+
+	preloadSlides: function(n) {
+		if (this._slides[n + 1]) {
+			this._slides[n + 1].loadMedia();
+			this._slides[n + 1].scrollToTop();
+		}
+		if (this._slides[n + 2]) {
+			this._slides[n + 2].loadMedia();
+			this._slides[n + 2].scrollToTop();
+		}
+		if (this._slides[n - 1]) {
+			this._slides[n - 1].loadMedia();
+			this._slides[n - 1].scrollToTop();
+		}
+		if (this._slides[n - 2]) {
+			this._slides[n - 2].loadMedia();
+			this._slides[n - 2].scrollToTop();
+		}
+	},
+
+	next: function() {
+	    var n = this._findSlideIndex(this.current_id);
+		if ((n + 1) < (this._slides.length)) {
+			this.goTo(n + 1);
+		} else {
+			this.goTo(n);
+		}
+	},
+
+	previous: function() {
+	    var n = this._findSlideIndex(this.current_id);
+		if (n - 1 >= 0) {
+			this.goTo(n - 1);
+		} else {
+			this.goTo(n);
+		}
+	},
+
+	showNav: function(nav_obj, show) {
+
+		if (this.options.width <= 500 && TL.Browser.mobile) {
+
+		} else {
+			if (show) {
+				nav_obj.show();
+			} else {
+				nav_obj.hide();
+			}
+
+		}
+	},
+
+
+
+	changeBackground: function(bg) {
+		var bg_color = {r:256, g:256, b:256},
+			bg_color_rgb;
+
+		if (bg.color_value && bg.color_value != "") {
+			bg_color = TL.Util.hexToRgb(bg.color_value);
+			if (!bg_color) {
+				trace("Invalid color value " + bg.color_value);
+				bg_color = this.options.default_bg_color;
+			}
+		} else {
+			bg_color = this.options.default_bg_color;
+			bg.color_value = "rgb(" + bg_color.r + " , " + bg_color.g + ", " + bg_color.b + ")";
+		}
+
+		bg_color_rgb 	= bg_color.r + "," + bg_color.g + "," + bg_color.b;
+		this._el.background.style.backgroundImage = "none";
+
+
+		if (bg.color_value) {
+			this._el.background.style.backgroundColor = bg.color_value;
+		} else {
+			this._el.background.style.backgroundColor = "transparent";
+		}
+
+		if (bg_color.r < 255 || bg_color.g < 255 || bg_color.b < 255 || bg.image) {
+			this._nav.next.setColor(true);
+			this._nav.previous.setColor(true);
+		} else {
+			this._nav.next.setColor(false);
+			this._nav.previous.setColor(false);
+		}
+	},
+	/*	Private Methods
+	================================================== */
+
+	// Update Display
+	_updateDisplay: function(width, height, animate, layout) {
+		var nav_pos, _layout;
+
+		if(typeof layout === 'undefined'){
+			_layout = this.options.layout;
+		} else {
+			_layout = layout;
+		}
+
+		this.options.layout = _layout;
+
+		this.slide_spacing = this.options.width*2;
+
+		if (width) {
+			this.options.width = width;
+		} else {
+			this.options.width = this._el.container.offsetWidth;
+		}
+
+		if (height) {
+			this.options.height = height;
+		} else {
+			this.options.height = this._el.container.offsetHeight;
+		}
+
+		//this._el.container.style.height = this.options.height;
+
+		// position navigation
+		nav_pos = (this.options.height/2);
+		this._nav.next.setPosition({top:nav_pos});
+		this._nav.previous.setPosition({top:nav_pos});
+
+
+		// Position slides
+		for (var i = 0; i < this._slides.length; i++) {
+			this._slides[i].updateDisplay(this.options.width, this.options.height, _layout);
+			this._slides[i].setPosition({left:(this.slide_spacing * i), top:0});
+
+		};
+
+		// Go to the current slide
+		this.goToId(this.current_id, true, true);
+	},
+
+	// Reposition and redraw slides
+    _updateDrawSlides: function() {
+	    var _layout = this.options.layout;
+
+		for (var i = 0; i < this._slides.length; i++) {
+			this._slides[i].updateDisplay(this.options.width, this.options.height, _layout);
+			this._slides[i].setPosition({left:(this.slide_spacing * i), top:0});
+		};
+
+		this.goToId(this.current_id, true, false);
+	},
+
+
+	/*	Init
+	================================================== */
+	_initLayout: function () {
+
+		TL.DomUtil.addClass(this._el.container, 'tl-storyslider');
+
+		// Create Layout
+		this._el.slider_container_mask		= TL.Dom.create('div', 'tl-slider-container-mask', this._el.container);
+		this._el.background 				= TL.Dom.create('div', 'tl-slider-background tl-animate', this._el.container);
+		this._el.slider_container			= TL.Dom.create('div', 'tl-slider-container tlanimate', this._el.slider_container_mask);
+		this._el.slider_item_container		= TL.Dom.create('div', 'tl-slider-item-container', this._el.slider_container);
+
+
+		// Update Size
+		this.options.width = this._el.container.offsetWidth;
+		this.options.height = this._el.container.offsetHeight;
+
+		// Create Navigation
+		this._nav.previous = new TL.SlideNav({title: "Previous", description: "description"}, {direction:"previous"});
+		this._nav.next = new TL.SlideNav({title: "Next",description: "description"}, {direction:"next"});
+
+		// add the navigation to the dom
+		this._nav.next.addTo(this._el.container);
+		this._nav.previous.addTo(this._el.container);
+
+
+
+		this._el.slider_container.style.left="0px";
+
+		if (TL.Browser.touch) {
+			//this._el.slider_touch_mask = TL.Dom.create('div', 'tl-slider-touch-mask', this._el.slider_container_mask);
+			this._swipable = new TL.Swipable(this._el.slider_container_mask, this._el.slider_container, {
+				enable: {x:true, y:false},
+				snap: 	true
+			});
+			this._swipable.enable();
+
+			// Message
+			this._message = new TL.Message({}, {
+				message_class: 		"tl-message-full",
+				message_icon_class: "tl-icon-swipe-left"
+			});
+			this._message.updateMessage(this._("swipe_to_navigate"));
+			this._message.addTo(this._el.container);
+		}
+
+	},
+
+	_initEvents: function () {
+		this._nav.next.on('clicked', this._onNavigation, this);
+		this._nav.previous.on('clicked', this._onNavigation, this);
+
+		if (this._message) {
+			this._message.on('clicked', this._onMessageClick, this);
+		}
+
+		if (this._swipable) {
+			this._swipable.on('swipe_left', this._onNavigation, this);
+			this._swipable.on('swipe_right', this._onNavigation, this);
+			this._swipable.on('swipe_nodirection', this._onSwipeNoDirection, this);
+		}
+
+
+	},
+
+	_initData: function() {
+	    if(this.data.title) {
+	        this._createSlide(this.data.title, true, -1);
+	    }
+        this._createSlides(this.data.events);
+	},
+
+	/*	Events
+	================================================== */
+	_onBackgroundChange: function(e) {
+	    var n = this._findSlideIndex(this.current_id);
+		var slide_background = this._slides[n].getBackground();
+		this.changeBackground(e);
+		this.fire("colorchange", slide_background);
+	},
+
+	_onMessageClick: function(e) {
+		this._message.hide();
+	},
+
+	_onSwipeNoDirection: function(e) {
+		this.goToId(this.current_id);
+	},
+
+	_onNavigation: function(e) {
+
+		if (e.direction == "next" || e.direction == "left") {
+			this.next();
+		} else if (e.direction == "previous" || e.direction == "right") {
+			this.previous();
+		}
+		this.fire("nav_" + e.direction, this.data);
+	},
+
+	_onSlideAdded: function(e) {
+		trace("slideadded")
+		this.fire("slideAdded", this.data);
+	},
+
+	_onSlideRemoved: function(e) {
+		this.fire("slideRemoved", this.data);
+	},
+
+	_onSlideChange: function(displayupdate) {
+		if (!displayupdate) {
+			this.fire("change", {unique_id: this.current_id});
+		}
+	},
+
+	_onMouseClick: function(e) {
+
+	},
+
+	_fireMouseEvent: function (e) {
+		if (!this._loaded) {
+			return;
+		}
+
+		var type = e.type;
+		type = (type === 'mouseenter' ? 'mouseover' : (type === 'mouseleave' ? 'mouseout' : type));
+
+		if (!this.hasEventListeners(type)) {
+			return;
+		}
+
+		if (type === 'contextmenu') {
+			TL.DomEvent.preventDefault(e);
+		}
+
+		this.fire(type, {
+			latlng: "something", //this.mouseEventToLatLng(e),
+			layerPoint: "something else" //this.mouseEventToLayerPoint(e)
+		});
+	},
+
+	_onLoaded: function() {
+		this.fire("loaded", this.data);
+	}
+
+
+});
+
+
+/* **********************************************
+     Begin TL.TimeNav.js
+********************************************** */
+
+/*	TL.TimeNav
+
+================================================== */
+
+TL.TimeNav = TL.Class.extend({
+
+	includes: [TL.Events, TL.DomMixins],
+
+	_el: {},
+
+	/*	Constructor
+	================================================== */
+	initialize: function (elem, timeline_config, options, init) {
+		// DOM ELEMENTS
+		this._el = {
+			parent: {},
+			container: {},
+			slider: {},
+			slider_background: {},
+			line: {},
+			marker_container_mask: {},
+			marker_container: {},
+			marker_item_container: {},
+			timeaxis: {},
+			timeaxis_background: {},
+			attribution: {}
+		};
+
+		this.collapsed = false;
+
+		if (typeof elem === 'object') {
+			this._el.container = elem;
+		} else {
+			this._el.container = TL.Dom.get(elem);
+		}
+
+		this.config = timeline_config;
+
+		//Options
+		this.options = {
+			width: 					600,
+			height: 				600,
+			duration: 				1000,
+			ease: 					TL.Ease.easeInOutQuint,
+			has_groups: 			false,
+			optimal_tick_width: 	50,
+			scale_factor: 			2, 				// How many screen widths wide should the timeline be
+			marker_padding: 		5,
+			timenav_height_min: 	150, 			// Minimum timenav height
+			marker_height_min: 		30, 			// Minimum Marker Height
+			marker_width_min: 		100, 			// Minimum Marker Width
+			zoom_sequence:          [0.5, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89] // Array of Fibonacci numbers for TimeNav zoom levels http://www.maths.surrey.ac.uk/hosted-sites/R.Knott/Fibonacci/fibtable.html
+		};
+
+		// Animation
+		this.animator = null;
+
+		// Ready state
+		this.ready = false;
+
+		// Markers Array
+		this._markers = [];
+
+		// Eras Array
+		this._eras = [];
+		this.has_eras = false;
+
+		// Groups Array
+		this._groups = [];
+
+		// Row Height
+		this._calculated_row_height = 100;
+
+		// Current Marker
+		this.current_id = "";
+
+		// TimeScale
+		this.timescale = {};
+
+		// TimeAxis
+		this.timeaxis = {};
+		this.axishelper = {};
+
+		// Max Rows
+		this.max_rows = 6;
+
+		// Animate CSS
+		this.animate_css = false;
+
+		// Swipe Object
+		this._swipable;
+
+		// Merge Data and Options
+		TL.Util.mergeData(this.options, options);
+
+		if (init) {
+			this.init();
+		}
+	},
+
+	init: function() {
+		this._initLayout();
+		this._initEvents();
+		this._initData();
+		this._updateDisplay();
+
+		this._onLoaded();
+	},
+
+	/*	Public
+	================================================== */
+	positionMarkers: function() {
+		this._positionMarkers();
+	},
+
+	/*	Update Display
+	================================================== */
+	updateDisplay: function(w, h, a, l) {
+		this._updateDisplay(w, h, a, l);
+	},
+
+
+	/*	TimeScale
+	================================================== */
+	_getTimeScale: function() {
+		/* maybe the establishing config values (marker_height_min and max_rows) should be
+		separated from making a TimeScale object, which happens in another spot in this file with duplicate mapping of properties of this TimeNav into the TimeScale options object? */
+		// Set Max Rows
+		var marker_height_min = 0;
+		try {
+			marker_height_min = parseInt(this.options.marker_height_min);
+		} catch(e) {
+			trace("Invalid value for marker_height_min option.");
+			marker_height_min = 30;
+		}
+		if (marker_height_min == 0) {
+			trace("marker_height_min option must not be zero.")
+			marker_height_min = 30;
+		}
+		this.max_rows = Math.round((this.options.height - this._el.timeaxis_background.offsetHeight - (this.options.marker_padding)) / marker_height_min);
+		if (this.max_rows < 1) {
+			this.max_rows = 1;
+		}
+		return new TL.TimeScale(this.config, {
+            display_width: this._el.container.offsetWidth,
+            screen_multiplier: this.options.scale_factor,
+            max_rows: this.max_rows
+
+		});
+	},
+
+	_updateTimeScale: function(new_scale) {
+		this.options.scale_factor = new_scale;
+		this._updateDrawTimeline();
+	},
+
+	zoomIn: function() { // move the the next "higher" scale factor
+		var new_scale = TL.Util.findNextGreater(this.options.zoom_sequence, this.options.scale_factor);
+		this.setZoomFactor(new_scale);
+	},
+
+	zoomOut: function() { // move the the next "lower" scale factor
+		var new_scale = TL.Util.findNextLesser(this.options.zoom_sequence, this.options.scale_factor);
+		this.setZoomFactor(new_scale);
+	},
+
+	setZoom: function(level) {
+		var zoom_factor = this.options.zoom_sequence[level];
+		if (typeof(zoom_factor) == 'number') {
+			this.setZoomFactor(zoom_factor);
+		} else {
+			console.warn("Invalid zoom level. Please use an index number between 0 and " + (this.options.zoom_sequence.length - 1));
+		}
+	},
+
+	setZoomFactor: function(factor) {
+		if (factor <= this.options.zoom_sequence[0]) {
+			this.fire("zoomtoggle", {zoom:"out", show:false});
+		} else {
+			this.fire("zoomtoggle", {zoom:"out", show:true});
+		}
+
+		if (factor >= this.options.zoom_sequence[this.options.zoom_sequence.length-1]) {
+			this.fire("zoomtoggle", {zoom:"in", show:false});
+		} else {
+			this.fire("zoomtoggle", {zoom:"in", show:true});
+		}
+
+		if (factor == 0) {
+			console.warn("Zoom factor must be greater than zero. Using 0.1");
+			factor = 0.1;
+		}
+		this.options.scale_factor = factor;
+		//this._updateDrawTimeline(true);
+		this.goToId(this.current_id, !this._updateDrawTimeline(true), true);
+	},
+
+	/*	Groups
+	================================================== */
+	_createGroups: function() {
+		var group_labels = this.timescale.getGroupLabels();
+
+		if (group_labels) {
+			this.options.has_groups = true;
+			for (var i = 0; i < group_labels.length; i++) {
+				this._createGroup(group_labels[i]);
+			}
+		}
+
+	},
+
+	_createGroup: function(group_label) {
+		var group = new TL.TimeGroup(group_label);
+		this._addGroup(group);
+		this._groups.push(group);
+	},
+
+	_addGroup:function(group) {
+		group.addTo(this._el.container);
+
+	},
+
+	_positionGroups: function() {
+		if (this.options.has_groups) {
+			var available_height 	= (this.options.height - this._el.timeaxis_background.offsetHeight ),
+				group_height 		= Math.floor((available_height /this.timescale.getNumberOfRows()) - this.options.marker_padding),
+				group_labels		= this.timescale.getGroupLabels();
+
+			for (var i = 0, group_rows = 0; i < this._groups.length; i++) {
+				var group_y = Math.floor(group_rows * (group_height + this.options.marker_padding));
+				var group_hide = false;
+				if (group_y > (available_height- this.options.marker_padding)) {
+					group_hide = true;
+				}
+
+				this._groups[i].setRowPosition(group_y, this._calculated_row_height + this.options.marker_padding/2);
+				this._groups[i].setAlternateRowColor(TL.Util.isEven(i), group_hide);
+
+				group_rows += this._groups[i].data.rows;    // account for groups spanning multiple rows
+			}
+		}
+	},
+
+	/*	Markers
+	================================================== */
+	_addMarker:function(marker) {
+		marker.addTo(this._el.marker_item_container);
+		marker.on('markerclick', this._onMarkerClick, this);
+		marker.on('added', this._onMarkerAdded, this);
+	},
+
+	_createMarker: function(data, n) {
+		var marker = new TL.TimeMarker(data, this.options);
+		this._addMarker(marker);
+		if(n < 0) {
+		    this._markers.push(marker);
+		} else {
+		    this._markers.splice(n, 0, marker);
+		}
+	},
+
+	_createMarkers: function(array) {
+		for (var i = 0; i < array.length; i++) {
+			this._createMarker(array[i], -1);
+		}
+	},
+
+	_removeMarker: function(marker) {
+		marker.removeFrom(this._el.marker_item_container);
+		//marker.off('added', this._onMarkerRemoved, this);
+	},
+
+	_destroyMarker: function(n) {
+	    this._removeMarker(this._markers[n]);
+	    this._markers.splice(n, 1);
+	},
+
+	_positionMarkers: function(fast) {
+		// POSITION X
+		for (var i = 0; i < this._markers.length; i++) {
+			var pos = this.timescale.getPositionInfo(i);
+			if (fast) {
+				this._markers[i].setClass("tl-timemarker tl-timemarker-fast");
+			} else {
+				this._markers[i].setClass("tl-timemarker");
+			}
+			this._markers[i].setPosition({left:pos.start});
+			this._markers[i].setWidth(pos.width);
+		};
+
+	},
+
+	_calculateMarkerHeight: function(h) {
+		return ((h /this.timescale.getNumberOfRows()) - this.options.marker_padding);
+	},
+
+	_calculateRowHeight: function(h) {
+		return (h /this.timescale.getNumberOfRows());
+	},
+
+	_calculateAvailableHeight: function() {
+		return (this.options.height - this._el.timeaxis_background.offsetHeight - (this.options.marker_padding));
+	},
+
+	_calculateMinimumTimeNavHeight: function() {
+		return (this.timescale.getNumberOfRows() * this.options.marker_height_min) + this._el.timeaxis_background.offsetHeight + (this.options.marker_padding);
+
+	},
+
+	getMinimumHeight: function() {
+		return this._calculateMinimumTimeNavHeight();
+	},
+
+	_assignRowsToMarkers: function() {
+		var available_height 	= this._calculateAvailableHeight(),
+			marker_height 		= this._calculateMarkerHeight(available_height);
+
+
+		this._positionGroups();
+
+		this._calculated_row_height = this._calculateRowHeight(available_height);
+
+		for (var i = 0; i < this._markers.length; i++) {
+
+			// Set Height
+			this._markers[i].setHeight(marker_height);
+
+			//Position by Row
+			var row = this.timescale.getPositionInfo(i).row;
+
+			var marker_y = Math.floor(row * (marker_height + this.options.marker_padding)) + this.options.marker_padding;
+
+			var remainder_height = available_height - marker_y + this.options.marker_padding;
+			this._markers[i].setRowPosition(marker_y, remainder_height);
+		};
+
+	},
+
+	_resetMarkersActive: function() {
+		for (var i = 0; i < this._markers.length; i++) {
+			this._markers[i].setActive(false);
+		};
+	},
+
+	_findMarkerIndex: function(n) {
+	    var _n = -1;
+		if (typeof n == 'string' || n instanceof String) {
+			_n = TL.Util.findArrayNumberByUniqueID(n, this._markers, "unique_id", _n);
+		}
+		return _n;
+	},
+
+	/*	ERAS
+	================================================== */
+	_createEras: function(array) {
+		for (var i = 0; i < array.length; i++) {
+			this._createEra(array[i], -1);
+		}
+	},
+
+	_createEra: function(data, n) {
+		var era = new TL.TimeEra(data, this.options);
+		this._addEra(era);
+		if(n < 0) {
+		    this._eras.push(era);
+		} else {
+		    this._eras.splice(n, 0, era);
+		}
+	},
+
+	_addEra:function(era) {
+		era.addTo(this._el.marker_item_container);
+		era.on('added', this._onEraAdded, this);
+	},
+
+	_removeEra: function(era) {
+		era.removeFrom(this._el.marker_item_container);
+		//marker.off('added', this._onMarkerRemoved, this);
+	},
+
+	_destroyEra: function(n) {
+	    this._removeEra(this._eras[n]);
+	    this._eras.splice(n, 1);
+	},
+
+	_positionEras: function(fast) {
+
+		var era_color = 0;
+		// POSITION X
+		for (var i = 0; i < this._eras.length; i++) {
+			var pos = {
+				start:0,
+				end:0,
+				width:0
+			};
+
+			pos.start = this.timescale.getPosition(this._eras[i].data.start_date.getTime());
+			pos.end = this.timescale.getPosition(this._eras[i].data.end_date.getTime());
+			pos.width = pos.end - pos.start;
+
+			if (fast) {
+				this._eras[i].setClass("tl-timeera tl-timeera-fast");
+			} else {
+				this._eras[i].setClass("tl-timeera");
+			}
+			this._eras[i].setPosition({left:pos.start});
+			this._eras[i].setWidth(pos.width);
+
+			era_color++;
+			if (era_color > 5) {
+				era_color = 0;
+			}
+			this._eras[i].setColor(era_color);
+		};
+
+	},
+
+	/*	Public
+	================================================== */
+
+	// Create a marker
+	createMarker: function(d, n) {
+	    this._createMarker(d, n);
+	},
+
+	// Create many markers from an array
+	createMarkers: function(array) {
+	    this._createMarkers(array);
+	},
+
+	// Destroy marker by index
+	destroyMarker: function(n) {
+	    this._destroyMarker(n);
+	},
+
+	// Destroy marker by id
+	destroyMarkerId: function(id) {
+	    this.destroyMarker(this._findMarkerIndex(id));
+	},
+
+	/*	Navigation
+	================================================== */
+	goTo: function(n, fast, css_animation) {
+		var self = 	this,
+			_ease = this.options.ease,
+			_duration = this.options.duration,
+			_n = (n < 0) ? 0 : n;
+
+		// Set Marker active state
+		this._resetMarkersActive();
+		if(n >= 0 && n < this._markers.length) {
+		    this._markers[n].setActive(true);
+		}
+		// Stop animation
+		if (this.animator) {
+			this.animator.stop();
+		}
+
+		if (fast) {
+			this._el.slider.className = "tl-timenav-slider";
+			this._el.slider.style.left = -this._markers[_n].getLeft() + (this.options.width/2) + "px";
+		} else {
+			if (css_animation) {
+				this._el.slider.className = "tl-timenav-slider tl-timenav-slider-animate";
+				this.animate_css = true;
+				this._el.slider.style.left = -this._markers[_n].getLeft() + (this.options.width/2) + "px";
+			} else {
+				this._el.slider.className = "tl-timenav-slider";
+				this.animator = TL.Animate(this._el.slider, {
+					left: 		-this._markers[_n].getLeft() + (this.options.width/2) + "px",
+					duration: 	_duration,
+					easing: 	_ease
+				});
+			}
+		}
+
+		if(n >= 0 && n < this._markers.length) {
+		    this.current_id = this._markers[n].data.unique_id;
+		} else {
+		    this.current_id = '';
+		}
+	},
+
+	goToId: function(id, fast, css_animation) {
+		this.goTo(this._findMarkerIndex(id), fast, css_animation);
+	},
+
+	/*	Events
+	================================================== */
+	_onLoaded: function() {
+		this.ready = true;
+		this.fire("loaded", this.config);
+	},
+
+	_onMarkerAdded: function(e) {
+		this.fire("dateAdded", this.config);
+	},
+
+	_onEraAdded: function(e) {
+		this.fire("eraAdded", this.config);
+	},
+
+	_onMarkerRemoved: function(e) {
+		this.fire("dateRemoved", this.config);
+	},
+
+	_onMarkerClick: function(e) {
+		// Go to the clicked marker
+		this.goToId(e.unique_id);
+		this.fire("change", {unique_id: e.unique_id});
+	},
+
+	_onMouseScroll: function(e) {
+
+		var delta		= 0,
+			scroll_to	= 0,
+			constraint 	= {
+				right: 	-(this.timescale.getPixelWidth() - (this.options.width/2)),
+				left: 	this.options.width/2
+			};
+		if (!e) {
+			e = window.event;
+		}
+		if (e.originalEvent) {
+			e = e.originalEvent;
+		}
+
+		// Webkit and browsers able to differntiate between up/down and left/right scrolling
+		if (typeof e.wheelDeltaX != 'undefined' ) {
+			delta = e.wheelDeltaY/6;
+			if (Math.abs(e.wheelDeltaX) > Math.abs(e.wheelDeltaY)) {
+				delta = e.wheelDeltaX/6;
+			} else {
+				//delta = e.wheelDeltaY/6;
+				delta = 0;
+			}
+		}
+		if (delta) {
+			if (e.preventDefault) {
+				 e.preventDefault();
+			}
+			e.returnValue = false;
+		}
+		// Stop from scrolling too far
+		scroll_to = parseInt(this._el.slider.style.left.replace("px", "")) + delta;
+
+
+		if (scroll_to > constraint.left) {
+			scroll_to = constraint.left;
+		} else if (scroll_to < constraint.right) {
+			scroll_to = constraint.right;
+		}
+
+		if (this.animate_css) {
+			this._el.slider.className = "tl-timenav-slider";
+			this.animate_css = false;
+		}
+
+		this._el.slider.style.left = scroll_to + "px";
+
+	},
+
+	_onDragMove: function(e) {
+		if (this.animate_css) {
+			this._el.slider.className = "tl-timenav-slider";
+			this.animate_css = false;
+		}
+
+	},
+
+	/*	Private Methods
+	================================================== */
+	// Update Display
+	_updateDisplay: function(width, height, animate) {
+
+		if (width) {
+			this.options.width = width;
+		}
+		if (height && height != this.options.height) {
+			this.options.height = height;
+			this.timescale = this._getTimeScale();
+		}
+
+		// Size Markers
+		this._assignRowsToMarkers();
+
+		// Size swipable area
+		this._el.slider_background.style.width = this.timescale.getPixelWidth() + this.options.width + "px";
+		this._el.slider_background.style.left = -(this.options.width/2) + "px";
+		this._el.slider.style.width = this.timescale.getPixelWidth() + this.options.width + "px";
+
+		// Update Swipable constraint
+		this._swipable.updateConstraint({top: false,bottom: false,left: (this.options.width/2),right: -(this.timescale.getPixelWidth() - (this.options.width/2))});
+
+		// Go to the current slide
+		this.goToId(this.current_id, true);
+	},
+
+	_drawTimeline: function(fast) {
+		this.timescale = this._getTimeScale();
+		this.timeaxis.drawTicks(this.timescale, this.options.optimal_tick_width);
+		this._positionMarkers(fast);
+		this._assignRowsToMarkers();
+		this._createGroups();
+		this._positionGroups();
+
+		if (this.has_eras) {
+
+			this._positionEras(fast);
+		}
+	},
+
+	_updateDrawTimeline: function(check_update) {
+		var do_update = false;
+
+		// Check to see if redraw is needed
+		if (check_update) {
+			/* keep this aligned with _getTimeScale or reduce code duplication */
+			var temp_timescale = new TL.TimeScale(this.config, {
+	            display_width: this._el.container.offsetWidth,
+	            screen_multiplier: this.options.scale_factor,
+	            max_rows: this.max_rows
+
+			});
+
+			if (this.timescale.getMajorScale() == temp_timescale.getMajorScale()
+			 && this.timescale.getMinorScale() == temp_timescale.getMinorScale()) {
+				do_update = true;
+			}
+		} else {
+			do_update = true;
+		}
+
+		// Perform update or redraw
+		if (do_update) {
+			this.timescale = this._getTimeScale();
+			this.timeaxis.positionTicks(this.timescale, this.options.optimal_tick_width);
+			this._positionMarkers();
+			this._assignRowsToMarkers();
+			this._positionGroups();
+			if (this.has_eras) {
+				this._positionEras();
+			}
+			this._updateDisplay();
+		} else {
+			this._drawTimeline(true);
+		}
+
+		return do_update;
+
+	},
+
+
+	/*	Init
+	================================================== */
+	_initLayout: function () {
+		// Create Layout
+		this._el.attribution 				= TL.Dom.create('div', 'tl-attribution', this._el.container);
+		this._el.line						= TL.Dom.create('div', 'tl-timenav-line', this._el.container);
+		this._el.slider						= TL.Dom.create('div', 'tl-timenav-slider', this._el.container);
+		this._el.slider_background			= TL.Dom.create('div', 'tl-timenav-slider-background', this._el.slider);
+		this._el.marker_container_mask		= TL.Dom.create('div', 'tl-timenav-container-mask', this._el.slider);
+		this._el.marker_container			= TL.Dom.create('div', 'tl-timenav-container', this._el.marker_container_mask);
+		this._el.marker_item_container		= TL.Dom.create('div', 'tl-timenav-item-container', this._el.marker_container);
+		this._el.timeaxis 					= TL.Dom.create('div', 'tl-timeaxis', this._el.slider);
+		this._el.timeaxis_background 		= TL.Dom.create('div', 'tl-timeaxis-background', this._el.container);
+
+
+		// Knight Lab Logo
+		this._el.attribution.innerHTML = "<a href='http://timeline.knightlab.com' target='_blank'><span class='tl-knightlab-logo'></span>Timeline JS</a>"
+
+		// Time Axis
+		this.timeaxis = new TL.TimeAxis(this._el.timeaxis, this.options);
+
+		// Swipable
+		this._swipable = new TL.Swipable(this._el.slider_background, this._el.slider, {
+			enable: {x:true, y:false},
+			constraint: {top: false,bottom: false,left: (this.options.width/2),right: false},
+			snap: 	false
+		});
+		this._swipable.enable();
+
+	},
+
+	_initEvents: function () {
+		// Drag Events
+		this._swipable.on('dragmove', this._onDragMove, this);
+
+		// Scroll Events
+		TL.DomEvent.addListener(this._el.container, 'mousewheel', this._onMouseScroll, this);
+		TL.DomEvent.addListener(this._el.container, 'DOMMouseScroll', this._onMouseScroll, this);
+	},
+
+	_initData: function() {
+		// Create Markers and then add them
+		this._createMarkers(this.config.events);
+
+		if (this.config.eras) {
+			this.has_eras = true;
+			this._createEras(this.config.eras);
+		}
+
+		this._drawTimeline();
+
+	}
+
+
+});
+
+
+/* **********************************************
+     Begin TL.TimeMarker.js
+********************************************** */
+
+/*	TL.TimeMarker
+
+================================================== */
+
+TL.TimeMarker = TL.Class.extend({
+
+	includes: [TL.Events, TL.DomMixins],
+
+	_el: {},
+
+	/*	Constructor
+	================================================== */
+	initialize: function(data, options) {
+
+		// DOM Elements
+		this._el = {
+			container: {},
+			content_container: {},
+			media_container: {},
+			timespan: {},
+			line_left: {},
+			line_right: {},
+			content: {},
+			text: {},
+			media: {},
+		};
+
+		// Components
+		this._text			= {};
+
+		// State
+		this._state = {
+			loaded: 		false
+		};
+
+
+		// Data
+		this.data = {
+			unique_id: 			"",
+			background: 		null,
+			date: {
+				year:			0,
+				month:			0,
+				day: 			0,
+				hour: 			0,
+				minute: 		0,
+				second: 		0,
+				millisecond: 	0,
+				thumbnail: 		"",
+				format: 		""
+			},
+			text: {
+				headline: 		"",
+				text: 			""
+			},
+			media: 				null
+		};
+
+		// Options
+		this.options = {
+			duration: 			1000,
+			ease: 				TL.Ease.easeInSpline,
+			width: 				600,
+			height: 			600,
+			marker_width_min: 	100 			// Minimum Marker Width
+		};
+
+		// Actively Displaying
+		this.active = false;
+
+		// Animation Object
+		this.animator = {};
+
+		// End date
+		this.has_end_date = false;
+
+		// Merge Data and Options
+		TL.Util.mergeData(this.options, options);
+		TL.Util.mergeData(this.data, data);
+
+		this._initLayout();
+		this._initEvents();
+
+
+	},
+
+	/*	Adding, Hiding, Showing etc
+	================================================== */
+	show: function() {
+
+	},
+
+	hide: function() {
+
+	},
+
+	setActive: function(is_active) {
+		this.active = is_active;
+
+		if (this.active && this.has_end_date) {
+			this._el.container.className = 'tl-timemarker tl-timemarker-with-end tl-timemarker-active';
+		} else if (this.active){
+			this._el.container.className = 'tl-timemarker tl-timemarker-active';
+		} else if (this.has_end_date){
+			this._el.container.className = 'tl-timemarker tl-timemarker-with-end';
+		} else {
+			this._el.container.className = 'tl-timemarker';
+		}
+	},
+
+	addTo: function(container) {
+		container.appendChild(this._el.container);
+	},
+
+	removeFrom: function(container) {
+		container.removeChild(this._el.container);
+	},
+
+	updateDisplay: function(w, h) {
+		this._updateDisplay(w, h);
+	},
+
+	loadMedia: function() {
+
+		if (this._media && !this._state.loaded) {
+			this._media.loadMedia();
+			this._state.loaded = true;
+		}
+	},
+
+	stopMedia: function() {
+		if (this._media && this._state.loaded) {
+			this._media.stopMedia();
+		}
+	},
+
+	getLeft: function() {
+		return this._el.container.style.left.slice(0, -2);
+	},
+
+	getTime: function() { // TODO does this need to know about the end date?
+		return this.data.start_date.getTime();
+	},
+
+	getEndTime: function() {
+
+		if (this.data.end_date) {
+			return this.data.end_date.getTime();
+		} else {
+			return false;
+		}
+	},
+
+	setHeight: function(h) {
+		var text_line_height = 12,
+			text_lines = 1;
+
+		this._el.content_container.style.height = h  + "px";
+		this._el.timespan_content.style.height = h + "px";
+		// Handle Line height for better display of text
+		if (h <= 30) {
+			this._el.content.className = "tl-timemarker-content tl-timemarker-content-small";
+		} else {
+			this._el.content.className = "tl-timemarker-content";
+		}
+
+		if (h <= 56) {
+			TL.DomUtil.addClass(this._el.content_container, "tl-timemarker-content-container-small");
+		} else {
+			TL.DomUtil.removeClass(this._el.content_container, "tl-timemarker-content-container-small");
+		}
+
+		// Handle number of lines visible vertically
+
+		if (TL.Browser.webkit) {
+			text_lines = Math.floor(h / (text_line_height + 2));
+			if (text_lines < 1) {
+				text_lines = 1;
+			}
+			this._text.className = "tl-headline";
+			this._text.style.webkitLineClamp = text_lines;
+		} else {
+			text_lines = h / text_line_height;
+			if (text_lines > 1) {
+				this._text.className = "tl-headline tl-headline-fadeout";
+			} else {
+				this._text.className = "tl-headline";
+			}
+			this._text.style.height = (text_lines * text_line_height)  + "px";
+		}
+
+	},
+
+	setWidth: function(w) {
+		if (this.data.end_date) {
+			this._el.container.style.width = w + "px";
+
+			if (w > this.options.marker_width_min) {
+				this._el.content_container.style.width = w + "px";
+				this._el.content_container.className = "tl-timemarker-content-container tl-timemarker-content-container-long";
+			} else {
+				this._el.content_container.style.width = this.options.marker_width_min + "px";
+				this._el.content_container.className = "tl-timemarker-content-container";
+			}
+		}
+
+	},
+
+	setClass: function(n) {
+		this._el.container.className = n;
+	},
+
+	setRowPosition: function(n, remainder) {
+		this.setPosition({top:n});
+		this._el.timespan.style.height = remainder + "px";
+
+		if (remainder < 56) {
+			//TL.DomUtil.removeClass(this._el.content_container, "tl-timemarker-content-container-small");
+		}
+	},
+
+	/*	Events
+	================================================== */
+	_onMarkerClick: function(e) {
+		this.fire("markerclick", {unique_id:this.data.unique_id});
+	},
+
+	/*	Private Methods
+	================================================== */
+	_initLayout: function () {
+		//trace(this.data)
+		// Create Layout
+		this._el.container 				= TL.Dom.create("div", "tl-timemarker");
+		if (this.data.unique_id) {
+			this._el.container.id 		= this.data.unique_id + "-marker";
+		}
+
+		if (this.data.end_date) {
+			this.has_end_date = true;
+			this._el.container.className = 'tl-timemarker tl-timemarker-with-end';
+		}
+
+		this._el.timespan				= TL.Dom.create("div", "tl-timemarker-timespan", this._el.container);
+		this._el.timespan_content		= TL.Dom.create("div", "tl-timemarker-timespan-content", this._el.timespan);
+		this._el.content_container		= TL.Dom.create("div", "tl-timemarker-content-container", this._el.container);
+
+		this._el.content				= TL.Dom.create("div", "tl-timemarker-content", this._el.content_container);
+
+		this._el.line_left				= TL.Dom.create("div", "tl-timemarker-line-left", this._el.timespan);
+		this._el.line_right				= TL.Dom.create("div", "tl-timemarker-line-right", this._el.timespan);
+
+		// Thumbnail or Icon
+		if (this.data.media) {
+			this._el.media_container	= TL.Dom.create("div", "tl-timemarker-media-container", this._el.content);
+
+			if (this.data.media.thumbnail && this.data.media.thumbnail != "") {
+				this._el.media				= TL.Dom.create("img", "tl-timemarker-media", this._el.media_container);
+				this._el.media.src			= TL.Util.transformImageURL(this.data.media.thumbnail);
+
+			} else {
+				var media_type = TL.MediaType(this.data.media).type;
+				this._el.media				= TL.Dom.create("span", "tl-icon-" + media_type, this._el.media_container);
+
+			}
+
+		}
+
+
+		// Text
+		this._el.text					= TL.Dom.create("div", "tl-timemarker-text", this._el.content);
+		this._text						= TL.Dom.create("h2", "tl-headline", this._el.text);
+		if (this.data.text.headline && this.data.text.headline != "") {
+			this._text.innerHTML		= TL.Util.unlinkify(this.data.text.headline);
+		} else if (this.data.text.text && this.data.text.text != "") {
+			this._text.innerHTML		= TL.Util.unlinkify(this.data.text.text);
+		} else if (this.data.media.caption && this.data.media.caption != "") {
+			this._text.innerHTML		= TL.Util.unlinkify(this.data.media.caption);
+		}
+
+
+
+		// Fire event that the slide is loaded
+		this.onLoaded();
+
+	},
+
+	_initEvents: function() {
+		TL.DomEvent.addListener(this._el.container, 'click', this._onMarkerClick, this);
+	},
+
+	// Update Display
+	_updateDisplay: function(width, height, layout) {
+
+		if (width) {
+			this.options.width 					= width;
+		}
+
+		if (height) {
+			this.options.height = height;
+		}
+
+	}
+
+});
+
+
+/* **********************************************
+     Begin TL.TimeEra.js
+********************************************** */
+
+/*	TL.TimeMarker
+
+================================================== */
+
+TL.TimeEra = TL.Class.extend({
+
+	includes: [TL.Events, TL.DomMixins],
+
+	_el: {},
+
+	/*	Constructor
+	================================================== */
+	initialize: function(data, options) {
+
+		// DOM Elements
+		this._el = {
+			container: {},
+			background: {},
+			content_container: {},
+			content: {},
+			text: {}
+		};
+
+		// Components
+		this._text			= {};
+
+		// State
+		this._state = {
+			loaded: 		false
+		};
+
+
+		// Data
+		this.data = {
+			unique_id: 			"",
+			date: {
+				year:			0,
+				month:			0,
+				day: 			0,
+				hour: 			0,
+				minute: 		0,
+				second: 		0,
+				millisecond: 	0,
+				thumbnail: 		"",
+				format: 		""
+			},
+			text: {
+				headline: 		"",
+				text: 			""
+			}
+		};
+
+		// Options
+		this.options = {
+			duration: 			1000,
+			ease: 				TL.Ease.easeInSpline,
+			width: 				600,
+			height: 			600,
+			marker_width_min: 	100 			// Minimum Marker Width
+		};
+
+		// Actively Displaying
+		this.active = false;
+
+		// Animation Object
+		this.animator = {};
+
+		// End date
+		this.has_end_date = false;
+
+		// Merge Data and Options
+		TL.Util.mergeData(this.options, options);
+		TL.Util.mergeData(this.data, data);
+
+		this._initLayout();
+		this._initEvents();
+
+
+	},
+
+	/*	Adding, Hiding, Showing etc
+	================================================== */
+	show: function() {
+
+	},
+
+	hide: function() {
+
+	},
+
+	setActive: function(is_active) {
+
+	},
+
+	addTo: function(container) {
+		container.appendChild(this._el.container);
+	},
+
+	removeFrom: function(container) {
+		container.removeChild(this._el.container);
+	},
+
+	updateDisplay: function(w, h) {
+		this._updateDisplay(w, h);
+	},
+
+	getLeft: function() {
+		return this._el.container.style.left.slice(0, -2);
+	},
+
+	getTime: function() { // TODO does this need to know about the end date?
+		return this.data.start_date.getTime();
+	},
+
+	getEndTime: function() {
+
+		if (this.data.end_date) {
+			return this.data.end_date.getTime();
+		} else {
+			return false;
+		}
+	},
+
+	setHeight: function(h) {
+		var text_line_height = 12,
+			text_lines = 1;
+
+		this._el.content_container.style.height = h  + "px";
+		this._el.content.className = "tl-timeera-content";
+
+		// Handle number of lines visible vertically
+
+		if (TL.Browser.webkit) {
+			text_lines = Math.floor(h / (text_line_height + 2));
+			if (text_lines < 1) {
+				text_lines = 1;
+			}
+			this._text.className = "tl-headline";
+			this._text.style.webkitLineClamp = text_lines;
+		} else {
+			text_lines = h / text_line_height;
+			if (text_lines > 1) {
+				this._text.className = "tl-headline tl-headline-fadeout";
+			} else {
+				this._text.className = "tl-headline";
+			}
+			this._text.style.height = (text_lines * text_line_height)  + "px";
+		}
+
+	},
+
+	setWidth: function(w) {
+		if (this.data.end_date) {
+			this._el.container.style.width = w + "px";
+
+			if (w > this.options.marker_width_min) {
+				this._el.content_container.style.width = w + "px";
+				this._el.content_container.className = "tl-timeera-content-container tl-timeera-content-container-long";
+			} else {
+				this._el.content_container.style.width = this.options.marker_width_min + "px";
+				this._el.content_container.className = "tl-timeera-content-container";
+			}
+		}
+
+	},
+
+	setClass: function(n) {
+		this._el.container.className = n;
+	},
+
+	setRowPosition: function(n, remainder) {
+		this.setPosition({top:n});
+
+		if (remainder < 56) {
+			//TL.DomUtil.removeClass(this._el.content_container, "tl-timeera-content-container-small");
+		}
+	},
+
+	setColor: function(color_num) {
+		this._el.container.className = 'tl-timeera tl-timeera-color' + color_num;
+	},
+
+	/*	Events
+	================================================== */
+
+
+	/*	Private Methods
+	================================================== */
+	_initLayout: function () {
+		//trace(this.data)
+		// Create Layout
+		this._el.container 				= TL.Dom.create("div", "tl-timeera");
+		if (this.data.unique_id) {
+			this._el.container.id 		= this.data.unique_id + "-era";
+		}
+
+		if (this.data.end_date) {
+			this.has_end_date = true;
+			this._el.container.className = 'tl-timeera tl-timeera-with-end';
+		}
+
+		this._el.content_container		= TL.Dom.create("div", "tl-timeera-content-container", this._el.container);
+
+		this._el.background 			= TL.Dom.create("div", "tl-timeera-background", this._el.content_container);
+
+		this._el.content				= TL.Dom.create("div", "tl-timeera-content", this._el.content_container);
+
+		
+
+		// Text
+		this._el.text					= TL.Dom.create("div", "tl-timeera-text", this._el.content);
+		this._text						= TL.Dom.create("h2", "tl-headline", this._el.text);
+		if (this.data.text.headline && this.data.text.headline != "") {
+			this._text.innerHTML		= TL.Util.unlinkify(this.data.text.headline);
+		} 
+
+
+
+		// Fire event that the slide is loaded
+		this.onLoaded();
+
+	},
+
+	_initEvents: function() {
+		
+	},
+
+	// Update Display
+	_updateDisplay: function(width, height, layout) {
+
+		if (width) {
+			this.options.width 					= width;
+		}
+
+		if (height) {
+			this.options.height = height;
+		}
+
+	}
+
+});
+
+
+/* **********************************************
+     Begin TL.TimeGroup.js
+********************************************** */
+
+/*	TL.TimeGroup
+	
+================================================== */
+ 
+TL.TimeGroup = TL.Class.extend({
+	
+	includes: [TL.Events, TL.DomMixins],
+	
+	_el: {},
+	
+	/*	Constructor
+	================================================== */
+	initialize: function(data) {
+		
+		// DOM ELEMENTS
+		this._el = {
+			parent: {},
+			container: {},
+			message: {}
+		};
+		
+		//Options
+		this.options = {
+			width: 					600,
+			height: 				600
+		};
+		
+		// Data
+		this.data = {
+			label: "",
+			rows: 1
+		};
+		
+		
+		this._el.container = TL.Dom.create("div", "tl-timegroup"); 
+		
+		// Merge Data
+		TL.Util.mergeData(this.data, data);
+		
+		// Animation
+		this.animator = {};
+		
+		
+		this._initLayout();
+		this._initEvents();
+	},
+	
+	/*	Public
+	================================================== */
+	
+	
+	
+	/*	Update Display
+	================================================== */
+	updateDisplay: function(w, h) {
+		
+	},
+	
+	setRowPosition: function(n, h) {
+		// trace(n);
+		// trace(this._el.container)
+		this.options.height = h * this.data.rows;
+		this.setPosition({top:n});
+		this._el.container.style.height = this.options.height + "px";
+		
+	},
+	
+	setAlternateRowColor: function(alternate, hide) {
+		var class_name = "tl-timegroup";
+		if (alternate) {
+			class_name += " tl-timegroup-alternate";
+		}
+		if (hide) {
+			class_name += " tl-timegroup-hidden";
+		}
+		this._el.container.className = class_name;
+	},
+	
+	/*	Events
+	================================================== */
+
+	
+	_onMouseClick: function() {
+		this.fire("clicked", this.options);
+	},
+
+	
+	/*	Private Methods
+	================================================== */
+	_initLayout: function () {
+		
+		// Create Layout
+		this._el.message = TL.Dom.create("div", "tl-timegroup-message", this._el.container);
+		this._el.message.innerHTML = this.data.label;
+		
+		
+	},
+	
+	_initEvents: function () {
+		TL.DomEvent.addListener(this._el.container, 'click', this._onMouseClick, this);
+	},
+	
+	// Update Display
+	_updateDisplay: function(width, height, animate) {
+		
+	}
+	
+});
+
+/* **********************************************
+     Begin TL.TimeScale.js
+********************************************** */
+
+/*  TL.TimeScale
+    Strategies for laying out the timenav
+    make a new one if the slides change
+
+    TODOS: deal with clustering
+================================================== */
+TL.TimeScale = TL.Class.extend({
+
+    initialize: function (timeline_config, options) {
+
+        var slides = timeline_config.events;
+        this._scale = timeline_config.scale;
+
+        options = TL.Util.mergeData({ // establish defaults
+            display_width: 500,
+            screen_multiplier: 3,
+            max_rows: null
+        }, options);
+
+        this._display_width = options.display_width;
+        this._screen_multiplier = options.screen_multiplier;
+        this._pixel_width = this._screen_multiplier * this._display_width;
+
+        this._group_labels = undefined;
+        this._positions = [];
+        this._pixels_per_milli = 0;
+
+        this._earliest = timeline_config.getEarliestDate().getTime();
+        this._latest = timeline_config.getLatestDate().getTime();
+        this._span_in_millis = this._latest - this._earliest;
+        if (this._span_in_millis <= 0) {
+            this._span_in_millis = this._computeDefaultSpan(timeline_config);
+        }
+        this._average = (this._span_in_millis)/slides.length;
+
+        this._pixels_per_milli = this.getPixelWidth() / this._span_in_millis;
+
+        this._axis_helper = TL.AxisHelper.getBestHelper(this);
+
+        this._scaled_padding = (1/this.getPixelsPerTick()) * (this._display_width/2)
+        this._computePositionInfo(slides, options.max_rows);
+    },
+
+    _computeDefaultSpan: function(timeline_config) {
+        // this gets called when all events are at the same instant,
+        // or maybe when the span_in_millis is > 0 but still below a desired threshold
+        // TODO: does this need smarts about eras?
+        if (timeline_config.scale == 'human') {
+            var formats = {}
+            for (var i = 0; i < timeline_config.events.length; i++) {
+                var fmt = timeline_config.events[i].start_date.findBestFormat();
+                formats[fmt] = (formats[fmt]) ? formats[fmt] + 1 : 1;
+            };
+
+            for (var i = TL.Date.SCALES.length - 1; i >= 0; i--) {
+                if (formats.hasOwnProperty(TL.Date.SCALES[i][0])) {
+                    var scale = TL.Date.SCALES[TL.Date.SCALES.length - 1]; // default
+                    if (TL.Date.SCALES[i+1]) {
+                        scale = TL.Date.SCALES[i+1]; // one larger than the largest in our data
+                    }
+                    return scale[1]
+                }
+            };
+            return 365 * 24 * 60 * 60 * 1000; // default to a year?
+        }
+
+        return 200000; // what is the right handling for cosmo dates?
+    },
+    getGroupLabels: function() { /*
+        return an array of objects, one per group, in the order (top to bottom) that the groups are expected to appear. Each object will have two properties:
+            * label (the string as specified in one or more 'group' properties of events in the configuration)
+            * rows (the number of rows occupied by events associated with the label. )
+        */
+        return (this._group_labels || []);
+    },
+
+    getScale: function() {
+        return this._scale;
+    },
+
+    getNumberOfRows: function() {
+        return this._number_of_rows
+    },
+
+    getPixelWidth: function() {
+        return this._pixel_width;
+    },
+
+    getPosition: function(time_in_millis) {
+        // be careful using millis, as they won't scale to cosmological time.
+        // however, we're moving to make the arg to this whatever value
+        // comes from TL.Date.getTime() which could be made smart about that --
+        // so it may just be about the naming.
+        return ( time_in_millis - this._earliest ) * this._pixels_per_milli
+    },
+
+    getPositionInfo: function(idx) {
+        return this._positions[idx];
+    },
+
+    getPixelsPerTick: function() {
+        return this._axis_helper.getPixelsPerTick(this._pixels_per_milli);
+    },
+
+    getTicks: function() {
+        return {
+            major: this._axis_helper.getMajorTicks(this),
+            minor: this._axis_helper.getMinorTicks(this) }
+    },
+
+    getDateFromTime: function(t) {
+        if(this._scale == 'human') {
+            return new TL.Date(t);
+        } else if(this._scale == 'cosmological') {
+            return new TL.BigDate(new TL.BigYear(t));
+        }
+        throw new TL.Error("time_scale_scale_err", this._scale);
+    },
+
+    getMajorScale: function() {
+        return this._axis_helper.major.name;
+    },
+
+    getMinorScale: function() {
+        return this._axis_helper.minor.name;
+    },
+
+    _assessGroups: function(slides) {
+        var groups = [];
+        var empty_group = false;
+        for (var i = 0; i < slides.length; i++) {
+            if(slides[i].group) {
+                if(groups.indexOf(slides[i].group) < 0) {
+                    groups.push(slides[i].group);
+                } else {
+                    empty_group = true;
+                }
+            }
+        };
+        if (groups.length && empty_group) {
+            groups.push('');
+        }
+        return groups;
+    },
+
+    /*  Compute the marker row positions, minimizing the number of
+        overlaps.
+
+        @positions = list of objects from this._positions
+        @rows_left = number of rows available (assume > 0)
+    */
+    _computeRowInfo: function(positions, rows_left) {
+        var lasts_in_row = [];
+        var n_overlaps = 0;
+
+        for (var i = 0; i < positions.length; i++) {
+            var pos_info = positions[i];
+            var overlaps = [];
+
+            // See if we can add item to an existing row without
+            // overlapping the previous item in that row
+            delete pos_info.row;
+
+            for (var j = 0; j < lasts_in_row.length; j++) {
+                overlaps.push(lasts_in_row[j].end - pos_info.start);
+                if(overlaps[j] <= 0) {
+                    pos_info.row = j;
+                    lasts_in_row[j] = pos_info;
+                    break;
+                }
+            }
+
+            // If we couldn't add to an existing row without overlap...
+            if (typeof(pos_info.row) == 'undefined') {
+                if (rows_left === null) {
+                    // Make a new row
+                    pos_info.row = lasts_in_row.length;
+                    lasts_in_row.push(pos_info);
+                } else if (rows_left > 0) {
+                    // Make a new row
+                    pos_info.row = lasts_in_row.length;
+                    lasts_in_row.push(pos_info);
+                    rows_left--;
+                } else {
+                    // Add to existing row with minimum overlap.
+                    var min_overlap = Math.min.apply(null, overlaps);
+                    var idx = overlaps.indexOf(min_overlap);
+                    pos_info.row = idx;
+                    if (pos_info.end > lasts_in_row[idx].end) {
+                        lasts_in_row[idx] = pos_info;
+                    }
+                    n_overlaps++;
+                }
+            }
+        }
+
+        return {n_rows: lasts_in_row.length, n_overlaps: n_overlaps};
+    },
+
+    /*  Compute marker positions.  If using groups, this._number_of_rows
+        will never be less than the number of groups.
+
+        @max_rows = total number of available rows
+        @default_marker_width should be in pixels
+    */
+    _computePositionInfo: function(slides, max_rows, default_marker_width) {
+        default_marker_width = default_marker_width || 100;
+
+        var groups = [];
+        var empty_group = false;
+
+        // Set start/end/width; enumerate groups
+        for (var i = 0; i < slides.length; i++) {
+            var pos_info = {
+                start: this.getPosition(slides[i].start_date.getTime())
+            };
+            this._positions.push(pos_info);
+
+            if (typeof(slides[i].end_date) != 'undefined') {
+                var end_pos = this.getPosition(slides[i].end_date.getTime());
+                pos_info.width = end_pos - pos_info.start;
+                if (pos_info.width > default_marker_width) {
+                    pos_info.end = pos_info.start + pos_info.width;
+                } else {
+                    pos_info.end = pos_info.start + default_marker_width;
+                }
+            } else {
+                pos_info.width = default_marker_width;
+                pos_info.end = pos_info.start + default_marker_width;
+            }
+
+            if(slides[i].group) {
+                if(groups.indexOf(slides[i].group) < 0) {
+                    groups.push(slides[i].group);
+                }
+            } else {
+                empty_group = true;
+            }
+        }
+
+        if(!(groups.length)) {
+            var result = this._computeRowInfo(this._positions, max_rows);
+            this._number_of_rows = result.n_rows;
+        } else {
+            if(empty_group) {
+                groups.push("");
+            }
+
+            // Init group info
+            var group_info = [];
+
+            for(var i = 0; i < groups.length; i++) {
+                group_info[i] = {
+                    label: groups[i],
+                    idx: i,
+                    positions: [],
+                    n_rows: 1,      // default
+                    n_overlaps: 0
+                };
+            }
+
+            for(var i = 0; i < this._positions.length; i++) {
+                var pos_info = this._positions[i];
+
+                pos_info.group = groups.indexOf(slides[i].group || "");
+                pos_info.row = 0;
+
+                var gi = group_info[pos_info.group];
+                for(var j = gi.positions.length - 1; j >= 0; j--) {
+                    if(gi.positions[j].end > pos_info.start) {
+                        gi.n_overlaps++;
+                    }
+                }
+
+                gi.positions.push(pos_info);
+            }
+
+            var n_rows = groups.length; // start with 1 row per group
+
+            while(true) {
+                // Count free rows available
+                var rows_left = Math.max(0, max_rows - n_rows);
+                if(!rows_left) {
+                    break;  // no free rows, nothing to do
+                }
+
+                // Sort by # overlaps, idx
+               group_info.sort(function(a, b) {
+                    if(a.n_overlaps > b.n_overlaps) {
+                        return -1;
+                    } else if(a.n_overlaps < b.n_overlaps) {
+                        return 1;
+                    }
+                    return a.idx - b.idx;
+                });
+                if(!group_info[0].n_overlaps) {
+                    break; // no overlaps, nothing to do
+                }
+
+                // Distribute free rows among groups with overlaps
+                var n_rows = 0;
+                for(var i = 0; i < group_info.length; i++) {
+                    var gi = group_info[i];
+
+                    if(gi.n_overlaps && rows_left) {
+                        var res = this._computeRowInfo(gi.positions,  gi.n_rows + 1);
+                        gi.n_rows = res.n_rows;     // update group info
+                        gi.n_overlaps = res.n_overlaps;
+                        rows_left--;                // update rows left
+                    }
+
+                    n_rows += gi.n_rows;            // update rows used
+                }
+            }
+
+            // Set number of rows
+            this._number_of_rows = n_rows;
+
+            // Set group labels; offset row positions
+            this._group_labels = [];
+
+            group_info.sort(function(a, b) {return a.idx - b.idx; });
+
+            for(var i = 0, row_offset = 0; i < group_info.length; i++) {
+                this._group_labels.push({
+                    label: group_info[i].label,
+                    rows: group_info[i].n_rows
+                });
+
+                for(var j = 0; j < group_info[i].positions.length; j++) {
+                    var pos_info = group_info[i].positions[j];
+                    pos_info.row += row_offset;
+                }
+
+                row_offset += group_info[i].n_rows;
+            }
+        }
+
+    }
+});
+
+
+/* **********************************************
+     Begin TL.TimeAxis.js
+********************************************** */
+
+/*	TL.TimeAxis
+	Display element for showing timescale ticks
+================================================== */
+
+TL.TimeAxis = TL.Class.extend({
+
+	includes: [TL.Events, TL.DomMixins, TL.I18NMixins],
+
+	_el: {},
+
+	/*	Constructor
+	================================================== */
+	initialize: function(elem, options) {
+		// DOM Elements
+		this._el = {
+			container: {},
+			content_container: {},
+			major: {},
+			minor: {},
+		};
+
+		// Components
+		this._text			= {};
+
+		// State
+		this._state = {
+			loaded: 		false
+		};
+
+
+		// Data
+		this.data = {};
+
+		// Options
+		this.options = {
+			duration: 				1000,
+			ease: 					TL.Ease.easeInSpline,
+			width: 					600,
+			height: 				600
+		};
+
+		// Actively Displaying
+		this.active = false;
+
+		// Animation Object
+		this.animator = {};
+
+		// Axis Helper
+		this.axis_helper = {};
+
+		// Minor tick dom element array
+		this.minor_ticks = [];
+
+		// Minor tick dom element array
+		this.major_ticks = [];
+
+		// Date Format Lookup, map TL.Date.SCALES names to...
+		this.dateformat_lookup = {
+	        millisecond: 'time_milliseconds',     // ...TL.Language.<code>.dateformats
+	        second: 'time_short',
+	        minute: 'time_no_seconds_short',
+	        hour: 'time_no_minutes_short',
+	        day: 'full_short',
+	        month: 'month_short',
+	        year: 'year',
+	        decade: 'year',
+	        century: 'year',
+	        millennium: 'year',
+	        age: 'compact',  // ...TL.Language.<code>.bigdateformats
+	        epoch: 'compact',
+	        era: 'compact',
+	        eon: 'compact',
+	        eon2: 'compact'
+	    }
+
+		// Main element
+		if (typeof elem === 'object') {
+			this._el.container = elem;
+		} else {
+			this._el.container = TL.Dom.get(elem);
+		}
+
+		// Merge Data and Options
+		TL.Util.mergeData(this.options, options);
+
+		this._initLayout();
+		this._initEvents();
+
+	},
+
+	/*	Adding, Hiding, Showing etc
+	================================================== */
+	show: function() {
+
+	},
+
+	hide: function() {
+
+	},
+
+	addTo: function(container) {
+		container.appendChild(this._el.container);
+	},
+
+	removeFrom: function(container) {
+		container.removeChild(this._el.container);
+	},
+
+	updateDisplay: function(w, h) {
+		this._updateDisplay(w, h);
+	},
+
+	getLeft: function() {
+		return this._el.container.style.left.slice(0, -2);
+	},
+
+	drawTicks: function(timescale, optimal_tick_width) {
+
+		var ticks = timescale.getTicks();
+
+		var controls = {
+			minor: {
+				el: this._el.minor,
+				dateformat: this.dateformat_lookup[ticks['minor'].name],
+				ts_ticks: ticks['minor'].ticks,
+				tick_elements: this.minor_ticks
+			},
+			major: {
+				el: this._el.major,
+				dateformat: this.dateformat_lookup[ticks['major'].name],
+				ts_ticks: ticks['major'].ticks,
+				tick_elements: this.major_ticks
+			}
+		}
+		// FADE OUT
+		this._el.major.className = "tl-timeaxis-major";
+		this._el.minor.className = "tl-timeaxis-minor";
+		this._el.major.style.opacity = 0;
+		this._el.minor.style.opacity = 0;
+
+		// CREATE MAJOR TICKS
+		this.major_ticks = this._createTickElements(
+			ticks['major'].ticks,
+			this._el.major,
+			this.dateformat_lookup[ticks['major'].name]
+		);
+
+		// CREATE MINOR TICKS
+		this.minor_ticks = this._createTickElements(
+			ticks['minor'].ticks,
+			this._el.minor,
+			this.dateformat_lookup[ticks['minor'].name],
+			ticks['major'].ticks
+		);
+
+		this.positionTicks(timescale, optimal_tick_width, true);
+
+		// FADE IN
+		this._el.major.className = "tl-timeaxis-major tl-animate-opacity tl-timeaxis-animate-opacity";
+		this._el.minor.className = "tl-timeaxis-minor tl-animate-opacity tl-timeaxis-animate-opacity";
+		this._el.major.style.opacity = 1;
+		this._el.minor.style.opacity = 1;
+	},
+
+	_createTickElements: function(ts_ticks,tick_element,dateformat,ticks_to_skip) {
+		tick_element.innerHTML = "";
+		var skip_times = {}
+		if (ticks_to_skip){
+			for (var i = 0; i < ticks_to_skip.length; i++) {
+				skip_times[ticks_to_skip[i].getTime()] = true;
+			}
+		}
+
+		var tick_elements = []
+		for (var i = 0; i < ts_ticks.length; i++) {
+			var ts_tick = ts_ticks[i];
+			if (!(ts_tick.getTime() in skip_times)) {
+				var tick = TL.Dom.create("div", "tl-timeaxis-tick", tick_element),
+					tick_text 	= TL.Dom.create("span", "tl-timeaxis-tick-text tl-animate-opacity", tick);
+
+				tick_text.innerHTML = ts_tick.getDisplayDate(this.getLanguage(), dateformat);
+
+				tick_elements.push({
+					tick:tick,
+					tick_text:tick_text,
+					display_date:ts_tick.getDisplayDate(this.getLanguage(), dateformat),
+					date:ts_tick
+				});
+			}
+		}
+		return tick_elements;
+	},
+
+	positionTicks: function(timescale, optimal_tick_width, no_animate) {
+
+		// Handle Animation
+		if (no_animate) {
+			this._el.major.className = "tl-timeaxis-major";
+			this._el.minor.className = "tl-timeaxis-minor";
+		} else {
+			this._el.major.className = "tl-timeaxis-major tl-timeaxis-animate";
+			this._el.minor.className = "tl-timeaxis-minor tl-timeaxis-animate";
+		}
+
+		this._positionTickArray(this.major_ticks, timescale, optimal_tick_width);
+		this._positionTickArray(this.minor_ticks, timescale, optimal_tick_width);
+
+	},
+
+	_positionTickArray: function(tick_array, timescale, optimal_tick_width) {
+		// Poition Ticks & Handle density of ticks
+		if (tick_array[1] && tick_array[0]) {
+			var distance = ( timescale.getPosition(tick_array[1].date.getMillisecond()) - timescale.getPosition(tick_array[0].date.getMillisecond()) ),
+				fraction_of_array = 1;
+
+
+			if (distance < optimal_tick_width) {
+				fraction_of_array = Math.round(optimal_tick_width/timescale.getPixelsPerTick());
+			}
+
+			var show = 1;
+
+			for (var i = 0; i < tick_array.length; i++) {
+
+				var tick = tick_array[i];
+
+				// Poition Ticks
+				tick.tick.style.left = timescale.getPosition(tick.date.getMillisecond()) + "px";
+				tick.tick_text.innerHTML = tick.display_date;
+
+				// Handle density of ticks
+				if (fraction_of_array > 1) {
+					if (show >= fraction_of_array) {
+						show = 1;
+						tick.tick_text.style.opacity = 1;
+						tick.tick.className = "tl-timeaxis-tick";
+					} else {
+						show++;
+						tick.tick_text.style.opacity = 0;
+						tick.tick.className = "tl-timeaxis-tick tl-timeaxis-tick-hidden";
+					}
+				} else {
+					tick.tick_text.style.opacity = 1;
+					tick.tick.className = "tl-timeaxis-tick";
+				}
+
+			};
+		}
+	},
+
+	/*	Events
+	================================================== */
+
+
+	/*	Private Methods
+	================================================== */
+	_initLayout: function () {
+		this._el.content_container		= TL.Dom.create("div", "tl-timeaxis-content-container", this._el.container);
+		this._el.major					= TL.Dom.create("div", "tl-timeaxis-major", this._el.content_container);
+		this._el.minor					= TL.Dom.create("div", "tl-timeaxis-minor", this._el.content_container);
+
+		// Fire event that the slide is loaded
+		this.onLoaded();
+	},
+
+	_initEvents: function() {
+
+	},
+
+	// Update Display
+	_updateDisplay: function(width, height, layout) {
+
+		if (width) {
+			this.options.width 					= width;
+		}
+
+		if (height) {
+			this.options.height = height;
+		}
+
+	}
+
+});
+
+
+/* **********************************************
+     Begin TL.AxisHelper.js
+********************************************** */
+
+/*  TL.AxisHelper
+    Strategies for laying out the timenav
+    markers and time axis
+    Intended as a private class -- probably only known to TimeScale
+================================================== */
+TL.AxisHelper = TL.Class.extend({
+    initialize: function (options) {
+		if (options) {
+            this.scale = options.scale;
+	        this.minor = options.minor;
+	        this.major = options.major;
+		} else {
+            throw new TL.Error("axis_helper_no_options_err")
+        }
+       
+    },
+    
+    getPixelsPerTick: function(pixels_per_milli) {
+        return pixels_per_milli * this.minor.factor;
+    },
+
+    getMajorTicks: function(timescale) {
+		return this._getTicks(timescale, this.major)
+    },
+
+    getMinorTicks: function(timescale) {
+        return this._getTicks(timescale, this.minor)
+    },
+
+    _getTicks: function(timescale, option) {
+
+        var factor_scale = timescale._scaled_padding * option.factor;
+        var first_tick_time = timescale._earliest - factor_scale;
+        var last_tick_time = timescale._latest + factor_scale;
+        var ticks = []
+        for (var i = first_tick_time; i < last_tick_time; i += option.factor) {
+            ticks.push(timescale.getDateFromTime(i).floor(option.name));
+        }
+
+        return {
+            name: option.name,
+            ticks: ticks
+        }
+
+    }
+
+});
+
+(function(cls){ // add some class-level behavior
+
+    var HELPERS = {};
+    
+    var setHelpers = function(scale_type, scales) {
+        HELPERS[scale_type] = [];
+        
+        for (var idx = 0; idx < scales.length - 1; idx++) {
+            var minor = scales[idx];
+            var major = scales[idx+1];
+            HELPERS[scale_type].push(new cls({
+                scale: minor[3],
+                minor: { name: minor[0], factor: minor[1]},
+                major: { name: major[0], factor: major[1]}
+            }));
+        }
+    };
+    
+    setHelpers('human', TL.Date.SCALES);
+    setHelpers('cosmological', TL.BigDate.SCALES);
+    
+    cls.HELPERS = HELPERS;
+    
+    cls.getBestHelper = function(ts,optimal_tick_width) {
+        if (typeof(optimal_tick_width) != 'number' ) {
+            optimal_tick_width = 100;
+        }
+        var ts_scale = ts.getScale();
+        var helpers = HELPERS[ts_scale];
+        
+        if (!helpers) {
+            throw new TL.Error("axis_helper_scale_err", ts_scale);
+        }
+        
+        var prev = null;
+        for (var idx = 0; idx < helpers.length; idx++) {
+            var curr = helpers[idx];
+            var pixels_per_tick = curr.getPixelsPerTick(ts._pixels_per_milli);
+            if (pixels_per_tick > optimal_tick_width)  {
+                if (prev == null) return curr;
+                var curr_dist = Math.abs(optimal_tick_width - pixels_per_tick);
+                var prev_dist = Math.abs(optimal_tick_width - pixels_per_tick);
+                if (curr_dist < prev_dist) {
+                    return curr;
+                } else {
+                    return prev;
+                }
+            }
+            prev = curr;
+        }
+        return helpers[helpers.length - 1]; // last resort           
+    }
+})(TL.AxisHelper);
+
+
+/* **********************************************
+     Begin TL.Timeline.js
+********************************************** */
+
+/*  TimelineJS
+Designed and built by Zach Wise at KnightLab
+
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+================================================== */
+/*
+TODO
+
+*/
+
+/*  Required Files
+CodeKit Import
+https://incident57.com/codekit/
+================================================== */
+
+// CORE
+	// @codekit-prepend "core/TL.js";
+	// @codekit-prepend "core/TL.Error.js";
+	// @codekit-prepend "core/TL.Util.js";
+	// @codekit-prepend "data/TL.Data.js";
+	// @codekit-prepend "core/TL.Class.js";
+	// @codekit-prepend "core/TL.Events.js";
+	// @codekit-prepend "core/TL.Browser.js";
+	// @codekit-prepend "core/TL.Load.js";
+	// @codekit-prepend "core/TL.TimelineConfig.js";
+	// @codekit-prepend "core/TL.ConfigFactory.js";
+
+
+// LANGUAGE
+	// @codekit-prepend "language/TL.Language.js";
+	// @codekit-prepend "language/TL.I18NMixins.js";
+
+// ANIMATION
+	// @codekit-prepend "animation/TL.Ease.js";
+	// @codekit-prepend "animation/TL.Animate.js";
+
+// DOM
+	// @codekit-prepend "dom/TL.Point.js";
+	// @codekit-prepend "dom/TL.DomMixins.js";
+	// @codekit-prepend "dom/TL.Dom.js";
+	// @codekit-prepend "dom/TL.DomUtil.js";
+	// @codekit-prepend "dom/TL.DomEvent.js";
+	// @codekit-prepend "dom/TL.StyleSheet.js";
+
+// Date
+	// @codekit-prepend "date/TL.Date.js";
+	// @codekit-prepend "date/TL.DateUtil.js";
+
+// UI
+	// @codekit-prepend "ui/TL.Draggable.js";
+	// @codekit-prepend "ui/TL.Swipable.js";
+	// @codekit-prepend "ui/TL.MenuBar.js";
+	// @codekit-prepend "ui/TL.Message.js";
+
+// MEDIA
+	// @codekit-prepend "media/TL.MediaType.js";
+	// @codekit-prepend "media/TL.Media.js";
+
+// MEDIA TYPES
+	// @codekit-prepend "media/types/TL.Media.Blockquote.js";
+	// @codekit-prepend "media/types/TL.Media.DailyMotion.js";
+	// @codekit-prepend "media/types/TL.Media.DocumentCloud.js";
+	// @codekit-prepend "media/types/TL.Media.Flickr.js";
+	// @codekit-prepend "media/types/TL.Media.GoogleDoc.js";
+	// @codekit-prepend "media/types/TL.Media.GooglePlus.js";
+	// @codekit-prepend "media/types/TL.Media.IFrame.js";
+	// @codekit-prepend "media/types/TL.Media.Image.js";
+	// @codekit-prepend "media/types/TL.Media.Imgur.js";
+	// @codekit-prepend "media/types/TL.Media.Instagram.js";
+	// @codekit-prepend "media/types/TL.Media.GoogleMap.js";
+	// @codekit-prepend "media/types/TL.Media.PDF.js";
+	// @codekit-prepend "media/types/TL.Media.Profile.js";
+	// @codekit-prepend "media/types/TL.Media.Slider.js";
+	// @codekit-prepend "media/types/TL.Media.SoundCloud.js";
+	// @codekit-prepend "media/types/TL.Media.Spotify.js";
+	// @codekit-prepend "media/types/TL.Media.Storify.js";
+	// @codekit-prepend "media/types/TL.Media.Text.js";
+	// @codekit-prepend "media/types/TL.Media.Twitter.js";
+	// @codekit-prepend "media/types/TL.Media.TwitterEmbed.js";
+	// @codekit-prepend "media/types/TL.Media.Vimeo.js";
+	// @codekit-prepend "media/types/TL.Media.Vine.js";
+	// @codekit-prepend "media/types/TL.Media.Website.js";
+	// @codekit-prepend "media/types/TL.Media.Wikipedia.js";
+	// @codekit-prepend "media/types/TL.Media.YouTube.js";
+
+// STORYSLIDER
+	// @codekit-prepend "slider/TL.Slide.js";
+	// @codekit-prepend "slider/TL.SlideNav.js";
+	// @codekit-prepend "slider/TL.StorySlider.js";
+
+// TIMENAV
+	// @codekit-prepend "timenav/TL.TimeNav.js";
+	// @codekit-prepend "timenav/TL.TimeMarker.js";
+	// @codekit-prepend "timenav/TL.TimeEra.js";
+	// @codekit-prepend "timenav/TL.TimeGroup.js";
+	// @codekit-prepend "timenav/TL.TimeScale.js";
+	// @codekit-prepend "timenav/TL.TimeAxis.js";
+	// @codekit-prepend "timenav/TL.AxisHelper.js";
+
+
+TL.Timeline = TL.Class.extend({
+	includes: [TL.Events, TL.I18NMixins],
+
+	/*  Private Methods
+	================================================== */
+	initialize: function (elem, data, options) {
+		var self = this;
+		if (!options) { options = {}};
+		// Version
+		this.version = "3.2.6";
+
+		// Ready
+		this.ready = false;
+
+		// DOM ELEMENTS
+		this._el = {
+			container: {},
+			storyslider: {},
+			timenav: {},
+			menubar: {}
+		};
+
+		// Determine Container Element
+		if (typeof elem === 'object') {
+			this._el.container = elem;
+		} else {
+			this._el.container = TL.Dom.get(elem);
+		}
+
+		// Slider
+		this._storyslider = {};
+
+		// Style Sheet
+		this._style_sheet = new TL.StyleSheet();
+
+		// TimeNav
+		this._timenav = {};
+
+		// Menu Bar
+		this._menubar = {};
+
+		// Loaded State
+		this._loaded = {storyslider:false, timenav:false};
+
+		// Data Object
+		this.config = null;
+
+		this.options = {
+			script_path: 				"",
+			height: 					this._el.container.offsetHeight,
+			width: 						this._el.container.offsetWidth,
+			debug: 						false,
+			is_embed: 					false,
+			is_full_embed: 				false,
+			hash_bookmark: false,
+			default_bg_color: 			{r:255, g:255, b:255},
+			scale_factor: 				2,						// How many screen widths wide should the timeline be
+			layout: 					"landscape",			// portrait or landscape
+			timenav_position: 			"bottom",				// timeline on top or bottom
+			optimal_tick_width: 		60,						// optimal distance (in pixels) between ticks on axis
+			base_class: 				"tl-timeline", 		// removing tl-timeline will break all default stylesheets...
+			timenav_height: 			null,
+			timenav_height_percentage: 	25,						// Overrides timenav height as a percentage of the screen
+			timenav_mobile_height_percentage: 40, 				// timenav height as a percentage on mobile devices
+			timenav_height_min: 		175,					// Minimum timenav height
+			marker_height_min: 			30,						// Minimum Marker Height
+			marker_width_min: 			100,					// Minimum Marker Width
+			marker_padding: 			5,						// Top Bottom Marker Padding
+			start_at_slide: 			0,
+			start_at_end: 				false,
+			menubar_height: 			0,
+			skinny_size: 				650,
+			medium_size: 				800,
+			relative_date: 				false,					// Use momentjs to show a relative date from the slide.text.date.created_time field
+			use_bc: 					false,					// Use declared suffix on dates earlier than 0
+			// animation
+			duration: 					1000,
+			ease: 						TL.Ease.easeInOutQuint,
+			// interaction
+			dragging: 					true,
+			trackResize: 				true,
+			map_type: 					"stamen:toner-lite",
+			slide_padding_lr: 			100,					// padding on slide of slide
+			slide_default_fade: 		"0%",					// landscape fade
+			zoom_sequence: 				[0.5, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89], // Array of Fibonacci numbers for TimeNav zoom levels
+			language: 					"en",
+			ga_property_id: 			null,
+			track_events: 				['back_to_start','nav_next','nav_previous','zoom_in','zoom_out' ]
+		};
+
+		// Animation Objects
+		this.animator_timenav = null;
+		this.animator_storyslider = null;
+		this.animator_menubar = null;
+
+		// Add message to DOM
+		this.message = new TL.Message({}, {message_class: "tl-message-full"}, this._el.container);
+
+		// Merge Options
+		if (typeof(options.default_bg_color) == "string") {
+			var parsed = TL.Util.hexToRgb(options.default_bg_color); // will clear it out if its invalid
+			if (parsed) {
+				options.default_bg_color = parsed;
+			} else {
+				delete options.default_bg_color
+				trace("Invalid default background color. Ignoring.");
+			}
+		}
+		TL.Util.mergeData(this.options, options);
+
+		window.addEventListener("resize", function(e){
+			self.updateDisplay();
+		});
+
+		// Set Debug Mode
+		TL.debug = this.options.debug;
+
+		// Apply base class to container
+		TL.DomUtil.addClass(this._el.container, 'tl-timeline');
+
+		if (this.options.is_embed) {
+			TL.DomUtil.addClass(this._el.container, 'tl-timeline-embed');
+		}
+
+		if (this.options.is_full_embed) {
+			TL.DomUtil.addClass(this._el.container, 'tl-timeline-full-embed');
+		}
+
+		// Use Relative Date Calculations
+		// NOT YET IMPLEMENTED
+		if(this.options.relative_date) {
+			if (typeof(moment) !== 'undefined') {
+				self._loadLanguage(data);
+			} else {
+				TL.Load.js(this.options.script_path + "/library/moment.js", function() {
+					self._loadLanguage(data);
+					trace("LOAD MOMENTJS")
+				});
+			}
+		} else {
+			self._loadLanguage(data);
+		}
+
+	},
+	_translateError: function(e) {
+	    if(e.hasOwnProperty('stack')) {
+	        trace(e.stack);
+	    }
+	    if(e.message_key) {
+	        return this._(e.message_key) + (e.detail ? ' [' + e.detail +']' : '')
+	    }
+	    return e;
+	},
+
+	/*  Load Language
+	================================================== */
+	_loadLanguage: function(data) {
+		try {
+		    this.options.language = new TL.Language(this.options);
+		    this._initData(data);
+		} catch(e) {
+		    this.showMessage(this._translateError(e));
+		}
+	},
+
+
+	/*  Navigation
+	================================================== */
+
+	// Goto slide with id
+	goToId: function(id) {
+		if (this.current_id != id) {
+			this.current_id = id;
+			this._timenav.goToId(this.current_id);
+			this._storyslider.goToId(this.current_id, false, true);
+			this.fire("change", {unique_id: this.current_id}, this);
+		}
+	},
+
+	// Goto slide n
+	goTo: function(n) {
+		if(this.config.title) {
+			if(n == 0) {
+				this.goToId(this.config.title.unique_id);
+			} else {
+				this.goToId(this.config.events[n - 1].unique_id);
+			}
+		} else {
+			this.goToId(this.config.events[n].unique_id);
+		}
+	},
+
+	// Goto first slide
+	goToStart: function() {
+		this.goTo(0);
+	},
+
+	// Goto last slide
+	goToEnd: function() {
+		var _n = this.config.events.length - 1;
+		this.goTo(this.config.title ? _n + 1 : _n);
+	},
+
+	// Goto previous slide
+	goToPrev: function() {
+		this.goTo(this._getSlideIndex(this.current_id) - 1);
+	},
+
+	// Goto next slide
+	goToNext: function() {
+		this.goTo(this._getSlideIndex(this.current_id) + 1);
+	},
+
+	/* Event maniupluation
+	================================================== */
+
+	// Add an event
+	add: function(data) {
+		var unique_id = this.config.addEvent(data);
+
+		var n = this._getEventIndex(unique_id);
+		var d = this.config.events[n];
+
+		this._storyslider.createSlide(d, this.config.title ? n+1 : n);
+		this._storyslider._updateDrawSlides();
+
+		this._timenav.createMarker(d, n);
+		this._timenav._updateDrawTimeline(false);
+
+		this.fire("added", {unique_id: unique_id});
+	},
+
+	// Remove an event
+	remove: function(n) {
+		if(n >= 0  && n < this.config.events.length) {
+			// If removing the current, nav to new one first
+			if(this.config.events[n].unique_id == this.current_id) {
+				if(n < this.config.events.length - 1) {
+					this.goTo(n + 1);
+				} else {
+					this.goTo(n - 1);
+				}
+			}
+
+			var event = this.config.events.splice(n, 1);
+			delete this.config.event_dict[event[0].unique_id];
+			this._storyslider.destroySlide(this.config.title ? n+1 : n);
+			this._storyslider._updateDrawSlides();
+
+			this._timenav.destroyMarker(n);
+			this._timenav._updateDrawTimeline(false);
+
+			this.fire("removed", {unique_id: event[0].unique_id});
+		}
+	},
+
+	removeId: function(id) {
+		this.remove(this._getEventIndex(id));
+	},
+
+	/* Get slide data
+	================================================== */
+
+	getData: function(n) {
+		if(this.config.title) {
+			if(n == 0) {
+				return this.config.title;
+			} else if(n > 0 && n <= this.config.events.length) {
+				return this.config.events[n - 1];
+			}
+		} else if(n >= 0 && n < this.config.events.length) {
+			return this.config.events[n];
+		}
+		return null;
+	},
+
+	getDataById: function(id) {
+		return this.getData(this._getSlideIndex(id));
+	},
+
+	/* Get slide object
+	================================================== */
+
+	getSlide: function(n) {
+		if(n >= 0 && n < this._storyslider._slides.length) {
+			return this._storyslider._slides[n];
+		}
+		return null;
+	},
+
+	getSlideById: function(id) {
+		return this.getSlide(this._getSlideIndex(id));
+	},
+
+	getCurrentSlide: function() {
+		return this.getSlideById(this.current_id);
+	},
+
+
+	/*  Display
+	================================================== */
+	updateDisplay: function() {
+		if (this.ready) {
+			this._updateDisplay();
+		}
+	},
+
+  	/*
+  		Compute the height of the navigation section of the Timeline, taking into account
+  		the possibility of an explicit height or height percentage, but also honoring the
+  		`timenav_height_min` option value. If `timenav_height` is specified it takes precedence over `timenav_height_percentage` but in either case, if the resultant pixel height is less than `options.timenav_height_min` then the value of `options.timenav_height_min` will be returned. (A minor adjustment is made to the returned value to account for marker padding.)
+
+  		Arguments:
+  		@timenav_height (optional): an integer value for the desired height in pixels
+  		@timenav_height_percentage (optional): an integer between 1 and 100
+
+  	 */
+	_calculateTimeNavHeight: function(timenav_height, timenav_height_percentage) {
+
+		var height = 0;
+
+		if (timenav_height) {
+			height = timenav_height;
+		} else {
+			if (this.options.timenav_height_percentage || timenav_height_percentage) {
+				if (timenav_height_percentage) {
+					height = Math.round((this.options.height/100)*timenav_height_percentage);
+				} else {
+					height = Math.round((this.options.height/100)*this.options.timenav_height_percentage);
+				}
+
+			}
+		}
+
+		// Set new minimum based on how many rows needed
+		if (this._timenav.ready) {
+			if (this.options.timenav_height_min < this._timenav.getMinimumHeight()) {
+				this.options.timenav_height_min = this._timenav.getMinimumHeight();
+			}
+		}
+
+		// If height is less than minimum set it to minimum
+		if (height < this.options.timenav_height_min) {
+			height = this.options.timenav_height_min;
+		}
+
+		height = height - (this.options.marker_padding * 2);
+
+		return height;
+	},
+
+	/*  Private Methods
+	================================================== */
+
+	// Update View
+	_updateDisplay: function(timenav_height, animate, d) {
+		var duration    = this.options.duration,
+		display_class   = this.options.base_class,
+		menu_position   = 0,
+		self      = this;
+
+		if (d) {
+			duration = d;
+		}
+
+		// Update width and height
+		this.options.width = this._el.container.offsetWidth;
+		this.options.height = this._el.container.offsetHeight;
+
+		// Check if skinny
+		if (this.options.width <= this.options.skinny_size) {
+			display_class += " tl-skinny";
+			this.options.layout = "portrait";
+		} else if (this.options.width <= this.options.medium_size) {
+			display_class += " tl-medium";
+			this.options.layout = "landscape";
+		} else {
+			this.options.layout = "landscape";
+		}
+
+		// Detect Mobile and Update Orientation on Touch devices
+		if (TL.Browser.touch) {
+			this.options.layout = TL.Browser.orientation();
+		}
+
+		if (TL.Browser.mobile) {
+			display_class += " tl-mobile";
+			// Set TimeNav Height
+			this.options.timenav_height = this._calculateTimeNavHeight(timenav_height, this.options.timenav_mobile_height_percentage);
+		} else {
+			// Set TimeNav Height
+			this.options.timenav_height = this._calculateTimeNavHeight(timenav_height);
+		}
+
+		// LAYOUT
+		if (this.options.layout == "portrait") {
+			// Portrait
+			display_class += " tl-layout-portrait";
+
+		} else {
+			// Landscape
+			display_class += " tl-layout-landscape";
+
+		}
+
+		// Set StorySlider Height
+		this.options.storyslider_height = (this.options.height - this.options.timenav_height);
+
+		// Positon Menu
+		if (this.options.timenav_position == "top") {
+			menu_position = ( Math.ceil(this.options.timenav_height)/2 ) - (this._el.menubar.offsetHeight/2) - (39/2) ;
+		} else {
+			menu_position = Math.round(this.options.storyslider_height + 1 + ( Math.ceil(this.options.timenav_height)/2 ) - (this._el.menubar.offsetHeight/2) - (35/2));
+		}
+
+
+		if (animate) {
+
+			// Animate TimeNav
+
+			/*
+			if (this.animator_timenav) {
+			this.animator_timenav.stop();
+			}
+
+			this.animator_timenav = TL.Animate(this._el.timenav, {
+			height:   (this.options.timenav_height) + "px",
+			duration:   duration/4,
+			easing:   TL.Ease.easeOutStrong,
+			complete: function () {
+			//self._map.updateDisplay(self.options.width, self.options.timenav_height, animate, d, self.options.menubar_height);
+			}
+			});
+			*/
+
+			this._el.timenav.style.height = Math.ceil(this.options.timenav_height) + "px";
+
+			// Animate StorySlider
+			if (this.animator_storyslider) {
+				this.animator_storyslider.stop();
+			}
+			this.animator_storyslider = TL.Animate(this._el.storyslider, {
+				height:   this.options.storyslider_height + "px",
+				duration:   duration/2,
+				easing:   TL.Ease.easeOutStrong
+			});
+
+			// Animate Menubar
+			if (this.animator_menubar) {
+				this.animator_menubar.stop();
+			}
+
+			this.animator_menubar = TL.Animate(this._el.menubar, {
+				top:  menu_position + "px",
+				duration:   duration/2,
+				easing:   TL.Ease.easeOutStrong
+			});
+
+		} else {
+			// TimeNav
+			this._el.timenav.style.height = Math.ceil(this.options.timenav_height) + "px";
+
+			// StorySlider
+			this._el.storyslider.style.height = this.options.storyslider_height + "px";
+
+			// Menubar
+			this._el.menubar.style.top = menu_position + "px";
+		}
+
+		if (this.message) {
+			this.message.updateDisplay(this.options.width, this.options.height);
+		}
+		// Update Component Displays
+		this._timenav.updateDisplay(this.options.width, this.options.timenav_height, animate);
+		this._storyslider.updateDisplay(this.options.width, this.options.storyslider_height, animate, this.options.layout);
+
+		// Apply class
+		this._el.container.className = display_class;
+
+	},
+
+	// Update hashbookmark in the url bar
+	_updateHashBookmark: function(id) {
+		var hash = "#" + "event-" + id.toString();
+		if (window.location.protocol != 'file:') {
+			window.history.replaceState(null, "Browsing TimelineJS", hash);
+		}
+		this.fire("hash_updated", {unique_id:this.current_id, hashbookmark:"#" + "event-" + id.toString()}, this);
+	},
+
+	/*  Init
+	================================================== */
+	// Initialize the data
+	_initData: function(data) {
+		var self = this;
+
+		if (typeof data == 'string') {
+			var self = this;
+			TL.ConfigFactory.makeConfig(data, function(config) {
+				self.setConfig(config);
+			});
+		} else if (TL.TimelineConfig == data.constructor) {
+			this.setConfig(data);
+		} else {
+			this.setConfig(new TL.TimelineConfig(data));
+		}
+	},
+
+	setConfig: function(config) {
+		this.config = config;
+		this.config.validate();
+		this._validateOptions();
+		if (this.config.isValid()) {
+		    try {
+			    this._onDataLoaded();
+			} catch(e) {
+			    this.showMessage("<strong>"+ this._('error') +":</strong> " + this._translateError(e));
+			}
+		} else {
+		    var translated_errs = [];
+
+		    for(var i = 0, errs = this.config.getErrors(); i < errs.length; i++) {
+		        translated_errs.push(this._translateError(errs[i]));
+		    }
+
+			this.showMessage("<strong>"+ this._('error') +":</strong> " + translated_errs.join('<br>'));
+			// should we set 'self.ready'? if not, it won't resize,
+			// but most resizing would only work
+			// if more setup happens
+		}
+	},
+	_validateOptions: function() {
+		// assumes that this.options and this.config have been set.
+		var INTEGER_PROPERTIES = ['timenav_height', 'timenav_height_min', 'marker_height_min', 'marker_width_min', 'marker_padding', 'start_at_slide', 'slide_padding_lr'  ];
+
+		for (var i = 0; i < INTEGER_PROPERTIES.length; i++) {
+				var opt = INTEGER_PROPERTIES[i];
+				var value = this.options[opt];
+				valid = true;
+				if (typeof(value) == 'number') {
+					valid = (value == parseInt(value))
+				} else if (typeof(value) == "string") {
+					valid = (value.match(/^\s*(\-?\d+)?\s*$/));
+				}
+				if (!valid) {
+					this.config.logError({ message_key: 'invalid_integer_option', detail: opt });
+				}
+		}
+	},
+	// Initialize the layout
+	_initLayout: function () {
+		var self = this;
+
+        this.message.removeFrom(this._el.container);
+		this._el.container.innerHTML = "";
+
+		// Create Layout
+		if (this.options.timenav_position == "top") {
+			this._el.timenav		= TL.Dom.create('div', 'tl-timenav', this._el.container);
+			this._el.storyslider	= TL.Dom.create('div', 'tl-storyslider', this._el.container);
+		} else {
+			this._el.storyslider  	= TL.Dom.create('div', 'tl-storyslider', this._el.container);
+			this._el.timenav		= TL.Dom.create('div', 'tl-timenav', this._el.container);
+		}
+
+		this._el.menubar			= TL.Dom.create('div', 'tl-menubar', this._el.container);
+
+
+		// Initial Default Layout
+		this.options.width        = this._el.container.offsetWidth;
+		this.options.height       = this._el.container.offsetHeight;
+		this._el.storyslider.style.top  = "1px";
+
+		// Set TimeNav Height
+		this.options.timenav_height = this._calculateTimeNavHeight(this.options.timenav_height);
+
+		// Create TimeNav
+		this._timenav = new TL.TimeNav(this._el.timenav, this.config, this.options);
+		this._timenav.on('loaded', this._onTimeNavLoaded, this);
+		this._timenav.on('update_timenav_min', this._updateTimeNavHeightMin, this);
+		this._timenav.options.height = this.options.timenav_height;
+		this._timenav.init();
+
+        // intial_zoom cannot be applied before the timenav has been created
+        if (this.options.initial_zoom) {
+            // at this point, this.options refers to the merged set of options
+            this.setZoom(this.options.initial_zoom);
+        }
+
+		// Create StorySlider
+		this._storyslider = new TL.StorySlider(this._el.storyslider, this.config, this.options);
+		this._storyslider.on('loaded', this._onStorySliderLoaded, this);
+		this._storyslider.init();
+
+		// Create Menu Bar
+		this._menubar = new TL.MenuBar(this._el.menubar, this._el.container, this.options);
+
+		// LAYOUT
+		if (this.options.layout == "portrait") {
+			this.options.storyslider_height = (this.options.height - this.options.timenav_height - 1);
+		} else {
+			this.options.storyslider_height = (this.options.height - 1);
+		}
+
+
+		// Update Display
+		this._updateDisplay(this._timenav.options.height, true, 2000);
+
+	},
+
+  /* Depends upon _initLayout because these events are on things the layout initializes */
+	_initEvents: function () {
+		// TimeNav Events
+		this._timenav.on('change', this._onTimeNavChange, this);
+		this._timenav.on('zoomtoggle', this._onZoomToggle, this);
+
+		// StorySlider Events
+		this._storyslider.on('change', this._onSlideChange, this);
+		this._storyslider.on('colorchange', this._onColorChange, this);
+		this._storyslider.on('nav_next', this._onStorySliderNext, this);
+		this._storyslider.on('nav_previous', this._onStorySliderPrevious, this);
+
+		// Menubar Events
+		this._menubar.on('zoom_in', this._onZoomIn, this);
+		this._menubar.on('zoom_out', this._onZoomOut, this);
+		this._menubar.on('back_to_start', this._onBackToStart, this);
+
+	},
+
+	/* Analytics
+	================================================== */
+	_initGoogleAnalytics: function() {
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+		ga('create', this.options.ga_property_id, 'auto');
+	},
+
+	_initAnalytics: function() {
+		if (this.options.ga_property_id === null) { return; }
+		this._initGoogleAnalytics();
+        ga('send', 'pageview');
+		var events = this.options.track_events;
+		for (i=0; i < events.length; i++) {
+			var event_ = events[i];
+			this.addEventListener(event_, function(e) {
+				ga('send', 'event', e.type, 'clicked');
+			});
+		}
+	},
+
+	_onZoomToggle: function(e) {
+		if (e.zoom == "in") {
+			this._menubar.toogleZoomIn(e.show);
+		} else if (e.zoom == "out") {
+			this._menubar.toogleZoomOut(e.show);
+		}
+
+	},
+
+	/* Get index of event by id
+	================================================== */
+	_getEventIndex: function(id) {
+		for(var i = 0; i < this.config.events.length; i++) {
+			if(id == this.config.events[i].unique_id) {
+				return i;
+			}
+		}
+		return -1;
+	},
+
+	/*  Get index of slide by id
+	================================================== */
+	_getSlideIndex: function(id) {
+		if(this.config.title && this.config.title.unique_id == id) {
+			return 0;
+		}
+		for(var i = 0; i < this.config.events.length; i++) {
+			if(id == this.config.events[i].unique_id) {
+				return this.config.title ? i+1 : i;
+			}
+		}
+		return -1;
+	},
+
+	/*  Events
+	================================================== */
+
+	_onDataLoaded: function(e) {
+		this.fire("dataloaded");
+		this._initLayout();
+		this._initEvents();
+		this._initAnalytics();
+		if (this.message) {
+			this.message.hide();
+		}
+
+		this.ready = true;
+
+	},
+
+	showMessage: function(msg) {
+		if (this.message) {
+			this.message.updateMessage(msg);
+		} else {
+			trace("No message display available.")
+			trace(msg);
+		}
+	},
+
+	_onColorChange: function(e) {
+		this.fire("color_change", {unique_id:this.current_id}, this);
+		if (e.color || e.image) {
+
+		} else {
+
+		}
+	},
+
+	_onSlideChange: function(e) {
+		if (this.current_id != e.unique_id) {
+			this.current_id = e.unique_id;
+			this._timenav.goToId(this.current_id);
+			this._onChange(e);
+		}
+	},
+
+	_onTimeNavChange: function(e) {
+		if (this.current_id != e.unique_id) {
+			this.current_id = e.unique_id;
+			this._storyslider.goToId(this.current_id);
+			this._onChange(e);
+		}
+	},
+
+	_onChange: function(e) {
+		this.fire("change", {unique_id:this.current_id}, this);
+		if (this.options.hash_bookmark && this.current_id) {
+			this._updateHashBookmark(this.current_id);
+		}
+	},
+
+	_onBackToStart: function(e) {
+		this._storyslider.goTo(0);
+		this.fire("back_to_start", {unique_id:this.current_id}, this);
+	},
+
+	/**
+	 * Zoom in and zoom out should be part of the public API.
+	 */
+	zoomIn: function() {
+	    this._timenav.zoomIn();
+	},
+	zoomOut: function() {
+	    this._timenav.zoomOut();
+	},
+
+	setZoom: function(level) {
+	    this._timenav.setZoom(level);
+	},
+
+	_onZoomIn: function(e) {
+		this._timenav.zoomIn();
+		this.fire("zoom_in", {zoom_level:this._timenav.options.scale_factor}, this);
+	},
+
+	_onZoomOut: function(e) {
+		this._timenav.zoomOut();
+		this.fire("zoom_out", {zoom_level:this._timenav.options.scale_factor}, this);
+	},
+
+	_onTimeNavLoaded: function() {
+		this._loaded.timenav = true;
+		this._onLoaded();
+	},
+
+	_onStorySliderLoaded: function() {
+		this._loaded.storyslider = true;
+		this._onLoaded();
+	},
+
+	_onStorySliderNext: function(e) {
+		this.fire("nav_next", e);
+	},
+
+	_onStorySliderPrevious: function(e) {
+		this.fire("nav_previous", e);
+	},
+
+	_onLoaded: function() {
+		if (this._loaded.storyslider && this._loaded.timenav) {
+			this.fire("loaded", this.config);
+			// Go to proper slide
+			if (this.options.hash_bookmark && window.location.hash != "") {
+				this.goToId(window.location.hash.replace("#event-", ""));
+			} else {
+				if( TL.Util.isTrue(this.options.start_at_end) || this.options.start_at_slide > this.config.events.length ) {
+					this.goToEnd();
+				} else {
+					this.goTo(this.options.start_at_slide);
+				}
+				if (this.options.hash_bookmark ) {
+					this._updateHashBookmark(this.current_id);
+				}
+			}
+
+		}
+	}
+
+});
+
+TL.Timeline.source_path = (function() {
+	var script_tags = document.getElementsByTagName('script');
+	var src = script_tags[script_tags.length-1].src;
+	return src.substr(0,src.lastIndexOf('/'));
+})();
+

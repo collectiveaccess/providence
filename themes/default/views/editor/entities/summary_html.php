@@ -39,7 +39,7 @@
 ?>
 		<div id="printButton">
 			<a href="<?php print caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), "PrintSummary", array($t_item->PrimaryKey() => $t_item->getPrimaryKey()))?>">
-				<?php print caNavIcon($this->request, __CA_NAV_BUTTON_PDF__); ?>
+				<?php print caNavIcon(__CA_NAV_ICON_PDF__, 2); ?>
 			</a>
 		</div>
 <?php
@@ -64,7 +64,7 @@
 <?php
 		foreach($va_placements as $vn_placement_id => $va_info) {
 			$vs_class = "";
-			if (!strlen($vs_display_value = $t_display->getDisplayValue($t_item, $vn_placement_id, array_merge(array('request' => $this->request), $va_info['settings'])))) {
+			if (!strlen($vs_display_value = $t_display->getDisplayValue($t_item, $vn_placement_id, array_merge(array('request' => $this->request), is_array($va_info['settings']) ? $va_info['settings'] : array())))) {
 				if (!(bool)$t_display->getSetting('show_empty_values')) { continue; }
 				$vs_display_value = "&lt;"._t('not defined')."&gt;";
 				$vs_class = " notDefined";

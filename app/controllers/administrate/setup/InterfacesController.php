@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2012 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -122,7 +122,7 @@ class InterfacesController extends BaseEditorController {
 			}
 			
 			$vn_i = 1;
-			foreach(array('preferred_labels', 'editor_code', 'color', 'editor_type', 'ca_editor_ui_type_restrictions',  'ca_editor_ui_screens', 'is_system_ui', 'ca_users', 'ca_user_groups') as $vs_bundle_name) {
+			foreach(array('preferred_labels', 'editor_code', 'color', 'editor_type', 'ca_editor_ui_type_restrictions',  'ca_editor_ui_screens', 'is_system_ui', 'ca_users', 'ca_user_groups', 'ca_user_roles') as $vs_bundle_name) {
 				$t_screen->addPlacement($vs_bundle_name, $vs_bundle_name, array(), $vn_i);
 				$vn_i++;
 			}
@@ -171,12 +171,11 @@ class InterfacesController extends BaseEditorController {
 			}
 			
 			$vn_i = 1;
-			foreach(array('preferred_labels', 'idno', 'color', 'is_default',  'ca_editor_ui_screen_type_restrictions', 'ca_editor_ui_bundle_placements') as $vs_bundle_name) {
+			foreach(array('preferred_labels', 'idno', 'color', 'is_default',  'ca_editor_ui_screen_type_restrictions', 'ca_editor_ui_bundle_placements', 'ca_users', 'ca_user_groups', 'ca_user_roles') as $vs_bundle_name) {
 				$t_screen->addPlacement($vs_bundle_name, $vs_bundle_name, array(), $vn_i);
 				$vn_i++;
 			}
 		}
-		
 		
 		return true;
 	}

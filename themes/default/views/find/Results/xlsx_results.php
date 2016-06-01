@@ -112,7 +112,7 @@
 			if (
 				(strpos($va_info['bundle_name'], 'ca_object_representations.media') !== false)
 				&&
-				($va_info['settings']['display_mode'] == 'media') // make sure that for the 'url' mode we don't insert the image here
+				(!isset($va_info['settings']['display_mode']) || ($va_info['settings']['display_mode'] !== 'url'))
 			) {
 				$vs_version = str_replace("ca_object_representations.media.", "", $va_info['bundle_name']);
 				$va_info = $vo_result->getMediaInfo('ca_object_representations.media',$vs_version);
@@ -177,6 +177,6 @@
 	
  	$o_writer = new PHPExcel_Writer_Excel2007($workbook);
 
- 	header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
- 	header('Content-Disposition:inline;filename=Export.xlsx ');
+ 	@header('Content-type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+ 	@header('Content-Disposition:inline;filename=Export.xlsx ');
  	$o_writer->save('php://output');

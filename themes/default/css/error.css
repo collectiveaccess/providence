@@ -34,7 +34,6 @@ a:hover{
 
 #errorDetails {
     width:80%;
-    height: 90%;
     overflow-y: auto;
     background-color: #FFFFFF;
     text-align:left;
@@ -138,6 +137,7 @@ H2{
     padding:10px 0px 5px 0px;
     font-family: 'DIN-Regular', helvetica, sans-serif;
     font-size: 22px;
+    line-height: 24px;
 }
 
 

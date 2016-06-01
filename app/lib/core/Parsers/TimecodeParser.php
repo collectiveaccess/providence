@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2004 Whirl-i-Gig
+ * Copyright 2004-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -47,18 +47,32 @@
  * FT_TIMECODE fields.
  *
  */
-require_once(__CA_LIB_DIR__."/core/Error.php");
+require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
 
 
 class TimecodeParser {
-	var $opn_parsed_value_in_seconds;
-	var $opn_timebase = 29.97; // NTSC fps
 	# ------------------------------------------------------------------
-	function TimecodeParser($ps_timecode="") {
+	/**
+	 *
+	 */
+	private $opn_parsed_value_in_seconds;
+	
+	/**
+	 *
+	 */
+	private $opn_timebase = 29.97; // NTSC fps
+	# ------------------------------------------------------------------
+	/**
+	 *
+	 */
+	public function __construct($ps_timecode="") {
 		if ($ps_timecode) { $this->parse($ps_timecode); }
 	}
 	# ------------------------------------------------------------------
-	function parse($ps_timecode) {
+	/**
+	 *
+	 */
+	public function parse($ps_timecode) {
 		if (preg_match("/^([\d]+[\.]{0,1}[\d]*)[s]{0,1}$/", $ps_timecode, $va_matches)) {
 			// simple seconds
 			return $this->opn_parsed_value_in_seconds = floatval($va_matches[1]);
@@ -139,11 +153,17 @@ class TimecodeParser {
 		}
 	}
 	# ------------------------------------------------------------------
-	function getSeconds() {
+	/**
+	 *
+	 */
+	public function getSeconds() {
 		return $this->opn_parsed_value_in_seconds;
 	}
 	# ------------------------------------------------------------------
-	function setTimebase($pn_timebase) {
+	/**
+	 *
+	 */
+	public function setTimebase($pn_timebase) {
 		if ($pn_timebase > 0) {
 			$this->opn_timebase = $pn_timebase;
 			return true;
@@ -152,11 +172,17 @@ class TimecodeParser {
 		}
 	}
 	# ------------------------------------------------------------------
-	function getTimebase() {
+	/**
+	 *
+	 */
+	public function getTimebase() {
 		return $this->opn_timebase;
 	}
 	# ------------------------------------------------------------------
-	function setParsedValueInSeconds($pn_seconds) {
+	/**
+	 *
+	 */
+	public function setParsedValueInSeconds($pn_seconds) {
 		if ($pn_seconds >= 0) {
 			$this->opn_parsed_value_in_seconds = $pn_seconds;
 			return true;
@@ -165,11 +191,29 @@ class TimecodeParser {
 		}
 	}
 	# ------------------------------------------------------------------
-	function getParsedValueInSeconds() {
+	/**
+	 *
+	 */
+	public function getParsedValueInSeconds() {
 		return $this->opn_parsed_value_in_seconds;
 	}
 	# ------------------------------------------------------------------
-	function getText($ps_format="RAW", $pa_options=null) {
+	/**
+	 *
+	 */
+	public function getText($ps_format="RAW", $pa_options=null) {
+		// Support shorter alternative format specifiers
+		switch($ps_format) {
+			case 'delimited':
+			case 'colon':
+				$ps_format = 'COLON_DELIMITED';
+				break;
+			case 'hms':
+			case 'time':
+				$ps_format = 'HOURS_MINUTES_SECONDS';
+				break;
+		}
+	
 		switch($ps_format) {
 			case 'COLON_DELIMITED':
 			case 'HOURS_MINUTES_SECONDS':
@@ -198,7 +242,7 @@ class TimecodeParser {
 						}
 						return $vn_hours.":".sprintf("%02d", $vn_minutes).":".$vs_seconds;
 					} else {
-						return $vn_hours."h ".$vn_minutes."m ".$vn_seconds."s";
+						return (($vn_hours > 0) ? "{$vn_hours}h " : '').(($vn_minutes > 0) ? "{$vn_minutes}m " : '').sprintf("%02.1f", $vn_seconds)."s";
 					}
 				}
 				break;
@@ -212,5 +256,3 @@ class TimecodeParser {
 	}
 	# ------------------------------------------------------------------
 }
-# ----------------------------------------------------------------------
-?>

@@ -28,9 +28,10 @@
  
  	$t_subject 			= $this->getVar('t_subject');
  	$o_result_context 	= $this->getVar('result_context');
+	$t_list 			= new ca_lists();
 ?>
 <div class='setTools'>
-	<a href="#" id='searchSetToolsShow' onclick="$('.setTools').hide(); return caShowSearchSetTools();"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_SETS__); print _t("Set Tools"); ?></a>
+	<a href="#" id='searchSetToolsShow' onclick="$('.setTools').hide(); return caShowSearchSetTools();"><?php print caNavIcon(__CA_NAV_ICON_SETS__, 2).' '._t("Set Tools"); ?></a>
 </div><!-- end setTools -->
 
 <div id="searchSetTools">
@@ -75,6 +76,14 @@
 				array('id' => 'caCreateSetFromResultsMode', 'class' => 'searchSetsSelect'),
 				array('value' => null, 'width' => '140px')
 			);
+			if($t_list->getAppConfig()->get('enable_set_type_controls')) {
+				print $t_list->getListAsHTMLFormElement(
+					'set_types',
+					'set_type',
+					array('id' => 'caCreateSetTypeID', 'class' => 'searchSetsSelect'),
+					array('value' => null, 'width' => '140px')
+				);
+			}
 			print caBusyIndicatorIcon($this->request, array('id' => 'caCreateSetFromResultsIndicator'))."\n";
 ?>
 			<a href='#' onclick="caCreateSetFromResults(); return false;" class="button"><?php print _t('Create'); ?> &rsaquo;</a>
@@ -87,8 +96,9 @@
 	</div>
 
 
-		<a href='#' id='hideSets' onclick='caHideSearchSetTools(); $(".setTools").slideDown(250); '><?php print caNavIcon($this->request, __CA_NAV_BUTTON_COLLAPSE__); ?></a>
-		<div style='clear:both;height:1px;'>&nbsp;</div>
+		<a href='#' id='hideSets' onclick='caHideSearchSetTools(); $(".setTools").slideDown(250);'><?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, 1); ?></a>
+		<br/>
+		<div class="clear">&nbsp;</div>
 </div><!-- end searchSetTools -->
 
 <script type="text/javascript">
@@ -175,7 +185,8 @@
 			{ 
 				set_name: jQuery('#caCreateSetFromResultsInput').val(),
 				mode: jQuery('#caCreateSetFromResultsMode').val(),
-				item_ids: caGetSelectedItemIDsToAddToSet().join(';')
+				item_ids: caGetSelectedItemIDsToAddToSet().join(';'),
+				set_type_id: jQuery('#caCreateSetTypeID').val()
 			}, 
 			function(res) {
 				jQuery("#caCreateSetFromResultsIndicator").hide();

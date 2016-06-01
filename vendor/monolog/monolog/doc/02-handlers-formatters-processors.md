@@ -35,6 +35,7 @@
 - _SlackHandler_: Logs records to a [Slack](https://www.slack.com/) account.
 - _MandrillHandler_: Sends emails via the Mandrill API using a [`Swift_Message`](http://swiftmailer.org/) instance.
 - _FleepHookHandler_: Logs records to a [Fleep](https://fleep.io/) conversation using Webhooks.
+- _IFTTTHandler_: Notifies an [IFTTT](https://ifttt.com/maker) trigger with the log channel, level name and message.
 
 ### Log specific servers and networked logging
 
@@ -84,6 +85,16 @@
   when it happens you will have the full information, including debug and info
   records. This provides you with all the information you need, but only when
   you need it.
+- _DeduplicationHandler_: Useful if you are sending notifications or emails
+  when critical errors occur. It takes a logger as parameter and will
+  accumulate log records of all levels until the end of the request (or
+  `flush()` is called). At that point it delivers all records to the handler
+  it wraps, but only if the records are unique over a given time period
+  (60seconds by default). If the records are duplicates they are simply
+  discarded. The main use of this is in case of critical failure like if your
+  database is unreachable for example all your requests will fail and that
+  can result in a lot of notifications being sent. Adding this handler reduces
+  the amount of notifications to a manageable level.
 - _WhatFailureGroupHandler_: This handler extends the _GroupHandler_ ignoring
    exceptions raised by each child handler. This allows you to ignore issues
    where a remote tcp connection may have died but you do not want your entire
@@ -104,6 +115,8 @@
 - _PsrHandler_: Can be used to forward log records to an existing PSR-3 logger
 - _TestHandler_: Used for testing, it records everything that is sent to it and
   has accessors to read out the information.
+- _HandlerWrapper_: A simple handler wrapper you can inherit from to create
+ your own wrappers easily.
 
 ## Formatters
 
@@ -123,6 +136,7 @@
 
 ## Processors
 
+- _PsrLogMessageProcessor_: Processes a log record's message according to PSR-3 rules, replacing `{foo}` with the value from `$context['foo']`.
 - _IntrospectionProcessor_: Adds the line/file/class/method from which the log call originated.
 - _WebProcessor_: Adds the current request URI, request method and client IP to a log record.
 - _MemoryUsageProcessor_: Adds the current memory usage to a log record.

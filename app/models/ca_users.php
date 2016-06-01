@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -144,7 +144,7 @@ BaseModel::$s_ca_models_definitions['ca_users'] = array(
 				'BOUNDS_VALUE' => array(0,1)
 		),
 		'registered_on' => array(
-				'FIELD_TYPE' => FT_TIMESTAMP, 'DISPLAY_TYPE' => DT_OMIT, 
+				'FIELD_TYPE' => FT_DATETIME, 'DISPLAY_TYPE' => DT_OMIT, 
 				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 				'IS_NULL' => true, 
 				'DEFAULT' => '',
@@ -323,7 +323,7 @@ class ca_users extends BaseModel {
 	public function __construct($pn_id=null, $pb_use_cache=false) {
 		parent::__construct($pn_id, $pb_use_cache);	# call superclass constructor	
 		
-		$this->opo_auth_config = Configuration::load($this->getAppConfig()->get("authentication_config"));
+		$this->opo_auth_config = Configuration::load(__CA_CONF_DIR__.'/authentication.conf');
 		$this->opo_log = new Eventlog();
 	}
 	# ----------------------------------------
@@ -1342,7 +1342,7 @@ class ca_users extends BaseModel {
 		}
 		if (!$vb_got_group) {
 			if (!$t_group->load(array("name" => $ps_group))) {
-				if (!$t_group->load(array("name_short" => $ps_group))) {
+				if (!$t_group->load(array("code" => $ps_group))) {
 					return false;
 				}
 			}
@@ -1839,9 +1839,12 @@ class ca_users extends BaseModel {
 								}
 							}
 							
+							$va_restrict_to_ui_locales = $this->getAppConfig()->getList('restrict_to_ui_locales');
+							
 							$va_opts = array();
 							$t_locale = new ca_locales();
 							foreach($va_locales as $vs_code => $va_parts) {
+								if (is_array($va_restrict_to_ui_locales) && sizeof($va_restrict_to_ui_locales) && !in_array($vs_code, $va_restrict_to_ui_locales)) { continue; }
 								try {
 									$vs_lang_name = Zend_Locale::getTranslation(strtolower($va_parts[0]), 'language', strtolower($va_parts[0]));
 									$vs_country_name = Zend_Locale::getTranslation($va_parts[1], 'Country', $vs_code);
@@ -2056,6 +2059,10 @@ class ca_users extends BaseModel {
 					
 					break;
 				# ---------------------------------
+				case 'DT_HIDDEN':
+					// noop
+					break;
+				# ---------------------------------
 				default:
 					return "Configuration error: Invalid display type for $ps_pref";
 				# ---------------------------------
@@ -2117,6 +2124,19 @@ class ca_users extends BaseModel {
 			) OR ";
 		}
 		
+		$vs_role_sql = '';
+		if (is_array($va_roles = $this->getUserRoles()) && sizeof($va_roles)) {
+			$vs_role_sql = " (
+				(ceui.ui_id IN (
+						SELECT ui_id 
+						FROM ca_editor_uis_x_roles
+						WHERE 
+							role_id IN (".join(',', array_keys($va_roles)).")
+					)
+				)
+			) OR ";
+		}
+		
 		$o_db = $this->getDb();
 		$qr_uis = $o_db->query("
 			SELECT ceui.ui_id, ceuil.name, ceuil.locale_id, ceuitr.type_id
@@ -2128,6 +2148,7 @@ class ca_users extends BaseModel {
 					ceui.user_id = ? OR 
 					ceui.is_system_ui = 1 OR
 					{$vs_group_sql}
+					{$vs_role_sql}
 					(ceui.ui_id IN (
 							SELECT ui_id 
 							FROM ca_editor_uis_x_users 
@@ -2166,6 +2187,19 @@ class ca_users extends BaseModel {
 			) OR ";
 		}
 		
+		$vs_role_sql = '';
+		if (is_array($va_roles = $this->getUserRoles()) && sizeof($va_roles)) {
+			$vs_role_sql = " (
+				(ceui.ui_id IN (
+						SELECT ui_id 
+						FROM ca_editor_uis_x_roles
+						WHERE 
+							role_id IN (".join(',', array_keys($va_roles)).")
+					)
+				)
+			) OR ";
+		}
+		
 		$o_db = $this->getDb();
 		$qr_uis = $o_db->query("
 			SELECT *
@@ -2176,6 +2210,7 @@ class ca_users extends BaseModel {
 					ceui.user_id = ? OR 
 					ceui.is_system_ui = 1 OR
 					{$vs_group_sql}
+					{$vs_role_sql}
 					(ceui.ui_id IN (
 							SELECT ui_id 
 							FROM ca_editor_uis_x_users 
@@ -2300,7 +2335,7 @@ class ca_users extends BaseModel {
 	
 	public function loadUserPrefDefs($pb_force_reload=false) {
 		if (!$this->_user_pref_defs || $pb_force_reload) {
-			if ($vs_user_pref_def_path = $this->getAppConfig()->get("user_pref_defs")) {
+			if ($vs_user_pref_def_path = __CA_CONF_DIR__."/user_pref_defs.conf") {
 				$this->_user_pref_defs = Configuration::load($vs_user_pref_def_path, $pb_force_reload);
 				return true;
 			}
@@ -2447,14 +2482,9 @@ class ca_users extends BaseModel {
 	 * @param mixed $ps_user_name_or_id The user name or numeric user_id of the user
 	 * @return boolean True if user exists, false if not
 	 */
-	public function exists($ps_user_name_or_id) {
-		$t_user = new ca_users();
-		if ($t_user->load($ps_user_name_or_id)) {
+	 static public function exists($ps_user_name_or_id, $pa_options=null) {
+		if (parent::exists($ps_user_name_or_id)) {
 			return true;
-		} else {
-			if ($t_user->load(array("user_name" => $ps_user_name_or_id))) {
-				return true;
-			}
 		}
 		return false;
 	}
@@ -2635,7 +2665,14 @@ class ca_users extends BaseModel {
 			} else {
 				// We rely on the system clock here. That might not be the smartest thing to do but it'll work for now.
 				$vn_token_expiration_timestamp = time() + 15 * 60; // now plus 15 minutes
-				$vs_password_reset_token = hash('sha256', mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+
+				if(function_exists('mcrypt_create_iv')) {
+					$vs_password_reset_token = hash('sha256', mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+				} elseif(function_exists('openssl_random_pseudo_bytes')) {
+					$vs_password_reset_token = hash('sha256', openssl_random_pseudo_bytes(32));
+				} else {
+					throw new Exception('mcrypt or OpenSSL is required for CollectiveAccess to run');
+				}
 
 				$this->setVar("{$vs_app_name}_password_reset_token", $vs_password_reset_token);
 				$this->setVar("{$vs_app_name}_password_reset_expiration", $vn_token_expiration_timestamp);

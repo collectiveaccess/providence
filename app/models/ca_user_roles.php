@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -461,15 +461,20 @@ class ca_user_roles extends BaseModel {
 	public static function loadRoleActionList() {
 		if (!ca_user_roles::$s_action_list) {
 			$o_config = Configuration::load();
-			$o_actions_config = Configuration::load($o_config->get('user_actions'));
+			$o_actions_config = Configuration::load(__CA_CONF_DIR__.'/user_actions.conf');
 			$vo_datamodel = Datamodel::load();
 			
 			$va_raw_actions = $o_actions_config->getAssoc('user_actions');
 	
 			// expand actions that need expanding
-			foreach($va_raw_actions as $vs_group => &$va_group_info) {
+			foreach($va_raw_actions as $vs_group => $va_group_info) {
 				$va_new_actions = array();
+				if(!is_array($va_group_info["actions"])) { $va_group_info["actions"] = array(); }
 				foreach($va_group_info["actions"] as $vs_action_key => $va_action){
+					if(isset($va_action['requires']) && is_array($va_action['requires']) && !ca_user_roles::_evaluateActionRequirements($va_action['requires'])) {
+						unset($va_raw_actions[$vs_group]["actions"][$vs_action_key]);
+						continue;
+					}
 					if(is_array($va_action["expand_types"]) && strlen($va_action["expand_types"]["table"])>0){
 						$t_instance = $vo_datamodel->getInstanceByTableName($va_action["expand_types"]["table"], true);
 						if(method_exists($t_instance, "getTypeList")){
@@ -505,6 +510,7 @@ class ca_user_roles extends BaseModel {
 			
 			$va_flattened_actions = array();
 			foreach($va_raw_actions as $vs_group => $va_group_actions_info) {
+				if (!is_array($va_group_actions_info['actions'])) { $va_group_actions_info['actions'] = array(); }
 				$va_flattened_actions = array_merge($va_flattened_actions, $va_group_actions_info['actions']);
 			}
 			
@@ -580,6 +586,58 @@ class ca_user_roles extends BaseModel {
 		}
 		$va_actions = array_flip($va_actions);
 		return array_keys($va_actions);
+	}
+	# -------------------------------------------------------
+	private static function _evaluateActionRequirements($pa_requirements, $pa_options=null) {
+		if(sizeof($pa_requirements) == 0) { return true; }	// empty requirements means show the action
+		$vs_result = $vs_value = null;
+		
+		$o_config = Configuration::load();
+		
+		foreach($pa_requirements as $vs_requirement => $vs_boolean) {
+			$vs_boolean = (strtoupper($vs_boolean) == "AND")  ? "AND" : "OR";
+			
+			$va_tmp = explode(':', $vs_requirement);
+			switch(strtolower($va_tmp[0])) {
+				case 'configuration':
+					$vs_pref = $va_tmp[1];
+					if ($vb_not = (substr($vs_pref, 0, 1) == '!') ? true : false) {
+						$vs_pref = substr($vs_pref, 1);
+					}
+					if (
+						($vb_not && !intval($o_config->get($vs_pref)))
+						||
+						(!$vb_not && intval($o_config->get($vs_pref)))
+					) {
+						$vs_value = true;
+					} else {
+						$vs_value = false;
+					}
+					break;
+				case 'global':
+					if (isset($va_tmp[2])) {
+						$vs_value = ($GLOBALS[$va_tmp[1]] == $va_tmp[2]) ? true : false;
+					} else {
+						$vs_value = $GLOBALS[$va_tmp[1]] ? true : false;
+					}
+					break;
+				default:
+					$vs_value = $vs_value ? true : false;
+					break;
+			}
+			
+			if (is_null($vs_result)) {
+				$vs_result = $vs_value;
+			} else {
+				if ($vs_boolean == "AND") {
+					$vs_result = ($vs_result && $vs_value);
+				} else {
+					$vs_result = ($vs_result || $vs_value);
+				}
+			}
+		}
+		
+		return $vs_result;
 	}
 	# ------------------------------------------------------
 }

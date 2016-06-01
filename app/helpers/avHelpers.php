@@ -43,10 +43,12 @@ function caMediaInfoGuessFileFormat($ps_path) {
 	if(!caMediaInfoInstalled()) { return false; }
 
 	$va_media_metadata = caExtractMetadataWithMediaInfo($ps_path);
+	
 	switch($va_media_metadata['VIDEO']['Format']) {
 		case 'DV':
 			return 'video/x-dv';
 		case 'MPEG-4':
+		case 'AVC':
 			return 'video/mp4';
 		case 'AVI':
 			return 'video/avi';

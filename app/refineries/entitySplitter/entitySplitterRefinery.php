@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2015 Whirl-i-Gig
+ * Copyright 2013-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -58,6 +58,7 @@
 		 */
 		public function refine(&$pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options=null) {
 			$pa_options['displaynameFormat'] = caGetOption('entitySplitter_displaynameFormat', $pa_item['settings'], null);
+			$pa_options['doNotParse'] = caGetOption('entitySplitter_doNotParse', $pa_item['settings'], null);
 			return caGenericImportSplitter('entitySplitter', 'entity', 'ca_entities', $this, $pa_destination_data, $pa_group, $pa_item, $pa_source_data, $pa_options);
 		}
 		# -------------------------------------------------------	
@@ -89,7 +90,7 @@
 				'takesLocale' => false,
 				'default' => '',
 				'label' => _t('Match on'),
-				'description' => _t('List indicating sequence of checks for an existing record; values of array can be "label" and "idno". Ex. array("idno", "label") will first try to match on idno and then label if the first match fails')
+				'description' => _t('List indicating sequence of checks for an existing record; values of array can be "label", "idno" or "displayname". Ex. array("idno", "label", "displayname") will first try to match on idno and label [forename, surname] if the first match fails, then finally the displayname field')
 			),
 			'entitySplitter_ignoreParent' => array(
 				'formatType' => FT_TEXT,
@@ -198,6 +199,32 @@
 				'default' => '',
 				'label' => _t('Non-preferred labels'),
 				'description' => _t('List of non-preferred labels to apply to entities.')
+			),
+			'entitySplitter_doNotParse' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Do not parse name'),
+				'description' => _t('Take the entity name as is from the data source and insert it without intervention in the surname and display name fields. This is often useful for organization names, especially when using the entity class "org" setting.')
+			),
+			'entitySplitter_relationships' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Relationships'),
+				'description' => _t('List of relationships to process.')
+			),
+			'entitySplitter_relatedEntities' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Relationships'),
+				'description' => _t('List of entity relationships to process.')
 			)
 		);
-?>

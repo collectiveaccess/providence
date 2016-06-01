@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,10 +31,10 @@
 
 	$t_list = new ca_lists();
 	$vs_set_type_menu = '<div class="sf-small-menu form-header-button rounded" style="padding: 6px;">'.
-							'<div style="float:right; margin: 3px;">'.
-								'<a href="#" onclick="_navigateToNewForm(jQuery(\'#typeList\').val(), jQuery(\'#tableList\').val());">'.caNavIcon($this->request, __CA_NAV_BUTTON_ADD_LARGE__).'</a>'.
+							'<div class="caNavHeaderIcon">'.
+								'<a href="#" onclick="_navigateToNewForm(jQuery(\'#typeList\').val(), jQuery(\'#tableList\').val());">'.caNavIcon(__CA_NAV_ICON_ADD__, 2).'</a>'.
 							'</div>'.
-						'<form action="#">'._t('Create New').' '.$t_list->getListAsHTMLFormElement('set_types', 'set_type', array('id' => 'typeList')).' '._t('containing').' '.caHTMLSelect('table_num', $this->getVar('table_list'), array('id' => 'tableList')).'</form>'.
+						'<form action="#">'._t('Create new').' '.$t_list->getListAsHTMLFormElement('set_types', 'set_type', array('id' => 'typeList')).' '._t('containing').' '.caHTMLSelect('table_num', $this->getVar('table_list'), array('id' => 'tableList')).'</form>'.
 						'</div>';
 ?>
 <script language="JavaScript" type="text/javascript">
@@ -57,7 +57,7 @@
 		); 
 	?>
 	
-	<table id="caSetList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+	<table id="caSetList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
@@ -81,7 +81,7 @@
 				<th class="list-header-unsorted">
 					<?php print _t('Status'); ?>
 				</th>
-				<th class="{sorter: false} list-header-nosort" >&nbsp;</th>
+				<th class="{sorter: false} list-header-nosort listtableEditDelete"> </th>
 			</tr>
 		</thead>
 		<tbody>
@@ -103,8 +103,8 @@
 					<div>
 <?php 	
 					if (($va_set['item_count'] > 0) && ($this->request->user->canDoAction('can_batch_edit_'.$t_set->getAppDatamodel()->getTableName($va_set['table_num'])))) {
+						print caNavButton($this->request, __CA_NAV_ICON_BATCH_EDIT__, _t('Batch edit'), 'batchIcon', 'batch', 'Editor', 'Edit', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true));
 						print $va_set['item_count']; 
-						print caNavButton($this->request, __CA_NAV_BUTTON_BATCH_EDIT__, _t('Batch edit'), 'batchIcon', 'batch', 'Editor', 'Edit', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true));
 					} else {
 						print $va_set['item_count']; 
 					}
@@ -120,11 +120,9 @@
 				<td>
 					<div><?php print $t_set->getChoiceListValue('status', $va_set['status']); ?></div>
 				</td>
-				<td >
-					<div class="saveDelete">
-						<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'editIcon', 'manage/sets', 'SetEditor', 'Edit', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-						<?php ($va_set['can_delete'] == TRUE) ? print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'deleteIcon', 'manage/sets', 'SetEditor', 'Delete', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)) : ''; ?>
-					</div>
+				<td class="listtableEditDelete">
+					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/sets', 'SetEditor', 'Edit', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")); ?>
+					<?php ($va_set['can_delete'] == TRUE) ? print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/sets', 'SetEditor', 'Delete', array('set_id' => $va_set['set_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")) : ''; ?>
 				</td>
 			</tr>
 <?php

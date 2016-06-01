@@ -74,6 +74,7 @@ class ExpressionVisitor implements Visitor\Visit {
 			'round'			=> xcallable('round'),
 			'random'		=> xcallable('rand'),
 			'current'		=> xcallable('caIsCurrentDate'),
+			'isvaliddate'	=> xcallable('caIsValidDate'),
 			'future'		=> xcallable('caDateEndsInFuture'),
 			'wc'			=> xcallable('str_word_count'),
 			'length'		=> xcallable('strlen'),
@@ -89,6 +90,7 @@ class ExpressionVisitor implements Visitor\Visit {
 			'average' 		=> xcallable($average),
 			'avg'     		=> xcallable($average),
 			'sum'			=> xcallable(function () { return array_sum(func_get_args()); }),
+			'replace'		=> xcallable('preg_replace'),
 		);
 
 		return;

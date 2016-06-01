@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2012 Whirl-i-Gig
+ * Copyright 2007-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -39,7 +39,17 @@
 	class IDNumbering {
 		# -------------------------------------------------------
 		/**
+		 * Initialize an instance of the currently configured numbering plugin. 
+		 * Plugin is defined is application configuration (app.conf) in the X_id_numbering_plugin directive where "X" = the current format.
+		 * Ex. if the format is ca_objects, then the class specified in the 'ca_objects_id_numbering_plugin' directive will be used as the numbering plugin.
+		 * All plugin classes are defined in app/lib/ca/IDNumbering
 		 *
+		 * @param string $ps_format The current format.
+		 * @param string $pm_type The current type. [Default is '__default__']
+		 * @param string $ps_value The current value. [Default is null]
+		 * @param Db $po_db A database connection instance to use for all queries. If omitted a new connection will be used. [Default is null]
+		 * @param Configuration $po_config The application configuration. If omitted the configuration object is loaded here. [Default is null]
+		 * @return Instance of sub-class of IDNumber
 		 */
 		static public function newIDNumberer($ps_format, $pm_type='__default__', $ps_value=null, $po_db=null, $po_config=null) {
 			$o_config = $po_config ? $po_config : Configuration::load();

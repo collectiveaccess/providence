@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,7 +49,23 @@
 	class LabelableBaseModelWithAttributes extends BaseModelWithAttributes implements ILabelable {
 		# ------------------------------------------------------------------
 		static $s_label_cache = array();
+		
+		/**
+		 * @int $s_label_cache_size
+		 *
+		 * Maximum numbers of cached labels per table
+		 */
+		static $s_label_cache_size = 1024;
+		
+		
 		static $s_labels_by_id_cache = array();
+		
+		/**
+		 * @int $s_labels_by_id_cache_size
+		 *
+		 * Maximum numbers of cached labels per id
+		 */
+		static $s_labels_by_id_cache_size = 1024;
 		
 		/** 
 		 * List of failed preferred label inserts to be forced into HTML bundle
@@ -413,7 +429,9 @@
 		 *		allowWildcards = consider "%" as a wildcard when searching. Any term including a "%" character will be queried using the SQL LIKE operator. [Default is false]
 		 *		purify = process text with HTMLPurifier before search. Purifier encodes &, < and > characters, and performs other transformations that can cause searches on literal text to fail. If you are purifying all input (the default) then leave this set true. [Default is true]
 		 *		purifyWithFallback = executes the search with "purify" set and falls back to search with unpurified text if nothing is found. [Default is false]
-		 *
+		 *		checkAccess = array of access values to filter results by; if defined only items with the specified access code(s) are returned. Only supported for <table_name>.hierarchy.preferred_labels and <table_name>.children.preferred_labels because these returns sets of items. For <table_name>.parent.preferred_labels, which returns a single row at most, you should do access checking yourself. (Everything here applies equally to nonpreferred_labels)
+		 *		restrictToTypes = Restrict returned items to those of the specified types. An array of list item idnos and/or item_ids may be specified. [Default is null]			 
+ 	 	 *
 		 * @return mixed Depending upon the returnAs option setting, an array, subclass of LabelableBaseModelWithAttributes or integer may be returned.
 		 */
 		public static function find($pa_values, $pa_options=null) {
@@ -432,12 +450,28 @@
 			$ps_boolean = caGetOption('boolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
 			$ps_label_boolean = caGetOption('labelBoolean', $pa_options, 'and', array('forceLowercase' => true, 'validValues' => array('and', 'or')));
 			$ps_sort = caGetOption('sort', $pa_options, null);
-		
+			$pa_check_access = caGetOption('checkAccess', $pa_options, null);
+			
+			
 			if (!$t_instance) { $t_instance = new $vs_table; }
 			$vn_table_num = $t_instance->tableNum();
 			$vs_table_pk = $t_instance->primaryKey();
 			
+			$va_sql_params = array();
+			
+			$vs_type_restriction_sql = '';
+			if ($va_restrict_to_types = caGetOption('restrictToTypes', $pa_options, null)) {
+				if (is_array($va_restrict_to_types = caMakeTypeIDList($vs_table, $va_restrict_to_types)) && sizeof($va_restrict_to_types)) {
+					$vs_type_restriction_sql = " {$vs_table}.".$t_instance->getTypeFieldName()." IN (?) AND ";
+					$va_sql_params[] = $va_restrict_to_types;
+				}
+			}
+			
+			
 			if (!($t_label = $t_instance->getLabelTableInstance())) {
+				if ($t_instance->ATTRIBUTE_TYPE_ID_FLD && is_array($va_restrict_to_types) && sizeof($va_restrict_to_types)) { 
+					$pa_values[$t_instance->ATTRIBUTE_TYPE_ID_FLD] = $va_restrict_to_types;
+				}
 				return parent::find($pa_values, $pa_options);
 			}
 			$vs_label_table = $t_label->tableName();
@@ -468,7 +502,6 @@
 			
 			
 			$va_joins = array();
-			$va_sql_params = array();
 			
 			$vb_purify_with_fallback = caGetOption('purifyWithFallback', $pa_options, false);
 			$vb_purify = $vb_purify_with_fallback ? true : caGetOption('purify', $pa_options, true);
@@ -602,7 +635,7 @@
 
 					if (is_null($vm_value)) {
 						$va_label_sql[] = "({$vs_table}.{$vs_field} IS NULL)";
-					} elseif (caGetOption('allowWildcards', $pa_options, false) && (strpos($vm_value, '%') !== false)) {
+					} elseif (caGetOption('allowWildcards', $pa_options, false) && !is_array($vm_value) && (strpos($vm_value, '%') !== false)) {
 						$va_label_sql[] = "({$vs_table}.{$vs_field} LIKE ?)";
 						$va_sql_params[] = $vm_value;
 					} else {
@@ -624,9 +657,8 @@
 		
 				foreach($pa_values as $vs_field => $vm_value) {
 					if (($vn_element_id = array_search($vs_field, $va_element_codes)) !== false) {
-						
-						$vs_q = " (ca_attribute_values.element_id = {$vn_element_id}) AND  ";
-						switch($vn_datatype = $t_instance->_getElementDatatype($vs_field)) {
+						$vs_q = " ca_attribute_values.element_id = {$vn_element_id} AND  ";
+						switch($vn_datatype = ca_metadata_elements::getElementDatatype($vs_field)) {
 							case 0:	// continue
 							case 15: // media
 							case 16: // file
@@ -642,7 +674,7 @@
 								}
 								break;
 							case 3:	// list
-								if ($t_element = $t_instance->_getElementInstance($vs_field)) {
+								if ($t_element = ca_metadata_elements::getInstance($vs_field)) {
 									$vn_item_id = is_numeric($vm_value) ? (int)$vm_value : (int)caGetListItemID($t_element->get('list_id'), $vm_value);
 								
 									$vs_q .= "(ca_attribute_values.item_id = ?)";
@@ -670,10 +702,16 @@
 			
 			if (!sizeof($va_label_sql)) { return null; }
 			
+			
+			if (is_array($pa_check_access) && sizeof($pa_check_access) && $t_instance->hasField('access')) {
+				$va_label_sql[] = "({$vs_table}.access IN (?))";
+				$va_sql_params[] = $pa_check_access;
+			}
+			
 			$vs_deleted_sql = ($t_instance->hasField('deleted')) ? "({$vs_table}.deleted = 0) AND " : '';
 			$vs_sql = "SELECT * FROM {$vs_table}";
 			$vs_sql .= join("\n", $va_joins);
-			$vs_sql .=" WHERE {$vs_deleted_sql} ".join(" {$ps_boolean} ", $va_label_sql);
+			$vs_sql .=" WHERE {$vs_deleted_sql} {$vs_type_restriction_sql} (".join(" {$ps_boolean} ", $va_label_sql).")";
 			
 			$vs_orderby = '';
 			if ($vs_sort_proc) {
@@ -1358,10 +1396,10 @@
 		 * If none of the UI fields are set to *anything* then we return NULL; this is a signal
 		 * to ignore the label input (ie. it was a blank form bundle)
 		 *
-		 * @param HTTPRequest $po_request Request object
+		 * @param RequestHTTP $po_request Request object
 		 * @param string $ps_form_prefix
 		 * @param string $ps_label_id
-		 * @param boolean $ps_is_preferred
+		 * @param bool $pb_is_preferred
 		 *
 		 * @return array Array of values or null is no values were set in the request
 		 */
@@ -1376,12 +1414,24 @@
 			} else {
 				$vs_pref_key = ($pb_is_preferred ? '_Pref' : '_NPref');
 			}
+			
+			// If label exists use existing values as defaults when no value is set
+			$t_label = null;
+			if (is_numeric($ps_label_id)) {
+				$t_label = $this->getLabelTableInstance();
+				if (!$t_label->load($ps_label_id)) { $t_label = null; }
+			}
+			
 			foreach($va_fields as $vs_field) {
 				if ($vs_val = $po_request->getParameter($ps_form_prefix.$vs_pref_key.$vs_field.'_'.$ps_label_id, pString)) {
 					$va_values[$vs_field] = $vs_val;
 					$vb_value_set = true;
 				} else {
-					$va_values[$vs_field] = '';
+					if (isset($_REQUEST[$ps_form_prefix.$vs_pref_key.$vs_field.'_'.$ps_label_id])) {
+						$va_values[$vs_field] = '';
+					} else {
+						$va_values[$vs_field] = $t_label ? $t_label->get($vs_field) : null;
+					}
 				}
 			}
 			
@@ -1534,6 +1584,10 @@
  					}
  				}
  				$va_labels = $va_flattened_labels;
+ 			}
+ 			
+ 			if (sizeof(LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()]) > LabelableBaseModelWithAttributes::$s_label_cache_size) {
+ 				array_splice(LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()], 0, ceil(LabelableBaseModelWithAttributes::$s_label_cache_size/2));
  			}
  			
  			LabelableBaseModelWithAttributes::$s_label_cache[$this->tableName()][$vn_id][$vs_cache_key] = $va_labels;
@@ -1990,6 +2044,10 @@
 				$va_sorted_labels[$vn_id] = $va_labels[$vn_id];
 			}
 			
+			if (sizeof(LabelableBaseModelWithAttributes::$s_labels_by_id_cache) > LabelableBaseModelWithAttributes::$s_labels_by_id_cache_size) {
+				array_splice(LabelableBaseModelWithAttributes::$s_labels_by_id_cache, 0, ceil(LabelableBaseModelWithAttributes::$s_labels_by_id_cache_size/2));
+			}
+			
 			if ($vb_return_all_locales) {
 				return LabelableBaseModelWithAttributes::$s_labels_by_id_cache[$vs_cache_key] = $va_sorted_labels;
 			}
@@ -2049,6 +2107,10 @@
 			$va_sorted_labels = array();
 			foreach($va_ids as $vn_id) {
 				$va_sorted_labels[$vn_id] = $va_labels[$vn_id];
+			}
+			
+			if (sizeof(LabelableBaseModelWithAttributes::$s_labels_by_id_cache) > LabelableBaseModelWithAttributes::$s_labels_by_id_cache_size) {
+				array_splice(LabelableBaseModelWithAttributes::$s_labels_by_id_cache, 0, ceil(LabelableBaseModelWithAttributes::$s_labels_by_id_cache_size/2));
 			}
 			
 			if ($vb_return_all_locales) {
@@ -2286,7 +2348,7 @@
 			
 			$o_db = $this->getDb();
 			
-			$qr_res = $o_db->query($x="
+			$qr_res = $o_db->query("
 				DELETE FROM {$vs_group_rel_table}
 				WHERE
 					{$vs_pk} = ?
@@ -2311,7 +2373,7 @@
 			$t_group = new ca_user_groups();
 			
 			$o_dm = Datamodel::load();
-			$t_rel = $o_dm->getInstanceByTableName($this->getProperty('USERS_RELATIONSHIP_TABLE'));
+			$t_rel = $o_dm->getInstanceByTableName($this->getProperty('USER_GROUPS_RELATIONSHIP_TABLE'));
 			$o_view->setVar('t_rel', $t_rel);
 			
 			$o_view->setVar('t_instance', $this);
@@ -2545,6 +2607,227 @@
 			
 			return $o_view->render('ca_users.php');
 		}
+		# ------------------------------------------------------------------
+		# User role-based access control
+		# ------------------------------------------------------------------
+		/**
+		 * Returns array of user roles associated with the currently loaded row. The array
+		 * is key'ed on user role role_id; each value is an  array containing information about the role. Array keys are:
+		 *			role_id			[role_id for role]
+		 *			name			[name of role]
+		 *			code			[short alphanumeric code identifying the role]
+		 *			description		[text description of role]
+		 *
+		 * @return array List of role associated with the currently loaded row
+		 */ 
+		public function getUserRoles($pa_options=null) {
+			if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
+			if (!($vs_role_rel_table = $this->getProperty('USER_ROLES_RELATIONSHIP_TABLE'))) { return null; }
+			$vs_pk = $this->primaryKey();
+			
+			if (!is_array($pa_options)) { $pa_options = array(); }
+			$vb_return_for_bundle =  (isset($pa_options['returnAsInitialValuesForBundle']) && $pa_options['returnAsInitialValuesForBundle']) ? true : false;
+			
+			$o_dm = Datamodel::load();
+			$t_rel = $o_dm->getInstanceByTableName($vs_group_rel_table);
+			
+			$o_db = $this->getDb();
+			
+			$qr_res = $o_db->query("
+				SELECT g.*, r.*
+				FROM {$vs_role_rel_table} r
+				INNER JOIN ca_user_roles AS g ON g.role_id = r.role_id
+				WHERE
+					r.{$vs_pk} = ?
+			", $vn_id);
+			
+			$va_roles = array();
+			
+			while($qr_res->nextRow()) {
+				$va_row = array();
+				foreach(array('role_id', 'name', 'code', 'description', 'access') as $vs_f) {
+					$va_row[$vs_f] = $qr_res->get($vs_f);
+				}
+				
+				if ($vb_return_for_bundle) {
+					$va_row['label'] = $va_role['name'];
+					$va_row['id'] = $va_row['role_id'];
+					$va_roles[(int)$qr_res->get('relation_id')] = $va_row;
+				} else {
+					$va_roles[(int)$qr_res->get('role_id')] = $va_row;
+				}
+			}
+			
+			return $va_roles;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Checks if currently loaded row is accessible (read or edit access) to the specified role or roles
+		 *
+		 * @param mixed $pm_role_id A group_id or array of role_ids to check
+		 * @return bool True if at least one role can access the currently loaded row, false if no roles have access; returns null if no row is currently loaded.
+		 */ 
+		public function isAccessibleToUserRole($pm_role_id) {
+			if (!is_array($pm_role_id)) { $pm_role_id = array($pm_role_id); }
+			if (is_array($va_roles = $this->getUserRoles())) {
+				foreach($pm_role_id as $pn_role_id) {
+					if (isset($va_roles[$pn_role_id]) && (is_array($va_roles[$pn_role_id]))) {
+						// is effective date set?
+						if (($va_roles[$pn_role_id]['sdatetime'] > 0) && ($va_roles[$pn_role_id]['edatetime'] > 0)) {
+							if (($va_roles[$pn_role_id]['sdatetime'] > time()) || ($va_roles[$pn_role_id]['edatetime'] <= time())) {
+								return false;
+							}
+						}
+						return true;
+					}
+				}
+				return false;
+			}
+			return null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		*
+		*
+		 * @param array $pa_role_ids
+		 * @param array $pa_effective_dates
+		 * @param array $pa_options Supported options are:
+		 *		user_id - if set, only user roles owned by the specified user_id will be added
+		 */ 
+		public function addUserRoles($pa_role_ids, $pa_options=null) {
+			if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
+			if (!($vs_role_rel_table = $this->getProperty('USER_ROLES_RELATIONSHIP_TABLE'))) { return null; }
+			$vs_pk = $this->primaryKey();
+			
+			$vn_user_id = (isset($pa_options['user_id']) && $pa_options['user_id']) ? $pa_options['user_id'] : null;
+			
+			$o_dm = Datamodel::load();
+			$t_rel = $o_dm->getInstanceByTableName($vs_role_rel_table, true);
+			if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
+			
+			$va_current_roles = $this->getUserroles();
+			
+			foreach($pa_role_ids as $vn_role_id => $vn_access) {
+				if ($vn_user_id) {	// verify that role we're linking to is owned by the current user
+					$t_role = new ca_user_roles($vn_role_id);
+					//if (($t_role->get('user_id') != $vn_user_id) && $t_role->get('user_id')) { continue; }
+				}
+				$t_rel->clear();
+				$t_rel->load(array('role_id' => $vn_role_id, $vs_pk => $vn_id));		// try to load existing record
+				
+				$t_rel->setMode(ACCESS_WRITE);
+				$t_rel->set($vs_pk, $vn_id);
+				$t_rel->set('role_id', $vn_role_id);
+				$t_rel->set('access', $vn_access);
+				
+				if ($t_rel->getPrimaryKey()) {
+					$t_rel->update();
+				} else {
+					$t_rel->insert();
+				}
+				
+				if ($t_rel->numErrors()) {
+					$this->errors = $t_rel->errors;
+					return false;
+				}
+			}
+			
+			return true;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * 
+		 */ 
+		public function setUserRoles($pa_role_ids, $pa_options=null) {
+			if (is_array($va_roles = $this->getUserRoles())) {
+				$this->removeAllUserRoles();
+				if (!$this->addUserRoles($pa_role_ids, $pa_options)) { return false; }
+				
+				return true;
+			}
+			return null;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * 
+		 */ 
+		public function removeUserRoles($pa_role_ids) {
+			if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
+			if (!($vs_role_rel_table = $this->getProperty('USER_ROLES_RELATIONSHIP_TABLE'))) { return null; }
+			$vs_pk = $this->primaryKey();
+			
+			$o_dm = Datamodel::load();
+			$t_rel = $o_dm->getInstanceByTableName($vs_role_rel_table);
+			if ($this->inTransaction()) { $t_rel->setTransaction($this->getTransaction()); }
+			
+			$va_current_roles = $this->getUserRoles();
+			
+			foreach($pa_role_ids as $vn_role_id) {
+				if (!isset($va_current_roles[$vn_role_id]) && $va_current_roles[$vn_role_id]) { continue; }
+				
+				$t_rel->setMode(ACCESS_WRITE);
+				if ($t_rel->load(array($vs_pk => $vn_id, 'role_id' => $vn_role_id))) {
+					$t_rel->delete(true);
+					
+					if ($t_rel->numErrors()) {
+						$this->errors = $t_rel->errors;
+						return false;
+					}
+				}
+			}
+			
+			return true;
+		}
+		# ------------------------------------------------------------------
+		/**
+		 * Removes all user roles from currently loaded row
+		 *
+		 * @return bool True on success, false on failure
+		 */ 
+		public function removeAllUserRoles() {
+			if (!($vn_id = (int)$this->getPrimaryKey())) { return null; }
+			if (!($vs_role_rel_table = $this->getProperty('USER_ROLES_RELATIONSHIP_TABLE'))) { return null; }
+			$vs_pk = $this->primaryKey();
+			
+			$o_db = $this->getDb();
+			
+			$qr_res = $o_db->query("
+				DELETE FROM {$vs_role_rel_table}
+				WHERE
+					{$vs_pk} = ?
+			", (int)$vn_id);
+			
+			if ($o_db->numErrors()) {
+				$this->errors = $o_db->errors;
+				return false;
+			}
+			return true;
+		}
+		# ------------------------------------------------------------------		
+		/**
+		 * 
+		 */
+		public function getUserRoleHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pn_table_num, $pn_item_id, $pn_user_id=null, $pa_options=null) {
+			$vs_view_path = (isset($pa_options['viewPath']) && $pa_options['viewPath']) ? $pa_options['viewPath'] : $po_request->getViewsDirectoryPath();
+			$o_view = new View($po_request, "{$vs_view_path}/bundles/");
+			
+			
+			require_once(__CA_MODELS_DIR__.'/ca_user_roles.php');
+			$t_role = new ca_user_roles();
+			
+			$o_dm = Datamodel::load();
+			$t_rel = $o_dm->getInstanceByTableName($this->getProperty('USER_ROLES_RELATIONSHIP_TABLE'));
+			$o_view->setVar('t_rel', $t_rel);
+			
+			$o_view->setVar('t_instance', $this);
+			$o_view->setVar('table_num', $pn_table_num);
+			$o_view->setVar('id_prefix', $ps_form_name);	
+			$o_view->setVar('placement_code', $ps_placement_code);		
+			$o_view->setVar('request', $po_request);	
+			$o_view->setVar('t_role', $t_role);
+			$o_view->setVar('initialValues', $this->getUserRoles());
+			
+			return $o_view->render('ca_user_roles.php');
+		}
 		# ------------------------------------------------------
 	}
-?>

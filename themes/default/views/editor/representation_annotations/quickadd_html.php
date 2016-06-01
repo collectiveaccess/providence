@@ -45,10 +45,10 @@
 	<div class='quickAddDialogHeader'><?php 	
 		if ($vb_can_edit) {
 			if (($vn_subject_id > 0) && (preg_match("!timebased!i", $t_subject->getAnnotationType()))) {
-				print "<div style='float: right;'>".caJSButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete annotation"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caConfirmDeleteAnnotation(true);"))."</div>\n";
+				print "<div style='float: right;'>".caJSButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete annotation"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caConfirmDeleteAnnotation(true);"))."</div>\n";
 			}
-			print "<div style='float: left;'>".caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save annotation"), "caAnnoEditorScreenSaveButton", array( "onclick" => "caSaveAnnotation{$vs_form_name}{$vs_field_name_prefix}{$vs_n}(event);"))
-				.' '.caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "return caAnnoEditorDisableAnnotationForm();"))."</div><br style='clear: both;'/>\n";
+			print "<div style='float: left;'>".caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save annotation"), "caAnnoEditorScreenSaveButton", array( "onclick" => "caSaveAnnotation{$vs_form_name}{$vs_field_name_prefix}{$vs_n}(event);"))
+				.' '.caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "return caAnnoEditorDisableAnnotationForm();"))."</div><br style='clear: both;'/>\n";
 		}
 ?>
 	</div>
@@ -117,7 +117,7 @@
 	}
 ?>
 						// Get new form with current in-point
-						caAnnoEditorEdit(0, caAnnoEditorGetPlayerTime(), caAnnoEditorGetPlayerTime() + 10);
+						caAnnoEditorEdit(0, caAnnoEditorGetPlayerTime(true), caAnnoEditorGetPlayerTime(true) + 10);
 					} else {
 						// error
 						var content = '<div class="notification-error-box rounded"><ul class="notification-error-box">';
@@ -140,8 +140,8 @@
 				if (show) {
 					var content = 	'<div class="notification-info-box rounded"><ul class="notification-info-box">' + 
 										'<li class="notification-info-box"><?php print addslashes(_t("Really delete annotation? %1 %2", 
-												caJSButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Yes"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caDeleteAnnotation(true);")),
-												caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("No"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caConfirmDeleteAnnotation(false); return false;"))
+												caJSButton($this->request, __CA_NAV_ICON_DELETE__, _t("Yes"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caDeleteAnnotation(true);")),
+												caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t("No"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caConfirmDeleteAnnotation(false); return false;"))
 											)); ?></li>' +
 										'</ul></div>';
 					jQuery('#<?php print $vs_form_name; ?>Errors<?php print $vs_field_name_prefix.$vs_n; ?>').html(content).slideDown(200);

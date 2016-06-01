@@ -61,6 +61,10 @@
  			$this->view->setVar('player_width', $vn_player_width);
  			$this->view->setVar('player_height', $vn_player_height);
  			
+ 			$va_rep_props = $t_rep->getMediaInfo('media', 'original');
+ 			$vn_timecode_offset = isset($va_rep_props['PROPERTIES']['timecode_offset']) ? (float)$va_rep_props['PROPERTIES']['timecode_offset'] : 0;
+ 			$this->view->setVar('timecode_offset', $vn_timecode_offset);
+ 			
  			// Get # clips
  			$this->view->setVar('annotation_count', (int)$t_rep->getAnnotationCount());
  			

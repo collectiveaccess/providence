@@ -314,12 +314,16 @@ final class ConfigurationExporter {
 			if(is_array($va_settings)) {
 				$vo_settings = $this->opo_dom->createElement("settings");
 				$vb_append_settings_element = false;
-				foreach($t_element->getSettings() as $vs_setting => $vs_value) {
-					if($t_element->isValidSetting($vs_setting) && ($vs_value != $va_available_settings[$vs_setting]["default"])) {
-						$vo_setting = $this->opo_dom->createElement("setting",$vs_value);
-						$vo_setting->setAttribute("name", $vs_setting);
-						$vo_settings->appendChild($vo_setting);
-						$vb_append_settings_element = true;
+				foreach($t_element->getSettings() as $vs_setting => $va_values) {
+					if(is_null($va_values)) { continue; }
+					if(!is_array($va_values)) { $va_values = array($va_values); }
+					foreach($va_values as $vs_value) {
+						if ($t_element->isValidSetting($vs_setting) && ($vs_value != $va_available_settings[$vs_setting]["default"])) {
+							$vo_setting = $this->opo_dom->createElement("setting", $vs_value);
+							$vo_setting->setAttribute("name", $vs_setting);
+							$vo_settings->appendChild($vo_setting);
+							$vb_append_settings_element = true;
+						}
 					}
 				}
 
@@ -815,7 +819,7 @@ final class ConfigurationExporter {
 	public function getRelationshipTypesAsDOM() {
 		$vo_rel_types = $this->opo_dom->createElement("relationshipTypes");
 
-		$qr_tables = $this->opo_db->query("SELECT DISTINCT table_num FROM ca_relationship_types ORDER BY type_id");
+		$qr_tables = $this->opo_db->query("SELECT DISTINCT table_num FROM ca_relationship_types");
 
 		while($qr_tables->nextRow()) {
 			$vo_table = $this->opo_dom->createElement("relationshipTable");
@@ -843,7 +847,7 @@ final class ConfigurationExporter {
 
 		$vo_types = $this->opo_dom->createElement("types");
 
-		$qr_types = $this->opo_db->query("SELECT * FROM ca_relationship_types WHERE parent_id=?",$pn_parent_id);
+		$qr_types = $this->opo_db->query("SELECT * FROM ca_relationship_types WHERE parent_id=? ORDER BY rank, type_id",$pn_parent_id);
 		if(!$qr_types->numRows()) return false;
 
 		while($qr_types->nextRow()) {

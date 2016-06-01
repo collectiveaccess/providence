@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2015 Whirl-i-Gig
+ * Copyright 2014-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -31,8 +31,8 @@
  	$vb_importers_available = (is_array($va_importer_list) && sizeof($va_importer_list));
  	
  	print $vs_control_box = caFormControlBox(
-		($vb_importers_available ? (caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Import"), 'caWorldCatResultsForm')) : '').' '.
-		(caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', '*', '*', 'Index')),
+		($vb_importers_available ? (caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Import"), 'caWorldCatResultsForm')) : '').' '.
+		(caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', '*', '*', 'Index')),
 		'',
 		''
 	);
@@ -40,7 +40,7 @@
  <form action="#" id="caWorldCatSearchForm">
  	<div class="formLabel">
  		<?php print _t('Find in WorldCat').': '.caHTMLTextInput("term", array('value' => '', 'id' => 'caWorldCatTerm'), array('width' => '250px')); ?>
- 		<a href="#" id="caWorldCatTermLookup" class="button"><?php print _t('Go'); ?> &rsaquo;</a>
+ 		<a href="#" id="caWorldCatTermLookup" class="button"><?php print caNavIcon(__CA_NAV_ICON_GO__, "18px"); ?></a>
  	</div>
  </form>
  

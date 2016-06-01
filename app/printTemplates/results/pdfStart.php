@@ -36,7 +36,17 @@
 	<head>
 		<title><?php print $this->getVar('criteria_summary_truncated'); ?></title>
 		
-		<link type="text/css" href="<?php print $this->getVar('base_path'); ?>pdf.css" rel="stylesheet" />
+<?php
+	if(file_exists($this->getVar('base_path')."/local/pdf.css")){
+?>
+		<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/local/pdf.css" rel="stylesheet" />
+<?php	
+	} else {
+?>
+		<link type="text/css" href="<?php print $this->getVar('base_path'); ?>/pdf.css" rel="stylesheet" />
+<?php
+	}
+?>
 		<style type="text/css">
 			@page { margin: {{{marginTop}}} {{{marginRight}}} {{{marginBottom}}} {{{marginLeft}}}; }
 		</style>

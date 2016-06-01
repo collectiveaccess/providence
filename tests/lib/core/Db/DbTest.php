@@ -112,8 +112,12 @@ class DbTest extends PHPUnit_Framework_TestCase {
 		$this->checkIfFooIsEmpty();
 
 		$this->db->dieOnError(false);
-		$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(1, 'bar', 'foo'));
-
+		
+		try {
+			$this->db->query("INSERT INTO foo (id, comment) VALUES (?, ?)", array(1, 'bar', 'foo'));
+		} catch (DatabaseException $e) {
+			// noop
+		}
 		$this->checkIfFooIsEmpty();
 	}
 
@@ -166,7 +170,7 @@ class DbTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertContains('foo', $va_tables);
 		$this->assertContains('bar', $va_tables);
-		$this->assertEquals(205, sizeof($va_tables)); // 203 CA tables plus 2 we created!
+		$this->assertEquals(210, sizeof($va_tables)); // 208 CA tables plus 2 we created!
 	}
 
 	public function testQuote() {

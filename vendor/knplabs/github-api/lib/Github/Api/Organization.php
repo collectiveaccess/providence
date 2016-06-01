@@ -16,6 +16,16 @@ use Github\Api\Organization\Teams;
 class Organization extends AbstractApi
 {
     /**
+     * @link https://developer.github.com/v3/orgs/#list-all-organizations
+     *
+     * @return array the organizations
+     */
+    public function all($since = '')
+    {
+        return $this->get('organizations?since='.rawurlencode($since));
+    }
+
+    /**
      * Get extended information about an organization by its name.
      *
      * @link http://developer.github.com/v3/orgs/#get
@@ -73,5 +83,19 @@ class Organization extends AbstractApi
     public function teams()
     {
         return new Teams($this->client);
+    }
+
+    /**
+     * @link http://developer.github.com/v3/issues/#list-issues
+     *
+     * @param $organization
+     * @param array $params
+     * @param int $page
+     *
+     * @return array
+     */
+    public function issues($organization, array $params = array(), $page = 1)
+    {
+        return $this->get('orgs/'.rawurlencode($organization).'/issues', array_merge(array('page' => $page), $params));
     }
 }

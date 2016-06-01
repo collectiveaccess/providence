@@ -36,6 +36,7 @@
  
 require_once(__CA_LIB_DIR__.'/ca/Attributes/Attribute.php');
 require_once(__CA_MODELS_DIR__.'/ca_attribute_value_multifiles.php');
+require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
 
 
 BaseModel::$s_ca_models_definitions['ca_attribute_values'] = array(
@@ -125,6 +126,8 @@ BaseModel::$s_ca_models_definitions['ca_attribute_values'] = array(
 );
 
 class ca_attribute_values extends BaseModel {
+	# ---------------------------------
+	use SyncableBaseModel;
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -231,7 +234,15 @@ class ca_attribute_values extends BaseModel {
 	public function doSearchIndexing($pa_changed_field_values_array=null, $pb_reindex_mode=false, $ps_engine=null) {
 		return;
 	}
-	# ------------------------------------------------------
+	# -------------------------------------------------------
+	public function insert($pa_options=null) {
+		if($vm_ret = parent::insert($pa_options)) {
+			$this->setGUID($pa_options); // generate and set GUID
+		}
+
+		return $vm_ret;
+	}
+	# -------------------------------------------------------
 	/**
 	 * Adds value to specified attribute. Returns value_id if new value on success, false on failure and
 	 * null on "silent" failure, in which case no error message is displayed to the user.
@@ -256,6 +267,7 @@ class ca_attribute_values extends BaseModel {
 		$o_attr_value = Attribute::getValueInstance($pa_element_info['datatype']);
 		$pa_element_info['displayLabel'] = $t_element->getLabelForDisplay(false);
 		$va_values = $o_attr_value->parseValue($ps_value, $pa_element_info, $pa_options);
+		if (isset($va_values['_dont_save']) && $va_values['_dont_save']) { return true; }
 		
 		if (is_array($va_values)) {
 			$this->useBlobAsFileField(false);
@@ -347,6 +359,18 @@ class ca_attribute_values extends BaseModel {
 			return $va_values;
 		}
 		
+		// Clear cache against attribute and any pages
+		$vn_id = $this->getPrimaryKey();
+		CompositeCache::delete("attribute:{$vn_id}", 'IIIFMediaInfo');
+		CompositeCache::delete("attribute:{$vn_id}", 'IIIFTileCounts');
+		
+		$vn_p = 1;
+		while(CompositeCache::contains($vs_key = "attribute:{$vn_id}:{$vn_p}", "IIIFMediaInfo")) {
+			CompositeCache::delete($vs_key, 'IIIFMediaInfo');
+			CompositeCache::delete($vs_key, 'IIIFTileCounts');
+			$vn_p++;
+		}
+		
 		$this->update();
 		
 		if ($this->numErrors()) {
@@ -374,7 +398,13 @@ class ca_attribute_values extends BaseModel {
 				$this->useBlobAsMediaField(false);
 				break;
 		}
-		return parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
+
+		$vn_primary_key = $this->getPrimaryKey();
+		$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
+		if($vn_primary_key && $vn_rc) {
+			$this->removeGUID($vn_primary_key);
+		}
+		return $vn_rc;
 	}
 	# ------------------------------------------------------
 	/**

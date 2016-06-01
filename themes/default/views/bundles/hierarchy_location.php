@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -62,15 +62,18 @@
 		$va_search_lookup_extra_params['currentHierarchyOnly'] = $vn_hier_id;
 	}
 	if (in_array($t_subject->tableName(), array('ca_objects', 'ca_collections')) && $vb_objects_x_collections_hierarchy_enabled) {
-		$va_lookup_urls = array(
+		$va_lookup_urls_for_move = $va_lookup_urls = array(
 			'search' => caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Get', $va_search_lookup_extra_params),
 			'levelList' => caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'GetHierarchyLevel'),
 			'ancestorList' => caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'GetHierarchyAncestorList')
 		);
+		$va_lookup_urls_for_move['search'] = caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Get', array_merge($va_search_lookup_extra_params, ['currentHierarchyOnly' => null]));
+		
 		$vs_edit_url = caNavUrl($this->request, 'lookup', 'ObjectCollectionHierarchy', 'Edit').'/id/';
 		$vn_init_id = $t_subject->tableName()."-".$pn_id;
 	} else {
-		$va_lookup_urls 	= caJSONLookupServiceUrl($this->request, $t_subject->tableName(), $va_search_lookup_extra_params);
+		$va_lookup_urls 			= caJSONLookupServiceUrl($this->request, $t_subject->tableName(), $va_search_lookup_extra_params);
+		$va_lookup_urls_for_move 	= caJSONLookupServiceUrl($this->request, $t_subject->tableName(), array_merge($va_search_lookup_extra_params, ['currentHierarchyOnly' => null]));
 		$vs_edit_url = caEditorUrl($this->request, $t_subject->tableName());
 		$vn_init_id = $pn_id;
 	}
@@ -327,11 +330,11 @@
 							print "<div id='{$vs_id_prefix}HierarchyBrowseAdd'>"._t("Add a new %1 %2 <em>%3</em>", $vs_type_selector, caHTMLSelect('add_type', $va_add_types, array('id' => "{$vs_id_prefix}addType")), $vs_subject_label);
 		
 							// Note the jQuery(\"#{$vs_id_prefix}childTypeList\").val() which grabs the value of the type
-							print " <a href='#' onclick='_navigateToNewForm(jQuery(\"#{$vs_id_prefix}typeList\").val(), jQuery(\"#{$vs_id_prefix}addType\").val(), (jQuery(\"#{$vs_id_prefix}addType\").val() == \"next_to\") ? ".intval($pn_parent_id)." : ".intval($pn_id).")'>".caNavIcon($this->request, __CA_NAV_BUTTON_ADD__)."</a></div>";
+							print " <a href='#' onclick='_navigateToNewForm(jQuery(\"#{$vs_id_prefix}typeList\").val(), jQuery(\"#{$vs_id_prefix}addType\").val(), (jQuery(\"#{$vs_id_prefix}addType\").val() == \"next_to\") ? ".intval($pn_parent_id)." : ".intval($pn_id).")'>".caNavIcon(__CA_NAV_ICON_ADD__, '15px')."</a></div>";
 						} else {
 							// for items without types
 							print "<div id='{$vs_id_prefix}HierarchyBrowseAdd'>"._t("Add a new %1 %2 <em>%3</em>",  $t_subject->getProperty('NAME_SINGULAR'), caHTMLSelect('add_type', $va_add_types, array('id' => "{$vs_id_prefix}addType")), $vs_subject_label);
-							print " <a href='#' onclick='_navigateToNewForm(0, jQuery(\"#{$vs_id_prefix}addType\").val(), (jQuery(\"#{$vs_id_prefix}addType\").val() == \"next_to\") ? ".intval($pn_parent_id)." : ".intval($pn_id).")'>".caNavIcon($this->request, __CA_NAV_BUTTON_ADD__)."</a></div>";
+							print " <a href='#' onclick='_navigateToNewForm(0, jQuery(\"#{$vs_id_prefix}addType\").val(), (jQuery(\"#{$vs_id_prefix}addType\").val() == \"next_to\") ? ".intval($pn_parent_id)." : ".intval($pn_id).")'>".caNavIcon(__CA_NAV_ICON_ADD__, '15px')."</a></div>";
 						}
 ?>
 					</div>
@@ -358,7 +361,7 @@
 							print "<div id='{$vs_id_prefix}HierarchyBrowseAdd'>"._t("Add a new %1 under <em>%2</em>", $vs_type_selector, $vs_subject_label);
 		
 							// Note the jQuery(\"#{$vs_id_prefix}childTypeList\").val() which grabs the value of the type
-							print " <a href='#' onclick='_navigateToNewObjectForm(jQuery(\"#{$vs_id_prefix}objectTypeList\").val(), ".intval($pn_id).")'>".caNavIcon($this->request, __CA_NAV_BUTTON_ADD__)."</a></div>";				
+							print " <a href='#' onclick='_navigateToNewObjectForm(jQuery(\"#{$vs_id_prefix}objectTypeList\").val(), ".intval($pn_id).")'>".caNavIcon(__CA_NAV_ICON_ADD__, '15px')."</a></div>";				
 ?>
 					</div>
 				</div>
@@ -382,7 +385,7 @@
 		// Set up "move" hierarchy browse search
 		jQuery('#<?php print $vs_id_prefix; ?>MoveHierarchyBrowserSearch').autocomplete(
 			{ 
-				source: '<?php print $va_lookup_urls['search']; ?>', minLength: 3, delay: 800, html: true,
+				source: '<?php print $va_lookup_urls_for_move['search']; ?>', minLength: 3, delay: 800, html: true,
 				select: function( event, ui ) {
 					if (ui.item.id) {
 						jQuery("#<?php print $vs_id_prefix; ?>HierarchyBrowserContainer").slideDown(350);
@@ -466,11 +469,11 @@
 				disabledItems: '<?php print $vs_disabled_items_mode; ?>',
 				
 				editUrl: '<?php print $vs_edit_url; ?>',
-				editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
-				disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
+				editButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
+				disabledButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_DOT__, 1); ?>",
 
 				initItemID: '<?php print $vn_init_id; ?>',
-				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+				indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 				displayCurrentSelectionOnLoad: false,
 				autoShrink: <?php print (caGetOption('auto_shrink', $pa_bundle_settings, false) ? 'true' : 'false'); ?>,
 				autoShrinkAnimateID: '<?php print $vs_id_prefix; ?>ExploreHierarchyBrowser'
@@ -494,16 +497,16 @@
 				disabledItems: '<?php print $vs_disabled_items_mode; ?>',
 				
 				initItemID: '<?php print $vn_init_id; ?>',
-				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
-				editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
-				disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
+				indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
+				editButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
+				disabledButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_DOT__, 1); ?>",
 		
 				currentSelectionIDID: '<?php print $vs_id_prefix; ?>_new_parent_id',
 				currentSelectionDisplayID: '<?php print $vs_id_prefix; ?>HierarchyBrowserSelectionMessage',
 				currentSelectionDisplayFormat: '<?php print addslashes(_t('Will be moved under <em>%1</em> after next save.')); ?>',
 				
 				allowExtractionFromHierarchy: <?php print ($t_subject->getProperty('HIERARCHY_TYPE') == __CA_HIER_TYPE_ADHOC_MONO__) ? 'true' : 'false'; ?>,
-				extractFromHierarchyButtonIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/buttons/arrow_grey_up.gif" border="0" title="<?php print _t("Extract from hierarchy"); ?>">',
+				extractFromHierarchyButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_EXTRACT__, 1); ?>",
 				extractFromHierarchyMessage: '<?php print addslashes(_t('Will be placed at the top of its own hierarchy after next save.')); ?>',
 				
 				onSelection: function(id, parent_id, name, formattedDisplay) {
@@ -548,7 +551,7 @@
 				disabledItems: '<?php print $vs_disabled_items_mode; ?>',
 				
 				initItemID: '<?php print $vn_init_id; ?>',
-				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+				indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 				displayCurrentSelectionOnLoad: true,
 				autoShrink: <?php print (caGetOption('auto_shrink', $pa_bundle_settings, false) ? 'true' : 'false'); ?>,
 				autoShrinkAnimateID: '<?php print $vs_id_prefix; ?>AddHierarchyBrowser'
@@ -573,7 +576,7 @@
 				allowSelection: false,
 				
 				initItemID: '<?php print $vn_init_id; ?>',
-				indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+				indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 				displayCurrentSelectionOnLoad: true,
 				autoShrink: <?php print (caGetOption('auto_shrink', $pa_bundle_settings, false) ? 'true' : 'false'); ?>,
 				autoShrinkAnimateID: '<?php print $vs_id_prefix; ?>AddObjectHierarchyBrowser'

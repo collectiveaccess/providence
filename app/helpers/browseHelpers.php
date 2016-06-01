@@ -99,14 +99,22 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 	}
 	# ---------------------------------------
 	/**
-	 * 
+	 * Get browse instance
 	 *
-	 * @return string 
+	 * @param string|int $pm_table_name_or_num
+	 * @param null $pa_options
+	 * @return BaseBrowse
 	 */
 	function caGetBrowseInstance($pm_table_name_or_num, $pa_options=null) {
 		$o_dm = Datamodel::load();
 		
 		$vs_table = (is_numeric($pm_table_name_or_num)) ? $o_dm->getTableName((int)$pm_table_name_or_num) : $pm_table_name_or_num;
+		
+		if (!($t_instance = $o_dm->getInstanceByTableName($vs_table, true))) { return null; }
+		if ($t_instance->isRelationship()) { 
+			require_once(__CA_LIB_DIR__.'/ca/Browse/InterstitialBrowse.php');
+			return new InterstitialBrowse(null, null, $vs_table);
+		}
 		
 		switch($vs_table) {
 			case 'ca_objects':
@@ -169,6 +177,96 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 				return null;
 				break;
 		}
+	}
+	# ---------------------------------------
+	/**
+	 * 
+	 *
+	 * @return Configuration 
+	 */
+	function caGetBrowseConfig() {
+		$o_config = Configuration::load();
+		return Configuration::load(__CA_CONF_DIR__.'/browse.conf');
+	}
+	# ---------------------------------------
+	/**
+	 * 
+	 *
+	 * @return array 
+	 */
+	function caGetInfoForBrowseType($ps_browse_type) {
+		$o_browse_config = caGetBrowseConfig();
+		
+		$va_browse_types = $o_browse_config->getAssoc('browseTypes');
+		$ps_browse_type = strtolower($ps_browse_type);
+		
+		if (isset($va_browse_types[$ps_browse_type])) {
+			return $va_browse_types[$ps_browse_type];
+		}
+		return null;
+	}
+	# ---------------------------------------
+	/**
+	 * 
+	 *
+	 * @return array 
+	 */
+	function caGetBrowseTypes($pa_options=null) {
+		$o_browse_config = caGetBrowseConfig();
+		
+		$va_browse_types = $o_browse_config->getAssoc('browseTypes');
+		if(caGetOption('forMenuBar', $pa_options, false)) {
+			foreach($va_browse_types as $vs_k => $va_browse_info) {
+				if (isset($va_browse_info['dontIncludeInBrowseMenu']) && (bool)$va_browse_info['dontIncludeInBrowseMenu']) {
+					unset($va_browse_types[$vs_k]);
+				}
+			}
+		}
+		
+		return $va_browse_types;
+	}
+	# ---------------------------------------
+	/**
+	 * 
+	 *
+	 * @return (string)
+	 */
+	function caGetFacetForMenuBar($po_request, $vs_browse_type, $pa_options=null) {
+		$vb_select_default_facet = caGetOption('selectDefaultFacet', $pa_options, true);
+		$vs_default_facet = caGetOption('defaultFacet', $pa_options, null);
+		
+		$o_browse_config = caGetBrowseConfig();
+		$vs_key = '';//$po_request->session->getVar('objects_last_browse_id');
+		
+		if (!($va_browse_info = caGetInfoForBrowseType($vs_browse_type))) {
+			// invalid browse type – throw error
+			return null;
+		}
+		$o_browse = caGetBrowseInstance($va_browse_info["table"]);
+		if ($vs_key) { $o_browse->reload($vs_key); }
+		
+		if ((isset($va_browse_info['facetGroup']) && (($vs_menu_bar_facet_group = $o_browse_config->get('menubarFacetGroup')) ||($vs_menu_bar_facet_group = $va_browse_info['facetGroup'])))) {
+			$o_browse->setFacetGroup($vs_menu_bar_facet_group);
+		}
+		
+		if (is_array($va_browse_info['restrictToTypes']) && sizeof($va_browse_info['restrictToTypes'])) { 
+			$o_browse->setTypeRestrictions($va_browse_info['restrictToTypes']);
+		}
+		
+		$o_browse->execute(array('checkAccess' => caGetUserAccessValues($po_request), 'showAllForNoCriteriaBrowse' => true));
+	
+		$va_facets = $o_browse->getInfoForAvailableFacets();
+		
+		$vs_buf = '';
+		foreach($va_facets as $vs_facet_name => $va_facet_info) {
+			if (!$vs_default_facet) { $vs_default_facet = $vs_facet_name; }
+			$vs_buf .= "<li ".((($vs_default_facet == $vs_facet_name) && $vb_select_default_facet) ? "class='active'" : "")."><a href='#' onclick='jQuery(\".browseMenuFacet\").load(\"".caNavUrl($po_request, '*', 'Browse', $vs_browse_type, array('facet' => $vs_facet_name, 'getFacet' => 1, 'key' => $vs_key, 'isNav' => 1))."\", function() { jQuery(this).parent().scrollTop(0); }); jQuery(this).parent().siblings().removeClass(\"active\"); jQuery(this).parent().addClass(\"active\"); return false;'>".caUcFirstUTF8Safe($va_facet_info['label_plural'])."</a></li>\n";
+		}
+		
+		if ($vs_default_facet && $vb_select_default_facet) {
+			$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { jQuery(\".browseMenuFacet\").load(\"".caNavUrl($po_request, '*', 'Browse', $vs_browse_type, array('facet' => $vs_default_facet, 'getFacet' => 1, 'key' => $vs_key, 'isNav' => 1))."\"); });</script>\n";
+		}
+		return $vs_buf;
 	}
 	# ---------------------------------------
 ?>

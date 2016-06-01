@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2013 Whirl-i-Gig
+ * Copyright 2012-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -152,6 +152,13 @@
 				_t('Match using directory name') => 'DIRECTORY_NAME',
 				_t('Match using directory name, then file name') => 'FILE_AND_DIRECTORY_NAMES'
 			), array(), array('value' => $va_last_settings['matchMode'])));
+			
+			$this->view->setVar('match_type', caHTMLSelect('match_type', array(
+				_t('matches exactly') => 'EXACT',
+				_t('starts with') => 'STARTS',
+				_t('ends with') => 'ENDS',
+				_t('contains') => 'CONTAINS'
+			), array(), array('value' => $va_last_settings['matchType'])));
  			
  			$this->view->setVar($vs_import_target.'_type_list', $t_instance->getTypeListAsHTMLFormElement($vs_import_target.'_type_id', null, array('value' => $va_last_settings[$vs_import_target.'_type_id'])));
  			$this->view->setVar($vs_import_target.'_limit_to_types_list', $t_instance->getTypeListAsHTMLFormElement($vs_import_target.'_limit_matching_to_type_ids[]', array('multiple' => 1), array('height' => '100px', 'values' => $va_last_settings[$vs_import_target.'_limit_matching_to_type_ids'])));
@@ -167,10 +174,11 @@
  			foreach($va_importer_list as $vn_importer_id => $va_importer_info) {
  				if ($va_importer_info['table_num'] == $t_instance->tableNum()) { // target table
  					$va_object_importer_options[$va_importer_info['label']] = $vn_importer_id;
- 				} else {
+ 				} elseif($va_importer_info['table_num'] == $t_instance->getAppDatamodel()->getTableNum('ca_object_representations')) {
  					$va_object_representation_importer_options[$va_importer_info['label']] = $vn_importer_id;
  				}
  			}
+
  			$this->view->setVar($vs_import_target.'_mapping_list', caHTMLSelect($vs_import_target.'_mapping_id', $va_object_importer_options, array(), array('value' => $va_last_settings[$vs_import_target.'_mapping_id'])));
  			$this->view->setVar($vs_import_target.'_mapping_list_count', sizeof($va_object_importer_options));
  			$this->view->setVar('ca_object_representations_mapping_list', caHTMLSelect('ca_object_representations_mapping_id', $va_object_representation_importer_options, array(), array('value' => $va_last_settings['ca_object_representations_mapping_id'])));
@@ -233,6 +241,7 @@
  				'deleteMediaOnImport' => (bool)$this->request->getParameter('delete_media_on_import', pInteger),
  				'importMode' => $this->request->getParameter('import_mode', pString),
  				'matchMode' => $this->request->getParameter('match_mode', pString),
+ 				'matchType' => $this->request->getParameter('match_type', pString),
 				$vs_import_target.'_limit_matching_to_type_ids' => $this->request->getParameter($vs_import_target.'_limit_matching_to_type_ids', pArray),
  				$vs_import_target.'_type_id' => $this->request->getParameter($vs_import_target.'_type_id', pInteger),
  				'ca_object_representations_type_id' => $this->request->getParameter('ca_object_representations_type_id', pInteger),

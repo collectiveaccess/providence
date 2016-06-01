@@ -201,6 +201,7 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	# ------------------------------------------------------
 	protected $USERS_RELATIONSHIP_TABLE = 'ca_editor_uis_x_users';
 	protected $USER_GROUPS_RELATIONSHIP_TABLE = 'ca_editor_uis_x_user_groups';
+	protected $USER_ROLES_RELATIONSHIP_TABLE = 'ca_editor_uis_x_roles';
 	
 	# ------------------------------------------------------
 	# Labeling
@@ -249,6 +250,8 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		
 		$this->BUNDLES['ca_users'] = array('type' => 'special', 'repeating' => true, 'label' => _t('User access'));
 		$this->BUNDLES['ca_user_groups'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Group access'));
+		$this->BUNDLES['ca_user_roles'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Role access'));
+		
 		$this->BUNDLES['ca_editor_ui_screens'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Screens'));
 		$this->BUNDLES['ca_editor_ui_type_restrictions'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Type restrictions'));
 	}
@@ -344,13 +347,12 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		$t_ui = new ca_editor_uis();
 		
 		// If table supports null types take type_id=null to be  "none" rather than a signal to allow any type of editor
-		if (!$vn_type_id && (bool)$t_instance->getFieldInfo($t_instance->getTypeFieldName(), 'IS_NULL')) {
+		if (!$vn_type_id && method_exists($t_instance, "getTypeFieldName") && (bool)$t_instance->getFieldInfo($t_instance->getTypeFieldName(), 'IS_NULL')) {
 			$vn_type_id = '_NONE_';
 		}
-		
 		if (!$vn_type_id || !($vn_rc = $t_ui->load($va_uis_by_type[$vn_type_id]))) {
 			$va_ui_ids = ca_editor_uis::getAvailableUIs($vn_table_num, $po_request, $vn_type_id, true);
-			
+
 			if (sizeof($va_ui_ids) == 0) { return ca_editor_uis::$s_default_ui_cache[$pm_table_name_or_num.'/'.$pn_type_id] = false; }
 			$va_tmp = array_keys($va_ui_ids);
 			if ($t_ui->load($va_tmp[0])) {
@@ -366,16 +368,16 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Returns list of screens for a given UI. 
 	 *
-	 * @param RequestHTTP $po_request The current request
 	 * @param int $pn_type_id Optional type to restrict screens to
 	 * @param array $pa_options Options include:
 	 *		showAll = Include screens that do not have placements. Default is false.
+	 *		user_id = User_id to apply access control for
 	 *
 	 * @return array List of screens for this user interface
 	 */
-	public function getScreens($po_request=null, $pn_type_id=null, $pa_options=null) {
+	public function getScreens($pn_type_id=null, $pa_options=null) {
 		if (!$this->getPrimaryKey()) { return false; }
-
+		
 		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('editor_type')))) { return null; }
 		
 		if($t_instance instanceof BaseRelationshipModel) {
@@ -384,10 +386,68 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			$va_types = $t_instance->getTypeList();	
 		}
 		
+		$va_sql_params = array((int)$this->getPrimaryKey());
+		
 		$o_db = $this->getDb();
 		$va_type_list = caMakeTypeIDList($this->get('editor_type'), array($pn_type_id), array('dontIncludeSubtypesInTypeRestriction' => true));
 		if (!sizeof($va_type_list)) { $va_type_list = array($pn_type_id); }
 		$vs_type_sql = ((int)$pn_type_id) ? "AND (ceustr.type_id IS NULL OR ceustr.type_id IN (".join(",", $va_type_list)."))" : '';
+	
+		$vs_access_sql = '';
+		
+		$t_user = new ca_users();
+		if (($vn_user_id = caGetOption('user_id', $pa_options, null)) && ($t_user->load($vn_user_id))) {
+			$vs_access_sql = " AND ((ceus.screen_id IN 
+					(
+						SELECT screen_id 
+						FROM ca_editor_ui_screens_x_users
+						WHERE
+							user_id = ?
+					)
+				)";
+				$va_sql_params[] = $vn_user_id;
+				
+			$va_groups = $t_user->getUserGroups();
+			if (is_array($va_groups) && sizeof($va_groups)) {
+				$vs_access_sql .= " OR (ceus.screen_id IN 
+					(
+						SELECT screen_id 
+						FROM ca_editor_ui_screens_x_user_groups
+						WHERE
+							group_id IN (?)
+					)
+				)";
+				$va_sql_params[] = array_keys($va_groups);
+			}
+			
+			$va_roles = $t_user->getUserRoles();
+			if (is_array($va_roles) && sizeof($va_roles)) {
+				$vs_access_sql .= " OR (ceus.screen_id IN 
+					(
+						SELECT screen_id 
+						FROM ca_editor_ui_screens_x_roles
+						WHERE
+							role_id IN (?)
+					)
+				)";
+				$va_sql_params[] = array_keys($va_roles);
+			}
+			$vs_access_sql .= "
+				OR (
+					ceus.screen_id NOT IN (
+						SELECT screen_id FROM ca_editor_ui_screens_x_users
+					)
+					AND
+					ceus.screen_id NOT IN (
+						SELECT screen_id FROM ca_editor_ui_screens_x_user_groups
+					)
+					AND
+					ceus.screen_id NOT IN (
+						SELECT screen_id FROM ca_editor_ui_screens_x_roles
+					)
+				)
+			)";
+		}
 	
 		$qr_res = $o_db->query("
 			SELECT ceus.*, ceusl.*, ceustr.type_id restriction_type_id
@@ -396,9 +456,10 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 			LEFT JOIN ca_editor_ui_screen_type_restrictions AS ceustr ON ceus.screen_id = ceustr.screen_id
 			WHERE
 				(ceus.ui_id = ?) {$vs_type_sql}
+				{$vs_access_sql}
 			ORDER BY 
 				ceus.rank, ceus.screen_id
-		", (int)$this->getPrimaryKey());
+		", $va_sql_params);
 		
 		$va_screens = array();
 		
@@ -450,6 +511,157 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ----------------------------------------
 	/**
+	 *
+	 */
+	public static function getAccessForUI($po_request, $pm_ui_id) {
+		
+		if (!is_numeric($pm_ui_id) || !($t_ui = ca_editor_uis::find(array('ui_id' => $pm_ui_id), array('returnAs' => 'firstModelInstance')))) {
+			$t_ui = ca_editor_uis::find(array('editor_code' => $pm_ui_id), array('returnAs' => 'firstModelInstance'));
+		}
+		if (!$t_ui) { return null; }
+		if ($t_ui->get('is_system_ui')) { return __CA_BUNDLE_ACCESS_EDIT__; }
+		$vn_ui_id = $t_ui->getPrimaryKey();
+		
+		if ($vn_user_id = $po_request->getUserID()) {
+			$t_user = $po_request->getUser();
+			
+			// Check for user access
+			$qr_users = $t_user->getDb()->query("
+				SELECT ui_id, user_id, access 
+				FROM ca_editor_uis_x_users
+				WHERE
+					user_id = ? AND ui_id = ?", array($vn_user_id, $vn_ui_id));
+					
+			if ($qr_users->nextRow()) {
+				return (int)$qr_users->get('access');
+			}
+			
+			// Check for group access
+			
+			if ((is_array($va_groups = $t_user->getUserGroups())) && sizeof($va_groups)) {
+				$qr_groups = $t_user->getDb()->query("
+					SELECT ui_id, group_id, access 
+					FROM ca_editor_uis_x_user_groups
+					WHERE
+						group_id IN (?) AND ui_id = ?", array(array_keys($va_groups), $vn_ui_id));
+						
+				if ($qr_groups->nextRow()) {
+					return (int)$qr_groups->get('access');
+				}
+			}		
+			
+			// Check for role access
+			
+			if ((is_array($va_roles = $t_user->getUserRoles())) && sizeof($va_roles)) {
+				$qr_roles = $t_user->getDb()->query("
+					SELECT ui_id, role_id, access 
+					FROM ca_editor_uis_x_roles
+					WHERE
+						role_id IN (?) AND ui_id = ?", array(array_keys($va_roles), $vn_ui_id));
+						
+				if ($qr_roles->nextRow()) {
+					return (int)$qr_roles->get('access');
+				}
+			}			
+		}
+		
+		$qr_all = $t_user->getDb()->query("
+			SELECT ui_id FROM ca_editor_uis_x_users WHERE ui_id = ?
+		", array($vn_ui_id));
+		if (!$qr_all->nextRow()) {
+			$qr_all = $t_user->getDb()->query("
+				SELECT ui_id FROM ca_editor_uis_x_user_groups WHERE ui_id = ?
+			", array($vn_ui_id));
+			if (!$qr_all->nextRow()) {
+				$qr_all = $t_user->getDb()->query("
+					SELECT ui_id FROM ca_editor_uis_x_roles WHERE ui_id = ?
+				", array($vn_ui_id));
+				if (!$qr_all->nextRow()) {
+					return __CA_BUNDLE_ACCESS_EDIT__; // no user, group or role access control applied to this screen...  allow editing
+				}
+			}
+		}
+		
+		return false; // no access
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	public static function getAccessForScreen($po_request, $pm_screen) {
+		$vn_screen_id = intval(str_replace('Screen', '', $pm_screen));
+		
+		if ($vn_user_id = $po_request->getUserID()) {
+			$t_user = $po_request->getUser();
+			
+			// Check for user access
+			$qr_users = $t_user->getDb()->query("
+				SELECT screen_id, user_id, access 
+				FROM ca_editor_ui_screens_x_users
+				WHERE
+					user_id = ? AND screen_id = ?", array($vn_user_id, $vn_screen_id));
+					
+			if ($qr_users->nextRow()) {
+				return (int)$qr_users->get('access');
+			}
+			
+			// Check for group access
+			
+			if ((is_array($va_groups = $t_user->getUserGroups())) && sizeof($va_groups)) {
+				$qr_groups = $t_user->getDb()->query("
+					SELECT screen_id, group_id, access 
+					FROM ca_editor_ui_screens_x_user_groups
+					WHERE
+						group_id IN (?) AND screen_id = ?", array(array_keys($va_groups), $vn_screen_id));
+						
+				if ($qr_groups->nextRow()) {
+					return (int)$qr_groups->get('access');
+				}
+			}		
+			
+			// Check for role access
+			
+			if ((is_array($va_roles = $t_user->getUserRoles())) && sizeof($va_roles)) {
+				$qr_roles = $t_user->getDb()->query("
+					SELECT screen_id, role_id, access 
+					FROM ca_editor_ui_screens_x_roles
+					WHERE
+						role_id IN (?) AND screen_id = ?", array(array_keys($va_roles), $vn_screen_id));
+						
+				if ($qr_roles->nextRow()) {
+					return (int)$qr_roles->get('access');
+				}
+			}			
+		}
+		
+		$qr_all = $t_user->getDb()->query("
+			SELECT screen_id FROM ca_editor_ui_screens_x_users WHERE screen_id = ?
+		", array($vn_screen_id));
+		if (!$qr_all->nextRow()) {
+			$qr_all = $t_user->getDb()->query("
+				SELECT screen_id FROM ca_editor_ui_screens_x_user_groups WHERE screen_id = ?
+			", array($vn_screen_id));
+			if (!$qr_all->nextRow()) {
+				$qr_all = $t_user->getDb()->query("
+					SELECT screen_id FROM ca_editor_ui_screens_x_roles WHERE screen_id = ?
+				", array($vn_screen_id));
+				if (!$qr_all->nextRow()) {
+					$qr_all = $t_user->getDb()->query("
+						SELECT ui_id FROM ca_editor_ui_screens WHERE screen_id = ?
+					", array($vn_screen_id));
+					
+					if ($qr_all->nextRow()) {
+						// Inherit access from UI screen is part of
+						return ca_editor_uis::getAccessForUI($po_request, $qr_all->get('ui_id'));
+					}
+				}
+			}
+		}
+		
+		return false; // no access
+	}
+	# ----------------------------------------
+	/**
 	  * Return information about default screen
 	  *
 	  * @param RequestHTTP $po_request The current request
@@ -459,7 +671,8 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	  * @return array Default screen information as an array
 	  */
 	public function getDefaultScreen($po_request=null, $pn_type_id=null, $pa_options=null) {
-		$va_screens = $this->getScreens($po_request, $pn_type_id, $pa_options);
+		if(!caGetOption('user_id', $pa_options, null) && $po_request) { $pa_options['user_id'] = $po_request->getUserID(); }
+		$va_screens = $this->getScreens($pn_type_id, $pa_options);
 		
 		foreach($va_screens as $vn_screen_id => $va_screen) {
 			if (isset($va_screen['isDefault']) && $va_screen['isDefault']) {
@@ -473,19 +686,24 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	  * Return number of screens configured for currently loaded UI 
 	  *
 	  * @param int $pn_type_id Optional type_id used when and per-screen type restrictions are enforced; if not set (the default) then all screens are returned - no type restrictions are enforced.
+	  * @param array $pa_options Options include:
+	  *		user_id = User_id to apply access control for
 	  * @return int Number of screens configured for the current UI
 	  */
-	public function getScreenCount($pn_type_id=null) {
+	public function getScreenCount($pn_type_id=null, $pa_options=null) {
 		if (!$this->getPrimaryKey()) { return 0; }
+		if(!caGetOption('user_id', $pa_options, null) && $po_request) { $pa_options['user_id'] = $po_request->getUserID(); }
+		$pa_options['showAll'] = true;
+		
 		$vs_opts_md5 = md5(print_r(array('showAll' => true), true));
 		
-		return sizeof($this->getScreens(null, $pn_type_id, array('showAll' => true)));
+		return sizeof($this->getScreens($pn_type_id, $pa_options));
 	}
 	# ----------------------------------------
 	/**
 	 *
 	 */
-	public function getScreenBundlePlacements($pm_screen) {
+	public function getScreenBundlePlacements($pm_screen, $pn_type_id=null) {
 		if (!$this->getPrimaryKey()) { return false; }
 		
 		$o_db = $this->getDb();
@@ -508,6 +726,15 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		while ($qr_res->nextRow()) {
 			$va_tmp = $qr_res->getRow();
 			$va_tmp['settings'] = $qr_res->getVars('settings');
+
+			// check bundle-placement type restrictions if set
+			if (
+				$pn_type_id &&
+				is_array($va_tmp['settings']['bundleTypeRestrictions']) &&
+				(sizeof($va_tmp['settings']['bundleTypeRestrictions']) > 0) &&
+				!in_array($pn_type_id, $va_tmp['settings']['bundleTypeRestrictions'])
+			) { continue; }
+				
 			$va_placements[] = $va_tmp;
 		}
 		
@@ -517,11 +744,17 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	/**
 	 * Returns screen name for the first screen in the currently loaded UI 
 	 * that contains the bundle named by $ps_bundle_name
+	 *
+	 * @param string $ps_bundle_name
+	 * @param RequestHTTP $po_request
+	 * @param array $pa_options Options include:
+	 *		user_id = User_id to apply access control for
 	 */
-	public function getScreenWithBundle($ps_bundle_name, $po_request=null) {
+	public function getScreenWithBundle($ps_bundle_name, $po_request=null, $pa_options=null) {
 		if (!$this->getPrimaryKey()) { return null; }
+		if(!caGetOption('user_id', $pa_options, null) && $po_request) { $pa_options['user_id'] = $po_request->getUserID(); }
 		
-		foreach($this->getScreens($po_request) as $va_screen) {
+		foreach($this->getScreens(null, $pa_options) as $va_screen) {
 			$vn_screen_id = $va_screen['screen_id'];
 			$va_placements = $this->getScreenBundlePlacements('Screen'.$vn_screen_id);
 			
@@ -541,14 +774,17 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @param string $ps_bundle_name The bundle name
 	 * @param RequestHTTP $po_request The current request
+	 * @param array $pa_options Options include:
+	 *		user_id = User_id to apply access control for
 	 *
 	 * @return array A list of placement info, one for each placement in the editor
 	 */
-	public function getPlacementsForBundle($ps_bundle_name, $po_request=null) {
+	public function getPlacementsForBundle($ps_bundle_name, $po_request=null, $pa_options=null) {
 		if (!$this->getPrimaryKey()) { return null; }
+		if(!caGetOption('user_id', $pa_options, null) && $po_request) { $pa_options['user_id'] = $po_request->getUserID(); }
 		
 		$va_found = array();
-		foreach($this->getScreens($po_request) as $va_screen) {
+		foreach($this->getScreens(null, $pa_options) as $va_screen) {
 			$vn_screen_id = $va_screen['screen_id'];
 			$va_placements = $this->getScreenBundlePlacements('Screen'.$vn_screen_id);
 			
@@ -576,10 +812,12 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	 * @param array $pa_options	Values to include in returned array for each screen. Values are returned as-is. Specific options also have the following effects:
 	 *		returnTypeRestrictions = return list of type restrictions for screen. Default is false. 
 	 *		restrictToTypes = 
+	 *		user_id = User_id to apply access control for
 	 * @return array
 	 */
 	public function getScreensAsNavConfigFragment($po_request, $pn_type_id, $ps_module_path, $ps_controller, $ps_action, $pa_parameters, $pa_requirements, $pb_disable_options=false, $pa_options=null) {
-		if (!($va_screens = $this->getScreens($po_request, $pn_type_id))) { return false; }
+		if(!caGetOption('user_id', $pa_options, null) && $po_request) { $pa_options['user_id'] = $po_request->getUserID(); }
+		if (!($va_screens = $this->getScreens($pn_type_id, $pa_options))) { return false; }
 		
 		$va_nav = array();
 		$vn_default_screen_id = null;
@@ -857,6 +1095,17 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		if ($t_instance instanceof BaseRelationshipModel) { // interstitial type restriction incoming
 			$va_rel_type_list = $t_instance->getRelationshipTypes();
 			if(!isset($va_rel_type_list[$pn_type_id])) { return false; }
+		} elseif($t_instance instanceof ca_representation_annotations) { // annotation type restriction
+			$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
+			$vb_ok = false;
+			foreach($o_annotation_type_conf->get('types') as $vs_type_code => $va_type_info) {
+				if(isset($va_type_info['typeID']) && ($va_type_info['typeID'] == $pn_type_id)) {
+					$vb_ok = true;
+					break;
+				}
+			}
+
+			if(!$vb_ok) { return false; } // couldn't find type id
 		} else { // "normal" (list-based) type restriction
 			$va_type_list = $t_instance->getTypeList();
 			if (!isset($va_type_list[$pn_type_id])) { return false; }
@@ -1017,7 +1266,8 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 * @return string Rendered HTML bundle for display
 	 */
-	public function getScreenHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null) {
+	public function getScreenHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code) {
+		
 		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 		
 		$o_view->setVar('t_ui', $this);		
@@ -1027,7 +1277,8 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 		$o_view->setVar('request', $po_request);
 		
 		if ($this->getPrimaryKey()) {
-			$o_view->setVar('screens', $this->getScreens($po_request, null, array('showAll' => true)));
+			// We don't filter screens based upon user access in the configuration interface
+			$o_view->setVar('screens', $this->getScreens(null, array('showAll' => true)));
 		} else {
 			$o_view->setVar('screens', array());
 		}
@@ -1063,6 +1314,15 @@ class ca_editor_uis extends BundlableLabelableBaseModelWithAttributes {
 
 		if($t_instance instanceof BaseRelationshipModel) { // interstitial
 			$o_view->setVar('type_restrictions', $t_instance->getRelationshipTypesAsHTMLSelect($t_instance->getLeftTableName(),null,null,array('name' => 'type_restrictions[]', 'multiple' => 1, 'size' => 5), array('values' => $va_restriction_type_ids)));
+		} elseif($t_instance instanceof ca_representation_annotations) { // config based
+			$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
+			$va_annotation_type_select_list = array();
+			foreach($o_annotation_type_conf->get('types') as $vs_type_code => $va_type_info) {
+				if(!isset($va_type_info['typeID'])) { continue; }
+				$va_annotation_type_select_list[$vs_type_code] = $va_type_info['typeID'];
+			}
+
+			$o_view->setVar('type_restrictions', caHTMLSelect('type_restrictions[]', $va_annotation_type_select_list, array('multiple' => 1, 'size' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)));
 		} else { // list-based
 			$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)));
 		}
