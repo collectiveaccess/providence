@@ -1185,6 +1185,16 @@ final class ConfigurationExporter {
 				$vs_buf .= "\t\t</settings>\n";
 			}
 
+			// type restrictions
+			$va_type_restrictions = $t_display->getTypeRestrictions();
+			if(is_array($va_type_restrictions) && (sizeof($va_type_restrictions) > 0)) {
+				$vs_buf .= "\t\t<typeRestrictions>\n";
+				foreach($va_type_restrictions as $va_restriction) {
+					$vs_buf .= "\t\t\t<restriction type='{$va_restriction['type_code']}' />\n";
+				}
+				$vs_buf .= "\t\t</typeRestrictions>\n";
+			}
+
 			// User and group access
 			$va_users = $t_display->getUsers();
 			if(sizeof($va_users)>0) {
