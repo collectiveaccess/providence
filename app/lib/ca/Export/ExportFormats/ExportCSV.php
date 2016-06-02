@@ -57,6 +57,8 @@ class ExportCSV extends BaseExportFormat {
 			$vn_column = intval($pa_item['element']);
 			$va_csv[$vn_column] = $pa_item['text'];
 		}
+		
+		if(!sizeof($va_csv)) { return ''; }
 
 		$vn_rightmost_column = max(array_keys($va_csv));
 

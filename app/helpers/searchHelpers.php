@@ -346,9 +346,23 @@ require_once(__CA_MODELS_DIR__.'/ca_lists.php');
 	 * @return Zend_Search_Lucene_Index_Term
 	 */
 	function caRewriteElasticSearchTermFieldSpec($po_term) {
-		return new Zend_Search_Lucene_Index_Term(
-			$po_term->text, (strlen($po_term->field) > 0) ? str_replace('.', '\/', str_replace('/', '|', $po_term->field)) : $po_term->field
-		);
+		if(strlen($po_term->field) > 0) {
+			// rewrite ca_objects.dates.dates_value as ca_objects/dates/dates/value, which is
+			// how we index in ElasticSsearch (they don't allow periods in field names)
+			$vs_new_field = str_replace('.', '\/', str_replace('/', '|', $po_term->field));
+
+			// rewrite ca_objects/dates/dates_value as ca_objects/dates_value, because that's
+			// how the SearchIndexer indexes -- we don't care about the container the field is in
+			$va_tmp = explode('\\/', $vs_new_field);
+			if(sizeof($va_tmp) == 3) {
+				unset($va_tmp[1]);
+				$vs_new_field = join('\\/', $va_tmp);
+			}
+		} else {
+			$vs_new_field = $po_term->field;
+		}
+
+		return new Zend_Search_Lucene_Index_Term($po_term->text, $vs_new_field);
 	}
 	# ---------------------------------------
 	/**

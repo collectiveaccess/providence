@@ -68,17 +68,21 @@ class DateRange extends GenericElement {
 
 		$va_parsed_values = caGetISODates(join(' ', $va_terms));
 
-		$va_return[] = array(
-			'range' => array(
-				$vs_fld => array(
-					'lte' => $va_parsed_values['end'],
-				)));
+		if($va_parsed_values['end'] != '2000000000-12-31T23:59:59Z') {
+			$va_return[] = array(
+				'range' => array(
+					$vs_fld => array(
+						'lte' => $va_parsed_values['end'],
+					)));
+		}
 
-		$va_return[] = array(
-			'range' => array(
-				$vs_fld => array(
-					'gte' => $va_parsed_values['start'],
-				)));
+		if($va_parsed_values['start'] != '-2000000000-12-31T23:59:59Z') {
+			$va_return[] = array(
+				'range' => array(
+					$vs_fld => array(
+						'gte' => $va_parsed_values['start'],
+					)));
+		}
 
 		return $va_return;
 	}
@@ -87,14 +91,34 @@ class DateRange extends GenericElement {
 	 * @param \Zend_Search_Lucene_Index_Term $po_term
 	 * @return array
 	 */
-	function getFilterForTerm($po_term) {
+	function getFiltersForTerm($po_term) {
+		$va_tmp = explode('\\/', $po_term->field);
+		if(sizeof($va_tmp) == 3) {
+			unset($va_tmp[1]);
+			$po_term = new \Zend_Search_Lucene_Index_Term(
+				$po_term->text, join('\\/', $va_tmp)
+			);
+		}
+
 		$va_return = array();
 		$va_parsed_values = caGetISODates($po_term->text);
+		$vs_fld = str_replace('\\', '', $po_term->field);
 
-		$va_return[str_replace('\\', '', $po_term->field)] = array(
-			'gte' => $va_parsed_values['start'],
-			'lte' => $va_parsed_values['end'],
-		);
+		if($va_parsed_values['end'] != '2000000000-12-31T23:59:59Z') {
+			$va_return[] = array(
+				'range' => array(
+					$vs_fld => array(
+						'lte' => $va_parsed_values['end'],
+					)));
+		}
+
+		if($va_parsed_values['start'] != '-2000000000-12-31T23:59:59Z') {
+			$va_return[] = array(
+				'range' => array(
+					$vs_fld => array(
+						'gte' => $va_parsed_values['start'],
+					)));
+		}
 
 		return $va_return;
 	}
