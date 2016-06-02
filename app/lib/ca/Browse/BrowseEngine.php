@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -375,15 +375,20 @@
 			if (!$this->isValidFacetName($ps_facet_name)) { return false; }
 
 			$va_criteria = $this->opo_ca_browse_cache->getParameter('criteria');
+			$va_criteria_display_strings = $this->opo_ca_browse_cache->getParameter('criteria_display_strings');
 			if (!is_array($pa_row_ids)) { $pa_row_ids = array($pa_row_ids); }
 
 			foreach($pa_row_ids as $vn_row_id) {
 				unset($va_criteria[$ps_facet_name][urldecode($vn_row_id)]);
+				unset($va_criteria_display_strings[$ps_facet_name][urldecode($vn_row_id)]);
 				if(is_array($va_criteria[$ps_facet_name]) && !sizeof($va_criteria[$ps_facet_name])) {
 					unset($va_criteria[$ps_facet_name]);
+					unset($va_criteria_display_strings[$ps_facet_name]);
 				}
 			}
+			
 			$this->opo_ca_browse_cache->setParameter('criteria', $va_criteria);
+			$this->opo_ca_browse_cache->setParameter('criteria_display_strings', $va_criteria_display_strings);
 			$this->opo_ca_browse_cache->setParameter('sort', null);
 			$this->opo_ca_browse_cache->setParameter('facet_html', null);
 
@@ -430,13 +435,17 @@
 			if ($ps_facet_name && !$this->isValidFacetName($ps_facet_name)) { return false; }
 
 			$va_criteria = $this->opo_ca_browse_cache->getParameter('criteria');
+			$va_criteria_display_strings = $this->opo_ca_browse_cache->getParameter('criteria_display_strings');
 			if($ps_facet_name) {
 				$va_criteria[$ps_facet_name] = array();
+				$va_criteria_display_strings[$ps_facet_name] = array();
 			} else {
 				$va_criteria = array();
+				$va_criteria_display_strings = array();
 			}
 
 			$this->opo_ca_browse_cache->setParameter('criteria', $va_criteria);
+			$this->opo_ca_browse_cache->setParameter('criteria_display_strings', $va_criteria_display_strings);
 			$this->opo_ca_browse_cache->setParameter('facet_html', null);
 
 			$this->opb_criteria_have_changed = true;
@@ -480,7 +489,7 @@
 
 			$va_criteria = $this->opo_ca_browse_cache->getParameter('criteria');
 			$va_criteria_display_strings = $this->opo_ca_browse_cache->getParameter('criteria_display_strings');
-
+			
 			$va_criteria_with_labels = array();
 			if($ps_facet_name) {
 				if (is_array($va_criteria_display_strings[$ps_facet_name])) {
@@ -1874,7 +1883,12 @@
 									$va_options['filterNonPrimaryRepresentations'] = true;	// filter out non-primary representations in ca_objects results to save (a bit) of time
 
 									$o_search->setOption('strictPhraseSearching', caGetOption('strictPhraseSearching', $va_options, true));
-									$qr_res = $o_search->search($va_row_ids[0], $va_options);
+									#$qr_res = $o_search->search($va_row_ids[0], $va_options);
+									if (sizeof($va_row_ids) > 1) {
+										// only allow singleton wildcards without other searches, otherwise we're wasting our time
+										$va_row_ids = array_filter($va_row_ids, function($a) { return !($a === '*'); });
+									}
+									$qr_res = $o_search->search(join(" AND ", $va_row_ids), $va_options);
 
 									$va_acc[$vn_i] = $qr_res->getPrimaryKeyValues();
 									$vn_i++;
