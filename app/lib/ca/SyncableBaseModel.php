@@ -64,6 +64,9 @@ trait SyncableBaseModel {
 	public function removeGUID($pn_primary_key) {
 		$t_guid = $this->getAppDatamodel()->getInstance('ca_guids');
 		if($t_guid->load(array('table_num' => $this->tableNum(), 'row_id' => $pn_primary_key))) {
+			if($this->inTransaction()) {
+				$t_guid->setTransaction($this->getTransaction());
+			}
 			$t_guid->setMode(ACCESS_WRITE);
 			$t_guid->delete();
 		}
@@ -77,7 +80,11 @@ trait SyncableBaseModel {
 	 */
 	public function getGUID() {
 		if($this->getPrimaryKey()) {
-			return ca_guids::getForRow($this->getPrimaryKey(), $this->tableNum());
+			$va_options = [];
+			if($this->inTransaction()) {
+				$va_options['transaction'] = $this->getTransaction();
+			}
+			return ca_guids::getForRow($this->getPrimaryKey(), $this->tableNum(), $va_options);
 		}
 
 		return null;
@@ -90,12 +97,10 @@ trait SyncableBaseModel {
 	 */
 	public function loadByGUID($ps_guid) {
 		$va_info = ca_guids::getInfoForGUID($ps_guid);
-		file_put_contents('/tmp/syncfoo', 'try and load guid' . $ps_guid . "\n", FILE_APPEND);
 
 		if($va_info['table_num'] == $this->tableNum()) {
 			return $this->load($va_info['row_id']);
 		}
-		file_put_contents('/tmp/syncfoo', "NOPE", FILE_APPEND);
 
 		return null;
 	}

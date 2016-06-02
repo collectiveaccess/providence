@@ -2190,6 +2190,9 @@
 			$va_restrictToAttributesByCodes = caGetOption('restrictToAttributesByCodes', $pa_options, array());
 			$va_restrictToAttributesByIds = caGetOption('restrictToAttributesByIds', $pa_options, array());
 
+			$va_exclude_attributes_by_codes = caGetOption('excludeAttributesByCodes', $pa_options, array());
+			if(!is_array($va_exclude_attributes_by_codes)) { $va_exclude_attributes_by_codes = []; }
+
 			if (!($t_dupe = $this->_DATAMODEL->getInstanceByTableNum($this->tableNum()))) { return null; }
 			$t_dupe->purify($this->purify());
 			if (!$this->getPrimaryKey()) { return null; }
@@ -2207,6 +2210,10 @@
 						continue;
 					}
 				}
+				if (in_array($vs_element_code, $va_exclude_attributes_by_codes)) {
+					continue;
+				}
+
 				foreach($va_vals as $vn_id => $va_vals_by_locale) {
 					foreach($va_vals_by_locale as $vn_locale_id => $va_vals_by_attr_id) {
 						foreach($va_vals_by_attr_id as $vn_attribute_id => $va_val) {

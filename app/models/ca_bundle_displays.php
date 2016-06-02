@@ -2331,7 +2331,9 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 		
 		$va_restrictions = array();
 		while($qr_res->nextRow()) {
-			$va_restrictions[] = $qr_res->getRow();
+			$va_restriction = $qr_res->getRow();
+			$va_restriction['type_code'] = caGetListItemIdno($va_restriction['type_id']);
+			$va_restrictions[] = $va_restriction;
 		}
 		return $va_restrictions;
 	}
