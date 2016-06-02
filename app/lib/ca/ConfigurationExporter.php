@@ -993,13 +993,8 @@ final class ConfigurationExporter {
 			}
 		}
 
-<<<<<<< HEAD
-		$qr_types = $this->opo_db->query("SELECT * FROM ca_relationship_types WHERE parent_id=?",$pn_parent_id);
-		if(!$qr_types->numRows() && !$this->opn_modified_after) { return false; }
-=======
 		$qr_types = $this->opo_db->query("SELECT * FROM ca_relationship_types WHERE parent_id=? ORDER BY rank, type_id",$pn_parent_id);
-		if(!$qr_types->numRows()) return false;
->>>>>>> master-fix
+		if(!$qr_types->numRows() && !$this->opn_modified_after) { return false; }
 
 		while($qr_types->nextRow()) {
 			$vo_type = $this->opo_dom->createElement("type");
