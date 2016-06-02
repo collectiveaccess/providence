@@ -179,8 +179,7 @@ class Installer {
 			$o_dom = new DOMDocument();
 			$o_dom->loadXML($ps_xml);
 			if(!@$o_dom->schemaValidate(__CA_BASE_DIR__.'/install/profiles/xml/profile.xsd')) {
-				$this->addError("Profile validation failed. Your profile doesn't conform to the required XML schema.");
-				return false;
+				throw new Exception("Profile validation failed. Your profile doesn't conform to the required XML schema.");
 			}
 		}
 		$this->opo_profile = @simplexml_load_string($ps_xml);
