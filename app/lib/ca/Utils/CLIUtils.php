@@ -325,7 +325,7 @@
 				}
 				print CLIProgressBar::finish();
 			}
-			return trie;
+			return true;
 		}
 		# -------------------------------------------------------
 		/**
@@ -2981,6 +2981,126 @@
 		 */
 		public static function reload_object_current_location_datesHelp() {
 			return _t('Regenerate date/time stamps for movement and object-based location tracking.');
+		}
+		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function push_config_changes($po_opts=null) {
+			require_once(__CA_LIB_DIR__.'/ca/ConfigurationExporter.php');
+
+			if (!($vs_targets = $po_opts->getOption('targets'))) {
+				CLIUtils::addError(_t("Missing required parameter: targets. Try checking the help for this subcommand."));
+				return false;
+			}
+
+			if (!($vs_user = $po_opts->getOption('username'))) {
+				CLIUtils::addError(_t("Missing required parameter: username. Try checking the help for this subcommand."));
+				return false;
+			}
+
+			if (!($vs_password = $po_opts->getOption('password'))) {
+				CLIUtils::addError(_t("Missing required parameter: user. Try checking the help for this subcommand."));
+				return false;
+			}
+
+			if (!($vn_timestamp = $po_opts->getOption('timestamp'))) {
+				CLIUtils::addError(_t("Missing required parameter: timestamp. Try checking the help for this subcommand."));
+				return false;
+			}
+
+			if(!is_numeric($vn_timestamp)) {
+				CLIUtils::addError(_t("Timestamp must be numeric."));
+				return false;
+			}
+
+			$vn_timestamp = intval($vn_timestamp);
+
+			$va_targets = preg_split('/[;|]/u', $vs_targets);
+
+			foreach($va_targets as $vs_target) {
+				CLIUtils::addMessage(_t("Processing target %1", $vs_target));
+
+				if(!isURL($vs_target)) {
+					CLIUtils::addError(_t("The target '%1' doesn't seem to be in URL format", $vs_target));
+					return false;
+				}
+
+				$vs_target = "{$vs_target}/service.php/model/updateConfig";
+
+				$vo_handle = curl_init($vs_target);
+				curl_setopt($vo_handle, CURLOPT_CUSTOMREQUEST, 'PUT');
+				curl_setopt($vo_handle, CURLOPT_RETURNTRANSFER, true);
+				curl_setopt($vo_handle, CURLOPT_TIMEOUT, 3);
+				curl_setopt($vo_handle, CURLOPT_SSL_VERIFYHOST, 0);
+				curl_setopt($vo_handle, CURLOPT_SSL_VERIFYPEER, 0);
+				curl_setopt($vo_handle, CURLOPT_FOLLOWLOCATION, true);
+				curl_setopt($vo_handle, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded']);
+
+				// basic auth
+				curl_setopt($vo_handle, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+				curl_setopt($vo_handle, CURLOPT_USERPWD, $vs_user.':'.$vs_password);
+
+				// add config as request body
+				$vs_config = ConfigurationExporter::exportConfigurationAsXML('', '', '', '', $vn_timestamp);
+				curl_setopt($vo_handle, CURLOPT_POSTFIELDS, $vs_config);
+
+				$vs_exec = curl_exec($vo_handle);
+				$vn_code = curl_getinfo($vo_handle, CURLINFO_HTTP_CODE);
+				curl_close($vo_handle);
+
+				if($vn_code != 200) {
+					CLIUtils::addError(_t("Pushing to target '%1' seems to have failed. HTTP response code was %2.", $vn_code));
+				}
+
+				$va_response = @json_decode($vs_exec, true);
+
+				if(!isset($va_response['ok']) || !$va_response['ok']) {
+					if(is_array($va_errors = $va_response['errors'])) {
+						CLIUtils::addError(_t("Pushing to target '%1' seems to have failed. Response was not marked as okay. Errors were: %2", join(',', $va_errors)));
+					} else {
+						CLIUtils::addError(_t("Pushing to target '%1' seems to have failed. Response was not marked as okay. Raw response was: %2", $vs_exec));
+					}
+				}
+			}
+
+			CLIUtils::addMessage(_t("All done"));
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function push_config_changesParamList() {
+			return [
+				"targets|t=s" => _t('Comma- or semicolon separated list of target systems to push changes to. We assume the same service account exists on all of these systems'),
+				"username|u=s" => _t('User name to use to log into the targets. We assume the same credentials can be used to log into all target systems.'),
+				"password|p=s" => _t('Password to use to log into the targets. We assume the same credentials can be used to log into all target systems.'),
+				"timestamp|s=s" => _t('Timestamp to use to filter the configuration changes that should be exported/pushed.'),
+				// @todo some params that control excluding/including specific stuff?
+			];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function push_config_changesUtilityClass() {
+			return _t('Configuration');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function push_config_changesShortHelp() {
+			return _t('Pushes configuration changes from this system out to other systems.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function push_config_changesHelp() {
+			return _t('Pushes configuration changes from this system out to other systems.');
 		}
 		# -------------------------------------------------------
 	}
