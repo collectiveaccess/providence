@@ -1693,13 +1693,13 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		if ($this->debug) { Debug::msg("[SqlSearchDebug] indexField: $pn_content_tablenum/$ps_content_fieldname [$pn_content_row_id] =&gt; $pm_content"); }
 	
-		if (in_array((string)'DONT_TOKENIZE', array_values($pa_options), true)) { 
+		if (in_array('DONT_TOKENIZE', array_values($pa_options), true)) { 
 			$pa_options['DONT_TOKENIZE'] = true;  
-		} else {
-			if (!isset($pa_options['DONT_TOKENIZE'])) { 
-				$pa_options['DONT_TOKENIZE'] = false; 
-			}
+		} elseif (!isset($pa_options['DONT_TOKENIZE'])) { 
+			$pa_options['DONT_TOKENIZE'] = false; 
 		}
+		
+		$vb_force_tokenize = (in_array('TOKENIZE', array_values($pa_options), true) || isset($pa_options['TOKENIZE']));
 		$vb_tokenize = $pa_options['DONT_TOKENIZE'] ? false : true;
 		
 		$vn_rel_type_id = (isset($pa_options['relationship_type_id']) && ($pa_options['relationship_type_id'] > 0)) ? (int)$pa_options['relationship_type_id'] : 0;
@@ -1733,14 +1733,13 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			$va_words = null;
 		} else {
 			// Tokenize string
-			if ($vb_tokenize) {
-				$va_words = [];
+			$va_words = [];
+			if ($vb_tokenize || $vb_force_tokenize) {
 				foreach($pm_content as $ps_content) {
 					$va_words = array_merge($va_words, $this->_tokenize((string)$ps_content));
 				}
-			} else {
-				$va_words = $pm_content;
 			}
+			if (!$vb_tokenize) { $va_words = array_merge($va_words, $pm_content); }
 		}
 		
 		$vb_incremental_reindexing = (bool)$this->can('incremental_reindexing');
