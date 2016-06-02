@@ -1074,11 +1074,24 @@ final class ConfigurationExporter {
 
 		$vo_roles = $this->opo_dom->createElement("roles");
 
-		if($this->opn_modified_after) { return $vo_roles; }
+		if($this->opn_modified_after && is_array($va_deleted = $this->getDeletedItemsFromChangeLogByIdno($t_role->tableNum(), 'code'))) {
+			foreach($va_deleted as $vs_deleted_idno) {
+				$vo_role = $this->opo_dom->createElement("role");
+				$vo_roles->appendChild($vo_role);
+				$vo_role->setAttribute("code", $vs_deleted_idno);
+				$vo_role->setAttribute("deleted", 1);
+			}
+		}
 
 		$qr_roles = $this->opo_db->query("SELECT * FROM ca_user_roles");
 
 		while($qr_roles->nextRow()) {
+			if($this->opn_modified_after) {
+				if($t_role->getLastChangeTimestampAsInt($qr_roles->get('role_id')) < $this->opn_modified_after) {
+					continue;
+				}
+			}
+
 			$t_role->load($qr_roles->get("role_id"));
 
 			$vo_role = $this->opo_dom->createElement("role");
@@ -1153,11 +1166,24 @@ final class ConfigurationExporter {
 
 		$vo_groups = $this->opo_dom->createElement("groups");
 
-		if($this->opn_modified_after) { return $vo_groups; }
+		if($this->opn_modified_after && is_array($va_deleted = $this->getDeletedItemsFromChangeLogByIdno($t_group->tableNum(), 'code'))) {
+			foreach($va_deleted as $vs_deleted_idno) {
+				$vo_group = $this->opo_dom->createElement("group");
+				$vo_groups->appendChild($vo_group);
+				$vo_group->setAttribute("code", $vs_deleted_idno);
+				$vo_group->setAttribute("deleted", 1);
+			}
+		}
 
 		$qr_groups = $this->opo_db->query("SELECT * FROM ca_user_groups WHERE parent_id IS NOT NULL");
 
 		while($qr_groups->nextRow()) {
+			if($this->opn_modified_after) {
+				if($t_group->getLastChangeTimestampAsInt($qr_groups->get('group_id')) < $this->opn_modified_after) {
+					continue;
+				}
+			}
+
 			$t_group->load($qr_groups->get("group_id"));
 
 			$vo_group = $this->opo_dom->createElement("group");

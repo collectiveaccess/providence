@@ -1210,9 +1210,16 @@ class Installer {
 		}
 
 		foreach($va_roles as $vs_role_code => $vo_role) {
-			$t_role = $this->opb_updating ? ca_user_roles::find(array('code' => $vs_role_code ), array('returnAs' => 'firstModelInstance')) : false;
-			$t_role = $t_role ? $t_role :  new ca_user_roles();
+			if(!($t_role = ca_user_roles::find(array('code' => (string)$vs_role_code), array('returnAs' => 'firstModelInstance')))) {
+				$t_role = new ca_user_roles();
+			}
+
 			$t_role->setMode(ACCESS_WRITE);
+
+			if(self::getAttribute($vo_role, "deleted") && $t_role->getPrimaryKey()) {
+				$t_role->delete(true);
+				continue;
+			}
 
 			$t_role->set('name', trim((string) $vo_role->name));
 			$t_role->set('description', trim((string) $vo_role->description));
@@ -1239,6 +1246,11 @@ class Installer {
 
 			// add bundle level ACL items
 			if($vo_role->bundleLevelAccessControl) {
+				// nuke old items
+				if(sizeof($vo_role->bundleLevelAccessControl->children()) > 0) {
+					$t_role->removeAllBundleAccessSettings();
+				}
+
 				foreach($vo_role->bundleLevelAccessControl->children() as $vo_permission) {
 					$vs_permission_table = self::getAttribute($vo_permission, 'table');
 					$vs_permission_bundle = self::getAttribute($vo_permission, 'bundle');
@@ -1253,6 +1265,11 @@ class Installer {
 
 			// add type level ACL items
 			if($vo_role->typeLevelAccessControl) {
+				// nuke old items
+				if(sizeof($vo_role->typeLevelAccessControl->children()) > 0) {
+					$t_role->removeAllTypeAccessSettings();
+				}
+
 				foreach($vo_role->typeLevelAccessControl->children() as $vo_permission) {
 					$vs_permission_table = self::getAttribute($vo_permission, 'table');
 					$vs_permission_type = self::getAttribute($vo_permission, 'type');
@@ -1267,6 +1284,11 @@ class Installer {
 
 			// add source level ACL items
 			if($vo_role->sourceLevelAccessControl) {
+				// nuke old items
+				if(sizeof($vo_role->sourceLevelAccessControl->children()) > 0) {
+					$t_role->removeAllSourceAccessSettings();
+				}
+
 				foreach($vo_role->sourceLevelAccessControl->children() as $vo_permission) {
 					$vs_permission_table = self::getAttribute($vo_permission, 'table');
 					$vs_permission_source = self::getAttribute($vo_permission, 'source');
@@ -1378,8 +1400,7 @@ class Installer {
 						$t_list_item->load(array('list_id' => $t_list->getPrimaryKey(), 'idno' => $vs_type));
 					}
 					$vn_type_id = ($vs_type) ? $t_list_item->getPrimaryKey() : null;
-					$t_restriction  = $this->opb_updating ? ca_bundle_display_type_restrictions::find(array('table_num' => $vn_table_num, 'type_id' => $vn_type_id), array('returnAs' => 'firstModelInstance')) : false;
-					$t_restriction = $t_restriction ? $t_restriction : new ca_bundle_display_type_restrictions();
+					$t_restriction = new ca_bundle_display_type_restrictions();
 					$t_restriction->setMode(ACCESS_WRITE);
 					$t_restriction->set('table_num', $vn_table_num);
 					$t_restriction->set('include_subtypes', (bool)$vo_restriction->includeSubtypes ? 1 : 0);
@@ -1387,11 +1408,7 @@ class Installer {
 					$t_restriction->set('display_id', $t_display->getPrimaryKey());
 
 					$this->_processSettings($t_restriction, $vo_restriction->settings);
-					if($t_restriction->getPrimaryKey()) {
-						$t_restriction->update();
-					} else {
-						$t_restriction->insert();
-					}
+					$t_restriction->insert();
 
 					if ($t_restriction->numErrors()) {
 						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in display {$vs_display_code}: ".join("; ",$t_restriction->getErrors()));
@@ -1615,8 +1632,9 @@ class Installer {
 	public function processGroups() {
 
 		// Create root group
-		$t_user_group = $this->opb_updating ? ca_user_groups::find(array('code' => 'Root', 'parent_id' => null), array('returnAs' => 'firstModelInstance')) : false;
+		$t_user_group = ca_user_groups::find(array('code' => 'Root', 'parent_id' => null), array('returnAs' => 'firstModelInstance'));
 		$t_user_group = $t_user_group ? $t_user_group : new ca_user_groups();
+
 		$t_user_group->setMode(ACCESS_WRITE);
 		$t_user_group->set('name', 'Root');
 		if($t_user_group->getPrimaryKey()) {
@@ -1653,8 +1671,17 @@ class Installer {
 
 		if (is_array($va_groups)) {
 			foreach($va_groups as $vs_group_code => $vo_group) {
-				$t_group = $this->opb_updating ? ca_user_groups::find(array('code' => $vs_group_code, 'parent_id' => null), array('returnAs' => 'firstModelInstance')) : false;
-				$t_group = $t_group ? $t_group : new ca_user_groups();
+				if(!($t_group = ca_user_groups::find(array('code' => (string)$vs_group_code), array('returnAs' => 'firstModelInstance')))) {
+					$t_group = new ca_user_groups();
+				}
+
+				$t_group->setMode(ACCESS_WRITE);
+
+				if(self::getAttribute($vo_group, "deleted") && $t_group->getPrimaryKey()) {
+					$t_group->delete(true);
+					continue;
+				}
+
 				$t_group->setMode(ACCESS_WRITE);
 				$t_group->set('name', trim((string) $vo_group->name));
 				$t_group->set('description', trim((string) $vo_group->description));
