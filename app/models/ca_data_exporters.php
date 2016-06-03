@@ -1778,32 +1778,42 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					}
 				}
 
-				$o_log->logDebug(_t("Trying to find code %1 in value array for the current attribute.", $vs_source));
-				$o_log->logDebug(_t("Value array is %1.", print_r($va_values, true)));
+				if(preg_match("/^_CONSTANT_:(.*)$/",$vs_source,$va_matches)) {
 
-				foreach($va_values as $vo_val) {
-					$va_display_val_options = array();
-					if($vo_val instanceof ListAttributeValue) {
-						// figure out list_id -- without it we can't pull display values
-						$t_element = new ca_metadata_elements($vo_val->getElementID());
-						$va_display_val_options = array('list_id' => $t_element->get('list_id'));
+					$o_log->logDebug(_t("This is a constant in attribute mode. Value for this mapping is '%1'", trim($va_matches[1])));
 
-						if($t_exporter_item->getSetting('returnIdno') || $t_exporter_item->getSetting('convertCodesToIdno')) {
-							$va_display_val_options['output'] = 'idno';
-						} elseif($t_exporter_item->getSetting('convertCodesToDisplayText')) {
-							$va_display_val_options['output'] = 'text';
+					$va_item_info[] = array(
+						'text' => trim($va_matches[1]),
+						'element' => $vs_element,
+					);
+				} else {
+					$o_log->logDebug(_t("Trying to find code %1 in value array for the current attribute.", $vs_source));
+					$o_log->logDebug(_t("Value array is %1.", print_r($va_values, true)));
+
+					foreach ($va_values as $vo_val) {
+						$va_display_val_options = array();
+						if ($vo_val instanceof ListAttributeValue) {
+							// figure out list_id -- without it we can't pull display values
+							$t_element = new ca_metadata_elements($vo_val->getElementID());
+							$va_display_val_options = array('list_id' => $t_element->get('list_id'));
+
+							if ($t_exporter_item->getSetting('returnIdno') || $t_exporter_item->getSetting('convertCodesToIdno')) {
+								$va_display_val_options['output'] = 'idno';
+							} elseif ($t_exporter_item->getSetting('convertCodesToDisplayText')) {
+								$va_display_val_options['output'] = 'text';
+							}
 						}
-					}
 
-					$o_log->logDebug(_t("Trying to match code from array %1 and the code we're looking for %2.", $vo_val->getElementCode(), $vs_source));
-					if($vo_val->getElementCode() == $vs_source) {
-						$vs_display_value = $vo_val->getDisplayValue($va_display_val_options);
-						$o_log->logDebug(_t("Found value %1.", $vs_display_value));
+						$o_log->logDebug(_t("Trying to match code from array %1 and the code we're looking for %2.", $vo_val->getElementCode(), $vs_source));
+						if ($vo_val->getElementCode() == $vs_source) {
+							$vs_display_value = $vo_val->getDisplayValue($va_display_val_options);
+							$o_log->logDebug(_t("Found value %1.", $vs_display_value));
 
-						$va_item_info[] = array(
-							'text' => $vs_display_value,
-							'element' => $vs_element,
-						);
+							$va_item_info[] = array(
+								'text' => $vs_display_value,
+								'element' => $vs_element,
+							);
+						}
 					}
 				}
 			} else { // no source in attribute context probably means this is some form of wrapper, e.g. a MARC field
