@@ -3323,55 +3323,6 @@
         </item>
       </items>
     </list>
-    <list code="object_deaccession_types" hierarchical="0" system="0" vocabulary="0">
-      <labels>
-        <label locale="en_US">
-          <name>Object deaccession types</name>
-        </label>
-      </labels>
-      <items>
-        <item idno="sold" enabled="1" default="1">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>sold</name_singular>
-              <name_plural>sold</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="donated" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>donated</name_singular>
-              <name_plural>donated</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="gifted" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>gifted</name_singular>
-              <name_plural>gifted</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="inactive" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>inactive: deaccessioned</name_singular>
-              <name_plural>inactive: deaccessioned</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="inactive_inventory" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>inactive: not found in inventory</name_singular>
-              <name_plural>inactive: not found in inventory</name_plural>
-            </label>
-          </labels>
-        </item>
-      </items>
-    </list>
     <list code="dimension_types" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
