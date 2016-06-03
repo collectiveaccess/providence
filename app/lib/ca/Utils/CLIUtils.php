@@ -3034,26 +3034,39 @@
 				return false;
 			}
 
+			$vs_log_dir = $po_opts->getOption('log');
+			$vn_log_level = CLIUtils::getLogLevel($po_opts);
+
+			$o_log = (is_writable($vs_log_dir)) ? new KLogger($vs_log_dir, $vn_log_level) : null;
+
 			if(!is_numeric($vn_timestamp)) {
 				CLIUtils::addError(_t("Timestamp must be numeric."));
 				return false;
 			}
 
+			if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Start preparing to push config changes")); }
+
 			$vn_timestamp = intval($vn_timestamp);
 
 			$va_targets = preg_split('/[;|]/u', $vs_targets);
 			$vs_config = ConfigurationExporter::exportConfigurationAsXML('', '', '', '', $vn_timestamp);
-			CLIUtils::addMessage(_t("Configuration was generated at %1 -- you can use this timestamp as starting point for your next sync.", time()));
+			CLIUtils::addMessage(_t("Configuration was generated at %1 -- you can use this timestamp as starting point for your next sync.", $vn_t = time()));
+
+			if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Configuration fragment was generated at %1", $vn_t)); }
 
 			foreach($va_targets as $vs_target) {
 				CLIUtils::addMessage(_t("Processing target %1", $vs_target));
+				if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Processing target %1", $vs_target)); }
 
 				if(!isURL($vs_target)) {
 					CLIUtils::addError(_t("The target '%1' doesn't seem to be in URL format", $vs_target));
+					if ($o_log) { $o_log->logError(_t("[push-config-changes] The target '%1' doesn't seem to be in URL format", $vs_target)); }
 					return false;
 				}
 
 				$vs_target = "{$vs_target}/service.php/model/updateConfig";
+
+				if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Service endpoint is %1", $vs_target)); }
 
 				$vo_handle = curl_init($vs_target);
 				curl_setopt($vo_handle, CURLOPT_CUSTOMREQUEST, 'PUT');
@@ -3076,10 +3089,15 @@
 				curl_close($vo_handle);
 
 				if($vn_code != 200) {
-					CLIUtils::addError(_t("Pushing to target '%1' seems to have failed. HTTP response code was %2.", $vn_code));
+					CLIUtils::addError(_t("Pushing to target '%1' seems to have failed. HTTP response code was %2.", $vs_target, $vn_code));
+					if ($o_log) { $o_log->logError(_t("[push-config-changes] Pushing to target '%1' seems to have failed. HTTP response code was %2. Enable debug logging mode to get more info below.", $vs_target, $vn_code)); }
 				}
 
+				if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Target '%1' responded with 200 OK", $vs_target)); }
+
 				$va_response = @json_decode($vs_exec, true);
+
+				if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Decoded response from target '%1' is '%2'", $vs_target, print_r($va_response, true))); }
 
 				if(!isset($va_response['ok']) || !$va_response['ok']) {
 					if(is_array($va_errors = $va_response['errors'])) {
@@ -3088,9 +3106,12 @@
 						CLIUtils::addError(_t("Pushing to target '%1' seems to have failed. Response was not marked as okay. Raw response was: %2", $vs_exec));
 					}
 				}
+
+				if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Finished processing target '%1'", $vs_target)); }
 			}
 
 			CLIUtils::addMessage(_t("All done"));
+			if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Finished ...")); }
 		}
 		# -------------------------------------------------------
 		/**
@@ -3102,6 +3123,9 @@
 				"username|u=s" => _t('User name to use to log into the targets. We assume the same credentials can be used to log into all target systems.'),
 				"password|p=s" => _t('Password to use to log into the targets. We assume the same credentials can be used to log into all target systems.'),
 				"timestamp|s=s" => _t('Timestamp to use to filter the configuration changes that should be exported/pushed.'),
+				"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
+				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
+
 				// @todo some params that control excluding/including specific stuff?
 			];
 		}
