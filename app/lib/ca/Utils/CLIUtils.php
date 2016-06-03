@@ -52,10 +52,11 @@
 
 			define('__CollectiveAccess_Installer__', 1);
 
-			if ($pb_installing && !$po_opts->getOption('profile-name')) {
+			if (!$po_opts->getOption('profile-name')) {
 				CLIUtils::addError(_t("Missing required parameter: profile-name"));
 				return false;
 			}
+
 			if ($pb_installing && !$po_opts->getOption('admin-email')) {
 				CLIUtils::addError(_t("Missing required parameter: admin-email"));
 				return false;
@@ -63,25 +64,14 @@
 			$vs_profile_directory = $po_opts->getOption('profile-directory');
 			$vs_profile_directory = $vs_profile_directory ? $vs_profile_directory : __CA_BASE_DIR__ . '/install/profiles/xml';
 			$t_total = new Timer();
-			// If we are installing, then use Installer, otherwise use Updater
-			$vo_installer = null;
-			if($pb_installing){
-				$vo_installer = new Installer(
-					$vs_profile_directory,
-					$po_opts->getOption('profile-name'),
-					$po_opts->getOption('admin-email'),
-					$po_opts->getOption('overwrite'),
-					$po_opts->getOption('debug')
-				);
-			} else {
-				$vo_installer = new Updater(
-					$vs_profile_directory,
-					$po_opts->getOption('profile-name'),
-					null, // If you are updating you don't want to generate an admin user
-					false, // If you are updating you never want to overwrite
-					$po_opts->getOption('debug')
-				);
-			}
+
+			$vo_installer = new Installer(
+				$vs_profile_directory,
+				$po_opts->getOption('profile-name'),
+				$po_opts->getOption('admin-email'),
+				$po_opts->getOption('overwrite'),
+				$po_opts->getOption('debug')
+			);
 
 			$vb_quiet = $po_opts->getOption('quiet');
 
@@ -224,6 +214,40 @@
 			return _t("Performs a fresh installation of CollectiveAccess using the configured values in setup.php.");
 		}
 		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function update_installation_profileUtilityClass() {
+			return _t('Configuration');
+		}
+		# -------------------------------------------------------
+		public static function update_installation_profileParamList() {
+			$va_params = self::installParamList();
+			unset($va_params['overwrite']);
+			unset($va_params['admin-email|e=s']);
+			return $va_params;
+		}
+		# -------------------------------------------------------
+		public static function update_installation_profile($po_opts=null) {
+			self::install($po_opts, false);
+			return true;
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function update_installation_profileHelp() {
+			return _t("Updates the configuration to match a supplied profile name.") ."\n".
+			"\t" . _t("This function only creates new values and is useful if you want to append changes from one profile onto another.")."\n".
+			"\t" . _t("Your new profile must exist in a directory that contains the profile.xsd schema and must validate against that schema in order for the update to apply successfully.");
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function update_installation_profileShortHelp() {
+			return _t("EXPERIMENTAL - Updates the installation profile to match a supplied profile name.");
+		}
 		/**
 		 * Rebuild search indices
 		 */
@@ -3018,6 +3042,8 @@
 			$vn_timestamp = intval($vn_timestamp);
 
 			$va_targets = preg_split('/[;|]/u', $vs_targets);
+			$vs_config = ConfigurationExporter::exportConfigurationAsXML('', '', '', '', $vn_timestamp);
+			CLIUtils::addMessage(_t("Configuration was generated at %1 -- you can use this timestamp as starting point for your next sync.", time()));
 
 			foreach($va_targets as $vs_target) {
 				CLIUtils::addMessage(_t("Processing target %1", $vs_target));
@@ -3043,7 +3069,6 @@
 				curl_setopt($vo_handle, CURLOPT_USERPWD, $vs_user.':'.$vs_password);
 
 				// add config as request body
-				$vs_config = ConfigurationExporter::exportConfigurationAsXML('', '', '', '', $vn_timestamp);
 				curl_setopt($vo_handle, CURLOPT_POSTFIELDS, $vs_config);
 
 				$vs_exec = curl_exec($vo_handle);
