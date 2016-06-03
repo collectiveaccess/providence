@@ -579,7 +579,12 @@
 				return false;
 			}
 
-			$vs_profile = ConfigurationExporter::exportConfigurationAsXML($po_opts->getOption("name"), $po_opts->getOption("description"), $po_opts->getOption("base"), $po_opts->getOption("infoURL"));
+			$vn_timestamp = null;
+			if($po_opts->getOption("timestamp")) {
+				$vn_timestamp = intval($po_opts->getOption("timestamp"));
+			}
+
+			$vs_profile = ConfigurationExporter::exportConfigurationAsXML($po_opts->getOption("name"), $po_opts->getOption("description"), $po_opts->getOption("base"), $po_opts->getOption("infoURL"), $vn_timestamp);
 
 			if ($vs_output) {
 				file_put_contents($vs_output, $vs_profile);
@@ -598,7 +603,8 @@
 				"name|n=s" => _t('Name of the profile, used for "profileName" element.'),
 				"infoURL|u-s" => _t('URL pointing to more information about the profile. (Optional)'),
 				"description|d-s" => _t('Description of the profile, used for "profileDescription" element. (Optional)'),
-				"output|o-s" => _t('File to output profile to. If omitted profile is printed to standard output. (Optional)')
+				"output|o-s" => _t('File to output profile to. If omitted profile is printed to standard output. (Optional)'),
+				"timestamp|t-s" => _t('Limit output to configuration changes made after this UNIX timestamp. (Optional)'),
 			);
 		}
 		# -------------------------------------------------------
@@ -3029,30 +3035,20 @@
 				return false;
 			}
 
-			if (!($vn_timestamp = $po_opts->getOption('timestamp'))) {
-				CLIUtils::addError(_t("Missing required parameter: timestamp. Try checking the help for this subcommand."));
-				return false;
-			}
-
+			$vn_timestamp = intval($po_opts->getOption('timestamp'));
 			$vs_log_dir = $po_opts->getOption('log');
 			$vn_log_level = CLIUtils::getLogLevel($po_opts);
 
 			$o_log = (is_writable($vs_log_dir)) ? new KLogger($vs_log_dir, $vn_log_level) : null;
-
-			if(!is_numeric($vn_timestamp)) {
-				CLIUtils::addError(_t("Timestamp must be numeric."));
-				return false;
-			}
 
 			if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Start preparing to push config changes")); }
 
 			$vn_timestamp = intval($vn_timestamp);
 
 			$va_targets = preg_split('/[;|]/u', $vs_targets);
-			$vs_config = ConfigurationExporter::exportConfigurationAsXML('', '', '', '', $vn_timestamp);
-			CLIUtils::addMessage(_t("Configuration was generated at %1 -- you can use this timestamp as starting point for your next sync.", $vn_t = time()));
 
-			if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Configuration fragment was generated at %1", $vn_t)); }
+			$o_vars = new ApplicationVars();
+			$va_timestamps = $o_vars->getVar('push-config-changes-timestamps');
 
 			foreach($va_targets as $vs_target) {
 				CLIUtils::addMessage(_t("Processing target %1", $vs_target));
@@ -3066,7 +3062,18 @@
 
 				$vs_target = "{$vs_target}/service.php/model/updateConfig";
 
-				if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Service endpoint is %1", $vs_target)); }
+				if(isset($va_timestamps[$vs_target])) {
+					$vn_target_timestamp = intval($va_timestamps[$vs_target]);
+				} else {
+					$vn_target_timestamp = $vn_timestamp ?: 0;
+				}
+
+				if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Service endpoint is '%1'. Timestamp for diff config is %2", $vs_target, $vn_target_timestamp)); }
+
+				$vs_config = ConfigurationExporter::exportConfigurationAsXML('', '', '', '', $vn_target_timestamp);
+				$va_timestamps[$vs_target] = time();
+
+				if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Configuration fragment was generated for target '%1' is \n %2", $vs_target, $vs_config)); }
 
 				$vo_handle = curl_init($vs_target);
 				curl_setopt($vo_handle, CURLOPT_CUSTOMREQUEST, 'PUT');
@@ -3109,6 +3116,10 @@
 
 				if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Finished processing target '%1'", $vs_target)); }
 			}
+
+			$o_vars->setVar('push-config-changes-timestamps', $va_timestamps);
+			$o_vars->save();
+			if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Saved sync timestamps are: %1", print_r($va_timestamps, true))); }
 
 			CLIUtils::addMessage(_t("All done"));
 			if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Finished ...")); }

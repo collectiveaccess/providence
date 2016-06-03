@@ -278,6 +278,9 @@ class Installer {
 			$t_instance->addLabel(array($t_instance->getLabelDisplayField() => "???"), array_shift($pa_locales), false, true);
 			return true; 
 		}
+
+		$va_old_label_ids = array_flip($t_instance->getLabelIDs());
+
 		foreach($po_labels->children() as $vo_label) {
 			$va_label_values = array();
 			$vs_locale = self::getAttribute($vo_label, "locale");
@@ -294,11 +297,22 @@ class Installer {
 				$va_label_values[$vo_field->getName()] = (string) $vo_field;
 			}
 			$va_existing_labels = $vb_preferred ? $t_instance->getPreferredLabels(array($vn_locale_id)) : $t_instance->getNonPreferredLabels(array($vn_locale_id));
-			if($va_existing_labels && $vn_label_id = $va_existing_labels[(int)$t_instance->getPrimaryKey()][(int)$vn_locale_id][0]['label_id']) {
-				$t_instance->editLabel($vn_label_id, $va_label_values, $vn_locale_id, null, $vb_preferred);
+			if(
+				is_array($va_existing_labels) &&
+				(sizeof($va_existing_labels) > 0) &&
+				($vn_label_id = $va_existing_labels[(int)$t_instance->getPrimaryKey()][(int)$vn_locale_id][0]['label_id'])
+			) {
+				$vn_label_id = $t_instance->editLabel($vn_label_id, $va_label_values, $vn_locale_id, null, $vb_preferred);
 			} else {
-				$t_instance->addLabel($va_label_values, $vn_locale_id, false, $vb_preferred);
+				$vn_label_id = $t_instance->addLabel($va_label_values, $vn_locale_id, false, $vb_preferred);
 			}
+
+			unset($va_old_label_ids[$vn_label_id]);
+		}
+
+		// remove all old labels that are not present in the XML!
+		foreach($va_old_label_ids as $vn_label_id => $_) {
+			$t_instance->removeLabel($vn_label_id);
 		}
 
 		return true;

@@ -161,6 +161,17 @@ class ConfigurationUpdateTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(__CA_ATTRIBUTE_VALUE_TEXT__, $t_instance->get('datatype'));
 	}
 
+	public function testRemoveLabelsFromElement() {
+		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/elements/remove_labels_from_element.xml'));
+		$this->assertTrue($o_installer instanceof Installer);
+		$o_installer->processLocales();
+		$o_installer->processMetadataElements();
+
+		$t_instance = ca_metadata_elements::getInstance('loan_out_date');
+		// we expect all labels to be removed, except the en_US one
+		$this->assertEquals(1, sizeof(array_shift($t_instance->getLabels())));
+	}
+
 	public function testAddElementExistingContainer() {
 		$o_installer = Installer::getFromString(file_get_contents(dirname(__FILE__).'/profile_fragments/elements/add_new_element_to_existing_container.xml'));
 		$this->assertTrue($o_installer instanceof Installer);
@@ -210,9 +221,8 @@ class ConfigurationUpdateTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(5, sizeof($va_elements_in_set));
 
 		// check a few of the changed properties (labels, whatever)
-		$this->assertEquals('URI', $va_elements_in_set[4]['display_label']);
-		$this->assertEquals('500px', $va_elements_in_set[2]['settings']['fieldWidth']);
-		$this->assertEquals('500px', $va_elements_in_set[2]['settings']['fieldWidth']);
+		$this->assertEquals('URI', $va_elements_in_set[3]['display_label']);
+		$this->assertEquals('500px', $va_elements_in_set[1]['settings']['fieldWidth']);
 
 		// try to find the restriction we added (storage locations), which should now be the only restriction (we nuked all the others)
 		$va_restrictions = $t_instance->getTypeRestrictions();
