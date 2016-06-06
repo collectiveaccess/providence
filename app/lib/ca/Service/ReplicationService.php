@@ -62,6 +62,9 @@ class ReplicationService {
 			case 'applylog';
 				$va_return = self::applyLog($po_request);
 				break;
+			case 'dedup';
+				$va_return = self::dedup($po_request);
+				break;
 			default:
 				throw new Exception('Unknown endpoint');
 
@@ -210,4 +213,50 @@ class ReplicationService {
 
 		return $va_return;
 	}
+	# -------------------------------------------------------
+	/**
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	public static function dedup($po_request) {
+		$pa_tables = [];
+		if($ps_tables = $po_request->getParameter('tables', pString, null, array('retainBackslashes' => false))) {
+			$pa_tables = @json_decode($ps_tables, true);
+			if(!is_array($pa_tables) || !sizeof($pa_tables)) {
+				throw new \Exception('You must define a list of tables for deduplication');
+			}
+		}
+
+		$o_dm = Datamodel::load();
+
+		$va_report = [];
+		foreach($pa_tables as $vs_table) {
+			// this makes sure the class is required/included
+			$t_instance = $o_dm->getInstance($vs_table);
+			if(!$t_instance) { continue; }
+
+			if(class_exists($vs_table) && method_exists($vs_table, 'listPotentialDupes') && method_exists($vs_table, 'mergeRecords')) {
+				$va_dupes = $vs_table::listPotentialDupes();
+				if(sizeof($va_dupes)) {
+					$va_report[$vs_table] = 0;
+					foreach ($va_dupes as $vs_sha2 => $va_keys) {
+						foreach ($va_keys as $vn_key) {
+							$t_instance->load($vn_key);
+						}
+
+						$vn_entity_id = $vs_table::mergeRecords($va_keys);
+						if (!$vn_entity_id) {
+							throw new Exception(_t("It seems like there was an error while deduplicating records. Keys were: %1", print_r($va_keys, true)));
+						}
+
+						$va_report[$vs_table] += sizeof($va_keys);
+					}
+				}
+			}
+		}
+
+		return ['report' => $va_report];
+	}
+	# -------------------------------------------------------
 }
