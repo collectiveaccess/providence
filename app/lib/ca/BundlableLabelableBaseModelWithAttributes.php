@@ -544,7 +544,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					$va_options['excludeAttributesByCodes'] = $va_dont_duplicate_codes;
 				}
 			}
-			caDebug($va_options);
 	
 			if (!$t_dupe->copyAttributesFrom($this->getPrimaryKey(), $va_options)) {
 				$this->errors = $t_dupe->errors;
