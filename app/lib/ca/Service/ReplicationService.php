@@ -161,8 +161,8 @@ class ReplicationService {
 		$va_sanity_check_errors = array();
 		$va_return = array(); $vs_error = null;
 
-		$o_tx = new \Transaction($o_db);
 		foreach($va_log as $vn_log_id => $va_log_entry) {
+			$o_tx = new \Transaction($o_db);
 			try {
 				$o_log_entry = CA\Sync\LogEntry\Base::getInstance($vs_source_system_guid, $vn_log_id, $va_log_entry, $o_tx);
 				$o_log_entry->sanityCheck();
@@ -193,8 +193,8 @@ class ReplicationService {
 				$o_tx->rollback();
 				break;
 			}
+			$o_tx->commit();
 		}
-		$o_tx->commit();
 
 		if($vn_last_applied_log_id) {
 			$va_return['replicated_log_id'] = $vn_last_applied_log_id;
