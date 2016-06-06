@@ -290,6 +290,16 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'description' => _t('The text set here will be inserted after earch record-level export.')
 		);
 
+		$va_settings['typeRestrictions'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 70, 'height' => 6,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Type restrictions'),
+			'description' => _t('If set, this mapping will only be available for these types. Multiple types are separated by commas or semicolons.')
+		);
+
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
 
 		// if exporter_format is set, pull in format-specific settings
@@ -497,6 +507,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @return mixed List of exporters, or integer count of exporters if countOnly option is set
 	 */
 	static public function getExporters($pn_table_num=null, $pa_options=null) {
+		if($ps_type_code = caGetOption('recordType', $pa_options)) {
+			if(is_numeric($ps_type_code)) {
+				$ps_type_code = caGetListItemIdno($ps_type_code);
+			}
+		}
+
 		$o_db = new Db();
 
 		$t_exporter = new ca_data_exporters();
@@ -526,7 +542,18 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		while($qr_res->nextRow()) {
 			$va_row = $qr_res->getRow();
+			if($ps_type_code) {
+				$t_exporter = new ca_data_exporters($va_row['exporter_id']);
+				$va_restrictions = $t_exporter->getSetting('typeRestrictions');
+				if(is_array($va_restrictions) && sizeof($va_restrictions)) {
+					if(!in_array($ps_type_code, $va_restrictions)) {
+						continue;
+					}
+				}
+			}
+
 			$va_ids[] = $vn_id = $va_row['exporter_id'];
+
 			$va_exporters[$vn_id] = $va_row;
 
 			$t_instance = $vo_dm->getInstanceByTableNum($va_row['table_num'], true);
@@ -677,7 +704,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vn_row = 0;
 
 		$va_settings = array();
-		$va_mappings = array();
 		$va_ids = array();
 
 		foreach ($o_sheet->getRowIterator() as $o_row) {
@@ -689,11 +715,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$o_cell = $o_sheet->getCellByColumnAndRow(0, $vn_row_num);
 			$vs_mode = (string)$o_cell->getValue();
 
-			switch($vs_mode) {
-				case 'Mapping':
-				case 'Constant':
-				case 'Variable':
-				case 'RepeatMappings':
+			switch(strtolower($vs_mode)) {
+				case 'mapping':
+				case 'constant':
+				case 'variable':
+				case 'repeatmappings':
 					$o_id = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
 					$o_parent = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
 					$o_element = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
@@ -794,10 +820,19 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					}
 
 					break;
-				case 'Setting':
+				case 'setting':
 					$o_setting_name = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
 					$o_setting_value = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
-					$va_settings[(string)$o_setting_name->getValue()] = (string)$o_setting_value->getValue();
+
+					switch($vs_setting_name = (string)$o_setting_name->getValue()) {
+						case 'typeRestrictions':		// older mapping worksheets use "inputTypes" instead of the preferred "inputFormats"
+							$va_settings[$vs_setting_name] = preg_split("/[;,]/u", (string)$o_setting_value->getValue());
+							break;
+						default:
+							$va_settings[$vs_setting_name] = (string)$o_setting_value->getValue();
+							break;
+					}
+
 					break;
 				default: // if 1st column is empty, skip
 					continue(2);
@@ -1435,6 +1470,16 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		if(!$t_exporter) {
 			$o_log->logError(_t("Failed to load exporter with code '%1' for item with ID %2", $ps_exporter_code, $pn_record_id));
 			return false;
+		}
+
+		$va_type_restrictions = $t_exporter->getSetting('typeRestrictions');
+		if(is_array($va_type_restrictions) && sizeof($va_type_restrictions)) {
+			$t_instance = Datamodel::load()->getInstance($t_exporter->get('table_num'));
+			$t_instance->load($pn_record_id);
+			if(!in_array($t_instance->getTypeCode(), $va_type_restrictions)) {
+				$o_log->logError(_t("Could not run exporter with code '%1' for item with ID %2 because a type restriction is in place", $ps_exporter_code, $pn_record_id));
+				return false;
+			}
 		}
 
 		$o_log->logInfo(_t("Successfully loaded exporter with code '%1' for item with ID %2", $ps_exporter_code, $pn_record_id));
