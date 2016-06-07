@@ -51,8 +51,9 @@ require_once(__CA_MODELS_DIR__.'/ca_metadata_dictionary_entries.php');
 
 final class ConfigurationExporter {
 	# -------------------------------------------------------
+	/** @var Configuration */
 	private $opo_config;
-	/** @var Datamodel*/
+	/** @var Datamodel */
 	private $opo_dm;
 	/** @var Db */
 	private $opo_db;
@@ -203,7 +204,16 @@ final class ConfigurationExporter {
 			}
 		}
 
+		$va_exclude_lists = $this->opo_config->get('configuration_export_exclude_lists');
+
 		while($qr_lists->nextRow()) {
+			// skip excluded lists
+			if(is_array($va_exclude_lists) && (sizeof($va_exclude_lists) > 0)) {
+				if(in_array($qr_lists->get('list_code'), $va_exclude_lists)) {
+					continue;
+				}
+			}
+
 			$vo_list = $this->opo_dom->createElement("list");
 			$vo_list->setAttribute("code", $this->makeIDNOFromInstance($qr_lists, 'list_code'));
 			$vo_list->setAttribute("hierarchical", $qr_lists->get("is_hierarchical"));
@@ -1210,7 +1220,12 @@ final class ConfigurationExporter {
 		$t_form = new ca_search_forms();
 		$vo_forms = $this->opo_dom->createElement("searchForms");
 
-		$qr_forms = $this->opo_db->query("SELECT * FROM ca_search_forms");
+		$vs_sql = "SELECT * FROM ca_search_forms";
+		if($this->opo_config->get('configuration_export_only_system_search_forms')) {
+			$vs_sql .= ' WHERE is_system=1';
+		}
+
+		$qr_forms = $this->opo_db->query($vs_sql);
 
 		if($this->opn_modified_after && is_array($va_deleted = $this->getDeletedItemsFromChangeLogByIdno($t_form->tableNum(), 'form_code'))) {
 			foreach($va_deleted as $vs_deleted_idno) {
@@ -1350,7 +1365,13 @@ final class ConfigurationExporter {
 		$o_dm = Datamodel::load();
 		$this->opt_locale = new ca_locales();
 
-		$va_displays = $t_display->getBundleDisplays();
+		$va_options = [];
+
+		if($this->opo_config->get('configuration_export_only_system_displays')) {
+			$va_options['systemOnly'] = true;
+		}
+
+		$va_displays = $t_display->getBundleDisplays($va_options);
 
 		$vs_buf = "<displays>\n";
 
