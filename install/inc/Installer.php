@@ -48,11 +48,6 @@ class Installer {
 
 	protected $ops_admin_email;
 	protected $opb_overwrite;
-
-	/**
-	 * @var bool We are installing
-	 */
-	protected $opb_updating = false;
 	# --------------------------------------------------
 	/** @var  SimpleXMLElement */
 	protected $opo_profile;
@@ -65,6 +60,11 @@ class Installer {
 	protected $opa_locales;
 	# --------------------------------------------------
 	/**
+	 * @var Db
+	 */
+	protected $opo_db;
+	# --------------------------------------------------
+	/**
 	 * Constructor
 	 *
 	 * @param string $ps_profile_dir path to a directory containing profiles and XML schema
@@ -72,8 +72,9 @@ class Installer {
 	 * @param string $ps_admin_email e-mail address for the initial administrator account
 	 * @param boolean $pb_overwrite overwrite existing install? optional, defaults to false
 	 * @param boolean $pb_debug enable or disable debugging mode
+	 * @param boolean $pb_skip_load dont actually load profile (useful if you want to fill in some gaps by hand)
 	 */
-	public function  __construct($ps_profile_dir,$ps_profile_name,$ps_admin_email=null,$pb_overwrite=false,$pb_debug=false) {
+	public function  __construct($ps_profile_dir,$ps_profile_name,$ps_admin_email=null,$pb_overwrite=false,$pb_debug=false,$pb_skip_load=false) {
 		$this->ops_profile_dir = $ps_profile_dir;
 		$this->ops_profile_name = $ps_profile_name;
 		$this->ops_admin_email = $ps_admin_email;
@@ -82,14 +83,37 @@ class Installer {
 
 		$this->opa_locales = array();
 
-		if($this->loadProfile($ps_profile_dir, $ps_profile_name)){
-			$this->extractAndLoadBase();
+		$this->opo_db = new Db();
 
-			if(!$this->validateProfile()){
-				$this->addError("Profile validation failed. Your profile doesn't conform to the required XML schema.");
+		if(!$pb_skip_load) {
+			if($this->loadProfile($ps_profile_dir, $ps_profile_name)) {
+				$this->extractAndLoadBase();
+
+				if(!$this->validateProfile()) {
+					$this->addError("Profile validation failed. Your profile doesn't conform to the required XML schema.");
+				}
+			} else {
+				$this->addError("Could not read profile '{$ps_profile_name}'. Please check the file permissions.");
 			}
+		}
+	}
+	# --------------------------------------------------
+	/**
+	 * Get an installer instance from just a XML string. This allows initializing
+	 * a system without having to write the profile to a file first.
+	 *
+	 * @param string $ps_profile_xml
+	 * @param string $ps_admin_email
+	 * @param bool $pb_overwrite
+	 * @return Installer|false
+	 */
+	public static function getFromString($ps_profile_xml, $ps_admin_email='', $pb_overwrite=false) {
+		$o_installer = new Installer(__CA_BASE_DIR__.'/install/profiles/xml', 'export', $ps_admin_email, $pb_overwrite, false, true);
+		if($o_installer->loadProfileFromString($ps_profile_xml, true)) {
+			$o_installer->extractAndLoadBase();
+			return $o_installer;
 		} else {
-			$this->addError("Could not read profile '{$ps_profile_name}'. Please check the file permissions.");
+			return false;
 		}
 	}
 	# --------------------------------------------------
@@ -115,11 +139,11 @@ class Installer {
 		$vo_profile = new DOMDocument();
 		$vo_profile->load($this->ops_profile_dir."/".$this->ops_profile_name.".xml");
 
-		if($this->opo_base){
+		if($this->opo_base) {
 			$vo_base = new DOMDocument();
 			$vo_base->load($this->ops_profile_dir."/".$this->ops_base_name.".xml");
 
-			if($this->opb_debug){
+			if($this->opb_debug) {
 				ob_start();
 				$vb_return = $vo_profile->schemaValidate($this->ops_profile_dir."/profile.xsd") && $vo_base->schemaValidate($this->ops_profile_dir."/profile.xsd");
 				$this->ops_profile_debug .= ob_get_clean();
@@ -127,7 +151,7 @@ class Installer {
 				$vb_return = @$vo_profile->schemaValidate($this->ops_profile_dir."/profile.xsd") && @$vo_base->schemaValidate($this->ops_profile_dir."/profile.xsd");
 			}
 		} else {
-			if($this->opb_debug){
+			if($this->opb_debug) {
 				ob_start();
 				$vb_return = $vo_profile->schemaValidate($this->ops_profile_dir."/profile.xsd");
 				$this->ops_profile_debug .= ob_get_clean();
@@ -139,10 +163,10 @@ class Installer {
 		return $vb_return;
 	}
 	# --------------------------------------------------
-	private function loadProfile($ps_profile_dir, $ps_profile_name) {
+	public function loadProfile($ps_profile_dir, $ps_profile_name) {
 		$vs_file = $ps_profile_dir."/".$ps_profile_name.".xml";
 
-		if(is_readable($vs_file)){
+		if(is_readable($vs_file)) {
 			$this->opo_profile = simplexml_load_file($vs_file);
 			return true;
 		} else {
@@ -150,7 +174,23 @@ class Installer {
 		}
 	}
 	# --------------------------------------------------
-	private function extractAndLoadBase(){
+	public function loadProfileFromString($ps_xml, $pb_skip_validation=false) {
+		if(!$pb_skip_validation) {
+			$o_dom = new DOMDocument();
+			$o_dom->loadXML($ps_xml);
+			if(!@$o_dom->schemaValidate(__CA_BASE_DIR__.'/install/profiles/xml/profile.xsd')) {
+				throw new Exception("Profile validation failed. Your profile doesn't conform to the required XML schema.");
+			}
+		}
+		$this->opo_profile = @simplexml_load_string($ps_xml);
+		if(!$this->opo_profile) {
+			throw new Exception('Something went wrong while initializing Installer. Did you send valid XML?');
+		}
+
+		return (bool) $this->opo_profile;
+	}
+	# --------------------------------------------------
+	public function extractAndLoadBase() {
 		$this->ops_base_name = self::getAttribute($this->opo_profile, "base");
 		if($this->ops_base_name) {
 			$this->opo_base = simplexml_load_file($this->ops_profile_dir."/".$this->ops_base_name.".xml");
@@ -161,7 +201,7 @@ class Installer {
 	# --------------------------------------------------
 	# ERROR HANDLING / DEBUGGING
 	# --------------------------------------------------
-	protected function addError($ps_error){
+	protected function addError($ps_error) {
 		$this->opa_errors[] = $ps_error;
 	}
 	# --------------------------------------------------
@@ -170,7 +210,7 @@ class Installer {
 	 *
 	 * @return int number of errors
 	 */
-	public function numErrors(){
+	public function numErrors() {
 		return sizeof($this->opa_errors);
 	}
 	# --------------------------------------------------
@@ -179,7 +219,7 @@ class Installer {
 	 *
 	 * @return array errors
 	 */
-	public function getErrors(){
+	public function getErrors() {
 		return $this->opa_errors;
 	}
 	# --------------------------------------------------
@@ -190,14 +230,14 @@ class Installer {
 	 *
 	 * @return string profile debug info
 	 */
-	public function getProfileDebugInfo(){
+	public function getProfileDebugInfo() {
 		return $this->ops_profile_debug;
 	}
 	# --------------------------------------------------
 	# UTILITIES
 	# --------------------------------------------------
 	protected  static function getAttribute($po_simplexml, $ps_attr) {
-		if(isset($po_simplexml[$ps_attr])){
+		if(isset($po_simplexml[$ps_attr])) {
 			return (string) $po_simplexml[$ps_attr];
 		} else {
 			return null;
@@ -227,44 +267,58 @@ class Installer {
 	 * @param bool $pb_force_preferred
 	 * @return bool
 	 */
-	protected static function addLabelsFromXMLElement($t_instance,$po_labels,$pa_locales, $pb_force_preferred=false){
+	protected static function addLabelsFromXMLElement($t_instance,$po_labels, $pa_locales, $pb_force_preferred=false) {
 		require_once(__CA_LIB_DIR__."/ca/LabelableBaseModelWithAttributes.php");
 
-		if(!($t_instance instanceof LabelableBaseModelWithAttributes)){
+		if(!($t_instance instanceof LabelableBaseModelWithAttributes)) {
 			return false;
 		}
 		/** @var LabelableBaseModelWithAttributes $t_instance */
-		if (!$po_labels || !$po_labels->children()) { 
+		if (!$po_labels || !$po_labels->children()) {
 			$t_instance->addLabel(array($t_instance->getLabelDisplayField() => "???"), array_shift($pa_locales), false, true);
 			return true; 
 		}
-		foreach($po_labels->children() as $vo_label){
+
+		$va_old_label_ids = array_flip($t_instance->getLabelIDs());
+
+		foreach($po_labels->children() as $vo_label) {
 			$va_label_values = array();
 			$vs_locale = self::getAttribute($vo_label, "locale");
 			$vn_locale_id = $pa_locales[$vs_locale];
 
 			$vb_preferred = self::getAttribute($vo_label, "preferred");
-			if($pb_force_preferred || (bool)$vb_preferred || is_null($vb_preferred)){
+			if($pb_force_preferred || (bool)$vb_preferred || is_null($vb_preferred)) {
 				$vb_preferred = true;
 			} else {
 				$vb_preferred = false;
 			}
 
-			foreach($vo_label->children() as $vo_field){
+			foreach($vo_label->children() as $vo_field) {
 				$va_label_values[$vo_field->getName()] = (string) $vo_field;
 			}
 			$va_existing_labels = $vb_preferred ? $t_instance->getPreferredLabels(array($vn_locale_id)) : $t_instance->getNonPreferredLabels(array($vn_locale_id));
-			if($va_existing_labels && $vn_label_id = $va_existing_labels[(int)$t_instance->getPrimaryKey()][(int)$vn_locale_id][0]['label_id']){
-				$t_instance->editLabel($vn_label_id, $va_label_values, $vn_locale_id, null, $vb_preferred);
-			}else {
-				$t_instance->addLabel($va_label_values, $vn_locale_id, false, $vb_preferred);
+			if(
+				is_array($va_existing_labels) &&
+				(sizeof($va_existing_labels) > 0) &&
+				($vn_label_id = $va_existing_labels[(int)$t_instance->getPrimaryKey()][(int)$vn_locale_id][0]['label_id'])
+			) {
+				$vn_label_id = $t_instance->editLabel($vn_label_id, $va_label_values, $vn_locale_id, null, $vb_preferred);
+			} else {
+				$vn_label_id = $t_instance->addLabel($va_label_values, $vn_locale_id, false, $vb_preferred);
 			}
+
+			unset($va_old_label_ids[$vn_label_id]);
+		}
+
+		// remove all old labels that are not present in the XML!
+		foreach($va_old_label_ids as $vn_label_id => $_) {
+			$t_instance->removeLabel($vn_label_id);
 		}
 
 		return true;
 	}
 	# --------------------------------------------------
-	public function performPreInstallTasks(){
+	public function performPreInstallTasks() {
 		$o_config = Configuration::load();
 		CompositeCache::flush(); // avoid stale cache
 
@@ -316,20 +370,19 @@ class Installer {
 	 * @param callable $f_callback Function to be called for each SQL statement in the schema. Function is passed four parameters: the SQL code of the statement, the table name, the number of the table being loaded and the total number of tables.
 	 * @return boolean Returns true on success, false if an error occurred
 	 */
-	public function loadSchema($f_callback=null){
+	public function loadSchema($f_callback=null) {
 
 		$vo_config = Configuration::load();
 		$vo_dm = Datamodel::load();
-		$vo_db = new Db();
 		if (defined('__CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__') && __CA_ALLOW_INSTALLER_TO_OVERWRITE_EXISTING_INSTALLS__ && ($this->opb_overwrite)) {
-			$vo_db->query('DROP DATABASE IF EXISTS `'.__CA_DB_DATABASE__.'`');
-			$vo_db->query('CREATE DATABASE `'.__CA_DB_DATABASE__.'`');
-			$vo_db->query('USE `'.__CA_DB_DATABASE__.'`');
+			$this->opo_db->query('DROP DATABASE IF EXISTS `'.__CA_DB_DATABASE__.'`');
+			$this->opo_db->query('CREATE DATABASE `'.__CA_DB_DATABASE__.'`');
+			$this->opo_db->query('USE `'.__CA_DB_DATABASE__.'`');
 		}
 
 		$va_ca_tables = $vo_dm->getTableNames();
 
-		$qr_tables = $vo_db->query("SHOW TABLES");
+		$qr_tables = $this->opo_db->query("SHOW TABLES");
 
 		while($qr_tables->nextRow()) {
 			$vs_table = $qr_tables->getFieldAtIndex(0);
@@ -369,9 +422,9 @@ class Installer {
 				}
 				$f_callback($vs_statement, $vs_table, $vn_i, $vn_num_tables);
 			}
-			$vo_db->query($vs_statement);
-			if ($vo_db->numErrors()) {
-				$this->addError("Error while loading the database schema: ".join("; ",$vo_db->getErrors()));
+			$this->opo_db->query($vs_statement);
+			if ($this->opo_db->numErrors()) {
+				$this->addError("Error while loading the database schema: ".join("; ",$this->opo_db->getErrors()));
 				return false;
 			}
 		}
@@ -379,44 +432,46 @@ class Installer {
 	# --------------------------------------------------
 	# PROFILE CONTENT PROCESSING
 	# --------------------------------------------------
-	public function processLocales(){
+	public function processLocales() {
 		require_once(__CA_MODELS_DIR__."/ca_locales.php");
 
 		$t_locale = new ca_locales();
 		$t_locale->setMode(ACCESS_WRITE);
 		// Find any existing locales
 		$va_locales = $t_locale->getLocaleList(array('index_by_code' => true));
-		foreach($va_locales as $vs_code => $va_locale){
+		foreach($va_locales as $vs_code => $va_locale) {
 			$this->opa_locales[$vs_code] = $va_locale['locale_id'];
 		}
-		if($this->ops_base_name){
+		if($this->ops_base_name) {
 			$va_locales = array();
-			foreach($this->opo_profile->locales->children() as $vo_locale){
+			foreach($this->opo_profile->locales->children() as $vo_locale) {
 				$va_locales[] = $vo_locale;
 			}
-			foreach($this->opo_base->locales->children() as $vo_locale){
+			foreach($this->opo_base->locales->children() as $vo_locale) {
 				$va_locales[] = $vo_locale;
 			}
 		} else {
 			$va_locales = $this->opo_profile->locales->children();
 		}
 
-		foreach($va_locales as $vo_locale){
+		foreach($va_locales as $vo_locale) {
+			$t_locale->clear();
 			$vs_language = self::getAttribute($vo_locale, "lang");
 			$vs_dialect = self::getAttribute($vo_locale, "dialect");
 			$vs_country = self::getAttribute($vo_locale, "country");
 			$vb_dont_use_for_cataloguing = self::getAttribute($vo_locale, "dontUseForCataloguing");
 
-			if(isset($this->opa_locales[$vs_language."_".$vs_country])){ // don't insert duplicate locales
-				continue;
+			if(isset($this->opa_locales[$vs_language."_".$vs_country]) && ($vn_locale_id = $this->opa_locales[$vs_language."_".$vs_country])) { // don't insert duplicate locales
+				$t_locale->load($vn_locale_id); // load locale so that we can 'overwrite' any existing attributes/fields
 			}
+
 			$t_locale->set('name', (string)$vo_locale);
 			$t_locale->set('country', $vs_country);
 			$t_locale->set('language', $vs_language);
 			if($vs_dialect) $t_locale->set('dialect', $vs_dialect);
 			$t_locale->set('dont_use_for_cataloguing', (bool)$vb_dont_use_for_cataloguing);
 
-			$t_locale->insert();
+			($t_locale->getPrimaryKey() > 0) ? $t_locale->update() : $t_locale->insert();
 
 			if ($t_locale->numErrors()) {
 				$this->addError("There was an error while inserting locale {$vs_language}_{$vs_country}: ".join(" ",$t_locale->getErrors()));
@@ -435,16 +490,16 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
-	public function processLists($f_callback=null){
+	public function processLists($f_callback=null) {
 		require_once(__CA_MODELS_DIR__."/ca_lists.php");
 		require_once(__CA_MODELS_DIR__."/ca_list_items.php");
 
-		if($this->ops_base_name){ // "merge" profile and its base
+		if($this->ops_base_name) { // "merge" profile and its base
 			$va_lists = array();
-			foreach($this->opo_base->lists->children() as $vo_list){
+			foreach($this->opo_base->lists->children() as $vo_list) {
 				$va_lists[self::getAttribute($vo_list, "code")] = $vo_list;
 			}
-			foreach($this->opo_profile->lists->children() as $vo_list){
+			foreach($this->opo_profile->lists->children() as $vo_list) {
 				$va_lists[self::getAttribute($vo_list, "code")] = $vo_list;
 			}
 		} else {
@@ -453,12 +508,18 @@ class Installer {
 
 		$vn_i = 0;
 		$vn_num_lists = sizeof($va_lists);
-		foreach($va_lists as $vo_list){
+		foreach($va_lists as $vo_list) {
 			$vs_list_code = self::getAttribute($vo_list, "code");
-			$t_list = $this->opb_updating ? ca_lists::find(array('list_code' => $vs_list_code), array('returnAs' => 'firstModelInstance')) : $this->opb_updating;
-			// if it doesn't exist create a new one
-			$t_list = $t_list ? $t_list: new ca_lists();
+			if(!($t_list = ca_lists::find(array('list_code' => $vs_list_code), array('returnAs' => 'firstModelInstance')))) {
+				$t_list = new ca_lists();
+			}
 			$t_list->setMode(ACCESS_WRITE);
+
+			if(self::getAttribute($vo_list, "deleted") && $t_list->getPrimaryKey()) {
+				$t_list->delete(true);
+				continue;
+			}
+
 			$vb_hierarchical = self::getAttribute($vo_list, "hierarchical");
 			$vb_system = self::getAttribute($vo_list, "system");
 			$vb_voc = self::getAttribute($vo_list, "vocabulary");
@@ -475,12 +536,11 @@ class Installer {
 			$t_list->set("is_hierarchical",$vb_hierarchical);
 			$t_list->set("use_as_vocabulary",$vb_voc);
 			if($vn_def_sort) $t_list->set("default_sort",(int)$vn_def_sort);
-			if($t_list->getPrimaryKey()){
+			if($t_list->getPrimaryKey()) {
 				$t_list->update();
-			}else {
+			} else {
 				$t_list->insert();
 			}
-
 
 			if ($t_list->numErrors()) {
 				$this->addError("There was an error while inserting list {$vs_list_code}: ".join(" ",$t_list->getErrors()));
@@ -489,8 +549,8 @@ class Installer {
 				if ($t_list->numErrors()) {
 					$this->addError("There was an error while inserting list label for {$vs_list_code}: ".join(" ",$t_list->getErrors()));
 				}
-				if($vo_list->items){
-					if(!$this->processListItems($t_list, $vo_list->items, null)){
+				if($vo_list->items) {
+					if(!$this->processListItems($t_list, $vo_list->items, null)) {
 						return false;
 					}
 				}
@@ -506,8 +566,8 @@ class Installer {
 	 * @param $pn_parent_id int
 	 * @return bool
 	 */
-	protected  function processListItems($t_list, $po_items, $pn_parent_id){
-		foreach($po_items->children() as $vo_item){
+	protected  function processListItems($t_list, $po_items, $pn_parent_id) {
+		foreach($po_items->children() as $vo_item) {
 			$vs_item_value = self::getAttribute($vo_item, "value");
 			$vs_item_idno = self::getAttribute($vo_item, "idno");
 			$vs_type = self::getAttribute($vo_item, "type");
@@ -526,12 +586,21 @@ class Installer {
 				$vn_type_id = $t_list->getItemIDFromList('list_item_types', $vs_type);
 			}
 
-
 			if (!isset($vs_status)) { $vs_status = 0; }
 			if (!isset($vs_access)) { $vs_access = 0; }
 			if (!isset($vs_rank)) { $vs_rank = 0; }
 
-			$t_item = $t_list->addItem($vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vn_type_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank);
+			if($vn_item_id = caGetListItemID($t_list->get('list_code'), $vs_item_idno, array('dontCache' => true))) {
+				if(self::getAttribute($vo_item, "deleted")) {
+					$t_item = new ca_list_items($vn_item_id);
+					$t_item->setMode(ACCESS_WRITE);
+					$t_item->delete();
+					continue;
+				}
+				$t_item = $t_list->editItem($vn_item_id, $vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank);
+			} else {
+				$t_item = $t_list->addItem($vs_item_value, $vn_enabled, $vn_default, $pn_parent_id, $vn_type_id, $vs_item_idno, '', (int)$vs_status, (int)$vs_access, (int)$vs_rank);
+			}
 
 			if (($t_list->numErrors() > 0) || !is_object($t_item)) {
 				$this->addError("There was an error while inserting list item {$vs_item_idno}: ".join(" ",$t_list->getErrors()));
@@ -552,7 +621,7 @@ class Installer {
 			}
 
 			if (isset($vo_item->items)) {
-				if(!$this->processListItems($t_list, $vo_item->items, $t_item->getPrimaryKey())){
+				if(!$this->processListItems($t_list, $vo_item->items, $t_item->getPrimaryKey())) {
 					return false;
 				}
 			}
@@ -561,7 +630,7 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
-	public function processMetadataElements(){
+	public function processMetadataElements() {
 		require_once(__CA_MODELS_DIR__."/ca_lists.php");
 		require_once(__CA_MODELS_DIR__."/ca_list_items.php");
 		require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
@@ -571,24 +640,29 @@ class Installer {
 		$t_list = new ca_lists();
 
 		$va_elements = array();
-		if($this->ops_base_name){ // "merge" profile and its base
-			foreach($this->opo_base->elementSets->children() as $vo_element){
+		if($this->ops_base_name) { // "merge" profile and its base
+			foreach($this->opo_base->elementSets->children() as $vo_element) {
 				$va_elements[self::getAttribute($vo_element, "code")] = $vo_element;
 			}
-			foreach($this->opo_profile->elementSets->children() as $vo_element){
+			foreach($this->opo_profile->elementSets->children() as $vo_element) {
 				$va_elements[self::getAttribute($vo_element, "code")] = $vo_element;
 			}
 		} else {
-			foreach($this->opo_profile->elementSets->children() as $vo_element){
+			foreach($this->opo_profile->elementSets->children() as $vo_element) {
 				$va_elements[self::getAttribute($vo_element, "code")] = $vo_element;
 			}
 		}
 
-		foreach($va_elements as $vs_element_code => $vo_element){
+		foreach($va_elements as $vs_element_code => $vo_element) {
+			if($vn_element_id = $this->processMetadataElement($vo_element, null)) {
+				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
+				// if we're updating, we expect the list of restrictions to include all restrictions!
+				if(sizeof($vo_element->typeRestrictions->children())) {
+					$this->opo_db->query('DELETE FROM ca_metadata_type_restrictions WHERE element_id=?', $vn_element_id);
+				}
 
-			if($vn_element_id = $this->processMetadataElement($vo_element, null)){
 				// handle restrictions
-				foreach($vo_element->typeRestrictions->children() as $vo_restriction){
+				foreach($vo_element->typeRestrictions->children() as $vo_restriction) {
 					$vs_restriction_code = self::getAttribute($vo_restriction, "code");
 
 					if (!($vn_table_num = $vo_dm->getTableNum((string)$vo_restriction->table))) {
@@ -602,7 +676,7 @@ class Installer {
 					// is this restriction further restricted on a specific type? -> get real id from code
 					if (strlen($vs_type)>0) {
 						// interstitial with type restriction -> code is relationship type code
-						if($t_instance instanceof BaseRelationshipModel){
+						if($t_instance instanceof BaseRelationshipModel) {
 							$vn_type_id = $t_rel_types->getRelationshipTypeID($t_instance->tableName(),$vs_type);
 						} else { // "normal" type restriction -> code is from actual type list
 							$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
@@ -611,8 +685,7 @@ class Installer {
 					}
 
 					// add restriction
-					$t_restriction = $this->opb_updating ? ca_metadata_type_restrictions::find(array('table_num' => $vn_table_num, 'type_id' => $vn_type_id, 'element_id' => $vn_element_id), array('returnAs' => 'firstModelInstance')) : false;
-					$t_restriction = $t_restriction ? $t_restriction : new ca_metadata_type_restrictions();
+					$t_restriction = new ca_metadata_type_restrictions();
 					$t_restriction->setMode(ACCESS_WRITE);
 					$t_restriction->set('table_num', $vn_table_num);
 					$t_restriction->set('include_subtypes', (bool)$vo_restriction->includeSubtypes ? 1 : 0);
@@ -620,11 +693,7 @@ class Installer {
 					$t_restriction->set('element_id', $vn_element_id);
 
 					$this->_processSettings($t_restriction, $vo_restriction->settings);
-					if($t_restriction->getPrimaryKey()){
-						$t_restriction->update();
-					}else{
-						$t_restriction->insert();
-					}
+					$t_restriction->insert();
 
 					if ($t_restriction->numErrors()) {
 						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} for metadata element {$vs_element_code}: ".join("; ",$t_restriction->getErrors()));
@@ -635,25 +704,30 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
-	private function processMetadataElement($po_element, $pn_parent_id){
+	private function processMetadataElement($po_element, $pn_parent_id) {
 		require_once(__CA_MODELS_DIR__."/ca_metadata_elements.php");
 		require_once(__CA_MODELS_DIR__."/ca_lists.php");
+
+		$vs_element_code = self::getAttribute($po_element, "code");
+
+		// try to load element by code for potential update. codes are unique, globally
+		if(!($t_md_element = ca_metadata_elements::getInstance($vs_element_code))) {
+			$t_md_element = new ca_metadata_elements();
+		}
+
+		$t_md_element->setMode(ACCESS_WRITE);
+
+		if(self::getAttribute($po_element, 'deleted') && $t_md_element->getPrimaryKey()) {
+			$t_md_element->delete(true, array('hard' => true));
+			return false; // we don't want the postprocessing to kick in. our work here is done.
+		}
 
 		if (($vn_datatype = ca_metadata_elements::getAttributeTypeCode(self::getAttribute($po_element, "datatype"))) === false) {
 			return false; // should not happen due to XSD restrictions, but just in case
 		}
 
-		$vs_element_code = self::getAttribute($po_element, "code");
-
 		$t_lists = new ca_lists();
 
-		if($this->opb_updating) {
-			$t_md_element = ca_metadata_elements::getInstance($vs_element_code) ? ca_metadata_elements::getInstance($vs_element_code) : new ca_metadata_elements();
-		} else {
-			$t_md_element = new ca_metadata_elements();
-		}
-
-		$t_md_element->setMode(ACCESS_WRITE);
 		$t_md_element->set('element_code', $vs_element_code);
 		$t_md_element->set('parent_id', $pn_parent_id);
 		$t_md_element->set('documentation_url',(string)$po_element->documentationUrl);
@@ -748,7 +822,7 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
-	public function processUserInterfaces(){
+	public function processUserInterfaces() {
 		require_once(__CA_MODELS_DIR__."/ca_editor_uis.php");
 		require_once(__CA_MODELS_DIR__."/ca_editor_ui_screens.php");
 		require_once(__CA_MODELS_DIR__."/ca_lists.php");
@@ -760,15 +834,15 @@ class Installer {
 		$t_list = new ca_lists();
 		$t_rel_types = new ca_relationship_types();
 		$va_uis = array();
-		if($this->ops_base_name){ // "merge" profile and its base
-			foreach($this->opo_base->userInterfaces->children() as $vo_ui){
+		if($this->ops_base_name) { // "merge" profile and its base
+			foreach($this->opo_base->userInterfaces->children() as $vo_ui) {
 				$va_uis[self::getAttribute($vo_ui, "code")] = $vo_ui;
 			}
-			foreach($this->opo_profile->userInterfaces->children() as $vo_ui){
+			foreach($this->opo_profile->userInterfaces->children() as $vo_ui) {
 				$va_uis[self::getAttribute($vo_ui, "code")] = $vo_ui;
 			}
 		} else {
-			foreach($this->opo_profile->userInterfaces->children() as $vo_ui){
+			foreach($this->opo_profile->userInterfaces->children() as $vo_ui) {
 				$va_uis[self::getAttribute($vo_ui, "code")] = $vo_ui;
 			}
 		}
@@ -784,15 +858,22 @@ class Installer {
 			$t_instance = $vo_dm->getInstanceByTableNum($vn_type);
 
 			// create ui row
-
-			$t_ui = ca_editor_uis::find(array('editor_code' => $vs_ui_code, 'editor_type' =>  $vn_type), array('returnAs' => 'firstModelInstance'));
-			$t_ui = $t_ui ? $t_ui : new ca_editor_uis();
+			if(!($t_ui = ca_editor_uis::find(array('editor_code' => $vs_ui_code, 'editor_type' =>  $vn_type), array('returnAs' => 'firstModelInstance')))) {
+				$t_ui = new ca_editor_uis();
+			}
 			$t_ui->setMode(ACCESS_WRITE);
+
+			if(self::getAttribute($vo_ui, 'deleted') && $t_ui->getPrimaryKey()) {
+				$t_ui->delete(true, array('hard' => true));
+				continue;
+			}
+
 			$t_ui->set('user_id', null);
 			$t_ui->set('is_system_ui', 1);
 			$t_ui->set('editor_code', $vs_ui_code);
 			$t_ui->set('editor_type', $vn_type);
-			if($t_ui->getPrimaryKey()){
+
+			if($t_ui->getPrimaryKey()) {
 				$t_ui->update();
 			}else{
 				$t_ui->insert();
@@ -808,13 +889,19 @@ class Installer {
 			self::addLabelsFromXMLElement($t_ui, $vo_ui->labels, $this->opa_locales);
 
 			// create ui type restrictions
-			if($vo_ui->typeRestrictions){
-				foreach($vo_ui->typeRestrictions->children() as $vo_restriction){
+			if($vo_ui->typeRestrictions) {
+				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
+				// if we're updating, we expect the list of restrictions to include all restrictions!
+				if(sizeof($vo_ui->typeRestrictions->children())) {
+					$this->opo_db->query('DELETE FROM ca_editor_ui_type_restrictions WHERE ui_id=?', $vn_ui_id);
+				}
+
+				foreach($vo_ui->typeRestrictions->children() as $vo_restriction) {
 					$vs_restriction_type = self::getAttribute($vo_restriction, "type");
 
 					if (strlen($vs_restriction_type)>0) {
 						// interstitial with type restriction -> code is relationship type code
-						if($t_instance instanceof BaseRelationshipModel){
+						if($t_instance instanceof BaseRelationshipModel) {
 							$vn_type_id = $t_rel_types->getRelationshipTypeID($t_instance->tableName(),$vs_restriction_type);
 						} else { // "normal" type restriction -> code is from actual type list
 							$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
@@ -837,12 +924,20 @@ class Installer {
 					'idno' => $vs_screen_idno,
 					'ui_id' => $vn_ui_id
 				), array('returnAs' => 'firstModelInstance'));
+
 				$t_ui_screens = $t_ui_screens ? $t_ui_screens : new ca_editor_ui_screens();
 				$t_ui_screens->setMode(ACCESS_WRITE);
+
+				if(self::getAttribute($vo_screen, 'deleted') && $t_ui_screens->getPrimaryKey()) {
+					$t_ui_screens->delete(true, array('hard' => true));
+					continue;
+				}
+
 				$t_ui_screens->set('idno',$vs_screen_idno);
 				$t_ui_screens->set('ui_id', $vn_ui_id);
 				$t_ui_screens->set('is_default', $vn_is_default);
-				if($t_ui_screens->getPrimaryKey()){
+
+				if($t_ui_screens->getPrimaryKey()) {
 					$t_ui_screens->update();
 				}else{
 					$t_ui_screens->set('parent_id', null);
@@ -858,6 +953,12 @@ class Installer {
 
 				$va_available_bundles = $t_ui_screens->getAvailableBundles(null,array('dontCache' => true));
 
+				// nuke previous placements. there shouldn't be any if we're installing from scratch.
+				// if we're updating, we expect the list of placements to include all of them!
+				if(sizeof($vo_screen->bundlePlacements->children())) {
+					$this->opo_db->query('DELETE FROM ca_editor_ui_bundle_placements WHERE screen_id=?', $t_ui_screens->getPrimaryKey());
+				}
+
 				// create ui bundle placements
 				foreach($vo_screen->bundlePlacements->children() as $vo_placement) {
 					$vs_placement_code = self::getAttribute($vo_placement, "code");
@@ -869,13 +970,19 @@ class Installer {
 				}
 
 				// create ui screen type restrictions
-				if($vo_screen->typeRestrictions){
-					foreach($vo_screen->typeRestrictions->children() as $vo_restriction){
+				if($vo_screen->typeRestrictions) {
+					// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
+					// if we're updating, we expect the list of restrictions to include all of them!
+					if(sizeof($vo_screen->typeRestrictions->children())) {
+						$this->opo_db->query('DELETE FROM ca_editor_ui_screen_type_restrictions WHERE screen_id=?', $t_ui_screens->getPrimaryKey());
+					}
+
+					foreach($vo_screen->typeRestrictions->children() as $vo_restriction) {
 						$vs_restriction_type = self::getAttribute($vo_restriction, "type");
 
 						if (strlen($vs_restriction_type)>0) {
 							// interstitial with type restriction -> code is relationship type code
-							if($t_instance instanceof BaseRelationshipModel){
+							if($t_instance instanceof BaseRelationshipModel) {
 								$vn_type_id = $t_rel_types->getRelationshipTypeID($t_instance->tableName(),$vs_restriction_type);
 							} else { // "normal" type restriction -> code is from actual type list
 								$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
@@ -894,18 +1001,18 @@ class Installer {
 			if($vo_ui->userAccess) {
 				$t_user = new ca_users();
 				$va_ui_users = array();
-				foreach($vo_ui->userAccess->children() as $vo_permission){
+				foreach($vo_ui->userAccess->children() as $vo_permission) {
 					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_user->load(array('user_name' => $vs_user))){
+					if($vn_access && $t_user->load(array('user_name' => $vs_user))) {
 						$va_ui_users[$t_user->getUserID()] = $vn_access;
 					} else {
 						$this->addError("User name or access value invalid for UI {$vs_ui_code} (permission item with user name '{$vs_user}')");
 					}
 				}
 
-				if(sizeof($va_ui_users)>0){
+				if(sizeof($va_ui_users)>0) {
 					$t_ui->addUsers($va_ui_users);
 				}
 			}
@@ -913,18 +1020,18 @@ class Installer {
 			if($vo_ui->groupAccess) {
 				$t_group = new ca_user_groups();
 				$va_ui_groups = array();
-				foreach($vo_ui->groupAccess->children() as $vo_permission){
+				foreach($vo_ui->groupAccess->children() as $vo_permission) {
 					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_group->load(array('code' => $vs_group))){
+					if($vn_access && $t_group->load(array('code' => $vs_group))) {
 						$va_ui_groups[$t_group->getPrimaryKey()] = $vn_access;
 					} else {
 						$this->addError("Group code or access value invalid for UI {$vs_ui_code} (permission item with group code '{$vs_group}')");
 					}
 				}
 
-				if(sizeof($va_ui_groups)>0){
+				if(sizeof($va_ui_groups)>0) {
 					$t_ui->addUserGroups($va_ui_groups);
 				}
 			}
@@ -936,21 +1043,20 @@ class Installer {
 		require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
 
 		$va_rel_tables = array();
-		if($this->ops_base_name){ // "merge" profile and its base
-			foreach($this->opo_base->relationshipTypes->children() as $vo_rel_table){
+		if($this->ops_base_name) { // "merge" profile and its base
+			foreach($this->opo_base->relationshipTypes->children() as $vo_rel_table) {
 				$va_rel_tables[self::getAttribute($vo_rel_table, "name")] = $vo_rel_table;
 			}
-			foreach($this->opo_profile->relationshipTypes->children() as $vo_rel_table){
+			foreach($this->opo_profile->relationshipTypes->children() as $vo_rel_table) {
 				$va_rel_tables[self::getAttribute($vo_rel_table, "name")] = $vo_rel_table;
 			}
 		} else {
-			foreach($this->opo_profile->relationshipTypes->children() as $vo_rel_table){
+			foreach($this->opo_profile->relationshipTypes->children() as $vo_rel_table) {
 				$va_rel_tables[self::getAttribute($vo_rel_table, "name")] = $vo_rel_table;
 			}
 		}
 
-		$o_db = new Db();
-		$qr_lists = $o_db->query("SELECT * FROM ca_lists");
+		$qr_lists = $this->opo_db->query("SELECT * FROM ca_lists");
 
 		$va_list_names = array();
 		$va_list_item_ids = array();
@@ -959,7 +1065,7 @@ class Installer {
 		}
 
 		// get list items
-		$qr_list_item_result = $o_db->query("SELECT * FROM ca_list_items cli INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id");
+		$qr_list_item_result = $this->opo_db->query("SELECT * FROM ca_list_items cli INNER JOIN ca_list_item_labels AS clil ON clil.item_id = cli.item_id");
 		while($qr_list_item_result->nextRow()) {
 			$vs_type_code = $va_list_names[$qr_list_item_result->get('list_id')];
 			$va_list_item_ids[$vs_type_code][$qr_list_item_result->get('item_value')] = $qr_list_item_result->get('item_id');
@@ -979,11 +1085,18 @@ class Installer {
 			$vs_left_table = $t_rel_table->getLeftTableName();
 			$vs_right_table = $t_rel_table->getRightTableName();
 
+
 			$vs_root_type_code = 'root_for_'.$vn_table_num;
-			$t_rel_type = $this->opb_updating ? ca_relationship_types::find(array('type_code' => $vs_root_type_code, 'table_num' => $vn_table_num, 'parent_id' => null),array('returnAs' => 'firstModelInstance')) : false;
+
+			/** @var ca_relationship_types $t_rel_type */
+			$t_rel_type = ca_relationship_types::find(
+				array('type_code' => $vs_root_type_code, 'table_num' => $vn_table_num, 'parent_id' => null),
+				array('returnAs' => 'firstModelInstance')
+			);
+
 			$t_rel_type = $t_rel_type ? $t_rel_type : new ca_relationship_types();
 			$t_rel_type->setMode(ACCESS_WRITE);
-			// create relationship type root
+			// create relationship type root if necessary
 			$t_rel_type->set('parent_id', null);
 			$t_rel_type->set('type_code', $vs_root_type_code);
 			$t_rel_type->set('sub_type_left_id', null);
@@ -991,9 +1104,7 @@ class Installer {
 			$t_rel_type->set('table_num', $vn_table_num);
 			$t_rel_type->set('rank', 10);
 			$t_rel_type->set('is_default', 0);
-			if($t_rel_type->getPrimaryKey()){
-				$t_rel_type->update();
-			} else {
+			if(!$t_rel_type->getPrimaryKey()) { // do nothing if find() found that very root
 				$t_rel_type->insert();
 			}
 
@@ -1009,7 +1120,7 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
-	private function processRelationshipTypesForTable($po_relationship_types, $pn_table_num, $ps_left_table, $ps_right_table, $pn_parent_id, $pa_list_item_ids){
+	private function processRelationshipTypesForTable($po_relationship_types, $pn_table_num, $ps_left_table, $ps_right_table, $pn_parent_id, $pa_list_item_ids) {
 		$o_dm = Datamodel::load();
 
 		// nuke caches to be safe
@@ -1026,9 +1137,18 @@ class Installer {
 			$vn_default = self::getAttribute($vo_type, "default");
 			$vn_rank = (int)self::getAttribute($vo_type, "rank");
 
-			$t_rel_type = $this->opb_updating ? ca_relationship_types::find(array('type_code' => $vs_type_code, 'table_num' => $pn_table_num, 'parent_id' => $pn_parent_id),array('returnAs' => 'firstModelInstance')) : false;
+			$t_rel_type = ca_relationship_types::find(
+				array('type_code' => $vs_type_code, 'table_num' => $pn_table_num, 'parent_id' => $pn_parent_id),
+				array('returnAs' => 'firstModelInstance')
+			);
+
 			$t_rel_type = $t_rel_type ? $t_rel_type : new ca_relationship_types();
 			$t_rel_type->setMode(ACCESS_WRITE);
+
+			if(self::getAttribute($vo_type, "deleted") && $t_rel_type->getPrimaryKey()) {
+				$t_rel_type->delete(true);
+				continue;
+			}
 
 			$t_rel_type->set('table_num', $pn_table_num);
 			$t_rel_type->set('type_code', $vs_type_code);
@@ -1079,33 +1199,40 @@ class Installer {
 		}
 	}
 	# --------------------------------------------------
-	public function processRoles(){
+	public function processRoles() {
 		require_once(__CA_MODELS_DIR__."/ca_user_roles.php");
 		$va_roles = array();
-		if($this->ops_base_name){ // "merge" profile and its base
+		if($this->ops_base_name) { // "merge" profile and its base
 
-			if($this->opo_base->roles){
-				foreach($this->opo_base->roles->children() as $vo_role){
+			if($this->opo_base->roles) {
+				foreach($this->opo_base->roles->children() as $vo_role) {
 					$va_roles[self::getAttribute($vo_role, "code")] = $vo_role;
 				}
 			}
-			if($this->opo_profile->roles){
-				foreach($this->opo_profile->roles->children() as $vo_role){
+			if($this->opo_profile->roles) {
+				foreach($this->opo_profile->roles->children() as $vo_role) {
 					$va_roles[self::getAttribute($vo_role, "code")] = $vo_role;
 				}
 			}
 		} else {
-			if($this->opo_profile->roles){
-				foreach($this->opo_profile->roles->children() as $vo_role){
+			if($this->opo_profile->roles) {
+				foreach($this->opo_profile->roles->children() as $vo_role) {
 					$va_roles[self::getAttribute($vo_role, "code")] = $vo_role;
 				}
 			}
 		}
 
 		foreach($va_roles as $vs_role_code => $vo_role) {
-			$t_role = $this->opb_updating ? ca_user_roles::find(array('code' => $vs_role_code ), array('returnAs' => 'firstModelInstance')) : false;
-			$t_role = $t_role ? $t_role :  new ca_user_roles();
+			if(!($t_role = ca_user_roles::find(array('code' => (string)$vs_role_code), array('returnAs' => 'firstModelInstance')))) {
+				$t_role = new ca_user_roles();
+			}
+
 			$t_role->setMode(ACCESS_WRITE);
+
+			if(self::getAttribute($vo_role, "deleted") && $t_role->getPrimaryKey()) {
+				$t_role->delete(true);
+				continue;
+			}
 
 			$t_role->set('name', trim((string) $vo_role->name));
 			$t_role->set('description', trim((string) $vo_role->description));
@@ -1113,13 +1240,13 @@ class Installer {
 
 			// add actions
 			$va_actions = array();
-			if($vo_role->actions){
-				foreach($vo_role->actions->children() as $vo_action){
+			if($vo_role->actions) {
+				foreach($vo_role->actions->children() as $vo_action) {
 					$va_actions[] = trim((string) $vo_action);
 				}
 			}
 			$t_role->setRoleActions($va_actions);
-			if($t_role->getPrimaryKey()){
+			if($t_role->getPrimaryKey()) {
 				$t_role->update();
 			} else {
 				$t_role->insert();
@@ -1132,12 +1259,17 @@ class Installer {
 
 			// add bundle level ACL items
 			if($vo_role->bundleLevelAccessControl) {
+				// nuke old items
+				if(sizeof($vo_role->bundleLevelAccessControl->children()) > 0) {
+					$t_role->removeAllBundleAccessSettings();
+				}
+
 				foreach($vo_role->bundleLevelAccessControl->children() as $vo_permission) {
 					$vs_permission_table = self::getAttribute($vo_permission, 'table');
 					$vs_permission_bundle = self::getAttribute($vo_permission, 'bundle');
 					$vn_permission_access = $this->_convertACLStringToConstant(self::getAttribute($vo_permission, 'access'));
 
-					if(!$t_role->setAccessSettingForBundle($vs_permission_table, $vs_permission_bundle, $vn_permission_access)){
+					if(!$t_role->setAccessSettingForBundle($vs_permission_table, $vs_permission_bundle, $vn_permission_access)) {
 						$this->addError("Could not add bundle level access control for table '{$vs_permission_table}' and bundle '{$vs_permission_bundle}'. Check the table and bundle names.");
 						//return false;
 					}
@@ -1146,12 +1278,17 @@ class Installer {
 
 			// add type level ACL items
 			if($vo_role->typeLevelAccessControl) {
+				// nuke old items
+				if(sizeof($vo_role->typeLevelAccessControl->children()) > 0) {
+					$t_role->removeAllTypeAccessSettings();
+				}
+
 				foreach($vo_role->typeLevelAccessControl->children() as $vo_permission) {
 					$vs_permission_table = self::getAttribute($vo_permission, 'table');
 					$vs_permission_type = self::getAttribute($vo_permission, 'type');
 					$vn_permission_access = $this->_convertACLStringToConstant(self::getAttribute($vo_permission, 'access'));
 
-					if(!$t_role->setAccessSettingForType($vs_permission_table, $vs_permission_type, $vn_permission_access)){
+					if(!$t_role->setAccessSettingForType($vs_permission_table, $vs_permission_type, $vn_permission_access)) {
 						$this->addError("Could not add type level access control for table '{$vs_permission_table}' and type '{$vs_permission_type}'. Check the table name and the type code.");
 						//return false;
 					}
@@ -1160,13 +1297,18 @@ class Installer {
 
 			// add source level ACL items
 			if($vo_role->sourceLevelAccessControl) {
+				// nuke old items
+				if(sizeof($vo_role->sourceLevelAccessControl->children()) > 0) {
+					$t_role->removeAllSourceAccessSettings();
+				}
+
 				foreach($vo_role->sourceLevelAccessControl->children() as $vo_permission) {
 					$vs_permission_table = self::getAttribute($vo_permission, 'table');
 					$vs_permission_source = self::getAttribute($vo_permission, 'source');
 					$vs_permission_default = self::getAttribute($vo_permission, 'default');
 					$vn_permission_access = $this->_convertACLStringToConstant(self::getAttribute($vo_permission, 'access'));
 
-					if(!$t_role->setAccessSettingForSource($vs_permission_table, $vs_permission_source, $vn_permission_access, (bool)$vs_permission_default)){
+					if(!$t_role->setAccessSettingForSource($vs_permission_table, $vs_permission_source, $vn_permission_access, (bool)$vs_permission_default)) {
 						$this->addError("Could not add source level access control for table '{$vs_permission_table}' and source '{$vs_permission_source}'. Check the table name and the source code.");
 						//return false;
 					}
@@ -1176,7 +1318,7 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
-	public function processDisplays(){
+	public function processDisplays() {
 		require_once(__CA_MODELS_DIR__."/ca_bundle_displays.php");
 		require_once(__CA_MODELS_DIR__."/ca_bundle_display_placements.php");
 		require_once(__CA_MODELS_DIR__."/ca_bundle_display_type_restrictions.php");
@@ -1185,40 +1327,47 @@ class Installer {
 
 		$vo_dm = Datamodel::load();
 
-		if($this->ops_base_name){ // "merge" profile and its base
-			$va_displays = array();
+		$va_displays = array();
+		if($this->ops_base_name) { // "merge" profile and its base
 			if($this->opo_base->displays) {
-				foreach($this->opo_base->displays->children() as $vo_display){
+				foreach($this->opo_base->displays->children() as $vo_display) {
 					$va_displays[self::getAttribute($vo_display, "code")] = $vo_display;
 				}
 			}
 
 			if($this->opo_profile->displays) {
-				foreach($this->opo_profile->displays->children() as $vo_display){
+				foreach($this->opo_profile->displays->children() as $vo_display) {
 					$va_displays[self::getAttribute($vo_display, "code")] = $vo_display;
 				}
 			}
 		} else {
-			if($this->opo_profile->displays){
-				foreach($this->opo_profile->displays->children() as $vo_display){
+			if($this->opo_profile->displays) {
+				foreach($this->opo_profile->displays->children() as $vo_display) {
 					$va_displays[self::getAttribute($vo_display, "code")] = $vo_display;
 				}
 			}
 		}
 
-		if(!is_array($va_displays) || sizeof($va_displays) == 0) return true;
+		if(sizeof($va_displays) == 0) { return true; }
 
-		foreach($va_displays as $vo_display){
+		foreach($va_displays as $vo_display) {
 			$vs_display_code = self::getAttribute($vo_display, "code");
 			$vb_system = self::getAttribute($vo_display, "system");
 			$vs_table = self::getAttribute($vo_display, "type");
+			$vn_table_num = $vo_dm->getTableNum($vs_table);
 
 			if ($o_config->get($vs_table.'_disable')) { continue; }
 
-			$t_display = $this->opb_updating ? ca_bundle_displays::find(array('code' => $vs_display_code, 'type' => $vs_table), array('returnAs' => 'firstModelInstance')) : false;
-			$t_display = $t_display ? $t_display : new ca_bundle_displays();
+			if(!($t_display = ca_bundle_displays::find(array('display_code' => $vs_display_code), array('returnAs' => 'firstModelInstance')))) {
+				$t_display = new ca_bundle_displays();
+			}
 
 			$t_display->setMode(ACCESS_WRITE);
+
+			if(self::getAttribute($vo_display, "deleted") && $t_display->getPrimaryKey()) {
+				$t_display->delete(true);
+				continue;
+			}
 
 			$t_display->set("display_code", $vs_display_code);
 			$t_display->set("is_system", $vb_system);
@@ -1227,7 +1376,7 @@ class Installer {
 
 			$this->_processSettings($t_display, $vo_display->settings);
 
-			if($t_display->getPrimaryKey()){
+			if($t_display->getPrimaryKey()) {
 				$t_display->update();
 			} else {
 				$t_display->insert();
@@ -1240,27 +1389,32 @@ class Installer {
 				if ($t_display->numErrors()) {
 					$this->addError("There was an error while inserting display label for {$vs_display_code}: ".join(" ",$t_display->getErrors()));
 				}
-				if(!$this->processDisplayPlacements($t_display, $vo_display->bundlePlacements, null)){
+				if(!$this->processDisplayPlacements($t_display, $vo_display->bundlePlacements, null)) {
 					return false;
 				}
 			}
 
 			if ($vo_display->typeRestrictions) {
-				foreach($vo_display->typeRestrictions->children() as $vo_restriction){
+				// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
+				// if we're updating, we expect the list of restrictions to include all restrictions!
+				if(sizeof($vo_display->typeRestrictions->children())) {
+					$this->opo_db->query('DELETE FROM ca_bundle_display_type_restrictions WHERE display_id=?', $t_display->getPrimaryKey());
+				}
+
+				foreach($vo_display->typeRestrictions->children() as $vo_restriction) {
 					$t_list = new ca_lists();
 					$t_list_item = new ca_list_items();
 					$vs_restriction_code = trim((string)self::getAttribute($vo_restriction, "code"));
 					$vs_type = trim((string)self::getAttribute($vo_restriction, "type"));
 
-					$t_instance = $vo_dm->getInstanceByTableNum($vn_table_num = $vo_dm->getTableNum($vs_table));
+					$t_instance = $vo_dm->getInstanceByTableNum($vn_table_num);
 					$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
 					if ($vs_type) {
 						$t_list->load(array('list_code' => $vs_type_list_name));
 						$t_list_item->load(array('list_id' => $t_list->getPrimaryKey(), 'idno' => $vs_type));
 					}
 					$vn_type_id = ($vs_type) ? $t_list_item->getPrimaryKey() : null;
-					$t_restriction  = $this->opb_updating ? ca_bundle_display_type_restrictions::find(array('table_num' => $vn_table_num, 'type_id' => $vn_type_id), array('returnAs' => 'firstModelInstance')) : false;
-					$t_restriction = $t_restriction ? $t_restriction : new ca_bundle_display_type_restrictions();
+					$t_restriction = new ca_bundle_display_type_restrictions();
 					$t_restriction->setMode(ACCESS_WRITE);
 					$t_restriction->set('table_num', $vn_table_num);
 					$t_restriction->set('include_subtypes', (bool)$vo_restriction->includeSubtypes ? 1 : 0);
@@ -1268,11 +1422,7 @@ class Installer {
 					$t_restriction->set('display_id', $t_display->getPrimaryKey());
 
 					$this->_processSettings($t_restriction, $vo_restriction->settings);
-					if($t_restriction->getPrimaryKey()){
-						$t_restriction->update();
-					} else {
-						$t_restriction->insert();
-					}
+					$t_restriction->insert();
 
 					if ($t_restriction->numErrors()) {
 						$this->addError("There was an error while inserting type restriction {$vs_restriction_code} in display {$vs_display_code}: ".join("; ",$t_restriction->getErrors()));
@@ -1283,18 +1433,18 @@ class Installer {
 			if($vo_display->userAccess) {
 				$t_user = new ca_users();
 				$va_display_users = array();
-				foreach($vo_display->userAccess->children() as $vo_permission){
+				foreach($vo_display->userAccess->children() as $vo_permission) {
 					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_user->load(array('user_name' => $vs_user))){
+					if($vn_access && $t_user->load(array('user_name' => $vs_user))) {
 						$va_display_users[$t_user->getUserID()] = $vn_access;
 					} else {
 						$this->addError("User name or access value invalid for display {$vs_display_code} (permission item with user name '{$vs_user}')");
 					}
 				}
 
-				if(sizeof($va_display_users)>0){
+				if(sizeof($va_display_users)>0) {
 					$t_display->addUsers($va_display_users);
 				}
 			}
@@ -1302,18 +1452,18 @@ class Installer {
 			if($vo_display->groupAccess) {
 				$t_group = new ca_user_groups();
 				$va_display_groups = array();
-				foreach($vo_display->groupAccess->children() as $vo_permission){
+				foreach($vo_display->groupAccess->children() as $vo_permission) {
 					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_group->load(array('code' => $vs_group))){
+					if($vn_access && $t_group->load(array('code' => $vs_group))) {
 						$va_display_groups[$t_group->getPrimaryKey()] = $vn_access;
 					} else {
 						$this->addError("Group code or access value invalid for display {$vs_display_code} (permission item with group code '{$vs_group}')");
 					}
 				}
 
-				if(sizeof($va_display_groups)>0){
+				if(sizeof($va_display_groups)>0) {
 					$t_display->addUserGroups($va_display_groups);
 				}
 			}
@@ -1323,17 +1473,22 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
-	private function processDisplayPlacements($t_display, $po_placements){
-		$o_config = Configuration::load();
+	private function processDisplayPlacements($t_display, $po_placements) {
 		$va_available_bundles = $t_display->getAvailableBundles(null, array('no_cache' => true));
 
+		// nuke previous placements. there shouldn't be any if we're installing from scratch.
+		// if we're updating, we expect the list of restrictions to include all restrictions!
+		if(sizeof($po_placements->children())) {
+			$this->opo_db->query('DELETE FROM ca_bundle_display_placements WHERE display_id=?', $t_display->getPrimaryKey());
+		}
+
 		$vn_i = 1;
-		foreach($po_placements->children() as $vo_placement){
+		foreach($po_placements->children() as $vo_placement) {
 			$vs_code = self::getAttribute($vo_placement, "code");
 			$vs_bundle = (string)$vo_placement->bundle;
 
 			$va_settings = $this->_processSettings(null, $vo_placement->settings);
-			$vn_placement_id = $t_display->addPlacement($vs_bundle, $va_settings, $vn_i, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
+			$t_display->addPlacement($vs_bundle, $va_settings, $vn_i, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
 			if ($t_display->numErrors()) {
 				$this->addError("There was an error while inserting display placement {$vs_code}: ".join(" ",$t_display->getErrors()));
 				return false;
@@ -1344,37 +1499,37 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
-	public function processSearchForms(){
+	public function processSearchForms() {
 		require_once(__CA_MODELS_DIR__."/ca_search_forms.php");
 		require_once(__CA_MODELS_DIR__."/ca_search_form_placements.php");
 
 		$o_config = Configuration::load();
 		$vo_dm = Datamodel::load();
 
-		if($this->ops_base_name){ // "merge" profile and its base
-			$va_forms = array();
+		$va_forms = array();
+		if($this->ops_base_name) { // "merge" profile and its base
 			if($this->opo_base->searchForms) {
-				foreach($this->opo_base->searchForms->children() as $vo_form){
+				foreach($this->opo_base->searchForms->children() as $vo_form) {
 					$va_forms[self::getAttribute($vo_form, "code")] = $vo_form;
 				}
 			}
 
 			if($this->opo_profile->searchForms) {
-				foreach($this->opo_profile->searchForms->children() as $vo_form){
+				foreach($this->opo_profile->searchForms->children() as $vo_form) {
 					$va_forms[self::getAttribute($vo_form, "code")] = $vo_form;
 				}
 			}
 		} else {
-			if($this->opo_profile->searchForms){
-				foreach($this->opo_profile->searchForms->children() as $vo_form){
+			if($this->opo_profile->searchForms) {
+				foreach($this->opo_profile->searchForms->children() as $vo_form) {
 					$va_forms[self::getAttribute($vo_form, "code")] = $vo_form;
 				}
 			}
 		}
 
-		if(!is_array($va_forms) || sizeof($va_forms) == 0) return true;
+		if(sizeof($va_forms) == 0) { return true; }
 
-		foreach($va_forms as $vo_form){
+		foreach($va_forms as $vo_form) {
 			$vs_form_code = self::getAttribute($vo_form, "code");
 			$vb_system = self::getAttribute($vo_form, "system");
 			$vs_table = self::getAttribute($vo_form, "type");
@@ -1383,16 +1538,23 @@ class Installer {
 			if ($o_config->get($vs_table.'_disable')) { continue; }
 			$vn_table_num = (int)$vo_dm->getTableNum($vs_table);
 
-			$t_form = $this->opb_updating ? ca_search_forms::find(array('form_code' => (string)$vs_form_code, 'table_num' => $vn_table_num), array('returnAs' => 'firstModelInstance')) : false;
-			$t_form = $t_form ? $t_form : new ca_search_forms();
+			if(!($t_form = ca_search_forms::find(array('form_code' => (string)$vs_form_code, 'table_num' => $vn_table_num), array('returnAs' => 'firstModelInstance')))) {
+				$t_form = new ca_search_forms();
+			}
 			$t_form->setMode(ACCESS_WRITE);
+
+			if(self::getAttribute($vo_form, "deleted") && $t_form->getPrimaryKey()) {
+				$t_form->delete(true);
+				continue;
+			}
+
 			$t_form->set("form_code", (string)$vs_form_code);
 			$t_form->set("is_system", (int)$vb_system);
 			$t_form->set("table_num", $vn_table_num);
 
-			$va_settings = $this->_processSettings($t_form, $vo_form->settings);
+			$this->_processSettings($t_form, $vo_form->settings);
 
-			if($t_form->getPrimaryKey()){
+			if($t_form->getPrimaryKey()) {
 				$t_form->update();
 			} else {
 				$t_form->set("user_id", 1);		// let administrative user own these
@@ -1406,7 +1568,7 @@ class Installer {
 				if ($t_form->numErrors()) {
 					$this->addError("There was an error while inserting search form label for {$vs_form_code}: ".join(" ",$t_form->getErrors()));
 				}
-				if(!$this->processSearchFormPlacements($t_form, $vo_form->bundlePlacements, null)){
+				if(!$this->processSearchFormPlacements($t_form, $vo_form->bundlePlacements, null)) {
 					return false;
 				}
 			}
@@ -1415,18 +1577,18 @@ class Installer {
 			if($vo_form->userAccess) {
 				$t_user = new ca_users();
 				$va_form_users = array();
-				foreach($vo_form->userAccess->children() as $vo_permission){
+				foreach($vo_form->userAccess->children() as $vo_permission) {
 					$vs_user = trim((string)self::getAttribute($vo_permission, "user"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_user->load(array('user_name' => $vs_user))){
+					if($vn_access && $t_user->load(array('user_name' => $vs_user))) {
 						$va_form_users[$t_user->getUserID()] = $vn_access;
 					} else {
 						$this->addError("User name or access value invalid for search form {$vs_form_code} (permission item with user name '{$vs_user}')");
 					}
 				}
 
-				if(sizeof($va_form_users)>0){
+				if(sizeof($va_form_users)>0) {
 					$t_form->addUsers($va_form_users);
 				}
 			}
@@ -1434,18 +1596,18 @@ class Installer {
 			if($vo_form->groupAccess) {
 				$t_group = new ca_user_groups();
 				$va_form_groups = array();
-				foreach($vo_form->groupAccess->children() as $vo_permission){
+				foreach($vo_form->groupAccess->children() as $vo_permission) {
 					$vs_group = trim((string)self::getAttribute($vo_permission, "group"));
 					$vn_access = $this->_convertUserGroupAccessStringToInt(self::getAttribute($vo_permission, 'access'));
 
-					if($vn_access && $t_group->load(array('code' => $vs_group))){
+					if($vn_access && $t_group->load(array('code' => $vs_group))) {
 						$va_form_groups[$t_group->getPrimaryKey()] = $vn_access;
 					} else {
 						$this->addError("Group code or access value invalid for search form {$vs_form_code} (permission item with group code '{$vs_group}')");
 					}
 				}
 
-				if(sizeof($va_form_groups)>0){
+				if(sizeof($va_form_groups)>0) {
 					$t_form->addUserGroups($va_form_groups);
 				}
 			}
@@ -1454,17 +1616,23 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
-	private function processSearchFormPlacements($t_form, $po_placements){
+	private function processSearchFormPlacements($t_form, $po_placements) {
 		$va_available_bundles = $t_form->getAvailableBundles();
 
+		// nuke previous restrictions. there shouldn't be any if we're installing from scratch.
+		// if we're updating, we expect the list of restrictions to include all restrictions!
+		if(sizeof($po_placements->children())) {
+			$this->opo_db->query('DELETE FROM ca_search_form_placements WHERE form_id=?', $t_form->getPrimaryKey());
+		}
+
 		$vn_i = 0;
-		foreach($po_placements->children() as $vo_placement){
+		foreach($po_placements->children() as $vo_placement) {
 			$vs_code = self::getAttribute($vo_placement, "code");
 			$vs_bundle = (string)$vo_placement->bundle;
 
 			$va_settings = $this->_processSettings(null, $vo_placement->settings);
 
-			$vn_placement_id = $t_form->addPlacement($vs_bundle, $va_settings, $vn_i, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
+			$t_form->addPlacement($vs_bundle, $va_settings, $vn_i, array('additional_settings' => $va_available_bundles[$vs_bundle]['settings']));
 			if ($t_form->numErrors()) {
 				$this->addError("There was an error while inserting search form placement {$vs_code}: ".join(" ",$t_form->getErrors()));
 				return false;
@@ -1475,14 +1643,15 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
-	public function processGroups(){
+	public function processGroups() {
 
 		// Create root group
-		$t_user_group = $this->opb_updating ? ca_user_groups::find(array('code' => 'Root', 'parent_id' => null), array('returnAs' => 'firstModelInstance')) : false;
+		$t_user_group = ca_user_groups::find(array('code' => 'Root', 'parent_id' => null), array('returnAs' => 'firstModelInstance'));
 		$t_user_group = $t_user_group ? $t_user_group : new ca_user_groups();
+
 		$t_user_group->setMode(ACCESS_WRITE);
 		$t_user_group->set('name', 'Root');
-		if($t_user_group->getPrimaryKey()){
+		if($t_user_group->getPrimaryKey()) {
 			$t_user_group->update();
 		} else {
 			$t_user_group->set('code', 'Root');
@@ -1494,21 +1663,21 @@ class Installer {
 			$this->addError("Errors creating root user group 'Root': ".join("; ",$t_user_group->getErrors()));
 			return false;
 		}
-		if($this->ops_base_name){ // "merge" profile and its base
+		if($this->ops_base_name) { // "merge" profile and its base
 			$va_groups = array();
-			if($this->opo_base->groups){
-				foreach($this->opo_base->groups->children() as $vo_group){
+			if($this->opo_base->groups) {
+				foreach($this->opo_base->groups->children() as $vo_group) {
 					$va_groups[self::getAttribute($vo_group, "code")] = $vo_group;
 				}
 			}
-			if($this->opo_profile->groups){
-				foreach($this->opo_profile->groups->children() as $vo_group){
+			if($this->opo_profile->groups) {
+				foreach($this->opo_profile->groups->children() as $vo_group) {
 					$va_groups[self::getAttribute($vo_group, "code")] = $vo_group;
 				}
 			}
 		} else {
-			if($this->opo_profile->groups){
-				foreach($this->opo_profile->groups->children() as $vo_group){
+			if($this->opo_profile->groups) {
+				foreach($this->opo_profile->groups->children() as $vo_group) {
 					$va_groups[self::getAttribute($vo_group, "code")] = $vo_group;
 				}
 			}
@@ -1516,12 +1685,21 @@ class Installer {
 
 		if (is_array($va_groups)) {
 			foreach($va_groups as $vs_group_code => $vo_group) {
-				$t_group = $this->opb_updating ? ca_user_groups::find(array('code' => $vs_group_code, 'parent_id' => null), array('returnAs' => 'firstModelInstance')) : false;
-				$t_group = $t_group ? $t_group : new ca_user_groups();
+				if(!($t_group = ca_user_groups::find(array('code' => (string)$vs_group_code), array('returnAs' => 'firstModelInstance')))) {
+					$t_group = new ca_user_groups();
+				}
+
+				$t_group->setMode(ACCESS_WRITE);
+
+				if(self::getAttribute($vo_group, "deleted") && $t_group->getPrimaryKey()) {
+					$t_group->delete(true);
+					continue;
+				}
+
 				$t_group->setMode(ACCESS_WRITE);
 				$t_group->set('name', trim((string) $vo_group->name));
 				$t_group->set('description', trim((string) $vo_group->description));
-				if($t_group->getPrimaryKey()){
+				if($t_group->getPrimaryKey()) {
 					$t_group->update();
 				} else {
 					$t_group->set('code', $vs_group_code);
@@ -1531,8 +1709,8 @@ class Installer {
 
 				$va_roles = array();
 
-				if($vo_group->roles){
-					foreach($vo_group->roles->children() as $vo_role){
+				if($vo_group->roles) {
+					foreach($vo_group->roles->children() as $vo_role) {
 						$va_roles[] = trim((string) $vo_role);
 					}
 				}
@@ -1549,30 +1727,29 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
-	public function processLogins(){
-
-		if($this->ops_base_name){ // "merge" profile and its base
-			$va_logins = array();
-			if($this->opo_base->logins){
-				foreach($this->opo_base->logins->children() as $vo_login){
+	public function processLogins($pb_create_admin_account=true) {
+		$va_logins = array();
+		if($this->ops_base_name) { // "merge" profile and its base
+			if($this->opo_base->logins) {
+				foreach($this->opo_base->logins->children() as $vo_login) {
 					$vs_logins[self::getAttribute($vo_login, "user_name")] = $vo_login;
 				}
 			}
-			if($this->opo_profile->logins){
-				foreach($this->opo_profile->logins->children() as $vo_login){
+			if($this->opo_profile->logins) {
+				foreach($this->opo_profile->logins->children() as $vo_login) {
 					$va_logins[self::getAttribute($vo_login, "user_name")] = $vo_login;
 				}
 			}
 		} else {
-			if($this->opo_profile->logins){
-				foreach($this->opo_profile->logins->children() as $vo_login){
+			if($this->opo_profile->logins) {
+				foreach($this->opo_profile->logins->children() as $vo_login) {
 					$va_logins[self::getAttribute($vo_login, "user_name")] = $vo_login;
 				}
 			}
 		}
 
 		// If no logins are defined in the profile create an admin login with random password
-		if (!sizeof($va_logins)) {
+		if (!sizeof($va_logins) && $pb_create_admin_account) {
 			$vs_password = $this->createAdminAccount();
 			return array('administrator' => $vs_password);
 		}
@@ -1596,8 +1773,8 @@ class Installer {
 			$t_user->insert();
 
 			$va_roles = array();
-			if($vo_login->role){
-				foreach($vo_login->role as $vo_role){
+			if($vo_login->role) {
+				foreach($vo_login->role as $vo_role) {
 					$va_roles[] = trim((string) self::getAttribute($vo_role, "code"));
 				}
 			}
@@ -1605,8 +1782,8 @@ class Installer {
 
 
 			$va_groups = array();
-			if($vo_login->group){
-				foreach($vo_login->group as $vo_group){
+			if($vo_login->group) {
+				foreach($vo_login->group as $vo_group) {
 					$va_groups[] = trim((string) self::getAttribute($vo_group, "code"));
 				}
 			}
@@ -1641,7 +1818,7 @@ class Installer {
 		}
 	}
 	# --------------------------------------------------
-	public function createAdminAccount(){
+	public function createAdminAccount() {
 		require_once(__CA_MODELS_DIR__."/ca_users.php");
 
 		$ps_password = $this->getRandomPassword();
@@ -1666,7 +1843,7 @@ class Installer {
 	# --------------------------------------------------
 	private function _processSettings($pt_instance, $po_settings_node) {
 		$va_settings = array();
-		if($po_settings_node){
+		if($po_settings_node) {
 			foreach($po_settings_node->children() as $vo_setting) {
 				// some settings like 'label' or 'add_label' have 'locale' as sub-setting
 				$vs_locale = self::getAttribute($vo_setting, "locale");
@@ -1679,7 +1856,7 @@ class Installer {
 				$vs_setting_name = self::getAttribute($vo_setting, "name");
 				$vs_value = (string) $vo_setting;
 
-				if((strlen($vs_setting_name)>0) && (strlen($vs_value)>0)){ // settings need at least name and value
+				if((strlen($vs_setting_name)>0) && (strlen($vs_value)>0)) { // settings need at least name and value
 					if ($vs_locale) { // settings with locale (those can't repeat)
 						$va_settings[$vs_setting_name][$vs_locale] = $vs_value;
 					} else {
@@ -1707,7 +1884,7 @@ class Installer {
 		return $va_settings;
 	}
 	# --------------------------------------------------
-	private function _convertACLStringToConstant($ps_name){
+	private function _convertACLStringToConstant($ps_name) {
 		switch($ps_name) {
 			case 'edit':
 				return __CA_BUNDLE_ACCESS_EDIT__;

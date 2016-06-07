@@ -1563,6 +1563,18 @@
  			
  			return $va_labels;
  		}
+		# ------------------------------------------------------------------
+		public function getLabelIDs() {
+			if(!$this->getPrimaryKey()) { return []; }
+
+			$qr_res = $this->getDb()->query("
+ 				SELECT label_id
+ 				FROM ".$this->getLabelTableName()."
+ 				WHERE ".$this->primaryKey()." = ?
+ 			", (int)$this->getPrimaryKey());
+
+			return $qr_res->getAllFieldValues('label_id');
+		}
  		# ------------------------------------------------------------------
 		/**
 		 * Returns number of preferred labels for the current row

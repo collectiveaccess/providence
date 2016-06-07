@@ -49,14 +49,14 @@
 		 */
 		public static function install($po_opts=null, $pb_installing = true) {
 			require_once(__CA_BASE_DIR__ . '/install/inc/Installer.php');
-			require_once(__CA_BASE_DIR__ . '/install/inc/Updater.php');
 
 			define('__CollectiveAccess_Installer__', 1);
 
-			if ($pb_installing && !$po_opts->getOption('profile-name')) {
+			if (!$po_opts->getOption('profile-name')) {
 				CLIUtils::addError(_t("Missing required parameter: profile-name"));
 				return false;
 			}
+
 			if ($pb_installing && !$po_opts->getOption('admin-email')) {
 				CLIUtils::addError(_t("Missing required parameter: admin-email"));
 				return false;
@@ -64,25 +64,14 @@
 			$vs_profile_directory = $po_opts->getOption('profile-directory');
 			$vs_profile_directory = $vs_profile_directory ? $vs_profile_directory : __CA_BASE_DIR__ . '/install/profiles/xml';
 			$t_total = new Timer();
-			// If we are installing, then use Installer, otherwise use Updater
-			$vo_installer = null;
-			if($pb_installing){
-				$vo_installer = new Installer(
-					$vs_profile_directory,
-					$po_opts->getOption('profile-name'),
-					$po_opts->getOption('admin-email'),
-					$po_opts->getOption('overwrite'),
-					$po_opts->getOption('debug')
-				);
-			} else {
-				$vo_installer = new Updater(
-					$vs_profile_directory,
-					$po_opts->getOption('profile-name'),
-					null, // If you are updating you don't want to generate an admin user
-					false, // If you are updating you never want to overwrite
-					$po_opts->getOption('debug')
-				);
-			}
+
+			$vo_installer = new Installer(
+				$vs_profile_directory,
+				$po_opts->getOption('profile-name'),
+				$po_opts->getOption('admin-email'),
+				$po_opts->getOption('overwrite'),
+				$po_opts->getOption('debug')
+			);
 
 			$vb_quiet = $po_opts->getOption('quiet');
 
@@ -134,7 +123,7 @@
 			$vo_installer->processGroups();
 
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing user logins")); }
-			$va_login_info = $vo_installer->processLogins();
+			$va_login_info = $vo_installer->processLogins($pb_installing);
 
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing user interfaces")); }
 			$vo_installer->processUserInterfaces();
@@ -224,13 +213,12 @@
 		public static function installShortHelp() {
 			return _t("Performs a fresh installation of CollectiveAccess using the configured values in setup.php.");
 		}
-
 		# -------------------------------------------------------
 		/**
 		 *
 		 */
 		public static function update_installation_profileUtilityClass() {
-			return _t('Configuration - Experimental');
+			return _t('Configuration');
 		}
 		# -------------------------------------------------------
 		public static function update_installation_profileParamList() {
@@ -241,7 +229,6 @@
 		}
 		# -------------------------------------------------------
 		public static function update_installation_profile($po_opts=null) {
-			require_once(__CA_BASE_DIR__ . '/install/inc/Updater.php');
 			self::install($po_opts, false);
 			return true;
 		}
@@ -250,7 +237,7 @@
 		 *
 		 */
 		public static function update_installation_profileHelp() {
-			return _t("EXPERIMENTAL - Updates the installation profile to match a supplied profile name.") ."\n".
+			return _t("Updates the configuration to match a supplied profile name.") ."\n".
 			"\t" . _t("This function only creates new values and is useful if you want to append changes from one profile onto another.")."\n".
 			"\t" . _t("Your new profile must exist in a directory that contains the profile.xsd schema and must validate against that schema in order for the update to apply successfully.");
 		}
@@ -259,10 +246,8 @@
 		 *
 		 */
 		public static function update_installation_profileShortHelp() {
-			return _t("EXPERIMENTAL - Updates the installation profile to match a supplied profile name.");
+			return _t("Updates the installation profile to match a supplied profile name. Backup your database before you use this!");
 		}
-
-		# -------------------------------------------------------
 		/**
 		 * Rebuild search indices
 		 */
@@ -364,7 +349,7 @@
 				}
 				print CLIProgressBar::finish();
 			}
-			return trie;
+			return true;
 		}
 		# -------------------------------------------------------
 		/**
@@ -594,7 +579,12 @@
 				return false;
 			}
 
-			$vs_profile = ConfigurationExporter::exportConfigurationAsXML($po_opts->getOption("name"), $po_opts->getOption("description"), $po_opts->getOption("base"), $po_opts->getOption("infoURL"));
+			$vn_timestamp = null;
+			if($po_opts->getOption("timestamp")) {
+				$vn_timestamp = intval($po_opts->getOption("timestamp"));
+			}
+
+			$vs_profile = ConfigurationExporter::exportConfigurationAsXML($po_opts->getOption("name"), $po_opts->getOption("description"), $po_opts->getOption("base"), $po_opts->getOption("infoURL"), $vn_timestamp);
 
 			if ($vs_output) {
 				file_put_contents($vs_output, $vs_profile);
@@ -613,7 +603,8 @@
 				"name|n=s" => _t('Name of the profile, used for "profileName" element.'),
 				"infoURL|u-s" => _t('URL pointing to more information about the profile. (Optional)'),
 				"description|d-s" => _t('Description of the profile, used for "profileDescription" element. (Optional)'),
-				"output|o-s" => _t('File to output profile to. If omitted profile is printed to standard output. (Optional)')
+				"output|o-s" => _t('File to output profile to. If omitted profile is printed to standard output. (Optional)'),
+				"timestamp|t-s" => _t('Limit output to configuration changes made after this UNIX timestamp. (Optional)'),
 			);
 		}
 		# -------------------------------------------------------
@@ -3020,6 +3011,156 @@
 		 */
 		public static function reload_object_current_location_datesHelp() {
 			return _t('Regenerate date/time stamps for movement and object-based location tracking.');
+		}
+		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function push_config_changes($po_opts=null) {
+			require_once(__CA_LIB_DIR__.'/ca/ConfigurationExporter.php');
+
+			if (!($vs_targets = $po_opts->getOption('targets'))) {
+				CLIUtils::addError(_t("Missing required parameter: targets. Try checking the help for this subcommand."));
+				return false;
+			}
+
+			if (!($vs_user = $po_opts->getOption('username'))) {
+				CLIUtils::addError(_t("Missing required parameter: username. Try checking the help for this subcommand."));
+				return false;
+			}
+
+			if (!($vs_password = $po_opts->getOption('password'))) {
+				CLIUtils::addError(_t("Missing required parameter: user. Try checking the help for this subcommand."));
+				return false;
+			}
+
+			$vn_timestamp = intval($po_opts->getOption('timestamp'));
+			$vs_log_dir = $po_opts->getOption('log');
+			$vn_log_level = CLIUtils::getLogLevel($po_opts);
+
+			$o_log = (is_writable($vs_log_dir)) ? new KLogger($vs_log_dir, $vn_log_level) : null;
+
+			if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Start preparing to push config changes")); }
+
+			$vn_timestamp = intval($vn_timestamp);
+
+			$va_targets = preg_split('/[;|]/u', $vs_targets);
+
+			$o_vars = new ApplicationVars();
+			$va_timestamps = $o_vars->getVar('push-config-changes-timestamps');
+
+			foreach($va_targets as $vs_target) {
+				CLIUtils::addMessage(_t("Processing target %1", $vs_target));
+				if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Processing target %1", $vs_target)); }
+
+				if(!isURL($vs_target)) {
+					CLIUtils::addError(_t("The target '%1' doesn't seem to be in URL format", $vs_target));
+					if ($o_log) { $o_log->logError(_t("[push-config-changes] The target '%1' doesn't seem to be in URL format", $vs_target)); }
+					return false;
+				}
+
+				$vs_target = "{$vs_target}/service.php/model/updateConfig";
+
+				if(isset($va_timestamps[$vs_target])) {
+					$vn_target_timestamp = intval($va_timestamps[$vs_target]);
+				} else {
+					$vn_target_timestamp = $vn_timestamp ?: 0;
+				}
+
+				if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Service endpoint is '%1'. Timestamp for diff config is %2", $vs_target, $vn_target_timestamp)); }
+
+				$vs_config = ConfigurationExporter::exportConfigurationAsXML('', '', '', '', $vn_target_timestamp);
+				$va_timestamps[$vs_target] = time();
+
+				if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Configuration fragment was generated for target '%1' is \n %2", $vs_target, $vs_config)); }
+
+				$vo_handle = curl_init($vs_target);
+				curl_setopt($vo_handle, CURLOPT_CUSTOMREQUEST, 'PUT');
+				curl_setopt($vo_handle, CURLOPT_RETURNTRANSFER, true);
+				curl_setopt($vo_handle, CURLOPT_TIMEOUT, 3);
+				curl_setopt($vo_handle, CURLOPT_SSL_VERIFYHOST, 0);
+				curl_setopt($vo_handle, CURLOPT_SSL_VERIFYPEER, 0);
+				curl_setopt($vo_handle, CURLOPT_FOLLOWLOCATION, true);
+				curl_setopt($vo_handle, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded']);
+
+				// basic auth
+				curl_setopt($vo_handle, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+				curl_setopt($vo_handle, CURLOPT_USERPWD, $vs_user.':'.$vs_password);
+
+				// add config as request body
+				curl_setopt($vo_handle, CURLOPT_POSTFIELDS, $vs_config);
+
+				$vs_exec = curl_exec($vo_handle);
+				$vn_code = curl_getinfo($vo_handle, CURLINFO_HTTP_CODE);
+				curl_close($vo_handle);
+
+				if($vn_code != 200) {
+					CLIUtils::addError(_t("Pushing to target '%1' seems to have failed. HTTP response code was %2.", $vs_target, $vn_code));
+					if ($o_log) { $o_log->logError(_t("[push-config-changes] Pushing to target '%1' seems to have failed. HTTP response code was %2. Enable debug logging mode to get more info below.", $vs_target, $vn_code)); }
+				}
+
+				if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Target '%1' responded with 200 OK", $vs_target)); }
+
+				$va_response = @json_decode($vs_exec, true);
+
+				if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Decoded response from target '%1' is '%2'", $vs_target, print_r($va_response, true))); }
+
+				if(!isset($va_response['ok']) || !$va_response['ok']) {
+					if(is_array($va_errors = $va_response['errors'])) {
+						CLIUtils::addError(_t("Pushing to target '%1' seems to have failed. Response was not marked as okay. Errors were: %2", join(',', $va_errors)));
+					} else {
+						CLIUtils::addError(_t("Pushing to target '%1' seems to have failed. Response was not marked as okay. Raw response was: %2", $vs_exec));
+					}
+				}
+
+				if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Finished processing target '%1'", $vs_target)); }
+			}
+
+			$o_vars->setVar('push-config-changes-timestamps', $va_timestamps);
+			$o_vars->save();
+			if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Saved sync timestamps are: %1", print_r($va_timestamps, true))); }
+
+			CLIUtils::addMessage(_t("All done"));
+			if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Finished ...")); }
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function push_config_changesParamList() {
+			return [
+				"targets|t=s" => _t('Comma- or semicolon separated list of target systems to push changes to. We assume the same service account exists on all of these systems'),
+				"username|u=s" => _t('User name to use to log into the targets. We assume the same credentials can be used to log into all target systems.'),
+				"password|p=s" => _t('Password to use to log into the targets. We assume the same credentials can be used to log into all target systems.'),
+				"timestamp|s=s" => _t('Timestamp to use to filter the configuration changes that should be exported/pushed. Optional. The timestamp is only used for the very first push to that system. After that the master system will store the last push timestamp and use that instead. This parameter is a fixed offset/"starting point" of sorts.'),
+				"log|l-s" => _t('Path to directory in which to log import details. If not set no logs will be recorded.'),
+				"log-level|d-s" => _t('Logging threshold. Possible values are, in ascending order of important: DEBUG, INFO, NOTICE, WARN, ERR, CRIT, ALERT. Default is INFO.'),
+
+				// @todo some params that control excluding/including specific stuff?
+			];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function push_config_changesUtilityClass() {
+			return _t('Configuration');
+		}
+
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function push_config_changesShortHelp() {
+			return _t('Pushes configuration changes from this system out to other systems.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function push_config_changesHelp() {
+			return _t('Pushes configuration changes from this system out to other systems.');
 		}
 		# -------------------------------------------------------
 	}

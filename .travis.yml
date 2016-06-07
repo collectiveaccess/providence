@@ -32,4 +32,4 @@ branches:
     - develop
     - master
     - master-fix
-    - dev/elasticSearchRewrite
+    - dev/configSync

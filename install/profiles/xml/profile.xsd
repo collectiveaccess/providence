@@ -269,6 +269,7 @@
     <xs:attribute name="default" type="booleanType" use="required"/>
     <xs:attribute name="value" type="xs:string" use="optional"/>
     <xs:attribute name="type" type="codeType" use="optional"/>
+    <xs:attribute name="deleted" type="booleanType" use="optional"/>
   </xs:complexType>
 
   <xs:complexType name="metadataElement">
@@ -303,6 +304,7 @@
     <xs:attribute name="code" type="elementCodeType" use="required"/>
     <xs:attribute name="datatype" type="datatypeList" use="required"/>
     <xs:attribute name="list" type="xs:string" use="optional"/>
+    <xs:attribute name="deleted" type="booleanType" use="optional"/>
   </xs:complexType>
 
   <xs:complexType name="metadataSubElement">
@@ -392,6 +394,7 @@
           </xs:sequence>
           <xs:attribute name="idno" type="codeType" use="required"/>
           <xs:attribute name="default" type="booleanType" use="required"/>
+          <xs:attribute name="deleted" type="booleanType" use="optional"/>
         </xs:complexType>
 
         <!-- placement codes must be unique inside a screen -->
@@ -485,6 +488,7 @@
           <xs:attribute name="code" type="elementCodeType" use="required"/>
           <xs:attribute name="default" type="booleanType" use="required"/>
           <xs:attribute name="rank" type="xs:integer" use="optional"/>
+          <xs:attribute name="deleted" type="booleanType" use="optional"/>
         </xs:complexType>
       </xs:element>
     </xs:sequence>
@@ -514,6 +518,7 @@
                                     use="optional"/>
                       <xs:attribute name="dontUseForCataloguing"
                                     type="booleanType" use="optional"/>
+                      <xs:attribute name="deleted" type="booleanType" use="optional"/>
                     </xs:extension>
                   </xs:simpleContent>
                 </xs:complexType>
@@ -542,7 +547,15 @@
                   <xs:attribute name="vocabulary" type="booleanType"
                                 use="required"/>
                   <xs:attribute name="defaultSort" type="xs:int" use="optional"/>
+                  <xs:attribute name="deleted" type="booleanType" use="optional"/>
                 </xs:complexType>
+
+                <!-- list item idnos must be unique inside a list -->
+                <xs:unique name="listItemIdnoUnique">
+                  <xs:selector xpath=".//item"/>
+                  <xs:field xpath="@idno"/>
+                </xs:unique>
+
               </xs:element>
             </xs:sequence>
           </xs:complexType>
@@ -645,6 +658,7 @@
 
                   <!-- entry attributes -->
                   <xs:attribute name="bundle" type="bundleType" use="required"/>
+                  <xs:attribute name="deleted" type="booleanType" use="optional"/>
 
                 </xs:complexType>
               </xs:element>
@@ -711,6 +725,7 @@
                   </xs:sequence>
                   <xs:attribute name="code" type="codeType" use="required"/>
                   <xs:attribute name="type" type="xs:string" use="required"/>
+                  <xs:attribute name="deleted" type="booleanType" use="optional"/>
                 </xs:complexType>
 
                 <!-- ui screen idnos must be unique inside a UI -->
@@ -820,6 +835,7 @@
                     </xs:element>
                   </xs:sequence>
                   <xs:attribute name="code" type="codeType" use="required"/>
+                  <xs:attribute name="deleted" type="booleanType" use="optional"/>
                 </xs:complexType>
               </xs:element>
             </xs:sequence>
@@ -848,6 +864,7 @@
                     </xs:element>
                   </xs:sequence>
                   <xs:attribute name="code" type="codeType" use="required"/>
+                  <xs:attribute name="deleted" type="booleanType" use="optional"/>
                 </xs:complexType>
               </xs:element>
             </xs:sequence>
@@ -930,6 +947,7 @@
                   <xs:attribute name="code" type="codeType" use="required"/>
                   <xs:attribute name="type" type="xs:string" use="required"/>
                   <xs:attribute name="system" type="booleanType" use="required"/>
+                  <xs:attribute name="deleted" type="booleanType" use="optional"/>
 
                 </xs:complexType>
               </xs:element>
@@ -1001,6 +1019,7 @@
                   <xs:attribute name="code" type="codeType" use="required"/>
                   <xs:attribute name="type" type="xs:string" use="required"/>
                   <xs:attribute name="system" type="booleanType" use="required"/>
+                  <xs:attribute name="deleted" type="booleanType" use="optional"/>
 
                 </xs:complexType>
               </xs:element>
@@ -1054,6 +1073,11 @@
     <!-- UNIQUENESS CONSTRAINTS ON CERTAIN ATTRIBUTES -->
     <xs:unique name="elementCodeUnique">
       <xs:selector xpath=".//metadataElement"/>
+      <xs:field xpath="@code"/>
+    </xs:unique>
+
+    <xs:unique name="listCodeUnique">
+      <xs:selector xpath=".//list"/>
       <xs:field xpath="@code"/>
     </xs:unique>
 
