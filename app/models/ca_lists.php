@@ -381,6 +381,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		$t_item->setMode(ACCESS_WRITE);
 		if ($this->inTransaction()) { $t_item->setTransaction($this->getTransaction()); }
 
+		if(is_null($pn_parent_id)) { $pn_parent_id = $this->getRootItemIDForList($this->getPrimaryKey()); }
+
 		$t_item->set('item_value', $ps_value);
 		$t_item->set('is_enabled', $pb_is_enabled ? 1 : 0);
 		$t_item->set('is_default', $pb_is_default ? 1 : 0);
