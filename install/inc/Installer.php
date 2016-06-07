@@ -1727,10 +1727,9 @@ class Installer {
 		return true;
 	}
 	# --------------------------------------------------
-	public function processLogins() {
-
+	public function processLogins($pb_create_admin_account=true) {
+		$va_logins = array();
 		if($this->ops_base_name) { // "merge" profile and its base
-			$va_logins = array();
 			if($this->opo_base->logins) {
 				foreach($this->opo_base->logins->children() as $vo_login) {
 					$vs_logins[self::getAttribute($vo_login, "user_name")] = $vo_login;
@@ -1750,7 +1749,7 @@ class Installer {
 		}
 
 		// If no logins are defined in the profile create an admin login with random password
-		if (!sizeof($va_logins)) {
+		if (!sizeof($va_logins) && $pb_create_admin_account) {
 			$vs_password = $this->createAdminAccount();
 			return array('administrator' => $vs_password);
 		}

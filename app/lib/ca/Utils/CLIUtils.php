@@ -123,7 +123,7 @@
 			$vo_installer->processGroups();
 
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing user logins")); }
-			$va_login_info = $vo_installer->processLogins();
+			$va_login_info = $vo_installer->processLogins($pb_installing);
 
 			if (!$vb_quiet) { CLIUtils::addMessage(_t("Processing user interfaces")); }
 			$vo_installer->processUserInterfaces();
@@ -246,7 +246,7 @@
 		 *
 		 */
 		public static function update_installation_profileShortHelp() {
-			return _t("EXPERIMENTAL - Updates the installation profile to match a supplied profile name.");
+			return _t("Updates the installation profile to match a supplied profile name. Backup your database before you use this!");
 		}
 		/**
 		 * Rebuild search indices
