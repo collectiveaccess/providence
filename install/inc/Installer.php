@@ -1354,10 +1354,11 @@ class Installer {
 			$vs_display_code = self::getAttribute($vo_display, "code");
 			$vb_system = self::getAttribute($vo_display, "system");
 			$vs_table = self::getAttribute($vo_display, "type");
+			$vn_table_num = $vo_dm->getTableNum($vs_table);
 
 			if ($o_config->get($vs_table.'_disable')) { continue; }
 
-			if(!($t_display = ca_bundle_displays::find(array('code' => $vs_display_code, 'type' => $vs_table), array('returnAs' => 'firstModelInstance')))) {
+			if(!($t_display = ca_bundle_displays::find(array('display_code' => $vs_display_code), array('returnAs' => 'firstModelInstance')))) {
 				$t_display = new ca_bundle_displays();
 			}
 
@@ -1406,7 +1407,7 @@ class Installer {
 					$vs_restriction_code = trim((string)self::getAttribute($vo_restriction, "code"));
 					$vs_type = trim((string)self::getAttribute($vo_restriction, "type"));
 
-					$t_instance = $vo_dm->getInstanceByTableNum($vn_table_num = $vo_dm->getTableNum($vs_table));
+					$t_instance = $vo_dm->getInstanceByTableNum($vn_table_num);
 					$vs_type_list_name = $t_instance->getFieldListCode($t_instance->getTypeFieldName());
 					if ($vs_type) {
 						$t_list->load(array('list_code' => $vs_type_list_name));
