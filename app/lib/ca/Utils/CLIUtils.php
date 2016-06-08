@@ -1834,7 +1834,7 @@
 		/**
 		 * Grab password from STDIN without showing input on STDOUT
 		 */
-		public static function _getPassword($ps_prompt, $pb_stars = false) {
+		private static function _getPassword($ps_prompt, $pb_stars = false) {
 			if ($ps_prompt) fwrite(STDOUT, $ps_prompt);
 			// Get current style
 			$vs_old_style = shell_exec('stty -g');
