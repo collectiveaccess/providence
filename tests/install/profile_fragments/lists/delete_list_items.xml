@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" infoUrl="">
+  <profileName>collectiveaccess</profileName>
+  <profileDescription/>
+  <locales/>
+  <lists>
+    <list code="diff_test_list" hierarchical="1" system="0" vocabulary="1">
+      <labels>
+        <label locale="en_US">
+          <name>Diff test list</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="test_item_two" deleted="1" />
+        <item idno="test_item_one" deleted="1" />
+      </items>
+    </list>
+  </lists>
+  <elementSets/>
+  <userInterfaces/>
+  <relationshipTypes/>
+  <roles/>
+  <groups/>
+  <displays></displays>
+  <searchForms/>
+</profile>

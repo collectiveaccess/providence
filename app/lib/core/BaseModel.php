@@ -2688,7 +2688,7 @@ class BaseModel extends BaseObject {
 							}
 							
 							// Moving between hierarchies
-							if ($this->get($vs_hier_id_fld) != $va_parent_info[$vs_hier_id_fld]) {
+							if (is_array($va_parent_info) && ($this->get($vs_hier_id_fld) != $va_parent_info[$vs_hier_id_fld])) {
 								$vn_hierarchy_id = $va_parent_info[$vs_hier_id_fld];
 								$this->set($this->getProperty('HIERARCHY_ID_FLD'), $vn_hierarchy_id);
 						
@@ -6845,6 +6845,15 @@ class BaseModel extends BaseObject {
 			return $va_last_change_info;
 		}
 		return null;
+	}
+
+	/**
+	 * Get just the actual timestamp of the last change (as opposed to the array returned by getLastChangeTimestamp())
+	 * @param null|int $pn_row_id
+	 */
+	public function getLastChangeTimestampAsInt($pn_row_id=null) {
+		$va_last_change = $this->getLastChangeTimestamp($pn_row_id);
+		return (int) $va_last_change['timestamp'];
 	}
 	# --------------------------------------------------------------------------------------------
 	# --- Hierarchical functions

@@ -1760,7 +1760,7 @@
         </item>
       </items>
     </list>
-    <list code="object_lot_statuses" hierarchical="0" system="0" vocabulary="0">
+    <!--<list code="object_lot_statuses" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
           <name>Object lot statuses</name>
@@ -1800,7 +1800,7 @@
           </labels>
         </item>
       </items>
-    </list>
+    </list>-->
     <list code="if_returned" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">
@@ -2345,14 +2345,6 @@
             <label locale="en_US" preferred="1">
               <name_singular>ERG</name_singular>
               <name_plural>ERG</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="rb" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>RB</name_singular>
-              <name_plural>RB</name_plural>
             </label>
           </labels>
         </item>
