@@ -7460,7 +7460,7 @@ class BaseModel extends BaseObject {
 					WHERE
 						(".$this->tableName().".{$vs_hier_parent_id_fld} = ?) ".((sizeof($va_additional_table_wheres) > 0) ? ' AND '.join(' AND ', $va_additional_table_wheres) : '')."
 					GROUP BY
-						".$this->tableName().".".$this->primaryKey()." {$vs_additional_table_to_join_group_by}
+						".$this->tableName().".".$this->primaryKey()." {$vs_additional_table_to_join_group_by}, p2.".$this->primaryKey()."
 					ORDER BY
 						".$vs_order_by."
 				", (int)$pn_id);
