@@ -1695,7 +1695,12 @@ table.listtable tr, table.listtable tr td, table.listtable tr th {
 
 #caWatchedItemsList.listtable {
 	font-size:12px;
-} 
+}
+
+#watchedItemsSetControls {
+    padding: 5px 5px 0 10px;
+    background-color: #eeeeee;
+}
 
 
 /* table headers */
