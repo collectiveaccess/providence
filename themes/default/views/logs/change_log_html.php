@@ -26,6 +26,8 @@
  * ----------------------------------------------------------------------
  */
 	$va_change_log_list = $this->getVar('change_log_list');
+	$vn_filter_table = $this->getVar('filter_table');
+	$vs_filter_change_type = $this->getVar('filter_change_type');
 
 ?>
 <script language="JavaScript" type="text/javascript">
@@ -36,12 +38,15 @@
 /* ]]> */
 </script>
 <div class="sectionBox">
-	<?php 
+	<?php
+		print caFormTag($this->request, 'Index', 'changeLogSearch');
 		print caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caChangeLogList\').caFilterTable(this.value); return false;" size="20"/></div>',
-			'', 
-			_t('Show from').': '.caFormTag($this->request, 'Index', 'changeLogSearch').caHTMLTextInput('search', array('size' => 25, 'value' => $this->getVar('change_log_search')))." ".caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'changeLogSearch')."</form>"
-		); 
+			caHTMLSelect('filter_change_type', [_t('--Any--') => '', _t('Added') => 'I', _t('Edited') => 'U', _t('Deleted') => 'D'], null, ['value' => $vs_filter_change_type]).
+			caHTMLSelect('filter_table', array_merge([_t('--Any--') => ''], caGetPrimaryTablesForHTMLSelect()), null, ['value' => $vn_filter_table]),
+			_t('Show from').': '.caHTMLTextInput('change_log_search', array('size' => 15, 'value' => $this->getVar('change_log_search')))." ".caFormSubmitButton($this->request, __CA_NAV_ICON_SEARCH__, "", 'changeLogSearch')
+		);
+		print "</form>";
 	?>
 	
 	<table id="caChangeLogList" class="listtable">
@@ -121,7 +126,7 @@
 	} else {
 ?>
 		<tr>
-			<td colspan='4'>
+			<td colspan='5'>
 				<div align="center">
 					<?php print (trim($this->getVar('change_log_search'))) ? _t('No log entries found') : _t('Enter a date to display change log from above'); ?>
 				</div>
