@@ -35,6 +35,20 @@ class ChangeController extends ActionController {
 	public function Index() {
 		AssetLoadManager::register('tableList');
 
+		$o_change_log = new ApplicationChangeLog();
+
+		$va_log_entries = [];
+
+		foreach([57,51,20,72,67,13,89,56,133,137,33,153,155] as $vn_table_num) {
+
+			$va_table_log_entries = $o_change_log->getRecentChanges($vn_table_num);
+			foreach($va_table_log_entries as $vs_unit_id => $va_log) {
+				$va_log_entries[$vn_table_num . $vs_unit_id] = $va_log;
+			}
+		}
+
+		$this->getView()->setVar('change_log_list', $va_log_entries);
+
 		$this->render('change_log_html.php');
 	}
 	# -------------------------------------------------------

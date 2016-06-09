@@ -53,25 +53,67 @@
 				<th class="list-header-unsorted">
 					<?php print _t('User'); ?>
 				</th>
-				<th class="list-header-nosort">
-					<?php print _t('Change summary'); ?>
+				<th class="list-header-unsorted">
+					<?php print _t('Change type'); ?>
+				</th>
+				<th class="list-header-unsorted">
+					<?php print _t('Record type'); ?>
+				</th>
+				<th class="list-header-unsorted">
+					<?php print _t('Changed item'); ?>
 				</th>
 			</tr>
 		</thead>
 		<tbody>
 <?php
 	if (sizeof($va_change_log_list)) {
-		foreach($va_change_log_list as $va_entry) {
+		foreach ($va_change_log_list as $vs_log_key => $va_log_entry) {
+			// $va_log_entry is a list of changes performed by a user as a unit (at a single instant in time)
+			// We grab the date & time, user name and other stuff out of the first entry in the list (index 0) because
+			// these don't vary from change to change in a unit, and the list is always guaranteed to have at least one entry
+			//
 ?>
 			<tr>
 				<td>
-					<?php print date("n/d/Y@g:i:sa T", $va_entry['date_time']); ?>
+					<?php print date("n/d/Y@g:i:sa T", $va_log_entry[0]['timestamp']); ?>
 				</td>
 				<td>
-					<?php print $va_entry['code']; ?>
+					<?php print $va_log_entry[0]['user_fullname']; ?>
 				</td>
 				<td>
-					<?php print $va_entry['message']; ?>
+					<?php print $va_log_entry[0]['changetype_display']; ?>
+				</td>
+				<td>
+					<?php print Datamodel::load()->getInstance($va_log_entry[0]['subject_table_num'], true)->getProperty('NAME_PLURAL'); ?>
+				</td>
+				<td>
+					<?php
+						print "<span style='font-size:12px; font-weight:bold;'><a href='".caEditorUrl($this->request, $va_log_entry[0]['subject_table_num'], $va_log_entry[0]['subject_id'])."'>".$va_log_entry[0]['subject']."</a></span><br/>";
+						print "<a href='#' id='more".$vs_log_key."' onclick='jQuery(\"#more".$vs_log_key."\").hide(); jQuery(\"#changes".$vs_log_key."\").slideDown(250); return false;'>More Info &rsaquo;</a>";
+						print "<div style='display:none;' id='changes".$vs_log_key."'><ul>";					// date/time of change, ready for display (don't use date() on it)
+						// Print out actual content changes
+						foreach($va_log_entry as $va_change_list) {
+							foreach($va_change_list['changes'] as $va_change) {
+								print "<li>";
+								switch($va_change_list['changetype']) {
+									case 'I':		// insert (aka add)
+										print _t('Added %1 to \'%2\'', $va_change['description'], $va_change['label']);
+										break;
+									case 'U':	// update
+										print _t('Updated %1 to \'%2\'', $va_change['label'], $va_change['description']);
+										break;
+									case 'D':	// delete
+										print _t('Deleted %1', $va_change['label']);
+										break;
+									default:		// unknown type - should not happen
+										print _t('Unknown change type \'%1\'', $va_change['changetype']);
+								}
+								print "</li>\n";
+							}
+						}
+						print "</ul>";
+						print "<a href='#' id='hide".$vs_log_key."' style='padding-left:10px;' onclick='jQuery(\"#changes".$vs_log_key."\").slideUp(250); jQuery(\"#more".$vs_log_key."\").show(); return false;'>Hide &rsaquo;</a>";
+					?>
 				</td>
 			</tr>
 <?php
