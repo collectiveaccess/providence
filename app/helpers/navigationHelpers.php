@@ -85,7 +85,6 @@
  	define('__CA_NAV_ICON_COMMIT__', 43);
  	define('__CA_NAV_ICON_SETS__', 44);
  	define('__CA_NAV_ICON_RIGHT_ARROW__', 45);
- 	define('__CA_NAV_ICON_ROTATE__', 46);
  	define('__CA_NAV_ICON_VISUALIZE__', 47);
  	define('__CA_NAV_ICON_ADD_WIDGET__', 48);	
  	define('__CA_NAV_ICON_VISIBILITY_TOGGLE__', 49);
@@ -1305,7 +1304,8 @@
 			'levelList' => caNavUrl($po_request, $vs_module, $vs_controller, 'GetHierarchyLevel', $pa_attributes),
 			'search' => caNavUrl($po_request, $vs_module, $vs_controller, 'Get', $pa_attributes),
 			'idno' => caNavUrl($po_request, $vs_module, $vs_controller, 'IDNo', $pa_attributes),
-			'intrinsic' => caNavUrl($po_request, $vs_module, $vs_controller, 'intrinsic', $pa_attributes)
+			'intrinsic' => caNavUrl($po_request, $vs_module, $vs_controller, 'intrinsic', $pa_attributes),
+			'attribute' => caNavUrl($po_request, $vs_module, $vs_controller, 'Attribute', $pa_attributes)
 		);
 	}
 	# ------------------------------------------------------------------------------------------------

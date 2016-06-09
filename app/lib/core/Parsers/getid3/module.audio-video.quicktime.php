@@ -204,19 +204,23 @@ class getid3_quicktime extends getid3_handler
 
 				// some "ilst" atoms contain data atoms that have a numeric name, and the data is far more accessible if the returned array is compacted
 				$allnumericnames = true;
-				foreach ($atom_structure['subatoms'] as $subatomarray) {
-					if (!is_integer($subatomarray['name']) || (count($subatomarray['subatoms']) != 1)) {
-						$allnumericnames = false;
-						break;
+				if(is_array($atom_structure['subatoms'])) {
+					foreach ($atom_structure['subatoms'] as $subatomarray) {
+						if (!is_integer($subatomarray['name']) || (count($subatomarray['subatoms']) != 1)) {
+							$allnumericnames = false;
+							break;
+						}
 					}
 				}
 				if ($allnumericnames) {
 					$newData = array();
-					foreach ($atom_structure['subatoms'] as $subatomarray) {
-						foreach ($subatomarray['subatoms'] as $newData_subatomarray) {
-							unset($newData_subatomarray['hierarchy'], $newData_subatomarray['name']);
-							$newData[$subatomarray['name']] = $newData_subatomarray;
-							break;
+					if(is_array($atom_structure['subatoms'])) {
+						foreach ($atom_structure['subatoms'] as $subatomarray) {
+							foreach ($subatomarray['subatoms'] as $newData_subatomarray) {
+								unset($newData_subatomarray['hierarchy'], $newData_subatomarray['name']);
+								$newData[$subatomarray['name']] = $newData_subatomarray;
+								break;
+							}
 						}
 					}
 					$atom_structure['data'] = $newData;

@@ -536,8 +536,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					}
 				}
 			}
+
+			$va_options = ['restrictToAttributesByCodes' => $va_attrs_to_duplicate];
+
+			if($va_dont_duplicate_codes = $this->getAppConfig()->get($this->tableName().'_dont_duplicate_element_codes')) {
+				if(is_array($va_dont_duplicate_codes)) {
+					$va_options['excludeAttributesByCodes'] = $va_dont_duplicate_codes;
+				}
+			}
 	
-			if (!$t_dupe->copyAttributesFrom($this->getPrimaryKey(), ['restrictToAttributesByCodes' => $va_attrs_to_duplicate])) {
+			if (!$t_dupe->copyAttributesFrom($this->getPrimaryKey(), $va_options)) {
 				$this->errors = $t_dupe->errors;
 				if ($vb_we_set_transaction) { $o_t->rollback();}
 				return false;
@@ -850,7 +858,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		$qr_res = $o_db->query($vs_sql, $va_values);
 		if ($qr_res->numRows() > 0) {
-			caDebug('true');
 			return true;
 		}
 		return false;
@@ -3565,7 +3572,9 @@ if (!$vb_batch) {		// hierarchy moves are not supported in batch mode
 			
 			if ($vb_is_insert) {
 			 	BaseModel::unsetChangeLogUnitID();
-			 	if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+			 	if ($vb_we_set_transaction) {
+					$this->removeTransaction(false);
+				}
 				return false;	// bail on insert error
 			}
 		}

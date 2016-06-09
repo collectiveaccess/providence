@@ -65,63 +65,6 @@
         </item>
       </items>
     </list>
-    <list code="place_types" hierarchical="1" system="0" vocabulary="0">
-      <labels>
-        <label locale="en_US">
-          <name>Place types</name>
-        </label>
-      </labels>
-      <items>
-        <item idno="continent" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>continent</name_singular>
-              <name_plural>continents</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="country" enabled="1" default="1">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>country</name_singular>
-              <name_plural>countries</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="state" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>state/province</name_singular>
-              <name_plural>state/province</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="county" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>county</name_singular>
-              <name_plural>counties</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="town" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>town</name_singular>
-              <name_plural>towns</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="locality" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>locality</name_singular>
-              <name_plural>locality</name_plural>
-            </label>
-          </labels>
-        </item>
-      </items>
-    </list>
     <list code="collection_types" hierarchical="1" system="1" vocabulary="0">
       <labels>
         <label locale="en_US">
