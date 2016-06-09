@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1303,25 +1303,36 @@
 										
 										if (is_array($va_value)) {
 											foreach($va_value as $vs_f => $vs_v) {
-												if ($vn_datatype == __CA_ATTRIBUTE_VALUE_LIST__) {
-													if ($vs_f != 'item_id') { continue; }
+												switch($vn_datatype) {
+													case __CA_ATTRIBUTE_VALUE_LIST__:
+														if ($vs_f != 'item_id') { continue; }
 
-													// Include sub-items
-													$t_list_item = new ca_list_items();
-													$va_item_ids = $t_list_item->getHierarchy((int)$vs_v, array('idsOnly' => true, 'includeSelf' => true));
+														// Include sub-items
+														$t_list_item = new ca_list_items();
+														$va_item_ids = $t_list_item->getHierarchy((int)$vs_v, array('idsOnly' => true, 'includeSelf' => true));
 
-													$va_item_ids[] = (int)$vs_v;
-													$va_attr_sql[] = "(ca_attribute_values.{$vs_f} IN (?))";
-													$va_attr_values[] = $va_item_ids;
-												} elseif($vn_datatype == __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__) {
-													if($vs_f == '_dont_save') {
-														$va_attr_sql[] = "(ca_attribute_values.value_longtext1 = ?)";
-														$va_attr_values[] = $vn_row_id;
+														$va_item_ids[] = (int)$vs_v;
+														$va_attr_sql[] = "(ca_attribute_values.{$vs_f} IN (?))";
+														$va_attr_values[] = $va_item_ids;
 														break;
-													}
-												} else {
-													$va_attr_sql[] = "(ca_attribute_values.{$vs_f} ".(is_null($vs_v) ? " IS " : " = ")." ?)";
-													$va_attr_values[] = $vs_v;
+													case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
+														if($vs_f == '_dont_save') {
+															$va_attr_sql[] = "(ca_attribute_values.value_longtext1 = ?)";
+															$va_attr_values[] = $vn_row_id;
+															break(2);
+														}
+														break;
+													case __CA_ATTRIBUTE_VALUE_LCSH__:
+														if ($vs_f == 'value_longtext2') {
+															$va_attr_sql[] = "(ca_attribute_values.value_longtext2 = ?)";
+															$va_attr_values[] = $va_value['value_longtext2'];
+														}
+														break;
+													default:
+														$va_attr_sql[] = "(ca_attribute_values.{$vs_f} ".(is_null($vs_v) ? " IS " : " = ")." ?)";
+														$va_attr_values[] = $vs_v;
+														break;
+													
 												}
 											}
 										}
