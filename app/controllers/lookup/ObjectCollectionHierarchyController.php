@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012-2015 Whirl-i-Gig
+ * Copyright 2012-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -238,6 +238,10 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 			$vs_table = $va_params['table'];
 			$vn_id = $va_params['id'];
 			$vn_start = $va_params['start'];
+			
+			if ((($vn_max_items_per_page = $this->request->getParameter('max', pInteger)) < 1) || ($vn_max_items_per_page > 1000)) {
+				$vn_max_items_per_page = null;
+			}
 
 			$vn_item_count = 0;
 
@@ -287,169 +291,168 @@ class ObjectCollectionHierarchyController extends BaseLookupController {
 				$va_items[$va_tmp[$vs_pk]][$va_tmp['locale_id']] = $va_tmp;
 				$va_items_for_locale = caExtractValuesByUserLocale($va_items);
 
-			} else {
-				if ($t_item->load($vn_id)) {		// id is the id of the parent for the level we're going to return
+			} elseif ($t_item->load($vn_id)) {		// id is the id of the parent for the level we're going to return
 
-					$va_additional_wheres = array();
-					$t_label_instance = $t_item->getLabelTableInstance();
-					if ($t_label_instance && $t_label_instance->hasField('is_preferred')) {
-						$va_additional_wheres[] = "(({$vs_label_table_name}.is_preferred = 1) OR ({$vs_label_table_name}.is_preferred IS NULL))";
-					}
+				$va_additional_wheres = array();
+				$t_label_instance = $t_item->getLabelTableInstance();
+				if ($t_label_instance && $t_label_instance->hasField('is_preferred')) {
+					$va_additional_wheres[] = "(({$vs_label_table_name}.is_preferred = 1) OR ({$vs_label_table_name}.is_preferred IS NULL))";
+				}
 
-					$va_sorts = $o_config->getList($vs_table.'_hierarchy_browser_sort_values');
-					if (!is_array($va_sorts) || !sizeof($va_sorts)) {
-						$va_sorts = [];
-					}
-					foreach($va_sorts as $vn_i => $vs_sort_fld) {
-						$va_tmp = explode(".", $vs_sort_fld);
+				$va_sorts = $o_config->getList($vs_table.'_hierarchy_browser_sort_values');
+				if (!is_array($va_sorts) || !sizeof($va_sorts)) {
+					$va_sorts = [];
+				}
+				foreach($va_sorts as $vn_i => $vs_sort_fld) {
+					$va_tmp = explode(".", $vs_sort_fld);
 
-						if ($va_tmp[1] == 'preferred_labels') {
-							$va_tmp[0] = $vs_label_table_name;
-							if (!($va_tmp[1] = $va_tmp[2])) {
-								$va_tmp[1] = $vs_label_display_field_name;
-							}
-							unset($va_tmp[2]);
-
-							$va_sorts[$vn_i] = join(".", $va_tmp);
+					if ($va_tmp[1] == 'preferred_labels') {
+						$va_tmp[0] = $vs_label_table_name;
+						if (!($va_tmp[1] = $va_tmp[2])) {
+							$va_tmp[1] = $vs_label_display_field_name;
 						}
+						unset($va_tmp[2]);
+
+						$va_sorts[$vn_i] = join(".", $va_tmp);
+					}
+				}
+
+				$vs_sort_dir = strtolower($o_config->get($vs_table.'_hierarchy_browser_sort_direction'));
+				if (!in_array($vs_sort_dir, array('asc', 'desc'))) {
+					$vs_sort_dir = 'asc';
+				}
+
+				$qr_children = $t_item->getHierarchyChildrenAsQuery(
+					$t_item->getPrimaryKey(),
+					array(
+						'additionalTableToJoin' => $vs_label_table_name,
+						'additionalTableJoinType' => 'LEFT',
+						'additionalTableSelectFields' => array($vs_label_display_field_name, 'locale_id'),
+						'additionalTableWheres' => $va_additional_wheres,
+						'returnChildCounts' => true,
+						'sort' => $va_sorts,
+						'sortDirection' => $vs_sort_dir
+					)
+				);
+
+				$va_items = array();
+
+				if (!($vs_item_template = trim($o_config->get("{$vs_table}_hierarchy_browser_display_settings")))) {
+					$vs_item_template = "^{$vs_table}.preferred_labels.{$vs_label_display_field_name}";
+				}
+
+				$va_child_counts = array();
+				$vn_c = 0;
+
+				$vn_item_count = $qr_children->numRows();
+
+				$qr_children->seek($vn_start);
+				$va_item_ids = [];
+				while($qr_children->nextRow()) {
+					$va_tmp = array(
+						$vs_pk => $vn_id = $qr_children->get($vs_table.'.'.$vs_pk),
+						'item_id' => $vs_table.'-'.$vn_id,
+						'parent_id' => $qr_children->get($vs_table.'.parent_id'),
+						'idno' => $qr_children->get($vs_table.'.idno'),
+						'locale_id' => $qr_children->get($vs_table.'.'.'locale_id')
+					);
+					if (!$va_tmp[$vs_label_display_field_name]) { $va_tmp[$vs_label_display_field_name] = $va_tmp['idno']; }
+					if (!$va_tmp[$vs_label_display_field_name]) { $va_tmp[$vs_label_display_field_name] = '???'; }
+
+					$va_tmp['name'] = caProcessTemplateForIDs($vs_item_template, $vs_table, array($va_tmp[$vs_pk]));
+
+					// Child count is only valid if has_children is not null
+					$va_tmp['children'] = $qr_children->get('has_children') ? (int)$qr_children->get('child_count') : 0;
+
+					if (is_array($va_sorts)) {
+						$vs_sort_acc = array();
+						foreach($va_sorts as $vs_sort) {
+							$vs_sort_acc[] = $qr_children->get($vs_sort);
+						}
+						$va_tmp['sort'] = join(";", $vs_sort_acc);
 					}
 
-					$vs_sort_dir = strtolower($o_config->get($vs_table.'_hierarchy_browser_sort_direction'));
-					if (!in_array($vs_sort_dir, array('asc', 'desc'))) {
-						$vs_sort_dir = 'asc';
+					$va_items[$va_tmp['item_id']][$va_tmp['locale_id']] = $va_tmp;
+					$va_item_ids[] = $vn_id;
+
+					$vn_c++;
+					if (!is_null($vn_max_items_per_page) && ($vn_c >= $vn_max_items_per_page)) { break; }
+				}
+
+				// if sorts are set, re-sort $va_items using a search result here. that way we can sort on non-intrinsics
+				if(sizeof($va_sorts) && sizeof($va_item_ids)) {
+					$va_sorted_items = [];
+					$o_res = caMakeSearchResult($vs_table, $va_item_ids, array(
+						'sort' => $va_sorts,
+						'sortDirection' => $vs_sort_dir
+					));
+
+					while($o_res->nextHit()) {
+						$va_sorted_items[$vs_table.'-'.$o_res->get($vs_table.'.'.$vs_pk)] = $va_items[$vs_table.'-'.$o_res->get($vs_table.'.'.$vs_pk)];
 					}
 
-					$qr_children = $t_item->getHierarchyChildrenAsQuery(
-						$t_item->getPrimaryKey(),
+					$va_items = $va_sorted_items;
+				}
+
+
+				if ($t_item->tableName() == 'ca_collections') {
+					$va_object_sorts =  $o_config->getList('ca_objects_hierarchy_browser_sort_values');
+					if (!is_array($va_object_sorts) || !sizeof($va_object_sorts)) {
+						$va_object_sorts = [];
+					}
+
+					$vs_object_sort_dir = strtolower($o_config->get('ca_objects_hierarchy_browser_sort_direction'));
+					if (!in_array($vs_object_sort_dir, array('asc', 'desc'))) {
+						$vs_object_sort_dir = 'asc';
+					}
+
+					$vs_object_collection_rel_type = $o_config->get('ca_objects_x_collections_hierarchy_relationship_type');
+					
+					$vn_count = 0;
+					$va_cross_table_items = $t_item->getRelatedItems(
+						'ca_objects',
 						array(
-							'additionalTableToJoin' => $vs_label_table_name,
-							'additionalTableJoinType' => 'LEFT',
-							'additionalTableSelectFields' => array($vs_label_display_field_name, 'locale_id'),
-							'additionalTableWheres' => $va_additional_wheres,
-							'returnChildCounts' => true,
-							'sort' => $va_sorts,
-							'sortDirection' => $vs_sort_dir
-						)
+							'sort' => $va_object_sorts,
+							'sortDirection' => $vs_object_sort_dir,
+							'restrictToRelationshipTypes' => array($vs_object_collection_rel_type),
+							'start' => $vn_start,
+							'limit' => $vn_max_items_per_page
+						), $vn_count
 					);
 
-					$va_items = array();
+					$vn_item_count += $vn_count;
+					$va_ids = array();
+					foreach($va_cross_table_items as $vn_x_item_id => $va_x_item) {
+						$va_items['ca_objects-'.$vn_x_item_id][$va_x_item['locale_id']] = $va_x_item;
 
-					if (!($vs_item_template = trim($o_config->get("{$vs_table}_hierarchy_browser_display_settings")))) {
-						$vs_item_template = "^{$vs_table}.preferred_labels.{$vs_label_display_field_name}";
+						$va_items['ca_objects-'.$va_x_item['object_id']][$va_x_item['locale_id']]['item_id'] = 'ca_objects-'.$va_x_item['object_id'];
+						$va_items['ca_objects-'.$va_x_item['object_id']][$va_x_item['locale_id']]['parent_id'] = $vn_id;
+
+						unset($va_items['ca_objects-'.$vn_x_item_id][$va_x_item['locale_id']]['labels']);
+
+						$va_items['ca_objects-'.$va_x_item['object_id']][$va_x_item['locale_id']]['children'] = 0;
+
+						$va_ids[] = $va_x_item['object_id'];
 					}
 
-					$va_child_counts = array();
-					if ((($vn_max_items_per_page = $this->request->getParameter('max', pInteger)) < 1) || ($vn_max_items_per_page > 1000)) {
-						$vn_max_items_per_page = null;
+					if (!($vs_item_template = trim($o_config->get("ca_objects_hierarchy_browser_display_settings")))) {
+						$vs_item_template = "^ca_objects.preferred_labels.name";
 					}
-					$vn_c = 0;
+					if(sizeof($va_ids)) {
+						$va_child_counts = $t_object->getHierarchyChildCountsForIDs($va_ids);
+						$va_templates = caProcessTemplateForIDs($vs_item_template, 'ca_objects', $va_ids, array('returnAsArray' => true));
 
-					$vn_item_count = $qr_children->numRows();
-
-					$qr_children->seek($vn_start);
-					$va_item_ids = [];
-					while($qr_children->nextRow()) {
-						$va_tmp = array(
-							$vs_pk => $vn_id = $qr_children->get($vs_table.'.'.$vs_pk),
-							'item_id' => $vs_table.'-'.$vn_id,
-							'parent_id' => $qr_children->get($vs_table.'.parent_id'),
-							'idno' => $qr_children->get($vs_table.'.idno'),
-							'locale_id' => $qr_children->get($vs_table.'.'.'locale_id')
-						);
-						if (!$va_tmp[$vs_label_display_field_name]) { $va_tmp[$vs_label_display_field_name] = $va_tmp['idno']; }
-						if (!$va_tmp[$vs_label_display_field_name]) { $va_tmp[$vs_label_display_field_name] = '???'; }
-
-						$va_tmp['name'] = caProcessTemplateForIDs($vs_item_template, $vs_table, array($va_tmp[$vs_pk]));
-
-						// Child count is only valid if has_children is not null
-						$va_tmp['children'] = $qr_children->get('has_children') ? (int)$qr_children->get('child_count') : 0;
-
-						if (is_array($va_sorts)) {
-							$vs_sort_acc = array();
-							foreach($va_sorts as $vs_sort) {
-								$vs_sort_acc[] = $qr_children->get($vs_sort);
-							}
-							$va_tmp['sort'] = join(";", $vs_sort_acc);
+						foreach($va_child_counts as $vn_id => $vn_c) {
+							$va_items['ca_objects-'.$vn_id][$va_x_item['locale_id']]['children'] = $vn_c;
 						}
-
-						$va_items[$va_tmp['item_id']][$va_tmp['locale_id']] = $va_tmp;
-						$va_item_ids[] = $vn_id;
-
-						$vn_c++;
-						if (!is_null($vn_max_items_per_page) && ($vn_c >= $vn_max_items_per_page)) { break; }
-					}
-
-					// if sorts are set, re-sort $va_items using a search result here. that way we can sort on non-intrinsics
-					if(sizeof($va_sorts) && sizeof($va_item_ids)) {
-						$va_sorted_items = [];
-						$o_res = caMakeSearchResult($vs_table, $va_item_ids, array(
-							'sort' => $va_sorts,
-							'sortDirection' => $vs_sort_dir
-						));
-
-						while($o_res->nextHit()) {
-							$va_sorted_items[$vs_table.'-'.$o_res->get($vs_table.'.'.$vs_pk)] = $va_items[$vs_table.'-'.$o_res->get($vs_table.'.'.$vs_pk)];
-						}
-
-						$va_items = $va_sorted_items;
-					}
-
-
-					if ($t_item->tableName() == 'ca_collections') {
-						$va_object_sorts =  $o_config->getList('ca_objects_hierarchy_browser_sort_values');
-						if (!is_array($va_object_sorts) || !sizeof($va_object_sorts)) {
-							$va_object_sorts = [];
-						}
-
-						$vs_object_sort_dir = strtolower($o_config->get('ca_objects_hierarchy_browser_sort_direction'));
-						if (!in_array($vs_object_sort_dir, array('asc', 'desc'))) {
-							$vs_object_sort_dir = 'asc';
-						}
-
-						$vs_object_collection_rel_type = $o_config->get('ca_objects_x_collections_hierarchy_relationship_type');
-						$va_cross_table_items = $t_item->getRelatedItems(
-							'ca_objects',
-							array(
-								'sort' => $va_object_sorts,
-								'sortDirection' => $vs_object_sort_dir,
-								'restrictToRelationshipTypes' => array($vs_object_collection_rel_type)
-							)
-						);
-
-						$vn_item_count += sizeof($va_cross_table_items);
-						$va_ids = array();
-						foreach($va_cross_table_items as $vn_x_item_id => $va_x_item) {
-							$va_items['ca_objects-'.$vn_x_item_id][$va_x_item['locale_id']] = $va_x_item;
-
-							$va_items['ca_objects-'.$va_x_item['object_id']][$va_x_item['locale_id']]['item_id'] = 'ca_objects-'.$va_x_item['object_id'];
-							$va_items['ca_objects-'.$va_x_item['object_id']][$va_x_item['locale_id']]['parent_id'] = $vn_id;
-
-							unset($va_items['ca_objects-'.$vn_x_item_id][$va_x_item['locale_id']]['labels']);
-
-							$va_items['ca_objects-'.$va_x_item['object_id']][$va_x_item['locale_id']]['children'] = 0;
-
-							$va_ids[] = $va_x_item['object_id'];
-						}
-
-						if (!($vs_item_template = trim($o_config->get("ca_objects_hierarchy_browser_display_settings")))) {
-							$vs_item_template = "^ca_objects.preferred_labels.name";
-						}
-						if(sizeof($va_ids)) {
-							$va_child_counts = $t_object->getHierarchyChildCountsForIDs($va_ids);
-							$va_templates = caProcessTemplateForIDs($vs_item_template, 'ca_objects', $va_ids, array('returnAsArray' => true));
-
-							foreach($va_child_counts as $vn_id => $vn_c) {
-								$va_items['ca_objects-'.$vn_id][$va_x_item['locale_id']]['children'] = $vn_c;
-							}
-							foreach($va_ids as $vn_i => $vn_id) {
-								$va_items['ca_objects-'.$vn_id][$va_x_item['locale_id']]['name'] = $va_templates[$vn_i];
-							}
+						foreach($va_ids as $vn_i => $vn_id) {
+							$va_items['ca_objects-'.$vn_id][$va_x_item['locale_id']]['name'] = $va_templates[$vn_i];
 						}
 					}
-
-					$va_items_for_locale = caExtractValuesByUserLocale($va_items);
-					$vs_rank_fld = $t_item->getProperty('RANK');
 				}
+
+				$va_items_for_locale = caExtractValuesByUserLocale($va_items);
+				$vs_rank_fld = $t_item->getProperty('RANK');
 			}
 
 			$va_items_for_locale['_sortOrder'] = array_keys($va_items_for_locale);

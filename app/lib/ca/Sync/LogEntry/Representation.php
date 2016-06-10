@@ -54,7 +54,9 @@ class Representation extends Bundlable {
 				/** @var \ApplicationError $o_e */
 				$o_e = array_shift($this->getModelInstance()->errors());
 
-				if($o_e->getErrorNumber() == 2710) { // 2710 = No media specified for new representation
+				// 2710 = No media specified for new representation
+				// 1600 = File type is not supported for this field (happens when the index.php "clean url" rewrite rule kicks in)
+				if(in_array($o_e->getErrorNumber(), [1600, 2710])) { 
 					$this->getModelInstance()->set('media', __CA_THEME_DIR__.'/graphics/icons/info.png');
 					// try insert again!
 					$this->getModelInstance()->insert(array('setGUIDTo' => $this->getGUID()));

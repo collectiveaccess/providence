@@ -818,7 +818,7 @@ class DisplayTemplateParser {
 				if (isset($pa_options['sort']) && is_array($pa_options['sort']) && sizeof($pa_options['sort'])) {
 					$va_sortables = array();
 					foreach($pa_options['sort'] as $vs_sort_spec) {
-						$va_sortables[] = $pr_res->get($vs_sort_spec, ['sortable' => true, 'returnAsArray' => true, 'returnBlankValues' => true]);
+						$va_sortables[] = $pr_res->get($vs_sort_spec, array_merge($pa_options, $va_parsed_tag_opts['options'], ['sortable' => true, 'returnAsArray' => true, 'returnBlankValues' => true]));
 					}
 					if ((($vn_start > 0) || ($vn_length > 0)) && ($vn_start < sizeof($va_sortables)) && (!$vn_length || ($vn_start + $vn_length <= sizeof($va_sortables)))) {
 						$va_sortables = array_slice($va_sortables, $vn_start, ($vn_length > 0) ? $vn_length : null);

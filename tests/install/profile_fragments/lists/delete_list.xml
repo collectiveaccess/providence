@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" infoUrl="">
+  <profileName>collectiveaccess</profileName>
+  <profileDescription/>
+  <locales/>
+  <lists>
+    <list code="diff_test_list" deleted="1" />
+  </lists>
+  <elementSets/>
+  <userInterfaces/>
+  <relationshipTypes/>
+  <roles/>
+  <groups/>
+  <displays></displays>
+  <searchForms/>
+</profile>
