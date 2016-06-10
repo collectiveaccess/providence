@@ -88,6 +88,9 @@ class ChangeController extends ActionController {
 					if($va_log[0]['changetype'] != $vs_filter_change_type) { continue; }
 				}
 				$va_log_entries[$vn_table_num . $vs_unit_id] = $va_log;
+
+				// the ui table doesn't have paging, so we should impose some kind of limit here
+				if(sizeof($va_log_entries) > 10000) { break 2; }
 			}
 		}
 
