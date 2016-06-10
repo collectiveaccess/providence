@@ -33,6 +33,17 @@ class ChangeController extends ActionController {
 	#
 	# -------------------------------------------------------
 	public function Index() {
+		if($this->getRequest()->getUser()->canDoAction('can_view_change_logs')) { // can view everything
+			$vb_full_view = true;
+		} elseif($this->getRequest()->getUser()->canDoAction('can_view_own_change_logs')) { // can view just own change log
+			$vb_full_view = false;
+		} else { // doesn't have access to this controller at all
+			$this->getResponse()->setRedirect(
+				$this->getRequest()->getAppConfig()->get('error_display_url').'/n/2320?r='.urlencode($this->getRequest()->getFullUrlPath())
+			);
+			return;
+		}
+
 		AssetLoadManager::register('tableList');
 
 		$vn_filter_table = $this->getRequest()->getParameter('filter_table', pInteger);
@@ -68,6 +79,11 @@ class ChangeController extends ActionController {
 
 			$va_table_log_entries = $o_change_log->getRecentChanges($vn_table_num, $vn_num_seconds);
 			foreach($va_table_log_entries as $vs_unit_id => $va_log) {
+				if(!$vb_full_view) {
+					if($va_log[0]['user_id'] != $this->getRequest()->getUserID()) {
+						continue;
+					}
+				}
 				if($vs_filter_change_type) {
 					if($va_log[0]['changetype'] != $vs_filter_change_type) { continue; }
 				}

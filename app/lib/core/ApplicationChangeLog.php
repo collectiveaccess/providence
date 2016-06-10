@@ -562,6 +562,7 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 							$va_log_output[$vn_unit_id][] = array(
 								'datetime' => $vs_datetime,
 								'timestamp' => $va_log_entry['log_datetime'],
+								'user_id' => $va_log_entry['user_id'],
 								'user_fullname' => $vs_user,
 								'user_email' => $vs_email,
 								'user' => $vs_user.' ('.$vs_email.')',
