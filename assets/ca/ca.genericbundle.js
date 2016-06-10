@@ -62,6 +62,9 @@ var caUI = caUI || {};
 			defaultValues: {},
 			bundlePreview: '',
 			readonly: 0,
+			
+			useAnimation: false,
+			animationDuration: 200,
 
 			// ajax loading of content
 			totalValueCount: null,
@@ -227,10 +230,20 @@ var caUI = caUI || {};
 			// replace values in template
 			var jElement = jQuery(this.container + ' textarea.' + (isNew ? this.templateClassName : this.initialValueTemplateClassName)).template(templateValues);
 
-			if ((this.addMode == 'prepend') && isNew) {	// addMode only applies to newly created bundles
-				jQuery(this.container + " ." + this.itemListClassName).prepend(jElement);
+			if(options.useAnimation) {
+				jQuery(jElement).hide();
+				if ((this.addMode == 'prepend') && isNew) {	// addMode only applies to newly created bundles
+					jQuery(this.container + " ." + this.itemListClassName).prepend(jElement);
+				} else {
+					jQuery(this.container + " ." + this.itemListClassName).append(jElement);
+				}
+				jQuery(jElement).slideDown(this.animationDuration);
 			} else {
-				jQuery(this.container + " ." + this.itemListClassName).append(jElement);
+				if ((this.addMode == 'prepend') && isNew) {	// addMode only applies to newly created bundles
+					jQuery(this.container + " ." + this.itemListClassName).prepend(jElement);
+				} else {
+					jQuery(this.container + " ." + this.itemListClassName).append(jElement);
+				}
 			}
 
 			if (!dontUpdateBundleFormState && $.fn['scrollTo']) {	// scroll to newly added bundle
@@ -438,13 +451,19 @@ var caUI = caUI || {};
 		};
 
 		that.deleteFromBundle = function(id) {
-			jQuery('#' + this.itemID + id).remove();
+			if(options.useAnimation) {
+				jQuery('#' + this.itemID + id).slideUp(that.animationDuration, function() { this.remove(); });
+			} else {
+				jQuery('#' + this.itemID + id).remove();
+			}
 			jQuery(this.container).append("<input type='hidden' name='" + that.fieldNamePrefix + id + "_delete' value='1'/>");
 
 			this.decrementCount();
 			this.updateBundleFormState();
 
 			that.showUnsavedChangesWarning(true);
+			
+			if (this.onDeleteItem) { this.onDeleteItem(id); }
 
 			return this;
 		};

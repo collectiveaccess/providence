@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -30,11 +30,7 @@
  * ----------------------------------------------------------------------
  */
 
- /**
-  *
-  */
-
-require_once(__CA_LIB_DIR__."/ca/Service/BaseJSONService.php"); 
+require_once(__CA_LIB_DIR__."/ca/Service/BaseJSONService.php");
 require_once(__CA_MODELS_DIR__."/ca_lists.php");
 require_once(__CA_MODELS_DIR__."/ca_relationship_types.php");
 
@@ -108,7 +104,7 @@ class ModelService extends BaseJSONService {
 
 		foreach($va_codes as $vs_code => $va_junk){
 			// subelements
-			$t_element = $t_instance->_getElementInstance($vs_code);
+			$t_element = ca_metadata_elements::getInstance($vs_code);
 			foreach($t_element->getElementsInSet() as $va_element_in_set){
 				if($va_element_in_set["datatype"]==0) continue; // don't include sub-containers
 				$va_element_in_set["datatype"] = ca_metadata_elements::getAttributeNameForTypeCode($va_element_in_set["datatype"]);
@@ -128,15 +124,12 @@ class ModelService extends BaseJSONService {
 		// possible relationships with "valid tables" (i.e. those that are accessible via services)
 		$t_rel_types = new ca_relationship_types();
 		foreach($this->opa_valid_tables as $vs_table){
-				$vs_rel_table = $t_rel_types->getRelationshipTypeTable($this->getTableName(),$vs_table);
-				$va_info = $t_rel_types->getRelationshipInfo($vs_rel_table);
-				foreach($va_info as $va_tmp){
-					$va_return["relationship_types"][$vs_table][$va_tmp["type_code"]] = $va_tmp;	
-				}
+			$vs_rel_table = $t_rel_types->getRelationshipTypeTable($this->getTableName(),$vs_table);
+			$va_info = $t_rel_types->getRelationshipInfo($vs_rel_table);
+			foreach($va_info as $va_tmp){
+				$va_return["relationship_types"][$vs_table][$va_tmp["type_code"]] = $va_tmp;
+			}
 		}
-
-
-		
 
 		return $va_return;
 	}

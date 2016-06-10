@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -287,7 +287,7 @@ class ObjectBrowseResult extends BaseSearchResult {
 	 private function _haveAccessToRepresentation($pa_access_values) {
 	 	if (!is_array($pa_access_values)) { $pa_access_values = array(); }
 	 	if (!sizeof($pa_access_values)) { return true; }
-	 	if (!in_array($this->get('ca_object_representations.access'), $pa_access_values)) {
+	 	if (!sizeof(array_intersect($this->get('ca_object_representations.access', array('returnAsArray' => true)), $pa_access_values))) {
 			return false;	
 		}
 		return true;

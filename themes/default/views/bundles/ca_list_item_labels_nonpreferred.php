@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,7 +49,7 @@
 	<textarea class='caLabelTemplate' style='display: none;'>
 		<div id="{fieldNamePrefix}Label_{n}" class="labelInfo">
 			<div style="float: right;">
-				<a href="#" class="caDeleteLabelButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
+				<a href="#" class="caDeleteLabelButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 			</div>
 			<table>
 				<tr valign="middle">
@@ -68,7 +68,7 @@
 							<tr>
 								<td>
 									<?php print '<div class="formLabel">'.$t_label->htmlFormElement('locale_id', '^LABEL ^ELEMENT', array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}locale_id_{n}", 'name' => "{fieldNamePrefix}locale_id_{n}", "value" => "{locale_id}", 'no_tooltips' => false, 'dont_show_null_value' => true, 'hide_select_if_only_one_option' => true, 'WHERE' => array('(dont_use_for_cataloguing = 0)'), 'tooltip_namespace' => 'bundle_ca_list_item_labels_preferred')); ?>
-									<?php print $t_label->htmlFormElement('type_id', "^LABEL ^ELEMENT", array('classname' => 'labelType', 'id' => "{fieldNamePrefix}type_id_{n}", 'name' => "{fieldNamePrefix}type_id_{n}", "value" => "{type_id}", 'no_tooltips' => true, 'list_code' => $this->request->config->get('ca_list_items_nonpreferred_label_type_list'), 'dont_show_null_value' => true, 'hide_select_if_no_options' => true)).'</div>'; ?>
+									<?php print ($vs_label_list = $this->request->config->get('ca_list_items_nonpreferred_label_type_list')) ? $t_label->htmlFormElement('type_id', "^LABEL ^ELEMENT", array('classname' => 'labelType', 'id' => "{fieldNamePrefix}type_id_{n}", 'name' => "{fieldNamePrefix}type_id_{n}", "value" => "{type_id}", 'no_tooltips' => true, 'list_code' => $vs_label_list, 'dont_show_null_value' => true, 'hide_select_if_no_options' => true)).'</div>' : ''; ?>
 								</td>
 							<tr>
 						</table>
@@ -85,7 +85,7 @@
 		<div class="caLabelList">
 		
 		</div>
-		<div class="button labelInfo caAddLabelButton"><a href='#'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add label"); ?></a></div>
+		<div class="button labelInfo caAddLabelButton"><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add label"); ?></a></div>
 	</div>
 			
 	

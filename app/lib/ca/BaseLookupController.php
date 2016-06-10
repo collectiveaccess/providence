@@ -491,5 +491,30 @@
 			$this->view->setVar('id_list', $va_ids);
 			return $this->render('intrinsic_json.php');
 		}
- 		# -------------------------------------------------------
+		# -------------------------------------------------------
+		/**
+		 * Checks value given metadata element and return list of primary keys that use the
+		 * specified value. Can be used to determine if a value that needs to be unique is actually unique.
+		 */
+		public function Attribute() {
+			$pn_element_id 	=  $this->getRequest()->getParameter('element_id', pInteger);
+			$ps_val 		=  $this->getRequest()->getParameter('n', pString);
+
+			if(!ca_metadata_elements::getElementCodeForId($pn_element_id)) {
+				return null;
+			}
+
+			$o_db = new Db();
+			if(unicode_strlen($ps_val) > 0) {
+				$qr_values = $o_db->query('SELECT value_id FROM ca_attribute_values WHERE element_id=? AND value_longtext1=?', $pn_element_id, $ps_val);
+				$va_value_list = $qr_values->getAllFieldValues('value_id');
+			} else {
+				$va_value_list = [];
+			}
+
+			$this->getView()->setVar('value_list', $va_value_list);
+
+			return $this->render('attribute_json.php');
+		}
+		# -------------------------------------------------------
  	}

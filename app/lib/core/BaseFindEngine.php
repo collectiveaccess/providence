@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2015 Whirl-i-Gig
+ * Copyright 2014-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -91,6 +91,7 @@
 				$this->opo_db->query("
 					CREATE TEMPORARY TABLE {$this->ops_tmp_table_name} (
 						row_id int unsigned not null,
+						idx int unsigned not null,
 						sort_key1 varchar(255) not null default '',
 						sort_key2 varchar(255) not null default '',
 						sort_key3 varchar(255) not null default '',
@@ -123,7 +124,7 @@
 			}
 		
 			if ((($g_mysql_has_file_priv === true) && (sizeof($pa_hits) > 500))) {
-				// Benchmarking has show that using "LOAD DATA INFILE" with an on-disk tmp file performs best with large result sets
+				// Benchmarking has shown that using "LOAD DATA INFILE" with an on-disk tmp file performs best with large result sets
 				// The downside is that it requires the MySQL global FILE priv, which often is not granted, especially in shared environments
 				$vs_data = '';
 				if (is_array($va_sortable_values)) {
@@ -152,8 +153,8 @@
 				// Fallback when database login does not have FILE priv
 				
 				if (is_array($va_sortable_values)) {
-					$vs_sql = "INSERT IGNORE INTO {$this->ops_tmp_table_name} (row_id, sort_key1, sort_key2, sort_key3) VALUES ";
-					foreach($pa_hits as $vn_hit) {
+					$vs_sql = "INSERT IGNORE INTO {$this->ops_tmp_table_name} (row_id, idx, sort_key1, sort_key2, sort_key3) VALUES ";
+					foreach($pa_hits as $vn_index => $vn_hit) {
 						if(!($vs_sort_key_1 = $va_sortable_values[0][$vn_hit])) { $vs_sort_key_1 = ''; } else { $vs_sort_key_1 = preg_replace("/[^[:alnum:][:space:]]/ui", '', $vs_sort_key_1); }
 						if(!($vs_sort_key_2 = $va_sortable_values[1][$vn_hit])) { $vs_sort_key_2 = ''; } else { $vs_sort_key_2 = preg_replace("/[^[:alnum:][:space:]]/ui", '', $vs_sort_key_2); }
 						if(!($vs_sort_key_3 = $va_sortable_values[2][$vn_hit])) { $vs_sort_key_3 = ''; } else { $vs_sort_key_3 = preg_replace("/[^[:alnum:][:space:]]/ui", '', $vs_sort_key_3); }
@@ -161,7 +162,7 @@
 						if (is_numeric($vs_sort_key_2)) { $vs_sort_key_2 = str_pad($vs_sort_key_2, 12, '0', STR_PAD_LEFT); }
 						if (is_numeric($vs_sort_key_3)) { $vs_sort_key_3 = str_pad($vs_sort_key_3, 12, '0', STR_PAD_LEFT); }
 						
-						$vs_sql .= "(".(int)$vn_hit.",'".$vs_sort_key_1."','".$vs_sort_key_2."','".$vs_sort_key_1."'),";
+						$vs_sql .= "(".(int)$vn_hit.",".(int)$vn_index.",'".$vs_sort_key_1."','".$vs_sort_key_2."','".$vs_sort_key_3."'),";
 					}
 				} else {
 					$vs_sql = "INSERT IGNORE INTO {$this->ops_tmp_table_name} (row_id) VALUES ";
@@ -451,7 +452,7 @@
 				}
 			}
 			
-			return $this->_doSort($pa_hits, $va_sort_key_values, $ps_direction);
+			return $this->_doSort($pa_hits, $va_sort_key_values, $ps_direction, $pa_options);
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -467,6 +468,7 @@
 		private function _doSort(&$pa_hits, $pa_sortable_values, $ps_direction='asc', $pa_options=null) {
 			if (!in_array($ps_direction = strtolower($ps_direction), array('asc', 'desc'))) { $ps_direction = 'asc'; }
 			$va_sorted_rows = array();
+			$vb_return_index = caGetOption('returnIndex', $pa_options, false);
 			
 			if (sizeof($pa_hits) < 1000000) {
 				//
@@ -474,19 +476,32 @@
 				//
 				$va_sort_buffer = array();
 				
-				foreach($pa_hits as $vn_hit) {
+				$vn_c = 0;
+				foreach($pa_hits as $vn_idx => $vn_hit) {
 					$vs_key = '';
 					foreach($pa_sortable_values as $vn_i => $va_sortable_values) {
 						$vs_v = preg_replace("![^\w_]+!", " ", $va_sortable_values[$vn_hit]);
 						
-						$vs_key .= str_pad(substr($vs_v,0,150), 150, ' ', is_numeric($vs_v) ? STR_PAD_LEFT : STR_PAD_RIGHT);
+						$vs_key .= str_pad(substr($vs_v,0,50), 50, ' ', is_numeric($vs_v) ? STR_PAD_LEFT : STR_PAD_RIGHT);
 					}
-					$va_sort_buffer[$vs_key.str_pad($vn_hit, 12, ' ', STR_PAD_LEFT)] = $vn_hit;
+					$va_sort_buffer[$vs_key.str_pad($vn_c, 8, '0', STR_PAD_LEFT)] = $vb_return_index ? $vn_idx . '/' . $vn_hit : $vn_hit;
+					$vn_c++;
 				}
-				
+
 				ksort($va_sort_buffer, SORT_FLAG_CASE | SORT_NATURAL);
-				$va_sort_buffer = array_values($va_sort_buffer);
 				if ($ps_direction == 'desc') { $va_sort_buffer = array_reverse($va_sort_buffer); }
+
+				if($vb_return_index) {
+					$va_return = array();
+					foreach($va_sort_buffer as $vs_val) {
+						$va_tmp = explode('/', $vs_val);
+						$va_return[$va_tmp[0]] = $va_tmp[1];
+					}
+					return $va_return;
+				} else {
+					$va_sort_buffer = array_values($va_sort_buffer);
+				}
+
 				return $va_sort_buffer;
 			} else {
 				//
@@ -494,17 +509,23 @@
 				//
 				$vs_sort_tmp_table = $this->loadListIntoTemporaryResultTable($pa_hits, caGenerateGUID(), array('sortableValues' => $pa_sortable_values));
 				$vs_sql = "
-					SELECT row_id
+					SELECT row_id, idx
 					FROM {$vs_sort_tmp_table}
 					ORDER BY sort_key1 {$ps_direction}, sort_key2 {$ps_direction}, sort_key3 {$ps_direction}, row_id
 				";
 				$qr_sort = $this->opo_db->query($vs_sql, array());
-				$va_sorted_rows = $qr_sort->getAllFieldValues('row_id');
-		
+				$va_results = $qr_sort->getAllFieldValues(array('row_id', 'idx'));
 				$this->cleanupTemporaryResultTable();
+				if($vb_return_index) {
+					$va_sorted_rows = array();
+					foreach($va_results['row_id'] as $vn_i => $vm_row_id) {
+						$va_sorted_rows[$va_results['idx'][$vn_i]] = $vm_row_id;
+					}
+					return $va_sorted_rows;
+				} else {
+					return $va_results['row_id'];
+				}
 			}
-			
-			return $va_sorted_rows;
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -560,17 +581,13 @@
 				case __CA_ATTRIBUTE_VALUE_MOVEMENTS__:
 				case __CA_ATTRIBUTE_VALUE_STORAGELOCATIONS__:
 				case __CA_ATTRIBUTE_VALUE_OBJECTLOTS__:
-					if (!($vs_sortable_value_fld = Attribute::getSortFieldForDatatype($vn_datatype))) {
-						break;
-					}
-
 					if (!($t_auth_instance = AuthorityAttributeValue::elementTypeToInstance($vn_datatype))) { break; }
-
+					$vs_sortable_value_fld = $t_auth_instance->getLabelSortField();
 					$vs_sql = "
 							SELECT attr.row_id, lower(lil.{$vs_sortable_value_fld}) {$vs_sortable_value_fld}
 							FROM ca_attributes attr
 							INNER JOIN ca_attribute_values AS attr_vals ON attr_vals.attribute_id = attr.attribute_id
-							INNER JOIN ".$t_auth_instance->getLabelTableName()." AS lil ON lil.value_integer1 = attr_vals.item_id
+							INNER JOIN ".$t_auth_instance->getLabelTableName()." AS lil ON lil.".$t_auth_instance->primaryKey()." = attr_vals.item_id
 							WHERE
 								(attr_vals.element_id = ?) AND
 								(attr.table_num = ?) AND

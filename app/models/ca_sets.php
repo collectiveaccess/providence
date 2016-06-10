@@ -1916,10 +1916,17 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		$o_view->setVar('request', $po_request);
 		
 		if ($this->getPrimaryKey()) {
+			$vs_set_table_name = $this->getAppDatamodel()->getTableName($this->get('table_num'));
+			if (!($vs_template = caGetOption("{$vs_set_table_name}_display_template", $pa_bundle_settings, null))) {		// display template by table
+				if (!($vs_template = caGetOption('display_template', $pa_bundle_settings, null))) {						// try the old non-table-specific template?
+					$vs_template = $this->getAppConfig()->get("{$vs_set_table_name}_set_item_display_template");			// use default in app.conf
+				}
+			} 
+		
 			$va_items = caExtractValuesByUserLocale($this->getItems(array(
 				'thumbnailVersion' => $vs_thumbnail_version,
 				'user_id' => $po_request->getUserID(),
-				'template' => caGetOption('displayTemplate', $pa_bundle_settings, null)
+				'template' => $vs_template
 			)), null, null, array());
 			$o_view->setVar('items', $va_items);
 		} else {
@@ -2001,6 +2008,18 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		$o_dm = $this->getAppDatamodel();
 		
 		return $o_dm->getInstanceByTableNum($this->get('table_num'), true);
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns the name of the table that is the content type for the currently loaded set.
+	 *
+	 * @return string
+	 */
+	public function getItemType() {
+		if (!$this->getPrimaryKey()) { return null; }
+		$o_dm = $this->getAppDatamodel();
+		
+		return $o_dm->getTableName($this->get('table_num'));
 	}
 	# ------------------------------------------------------
 	/**
@@ -2148,16 +2167,6 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		}
 		return $vn_table_num;
 	}
-	# ------------------------------------------------------
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	# ------------------------------------------------------
 	# new functions for pawtucket lightbox
 	# ------------------------------------------------------

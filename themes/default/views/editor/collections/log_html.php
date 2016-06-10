@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2009 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,7 +35,7 @@
 		'', 
 		''
 	); 
-	print $t_collection->getChangeLogForDisplay('caLog');
+	print $this->getVar('log');
 ?>
 	<div class="editorBottomPadding"><!-- empty --></div>
 </div>

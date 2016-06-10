@@ -113,6 +113,11 @@ class ExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertRegExp("/^1985\-01\-28T/", ExpressionParser::evaluate('formatgmdate("1985/01/28")'));
 	}
 
+	public function testReplace() {
+		$this->assertEquals("7", ExpressionParser::evaluate('replace("/[\s]+cm$/", "", "7 cm")'));
+		$this->assertEquals("cm", ExpressionParser::evaluate('replace("/^[0-9]+[\s]+/", "", "7 cm")'));
+	}
+
 	/**
 	 * Random expressions we used for testing while writing the grammar. Might as well leave them in here
 	 */
@@ -154,6 +159,7 @@ class ExpressionParserTest extends PHPUnit_Framework_TestCase {
 	public function testVars() {
 		$this->assertTrue(ExpressionParser::evaluate('^var = 5', array('var' => 5)));
 		$this->assertEquals('test123', ExpressionParser::evaluate('^ca_objects.preferred_labels', array('ca_objects.preferred_labels' => 'test123')));
+		$this->assertEquals(true, ExpressionParser::evaluate('^ca_entities.type_id%convertCodesToDisplayText=0&convertCodesToIdno=1 =~ /ind/', array('ca_entities.type_id%convertCodesToDisplayText=0&convertCodesToIdno=1' => 'ind')));
 	}
 
 	public function testObscureVars() {

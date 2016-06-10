@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2015 Whirl-i-Gig
+ * Copyright 2007-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -180,7 +180,7 @@ class SearchEngine extends SearchBase {
 		if($vn_cache_timeout == 0) { $vb_no_cache = true; } // don't try to cache if cache timeout is 0 (0 means disabled)
 		
 		$t_table = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
-		$vs_cache_key = md5($ps_search."/".serialize($this->getTypeRestrictionList($pa_options)));
+		$vs_cache_key = md5($ps_search."/".serialize($this->getTypeRestrictionList($pa_options))."/".serialize($this->opa_result_filters));
 
 		$o_cache = new SearchCache();
 		$vb_from_cache = false;
@@ -246,7 +246,7 @@ class SearchEngine extends SearchBase {
 			} 
 			
 			$vb_no_types = false;	
-			if (is_array($va_type_ids = $this->getTypeRestrictionList()) && (sizeof($va_type_ids) > 0) && $t_table->hasField('type_id')) {
+			if (!$pa_options['expandToIncludeParents'] && is_array($va_type_ids = $this->getTypeRestrictionList()) && (sizeof($va_type_ids) > 0) && $t_table->hasField('type_id')) {
 				if ($t_table->getFieldInfo('type_id', 'IS_NULL')) {
 					$va_type_ids[] = 'NULL';
 				}
@@ -268,11 +268,36 @@ class SearchEngine extends SearchBase {
 				if (is_array($va_restrict_to_fields = caGetOption('restrictSearchToFields', $pa_options, null)) && $this->opo_engine->can('restrict_to_fields')) {
 					$this->opo_engine->setOption('restrictSearchToFields', $va_restrict_to_fields);
 				}
+				if (is_array($va_exclude_fields_from_search = caGetOption('excludeFieldsFromSearch', $pa_options, null)) && $this->opo_engine->can('restrict_to_fields')) {
+					$this->opo_engine->setOption('excludeFieldsFromSearch', $va_exclude_fields_from_search);
+				}
+				
 
 				$o_res =  $this->opo_engine->search($this->opn_tablenum, $vs_search, $this->opa_result_filters, $o_rewritten_query);
 			
 				// cache the results
 				$va_hits = $o_res->getPrimaryKeyValues($vn_limit);
+				
+										
+				if ($pa_options['expandToIncludeParents'] && sizeof($va_hits)) {
+					$qr_exp = caMakeSearchResult($this->opn_tablenum, $va_hits);
+					if (!is_array($va_type_ids) || !sizeof($va_type_ids)) { $va_type_ids = null; }
+					
+					$va_results = [];
+					$va_parents = [];
+					while($qr_exp->nextHit()) {
+						if ($vn_parent_id = $qr_exp->get('parent_id')) {
+							if (
+								((!$va_type_ids) || (in_array($qr_exp->get($this->opn_tablenum.'.parent.type_id'), $va_type_ids)))
+							) { 
+								$va_parents[$vn_parent_id] = 1;
+							}
+						}
+						if (($va_type_ids) && (!in_array($qr_exp->get('type_id'), $va_type_ids))) { continue; }
+						$va_results[] = $qr_exp->getPrimaryKey();
+					}
+					$va_hits = array_merge($va_hits, array_keys($va_parents));
+				}
 				$o_res->seek(0);
 			} else {
 				$va_hits = array();

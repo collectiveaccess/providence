@@ -56,7 +56,7 @@
 foreach ($opa_error_messages as $vs_message):
 ?>
 		<div class="permissionError">
-			<img src='<?php print $vs_path; ?>/themes/default/graphics/buttons/glyphicons_078_warning_sign.png' class="permissionErrorIcon"/>
+			<?php print caNavIcon(__CA_NAV_ICON_ALERT__ , 2, array('class' => 'permissionErrorIcon')); ?>
 			<?php print $vs_message; ?>
 			<div style='clear:both; height:1px;'><!-- empty --></div>
 		</div>

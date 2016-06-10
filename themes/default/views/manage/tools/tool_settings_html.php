@@ -41,8 +41,8 @@
 	print caFormTag($this->request, 'Run', $vs_form_id, null, 'POST', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
 	
 	print $vs_control_box = caFormControlBox(
-		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Run"), "caRunTool{$vs_tool_identifier}", array('onclick' => 'caShowConfirmToolExecutionPanel(); return false;')).' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'manage', 'Tools', 'Settings', array('tool' => $vs_tool_identifier)),
+		caFormJSButton($this->request, __CA_NAV_ICON_SAVE__, _t("Run"), "caRunTool{$vs_tool_identifier}", array('onclick' => 'caShowConfirmToolExecutionPanel(); return false;')).' '.
+		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'manage', 'Tools', 'Settings', array('tool' => $vs_tool_identifier)),
 		'', 
 		''
 	);

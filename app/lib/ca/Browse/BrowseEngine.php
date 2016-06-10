@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -375,15 +375,20 @@
 			if (!$this->isValidFacetName($ps_facet_name)) { return false; }
 
 			$va_criteria = $this->opo_ca_browse_cache->getParameter('criteria');
+			$va_criteria_display_strings = $this->opo_ca_browse_cache->getParameter('criteria_display_strings');
 			if (!is_array($pa_row_ids)) { $pa_row_ids = array($pa_row_ids); }
 
 			foreach($pa_row_ids as $vn_row_id) {
 				unset($va_criteria[$ps_facet_name][urldecode($vn_row_id)]);
+				unset($va_criteria_display_strings[$ps_facet_name][urldecode($vn_row_id)]);
 				if(is_array($va_criteria[$ps_facet_name]) && !sizeof($va_criteria[$ps_facet_name])) {
 					unset($va_criteria[$ps_facet_name]);
+					unset($va_criteria_display_strings[$ps_facet_name]);
 				}
 			}
+			
 			$this->opo_ca_browse_cache->setParameter('criteria', $va_criteria);
+			$this->opo_ca_browse_cache->setParameter('criteria_display_strings', $va_criteria_display_strings);
 			$this->opo_ca_browse_cache->setParameter('sort', null);
 			$this->opo_ca_browse_cache->setParameter('facet_html', null);
 
@@ -430,13 +435,17 @@
 			if ($ps_facet_name && !$this->isValidFacetName($ps_facet_name)) { return false; }
 
 			$va_criteria = $this->opo_ca_browse_cache->getParameter('criteria');
+			$va_criteria_display_strings = $this->opo_ca_browse_cache->getParameter('criteria_display_strings');
 			if($ps_facet_name) {
 				$va_criteria[$ps_facet_name] = array();
+				$va_criteria_display_strings[$ps_facet_name] = array();
 			} else {
 				$va_criteria = array();
+				$va_criteria_display_strings = array();
 			}
 
 			$this->opo_ca_browse_cache->setParameter('criteria', $va_criteria);
+			$this->opo_ca_browse_cache->setParameter('criteria_display_strings', $va_criteria_display_strings);
 			$this->opo_ca_browse_cache->setParameter('facet_html', null);
 
 			$this->opb_criteria_have_changed = true;
@@ -480,7 +489,7 @@
 
 			$va_criteria = $this->opo_ca_browse_cache->getParameter('criteria');
 			$va_criteria_display_strings = $this->opo_ca_browse_cache->getParameter('criteria_display_strings');
-
+			
 			$va_criteria_with_labels = array();
 			if($ps_facet_name) {
 				if (is_array($va_criteria_display_strings[$ps_facet_name])) {
@@ -974,7 +983,6 @@
 			$vs_cache_key = $this->opo_ca_browse_cache->getCurrentCacheKey();
 
 			if ($this->opo_ca_browse_cache->load($vs_cache_key)) {
-
 				$vn_created_on = $this->opo_ca_browse_cache->getParameter('created_on'); //$t_new_browse->get('created_on', array('getDirectDate' => true));
 				$vn_cache_timeout = (int) $this->opo_ca_browse_config->get('cache_timeout');
 
@@ -1280,6 +1288,10 @@
 											$vs_target_browse_table_pk = $va_relative_execute_sql_data['target_table_pk'];
 										}
 									}
+									
+									if (!is_array($va_restrict_to_types = $va_facet_info['restrict_to_types'])) { $va_restrict_to_types = array(); }
+									$va_restrict_to_types = $this->_convertTypeCodesToIDs($va_restrict_to_types, array('instance' => $t_item));
+
 
 									// TODO: check that it is a *single-value* (ie. no hierarchical ca_metadata_elements) Text or Number attribute
 									// (do we support other types as well?)
@@ -1293,27 +1305,42 @@
 										$va_attr_sql = array();
 										$va_attr_values = array(intval($vs_target_browse_table_num), $vn_element_id);
 
+										if (is_array($va_restrict_to_types) && (sizeof($va_restrict_to_types) > 0) && method_exists($t_item, "getTypeList")) {
+											$va_attr_sql[] = "(".$this->ops_browse_table_name.".type_id IN (".join(", ", $va_restrict_to_types)."))";
+										}
+										
 										if (is_array($va_value)) {
 											foreach($va_value as $vs_f => $vs_v) {
-												if ($vn_datatype == __CA_ATTRIBUTE_VALUE_LIST__) {
-													if ($vs_f != 'item_id') { continue; }
+												switch($vn_datatype) {
+													case __CA_ATTRIBUTE_VALUE_LIST__:
+														if ($vs_f != 'item_id') { continue; }
 
-													// Include sub-items
-													$t_list_item = new ca_list_items();
-													$va_item_ids = $t_list_item->getHierarchy((int)$vs_v, array('idsOnly' => true, 'includeSelf' => true));
+														// Include sub-items
+														$t_list_item = new ca_list_items();
+														$va_item_ids = $t_list_item->getHierarchy((int)$vs_v, array('idsOnly' => true, 'includeSelf' => true));
 
-													$va_item_ids[] = (int)$vs_v;
-													$va_attr_sql[] = "(ca_attribute_values.{$vs_f} IN (?))";
-													$va_attr_values[] = $va_item_ids;
-												} elseif($vn_datatype == __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__) {
-													if($vs_f == '_dont_save') {
-														$va_attr_sql[] = "(ca_attribute_values.value_longtext1 = ?)";
-														$va_attr_values[] = $vn_row_id;
+														$va_item_ids[] = (int)$vs_v;
+														$va_attr_sql[] = "(ca_attribute_values.{$vs_f} IN (?))";
+														$va_attr_values[] = $va_item_ids;
 														break;
-													}
-												} else {
-													$va_attr_sql[] = "(ca_attribute_values.{$vs_f} ".(is_null($vs_v) ? " IS " : " = ")." ?)";
-													$va_attr_values[] = $vs_v;
+													case __CA_ATTRIBUTE_VALUE_INFORMATIONSERVICE__:
+														if($vs_f == '_dont_save') {
+															$va_attr_sql[] = "(ca_attribute_values.value_longtext1 = ?)";
+															$va_attr_values[] = $vn_row_id;
+															break(2);
+														}
+														break;
+													case __CA_ATTRIBUTE_VALUE_LCSH__:
+														if ($vs_f == 'value_longtext2') {
+															$va_attr_sql[] = "(ca_attribute_values.value_longtext2 = ?)";
+															$va_attr_values[] = $va_value['value_longtext2'];
+														}
+														break;
+													default:
+														$va_attr_sql[] = "(ca_attribute_values.{$vs_f} ".(is_null($vs_v) ? " IS " : " = ")." ?)";
+														$va_attr_values[] = $vs_v;
+														break;
+													
 												}
 											}
 										}
@@ -1652,15 +1679,21 @@
 									foreach($va_row_ids as $vn_row_id) {
 										$vn_row_id = urldecode($vn_row_id);
 										$va_row_tmp = explode(":", $vn_row_id);
-										if ($vn_i == 0) {
+										
+										if ($va_row_tmp[0] == 119) { // ca_objects_x_storage_locations
+											$t_loc = new ca_storage_locations();
+											
+											if (!is_array($va_loc_ids = $t_loc->getHierarchy($va_row_tmp[2], ['returnAsArray' => true, 'includeSelf' => true, 'idsOnly' => true])) || !sizeof($va_loc_ids)) { continue; }
+											$va_row_tmp[2] = array_values($va_loc_ids);
+											
 											$vs_sql = "
 												SELECT ".$this->ops_browse_table_name.'.'.$t_item->primaryKey()."
 												FROM ".$this->ops_browse_table_name."
 												WHERE
 													({$this->ops_browse_table_name}.current_loc_class = ?)"
 														.((sizeof($va_row_tmp) > 1) ? " AND ({$this->ops_browse_table_name}.current_loc_subclass = ?)" : "")
-														.((sizeof($va_row_tmp) > 2) ? " AND ({$this->ops_browse_table_name}.current_loc_id = ?)" : "");
-
+														.((sizeof($va_row_tmp) > 2) ? " AND ({$this->ops_browse_table_name}.current_loc_id IN (?))" : "");
+													
 											$qr_res = $this->opo_db->query($vs_sql, $va_row_tmp);
 										} else {
 											$vs_sql = "
@@ -1670,10 +1703,10 @@
 													({$this->ops_browse_table_name}.current_loc_class = ?)"
 														.((sizeof($va_row_tmp) > 1) ? " AND ({$this->ops_browse_table_name}.current_loc_subclass = ?)" : "")
 														.((sizeof($va_row_tmp) > 2) ? " AND ({$this->ops_browse_table_name}.current_loc_id = ?)" : "");
-
 											$qr_res = $this->opo_db->query($vs_sql, $va_row_tmp);
-
 										}
+										
+									
 										$va_acc[$vn_i] = $qr_res->getAllFieldValues($this->ops_browse_table_name.'.'.$t_item->primaryKey());
 
 										$vn_i++;
@@ -1860,7 +1893,12 @@
 									$va_options['filterNonPrimaryRepresentations'] = true;	// filter out non-primary representations in ca_objects results to save (a bit) of time
 
 									$o_search->setOption('strictPhraseSearching', caGetOption('strictPhraseSearching', $va_options, true));
-									$qr_res = $o_search->search($va_row_ids[0], $va_options);
+									#$qr_res = $o_search->search($va_row_ids[0], $va_options);
+									if (sizeof($va_row_ids) > 1) {
+										// only allow singleton wildcards without other searches, otherwise we're wasting our time
+										$va_row_ids = array_filter($va_row_ids, function($a) { return !($a === '*'); });
+									}
+									$qr_res = $o_search->search(join(" AND ", $va_row_ids), $va_options);
 
 									$va_acc[$vn_i] = $qr_res->getPrimaryKeyValues();
 									$vn_i++;
@@ -1935,7 +1973,8 @@
 							$va_wheres[] = '('.$this->ops_browse_table_name.'.'.$t_subject->getTypeFieldName().' IN ('.join(', ', $va_browse_type_ids).')'.($t_subject->getFieldInfo('type_id', 'IS_NULL') ? " OR (".$this->ops_browse_table_name.'.'.$t_subject->getTypeFieldName()." IS NULL)" : '').')';
 						}
 
-						if (is_array($va_browse_source_ids) && sizeof($va_browse_source_ids)) {
+						if (($va_browse_source_ids = $this->getSourceRestrictionList()) && sizeof($va_browse_source_ids)) {
+							$t_subject = $this->getSubjectInstance();
 							$va_wheres[] = '('.$this->ops_browse_table_name.'.'.$t_subject->getSourceFieldName().' IN ('.join(', ', $va_browse_source_ids).') OR ('.$this->ops_browse_table_name.'.'.$t_subject->getSourceFieldName().' IS NULL))';
 						}
 
@@ -2357,6 +2396,24 @@
 				}
 			}
 
+			$vs_browse_source_limit_sql = '';
+			if (($va_browse_source_ids = $this->getSourceRestrictionList()) && sizeof($va_browse_source_ids)) {		// source restrictions
+				$vs_browse_source_limit_sql = '('.$t_subject->tableName().'.'.$t_subject->getSourceFieldName().' IN ('.join(', ', $va_browse_source_ids).')'.($t_subject->getFieldInfo('source_id', 'IS_NULL') ? " OR (".$this->ops_browse_table_name.'.'.$t_subject->getSourceFieldName()." IS NULL)" : '').')';
+
+				if (is_array($va_facet_info['source_restrictions'])) { 		// facet source restrictions bind a facet to specific sources; we check them here
+					$va_restrict_to_sources = $this->_convertSourceCodesToIDs($va_facet_info['source_restrictions']);
+					$vb_is_ok_to_browse = false;
+					foreach($va_browse_source_ids as $vn_source_id) {
+						if (in_array($vn_source_id, $va_restrict_to_sources)) {
+							$vb_is_ok_to_browse = true;
+							break;
+						}
+					}
+
+					if (!$vb_is_ok_to_browse) { return array(); }
+				}
+			}
+
 			// Values to exclude from list attributes and authorities; can be idnos or ids
 			$va_exclude_values = caGetOption('exclude_values', $va_facet_info, array(), array('castTo' => 'array'));
 
@@ -2676,6 +2733,10 @@
 						$va_where_sql[] = $vs_browse_type_limit_sql;
 					}
 
+					if ($vs_browse_source_limit_sql) {
+						$va_where_sql[] = $vs_browse_source_limit_sql;
+					}
+
 					if (isset($va_facet_info['preferred_labels_only']) && $va_facet_info['preferred_labels_only'] && $t_label->hasField('is_preferred')) {
 						$va_where_sql[] = "l.is_preferred = 1";
 					}
@@ -2848,6 +2909,10 @@
 
 					if ($vs_browse_type_limit_sql) {
 						$va_wheres[] = $vs_browse_type_limit_sql;
+					}
+
+					if ($vs_browse_source_limit_sql) {
+						$va_wheres[] = $vs_browse_source_limit_sql;
 					}
 
 					if ($t_item->hasField('deleted')) {
@@ -3115,6 +3180,10 @@
 						$va_wheres[] = $vs_browse_type_limit_sql;
 					}
 
+					if ($vs_browse_source_limit_sql) {
+						$va_wheres[] = $vs_browse_source_limit_sql;
+					}
+
 					if ($t_item->hasField('deleted')) {
 						$va_wheres[] = "(".$vs_browse_table_name.".deleted = 0)";
 					}
@@ -3189,13 +3258,10 @@
 						foreach($va_values_by_table as $vs_loc_class => $va_loc_id_by_subclass) {
 							foreach($va_loc_id_by_subclass as $vs_loc_subclass => $va_loc_ids) {
 								if(sizeof($va_tmp = array_keys($va_loc_ids))) {
-									$vs_loc_table_name = $this->opo_datamodel->getTableName($vs_loc_class);
-									if (($vs_table_name = $vs_loc_table_name) == 'ca_objects_x_storage_locations') {
-										$vs_table_name = 'ca_storage_locations';
-									}
+									$vs_table_name = $vs_loc_table_name = $this->opo_datamodel->getTableName($vs_loc_class);
+									$vs_hier_table_name = (($vs_loc_table_name) == 'ca_objects_x_storage_locations') ? 'ca_storage_locations' : $vs_loc_table_name;
 
-									$qr_res = caMakeSearchResult($vs_table_name, $va_tmp);
-
+									$qr_res = caMakeSearchResult($vs_hier_table_name, $va_tmp);
 
 									if (isset($va_collapse_map[$vs_table_name]) && isset($va_collapse_map[$vs_table_name]['*']) && $va_collapse_map[$vs_table_name]['*']) {
 										$va_values[$vs_id = "{$vs_loc_class}"] = array(
@@ -3204,24 +3270,48 @@
 										);
 										continue;
 									}
+									
+									$va_config = ca_objects::getConfigurationForCurrentLocationType($vs_table_name, $vs_loc_subclass, array('facet' => isset($va_facet_info['display']) ? $va_facet_info['display'] : null));
 
+									if ($vs_hier_table_name == 'ca_storage_locations') {
+										
+										if (!($vn_max_browse_depth = caGetOption('maximumBrowseDepth', $va_facet_info, null))) {
+											$vn_max_browse_depth = caGetOption('maximumBrowseDepth', $va_config, null);
+										}
+										if (!$vn_max_browse_depth) { $vn_max_browse_depth = null; } else { $vn_max_browse_depth++; }	// add one to account for invisible root
+										
+										$vs_hier_pk = $this->opo_datamodel->getTablePrimaryKeyName($vs_hier_table_name, true);
+									
+										$va_hier_ids = [];
+										while($qr_res->nextHit()) {
+											if (is_array($va_ids = $qr_res->get("{$vs_hier_table_name}.hierarchy.{$vs_hier_pk}", ['returnAsArray' => true, 'maxLevelsFromBottom' => $vn_max_browse_depth]))) {
+												foreach($va_ids as $vn_id) {
+													$va_hier_ids[$vn_id] = true;
+												}
+											}
+										}	
+										$va_hier_ids = array_keys($va_hier_ids);
+										$qr_res = caMakeSearchResult($vs_hier_table_name, $va_hier_ids);
+									}
+									
 									while($qr_res->nextHit()) {
 										$vn_id = $qr_res->getPrimaryKey();
-
-										$va_config = ca_objects::getConfigurationForCurrentLocationType($vs_table_name, $vs_loc_subclass, array('facet' => isset($va_facet_info['display']) ? $va_facet_info['display'] : null));
 
 										$vs_template = isset($va_config['template']) ? $va_config['template'] : "^{$vs_table_name}.preferred_labels";
 
 										if (isset($va_collapse_map[$vs_table_name]) && isset($va_collapse_map[$vs_table_name][$vs_loc_subclass]) && $va_collapse_map[$vs_table_name][$vs_loc_subclass]) {
+											if (!($vs_label = $va_collapse_map[$vs_table_name][$vs_loc_subclass])) { continue; }
 											$va_values[$vs_id = "{$vs_loc_class}:{$vs_loc_subclass}"] = array(
 												'id' => $vs_id,
-												'label' => $va_collapse_map[$vs_table_name][$vs_loc_subclass]
+												'label' => $vs_label
 											);
 											continue;
 										}
+										
+										if (!$vn_id || !($vs_label = $qr_res->getWithTemplate($vs_template, $va_config))) { continue; }
 										$va_values[$vs_id = "{$vs_loc_class}:{$vs_loc_subclass}:{$vn_id}"] = array(
 											'id' => $vs_id,
-											'label' => $qr_res->getWithTemplate($vs_template, $va_config)
+											'label' => $vs_label
 										);
 									}
 								}
@@ -3266,6 +3356,10 @@
 
 						if ($vs_browse_type_limit_sql) {
 							$va_wheres[] = $vs_browse_type_limit_sql;
+						}
+
+						if ($vs_browse_source_limit_sql) {
+							$va_wheres[] = $vs_browse_source_limit_sql;
 						}
 
 						if ($t_subject->hasField('deleted')) {
@@ -3317,6 +3411,9 @@
 							$qr_res = $this->opo_db->query($vs_sql, $vs_list_name);
 							return ((int)$qr_res->numRows() > 1) ? true : false;
 						} else {
+							// Get label ordering fields
+							$va_ordering_fields_to_fetch = (isset($va_facet_info['order_by_label_fields']) && is_array($va_facet_info['order_by_label_fields'])) ? $va_facet_info['order_by_label_fields'] : array();
+
 							$va_orderbys = array();
 							
 							// Get label ordering fields
@@ -3345,9 +3442,8 @@
 										break;
 								}
 							}
-							
+
 							$vs_order_by = (sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
-							
 							$vs_sql = "
 								SELECT DISTINCT lil.item_id, lil.name_singular, lil.name_plural, lil.locale_id
 								FROM ca_list_items li
@@ -3401,6 +3497,11 @@
 							if ($vs_browse_type_limit_sql) {
 								$va_wheres[] = $vs_browse_type_limit_sql;
 							}
+
+							if ($vs_browse_source_limit_sql) {
+								$va_wheres[] = $vs_browse_source_limit_sql;
+							}							
+
 							if ($t_subject->hasField('deleted')) {
 								$va_wheres[] = "(".$t_subject->tableName().".deleted = 0)";
 							}
@@ -3503,6 +3604,10 @@
 
 								if ($vs_browse_type_limit_sql) {
 									$va_wheres[] = $vs_browse_type_limit_sql;
+								}
+
+								if ($vs_browse_source_limit_sql) {
+									$va_wheres[] = $vs_browse_source_limit_sql;
 								}
 
 								if ($va_facet_info['relative_to']) {
@@ -3641,6 +3746,10 @@
 						$va_wheres[] = $vs_browse_type_limit_sql;
 					}
 
+					if ($vs_browse_source_limit_sql) {
+						$va_wheres[] = $vs_browse_source_limit_sql;
+					}
+
 					if ($t_item->hasField('deleted')) {
 						$va_wheres[] = "(".$vs_browse_table_name.".deleted = 0)";
 					}
@@ -3755,6 +3864,10 @@
 
 					if ($vs_browse_type_limit_sql) {
 						$va_wheres[] = $vs_browse_type_limit_sql;
+					}
+
+					if ($vs_browse_source_limit_sql) {
+						$va_wheres[] = $vs_browse_source_limit_sql;
 					}
 
 					if ($t_item->hasField('deleted')) {
@@ -3875,6 +3988,10 @@
 
 					if ($vs_browse_type_limit_sql) {
 						$va_wheres[] = $vs_browse_type_limit_sql;
+					}
+
+					if ($vs_browse_source_limit_sql) {
+						$va_wheres[] = $vs_browse_source_limit_sql;
 					}
 
 					if ($t_item->hasField('deleted')) {
@@ -4093,6 +4210,10 @@
 
 					if ($vs_browse_type_limit_sql) {
 						$va_wheres[] = $vs_browse_type_limit_sql;
+					}
+
+					if ($vs_browse_source_limit_sql) {
+						$va_wheres[] = $vs_browse_source_limit_sql;
 					}
 
 					if ($t_item->hasField('deleted')) {
@@ -4379,6 +4500,10 @@
 
 					if ($vs_browse_type_limit_sql) {
 						$va_wheres[] = $vs_browse_type_limit_sql;
+					}
+
+					if ($vs_browse_source_limit_sql) {
+						$va_wheres[] = $vs_browse_source_limit_sql;
 					}
 
 					if ($t_item->hasField('deleted')) {
@@ -4708,6 +4833,10 @@ if (!$va_facet_info['show_all_when_first_facet'] || ($this->numCriteria() > 0)) 
 					}
 					if ($vs_browse_type_limit_sql) {
 						$va_wheres[] = $vs_browse_type_limit_sql;
+					}
+
+					if ($vs_browse_source_limit_sql) {
+						$va_wheres[] = $vs_browse_source_limit_sql;
 					}
 
 					if ($this->opo_config->get('perform_item_level_access_checking')) {

@@ -83,8 +83,10 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	 */
 	$g_list_item_id_cache = array();
 	function caGetListItemID($ps_list_code, $ps_idno, $pa_options=null) {
-		global $g_list_item_id_cache;
-		if(isset($g_list_item_id_cache[$ps_list_code.'/'.$ps_idno])) { return $g_list_item_id_cache[$ps_list_code.'/'.$ps_idno]; }
+		if(!caGetOption('dontCache', $pa_options, false)) {
+			global $g_list_item_id_cache;
+			if(isset($g_list_item_id_cache[$ps_list_code.'/'.$ps_idno])) { return $g_list_item_id_cache[$ps_list_code.'/'.$ps_idno]; }
+		}
 		$t_list = new ca_lists();
 		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
 		
@@ -150,6 +152,25 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	}
 	# ---------------------------------------
 	/**
+	 * Fetch display label in current locale for item with specified iteM-id in list
+	 *
+	 * @param int $pn_item_id primary key of item to get label for
+	 * @param bool $pb_return_plural If true, return plural version of label. Default is to return singular version of label.
+	 * @param array $pa_options Options include:
+	 *		transaction = transaction to execute queries within. [Default=null]
+	 * @return string The label of the list item, or null if no matching item was found
+	 */
+	$g_list_item_label_by_id_cache = array();
+	function caGetListItemForDisplayByItemID($pn_item_id, $pb_return_plural=false, $pa_options=null) {
+		global $g_list_item_label_by_id_cache;
+		if(isset($g_list_item_label_by_id_cache[$pn_item_id.'/'.(int)$pb_return_plural])) { return $g_list_item_label_by_id_cache[$pn_item_id.'/'.(int)$pb_return_plural]; }
+		$t_list = new ca_lists();
+		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_list->setTransaction($o_trans); }
+
+		return $g_list_item_label_by_id_cache[$pn_item_id.'/'.(int)$pb_return_plural] = $t_list->getItemForDisplayByItemID($pn_item_id, $pb_return_plural);
+	}
+	# ---------------------------------------
+	/**
 	 * Fetch display label in current locale for item with specified item_id
 	 *
 	 * @param int $pn_item_id item_id of item to get label for
@@ -191,6 +212,42 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 			return $vs_ret;
 		}
 		return null;
+	}
+	# ---------------------------------------
+	/**
+	 * Get list item value for a given item_id
+	 * @param int $pn_id
+	 * @param null|array $pa_options
+	 * @return string
+	 * @throws MemoryCacheInvalidParameterException
+	 */
+	function caGetListItemValueForID($pn_id, $pa_options= null) {
+		if(!$pn_id || !is_numeric($pn_id)) { return null; }
+		$vs_cache_key = md5($pn_id . serialize($pa_options));
+		if(MemoryCache::contains($vs_cache_key, 'ListItemValuesForIDs')) {
+			return MemoryCache::fetch($vs_cache_key, 'ListItemValuesForIDs');
+		}
+
+		$t_item = new ca_list_items();
+		if ($o_trans = caGetOption('transaction', $pa_options, null)) { $t_item->setTransaction($o_trans); }
+
+		if ($t_item->load($pn_id)) {
+			$vs_ret = $t_item->get('item_value');
+			MemoryCache::save($vs_cache_key, $vs_ret, 'ListItemValuesForIDs');
+			return $vs_ret;
+		}
+		return null;
+	}
+	# ---------------------------------------
+	/**
+	 * Get List item value for a given list code and idno
+	 *
+	 * @param string $ps_list_code
+	 * @param string $ps_idno
+	 * @return string
+	 */
+	function caGetListItemValueForIdno($ps_list_code, $ps_idno) {
+		return caGetListItemValueForID(caGetListItemID($ps_list_code, $ps_idno));
 	}
 	# ---------------------------------------
 	/**
@@ -279,6 +336,20 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 	}
 	# ---------------------------------------
 	/**
+	 * Get label type list
+	 * @param string|int $pm_table_name_or_num
+	 * @param bool $pb_preferred
+	 * @return string|null
+	 */
+	function caGetLabelTypeList($pm_table_name_or_num, $pb_preferred = true) {
+		$o_dm = Datamodel::load();
+		$vs_table_name = $o_dm->getTableName($pm_table_name_or_num);
+
+		$o_conf = Configuration::load();
+		return $o_conf->get($pb_preferred ? "{$vs_table_name}_preferred_label_type_list" : "{$vs_table_name}_nonpreferred_label_type_list");
+	}
+	# ---------------------------------------
+	/**
 	 * Fetch the id of the root item in list
 	 *
 	 * @param string $ps_list_code List code
@@ -309,5 +380,23 @@ require_once(__CA_MODELS_DIR__.'/ca_list_items.php');
 		$vs_code = $t_rel_types->get('type_code');
 		CompositeCache::save($pn_type_id, $vs_code, 'RelationshipIDsToCodes');
 		return $vs_code;
+	}
+	# ---------------------------------------
+	/**
+	 * Fetch the type id (primary key) for a given relationship type code
+	 * @param string $ps_type_code
+	 * @return int
+	 */
+	function caGetRelationshipTypeID($ps_type_code) {
+		if(CompositeCache::contains($ps_type_code, 'RelationshipTypeCodesToIDs')) {
+			return CompositeCache::fetch($ps_type_code, 'RelationshipTypeCodesToIDs');
+		}
+
+		$t_rel_types = new ca_relationship_types();
+		if(!$t_rel_types->load(array('type_code' => $ps_type_code))) { return false; }
+
+		$vn_id = $t_rel_types->getPrimaryKey();
+		CompositeCache::save($ps_type_code, $vn_id, 'RelationshipTypeCodesToIDs');
+		return $vn_id;
 	}
 	# ---------------------------------------

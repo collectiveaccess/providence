@@ -73,7 +73,14 @@ class IdnoSearchQueryTest extends AbstractSearchQueryTest {
 		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
 			'intrinsic_fields' => array(
 				'type_id' => 'image',
-				'idno' => '01 02 03 04',
+				'idno' => '2016.1.15',
+			),
+		)));
+
+		$this->assertGreaterThan(0, $this->addTestRecord('ca_objects', array(
+			'intrinsic_fields' => array(
+				'type_id' => 'image',
+				'idno' => 'CHS 34',
 			),
 		)));
 
@@ -83,6 +90,8 @@ class IdnoSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.idno:"D.99/2-39"' => 1,
 			'ca_objects.idno:"D.99/2-40"' => 0,
 			'ca_objects.idno:"D.99/2-"' => 0,
+			//'ca_objects.idno:D.99*' => 3, oops, this doesn't work in SqlSearch	
+			'ca_objects.idno:2016*' => 1,
 
 			'ca_objects.idno:"D.99"' => 3,
     		'ca_objects.idno:"D"' => 3,
@@ -91,9 +100,9 @@ class IdnoSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.idno:"D.99/0000001"' => 1,
 			'ca_objects.idno:"D.99/1"' => 1,
 
-			'ca_objects.idno:"01 02 03 04"' => 1,
-			'ca_objects.idno:"01 02"' => 1,
-			'ca_objects.idno:"03 04"' => 1,
+			'ca_objects.idno:"2016.1.15"' => 1,
+
+			//'ca_objects.idno:"CHS 34"' => 1,
 		));
 	}
 	# -------------------------------------------------------

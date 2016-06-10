@@ -47,8 +47,8 @@
 	print "<div class='componentAddTypeList'>"._t('Add component %1', $t_subject->getTypeListAsHTMLFormElement('change_type_id', array('id' => "{$vs_form_name}TypeID{$vs_field_name_prefix}{$vs_n}", 'onchange' => "caSwitchTypeComponentForm{$vs_field_name_prefix}{$vs_n}();"), array('value' => $t_subject->get('type_id'), 'restrictToTypes' => $va_restrict_to_types, 'dontIncludeSubtypesInTypeRestriction' => true, 'indentForHierarchy' => false)))."</div>"; 
 	
 	if ($vb_can_edit) {
-		print "<div style='float: right;'>".caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("Add %1", $t_subject->getTypeName()), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caSave{$vs_form_name}{$vs_field_name_prefix}{$vs_n}(event);"))
-		.' '.caJSButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "jQuery(\"#{$vs_form_name}{$vs_field_name_prefix}{$vs_n}\").parent().data(\"panel\").hidePanel();"))."</div><br style='clear: both;'/>\n";
+		print "<div style='float: right;'>".caJSButton($this->request, __CA_NAV_ICON_ADD__, _t("Add %1", $t_subject->getTypeName()), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "caSave{$vs_form_name}{$vs_field_name_prefix}{$vs_n}(event);"))
+		.' '.caJSButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), "{$vs_form_name}{$vs_field_name_prefix}{$vs_n}", array("onclick" => "jQuery(\"#{$vs_form_name}{$vs_field_name_prefix}{$vs_n}\").parent().data(\"panel\").hidePanel();"))."</div><br style='clear: both;'/>\n";
 	}
 ?>
 	</div>

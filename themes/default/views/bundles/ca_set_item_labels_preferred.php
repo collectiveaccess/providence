@@ -49,7 +49,7 @@
 	<textarea class='caLabelTemplate' style='display: none;'>
 		<div id="{fieldNamePrefix}Label_{n}" class="labelInfo">
 			<div style="float: right;">
-				<a href="#" class="caDeleteLabelButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
+				<a href="#" class="caDeleteLabelButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 			</div>
 			
 			<?php print $t_label->htmlFormElement('caption', "^ELEMENT", array_merge($va_settings, array('name' => "{fieldNamePrefix}caption_{n}", 'id' => "{fieldNamePrefix}caption_{n}", "value" => "{{caption}}", 'no_tooltips' => true, 'textAreaTagName' => 'textentry', 'readonly' => $vb_read_only))); ?>
@@ -62,7 +62,7 @@
 		<div class="caLabelList">
 		
 		</div>
-		<div class="button labelInfo caAddLabelButton"><a href='#'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add label"); ?></a></div>
+		<div class="button labelInfo caAddLabelButton"><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add label"); ?></a></div>
 	</div>	
 </div>
 <script type="text/javascript">

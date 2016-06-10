@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -35,6 +35,7 @@
    */
 
 require_once(__CA_LIB_DIR__.'/ca/BundlableLabelableBaseModelWithAttributes.php');
+require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
 require_once(__CA_MODELS_DIR__.'/ca_editor_uis.php');
 require_once(__CA_MODELS_DIR__.'/ca_editor_ui_bundle_placements.php');
 require_once(__CA_MODELS_DIR__.'/ca_editor_ui_screen_type_restrictions.php');
@@ -407,7 +408,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		if (!$pm_table_name_or_num) { $pm_table_name_or_num = $this->getTableNum(); }
 		
 		if (!is_numeric($pm_table_name_or_num)) { $pm_table_name_or_num = $this->_DATAMODEL->getTableNum($pm_table_name_or_num); }
-		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($pm_table_name_or_num, false))) { return null; }
+		if (!($t_instance = $this->getAppDatamodel()->getInstanceByTableNum($pm_table_name_or_num, false))) { return null; }
 		$vs_table = $t_instance->tableName();
 
 		// if cache is disabled, make sure bundle definitions are up-to-date for this instance. they are usually cached.
@@ -521,9 +522,12 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 					}
 					break;
 				case 'related_table':
-					if($vs_bundle == 'ca_objects_table') {
-						$t_rel = $this->_DATAMODEL->getInstanceByTableName('ca_objects', true);
-						$va_path = array_keys($this->_DATAMODEL->getPath($t_instance->tableName(), 'ca_objects'));
+					if(preg_match("/^([a-z_]+)_(related_list|table)$/", $vs_bundle, $va_matches)) {
+						$vs_table = $va_matches[1];
+						$t_rel = $this->_DATAMODEL->getInstanceByTableName($vs_table, true);
+						$va_path = array_keys($this->_DATAMODEL->getPath($t_instance->tableName(), $vs_table));
+						if(!is_array($va_path)) { continue 2; }
+
 						$va_additional_settings = array(
 							'restrict_to_relationship_types' => array(
 								'formatType' => FT_TEXT,
@@ -745,6 +749,18 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'description' => _t('Restricts display to items from the specified list(s). Leave all unselected for no restriction.')
 						);
 					}
+
+					if ($vs_bundle == 'ca_object_lots') {
+						$va_additional_settings['display_template'] = array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'default' => '^ca_object_lots.preferred_labels (^ca_object_lots.idno_stub)',
+							'width' => "275px", 'height' => 4,
+							'label' => _t('Relationship display template'),
+							'description' => _t('Layout for relationship when displayed in list (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
+						);
+					}
+
 					if (in_array($vs_bundle, array('ca_places', 'ca_list_items', 'ca_storage_locations'))) {
 						$va_additional_settings['useHierarchicalBrowser'] = array(
 							'formatType' => FT_TEXT,
@@ -978,6 +994,11 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									)
 								);
 								break;
+							case 'circulation_status':
+								$va_additional_settings = array(
+									// @todo: maybe add settings!?
+								);
+								break;
 							case 'ca_objects_location':
 								$va_additional_settings = array(
 									'locationTrackingMode' => array(
@@ -1109,6 +1130,26 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'default' => '0',
 										'label' => _t('Hide "Update Location" controls'),
 										'description' => _t('Check this option if you want to to hide the "Update Location" controls in this bundle placement.')
+									),
+									'hide_add_to_occurrence_controls' => array(
+										'formatType' => FT_NUMBER,
+										'displayType' => DT_CHECKBOXES,
+										'width' => "10", 'height' => "1",
+										'takesLocale' => false,
+										'default' => '0',
+										'label' => _t('Hide "Add to" occurrence controls'),
+										'description' => _t('Check this option if you want to to hide the "Add to" occurrence controls in this bundle placement.'),
+										'hideOnSelect' => ['add_to_occurrence_types']
+									),
+									'add_to_occurrence_types' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'useList' => 'occurrence_types',
+										'takesLocale' => false,
+										'default' => '',
+										'width' => "275px", 'height' => "75px",
+										'label' => _t('Show "Add to" occurrence controls for'),
+										'description' => ''
 									),
 									'useHierarchicalBrowser' => array(
 										'formatType' => FT_TEXT,
@@ -1325,6 +1366,18 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 										'label' => _t('Color for storage location'),
 										'description' => _t('Color to use as highlight storage location.')
 									),
+									'ca_storage_locations_elements' => array(
+										'formatType' => FT_TEXT,
+										'displayType' => DT_SELECT,
+										'default' => '',
+										'takesLocale' => false,
+										'table' => 'ca_objects_x_storage_locations',
+										'showMetadataElementsWithDataType' => "*",
+										'includeIntrinsics' => ['effective_date'],
+										'width' => "275px", 'height' => 4,
+										'label' => _t('Interstitial storage location elements to set'),
+										'description' => _t('')
+									),
 									'ca_storage_locations_displayTemplate' => array(
 										'formatType' => FT_TEXT,
 										'displayType' => DT_FIELD,
@@ -1409,16 +1462,20 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								);
 								break;
 							case 'ca_set_items':
-								$va_additional_settings = array(
-									'display_template' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_FIELD,
-										'default' => '',
-										'width' => "275px", 'height' => 4,
-										'label' => _t('Display template'),
-										'description' => _t('Layout for set item information when used in a display list. For example: <i>^ca_objects.deaccession_notes</i>.')
-									)
-								);
+								require_once(__CA_MODELS_DIR__."/ca_sets.php");
+								$t_set = new ca_sets();
+								
+								$va_additional_settings = array();
+								foreach($t_set->getFieldInfo('table_num', 'BOUNDS_CHOICE_LIST') as $vs_table_display_name => $vn_table_num) {
+									$va_additional_settings[$this->_DATAMODEL->getTableName($vn_table_num).'_display_template'] = array(
+											'formatType' => FT_TEXT,
+											'displayType' => DT_FIELD,
+											'default' => '',
+											'width' => "275px", 'height' => 4,
+											'label' => _t('Display template (%1)', $vs_table_display_name),
+											'description' => _t('Layout for %1 set item information when used in a display list. For example: <i>^ca_objects.deaccession_notes</i>.', $vs_table_display_name)
+									);
+								}
 								break;
 						}
 						$va_additional_settings['documentation_url'] = array(
@@ -1437,8 +1494,18 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			$t_placement->setSettingDefinitionsForPlacement($va_additional_settings);
-			
-			$vs_display = "<div id='uiEditorBundle_{$vs_table}_{$vs_bundle_proc}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_table.'.'.$vs_bundle_proc))."</div>";
+			$vs_label = $t_instance->getDisplayLabel($t_instance->tableName().'.'.$vs_bundle_proc) ?: $va_info['label'];
+			$vs_display = "<div id='uiEditorBundle_{$vs_table}_{$vs_bundle_proc}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label)."</div>";
+
+			$va_additional_settings['bundleTypeRestrictions'] = [
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'default' => '',
+				'showTypesForTable' => $vs_table,
+				'width' => "275px", 'height' => 4,
+				'label' => _t('Display bundle for types'),
+				'description' => _t('Restrict which types this bundle is displayed for. If no types are selected the bundle will be displayed for <strong>all</strong> types.')	
+			];
 
 			$va_available_bundles[$vs_display][$vs_bundle] = array(
 				'bundle' => $vs_bundle,
@@ -1689,7 +1756,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		$va_placements_in_screen = array();
 		foreach($va_placements as $vn_placement_id => $va_placement) {
 			$vs_bundle_proc = preg_replace('!^ca_attribute_!', '', $va_placement['bundle_name']);
-			
 			$vs_label = ($vs_label = ($t_instance->getDisplayLabel($t_instance->tableName().'.'.$vs_bundle_proc))) ? $vs_label : $va_placement['bundle_name'];
 			if(is_array($va_placement['settings']['label'])){
 				$va_tmp = caExtractValuesByUserLocale(array($va_placement['settings']['label']));
@@ -1874,6 +1940,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 
 		if($t_instance instanceof BaseRelationshipModel) { // interstitial
 			$o_view->setVar('type_restrictions', $t_instance->getRelationshipTypesAsHTMLSelect($t_instance->getLeftTableName(),null,null,array('name' => 'type_restrictions[]', 'multiple' => 1, 'size' => 5), array('values' => $va_restriction_type_ids)));
+		} elseif($t_instance instanceof ca_representation_annotations) { // config based
+			$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
+			$va_annotation_type_select_list = array();
+			foreach($o_annotation_type_conf->get('types') as $vs_type_code => $va_type_info) {
+				if(!isset($va_type_info['typeID'])) { continue; }
+				$va_annotation_type_select_list[$vs_type_code] = $va_type_info['typeID'];
+			}
+
+			$o_view->setVar('type_restrictions', caHTMLSelect('type_restrictions[]', $va_annotation_type_select_list, array('multiple' => 1, 'size' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)));
 		} else { // list-based
 			$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)));
 		}

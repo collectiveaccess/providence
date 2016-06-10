@@ -39,14 +39,14 @@ print "<h2>"._t("The export has been processed. Configure your download below.")
 	<tr>
 		<td style="vertical-align: top;"><span class='formLabelPlain'><?php print _t("Destination(s)"); ?>&colon;</td>
 		<td>
-			<div><?php print caJSButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, _t('Download'), 'file_download', array('id' => 'file_download', 'onclick' => 'caProcessDestination("file_download");')); ?></div>
+			<div><?php print caJSButton($this->request, __CA_NAV_ICON_DOWNLOAD__, _t('Download'), 'file_download', array('id' => 'file_download', 'onclick' => 'caProcessDestination("file_download");')); ?></div>
 <?php
 			if(is_array($va_destinations)) {
 				foreach($va_destinations as $vs_code => $va_dest) {
 					if(!isset($va_dest['type']) || ($va_dest['type'] != 'github')) { continue; } // we only support github atm
 					if(!isset($va_dest['display']) || !$va_dest['display']) { $va_dest['display'] = "???"; }
 
-					print "<div>".caJSButton($this->request, __CA_NAV_BUTTON_UPDATE__, $va_dest['display'], $vs_code, array('onclick' => 'caProcessDestination("'.$vs_code.'"); return false;'))."<div/>\n";
+					print "<div>".caJSButton($this->request, __CA_NAV_ICON_UPDATE__, $va_dest['display'], $vs_code, array('onclick' => 'caProcessDestination("'.$vs_code.'"); return false;'))."<div/>\n";
 				}
 			}
 ?>

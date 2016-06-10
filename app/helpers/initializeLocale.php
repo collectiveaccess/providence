@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -38,8 +38,12 @@
    function initializeLocale($g_ui_locale) {
    		global $_, $_locale;
    		
-		if(!file_exists($vs_locale_path = __CA_APP_DIR__.'/locale/user/'.$g_ui_locale.'/messages.mo')) {
-			$vs_locale_path = __CA_APP_DIR__.'/locale/'.$g_ui_locale.'/messages.mo';
+   		if(
+   			(!defined('__CA_THEME_DIR__') || !file_exists($vs_locale_path = __CA_THEME_DIR__.'/locale/'.$g_ui_locale.'/messages.mo'))
+		) {
+			if (!file_exists($vs_locale_path = __CA_APP_DIR__.'/locale/user/'.$g_ui_locale.'/messages.mo')) {
+				$vs_locale_path = __CA_APP_DIR__.'/locale/'.$g_ui_locale.'/messages.mo';
+			}
 		}
 		if(file_exists($vs_locale_path)) {
 			// If the locale is valid, locale is set

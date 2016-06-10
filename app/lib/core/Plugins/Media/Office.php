@@ -164,8 +164,7 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# for import and export
 	public function register() {
 		$this->opo_config = Configuration::load();
-		$vs_external_app_config_path = $this->opo_config->get('external_applications');
-		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
+		$this->opo_external_app_config = Configuration::load(__CA_CONF_DIR__."/external_applications.conf");
 		$this->ops_libreoffice_path = $this->opo_external_app_config->get('libreoffice_app');
 		$this->opb_libre_office_installed = caMediaPluginLibreOfficeInstalled($this->ops_libreoffice_path);
 		
@@ -687,16 +686,6 @@ class WLPlugMediaOffice Extends BaseMediaPlugin Implements IWLPlugMedia {
 					$vs_poster_frame = _t("View PDF document");
 				}
 				
-				$vs_buf = "<script type='text/javascript'>jQuery(document).ready(function() {
-	new PDFObject({
-		url: '{$ps_url}',
-		id: '{$vs_id}',
-		width: '{$vn_viewer_width}px',
-		height: '{$vn_viewer_height}px',
-	}).embed('{$vs_id}_div');
-});</script>
-	<div id='{$vs_id}_div'><a href='$ps_url' target='_pdf'>".$vs_poster_frame."</a></div>
-";
 				return $vs_buf;
 			} else {
 				if (!is_array($pa_options)) { $pa_options = array(); }
@@ -723,4 +712,3 @@ function WLPlugOfficeShutdown() {
 }
 
 register_shutdown_function("WLPlugOfficeShutdown");
-?>

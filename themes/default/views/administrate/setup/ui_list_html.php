@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,8 +28,8 @@
 $va_editor_ui_list = $this->getVar('editor_ui_list');
 
 $vs_type_menu = '<div class="sf-small-menu form-header-button rounded">'.
-							'<div style="float:right; margin: 3px;">'.
-								'<a href="#" onclick="_navigateToNewForm(jQuery(\'#tableList\').val());">'.caNavIcon($this->request, __CA_NAV_BUTTON_ADD_LARGE__).'</a>'.
+							'<div class="caNavHeaderIcon">'.
+								'<a href="#" onclick="_navigateToNewForm(jQuery(\'#tableList\').val());">'.caNavIcon(__CA_NAV_ICON_ADD__, 2).'</a>'.
 							'</div>'.
 						'<form action="#">'._t('New interface for ').' '.caHTMLSelect('editor_type', $this->getVar('table_list'), array('id' => 'tableList')).'</form>'.
 						'</div>';
@@ -54,7 +54,7 @@ $vs_type_menu = '<div class="sf-small-menu form-header-button rounded">'.
 		);
 	?>
 
-	<table id="caUIList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+	<table id="caUIList" class="listtable">
 		<thead>
 		<tr>
 			<th>
@@ -69,7 +69,7 @@ $vs_type_menu = '<div class="sf-small-menu form-header-button rounded">'.
 			<th>
 				<?php _p('System?'); ?>
 			</th>
-			<th class="{sorter: false} list-header-nosort">&nbsp;</th>
+			<th class="{sorter: false} list-header-nosort listtableEdit"> </th>
 		</tr>
 		</thead>
 		<tbody>
@@ -89,8 +89,8 @@ $vs_type_menu = '<div class="sf-small-menu form-header-button rounded">'.
 			<td>
 				<?php print $va_ui['is_system_ui'] ? _t('Yes') : _t('No'); ?>
 			</td>
-			<td>
-				<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), '', 'administrate/setup/interface_editor', 'InterfaceEditor', 'Edit', array('ui_id' => $va_ui['ui_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+			<td class="listtableEdit">
+				<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'administrate/setup/interface_editor', 'InterfaceEditor', 'Edit', array('ui_id' => $va_ui['ui_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 			</td>
 		</tr>
 <?php

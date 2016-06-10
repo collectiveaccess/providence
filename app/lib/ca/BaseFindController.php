@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -43,6 +43,7 @@
 	require_once(__CA_LIB_DIR__.'/core/Parsers/ZipStream.php');
  	require_once(__CA_LIB_DIR__.'/core/Print/PDFRenderer.php');
 	require_once(__CA_MODELS_DIR__.'/ca_data_exporters.php');
+ 	require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
  	
 	class BaseFindController extends ActionController {
 		# ------------------------------------------------------------------
@@ -57,6 +58,13 @@
 		
  		protected $opb_type_restriction_has_changed = false;
  		protected $opn_type_restriction_id = null;
+ 		
+ 		protected $opo_app_plugin_manager;
+		/**
+		 * List of available search-result sorting fields
+		 * Is associative array: values are display names for fields, keys are full fields names (table.field) to be used as sort
+		 */
+		protected $opa_sorts;
 		# ------------------------------------------------------------------
 		/**
 		 *
@@ -64,6 +72,11 @@
 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
 			AssetLoadManager::register("timelineJS");
  			AssetLoadManager::register('panel');
+ 			AssetLoadManager::register("tableview");
+ 			AssetLoadManager::register("bundleableEditor");
+ 			AssetLoadManager::register("bundleListEditorUI");
+ 			
+ 			$this->opo_app_plugin_manager = new ApplicationPluginManager();
  			
  			parent::__construct($po_request, $po_response, $pa_view_paths);
  			$this->opo_datamodel = Datamodel::load();
@@ -92,17 +105,17 @@
  		public function Index($pa_options=null) {
  			$po_search = isset($pa_options['search']) ? $pa_options['search'] : null;
  			
- 			$t_model 				= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+ 			$t_instance 				= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
  			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
  			
  			// Make sure user has access to at least one type
  			if (
- 				(method_exists($t_model, 'getTypeFieldName')) 
+ 				(method_exists($t_instance, 'getTypeFieldName')) 
  				&& 
- 				$t_model->getTypeFieldName() 
+ 				$t_instance->getTypeFieldName() 
  				&& 
  				(
- 					(!$t_model->typeIDIsOptional())
+ 					(!$t_instance->typeIDIsOptional())
  					&&
  					(!is_null($va_types = caGetTypeListForUser($this->ops_tablename, array('access' => __CA_BUNDLE_ACCESS_READONLY__))))
  					&& 
@@ -113,93 +126,15 @@
  				return;
  			}
 			
-			$va_display_list = array();
-			$t_display = $this->opo_datamodel->getInstanceByTableName('ca_bundle_displays', true); 
-			$t_display->load($vn_display_id);
-			
-			$vs_view = $this->opo_result_context->getCurrentView();
-			
-			if ($vn_display_id && ($t_display->haveAccessToDisplay($this->request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
-				$va_placements = $t_display->getPlacements(array('settingsOnly' => true));
-				foreach($va_placements as $vn_placement_id => $va_display_item) {
-					$va_settings = caUnserializeForDatabase($va_display_item['settings']);
-					
-					// get column header text
-					$vs_header = $va_display_item['display'];
-					if (isset($va_settings['label']) && is_array($va_settings['label'])) {
-						$va_tmp = caExtractValuesByUserLocale(array($va_settings['label']));
-						if ($vs_tmp = array_shift($va_tmp)) { $vs_header = $vs_tmp; }
-					}
-					
-					$va_display_list[$vn_placement_id] = array(
-						'placement_id' => $vn_placement_id,
-						'bundle_name' => $va_display_item['bundle_name'],
-						'display' => $vs_header,
-						'settings' => $va_settings
-					);
-					
-					if ($vs_view == 'editable') {
-						$va_display_list[$vn_placement_id] = array_merge($va_display_list[$vn_placement_id], array(
-							'allowInlineEditing' => $va_display_item['allowInlineEditing'],
-							'inlineEditingType' => $va_display_item['inlineEditingType'],
-							'inlineEditingListValues' => $va_display_item['inlineEditingListValues']
-						));
-						
-						AssetLoadManager::register('panel');
-					}
-				}
-			}
-			
-			//
-			// Default display list (if none are specifically defined)
-			//
-			if (!sizeof($va_display_list)) {
-				if ($vs_idno_fld = $t_model->getProperty('ID_NUMBERING_ID_FIELD')) {
-					$va_multipar_id = new MultipartIDNumber($this->ops_tablename, '__default__', null, $t_model->getDb());
-					$va_display_list[$this->ops_tablename.'.'.$vs_idno_fld] = array(
-						'placement_id' => $this->ops_tablename.'.'.$vs_idno_fld,
-						'bundle_name' => $this->ops_tablename.'.'.$vs_idno_fld,
-						'display' => $t_model->getDisplayLabel($this->ops_tablename.'.'.$vs_idno_fld),
-						'settings' => array(),
-						'allowInlineEditing' => $va_multipar_id->isFormatEditable($this->ops_tablename),
-						'inlineEditingType' => DT_FIELD,
-						'inlineEditingListValues' => array()
-					);
-				}
-				
-				if (method_exists($t_model, 'getLabelTableInstance') && !(($this->ops_tablename === 'ca_objects') && ($this->request->config->get('ca_objects_dont_use_labels')))) {
-					$t_label = $t_model->getLabelTableInstance();
-					$va_display_list[$this->ops_tablename.'.preferred_labels'] = array(
-						'placement_id' => $this->ops_tablename.'.preferred_labels',
-						'bundle_name' => $this->ops_tablename.'.preferred_labels',
-						'display' => $t_label->getDisplayLabel($t_label->tableName().'.'.$t_label->getDisplayField()),
-						'settings' => array(),
-						'allowInlineEditing' => true,
-						'inlineEditingType' => DT_FIELD,
-						'inlineEditingListValues' => array()
-					);
-				}
-				if ($vs_view == 'editable') {
-					AssetLoadManager::register('panel');
-				}
-			}
-			
- 			$this->view->setVar('current_display_list', $vn_display_id);
- 			$this->view->setVar('t_display', $t_display);
- 			
- 			if ($vs_view == 'editable') {
- 				$this->view->setVar('columns', $this->getInlineEditColumns($va_display_list, array('request' => $this->request)));
- 				$this->view->setVar('columnHeaders', caExtractValuesFromArrayList($va_display_list, 'display', array('preserveKeys' => false)));
- 			
-				$this->view->setVar('rowHeaders', array());
- 			
- 			}
+			$va_display_list = $this->_getDisplayList($vn_display_id);
+
+			$t_display = $this->opo_datamodel->getInstanceByTableName('ca_bundle_displays', true);  			
  			
  			// figure out which items in the display are sortable
- 			if (method_exists($t_model, 'getApplicableElementCodes')) {
-				$va_sortable_elements = ca_metadata_elements::getSortableElements($t_model->tableName());
-				$va_attribute_list = array_flip($t_model->getApplicableElementCodes($this->opo_result_context->getTypeRestriction($vb_dummy), false, false));
-				$t_label = $t_model->getLabelTableInstance();
+ 			if (method_exists($t_instance, 'getApplicableElementCodes')) {
+				$va_sortable_elements = ca_metadata_elements::getSortableElements($t_instance->tableName());
+				$va_attribute_list = array_flip($t_instance->getApplicableElementCodes($this->opo_result_context->getTypeRestriction($vb_dummy), false, false));
+				$t_label = $t_instance->getLabelTableInstance();
 				$vs_label_table_name = $t_label->tableName();
 				$vs_label_display_field = $t_label->getDisplayField();
 				foreach($va_display_list as $vn_i => $va_display_item) {
@@ -211,7 +146,7 @@
 						(($va_tmp[0] == $this->ops_tablename) && ($va_tmp[1] === 'preferred_labels'))
 					) {
 						$va_display_list[$vn_i]['is_sortable'] = true;
-						$va_display_list[$vn_i]['bundle_sort'] = $vs_label_table_name.'.'.$t_model->getLabelSortField();
+						$va_display_list[$vn_i]['bundle_sort'] = $vs_label_table_name.'.'.$t_instance->getLabelSortField();
 						continue;
 					}
 
@@ -225,13 +160,13 @@
 					// can't sort on related tables!?
 					if ($va_tmp[0] != $this->ops_tablename) { continue; }
 					
-					if ($t_model->hasField($va_tmp[1])) {
-						if($t_model->getFieldInfo($va_tmp[1], 'FIELD_TYPE') == FT_MEDIA) { // sorting media fields doesn't really make sense and can lead to sql errors
+					if ($t_instance->hasField($va_tmp[1])) {
+						if($t_instance->getFieldInfo($va_tmp[1], 'FIELD_TYPE') == FT_MEDIA) { // sorting media fields doesn't really make sense and can lead to sql errors
 							continue;
 						}
 						$va_display_list[$vn_i]['is_sortable'] = true;
 						
-						if ($t_model->hasField($va_tmp[1].'_sort')) {
+						if ($t_instance->hasField($va_tmp[1].'_sort')) {
 							$va_display_list[$vn_i]['bundle_sort'] = $va_display_item['bundle_name'].'_sort';
 						} else {
 							$va_display_list[$vn_i]['bundle_sort'] = $va_display_item['bundle_name'];
@@ -246,6 +181,7 @@
 					}
 				}
 			}
+			
  			$this->view->setVar('display_list', $va_display_list);
  			
  			// Default display is always there
@@ -265,16 +201,12 @@
  			$this->view->setVar('display_lists', $va_displays);	
  			
  			# --- print forms used for printing search results as labels - in tools show hide under page bar
- 			if ((bool)$this->request->config->get('use_legacy_print_labels_generator')) {
- 				$this->view->setVar('label_formats', $this->getLegacyPrintForms());
- 			} else {
- 				$this->view->setVar('label_formats', caGetAvailablePrintTemplates('labels', array('table' => $this->ops_tablename, 'type' => 'label')));
- 			}
+ 			$this->view->setVar('label_formats', caGetAvailablePrintTemplates('labels', array('table' => $this->ops_tablename, 'type' => 'label')));
  			
  			# --- export options used to export search results - in tools show hide under page bar
  			$vn_table_num = $this->opo_datamodel->getTableNum($this->ops_tablename);
 
-			//default export formats, not configureable
+			//default export formats, not configurable
 			$va_export_options = array(
 				array(
 					'name' => _t('Tab delimited'),
@@ -314,9 +246,9 @@
 
 			if(strlen($this->ops_tablename)>0){
 				if(!$this->request->user->canDoAction("can_edit_{$this->ops_tablename}")){
-					$this->view->setVar("default_action","Summary");
+					$this->view->setVar("default_action", "Summary");
 				} else {
-					$this->view->setVar("default_action","Edit");
+					$this->view->setVar("default_action", "Edit");
 				}
 			}
 			
@@ -337,8 +269,6 @@
 		 * Generates and outputs label-formatted PDF version of search results 
 		 */
 		protected function _genLabels($po_result, $ps_label_code, $ps_output_filename, $ps_title=null) {
-			if((bool)$this->request->config->get('use_legacy_print_labels_generator')) { return $this->_genLabelsLegacy($po_result, $ps_label_code, $ps_output_filename, $ps_title); }
-			
 			$vs_border = ((bool)$this->request->config->get('add_print_label_borders')) ? "border: 1px dotted #000000; " : "";
 			
 			//
@@ -450,267 +380,6 @@
 				$this->postError(3100, _t("Could not generate PDF"),"BaseFindController->PrintSummary()");
 			}
 			
-		}
-		# -------------------------------------------------------
- 		/**
- 		 * Returns list of available legacy label print formats
-		 * The legacy method of label generation is retained for backward compatibility and will be removed in an upcoming version
- 		 *
- 		 * @deprecated Deprecated since version 1.5
- 		 */
- 		public function getLegacyPrintForms() {
- 			require_once(__CA_LIB_DIR__.'/core/Print/PrintForms.php');
-			return PrintForms::getAvailableForms($this->request->config->get($this->ops_tablename.'_print_forms'));
-		}
-		# -------------------------------------------------------
-		/**
-		 * Generates and outputs label-formatted PDF version of search results using old "built-in" label generator
-		 * This method of label generation is retained for backward compatibility and will be removed in an upcoming version
-		 *
-		 * @deprecated Deprecated since version 1.5
-		 * @see BaseFindController::_genLabels
-		 */
-		protected function _genLabelsLegacy($po_result, $ps_label_code, $ps_output_filename, $ps_title=null) {
- 			require_once(__CA_LIB_DIR__.'/core/Print/PrintForms.php');
-			$o_print_form = new PrintForms($this->request->config->get($this->ops_tablename.'_print_forms'));
-			
-			if (!$o_print_form->setForm($ps_label_code)) {
-				// bail if there are no forms configured or the label code is invalid
-				$this->Index();
-				return;
-			}
-			
-			$o_print_form->setPageElement("datetime" , date("n/d/y @ g:i a"));
-			$o_print_form->setPageElement("title", $ps_title);
-
-			header("Content-type: application/pdf");
-			header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-			header("Cache-Control: no-store, no-cache, must-revalidate");
-			header("Cache-Control: post-check=0, pre-check=0", false);
-			header("Pragma: no-cache");
-			header("Cache-control: private");
-	
-			$t_subject = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
-			$va_elements = $o_print_form->getSubFormLayout();
-			
-			
-			// be sure to seek to the beginning when running labels
-			$po_result->seek(0); 
-			while($po_result->nextHit()) {
-				$t_subject->load($po_result->get($t_subject->primaryKey()));
-				
-				foreach($va_elements as $vs_element_name => $va_element_info) {
-					$vs_delimiter = $va_element_info['field_delimiter'].' ';
-					if (!is_array($va_fields = $va_element_info['fields'])) { continue; }
-					
-					$va_values[$vs_element_name] = array();
-					
-					if ($va_element_info['related_table']) {
-						// pulling data from related table
-						if ($t_rel_table = $this->opo_datamodel->getInstanceByTableName($va_element_info['related_table'], true)) {
-							$va_rel_items = $t_subject->getRelatedItems($va_element_info['related_table']);
-							$va_rel_value_groups = array();
-							
-							$vn_rel_count = 0;
-							$vn_limit = ($va_element_info['limit'] > 0) ? $va_element_info['limit'] : 0;
-							foreach($va_rel_items as $vs_key => $va_rel_item) {
-								$va_values[$vs_element_name] = array();
-								if ($t_rel_table->load($va_rel_item[$t_rel_table->primaryKey()])) {
-									foreach($va_fields as $vs_field) {
-										$va_tmp = explode(':', $vs_field);
-										if (sizeof($va_tmp) > 1) {
-											$vs_field_type = array_shift($va_tmp);
-											$vs_field = join(':', $va_tmp);
-										} else {
-											$vs_field_type = 'field';
-										}
-										
-										switch($vs_field_type) {
-											case 'attribute':
-												// output attributes
-												if ($vs_v = trim($t_rel_table->getAttributesForDisplay($vs_field))) {
-													$va_values[$vs_element_name][] = $vs_v;
-												}
-												break;
-											case 'labelForID':
-												$vn_key = $po_result->get($vs_field);
-												
-												list($vs_key_table, $vs_key_field) = explode('.', $vs_field);
-												$va_label_rels = $this->opo_datamodel->getManyToOneRelations($vs_key_table, $vs_key_field);
-											
-												if (is_array($va_label_rels) && (sizeof($va_label_rels) > 0)) {
-													if ($t_label_rel = $this->opo_datamodel->getInstanceByTableName($va_label_rels['one_table'], true)) {
-														if ($t_label_rel->load(array($va_label_rels['one_table_field'] => $vn_key))) {
-															if ($vs_label = trim($t_label_rel->getLabelForDisplay(false))) {
-																$va_values[$vs_element_name][] = $vs_label;	
-															}
-														}
-													}
-												}
-												break;
-											case 'label':
-												if ($vs_label = trim($t_rel_table->getLabelForDisplay(false))) {
-													$va_values[$vs_element_name][] = $vs_label;
-												}
-												break;
-											case 'hierlabel':
-												if ($vs_label = trim($t_rel_table->getLabelForDisplay(false))) {
-													$va_values[$vs_element_name][] = $vs_label;
-												}
-												break;
-											case 'field':
-											default:
-												// output standard database fields
-												list($vs_table, $vs_f) = explode('.', $vs_field);
-												if ($vs_v = trim($t_rel_table->get($vs_f))) {
-													$va_values[$vs_element_name][] = $vs_v;
-												}
-												break;
-										}
-									}
-									$vn_rel_count++;
-									if (($vn_limit > 0) && ($vn_limit < $vn_rel_count)) {
-										break;
-									}
-								}
-								if ($vs_formatted_string = $va_element_info['format']) {
-									for($vn_i=0; $vn_i < sizeof($va_values[$vs_element_name]); $vn_i++) {
-										$vs_formatted_string = str_replace('%'.($vn_i+1), $va_values[$vs_element_name][$vn_i], $vs_formatted_string);
-									}
-									$va_values[$vs_element_name] = $vs_formatted_string;
-								} else {
-									$va_values[$vs_element_name] = join($vs_delimiter, $va_values[$vs_element_name]);
-								}
-								$va_rel_value_groups[] = $va_values[$vs_element_name];
-							}
-							$va_values[$vs_element_name] = join("\n", $va_rel_value_groups);
-						}
-					} else {
-						// working on primary table
-						foreach($va_fields as $vs_field) {
-							$va_tmp = explode(':', $vs_field);
-							if (sizeof($va_tmp) > 1) {
-								$vs_field_type = array_shift($va_tmp);
-								$vs_field = join(':', $va_tmp);
-							} else {
-								$vs_field_type = 'field';
-							}
-							
-							switch($vs_field_type) {
-								case 'attribute':
-									// output attributes
-									if ($vs_v = trim($t_subject->getAttributesForDisplay($vs_field))) {
-										$va_values[$vs_element_name][] = $vs_v;
-									}
-									break;
-								case 'labelForID':
-									$vn_key = $po_result->get($vs_field);
-									
-									list($vs_key_table, $vs_key_field) = explode('.', $vs_field);
-									$va_label_rels = $this->opo_datamodel->getManyToOneRelations($vs_key_table, $vs_key_field);
-								
-									if (is_array($va_label_rels) && (sizeof($va_label_rels) > 0)) {
-										if ($t_label_rel = $this->opo_datamodel->getInstanceByTableName($va_label_rels['one_table'], true)) {
-											if ($t_label_rel->load(array($va_label_rels['one_table_field'] => $vn_key))) {
-												if ($vs_label = $t_label_rel->getLabelForDisplay(false)) {
-													$va_values[$vs_element_name][] = $vs_label;	
-												}
-											}
-										}
-									}
-									break;
-								case 'label':
-									if ($vs_label = trim($t_subject->getLabelForDisplay(false))) {
-										$va_values[$vs_element_name][] = $vs_label;
-									}
-									break;
-								case 'hierlabel':
-									if ($vs_label = trim($t_subject->getLabelForDisplay(false))) {
-										if (!$t_subject->isHierarchical()) {
-											$va_values[$vs_element_name][] = $vs_label;
-											break;
-										}
-										
-										$vn_hierarchy_type = $t_subject->getHierarchyType();
-										
-										$vs_label_table_name = $t_subject->getLabelTableName();
-										$vs_display_fld = $t_subject->getLabelDisplayField();
-										if (!($va_ancestor_list = $t_subject->getHierarchyAncestors(null, array(
-											'additionalTableToJoin' => $vs_label_table_name, 
-											'additionalTableJoinType' => 'LEFT',
-											'additionalTableSelectFields' => array($vs_display_fld, 'locale_id'),
-											'additionalTableWheres' => array('('.$vs_label_table_name.'.is_preferred = 1 OR '.$vs_label_table_name.'.is_preferred IS NULL)'),
-											'includeSelf' => true
-										)))) {
-											$va_ancestor_list = array();
-										}
-										
-										
-										$va_ancestors_by_locale = array();
-										$vs_pk = $t_subject->primaryKey();
-										
-										$vs_idno_field = $t_subject->getProperty('ID_NUMBERING_ID_FIELD');
-										foreach($va_ancestor_list as $vn_ancestor_id => $va_info) {
-											if (!$va_info['NODE']['parent_id'] && ($vn_hierarchy_type != __CA_HIER_TYPE_ADHOC_MONO__)) { continue; }
-											if (!($va_info['NODE']['name'] =  $va_info['NODE'][$vs_display_fld])) {		// copy display field content into 'name' which is used by bundle for display
-												if (!($va_info['NODE']['name'] = $va_info['NODE'][$vs_idno_field])) { $va_info['NODE']['name'] = '???'; }
-											}
-											$vn_locale_id = isset($va_info['NODE']['locale_id']) ? $va_info['NODE']['locale_id'] : null;
-											$va_ancestors_by_locale[$va_info['NODE'][$vs_pk]][$vn_locale_id] = $va_info['NODE'];
-										}
-										
-										$va_ancestor_list = array_reverse(caExtractValuesByUserLocale($va_ancestors_by_locale));
-										
-										$va_tmp = array();
-										foreach($va_ancestor_list as $vn_i => $va_ancestor) {
-											$va_tmp[] = $va_ancestor['name'];
-										}
-										
-										$vs_delimiter = (trim($vs_field)) ? $vs_field : ' > ';
-										$va_values[$vs_element_name][] = join($vs_delimiter, $va_tmp);
-									}
-									break;
-								case 'path':
-									if (method_exists($po_result, 'getMediaPath')) {
-										list($vs_version, $vs_field) = explode(':', $vs_field);
-										$va_values[$vs_element_name][] = $po_result->getMediaPath($vs_field, $vs_version);
-									}
-									break;
-								case 'field':
-								default:
-									// output standard database fields
-									if ($vs_v = trim($po_result->get($vs_field))) {
-										$va_values[$vs_element_name][] = $vs_v;
-									}
-									break;
-							}
-						}
-						
-						if ($vs_formatted_string = $va_element_info['format']) {
-							for($vn_i=0; $vn_i < sizeof($va_values[$vs_element_name]); $vn_i++) {
-								$vs_formatted_string = str_replace('%'.($vn_i+1), $va_values[$vs_element_name][$vn_i], $vs_formatted_string);
-							}
-							$va_values[$vs_element_name] = $vs_formatted_string;
-						} else {
-							$va_values[$vs_element_name] = join($vs_delimiter ? $vs_delimiter : ' ', $va_values[$vs_element_name]);
-						}
-					}
-					
-					
-					// convert HTML to line breaks
-					$va_values[$vs_element_name] = preg_replace('!<p[/]*>!', "\n\n", $va_values[$vs_element_name]); 
-					$va_values[$vs_element_name] = preg_replace('!</p>!', "", $va_values[$vs_element_name]); 
-					$va_values[$vs_element_name] = preg_replace('!<br[/]*>!', "\n", $va_values[$vs_element_name]); 
-					
-					// remove any other HTML tags
-					$va_values[$vs_element_name] = strip_tags($va_values[$vs_element_name]); 
-				}
-				$o_print_form->addNewSubForm($va_values, 0, 7);	
-			}
-			
-			$vs_output_file_name = mb_substr(preg_replace("/[^A-Za-z0-9\-]+/", '_', $ps_output_filename), 0, 30);
-			header("Content-Disposition: attachment; filename=labels_".$vs_output_file_name.".pdf");
-			$this->opo_response->addContent( $o_print_form->getPDF(), 'view');
 		}
 		# -------------------------------------------------------
 		# Export
@@ -848,7 +517,7 @@
  			if (!$ps_rows || !sizeof($pa_row_ids)) { 
  				$this->view->setVar('error', _t('Nothing was selected'));
  			} else {
-				$t_model = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+				$t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
 				
  				$pn_set_id = $this->request->getParameter('set_id', pInteger);
 				$t_set = new ca_sets($pn_set_id);
@@ -856,7 +525,7 @@
 				$this->view->setVar('set_name', $t_set->getLabelForDisplay());
 				$this->view->setVar('error', '');
 				
-				if ($t_set->getPrimaryKey() && ($t_set->get('table_num') == $t_model->tableNum())) {
+				if ($t_set->getPrimaryKey() && ($t_set->get('table_num') == $t_instance->tableNum())) {
 					$va_item_ids = $t_set->getItemRowIDs(array('user_id' => $this->request->getUserID()));
 					
 					$va_row_ids_to_add = array();
@@ -899,7 +568,7 @@
  			$vs_set_code = null;
  			$vn_added_items_count = 0;
  			if (is_array($va_row_ids) && sizeof($va_row_ids)) {
-				$t_model = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+				$t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
 				$vs_set_name = $this->request->getParameter('set_name', pString);
 				if (!$vs_set_name) { $vs_set_name = $this->opo_result_context->getSearchExpression(); }
 			
@@ -912,7 +581,7 @@
 				}
 
 				$t_set->set('user_id', $this->request->getUserID());
-				$t_set->set('table_num', $t_model->tableNum());
+				$t_set->set('table_num', $t_instance->tableNum());
 				$t_set->set('set_code', $vs_set_code = mb_substr(preg_replace("![^A-Za-z0-9_\-]+!", "_", $vs_set_name), 0, 100));
 			
 				$t_set->insert();
@@ -1014,17 +683,16 @@
  					$pa_ids = $this->opo_result_context->getResultList();
  				}
  				
-				$vn_file_count = 0;
-				
 				$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
 						
+				$va_download_list = [];
  				if (is_array($pa_ids) && sizeof($pa_ids)) {
  					$ps_version = $this->request->getParameter('version', pString);
 					if ($qr_res = $t_subject->makeSearchResult($t_subject->tableName(), $pa_ids, array('filterNonPrimaryRepresentations' => false))) {
 						
 						if (!($vn_limit = ini_get('max_execution_time'))) { $vn_limit = 30; }
 						set_time_limit($vn_limit * 10);
-						$o_zip = new ZipStream();
+						
 						while($qr_res->nextHit()) {
 							if (!is_array($va_version_list = $qr_res->getMediaVersions('ca_object_representations.media')) || !in_array($ps_version, $va_version_list)) {
 								$vs_version = 'original';
@@ -1082,21 +750,31 @@
 									}
 								}
 								if (!file_exists($vs_path)) { continue; }
-								$o_zip->addFile($vs_path, $vs_filename);
-								$vn_file_count++;
+								$va_download_list[$vs_path] = $vs_filename;
 							}
 						}
 					}
 				}
-				 				
- 				if ($o_zip && ($vn_file_count > 0)) {
+				
+				$vn_file_count = sizeof($va_download_list);			
+ 				if ($vn_file_count > 1) {
+					$o_zip = new ZipStream();
+					foreach($va_download_list as $vs_path => $vs_filename) {
+						$o_zip->addFile($vs_path, $vs_filename);
+					}
+					
  					$o_view->setVar('zip_stream', $o_zip);
 					$o_view->setVar('archive_name', 'media_for_'.mb_substr(preg_replace('![^A-Za-z0-9]+!u', '_', $this->getCriteriaForDisplay()), 0, 20).'.zip');
 
 					$this->response->addContent($o_view->render('download_file_binary.php'));
 					set_time_limit($vn_limit);
-
- 					//$this->render('Results/object_representation_download_binary.php');
+				} elseif($vn_file_count == 1) {
+					foreach($va_download_list as $vs_path => $vs_filename) {
+						$o_view->setVar('archive_path', $vs_path);
+						$o_view->setVar('archive_name', $vs_filename);
+						$this->response->addContent($o_view->render('download_file_binary.php'));
+						break;
+					}
  				} else {
  					$this->response->setHTTPResponseCode(204, _t('No files to download'));
  				}
@@ -1125,12 +803,7 @@
  			$this->view->setVar('current_view', $vs_view);
  			
  			$vn_type_id 			= $this->opo_result_context->getTypeRestriction($vb_dummy);
- 			$va_sortable_elements = ca_metadata_elements::getSortableElements($this->ops_tablename, $vn_type_id);
- 			
- 			if (!is_array($this->opa_sorts)) { $this->opa_sorts = array(); }
- 			foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
- 				$this->opa_sorts[$this->ops_tablename.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
- 			}
+			$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $this->getRequest())));
  			
  			$this->view->setVar('sorts', $this->opa_sorts);	// pass sort list to view for rendering
  			$this->view->setVar('current_sort', $vs_sort);
@@ -1151,8 +824,8 @@
  			$this->view->setVar('result', (is_array($va_results_id_list) && sizeof($va_results_id_list) > 0) ? caMakeSearchResult($this->ops_tablename, $va_results_id_list) : null);
  			
  			
- 			$t_model = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
- 			$this->view->setVar('t_subject', $t_model);
+ 			$t_instance = $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+ 			$this->view->setVar('t_subject', $t_instance);
  		}
  		# ------------------------------------------------------------------
  		# Visualization
@@ -1186,60 +859,15 @@
  		# ------------------------------------------------------------------
  		# Results-based inline editing
  		# ------------------------------------------------------------------
- 		/**
- 		 * Get part of result set for display in editable "spreadsheet"
- 		 *
+ 		/** 
+ 		 * Return view for results (spreadsheet-like) editor
  		 */
- 		public function getPartialResult($pa_options=null) {
- 			$t = new Timer();
- 			//self::Index($pa_options);
+ 		public function resultsEditor() {
+ 			AssetLoadManager::register("tableview");
+ 			
+ 			$va_ids 				= $this->opo_result_context->getResultList();
  			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
-			
-			$t_model 				= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
-			$va_display_list = array();
-			$t_display = $this->opo_datamodel->getInstanceByTableName('ca_bundle_displays', true); 
-			$t_display->load($vn_display_id);
-			
-			if ($vn_display_id && ($t_display->haveAccessToDisplay($this->request->getUserID(), __CA_BUNDLE_DISPLAY_READ_ACCESS__))) {
-				$va_placements = $t_display->getPlacements(array('settingsOnly' => true));
-				foreach($va_placements as $vn_placement_id => $va_display_item) {
-					$va_display_list[$vn_placement_id] = array(
-						'placement_id' => $vn_placement_id,
-						'bundle_name' => $va_display_item['bundle_name']
-					);
-				}
-			}
-			
-			//
-			// Default display list (if none are specifically defined)
-			//
-			if (!sizeof($va_display_list)) {
-				if ($vs_idno_fld = $t_model->getProperty('ID_NUMBERING_ID_FIELD')) {
-					$va_display_list[$this->ops_tablename.'.'.$vs_idno_fld] = array(
-						'placement_id' => $this->ops_tablename.'.'.$vs_idno_fld,
-						'bundle_name' => $this->ops_tablename.'.'.$vs_idno_fld
-					);
-				}
-				
-				if (method_exists($t_model, 'getLabelTableInstance')) {
-					$t_label = $t_model->getLabelTableInstance();
-					$va_display_list[$this->ops_tablename.'.preferred_labels'] = array(
-						'placement_id' => $this->ops_tablename.'.preferred_labels',
-						'bundle_name' => $this->ops_tablename.'.preferred_labels'
-					);
-				}
-			}
-		
- 			$po_search = isset($pa_options['search']) ? $pa_options['search'] : null;
- 			
- 			$pn_start = $this->request->getParameter('start', pInteger);
- 			
- 			if (!($vn_items_per_page = $this->request->getParameter('n', pInteger))) {
-				if (!($vn_items_per_page = $this->opo_result_context->getItemsPerPage())) { 
-					$vn_items_per_page = $this->opn_items_per_page_default; 
-					$this->opo_result_context->setItemsPerPage($vn_items_per_page);
-				}
- 			}
+ 			$va_display_list 		= $this->_getDisplayList($vn_display_id);
  			
  			$vs_search 				= $this->opo_result_context->getSearchExpression();
  					
@@ -1248,329 +876,122 @@
  				$vs_sort = array_shift($va_tmp); 
  			}
  			$vs_sort_direction = $this->opo_result_context->getCurrentSortDirection();
-			$vn_display_id 	= $this->opo_result_context->getCurrentBundleDisplay();
  			
  			if (!$this->opn_type_restriction_id) { $this->opn_type_restriction_id = ''; }
  			$this->view->setVar('type_id', $this->opn_type_restriction_id);
  			
  			// Get attribute sorts
- 			$va_sortable_elements = ca_metadata_elements::getSortableElements($this->ops_tablename, $this->opn_type_restriction_id);
+			$this->opa_sorts = array_replace($this->opa_sorts, caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $this->getRequest())));
  			
- 			if (!is_array($this->opa_sorts)) { $this->opa_sorts = array(); }
- 			foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
- 				$this->opa_sorts[$this->ops_tablename.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
- 			}
+ 			$this->view->setVar('display_id', $vn_display_id);
+ 			$this->view->setVar('columns',ca_bundle_displays::getColumnsForResultsEditor($va_display_list, array('request' => $this->request)));
+ 			$this->view->setVar('display_list', $va_display_list);
+ 			$this->view->setVar('num_rows', sizeof($va_ids));
  			
- 			if ($pa_options['appendToSearch']) {
- 				$vs_append_to_search .= " AND (".$pa_options['appendToSearch'].")";
- 			}
+ 			$this->render("Results/results_editable_html.php");
+ 		}
+ 		# ------------------------------------------------------------------
+ 		/** 
+ 		 * Return data for results editor
+ 		 */
+ 		public function getResultsEditorData() {
+ 			if (($pn_s = (int)$this->request->getParameter('s', pInteger)) < 0) { $pn_s = 0; }
+ 			if (($pn_c = (int)$this->request->getParameter('c', pInteger)) < 1) { $pn_c = 10; }
  			
-			//
-			// Execute the search
-			//
-			if($vs_search && ($vs_search != "")){ /* any request? */
-				$va_search_opts = array(
-					'sort' => $vs_sort, 
-					'sort_direction' => $vs_sort_direction, 
-					'appendToSearch' => $vs_append_to_search,
-					'checkAccess' => $va_access_values,
-					'no_cache' => $vb_is_new_search,
-					'dontCheckFacetAvailability' => true,
-					'filterNonPrimaryRepresentations' => true
-				);
-				if ($vb_is_new_search ||isset($pa_options['saved_search']) || (is_subclass_of($po_search, "BrowseEngine") && !$po_search->numCriteria()) ) {
-					$vs_browse_classname = get_class($po_search);
- 					$po_search = new $vs_browse_classname;
- 					if (is_subclass_of($po_search, "BrowseEngine")) {
- 						$po_search->addCriteria('_search', $vs_search);
- 						
- 						if (method_exists($this, "hookBeforeNewSearch")) {
- 							$this->hookBeforeNewSearch($po_search);
- 						}
- 					}
- 					
- 					$this->opo_result_context->setParameter('show_type_id', null);
- 				}
- 				
- 				if ($this->opn_type_restriction_id) {
- 					$po_search->setTypeRestrictions(array($this->opn_type_restriction_id));
- 				}
- 				
- 				$vb_criteria_have_changed = false;
- 				if (is_subclass_of($po_search, "BrowseEngine")) { 					
-					$vo_result = $po_search->getResults($va_search_opts);
-				} else {
-					$vo_result = $po_search->search($vs_search, $va_search_opts);
-				}
-				$this->opo_result_context->validateCache();
-				
-				// Only prefetch what we need
-				$vo_result->setOption('prefetch', $vn_items_per_page);
-				
- 				$this->view->setVar('result', $vo_result);
- 			}
+ 			$vn_display_id = $this->opo_result_context->getCurrentBundleDisplay();
+ 			$t_display = new ca_bundle_displays($vn_display_id);
+ 			$va_ids = $this->opo_result_context->getResultList();
+ 			$qr_res = caMakeSearchResult($this->ops_tablename, $va_ids);
  			
- 			$va_results = array();
- 			$vo_result->seek($pn_start);
- 			//$vo_result->registerElementsToPrefetch(array(15,4,1));
+ 			$va_display_list = $this->_getDisplayList($vn_display_id);
+ 			$va_data = [];
  			
- 			
- 			//print "[7] ". $t->getTime(4)."\n";
+ 			$qr_res->seek($pn_s);
  			$vn_c = 0;
- 			$vs_pk = $vo_result->primaryKey();
- 			while($vo_result->nextHit()) {
- 				$va_result = array("item_id" => $vo_result->get($vs_pk));
- 				foreach($va_display_list as $vn_placement_id => $va_placement) {
+ 			while($qr_res->nextHit()) {
+ 				$va_row = ['id' => $qr_res->getPrimaryKey()];
+ 				foreach($va_display_list as $va_display_item) {
+ 					$va_display_value = $t_display->getDisplayValue($qr_res, $va_display_item['placement_id'], ['returnInfo' => true]);
  					
- 					$va_result[str_replace(".", "-", $va_placement['bundle_name'])] = $t_display->getDisplayValue($vo_result, $vn_placement_id, array('request' => $this->request));
+ 					// Handsontable uses "." as a delimiter for nested object data sources
+ 					// which forces us to convert .'s in bundle names to something else... how about a comma?
+ 					$va_row[$vs_bundle = str_replace(".", ",", $va_display_item['bundle_name'])] = $va_display_value['value']; 
+ 					
+ 					// Flag how each field is editable
+ 					$va_row["{$vs_bundle}_edit_mode"] = $va_display_value['inlineEditable'] ? "inline" : "overlay";
  				}
- 				$va_results[] = $va_result;
- 				
+ 				$va_data[] = $va_row;
  				$vn_c++;
  				
- 				if ($vn_c >= $vn_items_per_page) { break; }
+ 				if (($pn_c > 0) && ($vn_c >= $pn_c)) { break; }
  			}
- 			//print "[8] ". $t->getTime(4)."\n";
- 			$this->view->setVar('results', $va_results);
- 			$this->render('Results/ajax_partial_results_json.php');
- 			//print "[x] ". $t->getTime(4)."\n";
+			$this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id);
+ 			
+ 			$this->view->setVar('data', $va_data);
+ 			$this->render("Results/ajax_results_editable_data_json.php");
  		}
  		# ------------------------------------------------------------------
- 		/**
- 		 * Save edits from "spreadsheet" (editable results) mode
- 		 *
- 		 */ 
- 		public function saveInlineEdit($pa_options=null) {
- 			global $g_ui_locale_id;
- 			$pa_changes = $this->request->getParameter("changes", pArray);
+ 		/** 
+ 		 * Save data from results editor. Data may be saved in two ways
+ 		 *	(1) "inline" from the spreadsheet view. Data in a changed cell will be submitted here in a "changes" array.
+ 		 *  (2) "complex" editing from a popup editing window. Data is submitted from a form as standard editor UI form data from a psuedo editor UI screen.
+ 		 */
+ 		public function saveResultsEditorData() {
+ 			$t_display = new ca_bundle_displays($vn_display_id = $this->opo_result_context->getCurrentBundleDisplay());
+ 			$va_response = $t_display->saveResultsEditorData($this->ops_tablename, ['request' => $this->request, 'user_id' => $this->request->getUserID(), 'type_id' => $this->opo_result_context->getTypeRestriction($vb_dummy)]);
  			
- 			$vs_resp = array();
- 			$o_dm = Datamodel::load();
- 			if (!is_array($pa_changes) || !sizeof($pa_changes)) {
- 				$va_resp['messages'][0] = _t("Nothing to save");
- 			} else {
- 				foreach($pa_changes as $vn_i => $pa_change) {
- 				$ps_table = $pa_change['table'];
- 				$pa_bundle 	= explode("-", $ps_bundle = $pa_change['bundle']);
- 				$pn_id = (int)$pa_change['id'];
- 				$ps_val = $pa_change['value'];
- 				
-				if (!($t_instance = $o_dm->getInstanceByTableName($ps_table, true))) {
-					$va_resp['errors'][$pn_id] = array(	
-						'error' => 100,
-						'message' => _t('Invalid table: %1', $ps_table)
-					);
-				} else {
-					if (!$t_instance->load($pn_id)) {
-						$va_resp['errors'][$pn_id] = array(
-							'error' => 100,
-							'message' => _t('Invalid id: %1', $pn_id)
-						);
-					} else {
-						if (!$t_instance->isSaveable($this->request)) {
-							$va_resp['errors'][$pn_id] = array(
-								'error' => 100,
-								'message' => _t('You are not allowed to edit this.')
-							);
-						} elseif ($pa_bundle[0] == 'preferred_labels') {
-							if ($this->request->user->getBundleAccessLevel($ps_table, $pa_bundle[0]) != __CA_BUNDLE_ACCESS_EDIT__) {
-								$va_resp['errors'][$pn_id] = array(
-									'error' => 100,
-									'message' => _t('You are not allowed to edit this.')
-								);
-							} else {
-								$vn_label_id = $t_instance->getPreferredLabelID($g_ui_locale_id);
-						
-								$va_label_values = array();
-								if (sizeof($pa_bundle) == 1) {
-									// is generic "preferred_labels"
-									$va_label_values[$t_instance->getLabelDisplayField()] = $ps_val;
-								} else {
-									$vs_preferred_label_element = $pa_bundle[1];
-									$va_label_values[$vs_preferred_label_element] = $ps_val;
-								}
-						
-								if ($vn_label_id) {
-									$t_instance->editLabel($vn_label_id, $va_label_values, $g_ui_locale_id, null, true);	// TODO: what about type?
-								} else {
-									$t_instance->addLabel($va_label_values, $g_ui_locale_id, null, true);
-								}
-						
-								if ($t_instance->numErrors()) {
-									$va_resp['errors'][$pn_id] = array(
-										'error' => 100,
-										'message' => _t('Could not set preferred label %1 to %2: %3', $ps_bundle, $ps_val, join("; ", $t_instance->getErrors()))
-									);
-								} else {
-									$va_resp['messages'][$pn_id] = array(
-										'message' => _t('Set preferred label %1 to %2', $ps_bundle, $ps_val),
-										'value' => $ps_val
-									);
-								}
-							}
-						} elseif ($t_instance->hasField($ps_bundle)) {
-							if ($this->request->user->getBundleAccessLevel($ps_table, $ps_bundle) != __CA_BUNDLE_ACCESS_EDIT__) {
-								$va_resp['errors'][$pn_id] = array(
-									'error' => 100,
-									'message' => _t('You are not allowed to edit this.')
-								);
-							} else {
-								// is it a list?
-								$t_list = new ca_lists();
-								$t_instance->setMode(ACCESS_WRITE);
-								if (($vs_list_code = $t_instance->getFieldInfo($ps_bundle, 'LIST')) && ($va_item = $t_list->getItemFromListByLabel($vs_list_code, $ps_val))) {
-									$t_instance->set($ps_bundle, $va_item['item_value']);
-								} elseif (($vs_list_code = $t_instance->getFieldInfo($ps_bundle, 'LIST_CODE')) && ($vn_item_id = $t_list->getItemIDFromListByLabel($vs_list_code, $ps_val))) {
-									$t_instance->set($ps_bundle, $vn_item_id);
-								} else {
-									$t_instance->set($ps_bundle, $ps_val);
-								}
-								$t_instance->update();
-						
-								if ($t_instance->numErrors()) {
-									$va_resp['errors'][$pn_id] = array(
-										'error' => 100,
-										'message' => _t('Could not set %1 to %2: %3', $ps_bundle, $ps_val, join("; ", $t_instance->getErrors()))
-									);
-								} else {
-									$va_resp['messages'][$pn_id] = array(
-										'message' => _t('Set %1 to %2', $ps_bundle, $ps_val),
-										'value' => $ps_val
-									);
-								}
-							}
-						} elseif ($t_instance->hasElement($ps_bundle)) {
-							$vn_datatype = ca_metadata_elements::getElementDatatype($ps_bundle);
-							
-							// Check if it repeats?
-							if ($vn_count = $t_instance->getAttributeCountByElement($ps_bundle) > 1) {
-								$va_resp['errors'][$pn_id] = array(
-									'error' => 100,
-									'message' => _t('Cannot edit <em>%1</em> here because it has multiple values. Try editing it directly.', mb_strtolower($t_instance->getDisplayLabel("{$ps_table}.{$ps_bundle}")))
-								);
-							} elseif(!in_array($vn_datatype, array(1,2,3,5,6,8,9,10,11,12))) {
-								// Check if it's a supported type?
-								$va_resp['errors'][$pn_id] = array(
-									'error' => 100,
-									'message' => _t('Cannot edit <em>%1</em> here. Try editing it directly.', mb_strtolower($t_instance->getDisplayLabel("{$ps_table}.{$ps_bundle}")))
-								);
-							} elseif ($this->request->user->getBundleAccessLevel($ps_table, $ps_bundle) != __CA_BUNDLE_ACCESS_EDIT__) {
-								$va_resp['errors'][$pn_id] = array(
-									'error' => 100,
-									'message' => _t('You are not allowed to edit this.')
-								);
-							} else {
-								// Do edit
-								$t_instance->setMode(ACCESS_WRITE);
-								
-								$vs_val_proc = null;
-								if ($vn_datatype == 3) {
-									if ($vn_id = ca_list_items::find(array('preferred_labels' => array('name_plural' => $ps_val)), array('returnAs' => 'firstId'))) {
-										$t_instance->replaceAttribute(array(
-											'locale_id' => $g_ui_locale_id,
-											$ps_bundle => $vn_id
-										), $ps_bundle);
-									
-										// convert list codes to display text
-										$t_list_item = new ca_list_items((int)$vn_id);
-										if ($t_list_item->getPrimaryKey()) {
-											$vs_val_proc = $t_list_item->get('ca_list_items.preferred_labels.name_plural');
-										}
-									}
-								} else {
-									$t_instance->replaceAttribute(array(
-										'locale_id' => $g_ui_locale_id,
-										$ps_bundle => $ps_val
-									), $ps_bundle);
-								}
-					
-								$t_instance->update();
-								
-								if (!$vs_val_proc) {
-									$vs_val_proc = $t_instance->get($ps_table.'.'.$ps_bundle);
-								}
-					
-								if ($t_instance->numErrors()) {
-									$va_resp['errors'][$pn_id] = array(
-										'error' => 100,
-										'message' => _t('Could not set %1 to %2: %3', $ps_bundle, $ps_val, join("; ", $t_instance->getErrors()))
-									);
-								} else {
-									$va_resp['messages'][$pn_id] = array(
-										'message' => _t('Set %1 to %2', $ps_bundle, $ps_val),
-										'value' => $vs_val_proc
-									);
-								}
-							}
-						} else {
-							$va_resp['errors'][$pn_id] = array(
-								'error' => 100,
-								'message' => _t('Invalid bundle: %1', $ps_bundle)
-							);
-						}
-					}
-				}
- 			}
- 			}
- 			
- 			$this->view->setVar('results', $va_resp);
- 			$this->render('Results/ajax_save_inline_edit_json.php');
- 		}
- 		# ------------------------------------------------------------------
- 		/**
- 		 * Return array of columns suitable for use with ca.tableview.js
- 		 * (implements "spreadsheet" editing UI)
- 		 *
- 		 */ 
- 		public function getInlineEditColumns($pa_display_list, $pa_options=null) {
- 			$po_request = isset($pa_options['request']) ? $pa_options['request'] : null;
- 			$va_bundle_names = caExtractValuesFromArrayList($pa_display_list, 'bundle_name', array('preserveKeys' => true));
-			$va_column_spec = array();
-
-			foreach($va_bundle_names as $vn_placement_id => $vs_bundle_name) {
-				if (!(bool)$pa_display_list[$vn_placement_id]['allowInlineEditing']) {
-					// Read only
-					$va_column_spec[] = array(
-						'data' => str_replace(".", "-", $vs_bundle_name), 
-						'readOnly' => !(bool)$pa_display_list[$vn_placement_id]['allowInlineEditing']
-					);
-					continue;
-				}
-		
-				switch($pa_display_list[$vn_placement_id]['inlineEditingType']) {
-					case DT_SELECT:
-						$va_column_spec[] = array(
-							'data' => str_replace(".", "-", $vs_bundle_name), 
-							'readOnly' => false,
-							'type' => 'DT_SELECT',
-							'source' => $pa_display_list[$vn_placement_id]['inlineEditingListValues'],
-							'strict' => true
-						);
-						break;
-					case DT_LOOKUP:
-						if ($po_request) {
-							$va_urls = caJSONLookupServiceUrl($po_request, 'ca_list_items');
-							$va_column_spec[] = array(
-								'data' => str_replace(".", "-", $vs_bundle_name), 
-								'readOnly' => false,
-								'type' => 'DT_LOOKUP',
-								'list' => $pa_display_list[$vn_placement_id]['inlineEditingList'],
-								'lookupURL' => $va_urls['search'],
-								'strict' => false
-							);
-						}
-						break;
-					default:
-						$va_column_spec[] = array(
-							'data' => str_replace(".", "-", $vs_bundle_name), 
-							'readOnly' => false,
-							'type' => 'DT_FIELD'
-						);
-						break;
-				}
-			}
+			$this->view->setVar('response', $va_response);
 			
-			return $va_column_spec;
-		}
+ 			$this->render("Results/ajax_save_results_editable_data_json.php");
+ 		}
+ 		# ------------------------------------------------------------------
+ 		/**
+ 		 * Return view for "complex" (pop-up) editor. This editor is loaded on click into a cell in the
+ 		 * results editor for data that is too complex to be edited in-cell.
+ 		 */ 
+ 		public function resultsComplexDataEditor() {
+ 			$t_instance 			= $this->opo_datamodel->getInstanceByTableName($this->ops_tablename, true);
+ 			$vn_display_id 			= $this->opo_result_context->getCurrentBundleDisplay();
+ 			
+ 			$pn_placement_id = (int)$this->request->getParameter('pl', pString);
+ 			$ps_bundle = $this->request->getParameter('bundle', pString);
+ 			$pn_id = $this->request->getParameter('id', pInteger);
+ 			$pn_col = $this->request->getParameter('col', pInteger);
+ 			$pn_row = $this->request->getParameter('row', pInteger);
+ 			
+ 			if (!$t_instance->load($pn_id) || !$t_instance->isSaveable($this->request, $ps_bundle)) {
+ 				throw new ApplicationException(_t('Cannot edit %1', $ps_bundle));
+ 			}
+ 			
+ 			$t_display = new ca_bundle_display_placements($pn_placement_id);
+ 			
+ 			$this->view->setVar('row', $pn_row);
+ 			$this->view->setVar('col', $pn_col);
+ 			$this->view->setVar('bundle', $ps_bundle);
+ 			$this->view->setVar('bundles', $va_bundles = ca_bundle_displays::makeBundlesForResultsEditor([$ps_bundle],[$t_display->get('settings')]));
+ 			$this->view->setVar('t_subject', $t_instance);
+ 					
+ 			$this->render("Results/ajax_results_editable_complex_data_form_html.php");
+ 		}
+ 		# ------------------------------------------------------------------
+ 		/**
+ 		 * Return list of bundles in display with inline editing settings for each.
+ 		 *
+ 		 * @param int $pn_display_id Numeric display_id
+ 		 * @return array 
+ 		 */
+ 		private function _getDisplayList($pn_display_id) {
+ 			$t_display = new ca_bundle_displays($pn_display_id);
+ 			
+ 			$vs_view = $this->opo_result_context->getCurrentView();
+ 			$va_ret = $t_display->getDisplayListForResultsEditor($this->ops_tablename, ['user_id' => $this->request->getUserID(), 'type_id' => $this->opo_result_context->getTypeRestriction($vb_dummy)]);
+ 			if (!is_array($va_ret)) { return null; }
+ 			
+			$this->view->setVar('t_display', $t_display);	
+			$this->view->setVar('current_display_list', $pn_display_id);
+			$this->view->setVar('column_headers', $va_ret['headers']);
+		
+ 			return $va_ret['displayList'];
+ 		}
  		# ------------------------------------------------------------------
 	}

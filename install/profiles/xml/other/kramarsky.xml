@@ -57,23 +57,6 @@
         </item>
       </items>
     </list>
-    <list code="object_lot_sources" hierarchical="0" system="0" vocabulary="0">
-      <labels>
-        <label locale="en_US">
-          <name>Object lot sources</name>
-        </label>
-      </labels>
-      <items>
-        <item idno="kramarsky" enabled="1" default="1">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Kramarsky</name_singular>
-              <name_plural>Kramarsky</name_plural>
-            </label>
-          </labels>
-        </item>
-      </items>
-    </list>
     <list code="occurrence_sources" hierarchical="0" system="0" vocabulary="0">
       <labels>
         <label locale="en_US">

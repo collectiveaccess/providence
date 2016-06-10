@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -27,6 +27,22 @@
  */
  
 	$t_subject 			= $this->getVar('t_subject');		// object representation
+
+	$va_media_props		= $t_subject->getMediaInfo('media', 'original');
+	$vn_timecode_offset	= isset($va_media_props['PROPERTIES']['timecode_offset']) ? (float)$va_media_props['PROPERTIES']['timecode_offset'] : 0;
+	
+	if (	// don't show bundle if this representation doesn't use bundles to edit annotations
+		!method_exists($t_subject, "getAnnotationType") || 
+		!$t_subject->getAnnotationType() ||
+		!method_exists($t_subject, "useBundleBasedAnnotationEditor") || 
+		!$t_subject->useBundleBasedAnnotationEditor()
+	) { 	
+?>
+		<span class='heading'><?php print _t('Annotations are not supported for this type of media'); ?></span>
+<?php
+			return; 
+	}
+	
 	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$t_item 			= $this->getVar('t_item');				// object representation annotation
 	$t_item_label 		= $this->getVar('t_item_label');	// object representation annotation_labels
@@ -115,7 +131,7 @@ if (	// don't show bundle if this representation doesn't use bundles to edit ann
 			}
 			if ($vs_goto_property) {
 ?>
-					</tr><tr><td <?php print ($vn_col_count > 1) ? "colspan='".$vn_col_count."'" : ""; ?>><a href="#" onclick="if (!jQuery('#annotation_media_player').data('hasBeenPlayed')) { jQuery('#annotation_media_player')[0].player.play(); jQuery('#annotation_media_player').data('hasBeenPlayed', true); } jQuery('#annotation_media_player')[0].player.setCurrentTime(parseFloat({{startTimecode_raw}}) >= 0 ? parseFloat({{startTimecode_raw}}) : 0); return false;" class="button" id="{fieldNamePrefix}gotoButton_{n}"><?php print _t('Play Clip'); ?> &rsaquo;</a></td>
+					</tr><tr><td <?php print ($vn_col_count > 1) ? "colspan='".$vn_col_count."'" : ""; ?>><a href="#" onclick="if (!jQuery('#annotation_media_player').data('hasBeenPlayed')) { jQuery('#annotation_media_player')[0].player.play(); jQuery('#annotation_media_player').data('hasBeenPlayed', true); } jQuery('#annotation_media_player')[0].player.setCurrentTime((parseFloat({{startTimecode_raw}}) >= 0 ? parseFloat({{startTimecode_raw}}) : 0) + <?php print $vn_timecode_offset; ?>); return false;" class="button" id="{fieldNamePrefix}gotoButton_{n}"><?php print _t('Play Clip'); ?> &rsaquo;</a></td>
 <?php
 			}
 			print "</tr></table></td>";
@@ -125,7 +141,7 @@ if (	// don't show bundle if this representation doesn't use bundles to edit ann
 					<td><a href="#" onclick="jQuery('#{fieldNamePrefix}moreOptions_{n}').slideToggle(250); return false;" class="button"><?php print _t('More'); ?> &rsaquo;</a></td>
 					
 					<td>
-						<a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>						
+						<a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>						
 					</td>
 				</tr>
 			</table>
@@ -135,7 +151,7 @@ if (	// don't show bundle if this representation doesn't use bundles to edit ann
 						<td><?php print $t_item_label->htmlFormElement('locale_id', null, array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}locale_id_{n}", 'name' => "{fieldNamePrefix}locale_id_{n}", "value" => "", 'no_tooltips' => false, 'WHERE' => array('(dont_use_for_cataloguing = 0)'))); ?></td>
 						<td><?php print $t_item->htmlFormElement('status', null, array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}status_{n}", 'name' => "{fieldNamePrefix}status_{n}", "value" => "", 'no_tooltips' => false)); ?></td>
 						<td><?php print $t_item->htmlFormElement('access', null, array('classname' => 'labelLocale', 'id' => "{fieldNamePrefix}access_{n}", 'name' => "{fieldNamePrefix}access_{n}", "value" => "", 'no_tooltips' => false)); ?></td>
-						<td><?php print urldecode(caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'editor/representation_annotations', 'RepresentationAnnotationEditor', 'Edit', array('annotation_id' => "{n}"), array('id' => "{fieldNamePrefix}edit_{n}"))); ?></td>
+						<td><?php print urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 1), '', 'editor/representation_annotations', 'RepresentationAnnotationEditor', 'Edit', array('annotation_id' => "{n}"), array('id' => "{fieldNamePrefix}edit_{n}"))); ?></td>
 					</tr>
 				</table>
 			</div>
@@ -143,7 +159,7 @@ if (	// don't show bundle if this representation doesn't use bundles to edit ann
 	</textarea>
 	
 	<div class="bundleContainer">	
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print _t("Add annotation"); ?> &rsaquo;</a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print _t("Add annotation"); ?> &rsaquo;</a></div>
 		<div class="caItemList" style="width: 100%; overflow-y: auto; min-height: 300px;";>
 		
 		</div>

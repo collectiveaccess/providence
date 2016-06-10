@@ -119,14 +119,22 @@ class Timestamp extends FieldType {
 	 * @param \Zend_Search_Lucene_Index_Term $po_term
 	 * @return array
 	 */
-	function getFilterForTerm($po_term) {
+	function getFiltersForTerm($po_term) {
 		$va_return = array();
 		$va_parsed_values = caGetISODates($po_term->text);
+		$vs_fld = str_replace('\\', '', $po_term->field);
 
-		$va_return[str_replace('\\', '', $po_term->field)] = array(
-			'gte' => $va_parsed_values['start'],
-			'lte' => $va_parsed_values['end'],
-		);
+		$va_return[] = array(
+			'range' => array(
+				$vs_fld => array(
+					'lte' => $va_parsed_values['end'],
+				)));
+
+		$va_return[] = array(
+			'range' => array(
+				$vs_fld => array(
+					'gte' => $va_parsed_values['start'],
+				)));
 
 		return $va_return;
 	}

@@ -34,10 +34,10 @@
 	<div class="sectionBox">
 <?php
 		print $vs_control_box = caFormControlBox(
-			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'SearchFormEditorForm').' '.
-			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'manage/search_forms', 'SearchFormEditor', 'Edit/'.$this->request->getActionExtra(), array('form_id' => $vn_form_id)), 
+			caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'SearchFormEditorForm').' '.
+			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'manage/search_forms', 'SearchFormEditor', 'Edit/'.$this->request->getActionExtra(), array('form_id' => $vn_form_id)), 
 			'', 
-			(intval($vn_form_id) > 0) ? caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'manage/search_forms', 'SearchFormEditor', 'Delete/'.$this->request->getActionExtra(), array('form_id' => $vn_form_id)) : ''
+			(intval($vn_form_id) > 0) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/search_forms', 'SearchFormEditor', 'Delete/'.$this->request->getActionExtra(), array('form_id' => $vn_form_id)) : ''
 		);
 		
 			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/form_id/'.$vn_form_id, 'SearchFormEditorForm', null, 'POST', 'multipart/form-data');
