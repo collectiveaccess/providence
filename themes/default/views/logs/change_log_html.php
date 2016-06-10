@@ -80,7 +80,7 @@
 ?>
 			<tr>
 				<td>
-					<?php print date("n/d/Y@g:i:sa T", $va_log_entry[0]['timestamp']); ?>
+					<?php print date("n/d/Y g:i:sa T", $va_log_entry[0]['timestamp']); ?>
 				</td>
 				<td>
 					<?php print $va_log_entry[0]['user_fullname']; ?>
