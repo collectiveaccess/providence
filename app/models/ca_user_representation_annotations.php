@@ -244,8 +244,8 @@ class ca_user_representation_annotations extends BundlableLabelableBaseModelWith
 	# ------------------------------------------------------
 	# Search
 	# ------------------------------------------------------
-	protected $SEARCH_CLASSNAME = 'RepresentationAnnotationSearch';
-	protected $SEARCH_RESULT_CLASSNAME = 'RepresentationAnnotationSearchResult';
+	protected $SEARCH_CLASSNAME = 'UserRepresentationAnnotationSearch';
+	protected $SEARCH_RESULT_CLASSNAME = 'UserRepresentationAnnotationSearchResult';
 	
 	
 	# ------------------------------------------------------
@@ -274,12 +274,30 @@ class ca_user_representation_annotations extends BundlableLabelableBaseModelWith
 		parent::__construct($pn_id);	# call superclass constructor
 		
  		$o_config = $this->getAppConfig();
- 		$this->opo_type_config = Configuration::load($o_config->get('annotation_type_config'));
+ 		$this->opo_type_config = Configuration::load(__CA_CONF_DIR__.'/annotation_types.conf');
 	}
 	# ------------------------------------------------------
 	protected function initLabelDefinitions($pa_options=null) {
 		parent::initLabelDefinitions($pa_options);
 		$this->BUNDLES['ca_objects'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects'));
+		$this->BUNDLES['ca_objects_table'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects list'));
+		$this->BUNDLES['ca_objects_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related objects list'));
+		$this->BUNDLES['ca_object_representations_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related object representations list'));
+		$this->BUNDLES['ca_entities_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities list'));
+		$this->BUNDLES['ca_places_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related places list'));
+		$this->BUNDLES['ca_occurrences_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related occurrences list'));
+		$this->BUNDLES['ca_collections_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related collections list'));
+		$this->BUNDLES['ca_list_items_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related list items list'));
+		$this->BUNDLES['ca_storage_locations_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related storage locations list'));
+		$this->BUNDLES['ca_loans_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related loans list'));
+		$this->BUNDLES['ca_movements_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related movements list'));
+		$this->BUNDLES['ca_object_lots_related_list'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related object lots list'));
+		$this->BUNDLES['ca_entities'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related entities'));
+		$this->BUNDLES['ca_places'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related places'));
+		$this->BUNDLES['ca_occurrences'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related occurrences'));
+		
+		$this->BUNDLES['ca_list_items'] = array('type' => 'related_table', 'repeating' => true, 'label' => _t('Related vocabulary terms'));
+
 		$this->BUNDLES['ca_user_representation_annotation_properties'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Annotation properties'));
 		
 	}

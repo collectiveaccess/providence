@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -110,6 +110,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		),
 		"TRANSFORMATIONS" => array(
 			"SCALE" 			=> array("width", "height", "mode", "antialiasing", "trim_edges", "crop_from"),
+			'CROP' 				=> array('width', 'height', 'x', 'y'),
 			"ANNOTATE"			=> array("text", "font", "size", "color", "position", "inset"),
 			"WATERMARK"			=> array("image", "width", "height", "position", "opacity"),
 			"ROTATE" 			=> array("angle"),
@@ -120,6 +121,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"DESPECKLE"			=> array(""),
 			"SHARPEN"			=> array("radius", "sigma"),
 			"UNSHARPEN_MASK"	=> array("radius", "sigma", "amount", "threshold"),
+			'FLIP'				=> array('direction')
 		),
 		"PROPERTIES" => array(
 			"width" 			=> 'R',
@@ -129,6 +131,7 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			'tiles'				=> 'R',
 			'layers'			=> 'W',
 			"quality" 			=> 'W',
+			'colorspace'		=> 'W',
 			'tile_width'		=> 'W',
 			'tile_height'		=> 'W',
 			'antialiasing'		=> 'W',
@@ -223,16 +226,9 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	public function register() {
 		// get config for external apps
 		$this->opo_config = Configuration::load();
-		$vs_external_app_config_path = $this->opo_config->get('external_applications');
-		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
+		$this->opo_external_app_config = Configuration::load(__CA_CONF_DIR__."/external_applications.conf");
 		$this->ops_imagemagick_path = $this->opo_external_app_config->get('imagemagick_path');
 		$this->ops_graphicsmagick_path = $this->opo_external_app_config->get('graphicsmagick_app');
-		
-		$this->ops_CoreImage_path = $this->opo_external_app_config->get('coreimagetool_app');
-		
-		if (caMediaPluginCoreImageInstalled($this->ops_CoreImage_path)) {
-			return null;	// don't use if CoreImage executable are available
-		}
 		
 		if (caMediaPluginImagickInstalled()) {	
 			return null;	// don't use if Imagick is available
@@ -259,10 +255,6 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if ($this->register()) {
 			$va_status['available'] = true;
 		} else {
-			if (caMediaPluginCoreImageInstalled($this->ops_CoreImage_path)) {
-				$va_status['unused'] = true;
-				$va_status['warnings'][] = _t("Didn't load because CoreImageTool is available and preferred");
-			}
 			if (caMediaPluginGraphicsMagickInstalled($this->ops_graphicsmagick_path)) {
 				$va_status['unused'] = true;
 				$va_status['warnings'][] = _t("Didn't load because GraphicsMagick is available and preferred");
@@ -768,6 +760,36 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				'radius' => $radius,
 				'sigma' => $sigma
 			);
+			break;		
+		# -----------------------
+		case "CROP":
+			$x = $parameters["x"];
+			$y = $parameters["y"];
+			$w = $parameters["width"];
+			$h = $parameters["height"];
+			
+			$this->handle['ops'][] = array(
+				'op' => 'crop',
+				'x' => $x,
+				'y' => $x,
+				'width' => $w,
+				'height' => $h
+			);
+			break;
+		# -----------------------
+		case "FLIP":
+			$dir = strtolower($parameters["direction"]);
+			
+			if ($dir == 'vertical') {
+				$this->handle['ops'][] = array(
+					'op' => 'flip'
+				);
+			} else {
+				$this->handle['ops'][] = array(
+					'op' => 'flop'
+				);
+			}
+			
 			break;
 		# -----------------------
 		case "UNSHARPEN_MASK":
@@ -1144,6 +1166,29 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# ------------------------------------------------
 	private function _imageMagickWrite($pa_handle, $ps_filepath, $ps_mimetype, $pn_quality=null) {
 		if (caMediaPluginImageMagickInstalled($this->ops_imagemagick_path)) {
+			if (($this->properties["colorspace"]) && ($this->properties["colorspace"] != "default")){ 
+				$vn_colorspace = null;
+				switch($this->properties["colorspace"]) {
+					case 'greyscale':
+					case 'grey':
+						$pa_handle['ops'][] = ['op' => 'colorspace', 'colorspace' => 'Gray'];
+						break;
+					case 'RGB':
+					case 'color':
+						$pa_handle['ops'][] = ['op' => 'colorspace', 'colorspace' => 'RGB'];
+						break;
+					case 'sRGB':
+						$pa_handle['ops'][] = ['op' => 'colorspace', 'colorspace' => 'sRGB'];
+						break;
+					case 'CMYK':
+						$pa_handle['ops'][] = ['op' => 'colorspace', 'colorspace' => 'CMYK'];
+						break;
+					case 'bitonal':
+						$pa_handle['ops'][] = ['op' => 'threshold', 'threshold' => '50%'];
+						break;
+				}
+			}
+			
 			$va_ops = array();	
 			foreach($pa_handle['ops'] as $va_op) {
 				switch($va_op['op']) {
@@ -1177,6 +1222,12 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 					case 'rotate':
 						if (!is_numeric($va_op['angle'])) { break; }
 						$va_ops['convert'][] = '-rotate '.$va_op['angle'];
+						break;
+					case 'colorspace':
+						$va_ops['convert'][] = '-colorspace '.$va_op['colorspace'];
+						break;
+					case 'threshold':
+						$va_ops['convert'][] = '-threshold '.$va_op['threshold'];
 						break;
 					case 'filter_despeckle':
 						$va_ops['convert'][] = '-despeckle';
@@ -1233,5 +1284,3 @@ class WLPlugMediaImageMagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}
 	# ------------------------------------------------
 }
-# ----------------------------------------------------------------------
-?>

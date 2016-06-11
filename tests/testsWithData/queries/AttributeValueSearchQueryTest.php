@@ -112,6 +112,13 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 						'coverageNotes' => '', // add blank value for [BLANK] search test
 					),
 				),
+
+				// Date in a container
+				'date' => array(
+					array(
+						'dates_value' => '1985'
+					)
+				)
 			)
 		)));
 
@@ -142,6 +149,9 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.dimensions_length:[0.5ft to 1ft]' => 1,
 			'ca_objects.dimensions_length:[1ft to 2ft]' => 0,
 
+			// it's not inconceivable that someone enters something like this!?
+			//'ca_objects.dimensions_length:"25cm to 30 cm"' => 1, // turns out SqlSearch can't to this
+
 			// weight
 			'ca_objects.dimensions_weight:2lbs' => 1,
 			'ca_objects.dimensions_weight:[1lbs to 2lbs]' => 1,
@@ -165,6 +175,8 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.currency_test:EUR100' => 0,
 			'ca_objects.currency_test:USD100' => 1,
 			'ca_objects.currency_test:CAD100' => 0,
+			// multiterm phrase query
+			'ca_objects.currency_test:"100 EUR"' => 0,
 
 			// Georeference
 			'ca_objects.georeference:[36.4,-123.5 to 38.5,-121.9]' => 1, // actual lucene range search
@@ -193,7 +205,11 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.internal_notes:"[BLANK]"' => 0,
 
 			// Same thing without quotes
-			'ca_objects.coverageNotes:[BLANK]' => 1,			// actually has a blank value
+			// These are being replaces with a phrase search for "[BLANK]"
+			// in SearchEngine.php, but we should keep these tests around
+			// just in case somebody decides to remove that from the
+			// SearchEngine :-)
+			'ca_objects.coverageNotes:[BLANK]' => 1,		// actually has a blank value
 			'ca_objects.description:[BLANK]' => 1,			// has no value at all
 			'ca_objects.georeference:[BLANK]' => 0,
 			'ca_objects.currency_test:[BLANK]' => 0,
@@ -201,7 +217,19 @@ class AttributeValueSearchQueryTest extends AbstractSearchQueryTest {
 			'ca_objects.dimensions_weight:[BLANK]' => 0,
 			'ca_objects.dimensions_length:[BLANK]' => 0,
 			'ca_objects.url_source:[BLANK]' => 0,
-			'ca_objects.internal_notes:[BLANK]' => 0
+			'ca_objects.internal_notes:[BLANK]' => 0,
+
+			// dates in containers
+			'ca_objects.dates_value:1985' => 1,
+			'ca_objects.date.dates_value:1985' => 1, // for container advanced searches
+			'ca_objects.dates_value:1986' => 0,
+			'ca_objects.date.dates_value:1986' => 0, // for container advanced searches
+
+			// same as phrases
+			'ca_objects.dates_value:"1985"' => 1,
+			'ca_objects.date.dates_value:"1985"' => 1, // for container advanced searches
+			'ca_objects.dates_value:"1986"' => 0,
+			'ca_objects.date.dates_value:"1986"' => 0, // for container advanced searches
 		));
 	}
 	# -------------------------------------------------------

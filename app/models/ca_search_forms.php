@@ -276,8 +276,8 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 
 		parent::__construct($pn_id);	# call superclass constructor
 
-		$this->opo_search_config = Configuration::load($this->_CONFIG->get("search_config"));
-		$this->opo_search_indexing_config = Configuration::load($this->opo_search_config->get("search_indexing_config"));
+		$this->opo_search_config = Configuration::load(__CA_CONF_DIR__.'/search.conf');
+		$this->opo_search_indexing_config = Configuration::load(__CA_CONF_DIR__.'/search_indexing.conf');
 
 		$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_search_forms_settings);
 	}
@@ -852,7 +852,7 @@ class ca_search_forms extends BundlableLabelableBaseModelWithAttributes {
 					if (!($va_field_info = $t_instance->getFieldInfo($vs_field))) {
 						// is it an attribute?
 						if (in_array($vs_field, $va_element_codes)) {
-							$t_element = $this->_getElementInstance($vs_field);
+							$t_element = ca_metadata_elements::getInstance($vs_field);
 							if(!$t_element) { continue; }
 							if (in_array($t_element->get('datatype'), array(15, 16))) { continue; } 		// skip file and media attributes - never searchable
 							if (!$t_element->getSetting('canBeUsedInSearchForm')) { continue; }

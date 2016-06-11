@@ -213,6 +213,14 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	protected $opo_app_plugin_manager;
 
 	# ------------------------------------------------------
+	public static function clearCaches() {
+		self::$s_exporter_cache = array();
+		self::$s_exporter_item_cache = array();
+		self::$s_mapping_check_cache = array();
+		self::$s_instance_cache = array();
+		self::$s_variables = array();
+	}
+	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		$this->opo_app_plugin_manager = new ApplicationPluginManager();
 
@@ -280,6 +288,16 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			'default' => '',
 			'label' => _t('Wrapping text after record export'),
 			'description' => _t('The text set here will be inserted after earch record-level export.')
+		);
+
+		$va_settings['typeRestrictions'] = array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_FIELD,
+			'width' => 70, 'height' => 6,
+			'takesLocale' => false,
+			'default' => '',
+			'label' => _t('Type restrictions'),
+			'description' => _t('If set, this mapping will only be available for these types. Multiple types are separated by commas or semicolons.')
 		);
 
 		$this->SETTINGS = new ModelSettings($this, 'settings', $va_settings);
@@ -489,6 +507,12 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * @return mixed List of exporters, or integer count of exporters if countOnly option is set
 	 */
 	static public function getExporters($pn_table_num=null, $pa_options=null) {
+		if($ps_type_code = caGetOption('recordType', $pa_options)) {
+			if(is_numeric($ps_type_code)) {
+				$ps_type_code = caGetListItemIdno($ps_type_code);
+			}
+		}
+
 		$o_db = new Db();
 
 		$t_exporter = new ca_data_exporters();
@@ -518,7 +542,18 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		while($qr_res->nextRow()) {
 			$va_row = $qr_res->getRow();
+			if($ps_type_code) {
+				$t_exporter = new ca_data_exporters($va_row['exporter_id']);
+				$va_restrictions = $t_exporter->getSetting('typeRestrictions');
+				if(is_array($va_restrictions) && sizeof($va_restrictions)) {
+					if(!in_array($ps_type_code, $va_restrictions)) {
+						continue;
+					}
+				}
+			}
+
 			$va_ids[] = $vn_id = $va_row['exporter_id'];
+
 			$va_exporters[$vn_id] = $va_row;
 
 			$t_instance = $vo_dm->getInstanceByTableNum($va_row['table_num'], true);
@@ -669,7 +704,6 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		$vn_row = 0;
 
 		$va_settings = array();
-		$va_mappings = array();
 		$va_ids = array();
 
 		foreach ($o_sheet->getRowIterator() as $o_row) {
@@ -681,11 +715,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$o_cell = $o_sheet->getCellByColumnAndRow(0, $vn_row_num);
 			$vs_mode = (string)$o_cell->getValue();
 
-			switch($vs_mode) {
-				case 'Mapping':
-				case 'Constant':
-				case 'Variable':
-				case 'RepeatMappings':
+			switch(strtolower($vs_mode)) {
+				case 'mapping':
+				case 'constant':
+				case 'variable':
+				case 'repeatmappings':
 					$o_id = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
 					$o_parent = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
 					$o_element = $o_sheet->getCellByColumnAndRow(3, $o_row->getRowIndex());
@@ -747,13 +781,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 					// allow mapping repetition
 					if($vs_mode == 'RepeatMappings') {
-						if(strlen($vs_source)<1) {// ignore repitition rows without value
+						if(strlen($vs_source) < 1) { // ignore repitition rows without value
 							continue;
 						}
 
 						$va_new_items = array();
 
-						$va_mapping_items_to_repeat = explode(",",$vs_source);
+						$va_mapping_items_to_repeat = explode(',', $vs_source);
 
 						foreach($va_mapping_items_to_repeat as $vs_mapping_item_to_repeat) {
 							$vs_mapping_item_to_repeat = trim($vs_mapping_item_to_repeat);
@@ -780,17 +814,25 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 									$va_new_items[$vs_key."_:_".$vs_item_key]['parent_id'] = $vs_key . ($va_item['parent_id'] ? "_:_".$va_item['parent_id'] : "");
 								}
 							}
-
 						}
 
-						$va_mapping = array_merge($va_mapping,$va_new_items);
+						$va_mapping = $va_mapping + $va_new_items;
 					}
 
 					break;
-				case 'Setting':
+				case 'setting':
 					$o_setting_name = $o_sheet->getCellByColumnAndRow(1, $o_row->getRowIndex());
 					$o_setting_value = $o_sheet->getCellByColumnAndRow(2, $o_row->getRowIndex());
-					$va_settings[(string)$o_setting_name->getValue()] = (string)$o_setting_value->getValue();
+
+					switch($vs_setting_name = (string)$o_setting_name->getValue()) {
+						case 'typeRestrictions':		// older mapping worksheets use "inputTypes" instead of the preferred "inputFormats"
+							$va_settings[$vs_setting_name] = preg_split("/[;,]/u", (string)$o_setting_value->getValue());
+							break;
+						default:
+							$va_settings[$vs_setting_name] = (string)$o_setting_value->getValue();
+							break;
+					}
+
 					break;
 				default: // if 1st column is empty, skip
 					continue(2);
@@ -1158,6 +1200,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 		$vb_show_cli_progress_bar = (isset($pa_options['showCLIProgressBar']) && ($pa_options['showCLIProgressBar']));
 		$po_request = caGetOption('request', $pa_options, null);
+		$vb_have_request = ($po_request instanceof RequestHTTP);
 
 		if(!$t_mapping = ca_data_exporters::loadExporterByCode($ps_exporter_code)) {
 			return false;
@@ -1220,9 +1263,16 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			file_put_contents($ps_filename, join(",", $va_header)."\n", FILE_APPEND);
 		}
 
+		$i = 0;
 		while($po_result->nextHit()) {
 
-			if($po_request instanceof RequestHTTP) {
+			// clear caches every once in a while. doesn't make much sense to keep them around while exporting
+			if((++$i % 1000) == 0) {
+				SearchResult::clearCaches();
+				ca_data_exporters::clearCaches();
+			}
+
+			if($vb_have_request) {
 				if(!caCanRead($po_request->getUserID(), $t_instance->tableNum(), $po_result->get($t_instance->primaryKey()))) {
 					continue;
 				}
@@ -1237,7 +1287,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 
 			$vn_num_processed++;
 
-			if ($po_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
+			if ($vb_have_request && isset($pa_options['progressCallback']) && ($ps_callback = $pa_options['progressCallback'])) {
 				$ps_callback($po_request, $vn_num_processed, $vn_num_items, _t("Exporting ... [%1/%2]", $vn_num_processed, $vn_num_items), (time() - $vn_start_time), memory_get_usage(true), $vn_num_processed);
 			}
 		}
@@ -1422,6 +1472,16 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			return false;
 		}
 
+		$va_type_restrictions = $t_exporter->getSetting('typeRestrictions');
+		if(is_array($va_type_restrictions) && sizeof($va_type_restrictions)) {
+			$t_instance = Datamodel::load()->getInstance($t_exporter->get('table_num'));
+			$t_instance->load($pn_record_id);
+			if(!in_array($t_instance->getTypeCode(), $va_type_restrictions)) {
+				$o_log->logError(_t("Could not run exporter with code '%1' for item with ID %2 because a type restriction is in place", $ps_exporter_code, $pn_record_id));
+				return false;
+			}
+		}
+
 		$o_log->logInfo(_t("Successfully loaded exporter with code '%1' for item with ID %2", $ps_exporter_code, $pn_record_id));
 
 		$va_export = array();
@@ -1495,6 +1555,7 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 	 * 			this triggers special behavior that allows getting container values in a kind of sub-export
 	 *			it's really only useful for Containers but in theory can be any attribute
 	 *		logger = KLogger instance to use for logging. This option is mandatory!
+	 * 		offset =
 	 * @return array Item info
 	 */
 	public function processExporterItem($pn_item_id,$pn_table_num,$pn_record_id,$pa_options=array()) {
@@ -1609,9 +1670,13 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 							$o_log->logInfo(_t("Switching context for element code: %1.", $va_context_tmp[1]));
 							$o_log->logDebug(_t("Raw attribute value array is as follows. The mapping will now be repeated for each (outer) attribute. %1", print_r($va_attrs,true)));
 
+							$vn_i = 0;
 							foreach($va_attrs as $vo_attr) {
-								$va_attribute_export = $this->processExporterItem($pn_item_id,$pn_table_num,$pn_record_id,array_merge(array('ignoreContext' => true, 'attribute_id' => $vo_attr->getAttributeID()),$pa_options));
-								$va_info = array_merge($va_info,$va_attribute_export);
+								$va_attribute_export = $this->processExporterItem($pn_item_id,$pn_table_num,$pn_record_id,
+									array_merge(array('ignoreContext' => true, 'attribute_id' => $vo_attr->getAttributeID(), 'offset' => $vn_i), $pa_options)
+								);
+								$va_info = array_merge($va_info, $va_attribute_export);
+								$vn_i++;
 							}
 						} else {
 							$o_log->logInfo(_t("Switching context for element code %1 failed. Either there is no attribute with that code attached to the current row or the code is invalid. Mapping is ignored for current row.", $va_context_tmp[1]));
@@ -1701,6 +1766,10 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_get_options['convertCodesToIdno'] = true;				// if display text is not requested try to return list item idno's... since underlying integer ca_list_items.item_id values are unlikely to be useful in an export context
 		}
 
+		if($t_exporter_item->getSetting('convertCodesToIdno')) {
+			$va_get_options['convertCodesToIdno'] = true;
+		}
+
 		if($t_exporter_item->getSetting('returnIdno')) {
 			$va_get_options['returnIdno'] = true;
 		}
@@ -1721,12 +1790,29 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 			$va_get_options['dateFormat'] = $vs_date_format;
 		}
 
+		// context was switched to attribute
 		if($vn_attribute_id) {
 
+			$t_attr = new ca_attributes($vn_attribute_id);
 			$o_log->logInfo(_t("Processing mapping in attribute mode for attribute_id = %1.", $vn_attribute_id));
+			$vs_relative_to = "{$t_instance->tableName()}.{$t_attr->getElementCode()}";
 
-			if($vs_source) { // trying to find the source only makes sense if the source is set
-				$t_attr = new ca_attributes($vn_attribute_id);
+			if($vs_template) { // if template is set, run through template engine as <unit>
+				$vn_offset = (int) caGetOption('offset', $pa_options, 0);
+
+				$vs_get_with_template = trim($t_instance->getWithTemplate("
+					<unit relativeTo='{$vs_relative_to}' start='{$vn_offset}' length='1'>
+						{$vs_template}
+					</unit>
+				"));
+
+				if($vs_get_with_template) {
+					$va_item_info[] = array(
+						'text' => $vs_get_with_template,
+						'element' => $vs_element,
+					);
+				}
+			} elseif($vs_source) { // trying to find the source only makes sense if the source is set
 				$va_values = $t_attr->getAttributeValues();
 
 				$va_src_tmp = explode('.', $vs_source);
@@ -1737,29 +1823,42 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 					}
 				}
 
-				$o_log->logDebug(_t("Trying to find code %1 in value array for the current attribute.", $vs_source));
-				$o_log->logDebug(_t("Value array is %1.", print_r($va_values, true)));
+				if(preg_match("/^_CONSTANT_:(.*)$/",$vs_source,$va_matches)) {
 
-				foreach($va_values as $vo_val) {
-					$va_display_val_options = array();
-					if($vo_val instanceof ListAttributeValue) {
-						$t_element = ca_metadata_elements::getInstance($t_attr->get('element_id'));
-						$va_display_val_options = array('list_id' => $t_element->get('list_id'));
+					$o_log->logDebug(_t("This is a constant in attribute mode. Value for this mapping is '%1'", trim($va_matches[1])));
 
-						if($t_exporter_item->getSetting('returnIdno')) {
-							$va_display_val_options['returnIdno'] = true;
+					$va_item_info[] = array(
+						'text' => trim($va_matches[1]),
+						'element' => $vs_element,
+					);
+				} else {
+					$o_log->logDebug(_t("Trying to find code %1 in value array for the current attribute.", $vs_source));
+					$o_log->logDebug(_t("Value array is %1.", print_r($va_values, true)));
+
+					foreach ($va_values as $vo_val) {
+						$va_display_val_options = array();
+						if ($vo_val instanceof ListAttributeValue) {
+							// figure out list_id -- without it we can't pull display values
+							$t_element = new ca_metadata_elements($vo_val->getElementID());
+							$va_display_val_options = array('list_id' => $t_element->get('list_id'));
+
+							if ($t_exporter_item->getSetting('returnIdno') || $t_exporter_item->getSetting('convertCodesToIdno')) {
+								$va_display_val_options['output'] = 'idno';
+							} elseif ($t_exporter_item->getSetting('convertCodesToDisplayText')) {
+								$va_display_val_options['output'] = 'text';
+							}
 						}
-					}
 
-					$o_log->logDebug(_t("Trying to match code from array %1 and the code we're looking for %2.", $vo_val->getElementCode(), $vs_source));
-					if($vo_val->getElementCode() == $vs_source) {
+						$o_log->logDebug(_t("Trying to match code from array %1 and the code we're looking for %2.", $vo_val->getElementCode(), $vs_source));
+						if ($vo_val->getElementCode() == $vs_source) {
+							$vs_display_value = $vo_val->getDisplayValue($va_display_val_options);
+							$o_log->logDebug(_t("Found value %1.", $vs_display_value));
 
-						$o_log->logDebug(_t("Found value %1.", $vo_val->getDisplayValue($va_display_val_options)));
-
-						$va_item_info[] = array(
-							'text' => $vo_val->getDisplayValue($va_display_val_options),
-							'element' => $vs_element,
-						);
+							$va_item_info[] = array(
+								'text' => $vs_display_value,
+								'element' => $vs_element,
+							);
+						}
 					}
 				}
 			} else { // no source in attribute context probably means this is some form of wrapper, e.g. a MARC field
@@ -1960,6 +2059,11 @@ class ca_data_exporters extends BundlableLabelableBaseModelWithAttributes {
 		return false;
 	}
 	# ------------------------------------------------------
+	/**
+	 * @param int $pn_record_id
+	 * @param int $pn_table_num
+	 * @return BundlableLabelableBaseModelWithAttributes|bool|null
+	 */
 	static public function loadInstanceByID($pn_record_id,$pn_table_num) {
 		if(sizeof(ca_data_exporters::$s_instance_cache)>10) {
 			array_shift(ca_data_exporters::$s_instance_cache);

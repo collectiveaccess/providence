@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -112,6 +112,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		),
 		"TRANSFORMATIONS" => array(
 			"SCALE" 			=> array("width", "height", "mode", "antialiasing"),
+			'CROP' 				=> array('width', 'height', 'x', 'y'),
 			"ANNOTATE"			=> array("text", "font", "size", "color", "position", "inset"),
 			"WATERMARK"			=> array("image", "width", "height", "position", "opacity"),
 			"ROTATE" 			=> array("angle"),
@@ -122,6 +123,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			"DESPECKLE"			=> array(""),
 			"SHARPEN"			=> array("radius", "sigma"),
 			"UNSHARPEN_MASK"	=> array("radius", "sigma", "amount", "threshold"),
+			'FLIP'				=> array('direction')
 		),
 		"PROPERTIES" => array(
 			"width" 			=> 'R',
@@ -131,6 +133,7 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 			'tiles'				=> 'R',
 			'layers'			=> 'W',
 			"quality" 			=> 'W',
+			'colorspace'		=> 'W',
 			'tile_width'		=> 'W',
 			'tile_height'		=> 'W',
 			'antialiasing'		=> 'W',
@@ -216,7 +219,6 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		"image/dng"		=> "image/x-adobe-dng"
 	);
 	
-	private $ops_CoreImage_path;
 	private $ops_dcraw_path;
 	
 	# ------------------------------------------------
@@ -228,15 +230,10 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	# for import and export
 	public function register() {
 		$this->opo_config = Configuration::load();
-		$vs_external_app_config_path = $this->opo_config->get('external_applications');
-		$this->opo_external_app_config = Configuration::load($vs_external_app_config_path);
+		$this->opo_external_app_config = Configuration::load(__CA_CONF_DIR__."/external_applications.conf");
 		$this->ops_CoreImage_path = $this->opo_external_app_config->get('coreimagetool_app');
 		
 		$this->ops_dcraw_path = $this->opo_external_app_config->get('dcraw_app');
-		
-		if (caMediaPluginCoreImageInstalled($this->ops_CoreImage_path)) {
-			return null;	// don't use if CoreImage executable are available
-		}
 		
 		if (caMediaPluginGmagickInstalled()) {
 			return null;	// don't use if Gmagick extension is available
@@ -256,10 +253,6 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 		if ($this->register()) {
 			$va_status['available'] = true;
 		} else {
-			if (caMediaPluginCoreImageInstalled($this->ops_CoreImage_path)) {
-				$va_status['unused'] = true;
-				$va_status['warnings'][] = _t("Didn't load because CoreImageTool is available and preferred");
-			} 
 			if (caMediaPluginGmagickInstalled()) {
 				$va_status['unused'] = true;
 				$va_status['warnings'][] = _t("Didn't load because Gmagick is available and preferred");
@@ -886,6 +879,35 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				}
 				break;
 			# -----------------------
+			case "CROP":
+				$x = $parameters["x"];
+				$y = $parameters["y"];
+				$w = $parameters["width"];
+				$h = $parameters["height"];
+				
+				if (!$this->handle->cropimage($w, $h, $x, $y)) {
+					$this->postError(1610, _t("Error during image crop"), "WLPlugImagick->transform:CROP()");
+					return false;
+				}
+				break;
+			# -----------------------
+			case "FLIP":
+				$dir = strtolower($parameters["direction"]);
+				
+				if ($dir == 'vertical') {
+					if (!$this->handle->flipimage()) {
+						$this->postError(1610, _t("Error during vertical image flip"), "WLPlugImagick->transform:FLIP()");
+						return false;
+					}
+				} else {
+					if (!$this->handle->flopimage()) {
+						$this->postError(1610, _t("Error during horizontal image flip"), "WLPlugImagick->transform:FLIP()");
+						return false;
+					}
+				}
+				
+				break;
+			# -----------------------
 			case "UNSHARPEN_MASK":
 				$radius = $parameters["radius"];
 				if ($radius < .1) { $radius = 1; }
@@ -968,6 +990,31 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 				if (!$this->properties['reference-black']) { $this->properties['reference-black'] = 0; }
 				if (!$this->properties['reference-white']) { $this->properties['reference-white'] = 65535; }
 				$this->handle->levelImage($this->properties['reference-black'], $this->properties['gamma'], $this->properties['reference-white']);
+			}
+			
+			if (($this->properties["colorspace"]) && ($this->properties["colorspace"] != "default")){ 
+				$vn_colorspace = null;
+				switch($this->properties["colorspace"]) {
+					case 'greyscale':
+					case 'grey':
+						$vn_colorspace = imagick::COLORSPACE_GRAY;
+						break;
+					case 'RGB':
+					case 'color':
+						$vn_colorspace = imagick::COLORSPACE_RGB;
+						break;
+					case 'sRGB':
+						$vn_colorspace = imagick::COLORSPACE_SRGB;
+						break;
+					case 'CMYK':
+						$vn_colorspace = imagick::COLORSPACE_CMYK;
+						break;
+					case 'bitonal':
+						$vn_colorspace = imagick::COLORSPACE_GRAY;
+						$this->handle->setimagedepth(1);
+						break;
+				}
+				if ($vn_colorspace) { $this->handle->setimagecolorspace($vn_colorspace); }
 			}
 			
 			$this->handle->stripImage();	// remove all lingering metadata
@@ -1209,5 +1256,3 @@ class WLPlugMediaImagick Extends BaseMediaPlugin Implements IWLPlugMedia {
 	}	
 	# ------------------------------------------------
 }
-# ----------------------------------------------------------------------
-?>

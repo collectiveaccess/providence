@@ -52,7 +52,7 @@
 	if (!$vb_read_only) {
 ?>	
 			<div style="float: right;">
-				<a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
+				<a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 			</div>
 <?php
 	}
@@ -79,7 +79,7 @@
 	if (!$vb_read_only) {
 ?>	
 			<div style="float: right;">
-				<a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
+				<a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 			</div>
 <?php
 	}
@@ -87,7 +87,7 @@
 			<div class="caListItem">
 				
 				<span class="formLabel">{locale} ({filesize})</span>
-				<?php print urlDecode(caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_DOWNLOAD__, null, array('align' => 'top')), '', '*', '*', 'downloadCaptionFile', array('representation_id' => $t_instance->getPrimaryKey(), 'caption_id' => "{caption_id}", 'download' => 1), array('id' => "{$vs_id_prefix}download{caption_id}", 'class' => 'attributeDownloadButton'))); ?>
+				<?php print urlDecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1,  null, array('align' => 'top')), '', '*', '*', 'downloadCaptionFile', array('representation_id' => $t_instance->getPrimaryKey(), 'caption_id' => "{caption_id}", 'download' => 1), array('id' => "{$vs_id_prefix}download{caption_id}", 'class' => 'attributeDownloadButton'))); ?>
 				
 				<input type="hidden" name="<?php print $vs_id_prefix; ?>_caption_id{n}" id="<?php print $vs_id_prefix; ?>_caption_id{n}" value="{caption_id}"/>
 			</div>
@@ -103,7 +103,7 @@
 <?php
 	if (!$vb_read_only) {
 ?>	
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add caption file"); ?></a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add caption file"); ?></a></div>
 <?php
 	}
 ?>

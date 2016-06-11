@@ -35,11 +35,12 @@ if (!$this->getVar('no_hierarchies_defined')) {
 	$va_type_list 			= $this->getVar('type_list');
 	$vs_current_sort 		= $this->getVar('current_sort');
 	$vs_default_action		= $this->getVar('default_action');
-	$vo_ar				= $this->getVar('access_restrictions');
+	$vo_ar					= $this->getVar('access_restrictions');
+	$vs_current_sort_dir    = $this->getVar('current_sort_direction');
 ?>
 <div id="scrollingResults">
 	<form id="caFindResultsForm">
-		<table class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+		<table class="listtable">
 			<thead>
 			<tr>
 			<th style="width:10px; text-align:center;" class='list-header-nosort'>
@@ -52,16 +53,29 @@ if (!$this->getVar('no_hierarchies_defined')) {
 			// output headers
 			$vn_id_count = 0;
 			foreach($va_display_list as $va_display_item) {
+				$vs_item_display_str =
+					((unicode_strlen($va_display_item['display']) > 30) ? strip_tags(mb_substr($va_display_item['display'], 0, 27))."..." : $va_display_item['display']);
+
 				if ($va_display_item['is_sortable']) {
 					if ($vs_current_sort == $va_display_item['bundle_sort']) {
-						print "<th class='list-header-sorted-asc'><span id='listHeader".$vn_id_count."'><nobr>".((unicode_strlen($va_display_item['display']) > 17) ? strip_tags(mb_substr($va_display_item['display'], 0, 15))."..." : $va_display_item['display'])."</nobr></span></th>";
+						if($vs_current_sort_dir == 'desc') {
+							$vs_th_class = 'list-header-sorted-desc';
+							$vs_new_sort_direction = 'asc';
+						} else {
+							$vs_th_class = 'list-header-sorted-asc';
+							$vs_new_sort_direction = 'desc';
+						}
+
+						print "<th class='{$vs_th_class}'><span id='listHeader".$vn_id_count."'><nobr>".
+							caNavLink($this->request, $vs_item_display_str, '', $this->request->getModulePath(), $this->request->getController(), 'Index', array('sort' => $va_display_item['bundle_sort'], 'direction' => $vs_new_sort_direction))
+							."</nobr></span></th>";
 						TooltipManager::add('#listHeader'.$vn_id_count , _t("Currently sorting by ").$va_display_item['display']);
 					} else {
-						print "<th class='list-header-unsorted'><span id='listHeader1".$vn_id_count."'><nobr>".caNavLink($this->request, ((unicode_strlen($va_display_item['display']) > 17) ? strip_tags(mb_substr($va_display_item['display'], 0, 15))."..." : $va_display_item['display']), '', $this->request->getModulePath(), $this->request->getController(), 'Index', array('sort' => $va_display_item['bundle_sort'])) ."</nobr></span></th>";
+						print "<th class='list-header-unsorted'><span id='listHeader1".$vn_id_count."'><nobr>".caNavLink($this->request, $vs_item_display_str, '', $this->request->getModulePath(), $this->request->getController(), 'Index', array('sort' => $va_display_item['bundle_sort'])) ."</nobr></span></th>";
 						TooltipManager::add('#listHeader1'.$vn_id_count , _t("Click to sort by ").$va_display_item['display']);
 					}
 				} else {
-					print "<th class='list-header-nosort'><span id='listHeader2".$vn_id_count."'><nobr>".((unicode_strlen($va_display_item['display']) > 17) ? strip_tags(mb_substr($va_display_item['display'], 0, 15))."..." : $va_display_item['display'])."</nobr></span></th>";
+					print "<th class='list-header-nosort'><span id='listHeader2".$vn_id_count."'><nobr>". $vs_item_display_str ."</nobr></span></th>";
 					TooltipManager::add('#listHeader2'.$vn_id_count , $va_display_item['display']);
 				}
 				$vn_id_count++;
@@ -82,9 +96,9 @@ if (!$this->getVar('no_hierarchies_defined')) {
 						<input type='checkbox' name='add_to_set_ids' value='<?php print (int)$vn_location_id; ?>' class="addItemToSetControl" />
 					</td>
 <?php
-					print "<td style='width:17%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', 'ca_storage_locations', $vn_location_id, array())."</td>";
+					print "<td style='width:17%;'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), '', 'ca_storage_locations', $vn_location_id, array())."</td>";
 					if ($vs_mode == 'search') { 
-						print " <a href='#' onclick='caOpenBrowserWith(".$vn_location_id.");'>".caNavIcon($this->request, __CA_NAV_BUTTON_HIER__)."</a>";
+						print " <a href='#' onclick='caOpenBrowserWith(".$vn_location_id.");'>".caNavIcon(__CA_NAV_ICON_HIER__, 1)."</a>";
 					}
 					print "</td>";		
 					foreach($va_display_list as $vn_placement_id => $va_info) {

@@ -31,7 +31,6 @@ class CliDumper extends AbstractDumper
         'num' => '1;38;5;38',
         'const' => '1;38;5;208',
         'str' => '1;38;5;113',
-        'cchr' => '7',
         'note' => '38;5;38',
         'ref' => '38;5;247',
         'public' => '',
@@ -42,7 +41,15 @@ class CliDumper extends AbstractDumper
         'index' => '38;5;38',
     );
 
-    protected static $controlCharsRx = '/[\x00-\x1F\x7F]/';
+    protected static $controlCharsRx = '/[\x00-\x1F\x7F]+/';
+    protected static $controlCharsMap = array(
+        "\t" => '\t',
+        "\n" => '\n',
+        "\v" => '\v',
+        "\f" => '\f',
+        "\r" => '\r',
+        "\033" => '\e',
+    );
 
     /**
      * {@inheritdoc}
@@ -84,9 +91,7 @@ class CliDumper extends AbstractDumper
      */
     public function setMaxStringWidth($maxStringWidth)
     {
-        if (function_exists('iconv')) {
-            $this->maxStringWidth = (int) $maxStringWidth;
-        }
+        $this->maxStringWidth = (int) $maxStringWidth;
     }
 
     /**
@@ -146,7 +151,7 @@ class CliDumper extends AbstractDumper
 
         $this->line .= $this->style($style, $value, $attr);
 
-        $this->dumpLine($cursor->depth);
+        $this->dumpLine($cursor->depth, true);
     }
 
     /**
@@ -161,13 +166,17 @@ class CliDumper extends AbstractDumper
         }
         if ('' === $str) {
             $this->line .= '""';
-            $this->dumpLine($cursor->depth);
+            $this->dumpLine($cursor->depth, true);
         } else {
             $attr = array(
-                'length' => function_exists('iconv_strlen') && 0 <= $cut ? iconv_strlen($str, 'UTF-8') + $cut : 0,
+                'length' => 0 <= $cut ? iconv_strlen($str, 'UTF-8') + $cut : 0,
                 'binary' => $bin,
             );
             $str = explode("\n", $str);
+            if (isset($str[1]) && !isset($str[2]) && !isset($str[1][0])) {
+                unset($str[1]);
+                $str[0] .= "\n";
+            }
             $m = count($str) - 1;
             $i = $lineCut = 0;
 
@@ -183,20 +192,30 @@ class CliDumper extends AbstractDumper
             }
 
             foreach ($str as $str) {
+                if ($i < $m) {
+                    $str .= "\n";
+                }
                 if (0 < $this->maxStringWidth && $this->maxStringWidth < $len = iconv_strlen($str, 'UTF-8')) {
                     $str = iconv_substr($str, 0, $this->maxStringWidth, 'UTF-8');
                     $lineCut = $len - $this->maxStringWidth;
                 }
-
-                if ($m) {
+                if ($m && 0 < $cursor->depth) {
                     $this->line .= $this->indentPad;
                 }
-                $this->line .= $this->style('str', $str, $attr);
-
+                if ('' !== $str) {
+                    $this->line .= $this->style('str', $str, $attr);
+                }
                 if ($i++ == $m) {
-                    $this->line .= '"';
                     if ($m) {
-                        $this->line .= '""';
+                        if ('' !== $str) {
+                            $this->dumpLine($cursor->depth);
+                            if (0 < $cursor->depth) {
+                                $this->line .= $this->indentPad;
+                            }
+                        }
+                        $this->line .= '"""';
+                    } else {
+                        $this->line .= '"';
                     }
                     if ($cut < 0) {
                         $this->line .= '…';
@@ -210,7 +229,7 @@ class CliDumper extends AbstractDumper
                     $lineCut = 0;
                 }
 
-                $this->dumpLine($cursor->depth);
+                $this->dumpLine($cursor->depth, $i > $m);
             }
         }
     }
@@ -226,9 +245,9 @@ class CliDumper extends AbstractDumper
             $class = $this->utf8Encode($class);
         }
         if (Cursor::HASH_OBJECT === $type) {
-            $prefix = 'stdClass' !== $class ? $this->style('note', $class).' {' : '{';
+            $prefix = $class && 'stdClass' !== $class ? $this->style('note', $class).' {' : '{';
         } elseif (Cursor::HASH_RESOURCE === $type) {
-            $prefix = $this->style('note', ':'.$class).' {';
+            $prefix = $this->style('note', $class.' resource').($hasChild ? ' {' : ' ');
         } else {
             $prefix = $class ? $this->style('note', 'array:'.$class).' [' : '[';
         }
@@ -237,6 +256,8 @@ class CliDumper extends AbstractDumper
             $prefix .= $this->style('ref', (Cursor::HASH_RESOURCE === $type ? '@' : '#').(0 < $cursor->softRefHandle ? $cursor->softRefHandle : $cursor->softRefTo), array('count' => $cursor->softRefCount));
         } elseif ($cursor->hardRefTo && !$cursor->refIndex && $class) {
             $prefix .= $this->style('ref', '&'.$cursor->hardRefTo, array('count' => $cursor->hardRefCount));
+        } elseif (!$hasChild && Cursor::HASH_RESOURCE === $type) {
+            $prefix = substr($prefix, 0, -1);
         }
 
         $this->line .= $prefix;
@@ -252,8 +273,8 @@ class CliDumper extends AbstractDumper
     public function leaveHash(Cursor $cursor, $type, $class, $hasChild, $cut)
     {
         $this->dumpEllipsis($cursor, $hasChild, $cut);
-        $this->line .= Cursor::HASH_OBJECT === $type || Cursor::HASH_RESOURCE === $type ? '}' : ']';
-        $this->dumpLine($cursor->depth);
+        $this->line .= Cursor::HASH_OBJECT === $type ? '}' : (Cursor::HASH_RESOURCE !== $type ? ']' : ($hasChild ? '}' : ''));
+        $this->dumpLine($cursor->depth, true);
     }
 
     /**
@@ -360,12 +381,34 @@ class CliDumper extends AbstractDumper
         }
 
         $style = $this->styles[$style];
-        $cchr = $this->colors ? "\033[m\033[{$style};{$this->styles['cchr']}m%s\033[m\033[{$style}m" : '%s';
-        $value = preg_replace_callback(self::$controlCharsRx, function ($r) use ($cchr) {
-            return sprintf($cchr, "\x7F" === $r[0] ? '?' : chr(64 + ord($r[0])));
-        }, $value);
 
-        return $this->colors ? sprintf("\033[%sm%s\033[m\033[%sm", $style, $value, $this->styles['default']) : $value;
+        $map = static::$controlCharsMap;
+        $startCchr = $this->colors ? "\033[m\033[{$this->styles['default']}m" : '';
+        $endCchr = $this->colors ? "\033[m\033[{$style}m" : '';
+        $value = preg_replace_callback(static::$controlCharsRx, function ($c) use ($map, $startCchr, $endCchr) {
+            $s = $startCchr;
+            $c = $c[$i = 0];
+            do {
+                $s .= isset($map[$c[$i]]) ? $map[$c[$i]] : sprintf('\x%02X', ord($c[$i]));
+            } while (isset($c[++$i]));
+
+            return $s.$endCchr;
+        }, $value, -1, $cchrCount);
+
+        if ($this->colors) {
+            if ($cchrCount && "\033" === $value[0]) {
+                $value = substr($value, strlen($startCchr));
+            } else {
+                $value = "\033[{$style}m".$value;
+            }
+            if ($cchrCount && $endCchr === substr($value, -strlen($endCchr))) {
+                $value = substr($value, 0, -strlen($endCchr));
+            } else {
+                $value .= "\033[{$this->styles['default']}m";
+            }
+        }
+
+        return $value;
     }
 
     /**
@@ -403,7 +446,7 @@ class CliDumper extends AbstractDumper
         }
 
         if ('\\' === DIRECTORY_SEPARATOR) {
-            static::$defaultColors = @(false !== getenv('ANSICON') || 'ON' === getenv('ConEmuANSI'));
+            static::$defaultColors = @(false !== getenv('ANSICON') || 'ON' === getenv('ConEmuANSI') || 'xterm' === getenv('TERM'));
         } elseif (function_exists('posix_isatty')) {
             $h = stream_get_meta_data($this->outputStream) + array('wrapper_type' => null);
             $h = 'Output' === $h['stream_type'] && 'PHP' === $h['wrapper_type'] ? fopen('php://stdout', 'wb') : $this->outputStream;
@@ -418,7 +461,7 @@ class CliDumper extends AbstractDumper
     /**
      * {@inheritdoc}
      */
-    protected function dumpLine($depth)
+    protected function dumpLine($depth, $endOfValue = false)
     {
         if ($this->colors) {
             $this->line = sprintf("\033[%sm%s\033[m", $this->styles['default'], $this->line);

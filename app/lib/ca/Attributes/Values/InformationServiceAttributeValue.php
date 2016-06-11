@@ -236,8 +236,7 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 					'value_decimal1' => $va_tmp[1], 		// id
 					'value_blob' => caSerializeForDatabase($va_info)
 				);
-			} elseif(sizeof($va_tmp)==1 && (isURL($va_tmp[0]) || is_numeric($va_tmp[0]))) { // URI or ID -> try to look it up. we match hit when exactly 1 hit comes back
-
+			} elseif((sizeof($va_tmp)==1) && (isURL($va_tmp[0], array('strict' => true)) || is_numeric($va_tmp[0]))) { // URI or ID -> try to look it up. we match hit when exactly 1 hit comes back
 				// try lookup cache
 				if(CompositeCache::contains($va_tmp[0], "InformationServiceLookup{$vs_service}")) {
 					return CompositeCache::fetch($va_tmp[0], "InformationServiceLookup{$vs_service}");
@@ -262,12 +261,8 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 						'value_blob' => caSerializeForDatabase($va_info)
 					);
 				} else {
-					$va_return = array(
-						'value_longtext1' => '',	// text
-						'value_longtext2' => '',	// url
-						'value_decimal1' => null,	// id
-						'value_blob' => null		// extra info
-					);
+					$this->postError(1970, _t('Value for InformationService lookup has to be an ID or URL that returns exactly 1 hit. We got more or no hits. Value was %1', $ps_value), 'ListAttributeValue->parseValue()');
+					return false;
 				}
 
 				CompositeCache::save($va_tmp[0], $va_return, "InformationServiceLookup{$vs_service}");

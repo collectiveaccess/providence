@@ -44,7 +44,7 @@ if (!$this->request->isAjax()) {
 		print caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="jQuery(\'#caExporterList\').caFilterTable(this.value); return false;" size="20"/></div>',
 			'',
-			caJSButton($this->request, __CA_NAV_BUTTON_ADD_LARGE__, _t("Add exporters"), 'caAddExportersButton', array('onclick' => 'jQuery("#exporterUploadArea").slideToggle(150); return false;'))
+			caFormJSButton($this->request, __CA_NAV_ICON_ADD__, _t("Add exporters"), 'caAddExportersButton', array('onclick' => 'jQuery("#exporterUploadArea").slideToggle(150); return false;'))
 		);
 	?>
 	
@@ -61,7 +61,7 @@ if (!$this->request->isAjax()) {
 }
 ?>
 	<div id="caExporterListContainer">
-		<table id="caExporterList" class="listtable" width="100%" border="0" cellpadding="0" cellspacing="1">
+		<table id="caExporterList" class="listtable">
 			<thead>
 			<tr>
 				<th>
@@ -97,8 +97,8 @@ if (!$this->request->isAjax()) {
 					<?php print caGetLocalizedDate($va_exporter['last_modified_on'], array('dateFormat' => 'delimited')); ?>
 				</td>
 				<td>
-					<?php print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), '', 'manage', 'MetadataExport', 'Delete', array('exporter_id' => $va_exporter['exporter_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-					<?php /*print caNavButton($this->request, __CA_NAV_BUTTON_GO__, _t("Export data"), '', 'manage', 'MetadataExport', 'Run', array('exporter_id' => $va_exporter['exporter_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true));*/ ?>
+					<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage', 'MetadataExport', 'Delete', array('exporter_id' => $va_exporter['exporter_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+					<?php /*print caNavButton($this->request, __CA_NAV_ICON_GO__, _t("Export data"), '', 'manage', 'MetadataExport', 'Run', array('exporter_id' => $va_exporter['exporter_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true));*/ ?>
 				</td>
 			</tr>
 <?php

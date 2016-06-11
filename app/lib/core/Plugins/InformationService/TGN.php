@@ -82,10 +82,14 @@ class WLPlugInformationServiceTGN extends BaseGettyLODServicePlugin implements I
 		if(!is_array($pa_options)) { $pa_options = array(); }
 
 		$va_service_conf = $this->opo_linked_data_conf->get('tgn');
+		if(!($vs_default_lang = $this->opo_linked_data_conf->get('getty_default_language'))) {
+			$vs_default_lang = 'en';
+		}
 		$vs_search_field = (isset($va_service_conf['search_text']) && $va_service_conf['search_text']) ? 'luc:text' : 'luc:term';
 
 		$pb_phrase = (bool) caGetOption('phrase', $pa_options, false);
 		$pb_raw = (bool) caGetOption('raw', $pa_options, false);
+		$pn_limit = (int) caGetOption('limit', $pa_options, ($va_service_conf['result_limit']) ? $va_service_conf['result_limit'] : 50);
 
 		/**
 		 * Contrary to what the Getty documentation says the terms seem to get combined by OR, not AND, so if you pass
@@ -103,15 +107,15 @@ class WLPlugInformationServiceTGN extends BaseGettyLODServicePlugin implements I
 			$vs_search = join(' AND ', $va_search);
 		}
 
-		$vs_query = urlencode('SELECT ?ID ?TermPrefLabel ?Parents ?Type ?ParentsFull{
+		$vs_query = urlencode('SELECT ?ID (coalesce(?labEn,?labGVP) as ?TermPrefLabel) ?Parents ?Type {
 			?ID a skos:Concept; '.$vs_search_field.' "'.$vs_search.'"; skos:inScheme tgn: ;
-			gvp:prefLabelGVP [xl:literalForm ?TermPrefLabel].
-  			{?ID gvp:parentStringAbbrev ?Parents}
-  			{?ID gvp:parentStringAbbrev ?ParentsFull}
-  			{?ID gvp:displayOrder ?Order}
-  			{?ID gvp:placeTypePreferred [gvp:prefLabelGVP [xl:literalForm ?Type]]}
+			optional {?ID gvp:prefLabelGVP [xl:literalForm ?labGVP]}
+			optional {?ID xl:prefLabel [xl:literalForm ?labEn; dct:language gvp_lang:'.$vs_default_lang.']}
+			{?ID gvp:parentStringAbbrev ?Parents}
+			{?ID gvp:displayOrder ?Order}
+			{?ID gvp:placeTypePreferred [gvp:prefLabelGVP [xl:literalForm ?Type]]}
 		} ORDER BY ASC(?Order)
-		LIMIT 50');
+		LIMIT '.$pn_limit);
 
 		$va_results = parent::queryGetty($vs_query);
 		if(!is_array($va_results)) { return false; }
@@ -146,9 +150,10 @@ class WLPlugInformationServiceTGN extends BaseGettyLODServicePlugin implements I
 		if(!$ps_text) { return ''; }
 		$va_matches = array();
 
-		if(preg_match("/^\[[0-9]+\]\s+([A-Za-z\s]+)\;.+\(.+\)$/", $ps_text, $va_matches)) {
+		if(preg_match("/^\[[0-9]+\]\s+([\p{L}\p{P}\p{Z}]+)\;.+$/", $ps_text, $va_matches)) {
 			return $va_matches[1];
 		}
+
 		return $ps_text;
 	}
 	# ------------------------------------------------

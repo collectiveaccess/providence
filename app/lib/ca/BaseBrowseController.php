@@ -73,12 +73,7 @@
 					$this->ops_view_default = $vs_view_default;
 				}
 				
-				$va_sortable_elements = ca_metadata_elements::getSortableElements($this->ops_tablename, $this->opn_type_restriction_id);
-		
-				$this->opa_sorts = array();
-				foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
-					$this->opa_sorts[$this->ops_tablename.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
-				}
+				$this->opa_sorts = caGetAvailableSortFields($this->ops_tablename, $this->opn_type_restriction_id, array('request' => $po_request));
 			}
  		}
  		# -------------------------------------------------------
@@ -94,6 +89,15 @@
 			AssetLoadManager::register('hierBrowser');
  			
  			$va_access_values = caGetUserAccessValues($this->request);
+ 			
+ 			
+ 			
+ 			//
+ 			// Enforce type restriction, if defined
+ 			// 
+ 			if ($this->opn_type_restriction_id > 0) {
+ 				$this->opo_browse->setTypeRestrictions(array($this->opn_type_restriction_id));
+ 			}
  			
  			//
  			// Restrict facets to specific group for main browse landing page (if set in app.conf config)
@@ -173,11 +177,6 @@
  				}
  			}
  			
- 			//
- 			// Enforce type restriction, if defined
- 			// 
- 			$this->opo_browse->setTypeRestrictions(array($this->opn_type_restriction_id));
- 			
  			MetaTagManager::setWindowTitle(_t('%1 browse', $this->browseName('plural')));
  			
  			//
@@ -253,7 +252,9 @@
 			if ($vo_result) {
 				if ($vb_criteria_have_changed || $vb_sort_has_changed) {
 					// Put the results id list into the results context - we used this for previous/next navigation
-					$this->opo_result_context->setResultList($vo_result->getPrimaryKeyValues());
+					$vo_full_result = $this->opo_browse->getResults(array('sort' => $vs_sort, 'sort_direction' => $vs_sort_direction));
+					$this->opo_result_context->setResultList($vo_full_result->getPrimaryKeyValues());
+					unset($vo_full_result);
 					$this->opo_result_context->setParameter('availableVisualizationChecked', 0);
 				}
 				
@@ -308,7 +309,7 @@
 	
 						$vn_item_count++;
 	
-						$va_row_headers[] = ($vn_item_count)." ".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), 'caResultsEditorEditLink', $this->ops_tablename, $vn_id);
+						$va_row_headers[] = ($vn_item_count)." ".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), 'caResultsEditorEditLink', $this->ops_tablename, $vn_id);
 	
 					}
 				}
@@ -375,10 +376,10 @@
  			$vs_cache_key = md5(join("/", array($ps_facet_name,$vs_show_group,$vs_grouping,$vm_id)));
  			$va_facet_info = $this->opo_browse->getInfoForFacet($ps_facet_name);
  			
- 			if (($va_facet_info['group_mode'] != 'hierarchical') && ($vs_content = $this->opo_browse->getCachedFacetHTML($vs_cache_key))) { 
- 				$this->response->addContent($vs_content);
- 				return;
- 			}
+ 			//if (($va_facet_info['group_mode'] != 'hierarchical') && ($vs_content = $this->opo_browse->getCachedFacetHTML($vs_cache_key))) { 
+ 			//	$this->response->addContent($vs_content);
+ 			//	return;
+ 			//}
  			
  			// Enforce type restriction
  			$this->opo_browse->setTypeRestrictions(array($this->opn_type_restriction_id));

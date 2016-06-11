@@ -204,7 +204,7 @@ class ca_watch_list extends BaseModel {
 	/**
 	 *
 	 */
-	public function getWatchedItems($pn_user_id, $pn_table_num = null){
+	public function getWatchedItems($pn_user_id, $pn_table_num = null, $pa_options=null){
 		require_once(__CA_LIB_DIR__.'/core/ApplicationChangeLog.php');
 		
 		if(!$pn_user_id) { return null; }
@@ -212,6 +212,8 @@ class ca_watch_list extends BaseModel {
 		$t_changelog = new ApplicationChangeLog();
 		$o_db = $this->getDb();
 		$o_dm = $this->getAppDatamodel();
+		
+		$vn_request_user_id = ($po_request = caGetOption('request', $pa_options, null)) ? $po_request->getUserID() : null;
 		
 		$sql = "";
 		$va_items = array();
@@ -231,12 +233,39 @@ class ca_watch_list extends BaseModel {
 				if ($t_item_table->hasField('deleted') && ($t_item_table->get('deleted') == 1)) { continue; }
 				
 				$t_item_table->load($q_watched_items->get("row_id"));
-				$va_items[] = array("watch_id" => $q_watched_items->get("watch_id"), "row_id" => $q_watched_items->get("row_id"), "table_num" => $q_watched_items->get("table_num"), "table_name" => $t_item_table->TableName(), "displayName" => $t_item_table->getLabelForDisplay(), "idno" => $t_item_table->get("idno"), "item_type" => $t_item_table->getProperty('NAME_SINGULAR'), "primary_key" => $t_item_table->getPrimaryKey(), "change_log" => $t_changelog->getChangeLogForRowForDisplay($t_item_table));
+				$va_items[] = array(
+					"watch_id" => $q_watched_items->get("watch_id"), 
+					"row_id" => $q_watched_items->get("row_id"), 
+					"table_num" => $q_watched_items->get("table_num"), 
+					"table_name" => $t_item_table->tableName(),
+					"displayName" => $t_item_table->getLabelForDisplay(), 
+					"idno" => $t_item_table->get("idno"), 
+					"item_type" => $t_item_table->getProperty('NAME_SINGULAR'), 
+					"primary_key" => $t_item_table->getPrimaryKey(), 
+					"change_log" => $t_changelog->getChangeLogForRowForDisplay($t_item_table, null, $vn_request_user_id)
+				);
 			}
 		}
 		
 		return $va_items;
 	}
 	# ------------------------------------------------------
+	public function getWatchedTablesAsHTMLSelect($pn_user_id, $ps_name) {
+		$va_items = $this->getWatchedItems($pn_user_id);
+		$va_select = [];
+		$o_dm = Datamodel::load();
+
+		foreach($va_items as $va_item) {
+			$t_instance = $o_dm->getInstance($va_item['table_num'], true);
+
+			$va_select[$t_instance->getProperty('NAME_PLURAL')] = $t_instance->tableName();
+		}
+
+		return caHTMLSelect($ps_name,
+			$va_select,
+			array('id' => $ps_name, 'class' => 'searchSetsSelect'),
+			array('value' => null, 'width' => '140px')
+		);
+	}
+	# ------------------------------------------------------
 }
-?>

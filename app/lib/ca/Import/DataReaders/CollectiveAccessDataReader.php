@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013 Whirl-i-Gig
+ * Copyright 2013-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -52,6 +52,7 @@ class CollectiveAccessDataReader extends BaseDataReader {
 	private $opo_datamodel = null;
 	
 	private $ops_table = null;
+	private $ops_path = null;
 	# -------------------------------------------------------
 	/**
 	 *
@@ -84,14 +85,15 @@ class CollectiveAccessDataReader extends BaseDataReader {
 		
 		$va_path = explode("/", $va_url['path']);
 		$this->ops_table = $vs_table = array_pop($va_path);
-		$vs_path = join("/", $va_path);
+		$this->ops_path = $vs_path = join("/", $va_path);
 		
 		$this->opa_row_ids = array();
 		$this->opn_current_row = 0;
 		
 		try {
-			$this->opo_client = new Client("http://".$va_url['user'].":".$va_url['pass']."@".$va_url['host'].($vs_path ? "/".$vs_path : ""));
-			$request = $this->opo_client->get("/service.php/find/{$vs_table}?".$va_url['query']);
+			$this->opo_client = new Client("http://".$va_url['user'].":".$va_url['pass']."@".$va_url['host'].(($va_url['port'] != 80) ? ":{$va_url['port']}": ''));
+			$request = $this->opo_client->get(($vs_path ? "{$vs_path}" : "")."/service.php/find/{$vs_table}?".$va_url['query']);
+			
 			$response = $request->send();
 			$data = $response->json();
 			
@@ -121,9 +123,10 @@ class CollectiveAccessDataReader extends BaseDataReader {
 			
 			$this->opn_current_row++;
 			try {
-				$request = $this->opo_client->get("/service.php/item/{$this->ops_table}/id/{$vn_id}?pretty=1&format=import");
+				$request = $this->opo_client->get(($this->ops_path ? $this->ops_path : "")."/service.php/item/{$this->ops_table}/id/{$vn_id}?pretty=1&format=import");
 				$response = $request->send();
 				$data = $response->json();
+				
 				$this->opa_row_buf[$this->opn_current_row] = $data;
 			} catch (Exception $e) {
 				//return false;
@@ -159,6 +162,9 @@ class CollectiveAccessDataReader extends BaseDataReader {
 		if ($vm_ret = parent::get($ps_col, $pa_options)) { return $vm_ret; }
 		
 		$pb_return_as_array = isset($pa_options['returnAsArray']) ? (bool)$pa_options['returnAsArray'] : false;
+		$pa_restrict_to_relationship_types = isset($pa_options['restrictToRelationshipTypes']) ? $pa_options['restrictToRelationshipTypes'] : false;
+		if (!is_array($pa_restrict_to_relationship_types) && $pa_restrict_to_relationship_types) { $pa_restrict_to_relationship_types = array($pa_restrict_to_relationship_types); }
+		
 		$pb_return_all_locales = isset($pa_options['returnAllLocales']) ? (bool)$pa_options['returnAllLocales'] : false;
 		$pb_convert_codes_to_display_text = isset($pa_options['convertCodesToDisplayText']) ? (bool)$pa_options['convertCodesToDisplayText'] : false;
 		$vs_delimiter = isset($pa_options['delimiter']) ? (string)$pa_options['delimiter'] : "; ";
@@ -268,10 +274,15 @@ class CollectiveAccessDataReader extends BaseDataReader {
 			// Object representations
 			//
 			if (($va_col[0] == 'ca_object_representations') && ($va_col[1] == 'media') && ($this->ops_table == 'ca_objects')) {
+				$va_urls = array();
 				foreach($va_data['representations'] as $vn_rep_id => $va_rep_data) {
-					$va_urls[] = $va_rep_data['urls']['original'];
+					if($va_rep_data['urls']['original']) { $va_urls[] = $va_rep_data['urls']['original']; }
 				}
-				return join($vs_delimiter, $va_urls);
+				if (sizeof($va_urls) > 0) { 
+					return join($vs_delimiter, $va_urls);
+				}
+				// if urls in "representations" block aren't set it might be an old services implementation
+				// so we fall through and try to get it with a regular "get"
 			}
 			
 			//
@@ -290,7 +301,9 @@ class CollectiveAccessDataReader extends BaseDataReader {
 							$vs_display_field = $t_instance->getLabelDisplayField();
 							$va_rels = array();
 							foreach($va_rel_data as $vn_i => $va_rel) {
-								$va_rels[] = $va_rel['preferred_labels'][$vs_display_field];
+								$va_labels = array_shift(caExtractValuesByUserLocale([0 => $va_rel['preferred_labels']]));
+								if (is_array($pa_restrict_to_relationship_types) && !in_array($va_rel['relationship_typename'], $pa_restrict_to_relationship_types)) { continue; }
+								$va_rels[] = $va_labels[$vs_display_field];
 							}
 							
 							if ($pb_return_as_array) {
@@ -304,6 +317,8 @@ class CollectiveAccessDataReader extends BaseDataReader {
 					// try intrinsic
 					$va_rels = array();
 					foreach($va_rel_data as $vn_i => $va_rel) {
+						if (is_array($pa_restrict_to_relationship_types) && !in_array($va_rel['relationship_typename'], $pa_restrict_to_relationship_types)) { continue; }
+								
 						if (isset($va_rel['intrinsic'][$va_col[1]])) {
 							if ($pb_convert_codes_to_display_text && isset($va_rel['intrinsic'][$va_col[1].'_display'])) {
 								$va_rels[] = $va_rel['intrinsic'][$va_col[1].'_display'];
@@ -332,7 +347,9 @@ class CollectiveAccessDataReader extends BaseDataReader {
 						if ($t_instance = $this->opo_datamodel->getInstanceByTableName($va_col[0], true)) {
 							$va_rels = array();
 							foreach($va_rel_data as $vn_i => $va_rel) {
-								$va_rels[] = $va_rel['preferred_labels'][$va_col[2]];
+								$va_labels = array_shift(caExtractValuesByUserLocale([0 => $va_rel['preferred_labels']]));
+								if (is_array($pa_restrict_to_relationship_types) && !in_array($va_rel['relationship_typename'], $pa_restrict_to_relationship_types)) { continue; }
+								$va_rels[] = $va_labels[$va_col[2]];
 							}
 							
 							if ($pb_return_as_array) {
@@ -453,4 +470,3 @@ class CollectiveAccessDataReader extends BaseDataReader {
 	}
 	# -------------------------------------------------------
 }
-?>

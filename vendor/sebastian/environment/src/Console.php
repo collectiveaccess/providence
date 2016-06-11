@@ -11,11 +11,6 @@
 namespace SebastianBergmann\Environment;
 
 /**
- * @package    Environment
- * @author     Sebastian Bergmann <sebastian@phpunit.de>
- * @copyright  2014 Sebastian Bergmann <sebastian@phpunit.de>
- * @license    http://www.opensource.org/licenses/BSD-3-Clause  The BSD 3-Clause License
- * @link       http://www.github.com/sebastianbergmann/environment
  */
 class Console
 {
@@ -29,12 +24,12 @@ class Console
      * This code has been copied and adapted from
      * Symfony\Component\Console\Output\OutputStream.
      *
-     * @return boolean
+     * @return bool
      */
     public function hasColorSupport()
     {
         if (DIRECTORY_SEPARATOR == '\\') {
-            return false !== getenv('ANSICON') || 'ON' === getenv('ConEmuANSI');
+            return false !== getenv('ANSICON') || 'ON' === getenv('ConEmuANSI') || 'xterm' === getenv('TERM');
         }
 
         if (!defined('STDOUT')) {
@@ -47,14 +42,42 @@ class Console
     /**
      * Returns the number of columns of the terminal.
      *
-     * @return integer
+     * @return int
      */
     public function getNumberOfColumns()
     {
-        // Windows terminals have a fixed size of 80
-        // but one column is used for the cursor.
         if (DIRECTORY_SEPARATOR == '\\') {
-            return 79;
+            $columns = 80;
+
+            if (preg_match('/^(\d+)x\d+ \(\d+x(\d+)\)$/', trim(getenv('ANSICON')), $matches)) {
+                $columns = $matches[1];
+            } elseif (function_exists('proc_open')) {
+                $process = proc_open(
+                    'mode CON',
+                    array(
+                        1 => array('pipe', 'w'),
+                        2 => array('pipe', 'w')
+                    ),
+                    $pipes,
+                    null,
+                    null,
+                    array('suppress_errors' => true)
+                );
+
+                if (is_resource($process)) {
+                    $info = stream_get_contents($pipes[1]);
+
+                    fclose($pipes[1]);
+                    fclose($pipes[2]);
+                    proc_close($process);
+
+                    if (preg_match('/--------+\r?\n.+?(\d+)\r?\n.+?(\d+)\r?\n/', $info, $matches)) {
+                        $columns = $matches[2];
+                    }
+                }
+            }
+
+            return $columns - 1;
         }
 
         if (!$this->isInteractive(self::STDIN)) {
@@ -62,11 +85,15 @@ class Console
         }
 
         if (preg_match('#\d+ (\d+)#', shell_exec('stty size'), $match) === 1) {
-            return (int) $match[1];
+            if ((int) $match[1] > 0) {
+                return (int) $match[1];
+            }
         }
 
         if (preg_match('#columns = (\d+);#', shell_exec('stty'), $match) === 1) {
-            return (int) $match[1];
+            if ((int) $match[1] > 0) {
+                return (int) $match[1];
+            }
         }
 
         return 80;
@@ -75,9 +102,9 @@ class Console
     /**
      * Returns if the file descriptor is an interactive terminal or not.
      *
-     * @param  int|resource $fileDescriptor
+     * @param int|resource $fileDescriptor
      *
-     * @return boolean
+     * @return bool
      */
     public function isInteractive($fileDescriptor = self::STDOUT)
     {

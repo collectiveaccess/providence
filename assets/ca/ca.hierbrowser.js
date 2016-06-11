@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -21,6 +21,9 @@
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
+ *
+ * Dependencies:
+ *		jQuery.scrollTo
  *
  * ----------------------------------------------------------------------
  */
@@ -37,6 +40,8 @@ var caUI = caUI || {};
 			uiStyle: 'horizontal',	// 'horizontal' [default] means side-to-side scrolling browser; 'vertical' means <select>-based vertically oriented browser.
 			//  The horizontal browser requires more space but it arguably easier and more pleasant to use with large hierarchies.
 			//  The vertical browser is more compact and works well with smaller hierarchies
+			
+			uiDirection: 'up',	// direction of browse in vertical mode; value may be 'up' or 'down'
 
 			bundle: '',
 
@@ -79,16 +84,19 @@ var caUI = caUI || {};
 			autoShrinkAnimateID: '',
 
 			/* how do we treat disabled items in the browser? can be
-			 *  - 'disable' : list items default behavior - i.e. show the item but don't make it a clickable link
+			 *  - 'disable' : list items default behavior - i.e. show the item but don't make it a clickable link and apply the disabled class ('classNameDisabled' option)
 			 *  - 'hide' : completely hide them from the browser
 			 *  - 'full' : don't treat disabled items any differently
 			 */
 			disabledItems: 'disable',
+			classNameDisabled: 'hierarchyBrowserLevelDisabled',
 
 			displayCurrentSelectionOnLoad: true,
 			typeMenuID: '',
 
+			indicator: '',	
 			indicatorUrl: '',
+			
 			editButtonIcon: '',
 			disabledButtonIcon: '',
 
@@ -106,6 +114,9 @@ var caUI = caUI || {};
 
 			maxItemsPerHierarchyLevelPage: 500	// maximum number of items to load at one time into a level
 		}, options);
+		
+		
+		that.useAsRootID = parseInt(that.useAsRootID);
 
 		if (!that.levelDataUrl) {
 			alert("No level data url specified for " + that.name + "!");
@@ -113,6 +124,7 @@ var caUI = caUI || {};
 		}
 
 		if (!jQuery.inArray(that.uiStyle, ['horizontal', 'vertical'])) { that.uiStyle = 'horizontal'; }		// verify the uiStyle is valid
+		if (!jQuery.inArray(that.uiDirection, ['up', 'down'])) { that.uiDirection = 'up'; }		// verify the uiDirection is valid
 
 		if (that.uiStyle == 'horizontal') {
 			// create scrolling container
@@ -141,24 +153,37 @@ var caUI = caUI || {};
 			that.levelLists = [];
 			that.selectedItemIDs = [];
 			jQuery.getJSON(that.initDataUrl, { id: item_id, bundle: that.bundle}, function(data, e, x) {
+				if (typeof data === 'object') {
+					var dataAsList = [];
+					for(var o in data) {
+						if (data.hasOwnProperty(o)) {
+							dataAsList.push(data[o]);
+						}
+					}
+					data = dataAsList;
+				}
+
+
 				if (data.length) {
 					that.selectedItemIDs = data.join(';').split(';');
 
-					if (that.useAsRootID > 0) {
+					if ((that.useAsRootID > 0) && (that.useAsRootID !== data[0])) {
 						that.selectedItemIDs.shift();
 						if (jQuery.inArray(that.useAsRootID, data) == -1) {
 							data.unshift(that.useAsRootID);
 						}
 					} else {
-						data.unshift(0);
+						if (!that.useAsRootID) { data.unshift(0); }
 					}
 				} else {
 					data = [that.useAsRootID ? that.useAsRootID : 0];
 				}
-
-				if (data[0] == data[1]) {	// workaround for jQuery(?) but that replicates first item of list in json array
-					data.shift();
+				
+				// Remove root from selected id list when present
+				if (that.useAsRootID && (that.selectedItemIDs[0] == that.useAsRootID)) {
+					that.selectedItemIDs.shift();
 				}
+
 				var l = 0;
 				jQuery.each(data, function(i, id) {
 					that.setUpHierarchyLevel(i, id, 1, item_id);
@@ -255,10 +280,22 @@ var caUI = caUI || {};
 				if (that.uiStyle == 'vertical') {
 					// Create new <select> to display list of items
 					var newLevelList = "<select class='" + that.className + "' id='" + newLevelListID + "' name='" + newLevelListID + "' style='width: "+ (that.browserWidth - 32) + "px;'></select>";	// allow 24 pixels for spinner
-					var newLevelDiv = "<div class='" + that.className + "' id='" + newLevelDivID + "'>" + newLevelList;
-					if (level > 0) { newLevelDiv += "<br/>⬆</div>"; }
-
-					jQuery('#' + that.container + '_select_container').prepend(newLevelDiv);
+					var newLevelDiv = "<div class='" + that.className + "' id='" + newLevelDivID + "'>";
+					
+					if (that.uiDirection == 'up') {
+						newLevelDiv += newLevelList;
+						if (level > 0) { newLevelDiv += "<br/>⬆</div>"; }
+						jQuery('#' + that.container + '_select_container').prepend(newLevelDiv);
+					} else {
+						if (level > 0) { newLevelDiv += "⬇<br/>"; }
+						newLevelDiv += newLevelList + "</div>";
+						if (level == 0) {
+							jQuery('#' + that.container + '_select_container').prepend(newLevelDiv);
+						} else {
+							jQuery('#' + that.container + '_select_container').append(newLevelDiv);
+						}
+					}
+					
 					jQuery('#' + newLevelDivID).data('level', level);
 					jQuery('#' + newLevelDivID).data('parent_id', item_id);
 					jQuery('#' + newLevelListID).change(function() {
@@ -416,7 +453,7 @@ var caUI = caUI || {};
 										case 'disabled':
 										default:
 											jQuery('#' + newLevelListID).append(
-												"<li class='" + that.className + "'>" + moreButton +  item.name + "</li>"
+												"<li class='" + that.className + "'>" + moreButton +  '<span class="' + that.classNameDisabled + '">' + item.name + "</span></li>"
 											);
 											break;
 									}
@@ -507,7 +544,7 @@ var caUI = caUI || {};
 								}
 							} else {
 								if (that.uiStyle == 'vertical') {
-									jQuery("#" + newLevelListID).append(jQuery("<option></option>").val(item.item_id).text(item.name));
+									jQuery("#" + newLevelListID).append(jQuery("<option></option>").val(item.item_id).text(jQuery('<div />').html(item.name).text()));
 								}
 							}
 							// Pass item_id to caller if required
@@ -552,7 +589,10 @@ var caUI = caUI || {};
 						} else {
 							if ((that.selectedItemIDs[level] !== undefined) && !dontDoSelectAndScroll) {
 								jQuery('#hierBrowser_' + that.name + '_level_' + (level) + '_item_' + that.selectedItemIDs[level]).addClass(that.classNameSelected);
-								jQuery('#hierBrowser_' + that.name + '_' + level).scrollTo('#hierBrowser_' + that.name + '_level_' + level + '_item_' + that.selectedItemIDs[level]);
+								
+								if (jQuery('#hierBrowser_' + that.name + '_level_' + level + '_item_' + that.selectedItemIDs[level]).position()) {
+									jQuery('#' + newLevelDivID).scrollTo(jQuery('#hierBrowser_' + that.name + '_level_' + level + '_item_' + that.selectedItemIDs[level]).position().top + 'px');
+								}
 							}
 						}
 					} else {
@@ -702,27 +742,37 @@ var caUI = caUI || {};
 		// @param string newLevelDivID The ID of the <div> containing the level
 		//
 		that.showIndicator = function(newLevelDivID) {
-			if (!that.indicatorUrl) { return; }
-			if (jQuery('#' + newLevelDivID + ' img._indicator').length > 0) {
-				jQuery('#' + newLevelDivID + ' img._indicator').show();
+			if (!that.indicatorUrl && !that.indicator) { return; }
+			
+			if (jQuery('#' + newLevelDivID + ' div._indicator').length > 0) {
+				jQuery('#' + newLevelDivID + ' div._indicator').show();
 				return;
 			}
+			
 			var level = jQuery('#' + newLevelDivID).data('level');
+				
+			if (that.indicatorUrl) {
+				var img = document.createElement('img');
+				img.src = that.indicatorUrl;
+				img.className = '_indicatorImg';
+				
+				that.indicator = that.indicatorUrl;
+			} 
+				
+				
+			var indicator = document.createElement('div');
 			if (that.uiStyle == 'vertical') {
-				var indicator = document.createElement('img');
-				indicator.src = that.indicatorUrl;
-				indicator.className = '_indicator';
 				if (level == 0) { jQuery('#' + newLevelDivID).append("<br/>"); }
-				jQuery('#' + newLevelDivID).append(indicator);
 			} else {
-				var indicator = document.createElement('img');
-				indicator.src = that.indicatorUrl;
+				jQuery(indicator).append(that.indicator);
 				indicator.className = '_indicator';
 				indicator.style.position = 'absolute';
 				indicator.style.left = '50%';
 				indicator.style.top = '50%';
-				jQuery('#' + newLevelDivID).append(indicator);
 			}
+			jQuery('#' + newLevelDivID).append(indicator);
+			
+			return;
 		}
 		// --------------------------------------------------------------------------------
 		// Remove spinning progress indicator from specified level <div>
@@ -730,7 +780,9 @@ var caUI = caUI || {};
 		// @param string newLevelDivID The ID of the <div> containing the level
 		//
 		that.hideIndicator = function(newLevelDivID) {
-			jQuery('#' + newLevelDivID + ' img._indicator').hide();		// hide loading indicator
+			if (!that.indicatorUrl && !that.indicator) { return; }
+			
+			jQuery('#' + newLevelDivID + ' div._indicator').hide();		// hide loading indicator
 		}
 		// --------------------------------------------------------------------------------
 		// Returns database id (the primary key in the database, *NOT* the DOM ID) of currently selected item

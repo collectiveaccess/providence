@@ -35,8 +35,6 @@
   */
   
  	require_once(__CA_LIB_DIR__.'/ca/RepresentableBaseModel.php');
-	require_once(__CA_MODELS_DIR__.'/ca_movements.php');
-	require_once(__CA_MODELS_DIR__.'/ca_storage_locations.php');
 	require_once(__CA_MODELS_DIR__.'/ca_objects.php');
  
 	class BaseObjectLocationModel extends RepresentableBaseModel {
@@ -75,92 +73,6 @@
 			if (!$vb_already_in_transaction) { $o_t->commit(); }
 	
 			return $vn_rc;
-		}
-		
-		# ------------------------------------------------------
-		/**
-		 *
-		 */
-		public function addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $ps_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
-			if ($vn_rc = parent::addRelationship($pm_rel_table_name_or_num, $pn_rel_id, $pm_type_id, $ps_effective_date, $ps_source_info, $ps_direction, $pn_rank, $pa_options)) {
-				$this->_setCurrent($pm_rel_table_name_or_num, $pn_rel_id);
-			}
-			return $vn_rc;
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public function editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id=null, $ps_effective_date=null, $pa_source_info=null, $ps_direction=null, $pn_rank=null, $pa_options=null) {
-			if ($vn_rc = parent::editRelationship($pm_rel_table_name_or_num, $pn_relation_id, $pn_rel_id, $pm_type_id, $ps_effective_date, $pa_source_info, $ps_direction, $pn_rank, $pa_options)) {
-				$this->_setCurrent($pm_rel_table_name_or_num, $pn_rel_id);
-			}
-			return $vn_rc;
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		public function removeRelationship($pm_rel_table_name_or_num, $pn_relation_id) {
-			$va_path = array_keys($this->getAppDatamodel()->getPath($this->tableName(), $pm_rel_table_name_or_num));
-			
-			$vn_rel_id = $t_rel_item = null;
-			if ((sizeof($va_path) == 3) && ($t_rel = $this->getAppDatamodel()->getInstance($va_path[1]))) {
-				$t_rel->setTransaction($this->getTransaction());
-				$t_rel_item = $this->getAppDatamodel()->getInstance($va_path[2], true);
-				if ($t_rel->load($pn_relation_id)) {
-					$vn_rel_id = $t_rel->get($t_rel_item->primaryKey());
-				}
-			}
-			if ($vn_rc = parent::removeRelationship($pm_rel_table_name_or_num, $pn_relation_id)) {
-				if ($vn_rel_id && $t_rel_item) {
-					$this->_setCurrent($t_rel_item->tableName(), $vn_rel_id);
-				}
-			}
-			
-			return $vn_rc;
-		}
-		# -------------------------------------------------------
-		/**
-		 *
-		 */
-		private function _setCurrent($pm_rel_table_name_or_num, $pn_rel_id) {
-			
-			switch ($this->tableName()) {
-				case 'ca_movements':
-					// Calcuate current flag for relationships to storage locations and objects
-					
-					if (
-						($vs_date_element = $this->getAppConfig()->get('movement_storage_location_date_element'))
-						&&
-						(($vs_rel_table = $this->getAppDatamodel()->getTableName($pm_rel_table_name_or_num)) == 'ca_objects')
-					) {
-						// get all other movements for this object
-						$t_object = new ca_objects();
-						$t_object->setTransaction($this->getTransaction());
-			
-						if ($t_object->load($pn_rel_id)) {
-							if ($qr_movements_for_object = ca_movements_x_objects::find(array('object_id' => $pn_rel_id), array('returnAs' => 'SearchResult'))) {
-								$va_list = array();
-								while($qr_movements_for_object->nextHit()) {
-									$va_list[$qr_movements_for_object->get("ca_movements.{$vs_date_element}", array('sortable' => true))] = $qr_movements_for_object->get('ca_movements_x_objects.relation_id');
-								}
-								ksort($va_list, SORT_NUMERIC);
-								$vn_current = array_pop($va_list);
-					
-								if(sizeof($va_list)) { 
-									$t_object->getDb()->query("UPDATE ca_movements_x_objects SET source_info = '' WHERE relation_id IN (?)", array(array_values($va_list)));
-									$t_object->getDb()->query("UPDATE ca_movements_x_storage_locations SET source_info = '' WHERE movement_id IN (SELECT movement_id FROM ca_movements_x_objects WHERE relation_id IN (?))", array(array_values($va_list)));
-								}
-								if ($vn_current) {
-									$t_object->getDb()->query("UPDATE ca_movements_x_objects SET source_info = 'current' WHERE relation_id = ?", array($vn_current));
-									$t_object->getDb()->query("UPDATE ca_movements_x_storage_locations SET source_info = 'current' WHERE movement_id IN (SELECT movement_id FROM ca_movements_x_objects WHERE relation_id = ?)", array($vn_current));
-								}
-							}
-						}
-					}
-					break;
-			}
 		}
 		# -------------------------------------------------------
 	}

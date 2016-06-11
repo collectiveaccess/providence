@@ -100,7 +100,7 @@ class DbStatement extends DbBase {
 	 * @param string $ps_sql the SQL statement
 	 * @param array $po_options options array
 	 */
-	function DbStatement($po_db, $ps_sql, $po_options=null) {
+	function __construct($po_db, $ps_sql, $po_options=null) {
 		$this->opo_db = $po_db;
 		$this->ops_sql = $ps_sql;
 	
@@ -142,12 +142,13 @@ class DbStatement extends DbBase {
 	 *
 	 * @see DbStatement::execute()
 	 * @param array $pa_params
+	 * @param array $pa_options
 	 * @return DbResult result
 	 */
-	function executeWithParamsAsArray($pa_params) {
+	function executeWithParamsAsArray($pa_params, $pa_options=null) {
 		$this->clearErrors();
 
-		if ($o_res = $this->opo_db->execute($this, $this->opo_native_statement ? $this->opo_native_statement : $this, $this->ops_sql, $pa_params)) {
+		if ($o_res = $this->opo_db->execute($this, $this->opo_native_statement ? $this->opo_native_statement : $this, $this->ops_sql, $pa_params, $pa_options)) {
 			$this->opn_last_insert_id = $this->opo_db->getLastInsertID($this);
 		}
 		return $o_res;
@@ -238,4 +239,3 @@ class DbStatement extends DbBase {
 		//print "DESTRUCT db statement\n";
 	}
 }
-?>

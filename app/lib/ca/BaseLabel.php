@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2013 Whirl-i-Gig
+ * Copyright 2008-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,8 +36,11 @@
   
  	require_once(__CA_LIB_DIR__.'/core/BaseModel.php');
  	require_once(__CA_LIB_DIR__.'/core/Parsers/TimeExpressionParser.php');
+	require_once(__CA_LIB_DIR__."/ca/SyncableBaseModel.php");
  
 	class BaseLabel extends BaseModel {
+		# -------------------------------------------------------
+		use SyncableBaseModel;
 		# -------------------------------------------------------
 		public function __construct($pn_id=null, $pb_use_cache=true) {
 			parent::__construct($pn_id, $pb_use_cache);
@@ -47,7 +50,11 @@
 			$this->_generateSortableValue();	// populate sort field
 			// invalidate get() prefetch cache
 			SearchResult::clearResultCacheForTable($this->tableName());
-			return parent::insert($pa_options);
+			if($vn_rc = parent::insert($pa_options)) {
+				$this->setGUID($pa_options);
+			}
+
+			return $vn_rc;
 		}
 		# -------------------------------------------------------
 		public function update($pa_options=null) {
@@ -60,7 +67,19 @@
 			
 			// Unset label cache entry for modified label only
 			unset(LabelableBaseModelWithAttributes::$s_label_cache[$this->getSubjectTableName()][$this->get($this->getSubjectKey())]);
+
 			return parent::update($pa_options);
+		}
+		# -------------------------------------------------------
+		public function delete ($pb_delete_related=false, $pa_options=null, $pa_fields=null, $pa_table_list=null) {
+			$vn_primary_key = $this->getPrimaryKey();
+			$vn_rc = parent::delete($pb_delete_related, $pa_options, $pa_fields, $pa_table_list);
+
+			if($vn_primary_key && $vn_rc && caGetOption('hard', $pa_options, false)) {
+				$this->removeGUID($vn_primary_key);
+			}
+
+			return $vn_rc;
 		}
 		# -------------------------------------------------------
 		/**
@@ -138,27 +157,9 @@
 			if ($vs_sort_field = $this->getProperty('LABEL_SORT_FIELD')) {
 				$vs_display_field = $this->getProperty('LABEL_DISPLAY_FIELD');
 				
-				$o_tep = new TimeExpressionParser();
-				
 				$t_locale = new ca_locales();
-				$o_tep->setLanguage($t_locale->localeIDToCode($this->get('locale_id')));
-				$o_lang_settings = $o_tep->getLanguageSettings();
-				$vs_display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $this->get($vs_display_field)));
-				
-				$va_definite_articles = $o_lang_settings->get('definiteArticles');
-				$va_indefinite_articles = $o_lang_settings->get('indefiniteArticles');
-				
-				foreach(array($o_lang_settings->get('definiteArticles'), $o_lang_settings->get('indefiniteArticles')) as $va_articles) {
-					if (is_array($va_articles)) {
-						foreach($va_articles as $vs_article) {
-							if (preg_match('!^('.$vs_article.')[ ]+!i', $vs_display_value, $va_matches)) {
-								$vs_display_value = trim(str_replace($va_matches[1], '', $vs_display_value).', '.$va_matches[1]);
-								break(2);
-							}
-						}
-					}
-				}
-				
+				$vs_display_value = caSortableValue($this->get($vs_display_field), array('locale' => $t_locale->localeIDToCode($this->get('locale_id'))));
+			
 				$this->set($vs_sort_field, $vs_display_value);
 			}
 		}
@@ -172,6 +173,10 @@
 				return true;
 			}
 			return false;
+		}
+		# -------------------------------------------------------
+		public function getAdditionalChecksumComponents() {
+			return [$this->getSubjectTableInstance()->getGUID()];
 		}
 		# -------------------------------------------------------
 	}

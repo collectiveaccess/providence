@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2015 Whirl-i-Gig
+ * Copyright 2013-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -65,7 +65,7 @@
 			} else {
 				// Default to first place hierarchy
 				$t_list = new ca_lists();
-				$va_hierarchy_ids = $t_list->getItemsForList('place_hierarchies', array('idsOnly' => true));
+				$va_hierarchy_ids = $t_list->getItemsForList('place_hierarchies', array('idsOnly' => true, 'omitRoot' => true));
 				$vn_hierarchy_id = array_shift($va_hierarchy_ids);
 			}
 			if (!$vn_hierarchy_id) {
@@ -228,6 +228,23 @@
 				'default' => '',
 				'label' => _t('Non-preferred labels'),
 				'description' => _t('List of non-preferred labels to apply to places.')
+			),
+			'placeSplitter_relationships' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Relationships'),
+				'description' => _t('List of relationships to process.')
+			),
+			'placeSplitter_relatedEntities' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Relationships'),
+				'description' => _t('List of entity relationships to process.')
 			)
 		);
-?>

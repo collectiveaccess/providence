@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2014 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -81,6 +81,24 @@
 			'width' => 1, 'height' => 1,
 			'label' => _t('Include date picker'),
 			'description' => _t('Check this option if you want a calendar-based date picker to be available for date entry. (The default is to not include a picker.)')
+		),
+		'datePickerDateFormat' => array(
+			'formatType' => FT_TEXT,
+			'displayType' => DT_SELECT,
+			'default' => 'yy-mm-dd',
+			'width' => 50, 'height' => 1,
+			'label' => _t('Date picker date format'),
+			'options' => array(
+				_t('ISO-8601 (ex. 2012-07-03)') => 'yy-mm-dd',
+				_t('US Delimited (ex. 07/03/2012)') => 'mm/dd/yy',
+				_t('European Delimited (ex. 03/07/2012)') => 'dd/mm/yy',
+				_t('Month Day, Year (ex. July 3, 2012)') => 'MM d, yy',
+				_t('Month Day Year (ex. July 3 2012)') => 'MM d yy',
+				_t('Day Month Year (ex. 3 July 2012)') => 'd MM yy',
+				_t('Short month Day Year (ex. Jul 3 2012)') => 'M d yy',
+				_t('Day Short month Year (ex. 3 July 2012)') => 'd M yy'
+			),
+			'description' => _t('Format to use for dates selected from the date picker. (The default is YY-MM-DD format.)')
 		),
 		'mustNotBeBlank' => array(
 			'formatType' => FT_NUMBER,
@@ -170,7 +188,7 @@
 		'displayDelimiter' => array(
 			'formatType' => FT_TEXT,
 			'displayType' => DT_FIELD,
-			'default' => '; ',
+			'default' => ',',
 			'width' => 10, 'height' => 1,
 			'label' => _t('Value delimiter'),
 			'validForRootOnly' => 1,
@@ -183,10 +201,19 @@
  		private $ops_text_value;
  		private $opn_start_date;
  		private $opn_end_date;
+
+		/**
+		 * @var TimeExpressionParser
+		 */
+ 		static private $o_tep;
+		/**
+		 * @var array
+		 */
+ 		static private $s_date_cache = array();
  		# ------------------------------------------------------------------
  		public function __construct($pa_value_array=null) {
- 			require_once(__CA_MODELS_DIR__.'/ca_metadata_elements.php');
  			parent::__construct($pa_value_array);
+ 			if(!DateRangeAttributeValue::$o_tep) { DateRangeAttributeValue::$o_tep = new TimeExpressionParser(); }
  		}
  		# ------------------------------------------------------------------
  		public function loadTypeSpecificValueFromRow($pa_value_array) {
@@ -204,7 +231,12 @@
 		public function getDisplayValue($pa_options=null) {
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if (isset($pa_options['rawDate']) && $pa_options['rawDate']) {
-				return array(0 => $this->opn_start_date, 1 => $this->opn_end_date, 'start' => $this->opn_start_date, 'end' =>$this->opn_end_date);
+				return array(
+					0 => $this->opn_start_date,
+					1 => $this->opn_end_date,
+					'start' => $this->opn_start_date,
+					'end' =>$this->opn_end_date
+				);
 			}
 			if (caGetOption('GET_DIRECT_DATE', $pa_options, false) || caGetOption('getDirectDate', $pa_options, false)) {
 				return $this->opn_start_date;
@@ -215,22 +247,29 @@
 				return $this->opn_start_date.'/'.$this->opn_end_date;
 			}
 			
-			$o_config = Configuration::load();
-			$o_date_config = Configuration::load($o_config->get('datetime_config'));
-			
-			if ($o_date_config->get('dateFormat') == 'original') {
-				return $this->ops_text_value;
-			} else {				
-				$t_element = new ca_metadata_elements($this->getElementID());
-				$va_settings = $this->getSettingValuesFromElementArray(
-					$t_element->getFieldValuesArray(), 
-					array('isLifespan')
-				);
-				
-				$o_tep = new TimeExpressionParser();
-				$o_tep->setHistoricTimestamps($this->opn_start_date, $this->opn_end_date);
-				return $o_tep->getText(array_merge(array('isLifespan' => $va_settings['isLifespan']), $pa_options)); //$this->ops_text_value;
- 			}
+			$o_date_config = Configuration::load(__CA_CONF_DIR__.'/datetime.conf');
+
+			$vs_date_format = $o_date_config->get('dateFormat');
+			$vs_cache_key = md5($vs_date_format . $this->opn_start_date . $this->opn_end_date);
+
+			// pull from cache
+			if(isset(DateRangeAttributeValue::$s_date_cache[$vs_cache_key])) {
+				return DateRangeAttributeValue::$s_date_cache[$vs_cache_key];
+			}
+
+			// if neither start nor end date are set, the setHistoricTimestamps() call below will
+			// fail and the TEP will return the text for whatever happened to be parsed previously 
+			// so we have to init() before trying
+			DateRangeAttributeValue::$o_tep->init();
+			if ($vs_date_format == 'original') {
+				return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = $this->ops_text_value;
+			} else {
+				if (!is_array($va_settings = ca_metadata_elements::getElementSettingsForId($this->getElementID()))) {
+					$va_settings = [];
+				}
+				DateRangeAttributeValue::$o_tep->setHistoricTimestamps($this->opn_start_date, $this->opn_end_date);
+				return DateRangeAttributeValue::$s_date_cache[$vs_cache_key] = DateRangeAttributeValue::$o_tep->getText(array_merge(array('isLifespan' => $va_settings['isLifespan']), $pa_options)); //$this->ops_text_value;
+			}
 		}
  		# ------------------------------------------------------------------
 		public function getHistoricTimestamps() {
@@ -238,8 +277,7 @@
 		}
  		# ------------------------------------------------------------------
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
-            $o_conf = Configuration::load();
-            $o_date_config = Configuration::load($o_conf->get('datetime_config'));
+ 			$o_date_config = Configuration::load(__CA_CONF_DIR__.'/datetime.conf');
             $show_Undated = $o_date_config->get('showUndated');
  
  			$ps_value = trim($ps_value);
@@ -248,17 +286,16 @@
  				array('dateRangeBoundaries', 'mustNotBeBlank')
  			);
  			
- 			$o_tep = new TimeExpressionParser();
 			if ($ps_value) {
-				if (!$o_tep->parse($ps_value)) { 
+				if (!DateRangeAttributeValue::$o_tep->parse($ps_value)) { 
 					// invalid date
 					$this->postError(1970, _t('%1 is invalid', $pa_element_info['displayLabel']), 'DateRangeAttributeValue->parseValue()');
 					return false;
 				}
-				$va_dates = $o_tep->getHistoricTimestamps();
+				$va_dates = DateRangeAttributeValue::$o_tep->getHistoricTimestamps();
 				if ($va_settings['dateRangeBoundaries']) {
-					if ($o_tep->parse($va_settings['dateRangeBoundaries'])) { 
-						$va_boundary_dates = $o_tep->getHistoricTimestamps();
+					if (DateRangeAttributeValue::$o_tep->parse($va_settings['dateRangeBoundaries'])) { 
+						$va_boundary_dates = DateRangeAttributeValue::$o_tep->getHistoricTimestamps();
 						if (
 							($va_dates[0] < $va_boundary_dates[0]) ||
 							($va_dates[0] > $va_boundary_dates[1]) ||
@@ -276,14 +313,12 @@
 					$this->postError(1970, _t('%1 must not be empty', $pa_element_info['displayLabel']), 'DateRangeAttributeValue->parseValue()');
 					return false;
 				} else {
-					
-					$o_config = Configuration::load();
-					$o_date_config = Configuration::load($o_config->get('datetime_config'));
+					$o_date_config = Configuration::load(__CA_CONF_DIR__.'/datetime.conf');
 			
 					// Default to "undated" date for blanks
 					$vs_undated_date = '';
 					if ((bool)$o_date_config->get('showUndated')) {
-						$o_lang_config = $o_tep->getLanguageSettings();
+						$o_lang_config = DateRangeAttributeValue::$o_tep->getLanguageSettings();
 						$vs_undated_date = array_shift($o_lang_config->getList('undatedDate'));
 					}
 					
@@ -312,12 +347,13 @@
  		 *			t_subject = an instance of the model to which the attribute belongs; required if suggestExistingValues lookups are enabled [Default is null]
  		 *			request = the RequestHTTP object for the current request; required if suggestExistingValues lookups are enabled [Default is null]
  		 *			suggestExistingValues = suggest values based on existing input for this element as user types [Default is false]		
- 		 *			useDatePicker = use calendar-style date picker [Default=false]
+ 		 *			useDatePicker = use calendar-style date picker [Default is false],
+ 		 8			datePickerDateFormat = Format to use for dates selected from the date picker [Default is 'yy-mm-dd']
  		 *
  		 * @return string
  		 */
  		public function htmlFormElement($pa_element_info, $pa_options=null) {
-			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'suggestExistingValues', 'useDatePicker'));
+			$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'suggestExistingValues', 'useDatePicker', 'datePickerDateFormat'));
 			$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : 'dateBg');
 			
 			if (isset($pa_options['useDatePicker'])) {
@@ -362,7 +398,7 @@
 
  				$vs_element .= "<script type='text/javascript'>
  					jQuery(document).ready(function() {
- 						jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').datepicker({constrainInput: false});
+ 						jQuery('#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}').datepicker({dateFormat: '".(isset($va_settings['datePickerDateFormat']) ? $va_settings['datePickerDateFormat'] : 'yy-mm-dd')."', constrainInput: false});
  					});
  				</script>\n";
 

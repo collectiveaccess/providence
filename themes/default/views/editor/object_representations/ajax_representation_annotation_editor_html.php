@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2013-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -32,6 +32,7 @@
 	$va_annotation_map 			= $this->getVar('annotation_map');
 	
 	$vn_annotation_count		= $this->getVar('annotation_count');
+	$vn_timecode_offset 		= $this->getVar('timecode_offset');
 
 	$vb_can_edit	 			= $t_rep->isSaveable($this->request);
 	$vb_can_delete				= $t_rep->isDeletable($this->request);
@@ -44,14 +45,14 @@
 
 <div class="caMediaOverlayControls">
 	<div class="objectInfo"><?php print "{$vs_media_type}; ".caGetRepresentationDimensionsForDisplay($t_rep, 'original'); ?></div>
-	<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close">&nbsp;&nbsp;&nbsp;</a></div>
+	<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close"><?php print caNavIcon(__CA_NAV_ICON_CLOSE__, "18px", [], ['color' => 'white']); ?></a></div>
 </div>
 	
 <div class="caAnnoEditorTlContainer">
 	<div class="caAnnoEditorTlInfo">
 		<div class="caAnnoEditorInfo"><?php print _t("%1 clips", $vn_annotation_count); ?></div>
 		<div class="caAnnoEditorTlSyncControl">
-			<a href='#' id='caAnnoEditorTlSyncButton'><img src='<?php print __CA_URL_ROOT__; ?>/themes/default/graphics/buttons/clock.png' border='0' title='sync timelines'></a>
+			<a href='#' id='caAnnoEditorTlSyncButton'><?php print caNavIcon(__CA_NAV_ICON_CLOCK__); ?></a>
 		</div>
 	</div><!-- end caAnnoEditorTlInfo -->
 	<div class="caAnnoEditorTl">
@@ -80,12 +81,11 @@
 		print $this->getVar('player');
 ?>
 		<div class="caAnnoMediaPlayerControlsLeft">
-			<?php print caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("New clip"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorNewInButton", "onclick" => "caAnnoEditorEdit(0, caAnnoEditorGetPlayerTime(), caAnnoEditorGetPlayerTime() + 10, \"PLAY\")")); ?>
-			<?php print "<span id='caAnnoEditorInOutButtonLabel'>"._t('Set').': </span>'.caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("start"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorInButton", "onclick" => "caAnnoEditorSetInTime(caAnnoEditorGetPlayerTime(), \"PLAY\")")); ?>
-			<?php print caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("end"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorOutPauseButton", "onclick" => "caAnnoEditorSetOutTime(caAnnoEditorGetPlayerTime(), \"PAUSE\")")); ?>
+			<?php print "<span id='caAnnoEditorInOutButtonLabel'>"._t('Set').': </span>'.caJSButton($this->request, __CA_NAV_ICON_ADD__, _t("start"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorInButton", "onclick" => "caAnnoEditorSetInTime(caAnnoEditorGetPlayerTime(), \"PLAY\")")); ?>
+			<?php print caJSButton($this->request, __CA_NAV_ICON_ADD__, _t("end"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorOutPauseButton", "onclick" => "caAnnoEditorSetOutTime(caAnnoEditorGetPlayerTime(), \"PAUSE\")")); ?>
 		</div>
 		<div class="caAnnoMediaPlayerControlsRight">
-			<?php print caJSButton($this->request, __CA_NAV_BUTTON_ADD__, _t("Set end &amp; Save"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorOutAndSavePauseButton", "onclick" => "caAnnoEditorSetOutTime(caAnnoEditorGetPlayerTime(), null, true)")); ?>
+			<?php print caJSButton($this->request, __CA_NAV_ICON_ADD__, _t("Set end &amp; Save"), "caAnnoEditorAddAtButton", array("id" => "caAnnoEditorOutAndSavePauseButton", "onclick" => "caAnnoEditorSetOutTime(caAnnoEditorGetPlayerTime(), null, true)")); ?>
 		</div>
 	</div>
 
@@ -205,10 +205,10 @@
 				var startTimecode = v['startTimecode_raw'];
 			
 				var item = "<div id='caAnnoEditorTlAnnotationContainer" + annotation_id + "' class='caAnnoEditorTlAnnotationContainer'>" + 
-					"<div class='title'><a href='#' onclick='caAnnoEditorPlayerPlay(" + startTimecode + "); return false;'>" + label + "</a></div>" + 
-					"<div class='timecode'><a href='#' onclick='caAnnoEditorPlayerPlay(" + startTimecode + "); return false;'>" + timecode + "</a></div>" + 
-					"<div class='editAnnoButton'><a href='#' onclick='caAnnoEditorEdit(" + annotation_id + "); event.preventDefault(); return false;'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__); ?></a></div>" + 
-					"<div class='deleteAnnoButton'><a href='#' onclick='caAnnoEditorDelete(" + annotation_id + "); event.preventDefault(); return false;'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a></div>";
+					"<div class='title'><a href='#' onclick='caAnnoEditorPlayerPlay(" + (startTimecode - v['timecodeOffset']) + "); return false;'>" + label + "</a></div>" + 
+					"<div class='timecode'><a href='#' onclick='caAnnoEditorPlayerPlay(" + (startTimecode - v['timecodeOffset']) + "); return false;'>" + timecode + "</a></div>" + 
+					"<div class='editAnnoButton'><a href='#' onclick='caAnnoEditorEdit(" + annotation_id + "); event.preventDefault(); return false;'><?php print caNavIcon(__CA_NAV_ICON_EDIT__, 1); ?></a></div>" + 
+					"<div class='deleteAnnoButton'><a href='#' onclick='caAnnoEditorDelete(" + annotation_id + "); event.preventDefault(); return false;'><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>";
 			
 				// does the item already exist?
 				if (items.eq(i).length > 0) {
@@ -324,14 +324,14 @@
 	
 	function caAnnoEditorSetInTime(inTime, state) {
 		caAnnoEditorEnableAnnotationForm();
-		jQuery("input[name=startTimecode]").val(caConvertSecondsToTimecode(inTime));
+		jQuery("input#startTimecode").val(caConvertSecondsToTimecode(inTime + <?php print $vn_timecode_offset; ?>));
 		if (state === 'PLAY') caAnnoEditorPlayerPlay();
 		if (state === 'PAUSE') caAnnoEditorPlayerPause();
 	}
 
 	function caAnnoEditorSetOutTime(outTime, state, save) {
 		caAnnoEditorEnableAnnotationForm();
-		jQuery("input[name=endTimecode]").val(caConvertSecondsToTimecode(outTime));
+		jQuery("input#endTimecode").val(caConvertSecondsToTimecode(outTime + <?php print $vn_timecode_offset; ?>));
 		if (state === 'PLAY') caAnnoEditorPlayerPlay();
 		if (state === 'PAUSE') caAnnoEditorPlayerPause();
 		if (save) {
@@ -396,11 +396,16 @@
 		p.paused ? p.play() : p.pause();
 	}
 
-	function caAnnoEditorGetPlayerTime() {
+	function caAnnoEditorGetPlayerTime(includeTimecodeOffset) {
 		var p = caAnnoEditorGetPlayer();
 		var mediaType = caAnnoEditorGetMediaType();
 		
-		if (p) { return (mediaType == 'AUDIO') ? p.currentTime : p.currentTime(); }
+		var ct;
+		if (p) { 
+			ct = (mediaType == 'AUDIO') ? p.currentTime : p.currentTime(); 
+			return includeTimecodeOffset ? (<?php print $vn_timecode_offset; ?> + ct) : ct;
+		}
+		
 		return null;
 	}
 

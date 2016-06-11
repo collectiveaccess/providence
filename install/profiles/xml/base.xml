@@ -5,7 +5,9 @@
   <locales>
     <locale lang="en" country="US">English (US)</locale>
     <locale lang="en" country="CA" dontUseForCataloguing="1">English (Canadian)</locale>
-    <locale lang="de" country="DE" dontUseForCataloguing="1">Deutsch</locale>
+    <locale lang="en" country="AU" dontUseForCataloguing="1">English (Australian)</locale>
+    <locale lang="de" country="DE" dontUseForCataloguing="1">Deutsch (Deutschland)</locale>
+    <locale lang="de" country="AT" dontUseForCataloguing="1">Deutsch (Österreich)</locale>
     <locale lang="fr" country="FR" dontUseForCataloguing="1">Français</locale>
     <locale lang="fr" country="CA" dontUseForCataloguing="1">Français (Canadien)</locale>
     <locale lang="cs" country="CZ" dontUseForCataloguing="1">Czech</locale>
@@ -923,6 +925,39 @@
             <label locale="sv_SE" preferred="1">
               <name_singular>tillgänglig för allmänheten</name_singular>
               <name_plural>tillgänglig för allmänheten</name_plural>
+            </label>
+          </labels>
+        </item>
+      </items>
+    </list>
+    <list code="object_circulation_statuses" hierarchical="1" system="0" vocabulary="0">
+      <labels>
+        <label locale="en_US">
+          <name>Object circulation statuses</name>
+        </label>
+      </labels>
+      <items>
+        <item idno="available" enabled="1" default="1">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Available</name_singular>
+              <name_plural>Available</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="in_library" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>In-library use only</name_singular>
+              <name_plural>In-library use only</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="unavailable" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Unavailable</name_singular>
+              <name_plural>Unavailable</name_plural>
             </label>
           </labels>
         </item>

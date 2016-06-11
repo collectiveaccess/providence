@@ -41,7 +41,7 @@
 		print caFormControlBox(
 			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caGroupList\').caFilterTable(this.value); return false;" size="20"/></div>', 
 			'', 
-			caNavHeaderButton($this->request, __CA_NAV_BUTTON_ADD_LARGE__, _t("New group"), 'administrate/access', 'groups', 'Edit', array('group_id' => 0))
+			caNavHeaderButton($this->request, __CA_NAV_ICON_ADD__, _t("New group"), 'administrate/access', 'groups', 'Edit', array('group_id' => 0))
 		); 
 	?>
 	
@@ -76,8 +76,8 @@
 						<?php print $va_group['description']; ?>
 					</td>
 					<td class="saveDelete">
-						<?php print caNavButton($this->request, __CA_NAV_BUTTON_EDIT__, _t("Edit"), 'list-button', 'administrate/access', 'groups', 'Edit', array('group_id' => $va_group['group_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
-						<?php print caNavButton($this->request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'list-button', 'administrate/access', 'groups', 'Delete', array('group_id' => $va_group['group_id']), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+						<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), 'list-button', 'administrate/access', 'groups', 'Edit', array('group_id' => $va_group['group_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
+						<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'list-button', 'administrate/access', 'groups', 'Delete', array('group_id' => $va_group['group_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true)); ?>
 					</td>
 				</tr>
 <?php

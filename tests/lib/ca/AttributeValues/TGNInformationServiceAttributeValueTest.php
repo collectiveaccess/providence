@@ -34,11 +34,16 @@ require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 
 class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase {
 
+	public function testGetDisplayLabelFromLookupText() {
+		$o_service = new WLPlugInformationServiceTGN();
+		$this->assertEquals('Coney Island', $o_service->getDisplayValueFromLookupText('[7015849] Coney Island; Brooklyn, New York (neighborhoods)'));
+	}
+
 	public function testBrooklynQuery() {
 		$o_service = new WLPlugInformationServiceTGN();
 
 		$va_return = $o_service->lookup(array(), 'Brooklyn');
-		$this->assertEquals(50, sizeof($va_return['results']));
+		$this->assertEquals(97, sizeof($va_return['results']));
 
 		$va_labels = array();
 		foreach($va_return['results'] as $va_record) {
@@ -63,7 +68,7 @@ class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase
 
 		$this->assertContains('[7015849] Coney Island; Brooklyn, New York (neighborhoods)', $va_labels);
 		$this->assertContains('[2252267] Coney Island Creek; Kings, New York (creeks (bodies of water))', $va_labels);
-		$this->assertContains('[7454829] Coney Island; Armagh, Northern Ireland (islands (landforms))', $va_labels);
+		$this->assertContains('[7454829] Coney Island; Armagh, Banbridge and Craigavon, United Kingdom (islands (landforms))', $va_labels);
 	}
 
 	public function testRubbishQuery() {
@@ -87,4 +92,15 @@ class TGNInformationServiceAttributeValueTest extends PHPUnit_Framework_TestCase
 		$o_service = new WLPlugInformationServiceTGN();
 		$o_service->getExtendedInformation(array(), 'gibberish');
 	}
+
+	public function testGetExtraInfo() {
+		$o_service = new WLPlugInformationServiceTGN();
+		$o_service->getExtraInfo(array(), 'http://vocab.getty.edu/tgn/7015849');
+	}
+
+	public function testGetSearchIndexing() {
+		$o_service = new WLPlugInformationServiceTGN();
+		$o_service->getDataForSearchIndexing(array(), 'http://vocab.getty.edu/tgn/7015849');
+	}
+
 }

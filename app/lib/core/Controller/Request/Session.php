@@ -34,7 +34,7 @@
   *
   */
  
-require_once(__CA_LIB_DIR__."/core/Error.php");
+require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
 require_once(__CA_LIB_DIR__."/core/Db.php");
 require_once(__CA_APP_DIR__."/helpers/utilityHelpers.php");
@@ -84,7 +84,7 @@ class Session {
 			// try to get session ID from cookie. if that doesn't work, generate a new one
 			if (!($vs_session_id = $this->getSessionID())) {
 				$vs_cookiepath = ((__CA_URL_ROOT__== '') ? '/' : __CA_URL_ROOT__);
-				if (!caIsRunFromCLI()) { setcookie($this->name, $_COOKIE[$this->name] = $vs_session_id = $this->generateGUIDV4(), $this->lifetime ? time() + $this->lifetime : null, $vs_cookiepath); }
+				if (!caIsRunFromCLI()) { setcookie($this->name, $_COOKIE[$this->name] = $vs_session_id = caGenerateGUID(), $this->lifetime ? time() + $this->lifetime : null, $vs_cookiepath); }
 		 	}
 
 			// initialize in-memory session var storage, either restored from external cache or newly initialized
@@ -115,26 +115,13 @@ class Session {
 	 */
 	public function __destruct() {
 		if($this->getSessionID() && is_array($this->opa_session_vars) && (sizeof($this->opa_session_vars) > 0)) {
-			ExternalCache::save($this->getSessionID(), $this->opa_session_vars, 'SessionVars', 0);
-		}
-	}
-	# ----------------------------------------
-	/**
-	 * Generate a GUID 
-	 */
-	private function generateGUIDV4(){
-		if (function_exists("openssl_random_pseudo_bytes")) {
-			$vs_data = openssl_random_pseudo_bytes(16);
-		} else {
-			$vs_data = '';
-			for($i=0; $i < 16; $i++) {
-				$vs_data .= chr(mt_rand(0, 255));
+			if(isset($this->opa_session_vars['session_end_timestamp'])) {
+				$vn_session_lifetime = abs(((int) $this->opa_session_vars['session_end_timestamp']) - time());
+			} else {
+				$vn_session_lifetime = 24 * 60 * 60;
 			}
+			ExternalCache::save($this->getSessionID(), $this->opa_session_vars, 'SessionVars', $vn_session_lifetime);
 		}
-		$vs_data[6] = chr(ord($vs_data[6]) & 0x0f | 0x40); // set version to 0100
-		$vs_data[8] = chr(ord($vs_data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
-
-		return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($vs_data), 4));
 	}
 	# ----------------------------------------
 	/**
@@ -142,6 +129,7 @@ class Session {
 	 * These tokens usually have a much shorter lifetime than the session.
 	 * @param bool $pb_dont_create_new_token dont create new auth token
 	 * @return string|bool The token, false if
+	 * @throws Exception
 	 */
 	public function getServiceAuthToken($pb_dont_create_new_token=false) {
 		if(!$this->getSessionID()) { return false; }
@@ -153,7 +141,13 @@ class Session {
 		if($pb_dont_create_new_token) { return false; }
 
 		// generate new token
-		$vs_token = hash('sha256', mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+		if(function_exists('mcrypt_create_iv')) {
+			$vs_token = hash('sha256', mcrypt_create_iv(32, MCRYPT_DEV_URANDOM));
+		} else if(function_exists('openssl_random_pseudo_bytes')) {
+			$vs_token = hash('sha256', openssl_random_pseudo_bytes(32));
+		} else {
+			throw new Exception('mcrypt or OpenSSL is required for CollectiveAccess to run');
+		}
 
 		// save mappings in both directions for easy lookup. they are valid for 2 hrs (@todo maybe make this configurable?)
 		ExternalCache::save($this->getSessionID(), $vs_token, 'SessionIDToServiceAuthTokens', 60 * 60 * 2);

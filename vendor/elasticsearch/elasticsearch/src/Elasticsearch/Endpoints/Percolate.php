@@ -1,25 +1,18 @@
 <?php
-/**
- * User: zach
- * Date: 01/20/2014
- * Time: 14:34:49 pm
- */
 
 namespace Elasticsearch\Endpoints;
 
-use Elasticsearch\Endpoints\AbstractEndpoint;
 use Elasticsearch\Common\Exceptions;
 
 /**
  * Class Percolate
  *
  * @category Elasticsearch
- * @package Elasticsearch\Endpoints
+ * @package  Elasticsearch\Endpoints
  * @author   Zachary Tong <zachary.tong@elasticsearch.com>
  * @license  http://www.apache.org/licenses/LICENSE-2.0 Apache2
  * @link     http://elasticsearch.org
  */
-
 class Percolate extends AbstractEndpoint
 {
     /**
@@ -34,12 +27,10 @@ class Percolate extends AbstractEndpoint
             return $this;
         }
 
-
         $this->body = $body;
+
         return $this;
     }
-
-
 
     /**
      * @throws \Elasticsearch\Common\Exceptions\RuntimeException
@@ -69,7 +60,6 @@ class Percolate extends AbstractEndpoint
         return $uri;
     }
 
-
     /**
      * @return string[]
      */
@@ -85,9 +75,9 @@ class Percolate extends AbstractEndpoint
             'percolate_type',
             'version',
             'version_type',
+            'percolate_format'
         );
     }
-
 
     /**
      * @return array
@@ -97,7 +87,6 @@ class Percolate extends AbstractEndpoint
     {
         return $this->body;
     }
-
 
     /**
      * @return string

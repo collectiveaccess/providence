@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2015 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -210,6 +210,7 @@
  		 */
  		public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  			if (isset(LCSHAttributeValue::$s_term_cache[$ps_value])) {
+ 				if (LCSHAttributeValue::$s_term_cache[$ps_value] === false) { return null; }
  				return LCSHAttributeValue::$s_term_cache[$ps_value];
  			}
  			$o_config = Configuration::load();
@@ -225,6 +226,7 @@
  			}
  			
 			if (trim($ps_value)) {
+				// parse <text>|<url> format
 				$va_tmp = explode('|', $ps_value);
 				if (sizeof($va_tmp) > 1) {
 				
@@ -237,7 +239,21 @@
 						'value_longtext2' => trim($vs_url),							// uri
 						'value_decimal1' => is_numeric($vs_id) ? $vs_id : null	// id
 					);
+				} elseif (preg_match('!\[(http://[^\]]+)\]!', $ps_value, $va_matches)) {
+					// parse <text> [<url>] format
+					$vs_uri = $va_matches[1];
+					$vs_text = preg_replace('!\[http://([^\]]+)\]!', '', $ps_value);
+					
+					$va_tmp1 = explode('/', $vs_uri);
+					$vs_id = array_pop($va_tmp1);
+					
+					LCSHAttributeValue::$s_term_cache[$ps_value] = array(
+						'value_longtext1' => trim($vs_text),						// text
+						'value_longtext2' => trim($vs_uri),							// uri
+						'value_decimal1' => is_numeric($vs_id) ? $vs_id : null		// id
+					);
 				} else {
+					// try to match on text using id.loc.gov service
 					$ps_value = str_replace(array("‘", "’", "“", "”"), array("'", "'", '"', '"'), $ps_value);
 					
 					if (caGetOption('matchUsingLOCLabel', $pa_options, false)) {
@@ -317,11 +333,7 @@
 				}
 			}
 			if (!isset(LCSHAttributeValue::$s_term_cache[$ps_value])) {
-				LCSHAttributeValue::$s_term_cache[$ps_value] = array(
-					'value_longtext1' => '',	// text
-					'value_longtext2' => '',	// uri
-					'value_decimal1' => null	// id
-				);
+				LCSHAttributeValue::$s_term_cache[$ps_value] = false;
 				return null;		// not an error, just skip it
 			}
 			

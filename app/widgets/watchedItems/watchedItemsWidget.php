@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -58,7 +58,7 @@
 			
 			$this->opo_view->setVar('request', $this->getRequest());
 			$t_watch_list = new ca_watch_list();
-			$va_watched_items = $t_watch_list->getWatchedItems($this->request->user->get("user_id"));
+			$va_watched_items = $t_watch_list->getWatchedItems($this->request->user->get("user_id"), null, ['request' => $this->getRequest()]);
 			$this->opo_view->setVar("watched_items", $va_watched_items);
 			
 			return $this->opo_view->render('main_html.php');

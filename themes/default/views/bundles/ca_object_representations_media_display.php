@@ -76,7 +76,7 @@
 	if ($vb_media_is_set) {
 ?>						
 						<div style="float:right;">
-							<?php print urldecode(caNavButton($this->request, __CA_NAV_BUTTON_DOWNLOAD__, _t('Download'), '', '*', '*', 'DownloadMedia', array('version' => 'original', 'representation_id' => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{$vs_id_prefix}download"), array('no_background' => true, 'dont_show_content' => true))); ?>
+							<?php print urldecode(caNavButton($this->request, __CA_NAV_ICON_DOWNLOAD__, _t('Download'), '', '*', '*', 'DownloadMedia', array('version' => 'original', 'representation_id' => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{$vs_id_prefix}download"), array('no_background' => true, 'dont_show_content' => true))); ?>
 						</div>
 <?php
 	}

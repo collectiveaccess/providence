@@ -34,7 +34,7 @@
   *
   */
  
-require_once(__CA_LIB_DIR__."/core/Error.php");
+require_once(__CA_LIB_DIR__."/core/ApplicationError.php");
 require_once(__CA_LIB_DIR__."/core/Configuration.php");
 require_once(__CA_LIB_DIR__."/core/Datamodel.php");
 
@@ -71,13 +71,10 @@ class MediaProcessingSettings {
 		$this->opa_table_settings = $this->opo_config_settings = null;
 		
 		if (!isset($va_field_info['MEDIA_ACCEPT']) || !is_array($va_field_info['MEDIA_ACCEPT'])) {
-			if (!($vs_config_path = $this->opo_config->get('media_processing_settings'))) {
-				return false;
-			}
 			if (!($vs_media_processing_setting = $va_field_info['MEDIA_PROCESSING_SETTING'])) {
 				return false;
 			}
-			$this->opo_config_settings = Configuration::load($vs_config_path);
+			$this->opo_config_settings = Configuration::load(__CA_CONF_DIR__."/media_processing.conf");
 			
 			if (!($this->opa_config_settings_as_array = $this->opo_config_settings->getAssoc($vs_media_processing_setting))) {
 				return false;

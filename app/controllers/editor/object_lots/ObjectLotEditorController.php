@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -28,6 +28,7 @@
  
  	require_once(__CA_MODELS_DIR__."/ca_object_lots.php");
  	require_once(__CA_LIB_DIR__."/ca/BaseEditorController.php");
+	require_once(__CA_LIB_DIR__.'/core/Parsers/ZipStream.php');
  
  	class ObjectLotEditorController extends BaseEditorController {
  		# -------------------------------------------------------
@@ -83,7 +84,7 @@
  		}
  		# -------------------------------------------------------
  		public function getLotMedia() {
- 			//if ((bool)$this->request->config->get('allow_download_of_all_object_media_in_a_lot')) {
+ 			//if ((bool)$this->request->config->get('allow_download_of_all_object_media_in_a_lot')) {	// DO WE NEED TO REINSTATE THIS OPTIN?
  				set_time_limit(600); // allow a lot of time for this because the sets can be potentially large
 				$t_lot = new ca_object_lots($this->request->getParameter('lot_id', pInteger));
 				$o_media_metadata_conf = Configuration::load($t_lot->getAppConfig()->get('media_metadata'));
@@ -113,10 +114,12 @@
 					}
 					
 					if (sizeof($va_paths) > 0){
-						$vs_tmp_name = caGetTempFileName('DownloadLotMedia', 'zip');
-						$o_phar = new PharData($vs_tmp_name, null, null, Phar::ZIP);
+						$o_zip = new ZipStream();
 						
 						foreach($va_paths as $vn_object_id => $va_path_info) {
+							// make sure we don't download representations the user isn't allowed to read
+							if(!caCanRead($this->request->user->getPrimaryKey(), 'ca_objects', $vn_object_id)){ continue; }
+								
 							$vn_c = 1;
 							foreach($va_path_info['paths'] as $vn_i => $vs_media_path) {
 								if (!file_exists($vs_media_path)) { continue; }
@@ -138,7 +141,7 @@
 								if ($vs_ext = pathinfo($vs_media_path, PATHINFO_EXTENSION)) {
 									$vs_filename .= ".{$vs_ext}";
 								}
-								$o_phar->addFile($vs_path, $vs_filename);
+								$o_zip->addFile($vs_path, $vs_filename);
 								
 								$vn_c++;
 							}
@@ -146,16 +149,13 @@
 						
 						$o_view = new View($this->request, $this->request->getViewsDirectoryPath().'/bundles/');
  			
-						// send download
-						$vs_idno = $t_lot->get('idno_stub');			
-						
-						$o_view->setVar('tmp_file', $vs_tmp_name);
-						$o_view->setVar('download_name', 'media_for_'.mb_substr(preg_replace('![^A-Za-z0-9]+!u', '_', $vs_idno ? $vs_idno : $t_lot->getPrimaryKey()), 0, 20).'.zip');
-						
-						$this->response->addContent($o_view->render('ca_object_lots_download_media.php'));
+						// send files
+						$o_view->setVar('zip_stream', $o_zip);
+						$o_view->setVar('archive_name', 'media_for_'.mb_substr(preg_replace('![^A-Za-z0-9]+!u', '_', ($vs_idno = $t_lot->get('idno_stub')) ? $vs_idno : $t_lot->getPrimaryKey()), 0, 20).'.zip');
+						$this->response->addContent($o_view->render('download_file_binary.php'));
 						return;
 					} else {
-						$this->notification->addNotification(_t('No media is available for download'), __NOTIFICATION_TYPE_ERROR__);
+						$this->notification->addNotification(_t('No files to download'), __NOTIFICATION_TYPE_ERROR__);
 						$this->opo_response->setRedirect(caEditorUrl($this->opo_request, 'ca_object_lots', $t_lot->getPrimaryKey()));
 						return;
 					}

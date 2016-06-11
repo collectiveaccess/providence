@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2007-2015 Whirl-i-Gig
+ * Copyright 2007-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -40,6 +40,7 @@ require_once(__CA_LIB_DIR__.'/core/Parsers/ZipFile.php');
 require_once(__CA_LIB_DIR__.'/core/Logging/Eventlog.php');
 require_once(__CA_LIB_DIR__.'/core/Utils/Encoding.php');
 require_once(__CA_LIB_DIR__.'/core/Zend/Measure/Length.php');
+require_once(__CA_LIB_DIR__.'/core/Parsers/ganon.php');
 
 # ----------------------------------------------------------------------
 # String localization functions (getText)
@@ -407,7 +408,7 @@ function caFileIsIncludable($ps_file) {
 		if ($handle = @opendir($dir)) {
 			while (false !== ($item = readdir($handle))) {
 				if ($item != "." && $item != ".." && ($pb_include_hidden_files || (!$pb_include_hidden_files && $item{0} !== '.'))) {
-					if (is_dir("{$dir}/{$item}")) { 
+					if (is_dir("{$dir}/{$item}")) {
 						$va_dir_list = array_merge($va_dir_list, caGetSubDirectoryList("{$dir}/{$item}", true, $pb_include_hidden_files));
 					}  else {
 						$vn_file_count++;
@@ -423,6 +424,22 @@ function caFileIsIncludable($ps_file) {
 		
 		ksort($va_dir_list);
 		return $va_dir_list;
+	}
+	# ----------------------------------------
+	/**
+	 * Checks if a given directory is empty (i.e. doesn't have any subdirectories or files in it)
+	 * @param string $vs_dir The directory to check
+	 * @return bool false if it's not a readable directory or if it's not empty, otherwise true
+	 */
+	function caDirectoryIsEmpty($vs_dir) {
+		if(!is_readable($vs_dir) || !is_dir($vs_dir)) { return false; }
+
+		try {
+			$o_iterator = new \FilesystemIterator($vs_dir);
+			return !$o_iterator->valid();
+		} catch (Exception $e) {
+			return false;
+		}
 	}
 	# ----------------------------------------
 	function caZipDirectory($ps_directory, $ps_name, $ps_output_file) {
@@ -459,7 +476,11 @@ function caFileIsIncludable($ps_file) {
 		// strip quotes from path if present since they'll cause file_exists() to fail
 		$ps_path = preg_replace("!^\"!", "", $ps_path);
 		$ps_path = preg_replace("!\"$!", "", $ps_path);
-		if (!$ps_path || (preg_match("/[^\/A-Za-z0-9\.:\ _\(\)\\\-]+/", $ps_path)) || !file_exists($ps_path)) { return false; }
+		if (!$ps_path || (preg_match("/[^\/A-Za-z0-9\.:\ _\(\)\\\-]+/", $ps_path))) { return false; }
+
+		if(!ini_get('open_basedir') && !@is_readable($ps_path)) { // open_basedir and is_readable() have some weird interactions
+			return false;
+		}
 
 		return true;
 	}
@@ -543,10 +564,34 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	function caEscapeForBundlePreview($ps_text, $pn_limit=100) {
-		if(strlen($ps_text) > $pn_limit) {
-			$ps_text = substr($ps_text, 0, $pn_limit) . " ...";
+		$ps_text = caSanitizeStringForJsonEncode($ps_text);
+		if(mb_strlen($ps_text) > $pn_limit) {
+			$ps_text = mb_substr($ps_text, 0, $pn_limit) . " ...";
 		}
-		return json_encode(html_entity_decode(strip_tags($ps_text), ENT_QUOTES | ENT_HTML5));
+
+		if($ps_text = json_encode(html_entity_decode($ps_text, ENT_QUOTES | ENT_HTML5))) {
+			return $ps_text;
+		} else {
+			return '""';
+		}
+	}
+	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caEscapeSearchForURL($ps_search) {
+		return rawurlencode(str_replace('/', '&#47;', $ps_search)); // encode slashes as html entities to avoid Apache considering it a directory separator
+	}
+	# ----------------------------------------
+	function caSanitizeStringForJsonEncode($ps_text) {
+		// Remove invalid UTF-8
+		mb_substitute_character(0xFFFD);
+		$ps_text = mb_convert_encoding($ps_text, 'UTF-8', 'UTF-8');
+
+		return strip_tags($ps_text);
+
+		// @see http://php.net/manual/en/regexp.reference.unicode.php
+		//return preg_replace("/[^\p{Ll}\p{Lm}\p{Lo}\p{Lt}\p{Lu}\p{N}\p{P}\p{Zp}\p{Zs}\p{S}]|➔/", '', strip_tags($ps_text));
 	}
 	# ----------------------------------------
 	/**
@@ -680,6 +725,22 @@ function caFileIsIncludable($ps_file) {
 		}
 	}
 	# ----------------------------------------
+	/**
+	 * Check if mod_rewrite web server module is available 
+	 *
+	 * @return bool
+	 */
+	$g_mod_write_is_available = null;
+	function caModRewriteIsAvailable() {
+		global $g_mod_write_is_available;
+		if (is_bool($g_mod_write_is_available)) { return $g_mod_write_is_available; }
+		if (function_exists('apache_get_modules')) {
+			return $g_mod_write_is_available = (bool)in_array('mod_rewrite', apache_get_modules());
+		} else {
+			return $g_mod_write_is_available = (bool)((getenv('HTTP_MOD_REWRITE') == 'On') ? true : false);
+		}
+	}
+	# ----------------------------------------
 	function caConvertHTMLBreaks($ps_text) {
 		# check for tags before converting breaks
 		preg_match_all("/<[A-Za-z0-9]+/", $ps_text, $va_tags);
@@ -749,13 +810,24 @@ function caFileIsIncludable($ps_file) {
 	# ---------------------------------------
 	/**
 	 * Checks URL for apparent well-formedness. Return true if it looks like a valid URL, false if not. This function does
-	 * not actually connect to the URL to confirm its validity. It only validates at text content for well-formedness.
+	 * not actually connect to the URL to confirm its validity. It only validates text content for well-formedness.
+	 * By default will return true if a url is anywhere in the $ps_url parameter. Set the 'strict' option if you want to 
+	 * only return true for strings that are valid urls without any extra text.
 	 *
 	 * @param string $ps_url The URL to check
+	 * @param array $pa_options Options include:
+	 *		strict = only consider text a valid url if text contains only the url [Default is false]
 	 * @return boolean true if it appears to be valid URL, false if not
 	 */
-	function isURL($ps_url) {
-		if (preg_match("!(http|ftp|https|rtmp|rtsp|mysql):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?!", $ps_url, $va_matches)) {
+	function isURL($ps_url, $pa_options=null) {
+	
+		if (
+			caGetOption('strict', $pa_options, false)
+			?
+				preg_match("!^(http|ftp|https|rtmp|rtsp|mysql):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?$!", $ps_url, $va_matches)
+				:
+				preg_match("!(http|ftp|https|rtmp|rtsp|mysql):\/\/[\w\-_]+(\.[\w\-_]+)*([\w\-\.,@?^=%&;:/~\+#]*[\w\-\@?^=%&/~\+#])?!", $ps_url, $va_matches)
+			) {
 			return array(
 				'protocol' => $va_matches[1],
 				'url' => $ps_url
@@ -1009,7 +1081,7 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Parses string for form element dimension. If a simple integer is passed then it is considered
 	 * to be expressed as the number of characters to display. If an integer suffixed with 'px' is passed
-	 * then the dimension is considered to be expressed in pixesl. If non-integers are passed they will
+	 * then the dimension is considered to be expressed in pixels. If non-integers are passed they will
 	 * be cast to integers.
 	 *
 	 * An array is always returned, with two keys: 
@@ -1037,19 +1109,66 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ---------------------------------------
 	/**
+	 * Parses string for element dimension. If a simple integer is passed then it is considered
+	 * to be expressed as pixels. If an integer suffixed with 'px' is passed. Percentages are parsed as relative dimensions.
+	 * then the dimension is considered to be expressed in pixels. If non-integers are passed they will
+	 * be cast to integers.
+	 *
+	 * An array is always returned, with three keys: 
+	 *		dimension = the integer value of the dimension
+	 *		expression = CSS dimension (eg. 500px or 100%)
+	 *		type = either 'pixels' or 'relative'
+	 *
+	 * @param string $ps_dimension
+	 * @return array An array describing the parsed value or null if no value was passed
+	*/
+	function caParseElementDimension($ps_dimension) {
+		$ps_dimension = trim($ps_dimension);
+		if (!$ps_dimension) { return null; }
+		
+		if (preg_match('!^([\d]+)[ ]*px$!', $ps_dimension, $va_matches)) {
+			return array(
+				'dimension' => (int)$va_matches[1],
+				'expression' => $ps_dimension,
+				'type' => 'pixels'
+			);
+		}
+		
+		if (preg_match('!^([\d\.]+)[ ]*%$!', $ps_dimension, $va_matches)) {
+			return array(
+				'dimension' => (int)$va_matches[1],
+				'expression' => $ps_dimension,
+				'type' => 'relative'
+			);
+		}
+		
+		return array(
+			'dimension' => (int)$ps_dimension,
+			'expression' => "{$ps_dimension} px",
+			'type' => 'pixels'
+		);
+	}
+	# ---------------------------------------
+	/**
 	 * Sorts an array of arrays based upon one or more values in the second-level array.
 	 * Top-level keys are preserved in the sort.
 	 *
 	 * @param array $pa_values The array to sort. It should be an array of arrays (aka. 2-dimensional)
 	 * @param array $pa_sort_keys An array of keys in the second-level array to sort by
+	 * @param array $pa_options Options include:
+	 * 		dontRemoveKeyPrefixes = By default keys that are period-delimited will have the prefix before the first period removed (this is to ease sorting by field names). Set to true to disable this behavior. [Default is false]
 	 * @return array The sorted array
 	*/
-	function caSortArrayByKeyInValue($pa_values, $pa_sort_keys, $ps_sort_direction="ASC") {
+	function caSortArrayByKeyInValue($pa_values, $pa_sort_keys, $ps_sort_direction="ASC", $pa_options=null) {
 		$va_sort_keys = array();
-		foreach ($pa_sort_keys as $vs_field) {
-			$va_tmp = explode('.', $vs_field);
-			if (sizeof($va_tmp) > 1) { array_shift($va_tmp); }
-			$va_sort_keys[] = join(".", $va_tmp);
+		if (caGetOption('dontRemoveKeyPrefixes', $pa_options, false)) {
+			foreach ($pa_sort_keys as $vs_field) {
+				$va_tmp = explode('.', $vs_field);
+				if (sizeof($va_tmp) > 1) { array_shift($va_tmp); }
+				$va_sort_keys[] = join(".", $va_tmp);
+			}
+		} else {
+			$va_sort_keys = $pa_sort_keys;
 		}
 		$va_sorted_by_key = array();
 		foreach($pa_values as $vn_id => $va_data) {
@@ -1123,6 +1242,25 @@ function caFileIsIncludable($ps_file) {
 	 */
 	function caStripLeadingPunctuation($ps_string) {
 		return preg_replace('!^[^A-Za-z0-9]+!u', '', trim($ps_string));
+	}
+	# ---------------------------------------
+	/**
+	 * Remove all HTML tags and their contents 
+	 *
+	 * @param string $ps_string The string to process
+	 * @return string $ps_string with HTML tags and associated content removed
+	 */
+	function caStripTagsAndContent($ps_string) {
+		$o_doc = str_get_dom($ps_string);	
+		foreach($o_doc("*") as $o_node) {
+			if ($o_node->tag != '~text~') {
+				$o_node->delete();
+			}
+		}
+		$vs_proc_string = $o_doc->html();
+		$vs_proc_string = str_replace("<~root~>", "", $vs_proc_string);
+		$vs_proc_string = str_replace("</~root~>", "", $vs_proc_string);
+		return trim($vs_proc_string);
 	}
 	# ---------------------------------------
 	/**
@@ -1342,7 +1480,7 @@ function caFileIsIncludable($ps_file) {
 			$vo_formatter->format();
 			rewind($vr_output);
 			return stream_get_contents($vr_output)."\n";
-		} catch (EXception $e) {
+		} catch (Exception $e) {
 			return false;
 		}
 	}
@@ -1354,6 +1492,11 @@ function caFileIsIncludable($ps_file) {
 	  * @return array The start and end timestamps for the parsed date/time range. Array contains values key'ed under 0 and 1 and 'start' and 'end'; null is returned if expression cannot be parsed.
 	  */
 	function caDateToUnixTimestamps($ps_date_expression) {
+		// don't mangle unix timestamps
+		if(preg_match('/^[0-9]{10}$/', $ps_date_expression)) {
+			return array('start' => (int) $ps_date_expression, 'end' => (int) $ps_date_expression);
+		}
+
 		$o_tep = new TimeExpressionParser();
 		if ($o_tep->parse($ps_date_expression)) {
 			return $o_tep->getUnixTimestamps();
@@ -1403,6 +1546,17 @@ function caFileIsIncludable($ps_file) {
 			return isset($va_date['start']) ? $va_date['start'] : null;
 		}
 		return null;
+	}
+	# ---------------------------------------
+	/**
+	  * Determine if date expression can be parsed 
+	  *
+	  * @param string $ps_date_expression A date/time expression as described in http://docs.collectiveaccess.org/wiki/Date_and_Time_Formats
+	  * @return bool True if expression can be parsed
+	  */
+	function caIsValidDate($ps_date_expression) {
+		$o_tep = new TimeExpressionParser();
+		return $o_tep->parse($ps_date_expression);
 	}
 	# ---------------------------------------
 	/**
@@ -1659,6 +1813,38 @@ function caFileIsIncludable($ps_file) {
 			'end' => $o_tep->getText(array_merge($pa_options, array('end_as_iso8601' => true)))
 		);
 	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Format time expression parser expression using date().
+	 * @see http://php.net/manual/en/function.date.php
+	 * @see http://docs.collectiveaccess.org/wiki/Date_and_Time_Formats
+	 *
+	 * @param string $ps_date_expression valid TEP expression
+	 * @param string $ps_format date() format string
+	 * @return null|string
+	 */
+	function caFormatDate($ps_date_expression, $ps_format = 'c') {
+		$va_unix_timestamps = caDateToUnixTimestamps($ps_date_expression);
+		if(!is_numeric($va_unix_timestamps['start'])) { return null; }
+
+		return date($ps_format, (int) $va_unix_timestamps['start']);
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * Format time expression parser expression using gmdate().
+	 * @see http://php.net/manual/en/function.gmdate.php
+	 * @see http://docs.collectiveaccess.org/wiki/Date_and_Time_Formats
+	 *
+	 * @param string $ps_date_expression valid TEP expression
+	 * @param string $ps_format gmdate() format string
+	 * @return null|string
+	 */
+	function caFormatGMDate($ps_date_expression, $ps_format = 'c') {
+		$va_unix_timestamps = caDateToUnixTimestamps($ps_date_expression);
+		if(!is_numeric($va_unix_timestamps['start'])) { return null; }
+
+		return gmdate($ps_format, (int) $va_unix_timestamps['start']);
+	}
 	# ----------------------------------------
 	/**
 	 *
@@ -1728,17 +1914,21 @@ function caFileIsIncludable($ps_file) {
 	 * caGetOption() provides a simple interface to grab values, force default values for non-existent settings and enforce simple validation rules.
 	 *
 	 * @param mixed $pm_option The option to extract. If an array is provided then each option is tried, in order, until a non-false value is found.
-	 * @param array $pa_options The options array to extract values from
+	 * @param array $pa_options The options array to extract values from. An instance of Zend_Console_Getopt may also be passed, allowing processing of command line options.
 	 * @param mixed $pm_default An optional default value to return if $ps_option is not set in $pa_options 
 	 * @param array $pa_parse_options Option parser options (cross your eyes now) include:
 	 *		forceLowercase = transform option value to all lowercase [default=false]
 	 *		forceUppercase = transform option value to all uppercase [default=false]
 	 *		validValues = array of values that are possible for this option. If the option value is not in the list then the default is returned. If no default is set then the first value in the validValues list is returned. Note that by default all comparisons are case-insensitive. 
 	 *		caseSensitive = do case sensitive comparisons when checking the option value against the validValues list [default=false]
-	 *		castTo = array|int|string
+	 *		castTo = array|int|string|float|bool
+	 *		delimiter = A delimiter, or array of delimiters, to break a string option value on. When this option is set an array will always be returned. [Default is null]
 	 * @return mixed
 	 */
 	function caGetOption($pm_option, $pa_options, $pm_default=null, $pa_parse_options=null) {
+		if (is_object($pa_options) && is_a($pa_options, 'Zend_Console_Getopt')) {
+			$pa_options = array($pm_option => $pa_options->getOption($pm_option));
+		}
 		$va_valid_values = null;
 		$vb_case_insensitive = false;
 		if (isset($pa_parse_options['validValues']) && is_array($pa_parse_options['validValues'])) {
@@ -1761,7 +1951,13 @@ function caFileIsIncludable($ps_file) {
 			$vm_val = (isset($pa_options[$pm_option]) && !is_null($pa_options[$pm_option])) ? $pa_options[$pm_option] : $pm_default;
 		}
 		
-		if(is_array($va_valid_values)) {
+		if (
+			((is_string($vm_val) && !isset($pa_parse_options['castTo'])) || (isset($pa_parse_options['castTo']) && ($pa_parse_options['castTo'] == 'string')))
+			&&
+			(!isset($pa_parse_options['delimiter']) || !($va_delimiter = $pa_parse_options['delimiter']))
+			&& 
+			(is_array($va_valid_values))
+		) {
 			if (!in_array($vb_case_insensitive ? mb_strtolower($vm_val) : $vm_val, $va_valid_values)) {
 				$vm_val = $pm_default;
 				if (!in_array($vb_case_insensitive ? mb_strtolower($vm_val) : $vm_val, $va_valid_values)) {
@@ -1779,13 +1975,19 @@ function caFileIsIncludable($ps_file) {
 		$vs_cast_to = (isset($pa_parse_options['castTo']) && ($pa_parse_options['castTo'])) ? strtolower($pa_parse_options['castTo']) : '';
 		switch($vs_cast_to) {
 			case 'int':
+			case 'integer':
 				$vm_val = (int)$vm_val;
 				break;
 			case 'float':
+			case 'decimal':
 				$vm_val = (float)$vm_val;
 				break;
 			case 'string':
 				$vm_val = (string)$vm_val;
+				break;
+			case 'bool':
+			case 'boolean':
+				$vm_val = (bool)$vm_val;
 				break;
 			case 'array':
 				if(!is_array($vm_val)) {
@@ -1796,6 +1998,27 @@ function caFileIsIncludable($ps_file) {
 					}
 				}
 				break;
+		}
+		
+		if (is_string($vm_val) && (isset($pa_parse_options['delimiter']) && ($va_delimiter = $pa_parse_options['delimiter']))) {
+			if (!is_array($va_delimiter)) { $va_delimiter = array($va_delimiter); }
+			
+			$va_split_vals = preg_split('![ ]*('.join('|', $va_delimiter).')[ ]*!', $vm_val);
+			$va_split_vals = array_filter($va_split_vals, "strlen");
+			
+			if (is_array($va_valid_values)) {
+				$va_filtered_vals = [];
+				foreach($va_split_vals as $vm_val) {
+					if (in_array($vb_case_insensitive ? mb_strtolower($vm_val) : $vm_val, $va_valid_values)) {
+						$va_filtered_vals[] = $vm_val;
+					}
+				
+					if (!sizeof($va_filtered_vals) && $pm_default) { $va_filtered_vals[] = $pm_default; }
+					$va_split_vals = $va_filtered_vals;
+				}
+			}
+			
+			return $va_split_vals;
 		}
 		
 		return $vm_val;
@@ -1825,12 +2048,14 @@ function caFileIsIncludable($ps_file) {
 	 *
 	 * @param array $pa_array The array to sanitize
 	 * @param array $pa_options
-	 *        allowStdClass = stdClass object array values are allowed. This is useful for arrays that are about to be passed to json_encode
+	 *        allowStdClass = stdClass object array values are allowed. This is useful for arrays that are about to be passed to json_encode [Default=false]
+	 *		  removeNonCharacterData = remove non-character data from all array value. This option leaves all character data in-place [Default=false]
 	 * @return array The sanitized array
 	 */
 	function caSanitizeArray($pa_array, $pa_options=null) {
 		if (!is_array($pa_array)) { return array(); }
-		$vb_allow_stdclass = caGetOption('allowStdClass',$pa_options,false);
+		$vb_allow_stdclass = caGetOption('allowStdClass', $pa_options, false);
+		$vb_remove_noncharacter_data = caGetOption('removeNonCharacterData', $pa_options, false);
 
 		foreach($pa_array as $vn_k => $vm_v) {
 			if (is_array($vm_v)) {
@@ -1842,6 +2067,40 @@ function caFileIsIncludable($ps_file) {
 
 				if ((!preg_match("!^\X+$!", $vm_v)) || (!mb_detect_encoding($vm_v))) {
 					unset($pa_array[$vn_k]);
+					continue;
+				}
+				
+				if ($vb_remove_noncharacter_data) {
+					$pa_array[$vn_k] = caSanitizeStringForJsonEncode($pa_array[$vn_k]);
+				}
+			}
+		}
+		return $pa_array;
+	}
+	# ---------------------------------------
+	/**
+	 * Process all string values in an array with HTMLPurifier. Arrays may be of any depth. If a string is passed it will be purified and returned.
+	 *
+	 * @param array $pm_array The array or string to purify
+	 * @param array $pa_options Array of options:
+	 *		purifier = HTMLPurifier instance to use for processing. If null a new instance will be used. [Default is null]
+	 * @return array The purified array
+	 */
+	function caPurifyArray($pa_array, $pa_options=null) {
+		if (!is_array($pa_array)) { return array(); }
+
+		if (!(($o_purifier = caGetOption('purifier', $pa_options, null)) instanceof HTMLPurifier)) {
+			$o_purifier = new HTMLPurifier();	
+		}	
+		
+		if (!is_array($pa_array)) { return $o_purifier->purify($pa_array); }	
+		
+		foreach($pa_array as $vn_k => $vm_v) {
+			if (is_array($vm_v)) {
+				$pa_array[$vn_k] = caPurifyArray($vm_v, $pa_options);
+			} else {
+				if (!is_null($vm_v)) {
+					$pa_array[$vn_k] = $o_purifier->purify($vm_v);
 				}
 			}
 		}
@@ -2355,60 +2614,37 @@ function caFileIsIncludable($ps_file) {
  	 * Query external web service and return whatever body it returns as string
  	 * @param string $ps_url URL of the web service to query
 	 * @return string
+	 * @throws \Exception
  	 */
 	function caQueryExternalWebservice($ps_url) {
 		if(!isURL($ps_url)) { return false; }
-
 		$o_conf = Configuration::load();
 
+		$vo_curl = curl_init();
+		curl_setopt($vo_curl, CURLOPT_URL, $ps_url);
+
 		if($vs_proxy = $o_conf->get('web_services_proxy_url')){ /* proxy server is configured */
-
-			$vs_proxy_auth = null;
-			if(($vs_proxy_user = $o_conf->get('web_services_proxy_auth_user')) && ($vs_proxy_pass = $o_conf->get('web_services_proxy_auth_pw'))){
-				$vs_proxy_auth = base64_encode("{$vs_proxy_user}:{$vs_proxy_pass}");
-			}
-
-			// non-authed proxy requests go through curl to properly support https queries
-			// everything else is still handled via file_get_contents and stream contexts
-			if(is_null($vs_proxy_auth) && function_exists('curl_exec')) {
-				$vo_curl = curl_init();
-				curl_setopt($vo_curl, CURLOPT_URL, $ps_url);
-				curl_setopt($vo_curl, CURLOPT_PROXY, $vs_proxy);
-				curl_setopt($vo_curl, CURLOPT_SSL_VERIFYHOST, 0);
-				curl_setopt($vo_curl, CURLOPT_SSL_VERIFYPEER, false);
-				curl_setopt($vo_curl, CURLOPT_FOLLOWLOCATION, true);
-				curl_setopt($vo_curl, CURLOPT_RETURNTRANSFER, 1);
-				curl_setopt($vo_curl, CURLOPT_AUTOREFERER, true);
-				curl_setopt($vo_curl, CURLOPT_CONNECTTIMEOUT, 120);
-				curl_setopt($vo_curl, CURLOPT_TIMEOUT, 120);
-				curl_setopt($vo_curl, CURLOPT_MAXREDIRS, 10);
-				curl_setopt($vo_curl, CURLOPT_USERAGENT, 'CollectiveAccess web service lookup');
-
-				$vs_content = curl_exec($vo_curl);
-				curl_close($vo_curl);
-				return $vs_content;
-			} else {
-				$va_context_options = array( 'http' => array(
-					'proxy' => $vs_proxy,
-					'request_fulluri' => true,
-					'header' => 'User-agent: CollectiveAccess web service lookup',
-				));
-
-				if($vs_proxy_auth){
-					$va_context_options['http']['header'] = "Proxy-Authorization: Basic {$vs_proxy_auth}";
-				}
-
-				$vo_context = stream_context_create($va_context_options);
-				return @file_get_contents($ps_url, false, $vo_context);
-			}
-		} else {
-			return @file_get_contents($ps_url, false, stream_context_create(array(
-				"ssl"=>array(
-					"verify_peer"=>false,
-					"verify_peer_name"=>false,
-				),
-			)));
+			curl_setopt($vo_curl, CURLOPT_PROXY, $vs_proxy);
 		}
+
+		curl_setopt($vo_curl, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($vo_curl, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($vo_curl, CURLOPT_FOLLOWLOCATION, true);
+		curl_setopt($vo_curl, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($vo_curl, CURLOPT_AUTOREFERER, true);
+		curl_setopt($vo_curl, CURLOPT_CONNECTTIMEOUT, 120);
+		curl_setopt($vo_curl, CURLOPT_TIMEOUT, 120);
+		curl_setopt($vo_curl, CURLOPT_MAXREDIRS, 10);
+		curl_setopt($vo_curl, CURLOPT_USERAGENT, 'CollectiveAccess web service lookup');
+
+		$vs_content = curl_exec($vo_curl);
+
+		if(curl_getinfo($vo_curl, CURLINFO_HTTP_CODE) !== 200) {
+			throw new \Exception(_t('An error occurred while querying an external webservice'));
+		}
+
+		curl_close($vo_curl);
+		return $vs_content;
 	}
 	# ----------------------------------------
 	/**
@@ -2450,25 +2686,26 @@ function caFileIsIncludable($ps_file) {
 	/**
 	 * Get length unit type as Zend constant, e.g. 'ft.' = Zend_Measure_Length::FEET
 	 * @param string $ps_unit
+	 * @param array $pa_options Options include:
+	 *		short = return short name for unit (ex. for feet, return "ft", for millimeter return "mm")
 	 * @return null|string
 	 */
-	function caGetLengthUnitType($ps_unit) {
-		switch($ps_unit) {
+	function caGetLengthUnitType($ps_unit, $pa_options=null) {
+		$vb_return_short = caGetOption('short', $pa_options, false);
+		switch(strtolower(str_replace(".", "", $ps_unit))) {
 			case "'":
 			case "’":
 			case 'ft':
-			case 'ft.':
 			case 'feet':
 			case 'foot':
-				return Zend_Measure_Length::FEET;
+				return $vb_return_short ? 'ft' : Zend_Measure_Length::FEET;
 				break;
 			case '"':
 			case "”":
 			case 'in':
-			case 'in.':
 			case 'inch':
 			case 'inches':
-				return Zend_Measure_Length::INCH;
+				return $vb_return_short ? 'in' :  Zend_Measure_Length::INCH;
 				break;
 			case 'm':
 			case 'm.':
@@ -2477,32 +2714,31 @@ function caFileIsIncludable($ps_file) {
 			case 'metre':
 			case 'metres':
 			case 'mt':
-				return Zend_Measure_Length::METER;
+				return $vb_return_short ? 'm' :  Zend_Measure_Length::METER;
 				break;
 			case 'cm':
-			case 'cm.':
 			case 'centimeter':
 			case 'centimeters':
 			case 'centimetre':
 			case 'centimetres':
-				return Zend_Measure_Length::CENTIMETER;
+				return $vb_return_short ? 'cm' : Zend_Measure_Length::CENTIMETER;
 				break;
 			case 'mm':
-			case 'mm.':
 			case 'millimeter':
 			case 'millimeters':
 			case 'millimetre':
 			case 'millimetres':
-				return Zend_Measure_Length::MILLIMETER;
+				return $vb_return_short ? 'mm' :  Zend_Measure_Length::MILLIMETER;
 				break;
 			case 'point':
 			case 'pt':
-			case 'pt.':
-				return Zend_Measure_Length::POINT;
+			case 'p':
+				return $vb_return_short ? 'pt' :  Zend_Measure_Length::POINT;
 				break;
 			case 'mile':
 			case 'miles':
-				return Zend_Measure_Length::MILE;
+			case 'mi':
+				return $vb_return_short ? 'mi' :  Zend_Measure_Length::MILE;
 				break;
 			case 'km':
 			case 'k':
@@ -2510,7 +2746,7 @@ function caFileIsIncludable($ps_file) {
 			case 'kilometers':
 			case 'kilometre':
 			case 'kilometres':
-				return Zend_Measure_Length::KILOMETER;
+				return $vb_return_short ? 'km' :  Zend_Measure_Length::KILOMETER;
 				break;
 			default:	
 				return null;
@@ -2684,6 +2920,75 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
+	 * Parses and normalizes length exprssions in the form <dimension1> <delimiter> <dimension2> <delimiter> <dimension3> ... (Ex. 4" x 5")
+	 * into an array of normalized dimension string. When no units are specified default units are specified (Ex. 4x6 is returned as ["4 in", "6 in"]).
+	 * When units are specified for some, but not all, quantities then the first specified unit in the expression in applied to all unit-less quantities 
+	 * (Ex. 4x6cm is returned as ["4 cm", "6 cm"] no matter what default units are set to). When units are specified that are always used for the quantity they
+	 * apply to (Ex. 4 x 6cm x 8" is returned as ["4 cm", "6 cm", "8 in"])
+	 *
+	 * @param string $ps_expression Expression to parse
+	 * @param null|array $pa_options Options include:
+	 *		delimiter = Delimiter string between dimensions. Delimiter will be processed case-insensitively. [Default is 'x']
+	 *		units = Units to use as default for quantities that lack a specification. [Default is inches]
+	 *		returnExtractedMeasurements = return an array of arrays, each of which includes the numeric quantity, units and display string as separate values. [Default is false]
+	 * @return array An array of parsed and normalized length dimensions, parseable by caParseLengthDimension() or Zend_Measure
+	 */
+	function caParseLengthExpression($ps_expression, $pa_options=null) {
+		$va_extracted_measurements = [];
+		$vs_specified_units = $vs_extracted_units = null;
+		
+		$ps_units = caGetOption('units', $pa_options, 'in');
+		$pb_return_extracted_measurements = caGetOption('returnExtractedMeasurements', $pa_options, false);
+		
+		if ($ps_delimiter = caGetOption('delimiter', $pa_options, 'x')) {
+			$va_measurements = explode(strtolower($ps_delimiter), strtolower($ps_expression));
+		} else {
+			$ps_delimiter = '';
+			$va_measurements = array($pm_value);
+		}
+		
+		foreach($va_measurements as $vn_i => $vs_measurement) {
+			$vs_measurement = trim(preg_replace("![ ]+!", " ", $vs_measurement));
+			
+			$vs_extracted_units = $vs_measurement_units = null;
+			try {
+				if (!($vo_parsed_measurement = caParseLengthDimension($vs_measurement))) {
+					throw new Exception("Missing or invalid dimensions");
+				} else {
+					$vs_measurement = trim($vo_parsed_measurement->toString());
+					$vs_extracted_units = caGetLengthUnitType($vo_parsed_measurement->getType(), ['short' => true]);
+					if (!$vs_specified_units) { $vs_specified_units = $vs_extracted_units; }
+				}
+			} catch(Exception $e) {
+				if (preg_match("!^([\d]+)!", $vs_measurement, $va_matches)) {
+					$vs_measurement = $va_matches[0]." {$ps_units}";
+				} else {
+					continue;
+				}
+			}
+			$va_extracted_measurements[] = ['quantity' => preg_replace("![^\d]+!", "", $vs_measurement), 'string' => $vs_measurement, 'units' => $vs_extracted_units];
+		}
+		if ($pb_return_extracted_measurements) { return $va_extracted_measurements; }
+		
+		$vn_set_count = 0;
+		
+		$va_return = [];
+		foreach($va_extracted_measurements as $vn_i => $va_measurement) {
+			
+			if ($va_measurement['units']) {
+				$vs_measurement = $va_measurement['quantity']." ".$va_measurement['units'];
+			} elseif ($vs_specified_units) {
+				$vs_measurement = $va_measurement['quantity']." {$vs_specified_units}";
+			} else {
+				$vs_measurement = $va_measurement['quantity']." {$ps_units}";
+			}
+			$va_return[] = $vs_measurement;
+		}
+		
+		return $va_return;
+	}
+	# ----------------------------------------
+	/**
 	 * Generate a GUID 
 	 */
 	function caGenerateGUID(){
@@ -2832,6 +3137,29 @@ function caFileIsIncludable($ps_file) {
 	}
 	# ----------------------------------------
 	/**
+	 * Display-and-die
+	 *
+	 * @param mixed $pm_val Value to dump
+	 * @param array $pa_options Option include:
+	 *		live = Don't die [default is to false]
+	 *
+	 */
+	function dd($pm_val, $pa_options=null) {
+		print "<pre>".print_r($pm_val, true)."</pre>\n";
+		if (!caGetOption('live', $pa_options, false)) { die; }
+	}
+	# ----------------------------------------
+	/**
+	 * Output content in HTML <pre> tags
+	 *
+	 * @param mixed $pm_val Value to dump
+	 *
+	 */
+	function pre($pm_val) {
+		dd($pm_val, array('live' => true));
+	}
+	# ----------------------------------------
+	/**
 	 * Flatten a multi-dimensional array
 	 *
 	 * @param array $pa_array The multidimensional array
@@ -2846,5 +3174,137 @@ function caFileIsIncludable($ps_file) {
 		
 		if(caGetOption('unique', $pa_options, false)) { $va_return = array_unique($va_return); }
 		return $va_return;
+	}
+	# ----------------------------------------
+	/**
+	 * Converts a (float) measurement in inches to fractions, up to the given denominator, e.g. 1/16th
+	 * @see http://stackoverflow.com/questions/13811108/function-to-round-mm-to-the-nearest-32nd-of-an-inch
+	 *
+	 * @param float $pn_inches_as_float
+	 * @param int $pn_denom
+	 * @param bool $pb_reduce
+	 * @return string
+	 */
+	function caLengthToFractions($pn_inches_as_float, $pn_denom, $pb_reduce = true) {
+		$num = round($pn_inches_as_float * $pn_denom);
+		$int = (int)($num / $pn_denom);
+		$num %= $pn_denom;
+
+		if (!$num) {
+			return "$int in";
+		}
+
+		if ($pb_reduce) {
+			// Use Euclid's algorithm to find the GCD.
+			$a = $num < 0 ? -$num : $num;
+			$b = $pn_denom;
+			while ($b) {
+				$t = $b;
+				$b = $a % $t;
+				$a = $t;
+			}
+
+			$num /= $a;
+			$pn_denom /= $a;
+		}
+
+		if ($int) {
+			// Suppress minus sign in numerator; keep it only in the integer part.
+			if ($num < 0) {
+				$num *= -1;
+			}
+			return "$int $num/$pn_denom in";
+		}
+
+		return "$num/$pn_denom in";
+	}
+	# ----------------------------------------
+	/**
+	 * Convert text into string suitable for sorting, by moving articles to end of string, etc.
+	 *
+	 * @param string $ps_text Text to convert to sortable value
+	 * @param array $pa_options Options include:
+	 *		locale = Locale settings to use. If omitted current default locale is used. [Default is current locale]
+	 *		omitArticle = Omit leading definite and indefinited articles, rather than moving them to the end of the text [Default is true]
+	 *
+	 * @return string Converted text. If locale cannot be found $ps_text is returned unchanged.
+	 */
+	function caSortableValue($ps_text, $pa_options=null) {
+		global $g_ui_locale;
+		$ps_locale = caGetOption('locale', $pa_options, $g_ui_locale);
+		if (!$ps_locale) { return $ps_text; }
+		
+		$pb_omit_article = caGetOption('omitArticle', $pa_options, true);
+		
+		$o_locale_settings = TimeExpressionParser::getSettingsForLanguage($ps_locale);
+		
+		$vs_display_value = trim(preg_replace('![^\p{L}0-9 ]+!u', ' ', $ps_text));
+		
+		// Move articles to end of string
+		$va_definite_articles = $o_locale_settings ? $o_locale_settings->get('definiteArticles') : array();
+		$va_indefinite_articles = $o_locale_settings ? $o_locale_settings->get('indefiniteArticles') : array();
+		
+		foreach(array($va_definite_articles, $va_indefinite_articles) as $va_articles) {
+			if (is_array($va_articles)) {
+				foreach($va_articles as $vs_article) {
+					if (preg_match('!^('.$vs_article.')[ ]+!i', $vs_display_value, $va_matches)) {
+						$vs_display_value = trim(str_replace($va_matches[1], '', $vs_display_value).($pb_omit_article ? '' : ', '.$va_matches[1]));
+						break(2);
+					}
+				}
+			}
+		}
+		
+		// Left-pad numbers
+		if (preg_match("![\d]+!", $vs_display_value, $va_matches)) {
+			for($i=0; $i<sizeof($va_matches); $i++) {
+				$vs_padded = str_pad($va_matches[$i], 15, 0, STR_PAD_LEFT);
+				$vs_display_value = str_replace($va_matches[$i], $vs_padded, $vs_display_value);
+			}
+		}
+		return $vs_display_value;
+	}
+	# ----------------------------------------
+	/**
+	 * Get list of (enabled) primary tables as table_num => table_name mappings
+	 * @return array
+	 */
+	function caGetPrimaryTables() {
+		$o_conf = Configuration::load();
+		$va_ret = [];
+		foreach([
+			'ca_objects' => 57,
+			'ca_object_lots' => 51,
+			'ca_entities' => 20,
+			'ca_places' => 72,
+			'ca_occurrences' => 67,
+			'ca_collections' => 13,
+			'ca_storage_locations' => 89,
+			'ca_object_representations' => 56,
+			'ca_loans' => 133,
+			'ca_movements' => 137,
+			'ca_list_items' => 33,
+			'ca_tours' => 153,
+			'ca_tour_stops' => 155
+		] as $vs_table_name => $vn_table_num) {
+			if(!$o_conf->get($vs_table_name.'_disable')) {
+				$va_ret[$vn_table_num] = $vs_table_name;
+			}
+		}
+		return $va_ret;
+	}
+	# ----------------------------------------
+	/**
+	 * Get CA primary tables (objects, entities, etc.) for HTML select, i.e. as Display Name => Table Num mapping
+	 * @return array
+	 */
+	function caGetPrimaryTablesForHTMLSelect() {
+		$va_tables = caGetPrimaryTables();
+		$o_dm = Datamodel::load();
+		$va_ret = [];
+		foreach($va_tables as $vn_table_num => $vs_table) {
+			$va_ret[$o_dm->getInstance($vn_table_num, true)->getProperty('NAME_PLURAL')] = $vn_table_num;
+		}
+		return $va_ret;
 	}
 	# ----------------------------------------

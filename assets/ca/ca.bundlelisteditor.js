@@ -6,7 +6,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2010-2013 Whirl-i-Gig
+ * Copyright 2010-2015 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,7 +49,7 @@ var caUI = caUI || {};
 			
 			settingsIcon: null
 		}, options);
-		
+
 		// ------------------------------------------------------------------------------------
 		that.initDisplayList = function() {
 			if (!that.initialDisplayList) { return; }
@@ -62,8 +62,7 @@ var caUI = caUI || {};
 			});
 			
 			jQuery('#' + that.toDisplayListID)
-				.html(displayListText)
-				.find("input:checked").change();	// trigger change handler to hide anything affected by hideOnSelect option for checkboxes
+				.html(displayListText);
 			
 			displayListText = '';
 			jQuery.each(that.availableDisplayList, function(k, v) {
@@ -112,13 +111,15 @@ var caUI = caUI || {};
 				id = id + '_0'; 
 			}
 
+			// Store the settings form HTML for lazy insertion.
+			// TODO: Use namespaces to prevent id collisions with multiple of this plugin on a single page.
+			caUI.bundlelisteditor.settingsForms[id] = settingsForm;
+
 			output =  "<div id='displayElement_" + id +"' class='" + that.displayItemClass + "'>";
-			output += " <div class='bundleDisplayElementSettingsControl'><a href='#' onclick='jQuery(\".elementSettingsUI\").fadeOut(250); jQuery(\"#displayElementSettings_" +  id.replace(/\./g, "\\\\.") +"\").fadeIn(250); return false; '>" + that.settingsIcon + "</a></div>";
+			output += "<div class='bundleDisplayElementSettingsControl'><a href='#' onclick='caUI.bundlelisteditor.initSettingsForm(\"" + id + "\"); jQuery(\".elementSettingsUI\").fadeOut(250); jQuery(\"#displayElementSettings_" +  id.replace(/\./g, "\\\\.") +"\").fadeIn(250); return false; '>" + that.settingsIcon + "</a></div>";
 			output += "<div style='width:75%'>" + label + " </div>";
 			output += "</div>\n";			
-			output += "<div id='displayElementSettings_" + id +"' class='elementSettingsUI' style='display: none;'>"+ label + settingsForm + "<a href='#' onclick='jQuery(\"#displayElementSettings_" +  id.replace(/\./g, "\\\\.") +"\").fadeOut(250); return false; '>" + that.settingsIcon + "</a></div>";
-
-			
+			output += "<div id='displayElementSettings_" + id +"' class='elementSettingsUI' style='display: none;'>" + label + "<div class='settingsFormContainer'></div><a href='#' onclick='jQuery(\"#displayElementSettings_" +  id.replace(/\./g, "\\\\.") +"\").fadeOut(250); return false; '>" + that.settingsIcon + "</a></div>";
 			return output;
 		}
 		// ------------------------------------------------------------------------------------
@@ -140,4 +141,19 @@ var caUI = caUI || {};
 		that.initDisplayList();
 		return that;
 	};
+
+	// Keys are ids and values are HTML for the popup settings form, stored here and lazily inserted into the DOM.
+	caUI.bundlelisteditor.settingsForms = {};
+
+	// Lazily insert popup settings form HTML from map.
+	caUI.bundlelisteditor.initSettingsForm = function (id) {
+		if (caUI.bundlelisteditor.settingsForms[id]) {
+			$('#displayElementSettings_' + id.replace('.', '\\.') + ' .settingsFormContainer')		// don't forget to escape periods in DOM ids
+				.html(caUI.bundlelisteditor
+				.settingsForms[id])					
+				.find("input:checked").change();	// trigger change handler to hide anything affected by hideOnSelect option for checkboxes
+			delete caUI.bundlelisteditor.settingsForms[id];
+		}
+	}
+
 })(jQuery);

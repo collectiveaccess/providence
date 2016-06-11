@@ -31,11 +31,10 @@ class HtmlDumper extends CliDumper
     protected $headerIsDumped = false;
     protected $lastDepth = -1;
     protected $styles = array(
-        'default' => 'background-color:#18171B; color:#FF8400; line-height:1.2em; font:12px Menlo, Monaco, Consolas, monospace; word-wrap: break-word; white-space: pre-wrap; position:relative; z-index:100000',
+        'default' => 'background-color:#18171B; color:#FF8400; line-height:1.2em; font:12px Menlo, Monaco, Consolas, monospace; word-wrap: break-word; white-space: pre-wrap; position:relative; z-index:99999; word-break: normal',
         'num' => 'font-weight:bold; color:#1299DA',
         'const' => 'font-weight:bold',
         'str' => 'font-weight:bold; color:#56DB3A',
-        'cchr' => 'color:#FF8400',
         'note' => 'color:#1299DA',
         'ref' => 'color:#A0A0A0',
         'public' => 'color:#FFFFFF',
@@ -45,6 +44,15 @@ class HtmlDumper extends CliDumper
         'key' => 'color:#56DB3A',
         'index' => 'color:#1299DA',
     );
+
+    /**
+     * {@inheritdoc}
+     */
+    public function __construct($output = null, $charset = null)
+    {
+        AbstractDumper::__construct($output, $charset);
+        $this->dumpId = 'sf-dump-'.mt_rand();
+    }
 
     /**
      * {@inheritdoc}
@@ -94,8 +102,8 @@ class HtmlDumper extends CliDumper
      */
     public function dump(Data $data, $output = null)
     {
-        $this->dumpId = 'sf-dump-'.mt_rand();
         parent::dump($data, $output);
+        $this->dumpId = 'sf-dump-'.mt_rand();
     }
 
     /**
@@ -121,7 +129,7 @@ var refStyle = doc.createElement('style'),
         e.addEventListener(n, cb, false);
     };
 
-doc.documentElement.firstChild.appendChild(refStyle);
+(doc.documentElement.firstElementChild || doc.documentElement.children[0]).appendChild(refStyle);
 
 if (!doc.addEventListener) {
     addEventListener = function (element, eventName, callback) {
@@ -367,10 +375,6 @@ EOHTML;
         }
 
         $v = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-        $v = preg_replace_callback(self::$controlCharsRx, function ($r) {
-            // Use Unicode Control Pictures - see http://www.unicode.org/charts/PDF/U2400.pdf
-            return sprintf('<span class=sf-dump-cchr title=\\x%02X>&#%d;</span>', ord($r[0]), "\x7F" !== $r[0] ? 0x2400 + ord($r[0]) : 0x2421);
-        }, $v);
 
         if ('ref' === $style) {
             if (empty($attr['count'])) {
@@ -387,25 +391,44 @@ EOHTML;
             $style .= sprintf(' title="%s"', empty($attr['dynamic']) ? 'Public property' : 'Runtime added dynamic property');
         } elseif ('str' === $style && 1 < $attr['length']) {
             $style .= sprintf(' title="%s%s characters"', $attr['length'], $attr['binary'] ? ' binary or non-UTF-8' : '');
-        } elseif ('note' === $style) {
-            if (false !== $c = strrpos($v, '\\')) {
-                return sprintf('<abbr title="%s" class=sf-dump-%s>%s</abbr>', $v, $style, substr($v, $c + 1));
-            } elseif (':' === $v[0]) {
-                return sprintf('<abbr title="`%s` resource" class=sf-dump-%s>%s</abbr>', substr($v, 1), $style, $v);
-            }
+        } elseif ('note' === $style && false !== $c = strrpos($v, '\\')) {
+            return sprintf('<abbr title="%s" class=sf-dump-%s>%s</abbr>', $v, $style, substr($v, $c + 1));
         } elseif ('protected' === $style) {
             $style .= ' title="Protected property"';
         } elseif ('private' === $style) {
             $style .= sprintf(' title="Private property defined in class:&#10;`%s`"', $attr['class']);
         }
 
-        return "<span class=sf-dump-$style>$v</span>";
+        $map = static::$controlCharsMap;
+        $style = "<span class=sf-dump-{$style}>";
+        $v = preg_replace_callback(static::$controlCharsRx, function ($c) use ($map, $style) {
+            $s = '</span>';
+            $c = $c[$i = 0];
+            do {
+                $s .= isset($map[$c[$i]]) ? $map[$c[$i]] : sprintf('\x%02X', ord($c[$i]));
+            } while (isset($c[++$i]));
+
+            return $s.$style;
+        }, $v, -1, $cchrCount);
+
+        if ($cchrCount && '<' === $v[0]) {
+            $v = substr($v, 7);
+        } else {
+            $v = $style.$v;
+        }
+        if ($cchrCount && '>' === substr($v, -1)) {
+            $v = substr($v, 0, -strlen($style));
+        } else {
+            $v .= '</span>';
+        }
+
+        return $v;
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function dumpLine($depth)
+    protected function dumpLine($depth, $endOfValue = false)
     {
         if (-1 === $this->lastDepth) {
             $this->line = sprintf($this->dumpPrefix, $this->dumpId, $this->indentPad).$this->line;
@@ -419,30 +442,7 @@ EOHTML;
         }
         $this->lastDepth = $depth;
 
-        // Replaces non-ASCII UTF-8 chars by numeric HTML entities
-        $this->line = preg_replace_callback(
-            '/[\x80-\xFF]+/',
-            function ($m) {
-                $m = unpack('C*', $m[0]);
-                $i = 1;
-                $entities = '';
-
-                while (isset($m[$i])) {
-                    if (0xF0 <= $m[$i]) {
-                        $c = (($m[$i++] - 0xF0) << 18) + (($m[$i++] - 0x80) << 12) + (($m[$i++] - 0x80) << 6) + $m[$i++] - 0x80;
-                    } elseif (0xE0 <= $m[$i]) {
-                        $c = (($m[$i++] - 0xE0) << 12) + (($m[$i++] - 0x80) << 6) + $m[$i++]  - 0x80;
-                    } else {
-                        $c = (($m[$i++] - 0xC0) << 6) + $m[$i++] - 0x80;
-                    }
-
-                    $entities .= '&#'.$c.';';
-                }
-
-                return $entities;
-            },
-            $this->line
-        );
+        $this->line = mb_convert_encoding($this->line, 'HTML-ENTITIES', 'UTF-8');
 
         if (-1 === $depth) {
             AbstractDumper::dumpLine(0);

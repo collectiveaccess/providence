@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/controllers/client/library/DashboardController.php :
+ * app/controllers/library/DashboardController.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software

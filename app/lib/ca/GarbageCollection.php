@@ -54,6 +54,7 @@ final class GarbageCollection {
 		$vs_cache_dir = $vs_cache_base_dir.DIRECTORY_SEPARATOR.__CA_APP_NAME__.'Cache';
 
 		$va_list = caGetDirectoryContentsAsList($vs_cache_dir);
+		$va_list = array_slice($va_list, 0, 2000);
 		foreach($va_list as $vs_file) {
 			$r = @fopen($vs_file, "r");
 
@@ -66,6 +67,16 @@ final class GarbageCollection {
 					fclose($r);
 					@unlink($vs_file);
 				}
+			}
+		}
+
+		$va_dir_list = caGetSubDirectoryList($vs_cache_dir);
+		// note we're explicitly reversing the array here so that
+		// the order is /foo/bar/foobar, then /foo/bar and then /foo
+		// that way we don't need recursion because we just work our way up the directory tree
+		foreach(array_reverse($va_dir_list) as $vs_dir => $vn_c) {
+			if(caDirectoryIsEmpty($vs_dir)) {
+				@rmdir($vs_dir);
 			}
 		}
 

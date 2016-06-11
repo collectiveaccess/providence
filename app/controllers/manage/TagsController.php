@@ -48,12 +48,6 @@
  		 */ 
  		protected $opa_views;
  		
- 		/**
- 		 * List of available search-result sorting fields
- 		 * Is associative array: values are display names for fields, keys are full fields names (table.field) to be used as sort
- 		 */
- 		protected $opa_sorts;
- 		
  		# -------------------------------------------------------
  		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
  			parent::__construct($po_request, $po_response, $pa_view_paths);
@@ -61,11 +55,6 @@
  		 	$this->opa_views = array(
 				'list' => _t('list')
 			 );
-			 
-			 $this->opa_sorts = array(
-				'ca_items_x_tags.created_on' => _t('date'),
-				'ca_items_x_tags.user_id' => _t('user')
-			);
 			 
  			AssetLoadManager::register('tableList');
  		}

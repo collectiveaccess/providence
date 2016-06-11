@@ -77,7 +77,7 @@
 				ExternalCache::save($vs_feed_url_md5, $feed, 'Meow');
 				$feed->__wakeup();
 			}
-			
+
 			$this->opo_view->setVar('title', $feed->title());
 			
 			$vn_i = (int)rand(0, ($feed->count() - 1));		// pick a random cat
@@ -92,7 +92,7 @@
 				$this->opo_view->setVar('item_link', $item->link());
 				
 				// Find the image URL in the encoded HTML content...
-				if (preg_match("!(https://i.chzbgr.com/maxW500/[^\"']+)!i", $item->encoded(), $va_matches)) {
+				if (preg_match("!(https://i.chzbgr.com/full/[^\"']+)!i", $item->encoded(), $va_matches)) {
 					$vs_url = $va_matches[1];
 					
 					$vn_width = 430;							// force width of image to 430 pixels

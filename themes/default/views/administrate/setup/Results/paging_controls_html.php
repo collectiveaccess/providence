@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -44,14 +44,14 @@
 	if($this->getVar('num_pages') > 1){
 		$vs_searchNav .= "<div class='nav'>";
 		if ($this->getVar('page') > 1) {
-			$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"".caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(), $va_previous_link_params)."\"); return false;' class='button'>&lsaquo; Previous</a>";
+			$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"".caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(), $va_previous_link_params)."\"); return false;' class='button'>&lsaquo; "._t("Previous")."</a>";
 		}
-		$vs_searchNav .= '&nbsp;&nbsp;&nbsp;Page '.$this->getVar('page').'/'.$this->getVar('num_pages').'&nbsp;&nbsp;&nbsp;';
+		$vs_searchNav .= '&nbsp;&nbsp;&nbsp;'._t("Page").' '.$this->getVar('page').'/'.$this->getVar('num_pages').'&nbsp;&nbsp;&nbsp;';
 		if ($this->getVar('page') < $this->getVar('num_pages')) {
-			$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"".caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(), $va_next_link_params)."\"); return false;' class='button'>Next &rsaquo;</a>";
+			$vs_searchNav .= "<a href='#' onclick='jQuery(\"#resultBox\").load(\"".caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(), $va_next_link_params)."\"); return false;' class='button'>"._t("Next")." &rsaquo;</a>";
 		}
 		$vs_searchNav .= "</div>";
-		$vs_searchNav .= '<form action="#">'._t('Jump to page').': <input type="text" size="3" name="page" id="jumpToPageNum" value=""/> <a href="#" onclick=\'jQuery("#resultBox").load("'.caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(), $va_jump_to_params).'/page/" + jQuery("#jumpToPageNum").val());\' class="button">'._t('GO').'</a></form>';
+		$vs_searchNav .= '<form action="#">'._t('Jump to page').': <input type="text" size="3" name="page" id="jumpToPageNum" value=""/> <a href="#" onclick=\'jQuery("#resultBox").load("'.caNavUrl($this->request, $this->request->getModulePath(), $this->request->getController(), $this->request->getAction(), $va_jump_to_params).'/page/" + jQuery("#jumpToPageNum").val());\' class="button">'.caNavIcon(__CA_NAV_ICON_GO__, "14px").'</a></form>';
 	}
 	$vs_searchNav .= _t('Your %1 found', $this->getVar('mode_name')).' '.$vo_result->numHits().' '.$this->getVar(($vo_result->numHits() == 1) ? 'mode_type_singular' : 'mode_type_plural');
 	$vs_searchNav .= "</div>";

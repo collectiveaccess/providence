@@ -77,7 +77,7 @@ class VarCloner extends AbstractCloner
                     $zval['type'] = gettype($v);
                 }
                 if ($zval['zval_isref']) {
-                    $queue[$i][$k] =& $stub;    // Break hard references to make $queue completely
+                    $queue[$i][$k] = &$stub;    // Break hard references to make $queue completely
                     unset($stub);               // independent from the original structure
                     if (isset($hardRefs[$zval['zval_hash']])) {
                         $queue[$i][$k] = $useExt ? ($v = $hardRefs[$zval['zval_hash']]) : ($step[$k] = $v);
@@ -130,7 +130,7 @@ class VarCloner extends AbstractCloner
                                 unset($v[$gid]);
                                 $a = array();
                                 foreach ($v as $gk => &$gv) {
-                                    $a[$gk] =& $gv;
+                                    $a[$gk] = &$gv;
                                 }
                             } else {
                                 $a = $v;
@@ -149,7 +149,7 @@ class VarCloner extends AbstractCloner
                             $stub->handle = $h;
                             $a = $this->castObject($stub, 0 < $i);
                             if ($v !== $stub->value) {
-                                if (Stub::TYPE_OBJECT !== $stub->type) {
+                                if (Stub::TYPE_OBJECT !== $stub->type || null === $stub->value) {
                                     break;
                                 }
                                 if ($useExt) {
@@ -210,7 +210,7 @@ class VarCloner extends AbstractCloner
                             $step[$k] = new Stub();
                             $step[$k]->value = $stub;
                             $h = spl_object_hash($step[$k]);
-                            $queue[$i][$k] = $hardRefs[$h] =& $step[$k];
+                            $queue[$i][$k] = $hardRefs[$h] = &$step[$k];
                             $values[$h] = $v;
                         }
                         $queue[$i][$k]->handle = ++$refs;
@@ -249,7 +249,7 @@ class VarCloner extends AbstractCloner
                         $step[$k] = $queue[$i][$k] = new Stub();
                         $step[$k]->value = $v;
                         $h = spl_object_hash($step[$k]);
-                        $hardRefs[$h] =& $step[$k];
+                        $hardRefs[$h] = &$step[$k];
                         $values[$h] = $v;
                     }
                     $queue[$i][$k]->handle = ++$refs;
@@ -282,7 +282,7 @@ class VarCloner extends AbstractCloner
         } else {
             // check if we are nested in an output buffering handler to prevent a fatal error with ob_start() below
             $obFuncs = array('ob_clean', 'ob_end_clean', 'ob_flush', 'ob_end_flush', 'ob_get_contents', 'ob_get_flush');
-            foreach (debug_backtrace(PHP_VERSION_ID >= 50400 ? DEBUG_BACKTRACE_IGNORE_ARGS : false) as $frame) {
+            foreach (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS) as $frame) {
                 if (isset($frame['function'][0]) && !isset($frame['class']) && 'o' === $frame['function'][0] && in_array($frame['function'], $obFuncs)) {
                     $frame['line'] = 0;
                     break;
