@@ -53,6 +53,8 @@
 				$o_view->setVar('identifier', $ps_identifier);
 				
 				$va_params = ['identifier' => $ps_identifier];
+				
+				// Pass subject key when getting viewer data
 				if ($pa_data['t_subject']) { $va_params[$pa_data['t_subject']->primaryKey()] = $pa_data['t_subject']->getPrimaryKey(); }
 				
 				$o_view->setVar('data_url', caNavUrl($po_request, '*', '*', 'GetMediaData', $va_params, ['absolute' => true]));
