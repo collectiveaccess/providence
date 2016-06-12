@@ -123,7 +123,7 @@ abstract class Base {
 		if($this->isUpdate() || $this->isDelete()) {
 			// if we can't find the GUID and this is an update, throw error
 			if((!$this->getModelInstance()->loadByGUID($this->getGUID())) && $this->isUpdate()) {
-				throw new InvalidLogEntryException('Mode was update but the given GUID "'.$this->getGUID().'" could not be found for table num ' . $this->getTableNum());
+				throw new IrrelevantLogEntry('Mode was update but the given GUID "'.$this->getGUID().'" could not be found for table num ' . $this->getTableNum());
 			}
 
 			// if we can't find it and this is a delete, we don't particularly care. yes, we can't delete a non-existing
@@ -354,7 +354,7 @@ abstract class Base {
 				}
 
 				// check parent_id field
-				if($vs_field == $this->getModelInstance()->getProperty('HIERARCHY_PARENT_ID_FLD')) {
+				if(($vs_field == $this->getModelInstance()->getProperty('HIERARCHY_PARENT_ID_FLD')) && (intval($va_snapshot[$vs_field]) != 1)) {
 					if(isset($va_snapshot[$vs_field . '_guid']) && ($vs_parent_guid = $va_snapshot[$vs_field . '_guid'])) {
 						if(($vs_idno = $va_snapshot[$this->getModelInstance()->getProperty('ID_NUMBERING_ID_FIELD')]) && !preg_match("/Root node for /", $vs_idno)) {
 							$t_instance = $this->getModelInstance()->cloneRecord();
@@ -422,27 +422,26 @@ abstract class Base {
 					continue;
 				}
 
-				// handle parent_ids -- have to translate GUID to primary key
+				// handle parent_ids -- have to translate GUID to primary key, unless it's 1
 				if($vs_field == $this->getModelInstance()->getProperty('HIERARCHY_PARENT_ID_FLD')) {
-					if(isset($va_snapshot[$vs_field . '_guid']) && ($vs_parent_guid = $va_snapshot[$vs_field . '_guid'])) {
-						$t_instance = $this->getModelInstance()->cloneRecord();
-						$t_instance->setTransaction($this->getTx());
-						if($t_instance->loadByGUID($vs_parent_guid)) {
-							$this->getModelInstance()->set($vs_field, $t_instance->getPrimaryKey());
-						} else {
-
-							if(($vs_idno = $va_snapshot[$this->getModelInstance()->getProperty('ID_NUMBERING_ID_FIELD')]) && preg_match("/Root node for /", $vs_idno)) {
-								throw new IrrelevantLogEntry();
-							}
-
-							if(intval($va_snapshot[$vs_field]) == 1) {
-								$this->getModelInstance()->set($vs_field, 1);
+					if(intval($va_snapshot[$vs_field]) == 1) {
+						$this->getModelInstance()->set($vs_field, 1);
+					} else {
+						if(isset($va_snapshot[$vs_field . '_guid']) && ($vs_parent_guid = $va_snapshot[$vs_field . '_guid'])) {
+							$t_instance = $this->getModelInstance()->cloneRecord();
+							$t_instance->setTransaction($this->getTx());
+							if($t_instance->loadByGUID($vs_parent_guid)) {
+								$this->getModelInstance()->set($vs_field, $t_instance->getPrimaryKey());
 							} else {
+								if(($vs_idno = $va_snapshot[$this->getModelInstance()->getProperty('ID_NUMBERING_ID_FIELD')]) && preg_match("/Root node for /", $vs_idno)) {
+									throw new IrrelevantLogEntry();
+								}
+
 								throw new InvalidLogEntryException("Could not load GUID {$vs_parent_guid} (referenced in HIERARCHY_PARENT_ID_FLD)");
 							}
+						} else {
+							throw new InvalidLogEntryException("No guid for parent_id field found");
 						}
-					} else {
-						throw new InvalidLogEntryException("No guid for parent_id field found");
 					}
 
 					continue;

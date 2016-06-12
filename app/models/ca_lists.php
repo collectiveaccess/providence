@@ -357,10 +357,50 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	}
 	# ------------------------------------------------------
 	/**
-	 *
+	 * Edit existing list item
+	 * @param int $pn_item_id
+	 * @param string $ps_value
+	 * @param bool $pb_is_enabled
+	 * @param bool $pb_is_default
+	 * @param int $pn_parent_id
+	 * @param int $pn_type_id
+	 * @param string $ps_idno
+	 * @param string $ps_validation_format
+	 * @param int $pn_status
+	 * @param int $pn_access
+	 * @param int $pn_rank
+	 * @return bool|ca_list_items
 	 */
-	public function editItem($pn_item_id, $ps_value, $pb_is_enabled=true, $pb_is_default=false, $pn_parent_id=null, $pn_type_id=null, $ps_idno=null, $ps_validation_format='', $pn_status=0, $pn_access=0, $pn_rank=null) {
-		die("Not implemented");
+	public function editItem($pn_item_id, $ps_value, $pb_is_enabled=true, $pb_is_default=false, $pn_parent_id=null, $ps_idno=null, $ps_validation_format='', $pn_status=0, $pn_access=0, $pn_rank=null) {
+		if(!($vn_list_id = $this->getPrimaryKey())) { return false; }
+
+		$t_item = new ca_list_items($pn_item_id);
+		if(!$t_item->getPrimaryKey()) { return false; }
+		if($t_item->get('list_id') != $this->getPrimaryKey()) { return false; } // don't allow editing items in other lists
+
+		$t_item->setMode(ACCESS_WRITE);
+		if ($this->inTransaction()) { $t_item->setTransaction($this->getTransaction()); }
+
+		if(is_null($pn_parent_id)) { $pn_parent_id = $this->getRootItemIDForList($this->getPrimaryKey()); }
+
+		$t_item->set('item_value', $ps_value);
+		$t_item->set('is_enabled', $pb_is_enabled ? 1 : 0);
+		$t_item->set('is_default', $pb_is_default ? 1 : 0);
+		$t_item->set('parent_id', $pn_parent_id);
+		$t_item->set('idno', $ps_idno);
+		$t_item->set('validation_format', $ps_validation_format);
+		$t_item->set('status', $pn_status);
+		$t_item->set('access', $pn_access);
+		if (!is_null($pn_rank)) { $t_item->set('rank', $pn_rank); }
+
+		$t_item->update();
+
+		if ($t_item->numErrors()) {
+			$this->errors = array_merge($this->errors, $t_item->errors);
+			return false;
+		}
+
+		return $t_item;
 	}
 	# ------------------------------------------------------
 	/**
@@ -406,6 +446,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *		labelsOnly = 	if true only labels in the current locale are returns in an array key'ed on item_id
 	 *		start = 		offset to start returning records from [default=0; no offset]
 	 *		limit = 		maximum number of records to return [default=null; no limit]
+	 * 		dontCache =		don't cache
 	 *
 	 * @return array List of items indexed first on item_id and then on locale_id of label
 	 */
@@ -417,6 +458,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	
 		$pn_start = caGetOption('start', $pa_options, 0);
 		$pn_limit = caGetOption('limit', $pa_options, null);
+		$pb_dont_cache = caGetOption('dontCache', $pa_options, false);
 		
 		$pb_omit_root = caGetOption('omitRoot', $pa_options, false);
 		$vb_enabled_only = caGetOption('enabledOnly', $pa_options, false);
@@ -430,8 +472,8 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		}
 	
 		$vs_cache_key = caMakeCacheKeyFromOptions(array_merge($pa_options, array('list_id' => $vn_list_id)));
-		
-		if (is_array(ca_lists::$s_list_item_cache[$vs_cache_key])) {
+
+		if (!$pb_dont_cache && is_array(ca_lists::$s_list_item_cache[$vs_cache_key])) {
 			return(ca_lists::$s_list_item_cache[$vs_cache_key]);
 		}
 		$t_list = new ca_lists($vn_list_id);

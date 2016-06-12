@@ -1573,7 +1573,9 @@ del.form-button{
 .form-button.delete:hover .fa, .form-button.delete:hover, .form-button.delete .fa:hover {
 	color:red;
 }
-
+.deleteButton a.form-button span {
+	color:red;
+}
 del.form-button span{
     cursor:default;
     color:#aaa !important;
@@ -1693,7 +1695,12 @@ table.listtable tr, table.listtable tr td, table.listtable tr th {
 
 #caWatchedItemsList.listtable {
 	font-size:12px;
-} 
+}
+
+#watchedItemsSetControls {
+    padding: 5px 5px 0 10px;
+    background-color: #eeeeee;
+}
 
 
 /* table headers */
@@ -1805,6 +1812,9 @@ td.listtableTotals {
 #caSetList img.deleteIcon, #caSetList img.editIcon {
 	width:20px;
 	padding:5px;
+}
+.caIcon.deleteIcon:hover {
+	color:red;
 }
 
 #caSetList tbody tr td div.caSetListName, #caSetList tbody tr td div.caSetListOwner {

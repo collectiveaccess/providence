@@ -1462,16 +1462,20 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								);
 								break;
 							case 'ca_set_items':
-								$va_additional_settings = array(
-									'display_template' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_FIELD,
-										'default' => '',
-										'width' => "275px", 'height' => 4,
-										'label' => _t('Display template'),
-										'description' => _t('Layout for set item information when used in a display list. For example: <i>^ca_objects.deaccession_notes</i>.')
-									)
-								);
+								require_once(__CA_MODELS_DIR__."/ca_sets.php");
+								$t_set = new ca_sets();
+								
+								$va_additional_settings = array();
+								foreach($t_set->getFieldInfo('table_num', 'BOUNDS_CHOICE_LIST') as $vs_table_display_name => $vn_table_num) {
+									$va_additional_settings[$this->_DATAMODEL->getTableName($vn_table_num).'_display_template'] = array(
+											'formatType' => FT_TEXT,
+											'displayType' => DT_FIELD,
+											'default' => '',
+											'width' => "275px", 'height' => 4,
+											'label' => _t('Display template (%1)', $vs_table_display_name),
+											'description' => _t('Layout for %1 set item information when used in a display list. For example: <i>^ca_objects.deaccession_notes</i>.', $vs_table_display_name)
+									);
+								}
 								break;
 						}
 						$va_additional_settings['documentation_url'] = array(
@@ -1490,8 +1494,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			$t_placement->setSettingDefinitionsForPlacement($va_additional_settings);
-			
-			$vs_display = "<div id='uiEditorBundle_{$vs_table}_{$vs_bundle_proc}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_table.'.'.$vs_bundle_proc))."</div>";
+			$vs_label = $t_instance->getDisplayLabel($t_instance->tableName().'.'.$vs_bundle_proc) ?: $va_info['label'];
+			$vs_display = "<div id='uiEditorBundle_{$vs_table}_{$vs_bundle_proc}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label)."</div>";
 
 			$va_additional_settings['bundleTypeRestrictions'] = [
 				'formatType' => FT_TEXT,
@@ -1752,7 +1756,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		$va_placements_in_screen = array();
 		foreach($va_placements as $vn_placement_id => $va_placement) {
 			$vs_bundle_proc = preg_replace('!^ca_attribute_!', '', $va_placement['bundle_name']);
-			
 			$vs_label = ($vs_label = ($t_instance->getDisplayLabel($t_instance->tableName().'.'.$vs_bundle_proc))) ? $vs_label : $va_placement['bundle_name'];
 			if(is_array($va_placement['settings']['label'])){
 				$va_tmp = caExtractValuesByUserLocale(array($va_placement['settings']['label']));
