@@ -54,12 +54,21 @@
 	foreach($va_resources as $va_resource) {
 		$vs_canvas_id = "{$vs_identifer}:{$vn_page}";
 		
-		if ($vs_display_version == 'tilepic') {
+		if (isset($va_resource['representation_id']) && ($va_resource['representation_id'] > 0)) {
+			// If resource includes explicitly set representation_id then assume representation identifier with that id
+			// (This is used to support the "use_universal_viewer_for_image_list_length_at_least" option in media_display.conf
+			//  which forces a list of image representations to be displayed as a multipage document in UniversalViewer)
+			$vs_service_url = "{$vs_base_url}/service.php/IIIF/representation:".$va_resource['representation_id']."";
+			$vs_thumb_url = "{$vs_base_url}/service.php/IIIF/representation:".$va_resource['representation_id']."/full/!512,512/0/default.jpg";
+			$vn_width = $va_resource['width']; $vn_height = $va_resource['height'];
+		} elseif ($vs_display_version == 'tilepic') {
 			$vs_service_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifer}:{$vn_page}";
-			$vs_thumb_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifer}:{$vn_page}/full/!1024,1024/0/default.jpg";
+			$vs_thumb_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifer}:{$vn_page}/full/!512,512/0/default.jpg";
+			$vn_width = $va_data['width']; $vn_height = $va_data['height'];
 		} else {
 			$vs_service_url = $va_resource['url'];
-			$vs_thumb_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifer}:{$vn_page}/full/!1024,1024/0/default.jpg";
+			$vs_thumb_url = "{$vs_base_url}/service.php/IIIF/{$vs_identifer}:{$vn_page}/full/!512,512/0/default.jpg";
+			$vn_width = $va_data['width']; $vn_height = $va_data['height'];
 		}
 		
 		$va_canvases[] =
@@ -69,8 +78,8 @@
 				"label" => (string)($vn_page),
 				"thumbnail" => $va_resource['preview_url'],
 				"seeAlso" => [],
-				"height" => $va_data['width'],
-				"width" => $va_data['height'],
+				"height" => $vn_height,
+				"width" => $vn_width,
 				"images" => [
 					[
 						"@id" => $vs_service_url,
@@ -80,8 +89,8 @@
 							"@id" => $vs_thumb_url,
 							"@type" => "dctypes:Image",
 							"format" => "image/jpeg",
-							"height" =>  $va_data['width'],
-							"width" => $va_data['height'],
+							"height" =>  $vn_height,
+							"width" => $vn_width,
 							"service" => [
 								"@context" => "http://iiif.io/api/image/2/context.json",
 								"@id" => $vs_service_url,
