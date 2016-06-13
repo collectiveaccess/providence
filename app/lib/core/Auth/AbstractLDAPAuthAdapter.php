@@ -310,8 +310,6 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
     }
 
 	protected function bindServiceAccount() {
-		@ldap_unbind($this->getLinkIdentifier());
-
 		if(
 			($vs_service_acct_rdn = $this->getConfigValue('ldap_service_account_rdn')) &&
 			($vs_service_acct_pwd = $this->getConfigValue('ldap_service_account_password'))
