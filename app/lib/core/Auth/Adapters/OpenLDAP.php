@@ -39,7 +39,7 @@ class OpenLDAPAuthAdapter extends AbstractLDAPAuthAdapter {
 		);
 	}
 	# --------------------------------------------------------------------------------
-	protected function isUserInAnyGroup($ps_username, $pa_group_cn_list){
+	protected function isUserInAnyGroup($ps_username, $pa_group_cn_list) {
 		$vs_base_dn = $this->getConfigValue("ldap_base_dn");
 		$vs_group_search_dn = $this->getProcessedConfigValue("ldap_group_search_dn_format", '', '', $vs_base_dn);
 
@@ -54,8 +54,8 @@ class OpenLDAPAuthAdapter extends AbstractLDAPAuthAdapter {
 			}
 
 			$va_entries = ldap_get_entries($this->getLinkIdentifier(), $vo_result);
-			if ($va_members = $va_entries[0]["memberuid"]){
-				if (in_array($ps_username, $va_members)){
+			if ($va_members = $va_entries[0]["memberuid"]) {
+				if (in_array($ps_username, $va_members)) {
 					// found group
 					return true;
 				}
@@ -84,8 +84,8 @@ class OpenLDAPAuthAdapter extends AbstractLDAPAuthAdapter {
 					}
 
 					$va_entries = ldap_get_entries($this->getLinkIdentifier(), $vo_result);
-					if($va_members = $va_entries[0]["memberuid"]){
-						if(in_array($ps_username, $va_members)){ // found group
+					if($va_members = $va_entries[0]["memberuid"]) {
+						if(in_array($ps_username, $va_members)) { // found group
 							$va_return = array_merge($va_return, $va_ca_roles);
 						}
 					}
@@ -116,8 +116,8 @@ class OpenLDAPAuthAdapter extends AbstractLDAPAuthAdapter {
 					}
 
 					$va_entries = ldap_get_entries($this->getLinkIdentifier(), $vo_result);
-					if($va_members = $va_entries[0]["memberuid"]){
-						if(in_array($ps_username, $va_members)){ // found group
+					if($va_members = $va_entries[0]["memberuid"]) {
+						if(in_array($ps_username, $va_members)) { // found group
 							$va_return = array_merge($va_return, $va_ca_groups);
 						}
 					}
