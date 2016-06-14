@@ -345,6 +345,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			'body' => array(
 				// we do paging in our code
 				'from' => 0, 'size' => 2147483647, // size is Java's 32bit int, for ElasticSearch
+				'_source' => false,
 				'query' => array(
 					'bool' => array(
 						'must' => array(
