@@ -132,6 +132,7 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				),
 				'ALLOW_BUNDLE_ACCESS_CHECK' => true,
 				'DONT_ALLOW_IN_UI' => true,
+				'RESULTS_EDITOR_BUNDLE' => 'ca_objects_deaccession',	// bundle to use when editing this in the search/browse "results" editing interface
 				'LABEL' => _t('Is deaccessioned'), 'DESCRIPTION' => _t('Check if object is deaccessioned')
 		),
 		'deaccession_date' => array(
@@ -334,7 +335,16 @@ BaseModel::$s_ca_models_definitions['ca_objects'] = array(
 				'IS_NULL' => false, 
 				'DEFAULT' => '',
 				'LABEL' => 'View count', 'DESCRIPTION' => 'Number of views for this record.'
-		)
+		),
+		'circulation_status_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => '',
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
+			'LIST_CODE' => 'object_circulation_statuses',
+			'LABEL' => _t('Circulation status'), 'DESCRIPTION' => _t('Indicates circulation status of the object.')
+		),
 	)
 );
 
@@ -551,6 +561,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		$this->BUNDLES['ca_object_representations_access_status'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Media representation access and status'));
 	
 		$this->BUNDLES['authority_references_list'] = array('type' => 'special', 'repeating' => false, 'label' => _t('References'));
+
+		$this->BUNDLES['ca_object_circulation_status'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Circulation Status'));
 	}
 	# ------------------------------------------------------
 	/**
@@ -949,7 +961,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				}
 				if (!sizeof($va_dates)) {
 					$va_dates[] = array(
-						'sortable' => $vn_date = caUnixTimestampToHistoricTimestamps($qr_loans->get('lastModified')),
+						'sortable' => $vn_date = caUnixTimestampToHistoricTimestamps($qr_loans->get('lastModified.direct')),
 						'bounds' => array(0, $vn_date),
 						'display' => caGetLocalizedDate($vn_date)
 					);
@@ -1019,7 +1031,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				}
 				if (!sizeof($va_dates)) {
 					$va_dates[] = array(
-						'sortable' => $vn_date = caUnixTimestampToHistoricTimestamps($qr_movements->get('lastModified')),
+						'sortable' => $vn_date = caUnixTimestampToHistoricTimestamps($qr_movements->get('lastModified.direct')),
 						'bound' => array(0, $vn_date),
 						'display' => caGetLocalizedDate($vn_date)
 					);
@@ -1091,7 +1103,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				}
 				if (!sizeof($va_dates)) {
 					$va_dates[] = array(
-						'sortable' => $vn_date = caUnixTimestampToHistoricTimestamps($qr_occurrences->get('lastModified')),
+						'sortable' => $vn_date = caUnixTimestampToHistoricTimestamps($qr_occurrences->get('lastModified.direct')),
 						'bounds' => array(0, $vn_date),
 						'display' => caGetLocalizedDate($vn_date)
 					);
@@ -1711,7 +1723,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		if ($vs_return_as == 'info') {
 			$va_data = array();
 			while($vm_res->nextHit()) {
-				$va_data[$vn_object_id = $vm_res->get('ca_objects.object_id')] = array(
+				$vn_object_id = $vm_res->get('ca_objects.object_id');
+				$va_data[$vn_object_id] = array(
 					'object_id' => $vn_object_id,
 					'id' => $vn_object_id,
 					'label' => $vm_res->get('ca_objects.preferred_labels.name'),
@@ -2086,7 +2099,17 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		$vb_is_reserved = is_array($va_reservations) && sizeof($va_reservations);
 		
 		$va_info = array('user_name' => null, 'checkout_date' => null, 'user_id' => null, 'due_date' => null, 'checkout_notes' => null);
-		
+
+		$vb_is_unavailable = false;
+		$o_lib_conf = caGetLibraryServicesConfiguration();
+		if($va_restrict_to_circ_statuses = $o_lib_conf->get('restrict_to_circulation_statuses')) {
+			if(sizeof($va_restrict_to_circ_statuses)) {
+				if(!in_array($this->get('circulation_status_id', ['convertCodesToIdno' => true]), $va_restrict_to_circ_statuses)) {
+					$vb_is_unavailable = true;
+				}
+			}
+		}
+
 		if ($va_is_out) {
 			$t_checkout->load($va_is_out['checkout_id']);
 			$va_info['status'] = $vb_is_reserved ? __CA_OBJECTS_CHECKOUT_STATUS_OUT_WITH_RESERVATIONS__ : __CA_OBJECTS_CHECKOUT_STATUS_OUT__;
@@ -2099,6 +2122,9 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		} elseif ($vb_is_reserved) {
 			$va_info['status'] = __CA_OBJECTS_CHECKOUT_STATUS_RESERVED__;
 			$va_info['status_display'] = ($vn_num_reservations == 1) ? _t('Reserved') : _t('%1 reservations', $vn_num_reservations);
+		} elseif($vb_is_unavailable) {
+			$va_info['status'] = __CA_OBJECTS_CHECKOUT_STATUS_UNAVAILABLE__;
+			$va_info['status_display'] = _t('Unavailable');
 		} else {
 			$va_info['status'] = __CA_OBJECTS_CHECKOUT_STATUS_AVAILABLE__;
 			$va_info['status_display'] = _t('Available');
@@ -2171,6 +2197,27 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 		}
 		
 		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * @param RequestHTTP $po_request
+	 * @param string $ps_form_name
+	 * @param string $ps_placement_code
+	 * @param null|array $pa_bundle_settings
+	 * @param null|array $pa_options
+	 * @return string
+	 */
+	public function getObjectCirculationStatusHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_bundle_settings=null, $pa_options=null) {
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+
+		if(!is_array($pa_options)) { $pa_options = array(); }
+
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);		// pass placement code
+		$o_view->setVar('settings', $pa_bundle_settings);
+		$o_view->setVar('t_subject', $this);
+
+		return $o_view->render('ca_object_circulation_status_html.php');
 	}
 	# ------------------------------------------------------
 }

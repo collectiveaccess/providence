@@ -245,7 +245,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 			$vs_output .= '<div class="clear"><!--empty--></div>'.$ps_second_row_content;
 		}
 		
-	$vs_output .= '</div>
+		$vs_output .= '</div>
 	<div class="clear"><!--empty--></div>'."\n";
 	
 		return $vs_output;
@@ -265,8 +265,8 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 			"<div class='delete_warning_box'>"._t('Really delete "%1"?', $ps_item_name)."</div>".
 			($vs_remapping_controls ? "<div class='delete_remapping_controls'>{$vs_remapping_controls}</div>" : ''),
 			$vs_warning,
-			caFormSubmitButton($po_request, __CA_NAV_BUTTON_DELETE__, _t("Delete"), 'caDeleteForm', array()).
-			caNavButton($po_request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', $ps_module_path, $ps_controller, $ps_cancel_action, $pa_parameters)
+			caFormSubmitButton($po_request, __CA_NAV_ICON_DELETE__, _t("Delete"), 'caDeleteForm', array()).
+			caFormNavButton($po_request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', $ps_module_path, $ps_controller, $ps_cancel_action, $pa_parameters)
 		)."</div>\n";
 		
 		
@@ -434,12 +434,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 	 * Returns HTML <img> tag displaying spinning "I'm doing something" icon
 	 */
 	function caBusyIndicatorIcon($po_request, $pa_attributes=null) {
-		if (!is_array($pa_attributes)) { $pa_attributes = array(); }
-		
-		$vs_attr = _caHTMLMakeAttributeString($pa_attributes);
-		$vs_button = "<img src='".$po_request->getThemeUrlPath()."/graphics/icons/indicator.gif' border='0' {$vs_attr}/> ";
-	
-		return $vs_button;
+		return caNavIcon(__CA_NAV_ICON_SPINNER__, 1, $pa_attributes);
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -538,12 +533,13 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 					&&
 					!($po_request->getAppConfig()->get($vs_table_name.'_editor_defaults_to_summary_view'))
 				){
-					$vs_buf .= caNavLink($po_request, _t('&#60; prev'), 'prev', $po_request->getModulePath(), $po_request->getController(), 'Edit'.'/'.$po_request->getActionExtra(), array($vs_pk => $vn_prev_id)).'&nbsp;';
+					$vs_buf .= caNavLink($po_request, caNavIcon(__CA_NAV_ICON_SCROLL_LT__, 2), 'prev record', $po_request->getModulePath(), $po_request->getController(), 'Edit'.'/'.$po_request->getActionExtra(), array($vs_pk => $vn_prev_id)).'&nbsp;';
 				} else {
-					$vs_buf .= caNavLink($po_request, _t('&#60; prev'), 'prev', $po_request->getModulePath(), $po_request->getController(), 'Summary', array($vs_pk => $vn_prev_id)).'&nbsp;';
+					$vs_buf .= caNavLink($po_request, caNavIcon(__CA_NAV_ICON_SCROLL_LT__, 2), 'prev record', $po_request->getModulePath(), $po_request->getController(), 'Summary', array($vs_pk => $vn_prev_id)).'&nbsp;';
 				}
+				TooltipManager::add(".prev.record", "Previous"); 
 			} else {
-				$vs_buf .=  '<span class="prev disabled">'._t('&#60; prev').'</span>';
+				$vs_buf .=  '<span class="prev disabled">'.caNavIcon(__CA_NAV_ICON_SCROLL_LT__, 2).'</span>';
 			}
 				
 			$vs_buf .= "<span class='resultCount'>".ResultContext::getResultsLinkForLastFind($po_request, $vs_table_name,  $vs_back_text, ''). " (".($vn_current_pos)."/".sizeof($va_found_ids).")</span>";
@@ -555,12 +551,13 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 					&&
 					!($po_request->getAppConfig()->get($vs_table_name.'_editor_defaults_to_summary_view'))
 				){
-					$vs_buf .= '&nbsp;'.caNavLink($po_request, _t('&#62; next'), 'next', $po_request->getModulePath(), $po_request->getController(), 'Edit'.'/'.$po_request->getActionExtra(), array($vs_pk => $vn_next_id));
+					$vs_buf .= '&nbsp;'.caNavLink($po_request,caNavIcon(__CA_NAV_ICON_SCROLL_RT__, 2), 'next record', $po_request->getModulePath(), $po_request->getController(), 'Edit'.'/'.$po_request->getActionExtra(), array($vs_pk => $vn_next_id));
 				} else {
-					$vs_buf .= '&nbsp;'.caNavLink($po_request, _t('&#62; next'), 'next', $po_request->getModulePath(), $po_request->getController(), 'Summary', array($vs_pk => $vn_next_id));
+					$vs_buf .= '&nbsp;'.caNavLink($po_request,caNavIcon(__CA_NAV_ICON_SCROLL_RT__, 2), 'next record', $po_request->getModulePath(), $po_request->getController(), 'Summary', array($vs_pk => $vn_next_id));
 				}
+				TooltipManager::add(".next.record", "Next"); 
 			} else {
-				$vs_buf .=  '<span class="next disabled">'._t('&#62; next').'</span>';
+				$vs_buf .=  '<span class="next disabled">'.caNavIcon(__CA_NAV_ICON_SCROLL_RT__, 2).'</span>';
 			}
 		} elseif ($vn_item_id) {
 			$vs_buf .= ResultContext::getResultsLinkForLastFind($po_request, $vs_table_name,  $vs_back_text, '');
@@ -680,6 +677,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 		$vs_table_name = $t_item->tableName();
 		if (($vs_priv_table_name = $vs_table_name) == 'ca_list_items') {
 			$vs_priv_table_name = 'ca_lists';
+			$vs_style = "style='padding-top:10px;'";
 		}
 		
 		$vn_item_id 			= $t_item->getPrimaryKey();
@@ -704,9 +702,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 
 		// action extra to preserve currently open screen across next/previous links
 		$vs_screen_extra 	= ($po_view->getVar('screen')) ? '/'.$po_view->getVar('screen') : '';
-		if ($vs_type_name == "list item") {
-			$vs_style = "style='height:auto;'";
-		}
+
 		if (($vn_item_id) || ($po_view->request->getAction() === 'Delete')) {
 			$vs_buf = '<h3 class="nextPrevious" '.$vs_style.'>'.caEditorFindResultNavigation($po_view->request, $t_item, $o_result_context, $pa_options)."</h3>\n";
 		}
@@ -904,7 +900,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 					if (sizeof($va_reps) > 1) {
 						$vs_buf .= "
 					<div class='leftScroll'>
-						<a href='#' onclick='inspectorInfoRepScroller.scrollToPreviousImage(); return false;'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_SCROLL_LT__)."</a>
+						<a href='#' onclick='inspectorInfoRepScroller.scrollToPreviousImage(); return false;'>".caNavIcon(__CA_NAV_ICON_SCROLL_LT__, '16px')."</a>
 					</div>
 		";
 					}
@@ -920,12 +916,12 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 					if (sizeof($va_reps) > 1) {
 						$vs_buf .= "
 					<div class='rightScroll'>
-						<a href='#' onclick='inspectorInfoRepScroller.scrollToNextImage(); return false;'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_SCROLL_RT__)."</a>
+						<a href='#' onclick='inspectorInfoRepScroller.scrollToNextImage(); return false;'>".caNavIcon(__CA_NAV_ICON_SCROLL_RT__, '16px')."</a>
 					</div>
 		";
 					}
-					TooltipManager::add(".leftScroll", _t('Previous'));
-					TooltipManager::add(".rightScroll", _t('Next'));
+					TooltipManager::add(".leftScroll", _t('Previous Image'));
+					TooltipManager::add(".rightScroll", _t('Next Image'));
 
 					$vs_buf .= "<script type='text/javascript'>";
 					$vs_buf .= "
@@ -970,7 +966,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 				if (in_array($vs_table_name, array('ca_objects', 'ca_object_lots', 'ca_entities', 'ca_places', 'ca_occurrences', 'ca_collections', 'ca_storage_locations'))) {
 					require_once(__CA_MODELS_DIR__.'/ca_watch_list.php');
 					$t_watch_list = new ca_watch_list();
-					$vs_watch = "<div class='watchThis'><a href='#' title='"._t('Add/remove item to/from watch list.')."' onclick='caToggleItemWatch(); return false;' id='caWatchItemButton'>".caNavIcon($po_view->request, $t_watch_list->isItemWatched($vn_item_id, $t_item->tableNum(), $po_view->request->user->get("user_id")) ? __CA_NAV_BUTTON_UNWATCH__ : __CA_NAV_BUTTON_WATCH__)."</a></div>";
+					$vs_watch = "<div class='watchThis'><div><a href='#' title='"._t('Add/remove item to/from watch list.')."' onclick='caToggleItemWatch(); return false;' id='caWatchItemButton'>".caNavIcon($t_watch_list->isItemWatched($vn_item_id, $t_item->tableNum(), $po_view->request->user->get("user_id")) ? __CA_NAV_ICON_UNWATCH__ : __CA_NAV_ICON_WATCH__, '20px')."</a></div></div>";
 					
 					$vs_buf .= "\n<script type='text/javascript'>
 		function caToggleItemWatch() {
@@ -978,7 +974,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 			
 			jQuery.getJSON(url, {}, function(data, status) {
 				if (data['status'] == 'ok') {
-					jQuery('#caWatchItemButton').html((data['state'] == 'watched') ? '".addslashes(caNavIcon($po_view->request, __CA_NAV_BUTTON_UNWATCH__))."' : '".addslashes(caNavIcon($po_view->request, __CA_NAV_BUTTON_WATCH__))."');
+					jQuery('#caWatchItemButton').html((data['state'] == 'watched') ? '".addslashes(caNavIcon(__CA_NAV_ICON_UNWATCH__, '20px'))."' : '".addslashes(caNavIcon(__CA_NAV_ICON_WATCH__, '20px'))."');
 				} else {
 					console.log('Error toggling watch status for item: ' + data['errors']);
 				}
@@ -992,7 +988,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 
 					if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}")) {
 						
-						$vs_buf .= "<div id='inspectorChangeType'><div id='inspectorChangeTypeButton'><a href='#' onclick='caTypeChangePanel.showPanel(); return false;'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_CHANGE__." Change Type", array('title' => _t('Change type')))."</a></div></div>\n";
+						$vs_buf .= "<div id='inspectorChangeType'><div id='inspectorChangeTypeButton'><a href='#' onclick='caTypeChangePanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_CHANGE__, '20px', array('title' => _t('Change type')))."</a></div></div>\n";
 						
 						$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
 						$vo_change_type_view->setVar('t_item', $t_item);
@@ -1019,7 +1015,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 							}
 							
 							if ($vs_type_list) {
-								$vs_buf .= "<div id='inspectorCreateChild'><div id='inspectorCreateChildButton'><a href='#' onclick='caCreateChildPanel.showPanel(); return false;'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_CHILD__, array('title' => _t('Create Child Record')))."</a></div></div>\n";
+								$vs_buf .= "<div id='inspectorCreateChild'><div id='inspectorCreateChildButton'><a href='#' onclick='caCreateChildPanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_CHILD__, '20px', array('title' => _t('Create Child Record')))."</a></div></div>\n";
 						
 								$vo_create_child_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
 								$vo_create_child_view->setVar('t_item', $t_item);
@@ -1036,7 +1032,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 				$vs_buf .= '<div id="caDuplicateItemButton">';
 			
 				$vs_buf .= caFormTag($po_view->request, 'Edit', 'DuplicateItemForm', $po_view->request->getModulePath().'/'.$po_view->request->getController(), 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true, 'noTimestamp' => true));
-				$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_DUPLICATE__), '', 'DuplicateItemForm');
+				$vs_buf .= "<div>".caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_DUPLICATE__, '20px'), '', 'DuplicateItemForm')."</div>";
 				
 				$vs_buf .= caHTMLHiddenInput($t_item->primaryKey(), array('value' => $t_item->getPrimaryKey()));
 				$vs_buf .= caHTMLHiddenInput('mode', array('value' => 'dupe'));
@@ -1050,14 +1046,14 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 			//
 			// Download media in lot ($vn_num_objects is only set for object lots)
 			if ($vn_num_objects > 0) {
-				$vs_buf .= "<div id='inspectorLotMediaDownloadButton'>".caNavLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_DOWNLOAD__), "button", $po_view->request->getModulePath(), $po_view->request->getController(), 'getLotMedia', array('lot_id' => $t_item->getPrimaryKey(), 'download' => 1), array())."</div>\n";
+				$vs_buf .= "<div id='inspectorLotMediaDownloadButton'>".caNavLink($po_view->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, '20px'), "button", $po_view->request->getModulePath(), $po_view->request->getController(), 'getLotMedia', array('lot_id' => $t_item->getPrimaryKey(), 'download' => 1), array())."</div>\n";
 				TooltipManager::add('#inspectorLotMediaDownloadButton', _t("Download all media associated with objects in this lot"));
 			}
 
 			//
 			// Download media in set
 			if(($vs_table_name == 'ca_sets') && (sizeof($t_item->getItemRowIDs())>0)) {
-				$vs_buf .= "<div id='inspectorSetMediaDownloadButton'>".caNavLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_DOWNLOAD__), "button", $po_view->request->getModulePath(), $po_view->request->getController(), 'getSetMedia', array('set_id' => $t_item->getPrimaryKey(), 'download' => 1), array())."</div>\n";
+				$vs_buf .= "<div id='inspectorSetMediaDownloadButton'>".caNavLink($po_view->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, '20px'), "button", $po_view->request->getModulePath(), $po_view->request->getController(), 'getSetMedia', array('set_id' => $t_item->getPrimaryKey(), 'download' => 1), array())."</div>\n";
 
 				TooltipManager::add('#inspectorSetMediaDownloadButton', _t("Download all media associated with records in this set"));
 			}
@@ -1132,7 +1128,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 				$vs_more_info .= caProcessTemplateForIDs($vs_get_spec, $vs_table_name, array($t_item->getPrimaryKey()));
 			}
 			if ($vs_more_info) {
-				$vs_buf .= "<div class='button info'><a href='#' id='inspectorMoreInfo'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_INFO2__)."</a></div>
+				$vs_buf .= "<div class='button info'><div><a href='#' id='inspectorMoreInfo'>".caNavIcon(__CA_NAV_ICON_INFO__, '20px')."</a></div></div>
 			<div id='inspectorInfo' >";
 				$vs_buf .= $vs_more_info."</div>\n";
 				
@@ -1210,7 +1206,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 			}
 								
 			if ($vb_can_add_component) {
-				$vs_buf .= ' <a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($po_view->request, '*', 'ObjectComponent', 'Form', array('parent_id' => $t_item->getPrimaryKey())).'"); return false;\')>'.caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__).'</a>';
+				$vs_buf .= ' <a href="#" onclick=\'caObjectComponentPanel.showPanel("'.caNavUrl($po_view->request, '*', 'ObjectComponent', 'Form', array('parent_id' => $t_item->getPrimaryKey())).'"); return false;\')>'.caNavIcon(__CA_NAV_ICON_ADD__, '18px').'</a>';
 
 				$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
 				$vo_change_type_view->setVar('t_item', $t_item);
@@ -1224,17 +1220,17 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 			if (($vs_table_name === 'ca_object_lots') && $t_item->getPrimaryKey()) {
 				$va_component_types = $po_view->request->config->getList('ca_objects_component_types');
 				if (is_array($va_component_types) && sizeof($va_component_types)) {
-					$vs_buf .= "<strong>".((($vn_num_objects = $t_item->numObjects(null, array('return' => 'objects'))) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
-					$vs_buf .= "<strong>".((($vn_num_components = $t_item->numObjects(null, array('return' => 'components'))) == 1) ? _t('Lot contains %1 component', $vn_num_components) : _t('Lot contains %1 components', $vn_num_components))."</strong>\n";
+					$vs_buf .= "<br/><strong>".((($vn_num_objects = $t_item->numObjects(null, array('return' => 'objects'))) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
+					$vs_buf .= "<br/><strong>".((($vn_num_components = $t_item->numObjects(null, array('return' => 'components'))) == 1) ? _t('Lot contains %1 component', $vn_num_components) : _t('Lot contains %1 components', $vn_num_components))."</strong>\n";
 				} else {
-					$vs_buf .= "<strong>".((($vn_num_objects = $t_item->numObjects()) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
+					$vs_buf .= "<br/><strong>".((($vn_num_objects = $t_item->numObjects()) == 1) ? _t('Lot contains %1 object', $vn_num_objects) : _t('Lot contains %1 objects', $vn_num_objects))."</strong>\n";
 				}
 
 				if (((bool)$po_view->request->config->get('allow_automated_renumbering_of_objects_in_a_lot')) && ($va_nonconforming_objects = $t_item->getObjectsWithNonConformingIdnos())) {
 				
 					$vs_buf .= '<br/><br/><em>'. ((($vn_c = sizeof($va_nonconforming_objects)) == 1) ? _t('There is %1 object with non-conforming numbering', $vn_c) : _t('There are %1 objects with non-conforming numbering', $vn_c))."</em>\n";
 					
-					$vs_buf .= "<a href='#' onclick='jQuery(\"#inspectorNonConformingNumberList\").toggle(250); return false;'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__);
+					$vs_buf .= "<a href='#' onclick='jQuery(\"#inspectorNonConformingNumberList\").toggle(250); return false;'>".caNavIcon(__CA_NAV_ICON_ADD__, '18px');
 					
 					$vs_buf .= "<div id='inspectorNonConformingNumberList' class='inspectorNonConformingNumberList'><div class='inspectorNonConformingNumberListScroll'><ol>\n";
 					foreach($va_nonconforming_objects as $vn_object_id => $va_object_info) {
@@ -1247,27 +1243,29 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 			
 				require_once(__CA_MODELS_DIR__.'/ca_objects.php');
 				$t_object = new ca_objects();
-				
-				$vs_buf .= "<div class='inspectorLotObjectTypeControls'><form action='#' id='caAddObjectToLotForm'>";
-				if ((bool)$po_view->request->config->get('ca_objects_enforce_strict_type_hierarchy')) {
-					// strict menu
-					$vs_buf .= _t('Add new %1 to lot', $t_object->getTypeListAsHTMLFormElement('type_id', array('id' => 'caAddObjectToLotForm_type_id'), array('childrenOfCurrentTypeOnly' => true, 'directChildrenOnly' => ($po_view->request->config->get('ca_objects_enforce_strict_type_hierarchy') == '~') ? false : true, 'returnHierarchyLevels' => true, 'access' => __CA_BUNDLE_ACCESS_EDIT__)));
-				} else {
-					// all types
-					$vs_buf .= _t('Add new %1 to lot', $t_object->getTypeListAsHTMLFormElement('type_id', array('id' => 'caAddObjectToLotForm_type_id'), array('access' => __CA_BUNDLE_ACCESS_EDIT__)));
-				}
-				
-				$vs_buf .= " <a href='#' onclick='caAddObjectToLotForm()'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__).'</a>';
-				$vs_buf .= "</form></div>\n";
-				
-				$vs_buf .= "<script type='text/javascript'>
+
+				if(!(bool)$po_view->request->config->get('disable_add_object_to_lot_inspector_controls')) {
+					$vs_buf .= "<div class='inspectorLotObjectTypeControls'><form action='#' id='caAddObjectToLotForm'>";
+					if ((bool)$po_view->request->config->get('ca_objects_enforce_strict_type_hierarchy')) {
+						// strict menu
+						$vs_buf .= _t('Add new %1 to lot', $t_object->getTypeListAsHTMLFormElement('type_id', array('id' => 'caAddObjectToLotForm_type_id'), array('childrenOfCurrentTypeOnly' => true, 'directChildrenOnly' => ($po_view->request->config->get('ca_objects_enforce_strict_type_hierarchy') == '~') ? false : true, 'returnHierarchyLevels' => true, 'access' => __CA_BUNDLE_ACCESS_EDIT__)));
+					} else {
+						// all types
+						$vs_buf .= _t('Add new %1 to lot', $t_object->getTypeListAsHTMLFormElement('type_id', array('id' => 'caAddObjectToLotForm_type_id'), array('access' => __CA_BUNDLE_ACCESS_EDIT__)));
+					}
+
+					$vs_buf .= " <a href='#' onclick='caAddObjectToLotForm()'>" . caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__) . '</a>';
+					$vs_buf .= "</form></div>\n";
+
+					$vs_buf .= "<script type='text/javascript'>
 	function caAddObjectToLotForm() { 
-		window.location='".caEditorUrl($po_view->request, 'ca_objects', 0, false, array('lot_id' => $t_item->getPrimaryKey(), 'rel' => 1, 'type_id' => ''))."' + jQuery('#caAddObjectToLotForm_type_id').val();
+		window.location='" . caEditorUrl($po_view->request, 'ca_objects', 0, false, array('lot_id' => $t_item->getPrimaryKey(), 'rel' => 1, 'type_id' => '')) . "' + jQuery('#caAddObjectToLotForm_type_id').val();
 	}
 	jQuery(document).ready(function() {
 		jQuery('#objectLotsNonConformingNumberList').hide();
 	});
-</script>\n";	
+</script>\n";
+				}
 			}	
 			
 			//
@@ -1313,8 +1311,9 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 				$vn_set_item_count = $t_item->getItemCount(array('user_id' => $po_view->request->getUserID()));
 				
 				if (($vn_set_item_count > 0) && ($po_view->request->user->canDoAction('can_batch_edit_'.$o_dm->getTableName($t_item->get('table_num'))))) {
-					$vs_buf .= caNavButton($po_view->request, __CA_NAV_BUTTON_BATCH_EDIT__, _t('Batch edit'), 'editorBatchSetEditorLink', 'batch', 'Editor', 'Edit', array('set_id' => $t_item->getPrimaryKey()), array(), array('icon_position' => __CA_NAV_BUTTON_ICON_POS_LEFT__, 'no_background' => true, 'dont_show_content' => true));
+					$vs_buf .= caNavButton($po_view->request, __CA_NAV_ICON_BATCH_EDIT__, _t('Batch edit'), 'editorBatchSetEditorLink', 'batch', 'Editor', 'Edit', array('set_id' => $t_item->getPrimaryKey()), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'no_background' => true, 'dont_show_content' => true));
 				}
+				TooltipManager::add(".editorBatchSetEditorLink", _t('Batch Edit')); 
 				
 				$vs_buf .= "<div><strong>"._t("Number of items")."</strong>: {$vn_set_item_count}<br/>\n";
 					
@@ -1335,7 +1334,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 							_t('new set') => 'new',
 						));
 						$vs_buf .= caHTMLHiddenInput('set_id', array('value' => $t_item->getPrimaryKey()));
-						$vs_buf .= caFormSubmitLink($po_view->request, _t('Go') . " &rsaquo;", "button", "caDupeSetItemsForm");
+						$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_GO__, "18px"), "button", "caDupeSetItemsForm");
 						$vs_buf .= "</form>";
 						$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" ></div>';
 					}
@@ -1355,7 +1354,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 					$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caExportItemButton">';
 
 					$vs_buf .= _t('Export this set of records')."&nbsp; ";
-					$vs_buf .= "<a class='button' onclick='jQuery(\"#exporterFormList\").show();' style='text-align:right;' href='#'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__)."</a>";
+					$vs_buf .= "<a class='button' onclick='jQuery(\"#exporterFormList\").show();' style='text-align:right;' href='#'>".caNavIcon(__CA_NAV_ICON_EXPORT_SMALL__, '16px')."</a>";
 
 					$vs_buf .= caFormTag($po_view->request, 'ExportData', 'caExportForm', 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
 					$vs_buf .= "<div id='exporterFormList'>";
@@ -1410,7 +1409,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 						$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px;">';
 						$vs_buf .= caFormTag($po_view->request, 'Edit', 'NewChildForm', 'administrate/setup/list_item_editor/ListItemEditor', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
 						$vs_buf .= _t('Add a %1 to this list', $vs_type_list).caHTMLHiddenInput($t_list_item->primaryKey(), array('value' => '0')).caHTMLHiddenInput('parent_id', array('value' => $t_list_item->getPrimaryKey()));
-						$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__), '', 'NewChildForm');
+						$vs_buf .= caFormSubmitLink($po_view->request, caNavIcon(__CA_NAV_ICON_ADD__, '18px'), '', 'NewChildForm');
 						$vs_buf .= "</form></div>\n";
 					}
 			}
@@ -1421,9 +1420,9 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 			if ($vs_table_name === 'ca_list_items') {
 				if ($t_list = $po_view->getVar('t_list')) {
 					$vn_list_id = $t_list->getPrimaryKey();
-					$vs_buf .= "<strong>"._t("Part of")."</strong>: ".caEditorLink($po_view->request, $t_list->getLabelForDisplay(), '', 'ca_lists', $vn_list_id) ."<br/>\n";
+					$vs_buf .= "<div><strong>"._t("Part of")."</strong>: ".caEditorLink($po_view->request, $t_list->getLabelForDisplay(), '', 'ca_lists', $vn_list_id) ."</div>\n";
 					if ($t_item->get('is_default')) {
-						$vs_buf .= "<strong>"._t("Is default for list")."</strong><br/>\n";
+						$vs_buf .= "<div><strong>"._t("Is default for list")."</strong></div>";
 					}
 				}
 			}
@@ -1597,11 +1596,11 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 			$vs_buf .= '<div style="border-top: 1px solid #aaaaaa; margin-top: 5px; font-size: 10px; text-align: right;" id="caExportItemButton">';
 				
 			$vs_buf .= _t('Export this %1', mb_strtolower($vs_type_name, 'UTF-8'))." ";
-			$vs_buf .= "<a class='button' onclick='jQuery(\"#exporterFormList\").show();' style='text-align:right;' href='#'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__)."</a>";
+			$vs_buf .= "<a class='button' onclick='jQuery(\"#exporterFormList\").show();' style='text-align:right;' href='#'>".caNavIcon(__CA_NAV_ICON_EXPORT_SMALL__, '16px')."</a>";
 
 			$vs_buf .= caFormTag($po_view->request, 'ExportSingleData', 'caExportForm', 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
 			$vs_buf .= "<div id='exporterFormList'>";
-			$vs_buf .= ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_item->tableNum(), array('id' => 'caExporterList'),array('width' => '120px'));
+			$vs_buf .= ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_item->tableNum(), array('id' => 'caExporterList'), array('width' => '120px', 'recordType' => $t_item->getTypeCode()));
 			$vs_buf .= caHTMLHiddenInput('item_id', array('value' => $t_item->getPrimaryKey()));
 			$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm");
 			$vs_buf .= "</div>\n";
@@ -1630,13 +1629,13 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 			}
 			if (inspectorCookieJar.get('inspectorMoreInfoIsOpen') == 1) {
 				jQuery('#inspectorInfo').toggle(0);
-				jQuery('#inspectorMoreInfo').html('".addslashes(caNavIcon($po_view->request, __CA_NAV_BUTTON_COLLAPSE__))."');
+				jQuery('#inspectorMoreInfo').html('".addslashes(caNavIcon(__CA_NAV_ICON_COLLAPSE__, '20px'))."');
 			}
 		
 			jQuery('#inspectorMoreInfo').click(function() {
 				jQuery('#inspectorInfo').slideToggle(350, function() { 
 					inspectorCookieJar.set('inspectorMoreInfoIsOpen', (this.style.display == 'block') ? 1 : 0); 
-					jQuery('#inspectorMoreInfo').html((this.style.display == 'block') ? '".addslashes(caNavIcon($po_view->request, __CA_NAV_BUTTON_COLLAPSE__))."' : '".addslashes(caNavIcon($po_view->request, __CA_NAV_BUTTON_INFO2__))."');
+					jQuery('#inspectorMoreInfo').html((this.style.display == 'block') ? '".addslashes(caNavIcon(__CA_NAV_ICON_COLLAPSE__, '20px'))."' : '".addslashes(caNavIcon(__CA_NAV_ICON_INFO__, '20px'))."');
 					caResizeSideNav();
 				}); 
 				return false;
@@ -1723,7 +1722,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 		// action extra to preserve currently open screen across next/previous links
 		//$vs_screen_extra 	= ($po_view->getVar('screen')) ? '/'.$po_view->getVar('screen') : '';
 		
-		$vs_buf = '<h3 class="nextPrevious">'.caNavLink($po_view->request, 'Back', '', 'manage', 'Set', 'ListSets')."</h3>\n";
+		$vs_buf = '<h3 class="nextPrevious"><span class="resultCount" style="padding-top:10px;">'.caNavLink($po_view->request, 'Back to Sets', '', 'manage', 'Set', 'ListSets')."</span></h3>\n";
 
 		$vs_color = $vs_type_name = null;
 		
@@ -1740,7 +1739,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 		if($po_view->request->user->canDoAction("can_edit_".$vs_priv_table_name) && (sizeof($t_item->getTypeList()) > 1)){
 			if ($po_view->request->user->canDoAction("can_change_type_{$vs_table_name}")) {
 				
-				$vs_buf .= "<div id='inspectorChangeType'><div id='inspectorChangeTypeButton'><a href='#' onclick='caTypeChangePanel.showPanel(); return false;'>".caNavIcon($po_view->request, __CA_NAV_BUTTON_CHANGE__, array('title' => _t('Change type')))."</a></div></div>\n";
+				$vs_buf .= "<div id='inspectorChangeType'><div id='inspectorChangeTypeButton'><a href='#' onclick='caTypeChangePanel.showPanel(); return false;'>".caNavIcon(__CA_NAV_ICON_CHANGE__, '18px', array('title' => _t('Change type')))."</a></div></div>\n";
 				TooltipManager::add("#inspectorChangeType", _t('Change Record Type')); 
 
 				$vo_change_type_view = new View($po_view->request, $po_view->request->getViewsDirectoryPath()."/bundles/");
@@ -1786,9 +1785,9 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 		if (($vn_item_count > 0) && ($po_view->request->user->canDoAction('can_batch_delete_'.$o_dm->getTableName($t_set->get('table_num'))))) {
 
 			$vs_buf .= "<div class='button' style='text-align:right;'><a href='#' id='inspectorMoreInfo'>"._t("More options")."</a> &rsaquo;</div>
-				<div id='inspectorInfo' style='background-color:#f9f9f9; border: 1px solid #eee;'>";
+				<div id='inspectorInfo' class='setDelete'>";
 			$vs_buf .= caNavLink($po_view->request, 
-				caNavIcon($po_view->request, __CA_NAV_BUTTON_DEL_BUNDLE__, array('style' => 'margin-top:7px; vertical-align: text-bottom;'))." "._t("Delete <strong><em>all</em></strong> records in set")
+				caNavIcon(__CA_NAV_ICON_NUKE__, '24px', array('style' => 'margin-top:7px; vertical-align: text-bottom;'))." "._t("Delete <strong><em>all</em></strong> records in set")
 				, null, 'batch', 'Editor', 'Delete', array('set_id' => $t_set->getPrimaryKey())
 			);
 
@@ -1996,6 +1995,29 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 			
 			if (in_array($ps_mimetype, $va_mimetypes)) {
 				return $va_media_class_info;
+			}
+		}
+		return null;
+	}
+	# ------------------------------------------------------------------------------------------------
+	/**
+	 * 
+	 *
+	 * @param
+	 *
+	 * @return 
+	 */
+	function caGetDefaultMediaViewer($ps_mimetype) {
+		$o_config = Configuration::load();
+		$o_media_display_config = Configuration::load(__CA_APP_DIR__.'/conf/media_display.conf');
+		
+		if (!is_array($va_defaults = $o_media_display_config->getAssoc('default_viewers'))) { return null; }
+	
+		foreach($va_defaults as $vs_media_class => $va_info) {
+			if (!is_array($va_mimetypes = $va_info['mimetypes'])) { continue; }
+			
+			if (in_array($ps_mimetype, $va_mimetypes)) {
+				return $va_info['viewer'];
 			}
 		}
 		return null;
@@ -2311,14 +2333,12 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
-	 * Returns 
+	 * Returns date range for TimelineJS
 	 *
-	 * @param int $pn_start_timestamp Start of date range, as Unix timestamp
-	 * @param array $pa_options All options supported by TimeExpressionParser::getText() are supported
-	 *
-	 * @return string Localized date range expression
+	 * @param array $pa_historic_timestamps
+	 * @return array
 	 */
-	function caGetDateRangeForTimelineJS($pa_historic_timestamps, $pa_options=null) {
+	function caGetDateRangeForTimelineJS($pa_historic_timestamps) {
 		$o_tep = new TimeExpressionParser();
 		
 		$va_start = $o_tep->getHistoricDateParts($pa_historic_timestamps[0]);
@@ -2327,10 +2347,18 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 		//if ($va_start['year'] < 0) { $va_start['year'] = 1900; }
 		if ($va_end['year'] >= 2000000) { $va_end['year'] = date("Y"); }
 		
-		return array(
-			'start' => $va_start['year'].','.$va_start['month'].','.$va_start['day'],
-			'end' => $va_end['year'].','.$va_end['month'].','.$va_end['day'],
-		);
+		return [
+			'start_date' => [
+				'year' => $va_start['year'],
+				'month' => $va_start['month'],
+				'day' => $va_start['day']
+			],
+			'end_date' => [
+				'year' => $va_end['year'],
+				'month' => $va_end['month'],
+				'day' => $va_end['day']
+			],
+		];
 	}
     # ------------------------------------------------------------------------------------------------
     /**
@@ -2865,9 +2893,12 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 	 * @return string HTML implementing the control
 	 */
 	function caEditorBundleShowHideControl($po_request, $ps_id_prefix, $pa_settings=null, $pb_has_value=false, $ps_preview_init="&nbsp;") {
+		if (caGetOption('dont_allow_bundle_show_hide', $pa_settings, false)) { return ''; }
 		$vs_expand_collapse_value = caGetOption('expand_collapse_value', $pa_settings, 'dont_force');
 		$vs_expand_collapse_no_value = caGetOption('expand_collapse_no_value', $pa_settings, 'dont_force');
 		$vs_expand_collapse = caGetOption('expand_collapse', $pa_settings, false);
+		
+		
 
 		if(!$vs_expand_collapse) {
 			$vs_expand_collapse = ($pb_has_value ? $vs_expand_collapse_value : $vs_expand_collapse_no_value);
@@ -2890,7 +2921,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 
 		$vs_buf  = "<span class='bundleContentPreview' id='{$ps_preview_id_prefix}_BundleContentPreview'>{$ps_preview_init}</span>";
 		$vs_buf .= "<span style='position: absolute; top: 2px; right: 7px;'>";
-		$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.toggle(\"{$ps_id_prefix}\");  return false;'><img src=\"".$po_request->getThemeUrlPath()."/graphics/arrows/expand.jpg\" border=\"0\" id=\"{$ps_id_prefix}VisToggleButton\"/></a>";
+		$vs_buf .= "<a href='#' onclick='caBundleVisibilityManager.toggle(\"{$ps_id_prefix}\");  return false;'>".caNavIcon(__CA_NAV_ICON_VISIBILITY_TOGGLE__, '18px', array('id' =>"{$ps_id_prefix}VisToggleButton"))."</a>";
 		$vs_buf .= "</span>\n";	
 		$vs_buf .= "<script type='text/javascript'>jQuery(document).ready(function() { caBundleVisibilityManager.registerBundle('{$ps_id_prefix}', '{$vs_force}'); }); </script>";
 		
@@ -2913,7 +2944,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 		
 		$vs_buf = '';
 		$vs_buf .= "<span style='position: absolute; top: 2px; right: 26px;'>";
-		$vs_buf .= "<a href='#' class='caMetadataDictionaryDefinitionToggle' onclick='caBundleVisibilityManager.toggleDictionaryEntry(\"{$ps_id_prefix}\");  return false;'><img src=\"".$po_request->getThemeUrlPath()."/graphics/icons/info.png\" border=\"0\" id=\"{$ps_id_prefix}MetadataDictionaryToggleButton\"/></a>";
+		$vs_buf .= "<a href='#' class='caMetadataDictionaryDefinitionToggle' onclick='caBundleVisibilityManager.toggleDictionaryEntry(\"{$ps_id_prefix}\");  return false;'>".caNavIcon(__CA_NAV_ICON_INFO__, 1, array('id' => "{$ps_id_prefix}MetadataDictionaryToggleButton"))."</a>";
 		$vs_buf .= "</span>\n";	
 		
 		$vs_buf .= "<div id='{$ps_id_prefix}DictionaryEntry' class='caMetadataDictionaryDefinition'>{$vs_definition}</div>";
@@ -3212,138 +3243,6 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 		
 		return $vs_template;
 	}
-	# ------------------------------------------------------
- 	/**
- 	 * Return rendered HTML for media viewer for both re
- 	 *
- 	 * @param RequestHTTP $po_request
- 	 * @param array $pa_options
- 	 * @param array $pa_additional_display_options
- 	 * @return string HTML output
- 	 */
- 	function caGetMediaViewerHTMLBundle($po_request, $pa_options=null, $pa_additional_display_options=null) {
- 		$va_access_values = (isset($pa_options['access']) && is_array($pa_options['access'])) ? $pa_options['access'] : array();	
- 		$vs_display_type = (isset($pa_options['display']) && $pa_options['display']) ? $pa_options['display'] : 'media_overlay';	
- 		$vs_container_dom_id = (isset($pa_options['containerID']) && $pa_options['containerID']) ? $pa_options['containerID'] : null;	
- 		
- 		$t_subject = (isset($pa_options['t_subject']) && $pa_options['t_subject']) ? $pa_options['t_subject'] : null;
- 		
- 		$t_rep = (isset($pa_options['t_representation']) && $pa_options['t_representation']) ? $pa_options['t_representation'] : null;
- 		$vn_representation_id = $t_rep ? $t_rep->getPrimaryKey() : null;
- 		$t_attr_val = (isset($pa_options['t_attribute_value']) && $pa_options['t_attribute_value']) ? $pa_options['t_attribute_value'] : null;
- 		$vn_value_id = $t_attr_val ? $t_attr_val->getPrimaryKey() : null;
- 		
- 		$vn_item_id = (isset($pa_options['item_id']) && $pa_options['item_id']) ? $pa_options['item_id'] : null;
- 		
- 		$vb_media_editor = (isset($pa_options['mediaEditor']) && $pa_options['mediaEditor']) ? true : false;
- 		$vb_no_controls = (isset($pa_options['noControls']) && $pa_options['noControls']) ? true : false;
- 		
- 		$vn_item_id = (isset($pa_options['item_id']) && $pa_options['item_id']) ? $pa_options['item_id'] : null;
- 		
- 		$vn_subject_id = $t_subject ? $t_subject->getPrimaryKey() : null;
- 		
- 		if(!$vn_value_id && !$vn_representation_id) {
- 			$t_rep->load($t_subject->getPrimaryRepresentationID(array('checkAccess' => $va_access_values)));
- 		}
- 		
-		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
-	
-		require_once(__CA_MODELS_DIR__.'/ca_set_items.php');	
-		$t_set_item = new ca_set_items();
-		if ($vn_item_id) { $t_set_item->load($vn_item_id); }
-		
-		$o_view->setVar('containerID', $vs_container_dom_id);
-		
- 		$o_view->setVar('t_subject', $t_subject);
-		$o_view->setVar('t_representation', $t_rep);
- 		if ($vn_representation_id && ((!sizeof($va_access_values) || in_array($t_rep->get('access'), $va_access_values)))) { 		// check rep access
-			$va_rep_display_info = caGetMediaDisplayInfo($vs_display_type, $t_rep->getMediaInfo('media', 'INPUT', 'MIMETYPE'));
-			$va_rep_display_info['poster_frame_url'] = $t_rep->getMediaUrl('media', $va_rep_display_info['poster_frame_version']);
-			
-			$o_view->setVar('num_multifiles', $t_rep->numFiles());
-				
- 			if (isset($pa_options['use_book_viewer'])) {
- 				$va_rep_display_info['use_book_viewer'] = (bool)$pa_options['use_book_viewer'];
- 			}		
-			$o_view->setVar('display_type', $vs_display_type);
-			
-			if (is_array($pa_additional_display_options)) { $va_rep_display_info = array_merge($va_rep_display_info, $pa_additional_display_options); }
-			$o_view->setVar('display_options', $va_rep_display_info);
-			$o_view->setVar('representation_id', $vn_representation_id);
-			$o_view->setVar('versions', $va_versions = $t_rep->getMediaVersions('media'));
-			
-			$t_media = new Media();
-			$o_view->setVar('version_type', $t_media->getMimetypeTypename($t_rep->getMediaInfo('media', 'original', 'MIMETYPE')));
-		
-			if ($vn_subject_id) { 
-				$o_view->setVar('reps', $va_reps = $t_subject->getRepresentations(array('icon'), null, array("return_with_access" => $va_access_values)));
-				
-				$vn_next_rep = $vn_prev_rep = null;
-				
-				$va_rep_list = array_values($va_reps);
-				foreach($va_rep_list as $vn_i => $va_rep) {
-					if ($va_rep['representation_id'] == $vn_representation_id) {
-						if (isset($va_rep_list[$vn_i - 1])) {
-							$vn_prev_rep = $va_rep_list[$vn_i - 1]['representation_id'];
-						}
-						if (isset($va_rep_list[$vn_i + 1])) {
-							$vn_next_rep = $va_rep_list[$vn_i + 1]['representation_id'];
-						}
-						$o_view->setVar('representation_index', $vn_i + 1);
-					}
-				}
-				$o_view->setVar('previous_representation_id', $vn_prev_rep);
-				$o_view->setVar('next_representation_id', $vn_next_rep);
-			}	
-			$ps_version 	= $po_request->getParameter('version', pString);
-			if (!in_array($ps_version, $va_versions)) { 
-				if (!($ps_version = $va_rep_display_info['display_version'])) { $ps_version = null; }
-			}
-			$o_view->setVar('version', $ps_version);
-			$o_view->setVar('version_info', $t_rep->getMediaInfo('media', $ps_version));
-			
- 			$o_view->setVar('t_set_item', $t_set_item);
- 			$o_view->setVar('use_media_editor', $vb_media_editor);
- 			$o_view->setVar('noControls', $vb_no_controls);
-		} else {
-			//$t_attr = new ca_attributes($t_attr_val->get('attribute_id'));
-			$t_attr_val->useBlobAsMediaField(true);
-			
-			$va_rep_display_info = caGetMediaDisplayInfo($vs_display_type, $t_attr_val->getMediaInfo('value_blob', 'INPUT', 'MIMETYPE'));
-			$va_rep_display_info['poster_frame_url'] = $t_attr_val->getMediaUrl('value_blob', $va_rep_display_info['poster_frame_version']);
-			
-			$o_view->setVar('num_multifiles', $t_attr_val->numFiles());
-				
- 			if (isset($pa_options['use_book_viewer'])) {
- 				$va_rep_display_info['use_book_viewer'] = (bool)$pa_options['use_book_viewer'];
- 			}		
-			$o_view->setVar('display_type', $vs_display_type);
-			
-			if (is_array($pa_additional_display_options)) { $va_rep_display_info = array_merge($va_rep_display_info, $pa_additional_display_options); }
-			$o_view->setVar('display_options', $va_rep_display_info);
-			$o_view->setVar('representation_id', $vn_representation_id);
-			$o_view->setVar('t_attribute_value', $t_attr_val);
-			$o_view->setVar('versions', $va_versions = $t_attr_val->getMediaVersions('value_blob'));
-			
-			$t_media = new Media();
-			$o_view->setVar('version_type', $t_media->getMimetypeTypename($t_attr_val->getMediaInfo('value_blob', 'original', 'MIMETYPE')));
-			
-			$o_view->setVar('reps', array());
-				
-			$ps_version 	= $po_request->getParameter('version', pString);
-			if (!in_array($ps_version, $va_versions)) { 
-				if (!($ps_version = $va_rep_display_info['display_version'])) { $ps_version = null; }
-			}
-			$o_view->setVar('version', $ps_version);
-			$o_view->setVar('version_info', $t_attr_val->getMediaInfo('value_blob', $ps_version));
-			
- 			$o_view->setVar('t_subject', $t_subject);
- 			$o_view->setVar('t_set_item', $t_set_item);
- 			$o_view->setVar('use_media_editor', $vb_media_editor);
- 			$o_view->setVar('noControls', $vb_no_controls);
-		}
-		return $o_view->render('representation_viewer_html.php');
- 	}
 	# ------------------------------------------------------------------
 	/**
 	 * Get Javascript code that generates Tooltips for a list of elements

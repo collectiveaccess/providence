@@ -89,10 +89,10 @@
 		<div id="<?php print $vs_id_prefix; ?>Item_{n}" class="labelInfo listRel caRelatedItem">
 <?php
 	if (!$vb_read_only && ca_editor_uis::loadDefaultUI($t_item_rel->tableNum(), $this->request)) {
-?><a href="#" class="caInterstitialEditButton listRelEditButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_INTERSTITIAL_EDIT_BUNDLE__); ?></a><?php
+?><a href="#" class="caInterstitialEditButton listRelEditButton"><?php print caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, 1); ?></a><?php
 	}
 	if (!$vb_read_only && !$vb_dont_show_del) {
-?><a href="#" class="caDeleteItemButton listRelDeleteButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a><?php
+?><a href="#" class="caDeleteItemButton listRelDeleteButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a><?php
 	}
 ?>
 			<a href="<?php print urldecode(caEditorUrl($this->request, 'ca_occurrences', '{occurrence_id}')); ?>" class="caEditItemButton" id="<?php print $vs_id_prefix; ?>_edit_related_{n}"></a>
@@ -136,7 +136,7 @@
 	if (!(bool)$va_settings['restrictToTermsRelatedToCollection']) {
 ?>
 						<td>
-							<a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
+							<a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 						</td>
 <?php
 	}
@@ -157,10 +157,10 @@
 			<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
 <?php
 			if (!$vb_read_only && ca_editor_uis::loadDefaultUI($t_item_rel->tableNum(), $this->request)) {
-?><a href="#" class="caInterstitialEditButton listRelEditButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_INTERSTITIAL_EDIT_BUNDLE__); ?></a><?php
+?><a href="#" class="caInterstitialEditButton listRelEditButton"><?php print caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, 1); ?></a><?php
 	}
 			if (!$vb_read_only && !$vb_dont_show_del) {
-?><a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a><?php
+?><a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a><?php
 			}
 ?>			
 			<div style="display: none;" class="itemName">{label}</div>
@@ -191,7 +191,7 @@
 						<input type="hidden" name="<?php print $vs_id_prefix; ?>_id{n}" id="<?php print $vs_id_prefix; ?>_id{n}" value="{id}"/>
 						</td>
 						<td>
-							<a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
+							<a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 						</td>
 					</tr>
 				</table>
@@ -205,7 +205,7 @@
 				}
 			}
 ?>
-				<div style="float: right;"><a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a></div>
+				<div style="float: right;"><a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 
 				<div style='width: 700px; height: <?php print $va_settings['hierarchicalBrowserHeight']; ?>;'>
 					
@@ -241,12 +241,12 @@
 							className: 'hierarchyBrowserLevel',
 							classNameContainer: 'hierarchyBrowserContainer',
 							
-							editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
-							disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
+							editButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
+							disabledButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_DOT__, 1); ?>",
 							
 							//initItemID: <?php print $vn_browse_last_id; ?>,
 							useAsRootID: <?php print $vn_use_as_root_id; ?>,
-							indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+							indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 							
 							displayCurrentSelectionOnLoad: false,
 							currentSelectionDisplayID: '<?php print $vs_id_prefix; ?>_browseCurrentSelectionText{n}',
@@ -293,7 +293,7 @@
 <?php
 	if (!$vb_read_only && !(bool)$va_settings['restrictToTermsRelatedToCollection']) {
 ?>	
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add relationship"); ?></a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add relationship"); ?></a></div>
 <?php
 	}
 ?>

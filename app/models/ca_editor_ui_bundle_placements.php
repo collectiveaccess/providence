@@ -239,7 +239,7 @@ class ca_editor_ui_bundle_placements extends BaseModel {
 	protected $LOG_CHANGES_TO_SELF = true;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-		
+			'screen_id'
 		),
 		"RELATED_TABLES" => array(
 		

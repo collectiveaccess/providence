@@ -408,7 +408,7 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		if (!$pm_table_name_or_num) { $pm_table_name_or_num = $this->getTableNum(); }
 		
 		if (!is_numeric($pm_table_name_or_num)) { $pm_table_name_or_num = $this->_DATAMODEL->getTableNum($pm_table_name_or_num); }
-		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($pm_table_name_or_num, false))) { return null; }
+		if (!($t_instance = $this->getAppDatamodel()->getInstanceByTableNum($pm_table_name_or_num, false))) { return null; }
 		$vs_table = $t_instance->tableName();
 
 		// if cache is disabled, make sure bundle definitions are up-to-date for this instance. they are usually cached.
@@ -994,6 +994,11 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									)
 								);
 								break;
+							case 'circulation_status':
+								$va_additional_settings = array(
+									// @todo: maybe add settings!?
+								);
+								break;
 							case 'ca_objects_location':
 								$va_additional_settings = array(
 									'locationTrackingMode' => array(
@@ -1457,16 +1462,20 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 								);
 								break;
 							case 'ca_set_items':
-								$va_additional_settings = array(
-									'display_template' => array(
-										'formatType' => FT_TEXT,
-										'displayType' => DT_FIELD,
-										'default' => '',
-										'width' => "275px", 'height' => 4,
-										'label' => _t('Display template'),
-										'description' => _t('Layout for set item information when used in a display list. For example: <i>^ca_objects.deaccession_notes</i>.')
-									)
-								);
+								require_once(__CA_MODELS_DIR__."/ca_sets.php");
+								$t_set = new ca_sets();
+								
+								$va_additional_settings = array();
+								foreach($t_set->getFieldInfo('table_num', 'BOUNDS_CHOICE_LIST') as $vs_table_display_name => $vn_table_num) {
+									$va_additional_settings[$this->_DATAMODEL->getTableName($vn_table_num).'_display_template'] = array(
+											'formatType' => FT_TEXT,
+											'displayType' => DT_FIELD,
+											'default' => '',
+											'width' => "275px", 'height' => 4,
+											'label' => _t('Display template (%1)', $vs_table_display_name),
+											'description' => _t('Layout for %1 set item information when used in a display list. For example: <i>^ca_objects.deaccession_notes</i>.', $vs_table_display_name)
+									);
+								}
 								break;
 						}
 						$va_additional_settings['documentation_url'] = array(
@@ -1485,8 +1494,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			$t_placement->setSettingDefinitionsForPlacement($va_additional_settings);
-			
-			$vs_display = "<div id='uiEditorBundle_{$vs_table}_{$vs_bundle_proc}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_table.'.'.$vs_bundle_proc))."</div>";
+			$vs_label = $t_instance->getDisplayLabel($t_instance->tableName().'.'.$vs_bundle_proc) ?: $va_info['label'];
+			$vs_display = "<div id='uiEditorBundle_{$vs_table}_{$vs_bundle_proc}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label)."</div>";
 
 			$va_additional_settings['bundleTypeRestrictions'] = [
 				'formatType' => FT_TEXT,
@@ -1747,7 +1756,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		$va_placements_in_screen = array();
 		foreach($va_placements as $vn_placement_id => $va_placement) {
 			$vs_bundle_proc = preg_replace('!^ca_attribute_!', '', $va_placement['bundle_name']);
-			
 			$vs_label = ($vs_label = ($t_instance->getDisplayLabel($t_instance->tableName().'.'.$vs_bundle_proc))) ? $vs_label : $va_placement['bundle_name'];
 			if(is_array($va_placement['settings']['label'])){
 				$va_tmp = caExtractValuesByUserLocale(array($va_placement['settings']['label']));
@@ -1932,6 +1940,15 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 
 		if($t_instance instanceof BaseRelationshipModel) { // interstitial
 			$o_view->setVar('type_restrictions', $t_instance->getRelationshipTypesAsHTMLSelect($t_instance->getLeftTableName(),null,null,array('name' => 'type_restrictions[]', 'multiple' => 1, 'size' => 5), array('values' => $va_restriction_type_ids)));
+		} elseif($t_instance instanceof ca_representation_annotations) { // config based
+			$o_annotation_type_conf = Configuration::load(Configuration::load()->get('annotation_type_config'));
+			$va_annotation_type_select_list = array();
+			foreach($o_annotation_type_conf->get('types') as $vs_type_code => $va_type_info) {
+				if(!isset($va_type_info['typeID'])) { continue; }
+				$va_annotation_type_select_list[$vs_type_code] = $va_type_info['typeID'];
+			}
+
+			$o_view->setVar('type_restrictions', caHTMLSelect('type_restrictions[]', $va_annotation_type_select_list, array('multiple' => 1, 'size' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)));
 		} else { // list-based
 			$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)));
 		}

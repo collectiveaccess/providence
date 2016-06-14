@@ -1577,6 +1577,7 @@ create table ca_objects
    current_loc_class              tinyint unsigned               null,
    current_loc_subclass           int unsigned                   null,
    current_loc_id                 int unsigned                   null,
+   circulation_status_id          int unsigned                   null,
    
    primary key (object_id),
    constraint fk_ca_objects_source_id foreign key (source_id)
@@ -1604,7 +1605,10 @@ create table ca_objects
       references ca_list_items (item_id) on delete restrict on update restrict,
       
    constraint fk_ca_objects_home_location_id foreign key (home_location_id)
-      references ca_storage_locations (location_id) on delete restrict on update restrict
+      references ca_storage_locations (location_id) on delete restrict on update restrict,
+
+   constraint fk_ca_objects_circulation_status_id foreign key (circulation_status_id)
+      references ca_list_items (item_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 create index i_parent_id on ca_objects(parent_id);
@@ -6714,5 +6718,5 @@ create table ca_schema_updates (
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Indicate up to what migration this schema definition covers */
-/* CURRENT MIGRATION: 132 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (132, unix_timestamp());
+/* CURRENT MIGRATION: 133 */
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (133, unix_timestamp());

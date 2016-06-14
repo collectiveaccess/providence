@@ -291,7 +291,7 @@
 					}
 				}
 				
-				$vn_count = $this->getAttributeCountByElement($t_element->getPrimaryKey())  + $vn_add_cnt - $vn_del_cnt;
+				$vn_count = $this->getAttributeCountByElement($t_element->getPrimaryKey(), ['includeBlanks' => true])  + $vn_add_cnt - $vn_del_cnt;
 				if ($vn_count <= $vn_min) { 
 					if (caGetOption('showRepeatCountErrors', $pa_options, false)) {
 						$this->postError(1967, ($vn_min == 1) ? _t('Cannot remove value; at least %1 value is required', $vn_min) : _t('Cannot remove value; at least %1 values are required', $vn_min), 'BaseModelWithAttributes->removeAttribute()', $ps_error_source);
@@ -1804,7 +1804,7 @@
 			$vn_element_id = ca_metadata_elements::getElementID($pm_element_code_or_id);
 			$va_attributes = ca_attributes::getAttributes($this->getDb(), $this->tableNum(), $vn_row_id, array($vn_element_id), $pa_options);
 		
-			$va_attribute_list =  is_array($va_attributes[$vn_element_id]) ? $va_attributes[$vn_element_id] : array();
+			$va_attribute_list =  is_array($va_attributes[$vn_hier_id = ca_metadata_elements::getElementHierarchyID($vn_element_id)]) ? $va_attributes[$vn_hier_id] : array();
 		
 			$vs_sort_dir = (isset($pa_options['sort']) && (in_array(strtolower($pa_options['sortDirection']), array('asc', 'desc')))) ? strtolower($pa_options['sortDirection']) : 'asc';	
 			if ((isset($pa_options['sort']) && ($vs_sort = $pa_options['sort'])) || ($vs_sort_dir == 'desc')) {
@@ -1866,7 +1866,7 @@
 			}
 
 			$vn_element_id = ca_metadata_elements::getElementID($pm_element_code_or_id);
-			return ca_attributes::getAttributeCount($this->getDb(), $this->tableNum(), $vn_row_id, $vn_element_id);
+			return ca_attributes::getAttributeCount($this->getDb(), $this->tableNum(), $vn_row_id, $vn_element_id, $pa_options);
 		}
 		# ------------------------------------------------------------------
 		/**
@@ -2114,7 +2114,7 @@
 			if (!is_array($pa_options)) { $pa_options = array(); }
 			if (!isset($pa_options['convertCodesToDisplayText'])) { $pa_options['convertCodesToDisplayText'] = true; }
 			
-			$va_tmp = $this->getAttributeDisplayValues($pm_element_code_or_id, $vn_row_id, array_merge($pa_options, array('returnAllLocales' => false)));
+			$va_tmp = $this->getAttributeDisplayValues($vn_hier_id = ca_metadata_elements::getElementHierarchyID($pm_element_code_or_id), $vn_row_id, array_merge($pa_options, array('returnAllLocales' => false)));
 		
 			if (!$ps_template && ($vs_template_tmp = $t_element->getSetting('displayTemplate', true))&& !caGetOption('dontUseElementTemplate', $pa_options, false)) {	// grab template from metadata element if none is passed in $ps_template
 				$ps_template = $vs_template_tmp;
@@ -2190,6 +2190,9 @@
 			$va_restrictToAttributesByCodes = caGetOption('restrictToAttributesByCodes', $pa_options, array());
 			$va_restrictToAttributesByIds = caGetOption('restrictToAttributesByIds', $pa_options, array());
 
+			$va_exclude_attributes_by_codes = caGetOption('excludeAttributesByCodes', $pa_options, array());
+			if(!is_array($va_exclude_attributes_by_codes)) { $va_exclude_attributes_by_codes = []; }
+
 			if (!($t_dupe = $this->_DATAMODEL->getInstanceByTableNum($this->tableNum()))) { return null; }
 			$t_dupe->purify($this->purify());
 			if (!$this->getPrimaryKey()) { return null; }
@@ -2200,22 +2203,39 @@
 
 			$vs_table = $this->tableName();
 			foreach($va_elements as $vn_element_id => $vs_element_code) {
-				$va_vals = $this->get("{$vs_table}.{$vs_element_code}", array("returnAsArray" => true, "returnWithStructure" => true, "returnAllLocales" => true, 'forDuplication' => true));
-				if (!is_array($va_vals)) { continue; }
-				if (sizeof($va_restrictToAttributesByCodes)>0 || sizeof($va_restrictToAttributesByIds)>0) {
-					if (!(in_array($vs_element_code,$va_restrictToAttributesByCodes) || in_array($vn_element_id,$va_restrictToAttributesByIds))) {
+				// restrict by code
+				if (sizeof($va_restrictToAttributesByCodes)>0) {
+					if (!in_array($vs_element_code, $va_restrictToAttributesByCodes)) {
 						continue;
 					}
 				}
+
+				// restrict by id
+				if (sizeof($va_restrictToAttributesByIds)>0) {
+					if (!in_array($vn_element_id, $va_restrictToAttributesByIds)) {
+						continue;
+					}
+				}
+
+				// exclude by code
+				if (in_array($vs_element_code, $va_exclude_attributes_by_codes)) {
+					continue;
+				}
+
+				$va_vals = $this->get("{$vs_table}.{$vs_element_code}", array("returnAsArray" => true, "returnWithStructure" => true, "returnAllLocales" => true, 'forDuplication' => true));
+				if (!is_array($va_vals)) { continue; }
+
 				foreach($va_vals as $vn_id => $va_vals_by_locale) {
 					foreach($va_vals_by_locale as $vn_locale_id => $va_vals_by_attr_id) {
 						foreach($va_vals_by_attr_id as $vn_attribute_id => $va_val) {
 							$va_val['locale_id'] = ($vn_locale_id) ? $vn_locale_id : $g_ui_locale_id;
+
 							$t_dupe->addAttribute($va_val, $vs_element_code);
 						}
 					}
 				}
 			}
+
 			$t_dupe->setMode(ACCESS_WRITE);
 			$t_dupe->update();
 

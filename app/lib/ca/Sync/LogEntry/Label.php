@@ -86,8 +86,8 @@ class Label extends Base {
 			$vs_label_subject_guid_field = str_replace('_id', '', $t_instance->getSubjectKey()) . '_guid';
 			if(isset($va_snapshot[$vs_label_subject_guid_field]) && $va_snapshot[$vs_label_subject_guid_field]) {
 				$t_subject = $t_instance->getSubjectTableInstance();
-				if($this->isUpdate() && !$t_subject->loadByGUID($va_snapshot[$vs_label_subject_guid_field])) {
-					throw new InvalidLogEntryException(_t('Could not load label subject record with GUID %1', $va_snapshot[$vs_label_subject_guid_field]));
+				if(!$t_subject->loadByGUID($va_snapshot[$vs_label_subject_guid_field])) {
+					throw new IrrelevantLogEntry(_t('Could not load label subject record with GUID %1', $va_snapshot[$vs_label_subject_guid_field]));
 				}
 			} else {
 				throw new InvalidLogEntryException(_t('No guid field for label subject reference found'));

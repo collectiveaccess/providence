@@ -15,80 +15,80 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  *
- * This source code is free and modifiable under the terms of 
+ * This source code is free and modifiable under the terms of
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
- * 
+ *
  * @package CollectiveAccess
  * @subpackage models
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
- * 
+ *
  * ----------------------------------------------------------------------
  */
- 
- /**
-   *
-   */
+
+/**
+ *
+ */
 
 
 BaseModel::$s_ca_models_definitions['ca_change_log'] = array(
 	'NAME_SINGULAR' 	=> _t('change log entry'),
- 	'NAME_PLURAL' 		=> _t('change log entries'),
- 	'FIELDS' 			=> array(
+	'NAME_PLURAL' 		=> _t('change log entries'),
+	'FIELDS' 			=> array(
 		'log_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
-				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Log id', 'DESCRIPTION' => 'Identifier for Log'
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
+			'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => 'Log id', 'DESCRIPTION' => 'Identifier for Log'
 		),
 		'log_datetime' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Logged date and time'), 'DESCRIPTION' => _t('Date and time logged event occurred')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => _t('Logged date and time'), 'DESCRIPTION' => _t('Date and time logged event occurred')
 		),
 		'user_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => '',
-				'LABEL' => _t('User'), 'DESCRIPTION' => _t('User who performed event')
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => '',
+			'LABEL' => _t('User'), 'DESCRIPTION' => _t('User who performed event')
 		),
 		'changetype' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 1, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => _t('Action'), 'DESCRIPTION' => _t('Type of action performed by user'),
-				'BOUNDS_LENGTH' => array(0,1)
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 1, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => _t('Action'), 'DESCRIPTION' => _t('Type of action performed by user'),
+			'BOUNDS_LENGTH' => array(0,1)
 		),
 		'logged_table_num' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Table', 'DESCRIPTION' => 'Table to which action was applied',
-				'BOUNDS_VALUE' => array(0,255)
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => 'Table', 'DESCRIPTION' => 'Table to which action was applied',
+			'BOUNDS_VALUE' => array(0,255)
 		),
 		'logged_row_id' => array(
-				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => false, 
-				'DEFAULT' => '',
-				'LABEL' => 'Row id', 'DESCRIPTION' => 'Identifier of row to which action was applied'
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => 'Row id', 'DESCRIPTION' => 'Identifier of row to which action was applied'
 		),
 		'unit_id' => array(
-				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
-				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-				'IS_NULL' => true, 
-				'DEFAULT' => '',
-				'LABEL' => 'Unit id', 'DESCRIPTION' => ''
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => '',
+			'LABEL' => 'Unit id', 'DESCRIPTION' => ''
 		)
 	)
 );
@@ -108,7 +108,7 @@ class ca_change_log extends BaseModel {
 	# ------------------------------------------------------
 	# what table does this class represent?
 	protected $TABLE = 'ca_change_log';
-	      
+
 	# what is the primary key of the table?
 	protected $PRIMARY_KEY = 'log_id';
 
@@ -139,7 +139,7 @@ class ca_change_log extends BaseModel {
 	protected $ORDER_BY = array('user_data');
 
 	# Maximum number of record to display per page in a listing
-	protected $MAX_RECORDS_PER_PAGE = 20; 
+	protected $MAX_RECORDS_PER_PAGE = 20;
 
 	# How do you want to page through records in a listing: by number pages ordered
 	# according to your setting above? Or alphabetically by the letters of the first
@@ -149,8 +149,8 @@ class ca_change_log extends BaseModel {
 	# If you want to order records arbitrarily, add a numeric field to the table and place
 	# its name here. The generic list scripts can then use it to order table records.
 	protected $RANK = '';
-	
-	
+
+
 	# ------------------------------------------------------
 	# Hierarchical table properties
 	# ------------------------------------------------------
@@ -161,7 +161,7 @@ class ca_change_log extends BaseModel {
 	protected $HIERARCHY_DEFINITION_TABLE	=	null;
 	protected $HIERARCHY_ID_FLD				=	null;
 	protected $HIERARCHY_POLY_TABLE			=	null;
-	
+
 	# ------------------------------------------------------
 	# Change logging
 	# ------------------------------------------------------
@@ -169,10 +169,10 @@ class ca_change_log extends BaseModel {
 	protected $LOG_CHANGES_TO_SELF = false;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-		
+
 		),
 		"RELATED_TABLES" => array(
-		
+
 		)
 	);
 	# ------------------------------------------------------
@@ -180,7 +180,7 @@ class ca_change_log extends BaseModel {
 	# are listed here is the order in which they will be returned using getFields()
 
 	protected $FIELDS;
-	
+
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -251,11 +251,27 @@ class ca_change_log extends BaseModel {
 		$pa_skip_if_expression = caGetOption('skipIfExpression', $pa_options);
 		if(!is_array($pa_skip_if_expression)) { $pa_skip_if_expression = array(); }
 
+		$pa_ignore_tables = caGetOption('ignoreTables', $pa_options);
+		if(!is_array($pa_ignore_tables)) { $pa_ignore_tables = array(); }
+
+		$va_ignore_tables = [];
+		foreach($pa_ignore_tables as $vs_ignore_table) {
+			if($vn_ignore_table_num = Datamodel::load()->getTableNum($vs_ignore_table)) {
+				$va_ignore_tables[] = $vn_ignore_table_num;
+			}
+		}
+
+		$vs_ignore_sql = '';
+		if(sizeof($va_ignore_tables)) {
+			$vs_ignore_sql = 'AND logged_table_num NOT IN (' . join(',', $va_ignore_tables) . ')';
+		}
+
 		$o_db = new Db();
 
 		$qr_results = $o_db->query("
 			SELECT * FROM ca_change_log cl, ca_change_log_snapshots cls
 			WHERE cl.log_id = cls.log_id AND cl.log_id>=?
+			{$vs_ignore_sql}
 			ORDER BY cl.log_id
 			{$vs_limit_sql}
 		", $pn_from);
@@ -263,6 +279,20 @@ class ca_change_log extends BaseModel {
 		$va_ret = array();
 		while($qr_results->nextRow()) {
 			$va_row = $qr_results->getRow();
+
+			// skip log entries without GUID -- we don't care about those
+			if(!($vs_guid = ca_guids::getForRow($qr_results->get('logged_table_num'), $qr_results->get('logged_row_id')))) {
+				continue;
+			}
+			$va_row['guid'] = $vs_guid;
+
+			// don't sync inserts/updates for deleted records, UNLESS they're in a hierarchical table,
+			// in which case other records may have depended on them when they were inserted
+			// (meaning their insert() could fail if a related/parent record is absent)
+			$t_instance = Datamodel::load()->getInstance((int) $qr_results->get('logged_table_num'), true);
+			//if(!$t_instance->isHierarchical() && ca_guids::isDeleted($vs_guid) && ($va_row['changetype'] != 'D')) {
+			//	continue;
+			//}
 
 			// decode snapshot
 			$va_snapshot = caUnserializeForDatabase($qr_results->get('snapshot'));
@@ -282,7 +312,6 @@ class ca_change_log extends BaseModel {
 						}
 						break;
 					case 'type_id':
-						$t_instance = Datamodel::load()->getInstance((int) $qr_results->get('logged_table_num'), true);
 						if($t_instance) {
 							if($t_instance instanceof BaseRelationshipModel) {
 								$va_snapshot['type_code'] = caGetRelationshipTypeCode($vm_val);
@@ -322,14 +351,44 @@ class ca_change_log extends BaseModel {
 								$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_instance->tableNum(), $vm_val);
 							}
 
+							// handle media ...
+							if($t_instance instanceof ca_object_representations) {
+								// nowadays the change log entry is an <img> tag ... the default behavior for get('media'), presumably
+								if(isset($va_snapshot['media']) && is_string($va_snapshot['media'])) {
+									$o_dom = new DOMDocument();
+									$o_dom->loadHTML($va_snapshot['media']);
+									if (isset($o_dom->getElementsByTagName('img')[0])) {
+										$va_snapshot['media'] = $o_dom->getElementsByTagName('img')[0]->getAttribute('src');
+									}
+								} elseif(is_array($va_snapshot['media'])) { // back in the day it would store the full media array here
+									$o_coder = MediaInfoCoder::load();
+									$va_snapshot['media'] = $o_coder->getMediaUrl($va_snapshot['media'], 'original');
+								}
+
+								// also unset media metadata, because otherwise json_encode is likely to bail
+								unset($va_snapshot['media_metadata']);
+							}
+
 							// handle left and right foreign keys in foo_x_bar table
 							if($t_instance instanceof BaseRelationshipModel) {
 								if($vs_fld == $t_instance->getProperty('RELATIONSHIP_LEFT_FIELDNAME')) {
-									$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_instance->getLeftTableNum(), $vm_val);
+									$vs_left_guid = ca_guids::getForRow($t_instance->getLeftTableNum(), $vm_val);
+									$va_snapshot[$vs_fld . '_guid'] = $vs_left_guid;
+
+									// don't sync relationships involving deleted records
+									//if(ca_guids::isDeleted($vs_left_guid) && ($va_row['changetype'] != 'D')) {
+									//	continue 3;
+									//}
 								}
 
 								if($vs_fld == $t_instance->getProperty('RELATIONSHIP_RIGHT_FIELDNAME')) {
-									$va_snapshot[$vs_fld . '_guid'] = ca_guids::getForRow($t_instance->getRightTableNum(), $vm_val);
+									$vs_right_guid = ca_guids::getForRow($t_instance->getRightTableNum(), $vm_val);
+									$va_snapshot[$vs_fld . '_guid'] = $vs_right_guid;
+
+									// don't sync relationships involving deleted records
+									//if(ca_guids::isDeleted($vs_right_guid) && ($va_row['changetype'] != 'D')) {
+									//	continue 3;
+									//}
 								}
 							}
 
@@ -347,13 +406,6 @@ class ca_change_log extends BaseModel {
 			}
 
 			$va_row['snapshot'] = $va_snapshot;
-
-			// skip log entries without GUID -- we don't care about those
-			if(!($vs_guid = ca_guids::getForRow($qr_results->get('logged_table_num'), $qr_results->get('logged_row_id')))) {
-				continue;
-			}
-
-			$va_row['guid'] = $vs_guid;
 
 			// get subjects
 			$qr_subjects = $o_db->query("SELECT * FROM ca_change_log_subjects WHERE log_id=?", $qr_results->get('log_id'));

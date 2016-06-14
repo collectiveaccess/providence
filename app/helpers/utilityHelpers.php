@@ -576,6 +576,13 @@ function caFileIsIncludable($ps_file) {
 		}
 	}
 	# ----------------------------------------
+	/**
+	 *
+	 */
+	function caEscapeSearchForURL($ps_search) {
+		return rawurlencode(str_replace('/', '&#47;', $ps_search)); // encode slashes as html entities to avoid Apache considering it a directory separator
+	}
+	# ----------------------------------------
 	function caSanitizeStringForJsonEncode($ps_text) {
 		// Remove invalid UTF-8
 		mb_substitute_character(0xFFFD);
@@ -715,6 +722,22 @@ function caFileIsIncludable($ps_file) {
 			// proc_close in order to avoid a deadlock
 			$pn_return_val = proc_close($r_proc);
 			return true;
+		}
+	}
+	# ----------------------------------------
+	/**
+	 * Check if mod_rewrite web server module is available 
+	 *
+	 * @return bool
+	 */
+	$g_mod_write_is_available = null;
+	function caModRewriteIsAvailable() {
+		global $g_mod_write_is_available;
+		if (is_bool($g_mod_write_is_available)) { return $g_mod_write_is_available; }
+		if (function_exists('apache_get_modules')) {
+			return $g_mod_write_is_available = (bool)in_array('mod_rewrite', apache_get_modules());
+		} else {
+			return $g_mod_write_is_available = (bool)((getenv('HTTP_MOD_REWRITE') == 'On') ? true : false);
 		}
 	}
 	# ----------------------------------------
@@ -3240,5 +3263,48 @@ function caFileIsIncludable($ps_file) {
 			}
 		}
 		return $vs_display_value;
+	}
+	# ----------------------------------------
+	/**
+	 * Get list of (enabled) primary tables as table_num => table_name mappings
+	 * @return array
+	 */
+	function caGetPrimaryTables() {
+		$o_conf = Configuration::load();
+		$va_ret = [];
+		foreach([
+			'ca_objects' => 57,
+			'ca_object_lots' => 51,
+			'ca_entities' => 20,
+			'ca_places' => 72,
+			'ca_occurrences' => 67,
+			'ca_collections' => 13,
+			'ca_storage_locations' => 89,
+			'ca_object_representations' => 56,
+			'ca_loans' => 133,
+			'ca_movements' => 137,
+			'ca_list_items' => 33,
+			'ca_tours' => 153,
+			'ca_tour_stops' => 155
+		] as $vs_table_name => $vn_table_num) {
+			if(!$o_conf->get($vs_table_name.'_disable')) {
+				$va_ret[$vn_table_num] = $vs_table_name;
+			}
+		}
+		return $va_ret;
+	}
+	# ----------------------------------------
+	/**
+	 * Get CA primary tables (objects, entities, etc.) for HTML select, i.e. as Display Name => Table Num mapping
+	 * @return array
+	 */
+	function caGetPrimaryTablesForHTMLSelect() {
+		$va_tables = caGetPrimaryTables();
+		$o_dm = Datamodel::load();
+		$va_ret = [];
+		foreach($va_tables as $vn_table_num => $vs_table) {
+			$va_ret[$o_dm->getInstance($vn_table_num, true)->getProperty('NAME_PLURAL')] = $vn_table_num;
+		}
+		return $va_ret;
 	}
 	# ----------------------------------------

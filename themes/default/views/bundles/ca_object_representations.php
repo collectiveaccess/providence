@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2014 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -125,14 +125,14 @@
 	if (!$vb_read_only) {
 ?>
 			<div style="float: right;">
-				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a></div>
+				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 			</div>
 <?php
 	}
 ?>	
 			<div style="width: 680px;">
 				<div style="float: left;">
-					<div class="caObjectRepresentationListItemImageThumb"><a href="#" onclick="caMediaPanel.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetRepresentationEditor', array('object_id' => $t_subject->getPrimaryKey(), 'representation_id' => '{n}'))); ?>'); return false;">{icon}</a></div>
+					<div class="caObjectRepresentationListItemImageThumb"><a href="#" onclick="caMediaPanel.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/objects', 'ObjectEditor', 'GetMediaOverlay', array('object_id' => $t_subject->getPrimaryKey(), 'representation_id' => '{n}'))); ?>'); return false;">{icon}</a></div>
 				</div>
 				<div style="float: right; width: 550px;">
 					<div style="float: left; width: 80%;">
@@ -142,7 +142,7 @@
 <?php
 	if (!$vb_read_only) {
 ?>
-								<span id="{fieldNamePrefix}change_{n}" class="caObjectRepresentationListInfoSubDisplayUpdate"><a href='#' class='updateIcon' onclick="caOpenRepresentationDetailEditor('{n}'); return false;"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_UPDATE__).'</a>'; ?></span>
+								<span id="{fieldNamePrefix}change_{n}" class="caObjectRepresentationListInfoSubDisplayUpdate"><a href='#' class='updateIcon' onclick="caOpenRepresentationDetailEditor('{n}'); return false;"><?php print caNavIcon(__CA_NAV_ICON_UPDATE__, 1).'</a>'; ?></span>
 <?php
 	}
 ?>
@@ -204,7 +204,7 @@
 							
 								<div class='caObjectRepresentationDetailEditorDoneButton'>
 <?php 
-									print caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t('Done'), '{fieldNamePrefix}detail_editor_save_button{n}', array('onclick' => 'caCloseRepresentationDetailEditor("{n}"); return false;')); 
+									print caJSButton($this->request, __CA_NAV_ICON_SAVE__, _t('Done'), '{fieldNamePrefix}detail_editor_save_button{n}', array('onclick' => 'caCloseRepresentationDetailEditor("{n}"); return false;')); 
 ?>
 								</div>	
 							
@@ -231,27 +231,27 @@
 ?>
 						</div>
 					
-						<div style="float: right; width: 20%;">						
+						<div class="mediaRight">						
 							<div class='caObjectRepresentationListActionButton'>
-								<span id="{fieldNamePrefix}primary_{n}"><a href='#' onclick='caSetRepresentationAsPrimary("{n}"); return false;'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_MAKE_PRIMARY__).' '._t('Make primary'); ?></a></span>
+								<span id="{fieldNamePrefix}primary_{n}"><a href='#' onclick='caSetRepresentationAsPrimary("{n}"); return false;'><?php print caNavIcon(__CA_NAV_ICON_MAKE_PRIMARY__, 1).' '._t('Make primary'); ?></a></span>
 							</div>
 							<div class='caObjectRepresentationListActionButton'>
-								<span id="{fieldNamePrefix}edit_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__).' '._t('Edit full record'), '', 'editor/object_representations', 'ObjectRepresentationEditor', 'Edit', array('representation_id' => "{n}"), array('id' => "{fieldNamePrefix}edit_button_{n}"))); ?></span>
+								<span id="{fieldNamePrefix}edit_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 1).' '._t('Edit full record'), '', 'editor/object_representations', 'ObjectRepresentationEditor', 'Edit', array('representation_id' => "{n}"), array('id' => "{fieldNamePrefix}edit_button_{n}"))); ?></span>
 							</div>
 <?php
 							if($this->request->getUser()->canDoAction('can_download_ca_object_representations')) {
 ?>
 							<div class='caObjectRepresentationListActionButton'>
-								<span id="{fieldNamePrefix}download_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_DOWNLOAD__).' '._t('Download'), '', 'editor/objects', 'ObjectEditor', 'DownloadMedia', array('version' => 'original', 'representation_id' => "{n}", 'object_id' => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{fieldNamePrefix}download_button_{n}"))); ?></span>
+								<span id="{fieldNamePrefix}download_{n}"><?php print urldecode(caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1).' '._t('Download'), '', 'editor/objects', 'ObjectEditor', 'DownloadMedia', array('version' => 'original', 'representation_id' => "{n}", 'object_id' => $t_subject->getPrimaryKey(), 'download' => 1), array('id' => "{fieldNamePrefix}download_button_{n}"))); ?></span>
 							</div>
 <?php
 							}
 ?>
 							<div class="caAnnoEditorLaunchButton annotationTypeClip{annotation_type} caObjectRepresentationListActionButton">
-								<span id="{fieldNamePrefix}edit_annotations_{n}"><a href="#" onclick="caAnnoEditor<?php print $vs_id_prefix; ?>.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetAnnotationEditor', array('representation_id' => '{n}'))); ?>'); return false;" id="{fieldNamePrefix}edit_annotations_button_{n}"><img src='<?php print $this->request->getThemeUrlPath()."/graphics/buttons/clock.png"; ?>' border='0'/> <?php print _t('Annotations'); ?></a></span>
+								<span id="{fieldNamePrefix}edit_annotations_{n}"><a href="#" onclick="caAnnoEditor<?php print $vs_id_prefix; ?>.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetAnnotationEditor', array('representation_id' => '{n}'))); ?>'); return false;" id="{fieldNamePrefix}edit_annotations_button_{n}"><?php print caNavIcon(__CA_NAV_ICON_CLOCK__, 1); ?> <?php print _t('Annotations'); ?></a></span>
 							</div>
 							<div class="caSetImageCenterLaunchButton annotationTypeSetCenter{annotation_type} caObjectRepresentationListActionButton">
-								<span id="{fieldNamePrefix}edit_image_center_{n}"><a href="#" onclick="caImageCenterEditor<?php print $vs_id_prefix; ?>.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetImageCenterEditor', array('representation_id' => '{n}'))); ?>', caSetImageCenterForSave<?php print $vs_id_prefix; ?>, true, {}, {'id': '{n}'}); return false;" id="{fieldNamePrefix}edit_image_center_{n}"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_SET_CENTER__); ?> <?php print _t('Set center'); ?></a></span>
+								<span id="{fieldNamePrefix}edit_image_center_{n}"><a href="#" onclick="caImageCenterEditor<?php print $vs_id_prefix; ?>.showPanel('<?php print urldecode(caNavUrl($this->request, 'editor/object_representations', 'ObjectRepresentationEditor', 'GetImageCenterEditor', array('representation_id' => '{n}'))); ?>', caSetImageCenterForSave<?php print $vs_id_prefix; ?>, true, {}, {'id': '{n}'}); return false;" id="{fieldNamePrefix}edit_image_center_{n}"><?php print caNavIcon(__CA_NAV_ICON_SET_CENTER__, 1); ?> <?php print _t('Set center'); ?></a></span>
 							</div>
 						</div>	
 					</div>
@@ -261,7 +261,7 @@
 				
 				<div id="{fieldNamePrefix}media_replication_container_{n}" style="display: none;">
 					<div class="caRepresentationMediaReplicationButton">
-						<a href="#" id="{fieldNamePrefix}caRepresentationMediaReplicationButton_{n}" onclick="caToggleDisplayMediaReplication('{fieldNamePrefix}media_replication{n}', '{fieldNamePrefix}caRepresentationMediaReplicationButton_{n}', '{n}'); return false;" class="caRepresentationMediaReplicationButton"><?php print "<div style='margin-top:5px; width:11px; float:left;'><img src='".$this->request->getThemeUrlPath()."/graphics/icons/downarrow.jpg' border='0' height='11px' width='11px'/></div>"?><?php print _t('Replication'); ?></a>
+						<a href="#" id="{fieldNamePrefix}caRepresentationMediaReplicationButton_{n}" onclick="caToggleDisplayMediaReplication('{fieldNamePrefix}media_replication{n}', '{fieldNamePrefix}caRepresentationMediaReplicationButton_{n}', '{n}'); return false;" class="caRepresentationMediaReplicationButton"><?php print caNavIcon(__CA_NAV_ICON_MEDIA_METADATA__, '15px')." "._t('Replication'); ?></a>
 					</div>
 					<div>
 						<div id="{fieldNamePrefix}media_replication{n}" class="caRepresentationMediaReplication">
@@ -272,7 +272,7 @@
 			
 				<div id="{fieldNamePrefix}media_metadata_container_{n}">	
 					<div class="caObjectRepresentationMetadataButton">
-						<a href="#" id="{fieldNamePrefix}caObjectRepresentationMetadataButton_{n}" onclick="caToggleDisplayObjectRepresentationMetadata('{fieldNamePrefix}media_metadata_{n}', '{fieldNamePrefix}caObjectRepresentationMetadataButton_{n}'); return false;" class="caObjectRepresentationMetadataButton"><?php print "<img src='".$this->request->getThemeUrlPath()."/graphics/icons/downarrow.jpg' border='0' height='11px' width='11px'/>"; ?><?php print _t('Media metadata'); ?></a>
+						<a href="#" id="{fieldNamePrefix}caObjectRepresentationMetadataButton_{n}" onclick="caToggleDisplayObjectRepresentationMetadata('{fieldNamePrefix}media_metadata_{n}', '{fieldNamePrefix}caObjectRepresentationMetadataButton_{n}'); return false;" class="caObjectRepresentationMetadataButton"><?php print caNavIcon(__CA_NAV_ICON_MEDIA_METADATA__, '15px').' '._t('Media metadata'); ?></a>
 					</div>
 					<div>
 						<div id="{fieldNamePrefix}media_metadata_{n}" class="caObjectRepresentationMetadata">
@@ -314,7 +314,7 @@
 
 			<span class="formLabelError">{error}</span>
 			<div style="float: right;">
-				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a></div>
+				<div style="margin: 0 0 10px 5px;"><a href="#" class="caDeleteItemButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a></div>
 			</div>
 			
 			<div id='{fieldNamePrefix}detail_editor_{n}' class="caObjectRepresentationNewDetailEditorContainer">
@@ -397,13 +397,21 @@
 	</textarea>
 	
 	<div class="bundleContainer">
+		<div class="downloadAll">
+<?php
+		if ($vn_rep_count > 1) {
+			print caNavLink($this->request, caNavIcon(__CA_NAV_ICON_DOWNLOAD__, 1)." "._t('Download all'), 'button', '*', '*', 'DownloadMedia', ['object_id' => $t_subject->getPrimaryKey()]);
+		}
+?>
+		</div>
+		<br class="clear"/>
 		<div class="caItemList">
 			
 		</div>
 <?php 
 	if (!$vb_read_only) {
 ?>
-		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add representation")." &rsaquo;"; ?></a></div>
+		<div class='button labelInfo caAddItemButton'><a href='#'><?php print caNavIcon(__CA_NAV_ICON_ADD__, '15px'); ?> <?php print $vs_add_label ? $vs_add_label : _t("Add representation")." &rsaquo;"; ?></a></div>
 <?php
 	}
 ?>

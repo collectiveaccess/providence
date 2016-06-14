@@ -1125,6 +1125,7 @@ class SearchResult extends BaseObject {
 									}
 								}
 								
+								if ($t_instance->getProperty('HIERARCHY_TYPE') == __CA_HIER_TYPE_MULTI_MONO__) { array_pop($va_hier_ids); }
 								if (!is_null($vn_max_levels_from_top)) {
 									$va_hier_ids = array_slice($va_hier_ids, 0, $vn_max_levels_from_top, true);
 								} elseif (!is_null($vn_max_levels_from_bottom)) {
@@ -1333,7 +1334,7 @@ class SearchResult extends BaseObject {
 						goto filter;
 					} else {
 						$vs_subfield = $va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : 'timestamp';
-						$vm_val = self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id][$vs_subfield];
+						$vm_val = self::$s_timestamp_cache['created_on'][$this->ops_table_name][$vn_row_id]['timestamp'];
 				
 						if ($vs_subfield == 'timestamp') {
 							$this->opo_tep->init();
@@ -1361,7 +1362,7 @@ class SearchResult extends BaseObject {
 						goto filter;
 					} else {
 						$vs_subfield = $va_path_components['subfield_name'] ? $va_path_components['subfield_name'] : 'timestamp';
-						$vm_val = self::$s_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id][$vs_subfield];
+						$vm_val = self::$s_timestamp_cache['last_changed'][$this->ops_table_name][$vn_row_id]['timestamp'];
 				
 						if ($vs_subfield == 'timestamp') {
 							$this->opo_tep->init();
@@ -1454,8 +1455,8 @@ class SearchResult extends BaseObject {
 							$va_filter_vals[$vn_index] = caGetListItemID($t_element->get('list_id'), $vs_filter_val);
 						}
 					}
-				
-					$va_filter_values = $this->get(join(".", $va_tmp).".{$vs_filter}", array('returnAsArray' => true, 'alwaysReturnItemID' => true));
+					
+					$va_filter_values = $this->get(join(".", $va_tmp).".{$vs_filter}", array('returnAsArray' => true, 'alwaysReturnItemID' => true, 'sort' => caGetOption('sort', $pa_options, null), 'sortDirection' => caGetOption('sortDirection', $pa_options, null)));
 			
 					if (is_array($va_filter_values)) {
 						foreach($va_filter_values as $vn_id => $vm_filtered_val) {
@@ -2163,10 +2164,10 @@ class SearchResult extends BaseObject {
 	 */
 	public function getWithTemplate($ps_template, $pa_options=null) {
 		unset($pa_options['request']);
-		if($this->opb_disable_get_with_template_prefetch) {
+		//if($this->opb_disable_get_with_template_prefetch) {
 			if(!is_array($pa_options)) { $pa_options = array(); }
 			return caProcessTemplateForIDs($ps_template, $this->ops_table_name, array($this->get($this->ops_table_name.".".$this->ops_subject_pk)), array_merge($pa_options, ['dontPrefetchRelated' => true]));
-		}
+		//}
 
 		// the assumption is that if you run getWithTemplate for the current row, you'll probably run it for the next bunch of rows too
 		// since running caProcessTemplateForIDs for every single row is slow, we prefetch a set number of rows here

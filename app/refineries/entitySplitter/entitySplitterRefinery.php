@@ -208,6 +208,23 @@
 				'default' => '',
 				'label' => _t('Do not parse name'),
 				'description' => _t('Take the entity name as is from the data source and insert it without intervention in the surname and display name fields. This is often useful for organization names, especially when using the entity class "org" setting.')
+			),
+			'entitySplitter_relationships' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Relationships'),
+				'description' => _t('List of relationships to process.')
+			),
+			'entitySplitter_relatedEntities' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Relationships'),
+				'description' => _t('List of entity relationships to process.')
 			)
 		);
-?>

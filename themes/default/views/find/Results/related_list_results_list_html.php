@@ -104,11 +104,11 @@
 
 				<tr <?php print ($i ==1) ? "class='odd'" : ""; ?> <?php print "id='{$vs_interstitial_prefix}{$vn_relation_id}'"; ?>>
 					<td style="width:10px">
-						<a href="#" class="caInterstitialEditButton listRelEditButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_INTERSTITIAL_EDIT_BUNDLE__); ?></a>
-						<a href="#" class="caDeleteItemButton listRelDeleteButton"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_DEL_BUNDLE__); ?></a>
+						<a href="#" class="caInterstitialEditButton listRelEditButton"><?php print caNavIcon(__CA_NAV_ICON_INTERSTITIAL_EDIT_BUNDLE__, 1); ?></a>
+						<a href="#" class="caDeleteItemButton listRelDeleteButton"><?php print caNavIcon(__CA_NAV_ICON_DEL_BUNDLE__, 1); ?></a>
 					</td>
 <?php
-					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon($this->request, __CA_NAV_BUTTON_EDIT__), '', $vs_related_table, $vn_id, array(), array())."</td>";;
+					print "<td style='width:5%;'>".caEditorLink($this->request, caNavIcon(__CA_NAV_ICON_EDIT__, 2), '', $vs_related_table, $vn_id, array(), array())."</td>";
 ?>
 					<td style="padding-left: 5px; padding-right: 5px;">
 						<?php print $va_rel_id_typenames[$vn_relation_id]; ?>

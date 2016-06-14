@@ -27,6 +27,7 @@
  */
  
  	$vs_current_table = 		$this->getVar('current_table');
+	/** @var ca_users $t_user */
 	$t_user = 					$this->getVar('t_user');
 	$vs_group = 				$this->getVar('group');
 	$va_bundle_list =			$this->getVar('bundle_list');
@@ -37,8 +38,8 @@
 <div class="sectionBox">
 <?php
 	print $vs_control_box = caFormControlBox(
-		caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'PreferencesForm').' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Reset"), '', 'system', 'Preferences', $this->request->getAction()."/".$this->request->getActionExtra(), array()), 
+		caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'PreferencesForm').' '.
+		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Reset"), '', 'system', 'Preferences', $this->request->getAction()."/".$this->request->getActionExtra(), array()), 
 		'', 
 		''
 	);
@@ -69,22 +70,24 @@
 		print "</tr></table>\n";
 		
 		// metadata elements
-		print "<table class='preferenceColumnSelector'>\n";			
-		print "<thead><tr><th>"._t('Metadata element')."</th><th><a href='#' class='preferenceColumnSelector' id='duplicationOn'>"._t('Duplicate')."</a></th><th><a href='#' class='preferenceColumnSelector' id='duplicationOff'>"._t('Do not duplicate')."</a></th></tr></thead>\n";
-	
-		$vs_pk = $t_instance->primaryKey();
-		print "<tbody>";
-		foreach($va_bundle_list as $vs_bundle_name => $va_info) {
-			print "<tr>";
-			print "<td class='preferenceColumnSelectorLabel'>".$va_info['bundle_info']['display']."</td>";
-		
-			$vn_duplication_setting = $va_info['duplication_setting'];
-			print "<td>".caHTMLRadioButtonInput("duplicate_element_settings[{$vs_bundle_name}]", array('value' => 1, 'class' => "duplication_setting_on"), array('checked' => ($vn_duplication_setting == 1), "disabled" => !$vb_duplicate_metadata))."</td>\n";
-			print "<td>".caHTMLRadioButtonInput("duplicate_element_settings[{$vs_bundle_name}]", array('value' => 0, 'class' => "duplication_setting_off"), array('checked' => ($vn_duplication_setting == 0), "disabled" => !$vb_duplicate_metadata))."</td>\n";
-			print "</tr>\n";
+		if($t_user->isValidPreference($vs_current_table.'_duplicate_element_settings')) {
+			print "<table class='preferenceColumnSelector'>\n";
+			print "<thead><tr><th>" . _t('Metadata element') . "</th><th><a href='#' class='preferenceColumnSelector' id='duplicationOn'>" . _t('Duplicate') . "</a></th><th><a href='#' class='preferenceColumnSelector' id='duplicationOff'>" . _t('Do not duplicate') . "</a></th></tr></thead>\n";
+
+			$vs_pk = $t_instance->primaryKey();
+			print "<tbody>";
+			foreach ($va_bundle_list as $vs_bundle_name => $va_info) {
+				print "<tr>";
+				print "<td class='preferenceColumnSelectorLabel'>" . $va_info['bundle_info']['display'] . "</td>";
+
+				$vn_duplication_setting = $va_info['duplication_setting'];
+				print "<td>" . caHTMLRadioButtonInput("duplicate_element_settings[{$vs_bundle_name}]", array('value' => 1, 'class' => "duplication_setting_on"), array('checked' => ($vn_duplication_setting == 1), "disabled" => !$vb_duplicate_metadata)) . "</td>\n";
+				print "<td>" . caHTMLRadioButtonInput("duplicate_element_settings[{$vs_bundle_name}]", array('value' => 0, 'class' => "duplication_setting_off"), array('checked' => ($vn_duplication_setting == 0), "disabled" => !$vb_duplicate_metadata)) . "</td>\n";
+				print "</tr>\n";
+			}
+			print "<tbody>";
+			print "</table>\n";
 		}
-		print "<tbody>";
-		print "</table>\n";
 		
 		
 		print "<div class='preferenceSectionDivider'><!-- empty --></div>\n"; 

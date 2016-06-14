@@ -277,6 +277,23 @@
 				'default' => '',
 				'label' => _t('Non-preferred labels'),
 				'description' => _t('List of non-preferred labels to apply to tour stops.')
+			),
+			'tourStopSplitter_relationships' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Relationships'),
+				'description' => _t('List of relationships to process.')
+			),
+			'tourStopSplitter_relatedEntities' => array(
+				'formatType' => FT_TEXT,
+				'displayType' => DT_SELECT,
+				'width' => 10, 'height' => 1,
+				'takesLocale' => false,
+				'default' => '',
+				'label' => _t('Relationships'),
+				'description' => _t('List of entity relationships to process.')
 			)
 		);
-?>

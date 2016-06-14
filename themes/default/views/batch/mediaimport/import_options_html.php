@@ -35,8 +35,8 @@
  	$va_last_settings = $this->getVar('batch_mediaimport_last_settings');
 
 	print $vs_control_box = caFormControlBox(
-		caJSButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Execute media import"), 'caBatchMediaImportFormButton', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
-		caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', 'batch', 'MediaImport', 'Index/'.$this->request->getActionExtra(), array()),
+		caFormJSButton($this->request, __CA_NAV_ICON_SAVE__, _t("Execute media import"), 'caBatchMediaImportFormButton', array('onclick' => 'caShowConfirmBatchExecutionPanel(); return false;')).' '.
+		caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'batch', 'MediaImport', 'Index/'.$this->request->getActionExtra(), array()),
 		'',
 		''
 	);
@@ -79,11 +79,11 @@
 			levelDataUrl: '<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryLevel'); ?>',
 			initDataUrl: '<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'GetDirectoryAncestorList'); ?>',
 
-			openDirectoryIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
-			disabledDirectoryIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__, array('class' => 'disabled')); ?>",
+			openDirectoryIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__, 1); ?>",
+			disabledDirectoryIcon: "<?php print caNavIcon(__CA_NAV_ICON_DOT__, 1, array('class' => 'disabled')); ?>",
 
-			folderIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/folder_small.png" border="0" title="Folder" style="margin-right: 7px;"/>',
-			fileIcon: '<img src="<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/file_small.png" border="0" title="File" style="margin-right: 7px;"/>',
+			folderIcon: "<?php print caNavIcon(__CA_NAV_ICON_FOLDER__, 1); ?>",
+			fileIcon: "<?php print caNavIcon(__CA_NAV_ICON_FILE__, 1); ?>",
 
 			displayFiles: true,
 			allowFileSelection: false,
@@ -96,7 +96,7 @@
 			dragAndDropUploadUrl: "<?php print caNavUrl($this->request, 'batch', 'MediaImport', 'UploadFiles'); ?>",
 
 			initItemID: '<?php print addslashes($va_last_settings['importFromDirectory']); ?>',
-			indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
+			indicator: "<?php print caNavIcon(__CA_NAV_ICON_SPINNER__, 1); ?>",
 
 			currentSelectionDisplayID: 'browseCurrentSelection',
 

@@ -37,7 +37,7 @@ require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/AttributeValue.php');
 require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Bundlable.php');
 require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Relationship.php');
 require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Label.php');
-
+require_once(__CA_LIB_DIR__.'/ca/Sync/LogEntry/Representation.php');
 
 abstract class Base {
 
@@ -113,11 +113,17 @@ abstract class Base {
 			throw new InvalidLogEntryException('table num is invalid for this log entry');
 		}
 
+		if(!$this->isRelevant()) {
+			throw new IrrelevantLogEntry();
+		}
+
+		$this->opt_instance->setTransaction($this->getTx());
+
 		// if this is not an insert log entry, load the specified row by GUID
 		if($this->isUpdate() || $this->isDelete()) {
 			// if we can't find the GUID and this is an update, throw error
 			if((!$this->getModelInstance()->loadByGUID($this->getGUID())) && $this->isUpdate()) {
-				throw new InvalidLogEntryException('Mode was update but the given GUID "'.$this->getGUID().'" could not be found for table num ' . $this->getTableNum());
+				throw new IrrelevantLogEntry('Mode was update but the given GUID "'.$this->getGUID().'" could not be found for table num ' . $this->getTableNum());
 			}
 
 			// if we can't find it and this is a delete, we don't particularly care. yes, we can't delete a non-existing
@@ -127,12 +133,7 @@ abstract class Base {
 			}
 		}
 
-		$this->opt_instance->setTransaction($this->getTx());
 		$this->opt_instance->setMode(ACCESS_WRITE);
-
-		if(!$this->isRelevant()) {
-			throw new IrrelevantLogEntry();
-		}
 	}
 
 	/**
@@ -156,25 +157,28 @@ abstract class Base {
 	 */
 	public function isRelevant() {
 		$vs_t = $this->getModelInstance()->tableName();
-		if(preg_match("/^ca\_editor\_ui/", $vs_t)) {
+		if(preg_match("/^ca_locales/", $vs_t)) {
 			return false;
 		}
-		if(preg_match("/^ca\_metadata\_/", $vs_t)) {
+		if(preg_match("/^ca_editor_ui/", $vs_t)) {
 			return false;
 		}
-		if(preg_match("/^ca\_relationship\_/", $vs_t)) {
+		if(preg_match("/^ca_metadata_/", $vs_t)) {
 			return false;
 		}
-		if(preg_match("/^ca\_search\_/", $vs_t)) {
+		if(preg_match("/^ca_relationship_/", $vs_t)) {
 			return false;
 		}
-		if(preg_match("/^ca\_bundle\_display/", $vs_t)) {
+		if(preg_match("/^ca_search_/", $vs_t)) {
 			return false;
 		}
-		if(preg_match("/^ca\_data_import/", $vs_t)) {
+		if(preg_match("/^ca_bundle_display/", $vs_t)) {
 			return false;
 		}
-		if(preg_match("/^ca\_data_exporter/", $vs_t)) {
+		if(preg_match("/^ca_data_import/", $vs_t)) {
+			return false;
+		}
+		if(preg_match("/^ca_data_exporter/", $vs_t)) {
 			return false;
 		}
 
@@ -350,11 +354,14 @@ abstract class Base {
 				}
 
 				// check parent_id field
-				if($vs_field == $this->getModelInstance()->getProperty('HIERARCHY_PARENT_ID_FLD')) {
+				if(($vs_field == $this->getModelInstance()->getProperty('HIERARCHY_PARENT_ID_FLD')) && (intval($va_snapshot[$vs_field]) != 1)) {
 					if(isset($va_snapshot[$vs_field . '_guid']) && ($vs_parent_guid = $va_snapshot[$vs_field . '_guid'])) {
-						$t_instance = $this->getModelInstance()->cloneRecord();
-						if(!$t_instance->loadByGUID($vs_parent_guid)) {
-							throw new InvalidLogEntryException(_t("Could not load GUID %1 (referenced in HIERARCHY_PARENT_ID_FLD)", $vs_parent_guid));
+						if(($vs_idno = $va_snapshot[$this->getModelInstance()->getProperty('ID_NUMBERING_ID_FIELD')]) && !preg_match("/Root node for /", $vs_idno)) {
+							$t_instance = $this->getModelInstance()->cloneRecord();
+							$t_instance->setTransaction($this->getTx());
+							if(!$t_instance->loadByGUID($vs_parent_guid) && !(intval($va_snapshot[$vs_field]) == 1)) {
+								throw new InvalidLogEntryException(_t("Could not load GUID %1 (referenced in HIERARCHY_PARENT_ID_FLD)", $vs_parent_guid));
+							}
 						}
 					} else {
 						throw new InvalidLogEntryException("No parent_guid field found");
@@ -415,17 +422,26 @@ abstract class Base {
 					continue;
 				}
 
-				// handle parent_ids -- have to translate GUID to primary key
+				// handle parent_ids -- have to translate GUID to primary key, unless it's 1
 				if($vs_field == $this->getModelInstance()->getProperty('HIERARCHY_PARENT_ID_FLD')) {
-					if(isset($va_snapshot[$vs_field . '_guid']) && ($vs_parent_guid = $va_snapshot[$vs_field . '_guid'])) {
-						$t_instance = $this->getModelInstance()->cloneRecord();
-						if($t_instance->loadByGUID($vs_parent_guid)) {
-							$this->getModelInstance()->set($vs_field, $t_instance->getPrimaryKey());
-						} else {
-							throw new InvalidLogEntryException("Could not load GUID {$vs_parent_guid} (referenced in HIERARCHY_PARENT_ID_FLD)");
-						}
+					if(intval($va_snapshot[$vs_field]) == 1) {
+						$this->getModelInstance()->set($vs_field, 1);
 					} else {
-						throw new InvalidLogEntryException("No guid for parent_id field found");
+						if(isset($va_snapshot[$vs_field . '_guid']) && ($vs_parent_guid = $va_snapshot[$vs_field . '_guid'])) {
+							$t_instance = $this->getModelInstance()->cloneRecord();
+							$t_instance->setTransaction($this->getTx());
+							if($t_instance->loadByGUID($vs_parent_guid)) {
+								$this->getModelInstance()->set($vs_field, $t_instance->getPrimaryKey());
+							} else {
+								if(($vs_idno = $va_snapshot[$this->getModelInstance()->getProperty('ID_NUMBERING_ID_FIELD')]) && preg_match("/Root node for /", $vs_idno)) {
+									throw new IrrelevantLogEntry();
+								}
+
+								throw new InvalidLogEntryException("Could not load GUID {$vs_parent_guid} (referenced in HIERARCHY_PARENT_ID_FLD)");
+							}
+						} else {
+							throw new InvalidLogEntryException("No guid for parent_id field found");
+						}
 					}
 
 					continue;
@@ -463,6 +479,7 @@ abstract class Base {
 	 * @param \Transaction $po_tx
 	 * @return \CA\Sync\LogEntry\Base
 	 * @throws InvalidLogEntryException
+	 * @throws IrrelevantLogEntry
 	 */
 	public static function getInstance($ps_source_system_id, $pn_log_id, $pa_log, \Transaction $po_tx) {
 		if(!is_array($pa_log) || !isset($pa_log['logged_table_num'])) {
@@ -481,11 +498,13 @@ abstract class Base {
 			return new AttributeValue($ps_source_system_id, $pn_log_id, $pa_log, $po_tx);
 		} elseif($t_instance instanceof \BaseLabel) {
 			return new Label($ps_source_system_id, $pn_log_id, $pa_log, $po_tx);
+		} elseif($t_instance instanceof \ca_object_representations) {
+			return new Representation($ps_source_system_id, $pn_log_id, $pa_log, $po_tx);
 		} elseif($t_instance instanceof \BundlableLabelableBaseModelWithAttributes) {
 			return new Bundlable($ps_source_system_id, $pn_log_id, $pa_log, $po_tx);
 		}
 
-		throw new InvalidLogEntryException('Invalid table in log entry');
+		throw new IrrelevantLogEntry();
 	}
 
 }

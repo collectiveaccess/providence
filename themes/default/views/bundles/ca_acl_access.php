@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2012 Whirl-i-Gig
+ * Copyright 2012-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -36,8 +36,8 @@
 <?php
 	if ($vb_can_edit) {
 		print $vs_control_box = caFormControlBox(
-			caFormSubmitButton($this->request, __CA_NAV_BUTTON_SAVE__, _t("Save"), 'caAccessControlList').' '.
-			caNavButton($this->request, __CA_NAV_BUTTON_CANCEL__, _t("Cancel"), '', $this->request->getModulePath(), $this->request->getController(), 'Access/'.$this->request->getActionExtra(), array($t_instance->primaryKey() => $t_instance->getPrimaryKey())),
+			caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'caAccessControlList').' '.
+			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', $this->request->getModulePath(), $this->request->getController(), 'Access/'.$this->request->getActionExtra(), array($t_instance->primaryKey() => $t_instance->getPrimaryKey())),
 			'',
 			''
 		);
@@ -59,7 +59,7 @@
 		print $t_instance->getACLWorldHTMLFormBundle($this->request, 'caAccessControlList');	
 	?>	
 		</div>
-		<div id='editGlobalAccessLink' class='editLink'><a href='#' onclick='jQuery("#editGlobalAccess").show(250); jQuery("#editGlobalAccessLink").hide()'><img src='<?php print $this->request->getThemeUrlPath() ?>/graphics/buttons/edit.png' border='0' /> <?php print _t('Edit Global Access'); ?></a></div>
+		<div id='editGlobalAccessLink' class='editLink'><a href='#' onclick='jQuery("#editGlobalAccess").show(250); jQuery("#editGlobalAccessLink").hide()'><?php print caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?>  <?php print _t('Edit Global Access'); ?></a></div>
 		<div style='width:100%; clear:both; height: 1px;'></div> 
 	</div>
 	<div class='globalAccess'>
@@ -95,11 +95,11 @@
 <?php
 		if (($t_instance->getACLUserGroups()) || ($t_instance->getACLUsers())) {
 ?>
-			<div id='editUserAccessLink' class='editLink'><a href='#' onclick='jQuery("#editUserAccess").show(250); jQuery("#editUserAccessLink").hide()'><img src='<?php print $this->request->getThemeUrlPath() ?>/graphics/buttons/edit.png' border='0' /> <?php print _t('Edit Exceptions'); ?></a></div>
+			<div id='editUserAccessLink' class='editLink'><a href='#' onclick='jQuery("#editUserAccess").show(250); jQuery("#editUserAccessLink").hide()'><?php print caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?> <?php print _t('Edit Exceptions'); ?></a></div>
 <?php   
 		} else {
 ?>
-		<div id='editUserAccessLink' class='editLink'><a href='#' onclick='jQuery("#editUserAccess").show(250); jQuery("#editUserAccessLink").hide()'><img src='<?php print $this->request->getThemeUrlPath() ?>/graphics/buttons/edit.png' border='0' /> <?php print _t('Create an Exception'); ?></a></div>
+		<div id='editUserAccessLink' class='editLink'><a href='#' onclick='jQuery("#editUserAccess").show(250); jQuery("#editUserAccessLink").hide()'><?php print caNavIcon(__CA_NAV_ICON_EDIT__, 2); ?> <?php print _t('Create an Exception'); ?></a></div>
 <?php
 		}		
 ?>

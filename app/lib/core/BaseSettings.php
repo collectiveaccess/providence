@@ -410,6 +410,11 @@
 								if (!$va_type_info['parent_id']) { continue; }
 								$va_type_opts[$va_type_info['typename'].'/'.$va_type_info['typename_reverse']] = $va_type_info['type_id'];
 							}
+						} elseif($t_show_types_for_table instanceof ca_representation_annotations) {
+							$va_type_list = $t_show_types_for_table->getTypeList();
+							foreach($va_type_list as $vn_type_id => $va_type_info) {
+								$va_type_opts[$va_type_info['idno']] = $vn_type_id;
+							}
 						} else { // "normal" (list-based) type restriction
 							$va_type_list = $t_show_types_for_table->getTypeList();
 							if (!is_array($va_type_list)) { break; }

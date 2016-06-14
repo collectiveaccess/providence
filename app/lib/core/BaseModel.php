@@ -513,13 +513,13 @@ class BaseModel extends BaseObject {
 	/**
 	 * Remove transaction property.
 	 *
-	 * @param bool $ps_commit If true, the transaction is committed, if false, the transaction is rolledback.
+	 * @param bool $pb_commit If true, the transaction is committed, if false, the transaction is rolledback.
 	 * Defaults to true.
 	 * @return bool success state
 	 */
-	public function removeTransaction($ps_commit=true) {
+	public function removeTransaction($pb_commit=true) {
 		if ($this->inTransaction()) {
-			if ($ps_commit) {
+			if ($pb_commit) {
 				$this->_TRANSACTION->commit();
 			} else {
 				$this->_TRANSACTION->rollback();
@@ -1241,6 +1241,7 @@ class BaseModel extends BaseObject {
 		}
 
 		foreach($pa_fields as $vs_field => $vm_value) {
+			if (strpos($vs_field, '.') !== false) { $va_tmp = explode('.', $vs_field); $vs_field = $va_tmp[1]; }
 			if (array_key_exists($vs_field, $this->FIELDS)) {
 				$pa_fields_type = $this->getFieldInfo($vs_field,"FIELD_TYPE");
 				$pb_need_reload = false;
@@ -2426,8 +2427,19 @@ class BaseModel extends BaseObject {
 
 				if ($this->debug) echo $vs_sql;
 				
-				$o_db->query($vs_sql);
-				
+				try {
+					$o_db->query($vs_sql);
+				} catch (DatabaseException $e) {
+					switch($e->getNumber()) {
+						case 251: 	// duplicate key
+							// noop - recoverable
+							$o_db->postError($e->getNumber(), $e->getMessage(), $e->getContext);
+							break;
+						default:
+							throw $e;
+							break;
+					}
+				}
 				if ($o_db->numErrors() == 0) {
 					if ($this->getFieldInfo($vs_pk = $this->primaryKey(), "IDENTITY")) {
 						$this->_FIELD_VALUES[$vs_pk] = $vn_new_id = $o_db->getLastInsertID();
@@ -2462,6 +2474,7 @@ class BaseModel extends BaseObject {
 
 						if($this->getHierarchyType() == __CA_HIER_TYPE_ADHOC_MONO__) {	// Ad-hoc hierarchy
 							if (!$this->get($this->getProperty('HIERARCHY_ID_FLD'))) {
+								$this->set($this->getProperty('HIERARCHY_ID_FLD'), $this->getPrimaryKey());
 								$vs_sql .= $this->getProperty('HIERARCHY_ID_FLD').' = '.$this->getPrimaryKey().' ';
 							}
 						}
@@ -2675,7 +2688,7 @@ class BaseModel extends BaseObject {
 							}
 							
 							// Moving between hierarchies
-							if ($this->get($vs_hier_id_fld) != $va_parent_info[$vs_hier_id_fld]) {
+							if (is_array($va_parent_info) && ($this->get($vs_hier_id_fld) != $va_parent_info[$vs_hier_id_fld])) {
 								$vn_hierarchy_id = $va_parent_info[$vs_hier_id_fld];
 								$this->set($this->getProperty('HIERARCHY_ID_FLD'), $vn_hierarchy_id);
 						
@@ -4073,7 +4086,7 @@ class BaseModel extends BaseObject {
 				$vb_is_fetched_file = false;
 				if ($vb_allow_fetching_of_urls && (bool)ini_get('allow_url_fopen') && isURL($vs_url = html_entity_decode($this->_SET_FILES[$ps_field]['tmp_name']))) {
 					$vs_tmp_file = tempnam(__CA_APP_DIR__.'/tmp', 'caUrlCopy');
-					$r_incoming_fp = fopen($vs_url, 'r');
+					$r_incoming_fp = @fopen($vs_url, 'r');
 				
 					if (!$r_incoming_fp) {
 						$this->postError(1600, _t('Cannot open remote URL [%1] to fetch media', $vs_url),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
@@ -4138,61 +4151,7 @@ class BaseModel extends BaseObject {
 					$vs_original_tmpname = $this->_SET_FILES[$ps_field]['tmp_name'];
 					$va_matches = array();
 
-					if(preg_match("/(\.zip|\.tar\.gz|\.tgz)$/",$vs_original_filename,$va_matches)){
-						$vs_archive_extension = $va_matches[1];
-
-						// add file extension to temporary file if necessary; otherwise phar barfs when handling the archive
-						$va_tmp = array();
-						preg_match("/[.]*\.([a-zA-Z0-9]+)$/",$vs_original_tmpname,$va_tmp);
-						if(!isset($va_tmp[1])){
-							@rename($this->_SET_FILES[$ps_field]['tmp_name'], $this->_SET_FILES[$ps_field]['tmp_name'].$vs_archive_extension);
-							$this->_SET_FILES[$ps_field]['tmp_name'] = $this->_SET_FILES[$ps_field]['tmp_name'].$vs_archive_extension;
-						}
-
-						if(caIsArchive($this->_SET_FILES[$ps_field]['tmp_name'])){
-							$va_archive_files = caGetDirectoryContentsAsList('phar://'.$this->_SET_FILES[$ps_field]['tmp_name']);
-							if(sizeof($va_archive_files)>0){
-								// get first file we encounter in the archive and use it to generate them previews
-								$vb_is_archive = true;
-								$vs_archive = $this->_SET_FILES[$ps_field]['tmp_name'];
-								$va_tmp = array();
-
-								// copy primary file from the archive to temporary file (with extension so that *Magick can identify properly)
-								// this is basically a fallback. if the code below fails, we still have a 'fake' original
-								preg_match("/[.]*\.([a-zA-Z0-9]+)$/",$va_archive_files[0],$va_tmp);
-								$vs_primary_file_tmp = tempnam(caGetTempDirPath(), "caArchivePrimary");
-								@unlink($vs_primary_file_tmp);
-								$vs_primary_file_tmp = $vs_primary_file_tmp.".".$va_tmp[1];
-
-								if(!@copy($va_archive_files[0], $vs_primary_file_tmp)){
-									$this->postError(1600, _t("Couldn't extract first file from archive. There is probably a invalid character in a directory or file name inside the archive"),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
-									set_time_limit($vn_max_execution_time);
-									if ($vb_is_fetched_file) { @unlink($vs_tmp_file); }
-									if ($vb_is_archive) { @unlink($vs_archive); @unlink($vs_primary_file_tmp); }
-									return false;
-								}
-							
-								$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_primary_file_tmp;
-
-								// prepare to join archive contents to form a better downloadable "original" than the zip/tgz archive (e.g. a multi-page tiff)
-								// to do that, we have to 'extract' the archive so that command-line utilities like *Magick can operate
-								@caRemoveDirectory(caGetTempDirPath().'/caArchiveExtract'); // remove left-overs, just to be sure we don't include other files in the tiff
-								$va_archive_tmp_files = array();
-								@mkdir(caGetTempDirPath().'/caArchiveExtract');
-								foreach($va_archive_files as $vs_archive_file){
-									$vs_basename = basename($vs_archive_file);
-									$vs_tmp_file_name = caGetTempDirPath().'/caArchiveExtract/'.str_replace(" ", "_", $vs_basename);
-									$va_archive_tmp_files[] = $vs_tmp_file_name;
-									@copy($vs_archive_file,$vs_tmp_file_name);
-								}
-							}
-						}
-
-						if(!$vb_is_archive) { // something went wrong (i.e. no valid or empty archive) -> restore previous state
-							@rename($this->_SET_FILES[$ps_field]['tmp_name'].$vs_archive_extension, $vs_original_tmpname);
-							$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_original_tmpname;
-						}
-					}
+					
 
 					// ImageMagick partly relies on file extensions to properly identify images (RAW images in particular)
 					// therefore we rename the temporary file here (using the extension of the original filename, if any)
@@ -4232,28 +4191,6 @@ class BaseModel extends BaseObject {
 						return false;
 					}
 
-					// if necessary, join archive contents to form a better downloadable "original" than the zip/tgz archive (e.g. a multi-page tiff)
-					// by this point, a backend plugin was picked using the first file of the archive. this backend is also used to prepare the new original.
-					if($vb_is_archive && (sizeof($va_archive_tmp_files)>0)){
-						if($vs_archive_original = $m->joinArchiveContents($va_archive_tmp_files)){
-							// mangle filename, so that the uploaded archive.zip becomes archive.tif or archive.gif or whatever extension the Media plugin prefers
-							$va_new_original_pathinfo = pathinfo($vs_archive_original);
-							$va_archive_pathinfo = pathinfo($this->_SET_FILES[$ps_field]['original_filename']);
-							$this->_SET_FILES[$ps_field]['original_filename'] = $va_archive_pathinfo['filename'].".".$va_new_original_pathinfo['extension'];
-
-							// this is now our original, disregard the uploaded archive
-							$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_archive_original;
-
-							// re-run mimetype detection and read on the new original
-							$m->reset();
-							$input_mimetype = $m->divineFileFormat($vs_archive_original);
-							$input_type = $o_media_proc_settings->canAccept($input_mimetype);
-							$m->read($vs_archive_original);
-						}
-
-						@caRemoveDirectory(caGetTempDirPath().'/caArchiveExtract');
-					}
-				
 					$va_media_objects['_original'] = $m;
 				
 					// preserve center setting from any existing media
@@ -5732,7 +5669,7 @@ class BaseModel extends BaseObject {
 					"MD5" => md5_file($this->_SET_FILES[$field]['tmp_name'])
 				);
 
-				if (!copy($this->_SET_FILES[$field]['tmp_name'], $filepath)) {
+				if (!@copy($this->_SET_FILES[$field]['tmp_name'], $filepath)) {
 					$this->postError(1600, _t("File could not be copied. Ask your administrator to check permissions and file space for %1",$vi["absolutePath"]),"BaseModel->_processFiles()", $this->tableName().'.'.$field);
 					return false;
 				}
@@ -6372,8 +6309,8 @@ class BaseModel extends BaseObject {
 				$va_lookup_url_info = caJSONLookupServiceUrl($po_request, $this->tableName());
 				return $this->htmlFormElement($va_tmp[1], $this->getAppConfig()->get('idno_element_display_format_without_label'), array_merge($pa_options, array(
 						'name' => $ps_field,
-						'error_icon' 				=> $po_request->getThemeUrlPath()."/graphics/icons/warning_small.gif",
-						'progress_indicator'		=> $po_request->getThemeUrlPath()."/graphics/icons/indicator.gif",
+						'error_icon' 				=> caNavIcon(__CA_NAV_ICON_ALERT__, 1),
+						'progress_indicator'		=> caNavIcon(__CA_NAV_ICON_SPINNER__, 1),
 						'id' => str_replace(".", "_", $ps_field),
 						'classname' => (isset($pa_options['class']) ? $pa_options['class'] : ''),
 						'value' => (isset($pa_options['values'][$ps_field]) ? $pa_options['values'][$ps_field] : ''),
@@ -6908,6 +6845,15 @@ class BaseModel extends BaseObject {
 			return $va_last_change_info;
 		}
 		return null;
+	}
+
+	/**
+	 * Get just the actual timestamp of the last change (as opposed to the array returned by getLastChangeTimestamp())
+	 * @param null|int $pn_row_id
+	 */
+	public function getLastChangeTimestampAsInt($pn_row_id=null) {
+		$va_last_change = $this->getLastChangeTimestamp($pn_row_id);
+		return (int) $va_last_change['timestamp'];
 	}
 	# --------------------------------------------------------------------------------------------
 	# --- Hierarchical functions
@@ -7467,7 +7413,7 @@ class BaseModel extends BaseObject {
 					WHERE
 						(".$this->tableName().".{$vs_hier_parent_id_fld} = ?) ".((sizeof($va_additional_table_wheres) > 0) ? ' AND '.join(' AND ', $va_additional_table_wheres) : '')."
 					GROUP BY
-						".$this->tableName().".".$this->primaryKey()." {$vs_additional_table_to_join_group_by}
+						".$this->tableName().".".$this->primaryKey()." {$vs_additional_table_to_join_group_by}, p2.".$this->primaryKey()."
 					ORDER BY
 						".$vs_order_by."
 				", (int)$pn_id);
@@ -8755,8 +8701,8 @@ $pa_options["display_form_field_tips"] = true;
 								$vs_element .= "<span id='".$pa_options["id"].'_uniqueness_status'."'></span>";
 								$vs_element .= "<script type='text/javascript'>
 	caUI.initUniquenessChecker({
-		errorIcon: '".$pa_options['error_icon']."',
-		processIndicator: '".$pa_options['progress_indicator']."',
+		errorIcon: '".addslashes($pa_options['error_icon'])."',
+		processIndicator: '".addslashes($pa_options['progress_indicator'])."',
 		statusID: '".$pa_options["id"]."_uniqueness_status',
 		lookupUrl: '".$pa_options['lookup_url']."',
 		formElementID: '".$pa_options["id"]."',
@@ -11856,77 +11802,6 @@ $pa_options["display_form_field_tips"] = true;
 
 		return $va_rels;
 	}
-	# -----------------------------------------------------
-	// guid utilities
-	# -----------------------------------------------------
-	/**
-	 * Get GUID for current row
-	 * @return bool|null|string
-	 */
-	public function getGUID() {
-		if($this->getPrimaryKey()) {
-			return ca_guids::getForRow($this->getPrimaryKey(), $this->tableNum());
-		}
-
-		return null;
-	}
-	# -----------------------------------------------------
-	/**
-	 * Load by GUID
-	 * @param string $ps_guid
-	 * @return bool|null
-	 */
-	public function loadByGUID($ps_guid) {
-		$va_info = ca_guids::getInfoForGUID($ps_guid);
-
-		if($va_info['table_num'] == $this->tableNum()) {
-			return $this->load($va_info['row_id']);
-		}
-
-		return null;
-	}
-	# -----------------------------------------------------
-	/**
-	 * Get loaded BaseModel instance by GUID
-	 * @param string $ps_guid
-	 * @return null|BaseModel
-	 */
-	public static function getInstanceByGUID($ps_guid) {
-		$vs_table = get_called_class();
-		$t_instance = new $vs_table;
-
-		if($t_instance->loadByGUID($ps_guid)) {
-			return $t_instance;
-		}
-
-		return null;
-	}
-	# -----------------------------------------------------
-	/**
-	 * Get primary key for given GUID
-	 * @param string $ps_guid
-	 * @return int|null
-	 */
-	public static function getPrimaryKeyByGUID($ps_guid) {
-		$vs_table = get_called_class();
-		$t_instance = new $vs_table;
-
-		if($t_instance->loadByGUID($ps_guid)) {
-			return $t_instance->getPrimaryKey();
-		}
-
-		return null;
-	}
-	# -----------------------------------------------------
-	/**
-	 * Get guid by primary key
-	 * @param int $pn_primary_key
-	 * @return bool|string
-	 */
-	public static function getGUIDByPrimaryKey($pn_primary_key) {
-		return ca_guids::getForRow(Datamodel::load()->getTableNum(get_called_class()), $pn_primary_key);
-	}
-	# -----------------------------------------------------
 }
 
 // includes for which BaseModel must already be defined
