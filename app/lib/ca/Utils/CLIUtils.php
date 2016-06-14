@@ -3625,9 +3625,9 @@
 				return false;
 			}
 
-			if (!($vs_password = $po_opts->getOption('password'))) {
-				CLIUtils::addError(_t("Missing required parameter: user. Try checking the help for this subcommand."));
-				return false;
+			if (!($vs_password = (string)$po_opts->getOption('password'))) {
+				$vs_password = CLIUtils::_getPassword(_t('Password: '), true);
+				print "\n\n";
 			}
 
 			$vn_timestamp = intval($po_opts->getOption('timestamp'));
@@ -3703,9 +3703,9 @@
 
 				if(!isset($va_response['ok']) || !$va_response['ok']) {
 					if(is_array($va_errors = $va_response['errors'])) {
-						CLIUtils::addError(_t("Pushing to target '%1' seems to have failed. Response was not marked as okay. Errors were: %2", join(',', $va_errors)));
+						CLIUtils::addError(_t("Pushing to target '%1' seems to have failed. Response was not marked as okay. Errors were: %2", $vs_target, join(',', $va_errors)));
 					} else {
-						CLIUtils::addError(_t("Pushing to target '%1' seems to have failed. Response was not marked as okay. Raw response was: %2", $vs_exec));
+						CLIUtils::addError(_t("Pushing to target '%1' seems to have failed. Response was not marked as okay. Raw response was: %2", $vs_target, $vs_exec));
 					}
 				}
 
