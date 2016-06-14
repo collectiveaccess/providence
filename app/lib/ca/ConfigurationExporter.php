@@ -65,10 +65,13 @@ final class ConfigurationExporter {
 	 * @var int
 	 */
 	private $opn_modified_after = null;
+
+	/** @var bool */
+	private $opb_output_status = false;
 	# -------------------------------------------------------
 
 	# -------------------------------------------------------
-	public function __construct($pn_modified_after = null) {
+	public function __construct($pn_modified_after = null, $pb_output_status = false) {
 		$this->opo_config = Configuration::load();
 		$this->opo_db = new Db();
 		$this->opo_dm = Datamodel::load();
@@ -82,6 +85,8 @@ final class ConfigurationExporter {
 		if(is_int($pn_modified_after)) {
 			$this->opn_modified_after = $pn_modified_after;
 		}
+
+		$this->opb_output_status = $pb_output_status;
 	}
 	# -------------------------------------------------------
 	/**
@@ -91,10 +96,11 @@ final class ConfigurationExporter {
 	 * @param string $ps_base Base profile
 	 * @param string $ps_info_url Info URL for the profile
 	 * @param int|null $pn_modified_after If set, only configuration elements modified *after* this unix timestamp are exported
+	 * @param bool $pb_print_status If set to true, the exporter will output some command line statuses
 	 * @return string string profile as XML string
 	 */
-	public static function exportConfigurationAsXML($ps_name="",$ps_description="",$ps_base="",$ps_info_url="",$pn_modified_after=null) {
-		$o_exporter = new ConfigurationExporter($pn_modified_after);
+	public static function exportConfigurationAsXML($ps_name="",$ps_description="",$ps_base="",$ps_info_url="",$pn_modified_after=null,$pb_print_status=false) {
+		$o_exporter = new ConfigurationExporter($pn_modified_after, $pb_print_status);
 
 		$vo_root = $o_exporter->getDOM()->createElement('profile');
 		$o_exporter->getDOM()->appendChild($vo_root);
@@ -169,6 +175,8 @@ final class ConfigurationExporter {
 				if($t_locale->getLastChangeTimestampAsInt($qr_locales->get('locale_id')) < $this->opn_modified_after) {
 					continue;
 				}
+
+				$this->printStatus(_t("Exporting changes for locale %1", caEscapeForXML($qr_locales->get("name"))));
 			}
 			$vo_locale = $this->opo_dom->createElement("locale",caEscapeForXML($qr_locales->get("name")));
 			$vo_locale->setAttribute("lang", $qr_locales->get("language"));
@@ -201,14 +209,16 @@ final class ConfigurationExporter {
 				$vo_lists->appendChild($vo_list);
 				$vo_list->setAttribute("code", $vs_deleted_idno);
 				$vo_list->setAttribute("deleted", 1);
+
+				$this->printStatus(_t("Exporting deleted list %1", $vs_deleted_idno));
 			}
 		}
 
 		$va_exclude_lists = $this->opo_config->get('configuration_export_exclude_lists');
 
 		while($qr_lists->nextRow()) {
-			// skip excluded lists
-			if(is_array($va_exclude_lists) && (sizeof($va_exclude_lists) > 0)) {
+			// skip excluded lists (in diff exports only)
+			if($this->opn_modified_after && is_array($va_exclude_lists) && (sizeof($va_exclude_lists) > 0)) {
 				if(in_array($qr_lists->get('list_code'), $va_exclude_lists)) {
 					continue;
 				}
@@ -256,6 +266,8 @@ final class ConfigurationExporter {
 				if($qr_lists->get('deleted') == '1') {
 					continue;
 				}
+
+				$this->printStatus(_t("Exporting changes for list %1", $qr_lists->get("list_code")));
 			}
 
 			if($vo_items) {
@@ -357,6 +369,8 @@ final class ConfigurationExporter {
 				$vo_elements->appendChild($vo_element);
 				$vo_element->setAttribute("code", $vs_deleted_idno);
 				$vo_element->setAttribute("deleted", 1);
+
+				$this->printStatus(_t("Exporting deleted metadata element %1", $vs_deleted_idno));
 			}
 		}
 
@@ -423,6 +437,8 @@ final class ConfigurationExporter {
 				if($t_element->getLastChangeTimestampAsInt($qr_elements->get('element_id')) < $this->opn_modified_after) {
 					continue;
 				}
+
+				$this->printStatus(_t("Exporting changes for element %1", $qr_elements->get("element_code")));
 			}
 
 			// but IF we're exporting this item, always export ALL sub-items
@@ -540,6 +556,8 @@ final class ConfigurationExporter {
 				if($t_element->getLastChangeTimestampAsInt() < $this->opn_modified_after) {
 					continue;
 				}
+
+				$this->printStatus(_t("Exporting changes for element %1", $qr_elements->get("element_code")));
 			}
 
 			// but IF we're exporting this item, always export ALL sub-items
@@ -697,6 +715,8 @@ final class ConfigurationExporter {
 				$vo_uis->appendChild($vo_ui);
 				$vo_ui->setAttribute("code", $vs_deleted_idno);
 				$vo_ui->setAttribute("deleted", 1);
+
+				$this->printStatus(_t("Exporting deleted editor %1", $vs_deleted_idno));
 			}
 		}
 
@@ -949,6 +969,8 @@ final class ConfigurationExporter {
 				if($t_ui->getLastChangeTimestampAsInt($qr_uis->get('ui_id')) < $this->opn_modified_after) {
 					continue;
 				}
+
+				$this->printStatus(_t("Exporting changes for editor %1", $qr_uis->get("editor_code")));
 			}
 
 			$vo_ui->appendChild($vo_screens);
@@ -1004,6 +1026,8 @@ final class ConfigurationExporter {
 				$vo_types->appendChild($vo_type);
 				$vo_type->setAttribute("code", $vs_deleted_idno);
 				$vo_type->setAttribute("deleted", 1);
+
+				$this->printStatus(_t("Exporting deleted relationship type %1", $vs_deleted_idno));
 			}
 		}
 
@@ -1017,6 +1041,8 @@ final class ConfigurationExporter {
 				if($t_rel_types->getLastChangeTimestampAsInt($qr_types->get('type_id')) < $this->opn_modified_after) {
 					continue;
 				}
+
+				$this->printStatus(_t("Exporting changes for relationship type %1", $qr_types->get("type_code")));
 			}
 
 			if(preg_match("/root\_for\_[0-9]{1,3}/",$qr_types->get("type_code"))) { // ignore legacy root records
@@ -1094,6 +1120,8 @@ final class ConfigurationExporter {
 				$vo_roles->appendChild($vo_role);
 				$vo_role->setAttribute("code", $vs_deleted_idno);
 				$vo_role->setAttribute("deleted", 1);
+
+				$this->printStatus(_t("Exporting deleted role %1", $vs_deleted_idno));
 			}
 		}
 
@@ -1104,6 +1132,8 @@ final class ConfigurationExporter {
 				if($t_role->getLastChangeTimestampAsInt($qr_roles->get('role_id')) < $this->opn_modified_after) {
 					continue;
 				}
+
+				$this->printStatus(_t("Exporting changes for role %1", $qr_roles->get("code")));
 			}
 
 			$t_role->load($qr_roles->get("role_id"));
@@ -1132,7 +1162,7 @@ final class ConfigurationExporter {
 					$vs_table_name = $va_tmp[0];
 					$vs_bundle_name = $va_tmp[1];
 
-					if($t_ui_screens->isAvailableBundle($vs_table_name,$vs_bundle_name)) { // only add this entry to the export if it's actually a valid bundle
+					if($t_ui_screens->isAvailableBundle($vs_table_name, $vs_bundle_name)) { // only add this entry to the export if it's actually a valid bundle
 						$vs_access = $this->_convertACLConstantToString(intval($vn_val));
 
 						$vo_permission = $this->opo_dom->createElement("permission");
@@ -1186,6 +1216,8 @@ final class ConfigurationExporter {
 				$vo_groups->appendChild($vo_group);
 				$vo_group->setAttribute("code", $vs_deleted_idno);
 				$vo_group->setAttribute("deleted", 1);
+
+				$this->printStatus(_t("Exporting deleted group %1", $vs_deleted_idno));
 			}
 		}
 
@@ -1196,6 +1228,8 @@ final class ConfigurationExporter {
 				if($t_group->getLastChangeTimestampAsInt($qr_groups->get('group_id')) < $this->opn_modified_after) {
 					continue;
 				}
+
+				$this->printStatus(_t("Exporting changes for group %1", $qr_groups->get("code")));
 			}
 
 			$t_group->load($qr_groups->get("group_id"));
@@ -1237,6 +1271,8 @@ final class ConfigurationExporter {
 				$vo_forms->appendChild($vo_form);
 				$vo_form->setAttribute("code", $vs_deleted_idno);
 				$vo_form->setAttribute("deleted", 1);
+
+				$this->printStatus(_t("Exporting deleted search form %1", $vs_deleted_idno));
 			}
 		}
 
@@ -1248,6 +1284,8 @@ final class ConfigurationExporter {
 				if($t_form->getLastChangeTimestampAsInt($qr_forms->get('form_id')) < $this->opn_modified_after) {
 					continue;
 				}
+
+				$this->printStatus(_t("Exporting changes for search form %1", $qr_forms->get("code")));
 			}
 
 			$vo_form = $this->opo_dom->createElement("searchForm");
@@ -1382,6 +1420,7 @@ final class ConfigurationExporter {
 		if($this->opn_modified_after && is_array($va_deleted = $this->getDeletedItemsFromChangeLogByIdno($t_display->tableNum(), 'display_code'))) {
 			foreach($va_deleted as $vs_deleted_idno) {
 				$vs_buf .= "\t<display code='".($vs_deleted_idno)."' deleted='1' />\n";
+				$this->printStatus(_t("Exporting deleted display %1", $vs_deleted_idno));
 			}
 		}
 
@@ -1395,6 +1434,8 @@ final class ConfigurationExporter {
 				if($t_display->getLastChangeTimestampAsInt() < $this->opn_modified_after) {
 					continue;
 				}
+
+				$this->printStatus(_t("Exporting changes for display %1", $va_info['display_code']));
 			}
 
 			$vs_buf .= "\t<display code='".($va_info['display_code'] && preg_match('!^[A-Za-z0-9_]+$!', $va_info['display_code']) ? $va_info['display_code'] : 'display_'.$va_info['display_id'])."' type='".$o_dm->getTableName($va_info['table_num'])."' system='".$t_display->get('is_system')."'>\n";
@@ -1606,6 +1647,19 @@ final class ConfigurationExporter {
 		}
 
 		return $va_return;
+	}
+	# --------------------------------------------------
+	/**
+	 * @return bool
+	 */
+	protected function outputStatus() {
+		return $this->opb_output_status;
+	}
+	# --------------------------------------------------
+	protected function printStatus($vs_msg) {
+		if($this->outputStatus()) {
+			CLIUtils::addMessage($vs_msg);
+		}
 	}
 	# --------------------------------------------------
 }
