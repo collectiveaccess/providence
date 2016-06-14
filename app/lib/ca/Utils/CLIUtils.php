@@ -3075,7 +3075,7 @@
 
 				if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Service endpoint is '%1'. Timestamp for diff config is %2", $vs_target, $vn_target_timestamp)); }
 
-				$vs_config = ConfigurationExporter::exportConfigurationAsXML('', '', '', '', $vn_target_timestamp);
+				$vs_config = ConfigurationExporter::exportConfigurationAsXML('', '', '', '', $vn_target_timestamp, true);
 				$va_timestamps[$vs_target] = time();
 				CLIUtils::addMessage(_t("Finished partial configuration export for target %1", $vs_target));
 
