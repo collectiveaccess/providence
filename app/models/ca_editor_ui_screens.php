@@ -405,6 +405,11 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	public function getAvailableBundles($pm_table_name_or_num=null, $pa_options=null) {
 		$pb_dont_cache = caGetOption('dontCache', $pa_options, false);
 		if (!$pm_table_name_or_num) { $pm_table_name_or_num = $this->getTableNum(); }
+		$vs_cache_key = md5($pm_table_name_or_num . serialize($pa_options));
+
+		if(MemoryCache::contains($vs_cache_key, 'UiScreensAvailableBundles')) {
+			return MemoryCache::fetch($vs_cache_key, 'UiScreensAvailableBundles');
+		}
 		
 		if (!is_numeric($pm_table_name_or_num)) { $pm_table_name_or_num = $this->_DATAMODEL->getTableNum($pm_table_name_or_num); }
 		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($pm_table_name_or_num, false))) { return null; }
@@ -1475,6 +1480,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				$va_sorted_bundles[$vs_real_key] = $va_info;
 			}
 		}
+
+		MemoryCache::save($vs_cache_key, $va_sorted_bundles, 'UiScreensAvailableBundles');
+
 		return $va_sorted_bundles;
 	}
 	# ----------------------------------------
