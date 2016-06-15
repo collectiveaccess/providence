@@ -159,7 +159,7 @@ class Mapping {
 
 		$va_related_tables = $this->getSearchBase()->getRelatedIndexingTables($ps_table);
 		foreach($va_related_tables as $vs_related_table) {
-			$va_related_table_fields = $this->getSearchBase()->getFieldsToIndex($ps_table, $vs_related_table);
+			$va_related_table_fields = $this->getSearchBase()->getFieldsToIndex($ps_table, $vs_related_table, array('clearCache' => true, 'includeNonRootElements' => true));
 			foreach($va_related_table_fields as $vs_related_table_field => $va_related_table_field_options){
 				if (preg_match('!^_ca_attribute_([\d]*)$!', $vs_related_table_field, $va_matches)) {
 					$va_rewritten_fields[$vs_related_table.'.A'.$va_matches[1]] = $va_related_table_field_options;
@@ -383,7 +383,6 @@ class Mapping {
 		$va_mapping_config = array();
 
 		foreach($this->getTables() as $vs_table) {
-			//if($vs_table == 'ca_objects') { var_dump($this->getFieldsToIndex($vs_table)); }
 			$va_mapping_config[$vs_table]['_source']['enabled'] = true;
 			$va_mapping_config[$vs_table]['properties'] = array();
 
