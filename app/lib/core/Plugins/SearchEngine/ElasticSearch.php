@@ -403,14 +403,18 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		$o_field = new ElasticSearch\Field($pn_content_tablenum, $ps_content_fieldname);
 		$va_fragment = $o_field->getIndexingFragment($pm_content, $pa_options);
 
-		try {
-			$va_record = $this->getClient()->get([
-				'index' => $this->getIndexName(),
-				'type' => $this->ops_indexing_subject_tablename,
-				'id' => $this->opn_indexing_subject_row_id
-			])['_source'];
-		} catch(\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
-			$va_record = null;
+		$va_record = null;
+
+		if(!$this->isReindexing()) {
+			try {
+				$va_record = $this->getClient()->get([
+					'index' => $this->getIndexName(),
+					'type' => $this->ops_indexing_subject_tablename,
+					'id' => $this->opn_indexing_subject_row_id
+				])['_source'];
+			} catch(\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
+				$va_record = null;
+			}
 		}
 
 		// if the record already exists, do incremental indexing
@@ -690,6 +694,10 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		}
 
 		return array_flip($va_pks);
+	}
+	# -------------------------------------------------------
+	public function isReindexing() {
+		return (defined('__CollectiveAccess_IS_REINDEXING__') && __CollectiveAccess_IS_REINDEXING__);
 	}
 	# -------------------------------------------------------
 }
