@@ -143,7 +143,7 @@ class Mapping {
 	 */
 	public function getFieldsToIndex($ps_table) {
 		if(!$this->getDatamodel()->tableExists($ps_table)) { return array(); }
-		$va_table_fields = $this->getSearchBase()->getFieldsToIndex($ps_table, null, array('clearCache' => true));
+		$va_table_fields = $this->getSearchBase()->getFieldsToIndex($ps_table, null, array('clearCache' => true, 'includeNonRootElements' => true));
 		if(!is_array($va_table_fields)) { return array(); }
 
 		$va_rewritten_fields = array();
@@ -383,6 +383,7 @@ class Mapping {
 		$va_mapping_config = array();
 
 		foreach($this->getTables() as $vs_table) {
+			//if($vs_table == 'ca_objects') { var_dump($this->getFieldsToIndex($vs_table)); }
 			$va_mapping_config[$vs_table]['_source']['enabled'] = true;
 			$va_mapping_config[$vs_table]['properties'] = array();
 
