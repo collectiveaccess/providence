@@ -3631,7 +3631,10 @@
 			}
 
 			$vn_timestamp = intval($po_opts->getOption('timestamp'));
-			$vs_log_dir = $po_opts->getOption('log');
+			if (!($vs_log_dir = $po_opts->getOption('log'))) {
+				$vs_log_dir = Configuration::load()->get('batch_metadata_import_log_directory');
+			}
+
 			$vn_log_level = CLIUtils::getLogLevel($po_opts);
 
 			$o_log = (is_writable($vs_log_dir)) ? new KLogger($vs_log_dir, $vn_log_level) : null;
@@ -3646,6 +3649,8 @@
 			$va_timestamps = $o_vars->getVar('push-config-changes-timestamps');
 
 			foreach($va_targets as $vs_target) {
+				$vs_target = trim($vs_target);
+
 				CLIUtils::addMessage(_t("Processing target %1", $vs_target));
 				if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Processing target %1", $vs_target)); }
 
@@ -3665,15 +3670,17 @@
 
 				if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Service endpoint is '%1'. Timestamp for diff config is %2", $vs_target, $vn_target_timestamp)); }
 
-				$vs_config = ConfigurationExporter::exportConfigurationAsXML('', '', '', '', $vn_target_timestamp);
+				$vs_config = ConfigurationExporter::exportConfigurationAsXML('', '', '', '', $vn_target_timestamp, true);
 				$va_timestamps[$vs_target] = time();
+				CLIUtils::addMessage(_t("Finished partial configuration export for target %1", $vs_target));
 
-				if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Configuration fragment was generated for target '%1' is \n %2", $vs_target, $vs_config)); }
+				if ($o_log) { $o_log->logDebug(_t("[push-config-changes] Configuration fragment for target '%1' is \n %2", $vs_target, $vs_config)); }
 
 				$vo_handle = curl_init($vs_target);
 				curl_setopt($vo_handle, CURLOPT_CUSTOMREQUEST, 'PUT');
 				curl_setopt($vo_handle, CURLOPT_RETURNTRANSFER, true);
-				curl_setopt($vo_handle, CURLOPT_TIMEOUT, 3);
+				curl_setopt($vo_handle, CURLOPT_TIMEOUT, 600);
+				curl_setopt($vo_handle, CURLOPT_CONNECTTIMEOUT, 30);
 				curl_setopt($vo_handle, CURLOPT_SSL_VERIFYHOST, 0);
 				curl_setopt($vo_handle, CURLOPT_SSL_VERIFYPEER, 0);
 				curl_setopt($vo_handle, CURLOPT_FOLLOWLOCATION, true);

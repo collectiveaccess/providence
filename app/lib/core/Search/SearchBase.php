@@ -167,13 +167,13 @@ require_once(__CA_LIB_DIR__."/core/Db.php");
 				return $va_fields_to_index;
 			}
 			
-			// Expand "_metadata" to all available metadata elements		
+			// Expand "_metadata" to all available metadata elements
 			if (isset($va_fields_to_index['_metadata'])) {
 				$va_data = $va_fields_to_index['_metadata'];
 				unset($va_fields_to_index['_metadata']);
-				
-				
-				$va_field_data = $t_subject->getApplicableElementCodes(null, false, false);
+
+				$vb_include_non_root_elements = caGetOption('includeNonRootElements', $pa_options, false);
+				$va_field_data = $t_subject->getApplicableElementCodes(null, $vb_include_non_root_elements, false);
 				foreach($va_field_data as $vn_element_id => $vs_element_code) {
 					$va_fields_to_index['_ca_attribute_'.$vn_element_id] = $va_data;
 				}
