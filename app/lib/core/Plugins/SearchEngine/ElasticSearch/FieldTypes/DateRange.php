@@ -76,7 +76,7 @@ class DateRange extends GenericElement {
 					)));
 		}
 
-		if($va_parsed_values['start'] != '-2000000000-12-31T23:59:59Z') {
+		if($va_parsed_values['start'] != '-2000000000-01-01T00:00:00Z') {
 			$va_return[] = array(
 				'range' => array(
 					$vs_fld => array(
@@ -112,7 +112,7 @@ class DateRange extends GenericElement {
 					)));
 		}
 
-		if($va_parsed_values['start'] != '-2000000000-12-31T23:59:59Z') {
+		if($va_parsed_values['start'] != '-2000000000-01-01T00:00:00Z') {
 			$va_return[] = array(
 				'range' => array(
 					$vs_fld => array(
