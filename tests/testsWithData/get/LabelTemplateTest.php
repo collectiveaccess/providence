@@ -66,11 +66,6 @@ class LabelTemplateTest extends BaseTestWithData {
 					"locale" => "en_US",
 					"name" => "Use for title for test image",
 					"type_id" => 'uf'
-				),
-				array(
-					"locale" => "en_US",
-					"name" => "Alternative title for test image",
-					"type_id" => 'alt'
 				)
 			),
 		));
@@ -81,7 +76,7 @@ class LabelTemplateTest extends BaseTestWithData {
 	}
 	# -------------------------------------------------------
 	public function testGets() {
-		$this->assertEquals('use for;alternate', $this->opt_object->getWithTemplate('^ca_objects.nonpreferred_labels.type_id'));
+		$this->assertEquals('use for', $this->opt_object->getWithTemplate('^ca_objects.nonpreferred_labels.type_id'));
 	}
 	# -------------------------------------------------------
 }
