@@ -34,6 +34,6 @@
 	<?php print $this->getVar('viewer'); ?>
 </div>	
 <div class="caMediaOverlayControls">
-	<?php print _t('Editing floor plan'); ?>
+	<?php print _t('Editing floor plan for <em>%1</em>', $this->getVar('target_name')); ?>
 	<div class='close'><a href="#" onclick="caMediaPanel.hidePanel(); return false;" title="close"><?php print caNavIcon(__CA_NAV_ICON_CLOSE__, "18px", [], ['color' => 'white']); ?></a></div>
 </div>

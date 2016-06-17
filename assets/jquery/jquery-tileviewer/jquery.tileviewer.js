@@ -323,15 +323,13 @@ var methods = {
 
                     	if (!options.useAnnotations || !options.annotationLoadUrl || !options.annotationLoadUrl.trim()) { return; }
                     	
-                    	if (options.annotationLoadUrl.substr(0,4) == 'http') {
+                    	if (options.annotationLoadUrl.substr(0,1) !== '#') {
 							jQuery.getJSON(options.annotationLoadUrl, function(data) {
 								view.load_annotation_data(data);
 							});
 						} else {
-							if (options.annotationLoadUrl.substr(0,1) == '#') {
-								var data = jQuery(options.annotationLoadUrl).val();
-								if (data) view.load_annotation_data(JSON.parse(data));
-							}
+							var data = jQuery(options.annotationLoadUrl).val();
+							if (data) view.load_annotation_data(JSON.parse(data));
 						}
                     },
                     
@@ -340,12 +338,15 @@ var methods = {
 						view.annotationTextBlocks = [];
 						
 						jQuery.each(data, function(k, v) {
+							if (!v) { return; }
 							if (v['scale'] && v['measurementUnits']) { 
 								options.scale = v['scale'];
 								options.measurementUnits = v['measurementUnits'];
 								jQuery(".tileviewerImageScaleControls div.tileviewerImageScaleControlText").html(options.imageScaleControlChangeSettingText.replace("%1", "1" + options.measurementUnits + " = " + (options.scale.toFixed(2) * 100) + "% of width"));
 								return;
 							}
+							if (!v['annotation_id']) { return; }
+							
 							v['index'] = k;
 							v['x'] = parseFloat(v['x']);
 							v['y'] = parseFloat(v['y']);
@@ -372,6 +373,7 @@ var methods = {
 						
 						view.draw_annotations();
 						if (options.allowAnnotationList) { view.update_annotation_list(); }
+						jQuery(view.canvas).parent().trigger('tileviewer:loadAnnotations', {'viewer': jQuery("#" + options.id)}); 
                     },
                     
                     /**
@@ -379,17 +381,19 @@ var methods = {
                      */
                     save_annotations: function(toSave, toDelete) {
                     	if (!options.useAnnotations) { return; }
-                    	
                     	for(var i in toSave) {
                     		if (!jQuery.isNumeric(i)) { continue; }
-                    		view.annotationsToSave.push(view.annotations[toSave[i]]);
+                    		i = parseInt(i);
+                    		view.annotationsToSave.push(view.annotations[parseInt(toSave[i])]);
                     	}
                     	
                     	for(var i in toDelete) {
                     		if (!jQuery.isNumeric(i)) { continue; }
-                    		view.annotationsToDelete.push(view.annotations[toDelete[i]].annotation_id);
+                    		i = parseInt(i);
+                    		view.annotationsToDelete.push(view.annotations[parseInt(toDelete[i])].annotation_id);
                     	}
                     	
+                    	console.log("save", toSave, view.annotations);
                     	view.commit_annotation_changes();
                     },
                     
@@ -418,25 +422,47 @@ var methods = {
                     		annotationsToSave.push(a);
                     	});
                     	
-                    	if (options.annotationSaveUrl.substr(0,4) == 'http') {
+                    	if (options.annotationSaveUrl.substr(0,1) !== '#') {
 							jQuery.post(options.annotationSaveUrl, { save: annotationsToSave, delete: view.annotationsToDelete }, function(data) {
 								view._update_annotations_after_commit(data['annotation_ids'], annotationsToSave);
+								jQuery.each(view.annotationsToDelete, function(k, v) {
+									view.annotations[v] = null;
+								});
+                    			view.isSavingAnnotations = false;
 							}, 'json');
 						} else {
 							var ids = [];
-							jQuery.each(annotationsToSave, function(k, v) {
-								ids[k] = k;
+							jQuery.each(view.annotationsToDelete, function(k, v) {
+								view.annotations[v-1] = null;
 							});
-						
+							jQuery.each(view.annotations, function(k, v) {
+								if (!v) { return; }
+								if(!v['annotation_id']) { v['annotation_id'] = k + 1; }
+								ids.push(v['annotation_id']);
+							});
+							
 							view._update_annotations_after_commit(ids, annotationsToSave);
 							
 							if (options.annotationSaveUrl.substr(0,1) == '#') {
-								jQuery(options.annotationSaveUrl).val(JSON.stringify(view.annotations));
+								var filteredAnnotations = [];
+								var i = 0;
+								jQuery.each(view.annotations, function(k, v) {
+									if (v) {
+										v['index'] = i;
+										v['annotation_id'] = i + 1;
+										filteredAnnotations.push(v);
+										i++;
+									}
+								});	
+								jQuery(options.annotationSaveUrl).val(JSON.stringify(filteredAnnotations));
 							}
+                    		view.isSavingAnnotations = false;
 						}
+						jQuery(view.canvas).parent().trigger('tileviewer:saveAnnotations', {'viewer': jQuery(view.canvas).parent()}); 
                     },
                     
                     _update_annotations_after_commit: function(annotation_ids, annotationsToSave) {
+                    	console.log("x", annotation_ids, view.annotations);
                     	for(var index in annotation_ids) {
 							if (!jQuery.isNumeric(index)) { continue; }
 							if (!view.annotations[index]) { continue; }
@@ -448,12 +474,6 @@ var methods = {
 							
                     		view.annotationsToSave = [];
                     		view.annotationsToDelete = [];
-                    		
-                    		view.isSavingAnnotations = false;
-                    		
-                    		if ((view.annotationsToSave.length > 0) || (view.annotationsToDelete.length > 0)) {
-                    			view.commit_annotation_changes();
-                    		}
                     		
                     		view.needdraw = true;
                     		
@@ -469,11 +489,12 @@ var methods = {
 								jQuery("#tileviewerAnnotationTextBlock_" + index).html(options.annotationPrefixText + (annotationsToSave[i]['label'] ? annotationsToSave[i]['label'] : (options.showEmptyAnnotationLabelTextInTextBoxes ? options.emptyAnnotationLabelText : '')));
 							}
 						}
+						
+                    	view.isSavingAnnotations = false;
                     },
 
                     _get_annotation_by_index: function(index, returnArrayIndex) {
                     	var annotationsToCheck = jQuery.extend(true, [], view.annotations);
-                        
                         index = parseInt(index);
                         for(var i in annotationsToCheck) {
                         	if (!annotationsToCheck[i]) { continue; }
@@ -525,7 +546,6 @@ var methods = {
 							view.annotations[index].ty = ((pos.top + view.canvasOverscanY - layer.ypos)/((layer.info.height/factor) * (layer.tilesize/256))) * 100;
 		
 							view.save_annotations([index], []);
-							view.commit_annotation_changes();
 							view.draw();
 						}}).mouseup(function(e) {
 							view.isAnnotationResize = view.isAnnotationTransformation = view.mousedown = view.dragAnnotation = null;
@@ -1615,7 +1635,6 @@ var methods = {
                     	if (parseInt(view.annotations[i]['locked']) == 1) { return; }
                     	
 						view.save_annotations([], [i]);
-						view.commit_annotation_changes();
 						
 						$('#tileviewerAnnotationTextBlock_' + i).remove();
                     	view.annotations[i] = null;
@@ -1900,6 +1919,7 @@ var methods = {
 							var i = view._get_annotation_by_index(inAnnotation['index'], true);
 							
 							if(i == null) { return; }	// annotation has been deleted
+							console.log("edit" ,i);
 							view.annotations[i]['label'] = jQuery('#tileviewerAnnotationTextLabel').val();
 							view.make_annotation_dirty(inAnnotation['index']);
 							view.save_annotations([inAnnotation['index']], []);
@@ -3152,7 +3172,6 @@ var methods = {
 					view.annotations[i].ty = ((pos.top + view.canvasOverscanY - layer.ypos)/((layer.info.height/factor) * (layer.tilesize/256))) * 100;
 					
 					view.save_annotations([view.selectedAnnotation], []);
-                    view.commit_annotation_changes();
 					view.draw();
 					//e.preventDefault();
 				}}).mouseup(function(e) {
@@ -3414,7 +3433,6 @@ var methods = {
                     view.dragAnnotation = view.isAnnotationResize = view.isAnnotationTranslation = null;
                     if(view.annotation_is_dirty(view.selectedAnnotation)) {
                     	view.save_annotations([view.selectedAnnotation], []);
-                    	view.commit_annotation_changes();
                     }
 //
 // End ANNOTATIONS: mouseup handler

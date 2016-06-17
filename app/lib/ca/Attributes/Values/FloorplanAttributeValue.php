@@ -33,7 +33,7 @@
   /**
   *
   */
-  define("__CA_ATTRIBUTE_VALUE_FloorPlan__", 14);
+  define("__CA_ATTRIBUTE_VALUE_FLOORPLAN__", 31);
   
  require_once(__CA_LIB_DIR__.'/core/Configuration.php');
  require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/IAttributeValue.php');
@@ -78,29 +78,13 @@
 		'label' => _t('Can be used for sorting'),
 		'description' => _t('Check this option if this attribute value can be used for sorting of search results. (The default is not to be.)')
 	),
-	'disableMap' => array(
-		'formatType' => FT_NUMBER,
-		'displayType' => DT_CHECKBOXES,
-		'default' => 0,
-		'width' => 1, 'height' => 1,
-		'label' => _t('Disable map'),
-		'description' => _t('Check this option if you want to disable location map display.')
-	),
 	'canBeEmpty' => array(
-		'formatType' => FT_NUMBER,
-		'displayType' => DT_CHECKBOXES,
-		'default' => 0,
-		'width' => 1, 'height' => 1,
-		'label' => _t('Can be empty'),
-		'description' => _t('Check this option if you want to allow empty attribute values. This - of course - only makes sense if you bundle several elements in a container.')
-	),
-	'canBeUsedInSearchForm' => array(
 		'formatType' => FT_NUMBER,
 		'displayType' => DT_CHECKBOXES,
 		'default' => 1,
 		'width' => 1, 'height' => 1,
-		'label' => _t('Can be used in search form'),
-		'description' => _t('Check this option if this attribute value can be used in search forms. (The default is to be.)')
+		'label' => _t('Can be empty'),
+		'description' => _t('Check this option if you want to allow empty attribute values. This - of course - only makes sense if you bundle several elements in a container.')
 	),
 	'canBeUsedInDisplay' => array(
 		'formatType' => FT_NUMBER,
@@ -109,65 +93,7 @@
 		'width' => 1, 'height' => 1,
 		'label' => _t('Can be used in display'),
 		'description' => _t('Check this option if this attribute value can be used for display in search results. (The default is to be.)')
-	),
-	'canMakePDF' => array(
-		'formatType' => FT_NUMBER,
-		'displayType' => DT_CHECKBOXES,
-		'default' => 0,
-		'width' => 1, 'height' => 1,
-		'label' => _t('Allow PDF output?'),
-		'description' => _t('Check this option if this metadata element can be output as a printable PDF. (The default is not to be.)')
-	),
-	'canMakePDFForValue' => array(
-		'formatType' => FT_NUMBER,
-		'displayType' => DT_CHECKBOXES,
-		'default' => 0,
-		'width' => 1, 'height' => 1,
-		'label' => _t('Allow PDF output?'),
-		'description' => _t('Check this option if individual values for this metadata element can be output as a printable PDF. (The default is not to be.)')
-	),
-	'displayTemplate' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_FIELD,
-		'default' => '',
-		'width' => 90, 'height' => 4,
-		'label' => _t('Display template'),
-		'validForRootOnly' => 1,
-		'description' => _t('Layout for value when used in a display (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
-	),
-	'displayDelimiter' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_FIELD,
-		'default' => '; ',
-		'width' => 10, 'height' => 1,
-		'label' => _t('Value delimiter'),
-		'validForRootOnly' => 1,
-		'description' => _t('Delimiter to use between multiple values when used in a display.')
-	),
-	'maxResults' => array(
-		'formatType' => FT_NUMBER,
-		'displayType' => DT_FIELD,
-		'default' => 20,
-		'width' => 5, 'height' => 1,
-		'label' => _t('Maximum number of FloorPlan results'),
-		'description' => _t('Determines the maximum number of results returned by FloorPlan. Tweak this number if you want to speed up lookups.')
-	),
-	'gnElements' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_FIELD,
-		'default' => 'name,countryName,continentCode',
-		'width' => 90, 'height' => 4,
-		'label' => _t('FloorPlan elements'),
-		'description' => _t('Comma-separated list of FloorPlan attributes to be pulled from the service to build the text representation for the selected location. See http://www.FloorPlan.org/export/FloorPlan-search.html for further reference, including the available element names. Note that latitude and longitude are always added to the text value to enable map display.')
-	),
-	'gnDelimiter' => array(
-		'formatType' => FT_TEXT,
-		'displayType' => DT_FIELD,
-		'default' => ', ',
-		'width' => 10, 'height' => 1,
-		'label' => _t('FloorPlan element delimiter'),
-		'description' => _t('Delimiter to use between multiple values pulled from FloorPlan service.')
-	),
+	)
 );
 
 class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue {
@@ -275,8 +201,9 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
 		
 		// HTML for tileviewer
 		$o_view->setVar('viewer', $t_instance->getMediaTag('floorplan', 'tilepic', $va_viewer_opts));
+		$o_view->setVar('target_name', $vs_target_name = $t_instance->get('preferred_labels'));
 		
-		$vs_element = "<a href='#' id='{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_trigger'>".$t_instance->getMediaTag('floorplan', 'preview')."</a>";
+		$vs_element = "<a href='#' class=\"{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_trigger\">".$t_instance->getMediaTag('floorplan', 'preview')."</a>";
 		$vs_element .= caHTMLHiddenInput(
  				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
  				['value' => '{{'.$pa_element_info['element_id'].'}}', 'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}']
@@ -286,9 +213,32 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
 		".$o_view->render('floorplan_viewer.php')."
 		</textarea>";
 		
+		if (!is_array($va_floor_plan_annotations = json_decode($t_subject->get($pa_element_info['element_code'])))) { $va_floor_plan_annotations = []; }
+		$vn_num_annotations = sizeof($va_floor_plan_annotations);
+		$vs_element .= "<div style=\"float:right; width: 50%;\" id=\"{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_info\">
+			<div>
+				<h2>"._t("Floor plan for <em>%1</em>", $vs_target_name)."</h2>
+			</div>
+			<div id=\"{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_stats\">
+			".(($vn_num_annotations == 1) ? _t('%1 annotation on this floor plan', $vn_num_annotations) : _t('%1 annotations on this floor plan', $vn_num_annotations))."
+			</div>
+			<div>
+				<a href='#' class=\"{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_trigger\">".caNavIcon(__CA_NAV_ICON_EDIT__, "18px")."</a>
+			</div>
+		</div>\n";
+		
 		$vs_element .= "<script type='text/javascript'>
 	jQuery(document).ready(function() {
 		var {fieldNamePrefix}".$pa_element_info['element_id']."{n}Floorplan = caUI.initFloorplan({'baseID': '{fieldNamePrefix}".$pa_element_info['element_id']."_{n}'});
+		jQuery('#caMediaPanel').on('tileviewer:saveAnnotations', '#caMediaOverlayTileViewer', function(e) {
+			var data = jQuery(\"#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}\").val();
+			var l = 0;
+			if (data) { l = JSON.parse(data).length; }
+			var singular_msg = '".addslashes(_t('%1 annotation on this floor plan'))."';
+			var plural_msg = '".addslashes(_t('%1 annotations on this floor plan'))."';
+			
+			jQuery(\"#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_stats\").html(((l == 1) ? singular_msg.replace('%1', l) : plural_msg.replace('%1', l)));
+		});
 	});
 </script>
 		"; 

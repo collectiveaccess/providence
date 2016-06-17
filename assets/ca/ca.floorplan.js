@@ -35,19 +35,11 @@ var caUI = caUI || {};
 			baseID: null
 		}, options);
 		
-		jQuery('#' + that.baseID + '_trigger').on('click', function(e) {
+		jQuery('.' + that.baseID + '_trigger').on('click', function(e) {
 			caMediaPanel.showPanel();
 			jQuery('#caMediaPanelContentArea').html(jQuery('#' + that.baseID + '_viewer').val());
 		});
-		
-		// --------------------------------------------------------------------------------
-		// Define methods
-		// --------------------------------------------------------------------------------
-		that.showPanel = function(url, onCloseCallback, clearOnClose, postData, callbackData) {
 			
-		}
-		
-		
 		// --------------------------------------------------------------------------------
 		
 		return that;
