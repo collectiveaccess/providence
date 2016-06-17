@@ -1,7 +1,7 @@
 /* 
 TileViewer HTML5 client
 
-    Version: 3.0.1
+    Version: 3.0.2
 
     This plugin is tested with following dependencies
     * JQuery 1.7+
@@ -323,44 +323,55 @@ var methods = {
 
                     	if (!options.useAnnotations || !options.annotationLoadUrl || !options.annotationLoadUrl.trim()) { return; }
                     	
-                    	jQuery.getJSON(options.annotationLoadUrl, function(data) {
-                    		view.annotations = [];
-                    		view.annotationTextBlocks = [];
-                    		
-                    		jQuery.each(data, function(k, v) {
-                    			if (v['scale'] && v['measurementUnits']) { 
-                    				options.scale = v['scale'];
-                    				options.measurementUnits = v['measurementUnits'];
-                    				jQuery(".tileviewerImageScaleControls div.tileviewerImageScaleControlText").html(options.imageScaleControlChangeSettingText.replace("%1", "1" + options.measurementUnits + " = " + (options.scale.toFixed(2) * 100) + "% of width"));
-                    				return;
-                    			}
-                    			v['index'] = k;
-                    			v['x'] = parseFloat(v['x']);
-                    			v['y'] = parseFloat(v['y']);
-                    			v['w'] = parseFloat(v['w']);
-                    			v['h'] = parseFloat(v['h']);
-                    			v['tx'] = parseFloat(v['tx']);
-                    			v['ty'] = parseFloat(v['ty']);
-                    			v['tw'] = parseFloat(v['tw']);
-                    			v['th'] = parseFloat(v['th']);
-                    			if (v['label'] == '[BLANK]') { v['label'] = ''; }
-                    			
-                    			// create text block
-                    			var textBlock = document.createElement("div");
-                    			jQuery(textBlock).attr('id', 'tileviewerAnnotationTextBlock_' + k).addClass("tileviewerAnnotationTextBlock").data("annotationIndex", k).html(options.annotationPrefixText + (v['label'] ? v['label'] : (options.showEmptyAnnotationLabelTextInTextBoxes ? options.emptyAnnotationLabelText : '')));
-								jQuery('#tileviewerAnnotationTextBlock_' + k).remove();
-								jQuery(view.annotationContainer).append(textBlock)
-								if (options.annotationTextDisplayMode == 'simultaneous') { 
-									view._make_annotation_text_block_draggable('#tileviewerAnnotationTextBlock_' + k);
-								}
-								v['textBlock'] = textBlock;
+                    	if (options.annotationLoadUrl.substr(0,4) == 'http') {
+							jQuery.getJSON(options.annotationLoadUrl, function(data) {
+								view.load_annotation_data(data);
+							});
+						} else {
+							if (options.annotationLoadUrl.substr(0,1) == '#') {
+								var data = jQuery(options.annotationLoadUrl).val();
+								if (data) view.load_annotation_data(JSON.parse(data));
+							}
+						}
+                    },
+                    
+                    load_annotation_data: function(data) {
+                    	view.annotations = [];
+						view.annotationTextBlocks = [];
+						
+						jQuery.each(data, function(k, v) {
+							if (v['scale'] && v['measurementUnits']) { 
+								options.scale = v['scale'];
+								options.measurementUnits = v['measurementUnits'];
+								jQuery(".tileviewerImageScaleControls div.tileviewerImageScaleControlText").html(options.imageScaleControlChangeSettingText.replace("%1", "1" + options.measurementUnits + " = " + (options.scale.toFixed(2) * 100) + "% of width"));
+								return;
+							}
+							v['index'] = k;
+							v['x'] = parseFloat(v['x']);
+							v['y'] = parseFloat(v['y']);
+							v['w'] = parseFloat(v['w']);
+							v['h'] = parseFloat(v['h']);
+							v['tx'] = parseFloat(v['tx']);
+							v['ty'] = parseFloat(v['ty']);
+							v['tw'] = parseFloat(v['tw']);
+							v['th'] = parseFloat(v['th']);
+							if (v['label'] == '[BLANK]') { v['label'] = ''; }
 							
-								view.annotations.push(v);
-                    		});
-                    		
-                    		view.draw_annotations();
-                    		if (options.allowAnnotationList) { view.update_annotation_list(); }
-                    	});
+							// create text block
+							var textBlock = document.createElement("div");
+							jQuery(textBlock).attr('id', 'tileviewerAnnotationTextBlock_' + k).addClass("tileviewerAnnotationTextBlock").data("annotationIndex", k).html(options.annotationPrefixText + (v['label'] ? v['label'] : (options.showEmptyAnnotationLabelTextInTextBoxes ? options.emptyAnnotationLabelText : '')));
+							jQuery('#tileviewerAnnotationTextBlock_' + k).remove();
+							jQuery(view.annotationContainer).append(textBlock)
+							if (options.annotationTextDisplayMode == 'simultaneous') { 
+								view._make_annotation_text_block_draggable('#tileviewerAnnotationTextBlock_' + k);
+							}
+							v['textBlock'] = textBlock;
+						
+							view.annotations.push(v);
+						});
+						
+						view.draw_annotations();
+						if (options.allowAnnotationList) { view.update_annotation_list(); }
                     },
                     
                     /**
@@ -397,7 +408,7 @@ var methods = {
                     		return false;
                     	}
                     	view.isSavingAnnotations = true;
-                    	if (options.debug) { console.log("Commit " + view.annotationsToSave.length + " annotations to " + options.annotationSaveUrl, view.annotationsToSave, view.annotationsToDelete); }
+                    	if (options.debug) { console.log("Commit " + view.annotationsToSave.length + " annotations to " + (options.annotationSaveUrl ? options.annotationSaveUrl : "LOCAL"), view.annotationsToSave, view.annotationsToDelete); }
                     	
                     	// strip out textBlock pointer because it causes jQuery errors with getJSON
                     	var annotationsToSave = [];
@@ -407,29 +418,34 @@ var methods = {
                     		annotationsToSave.push(a);
                     	});
                     	
-                    	jQuery.post(options.annotationSaveUrl, { save: annotationsToSave, delete: view.annotationsToDelete }, function(data) {
-                    		if (data['annotation_ids']) {
-                    			for(var index in data['annotation_ids']) {
-                    				if (!jQuery.isNumeric(index)) { continue; }
-                    				if (!view.annotations[index]) { continue; }
-                    				view.annotations[index]['annotation_id'] = data['annotation_ids'][index];
-                    				var i = view.changedAnnotations.indexOf(index);
-                    				if (i !== -1) {
-                    					view.changedAnnotations.splice(i, 1);
-                    				}
-                    			}
-                    		
-								// put new text into overlays
-                    			for(var i in annotationsToSave) {
-                    				var index = annotationsToSave[i]['index'];
-                    				if (!jQuery.isNumeric(i)) { continue; }
-                    				if (!jQuery.isNumeric(index)) { continue; }
-                    				if (data['annotation_ids'][index]) {
-                    					jQuery("#tileviewerAnnotationTextBlock_" + index).html(options.annotationPrefixText + (annotationsToSave[i]['label'] ? annotationsToSave[i]['label'] : (options.showEmptyAnnotationLabelTextInTextBoxes ? options.emptyAnnotationLabelText : '')));
-                    				}
-                    			}
-                    		}
-                    		
+                    	if (options.annotationSaveUrl.substr(0,4) == 'http') {
+							jQuery.post(options.annotationSaveUrl, { save: annotationsToSave, delete: view.annotationsToDelete }, function(data) {
+								view._update_annotations_after_commit(data['annotation_ids'], annotationsToSave);
+							}, 'json');
+						} else {
+							var ids = [];
+							jQuery.each(annotationsToSave, function(k, v) {
+								ids[k] = k;
+							});
+						
+							view._update_annotations_after_commit(ids, annotationsToSave);
+							
+							if (options.annotationSaveUrl.substr(0,1) == '#') {
+								jQuery(options.annotationSaveUrl).val(JSON.stringify(view.annotations));
+							}
+						}
+                    },
+                    
+                    _update_annotations_after_commit: function(annotation_ids, annotationsToSave) {
+                    	for(var index in annotation_ids) {
+							if (!jQuery.isNumeric(index)) { continue; }
+							if (!view.annotations[index]) { continue; }
+							view.annotations[index]['annotation_id'] = annotation_ids[index];
+							var i = view.changedAnnotations.indexOf(index);
+							if (i !== -1) {
+								view.changedAnnotations.splice(i, 1);
+							}
+							
                     		view.annotationsToSave = [];
                     		view.annotationsToDelete = [];
                     		
@@ -442,7 +458,17 @@ var methods = {
                     		view.needdraw = true;
                     		
                     		if (options.allowAnnotationList) { view.update_annotation_list(); }	// reload annotation list because annotations have changes
-                    	}, 'json');
+						}
+					
+						// put new text into overlays
+						for(var i in annotationsToSave) {
+							var index = annotationsToSave[i]['index'];
+							if (!jQuery.isNumeric(i)) { continue; }
+							if (!jQuery.isNumeric(index)) { continue; }
+							if (annotation_ids[index]) {
+								jQuery("#tileviewerAnnotationTextBlock_" + index).html(options.annotationPrefixText + (annotationsToSave[i]['label'] ? annotationsToSave[i]['label'] : (options.showEmptyAnnotationLabelTextInTextBoxes ? options.emptyAnnotationLabelText : '')));
+							}
+						}
                     },
 
                     _get_annotation_by_index: function(index, returnArrayIndex) {

@@ -173,7 +173,6 @@
 class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue {
 	# ------------------------------------------------------------------
  	private $ops_text_value;
- 	private $ops_uri_value;
  	# ------------------------------------------------------------------
  	public function __construct($pa_value_array=null) {
  		parent::__construct($pa_value_array);
@@ -181,7 +180,6 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
  	# ------------------------------------------------------------------
  	public function loadTypeSpecificValueFromRow($pa_value_array) {
  		$this->ops_text_value = $pa_value_array['value_longtext1'];
- 		$this->ops_uri_value =  $pa_value_array['value_longtext2'];
  	}
  	# ------------------------------------------------------------------
  	/**
@@ -203,19 +201,11 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
 			}
 		}
 		
-		if(isset($pa_options['forDuplication']) && $pa_options['forDuplication']) {
-			return $this->ops_text_value.'|'.$this->ops_uri_value;
-		}
-
-		return $this->ops_text_value.' [id:'.$this->ops_uri_value.']';
+		return $this->ops_text_value;
 	}
 	# ------------------------------------------------------------------
 	public function getTextValue(){
 		return $this->ops_text_value;
-	}
- 	# ------------------------------------------------------------------
-	public function getUri(){
-		return $this->ops_uri_value;
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -233,26 +223,14 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
 				return false;
 			}
 			return array();
- 		} else {
- 			$vs_text = $ps_value;
- 			$vs_id = null;
-			if (preg_match("! \[id:([0-9]+)\]$!", $vs_text, $va_matches)) {
-				$vs_id = $va_matches[1];
-				$vs_text = preg_replace("! \[id:[0-9]+\]$!", "", $ps_value);
-			}
-			if (!$vs_id) {
-				if(!$va_settings["canBeEmpty"]){
-					$this->postError(1970, _t('Entry was blank.'), 'FloorPlanAttributeValue->parseValue()');
-					return false;
-				}
-				return array();
-			}
-
+ 		} elseif (is_array($va_data = json_decode($ps_value))) {
+			$vs_text = $ps_value;
+	
 			return array(
-				'value_longtext1' => $vs_text,
-				'value_longtext2' => $vs_id,
+				'value_longtext1' => $vs_text
 			);
 		}
+		return false;
 	}
 	# ------------------------------------------------------------------
 	/**
@@ -291,16 +269,20 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
 			'id' => 'caMediaOverlayTileViewer',
 			'viewer_width' => caGetOption('viewer_width', $pa_data['display'], '100%'), 'viewer_height' => caGetOption('viewer_height', $pa_data['display'], '100%'),
 			'viewer_base_url' => $po_request->getBaseUrlPath(),
-			#'annotation_load_url' => caNavUrl($po_request, '*', '*', 'GetAnnotations', array('representation_id' => (int)$t_instance->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey())),
-			#'annotation_save_url' => caNavUrl($po_request, '*', '*', 'SaveAnnotations', array('representation_id' => (int)$t_instance->getPrimaryKey(), $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey())),
+			'annotation_load_url' => '#{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
+			'annotation_save_url' => '#{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}',
 			'progress_id' => 'caMediaOverlayProgress'
 		];
 		
 		// HTML for tileviewer
-		$o_view->setVar('viewer', 'xx'.$t_instance->getMediaTag('floorplan', 'tilepic', $va_viewer_opts));
+		$o_view->setVar('viewer', $t_instance->getMediaTag('floorplan', 'tilepic', $va_viewer_opts));
 		
 		
 		$vs_element = "<a href='#' id='{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_trigger'>".$t_instance->getMediaTag('floorplan', 'preview')."</a>";
+		$vs_element .= caHTMLHiddenInput(
+ 				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
+ 				['value' => '{{'.$pa_element_info['element_id'].'}}', 'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}']
+ 			);
 		
 		$vs_element .= "<textarea style=\"display: none;\" id=\"{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_viewer\">
 		".$o_view->render('floorplan_viewer.php')."
