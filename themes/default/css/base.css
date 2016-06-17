@@ -5569,14 +5569,12 @@ a.caItemLoadNextBundles {
 
 .roundedRel .caDeleteItemButton, .roundedRel .caInterstitialEditButton {
     position: relative;
+    margin: 0 3px 0 3px;
 }
 
 .listRel .caDeleteItemButton, .listRel .caInterstitialEditButton {
     float: right;
-}
-
-.listRel .caInterstitialEditButton {
-    float: right;
+    margin: 0 3px 0 3px;
 }
 
 div.preferenceSectionDivider {
