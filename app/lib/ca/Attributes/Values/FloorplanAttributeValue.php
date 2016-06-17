@@ -242,14 +242,13 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
 	 * @return string
 	 */
 	public function htmlFormElement($pa_element_info, $pa_options=null) {
-		$vs_class = trim((isset($pa_options['class']) && $pa_options['class']) ? $pa_options['class'] : '');
- 		$o_config = Configuration::load();
+		$o_config = Configuration::load();
  		
- 		if (!($po_request = caGetOption('request', $pa_options, null))) { return ''; }
+ 		if (!($po_request = caGetOption('request', $pa_options, null))) { return _t('Floor plan is not supported outside of a request context'); }
  		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
 
 
- 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight', 'disableMap', 'maxResults', 'gnElements', 'gnDelimiter'));
+ 		$va_settings = $this->getSettingValuesFromElementArray($pa_element_info, array('fieldWidth', 'fieldHeight'));
 		
  		if (!(isset($pa_options['t_subject']) && is_object($pa_options['t_subject']))) {
  			return _t('Floor plan is not supported');
@@ -276,7 +275,6 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
 		
 		// HTML for tileviewer
 		$o_view->setVar('viewer', $t_instance->getMediaTag('floorplan', 'tilepic', $va_viewer_opts));
-		
 		
 		$vs_element = "<a href='#' id='{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_trigger'>".$t_instance->getMediaTag('floorplan', 'preview')."</a>";
 		$vs_element .= caHTMLHiddenInput(
