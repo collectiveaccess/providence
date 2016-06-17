@@ -576,11 +576,17 @@ div.inspectorCheckedOut {
 	font-size:12px;
 	line-height:1.7em;
 }
-#leftNav h3.searchHistory, #leftNav h3.searchSaved, #leftNav h3.searchTools, #leftNav h3.tools{
+#leftNav h3.searchHistory, #leftNav h3.searchSaved, #leftNav h3.searchTools, #leftNav h3.tools, #leftNav h3.currentSort {
 	color:#555;
 	margin-bottom: 5px;
 	margin-top:5px;
 }
+
+h3.searchHistory div {
+    margin-left: 3px;
+    margin-top: 1px;
+}
+
 .inspectorNonConformingNumberList {
     display: none;
 }

@@ -126,6 +126,7 @@ if($vo_result) {
 	<?php
 	}
 
-	print $this->render('Search/search_sets_html.php');
+	print $this->render('Results/current_sort_html.php');
+		print $this->render('Search/search_sets_html.php');
 }
 ?>

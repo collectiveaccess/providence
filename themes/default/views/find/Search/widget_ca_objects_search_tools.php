@@ -25,8 +25,10 @@
  *
  * ----------------------------------------------------------------------
  */
- 
+
+	/** @var ResultContext $vo_result_context */
  	$vo_result_context 			= $this->getVar('result_context');
+	/** @var SearchResult $vo_result */
  	$vo_result					= $this->getVar('result');
 ?>
 <h3 class='searchType'>
@@ -125,7 +127,8 @@ if(sizeof($this->getVar("available_sets")) > 0){
 			</div>
 <?php
 		}
-		
+
+		print $this->render('Results/current_sort_html.php');
+		print $this->render('Results/current_sort_html.php');
 		print $this->render('Search/search_sets_html.php');
 	}
-?>
