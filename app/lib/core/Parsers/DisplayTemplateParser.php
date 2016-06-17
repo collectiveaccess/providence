@@ -178,7 +178,14 @@ class DisplayTemplateParser {
 			DisplayTemplateParser::prefetchAllRelatedIDs($va_template['tree']->children, $ps_tablename, $pa_row_ids, $pa_options);
 		}
 
+		// ad hoc template processing for labels.
+		// they only support a very limited set and no nested units or stuff like that
+		if($t_instance instanceof BaseLabel) {
+			return self::_processLabelTemplate($t_instance, $ps_template, $pa_row_ids, $pa_options);
+		}
+
 		$qr_res = caMakeSearchResult($ps_tablename, $pa_row_ids);
+
 		if(!$qr_res) { return $pb_return_as_array ? array() : ""; }
 
 		if(!caGetOption('filterNonPrimaryRepresentations', $pa_options, true) && ($qr_res instanceof ObjectSearchResult)) {
@@ -520,6 +527,13 @@ class DisplayTemplateParser {
 							case 'siblings':
 								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().".siblings.".$t_rel_instance->primaryKey(), $va_get_options);
 								$va_relative_ids = array_values($va_relative_ids);
+								break;
+							// allow labels as units
+							case 'preferred_labels':
+							case 'nonpreferred_labels':
+								/** @var LabelableBaseModelWithAttributes $t_instance */
+								$ps_tablename = $t_instance->getLabelTableName();
+								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().'.'.$va_relative_to_tmp[1].'.label_id', ['returnAsArray' => true]);
 								break;
 							default:
 								// If relativeTo is not set to a valid attribute try to guess from template, looking for container
@@ -1207,6 +1221,42 @@ class DisplayTemplateParser {
 				break;
 		}
 		return array();
+	}
+	# -------------------------------------------------------------------
+	/**
+	 * Process template for labels
+	 *
+	 * @param BaseLabel $t_instance
+	 * @param string $ps_template
+	 * @param array $pa_row_ids
+	 * @param array $pa_options
+	 * @return array
+	 */
+	public static function _processLabelTemplate($t_instance, $ps_template, array $pa_row_ids, array $pa_options) {
+		$pb_return_as_array = (bool) caGetOption('returnAsArray', $pa_options, false);
+
+		if(!($t_instance instanceof BaseLabel)) { return $pb_return_as_array ? array() : ''; }
+
+		$va_tags = caGetTemplateTags($ps_template);
+		if(!is_array($va_tags) || (sizeof($va_tags) < 1)) { return []; }
+
+		$va_return = [];
+		foreach($pa_row_ids as $vn_row_id) {
+			if(!$t_instance->load($vn_row_id)) { continue; }
+
+			$va_tag_values = [];
+			foreach($va_tags as $vs_tag) {
+				// @ todo: check ca_objects.preferred_labels or ca_object_labels.
+				// @ todo: right now you can template whatever so long as the
+				// @ todo: field name is in that table
+				$vs_field = array_pop(explode('.', $vs_tag));
+
+				$va_tag_values[$vs_tag] = $t_instance->get($vs_field, ['convertCodesToDisplayText' => true]);
+			}
+			$va_return[] = caProcessTemplate($ps_template, $va_tag_values);
+		}
+
+		return $va_return;
 	}
 	# -------------------------------------------------------------------
 }
