@@ -2974,6 +2974,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 				"._t('Sort by')." <img src=\"".$po_request->getThemeUrlPath()."/graphics/icons/bg.gif\" alt=\"Sort\"/>
 			</div>
 		<div class=\"caItemListSortControls\" id=\"{$ps_id_prefix}caItemListSortControls\">
+			<a href='#' style='float:right;' class=\"caItemListSortControl\">".caNavIcon(__CA_NAV_ICON_COLLAPSE__, '18px')."</a>
 			<ul>\n";
 
 		foreach($va_sort_fields as $vs_key => $vs_label) {
