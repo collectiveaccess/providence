@@ -222,22 +222,18 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
 			<div id=\"{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_stats\">
 			".(($vn_num_annotations == 1) ? _t('%1 annotation on this floor plan', $vn_num_annotations) : _t('%1 annotations on this floor plan', $vn_num_annotations))."
 			</div>
-			<div>
-				<a href='#' class=\"{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_trigger\">".caNavIcon(__CA_NAV_ICON_EDIT__, "18px")."</a>
+			<div style='margin-top: 10px'>
+				<a href='#' class=\"{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_trigger form-button\"><span class=\"form-button\">".caNavIcon(__CA_NAV_ICON_EDIT__, 2, ['style' => 'margin-right: 5px;'])." "._t('Edit floor plan')."</span></a>
 			</div>
 		</div>\n";
 		
 		$vs_element .= "<script type='text/javascript'>
 	jQuery(document).ready(function() {
-		var {fieldNamePrefix}".$pa_element_info['element_id']."{n}Floorplan = caUI.initFloorplan({'baseID': '{fieldNamePrefix}".$pa_element_info['element_id']."_{n}'});
-		jQuery('#caMediaPanel').on('tileviewer:saveAnnotations', '#caMediaOverlayTileViewer', function(e) {
-			var data = jQuery(\"#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}\").val();
-			var l = 0;
-			if (data) { l = JSON.parse(data).length; }
-			var singular_msg = '".addslashes(_t('%1 annotation on this floor plan'))."';
-			var plural_msg = '".addslashes(_t('%1 annotations on this floor plan'))."';
-			
-			jQuery(\"#{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_stats\").html(((l == 1) ? singular_msg.replace('%1', l) : plural_msg.replace('%1', l)));
+		var {fieldNamePrefix}".$pa_element_info['element_id']."{n}Floorplan = caUI.initFloorplan({
+			'baseID': '{fieldNamePrefix}".$pa_element_info['element_id']."_{n}', 
+			'elementID': ".$pa_element_info['element_id'].",
+			'singularMessage': '".addslashes(_t('%1 annotation on this floor plan'))."',
+			'pluralMessage': '".addslashes(_t('%1 annotations on this floor plan'))."'
 		});
 	});
 </script>

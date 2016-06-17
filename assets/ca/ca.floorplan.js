@@ -32,12 +32,25 @@ var caUI = caUI || {};
 		// --------------------------------------------------------------------------------
 		// setup options
 		var that = jQuery.extend({
-			baseID: null
+			baseID: null,
+			panelID: 'caMediaPanel',
+			viewerID: 'caMediaOverlayTileViewer',
+			elementID: null,
+			singularMessage: "%1 annotation on this floor plan",
+			pluralMessage: "%1 annotations on this floor plan"
 		}, options);
 		
 		jQuery('.' + that.baseID + '_trigger').on('click', function(e) {
 			caMediaPanel.showPanel();
 			jQuery('#caMediaPanelContentArea').html(jQuery('#' + that.baseID + '_viewer').val());
+		});
+		
+		jQuery('#' + that.panelID).on('tileviewer:saveAnnotations', '#' + that.viewerID, function(e) {
+			var data = jQuery("#{fieldNamePrefix}" + that.elementID + "_{n}").val();
+			var l = 0;
+			if (data) { l = JSON.parse(data).length; }
+			
+			jQuery("#{fieldNamePrefix}" + that.elementID + "_{n}_stats").html(((l == 1) ? that.singularMessage.replace('%1', l) : that.pluralMessage.replace('%1', l)));
 		});
 			
 		// --------------------------------------------------------------------------------

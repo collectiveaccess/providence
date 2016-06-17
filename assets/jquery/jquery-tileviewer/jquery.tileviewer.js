@@ -159,7 +159,11 @@ var methods = {
 			imageScaleControlFirstSetText: "<div class='tileviewerImageScaleControlsHeader'>A scale must be set for this image before measurements can be evaluated.</div><div class='tileviewerImageScaleControlsHelpText'>Enter the length with units (mm, cm, m, km, in, ft, miles, etc.) of the currently selected measurement below.</div>",
 			imageScaleControlChangeSettingText: "<div class='tileviewerImageScaleControlsHeader'>This image is scaled at %1.</div><div class='tileviewerImageScaleControlsHelpText'>To change scale enter the length with units (mm, cm, m, km, in, ft, miles, etc.) of the currently selected measurement below.</div>"
         };
-
+        
+        if (options.annotationLoadUrl.substr(0, 1) === '#') {
+        	options.enableMeasurements = false; 	// no measurements allowed when saving annotations locally
+		}
+		
         return this.each(function() {
             var $this = $(this);
         
@@ -393,7 +397,6 @@ var methods = {
                     		view.annotationsToDelete.push(view.annotations[parseInt(toDelete[i])].annotation_id);
                     	}
                     	
-                    	console.log("save", toSave, view.annotations);
                     	view.commit_annotation_changes();
                     },
                     
@@ -462,7 +465,6 @@ var methods = {
                     },
                     
                     _update_annotations_after_commit: function(annotation_ids, annotationsToSave) {
-                    	console.log("x", annotation_ids, view.annotations);
                     	for(var index in annotation_ids) {
 							if (!jQuery.isNumeric(index)) { continue; }
 							if (!view.annotations[index]) { continue; }
@@ -932,10 +934,6 @@ var methods = {
 												ctx.restore();
 												
 												// Measure: draw quantity
-												
-												// TODO: display scaled measurement; this is a placeholder
-												//var d = Math.sqrt(Math.pow(x2 - x1, 2) + (Math.pow(y2 - y1, 2)));
-												//var d_relative = (d/layerWidth/layerMag) * 100;
 												
 												var m = null;
 												
@@ -2336,15 +2334,18 @@ var methods = {
 									var h = view.annotations[view.selectedAnnotation].h/100;
 									
 									// Save scale factor
-									jQuery.getJSON(options.annotationSaveUrl, { 'measurement': m, 'width': w, 'height': h}, function(data) {
-										console.log(m, w, h, data);
-										options.scale = data.scale;
-										options.measurementUnits = data.measurementUnits;
+									if (options.annotationSaveUrl.substr(0, 1) !== '#') {
+										jQuery.getJSON(options.annotationSaveUrl, { 'measurement': m, 'width': w, 'height': h}, function(data) {
+											options.scale = data.scale;
+											options.measurementUnits = data.measurementUnits;
 										
-										view.needdraw = true;
+											view.needdraw = true;
 										
-										jQuery(".tileviewerImageScaleControls div.tileviewerImageScaleControlText").html(options.imageScaleControlChangeSettingText.replace("%1", "1" + options.measurementUnits + " = " + (options.scale.toFixed(2) * 100) + "% of width"));
-									});
+											jQuery(".tileviewerImageScaleControls div.tileviewerImageScaleControlText").html(options.imageScaleControlChangeSettingText.replace("%1", "1" + options.measurementUnits + " = " + (options.scale.toFixed(2) * 100) + "% of width"));
+										});
+									} else {
+										
+									}
 									
 									e.preventDefault();
 									return false;
