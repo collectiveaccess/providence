@@ -27,6 +27,9 @@
  
 var caUI = caUI || {};
 
+// Global panel count; provides for control of mask when nested panels are opened
+caUI.panelCount = 0;
+
 (function ($) {
 	caUI.initPanel = function(options) {
 		// --------------------------------------------------------------------------------
@@ -67,6 +70,8 @@ var caUI = caUI || {};
 		that.showPanel = function(url, onCloseCallback, clearOnClose, postData, callbackData) {
 			that.setZoom(that.allowMobileSafariZooming);
 			that.isChanging = true;
+			
+			caUI.panelCount++;
 			
 			// Set reference to panel in <div> being used
 			jQuery('#' + that.panelID).data("panel", that);
@@ -109,6 +114,7 @@ var caUI = caUI || {};
 		}
 		
 		that.hidePanel = function(opts) {
+			caUI.panelCount--;
 			if (that.onCloseCallback) {
 				that.onCloseCallback(that.callbackData);
 			}
@@ -116,7 +122,7 @@ var caUI = caUI || {};
 			that.isChanging = true;
 			jQuery('#' + that.panelID).fadeOut(that.panelTransitionSpeed, function() { that.isChanging = false; });
 			
-			if (that.useExpose && (!opts || !opts.dontCloseMask)) {
+			if (that.useExpose && (!opts || !opts.dontCloseMask) && (caUI.panelCount < 1)) {
 				jQuery.mask.close();
 			}
 			
