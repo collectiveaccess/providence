@@ -743,7 +743,7 @@ create table ca_places
    hier_left                      decimal(30,20)                 not null,
    hier_right                     decimal(30,20)                 not null,
    rank                           int unsigned                   not null default 0,
-   media                          longblob                       not null,
+   floorplan                      longblob                       not null,
    
    primary key (place_id),
    constraint fk_ca_places_source_id foreign key (source_id)
