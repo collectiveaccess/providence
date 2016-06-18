@@ -46,11 +46,11 @@ var caUI = caUI || {};
 		});
 		
 		jQuery('#' + that.panelID).on('tileviewer:saveAnnotations', '#' + that.viewerID, function(e) {
-			var data = jQuery("#{fieldNamePrefix}" + that.elementID + "_{n}").val();
+			var data = jQuery("#" + that.baseID).val();
 			var l = 0;
 			if (data) { l = JSON.parse(data).length; }
 			
-			jQuery("#{fieldNamePrefix}" + that.elementID + "_{n}_stats").html(((l == 1) ? that.singularMessage.replace('%1', l) : that.pluralMessage.replace('%1', l)));
+			jQuery("#" + that.baseID + "_stats").html(((l == 1) ? that.singularMessage.replace('%1', l) : that.pluralMessage.replace('%1', l)));
 		});
 			
 		// --------------------------------------------------------------------------------
