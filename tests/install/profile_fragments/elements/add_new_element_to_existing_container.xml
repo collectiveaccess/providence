@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" infoUrl="">
+  <profileName>collectiveaccess</profileName>
+  <profileDescription/>
+  <locales/>
+  <lists/>
+  <elementSets>
+    <metadataElement code="date" datatype="Container">
+      <labels>
+        <label locale="en_US">
+          <name>Date</name>
+          <description>A point or period of time associated with an event in the life cycle of the resource.</description>
+        </label>
+      </labels>
+      <documentationUrl>http://dublincore.org/documents/dcmi-terms/#terms-date</documentationUrl>
+      <settings>
+        <setting name="lineBreakAfterNumberOfElements">2</setting>
+      </settings>
+      <elements>
+        <metadataElement code="dates_value" datatype="DateRange">
+          <labels>
+            <label locale="en_US">
+              <name>Date</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">40</setting>
+            <setting name="fieldHeight">1</setting>
+            <setting name="minChars">0</setting>
+            <setting name="maxChars">65535</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="dc_dates_types" datatype="List" list="date_types">
+          <labels>
+            <label locale="en_US">
+              <name>Type</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">40</setting>
+          </settings>
+        </metadataElement>
+        <metadataElement code="dates_description" datatype="Text">
+          <labels>
+            <label locale="en_US">
+              <name>Text</name>
+            </label>
+          </labels>
+          <settings>
+            <setting name="fieldWidth">100</setting>
+          </settings>
+        </metadataElement>
+      </elements>
+      <typeRestrictions>
+        <restriction code="objects">
+          <table>ca_objects</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">255</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+        <restriction code="r1">
+          <table>ca_object_representations</table>
+          <settings>
+            <setting name="minAttributesPerRow">0</setting>
+            <setting name="maxAttributesPerRow">1</setting>
+            <setting name="minimumAttributeBundlesToDisplay">1</setting>
+          </settings>
+        </restriction>
+      </typeRestrictions>
+    </metadataElement>
+  </elementSets>
+  <userInterfaces/>
+  <relationshipTypes/>
+  <roles/>
+  <groups/>
+  <displays></displays>
+  <searchForms/>
+</profile>

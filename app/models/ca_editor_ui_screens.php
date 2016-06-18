@@ -406,6 +406,11 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 	public function getAvailableBundles($pm_table_name_or_num=null, $pa_options=null) {
 		$pb_dont_cache = caGetOption('dontCache', $pa_options, false);
 		if (!$pm_table_name_or_num) { $pm_table_name_or_num = $this->getTableNum(); }
+		$vs_cache_key = md5($pm_table_name_or_num . serialize($pa_options));
+
+		if(MemoryCache::contains($vs_cache_key, 'UiScreensAvailableBundles')) {
+			return MemoryCache::fetch($vs_cache_key, 'UiScreensAvailableBundles');
+		}
 		
 		if (!is_numeric($pm_table_name_or_num)) { $pm_table_name_or_num = $this->_DATAMODEL->getTableNum($pm_table_name_or_num); }
 		if (!($t_instance = $this->getAppDatamodel()->getInstanceByTableNum($pm_table_name_or_num, false))) { return null; }
@@ -1494,8 +1499,8 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 			}
 			
 			$t_placement->setSettingDefinitionsForPlacement($va_additional_settings);
-			
-			$vs_display = "<div id='uiEditorBundle_{$vs_table}_{$vs_bundle_proc}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label = $t_instance->getDisplayLabel($vs_table.'.'.$vs_bundle_proc))."</div>";
+			$vs_label = $t_instance->getDisplayLabel($t_instance->tableName().'.'.$vs_bundle_proc) ?: $va_info['label'];
+			$vs_display = "<div id='uiEditorBundle_{$vs_table}_{$vs_bundle_proc}'><span class='bundleDisplayEditorPlacementListItemTitle'>".caUcFirstUTF8Safe($t_instance->getProperty('NAME_SINGULAR'))."</span> ".($vs_label)."</div>";
 
 			$va_additional_settings['bundleTypeRestrictions'] = [
 				'formatType' => FT_TEXT,
@@ -1530,6 +1535,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 				$va_sorted_bundles[$vs_real_key] = $va_info;
 			}
 		}
+
+		MemoryCache::save($vs_cache_key, $va_sorted_bundles, 'UiScreensAvailableBundles');
+
 		return $va_sorted_bundles;
 	}
 	# ----------------------------------------
@@ -1756,7 +1764,6 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 		$va_placements_in_screen = array();
 		foreach($va_placements as $vn_placement_id => $va_placement) {
 			$vs_bundle_proc = preg_replace('!^ca_attribute_!', '', $va_placement['bundle_name']);
-			
 			$vs_label = ($vs_label = ($t_instance->getDisplayLabel($t_instance->tableName().'.'.$vs_bundle_proc))) ? $vs_label : $va_placement['bundle_name'];
 			if(is_array($va_placement['settings']['label'])){
 				$va_tmp = caExtractValuesByUserLocale(array($va_placement['settings']['label']));

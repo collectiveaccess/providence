@@ -513,13 +513,13 @@ class BaseModel extends BaseObject {
 	/**
 	 * Remove transaction property.
 	 *
-	 * @param bool $ps_commit If true, the transaction is committed, if false, the transaction is rolledback.
+	 * @param bool $pb_commit If true, the transaction is committed, if false, the transaction is rolledback.
 	 * Defaults to true.
 	 * @return bool success state
 	 */
-	public function removeTransaction($ps_commit=true) {
+	public function removeTransaction($pb_commit=true) {
 		if ($this->inTransaction()) {
-			if ($ps_commit) {
+			if ($pb_commit) {
 				$this->_TRANSACTION->commit();
 			} else {
 				$this->_TRANSACTION->rollback();
@@ -2688,7 +2688,7 @@ class BaseModel extends BaseObject {
 							}
 							
 							// Moving between hierarchies
-							if ($this->get($vs_hier_id_fld) != $va_parent_info[$vs_hier_id_fld]) {
+							if (is_array($va_parent_info) && ($this->get($vs_hier_id_fld) != $va_parent_info[$vs_hier_id_fld])) {
 								$vn_hierarchy_id = $va_parent_info[$vs_hier_id_fld];
 								$this->set($this->getProperty('HIERARCHY_ID_FLD'), $vn_hierarchy_id);
 						
@@ -6846,6 +6846,15 @@ class BaseModel extends BaseObject {
 		}
 		return null;
 	}
+
+	/**
+	 * Get just the actual timestamp of the last change (as opposed to the array returned by getLastChangeTimestamp())
+	 * @param null|int $pn_row_id
+	 */
+	public function getLastChangeTimestampAsInt($pn_row_id=null) {
+		$va_last_change = $this->getLastChangeTimestamp($pn_row_id);
+		return (int) $va_last_change['timestamp'];
+	}
 	# --------------------------------------------------------------------------------------------
 	# --- Hierarchical functions
 	# --------------------------------------------------------------------------------------------
@@ -7404,7 +7413,7 @@ class BaseModel extends BaseObject {
 					WHERE
 						(".$this->tableName().".{$vs_hier_parent_id_fld} = ?) ".((sizeof($va_additional_table_wheres) > 0) ? ' AND '.join(' AND ', $va_additional_table_wheres) : '')."
 					GROUP BY
-						".$this->tableName().".".$this->primaryKey()." {$vs_additional_table_to_join_group_by}
+						".$this->tableName().".".$this->primaryKey()." {$vs_additional_table_to_join_group_by}, p2.".$this->primaryKey()."
 					ORDER BY
 						".$vs_order_by."
 				", (int)$pn_id);

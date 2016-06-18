@@ -1695,7 +1695,12 @@ table.listtable tr, table.listtable tr td, table.listtable tr th {
 
 #caWatchedItemsList.listtable {
 	font-size:12px;
-} 
+}
+
+#watchedItemsSetControls {
+    padding: 5px 5px 0 10px;
+    background-color: #eeeeee;
+}
 
 
 /* table headers */
@@ -2621,7 +2626,7 @@ table.representationAnnotationListItem {
     display: none;
     margin: 0px;
     padding: 0px;
-    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+    z-index: 34000;			/* needs to be on top of menu bar, which has z-index=30000 */
 }
 
 #caMediaPanelContentArea {
@@ -2665,7 +2670,7 @@ div.caMediaOverlayControls {
     width:100%;
     bottom:0px;
     left:0px;
-    z-index: 32000;			/* needs to be on top of caMediaPanel, which has z-index=31000 */
+    z-index: 35000;			/* needs to be on top of caMediaPanel, which has z-index=34000 */
     /* opacity:.1;	 */
     opacity: 0.7;
 }
@@ -5564,14 +5569,12 @@ a.caItemLoadNextBundles {
 
 .roundedRel .caDeleteItemButton, .roundedRel .caInterstitialEditButton {
     position: relative;
+    margin: 0 3px 0 3px;
 }
 
 .listRel .caDeleteItemButton, .listRel .caInterstitialEditButton {
     float: right;
-}
-
-.listRel .caInterstitialEditButton {
-    float: right;
+    margin: 0 3px 0 3px;
 }
 
 div.preferenceSectionDivider {

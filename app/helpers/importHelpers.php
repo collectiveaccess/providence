@@ -356,7 +356,7 @@
  *
  * @return array
  */
-	function caProcessRefineryRelated($ps_related_table, $pa_related_option_list, $pa_source_data, $pa_item, $pn_c, $pa_options = null) {
+	function caProcessRefineryRelated($ps_related_table, $pa_related_option_list, $pa_source_data, $pa_item, $pn_c, $pa_options=null) {
 		$o_reader = caGetOption('reader', $pa_options, null);
 		$o_log = caGetOption('log', $pa_options, null);
 		$o_trans = caGetOption('transaction', $pa_options, null);
@@ -430,7 +430,7 @@
 				$vs_idno_stub = BaseRefinery::parsePlaceholder($pa_related_options['idno_stub'], $pa_source_data, $pa_item, $pn_c, array('reader' => $o_reader, 'returnAsString' => true, 'delimiter' => ' '));	
 			}	
 			
-			$pa_options = array_merge(array('matchOn' => array('idno', 'label'), $pa_options));
+			$pa_options = array_merge(array('transaction' => $o_trans, 'matchOn' => array('idno', 'label'), $pa_options));
 			
 			switch($ps_related_table) {
 				case 'ca_objects':
@@ -695,7 +695,9 @@
 						}
 
 						// Set relationships on the related table
-						caProcessRefineryRelatedMultiple($po_refinery_instance, $pa_item, $pa_source_data, $vn_i, $o_log, $o_reader, $va_val, $va_attr_vals);
+						
+					
+						caProcessRefineryRelatedMultiple($po_refinery_instance, $pa_item, $pa_source_data, $vn_i, $o_log, $o_reader, $va_val, $va_attr_vals, $pa_options);
 
 						// Set nonpreferred labels
 						if (is_array($va_non_preferred_labels = $pa_item['settings']["{$ps_refinery_name}_nonPreferredLabels"])) {
@@ -832,6 +834,8 @@
 							
 								if (isset($pa_item['settings']['objectRepresentationSplitter_mediaPrefix']) && $pa_item['settings']['objectRepresentationSplitter_mediaPrefix'] && isset($va_val['media']['media']) && ($va_val['media']['media'])) {
 									$va_val['media']['media'] = $vs_batch_media_directory.'/'.$pa_item['settings']['objectRepresentationSplitter_mediaPrefix'].'/'.str_replace("\\", "/", $va_val['media']['media']);
+								} else {
+									$va_val['media']['media'] = $vs_item;
 								}
 								if(!isset($va_val['idno'])) { $va_val['idno'] = pathinfo($vs_item, PATHINFO_FILENAME); }
 								break;
@@ -901,7 +905,9 @@
  * @param $va_val array
  * @param $va_attr_vals array
  */
-function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_source_data, $pn_value_index, $o_log, $o_reader, &$va_val, &$va_attr_vals) {
+function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_source_data, $pn_value_index, $o_log, $o_reader, &$va_val, &$va_attr_vals, $pa_options=null) {
+	$o_trans = caGetOption('transaction', $pa_options, null);
+
 	$vs_relationship_settings_key = $po_refinery_instance->getName() . '_relationships';
 	// Set relatedEntities to support legacy mappings
 	if (is_array($va_related_entities_settings = $pa_item['settings'][$po_refinery_instance->getName() . '_relatedEntities'])) {
@@ -915,7 +921,7 @@ function caProcessRefineryRelatedMultiple($po_refinery_instance, &$pa_item, $pa_
 	if (is_array($va_relationships = $pa_item['settings'][$vs_relationship_settings_key])) {
 		foreach ($va_relationships as $va_relationship_settings) {
 			if ($vs_table_name = caGetOption('relatedTable', $va_relationship_settings)) {
-				if (is_array($va_rels = caProcessRefineryRelated($vs_table_name, array($va_relationship_settings), $pa_source_data, $pa_item, $pn_value_index, array('log' => $o_log, 'reader' => $o_reader)))) {
+				if (is_array($va_rels = caProcessRefineryRelated($vs_table_name, array($va_relationship_settings), $pa_source_data, $pa_item, $pn_value_index, $pa_options))) {
 					$va_rel_rels = $va_rels['_related_related'];
 					unset($va_rels['_related_related']);
 					

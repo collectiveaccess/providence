@@ -1600,7 +1600,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 
 			$vs_buf .= caFormTag($po_view->request, 'ExportSingleData', 'caExportForm', 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
 			$vs_buf .= "<div id='exporterFormList'>";
-			$vs_buf .= ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_item->tableNum(), array('id' => 'caExporterList'),array('width' => '120px'));
+			$vs_buf .= ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_item->tableNum(), array('id' => 'caExporterList'), array('width' => '120px', 'recordType' => $t_item->getTypeCode()));
 			$vs_buf .= caHTMLHiddenInput('item_id', array('value' => $t_item->getPrimaryKey()));
 			$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm");
 			$vs_buf .= "</div>\n";

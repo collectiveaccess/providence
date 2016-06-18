@@ -759,71 +759,61 @@
             </label>
           </labels>
         </item>
-        <item idno="vhs" enabled="0" default="0">
+        <item idno="betacam" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Betacam</name_singular>
+              <name_plural>Betacam</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="beta" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Beta</name_singular>
+              <name_plural>Beta</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="hi8" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>Hi8 (High 8)</name_singular>
+              <name_plural>Hi8 (High 8)</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="vhsc" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>VHSC</name_singular>
+              <name_plural>VHSC</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="umatic" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>U-matic</name_singular>
+              <name_plural>U-matic</name_plural>
+            </label>
+          </labels>
+        </item>
+        <item idno="vhs" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>VHS</name_singular>
               <name_plural>VHS</name_plural>
             </label>
           </labels>
-          <items>
-            <item idno="betacam" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Betacam</name_singular>
-                  <name_plural>Betacam</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="beta" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Beta</name_singular>
-                  <name_plural>Beta</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="hi8" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>Hi8 (High 8)</name_singular>
-                  <name_plural>Hi8 (High 8)</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="vhsc" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>VHSC</name_singular>
-                  <name_plural>VHSC</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="umatic" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>U-matic</name_singular>
-                  <name_plural>U-matic</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="vhs" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>VHS</name_singular>
-                  <name_plural>VHS</name_plural>
-                </label>
-              </labels>
-            </item>
-            <item idno="3_4" enabled="1" default="0">
-              <labels>
-                <label locale="en_US" preferred="1">
-                  <name_singular>3/4"</name_singular>
-                  <name_plural>3/4"</name_plural>
-                </label>
-              </labels>
-            </item>            
-          </items>
+        </item>
+        <item idno="3_4" enabled="1" default="0">
+          <labels>
+            <label locale="en_US" preferred="1">
+              <name_singular>3/4"</name_singular>
+              <name_plural>3/4"</name_plural>
+            </label>
+          </labels>
         </item>
       </items>
     </list>

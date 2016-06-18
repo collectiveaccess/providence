@@ -2361,8 +2361,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												if($va_field_info['FIELD_TYPE'] == FT_MEDIA) {
 													$va_opts['original_filename'] = basename($va_element_content[$vs_element]);
 												}
-
-												$t_subject->set($vs_element, $va_element_content[$vs_element], $va_opts);
+												
+												$vs_content = isset($va_element_content[$vs_element]) ? $va_element_content[$vs_element] : $va_element_content;
+												$t_subject->set($vs_element, $vs_content, $va_opts);
 												$t_subject->update();
 												if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add intrinsic %2 to %3:", $vs_idno, $vs_elenent, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 													ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);

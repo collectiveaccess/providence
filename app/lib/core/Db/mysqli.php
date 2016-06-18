@@ -345,12 +345,12 @@ class Db_mysqli extends DbDriverBase {
 	 * @return bool success state
 	 */
 	public function beginTransaction($po_caller) {
-		if (!@mysqli_query($this->opr_db, 'set autocommit=0')) {
+		if (!mysqli_autocommit($this->opr_db, false)) { 
 			$po_caller->postError(250, mysqli_error($this->opr_db), "Db->mysqli->beginTransaction()");
 			throw new DatabaseException(mysqli_error($this->opr_db), 250, "Db->mysqli->beginTransaction()");
 			return false;
 		}
-		if (!@mysqli_query($this->opr_db, 'start transaction')) {
+		if (!mysqli_begin_transaction($this->opr_db)) {
 			$po_caller->postError(250, mysqli_error($this->opr_db), "Db->mysqli->beginTransaction()");
 			throw new DatabaseException(mysqli_error($this->opr_db), 250, "Db->mysqli->beginTransaction()");
 			return false;
@@ -364,12 +364,12 @@ class Db_mysqli extends DbDriverBase {
 	 * @return bool success state
 	 */
 	public function commitTransaction($po_caller) {
-		if (!@mysqli_query($this->opr_db, 'commit')) {
+		if(!mysqli_commit($this->opr_db)) {
 			$po_caller->postError(250, mysqli_error($this->opr_db), "Db->mysqli->commitTransaction()");
 			throw new DatabaseException(mysqli_error($this->opr_db), 250, "Db->mysqli->commitTransaction()");
 			return false;
 		}
-		if (!@mysqli_query($this->opr_db, 'set autocommit=1')) {
+		if (!mysqli_autocommit($this->opr_db, true)) { 
 			$po_caller->postError(250, mysqli_error($this->opr_db), "Db->mysqli->commitTransaction()");
 			throw new DatabaseException(mysqli_error($this->opr_db), 250, "Db->mysqli->commitTransaction()");
 			return false;
@@ -383,12 +383,12 @@ class Db_mysqli extends DbDriverBase {
 	 * @return bool success state
 	 */
 	public function rollbackTransaction($po_caller) {
-		if (!@mysqli_query($this->opr_db, 'rollback')) {
+		if (!mysqli_rollback($this->opr_db)) {
 			$po_caller->postError(250, mysqli_error($this->opr_db), "Db->mysqli->rollbackTransaction()");
 			throw new DatabaseException(mysqli_error($this->opr_db), 250, "Db->mysqli->rollbackTransaction()");
 			return false;
 		}
-		if (!@mysqli_query($this->opr_db, 'set autocommit=1')) {
+		if (!mysqli_autocommit($this->opr_db, true)) { 
 			$po_caller->postError(250, mysqli_error($this->opr_db), "Db->mysqli->rollbackTransaction()");
 			throw new DatabaseException(mysqli_error($this->opr_db), 250, "Db->mysqli->rollbackTransaction()");
 			return false;
