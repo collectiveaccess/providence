@@ -1232,6 +1232,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 	 *
 	 *  useDefaultWhenNull = if a list has a null value the default value is typically ignored and null used as the initial value; set this option to use the default in all cases [Default=false]
 	 *	checkAccess = 
+	 *	exclude = array of item idnos to omit from the returned list. [Default is null]
 	 *	 
 	 * @return string - HTML code for the <select> element; empty string if the list is empty
 	 */
@@ -1328,6 +1329,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 		
 		if (!isset($pa_options['limitToItemsWithID']) || !is_array($pa_options['limitToItemsWithID']) || !sizeof($pa_options['limitToItemsWithID'])) { $pa_options['limitToItemsWithID'] = null; }
 		if (!isset($pa_options['omitItemsWithID']) || !is_array($pa_options['omitItemsWithID']) || !sizeof($pa_options['omitItemsWithID'])) { $pa_options['omitItemsWithID'] = null; }
+		$pa_exclude_items = caGetOption('exclude', $pa_options, null);
 	
 		if ((isset($pa_options['nullOption']) && $pa_options['nullOption']) && ($vs_render_as != 'checklist')) {
 			$va_options[''] = $pa_options['nullOption'];
@@ -1382,6 +1384,7 @@ class ca_lists extends BundlableLabelableBaseModelWithAttributes {
 			if (is_array($pa_options['omitItemsWithID']) && in_array($vn_item_id, $pa_options['omitItemsWithID'])) { continue; }
 			if (is_array($va_in_use_list) && !in_array($vn_item_id, $va_in_use_list)) { continue; }
 			if (is_array($pa_check_access) && (sizeof($pa_check_access) > 0) && !in_array($va_item['access'], $pa_check_access)) { continue; }
+			if (is_array($pa_exclude_items) && (sizeof($pa_exclude_items) > 0) && in_array($va_item['idno'], $pa_exclude_items)) { continue; }
 			
 			$va_options[$va_item[$pa_options['key']]] = str_repeat('&nbsp;', intval($va_item['LEVEL']) * 3).' '.$va_item['name_singular'];
 			if (!$va_item['is_enabled'] || (is_array($va_disabled_item_ids) && in_array($vn_item_id, $va_disabled_item_ids))) { $va_disabled_options[$va_item[$pa_options['key']]] = true; }
