@@ -1244,9 +1244,13 @@ class DisplayTemplateParser {
 		foreach($pa_row_ids as $vn_row_id) {
 			if(!$t_instance->load($vn_row_id)) { continue; }
 
+			$pb_is_preferred = (bool) ($t_instance->hasField('is_preferred') ? $t_instance->get('is_preferred') : false);
+
+			$t_instance->setLabelTypeList(Configuration::load()->get($pb_is_preferred ? $t_instance->getSubjectTableName()."_preferred_label_type_list" : $t_instance->getSubjectTableName()."_nonpreferred_label_type_list"));
+
 			$va_tag_values = [];
 			foreach($va_tags as $vs_tag) {
-				// @ todo: check ca_objects.preferred_labels or ca_object_labels.
+				// @ todo: check ca_objects.preferred_labels or ca_object_labels?
 				// @ todo: right now you can template whatever so long as the
 				// @ todo: field name is in that table
 				$vs_field = array_pop(explode('.', $vs_tag));
