@@ -25,28 +25,29 @@
  *
  * ----------------------------------------------------------------------
  */
- 	require_once(__CA_LIB_DIR__."/core/Controller/ActionController.php");
- 	
- 	class MetadataAlertsController extends ActionController {
- 		# -------------------------------------------------------
- 		public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
- 			parent::__construct($po_request, $po_response, $pa_view_paths);
- 		 
- 			AssetLoadManager::register('tableList');
- 		}
- 		# -------------------------------------------------------
- 		public function ListAlerts() {
+require_once(__CA_LIB_DIR__."/core/Controller/ActionController.php");
+require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rules.php');
 
-			$va_list = ca_metadata_alert_rules::getList($this->getRequest()->getUserID());
+class MetadataAlertsController extends ActionController {
+	# -------------------------------------------------------
+	public function __construct(&$po_request, &$po_response, $pa_view_paths=null) {
+		parent::__construct($po_request, $po_response, $pa_view_paths);
+	}
+	# -------------------------------------------------------
+	public function ListAlerts() {
+		AssetLoadManager::register('tableList');
 
- 			$this->render('metadata_alert_list_html.php');
- 		}
- 		# -------------------------------------------------------
- 		/**
- 		 * 
- 		 */
- 		public function Info() {
- 			return $this->render('widget_metadata_alerts_info_html.php', true);
- 		}
- 		# -------------------------------------------------------
- 	}
+		$va_list = ca_metadata_alert_rules::getList($this->getRequest()->getUserID());
+		$this->getView()->setVar('rule_list', $va_list);
+
+		$this->render('metadata_alert_list_html.php');
+	}
+	# -------------------------------------------------------
+	/**
+	 *
+	 */
+	public function Info() {
+		return $this->render('widget_metadata_alerts_info_html.php', true);
+	}
+	# -------------------------------------------------------
+}

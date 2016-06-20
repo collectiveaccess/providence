@@ -102,7 +102,8 @@ BaseModel::$s_ca_models_definitions['ca_editor_uis'] = array(
 					_t('displays') => 124,
 					_t('relationship types') => 79,
 					_t('user interfaces') => 101,
-					_t('user interface screens') => 100
+					_t('user interface screens') => 100,
+					_t('metadata alert rules') => 233,
 				)
 		),
 		'color' => array(

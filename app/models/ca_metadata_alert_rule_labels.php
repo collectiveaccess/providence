@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/models/ca_metadata_alert_rules.php : table access class for table ca_metadata_alert_rules
+ * app/models/ca_metadata_alert_rule_labels.php : table access class for table ca_metadata_alert_rule_labels
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -15,72 +15,95 @@
  * the terms of the provided license as published by Whirl-i-Gig
  *
  * CollectiveAccess is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * WITHOUT ANY WARRANTIES whatsoever, including any implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
  *
- * This source code is free and modifiable under the terms of
+ * This source code is free and modifiable under the terms of 
  * GNU General Public License. (http://www.gnu.org/copyleft/gpl.html). See
  * the "license.txt" file for details, or visit the CollectiveAccess web site at
  * http://www.CollectiveAccess.org
- *
+ * 
  * @package CollectiveAccess
  * @subpackage models
  * @license http://www.gnu.org/copyleft/gpl.html GNU Public License version 3
- *
+ * 
  * ----------------------------------------------------------------------
  */
+ 
+ /**
+   *
+   */
+require_once(__CA_LIB_DIR__.'/ca/BaseLabel.php');
 
-/**
- *
- */
 
-BaseModel::$s_ca_models_definitions['ca_metadata_alert_rules'] = array(
-	'NAME_SINGULAR' 	=> _t('metadata alert rule'),
-	'NAME_PLURAL' 		=> _t('metadata alert rules'),
-	'FIELDS' 			=> array(
+BaseModel::$s_ca_models_definitions['ca_metadata_alert_rule_labels'] = array(
+ 	'NAME_SINGULAR' 	=> _t('search form name'),
+ 	'NAME_PLURAL' 		=> _t('search form names'),
+ 	'FIELDS' 			=> array(
+ 		'label_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN, 
+				'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => 'Label id', 'DESCRIPTION' => 'Identifier for Label'
+		),
 		'rule_id' => array(
-			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
-			'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => false,
-			'DEFAULT' => '',
-			'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this rule')
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => 'Form id', 'DESCRIPTION' => 'Identifier for metadata alert rule'
 		),
-		'user_id' => array(
-			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
-			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => true,
-			'DISPLAY_FIELD' => array('ca_users.lname', 'ca_users.fname'),
-			'DEFAULT' => '',
-			'LABEL' => _t('User'), 'DESCRIPTION' => _t('The user who created the form.')
+		'locale_id' => array(
+				'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'DISPLAY_FIELD' => array('ca_locales.name'),
+				'LABEL' => _t('Locale'), 'DESCRIPTION' => _t('Locale of label'),
 		),
-		'table_num' => array(
-			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
-			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'DONT_USE_AS_BUNDLE' => true,
-			'IS_NULL' => false,
-			'DEFAULT' => '',
-			'LABEL' => 'Table', 'DESCRIPTION' => 'Table',
-			'BOUNDS_VALUE' => array(0,255)
+		'name' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 100, 'DISPLAY_HEIGHT' => 3,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Name'), 'DESCRIPTION' => _t('Name of search form'),
+				'BOUNDS_LENGTH' => array(1,255)
 		),
-		'code' => array(
-			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
-			'DISPLAY_WIDTH' => 30, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => false,
-			'DEFAULT' => '',
-			'LABEL' => _t('Code'), 'DESCRIPTION' => _t('Short code for rule (must be unique)'),
-			'BOUNDS_LENGTH' => array(1,20)
+		'name_sort' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => 'Sort order', 'DESCRIPTION' => 'Sortable version of name value',
+				'BOUNDS_LENGTH' => array(0,255)
 		),
-		'settings' => array(
-			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT,
-			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-			'IS_NULL' => false,
-			'DEFAULT' => '',
-			'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Trigger settings')
+		'description' => array(
+				'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD, 
+				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Description'), 'DESCRIPTION' => _t('Description of display'),
+				'BOUNDS_LENGTH' => array(0,65535)
 		),
-	)
+		'source_info' => array(
+				'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT, 
+				'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => 'Source information', 'DESCRIPTION' => 'Source information'
+		),
+		'is_preferred' => array(
+				'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT, 
+				'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+				'IS_NULL' => false, 
+				'DEFAULT' => '',
+				'LABEL' => _t('Is preferred'), 'DESCRIPTION' => _t('Is preferred')
+		)
+ 	)
 );
 
-class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes {
+class ca_metadata_alert_rule_labels extends BaseLabel {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -92,10 +115,10 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 	# --- Basic object parameters
 	# ------------------------------------------------------
 	# what table does this class represent?
-	protected $TABLE = 'ca_metadata_alert_rules';
-
+	protected $TABLE = 'ca_metadata_alert_rule_labels';
+	      
 	# what is the primary key of the table?
-	protected $PRIMARY_KEY = 'rule_id';
+	protected $PRIMARY_KEY = 'label_id';
 
 	# ------------------------------------------------------
 	# --- Properties used by standard editing scripts
@@ -106,25 +129,28 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 	# ------------------------------------------------------
 
 	# Array of fields to display in a listing of records from this table
-	protected $LIST_FIELDS = array();
+	protected $LIST_FIELDS = array('name');
 
 	# When the list of "list fields" above contains more than one field,
 	# the LIST_DELIMITER text is displayed between fields as a delimiter.
 	# This is typically a comma or space, but can be any string you like
 	protected $LIST_DELIMITER = ' ';
 
+	# Heading to place at the beginning of a listing of records
+	protected $LIST_HEADING = 'Metadata alert rule labels';
+
 	# What you'd call a single record from this table (eg. a "person")
 	protected $NAME_SINGULAR;
 
 	# What you'd call more than one record from this table (eg. "people")
-	protected $NAME_PLURAL;
+	protected $NAME_PLURAL = 'metadata alert rule labels';
 
 	# List of fields to sort listing of records by; you can use 
 	# SQL 'ASC' and 'DESC' here if you like.
-	protected $ORDER_BY = array('rule_id');
+	protected $ORDER_BY = array('name');
 
 	# Maximum number of record to display per page in a listing
-	protected $MAX_RECORDS_PER_PAGE = 20;
+	protected $MAX_RECORDS_PER_PAGE = 20; 
 
 	# How do you want to page through records in a listing: by number pages ordered
 	# according to your setting above? Or alphabetically by the letters of the first
@@ -134,8 +160,8 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 	# If you want to order records arbitrarily, add a numeric field to the table and place
 	# its name here. The generic list scripts can then use it to order table records.
 	protected $RANK = '';
-
-
+	
+	
 	# ------------------------------------------------------
 	# Hierarchical table properties
 	# ------------------------------------------------------
@@ -146,59 +172,42 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 	protected $HIERARCHY_DEFINITION_TABLE	=	null;
 	protected $HIERARCHY_ID_FLD				=	null;
 	protected $HIERARCHY_POLY_TABLE			=	null;
-
+	
 	# ------------------------------------------------------
 	# Change logging
 	# ------------------------------------------------------
 	protected $UNIT_ID_FIELD = null;
-	protected $LOG_CHANGES_TO_SELF = true;
+	protected $LOG_CHANGES_TO_SELF = false;
 	protected $LOG_CHANGES_USING_AS_SUBJECT = array(
 		"FOREIGN_KEYS" => array(
-
+			'rule_id'
 		),
 		"RELATED_TABLES" => array(
 
 		)
 	);
+	
 	# ------------------------------------------------------
-	# Group-based access control
+	# Labels
 	# ------------------------------------------------------
-	protected $USERS_RELATIONSHIP_TABLE = 'ca_metadata_alert_rules_x_users.php';
-	protected $USER_GROUPS_RELATIONSHIP_TABLE = 'ca_metadata_alert_rules_x_user_groups.php';
-
-	# ------------------------------------------------------
-	# Labeling
-	# ------------------------------------------------------
-	protected $LABEL_TABLE_NAME = 'ca_metadata_alert_rule_labels';
-
-	# ------------------------------------------------------
-	# Attributes
-	# ------------------------------------------------------
-	protected $ATTRIBUTE_TYPE_ID_FLD = null;				// name of type field for this table - attributes system uses this to determine via ca_metadata_type_restrictions which attributes are applicable to rows of the given type
-	protected $ATTRIBUTE_TYPE_LIST_CODE = null;				// list code (ca_lists.list_code) of list defining types for this table
-
-	# ------------------------------------------------------
-	# Self-relations
-	# ------------------------------------------------------
-	protected $SELF_RELATION_TABLE_NAME = null;
-
-	# ------------------------------------------------------
-	# ID numbering
-	# ------------------------------------------------------
-	protected $ID_NUMBERING_ID_FIELD = null;				// name of field containing user-defined identifier
-	protected $ID_NUMBERING_SORT_FIELD = null;				// name of field containing version of identifier for sorting (is normalized with padding to sort numbers properly)
-
+	# --- List of fields used in label user interface
+	protected $LABEL_UI_FIELDS = array(
+		'name'
+	);
+	protected $LABEL_DISPLAY_FIELD = 'name';
+	
+	# --- Name of field used for sorting purposes
+	protected $LABEL_SORT_FIELD = 'name_sort';
+	
+	# --- Name of table this table contains label for
+	protected $LABEL_SUBJECT_TABLE = 'ca_metadata_alert_rules';
+	
 	# ------------------------------------------------------
 	# $FIELDS contains information about each field in the table. The order in which the fields
 	# are listed here is the order in which they will be returned using getFields()
 
 	protected $FIELDS;
-
-	/**
-	 * @var resource|null
-	 */
-	static $s_lock_resource = null;
-
+	
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -212,21 +221,7 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
-
-		// Filter list of tables form can be used for to those enabled in current config
-		BaseModel::$s_ca_models_definitions['ca_metadata_alert_rules']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caGetPrimaryTablesForHTMLSelect();
-	}
-	# ------------------------------------------------------
-	/**
-	 * @param int $pn_user_id
-	 * @return array
-	 */
-	public static function getList($pn_user_id) {
-		$o_db = new Db();
-
-		$o_db->query('SELECT * FROM ca_metadata_alert_rules WHERE user_id=?', $pn_user_id);
-
-		return [];
 	}
 	# ------------------------------------------------------
 }
+

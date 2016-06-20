@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/views/manage/widget_metadata_alerts_info.php :
+ * app/views/editor/places/widget_metadata_alert_rule_info_html.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source places management software
@@ -26,14 +26,4 @@
  * ----------------------------------------------------------------------
  */
  
-	$vn_rule_count 	= $this->getVar('rule_count');
-?>
-<h3 class='searchForms'><?php print _t('Your metadata alert rules'); ?>:
-<div><?php
-	if ($vn_rule_count == 1) {
-		print _t("1 rule is available for editing");
-	} else {
-		print _t("%1 rules are available for editing", $vn_rule_count);
-	}
-?></div>
-</h3>
+print caEditorInspector($this, array('backText' => _t('Back to list')));

@@ -26,24 +26,35 @@
  * ----------------------------------------------------------------------
  */
 	$va_alert_list 		= $this->getVar('metadata_alert_list');
+
+	$vs_new_menu = '<div class="sf-small-menu form-header-button rounded">'.
+		'<div class="caNavHeaderIcon">'.
+		'<a href="#" onclick="_navigateToNewForm(jQuery(\'#tableList\').val());">'.caNavIcon(__CA_NAV_ICON_ADD__, 2).'</a>'.
+		'</div>'.
+		'<form action="#">'._t('New metadata alert rule for ').' '.caHTMLSelect('table_num', caGetPrimaryTablesForHTMLSelect(), array('id' => 'tableList')).'</form>'.
+		'</div>';
 ?>
 <script language="JavaScript" type="text/javascript">
 /* <![CDATA[ */
 	jQuery(document).ready(function(){
-		jQuery('#caSetList').caFormatListTable();
+		jQuery('#caMetadataAlertList').caFormatListTable();
 	});
+
+	function _navigateToNewForm(table_num) {
+		document.location = '<?php print caNavUrl($this->request, 'manage/metadata_alert_rules', 'MetadataAlertRuleEditor', 'Edit', array('rule_id' => 0)); ?>' + '/table_num/' + table_num;
+	}
 /* ]]> */
 </script>
 <div class="sectionBox">
 	<?php 
 		print caFormControlBox(
-			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caSetList\').caFilterTable(this.value); return false;" size="20"/></div>', 
+			'<div class="list-filter">'._t('Filter').': <input type="text" name="filter" value="" onkeyup="$(\'#caMetadataAlertList\').caFilterTable(this.value); return false;" size="20"/></div>',
 			'', 
-			''
-		); 
+			$vs_new_menu
+		);
 	?>
 	
-	<table id="caSetList" class="listtable">
+	<table id="caMetadataAlertList" class="listtable">
 		<thead>
 			<tr>
 				<th class="list-header-unsorted">
@@ -65,17 +76,17 @@
 ?>
 			<tr>
 				<td>
-					<div class="caSetListName"><?php print $va_alert['name'].($va_alert['code'] ? "<br/>(".$va_alert['code'].")" : ""); ?></div>
+					<div class="caMetadataAlertListName"><?php print $va_alert['name'].($va_alert['code'] ? "<br/>(".$va_alert['code'].")" : ""); ?></div>
 				</td>
 				<td>
 					<div><?php print $va_alert['content_type']; ?></div>
 				</td>
 				<td>
-					<div class="caSetListOwner"><?php print $va_alert['fname'].' '.$va_alert['lname'].($va_alert['email'] ? "<br/>(<a href='mailto:".$va_alert['email']."'>".$va_alert['email']."</a>)" : ""); ?></div>
+					<div class="caMetadataAlertListOwner"><?php print $va_alert['fname'].' '.$va_alert['lname'].($va_alert['email'] ? "<br/>(<a href='mailto:".$va_alert['email']."'>".$va_alert['email']."</a>)" : ""); ?></div>
 				</td>
 				<td class="listtableEditDelete">
-					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage', 'MetadataAlerts', 'Edit', array('alert_id' => $va_alert['alert_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")); ?>
-					<?php ($va_alert['can_delete'] == TRUE) ? print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage', 'MetadataAlerts', 'Delete', array('alert_id' => $va_alert['alert_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")) : ''; ?>
+					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage', 'MetadataAlerts', 'Edit', array('rule_id' => $va_alert['rule_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")); ?>
+					<?php ($va_alert['can_delete'] == TRUE) ? print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage', 'MetadataAlerts', 'Delete', array('rule_id' => $va_alert['rule_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")) : ''; ?>
 				</td>
 			</tr>
 <?php
@@ -93,7 +104,6 @@
 	}
 	TooltipManager::add('.deleteIcon', _t("Delete"));
 	TooltipManager::add('.editIcon', _t("Edit"));
-	TooltipManager::add('.batchIcon', _t("Batch"));
 ?>
 		</tbody>
 	</table>

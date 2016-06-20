@@ -8,7 +8,6 @@
 create table ca_metadata_alert_rules (
   rule_id         int unsigned      not null AUTO_INCREMENT,
   table_num       tinyint unsigned  not null,
-  name            varchar(255)      not null,
   code            varchar(20)       not null,
   settings        longtext          not null,
   user_id			    int unsigned      null references ca_users(user_id),
@@ -17,12 +16,25 @@ create table ca_metadata_alert_rules (
   index i_table_num (table_num)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 /*==========================================================================*/
+create table ca_metadata_alert_rule_labels (
+	label_id		  int unsigned not null primary key auto_increment,
+	rule_id			  int unsigned null references ca_metadata_alert_rules(rule_id),
+	locale_id		  smallint unsigned not null references ca_locales(locale_id),
+	name			    varchar(255) not null,
+	name_sort		  varchar(255) not null,
+	description		text not null,
+	source_info		longtext not null,
+	is_preferred	tinyint unsigned not null,
+
+	KEY i_rule_id (rule_id),
+	KEY i_locale_id (locale_id)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+/*==========================================================================*/
 create table ca_metadata_alert_triggers (
   trigger_id      int unsigned      not null AUTO_INCREMENT,
   rule_id         int unsigned      not null,
   settings        longtext          not null,
   trigger_type    varchar(30)       not null,
-
 
   primary key (trigger_id),
   constraint fk_alert_rules_rule_id foreign key (rule_id)

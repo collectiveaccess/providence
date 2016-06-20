@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/views/manage/widget_metadata_alerts_info.php :
+ * views/manage/search_forms/delete_html.php : 
  * ----------------------------------------------------------------------
  * CollectiveAccess
- * Open-source places management software
+ * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2016 Whirl-i-Gig
+ * Copyright 2009-2011 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,15 +25,16 @@
  *
  * ----------------------------------------------------------------------
  */
- 
-	$vn_rule_count 	= $this->getVar('rule_count');
+ 	$t_set = $this->getVar('t_subject');
+	$vn_form_id = $this->getVar('subject_id');
 ?>
-<h3 class='searchForms'><?php print _t('Your metadata alert rules'); ?>:
-<div><?php
-	if ($vn_rule_count == 1) {
-		print _t("1 rule is available for editing");
+<div class="sectionBox">
+<?php
+	if (!$this->getVar('confirmed')) {
+		// show delete confirmation notice
+		print caDeleteWarningBox($this->request, $t_set, $this->getVar('subject_name'), 'manage/search_forms', 'SearchFormEditor', 'Edit/'.$this->request->getActionExtra(), array('form_id' => $vn_form_id));
 	} else {
-		print _t("%1 rules are available for editing", $vn_rule_count);
+		print "<div align='center'>".caNavLink($this->request, _t('Back to search form list'), 'button', 'manage', 'SearchForm', 'ListForms')."</div>";
 	}
-?></div>
-</h3>
+?>
+</div>
