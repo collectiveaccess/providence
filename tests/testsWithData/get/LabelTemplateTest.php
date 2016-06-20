@@ -64,13 +64,13 @@ class LabelTemplateTest extends BaseTestWithData {
 			'nonpreferred_labels' => array(
 				array(
 					"locale" => "en_US",
-					"name" => "Use for title for test image",
-					"type_id" => 'uf'
+					"name" => "Alternate title for test image",
+					"type_id" => 'alt'
 				),
 				array(
 					"locale" => "en_US",
-					"name" => "Alternate title for test image",
-					"type_id" => 'alt'
+					"name" => "Use for title for test image",
+					"type_id" => 'uf'
 				)
 			),
 		));
@@ -82,7 +82,7 @@ class LabelTemplateTest extends BaseTestWithData {
 	# -------------------------------------------------------
 	public function testGets() {
 		$this->assertEquals(
-			'Use for title for test image (use for)<br />Alternate title for test image (alternate)',
+			'Alternate title for test image (alternate)<br />Use for title for test image (use for)',
 			$this->opt_object->getWithTemplate(
 				'<unit relativeTo="ca_objects.nonpreferred_labels" delimiter="<br />">^ca_objects.nonpreferred_labels.name (^ca_objects.nonpreferred_labels.type_id)</unit>'
 			)
