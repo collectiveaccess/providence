@@ -587,6 +587,12 @@ h3.searchHistory div {
     margin-top: 1px;
 }
 
+h3.currentSort div {
+    margin-left: 3px;
+    margin-top: 1px;
+    margin-right: 5px;
+}
+
 .inspectorNonConformingNumberList {
     display: none;
 }
