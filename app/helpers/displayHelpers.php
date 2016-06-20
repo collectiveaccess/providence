@@ -1254,7 +1254,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 						$vs_buf .= _t('Add new %1 to lot', $t_object->getTypeListAsHTMLFormElement('type_id', array('id' => 'caAddObjectToLotForm_type_id'), array('access' => __CA_BUNDLE_ACCESS_EDIT__)));
 					}
 
-					$vs_buf .= " <a href='#' onclick='caAddObjectToLotForm()'>" . caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__) . '</a>';
+					$vs_buf .= "&nbsp;<a href='#' onclick='caAddObjectToLotForm()'>" . caNavIcon(__CA_NAV_ICON_ADD__, '16px') . '</a>';
 					$vs_buf .= "</form></div>\n";
 
 					$vs_buf .= "<script type='text/javascript'>
@@ -1600,7 +1600,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 
 			$vs_buf .= caFormTag($po_view->request, 'ExportSingleData', 'caExportForm', 'manage/MetadataExport', 'post', 'multipart/form-data', '_top', array('disableUnsavedChangesWarning' => true));
 			$vs_buf .= "<div id='exporterFormList'>";
-			$vs_buf .= ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_item->tableNum(), array('id' => 'caExporterList'),array('width' => '120px'));
+			$vs_buf .= ca_data_exporters::getExporterListAsHTMLFormElement('exporter_id', $t_item->tableNum(), array('id' => 'caExporterList'), array('width' => '120px', 'recordType' => $t_item->getTypeCode()));
 			$vs_buf .= caHTMLHiddenInput('item_id', array('value' => $t_item->getPrimaryKey()));
 			$vs_buf .= caFormSubmitLink($po_view->request, _t('Export')." &rsaquo;", "button", "caExportForm");
 			$vs_buf .= "</div>\n";
@@ -2971,13 +2971,15 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 		$vs_buf = "
 		<div class=\"caItemListSortControlContainer\">
 			<div class=\"caItemListSortControlTrigger\" id=\"{$ps_id_prefix}caItemListSortControlTrigger\">
-				"._t('Sort by')." <img src=\"".$po_request->getThemeUrlPath()."/graphics/icons/bg.gif\" alt=\"Sort\"/>
+				<span id='{$ps_id_prefix}_caCurrentSortLabel'>"._t('Sort by')."</span> <img src=\"".$po_request->getThemeUrlPath()."/graphics/icons/bg.gif\" alt=\"Sort\"/>
 			</div>
 		<div class=\"caItemListSortControls\" id=\"{$ps_id_prefix}caItemListSortControls\">
+			<a href='#' style='float:right;' class=\"caItemListSortControl\">".caNavIcon(__CA_NAV_ICON_COLLAPSE__, '18px')."</a>
 			<ul>\n";
 
 		foreach($va_sort_fields as $vs_key => $vs_label) {
-			$vs_buf .= "<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('{$vs_key}'); return false;\" class=\"caItemListSortControl\">".$vs_label."</a><br/></li>\n";
+			$vs_short_label = caTruncateStringWithEllipsis($vs_label, 20);
+			$vs_buf .= "<li><a href=\"#\" onclick=\"caRelationBundle{$ps_id_prefix}.sort('{$vs_key}', '"._t('Sorted by').": {$vs_short_label}'); return false;\" class=\"caItemListSortControl\">".$vs_label."</a><br/></li>\n";
 		}
 
 		$vs_buf .=	"

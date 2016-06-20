@@ -126,7 +126,7 @@
 			if ($o_res->numHits() >= 1) { 
 ?>
 				<div class="quickSearchResultHeader rounded" >
-					<div class="quickSearchFullResultsLink"><?php print caNavLink($this->request, caNavIcon(__CA_NAV_FULL_RESULTS__, 2)." "._t("Full Results"), null, $va_info['searchModule'], $va_info['searchController'], $va_info['searchAction'], array("search" => caEscapeSearchForURL($ps_search), 'type_id' => '*')); ?></div>
+					<div class="quickSearchFullResultsLink"><?php print caNavLink($this->request, caNavIcon(__CA_NAV_ICON_FULL_RESULTS__, 2)." "._t("Full Results"), null, $va_info['searchModule'], $va_info['searchController'], $va_info['searchAction'], array("search" => caEscapeSearchForURL($ps_search), 'type_id' => '*')); ?></div>
 					<a href='#' style="text-decoration:none; color:#333;" id='show<?php print $vs_table; ?>' onclick='return caQuickSearchShowHideResults("show", "<?php print $vs_table; ?>");'><?php print $va_info['displayname']." (".$o_res->numHits().")"; ?> <?php print caNavIcon(__CA_NAV_ICON_EXPAND__, '18px'); ?></a>
 					<a href='#' id='hide<?php print $vs_table; ?>' style='display:none; text-decoration:none; color:#333;' onclick='return caQuickSearchShowHideResults("hide", "<?php print $vs_table; ?>");'><?php print $va_info['displayname']." (".$o_res->numHits().")"; ?> <?php print caNavIcon(__CA_NAV_ICON_COLLAPSE__, '18px'); ?></a>
 				</div>

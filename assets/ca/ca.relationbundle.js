@@ -227,7 +227,7 @@ var caUI = caUI || {};
 			that.showUnsavedChangesWarning(true);
 		};
 		
-		options.sort = function(key) {
+		options.sort = function(key, label) {
 			var indexedValues = {};
 
 			jQuery.each(jQuery(that.container + ' .bundleContainer .' + that.itemListClassName + ' .roundedRel'), function(k, v) {
@@ -253,6 +253,8 @@ var caUI = caUI || {};
 					}
 				}
 			});
+
+			jQuery('#' + that.fieldNamePrefix + 'caCurrentSortLabel').html(label);
 			
 			var whatsLeft = jQuery(that.container + ' .bundleContainer .' + that.itemListClassName).html();
 			jQuery(that.container + ' .bundleContainer .' + that.itemListClassName).html('');

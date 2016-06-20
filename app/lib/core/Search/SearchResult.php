@@ -1455,8 +1455,8 @@ class SearchResult extends BaseObject {
 							$va_filter_vals[$vn_index] = caGetListItemID($t_element->get('list_id'), $vs_filter_val);
 						}
 					}
-				
-					$va_filter_values = $this->get(join(".", $va_tmp).".{$vs_filter}", array('returnAsArray' => true, 'alwaysReturnItemID' => true));
+					
+					$va_filter_values = $this->get(join(".", $va_tmp).".{$vs_filter}", array('returnAsArray' => true, 'alwaysReturnItemID' => true, 'sort' => caGetOption('sort', $pa_options, null), 'sortDirection' => caGetOption('sortDirection', $pa_options, null)));
 			
 					if (is_array($va_filter_values)) {
 						foreach($va_filter_values as $vn_id => $vm_filtered_val) {

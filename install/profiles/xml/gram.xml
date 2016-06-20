@@ -787,7 +787,7 @@
             </label>
           </labels>
         </item>
-        <item idno="trustees" rank="4" enabled="1" default="0">
+        <item idno="accessions" rank="4" enabled="1" default="0">
           <labels>
             <label locale="en_US" preferred="1">
               <name_singular>Approved by Accessions Committee</name_singular>
@@ -3318,55 +3318,6 @@
             <label locale="en_US" preferred="1">
               <name_singular>Zulu</name_singular>
               <name_plural>Zulu</name_plural>
-            </label>
-          </labels>
-        </item>
-      </items>
-    </list>
-    <list code="object_deaccession_types" hierarchical="0" system="0" vocabulary="0">
-      <labels>
-        <label locale="en_US">
-          <name>Object deaccession types</name>
-        </label>
-      </labels>
-      <items>
-        <item idno="sold" enabled="1" default="1">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>sold</name_singular>
-              <name_plural>sold</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="donated" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>donated</name_singular>
-              <name_plural>donated</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="gifted" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>gifted</name_singular>
-              <name_plural>gifted</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="inactive" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>inactive: deaccessioned</name_singular>
-              <name_plural>inactive: deaccessioned</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="inactive_inventory" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>inactive: not found in inventory</name_singular>
-              <name_plural>inactive: not found in inventory</name_plural>
             </label>
           </labels>
         </item>
@@ -6535,55 +6486,6 @@
             <label locale="en_US" preferred="1">
               <name_singular>Place Resided</name_singular>
               <name_plural>Places Resided</name_plural>
-            </label>
-          </labels>
-        </item>
-      </items>
-    </list>
-    <list code="object_location_types" hierarchical="0" system="0" vocabulary="0">
-      <labels>
-        <label locale="en_US">
-          <name>Object Location Types</name>
-        </label>
-      </labels>
-      <items>
-        <item idno="null" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>-</name_singular>
-              <name_plural>-</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="creation_place" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Creation Place</name_singular>
-              <name_plural>Creation Place</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="place_depicted" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Place Depicted</name_singular>
-              <name_plural>Place Depicted</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="place_reproduced" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Place Reproduced</name_singular>
-              <name_plural>Place Reproduced</name_plural>
-            </label>
-          </labels>
-        </item>
-        <item idno="place_manufactured" enabled="1" default="0">
-          <labels>
-            <label locale="en_US" preferred="1">
-              <name_singular>Place Manufactured</name_singular>
-              <name_plural>Place Manufactured</name_plural>
             </label>
           </labels>
         </item>

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2013-2014 Whirl-i-Gig
+ * Copyright 2013-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -139,7 +139,7 @@
 					$va_val = array_merge($va_val, $va_attr_vals);
 				}
 
-				caProcessRefineryRelatedMultiple($this, $pa_item, $pa_source_data, $vn_c, $o_log, caGetOption('reader', $pa_options, null), $va_val, $va_vals);
+				caProcessRefineryRelatedMultiple($this, $pa_item, $pa_source_data, $vn_c, $o_log, caGetOption('reader', $pa_options, null), $va_val, $va_vals, $pa_options);
 				
 				// nonpreferred labels
 				if (is_array($pa_item['settings']['entityJoiner_nonpreferred_labels'])) {

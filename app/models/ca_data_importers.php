@@ -2361,8 +2361,9 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 												if($va_field_info['FIELD_TYPE'] == FT_MEDIA) {
 													$va_opts['original_filename'] = basename($va_element_content[$vs_element]);
 												}
-
-												$t_subject->set($vs_element, $va_element_content[$vs_element], $va_opts);
+												
+												$vs_content = isset($va_element_content[$vs_element]) ? $va_element_content[$vs_element] : $va_element_content;
+												$t_subject->set($vs_element, $vs_content, $va_opts);
 												$t_subject->update();
 												if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add intrinsic %2 to %3:", $vs_idno, $vs_elenent, $t_subject->tableName()), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
 													ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
@@ -2375,6 +2376,31 @@ class ca_data_importers extends BundlableLabelableBaseModelWithAttributes {
 														return false;
 													}
 													continue(3);
+												}
+												
+												try {
+													if ((is_array($va_rel_info = $o_dm->getManyToOneRelations($vs_table_name, $vs_element)) && (sizeof($va_rel_info) > 0)) && is_array($va_element_data[$vs_element]['_related_related']) && sizeof($va_element_data[$vs_element]['_related_related'])) {
+														foreach($va_element_data[$vs_element]['_related_related'] as $vs_rel_rel_table => $va_rel_rels) {
+															foreach($va_rel_rels as $vn_i => $va_rel_rel) {
+																if (!($t_rel_instance = $o_dm->getInstanceByTableName($va_rel_info['one_table']))) { 
+																	$o_log->logWarn(_t("[%1] Could not instantiate related table %2", $vs_idno, $vs_table_name));
+																	continue; 
+																}
+																if ($o_trans) { $t_rel_instance->setTransaction($o_trans); }
+																if ($t_rel_instance->load($va_element_content[$vs_element])) {
+																	if ($t_rel_rel = $t_rel_instance->addRelationship($vs_rel_rel_table, $va_rel_rel['id'], $va_rel_rel['_relationship_type'])) {
+																		$o_log->logInfo(_t('[%1] Related %2 (%3) to related %4 with relationship %5', $vs_idno, $o_dm->getTableProperty($vs_rel_rel_table, 'NAME_SINGULAR'), $va_rel_rel['id'], $t_rel_instance->getProperty('NAME_SINGULAR'), trim($va_rel_rel['_relationship_type'])));
+																	} else {
+																		if ($vs_error = DataMigrationUtils::postError($t_subject, _t("[%1] Could not add related %2 (%3) to related %4 with relationship %5:", $vs_idno, $o_dm->getTableProperty($vs_rel_rel_table, 'NAME_SINGULAR'), $va_rel_rel['id'], $t_rel_instance->getProperty('NAME_SINGULAR'), trim($va_rel_rel['_relationship_type'])), __CA_DATA_IMPORT_ERROR__, array('dontOutputLevel' => true, 'dontPrint' => true))) {
+																			ca_data_importers::logImportError($vs_error, $va_log_import_error_opts);
+																		}
+																	}
+																}
+															}
+														}
+													 }
+												} catch (Exception $e) {
+													// noop
 												}
 												break;
 											}

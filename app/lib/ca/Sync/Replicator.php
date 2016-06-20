@@ -201,12 +201,12 @@ class Replicator {
 				}
 
 				$pb_ok = true;
-				while(true) { // use chunks of 100 entries until something happens (success/err)
+				while(true) { // use chunks of 10 entries until something happens (success/err)
 					// get change log from source, starting with the log id we got above
 					$va_source_log_entries = $o_source->setEndpoint('getlog')
 						->addGetParameter('from', $pn_replicated_log_id)
 						->addGetParameter('skipIfExpression', $vs_skip_if_expression)
-						->addGetParameter('limit', 100)
+						->addGetParameter('limit', 10)
 						->addGetParameter('ignoreTables', $vs_ignore_tables)
 						->request()->getRawData();
 
@@ -256,6 +256,33 @@ class Replicator {
 
 				if($pb_ok) {
 					$this->log(_t("Sync for source %1 and target %2 successful", $vs_source_key, $vs_target_key), Zend_Log::INFO);
+
+					// run dedup if configured
+					$va_dedup_after_replication = $this->opo_replication_conf->get('targets')[$vs_target_key]['deduplicateAfterReplication'];
+					$vs_dedup_after_replication = null;
+					if(is_array($va_dedup_after_replication) && sizeof($va_dedup_after_replication)) {
+						$vs_dedup_after_replication = json_encode($va_dedup_after_replication);
+
+						// apply that log at the current target
+						$o_dedup_response = $o_target->setRequestMethod('POST')->setEndpoint('dedup')
+							->addGetParameter('tables', $vs_dedup_after_replication)
+							->request();
+
+						$va_dedup_response = $o_dedup_response->getRawData();
+
+						if (!$o_dedup_response->isOk()) {
+							$this->log(_t("There were errors while processing deduplication for at target %1: %2", $vs_target_key, join(' ', $o_dedup_response->getErrors())), Zend_Log::ERR);
+						} else {
+							$this->log(_t("Dedup at target %1 successful.", $vs_target_key), Zend_Log::INFO);
+							if(isset($va_dedup_response['report']) && is_array($va_dedup_response['report'])) {
+								foreach($va_dedup_response['report'] as $vs_t => $vn_c) {
+									$this->log(_t("De-duped %1 records for %2.", $vn_c, $vs_t), Zend_Log::DEBUG);
+								}
+							}
+						}
+					}
+
+
 				} else {
 					$this->log(_t("Sync for source %1 and target %2 finished, but there were errors", $vs_source_key, $vs_target_key), Zend_Log::ERR);
 				}

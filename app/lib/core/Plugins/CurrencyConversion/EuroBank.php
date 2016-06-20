@@ -154,7 +154,7 @@
 			}
 
 			// Load data from source
-			if ($vs_data = @file_get_contents(WLPlugCurrencyConversionEuroBank::CONVERSION_SERVICE_URL)) {
+			if ($vs_data = caQueryExternalWebservice(WLPlugCurrencyConversionEuroBank::CONVERSION_SERVICE_URL)) {
 				if (!($o_data = new SimpleXMLElement($vs_data))) {
 					throw(new Exception(_t("Cannot parse data from %1", WLPlugCurrencyConversionEuroBank::CONVERSION_SERVICE_URL)));
 					return null;

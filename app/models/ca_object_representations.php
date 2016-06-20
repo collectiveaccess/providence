@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -1875,6 +1875,101 @@ class ca_object_representations extends BundlableLabelableBaseModelWithAttribute
 		}
 		
 		return false;
+	}	
+	# ------------------------------------------------------
+	/**
+	 * Returns number of representations attached to the current item of the specified class. 
+	 * Provided interface compatibility with RepresentableBaseModel classes.
+	 *
+	 * @param string $ps_class The class of representation to return a count for. Valid classes are "image", "audio", "video" and "document"
+	 * @param array $pa_options No options are currently supported.
+	 *
+	 * @return int Number of representations
+	 */
+	public function numberOfRepresentationsOfClass($ps_class, $pa_options=null) {
+		return sizeof($this->representationsOfClass($ps_class, $pa_options));
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns number of representations attached to the current item with the specified mimetype. 
+	 * Provided interface compatibility with RepresentableBaseModel classes.
+	 *
+	 * @param string $ps_mimetype The mimetype to return a count for. 
+	 * @param array $pa_options No options are currently supported.
+	 *
+	 * @return int Number of representations
+	 */
+	public function numberOfRepresentationsWithMimeType($ps_mimetype, $pa_options=null) {
+		return sizeof($this->representationsWithMimeType($ps_mimetype, $pa_options));
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns information for representations of the specified class attached to the current item. 
+	 * Provided interface compatibility with RepresentableBaseModel classes.
+	 *
+	 * @param string $ps_class The class of representation to return information for. Valid classes are "image", "audio", "video" and "document"
+	 * @param array $pa_options No options are currently supported.
+	 *
+	 * @return array An array of representation_ids, or null if there is no match
+	 */
+	public function representationsOfClass($ps_class, $pa_options=null) {
+		if (!($vs_mimetypes_regex = caGetMimetypesForClass($ps_class, array('returnAsRegex' => true)))) { return array(); }
+	
+		$vs_mimetype = $this->getMediaInfo('media', 'MIMETYPE');
+		if (preg_match("!{$vs_mimetypes_regex}!", $vs_mimetype)) {	
+			return [$this->getPrimaryKey()];
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns information for representations attached to the current item with the specified mimetype. 
+	 * Provided interface compatibility with RepresentableBaseModel classes.
+	 *
+	 * @param array $pa_mimetypes List of mimetypes to return representations for. 
+	 * @param array $pa_options No options are currently supported.
+	 *
+	 * @return array An array of representation_ids, or null if there is no match
+	 */
+	public function representationsWithMimeType($pa_mimetypes, $pa_options=null) {
+		if (!$pa_mimetypes) { return array(); }
+		if (!is_array($pa_mimetypes) && $pa_mimetypes) { $pa_mimetypes = array($pa_mimetypes); }
+		
+		$vs_mimetype = $this->getMediaInfo('media', 'MIMETYPE');
+		if (in_array($vs_mimetype, $pa_mimetypes)) {	
+			return [$this->getPrimaryKey()];
+		}
+
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns information for representation attached to the current item with the specified MD5 hash. 
+	 # Provided interface compatibility with RepresentableBaseModel classes.
+	 *
+	 * @param string $ps_md5 The MD5 hash to return representation info for. 
+	 * @param array $pa_options No options are currently supported.
+	 *
+	 * @return array An array of representation_ids, or null if there is no match
+	 */
+	public function representationWithMD5($ps_md5, $pa_options=null) {
+		$va_rep_list = array();
+		
+		if ($this->get('md5') == $ps_md5) {
+			return [$this->getPrimaryKey];
+		}
+		return null;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns number of representations (always 1). Provided interface compatibility with RepresentableBaseModel classes.
+	 *
+	 * @param array $pa_options No options are currently supported
+	 *
+	 * @return integer The number of representations
+	 */
+	public function getRepresentationCount($pa_options=null) {
+		return 1;
 	}
 	# ------------------------------------------------------
 }
