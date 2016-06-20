@@ -1254,7 +1254,7 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 						$vs_buf .= _t('Add new %1 to lot', $t_object->getTypeListAsHTMLFormElement('type_id', array('id' => 'caAddObjectToLotForm_type_id'), array('access' => __CA_BUNDLE_ACCESS_EDIT__)));
 					}
 
-					$vs_buf .= " <a href='#' onclick='caAddObjectToLotForm()'>" . caNavIcon($po_view->request, __CA_NAV_BUTTON_ADD__) . '</a>';
+					$vs_buf .= "&nbsp;<a href='#' onclick='caAddObjectToLotForm()'>" . caNavIcon(__CA_NAV_ICON_ADD__, '16px') . '</a>';
 					$vs_buf .= "</form></div>\n";
 
 					$vs_buf .= "<script type='text/javascript'>

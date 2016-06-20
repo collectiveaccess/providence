@@ -72,7 +72,7 @@
 			if(!caGetOption('hide_add_to_occurrence_controls', $va_settings, false)) {
 				foreach($va_occ_types as $vn_type_id => $va_type_info) {
 ?>
-				<div style='float: left;'  class='button caAddOccurrenceButton caAddOccurrenceButton<?php print $vn_type_id; ?>'><a href="#" id="<?php print $vs_id_prefix; ?>AddOcc<?php print $vn_type_id; ?>"><?php print caNavIcon($this->request, __CA_NAV_BUTTON_ADD__); ?> <?php print _t('Add to %1', $va_type_info['name_singular']); ?></a></div>
+				<div style='float: left;'  class='button caAddOccurrenceButton caAddOccurrenceButton<?php print $vn_type_id; ?>'><a href="#" id="<?php print $vs_id_prefix; ?>AddOcc<?php print $vn_type_id; ?>"><?php print caNavIcon(__CA_NAV_ICON_ADD__, '18px'); ?> <?php print _t('Add to %1', $va_type_info['name_singular']); ?></a></div>
 <?php		
 				}
 			}
@@ -203,8 +203,8 @@ if(!caGetOption('hide_add_to_occurrence_controls', $va_settings, false)) {
 						className: 'hierarchyBrowserLevel',
 						classNameContainer: 'hierarchyBrowserContainer',
 					
-						editButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_RIGHT_ARROW__); ?>",
-						disabledButtonIcon: "<?php print caNavIcon($this->request, __CA_NAV_BUTTON_DOT__); ?>",
+						editButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_RIGHT_ARROW__); ?>",
+						disabledButtonIcon: "<?php print caNavIcon(__CA_NAV_ICON_DOT__); ?>",
 					
 						indicatorUrl: '<?php print $this->request->getThemeUrlPath(); ?>/graphics/icons/indicator.gif',
 					
