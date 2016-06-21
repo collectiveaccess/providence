@@ -3752,6 +3752,12 @@
             <placement code="ca_metadata_alert_rule_type_restrictions">
               <bundle>ca_metadata_alert_rule_type_restrictions</bundle>
             </placement>
+            <placement code="ca_users">
+              <bundle>ca_users</bundle>
+            </placement>
+            <placement code="ca_user_groups">
+              <bundle>ca_user_groups</bundle>
+            </placement>
           </bundlePlacements>
         </screen>
       </screens>

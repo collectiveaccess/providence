@@ -432,16 +432,140 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		return $this->setTypeRestrictions($po_request->getParameter('type_restrictions', pArray));
 	}
 	# ------------------------------------------------------
+	# ------------------------------------------------------
 	/**
-	 * @param int $pn_user_id
+	 * Returns list of metadata alert rules subject to options
+	 *
+	 * @param array $pa_options Optional array of options. Supported options are:
+	 *			table = If set, list is restricted to rules that pertain to the specified table. You can pass a table name or number. If omitted rules for all tables will be returned.
+	 *			user_id = Restricts returned rules to those accessible by the current user. If omitted then all rules, regardless of access are returned.
+	 *			restrictToTypes = Restricts returned rules to those bound to the specified type. Default is to not restrict by type.
+	 *			dontIncludeSubtypesInTypeRestriction = If restrictToTypes is set, controls whether or not subtypes are automatically included in the restriction. Default is false – subtypes are included.
+	 *			access = Restricts returned rules to those with at least the specified access level for the specified user. If user_id is omitted then this option has no effect. If user_id is set and this option is omitted, then rules where the user has at least read access will be returned.
 	 * @return array
 	 */
-	public static function getList($pn_user_id) {
-		$o_db = new Db();
+	public function getRules($pa_options=null) {
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		$pm_table_name_or_num = 							caGetOption('table', $pa_options, null);
+		$pn_user_id = 										caGetOption('user_id', $pa_options, null);
+		$pn_user_access = 									caGetOption('access', $pa_options, null);
+		$pa_access = 										caGetOption('checkAccess', $pa_options, null);
+		$pa_restrict_to_types = 							caGetOption('restrictToTypes', $pa_options, null);
+		$pb_dont_include_subtypes_in_type_restriction = 	caGetOption('dontIncludeSubtypesInTypeRestriction', $pa_options, false);
 
-		$o_db->query('SELECT * FROM ca_metadata_alert_rules WHERE user_id=?', $pn_user_id);
+		$o_dm = $this->getAppDatamodel();
+		$vn_table_num = 0;
+		if ($pm_table_name_or_num && !($vn_table_num = $o_dm->getTableNum($pm_table_name_or_num))) { return array(); }
 
-		return [];
+		$o_db = $this->getDb();
+
+		$va_sql_wheres = array(
+			'((marl.is_preferred = 1) OR (marl.is_preferred is null))'
+		);
+		if ($vn_table_num > 0) {
+			$va_sql_wheres[] = "(mar.table_num = ".intval($vn_table_num).")";
+		}
+
+		if(is_array($pa_restrict_to_types) && sizeof($pa_restrict_to_types)) {
+			$va_type_list = caMakeTypeIDList($pm_table_name_or_num, $pa_restrict_to_types, array('dontIncludeSubtypesInTypeRestriction' => $pb_dont_include_subtypes_in_type_restriction));
+			if (sizeof($va_type_list) > 0) {
+				$va_sql_wheres[] = "(martr.type_id IS NULL OR martr.type_id IN (".join(",", $va_type_list)."))";
+			}
+		}
+		if (is_array($pa_access) && (sizeof($pa_access))) {
+			$pa_access = array_map("intval", $pa_access);
+			$va_sql_wheres[] = "(mar.access IN (".join(",", $pa_access)."))";
+		}
+
+		$va_sql_access_wheres = array();
+		if ($pn_user_id) {
+			$t_user = $o_dm->getInstanceByTableName('ca_users', true);
+			$t_user->load($pn_user_id);
+
+			if ($t_user->getPrimaryKey()) {
+				$vs_access_sql = ($pn_user_access > 0) ? " AND (access >= ".intval($pn_user_access).")" : "";
+				if (is_array($va_groups = $t_user->getUserGroups()) && sizeof($va_groups)) {
+					$vs_sql = "(
+						(mar.user_id = ".intval($pn_user_id).") OR
+						(mar.rule_id IN (
+								SELECT rule_id
+								FROM ca_metadata_alert_rules_x_users
+								WHERE
+									group_id IN (".join(',', array_keys($va_groups)).") {$vs_access_sql}
+							)
+						)
+					)";
+				} else {
+					$vs_sql = "(mar.user_id = {$pn_user_id})";
+				}
+
+				$vs_sql .= " OR (mar.rule_id IN (
+										SELECT rule_id
+										FROM ca_metadata_alert_rules_x_user_groups
+										WHERE
+											user_id = {$pn_user_id} {$vs_access_sql}
+									)
+								)";
+
+
+				$va_sql_access_wheres[] = "({$vs_sql})";
+			}
+		}
+
+		if (($pn_user_access == __CA_BUNDLE_DISPLAY_READ_ACCESS__)) {
+			$va_sql_access_wheres[] = "(mar.is_system = 1)";
+		}
+
+		if (sizeof($va_sql_access_wheres)) {
+			$va_sql_wheres[] = "(".join(" OR ", $va_sql_access_wheres).")";
+		}
+
+		// get displays
+		$qr_res = $o_db->query($vs_sql = "
+			SELECT
+				mar.rule_id, mar.code, mar.user_id, mar.table_num,
+				marl.label_id, marl.name, marl.locale_id, u.fname, u.lname, u.email,
+				l.language, l.country
+			FROM ca_metadata_alert_rules AS mar
+			LEFT JOIN ca_metadata_alert_rule_labels AS marl ON mar.rule_id = marl.rule_id
+			LEFT JOIN ca_locales AS l ON marl.locale_id = l.locale_id
+			LEFT JOIN ca_metadata_alert_rule_type_restrictions AS martr ON mar.rule_id = martr.rule_id
+			INNER JOIN ca_users AS u ON mar.user_id = u.user_id
+			".(sizeof($va_sql_wheres) ? 'WHERE ' : '')."
+			".join(' AND ', $va_sql_wheres)."
+			ORDER BY martr.rule_id DESC, marl.name ASC
+		");
+		//print "got $vs_sql";
+		$va_rules = array();
+
+		$va_type_name_cache = array();
+		while($qr_res->nextRow()) {
+			$vn_table_num = $qr_res->get('table_num');
+			if (!isset($va_type_name_cache[$vn_table_num]) || !($vs_display_type = $va_type_name_cache[$vn_table_num])) {
+				$vs_display_type = $va_type_name_cache[$vn_table_num] = $this->getMetadataAlertRuleTypeName($vn_table_num, array('number' => 'plural'));
+			}
+			$va_rules[$qr_res->get('rule_id')][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array('metadata_alert_rule_content_type' => $vs_display_type));
+		}
+		return $va_rules;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns name of type of content (synonymous with the table name for the content) currently loaded bundle display contains for display. Will return name in singular number unless the 'number' option is set to 'plural'
+	 *
+	 * @param int $pm_table_name_or_num Table number to return name for. If omitted then the name for the content type contained by the current bundle display will be returned. Use this parameter if you want to force a content type without having to load a bundle display.
+	 * @param array $pa_options Optional array of options. Supported options are:
+	 *		number = Set to 'plural' to return plural version of name; set to 'singular' [default] to return the singular version
+	 * @return string The name of the type of content or null if $pn_table_num is not set to a valid table and no form is loaded.
+	 */
+	public function getMetadataAlertRuleTypeName($pm_table_name_or_num=null, $pa_options=null) {
+		$o_dm = $this->getAppDatamodel();
+		if (!$pm_table_name_or_num && !($pm_table_name_or_num = $this->get('table_num'))) { return null; }
+		if (!($vn_table_num = $o_dm->getTableNum($pm_table_name_or_num))) { return null; }
+
+		$t_instance = $o_dm->getInstanceByTableNum($vn_table_num, true);
+		if (!$t_instance) { return null; }
+		return (isset($pa_options['number']) && ($pa_options['number'] == 'plural')) ? $t_instance->getProperty('NAME_PLURAL') : $t_instance->getProperty('NAME_SINGULAR');
+
 	}
 	# ------------------------------------------------------
 }
