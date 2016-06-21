@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -571,6 +571,18 @@ class ca_set_items extends BundlableLabelableBaseModelWithAttributes {
 		$this->setMode(ACCESS_WRITE);
 		$this->setVar('selected_representations', $va_reps);
 	}
+	
+	# ----------------------------------------
+	/**
+	 * 
+	 */	
+	public function getItemInstance() {
+		if (!$this->getPrimaryKey()) { return null; }
+		
+		if(!($t_instance = $this->getAppDatamodel()->getInstanceByTableNum($this->get('table_num'), false))) { return null; }
+		
+		$t_instance->load($this->get('row_id'));
+		return $t_instance;
+	}
 	# ----------------------------------------
 }
-?>
