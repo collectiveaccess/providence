@@ -483,7 +483,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		list($vs_table, $vs_field, $vs_subfield) = explode('.', $va_tmp[0]);
 		
 		$vs_rel_table = caGetRelationshipTableName($pn_subject_tablenum, $vs_table);
-		$va_rel_type_ids = ($va_tmp[1] && $vs_rel_table) ? caMakeRelationshipTypeIDList($vs_rel_table, array($va_tmp[1])) : null;
+		$va_rel_type_ids = ($va_tmp[1] && $vs_rel_table) ? caMakeRelationshipTypeIDList($vs_rel_table, preg_split("![,;]+!", $va_tmp[1])) : null;
 		
 		if (!($t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true))) { 
 			return array('access_point' => $va_tmp[0]);
