@@ -111,6 +111,18 @@ class ExpressionParserTest extends PHPUnit_Framework_TestCase {
 		// date formatting
 		$this->assertRegExp("/^1985\-01\-28T/", ExpressionParser::evaluate('formatdate("1985/01/28")'));
 		$this->assertRegExp("/^1985\-01\-28T/", ExpressionParser::evaluate('formatgmdate("1985/01/28")'));
+
+		// join strings
+		$this->assertEquals('piece1gluepiece2', ExpressionParser::evaluate('join("glue", "piece1", "piece2")'));
+		$this->setExpectedException('Exception', 'Invalid number of arguments. Number of arguments passed: 0');
+		ExpressionParser::evaluate('join()');
+		$this->setExpectedException('Exception', 'Invalid number of arguments. Number of arguments passed: 1');
+		ExpressionParser::evaluate('join("foo")');
+
+		// trim strings
+		$this->assertEquals('spaces', ExpressionParser::evaluate('trim(" spaces ")'));
+		$this->assertEquals('nospaces', ExpressionParser::evaluate('trim("nospaces")'));
+		$this->assertEquals('', ExpressionParser::evaluate('trim("  ")'));
 	}
 
 	/**
@@ -157,6 +169,7 @@ class ExpressionParserTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(true, ExpressionParser::evaluate('^ca_entities.type_id%convertCodesToDisplayText=0&convertCodesToIdno=1 =~ /ind/', array('ca_entities.type_id%convertCodesToDisplayText=0&convertCodesToIdno=1' => 'ind')));
 		$this->assertEquals('Poa annua', ExpressionParser::evaluate('join(" ", ^Genus, ^Species)', array('Genus' => 'Poa', 'Species' => 'annua')));
 		$this->assertEquals('Poa annua L.', ExpressionParser::evaluate('implode(" ", ^Genus, ^Species, ^Authority)', array('Genus' => 'Poa', 'Species' => 'annua', 'Authority' => 'L.')));
+		$this->assertTrue((bool)ExpressionParser::evaluate('trim(join(" ", ^Genus, ^Species)) = ^ScientificName', array('Genus' => 'Poa', 'Species' => '', 'ScientificName' => 'Poa')));
 	}
 
 	public function testObscureVars() {
