@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2008-2015 Whirl-i-Gig
+ * Copyright 2008-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -475,6 +475,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 								continue;
 						}
 
+if ($vs_select && $vs_hide_js && $vs_condition) {
 						$vs_element .= "
 <script type='text/javascript'>
 	jQuery(document).ready(function() {
@@ -492,6 +493,7 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 	});
 </script>
 	";
+}
 					}
 				}
 			}
