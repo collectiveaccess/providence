@@ -3694,7 +3694,7 @@ if (!$vb_batch) {
 				// get settings
 				$va_bundle_settings = array();
 				foreach($va_bundles as $va_bundle_info) {
-					if ($va_bundle_info['placement_code'] == $vs_placement_code) {
+					if ('P'.$va_bundle_info['placement_id'] == $vs_placement_code) {
 						$va_bundle_settings = $va_bundle_info['settings'];
 						break;
 					}
@@ -4454,18 +4454,20 @@ if (!$vb_batch) {
 		}
 }
  		
- 		// check for new relations to add
+ 		// process batch remove
  		if ($vb_batch) {
 			$vs_batch_mode = $_REQUEST["{$ps_placement_code}{$ps_form_prefix}_batch_mode"];
  			if ($vs_batch_mode == '_disabled_') { return true; }
 			if ($vs_batch_mode == '_delete_') {				// remove all relationships and return
-				$this->removeRelationships($ps_bundle_name);
+				$this->removeRelationships($ps_bundle_name, caGetOption('restrict_to_relationship_types', $pa_settings, null), ['restrictToTypes' => caGetOption('restrict_to_types', $pa_settings, null)]);
 				return true;
 			}
 			if ($vs_batch_mode == '_replace_') {			// remove all existing relationships and then add new ones
-				$this->removeRelationships($ps_bundle_name);
+				$this->removeRelationships($ps_bundle_name, caGetOption('restrict_to_relationship_types', $pa_settings, null), ['restrictToTypes' => caGetOption('restrict_to_types', $pa_settings, null)]);
 			}
 		}
+		
+ 		// check for new relations to add
  		foreach($_REQUEST as $vs_key => $vs_value ) {
 			if (preg_match("/^{$ps_placement_code}{$ps_form_prefix}_idnew_([\d]+)/", $vs_key, $va_matches)) { 
 				$vn_c = intval($va_matches[1]);

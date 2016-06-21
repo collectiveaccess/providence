@@ -9497,27 +9497,49 @@ $pa_options["display_form_field_tips"] = true;
 	 *
 	 * @param mixed $pm_rel_table_name_or_num Table name (eg. "ca_entities") or number as defined in datamodel.conf of table containing row to removes relationships to.
 	 * @param mixed $pm_type_id If set to a relationship type code or numeric type_id, only relationships with the specified type are removed.
+	 * @param array $pa_options Options include:
+	 *		restrictToTypes = 
+	 *
 	 * @return boolean True on success, false on error
 	 */
-	public function removeRelationships($pm_rel_table_name_or_num, $pm_type_id=null) {
+	public function removeRelationships($pm_rel_table_name_or_num, $pm_relationship_type_id=null, $pa_options=null) {
 		if (!($vn_row_id = $this->getPrimaryKey())) { return null; }
 		if(!($va_rel_info = $this->_getRelationshipInfo($pm_rel_table_name_or_num))) { return null; }
 		$t_item_rel = $va_rel_info['t_item_rel'];
 		if (!method_exists($t_item_rel, "isRelationship") || !$t_item_rel->isRelationship()){ return false; }
-		if ($pm_type_id && !is_numeric($pm_type_id)) {
-			$t_rel_type = new ca_relationship_types();
-			if ($vs_linking_table = $t_rel_type->getRelationshipTypeTable($this->tableName(), $t_item_rel->tableName())) {
-				$pn_type_id = $t_rel_type->getRelationshipTypeID($vs_linking_table, $pm_type_id);
+		$va_sql_params = array();
+		
+		$pa_relationship_type_ids = caMakeRelationshipTypeIDList($t_item_rel->tableName(), $pm_relationship_type_id);
+		
+		$vs_join_sql = '';
+		$vs_type_limit_sql = '';
+		if ($pa_type_ids = caGetOption('restrictToTypes', $pa_options, null)) {
+			$pa_type_ids = caMakeTypeIDList($pm_rel_table_name_or_num, $pa_type_ids);
+			if (is_array($pa_type_ids) && (sizeof($pa_type_ids) > 0)) {
+				
+				if ($t_item_rel->tableName() == $this->getSelfRelationTableName()) {
+					$vs_join_sql = "INNER JOIN ".$this->tableName()." AS t1 ON t1.".$this->primaryKey()." = r.".$t_item_rel->getLeftTableFieldName()."\n".
+									"INNER JOIN ".$this->tableName()." AS t2 ON t2.".$this->primaryKey()." = r.".$t_item_rel->getRightTableFieldName()."\n";
+				
+					$vs_type_limit_sql = " AND (t1.type_id IN (?) OR t2.type_id IN (?))";
+					$va_sql_params[] = $pa_type_ids; $va_sql_params[] = $pa_type_ids;
+				} else {
+					$vs_target_table_name = ($t_item_rel->getLeftTableName() == $this->tableName()) ? $t_item_rel->getRightTableName()  : $t_item_rel->getLeftTableName() ;
+					$vs_target_table_pk = $this->getAppDatamodel()->primaryKey($vs_target_table_name);
+					
+					$vs_join_sql = "INNER JOIN {$vs_target_table_name} AS t ON t.{$vs_target_table_pk} = r.{$vs_target_table_pk}\n";
+				
+					$vs_type_limit_sql = " AND (t.type_id IN (?))";
+					$va_sql_params[] = $pa_type_ids; 
+				}
+				
 			}
-		} else {
-			$pn_type_id = $pm_type_id;
 		}
 		
-		$vs_type_limit_sql = '';
-		$va_sql_params = array();
-		if ($pn_type_id) {
-			$vs_type_limit_sql = " AND type_id = ?";
-			$va_sql_params[] = $pn_type_id;
+		$vs_relationship_type_limit_sql = '';
+		if (is_array($pa_relationship_type_ids) && (sizeof($pa_relationship_type_ids) > 0)) {
+			$vs_relationship_type_limit_sql = " AND type_id IN (?)";
+			$va_sql_params[] = $pa_relationship_type_ids;
 		}
 		
 		$o_db = $this->getDb();
@@ -9526,9 +9548,10 @@ $pa_options["display_form_field_tips"] = true;
 			array_unshift($va_sql_params, (int)$vn_row_id);
 			array_unshift($va_sql_params, (int)$vn_row_id);
 			$qr_res = $o_db->query("
-				SELECT relation_id FROM ".$t_item_rel->tableName()." 
-				WHERE ".$t_item_rel->getLeftTableFieldName()." = ? OR ".$t_item_rel->getRightTableFieldName()." = ?
-					{$vs_type_limit_sql}
+				SELECT r.relation_id FROM ".$t_item_rel->tableName()." r
+				{$vs_join_sql}
+				WHERE (r.".$t_item_rel->getLeftTableFieldName()." = ? OR r.".$t_item_rel->getRightTableFieldName()." = ?)
+					{$vs_type_limit_sql} {$vs_relationship_type_limit_sql}
 			", $va_sql_params);
 			
 			while($qr_res->nextRow()) {
@@ -9539,9 +9562,10 @@ $pa_options["display_form_field_tips"] = true;
 		} else {
 			array_unshift($va_sql_params, (int)$vn_row_id);
 			$qr_res = $o_db->query("
-				SELECT relation_id FROM ".$t_item_rel->tableName()." 
-				WHERE ".$this->primaryKey()." = ?
-					{$vs_type_limit_sql}
+				SELECT r.relation_id FROM ".$t_item_rel->tableName()." r
+				{$vs_join_sql}
+				WHERE r.".$this->primaryKey()." = ?
+					{$vs_type_limit_sql} {$vs_relationship_type_limit_sql}
 			", $va_sql_params);
 			
 			while($qr_res->nextRow()) {

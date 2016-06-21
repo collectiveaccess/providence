@@ -1801,8 +1801,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	 *
  	 * @return int
  	 */
- 	public function removeRelationships($pm_rel_table_name_or_num, $pm_type_id=null) {
- 		if ($vn_rc = parent::removeRelationships($pm_rel_table_name_or_num, $pm_type_id)) {
+ 	public function removeRelationships($pm_rel_table_name_or_num, $pm_type_id=null, $pa_options=null) {
+ 		if ($vn_rc = parent::removeRelationships($pm_rel_table_name_or_num, $pm_type_id, $pa_options)) {
  			
  			if ($this->relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, null, $pm_type_id)) {
  				$this->deriveCurrentLocationForBrowse();
