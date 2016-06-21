@@ -34,6 +34,10 @@
  *
  */
 
+define('__CA_ALERT_RULE_NO_ACCESS__', 0);
+define('__CA_ALERT_RULE_ACCESS_READONLY__', 1);
+define('__CA_ALERT_RULE_ACCESS_ACCESS_EDIT__', 2);
+
 BaseModel::$s_ca_models_definitions['ca_metadata_alert_rules'] = array(
 	'NAME_SINGULAR' 	=> _t('metadata alert rule'),
 	'NAME_PLURAL' 		=> _t('metadata alert rules'),
@@ -163,8 +167,8 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 	# ------------------------------------------------------
 	# Group-based access control
 	# ------------------------------------------------------
-	protected $USERS_RELATIONSHIP_TABLE = 'ca_metadata_alert_rules_x_users.php';
-	protected $USER_GROUPS_RELATIONSHIP_TABLE = 'ca_metadata_alert_rules_x_user_groups.php';
+	protected $USERS_RELATIONSHIP_TABLE = 'ca_metadata_alert_rules_x_users';
+	protected $USER_GROUPS_RELATIONSHIP_TABLE = 'ca_metadata_alert_rules_x_user_groups';
 
 	# ------------------------------------------------------
 	# Labeling

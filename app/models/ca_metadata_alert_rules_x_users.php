@@ -67,8 +67,9 @@ BaseModel::$s_ca_models_definitions['ca_metadata_alert_rules_x_users'] = array(
 			'IS_NULL' => false,
 			'DEFAULT' => 1,
 			'BOUNDS_CHOICE_LIST' => array(
-				_t('can read') => __CA_BUNDLE_ACCESS_READONLY__,
-				_t('can edit') => __CA_BUNDLE_ACCESS_EDIT__
+				_t('has no access') => __CA_ALERT_RULE_NO_ACCESS__,
+				_t('can read') => __CA_ALERT_RULE_ACCESS_READONLY__,
+				_t('can edit') => __CA_ALERT_RULE_ACCESS_ACCESS_EDIT__
 			),
 			'LABEL' => _t('Access'), 'DESCRIPTION' => _t('Indicates user&apos;s level of access to the display. ')
 		)

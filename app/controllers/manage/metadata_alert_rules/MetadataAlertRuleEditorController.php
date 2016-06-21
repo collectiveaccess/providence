@@ -80,7 +80,7 @@
  		 */
  		public function _afterSave($pt_subject, $pb_is_insert) {
  			if ($pb_is_insert && $pt_subject->getPrimaryKey()) {
- 				$pt_subject->addUsers(array($this->request->getUserID() => __CA_SEARCH_FORM_EDIT_ACCESS__));
+ 				$pt_subject->addUsers(array($this->request->getUserID() => __CA_ALERT_RULE_ACCESS_ACCESS_EDIT__));
  			}
  		}
  		# -------------------------------------------------------
