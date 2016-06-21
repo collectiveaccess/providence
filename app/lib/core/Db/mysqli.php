@@ -88,6 +88,10 @@ class Db_mysqli extends DbDriverBase {
 		'max_nested_transactions' => 1
 	);
 
+	private $ops_db_host = '';
+	private $ops_db_user = '';
+	private $ops_db_pass = '';
+
 	/**
 	 * Constructor
 	 *
@@ -117,7 +121,11 @@ class Db_mysqli extends DbDriverBase {
 		}
 		
 		$vb_persistent_connections = caGetOption('persistentConnections', $pa_options, false);
-		$this->opr_db = @mysqli_connect(($vb_persistent_connections ? "p:" : "").$pa_options["host"], $pa_options["username"], $pa_options["password"]);
+		$this->ops_db_host = ($vb_persistent_connections ? "p:" : "").$pa_options["host"];
+		$this->ops_db_user = $pa_options["username"];
+		$this->ops_db_pass = $pa_options["password"];
+
+		$this->opr_db = @mysqli_connect($this->ops_db_host, $this->ops_db_user, $this->ops_db_pass);
 
 		if (!$this->opr_db) {
 			$po_caller->postError(200, mysqli_connect_error(), "Db->mysqli->connect()");
@@ -250,6 +258,7 @@ class Db_mysqli extends DbDriverBase {
 	 * @param DbStatement $opo_statement
 	 * @param string $ps_sql SQL statement
 	 * @param array $pa_values array of placeholder replacements
+	 * @return bool
 	 */
 	public function execute($po_caller, $opo_statement, $ps_sql, $pa_values) {
 		if (!$ps_sql) {
@@ -290,10 +299,19 @@ class Db_mysqli extends DbDriverBase {
 			$t = new Timer();
 		}
 		if (!($r_res = mysqli_query($this->opr_db, $vs_sql))) {
-			//print "<pre>".caPrintStacktrace()."</pre>\n";
-			//print "<pre>".$vs_sql."</pre>";
-			$opo_statement->postError($po_caller->nativeToDbError(mysqli_errno($this->opr_db)), mysqli_error($this->opr_db), "Db->mysqli->execute()");
-			return false;
+
+			// if error is "Mysql server has gone away" and ping fails, try reconnecting and execute again
+			if((mysqli_errno($this->opr_db) == 2006) && !mysqli_ping($this->opr_db)) {
+				$this->opr_db = @mysqli_connect($this->ops_db_host, $this->ops_db_user, $this->ops_db_pass);
+				$r_res = mysqli_query($this->opr_db, $vs_sql);
+			}
+
+			if(!$r_res) {
+				//print "<pre>".caPrintStacktrace()."</pre>\n";
+				//print "<pre>".$vs_sql."</pre>";
+				$opo_statement->postError($po_caller->nativeToDbError(mysqli_errno($this->opr_db)), mysqli_error($this->opr_db), "Db->mysqli->execute()");
+				return false;
+			}
 		}
 		if (Db::$monitor) {
 			Db::$monitor->logQuery($ps_sql, $pa_values, $t->getTime(4), is_bool($r_res) ? null : mysqli_num_rows($r_res));
