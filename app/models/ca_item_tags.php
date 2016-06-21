@@ -183,14 +183,14 @@ class ca_item_tags extends BaseModel {
 	 *
 	 */
 	public function getModeratedTags($pn_limit=0) {
-		return $this->getAllTags(false, $pn_limit);
+		return $this->getAllTags(true, $pn_limit);
 	}
 	# ------------------------------------------------------
 	/**
 	 *
 	 */
 	public function getUnmoderatedTags($pn_limit=0) {
-		return $this->getAllTags(true, $pn_limit);
+		return $this->getAllTags(false, $pn_limit);
 	}
 	# ------------------------------------------------------
 	/**
