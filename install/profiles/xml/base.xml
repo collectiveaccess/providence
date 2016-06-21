@@ -3722,6 +3722,40 @@
         </screen>
       </screens>
     </userInterface>
+    <userInterface code="metadata_alert_rule_config_ui" type="ca_metadata_alert_rules">
+      <labels>
+        <label locale="en_US">
+          <name>Metadata alert rule editor</name>
+        </label>
+      </labels>
+      <screens>
+        <screen idno="basic" default="1">
+          <labels>
+            <label locale="en_US">
+              <name>Basic info</name>
+            </label>
+          </labels>
+          <bundlePlacements>
+            <placement code="preferred_labels">
+              <bundle>preferred_labels</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Metadata alert rule name</setting>
+                <setting name="add_label" locale="en_US">Add name</setting>
+              </settings>
+            </placement>
+            <placement code="code">
+              <bundle>code</bundle>
+            </placement>
+            <placement code="table_num">
+              <bundle>table_num</bundle>
+            </placement>
+            <placement code="ca_metadata_alert_rule_type_restrictions">
+              <bundle>ca_metadata_alert_rule_type_restrictions</bundle>
+            </placement>
+          </bundlePlacements>
+        </screen>
+      </screens>
+    </userInterface>
     <userInterface code="tour_editor_ui" type="ca_tours">
       <labels>
         <label locale="en_US">
