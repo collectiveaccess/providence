@@ -63,6 +63,15 @@ class ExpressionVisitor implements Visitor\Visit {
 			return array_sum($arguments) / count($arguments);
 		};
 
+		$implode = function () {
+			$va_args = func_get_args();
+			if(count($va_args)<2){
+				throw new Exception(_t('Invalid number of arguments. Number of arguments passed: %1', count($va_args)));
+			}
+			$vs_glue = array_shift($va_args);
+			return implode($vs_glue, $va_args);
+		};
+
 		$this->opa_functions  = array(
 			'abs'			=> xcallable('abs'),
 			'ceil'			=> xcallable('ceil'),
@@ -89,8 +98,10 @@ class ExpressionVisitor implements Visitor\Visit {
 			'average' 		=> xcallable($average),
 			'avg'     		=> xcallable($average),
 			'sum'			=> xcallable(function () { return array_sum(func_get_args()); }),
+			'join'			=> xcallable($implode),
+			'implode'		=> xcallable($implode),
+			'trim'			=> xcallable('trim'),
 		);
-
 		return;
 	}
 
@@ -134,6 +145,7 @@ class ExpressionVisitor implements Visitor\Visit {
 	 * @param Hoa\Core\Consistency\Xcallable $f_handle
 	 * @param Hoa\Core\Consistency\Xcallable $f_eldnah
 	 * @return mixed
+	 * @throws Exception
 	 */
 	public function visit(Visitor\Element $po_element, &$f_handle = null, $f_eldnah  = null) {
 		$vs_type = $po_element->getId();
