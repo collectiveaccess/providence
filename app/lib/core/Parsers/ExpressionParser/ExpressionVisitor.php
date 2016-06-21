@@ -96,7 +96,7 @@ class ExpressionVisitor implements Visitor\Visit {
 			'avg'     		=> xcallable($average),
 			'sum'			=> xcallable(function () { return array_sum(func_get_args()); }),
 			'join'			=> xcallable($join),
-			'implode'			=> xcallable($join),
+			'implode'		=> xcallable($join),
 		);
 		return;
 	}
