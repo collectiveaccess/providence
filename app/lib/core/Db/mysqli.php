@@ -298,12 +298,15 @@ class Db_mysqli extends DbDriverBase {
 		if (Db::$monitor) {
 			$t = new Timer();
 		}
-		if (!($r_res = mysqli_query($this->opr_db, $vs_sql))) {
-
-			// if error is "Mysql server has gone away" and ping fails, try reconnecting and execute again
-			if((mysqli_errno($this->opr_db) == 2006) && !mysqli_ping($this->opr_db)) {
+		if (!($r_res = @mysqli_query($this->opr_db, $vs_sql))) {
+			// if connection went away, try reconnecting and execute again
+			if(!mysqli_ping($this->opr_db)) {
 				$this->opr_db = @mysqli_connect($this->ops_db_host, $this->ops_db_user, $this->ops_db_pass);
-				$r_res = mysqli_query($this->opr_db, $vs_sql);
+				if (!$this->opr_db) {
+					$po_caller->postError(200, mysqli_connect_error(), "Db->mysqli->connect()");
+					return false;
+				}
+				$r_res = @mysqli_query($this->opr_db, $vs_sql);
 			}
 
 			if(!$r_res) {
