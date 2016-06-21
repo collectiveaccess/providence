@@ -319,6 +319,11 @@
 				if (isset($pa_options[$vs_attr])) { $va_attributes[$vs_attr] = $pa_options[$vs_attr]; }
 		}
 		
+		// Allow data-* attributes
+		foreach($pa_options as $vs_k => $vs_v) {
+			if (substr($vs_k, 0, 5) == 'data-') { $va_attributes[$vs_k] = $vs_v; }
+		}
+		
 		$vn_scale_css_width_to = caGetOption('scaleCSSWidthTo', $pa_options, null);
 		$vn_scale_css_height_to = caGetOption('scaleCSSHeightTo', $pa_options, null);
 		
