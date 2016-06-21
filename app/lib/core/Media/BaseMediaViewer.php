@@ -88,7 +88,9 @@
 					if ($vn_rep_index < ($vn_num_media - 1)) {
 						$vs_controls .=  "<a href='#' onClick='jQuery(\"#caMediaPanelContentArea\").load(\"".caNavUrl($po_request, '*', '*', $po_request->getAction(), array('representation_id' => (int)$va_ids[$vn_rep_index + 1], $t_subject->primaryKey() => (int)$t_subject->getPrimaryKey()))."\");'>→</a>";
 					}
-					$vs_controls .= "</div>";			
+					$vs_controls .= "</div>";	
+					
+					$o_view->setVar('page', $vn_rep_index);		
 				}
 			}
 			if ($t_subject && $t_instance && $po_request->user->canDoAction('can_download_media') || $po_request->user->canDoAction('can_download_ca_object_representations')) {

@@ -128,7 +128,7 @@ abstract class BaseServiceClient {
 		curl_setopt($vo_handle, CURLOPT_SSL_VERIFYPEER, 0);
 		curl_setopt($vo_handle, CURLOPT_FOLLOWLOCATION, true);
 		curl_setopt($vo_handle, CURLOPT_CONNECTTIMEOUT, 60);
-		curl_setopt($vo_handle, CURLOPT_TIMEOUT, 600);
+		curl_setopt($vo_handle, CURLOPT_TIMEOUT, 3600);
 
 		$va_body = $this->getRequestBody();
 		if(is_array($va_body) && sizeof($va_body)>0) {

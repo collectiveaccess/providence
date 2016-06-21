@@ -1279,3 +1279,25 @@
 		return $va_base_fields;
 	}
 	# ---------------------------------------
+	/**
+	 * Get given sort fields (semi-colon separated list from ResultContext) for display,
+	 * i.e. as array of human readable names
+	 * @param string $ps_table
+	 * @param array $ps_sort_fields
+	 * @return string
+	 */
+	function caGetSortForDisplay($ps_table, $ps_sort_fields) {
+		$va_sort_fields = explode(';', $ps_sort_fields);
+
+		$va_available_sorts = caGetAvailableSortFields($ps_table, null, ['includeUserSorts' => false]);
+
+		$va_return = [];
+		foreach($va_sort_fields as $vs_sort_field) {
+			if(isset($va_available_sorts[$vs_sort_field])) {
+				$va_return[] = $va_available_sorts[$vs_sort_field];
+			}
+		}
+
+		return $va_return;
+	}
+	# ---------------------------------------

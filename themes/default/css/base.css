@@ -576,11 +576,23 @@ div.inspectorCheckedOut {
 	font-size:12px;
 	line-height:1.7em;
 }
-#leftNav h3.searchHistory, #leftNav h3.searchSaved, #leftNav h3.searchTools, #leftNav h3.tools{
+#leftNav h3.searchHistory, #leftNav h3.searchSaved, #leftNav h3.searchTools, #leftNav h3.tools, #leftNav h3.currentSort {
 	color:#555;
 	margin-bottom: 5px;
 	margin-top:5px;
 }
+
+h3.searchHistory div {
+    margin-left: 3px;
+    margin-top: 1px;
+}
+
+h3.currentSort div {
+    margin-left: 3px;
+    margin-top: 1px;
+    margin-right: 5px;
+}
+
 .inspectorNonConformingNumberList {
     display: none;
 }
@@ -2626,7 +2638,7 @@ table.representationAnnotationListItem {
     display: none;
     margin: 0px;
     padding: 0px;
-    z-index: 31000;			/* needs to be on top of menu bar, which has z-index=30000 */
+    z-index: 34000;			/* needs to be on top of menu bar, which has z-index=30000 */
 }
 
 #caMediaPanelContentArea {
@@ -2670,7 +2682,7 @@ div.caMediaOverlayControls {
     width:100%;
     bottom:0px;
     left:0px;
-    z-index: 32000;			/* needs to be on top of caMediaPanel, which has z-index=31000 */
+    z-index: 35000;			/* needs to be on top of caMediaPanel, which has z-index=34000 */
     /* opacity:.1;	 */
     opacity: 0.7;
 }
@@ -5569,14 +5581,12 @@ a.caItemLoadNextBundles {
 
 .roundedRel .caDeleteItemButton, .roundedRel .caInterstitialEditButton {
     position: relative;
+    margin: 0 3px 0 3px;
 }
 
 .listRel .caDeleteItemButton, .listRel .caInterstitialEditButton {
     float: right;
-}
-
-.listRel .caInterstitialEditButton {
-    float: right;
+    margin: 0 3px 0 3px;
 }
 
 div.preferenceSectionDivider {

@@ -2363,7 +2363,11 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Returns attribute data type code for authority element used to reference this model. 
+		 * Eg. for the ca_entities model the __CA_ATTRIBUTE_VALUE_ENTITIES__ constant (numeric 22) is returned.
+		 * Returns null if the model cannot be referenced using a metadata element.
 		 *
+		 * @return int
 		 */
 		public static function getAuthorityElementDatatypeList() {
 			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/CollectionsAttributeValue.php');

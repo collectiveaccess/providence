@@ -3836,7 +3836,7 @@ if (!$vb_batch) {
 				// get settings
 				$va_bundle_settings = array();
 				foreach($va_bundles as $va_bundle_info) {
-					if ($va_bundle_info['placement_code'] == $vs_placement_code) {
+					if ('P'.$va_bundle_info['placement_id'] == $vs_placement_code) {
 						$va_bundle_settings = $va_bundle_info['settings'];
 						break;
 					}
@@ -4546,6 +4546,7 @@ if (!$vb_batch) {
 						// NOOP (for now)
 					
 						break;
+					# -------------------------------
 					case 'ca_object_circulation_status':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
@@ -4560,6 +4561,7 @@ if (!$vb_batch) {
 							$vn_status = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_status", pString);
 							
 							$t_rep = new ca_object_representations();
+							if ($this->inTransaction()) { $t_rep->setTransaction($this->getTransaction()); }
 							if(is_array($va_rep_ids = $this->getRepresentationIDs())) {
 								foreach(array_keys($va_rep_ids) as $vn_rep_id) {
 									if ($t_rep->load($vn_rep_id)) {
@@ -4670,18 +4672,20 @@ if (!$vb_batch) {
 		}
 }
  		
- 		// check for new relations to add
+ 		// process batch remove
  		if ($vb_batch) {
 			$vs_batch_mode = $_REQUEST["{$ps_placement_code}{$ps_form_prefix}_batch_mode"];
  			if ($vs_batch_mode == '_disabled_') { return true; }
 			if ($vs_batch_mode == '_delete_') {				// remove all relationships and return
-				$this->removeRelationships($ps_bundle_name);
+				$this->removeRelationships($ps_bundle_name, caGetOption('restrict_to_relationship_types', $pa_settings, null), ['restrictToTypes' => caGetOption('restrict_to_types', $pa_settings, null)]);
 				return true;
 			}
 			if ($vs_batch_mode == '_replace_') {			// remove all existing relationships and then add new ones
-				$this->removeRelationships($ps_bundle_name);
+				$this->removeRelationships($ps_bundle_name, caGetOption('restrict_to_relationship_types', $pa_settings, null), ['restrictToTypes' => caGetOption('restrict_to_types', $pa_settings, null)]);
 			}
 		}
+		
+ 		// check for new relations to add
  		foreach($_REQUEST as $vs_key => $vs_value ) {
 			if (preg_match("/^{$ps_placement_code}{$ps_form_prefix}_idnew_([\d]+)/", $vs_key, $va_matches)) { 
 				$vn_c = intval($va_matches[1]);
@@ -6985,6 +6989,7 @@ side. For many self-relations the direction determines the nature and display te
 	 	if(!$this->getPrimaryKey()) { return null; }
 			
 		$t_violation = new ca_metadata_dictionary_rule_violations();
+		if ($this->inTransaction()) { $t_violation->setTransaction($this->getTransaction()); }
 		
 		$va_rules = ca_metadata_dictionary_rules::getRules(array('db' => $o_db, 'bundles' => caGetOption('bundles', $pa_options, null)));
 		
@@ -7008,7 +7013,7 @@ side. For many self-relations the direction determines the nature and display te
 			}
 			
 			// is there a violation recorded for this rule and row?
-			if ($t_found = ca_metadata_dictionary_rule_violations::find(array('rule_id' => $va_rule['rule_id'], 'row_id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum()), array('returnAs' => 'firstModelInstance'))) {
+			if ($t_found = ca_metadata_dictionary_rule_violations::find(array('rule_id' => $va_rule['rule_id'], 'row_id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum()), array('returnAs' => 'firstModelInstance', 'transaction' => $this->getTransaction()))) {
 				$t_violation = $t_found;
 			}
 					

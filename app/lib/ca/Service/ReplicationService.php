@@ -167,7 +167,10 @@ class ReplicationService {
 				$o_log_entry = CA\Sync\LogEntry\Base::getInstance($vs_source_system_guid, $vn_log_id, $va_log_entry, $o_tx);
 				$o_log_entry->sanityCheck();
 			} catch (CA\Sync\LogEntry\IrrelevantLogEntry $e) {
-				// noop
+				// skip log entry (still counts as "applied")
+				$o_tx->rollback();
+				$vn_last_applied_log_id = $vn_log_id;
+				continue;
 			} catch (\Exception $e) {
 				// append log entry to message for easier debugging
 				$va_sanity_check_errors[] = $e->getMessage() . ' ' . _t("Log entry was: %1", print_r($va_log_entry, true));

@@ -1544,6 +1544,7 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 	 *			returnItemAttributes = A list of attribute element codes for the ca_set_item record to return values for.
 	 *			idsOnly = Return a simple numerically indexed array of row_ids
 	 * 			template =
+	 *			item_ids = array of set item_ids to limit results to -> used by getPrimaryItemsFromSets so don't have to replicate all the functionality in this function
 	 *
 	 * @return array An array of items. The format varies depending upon the options set. If returnRowIdsOnly or returnItemIdsOnly are set then the returned array is a 
 	 *			simple list of ids. The full return array is key'ed on ca_set_items.item_id and then on locale_id. The values are arrays with keys set to a number of fields including:
@@ -1582,6 +1583,10 @@ class ca_sets extends BundlableLabelableBaseModelWithAttributes implements IBund
 		$vs_limit_sql = '';
 		if (isset($pa_options['limit']) && ($pa_options['limit'] > 0)) {
 			$vs_limit_sql = "LIMIT ".$pa_options['limit'];
+		}
+		$vs_item_ids_sql = '';
+		if (isset($pa_options['item_ids']) && (is_array($pa_options['item_ids'])) && (sizeof($pa_options['item_ids']) > 0)) {
+			$vs_item_ids_sql = " AND casi.item_id IN (".join(", ", $pa_options['item_ids']).") ";
 		}
 		// get set items
 		$vs_access_sql = '';
@@ -1632,7 +1637,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			INNER JOIN ".$t_rel_table->tableName()." AS rel ON rel.".$t_rel_table->primaryKey()." = casi.row_id
 			{$vs_label_join_sql}
 			WHERE
-				casi.set_id = ? {$vs_access_sql} {$vs_deleted_sql}
+				casi.set_id = ? {$vs_access_sql} {$vs_deleted_sql} {$vs_item_ids_sql}
 			ORDER BY 
 				casi.rank ASC
 			{$vs_limit_sql}
@@ -1680,7 +1685,7 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 			{$vs_label_join_sql}
 			{$vs_rep_join_sql}
 			WHERE
-				casi.set_id = ? {$vs_rep_where_sql} {$vs_access_sql} {$vs_deleted_sql}
+				casi.set_id = ? {$vs_rep_where_sql} {$vs_access_sql} {$vs_deleted_sql} {$vs_item_ids_sql}
 			ORDER BY 
 				casi.rank ASC
 			{$vs_limit_sql}
@@ -2050,6 +2055,80 @@ LEFT JOIN ca_object_representations AS cor ON coxor.representation_id = cor.repr
 		}
 		
 		return $va_items;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Returns the primary items from each set listed in $pa_set_ids.  If no primary item is selected, default to first item in set
+	 *
+	 * @param array $pa_set_ids The set_ids (*not* set codes) for which the first item should be fetched
+	 * @param array $pa_options And optional array of options. Supported values include:
+	 *			version = the media version to include with returned set items, when media is available
+	 *			primary_attribute = md attribute used to indicate set item is primary; default = set_item_is_primary
+	 *			primary_list = list for primary attribute; default = set_item_is_primary
+	 *			primary_value = list item value for primary items; default = is_primary
+	 *
+	 * @return array A list of items; the keys of the array are set_ids while the values are associative arrays containing the latest information.
+	 */
+	public static function getPrimaryItemsFromSets($pa_set_ids, $pa_options=null) {
+		if (!is_array($pa_options)) { $pa_options = array(); }
+		$vs_version = (isset($pa_options['version']) && $pa_options['version']) ? $pa_options['version'] : 'thumbnail';
+		$pa_options["thumbnailVersion"] = $vs_version;
+		$vs_primary_attribute = (isset($pa_options['primary_attribute']) && $pa_options['primary_attribute']) ? $pa_options['primary_attribute'] : 'set_item_is_primary';
+		$vs_primary_list = (isset($pa_options['primary_list']) && $pa_options['primary_list']) ? $pa_options['primary_list'] : 'set_item_is_primary';
+		$vs_primary_value = (isset($pa_options['primary_value']) && $pa_options['primary_value']) ? $pa_options['primary_value'] : 'is_primary';
+		
+		
+		#$pa_options["limit"] = 1;
+		$t_set_item = new ca_set_items();
+		$va_items = array();
+		$o_db = new Db();
+		$qr_element = $o_db->query("
+			select element_id from ca_metadata_elements where element_code = ?
+		", array($vs_primary_attribute));
+		$va_primary_set_item_ids_for_set = array();
+		if($qr_element->numRows()){
+			$qr_element->nextRow();
+			$vn_element_id = $qr_element->get("element_id");
+			$t_lists = new ca_lists();
+			$vn_is_primary_item_id = $t_lists->getItemIDFromList($vs_primary_list, $vs_primary_value);
+			if($vn_is_primary_item_id){
+				foreach($pa_set_ids as $vn_set_id) {					
+					# --- query for set items based on attribute value of primary_attribute
+					$qr_primary_items = $o_db->query("
+						SELECT si.item_id, si.row_id
+						FROM ca_attribute_values av
+						INNER JOIN ca_attributes as a ON av.attribute_id = a.attribute_id
+						INNER JOIN ca_set_items as si ON si.item_id = a.row_id
+						WHERE a.table_num = ? AND av.item_id = ? AND si.set_id = ?					
+						", array($t_set_item->tableNum(), $vn_is_primary_item_id, $vn_set_id));
+					if($qr_primary_items->numRows()){
+						$va_tmp = array();
+						while($qr_primary_items->nextRow()){
+							$va_tmp[] = $qr_primary_items->get("item_id");
+						}
+						$va_primary_set_item_ids_for_set[$vn_set_id] = $va_tmp;
+					}					
+				}			
+			}
+		}
+		$t_set = new ca_sets();
+		foreach($pa_set_ids as $vn_set_id) {
+			if ($t_set->load($vn_set_id)) {
+				if(is_array($va_primary_set_item_ids_for_set[$vn_set_id])){
+					$pa_options["item_ids"] = $va_primary_set_item_ids_for_set[$vn_set_id];
+					$pa_options["limit"] = null;
+				}else{
+					$pa_options["limit"] = 1;
+				}
+				$va_item_list = caExtractValuesByUserLocale($t_set->getItems($pa_options));
+				$va_items[$vn_set_id] = $va_item_list;	
+			}
+		}
+		
+		return $va_items;		
+
+		
+		return true;
 	}
 	# ------------------------------------------------------
 	/**

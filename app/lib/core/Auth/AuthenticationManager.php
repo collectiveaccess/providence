@@ -85,14 +85,6 @@ class AuthenticationManager {
 			return $vn_rc;
 		}
 
-		if (!self::$g_authentication_adapter instanceof CaUsersAuthAdapter) {
-			// fall back to ca_users "native" authentication
-			self::init('CaUsers');
-			$vn_rc = self::$g_authentication_adapter->authenticate($ps_username, $ps_password, $pa_options);
-			self::$g_authentication_adapter = null;
-			return $vn_rc;
-		}
-
 		return null;
 	}
 

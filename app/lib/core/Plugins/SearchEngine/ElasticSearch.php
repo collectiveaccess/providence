@@ -345,6 +345,7 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 			'body' => array(
 				// we do paging in our code
 				'from' => 0, 'size' => 2147483647, // size is Java's 32bit int, for ElasticSearch
+				'_source' => false,
 				'query' => array(
 					'bool' => array(
 						'must' => array(
@@ -404,14 +405,18 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 
 		foreach($pm_content as $ps_content) {
 			$va_fragment = $o_field->getIndexingFragment($ps_content, $pa_options);
-			try {
-				$va_record = $this->getClient()->get([
-					'index' => $this->getIndexName(),
-					'type' => $this->ops_indexing_subject_tablename,
-					'id' => $this->opn_indexing_subject_row_id
-				])['_source'];
-			} catch (\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
-				$va_record = null;
+			$va_record = null;
+
+			if(!$this->isReindexing()) {
+				try {
+					$va_record = $this->getClient()->get([
+						'index' => $this->getIndexName(),
+						'type' => $this->ops_indexing_subject_tablename,
+						'id' => $this->opn_indexing_subject_row_id
+					])['_source'];
+				} catch (\Elasticsearch\Common\Exceptions\Missing404Exception $e) {
+					$va_record = null;
+				}
 			}
 
 			// if the record already exists, do incremental indexing
@@ -692,6 +697,10 @@ class WLPlugSearchEngineElasticSearch extends BaseSearchPlugin implements IWLPlu
 		}
 
 		return array_flip($va_pks);
+	}
+	# -------------------------------------------------------
+	public function isReindexing() {
+		return (defined('__CollectiveAccess_IS_REINDEXING__') && __CollectiveAccess_IS_REINDEXING__);
 	}
 	# -------------------------------------------------------
 }
