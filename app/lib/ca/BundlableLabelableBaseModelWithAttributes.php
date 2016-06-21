@@ -1734,6 +1734,11 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
 						break;
 					# -------------------------------
+					// This bundle is only available when editing objects of type ca_bundle_displays
+					case 'ca_metadata_alert_rule_type_restrictions':
+						$vs_element .= $this->getTypeRestrictionsHTMLFormBundle($pa_options['request'], $pa_options['formName'], $ps_placement_code, $pa_options);
+						break;
+					# -------------------------------
 					// 
 					case 'ca_users':
 						if (!$pa_options['request']->user->canDoAction('is_administrator') && ($pa_options['request']->getUserID() != $this->get('user_id'))) { return ''; }	// don't allow setting of per-user access if user is not owner
@@ -4147,6 +4152,12 @@ if (!$vb_batch) {
 					# -------------------------------------
 					// This bundle is only available for ca_bundle_displays 
 					case 'ca_bundle_display_type_restrictions':
+						if ($vb_batch) { break; } // not supported in batch mode
+						$this->saveTypeRestrictionsFromHTMLForm($po_request, $vs_form_prefix, $vs_placement_code);
+						break;
+					# -------------------------------------
+					// This bundle is only available for ca_bundle_displays
+					case 'ca_metadata_alert_rule_type_restrictions':
 						if ($vb_batch) { break; } // not supported in batch mode
 						$this->saveTypeRestrictionsFromHTMLForm($po_request, $vs_form_prefix, $vs_placement_code);
 						break;

@@ -38,6 +38,13 @@ define('__CA_ALERT_RULE_NO_ACCESS__', 0);
 define('__CA_ALERT_RULE_ACCESS_READONLY__', 1);
 define('__CA_ALERT_RULE_ACCESS_ACCESS_EDIT__', 2);
 
+require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rule_type_restrictions.php');
+require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rule_labels.php');
+require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_notifications.php');
+require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rules_x_user_groups.php');
+require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rules_x_users.php');
+require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_triggers.php');
+
 BaseModel::$s_ca_models_definitions['ca_metadata_alert_rules'] = array(
 	'NAME_SINGULAR' 	=> _t('metadata alert rule'),
 	'NAME_PLURAL' 		=> _t('metadata alert rules'),
@@ -219,6 +226,210 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 
 		// Filter list of tables form can be used for to those enabled in current config
 		BaseModel::$s_ca_models_definitions['ca_metadata_alert_rules']['FIELDS']['table_num']['BOUNDS_CHOICE_LIST'] = caGetPrimaryTablesForHTMLSelect();
+	}
+	# ------------------------------------------------------
+	protected function initLabelDefinitions($pa_options=null) {
+		parent::initLabelDefinitions($pa_options);
+		$this->BUNDLES['ca_users'] = array('type' => 'special', 'repeating' => true, 'label' => _t('User access'));
+		$this->BUNDLES['ca_user_groups'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Group access'));
+		$this->BUNDLES['ca_metadata_alert_rule_type_restrictions'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Type restrictions'));
+	}
+	# ----------------------------------------
+	/**
+	 * Return restrictions for currently loaded rule
+	 *
+	 * @param int $pn_type_id Type to limit returned restrictions to; if omitted or null then all restrictions are returned
+	 * @return array A list of restrictions, false on error or null if no ui is loaded
+	 */
+	public function getTypeRestrictions($pn_type_id=null) {
+		if (!($this->getPrimaryKey())) { return null; }		// rule must be loaded
+
+		$o_db = $this->getDb();
+
+		$vs_table_type_sql = '';
+		if ($pn_type_id > 0) {
+			$vs_table_type_sql .= ' AND type_id = '.intval($pn_type_id);
+		}
+		$qr_res = $o_db->query("
+			SELECT *
+			FROM ca_metadata_alert_rule_type_restrictions
+			WHERE
+				rule_id = ? {$vs_table_type_sql}
+		", (int)$this->getPrimaryKey());
+
+		if ($o_db->numErrors()) {
+			$this->errors = $o_db->errors();
+			return false;
+		}
+
+		$va_restrictions = array();
+		while($qr_res->nextRow()) {
+			$va_restriction = $qr_res->getRow();
+			$va_restriction['type_code'] = caGetListItemIdno($va_restriction['type_id']);
+			$va_restrictions[] = $va_restriction;
+		}
+		return $va_restrictions;
+	}
+	# ----------------------------------------
+	/**
+	 * Adds restriction (a binding between the display and item type)
+	 *
+	 * @param int $pn_type_id the type
+	 * @param array $pa_settings Array of options for the restriction. (No options are currently implemented).
+	 * @return bool True on success, false on error, null if no screen is loaded
+	 *
+	 */
+	public function addTypeRestriction($pn_type_id, $pa_settings=null) {
+		if (!($vn_rule_id = $this->getPrimaryKey())) { return null; }		// display must be loaded
+		if (!is_array($pa_settings)) { $pa_settings = array(); }
+
+		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('table_num')))) { return false; }
+
+		$va_type_list = $t_instance->getTypeList();
+		if (!isset($va_type_list[$pn_type_id])) { return false; }
+
+		$t_restriction = new ca_metadata_alert_rule_type_restrictions();
+		if ($this->inTransaction()) { $t_restriction->setTransaction($this->getTransaction()); }
+		$t_restriction->setMode(ACCESS_WRITE);
+		$t_restriction->set('table_num', $this->get('table_num'));
+		$t_restriction->set('type_id', $pn_type_id);
+		$t_restriction->set('rule_id', $this->getPrimaryKey());
+		foreach($pa_settings as $vs_setting => $vs_setting_value) {
+			$t_restriction->setSetting($vs_setting, $vs_setting_value);
+		}
+		$t_restriction->insert();
+
+		if ($t_restriction->numErrors()) {
+			$this->errors = $t_restriction->errors();
+			return false;
+		}
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 * Remove restriction from currently loaded display for specified type
+	 *
+	 * @param int $pn_type_id The type of the restriction
+	 * @return bool True on success, false on error, null if no screen is loaded
+	 */
+	public function removeTypeRestriction($pn_type_id) {
+		if (!($vn_rule_id = $this->getPrimaryKey())) { return null; }		// display must be loaded
+
+		$o_db = $this->getDb();
+
+		$qr_res = $o_db->query("
+			DELETE FROM ca_metadata_alert_rule_type_restrictions
+			WHERE
+				rule_id = ? AND type_id = ?
+		", (int)$this->getPrimaryKey(), (int)$pn_type_id);
+
+		if ($o_db->numErrors()) {
+			$this->errors = $o_db->errors();
+			return false;
+		}
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 * Remove all type restrictions from loaded display
+	 *
+	 * @return bool True on success, false on error, null if no screen is loaded
+	 */
+	public function removeAllTypeRestrictions() {
+		if (!($vn_rule_id = $this->getPrimaryKey())) { return null; }		// display must be loaded
+
+		$o_db = $this->getDb();
+
+		$qr_res = $o_db->query("
+			DELETE FROM ca_metadata_alert_rule_type_restrictions
+			WHERE
+				rule_id = ?
+		", (int)$this->getPrimaryKey());
+
+		if ($o_db->numErrors()) {
+			$this->errors = $o_db->errors();
+			return false;
+		}
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 * Sets restrictions for currently loaded rule
+	 *
+	 * @param array $pa_type_ids list of types to restrict to
+	 * @return bool True on success, false on error, null if no screen is loaded
+	 *
+	 */
+	public function setTypeRestrictions($pa_type_ids) {
+		if (!($vn_rule_id = $this->getPrimaryKey())) { return null; }		// rule must be loaded
+		if (!is_array($pa_type_ids)) {
+			if (is_numeric($pa_type_ids)) {
+				$pa_type_ids = array($pa_type_ids);
+			} else {
+				$pa_type_ids = array();
+			}
+		}
+
+		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($this->get('table_num')))) { return false; }
+
+		$va_type_list = $t_instance->getTypeList();
+		$va_current_restrictions = $this->getTypeRestrictions();
+		$va_current_type_ids = array();
+		foreach($va_current_restrictions as $vn_i => $va_restriction) {
+			$va_current_type_ids[$va_restriction['type_id']] = true;
+		}
+
+		foreach($va_type_list as $vn_type_id => $va_type_info) {
+			if(in_array($vn_type_id, $pa_type_ids)) {
+				// need to set
+				if(!isset($va_current_type_ids[$vn_type_id])) {
+					$this->addTypeRestriction($vn_type_id);
+				}
+			} else {
+				// need to unset
+				if(isset($va_current_type_ids[$vn_type_id])) {
+					$this->removeTypeRestriction($vn_type_id);
+				}
+			}
+		}
+		return true;
+	}
+	# ----------------------------------------
+	/**
+	 * Renders and returns HTML form bundle for management of type restriction in the currently loaded alert rule
+	 *
+	 * @param object $po_request The current request object
+	 * @param string $ps_form_name The name of the form in which the bundle will be rendered
+	 *
+	 * @return string Rendered HTML bundle for alert rule
+	 */
+	public function getTypeRestrictionsHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, $pa_options=null) {
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+
+		$o_view->setVar('t_rule', $this);
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);
+		$o_view->setVar('request', $po_request);
+
+		$va_type_restrictions = $this->getTypeRestrictions();
+		$va_restriction_type_ids = array();
+		if (is_array($va_type_restrictions)) {
+			foreach($va_type_restrictions as $vn_i => $va_restriction) {
+				$va_restriction_type_ids[] = $va_restriction['type_id'];
+			}
+		}
+
+		if (!($t_instance = $this->_DATAMODEL->getInstanceByTableNum($vn_table_num = $this->get('table_num')))) { return null; }
+
+		$o_view->setVar('type_restrictions', $t_instance->getTypeListAsHTMLFormElement('type_restrictions[]', array('multiple' => 1, 'height' => 5), array('value' => 0, 'values' => $va_restriction_type_ids)));
+
+		return $o_view->render('ca_metadata_alert_rule_type_restrictions.php');
+	}
+	# ----------------------------------------
+	public function saveTypeRestrictionsFromHTMLForm($po_request, $ps_form_prefix, $ps_placement_code) {
+		if (!$this->getPrimaryKey()) { return null; }
+
+		return $this->setTypeRestrictions($po_request->getParameter('type_restrictions', pArray));
 	}
 	# ------------------------------------------------------
 	/**
