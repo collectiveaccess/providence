@@ -517,8 +517,12 @@ class SearchEngine extends SearchBase {
 		$vs_fld = $po_term->getTerm()->field;
 		if (sizeof($va_access_points = $this->getAccessPoints($this->opn_tablenum))) {
 			// if field is access point then do rewrite
+			$va_fld_tmp = explode("/", mb_strtolower($vs_fld));
+			$vs_fld_lc = $va_fld_tmp[0];
+			$vs_rel_types = isset($va_fld_tmp[1]) ? $va_fld_tmp[1] : null;
+			
 			if (
-				isset($va_access_points[$vs_fld_lc = mb_strtolower($vs_fld)]) 
+				isset($va_access_points[$vs_fld_lc]) 
 				&&
 				($va_ap_info = $va_access_points[$vs_fld_lc])
 			) {
@@ -549,7 +553,7 @@ class SearchEngine extends SearchBase {
 					if(isset($va_ap_info['options']) && ($va_ap_info['options']['DONT_STEM'] || in_array('DONT_STEM', $va_ap_info['options']))) {
 						$vs_term .= '|';
 					}
-					$va_terms['terms'][] = new Zend_Search_Lucene_Index_Term($vs_term, $vs_field);
+					$va_terms['terms'][] = new Zend_Search_Lucene_Index_Term($vs_term, $vs_field.($vs_rel_types ? "/{$vs_rel_types}" : ''));
 					$va_terms['signs'][] = ($vs_bool == 'AND') ? true : null;
 					$va_terms['options'][] = is_array($va_ap_info['options']) ? $va_ap_info['options'] : array();
 				}
