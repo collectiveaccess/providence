@@ -33,7 +33,7 @@
  $o_dm = Datamodel::load();
  
  $vs_sort_form = caFormTag($this->request, 'Index', 'QuickSearchSortForm');
- $vs_sort_form .= _t('Sort by ').caHTMLSelect('sort', array(_t('name') => 'name', _t('idno') => 'idno'), array('onchange' => 'jQuery("#QuickSearchSortForm").submit();'), array('value' => $this->getVar('sort')));
+ $vs_sort_form .= _t('Sort by ').caHTMLSelect('sort', array(_t('name') => 'name', _t('relevance') => 'relevance', _t('idno') => 'idno'), array('onchange' => 'jQuery("#QuickSearchSortForm").submit();'), array('value' => $this->getVar('sort')));
  $vs_sort_form .= "</form>";
  
  print $vs_control_box = caFormControlBox(
