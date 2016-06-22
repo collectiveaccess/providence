@@ -651,6 +651,13 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		$o_view->setVar('placement_code', $ps_placement_code);
 		$o_view->setVar('request', $po_request);
 
+		if(!($vn_table_num = $this->get('table_num'))) { return null; }
+
+		$o_view->setVar('table_num', $vn_table_num);
+
+		$t_trigger = new ca_metadata_alert_triggers();
+		$o_view->setVar('t_rule', $t_trigger);
+
 		return $o_view->render('ca_metadata_alert_triggers.php');
 	}
 	# ------------------------------------------------------

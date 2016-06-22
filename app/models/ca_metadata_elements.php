@@ -606,6 +606,26 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	}
 	# ------------------------------------------------------
 	/**
+	 * Get element list as HTML select
+	 * @param string $ps_select_name
+	 * @param array $pa_attributes
+	 * @param bool $pb_root_elements_only
+	 * @param null $pm_table_name_or_num
+	 * @param null $pm_type_name_or_id
+	 * @return string
+	 */
+	public static function getElementListAsHTMLSelect($ps_select_name, array $pa_attributes=[], $pb_root_elements_only=false, $pm_table_name_or_num=null, $pm_type_name_or_id=null) {
+		$va_elements = self::getElementsAsList($pb_root_elements_only, $pm_table_name_or_num, $pm_type_name_or_id);
+
+		$va_options = [];
+		foreach($va_elements as $va_element) {
+			$va_options[$va_element['element_id']] = $va_element['display_label'];
+		}
+
+		return caHTMLSelect($ps_select_name, $va_options, $pa_attributes, ['contentArrayUsesKeysForValues' => true]);
+	}
+	# ------------------------------------------------------
+	/**
 	 * Returns all elements in system as list
 	 *
 	 * @param $pb_root_elements_only boolean If true, then only root elements are returned; default is false

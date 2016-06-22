@@ -26,6 +26,38 @@
  * ----------------------------------------------------------------------
  */
 
-$vs_id_prefix 			= $this->getVar('placement_code').$this->getVar('id_prefix');
+$vs_id_prefix = $this->getVar('placement_code').$this->getVar('id_prefix');
+$vn_table_num = $this->getVar('table_num');
+/** @var ca_metadata_alert_rules $t_rule */
+$t_rule = $this->getVar('t_rule');
+$t_trigger = $this->getVar('t_trigger');
+
+
+$va_errors = array();
+if(is_array($va_action_errors = $this->getVar('errors'))) {
+	foreach($va_action_errors as $o_error) {
+		$va_errors[] = $o_error->getErrorDescription();
+	}
+}
+
+print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 ?>
-<h3>Foo</h3>
+<div id="<?php print $vs_id_prefix; ?>">
+	<div class="bundleContainer">
+		<div class="caItemList">
+			<div class="labelInfo">
+				<?php
+				if (is_array($va_errors) && sizeof($va_errors)) {
+					?>
+					<span class="formLabelError"><?php print join('; ', $va_errors); ?></span>
+					<?php
+				}
+				?>
+				<div class="formLabel"><?php print _t('Trigger Element'); ?><br/>
+				<?php print ca_metadata_elements::getElementListAsHTMLSelect($vs_id_prefix . 'element_id', [], false, $vn_table_num); ?>
+				</div>
+				<?php print $t_rule->htmlFormElement('trigger_type'); ?>
+			</div>
+		</div>
+	</div>
+</div>
