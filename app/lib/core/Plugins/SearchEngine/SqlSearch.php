@@ -483,7 +483,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		list($vs_table, $vs_field, $vs_subfield) = explode('.', $va_tmp[0]);
 		
 		$vs_rel_table = caGetRelationshipTableName($pn_subject_tablenum, $vs_table);
-		$va_rel_type_ids = ($va_tmp[1] && $vs_rel_table) ? caMakeRelationshipTypeIDList($vs_rel_table, array($va_tmp[1])) : null;
+		$va_rel_type_ids = ($va_tmp[1] && $vs_rel_table) ? caMakeRelationshipTypeIDList($vs_rel_table, preg_split("![,;]+!", $va_tmp[1])) : null;
 		
 		if (!($t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true))) { 
 			return array('access_point' => $va_tmp[0]);
@@ -536,6 +536,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		$o_base = new SearchBase();
 		
 		$va_old_signs = $po_rewritten_query->getSigns();
+		
+		$vb_is_only_blank_searches = true;
 		foreach($va_elements as $o_lucene_query_element) {
 			$vb_is_blank_search = $vb_is_not_blank_search = false;
 			
@@ -1505,6 +1507,10 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 							// Finally we pray
 						}
 					}
+					
+					
+					if (!$vb_is_blank_search && !$vb_is_not_blank_search) { $vb_is_only_blank_searches = false; }
+					
 					if ($vn_i == 0) {
 						if($vs_direct_sql_query) {
 							$vs_direct_sql_query = str_replace('^JOIN', join("\n", $va_join), $vs_direct_sql_query);
@@ -1518,7 +1524,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								INSERT IGNORE INTO {$ps_dest_table}
 								SELECT swi.row_id, SUM(swi.boost)
 								FROM ca_sql_search_word_index swi
-								".((!$vb_is_blank_search && !$vb_is_not_blank_search) ? "INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id" : '')."
+								".((!$vb_is_only_blank_searches) ? "INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id" : '')."
 								WHERE
 									{$vs_sql_where}
 									AND
@@ -1560,7 +1566,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$vs_sql = ($vs_direct_sql_query) ? "{$vs_direct_sql_query}" : "
 									SELECT swi.row_id
 									FROM ca_sql_search_word_index swi
-									".((!$vb_is_blank_search && !$vb_is_not_blank_search) ? "INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id" : '')."
+									".((!$vb_is_only_blank_searches) ? "INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id" : '')."
 									WHERE
 										{$vs_sql_where}
 										AND
@@ -1602,7 +1608,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 								$vs_sql = "
 									SELECT swi.row_id
 									FROM ca_sql_search_word_index swi
-									".((!$vb_is_blank_search && !$vb_is_not_blank_search) ? "INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id" : '')."
+									".((!$vb_is_only_blank_searches) ? "INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id" : '')."
 									WHERE 
 										".($vs_sql_where ? "{$vs_sql_where} AND " : "")." swi.table_num = ? 
 										{$vs_rel_type_id_sql}
@@ -1635,7 +1641,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									INSERT IGNORE INTO {$ps_dest_table}
 									SELECT swi.row_id, SUM(swi.boost)
 									FROM ca_sql_search_word_index swi
-									".((!$vb_is_blank_search && !$vb_is_not_blank_search) ? "INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id" : '')."
+									".((!$vb_is_only_blank_searches) ? "INNER JOIN ca_sql_search_words AS sw ON sw.word_id = swi.word_id" : '')."
 									WHERE
 										{$vs_sql_where}
 										AND
@@ -1693,13 +1699,13 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		if ($this->debug) { Debug::msg("[SqlSearchDebug] indexField: $pn_content_tablenum/$ps_content_fieldname [$pn_content_row_id] =&gt; $pm_content"); }
 	
-		if (in_array((string)'DONT_TOKENIZE', array_values($pa_options), true)) { 
+		if (in_array('DONT_TOKENIZE', array_values($pa_options), true)) { 
 			$pa_options['DONT_TOKENIZE'] = true;  
-		} else {
-			if (!isset($pa_options['DONT_TOKENIZE'])) { 
-				$pa_options['DONT_TOKENIZE'] = false; 
-			}
+		} elseif (!isset($pa_options['DONT_TOKENIZE'])) { 
+			$pa_options['DONT_TOKENIZE'] = false; 
 		}
+		
+		$vb_force_tokenize = (in_array('TOKENIZE', array_values($pa_options), true) || isset($pa_options['TOKENIZE']));
 		$vb_tokenize = $pa_options['DONT_TOKENIZE'] ? false : true;
 		
 		$vn_rel_type_id = (isset($pa_options['relationship_type_id']) && ($pa_options['relationship_type_id'] > 0)) ? (int)$pa_options['relationship_type_id'] : 0;
@@ -1733,14 +1739,13 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			$va_words = null;
 		} else {
 			// Tokenize string
-			if ($vb_tokenize) {
-				$va_words = [];
+			$va_words = [];
+			if ($vb_tokenize || $vb_force_tokenize) {
 				foreach($pm_content as $ps_content) {
 					$va_words = array_merge($va_words, $this->_tokenize((string)$ps_content));
 				}
-			} else {
-				$va_words = $pm_content;
 			}
+			if (!$vb_tokenize) { $va_words = array_merge($va_words, $pm_content); }
 		}
 		
 		$vb_incremental_reindexing = (bool)$this->can('incremental_reindexing');

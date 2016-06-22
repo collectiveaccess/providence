@@ -536,8 +536,16 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 					}
 				}
 			}
+
+			$va_options = ['restrictToAttributesByCodes' => $va_attrs_to_duplicate];
+
+			if($va_dont_duplicate_codes = $this->getAppConfig()->get($this->tableName().'_dont_duplicate_element_codes')) {
+				if(is_array($va_dont_duplicate_codes)) {
+					$va_options['excludeAttributesByCodes'] = $va_dont_duplicate_codes;
+				}
+			}
 	
-			if (!$t_dupe->copyAttributesFrom($this->getPrimaryKey(), ['restrictToAttributesByCodes' => $va_attrs_to_duplicate])) {
+			if (!$t_dupe->copyAttributesFrom($this->getPrimaryKey(), $va_options)) {
 				$this->errors = $t_dupe->errors;
 				if ($vb_we_set_transaction) { $o_t->rollback();}
 				return false;
@@ -850,7 +858,6 @@ class BundlableLabelableBaseModelWithAttributes extends LabelableBaseModelWithAt
 		}
 		$qr_res = $o_db->query($vs_sql, $va_values);
 		if ($qr_res->numRows() > 0) {
-			caDebug('true');
 			return true;
 		}
 		return false;
@@ -3565,7 +3572,9 @@ if (!$vb_batch) {		// hierarchy moves are not supported in batch mode
 			
 			if ($vb_is_insert) {
 			 	BaseModel::unsetChangeLogUnitID();
-			 	if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+			 	if ($vb_we_set_transaction) {
+					$this->removeTransaction(false);
+				}
 				return false;	// bail on insert error
 			}
 		}
@@ -3827,7 +3836,7 @@ if (!$vb_batch) {
 				// get settings
 				$va_bundle_settings = array();
 				foreach($va_bundles as $va_bundle_info) {
-					if ($va_bundle_info['placement_code'] == $vs_placement_code) {
+					if ('P'.$va_bundle_info['placement_id'] == $vs_placement_code) {
 						$va_bundle_settings = $va_bundle_info['settings'];
 						break;
 					}
@@ -4537,6 +4546,7 @@ if (!$vb_batch) {
 						// NOOP (for now)
 					
 						break;
+					# -------------------------------
 					case 'ca_object_circulation_status':
 						if ($vb_batch) { return null; } // not supported in batch mode
 						if (!$po_request->user->canDoAction('can_edit_ca_objects')) { break; }
@@ -4551,6 +4561,7 @@ if (!$vb_batch) {
 							$vn_status = $po_request->getParameter("{$vs_placement_code}{$vs_form_prefix}_status", pString);
 							
 							$t_rep = new ca_object_representations();
+							if ($this->inTransaction()) { $t_rep->setTransaction($this->getTransaction()); }
 							if(is_array($va_rep_ids = $this->getRepresentationIDs())) {
 								foreach(array_keys($va_rep_ids) as $vn_rep_id) {
 									if ($t_rep->load($vn_rep_id)) {
@@ -4661,18 +4672,20 @@ if (!$vb_batch) {
 		}
 }
  		
- 		// check for new relations to add
+ 		// process batch remove
  		if ($vb_batch) {
 			$vs_batch_mode = $_REQUEST["{$ps_placement_code}{$ps_form_prefix}_batch_mode"];
  			if ($vs_batch_mode == '_disabled_') { return true; }
 			if ($vs_batch_mode == '_delete_') {				// remove all relationships and return
-				$this->removeRelationships($ps_bundle_name);
+				$this->removeRelationships($ps_bundle_name, caGetOption('restrict_to_relationship_types', $pa_settings, null), ['restrictToTypes' => caGetOption('restrict_to_types', $pa_settings, null)]);
 				return true;
 			}
 			if ($vs_batch_mode == '_replace_') {			// remove all existing relationships and then add new ones
-				$this->removeRelationships($ps_bundle_name);
+				$this->removeRelationships($ps_bundle_name, caGetOption('restrict_to_relationship_types', $pa_settings, null), ['restrictToTypes' => caGetOption('restrict_to_types', $pa_settings, null)]);
 			}
 		}
+		
+ 		// check for new relations to add
  		foreach($_REQUEST as $vs_key => $vs_value ) {
 			if (preg_match("/^{$ps_placement_code}{$ps_form_prefix}_idnew_([\d]+)/", $vs_key, $va_matches)) { 
 				$vn_c = intval($va_matches[1]);
@@ -4786,8 +4799,8 @@ if (!$vb_batch) {
  	/**
  	 * Returns list of items in the specified table related to the currently loaded row or rows specified in options.
  	 * 
- 	 * @param $pm_rel_table_name_or_num - the table name or table number of the item type you want to get a list of (eg. if you are calling this on an ca_objects instance passing 'ca_entities' here will get you a list of entities related to the object)
- 	 * @param $pa_options - array of options. Supported options are:
+ 	 * @param mixed $pm_rel_table_name_or_num The table name or table number of the item type you want to get a list of (eg. if you are calling this on an ca_objects instance passing 'ca_entities' here will get you a list of entities related to the object)
+ 	 * @param array $pa_options Array of options. Supported options are:
  	 *
  	 *		[Options controlling rows for which data is returned]
  	 *			row_ids = Array of primary key values to use when fetching related items. If omitted or set to a null value the 'row_id' option will be used. [Default is null]
@@ -4840,9 +4853,11 @@ if (!$vb_batch) {
 	 *
 	 *					Default is "data" - returns a list of arrays with data about each related item
  	 *
+ 	 * @param int $pn_count Variable to return number of related items. The count reflects the absolute number of related items, independent of how the start and limit options are set, and may differ from the number of items actually returned.
+ 	 *
  	 * @return array List of related items
  	 */
-	public function getRelatedItems($pm_rel_table_name_or_num, $pa_options=null) {
+	public function getRelatedItems($pm_rel_table_name_or_num, $pa_options=null, &$pn_count=null) {
 		global $AUTH_CURRENT_USER_ID;
 		$vn_user_id = (isset($pa_options['user_id']) && $pa_options['user_id']) ? $pa_options['user_id'] : (int)$AUTH_CURRENT_USER_ID;
 		$vb_show_if_no_acl = (bool)($this->getAppConfig()->get('default_item_access_level') > __CA_ACL_NO_ACCESS__);
@@ -5211,6 +5226,8 @@ if (!$vb_batch) {
 					{$vs_order_by}";
 
 				$qr_res = $o_db->query($vs_sql);
+				
+				if (!is_null($pn_count)) { $pn_count = $qr_res->numRows(); }
 
 				if ($vb_uses_relationship_types) { $va_rel_types = $t_rel->getRelationshipInfo($va_path[1]); }
 				$vn_c = 0;
@@ -5348,6 +5365,8 @@ if (!$vb_batch) {
 
 				//print "<pre>$vs_sql</pre>\n";
 				$qr_res = $o_db->query($vs_sql);
+				
+				if (!is_null($pn_count)) { $pn_count = $qr_res->numRows(); }
 				
 				if ($vb_uses_relationship_types)  {
 					$va_rel_types = $t_rel->getRelationshipInfo($vs_item_rel_table_name);
@@ -5519,6 +5538,9 @@ if (!$vb_batch) {
 			";
 			
 			$qr_res = $o_db->query($vs_sql);
+			
+			if (!is_null($pn_count)) { $pn_count = $qr_res->numRows(); }
+			
 			if ($vb_uses_relationship_types)  {
 				$va_rel_types = $t_rel->getRelationshipInfo($t_tmp->tableName());
 				if(method_exists($t_tmp, 'getLeftTableName')) {
@@ -6967,6 +6989,7 @@ side. For many self-relations the direction determines the nature and display te
 	 	if(!$this->getPrimaryKey()) { return null; }
 			
 		$t_violation = new ca_metadata_dictionary_rule_violations();
+		if ($this->inTransaction()) { $t_violation->setTransaction($this->getTransaction()); }
 		
 		$va_rules = ca_metadata_dictionary_rules::getRules(array('db' => $o_db, 'bundles' => caGetOption('bundles', $pa_options, null)));
 		
@@ -6990,7 +7013,7 @@ side. For many self-relations the direction determines the nature and display te
 			}
 			
 			// is there a violation recorded for this rule and row?
-			if ($t_found = ca_metadata_dictionary_rule_violations::find(array('rule_id' => $va_rule['rule_id'], 'row_id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum()), array('returnAs' => 'firstModelInstance'))) {
+			if ($t_found = ca_metadata_dictionary_rule_violations::find(array('rule_id' => $va_rule['rule_id'], 'row_id' => $this->getPrimaryKey(), 'table_num' => $this->tableNum()), array('returnAs' => 'firstModelInstance', 'transaction' => $this->getTransaction()))) {
 				$t_violation = $t_found;
 			}
 					

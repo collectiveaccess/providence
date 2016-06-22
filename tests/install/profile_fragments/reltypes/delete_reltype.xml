@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<profile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="profile.xsd" useForConfiguration="1" infoUrl="">
+  <profileName>collectiveaccess</profileName>
+  <profileDescription/>
+  <locales/>
+  <lists/>
+  <elementSets/>
+  <userInterfaces/>
+  <relationshipTypes>
+    <relationshipTable name="ca_objects_x_occurrences">
+      <types>
+        <type code="describes" deleted="1"/>
+      </types>
+    </relationshipTable>
+  </relationshipTypes>
+  <roles/>
+  <groups/>
+  <displays>
+  </displays>
+  <searchForms/>
+</profile>

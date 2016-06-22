@@ -38,6 +38,14 @@ require_once(__CA_MODELS_DIR__.'/ca_attributes.php');
 
 class AttributeValue extends Base {
 
+	public function isRelevant() {
+		if((!$this->getModelInstance()->loadByGUID($this->getGUID())) && $this->isUpdate()) {
+			return false;
+		}
+
+		return parent::isRelevant();
+	}
+
 	public function sanityCheck() {
 		parent::sanityCheck();
 		$va_snapshot = $this->getSnapshot();

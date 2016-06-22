@@ -85,7 +85,6 @@
  	define('__CA_NAV_ICON_COMMIT__', 43);
  	define('__CA_NAV_ICON_SETS__', 44);
  	define('__CA_NAV_ICON_RIGHT_ARROW__', 45);
- 	define('__CA_NAV_ICON_ROTATE__', 46);
  	define('__CA_NAV_ICON_VISUALIZE__', 47);
  	define('__CA_NAV_ICON_ADD_WIDGET__', 48);	
  	define('__CA_NAV_ICON_VISIBILITY_TOGGLE__', 49);
@@ -102,7 +101,8 @@
  	define('__CA_NAV_ICON_EXTRACT__', 60);
  	define('__CA_NAV_ICON_MEDIA_METADATA__', 61);
  	define('__CA_NAV_ICON_NUKE__', 62);
- 	define('__CA_NAV_FULL_RESULTS__', 63);
+ 	define('__CA_NAV_ICON_FULL_RESULTS__', 63);
+ 	define('__CA_NAV_ICON_EXPORT_SMALL__', 64);
  	
  	/**
  	 * Icon position constants
@@ -603,7 +603,7 @@
 	 * Return system icon as HTML
 	 *
 	 * @param int $pn_type Icon type constant (ex. __CA_NAV_ICON_ADD__)
-	 * @param mixed $pn_size Size of icon expressed as FontAwesome magnification level (Ex. 2) or pixel height (Ex. 24px). [Default is 2]
+	 * @param mixed $pn_size Size of icon expressed as FontAwesome magnification level (Ex. 2) or pixel height (Ex. 24px). Text values will be applied as CSS classes to the icon. [Default is 2]
 	 * @param array $pa_attributes Array of additional parameters to include in URL [Default is null]
 	 * @param array $pa_options Options include:
 	 *		color = hex color for icon [Default is #fff]
@@ -629,6 +629,8 @@
 			} elseif(substr(strtolower($pm_size), -2) == 'px') {
 				if (!isset($pa_attributes['style'])) { $pa_attributes['style'] = ''; }
 				$pa_attributes['style'] = "font-size: {$pm_size};".$pa_attributes['style'];
+			} elseif($pm_size) {
+				$vs_opt_class .= " {$pm_size}";
 			}
 			
 			$vs_rotate_class = '';
@@ -760,6 +762,9 @@
 			case __CA_NAV_ICON_EXPORT__:
 				$vs_fa_class = 'fa-download';
 				break;
+			case __CA_NAV_ICON_EXPORT_SMALL__:
+				$vs_fa_class = 'fa-external-link-square';
+				break;	
 			case __CA_NAV_ICON_SETS__:
 				$vs_fa_class = 'fa-clone';
 				break;	
@@ -844,7 +849,7 @@
 			case __CA_NAV_ICON_NUKE__:
 				$vs_fa_class = 'fa-bomb';
 				break;
-			case __CA_NAV_FULL_RESULTS__:
+			case __CA_NAV_ICON_FULL_RESULTS__:
 				$vs_fa_class = 'fa-bars';
 				break;																			
 			default:
@@ -852,7 +857,7 @@
 				return null;
 				break;
 		}
-		return array('class' => $vs_fa_class);
+		return array('class' => trim("{$vs_fa_class} {$vs_ca_class}"), 'fa-class' => $vs_fa_class, 'ca-class' => $vs_ca_class);
 	}
 	# ------------------------------------------------------------------------------------------------
 	/**
@@ -1299,7 +1304,8 @@
 			'levelList' => caNavUrl($po_request, $vs_module, $vs_controller, 'GetHierarchyLevel', $pa_attributes),
 			'search' => caNavUrl($po_request, $vs_module, $vs_controller, 'Get', $pa_attributes),
 			'idno' => caNavUrl($po_request, $vs_module, $vs_controller, 'IDNo', $pa_attributes),
-			'intrinsic' => caNavUrl($po_request, $vs_module, $vs_controller, 'intrinsic', $pa_attributes)
+			'intrinsic' => caNavUrl($po_request, $vs_module, $vs_controller, 'intrinsic', $pa_attributes),
+			'attribute' => caNavUrl($po_request, $vs_module, $vs_controller, 'Attribute', $pa_attributes)
 		);
 	}
 	# ------------------------------------------------------------------------------------------------

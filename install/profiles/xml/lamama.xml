@@ -130,7 +130,7 @@
                 </label>
               </labels>
             </item>
-            <item idno="artistic" enabled="1" default="0">
+            <item idno="artist_angel" enabled="1" default="0">
               <labels>
                 <label locale="en_US" preferred="1">
                   <name_singular>Artist/Angel files</name_singular>

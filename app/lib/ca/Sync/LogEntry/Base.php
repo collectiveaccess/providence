@@ -123,7 +123,7 @@ abstract class Base {
 		if($this->isUpdate() || $this->isDelete()) {
 			// if we can't find the GUID and this is an update, throw error
 			if((!$this->getModelInstance()->loadByGUID($this->getGUID())) && $this->isUpdate()) {
-				throw new InvalidLogEntryException('Mode was update but the given GUID "'.$this->getGUID().'" could not be found for table num ' . $this->getTableNum());
+				throw new IrrelevantLogEntry('Mode was update but the given GUID "'.$this->getGUID().'" could not be found for table num ' . $this->getTableNum());
 			}
 
 			// if we can't find it and this is a delete, we don't particularly care. yes, we can't delete a non-existing

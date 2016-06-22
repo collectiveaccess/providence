@@ -961,7 +961,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				}
 				if (!sizeof($va_dates)) {
 					$va_dates[] = array(
-						'sortable' => $vn_date = caUnixTimestampToHistoricTimestamps($qr_loans->get('lastModified')),
+						'sortable' => $vn_date = caUnixTimestampToHistoricTimestamps($qr_loans->get('lastModified.direct')),
 						'bounds' => array(0, $vn_date),
 						'display' => caGetLocalizedDate($vn_date)
 					);
@@ -1031,7 +1031,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				}
 				if (!sizeof($va_dates)) {
 					$va_dates[] = array(
-						'sortable' => $vn_date = caUnixTimestampToHistoricTimestamps($qr_movements->get('lastModified')),
+						'sortable' => $vn_date = caUnixTimestampToHistoricTimestamps($qr_movements->get('lastModified.direct')),
 						'bound' => array(0, $vn_date),
 						'display' => caGetLocalizedDate($vn_date)
 					);
@@ -1103,7 +1103,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 				}
 				if (!sizeof($va_dates)) {
 					$va_dates[] = array(
-						'sortable' => $vn_date = caUnixTimestampToHistoricTimestamps($qr_occurrences->get('lastModified')),
+						'sortable' => $vn_date = caUnixTimestampToHistoricTimestamps($qr_occurrences->get('lastModified.direct')),
 						'bounds' => array(0, $vn_date),
 						'display' => caGetLocalizedDate($vn_date)
 					);
@@ -1850,8 +1850,8 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	 *
  	 * @return int
  	 */
- 	public function removeRelationships($pm_rel_table_name_or_num, $pm_type_id=null) {
- 		if ($vn_rc = parent::removeRelationships($pm_rel_table_name_or_num, $pm_type_id)) {
+ 	public function removeRelationships($pm_rel_table_name_or_num, $pm_type_id=null, $pa_options=null) {
+ 		if ($vn_rc = parent::removeRelationships($pm_rel_table_name_or_num, $pm_type_id, $pa_options)) {
  			
  			if ($this->relationshipChangeMayAffectCurrentLocation($pm_rel_table_name_or_num, null, $pm_type_id)) {
  				$this->deriveCurrentLocationForBrowse();

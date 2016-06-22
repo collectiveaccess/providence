@@ -2190,6 +2190,9 @@
 			$va_restrictToAttributesByCodes = caGetOption('restrictToAttributesByCodes', $pa_options, array());
 			$va_restrictToAttributesByIds = caGetOption('restrictToAttributesByIds', $pa_options, array());
 
+			$va_exclude_attributes_by_codes = caGetOption('excludeAttributesByCodes', $pa_options, array());
+			if(!is_array($va_exclude_attributes_by_codes)) { $va_exclude_attributes_by_codes = []; }
+
 			if (!($t_dupe = $this->_DATAMODEL->getInstanceByTableNum($this->tableNum()))) { return null; }
 			$t_dupe->purify($this->purify());
 			if (!$this->getPrimaryKey()) { return null; }
@@ -2200,22 +2203,39 @@
 
 			$vs_table = $this->tableName();
 			foreach($va_elements as $vn_element_id => $vs_element_code) {
-				$va_vals = $this->get("{$vs_table}.{$vs_element_code}", array("returnAsArray" => true, "returnWithStructure" => true, "returnAllLocales" => true, 'forDuplication' => true));
-				if (!is_array($va_vals)) { continue; }
-				if (sizeof($va_restrictToAttributesByCodes)>0 || sizeof($va_restrictToAttributesByIds)>0) {
-					if (!(in_array($vs_element_code,$va_restrictToAttributesByCodes) || in_array($vn_element_id,$va_restrictToAttributesByIds))) {
+				// restrict by code
+				if (sizeof($va_restrictToAttributesByCodes)>0) {
+					if (!in_array($vs_element_code, $va_restrictToAttributesByCodes)) {
 						continue;
 					}
 				}
+
+				// restrict by id
+				if (sizeof($va_restrictToAttributesByIds)>0) {
+					if (!in_array($vn_element_id, $va_restrictToAttributesByIds)) {
+						continue;
+					}
+				}
+
+				// exclude by code
+				if (in_array($vs_element_code, $va_exclude_attributes_by_codes)) {
+					continue;
+				}
+
+				$va_vals = $this->get("{$vs_table}.{$vs_element_code}", array("returnAsArray" => true, "returnWithStructure" => true, "returnAllLocales" => true, 'forDuplication' => true));
+				if (!is_array($va_vals)) { continue; }
+
 				foreach($va_vals as $vn_id => $va_vals_by_locale) {
 					foreach($va_vals_by_locale as $vn_locale_id => $va_vals_by_attr_id) {
 						foreach($va_vals_by_attr_id as $vn_attribute_id => $va_val) {
 							$va_val['locale_id'] = ($vn_locale_id) ? $vn_locale_id : $g_ui_locale_id;
+
 							$t_dupe->addAttribute($va_val, $vs_element_code);
 						}
 					}
 				}
 			}
+
 			$t_dupe->setMode(ACCESS_WRITE);
 			$t_dupe->update();
 
@@ -2343,7 +2363,11 @@
 		}
 		# ------------------------------------------------------------------
 		/**
+		 * Returns attribute data type code for authority element used to reference this model. 
+		 * Eg. for the ca_entities model the __CA_ATTRIBUTE_VALUE_ENTITIES__ constant (numeric 22) is returned.
+		 * Returns null if the model cannot be referenced using a metadata element.
 		 *
+		 * @return int
 		 */
 		public static function getAuthorityElementDatatypeList() {
 			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/CollectionsAttributeValue.php');

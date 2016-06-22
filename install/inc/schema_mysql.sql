@@ -742,7 +742,9 @@ create table ca_places
    deleted                        tinyint unsigned               not null default 0,
    hier_left                      decimal(30,20)                 not null,
    hier_right                     decimal(30,20)                 not null,
-   rank                             int unsigned                     not null default 0,
+   rank                           int unsigned                   not null default 0,
+   floorplan                      longblob                       not null,
+   
    primary key (place_id),
    constraint fk_ca_places_source_id foreign key (source_id)
       references ca_list_items (item_id) on delete restrict on update restrict,
@@ -6719,4 +6721,4 @@ create table ca_schema_updates (
 
 /* Indicate up to what migration this schema definition covers */
 /* CURRENT MIGRATION: 133 */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (133, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (134, unix_timestamp());

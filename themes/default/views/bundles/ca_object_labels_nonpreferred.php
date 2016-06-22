@@ -29,6 +29,8 @@
 	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$va_labels 			= $this->getVar('labels');
 	$t_label 			= $this->getVar('t_label');
+	/** @var BundlableLabelableBaseModelWithAttributes $t_subject */
+	$t_subject			= $this->getVar('t_subject');
 	$va_initial_values 	= $this->getVar('label_initial_values');
 	if (!$va_force_new_labels = $this->getVar('new_labels')) { $va_force_new_labels = array(); }	// list of new labels not saved due to error which we need to for onto the label list as new
 
@@ -37,6 +39,11 @@
 	
 	$vb_read_only		= ((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_objects', 'nonpreferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
 	$vb_batch			= $this->getVar('batch');
+	$vs_bundle_preview 	= $t_subject->getWithTemplate("<unit relativeTo='ca_objects.nonpreferred_labels' delimiter='; '>^ca_objects.nonpreferred_labels.name (^ca_objects.nonpreferred_labels.type_id)</unit>");
+	if(!$vs_bundle_preview) {
+		$va_cur = current($va_initial_values);
+		$vs_bundle_preview = $va_cur['name'];
+	}
 	
 	if ($vb_batch) {
 		print caBatchEditorNonPreferredLabelsModeControl($t_label, $vs_id_prefix);
@@ -84,7 +91,7 @@
 		labelListClassName: 'caLabelList',
 		addButtonClassName: 'caAddLabelButton',
 		deleteButtonClassName: 'caDeleteLabelButton',
-		bundlePreview: <?php $va_cur = current($va_initial_values); print caEscapeForBundlePreview($va_cur['name']); ?>,
+		bundlePreview: <?php print caEscapeForBundlePreview($vs_bundle_preview); ?>,
 		readonly: <?php print $vb_read_only ? "1" : "0"; ?>,
 		defaultLocaleID: <?php print ca_locales::getDefaultCataloguingLocaleID(); ?>
 	});

@@ -123,6 +123,8 @@ class SimpleService {
 	 */
 	private static function runSearchEndpoint($pa_config, $po_request) {
 		$o_dm = Datamodel::load();
+		
+		$vb_return_data_as_list = caGetOption('returnDataAsList', $pa_config, false, ['castTo' => 'bool']);
 
 		// load blank instance
 		$t_instance = $o_dm->getInstance($pa_config['table']);
@@ -176,10 +178,16 @@ class SimpleService {
 			foreach($pa_config['content'] as $vs_key => $vs_template) {
 				$va_hit[self::sanitizeKey($vs_key)] = $o_res->getWithTemplate($vs_template, $va_get_options);
 			}
-
-			$va_return[$o_res->get($t_instance->primaryKey(true))] = $va_hit;
-
-			if($vn_limit && (sizeof($va_return) >= $vn_limit)) { break; }
+			
+			
+			if ($vb_return_data_as_list) {
+				$va_return['data'][] = $va_hit;
+				if($vn_limit && (sizeof($va_return['data']) >= $vn_limit)) { break; }
+			} else {
+				$va_return[$o_res->get($t_instance->primaryKey(true))] = $va_hit;
+				if($vn_limit && (sizeof($va_return) >= $vn_limit)) { break; }
+			}
+			
 		}
 
 		return $va_return;
