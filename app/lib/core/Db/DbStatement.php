@@ -122,7 +122,7 @@ class DbStatement extends DbBase {
 	 * Executes a stored statement (this class also serves as PerparedStatement abstraction).
 	 * Options can be passed as arguments to this function.
 	 *
-	 * @return mixed result
+	 * @return DbResult|bool
 	 */
 	function execute() {
 		$this->clearErrors();
@@ -131,10 +131,10 @@ class DbStatement extends DbBase {
 			$va_args = $va_args[0];
 		}
 		
-		if ($vb_res = $this->opo_db->execute($this, $this->opo_native_statement ? $this->opo_native_statement : $this, $this->ops_sql, $va_args)) {
+		if ($vr_res = $this->opo_db->execute($this, $this->opo_native_statement ? $this->opo_native_statement : $this, $this->ops_sql, $va_args)) {
 			$this->opn_last_insert_id = $this->opo_db->getLastInsertID($this);
 		}
-		return $vb_res;
+		return $vr_res;
 	}
 
 	/**
