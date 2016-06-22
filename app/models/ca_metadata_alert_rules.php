@@ -210,6 +210,9 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 	 */
 	static $s_lock_resource = null;
 
+	/** @var array access to rule cache */
+	static $s_have_access_to_rule_cache = [];
+
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -547,6 +550,67 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 			$va_rules[$qr_res->get('rule_id')][$qr_res->get('locale_id')] = array_merge($qr_res->getRow(), array('metadata_alert_rule_content_type' => $vs_display_type));
 		}
 		return $va_rules;
+	}
+	# ------------------------------------------------------
+	/**
+	 * Determines if user has access to a rule at a specified access level.
+	 *
+	 * @param int $pn_user_id user_id of user to check rule access for
+	 * @param int $pn_access type of access required. Use __CA_ALERT_RULE_ACCESS_READONLY__ for read-only access or __CA_ALERT_RULE_ACCESS_ACCESS_EDIT__ for editing (full) access
+	 * @param int $pn_rule_id The id of the rule to check. If omitted then currently loaded rule will be checked.
+	 * @return bool True if user has access, false if not
+	 */
+	public function haveAccessToForm($pn_user_id, $pn_access, $pn_rule_id=null) {
+		$vn_rule_id = null;
+		if ($pn_rule_id) {
+			$vn_rule_id = $pn_rule_id;
+			$t_rule = new ca_metadata_alert_rules($vn_rule_id);
+			$vn_form_user_id = $t_rule->get('user_id');
+		} else {
+			$vn_form_user_id = $this->get('user_id');
+			$t_rule = $this;
+		}
+		if(!$vn_rule_id && !($vn_rule_id = $t_rule->getPrimaryKey())) {
+			return true; // new rule
+		}
+
+		// return from cache
+		if (isset(ca_metadata_alert_rules::$s_have_access_to_rule_cache[$vn_rule_id.'/'.$pn_user_id.'/'.$pn_access])) {
+			return ca_metadata_alert_rules::$s_have_access_to_rule_cache[$vn_rule_id.'/'.$pn_user_id.'/'.$pn_access];
+		}
+
+		if (($vn_form_user_id == $pn_user_id)) {	// owners have all access
+			return ca_metadata_alert_rules::$s_have_access_to_rule_cache[$vn_rule_id.'/'.$pn_user_id.'/'.$pn_access] = true;
+		}
+
+		if ((bool)$t_rule->get('is_system') && ($pn_access == __CA_ALERT_RULE_ACCESS_READONLY__)) {	// system forms are readable by all
+			return ca_metadata_alert_rules::$s_have_access_to_rule_cache[$vn_rule_id.'/'.$pn_user_id.'/'.$pn_access] = true;
+		}
+
+		$o_db =  $this->getDb();
+		$qr_res = $o_db->query("
+			SELECT rxg.rule_id
+			FROM ca_metadata_alert_rules_x_user_groups rxg
+			INNER JOIN ca_user_groups AS ug ON rxg.group_id = ug.group_id
+			INNER JOIN ca_users_x_groups AS uxg ON uxg.group_id = ug.group_id
+			WHERE
+				(rxg.access >= ?) AND (uxg.user_id = ?) AND (rxg.rule_id = ?)
+		", (int)$pn_access, (int)$pn_user_id, (int)$vn_rule_id);
+
+		if ($qr_res->numRows() > 0) { return ca_metadata_alert_rules::$s_have_access_to_rule_cache[$vn_rule_id.'/'.$pn_user_id.'/'.$pn_access] = true; }
+
+		$qr_res = $o_db->query("
+			SELECT rxu.rule_id
+			FROM ca_metadata_alert_rules_x_users rxu
+			INNER JOIN ca_users AS u ON rxu.user_id = u.user_id
+			WHERE
+				(rxu.access >= ?) AND (u.user_id = ?) AND (rxu.rule_id = ?)
+		", (int)$pn_access, (int)$pn_user_id, (int)$vn_rule_id);
+
+		if ($qr_res->numRows() > 0) { return ca_metadata_alert_rules::$s_have_access_to_rule_cache[$vn_rule_id.'/'.$pn_user_id.'/'.$pn_access] = true; }
+
+
+		return ca_metadata_alert_rules::$s_have_access_to_rule_cache[$vn_rule_id.'/'.$pn_user_id.'/'.$pn_access] = false;
 	}
 	# ------------------------------------------------------
 	/**

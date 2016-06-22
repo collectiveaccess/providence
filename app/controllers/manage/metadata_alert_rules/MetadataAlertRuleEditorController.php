@@ -52,13 +52,13 @@
  			return $va_init;
  		}
  		# -------------------------------------------------------
- 		protected function _isFormEditable() {
- 			$pn_form_id = $this->request->getParameter('form_id', pInteger);
- 			if ($pn_form_id == 0) { return true; }		// allow creation of new forms
- 			$t_form = new ca_metadata_alert_rules();
- 			if (!$t_form->haveAccessToForm($this->request->getUserID(), __CA_BUNDLE_DISPLAY_EDIT_ACCESS__, $pn_form_id)) {		// is user allowed to edit form?
+ 		protected function _isRuleEditable() {
+ 			$pn_rule_id = $this->getRequest()->getParameter('rule_id', pInteger);
+ 			if ($pn_rule_id == 0) { return true; }		// allow creation of new rules
+ 			$t_rule = new ca_metadata_alert_rules();
+ 			if (!$t_rule->haveAccessToForm($this->getRequest()->getUserID(), __CA_BUNDLE_DISPLAY_EDIT_ACCESS__, $pn_rule_id)) {		// is user allowed to edit rule?
  				$this->notification->addNotification(_t("You cannot edit that form"), __NOTIFICATION_TYPE_ERROR__);
- 				$this->response->setRedirect(caNavUrl($this->request, 'manage', 'SearchForm', 'ListForms'));
+ 				$this->response->setRedirect(caNavUrl($this->getRequest(), 'manage', 'SearchForm', 'ListForms'));
  				return false; 
  			} else {
  				return true;
@@ -66,12 +66,12 @@
  		}
  		# -------------------------------------------------------
  		public function Edit($pa_values=null, $pa_options=null) {
- 			if ($this->_isFormEditable()) { return parent::Edit($pa_values, $pa_options); } 
+ 			if ($this->_isRuleEditable()) { return parent::Edit($pa_values, $pa_options); }
  			return false;
  		}
  		# -------------------------------------------------------
  		public function Delete($pa_options=null) {
- 			if ($this->_isFormEditable()) { return parent::Delete($pa_options); } 
+ 			if ($this->_isRuleEditable()) { return parent::Delete($pa_options); }
  			return false;
  		}
  		# -------------------------------------------------------
@@ -80,7 +80,7 @@
  		 */
  		public function _afterSave($pt_subject, $pb_is_insert) {
  			if ($pb_is_insert && $pt_subject->getPrimaryKey()) {
- 				$pt_subject->addUsers(array($this->request->getUserID() => __CA_ALERT_RULE_ACCESS_ACCESS_EDIT__));
+ 				$pt_subject->addUsers(array($this->getRequest()->getUserID() => __CA_ALERT_RULE_ACCESS_ACCESS_EDIT__));
  			}
  		}
  		# -------------------------------------------------------
@@ -88,8 +88,7 @@
  		# -------------------------------------------------------
  		public function Info($pa_parameters) {
  			parent::info($pa_parameters);
- 			
- 			
+
  			return $this->render('widget_metadata_alert_rule_info_html.php', true);
  		}
  		# -------------------------------------------------------

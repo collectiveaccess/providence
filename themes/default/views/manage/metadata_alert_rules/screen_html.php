@@ -37,10 +37,10 @@
 			caFormSubmitButton($this->request, __CA_NAV_ICON_SAVE__, _t("Save"), 'MetadataAlertRuleEditorForm').' '.
 			caFormNavButton($this->request, __CA_NAV_ICON_CANCEL__, _t("Cancel"), '', 'manage/metadata_alert_rules', 'MetadataAlertRuleEditor', 'Edit/'.$this->request->getActionExtra(), array('rule_id' => $vn_rule_id)),
 			'', 
-			(intval($vn_rule_id) > 0) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/metadata_alert_rules', 'MetadataAlertRuleEditor', 'Delete/'.$this->request->getActionExtra(), array('form_id' => $vn_rule_id)) : ''
+			(intval($vn_rule_id) > 0) ? caFormNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/metadata_alert_rules', 'MetadataAlertRuleEditor', 'Delete/'.$this->request->getActionExtra(), array('rule_id' => $vn_rule_id)) : ''
 		);
 		
-			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/form_id/'.$vn_rule_id, 'MetadataAlertRuleEditorForm', null, 'POST', 'multipart/form-data');
+			print caFormTag($this->request, 'Save/'.$this->request->getActionExtra().'/rule_id/'.$vn_rule_id, 'MetadataAlertRuleEditorForm', null, 'POST', 'multipart/form-data');
 			
 			$va_form_elements = $t_form->getBundleFormHTMLForScreen($this->request->getActionExtra(), array(
 									'request' => $this->request, 
@@ -66,7 +66,7 @@
 			print $vs_control_box;
 ?>
 			<input type='hidden' name='table_num' value='<?php print $vn_table_num; ?>'/>
-			<input type='hidden' name='form_id' value='<?php print $vn_rule_id; ?>'/>
+			<input type='hidden' name='rule_id' value='<?php print $vn_rule_id; ?>'/>
 		</form>
 	
 		<div class="editorBottomPadding"><!-- empty --></div>

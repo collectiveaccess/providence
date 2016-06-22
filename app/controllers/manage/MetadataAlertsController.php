@@ -37,7 +37,8 @@ class MetadataAlertsController extends ActionController {
 	public function ListAlerts() {
 		AssetLoadManager::register('tableList');
 
-		$va_list = ca_metadata_alert_rules::getList($this->getRequest()->getUserID());
+		$t_rule = new ca_metadata_alert_rules();
+		$va_list = caExtractValuesByLocale(caGetUserLocaleRules(), $t_rule->getRules());
 		$this->getView()->setVar('rule_list', $va_list);
 
 		$this->render('metadata_alert_list_html.php');
@@ -47,6 +48,11 @@ class MetadataAlertsController extends ActionController {
 	 *
 	 */
 	public function Info() {
+		$t_rule = new ca_metadata_alert_rules();
+		$va_list = caExtractValuesByLocale(caGetUserLocaleRules(), $t_rule->getRules());
+
+		$this->getView()->setVar('rule_count', sizeof($va_list));
+
 		return $this->render('widget_metadata_alerts_info_html.php', true);
 	}
 	# -------------------------------------------------------

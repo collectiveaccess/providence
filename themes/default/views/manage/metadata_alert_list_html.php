@@ -25,7 +25,7 @@
  *
  * ----------------------------------------------------------------------
  */
-	$va_alert_list 		= $this->getVar('metadata_alert_list');
+	$va_list 		= $this->getVar('rule_list');
 
 	$vs_new_menu = '<div class="sf-small-menu form-header-button rounded">'.
 		'<div class="caNavHeaderIcon">'.
@@ -71,22 +71,22 @@
 		</thead>
 		<tbody>
 <?php
-	if (sizeof($va_alert_list)) {
-		foreach($va_alert_list as $va_alert) {
+	if (sizeof($va_list)) {
+		foreach($va_list as $va_rule) {
 ?>
 			<tr>
 				<td>
-					<div class="caMetadataAlertListName"><?php print $va_alert['name'].($va_alert['code'] ? "<br/>(".$va_alert['code'].")" : ""); ?></div>
+					<div class="caMetadataAlertListName"><?php print $va_rule['name'].($va_rule['code'] ? "<br/>(".$va_rule['code'].")" : ""); ?></div>
 				</td>
 				<td>
-					<div><?php print $va_alert['content_type']; ?></div>
+					<div><?php print $va_rule['metadata_alert_rule_content_type']; ?></div>
 				</td>
 				<td>
-					<div class="caMetadataAlertListOwner"><?php print $va_alert['fname'].' '.$va_alert['lname'].($va_alert['email'] ? "<br/>(<a href='mailto:".$va_alert['email']."'>".$va_alert['email']."</a>)" : ""); ?></div>
+					<div class="caMetadataAlertListOwner"><?php print $va_rule['fname'].' '.$va_rule['lname'].($va_rule['email'] ? "<br/>(<a href='mailto:".$va_rule['email']."'>".$va_rule['email']."</a>)" : ""); ?></div>
 				</td>
 				<td class="listtableEditDelete">
-					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage', 'MetadataAlerts', 'Edit', array('rule_id' => $va_alert['rule_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")); ?>
-					<?php ($va_alert['can_delete'] == TRUE) ? print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage', 'MetadataAlerts', 'Delete', array('rule_id' => $va_alert['rule_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")) : ''; ?>
+					<?php print caNavButton($this->request, __CA_NAV_ICON_EDIT__, _t("Edit"), '', 'manage/metadata_alert_rules', 'MetadataAlertRuleEditor', 'Edit', array('rule_id' => $va_rule['rule_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")); ?>
+					<?php print caNavButton($this->request, __CA_NAV_ICON_DELETE__, _t("Delete"), '', 'manage/metadata_alert_rules', 'MetadataAlertRuleEditor', 'Delete', array('rule_id' => $va_rule['rule_id']), array(), array('icon_position' => __CA_NAV_ICON_ICON_POS_LEFT__, 'use_class' => 'list-button', 'no_background' => true, 'dont_show_content' => true, 'rightMargin' => "0px")); ?>
 				</td>
 			</tr>
 <?php
@@ -96,7 +96,7 @@
 		<tr>
 			<td colspan='8'>
 				<div align="center">
-					<?php print _t('No sets have been created'); ?>
+					<?php print _t('No metadata alert rules have been created'); ?>
 				</div>
 			</td>
 		</tr>

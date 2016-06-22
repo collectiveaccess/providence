@@ -1,13 +1,13 @@
 <?php
 /* ----------------------------------------------------------------------
- * views/manage/search_forms/delete_html.php : 
+ * views/manage/metadata_alert_rules/delete_html.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2011 Whirl-i-Gig
+ * Copyright 2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -25,16 +25,16 @@
  *
  * ----------------------------------------------------------------------
  */
- 	$t_set = $this->getVar('t_subject');
-	$vn_form_id = $this->getVar('subject_id');
+ 	$t_rule = $this->getVar('t_subject');
+	$vn_rule_id = $this->getVar('subject_id');
 ?>
 <div class="sectionBox">
 <?php
 	if (!$this->getVar('confirmed')) {
 		// show delete confirmation notice
-		print caDeleteWarningBox($this->request, $t_set, $this->getVar('subject_name'), 'manage/search_forms', 'SearchFormEditor', 'Edit/'.$this->request->getActionExtra(), array('form_id' => $vn_form_id));
+		print caDeleteWarningBox($this->request, $t_rule, $this->getVar('subject_name'), 'manage/metadata_alert_rules', 'MetadataAlertRuleEditor', 'Edit/'.$this->request->getActionExtra(), array('rule_id' => $vn_rule_id));
 	} else {
-		print "<div align='center'>".caNavLink($this->request, _t('Back to search form list'), 'button', 'manage', 'SearchForm', 'ListForms')."</div>";
+		print "<div align='center'>".caNavLink($this->request, _t('Back to metadata alert rule list'), 'button', 'manage', 'MetadataAlerts', 'ListAlerts')."</div>";
 	}
 ?>
 </div>
