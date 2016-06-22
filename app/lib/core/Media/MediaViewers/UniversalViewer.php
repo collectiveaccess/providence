@@ -84,7 +84,7 @@
 					$pa_data['width'] = $t_instance->getMediaInfo($vs_media_fld, 'original', 'WIDTH');
 					$pa_data['height'] = $t_instance->getMediaInfo($vs_media_fld, 'original', 'HEIGHT');
 					
-					if ((($vs_display_version = caGetOption('display_version', $pa_data['display'], 'tilepic')) == 'tilepic') && false) {
+					if ((($vs_display_version = caGetOption('display_version', $pa_data['display'], 'tilepic')) == 'tilepic')) {
 						$pa_data['resources'] = $t_instance->getFileList();
 					} else {
 						if (is_a($t_instance, "ca_object_representations") && $pa_data['t_subject'] && ($vn_use_universal_viewer_for_image_list_length = caGetOption('use_universal_viewer_for_image_list_length_at_least', $pa_data['display'], null))) {
@@ -94,7 +94,8 @@
 									'representation_id' => $va_rep['representation_id'],
 									'url' => $va_rep[$vs_display_version]['url'],
 									'width' => $va_rep['info']['original']['WIDTH'],
-									'height' => $va_rep['info']['original']['HEIGHT']
+									'height' => $va_rep['info']['original']['HEIGHT'],
+									'noPages' => true
 								];
 							}
 						} else {
