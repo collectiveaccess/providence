@@ -447,6 +447,11 @@ abstract class Base {
 					continue;
 				}
 
+				// just ignore user_ids
+				if($vs_field == 'user_id') {
+					continue;
+				}
+
 				// plain old field like idno, extent, source_info etc.
 				// model errors usually don't occurr on set(), so the implementations can still do whatever they want and possibly overwrite this
 				$this->getModelInstance()->set($vs_field, $vm_val);
