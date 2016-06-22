@@ -132,9 +132,6 @@
  						$va_tmp = caMakeTypeIDList($t_subject->tableName(), array($vs_type));
  						$vn_type_id = array_shift($va_tmp);
  					}
-					if(!$vn_type_id) {
-						//$vn_type_id = 2;
-					}
  					if (!$vn_type_id) {
  						$vn_type_id = $t_subject->getDefaultTypeID();
  					}

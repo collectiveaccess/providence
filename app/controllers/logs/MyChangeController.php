@@ -1,6 +1,6 @@
 <?php
 /* ----------------------------------------------------------------------
- * app/controllers/logs/ChangeController.php :
+ * app/controllers/logs/MyChangeController.php :
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -28,16 +28,12 @@
 
 require_once(__CA_MODELS_DIR__.'/ca_change_log.php');
 
-class ChangeController extends ActionController {
+class MyChangeController extends ActionController {
 	# -------------------------------------------------------
 	#
 	# -------------------------------------------------------
 	public function Index() {
-		if($this->getRequest()->getUser()->canDoAction('can_view_change_logs')) { // can view everything
-			$vb_full_view = true;
-		} elseif($this->getRequest()->getUser()->canDoAction('can_view_own_change_logs')) { // can view just own change log
-			$vb_full_view = false;
-		} else { // doesn't have access to this controller at all
+		if(!$this->getRequest()->getUser()->canDoAction('can_view_my_change_logs')) { // can view everything
 			$this->getResponse()->setRedirect(
 				$this->getRequest()->getAppConfig()->get('error_display_url').'/n/2320?r='.urlencode($this->getRequest()->getFullUrlPath())
 			);
@@ -79,11 +75,8 @@ class ChangeController extends ActionController {
 
 			$va_table_log_entries = $o_change_log->getRecentChanges($vn_table_num, $vn_num_seconds);
 			foreach($va_table_log_entries as $vs_unit_id => $va_log) {
-				if(!$vb_full_view) {
-					if($va_log[0]['user_id'] != $this->getRequest()->getUserID()) {
-						continue;
-					}
-				}
+				if($va_log[0]['user_id'] != $this->getRequest()->getUserID()) { continue; }
+
 				if($vs_filter_change_type) {
 					if($va_log[0]['changetype'] != $vs_filter_change_type) { continue; }
 				}
@@ -96,7 +89,7 @@ class ChangeController extends ActionController {
 
 		$this->getView()->setVar('change_log_list', $va_log_entries);
 
-		$this->render('change_log_html.php');
+		$this->render('my_change_log_html.php');
 	}
 	# -------------------------------------------------------
 }

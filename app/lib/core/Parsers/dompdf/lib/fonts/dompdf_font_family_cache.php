@@ -199,4 +199,18 @@
     'italic' => DOMPDF_FONT_DIR . 'OpenSans-Italic',
     'bold_italic' => DOMPDF_FONT_DIR . 'OpenSans-BoldItalic',
   ),
+  'futura bold' => 
+  array (
+    'normal' => DOMPDF_FONT_DIR . 'futura_bold',
+    'bold' => DOMPDF_FONT_DIR . 'futura_bold',
+    'italic' => DOMPDF_FONT_DIR . 'futura_bold',
+    'bold_italic' => DOMPDF_FONT_DIR . 'futura_bold',
+  ),
+  'futura' => 
+  array (
+    'normal' => DOMPDF_FONT_DIR . '2C209B_0_0',
+    'bold' => DOMPDF_FONT_DIR . '2C209B_0_0',
+    'italic' => DOMPDF_FONT_DIR . '2C209B_0_0',
+    'bold_italic' => DOMPDF_FONT_DIR . '2C209B_0_0',
+  ),
 ) ?>
