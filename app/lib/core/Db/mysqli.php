@@ -112,18 +112,24 @@ class Db_mysqli extends DbDriverBase {
 		global $g_connect;
 		if (!is_array($g_connect)) { $g_connect = array(); }
 		$vs_db_connection_key = $pa_options["host"].'/'.$pa_options["database"];
-		
-		if (!($vb_unique_connection = caGetOption('uniqueConnection', $pa_options, false)) && isset($g_connect[$vs_db_connection_key]) && ($g_connect[$vs_db_connection_key])) { $this->opr_db = $g_connect[$vs_db_connection_key]; return true;}
+
+		$vb_persistent_connections = caGetOption('persistentConnections', $pa_options, false);
+		$this->ops_db_host = ($vb_persistent_connections ? "p:" : "").$pa_options["host"];
+		$this->ops_db_user = $pa_options["username"];
+		$this->ops_db_pass = $pa_options["password"];
+
+		if (
+			!($vb_unique_connection = caGetOption('uniqueConnection', $pa_options, false)) &&
+			isset($g_connect[$vs_db_connection_key]) &&
+			($g_connect[$vs_db_connection_key])
+		) {
+			$this->opr_db = $g_connect[$vs_db_connection_key]; return true;
+		}
 		
 		if (!function_exists("mysqli_connect")) {
 			die(_t("Your PHP installation lacks MySQL support. Please add it and retry..."));
 			exit;
 		}
-		
-		$vb_persistent_connections = caGetOption('persistentConnections', $pa_options, false);
-		$this->ops_db_host = ($vb_persistent_connections ? "p:" : "").$pa_options["host"];
-		$this->ops_db_user = $pa_options["username"];
-		$this->ops_db_pass = $pa_options["password"];
 
 		$this->opr_db = @mysqli_connect($this->ops_db_host, $this->ops_db_user, $this->ops_db_pass);
 
