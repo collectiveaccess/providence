@@ -35,7 +35,7 @@
  */
 
 define('__CA_ALERT_RULE_NO_ACCESS__', 0);
-define('__CA_ALERT_RULE_ACCESS_READONLY__', 1);
+define('__CA_ALERT_RULE_ACCESS_NOTIFICATION__', 1);
 define('__CA_ALERT_RULE_ACCESS_ACCESS_EDIT__', 2);
 
 require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rule_type_restrictions.php');
@@ -233,9 +233,12 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 	# ------------------------------------------------------
 	protected function initLabelDefinitions($pa_options=null) {
 		parent::initLabelDefinitions($pa_options);
-		$this->BUNDLES['ca_users'] = array('type' => 'special', 'repeating' => true, 'label' => _t('User access'));
-		$this->BUNDLES['ca_user_groups'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Group access'));
+
+		$this->BUNDLES['ca_users'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Recipient users'));
+		$this->BUNDLES['ca_user_groups'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Recipient user groups'));
+
 		$this->BUNDLES['ca_metadata_alert_rule_type_restrictions'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Type restrictions'));
+		$this->BUNDLES['ca_metadata_alert_triggers'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Triggers'));
 	}
 	# ----------------------------------------
 	/**
@@ -556,7 +559,7 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 	 * Determines if user has access to a rule at a specified access level.
 	 *
 	 * @param int $pn_user_id user_id of user to check rule access for
-	 * @param int $pn_access type of access required. Use __CA_ALERT_RULE_ACCESS_READONLY__ for read-only access or __CA_ALERT_RULE_ACCESS_ACCESS_EDIT__ for editing (full) access
+	 * @param int $pn_access type of access required. Use __CA_ALERT_RULE_ACCESS_NOTIFICATION__ for read-only access or __CA_ALERT_RULE_ACCESS_ACCESS_EDIT__ for editing (full) access
 	 * @param int $pn_rule_id The id of the rule to check. If omitted then currently loaded rule will be checked.
 	 * @return bool True if user has access, false if not
 	 */
@@ -583,7 +586,7 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 			return ca_metadata_alert_rules::$s_have_access_to_rule_cache[$vn_rule_id.'/'.$pn_user_id.'/'.$pn_access] = true;
 		}
 
-		if ((bool)$t_rule->get('is_system') && ($pn_access == __CA_ALERT_RULE_ACCESS_READONLY__)) {	// system forms are readable by all
+		if ((bool)$t_rule->get('is_system') && ($pn_access == __CA_ALERT_RULE_ACCESS_NOTIFICATION__)) {	// system forms are readable by all
 			return ca_metadata_alert_rules::$s_have_access_to_rule_cache[$vn_rule_id.'/'.$pn_user_id.'/'.$pn_access] = true;
 		}
 
@@ -630,6 +633,25 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		if (!$t_instance) { return null; }
 		return (isset($pa_options['number']) && ($pa_options['number'] == 'plural')) ? $t_instance->getProperty('NAME_PLURAL') : $t_instance->getProperty('NAME_SINGULAR');
 
+	}
+	# ------------------------------------------------------
+	/**
+	 * @param RequestHTTP $po_request
+	 * @param string $ps_form_name
+	 * @param string $ps_placement_code
+	 * @param array $pa_bundle_settings
+	 * @param array $pa_options
+	 * @return string
+	 */
+	public function getTriggerHTMLFormBundle($po_request, $ps_form_name, $ps_placement_code, array $pa_bundle_settings=[], array $pa_options=[]) {
+		$o_view = new View($po_request, $po_request->getViewsDirectoryPath().'/bundles/');
+
+		$o_view->setVar('t_rule', $this);
+		$o_view->setVar('id_prefix', $ps_form_name);
+		$o_view->setVar('placement_code', $ps_placement_code);
+		$o_view->setVar('request', $po_request);
+
+		return $o_view->render('ca_metadata_alert_triggers.php');
 	}
 	# ------------------------------------------------------
 }

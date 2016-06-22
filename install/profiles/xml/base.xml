@@ -3754,9 +3754,20 @@
             </placement>
             <placement code="ca_users">
               <bundle>ca_users</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Recipient users</setting>
+                <setting name="add_label" locale="en_US">Add user</setting>
+              </settings>
             </placement>
             <placement code="ca_user_groups">
               <bundle>ca_user_groups</bundle>
+              <settings>
+                <setting name="label" locale="en_US">Recipient user groups</setting>
+                <setting name="add_label" locale="en_US">Add group</setting>
+              </settings>
+            </placement>
+            <placement code="ca_metadata_alert_triggers">
+              <bundle>ca_metadata_alert_triggers</bundle>
             </placement>
           </bundlePlacements>
         </screen>

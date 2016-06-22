@@ -53,6 +53,13 @@ BaseModel::$s_ca_models_definitions['ca_metadata_alert_triggers'] = array(
 			'DONT_ALLOW_IN_UI' => true,
 			'LABEL' => 'User id', 'DESCRIPTION' => 'Identifier for rule this trigger belongs to'
 		),
+		'element_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => 'Element id', 'DESCRIPTION' => 'Identifier for trigger element'
+		),
 		'settings' => array(
 			'FIELD_TYPE' => FT_VARS, 'DISPLAY_TYPE' => DT_OMIT,
 			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
@@ -61,14 +68,24 @@ BaseModel::$s_ca_models_definitions['ca_metadata_alert_triggers'] = array(
 			'LABEL' => _t('Settings'), 'DESCRIPTION' => _t('Trigger settings')
 		),
 		'trigger_type' => array(
-			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_OMIT,
+			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_SELECT,
 			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false,
 			'DEFAULT' => '',
-			'LABEL' => _t('Type code'), 'DESCRIPTION' => _t('Code indicating type of trigger.'),
-			'BOUNDS_LENGTH' => array(1,30)
+			'BOUNDS_CHOICE_LIST' => array(
+				_t('Modification') => 'modification',
+				_t('List value chosen') => 'list_value',
+				_t('Date') => 'date',
+				_t('Conditions met') => 'expression',
+			),
+			'LABEL' => _t('Trigger type'), 'DESCRIPTION' => _t('Element indicating type of trigger.'),
 		),
 	)
+);
+
+global $_ca_metadata_alert_triggers_settings;
+$_ca_metadata_alert_triggers_settings = array(		// global
+
 );
 
 class ca_metadata_alert_triggers extends BaseModel {
@@ -162,6 +179,11 @@ class ca_metadata_alert_triggers extends BaseModel {
 	 */
 	static $s_lock_resource = null;
 
+	/**
+	 * Settings delegate - implements methods for setting, getting and using 'settings' var field
+	 */
+	public $SETTINGS;
+
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -174,7 +196,22 @@ class ca_metadata_alert_triggers extends BaseModel {
 	#
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
+		global $_ca_metadata_alert_triggers_settings;
 		parent::__construct($pn_id);	# call superclass constructor
+
+		$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_metadata_alert_triggers_settings);
+	}
+	# ------------------------------------------------------
+	# Settings
+	# ------------------------------------------------------
+	/**
+	 * Reroutes calls to method implemented by settings delegate to the delegate class
+	 */
+	public function __call($ps_name, $pa_arguments) {
+		if (method_exists($this->SETTINGS, $ps_name)) {
+			return call_user_func_array(array($this->SETTINGS, $ps_name), $pa_arguments);
+		}
+		die($this->tableName()." does not implement method {$ps_name}");
 	}
 	# ------------------------------------------------------
 }

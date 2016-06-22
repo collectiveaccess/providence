@@ -1482,6 +1482,9 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 									);
 								}
 								break;
+							case 'ca_metadata_alert_rule_type_restrictions':
+								$va_additional_settings = [];
+								break;
 						}
 						$va_additional_settings['documentation_url'] = array(
 							'formatType' => FT_TEXT,

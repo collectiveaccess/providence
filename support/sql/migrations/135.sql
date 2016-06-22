@@ -33,12 +33,16 @@ create table ca_metadata_alert_rule_labels (
 create table ca_metadata_alert_triggers (
   trigger_id      int unsigned      not null AUTO_INCREMENT,
   rule_id         int unsigned      not null,
+  element_id      smallint unsigned not null,
   settings        longtext          not null,
   trigger_type    varchar(30)       not null,
 
   primary key (trigger_id),
   constraint fk_alert_rules_rule_id foreign key (rule_id)
-    references ca_metadata_alert_rules (rule_id) on delete restrict on update restrict
+    references ca_metadata_alert_rules (rule_id) on delete restrict on update restrict,
+
+  constraint fk_ca_metadata_alert_triggers_element_id foreign key (element_id)
+    references ca_metadata_elements (element_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 /*==========================================================================*/
 create table ca_metadata_alert_rules_x_user_groups (

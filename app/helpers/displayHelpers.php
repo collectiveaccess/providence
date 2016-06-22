@@ -1395,6 +1395,20 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 					$vs_buf .= "</div>\n";
 				}
 			}
+
+			//
+			// Output extra useful info for metadata alert rules
+			if (($vs_table_name == 'ca_metadata_alert_rules')) {
+				if ($t_item->getPrimaryKey()) {
+					$vs_buf .= "<div><strong>"._t("Type of content")."</strong>: ".caGetTableDisplayName($t_item->get('table_num'))."<br/></div>\n";
+				} else {
+					if ($vn_set_table_num = $po_view->request->getParameter('table_num', pInteger)) {
+						$vs_buf .= "<div><strong>"._t("Type of content")."</strong>: ".caGetTableDisplayName($vn_set_table_num)."<br/>\n";
+
+						$vs_buf .= "</div>\n";
+					}
+				}
+			}
 			
 			//
 			// Output extra useful info for lists
