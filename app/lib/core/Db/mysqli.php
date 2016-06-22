@@ -355,11 +355,9 @@ class Db_mysqli extends DbDriverBase {
 	 * @return string
 	 */
 	public function escape($ps_text) {
-		if ($this->opr_db) {
-			return mysqli_real_escape_string($this->opr_db, $ps_text);
-		} else {
-			return mysqli_real_escape_string($ps_text);
-		}
+		if(!$this->opr_db) { return false; }
+
+		return mysqli_real_escape_string($this->opr_db, $ps_text);
 	}
 
 	/**
