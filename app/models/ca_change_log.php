@@ -400,6 +400,12 @@ class ca_change_log extends BaseModel {
 									$va_snapshot[$vs_label_subject_guid_field] = ca_guids::getForRow($t_instance->getSubjectTableInstance()->tableNum(), $vm_val);
 								}
 							}
+
+							// handle 1:n foreign keys like ca_representation_annotations.representation_id
+							// @todo: don't use hardcoded field names!? -- another case would be ca_objects.lot_id
+							if(($t_instance instanceof \ca_representation_annotations) && ($vs_fld == 'representation_id')) {
+								$va_snapshot['representation_guid'] = ca_guids::getForRow(Datamodel::load()->getTableNum('ca_object_representations'), $vm_val);
+							}
 						}
 						break;
 				}

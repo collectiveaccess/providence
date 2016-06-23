@@ -59,7 +59,12 @@ class Representation extends Bundlable {
 				if(in_array($o_e->getErrorNumber(), [1600, 2710])) { 
 					$this->getModelInstance()->set('media', __CA_THEME_DIR__.'/graphics/icons/info.png');
 					// try insert again!
-					$this->getModelInstance()->insert(array('setGUIDTo' => $this->getGUID()));
+					if($this->isInsert()) {
+						$this->getModelInstance()->insert(array('setGUIDTo' => $this->getGUID()));
+					} elseif($this->isUpdate()) {
+						$this->getModelInstance()->update();
+					}
+
 					// check again!
 					if($this->getModelInstance()->numErrors() > 0) {
 						throw new InvalidLogEntryException(
