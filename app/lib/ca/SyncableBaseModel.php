@@ -40,15 +40,18 @@ trait SyncableBaseModel {
 	 */
 	public function setGUID($pa_options=null) {
 		if(!$this->getPrimaryKey()) { return; }
+		$vs_guid = caGetOption('setGUIDTo', $pa_options, caGenerateGUID());
 
 		/** @var ca_guids $t_guid */
 		$t_guid = $this->getAppDatamodel()->getInstance('ca_guids');
 		$t_guid->setTransaction($this->getTransaction());
 
+		$t_guid->load(array('guid' => $vs_guid));
+
 		$t_guid->setMode(ACCESS_WRITE);
 		$t_guid->set('table_num', $this->tableNum());
 		$t_guid->set('row_id', $this->getPrimaryKey());
-		$t_guid->set('guid', caGetOption('setGUIDTo', $pa_options, caGenerateGUID()));
+		$t_guid->set('guid', $vs_guid);
 
 		if($t_guid->getPrimaryKey()) {
 			$t_guid->update();

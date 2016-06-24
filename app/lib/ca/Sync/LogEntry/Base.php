@@ -447,6 +447,23 @@ abstract class Base {
 					continue;
 				}
 
+				// just ignore user_ids
+				if($vs_field == 'user_id') {
+					continue;
+				}
+
+				if(($this->getModelInstance() instanceof \ca_representation_annotations) && ($vs_field == 'representation_id')) {
+					if(isset($va_snapshot[$vs_field . '_guid']) && ($vs_rep_guid = $va_snapshot[$vs_field . '_guid'])) {
+						$t_rep = new \ca_object_representations();
+						$t_rep->setTransaction($this->getTx());
+						if($t_rep->loadByGUID($vs_rep_guid)) {
+							$this->getModelInstance()->set($vs_field, $t_rep->getPrimaryKey());
+						} else {
+							throw new InvalidLogEntryException("Could not load GUID {$vs_rep_guid} (referenced in representation_id)");
+						}
+					}
+				}
+
 				// plain old field like idno, extent, source_info etc.
 				// model errors usually don't occurr on set(), so the implementations can still do whatever they want and possibly overwrite this
 				$this->getModelInstance()->set($vs_field, $vm_val);

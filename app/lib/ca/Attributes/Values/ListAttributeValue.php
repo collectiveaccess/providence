@@ -431,10 +431,12 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 
 			if($vb_print_js) {
 				$t_list = new ca_lists();
-				$vb_yes_was_set = false; $vs_select = '';
+				$vb_yes_was_set = false;
 				foreach($t_list->getItemsForList($pa_element_info['list_id']) as $va_items_by_locale) {
 					foreach ($va_items_by_locale as $vn_locale_id => $va_item) {
 						$vs_hide_js = '';
+						$vs_condition = '';
+						$vs_select = '';
 
 						if(isset($pa_element_info['settings']['hideIfSelected_'.$va_item['idno']])) {
 							$va_hideif_for_idno = $pa_element_info['settings']['hideIfSelected_'.$va_item['idno']];
@@ -475,8 +477,8 @@ class ListAttributeValue extends AuthorityAttributeValue implements IAttributeVa
 								continue;
 						}
 
-if ($vs_select && $vs_hide_js && $vs_condition) {
-						$vs_element .= "
+						if ($vs_select && $vs_hide_js && $vs_condition) {
+							$vs_element .= "
 <script type='text/javascript'>
 	jQuery(document).ready(function() {
 		var select = {$vs_select};
@@ -493,7 +495,7 @@ if ($vs_select && $vs_hide_js && $vs_condition) {
 	});
 </script>
 	";
-}
+						}
 					}
 				}
 			}
