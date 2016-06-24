@@ -143,8 +143,7 @@ class AuthenticationManager {
 		self::init();
 
 		if ($pn_feature == __CA_AUTH_ADAPTER_FEATURE_RESET_PASSWORDS__) {
-			$po_auth_config = Configuration::load(Configuration::load()->get('authentication_config'));
-			if (!$po_auth_config->get('auth_allow_password_reset')) {
+			if (!AuthenticationManager::$g_authentication_conf->get('auth_allow_password_reset')) {
 				return false;
 			}
 		}
@@ -190,7 +189,7 @@ class AuthenticationManager {
 			return $vn_rc;
 		}
 
-		if (!self::$g_authentication_adapter instanceof CaUsersAuthAdapter) {
+		if ((AuthenticationManager::$g_authentication_conf->get('allow_fallback_to_ca_users_auth')) && !self::$g_authentication_adapter instanceof CaUsersAuthAdapter) {
 			// fall back to ca_users "native" authentication
 			self::init('CaUsers');
 			$vn_rc = self::$g_authentication_adapter->getUserInfo($ps_username, $ps_password);

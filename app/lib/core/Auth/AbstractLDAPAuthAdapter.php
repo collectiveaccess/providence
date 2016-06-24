@@ -333,7 +333,7 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
 
         // apply filter to bind, if there is one
         if (strlen($vs_bind_rdn_filter) > 0) {
-			$this->bindServiceAccount($po_ldap);
+			$this->bindServiceAccount($po_ldap, $pa_config);
 
             $vo_dn_search_results = ldap_search($po_ldap, $vs_base_dn, $vs_bind_rdn_filter);
             $va_dn_search_results = ldap_get_entries($po_ldap, $vo_dn_search_results);
@@ -397,10 +397,10 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
 	/**
 	 * Bind to service account when server does not support search after anonymous bind
 	 */
-	protected function bindServiceAccount($po_ldap) {
+	protected function bindServiceAccount($po_ldap, $pa_config) {
 		if(
-			($vs_service_acct_rdn = $this->getConfigValue('ldap_service_account_rdn')) &&
-			($vs_service_acct_pwd = $this->getConfigValue('ldap_service_account_password'))
+			($vs_service_acct_rdn = $pa_config['ldap_service_account_rdn']) &&
+			($vs_service_acct_pwd = $pa_config['ldap_service_account_password'])
 		) {
 			return @ldap_bind($po_ldap, $vs_service_acct_rdn, $vs_service_acct_pwd);
 		}
