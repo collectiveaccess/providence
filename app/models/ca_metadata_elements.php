@@ -612,12 +612,19 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * @param bool $pb_root_elements_only
 	 * @param null $pm_table_name_or_num
 	 * @param null $pm_type_name_or_id
+	 * @param bool $pb_add_empty_option
 	 * @return string
 	 */
-	public static function getElementListAsHTMLSelect($ps_select_name, array $pa_attributes=[], $pb_root_elements_only=false, $pm_table_name_or_num=null, $pm_type_name_or_id=null) {
+	public static function getElementListAsHTMLSelect($ps_select_name, array $pa_attributes=[], $pb_root_elements_only=false, $pm_table_name_or_num=null, $pm_type_name_or_id=null, $pb_add_empty_option=false) {
 		$va_elements = self::getElementsAsList($pb_root_elements_only, $pm_table_name_or_num, $pm_type_name_or_id);
 
-		$va_options = [];
+
+		if($pb_add_empty_option) {
+			$va_options = [0 => '---'];
+		} else {
+			$va_options = [];
+		}
+
 		foreach($va_elements as $va_element) {
 			$va_options[$va_element['element_id']] = $va_element['display_label'];
 		}

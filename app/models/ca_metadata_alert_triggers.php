@@ -34,6 +34,8 @@
  *
  */
 
+require_once(__CA_LIB_DIR__.'/ca/MetadataAlerts/TriggerTypes/Base.php');
+
 BaseModel::$s_ca_models_definitions['ca_metadata_alert_triggers'] = array(
 	'NAME_SINGULAR' 	=> _t('metadata alert triggers'),
 	'NAME_PLURAL' 		=> _t('metadata alert triggers'),
@@ -72,20 +74,10 @@ BaseModel::$s_ca_models_definitions['ca_metadata_alert_triggers'] = array(
 			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false,
 			'DEFAULT' => '',
-			'BOUNDS_CHOICE_LIST' => array(
-				_t('Modification') => 'modification',
-				_t('List value chosen') => 'list_value',
-				_t('Date') => 'date',
-				_t('Conditions met') => 'expression',
-			),
+			'BOUNDS_CHOICE_LIST' => CA\MetadataAlerts\TriggerTypes\Base::getAvailableTypes(),
 			'LABEL' => _t('Trigger type'), 'DESCRIPTION' => _t('Element indicating type of trigger.'),
 		),
 	)
-);
-
-global $_ca_metadata_alert_triggers_settings;
-$_ca_metadata_alert_triggers_settings = array(		// global
-
 );
 
 class ca_metadata_alert_triggers extends BaseModel {
@@ -196,10 +188,34 @@ class ca_metadata_alert_triggers extends BaseModel {
 	#
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
-		global $_ca_metadata_alert_triggers_settings;
 		parent::__construct($pn_id);	# call superclass constructor
 
-		$this->SETTINGS = new ModelSettings($this, 'settings', $_ca_metadata_alert_triggers_settings);
+		$this->loadSettingsForTriggerType();
+	}
+	# ------------------------------------------------------
+	protected function loadSettingsForTriggerType() {
+		if($vs_trigger_type = $this->get('trigger_type')) {
+			/** @var CA\MetadataAlerts\TriggerTypes\Base $o_trigger_type */
+			$o_trigger_type = CA\MetadataAlerts\TriggerTypes\Base::getInstance($vs_trigger_type);
+			$this->SETTINGS = new ModelSettings($this, 'settings', $o_trigger_type->getAvailableSettings());
+		}
+	}
+	# ------------------------------------------------------
+	public function set($pa_fields, $pm_value="", $pa_options=null) {
+		$vm_ret = parent::set($pa_fields, $pm_value, $pa_options);
+
+		if($this->changed('trigger_type')) {
+			$this->loadSettingsForTriggerType();
+		}
+
+		return $vm_ret;
+	}
+	# ------------------------------------------------------
+	public function load($pm_id=null, $pb_use_cache=true) {
+		$vm_ret = parent::load($pm_id, $pb_use_cache);
+
+		$this->loadSettingsForTriggerType();
+		return $vm_ret;
 	}
 	# ------------------------------------------------------
 	# Settings

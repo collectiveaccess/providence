@@ -53,11 +53,30 @@ print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 					<?php
 				}
 				?>
+				<?php print $t_rule->htmlFormElement('trigger_type', null, ['id' => $vs_id_prefix.'triggerTypeSelect']); ?>
+				<div id="<?php print $vs_id_prefix; ?>triggerTypeSettingsForm"></div>
 				<div class="formLabel"><?php print _t('Trigger Element'); ?><br/>
-				<?php print ca_metadata_elements::getElementListAsHTMLSelect($vs_id_prefix . 'element_id', [], false, $vn_table_num); ?>
+				<?php print ca_metadata_elements::getElementListAsHTMLSelect($vs_id_prefix . 'element_id', [], false, $vn_table_num, null, true); ?>
 				</div>
-				<?php print $t_rule->htmlFormElement('trigger_type'); ?>
 			</div>
 		</div>
 	</div>
 </div>
+
+
+<script type="text/javascript">
+	function caSetTriggerSettingsForm(opts) {
+		if (!opts) { opts = {}; }
+		opts['triggerType'] = jQuery("#<?php print $vs_id_prefix.'triggerTypeSelect'; ?>").val();
+		opts['rule_id'] = <?php print (int)$t_rule->getPrimaryKey(); ?>;
+		opts['id_prefix'] = '<?php print $vs_id_prefix; ?>';
+		console.log('opts', opts);
+		jQuery("#<?php print $vs_id_prefix; ?>triggerTypeSettingsForm").load('<?php print caNavUrl($this->request, 'manage/metadata_alert_rules', 'MetadataAlertRuleEditor', 'getTriggerTypeSettingsForm'); ?>', opts);
+	}
+
+	jQuery(document).ready(function() {
+		caSetTriggerSettingsForm();
+
+		jQuery("#<?php print $vs_id_prefix.'triggerTypeSelect'; ?>").change(function() { caSetTriggerSettingsForm(); });
+	});
+</script>

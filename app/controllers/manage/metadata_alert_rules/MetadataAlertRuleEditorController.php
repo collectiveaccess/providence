@@ -92,4 +92,40 @@
  			return $this->render('widget_metadata_alert_rule_info_html.php', true);
  		}
  		# -------------------------------------------------------
+		public function getTriggerTypeSettingsForm() {
+			$t_trigger = $this->getTriggerObject();
+			$ps_trigger_type = $this->getRequest()->getParameter('triggerType', pString);
+			$ps_prefix = $this->getRequest()->getParameter('id_prefix', pString);
+			$this->getView()->setVar('id_prefix', $ps_prefix);
+
+			$t_trigger->set('trigger_type', $ps_trigger_type);
+
+			foreach($_REQUEST as $vs_k => $vs_v) {
+				if (substr($vs_k, 0, 8) == 'setting_') {
+//					$t_trigger->setSetting(substr($vs_k, 8), $this->getRequest()->getParameter($vs_k, pString));
+				}
+			}
+
+			$this->getView()->setVar('available_settings',$t_trigger->getAvailableSettings());
+			$this->render("ajax_rule_trigger_settings_form_html.php");
+		}
+		# -------------------------------------------------------
+		/**
+		 * @param bool $pb_set_view_vars
+		 * @param null|int $pn_trigger_id
+		 * @return ca_metadata_alert_triggers
+		 */
+		private function getTriggerObject($pb_set_view_vars=true, $pn_trigger_id=null) {
+			if (!($vn_trigger_id = $this->getRequest()->getParameter('trigger_id', pInteger))) {
+				$vn_trigger_id = $pn_trigger_id;
+			}
+			$t_trigger = new ca_metadata_alert_triggers();
+			$t_trigger->load($vn_trigger_id, false);
+			if ($pb_set_view_vars) {
+				$this->getView()->setVar('trigger_id', $vn_trigger_id);
+				$this->getView()->setVar('t_trigger', $t_trigger);
+			}
+			return $t_trigger;
+		}
+		# -------------------------------------------------------
  	}

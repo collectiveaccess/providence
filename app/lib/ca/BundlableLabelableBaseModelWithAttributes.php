@@ -4599,6 +4599,12 @@ if (!$vb_batch) {
 						}
 						break;
 					# -------------------------------
+					case 'ca_metadata_alert_triggers':
+						if ($vb_batch) { return null; } // not supported in batch mode
+						if (!$po_request->user->canDoAction('can_use_metadata_alerts')) { break; }
+						$this->saveTriggerHTMLFormBundle($po_request, $vs_form_prefix, $vs_placement_code);
+						break;
+					# -------------------------------
 				}
 			}
 		}

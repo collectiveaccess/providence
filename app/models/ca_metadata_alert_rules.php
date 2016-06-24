@@ -238,7 +238,7 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		$this->BUNDLES['ca_user_groups'] = array('type' => 'special', 'repeating' => true, 'label' => _t('Recipient user groups'));
 
 		$this->BUNDLES['ca_metadata_alert_rule_type_restrictions'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Type restrictions'));
-		$this->BUNDLES['ca_metadata_alert_triggers'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Triggers'));
+		$this->BUNDLES['ca_metadata_alert_triggers'] = array('type' => 'special', 'repeating' => false, 'label' => _t('Trigger'));
 	}
 	# ----------------------------------------
 	/**
@@ -659,6 +659,26 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 		$o_view->setVar('t_rule', $t_trigger);
 
 		return $o_view->render('ca_metadata_alert_triggers.php');
+	}
+	# ------------------------------------------------------
+	/**
+	 * Save trigger bundle
+	 *
+	 * @param $po_request
+	 * @param $ps_form_prefix
+	 * @param $ps_placement_code
+	 */
+	public function saveTriggerHTMLFormBundle($po_request, $ps_form_prefix, $ps_placement_code) {
+		$vs_id_prefix = $ps_placement_code.$ps_form_prefix;
+
+		// @todo create or load trigger
+
+		// find settings keys in request and set them
+		foreach($_REQUEST as $vs_k => $vm_v) {
+			if(preg_match("/^{$vs_id_prefix}_setting_(.+)$/u", $vs_k)) {
+				caDebug($vs_k);
+			}
+		}
 	}
 	# ------------------------------------------------------
 }

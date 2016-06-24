@@ -27,6 +27,7 @@
  */
 require_once(__CA_LIB_DIR__."/core/Controller/ActionController.php");
 require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rules.php');
+require_once(__CA_LIB_DIR__."/ca/ResultContext.php");
 
 class MetadataAlertsController extends ActionController {
 	# -------------------------------------------------------
@@ -40,6 +41,11 @@ class MetadataAlertsController extends ActionController {
 		$t_rule = new ca_metadata_alert_rules();
 		$va_list = caExtractValuesByLocale(caGetUserLocaleRules(), $t_rule->getRules());
 		$this->getView()->setVar('rule_list', $va_list);
+
+		$o_result_context = new ResultContext($this->getRequest(), 'ca_metadata_alert_rules', 'basic_search');
+		$o_result_context->setAsLastFind();
+		$o_result_context->setResultList(is_array($va_list) ? array_keys($va_list) : array());
+		$o_result_context->saveContext();
 
 		$this->render('metadata_alert_list_html.php');
 	}
