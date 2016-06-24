@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -197,6 +197,14 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
         return $this->opa_ldaps;
     }
     # --------------------------------------------------------------------------------
+    protected function getConfigValue($ps_key, $pm_default_value = null) {
+        $vm_result = $this->opo_auth_config->get($ps_key);
+        if ($pm_default_value && !$vm_result) {
+            $vm_result = $pm_default_value;
+        }
+        return $vm_result;
+    }
+    # --------------------------------------------------------------------------------
 	/**
 	 * @param array $pa_config
 	 * @param string $ps_key
@@ -327,15 +335,10 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
 
         // apply filter to bind, if there is one
         if (strlen($vs_bind_rdn_filter) > 0) {
-<<<<<<< HEAD
-            $vo_dn_search_results = ldap_search($po_ldap, $vs_base_dn, $vs_bind_rdn_filter);
-            $va_dn_search_results = ldap_get_entries($po_ldap, $vo_dn_search_results);
-=======
 			$this->bindServiceAccount();
 
             $vo_dn_search_results = ldap_search($this->getLinkIdentifier(), $vs_base_dn, $vs_bind_rdn_filter);
             $va_dn_search_results = ldap_get_entries($this->getLinkIdentifier(), $vo_dn_search_results);
->>>>>>> master-fix
             if (isset($va_dn_search_results[0]['dn'])) {
                 $vs_bind_rdn = $va_dn_search_results[0]['dn'];
             }
