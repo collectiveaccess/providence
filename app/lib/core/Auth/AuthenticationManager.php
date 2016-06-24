@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -60,7 +60,7 @@ class AuthenticationManager {
 
 			$vs_auth_adapter_file = __CA_LIB_DIR__."/core/Auth/Adapters/".$vs_auth_adapter.".php";
 			if(file_exists($vs_auth_adapter_file)) {
-				@require_once($vs_auth_adapter_file);
+				require_once($vs_auth_adapter_file);
 
 				$vs_auth_class_name = $vs_auth_adapter . 'AuthAdapter';
 				if(class_exists($vs_auth_class_name)) {
