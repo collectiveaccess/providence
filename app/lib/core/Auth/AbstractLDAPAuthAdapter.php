@@ -48,10 +48,10 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
             throw new LDAPException(_t("PHP's LDAP module is required for LDAP authentication!"));
         }
 
-        $this->opo_auth_config = $o_auth_config = Configuration::load(Configuration::load()->get('authentication_config'));
+        $this->opo_auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
 
 		// "new" config format allows defining multiple directories in an array
-		if($va_directories = $o_auth_config->get('directories')) {
+		if($va_directories = $this->opo_auth_config->get('directories')) {
 
 			foreach($va_directories as $vs_dir_key => $va_dir) {
 				$o_ldap = ldap_connect($va_dir["ldap_host"], $va_dir["ldap_port"]);
@@ -238,9 +238,7 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
     }
     # --------------------------------------------------------------------------------
     public function getAccountManagementLink() {
-		$o_auth_config = Configuration::load(Configuration::load()->get('authentication_config'));
-
-        if($vs_link = $o_auth_config->get('manage_account_url')) {
+        if($vs_link = $this->opo_auth_config->get('manage_account_url')) {
             return $vs_link;
         }
         return false;
@@ -395,7 +393,10 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
             }
         }
     }
-
+	# --------------------------------------------------------------------------------	
+	/**
+	 * Bind to service account when server does not support search after anonymous bind
+	 */
 	protected function bindServiceAccount() {
 		if(
 			($vs_service_acct_rdn = $this->getConfigValue('ldap_service_account_rdn')) &&
@@ -406,6 +407,7 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
 
 		return false;
 	}
+	# --------------------------------------------------------------------------------
 }
 
 class LDAPException extends Exception {}

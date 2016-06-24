@@ -33,6 +33,10 @@
 require_once(__CA_LIB_DIR__.'/core/Auth/BaseAuthAdapter.php');
 
 class AuthenticationManager {
+	/**
+	 * @var object contains instance of authentication configuration
+	 */
+	private static $g_authentication_conf = null;
 
 	/**
 	 * @var object contains instance of authentication adapter to use
@@ -50,8 +54,7 @@ class AuthenticationManager {
 	 */
 	public static function init($ps_adapter=null) {
 		if(!is_null($ps_adapter) || (self::$g_authentication_adapter === null)) {
-			$o_app_conf = Configuration::load();
-			$o_auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
+			AuthenticationManager::$g_authentication_conf = $o_auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
 
 			$vs_auth_adapter = (!is_null($ps_adapter)) ? $ps_adapter : $o_auth_config->get('auth_adapter');
 
@@ -82,6 +85,14 @@ class AuthenticationManager {
 		self::init();
 
 		if ($vn_rc = self::$g_authentication_adapter->authenticate($ps_username, $ps_password, $pa_options)) {
+			return $vn_rc;
+		}
+
+		if ((AuthenticationManager::$g_authentication_conf->get('allow_fallback_to_ca_users_auth')) && !self::$g_authentication_adapter instanceof CaUsersAuthAdapter) {
+			// fall back to ca_users "native" authentication
+			self::init('CaUsers');
+			$vn_rc = self::$g_authentication_adapter->authenticate($ps_username, $ps_password, $pa_options);
+			self::$g_authentication_adapter = null;
 			return $vn_rc;
 		}
 
