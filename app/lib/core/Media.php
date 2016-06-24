@@ -146,7 +146,7 @@ class Media extends BaseObject {
 		$va_plugin_names = $this->getPluginNames();
 
 		// take an educated guess at which plugin to use
-		if($vs_guess_mimetype = mime_content_type($ps_filepath)) {
+		if(function_exists("mime_content_type") && ($vs_guess_mimetype = mime_content_type($ps_filepath))) {
 			$va_mimetype_plugins = $this->getPluginsForMimetypes();
 			if(isset($va_mimetype_plugins[$vs_guess_mimetype]) && is_array($va_mimetype_plugins[$vs_guess_mimetype])) {
 				foreach($va_mimetype_plugins[$vs_guess_mimetype] as $vs_plugin) {
