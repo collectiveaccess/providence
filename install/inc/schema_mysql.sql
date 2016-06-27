@@ -6738,7 +6738,7 @@ create table ca_metadata_alert_rule_labels (
 create table ca_metadata_alert_triggers (
   trigger_id      int unsigned      not null AUTO_INCREMENT,
   rule_id         int unsigned      not null,
-  element_id      smallint unsigned not null,
+  element_id      smallint unsigned,
   settings        longtext          not null,
   trigger_type    varchar(30)       not null,
 
