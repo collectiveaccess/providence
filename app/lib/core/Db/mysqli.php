@@ -91,6 +91,7 @@ class Db_mysqli extends DbDriverBase {
 	private $ops_db_host = '';
 	private $ops_db_user = '';
 	private $ops_db_pass = '';
+	private $ops_db_db = '';
 
 	/**
 	 * Constructor
@@ -117,6 +118,7 @@ class Db_mysqli extends DbDriverBase {
 		$this->ops_db_host = ($vb_persistent_connections ? "p:" : "").$pa_options["host"];
 		$this->ops_db_user = $pa_options["username"];
 		$this->ops_db_pass = $pa_options["password"];
+		$this->ops_db_db = $pa_options["database"];
 
 		if (
 			!($vb_unique_connection = caGetOption('uniqueConnection', $pa_options, false)) &&
@@ -137,7 +139,7 @@ class Db_mysqli extends DbDriverBase {
 			throw new DatabaseException(mysqli_connect_error(), 200, "Db->mysqli->connect()");
 		}
 
-		if (!mysqli_select_db($this->opr_db, $pa_options["database"])) {
+		if (!mysqli_select_db($this->opr_db, $this->ops_db_db)) {
 			$po_caller->postError(201, mysqli_error($this->opr_db), "Db->mysqli->connect()");
 			throw new DatabaseException(mysqli_error($this->opr_db), 201, "Db->mysqli->connect()");
 		}
@@ -307,23 +309,11 @@ class Db_mysqli extends DbDriverBase {
 		if (Db::$monitor) {
 			$t = new Timer();
 		}
+
 		if (!($r_res = @mysqli_query($this->opr_db, $vs_sql, caGetOption('resultMode', $pa_options, MYSQLI_STORE_RESULT)))) {
-			// if connection went away, try reconnecting and execute again
-			if(!mysqli_ping($this->opr_db)) {
-				$this->opr_db = @mysqli_connect($this->ops_db_host, $this->ops_db_user, $this->ops_db_pass);
-				if (!$this->opr_db) {
-					$po_caller->postError(200, mysqli_connect_error(), "Db->mysqli->connect()");
-					throw new DatabaseException(mysqli_connect_error(), 200, "Db->mysqli->connect()");
-				}
-
-				$r_res = @mysqli_query($this->opr_db, $vs_sql, caGetOption('resultMode', $pa_options, MYSQLI_STORE_RESULT));
-			}
-
-			if(!$r_res) {
-				//print "<pre>".caPrintStacktrace()."</pre>\n";
-				$po_statement->postError($this->nativeToDbError(mysqli_errno($this->opr_db)), mysqli_error($this->opr_db), "Db->mysqli->execute()");
-				throw new DatabaseException(mysqli_error($this->opr_db), $this->nativeToDbError(mysqli_errno($this->opr_db)), "Db->mysqli->execute()");
-			}
+			//print "<pre>".caPrintStacktrace()."</pre>\n";
+			$po_statement->postError($this->nativeToDbError(mysqli_errno($this->opr_db)), mysqli_error($this->opr_db), "Db->mysqli->execute()");
+			throw new DatabaseException(mysqli_error($this->opr_db), $this->nativeToDbError(mysqli_errno($this->opr_db)), "Db->mysqli->execute()");
 		}
 
 		if (Db::$monitor) {
