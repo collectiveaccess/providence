@@ -613,23 +613,29 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 	 * @param null $pm_table_name_or_num
 	 * @param null $pm_type_name_or_id
 	 * @param bool $pb_add_empty_option
+	 * @param mixed $pm_value
 	 * @return string
 	 */
-	public static function getElementListAsHTMLSelect($ps_select_name, array $pa_attributes=[], $pb_root_elements_only=false, $pm_table_name_or_num=null, $pm_type_name_or_id=null, $pb_add_empty_option=false) {
+	public static function getElementListAsHTMLSelect($ps_select_name, array $pa_attributes=[], $pb_root_elements_only=false, $pm_table_name_or_num=null, $pm_type_name_or_id=null, $pb_add_empty_option=false, $pm_value=null) {
 		$va_elements = self::getElementsAsList($pb_root_elements_only, $pm_table_name_or_num, $pm_type_name_or_id);
 
 
 		if($pb_add_empty_option) {
-			$va_options = [0 => '---'];
+			$va_list = [0 => '---'];
 		} else {
-			$va_options = [];
+			$va_list = [];
+		}
+
+		$va_options = ['contentArrayUsesKeysForValues' => true];
+		if($pm_value) {
+			$va_options['value'] = $pm_value;
 		}
 
 		foreach($va_elements as $va_element) {
-			$va_options[$va_element['element_id']] = $va_element['display_label'];
+			$va_list[$va_element['element_id']] = $va_element['display_label'];
 		}
 
-		return caHTMLSelect($ps_select_name, $va_options, $pa_attributes, ['contentArrayUsesKeysForValues' => true]);
+		return caHTMLSelect($ps_select_name, $va_list, $pa_attributes, $va_options);
 	}
 	# ------------------------------------------------------
 	/**

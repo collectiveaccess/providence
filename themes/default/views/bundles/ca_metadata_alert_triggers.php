@@ -28,10 +28,8 @@
 
 $vs_id_prefix = $this->getVar('placement_code').$this->getVar('id_prefix');
 $vn_table_num = $this->getVar('table_num');
-/** @var ca_metadata_alert_rules $t_rule */
-$t_rule = $this->getVar('t_rule');
+/** @var ca_metadata_alert_triggers $t_trigger */
 $t_trigger = $this->getVar('t_trigger');
-
 
 $va_errors = array();
 if(is_array($va_action_errors = $this->getVar('errors'))) {
@@ -53,10 +51,10 @@ print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 					<?php
 				}
 				?>
-				<?php print $t_rule->htmlFormElement('trigger_type', null, ['id' => $vs_id_prefix.'triggerTypeSelect']); ?>
+				<?php print $t_trigger->htmlFormElement('trigger_type', null, ['name' => $vs_id_prefix . '_trigger_type', 'id' => $vs_id_prefix.'triggerTypeSelect']); ?>
 				<div id="<?php print $vs_id_prefix; ?>triggerTypeSettingsForm"></div>
 				<div class="formLabel"><?php print _t('Trigger Element'); ?><br/>
-				<?php print ca_metadata_elements::getElementListAsHTMLSelect($vs_id_prefix . 'element_id', [], false, $vn_table_num, null, true); ?>
+				<?php print ca_metadata_elements::getElementListAsHTMLSelect($vs_id_prefix . '_element_id', [], false, $vn_table_num, null, true, $t_trigger->get('element_id')); ?>
 				</div>
 			</div>
 		</div>
@@ -68,7 +66,7 @@ print caEditorBundleShowHideControl($this->request, $vs_id_prefix);
 	function caSetTriggerSettingsForm(opts) {
 		if (!opts) { opts = {}; }
 		opts['triggerType'] = jQuery("#<?php print $vs_id_prefix.'triggerTypeSelect'; ?>").val();
-		opts['rule_id'] = <?php print (int)$t_rule->getPrimaryKey(); ?>;
+		opts['trigger_id'] = <?php print (int)$t_trigger->getPrimaryKey(); ?>;
 		opts['id_prefix'] = '<?php print $vs_id_prefix; ?>';
 		console.log('opts', opts);
 		jQuery("#<?php print $vs_id_prefix; ?>triggerTypeSettingsForm").load('<?php print caNavUrl($this->request, 'manage/metadata_alert_rules', 'MetadataAlertRuleEditor', 'getTriggerTypeSettingsForm'); ?>', opts);

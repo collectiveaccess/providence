@@ -58,7 +58,7 @@ BaseModel::$s_ca_models_definitions['ca_metadata_alert_triggers'] = array(
 		'element_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => false,
+			'IS_NULL' => true,
 			'DEFAULT' => '',
 			'LABEL' => 'Element id', 'DESCRIPTION' => 'Identifier for trigger element'
 		),

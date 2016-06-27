@@ -655,10 +655,37 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 
 		$o_view->setVar('table_num', $vn_table_num);
 
-		$t_trigger = new ca_metadata_alert_triggers();
-		$o_view->setVar('t_rule', $t_trigger);
+		$vn_trigger_id = null;
+		if($va_triggers = $this->getTriggers()) {
+			$va_trigger = array_shift($va_triggers);
+			$vn_trigger_id = $va_trigger['trigger_id'];
+		}
+
+		$t_trigger = new ca_metadata_alert_triggers($vn_trigger_id);
+		$o_view->setVar('t_trigger', $t_trigger);
 
 		return $o_view->render('ca_metadata_alert_triggers.php');
+	}
+	# ------------------------------------------------------
+	/**
+	 * Get all triggers for this rule
+	 *
+	 * @param array $pa_options
+	 * @return array
+	 */
+	public function getTriggers(array $pa_options = []) {
+		if(!$this->getPrimaryKey()) { return []; }
+
+		$qr_triggers = $this->getDb()->query('SELECT * FROM ca_metadata_alert_triggers WHERE rule_id = ?', $this->getPrimaryKey());
+
+		$va_return = [];
+
+		while($qr_triggers->nextRow()) {
+			$va_return[$qr_triggers->get('trigger_id')] = $qr_triggers->getRow();
+			$va_return[$qr_triggers->get('trigger_id')]['settings'] = caUnserializeForDatabase($qr_triggers->get('settings'));
+		}
+
+		return $va_return;
 	}
 	# ------------------------------------------------------
 	/**
@@ -671,12 +698,46 @@ class ca_metadata_alert_rules extends BundlableLabelableBaseModelWithAttributes 
 	public function saveTriggerHTMLFormBundle($po_request, $ps_form_prefix, $ps_placement_code) {
 		$vs_id_prefix = $ps_placement_code.$ps_form_prefix;
 
-		// @todo create or load trigger
+		$va_triggers = $this->getTriggers();
+
+		$vn_trigger_id = null;
+		if(is_array($va_triggers) && (sizeof($va_triggers)>0)) {
+			$va_trigger = array_shift($va_triggers);
+			$vn_trigger_id = $va_trigger['trigger_id'];
+		}
+
+		$t_trigger = new ca_metadata_alert_triggers($vn_trigger_id);
+
+		// set vars for trigger
+
+		if($vs_trigger_type = $_REQUEST["{$vs_id_prefix}_trigger_type"]) {
+			$t_trigger->set('trigger_type', $vs_trigger_type);
+		}
+
+		if($vn_element_id = $_REQUEST["{$vs_id_prefix}_element_id"]) {
+			$t_trigger->set('element_id', $vn_element_id);
+		}
 
 		// find settings keys in request and set them
 		foreach($_REQUEST as $vs_k => $vm_v) {
-			if(preg_match("/^{$vs_id_prefix}_setting_(.+)$/u", $vs_k)) {
-				caDebug($vs_k);
+			if(preg_match("/^{$vs_id_prefix}_setting_(.+)$/u", $vs_k, $va_matches)) {
+				$t_trigger->setSetting($va_matches[1], $vm_v);
+			}
+		}
+
+		$t_trigger->set('rule_id', $this->getPrimaryKey());
+		$t_trigger->setMode(ACCESS_WRITE);
+
+		// insert or update this trigger
+		if($t_trigger->getPrimaryKey()) {
+			$t_trigger->update();
+		} else {
+			$t_trigger->insert();
+		}
+
+		if($t_trigger->numErrors() > 0) {
+			foreach($t_trigger->getErrors() as $vs_error) {
+				$this->notification->addNotification($vs_error, __NOTIFICATION_TYPE_ERROR__);
 			}
 		}
 	}

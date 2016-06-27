@@ -57,7 +57,7 @@
  			if ($pn_rule_id == 0) { return true; }		// allow creation of new rules
  			$t_rule = new ca_metadata_alert_rules();
  			if (!$t_rule->haveAccessToForm($this->getRequest()->getUserID(), __CA_BUNDLE_DISPLAY_EDIT_ACCESS__, $pn_rule_id)) {		// is user allowed to edit rule?
- 				$this->notification->addNotification(_t("You cannot edit that form"), __NOTIFICATION_TYPE_ERROR__);
+ 				$this->notification->addNotification(_t("You cannot edit that rule"), __NOTIFICATION_TYPE_ERROR__);
  				$this->response->setRedirect(caNavUrl($this->getRequest(), 'manage', 'SearchForm', 'ListForms'));
  				return false; 
  			} else {
