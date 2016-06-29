@@ -589,6 +589,22 @@ class DisplayTemplateParser {
 						$vs_acc .= join($vs_unit_delimiter, $va_tmpl_val);
 						if ($pb_is_case) { break(2); }
 					} else { 
+						if ($t_instance->isRelationship()) {
+							// Allow subunits to inherit incorrectly places restrict/exclude types options
+							// This enables templates such as this to work as expected:
+							//
+							// <unit relativeTo="ca_objects_x_entities" restrictToTypes="individual"><unit relativeTo="ca_entities">^ca_entities.preferred_labels.displayname</unit></unit>
+							//
+							// by allowing the restrictToTypes on the relationship to be applied on the inner unit as is required.
+							//
+							if (!is_array($va_get_options['restrictToTypes']) || !sizeof($va_get_options['restrictToTypes'])) {
+								$va_get_options['restrictToTypes'] = $pa_options['restrictToTypes'];
+							}
+							if (!is_array($va_get_options['excludeTypes']) || !sizeof($va_get_options['excludeTypes'])) {
+								$va_get_options['excludeTypes'] = $pa_options['excludeTypes'];
+							}
+						}
+						
 						switch(strtolower($va_relative_to_tmp[1])) {
 							case 'hierarchy':
 								$va_relative_ids = $pr_res->get($t_rel_instance->tableName().".hierarchy.".$t_rel_instance->primaryKey(), $va_get_options);
