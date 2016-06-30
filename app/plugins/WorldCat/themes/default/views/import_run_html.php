@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -49,7 +49,10 @@
 <div class="editorBottomPadding"><!-- empty --></div>
 
 <div id="batchProcessingMore">
-	<?php print caNavLink($this->request, _t('Run another import'), '', '*', '*', 'Index'); ?>
+
+	<p>
+		<?php print caNavLink($this->request, _t('Run another import'), '', '*', '*', 'Index'); ?>
+	</p>
 </div>
 	
 <script type="text/javascript">
@@ -62,10 +65,9 @@
 		var updateProgressBarInterval = null;
 		jQuery.post('<?php print caNavUrl($this->request, '*', '*', 'RunImport', array()); ?>', <?php print json_encode(array('importer_id' => $pn_importer_id, 'job_id' => $ps_job_id, 'WorldCatID' => $pa_worldcat_ids, 'log_level' => $pn_log_level)); ?>,
 			function(data, textStatus, jqXHR) {
-				console.log("Job returned:", data);
 				// stop progress refresh
 				clearInterval(updateProgressBarInterval);
-				jQuery('#batchProcessingMore').fadeIn(500);
+				jQuery('#batchProcessingMore').prepend(data['links']).fadeIn(500);
 				
 				var m = jQuery('#progressbar').progressbar("option", "max");
 				jQuery('#progressbar').progressbar("option", "value", m);

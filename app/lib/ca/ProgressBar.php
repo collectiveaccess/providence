@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014-2015 Whirl-i-Gig
+ * Copyright 2014-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -406,9 +406,10 @@ class ProgressBar {
 	 * Set the per-job_id progress bar cache with the current state of the progress bar
 	 *
 	 * @param string $ps_message The message
+	 * @param array $pa_data Optional data array to stash
 	 * @return array The cached data or null if no job_id was set or the cache could not be opened.
 	 */
-	private function setCache($ps_message=null) {
+	private function setCache($ps_message=null, $pa_data=null) {
 		$va_data = null;
 		if ($this->ops_job_id) {
 			if(CompositeCache::contains($this->ops_job_id, 'ProgressBar')) {
@@ -421,6 +422,7 @@ class ProgressBar {
 			$va_data['start'] = $this->opn_start;
 			$va_data['position'] = $this->getCurrentPosition();
 			$va_data['message'] = is_null($ps_message) ? $this->getMessage() : $ps_message;
+			if (is_array($pa_data)) { $va_data['data'] = $pa_data; }
 
 			CompositeCache::save($this->ops_job_id, $va_data, 'ProgressBar');
 		}
@@ -439,9 +441,22 @@ class ProgressBar {
 		if(CompositeCache::contains($this->ops_job_id, 'ProgressBar')) {
 			$va_data = CompositeCache::fetch($this->ops_job_id, 'ProgressBar');
 		} else {
-			$va_data = array('total' => $this->getTotal(), 'start' => $this->opn_start, 'position' => $this->getCurrentPosition(), 'message' => $this->getMessage());
+			$va_data = array('total' => $this->getTotal(), 'start' => $this->opn_start, 'position' => $this->getCurrentPosition(), 'message' => $this->getMessage(), 'data' => []);
 		}
 		return $va_data;
+	}
+	# -------------------------------------------------------
+	/**
+	 * Set the progress bar cache with the current state of the progress bar for the specified job_id
+	 *
+	 * @param string $ps_job_id Optional job_id to get progress bar data for. If omitted the currently set job_id is used.
+	 * @param string $ps_message The message
+	 * @param array $pa_data Optional data array to stash
+	 * @return bool The cached data or null if no job_id was set or the cache could not be opened.
+	 */
+	public function setDataForJobID($ps_job_id=null,$ps_message=null, $pa_data=null) {
+		if($ps_job_id) { $this->setJobID($ps_job_id); }
+		return $this->setCache($ps_message, $pa_data);
 	}
 	# -------------------------------------------------------
 	/**
