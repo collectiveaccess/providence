@@ -293,7 +293,9 @@ class ca_bundle_displays extends BundlableLabelableBaseModelWithAttributes {
 				
 				$va_items = array();
 				while($qr_res->nextRow()) {
-					$va_items[$qr_res->get('placement_id')] = $qr_res->getRow();
+					$va_row = $qr_res->getRow();
+					$va_row['settings'] = caUnserializeForDatabase($va_row['settings']);
+					$va_items[$qr_res->get('placement_id')] = $va_row;
 				}
 				
 				foreach($va_items as $vn_item_id => $va_item) {
