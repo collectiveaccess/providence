@@ -33,6 +33,7 @@
 namespace CA\Media\Remote;
 
 require_once(__CA_LIB_DIR__.'/core/Media/Remote/Flickr.php');
+require_once(__CA_LIB_DIR__.'/core/Media/Remote/File.php');
 
 abstract class Base {
 
