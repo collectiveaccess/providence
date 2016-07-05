@@ -40,13 +40,13 @@
  		_t('Overdue (%1)', sizeof($va_overdue_checkouts)) => &$va_overdue_checkouts,
  		_t('Check ins (%1)', sizeof($va_checkins)) => &$va_checkins,
  		_t('Reservations (%1)', sizeof($va_reservations)) => &$va_reservations,
- 	) as $vs_heading => $va_data) {
- 		if (sizeof($va_data) > 0) {
+ 	) as $vs_heading => $va_list) {
+ 		if (sizeof($va_list) > 0) {
  ?>
  	<h3><?php print $vs_heading; ?></h3>
  <ul>
  <?php
-		foreach($va_data as $va_data) {
+		foreach($va_list as $va_data) {
 			print "<li>".$va_data['_display']." <em>";
 			
 			$va_dates = array();
