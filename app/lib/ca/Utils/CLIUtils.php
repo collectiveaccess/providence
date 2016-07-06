@@ -3822,7 +3822,7 @@
 		# -------------------------------------------------------
 		public static function check_url_reference_integrityParamList() {
 			return [
-				"email|u=s" => _t('Email address to mail report to if there are errors. [Optional]'),
+				"email|e=s" => _t('Email address(es) to mail report to if there are errors.[Optional]'),
 			];
 		}
 		# -------------------------------------------------------

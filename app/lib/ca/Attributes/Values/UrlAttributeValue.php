@@ -346,7 +346,7 @@
 		}
 		# ------------------------------------------------------------------
 		public function checkIntegrity() {
-			if(!$this->ops_text_value) { throw new Exception('No URL was loaded'); }
+			if(!$this->ops_text_value) { return false; }
 			$ps_url = $this->ops_text_value;
 
 			if(!((bool)ini_get('allow_url_fopen'))) {
@@ -432,6 +432,26 @@
 					}
 
 					if($pb_print_status) { print CLIProgressBar::finish(); }
+				}
+
+				if((strlen($ps_email_errors) > 0) && sizeof($va_report)) {
+					$vs_body_text = _t("There were errors when checking URL reference integrity for all records in CollectiveAccess:"). "\n\n";
+					foreach($va_report as $vs_element_code => $va_records) {
+						$vs_body_text .= _t("Metadata element with code [%1] had the following problems:", $vs_element_code) . "\n";
+
+						foreach($va_records as $vn_table_num => $va_records_by_table) {
+							$vs_body_text .= caGetTableDisplayName($vn_table_num) . ":\n";
+
+							foreach($va_records_by_table as $vn_row_id => $va_messages) {
+								$vs_body_text .= "\t" . join("\n\t", $va_messages) . "\n";
+							}
+
+							$vs_body_text .= "\n";
+						}
+					}
+
+					$pa_emails = preg_split('/[,:]/', $ps_email_errors);
+					caSendmail($pa_emails, [__CA_ADMIN_EMAIL__], _t("URL attribute integrity check had errors"), $vs_body_text);
 				}
 			}
 		}
