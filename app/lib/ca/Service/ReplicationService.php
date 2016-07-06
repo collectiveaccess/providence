@@ -139,12 +139,23 @@ class ReplicationService {
 					);
 
 					curl_setopt($o_curl, CURLOPT_RETURNTRANSFER, true);
+					curl_setopt($o_curl, CURLOPT_SSL_VERIFYHOST, 0);
+					curl_setopt($o_curl, CURLOPT_SSL_VERIFYPEER, 0);
+					curl_setopt($o_curl, CURLOPT_FOLLOWLOCATION, true);
+					curl_setopt($o_curl, CURLOPT_CONNECTTIMEOUT, 60);
+					curl_setopt($o_curl, CURLOPT_TIMEOUT, 7200);
 
 					// basic auth
 					curl_setopt($o_curl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
 					curl_setopt($o_curl, CURLOPT_USERPWD, $va_target_conf['service_user'].':'.$va_target_conf['service_key']);
 
 					curl_exec($o_curl);
+
+					$vn_code = curl_getinfo($o_curl, CURLINFO_HTTP_CODE);
+					if($vn_code != 200) {
+						throw new Exception(_t("Could not upload file [%1] to target [%2]. HTTP response code was %3.", $vs_local_path, $ps_push_media_to, $vn_code));
+					}
+
 					curl_close($o_curl);
 				}
 			}
