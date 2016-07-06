@@ -3799,4 +3799,52 @@
 			return _t('This utility generates a new system GUID for the current system. This can be useful is you used a copy of another system to set it up and are now trying to sync/replicate data between the two. You may have to reset the system GUID for one of them in that case.');
 		}
 		# -------------------------------------------------------
+		/**
+		 * @param Zend_Console_Getopt|null $po_opts
+		 * @return bool
+		 */
+		public static function check_url_reference_integrity($po_opts=null) {
+			require_once(__CA_LIB_DIR__.'/ca/Attributes/Values/UrlAttributeValue.php');
+
+			$o_request = new RequestHTTP(null, [
+				'no_headers' => true,
+				'simulateWith' => [
+					'REQUEST_METHOD' => 'GET',
+					'SCRIPT_NAME' => 'index.php'
+				]
+			]);
+
+			UrlAttributeValue::checkIntegrityForAllElements([
+				'request' => $o_request,
+				'emailErrorsTo' => $po_opts->getOption('email')
+			]);
+		}
+		# -------------------------------------------------------
+		public static function check_url_reference_integrityParamList() {
+			return [
+				"email|e=s" => _t('Email address(es) to mail report to if there are errors.[Optional]'),
+			];
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_url_reference_integrityUtilityClass() {
+			return _t('Maintenance');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_url_reference_integrityShortHelp() {
+			return _t('Checks integrity for all URL references in the database.');
+		}
+		# -------------------------------------------------------
+		/**
+		 *
+		 */
+		public static function check_url_reference_integrityHelp() {
+			return _t('This utility checks the integrity for all URL attribute references in the database. It does so by trying to hit each URL and reading a few bytes. It does not download the whole file.');
+		}
+		# -------------------------------------------------------
 	}

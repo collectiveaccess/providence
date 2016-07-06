@@ -148,6 +148,11 @@ class Replicator {
 			foreach($this->getTargetsAsServiceClients() as $vs_target_key => $o_target) {
 				/** @var CAS\ReplicationService $o_target */
 
+				$vs_push_media_to = null;
+				if($this->opo_replication_conf->get('sources')[$vs_source_key]['push_media']) {
+					$vs_push_media_to = $vs_target_key;
+				}
+
 				// get latest log id for this source at current target
 				$o_result = $o_target->setEndpoint('getlastreplicatedlogid')
 					->addGetParameter('system_guid', $vs_source_system_guid)
@@ -208,6 +213,7 @@ class Replicator {
 						->addGetParameter('skipIfExpression', $vs_skip_if_expression)
 						->addGetParameter('limit', 10)
 						->addGetParameter('ignoreTables', $vs_ignore_tables)
+						->addGetParameter('pushMediaTo', $vs_push_media_to)
 						->request()->getRawData();
 
 					if (!is_array($va_source_log_entries) || !sizeof($va_source_log_entries)) {

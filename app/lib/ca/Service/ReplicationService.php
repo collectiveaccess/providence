@@ -65,6 +65,9 @@ class ReplicationService {
 			case 'dedup';
 				$va_return = self::dedup($po_request);
 				break;
+			case 'pushmedia':
+				$va_return = self::pushMedia($po_request);
+				break;
 			default:
 				throw new Exception('Unknown endpoint');
 
@@ -77,6 +80,8 @@ class ReplicationService {
 	 * @return array
 	 */
 	public static function getLog($po_request) {
+		$o_replication_conf = Configuration::load(__CA_CONF_DIR__.'/replication.conf');
+
 		$pn_from = $po_request->getParameter('from', pInteger);
 		if(!$pn_from) { $pn_from = 0; }
 
@@ -98,7 +103,67 @@ class ReplicationService {
 			}
 		}
 
-		return ca_change_log::getLog($pn_from, $pn_limit, $pa_options);
+		// if log contains media, and pushMediaTo is set, copy media first before sending log. that way the
+		// other side of the sync doesn't have to pull the media from us (which may not be possible due to networking
+		// restrictions) but can use local file paths instead
+		if(
+			($ps_push_media_to = $po_request->getParameter('pushMediaTo', pString, null, ['retainBackslashes' => false]))
+			&&
+			(isset($o_replication_conf->get('targets')[$ps_push_media_to]))
+		) {
+			$va_target_conf = $o_replication_conf->get('targets')[$ps_push_media_to];
+
+			$va_media = [];
+			// passing a 4th param here changes the behavior slightly
+			$va_log = ca_change_log::getLog($pn_from, $pn_limit, $pa_options, $va_media);
+
+			if(sizeof($va_media) > 0) {
+				foreach($va_media as $vs_md5 => $vs_url) {
+
+					// translate url to absolute media path
+					$vs_path_from_url = parse_url($vs_url, PHP_URL_PATH);
+					$vs_local_path = __CA_BASE_DIR__ . str_replace(__CA_URL_ROOT__, '', $vs_path_from_url);
+
+					// send media to remote service endpoint
+					$o_curl = curl_init($va_target_conf['url'] . '/service.php/replication/pushMedia');
+					$o_file = new CURLFile(realpath($vs_local_path));
+
+					curl_setopt($o_curl, CURLOPT_POST, true);
+					curl_setopt(
+						$o_curl,
+						CURLOPT_POSTFIELDS,
+						[
+							'file' => $o_file,
+							'url_checksum' => $vs_md5
+						]
+					);
+
+					curl_setopt($o_curl, CURLOPT_RETURNTRANSFER, true);
+					curl_setopt($o_curl, CURLOPT_SSL_VERIFYHOST, 0);
+					curl_setopt($o_curl, CURLOPT_SSL_VERIFYPEER, 0);
+					curl_setopt($o_curl, CURLOPT_FOLLOWLOCATION, true);
+					curl_setopt($o_curl, CURLOPT_CONNECTTIMEOUT, 60);
+					curl_setopt($o_curl, CURLOPT_TIMEOUT, 7200);
+
+					// basic auth
+					curl_setopt($o_curl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+					curl_setopt($o_curl, CURLOPT_USERPWD, $va_target_conf['service_user'].':'.$va_target_conf['service_key']);
+
+					curl_exec($o_curl);
+
+					$vn_code = curl_getinfo($o_curl, CURLINFO_HTTP_CODE);
+					if($vn_code != 200) {
+						throw new Exception(_t("Could not upload file [%1] to target [%2]. HTTP response code was %3.", $vs_local_path, $ps_push_media_to, $vn_code));
+					}
+
+					curl_close($o_curl);
+				}
+			}
+		} else {
+			$va_log = ca_change_log::getLog($pn_from, $pn_limit, $pa_options);
+		}
+
+		return $va_log;
 	}
 	# -------------------------------------------------------
 	/**
@@ -260,6 +325,49 @@ class ReplicationService {
 		}
 
 		return ['report' => $va_report];
+	}
+	# -------------------------------------------------------
+	/**
+	 * @param RequestHTTP $po_request
+	 * @return array
+	 * @throws Exception
+	 */
+	public static function pushMedia($po_request) {
+		if(!isset($_FILES['file'])) {
+			throw new Exception('No file specified');
+		}
+
+		if(!($vs_checksum = $po_request->getParameter('url_checksum', pString))) {
+			throw new Exception('No checksum specified');
+		}
+
+		$o_app_vars = new ApplicationVars();
+		$va_files = $o_app_vars->getVar('pushMediaFiles');
+		if(!is_array($va_files)) { $va_files = []; }
+
+		$o_file_vols = new FileVolumes();
+		$vs_workspace_path = $o_file_vols->getVolumeInformation('workspace')['absolutePath'];
+		$vs_new_file_path = $vs_workspace_path . DIRECTORY_SEPARATOR . $_FILES['file']['name'];
+
+		if(!@rename($_FILES['file']['tmp_name'], $vs_new_file_path)) {
+			throw new Exception('Could not move temporary file. Please check the permissions for the workspace directory.');
+		}
+
+		$va_files[$vs_checksum] = $vs_new_file_path;
+
+		// only stash 100 files tops
+		if(sizeof($va_files) > 100) {
+			$va_excess_files = array_splice($va_files, 99);
+
+			foreach($va_excess_files as $vs_file) {
+				@unlink($vs_file);
+			}
+		}
+
+		$o_app_vars->setVar('pushMediaFiles', $va_files);
+		$o_app_vars->save();
+
+		return true;
 	}
 	# -------------------------------------------------------
 }

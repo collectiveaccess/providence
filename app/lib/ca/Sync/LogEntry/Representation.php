@@ -83,4 +83,64 @@ class Representation extends Bundlable {
 		}
 	}
 
+	public function sanityCheck() {
+		parent::sanityCheck();
+
+		$va_snapshot = $this->getSnapshot();
+
+		// is checksum? -> dig actual file out from stashed files if possible
+		if(isset($va_snapshot['media']) && (strlen($va_snapshot['media']) == 32) && preg_match("/^[a-f0-9]+$/", $va_snapshot['media'])) {
+			$o_app_vars = new \ApplicationVars();
+			$va_files = $o_app_vars->getVar('pushMediaFiles');
+			if(!isset($va_files[$va_snapshot['media']])) {
+				throw new InvalidLogEntryException('Could not find media reference for checksum');
+			}
+
+			if(!file_exists($va_files[$va_snapshot['media']])) {
+				throw new InvalidLogEntryException('Could not find stashed media for checksum');
+			}
+		}
+	}
+
+	/**
+	 * Set intrinsic fields from snapshot in given model instance
+	 */
+	public function setIntrinsicsFromSnapshotInModelInstance() {
+		parent::setIntrinsicsFromSnapshotInModelInstance();
+
+		$va_snapshot = $this->getSnapshot();
+
+		// is checksum? -> dig actual file out from stashed files if possible
+		if(isset($va_snapshot['media']) && (strlen($va_snapshot['media']) == 32) && preg_match("/^[a-f0-9]+$/", $va_snapshot['media'])) {
+			$o_app_vars = new \ApplicationVars();
+			$va_files = $o_app_vars->getVar('pushMediaFiles');
+			if(isset($va_files[$va_snapshot['media']])) {
+				$this->getModelInstance()->set('media', $va_files[$va_snapshot['media']]);
+			} else {
+				throw new InvalidLogEntryException('Could not find media for checksum');
+			}
+		}
+	}
+
+	public function apply(array $pa_options = array()) {
+		$vm_ret = parent::apply($pa_options);
+
+		$va_snapshot = $this->getSnapshot();
+
+		// was checksum? -> clean up stashed file
+		if(isset($va_snapshot['media']) && (strlen($va_snapshot['media']) == 32) && preg_match("/^[a-f0-9]+$/", $va_snapshot['media'])) {
+			$o_app_vars = new \ApplicationVars();
+			$va_files = $o_app_vars->getVar('pushMediaFiles');
+			if(isset($va_files[$va_snapshot['media']])) {
+				@unlink($va_files[$va_snapshot['media']]);
+				unset($va_files[$va_snapshot['media']]);
+			}
+
+			$o_app_vars->setVar('pushMediaFiles', $va_files);
+			$o_app_vars->save();
+		}
+
+		return $vm_ret;
+	}
+
 }
