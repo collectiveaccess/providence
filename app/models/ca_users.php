@@ -3452,16 +3452,4 @@ class ca_users extends BaseModel {
 		return $va_ret;
 	}
 	# ----------------------------------------
-	/**
-	 * @param $pn_type
-	 * @param $ps_message
-	 * @param bool $pb_global Indicates if this notification is global and can be seen and interacted with by everyone, system-wide
-	 * @param int|null $pn_table_num Table number of the record this notification pertains to
-	 * @param int|null $pn_row_id Row ID (primary key value) of the record this notification pertains to
-	 * @param array $pa_options
-	 */
-	public function addNotification($pn_type, $ps_message, $pb_global=false, $pn_table_num=null, $pn_row_id=null, array $pa_options=[]) {
-
-	}
-	# ----------------------------------------
 }
