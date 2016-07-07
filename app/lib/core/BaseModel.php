@@ -11622,23 +11622,36 @@ $pa_options["display_form_field_tips"] = true;
 	 * @param array $pa_options
 	 * 			table_num -
 	 * 			row_id -
+	 * 			includeRead -
 	 *
 	 * @return array
 	 */
 	public function getNotifications(array $pa_options = []) {
 		$pn_table_num = caGetOption('table_num', $pa_options, $this->tableNum());
 		$pn_row_id = caGetOption('row_id', $pa_options, $this->getPrimaryKey());
+		$va_additional_wheres = []; $vs_additional_wheres = '';
+
+		if(!caGetOption('includeRead', $pa_options, false)) {
+			$va_additional_wheres[] = 'ca_notification_subjects.was_read = 0';
+		}
 
 		if(!$pn_row_id || !$pn_table_num) { return false; }
+
+		if(sizeof($va_additional_wheres)) {
+			$vs_additional_wheres = ' AND ' . join(' AND ', $va_additional_wheres);
+		}
+
 
 		$qr_notifications = $this->getDb()->query("
 			SELECT DISTINCT
 				ca_notifications.notification_id, ca_notifications.message,
-				ca_notifications.notification_type, ca_notifications.datetime
+				ca_notifications.notification_type, ca_notifications.datetime,
+				ca_notification_subjects.subject_id
 			FROM ca_notification_subjects, ca_notifications
 			WHERE ca_notification_subjects.notification_id = ca_notifications.notification_id
 			AND ca_notification_subjects.table_num = ?
 			AND ca_notification_subjects.row_id = ?
+			{$vs_additional_wheres}
 		", $pn_table_num, $pn_row_id);
 
 		$va_return = [];

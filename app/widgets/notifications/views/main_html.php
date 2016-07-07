@@ -36,22 +36,31 @@
 <div class="dashboardWidgetContentContainer dashboardWidgetScrollMedium">
 	<table class='dashboardWidgetTable'>
 		<tr>
+			<th>&nbsp;</th>
 			<th><?php print _t('Date/time');?></th>
 			<th><?php print _t('Message');?></th>
 		</tr>
 			
 <?php
-	foreach($va_notification_list as $vn_i => $va_notifications) {
-		$vs_short_message = caTruncateStringWithEllipsis($va_notifications['message'], 50);
-		if(strlen($va_notifications['message']) != strlen($vs_short_message)) {
-			TooltipManager::add('#notificationWidgetMessage'.$vn_i, $va_notifications['message']);
+	foreach($va_notification_list as $vn_notification_id => $va_notification) {
+		$vs_short_message = caTruncateStringWithEllipsis($va_notification['message'], 50);
+		if(strlen($va_notification['message']) != strlen($vs_short_message)) {
+			TooltipManager::add('#notificationWidgetMessage'.$vn_notification_id, $va_notification['message']);
 		}
 
 		print "<tr>";
-		print "<td>".date("n/d/y, g:iA T", $va_notifications['datetime'])."</td>";
-		print "<td id='notificationWidgetMessage{$vn_i}'>".$vs_short_message."</td>";
+		print "<td><a href='#' onclick='caMarkNotificationAsRead(".$va_notification['subject_id'].", ".$vn_notification_id."); return false;'>"._t("Read")."</a></td>";
+		print "<td>".date("n/d/y, g:iA", $va_notification['datetime'])."</td>";
+		print "<td id='notificationWidgetMessage{$vn_notification_id}'>".$vs_short_message."</td>";
 		print "</tr>\n";
 	}
 ?>
 	</table>
 </div>
+
+<script type="text/javascript">
+	function caMarkNotificationAsRead(subject_id, notification_id) {
+		jQuery.get("<?php print caNavUrl($po_request, 'manage', 'Notifications', 'markAsRead')?>", { subject_id: subject_id });
+		jQuery('#notificationWidgetMessage' + notification_id).parent().hide();
+	}
+</script>

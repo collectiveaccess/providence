@@ -65,6 +65,15 @@ BaseModel::$s_ca_models_definitions['ca_notification_subjects'] = array(
 			'DEFAULT' => '',
 			'LABEL' => 'Row id', 'DESCRIPTION' => 'Row identifier'
 		),
+		'was_read' => array(
+			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => _t('Was read?'),
+			'DESCRIPTION' => _t('Indicates whether this notification was marked as read or not.'),
+			'BOUNDS_VALUE' => array(0,1),
+		),
 	)
 );
 
