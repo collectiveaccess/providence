@@ -62,37 +62,6 @@ BaseModel::$s_ca_models_definitions['ca_notifications'] = array(
 			),
 			'LABEL' => _t('Notification type'), 'DESCRIPTION' => _t('Indicates the type of this notification.')
 		),
-		'table_num' => array(
-			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
-			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => true,
-			'DEFAULT' => '',
-			'LABEL' => 'Table', 'DESCRIPTION' => 'Table',
-			'BOUNDS_VALUE' => array(0,255)
-		),
-		'row_id' => array(
-			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
-			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => true,
-			'DEFAULT' => '',
-			'LABEL' => 'Row id', 'DESCRIPTION' => 'Row identifier'
-		),
-		'user_id' => array(
-			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
-			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => true,
-			'DEFAULT' => '',
-			'DONT_ALLOW_IN_UI' => true,
-			'LABEL' => 'User id', 'DESCRIPTION' => 'Identifier for notification user'
-		),
-		'group_id' => array(
-			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_OMIT,
-			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => true,
-			'DEFAULT' => '',
-			'DONT_ALLOW_IN_UI' => true,
-			'LABEL' => 'User id', 'DESCRIPTION' => 'Identifier for notification user group'
-		),
 		'datetime' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
@@ -100,20 +69,22 @@ BaseModel::$s_ca_models_definitions['ca_notifications'] = array(
 			'DEFAULT' => '',
 			'LABEL' => _t('Notification date and time'), 'DESCRIPTION' => _t('Date and time for notification')
 		),
-		'was_read' => array(
-			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT,
-			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => false,
-			'DEFAULT' => '',
-			'LABEL' => _t('Was read?'),
-			'DESCRIPTION' => _t('Indicates if this notification was marked as read.'),
-		),
 		'message' => array(
 			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
 			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
 			'IS_NULL' => false,
 			'DEFAULT' => '',
 			'LABEL' => _t('Message'), 'DESCRIPTION' => _t('Notification message')
+		),
+		'is_system' => array(
+			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => false,
+			'DEFAULT' => '',
+			'LABEL' => _t('Is system notification'),
+			'DESCRIPTION' => _t('Set this if the notification is available system-wide and readable by everyone.'),
+			'BOUNDS_VALUE' => array(0,1),
+			'REQUIRES' => array('is_administrator')
 		),
 	)
 );
