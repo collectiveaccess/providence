@@ -1,6 +1,6 @@
 /*
-	Date: 25 May 2016
-	Migration: 135
+	Date: 7 July 2016
+	Migration: 136
 	Description: Add tables for metadata alerts
 */
 
@@ -82,20 +82,6 @@ create table ca_metadata_alert_rule_type_restrictions (
    constraint fk_ca_metadata_alert_rule_type_restrictions_rule_id foreign key (rule_id)
       references ca_metadata_alert_rules (rule_id) on delete restrict on update restrict
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
-/*==========================================================================*/
-create table ca_metadata_alert_notifications (
-  notification_id    int UNSIGNED      not null AUTO_INCREMENT,
-  user_id     int UNSIGNED      not null references ca_users(user_id),
-  rule_id     int UNSIGNED      not null references ca_metadata_alert_rules(rule_id),
-  datetime    int unsigned      not null,
-  table_num   tinyint UNSIGNED  not null,
-  row_id      int unsigned      not null,
-
-  primary key (notification_id),
-
-  index i_table_num_row_id (table_num, row_id),
-  index i_datetime (datetime)
-) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Always add the update to ca_schema_updates at the end of the file */
-INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (135, unix_timestamp());
+INSERT IGNORE INTO ca_schema_updates (version_num, datetime) VALUES (136, unix_timestamp());

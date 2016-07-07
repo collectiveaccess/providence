@@ -40,7 +40,6 @@ define('__CA_ALERT_RULE_ACCESS_ACCESS_EDIT__', 2);
 
 require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rule_type_restrictions.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rule_labels.php');
-require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_notifications.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rules_x_user_groups.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_rules_x_users.php');
 require_once(__CA_MODELS_DIR__.'/ca_metadata_alert_triggers.php');
