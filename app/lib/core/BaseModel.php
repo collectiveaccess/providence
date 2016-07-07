@@ -11618,6 +11618,38 @@ $pa_options["display_form_field_tips"] = true;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
+	 * Get notifications pertaining to current row
+	 * @param array $pa_options
+	 * 			table_num -
+	 * 			row_id -
+	 *
+	 * @return array
+	 */
+	public function getNotifications(array $pa_options = []) {
+		$pn_table_num = caGetOption('table_num', $pa_options, $this->tableNum());
+		$pn_row_id = caGetOption('row_id', $pa_options, $this->getPrimaryKey());
+
+		if(!$pn_row_id || !$pn_table_num) { return false; }
+
+		$qr_notifications = $this->getDb()->query("
+			SELECT DISTINCT
+				ca_notifications.notification_id, ca_notifications.message,
+				ca_notifications.notification_type, ca_notifications.datetime
+			FROM ca_notification_subjects, ca_notifications
+			WHERE ca_notification_subjects.notification_id = ca_notifications.notification_id
+			AND ca_notification_subjects.table_num = ?
+			AND ca_notification_subjects.row_id = ?
+		", $pn_table_num, $pn_row_id);
+
+		$va_return = [];
+		while($qr_notifications->nextRow()) {
+			$va_return[$qr_notifications->get('notification_id')] = $qr_notifications->getRow();
+		}
+
+		return $va_return;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
 	 * Destructor
 	 */
 	public function __destruct() {
