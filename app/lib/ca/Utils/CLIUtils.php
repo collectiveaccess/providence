@@ -1863,7 +1863,6 @@
 		 */
 		public static function reset_passwordParamList() {
 			return array(
-				"username" => _t("User name to reset password for."),
 				"user|u=s" => _t("User name to reset password for."),
 				"password|p=s" => _t("New password for user")
 			);
