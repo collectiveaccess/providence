@@ -11627,6 +11627,8 @@ $pa_options["display_form_field_tips"] = true;
 	 * @return array
 	 */
 	public function getNotifications(array $pa_options = []) {
+		$t_notification = new ca_notifications();
+
 		$pn_table_num = caGetOption('table_num', $pa_options, $this->tableNum());
 		$pn_row_id = caGetOption('row_id', $pa_options, $this->getPrimaryKey());
 		$va_additional_wheres = []; $vs_additional_wheres = '';
@@ -11654,9 +11656,15 @@ $pa_options["display_form_field_tips"] = true;
 			{$vs_additional_wheres}
 		", $pn_table_num, $pn_row_id);
 
+
+		$va_types = array_flip($t_notification->getFieldInfo('notification_type')['BOUNDS_CHOICE_LIST']);
 		$va_return = [];
 		while($qr_notifications->nextRow()) {
-			$va_return[$qr_notifications->get('notification_id')] = $qr_notifications->getRow();
+			$va_row = $qr_notifications->getRow();
+			// translate for display
+			$va_row['notification_type_display'] = $va_types[$va_row['notification_type']];
+
+			$va_return[$qr_notifications->get('notification_id')] = $va_row;
 		}
 
 		return $va_return;

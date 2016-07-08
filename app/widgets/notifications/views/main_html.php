@@ -31,32 +31,39 @@
 	$va_settings 			= $this->getVar('settings');
 	$vs_widget_id 			= $this->getVar('widget_id');
 	$va_notification_list	= $this->getVar('notification_list');
+
+	if(!is_array($va_notification_list) || !sizeof($va_notification_list)) {
+		print "<div class=\"dashboardWidgetContentContainer dashboardWidgetScrollMedium\">"._t("You have no new notifications")."</div>";
+	} else {
 ?>
+		<div class="dashboardWidgetContentContainer dashboardWidgetScrollMedium">
+			<table class='dashboardWidgetTable'>
+				<tr>
+					<th>&nbsp;</th>
+					<th><?php print _t('Date/time'); ?></th>
+					<th><?php print _t('Message'); ?></th>
+				</tr>
 
-<div class="dashboardWidgetContentContainer dashboardWidgetScrollMedium">
-	<table class='dashboardWidgetTable'>
-		<tr>
-			<th>&nbsp;</th>
-			<th><?php print _t('Date/time');?></th>
-			<th><?php print _t('Message');?></th>
-		</tr>
-			
 <?php
-	foreach($va_notification_list as $vn_notification_id => $va_notification) {
-		$vs_short_message = caTruncateStringWithEllipsis($va_notification['message'], 50);
-		if(strlen($va_notification['message']) != strlen($vs_short_message)) {
-			TooltipManager::add('#notificationWidgetMessage'.$vn_notification_id, $va_notification['message']);
-		}
+				foreach ($va_notification_list as $vn_notification_id => $va_notification) {
+					$vs_short_message = caTruncateStringWithEllipsis($va_notification['message'], 50);
+					if (strlen($va_notification['message']) != strlen($vs_short_message)) {
+						TooltipManager::add('#notificationWidgetMessage' . $vn_notification_id, $va_notification['message']);
+					}
 
-		print "<tr>";
-		print "<td><a href='#' onclick='caMarkNotificationAsRead(".$va_notification['subject_id'].", ".$vn_notification_id."); return false;'>"._t("Read")."</a></td>";
-		print "<td>".date("n/d/y, g:iA", $va_notification['datetime'])."</td>";
-		print "<td id='notificationWidgetMessage{$vn_notification_id}'>".$vs_short_message."</td>";
-		print "</tr>\n";
+					print "<tr>";
+					print "<td><a href='#' onclick='caMarkNotificationAsRead(" . $va_notification['subject_id'] . ", " . $vn_notification_id . "); return false;'>" . _t("Read") . "</a></td>";
+					print "<td>" . date("n/d/y, g:iA", $va_notification['datetime']) . "</td>";
+					print "<td id='notificationWidgetMessage{$vn_notification_id}'>" . $vs_short_message . "</td>";
+					print "</tr>\n";
+				}
+?>
+			</table>
+		</div>
+
+<?php
 	}
 ?>
-	</table>
-</div>
 
 <script type="text/javascript">
 	function caMarkNotificationAsRead(subject_id, notification_id) {
