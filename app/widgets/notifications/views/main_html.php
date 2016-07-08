@@ -36,7 +36,7 @@
 		print "<div class=\"dashboardWidgetContentContainer dashboardWidgetScrollMedium\">"._t("You have no new notifications")."</div>";
 	} else {
 ?>
-		<div class="dashboardWidgetContentContainer dashboardWidgetScrollMedium">
+		<div class="dashboardWidgetContentContainer dashboardWidgetScrollLarge" style="width:430px">
 			<table class='dashboardWidgetTable'>
 				<tr>
 					<th>&nbsp;</th>
@@ -46,15 +46,12 @@
 
 <?php
 				foreach ($va_notification_list as $vn_notification_id => $va_notification) {
-					$vs_short_message = caTruncateStringWithEllipsis($va_notification['message'], 50);
-					if (strlen($va_notification['message']) != strlen($vs_short_message)) {
-						TooltipManager::add('#notificationWidgetMessage' . $vn_notification_id, $va_notification['message']);
-					}
-
 					print "<tr>";
 					print "<td><a href='#' onclick='caMarkNotificationAsRead(" . $va_notification['subject_id'] . ", " . $vn_notification_id . "); return false;'>" . _t("Read") . "</a></td>";
 					print "<td>" . date("n/d/y, g:iA", $va_notification['datetime']) . "</td>";
-					print "<td id='notificationWidgetMessage{$vn_notification_id}'>" . $vs_short_message . "</td>";
+					print "<td id='notificationWidgetMessage{$vn_notification_id}'>";
+					print "<div>" . $va_notification['message'] . "</div>";
+					print "</td>";
 					print "</tr>\n";
 				}
 ?>
