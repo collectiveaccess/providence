@@ -1,6 +1,6 @@
 <?php
 /** ---------------------------------------------------------------------
- * app/models/ca_notifications.php : table access class for table ca_notifications
+ * app/models/ca_notification_subjects.php : table access class for table ca_notification_subjects
  * ----------------------------------------------------------------------
  * CollectiveAccess
  * Open-source collections management software
@@ -30,64 +30,56 @@
  * ----------------------------------------------------------------------
  */
 
-define('__CA_NOTIFICATION_TYPE_GENERIC__', 0);
-define('__CA_NOTIFICATION_TYPE_METADATA_ALERT__', 1);
-define('__CA_NOTIFICATION_TYPE_URL_REFERENCE_CHECK__', 2);
 
-require_once(__CA_APP_DIR__.'/models/ca_notification_subjects.php');
-
-BaseModel::$s_ca_models_definitions['ca_notifications'] = array(
-	'NAME_SINGULAR' 	=> _t('notifications'),
-	'NAME_PLURAL' 		=> _t('notifications'),
+BaseModel::$s_ca_models_definitions['ca_notification_subjects'] = array(
+	'NAME_SINGULAR' 	=> _t('notification subject'),
+	'NAME_PLURAL' 		=> _t('notification subjects'),
 	'FIELDS' 			=> array(
-		'notification_id' => array(
+		'subject_id' => array(
 			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
 			'IDENTITY' => true, 'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false,
 			'DEFAULT' => '',
-			'LABEL' => _t('CollectiveAccess id'), 'DESCRIPTION' => _t('Unique numeric identifier used by CollectiveAccess internally to identify this notification')
+			'LABEL' => 'Log id', 'DESCRIPTION' => 'Identifier for subject'
 		),
-		'notification_type' => array(
-			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_SELECT,
-			'DISPLAY_WIDTH' => 40, 'DISPLAY_HEIGHT' => 1,
-			'IS_NULL' => false,
-			'DEFAULT' => 0,
-			'ALLOW_BUNDLE_ACCESS_CHECK' => true,
-			'BOUNDS_CHOICE_LIST' => array(
-				_t('Generic') => __CA_NOTIFICATION_TYPE_GENERIC__,
-				_t('Metadata alert') => __CA_NOTIFICATION_TYPE_METADATA_ALERT__,
-				_t('Url reference check') => __CA_NOTIFICATION_TYPE_URL_REFERENCE_CHECK__
-			),
-			'LABEL' => _t('Notification type'), 'DESCRIPTION' => _t('Indicates the type of this notification.')
-		),
-		'datetime' => array(
-			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+		'notification_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_HIDDEN,
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false,
+			'ALLOW_BUNDLE_ACCESS_CHECK' => true, 'DONT_ALLOW_IN_UI' => true,
 			'DEFAULT' => '',
-			'LABEL' => _t('Notification date and time'), 'DESCRIPTION' => _t('Date and time for notification')
+			'LABEL' => _t('Notification'), 'DESCRIPTION' => _t('Notification this subject definition belongs to.')
 		),
-		'message' => array(
-			'FIELD_TYPE' => FT_TEXT, 'DISPLAY_TYPE' => DT_FIELD,
-			'DISPLAY_WIDTH' => 88, 'DISPLAY_HEIGHT' => 15,
-			'IS_NULL' => false,
+		'table_num' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
 			'DEFAULT' => '',
-			'LABEL' => _t('Message'), 'DESCRIPTION' => _t('Notification message')
+			'LABEL' => 'Table', 'DESCRIPTION' => 'Table',
+			'BOUNDS_VALUE' => array(0,255)
 		),
-		'is_system' => array(
+		'row_id' => array(
+			'FIELD_TYPE' => FT_NUMBER, 'DISPLAY_TYPE' => DT_FIELD,
+			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
+			'IS_NULL' => true,
+			'DEFAULT' => '',
+			'LABEL' => 'Row id', 'DESCRIPTION' => 'Row identifier'
+		),
+		'was_read' => array(
 			'FIELD_TYPE' => FT_BIT, 'DISPLAY_TYPE' => DT_SELECT,
 			'DISPLAY_WIDTH' => 10, 'DISPLAY_HEIGHT' => 1,
 			'IS_NULL' => false,
 			'DEFAULT' => '',
-			'LABEL' => _t('Is system notification'),
-			'DESCRIPTION' => _t('Set this if the notification is available system-wide and readable by everyone.'),
+			'LABEL' => _t('Was read?'),
+			'DESCRIPTION' => _t('Indicates whether this notification was marked as read or not.'),
 			'BOUNDS_VALUE' => array(0,1),
-			'REQUIRES' => array('is_administrator')
 		),
 	)
 );
 
-class ca_notifications extends BaseModel {
+require_once(__CA_MODELS_DIR__ . '/ca_guids.php');
+
+class ca_notification_subjects extends BaseModel {
 	# ---------------------------------
 	# --- Object attribute properties
 	# ---------------------------------
@@ -99,21 +91,21 @@ class ca_notifications extends BaseModel {
 	# --- Basic object parameters
 	# ------------------------------------------------------
 	# what table does this class represent?
-	protected $TABLE = 'ca_notifications';
+	protected $TABLE = 'ca_notification_subjects';
 
 	# what is the primary key of the table?
-	protected $PRIMARY_KEY = 'notification_id';
+	protected $PRIMARY_KEY = 'subject_id';
 
 	# ------------------------------------------------------
 	# --- Properties used by standard editing scripts
-	#
+	# 
 	# These class properties allow generic scripts to properly display
 	# records from the table represented by this class
 	#
 	# ------------------------------------------------------
 
 	# Array of fields to display in a listing of records from this table
-	protected $LIST_FIELDS = array('table_num', 'row_id');
+	protected $LIST_FIELDS = array('table_num', 'row_id', 'notification_id');
 
 	# When the list of "list fields" above contains more than one field,
 	# the LIST_DELIMITER text is displayed between fields as a delimiter.
@@ -126,9 +118,9 @@ class ca_notifications extends BaseModel {
 	# What you'd call more than one record from this table (eg. "people")
 	protected $NAME_PLURAL;
 
-	# List of fields to sort listing of records by; you can use
+	# List of fields to sort listing of records by; you can use 
 	# SQL 'ASC' and 'DESC' here if you like.
-	protected $ORDER_BY = array('notification_id');
+	protected $ORDER_BY = array('user_data');
 
 	# Maximum number of record to display per page in a listing
 	protected $MAX_RECORDS_PER_PAGE = 20;
@@ -173,11 +165,6 @@ class ca_notifications extends BaseModel {
 
 	protected $FIELDS;
 
-	/**
-	 * @var resource|null
-	 */
-	static $s_lock_resource = null;
-
 	# ------------------------------------------------------
 	# --- Constructor
 	#
@@ -191,54 +178,6 @@ class ca_notifications extends BaseModel {
 	# ------------------------------------------------------
 	public function __construct($pn_id=null) {
 		parent::__construct($pn_id);	# call superclass constructor
-	}
-	# ------------------------------------------------------
-	/**
-	 * Static utility to add a notification
-	 *
-	 * @param int $pn_type
-	 * @param string $ps_message
-	 * @param array $pa_subjects
-	 * @param bool $pb_system
-	 * @param array $pa_options
-	 * 		datetime --
-	 * @return bool
-	 */
-	public static function add($pn_type, $ps_message, array $pa_subjects, $pb_system=false, array $pa_options = []) {
-		$t_notification = new ca_notifications();
-
-		$t_notification->setMode(ACCESS_WRITE);
-		$t_notification->set('notification_type', $pn_type);
-		$t_notification->set('message', $ps_message);
-		$t_notification->set('datetime', caGetOption('datetime', $pa_options, time()));
-		$t_notification->set('is_system', $pb_system ? 1 : 0);
-
-		$t_notification->insert();
-
-		if(!$t_notification->getPrimaryKey()) {
-			return false;
-		}
-
-		foreach($pa_subjects as $va_subject) {
-			if(!is_array($va_subject) || !isset($va_subject['table_num']) || !isset($va_subject['row_id'])) {
-				continue;
-			}
-
-			$t_subject = new ca_notification_subjects();
-			$t_subject->setMode(ACCESS_WRITE);
-
-			$t_subject->set('notification_id', $t_notification->getPrimaryKey());
-			$t_subject->set('table_num', $va_subject['table_num']);
-			$t_subject->set('row_id', $va_subject['row_id']);
-
-			$t_subject->insert();
-
-			if(!$t_subject->getPrimaryKey()) {
-				return false;
-			}
-		}
-
-		return true;
 	}
 	# ------------------------------------------------------
 }

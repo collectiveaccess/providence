@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2011-2015 Whirl-i-Gig
+ * Copyright 2011-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -369,8 +369,9 @@ class InformationServiceAttributeValue extends AttributeValue implements IAttrib
 	 */
 	public function getAvailableSettings($pa_element_info=null) {
 		global $_ca_attribute_settings;
-
-		$vs_service = isset($pa_element_info['service']) ? $pa_element_info['service'] : null;
+		if (!($vs_service = isset($pa_element_info['settings']['service']) ? $pa_element_info['settings']['service'] : null)) {
+			$vs_service = isset($pa_element_info['service']) ? $pa_element_info['service'] : null;
+		}
 		$va_names = InformationServiceManager::getInformationServiceNames();
 		if (!in_array($vs_service, $va_names)) {
 			$vs_service = $va_names[0];

@@ -1863,7 +1863,6 @@
 		 */
 		public static function reset_passwordParamList() {
 			return array(
-				"username" => _t("User name to reset password for."),
 				"user|u=s" => _t("User name to reset password for."),
 				"password|p=s" => _t("New password for user")
 			);
@@ -3816,13 +3815,15 @@
 
 			UrlAttributeValue::checkIntegrityForAllElements([
 				'request' => $o_request,
-				'emailErrorsTo' => $po_opts->getOption('email')
+				'notifyUsers' => $po_opts->getOption('users'),
+				'notifyGroups' => $po_opts->getOption('groups')
 			]);
 		}
 		# -------------------------------------------------------
 		public static function check_url_reference_integrityParamList() {
 			return [
-				"email|e=s" => _t('Email address(es) to mail report to if there are errors.[Optional]'),
+				"users|u=s" => _t('User names to notify if there are errors. Multiple entries are delimited by comma or semicolon. [Optional]'),
+				"groups|g=s" => _t('Groups to notify if there are errors. Multiple entries are delimited by comma or semicolon. [Optional]'),
 			];
 		}
 		# -------------------------------------------------------

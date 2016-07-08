@@ -11525,7 +11525,7 @@ $pa_options["display_form_field_tips"] = true;
 	 */
 	public static function exists($pm_id, $pa_options=null) {	
 		$o_dm = Datamodel::load();
-		$o_trans = caGetOption('transaction', $pa_option, null);
+		$o_trans = caGetOption('transaction', $pa_options, null);
 		if (is_numeric($pm_id) && $pm_id > 0) {
 			$vn_c = self::find([$o_dm->primaryKey(get_called_class()) => $pm_id], ['returnAs' => 'count', 'transaction' => $o_trans]);
 			if ($vn_c > 0) { return true; }
@@ -11537,6 +11537,137 @@ $pa_options["display_form_field_tips"] = true;
 		}
 		
 		return false;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * @param int $pn_type Indicates notification type
+	 * @param string $ps_message
+	 * @param bool $pb_system Indicates if this notification is global and can be seen and interacted with by everyone, system-wide
+	 * @param array $pa_options
+	 * 		datetime - timestamp for notification -- defaults to now
+	 * 		additionalSubjects = list of ['table_num' => X, 'row_id' => Y] pairs to add as additional subjects
+	 * @return bool sucess or not
+	 */
+	public function addNotification($pn_type, $ps_message, $pb_system=false, array $pa_options=[]) {
+		$vb_we_set_transaction = false;
+		if (!$this->inTransaction()) {
+			$this->setTransaction(new Transaction($this->getDb()));
+			$vb_we_set_transaction = true;
+		}
+
+		$t_notification = new ca_notifications();
+
+		$t_notification->setMode(ACCESS_WRITE);
+		$t_notification->set('notification_type', $pn_type);
+		$t_notification->set('message', $ps_message);
+		$t_notification->set('datetime', caGetOption('datetime', $pa_options, time()));
+		$t_notification->set('is_system', $pb_system ? 1 : 0);
+
+		$t_notification->insert();
+
+		if(!$t_notification->getPrimaryKey()) {
+			$this->errors = array_merge($this->errors, $t_notification->errors);
+			if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+			return false;
+		}
+
+		// add current row as subject
+		if($this->getPrimaryKey() > 0) {
+			$t_subject = new ca_notification_subjects();
+			$t_subject->setMode(ACCESS_WRITE);
+
+			$t_subject->set('notification_id', $t_notification->getPrimaryKey());
+			$t_subject->set('table_num', $this->tableNum());
+			$t_subject->set('row_id', $this->getPrimaryKey());
+
+			$t_subject->insert();
+
+			if(!$t_subject->getPrimaryKey()) {
+				$this->errors = array_merge($this->errors, $t_subject->errors);
+				if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+				return false;
+			}
+		}
+
+		$va_additional_subjects = caGetOption('additionalSubjects', $pa_options, null);
+
+		if(is_array($va_additional_subjects)) {
+			foreach($va_additional_subjects as $va_subject) {
+				if(!is_array($va_subject) || !isset($va_subject['table_num']) || !isset($va_subject['row_id'])) {
+					continue;
+				}
+
+				$t_subject = new ca_notification_subjects();
+				$t_subject->setMode(ACCESS_WRITE);
+
+				$t_subject->set('notification_id', $t_notification->getPrimaryKey());
+				$t_subject->set('table_num', $va_subject['table_num']);
+				$t_subject->set('row_id', $va_subject['row_id']);
+
+				$t_subject->insert();
+
+				if(!$t_subject->getPrimaryKey()) {
+					$this->errors = array_merge($this->errors, $t_subject->errors);
+					if ($vb_we_set_transaction) { $this->removeTransaction(false); }
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+	# --------------------------------------------------------------------------------------------
+	/**
+	 * Get notifications pertaining to current row
+	 * @param array $pa_options
+	 * 			table_num -
+	 * 			row_id -
+	 * 			includeRead -
+	 *
+	 * @return array
+	 */
+	public function getNotifications(array $pa_options = []) {
+		$t_notification = new ca_notifications();
+
+		$pn_table_num = caGetOption('table_num', $pa_options, $this->tableNum());
+		$pn_row_id = caGetOption('row_id', $pa_options, $this->getPrimaryKey());
+		$va_additional_wheres = []; $vs_additional_wheres = '';
+
+		if(!caGetOption('includeRead', $pa_options, false)) {
+			$va_additional_wheres[] = 'ca_notification_subjects.was_read = 0';
+		}
+
+		if(!$pn_row_id || !$pn_table_num) { return false; }
+
+		if(sizeof($va_additional_wheres)) {
+			$vs_additional_wheres = ' AND ' . join(' AND ', $va_additional_wheres);
+		}
+
+
+		$qr_notifications = $this->getDb()->query("
+			SELECT DISTINCT
+				ca_notifications.notification_id, ca_notifications.message,
+				ca_notifications.notification_type, ca_notifications.datetime,
+				ca_notification_subjects.subject_id
+			FROM ca_notification_subjects, ca_notifications
+			WHERE ca_notification_subjects.notification_id = ca_notifications.notification_id
+			AND ca_notification_subjects.table_num = ?
+			AND ca_notification_subjects.row_id = ?
+			{$vs_additional_wheres}
+		", $pn_table_num, $pn_row_id);
+
+
+		$va_types = array_flip($t_notification->getFieldInfo('notification_type')['BOUNDS_CHOICE_LIST']);
+		$va_return = [];
+		while($qr_notifications->nextRow()) {
+			$va_row = $qr_notifications->getRow();
+			// translate for display
+			$va_row['notification_type_display'] = $va_types[$va_row['notification_type']];
+
+			$va_return[$qr_notifications->get('notification_id')] = $va_row;
+		}
+
+		return $va_return;
 	}
 	# --------------------------------------------------------------------------------------------
 	/**
@@ -11829,3 +11960,4 @@ require_once(__CA_APP_DIR__.'/models/ca_locales.php');
 require_once(__CA_APP_DIR__.'/models/ca_item_tags.php');
 require_once(__CA_APP_DIR__.'/models/ca_items_x_tags.php');
 require_once(__CA_APP_DIR__.'/models/ca_item_comments.php');
+require_once(__CA_APP_DIR__.'/models/ca_notifications.php');

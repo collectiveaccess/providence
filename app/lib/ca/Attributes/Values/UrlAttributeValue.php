@@ -366,7 +366,7 @@
 			$r_fp = @fopen($ps_url, 'r', false, $o_context);
 
 			if(!$r_fp) {
-				throw new Exception(_t('Cannot open remote URL [%1]', $ps_url));
+				throw new Exception(_t('Could not open remote URL [%1]', $ps_url));
 			}
 
 			if(($vs_content = fgets($r_fp, 64)) === false) {
@@ -380,19 +380,21 @@
 		 * @param array $pa_options
 		 * 		request = Request object used to build links
 		 * 		printStatusViaCLIUtils = defaults to true
-		 * 		emailErrorsTo = if set to a valid email address, a report will be emailed once the utility finishes (only if there were errors, that is)
+		 * 		notifyUsers =
+		 * 		notifyGroups =
 		 * @throws Exception
 		 */
 		public static function checkIntegrityForAllElements(array $pa_options = []) {
 			$pb_print_status = caGetOption('printStatusViaCLIUtils', $pa_options, true);
-			$ps_email_errors = caGetOption('emailErrorsTo', $pa_options, false);
+			$ps_notify_users = caGetOption('notifyUsers', $pa_options, false);
+			$ps_notify_groups = caGetOption('notifyGroups', $pa_options, false);
 			$po_request = caGetOption('request', $pa_options, null);
 
 			$o_db = new Db();
 
 			$qr_elements = $o_db->query('SELECT element_id FROM ca_metadata_elements WHERE datatype=? ORDER BY element_id', __CA_ATTRIBUTE_VALUE_URL__);
 
-			$va_report = [];
+			$va_notifications = [];
 			while($qr_elements->nextRow()) {
 				$vs_element_code = ca_metadata_elements::getElementCodeForId($qr_elements->get('element_id'));
 
@@ -421,10 +423,10 @@
 						);
 
 						if($po_request instanceof RequestHTTP) {
-							$vs_msg .= "\n\t" . caEditorUrl($po_request, $qr_attr->get('table_num'), $qr_attr->get('row_id'), false, null, ['absolute' => true]);
+							$vs_msg .= "\n<br/><br/>" . caEditorLink($po_request, _t("Open record"), '', $qr_attr->get('table_num'), $qr_attr->get('row_id'), null, null, ['action' => 'Edit']);
 						}
 
-						$va_report[$vs_element_code][$qr_attr->get('table_num')][$qr_attr->get('row_id')][] = $vs_msg;
+						$va_notifications[] = $vs_msg;
 
 						if($pb_print_status) {
 							CLIUtils::addError($vs_msg);
@@ -434,24 +436,43 @@
 					if($pb_print_status) { print CLIProgressBar::finish(); }
 				}
 
-				if((strlen($ps_email_errors) > 0) && sizeof($va_report)) {
-					$vs_body_text = _t("There were errors when checking URL reference integrity for all records in CollectiveAccess:"). "\n\n";
-					foreach($va_report as $vs_element_code => $va_records) {
-						$vs_body_text .= _t("Metadata element with code [%1] had the following problems:", $vs_element_code) . "\n";
+				// notify users
+				if((strlen($ps_notify_users) > 0) && sizeof($va_notifications)) {
+					$t_user = new ca_users();
+					$pa_users = preg_split('/[,:]/', $ps_notify_users);
 
-						foreach($va_records as $vn_table_num => $va_records_by_table) {
-							$vs_body_text .= caGetTableDisplayName($vn_table_num) . ":\n";
+					foreach($pa_users as $vs_user_name) {
+						if(!$t_user->load(['user_name' => $vs_user_name])) {
+							continue;
+						}
 
-							foreach($va_records_by_table as $vn_row_id => $va_messages) {
-								$vs_body_text .= "\t" . join("\n\t", $va_messages) . "\n";
-							}
-
-							$vs_body_text .= "\n";
+						foreach($va_notifications as $vs_notification) {
+							$t_user->addNotification(__CA_NOTIFICATION_TYPE_URL_REFERENCE_CHECK__, $vs_notification);
 						}
 					}
+				}
 
-					$pa_emails = preg_split('/[,:]/', $ps_email_errors);
-					caSendmail($pa_emails, [__CA_ADMIN_EMAIL__], _t("URL attribute integrity check had errors"), $vs_body_text);
+				// notify user groups (each user individually)
+				if((strlen($ps_notify_groups) > 0) && sizeof($va_notifications)) {
+					$t_group = new ca_user_groups();
+					$t_user = new ca_users();
+					$pa_groups = preg_split('/[,:]/', $ps_notify_groups);
+
+					foreach($pa_groups as $vs_group_code) {
+						if(!$t_group->load(['code' => $vs_group_code])) {
+							continue;
+						}
+
+						foreach($t_group->getGroupUsers() as $va_user) {
+							if(!$t_user->load(['user_name' => $va_user['user_name']])) {
+								continue;
+							}
+
+							foreach($va_notifications as $vs_notification) {
+								$t_user->addNotification(__CA_NOTIFICATION_TYPE_URL_REFERENCE_CHECK__, $vs_notification);
+							}
+						}
+					}
 				}
 			}
 		}

@@ -6791,25 +6791,26 @@ create table ca_metadata_alert_rule_type_restrictions (
 create table ca_notifications (
   notification_id     int unsigned        not null AUTO_INCREMENT,
   notification_type   tinyint unsigned    not null default 0,
-  user_id             int unsigned,
-  group_id            int unsigned,
   datetime            int unsigned        not null,
-  table_num           tinyint unsigned,
-  row_id              int unsigned,
-  was_read            tinyint unsigned    not null default 0,
   message             longtext,
+  is_system		        tinyint unsigned    not null default 0,
 
   primary key (notification_id),
 
-  constraint fk_ca_users_user_id foreign key (user_id)
-    references ca_users (user_id) on delete restrict on update restrict,
-
-  constraint fk_ca_user_groups_group_id foreign key (group_id)
-    references ca_user_groups (group_id) on delete restrict on update restrict,
-
-  index i_table_num_row_id (table_num, row_id),
   index i_datetime (datetime),
   index i_notification_type (notification_type)
+) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
+/*==========================================================================*/
+create table ca_notification_subjects (
+  subject_id      int unsigned        not null auto_increment,
+  notification_id int unsigned        not null references ca_notifications(notification_id),
+  was_read        tinyint unsigned    not null default 0,
+  table_num       tinyint unsigned    not null,
+  row_id          int unsigned        not null,
+
+  primary key (subject_id),
+  index i_notification_id (notification_id),
+  index i_table_num_row_id (table_num, row_id)
 ) engine=innodb CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /*==========================================================================*/

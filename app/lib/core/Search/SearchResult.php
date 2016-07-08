@@ -93,12 +93,29 @@ class SearchResult extends BaseObject {
 	
 	private $opb_use_identifiers_in_urls = false;
 	private $ops_subject_idno = false;
+	
+	/**
+	 * Maximum number of entries for each table in these caches:
+	 *		rel_prefetch_cache
+	 *		prefetch_cache
+	 *		hierarchy_parent_prefetch_cache
+	 *		hierarchy_parent_prefetch_cache_index
+	 *		hierarchy_siblings_prefetch_cache
+	 *		hierarchy_siblings_prefetch_cache_index
+	 *		hierarchy_children_prefetch_cache_index
+	 */
+	static $s_cache_size_limit = 256;
 
 	# ------------------------------------------------------------------
 	private $opb_disable_get_with_template_prefetch = false;
 	private $opa_template_prefetch_cache = array();
 	# ------------------------------------------------------------------
 
+	/**
+	 * Clear all internal caches
+	 *
+	 * @return void
+	 */ 
 	public static function clearCaches() {
 		self::$s_prefetch_cache = array();
 		self::$s_instance_cache = array();
@@ -112,6 +129,75 @@ class SearchResult extends BaseObject {
 		self::$opa_hierarchy_siblings_prefetch_cache = array();
 		self::$opa_hierarchy_siblings_prefetch_cache_index = array();
 	}
+	
+	/**
+	 * Get relative sizes of internal caches. The size is the strlen of the cache when serialized and
+	 * is only useful for relative size comparisons.
+	 *
+	 * @return array Array with keys set to cache name, values set to relative sizes
+	 */
+	public static function getCacheSizes() {
+		return [
+			'prefetch_cache' => strlen(serialize(self::$s_prefetch_cache)),
+			'instance_cache' => strlen(serialize(self::$s_instance_cache)),
+			'timestamp_cache' => strlen(serialize(self::$s_timestamp_cache)),
+			'rel_prefetch_cache' => strlen(serialize(self::$s_rel_prefetch_cache)),
+			'parsed_field_component_cache' => strlen(serialize(self::$s_parsed_field_component_cache)),
+			'hierarchy_parent_prefetch_cache' => strlen(serialize(self::$opa_hierarchy_parent_prefetch_cache)),
+			'hierarchy_children_prefetch_cache' => strlen(serialize(self::$opa_hierarchy_children_prefetch_cache)),
+			'hierarchy_parent_prefetch_cache_index' => strlen(serialize(self::$opa_hierarchy_parent_prefetch_cache_index)),
+			'hierarchy_children_prefetch_cache_index' => strlen(serialize(self::$opa_hierarchy_children_prefetch_cache_index)),
+			'hierarchy_siblings_prefetch_cache' => strlen(serialize(self::$opa_hierarchy_siblings_prefetch_cache)),
+			'hierarchy_siblings_prefetch_cache_index' => strlen(serialize(self::$opa_hierarchy_siblings_prefetch_cache_index))
+		];
+	}
+
+	/**
+	 * Checks size of volatile per-table caches and resets them if their size exceeds the threshold for the given table
+	 * as set in SearchResult::$s_cache_size_limit. Caches managed include:
+	 *
+	 *		rel_prefetch_cache
+	 *		prefetch_cache
+	 *		hierarchy_parent_prefetch_cache
+	 *		hierarchy_parent_prefetch_cache_index
+	 *		hierarchy_siblings_prefetch_cache
+	 *		hierarchy_siblings_prefetch_cache_index
+	 *		hierarchy_children_prefetch_cache_index
+	 * 
+	 * @param string Table name
+	 * @return void
+	 */ 
+	public static function checkCacheSizeLimit($ps_tablename) {
+		foreach ([
+			'prefetch_cache' => &self::$s_prefetch_cache,
+			'instance_cache' => &self::$s_instance_cache,
+			'timestamp_cache' => &self::$s_timestamp_cache,
+			'rel_prefetch_cache' => &self::$s_rel_prefetch_cache,
+			'parsed_field_component_cache' => &self::$s_parsed_field_component_cache,
+			'hierarchy_parent_prefetch_cache' => &self::$opa_hierarchy_parent_prefetch_cache,
+			'hierarchy_children_prefetch_cache' => &self::$opa_hierarchy_children_prefetch_cache,
+			'hierarchy_parent_prefetch_cache_index' => &self::$opa_hierarchy_parent_prefetch_cache_index,
+			'hierarchy_children_prefetch_cache_index' => &self::$opa_hierarchy_children_prefetch_cache_index,
+			'hierarchy_siblings_prefetch_cache' => &self::$opa_hierarchy_siblings_prefetch_cache,
+			'hierarchy_siblings_prefetch_cache_index' => &self::$opa_hierarchy_siblings_prefetch_cache_index
+		] as $vs_cache => &$va_cache) {
+			switch($vs_cache) {
+				case 'rel_prefetch_cache':
+				case 'prefetch_cache':
+				case 'hierarchy_parent_prefetch_cache':
+				case 'hierarchy_parent_prefetch_cache_index':
+				case 'hierarchy_siblings_prefetch_cache':
+				case 'hierarchy_siblings_prefetch_cache_index':
+				case 'hierarchy_children_prefetch_cache_index':
+					if (is_array($va_cache) && is_array($va_cache[$ps_tablename]) && (sizeof($va_cache[$ps_tablename]) > SearchResult::$s_cache_size_limit)) {
+						$va_cache[$ps_tablename] = [];
+					}
+					break;
+			}
+			
+		}
+	}
+
 
 	public function __construct($po_engine_result=null, $pa_tables=null) {
 		if (!SearchResult::$opo_datamodel) { SearchResult::$opo_datamodel = Datamodel::load(); }
@@ -298,6 +384,9 @@ class SearchResult extends BaseObject {
 	 */
 	public function prefetchHierarchyParents($ps_tablename, $pn_start, $pn_num_rows, $pa_options=null) {
 		if (!$ps_tablename ) { return; }
+		
+		SearchResult::checkCacheSizeLimit($ps_tablename);
+		
 		// get row_ids to fetch
 		if (isset($pa_options['row_ids']) && is_array($pa_options['row_ids'])) {
 			$va_row_ids = $pa_options['row_ids'];
@@ -534,10 +623,14 @@ class SearchResult extends BaseObject {
 	 */
 	private function _getRelatedIDsForPrefetch($ps_tablename, $pn_start, $pn_num_rows, &$pa_cache, $t_rel_instance, $va_row_ids, $pa_options) {
 		$this->prefetchRelated($ps_tablename, $pn_start, $pn_num_rows, $pa_options);
+		
+		SearchResult::checkCacheSizeLimit($ps_tablename);
 						
 		$va_base_row_ids = array();
 		$vs_opt_md5 = caMakeCacheKeyFromOptions($pa_options);
 		$va_related_ids = array();
+		
+		
 		foreach($va_row_ids as $vn_row_id) {
 			if(is_array($va_related_items = self::$s_rel_prefetch_cache[$this->ops_table_name][$vn_row_id][$ps_tablename][$vs_opt_md5])) {
 				$va_base_row_ids[$vn_row_id] = caExtractValuesFromArrayList($va_related_items, $t_rel_instance->primaryKey());
@@ -709,6 +802,8 @@ class SearchResult extends BaseObject {
 		unset($pa_options['request']);
 		if (sizeof($va_row_ids = $this->getRowIDsToPrefetch($pn_start, $pn_num_rows)) == 0) { return false; }
 		
+		SearchResult::checkCacheSizeLimit($this->ops_table_name);
+		
 		$pa_check_access = caGetOption('checkAccess', $pa_options, null);
 		
 		$vs_md5 = caMakeCacheKeyFromOptions($pa_options);
@@ -732,6 +827,7 @@ class SearchResult extends BaseObject {
 				'criteria' => array()
 			);
 		}
+		
 		
 		foreach($va_rel_items as $vs_key => $va_rel_item) {
 			self::$s_rel_prefetch_cache[$this->ops_table_name][(int)$va_rel_item['row_id']][$ps_tablename][$vs_md5][$va_rel_item[$va_rel_item['_key']]] = $va_rel_item;
