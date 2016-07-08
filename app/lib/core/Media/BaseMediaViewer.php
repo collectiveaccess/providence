@@ -63,7 +63,7 @@
 		/**
 		 *
 		 */
-		static public function prepareViewerHTML($po_request, $o_view, $pa_data=null) {
+		static public function prepareViewerHTML($po_request, $o_view, $pa_data=null, $pa_options=null) {
 			$t_instance = isset($pa_data['t_instance']) ? $pa_data['t_instance'] : null;
 			$t_subject = isset($pa_data['t_subject']) ? $pa_data['t_subject'] : null;
 				
@@ -111,7 +111,7 @@
 			
 			$o_view->setVar('controls', $vs_controls);
 		
-			return $o_view->render('viewerWrapper.php');
+			return $o_view->render(caGetOption('viewerWrapper', $pa_options, 'viewerWrapper').'.php');
 		}
 		# -------------------------------------------------------
 	}

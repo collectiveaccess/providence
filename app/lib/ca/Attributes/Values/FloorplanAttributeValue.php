@@ -105,7 +105,7 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
  	}
  	# ------------------------------------------------------------------
  	public function loadTypeSpecificValueFromRow($pa_value_array) {
- 		$this->ops_text_value = $pa_value_array['value_longtext1'];
+ 		$this->ops_text_value = $pa_value_array['value_blob'];
  	}
  	# ------------------------------------------------------------------
  	/**
@@ -139,6 +139,7 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
 	 */
 	public function parseValue($ps_value, $pa_element_info, $pa_options=null) {
  		$ps_value = trim(preg_replace("![\t\n\r]+!", ' ', $ps_value));
+ 		
 		$vo_conf = Configuration::load();
 		$vs_user = trim($vo_conf->get("FloorPlan_user"));
 
@@ -149,11 +150,9 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
 				return false;
 			}
 			return array();
- 		} elseif (is_array($va_data = json_decode($ps_value))) {
-			$vs_text = $ps_value;
-	
+ 		} elseif (is_array($va_data = json_decode(preg_replace('/[\x00-\x1F\x80-\xFF]/', '', preg_replace("/[\\\\]{2}/", "\\", $ps_value))))) {
 			return array(
-				'value_longtext1' => $vs_text
+				'value_blob' => $ps_value
 			);
 		}
 		return false;
@@ -203,7 +202,7 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
 		$o_view->setVar('viewer', $t_instance->getMediaTag('floorplan', 'tilepic', $va_viewer_opts));
 		$o_view->setVar('target_name', $vs_target_name = $t_instance->get('preferred_labels'));
 		
-		$vs_element = "<a href='#' class=\"{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_trigger\">".$t_instance->getMediaTag('floorplan', 'preview')."</a>";
+		$vs_element = "<div style='width: 850px;'><a href='#' class=\"{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_trigger\">".$t_instance->getMediaTag('floorplan', 'preview')."</a>";
 		$vs_element .= caHTMLHiddenInput(
  				'{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}', 
  				['value' => '{{'.$pa_element_info['element_id'].'}}', 'id' => '{fieldNamePrefix}'.$pa_element_info['element_id'].'_{n}']
@@ -225,7 +224,7 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
 			<div style='margin-top: 10px'>
 				<a href='#' class=\"{fieldNamePrefix}".$pa_element_info['element_id']."_{n}_trigger form-button\"><span class=\"form-button\">".caNavIcon(__CA_NAV_ICON_EDIT__, 2, ['style' => 'margin-right: 5px;'])." "._t('Edit floor plan')."</span></a>
 			</div>
-		</div>\n";
+		</div></div>\n";
 		
 		$vs_element .= "<script type='text/javascript'>
 	jQuery(document).ready(function() {
@@ -253,7 +252,7 @@ class FloorPlanAttributeValue extends AttributeValue implements IAttributeValue 
 		 * @return string Name of sort field
 		 */
 		public function sortField() {
-			return 'value_longtext1';
+			return 'value_blob';
 		}
  	# ------------------------------------------------------------------
 		/**

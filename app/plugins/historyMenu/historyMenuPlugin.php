@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2009-2013 Whirl-i-Gig
+ * Copyright 2009-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -137,7 +137,6 @@
 						
 						// Output occurrences grouped by type with types as top-level menu items
 						$va_types = $t_instance->getTypeList();
-						$va_editor_url_info = caEditorUrl($o_req, $vs_table_name, null, true);
 						
 						// sort occurrences by type
 						$va_sorted_by_type_id = array();
@@ -150,6 +149,8 @@
 							$va_activity_menu_list = array();
 							if (isset($va_sorted_by_type_id[$vn_type_id]) && is_array($va_sorted_by_type_id[$vn_type_id])) {
 								foreach($va_sorted_by_type_id[$vn_type_id] as $vn_id => $va_info) {
+									$va_editor_url_info = caEditorUrl($o_req, $vs_table_name, $vn_id, true);
+									
 									$va_activity_menu_list[$vs_table_name.'_'.$vn_type_id.'_'.$vn_id] = array(
 										'default' => $va_editor_url_info,
 										'displayName' => $va_labels[$vn_id].((trim($va_info['idno'])) ? ' ['.$va_info['idno'].']' : ''),
@@ -197,7 +198,7 @@
 						$va_keys = array_reverse(array_keys($va_activity_list));
 						foreach($va_keys as $vn_id) {
 							$va_info = $va_activity_list[$vn_id];
-							$va_editor_url_info = caEditorUrl($o_req, $vs_table_name, null, true);
+							$va_editor_url_info = caEditorUrl($o_req, $vs_table_name, $vn_id, true);
 							$va_activity_menu_list[$vs_table_name.'_'.$vn_id] = array(
 								'default' => $va_editor_url_info,
 								'displayName' => $va_labels[$vn_id].((trim($va_info['idno'])) ? ' ['.$va_info['idno'].']' : ''),

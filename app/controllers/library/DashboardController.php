@@ -156,7 +156,7 @@
  				$vs_item_display_template = "<unit relativeTo=\"ca_objects\"><l>^ca_objects.preferred_labels.name</l> (^ca_objects.idno)</unit>";
  			
 				// Get checkouts 
-				$this->view->setVar('checkouts', ca_object_checkouts::getOutstandingCheckoutsForUser($pn_user_id, $vs_item_display_template, $ps_daterange));
+				$this->view->setVar('checkouts', ca_object_checkouts::getOutstandingCheckoutsForUser($pn_user_id, $vs_item_display_template, $ps_daterange, ['omitOverdue' => true]));
 			
 				// Get checkins 
 				$this->view->setVar('checkins', ca_object_checkouts::getCheckinsForUser($pn_user_id, $vs_item_display_template, $ps_daterange));

@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -48,10 +48,10 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
             throw new LDAPException(_t("PHP's LDAP module is required for LDAP authentication!"));
         }
 
-        $o_auth_config = Configuration::load(Configuration::load()->get('authentication_config'));
+        $this->opo_auth_config = Configuration::load(__CA_APP_DIR__."/conf/authentication.conf");
 
 		// "new" config format allows defining multiple directories in an array
-		if($va_directories = $o_auth_config->get('directories')) {
+		if($va_directories = $this->opo_auth_config->get('directories')) {
 
 			foreach($va_directories as $vs_dir_key => $va_dir) {
 				$o_ldap = ldap_connect($va_dir["ldap_host"], $va_dir["ldap_port"]);
@@ -197,6 +197,14 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
         return $this->opa_ldaps;
     }
     # --------------------------------------------------------------------------------
+    protected function getConfigValue($ps_key, $pm_default_value = null) {
+        $vm_result = $this->opo_auth_config->get($ps_key);
+        if ($pm_default_value && !$vm_result) {
+            $vm_result = $pm_default_value;
+        }
+        return $vm_result;
+    }
+    # --------------------------------------------------------------------------------
 	/**
 	 * @param array $pa_config
 	 * @param string $ps_key
@@ -230,9 +238,7 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
     }
     # --------------------------------------------------------------------------------
     public function getAccountManagementLink() {
-		$o_auth_config = Configuration::load(Configuration::load()->get('authentication_config'));
-
-        if($vs_link = $o_auth_config->get('manage_account_url')) {
+        if($vs_link = $this->opo_auth_config->get('manage_account_url')) {
             return $vs_link;
         }
         return false;
@@ -327,15 +333,10 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
 
         // apply filter to bind, if there is one
         if (strlen($vs_bind_rdn_filter) > 0) {
-<<<<<<< HEAD
+			$this->bindServiceAccount($po_ldap, $pa_config);
+
             $vo_dn_search_results = ldap_search($po_ldap, $vs_base_dn, $vs_bind_rdn_filter);
             $va_dn_search_results = ldap_get_entries($po_ldap, $vo_dn_search_results);
-=======
-			$this->bindServiceAccount();
-
-            $vo_dn_search_results = ldap_search($this->getLinkIdentifier(), $vs_base_dn, $vs_bind_rdn_filter);
-            $va_dn_search_results = ldap_get_entries($this->getLinkIdentifier(), $vo_dn_search_results);
->>>>>>> master-fix
             if (isset($va_dn_search_results[0]['dn'])) {
                 $vs_bind_rdn = $va_dn_search_results[0]['dn'];
             }
@@ -392,17 +393,21 @@ abstract class AbstractLDAPAuthAdapter extends BaseAuthAdapter {
             }
         }
     }
-
-	protected function bindServiceAccount() {
+	# --------------------------------------------------------------------------------	
+	/**
+	 * Bind to service account when server does not support search after anonymous bind
+	 */
+	protected function bindServiceAccount($po_ldap, $pa_config) {
 		if(
-			($vs_service_acct_rdn = $this->getConfigValue('ldap_service_account_rdn')) &&
-			($vs_service_acct_pwd = $this->getConfigValue('ldap_service_account_password'))
+			($vs_service_acct_rdn = $pa_config['ldap_service_account_rdn']) &&
+			($vs_service_acct_pwd = $pa_config['ldap_service_account_password'])
 		) {
-			return @ldap_bind($this->getLinkIdentifier(), $vs_service_acct_rdn, $vs_service_acct_pwd);
+			return @ldap_bind($po_ldap, $vs_service_acct_rdn, $vs_service_acct_pwd);
 		}
 
 		return false;
 	}
+	# --------------------------------------------------------------------------------
 }
 
 class LDAPException extends Exception {}

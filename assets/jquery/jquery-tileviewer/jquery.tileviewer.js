@@ -332,8 +332,12 @@ var methods = {
 								view.load_annotation_data(data);
 							});
 						} else {
-							var data = jQuery(options.annotationLoadUrl).val();
-							if (data) view.load_annotation_data(JSON.parse(data));
+							try {
+								var data = jQuery(options.annotationLoadUrl).val();
+								if (data) view.load_annotation_data(JSON.parse(data));
+							} catch(e) {
+								view.load_annotation_data('');
+							}
 						}
                     },
                     
