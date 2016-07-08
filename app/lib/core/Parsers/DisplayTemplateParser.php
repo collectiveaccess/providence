@@ -717,8 +717,11 @@ class DisplayTemplateParser {
 					}
 					
 					if ($vs_tag === 'l') {
+						$vs_linking_context = $ps_tablename;
+						$va_linking_ids = [$pr_res->getPrimaryKey()];
+						
 						$va_proc_templates = caCreateLinksFromText(
-							["{$vs_proc_template}"], $ps_tablename, [$pr_res->getPrimaryKey()],
+							["{$vs_proc_template}"], $vs_linking_context, $va_linking_ids,
 							null, caGetOption('linkTarget', $pa_options, null),
 							array_merge(['addRelParameter' => true, 'requireLinkTags' => false], $pa_options)
 						);
