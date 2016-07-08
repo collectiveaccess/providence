@@ -473,7 +473,16 @@ class ca_editor_ui_screens extends BundlableLabelableBaseModelWithAttributes {
 							'width' => "275px", 'height' => 1,
 							'label' => _t('Documentation URL'),
 							'description' => _t('URL pointing to documentation for this field. Leave blank if no documentation URL exists.')
-						)
+						),
+						'displayTemplate' => array(
+							'formatType' => FT_TEXT,
+							'displayType' => DT_FIELD,
+							'default' => '',
+							'width' => 90, 'height' => 4,
+							'label' => _t('Display template'),
+							'validForRootOnly' => 1,
+							'description' => _t('Layout for value when used in a display (can include HTML). Element code tags prefixed with the ^ character can be used to represent the value in the template. For example: <i>^my_element_code</i>.')
+						),
 					);
 					break;
 				case 'attribute':

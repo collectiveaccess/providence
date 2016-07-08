@@ -26,7 +26,7 @@
  * ----------------------------------------------------------------------
  */
  
-	$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
+		$vs_id_prefix 		= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$va_labels 			= $this->getVar('labels');
 	$t_label 			= $this->getVar('t_label');
 	/** @var BundlableLabelableBaseModelWithAttributes $t_subject */
@@ -39,12 +39,14 @@
 	
 	$vb_read_only		= ((isset($va_settings['readonly']) && $va_settings['readonly'])  || ($this->request->user->getBundleAccessLevel('ca_objects', 'nonpreferred_labels') == __CA_BUNDLE_ACCESS_READONLY__));
 	$vb_batch			= $this->getVar('batch');
-	$vs_bundle_preview 	= $t_subject->getWithTemplate("<unit relativeTo='ca_objects.nonpreferred_labels' delimiter='; '>^ca_objects.nonpreferred_labels.name (^ca_objects.nonpreferred_labels.type_id)</unit>");
-	if(!$vs_bundle_preview) {
-		$va_cur = current($va_initial_values);
-		$vs_bundle_preview = $va_cur['name'];
+
+	$vs_bundle_preview = '';
+	if(isset($va_settings['displayTemplate'])) {
+		$vs_bundle_preview = $t_subject->getWithTemplate($va_settings['displayTemplate']);
 	}
-	
+	if(!$vs_bundle_preview) {
+		$vs_bundle_preview = current($va_initial_values)['name'];
+	}	
 	if ($vb_batch) {
 		print caBatchEditorNonPreferredLabelsModeControl($t_label, $vs_id_prefix);
 	} else {

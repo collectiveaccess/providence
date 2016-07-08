@@ -120,6 +120,7 @@ require_once(__CA_APP_DIR__."/helpers/printHelpers.php");
 require_once(__CA_LIB_DIR__."/ca/ApplicationPluginManager.php");
 require_once(__CA_LIB_DIR__."/ca/MediaContentLocationIndexer.php");
 require_once(__CA_LIB_DIR__.'/ca/MediaReplicator.php');
+require_once(__CA_LIB_DIR__.'/core/Media/Remote/Base.php');
 
 /**
  * Base class for all database table classes. Implements database insert/update/delete
@@ -4031,7 +4032,7 @@ class BaseModel extends BaseObject {
 	 * Supported options:
 	 * 		delete_old_media = set to zero to prevent that old media files are deleted; defaults to 1
 	 *		these_versions_only = if set to an array of valid version names, then only the specified versions are updated with the currently updated file; ignored if no media already exists
-	 *		dont_allow_duplicate_media = if set to true, and the model as a field named "md5" then media will be rejected if a row already exists with the same MD5 signature
+	 *		dont_allow_duplicate_media = if set to true, and the model has a field named "md5" then media will be rejected if a row already exists with the same MD5 signature
 	 */
 	public function _processMedia($ps_field, $pa_options=null) {
 		global $AUTH_CURRENT_USER_ID;
@@ -4084,28 +4085,19 @@ class BaseModel extends BaseObject {
 			
 				$vb_allow_fetching_of_urls = (bool)$this->_CONFIG->get('allow_fetching_of_media_from_remote_urls');
 				$vb_is_fetched_file = false;
-				if ($vb_allow_fetching_of_urls && (bool)ini_get('allow_url_fopen') && isURL($vs_url = html_entity_decode($this->_SET_FILES[$ps_field]['tmp_name']))) {
+
+				if($vb_allow_fetching_of_urls && ($o_remote = CA\Media\Remote\Base::getPluginInstance($this->_SET_FILES[$ps_field]['tmp_name']))) {
+					$vs_url = $this->_SET_FILES[$ps_field]['tmp_name'];
 					$vs_tmp_file = tempnam(__CA_APP_DIR__.'/tmp', 'caUrlCopy');
-					$r_incoming_fp = @fopen($vs_url, 'r');
-				
-					if (!$r_incoming_fp) {
-						$this->postError(1600, _t('Cannot open remote URL [%1] to fetch media', $vs_url),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
+					try {
+						$o_remote->downloadMediaForProcessing($vs_url, $vs_tmp_file);
+						$this->_SET_FILES[$ps_field]['original_filename'] = $o_remote->getOriginalFilename($vs_url);
+					} catch(Exception $e) {
+						$this->postError(1600, $e->getMessage(), "BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
 						set_time_limit($vn_max_execution_time);
 						return false;
 					}
-				
-					$r_outgoing_fp = fopen($vs_tmp_file, 'w');
-					if (!$r_outgoing_fp) {
-						$this->postError(1600, _t('Cannot open file for media fetched from URL [%1]', $vs_url),"BaseModel->_processMedia()", $this->tableName().'.'.$ps_field);
-						set_time_limit($vn_max_execution_time);
-						return false;
-					}
-					while(($vs_content = fgets($r_incoming_fp, 4096)) !== false) {
-						fwrite($r_outgoing_fp, $vs_content);
-					}
-					fclose($r_incoming_fp);
-					fclose($r_outgoing_fp);
-				
+
 					$vs_url_fetched_from = $vs_url;
 					$vn_url_fetched_on = time();
 					$this->_SET_FILES[$ps_field]['tmp_name'] = $vs_tmp_file;
