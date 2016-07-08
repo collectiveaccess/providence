@@ -193,4 +193,52 @@ class ca_notifications extends BaseModel {
 		parent::__construct($pn_id);	# call superclass constructor
 	}
 	# ------------------------------------------------------
+	/**
+	 * Static utility to add a notification
+	 *
+	 * @param int $pn_type
+	 * @param string $ps_message
+	 * @param array $pa_subjects
+	 * @param bool $pb_system
+	 * @param array $pa_options
+	 * 		datetime --
+	 * @return bool
+	 */
+	public static function add($pn_type, $ps_message, array $pa_subjects, $pb_system=false, array $pa_options = []) {
+		$t_notification = new ca_notifications();
+
+		$t_notification->setMode(ACCESS_WRITE);
+		$t_notification->set('notification_type', $pn_type);
+		$t_notification->set('message', $ps_message);
+		$t_notification->set('datetime', caGetOption('datetime', $pa_options, time()));
+		$t_notification->set('is_system', $pb_system ? 1 : 0);
+
+		$t_notification->insert();
+
+		if(!$t_notification->getPrimaryKey()) {
+			return false;
+		}
+
+		foreach($pa_subjects as $va_subject) {
+			if(!is_array($va_subject) || !isset($va_subject['table_num']) || !isset($va_subject['row_id'])) {
+				continue;
+			}
+
+			$t_subject = new ca_notification_subjects();
+			$t_subject->setMode(ACCESS_WRITE);
+
+			$t_subject->set('notification_id', $t_notification->getPrimaryKey());
+			$t_subject->set('table_num', $va_subject['table_num']);
+			$t_subject->set('row_id', $va_subject['row_id']);
+
+			$t_subject->insert();
+
+			if(!$t_subject->getPrimaryKey()) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+	# ------------------------------------------------------
 }
