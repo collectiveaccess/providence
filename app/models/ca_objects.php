@@ -1547,12 +1547,12 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  			INNER JOIN ca_storage_locations AS sl ON sl.location_id = csl.location_id
  			WHERE
  				(csl.object_id = ?) AND 
- 				(sl.deleted = 0) AND (csl.sdatetime <= ?)
+ 				(sl.deleted = 0) AND ((csl.sdatetime <= ?) || (csl.sdatetime IS NULL))
  			ORDER BY
  				csl.sdatetime DESC, csl.relation_id DESC
  			LIMIT 1
  		", array($vn_object_id, $vn_current_date));
- 	
+ 		
  		if($qr_res->nextRow()) {
  			$t_loc =  new ca_objects_x_storage_locations($qr_res->get('relation_id'));
  			if ($this->inTransaction()) { $t_loc->setTransaction($this->getTransaction()); }
