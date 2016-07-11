@@ -655,10 +655,10 @@ class DisplayTemplateParser {
 										$va_relationship_type_ids = $qr_rels->getAllFieldValues($t_rel_instance->getRelationshipTableName($ps_tablename).'.type_id');
 									} elseif($t_rel_instance->isRelationship()) {
 										// return type on relationship
-										$va_relationship_type_ids = [$pr_res->get($t_rel_instance->tableName().".type_id")];
+										$va_relationship_type_ids = $pr_res->get($t_rel_instance->tableName().".type_id", ['returnAsArray' => true]);
 									} elseif($vs_rel_tablename = $t_rel_instance->getRelationshipTableName($ps_tablename)) {
 										// grab type from adjacent relationship table
-										$va_relationship_type_ids = [$pr_res->get("{$vs_rel_tablename}.type_id")];
+										$va_relationship_type_ids = $pr_res->get("{$vs_rel_tablename}.type_id", ['returnAsArray' => true]);
  									}
 								}
 							
@@ -717,8 +717,18 @@ class DisplayTemplateParser {
 					}
 					
 					if ($vs_tag === 'l') {
+						$vs_linking_context = $ps_tablename;
+						$va_linking_ids = [$pr_res->getPrimaryKey()];
+						
+						if ($t_instance->isRelationship() && (is_array($va_tmp = caGetTemplateTags($o_node->html(), ['firstPartOnly' => true])) && sizeof($va_tmp))) {
+							$vs_linking_context = array_shift($va_tmp);
+							if (in_array($vs_linking_context, [$t_instance->getLeftTableName(), $t_instance->getRightTableName()])) {
+								$va_linking_ids = $pr_res->get("{$vs_linking_context}.".$o_dm->primaryKey($vs_linking_context), ['returnAsArray' => true]);
+							}
+						}
+						
 						$va_proc_templates = caCreateLinksFromText(
-							["{$vs_proc_template}"], $ps_tablename, [$pr_res->getPrimaryKey()],
+							["{$vs_proc_template}"], $vs_linking_context, $va_linking_ids,
 							null, caGetOption('linkTarget', $pa_options, null),
 							array_merge(['addRelParameter' => true, 'requireLinkTags' => false], $pa_options)
 						);

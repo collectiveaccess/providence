@@ -3445,7 +3445,7 @@
 
 							$vs_order_by = (sizeof($va_orderbys) ? "ORDER BY ".join(', ', $va_orderbys) : '');
 							$vs_sql = "
-								SELECT DISTINCT lil.item_id, lil.name_singular, lil.name_plural, lil.locale_id
+								SELECT DISTINCT lil.item_id, lil.name_singular, lil.name_plural, lil.locale_id, li.rank, li.idno_sort
 								FROM ca_list_items li
 								INNER JOIN ca_list_item_labels AS lil ON lil.item_id = li.item_id
 								{$vs_join_sql}

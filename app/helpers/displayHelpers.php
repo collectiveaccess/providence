@@ -2042,10 +2042,11 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 	 *
 	 * @param string $ps_template
 	 * @param array $pa_options 
-	 *		stripOptions =
-	 *		parseOptions = 
+	 *		stripOptions = Remove all options from returned tags. [Default is false]
+	 *		parseOptions = Parse tag options are return an array where each value is an array of options; the tag itself is put in the 'originalTag' key. [Default is false]
+	 *		firstPartOnly = Return a list of first elements in the tags. For the template "^ca_entities.entity_id ^ca_objects_x_entities.source_text" the list  ["ca_entites", "ca_objects_x_entities"] would be returned. [Default is false]
 	 * 
-	 * @return array An array of tags
+	 * @return array An array of tags, or an array of arrays when parseOptions option is set.
 	 */
 	function caGetTemplateTags($ps_template, $pa_options=null) {
 		$va_tags = array();
@@ -2057,7 +2058,13 @@ define("__CA_BUNDLE_DISPLAY_TEMPLATE_TAG_REGEX__", "/\^(ca_[A-Za-z]+[A-Za-z0-9_\
 			$va_tags = $va_matches[1];
 		}
 		
-		if (caGetOption('stripOptions', $pa_options, false)) {
+		if (caGetOption('firstPartOnly', $pa_options, false)) {
+			foreach($va_tags as $vn_i => $vs_tag) {
+				$va_tmp = explode('.', $vs_tag);
+				$va_tags[$vn_i] = array_shift($va_tmp);
+			}
+			return array_unique($va_tags);
+		} elseif (caGetOption('stripOptions', $pa_options, false)) {
 			foreach($va_tags as $vn_i => $vs_tag) {
 				$va_opts = caParseTagOptions($vs_tag);
 				
