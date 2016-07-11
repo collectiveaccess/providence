@@ -688,6 +688,17 @@ class ca_metadata_elements extends LabelableBaseModelWithAttributes implements I
 
 			if ($pb_return_stats) {
 				$va_record['ui_counts'] = $va_counts_by_attribute[$vs_code = $qr_tmp->get('element_code')];
+
+				if(!$pb_root_elements_only && !$va_record['ui_counts'] && $va_record['parent_id']) {
+					$t_element->load($va_record['parent_id']);
+
+					while($t_element->get('parent_id')) {
+						$t_element->load($t_element->get('parent_id'));
+					}
+
+					$va_record['ui_counts'] = $va_counts_by_attribute[$t_element->get('element_code')];
+				}
+
 				$va_record['restrictions'] = $va_restrictions_by_attribute[$vs_code];
 			}
 			$va_return[$vn_element_id] = $va_record;
