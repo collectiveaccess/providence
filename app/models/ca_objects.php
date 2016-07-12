@@ -2175,7 +2175,22 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 	public function renderBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options=null) {
 		switch($ps_bundle_name) {
 			case 'ca_objects_location':
-				return $this->getLastLocationForDisplay("^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_", ['object_id' => $pn_row_id]);
+				
+				if ((method_exists($this, "getObjectHistory")) && (is_array($va_bundle_settings = $this->_processObjectHistoryBundleSettings(['useAppConfDefaults' => true]))) && (sizeof($va_bundle_settings) > 0)) {
+					$t_object = new ca_objects($pn_row_id);
+					//
+					// Output current "location" of object in life cycle. Configuration is taken from a ca_objects_history bundle configured for the current editor
+					//
+					if (is_array($va_history = $t_object->getObjectHistory($va_bundle_settings, array('limit' => 1, 'currentOnly' => true))) && (sizeof($va_history) > 0)) {
+						$va_current_location = array_shift(array_shift($va_history));
+
+						return $va_current_location['display'];
+					}
+				} elseif (method_exists($this, "getLastLocationForDisplay")) {
+					// If no ca_objects_history bundle is configured then display the last storage location
+					return $this->getLastLocationForDisplay("^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_", ['object_id' => $pn_row_id]);
+				}
+				return '';
 				
 				// if(!is_array($pa_values) || !sizeof($pa_values)) { return null; }
 // 				$va_values = array_shift($pa_values);
