@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2015 Whirl-i-Gig
+ * Copyright 2015-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -77,7 +77,7 @@
 				foreach($va_stats[$vs_stat_key] as $va_user) {
 					$va_user_list[] = "<a href='#' class='caLibraryUserLink' data-user_id='".$va_user['user_id']."'>".trim($va_user['fname'].' '.$va_user['lname'])."</a>"; //.($va_user['email'] ? ' ('.$va_user['email'].')' : '');
 					$vn_c++;
-					if ($vn_c >= 10) {
+					if ($vn_c >= 100) {
 						$va_user_list[] = _t(' and %1 more', sizeof($va_stats[$vs_stat_key]) - $vn_c);
 						break;
 					}

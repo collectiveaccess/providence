@@ -1540,7 +1540,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	 * Return last storage location as an ca_objects_x_storage_locations instance
  	 */
  	public function getLastLocation($pa_options=null) {
- 		$pn_object = caGetOption('object_id', $pa_options, null);
+ 		$pn_object_id = caGetOption('object_id', $pa_options, null);
  		if (!($vn_object_id = ($pn_object_id > 0) ? $pn_object_id : $this->getPrimaryKey())) { return null; }
  		
  		$vn_current_date = TimeExpressionParser::now();
@@ -1583,7 +1583,7 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
  	 *		template =
  	 */
  	public function getLocationHistory($pa_options=null) {
- 		$pn_object = caGetOption('object_id', $pa_options, null);
+ 		$pn_object_id = caGetOption('object_id', $pa_options, null);
  		if (!($vn_object_id = ($pn_object_id > 0) ? $pn_object_id : $this->getPrimaryKey())) { return null; }
  		
  		$ps_display_template = caGetOption('template', $pa_options, '^ca_objects_x_storage_locations.relation_id');
@@ -2175,29 +2175,46 @@ class ca_objects extends BaseObjectLocationModel implements IBundleProvider {
 	public function renderBundleForDisplay($ps_bundle_name, $pn_row_id, $pa_values, $pa_options=null) {
 		switch($ps_bundle_name) {
 			case 'ca_objects_location':
-				if(!is_array($pa_values) || !sizeof($pa_values)) { return null; }
-				$va_values = array_shift($pa_values);
-				if(!is_array($va_values) || !sizeof($va_values)) { return null; }
-				$va_values = array_shift($va_values);
-				$vn_loc_class =  $va_values['current_loc_class'];
-				$vn_loc_subclass =  $va_values['current_loc_subclass'];
-				$vn_loc_id =  $va_values['current_loc_id'];
-				$vs_loc_table_name = $this->getAppDatamodel()->getTableName($vn_loc_class);
 				
-				$t_instance = $this->getAppDatamodel()->getInstanceByTableName($vs_loc_table_name, true);
-				
-				if (($vs_table_name = $vs_loc_table_name) == 'ca_objects_x_storage_locations') {
-					$vs_table_name = 'ca_storage_locations';
+				if ((method_exists($this, "getObjectHistory")) && (is_array($va_bundle_settings = $this->_processObjectHistoryBundleSettings(['useAppConfDefaults' => true]))) && (sizeof($va_bundle_settings) > 0)) {
+					$t_object = new ca_objects($pn_row_id);
+					//
+					// Output current "location" of object in life cycle. Configuration is taken from a ca_objects_history bundle configured for the current editor
+					//
+					if (is_array($va_history = $t_object->getObjectHistory($va_bundle_settings, array('limit' => 1, 'currentOnly' => true))) && (sizeof($va_history) > 0)) {
+						$va_current_location = array_shift(array_shift($va_history));
+
+						return $va_current_location['display'];
+					}
+				} elseif (method_exists($this, "getLastLocationForDisplay")) {
+					// If no ca_objects_history bundle is configured then display the last storage location
+					return $this->getLastLocationForDisplay("^ca_storage_locations.hierarchy.preferred_labels.name%delimiter=_➜_", ['object_id' => $pn_row_id]);
 				}
+				return '';
 				
-				if(($qr_res = caMakeSearchResult($vs_table_name, array($vn_loc_id))) && $qr_res->nextHit()) {
-					// Return label for id
-					
-					$va_config = ca_objects::getConfigurationForCurrentLocationType($vs_table_name, $vn_loc_subclass);
-					$vs_template = isset($va_config['template']) ? $va_config['template'] : "^{$vs_table_name}.preferred_labels";
-					
-					return $qr_res->getWithTemplate($vs_template);
-				} 
+				// if(!is_array($pa_values) || !sizeof($pa_values)) { return null; }
+// 				$va_values = array_shift($pa_values);
+// 				if(!is_array($va_values) || !sizeof($va_values)) { return null; }
+// 				$va_values = array_shift($va_values);
+// 				$vn_loc_class =  $va_values['current_loc_class'];
+// 				$vn_loc_subclass =  $va_values['current_loc_subclass'];
+// 				$vn_loc_id =  $va_values['current_loc_id'];
+// 				$vs_loc_table_name = $this->getAppDatamodel()->getTableName($vn_loc_class);
+// 				
+// 				$t_instance = $this->getAppDatamodel()->getInstanceByTableName($vs_loc_table_name, true);
+// 				
+// 				if (($vs_table_name = $vs_loc_table_name) == 'ca_objects_x_storage_locations') {
+// 					$vs_table_name = 'ca_storage_locations';
+// 				}
+// 				
+// 				if(($qr_res = caMakeSearchResult($vs_table_name, array($vn_loc_id))) && $qr_res->nextHit()) {
+// 					// Return label for id
+// 					
+// 					$va_config = ca_objects::getConfigurationForCurrentLocationType($vs_table_name, $vn_loc_subclass);
+// 					$vs_template = isset($va_config['template']) ? $va_config['template'] : "^{$vs_table_name}.preferred_labels";
+// 					
+// 					return $qr_res->getWithTemplate($vs_template);
+// 				} 
 				break;
 		}
 		
