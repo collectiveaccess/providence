@@ -7,7 +7,7 @@
  * ----------------------------------------------------------------------
  *
  * Software by Whirl-i-Gig (http://www.whirl-i-gig.com)
- * Copyright 2014 Whirl-i-Gig
+ * Copyright 2014-2016 Whirl-i-Gig
  *
  * For more information visit http://www.CollectiveAccess.org
  *
@@ -69,8 +69,8 @@ class ULANPlugin extends BaseApplicationPlugin {
 	 */
 	public function hookRenderMenuBar($pa_menu_bar) {
 		if ($o_req = $this->getRequest()) {
-			if (!$o_req->user->canDoAction('can_import_ulan')) { return false; }
-			if(!(bool)$this->opo_config->get('enabled')) { return false; }
+			if (!$o_req->user->canDoAction('can_import_ulan')) { return $pa_menu_bar; }
+			if(!(bool)$this->opo_config->get('enabled')) { return $pa_menu_bar; }
 
 			if (isset($pa_menu_bar['Import'])) {
 				$va_menu_items = $pa_menu_bar['Import']['navigation'];
