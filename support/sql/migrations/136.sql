@@ -5,11 +5,18 @@
 */
 
 /*==========================================================================*/
-#ALTER TABLE ca_notifications DROP COLUMN was_read;
-#ALTER TABLE ca_notifications DROP COLUMN user_id;
-#ALTER TABLE ca_notifications DROP COLUMN group_id;
-#ALTER TABLE ca_notifications DROP COLUMN table_num;
-#ALTER TABLE ca_notifications DROP COLUMN row_id;
+ALTER TABLE ca_notifications DROP FOREIGN KEY fk_ca_users_user_id;
+ALTER TABLE ca_notifications DROP FOREIGN KEY fk_ca_user_groups_group_id;
+
+
+ALTER TABLE ca_notifications DROP COLUMN user_id;
+ALTER TABLE ca_notifications DROP COLUMN group_id;
+
+ALTER TABLE ca_notifications DROP COLUMN was_read;
+
+ALTER TABLE ca_notifications DROP INDEX i_table_num_row_id;
+ALTER TABLE ca_notifications DROP COLUMN table_num;
+ALTER TABLE ca_notifications DROP COLUMN row_id;
 /*==========================================================================*/
 create table ca_notification_subjects (
   subject_id      int unsigned        not null auto_increment,
