@@ -28,8 +28,9 @@
  
 	$vs_id_prefix 						= $this->getVar('placement_code').$this->getVar('id_prefix');
 	$va_labels 							= $this->getVar('labels');
-	$t_label 								= $this->getVar('t_label');
+	$t_label 							= $this->getVar('t_label');
 	$va_initial_values 					= $this->getVar('label_initial_values');
+	$t_subject							= $this->getVar('t_subject');
 	if (!$va_force_new_labels 		= $this->getVar('new_labels')) { $va_force_new_labels = array(); }	// list of new labels not saved due to error which we need to for onto the label list as new
 
 	$va_settings = 		$this->getVar('settings');
