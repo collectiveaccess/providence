@@ -1269,9 +1269,31 @@
 
 			// add sortable elements
 			require_once(__CA_MODELS_DIR__ . '/ca_metadata_elements.php');
-			$va_sortable_elements = ca_metadata_elements::getSortableElements($ps_table, $pn_type_id);
+			$va_sortable_elements = ca_metadata_elements::getSortableElements($ps_table, $pn_type_id, ['indexByElementCode' => true]);
 			foreach($va_sortable_elements as $vn_element_id => $va_sortable_element) {
 				$va_base_fields[$ps_table.'.'.$va_sortable_element['element_code']] = $va_sortable_element['display_label'];
+			}
+
+			if(caGetOption('distinguishNamesUsingCodes', $pa_options, true)) {
+				foreach(array_count_values($va_base_fields) as $vn_v => $vn_c) {
+					if($vn_c > 1) {
+						foreach(array_keys($va_base_fields, $vn_v) as $vs_k) {
+
+							$vs_code = explode('.', $vs_k)[1];
+							$va_restrictions = [];
+
+							if(is_array($va_sortable_elements[$vs_code]['typeRestrictions'])) {
+								foreach($va_sortable_elements[$vs_code]['typeRestrictions'] as $vs_table => $va_type_list) {
+									foreach($va_type_list as $vn_type_id => $vs_type_name) {
+										$va_restrictions[] = ucfirst($vs_table)." [{$vs_type_name}]";
+									}
+								}
+							}
+
+							$va_base_fields[$vs_k] .= ' (' . join('; ', $va_restrictions) . ')';
+						}
+					}
+				}
 			}
 		}
 		natcasesort($va_base_fields);
