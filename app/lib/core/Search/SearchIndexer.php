@@ -757,240 +757,9 @@ class SearchIndexer extends SearchBase {
 
 					$va_params = null;
 
-					if ($vs_subject_tablename == $vs_related_table) {
-						// self-relation
-						if (!($vs_self_rel_table_name = $t_rel->getSelfRelationTableName())) { continue; }
-						$t_self_rel = $this->opo_datamodel->getInstanceByTableName($vs_self_rel_table_name, true);
-						$va_proc_field_list = array();
-						$va_fields_to_index = $va_self_info['related']['fields'];
-						$va_field_list = array_keys($va_fields_to_index);
-
-						$vn_field_list_count = sizeof($va_field_list);
-						for($vn_i=0; $vn_i < $vn_field_list_count; $vn_i++) {
-							if ($va_field_list[$vn_i] == '_count') { continue; }
-							if (substr($va_field_list[$vn_i], 0, 14) === '_ca_attribute_') { continue; }
-							if (!trim($va_field_list[$vn_i])) { continue; }
-							$va_proc_field_list[$vn_i] = $vs_related_table.'.'.$va_field_list[$vn_i];
-						}
-						$va_proc_field_list[] = $vs_related_table.'.'.$vs_related_pk;
-						if ($vs_self_rel_table_name) { $va_proc_field_list[] = $vs_self_rel_table_name.'.type_id rel_type_id'; }
-
-						$vs_delete_sql = $t_rel->hasField('deleted') ? " AND {$vs_related_table}.deleted = 0" : '';
-						$vs_sql = "
-							SELECT ".join(",", $va_proc_field_list)."
-							FROM {$vs_related_table}
-							INNER JOIN {$vs_self_rel_table_name} ON {$vs_self_rel_table_name}.".$t_self_rel->getLeftTableFieldName()." = {$vs_related_table}.{$vs_related_pk}
-							WHERE
-								(".$vs_self_rel_table_name.'.'.$t_self_rel->getRightTableFieldName().' = ?)
-								'.$vs_delete_sql.'
-							UNION
-						
-							SELECT '.join(",", $va_proc_field_list)."
-							FROM {$vs_related_table}
-							INNER JOIN {$vs_self_rel_table_name} ON {$vs_self_rel_table_name}.".$t_self_rel->getRightTableFieldName()." = {$vs_related_table}.{$vs_related_pk}
-							WHERE
-								(".$vs_self_rel_table_name.'.'.$t_self_rel->getLeftTableFieldName().' = ?)
-								'.$vs_delete_sql.'
-						';
-						$va_params = array($pn_subject_row_id, $pn_subject_row_id);
-
-						$va_queries[] = array('sql' => $vs_sql, 'params' => $va_params);
-					} else {
-						// related table
-						$va_fields_to_index = $this->getFieldsToIndex($vs_subject_tablename, $vs_related_table);
-						$va_table_info = $this->getTableIndexingInfo($vs_subject_tablename, $vs_related_table);
-
-						$va_field_list = array_keys($va_fields_to_index);
-
-						$va_table_list_list = $va_table_key_list = array();
-
-						if (isset($va_table_info['key']) && $va_table_info['key']) {
-							$va_table_list_list = array('key' => array($vs_related_table));
-							$va_table_key_list = array();
-						} else {
-							if ($pb_reindex_mode || (!$vb_can_do_incremental_indexing)) {
-								$va_table_list_list = isset($va_table_info['tables']) ? $va_table_info['tables'] : null;
-								$va_table_key_list = isset($va_table_info['keys']) ? $va_table_info['keys'] : null;
-							}
-						}
-
-						if (!is_array($va_table_list_list) || !sizeof($va_table_list_list)) { continue; }
-						foreach($va_table_list_list as $vs_list_name => $va_linking_tables_config) {
-							if (caIsIndexedArray($va_linking_tables_config)) {
-								$va_tmp = array();
-								foreach($va_linking_tables_config as $vs_t) {
-									$va_tmp[$vs_t] = [];
-								}
-								$va_linking_tables_config = $va_tmp;
-							}
-							$va_linking_tables = array_keys($va_linking_tables_config);
-						
-							array_push($va_linking_tables, $vs_related_table);
-							$vs_left_table = $vs_subject_tablename;
-
-							$va_joins = array();
-							$vs_rel_type_id_fld = null;
-							
-							$vn_t = 1;
-							$va_aliases = [$vs_subject_tablename => [0 => 't0']];
-							$va_alias_stack = ['t0'];
-							
-							foreach($va_linking_tables as $vs_right_table) {
-								$va_rel_type_ids = array();
-								$vs_rel_type_res_sql = '';
-								if (($va_type_res = $va_linking_tables_config[$vs_right_table]['types']) && is_array($va_type_res) && sizeof($va_type_res)) {
-									$va_rel_type_ids = caMakeRelationshipTypeIDList($vs_right_table, $va_type_res);
-								}
-										
-								if (is_array($va_table_key_list) && (isset($va_table_key_list[$vs_list_name][$vs_right_table][$vs_left_table]) || isset($va_table_key_list[$vs_list_name][$vs_left_table][$vs_right_table]))) {		// are the keys for this join specified in the indexing config?
-																
-									$vs_alias = $va_aliases[$vs_right_table][] = $va_alias_stack[] = "t{$vn_t}";
-									$vs_prev_alias = $va_alias_stack[sizeof($va_alias_stack)-2];
-								
-									if(sizeof($va_rel_type_ids) > 0) {
-										$vs_rel_type_res_sql = " AND {$vs_alias}.type_id IN (".join(",", $va_rel_type_ids).")";
-									}
-										
-									if (isset($va_table_key_list[$vs_list_name][$vs_left_table][$vs_right_table])) {
-										$va_key_spec = $va_table_key_list[$vs_list_name][$vs_left_table][$vs_right_table];
-										$vs_join = "INNER JOIN {$vs_right_table} AS {$vs_alias} ON ({$vs_alias}.{$va_key_spec['right_key']} = {$vs_prev_alias}.{$va_key_spec['left_key']}".$vs_rel_type_res_sql;
-										if ($va_key_spec['left_table_num'] || $va_key_spec['right_table_num']) {
-											if ($va_key_spec['right_table_num']) {
-												$vs_join .= " AND {$vs_alias}.{$va_key_spec['right_table_num']} = ".$this->opo_datamodel->getTableNum($vs_left_table);
-											} else {
-												$vs_join .= " AND {$vs_prev_alias}.{$va_key_spec['left_table_num']} = ".$this->opo_datamodel->getTableNum($vs_right_table);
-											}
-										}
-										$vs_join .= ")";
-									} else {
-										$va_key_spec = $va_table_key_list[$vs_list_name][$vs_right_table][$vs_left_table];
-										$vs_join = "INNER JOIN {$vs_right_table} AS {$vs_alias} ON ({$vs_alias}.{$va_key_spec['left_key']} = {$vs_prev_alias}.{$va_key_spec['right_key']}".$vs_rel_type_res_sql;
-										if ($va_key_spec['left_table_num'] || $va_key_spec['right_table_num']) {
-											if ($va_key_spec['right_table_num']) {
-												$vs_join .= " AND {$vs_prev_alias}.{$va_key_spec['right_table_num']} = ".$this->opo_datamodel->getTableNum($vs_right_table);
-											} else {
-												$vs_join .= " AND {$vs_alias}.{$va_key_spec['left_table_num']} = ".$this->opo_datamodel->getTableNum($vs_left_table);
-											}
-										}
-										$vs_join .= ")";
-									}
-
-									if (($t_rel_instance = $this->opo_datamodel->getInstanceByTableName($vs_right_table, true)) && method_exists($t_rel_instance, "isRelationship") && $t_rel_instance->isRelationship() && $t_rel_instance->hasField('type_id')) {
-										$vs_rel_type_id_fld = "{$va_alias}.type_id";
-									}
-									$va_joins[] = $vs_join;
-								} else {
-									if ($va_rel = $this->opo_datamodel->getOneToManyRelations($vs_left_table, $vs_right_table)) {
-										$vs_alias = $va_aliases[$vs_right_table][] = $va_alias_stack[] = "t{$vn_t}";
-										$vs_prev_alias = $va_alias_stack[sizeof($va_alias_stack)-2];
-										
-										if(sizeof($va_rel_type_ids) > 0) {
-											$vs_rel_type_res_sql = " AND {$vs_alias}.type_id IN (".join(",", $va_rel_type_ids).")";
-										}
-										
-										if($this->opo_datamodel->isSelfRelationship($va_rel['many_table'])) {
-											$t_self_rel = $this->opo_datamodel->getInstanceByTableName($va_rel['many_table'], true);
-											
-											$va_joins[] = array(
-															"INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.".$t_self_rel->getLeftTableFieldName().$vs_rel_type_res_sql,
-															"INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.".$t_self_rel->getRightTableFieldName().$vs_rel_type_res_sql
-														);
-														
-											if ($t_self_rel->hasField('type_id')) {
-												$vs_rel_type_id_fld = "{$vs_alias}.type_id";
-											}
-											
-										} else {
-										
-											$va_joins[] = "INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.{$va_rel['many_table_field']}".$vs_rel_type_res_sql;
-											if (($t_rel_instance = $this->opo_datamodel->getInstanceByTableName($va_rel['many_table'], true)) && method_exists($t_rel_instance, "isRelationship") && $t_rel_instance->isRelationship() && $t_rel_instance->hasField('type_id')) {
-												$vs_rel_type_id_fld = "{$vs_alias}.type_id";
-											}
-										}
-									} elseif ($va_rel = $this->opo_datamodel->getOneToManyRelations($vs_right_table, $vs_left_table)) {
-										$vs_alias = $va_aliases[$vs_right_table][] = $va_alias_stack[] = "t{$vn_t}";
-										$vs_prev_alias = $va_alias_stack[sizeof($va_alias_stack)-2];
-										
-										if(sizeof($va_rel_type_ids) > 0) {
-											$vs_rel_type_res_sql = " AND {$vs_alias}.type_id IN (".join(",", $va_rel_type_ids).")";
-										}
-										
-										if($this->opo_datamodel->isSelfRelationship($va_rel['many_table'])) {
-											$t_self_rel = $this->opo_datamodel->getInstanceByTableName($va_rel['many_table'], true);
-											
-											$va_joins[] = array(
-															"INNER JOIN {$va_rel['one_table']} AS {$vs_alias} ON {$vs_alias}.{$va_rel['one_table_field']} = {$vs_prev_alias}.".$t_self_rel->getRightTableFieldName().$vs_rel_type_res_sql,
-															"INNER JOIN {$va_rel['one_table']} AS {$vs_alias} ON {$vs_alias}.{$va_rel['one_table_field']} = {$vs_prev_alias}.".$t_self_rel->getLeftTableFieldName().$vs_rel_type_res_sql
-														);
-														
-											if ($t_self_rel->hasField('type_id')) {
-												$vs_rel_type_id_fld = "{$vs_alias}.type_id";
-											}
-										} else {
-											$va_joins[] = "INNER JOIN {$va_rel['one_table']} AS {$vs_alias} ON {$vs_alias}.{$va_rel['one_table_field']} = {$vs_prev_alias}.{$va_rel['many_table_field']}".$vs_rel_type_res_sql;
-											if (($t_rel_instance = $this->opo_datamodel->getInstanceByTableName($va_rel['one_table'], true)) && method_exists($t_rel_instance, "isRelationship") && $t_rel_instance->isRelationship() && $t_rel_instance->hasField('type_id')) {
-												$vs_rel_type_id_fld = "{$vs_prev_alias}.type_id";
-											}
-										}
-									}
-								}
-								$vs_left_table = $vs_right_table;
-								
-								$vn_t++;
-							}
-
-							$va_proc_field_list = array();
-							$vn_field_list_count = sizeof($va_field_list);
-							for($vn_i=0; $vn_i < $vn_field_list_count; $vn_i++) {
-								if ($va_field_list[$vn_i] == '_count') {
-									continue;
-								}
-								if (substr($va_field_list[$vn_i], 0, 14) === '_ca_attribute_') { continue; }
-								if (!trim($va_field_list[$vn_i])) { continue; }
-								$va_proc_field_list[$vn_i] = $va_aliases[$vs_related_table][sizeof($va_aliases[$vs_related_table])-1].'.'.$va_field_list[$vn_i];
-							}
-							$va_proc_field_list[] = $va_aliases[$vs_related_table][sizeof($va_aliases[$vs_related_table])-1].'.'.$vs_related_pk;
-							if ($vs_rel_type_id_fld) { $va_proc_field_list[] = $vs_rel_type_id_fld.' rel_type_id'; }
-							if (isset($va_rel['many_table']) && $va_rel['many_table']) {
-								$va_proc_field_list[] = $va_aliases[$va_rel['many_table']][sizeof($va_aliases[$va_rel['many_table']])-1].'.'.$va_rel['many_table_field'];
-							}
-
-							// process joins
-							$vn_num_queries_required = 1;
-							foreach($va_joins as $vn_i => $va_join_list) {
-								if(sizeof($va_join_list) > $vn_num_queries_required) {
-									$vn_num_queries_required = sizeof($va_join_list);
-								}
-							}
-							if ($vn_num_queries_required > 1) {
-								foreach($va_joins as $vn_i => $va_join_list) {
-									if(!is_array($va_joins[$vn_i])) { $va_joins[$vn_i] = array($va_joins[$vn_i]); }
-									$va_joins[$vn_i] = array_pad($va_joins[$vn_i], $vn_num_queries_required, $va_joins[$vn_i][0]);
-								}
-							}
-							
-							$vs_deleted_sql = '';
-							if ($t_subject->hasField('deleted')) {
-								$vs_deleted_sql = "(t0.deleted = 0) AND ";
-							}
-							for($i=0; $i < $vn_num_queries_required; $i++) {
-								$vs_joins = '';
-								foreach($va_joins as $va_join_list) {
-									$vs_joins .= (is_array($va_join_list) ? $va_join_list[$i] : $va_join_list)."\n";
-								}
-								$vs_sql = "
-									SELECT ".join(",", $va_proc_field_list)."
-									FROM ".$vs_subject_tablename." AS t0
-									{$vs_joins}
-									WHERE
-										{$vs_deleted_sql}
-										(".$va_aliases[$vs_subject_tablename][0].'.'.$vs_subject_pk.' = ?)
-								';
-
-								$va_queries[] = array('sql' => $vs_sql, 'params' => array($pn_subject_row_id));
-							}
-						}
-					}
+					$va_query_info = $this->_getQueriesForRelatedRows($t_subject, $pn_subject_row_id, $t_rel, $pb_reindex_mode);
+					$va_queries 			= $va_query_info['queries'];
+					$va_fields_to_index 	= $va_query_info['fields_to_index'];
 					
 					foreach($va_queries as $va_query) {
 						$vs_sql = $va_query['sql'];
@@ -1016,12 +785,18 @@ class SearchIndexer extends SearchBase {
 							$qr_res = $this->opo_db->query($vs_sql, $va_params);
 						}
 						
+						$va_counts = ['_total' => 0];
+						$vb_index_count = isset($va_fields_to_index['_count']) && (bool)$va_fields_to_index['_count'];
 						while($qr_res->nextRow()) {
+							$vn_count++;
+							
 							$va_field_data = $qr_res->getRow();
 							
 							$vn_row_id = $qr_res->get($vs_related_pk);
 							
 							$vn_rel_type_id = $qr_res->get('rel_type_id');
+							$vn_row_type_id = $qr_res->get('type_id');
+							
 							foreach($va_fields_to_index as $vs_rel_field => $va_rel_field_info) {
 //
 // BEGIN: Index attributes in related tables
@@ -1074,7 +849,11 @@ class SearchIndexer extends SearchBase {
 
 								switch($vs_rel_field){
 									case '_count':
-										// noop
+										$va_counts['_total']++;
+										
+										if ($vn_rel_type_id || $vn_row_type_id) {
+											$va_counts[$t_rel->isRelationship() ? $vn_rel_type_id : $vn_row_type_id]++;
+										}
 										break;
 									default:
 										if ($vb_is_attr) {
@@ -1118,6 +897,13 @@ class SearchIndexer extends SearchBase {
 										}
 									}
 								}
+							}
+						}
+						
+						// index counts?
+						if ($vb_index_count) {
+							foreach($va_counts as $vs_key => $vn_count) {
+								$this->opo_engine->indexField($vn_related_tablenum, 'C'.$vs_key, 0, [(int)$vn_count], $va_rel_field_info);
 							}
 						}
 					}
@@ -1201,6 +987,12 @@ class SearchIndexer extends SearchBase {
 
 					if (substr($va_row_to_reindex['field_name'], 0, 14) == '_ca_attribute_') {		// is attribute
 						$va_row_to_reindex['indexing_info']['datatype'] = ca_metadata_elements::getElementDatatype(substr($va_row_to_reindex['field_name'], 14));
+					}
+					
+					if ($va_row_to_reindex['field_name'] == '_count') {
+						foreach( $va_row_to_reindex['row_ids'] as $vn_subject_row_id) {
+							$this->_doCountIndexing($this->opo_datamodel->getInstanceByTableNum($va_row_to_reindex['table_num'], true), $vn_subject_row_id, $t_rel, false);
+						}
 					}
 
 					if (((isset($va_row_to_reindex['indexing_info']['INDEX_ANCESTORS']) && $va_row_to_reindex['indexing_info']['INDEX_ANCESTORS']) || in_array('INDEX_ANCESTORS', $va_row_to_reindex['indexing_info']))) {
@@ -1619,6 +1411,8 @@ class SearchIndexer extends SearchBase {
 		$this->opo_engine->removeRowIndexing($pn_subject_tablenum, $pn_subject_row_id);
 
 		if (is_array($this->opa_dependencies_to_update)) {
+			$t_subject = $this->opo_datamodel->getInstanceByTableNum($pn_subject_tablenum, true);
+			
 			if (!$vb_can_do_incremental_indexing) {
 				$va_seen_items = array();
 
@@ -1641,6 +1435,8 @@ class SearchIndexer extends SearchBase {
 					$this->opo_engine->removeRowIndexing($va_item['table_num'], $va_item['row_id'], null, null, null, $va_item['relationship_type_id']);
 
 					$this->indexRow($va_item['table_num'], $va_item['row_id'], $va_field_values[$va_item['table_num']][$va_item['row_id']]);
+					$this->_doCountIndexing($this->opo_datamodel->getInstanceByTableNum($va_item['table_num'], true), $va_item['row_id'], $t_subject, false);
+				
 					$va_seen_items[$va_item['table_num']][$va_item['row_id']] = true;
 				}
 			} else {
@@ -1649,6 +1445,11 @@ class SearchIndexer extends SearchBase {
 
 				foreach($this->opa_dependencies_to_update as $va_item) {
 					$this->opo_engine->removeRowIndexing($va_item['table_num'], $va_item['row_id'], $va_item['field_table_num'], $va_item['field_nums'], $va_item['field_row_id'], $va_item['relationship_type_id']);
+					
+					// Remove existing count index and recreate
+					$this->opo_engine->removeRowIndexing($va_item['table_num'], $va_item['row_id'], $va_item['field_table_num'], null, 0, $va_item['relationship_type_id']);
+					$this->_doCountIndexing($this->opo_datamodel->getInstanceByTableNum($va_item['table_num'], true), $va_item['row_id'], $t_subject, false);
+				
 				}
 			}
 		}
@@ -1679,6 +1480,13 @@ class SearchIndexer extends SearchBase {
 			}
 		}
 		return false;
+	}
+	# ------------------------------------------------
+	/**
+	 * 
+	 */
+	private function _getCountsForSubject($pn_subject_tablenum, $pn_subject_row_id, $pa_options) {
+	
 	}
 	# ------------------------------------------------
 	/**
@@ -2330,6 +2138,299 @@ class SearchIndexer extends SearchBase {
 			$va_deps[] = $t_subject->getLeftTableName();
 		}
 		return $va_deps;
+	}
+	# ------------------------------------------------
+	/**
+	 *
+	 */
+	private function _getQueriesForRelatedRows($pt_subject, $pn_subject_row_id, $pt_rel, $pb_reindex_mode) {
+		$vs_subject_tablename = $pt_subject->tableName();
+		$vs_subject_pk = $pt_subject->primaryKey();
+		$vs_related_table = $pt_rel->tableName();
+		$vs_related_pk = $pt_rel->primaryKey();
+		
+		$vb_can_do_incremental_indexing = $this->opo_engine->can('incremental_reindexing') ? true : false;
+		
+		if ($vs_subject_tablename == $vs_related_table) {
+			// self-relation
+			if (!($vs_self_rel_table_name = $pt_rel->getSelfRelationTableName())) { return null; }
+			$t_self_rel = $this->opo_datamodel->getInstanceByTableName($vs_self_rel_table_name, true);
+			$va_proc_field_list = array();
+			
+			$va_self_info = $this->getTableIndexingInfo($vs_subject_tablename, $vs_subject_tablename);
+			$va_fields_to_index = $va_self_info['related']['fields'];
+			$va_field_list = array_keys($va_fields_to_index);
+
+			$vn_field_list_count = sizeof($va_field_list);
+			for($vn_i=0; $vn_i < $vn_field_list_count; $vn_i++) {
+				if ($va_field_list[$vn_i] == '_count') { continue; }
+				if (substr($va_field_list[$vn_i], 0, 14) === '_ca_attribute_') { continue; }
+				if (!trim($va_field_list[$vn_i])) { continue; }
+				$va_proc_field_list[$vn_i] = $vs_related_table.'.'.$va_field_list[$vn_i];
+			}
+			$va_proc_field_list[] = $vs_related_table.'.'.$vs_related_pk;
+			if ($vs_self_rel_table_name) { $va_proc_field_list[] = $vs_self_rel_table_name.'.type_id rel_type_id'; }
+
+			$vs_delete_sql = $pt_rel->hasField('deleted') ? " AND {$vs_related_table}.deleted = 0" : '';
+			$vs_sql = "
+				SELECT ".join(",", $va_proc_field_list)."
+				FROM {$vs_related_table}
+				INNER JOIN {$vs_self_rel_table_name} ON {$vs_self_rel_table_name}.".$t_self_rel->getLeftTableFieldName()." = {$vs_related_table}.{$vs_related_pk}
+				WHERE
+					(".$vs_self_rel_table_name.'.'.$t_self_rel->getRightTableFieldName().' = ?)
+					'.$vs_delete_sql.'
+				UNION
+			
+				SELECT '.join(",", $va_proc_field_list)."
+				FROM {$vs_related_table}
+				INNER JOIN {$vs_self_rel_table_name} ON {$vs_self_rel_table_name}.".$t_self_rel->getRightTableFieldName()." = {$vs_related_table}.{$vs_related_pk}
+				WHERE
+					(".$vs_self_rel_table_name.'.'.$t_self_rel->getLeftTableFieldName().' = ?)
+					'.$vs_delete_sql.'
+			';
+			$va_params = array($pn_subject_row_id, $pn_subject_row_id);
+
+			$va_queries[] = array('sql' => $vs_sql, 'params' => $va_params);
+		} else {
+			$va_fields_to_index = $this->getFieldsToIndex($vs_subject_tablename, $vs_related_table);
+			$va_table_info = $this->getTableIndexingInfo($vs_subject_tablename, $vs_related_table);
+
+			$va_field_list = array_keys($va_fields_to_index);
+
+			$va_table_list_list = $va_table_key_list = array();
+
+			if (isset($va_table_info['key']) && $va_table_info['key']) {
+				$va_table_list_list = array('key' => array($vs_related_table));
+				$va_table_key_list = array();
+			} else {
+				if ($pb_reindex_mode || (!$vb_can_do_incremental_indexing)) {
+					$va_table_list_list = isset($va_table_info['tables']) ? $va_table_info['tables'] : null;
+					$va_table_key_list = isset($va_table_info['keys']) ? $va_table_info['keys'] : null;
+				}
+			}
+
+			if (!is_array($va_table_list_list) || !sizeof($va_table_list_list)) {  return null; }
+			foreach($va_table_list_list as $vs_list_name => $va_linking_tables_config) {
+				if (caIsIndexedArray($va_linking_tables_config)) {
+					$va_tmp = array();
+					foreach($va_linking_tables_config as $vs_t) {
+						$va_tmp[$vs_t] = [];
+					}
+					$va_linking_tables_config = $va_tmp;
+				}
+				$va_linking_tables = array_keys($va_linking_tables_config);
+		
+				array_push($va_linking_tables, $vs_related_table);
+				$vs_left_table = $vs_subject_tablename;
+
+				$va_joins = array();
+				$vs_rel_type_id_fld = null;
+			
+				$vn_t = 1;
+				$va_aliases = [$vs_subject_tablename => [0 => 't0']];
+				$va_alias_stack = ['t0'];
+			
+				foreach($va_linking_tables as $vs_right_table) {
+					$va_rel_type_ids = array();
+					$vs_rel_type_res_sql = '';
+					if (($va_type_res = $va_linking_tables_config[$vs_right_table]['types']) && is_array($va_type_res) && sizeof($va_type_res)) {
+						$va_rel_type_ids = caMakeRelationshipTypeIDList($vs_right_table, $va_type_res);
+					}
+						
+					if (is_array($va_table_key_list) && (isset($va_table_key_list[$vs_list_name][$vs_right_table][$vs_left_table]) || isset($va_table_key_list[$vs_list_name][$vs_left_table][$vs_right_table]))) {		// are the keys for this join specified in the indexing config?
+												
+						$vs_alias = $va_aliases[$vs_right_table][] = $va_alias_stack[] = "t{$vn_t}";
+						$vs_prev_alias = $va_alias_stack[sizeof($va_alias_stack)-2];
+				
+						if(sizeof($va_rel_type_ids) > 0) {
+							$vs_rel_type_res_sql = " AND {$vs_alias}.type_id IN (".join(",", $va_rel_type_ids).")";
+						}
+						
+						if (isset($va_table_key_list[$vs_list_name][$vs_left_table][$vs_right_table])) {
+							$va_key_spec = $va_table_key_list[$vs_list_name][$vs_left_table][$vs_right_table];
+							$vs_join = "INNER JOIN {$vs_right_table} AS {$vs_alias} ON ({$vs_alias}.{$va_key_spec['right_key']} = {$vs_prev_alias}.{$va_key_spec['left_key']}".$vs_rel_type_res_sql;
+							if ($va_key_spec['left_table_num'] || $va_key_spec['right_table_num']) {
+								if ($va_key_spec['right_table_num']) {
+									$vs_join .= " AND {$vs_alias}.{$va_key_spec['right_table_num']} = ".$this->opo_datamodel->getTableNum($vs_left_table);
+								} else {
+									$vs_join .= " AND {$vs_prev_alias}.{$va_key_spec['left_table_num']} = ".$this->opo_datamodel->getTableNum($vs_right_table);
+								}
+							}
+							$vs_join .= ")";
+						} else {
+							$va_key_spec = $va_table_key_list[$vs_list_name][$vs_right_table][$vs_left_table];
+							$vs_join = "INNER JOIN {$vs_right_table} AS {$vs_alias} ON ({$vs_alias}.{$va_key_spec['left_key']} = {$vs_prev_alias}.{$va_key_spec['right_key']}".$vs_rel_type_res_sql;
+							if ($va_key_spec['left_table_num'] || $va_key_spec['right_table_num']) {
+								if ($va_key_spec['right_table_num']) {
+									$vs_join .= " AND {$vs_prev_alias}.{$va_key_spec['right_table_num']} = ".$this->opo_datamodel->getTableNum($vs_right_table);
+								} else {
+									$vs_join .= " AND {$vs_alias}.{$va_key_spec['left_table_num']} = ".$this->opo_datamodel->getTableNum($vs_left_table);
+								}
+							}
+							$vs_join .= ")";
+						}
+
+						if (($pt_rel_instance = $this->opo_datamodel->getInstanceByTableName($vs_right_table, true)) && method_exists($pt_rel_instance, "isRelationship") && $pt_rel_instance->isRelationship() && $pt_rel_instance->hasField('type_id')) {
+							$vs_rel_type_id_fld = "{$va_alias}.type_id";
+						}
+						$va_joins[] = $vs_join;
+					} else {
+						if ($va_rel = $this->opo_datamodel->getOneToManyRelations($vs_left_table, $vs_right_table)) {
+							$vs_alias = $va_aliases[$vs_right_table][] = $va_alias_stack[] = "t{$vn_t}";
+							$vs_prev_alias = $va_alias_stack[sizeof($va_alias_stack)-2];
+						
+							if(sizeof($va_rel_type_ids) > 0) {
+								$vs_rel_type_res_sql = " AND {$vs_alias}.type_id IN (".join(",", $va_rel_type_ids).")";
+							}
+						
+							if($this->opo_datamodel->isSelfRelationship($va_rel['many_table'])) {
+								$t_self_rel = $this->opo_datamodel->getInstanceByTableName($va_rel['many_table'], true);
+							
+								$va_joins[] = array(
+												"INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.".$t_self_rel->getLeftTableFieldName().$vs_rel_type_res_sql,
+												"INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.".$t_self_rel->getRightTableFieldName().$vs_rel_type_res_sql
+											);
+										
+								if ($t_self_rel->hasField('type_id')) {
+									$vs_rel_type_id_fld = "{$vs_alias}.type_id";
+								}
+							
+							} else {
+						
+								$va_joins[] = "INNER JOIN {$va_rel['many_table']} AS {$vs_alias} ON {$vs_prev_alias}.{$va_rel['one_table_field']} = {$vs_alias}.{$va_rel['many_table_field']}".$vs_rel_type_res_sql;
+								if (($pt_rel_instance = $this->opo_datamodel->getInstanceByTableName($va_rel['many_table'], true)) && method_exists($pt_rel_instance, "isRelationship") && $pt_rel_instance->isRelationship() && $pt_rel_instance->hasField('type_id')) {
+									$vs_rel_type_id_fld = "{$vs_alias}.type_id";
+								}
+							}
+						} elseif ($va_rel = $this->opo_datamodel->getOneToManyRelations($vs_right_table, $vs_left_table)) {
+							$vs_alias = $va_aliases[$vs_right_table][] = $va_alias_stack[] = "t{$vn_t}";
+							$vs_prev_alias = $va_alias_stack[sizeof($va_alias_stack)-2];
+						
+							if(sizeof($va_rel_type_ids) > 0) {
+								$vs_rel_type_res_sql = " AND {$vs_alias}.type_id IN (".join(",", $va_rel_type_ids).")";
+							}
+						
+							if($this->opo_datamodel->isSelfRelationship($va_rel['many_table'])) {
+								$t_self_rel = $this->opo_datamodel->getInstanceByTableName($va_rel['many_table'], true);
+							
+								$va_joins[] = array(
+												"INNER JOIN {$va_rel['one_table']} AS {$vs_alias} ON {$vs_alias}.{$va_rel['one_table_field']} = {$vs_prev_alias}.".$t_self_rel->getRightTableFieldName().$vs_rel_type_res_sql,
+												"INNER JOIN {$va_rel['one_table']} AS {$vs_alias} ON {$vs_alias}.{$va_rel['one_table_field']} = {$vs_prev_alias}.".$t_self_rel->getLeftTableFieldName().$vs_rel_type_res_sql
+											);
+										
+								if ($t_self_rel->hasField('type_id')) {
+									$vs_rel_type_id_fld = "{$vs_alias}.type_id";
+								}
+							} else {
+								$va_joins[] = "INNER JOIN {$va_rel['one_table']} AS {$vs_alias} ON {$vs_alias}.{$va_rel['one_table_field']} = {$vs_prev_alias}.{$va_rel['many_table_field']}".$vs_rel_type_res_sql;
+								if (($pt_rel_instance = $this->opo_datamodel->getInstanceByTableName($va_rel['one_table'], true)) && method_exists($pt_rel_instance, "isRelationship") && $pt_rel_instance->isRelationship() && $pt_rel_instance->hasField('type_id')) {
+									$vs_rel_type_id_fld = "{$vs_prev_alias}.type_id";
+								}
+							}
+						}
+					}
+					$vs_left_table = $vs_right_table;
+				
+					$vn_t++;
+				}
+
+				$va_proc_field_list = array();
+				$vn_field_list_count = sizeof($va_field_list);
+				for($vn_i=0; $vn_i < $vn_field_list_count; $vn_i++) {
+					if ($va_field_list[$vn_i] == '_count') {
+						continue;
+					}
+					if (substr($va_field_list[$vn_i], 0, 14) === '_ca_attribute_') { continue; }
+					if (!trim($va_field_list[$vn_i])) { continue; }
+					$va_proc_field_list[$vn_i] = $va_aliases[$vs_related_table][sizeof($va_aliases[$vs_related_table])-1].'.'.$va_field_list[$vn_i];
+				}
+				$va_proc_field_list[] = $va_aliases[$vs_related_table][sizeof($va_aliases[$vs_related_table])-1].'.'.$vs_related_pk;
+				if ($vs_rel_type_id_fld) { $va_proc_field_list[] = $vs_rel_type_id_fld.' rel_type_id'; }
+				if (isset($va_rel['many_table']) && $va_rel['many_table']) {
+					$va_proc_field_list[] = $va_aliases[$va_rel['many_table']][sizeof($va_aliases[$va_rel['many_table']])-1].'.'.$va_rel['many_table_field'];
+				}
+
+				// process joins
+				$vn_num_queries_required = 1;
+				foreach($va_joins as $vn_i => $va_join_list) {
+					if(sizeof($va_join_list) > $vn_num_queries_required) {
+						$vn_num_queries_required = sizeof($va_join_list);
+					}
+				}
+				if ($vn_num_queries_required > 1) {
+					foreach($va_joins as $vn_i => $va_join_list) {
+						if(!is_array($va_joins[$vn_i])) { $va_joins[$vn_i] = array($va_joins[$vn_i]); }
+						$va_joins[$vn_i] = array_pad($va_joins[$vn_i], $vn_num_queries_required, $va_joins[$vn_i][0]);
+					}
+				}
+			
+				$vs_deleted_sql = '';
+				if ($pt_subject->hasField('deleted')) {
+					$vs_deleted_sql = "(t0.deleted = 0) AND ";
+				}
+				for($i=0; $i < $vn_num_queries_required; $i++) {
+					$vs_joins = '';
+					foreach($va_joins as $va_join_list) {
+						$vs_joins .= (is_array($va_join_list) ? $va_join_list[$i] : $va_join_list)."\n";
+					}
+					$vs_sql = "
+						SELECT ".join(",", $va_proc_field_list)."
+						FROM ".$vs_subject_tablename." AS t0
+						{$vs_joins}
+						WHERE
+							{$vs_deleted_sql}
+							(".$va_aliases[$vs_subject_tablename][0].'.'.$vs_subject_pk.' = ?)
+					';
+
+					$va_queries[] = array('sql' => $vs_sql, 'params' => array($pn_subject_row_id));
+				}
+			}
+		}
+		return ['queries' => $va_queries, 'fields_to_index' => $va_fields_to_index, 'field_list' => $va_field_list];
+	}
+	# ------------------------------------------------
+	/**
+	 *
+	 */
+	private function _doCountIndexing($pt_subject, $pn_subject_row_id, $pt_rel, $pb_reindex_mode) {
+		$va_query_info = $this->_getQueriesForRelatedRows($pt_subject, $pn_subject_row_id, $pt_rel, $pb_reindex_mode);
+		$va_queries 			= $va_query_info['queries'];
+		$va_fields_to_index 	= $va_query_info['fields_to_index'];
+
+		if(isset($va_fields_to_index['_count']) && (bool)$va_fields_to_index['_count']) {
+			foreach($va_queries as $va_query) {
+				$vs_sql = $va_query['sql'];
+				$va_params = $va_query['params'];
+
+				$qr_res = $this->opo_db->query($vs_sql, $va_params);
+
+				if ($this->opo_db->numErrors()) {
+					// Shouldn't ever happen
+					throw new Exception(_t("SQL error while getting content for index of related fields: %1; SQL was %2", $this->opo_db->getErrors(), $vs_sql));
+				}
+
+				$va_counts = ['_total' => 0];
+
+				while($qr_res->nextRow()) {
+					$vn_count++;
+
+					$vn_row_id = $qr_res->get($vs_related_pk);
+
+					$vn_rel_type_id = $qr_res->get('rel_type_id');
+					$vn_row_type_id = $qr_res->get('type_id');
+
+					$va_counts['_total']++;
+
+					if ($vn_rel_type_id || $vn_row_type_id) {
+						$va_counts[$pt_rel->isRelationship() ? $vn_rel_type_id : $vn_row_type_id]++;
+					}
+				}
+				// index counts?
+				foreach($va_counts as $vs_key => $vn_count) {
+					$this->opo_engine->updateIndexingInPlace($pt_subject->tableNum(), [$pn_subject_row_id], $pt_rel->tableNum(), 'C'.$vs_key, 0, $vn_count, []);
+				}
+			}
+		}
 	}
 	# ------------------------------------------------
 }

@@ -1688,6 +1688,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 	}
 	# -------------------------------------------------------
 	public function indexField($pn_content_tablenum, $ps_content_fieldname, $pn_content_row_id, $pm_content, $pa_options) {
+		if (!is_array($pa_options)) { $pa_options = []; }
+		
 		if (!is_array($pm_content)) {
 			$pm_content = [$pm_content];
 		}
@@ -1735,7 +1737,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			}
 		} 
 		
-		if (!$pm_content || !sizeof($pm_content) || (((sizeof($pm_content) == 1) && strlen((string)$pm_content[0]) == 0))) { 
+		if ((!is_array($pm_content) && !strlen($pm_content)) || !sizeof($pm_content) || (((sizeof($pm_content) == 1) && strlen((string)$pm_content[0]) == 0))) { 
 			$va_words = null;
 		} else {
 			// Tokenize string
@@ -1839,7 +1841,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		if (!$pn_rel_type_id) { $pn_rel_type_id = 0; }
 		
 		// remove dependent row indexing
-		if ($pn_subject_tablenum && $pn_subject_row_id && $pn_field_tablenum && $pn_field_row_id && is_array($pa_field_nums) && sizeof($pa_field_nums)) {
+		if ($pn_subject_tablenum && $pn_subject_row_id &&  !is_null($pn_field_tablenum) && !is_null($pn_field_row_id) && is_array($pa_field_nums) && sizeof($pa_field_nums)) {
 			foreach($pa_field_nums as $pn_field_num) {
 				if(!$pn_field_num) { continue; }
 				//print "DELETE ROW WITH FIELD NUM $pn_subject_tablenum/$pn_subject_row_id/$pn_field_tablenum/$pn_field_num/$pn_field_row_id<br>";
@@ -1847,11 +1849,11 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			}
 			return true;
 		} else {
-			if ($pn_subject_tablenum && $pn_subject_row_id && $pn_field_tablenum && $pn_field_row_id) {
+			if ($pn_subject_tablenum && $pn_subject_row_id && !is_null($pn_field_tablenum) && !is_null($pn_field_row_id)) {
 				//print "DELETE ROW $pn_subject_tablenum/$pn_subject_row_id/$pn_field_tablenum/$pn_field_row_id<br>";
 				return $this->opqr_delete_with_field_row_id->execute((int)$pn_subject_tablenum, (int)$pn_subject_row_id, (int)$pn_field_tablenum, (int)$pn_field_row_id, $pn_rel_type_id);
 			} else {
-				if ($pn_field_tablenum && is_array($pa_field_nums) && sizeof($pa_field_nums)) {
+				if (!is_null($pn_field_tablenum) && is_array($pa_field_nums) && sizeof($pa_field_nums)) {
 					foreach($pa_field_nums as $pn_field_num) {
 						if(!$pn_field_num) { continue; }
 						//print "DELETE FIELD $pn_subject_tablenum/$pn_subject_row_id/$pn_field_tablenum/$pn_field_num<br>";
@@ -1859,7 +1861,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					}
 					return true;
 				} else {
-					if (!$pn_subject_tablenum && !$pn_subject_row_id && $pn_field_tablenum && $pn_field_row_id) {
+					if (!$pn_subject_tablenum && !$pn_subject_row_id && !is_null($pn_field_tablenum) && !is_null($pn_field_row_id)) {
 						//print "DELETE DEP $pn_field_tablenum/$pn_field_row_id<br>";
 						$this->opqr_delete_dependent_sql->execute((int)$pn_field_tablenum, (int)$pn_field_row_id, $pn_rel_type_id);
 					} else {
