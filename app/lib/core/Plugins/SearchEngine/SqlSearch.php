@@ -496,6 +496,8 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			
 			if (sizeof($va_rel_type_ids) > 0) {
 				$vn_rel_type = $va_rel_type_ids[0];
+			} else {
+				$va_rel_type_ids = [0];
 			}
 			
 			return array(
@@ -521,6 +523,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 			if(strtolower($vs_subfield) == 'count') {
 				$vs_subfield = null;
 				$vb_is_count = true;
+				if (!is_array($va_rel_type_ids) || !sizeof($va_rel_type_ids)) { $va_rel_type_ids = [0]; }
 			}
 			if ($t_element->load(array('element_code' => ($vs_subfield ? $vs_subfield : $vs_field)))) {
 				if ($vb_is_count) {
@@ -844,9 +847,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$vs_fld_table_num = $va_element['table_num'];
 									$vs_fld_limit_sql = " AND (swi.field_table_num = {$vs_fld_table_num} AND swi.field_num = '{$vs_fld_num}')";
 									
-									//if (is_array($va_element['relationship_type_ids']) && sizeof($va_element['relationship_type_ids'])) {
-										$vs_fld_limit_sql .= " AND (swi.rel_type_id IN (".join(",", (is_array($va_element['relationship_type_ids']) && sizeof($va_element['relationship_type_ids'])) ? $va_element['relationship_type_ids'] : [0])."))";
-									//}
+									if (is_array($va_element['relationship_type_ids']) && sizeof($va_element['relationship_type_ids'])) {
+										$vs_fld_limit_sql .= " AND (swi.rel_type_id IN (".join(",", $va_element['relationship_type_ids'])."))";
+									}
 								}
 							}
 							
@@ -1514,9 +1517,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					}
 					
 					$vs_rel_type_id_sql = null;
-					//if((is_array($va_access_point_info['relationship_type_ids']) && sizeof($va_access_point_info['relationship_type_ids']))) {
-						$vs_rel_type_id_sql = " AND (swi.rel_type_id IN (".join(",", (is_array($va_access_point_info['relationship_type_ids']) && sizeof($va_access_point_info['relationship_type_ids'])) ? $va_access_point_info['relationship_type_ids'] : [0])."))";
-					//}
+					if((is_array($va_access_point_info['relationship_type_ids']) && sizeof($va_access_point_info['relationship_type_ids']))) {
+						$vs_rel_type_id_sql = " AND (swi.rel_type_id IN (".join(",", $va_access_point_info['relationship_type_ids'])."))";
+					}
 					if (!$vs_fld_num && is_array($va_restrict_to_fields = caGetOption('restrictSearchToFields', $pa_options, null)) && sizeof($va_restrict_to_fields)) {
 						$va_field_restrict_sql = array();
 						foreach($va_restrict_to_fields as $va_restrict) {
