@@ -490,23 +490,20 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		}
 		$vs_table_num = $t_table->tableNum();
 		
-		if ($vs_field == 'count') {
+		// counts for relationship
+		if (strtolower($vs_field) == 'count') {
 			$vs_rel_type = null;
 			
 			if (sizeof($va_rel_type_ids) > 0) {
-				$vn_rel_type = array_shift($va_rel_type_ids);
-				$va_rel_type_ids = [0];
-				$vs_field_num = "C{$vn_rel_type}";
-			} else {
-				$vs_field_num = 'C_total';
+				$vn_rel_type = $va_rel_type_ids[0];
 			}
 			
 			return array(
-				'access_point' => "{$vs_table}.{$vs_field_num}",
-				'relationship_type' => 0,
+				'access_point' => "{$vs_table}.{$vs_field}",
+				'relationship_type' => (int)$vn_rel_type,
 				'table_num' => $vs_table_num,
 				'element_id' => null,
-				'field_num' => $vs_field_num,
+				'field_num' => 'COUNT',
 				'datatype' => 'COUNT',
 				'element_info' => null,
 				'relationship_type_ids' => $va_rel_type_ids
@@ -519,20 +516,35 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 		
 		if (!strlen($vs_fld_num)) {
 			$t_element = new ca_metadata_elements();
+			
+			$vb_is_count = false;
+			if(strtolower($vs_subfield) == 'count') {
+				$vs_subfield = null;
+				$vb_is_count = true;
+			}
 			if ($t_element->load(array('element_code' => ($vs_subfield ? $vs_subfield : $vs_field)))) {
-				switch ($t_element->get('datatype')) {
-					default:
-						return array(
-							'access_point' => $va_tmp[0],
-							'relationship_type' => $va_tmp[1],
-							'table_num' => $vs_table_num,
-							'element_id' => $t_element->getPrimaryKey(),
-							'field_num' => 'A'.$t_element->getPrimaryKey(),
-							'datatype' => $t_element->get('datatype'),
-							'element_info' => $t_element->getFieldValuesArray(),
-							'relationship_type_ids' => $va_rel_type_ids
-						);
-						break;
+				if ($vb_is_count) {
+					return array(
+						'access_point' => "{$vs_table}.{$vs_field}",
+						'relationship_type' => $va_tmp[1],
+						'table_num' => $vs_table_num,
+						'element_id' => $t_element->getPrimaryKey(),
+						'field_num' => 'COUNT'.$t_element->getPrimaryKey(),
+						'datatype' => 'COUNT',
+						'element_info' => $t_element->getFieldValuesArray(),
+						'relationship_type_ids' => $va_rel_type_ids
+					);
+				} else {
+					return array(
+						'access_point' => $va_tmp[0],
+						'relationship_type' => $va_tmp[1],
+						'table_num' => $vs_table_num,
+						'element_id' => $t_element->getPrimaryKey(),
+						'field_num' => 'A'.$t_element->getPrimaryKey(),
+						'datatype' => $t_element->get('datatype'),
+						'element_info' => $t_element->getFieldValuesArray(),
+						'relationship_type_ids' => $va_rel_type_ids
+					);
 				}
 			}
 		} else {
@@ -674,7 +686,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 											AND 
 											(ca.field_table_num = ?)
 											AND
-											(ca.rel_type_id = 0)
+											(ca.rel_type_id IN (".join(',', (is_array($va_element['relationship_type_ids']) && sizeof($va_element['relationship_type_ids'])) ? $va_element['relationship_type_ids'] : [0])."))
 											AND
 											(ca.field_num = '".$va_element['field_num']."')
 											AND
@@ -832,9 +844,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$vs_fld_table_num = $va_element['table_num'];
 									$vs_fld_limit_sql = " AND (swi.field_table_num = {$vs_fld_table_num} AND swi.field_num = '{$vs_fld_num}')";
 									
-									if (is_array($va_element['relationship_type_ids']) && sizeof($va_element['relationship_type_ids'])) {
-										$vs_fld_limit_sql .= " AND (swi.rel_type_id IN (".join(",", $va_element['relationship_type_ids'])."))";
-									}
+									//if (is_array($va_element['relationship_type_ids']) && sizeof($va_element['relationship_type_ids'])) {
+										$vs_fld_limit_sql .= " AND (swi.rel_type_id IN (".join(",", (is_array($va_element['relationship_type_ids']) && sizeof($va_element['relationship_type_ids'])) ? $va_element['relationship_type_ids'] : [0])."))";
+									//}
 								}
 							}
 							
@@ -1032,7 +1044,6 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									break;
 							}
 						} else {
-							//print "$vs_table/$vs_field/";
 							if ((!$vb_is_blank_search && !$vb_is_not_blank_search) && $vs_table && $vs_field && ($t_table = $this->opo_datamodel->getInstanceByTableName($vs_table, true)) ) {
 								$vs_table_num = $t_table->tableNum();
 								
@@ -1040,8 +1051,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 									$vs_fld_num = 'I'.$vs_field;
 									$vn_fld_num = (int)$vs_field;
 								} else {
-									$vn_fld_num = $this->getFieldNum($vs_table, $vs_field);
-									$vs_fld_num = 'I'.$vn_fld_num;
+									if($vn_fld_num = $this->getFieldNum($vs_table, $vs_field)) {
+										$vs_fld_num = 'I'.$vn_fld_num;
+									}
 									
 									if (!strlen($vn_fld_num)) {
 										$t_element = new ca_metadata_elements();
@@ -1052,7 +1064,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 											$vn_root_element_id = $t_element->get('hier_element_id');
 											
 											if (!isset($va_indexed_fields['_ca_attribute_'.$vn_fld_num]) && (!$vn_root_element_id || ($vn_root_element_id && !isset($va_indexed_fields['_ca_attribute_'.$vn_root_element_id])))) { break(2); } // skip if not indexed
-											$vs_fld_num = 'A'.$vn_fld_num;
+											//$vs_fld_num = 'A'.$vn_fld_num;
 										
 											if (!$vb_is_blank_search && !$vb_is_not_blank_search) {
 												//
@@ -1502,9 +1514,9 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 					}
 					
 					$vs_rel_type_id_sql = null;
-					if((is_array($va_access_point_info['relationship_type_ids']) && sizeof($va_access_point_info['relationship_type_ids']))) {
-						$vs_rel_type_id_sql = " AND (swi.rel_type_id IN (".join(",", $va_access_point_info['relationship_type_ids'])."))";
-					}
+					//if((is_array($va_access_point_info['relationship_type_ids']) && sizeof($va_access_point_info['relationship_type_ids']))) {
+						$vs_rel_type_id_sql = " AND (swi.rel_type_id IN (".join(",", (is_array($va_access_point_info['relationship_type_ids']) && sizeof($va_access_point_info['relationship_type_ids'])) ? $va_access_point_info['relationship_type_ids'] : [0])."))";
+					//}
 					if (!$vs_fld_num && is_array($va_restrict_to_fields = caGetOption('restrictSearchToFields', $pa_options, null)) && sizeof($va_restrict_to_fields)) {
 						$va_field_restrict_sql = array();
 						foreach($va_restrict_to_fields as $va_restrict) {
@@ -1587,8 +1599,7 @@ class WLPlugSearchEngineSqlSearch extends BaseSearchPlugin implements IWLPlugSea
 						$pa_direct_sql_query_params = is_array($pa_direct_sql_query_params) ? $pa_direct_sql_query_params : array();
 						if(strpos($vs_sql, '?') === false) { $pa_direct_sql_query_params = array(); }
 						$this->opo_db->query($vs_sql, $pa_direct_sql_query_params);
-print $vs_sql;
-print_R($pa_direct_sql_query_params);
+						
 						$vn_i++;
 						if ($this->debug) { Debug::msg('FIRST: '.$vs_sql." [$pn_subject_tablenum] ".$t->GetTime(4)); }
 					} else {
